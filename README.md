@@ -1,6 +1,7 @@
 <div align="center">
-
-<img src="docs/assets/logo.png" alt="Glaz logo" width="200" height="200"/>
+<!--
+<img src="docs/assets/logo.png" alt="Rivet logo" width="200" height="200"/>
+-->
 
 # The Rivet programming language
 
