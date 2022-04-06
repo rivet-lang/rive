@@ -20,26 +20,19 @@ of software.
 
 </div>
 
-<!--
-> **NOTE:** The compiler is **not ready** for production _yet_.
--->
-
 ## Features
 
-* Simple and easy-to-learn syntax.
-* Fast like C.
+* Easy-to-learn syntax.
+* Non-null values.
 * SumTypes.
-* Non-null and optional values.
 * Named and optional arguments.
 * Result types for error handling.
 * Struct inheritance and polymorphism.
+* And much more!.
 
-<!--
-## Documentation
-
-You can see [`docs/`](docs/00_getting_started.md) for installation instructions and
-language syntax.
--->
+Rivet's goal is to be a very powerful programming language and at the same time easy
+to use, with a syntax inspired mainly by Rust and C# (which are the coolest languages
+I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
 
 * * *
 
