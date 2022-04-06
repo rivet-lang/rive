@@ -20,6 +20,10 @@ of software.
 
 </div>
 
+Rivet's goal is to be a very powerful programming language and at the same time easy
+to use, with a syntax inspired mainly by Rust and C# (which are the coolest languages
+I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
+
 ## Features
 
 * Easy-to-learn syntax.
@@ -29,10 +33,6 @@ of software.
 * Result types for error handling.
 * Struct inheritance and polymorphism.
 * And much more!.
-
-Rivet's goal is to be a very powerful programming language and at the same time easy
-to use, with a syntax inspired mainly by Rust and C# (which are the coolest languages
-I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
 
 * * *
 
