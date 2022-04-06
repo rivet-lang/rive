@@ -5,9 +5,9 @@
 
 # The Rivet programming language
 
-![issues](https://img.shields.io/github/issues/glaz-lang/glaz?style=flat-square)
+![issues](https://img.shields.io/github/issues/rivet-lang/rivet?style=flat-square)
 ![status](https://img.shields.io/badge/status-beta-blue?style=flat-square)
-![license](https://img.shields.io/github/license/glaz-lang/glaz?style=flat-square)
+![license](https://img.shields.io/github/license/rivet-lang/rivet?style=flat-square)
 
 <!--
 [Docs](docs/docs.md) •
