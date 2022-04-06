@@ -20,7 +20,9 @@ of software.
 
 </div>
 
+<!--
 > **NOTE:** The compiler is **not ready** for production _yet_.
+-->
 
 ## Features
 
