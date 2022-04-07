@@ -1,0 +1,22 @@
+name: Building compiler
+
+on:
+  push:
+    paths: ['src/**.cpp', 'include/**.hpp']
+    branches: [main]
+
+jobs:
+  build-compiler:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Glaz source code
+        uses: actions/checkout@v2
+
+      - name: Install CMake & LLVM
+        run: |
+          sudo apt-get install cmake llvm-12
+
+      - name: Build compiler
+        run: |
+          mkdir build && cd build/
+          cmake ..
