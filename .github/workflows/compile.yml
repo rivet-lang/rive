@@ -1,4 +1,4 @@
-name: Build compiler
+name: Build nightly compiler
 
 on:
   push:
@@ -19,4 +19,16 @@ jobs:
       - name: Build compiler
         run: |
           mkdir build && cd build/
-          cmake ..
+          cmake ../ && make
+
+      - name: Create ZIP archive
+        run: |
+          zip rivetc-linux-nightly rivetc
+
+      - name: Update nightly compiler
+        uses: eine/tip@master
+        with:
+          tag: nightly
+          rm: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: rivetc-linux-nightly.zip
