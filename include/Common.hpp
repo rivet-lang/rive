@@ -5,7 +5,7 @@
 
 namespace rivet {
 
-[[ noreturn ]] void panic(std::string msg);
+[[noreturn]] void panic(std::string msg);
 
 }  // namespace rivet
 

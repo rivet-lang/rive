@@ -33,7 +33,37 @@ I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
 * Named and optional arguments.
 * Result types for error handling.
 * Struct inheritance and polymorphism.
-* And much more!.
+* And much more!
+
+## Building from source
+
+> **NOTE:** The compiler only supports Linux for now.
+
+To build the compiler we need 3 things:
+
+* [Git](https://git-scm.com/).
+* [CMake](https://cmake.org/).
+* [LLVM](https://llvm.org/).
+
+```bash
+$ sudo apt install git cmake llvm
+```
+
+Ok, now we clone the repository:
+
+```bash
+$ git clone https://github.com/rivet-lang/rivet
+```
+
+Now we create a directory called `build` and call CMake,
+then call `make`:
+
+```bash
+$ mkdir build && cd build/
+$ cmake ../ && make
+```
+
+A binary called `rivetc` will be generated, and that's it!
 
 * * *
 
