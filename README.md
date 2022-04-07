@@ -5,7 +5,7 @@
 
 # The Rivet programming language
 
-[![build status](https://github.com/rivet-lang/rivet/workflows/CI/badge.svg)](https://github.com/rivet-lang/rivet/commits/main)
+[![build status](https://github.com/rivet-lang/rivet/actions/workflows/compile.yml/badge.svg?branch=main)](https://github.com/rivet-lang/rivet/actions/workflows/compile.yml)
 ![issues](https://img.shields.io/github/issues/rivet-lang/rivet?style=flat-square)
 ![status](https://img.shields.io/badge/status-alpha-blue?style=flat-square)
 ![license](https://img.shields.io/github/license/rivet-lang/rivet?style=flat-square)
