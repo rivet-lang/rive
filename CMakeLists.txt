@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(rivet)
 
-set(CMAKE_CXX_COMPILER "clang++-12")
+set(CMAKE_CXX_COMPILER "clang++")
 
 find_package(LLVM REQUIRED CONFIG)
 include_directories(${LLVM_INCLUDE_DIRS})
