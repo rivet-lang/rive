@@ -5,7 +5,6 @@
 
 # The Rivet programming language
 
-[![build status](https://github.com/rivet-lang/rivet/actions/workflows/compile.yml/badge.svg?branch=main)](https://github.com/rivet-lang/rivet/actions/workflows/compile.yml)
 ![issues](https://img.shields.io/github/issues/rivet-lang/rivet?style=flat-square)
 ![status](https://img.shields.io/badge/status-alpha-blue?style=flat-square)
 ![license](https://img.shields.io/github/license/rivet-lang/rivet?style=flat-square)
@@ -29,41 +28,22 @@ I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
 
 * Easy-to-learn syntax.
 * Non-null values.
-* SumTypes.
 * Named and optional arguments.
-* Result types for error handling.
+* Easy error handling.
+* SumTypes.
 * Struct inheritance and polymorphism.
-* And much more!
 
-## Building from source
+## Run the compiler
 
-> **NOTE:** The compiler only supports Linux for now.
+To run the compiler you must have Python 3 and Pip3 installed.
 
-To build the compiler we need 3 things:
-
-* [Git](https://git-scm.com/).
-* [CMake](https://cmake.org/).
-* [LLVM](https://llvm.org/).
+You must also install `llvmlite`:
 
 ```bash
-$ sudo apt install git cmake llvm
+$ sudo pip3 install llvmlite
 ```
 
-Ok, now we clone the repository:
-
-```bash
-$ git clone https://github.com/rivet-lang/rivet
-```
-
-Now we create a directory called `build` and call CMake,
-then call `make`:
-
-```bash
-$ mkdir build && cd build/
-$ cmake ../ && make
-```
-
-A binary called `rivetc` will be generated, and that's it!
+Then just run `python3 rivetc.py`.
 
 * * *
 

@@ -1,34 +1,22 @@
-name: Build nightly compiler
+name: Test compiler
 
 on:
   push:
-    paths: ['src/**.cpp', 'include/**.hpp']
+    paths: ['rivetc/**.py']
     branches: [main]
 
 jobs:
   build-compiler:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Glaz source code
+      - name: Checkout Rivet source code
         uses: actions/checkout@v2
 
       - name: Install CMake & LLVM
         run: |
-          sudo apt-get install cmake llvm-12
+          sudo apt-get install pip3
+          sudo pip3 install llvmlite
 
-      - name: Build compiler
+      - name: Run compiler
         run: |
-          mkdir build && cd build/
-          cmake ../ && make
-
-      - name: Create ZIP archive
-        run: |
-          zip rivetc-linux-nightly rivetc
-
-      - name: Update nightly compiler
-        uses: eine/tip@master
-        with:
-          tag: nightly
-          rm: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: rivetc-linux-nightly.zip
+          python3 ./rivetc.py --help
