@@ -3,11 +3,11 @@
 # that can be found in the LICENSE file.
 
 import sys
-from rivetc.compiler import Compiler
+import rivetc
 
 
 def main(args):
-    Compiler(args)
+    rivetc.compile(args)
 
 
 if __name__ == "__main__":
