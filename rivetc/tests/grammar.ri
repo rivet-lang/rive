@@ -7,6 +7,15 @@
 * random number-hex ahre 92j32q92r
 */
 
+extern pkg core;
+extern pkg std;
+
+extern "C" fn x();
+extern "C" {
+    fn block();
+    fn super();
+}
+
 mod real {
     @[abstract; virtual; unsafe]
     @[defender; windows; xampp]
@@ -15,6 +24,6 @@ mod real {
     pub mod sis {}
 }
 
-// simple comment
 /// DOC-COMMENT
+// simple comment
 fn main() {}

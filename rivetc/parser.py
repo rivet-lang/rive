@@ -9,13 +9,21 @@ from .utils import eprint
 
 Parser = Lark(
     r"""
-module: declaration*
+module: extern_pkg* (extern_decl | declaration)*
+
+extern_pkg: "extern" "pkg" WORD ";"
+
+extern_decl: "extern" "\"C\"" (fn_without_body | "{" fn_without_body* "}")
+
+declaration: mod_decl | fn_decl
 
 attrs: "@" "[" WORD (";" WORD)* "]"
-declaration: attrs* (mod_decl | fn_decl)
 
-mod_decl: "pub"? "mod" WORD "{" declaration* "}"
-fn_decl: "pub"? "fn" WORD "(" ")" "{" "}"
+mod_decl:  attrs* "pub"? "mod" WORD "{" declaration* "}"
+
+fn_without_body: fn_header ";"
+fn_decl:  attrs* "pub"? fn_header "{" "}"
+fn_header: "fn" WORD "(" ")"
 
 COMMENT: "//" /[^\n]/*
 MULTI_COMMENT: "/*" /.*/s "*/"
@@ -31,9 +39,10 @@ MULTI_COMMENT: "/*" /.*/s "*/"
     parser="lalr",
 )
 
+
 def parse(filename: str):
     with open(filename, "r") as f:
-        src= f.read()
+        src = f.read()
         try:
             return Parser.parse(src)
         except UnexpectedInput as err:
