@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 jobs:
-  build-compiler:
+  test-compiler:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Rivet source code
@@ -19,4 +19,4 @@ jobs:
 
       - name: Run compiler
         run: |
-          python3 ./rivetc.py rivetc/test_grammar.ri
+          python3 ./rivetc.py rivetc/tests/grammar.ri
