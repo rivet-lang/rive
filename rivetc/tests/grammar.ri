@@ -8,6 +8,8 @@
 */
 
 mod real {
+    @[abstract; virtual; unsafe]
+    @[defender; windows; xampp]
     pub fn scrash() {}
 
     pub mod sis {}
