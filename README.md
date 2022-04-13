@@ -11,12 +11,10 @@
 
 <!--
 [Docs](docs/docs.md) •
-[Changelog](CHANGELOG.md) •
-[TODO's list](TODO.md)
+[Changelog](CHANGELOG.md)
 -->
 
-A general-purpose language, designed for the safe, fast and stable creation
-of software.
+A general-purpose language designed for the safe, fast and stable creation of software.
 
 </div>
 
@@ -37,10 +35,10 @@ I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
 
 To run the compiler you must have Python 3 and Pip3 installed.
 
-You must also install `llvmlite`:
+You must also install `llvmlite` and `ply`:
 
 ```bash
-$ sudo pip3 install llvmlite
+$ sudo pip install ply llvmlite
 ```
 
 Then just run `python3 rivetc.py`.

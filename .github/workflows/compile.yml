@@ -12,10 +12,10 @@ jobs:
       - name: Checkout Rivet source code
         uses: actions/checkout@v2
 
-      - name: Install CMake & LLVM
+      - name: Install Pip & Ply & llvmlite
         run: |
-          sudo apt-get install pip3
-          sudo pip3 install llvmlite
+          sudo apt-get install python3-pip
+          sudo pip install ply llvmlite
 
       - name: Run compiler
         run: |

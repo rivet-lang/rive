@@ -48,7 +48,7 @@ class Prefs:
                 exit(0)
 
             # compiler options
-            if arg.endswith(".rvt"):
+            if arg.endswith(".ri"):
                 if not os.path.exists(arg):
                     error(f"unable to read '{arg}': file not found")
                 elif os.path.isdir(arg):
