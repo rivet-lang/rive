@@ -4,7 +4,7 @@
 
 from llvmlite import binding as llvm
 
-from . import prefs
+from . import prefs, parser
 
 
 class Compiler:
@@ -14,5 +14,6 @@ class Compiler:
         llvm.initialize_all_targets()
 
         self.prefs = prefs.Prefs(args)
+        parser.parse(self.prefs.input)
 
         llvm.shutdown()

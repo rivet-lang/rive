@@ -35,10 +35,10 @@ I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
 
 To run the compiler you must have Python 3 and Pip3 installed.
 
-You must also install `llvmlite` and `ply`:
+You must also install `llvmlite` and `lark`:
 
 ```bash
-$ sudo pip install ply llvmlite
+$ sudo pip install lark llvmlite
 ```
 
 Then just run `python3 rivetc.py`.

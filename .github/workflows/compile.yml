@@ -12,11 +12,11 @@ jobs:
       - name: Checkout Rivet source code
         uses: actions/checkout@v2
 
-      - name: Install Pip & Ply & llvmlite
+      - name: Install Pip & Lark & llvmlite
         run: |
           sudo apt-get install python3-pip
-          sudo pip install ply llvmlite
+          sudo pip install lark llvmlite
 
       - name: Run compiler
         run: |
-          python3 ./rivetc.py --help
+          python3 ./rivetc.py rivetc/test_grammar.ri
