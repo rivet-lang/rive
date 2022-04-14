@@ -10,20 +10,28 @@
 extern pkg core;
 extern pkg std;
 
-extern "C" fn x();
 extern "C" {
-    fn block();
-    fn super();
+    fn exit(status: i32);
+    fn abort();
 }
+extern "C" fn x();
 
 mod real {
     @[abstract; virtual; unsafe]
-    @[defender; windows; xampp]
     pub fn scrash() {}
 
-    pub mod sis {}
+    pub mod sis {
+        fn inner(a: &[i32], mut b: [u8; 4]) {
+        }
+    }
+
+    fn x() !i32 {
+    }
+
+    fn z() ?bool {}
 }
 
 /// DOC-COMMENT
-// simple comment
-fn main() {}
+fn main() {
+    // simple comment
+}
