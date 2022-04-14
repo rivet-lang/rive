@@ -53,7 +53,7 @@ _LETTER: "A".."Z" | "a".."z"
 IDENT: ("_" | _LETTER) ("_" | _LETTER | DIGIT)*
 
 COMMENT: /\/\/[^\n]*/
-MULTI_COMMENT: "/*" /.*/s "*/"
+MULTI_COMMENT: "/*" /(.|\n)*?/ "*/"
 
 WS: /[ \t\f\r\n]/+
 

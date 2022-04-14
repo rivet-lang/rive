@@ -1,9 +1,7 @@
+//! MODULE-COMMENT
+
 /*
 * Multi-comment
-*
-* /*
-* * Nested comment
-* */
 */
 
 extern pkg core;
