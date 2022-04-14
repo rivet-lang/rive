@@ -10,14 +10,21 @@ from . import prefs, parser
 class Compiler:
     def __init__(self, args: [str]):
         self.prefs = prefs.Prefs(args)
-        parser.parse(self.prefs.input)
+        self.source_files = []
+
+    def parse_input(self):
+        self.parse(self.prefs.input)
+
+    def parse(self, file):
+        self.source_files.append(parser.parse(file))
 
 
 def compile(args):
-    llvm.initialize()
-    llvm.initialize_all_asmprinters()
-    llvm.initialize_all_targets()
+    # llvm.initialize()
+    # llvm.initialize_all_asmprinters()
+    # llvm.initialize_all_targets()
 
     compiler = Compiler(args)
+    compiler.parse_input()
 
-    llvm.shutdown()
+    # llvm.shutdown()

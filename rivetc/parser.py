@@ -63,6 +63,7 @@ WS: /[ \t\f\r\n]/+
 """,
     start="module",
     parser="lalr",
+    cache=True,
 )
 
 
