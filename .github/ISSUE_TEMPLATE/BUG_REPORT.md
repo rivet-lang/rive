@@ -11,8 +11,6 @@ assignees: ''
 **Rivet version:**
 **OS:**
 
-* * *
-
 ## What did you do?
 
 
