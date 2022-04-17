@@ -2,9 +2,10 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from lark import Lark
+from lark import Lark, Transformer
 from lark.exceptions import UnexpectedInput, UnexpectedToken, UnexpectedCharacters
 
+from . import ast
 from .utils import eprint
 
 Parser = Lark(
@@ -19,14 +20,20 @@ declaration: mod_decl | fn_decl
 
 attrs: "@" "[" IDENT (";" IDENT)* "]"
 
-mod_decl:  "pub"? "mod" IDENT "{" declaration* "}"
+mod_decl: maybe_pub "mod" IDENT "{" declaration* "}"
 
 fn_without_body: fn_header ";"
-fn_decl:  attrs* "pub"? fn_header "{" "}"
+fn_decl: attrs* maybe_pub fn_header "{" "}"
 fn_header: "fn" IDENT "(" (fn_arg ("," fn_arg)*)? ")" ("!"? type)?
 fn_arg: "mut"? IDENT ":" type
 
-type: "?"? (IDENT | "&" type | "[" type (";" NUMBER )? "]")
+!type: "?"? (IDENT | type_ptr | type_ref | type_array | type_slice)
+type_ptr: "*" "*"* type
+type_ref: "&" type
+type_array: "[" type ";" NUMBER "]"
+type_slice: "[" type "]"
+
+!maybe_pub: "pub"?
 
 // ------------------ Utils ------------------
 
@@ -40,7 +47,7 @@ DECIMAL: INT "." INT? | "." INT
 // floats
 _EXP: ("e"|"E") ["+"|"-"] INT
 FLOAT: ["+"|"-"] (INT _EXP | DECIMAL _EXP?)
-
+// Khe xd, entonces se mi novia owo
 NUMBER: FLOAT | INT
 
 // strings
@@ -67,10 +74,11 @@ WS: /[ \t\f\r\n]/+
 )
 
 
-def parse(filename: str):
+def parse(filename: str, prefs, is_root=False):
     src = open(filename, "r").read()
     try:
-        return Parser.parse(src)
+        tree = Parser.parse(src)
+        return AST_Transformer(prefs, is_root).transform(tree)
     except UnexpectedInput as err:
         ctx = err.get_context(src).strip()
         start = f"{filename}:{err.line}:{err.column}: error:"
@@ -86,3 +94,24 @@ def parse(filename: str):
             eprint(ctx)
             eprint(f"expected one of: {err.expected}")
         exit(1)
+
+class AST_Transformer(Transformer):
+    def __init__(self, prefs, is_root=False):
+        self.prefs = prefs
+        self.is_root = is_root
+
+    def module(self, decls):
+        return ast.SourceFile(self.prefs.pkg_name, decls, is_root=self.is_root)
+
+    def extern_pkg(self, pkg):
+        return ast.ExternPkg(pkg[0].name)
+
+    def mod_decl(self, decls):
+        is_pub = decls[0].data=="maybe_pub"
+        print(is_pub)
+        return ast.Mod(decls[1].name if is_pub else decls[0].name, decls[1:])
+
+    # Terminals
+
+    def IDENT(self, name):
+        return ast.Ident(name)

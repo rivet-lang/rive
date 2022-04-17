@@ -14,7 +14,7 @@
 [Changelog](CHANGELOG.md)
 -->
 
-A general-purpose language designed for the safe, fast and stable creation of software.
+A general purpose programming language, focused on simplicity, safety and stability.
 
 </div>
 

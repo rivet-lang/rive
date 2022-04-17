@@ -13,10 +13,10 @@ class Compiler:
         self.source_files = []
 
     def parse_input(self):
-        self.parse(self.prefs.input)
+        self.source_files.append(parser.parse(self.prefs.input, self.prefs, True))
 
     def parse(self, file):
-        self.source_files.append(parser.parse(file))
+        self.source_files.append(parser.parse(file, self.prefs))
 
 
 def compile(args):

@@ -25,7 +25,7 @@ mod real {
     fn x() !i32 {
     }
 
-    fn z() ?bool {}
+    fn z(a: *i32, b: ***i32) ?bool {}
 }
 
 /// DOC-COMMENT
