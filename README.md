@@ -14,7 +14,7 @@
 [Changelog](CHANGELOG.md)
 -->
 
-A general purpose programming language, focused on simplicity, safety and stability.
+A general-purpose programming language, focused on simplicity, safety and stability.
 
 </div>
 
@@ -28,7 +28,6 @@ I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
 * Non-null values.
 * Named and optional arguments.
 * Easy error handling.
-* SumTypes.
 * Struct inheritance and polymorphism.
 
 ## Run the compiler
@@ -47,6 +46,6 @@ Then just run `python3 rivetc.py`.
 
 <div align="center">
 
-(C) 2022 **Rivet Developers**
+Copyright (C) 2022 **The Rivet Team**
 
 </div>
