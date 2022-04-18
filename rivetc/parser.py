@@ -95,6 +95,7 @@ def parse(filename: str, prefs, is_root=False):
             eprint(f"expected one of: {err.expected}")
         exit(1)
 
+
 class AST_Transformer(Transformer):
     def __init__(self, prefs, is_root=False):
         self.prefs = prefs
@@ -107,7 +108,7 @@ class AST_Transformer(Transformer):
         return ast.ExternPkg(pkg[0].name)
 
     def mod_decl(self, decls):
-        is_pub = decls[0].data=="maybe_pub"
+        is_pub = decls[0].data == "maybe_pub"
         print(is_pub)
         return ast.Mod(decls[1].name if is_pub else decls[0].name, decls[1:])
 
