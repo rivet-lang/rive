@@ -4,7 +4,7 @@
 
 from llvmlite import binding as llvm
 
-from . import prefs, parser
+from . import prefs, parser, sly
 
 
 class Compiler:

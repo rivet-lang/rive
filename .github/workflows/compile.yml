@@ -12,11 +12,6 @@ jobs:
       - name: Checkout Rivet source code
         uses: actions/checkout@v2
 
-      - name: Install Pip & Lark & llvmlite
-        run: |
-          sudo apt-get install python3-pip
-          sudo pip install lark llvmlite
-
       - name: Run compiler
         run: |
-          python3 ./rivetc.py rivetc/tests/grammar.ri
+          python3 ./rivetc.py src/tests/grammar.ri

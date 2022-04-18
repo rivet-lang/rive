@@ -3,12 +3,7 @@
 # that can be found in the LICENSE file.
 
 import sys
-import rivetc
-
-
-def main(args):
-    rivetc.compile(args)
-
+import src
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    src.compile(sys.argv[1:])
