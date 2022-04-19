@@ -69,7 +69,7 @@ class Kind(Enum):
     KeySelf = auto_enum()  # self
     # ==============================
 
-    # ========== keywords ==========
+    # ========== KEYWORDS ==========
     KeySelfTy = auto_enum()  # Self
     KeyPkg = auto_enum()  # pkg
     KeyMod = auto_enum()  # mod
@@ -116,7 +116,7 @@ class Kind(Enum):
     KeywordEnd = auto_enum()
 
     def __repr__(self):
-        return kind2str(self)
+        return TOKEN_STRINGS[self] if self in TOKEN_STRINGS else "unknown"
 
     def __str__(self):
         return self.__repr__()
@@ -203,6 +203,7 @@ TOKEN_STRINGS = {
     Kind.Rbracket: "]",
     Kind.Lparen: "(",
     Kind.Rparen: ")",
+
     # ========== literals ==========
     Kind.KeyNone: "none",
     Kind.KeyTrue: "true",
@@ -210,7 +211,8 @@ TOKEN_STRINGS = {
     Kind.KeyBase: "base",
     Kind.KeySelf: "self",
     # ==============================
-    # ========== keywords ==========
+
+    # ========== KEYWORDS ==========
     Kind.KeySelfTy: "Self",
     Kind.KeyPkg: "pkg",
     Kind.KeyMod: "mod",
@@ -256,26 +258,19 @@ TOKEN_STRINGS = {
 }
 
 
-def kind2str(k):
-    try:
-        return TOKEN_STRINGS[k]
-    except KeyError:
-        return "unknown"
-
-
 def gen_keys():
     res = {}
     for i, k in enumerate(Kind):
         if i > Kind.KeywordBegin - 1 and i < Kind.KeywordEnd - 1:
-            res[kind2str(k)] = k
+            res[str(k)] = k
     return res
 
 
-keywords = gen_keys()
+KEYWORDS = gen_keys()
 
 
 def lookup(lit):
-    return keywords[lit] if lit in keywords else Kind.Name
+    return KEYWORDS[lit] if lit in KEYWORDS else Kind.Name
 
 
 def is_key(lit):
@@ -313,4 +308,4 @@ class Token:
         return str
 
     def __repr__(self):
-        return f"rivet.Token<kind='{kind2str(self.kind)}', lit='{self.lit}', pos='{self.pos}'>"
+        return f"rivet.Token<kind='{self.kind}', lit='{self.lit}', pos='{self.pos}'>"

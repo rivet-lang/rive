@@ -2,7 +2,7 @@ name: Test compiler
 
 on:
   push:
-    paths: ['rivetc/**.py']
+    paths: ['src/**.py', 'rivetc.py']
     branches: [main]
 
 jobs:
