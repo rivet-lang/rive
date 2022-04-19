@@ -1,4 +1,4 @@
-//! MODULE-COMMENT
+//! module-level doc-comment
 
 /*
 * Multi-comment
@@ -14,7 +14,7 @@ extern "C" {
 extern "C" fn x();
 
 mod real {
-    @[abstract; virtual; unsafe]
+    [abstract; virtual; unsafe]
     pub fn scrash() {}
 
     pub mod sis {
@@ -28,7 +28,33 @@ mod real {
     fn z(a: *i32, b: ***i32) ?bool {}
 }
 
-/// DOC-COMMENT
+/// symbol-level doc-comment
 fn main() {
     // simple comment
+
+    let mut x = 1;
+    while (x < 5) {
+        x++;
+    }
+
+    loop {
+        x++;
+        if (x < 5) {
+            break;
+        }
+    }
+
+    // Unlike `while` and `loop`, `for` is only valid with values
+    // that implement the `Iterator` trait.
+    for (x in [1, 2, 3, 4]) {
+        // ...
+    }
+
+    // The `for` is just a shorthand way of writing the following:
+    let _T0 = [1, 2, 3, 4].iter();
+    let _T1 = _T0.next();
+    while (_T1 != none) {
+        // ...
+        _T1 = _T0.next();
+    }
 }

@@ -26,8 +26,8 @@ I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
 
 * Easy-to-learn syntax.
 * Non-null values.
-* Named and optional arguments.
 * Easy error handling.
+* Named and optional arguments.
 * Struct inheritance and polymorphism.
 
 ## Run the compiler

@@ -4,7 +4,14 @@
 
 from llvmlite import binding as llvm
 
-from . import prefs, parser, sly
+from . import prefs, lexer, tokens
+
+
+VERSION = "0.1.0b"
+
+
+class CompilerError(Exception):
+    pass
 
 
 class Compiler:
@@ -12,11 +19,9 @@ class Compiler:
         self.prefs = prefs.Prefs(args)
         self.source_files = []
 
-    def parse_input(self):
-        self.source_files.append(parser.parse(self.prefs.input, self.prefs, True))
-
     def parse(self, file):
-        self.source_files.append(parser.parse(file, self.prefs))
+        #self.source_files.append(parser.parse(file, self.prefs))
+        pass
 
 
 def compile(args):
@@ -25,6 +30,11 @@ def compile(args):
     # llvm.initialize_all_targets()
 
     compiler = Compiler(args)
-    compiler.parse_input()
+    lex = lexer.Lexer.from_file(compiler.prefs.input)
+
+    tok = lex.next()
+    while tok.kind != tokens.Kind.EOF:
+        print(tok)
+        tok = lex.next()
 
     # llvm.shutdown()

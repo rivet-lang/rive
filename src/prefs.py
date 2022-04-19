@@ -5,8 +5,6 @@
 import os
 from enum import IntEnum as Enum, auto as auto_enum
 
-from .utils import *
-
 HELP = """Usage: rivetc [OPTIONS] INPUT
 
 Compiler Options:
@@ -16,6 +14,15 @@ Compiler Options:
 Help Options:
    -V, --version               Display compiler version.
    -h, --help                  Display this message."""
+
+
+def option(args, param, def_=""):
+    for (i, arg) in enumerate(args):
+        if param == arg:
+            if i + 1 < len(args):
+                return args[i + 1]
+            break
+    return def_
 
 
 class OutputMode(Enum):
