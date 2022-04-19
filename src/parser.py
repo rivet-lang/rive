@@ -24,7 +24,6 @@ class Parser:
         self.lexer = Lexer.from_file(file)
         for _ in range(2):
             self.next()
-        self.check(Kind.KeyFn)
 
     def next(self):
         self.prev_tok = self.tok

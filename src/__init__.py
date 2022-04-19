@@ -2,7 +2,7 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from . import prefs, parser
+from . import prefs, parser, report
 
 
 VERSION = "0.1.0b"
@@ -19,6 +19,8 @@ class Compiler:
 
     def parse_files(self):
         parser.Parser(self.prefs).parse_files()
+        if report.ERRORS > 0:
+            exit(1)
 
 
 def main(args):
