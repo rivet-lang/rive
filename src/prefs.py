@@ -5,6 +5,8 @@
 import os
 from enum import IntEnum as Enum, auto as auto_enum
 
+from .utils import error
+
 HELP = """Usage: rivetc [OPTIONS] INPUT
 
 Compiler Options:
@@ -36,7 +38,7 @@ class Prefs:
             eprint(HELP)
             exit(0)
 
-        self.input = ""
+        self.inputs = []
         self.pkg_name = "main"
         self.output_mode = OutputMode.BINARY
         self.is_verbose = False
@@ -60,9 +62,9 @@ class Prefs:
                     error(f"unable to read '{arg}': file not found")
                 elif os.path.isdir(arg):
                     error(f"unable to read '{arg}': is a directory")
-                elif self.input != "":
-                    error("multiple input filenames provided")
-                self.input = arg
+                elif arg in self.inputs:
+                    error(f"duplicate file '{arg}'")
+                self.inputs.append(arg)
             elif arg == "--pkg-name":
                 if len(current_args) > 1:
                     self.pkg_name = option(current_args, arg, "main")
@@ -78,5 +80,5 @@ class Prefs:
 
             i += 1
 
-        if self.input == "":
+        if len(self.inputs) == 0:
             error("no input filename given")

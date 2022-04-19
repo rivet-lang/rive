@@ -24,9 +24,10 @@ class Compiler:
 
 def compile(args):
     compiler = Compiler(args)
-    lex = lexer.Lexer.from_file(compiler.prefs.input)
 
-    tok = lex.next()
-    while tok.kind != tokens.Kind.EOF:
-        print(tok)
+    for input in compiler.prefs.inputs:
+        lex = lexer.Lexer.from_file(input)
         tok = lex.next()
+        while tok.kind != tokens.Kind.EOF:
+            print(tok)
+            tok = lex.next()

@@ -15,12 +15,12 @@ DOUBLE_QUOTE = chr(34)
 DOUBLE_ESCAPE = "\\\\"
 
 
-def eprint(s, end="\n", **args):
-    print(s, args, end=end, file=sys.stderr)
+def eprint(s, end="\n"):
+    print(s, end=end, file=sys.stderr)
 
 
 def error(msg):
-    eprint(f"rivet: error:", msg)
+    eprint(f"rivet: error: {msg}")
     exit(1)
 
 
