@@ -14,7 +14,7 @@ def is_hex_number(ch):
 
 
 def is_bin_number(ch):
-    return ch == "0" or ch == "1"
+    return ch in ("0", "1")
 
 
 class Lexer:
@@ -28,6 +28,7 @@ class Lexer:
         self.is_started = False
         self.is_cr_lf = False
 
+    @staticmethod
     def from_file(file):
         s = Lexer(open(file).read())
         s.file = file
@@ -57,7 +58,7 @@ class Lexer:
         return self.pos - self.last_nl_pos
 
     def is_nl(self, ch):
-        return ch == CR or ch == LF
+        return ch in (CR, LF)
 
     def skip_whitespace(self):
         while self.pos < self.text_len:
@@ -194,8 +195,6 @@ class Lexer:
             report.error(
                 "cannot use `_` at the end of a numeric literal", self.get_pos()
             )
-        call_method = False
-        is_range = False
         # fractional part
         if self.pos < self.text_len and self.text[self.pos] == ".":
             self.pos += 1
@@ -207,12 +206,6 @@ class Lexer:
                         if not c.isdigit():
                             if not c.isalpha() or c in ["e", "E"]:
                                 # 16.6.str()
-                                if (
-                                    c == "."
-                                    and self.pos + 1 < self.text_len
-                                    and self.text[self.pos + 1].isalpha()
-                                ):
-                                    call_method = True
                                 break
                             else:
                                 report.error(
@@ -222,13 +215,11 @@ class Lexer:
                         self.pos += 1
                 elif self.text[self.pos] == ".":
                     # 4.. a range
-                    is_range = True
                     self.pos -= 1
                 elif self.text[self.pos] in ["e", "E"]:
                     pass  # 6.e6
                 elif self.text[self.pos].isalpha():
                     # 16.str()
-                    call_method = True
                     self.pos -= 1
                 else:
                     # 5.
@@ -239,9 +230,7 @@ class Lexer:
                     )
                     self.pos += 1
         # exponential part
-        has_exp = False
         if self.pos < self.text_len and self.text[self.pos] in ["e", "E"]:
-            has_exp = True
             self.pos += 1
             if self.pos < self.text_len and self.text[self.pos] in ["-", "+"]:
                 self.pos += 1
@@ -253,12 +242,6 @@ class Lexer:
                         self.read_ident()
                     if not c.isalpha():
                         # 6e6.str()
-                        if (
-                            c == "."
-                            and self.pos + 1 < self.text_len
-                            and self.text[self.pos + 1].isalpha()
-                        ):
-                            call_method = True
                         break
                     elif not has_suffix:
                         report.error(
@@ -442,6 +425,8 @@ class Lexer:
                 return tokens.Token("", tokens.Kind.Question, pos)
             elif ch == "$":
                 return tokens.Token("", tokens.Kind.Dollar, pos)
+            elif ch == "@":
+                return tokens.Token("", tokens.Kind.At, pos)
             elif ch == "&":
                 if nextc == "=":
                     self.pos += 1
