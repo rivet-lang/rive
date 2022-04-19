@@ -295,7 +295,7 @@ class Token:
         self.kind = kind
         self.pos = pos
 
-    def str(self):
+    def __str__(self):
         string = str(self.kind)
         if not string[0].isalpha():
             return f"token `{str}`"

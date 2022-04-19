@@ -369,7 +369,10 @@ class Lexer:
                     self.pos += 1
                     while not self.expect("*/", self.pos):
                         self.pos += 1
-                    self.pos += 1
+                        if self.cur_char() == LF:
+                            self.inc_line_number()
+                            continue
+                    self.pos += 2
                     if self.pos >= self.text_len:
                         self.pos = start_pos
                         report.error("comment not terminated", self.get_pos())

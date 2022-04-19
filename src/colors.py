@@ -37,6 +37,10 @@ def cyan(msg):
     return format(msg, "36", "39")
 
 
+def green(msg):
+    return format(msg, "32", "39")
+
+
 def white(msg):
     return format(msg, "37", "39")
 
