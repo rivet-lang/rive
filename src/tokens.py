@@ -145,7 +145,7 @@ def is_relational(k):
         Kind.Le,
         Kind.Ge,
         Kind.KeyIs,
-        Kind.KeyIsNot,
+        Kind.KeyNotIs,
     ]
 
 
@@ -256,15 +256,15 @@ TOKEN_STRINGS = {
 }
 
 
-def gen_keys():
+def generate_keyword_map():
     res = {}
-    for i, k in enumerate(Kind):
+    for (i, k) in enumerate(Kind):
         if i > Kind.KeywordBegin - 1 and i < Kind.KeywordEnd - 1:
             res[str(k)] = k
     return res
 
 
-KEYWORDS = gen_keys()
+KEYWORDS = generate_keyword_map()
 
 
 def lookup(lit):
@@ -296,14 +296,14 @@ class Token:
         self.pos = pos
 
     def str(self):
-        str = kind2str(self.kind)
-        if not str[0].isalpha():
+        string = str(self.kind)
+        if not string[0].isalpha():
             return f"token `{str}`"
         if is_key(self.lit):
-            str = "keyword"
+            string = "keyword"
         if self.lit != "":
-            str += f" `{self.lit}`"
-        return str
+            string += f" `{self.lit}`"
+        return string
 
     def __repr__(self):
         return f"rivet.Token<kind='{self.kind}', lit='{self.lit}', pos='{self.pos}'>"

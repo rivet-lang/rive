@@ -6,4 +6,4 @@ import sys
 import src
 
 if __name__ == "__main__":
-    src.compile(sys.argv[1:])
+    src.main(sys.argv[1:])

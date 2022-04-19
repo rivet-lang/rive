@@ -384,7 +384,6 @@ class Lexer:
                 elif nextc == "*":
                     start_pos = self.pos
                     self.pos += 1
-                    nest_count = 1
                     while not self.expect("*/", self.pos):
                         self.pos += 1
                     self.pos += 1
@@ -457,7 +456,7 @@ class Lexer:
                     self.pos += 2
                     ch2 = self.cur_char()
                     if ch2 == "s":
-                        return tokens.Token("", tokens.Kind.KeyIsNot, pos)
+                        return tokens.Token("", tokens.Kind.KeyNotIs, pos)
                     elif ch2 == "n":
                         return tokens.Token("", tokens.Kind.KeyNotIn, pos)
                 elif nextc == "=":
@@ -476,13 +475,6 @@ class Lexer:
                     self.pos += 1
                     return tokens.Token("", tokens.Kind.XorAssign, pos)
                 return tokens.Token("", tokens.Kind.Xor, pos)
-            elif ch == "`":
-                self.pos += 1
-                start = self.pos
-                self.eat_to_end_of_line()
-                line = self.text[start : self.pos]
-                self.pos -= 1
-                return tokens.Token(line, tokens.Kind.CCode, pos)
             elif ch == "#":
                 return tokens.Token("", tokens.Kind.Hash, pos)
             #

@@ -2,7 +2,7 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from . import prefs, lexer, tokens
+from . import prefs, parser
 
 
 VERSION = "0.1.0b"
@@ -17,17 +17,10 @@ class Compiler:
         self.prefs = prefs.Prefs(args)
         self.source_files = []
 
-    def parse(self, file):
-        # self.source_files.append(parser.parse(file, self.prefs))
-        pass
+    def parse_files(self):
+        parser.Parser(self.prefs).parse_files()
 
 
-def compile(args):
+def main(args):
     compiler = Compiler(args)
-
-    for input in compiler.prefs.inputs:
-        lex = lexer.Lexer.from_file(input)
-        tok = lex.next()
-        while tok.kind != tokens.Kind.EOF:
-            print(tok)
-            tok = lex.next()
+    compiler.parse_files()
