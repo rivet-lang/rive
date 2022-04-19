@@ -7,16 +7,20 @@ from . import utils
 ERRORS = 0
 WARNS = 0
 
+
 def error(msg, pos):
     utils.eprint(f"{pos}: error: {msg}")
     ERRORS += 1
+
 
 def warn(msg, pos):
     utils.eprint(f"{pos}: warning: {msg}")
     WARNS += 1
 
+
 def note(msg):
     utils.eprint(f"    note: {msg}")
+
 
 def help(msg):
     utils.eprint(f"    help: {msg}")

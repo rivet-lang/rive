@@ -203,7 +203,6 @@ TOKEN_STRINGS = {
     Kind.Rbracket: "]",
     Kind.Lparen: "(",
     Kind.Rparen: ")",
-
     # ========== literals ==========
     Kind.KeyNone: "none",
     Kind.KeyTrue: "true",
@@ -211,7 +210,6 @@ TOKEN_STRINGS = {
     Kind.KeyBase: "base",
     Kind.KeySelf: "self",
     # ==============================
-
     # ========== KEYWORDS ==========
     Kind.KeySelfTy: "Self",
     Kind.KeyPkg: "pkg",

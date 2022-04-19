@@ -2,8 +2,6 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from llvmlite import binding as llvm
-
 from . import prefs, lexer, tokens
 
 
@@ -20,15 +18,11 @@ class Compiler:
         self.source_files = []
 
     def parse(self, file):
-        #self.source_files.append(parser.parse(file, self.prefs))
+        # self.source_files.append(parser.parse(file, self.prefs))
         pass
 
 
 def compile(args):
-    # llvm.initialize()
-    # llvm.initialize_all_asmprinters()
-    # llvm.initialize_all_targets()
-
     compiler = Compiler(args)
     lex = lexer.Lexer.from_file(compiler.prefs.input)
 
@@ -36,5 +30,3 @@ def compile(args):
     while tok.kind != tokens.Kind.EOF:
         print(tok)
         tok = lex.next()
-
-    # llvm.shutdown()
