@@ -72,7 +72,8 @@ class Parser:
             decls.append(self.parse_decl())
         return decls
 
-    def parse_decl(self, is_pub=False):
+    def parse_decl(self):
+        is_pub = self.accept(Kind.KeyPub)
         pos = self.tok.pos
         if self.accept(Kind.KeyExtern):
             if is_pub:
@@ -80,9 +81,8 @@ class Parser:
             if self.accept(Kind.KeyPkg):
                 # extern package
                 if not self.is_root_mod:
-                    # Only packages can import other packages.
                     report.error(
-                        "extern package declarations are valid only inside a package",
+                        "extern packages can only be declared at the package level",
                         pos,
                     )
                 extern_pkg = self.parse_name()
@@ -92,14 +92,17 @@ class Parser:
                 # extern functions
                 report.error(f"extern functions are not yet supported", pos)
                 self.next()
-        elif self.accept(Kind.KeyPub):
-            return self.parse_decl(True)
         elif self.accept(Kind.KeyMod):
+            old_is_root_mod = self.is_root_mod
+            self.is_root_mod = False
+
             name = self.parse_name()
             self.expect(Kind.Lbrace)
             decls = []
             while not self.accept(Kind.Rbrace):
                 decls.append(self.parse_decl())
+
+            self.is_root_mod = old_is_root_mod
             return ast.Mod(name, is_pub, decls)
         else:
             report.error(f"expected declaration, found {self.tok}", pos)

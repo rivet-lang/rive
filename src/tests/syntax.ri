@@ -7,11 +7,11 @@
 extern pkg core;
 extern pkg std;
 
-mod simple {
-}
+mod simple { }
 
 pub mod simple2 {
     mod inner_mod {
+        pub mod pub_inner_mod { }
     }
 }
 
@@ -23,7 +23,7 @@ extern "C" {
 extern "C" fn x();
 
 mod real {
-    [abstract; virtual; unsafe]
+    [unsafe; abstract; virtual] // <- attributes
     pub fn scrash() {}
 
     pub mod sis {
