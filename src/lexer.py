@@ -28,17 +28,30 @@ class Lexer:
         self.is_started = False
         self.is_cr_lf = False
 
+        self.all_tokens = []
+        self.tidx = 0
+
     @staticmethod
     def from_file(file):
         s = Lexer(open(file).read())
         s.file = file
+        s.tokenize_remaining_text()
         return s
+
+    def tokenize_remaining_text(self):
+        while True:
+            t = self._next()
+            self.all_tokens.append(t)
+            if t.kind == tokens.Kind.EOF:
+                break
 
     def cur_char(self):
         return self.text[self.pos]
 
     def get_pos(self):
-        return tokens.Position(self.file, self.line, self.current_column(), self.pos)
+        return tokens.Position(
+            self.file, self.line, max(1, self.current_column()), self.pos
+        )
 
     def ignore_line(self):
         self.eat_to_end_of_line()
@@ -58,11 +71,14 @@ class Lexer:
         return self.pos - self.last_nl_pos
 
     def is_nl(self, ch):
-        return ch in (CR, LF)
+        return ch in [CR, LF]
 
     def skip_whitespace(self):
         while self.pos < self.text_len:
             c = self.cur_char()
+            if c == chr(8):
+                self.pos += 1
+                continue
             if not (
                 c == chr(32)
                 or (c > chr(8) and c < chr(14))
@@ -91,11 +107,9 @@ class Lexer:
             or end_pos > self.text_len
         ):
             return False
-        pos = start_pos
-        while pos < end_pos:
+        for pos in range(start_pos, end_pos):
             if self.text[pos] != want[pos - start_pos]:
                 return False
-            pos += 1
         return True
 
     def read_ident(self):
@@ -263,6 +277,7 @@ class Lexer:
         len = 0
         start = self.pos
         backslash = "\\"
+
         while True:
             self.pos += 1
             if self.pos >= self.text_len:
@@ -277,13 +292,15 @@ class Lexer:
                     len += 1
                 break
         len -= 1
+
         ch = self.text[start + 1 : self.pos]
         if len != 1:
             if len > 1:
                 report.error(
                     "character literal may only contain one codepoint", self.get_pos()
-                ).help("if you meant to write a string literal, use double quotes")
-            if len == 0:
+                )
+                report.help("if you meant to write a string literal, use double quotes")
+            elif len == 0:
                 report.error("empty character literal", self.get_pos())
         return ch
 
@@ -294,9 +311,11 @@ class Lexer:
         backslash_count = 1 if start_char == backslash else 0
         is_raw = self.pos > 0 and self.text[self.pos - 1] == "r"
         n_cr_chars = 0
+
         while True:
             self.pos += 1
             if self.pos >= self.text_len:
+                self.pos = start
                 report.error("unfinished string literal", self.get_pos())
                 return ""
             c = self.cur_char()
@@ -311,6 +330,7 @@ class Lexer:
                 self.inc_line_number()
             if c != backslash:
                 backslash_count = 0
+
         lit = ""
         if start <= self.pos:
             lit = self.text[start + 1 : self.pos]
@@ -320,6 +340,15 @@ class Lexer:
 
     def next(self):
         while True:
+            cidx = self.tidx
+            self.tidx += 1
+            if cidx >= len(self.all_tokens):
+                return tokens.Token("", tokens.Kind.EOF, self.get_pos())
+            return self.all_tokens[cidx]
+        return tokens.Token("", tokens.Kind.EOF, self.get_pos())
+
+    def _next(self):
+        while True:
             if self.is_started:
                 self.pos += 1
             else:
@@ -328,9 +357,9 @@ class Lexer:
             if self.pos >= self.text_len:
                 return tokens.Token("", tokens.Kind.EOF, self.get_pos())
 
-            pos = self.get_pos()
             ch = self.cur_char()
             nextc = self.text[self.pos + 1] if self.pos + 1 < self.text_len else chr(0)
+            pos = self.get_pos()
             if utils.is_valid_name(ch):
                 lit = self.read_ident()
                 return tokens.Token(lit, tokens.lookup(lit), pos)
@@ -367,12 +396,14 @@ class Lexer:
                 elif nextc == "*":
                     start_pos = self.pos
                     self.pos += 1
-                    while not self.expect("*/", self.pos):
+                    while self.pos < self.text_len - 1:
                         self.pos += 1
                         if self.cur_char() == LF:
                             self.inc_line_number()
                             continue
-                    self.pos += 2
+                        elif self.expect("*/", self.pos):
+                            self.pos += 1
+                            break
                     if self.pos >= self.text_len:
                         self.pos = start_pos
                         report.error("comment not terminated", self.get_pos())
@@ -438,7 +469,7 @@ class Lexer:
             elif ch == "!":
                 if (
                     nextc == "i"
-                    and self.text[self.pos + 2] in ["s", "n"]
+                    and self.text[self.pos + 2] in ("s", "n")
                     and self.text[self.pos + 3].isspace()
                 ):
                     self.pos += 2
@@ -486,5 +517,4 @@ class Lexer:
             else:
                 report.error(f"invalid character `{ch}`", pos)
                 break
-
         return tokens.Token("", tokens.Kind.EOF, self.get_pos())

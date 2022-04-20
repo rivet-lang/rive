@@ -40,7 +40,7 @@ class Parser:
             return True
         return False
 
-    def check(self, kind):
+    def expect(self, kind):
         if self.accept(kind):
             return
         kstr = str(kind)
@@ -53,7 +53,7 @@ class Parser:
 
     def parse_name(self):
         lit = self.tok.lit
-        self.check(Kind.Name)
+        self.expect(Kind.Name)
         return lit
 
     # ---- declarations --------------
@@ -64,17 +64,18 @@ class Parser:
 
     def parse_decl(self):
         pos = self.tok.pos
-        if self.tok.kind == Kind.KeyExtern:
-            self.next()
+        if self.accept(Kind.KeyExtern):
             if self.accept(Kind.KeyPkg):
                 # extern package
                 extern_pkg = self.parse_name()
-                self.check(Kind.Semicolon)
+                self.expect(Kind.Semicolon)
                 return ast.ExternPkg(extern_pkg, pos)
             else:
                 # extern functions
-                report.error(f"extern functions are not yet supported")
+                report.error(f"extern functions are not yet supported", pos)
+                self.next()
         else:
-            report.error(f"expected declaration, found {self.tok}", self.tok.pos)
+            report.error(f"expected declaration, found {self.tok}", pos)
+            report.note("xxx")
             self.next()
         return ast.EmptyDecl()

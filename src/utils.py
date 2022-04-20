@@ -20,7 +20,7 @@ def eprint(s, end="\n"):
 
 
 def error(msg):
-    bg = colors.bold(f'rivet: {colors.red("error:")}')
+    bg = colors.bold(f'rivetc: {colors.red("error:")}')
     eprint(f"{bg} {msg}")
     exit(1)
 

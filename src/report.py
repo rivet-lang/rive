@@ -10,43 +10,35 @@ WARNS = 0
 # This dictionary saves the lines of the files that have
 # had reports to avoid having to open them over and over
 # again.
-FILES_ALREADY_READ = {}
+FILE_LINES = {}
 
 LAST_LINE_NR_LEN = -1
 SEP = colors.bold("|")
 MARK = colors.bold(colors.green("^"))
 
 
-def count_digits(n):
-    if n == 0:
-        return 1
-    c = 0
-    while n != 0:
-        n //= 10
-        c += 1
-    return c
-
-
 def _readline(file, line_nr):
-    global FILES_ALREADY_READ
-    if file in FILES_ALREADY_READ:
-        return FILES_ALREADY_READ[file][line_nr]
+    global FILE_LINES
+    if file in FILE_LINES:
+        lines = FILE_LINES[file]
+        line_nr = min(line_nr, len(lines) - 1)
+        return lines[line_nr]
+
     lines = open(file).read().splitlines()
-    FILES_ALREADY_READ[file] = lines
+    FILE_LINES[file] = lines
+    line_nr = min(line_nr, len(lines) - 1)
     return lines[line_nr]
 
 
 def readline(pos):
     global LAST_LINE_NR_LEN
-    line_nr = max(0, pos.line + 1)
-    line = _readline(pos.file, line_nr)
-    LAST_LINE_NR_LEN = count_digits(line_nr) + 3
+    line = _readline(pos.file, pos.line)
+    line_str = f"  {colors.bold(pos.line+1)}"
+    LAST_LINE_NR_LEN = len(f"  {pos.line+1}")
     # TODO(StunxFS): it would be better if the marker was the width
     # of the token.
     marker = (" " * (pos.col - 1)) + MARK
-    return (
-        f"  {colors.bold(line_nr)} {SEP} {line}\n{' ' * LAST_LINE_NR_LEN}{SEP} {marker}"
-    )
+    return f"{line_str} {SEP} {line}\n{' ' * LAST_LINE_NR_LEN} {SEP} {marker}"
 
 
 def fmt_msg(pos, kind, msg):
@@ -69,8 +61,10 @@ def warn(msg, pos):
 
 
 def note(msg):
-    utils.eprint(f"{' ' * LAST_LINE_NR_LEN}{colors.bold(colors.cyan('= note:'))} {msg}")
+    utils.eprint(
+        f"{' ' * LAST_LINE_NR_LEN}{colors.bold(colors.cyan(' = note:'))} {msg}"
+    )
 
 
 def help(msg):
-    utils.eprint(f"{' ' * LAST_LINE_NR_LEN}{colors.bold('= help:')} {msg}")
+    utils.eprint(f"{' ' * LAST_LINE_NR_LEN}{colors.bold(' = help:')} {msg}")

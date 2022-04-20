@@ -2,7 +2,7 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from . import prefs, parser, report
+from . import prefs, parser, report, utils
 
 
 VERSION = "0.1.0b"
@@ -20,7 +20,15 @@ class Compiler:
     def parse_files(self):
         self.source_files = parser.Parser(self.prefs).parse_files()
         if report.ERRORS > 0:
-            exit(1)
+            self.abort()
+
+    def abort(self):
+        if report.ERRORS == 1:
+            msg = f"could not compile package `{self.prefs.pkg_name}`, aborting due to previous error."
+        else:
+            msg = f"could not compile package `{self.prefs.pkg_name}`, aborting due to {report.ERRORS} previous errors."
+        utils.error(msg)
+        exit(1)
 
 
 def main(args):
