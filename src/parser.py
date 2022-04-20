@@ -76,6 +76,5 @@ class Parser:
                 self.next()
         else:
             report.error(f"expected declaration, found {self.tok}", pos)
-            report.note("xxx")
             self.next()
         return ast.EmptyDecl()
