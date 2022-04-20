@@ -80,11 +80,8 @@ class Prefs:
                 files = glob.glob(f"{arg}/*.ri")
                 if len(files) == 0:
                     error(f"`{files}` does not have .ri files")
-                else:
-                    for f in files:
-                        if f in self.inputs:
-                            error(f"duplicate file '{f}'")
-                self.inputs += files
+                for f in files:
+                    self.inputs.append(f)
             else:
                 error(f"unknown option: `{arg}`")
 
