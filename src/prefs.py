@@ -6,9 +6,12 @@ import os
 import glob
 from enum import IntEnum as Enum, auto as auto_enum
 
-from .utils import error
+from .utils import error, eprint
 
-HELP = """Usage: rivetc [OPTIONS] INPUT
+HELP = """Usage: rivetc [OPTIONS] INPUTS
+
+The compiler can receive both files and directories, example:
+   rivetc my_file.ri my_folder/ my_folder2/ other_file.ri
 
 Compiler Options:
    --pkg-name NAME             Specify the name of the package being built.
