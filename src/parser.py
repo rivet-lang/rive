@@ -74,7 +74,7 @@ class Parser:
             else:
                 # extern functions
                 report.error(f"extern functions are not yet supported")
-        else:  # yo estoy bien gracias :3
+        else:
             report.error(f"expected declaration, found {self.tok}", self.tok.pos)
             self.next()
         return ast.EmptyDecl()
