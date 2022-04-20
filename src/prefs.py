@@ -3,6 +3,7 @@
 # that can be found in the LICENSE file.
 
 import os
+import glob
 from enum import IntEnum as Enum, auto as auto_enum
 
 from .utils import error
@@ -75,6 +76,15 @@ class Prefs:
                     error("`--pkg-name` requires a name as argument")
             elif arg in ["-v", "--verbose"]:
                 self.is_verbose = True
+            elif os.path.isdir(arg):
+                files = glob.glob(f"{arg}/*.ri")
+                if len(files) == 0:
+                    error(f"`{files}` does not have .ri files")
+                else:
+                    for f in files:
+                        if f in self.inputs:
+                            error(f"duplicate file '{f}'")
+                self.inputs += files
             else:
                 error(f"unknown option: `{arg}`")
 
