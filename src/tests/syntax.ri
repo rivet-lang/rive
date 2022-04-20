@@ -7,6 +7,14 @@
 extern pkg core;
 extern pkg std;
 
+mod simple {
+}
+
+pub mod simple2 {
+    mod inner_mod {
+    }
+}
+
 /*
 extern "C" {
     fn exit(status: i32);

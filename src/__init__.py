@@ -5,7 +5,7 @@
 from . import prefs, parser, report, utils
 
 
-VERSION = "0.1.0b"
+VERSION = "0.1.0a"
 
 
 class CompilerError(Exception):
@@ -18,7 +18,7 @@ class Compiler:
         self.source_files = []
 
     def parse_files(self):
-        self.source_files = parser.Parser(self.prefs).parse_files()
+        self.source_files = parser.Parser(self.prefs).parse_pkg()
         if report.ERRORS > 0:
             self.abort()
 

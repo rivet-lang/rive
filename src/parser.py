@@ -16,7 +16,15 @@ class Parser:
         self.tok = None
         self.peek_tok = None
 
-    def parse_files(self):
+        # This field is `true` when we are in a root module, that
+        # is, a package.
+        self.is_root_mod = False
+
+    def parse_pkg(self):
+        self.is_root_mod = True
+        return self.parse_module_files()
+
+    def parse_module_files(self):
         source_files = []
         for input in self.prefs.inputs:
             source_files.append(self.parse_file(input))
@@ -26,8 +34,8 @@ class Parser:
         self.lexer = Lexer.from_file(file)
         for _ in range(2):
             self.next()
-        self.parse_decls()
-        return ast.SourceFile(file, [])
+        decls = self.parse_decls()
+        return ast.SourceFile(file, decls)
 
     def next(self):
         self.prev_tok = self.tok
@@ -59,14 +67,24 @@ class Parser:
     # ---- declarations --------------
 
     def parse_decls(self):
+        decls = []
         while self.tok.kind != Kind.EOF:
-            return self.parse_decl()
+            decls.append(self.parse_decl())
+        return decls
 
-    def parse_decl(self):
+    def parse_decl(self, is_pub=False):
         pos = self.tok.pos
         if self.accept(Kind.KeyExtern):
+            if is_pub:
+                report.error("`extern` declarations cannot be public", pos)
             if self.accept(Kind.KeyPkg):
                 # extern package
+                if not self.is_root_mod:
+                    # Only packages can import other packages.
+                    report.error(
+                        "extern package declarations are valid only inside a package",
+                        pos,
+                    )
                 extern_pkg = self.parse_name()
                 self.expect(Kind.Semicolon)
                 return ast.ExternPkg(extern_pkg, pos)
@@ -74,6 +92,15 @@ class Parser:
                 # extern functions
                 report.error(f"extern functions are not yet supported", pos)
                 self.next()
+        elif self.accept(Kind.KeyPub):
+            return self.parse_decl(True)
+        elif self.accept(Kind.KeyMod):
+            name = self.parse_name()
+            self.expect(Kind.Lbrace)
+            decls = []
+            while not self.accept(Kind.Rbrace):
+                decls.append(self.parse_decl())
+            return ast.Mod(name, is_pub, decls)
         else:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()

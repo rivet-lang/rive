@@ -21,10 +21,10 @@ class ExternPkg:
 
 
 class Mod:
-    def __init__(self, name, decls):
+    def __init__(self, name, is_pub, decls):
         self.name = name
         self.decls = decls
-        self.is_pub = False
+        self.is_pub = is_pub
 
 
 # ------ Expressions -------
