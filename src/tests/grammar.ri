@@ -7,6 +7,7 @@
 extern pkg core;
 extern pkg std;
 
+/*
 extern "C" {
     fn exit(status: i32);
     fn abort();
@@ -58,3 +59,4 @@ fn main() {
         _T1 = _T0.next();
     }
 }
+*/

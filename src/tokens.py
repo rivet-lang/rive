@@ -298,7 +298,7 @@ class Token:
     def __str__(self):
         string = str(self.kind)
         if not string[0].isalpha():
-            return f"token `{str}`"
+            return f"token `{string}`"
         if is_key(self.lit):
             string = "keyword"
         if self.lit != "":

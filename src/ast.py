@@ -3,16 +3,21 @@
 # that can be found in the LICENSE file.
 
 
-class ExternPkg:
-    def __init__(self, pkg):
-        self.pkg = pkg
-
-
 class SourceFile:
-    def __init__(self, name, decls, is_root=False):
-        self.name = name
+    def __init__(self, file, decls):
+        self.file = file
         self.decls = decls
-        self.is_root = is_root
+
+
+# ---- Declarations ----
+class EmptyDecl:
+    pass
+
+
+class ExternPkg:
+    def __init__(self, pkg_name, pos):
+        self.pkg_name = pkg_name
+        self.pos = pos
 
 
 class Mod:
@@ -22,6 +27,7 @@ class Mod:
         self.is_pub = False
 
 
+# ------ Expressions -------
 class Ident:
     def __init__(self, name):
         self.name = name

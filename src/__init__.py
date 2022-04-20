@@ -18,7 +18,7 @@ class Compiler:
         self.source_files = []
 
     def parse_files(self):
-        parser.Parser(self.prefs).parse_files()
+        self.source_files = parser.Parser(self.prefs).parse_files()
         if report.ERRORS > 0:
             exit(1)
 

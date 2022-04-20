@@ -44,7 +44,9 @@ def readline(pos):
     # TODO(StunxFS): it would be better if the marker was the width
     # of the token.
     marker = (" " * (pos.col - 1)) + MARK
-    return f"  {colors.bold(line_nr)} {SEP} {line}\n    {SEP} {marker}"
+    return (
+        f"  {colors.bold(line_nr)} {SEP} {line}\n{' ' * LAST_LINE_NR_LEN}{SEP} {marker}"
+    )
 
 
 def fmt_msg(pos, kind, msg):
