@@ -22,7 +22,7 @@ Rivet's goal is to be a very powerful programming language and at the same time 
 to use, with a syntax inspired mainly by Rust and C# (which are the coolest languages
 I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
 
-It is true that there are many programming languages​and each of them specialized in
+It is true that there are many programming languages and each of them specialized in
 a field; some with strange syntax in my opinion (like Lisp...) and others with a high
 learning curve, but above all Rivet tries to be an exception by trying to become a
 unique language with a clear and simple syntax and a low learning curve.
@@ -37,6 +37,12 @@ unique language with a clear and simple syntax and a low learning curve.
 * **Struct inheritance and polymorphism**: Traits and Tagged Unions are also supported.
 * **Ownership and Borrowing**: Rivet has a very simplified version of Rust's
 Ownership and Borrowing system. The lifetimes are inferred by the compiler.
+
+## Dependencies
+
+The Rivet compiler currently generates C code, so a C compiler, which supports C11,
+is required to generate executables. Over time the compiler will add support for
+generating binaries directly without the need for a C compiler.
 
 ## Run the compiler
 
