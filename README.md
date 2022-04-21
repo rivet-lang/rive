@@ -34,6 +34,7 @@ unique language with a clear and simple syntax and a low learning curve.
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
 * **Easy error handling**: Via result types: `fn alloc() !`.
 * **Named and optional arguments**: Very useful.
+* **Templates:** Reuse (and specialize) the same code for different types!.
 * **Struct inheritance and polymorphism**: Traits and Tagged Unions are also supported.
 * **Ownership and Borrowing**: Rivet has a very simplified version of Rust's
 Ownership and Borrowing system. The lifetimes are inferred by the compiler.

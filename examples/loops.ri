@@ -1,0 +1,17 @@
+fn main() {
+    // Rivet only has 2 ways to write loops:
+    // `loop`, which is an infinite loop (short for `while (true)`).
+    // `while` which always executes until the given condition is false.
+
+    let mut x = 0;
+    loop {
+        x++;
+        if (x < 5) {
+            break;
+        }
+    }
+
+    while (x < 10) {
+        x++;
+    }
+}
