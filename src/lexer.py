@@ -8,14 +8,12 @@ LF = chr(10)
 CR = chr(13)
 NUM_SEP = "_"
 
-
 def is_hex_number(ch):
-    return ch.isdigit() or (ch >= "a" and ch <= "f") or (ch >= "A" and ch <= "F")
-
+    return ch.isdigit() or (ch >= "a"
+                            and ch <= "f") or (ch >= "A" and ch <= "F")
 
 def is_bin_number(ch):
     return ch in ("0", "1")
-
 
 class Lexer:
     def __init__(self, text):
@@ -80,15 +78,12 @@ class Lexer:
                 self.pos += 1
                 continue
             if not (
-                c == chr(32)
-                or (c > chr(8) and c < chr(14))
-                or (c == chr(0x85))
-                or (c == chr(0xA0))
+                c == chr(32) or (c > chr(8) and c < chr(14)) or
+                (c == chr(0x85)) or (c == chr(0xA0))
             ):
                 return
             if (
-                self.pos + 1 < self.text_len
-                and c == CR
+                self.pos + 1 < self.text_len and c == CR
                 and self.text[self.pos + 1] == LF
             ):
                 self.is_cr_lf = True
@@ -101,9 +96,7 @@ class Lexer:
     def expect(self, want, start_pos):
         end_pos = start_pos + len(want)
         if (
-            start_pos < 0
-            or end_pos < 0
-            or start_pos >= self.text_len
+            start_pos < 0 or end_pos < 0 or start_pos >= self.text_len
             or end_pos > self.text_len
         ):
             return False
@@ -120,13 +113,13 @@ class Lexer:
             if not (utils.is_valid_name(c) or c.isdigit()):
                 break
             self.pos += 1
-        lit = self.text[start : self.pos]
-        self.pos -= 1  # fix pos
+        lit = self.text[start:self.pos]
+        self.pos -= 1 # fix pos
         return lit
 
     def read_hex_number(self):
         start = self.pos
-        self.pos += 2  # skip '0x'
+        self.pos += 2 # skip '0x'
         if self.pos < self.text_len and self.cur_char() == NUM_SEP:
             report.error(
                 "separator `_` is only valid between digits in a numeric literal",
@@ -136,7 +129,8 @@ class Lexer:
             ch = self.cur_char()
             if ch == NUM_SEP and self.text[self.pos + 1] == NUM_SEP:
                 report.error(
-                    "cannot use `_` consecutively in a numeric literal", self.get_pos()
+                    "cannot use `_` consecutively in a numeric literal",
+                    self.get_pos()
                 )
             if not is_hex_number(ch) and ch != NUM_SEP:
                 if not ch.isdigit() and not ch.isalpha():
@@ -151,14 +145,14 @@ class Lexer:
             report.error(
                 "cannot use `_` at the end of a numeric literal", self.get_pos()
             )
-        lit = self.text[start : self.pos]
-        self.pos -= 1  # fix pos
+        lit = self.text[start:self.pos]
+        self.pos -= 1 # fix pos
         return lit
 
     def read_bin_number(self):
         start = self.pos
         has_wrong_digit = False
-        self.pos += 2  # skip '0b'
+        self.pos += 2 # skip '0b'
         if self.pos < self.text_len and self.cur_char() == NUM_SEP:
             report.error(
                 "separator `_` is only valid between digits in a numeric literal",
@@ -168,7 +162,8 @@ class Lexer:
             ch = self.cur_char()
             if ch == NUM_SEP and self.text[self.pos + 1] == NUM_SEP:
                 report.error(
-                    "cannot use `_` consecutively in a numeric literal", self.get_pos()
+                    "cannot use `_` consecutively in a numeric literal",
+                    self.get_pos()
                 )
             if not is_bin_number(ch) and ch != NUM_SEP:
                 if not ch.isdigit() and not ch.isalpha():
@@ -184,8 +179,8 @@ class Lexer:
             report.error(
                 "cannot use `_` at the end of a numeric literal", self.get_pos()
             )
-        lit = self.text[start : self.pos]
-        self.pos -= 1  # fix pos
+        lit = self.text[start:self.pos]
+        self.pos -= 1 # fix pos
         return lit
 
     def read_dec_number(self):
@@ -194,7 +189,8 @@ class Lexer:
             ch = self.cur_char()
             if ch == NUM_SEP and self.text[self.pos + 1] == NUM_SEP:
                 report.error(
-                    "cannot use `_` consecutively in a numeric literal", self.get_pos()
+                    "cannot use `_` consecutively in a numeric literal",
+                    self.get_pos()
                 )
             if not ch.isdigit() and ch != NUM_SEP:
                 if not ch.isalpha() or ch in ["e", "E"]:
@@ -231,7 +227,7 @@ class Lexer:
                     # 4.. a range
                     self.pos -= 1
                 elif self.text[self.pos] in ["e", "E"]:
-                    pass  # 6.e6
+                    pass # 6.e6
                 elif self.text[self.pos].isalpha():
                     # 16.str()
                     self.pos -= 1
@@ -259,11 +255,12 @@ class Lexer:
                         break
                     elif not has_suffix:
                         report.error(
-                            f"this number has unsuitable digit `{c}`", self.get_pos()
+                            f"this number has unsuitable digit `{c}`",
+                            self.get_pos()
                         )
                 self.pos += 1
-        lit = self.text[start : self.pos]
-        self.pos -= 1  # fix pos
+        lit = self.text[start:self.pos]
+        self.pos -= 1 # fix pos
         return lit
 
     def read_number(self):
@@ -293,13 +290,16 @@ class Lexer:
                 break
         len -= 1
 
-        ch = self.text[start + 1 : self.pos]
+        ch = self.text[start + 1:self.pos]
         if len != 1:
             if len > 1:
                 report.error(
-                    "character literal may only contain one codepoint", self.get_pos()
+                    "character literal may only contain one codepoint",
+                    self.get_pos()
                 )
-                report.help("if you meant to write a string literal, use double quotes")
+                report.help(
+                    "if you meant to write a string literal, use double quotes"
+                )
             elif len == 0:
                 report.error("empty character literal", self.get_pos())
         return ch
@@ -323,7 +323,7 @@ class Lexer:
                 backslash_count += 1
             # end of string
             if c == '"' and (is_raw or backslash_count % 2 == 0):
-                break  # handle "\\" at the end
+                break # handle "\\" at the end
             if c == CR:
                 n_cr_chars += 1
             if c == LF:
@@ -333,7 +333,7 @@ class Lexer:
 
         lit = ""
         if start <= self.pos:
-            lit = self.text[start + 1 : self.pos]
+            lit = self.text[start + 1:self.pos]
             if n_cr_chars > 0:
                 lit = lit.replace("\r", "")
         return lit
@@ -358,7 +358,8 @@ class Lexer:
                 return tokens.Token("", tokens.Kind.EOF, self.get_pos())
 
             ch = self.cur_char()
-            nextc = self.text[self.pos + 1] if self.pos + 1 < self.text_len else chr(0)
+            nextc = self.text[self.pos +
+                              1] if self.pos + 1 < self.text_len else chr(0)
             pos = self.get_pos()
             if utils.is_valid_name(ch):
                 lit = self.read_ident()
@@ -468,8 +469,7 @@ class Lexer:
                 return tokens.Token("", tokens.Kind.Amp, pos)
             elif ch == "!":
                 if (
-                    nextc == "i"
-                    and self.text[self.pos + 2] in ("s", "n")
+                    nextc == "i" and self.text[self.pos + 2] in ("s", "n")
                     and self.text[self.pos + 3].isspace()
                 ):
                     self.pos += 2

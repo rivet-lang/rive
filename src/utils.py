@@ -6,7 +6,6 @@ import sys
 
 from . import colors
 
-
 INVALID_ESCAPES = ["(", "{", "$", "`", "."]
 BACKSLASH = chr(92)
 BACKSLASH_R = chr(13)
@@ -14,20 +13,16 @@ BACKSLASH_N = chr(10)
 DOUBLE_QUOTE = chr(34)
 DOUBLE_ESCAPE = "\\\\"
 
-
 def eprint(s, end="\n"):
     print(s, end=end, file=sys.stderr)
-
 
 def error(msg):
     bg = colors.bold(f'rivetc: {colors.red("error:")}')
     eprint(f"{bg} {msg}")
     exit(1)
 
-
 def is_valid_name(ch):
     return (ch >= "A" and ch <= "Z") or (ch >= "a" and ch <= "z") or ch == "_"
-
 
 def smart_quote(str, raw: bool):
     len_ = len(str)

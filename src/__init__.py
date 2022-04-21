@@ -4,13 +4,10 @@
 
 from . import prefs, parser, report, utils
 
-
 VERSION = "0.1.0a"
-
 
 class CompilerError(Exception):
     pass
-
 
 class Compiler:
     def __init__(self, args: [str]):
@@ -29,7 +26,6 @@ class Compiler:
             msg = f"could not compile package `{self.prefs.pkg_name}`, aborting due to {report.ERRORS} previous errors."
         utils.error(msg)
         exit(1)
-
 
 def main(args):
     compiler = Compiler(args)

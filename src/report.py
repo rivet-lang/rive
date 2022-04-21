@@ -16,7 +16,6 @@ LAST_LINE_NR_LEN = -1
 SEP = colors.bold("|")
 MARK = colors.bold(colors.green("^"))
 
-
 def _readline(file, line_nr):
     global FILE_LINES
     if file in FILE_LINES:
@@ -29,7 +28,6 @@ def _readline(file, line_nr):
     line_nr = min(line_nr, len(lines) - 1)
     return lines[line_nr]
 
-
 def readline(pos):
     global LAST_LINE_NR_LEN
     line = _readline(pos.file, pos.line)
@@ -40,11 +38,9 @@ def readline(pos):
     marker = (" " * (pos.col - 1)) + MARK
     return f"{line_str} {SEP} {line}\n{' ' * LAST_LINE_NR_LEN} {SEP} {marker}"
 
-
 def fmt_msg(pos, kind, msg):
     kind = colors.red(kind) if kind == "error:" else colors.yellow(kind)
     return f"{colors.bold(f'{pos}: {kind} {msg}')}"
-
 
 def error(msg, pos):
     global ERRORS
@@ -52,19 +48,16 @@ def error(msg, pos):
     utils.eprint(readline(pos))
     ERRORS += 1
 
-
 def warn(msg, pos):
     global WARNS
     utils.eprint(fmt_msg(pos, "warning:", msg))
     utils.eprint(readline(pos))
     WARNS += 1
 
-
 def note(msg):
     utils.eprint(
         f"{' ' * LAST_LINE_NR_LEN}{colors.bold(colors.cyan(' = note:'))} {msg}"
     )
-
 
 def help(msg):
     utils.eprint(f"{' ' * LAST_LINE_NR_LEN}{colors.bold(' = help:')} {msg}")

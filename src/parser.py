@@ -6,7 +6,6 @@ from . import report, tokens, ast
 from .tokens import Kind
 from .lexer import Lexer
 
-
 class Parser:
     def __init__(self, prefs):
         self.prefs = prefs

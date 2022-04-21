@@ -21,7 +21,6 @@ Help Options:
    -V, --version               Display compiler version.
    -h, --help                  Display this message."""
 
-
 def option(args, param, def_=""):
     for (i, arg) in enumerate(args):
         if param == arg:
@@ -30,11 +29,9 @@ def option(args, param, def_=""):
             break
     return def_
 
-
 class OutputMode(Enum):
     BINARY = auto_enum()
     LIBRARY = auto_enum()
-
 
 class Prefs:
     def __init__(self, args: [str]):
