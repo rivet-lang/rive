@@ -23,20 +23,20 @@ to use, with a syntax inspired mainly by Rust and C# (which are the coolest lang
 I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
 
 It is true that there are many programming languages and each of them specialized in
-a field; some with strange syntax in my opinion (like Lisp...) and others with a high
-learning curve, but above all Rivet tries to be an exception by trying to become a
-unique language with a clear and simple syntax and a low learning curve.
+a field; some with strange syntax in my opinion (like Lisp) and others with a high
+learning curve, but Rivet tries to be an exception by trying to become a unique
+language with a clear and simple syntax and a low learning curve.
 
 > **NOTE:** Rivet is still in the development phase.
 
 ## Features
 
-* **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
-* **Easy error handling**: Via result types: `fn alloc() !`.
-* **Named and optional arguments**: Very useful.
-* **Templates:** Reuse (and specialize) the same code for different types!.
-* **Struct inheritance and polymorphism**: Traits and Tagged Unions are also supported.
-* **Ownership and Borrowing**: Rivet has a very simplified version of Rust's
+* [X] **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
+* [ ] **Easy error handling**: Via result types: `fn alloc() !`.
+* [ ] **Named and optional arguments**: Very useful.
+* [ ] **Templates:** Reuse (and specialize) the same code for different types!.
+* [ ] **Struct inheritance and polymorphism**: Traits and Tagged Unions are also supported.
+* [ ] **Ownership and Borrowing**: Rivet has a very simplified version of Rust's
 Ownership and Borrowing system. The lifetimes are inferred by the compiler.
 
 ## Dependencies
