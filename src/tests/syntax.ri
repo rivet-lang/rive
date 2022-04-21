@@ -23,6 +23,7 @@ extern "C" {
     fn exit(status: i32);
     fn abort();
 }
+
 extern "C" fn x();
 
 mod real {
