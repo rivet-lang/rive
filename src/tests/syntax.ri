@@ -11,10 +11,15 @@ mod simple { }
 
 [unsafe; abstract; virtual] // <- attributes
 pub mod simple2 {
-    mod inner_mod {
+    [inline]
+    pub mod inner_mod {
         [unsafe]
         [simple]
-        pub mod pub_inner_mod { }
+        pub mod pub_inner_mod {
+        }
+    }
+
+    mod snacks {
     }
 }
 

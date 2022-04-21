@@ -235,7 +235,8 @@ class Lexer:
                     # 5.
                     self.pos -= 1
                     report.error(
-                        "float literals should have a digit after the decimal point, e.g. `1.0`",
+                        "float literals should have a digit after the decimal point, "
+                        "e.g. `1.0`",
                         self.get_pos(),
                     )
                     self.pos += 1
@@ -365,6 +366,16 @@ class Lexer:
                 lit = self.read_ident()
                 return tokens.Token(lit, tokens.lookup(lit), pos)
             elif ch.isdigit():
+                # decimals with 0 prefix
+                start_pos = self.pos
+                while start_pos < self.text_len and self.text[start_pos] == '0':
+                    start_pos += 1
+                prefix_zero_num = start_pos - self.pos
+                if start_pos == self.text_len or (
+                    ch == '0' and not self.text[start_pos].isdigit()
+                ):
+                    prefix_zero_num -= 1
+                self.pos += prefix_zero_num
                 return tokens.Token(
                     self.read_number().replace("_", ""), tokens.Kind.Number, pos
                 )
