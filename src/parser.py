@@ -72,7 +72,24 @@ class Parser:
             decls.append(self.parse_decl())
         return decls
 
+    def parse_attrs(self):
+        attrs = ast.Attrs()
+        while self.accept(Kind.Lbracket):
+            while True:
+                pos = self.tok.pos
+                if self.tok.kind == Kind.KeyUnsafe:
+                    name = "unsafe"
+                    self.next()
+                else:
+                    name = self.parse_name()
+                attrs.add(ast.Attr(name, pos))
+                if not self.accept(Kind.Semicolon):
+                    break
+            self.expect(Kind.Rbracket)
+        return attrs
+
     def parse_decl(self):
+        attrs = self.parse_attrs()
         is_pub = self.accept(Kind.KeyPub)
         pos = self.tok.pos
         if self.accept(Kind.KeyExtern):

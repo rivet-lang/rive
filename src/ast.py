@@ -14,6 +14,26 @@ class EmptyDecl:
     pass
 
 
+class Attr:
+    def __init__(self, name, pos):
+        self.name = name
+        self.pos = pos
+
+
+class Attrs:
+    def __init__(self):
+        self.attrs = []
+
+    def add(self, attr):
+        self.attrs.append(attr)
+
+    def lookup(self, name):
+        for attr in self.attrs:
+            if attr.name == name:
+                return attr
+        return None
+
+
 class ExternPkg:
     def __init__(self, pkg_name, pos):
         self.pkg_name = pkg_name
