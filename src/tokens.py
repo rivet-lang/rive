@@ -146,207 +146,108 @@ def is_relational(k):
     ]
 
 TOKEN_STRINGS = {
-    Kind.Unknown:
-    "unknown",
-    Kind.EOF:
-    "end of file",
-    Kind.Name:
-    "name",
-    Kind.Number:
-    "number",
-    Kind.Char:
-    "character",
-    Kind.String:
-    "string",
-    Kind.Plus:
-    "+",
-    Kind.Minus:
-    "-",
-    Kind.Mult:
-    "*",
-    Kind.Div:
-    "/",
-    Kind.Mod:
-    "%",
-    Kind.Inc:
-    "++",
-    Kind.Dec:
-    "--",
-    Kind.Assign:
-    "=",
-    Kind.PlusAssign:
-    "+=",
-    Kind.MinusAssign:
-    "-=",
-    Kind.MultAssign:
-    "*=",
-    Kind.DivAssign:
-    "/=",
-    Kind.ModAssign:
-    "%=",
-    Kind.AmpAssign:
-    "&=",
-    Kind.PipeAssign:
-    "|=",
-    Kind.XorAssign:
-    "^=",
-    Kind.Eq:
-    "==",
-    Kind.Ne:
-    "!=",
-    Kind.Lt:
-    "<",
-    Kind.Gt:
-    ">",
-    Kind.Le:
-    "<=",
-    Kind.Ge:
-    ">=",
-    Kind.Lshift:
-    "<<",
-    Kind.Rshift:
-    ">>",
-    Kind.Dot:
-    ".",
-    Kind.DotDot:
-    "..",
-    Kind.Ellipsis:
-    "...",
-    Kind.Arrow:
-    "=>",
-    Kind.Comma:
-    ",",
-    Kind.Colon:
-    ":",
-    Kind.DoubleColon:
-    "::",
-    Kind.Semicolon:
-    ";",
-    Kind.Question:
-    "?",
-    Kind.Bang:
-    "!",
-    Kind.Amp:
-    "&",
-    Kind.Pipe:
-    "|",
-    Kind.BitNot:
-    "~",
-    Kind.Xor:
-    "^",
-    Kind.At:
-    "@",
-    Kind.Hash:
-    "#",
-    Kind.Dollar:
-    "$",
-    Kind.Lbrace:
-    "{",
-    Kind.Rbrace:
-    "}",
-    Kind.Lbracket:
-    "[",
-    Kind.Rbracket:
-    "]",
-    Kind.Lparen:
-    "(",
-    Kind.Rparen:
-    ")",
+    Kind.Unknown: "unknown",
+    Kind.EOF: "end of file",
+    Kind.Name: "name",
+    Kind.Number: "number",
+    Kind.Char: "character",
+    Kind.String: "string",
+    Kind.Plus: "+",
+    Kind.Minus: "-",
+    Kind.Mult: "*",
+    Kind.Div: "/",
+    Kind.Mod: "%",
+    Kind.Inc: "++",
+    Kind.Dec: "--",
+    Kind.Assign: "=",
+    Kind.PlusAssign: "+=",
+    Kind.MinusAssign: "-=",
+    Kind.MultAssign: "*=",
+    Kind.DivAssign: "/=",
+    Kind.ModAssign: "%=",
+    Kind.AmpAssign: "&=",
+    Kind.PipeAssign: "|=",
+    Kind.XorAssign: "^=",
+    Kind.Eq: "==",
+    Kind.Ne: "!=",
+    Kind.Lt: "<",
+    Kind.Gt: ">",
+    Kind.Le: "<=",
+    Kind.Ge: ">=",
+    Kind.Lshift: "<<",
+    Kind.Rshift: ">>",
+    Kind.Dot: ".",
+    Kind.DotDot: "..",
+    Kind.Ellipsis: "...",
+    Kind.Arrow: "=>",
+    Kind.Comma: ",",
+    Kind.Colon: ":",
+    Kind.DoubleColon: "::",
+    Kind.Semicolon: ";",
+    Kind.Question: "?",
+    Kind.Bang: "!",
+    Kind.Amp: "&",
+    Kind.Pipe: "|",
+    Kind.BitNot: "~",
+    Kind.Xor: "^",
+    Kind.At: "@",
+    Kind.Hash: "#",
+    Kind.Dollar: "$",
+    Kind.Lbrace: "{",
+    Kind.Rbrace: "}",
+    Kind.Lbracket: "[",
+    Kind.Rbracket: "]",
+    Kind.Lparen: "(",
+    Kind.Rparen: ")",
     # ========== literals ==========
-    Kind.KeyNone:
-    "none",
-    Kind.KeyTrue:
-    "true",
-    Kind.KeyFalse:
-    "false",
-    Kind.KeyBase:
-    "base",
-    Kind.KeySelf:
-    "self",
+    Kind.KeyNone: "none",
+    Kind.KeyTrue: "true",
+    Kind.KeyFalse: "false",
+    Kind.KeyBase: "base",
+    Kind.KeySelf: "self",
     # ==============================
     # ========== KEYWORDS ==========
-    Kind.KeySelfTy:
-    "Self",
-    Kind.KeyPkg:
-    "pkg",
-    Kind.KeyMod:
-    "mod",
-    Kind.KeyExtern:
-    "extern",
-    Kind.KeyTrait:
-    "trait",
-    Kind.KeyStruct:
-    "struct",
-    Kind.KeyUnion:
-    "union",
-    Kind.KeyType:
-    "type",
-    Kind.KeyEnum:
-    "enum",
-    Kind.KeyImpl:
-    "impl",
-    Kind.KeyFn:
-    "fn",
-    Kind.KeyTest:
-    "test",
-    Kind.KeyPub:
-    "pub",
-    Kind.KeyIf:
-    "if",
-    Kind.KeyElif:
-    "elif",
-    Kind.KeyElse:
-    "else",
-    Kind.KeyMatch:
-    "match",
-    Kind.KeyLoop:
-    "loop",
-    Kind.KeyWhile:
-    "while",
-    Kind.KeyFor:
-    "for",
-    Kind.KeyBreak:
-    "break",
-    Kind.KeyContinue:
-    "continue",
-    Kind.KeyReturn:
-    "return",
-    Kind.KeyRaise:
-    "raise",
-    Kind.KeyGoto:
-    "goto",
-    Kind.KeyAnd:
-    "and",
-    Kind.KeyOr:
-    "or",
-    Kind.KeyIn:
-    "in",
-    Kind.KeyIs:
-    "is",
-    Kind.KeyNotIn:
-    "!in",
-    Kind.KeyNotIs:
-    "!is",
-    Kind.KeyCast:
-    "cast",
-    Kind.KeyAs:
-    "as",
-    Kind.KeyUse:
-    "use",
-    Kind.KeyConst:
-    "const",
-    Kind.KeyStatic:
-    "static",
-    Kind.KeyLet:
-    "let",
-    Kind.KeyMut:
-    "mut",
-    Kind.KeyUnsafe:
-    "unsafe",
-    Kind.KeyOrElse:
-    "orelse",
-    Kind.KeyCatch:
-    "catch",
+    Kind.KeySelfTy: "Self",
+    Kind.KeyPkg: "pkg",
+    Kind.KeyMod: "mod",
+    Kind.KeyExtern: "extern",
+    Kind.KeyTrait: "trait",
+    Kind.KeyStruct: "struct",
+    Kind.KeyUnion: "union",
+    Kind.KeyType: "type",
+    Kind.KeyEnum: "enum",
+    Kind.KeyImpl: "impl",
+    Kind.KeyFn: "fn",
+    Kind.KeyTest: "test",
+    Kind.KeyPub: "pub",
+    Kind.KeyIf: "if",
+    Kind.KeyElif: "elif",
+    Kind.KeyElse: "else",
+    Kind.KeyMatch: "match",
+    Kind.KeyLoop: "loop",
+    Kind.KeyWhile: "while",
+    Kind.KeyFor: "for",
+    Kind.KeyBreak: "break",
+    Kind.KeyContinue: "continue",
+    Kind.KeyReturn: "return",
+    Kind.KeyRaise: "raise",
+    Kind.KeyGoto: "goto",
+    Kind.KeyAnd: "and",
+    Kind.KeyOr: "or",
+    Kind.KeyIn: "in",
+    Kind.KeyIs: "is",
+    Kind.KeyNotIn: "!in",
+    Kind.KeyNotIs: "!is",
+    Kind.KeyCast: "cast",
+    Kind.KeyAs: "as",
+    Kind.KeyUse: "use",
+    Kind.KeyConst: "const",
+    Kind.KeyStatic: "static",
+    Kind.KeyLet: "let",
+    Kind.KeyMut: "mut",
+    Kind.KeyUnsafe: "unsafe",
+    Kind.KeyOrElse: "orelse",
+    Kind.KeyCatch: "catch",
     # ==============================
 }
 
