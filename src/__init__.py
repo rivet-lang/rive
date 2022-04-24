@@ -4,8 +4,6 @@
 
 from . import prefs, parser, report, utils
 
-VERSION = "0.1.0a"
-
 class CompilerError(Exception):
     pass
 
