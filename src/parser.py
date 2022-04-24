@@ -15,8 +15,8 @@ class Parser:
         self.tok = None
         self.peek_tok = None
 
-        # This field is `true` when we are in a root module, that
-        # is, a package.
+        # This field is `true` when we are in a root module, that is,
+        # a package.
         self.is_root_mod = False
 
     def parse_pkg(self):
@@ -57,14 +57,12 @@ class Parser:
         self.next()
 
     # ---- utilities ------------------
-
     def parse_name(self):
         lit = self.tok.lit
         self.expect(Kind.Name)
         return lit
 
     # ---- declarations --------------
-
     def parse_decls(self):
         decls = []
         while self.tok.kind != Kind.EOF:

@@ -20,10 +20,7 @@ class OrderedDepMap:
         self.set(name, d)
 
     def get(self, name):
-        try:
-            return self.data[name]
-        except:
-            return []
+        return self.data[name] if name in self.data else []
 
     def delete(self, name):
         if name not in self.data:
@@ -60,15 +57,18 @@ class NodeNames:
         new_already_seen = already_seen.copy()
         if name in self.is_cycle:
             return self.is_cycle[name], new_already_seen
+
         if name in already_seen:
             new_already_seen.append(name)
             self.is_cycle[name] = True
             return True, new_already_seen
+
         new_already_seen.append(name)
         deps = self.names[name] if name in self.names else []
         if len(deps) == 0:
             self.is_cycle[name] = False
             return False, new_already_seen
+
         for d in deps:
             d_already_seen = new_already_seen.copy()
             seen, d_already_seen = self.is_part_of_cycle(d, d_already_seen)
