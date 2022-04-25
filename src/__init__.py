@@ -3,12 +3,11 @@
 # that can be found in the LICENSE file.
 
 from . import prefs, parser, report, utils
-
-class CompilerError(Exception):
-    pass
+from .ast import sym
 
 class Compiler:
     def __init__(self, args: [str]):
+        self.universe = sym.universe()
         self.prefs = prefs.Prefs(args)
         self.source_files = []
 

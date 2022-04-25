@@ -13,6 +13,9 @@ BACKSLASH_N = chr(10)
 DOUBLE_QUOTE = chr(34)
 DOUBLE_ESCAPE = "\\\\"
 
+class CompilerError(Exception):
+    pass
+
 def eprint(s, end="\n"):
     print(s, end=end, file=sys.stderr)
 

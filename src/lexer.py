@@ -211,6 +211,7 @@ class Lexer:
             report.error(
                 "cannot use `_` at the end of a numeric literal", self.get_pos()
             )
+
         # fractional part
         if self.pos < self.text_len and self.text[self.pos] == ".":
             self.pos += 1
@@ -246,6 +247,7 @@ class Lexer:
                         self.get_pos(),
                     )
                     self.pos += 1
+
         # exponential part
         if self.pos < self.text_len and self.text[self.pos] in ["e", "E"]:
             self.pos += 1

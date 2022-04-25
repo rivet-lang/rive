@@ -6,6 +6,8 @@ from . import report, tokens, ast
 from .tokens import Kind
 from .lexer import Lexer
 
+from .ast import sym
+
 class Parser:
     def __init__(self, prefs):
         self.prefs = prefs
@@ -17,10 +19,10 @@ class Parser:
 
         # This field is `true` when we are in a root module, that is,
         # a package.
-        self.is_root_mod = False
+        self.is_pkg_level = False
 
     def parse_pkg(self):
-        self.is_root_mod = True
+        self.is_pkg_level = True
         return self.parse_module_files()
 
     def parse_module_files(self):
@@ -98,7 +100,7 @@ class Parser:
                 report.error("`extern` declarations cannot be public", pos)
             if self.accept(Kind.KeyPkg):
                 # extern package
-                if not self.is_root_mod:
+                if not self.is_pkg_level:
                     report.error(
                         "extern packages can only be declared at the package level",
                         pos,
@@ -111,8 +113,8 @@ class Parser:
                 report.error(f"extern functions are not yet supported", pos)
                 self.next()
         elif self.accept(Kind.KeyMod):
-            old_is_root_mod = self.is_root_mod
-            self.is_root_mod = False
+            old_is_pkg_level = self.is_pkg_level
+            self.is_pkg_level = False
 
             name = self.parse_name()
             self.expect(Kind.Lbrace)
@@ -120,7 +122,7 @@ class Parser:
             while not self.accept(Kind.Rbrace):
                 decls.append(self.parse_decl())
 
-            self.is_root_mod = old_is_root_mod
+            self.is_pkg_level = old_is_pkg_level
             return ast.Mod(name, is_pub, decls)
         else:
             report.error(f"expected declaration, found {self.tok}", pos)

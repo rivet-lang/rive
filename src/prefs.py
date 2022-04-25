@@ -22,15 +22,13 @@ Help Options:
    -V, --version               Display compiler version.
    -h, --help                  Display this message."""
 
-def option(args, param, def_=""):
+def option(args, param):
     for (i, arg) in enumerate(args):
         if param == arg:
             if i + 1 < len(args):
                 return args[i + 1]
-            elif len(def_) == 0:
-                return None
             break
-    return def_
+    return None
 
 class PkgMode(Enum):
     BINARY = auto_enum()
@@ -40,7 +38,7 @@ class Prefs:
     def __init__(self, args: [str]):
         if len(args) == 0:
             eprint(HELP)
-            exit(0)
+            return
 
         self.inputs = []
         self.pkg_name = "main"
