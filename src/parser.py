@@ -36,10 +36,14 @@ class Parser:
         decls = self.parse_decls()
         return ast.SourceFile(file, decls)
 
+    # ---- useful functions for working with tokens ----
     def next(self):
         self.prev_tok = self.tok
         self.tok = self.peek_tok
         self.peek_tok = self.lexer.next()
+
+    def peek_token(self, n):
+        return self.lexer.peek_token(n - 2)
 
     def accept(self, kind):
         if self.tok.kind == kind:

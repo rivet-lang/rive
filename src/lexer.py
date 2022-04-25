@@ -105,6 +105,12 @@ class Lexer:
                 return False
         return True
 
+    def peek_token(self, n):
+        idx = self.tidx + n
+        if idx >= len(self.all_tokens):
+            return tokens.Token("", tokens.Kind.EOF, self.get_pos())
+        return self.all_tokens[idx]
+
     def read_ident(self):
         start = self.pos
         self.pos += 1

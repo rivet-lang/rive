@@ -27,6 +27,8 @@ def option(args, param, def_=""):
         if param == arg:
             if i + 1 < len(args):
                 return args[i + 1]
+            elif len(def_) == 0:
+                return None
             break
     return def_
 
@@ -68,8 +70,8 @@ class Prefs:
                     error(f"duplicate file '{arg}'")
                 self.inputs.append(arg)
             elif arg == "--pkg-name":
-                if len(current_args) > 1:
-                    self.pkg_name = option(current_args, arg, "main")
+                if pkg_name := option(current_args, arg):
+                    self.pkg_name = pkg_name
                     i += 1
                     if not self.pkg_name.isidentifier():
                         error(f"invalid package name `{self.pkg_name}`")
