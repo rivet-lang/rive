@@ -2,15 +2,14 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from . import report, tokens, ast
-from .tokens import Kind
+from .ast import sym, type
 from .lexer import Lexer
-
-from .ast import sym
+from .tokens import Kind
+from . import report, tokens, ast
 
 class Parser:
-    def __init__(self, prefs):
-        self.prefs = prefs
+    def __init__(self, comp):
+        self.comp = comp
         self.lexer = None
 
         self.prev_tok = None
@@ -27,14 +26,13 @@ class Parser:
 
     def parse_module_files(self):
         source_files = []
-        for input in self.prefs.inputs:
+        for input in self.comp.prefs.inputs:
             source_files.append(self.parse_file(input))
         return source_files
 
     def parse_file(self, file):
         self.lexer = Lexer.from_file(file)
-        for _ in range(2):
-            self.next()
+        self.advance(2)
         decls = self.parse_decls()
         return ast.SourceFile(file, decls)
 
@@ -46,6 +44,10 @@ class Parser:
 
     def peek_token(self, n):
         return self.lexer.peek_token(n - 2)
+
+    def advance(self, n):
+        for _ in range(n):
+            self.next()
 
     def accept(self, kind):
         if self.tok.kind == kind:
@@ -128,3 +130,43 @@ class Parser:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()
         return ast.EmptyDecl()
+
+    # ---- types -------------------------------
+    def parse_type(self):
+        pos = self.tok.pos
+        if self.tok.kind == Kind.Lparen and self.peek_tok.kind == Kind.Rparen:
+            self.advance(2)
+            return type.Type(self.comp.unit)
+        elif self.tok.kind == Kind.Name:
+            lit = self.parse_name()
+            if lit == "unit":
+                report.error("use `()` instead of `unit`", pos)
+            elif lit == "rawptr":
+                return type.Type(self.comp.rawptr)
+            elif lit == "bool":
+                return type.Type(self.comp.bool)
+            elif lit == "char":
+                return type.Type(self.comp.char)
+            elif lit == "i8":
+                return type.Type(self.comp.int8)
+            elif lit == "i16":
+                return type.Type(self.comp.int16)
+            elif lit == "i32":
+                return type.Type(self.comp.int32)
+            elif lit == "i64":
+                return type.Type(self.comp.int64)
+            elif lit == "isize":
+                return type.Type(self.comp.isize)
+            elif lit == "u8":
+                return type.Type(self.comp.uint8)
+            elif lit == "u16":
+                return type.Type(self.comp.uint16)
+            elif lit == "u32":
+                return type.Type(self.comp.uint32)
+            elif lit == "u64":
+                return type.Type(self.comp.uint64)
+            elif lit == "usize":
+                return type.Type(self.comp.usize)
+        else:
+            report.error(f"expected type, found {self.tok}", pos)
+        return type.UnknownType(self.tok)

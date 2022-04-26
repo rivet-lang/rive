@@ -41,6 +41,10 @@ class Mod:
         self.is_pub = is_pub
 
 # ------ Expressions -------
+class TypeNode:
+    def __init__(self, ty):
+        self.ty = ty
+
 class Ident:
     def __init__(self, name):
         self.name = name

@@ -2,27 +2,9 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from ..utils import CompilerError
+from enum import IntEnum as Enum, auto as auto_enum
 
-def universe():
-    st = Sym("universe")
-    st.add(Type("bool"))
-    st.add(Type("char"))
-    st.add(Type("i8"))
-    st.add(Type("i16"))
-    st.add(Type("i32"))
-    st.add(Type("i64"))
-    st.add(Type("u8"))
-    st.add(Type("u16"))
-    st.add(Type("u32"))
-    st.add(Type("u64"))
-    st.add(Type("isize"))
-    st.add(Type("usize"))
-    st.add(Type("f32"))
-    st.add(Type("f64"))
-    st.add(Type("str"))
-    st.add(Type("rawptr"))
-    return st
+from ..utils import CompilerError
 
 class Sym:
     def __init__(self, name):
@@ -53,5 +35,45 @@ class Pkg(Sym):
 class Mod(Sym):
     pass
 
+class Field:
+    def __init__(self, name, is_mut=False, is_pub=False):
+        self.name = name
+        self.is_mut = is_mut
+        self.is_pub = is_pub
+
+class SymKind(Enum):
+    Unknown = auto_enum()
+    Unit = auto_enum()
+    Rawptr = auto_enum()
+    Bool = auto_enum()
+    Char = auto_enum()
+    Int8 = auto_enum()
+    Int16 = auto_enum()
+    Int32 = auto_enum()
+    Int64 = auto_enum()
+    Isize = auto_enum()
+    Uint8 = auto_enum()
+    Uint16 = auto_enum()
+    Uint32 = auto_enum()
+    Uint64 = auto_enum()
+    Usize = auto_enum()
+    Float32 = auto_enum()
+    Float64 = auto_enum()
+    Str = auto_enum()
+
 class Type(Sym):
-    pass
+    def __init__(self, name, kind=SymKind.Unknown, fields=[]):
+        Sym.__init__(self, name)
+        self.kind = kind
+        self.fields = fields
+
+    def lookup_field(self, name):
+        for f in self.fields:
+            if f.name == name:
+                return f
+        return None
+
+    def has_field(self, name):
+        if f := self.lookup_field(name):
+            return True
+        return False
