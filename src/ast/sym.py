@@ -12,15 +12,15 @@ class Sym:
         self.syms = []
 
     def add(self, sym):
-        if self.exists(name):
+        if self.exists(sym.name):
             raise CompilerError(
-                f"another symbol with this name already exists: `{name}`"
+                f"another symbol with this name already exists: `{sym.name}`"
             )
         self.syms.append(sym)
 
     def lookup(self, name):
         for sym in self.syms:
-            if name == name:
+            if sym.name == name:
                 return sym
         return None
 

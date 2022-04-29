@@ -49,7 +49,7 @@ class EmptyExpr:
         self.pos = pos
 
     def __repr__(self):
-        return f"<EmptyExpr pos={self.pos}>"
+        return f"<rivet.EmptyExpr pos={self.pos}>"
 
     def __str__(self):
         return self.__repr__()
@@ -248,7 +248,7 @@ class ArrayLiteral:
         self.pos = pos
 
     def __repr__(self):
-        return f"[{self.elem_ty}; {self.size}]{{ {', '.join([e.__str__() for e in self.elems])} }}"
+        return f"[{self.elem_ty}; {self.size}]{{ {', '.join([str(e) for e in self.elems])} }}"
 
     def __str__(self):
         return self.__repr__()
@@ -342,7 +342,9 @@ class CallExpr:
                 return arg
         return None
 
-    def args_len(self):
+    # Returns the number of pure arguments, that is, not named, that
+    # this call has.
+    def pure_args_count(self):
         l = 0
         for arg in self.args:
             if not arg.is_named:
@@ -350,7 +352,7 @@ class CallExpr:
         return l
 
     def __repr__(self):
-        return f"{self.left}({', '.join([a.__str__() for a in self.args])})"
+        return f"{self.left}({', '.join([str(a) for a in self.args])})"
 
     def __str__(self):
         return self.__repr__()
@@ -395,7 +397,7 @@ class BuiltinCallExpr:
         self.pos = pos
 
     def __repr__(self):
-        return f"{self.left}!({', '.join([a.__str__() for a in self.args])})"
+        return f"{self.left}!({', '.join([str(a) for a in self.args])})"
 
     def __str__(self):
         return self.__repr__()
