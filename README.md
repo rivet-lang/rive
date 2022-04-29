@@ -39,7 +39,7 @@ are immutable by default.
 Ownership and Borrowing system. The lifetimes are inferred by the compiler.
 * [ ] **Struct inheritance and polymorphism**: Traits and Tagged Unions are also
 supported.
-* [ ] **Templates:** Reuse (and specialize) the same code for different types!.
+* [ ] **Templates:** Reuse (and specialize) the same code for different types!
 
 ## Dependencies
 
