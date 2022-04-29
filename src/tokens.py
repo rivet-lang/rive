@@ -108,6 +108,7 @@ class Kind(Enum):
     KeyLet = auto_enum() # let
     KeyMut = auto_enum() # mut
     KeyUnsafe = auto_enum() # unsafe
+    KeyTry = auto_enum() # try
     KeyOrElse = auto_enum() # orelse
     KeyCatch = auto_enum() # catch
     # ==============================
@@ -246,6 +247,7 @@ TOKEN_STRINGS = {
     Kind.KeyLet: "let",
     Kind.KeyMut: "mut",
     Kind.KeyUnsafe: "unsafe",
+    Kind.KeyTry: "try",
     Kind.KeyOrElse: "orelse",
     Kind.KeyCatch: "catch",
     # ==============================

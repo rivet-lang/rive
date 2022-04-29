@@ -12,15 +12,15 @@ class Sym:
         self.syms = []
 
     def add(self, sym):
-        if self.exists(sym.name):
+        if self.exists(name):
             raise CompilerError(
-                f"another symbol with this name already exists: `{sym.name}`"
+                f"another symbol with this name already exists: `{name}`"
             )
         self.syms.append(sym)
 
     def lookup(self, name):
         for sym in self.syms:
-            if sym.name == name:
+            if name == name:
                 return sym
         return None
 
@@ -41,8 +41,7 @@ class Field:
         self.is_mut = is_mut
         self.is_pub = is_pub
 
-class SymKind(Enum):
-    Unknown = auto_enum()
+class TypeKind(Enum):
     Unit = auto_enum()
     Rawptr = auto_enum()
     Bool = auto_enum()
@@ -60,9 +59,15 @@ class SymKind(Enum):
     Float32 = auto_enum()
     Float64 = auto_enum()
     Str = auto_enum()
+    Array = auto_enum()
+    Slice = auto_enum()
+    Tuple = auto_enum()
+    Struct = auto_enum()
+    Union = auto_enum()
+    Trait = auto_enum()
 
 class Type(Sym):
-    def __init__(self, name, kind=SymKind.Unknown, fields=[]):
+    def __init__(self, name, kind, fields=[]):
         Sym.__init__(self, name)
         self.kind = kind
         self.fields = fields
@@ -77,3 +82,29 @@ class Type(Sym):
         if _ := self.lookup_field(name):
             return True
         return False
+
+class Fn(Sym):
+    def __init__(self, name, rec_ty, args, ret_ty):
+        Sym.__init__(self, name)
+        self.rec_ty = rec_ty
+        self.args = args
+        self.ret_ty = ret_ty
+
+# Primitives.
+unit = Type("unit", TypeKind.Unit)
+rawptr = Type("rawptr", TypeKind.Rawptr)
+bool = Type("bool", TypeKind.Bool)
+rune = Type("rune", TypeKind.Rune)
+int8 = Type("i8", TypeKind.Int8)
+int16 = Type("i16", TypeKind.Int16)
+int32 = Type("i32", TypeKind.Int32)
+int64 = Type("i64", TypeKind.Int64)
+isize = Type("isize", TypeKind.Isize)
+uint8 = Type("u8", TypeKind.Uint8)
+uint16 = Type("u16", TypeKind.Uint16)
+uint32 = Type("u32", TypeKind.Uint32)
+uint64 = Type("u64", TypeKind.Uint64)
+usize = Type("usize", TypeKind.Usize)
+float32 = Type("f32", TypeKind.Float32)
+float64 = Type("f64", TypeKind.Float64)
+str = Type("str", TypeKind.Str, [Field("len", is_pub=True)])

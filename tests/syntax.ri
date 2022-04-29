@@ -15,12 +15,10 @@ pub mod simple2 {
     pub mod inner_mod {
         [unsafe]
         [simple]
-        pub mod pub_inner_mod {
-        }
+        pub mod pub_inner_mod { }
     }
 
-    mod snacks {
-    }
+    mod snacks { }
 }
 
 /*
