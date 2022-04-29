@@ -46,7 +46,7 @@ class SymKind(Enum):
     Unit = auto_enum()
     Rawptr = auto_enum()
     Bool = auto_enum()
-    Char = auto_enum()
+    Rune = auto_enum()
     Int8 = auto_enum()
     Int16 = auto_enum()
     Int32 = auto_enum()

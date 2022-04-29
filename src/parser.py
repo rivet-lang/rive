@@ -145,8 +145,8 @@ class Parser:
                 return type.Type(self.comp.rawptr)
             elif lit == "bool":
                 return type.Type(self.comp.bool)
-            elif lit == "char":
-                return type.Type(self.comp.char)
+            elif lit == "rune":
+                return type.Type(self.comp.rune)
             elif lit == "i8":
                 return type.Type(self.comp.int8)
             elif lit == "i16":
@@ -167,6 +167,8 @@ class Parser:
                 return type.Type(self.comp.uint64)
             elif lit == "usize":
                 return type.Type(self.comp.usize)
+            elif lit == "str":
+                return type.Type(self.comp.str)
         else:
             report.error(f"expected type, found {self.tok}", pos)
         return type.UnknownType(self.tok)

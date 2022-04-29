@@ -33,10 +33,12 @@ language with a clear and simple syntax and a low learning curve.
 * [X] **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
 * [ ] **Easy error handling**: Via result types: `fn alloc() !`.
 * [ ] **Named and optional arguments**: Very useful.
-* [ ] **Struct inheritance and polymorphism**: Traits and Tagged Unions are also
-supported.
+* [ ] **Immutable values by default:** Variables, arguments and fields of struct
+are immutable by default.
 * [ ] **Ownership and Borrowing**: Rivet has a very simplified version of Rust's
 Ownership and Borrowing system. The lifetimes are inferred by the compiler.
+* [ ] **Struct inheritance and polymorphism**: Traits and Tagged Unions are also
+supported.
 * [ ] **Templates:** Reuse (and specialize) the same code for different types!.
 
 ## Dependencies

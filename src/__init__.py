@@ -15,7 +15,7 @@ class Compiler:
         self.unit = sym.Type("unit", sym.SymKind.Unit)
         self.rawptr = sym.Type("rawptr", sym.SymKind.Rawptr)
         self.bool = sym.Type("bool", sym.SymKind.Bool)
-        self.char = sym.Type("char", sym.SymKind.Char)
+        self.rune = sym.Type("rune", sym.SymKind.Rune)
         self.int8 = sym.Type("i8", sym.SymKind.Int8)
         self.int16 = sym.Type("i16", sym.SymKind.Int16)
         self.int32 = sym.Type("i32", sym.SymKind.Int32)
