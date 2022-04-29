@@ -367,7 +367,7 @@ class Parser:
                 expr = self.parse_path_expr(expr)
             elif self.accept(Kind.Lbracket):
                 index = self.empty_expr()
-                if self.accept(Kind.Colon):
+                if self.accept(Kind.DotDot):
                     index = self.parse_expr()
                     index = ast.RangeExpr(
                         None, index, False, index.pos, False, True
