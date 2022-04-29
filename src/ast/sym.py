@@ -74,6 +74,6 @@ class Type(Sym):
         return None
 
     def has_field(self, name):
-        if f := self.lookup_field(name):
+        if _ := self.lookup_field(name):
             return True
         return False
