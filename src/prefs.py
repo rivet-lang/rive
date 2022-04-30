@@ -80,7 +80,7 @@ class Prefs:
             elif os.path.isdir(arg):
                 files = glob.glob(f"{arg}/*.ri")
                 if len(files) == 0:
-                    error(f"`{files}` does not have .ri files")
+                    error(f"`{arg}` does not have .ri files")
                 for f in files:
                     self.inputs.append(f)
             else:

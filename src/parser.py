@@ -144,69 +144,100 @@ class Parser:
     def parse_expr(self):
         return self.parse_or_expr()
 
-    def empty_expr(self):
-        return ast.EmptyExpr(self.tok.pos)
+    def parse_or_expr(self):
+        left = self.parse_and_expr()
+        while self.accept(Kind.KeyOr):
+            right = self.parse_and_expr()
+            left = ast.BinaryExpr(left, Kind.KeyOr, right, right.pos)
+        return left
 
-    def parse_literal(self):
-        if self.tok.kind in [Kind.KeyTrue, Kind.KeyFalse]:
-            pos = self.tok.pos
-            lit = self.tok.kind == Kind.KeyTrue
+    def parse_and_expr(self):
+        left = self.parse_equality_expr()
+        while self.accept(Kind.KeyAnd):
+            right = self.parse_equality_expr()
+            left = ast.BinaryExpr(left, Kind.KeyAnd, right, right.pos)
+        return left
+
+    def parse_equality_expr(self):
+        left = self.parse_relational_expr()
+        if self.tok.kind in [Kind.Eq, Kind.Ne]:
+            op = self.tok.kind
             self.next()
-            return ast.BoolLiteral(lit, pos)
-        elif self.tok.kind == Kind.Char:
-            return self.parse_character_literal()
-        elif self.tok.kind == Kind.Number:
-            return self.parse_integer_literal()
-        elif self.tok.kind == Kind.String:
-            return self.parse_string_literal()
-        elif self.tok.kind == Kind.KeyNone:
+            right = self.parse_relational_expr()
+            left = ast.BinaryExpr(left, op, right, right.pos)
+        return left
+
+    def parse_relational_expr(self):
+        left = self.parse_shift_expr()
+        if self.tok.kind in [
+            Kind.Gt,
+            Kind.Lt,
+            Kind.Ge,
+            Kind.Le,
+            Kind.KeyIn,
+            Kind.KeyNotIn,
+        ]:
+            op = self.tok.kind
+            self.next()
+            right = self.parse_shift_expr()
+            left = ast.BinaryExpr(left, op, right, right.pos)
+        elif self.tok.kind in [Kind.KeyIs, Kind.KeyNotIs]:
+            op = self.tok.kind
+            self.next()
+            pos = self.tok.pos
+            right = TypeNode(self.parse_type(), pos)
+            left = ast.BinaryExpr(left, op, right, pos)
+        return left
+
+    def parse_shift_expr(self):
+        left = self.parse_additive_expr()
+        if self.tok.kind in [Kind.Lt, Kind.Gt]:
+            op = Kind.Lshift if self.tok.kind == Kind.Lt else Kind.Rshift
+            if self.tok.pos.pos + 1 == self.peek_tok.pos.pos:
+                self.next()
+                self.next()
+                right = self.parse_additive_expr()
+                left = ast.BinaryExpr(left, op, right, right.pos)
+        elif self.tok.kind in [Kind.Amp, Kind.Pipe, Kind.Xor]:
+            op = self.tok.kind
+            self.next()
+            right = self.parse_additive_expr()
+            left = ast.BinaryExpr(left, op, right, right.pos)
+        return left
+
+    def parse_additive_expr(self):
+        left = self.parse_multiplicative_expr()
+        if self.tok.kind in [Kind.Plus, Kind.Minus]:
+            op = self.tok.kind
+            self.next()
+            right = self.parse_multiplicative_expr()
+            left = ast.BinaryExpr(left, op, right, right.pos)
+        return left
+
+    def parse_multiplicative_expr(self):
+        left = self.parse_unary_expr()
+        if self.tok.kind in [Kind.Mult, Kind.Div, Kind.Mod]:
+            op = self.tok.kind
+            self.next()
+            right = self.parse_unary_expr()
+            left = ast.BinaryExpr(left, op, right, right.pos)
+        return left
+
+    def parse_unary_expr(self):
+        expr = self.empty_expr()
+        if (
+            self.tok.kind in [
+                Kind.Amp, Kind.Bang, Kind.BitNot, Kind.Inc, Kind.Dec, Kind.Minus
+            ]
+        ):
+            op = self.tok.kind
             pos = self.tok.pos
             self.next()
-            return ast.NoneLiteral(pos)
+            right = self.parse_unary_expr()
+            expr = ast.UnaryExpr(right, op, right.pos)
         else:
-            report.error(
-                f"expected literal, found {self.tok.str()}", self.tok.pos
-            )
-        return self.empty_expr()
-
-    def parse_integer_literal(self):
-        pos = self.tok.pos
-        lit = self.tok.lit
-        is_float = "." in lit or "e" in lit or "E" in lit
-        self.next()
-        return (
-            ast.FloatLiteral(lit, pos)
-            if is_float else ast.IntegerLiteral(lit, pos)
-        )
-
-    def parse_character_literal(self):
-        is_byte = False
-        if self.tok.kind == Kind.Name:
-            is_byte = self.tok.lit == "b"
-            self.expect(Kind.Name)
-        lit = self.tok.lit
-        pos = self.tok.pos
-        self.expect(Kind.Char)
-        return ast.CharLiteral(lit, pos, is_byte)
-
-    def parse_string_literal(self):
-        is_bytestr = False
-        is_raw = False
-        if self.tok.kind == Kind.Name:
-            is_raw = self.tok.lit == "r"
-            is_bytestr = self.tok.lit == "b"
-            self.expect(Kind.Name)
-        lit = self.tok.lit
-        pos = self.tok.pos
-        self.expect(Kind.String)
-        while self.accept(Kind.String):
-            lit += self.prev_tok.lit
-        return ast.StringLiteral(lit, is_raw, is_bytestr, pos)
-
-    def parse_ident(self):
-        pos = self.tok.pos
-        name = self.parse_name()
-        return ast.Ident(name, pos, scope=self.scope)
+            expr = self.parse_primary_expr()
+        return expr
 
     def parse_primary_expr(self):
         expr = self.empty_expr()
@@ -395,11 +426,6 @@ class Parser:
                 break
         return expr
 
-    def parse_pkg_expr(self):
-        pos = self.tok.pos
-        self.next()
-        return ast.PkgExpr(pos)
-
     def parse_path_expr(self, left):
         self.expect(Kind.DoubleColon)
         pos = self.tok.pos
@@ -408,100 +434,74 @@ class Parser:
         expr.is_last = self.tok.kind != Kind.DoubleColon
         return expr
 
-    def parse_unary_expr(self):
-        expr = self.empty_expr()
-        if (
-            self.tok.kind in [
-                Kind.Amp, Kind.Bang, Kind.BitNot, Kind.Inc, Kind.Dec, Kind.Minus
-            ]
-        ):
-            op = self.tok.kind
+    def parse_literal(self):
+        if self.tok.kind in [Kind.KeyTrue, Kind.KeyFalse]:
+            pos = self.tok.pos
+            lit = self.tok.kind == Kind.KeyTrue
+            self.next()
+            return ast.BoolLiteral(lit, pos)
+        elif self.tok.kind == Kind.Char:
+            return self.parse_character_literal()
+        elif self.tok.kind == Kind.Number:
+            return self.parse_integer_literal()
+        elif self.tok.kind == Kind.String:
+            return self.parse_string_literal()
+        elif self.tok.kind == Kind.KeyNone:
             pos = self.tok.pos
             self.next()
-            right = self.parse_unary_expr()
-            expr = ast.UnaryExpr(right, op, right.pos)
+            return ast.NoneLiteral(pos)
         else:
-            expr = self.parse_primary_expr()
-        return expr
+            report.error(
+                f"expected literal, found {self.tok.str()}", self.tok.pos
+            )
+        return self.empty_expr()
 
-    def parse_multiplicative_expr(self):
-        left = self.parse_unary_expr()
-        if self.tok.kind in [Kind.Mult, Kind.Div, Kind.Mod]:
-            op = self.tok.kind
-            self.next()
-            right = self.parse_unary_expr()
-            left = ast.BinaryExpr(left, op, right, right.pos)
-        return left
+    def parse_integer_literal(self):
+        pos = self.tok.pos
+        lit = self.tok.lit
+        is_float = "." in lit or "e" in lit or "E" in lit
+        self.next()
+        return (
+            ast.FloatLiteral(lit, pos)
+            if is_float else ast.IntegerLiteral(lit, pos)
+        )
 
-    def parse_additive_expr(self):
-        left = self.parse_multiplicative_expr()
-        if self.tok.kind in [Kind.Plus, Kind.Minus]:
-            op = self.tok.kind
-            self.next()
-            right = self.parse_multiplicative_expr()
-            left = ast.BinaryExpr(left, op, right, right.pos)
-        return left
+    def parse_character_literal(self):
+        is_byte = False
+        if self.tok.kind == Kind.Name:
+            is_byte = self.tok.lit == "b"
+            self.expect(Kind.Name)
+        lit = self.tok.lit
+        pos = self.tok.pos
+        self.expect(Kind.Char)
+        return ast.CharLiteral(lit, pos, is_byte)
 
-    def parse_shift_expr(self):
-        left = self.parse_additive_expr()
-        if self.tok.kind in [Kind.Lt, Kind.Gt]:
-            op = Kind.Lshift if self.tok.kind == Kind.Lt else Kind.Rshift
-            if self.tok.pos.pos + 1 == self.peek_tok.pos.pos:
-                self.next()
-                self.next()
-                right = self.parse_additive_expr()
-                left = ast.BinaryExpr(left, op, right, right.pos)
-        elif self.tok.kind in [Kind.Amp, Kind.Pipe, Kind.Xor]:
-            op = self.tok.kind
-            self.next()
-            right = self.parse_additive_expr()
-            left = ast.BinaryExpr(left, op, right, right.pos)
-        return left
+    def parse_string_literal(self):
+        is_bytestr = False
+        is_raw = False
+        if self.tok.kind == Kind.Name:
+            is_raw = self.tok.lit == "r"
+            is_bytestr = self.tok.lit == "b"
+            self.expect(Kind.Name)
+        lit = self.tok.lit
+        pos = self.tok.pos
+        self.expect(Kind.String)
+        while self.accept(Kind.String):
+            lit += self.prev_tok.lit
+        return ast.StringLiteral(lit, is_raw, is_bytestr, pos)
 
-    def parse_relational_expr(self):
-        left = self.parse_shift_expr()
-        if self.tok.kind in [
-            Kind.Gt,
-            Kind.Lt,
-            Kind.Ge,
-            Kind.Le,
-            Kind.KeyIn,
-            Kind.KeyNotIn,
-        ]:
-            op = self.tok.kind
-            self.next()
-            right = self.parse_shift_expr()
-            left = ast.BinaryExpr(left, op, right, right.pos)
-        elif self.tok.kind in [Kind.KeyIs, Kind.KeyNotIs]:
-            op = self.tok.kind
-            self.next()
-            pos = self.tok.pos
-            right = TypeNode(self.parse_type(), pos)
-            left = ast.BinaryExpr(left, op, right, pos)
-        return left
+    def parse_ident(self):
+        pos = self.tok.pos
+        name = self.parse_name()
+        return ast.Ident(name, pos, scope=self.scope)
 
-    def parse_equality_expr(self):
-        left = self.parse_relational_expr()
-        if self.tok.kind in [Kind.Eq, Kind.Ne]:
-            op = self.tok.kind
-            self.next()
-            right = self.parse_relational_expr()
-            left = ast.BinaryExpr(left, op, right, right.pos)
-        return left
+    def parse_pkg_expr(self):
+        pos = self.tok.pos
+        self.next()
+        return ast.PkgExpr(pos)
 
-    def parse_and_expr(self):
-        left = self.parse_equality_expr()
-        while self.accept(Kind.KeyAnd):
-            right = self.parse_equality_expr()
-            left = ast.BinaryExpr(left, Kind.KeyAnd, right, right.pos)
-        return left
-
-    def parse_or_expr(self):
-        left = self.parse_and_expr()
-        while self.accept(Kind.KeyOr):
-            right = self.parse_and_expr()
-            left = ast.BinaryExpr(left, Kind.KeyOr, right, right.pos)
-        return left
+    def empty_expr(self):
+        return ast.EmptyExpr(self.tok.pos)
 
     # ---- types -------------------------------
     def parse_type(self):
