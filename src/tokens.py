@@ -94,6 +94,7 @@ class Kind(Enum):
     KeyReturn = auto_enum() # return
     KeyRaise = auto_enum() # raise
     KeyGoto = auto_enum() # goto
+    KeyGo = auto_enum() # go
     KeyAnd = auto_enum() # and
     KeyOr = auto_enum() # or
     KeyIn = auto_enum() # in
@@ -200,6 +201,7 @@ TOKEN_STRINGS = {
     Kind.Rbracket: "]",
     Kind.Lparen: "(",
     Kind.Rparen: ")",
+
     # ========== literals ==========
     Kind.KeyNone: "none",
     Kind.KeyTrue: "true",
@@ -207,6 +209,7 @@ TOKEN_STRINGS = {
     Kind.KeyBase: "base",
     Kind.KeySelf: "self",
     # ==============================
+
     # ========== KEYWORDS ==========
     Kind.KeySelfTy: "Self",
     Kind.KeyPkg: "pkg",
@@ -233,6 +236,7 @@ TOKEN_STRINGS = {
     Kind.KeyReturn: "return",
     Kind.KeyRaise: "raise",
     Kind.KeyGoto: "goto",
+    Kind.KeyGo: "go",
     Kind.KeyAnd: "and",
     Kind.KeyOr: "or",
     Kind.KeyIn: "in",
