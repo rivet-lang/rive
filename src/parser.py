@@ -72,13 +72,6 @@ class Parser:
         self.expect(Kind.Name)
         return lit
 
-    def parse_name_lit(self, lit):
-        pos = self.tok.pos
-        name = self.parse_name()
-        if name != lit:
-            report.error(f"expected name `{lit}`, found `{name}`", pos)
-        return name
-
     # ---- declarations --------------
     def parse_decls(self):
         decls = []
