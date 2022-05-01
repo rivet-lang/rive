@@ -151,7 +151,10 @@ class Parser:
                         break
             self.expect(Kind.Rparen)
 
-            if self.tok.kind != Kind.Lbrace:
+            if self.accept(Kind.Bang):
+                # Result
+                self.parse_type()
+            else:
                 self.parse_type()
 
             self.expect(Kind.Lbrace)

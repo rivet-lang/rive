@@ -25,7 +25,7 @@ pub fn pub_basic_fn(alpha: i32, arr: [i32; 5], slice: [i32]) void { }
 
 fn basic_fn() ?i32 { }
 
-fn def_arg(a: i32 = 10, tuple: (bool, void, u8)) { }
+fn def_arg(a: i32 = 10, tuple: (bool, void, u8)) void { }
 
 /*
 extern "C" {
