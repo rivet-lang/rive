@@ -49,7 +49,7 @@ class Field:
 class TypeKind(Enum):
     CVoid = auto_enum()
     Void = auto_enum()
-    Rawptr = auto_enum()
+    Ptr = auto_enum()
     Bool = auto_enum()
     Rune = auto_enum()
     Int8 = auto_enum()
@@ -100,7 +100,7 @@ def universe():
     uni = Sym("universe")
     uni.add(Type("c_void", TypeKind.CVoid))
     uni.add(Type("void", TypeKind.Void))
-    uni.add(Type("rawptr", TypeKind.Rawptr))
+    uni.add(Type("ptr", TypeKind.Ptr))
     uni.add(Type("bool", TypeKind.Bool))
     uni.add(Type("rune", TypeKind.Rune))
     uni.add(Type("i8", TypeKind.Int8))

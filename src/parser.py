@@ -522,8 +522,8 @@ class Parser:
                 return self.comp.c_void_t
             elif lit == "void":
                 return self.comp.void_t
-            elif lit == "rawptr":
-                return self.comp.rawptr_t
+            elif lit == "ptr":
+                return self.comp.ptr_t
             elif lit == "bool":
                 return self.comp.bool_t
             elif lit == "rune":

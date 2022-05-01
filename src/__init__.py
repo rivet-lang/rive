@@ -17,7 +17,7 @@ class Compiler:
         # behind the scenes, is simply an alias to `u8`.
         self.c_void_t = type.Type(self.universe[0])
         self.void_t = type.Type(self.universe[1])
-        self.rawptr_t = type.Type(self.universe[2])
+        self.ptr_t = type.Type(self.universe[2])
         self.bool_t = type.Type(self.universe[3])
         self.rune_t = type.Type(self.universe[4])
         self.int8_t = type.Type(self.universe[5])
