@@ -21,6 +21,7 @@ class Parser:
         # This field is `true` when we are in a root module, that is,
         # a package.
         self.is_pkg_level = False
+        self.inside_unsafe = False
 
     def parse_pkg(self):
         self.is_pkg_level = True
@@ -288,7 +289,13 @@ class Parser:
             self.next()
             elem_ty = self.parse_type()
             self.expect(Kind.Semicolon)
-            size = self.parse_expr()
+            has_unknown_size = False
+            if self.tok.kind == Kind.Name and self.tok.lit == "_":
+                size = None
+                has_unknown_size = True
+                self.next()
+            else:
+                size = self.parse_expr()
             self.expect(Kind.Rbracket)
             self.expect(Kind.Lbrace)
             if self.tok.kind != Kind.Rbrace:
@@ -297,6 +304,8 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Rbrace)
+            if has_unknown_size:
+                size = ast.IntegerLiteral(str(len(elems)), pos)
             expr = ast.ArrayLiteral(elem_ty, elems, size, pos)
         elif self.tok.kind == Kind.KeyPkg:
             expr = self.parse_pkg_expr()

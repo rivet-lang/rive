@@ -98,7 +98,7 @@ class UnsafeExpr:
         self.pos = pos
 
     def __repr__(self):
-        return f"unsafe {self.expr}"
+        return f"unsafe {{ {self.expr} }}"
 
     def __str__(self):
         return self.__repr__()
@@ -221,12 +221,7 @@ class TupleLiteral:
         self.pos = pos
 
     def __repr__(self):
-        res = "("
-        for i, e in enumerate(self.exprs):
-            res += e.__str__()
-            if i < len(self.exprs) - 1:
-                res += ", "
-        return f"{res})"
+        return f"({', '.join([str(e) for e in self.exprs])})"
 
     def __str__(self):
         return self.__repr__()
@@ -248,6 +243,8 @@ class ArrayLiteral:
         self.pos = pos
 
     def __repr__(self):
+        if len(self.elems) == 0:
+            return f"[{self.elem_ty}; {self.size}]{{}}"
         return f"[{self.elem_ty}; {self.size}]{{ {', '.join([str(e) for e in self.elems])} }}"
 
     def __str__(self):
