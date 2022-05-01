@@ -137,8 +137,23 @@ class Parser:
         elif self.accept(Kind.KeyFn):
             name = self.parse_name()
             stmts = []
+
             self.expect(Kind.Lparen)
+            if self.tok.kind != Kind.Rparen:
+                while True:
+                    # arguments
+                    self.parse_name()
+                    self.expect(Kind.Colon)
+                    self.parse_type()
+                    if self.accept(Kind.Assign):
+                        self.parse_expr()
+                    if not self.accept(Kind.Comma):
+                        break
             self.expect(Kind.Rparen)
+
+            if self.tok.kind != Kind.Lbrace:
+                self.parse_type()
+
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
@@ -598,4 +613,5 @@ class Parser:
             return type.Optional(typ)
         else:
             report.error(f"expected type, found {self.tok}", pos)
+            self.next()
         return type.UnknownType(self.tok)

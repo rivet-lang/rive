@@ -21,11 +21,13 @@ pub mod simple2 {
     mod snacks { }
 }
 
-pub fn pub_basic_fn() {
+pub fn pub_basic_fn(alpha: i32) void {
 }
 
-fn basic_fn() {
+fn basic_fn() ?i32 {
 }
+
+fn def_arg(a: i32 = 10) {}
 
 /*
 extern "C" {
