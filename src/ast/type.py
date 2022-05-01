@@ -11,17 +11,26 @@ class Type:
         self.sym = sym
 
 class Ref:
-    def __init__(self, ty):
-        self.ty = ty
+    def __init__(self, typ):
+        self.typ = typ
 
 class Ptr:
-    def __init__(self, ty):
-        self.ty = ty
+    def __init__(self, typ):
+        self.typ = typ
+
+class Array:
+    def __init__(self, typ, size):
+        self.typ = typ
+        self.size = size
+
+class Tuple:
+    def __init__(self, types):
+        self.types = types
 
 class Optional:
-    def __init__(self, ty):
-        self.ty = ty
+    def __init__(self, typ):
+        self.typ = typ
 
 class Result:
-    def __init__(self, ty):
-        self.ty = ty
+    def __init__(self, typ):
+        self.typ = typ

@@ -608,6 +608,20 @@ class Parser:
         elif self.accept(Kind.Mult):
             typ = self.parse_type()
             return type.Ptr(typ)
+        elif self.accept(Kind.Lbracket):
+            typ = self.parse_type()
+            self.expect(Kind.Semicolon)
+            size = self.parse_expr()
+            self.expect(Kind.Rbracket)
+            return type.Array(typ, size)
+        elif self.accept(Kind.Lparen):
+            types = []
+            while True:
+                types.append(self.parse_type())
+                if not self.accept(Kind.Comma):
+                    break
+            self.expect(Kind.Rparen)
+            return type.Tuple(types)
         elif self.accept(Kind.Question):
             typ = self.parse_type()
             return type.Optional(typ)
