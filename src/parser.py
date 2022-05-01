@@ -519,50 +519,50 @@ class Parser:
                         "`c_void` can only be used inside `extern` declarations",
                         self.prev_tok.pos
                     )
-                return type.c_void_t
+                return self.comp.c_void_t
             elif lit == "void":
-                return type.void_t
+                return self.comp.void_t
             elif lit == "rawptr":
-                return type.rawptr_t
+                return self.comp.rawptr_t
             elif lit == "bool":
-                return type.bool_t
+                return self.comp.bool_t
             elif lit == "rune":
-                return type.rune_t
+                return self.comp.rune_t
             elif lit == "i8":
-                return type.int8_t
+                return self.comp.int8_t
             elif lit == "i16":
-                return type.int16_t
+                return self.comp.int16_t
             elif lit == "i32":
-                return type.int32_t
+                return self.comp.int32_t
             elif lit == "i64":
-                return type.int64_t
+                return self.comp.int64_t
             elif lit == "isize":
-                return type.isize_t
+                return self.comp.isize_t
             elif lit == "u8":
-                return type.uint8_t
+                return self.comp.uint8_t
             elif lit == "u16":
-                return type.uint16_t
+                return self.comp.uint16_t
             elif lit == "u32":
-                return type.uint32_t
+                return self.comp.uint32_t
             elif lit == "u64":
-                return type.uint64_t
+                return self.comp.uint64_t
             elif lit == "usize":
-                return type.usize_t
+                return self.comp.usize_t
             elif lit == "f32":
-                return type.float32_t
+                return self.comp.float32_t
             elif lit == "f64":
-                return type.float64_t
+                return self.comp.float64_t
             elif lit == "str":
-                return type.str_t
+                return self.comp.str_t
         elif self.accept(Kind.Amp):
-            ty = self.parse_type()
-            return type.Ref(ty)
+            typ = self.parse_type()
+            return type.Ref(typ)
         elif self.accept(Kind.Mult):
-            ty = self.parse_type()
-            return type.Ptr(ty)
+            typ = self.parse_type()
+            return type.Ptr(typ)
         elif self.accept(Kind.Question):
-            ty = self.parse_type()
-            return type.Optional(ty)
+            typ = self.parse_type()
+            return type.Optional(typ)
         else:
             report.error(f"expected type, found {self.tok}", pos)
         return type.UnknownType(self.tok)

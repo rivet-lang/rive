@@ -217,7 +217,7 @@ class StringLiteral:
 class TupleLiteral:
     def __init__(self, exprs, pos):
         self.exprs = exprs
-        self.typ = type.unit_t
+        self.typ = None
         self.pos = pos
 
     def __repr__(self):
@@ -227,10 +227,10 @@ class TupleLiteral:
         return self.__repr__()
 
 class StructLiteral:
-    def __init__(self, sym, fields, pos):
-        self.sym = sym
+    def __init__(self, expr, fields, pos):
+        self.expr = expr
         self.fields = fields
-        self.typ = type.unit_t
+        self.typ = None
         self.field_types = {}
         self.pos = pos
 
@@ -239,7 +239,7 @@ class ArrayLiteral:
         self.elem_ty = elem_ty
         self.elems = elems
         self.size = size
-        self.typ = type.unit_t
+        self.typ = None
         self.pos = pos
 
     def __repr__(self):
@@ -267,7 +267,7 @@ class UnaryExpr:
         self.right = right
         self.op = op
         self.pos = pos
-        self.typ = type.unit_t
+        self.typ = None
 
     def __repr__(self):
         return f"{self.op}{self.right}"
@@ -281,7 +281,7 @@ class BinaryExpr:
         self.op = op
         self.right = right
         self.pos = pos
-        self.typ = type.unit_t
+        self.typ = None
 
     def __repr__(self):
         return f"{self.left} {self.op} {self.right}"
@@ -294,7 +294,7 @@ class PostfixExpr:
         self.left = left
         self.op = op
         self.pos = pos
-        self.typ = type.unit_t
+        self.typ = None
 
     def __repr__(self):
         return f"{self.left}{self.op}"
@@ -315,8 +315,8 @@ class IndexExpr:
     def __init__(self, left, index, pos):
         self.left = left
         self.index = index
-        self.left_typ = type.unit_t
-        self.typ = type.unit_t
+        self.left_typ = None
+        self.typ = None
         self.pos = pos
 
     def __repr__(self):
@@ -330,7 +330,7 @@ class CallExpr:
         self.left = left
         self.args = args
         self.pos = pos
-        self.typ = type.unit_t
+        self.typ = None
         self.info = None
 
     def get_named_arg(self, name):
@@ -390,7 +390,7 @@ class BuiltinCallExpr:
     def __init__(self, left, args, pos):
         self.left = left
         self.args = args
-        self.typ = type.unit_t
+        self.typ = None
         self.pos = pos
 
     def __repr__(self):
@@ -404,8 +404,8 @@ class SelectorExpr:
         self.left = left
         self.field_name = field_name
         self.field_info = None
-        self.left_typ = type.unit_t
-        self.typ = type.unit_t
+        self.left_typ = None
+        self.typ = None
         self.pos = pos
 
     def __repr__(self):
@@ -419,8 +419,8 @@ class PathExpr:
         self.left = left
         self.field_name = field_name
         self.field_info = None
-        self.left_typ = type.unit_t
-        self.typ = type.unit_t
+        self.left_typ = None
+        self.typ = None
         self.is_last = False
         self.pos = pos
 

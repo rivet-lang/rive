@@ -29,6 +29,11 @@ class Sym:
             return True
         return False
 
+    def __getitem__(self, idx):
+        if isinstance(idx, str):
+            return self.lookup(idx)
+        return self.syms[idx]
+
 class Pkg(Sym):
     pass
 
@@ -85,28 +90,30 @@ class Type(Sym):
         return False
 
 class Fn(Sym):
-    def __init__(self, name, rec_ty, args, ret_ty):
+    def __init__(self, name, rec_typ, args, ret_typ):
         Sym.__init__(self, name)
-        self.rec_ty = rec_ty
+        self.rec_typ = rec_typ
         self.args = args
-        self.ret_ty = ret_ty
+        self.ret_typ = ret_typ
 
-# Primitives.
-c_void = Type("c_void", TypeKind.CVoid)
-void = Type("void", TypeKind.Void)
-rawptr = Type("rawptr", TypeKind.Rawptr)
-bool = Type("bool", TypeKind.Bool)
-rune = Type("rune", TypeKind.Rune)
-int8 = Type("i8", TypeKind.Int8)
-int16 = Type("i16", TypeKind.Int16)
-int32 = Type("i32", TypeKind.Int32)
-int64 = Type("i64", TypeKind.Int64)
-isize = Type("isize", TypeKind.Isize)
-uint8 = Type("u8", TypeKind.Uint8)
-uint16 = Type("u16", TypeKind.Uint16)
-uint32 = Type("u32", TypeKind.Uint32)
-uint64 = Type("u64", TypeKind.Uint64)
-usize = Type("usize", TypeKind.Usize)
-float32 = Type("f32", TypeKind.Float32)
-float64 = Type("f64", TypeKind.Float64)
-str = Type("str", TypeKind.Str, [Field("len", is_pub=True)])
+def universe():
+    uni = Sym("universe")
+    uni.add(Type("c_void", TypeKind.CVoid))
+    uni.add(Type("void", TypeKind.Void))
+    uni.add(Type("rawptr", TypeKind.Rawptr))
+    uni.add(Type("bool", TypeKind.Bool))
+    uni.add(Type("rune", TypeKind.Rune))
+    uni.add(Type("i8", TypeKind.Int8))
+    uni.add(Type("i16", TypeKind.Int16))
+    uni.add(Type("i32", TypeKind.Int32))
+    uni.add(Type("i64", TypeKind.Int64))
+    uni.add(Type("isize", TypeKind.Isize))
+    uni.add(Type("u8", TypeKind.Uint8))
+    uni.add(Type("u16", TypeKind.Uint16))
+    uni.add(Type("u32", TypeKind.Uint32))
+    uni.add(Type("u64", TypeKind.Uint64))
+    uni.add(Type("usize", TypeKind.Usize))
+    uni.add(Type("f32", TypeKind.Float32))
+    uni.add(Type("f64", TypeKind.Float64))
+    uni.add(Type("str", TypeKind.Str, [Field("len", is_pub=True)]))
+    return uni
