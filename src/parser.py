@@ -610,10 +610,12 @@ class Parser:
             return type.Ptr(typ)
         elif self.accept(Kind.Lbracket):
             typ = self.parse_type()
-            self.expect(Kind.Semicolon)
-            size = self.parse_expr()
+            if self.accept(Kind.Semicolon):
+                size = self.parse_expr()
+                self.expect(Kind.Rbracket)
+                return type.Array(typ, size)
             self.expect(Kind.Rbracket)
-            return type.Array(typ, size)
+            return type.Slice(typ)
         elif self.accept(Kind.Lparen):
             types = []
             while True:

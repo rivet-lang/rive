@@ -18,6 +18,10 @@ class Ptr:
     def __init__(self, typ):
         self.typ = typ
 
+class Slice:
+    def __init__(self, typ):
+        self.typ = typ
+
 class Array:
     def __init__(self, typ, size):
         self.typ = typ

@@ -21,7 +21,7 @@ pub mod simple2 {
     mod snacks { }
 }
 
-pub fn pub_basic_fn(alpha: i32, arr: [i32; 5]) void {
+pub fn pub_basic_fn(alpha: i32, arr: [i32; 5], slice: [i32]) void {
 }
 
 fn basic_fn() ?i32 {
