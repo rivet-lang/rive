@@ -331,8 +331,11 @@ class Parser:
                 stmts.append(self.parse_stmt())
             expr = ast.Block(stmts[:-1], stmts[-1].expr, True, pos)
             self.inside_block = old_inside_block
+        elif self.accept(Kind.KeyGo):
+            pos = self.prev_tok.pos
+            expr = ast.GoExpr(self.parse_expr(), pos)
         elif self.accept(Kind.KeyTry):
-            pos = self.tok.pos
+            pos = self.prev_tok.pos
             expr = ast.TryExpr(self.parse_expr(), pos)
         elif self.tok.kind == Kind.Lbracket:
             elems = []

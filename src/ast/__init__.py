@@ -79,20 +79,6 @@ class Block:
     def __str__(self):
         return self.__repr__()
 
-class GuardExpr: # if (let x = optional_or_result_fn()) { ... }
-    def __init__(self, ident, is_mut, expr, pos):
-        self.ident = ident
-        self.is_mut = is_mut
-        self.expr = expr
-        self.pos = pos
-
-    def __repr__(self):
-        kmut = "mut" if self.is_mut else ""
-        return f"let {kmut} {self.ident} = {self.expr}"
-
-    def __str__(self):
-        return self.__repr__()
-
 class TypeNode:
     def __init__(self, typ, pos):
         self.typ = typ
@@ -100,54 +86,6 @@ class TypeNode:
 
     def __repr__(self):
         return "{self.ty}"
-
-    def __str__(self):
-        return self.__repr__()
-
-class CastExpr:
-    def __init__(self, expr, typ, pos):
-        self.expr = expr
-        self.typ = typ
-        self.pos = pos
-
-    def __repr__(self):
-        return f"cast({self.expr}, {self.ty})"
-
-    def __str__(self):
-        return self.__repr__()
-
-class UnsafeExpr:
-    def __init__(self, expr, pos, typ=None):
-        self.expr = expr
-        self.typ = typ
-        self.pos = pos
-
-    def __repr__(self):
-        return f"unsafe {{ {self.expr} }}"
-
-    def __str__(self):
-        return self.__repr__()
-
-class NoneCheckExpr:
-    def __init__(self, expr, pos, typ=None):
-        self.expr = expr
-        self.typ = typ
-        self.pos = pos
-
-    def __repr__(self):
-        return f"{self.expr}.?"
-
-    def __str__(self):
-        return self.__repr__()
-
-class IndirectExpr:
-    def __init__(self, expr, pos, typ=None):
-        self.expr = expr
-        self.typ = typ
-        self.pos = pos
-
-    def __repr__(self):
-        return f"{self.expr}.*"
 
     def __str__(self):
         return self.__repr__()
@@ -275,14 +213,89 @@ class ArrayLiteral:
     def __str__(self):
         return self.__repr__()
 
+class GoExpr:
+    def __init__(self, expr, pos):
+        self.expr = expr
+        self.pos = pos
+        self.typ = None
+
+    def __repr__(self):
+        return f"go {self.expr}"
+
+    def __str__(self):
+        return self.__repr__()
+
 class SelfExpr:
-    def __init__(self, typ, scope, pos):
-        self.typ = typ
+    def __init__(self, scope, pos):
         self.scope = scope
         self.pos = pos
 
     def __repr__(self):
         return "self"
+
+    def __str__(self):
+        return self.__repr__()
+
+class CastExpr:
+    def __init__(self, expr, typ, pos):
+        self.expr = expr
+        self.typ = typ
+        self.pos = pos
+
+    def __repr__(self):
+        return f"cast({self.expr}, {self.ty})"
+
+    def __str__(self):
+        return self.__repr__()
+
+class UnsafeExpr:
+    def __init__(self, expr, pos, typ=None):
+        self.expr = expr
+        self.typ = typ
+        self.pos = pos
+
+    def __repr__(self):
+        return f"unsafe {{ {self.expr} }}"
+
+    def __str__(self):
+        return self.__repr__()
+
+class NoneCheckExpr:
+    def __init__(self, expr, pos, typ=None):
+        self.expr = expr
+        self.typ = typ
+        self.pos = pos
+
+    def __repr__(self):
+        return f"{self.expr}.?"
+
+    def __str__(self):
+        return self.__repr__()
+
+class IndirectExpr:
+    def __init__(self, expr, pos, typ=None):
+        self.expr = expr
+        self.typ = typ
+        self.pos = pos
+
+    def __repr__(self):
+        return f"{self.expr}.*"
+
+    def __str__(self):
+        return self.__repr__()
+
+class GuardExpr:
+    # if (let x = optional_or_result_fn()) { ... }
+    # if (let x = "".split(", "); x.len > 5) { ... }
+    def __init__(self, ident, is_mut, expr, pos):
+        self.ident = ident
+        self.is_mut = is_mut
+        self.expr = expr
+        self.pos = pos
+
+    def __repr__(self):
+        kmut = "mut" if self.is_mut else ""
+        return f"let {kmut} {self.ident} = {self.expr}"
 
     def __str__(self):
         return self.__repr__()
