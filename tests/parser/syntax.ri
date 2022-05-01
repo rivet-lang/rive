@@ -21,6 +21,12 @@ pub mod simple2 {
     mod snacks { }
 }
 
+pub fn pub_basic_fn() {
+}
+
+fn basic_fn() {
+}
+
 /*
 extern "C" {
     fn exit(status: i32);

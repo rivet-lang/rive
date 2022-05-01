@@ -23,6 +23,7 @@ class Parser:
         self.is_pkg_level = False
         self.inside_extern = False
         self.inside_unsafe = False
+        self.inside_block = False
 
     def parse_pkg(self):
         self.is_pkg_level = True
@@ -120,22 +121,45 @@ class Parser:
                 self.next()
                 self.inside_extern = False
         elif self.accept(Kind.KeyMod):
+            pos = self.tok.pos
+            name = self.parse_name()
+            decls = []
+
             old_is_pkg_level = self.is_pkg_level
             self.is_pkg_level = False
 
-            pos = self.tok.pos
-            name = self.parse_name()
             self.expect(Kind.Lbrace)
-            decls = []
             while not self.accept(Kind.Rbrace):
                 decls.append(self.parse_decl())
 
             self.is_pkg_level = old_is_pkg_level
             return ast.ModDecl(name, is_pub, decls, pos)
+        elif self.accept(Kind.KeyFn):
+            name = self.parse_name()
+            stmts = []
+            self.expect(Kind.Lparen)
+            self.expect(Kind.Rparen)
+            self.expect(Kind.Lbrace)
+            while not self.accept(Kind.Rbrace):
+                stmts.append(self.parse_stmt())
         else:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()
         return ast.EmptyDecl()
+
+    # ---- statements --------------------------
+    def parse_stmt(self):
+        if self.accept(Kind.Lbrace):
+            pos = self.prev_tok.pos
+            stmts = []
+            while not self.accept(Kind.Rbrace):
+                stmts.append(self.parse_stmt())
+            return ast.Block(stmts, None, False, pos)
+
+        expr = self.parse_expr()
+        if self.inside_block and self.tok.kind != Kind.Rbrace:
+            self.expect(Kind.Semicolon)
+        return ast.ExprStmt(expr, expr.pos)
 
     # ---- expressions -------------------------
     def parse_expr(self):
@@ -280,11 +304,20 @@ class Parser:
             self.expect(Kind.Lparen)
             expr = self.parse_expr()
             self.expect(Kind.Comma)
-            ty = self.parse_type()
+            typ = self.parse_type()
             self.expect(Kind.Rparen)
-            expr = ast.CastExpr(expr, expr.pos, ty)
+            expr = ast.CastExpr(expr, expr.pos, typ)
+        elif self.accept(Kind.Lbrace):
+            old_inside_block = self.inside_block
+            self.inside_block = True
+            pos = self.tok.pos
+            stmts = []
+            while not self.accept(Kind.Rbrace):
+                stmts.append(self.parse_stmt())
+            expr = ast.Block(stmts[:-1], stmts[-1].expr, True, pos)
+            self.inside_block = old_inside_block
         elif self.accept(Kind.KeyTry):
-            pos = self.prev_tok.pos
+            pos = self.tok.pos
             expr = ast.TryExpr(self.parse_expr(), pos)
         elif self.tok.kind == Kind.Lbracket:
             elems = []

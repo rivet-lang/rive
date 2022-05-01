@@ -43,6 +43,12 @@ class ModDecl:
         self.decls = decls
         self.pos = pos
 
+# ------ Statements --------
+class ExprStmt:
+    def __init__(self, expr, pos):
+        self.expr = expr
+        self.pos = pos
+
 # ------ Expressions -------
 class EmptyExpr:
     def __init__(self, pos):
@@ -50,6 +56,25 @@ class EmptyExpr:
 
     def __repr__(self):
         return f"<rivet.EmptyExpr pos={self.pos}>"
+
+    def __str__(self):
+        return self.__repr__()
+
+class Block:
+    def __init__(self, stmts, expr, is_expr, pos):
+        self.stmts = stmts
+        self.expr = expr
+        self.is_expr = is_expr
+        self.typ = None
+        self.pos = pos
+
+    def __repr__(self):
+        if len(self.stmts) == 0:
+            if self.is_expr:
+                return f"{{ {self.expr} }}"
+            else:
+                return "{}"
+        return f"{{ {'; '.join([str(s) for s in self.stmts])}; {self.expr} }}"
 
     def __str__(self):
         return self.__repr__()
@@ -69,8 +94,8 @@ class GuardExpr: # if (let x = optional_or_result_fn()) { ... }
         return self.__repr__()
 
 class TypeNode:
-    def __init__(self, ty, pos):
-        self.ty = ty
+    def __init__(self, typ, pos):
+        self.typ = typ
         self.pos = pos
 
     def __repr__(self):
@@ -80,9 +105,9 @@ class TypeNode:
         return self.__repr__()
 
 class CastExpr:
-    def __init__(self, expr, ty, pos):
+    def __init__(self, expr, typ, pos):
         self.expr = expr
-        self.ty = ty
+        self.typ = typ
         self.pos = pos
 
     def __repr__(self):
@@ -305,7 +330,7 @@ class PostfixExpr:
 class ParExpr:
     def __init__(self, expr, pos):
         self.expr = expr
-        self.typ = expr.typ
+        self.typ = None
         self.pos = pos
 
     def __repr__(self):
