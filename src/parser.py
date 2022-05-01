@@ -21,6 +21,7 @@ class Parser:
         # This field is `true` when we are in a root module, that is,
         # a package.
         self.is_pkg_level = False
+        self.inside_extern = False
         self.inside_unsafe = False
 
     def parse_pkg(self):
@@ -114,8 +115,10 @@ class Parser:
                 return ast.ExternPkg(extern_pkg, pos)
             else:
                 # extern functions
+                self.inside_extern = True
                 report.error("extern functions are not yet supported", pos)
                 self.next()
+                self.inside_extern = False
         elif self.accept(Kind.KeyMod):
             old_is_pkg_level = self.is_pkg_level
             self.is_pkg_level = False
@@ -508,13 +511,17 @@ class Parser:
     # ---- types -------------------------------
     def parse_type(self):
         pos = self.tok.pos
-        if self.tok.kind == Kind.Lparen and self.peek_tok.kind == Kind.Rparen:
-            self.advance(2)
-            return type.unit_t
-        elif self.tok.kind == Kind.Name:
+        if self.tok.kind == Kind.Name:
             lit = self.parse_name()
-            if lit == "unit":
-                report.error("use `()` instead of `unit`", pos)
+            if lit == "c_void":
+                if not self.inside_extern:
+                    self.error(
+                        "`c_void` can only be used inside `extern` declarations",
+                        self.prev_tok.pos
+                    )
+                return type.c_void_t
+            elif lit == "void":
+                return type.void_t
             elif lit == "rawptr":
                 return type.rawptr_t
             elif lit == "bool":

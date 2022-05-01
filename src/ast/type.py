@@ -29,7 +29,11 @@ class Result:
         self.ty = ty
 
 # Primitive types.
-unit_t = Type(sym.unit)
+# NOTE: the difference between `c_void` and `void` is that
+# the former corresponds to C's `void`, while the latter,
+# behind the scenes, is simply an alias to `u8`.
+c_void_t = Type(sym.c_void)
+void_t = Type(sym.void)
 rawptr_t = Type(sym.rawptr)
 bool_t = Type(sym.bool)
 rune_t = Type(sym.rune)

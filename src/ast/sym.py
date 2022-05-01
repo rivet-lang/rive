@@ -42,7 +42,8 @@ class Field:
         self.is_pub = is_pub
 
 class TypeKind(Enum):
-    Unit = auto_enum()
+    CVoid = auto_enum()
+    Void = auto_enum()
     Rawptr = auto_enum()
     Bool = auto_enum()
     Rune = auto_enum()
@@ -91,7 +92,8 @@ class Fn(Sym):
         self.ret_ty = ret_ty
 
 # Primitives.
-unit = Type("unit", TypeKind.Unit)
+c_void = Type("c_void", TypeKind.CVoid)
+void = Type("void", TypeKind.Void)
 rawptr = Type("rawptr", TypeKind.Rawptr)
 bool = Type("bool", TypeKind.Bool)
 rune = Type("rune", TypeKind.Rune)
