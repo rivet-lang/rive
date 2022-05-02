@@ -214,17 +214,15 @@ class StructLiteral:
         self.pos = pos
 
 class ArrayLiteral:
-    def __init__(self, elem_ty, elems, size, pos):
-        self.elem_ty = elem_ty
+    def __init__(self, elems, pos):
         self.elems = elems
-        self.size = size
         self.typ = None
         self.pos = pos
 
     def __repr__(self):
         if len(self.elems) == 0:
-            return f"[{self.elem_ty}; {self.size}]{{}}"
-        return f"[{self.elem_ty}; {self.size}]{{ {', '.join([str(e) for e in self.elems])} }}"
+            return "[]"
+        return f"[{', '.join([str(e) for e in self.elems])}]"
 
     def __str__(self):
         return self.__repr__()

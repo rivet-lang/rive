@@ -396,26 +396,13 @@ class Parser:
             elems = []
             pos = self.tok.pos
             self.next()
-            elem_ty = self.parse_type()
-            self.expect(Kind.Semicolon)
-            has_unknown_size = False
-            if self.tok.kind == Kind.Name and self.tok.lit == "_":
-                size = None
-                has_unknown_size = True
-                self.next()
-            else:
-                size = self.parse_expr()
-            self.expect(Kind.Rbracket)
-            self.expect(Kind.Lbrace)
-            if self.tok.kind != Kind.Rbrace:
+            if self.tok.kind != Kind.Rbracket:
                 while True:
                     elems.append(self.parse_expr())
                     if not self.accept(Kind.Comma):
                         break
-            self.expect(Kind.Rbrace)
-            if has_unknown_size:
-                size = ast.IntegerLiteral(str(len(elems)), pos)
-            expr = ast.ArrayLiteral(elem_ty, elems, size, pos)
+            self.expect(Kind.Rbracket)
+            expr = ast.ArrayLiteral(elems, pos)
         elif self.tok.kind == Kind.KeyPkg:
             expr = self.parse_pkg_expr()
         else:
