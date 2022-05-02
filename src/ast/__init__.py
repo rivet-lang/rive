@@ -354,14 +354,16 @@ class MatchBranch:
         return self.__repr__()
 
 class MatchExpr:
-    def __init__(self, expr, branches, pos):
+    def __init__(self, expr, branches, is_typematch, pos):
         self.expr = expr
         self.branches = branches
+        self.is_typematch = is_typematch
         self.pos = pos
         self.typ = None
 
     def __repr__(self):
-        return f"match ({self.expr}) {{ " + ", ".join(
+        isk = " is " if self.is_typematch else ""
+        return f"match ({self.expr}) {isk} {{ " + ", ".join(
             [str(b) for b in self.branches]
         ) + " }"
 

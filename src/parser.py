@@ -319,22 +319,27 @@ class Parser:
             self.expect(Kind.Lparen)
             expr = self.parse_expr()
             self.expect(Kind.Rparen)
+            is_typematch = self.accept(Kind.KeyIs)
             self.expect(Kind.Lbrace)
             while True:
                 pats = []
                 is_else = self.accept(Kind.KeyElse)
                 if not is_else:
                     while True:
-                        pats.append(self.parse_expr())
+                        if is_typematch:
+                            pats.append(self.parse_type())
+                        else:
+                            pats.append(self.parse_expr())
                         if not self.accept(Kind.Comma):
                             break
                 self.expect(Kind.Arrow)
-                mexpr = self.parse_expr()
-                branches.append(ast.MatchBranch(pats, mexpr, is_else))
+                branches.append(
+                    ast.MatchBranch(pats, self.parse_expr(), is_else)
+                )
                 if not self.accept(Kind.Comma):
                     break
             self.expect(Kind.Rbrace)
-            expr = ast.MatchExpr(expr, branches, pos)
+            expr = ast.MatchExpr(expr, branches, is_typematch, pos)
         elif self.tok.kind == Kind.Lparen:
             self.expect(Kind.Lparen)
             e = self.parse_expr()

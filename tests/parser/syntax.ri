@@ -86,6 +86,13 @@ fn simple() !void {
         888, 999 => println("888 or 999"),
         else => println("finch")
     }
+
+    // typematch
+    match (union_value) is {
+        str => println("str"),
+        i32 => println("i32"),
+        else => println("unknown type")
+    }
 }
 
 /*
