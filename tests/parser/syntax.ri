@@ -27,6 +27,11 @@ fn basic_fn() ?i32 { }
 
 fn def_arg(a: i32 = 10, tuple: (bool, void, u8)) void { }
 
+fn result() !i32 { }
+
+[unsafe]
+fn simple() void { }
+
 /*
 extern "C" {
     fn exit(status: i32);

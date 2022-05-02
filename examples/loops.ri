@@ -1,4 +1,4 @@
-fn main() {
+fn main() void {
     // Rivet only has 2 ways to write loops:
     // `loop`, which is an infinite loop (short for `while (true)`).
     // `while` which always executes until the given condition is false.

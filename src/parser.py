@@ -151,11 +151,8 @@ class Parser:
                         break
             self.expect(Kind.Rparen)
 
-            if self.accept(Kind.Bang):
-                # Result
-                self.parse_type()
-            else:
-                self.parse_type()
+            is_result = self.accept(Kind.Bang)
+            self.parse_type()
 
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
@@ -173,7 +170,6 @@ class Parser:
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
             return ast.Block(stmts, None, False, pos)
-
         expr = self.parse_expr()
         if self.inside_block and self.tok.kind != Kind.Rbrace:
             self.expect(Kind.Semicolon)
