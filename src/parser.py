@@ -167,6 +167,12 @@ class Parser:
     def parse_stmt(self):
         if self.accept(Kind.KeyLoop):
             return ast.LoopStmt(self.parse_stmt())
+        elif self.accept(Kind.KeyWhile):
+            self.expect(Kind.Lparen)
+            cond = self.parse_expr()
+            self.expect(Kind.Rparen)
+            stmt = self.parse_stmt()
+            return ast.WhileStmt(cond, stmt)
         elif self.accept(Kind.Lbrace):
             pos = self.prev_tok.pos
             stmts = []

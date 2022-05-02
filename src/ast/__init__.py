@@ -53,6 +53,11 @@ class LoopStmt:
     def __init__(self, stmt):
         self.stmt = stmt
 
+class WhileStmt:
+    def __init__(self, cond, stmt):
+        self.cond = cond
+        self.stmt = stmt
+
 # ------ Expressions -------
 class EmptyExpr:
     def __init__(self, pos):
