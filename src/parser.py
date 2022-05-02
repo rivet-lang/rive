@@ -176,7 +176,6 @@ class Parser:
             or expr.__class__ in (ast.IfExpr, ast.MatchExpr)
         ):
             self.expect(Kind.Semicolon)
-        print(expr)
         return ast.ExprStmt(expr, expr.pos)
 
     # ---- expressions -------------------------

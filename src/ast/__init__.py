@@ -362,8 +362,8 @@ class MatchExpr:
         self.typ = None
 
     def __repr__(self):
-        isk = " is " if self.is_typematch else ""
-        return f"match ({self.expr}) {isk} {{ " + ", ".join(
+        kis = " is " if self.is_typematch else ""
+        return f"match ({self.expr}){kis}{{ " + ", ".join(
             [str(b) for b in self.branches]
         ) + " }"
 
