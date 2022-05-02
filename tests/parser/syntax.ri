@@ -30,7 +30,28 @@ fn def_arg(a: i32 = 10, tuple: (bool, void, u8)) void { }
 fn result() !i32 { }
 
 [unsafe]
-fn simple() void { }
+fn simple() !void {
+    try run(player: Player{
+        name: "StunxFS",
+        rol: .Sheriff
+    });
+
+    expr_stmt({
+        // block expression
+        call1();
+        call2();
+        2 / 5
+    });
+
+    {
+        expr_stmt({
+            // block expression
+            call1();
+            call2();
+            2 / 5
+        });
+    }
+}
 
 /*
 extern "C" {

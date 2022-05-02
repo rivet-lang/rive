@@ -103,6 +103,18 @@ class Ident:
     def __str__(self):
         return self.__repr__()
 
+class EnumVariantExpr:
+    def __init__(self, variant, pos):
+        self.variant = variant
+        self.pos = pos
+        self.ty = None
+
+    def __repr__(self):
+        return f".{self.name}"
+
+    def __str__(self):
+        return self.__repr__()
+
 class NoneLiteral:
     def __init__(self, pos):
         self.pos = pos

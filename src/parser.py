@@ -171,7 +171,7 @@ class Parser:
                 stmts.append(self.parse_stmt())
             return ast.Block(stmts, None, False, pos)
         expr = self.parse_expr()
-        if self.inside_block and self.tok.kind != Kind.Rbrace:
+        if not (self.inside_block and self.tok.kind == Kind.Rbrace):
             self.expect(Kind.Semicolon)
         return ast.ExprStmt(expr, expr.pos)
 
@@ -277,18 +277,14 @@ class Parser:
     def parse_primary_expr(self):
         expr = self.empty_expr()
         if self.tok.kind in [
-            Kind.KeyTrue,
-            Kind.KeyFalse,
-            Kind.Char,
-            Kind.Number,
-            Kind.String,
-            Kind.KeyNone,
+            Kind.KeyTrue, Kind.KeyFalse, Kind.Char, Kind.Number, Kind.String,
+            Kind.KeyNone, Kind.KeySelf
         ]:
             expr = self.parse_literal()
-        elif self.tok.kind == Kind.KeySelf:
+        elif self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Name:
             pos = self.tok.pos
             self.next()
-            expr = ast.SelfExpr(None, self.scope, pos)
+            expr = ast.EnumVariantExpr(self.parse_name(), pos)
         elif self.tok.kind == Kind.Lparen:
             self.expect(Kind.Lparen)
             e = self.parse_expr()
@@ -501,6 +497,10 @@ class Parser:
             return self.parse_integer_literal()
         elif self.tok.kind == Kind.String:
             return self.parse_string_literal()
+        elif self.tok.kind == Kind.KeySelf:
+            pos = self.tok.pos
+            self.next()
+            expr = ast.SelfExpr(self.scope, pos)
         elif self.tok.kind == Kind.KeyNone:
             pos = self.tok.pos
             self.next()
