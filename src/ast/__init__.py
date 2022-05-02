@@ -58,6 +58,13 @@ class WhileStmt:
         self.cond = cond
         self.stmt = stmt
 
+class ForInStmt:
+    def __init__(self, key, value, iterable, stmt):
+        self.key = key
+        self.value = value
+        self.iterable = iterable
+        self.stmt = stmt
+
 # ------ Expressions -------
 class EmptyExpr:
     def __init__(self, pos):

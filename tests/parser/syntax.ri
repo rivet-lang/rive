@@ -138,9 +138,9 @@ mod real {
 fn main() void {
     // Unlike `while` and `loop`, `for` is only valid with values
     // that implement the `Iterator` trait.
-    // for (x in [1, 2, 3, 4]) {
-    //     ...
-    // }
+    for (x in [1, 2, 3, 4]) {
+        // ...
+    }
 
     // The `for` is just a shorthand way of writing the following:
     // let _T0 = [1, 2, 3, 4].iter();

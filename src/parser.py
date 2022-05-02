@@ -173,6 +173,18 @@ class Parser:
             self.expect(Kind.Rparen)
             stmt = self.parse_stmt()
             return ast.WhileStmt(cond, stmt)
+        elif self.accept(Kind.KeyFor):
+            self.expect(Kind.Lparen)
+            key = self.parse_name()
+            if self.accept(Kind.Comma):
+                value = self.parse_name()
+            else:
+                value = ""
+            self.expect(Kind.KeyIn)
+            iterable = self.parse_expr()
+            self.expect(Kind.Rparen)
+            stmt = self.parse_stmt()
+            return ast.ForInStmt(key, value, iterable, stmt)
         elif self.accept(Kind.Lbrace):
             pos = self.prev_tok.pos
             stmts = []
