@@ -110,7 +110,7 @@ class EnumVariantExpr:
         self.ty = None
 
     def __repr__(self):
-        return f".{self.name}"
+        return f".{self.variant}"
 
     def __str__(self):
         return self.__repr__()
@@ -313,16 +313,60 @@ class GuardExpr:
         return self.__repr__()
 
 class IfBranch:
-    def __init__(self, cond, expr, is_else):
+    def __init__(self, cond, expr, is_else, op):
         self.cond = cond
         self.expr = expr
         self.is_else = is_else
+        self.op = op
+
+    def __repr__(self):
+        if self.is_else:
+            return f"else {self.expr}"
+        return f"{self.op} ({self.cond}) {self.expr}"
+
+    def __str__(self):
+        return self.__repr__()
 
 class IfExpr:
     def __init__(self, branches, pos):
         self.branches = branches
         self.pos = pos
         self.typ = None
+
+    def __repr__(self):
+        return " ".join([str(b) for b in self.branches])
+
+    def __str__(self):
+        return self.__repr__()
+
+class MatchBranch:
+    def __init__(self, pats, expr, is_else):
+        self.pats = pats
+        self.expr = expr
+        self.is_else = is_else
+
+    def __repr__(self):
+        if self.is_else:
+            return f"else => {self.expr}"
+        return f"{', '.join([str(p) for p in self.pats])} => {self.expr}"
+
+    def __str__(self):
+        return self.__repr__()
+
+class MatchExpr:
+    def __init__(self, expr, branches, pos):
+        self.expr = expr
+        self.branches = branches
+        self.pos = pos
+        self.typ = None
+
+    def __repr__(self):
+        return f"match ({self.expr}) {{ " + ", ".join(
+            [str(b) for b in self.branches]
+        ) + " }"
+
+    def __str__(self):
+        return self.__repr__()
 
 class UnaryExpr:
     def __init__(self, right, op, pos=None):

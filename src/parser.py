@@ -173,9 +173,10 @@ class Parser:
         expr = self.parse_expr()
         if not (
             (self.inside_block and self.tok.kind == Kind.Rbrace)
-            or isinstance(expr, ast.IfExpr)
+            or expr.__class__ in (ast.IfExpr, ast.MatchExpr)
         ):
             self.expect(Kind.Semicolon)
+        print(expr)
         return ast.ExprStmt(expr, expr.pos)
 
     # ---- expressions -------------------------
@@ -289,25 +290,51 @@ class Parser:
             self.next()
             expr = ast.EnumVariantExpr(self.parse_name(), pos)
         elif self.tok.kind == Kind.KeyIf:
-            pos = self.tok.pos
             branches = []
+            pos = self.tok.pos
             while self.tok.kind in (Kind.KeyIf, Kind.KeyElif, Kind.KeyElse):
                 if self.accept(Kind.KeyElse):
                     branches.append(
                         ast.IfBranch(
-                            self.empty_expr(), self.parse_expr(), True
+                            self.empty_expr(), self.parse_expr(), True,
+                            Kind.KeyElse
                         )
                     )
                     break
                 else:
+                    op = self.tok.kind
                     self.next()
                     self.expect(Kind.Lparen)
                     cond = self.parse_expr()
                     self.expect(Kind.Rparen)
-                    branches.append(ast.IfBranch(cond, self.parse_expr(), True))
+                    branches.append(
+                        ast.IfBranch(cond, self.parse_expr(), False, op)
+                    )
                     if self.tok.kind not in (Kind.KeyElif, Kind.KeyElse):
                         break
             expr = ast.IfExpr(branches, pos)
+        elif self.accept(Kind.KeyMatch):
+            branches = []
+            pos = self.prev_tok.pos
+            self.expect(Kind.Lparen)
+            expr = self.parse_expr()
+            self.expect(Kind.Rparen)
+            self.expect(Kind.Lbrace)
+            while True:
+                pats = []
+                is_else = self.accept(Kind.KeyElse)
+                if not is_else:
+                    while True:
+                        pats.append(self.parse_expr())
+                        if not self.accept(Kind.Comma):
+                            break
+                self.expect(Kind.Arrow)
+                mexpr = self.parse_expr()
+                branches.append(ast.MatchBranch(pats, mexpr, is_else))
+                if not self.accept(Kind.Comma):
+                    break
+            self.expect(Kind.Rbrace)
+            expr = ast.MatchExpr(expr, branches, pos)
         elif self.tok.kind == Kind.Lparen:
             self.expect(Kind.Lparen)
             e = self.parse_expr()

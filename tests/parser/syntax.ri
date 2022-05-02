@@ -61,9 +61,15 @@ fn simple() !void {
                 .Installed
             } else {
                 panic!("error");
+            },
+            match (xyz) { // match expr
+                5 => get_windows_size(),
+                8 => get_named_arg(),
+                else => get_anarky()
             }
         );
     }
+
     // if stmt
     if (true) {
         call9();
@@ -71,6 +77,14 @@ fn simple() !void {
         call10();
     } else {
         call11();
+    }
+
+    // match stmt
+    match (555) {
+        555 => println("555"),
+        777 => println("777"),
+        888, 999 => println("888 or 999"),
+        else => println("finch")
     }
 }
 
