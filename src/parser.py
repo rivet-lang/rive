@@ -171,7 +171,10 @@ class Parser:
                 stmts.append(self.parse_stmt())
             return ast.Block(stmts, None, False, pos)
         expr = self.parse_expr()
-        if not (self.inside_block and self.tok.kind == Kind.Rbrace):
+        if not (
+            (self.inside_block and self.tok.kind == Kind.Rbrace)
+            or isinstance(expr, ast.IfExpr)
+        ):
             self.expect(Kind.Semicolon)
         return ast.ExprStmt(expr, expr.pos)
 
@@ -285,6 +288,26 @@ class Parser:
             pos = self.tok.pos
             self.next()
             expr = ast.EnumVariantExpr(self.parse_name(), pos)
+        elif self.tok.kind == Kind.KeyIf:
+            pos = self.tok.pos
+            branches = []
+            while self.tok.kind in (Kind.KeyIf, Kind.KeyElif, Kind.KeyElse):
+                if self.accept(Kind.KeyElse):
+                    branches.append(
+                        ast.IfBranch(
+                            self.empty_expr(), self.parse_expr(), True
+                        )
+                    )
+                    break
+                else:
+                    self.next()
+                    self.expect(Kind.Lparen)
+                    cond = self.parse_expr()
+                    self.expect(Kind.Rparen)
+                    branches.append(ast.IfBranch(cond, self.parse_expr(), True))
+                    if self.tok.kind not in (Kind.KeyElif, Kind.KeyElse):
+                        break
+            expr = ast.IfExpr(branches, pos)
         elif self.tok.kind == Kind.Lparen:
             self.expect(Kind.Lparen)
             e = self.parse_expr()

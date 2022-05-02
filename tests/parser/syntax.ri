@@ -43,13 +43,34 @@ fn simple() !void {
         2 / 5
     });
 
-    {
-        expr_stmt({
-            // block expression
-            call1();
-            call2();
-            2 / 5
-        });
+    { // block statement
+        expr_stmt(
+            {
+                // block expression
+                call1();
+                call2();
+                2 / 5
+            },
+            {
+                // block expr
+                call1();
+                call2();
+            },
+            if (true) { // if expr
+                install_app();
+                .Installed
+            } else {
+                panic!("error");
+            }
+        );
+    }
+    // if stmt
+    if (true) {
+        call9();
+    } elif (false) {
+        call10();
+    } else {
+        call11();
     }
 }
 

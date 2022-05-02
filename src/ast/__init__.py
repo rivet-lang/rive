@@ -312,6 +312,18 @@ class GuardExpr:
     def __str__(self):
         return self.__repr__()
 
+class IfBranch:
+    def __init__(self, cond, expr, is_else):
+        self.cond = cond
+        self.expr = expr
+        self.is_else = is_else
+
+class IfExpr:
+    def __init__(self, branches, pos):
+        self.branches = branches
+        self.pos = pos
+        self.typ = None
+
 class UnaryExpr:
     def __init__(self, right, op, pos=None):
         self.right = right
