@@ -142,6 +142,7 @@ class Parser:
             if self.tok.kind != Kind.Rparen:
                 while True:
                     # arguments
+                    is_mut = self.accept(Kind.KeyMut)
                     self.parse_name()
                     self.expect(Kind.Colon)
                     self.parse_type()
@@ -164,7 +165,9 @@ class Parser:
 
     # ---- statements --------------------------
     def parse_stmt(self):
-        if self.accept(Kind.Lbrace):
+        if self.accept(Kind.KeyLoop):
+            return ast.LoopStmt(self.parse_stmt())
+        elif self.accept(Kind.Lbrace):
             pos = self.prev_tok.pos
             stmts = []
             while not self.accept(Kind.Rbrace):
@@ -353,6 +356,18 @@ class Parser:
             else:
                 self.expect(Kind.Rparen)
                 expr = ast.ParExpr(e, e.pos)
+        elif self.accept(Kind.Lbrace):
+            old_inside_block = self.inside_block
+            self.inside_block = True
+            pos = self.tok.pos
+            stmts = []
+            while not self.accept(Kind.Rbrace):
+                stmts.append(self.parse_stmt())
+            if len(stmts) > 0:
+                expr = ast.Block(stmts[:-1], stmts[-1].expr, True, pos)
+            else:
+                expr = ast.Block([], self.empty_expr(), True, pos)
+            self.inside_block = old_inside_block
         elif self.tok.kind == Kind.KeyUnsafe:
             if self.inside_unsafe:
                 report.warn("`unsafe` is unnecessary", self.tok.pos)
@@ -371,15 +386,6 @@ class Parser:
             typ = self.parse_type()
             self.expect(Kind.Rparen)
             expr = ast.CastExpr(expr, expr.pos, typ)
-        elif self.accept(Kind.Lbrace):
-            old_inside_block = self.inside_block
-            self.inside_block = True
-            pos = self.tok.pos
-            stmts = []
-            while not self.accept(Kind.Rbrace):
-                stmts.append(self.parse_stmt())
-            expr = ast.Block(stmts[:-1], stmts[-1].expr, True, pos)
-            self.inside_block = old_inside_block
         elif self.accept(Kind.KeyGo):
             pos = self.prev_tok.pos
             expr = ast.GoExpr(self.parse_expr(), pos)

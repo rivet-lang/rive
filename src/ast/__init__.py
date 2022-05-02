@@ -49,6 +49,10 @@ class ExprStmt:
         self.expr = expr
         self.pos = pos
 
+class LoopStmt:
+    def __init__(self, stmt):
+        self.stmt = stmt
+
 # ------ Expressions -------
 class EmptyExpr:
     def __init__(self, pos):

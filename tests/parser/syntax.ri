@@ -1,11 +1,22 @@
 //! module-level doc-comment
 
+// simple comment
+
 /*
 * Multi-comment
 */
 
 extern pkg core;
 extern pkg std;
+
+/*
+extern "C" {
+    fn exit(status: i32);
+    fn abort();
+}
+
+extern "C" fn x();
+*/
 
 mod simple { }
 
@@ -93,21 +104,25 @@ fn simple() !void {
         i32 => println("i32"),
         else => println("unknown type")
     }
-}
 
-/*
-extern "C" {
-    fn exit(status: i32);
-    fn abort();
-}
+    //let mut x = 1;
+    //while (x < 5) {
+        //x++;
+    //}
 
-extern "C" fn x();
+    loop {
+        //x++;
+        if (x < 5) {
+            call9();
+        }
+    }
+}
 
 mod real {
-    pub fn scrash() {}
+    pub fn scrash() void {}
 
     pub mod sis {
-        fn inner(a: &[i32], mut b: [u8; 4]) {
+        fn inner(a: &[i32], mut b: [u8; 4]) void {
         }
     }
 
@@ -118,33 +133,18 @@ mod real {
 }
 
 /// symbol-level doc-comment
-fn main() {
-    // simple comment
-
-    let mut x = 1;
-    while (x < 5) {
-        x++;
-    }
-
-    loop {
-        x++;
-        if (x < 5) {
-            break;
-        }
-    }
-
+fn main() void {
     // Unlike `while` and `loop`, `for` is only valid with values
     // that implement the `Iterator` trait.
-    for (x in [1, 2, 3, 4]) {
+    //for (x in [1, 2, 3, 4]) {
         // ...
-    }
+    //}
 
     // The `for` is just a shorthand way of writing the following:
-    let _T0 = [1, 2, 3, 4].iter();
-    let _T1 = _T0.next();
-    while (_T1 != none) {
+    //let _T0 = [1, 2, 3, 4].iter();
+    //let _T1 = _T0.next();
+    //while (_T1 != none) {
         // ...
-        _T1 = _T0.next();
-    }
+    //    _T1 = _T0.next();
+    //}
 }
-*/
