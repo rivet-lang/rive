@@ -89,10 +89,18 @@ class Type(Sym):
             return True
         return False
 
+class Arg:
+    def __init__(self, name, is_mut, typ, def_expr, has_def_expr):
+        self.name = name
+        self.is_mut = is_mut
+        self.typ = typ
+        self.def_expr = def_expr
+        self.has_def_expr = has_def_expr
+
 class Fn(Sym):
-    def __init__(self, name, rec_typ, args, ret_typ):
+    def __init__(self, name, args, ret_typ):
         Sym.__init__(self, name)
-        self.rec_typ = rec_typ
+        #self.rec_typ = rec_typ
         self.args = args
         self.ret_typ = ret_typ
 

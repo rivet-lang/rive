@@ -43,6 +43,13 @@ class ModDecl:
         self.decls = decls
         self.pos = pos
 
+class FnDecl:
+    def __init__(self, name, args, ret_typ, stmts):
+        self.name = name
+        self.args = args
+        self.ret_typ = ret_typ
+        self.stmts = stmts
+
 # ------ Statements --------
 class ExprStmt:
     def __init__(self, expr, pos):

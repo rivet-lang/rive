@@ -136,28 +136,41 @@ class Parser:
             return ast.ModDecl(name, is_pub, decls, pos)
         elif self.accept(Kind.KeyFn):
             name = self.parse_name()
-            stmts = []
 
+            args = []
             self.expect(Kind.Lparen)
             if self.tok.kind != Kind.Rparen:
                 while True:
                     # arguments
                     is_mut = self.accept(Kind.KeyMut)
-                    self.parse_name()
+                    arg_name = self.parse_name()
                     self.expect(Kind.Colon)
-                    self.parse_type()
+                    arg_typ = self.parse_type()
+                    arg_expr = self.empty_expr()
                     if self.accept(Kind.Assign):
-                        self.parse_expr()
+                        arg_expr = self.parse_expr()
+                    args.append(
+                        sym.Arg(
+                            arg_name, is_mut, arg_typ, arg_expr,
+                            not isinstance(arg_expr, ast.EmptyExpr)
+                        )
+                    )
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Rparen)
 
             is_result = self.accept(Kind.Bang)
-            self.parse_type()
+            ret_typ = self.parse_type()
+            if is_result:
+                ret_typ = type.Result(ret_typ)
 
+            stmts = []
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
+
+            _ = sym.Fn(name, args, ret_typ)
+            return ast.FnDecl(name, args, ret_typ, stmts)
         else:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()
