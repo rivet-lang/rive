@@ -13,6 +13,11 @@ class SourceFile:
 class EmptyDecl:
     pass
 
+class DocComment:
+    def __init__(self, lines, pos):
+        self.lines = lines
+        self.pos = pos
+
 class Attr:
     def __init__(self, name, pos):
         self.name = name

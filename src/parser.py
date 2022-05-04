@@ -82,6 +82,13 @@ class Parser:
             decls.append(self.parse_decl())
         return decls
 
+    def parse_doc_comment(self):
+        pos = self.tok.pos
+        lines = []
+        while self.accept(Kind.DocComment):
+            lines.append(self.prev_tok.lit)
+        return ast.DocComment(lines, pos)
+
     def parse_attrs(self):
         attrs = ast.Attrs()
         while self.accept(Kind.Lbracket):
@@ -98,6 +105,7 @@ class Parser:
         return attrs
 
     def parse_decl(self):
+        doc_comment = self.parse_doc_comment()
         attrs = self.parse_attrs()
         is_pub = self.accept(Kind.KeyPub)
         pos = self.tok.pos
@@ -169,7 +177,6 @@ class Parser:
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
 
-            _ = sym.Fn(name, args, ret_typ)
             return ast.FnDecl(name, args, ret_typ, stmts)
         else:
             report.error(f"expected declaration, found {self.tok}", pos)
@@ -257,7 +264,7 @@ class Parser:
             op = self.tok.kind
             self.next()
             pos = self.tok.pos
-            right = TypeNode(self.parse_type(), pos)
+            right = ast.TypeNode(self.parse_type(), pos)
             left = ast.BinaryExpr(left, op, right, pos)
         return left
 

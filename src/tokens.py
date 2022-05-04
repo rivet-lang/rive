@@ -7,6 +7,7 @@ from enum import IntEnum as Enum, auto as auto_enum
 class Kind(Enum):
     Unknown = auto_enum() # unknown
     EOF = auto_enum() # end of file
+    DocComment = auto_enum() # doc-comment
     Name = auto_enum() # name
     Number = auto_enum() # number
     Char = auto_enum() # character
@@ -150,6 +151,7 @@ def is_relational(k):
 TOKEN_STRINGS = {
     Kind.Unknown: "unknown",
     Kind.EOF: "end of file",
+    Kind.DocComment: "documentation comment",
     Kind.Name: "name",
     Kind.Number: "number",
     Kind.Char: "character",
@@ -302,4 +304,4 @@ class Token:
         return string
 
     def __repr__(self):
-        return f"rivet.Token<kind='{self.kind}', lit='{self.lit}', pos='{self.pos}'>"
+        return f'rivet.Token<kind: "{self.kind}", lit: "{self.lit}", pos: "{self.pos}">'
