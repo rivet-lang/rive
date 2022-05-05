@@ -18,6 +18,19 @@ class DocComment:
         self.lines = lines
         self.pos = pos
 
+    def has_doc(self):
+        return len(self.lines) > 0
+
+    def merge(self):
+        res = ""
+        for l in self.lines:
+            res += l
+            if len(l) == 0 or l.endswith("."):
+                res += "\n"
+            else:
+                res += " "
+        return res
+
 class Attr:
     def __init__(self, name, pos):
         self.name = name
@@ -76,6 +89,12 @@ class ForInStmt:
         self.value = value
         self.iterable = iterable
         self.stmt = stmt
+
+class ReturnStmt:
+    def __init__(self, expr, has_expr, pos):
+        self.expr = expr
+        self.has_expr = has_expr
+        self.pos = pos
 
 # ------ Expressions -------
 class EmptyExpr:

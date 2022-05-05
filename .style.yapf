@@ -199,7 +199,7 @@ spaces_around_default_or_named_assign=False
 # will be formatted as:
 #
 #   { 1: 2 }
-spaces_around_dict_delimiters=False
+spaces_around_dict_delimiters=True
 
 # Adds a space after the opening '[' and before the ending ']' list
 # delimiters.

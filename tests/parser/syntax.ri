@@ -9,15 +9,16 @@ extern pkg std;
 
 /*
 extern "C" {
-    fn exit(status: i32);
-    fn abort();
+    fn exit(status: i32) c_void;
+    fn abort() c_void;
 }
 
-extern "C" fn x();
+extern "C" fn x() c_void;
 */
 
-/// `simple`.
-/// a new line
+/// A simple module for doc-comments.
+///
+/// Other new line in doc-comment. More text, simple =D.
 mod simple { }
 
 pub mod simple2 {
@@ -33,7 +34,9 @@ pub mod simple2 {
 pub fn pub_basic_fn(alpha: i32, arr: [i32; 5], slice: [i32]) void { }
 
 [inline]
-fn basic_fn() ?i32 { }
+fn basic_fn() ?i32 {
+    return none;
+}
 
 [unsafe; abstract; virtual] // <- attributes
 fn def_arg(a: i32 = 10, tuple: (bool, void, u8)) void { }
@@ -104,10 +107,14 @@ fn simple() !void {
     match (union_value) is {
         str => println("str"),
         i32 => println("i32"),
+        bool => {
+            // block expr
+            println("simple block expr")
+        },
         else => println("unknown type")
     }
 
-    //let mut x = 1;
+    // let mut x = 1;
     while (x < 5) {
         x++;
     }
@@ -121,21 +128,21 @@ fn simple() !void {
 }
 
 mod real {
-    pub fn scrash() void {}
+    pub fn scrash() void {
+        return;
+    }
 
     pub mod sis {
-        fn inner(a: &[i32], mut b: [u8; 4]) void {
-        }
+        fn inner(a: &[i32], mut b: [u8; 4]) void { }
     }
 
-    fn x() !i32 {
-    }
+    fn x() !i32 { }
 
     fn z(a: *i32, b: ***i32) ?bool {}
 
-    fn arrays() [i32; 5] {}
+    fn arrays() [i32; 5] { }
 
-    fn slices() &[i32] {}
+    fn slices() &[i32] { }
 }
 
 /// doc-comment

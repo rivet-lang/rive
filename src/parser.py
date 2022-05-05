@@ -21,6 +21,7 @@ class Parser:
         # This field is `true` when we are in a root module, that is,
         # a package.
         self.is_pkg_level = False
+
         self.inside_extern = False
         self.inside_unsafe = False
         self.inside_block = False
@@ -185,7 +186,13 @@ class Parser:
 
     # ---- statements --------------------------
     def parse_stmt(self):
-        if self.accept(Kind.KeyLoop):
+        if self.accept(Kind.Lbrace):
+            pos = self.prev_tok.pos
+            stmts = []
+            while not self.accept(Kind.Rbrace):
+                stmts.append(self.parse_stmt())
+            return ast.Block(stmts, None, False, pos)
+        elif self.accept(Kind.KeyLoop):
             return ast.LoopStmt(self.parse_stmt())
         elif self.accept(Kind.KeyWhile):
             self.expect(Kind.Lparen)
@@ -205,12 +212,15 @@ class Parser:
             self.expect(Kind.Rparen)
             stmt = self.parse_stmt()
             return ast.ForInStmt(key, value, iterable, stmt)
-        elif self.accept(Kind.Lbrace):
+        elif self.accept(Kind.KeyReturn):
             pos = self.prev_tok.pos
-            stmts = []
-            while not self.accept(Kind.Rbrace):
-                stmts.append(self.parse_stmt())
-            return ast.Block(stmts, None, False, pos)
+            has_expr = self.tok.kind != Kind.Semicolon
+            if has_expr:
+                expr = self.parse_expr()
+            else:
+                expr = self.empty_expr()
+            self.expect(Kind.Semicolon)
+            return ast.ReturnStmt(expr, has_expr, pos)
         expr = self.parse_expr()
         if not (
             (self.inside_block and self.tok.kind == Kind.Rbrace)
