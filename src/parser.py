@@ -666,56 +666,16 @@ class Parser:
     # ---- types -------------------------------
     def parse_type(self):
         pos = self.tok.pos
-        if self.tok.kind == Kind.Name:
-            lit = self.parse_name()
-            if lit == "c_void":
-                if not self.inside_extern:
-                    self.error(
-                        "`c_void` can only be used inside `extern` declarations",
-                        self.prev_tok.pos
-                    )
-                return self.comp.c_void_t
-            elif lit == "void":
-                return self.comp.void_t
-            elif lit == "ptr":
-                return self.comp.ptr_t
-            elif lit == "bool":
-                return self.comp.bool_t
-            elif lit == "rune":
-                return self.comp.rune_t
-            elif lit == "i8":
-                return self.comp.int8_t
-            elif lit == "i16":
-                return self.comp.int16_t
-            elif lit == "i32":
-                return self.comp.int32_t
-            elif lit == "i64":
-                return self.comp.int64_t
-            elif lit == "isize":
-                return self.comp.isize_t
-            elif lit == "u8":
-                return self.comp.uint8_t
-            elif lit == "u16":
-                return self.comp.uint16_t
-            elif lit == "u32":
-                return self.comp.uint32_t
-            elif lit == "u64":
-                return self.comp.uint64_t
-            elif lit == "usize":
-                return self.comp.usize_t
-            elif lit == "f32":
-                return self.comp.float32_t
-            elif lit == "f64":
-                return self.comp.float64_t
-            elif lit == "str":
-                return self.comp.str_t
-        elif self.accept(Kind.Amp):
+        if self.accept(Kind.Amp):
+            # references
             typ = self.parse_type()
             return type.Ref(typ)
         elif self.accept(Kind.Mult):
+            # pointers
             typ = self.parse_type()
             return type.Ptr(typ)
         elif self.accept(Kind.Lbracket):
+            # arrays or slices
             typ = self.parse_type()
             if self.accept(Kind.Semicolon):
                 size = self.parse_expr()
@@ -724,6 +684,7 @@ class Parser:
             self.expect(Kind.Rbracket)
             return type.Slice(typ)
         elif self.accept(Kind.Lparen):
+            # tuples
             types = []
             while True:
                 types.append(self.parse_type())
@@ -732,9 +693,74 @@ class Parser:
             self.expect(Kind.Rparen)
             return type.Tuple(types)
         elif self.accept(Kind.Question):
+            # optional
             typ = self.parse_type()
             return type.Optional(typ)
+        elif self.accept(Kind.KeySelfTy):
+            return type.UnknownType(ast.SelfExpr(self.prev_tok.pos))
+        elif self.tok.kind in (Kind.KeyPkg, Kind.Name):
+            # normal type
+            if self.peek_tok.kind == Kind.DoubleColon:
+                path_expr = self.parse_path_expr(
+                    self.parse_pkg_expr() if self.tok.kind ==
+                    Kind.KeyPkg else self.parse_ident()
+                )
+                if self.tok.kind == Kind.DoubleColon:
+                    while True:
+                        path_expr = self.parse_path_expr(path_expr)
+                        if self.tok.kind != Kind.DoubleColon:
+                            break
+                return type.UnknownType(path_expr)
+            elif self.tok.kind == Kind.Name:
+                expr = self.parse_ident()
+                lit = expr.name
+                if lit == "c_void":
+                    if not self.inside_extern:
+                        self.error(
+                            "`c_void` can only be used inside `extern` declarations",
+                            pos
+                        )
+                    return self.comp.c_void_t
+                elif lit == "void":
+                    return self.comp.void_t
+                elif lit == "ptr":
+                    return self.comp.ptr_t
+                elif lit == "bool":
+                    return self.comp.bool_t
+                elif lit == "rune":
+                    return self.comp.rune_t
+                elif lit == "i8":
+                    return self.comp.int8_t
+                elif lit == "i16":
+                    return self.comp.int16_t
+                elif lit == "i32":
+                    return self.comp.int32_t
+                elif lit == "i64":
+                    return self.comp.int64_t
+                elif lit == "isize":
+                    return self.comp.isize_t
+                elif lit == "u8":
+                    return self.comp.uint8_t
+                elif lit == "u16":
+                    return self.comp.uint16_t
+                elif lit == "u32":
+                    return self.comp.uint32_t
+                elif lit == "u64":
+                    return self.comp.uint64_t
+                elif lit == "usize":
+                    return self.comp.usize_t
+                elif lit == "f32":
+                    return self.comp.float32_t
+                elif lit == "f64":
+                    return self.comp.float64_t
+                elif lit == "str":
+                    return self.comp.str_t
+                else:
+                    return type.UnknownType(expr)
+            else:
+                report.error(f"expected type, found keyword `pkg`", pos)
+                self.next()
         else:
             report.error(f"expected type, found {self.tok}", pos)
             self.next()
-        return type.UnknownType(self.tok)
+        return type.UnknownType(self.empty_expr())

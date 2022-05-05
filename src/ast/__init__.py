@@ -146,6 +146,16 @@ class TypeNode:
     def __str__(self):
         return self.__repr__()
 
+class PkgExpr:
+    def __init__(self, pos):
+        self.pos = pos
+
+    def __repr__(self):
+        return "pkg"
+
+    def __str__(self):
+        return self.__repr__()
+
 class Ident:
     def __init__(self, name, pos, scope):
         self.name = name

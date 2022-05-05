@@ -34,6 +34,10 @@ extend u8 {
     }
 }
 
+extend pkg::custom_mod::CustomType {
+    pub fn custom_fn() void { }
+}
+
 [unsafe]
 [simple]
 pub fn pub_basic_fn(alpha: i32, arr: [i32; 5], slice: [i32]) void { }
