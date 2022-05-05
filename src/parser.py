@@ -410,6 +410,10 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
                 self.expect(Kind.Rparen)
+                if len(exprs) > 8:
+                    report.error(
+                        "tuples can have a maximum of 8 expressions", e.pos
+                    )
                 expr = ast.TupleLiteral(exprs, e.pos)
             else:
                 self.expect(Kind.Rparen)
@@ -669,10 +673,19 @@ class Parser:
         if self.accept(Kind.Amp):
             # references
             typ = self.parse_type()
+            if self.inside_extern:
+                report.error("cannot use references inside `extern` blocks")
+                report.help(f"use pointers instead: `*{typ}`")
+            elif isinstance(typ, type.Ref):
+                report.error("multi-level references are not allowed", pos)
+            elif isinstance(typ, type.Ptr):
+                report.error("cannot use references with pointers", pos)
             return type.Ref(typ)
         elif self.accept(Kind.Mult):
             # pointers
             typ = self.parse_type()
+            if isinstance(typ, type.Ref):
+                report.error("cannot use pointers with references", pos)
             return type.Ptr(typ)
         elif self.accept(Kind.Lbracket):
             # arrays or slices
@@ -690,11 +703,19 @@ class Parser:
                 types.append(self.parse_type())
                 if not self.accept(Kind.Comma):
                     break
+            if len(types) > 8:
+                report.error("tuples can have a maximum of 8 types", pos)
+                report.help("you can use a struct instead")
             self.expect(Kind.Rparen)
             return type.Tuple(types)
         elif self.accept(Kind.Question):
             # optional
             typ = self.parse_type()
+            if isinstance(typ, type.Ptr):
+                report.error("pointers cannot be optional", pos)
+                report.note("by default pointers can contain the value `none`")
+            elif isinstance(typ, type.Optional):
+                report.error("optional multi-level types are not allowed", pos)
             return type.Optional(typ)
         elif self.accept(Kind.KeySelfTy):
             return type.UnknownType(ast.SelfExpr(self.prev_tok.pos))

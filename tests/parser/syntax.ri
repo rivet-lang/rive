@@ -30,8 +30,7 @@ pub mod simple2 {
 }
 
 extend u8 {
-    pub fn to_str() str {
-    }
+    pub fn to_str() str { return ""; }
 }
 
 extend pkg::custom_mod::CustomType {
@@ -39,7 +38,6 @@ extend pkg::custom_mod::CustomType {
 }
 
 [unsafe]
-[simple]
 pub fn pub_basic_fn(alpha: i32, arr: [i32; 5], slice: [i32]) void { }
 
 [inline]
@@ -91,7 +89,8 @@ fn simple() !void {
                 else => get_anarky()
             },
             array: [1, 2, 3, 4, 5, 6, 7, 8],
-            slice: [1, 2, 3, 4][0..4]
+            slice: [1, 2, 3, 4, 5, 6][0..4],
+            tuple: (1, 2, 3, 4, 5, 6, 7, 8)
         );
     }
 
