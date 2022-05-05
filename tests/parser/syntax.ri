@@ -29,6 +29,11 @@ pub mod simple2 {
     mod snacks { }
 }
 
+extend u8 {
+    pub fn to_str() str {
+    }
+}
+
 [unsafe]
 [simple]
 pub fn pub_basic_fn(alpha: i32, arr: [i32; 5], slice: [i32]) void { }

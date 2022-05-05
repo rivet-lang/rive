@@ -132,18 +132,26 @@ class Parser:
         elif self.accept(Kind.KeyMod):
             pos = self.tok.pos
             name = self.parse_name()
-            decls = []
 
             old_is_pkg_level = self.is_pkg_level
             self.is_pkg_level = False
 
+            decls = []
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
                 decls.append(self.parse_decl())
 
             self.is_pkg_level = old_is_pkg_level
-            return ast.ModDecl(name, is_pub, decls, pos)
+            return ast.ModDecl(doc_comment, attrs, name, is_pub, decls, pos)
+        elif self.accept(Kind.KeyExtend):
+            typ = self.parse_type()
+            decls = []
+            self.expect(Kind.Lbrace)
+            while not self.accept(Kind.Rbrace):
+                decls.append(self.parse_decl())
+            return ast.ExtendDecl(typ, decls)
         elif self.accept(Kind.KeyFn):
+            pos = self.tok.pos
             name = self.parse_name()
 
             args = []
@@ -178,7 +186,9 @@ class Parser:
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
 
-            return ast.FnDecl(name, args, ret_typ, stmts)
+            return ast.FnDecl(
+                doc_comment, attrs, is_pub, name, args, ret_typ, stmts
+            )
         else:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()

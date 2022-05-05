@@ -55,14 +55,23 @@ class ExternPkg:
         self.pos = pos
 
 class ModDecl:
-    def __init__(self, name, is_pub, decls, pos):
+    def __init__(self, doc_comment, attrs, name, is_pub, decls, pos):
+        self.doc_comment = doc_comment
+        self.attrs = attrs
         self.name = name
         self.is_pub = is_pub
         self.decls = decls
         self.pos = pos
 
+class ExtendDecl:
+    def __init__(self, typ, decls):
+        self.typ = typ
+        self.decls = decls
+
 class FnDecl:
-    def __init__(self, name, args, ret_typ, stmts):
+    def __init__(self, doc_comment, attrs, is_pub, name, args, ret_typ, stmts):
+        self.doc_comment = doc_comment
+        self.attrs = attrs
         self.name = name
         self.args = args
         self.ret_typ = ret_typ

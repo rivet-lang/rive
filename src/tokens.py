@@ -79,7 +79,7 @@ class Kind(Enum):
     KeyUnion = auto_enum() # union
     KeyType = auto_enum() # type
     KeyEnum = auto_enum() # enum
-    KeyImpl = auto_enum() # impl
+    KeyExtend = auto_enum() # extend
     KeyFn = auto_enum() # fn
     KeyTest = auto_enum() # test
     KeyPub = auto_enum() # pub
@@ -222,7 +222,7 @@ TOKEN_STRINGS = {
     Kind.KeyUnion: "union",
     Kind.KeyType: "type",
     Kind.KeyEnum: "enum",
-    Kind.KeyImpl: "impl",
+    Kind.KeyExtend: "extend",
     Kind.KeyFn: "fn",
     Kind.KeyTest: "test",
     Kind.KeyPub: "pub",
