@@ -17,11 +17,15 @@ The compiler can receive both files and directories as input, example:
 
 Options:
    --pkg-name <name>
-      Specify the name of the package being built.
+      Specify the name of the package being built. By default: main.
 
-   -o <output>, --output <output>
+   --pkg-type bin|lib|dylib|staticlib
+      Specify the type of the package being built. By default: bin.
+
+   -o <filename>, --output <filename>
       Force Rivet to output the package in a specific location
       (relative to the current working directory if not absolute).
+      By default: main.
 
    -d <flag>, --define <flag>
       Define the provided flag.
@@ -67,13 +71,13 @@ class OS(Enum):
 
     @staticmethod
     def get():
-        if os := OS.get_from_string(sys.platform):
+        if os := OS.from_string(sys.platform):
             return os
         else:
             error(f"unknown or unsupported host OS: {sys.platform}")
 
     @staticmethod
-    def get_from_string(name_):
+    def from_string(name_):
         name = name_.lower()
         if name == "linux":
             return OS.Linux
@@ -95,7 +99,7 @@ class Arch(Enum):
         return Arch.I386
 
     @staticmethod
-    def get_from_string(arch_):
+    def from_string(arch_):
         arch = arch_.lower()
         if arch == "amd64":
             return Arch.Amd64
@@ -113,16 +117,30 @@ class ByteOrder(Enum):
             return ByteOrder.Little
         return ByteOrder.Big
 
-class PkgMode(Enum):
-    Binary = auto_enum()
-    Library = auto_enum()
+class PkgType(Enum):
+    Bin = auto_enum() # .exe
+    Lib = auto_enum() # .rilib
+    DyLib = auto_enum() # .so, .dll, .dylib
+    StaticLib = auto_enum() # .a, .lib
+
+    @staticmethod
+    def from_string(typ):
+        if typ == "bin":
+            return PkgType.Bin
+        elif typ == "lib":
+            return PkgType.Lib
+        elif typ == "dylib":
+            return PkgType.DyLib
+        elif typ == "static":
+            return PkgType.StaticLib
+        return None
 
 class Prefs:
     def __init__(self, args: [str]):
         self.inputs = []
 
         self.pkg_name = "main"
-        self.pkg_mode = PkgMode.Binary
+        self.pkg_type = PkgType.Bin
         self.output = "main"
         self.os = OS.get()
         self.arch = Arch.get()
@@ -167,6 +185,15 @@ class Prefs:
                 else:
                     error("`--pkg-name` requires a name as argument")
                 i += 1
+            elif arg == "--pkg-type":
+                if typ := option(current_args, arg):
+                    if pkg_typ := PkgType.from_string(typ):
+                        self.pkg_typ = pkg_typ
+                    else:
+                        error(f"invalid package type: `{typ}`")
+                else:
+                    error("`--pkg-type` requires a package type as argument")
+                i += 1
             elif arg in ("-o", "--output"):
                 if out := option(current_args, arg):
                     self.output = out
@@ -191,7 +218,7 @@ class Prefs:
                 i += 1
             elif arg in ("-os", "--target-os"):
                 if os_name := option(current_args, arg):
-                    if os_flag := OS.get_from_string(os_name):
+                    if os_flag := OS.from_string(os_name):
                         self.os = os_flag
                     else:
                         error(f"unknown operating system target: `{os_name}`")
@@ -200,7 +227,7 @@ class Prefs:
                 i += 1
             elif arg in ("-arch", "--target-arch"):
                 if arch_name := option(current_args, arg):
-                    if arch_flag := Arch.get_from_string(arch_name):
+                    if arch_flag := Arch.from_string(arch_name):
                         self.arch = arch_flag
                     else:
                         error(f"unknown architecture target: `{arch_name}`")
@@ -241,9 +268,9 @@ class Prefs:
                         should_compile = ext[2:] in self.flags
                     else:
                         should_compile = ext[5:] not in self.flags
-                elif osf := OS.get_from_string(ext):
+                elif osf := OS.from_string(ext):
                     should_compile = osf == self.os
-                elif arch := Arch.get_from_string(ext):
+                elif arch := Arch.from_string(ext):
                     should_compile = arch == self.arch
             if should_compile:
                 new_inputs.append(input)
