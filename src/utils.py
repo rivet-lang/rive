@@ -14,9 +14,9 @@ DOUBLE_QUOTE = chr(34)
 DOUBLE_ESCAPE = "\\\\"
 
 class ProcessResult:
-    def __init__(self, stdout, stderr, exit_code):
-        self.stdout = stdout
-        self.stderr = stderr
+    def __init__(self, out, err, exit_code):
+        self.out = out
+        self.err = err
         self.exit_code = exit_code
 
 def run_process(*args):

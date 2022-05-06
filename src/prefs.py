@@ -8,7 +8,7 @@ from enum import IntEnum as Enum, auto as auto_enum
 from .utils import error, eprint, run_process
 
 VERSION = "0.1.0"
-COMMIT = run_process("git", "rev-parse", "--short", "HEAD").stdout
+COMMIT = run_process("git", "rev-parse", "--short", "HEAD").out
 HELP = """Usage: rivetc [OPTIONS] INPUTS
 
 The compiler can receive both files and directories as input, example:
@@ -17,6 +17,9 @@ The compiler can receive both files and directories as input, example:
 Options:
    --pkg-name <name>
       Specify the name of the package being built.
+
+   -d <flag>, --define <flag>
+      Define the provided flag.
 
    -os <name>, --target-os <name>
       Change the target OS that Rivet tries to compile for. By default, the
@@ -156,6 +159,20 @@ class Prefs:
                         error(f"invalid package name `{self.pkg_name}`")
                 else:
                     error("`--pkg-name` requires a name as argument")
+            elif arg in ("-d", "--define"):
+                if flag := option(current_args, arg):
+                    if not flag.isupper():
+                        error(f"flag `{flag}` should have a upper case name")
+                    elif flag.startswith("_") and flag.endswith("_"):
+                        error(
+                            f"this form of declaration is reserved for the compiler: `{flag}`"
+                        )
+                    elif flag in self.flags:
+                        error(f"duplicate flag: `{flag}`")
+                    self.flags.append(flag)
+                    i += 1
+                else:
+                    error(f"`{arg}` requires a name as argument")
             elif arg in ("-os", "--target-os"):
                 if os_name := option(current_args, arg):
                     if os_flag := OS.get_from_string(os_name):
