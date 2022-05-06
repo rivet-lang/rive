@@ -86,7 +86,8 @@ class Arch(Enum):
         return Arch.I386
 
     @staticmethod
-    def get_from_string(arch):
+    def get_from_string(arch_):
+        arch = arch_.lower()
         if arch == "amd64":
             return Arch.Amd64
         elif arch == "i386":
@@ -113,15 +114,16 @@ class Prefs:
             eprint(HELP)
             exit(1)
 
+        self.inputs = []
+
         self.pkg_name = "main"
         self.pkg_mode = PkgMode.Binary
         self.os = OS.get()
         self.arch = Arch.get()
-        self.m64 = True
+        self.x64 = True
         self.byte_order = ByteOrder.get()
+        self.flags = []
         self.is_verbose = False
-
-        self.inputs = []
 
         i = 0
         while i < len(args):
@@ -137,6 +139,7 @@ class Prefs:
                 return
 
             # compiler options
+            inputs = []
             if arg.endswith(".ri"):
                 if os.path.isdir(arg):
                     error(f"unable to read '{arg}': is a directory")
@@ -144,7 +147,7 @@ class Prefs:
                     error(f"unable to read '{arg}': file not found")
                 elif arg in self.inputs:
                     error(f"duplicate file '{arg}'")
-                self.inputs.append(arg)
+                inputs.append(arg)
             elif arg == "--pkg-name":
                 if pkg_name := option(current_args, arg):
                     self.pkg_name = pkg_name
@@ -180,10 +183,32 @@ class Prefs:
                 if len(files) == 0:
                     error(f"`{arg}` does not have .ri files")
                 for f in files:
-                    self.inputs.append(f)
+                    inputs.append(f)
             else:
                 error(f"unknown option: `{arg}`")
             i += 1
 
+        self.inputs = self.filter_files(inputs)
         if len(self.inputs) == 0:
             error("no input received")
+
+    def filter_files(self, inputs):
+        new_inputs = []
+        for input in inputs:
+            if input.count('.') == 1:
+                new_inputs.append(input)
+            exts = input[:-3].split('.')[1:]
+            should_compile = False
+            for ext in exts:
+                if ext.startswith("d_") or ext.startswith("notd_"):
+                    if ext.startswith("d_"):
+                        should_compile = ext[2:] in self.flags
+                    else:
+                        should_compile = ext[5:] not in self.flags
+                elif os := OS.get_from_string(ext):
+                    should_compile = os == self.os
+                elif arch := Arch.get_from_string(ext):
+                    should_compile = arch == self.arch
+            if should_compile:
+                new_inputs.append(input)
+        return new_inputs
