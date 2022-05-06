@@ -2,25 +2,36 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-import os
-import glob
+import os, sys, glob
 from enum import IntEnum as Enum, auto as auto_enum
 
 from .utils import error, eprint
 
-VERSION = "0.1.0a"
+VERSION = "0.1.0"
 HELP = """Usage: rivetc [OPTIONS] INPUTS
 
 The compiler can receive both files and directories as input, example:
    rivetc my_file.ri my_folder/ my_folder2/ other_file.ri
 
-Compiler Options:
-   --pkg-name NAME             Specify the name of the package being built.
-   -v, --verbose               Use verbose output.
+Options:
+   --pkg-name <name>
+      Specify the name of the package being built.
 
-Help Options:
-   -V, --version               Display compiler version.
-   -h, --help                  Display this message."""
+   -os <name>, --target-os <name>
+      Change the target OS that Rivet tries to compile for. By default, the
+      target OS is the host system.
+
+      Here is a list of the operating systems, supported by Rivet:
+        `linux`
+
+   -v, --verbose
+      Print additional messages to the console.
+
+   -V, --version
+      Print compiler version.
+
+   -h, --help
+      Print this message."""
 
 def option(args, param):
     for (i, arg) in enumerate(args):
@@ -30,20 +41,46 @@ def option(args, param):
             break
     return None
 
+class OS(Enum):
+    Linux = auto_enum()
+    # Windows = auto_enum()
+    # Macos = auto_enum()
+
+    @staticmethod
+    def get_current():
+        if os := OS.get_from_string(sys.platform):
+            return os
+        else:
+            error(f"unknown or unsupported host OS: {sys.platform}")
+
+    @staticmethod
+    def get_from_string(name_):
+        name = name_.lower()
+        if name == "linux":
+            return OS.Linux
+        return None
+
+    def equals_to_string(self, flag):
+        if flag == "_LINUX_" and self == OS.Linux:
+            return True
+        return False
+
 class PkgMode(Enum):
-    BINARY = auto_enum()
-    LIBRARY = auto_enum()
+    Binary = auto_enum()
+    Library = auto_enum()
 
 class Prefs:
     def __init__(self, args: [str]):
         if len(args) == 0:
             eprint(HELP)
-            return
+            exit(1)
+
+        self.pkg_name = "main"
+        self.pkg_mode = PkgMode.Binary
+        self.os = OS.get_current()
+        self.is_verbose = False
 
         self.inputs = []
-        self.pkg_name = "main"
-        self.pkg_mode = PkgMode.BINARY
-        self.is_verbose = False
 
         i = 0
         while i < len(args):
@@ -75,6 +112,15 @@ class Prefs:
                         error(f"invalid package name `{self.pkg_name}`")
                 else:
                     error("`--pkg-name` requires a name as argument")
+            elif arg in ("-os", "--target-os"):
+                if os_name := option(current_args, arg):
+                    if os_flag := OS.get_from_string(os_name):
+                        self.os = os_flag
+                        i += 1
+                    else:
+                        error(f"unknown or unsupported OS name: `{os_name}`")
+                else:
+                    error(f"`{arg}` requires a name as argument")
             elif arg in ("-v", "--verbose"):
                 self.is_verbose = True
             elif os.path.isdir(arg):

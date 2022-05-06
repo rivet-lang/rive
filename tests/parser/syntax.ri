@@ -7,14 +7,12 @@
 extern pkg core;
 extern pkg std;
 
-/*
 extern "C" {
     fn exit(status: i32) c_void;
     fn abort() c_void;
 }
 
-extern "C" fn x() c_void;
-*/
+extern "C" fn abs(a: i32) i32;
 
 /// A simple module for doc-comments.
 ///
@@ -41,8 +39,8 @@ extend pkg::custom_mod::CustomType {
 pub fn pub_basic_fn(alpha: i32, arr: [i32; 5], slice: [i32]) void { }
 
 [inline]
-fn basic_fn() ?i32 {
-    return none;
+fn basic_fn(return_none: bool) ?i32 {
+    return if (return_none) none else 5;
 }
 
 [unsafe; abstract; virtual] // <- attributes
@@ -117,7 +115,7 @@ fn simple() !void {
         i32 => println("i32"),
         bool => {
             // block expr
-            println("simple block expr")
+            loop { println("simple block expr"); }
         },
         else => println("unknown type")
     }

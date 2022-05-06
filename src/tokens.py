@@ -299,7 +299,7 @@ class Token:
             return f"token `{string}`"
         if is_key(self.lit):
             string = "keyword"
-        if self.lit != "":
+        if self.lit != "" and self.kind != Kind.DocComment:
             string += f" `{self.lit}`"
         return string
 

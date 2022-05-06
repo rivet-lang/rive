@@ -54,6 +54,12 @@ class ExternPkg:
         self.pkg_name = pkg_name
         self.pos = pos
 
+class ExternDecl:
+    def __init__(self, abi, decls, pos):
+        self.abi = abi
+        self.decls = decls
+        self.pos = pos
+
 class ModDecl:
     def __init__(self, doc_comment, attrs, name, is_pub, decls, pos):
         self.doc_comment = doc_comment

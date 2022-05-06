@@ -111,8 +111,12 @@ class Parser:
         is_pub = self.accept(Kind.KeyPub)
         pos = self.tok.pos
         if self.accept(Kind.KeyExtern):
-            if is_pub:
+            if self.inside_extern:
+                report.error("`extern` declarations cannot be nested", pos)
+            elif is_pub:
                 report.error("`extern` declarations cannot be public", pos)
+            self.inside_extern = True
+            decl = None
             if self.accept(Kind.KeyPkg):
                 # extern package
                 if not self.is_pkg_level:
@@ -122,13 +126,31 @@ class Parser:
                     )
                 extern_pkg = self.parse_name()
                 self.expect(Kind.Semicolon)
-                return ast.ExternPkg(extern_pkg, pos)
+                decl = ast.ExternPkg(extern_pkg, pos)
             else:
                 # extern functions
-                self.inside_extern = True
-                report.error("extern functions are not yet supported", pos)
-                self.next()
-                self.inside_extern = False
+                abi = self.parse_string_literal()
+                decls = []
+                if self.accept(Kind.KeyFn):
+                    decls.append(self.parse_fn_decl(doc_comment, attrs, True))
+                    self.expect(Kind.Semicolon)
+                else:
+                    self.expect(Kind.Lbrace)
+                    while not self.accept(Kind.Rbrace):
+                        if self.accept(Kind.KeyFn):
+                            decls.append(
+                                self.parse_fn_decl(doc_comment, attrs, True)
+                            )
+                            self.expect(Kind.Semicolon)
+                        else:
+                            report.error(
+                                f"expected function header, found {self.tok}",
+                                self.tok.pos
+                            )
+                            self.next()
+                decl = ast.ExternDecl(abi, decls, pos)
+            self.inside_extern = False
+            return decl
         elif self.accept(Kind.KeyMod):
             pos = self.tok.pos
             name = self.parse_name()
@@ -151,48 +173,55 @@ class Parser:
                 decls.append(self.parse_decl())
             return ast.ExtendDecl(typ, decls)
         elif self.accept(Kind.KeyFn):
-            pos = self.tok.pos
-            name = self.parse_name()
-
-            args = []
-            self.expect(Kind.Lparen)
-            if self.tok.kind != Kind.Rparen:
-                while True:
-                    # arguments
-                    is_mut = self.accept(Kind.KeyMut)
-                    arg_name = self.parse_name()
-                    self.expect(Kind.Colon)
-                    arg_typ = self.parse_type()
-                    arg_expr = self.empty_expr()
-                    if self.accept(Kind.Assign):
-                        arg_expr = self.parse_expr()
-                    args.append(
-                        sym.Arg(
-                            arg_name, is_mut, arg_typ, arg_expr,
-                            not isinstance(arg_expr, ast.EmptyExpr)
-                        )
-                    )
-                    if not self.accept(Kind.Comma):
-                        break
-            self.expect(Kind.Rparen)
-
-            is_result = self.accept(Kind.Bang)
-            ret_typ = self.parse_type()
-            if is_result:
-                ret_typ = type.Result(ret_typ)
-
-            stmts = []
-            self.expect(Kind.Lbrace)
-            while not self.accept(Kind.Rbrace):
-                stmts.append(self.parse_stmt())
-
-            return ast.FnDecl(
-                doc_comment, attrs, is_pub, name, args, ret_typ, stmts
-            )
+            return self.parse_fn_decl(doc_comment, attrs, is_pub)
         else:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()
         return ast.EmptyDecl()
+
+    def parse_fn_decl(self, doc_comment, attrs, is_pub):
+        pos = self.tok.pos
+        name = self.parse_name()
+
+        args = []
+        self.expect(Kind.Lparen)
+        if self.tok.kind != Kind.Rparen:
+            while True:
+                # arguments
+                is_mut = self.accept(Kind.KeyMut)
+                arg_name = self.parse_name()
+                self.expect(Kind.Colon)
+                arg_typ = self.parse_type()
+                arg_expr = self.empty_expr()
+                if self.accept(Kind.Assign):
+                    arg_expr = self.parse_expr()
+                args.append(
+                    sym.Arg(
+                        arg_name, is_mut, arg_typ, arg_expr,
+                        not isinstance(arg_expr, ast.EmptyExpr)
+                    )
+                )
+                if not self.accept(Kind.Comma):
+                    break
+        self.expect(Kind.Rparen)
+
+        is_result = self.accept(Kind.Bang)
+        ret_typ = self.parse_type()
+        if is_result:
+            ret_typ = type.Result(ret_typ)
+
+        stmts = []
+        if self.inside_extern:
+            if self.tok.kind == Kind.Lbrace:
+                report.error("extern functions cannot have body", pos)
+        else:
+            self.expect(Kind.Lbrace)
+            while not self.accept(Kind.Rbrace):
+                stmts.append(self.parse_stmt())
+
+        return ast.FnDecl(
+            doc_comment, attrs, is_pub, name, args, ret_typ, stmts
+        )
 
     # ---- statements --------------------------
     def parse_stmt(self):
@@ -419,14 +448,18 @@ class Parser:
                 self.expect(Kind.Rparen)
                 expr = ast.ParExpr(e, e.pos)
         elif self.accept(Kind.Lbrace):
+            pos = self.prev_tok.pos
             old_inside_block = self.inside_block
             self.inside_block = True
-            pos = self.tok.pos
             stmts = []
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
             if len(stmts) > 0:
-                expr = ast.Block(stmts[:-1], stmts[-1].expr, True, pos)
+                expr = ast.Block(
+                    stmts[:-1], stmts[-1].expr if
+                    isinstance(stmts[-1], ast.ExprStmt) else self.empty_expr(),
+                    True, pos
+                )
             else:
                 expr = ast.Block([], self.empty_expr(), True, pos)
             self.inside_block = old_inside_block
@@ -674,7 +707,9 @@ class Parser:
             # references
             typ = self.parse_type()
             if self.inside_extern:
-                report.error("cannot use references inside `extern` blocks")
+                report.error(
+                    "cannot use references inside `extern` blocks", pos
+                )
                 report.help(f"use pointers instead: `*{typ}`")
             elif isinstance(typ, type.Ref):
                 report.error("multi-level references are not allowed", pos)
