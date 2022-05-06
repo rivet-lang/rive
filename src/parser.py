@@ -38,9 +38,10 @@ class Parser:
 
     def parse_file(self, file):
         self.lexer = Lexer.from_file(file)
+        if report.ERRORS > 0:
+            return ast.SourceFile(file, [])
         self.advance(2)
-        decls = self.parse_decls()
-        return ast.SourceFile(file, decls)
+        return ast.SourceFile(file, self.parse_decls())
 
     # ---- useful functions for working with tokens ----
     def next(self):
