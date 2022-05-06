@@ -2,9 +2,9 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
+from os import path
 import os, sys, glob
 from ctypes import sizeof, c_voidp
-from os import path
 from enum import IntEnum as Enum, auto as auto_enum
 
 from .utils import error, eprint, run_process
@@ -23,6 +23,13 @@ Options:
    --pkg-type bin|lib|dylib|staticlib
       Specify the type of the package being built. By default: bin.
 
+   -b <backend>, --backend <backend>
+      Specify the backend to use while building the package.
+
+      Current list of supported backends:
+        `c` (default)
+           Rivet outputs C source code which is passed to a C compiler to be compiled.
+
    -o <filename>, --output <filename>
       Force Rivet to output the package in a specific location
       (relative to the current working directory if not absolute).
@@ -35,14 +42,14 @@ Options:
       Change the target OS that Rivet tries to compile for. By default, the
       target OS is the host system.
 
-      Here is a list of the operating systems supported by Rivet:
+      Current list of supported operating systems:
         `linux`
 
    -arch <arch>, --target-arch <arch>
       Change the target architecture that Rivet tries to compile for. By
       default, the target architecture is the host arch.
 
-      Here is a list of the architectures supported by Rivet:
+      Current list of supported architectures:
         `amd64`, `i386`
 
    -x32, -x64
@@ -78,8 +85,7 @@ class OS(Enum):
             error(f"unknown or unsupported host OS: {sys.platform}")
 
     @staticmethod
-    def from_string(name_):
-        name = name_.lower()
+    def from_string(name):
         if name == "linux":
             return OS.Linux
         return None
@@ -100,8 +106,7 @@ class Arch(Enum):
         return Arch.I386
 
     @staticmethod
-    def from_string(arch_):
-        arch = arch_.lower()
+    def from_string(arch):
         if arch == "amd64":
             return Arch.Amd64
         elif arch == "i386":
@@ -117,6 +122,14 @@ class ByteOrder(Enum):
         if sys.byteorder == "little":
             return ByteOrder.Little
         return ByteOrder.Big
+
+class Backend(Enum):
+    C = auto_enum()
+
+    def from_string(bk):
+        if bk == "c":
+            return Backend.C
+        return None
 
 class PkgType(Enum):
     Bin = auto_enum() # .exe
@@ -140,15 +153,19 @@ class Prefs:
     def __init__(self, args: [str]):
         self.inputs = []
 
+        # package info
         self.pkg_name = "main"
         self.pkg_type = PkgType.Bin
+        self.backend = Backend.C
         self.output = "main"
+
+        # system info
         self.os = OS.get()
         self.arch = Arch.get()
         self.x64 = sizeof(c_voidp) == 8 # 4 = x32
         self.byte_order = ByteOrder.get()
-        self.flags = []
 
+        self.flags = []
         self.is_verbose = False
 
         if len(args) == 0:
@@ -194,6 +211,15 @@ class Prefs:
                         error(f"invalid package type: `{typ}`")
                 else:
                     error("`--pkg-type` requires a package type as argument")
+                i += 1
+            elif arg in ("-b", "--backend"):
+                if b := option(current_args, arg):
+                    if backend := Backend.from_string(b):
+                        self.backend = backend
+                    else:
+                        error(f"unknown backend: `{b}`")
+                else:
+                    error(f"`{arg}` requires a name as argument")
                 i += 1
             elif arg in ("-o", "--output"):
                 if out := option(current_args, arg):
