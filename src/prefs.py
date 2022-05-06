@@ -3,6 +3,7 @@
 # that can be found in the LICENSE file.
 
 import os, sys, glob
+from ctypes import sizeof, c_voidp
 from os import path
 from enum import IntEnum as Enum, auto as auto_enum
 
@@ -144,7 +145,7 @@ class Prefs:
         self.output = "main"
         self.os = OS.get()
         self.arch = Arch.get()
-        self.x64 = True
+        self.x64 = sizeof(c_voidp) == 8 # 4 = x32
         self.byte_order = ByteOrder.get()
         self.flags = []
 
