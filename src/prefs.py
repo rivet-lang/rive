@@ -3,6 +3,7 @@
 # that can be found in the LICENSE file.
 
 import os, sys, glob
+from os import path
 from enum import IntEnum as Enum, auto as auto_enum
 
 from .utils import error, eprint, run_process
@@ -18,6 +19,10 @@ Options:
    --pkg-name <name>
       Specify the name of the package being built.
 
+   -o <output>, --output <output>
+      Force Rivet to output the package in a specific location
+      (relative to the current working directory if not absolute).
+
    -d <flag>, --define <flag>
       Define the provided flag.
 
@@ -25,13 +30,14 @@ Options:
       Change the target OS that Rivet tries to compile for. By default, the
       target OS is the host system.
 
-      Here is a list of the operating systems, supported by Rivet:
+      Here is a list of the operating systems supported by Rivet:
         `linux`
 
    -arch <arch>, --target-arch <arch>
-      Change the target architecture.
+      Change the target architecture that Rivet tries to compile for. By
+      default, the target architecture is the host arch.
 
-      Here is a list of the architectures, supported by Rivet:
+      Here is a list of the architectures supported by Rivet:
         `amd64`, `i386`
 
    -x32, -x64
@@ -113,20 +119,22 @@ class PkgMode(Enum):
 
 class Prefs:
     def __init__(self, args: [str]):
-        if len(args) == 0:
-            eprint(HELP)
-            exit(1)
-
         self.inputs = []
 
         self.pkg_name = "main"
         self.pkg_mode = PkgMode.Binary
+        self.output = "main"
         self.os = OS.get()
         self.arch = Arch.get()
         self.x64 = True
         self.byte_order = ByteOrder.get()
         self.flags = []
+
         self.is_verbose = False
+
+        if len(args) == 0:
+            eprint(HELP)
+            return
 
         i = 0
         while i < len(args):
@@ -142,23 +150,31 @@ class Prefs:
                 return
 
             # compiler options
-            inputs = []
             if arg.endswith(".ri"):
-                if os.path.isdir(arg):
+                if path.isdir(arg):
                     error(f"unable to read '{arg}': is a directory")
-                elif not os.path.exists(arg):
+                elif not path.exists(arg):
                     error(f"unable to read '{arg}': file not found")
                 elif arg in self.inputs:
                     error(f"duplicate file '{arg}'")
-                inputs.append(arg)
+                self.inputs.append(arg)
             elif arg == "--pkg-name":
                 if pkg_name := option(current_args, arg):
                     self.pkg_name = pkg_name
-                    i += 1
+                    self.output = pkg_name
                     if not self.pkg_name.isidentifier():
                         error(f"invalid package name `{self.pkg_name}`")
                 else:
                     error("`--pkg-name` requires a name as argument")
+                i += 1
+            elif arg in ("-o", "--output"):
+                if out := option(current_args, arg):
+                    self.output = out
+                    if path.isdir(self.output):
+                        error(f"{arg}: `{self.output}` is a directory")
+                else:
+                    error(f"`{arg}` requires a filename as argument")
+                i += 1
             elif arg in ("-d", "--define"):
                 if flag := option(current_args, arg):
                     if not flag.isupper():
@@ -170,44 +186,47 @@ class Prefs:
                     elif flag in self.flags:
                         error(f"duplicate flag: `{flag}`")
                     self.flags.append(flag)
-                    i += 1
                 else:
                     error(f"`{arg}` requires a name as argument")
+                i += 1
             elif arg in ("-os", "--target-os"):
                 if os_name := option(current_args, arg):
                     if os_flag := OS.get_from_string(os_name):
                         self.os = os_flag
-                        i += 1
                     else:
                         error(f"unknown operating system target: `{os_name}`")
                 else:
                     error(f"`{arg}` requires a name as argument")
+                i += 1
             elif arg in ("-arch", "--target-arch"):
                 if arch_name := option(current_args, arg):
                     if arch_flag := Arch.get_from_string(arch_name):
                         self.arch = arch_flag
-                        i += 1
                     else:
                         error(f"unknown architecture target: `{arch_name}`")
                 else:
                     error(f"`{arg}` requires a name as argument")
+                i += 1
             elif arg in ("-x32", "-x64"):
                 self.x64 = arg == "-x64"
             elif arg in ("-v", "--verbose"):
                 self.is_verbose = True
-            elif os.path.isdir(arg):
+            elif path.isdir(arg):
                 files = glob.glob(f"{arg}/*.ri")
                 if len(files) == 0:
                     error(f"`{arg}` does not have .ri files")
                 for f in files:
-                    inputs.append(f)
+                    self.inputs.append(f)
             else:
                 error(f"unknown option: `{arg}`")
             i += 1
 
-        self.inputs = self.filter_files(inputs)
+        self.inputs = self.filter_files(self.inputs)
         if len(self.inputs) == 0:
             error("no input received")
+
+        if not path.isabs(self.output):
+            self.output = path.join(os.getcwd(), self.output)
 
     def filter_files(self, inputs):
         new_inputs = []
@@ -222,8 +241,8 @@ class Prefs:
                         should_compile = ext[2:] in self.flags
                     else:
                         should_compile = ext[5:] not in self.flags
-                elif os := OS.get_from_string(ext):
-                    should_compile = os == self.os
+                elif osf := OS.get_from_string(ext):
+                    should_compile = osf == self.os
                 elif arch := Arch.get_from_string(ext):
                     should_compile = arch == self.arch
             if should_compile:
