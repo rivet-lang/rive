@@ -5,9 +5,10 @@
 import os, sys, glob
 from enum import IntEnum as Enum, auto as auto_enum
 
-from .utils import error, eprint
+from .utils import error, eprint, run_process
 
 VERSION = "0.1.0"
+COMMIT = run_process("git", "rev-parse", "--short", "HEAD").stdout
 HELP = """Usage: rivetc [OPTIONS] INPUTS
 
 The compiler can receive both files and directories as input, example:
@@ -116,7 +117,7 @@ class Prefs:
         self.pkg_mode = PkgMode.Binary
         self.os = OS.get()
         self.arch = Arch.get()
-        self.m64 =True
+        self.m64 = True
         self.byte_order = ByteOrder.get()
         self.is_verbose = False
 
@@ -132,7 +133,7 @@ class Prefs:
                 eprint(HELP)
                 return
             elif arg in ("-V", "--version"):
-                eprint(f"rivetc {VERSION}")
+                eprint(f"rivetc {VERSION} {COMMIT}")
                 return
 
             # compiler options
@@ -182,7 +183,6 @@ class Prefs:
                     self.inputs.append(f)
             else:
                 error(f"unknown option: `{arg}`")
-
             i += 1
 
         if len(self.inputs) == 0:

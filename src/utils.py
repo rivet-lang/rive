@@ -2,7 +2,7 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-import sys
+import sys, subprocess
 
 from . import colors
 
@@ -12,6 +12,19 @@ BACKSLASH_R = chr(13)
 BACKSLASH_N = chr(10)
 DOUBLE_QUOTE = chr(34)
 DOUBLE_ESCAPE = "\\\\"
+
+class ProcessResult:
+    def __init__(self, stdout, stderr, exit_code):
+        self.stdout = stdout
+        self.stderr = stderr
+        self.exit_code = exit_code
+
+def run_process(*args):
+    res = subprocess.run(args, capture_output=True)
+    return ProcessResult(
+        res.stdout.decode().strip(),
+        res.stderr.decode().strip(), res.returncode
+    )
 
 class CompilerError(Exception):
     pass
