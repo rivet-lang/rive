@@ -24,6 +24,15 @@ Options:
       Here is a list of the operating systems, supported by Rivet:
         `linux`
 
+   -arch <arch>, --target-arch <arch>
+      Change the target architecture.
+
+      Here is a list of the architectures, supported by Rivet:
+        `amd64`, `i386`
+
+   -x32, -x64
+      Whether 32-bit or 64-bit machine code will be generated.
+
    -v, --verbose
       Print additional messages to the console.
 
@@ -47,7 +56,7 @@ class OS(Enum):
     # Macos = auto_enum()
 
     @staticmethod
-    def get_current():
+    def get():
         if os := OS.get_from_string(sys.platform):
             return os
         else:
@@ -65,6 +74,34 @@ class OS(Enum):
             return True
         return False
 
+class Arch(Enum):
+    Amd64 = auto_enum() # aka x86_64
+    I386 = auto_enum() # aka x86
+
+    @staticmethod
+    def get():
+        if os.uname().machine == "x86_64":
+            return Arch.Amd64
+        return Arch.I386
+
+    @staticmethod
+    def get_from_string(arch):
+        if arch == "amd64":
+            return Arch.Amd64
+        elif arch == "i386":
+            return Arch.I386
+        return None
+
+class ByteOrder(Enum):
+    Little = auto_enum()
+    Big = auto_enum()
+
+    @staticmethod
+    def get():
+        if sys.byteorder == "little":
+            return ByteOrder.Little
+        return ByteOrder.Big
+
 class PkgMode(Enum):
     Binary = auto_enum()
     Library = auto_enum()
@@ -77,7 +114,10 @@ class Prefs:
 
         self.pkg_name = "main"
         self.pkg_mode = PkgMode.Binary
-        self.os = OS.get_current()
+        self.os = OS.get()
+        self.arch = Arch.get()
+        self.m64 =True
+        self.byte_order = ByteOrder.get()
         self.is_verbose = False
 
         self.inputs = []
@@ -92,7 +132,7 @@ class Prefs:
                 eprint(HELP)
                 return
             elif arg in ("-V", "--version"):
-                eprint(f"Rivet {VERSION}")
+                eprint(f"rivetc {VERSION}")
                 return
 
             # compiler options
@@ -118,9 +158,20 @@ class Prefs:
                         self.os = os_flag
                         i += 1
                     else:
-                        error(f"unknown or unsupported OS name: `{os_name}`")
+                        error(f"unknown operating system target: `{os_name}`")
                 else:
                     error(f"`{arg}` requires a name as argument")
+            elif arg in ("-arch", "--target-arch"):
+                if arch_name := option(current_args, arg):
+                    if arch_flag := Arch.get_from_string(arch_name):
+                        self.arch = arch_flag
+                        i += 1
+                    else:
+                        error(f"unknown architecture target: `{arch_name}`")
+                else:
+                    error(f"`{arg}` requires a name as argument")
+            elif arg in ("-x32", "-x64"):
+                self.x64 = arg == "-x64"
             elif arg in ("-v", "--verbose"):
                 self.is_verbose = True
             elif os.path.isdir(arg):
