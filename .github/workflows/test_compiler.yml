@@ -12,6 +12,10 @@ jobs:
       - name: Checkout Rivet source code
         uses: actions/checkout@v2
 
-      - name: Test parser
+      - name: Run tests
         run: |
-          python3 ./rivetc.py tests/parser/syntax.ri
+          python3 tests/run_tests.py
+
+      - name: Run failing tests
+        run: |
+          python3 tests/run_fail_tests.py

@@ -1,0 +1,4 @@
+tests/lexer/invalid_character.ri:1:1: error: invalid character ```
+  1 | `
+    | ^
+rivetc: error: could not compile package `main`, aborting due to previous error.

@@ -70,7 +70,7 @@ class Lexer:
         return self.pos - self.last_nl_pos
 
     def is_nl(self, ch):
-        return ch in [CR, LF]
+        return ch in (CR, LF)
 
     def skip_whitespace(self):
         while self.pos < self.text_len:

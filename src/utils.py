@@ -29,8 +29,8 @@ def run_process(*args):
 class CompilerError(Exception):
     pass
 
-def eprint(s, end="\n"):
-    print(s, end=end, file=sys.stderr)
+def eprint(*s, end="\n"):
+    print(*s, end=end, file=sys.stderr)
 
 def error(msg):
     bg = colors.bold(f'rivetc: {colors.red("error:")}')
