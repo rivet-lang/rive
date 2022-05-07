@@ -10,7 +10,6 @@ from enum import IntEnum as Enum, auto as auto_enum
 from .utils import error, eprint, run_process
 
 VERSION = "0.1.0"
-COMMIT = run_process("git", "rev-parse", "--short", "HEAD").out
 HELP = """Usage: rivetc [OPTIONS] INPUTS
 
 The compiler can receive both files and directories as input, example:
@@ -82,7 +81,7 @@ class OS(Enum):
         if os := OS.from_string(sys.platform):
             return os
         else:
-            error(f"unknown or unsupported host OS: {sys.platform}")
+            error(f"unknown target OS: {sys.platform}")
 
     @staticmethod
     def from_string(name):
@@ -101,9 +100,13 @@ class Arch(Enum):
 
     @staticmethod
     def get():
-        if os.uname().machine == "x86_64":
+        arch = os.uname().machine
+        if arch == "x86_64":
             return Arch.Amd64
-        return Arch.I386
+        elif arch == "x86":
+            return Arch.I386
+        else:
+            error(f"unknown target architecture: `{arch}`")
 
     @staticmethod
     def from_string(arch):
@@ -113,15 +116,25 @@ class Arch(Enum):
             return Arch.I386
         return None
 
-class ByteOrder(Enum):
+class Bits(Enum):
+    X32 = auto_enum()
+    X64 = auto_enum()
+
+    @staticmethod
+    def get():
+        if sizeof(c_voidp) == 8:
+            return Bits.X64
+        return Bits.X32
+
+class Endian(Enum):
     Little = auto_enum()
     Big = auto_enum()
 
     @staticmethod
     def get():
         if sys.byteorder == "little":
-            return ByteOrder.Little
-        return ByteOrder.Big
+            return Endian.Little
+        return Endian.Big
 
 class Backend(Enum):
     C = auto_enum()
@@ -153,17 +166,17 @@ class Prefs:
     def __init__(self, args: [str]):
         self.inputs = []
 
+        # target info
+        self.target_os = OS.get()
+        self.target_arch = Arch.get()
+        self.target_bits = Bits.get()
+        self.target_endian = Endian.get()
+        self.target_backend = Backend.C
+
         # package info
         self.pkg_name = "main"
         self.pkg_type = PkgType.Bin
-        self.backend = Backend.C
-        self.output = "main"
-
-        # system info
-        self.os = OS.get()
-        self.arch = Arch.get()
-        self.x64 = sizeof(c_voidp) == 8 # 4 = x32
-        self.byte_order = ByteOrder.get()
+        self.pkg_output = "main"
 
         self.flags = []
         self.is_verbose = False
@@ -173,8 +186,13 @@ class Prefs:
             return
 
         i = 0
+        flags = []
         while i < len(args):
             arg = args[i]
+            if arg.startswith("-") and arg in flags:
+                error(f"duplicate flag `{arg}`")
+            flags.append(arg)
+
             current_args = args[i:]
 
             # informative options
@@ -182,7 +200,10 @@ class Prefs:
                 eprint(HELP)
                 return
             elif arg in ("-V", "--version"):
-                eprint(f"rivetc {VERSION} {COMMIT}")
+                commit_date = run_process(
+                    "git", "log", "-n", "1", '--pretty=format:%h %as'
+                ).out
+                eprint(f"rivetc {VERSION} ({commit_date})")
                 return
 
             # compiler options
@@ -215,7 +236,7 @@ class Prefs:
             elif arg in ("-b", "--backend"):
                 if b := option(current_args, arg):
                     if backend := Backend.from_string(b):
-                        self.backend = backend
+                        self.target_backend = backend
                     else:
                         error(f"unknown backend: `{b}`")
                 else:
@@ -223,9 +244,9 @@ class Prefs:
                 i += 1
             elif arg in ("-o", "--output"):
                 if out := option(current_args, arg):
-                    self.output = out
-                    if path.isdir(self.output):
-                        error(f"{arg}: `{self.output}` is a directory")
+                    self.pkg_output = out
+                    if path.isdir(self.pkg_output):
+                        error(f"{arg}: `{self.pkg_output}` is a directory")
                 else:
                     error(f"`{arg}` requires a filename as argument")
                 i += 1
@@ -246,23 +267,23 @@ class Prefs:
             elif arg in ("-os", "--target-os"):
                 if os_name := option(current_args, arg):
                     if os_flag := OS.from_string(os_name):
-                        self.os = os_flag
+                        self.target_os = os_flag
                     else:
-                        error(f"unknown operating system target: `{os_name}`")
+                        error(f"unknown target operating system: `{os_name}`")
                 else:
                     error(f"`{arg}` requires a name as argument")
                 i += 1
             elif arg in ("-arch", "--target-arch"):
                 if arch_name := option(current_args, arg):
                     if arch_flag := Arch.from_string(arch_name):
-                        self.arch = arch_flag
+                        self.target_arch = arch_flag
                     else:
-                        error(f"unknown architecture target: `{arch_name}`")
+                        error(f"unknown target architecture: `{arch_name}`")
                 else:
                     error(f"`{arg}` requires a name as argument")
                 i += 1
             elif arg in ("-x32", "-x64"):
-                self.x64 = arg == "-x64"
+                self.target_bits = Bits.X32 if arg == "-x32" else Bits.X64
             elif arg in ("-v", "--verbose"):
                 self.is_verbose = True
             elif path.isdir(arg):
@@ -279,8 +300,8 @@ class Prefs:
         if len(self.inputs) == 0:
             error("no input received")
 
-        if not path.isabs(self.output):
-            self.output = path.join(os.getcwd(), self.output)
+        if not path.isabs(self.pkg_output):
+            self.pkg_output = path.join(os.getcwd(), self.pkg_output)
 
     def filter_files(self, inputs):
         new_inputs = []
@@ -289,16 +310,20 @@ class Prefs:
                 new_inputs.append(input)
             exts = input[:-3].split('.')[1:]
             should_compile = False
+            already_exts = []
             for ext in exts:
+                if ext in already_exts:
+                    error(f"duplicate special extension `{ext}` for `{input}`")
+                already_exts.append(ext)
                 if ext.startswith("d_") or ext.startswith("notd_"):
                     if ext.startswith("d_"):
                         should_compile = ext[2:] in self.flags
                     else:
                         should_compile = ext[5:] not in self.flags
                 elif osf := OS.from_string(ext):
-                    should_compile = osf == self.os
+                    should_compile = osf == self.target_os
                 elif arch := Arch.from_string(ext):
-                    should_compile = arch == self.arch
+                    should_compile = arch == self.target_arch
             if should_compile:
                 new_inputs.append(input)
         return new_inputs
