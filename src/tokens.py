@@ -50,7 +50,6 @@ class Kind(Enum):
     Pipe = auto_enum() # |
     BitNot = auto_enum() # ~
     Xor = auto_enum() # ^
-    At = auto_enum() # @
     Hash = auto_enum() # #
     Dollar = auto_enum() # $
     Lbrace = auto_enum() # {
@@ -194,7 +193,6 @@ TOKEN_STRINGS = {
     Kind.Pipe: "|",
     Kind.BitNot: "~",
     Kind.Xor: "^",
-    Kind.At: "@",
     Kind.Hash: "#",
     Kind.Dollar: "$",
     Kind.Lbrace: "{",

@@ -388,8 +388,9 @@ class Lexer:
                 return tokens.Token(
                     self.read_number().replace("_", ""), Kind.Number, pos
                 )
+
             # delimiters and operators
-            elif ch == "+":
+            if ch == "+":
                 if nextc == "+":
                     self.pos += 1
                     return tokens.Token("", Kind.Inc, pos)
@@ -487,7 +488,11 @@ class Lexer:
             elif ch == "$":
                 return tokens.Token("", Kind.Dollar, pos)
             elif ch == "@":
-                return tokens.Token("", Kind.At, pos)
+                self.pos += 1
+                keyword = self.read_ident()
+                if not tokens.is_key(keyword):
+                    report.error(f"expected keyword, found `{keyword}`", pos)
+                return tokens.Token(keyword, Kind.Name, pos)
             elif ch == "#":
                 return tokens.Token("", Kind.Hash, pos)
             elif ch == "&":
