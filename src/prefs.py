@@ -332,6 +332,7 @@ class Prefs:
         for input in inputs:
             if input.count('.') == 1:
                 new_inputs.append(input)
+                continue
             exts = input[:-3].split('.')[1:]
             should_compile = False
             already_exts = []

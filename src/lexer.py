@@ -488,6 +488,8 @@ class Lexer:
                 return tokens.Token("", Kind.Dollar, pos)
             elif ch == "@":
                 return tokens.Token("", Kind.At, pos)
+            elif ch == "#":
+                return tokens.Token("", Kind.Hash, pos)
             elif ch == "&":
                 if nextc == "=":
                     self.pos += 1
@@ -520,8 +522,6 @@ class Lexer:
                     self.pos += 1
                     return tokens.Token("", Kind.XorAssign, pos)
                 return tokens.Token("", Kind.Xor, pos)
-            elif ch == "#":
-                return tokens.Token("", Kind.Hash, pos)
             #
             elif ch == "{":
                 return tokens.Token("", Kind.Lbrace, pos)

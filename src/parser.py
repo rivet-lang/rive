@@ -93,7 +93,8 @@ class Parser:
 
     def parse_attrs(self):
         attrs = ast.Attrs()
-        while self.accept(Kind.Lbracket):
+        while self.accept(Kind.Hash):
+            self.expect(Kind.Lbracket)
             while True:
                 pos = self.tok.pos
                 if self.accept(Kind.KeyUnsafe):
