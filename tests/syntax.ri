@@ -133,9 +133,7 @@ fn simple() !void {
 }
 
 mod real {
-    pub fn scrash() void {
-        return;
-    }
+    pub fn scrash() void { return; }
 
     pub mod sis {
         fn inner(a: &[i32], mut b: [u8; 4]) void { }
@@ -148,6 +146,20 @@ mod real {
     fn arrays() [i32; 5] { }
 
     fn slices() &[i32] { }
+}
+
+fn comptime() void {
+    print_target_info($_OS_, $_ARCH_, $_ENDIAN_, $_BITS_, $_BACKEND_);
+    print_info($_FILE_, $_FUNCTION_, $_LINE_, $_COLUMN_);
+    $if (_LINUX_) {
+        compiler_warn!("comptime works!");
+    } $else {
+        compiler_warn!("comptime don't works =(");
+    }
+    $match ($_OS_) {
+        _LINUX_ => trace("Running on Linux"),
+        else => trace("unknown OS")
+    }
 }
 
 /// doc-comment

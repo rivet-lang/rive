@@ -165,13 +165,16 @@ class PkgExpr:
         return self.__repr__()
 
 class Ident:
-    def __init__(self, name, pos, scope):
+    def __init__(self, name, pos, scope, is_comptime):
         self.name = name
-        self.pos = pos
-        self.ty = None
         self.scope = scope
+        self.is_comptime = is_comptime
+        self.ty = None
+        self.pos = pos
 
     def __repr__(self):
+        if self.is_comptime:
+            return f"${self.name}"
         return self.name
 
     def __str__(self):
@@ -385,22 +388,25 @@ class GuardExpr:
         return self.__repr__()
 
 class IfBranch:
-    def __init__(self, cond, expr, is_else, op):
+    def __init__(self, is_comptime, cond, expr, is_else, op):
+        self.is_comptime = is_comptime
         self.cond = cond
         self.expr = expr
         self.is_else = is_else
         self.op = op
 
     def __repr__(self):
+        prefix = "$" if self.is_comptime else ""
         if self.is_else:
-            return f"else {self.expr}"
-        return f"{self.op} ({self.cond}) {self.expr}"
+            return f"{prefix}else {self.expr}"
+        return f"{prefix}{self.op} ({self.cond}) {self.expr}"
 
     def __str__(self):
         return self.__repr__()
 
 class IfExpr:
-    def __init__(self, branches, pos):
+    def __init__(self, is_comptime, branches, pos):
+        self.is_comptime = is_comptime
         self.branches = branches
         self.pos = pos
         self.typ = None
@@ -426,16 +432,18 @@ class MatchBranch:
         return self.__repr__()
 
 class MatchExpr:
-    def __init__(self, expr, branches, is_typematch, pos):
+    def __init__(self, is_comptime, expr, branches, is_typematch, pos):
         self.expr = expr
         self.branches = branches
         self.is_typematch = is_typematch
+        self.is_comptime = is_comptime
         self.pos = pos
         self.typ = None
 
     def __repr__(self):
-        kis = " is " if self.is_typematch else ""
-        return f"match ({self.expr}){kis}{{ " + ", ".join(
+        prefix = "$" if self.is_comptime else ""
+        kis = " is " if self.is_typematch else " "
+        return f"{prefix}match ({self.expr}){kis}{{ " + ", ".join(
             [str(b) for b in self.branches]
         ) + " }"
 
