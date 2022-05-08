@@ -36,7 +36,6 @@ extend pkg::custom_mod::CustomType {
     pub fn custom_fn() void { }
 }
 
-#[unsafe]
 pub fn pub_basic_fn(alpha: i32, arr: [i32; 5], slice: [i32]) void { }
 
 #[inline]
@@ -44,12 +43,11 @@ fn basic_fn(return_none: bool) ?i32 {
     return if (return_none) none else 5;
 }
 
-#[unsafe; abstract; virtual] // <- attributes
-fn def_arg(a: i32 = 10, tuple: (bool, void, u8)) void { }
+#[abstract; virtual] // <- attributes
+unsafe fn def_arg(a: i32 = 10, tuple: (bool, void, u8)) void { }
 
 fn result() !i32 { }
 
-#[unsafe]
 fn simple() !void {
     try run(player: Player{
         name: "StunxFS",

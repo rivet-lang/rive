@@ -97,9 +97,7 @@ class Parser:
             self.expect(Kind.Lbracket)
             while True:
                 pos = self.tok.pos
-                if self.accept(Kind.KeyUnsafe):
-                    attrs.add(ast.Attr("unsafe", pos))
-                elif self.accept(Kind.KeyIf):
+                if self.accept(Kind.KeyIf):
                     self.expect(Kind.Lparen)
                     cond = self.parse_expr()
                     self.expect(Kind.Rparen)
@@ -115,12 +113,19 @@ class Parser:
         doc_comment = self.parse_doc_comment()
         attrs = self.parse_attrs()
         is_pub = self.accept(Kind.KeyPub)
+        is_unsafe = self.accept(Kind.KeyUnsafe)
         pos = self.tok.pos
         if self.accept(Kind.KeyExtern):
             if self.inside_extern:
                 report.error("`extern` declarations cannot be nested", pos)
             elif is_pub:
-                report.error("`extern` declarations cannot be public", pos)
+                report.error(
+                    "`extern` declarations cannot be declared public", pos
+                )
+            elif is_unsafe:
+                report.error(
+                    "`extern` declarations cannot be declared unsafe", pos
+                )
             self.inside_extern = True
             decl = None
             if self.accept(Kind.KeyPkg):
@@ -161,6 +166,9 @@ class Parser:
             pos = self.tok.pos
             name = self.parse_name()
 
+            if is_unsafe:
+                report.error("modules cannot be declared unsafe", pos)
+
             old_is_pkg_level = self.is_pkg_level
             self.is_pkg_level = False
 
@@ -172,6 +180,8 @@ class Parser:
             self.is_pkg_level = old_is_pkg_level
             return ast.ModDecl(doc_comment, attrs, name, is_pub, decls, pos)
         elif self.accept(Kind.KeyExtend):
+            if is_unsafe:
+                report.error("`extend`s cannot be unsafe", self.prev_tok.pos)
             typ = self.parse_type()
             decls = []
             self.expect(Kind.Lbrace)
