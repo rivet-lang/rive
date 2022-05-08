@@ -22,6 +22,11 @@ Options:
    --pkg-type bin|lib|dylib|staticlib
       Specify the type of the package being built. By default: bin.
 
+   -o <filename>, --output <filename>
+      Force Rivet to output the package in a specific location
+      (relative to the current working directory if not absolute).
+      By default: main.
+
    -b <backend>, --backend <backend>
       Specify the backend to use while building the package.
 
@@ -29,13 +34,11 @@ Options:
         `c` (default)
            Rivet outputs C source code which is passed to a C compiler to be compiled.
 
-   -o <filename>, --output <filename>
-      Force Rivet to output the package in a specific location
-      (relative to the current working directory if not absolute).
-      By default: main.
-
    -d <flag>, --define <flag>
       Define the provided flag.
+
+   -L <path>
+      Add a directory to the library search path.
 
    -os <name>, --target-os <name>
       Change the target OS that Rivet tries to compile for. By default, the
@@ -62,6 +65,8 @@ Options:
 
    -h, --help
       Print this message."""
+
+RIVET_DIR = path.join(path.expanduser("~"), ".rivet-lang")
 
 def option(args, param):
     for (i, arg) in enumerate(args):
@@ -178,6 +183,10 @@ class Prefs:
         self.pkg_type = PkgType.Bin
         self.pkg_output = "main"
 
+        self.library_path = [
+            path.join(path.dirname(path.realpath(sys.argv[0])), "lib"),
+            path.join(RIVET_DIR, "libs")
+        ]
         self.flags = []
         self.is_verbose = False
 
@@ -189,7 +198,9 @@ class Prefs:
         flags = []
         while i < len(args):
             arg = args[i]
-            if arg.startswith("-") and arg in flags:
+            if arg[0] == '-' and arg not in (
+                "-L", "-d", "--define"
+            ) and arg in flags:
                 error(f"duplicate flag `{arg}`")
             flags.append(arg)
 
@@ -233,6 +244,14 @@ class Prefs:
                 else:
                     error("`--pkg-type` requires a package type as argument")
                 i += 1
+            elif arg in ("-o", "--output"):
+                if out := option(current_args, arg):
+                    self.pkg_output = out
+                    if path.isdir(self.pkg_output):
+                        error(f"{arg}: `{self.pkg_output}` is a directory")
+                else:
+                    error(f"`{arg}` requires a filename as argument")
+                i += 1
             elif arg in ("-b", "--backend"):
                 if b := option(current_args, arg):
                     if backend := Backend.from_string(b):
@@ -241,14 +260,6 @@ class Prefs:
                         error(f"unknown backend: `{b}`")
                 else:
                     error(f"`{arg}` requires a name as argument")
-                i += 1
-            elif arg in ("-o", "--output"):
-                if out := option(current_args, arg):
-                    self.pkg_output = out
-                    if path.isdir(self.pkg_output):
-                        error(f"{arg}: `{self.pkg_output}` is a directory")
-                else:
-                    error(f"`{arg}` requires a filename as argument")
                 i += 1
             elif arg in ("-d", "--define"):
                 if flag := option(current_args, arg):
@@ -263,6 +274,17 @@ class Prefs:
                     self.flags.append(flag)
                 else:
                     error(f"`{arg}` requires a name as argument")
+                i += 1
+            elif arg == "-L":
+                if p := option(current_args, arg):
+                    if path.isdir(p):
+                        if p in self.library_path:
+                            error(f"duplicate library path: `{p}`")
+                        self.library_path.append(p)
+                    else:
+                        error(f"`{p}` is not a directory")
+                else:
+                    error("`-L` requires a directory as argument")
                 i += 1
             elif arg in ("-os", "--target-os"):
                 if os_name := option(current_args, arg):
@@ -300,6 +322,8 @@ class Prefs:
         if len(self.inputs) == 0:
             error("no input received")
 
+        self.build_rivet_dir()
+
         if not path.isabs(self.pkg_output):
             self.pkg_output = path.join(os.getcwd(), self.pkg_output)
 
@@ -327,3 +351,8 @@ class Prefs:
             if should_compile:
                 new_inputs.append(input)
         return new_inputs
+
+    def build_rivet_dir(self):
+        if not path.isdir(RIVET_DIR):
+            os.mkdir(RIVET_DIR)
+            os.mkdir(path.join(RIVET_DIR, "libs"))
