@@ -98,10 +98,14 @@ class Parser:
             while True:
                 pos = self.tok.pos
                 if self.accept(Kind.KeyUnsafe):
-                    name = "unsafe"
+                    attrs.add(ast.Attr("unsafe", pos))
+                elif self.accept(Kind.KeyIf):
+                    self.expect(Kind.Lparen)
+                    cond = self.parse_expr()
+                    self.expect(Kind.Rparen)
+                    attrs.add(ast.Attr("if", pos, cond, True))
                 else:
-                    name = self.parse_name()
-                attrs.add(ast.Attr(name, pos))
+                    attrs.add(ast.Attr(self.parse_name(), pos))
                 if not self.accept(Kind.Semicolon):
                     break
             self.expect(Kind.Rbracket)

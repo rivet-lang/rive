@@ -12,6 +12,7 @@ extern "C" {
     fn abort() c_void;
 }
 
+#[if (_LINUX_ and _AMD64_)]
 extern "C" fn abs(a: i32) i32;
 
 /// A simple module for doc-comments.

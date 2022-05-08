@@ -32,9 +32,11 @@ class DocComment:
         return res
 
 class Attr:
-    def __init__(self, name, pos):
+    def __init__(self, name, pos, expr=None, has_expr=False):
         self.name = name
         self.pos = pos
+        self.expr = expr
+        self.has_expr = has_expr
 
 class Attrs:
     def __init__(self):
