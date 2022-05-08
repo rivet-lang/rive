@@ -91,6 +91,12 @@ class ExprStmt:
         self.expr = expr
         self.pos = pos
 
+    def __repr__(self):
+        return f"{self.expr}"
+
+    def __str__(self):
+        return self.__repr__()
+
 class LoopStmt:
     def __init__(self, stmt):
         self.stmt = stmt
@@ -138,7 +144,11 @@ class Block:
                 return f"{{ {self.expr} }}"
             else:
                 return "{}"
-        return f"{{ {'; '.join([str(s) for s in self.stmts])}; {self.expr} }}"
+        if self.is_expr:
+            return f"{{ {'; '.join([str(s) for s in self.stmts])}; {self.expr} }}"
+        if len(self.stmts) == 1:
+            return f"{{ {self.stmts[0]}; }}"
+        return f"{{ {'; '.join([str(s) for s in self.stmts])} }}"
 
     def __str__(self):
         return self.__repr__()

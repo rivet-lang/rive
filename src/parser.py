@@ -425,20 +425,22 @@ class Parser:
                 self.expect(Kind.Rparen)
                 expr = ast.ParExpr(e, e.pos)
         elif self.accept(Kind.Lbrace):
+            # block expression
             pos = self.prev_tok.pos
             old_inside_block = self.inside_block
             self.inside_block = True
             stmts = []
+            has_expr = False
             while not self.accept(Kind.Rbrace):
-                stmts.append(self.parse_stmt())
-            if len(stmts) > 0:
-                expr = ast.Block(
-                    stmts[:-1], stmts[-1].expr if
-                    isinstance(stmts[-1], ast.ExprStmt) else self.empty_expr(),
-                    True, pos
-                )
+                stmt = self.parse_stmt()
+                has_expr = isinstance(
+                    stmt, ast.ExprStmt
+                ) and self.prev_tok.kind != Kind.Semicolon
+                stmts.append(stmt)
+            if has_expr:
+                expr = ast.Block(stmts[:-1], stmts[-1].expr, True, pos)
             else:
-                expr = ast.Block([], self.empty_expr(), True, pos)
+                expr = ast.Block(stmts, self.empty_expr(), False, pos)
             self.inside_block = old_inside_block
         elif self.tok.kind == Kind.KeyUnsafe:
             if self.inside_unsafe:
