@@ -84,6 +84,14 @@ class ErrTypeDecl:
         self.name = name
         self.pos = pos
 
+class EnumDecl:
+    def __init__(self, is_pub, name, variants, decls, pos):
+        self.is_pub = is_pub
+        self.name = name
+        self.variants = variants
+        self.decls = decls
+        self.pos = pos
+
 class UnionDecl:
     def __init__(self, is_pub, name, variants, decls, pos):
         self.is_pub = is_pub

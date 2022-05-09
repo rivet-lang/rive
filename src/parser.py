@@ -189,6 +189,24 @@ class Parser:
             name = self.parse_name()
             self.expect(Kind.Semicolon)
             return ast.ErrTypeDecl(is_pub, name, pos)
+        elif self.accept(Kind.KeyEnum):
+            pos = self.tok.pos
+            if is_unsafe:
+                report.error("enum types cannot be declared unsafe", pos)
+            name = self.parse_name()
+            self.expect(Kind.Lbrace)
+            variants = []
+            while True:
+                variants.append(self.parse_name())
+                if not self.accept(Kind.Comma):
+                    break
+            decls = []
+            if self.accept(Kind.Semicolon):
+                # declarations: methods, consts, etc.
+                while self.tok.kind != Kind.Rbrace:
+                    decls.append(self.parse_decl())
+            self.expect(Kind.Rbrace)
+            return ast.EnumDecl(is_pub, name, variants, decls, pos)
         elif self.accept(Kind.KeyUnion):
             pos = self.tok.pos
             if is_unsafe:

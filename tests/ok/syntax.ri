@@ -25,26 +25,42 @@ fn open(path: str) !str {
 }
 
 union Expr {
-    IntegerLiteral,
-    StructLiteral,
-    BinaryExpr
+    IntegerLiteral, StructLiteral, BinaryExpr
 }
 
-#[no_tags]
+#[no_tag]
 union LikeC {
-    f32,
-    i32
+    f32, i32
 }
 
 union Object {
-    str,
-    i64;
+    str, i64;
 
     fn to_str() str {
         if (self is str) {
             return cast(self, str);
         }
         return "<i64-value>";
+    }
+}
+
+enum ReportLevel {
+    Low,
+    High
+}
+
+enum NPCRol {
+    Enemy,
+    Friend,
+    Helper,
+    Bot,
+    Police;
+
+    pub fn to_str() str {
+        if (self == .Enemy) {
+            return "<Enemy>";
+        }
+        return "<Friend =D>";
     }
 }
 
