@@ -235,12 +235,14 @@ class Parser:
 
     # ---- statements --------------------------
     def parse_stmt(self):
-        if self.accept(Kind.Lbrace):
-            pos = self.prev_tok.pos
+        if self.tok.kind in (Kind.KeyUnsafe, Kind.Lbrace):
+            pos = self.tok.pos
+            is_unsafe = self.accept(Kind.KeyUnsafe)
+            self.expect(Kind.Lbrace)
             stmts = []
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
-            return ast.Block(stmts, None, False, pos)
+            return ast.Block(is_unsafe, stmts, None, False, pos)
         elif self.accept(Kind.KeyLoop):
             return ast.LoopStmt(self.parse_stmt())
         elif self.accept(Kind.KeyWhile):
@@ -418,9 +420,11 @@ class Parser:
             else:
                 self.expect(Kind.Rparen)
                 expr = ast.ParExpr(e, e.pos)
-        elif self.accept(Kind.Lbrace):
+        elif self.tok.kind in (Kind.KeyUnsafe, Kind.Lbrace):
             # block expression
-            pos = self.prev_tok.pos
+            pos = self.tok.pos
+            is_unsafe = self.accept(Kind.KeyUnsafe)
+            self.expect(Kind.Lbrace)
             old_inside_block = self.inside_block
             self.inside_block = True
             stmts = []
@@ -432,16 +436,12 @@ class Parser:
                 ) and self.prev_tok.kind != Kind.Semicolon
                 stmts.append(stmt)
             if has_expr:
-                expr = ast.Block(stmts[:-1], stmts[-1].expr, True, pos)
+                expr = ast.Block(
+                    is_unsafe, stmts[:-1], stmts[-1].expr, True, pos
+                )
             else:
-                expr = ast.Block(stmts, self.empty_expr(), False, pos)
+                expr = ast.Block(is_unsafe, stmts, None, False, pos)
             self.inside_block = old_inside_block
-        elif self.tok.kind == Kind.KeyUnsafe:
-            self.expect(Kind.KeyUnsafe)
-            self.expect(Kind.Lbrace)
-            expr = self.parse_expr()
-            self.expect(Kind.Rbrace)
-            expr = ast.UnsafeExpr(expr, expr.pos)
         elif self.accept(Kind.KeyCast):
             self.expect(Kind.Lparen)
             expr = self.parse_expr()

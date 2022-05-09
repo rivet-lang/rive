@@ -50,6 +50,14 @@ unsafe fn def_arg(a: i32 = 10, tuple: (bool, void, u8)) void { }
 fn result() !i32 { }
 
 fn simple() !void {
+    call_unsafe(unsafe {
+        trace!("inside unsafe!");
+        x()
+    });
+    unsafe {
+        x();
+    }
+
     try run(player: Player{
         name: "StunxFS",
         rol: .Sheriff

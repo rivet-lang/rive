@@ -135,7 +135,8 @@ class EmptyExpr:
         return self.__repr__()
 
 class Block:
-    def __init__(self, stmts, expr, is_expr, pos):
+    def __init__(self, is_unsafe, stmts, expr, is_expr, pos):
+        self.is_unsafe = is_unsafe
         self.stmts = stmts
         self.expr = expr
         self.is_expr = is_expr
@@ -143,16 +144,17 @@ class Block:
         self.pos = pos
 
     def __repr__(self):
+        prefix = "unsafe " if self.is_unsafe else ""
         if len(self.stmts) == 0:
             if self.is_expr:
-                return f"{{ {self.expr} }}"
+                return f"{prefix}{{ {self.expr} }}"
             else:
-                return "{}"
+                return f"{prefix}{{}}"
         if self.is_expr:
-            return f"{{ {'; '.join([str(s) for s in self.stmts])}; {self.expr} }}"
+            return f"{prefix}{{ {'; '.join([str(s) for s in self.stmts])}; {self.expr} }}"
         if len(self.stmts) == 1:
-            return f"{{ {self.stmts[0]}; }}"
-        return f"{{ {'; '.join([str(s) for s in self.stmts])} }}"
+            return f"{prefix}{{ {self.stmts[0]}; }}"
+        return f"{prefix}{{ {'; '.join([str(s) for s in self.stmts])} }}"
 
     def __str__(self):
         return self.__repr__()
@@ -345,18 +347,6 @@ class CastExpr:
 
     def __repr__(self):
         return f"cast({self.expr}, {self.ty})"
-
-    def __str__(self):
-        return self.__repr__()
-
-class UnsafeExpr:
-    def __init__(self, expr, pos, typ=None):
-        self.expr = expr
-        self.typ = typ
-        self.pos = pos
-
-    def __repr__(self):
-        return f"unsafe {{ {self.expr} }}"
 
     def __str__(self):
         return self.__repr__()
