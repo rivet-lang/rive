@@ -77,6 +77,7 @@ class Kind(Enum):
     KeyStruct = auto_enum() # struct
     KeyUnion = auto_enum() # union
     KeyType = auto_enum() # type
+    KeyErrType = auto_enum() # errtype
     KeyEnum = auto_enum() # enum
     KeyExtend = auto_enum() # extend
     KeyFn = auto_enum() # fn
@@ -219,6 +220,7 @@ TOKEN_STRINGS = {
     Kind.KeyStruct: "struct",
     Kind.KeyUnion: "union",
     Kind.KeyType: "type",
+    Kind.KeyErrType: "errtype",
     Kind.KeyEnum: "enum",
     Kind.KeyExtend: "extend",
     Kind.KeyFn: "fn",

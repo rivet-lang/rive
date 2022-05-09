@@ -173,6 +173,18 @@ class Parser:
 
             self.is_pkg_level = old_is_pkg_level
             return ast.ModDecl(doc_comment, attrs, name, is_pub, decls, pos)
+        elif self.accept(Kind.KeyType):
+            pos = self.tok.pos
+            name = self.parse_name()
+            self.expect(Kind.Assign)
+            parent = self.parse_type()
+            self.expect(Kind.Semicolon)
+            return ast.TypeDecl(is_pub, name, parent, pos)
+        elif self.accept(Kind.KeyErrType):
+            pos = self.tok.pos
+            name = self.parse_name()
+            self.expect(Kind.Semicolon)
+            return ast.ErrTypeDecl(is_pub, name, pos)
         elif self.accept(Kind.KeyExtend):
             if is_unsafe:
                 report.error("`extend`s cannot be unsafe", self.prev_tok.pos)

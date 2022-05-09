@@ -62,6 +62,19 @@ class ExternDecl:
         self.protos = protos
         self.pos = pos
 
+class TypeDecl:
+    def __init__(self, is_pub, name, parent, pos):
+        self.is_pub = is_pub
+        self.name = name
+        self.parent = parent
+        self.pos = pos
+
+class ErrTypeDecl:
+    def __init__(self, is_pub, name, pos):
+        self.is_pub = is_pub
+        self.name = name
+        self.pos = pos
+
 class ModDecl:
     def __init__(self, doc_comment, attrs, name, is_pub, decls, pos):
         self.doc_comment = doc_comment

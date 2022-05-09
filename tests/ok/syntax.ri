@@ -7,6 +7,13 @@
 extern pkg core;
 extern pkg std;
 
+type Integer32 = i32;
+type WChar = u16;
+pub type WStr = *u16;
+
+errtype RuntimeError;
+pub errtype FileNotFoundError;
+
 #[if (DEFINE_EXIT_FUNCS)]
 extern "C" {
     fn exit(status: i32) c_void;
