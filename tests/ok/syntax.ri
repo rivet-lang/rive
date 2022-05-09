@@ -7,6 +7,12 @@
 extern pkg core;
 extern pkg std;
 
+const MAX_SIZE: i32 = 10;
+const MIN_SIZE: i32 = 1;
+
+static GLOBAL_VALUE: i32 = 10;
+static mut UNSAFE_GLOBAL_VALUE: i32 = 5;
+
 type Integer32 = i32;
 type WideChar = u16;
 pub type WideStr = *u16;

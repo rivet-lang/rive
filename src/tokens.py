@@ -71,6 +71,11 @@ class Kind(Enum):
     # ========== KEYWORDS ==========
     KeySelfTy = auto_enum() # Self
     KeyPkg = auto_enum() # pkg
+    KeyPub = auto_enum() # pub
+    KeyUse = auto_enum() # use
+    KeyAs = auto_enum() # as
+    KeyConst = auto_enum() # const
+    KeyStatic = auto_enum() # static
     KeyMod = auto_enum() # mod
     KeyExtern = auto_enum() # extern
     KeyTrait = auto_enum() # trait
@@ -80,9 +85,10 @@ class Kind(Enum):
     KeyErrType = auto_enum() # errtype
     KeyType = auto_enum() # type
     KeyExtend = auto_enum() # extend
-    KeyFn = auto_enum() # fn
     KeyTest = auto_enum() # test
-    KeyPub = auto_enum() # pub
+    KeyFn = auto_enum() # fn
+    KeyLet = auto_enum() # let
+    KeyMut = auto_enum() # mut
     KeyIf = auto_enum() # if
     KeyElif = auto_enum() # elif
     KeyElse = auto_enum() # else
@@ -90,8 +96,8 @@ class Kind(Enum):
     KeyLoop = auto_enum() # loop
     KeyWhile = auto_enum() # while
     KeyFor = auto_enum() # for
-    KeyBreak = auto_enum() # break
     KeyContinue = auto_enum() # continue
+    KeyBreak = auto_enum() # break
     KeyReturn = auto_enum() # return
     KeyRaise = auto_enum() # raise
     KeyGoto = auto_enum() # goto
@@ -103,12 +109,6 @@ class Kind(Enum):
     KeyNotIn = auto_enum() # !in
     KeyNotIs = auto_enum() # !is
     KeyCast = auto_enum() # cast
-    KeyAs = auto_enum() # as
-    KeyUse = auto_enum() # use
-    KeyConst = auto_enum() # const
-    KeyStatic = auto_enum() # static
-    KeyLet = auto_enum() # let
-    KeyMut = auto_enum() # mut
     KeyUnsafe = auto_enum() # unsafe
     KeyTry = auto_enum() # try
     KeyOrElse = auto_enum() # orelse
@@ -214,6 +214,11 @@ TOKEN_STRINGS = {
     # ========== KEYWORDS ==========
     Kind.KeySelfTy: "Self",
     Kind.KeyPkg: "pkg",
+    Kind.KeyPub: "pub",
+    Kind.KeyUse: "use",
+    Kind.KeyAs: "as",
+    Kind.KeyConst: "const",
+    Kind.KeyStatic: "static",
     Kind.KeyMod: "mod",
     Kind.KeyExtern: "extern",
     Kind.KeyTrait: "trait",
@@ -223,9 +228,10 @@ TOKEN_STRINGS = {
     Kind.KeyErrType: "errtype",
     Kind.KeyType: "type",
     Kind.KeyExtend: "extend",
-    Kind.KeyFn: "fn",
     Kind.KeyTest: "test",
-    Kind.KeyPub: "pub",
+    Kind.KeyFn: "fn",
+    Kind.KeyLet: "let",
+    Kind.KeyMut: "mut",
     Kind.KeyIf: "if",
     Kind.KeyElif: "elif",
     Kind.KeyElse: "else",
@@ -233,8 +239,8 @@ TOKEN_STRINGS = {
     Kind.KeyLoop: "loop",
     Kind.KeyWhile: "while",
     Kind.KeyFor: "for",
-    Kind.KeyBreak: "break",
     Kind.KeyContinue: "continue",
+    Kind.KeyBreak: "break",
     Kind.KeyReturn: "return",
     Kind.KeyRaise: "raise",
     Kind.KeyGoto: "goto",
@@ -246,12 +252,6 @@ TOKEN_STRINGS = {
     Kind.KeyNotIn: "!in",
     Kind.KeyNotIs: "!is",
     Kind.KeyCast: "cast",
-    Kind.KeyAs: "as",
-    Kind.KeyUse: "use",
-    Kind.KeyConst: "const",
-    Kind.KeyStatic: "static",
-    Kind.KeyLet: "let",
-    Kind.KeyMut: "mut",
     Kind.KeyUnsafe: "unsafe",
     Kind.KeyTry: "try",
     Kind.KeyOrElse: "orelse",

@@ -157,12 +157,34 @@ class Parser:
                 decl = ast.ExternDecl(abi, protos, pos)
             self.inside_extern = False
             return decl
+        elif self.accept(Kind.KeyConst):
+            pos = self.tok.pos
+            if is_unsafe:
+                report.error("constants cannot be declared unsafe", pos)
+            name = self.parse_name()
+            self.expect(Kind.Colon)
+            typ = self.parse_type()
+            self.expect(Kind.Assign)
+            expr = self.parse_expr()
+            self.expect(Kind.Semicolon)
+            return ast.ConstDecl(is_pub, name, typ, expr)
+        elif self.accept(Kind.KeyStatic):
+            pos = self.tok.pos
+            if is_unsafe:
+                report.error("static values cannot be declared unsafe", pos)
+            is_mut = self.accept(Kind.KeyMut)
+            name = self.parse_name()
+            self.expect(Kind.Colon)
+            typ = self.parse_type()
+            self.expect(Kind.Assign)
+            expr = self.parse_expr()
+            self.expect(Kind.Semicolon)
+            return ast.StaticDecl(is_pub, is_mut, name, typ, expr)
         elif self.accept(Kind.KeyMod):
             pos = self.tok.pos
-            name = self.parse_name()
-
             if is_unsafe:
                 report.error("modules cannot be declared unsafe", pos)
+            name = self.parse_name()
 
             old_is_pkg_level = self.is_pkg_level
             self.is_pkg_level = False
