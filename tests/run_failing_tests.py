@@ -9,7 +9,7 @@ from os import path
 def run_fail_tests():
     exit_code = 0
 
-    FAIL_FILES = glob.glob(f"tests/**/*.ri")
+    FAIL_FILES = glob.glob(f"tests/failing/**/*.ri")
 
     print(
         utils

@@ -1,7 +1,0 @@
-tests/lexer/invalid_escape_keyword.ri:1:1: error: expected keyword, found `4`
-  1 | @4
-    | ^
-tests/lexer/invalid_escape_keyword.ri:2:1: error: expected keyword, found `name`
-  2 | @name
-    | ^
-rivetc: error: could not compile package `main`, aborting due to 2 previous errors.
