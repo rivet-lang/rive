@@ -7,6 +7,7 @@ import os, sys, glob
 from ctypes import sizeof, c_voidp
 from enum import IntEnum as Enum, auto as auto_enum
 
+from . import ast, report, tokens
 from .utils import error, eprint, run_process
 
 VERSION = "0.1.0"
@@ -120,6 +121,13 @@ class Arch(Enum):
         elif arch == "i386":
             return Arch.I386
         return None
+
+    def equals_to_string(self, flag):
+        if flag == "_AMD64_" and self == Arch.Amd64:
+            return True
+        elif flag == "_i386_" and self == Arch.I386:
+            return True
+        return False
 
 class Bits(Enum):
     X32 = auto_enum()
@@ -357,3 +365,53 @@ class Prefs:
         if not path.isdir(RIVET_DIR):
             os.mkdir(RIVET_DIR)
             os.mkdir(path.join(RIVET_DIR, "libs"))
+
+    def evalue_comptime_condition(self, cond):
+        if isinstance(cond, ast.Ident):
+            if cond.is_comptime:
+                report.error("invalid comptime condition", cond.pos)
+            # operating systems
+            elif cond.name == "_LINUX_":
+                return self.target_os.equals_to_string(cond.name)
+            # architectures
+            elif cond.name in ("_AMD64_", "_i386_"):
+                return self.target_arch.equals_to_string(cond.name)
+            # bits
+            elif cond.name in ("_x32_", "_x64_"):
+                if cond.name == "_x32_":
+                    return self.target_bits == Bits.X32
+                else:
+                    return self.target_bits == Bits.X64
+            # endian
+            elif cond.name in ("_LITTLE_ENDIAN_", "_BIG_ENDIAN_"):
+                if cond.name == "_LITTLE_ENDIAN_":
+                    return self.target_endian == Endian.Little
+                else:
+                    return self.target_endian == Endian.Big
+            else:
+                if cond.name.startswith("_") and cond.name.endswith("_"):
+                    report.error(f"unknown builtin flag: `{cond}`", cond.pos)
+                    return False
+                return cond.name in self.flags
+        elif isinstance(cond, ast.ParExpr):
+            return self.evalue_comptime_condition(cond.expr)
+        elif isinstance(cond, ast.UnaryExpr):
+            if cond.op == tokens.Kind.Bang:
+                return not self.evalue_comptime_condition(cond.right)
+            else:
+                report.error("invalid comptime condition", cond.pos)
+        elif isinstance(cond, ast.BinaryExpr):
+            if cond.op in (tokens.Kind.KeyAnd, tokens.Kind.KeyOr):
+                if cond.op == tokens.Kind.KeyAnd:
+                    return self.evalue_comptime_condition(
+                        cond.left
+                    ) and self.evalue_comptime_condition(cond.right)
+                else:
+                    return self.evalue_comptime_condition(
+                        cond.left
+                    ) or self.evalue_comptime_condition(cond.right)
+            else:
+                report.error("invalid comptime condition", cond.pos)
+        else:
+            report.error("invalid comptime condition", cond.pos)
+        return False

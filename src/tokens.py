@@ -302,4 +302,4 @@ class Token:
         return string
 
     def __repr__(self):
-        return f'rivet.Token<kind: "{self.kind}", lit: "{self.lit}", pos: "{self.pos}">'
+        return f'rivet.Token(kind: "{self.kind}", lit: "{self.lit}", pos: "{self.pos}")'

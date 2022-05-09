@@ -23,7 +23,6 @@ class Parser:
         self.is_pkg_level = False
 
         self.inside_extern = False
-        self.inside_unsafe = False
         self.inside_block = False
 
     def parse_pkg(self):
@@ -126,40 +125,35 @@ class Parser:
                 report.error(
                     "`extern` declarations cannot be declared unsafe", pos
                 )
+            elif not self.is_pkg_level:
+                report.error(
+                    "extern packages or functions can only be declared at the package level",
+                    pos,
+                )
             self.inside_extern = True
-            decl = None
             if self.accept(Kind.KeyPkg):
                 # extern package
-                if not self.is_pkg_level:
-                    report.error(
-                        "extern packages can only be declared at the package level",
-                        pos,
-                    )
                 extern_pkg = self.parse_name()
                 self.expect(Kind.Semicolon)
                 decl = ast.ExternPkg(extern_pkg, pos)
             else:
-                # extern functions
+                # extern function
                 abi = self.parse_string_literal()
-                decls = []
-                if self.accept(Kind.KeyFn):
-                    decls.append(self.parse_fn_decl(doc_comment, attrs, True))
-                    self.expect(Kind.Semicolon)
-                else:
-                    self.expect(Kind.Lbrace)
+                protos = []
+                if self.accept(Kind.Lbrace):
                     while not self.accept(Kind.Rbrace):
-                        if self.accept(Kind.KeyFn):
-                            decls.append(
-                                self.parse_fn_decl(doc_comment, attrs, True)
-                            )
-                            self.expect(Kind.Semicolon)
-                        else:
-                            report.error(
-                                f"expected function header, found {self.tok}",
-                                self.tok.pos
-                            )
-                            self.next()
-                decl = ast.ExternDecl(abi, decls, pos)
+                        self.expect(Kind.KeyFn)
+                        protos.append(
+                            self.parse_fn_decl(doc_comment, attrs, True, True)
+                        )
+                        self.expect(Kind.Semicolon)
+                else:
+                    self.expect(Kind.KeyFn)
+                    protos.append(
+                        self.parse_fn_decl(doc_comment, attrs, True, True)
+                    )
+                    self.expect(Kind.Semicolon)
+                decl = ast.ExternDecl(abi, protos, pos)
             self.inside_extern = False
             return decl
         elif self.accept(Kind.KeyMod):
@@ -189,13 +183,13 @@ class Parser:
                 decls.append(self.parse_decl())
             return ast.ExtendDecl(typ, decls)
         elif self.accept(Kind.KeyFn):
-            return self.parse_fn_decl(doc_comment, attrs, is_pub)
+            return self.parse_fn_decl(doc_comment, attrs, is_pub, is_unsafe)
         else:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()
         return ast.EmptyDecl()
 
-    def parse_fn_decl(self, doc_comment, attrs, is_pub):
+    def parse_fn_decl(self, doc_comment, attrs, is_pub, is_unsafe):
         pos = self.tok.pos
         name = self.parse_name()
 
@@ -229,14 +223,14 @@ class Parser:
         stmts = []
         if self.inside_extern:
             if self.tok.kind == Kind.Lbrace:
-                report.error("extern functions cannot have body", pos)
+                report.error("extern functions cannot have a body", pos)
         else:
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
 
         return ast.FnDecl(
-            doc_comment, attrs, is_pub, name, args, ret_typ, stmts
+            doc_comment, attrs, is_pub, is_unsafe, name, args, ret_typ, stmts
         )
 
     # ---- statements --------------------------
@@ -292,14 +286,14 @@ class Parser:
         left = self.parse_and_expr()
         while self.accept(Kind.KeyOr):
             right = self.parse_and_expr()
-            left = ast.BinaryExpr(left, Kind.KeyOr, right, right.pos)
+            left = ast.BinaryExpr(left, Kind.KeyOr, right, left.pos)
         return left
 
     def parse_and_expr(self):
         left = self.parse_equality_expr()
         while self.accept(Kind.KeyAnd):
             right = self.parse_equality_expr()
-            left = ast.BinaryExpr(left, Kind.KeyAnd, right, right.pos)
+            left = ast.BinaryExpr(left, Kind.KeyAnd, right, left.pos)
         return left
 
     def parse_equality_expr(self):
@@ -308,7 +302,7 @@ class Parser:
             op = self.tok.kind
             self.next()
             right = self.parse_relational_expr()
-            left = ast.BinaryExpr(left, op, right, right.pos)
+            left = ast.BinaryExpr(left, op, right, left.pos)
         return left
 
     def parse_relational_expr(self):
@@ -341,12 +335,12 @@ class Parser:
                 self.next()
                 self.next()
                 right = self.parse_additive_expr()
-                left = ast.BinaryExpr(left, op, right, right.pos)
+                left = ast.BinaryExpr(left, op, right, left.pos)
         elif self.tok.kind in [Kind.Amp, Kind.Pipe, Kind.Xor]:
             op = self.tok.kind
             self.next()
             right = self.parse_additive_expr()
-            left = ast.BinaryExpr(left, op, right, right.pos)
+            left = ast.BinaryExpr(left, op, right, left.pos)
         return left
 
     def parse_additive_expr(self):
@@ -355,7 +349,7 @@ class Parser:
             op = self.tok.kind
             self.next()
             right = self.parse_multiplicative_expr()
-            left = ast.BinaryExpr(left, op, right, right.pos)
+            left = ast.BinaryExpr(left, op, right, left.pos)
         return left
 
     def parse_multiplicative_expr(self):
@@ -364,7 +358,7 @@ class Parser:
             op = self.tok.kind
             self.next()
             right = self.parse_unary_expr()
-            left = ast.BinaryExpr(left, op, right, right.pos)
+            left = ast.BinaryExpr(left, op, right, left.pos)
         return left
 
     def parse_unary_expr(self):
@@ -443,14 +437,9 @@ class Parser:
                 expr = ast.Block(stmts, self.empty_expr(), False, pos)
             self.inside_block = old_inside_block
         elif self.tok.kind == Kind.KeyUnsafe:
-            if self.inside_unsafe:
-                report.warn("`unsafe` is unnecessary", self.tok.pos)
-            old_iu = self.inside_unsafe
             self.expect(Kind.KeyUnsafe)
             self.expect(Kind.Lbrace)
-            self.inside_unsafe = True
             expr = self.parse_expr()
-            self.inside_unsafe = old_iu
             self.expect(Kind.Rbrace)
             expr = ast.UnsafeExpr(expr, expr.pos)
         elif self.accept(Kind.KeyCast):

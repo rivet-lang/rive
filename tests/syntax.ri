@@ -7,12 +7,13 @@
 extern pkg core;
 extern pkg std;
 
+#[if (DEFINE_EXIT_FUNCS)]
 extern "C" {
     fn exit(status: i32) c_void;
     fn abort() c_void;
 }
 
-#[if (_LINUX_ and _AMD64_)]
+#[if (_LINUX_ and _AMD64_ and _x64_ and _LITTLE_ENDIAN_ and DEFINE_ABS)]
 extern "C" fn abs(a: i32) i32;
 
 /// A simple module for doc-comments.
@@ -152,13 +153,13 @@ fn comptime() void {
     print_target_info($_OS_, $_ARCH_, $_ENDIAN_, $_BITS_, $_BACKEND_);
     print_info($_FILE_, $_FUNCTION_, $_LINE_, $_COLUMN_);
     $if (_LINUX_) {
-        compiler_warn!("comptime works!");
+        compile_warn!("comptime works!");
     } $else {
-        compiler_warn!("comptime don't works =(");
+        compile_warn!("comptime doesn't works =(");
     }
     $match ($_OS_) {
-        _LINUX_ => trace("Running on Linux"),
-        else => trace("unknown OS")
+        _LINUX_ => trace!("Running on Linux"),
+        else => trace!("unknown OS")
     }
 }
 

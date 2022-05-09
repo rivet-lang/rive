@@ -57,9 +57,9 @@ class ExternPkg:
         self.pos = pos
 
 class ExternDecl:
-    def __init__(self, abi, decls, pos):
+    def __init__(self, abi, protos, pos):
         self.abi = abi
-        self.decls = decls
+        self.protos = protos
         self.pos = pos
 
 class ModDecl:
@@ -77,9 +77,13 @@ class ExtendDecl:
         self.decls = decls
 
 class FnDecl:
-    def __init__(self, doc_comment, attrs, is_pub, name, args, ret_typ, stmts):
+    def __init__(
+        self, doc_comment, attrs, is_pub, is_unsafe, name, args, ret_typ, stmts
+    ):
         self.doc_comment = doc_comment
         self.attrs = attrs
+        self.is_pub = is_pub
+        self.is_unsafe = is_unsafe
         self.name = name
         self.args = args
         self.ret_typ = ret_typ
@@ -125,7 +129,7 @@ class EmptyExpr:
         self.pos = pos
 
     def __repr__(self):
-        return f"<rivet.EmptyExpr pos={self.pos}>"
+        return f'rivet.EmptyExpr(pos: "{self.pos}")'
 
     def __str__(self):
         return self.__repr__()
