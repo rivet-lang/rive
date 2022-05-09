@@ -51,6 +51,9 @@ class Attrs:
                 return attr
         return None
 
+    def has_attrs(self):
+        return len(self.attrs) > 0
+
 class ExternPkg:
     def __init__(self, pkg_name, pos):
         self.pkg_name = pkg_name
@@ -82,6 +85,13 @@ class ErrTypeDecl:
     def __init__(self, is_pub, name, pos):
         self.is_pub = is_pub
         self.name = name
+        self.pos = pos
+
+class TraitDecl:
+    def __init__(self, is_pub, name, decls, pos):
+        self.is_pub = is_pub
+        self.name = name
+        self.decls = decls
         self.pos = pos
 
 class UnionDecl:
@@ -123,7 +133,16 @@ class ExtendDecl:
 
 class FnDecl:
     def __init__(
-        self, doc_comment, attrs, is_pub, is_unsafe, name, args, ret_typ, stmts
+        self,
+        doc_comment,
+        attrs,
+        is_pub,
+        is_unsafe,
+        name,
+        args,
+        ret_typ,
+        stmts,
+        has_body=False
     ):
         self.doc_comment = doc_comment
         self.attrs = attrs

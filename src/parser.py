@@ -24,6 +24,7 @@ class Parser:
 
         self.inside_extern = False
         self.inside_block = False
+        self.inside_trait = False
 
     def parse_pkg(self):
         self.is_pkg_level = True
@@ -189,6 +190,35 @@ class Parser:
             name = self.parse_name()
             self.expect(Kind.Semicolon)
             return ast.ErrTypeDecl(is_pub, name, pos)
+        elif self.accept(Kind.KeyTrait):
+            pos = self.tok.pos
+            if is_unsafe:
+                report.error("traits cannot be declared unsafe", pos)
+            name = self.parse_name()
+            decls = []
+            old_inside_trait = self.inside_trait
+            self.inside_trait = True
+            self.expect(Kind.Lbrace)
+            while not self.accept(Kind.Rbrace):
+                doc_comment = self.parse_doc_comment()
+                attrs_pos = self.tok.pos
+                attrs = self.parse_attrs()
+                if attrs.has_attrs():
+                    report.error(
+                        "attributes should be applied to a function or method",
+                        attrs_pos
+                    )
+                if self.accept(Kind.KeyPub):
+                    report.error(
+                        "unnecessary visibility qualifier", self.prev_tok.pos
+                    )
+                is_unsafe = self.accept(Kind.KeyUnsafe)
+                self.expect(Kind.KeyFn)
+                decls.append(
+                    self.parse_fn_decl(doc_comment, attrs, True, is_unsafe)
+                )
+            self.inside_trait = old_inside_trait
+            return ast.TraitDecl(is_pub, name, decls, pos)
         elif self.accept(Kind.KeyUnion):
             pos = self.tok.pos
             if is_unsafe:
@@ -316,16 +346,23 @@ class Parser:
             ret_typ = type.Result(ret_typ)
 
         stmts = []
-        if self.inside_extern:
-            if self.tok.kind == Kind.Lbrace:
-                report.error("extern functions cannot have a body", pos)
+        has_body = True
+        if self.tok.kind == Kind.Semicolon and self.inside_trait:
+            has_body = False
+            self.expect(Kind.Semicolon)
         else:
-            self.expect(Kind.Lbrace)
-            while not self.accept(Kind.Rbrace):
-                stmts.append(self.parse_stmt())
+            if self.inside_extern:
+                if self.tok.kind == Kind.Lbrace:
+                    report.error("extern functions cannot have a body", pos)
+                has_body = False
+            else:
+                self.expect(Kind.Lbrace)
+                while not self.accept(Kind.Rbrace):
+                    stmts.append(self.parse_stmt())
 
         return ast.FnDecl(
-            doc_comment, attrs, is_pub, is_unsafe, name, args, ret_typ, stmts
+            doc_comment, attrs, is_pub, is_unsafe, name, args, ret_typ, stmts,
+            has_body
         )
 
     # ---- statements --------------------------

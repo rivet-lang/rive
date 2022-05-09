@@ -60,6 +60,23 @@ struct Account {
     }
 }
 
+trait Printable {
+    fn to_str() str;
+}
+
+trait Writable {
+	fn write(buf: [u8]) !?i32;
+	fn write_to(pos: u64, buf: [u8]) !?i32;
+}
+
+trait Widget {
+    fn id() str;
+
+    fn id_and_name() str {
+        return self.id();
+    }
+}
+
 struct EmptyStruct { }
 
 union Expr {
