@@ -309,6 +309,14 @@ class Parser:
             return ast.ExtendDecl(typ, decls)
         elif self.accept(Kind.KeyFn):
             return self.parse_fn_decl(doc_comment, attrs, is_pub, is_unsafe)
+        elif self.accept(Kind.KeyTest):
+            name = self.tok.lit
+            self.expect(Kind.String)
+            stmts = []
+            self.expect(Kind.Lbrace)
+            while not self.accept(Kind.Rbrace):
+                stmts.append(self.parse_stmt())
+            return ast.TestDecl(name, stmts)
         else:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()

@@ -90,6 +90,11 @@ trait Widget {
     }
 }
 
+test "Test body with cool name =D!" {
+    trace!("inside test");
+    assert!(2 >= 5);
+}
+
 struct EmptyStruct { }
 
 union Expr {

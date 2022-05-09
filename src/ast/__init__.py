@@ -153,6 +153,11 @@ class FnDecl:
         self.ret_typ = ret_typ
         self.stmts = stmts
 
+class TestDecl:
+    def __init__(self, name, stmts):
+        self.name = name
+        self.stmts = stmts
+
 class DestructorDecl:
     def __init__(self, stmts):
         self.stmts = stmts
