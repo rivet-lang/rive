@@ -136,6 +136,11 @@ class ReturnStmt:
         self.has_expr = has_expr
         self.pos = pos
 
+class RaiseStmt:
+    def __init__(self, msg, pos):
+        self.msg = msg
+        self.pos = pos
+
 # ------ Expressions -------
 class EmptyExpr:
     def __init__(self, pos):
@@ -295,6 +300,17 @@ class StringLiteral:
     def __str__(self):
         return self.__repr__()
 
+class SelfExpr:
+    def __init__(self, scope, pos):
+        self.scope = scope
+        self.pos = pos
+
+    def __repr__(self):
+        return "self"
+
+    def __str__(self):
+        return self.__repr__()
+
 class TupleLiteral:
     def __init__(self, exprs, pos):
         self.exprs = exprs
@@ -341,13 +357,13 @@ class GoExpr:
     def __str__(self):
         return self.__repr__()
 
-class SelfExpr:
-    def __init__(self, scope, pos):
-        self.scope = scope
+class TryExpr:
+    def __init__(self, expr, pos):
+        self.expr = expr
         self.pos = pos
 
     def __repr__(self):
-        return "self"
+        return f"try {self.expr}"
 
     def __str__(self):
         return self.__repr__()
@@ -631,17 +647,6 @@ class PathExpr:
 
     def __repr__(self):
         return f"{self.left}::{self.field_name}"
-
-    def __str__(self):
-        return self.__repr__()
-
-class TryExpr:
-    def __init__(self, expr, pos):
-        self.expr = expr
-        self.pos = pos
-
-    def __repr__(self):
-        return f"try {self.expr}"
 
     def __str__(self):
         return self.__repr__()

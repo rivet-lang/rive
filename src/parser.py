@@ -284,6 +284,11 @@ class Parser:
                 expr = self.empty_expr()
             self.expect(Kind.Semicolon)
             return ast.ReturnStmt(expr, has_expr, pos)
+        elif self.accept(Kind.KeyRaise):
+            pos = self.prev_tok.pos
+            msg = self.parse_expr()
+            self.expect(Kind.Semicolon)
+            return ast.RaiseStmt(msg, pos)
         expr = self.parse_expr()
         if not (
             (self.inside_block and self.tok.kind == Kind.Rbrace)
@@ -622,10 +627,12 @@ class Parser:
                         is_comptime, cond, self.parse_expr(), False, op
                     )
                 )
+                if self.tok.kind not in (
+                    Kind.Dollar, Kind.KeyElif, Kind.KeyElse
+                ):
+                    break
                 if is_comptime:
                     self.expect(Kind.Dollar)
-                if self.tok.kind not in (Kind.KeyElif, Kind.KeyElse):
-                    break
         return ast.IfExpr(is_comptime, branches, pos)
 
     def parse_match_expr(self, is_comptime):

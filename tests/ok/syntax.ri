@@ -8,11 +8,21 @@ extern pkg core;
 extern pkg std;
 
 type Integer32 = i32;
-type WChar = u16;
-pub type WStr = *u16;
+type WideChar = u16;
+pub type WideStr = *u16;
 
 errtype RuntimeError;
 pub errtype FileNotFoundError;
+
+fn open(path: str) !str {
+    $if (_LINUX_) {
+        if (!exists(path)) {
+            raise FileNotFoundError();
+        }
+        return path;
+    }
+    raise RuntimeError("unsupported OS for `open`");
+}
 
 #[if (DEFINE_EXIT_FUNCS)]
 extern "C" {
@@ -64,6 +74,8 @@ fn simple() !void {
     unsafe {
         x();
     }
+
+    go run_thread();
 
     try run(player: Player{
         name: "StunxFS",
