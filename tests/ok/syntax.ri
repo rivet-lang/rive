@@ -52,7 +52,20 @@ struct Account {
 
     other_field: bool;
 
-    fn other_method() void { }
+    fn other_method() void {
+        loop {
+            if (1 >= 3) {
+                break;
+            }
+            continue;
+        }
+    }
+
+    fn other_method2() void {
+    L1:
+        trace!("garrotero");
+        unsafe { goto L1; }
+    }
 
     ~self {
         // struct destructor

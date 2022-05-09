@@ -367,7 +367,12 @@ class Parser:
 
     # ---- statements --------------------------
     def parse_stmt(self):
-        if self.tok.kind in (Kind.KeyUnsafe, Kind.Lbrace):
+        if self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
+            pos = self.tok.pos
+            label = self.parse_name()
+            self.expect(Kind.Colon)
+            return ast.LabelStmt(label, pos)
+        elif self.tok.kind in (Kind.KeyUnsafe, Kind.Lbrace):
             pos = self.tok.pos
             is_unsafe = self.accept(Kind.KeyUnsafe)
             self.expect(Kind.Lbrace)
@@ -395,6 +400,17 @@ class Parser:
             self.expect(Kind.Rparen)
             stmt = self.parse_stmt()
             return ast.ForInStmt(key, value, iterable, stmt)
+        elif self.accept(Kind.KeyGoto):
+            pos = self.tok.pos
+            label = self.parse_name()
+            self.expect(Kind.Semicolon)
+            return ast.GotoStmt(label, pos)
+        elif self.tok.kind in (Kind.KeyContinue, Kind.KeyBreak):
+            op = self.tok.kind
+            pos = self.tok.pos
+            self.next()
+            self.expect(Kind.Semicolon)
+            return ast.BranchStmt(op, pos)
         elif self.accept(Kind.KeyReturn):
             pos = self.prev_tok.pos
             has_expr = self.tok.kind != Kind.Semicolon

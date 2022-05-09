@@ -169,6 +169,11 @@ class ExprStmt:
     def __str__(self):
         return self.__repr__()
 
+class LabelStmt:
+    def __init__(self, label, pos):
+        self.label = label
+        self.pos = pos
+
 class LoopStmt:
     def __init__(self, stmt):
         self.stmt = stmt
@@ -184,6 +189,16 @@ class ForInStmt:
         self.value = value
         self.iterable = iterable
         self.stmt = stmt
+
+class GotoStmt:
+    def __init__(self, label, pos):
+        self.label = label
+        self.pos = pos
+
+class BranchStmt:
+    def __init__(self, op, pos):
+        self.op = op
+        self.pos = pos
 
 class ReturnStmt:
     def __init__(self, expr, has_expr, pos):
