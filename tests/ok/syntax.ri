@@ -24,6 +24,44 @@ fn open(path: str) !str {
     raise RuntimeError("unsupported OS for `open`");
 }
 
+enum Service {
+    VIP,
+    Fast,
+    Unique,
+    Small,
+    Free
+}
+
+struct Account {
+    pub mut name: str;
+    pub id: i32; // unique ID
+    pub mut password: str;
+    pub mut is_active: bool;
+
+    // private field
+    mut services: [Service; 3] = [Service::VIP, .Small, .Unique];
+
+    #[inline]
+    pub fn new(name: str, password: str) Self {
+        return Self{
+            name: name,
+            id: generate_unique_id(),
+            password: password
+        };
+    }
+
+    other_field: bool;
+
+    fn other_method() void { }
+
+    ~self {
+        // struct destructor
+        trace!("~Account() called");
+    }
+}
+
+struct EmptyStruct { }
+
 union Expr {
     IntegerLiteral, StructLiteral, BinaryExpr
 }
@@ -90,6 +128,7 @@ extend u8 {
     pub fn to_str() str { return ""; }
 }
 
+#[if (EXTEND_CUSTOM_TYPE)]
 extend pkg::custom_mod::CustomType {
     pub fn custom_fn() void { }
 }

@@ -189,28 +189,10 @@ class Parser:
             name = self.parse_name()
             self.expect(Kind.Semicolon)
             return ast.ErrTypeDecl(is_pub, name, pos)
-        elif self.accept(Kind.KeyEnum):
-            pos = self.tok.pos
-            if is_unsafe:
-                report.error("enum types cannot be declared unsafe", pos)
-            name = self.parse_name()
-            self.expect(Kind.Lbrace)
-            variants = []
-            while True:
-                variants.append(self.parse_name())
-                if not self.accept(Kind.Comma):
-                    break
-            decls = []
-            if self.accept(Kind.Semicolon):
-                # declarations: methods, consts, etc.
-                while self.tok.kind != Kind.Rbrace:
-                    decls.append(self.parse_decl())
-            self.expect(Kind.Rbrace)
-            return ast.EnumDecl(is_pub, name, variants, decls, pos)
         elif self.accept(Kind.KeyUnion):
             pos = self.tok.pos
             if is_unsafe:
-                report.error("union types cannot be declared unsafe", pos)
+                report.error("unions cannot be declared unsafe", pos)
             name = self.parse_name()
             self.expect(Kind.Lbrace)
             variants = []
@@ -225,6 +207,67 @@ class Parser:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
             return ast.UnionDecl(is_pub, name, variants, decls, pos)
+        elif self.accept(Kind.KeyStruct):
+            pos = self.tok.pos
+            if is_unsafe:
+                report.error("structs cannot be declared unsafe", pos)
+            name = self.parse_name()
+            self.expect(Kind.Lbrace)
+            decls = []
+            if self.tok.kind != Kind.Rbrace:
+                while self.tok.kind != Kind.Rbrace:
+                    if self.tok.kind in (Kind.KeyMut, Kind.Name) or (
+                        self.tok.kind == Kind.KeyPub
+                        and self.peek_tok.kind in (Kind.KeyMut, Kind.Name)
+                    ):
+                        # fields
+                        is_pub = self.accept(Kind.KeyPub)
+                        is_mut = self.accept(Kind.KeyMut)
+                        fname = self.parse_name()
+                        self.expect(Kind.Colon)
+                        ftyp = self.parse_type()
+                        has_def_expr = self.accept(Kind.Assign)
+                        def_expr = None
+                        if has_def_expr:
+                            def_expr = self.parse_expr()
+                        self.expect(Kind.Semicolon)
+                        decls.append(
+                            ast.StructField(
+                                is_pub, is_mut, fname, ftyp, def_expr,
+                                has_def_expr
+                            )
+                        )
+                    elif self.accept(Kind.BitNot):
+                        # destructor
+                        self.expect(Kind.KeySelf)
+                        self.expect(Kind.Lbrace)
+                        stmts = []
+                        while not self.accept(Kind.Rbrace):
+                            stmts.append(self.parse_stmt())
+                        decls.append(ast.DestructorDecl(stmts))
+                    else:
+                        # declaration: methods, consts, etc.
+                        decls.append(self.parse_decl())
+            self.expect(Kind.Rbrace)
+            return ast.StructDecl(is_pub, name, decls, pos)
+        elif self.accept(Kind.KeyEnum):
+            pos = self.tok.pos
+            if is_unsafe:
+                report.error("enums cannot be declared unsafe", pos)
+            name = self.parse_name()
+            self.expect(Kind.Lbrace)
+            variants = []
+            while True:
+                variants.append(self.parse_name())
+                if not self.accept(Kind.Comma):
+                    break
+            decls = []
+            if self.accept(Kind.Semicolon):
+                # declarations: methods, consts, etc.
+                while self.tok.kind != Kind.Rbrace:
+                    decls.append(self.parse_decl())
+            self.expect(Kind.Rbrace)
+            return ast.EnumDecl(is_pub, name, variants, decls, pos)
         elif self.accept(Kind.KeyExtend):
             if is_unsafe:
                 report.error("`extend`s cannot be unsafe", self.prev_tok.pos)
@@ -440,7 +483,7 @@ class Parser:
         expr = self.empty_expr()
         if self.tok.kind in [
             Kind.KeyTrue, Kind.KeyFalse, Kind.Char, Kind.Number, Kind.String,
-            Kind.KeyNone, Kind.KeySelf
+            Kind.KeyNone, Kind.KeySelf, Kind.KeySelfTy
         ]:
             expr = self.parse_literal()
         elif self.accept(Kind.Dollar):
@@ -721,18 +764,14 @@ class Parser:
             return self.parse_integer_literal()
         elif self.tok.kind == Kind.String:
             return self.parse_string_literal()
-        elif self.tok.kind == Kind.KeySelf:
-            pos = self.tok.pos
-            self.next()
-            expr = ast.SelfExpr(self.scope, pos)
-        elif self.tok.kind == Kind.KeyNone:
-            pos = self.tok.pos
-            self.next()
-            return ast.NoneLiteral(pos)
+        elif self.accept(Kind.KeySelf):
+            return ast.SelfExpr(self.scope, self.prev_tok.pos)
+        elif self.accept(Kind.KeySelfTy):
+            return ast.SelfTyExpr(self.scope, self.prev_tok.pos)
+        elif self.accept(Kind.KeyNone):
+            return ast.NoneLiteral(self.prev_tok.pos)
         else:
-            report.error(
-                f"expected literal, found {self.tok.str()}", self.tok.pos
-            )
+            report.error(f"expected literal, found {self.tok}", self.tok.pos)
         return self.empty_expr()
 
     def parse_integer_literal(self):
@@ -835,7 +874,7 @@ class Parser:
                 report.error("optional multi-level types are not allowed", pos)
             return type.Optional(typ)
         elif self.accept(Kind.KeySelfTy):
-            return type.UnknownType(ast.SelfExpr(self.prev_tok.pos))
+            return type.UnknownType(ast.SelfExpr(self.scope, self.prev_tok.pos))
         elif self.tok.kind in (Kind.KeyPkg, Kind.Name):
             # normal type
             if self.peek_tok.kind == Kind.DoubleColon:

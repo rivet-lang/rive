@@ -74,11 +74,11 @@ class Kind(Enum):
     KeyMod = auto_enum() # mod
     KeyExtern = auto_enum() # extern
     KeyTrait = auto_enum() # trait
-    KeyStruct = auto_enum() # struct
     KeyUnion = auto_enum() # union
-    KeyType = auto_enum() # type
-    KeyErrType = auto_enum() # errtype
+    KeyStruct = auto_enum() # struct
     KeyEnum = auto_enum() # enum
+    KeyErrType = auto_enum() # errtype
+    KeyType = auto_enum() # type
     KeyExtend = auto_enum() # extend
     KeyFn = auto_enum() # fn
     KeyTest = auto_enum() # test
@@ -217,11 +217,11 @@ TOKEN_STRINGS = {
     Kind.KeyMod: "mod",
     Kind.KeyExtern: "extern",
     Kind.KeyTrait: "trait",
-    Kind.KeyStruct: "struct",
     Kind.KeyUnion: "union",
-    Kind.KeyType: "type",
-    Kind.KeyErrType: "errtype",
+    Kind.KeyStruct: "struct",
     Kind.KeyEnum: "enum",
+    Kind.KeyErrType: "errtype",
+    Kind.KeyType: "type",
     Kind.KeyExtend: "extend",
     Kind.KeyFn: "fn",
     Kind.KeyTest: "test",

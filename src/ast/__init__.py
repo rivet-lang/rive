@@ -84,7 +84,7 @@ class ErrTypeDecl:
         self.name = name
         self.pos = pos
 
-class EnumDecl:
+class UnionDecl:
     def __init__(self, is_pub, name, variants, decls, pos):
         self.is_pub = is_pub
         self.name = name
@@ -92,7 +92,23 @@ class EnumDecl:
         self.decls = decls
         self.pos = pos
 
-class UnionDecl:
+class StructField:
+    def __init__(self, is_pub, is_mut, name, typ, def_expr, has_def_expr):
+        self.is_pub = is_pub
+        self.is_mut = is_mut
+        self.name = name
+        self.typ = typ
+        self.def_expr = def_expr
+        self.has_def_expr = has_def_expr
+
+class StructDecl:
+    def __init__(self, is_pub, name, decls, pos):
+        self.is_pub = is_pub
+        self.name = name
+        self.decls = decls
+        self.pos = pos
+
+class EnumDecl:
     def __init__(self, is_pub, name, variants, decls, pos):
         self.is_pub = is_pub
         self.name = name
@@ -116,6 +132,10 @@ class FnDecl:
         self.name = name
         self.args = args
         self.ret_typ = ret_typ
+        self.stmts = stmts
+
+class DestructorDecl:
+    def __init__(self, stmts):
         self.stmts = stmts
 
 # ------ Statements --------
@@ -323,6 +343,17 @@ class SelfExpr:
 
     def __repr__(self):
         return "self"
+
+    def __str__(self):
+        return self.__repr__()
+
+class SelfTyExpr:
+    def __init__(self, scope, pos):
+        self.scope = scope
+        self.pos = pos
+
+    def __repr__(self):
+        return "Self"
 
     def __str__(self):
         return self.__repr__()
