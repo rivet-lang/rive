@@ -62,6 +62,15 @@ class ExternDecl:
         self.protos = protos
         self.pos = pos
 
+class ModDecl:
+    def __init__(self, doc_comment, attrs, name, is_pub, decls, pos):
+        self.doc_comment = doc_comment
+        self.attrs = attrs
+        self.name = name
+        self.is_pub = is_pub
+        self.decls = decls
+        self.pos = pos
+
 class TypeDecl:
     def __init__(self, is_pub, name, parent, pos):
         self.is_pub = is_pub
@@ -75,12 +84,11 @@ class ErrTypeDecl:
         self.name = name
         self.pos = pos
 
-class ModDecl:
-    def __init__(self, doc_comment, attrs, name, is_pub, decls, pos):
-        self.doc_comment = doc_comment
-        self.attrs = attrs
-        self.name = name
+class UnionDecl:
+    def __init__(self, is_pub, name, variants, decls, pos):
         self.is_pub = is_pub
+        self.name = name
+        self.variants = variants
         self.decls = decls
         self.pos = pos
 

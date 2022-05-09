@@ -175,6 +175,8 @@ class Parser:
             return ast.ModDecl(doc_comment, attrs, name, is_pub, decls, pos)
         elif self.accept(Kind.KeyType):
             pos = self.tok.pos
+            if is_unsafe:
+                report.error("type aliases cannot be declared unsafe", pos)
             name = self.parse_name()
             self.expect(Kind.Assign)
             parent = self.parse_type()
@@ -182,9 +184,29 @@ class Parser:
             return ast.TypeDecl(is_pub, name, parent, pos)
         elif self.accept(Kind.KeyErrType):
             pos = self.tok.pos
+            if is_unsafe:
+                report.error("error types cannot be declared unsafe", pos)
             name = self.parse_name()
             self.expect(Kind.Semicolon)
             return ast.ErrTypeDecl(is_pub, name, pos)
+        elif self.accept(Kind.KeyUnion):
+            pos = self.tok.pos
+            if is_unsafe:
+                report.error("union types cannot be declared unsafe", pos)
+            name = self.parse_name()
+            self.expect(Kind.Lbrace)
+            variants = []
+            while True:
+                variants.append(self.parse_type())
+                if not self.accept(Kind.Comma):
+                    break
+            decls = []
+            if self.accept(Kind.Semicolon):
+                # declarations: methods, consts, etc.
+                while self.tok.kind != Kind.Rbrace:
+                    decls.append(self.parse_decl())
+            self.expect(Kind.Rbrace)
+            return ast.UnionDecl(is_pub, name, variants, decls, pos)
         elif self.accept(Kind.KeyExtend):
             if is_unsafe:
                 report.error("`extend`s cannot be unsafe", self.prev_tok.pos)
