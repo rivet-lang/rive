@@ -288,7 +288,7 @@ class Block:
             return f"{prefix}{{ {'; '.join([str(s) for s in self.stmts])}; {self.expr} }}"
         if len(self.stmts) == 1:
             return f"{prefix}{{ {self.stmts[0]}; }}"
-        return f"{prefix}{{ {'; '.join([str(s) for s in self.stmts])} }}"
+        return f"{prefix}{{ {'; '.join([str(s) for s in self.stmts])}; }}"
 
     def __str__(self):
         return self.__repr__()
@@ -674,12 +674,13 @@ class IndexExpr:
         return self.__repr__()
 
 class CallExpr:
-    def __init__(self, left, args, pos):
+    def __init__(self, left, args, err_handler, pos):
         self.left = left
         self.args = args
-        self.pos = pos
-        self.typ = None
+        self.err_handler = err_handler
         self.info = None
+        self.typ = None
+        self.pos = pos
 
     def get_named_arg(self, name):
         for arg in self.args:
@@ -696,8 +697,14 @@ class CallExpr:
                 l += 1
         return l
 
+    def has_err_handler(self):
+        return self.err_handler.expr != None
+
     def __repr__(self):
-        return f"{self.left}({', '.join([str(a) for a in self.args])})"
+        res = f"{self.left}({', '.join([str(a) for a in self.args])})"
+        if self.has_err_handler():
+            res += " " + str(self.err_handler)
+        return res
 
     def __str__(self):
         return self.__repr__()
@@ -710,7 +717,22 @@ class CallArg:
         self.is_named = name != ""
 
     def __repr__(self):
-        return (f"{self.name}: " if self.is_named else "") + f"{self.expr}"
+        if self.is_named:
+            return f"{self.name}: {self.expr}"
+        return str(self.expr)
+
+    def __str__(self):
+        return self.__repr__()
+
+class CallErrorHandler:
+    def __init__(self, varname, expr):
+        self.varname = varname
+        self.expr = expr
+
+    def __repr__(self):
+        if len(self.varname) == 0:
+            return f"catch {self.expr}"
+        return f"catch |{self.varname}| {self.expr}"
 
     def __str__(self):
         return self.__repr__()

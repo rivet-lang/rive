@@ -755,7 +755,17 @@ class Parser:
                         if not self.accept(Kind.Comma):
                             break
                 self.expect(Kind.Rparen)
-                expr = ast.CallExpr(expr, args, expr.pos)
+                varname = ""
+                err_expr = None
+                if self.accept(Kind.KeyCatch):
+                    if self.accept(Kind.Pipe):
+                        varname = self.parse_name()
+                        self.expect(Kind.Pipe)
+                    err_expr = self.parse_expr()
+                expr = ast.CallExpr(
+                    expr, args, ast.CallErrorHandler(varname, err_expr),
+                    expr.pos
+                )
             elif self.accept(Kind.Dot):
                 if self.accept(Kind.Mult):
                     expr = ast.IndirectExpr(expr, expr.pos)

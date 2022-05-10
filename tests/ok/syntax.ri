@@ -103,9 +103,31 @@ trait Widget {
     }
 }
 
+fn optional() ?i32 {
+    return none;
+}
+
+fn error() !void {
+    raise RuntimeError("simple error =D");
+}
+
 test "Test body with cool name =D!" {
     trace!("inside test");
     assert!(2 >= 5);
+
+    // optional() orelse {
+    //     assert!(true);
+    //     5
+    // };
+
+    error() catch {
+        trace!("error catched");
+    };
+
+    error() catch |err| {
+        assert!(err is RuntimeError);
+        assert!(err.msg.len == 15);
+    };
 }
 
 struct EmptyStruct { }
