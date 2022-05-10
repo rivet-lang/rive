@@ -177,12 +177,18 @@ class FnDecl:
         args,
         ret_typ,
         stmts,
-        has_body=False
+        has_body=False,
+        is_method=False,
+        self_is_ref=False,
+        self_is_mut=False
     ):
         self.doc_comment = doc_comment
         self.attrs = attrs
         self.vis = vis
         self.is_unsafe = is_unsafe
+        self.is_method = is_method
+        self.self_is_ref = self_is_ref
+        self.self_is_mut = self_is_mut
         self.name = name
         self.args = args
         self.ret_typ = ret_typ

@@ -359,10 +359,26 @@ class Parser:
         name = self.parse_name()
 
         args = []
+        is_method = False
+        self_is_ref = False
+        self_is_mut = False
         self.expect(Kind.Lparen)
         if self.tok.kind != Kind.Rparen:
-            while True:
-                # arguments
+            # receiver (`self`|`&self`|`&mut self`)
+            if self.tok.kind == Kind.KeySelf or (
+                self.tok.kind == Kind.Amp and self.peek_tok.kind == Kind.KeySelf
+            ) or (
+                self.tok.kind == Kind.Amp and self.peek_tok.kind == Kind.KeyMut
+                and self.peek_token(2).kind == Kind.KeySelf
+            ):
+                is_method = True
+                self_is_ref = self.accept(Kind.Amp)
+                self_is_mut = self.accept(Kind.KeyMut)
+                self.expect(Kind.KeySelf)
+                if self.tok.kind != Kind.Rparen:
+                    self.expect(Kind.Comma)
+            # arguments
+            while self.tok.kind != Kind.Rparen:
                 is_mut = self.accept(Kind.KeyMut)
                 arg_name = self.parse_name()
                 self.expect(Kind.Colon)
@@ -402,7 +418,7 @@ class Parser:
 
         return ast.FnDecl(
             doc_comment, attrs, vis, is_unsafe, name, args, ret_typ, stmts,
-            has_body
+            has_body, is_method, self_is_ref, self_is_mut
         )
 
     # ---- statements --------------------------

@@ -61,7 +61,7 @@ struct Account {
 
     other_field: bool;
 
-    fn other_method() void {
+    fn method(self) void {
         loop {
             if (1 >= 3) {
                 break;
@@ -70,7 +70,11 @@ struct Account {
         }
     }
 
-    fn other_method2() void {
+    fn method2(&self) void { }
+
+    fn method3(&mut self) void { }
+
+    fn associated_function() void {
     L1:
         trace!("garrotero");
         unsafe { goto L1; }
