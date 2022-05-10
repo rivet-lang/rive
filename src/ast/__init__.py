@@ -205,8 +205,9 @@ class DestructorDecl:
 
 # ------ Statements --------
 class VarDecl:
-    def __init__(self, is_mut, name, typ):
+    def __init__(self, is_mut, is_ref, name, typ):
         self.is_mut = is_mut
+        self.is_ref = is_ref
         self.name = name
         self.typ = typ
 
@@ -238,9 +239,8 @@ class WhileStmt:
         self.stmt = stmt
 
 class ForInStmt:
-    def __init__(self, key, value, iterable, stmt):
-        self.key = key
-        self.value = value
+    def __init__(self, lefts, iterable, stmt):
+        self.lefts = lefts
         self.iterable = iterable
         self.stmt = stmt
 

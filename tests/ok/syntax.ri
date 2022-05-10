@@ -72,7 +72,7 @@ struct Account {
 
     fn method2(&self) void { }
 
-    fn method3(&mut self) void { }
+    fn method3(mut &self) void { }
 
     fn associated_function() void {
     L1:
@@ -362,5 +362,10 @@ fn main() void {
     while (_T1 != none) {
         // ...
         _T1 = _T0.next();
+    }
+
+    let map: Map = Map::new([("Key", 5)]);
+    for ((key, mut &value) in map) {
+        assert!(key == "Key" and value.* == 5);
     }
 }

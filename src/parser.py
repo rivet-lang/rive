@@ -2,9 +2,9 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from .ast import sym, type
-from .lexer import Lexer
 from .tokens import Kind
+from .lexer import Lexer
+from .ast import sym, type
 from . import report, tokens, ast
 
 class Parser:
@@ -364,16 +364,16 @@ class Parser:
         self_is_mut = False
         self.expect(Kind.Lparen)
         if self.tok.kind != Kind.Rparen:
-            # receiver (`self`|`&self`|`&mut self`)
+            # receiver (`self`|`&self`|`mut &self`)
             if self.tok.kind == Kind.KeySelf or (
                 self.tok.kind == Kind.Amp and self.peek_tok.kind == Kind.KeySelf
             ) or (
-                self.tok.kind == Kind.Amp and self.peek_tok.kind == Kind.KeyMut
+                self.tok.kind == Kind.KeyMut and self.peek_tok.kind == Kind.Amp
                 and self.peek_token(2).kind == Kind.KeySelf
             ):
                 is_method = True
-                self_is_ref = self.accept(Kind.Amp)
                 self_is_mut = self.accept(Kind.KeyMut)
+                self_is_ref = self.accept(Kind.Amp)
                 self.expect(Kind.KeySelf)
                 if self.tok.kind != Kind.Rparen:
                     self.expect(Kind.Comma)
@@ -463,16 +463,21 @@ class Parser:
             return ast.WhileStmt(cond, stmt)
         elif self.accept(Kind.KeyFor):
             self.expect(Kind.Lparen)
-            key = self.parse_name()
-            if self.accept(Kind.Comma):
-                value = self.parse_name()
+            lefts = []
+            if self.accept(Kind.Lparen):
+                # multiple variables
+                while True:
+                    lefts.append(self.parse_var_decl(True, False))
+                    if not self.accept(Kind.Comma):
+                        break
+                self.expect(Kind.Rparen)
             else:
-                value = ""
+                lefts = [self.parse_var_decl(False)]
             self.expect(Kind.KeyIn)
             iterable = self.parse_expr()
             self.expect(Kind.Rparen)
             stmt = self.parse_stmt()
-            return ast.ForInStmt(key, value, iterable, stmt)
+            return ast.ForInStmt(lefts, iterable, stmt)
         elif self.accept(Kind.KeyGoto):
             pos = self.tok.pos
             label = self.parse_name()
@@ -514,13 +519,14 @@ class Parser:
             self.expect(Kind.Semicolon)
         return ast.ExprStmt(expr, expr.pos)
 
-    def parse_var_decl(self):
+    def parse_var_decl(self, support_ref=False, support_typ=True):
         is_mut = self.accept(Kind.KeyMut)
+        is_ref = support_ref and self.accept(Kind.Amp)
         name = self.parse_name()
         typ = self.comp.void_t
-        if self.accept(Kind.Colon):
+        if support_typ and self.accept(Kind.Colon):
             typ = self.parse_type()
-        return ast.VarDecl(is_mut, name, typ)
+        return ast.VarDecl(is_mut, is_ref, name, typ)
 
     # ---- expressions -------------------------
     def parse_expr(self):
