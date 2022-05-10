@@ -23,6 +23,7 @@ class Parser:
         self.is_pkg_level = False
 
         self.inside_extern = False
+        self.inside_struct_decl = False
         self.inside_block = False
         self.inside_trait = False
 
@@ -271,6 +272,8 @@ class Parser:
             self.expect(Kind.Rbrace)
             return ast.UnionDecl(vis, name, variants, decls, pos)
         elif self.accept(Kind.KeyStruct):
+            old_inside_struct_decl = self.inside_struct_decl
+            self.inside_struct_decl = True
             pos = self.tok.pos
             if is_unsafe:
                 report.error("structs cannot be declared unsafe", pos)
@@ -279,28 +282,7 @@ class Parser:
             decls = []
             if self.tok.kind != Kind.Rbrace:
                 while self.tok.kind != Kind.Rbrace:
-                    if self.tok.kind in (Kind.KeyMut, Kind.Name) or (
-                        self.tok.kind == Kind.KeyPub
-                        and self.peek_tok.kind in (Kind.KeyMut, Kind.Name)
-                    ):
-                        # fields
-                        is_pub = self.accept(Kind.KeyPub)
-                        is_mut = self.accept(Kind.KeyMut)
-                        fname = self.parse_name()
-                        self.expect(Kind.Colon)
-                        ftyp = self.parse_type()
-                        has_def_expr = self.accept(Kind.Assign)
-                        def_expr = None
-                        if has_def_expr:
-                            def_expr = self.parse_expr()
-                        self.expect(Kind.Semicolon)
-                        decls.append(
-                            ast.StructField(
-                                is_pub, is_mut, fname, ftyp, def_expr,
-                                has_def_expr
-                            )
-                        )
-                    elif self.accept(Kind.BitNot):
+                    if self.accept(Kind.BitNot):
                         # destructor
                         self.expect(Kind.KeySelf)
                         self.expect(Kind.Lbrace)
@@ -312,7 +294,24 @@ class Parser:
                         # declaration: methods, consts, etc.
                         decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
+            self.inside_struct_decl = old_inside_struct_decl
             return ast.StructDecl(vis, name, decls, pos)
+        elif self.inside_struct_decl and self.tok.kind in (
+            Kind.KeyMut, Kind.Name
+        ):
+            # struct fields
+            is_mut = self.accept(Kind.KeyMut)
+            name = self.parse_name()
+            self.expect(Kind.Colon)
+            typ = self.parse_type()
+            has_def_expr = self.accept(Kind.Assign)
+            def_expr = None
+            if has_def_expr:
+                def_expr = self.parse_expr()
+            self.expect(Kind.Semicolon)
+            return ast.StructField(
+                vis.is_pub(), is_mut, name, typ, def_expr, has_def_expr
+            )
         elif self.accept(Kind.KeyEnum):
             pos = self.tok.pos
             if is_unsafe:

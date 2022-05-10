@@ -47,7 +47,7 @@ struct Account {
     pub mut password: str;
     pub mut is_active: bool;
 
-    // private field
+    /// Custom services. A private field.
     mut services: [Service; 3] = [Service::VIP, .Small, .Unique];
 
     #[inline]
