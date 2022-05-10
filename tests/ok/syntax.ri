@@ -203,6 +203,12 @@ pub mod simple2 {
     mod snacks { }
 }
 
+static mut VALUE: i32 = 5;
+
+unsafe fn get_mutable_pointer() mut &i32 {
+    return unsafe { &VALUE };
+}
+
 extend u8 {
     pub fn to_str() str { return ""; }
 }

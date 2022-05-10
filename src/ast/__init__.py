@@ -175,6 +175,7 @@ class FnDecl:
         is_unsafe,
         name,
         args,
+        ret_is_mut,
         ret_typ,
         stmts,
         has_body=False,
@@ -191,6 +192,7 @@ class FnDecl:
         self.self_is_mut = self_is_mut
         self.name = name
         self.args = args
+        self.ret_is_mut = ret_is_mut
         self.ret_typ = ret_typ
         self.stmts = stmts
 

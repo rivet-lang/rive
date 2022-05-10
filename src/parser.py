@@ -397,6 +397,7 @@ class Parser:
         self.expect(Kind.Rparen)
 
         is_result = self.accept(Kind.Bang)
+        ret_is_mut = self.accept(Kind.KeyMut)
         ret_typ = self.parse_type()
         if is_result:
             ret_typ = type.Result(ret_typ)
@@ -417,8 +418,8 @@ class Parser:
                     stmts.append(self.parse_stmt())
 
         return ast.FnDecl(
-            doc_comment, attrs, vis, is_unsafe, name, args, ret_typ, stmts,
-            has_body, is_method, self_is_ref, self_is_mut
+            doc_comment, attrs, vis, is_unsafe, name, args, ret_typ, ret_is_mut,
+            stmts, has_body, is_method, self_is_ref, self_is_mut
         )
 
     # ---- statements --------------------------
