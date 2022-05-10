@@ -149,9 +149,11 @@ class Lexer:
                     )
             self.pos += 1
         if self.text[self.pos - 1] == NUM_SEP:
+            self.pos -= 1
             report.error(
                 "cannot use `_` at the end of a numeric literal", self.get_pos()
             )
+            self.pos += 1
         lit = self.text[start:self.pos]
         self.pos -= 1 # fix pos
         return lit
@@ -183,9 +185,11 @@ class Lexer:
                     )
             self.pos += 1
         if self.text[self.pos - 1] == NUM_SEP:
+            self.pos -= 1
             report.error(
                 "cannot use `_` at the end of a numeric literal", self.get_pos()
             )
+            self.pos += 1
         lit = self.text[start:self.pos]
         self.pos -= 1 # fix pos
         return lit
@@ -209,9 +213,11 @@ class Lexer:
                     )
             self.pos += 1
         if self.text[self.pos - 1] == NUM_SEP:
+            self.pos -= 1
             report.error(
                 "cannot use `_` at the end of a numeric literal", self.get_pos()
             )
+            self.pos += 1
 
         # fractional part
         if self.pos < self.text_len and self.text[self.pos] == ".":
@@ -243,10 +249,11 @@ class Lexer:
                     # 5.
                     self.pos -= 1
                     report.error(
-                        "float literals should have a digit after the decimal point, "
-                        "e.g. `1.0`",
+                        "float literals should have a digit after the decimal point",
                         self.get_pos(),
                     )
+                    fl = self.text[start:self.pos]
+                    report.help(f"use `{fl}.0` instead of `{fl}`")
                     self.pos += 1
 
         # exponential part

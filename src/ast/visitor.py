@@ -3,4 +3,5 @@
 # that can be found in the LICENSE file.
 
 class Visitor:
-    pass
+    def __init__(self):
+        pass

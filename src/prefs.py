@@ -238,7 +238,7 @@ class Prefs:
                 if pkg_name := option(current_args, arg):
                     self.pkg_name = pkg_name
                     self.output = pkg_name
-                    if not self.pkg_name.isidentifier():
+                    if not utils.is_valid_name(self.pkg_name):
                         error(f"invalid package name `{self.pkg_name}`")
                 else:
                     error("`--pkg-name` requires a name as argument")

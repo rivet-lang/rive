@@ -56,8 +56,10 @@ def warn(msg, pos):
 
 def note(msg):
     utils.eprint(
-        f"{' ' * LAST_LINE_NR_LEN}{colors.bold(colors.cyan(' = note:'))} {msg}"
+        f"{' ' * LAST_LINE_NR_LEN}{colors.bold(colors.green(' = note:'))} {msg}"
     )
 
 def help(msg):
-    utils.eprint(f"{' ' * LAST_LINE_NR_LEN}{colors.bold(' = help:')} {msg}")
+    utils.eprint(
+        f"{' ' * LAST_LINE_NR_LEN}{colors.bold(colors.cyan(' = help:'))} {msg}"
+    )
