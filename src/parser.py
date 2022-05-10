@@ -423,7 +423,24 @@ class Parser:
 
     # ---- statements --------------------------
     def parse_stmt(self):
-        if self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
+        if self.accept(Kind.KeyLet):
+            # variable declarations
+            pos = self.prev_tok.pos
+            lefts = []
+            if self.accept(Kind.Lparen):
+                # multiple variables
+                while True:
+                    lefts.append(self.parse_var_decl())
+                    if not self.accept(Kind.Comma):
+                        break
+                self.expect(Kind.Rparen)
+            else:
+                lefts = [self.parse_var_decl()]
+            self.expect(Kind.Assign)
+            right = self.parse_expr()
+            self.expect(Kind.Semicolon)
+            return ast.LetStmt(lefts, right, pos)
+        elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
             pos = self.tok.pos
             label = self.parse_name()
             self.expect(Kind.Colon)
@@ -481,13 +498,29 @@ class Parser:
             msg = self.parse_expr()
             self.expect(Kind.Semicolon)
             return ast.RaiseStmt(msg, pos)
+
         expr = self.parse_expr()
-        if not (
+        if self.tok.kind.is_assign():
+            # assignment
+            op = self.tok.kind
+            self.next()
+            right = self.parse_expr()
+            self.expect(Kind.Semicolon)
+            return ast.AssignStmt(expr, op, right, expr.pos)
+        elif not (
             (self.inside_block and self.tok.kind == Kind.Rbrace)
             or expr.__class__ in (ast.IfExpr, ast.MatchExpr)
         ):
             self.expect(Kind.Semicolon)
         return ast.ExprStmt(expr, expr.pos)
+
+    def parse_var_decl(self):
+        is_mut = self.accept(Kind.KeyMut)
+        name = self.parse_name()
+        typ = self.comp.void_t
+        if self.accept(Kind.Colon):
+            typ = self.parse_type()
+        return ast.VarDecl(is_mut, name, typ)
 
     # ---- expressions -------------------------
     def parse_expr(self):

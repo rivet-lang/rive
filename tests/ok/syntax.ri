@@ -115,9 +115,19 @@ test "Test body with cool name =D!" {
     trace!("inside test");
     assert!(2 >= 5);
 
-    optional() orelse {
-        assert!(true);
+    let mut x = optional() orelse {
+        5
     };
+    assert!(x == 5);
+
+    x = 10;
+    assert!(x == 10);
+
+    x += 10;
+    assert!(x == 20);
+
+    let (a, b, c) = (1, 2, 3);
+    assert!(a == 1 and b == 2 and c == 3);
 
     error() catch {
         trace!("error catched");
@@ -347,10 +357,10 @@ fn main() void {
     }
 
     // The `for` is just a shorthand way of writing the following:
-    // let _T0 = [1, 2, 3, 4].iter();
-    // let _T1 = _T0.next();
+    let _T0 = [1, 2, 3, 4].iter();
+    let _T1 = _T0.next();
     while (_T1 != none) {
         // ...
-        // _T1 = _T0.next();
+        _T1 = _T0.next();
     }
 }

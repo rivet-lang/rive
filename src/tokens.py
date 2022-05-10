@@ -117,36 +117,36 @@ class Kind(Enum):
 
     KeywordEnd = auto_enum()
 
+    def is_assign(self):
+        return self in [
+            Kind.Assign,
+            Kind.PlusAssign,
+            Kind.MinusAssign,
+            Kind.MultAssign,
+            Kind.DivAssign,
+            Kind.ModAssign,
+            Kind.AmpAssign,
+            Kind.PipeAssign,
+            Kind.XorAssign,
+        ]
+
+    def is_relational(self):
+        return self in [
+            Kind.Eq,
+            Kind.Ne,
+            Kind.Lt,
+            Kind.Gt,
+            Kind.Le,
+            Kind.Ge,
+            Kind.KeyIs,
+            Kind.KeyNotIs,
+        ]
+
     def __repr__(self):
         return TOKEN_STRINGS[self] if self in TOKEN_STRINGS else "unknown"
 
     def __str__(self):
         return self.__repr__()
-
-def is_assign(k):
-    return k in [
-        Kind.Assign,
-        Kind.PlusAssign,
-        Kind.MinusAssign,
-        Kind.MultAssign,
-        Kind.DivAssign,
-        Kind.ModAssign,
-        Kind.AmpAssign,
-        Kind.PipeAssign,
-        Kind.XorAssign,
-    ]
-
-def is_relational(k):
-    return k in [
-        Kind.Eq,
-        Kind.Ne,
-        Kind.Lt,
-        Kind.Gt,
-        Kind.Le,
-        Kind.Ge,
-        Kind.KeyIs,
-        Kind.KeyNotIs,
-    ]
 
 TOKEN_STRINGS = {
     Kind.Unknown: "unknown",

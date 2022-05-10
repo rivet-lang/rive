@@ -204,16 +204,24 @@ class DestructorDecl:
         self.stmts = stmts
 
 # ------ Statements --------
-class ExprStmt:
-    def __init__(self, expr, pos):
-        self.expr = expr
+class VarDecl:
+    def __init__(self, is_mut, name, typ):
+        self.is_mut = is_mut
+        self.name = name
+        self.typ = typ
+
+class LetStmt:
+    def __init__(self, lefts, right, pos):
+        self.lefts = lefts
+        self.right = right
         self.pos = pos
 
-    def __repr__(self):
-        return f"{self.expr}"
-
-    def __str__(self):
-        return self.__repr__()
+class AssignStmt:
+    def __init__(self, left, op, right, pos):
+        self.left = left
+        self.op = op
+        self.right = right
+        self.pos = pos
 
 class LabelStmt:
     def __init__(self, label, pos):
@@ -256,6 +264,17 @@ class RaiseStmt:
     def __init__(self, msg, pos):
         self.msg = msg
         self.pos = pos
+
+class ExprStmt:
+    def __init__(self, expr, pos):
+        self.expr = expr
+        self.pos = pos
+
+    def __repr__(self):
+        return f"{self.expr}"
+
+    def __str__(self):
+        return self.__repr__()
 
 # ------ Expressions -------
 class EmptyExpr:
