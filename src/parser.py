@@ -109,16 +109,25 @@ class Parser:
             self.expect(Kind.Rbracket)
         return attrs
 
+    def parse_vis(self):
+        if self.accept(Kind.KeyPub):
+            if self.accept(Kind.Lparen):
+                self.expect(Kind.KeyPkg)
+                self.expect(Kind.Rparen)
+                return ast.Visibility.PublicInPkg
+            return ast.Visibility.Public
+        return ast.Visibility.Private
+
     def parse_decl(self):
         doc_comment = self.parse_doc_comment()
         attrs = self.parse_attrs()
-        is_pub = self.accept(Kind.KeyPub)
+        vis = self.parse_vis()
         is_unsafe = self.accept(Kind.KeyUnsafe)
         pos = self.tok.pos
         if self.accept(Kind.KeyExtern):
             if self.inside_extern:
                 report.error("`extern` declarations cannot be nested", pos)
-            elif is_pub:
+            elif vis.is_pub():
                 report.error(
                     "`extern` declarations cannot be declared public", pos
                 )
@@ -167,7 +176,7 @@ class Parser:
             self.expect(Kind.Assign)
             expr = self.parse_expr()
             self.expect(Kind.Semicolon)
-            return ast.ConstDecl(is_pub, name, typ, expr)
+            return ast.ConstDecl(vis, name, typ, expr)
         elif self.accept(Kind.KeyStatic):
             pos = self.tok.pos
             if is_unsafe:
@@ -179,7 +188,7 @@ class Parser:
             self.expect(Kind.Assign)
             expr = self.parse_expr()
             self.expect(Kind.Semicolon)
-            return ast.StaticDecl(is_pub, is_mut, name, typ, expr)
+            return ast.StaticDecl(vis, is_mut, name, typ, expr)
         elif self.accept(Kind.KeyMod):
             pos = self.tok.pos
             if is_unsafe:
@@ -195,7 +204,7 @@ class Parser:
                 decls.append(self.parse_decl())
 
             self.is_pkg_level = old_is_pkg_level
-            return ast.ModDecl(doc_comment, attrs, name, is_pub, decls, pos)
+            return ast.ModDecl(doc_comment, attrs, name, vis, decls, pos)
         elif self.accept(Kind.KeyType):
             pos = self.tok.pos
             if is_unsafe:
@@ -204,14 +213,14 @@ class Parser:
             self.expect(Kind.Assign)
             parent = self.parse_type()
             self.expect(Kind.Semicolon)
-            return ast.TypeDecl(is_pub, name, parent, pos)
+            return ast.TypeDecl(vis, name, parent, pos)
         elif self.accept(Kind.KeyErrType):
             pos = self.tok.pos
             if is_unsafe:
                 report.error("error types cannot be declared unsafe", pos)
             name = self.parse_name()
             self.expect(Kind.Semicolon)
-            return ast.ErrTypeDecl(is_pub, name, pos)
+            return ast.ErrTypeDecl(vis, name, pos)
         elif self.accept(Kind.KeyTrait):
             pos = self.tok.pos
             if is_unsafe:
@@ -237,10 +246,12 @@ class Parser:
                 is_unsafe = self.accept(Kind.KeyUnsafe)
                 self.expect(Kind.KeyFn)
                 decls.append(
-                    self.parse_fn_decl(doc_comment, attrs, True, is_unsafe)
+                    self.parse_fn_decl(
+                        doc_comment, attrs, ast.Visibility.Public, is_unsafe
+                    )
                 )
             self.inside_trait = old_inside_trait
-            return ast.TraitDecl(is_pub, name, decls, pos)
+            return ast.TraitDecl(vis, name, decls, pos)
         elif self.accept(Kind.KeyUnion):
             pos = self.tok.pos
             if is_unsafe:
@@ -258,7 +269,7 @@ class Parser:
                 while self.tok.kind != Kind.Rbrace:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
-            return ast.UnionDecl(is_pub, name, variants, decls, pos)
+            return ast.UnionDecl(vis, name, variants, decls, pos)
         elif self.accept(Kind.KeyStruct):
             pos = self.tok.pos
             if is_unsafe:
@@ -301,7 +312,7 @@ class Parser:
                         # declaration: methods, consts, etc.
                         decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
-            return ast.StructDecl(is_pub, name, decls, pos)
+            return ast.StructDecl(vis, name, decls, pos)
         elif self.accept(Kind.KeyEnum):
             pos = self.tok.pos
             if is_unsafe:
@@ -319,7 +330,7 @@ class Parser:
                 while self.tok.kind != Kind.Rbrace:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
-            return ast.EnumDecl(is_pub, name, variants, decls, pos)
+            return ast.EnumDecl(vis, name, variants, decls, pos)
         elif self.accept(Kind.KeyExtend):
             if is_unsafe:
                 report.error("`extend`s cannot be unsafe", self.prev_tok.pos)
@@ -330,7 +341,7 @@ class Parser:
                 decls.append(self.parse_decl())
             return ast.ExtendDecl(typ, decls)
         elif self.accept(Kind.KeyFn):
-            return self.parse_fn_decl(doc_comment, attrs, is_pub, is_unsafe)
+            return self.parse_fn_decl(doc_comment, attrs, vis, is_unsafe)
         elif self.accept(Kind.KeyTest):
             name = self.tok.lit
             self.expect(Kind.String)
@@ -344,7 +355,7 @@ class Parser:
             self.next()
         return ast.EmptyDecl()
 
-    def parse_fn_decl(self, doc_comment, attrs, is_pub, is_unsafe):
+    def parse_fn_decl(self, doc_comment, attrs, vis, is_unsafe):
         pos = self.tok.pos
         name = self.parse_name()
 
@@ -391,7 +402,7 @@ class Parser:
                     stmts.append(self.parse_stmt())
 
         return ast.FnDecl(
-            doc_comment, attrs, is_pub, is_unsafe, name, args, ret_typ, stmts,
+            doc_comment, attrs, vis, is_unsafe, name, args, ret_typ, stmts,
             has_body
         )
 

@@ -14,8 +14,11 @@ static GLOBAL_VALUE: i32 = 10;
 static mut UNSAFE_GLOBAL_VALUE: i32 = 5;
 
 type Integer32 = i32;
-type WideChar = u16;
+pub type WideChar = u16;
 pub type WideStr = *u16;
+
+pub(pkg) type Byte = u8;
+pub type Int = i32;
 
 errtype RuntimeError;
 pub errtype FileNotFoundError;

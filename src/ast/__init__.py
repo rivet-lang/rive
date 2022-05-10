@@ -2,12 +2,32 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
+from enum import IntEnum as Enum, auto as auto_enum
+
 from . import type
 
 class SourceFile:
     def __init__(self, file, decls):
         self.file = file
         self.decls = decls
+
+class Visibility(Enum):
+    Private = auto_enum()
+    Public = auto_enum() # Public outside current module
+    PublicInPkg = auto_enum() # Public inside current package
+
+    def is_pub(self):
+        return self != Visibility.Private
+
+    def __repr__(self):
+        if self == Visibility.Public:
+            return "pub"
+        elif self == Visibility.PublicInPkg:
+            return "pub(pkg)"
+        return "" # private
+
+    def __str__(self):
+        return self.__repr__()
 
 # ---- Declarations ----
 class EmptyDecl:
@@ -66,52 +86,52 @@ class ExternDecl:
         self.pos = pos
 
 class ConstDecl:
-    def __init__(self, is_pub, name, typ, expr):
-        self.is_pub = is_pub
+    def __init__(self, vis, name, typ, expr):
+        self.vis = vis
         self.name = name
         self.typ = typ
         self.expr = expr
 
 class StaticDecl:
-    def __init__(self, is_pub, is_mut, name, typ, expr):
-        self.is_pub = is_pub
+    def __init__(self, vis, is_mut, name, typ, expr):
+        self.vis = vis
         self.is_mut = is_mut
         self.name = name
         self.typ = typ
         self.expr = expr
 
 class ModDecl:
-    def __init__(self, doc_comment, attrs, name, is_pub, decls, pos):
+    def __init__(self, doc_comment, attrs, name, vis, decls, pos):
         self.doc_comment = doc_comment
         self.attrs = attrs
         self.name = name
-        self.is_pub = is_pub
+        self.vis = vis
         self.decls = decls
         self.pos = pos
 
 class TypeDecl:
-    def __init__(self, is_pub, name, parent, pos):
-        self.is_pub = is_pub
+    def __init__(self, vis, name, parent, pos):
+        self.vis = vis
         self.name = name
         self.parent = parent
         self.pos = pos
 
 class ErrTypeDecl:
-    def __init__(self, is_pub, name, pos):
-        self.is_pub = is_pub
+    def __init__(self, vis, name, pos):
+        self.vis = vis
         self.name = name
         self.pos = pos
 
 class TraitDecl:
-    def __init__(self, is_pub, name, decls, pos):
-        self.is_pub = is_pub
+    def __init__(self, vis, name, decls, pos):
+        self.vis = vis
         self.name = name
         self.decls = decls
         self.pos = pos
 
 class UnionDecl:
-    def __init__(self, is_pub, name, variants, decls, pos):
-        self.is_pub = is_pub
+    def __init__(self, vis, name, variants, decls, pos):
+        self.vis = vis
         self.name = name
         self.variants = variants
         self.decls = decls
@@ -127,15 +147,15 @@ class StructField:
         self.has_def_expr = has_def_expr
 
 class StructDecl:
-    def __init__(self, is_pub, name, decls, pos):
-        self.is_pub = is_pub
+    def __init__(self, vis, name, decls, pos):
+        self.vis = vis
         self.name = name
         self.decls = decls
         self.pos = pos
 
 class EnumDecl:
-    def __init__(self, is_pub, name, variants, decls, pos):
-        self.is_pub = is_pub
+    def __init__(self, vis, name, variants, decls, pos):
+        self.vis = vis
         self.name = name
         self.variants = variants
         self.decls = decls
@@ -151,7 +171,7 @@ class FnDecl:
         self,
         doc_comment,
         attrs,
-        is_pub,
+        vis,
         is_unsafe,
         name,
         args,
@@ -161,7 +181,7 @@ class FnDecl:
     ):
         self.doc_comment = doc_comment
         self.attrs = attrs
-        self.is_pub = is_pub
+        self.vis = vis
         self.is_unsafe = is_unsafe
         self.name = name
         self.args = args
