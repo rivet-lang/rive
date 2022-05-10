@@ -299,7 +299,7 @@ class TypeNode:
         self.pos = pos
 
     def __repr__(self):
-        return "{self.ty}"
+        return f"{self.typ}"
 
     def __str__(self):
         return self.__repr__()
@@ -502,15 +502,15 @@ class CastExpr:
         self.pos = pos
 
     def __repr__(self):
-        return f"cast({self.expr}, {self.ty})"
+        return f"cast({self.expr}, {self.typ})"
 
     def __str__(self):
         return self.__repr__()
 
 class NoneCheckExpr:
-    def __init__(self, expr, pos, typ=None):
+    def __init__(self, expr, pos):
         self.expr = expr
-        self.typ = typ
+        self.typ = None
         self.pos = pos
 
     def __repr__(self):
@@ -520,13 +520,25 @@ class NoneCheckExpr:
         return self.__repr__()
 
 class IndirectExpr:
-    def __init__(self, expr, pos, typ=None):
+    def __init__(self, expr, pos):
         self.expr = expr
-        self.typ = typ
+        self.typ = None
         self.pos = pos
 
     def __repr__(self):
         return f"{self.expr}.*"
+
+    def __str__(self):
+        return self.__repr__()
+
+class OrElseExpr:
+    def __init__(self, left, right, pos):
+        self.left = left
+        self.right = right
+        self.pos = pos
+
+    def __repr__(self):
+        return f"{self.left} orelse {self.right}"
 
     def __str__(self):
         return self.__repr__()

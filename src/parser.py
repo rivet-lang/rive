@@ -657,7 +657,7 @@ class Parser:
             self.expect(Kind.Comma)
             typ = self.parse_type()
             self.expect(Kind.Rparen)
-            expr = ast.CastExpr(expr, expr.pos, typ)
+            expr = ast.CastExpr(expr, typ, expr.pos)
         elif self.accept(Kind.KeyGo):
             pos = self.prev_tok.pos
             expr = ast.GoExpr(self.parse_expr(), pos)
@@ -766,16 +766,6 @@ class Parser:
                     expr, args, ast.CallErrorHandler(varname, err_expr),
                     expr.pos
                 )
-            elif self.accept(Kind.Dot):
-                if self.accept(Kind.Mult):
-                    expr = ast.IndirectExpr(expr, expr.pos)
-                elif self.accept(Kind.Question):
-                    expr = ast.NoneCheckExpr(expr, expr.pos)
-                else:
-                    name = self.parse_name()
-                    expr = ast.SelectorExpr(expr, name, expr.pos)
-            elif self.tok.kind == Kind.DoubleColon:
-                expr = self.parse_path_expr(expr)
             elif self.accept(Kind.Lbracket):
                 index = self.empty_expr()
                 if self.accept(Kind.DotDot):
@@ -797,11 +787,24 @@ class Parser:
                             )
                 self.expect(Kind.Rbracket)
                 expr = ast.IndexExpr(expr, index, expr.pos)
+            elif self.accept(Kind.Dot):
+                if self.accept(Kind.Mult):
+                    expr = ast.IndirectExpr(expr, expr.pos)
+                elif self.accept(Kind.Question):
+                    expr = ast.NoneCheckExpr(expr, expr.pos)
+                else:
+                    name = self.parse_name()
+                    expr = ast.SelectorExpr(expr, name, expr.pos)
+            elif self.tok.kind == Kind.DoubleColon:
+                expr = self.parse_path_expr(expr)
             elif self.tok.kind == Kind.DotDot:
                 self.next()
                 is_inclusive = self.accept(Kind.Assign)
                 end = self.parse_expr()
                 expr = ast.RangeExpr(expr, end, is_inclusive, expr.pos)
+            elif self.accept(Kind.KeyOrElse):
+                # optional handling
+                expr = ast.OrElseExpr(expr, self.parse_expr(), expr.pos)
             else:
                 break
         return expr
