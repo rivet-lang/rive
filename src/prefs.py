@@ -8,7 +8,7 @@ from ctypes import sizeof, c_voidp
 from enum import IntEnum as Enum, auto as auto_enum
 
 from . import ast, report, tokens
-from .utils import error, eprint, run_process
+from .utils import error, eprint, run_process, is_valid_name
 
 VERSION = "0.1.0"
 HELP = """Usage: rivetc [OPTIONS] INPUTS
@@ -238,7 +238,7 @@ class Prefs:
                 if pkg_name := option(current_args, arg):
                     self.pkg_name = pkg_name
                     self.output = pkg_name
-                    if not utils.is_valid_name(self.pkg_name):
+                    if not is_valid_name(self.pkg_name):
                         error(f"invalid package name `{self.pkg_name}`")
                 else:
                     error("`--pkg-name` requires a name as argument")

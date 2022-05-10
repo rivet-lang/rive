@@ -138,7 +138,12 @@ class UnionDecl:
         self.pos = pos
 
 class StructField:
-    def __init__(self, is_pub, is_mut, name, typ, def_expr, has_def_expr):
+    def __init__(
+        self, attrs, doc_comment, is_pub, is_mut, name, typ, def_expr,
+        has_def_expr
+    ):
+        self.attrs = attrs
+        self.doc_comment = doc_comment
         self.is_pub = is_pub
         self.is_mut = is_mut
         self.name = name

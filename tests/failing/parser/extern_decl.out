@@ -1,0 +1,25 @@
+tests/failing/parser/extern_decl.ri:1:4: error: `extern` declarations cannot be declared public
+  1 | pub extern "C" fn abort() c_void;
+    |    ^
+tests/failing/parser/extern_decl.ri:2:8: error: `extern` declarations cannot be declared unsafe
+  2 | unsafe extern "C" fn abort() c_void;
+    |        ^
+tests/failing/parser/extern_decl.ri:5:5: error: external packages or functions can only be declared at the package level
+  5 |     extern pkg oreo;
+    |     ^
+tests/failing/parser/extern_decl.ri:6:5: error: external packages or functions can only be declared at the package level
+  6 |     extern "C" fn abort() c_void;
+    |     ^
+tests/failing/parser/extern_decl.ri:9:15: error: extern functions cannot have a body
+  9 | extern "C" fn sss() c_void {}
+    |               ^
+tests/failing/parser/extern_decl.ri:9:28: error: expected `;`, found token `{` 
+  9 | extern "C" fn sss() c_void {}
+    |                            ^
+tests/failing/parser/extern_decl.ri:9:28: error: expected declaration, found token `{`
+  9 | extern "C" fn sss() c_void {}
+    |                            ^
+tests/failing/parser/extern_decl.ri:9:29: error: expected declaration, found token `}`
+  9 | extern "C" fn sss() c_void {}
+    |                             ^
+rivetc: error: could not compile package `extern_decl`, aborting due to 8 previous errors.

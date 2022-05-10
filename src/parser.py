@@ -70,7 +70,6 @@ class Parser:
         if tokens.is_key(kstr) or (len(kstr) > 0 and not kstr[0].isalpha()):
             kstr = f"`{kstr}`"
         report.error(f"expected {kstr}, found {self.tok} ", self.tok.pos)
-        self.next()
 
     # ---- utilities ------------------
     def parse_name(self):
@@ -126,9 +125,7 @@ class Parser:
         is_unsafe = self.accept(Kind.KeyUnsafe)
         pos = self.tok.pos
         if self.accept(Kind.KeyExtern):
-            if self.inside_extern:
-                report.error("`extern` declarations cannot be nested", pos)
-            elif vis.is_pub():
+            if vis.is_pub():
                 report.error(
                     "`extern` declarations cannot be declared public", pos
                 )
@@ -138,7 +135,7 @@ class Parser:
                 )
             elif not self.is_pkg_level:
                 report.error(
-                    "extern packages or functions can only be declared at the package level",
+                    "external packages or functions can only be declared at the package level",
                     pos,
                 )
             self.inside_extern = True
@@ -260,11 +257,11 @@ class Parser:
             name = self.parse_name()
             self.expect(Kind.Lbrace)
             variants = []
+            decls = []
             while True:
                 variants.append(self.parse_type())
                 if not self.accept(Kind.Comma):
                     break
-            decls = []
             if self.accept(Kind.Semicolon):
                 # declarations: methods, consts, etc.
                 while self.tok.kind != Kind.Rbrace:
@@ -310,7 +307,8 @@ class Parser:
                 def_expr = self.parse_expr()
             self.expect(Kind.Semicolon)
             return ast.StructField(
-                vis.is_pub(), is_mut, name, typ, def_expr, has_def_expr
+                attrs, doc_comment, vis.is_pub(), is_mut, name, typ, def_expr,
+                has_def_expr
             )
         elif self.accept(Kind.KeyEnum):
             pos = self.tok.pos
@@ -319,11 +317,11 @@ class Parser:
             name = self.parse_name()
             self.expect(Kind.Lbrace)
             variants = []
+            decls = []
             while True:
                 variants.append(self.parse_name())
                 if not self.accept(Kind.Comma):
                     break
-            decls = []
             if self.accept(Kind.Semicolon):
                 # declarations: methods, consts, etc.
                 while self.tok.kind != Kind.Rbrace:
@@ -651,8 +649,8 @@ class Parser:
             expr = self.parse_if_expr(False)
         elif self.accept(Kind.KeyMatch):
             expr = self.parse_match_expr(False)
-        elif self.tok.kind == Kind.Lparen:
-            self.expect(Kind.Lparen)
+        elif self.accept(Kind.Lparen):
+            pos = self.prev_tok.pos
             e = self.parse_expr()
             if self.accept(Kind.Comma): # tuple
                 exprs = [e]
@@ -663,9 +661,9 @@ class Parser:
                 self.expect(Kind.Rparen)
                 if len(exprs) > 8:
                     report.error(
-                        "tuples can have a maximum of 8 expressions", e.pos
+                        "tuples can have a maximum of 8 expressions", pos
                     )
-                expr = ast.TupleLiteral(exprs, e.pos)
+                expr = ast.TupleLiteral(exprs, pos)
             else:
                 self.expect(Kind.Rparen)
                 expr = ast.ParExpr(e, e.pos)
@@ -724,6 +722,7 @@ class Parser:
                         "only `b` is recognized as a valid prefix for a character literal",
                         self.tok.pos,
                     )
+                    self.next()
                 else:
                     expr = self.parse_character_literal()
             elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.String:
@@ -732,6 +731,7 @@ class Parser:
                         "only `b` and `r` are recognized as valid prefixes for a string literal",
                         self.tok.pos,
                     )
+                    self.next()
                 else:
                     expr = self.parse_string_literal()
             elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Bang: # builtin call
@@ -787,7 +787,7 @@ class Parser:
                         else:
                             if expecting_named_arg:
                                 report.error(
-                                    "expected named argument, found expression",
+                                    "expected named argument, found single expression",
                                     self.tok.pos
                                 )
                             expr2 = self.parse_expr()
@@ -1004,6 +1004,9 @@ class Parser:
             typ = self.parse_type()
             if isinstance(typ, type.Ref):
                 report.error("cannot use pointers with references", pos)
+            elif typ == self.comp.c_void_t:
+                report.error("cannot use `*c_void` as type", pos)
+                report.help("use `ptr` instead")
             return type.Ptr(typ)
         elif self.accept(Kind.Lbracket):
             # arrays or slices
@@ -1055,9 +1058,9 @@ class Parser:
                 lit = expr.name
                 if lit == "c_void":
                     if not self.inside_extern:
-                        self.error(
+                        report.error(
                             "`c_void` can only be used inside `extern` declarations",
-                            pos
+                            expr.pos
                         )
                     return self.comp.c_void_t
                 elif lit == "void":

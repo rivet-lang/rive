@@ -4,6 +4,9 @@
 
 import os, sys, subprocess
 
+def filename(path):
+    return os.path.splitext(os.path.basename(path))[0]
+
 def eprint(*s, end="\n"):
     print(*s, end=end, file=sys.stderr)
 

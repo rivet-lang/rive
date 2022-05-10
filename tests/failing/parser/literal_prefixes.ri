@@ -1,0 +1,9 @@
+fn main() void {
+    _ = b'A'; // OK
+    _ = c'B'; // BAD
+
+    _ = b"Byte string"; // OK
+    _ = r"Raw string"; // OK
+
+    _ = v"V string"; // BAD
+}

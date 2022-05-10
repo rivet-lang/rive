@@ -1,0 +1,34 @@
+tests/failing/parser/unsafe_decls.ri:1:13: error: constants cannot be declared unsafe
+  1 | unsafe const BAD: i32 = 0;
+    |             ^
+tests/failing/parser/unsafe_decls.ri:3:15: error: static values cannot be declared unsafe
+  3 | unsafe static BAD: i32 = 0;
+    |               ^
+tests/failing/parser/unsafe_decls.ri:4:15: error: static values cannot be declared unsafe
+  4 | unsafe static mut BAD2: i32 = 0; // BAD, unsafe by default (`m̀ut`)
+    |               ^
+tests/failing/parser/unsafe_decls.ri:6:12: error: modules cannot be declared unsafe
+  6 | unsafe mod Bad {}
+    |            ^
+tests/failing/parser/unsafe_decls.ri:8:13: error: type aliases cannot be declared unsafe
+  8 | unsafe type Alias = u8;
+    |             ^
+tests/failing/parser/unsafe_decls.ri:10:16: error: error types cannot be declared unsafe
+  10 | unsafe errtype UnsafeError;
+     |                ^
+tests/failing/parser/unsafe_decls.ri:12:14: error: traits cannot be declared unsafe
+  12 | unsafe trait Traitable { }
+     |              ^
+tests/failing/parser/unsafe_decls.ri:14:14: error: unions cannot be declared unsafe
+  14 | unsafe union Union { A }
+     |              ^
+tests/failing/parser/unsafe_decls.ri:16:15: error: structs cannot be declared unsafe
+  16 | unsafe struct Struct { }
+     |               ^
+tests/failing/parser/unsafe_decls.ri:18:13: error: enums cannot be declared unsafe
+  18 | unsafe enum Enum { A }
+     |             ^
+tests/failing/parser/unsafe_decls.ri:20:8: error: `extend`s cannot be unsafe
+  20 | unsafe extend Enum { }
+     |        ^
+rivetc: error: could not compile package `unsafe_decls`, aborting due to 11 previous errors.

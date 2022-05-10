@@ -1,0 +1,13 @@
+tests/failing/parser/literal_prefixes.ri:3:9: error: only `b` is recognized as a valid prefix for a character literal
+  3 |     _ = c'B'; // BAD
+    |         ^
+tests/failing/parser/literal_prefixes.ri:3:10: error: expected `;`, found character `B` 
+  3 |     _ = c'B'; // BAD
+    |          ^
+tests/failing/parser/literal_prefixes.ri:8:9: error: only `b` and `r` are recognized as valid prefixes for a string literal
+  8 |     _ = v"V string"; // BAD
+    |         ^
+tests/failing/parser/literal_prefixes.ri:8:10: error: expected `;`, found string `V string` 
+  8 |     _ = v"V string"; // BAD
+    |          ^
+rivetc: error: could not compile package `literal_prefixes`, aborting due to 4 previous errors.
