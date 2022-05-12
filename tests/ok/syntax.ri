@@ -366,7 +366,7 @@ mod real {
 fn comptime() void {
     print_target_info($_OS_, $_ARCH_, $_ENDIAN_, $_BITS_, $_BACKEND_);
     print_info($_FILE_, $_FUNCTION_, $_LINE_, $_COLUMN_);
-    $if (_LINUX_) {
+    $if (_LINUX_ or true) {
         compile_warn!("comptime works!");
     } $else {
         compile_warn!("comptime doesn't works =(");

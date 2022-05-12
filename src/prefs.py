@@ -399,7 +399,9 @@ class Prefs:
             os.mkdir(path.join(RIVET_DIR, "libs"))
 
     def evalue_comptime_condition(self, cond):
-        if isinstance(cond, ast.Ident):
+        if isinstance(cond, ast.BoolLiteral):
+            return cond.lit
+        elif isinstance(cond, ast.Ident):
             if cond.is_comptime:
                 report.error("invalid comptime condition", cond.pos)
             # operating systems
@@ -425,8 +427,6 @@ class Prefs:
                     report.error(f"unknown builtin flag: `{cond}`", cond.pos)
                     return False
                 return cond.name in self.flags
-        elif isinstance(cond, ast.ParExpr):
-            return self.evalue_comptime_condition(cond.expr)
         elif isinstance(cond, ast.UnaryExpr):
             if cond.op == tokens.Kind.Bang:
                 return not self.evalue_comptime_condition(cond.right)
@@ -444,6 +444,8 @@ class Prefs:
                     ) or self.evalue_comptime_condition(cond.right)
             else:
                 report.error("invalid comptime condition", cond.pos)
+        elif isinstance(cond, ast.ParExpr):
+            return self.evalue_comptime_condition(cond.expr)
         else:
             report.error("invalid comptime condition", cond.pos)
         return False
