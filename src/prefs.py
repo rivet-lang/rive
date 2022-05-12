@@ -58,6 +58,12 @@ Options:
    -x32, -x64
       Whether 32-bit or 64-bit machine code will be generated.
 
+   --check-syntax
+      Only scan and parse the files, but then stop.
+
+   --check
+      Scans, parses, and checks the files without compiling the package.
+
    -v, --verbose
       Print additional messages to the console.
 
@@ -79,8 +85,8 @@ def option(args, param):
 
 class OS(Enum):
     Linux = auto_enum()
-    # Windows = auto_enum()
-    # Macos = auto_enum()
+    Windows = auto_enum()
+    Macos = auto_enum()
 
     @staticmethod
     def get():
@@ -93,6 +99,10 @@ class OS(Enum):
     def from_string(name):
         if name == "linux":
             return OS.Linux
+        #elif name == "windows":
+        #    return OS.Windows
+        #elif name=="macos":
+        #    return OS.Macos
         return None
 
     def equals_to_string(self, flag):
@@ -195,7 +205,10 @@ class Prefs:
             path.join(path.dirname(path.realpath(sys.argv[0])), "lib"),
             path.join(RIVET_DIR, "libs")
         ]
+
         self.flags = []
+        self.check_syntax = False
+        self.check = False
         self.is_verbose = False
 
         if len(args) == 0:
@@ -206,7 +219,7 @@ class Prefs:
         flags = []
         while i < len(args):
             arg = args[i]
-            if arg[0] == '-' and arg not in (
+            if len(arg) > 1 and arg[0] == '-' and arg not in (
                 "-L", "-d", "--define"
             ) and arg in flags:
                 error(f"duplicate flag `{arg}`")
@@ -314,6 +327,10 @@ class Prefs:
                 i += 1
             elif arg in ("-x32", "-x64"):
                 self.target_bits = Bits.X32 if arg == "-x32" else Bits.X64
+            elif arg == "--check-syntax":
+                self.check_syntax = True
+            elif arg == "--check":
+                self.check = True
             elif arg in ("-v", "--verbose"):
                 self.is_verbose = True
             elif path.isdir(arg):
@@ -346,17 +363,32 @@ class Prefs:
             already_exts = []
             for ext in exts:
                 if ext in already_exts:
-                    error(f"duplicate special extension `{ext}` for `{input}`")
+                    error(f"{input}: duplicate special extension `{ext}`")
                 already_exts.append(ext)
                 if ext.startswith("d_") or ext.startswith("notd_"):
                     if ext.startswith("d_"):
-                        should_compile = ext[2:] in self.flags
+                        should_compile = should_compile and ext[2:] in self.flags
                     else:
-                        should_compile = ext[5:] not in self.flags
+                        should_compile = should_compile and ext[
+                            5:] not in self.flags
                 elif osf := OS.from_string(ext):
-                    should_compile = osf == self.target_os
+                    should_compile = should_compile and self.target_os == osf
                 elif arch := Arch.from_string(ext):
-                    should_compile = arch == self.target_arch
+                    should_compile = should_compile and self.target_arch == arch
+                elif ext in ("x32", "x64"):
+                    if ext == "x32":
+                        should_compile = should_compile and self.target_bits == Bits.X32
+                    else:
+                        should_compile = should_compile and self.target_bits == Bits.X64
+                elif ext in ("little_endian", "big_endian"):
+                    if ext == "little_endian":
+                        should_compile = should_compile and self.target_endian == Endian.Little
+                    else:
+                        should_compile = should_compile and self.target_endian == Endian.Big
+                elif b := Backend.from_string(ext): # backends
+                    should_compile = should_compile and self.target_backend == b
+                else:
+                    error(f"{input}: unknown special extension `{ext}`")
             if should_compile:
                 new_inputs.append(input)
         return new_inputs

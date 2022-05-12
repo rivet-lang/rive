@@ -1,0 +1,7 @@
+tests/failing/parser/extend_with_non_fns.ri:2:11: error: expected associated function or method
+  2 |     const BAD: i32 = 1;
+    |           ^
+tests/failing/parser/extend_with_non_fns.ri:4:12: error: expected associated function or method
+  4 |     struct Bad2 {}
+    |            ^
+rivetc: error: could not compile package `extend_with_non_fns`, aborting due to 2 previous errors.

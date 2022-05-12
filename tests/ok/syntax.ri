@@ -10,8 +10,8 @@ extern pkg std;
 const MAX_SIZE: i32 = 10;
 const MIN_SIZE: i32 = 1;
 
-static GLOBAL_VALUE: i32 = 10;
-static mut UNSAFE_GLOBAL_VALUE: i32 = 5;
+static STATIC_VALUE: i32 = 10;
+static mut UNSAFE_STATIC_VALUE: i32 = 5;
 
 type Integer32 = i32;
 pub type WideChar = u16;
@@ -22,6 +22,21 @@ pub type Int = i32;
 
 errtype RuntimeError;
 pub errtype FileNotFoundError;
+
+mod capsule {
+    errtype RuntimeError;
+}
+
+fn test_assign(a: i32 = 5) void {
+    let x = 1;
+    let y = $if (_LINUX_) {
+        trace!("None");
+        0
+    } $else {
+        trace!("Some");
+        5
+    };
+}
 
 fn open(path: str) !str {
     $if (_LINUX_) {
@@ -60,6 +75,9 @@ struct Account {
     }
 
     other_field: bool;
+
+    #[if (DEFINE_FIELD2)]
+    other_field2: bool;
 
     fn method(self) void {
         loop {
@@ -133,13 +151,22 @@ test "Test body with cool name =D!" {
         trace!("error catched");
     };
 
-    error() catch |err| {
+    let m = error() catch |err| {
         assert!(err is RuntimeError);
         assert!(err.msg.len == 15);
+        true
     };
 }
 
-struct EmptyStruct { }
+extend EmptyStruct {
+    fn julian() void {}
+}
+
+type Alias = i32;
+
+struct EmptyStruct {
+    fff: Alias;
+}
 
 union Expr {
     IntegerLiteral, StructLiteral, BinaryExpr
@@ -187,8 +214,7 @@ extern "C" {
     fn abort() c_void;
 }
 
-#[if (_LINUX_ and _AMD64_ and _x64_ and _LITTLE_ENDIAN_ and DEFINE_ABS)]
-extern "C" fn abs(a: i32) i32;
+extern "C" fn abs(a: c_int) c_int;
 
 /// A simple module for doc-comments.
 ///
@@ -214,37 +240,34 @@ extend u8 {
 }
 
 #[if (EXTEND_CUSTOM_TYPE)]
-extend pkg::custom_mod::CustomType {
+extend CustomType {
     pub fn custom_fn() void { }
 }
 
 pub fn pub_basic_fn(alpha: i32, arr: [i32; 5], slice: [i32]) void { }
 
 #[inline]
-fn basic_fn(return_none: bool) ?i32 {
-    return if (return_none) none else 5;
-}
+fn basic_fn(return_none: bool) ?i32 { return if (return_none) none else 5; }
 
 #[abstract; virtual] // <- attributes
 unsafe fn def_arg(a: i32 = 10, tuple: (bool, void, u8)) void { }
 
 fn result() !i32 { }
 
-fn simple() !void {
+fn simple_fn() !void {
     call_unsafe(unsafe {
         trace!("inside unsafe!");
         x()
     });
+
     unsafe {
         x();
     }
 
-    go run_thread();
-
-    try run(player: Player{
+    run(player: Player{
         name: "StunxFS",
         rol: .Sheriff
-    });
+    }).!;
 
     expr_stmt({
         // block expression
@@ -347,10 +370,6 @@ fn comptime() void {
         compile_warn!("comptime works!");
     } $else {
         compile_warn!("comptime doesn't works =(");
-    }
-    $match ($_OS_) {
-        _LINUX_ => trace!("Running on Linux"),
-        else => trace!("unknown OS")
     }
 }
 

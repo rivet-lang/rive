@@ -33,8 +33,8 @@ def readline(pos):
     line = _readline(pos.file, pos.line)
     line_str = f"  {colors.bold(pos.line+1)}"
     LAST_LINE_NR_LEN = len(f"  {pos.line+1}")
-    # TODO(StunxFS): it would be better if the marker was the width
-    # of the token.
+    # TODO(StunxFS): it would be better if the marker was the width of
+    # the token.
     marker = (" " * (pos.col - 1)) + MARK
     return f"{line_str} {SEP} {line}\n{' ' * LAST_LINE_NR_LEN} {SEP} {marker}"
 

@@ -59,6 +59,8 @@ class Kind(Enum):
     Lparen = auto_enum() # (
     Rparen = auto_enum() # )
 
+    # 6 literals, 39 keywords; Total: 45 keywords,
+    # +2 extra keywords (`!in` and `!is` = `!` + keyword).
     KeywordBegin = auto_enum()
     # ========== literals ==========
     KeyNone = auto_enum() # none
@@ -66,10 +68,10 @@ class Kind(Enum):
     KeyFalse = auto_enum() # false
     KeyBase = auto_enum() # base
     KeySelf = auto_enum() # self
+    KeySelfTy = auto_enum() # Self
     # ==============================
 
-    # ========== KEYWORDS ==========
-    KeySelfTy = auto_enum() # Self
+    # ========== keywords ==========
     KeyPkg = auto_enum() # pkg
     KeyPub = auto_enum() # pub
     KeyUse = auto_enum() # use
@@ -101,7 +103,6 @@ class Kind(Enum):
     KeyReturn = auto_enum() # return
     KeyRaise = auto_enum() # raise
     KeyGoto = auto_enum() # goto
-    KeyGo = auto_enum() # go
     KeyAnd = auto_enum() # and
     KeyOr = auto_enum() # or
     KeyIn = auto_enum() # in
@@ -110,7 +111,6 @@ class Kind(Enum):
     KeyNotIs = auto_enum() # !is
     KeyCast = auto_enum() # cast
     KeyUnsafe = auto_enum() # unsafe
-    KeyTry = auto_enum() # try
     KeyOrElse = auto_enum() # orelse
     KeyCatch = auto_enum() # catch
     # ==============================
@@ -211,7 +211,7 @@ TOKEN_STRINGS = {
     Kind.KeySelf: "self",
     # ==============================
 
-    # ========== KEYWORDS ==========
+    # ========== keywords ==========
     Kind.KeySelfTy: "Self",
     Kind.KeyPkg: "pkg",
     Kind.KeyPub: "pub",
@@ -244,7 +244,6 @@ TOKEN_STRINGS = {
     Kind.KeyReturn: "return",
     Kind.KeyRaise: "raise",
     Kind.KeyGoto: "goto",
-    Kind.KeyGo: "go",
     Kind.KeyAnd: "and",
     Kind.KeyOr: "or",
     Kind.KeyIn: "in",
@@ -253,7 +252,6 @@ TOKEN_STRINGS = {
     Kind.KeyNotIs: "!is",
     Kind.KeyCast: "cast",
     Kind.KeyUnsafe: "unsafe",
-    Kind.KeyTry: "try",
     Kind.KeyOrElse: "orelse",
     Kind.KeyCatch: "catch",
     # ==============================

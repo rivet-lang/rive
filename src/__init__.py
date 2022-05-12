@@ -3,7 +3,7 @@
 # that can be found in the LICENSE file.
 
 from .ast import sym, type
-from . import prefs, parser, report, utils
+from . import prefs, report, utils, parser, register
 
 class Compiler:
     def __init__(self, args: [str]):
@@ -12,9 +12,10 @@ class Compiler:
         self.universe = sym.universe()
 
         # Primitive types.
-        # NOTE: the difference between `c_void` and `void` is that
-        # the former corresponds to C's `void`, while the latter,
-        # behind the scenes, is simply an alias to `u8`.
+        #
+        # NOTE: the difference between `c_void` and `void` is that the former
+        # corresponds to C's `void`, while the latter, behind the scenes, is
+        # simply an alias to `u8`.
         self.c_void_t = type.Type(self.universe[0])
         self.void_t = type.Type(self.universe[1])
         self.ptr_t = type.Type(self.universe[2])
@@ -33,9 +34,22 @@ class Compiler:
         self.float32_t = type.Type(self.universe[15])
         self.float64_t = type.Type(self.universe[16])
         self.str_t = type.Type(self.universe[17])
+        self.error_t = type.Type(self.universe[18])
+
+        self.universe[17].fields[0].typ = self.usize_t # str.len: usize
+        self.universe[18].fields[0].typ = self.str_t # error.msg: str
 
         self.prefs = prefs.Prefs(args)
         self.source_files = []
+
+        self.register = register.Register(self)
+
+    def build_package(self):
+        self.parse_files()
+        if not self.prefs.check_syntax:
+            self.register.visit_source_files(self.source_files)
+            if report.ERRORS > 0:
+                self.abort()
 
     def parse_files(self):
         self.source_files = parser.Parser(self).parse_pkg()
@@ -52,4 +66,4 @@ class Compiler:
 
 def main(args):
     comp = Compiler(args)
-    comp.parse_files()
+    comp.build_package()

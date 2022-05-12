@@ -7,6 +7,8 @@ from .lexer import Lexer
 from .ast import sym, type
 from . import report, tokens, ast
 
+# TODO(StunxFS): parse `use` stmt; parse `mod` import: `mod xx;`
+
 class Parser:
     def __init__(self, comp):
         self.comp = comp
@@ -77,6 +79,13 @@ class Parser:
         self.expect(Kind.Name)
         return lit
 
+    def open_scope(self):
+        self.scope = sym.Scope(self.tok.pos.pos, self.scope)
+
+    def close_scope(self):
+        self.scope.end = self.tok.pos.pos
+        self.scope = self.scope.parent
+
     # ---- declarations --------------
     def parse_decls(self):
         decls = []
@@ -146,7 +155,13 @@ class Parser:
                 decl = ast.ExternPkg(extern_pkg, pos)
             else:
                 # extern function
-                abi = self.parse_string_literal()
+                abi_pos = self.tok.pos
+                abi_str = self.parse_string_literal().lit
+                if abi_f := sym.ABI.from_string(abi_str):
+                    abi = abi_f
+                else:
+                    report.error(f"unknown ABI: `{abi_str}`", abi_pos)
+                    abi = sym.ABI.Rivet
                 protos = []
                 if self.accept(Kind.Lbrace):
                     while not self.accept(Kind.Rbrace):
@@ -161,7 +176,7 @@ class Parser:
                         self.parse_fn_decl(doc_comment, attrs, True, True)
                     )
                     self.expect(Kind.Semicolon)
-                decl = ast.ExternDecl(abi, protos, pos)
+                decl = ast.ExternDecl(attrs, abi, protos, pos)
             self.inside_extern = False
             return decl
         elif self.accept(Kind.KeyConst):
@@ -174,7 +189,7 @@ class Parser:
             self.expect(Kind.Assign)
             expr = self.parse_expr()
             self.expect(Kind.Semicolon)
-            return ast.ConstDecl(vis, name, typ, expr)
+            return ast.ConstDecl(doc_comment, attrs, vis, name, typ, expr, pos)
         elif self.accept(Kind.KeyStatic):
             pos = self.tok.pos
             if is_unsafe:
@@ -186,7 +201,9 @@ class Parser:
             self.expect(Kind.Assign)
             expr = self.parse_expr()
             self.expect(Kind.Semicolon)
-            return ast.StaticDecl(vis, is_mut, name, typ, expr)
+            return ast.StaticDecl(
+                doc_comment, attrs, vis, is_mut, name, typ, expr, pos
+            )
         elif self.accept(Kind.KeyMod):
             pos = self.tok.pos
             if is_unsafe:
@@ -211,14 +228,14 @@ class Parser:
             self.expect(Kind.Assign)
             parent = self.parse_type()
             self.expect(Kind.Semicolon)
-            return ast.TypeDecl(vis, name, parent, pos)
+            return ast.TypeDecl(doc_comment, attrs, vis, name, parent, pos)
         elif self.accept(Kind.KeyErrType):
             pos = self.tok.pos
             if is_unsafe:
                 report.error("error types cannot be declared unsafe", pos)
             name = self.parse_name()
             self.expect(Kind.Semicolon)
-            return ast.ErrTypeDecl(vis, name, pos)
+            return ast.ErrTypeDecl(doc_comment, attrs, vis, name, pos)
         elif self.accept(Kind.KeyTrait):
             pos = self.tok.pos
             if is_unsafe:
@@ -249,7 +266,7 @@ class Parser:
                     )
                 )
             self.inside_trait = old_inside_trait
-            return ast.TraitDecl(vis, name, decls, pos)
+            return ast.TraitDecl(doc_comment, attrs, vis, name, decls, pos)
         elif self.accept(Kind.KeyUnion):
             pos = self.tok.pos
             if is_unsafe:
@@ -267,7 +284,9 @@ class Parser:
                 while self.tok.kind != Kind.Rbrace:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
-            return ast.UnionDecl(vis, name, variants, decls, pos)
+            return ast.UnionDecl(
+                doc_comment, attrs, vis, name, variants, decls, pos
+            )
         elif self.accept(Kind.KeyStruct):
             old_inside_struct_decl = self.inside_struct_decl
             self.inside_struct_decl = True
@@ -281,18 +300,19 @@ class Parser:
                 while self.tok.kind != Kind.Rbrace:
                     if self.accept(Kind.BitNot):
                         # destructor
+                        pos = self.prev_tok.pos
                         self.expect(Kind.KeySelf)
                         self.expect(Kind.Lbrace)
                         stmts = []
                         while not self.accept(Kind.Rbrace):
                             stmts.append(self.parse_stmt())
-                        decls.append(ast.DestructorDecl(stmts))
+                        decls.append(ast.DestructorDecl(self.scope, stmts, pos))
                     else:
                         # declaration: methods, consts, etc.
                         decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
             self.inside_struct_decl = old_inside_struct_decl
-            return ast.StructDecl(vis, name, decls, pos)
+            return ast.StructDecl(doc_comment, attrs, vis, name, decls, pos)
         elif self.inside_struct_decl and self.tok.kind in (
             Kind.KeyMut, Kind.Name
         ):
@@ -308,7 +328,7 @@ class Parser:
             self.expect(Kind.Semicolon)
             return ast.StructField(
                 attrs, doc_comment, vis.is_pub(), is_mut, name, typ, def_expr,
-                has_def_expr
+                has_def_expr, pos
             )
         elif self.accept(Kind.KeyEnum):
             pos = self.tok.pos
@@ -327,7 +347,9 @@ class Parser:
                 while self.tok.kind != Kind.Rbrace:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
-            return ast.EnumDecl(vis, name, variants, decls, pos)
+            return ast.EnumDecl(
+                doc_comment, attrs, vis, name, variants, decls, pos
+            )
         elif self.accept(Kind.KeyExtend):
             if is_unsafe:
                 report.error("`extend`s cannot be unsafe", self.prev_tok.pos)
@@ -335,18 +357,27 @@ class Parser:
             decls = []
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
-                decls.append(self.parse_decl())
-            return ast.ExtendDecl(typ, decls)
+                decl = self.parse_decl()
+                if not isinstance(decl, ast.FnDecl):
+                    report.error(
+                        "expected associated function or method", decl.pos
+                    )
+                decls.append(decl)
+            return ast.ExtendDecl(attrs, typ, decls)
         elif self.accept(Kind.KeyFn):
             return self.parse_fn_decl(doc_comment, attrs, vis, is_unsafe)
         elif self.accept(Kind.KeyTest):
+            pos = self.prev_tok.pos
             name = self.tok.lit
             self.expect(Kind.String)
+            self.open_scope()
+            sc = self.scope
             stmts = []
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
-            return ast.TestDecl(name, stmts)
+            self.close_scope()
+            return ast.TestDecl(sc, name, stmts, pos)
         else:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()
@@ -360,6 +391,8 @@ class Parser:
         is_method = False
         self_is_ref = False
         self_is_mut = False
+        self.open_scope()
+        sc = self.scope
         self.expect(Kind.Lparen)
         if self.tok.kind != Kind.Rparen:
             # receiver (`self`|`&self`|`mut &self`)
@@ -378,6 +411,7 @@ class Parser:
             # arguments
             while self.tok.kind != Kind.Rparen:
                 is_mut = self.accept(Kind.KeyMut)
+                arg_pos = self.tok.pos
                 arg_name = self.parse_name()
                 self.expect(Kind.Colon)
                 arg_typ = self.parse_type()
@@ -387,7 +421,7 @@ class Parser:
                 args.append(
                     sym.Arg(
                         arg_name, is_mut, arg_typ, arg_expr,
-                        not isinstance(arg_expr, ast.EmptyExpr)
+                        not isinstance(arg_expr, ast.EmptyExpr), arg_pos
                     )
                 )
                 if not self.accept(Kind.Comma):
@@ -414,10 +448,11 @@ class Parser:
                 self.expect(Kind.Lbrace)
                 while not self.accept(Kind.Rbrace):
                     stmts.append(self.parse_stmt())
-
+        self.close_scope()
         return ast.FnDecl(
-            doc_comment, attrs, vis, is_unsafe, name, args, ret_typ, ret_is_mut,
-            stmts, has_body, is_method, self_is_ref, self_is_mut
+            doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
+            args, ret_typ, ret_is_mut, stmts, sc, has_body, is_method,
+            self_is_ref, self_is_mut
         )
 
     # ---- statements --------------------------
@@ -438,7 +473,7 @@ class Parser:
             self.expect(Kind.Assign)
             right = self.parse_expr()
             self.expect(Kind.Semicolon)
-            return ast.LetStmt(lefts, right, pos)
+            return ast.LetStmt(self.scope, lefts, right, pos)
         elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
             pos = self.tok.pos
             label = self.parse_name()
@@ -448,10 +483,13 @@ class Parser:
             pos = self.tok.pos
             is_unsafe = self.accept(Kind.KeyUnsafe)
             self.expect(Kind.Lbrace)
+            self.open_scope()
+            sc = self.scope
             stmts = []
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
-            return ast.Block(is_unsafe, stmts, None, False, pos)
+            self.close_scope()
+            return ast.Block(sc, is_unsafe, stmts, None, False, pos)
         elif self.accept(Kind.KeyLoop):
             return ast.LoopStmt(self.parse_stmt())
         elif self.accept(Kind.KeyWhile):
@@ -462,6 +500,8 @@ class Parser:
             return ast.WhileStmt(cond, stmt)
         elif self.accept(Kind.KeyFor):
             self.expect(Kind.Lparen)
+            self.open_scope()
+            sc = self.scope
             lefts = []
             if self.accept(Kind.Lparen):
                 # multiple variables
@@ -476,7 +516,8 @@ class Parser:
             iterable = self.parse_expr()
             self.expect(Kind.Rparen)
             stmt = self.parse_stmt()
-            return ast.ForInStmt(lefts, iterable, stmt)
+            self.close_scope()
+            return ast.ForInStmt(sc, lefts, iterable, stmt)
         elif self.accept(Kind.KeyGoto):
             pos = self.tok.pos
             label = self.parse_name()
@@ -521,11 +562,12 @@ class Parser:
     def parse_var_decl(self, support_ref=False, support_typ=True):
         is_mut = self.accept(Kind.KeyMut)
         is_ref = support_ref and self.accept(Kind.Amp)
+        pos = self.tok.pos
         name = self.parse_name()
         typ = self.comp.void_t
         if support_typ and self.accept(Kind.Colon):
             typ = self.parse_type()
-        return ast.VarDecl(is_mut, is_ref, name, typ)
+        return ast.VarDecl(is_mut, is_ref, name, typ, pos)
 
     # ---- expressions -------------------------
     def parse_expr(self):
@@ -557,12 +599,8 @@ class Parser:
     def parse_relational_expr(self):
         left = self.parse_shift_expr()
         if self.tok.kind in [
-            Kind.Gt,
-            Kind.Lt,
-            Kind.Ge,
-            Kind.Le,
-            Kind.KeyIn,
-            Kind.KeyNotIn,
+            Kind.Gt, Kind.Lt, Kind.Ge, Kind.Le, Kind.KeyIn, Kind.KeyNotIn,
+            Kind.KeyOrElse
         ]:
             op = self.tok.kind
             self.next()
@@ -637,8 +675,6 @@ class Parser:
             # comptime expressions
             if self.tok.kind == Kind.KeyIf:
                 expr = self.parse_if_expr(True)
-            elif self.accept(Kind.KeyMatch):
-                expr = self.parse_match_expr(True)
             else:
                 expr = self.parse_ident(True)
         elif self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Name:
@@ -648,25 +684,28 @@ class Parser:
         elif self.tok.kind == Kind.KeyIf:
             expr = self.parse_if_expr(False)
         elif self.accept(Kind.KeyMatch):
-            expr = self.parse_match_expr(False)
+            expr = self.parse_match_expr()
         elif self.accept(Kind.Lparen):
             pos = self.prev_tok.pos
-            e = self.parse_expr()
-            if self.accept(Kind.Comma): # tuple
-                exprs = [e]
-                while True:
-                    exprs.append(self.parse_expr())
-                    if not self.accept(Kind.Comma):
-                        break
-                self.expect(Kind.Rparen)
-                if len(exprs) > 8:
-                    report.error(
-                        "tuples can have a maximum of 8 expressions", pos
-                    )
-                expr = ast.TupleLiteral(exprs, pos)
+            if self.accept(Kind.Rparen):
+                expr = ast.VoidLiteral(pos)
             else:
-                self.expect(Kind.Rparen)
-                expr = ast.ParExpr(e, e.pos)
+                e = self.parse_expr()
+                if self.accept(Kind.Comma): # tuple
+                    exprs = [e]
+                    while True:
+                        exprs.append(self.parse_expr())
+                        if not self.accept(Kind.Comma):
+                            break
+                    self.expect(Kind.Rparen)
+                    if len(exprs) > 8:
+                        report.error(
+                            "tuples can have a maximum of 8 expressions", pos
+                        )
+                    expr = ast.TupleLiteral(exprs, pos)
+                else:
+                    self.expect(Kind.Rparen)
+                    expr = ast.ParExpr(e, e.pos)
         elif self.tok.kind in (Kind.KeyUnsafe, Kind.Lbrace):
             # block expression
             pos = self.tok.pos
@@ -676,18 +715,21 @@ class Parser:
             self.inside_block = True
             stmts = []
             has_expr = False
+            self.open_scope()
+            sc = self.scope
             while not self.accept(Kind.Rbrace):
                 stmt = self.parse_stmt()
                 has_expr = isinstance(
                     stmt, ast.ExprStmt
                 ) and self.prev_tok.kind != Kind.Semicolon
                 stmts.append(stmt)
+            self.close_scope()
             if has_expr:
                 expr = ast.Block(
-                    is_unsafe, stmts[:-1], stmts[-1].expr, True, pos
+                    sc, is_unsafe, stmts[:-1], stmts[-1].expr, True, pos
                 )
             else:
-                expr = ast.Block(is_unsafe, stmts, None, False, pos)
+                expr = ast.Block(sc, is_unsafe, stmts, None, False, pos)
             self.inside_block = old_inside_block
         elif self.accept(Kind.KeyCast):
             self.expect(Kind.Lparen)
@@ -696,12 +738,6 @@ class Parser:
             typ = self.parse_type()
             self.expect(Kind.Rparen)
             expr = ast.CastExpr(expr, typ, expr.pos)
-        elif self.accept(Kind.KeyGo):
-            pos = self.prev_tok.pos
-            expr = ast.GoExpr(self.parse_expr(), pos)
-        elif self.accept(Kind.KeyTry):
-            pos = self.prev_tok.pos
-            expr = ast.TryExpr(self.parse_expr(), pos)
         elif self.tok.kind == Kind.Lbracket:
             elems = []
             pos = self.tok.pos
@@ -753,13 +789,14 @@ class Parser:
                 expr = self.parse_ident()
         while True:
             if self.accept(Kind.Lbrace):
-                fields = {}
+                fields = []
                 if self.tok.kind != Kind.Rbrace:
                     while True:
-                        key = self.parse_ident()
+                        fpos = self.tok.pos
+                        name = self.parse_name()
                         self.expect(Kind.Colon)
                         value = self.parse_expr()
-                        fields[key] = value
+                        fields.append(ast.StructLiteralField(name, value, fpos))
                         if not self.accept(Kind.Comma):
                             break
                 self.expect(Kind.Rbrace)
@@ -796,15 +833,19 @@ class Parser:
                             break
                 self.expect(Kind.Rparen)
                 varname = ""
+                varname_pos = self.tok.pos
                 err_expr = None
                 if self.accept(Kind.KeyCatch):
                     if self.accept(Kind.Pipe):
+                        varname_pos = self.tok.pos
                         varname = self.parse_name()
                         self.expect(Kind.Pipe)
                     err_expr = self.parse_expr()
                 expr = ast.CallExpr(
-                    expr, args, ast.CallErrorHandler(varname, err_expr),
-                    expr.pos
+                    expr, args,
+                    ast.CallErrorHandler(
+                        varname, err_expr, varname_pos, self.scope
+                    ), expr.pos
                 )
             elif self.accept(Kind.Lbracket):
                 index = self.empty_expr()
@@ -829,9 +870,19 @@ class Parser:
                 expr = ast.IndexExpr(expr, index, expr.pos)
             elif self.accept(Kind.Dot):
                 if self.accept(Kind.Mult):
-                    expr = ast.IndirectExpr(expr, expr.pos)
+                    expr = ast.SelectorExpr(
+                        expr, "", expr.pos, is_indirect=True
+                    )
                 elif self.accept(Kind.Question):
-                    expr = ast.NoneCheckExpr(expr, expr.pos)
+                    # check optional value, if none panic
+                    expr = ast.SelectorExpr(
+                        expr, "", expr.pos, is_nonecheck=True
+                    )
+                elif self.accept(Kind.Bang):
+                    # check result value, if error propagate
+                    expr = ast.SelectorExpr(
+                        expr, "", expr.pos, is_errcheck=True
+                    )
                 else:
                     name = self.parse_name()
                     expr = ast.SelectorExpr(expr, name, expr.pos)
@@ -842,9 +893,6 @@ class Parser:
                 is_inclusive = self.accept(Kind.Assign)
                 end = self.parse_expr()
                 expr = ast.RangeExpr(expr, end, is_inclusive, expr.pos)
-            elif self.accept(Kind.KeyOrElse):
-                # optional handling
-                expr = ast.OrElseExpr(expr, self.parse_expr(), expr.pos)
             else:
                 break
         return expr
@@ -880,7 +928,7 @@ class Parser:
                     self.expect(Kind.Dollar)
         return ast.IfExpr(is_comptime, branches, pos)
 
-    def parse_match_expr(self, is_comptime):
+    def parse_match_expr(self):
         branches = []
         pos = self.prev_tok.pos
         self.expect(Kind.Lparen)
@@ -894,7 +942,8 @@ class Parser:
             if not is_else:
                 while True:
                     if is_typematch:
-                        pats.append(self.parse_type())
+                        pos = self.tok.pos
+                        pats.append(ast.TypeNode(self.parse_type(), pos))
                     else:
                         pats.append(self.parse_expr())
                     if not self.accept(Kind.Comma):
@@ -904,7 +953,7 @@ class Parser:
             if not self.accept(Kind.Comma):
                 break
         self.expect(Kind.Rbrace)
-        return ast.MatchExpr(is_comptime, expr, branches, is_typematch, pos)
+        return ast.MatchExpr(expr, branches, is_typematch, pos)
 
     def parse_path_expr(self, left):
         self.expect(Kind.DoubleColon)

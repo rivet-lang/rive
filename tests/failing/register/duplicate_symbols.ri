@@ -1,0 +1,56 @@
+fn main() void {
+    let x = 1;
+    let x = 1;
+
+    let y = 2;
+    {
+        let y = 5; // disallow variable shadowing
+    }
+
+
+    let L1 = 2;
+L1:
+
+L2:
+    let L2 = true;
+
+    let m = {
+    L3:
+        let L3 = 1;
+    };
+}
+
+fn other(a: i32) void {
+    let a = 1;
+}
+
+errtype RuntimeError;
+errtype RuntimeError;
+
+struct Gota { }
+struct Gota { }
+
+mod module {
+    struct App { }
+    struct App { }
+}
+
+// extend `module` mod
+mod module {
+    struct Game {
+        art: bool;
+        art: bool;
+    }
+}
+
+union Obj {
+    i32,
+    i32
+}
+
+enum State {
+    Idle,
+    Idle
+}
+
+extend module::Game { }

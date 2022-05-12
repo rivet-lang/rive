@@ -1,0 +1,34 @@
+tests/failing/register/duplicate_symbols.ri:3:9: error: duplicate object `x`
+  3 |     let x = 1;
+    |         ^
+tests/failing/register/duplicate_symbols.ri:7:13: error: duplicate object `y`
+  7 |         let y = 5; // disallow variable shadowing
+    |             ^
+tests/failing/register/duplicate_symbols.ri:19:13: error: duplicate object `L3`
+  19 |         let L3 = 1;
+     |             ^
+tests/failing/register/duplicate_symbols.ri:24:9: error: duplicate object `a`
+  24 |     let a = 1;
+     |         ^
+tests/failing/register/duplicate_symbols.ri:28:9: error: another symbol with this name already exists: `RuntimeError`
+  28 | errtype RuntimeError;
+     |         ^
+tests/failing/register/duplicate_symbols.ri:31:8: error: another symbol with this name already exists: `Gota`
+  31 | struct Gota { }
+     |        ^
+tests/failing/register/duplicate_symbols.ri:35:12: error: another symbol with this name already exists: `App`
+  35 |     struct App { }
+     |            ^
+tests/failing/register/duplicate_symbols.ri:42:9: error: field `art` is already declared
+  42 |         art: bool;
+     |         ^
+tests/failing/register/duplicate_symbols.ri:46:7: error: union `Obj` has duplicate variant type `i32`
+  46 | union Obj {
+     |       ^
+tests/failing/register/duplicate_symbols.ri:51:6: error: enum `State` has duplicate variant `Idle`
+  51 | enum State {
+     |      ^
+tests/failing/register/duplicate_symbols.ri:56:16: error: cannot extend non-local types
+  56 | extend module::Game { }
+     |                ^
+rivetc: error: could not compile package `duplicate_symbols`, aborting due to 11 previous errors.
