@@ -490,14 +490,16 @@ class Parser:
                 stmts.append(self.parse_stmt())
             self.close_scope()
             return ast.Block(sc, is_unsafe, stmts, None, False, pos)
-        elif self.accept(Kind.KeyLoop):
-            return ast.LoopStmt(self.parse_stmt())
         elif self.accept(Kind.KeyWhile):
-            self.expect(Kind.Lparen)
-            cond = self.parse_expr()
-            self.expect(Kind.Rparen)
+            is_inf = False
+            if self.accept(Kind.Lparen):
+                cond = self.parse_expr()
+                self.expect(Kind.Rparen)
+            else:
+                cond = ast.BoolLiteral(True, self.tok.pos)
+                is_inf = True
             stmt = self.parse_stmt()
-            return ast.WhileStmt(cond, stmt)
+            return ast.WhileStmt(cond, stmt, is_inf)
         elif self.accept(Kind.KeyFor):
             self.expect(Kind.Lparen)
             self.open_scope()
@@ -535,7 +537,7 @@ class Parser:
             if has_expr:
                 expr = self.parse_expr()
             else:
-                expr = self.empty_expr()
+                expr = ast.VoidLiteral(pos)
             self.expect(Kind.Semicolon)
             return ast.ReturnStmt(expr, has_expr, pos)
         elif self.accept(Kind.KeyRaise):
@@ -832,10 +834,15 @@ class Parser:
                         if not self.accept(Kind.Comma):
                             break
                 self.expect(Kind.Rparen)
+                is_propagate = False
                 varname = ""
                 varname_pos = self.tok.pos
                 err_expr = None
-                if self.accept(Kind.KeyCatch):
+                if self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Bang:
+                    # check result value, if error propagate
+                    self.advance(2)
+                    is_propagate = True
+                elif self.accept(Kind.KeyCatch):
                     if self.accept(Kind.Pipe):
                         varname_pos = self.tok.pos
                         varname = self.parse_name()
@@ -844,7 +851,7 @@ class Parser:
                 expr = ast.CallExpr(
                     expr, args,
                     ast.CallErrorHandler(
-                        varname, err_expr, varname_pos, self.scope
+                        is_propagate, varname, err_expr, varname_pos, self.scope
                     ), expr.pos
                 )
             elif self.accept(Kind.Lbracket):
@@ -877,11 +884,6 @@ class Parser:
                     # check optional value, if none panic
                     expr = ast.SelectorExpr(
                         expr, "", expr.pos, is_nonecheck=True
-                    )
-                elif self.accept(Kind.Bang):
-                    # check result value, if error propagate
-                    expr = ast.SelectorExpr(
-                        expr, "", expr.pos, is_errcheck=True
                     )
                 else:
                     name = self.parse_name()
@@ -931,10 +933,13 @@ class Parser:
     def parse_match_expr(self):
         branches = []
         pos = self.prev_tok.pos
-        self.expect(Kind.Lparen)
-        expr = self.parse_expr()
-        self.expect(Kind.Rparen)
-        is_typematch = self.accept(Kind.KeyIs)
+        is_typematch = False
+        if self.accept(Kind.Lparen):
+            expr = self.parse_expr()
+            self.expect(Kind.Rparen)
+            is_typematch = self.accept(Kind.KeyIs)
+        else:
+            expr = ast.BoolLiteral(True, pos)
         self.expect(Kind.Lbrace)
         while True:
             pats = []
@@ -959,7 +964,7 @@ class Parser:
         self.expect(Kind.DoubleColon)
         pos = self.tok.pos
         name = self.parse_name()
-        expr = ast.PathExpr(left, name, pos)
+        expr = ast.PathExpr(left, name, left.pos, pos)
         expr.is_last = self.tok.kind != Kind.DoubleColon
         return expr
 
@@ -1088,7 +1093,9 @@ class Parser:
                 report.error("optional multi-level types are not allowed", pos)
             return type.Optional(typ)
         elif self.accept(Kind.KeySelfTy):
-            return type.UnknownType(ast.SelfExpr(self.scope, self.prev_tok.pos))
+            return type.Type.unresolved(
+                ast.SelfExpr(self.scope, self.prev_tok.pos)
+            )
         elif self.tok.kind in (Kind.KeyPkg, Kind.Name):
             # normal type
             if self.peek_tok.kind == Kind.DoubleColon:
@@ -1101,7 +1108,7 @@ class Parser:
                         path_expr = self.parse_path_expr(path_expr)
                         if self.tok.kind != Kind.DoubleColon:
                             break
-                return type.UnknownType(path_expr)
+                return type.Type.unresolved(path_expr)
             elif self.tok.kind == Kind.Name:
                 expr = self.parse_ident()
                 lit = expr.name
@@ -1147,11 +1154,11 @@ class Parser:
                 elif lit == "str":
                     return self.comp.str_t
                 else:
-                    return type.UnknownType(expr)
+                    return type.Type.unresolved(expr)
             else:
                 report.error(f"expected type, found keyword `pkg`", pos)
                 self.next()
         else:
             report.error(f"expected type, found {self.tok}", pos)
             self.next()
-        return type.UnknownType(self.empty_expr())
+        return type.Type.unresolved(self.empty_expr())

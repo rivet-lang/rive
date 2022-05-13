@@ -1,0 +1,16 @@
+mod my_mod {
+    struct PrivateStruct {
+        a: i32;
+        b: PrivateEnum;
+    }
+    const PRIVATE_CONST: i32 = 1;
+
+    enum PrivateEnum { Variant }
+}
+
+fn main() void {
+    _ = my_mod::PrivateStruct{
+        a: my_mod::PRIVATE_CONST,
+        b: my_mod::PrivateEnum::Variant
+    };
+}

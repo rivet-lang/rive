@@ -431,7 +431,7 @@ class Prefs:
             if cond.op == tokens.Kind.Bang:
                 return not self.evalue_comptime_condition(cond.right)
             else:
-                report.error("invalid comptime condition", cond.pos)
+                report.error(f"expected `!`, found token `{cond.op}`", cond.pos)
         elif isinstance(cond, ast.BinaryExpr):
             if cond.op in (tokens.Kind.KeyAnd, tokens.Kind.KeyOr):
                 if cond.op == tokens.Kind.KeyAnd:

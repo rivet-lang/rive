@@ -1,0 +1,13 @@
+tests/failing/resolver/unknown_symbol.ri:6:5: error: cannot find `unknown_fn` in this scope
+  6 |     unknown_fn();
+    |     ^
+tests/failing/resolver/unknown_symbol.ri:7:13: error: cannot find `UnknownStruct` in this scope
+  7 |     let x = UnknownStruct{};
+    |             ^
+tests/failing/resolver/unknown_symbol.ri:8:13: error: cannot find `unknown_var` in this scope
+  8 |     let z = unknown_var;
+    |             ^
+tests/failing/resolver/unknown_symbol.ri:9:17: error: enum `MyEnum` has no variant `Mark`
+  9 |     _ = MyEnum::Mark;
+    |                 ^
+rivetc: error: could not compile package `unknown_symbol`, aborting due to 4 previous errors.

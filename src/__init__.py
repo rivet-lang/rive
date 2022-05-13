@@ -3,7 +3,14 @@
 # that can be found in the LICENSE file.
 
 from .ast import sym, type
-from . import prefs, report, utils, parser, register
+from . import (
+    prefs,
+    report,
+    utils,
+    parser,
+    register,
+    resolver # phases
+)
 
 class Compiler:
     def __init__(self, args: [str]):
@@ -12,7 +19,6 @@ class Compiler:
         self.universe = sym.universe()
 
         # Primitive types.
-        #
         # NOTE: the difference between `c_void` and `void` is that the former
         # corresponds to C's `void`, while the latter, behind the scenes, is
         # simply an alias to `u8`.
@@ -39,15 +45,20 @@ class Compiler:
         self.universe[17].fields[0].typ = self.usize_t # str.len: usize
         self.universe[18].fields[0].typ = self.str_t # error.msg: str
 
-        self.prefs = prefs.Prefs(args)
-        self.source_files = []
+        self.pkg_sym = None
 
+        self.source_files = []
+        self.prefs = prefs.Prefs(args)
         self.register = register.Register(self)
+        self.resolver = resolver.Resolver(self)
 
     def build_package(self):
         self.parse_files()
         if not self.prefs.check_syntax:
             self.register.visit_source_files(self.source_files)
+            if report.ERRORS > 0:
+                self.abort()
+            self.resolver.resolve_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
 

@@ -7,6 +7,8 @@
 extern pkg core;
 extern pkg std;
 
+type c_int = i32;
+
 const MAX_SIZE: i32 = 10;
 const MIN_SIZE: i32 = 1;
 
@@ -23,8 +25,14 @@ pub type Int = i32;
 errtype RuntimeError;
 pub errtype FileNotFoundError;
 
+fn println(s: str) void { }
+fn exists(s: str) bool { return true; }
+fn print_target_info() void { }
+fn print_info(info: str) void { }
+fn generate_unique_id() i32 { return 0; }
+
 mod capsule {
-    errtype RuntimeError;
+    pub errtype RuntimeError;
 }
 
 fn test_assign(a: i32 = 5) void {
@@ -56,6 +64,8 @@ enum Service {
     Free
 }
 
+type Windows = [(WideStr, Integer32, &WideChar); 11];
+
 struct Account {
     pub mut name: str;
     pub id: i32; // unique ID
@@ -75,12 +85,13 @@ struct Account {
     }
 
     other_field: bool;
+    small_field: Windows;
 
     #[if (DEFINE_FIELD2)]
     other_field2: bool;
 
     fn method(self) void {
-        loop {
+        while { // infinite loop == while (true)
             if (1 >= 3) {
                 break;
             }
@@ -126,6 +137,7 @@ fn optional() ?i32 {
 }
 
 fn error() !void {
+    trace!("Error =D");
     raise RuntimeError("simple error =D");
 }
 
@@ -154,7 +166,7 @@ test "Test body with cool name =D!" {
     let m = error() catch |err| {
         assert!(err is RuntimeError);
         assert!(err.msg.len == 15);
-        true
+        ()
     };
 }
 
@@ -166,10 +178,6 @@ type Alias = i32;
 
 struct EmptyStruct {
     fff: Alias;
-}
-
-union Expr {
-    IntegerLiteral, StructLiteral, BinaryExpr
 }
 
 #[no_tag]
@@ -254,6 +262,15 @@ unsafe fn def_arg(a: i32 = 10, tuple: (bool, void, u8)) void { }
 
 fn result() !i32 { }
 
+unsafe fn call_unsafe() void { }
+fn run() void { }
+
+fn expr_stmt() void { }
+
+fn install_app() void { }
+
+struct Player { }
+
 fn simple_fn() !void {
     call_unsafe(unsafe {
         trace!("inside unsafe!");
@@ -271,8 +288,8 @@ fn simple_fn() !void {
 
     expr_stmt({
         // block expression
-        call1();
-        call2();
+        println();
+        println();
         2 / 5
     });
 
@@ -280,14 +297,14 @@ fn simple_fn() !void {
         expr_stmt(
             {
                 // block expression
-                call1();
-                call2();
+                println();
+                println();
                 2 / 5
             },
             {
                 // block expr
-                call1();
-                call2();
+                println();
+                println();
             },
             if (true) { // if expr
                 install_app();
@@ -295,10 +312,10 @@ fn simple_fn() !void {
             } else {
                 panic!("error");
             },
-            match (xyz) { // match expr
-                5 => get_windows_size(),
-                8 => get_named_arg(),
-                else => get_anarky()
+            match (5) { // match expr
+                5 => 5,
+                8 => 6,
+                else => 333
             },
             array: [1, 2, 3, 4, 5, 6, 7, 8],
             slice: [1, 2, 3, 4, 5, 6][0..4],
@@ -308,11 +325,11 @@ fn simple_fn() !void {
 
     // if stmt
     if (true) {
-        call9();
+        println();
     } elif (false) {
-        call10();
+        println();
     } else {
-        call11();
+        println();
     }
 
     // match stmt
@@ -324,31 +341,38 @@ fn simple_fn() !void {
     }
 
     // typematch
+    let union_value = Object(5);
     match (union_value) is {
         str => println("str"),
         i32 => println("i32"),
         bool => {
             // block expr
-            loop { println("simple block expr"); }
+            while { println("simple block expr"); }
         },
         else => println("unknown type")
     }
 
-    // let mut x = 1;
+    let mut x = 1;
     while (x < 5) {
         x++;
     }
 
-    loop {
+    while {
         x++;
         if (x < 5) {
-            call12();
+            println();
         }
     }
 }
 
 mod real {
-    pub fn scrash() void { return; }
+    pub fn scrash() void {
+        match {
+            2 >= 4 and 3 + 3 == 6 => trace!("yeah!"),
+            else => {}
+        }
+        return (); // == return;
+    }
 
     pub mod sis {
         fn inner(a: &[i32], mut b: [u8; 4]) void { }
@@ -375,8 +399,8 @@ fn comptime() void {
 
 /// doc-comment
 fn main() void {
-    // Unlike `while` and `loop`, `for` is only valid with values
-    // that implement the `Iterator` trait.
+    // Unlike `while`, `for` is only valid with values that implement
+    // the `Iterator` trait.
     for (x in [1, 2, 3, 4]) {
         // ...
     }
@@ -389,8 +413,10 @@ fn main() void {
         _T1 = _T0.next();
     }
 
-    let map: Map = Map::new([("Key", 5)]);
-    for ((key, mut &value) in map) {
-        assert!(key == "Key" and value.* == 5);
+    $if (false) {
+        let map: Map = Map::new([("Key", 5)]);
+        for ((key, mut &value) in map) {
+            assert!(key == "Key" and value.* == 5);
+        }
     }
 }

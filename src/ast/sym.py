@@ -65,6 +65,7 @@ class Sym:
         self.vis = vis
         self.name = name
         self.syms = []
+        self.parent = None
 
     def add(self, sym):
         if asym := self.lookup(sym.name):
@@ -85,6 +86,7 @@ class Sym:
                 raise CompilerError(
                     f"another symbol with this name already exists: `{sym.name}`"
                 )
+        sym.parent = self
         self.syms.append(sym)
 
     def add_or_extend_mod(self, sym):
@@ -104,6 +106,19 @@ class Sym:
         if _ := self.lookup(name):
             return True
         return False
+
+    def sym_kind(self):
+        if isinstance(self, Pkg):
+            return "package"
+        elif isinstance(self, Mod):
+            return "module"
+        elif isinstance(self, Const):
+            return "constant"
+        elif isinstance(self, Static):
+            return "static"
+        elif isinstance(self, Type):
+            return "type"
+        return "function"
 
     def __getitem__(self, idx):
         if isinstance(idx, str):

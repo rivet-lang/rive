@@ -59,7 +59,7 @@ class Kind(Enum):
     Lparen = auto_enum() # (
     Rparen = auto_enum() # )
 
-    # 6 literals, 39 keywords; Total: 45 keywords,
+    # 6 literals, 38 keywords; Total: 44 keywords,
     # +2 extra keywords (`!in` and `!is` = `!` + keyword).
     KeywordBegin = auto_enum()
     # ========== literals ==========
@@ -95,7 +95,6 @@ class Kind(Enum):
     KeyElif = auto_enum() # elif
     KeyElse = auto_enum() # else
     KeyMatch = auto_enum() # match
-    KeyLoop = auto_enum() # loop
     KeyWhile = auto_enum() # while
     KeyFor = auto_enum() # for
     KeyContinue = auto_enum() # continue
@@ -236,7 +235,6 @@ TOKEN_STRINGS = {
     Kind.KeyElif: "elif",
     Kind.KeyElse: "else",
     Kind.KeyMatch: "match",
-    Kind.KeyLoop: "loop",
     Kind.KeyWhile: "while",
     Kind.KeyFor: "for",
     Kind.KeyContinue: "continue",

@@ -8,13 +8,13 @@ from . import ast, report, utils
 class Register:
     def __init__(self, comp):
         self.comp = comp
-        self.source_files = []
         self.cur_sym = None
         self.errtype_nr = 0
         self.cur_fn_scope = None
 
     def visit_source_files(self, source_files):
         self.cur_sym = self.add_pkg(self.comp.prefs.pkg_name)
+        self.comp.pkg_sym = self.cur_sym
         for sf in source_files:
             self.visit_source_file(sf)
 
@@ -43,6 +43,7 @@ class Register:
                     should_register = self.comp.prefs.evalue_comptime_condition(
                         if_attr.expr
                     )
+                    decl.attrs.if_check = should_register
             if isinstance(decl, ast.ExternPkg):
                 continue # TODO(StunxFS): load external packages
             elif isinstance(decl, ast.ModDecl):
@@ -50,6 +51,7 @@ class Register:
                 if should_register:
                     old_sym = self.cur_sym
                     self.cur_sym = self.add_mod(decl.vis, decl.name)
+                    decl.sym = self.cur_sym
                     self.visit_decls(decl.decls)
                     self.cur_sym = old_sym
             elif isinstance(decl, ast.ExternDecl):
@@ -196,32 +198,34 @@ class Register:
                 if should_register:
                     old_sym = self.cur_sym
                     if isinstance(decl.typ, type.Type):
-                        self.cur_sym = decl.typ.sym
-                        for d in decl.decls:
-                            self.visit_fn_decl(d)
-                    elif isinstance(decl.typ, type.UnknownType):
-                        if isinstance(decl.typ.expr, ast.Ident):
-                            if s := self.cur_sym.lookup(decl.typ.expr.name):
-                                if s.kind == sym.TypeKind.Alias and not isinstance(
-                                    s.info.parent, type.UnknownType
-                                ):
-                                    self.cur_sym = s.info.parent.sym
+                        if decl.typ.unresolved:
+                            if isinstance(decl.typ.expr, ast.Ident):
+                                if s := self.cur_sym.lookup(decl.typ.expr.name):
+                                    if s.kind == sym.TypeKind.Alias and not isinstance(
+                                        s.info.parent, type.UnknownType
+                                    ):
+                                        self.cur_sym = s.info.parent.sym
+                                    else:
+                                        self.cur_sym = s
                                 else:
-                                    self.cur_sym = s
+                                    # placeholder
+                                    self.cur_sym = sym.Type(
+                                        ast.Visibility.Private,
+                                        decl.typ.expr.name,
+                                        sym.TypeKind.Placeholder
+                                    )
+                                    old_sym.add(self.cur_sym)
+                                for d in decl.decls:
+                                    self.visit_fn_decl(d)
                             else:
-                                # placeholder
-                                self.cur_sym = sym.Type(
-                                    ast.Visibility.Private, decl.typ.expr.name,
-                                    sym.TypeKind.Placeholder
+                                report.error(
+                                    "cannot extend non-local types",
+                                    decl.typ.expr.pos
                                 )
-                                old_sym.add(self.cur_sym)
+                        else:
+                            self.cur_sym = decl.typ.sym
                             for d in decl.decls:
                                 self.visit_fn_decl(d)
-                        else:
-                            report.error(
-                                "cannot extend non-local types",
-                                decl.typ.expr.pos
-                            )
                     self.cur_sym = old_sym
             elif isinstance(decl, ast.TestDecl):
                 self.cur_fn_scope = decl.scope
@@ -252,7 +256,12 @@ class Register:
             self.visit_stmt(stmt)
 
     def visit_stmt(self, stmt):
-        if isinstance(stmt, ast.LabelStmt):
+        if isinstance(stmt, ast.LetStmt):
+            self.register_variables(stmt.scope, stmt.lefts)
+            self.visit_expr(stmt.right)
+        elif isinstance(stmt, ast.AssignStmt):
+            self.visit_expr(stmt.right)
+        elif isinstance(stmt, ast.LabelStmt):
             if self.cur_fn_scope != None:
                 try:
                     self.cur_fn_scope.add(sym.Label(stmt.label))
@@ -263,25 +272,17 @@ class Register:
             for stmt in stmt.stmts:
                 self.visit_stmt(stmt)
             self.cur_fn_scope = None
-        elif isinstance(stmt, ast.LoopStmt):
-            self.visit_stmt(stmt.stmt)
+        elif isinstance(stmt, ast.ReturnStmt):
+            self.visit_expr(stmt.expr)
+        elif isinstance(stmt, ast.RaiseStmt):
+            self.visit_expr(stmt.msg)
+        elif isinstance(stmt, ast.ExprStmt):
+            self.visit_expr(stmt.expr)
         elif isinstance(stmt, ast.WhileStmt):
             self.visit_stmt(stmt.stmt)
         elif isinstance(stmt, ast.ForInStmt):
             self.register_variables(stmt.scope, stmt.lefts)
             self.visit_stmt(stmt.stmt)
-        elif isinstance(stmt, ast.LetStmt):
-            self.register_variables(stmt.scope, stmt.lefts)
-            self.visit_expr(stmt.right)
-        elif isinstance(stmt, ast.AssignStmt):
-            self.visit_expr(stmt.right)
-        elif isinstance(stmt, ast.ReturnStmt):
-            if stmt.has_expr:
-                self.visit_expr(stmt.expr)
-        elif isinstance(stmt, ast.RaiseStmt):
-            self.visit_expr(stmt.msg)
-        elif isinstance(stmt, ast.ExprStmt):
-            self.visit_expr(stmt.expr)
 
     def visit_expr(self, expr):
         if isinstance(expr, ast.BuiltinCallExpr):
@@ -291,17 +292,19 @@ class Register:
             self.visit_expr(expr.left)
             for a in expr.args:
                 self.visit_expr(a.expr)
-            if expr.has_err_handler() and expr.err_handler.has_varname():
-                # register error value
-                try:
-                    expr.err_handler.scope.add(
-                        sym.Object(
-                            False, expr.err_handler.varname, self.comp.error_t,
-                            False
+            if expr.has_err_handler():
+                if expr.err_handler.has_varname():
+                    # register error value
+                    try:
+                        expr.err_handler.scope.add(
+                            sym.Object(
+                                False, expr.err_handler.varname,
+                                self.comp.error_t, False
+                            )
                         )
-                    )
-                except utils.CompilerError as e:
-                    report.error(e.args[0], expr.err_handler.varname_pos)
+                    except utils.CompilerError as e:
+                        report.error(e.args[0], expr.err_handler.varname_pos)
+                self.visit_expr(expr.err_handler.expr)
         elif isinstance(expr, ast.IfExpr):
             if expr.is_comptime:
                 # evalue comptime if expression

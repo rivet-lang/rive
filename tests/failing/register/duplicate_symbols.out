@@ -28,7 +28,7 @@ tests/failing/register/duplicate_symbols.ri:46:7: error: union `Obj` has duplica
 tests/failing/register/duplicate_symbols.ri:51:6: error: enum `State` has duplicate variant `Idle`
   51 | enum State {
      |      ^
-tests/failing/register/duplicate_symbols.ri:56:16: error: cannot extend non-local types
+tests/failing/register/duplicate_symbols.ri:56:8: error: cannot extend non-local types
   56 | extend module::Game { }
-     |                ^
+     |        ^
 rivetc: error: could not compile package `duplicate_symbols`, aborting due to 11 previous errors.

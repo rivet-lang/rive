@@ -4,7 +4,13 @@
 
 from enum import IntEnum as Enum, auto as auto_enum
 
-from . import type
+COMPTIME_CONSTANTS = [
+    "_OS_", "_ARCH_", "_ENDIAN_", "_BITS_", "_BACKEND_", "_FILE_", "_FUNCTION_",
+    "_LINE_", "_COLUMN_"
+]
+
+def is_known_comptime_constant(name):
+    return name in COMPTIME_CONSTANTS
 
 class SourceFile:
     def __init__(self, file, decls):
@@ -82,6 +88,7 @@ class Attr:
 class Attrs:
     def __init__(self):
         self.attrs = []
+        self.if_check = True
 
     def add(self, attr):
         self.attrs.append(attr)
@@ -141,6 +148,7 @@ class ModDecl:
         self.name = name
         self.vis = vis
         self.decls = decls
+        self.sym = None
         self.pos = pos
 
 class TypeDecl:
@@ -289,13 +297,10 @@ class LabelStmt:
         self.pos = pos
 
 class WhileStmt:
-    def __init__(self, cond, stmt):
+    def __init__(self, cond, stmt, is_inf):
         self.cond = cond
         self.stmt = stmt
-
-class LoopStmt:
-    def __init__(self, stmt):
-        self.stmt = stmt
+        self.is_inf = is_inf
 
 class ForInStmt:
     def __init__(self, scope, lefts, iterable, stmt):
@@ -381,10 +386,13 @@ class VoidLiteral:
 class Ident:
     def __init__(self, name, pos, scope, is_comptime):
         self.name = name
-        self.scope = scope
+        self.obj = None
+        self.sym = None
+        self.is_obj = False
         self.is_comptime = is_comptime
-        self.ty = None
+        self.scope = scope
         self.pos = pos
+        self.typ = None
 
     def __repr__(self):
         if self.is_comptime:
@@ -682,7 +690,7 @@ class CallExpr:
     def __repr__(self):
         res = f"{self.left}({', '.join([str(a) for a in self.args])})"
         if self.has_err_handler():
-            res += " " + str(self.err_handler)
+            res += f" {self.err_handler}"
         return res
 
     def __str__(self):
@@ -704,7 +712,8 @@ class CallArg:
         return self.__repr__()
 
 class CallErrorHandler:
-    def __init__(self, varname, expr, varname_pos, scope):
+    def __init__(self, is_propagate, varname, expr, varname_pos, scope):
+        self.is_propagate = is_propagate
         self.varname = varname
         self.varname_pos = varname_pos
         self.expr = expr
@@ -714,7 +723,9 @@ class CallErrorHandler:
         return len(self.varname) > 0
 
     def __repr__(self):
-        if len(self.varname) == 0:
+        if self.is_propagate:
+            return ".!"
+        elif len(self.varname) == 0:
             return f"catch {self.expr}"
         return f"catch |{self.varname}| {self.expr}"
 
@@ -755,20 +766,13 @@ class BuiltinCallExpr:
 
 class SelectorExpr:
     def __init__(
-        self,
-        left,
-        field_name,
-        pos,
-        is_indirect=False,
-        is_nonecheck=False,
-        is_errcheck=False
+        self, left, field_name, pos, is_indirect=False, is_nonecheck=False
     ):
         self.left = left
         self.field_name = field_name
         self.left_typ = None
         self.is_indirect = is_indirect
         self.is_nonecheck = is_nonecheck
-        self.is_errcheck = is_errcheck
         self.pos = pos
         self.typ = None
 
@@ -777,20 +781,19 @@ class SelectorExpr:
             return f"{self.left}.*"
         elif self.is_nonecheck:
             return f"{self.left}.?"
-        elif self.is_errcheck:
-            return f"{self.left}.!"
         return f"{self.left}.{self.field_name}"
 
     def __str__(self):
         return self.__repr__()
 
 class PathExpr:
-    def __init__(self, left, field_name, pos):
+    def __init__(self, left, field_name, pos, field_pos):
         self.left = left
-        self.left_typ = None
         self.field_name = field_name
         self.field_info = None
+        self.field_pos = field_pos
         self.is_last = False
+        self.has_error = False
         self.pos = pos
         self.typ = None
 
