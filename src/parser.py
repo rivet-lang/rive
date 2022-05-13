@@ -529,26 +529,6 @@ class Parser:
             label = self.parse_name()
             self.expect(Kind.Semicolon)
             return ast.GotoStmt(label, pos)
-        elif self.tok.kind in (Kind.KeyContinue, Kind.KeyBreak):
-            op = self.tok.kind
-            pos = self.tok.pos
-            self.next()
-            self.expect(Kind.Semicolon)
-            return ast.BranchStmt(op, pos)
-        elif self.accept(Kind.KeyReturn):
-            pos = self.prev_tok.pos
-            has_expr = self.tok.kind != Kind.Semicolon
-            if has_expr:
-                expr = self.parse_expr()
-            else:
-                expr = ast.VoidLiteral(pos)
-            self.expect(Kind.Semicolon)
-            return ast.ReturnStmt(expr, has_expr, pos)
-        elif self.accept(Kind.KeyRaise):
-            pos = self.prev_tok.pos
-            msg = self.parse_expr()
-            self.expect(Kind.Semicolon)
-            return ast.RaiseStmt(msg, pos)
 
         expr = self.parse_expr()
         if self.tok.kind.is_assign():
@@ -687,6 +667,23 @@ class Parser:
             pos = self.tok.pos
             self.next()
             expr = ast.EnumVariantExpr(self.parse_name(), pos)
+        elif self.tok.kind in (Kind.KeyContinue, Kind.KeyBreak):
+            op = self.tok.kind
+            pos = self.tok.pos
+            self.next()
+            return ast.BranchExpr(op, pos)
+        elif self.accept(Kind.KeyReturn):
+            pos = self.prev_tok.pos
+            has_expr = self.tok.kind != Kind.Semicolon
+            if has_expr:
+                expr = self.parse_expr()
+            else:
+                expr = ast.VoidLiteral(pos)
+            return ast.ReturnExpr(expr, has_expr, pos)
+        elif self.accept(Kind.KeyRaise):
+            pos = self.prev_tok.pos
+            expr = self.parse_expr()
+            return ast.RaiseExpr(expr, pos)
         elif self.tok.kind == Kind.KeyIf:
             expr = self.parse_if_expr(False)
         elif self.accept(Kind.KeyMatch):

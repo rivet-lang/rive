@@ -184,6 +184,9 @@ test "Test body with cool name =D!" {
         assert!(err.msg.len == 15);
         ()
     };
+
+    error() catch return;
+    optional() orelse raise RuntimeError("`none` detected");
 }
 
 extend EmptyStruct {

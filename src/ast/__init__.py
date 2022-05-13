@@ -314,22 +314,6 @@ class GotoStmt:
         self.label = label
         self.pos = pos
 
-class BranchStmt:
-    def __init__(self, op, pos):
-        self.op = op
-        self.pos = pos
-
-class ReturnStmt:
-    def __init__(self, expr, has_expr, pos):
-        self.expr = expr
-        self.has_expr = has_expr
-        self.pos = pos
-
-class RaiseStmt:
-    def __init__(self, msg, pos):
-        self.msg = msg
-        self.pos = pos
-
 class ExprStmt:
     def __init__(self, expr, pos):
         self.expr = expr
@@ -799,6 +783,45 @@ class PathExpr:
 
     def __repr__(self):
         return f"{self.left}::{self.field_name}"
+
+    def __str__(self):
+        return self.__repr__()
+
+class BranchExpr:
+    def __init__(self, op, pos):
+        self.op = op
+        self.pos = pos
+        self.typ = None
+
+    def __repr__(self):
+        return str(self.op)
+
+    def __str__(self):
+        return self.__repr__()
+
+class ReturnExpr:
+    def __init__(self, expr, has_expr, pos):
+        self.expr = expr
+        self.has_expr = has_expr
+        self.pos = pos
+        self.typ = None
+
+    def __repr__(self):
+        if not self.has_expr:
+            return f"return"
+        return f"return {self.expr}"
+
+    def __str__(self):
+        return self.__repr__()
+
+class RaiseExpr:
+    def __init__(self, expr, pos):
+        self.expr = expr
+        self.pos = pos
+        self.typ = None
+
+    def __repr__(self):
+        return f"raise {self.expr}"
 
     def __str__(self):
         return self.__repr__()

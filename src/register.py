@@ -272,10 +272,6 @@ class Register:
             for stmt in stmt.stmts:
                 self.visit_stmt(stmt)
             self.cur_fn_scope = None
-        elif isinstance(stmt, ast.ReturnStmt):
-            self.visit_expr(stmt.expr)
-        elif isinstance(stmt, ast.RaiseStmt):
-            self.visit_expr(stmt.msg)
         elif isinstance(stmt, ast.ExprStmt):
             self.visit_expr(stmt.expr)
         elif isinstance(stmt, ast.WhileStmt):
@@ -361,6 +357,10 @@ class Register:
             self.visit_expr(expr.left)
         elif isinstance(expr, ast.PathExpr):
             self.visit_expr(expr.left)
+        elif isinstance(expr, ast.ReturnExpr):
+            self.visit_expr(expr.expr)
+        elif isinstance(expr, ast.RaiseExpr):
+            self.visit_expr(expr.expr)
         elif isinstance(expr, ast.Block):
             self.cur_fn_scope = expr.scope
             for stmt in expr.stmts:

@@ -97,10 +97,6 @@ class Resolver:
         elif isinstance(stmt, ast.AssignStmt):
             self.resolve_expr(stmt.left)
             self.resolve_expr(stmt.right)
-        elif isinstance(stmt, ast.ReturnStmt):
-            self.resolve_expr(stmt.expr)
-        elif isinstance(stmt, ast.RaiseStmt):
-            self.resolve_expr(stmt.msg)
         elif isinstance(stmt, ast.ExprStmt):
             self.resolve_expr(stmt.expr)
         elif isinstance(stmt, ast.Block):
@@ -174,6 +170,10 @@ class Resolver:
                 self.resolve_expr(a.expr)
             if expr.has_err_handler():
                 self.resolve_expr(expr.err_handler.expr)
+        elif isinstance(expr, ast.ReturnExpr):
+            self.resolve_expr(expr.expr)
+        elif isinstance(expr, ast.RaiseExpr):
+            self.resolve_expr(expr.expr)
         elif isinstance(expr, ast.Block):
             for stmt in expr.stmts:
                 self.resolve_stmt(stmt)
