@@ -60,6 +60,14 @@ class ABI(Enum):
             return ABI.Rivet
         return None
 
+    def __repr__(self):
+        if self == ABI.Rivet:
+            return "Rivet"
+        return "C"
+
+    def __str__(self):
+        return self.__repr__()
+
 class Sym:
     def __init__(self, vis, name):
         self.vis = vis
@@ -250,6 +258,16 @@ class Fn(Sym):
         self.args = args
         self.ret_is_mut = ret_is_mut
         self.ret_typ = ret_typ
+
+    def typ(self):
+        from .type import Fn, FnArg
+        args = []
+        for arg in self.args:
+            args.append(FnArg(arg.is_mut, arg.typ))
+        return Fn(
+            self.is_unsafe, self.is_extern, self.abi, args, self.ret_is_mut,
+            self.ret_typ
+        )
 
 def universe():
     uni = Sym(Visibility.Private, "universe")

@@ -86,6 +86,16 @@ class Parser:
         self.scope.end = self.tok.pos.pos
         self.scope = self.scope.parent
 
+    def parse_abi(self):
+        abi_pos = self.tok.pos
+        abi_str = self.parse_string_literal().lit
+        if abi_f := sym.ABI.from_string(abi_str):
+            abi = abi_f
+        else:
+            report.error(f"unknown ABI: `{abi_str}`", abi_pos)
+            abi = sym.ABI.Rivet
+        return abi
+
     # ---- declarations --------------
     def parse_decls(self):
         decls = []
@@ -155,13 +165,7 @@ class Parser:
                 decl = ast.ExternPkg(extern_pkg, pos)
             else:
                 # extern function
-                abi_pos = self.tok.pos
-                abi_str = self.parse_string_literal().lit
-                if abi_f := sym.ABI.from_string(abi_str):
-                    abi = abi_f
-                else:
-                    report.error(f"unknown ABI: `{abi_str}`", abi_pos)
-                    abi = sym.ABI.Rivet
+                abi = self.parse_abi()
                 protos = []
                 if self.accept(Kind.Lbrace):
                     while not self.accept(Kind.Rbrace):
@@ -451,7 +455,7 @@ class Parser:
         self.close_scope()
         return ast.FnDecl(
             doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
-            args, ret_typ, ret_is_mut, stmts, sc, has_body, is_method,
+            args, ret_is_mut, ret_typ, stmts, sc, has_body, is_method,
             self_is_ref, self_is_mut
         )
 
@@ -1040,7 +1044,35 @@ class Parser:
     # ---- types -------------------------------
     def parse_type(self):
         pos = self.tok.pos
-        if self.accept(Kind.Amp):
+        if self.accept(Kind.Question):
+            # optional
+            typ = self.parse_type()
+            if isinstance(typ, type.Ptr):
+                report.error("pointers cannot be optional", pos)
+                report.note("by default pointers can contain the value `none`")
+            elif isinstance(typ, type.Optional):
+                report.error("optional multi-level types are not allowed", pos)
+            return type.Optional(typ)
+        elif self.tok.kind in (Kind.KeyUnsafe, Kind.KeyExtern, Kind.KeyFn):
+            # function types
+            is_unsafe = self.accept(Kind.KeyUnsafe)
+            is_extern = self.accept(Kind.KeyExtern)
+            abi = self.parse_abi() if is_extern else sym.ABI.Rivet
+            if is_extern and not self.inside_extern: self.inside_extern = True
+            args = []
+            self.expect(Kind.KeyFn)
+            self.expect(Kind.Lparen)
+            if self.tok.kind != Kind.Rparen:
+                while True:
+                    is_mut = self.accept(Kind.KeyMut)
+                    args.append(type.FnArg(is_mut, self.parse_type()))
+                    if not self.accept(Kind.Comma): break
+            self.expect(Kind.Rparen)
+            ret_is_mut = self.accept(Kind.KeyMut)
+            ret_typ = self.parse_type()
+            if is_extern and self.inside_extern: self.inside_extern = False
+            return type.Fn(is_unsafe, is_extern, abi, args, ret_is_mut, ret_typ)
+        elif self.accept(Kind.Amp):
             # references
             typ = self.parse_type()
             if self.inside_extern:
@@ -1083,15 +1115,6 @@ class Parser:
                 report.help("you can use a struct instead")
             self.expect(Kind.Rparen)
             return type.Tuple(types)
-        elif self.accept(Kind.Question):
-            # optional
-            typ = self.parse_type()
-            if isinstance(typ, type.Ptr):
-                report.error("pointers cannot be optional", pos)
-                report.note("by default pointers can contain the value `none`")
-            elif isinstance(typ, type.Optional):
-                report.error("optional multi-level types are not allowed", pos)
-            return type.Optional(typ)
         elif self.accept(Kind.KeySelfTy):
             return type.Type.unresolved(
                 ast.SelfExpr(self.scope, self.prev_tok.pos)

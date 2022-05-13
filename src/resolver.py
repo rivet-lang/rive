@@ -279,6 +279,10 @@ class Resolver:
             for t in typ.types:
                 if not self.resolve_type(t): return False
             return True
+        elif isinstance(typ, type.Fn):
+            for arg in typ.args:
+                self.resolve_type(arg.typ)
+            self.resolve_type(typ.ret_typ)
         elif isinstance(typ, type.Optional):
             return self.resolve_type(typ.typ)
         elif isinstance(typ, type.Result):
@@ -305,7 +309,7 @@ class Resolver:
                         f"cannot find type `{typ.expr.name}` in this scope",
                         typ.expr.pos
                     )
-            else:
+            elif isinstance(typ.expr, ast.PathExpr):
                 self.resolve_path_expr(typ.expr)
                 if not typ.expr.has_error:
                     if isinstance(typ.expr.field_info, sym.Type):

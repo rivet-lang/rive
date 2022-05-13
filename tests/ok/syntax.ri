@@ -25,6 +25,22 @@ pub type Int = i32;
 errtype RuntimeError;
 pub errtype FileNotFoundError;
 
+type EventHandler = fn(mut Byte, WideChar) void;
+
+fn event_handler(f: EventHandler) void {
+    f(b'2', 76);
+}
+
+fn fn_pointer(func: fn() void) void {
+    func();
+}
+
+unsafe fn unsafe_fn_pointer(
+    a: unsafe fn(usize) ptr, // `malloc` type
+    b: unsafe extern "C" fn(ptr) c_void, // `free` type
+    c: extern "C" fn(c_int) void // `exit` type
+) void { }
+
 fn println(s: str) void { }
 fn exists(s: str) bool { return true; }
 fn print_target_info() void { }
