@@ -355,10 +355,10 @@ class Prefs:
     def filter_files(self, inputs):
         new_inputs = []
         for input in inputs:
-            if input.count('.') == 1:
+            if path.basename(input).count('.') == 1:
                 new_inputs.append(input)
                 continue
-            exts = input[:-3].split('.')[1:]
+            exts = path.basename(input)[:-3].split('.')[1:]
             should_compile = False
             already_exts = []
             for ext in exts:

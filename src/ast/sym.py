@@ -35,8 +35,10 @@ class Scope:
             raise CompilerError(f"duplicate object `{obj.name}`")
         self.objects.append(obj)
 
-    def dont_lookup_parent(self):
-        return self.detached_from_parent or self.parent == None
+    def exists(self, name):
+        if _ := self.lookup(name):
+            return True
+        return False
 
     def lookup(self, name):
         sc = self
@@ -48,6 +50,13 @@ class Scope:
                 break
             sc = sc.parent
         return None
+
+    def dont_lookup_parent(self):
+        return self.detached_from_parent or self.parent == None
+
+    def update_typ(self, name, typ):
+        if obj := self.lookup(name):
+            obj.typ = typ
 
 class ABI(Enum):
     Rivet = auto_enum()
@@ -74,6 +83,7 @@ class Sym:
         self.name = name
         self.syms = []
         self.parent = None
+        self.is_universe = False
 
     def add(self, sym):
         if asym := self.lookup(sym.name):
@@ -97,12 +107,54 @@ class Sym:
         sym.parent = self
         self.syms.append(sym)
 
-    def add_or_extend_mod(self, sym):
-        if m := self.lookup(sym.name):
-            return m
+    def add_and_return(self, sym):
         idx = len(self.syms)
         self.syms.append(sym)
         return self.syms[idx]
+
+    def add_or_extend_mod(self, sym):
+        if m := self.lookup(sym.name):
+            return m
+        return self.add_and_return(sym)
+
+    def add_or_get_slice(self, elem_typ):
+        unique_name = f"[{elem_typ.qualstr()}]"
+        if sym := self.lookup(unique_name):
+            return sym
+        return self.add_and_return(
+            Type(
+                Visibility.Private,
+                unique_name,
+                TypeKind.Slice,
+                info=SliceInfo(elem_typ)
+            )
+        )
+
+    def add_or_get_array(self, elem_typ, size):
+        unique_name = f"[{elem_typ.qualstr()}; {size}]"
+        if sym := self.lookup(unique_name):
+            return sym
+        return self.add_and_return(
+            Type(
+                Visibility.Private,
+                unique_name,
+                TypeKind.Array,
+                info=ArrayInfo(elem_typ, size)
+            )
+        )
+
+    def add_or_get_tuple(self, types):
+        unique_name = f"({', '.join([t.qualstr() for t in types])})"
+        if sym := self.lookup(unique_name):
+            return sym
+        return self.add_and_return(
+            Type(
+                Visibility.Private,
+                unique_name,
+                TypeKind.Tuple,
+                info=TupleInfo(types)
+            )
+        )
 
     def lookup(self, name):
         for sym in self.syms:
@@ -126,7 +178,16 @@ class Sym:
             return "static"
         elif isinstance(self, Type):
             return "type"
-        return "function"
+        elif isinstance(self, Fn):
+            if self.is_method:
+                return "method"
+            return "function"
+        return "unknown symbol kind"
+
+    def qualname(self):
+        if self.parent == None or self.parent.is_universe:
+            return self.name
+        return f"{self.parent.qualname()}::{self.name}"
 
     def __getitem__(self, idx):
         if isinstance(idx, str):
@@ -161,8 +222,8 @@ class Field:
 class TypeKind(Enum):
     Placeholder = auto_enum()
     CVoid = auto_enum()
+    None_ = auto_enum()
     Void = auto_enum()
-    Ptr = auto_enum()
     Bool = auto_enum()
     Rune = auto_enum()
     Int8 = auto_enum()
@@ -187,6 +248,69 @@ class TypeKind(Enum):
     Struct = auto_enum()
     Union = auto_enum()
     Trait = auto_enum()
+    NoReturn = auto_enum()
+
+    def __repr__(self):
+        if self == TypeKind.CVoid:
+            return "c_void"
+        elif self == TypeKind.None_:
+            return "none"
+        elif self == TypeKind.Void:
+            return "void"
+        elif self == TypeKind.Bool:
+            return "bool"
+        elif self == TypeKind.Rune:
+            return "rune"
+        elif self == TypeKind.Int8:
+            return "i8"
+        elif self == TypeKind.Int16:
+            return "i16"
+        elif self == TypeKind.Int32:
+            return "i32"
+        elif self == TypeKind.Int64:
+            return "i64"
+        elif self == TypeKind.Isize:
+            return "isize"
+        elif self == TypeKind.Uint8:
+            return "u8"
+        elif self == TypeKind.Uint16:
+            return "u16"
+        elif self == TypeKind.Uint32:
+            return "u32"
+        elif self == TypeKind.Uint64:
+            return "u64"
+        elif self == TypeKind.Usize:
+            return "usize"
+        elif self == TypeKind.Float32:
+            return "f32"
+        elif self == TypeKind.Float64:
+            return "f64"
+        elif self == TypeKind.Str:
+            return "str"
+        elif self == TypeKind.Alias:
+            return "alias"
+        elif self == TypeKind.ErrType:
+            return "errtype"
+        elif self == TypeKind.Array:
+            return "array"
+        elif self == TypeKind.Slice:
+            return "slice"
+        elif self == TypeKind.Tuple:
+            return "tuple"
+        elif self == TypeKind.Enum:
+            return "enum"
+        elif self == TypeKind.Struct:
+            return "struct"
+        elif self == TypeKind.Union:
+            return "union"
+        elif self == TypeKind.Trait:
+            return "trait"
+        elif self == TypeKind.NoReturn:
+            return "no_return"
+        return "placeholder"
+
+    def __str__(self):
+        return self.__repr__()
 
 # Type infos
 
@@ -249,15 +373,23 @@ class Arg:
 
 class Fn(Sym):
     def __init__(
-        self, abi, vis, is_extern, is_unsafe, name, args, ret_is_mut, ret_typ
+        self, abi, vis, is_extern, is_unsafe, is_method, name, args, ret_is_mut,
+        ret_typ, has_named_args
     ):
         Sym.__init__(self, vis, name)
         self.abi = abi
         self.is_extern = is_extern
         self.is_unsafe = is_unsafe
+        self.is_method = is_method
         self.args = args
         self.ret_is_mut = ret_is_mut
         self.ret_typ = ret_typ
+        self.has_named_args = has_named_args
+
+    def kind(self):
+        if self.is_method:
+            return "method"
+        return "function"
 
     def typ(self):
         from .type import Fn, FnArg
@@ -271,9 +403,10 @@ class Fn(Sym):
 
 def universe():
     uni = Sym(Visibility.Private, "universe")
+    uni.is_universe = True
     uni.add(Type(Visibility.Public, "c_void", TypeKind.CVoid))
+    uni.add(Type(Visibility.Public, "none", TypeKind.None_))
     uni.add(Type(Visibility.Public, "void", TypeKind.Void))
-    uni.add(Type(Visibility.Public, "ptr", TypeKind.Ptr))
     uni.add(Type(Visibility.Public, "bool", TypeKind.Bool))
     uni.add(Type(Visibility.Public, "rune", TypeKind.Rune))
     uni.add(Type(Visibility.Public, "i8", TypeKind.Int8))
@@ -304,4 +437,5 @@ def universe():
             fields=[Field("msg", True, False, None)]
         )
     )
+    uni.add(Type(Visibility.Public, "no_return", TypeKind.NoReturn))
     return uni

@@ -1,10 +1,13 @@
 tests/failing/resolver/private_symbol.ri:12:17: error: type `PrivateStruct` is private
+     |
   12 |     _ = my_mod::PrivateStruct{
      |                 ^
 tests/failing/resolver/private_symbol.ri:13:20: error: constant `PRIVATE_CONST` is private
+     |
   13 |         a: my_mod::PRIVATE_CONST,
      |                    ^
 tests/failing/resolver/private_symbol.ri:14:20: error: type `PrivateEnum` is private
+     |
   14 |         b: my_mod::PrivateEnum::Variant
      |                    ^
 rivetc: error: could not compile package `private_symbol`, aborting due to 3 previous errors.

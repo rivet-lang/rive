@@ -31,8 +31,8 @@ language with a clear and simple syntax and a low learning curve.
 ## Features
 
 * [X] **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
-* [ ] **Easy error handling**: Via result types: `fn alloc() !`.
-* [ ] **Named and optional arguments**: Very useful.
+* [X] **Easy error handling**: Via result types: `fn func() !T { ... }`.
+* [X] **Named and optional arguments**: Very useful.
 * [ ] **Immutable values by default:** Variables, arguments and fields of struct
 are immutable by default.
 * [ ] **Ownership and Borrowing**: Rivet has a very simplified version of Rust's

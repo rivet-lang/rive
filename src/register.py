@@ -110,14 +110,14 @@ class Register:
                             )
                         else:
                             variants.append(v)
-                    un = sym.Type(
+                    decl.sym = sym.Type(
                         decl.vis,
                         decl.name,
                         sym.TypeKind.Union,
                         info=sym.UnionInfo(variants, decl.attrs.has("no_tag"))
                     )
                     old_cur_sym = self.cur_sym
-                    self.cur_sym = un
+                    self.cur_sym = decl.sym
                     for d in decl.decls:
                         if isinstance(d, ast.FnDecl):
                             self.visit_fn_decl(d)
@@ -126,12 +126,14 @@ class Register:
                                 "expected associated function or method", d.pos
                             )
                     self.cur_sym = old_cur_sym
-                    self.add_sym(un, decl.pos)
+                    self.add_sym(decl.sym, decl.pos)
             elif isinstance(decl, ast.StructDecl):
                 if should_register:
-                    st = sym.Type(decl.vis, decl.name, sym.TypeKind.Struct, [])
+                    decl.sym = sym.Type(
+                        decl.vis, decl.name, sym.TypeKind.Struct, []
+                    )
                     old_cur_sym = self.cur_sym
-                    self.cur_sym = st
+                    self.cur_sym = decl.sym
                     for d in decl.decls:
                         if isinstance(d, ast.StructField):
                             should_register_field = True
@@ -140,13 +142,13 @@ class Register:
                                     if_attr.expr
                                 )
                             if should_register_field:
-                                if st.has_field(d.name):
+                                if decl.sym.has_field(d.name):
                                     report.error(
                                         f"field `{d.name}` is already declared",
                                         d.pos
                                     )
                                 else:
-                                    st.fields.append(
+                                    decl.sym.fields.append(
                                         sym.Field(
                                             d.name, d.is_mut, d.is_pub, d.typ
                                         )
@@ -154,11 +156,17 @@ class Register:
                         elif isinstance(d, ast.FnDecl):
                             self.visit_fn_decl(d)
                         elif isinstance(d, ast.DestructorDecl):
+                            d.scope.add(
+                                sym.Object(
+                                    True, "self", type.Ref(type.Type(decl.sym)),
+                                    True
+                                )
+                            )
                             self.add_sym(
                                 sym.Fn(
                                     sym.ABI.Rivet, ast.Visibility.Private,
-                                    False, False, "dtor", [], False,
-                                    self.comp.c_void_t
+                                    False, False, True, "dtor", [], False,
+                                    self.comp.c_void_t, False
                                 ), decl.pos
                             )
                         else:
@@ -166,7 +174,7 @@ class Register:
                                 "expected associated function or method", d.pos
                             )
                     self.cur_sym = old_cur_sym
-                    self.add_sym(st, decl.pos)
+                    self.add_sym(decl.sym, decl.pos)
             elif isinstance(decl, ast.EnumDecl):
                 variants = []
                 for v in decl.variants:
@@ -177,14 +185,14 @@ class Register:
                         )
                     else:
                         variants.append(v)
-                es = sym.Type(
+                decl.sym = sym.Type(
                     decl.vis,
                     decl.name,
                     sym.TypeKind.Enum,
                     info=sym.EnumInfo(variants)
                 )
                 old_cur_sym = self.cur_sym
-                self.cur_sym = es
+                self.cur_sym = decl.sym
                 for d in decl.decls:
                     if isinstance(d, ast.FnDecl):
                         self.visit_fn_decl(d)
@@ -193,7 +201,7 @@ class Register:
                             "expected associated function or method", d.pos
                         )
                 self.cur_sym = old_cur_sym
-                self.add_sym(es, decl.pos)
+                self.add_sym(decl.sym, decl.pos)
             elif isinstance(decl, ast.ExtendDecl):
                 if should_register:
                     old_sym = self.cur_sym
@@ -201,8 +209,9 @@ class Register:
                         if decl.typ.unresolved:
                             if isinstance(decl.typ.expr, ast.Ident):
                                 if s := self.cur_sym.lookup(decl.typ.expr.name):
-                                    if s.kind == sym.TypeKind.Alias and not isinstance(
-                                        s.info.parent, type.UnknownType
+                                    if s.kind == sym.TypeKind.Alias and (
+                                        isinstance(s.info.parent, type.Type)
+                                        and s.info.parent.is_resolved()
                                     ):
                                         self.cur_sym = s.info.parent.sym
                                     else:
@@ -239,12 +248,17 @@ class Register:
                 self.cur_fn_scope = None
 
     def visit_fn_decl(self, decl, abi=sym.ABI.Rivet):
-        self.add_sym(
-            sym.Fn(
-                abi, decl.vis, decl.is_extern, decl.is_unsafe, decl.name,
-                decl.args, decl.ret_is_mut, decl.ret_typ
-            ), decl.name_pos
+        decl.sym = sym.Fn(
+            abi, decl.vis, decl.is_extern, decl.is_unsafe, decl.is_method,
+            decl.name, decl.args, decl.ret_is_mut, decl.ret_typ,
+            decl.has_named_args
         )
+        self.add_sym(decl.sym, decl.name_pos)
+        if decl.is_method:
+            self_typ = type.Type(self.cur_sym)
+            if decl.self_is_ref:
+                self_typ = type.Ref(self_typ)
+            decl.scope.add(sym.Object(decl.self_is_mut, "self", self_typ, True))
         for arg in decl.args:
             try:
                 decl.scope.add(sym.Object(arg.is_mut, arg.name, arg.typ, True))
@@ -267,11 +281,6 @@ class Register:
                     self.cur_fn_scope.add(sym.Label(stmt.label))
                 except utils.CompilerError as e:
                     report.error(e.args[0], stmt.pos)
-        elif isinstance(stmt, ast.Block):
-            self.cur_fn_scope = stmt.scope
-            for stmt in stmt.stmts:
-                self.visit_stmt(stmt)
-            self.cur_fn_scope = None
         elif isinstance(stmt, ast.ExprStmt):
             self.visit_expr(stmt.expr)
         elif isinstance(stmt, ast.WhileStmt):

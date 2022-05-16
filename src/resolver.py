@@ -3,9 +3,9 @@
 # that can be found in the LICENSE file.
 
 from .tokens import Kind
-from . import ast, report
 from .ast import sym, type
 from .ast.sym import Visibility
+from . import ast, report, register, utils
 
 class Resolver:
     def __init__(self, comp):
@@ -14,7 +14,13 @@ class Resolver:
 
         self.inside_is_comparation = False
 
+        self.self_sym = None
+
     def resolve_files(self, source_files):
+        register.Register(self.comp).visit_source_files(source_files)
+        if report.ERRORS > 0:
+            return
+
         self.cur_sym = self.comp.pkg_sym
         for sf in source_files:
             self.resolve_file(sf)
@@ -57,22 +63,64 @@ class Resolver:
                 self.resolve_decls(decl.decls)
         elif isinstance(decl, ast.UnionDecl):
             if should_check:
+                self.self_sym = decl.sym
                 for v in decl.variants:
                     self.resolve_type(v)
                 self.resolve_decls(decl.decls)
+                self.self_sym = None
         elif isinstance(decl, ast.EnumDecl):
             if should_check:
+                self.self_sym = decl.sym
                 self.resolve_decls(decl.decls)
+                self.self_sym = None
         elif isinstance(decl, ast.StructDecl):
             if should_check:
+                self.self_sym = decl.sym
                 self.resolve_decls(decl.decls)
+                self.self_sym = None
         elif isinstance(decl, ast.StructField):
             if should_check:
                 self.resolve_type(decl.typ)
+                if decl.has_def_expr:
+                    self.resolve_expr(decl.def_expr)
         elif isinstance(decl, ast.ExtendDecl):
             if should_check:
-                self.resolve_type(decl.typ)
-                self.resolve_decls(decl.decls)
+                if self.resolve_type(decl.typ):
+                    self.self_sym = decl.typ.get_sym()
+                    if isinstance(
+                        decl.typ, (type.Array, type.Slice, type.Tuple)
+                    ):
+                        # TODO(StunxFS): better error messages
+                        s = decl.typ.get_sym()
+                        for d in decl.decls:
+                            if isinstance(d, ast.FnDecl):
+                                if d.is_method:
+                                    self_typ = type.Type(self.self_sym)
+                                    if d.self_is_ref:
+                                        self_typ = type.Ref(self_typ)
+                                    if not d.scope.exists("self"):
+                                        d.scope.add(
+                                            sym.Object(
+                                                d.self_is_mut, "self", self_typ,
+                                                True
+                                            )
+                                        )
+                                    try:
+                                        d.sym = sym.Fn(
+                                            sym.ABI.Rivet, d.vis, d.is_extern,
+                                            d.is_unsafe, d.is_method, d.name,
+                                            d.args, d.ret_is_mut, d.ret_typ,
+                                            d.has_named_args
+                                        )
+                                        s.add(d.sym)
+                                    except utils.CompilerError as e:
+                                        report.error(e.args[0], d.name_pos)
+                                else:
+                                    report.error("expected method", d.name_pos)
+                            else:
+                                report.error("expected method", d.pos)
+                    self.resolve_decls(decl.decls)
+                    self.self_sym = None
         elif isinstance(decl, ast.TestDecl):
             self.resolve_stmts(decl.stmts)
         elif isinstance(decl, ast.FnDecl):
@@ -99,9 +147,6 @@ class Resolver:
             self.resolve_expr(stmt.right)
         elif isinstance(stmt, ast.ExprStmt):
             self.resolve_expr(stmt.expr)
-        elif isinstance(stmt, ast.Block):
-            for stmt in stmt.stmts:
-                self.resolve_stmt(stmt)
         elif isinstance(stmt, ast.WhileStmt):
             self.resolve_expr(stmt.cond)
             self.resolve_stmt(stmt.stmt)
@@ -121,14 +166,28 @@ class Resolver:
                         f"unknown comptime constant `{expr.name}`", expr.pos
                     )
             elif obj := expr.scope.lookup(expr.name):
-                expr.obj = obj
-                expr.is_obj = True
-            elif sym := self.cur_sym.lookup(expr.name):
-                expr.sym = sym
+                if isinstance(obj, sym.Label):
+                    report.error("expected value, found label", expr.pos)
+                else:
+                    expr.is_obj = True
+                    expr.obj = obj
+                    expr.typ = obj.typ
+            elif s := self.cur_sym.lookup(expr.name):
+                expr.sym = s
             else:
                 report.error(
                     f"cannot find `{expr.name}` in this scope", expr.pos
                 )
+        elif isinstance(expr, ast.SelfExpr):
+            if self_ := expr.scope.lookup("self"):
+                expr.typ = self_.typ
+            else:
+                report.error(f"cannot find `self` in this scope", expr.pos)
+        elif isinstance(expr, ast.SelfTyExpr):
+            if self.self_sym != None:
+                expr.typ = type.Type(self.self_sym)
+            else:
+                report.error(f"cannot resolve type for `Self`", expr.pos)
         elif isinstance(expr, ast.TypeNode):
             self.resolve_type(expr.typ)
         elif isinstance(expr, ast.TupleLiteral):
@@ -213,6 +272,7 @@ class Resolver:
 
     def resolve_path_expr(self, path):
         if isinstance(path.left, ast.PkgExpr):
+            path.left_info = self.comp.pkg_sym
             if field_info := self.find_symbol(
                 self.comp.pkg_sym, path.field_name, path.field_pos
             ):
@@ -221,6 +281,7 @@ class Resolver:
                 path.has_error = True
         elif isinstance(path.left, ast.Ident):
             if local_sym := self.cur_sym.lookup(path.left.name):
+                path.left_info = local_sym
                 if field_info := self.find_symbol(
                     local_sym, path.field_name, path.field_pos
                 ):
@@ -228,6 +289,7 @@ class Resolver:
                 else:
                     path.has_error = True
             elif package := self.comp.universe.lookup(path.left.name):
+                path.left_info = package
                 # external package?
                 if field_info := self.find_symbol(
                     package, path.field_name, path.field_pos
@@ -244,6 +306,7 @@ class Resolver:
         elif isinstance(path.left, ast.PathExpr):
             self.resolve_expr(path.left)
             if not path.left.has_error:
+                path.left_info = path.left.field_info
                 if field_info := self.find_symbol(
                     path.left.field_info, path.field_name, path.field_pos
                 ):
@@ -258,7 +321,6 @@ class Resolver:
         if sym.vis == Visibility.Private and sym.parent != self.cur_sym:
             report.error(f"{sym.sym_kind()} `{sym.name}` is private", pos)
 
-    # TODO(StunxFS): move to checker
     def disallow_errtype_use(self, kind, pos):
         if (not self.inside_is_comparation) and kind == sym.TypeKind.ErrType:
             report.error("cannot use error type as a normal type", pos)
@@ -272,17 +334,27 @@ class Resolver:
         elif isinstance(typ, type.Ptr):
             return self.resolve_type(typ.typ)
         elif isinstance(typ, type.Slice):
-            return self.resolve_type(typ.typ)
+            if self.resolve_type(typ.typ):
+                typ.resolve(self.comp.universe.add_or_get_slice(typ.typ))
+                return True
         elif isinstance(typ, type.Array):
-            return self.resolve_type(typ.typ)
+            if self.resolve_type(typ.typ):
+                typ.resolve(
+                    self.comp.universe.add_or_get_array(typ.typ, typ.size)
+                )
+                return True
         elif isinstance(typ, type.Tuple):
+            res = False
             for t in typ.types:
-                if not self.resolve_type(t): return False
-            return True
+                res = self.resolve_type(t)
+            typ.resolve(self.comp.universe.add_or_get_tuple(typ.types))
+            return res
         elif isinstance(typ, type.Fn):
+            res = False
             for arg in typ.args:
-                self.resolve_type(arg.typ)
-            self.resolve_type(typ.ret_typ)
+                res = self.resolve_type(arg.typ)
+            res = self.resolve_type(typ.ret_typ)
+            return res
         elif isinstance(typ, type.Optional):
             return self.resolve_type(typ.typ)
         elif isinstance(typ, type.Result):
@@ -327,4 +399,13 @@ class Resolver:
                             f"expected type, found {typ.expr.field_info.sym_kind()}",
                             typ.expr.pos
                         )
+            elif isinstance(typ.expr, ast.SelfTyExpr):
+                if self.self_sym != None:
+                    typ.resolve(self.self_sym)
+                else:
+                    report.error(
+                        f"cannot resolve type for `Self`", typ.expr.pos
+                    )
+            else:
+                report.error(f"expected type, found {typ.expr}", typ.expr.pos)
         return False

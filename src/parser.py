@@ -307,10 +307,13 @@ class Parser:
                         pos = self.prev_tok.pos
                         self.expect(Kind.KeySelf)
                         self.expect(Kind.Lbrace)
+                        self.open_scope()
+                        sc = self.scope
                         stmts = []
                         while not self.accept(Kind.Rbrace):
                             stmts.append(self.parse_stmt())
-                        decls.append(ast.DestructorDecl(self.scope, stmts, pos))
+                        self.close_scope()
+                        decls.append(ast.DestructorDecl(sc, stmts, pos))
                     else:
                         # declaration: methods, consts, etc.
                         decls.append(self.parse_decl())
@@ -395,6 +398,7 @@ class Parser:
         is_method = False
         self_is_ref = False
         self_is_mut = False
+        has_named_args = False
         self.open_scope()
         sc = self.scope
         self.expect(Kind.Lparen)
@@ -421,6 +425,7 @@ class Parser:
                 arg_typ = self.parse_type()
                 arg_expr = self.empty_expr()
                 if self.accept(Kind.Assign):
+                    has_named_args = True
                     arg_expr = self.parse_expr()
                 args.append(
                     sym.Arg(
@@ -456,7 +461,7 @@ class Parser:
         return ast.FnDecl(
             doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
             args, ret_is_mut, ret_typ, stmts, sc, has_body, is_method,
-            self_is_ref, self_is_mut
+            self_is_ref, self_is_mut, has_named_args
         )
 
     # ---- statements --------------------------
@@ -550,10 +555,12 @@ class Parser:
         is_ref = support_ref and self.accept(Kind.Amp)
         pos = self.tok.pos
         name = self.parse_name()
+        has_typ = False
         typ = self.comp.void_t
         if support_typ and self.accept(Kind.Colon):
             typ = self.parse_type()
-        return ast.VarDecl(is_mut, is_ref, name, typ, pos)
+            has_typ = True
+        return ast.VarDecl(is_mut, is_ref, name, has_typ, typ, pos)
 
     # ---- expressions -------------------------
     def parse_expr(self):
@@ -591,13 +598,13 @@ class Parser:
             op = self.tok.kind
             self.next()
             right = self.parse_shift_expr()
-            left = ast.BinaryExpr(left, op, right, right.pos)
+            left = ast.BinaryExpr(left, op, right, left.pos)
         elif self.tok.kind in [Kind.KeyIs, Kind.KeyNotIs]:
             op = self.tok.kind
             self.next()
             pos = self.tok.pos
             right = ast.TypeNode(self.parse_type(), pos)
-            left = ast.BinaryExpr(left, op, right, pos)
+            left = ast.BinaryExpr(left, op, right, left.pos)
         return left
 
     def parse_shift_expr(self):
@@ -645,7 +652,7 @@ class Parser:
             pos = self.tok.pos
             self.next()
             right = self.parse_unary_expr()
-            expr = ast.UnaryExpr(right, op, right.pos)
+            expr = ast.UnaryExpr(right, op, pos)
         else:
             expr = self.parse_primary_expr()
         return expr
@@ -835,12 +842,14 @@ class Parser:
                         if not self.accept(Kind.Comma):
                             break
                 self.expect(Kind.Rparen)
+                err_handler_pos = self.tok.pos
                 is_propagate = False
                 varname = ""
                 varname_pos = self.tok.pos
                 err_expr = None
                 if self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Bang:
                     # check result value, if error propagate
+                    err_handler_pos = self.peek_tok.pos
                     self.advance(2)
                     is_propagate = True
                 elif self.accept(Kind.KeyCatch):
@@ -852,7 +861,8 @@ class Parser:
                 expr = ast.CallExpr(
                     expr, args,
                     ast.CallErrorHandler(
-                        is_propagate, varname, err_expr, varname_pos, self.scope
+                        is_propagate, varname, err_expr, varname_pos,
+                        self.scope, err_handler_pos
                     ), expr.pos
                 )
             elif self.accept(Kind.Lbracket):
@@ -879,16 +889,21 @@ class Parser:
             elif self.accept(Kind.Dot):
                 if self.accept(Kind.Mult):
                     expr = ast.SelectorExpr(
-                        expr, "", expr.pos, is_indirect=True
+                        expr, "", expr.pos, self.prev_tok.pos, is_indirect=True
                     )
                 elif self.accept(Kind.Question):
                     # check optional value, if none panic
                     expr = ast.SelectorExpr(
-                        expr, "", expr.pos, is_nonecheck=True
+                        expr,
+                        "",
+                        expr.pos,
+                        self.prev_tok.pos,
+                        is_nonecheck=True
                     )
                 else:
+                    field_pos = self.tok.pos
                     name = self.parse_name()
-                    expr = ast.SelectorExpr(expr, name, expr.pos)
+                    expr = ast.SelectorExpr(expr, name, expr.pos, field_pos)
             elif self.tok.kind == Kind.DoubleColon:
                 expr = self.parse_path_expr(expr)
             elif self.tok.kind == Kind.DotDot:
@@ -1087,9 +1102,6 @@ class Parser:
             typ = self.parse_type()
             if isinstance(typ, type.Ref):
                 report.error("cannot use pointers with references", pos)
-            elif typ == self.comp.c_void_t:
-                report.error("cannot use `*c_void` as type", pos)
-                report.help("use `ptr` instead")
             return type.Ptr(typ)
         elif self.accept(Kind.Lbracket):
             # arrays or slices
@@ -1114,7 +1126,7 @@ class Parser:
             return type.Tuple(types)
         elif self.accept(Kind.KeySelfTy):
             return type.Type.unresolved(
-                ast.SelfExpr(self.scope, self.prev_tok.pos)
+                ast.SelfTyExpr(self.scope, self.prev_tok.pos)
             )
         elif self.tok.kind in (Kind.KeyPkg, Kind.Name):
             # normal type
@@ -1130,19 +1142,17 @@ class Parser:
                             break
                 return type.Type.unresolved(path_expr)
             elif self.tok.kind == Kind.Name:
+                prev_tok_kind = self.prev_tok.kind
                 expr = self.parse_ident()
                 lit = expr.name
                 if lit == "c_void":
-                    if not self.inside_extern:
-                        report.error(
-                            "`c_void` can only be used inside `extern` declarations",
-                            expr.pos
-                        )
+                    if prev_tok_kind != Kind.Mult and (
+                        prev_tok_kind == Kind.Rparen and not self.inside_extern
+                    ):
+                        report.error("invalid use of type `c_void`", pos)
                     return self.comp.c_void_t
                 elif lit == "void":
                     return self.comp.void_t
-                elif lit == "ptr":
-                    return self.comp.ptr_t
                 elif lit == "bool":
                     return self.comp.bool_t
                 elif lit == "rune":
@@ -1173,6 +1183,10 @@ class Parser:
                     return self.comp.float64_t
                 elif lit == "str":
                     return self.comp.str_t
+                elif lit == "no_return":
+                    if prev_tok_kind != Kind.Rparen and self.tok.kind != Kind.Lbrace:
+                        report.error("invalid use of type `no_return`", pos)
+                    return self.comp.c_void_t
                 else:
                     return type.Type.unresolved(expr)
             else:

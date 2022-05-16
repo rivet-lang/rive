@@ -1,0 +1,6 @@
+tests/failing/checker/fn_mut_arg.ri:1:12: error: arguments passed by value cannot be mutated
+    |
+  1 | fn func(mut a: i32) void { }
+    |            ^
+    = note: only arguments passed by reference can be mutated
+rivetc: error: could not compile package `fn_mut_arg`, aborting due to previous error.

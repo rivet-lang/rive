@@ -20,20 +20,23 @@ def format(msg, open, close):
         return msg
     return f"\x1b[{open}m{msg}\x1b[{close}m"
 
-def red(msg):
-    return format(msg, "91", "39")
-
-def yellow(msg):
-    return format(msg, "33", "39")
-
-def cyan(msg):
-    return format(msg, "36", "39")
+def bold(msg):
+    return format(msg, "1", "22")
 
 def green(msg):
     return format(msg, "32", "39")
 
+def yellow(msg):
+    return format(msg, "33", "39")
+
+def blue(msg):
+    return format(msg, "34", "39")
+
+def cyan(msg):
+    return format(msg, "36", "39")
+
 def white(msg):
     return format(msg, "37", "39")
 
-def bold(msg):
-    return format(msg, "1", "22")
+def red(msg):
+    return format(msg, "91", "39")

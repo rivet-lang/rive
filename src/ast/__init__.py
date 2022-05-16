@@ -37,10 +37,11 @@ class Visibility(Enum):
 
 # Used for `let` and `for` stmts, and guard exprs
 class VarDecl:
-    def __init__(self, is_mut, is_ref, name, typ, pos):
+    def __init__(self, is_mut, is_ref, name, has_typ, typ, pos):
         self.is_mut = is_mut
         self.is_ref = is_ref
         self.name = name
+        self.has_typ = has_typ
         self.typ = typ
         self.pos = pos
 
@@ -51,6 +52,8 @@ class VarDecl:
         if self.is_ref:
             res += "&"
         res += self.name
+        if self.has_typ:
+            res += f": {self.typ}"
         return res
 
     def __str__(self):
@@ -185,6 +188,7 @@ class UnionDecl:
         self.name = name
         self.variants = variants
         self.decls = decls
+        self.sym = None
         self.pos = pos
 
 class StructField:
@@ -209,6 +213,7 @@ class StructDecl:
         self.vis = vis
         self.name = name
         self.decls = decls
+        self.sym = None
         self.pos = pos
 
 class EnumDecl:
@@ -219,6 +224,7 @@ class EnumDecl:
         self.name = name
         self.variants = variants
         self.decls = decls
+        self.sym = None
         self.pos = pos
 
 class ExtendDecl:
@@ -246,6 +252,7 @@ class FnDecl:
         is_method=False,
         self_is_ref=False,
         self_is_mut=False,
+        has_named_args=False
     ):
         self.doc_comment = doc_comment
         self.attrs = attrs
@@ -255,11 +262,14 @@ class FnDecl:
         self.args = args
         self.self_is_ref = self_is_ref
         self.self_is_mut = self_is_mut
+        self.self_typ = None
         self.is_extern = is_extern
         self.is_unsafe = is_unsafe
         self.is_method = is_method
         self.ret_is_mut = ret_is_mut
         self.ret_typ = ret_typ
+        self.has_named_args = has_named_args
+        self.sym = None
         self.scope = scope
         self.stmts = stmts
 
@@ -274,6 +284,7 @@ class DestructorDecl:
     def __init__(self, scope, stmts, pos):
         self.stmts = stmts
         self.scope = scope
+        self.self_typ = None
         self.pos = pos
 
 # ------ Statements --------
@@ -669,7 +680,7 @@ class CallExpr:
         return l
 
     def has_err_handler(self):
-        return self.err_handler.expr != None
+        return self.err_handler.expr != None or self.err_handler.is_propagate
 
     def __repr__(self):
         res = f"{self.left}({', '.join([str(a) for a in self.args])})"
@@ -696,12 +707,13 @@ class CallArg:
         return self.__repr__()
 
 class CallErrorHandler:
-    def __init__(self, is_propagate, varname, expr, varname_pos, scope):
+    def __init__(self, is_propagate, varname, expr, varname_pos, scope, pos):
         self.is_propagate = is_propagate
         self.varname = varname
         self.varname_pos = varname_pos
         self.expr = expr
         self.scope = scope
+        self.pos = pos
 
     def has_varname(self):
         return len(self.varname) > 0
@@ -750,10 +762,17 @@ class BuiltinCallExpr:
 
 class SelectorExpr:
     def __init__(
-        self, left, field_name, pos, is_indirect=False, is_nonecheck=False
+        self,
+        left,
+        field_name,
+        pos,
+        field_pos,
+        is_indirect=False,
+        is_nonecheck=False
     ):
         self.left = left
         self.field_name = field_name
+        self.field_pos = field_pos
         self.left_typ = None
         self.is_indirect = is_indirect
         self.is_nonecheck = is_nonecheck
@@ -773,6 +792,7 @@ class SelectorExpr:
 class PathExpr:
     def __init__(self, left, field_name, pos, field_pos):
         self.left = left
+        self.left_info = None
         self.field_name = field_name
         self.field_info = None
         self.field_pos = field_pos

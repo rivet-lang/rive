@@ -1,0 +1,7 @@
+tests/failing/checker/mut_static.ri:4:13: error: use of mutable static is unsafe and requires `unsafe` block
+    |
+  4 |     let x = MUTABLE_STATIC;
+    |             ^
+    = note: mutable statics can be mutated by multiple threads: aliasing violations or data
+      races will cause undefined behavior
+rivetc: error: could not compile package `mut_static`, aborting due to previous error.

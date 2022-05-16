@@ -289,8 +289,9 @@ class Lexer:
 
     def read_char(self):
         len = 0
-        start = self.pos
         backslash = "\\"
+        start = self.pos
+        is_bytelit = self.pos > 0 and self.text[self.pos - 1] == "b"
 
         while True:
             self.pos += 1
@@ -308,7 +309,15 @@ class Lexer:
         len -= 1
 
         ch = self.text[start + 1:self.pos]
-        if len != 1:
+        if len == 0:
+            report.error("empty character literal", self.get_pos())
+        elif is_bytelit:
+            _, len = utils.bytestr(ch)
+            if len > 1:
+                report.error(
+                    "byte literal may only contain one byte", self.get_pos()
+                )
+        elif len != 1:
             if len > 1:
                 report.error(
                     "character literal may only contain one codepoint",
@@ -317,8 +326,6 @@ class Lexer:
                 report.help(
                     "if you meant to write a string literal, use double quotes"
                 )
-            elif len == 0:
-                report.error("empty character literal", self.get_pos())
         return ch
 
     def read_string(self):

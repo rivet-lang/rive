@@ -29,6 +29,11 @@ def run_process(*args):
 class CompilerError(Exception):
     pass
 
+def bytestr(string):
+    buf = bytearray((' ' * len(string)).encode('ascii'))
+    buf = string.encode('utf-8')
+    return (buf, len(buf))
+
 def eprint(*s, end="\n"):
     print(*s, end=end, file=sys.stderr)
 
