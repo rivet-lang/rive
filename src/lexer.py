@@ -2,8 +2,8 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from .tokens import Kind
-from . import utils, tokens, report
+from .token import Kind
+from . import utils, token, report
 
 LF = chr(10)
 CR = chr(13)
@@ -48,7 +48,7 @@ class Lexer:
         return self.text[self.pos]
 
     def get_pos(self):
-        return tokens.Position(
+        return token.Pos(
             self.file, self.line, max(1, self.current_column()), self.pos
         )
 
@@ -109,7 +109,7 @@ class Lexer:
     def peek_token(self, n):
         idx = self.tidx + n
         if idx >= len(self.all_tokens):
-            return tokens.Token("", Kind.EOF, self.get_pos())
+            return token.Token("", Kind.EOF, self.get_pos())
         return self.all_tokens[idx]
 
     def read_ident(self):
@@ -367,9 +367,9 @@ class Lexer:
             cidx = self.tidx
             self.tidx += 1
             if cidx >= len(self.all_tokens):
-                return tokens.Token("", Kind.EOF, self.get_pos())
+                return token.Token("", Kind.EOF, self.get_pos())
             return self.all_tokens[cidx]
-        return tokens.Token("", Kind.EOF, self.get_pos())
+        return token.Token("", Kind.EOF, self.get_pos())
 
     def _next(self):
         while True:
@@ -379,7 +379,7 @@ class Lexer:
                 self.is_started = True
             self.skip_whitespace()
             if self.pos >= self.text_len:
-                return tokens.Token("", Kind.EOF, self.get_pos())
+                return token.Token("", Kind.EOF, self.get_pos())
 
             ch = self.cur_char()
             nextc = self.text[self.pos +
@@ -387,7 +387,7 @@ class Lexer:
             pos = self.get_pos()
             if utils.is_valid_name(ch):
                 lit = self.read_ident()
-                return tokens.Token(lit, tokens.lookup(lit), pos)
+                return token.Token(lit, token.lookup(lit), pos)
             elif ch.isdigit():
                 # decimals with 0 prefix
                 start_pos = self.pos
@@ -399,7 +399,7 @@ class Lexer:
                 ):
                     prefix_zero_num -= 1
                 self.pos += prefix_zero_num
-                return tokens.Token(
+                return token.Token(
                     self.read_number().replace("_", ""), Kind.Number, pos
                 )
 
@@ -407,24 +407,24 @@ class Lexer:
             if ch == "+":
                 if nextc == "+":
                     self.pos += 1
-                    return tokens.Token("", Kind.Inc, pos)
+                    return token.Token("", Kind.Inc, pos)
                 elif nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.PlusAssign, pos)
-                return tokens.Token("", Kind.Plus, pos)
+                    return token.Token("", Kind.PlusAssign, pos)
+                return token.Token("", Kind.Plus, pos)
             elif ch == "-":
                 if nextc == "-":
                     self.pos += 1
-                    return tokens.Token("", Kind.Dec, pos)
+                    return token.Token("", Kind.Dec, pos)
                 elif nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.MinusAssign, pos)
-                return tokens.Token("", Kind.Minus, pos)
+                    return token.Token("", Kind.MinusAssign, pos)
+                return token.Token("", Kind.Minus, pos)
             elif ch == "*":
                 if nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.MultAssign, pos)
-                return tokens.Token("", Kind.Mult, pos)
+                    return token.Token("", Kind.MultAssign, pos)
+                return token.Token("", Kind.Mult, pos)
             elif ch == "/":
                 if nextc == "/":
                     start_pos = self.pos
@@ -432,7 +432,7 @@ class Lexer:
                         start_pos += 3
                         self.ignore_line()
                         line = self.text[start_pos:self.pos].strip()
-                        return tokens.Token(line, Kind.DocComment, pos)
+                        return token.Token(line, Kind.DocComment, pos)
                     self.ignore_line()
                     continue
                 elif nextc == "*":
@@ -452,114 +452,110 @@ class Lexer:
                     continue
                 elif nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.DivAssign, pos)
-                return tokens.Token("", Kind.Div, pos)
+                    return token.Token("", Kind.DivAssign, pos)
+                return token.Token("", Kind.Div, pos)
             elif ch == "%":
                 if nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.ModAssign, pos)
-                return tokens.Token("", Kind.Mod, pos)
+                    return token.Token("", Kind.ModAssign, pos)
+                return token.Token("", Kind.Mod, pos)
             #
             elif ch == "=":
                 if nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.Eq, pos)
+                    return token.Token("", Kind.Eq, pos)
                 elif nextc == ">":
                     self.pos += 1
-                    return tokens.Token("", Kind.Arrow, pos)
-                return tokens.Token("", Kind.Assign, pos)
+                    return token.Token("", Kind.Arrow, pos)
+                return token.Token("", Kind.Assign, pos)
             #
             elif ch == "<":
                 if nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.Le, pos)
-                return tokens.Token("", Kind.Lt, pos)
+                    return token.Token("", Kind.Le, pos)
+                return token.Token("", Kind.Lt, pos)
             elif ch == ">":
                 if nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.Ge, pos)
-                return tokens.Token("", Kind.Gt, pos)
+                    return token.Token("", Kind.Ge, pos)
+                return token.Token("", Kind.Gt, pos)
             #
             elif ch == ".":
                 if nextc == "." and self.text[self.pos + 2] == ".":
                     self.pos += 2
-                    return tokens.Token("", Kind.Ellipsis, pos)
+                    return token.Token("", Kind.Ellipsis, pos)
                 elif nextc == ".":
                     self.pos += 1
-                    return tokens.Token("", Kind.DotDot, pos)
-                return tokens.Token("", Kind.Dot, pos)
+                    return token.Token("", Kind.DotDot, pos)
+                return token.Token("", Kind.Dot, pos)
             elif ch == ",":
-                return tokens.Token("", Kind.Comma, pos)
+                return token.Token("", Kind.Comma, pos)
             elif ch == ":":
                 if nextc == ":":
                     self.pos += 1
-                    return tokens.Token("", Kind.DoubleColon, pos)
-                return tokens.Token("", Kind.Colon, pos)
+                    return token.Token("", Kind.DoubleColon, pos)
+                return token.Token("", Kind.Colon, pos)
             elif ch == ";":
-                return tokens.Token("", Kind.Semicolon, pos)
+                return token.Token("", Kind.Semicolon, pos)
             elif ch == "?":
-                return tokens.Token("", Kind.Question, pos)
+                return token.Token("", Kind.Question, pos)
             elif ch == "$":
-                return tokens.Token("", Kind.Dollar, pos)
+                return token.Token("", Kind.Dollar, pos)
             elif ch == "@":
                 self.pos += 1
                 keyword = self.read_ident()
-                if not tokens.is_key(keyword):
+                if not token.is_key(keyword):
                     report.error(f"expected keyword, found `{keyword}`", pos)
-                return tokens.Token(keyword, Kind.Name, pos)
+                return token.Token(keyword, Kind.Name, pos)
             elif ch == "#":
-                return tokens.Token("", Kind.Hash, pos)
+                return token.Token("", Kind.Hash, pos)
             elif ch == "&":
                 if nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.AmpAssign, pos)
-                return tokens.Token("", Kind.Amp, pos)
+                    return token.Token("", Kind.AmpAssign, pos)
+                return token.Token("", Kind.Amp, pos)
             elif ch == "!":
                 if (
-                    nextc == "i" and self.text[self.pos + 2] in ("s", "n")
+                    nextc == "i" and self.text[self.pos + 2] == "s"
                     and self.text[self.pos + 3].isspace()
                 ):
                     self.pos += 2
-                    ch2 = self.cur_char()
-                    if ch2 == "s":
-                        return tokens.Token("", Kind.KeyNotIs, pos)
-                    elif ch2 == "n":
-                        return tokens.Token("", Kind.KeyNotIn, pos)
+                    return token.Token("", Kind.KeyNotIs, pos)
                 elif nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.Ne, pos)
-                return tokens.Token("", Kind.Bang, pos)
+                    return token.Token("", Kind.Ne, pos)
+                return token.Token("", Kind.Bang, pos)
             elif ch == "|":
                 if nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.PipeAssign, pos)
-                return tokens.Token("", Kind.Pipe, pos)
+                    return token.Token("", Kind.PipeAssign, pos)
+                return token.Token("", Kind.Pipe, pos)
             elif ch == "~":
-                return tokens.Token("", Kind.BitNot, pos)
+                return token.Token("", Kind.BitNot, pos)
             elif ch == "^":
                 if nextc == "=":
                     self.pos += 1
-                    return tokens.Token("", Kind.XorAssign, pos)
-                return tokens.Token("", Kind.Xor, pos)
+                    return token.Token("", Kind.XorAssign, pos)
+                return token.Token("", Kind.Xor, pos)
             #
             elif ch == "{":
-                return tokens.Token("", Kind.Lbrace, pos)
+                return token.Token("", Kind.Lbrace, pos)
             elif ch == "}":
-                return tokens.Token("", Kind.Rbrace, pos)
+                return token.Token("", Kind.Rbrace, pos)
             elif ch == "[":
-                return tokens.Token("", Kind.Lbracket, pos)
+                return token.Token("", Kind.Lbracket, pos)
             elif ch == "]":
-                return tokens.Token("", Kind.Rbracket, pos)
+                return token.Token("", Kind.Rbracket, pos)
             elif ch == "(":
-                return tokens.Token("", Kind.Lparen, pos)
+                return token.Token("", Kind.Lparen, pos)
             elif ch == ")":
-                return tokens.Token("", Kind.Rparen, pos)
+                return token.Token("", Kind.Rparen, pos)
             # characters and strings
             elif ch == "'":
-                return tokens.Token(self.read_char(), Kind.Char, pos)
+                return token.Token(self.read_char(), Kind.Char, pos)
             elif ch == '"':
-                return tokens.Token(self.read_string(), Kind.String, pos)
+                return token.Token(self.read_string(), Kind.String, pos)
             else:
                 report.error(f"invalid character `{ch}`", pos)
                 break
-        return tokens.Token("", Kind.EOF, self.get_pos())
+        return token.Token("", Kind.EOF, self.get_pos())

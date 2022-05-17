@@ -60,7 +60,7 @@ class Kind(Enum):
     Rparen = auto_enum() # )
 
     # 6 literals, 38 keywords; Total: 44 keywords,
-    # +2 extra keywords (`!in` and `!is` = `!` + keyword).
+    # +1 extra keyword (`!is` = `!` + keyword).
     KeywordBegin = auto_enum()
     # ========== literals ==========
     KeyNone = auto_enum() # none
@@ -106,7 +106,6 @@ class Kind(Enum):
     KeyOr = auto_enum() # or
     KeyIn = auto_enum() # in
     KeyIs = auto_enum() # is
-    KeyNotIn = auto_enum() # !in
     KeyNotIs = auto_enum() # !is
     KeyCast = auto_enum() # cast
     KeyUnsafe = auto_enum() # unsafe
@@ -246,7 +245,6 @@ TOKEN_STRINGS = {
     Kind.KeyOr: "or",
     Kind.KeyIn: "in",
     Kind.KeyIs: "is",
-    Kind.KeyNotIn: "!in",
     Kind.KeyNotIs: "!is",
     Kind.KeyCast: "cast",
     Kind.KeyUnsafe: "unsafe",
@@ -270,7 +268,7 @@ def lookup(lit):
 def is_key(lit):
     return lookup(lit) != Kind.Name
 
-class Position:
+class Pos:
     def __init__(self, file, line, col, pos):
         self.file = file
         self.line = line

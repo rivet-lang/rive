@@ -2,8 +2,8 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
+from .. import token
 from . import Visibility
-from ..tokens import Position
 from .sym import TypeKind, Fn as FnInfo, Arg
 
 class _Ptr: # ugly hack =/
@@ -160,7 +160,7 @@ class Fn(BaseType):
             args.append(
                 Arg(
                     f"arg{i+1}", arg.is_mut, arg.typ, None, False,
-                    Position("", 0, 0, 0)
+                    token.Pos("", 0, 0, 0)
                 )
             )
         return FnInfo(

@@ -6,12 +6,20 @@ import sys, subprocess
 
 from . import colors
 
+VERSION = "0.1.0"
+
 INVALID_ESCAPES = ["(", "{", "$", "`", "."]
 BACKSLASH = chr(92)
 BACKSLASH_R = chr(13)
 BACKSLASH_N = chr(10)
 DOUBLE_QUOTE = chr(34)
 DOUBLE_ESCAPE = "\\\\"
+
+def full_version():
+    commit_date = run_process(
+        "git", "log", "-n", "1", '--pretty=format:%h %as'
+    ).out
+    return f"rivetc {VERSION} ({commit_date})"
 
 class ProcessResult:
     def __init__(self, out, err, exit_code):

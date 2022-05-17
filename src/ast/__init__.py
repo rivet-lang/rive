@@ -61,7 +61,8 @@ class VarDecl:
 
 # ---- Declarations ----
 class EmptyDecl:
-    pass
+    def __init__(self):
+        self.attrs = Attrs()
 
 class DocComment:
     def __init__(self, lines, pos):

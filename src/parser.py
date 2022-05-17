@@ -2,10 +2,10 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from .tokens import Kind
+from .token import Kind
 from .lexer import Lexer
 from .ast import sym, type
-from . import report, tokens, ast
+from . import report, token, ast
 
 # TODO(StunxFS): parse `use` stmt; parse `mod` import: `mod xx;`
 
@@ -69,7 +69,7 @@ class Parser:
         if self.accept(kind):
             return
         kstr = str(kind)
-        if tokens.is_key(kstr) or (len(kstr) > 0 and not kstr[0].isalpha()):
+        if token.is_key(kstr) or (len(kstr) > 0 and not kstr[0].isalpha()):
             kstr = f"`{kstr}`"
         report.error(f"expected {kstr}, found {self.tok} ", self.tok.pos)
 
@@ -385,7 +385,7 @@ class Parser:
                 stmts.append(self.parse_stmt())
             self.close_scope()
             return ast.TestDecl(sc, name, stmts, pos)
-        else:
+        elif self.tok.kind != Kind.EOF:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()
         return ast.EmptyDecl()
@@ -592,8 +592,7 @@ class Parser:
     def parse_relational_expr(self):
         left = self.parse_shift_expr()
         if self.tok.kind in [
-            Kind.Gt, Kind.Lt, Kind.Ge, Kind.Le, Kind.KeyIn, Kind.KeyNotIn,
-            Kind.KeyOrElse
+            Kind.Gt, Kind.Lt, Kind.Ge, Kind.Le, Kind.KeyOrElse
         ]:
             op = self.tok.kind
             self.next()

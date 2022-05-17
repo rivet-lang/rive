@@ -2,7 +2,7 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from .tokens import Kind
+from .token import Kind
 from .ast import sym, type
 from .ast.sym import Visibility
 from . import ast, report, register, utils

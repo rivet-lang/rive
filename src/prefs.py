@@ -7,10 +7,9 @@ import os, sys, glob
 from ctypes import sizeof, c_voidp
 from enum import IntEnum as Enum, auto as auto_enum
 
-from . import ast, report, tokens
-from .utils import error, eprint, run_process, is_valid_name
+from . import ast, report, token
+from .utils import error, eprint, run_process, is_valid_name, full_version
 
-VERSION = "0.1.0"
 HELP = """Usage: rivetc [OPTIONS] INPUTS
 
 The compiler can receive both files and directories as input, example:
@@ -232,10 +231,7 @@ class Prefs:
                 eprint(HELP)
                 return
             elif arg in ("-V", "--version"):
-                commit_date = run_process(
-                    "git", "log", "-n", "1", '--pretty=format:%h %as'
-                ).out
-                eprint(f"rivetc {VERSION} ({commit_date})")
+                eprint(full_version())
                 return
 
             # compiler options
@@ -428,13 +424,13 @@ class Prefs:
                     return False
                 return cond.name in self.flags
         elif isinstance(cond, ast.UnaryExpr):
-            if cond.op == tokens.Kind.Bang:
+            if cond.op == token.Kind.Bang:
                 return not self.evalue_comptime_condition(cond.right)
             else:
                 report.error(f"expected `!`, found token `{cond.op}`", cond.pos)
         elif isinstance(cond, ast.BinaryExpr):
-            if cond.op in (tokens.Kind.KeyAnd, tokens.Kind.KeyOr):
-                if cond.op == tokens.Kind.KeyAnd:
+            if cond.op in (token.Kind.KeyAnd, token.Kind.KeyOr):
+                if cond.op == token.Kind.KeyAnd:
                     return self.evalue_comptime_condition(
                         cond.left
                     ) and self.evalue_comptime_condition(cond.right)
