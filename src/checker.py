@@ -18,6 +18,8 @@ class Checker:
         self.unsafe_operations = 0
         self.inside_unsafe = False
 
+        self.trait_not_satisfied = False
+
     def check_files(self, source_files):
         for sf in source_files:
             self.unsafe_operations = 0
@@ -70,6 +72,44 @@ class Checker:
         elif isinstance(decl, ast.ExtendDecl):
             if should_check:
                 self.check_decls(decl.decls)
+                if decl.is_for_trait:
+                    typ_sym = decl.typ.get_sym()
+                    trait_sym = decl.for_trait.get_sym()
+                    if trait_sym.kind == TypeKind.Trait:
+                        not_implemented = []
+                        for proto in trait_sym.syms:
+                            if d := typ_sym.lookup(proto.name):
+                                # check signature
+                                ptyp = proto.typ()
+                                dtyp = d.typ()
+                                if ptyp != dtyp:
+                                    report.error(
+                                        f"type `{typ_sym.name}` incorrectly implements {d.kind()} `{d.name}` of trait `{trait_sym.name}`",
+                                        d.name_pos
+                                    )
+                                    report.note(f"expected `{ptyp}`")
+                                    report.note(f"found `{dtyp}`")
+                            elif proto.has_body:
+                                pass # trait implementation
+                            else:
+                                not_implemented.append(proto.name)
+                        if len(not_implemented) > 0:
+                            word = "method" if len(
+                                not_implemented
+                            ) == 1 else "methods"
+                            report.error(
+                                f"type `{typ_sym.name}` does not implement trait `{trait_sym.name}`",
+                                decl.pos
+                            )
+                            report.note(
+                                f"missing {word}: `{'`, `'.join(not_implemented)}`"
+                            )
+                        else:
+                            typ_sym.implements.append(trait_sym.qualname())
+                    else:
+                        report.error(
+                            f"`{trait_sym.name}` is not a trait", decl.pos
+                        )
         elif isinstance(decl, ast.TestDecl):
             self.check_stmts(decl.stmts)
         elif isinstance(decl, ast.FnDecl):
@@ -520,8 +560,10 @@ class Checker:
                 else:
                     expr.typ = left_typ.typ
             elif expr.is_indirect:
-                if not isinstance(left_typ, type.Ptr
-                                  ) or not isinstance(left_typ, type.Ref):
+                if not (
+                    isinstance(left_typ, type.Ptr)
+                    or isinstance(left_typ, type.Ref)
+                ):
                     report.error(
                         f"invalid indirect for `{left_typ}`", expr.field_pos
                     )
@@ -964,6 +1006,11 @@ class Checker:
                     got_str = f"?{expected}"
             else:
                 got_str = str(got)
+            if self.trait_not_satisfied:
+                self.trait_not_satisfied = False
+                raise utils.CompilerError(
+                    f"type `{got_str}` does not implement trait `{expected}`"
+                )
             raise utils.CompilerError(
                 f"expected type `{expected}`, found `{got_str}`"
             )
@@ -1018,5 +1065,10 @@ class Checker:
                 if t != got_sym.info.types[i]:
                     return False
             return True
+        elif exp_sym.kind == TypeKind.Trait and got_sym.kind != TypeKind.Trait:
+            if got_sym.implement_trait(exp_sym.qualname()):
+                return True
+            self.trait_not_satisfied = True
+            return False
 
         return exp_sym == got_sym

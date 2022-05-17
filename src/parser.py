@@ -358,9 +358,15 @@ class Parser:
                 doc_comment, attrs, vis, name, variants, decls, pos
             )
         elif self.accept(Kind.KeyExtend):
+            pos = self.prev_tok.pos
             if is_unsafe:
-                report.error("`extend`s cannot be unsafe", self.prev_tok.pos)
+                report.error("`extend`s cannot be unsafe", pos)
             typ = self.parse_type()
+            is_for_trait = self.accept(Kind.KeyFor)
+            if is_for_trait:
+                for_trait = self.parse_type()
+            else:
+                for_trait = None
             decls = []
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
@@ -370,7 +376,9 @@ class Parser:
                         "expected associated function or method", decl.pos
                     )
                 decls.append(decl)
-            return ast.ExtendDecl(attrs, typ, decls)
+            return ast.ExtendDecl(
+                attrs, typ, is_for_trait, for_trait, decls, pos
+            )
         elif self.accept(Kind.KeyFn):
             return self.parse_fn_decl(doc_comment, attrs, vis, is_unsafe)
         elif self.accept(Kind.KeyTest):
@@ -1081,8 +1089,12 @@ class Parser:
             self.expect(Kind.Rparen)
             ret_is_mut = self.accept(Kind.KeyMut)
             ret_typ = self.parse_type()
-            if is_extern and self.inside_extern: self.inside_extern = False
-            return type.Fn(is_unsafe, is_extern, abi, args, ret_is_mut, ret_typ)
+            if is_extern and self.inside_extern:
+                self.inside_extern = False
+            return type.Fn(
+                is_unsafe, is_extern, abi, False, args, ret_is_mut, ret_typ,
+                False, False
+            )
         elif self.accept(Kind.Amp):
             # references
             typ = self.parse_type()

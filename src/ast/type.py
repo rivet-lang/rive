@@ -72,6 +72,11 @@ class Type(BaseType):
     def qualstr(self):
         return self.sym.qualname()
 
+    def __eq__(self, other):
+        if not isinstance(other, Type):
+            return False
+        return self.sym == other.sym
+
     def __str__(self):
         if self.unresolved:
             return str(self.expr)
@@ -84,6 +89,11 @@ class Ref(BaseType):
     def qualstr(self):
         return f"&{self.typ.qualstr()}"
 
+    def __eq__(self, other):
+        if not isinstance(other, Ref):
+            return False
+        return self.typ == other.typ
+
     def __str__(self):
         return f"&{self.typ}"
 
@@ -93,6 +103,11 @@ class Ptr(BaseType):
 
     def qualstr(self):
         return f"*{self.typ.qualstr()}"
+
+    def __eq__(self, other):
+        if not isinstance(other, Ptr):
+            return False
+        return self.typ == other.typ
 
     def __str__(self):
         return f"*{self.typ}"
@@ -108,6 +123,11 @@ class Slice(BaseType):
     def qualstr(self):
         return f"[{self.typ.qualstr()}]"
 
+    def __eq__(self, other):
+        if not isinstance(other, Slice):
+            return False
+        return self.typ == other.typ
+
     def __str__(self):
         return f"[{self.typ}]"
 
@@ -122,6 +142,11 @@ class Array(BaseType):
 
     def qualstr(self):
         return f"[{self.typ.qualstr()}; {self.size}]"
+
+    def __eq__(self, other):
+        if not isinstance(other, Array):
+            return False
+        return self.typ == other.typ and self.size == other.size
 
     def __str__(self):
         return f"[{self.typ}; {self.size}]"
@@ -146,10 +171,16 @@ class FnArg:
         self.typ = typ
 
 class Fn(BaseType):
-    def __init__(self, is_unsafe, is_extern, abi, args, ret_is_mut, ret_typ):
+    def __init__(
+        self, is_unsafe, is_extern, abi, is_method, args, ret_is_mut, ret_typ,
+        rec_is_mut, rec_is_ref
+    ):
         self.is_unsafe = is_unsafe
         self.is_extern = is_extern
         self.abi = abi
+        self.is_method = is_method
+        self.rec_is_mut = rec_is_mut
+        self.rec_is_ref = rec_is_ref
         self.args = args
         self.ret_is_mut = ret_is_mut
         self.ret_typ = ret_typ
@@ -164,8 +195,10 @@ class Fn(BaseType):
                 )
             )
         return FnInfo(
-            self.abi, Visibility.Public, self.is_extern, self.is_unsafe, False,
-            self.stringify(False), args, self.ret_is_mut, self.ret_typ, False
+            self.abi,
+            Visibility.Public, self.is_extern, self.is_unsafe, self.is_method,
+            self.stringify(False), args, self.ret_is_mut, self.ret_typ, False,
+            True, token.Pos("", 0, 0, 0), self.rec_is_mut, self.rec_is_ref
         )
 
     def stringify(self, qual):
@@ -175,6 +208,14 @@ class Fn(BaseType):
         if self.is_extern:
             res += f'extern "{self.abi}" '
         res += "fn("
+        if self.is_method:
+            if self.rec_is_mut:
+                res += "mut "
+            if self.rec_is_ref:
+                res += "&"
+            res += "self"
+            if len(self.args) > 0:
+                res += ", "
         for i, arg in enumerate(self.args):
             if arg.is_mut:
                 res += "mut "
@@ -200,6 +241,12 @@ class Fn(BaseType):
             return False
         elif self.abi != got.abi:
             return False
+        elif self.is_method != got.is_method:
+            return False
+        elif self.rec_is_mut != got.rec_is_mut:
+            return False
+        elif self.rec_is_ref != got.rec_is_ref:
+            return False
         elif len(self.args) != len(got.args):
             return False
         for i, arg in enumerate(self.args):
@@ -217,6 +264,11 @@ class Optional(BaseType):
     def qualstr(self):
         return f"?{self.typ.qualstr()}"
 
+    def __eq__(self, other):
+        if not isinstance(other, Optional):
+            return False
+        return self.typ == other.typ
+
     def __str__(self):
         return f"?{self.typ}"
 
@@ -226,6 +278,11 @@ class Result(BaseType):
 
     def qualstr(self):
         return f"!{self.typ.qualstr()}"
+
+    def __eq__(self, other):
+        if not isinstance(other, Result):
+            return False
+        return self.typ == other.typ
 
     def __str__(self):
         return f"!{self.typ}"

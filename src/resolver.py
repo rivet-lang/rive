@@ -86,6 +86,8 @@ class Resolver:
         elif isinstance(decl, ast.ExtendDecl):
             if should_check:
                 if self.resolve_type(decl.typ):
+                    if decl.is_for_trait:
+                        self.resolve_type(decl.for_trait)
                     self.self_sym = decl.typ.get_sym()
                     if isinstance(
                         decl.typ, (type.Array, type.Slice, type.Tuple)
@@ -110,7 +112,9 @@ class Resolver:
                                             sym.ABI.Rivet, d.vis, d.is_extern,
                                             d.is_unsafe, d.is_method, d.name,
                                             d.args, d.ret_is_mut, d.ret_typ,
-                                            d.has_named_args
+                                            d.has_named_args, d.has_body,
+                                            d.name_pos, d.self_is_mut,
+                                            d.self_is_ref
                                         )
                                         s.add(d.sym)
                                     except utils.CompilerError as e:

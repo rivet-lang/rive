@@ -1,0 +1,25 @@
+trait ToStr {
+    fn to_str(&self) str;
+}
+
+fn print(v: ToStr) void {
+    _ = v.to_str();
+}
+
+extend str for ToStr {
+    fn to_str(&self) str {
+        return self.*;
+    }
+}
+
+extend bool for ToStr {
+    fn to_str(&self) str {
+        return if (self.*) "true" else "false";
+    }
+}
+
+fn main() void {
+    print(""); // OK
+    print(true); // OK
+    print(1); // BAD
+}

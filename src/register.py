@@ -165,8 +165,9 @@ class Register:
                             self.add_sym(
                                 sym.Fn(
                                     sym.ABI.Rivet, ast.Visibility.Private,
-                                    False, False, True, "dtor", [], False,
-                                    self.comp.c_void_t, False
+                                    False, False, True, "0_dtor", [], False,
+                                    self.comp.c_void_t, False, True, d.pos,
+                                    True, True
                                 ), decl.pos
                             )
                         else:
@@ -251,7 +252,8 @@ class Register:
         decl.sym = sym.Fn(
             abi, decl.vis, decl.is_extern, decl.is_unsafe, decl.is_method,
             decl.name, decl.args, decl.ret_is_mut, decl.ret_typ,
-            decl.has_named_args
+            decl.has_named_args, decl.has_body, decl.name_pos, decl.self_is_mut,
+            decl.self_is_ref
         )
         self.add_sym(decl.sym, decl.name_pos)
         if decl.is_method:

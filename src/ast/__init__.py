@@ -229,10 +229,13 @@ class EnumDecl:
         self.pos = pos
 
 class ExtendDecl:
-    def __init__(self, attrs, typ, decls):
+    def __init__(self, attrs, typ, is_for_trait, for_trait, decls, pos):
         self.attrs = attrs
         self.typ = typ
+        self.is_for_trait = is_for_trait
+        self.for_trait = for_trait
         self.decls = decls
+        self.pos = pos
 
 class FnDecl:
     def __init__(
@@ -270,6 +273,7 @@ class FnDecl:
         self.ret_is_mut = ret_is_mut
         self.ret_typ = ret_typ
         self.has_named_args = has_named_args
+        self.has_body = has_body
         self.sym = None
         self.scope = scope
         self.stmts = stmts

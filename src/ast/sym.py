@@ -350,6 +350,7 @@ class Type(Sym):
         self.kind = kind
         self.fields = fields
         self.info = info
+        self.implements = []
 
     def lookup_field(self, name):
         for f in self.fields:
@@ -361,6 +362,9 @@ class Type(Sym):
         if _ := self.lookup_field(name):
             return True
         return False
+
+    def implement_trait(self, qname):
+        return qname in self.implements
 
 class Arg:
     def __init__(self, name, is_mut, typ, def_expr, has_def_expr, pos):
@@ -374,17 +378,21 @@ class Arg:
 class Fn(Sym):
     def __init__(
         self, abi, vis, is_extern, is_unsafe, is_method, name, args, ret_is_mut,
-        ret_typ, has_named_args
+        ret_typ, has_named_args, has_body, name_pos, rec_is_mut, rec_is_ref
     ):
         Sym.__init__(self, vis, name)
         self.abi = abi
         self.is_extern = is_extern
         self.is_unsafe = is_unsafe
         self.is_method = is_method
+        self.rec_is_mut = rec_is_mut
+        self.rec_is_ref = rec_is_ref
         self.args = args
         self.ret_is_mut = ret_is_mut
         self.ret_typ = ret_typ
         self.has_named_args = has_named_args
+        self.has_body = has_body
+        self.name_pos = name_pos
 
     def kind(self):
         if self.is_method:
@@ -397,8 +405,8 @@ class Fn(Sym):
         for arg in self.args:
             args.append(FnArg(arg.is_mut, arg.typ))
         return Fn(
-            self.is_unsafe, self.is_extern, self.abi, args, self.ret_is_mut,
-            self.ret_typ
+            self.is_unsafe, self.is_extern, self.abi, self.is_method, args,
+            self.ret_is_mut, self.ret_typ, self.rec_is_mut, self.rec_is_ref
         )
 
 def universe():
