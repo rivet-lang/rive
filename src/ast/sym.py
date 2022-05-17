@@ -434,7 +434,7 @@ def universe():
             Visibility.Public,
             "str",
             TypeKind.Str,
-            fields=[Field("len", True, False, None)]
+            fields=[Field("len", False, True, None)]
         )
     )
     uni.add(
@@ -442,7 +442,7 @@ def universe():
             Visibility.Public,
             "error",
             TypeKind.Struct,
-            fields=[Field("msg", True, False, None)]
+            fields=[Field("msg", False, True, None)]
         )
     )
     uni.add(Type(Visibility.Public, "no_return", TypeKind.NoReturn))

@@ -307,6 +307,17 @@ class Resolver:
                     path.left.pos
                 )
                 path.has_error = True
+        elif isinstance(path.left, ast.SelfTyExpr):
+            if self.self_sym != None:
+                path.left_info = self.self_sym
+                if field_info := self.find_symbol(
+                    self.self_sym, path.field_name, path.field_pos
+                ):
+                    path.field_info = field_info
+                else:
+                    path.has_error = True
+            else:
+                report.error("cannot resolve `Self`", path.left.pos)
         elif isinstance(path.left, ast.PathExpr):
             self.resolve_expr(path.left)
             if not path.left.has_error:

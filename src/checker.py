@@ -20,6 +20,10 @@ class Checker:
 
         self.trait_not_satisfied = False
 
+        self.valid_types = (
+            self.comp.void_t, self.comp.c_void_t, self.comp.no_return_t
+        )
+
     def check_files(self, source_files):
         for sf in source_files:
             self.unsafe_operations = 0
@@ -164,20 +168,19 @@ class Checker:
                     )
                 else:
                     for i, vd in enumerate(stmt.lefts):
-                        vd.typ = symbol.info.types[i]
+                        if not vd.has_typ:
+                            vtyp = symbol.info.types[i]
+                            vd.typ = vtyp
+                            stmt.scope.update_typ(vd.name, vtyp)
         elif isinstance(stmt, ast.AssignStmt):
             self.check_expr(stmt.left)
             self.check_expr(stmt.right)
         elif isinstance(stmt, ast.ExprStmt):
             expr_typ = self.check_expr(stmt.expr)
-            valid_types = (
-                self.comp.void_t, self.comp.c_void_t, self.comp.no_return_t
-            )
             if not (
-                expr_typ in valid_types or isinstance(expr_typ, type.Result)
-                and expr_typ.typ in valid_types
-                or isinstance(expr_typ, type.Optional)
-                and expr_typ.typ in valid_types
+                isinstance(expr_typ, type.Result) and expr_typ.typ
+                in self.valid_types or isinstance(expr_typ, type.Optional) and
+                expr_typ.typ in self.valid_types or expr_typ in self.valid_types
             ):
                 report.warn("expression evaluated but not used", stmt.expr.pos)
         elif isinstance(stmt, ast.WhileStmt):
@@ -190,6 +193,7 @@ class Checker:
                 )
             self.check_stmt(stmt.stmt)
         elif isinstance(stmt, ast.ForInStmt):
+            # TODO: check variables
             self.check_expr(stmt.iterable)
             self.check_stmt(stmt.stmt)
         elif isinstance(stmt, ast.GotoStmt):
@@ -377,6 +381,10 @@ class Checker:
                     report.error(
                         "cannot take the address of other reference", expr.pos
                     )
+                elif expr.typ == self.comp.error_t:
+                    report.error(
+                        "cannot take the address of a error value", expr.pos
+                    )
 
                 if isinstance(self.expected_type, type.Ptr):
                     expr.typ = type.Ptr(expr.typ)
@@ -447,6 +455,39 @@ class Checker:
                         "expected optional value in left operand for operator `orelse`",
                         expr.pos
                     )
+            elif expr.op in (Kind.KeyIs, Kind.KeyNotIs):
+                lsym = ltyp.get_sym()
+                if ltyp == self.comp.error_t:
+                    rsym = rtyp.get_sym()
+                    if rsym.kind != TypeKind.ErrType:
+                        report.error(
+                            f"expected errtype value, found `{rtyp}`",
+                            expr.right.pos
+                        )
+                        report.note(
+                            f"in right operand for operator `{expr.op}`"
+                        )
+                elif lsym.kind == TypeKind.Union:
+                    if lsym.info.no_tag:
+                        report.error(
+                            f"union `{lsym.name}` does not support operator `{expr.op}`",
+                            expr.left.pos
+                        )
+                        report.note(f"`{lsym.name}` is marked with `#[no_tag]`")
+                    elif rtyp not in lsym.info.variants:
+                        report.error(
+                            f"union `{lsym.name}` has no variant `{rtyp}`",
+                            expr.right.pos
+                        )
+                        report.note(
+                            f"in right operand for operator `{expr.op}`"
+                        )
+                else:
+                    report.error(
+                        f"expected error or union value, found `{ltyp}`",
+                        expr.left.pos
+                    )
+
             if ltyp == self.comp.bool_t and rtyp == self.comp.bool_t and expr.op not in (
                 Kind.Eq, Kind.Ne, Kind.KeyAnd, Kind.KeyOr, Kind.Pipe, Kind.Amp
             ):
@@ -461,11 +502,18 @@ class Checker:
                     "string values only support `==`, `!=`, `<`, `>`, `<=` and `>=`",
                     expr.pos
                 )
+            elif ltyp == self.comp.error_t and expr.op not in (
+                Kind.KeyIs, Kind.KeyNotIs
+            ):
+                report.error(
+                    "error values only support `is` and `!is`", expr.pos
+                )
 
-            try:
-                self.check_types(rtyp, return_type)
-            except utils.CompilerError as e:
-                report.error(e.args[0], expr.right.pos)
+            if expr.op not in (Kind.KeyIs, Kind.KeyNotIs):
+                try:
+                    self.check_types(rtyp, return_type)
+                except utils.CompilerError as e:
+                    report.error(e.args[0], expr.right.pos)
 
             if expr.op.is_relational():
                 expr.typ = self.comp.bool_t
@@ -868,12 +916,24 @@ class Checker:
                     if i == 0: expr.typ = self.check_expr(b.expr)
             return expr.typ
         elif isinstance(expr, ast.MatchExpr):
-            self.check_expr(expr.expr)
+            expr_typ = self.check_expr(expr.expr)
+            expected_branch_typ = self.comp.void_t
             for i, b in enumerate(expr.branches):
                 for p in b.pats:
-                    self.check_expr(p)
+                    pat_t = self.check_expr(p)
+                    try:
+                        self.check_types(pat_t, expr_typ)
+                    except utils.CompilerError as e:
+                        report.error(e.args[0], p.pos)
+                branch_t = self.check_expr(b.expr)
                 if i == 0:
-                    expr.typ = self.check_expr(b.expr)
+                    expected_branch_typ = branch_t
+                else:
+                    try:
+                        self.check_types(branch_t, expected_branch_typ)
+                    except utils.CompilerError as e:
+                        report.error(e.args[0], b.expr.pos)
+            expr.typ = expected_branch_typ
             return expr.typ
         else:
             print(expr.__class__, expr)
@@ -989,7 +1049,12 @@ class Checker:
             elif builtin_call.name == "compile_error":
                 report.error(msg, builtin_call.pos)
         elif builtin_call.name == "assert":
-            pass
+            cond = builtin_call.args[0]
+            if self.check_expr(cond) != self.comp.bool_t:
+                report.error(
+                    "non-boolean expression used as `assert` condition",
+                    cond.pos
+                )
         else:
             report.error(
                 f"unknown builtin function `{builtin_call.name}`",
@@ -1054,7 +1119,9 @@ class Checker:
         got_sym = got.get_sym()
         exp_sym = expected.get_sym()
 
-        if exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:
+        if expected == self.comp.error_t and got_sym.kind == TypeKind.ErrType:
+            return True # valid
+        elif exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:
             return exp_sym.info.elem_typ == got_sym.info.elem_typ and exp_sym.info.size == got_sym.info.size
         elif exp_sym.kind == TypeKind.Slice and got_sym.kind == TypeKind.Slice:
             return exp_sym.info.elem_typ == got_sym.info.elem_typ
@@ -1065,6 +1132,8 @@ class Checker:
                 if t != got_sym.info.types[i]:
                     return False
             return True
+        elif exp_sym.kind == TypeKind.Union:
+            return got in exp_sym.info.variants
         elif exp_sym.kind == TypeKind.Trait and got_sym.kind != TypeKind.Trait:
             if got_sym.implement_trait(exp_sym.qualname()):
                 return True
