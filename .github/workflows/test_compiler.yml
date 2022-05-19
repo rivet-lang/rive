@@ -14,8 +14,8 @@ jobs:
 
       - name: Run tests
         run: |
-          python3 tests/run_tests.py
+          python3 tests/run_ok_tests.py
 
       - name: Run failing tests
         run: |
-          python3 tests/run_fail_tests.py
+          python3 tests/run_failing_tests.py

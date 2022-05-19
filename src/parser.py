@@ -688,7 +688,9 @@ class Parser:
             return ast.BranchExpr(op, pos)
         elif self.accept(Kind.KeyReturn):
             pos = self.prev_tok.pos
-            has_expr = self.tok.kind != Kind.Semicolon
+            has_expr = self.tok.kind not in (
+                Kind.Comma, Kind.Semicolon, Kind.Rbrace
+            )
             if has_expr:
                 expr = self.parse_expr()
             else:
@@ -792,9 +794,9 @@ class Parser:
                 self.expect(Kind.Bang)
                 self.expect(Kind.Lparen)
                 args = []
-                if name in ("sizeof", "default"):
+                if name in ("sizeof", "alignof", "default"):
                     pos = self.tok.pos
-                    args.append(TypeNode(self.parse_type(), pos))
+                    args.append(ast.TypeNode(self.parse_type(), pos))
                 elif self.tok.kind != Kind.Rparen:
                     while True:
                         args.append(self.parse_expr())

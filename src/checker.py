@@ -330,6 +330,10 @@ class Checker:
                     report.error(
                         f"expected struct, found {expr_sym.kind}", expr.expr.pos
                     )
+                    if expr_sym.kind in (
+                        TypeKind.ErrType, TypeKind.Union, TypeKind.Trait
+                    ):
+                        report.help(f"use `{expr_sym.name}(value)` instead")
                 return expr.typ
             report.error(
                 "expected identifier or path expression", expr.expr.pos
@@ -735,10 +739,12 @@ class Checker:
                 if isinstance(expr_left.sym, sym.Fn):
                     expr.info = expr_left.sym
                     self.check_call(expr_left.sym, expr)
-                elif isinstance(
-                    expr_left.sym, sym.Type
-                ) and expr_left.sym.kind == TypeKind.ErrType:
-                    self.check_errtype_ctor(expr_left.sym, expr)
+                elif isinstance(expr_left.sym,
+                                sym.Type) and expr_left.sym.kind in (
+                                    TypeKind.ErrType, TypeKind.Union,
+                                    TypeKind.Trait
+                                ):
+                    self.check_special_ctor(expr_left.sym, expr)
                 elif expr_left.is_obj:
                     if isinstance(expr_left.typ, type.Fn):
                         self.check_call(expr_left.typ.info(), expr)
@@ -819,10 +825,12 @@ class Checker:
                 if isinstance(expr_left.field_info, sym.Fn):
                     expr.info = expr_left.field_info
                     self.check_call(expr.info, expr)
-                elif isinstance(
-                    expr_left.field_info, sym.Type
-                ) and expr_left.field_info.kind == TypeKind.ErrType:
-                    self.check_errtype_ctor(expr_left.field_info, expr)
+                elif isinstance(expr_left.field_info,
+                                sym.Type) and expr_left.field_info.kind in (
+                                    TypeKind.ErrType, TypeKind.Union,
+                                    TypeKind.Trait
+                                ):
+                    self.check_special_ctor(expr_left.sym, expr)
                 else:
                     report.error(
                         f"expected function, found {expr_left.field_info.sym_kind()}",
@@ -917,14 +925,39 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.MatchExpr):
             expr_typ = self.check_expr(expr.expr)
+            expr_sym = expr_typ.get_sym()
             expected_branch_typ = self.comp.void_t
+            if expr.is_typematch and not (
+                expr_typ == self.comp.error_t
+                or expr_sym.kind in (TypeKind.Union, TypeKind.Trait)
+            ):
+                report.error(
+                    f"expected union, trait or error value, found `{expr_typ}`, for typematch",
+                    expr.expr.pos
+                )
             for i, b in enumerate(expr.branches):
                 for p in b.pats:
                     pat_t = self.check_expr(p)
-                    try:
-                        self.check_types(pat_t, expr_typ)
-                    except utils.CompilerError as e:
-                        report.error(e.args[0], p.pos)
+                    if expr.is_typematch:
+                        if expr_sym.kind == TypeKind.Union:
+                            if pat_t not in expr_sym.info.variants:
+                                report.error(
+                                    f"union `{expr_sym.name}` has no variant `{pat_t}`",
+                                    p.pos
+                                )
+                        elif expr_sym.kind == TypeKind.Trait:
+                            if not pat_t.get_sym().implement_trait(
+                                expr_sym.qualname()
+                            ):
+                                report.error(
+                                    f"type `{pat_t}` does not implement trait `{expr_sym.name}`",
+                                    p.pos
+                                )
+                    else:
+                        try:
+                            self.check_types(pat_t, expr_typ)
+                        except utils.CompilerError as e:
+                            report.error(e.args[0], p.pos)
                 branch_t = self.check_expr(b.expr)
                 if i == 0:
                     expected_branch_typ = branch_t
@@ -942,18 +975,44 @@ class Checker:
         self.unsafe_operations += 1
         return self.inside_unsafe
 
-    def check_errtype_ctor(self, info, expr):
+    def check_special_ctor(self, info, expr):
         expr.typ = type.Type(info)
-        if len(expr.args) == 1:
-            msg_t = self.check_expr(expr.args[0].expr)
-            if msg_t != self.comp.str_t:
+        if info.kind == TypeKind.ErrType:
+            if len(expr.args) == 1:
+                msg_t = self.check_expr(expr.args[0].expr)
+                if msg_t != self.comp.str_t:
+                    report.error(
+                        f"expected string value, found `{msg_t}`",
+                        expr.args[0].pos
+                    )
+            elif len(expr.args) != 0:
                 report.error(
-                    f"expected string value, found `{msg_t}`", expr.args[0].pos
+                    f"expected 1 argument, found {len(expr.args)}", expr.pos
                 )
-        elif len(expr.args) != 0:
-            report.error(
-                f"expected 1 argument, found {len(expr.args)}", expr.pos
-            )
+        elif info.kind == TypeKind.Union:
+            if len(expr.args) == 1:
+                value_t = self.check_expr(expr.args[0].expr)
+                if value_t not in info.info.variants:
+                    report.error(
+                        f"union `{info.name}` has no variant `{value_t}`",
+                        expr.args[0].pos
+                    )
+            else:
+                report.error(
+                    f"expected 1 argument, found {len(expr.args)}", expr.pos
+                )
+        else: # trait
+            if len(expr.args) == 1:
+                value_t = self.check_expr(expr.args[0].expr)
+                if not value_t.get_sym().implement_trait(info.qualname()):
+                    report.error(
+                        f"type `{value_t}` does not implement trait `{info.name}`",
+                        expr.args[0].pos
+                    )
+            else:
+                report.error(
+                    f"expected 1 argument, found {len(expr.args)}", expr.pos
+                )
 
     def check_call(self, info, expr):
         kind = info.kind()
@@ -1042,6 +1101,13 @@ class Checker:
             # pos = colors.bold(f"{builtin_call.pos.file}:{builtin_call.pos.line}:")
             # utils.eprint(f"{pos} {builtin_call.args[0].lit}")
             pass
+        elif builtin_call.name in ("sizeof", "alignof"):
+            size, align = self.comp.type_size(builtin_call.args[0].typ)
+            if builtin_call.name == "sizeof":
+                pass #print(size)
+            else:
+                pass #print(align)
+            ret_typ = self.comp.usize_t
         elif builtin_call.name in ("compile_warn", "compile_error"):
             msg = builtin_call.args[0].lit
             if builtin_call.name == "compile_warn":

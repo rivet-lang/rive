@@ -117,19 +117,6 @@ class Sym:
             return m
         return self.add_and_return(sym)
 
-    def add_or_get_slice(self, elem_typ):
-        unique_name = f"[{elem_typ.qualstr()}]"
-        if sym := self.lookup(unique_name):
-            return sym
-        return self.add_and_return(
-            Type(
-                Visibility.Private,
-                unique_name,
-                TypeKind.Slice,
-                info=SliceInfo(elem_typ)
-            )
-        )
-
     def add_or_get_array(self, elem_typ, size):
         unique_name = f"[{elem_typ.qualstr()}; {size}]"
         if sym := self.lookup(unique_name):
@@ -140,6 +127,19 @@ class Sym:
                 unique_name,
                 TypeKind.Array,
                 info=ArrayInfo(elem_typ, size)
+            )
+        )
+
+    def add_or_get_slice(self, elem_typ):
+        unique_name = f"[{elem_typ.qualstr()}]"
+        if sym := self.lookup(unique_name):
+            return sym
+        return self.add_and_return(
+            Type(
+                Visibility.Private,
+                unique_name,
+                TypeKind.Slice,
+                info=SliceInfo(elem_typ)
             )
         )
 
@@ -351,6 +351,8 @@ class Type(Sym):
         self.fields = fields
         self.info = info
         self.implements = []
+        self.size = -1
+        self.align = -1
 
     def lookup_field(self, name):
         for f in self.fields:

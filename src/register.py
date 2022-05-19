@@ -40,7 +40,7 @@ class Register:
             should_register = True
             if not decl.__class__ in (ast.TestDecl, ast.ExternPkg):
                 if if_attr := decl.attrs.lookup("if"):
-                    should_register = self.comp.prefs.evalue_comptime_condition(
+                    should_register = self.comp.evalue_comptime_condition(
                         if_attr.expr
                     )
                     decl.attrs.if_check = should_register
@@ -138,7 +138,7 @@ class Register:
                         if isinstance(d, ast.StructField):
                             should_register_field = True
                             if if_attr := d.attrs.lookup("if"):
-                                should_register_field = self.comp.prefs.evalue_comptime_condition(
+                                should_register_field = self.comp.evalue_comptime_condition(
                                     if_attr.expr
                                 )
                             if should_register_field:
@@ -319,9 +319,7 @@ class Register:
                 for idx, b in enumerate(expr.branches):
                     cond_val = False
                     if not b.is_else:
-                        cond_val = self.comp.prefs.evalue_comptime_condition(
-                            b.cond
-                        )
+                        cond_val = self.comp.evalue_comptime_condition(b.cond)
                     if branch_idx == -1:
                         if cond_val or b.is_else:
                             branch_idx = idx

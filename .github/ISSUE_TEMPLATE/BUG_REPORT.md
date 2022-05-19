@@ -1,20 +1,14 @@
 ---
-name: bug report
-about: bug report
+name: Bug report
+about: Bug report
 title: ''
 labels: 'Bug'
 assignees: ''
 ---
 
-## Basic Information
-
 **Rivet version:**
 **OS:**
 
-## What did you do?
+* * *
 
-
-## What did you expect to see?
-
-
-## What did you see instead?
+<!-- Please provide a detailed description of your problem. -->
