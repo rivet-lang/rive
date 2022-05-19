@@ -594,62 +594,79 @@ class Parser:
 
     def parse_equality_expr(self):
         left = self.parse_relational_expr()
-        if self.tok.kind in [Kind.Eq, Kind.Ne]:
-            op = self.tok.kind
-            self.next()
-            right = self.parse_relational_expr()
-            left = ast.BinaryExpr(left, op, right, left.pos)
+        while True:
+            if self.tok.kind in [Kind.Eq, Kind.Ne]:
+                op = self.tok.kind
+                self.next()
+                right = self.parse_relational_expr()
+                left = ast.BinaryExpr(left, op, right, left.pos)
+            else:
+                break
         return left
 
     def parse_relational_expr(self):
         left = self.parse_shift_expr()
-        if self.tok.kind in [
-            Kind.Gt, Kind.Lt, Kind.Ge, Kind.Le, Kind.KeyOrElse
-        ]:
-            op = self.tok.kind
-            self.next()
-            right = self.parse_shift_expr()
-            left = ast.BinaryExpr(left, op, right, left.pos)
-        elif self.tok.kind in [Kind.KeyIs, Kind.KeyNotIs]:
-            op = self.tok.kind
-            self.next()
-            pos = self.tok.pos
-            right = ast.TypeNode(self.parse_type(), pos)
-            left = ast.BinaryExpr(left, op, right, left.pos)
+        while True:
+            if self.tok.kind in [
+                Kind.Gt, Kind.Lt, Kind.Ge, Kind.Le, Kind.KeyOrElse
+            ]:
+                op = self.tok.kind
+                self.next()
+                right = self.parse_shift_expr()
+                left = ast.BinaryExpr(left, op, right, left.pos)
+            elif self.tok.kind in [Kind.KeyIs, Kind.KeyNotIs]:
+                op = self.tok.kind
+                self.next()
+                pos = self.tok.pos
+                right = ast.TypeNode(self.parse_type(), pos)
+                left = ast.BinaryExpr(left, op, right, left.pos)
+            else:
+                break
         return left
 
     def parse_shift_expr(self):
         left = self.parse_additive_expr()
-        if self.tok.kind in [Kind.Lt, Kind.Gt]:
-            op = Kind.Lshift if self.tok.kind == Kind.Lt else Kind.Rshift
-            if self.tok.pos.pos + 1 == self.peek_tok.pos.pos:
-                self.next()
+        while True:
+            if self.tok.kind in [Kind.Lt, Kind.Gt]:
+                op = Kind.Lshift if self.tok.kind == Kind.Lt else Kind.Rshift
+                if self.tok.pos.pos + 1 == self.peek_tok.pos.pos:
+                    self.next()
+                    self.next()
+                    right = self.parse_additive_expr()
+                    left = ast.BinaryExpr(left, op, right, left.pos)
+                else:
+                    break
+            elif self.tok.kind in [Kind.Amp, Kind.Pipe, Kind.Xor]:
+                op = self.tok.kind
                 self.next()
                 right = self.parse_additive_expr()
                 left = ast.BinaryExpr(left, op, right, left.pos)
-        elif self.tok.kind in [Kind.Amp, Kind.Pipe, Kind.Xor]:
-            op = self.tok.kind
-            self.next()
-            right = self.parse_additive_expr()
-            left = ast.BinaryExpr(left, op, right, left.pos)
+            else:
+                break
         return left
 
     def parse_additive_expr(self):
         left = self.parse_multiplicative_expr()
-        if self.tok.kind in [Kind.Plus, Kind.Minus]:
-            op = self.tok.kind
-            self.next()
-            right = self.parse_multiplicative_expr()
-            left = ast.BinaryExpr(left, op, right, left.pos)
+        while True:
+            if self.tok.kind in [Kind.Plus, Kind.Minus]:
+                op = self.tok.kind
+                self.next()
+                right = self.parse_multiplicative_expr()
+                left = ast.BinaryExpr(left, op, right, left.pos)
+            else:
+                break
         return left
 
     def parse_multiplicative_expr(self):
         left = self.parse_unary_expr()
-        if self.tok.kind in [Kind.Mult, Kind.Div, Kind.Mod]:
-            op = self.tok.kind
-            self.next()
-            right = self.parse_unary_expr()
-            left = ast.BinaryExpr(left, op, right, left.pos)
+        while True:
+            if self.tok.kind in [Kind.Mult, Kind.Div, Kind.Mod]:
+                op = self.tok.kind
+                self.next()
+                right = self.parse_unary_expr()
+                left = ast.BinaryExpr(left, op, right, left.pos)
+            else:
+                break
         return left
 
     def parse_unary_expr(self):

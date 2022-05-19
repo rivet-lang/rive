@@ -1104,7 +1104,7 @@ class Checker:
         elif builtin_call.name in ("sizeof", "alignof"):
             size, align = self.comp.type_size(builtin_call.args[0].typ)
             if builtin_call.name == "sizeof":
-                pass #print(size)
+                print(size)
             else:
                 pass #print(align)
             ret_typ = self.comp.usize_t

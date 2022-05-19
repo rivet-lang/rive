@@ -138,6 +138,15 @@ class Compiler:
             size, align = int(sy.info.size.lit) * elem_size, elem_align
         elif sy.kind in (sym.TypeKind.Str, sym.TypeKind.Slice):
             size = self.pointer_size * 2
+        elif sy.kind == sym.TypeKind.Union:
+            for vtyp in sy.info.variants:
+                v_size, v_alignment = self.type_size(vtyp)
+                if v_size > size:
+                    size = v_size
+                    align = v_alignment
+            if not sy.info.no_tag:
+                # `tag: u8` field
+                size += 4
         elif sy.kind in (sym.TypeKind.Struct, sym.TypeKind.Tuple):
             total_size = 0
             max_alignment = 0
