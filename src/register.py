@@ -190,7 +190,7 @@ class Register:
                     decl.vis,
                     decl.name,
                     sym.TypeKind.Enum,
-                    info=sym.EnumInfo(variants)
+                    info=sym.EnumInfo(decl.underlying_typ, variants)
                 )
                 old_cur_sym = self.cur_sym
                 self.cur_sym = decl.sym

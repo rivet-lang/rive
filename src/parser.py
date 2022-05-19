@@ -342,6 +342,9 @@ class Parser:
             if is_unsafe:
                 report.error("enums cannot be declared unsafe", pos)
             name = self.parse_name()
+            underlying_typ = self.comp.int32_t
+            if self.accept(Kind.Colon):
+                underlying_typ = self.parse_type()
             self.expect(Kind.Lbrace)
             variants = []
             decls = []
@@ -355,7 +358,8 @@ class Parser:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
-                doc_comment, attrs, vis, name, variants, decls, pos
+                doc_comment, attrs, vis, name, underlying_typ, variants, decls,
+                pos
             )
         elif self.accept(Kind.KeyExtend):
             pos = self.prev_tok.pos

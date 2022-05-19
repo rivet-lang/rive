@@ -336,7 +336,8 @@ class TupleInfo:
         self.types = types
 
 class EnumInfo:
-    def __init__(self, variants):
+    def __init__(self, underlying_typ, variants):
+        self.underlying_typ = underlying_typ
         self.variants = variants
 
 class UnionInfo:

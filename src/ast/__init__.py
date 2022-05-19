@@ -218,11 +218,15 @@ class StructDecl:
         self.pos = pos
 
 class EnumDecl:
-    def __init__(self, doc_comment, attrs, vis, name, variants, decls, pos):
+    def __init__(
+        self, doc_comment, attrs, vis, name, underlying_typ, variants, decls,
+        pos
+    ):
         self.doc_comment = doc_comment
         self.attrs = attrs
         self.vis = vis
         self.name = name
+        self.underlying_typ = underlying_typ
         self.variants = variants
         self.decls = decls
         self.sym = None

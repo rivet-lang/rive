@@ -132,7 +132,7 @@ class Compiler:
         elif sy.kind == sym.TypeKind.ErrType:
             size, align = 1, 1
         elif sy.kind == sym.TypeKind.Enum:
-            size, align = 4, 4 # == i32
+            size, align = self.type_size(sy.info.underlying_typ)
         elif sy.kind == sym.TypeKind.Array:
             elem_size, elem_align = self.type_size(sy.info.elem_typ)
             size, align = int(sy.info.size.lit) * elem_size, elem_align
