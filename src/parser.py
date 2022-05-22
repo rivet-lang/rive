@@ -1107,6 +1107,14 @@ class Parser:
             if self.tok.kind != Kind.Rparen:
                 while True:
                     is_mut = self.accept(Kind.KeyMut)
+                    if is_mut and self.tok.kind not in (Kind.Amp, Kind.Mult):
+                        report.error(
+                            "arguments passed by value cannot be mutated",
+                            self.prev_tok.pos
+                        )
+                        report.note(
+                            "only arguments passed by reference can be mutated"
+                        )
                     args.append(type.FnArg(is_mut, self.parse_type()))
                     if not self.accept(Kind.Comma): break
             self.expect(Kind.Rparen)

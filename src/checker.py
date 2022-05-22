@@ -72,7 +72,10 @@ class Checker:
         elif isinstance(decl, ast.StructField):
             if should_check:
                 if decl.has_def_expr:
+                    old_expected_type = self.expected_type
+                    self.expected_type = decl.typ
                     self.check_expr(decl.def_expr)
+                    self.expected_type = old_expected_type
         elif isinstance(decl, ast.ExtendDecl):
             if should_check:
                 self.check_decls(decl.decls)
@@ -285,12 +288,28 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.ArrayLiteral):
             old_exp_typ = self.expected_type
-            elem_typ = self.comp.void_t
+            has_exp_typ = False
+            if not isinstance(self.expected_type, type.Fn):
+                elem_sym = self.expected_type.get_sym()
+                if elem_sym.kind == TypeKind.Array:
+                    has_exp_typ = True
+                    elem_typ = elem_sym.info.elem_typ
+                    self.expected_type = elem_typ
+                else:
+                    elem_typ = self.comp.void_t
+            else:
+                elem_typ = self.comp.void_t
             for i, e in enumerate(expr.elems):
                 typ = self.check_expr(e)
-                if i == 0:
+                if i == 0 and not has_exp_typ:
                     elem_typ = typ
                     self.expected_type = elem_typ
+                else:
+                    try:
+                        self.check_types(typ, elem_typ)
+                    except utils.CompilerError as err:
+                        report.error(err.args[0], e.pos)
+                        report.note(f"in element {i + 1} of array literal")
             expr.typ = type.Type(
                 self.comp.universe.add_or_get_array(
                     elem_typ,
@@ -1104,7 +1123,7 @@ class Checker:
         elif builtin_call.name in ("sizeof", "alignof"):
             size, align = self.comp.type_size(builtin_call.args[0].typ)
             if builtin_call.name == "sizeof":
-                print(size)
+                pass #print(size)
             else:
                 pass #print(align)
             ret_typ = self.comp.usize_t

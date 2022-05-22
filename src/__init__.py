@@ -51,6 +51,7 @@ class Compiler:
         self.universe[18].fields[0].typ = self.str_t # error.msg: str
 
         self.pkg_sym = None
+        self.core_pkg = None
 
         self.source_files = []
         self.prefs = prefs.Prefs(args)
@@ -66,6 +67,10 @@ class Compiler:
             self.resolver.resolve_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
+
+            if core_pkg := self.universe.lookup("core"):
+                self.core_pkg = core_pkg # TODO: move to `load_core_pkg()`
+
             self.checker.check_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
@@ -145,7 +150,7 @@ class Compiler:
                     size = v_size
                     align = v_alignment
             if not sy.info.no_tag:
-                # `tag: u8` field
+                # `tag: i32` field
                 size += 4
         elif sy.kind in (sym.TypeKind.Struct, sym.TypeKind.Tuple):
             total_size = 0
