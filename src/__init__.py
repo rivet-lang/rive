@@ -81,6 +81,9 @@ class Compiler:
             self.abort()
 
     # ======== TODO(StunxFS): move code to Table =============
+    def is_number(self, typ):
+        return self.is_int(typ) or self.is_float(typ)
+
     def is_int(self, typ):
         return self.is_signed_int(typ) or self.is_unsigned_int(typ)
 
@@ -98,9 +101,41 @@ class Compiler:
             self.usize_t
         )
 
+    def num_bits(self, typ):
+        if self.is_int(typ):
+            return self.int_bits(typ)
+        return self.float_bits(typ)
+
+    def int_bits(self, typ):
+        if self.is_int(typ):
+            typ_sym = typ.get_sym()
+            if typ_sym.kind in (sym.TypeKind.Int8, sym.TypeKind.Uint8):
+                return 8
+            elif typ_sym.kind in (sym.TypeKind.Int16, sym.TypeKind.Uint16):
+                return 16
+            elif typ_sym.kind in (sym.TypeKind.Int32, sym.TypeKind.Uint32):
+                return 32
+            elif typ_sym.kind in (sym.TypeKind.Int64, sym.TypeKind.Uint64):
+                return 64
+            elif typ_sym.kind in (sym.TypeKind.Isize, sym.TypeKind.Usize):
+                return 32 if self.prefs.target_bits == prefs.Bits.X32 else 64
+        else:
+            return -1
+
+    def float_bits(self, typ):
+        if self.is_float(typ):
+            typ_sym = typ.get_sym()
+            if typ_sym.kind == sym.TypeKind.Float32:
+                return 32
+            elif typ_sym.kind == sym.TypeKind.Float64:
+                return 64
+        else:
+            return -1
+
     # Returns the size and alignment (in bytes) of `typ`, similarly to
     # C's `sizeof(T)` and `alignof(T)`.
     def type_size(self, typ):
+        # TODO: trait
         if isinstance(typ, type.Optional):
             return type.type_size(typ.typ)
         elif isinstance(typ, (type.Ptr, type.Ref)):
@@ -112,7 +147,8 @@ class Compiler:
             return sy.size, sy.align
         size, align = 0, 0
         if sy.kind in (
-            sym.TypeKind.Placeholder, sym.TypeKind.CVoid, sym.TypeKind.None_
+            sym.TypeKind.Placeholder, sym.TypeKind.CVoid, sym.TypeKind.None_,
+            sym.TypeKind.NoReturn
         ):
             pass
         elif sy.kind == sym.TypeKind.Alias:

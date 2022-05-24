@@ -445,26 +445,28 @@ class Checker:
                     )
 
             return_type = ltyp
-            if expr.op in (Kind.KeyAnd, Kind.KeyOr):
-                if ltyp != self.comp.bool_t:
+            if expr.op in (
+                Kind.Plus, Kind.Minus, Kind.Mult, Kind.Div, Kind.Mod, Kind.Xor,
+                Kind.Amp, Kind.Pipe
+            ):
+                if isinstance(ltyp, type.Ptr) and isinstance(
+                    rtyp, type.Ptr
+                ) and expr.op == Kind.Minus:
+                    promoted_type = self.comp.isize_t
+                else:
+                    promoted_type = self.promote(ltyp, rtyp)
+
+                if promoted_type == self.comp.void_t:
                     report.error(
-                        f"non-boolean expression in left operand for `{expr.op}`",
-                        expr.left.pos
+                        f"mismatched types `{ltyp}` and `{rtyp}`", expr.pos
                     )
-                elif rtyp != self.comp.bool_t:
+                elif isinstance(promoted_type, type.Optional):
                     report.error(
-                        f"non-boolean expression in right operand for `{expr.op}`",
-                        expr.right.pos
+                        f"operator `{expr.op}` cannot be used with `{promoted_type}`",
+                        expr.pos
                     )
-                elif isinstance(expr.left, ast.BinaryExpr):
-                    if expr.left.op != expr.op and expr.left in (
-                        Kind.KeyAnd, Kind.KeyOr
-                    ):
-                        # use `(a and b) or c` instead of `a and b or c`
-                        report.error("ambiguous boolean expression", expr.pos)
-                        report.help(
-                            "use `()` to ensure correct order of operations"
-                        )
+
+                return_type = promoted_type
             elif expr.op == Kind.KeyOrElse:
                 if isinstance(ltyp, type.Optional):
                     if ltyp.typ != rtyp and rtyp != self.comp.no_return_t:
@@ -473,11 +475,14 @@ class Checker:
                             expr.right.pos
                         )
                         report.note("in right operand for operator `orelse`")
+                    expr.typ = ltyp.typ
                 else:
                     report.error(
                         "expected optional value in left operand for operator `orelse`",
                         expr.pos
                     )
+                    expr.typ = ltyp
+                return expr.typ
             elif expr.op in (Kind.KeyIs, Kind.KeyNotIs):
                 lsym = ltyp.get_sym()
                 if ltyp == self.comp.error_t:
@@ -507,22 +512,46 @@ class Checker:
                         )
                 else:
                     report.error(
-                        f"expected error or union value, found `{ltyp}`",
+                        f"`{expr.op}` can only be used with traits, tagged unions and error values",
                         expr.left.pos
                     )
+                expr.typ = self.comp.bool_t
+                return expr.typ
+            elif expr.op in (Kind.KeyAnd, Kind.KeyOr):
+                if ltyp != self.comp.bool_t:
+                    report.error(
+                        f"non-boolean expression in left operand for `{expr.op}`",
+                        expr.left.pos
+                    )
+                elif rtyp != self.comp.bool_t:
+                    report.error(
+                        f"non-boolean expression in right operand for `{expr.op}`",
+                        expr.right.pos
+                    )
+                elif isinstance(expr.left, ast.BinaryExpr):
+                    if expr.left.op != expr.op and expr.left.op in (
+                        Kind.KeyAnd, Kind.KeyOr
+                    ):
+                        # use `(a and b) or c` instead of `a and b or c`
+                        report.error("ambiguous boolean expression", expr.pos)
+                        report.help(
+                            f"use `({expr.left}) {expr.op} {expr.right}` instead"
+                        )
+                expr.typ = self.comp.bool_t
+                return expr.typ
 
             if ltyp == self.comp.bool_t and rtyp == self.comp.bool_t and expr.op not in (
                 Kind.Eq, Kind.Ne, Kind.KeyAnd, Kind.KeyOr, Kind.Pipe, Kind.Amp
             ):
                 report.error(
-                    "boolean values only support `==`, `!=`, `and`, `or`, `&` and `|`",
+                    "boolean values only support the following operators: `==`, `!=`, `and`, `or`, `&` and `|`",
                     expr.pos
                 )
             elif ltyp == self.comp.str_t and rtyp == self.comp.str_t and expr.op not in (
                 Kind.Eq, Kind.Ne, Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge
             ):
                 report.error(
-                    "string values only support `==`, `!=`, `<`, `>`, `<=` and `>=`",
+                    "string values only support the following operators: `==`, `!=`, `<`, `>`, `<=` and `>=`",
                     expr.pos
                 )
             elif ltyp == self.comp.error_t and expr.op not in (
@@ -532,11 +561,16 @@ class Checker:
                     "error values only support `is` and `!is`", expr.pos
                 )
 
-            if expr.op not in (Kind.KeyIs, Kind.KeyNotIs):
-                try:
-                    self.check_types(rtyp, return_type)
-                except utils.CompilerError as e:
-                    report.error(e.args[0], expr.right.pos)
+            if not (
+                self.check_compatible_types(ltyp, rtyp)
+                and self.check_compatible_types(rtyp, ltyp)
+            ):
+                if ltyp == self.comp.void_t or rtyp == self.comp.void_t or return_type == self.comp.void_t:
+                    expr.typ = return_type
+                    return expr.typ
+                report.error(
+                    f"expected type {ltyp}, found {rtyp}", expr.right.pos
+                )
 
             if expr.op.is_relational():
                 expr.typ = self.comp.bool_t
@@ -1197,14 +1231,20 @@ class Checker:
             return expected.typ == got.typ
         elif isinstance(expected,
                         type.Optional) and not isinstance(got, type.Optional):
-            if got in (self.comp.none_t, self.comp.no_return_t):
+            if got == self.comp.none_t:
                 return True
             return expected.typ == got
+        elif expected == self.comp.none_t and (
+            isinstance(got, type.Optional) or isinstance(got, type.Ptr)
+        ):
+            return True
 
         got_sym = got.get_sym()
         exp_sym = expected.get_sym()
 
-        if expected == self.comp.error_t and got_sym.kind == TypeKind.ErrType:
+        if self.comp.is_number(expected) and self.comp.is_number(got):
+            return self.promote_number(expected, got) == expected
+        elif expected == self.comp.error_t and got_sym.kind == TypeKind.ErrType:
             return True # valid
         elif exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:
             return exp_sym.info.elem_typ == got_sym.info.elem_typ and exp_sym.info.size == got_sym.info.size
@@ -1226,3 +1266,58 @@ class Checker:
             return False
 
         return exp_sym == got_sym
+
+    def promote(self, left_typ, right_typ):
+        if isinstance(left_typ, type.Ptr):
+            if self.comp.is_int(right_typ):
+                return left_typ
+            return self.comp.void_t
+        elif isinstance(right_typ, type.Ptr):
+            if self.comp.is_int(left_typ):
+                return right_typ
+            return self.comp.void_t
+        elif left_typ == right_typ:
+            return left_typ
+        elif self.comp.is_number(right_typ) and self.comp.is_number(left_typ):
+            return self.promote_number(left_typ, right_typ)
+        return left_typ
+
+    def promote_number(self, expected, got):
+        type_hi = expected
+        type_lo = got
+        bits_hi = self.comp.num_bits(type_hi)
+        bits_lo = self.comp.num_bits(type_lo)
+        if bits_hi < bits_lo:
+            old_hi = type_hi
+            type_hi = type_lo
+            type_lo = old_hi
+            old_bhi = bits_hi
+            bits_hi = bits_lo
+            bits_lo = old_bhi
+
+        if self.comp.is_float(type_hi):
+            # float -> float (good)
+            if bits_hi == 32:
+                if type_lo.get_sym().kind in (TypeKind.Int64, TypeKind.Uint64):
+                    return self.comp.void_t
+                return type_hi
+            else: # f64
+                return type_hi
+
+        is_signed_lo = self.comp.is_signed_int(type_lo)
+        is_unsigned_lo = not is_signed_lo
+        is_signed_hi = self.comp.is_signed_int(type_hi)
+        is_unsigned_hi = not is_signed_hi
+
+        if is_unsigned_lo and is_unsigned_hi:
+            # unsigned number -> unsigned number (good)
+            return type_hi
+        elif is_signed_lo and is_signed_hi:
+            # signed number -> signed number (good)
+            return type_lo if (bits_lo == 64 and is_signed_lo) else type_hi
+        elif is_unsigned_lo and is_signed_hi and (bits_lo < bits_hi):
+            # unsigned number -> signed number (good, if signed type is larger)
+            return type_lo
+        else:
+            # signed number -> unsigned number (bad)
+            return self.comp.void_t

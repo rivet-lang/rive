@@ -3,7 +3,7 @@ fn main() void {
     // until the given condition is false.
 
     let mut x = 0;
-    while {
+    while { // infinite loop
         x++;
         if (x < 5) {
             break;

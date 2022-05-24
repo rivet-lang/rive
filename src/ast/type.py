@@ -21,7 +21,7 @@ class BaseType:
         ) or isinstance(self, Tuple):
             return self.sym
         elif isinstance(self, Fn):
-            return None
+            return self.info()
         return self.typ.get_sym()
 
     def unalias(self):

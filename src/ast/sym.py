@@ -115,7 +115,9 @@ class Sym:
     def add_or_extend_mod(self, sym):
         if m := self.lookup(sym.name):
             return m
-        return self.add_and_return(sym)
+        nm = self.add_and_return(sym)
+        nm.parent = self
+        return nm
 
     def add_or_get_array(self, elem_typ, size):
         unique_name = f"[{elem_typ.qualstr()}; {size}]"
@@ -230,11 +232,11 @@ class TypeKind(Enum):
     Int16 = auto_enum()
     Int32 = auto_enum()
     Int64 = auto_enum()
-    Isize = auto_enum()
     Uint8 = auto_enum()
     Uint16 = auto_enum()
     Uint32 = auto_enum()
     Uint64 = auto_enum()
+    Isize = auto_enum()
     Usize = auto_enum()
     Float32 = auto_enum()
     Float64 = auto_enum()

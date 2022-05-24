@@ -46,6 +46,10 @@ class Register:
                     decl.attrs.if_check = should_register
             if isinstance(decl, ast.ExternPkg):
                 continue # TODO(StunxFS): load external packages
+            elif isinstance(decl, ast.ExternDecl):
+                if should_register:
+                    for proto in decl.protos:
+                        self.visit_fn_decl(proto, decl.abi)
             elif isinstance(decl, ast.ModDecl):
                 # TODO(StunxFS): load external modules (`mod infolder;`)
                 if should_register:
@@ -54,10 +58,6 @@ class Register:
                     decl.sym = self.cur_sym
                     self.visit_decls(decl.decls)
                     self.cur_sym = old_sym
-            elif isinstance(decl, ast.ExternDecl):
-                if should_register:
-                    for proto in decl.protos:
-                        self.visit_fn_decl(proto, decl.abi)
             elif isinstance(decl, ast.ConstDecl):
                 if should_register:
                     self.add_sym(
