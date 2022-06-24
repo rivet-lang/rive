@@ -1,6 +1,6 @@
-tests/failing/checker/check_trait.ri:24:11: error: type `i32` does not implement trait `ToStr`
+tests/failing/checker/check_trait.ri:24:14: error: type `i32` does not implement trait `ToStr`
      |
-  24 |     print(1); // BAD
-     |           ^
-     = note: in argument `v` of function `print`
-rivetc: error: could not compile package `check_trait`, aborting due to previous error.
+  24 |     my_print(1); // BAD
+     |              ^
+     = note: in argument `v` of function `my_print`
+rivetc: error: could not compile package `core`, aborting due to previous error

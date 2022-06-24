@@ -1,3 +1,3 @@
-import sys, pylint
+import pylint
 
-pylint.run_pylint(["src", "-f", "colorized", "-d", "convention"])
+pylint.run_pylint(["src"])

@@ -1,3 +1,0 @@
-fn func(mut a: i32) void { }
-
-fn main() void { }

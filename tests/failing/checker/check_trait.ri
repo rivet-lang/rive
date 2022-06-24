@@ -1,25 +1,25 @@
 trait ToStr {
-    fn to_str(&self) str;
+    fn to_str1(&self) str;
 }
 
-fn print(v: ToStr) void {
-    _ = v.to_str();
+fn my_print(v: ToStr) {
+    _ = v.to_str1();
 }
 
 extend str for ToStr {
-    fn to_str(&self) str {
+    fn to_str1(&self) str {
         return self.*;
     }
 }
 
 extend bool for ToStr {
-    fn to_str(&self) str {
+    fn to_str1(&self) str {
         return if (self.*) "true" else "false";
     }
 }
 
-fn main() void {
-    print(""); // OK
-    print(true); // OK
-    print(1); // BAD
+fn main() {
+    my_print(""); // OK
+    my_print(true); // OK
+    my_print(1); // BAD
 }

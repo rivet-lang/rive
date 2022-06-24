@@ -1,0 +1,24 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+pub mod stdio {
+    pub struct _IO_FILE;
+    pub type FILE = _IO_FILE;
+
+    extern "C" {
+        pub static stdin: *mut FILE;
+        pub static stdout: *mut FILE;
+        pub static stderr: *mut FILE;
+    }
+
+    extern "C" {
+        pub fn fprintf(f: *mut FILE, fmt: *const u8, ...) i32;
+        pub fn fflush(f: *mut FILE);
+
+        pub fn printf(fmt: *const u8, ...) i32;
+
+        pub fn write(fd: i32, buf: *const void, count: usize) isize;
+        pub fn putchar(s: i32) i32;
+    }
+}

@@ -1,0 +1,62 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import pkg::stdc: string;
+
+#[used]
+struct _slice {
+    ptr: *mut void;
+    elem_size: usize;
+    len: usize;
+
+    #[used]
+    fn get(&self, idx: usize) *mut void {
+        if (idx >= self.len) {
+            panic("slice index out of range");
+        }
+        return unsafe { as(self.ptr, *mut u8) + idx * self.elem_size };
+    }
+
+    #[used]
+    unsafe fn raw_get(&self, idx: usize) *mut void {
+        return unsafe { as(self.ptr, *mut u8) + idx * self.elem_size };
+    }
+
+    #[used]
+    fn set(&self, idx: usize, val: *const void) {
+        if (idx >= self.len) {
+            panic("slice index out of range");
+        }
+        unsafe {
+            _ = string::memcpy(as(self.ptr, *mut u8) + self.elem_size * idx, val, self.elem_size);
+        }
+    }
+
+    #[used]
+    fn slice(&self, start: usize, end: usize) _slice {
+        if (start > end or end > self.len or start == end) {
+            panic("slice index out of range");
+        }
+        let len = end - start;
+        if (len == self.len) {
+            return self.*;
+        }
+        return _slice{
+            ptr: unsafe { as(self.ptr, *mut u8) + (start * self.elem_size) },
+            elem_size: self.elem_size,
+            len: len
+        };
+    }
+
+    #[used]
+    fn eq(&self, other: &_slice) bool {
+        if (self.len != other.len) {
+            return false;
+        }
+        return unsafe { string::memcmp(self.ptr, other.ptr, self.len) == 0 };
+    }
+
+    #[used]
+    fn ne(&self, other: &_slice) bool { return !self.eq(other); }
+}

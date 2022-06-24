@@ -1,0 +1,65 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+/// The highest valid codepoint a `rune` can have.
+pub const MAX_RUNE: rune = 0x10FFFF;
+
+/// `U+FFFD REPLACEMENT CHARACTER` (�) is used in Unicode to represent a
+/// decoding error.
+pub const REPLACEMENT_CHARACTER: rune = 0xFFFD;
+
+const MAX_ONE_B: u32 = 0x80;
+const MAX_TWO_B: u32 = 0x800;
+const MAX_THREE_B: u32 = 0x10000;
+
+pub errtype RuneFromU32Error;
+
+fn rune_from_u32(i: u32) !rune {
+    if (i > as(MAX_RUNE, u32) or (i >= 0xD800 and i <= 0xDFFF)) {
+        raise RuneFromU32Error();
+    }
+    return as(i, rune);
+}
+
+/// Converts a digit in the given radix to a `rune`.
+///
+/// A 'radix' here is sometimes also called a 'base'. A radix of two
+/// indicates a binary number, a radix of ten, decimal, and a radix of
+/// sixteen, hexadecimal, to give some common values. Arbitrary
+/// radices are supported.
+///
+/// `rune_from_digit()` will return `none` if the input is not a digit
+/// in the given radix.
+///
+/// Panics if given a radix larger than 36.
+pub fn rune_from_digit(num: u32, radix: u32) ?rune {
+    if (radix > 36) {
+        panic("rune_from_digit: radix is too high (maximum 36)");
+    }
+    if (num < radix) {
+        let num_ = as(num, u8);
+        if (num_ < 10) {
+            return as(b'0' + num_, rune);
+        } else {
+            return as(b'a' + num_ - 10, rune);
+        }
+    }
+    return none;
+}
+
+fn len_utf8(code: u32) usize {
+    return if (code < MAX_ONE_B) {
+        1
+    } elif (code < MAX_TWO_B) {
+        2
+    } elif (code < MAX_THREE_B) {
+        3
+    } else {
+        4
+    };
+}
+
+extend rune {
+    fn len_utf8(self) usize { return len_utf8(as(self, u32)); }
+}

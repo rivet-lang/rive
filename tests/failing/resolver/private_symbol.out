@@ -10,4 +10,4 @@ tests/failing/resolver/private_symbol.ri:14:20: error: type `PrivateEnum` is pri
      |
   14 |         b: my_mod::PrivateEnum::Variant
      |                    ^
-rivetc: error: could not compile package `private_symbol`, aborting due to 3 previous errors.
+rivetc: error: could not compile package `core`, aborting due to 3 previous errors

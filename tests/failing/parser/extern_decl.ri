@@ -1,9 +1,12 @@
-pub extern "C" fn abort() c_void;
-unsafe extern "C" fn abort() c_void;
-
-mod module {
-    extern pkg oreo;
-    extern "C" fn abort() c_void;
+extern "C" {
+    pub fn abort(); // OK
 }
 
-extern "C" fn sss() c_void {}
+mod module {
+    extern pkg oreo; // BAD
+    extern "C" {
+        fn abort(); // OK
+    }
+}
+
+extern "C" fn sss() {} // OK

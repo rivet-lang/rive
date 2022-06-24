@@ -2,31 +2,35 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-import glob, sys
-from os import path
+import glob, sys, os
 
 import utils
 
 def run_tests():
-    exit_code = 0
+	exit_code = 0
 
-    OK_FILES = glob.glob(f"tests/ok/*.ri")
-    HEADER = f"---------------------- Running {len(OK_FILES)} tests ----------------------"
+	OK_FILES = glob.glob(f"tests/ok/*.ri")
+	HEADER = f"---------------------- Running {len(OK_FILES)} tests ----------------------"
 
-    print(utils.bold(HEADER))
-    for file in OK_FILES:
-        res = utils.run_process(sys.executable, "rivetc.py", file)
-        if res.exit_code == 0:
-            print(utils.bold(utils.green(" [ PASS ] ")), end="")
-        else:
-            print(utils.bold(utils.red(" [ FAIL ] ")), end="")
-        print(file)
-        if res.exit_code != 0:
-            print(res.err)
-            exit_code = 1
-    print(utils.bold("-" * len(HEADER)))
+	utils.eprint(utils.bold(HEADER))
+	for file in OK_FILES:
+		res = utils.run_process(sys.executable, "rivetc.py", "-o", "test", file)
+		if res.exit_code == 0:
+			res = utils.run_process("./test")
+			if res.exit_code == 0:
+				utils.eprint(utils.bold(utils.green(" [ PASS ] ")), file)
+				os.remove("test")
+			else:
+				utils.eprint(utils.bold(utils.red(" [ FAIL ] ")), file)
+				utils.eprint(res.err)
+				exit_code = res.exit_code
+		else:
+			utils.eprint(utils.bold(utils.red(" [ FAIL ] ")), file)
+			utils.eprint(res.err)
+			exit_code = res.exit_code
+	utils.eprint(utils.bold("-" * len(HEADER)))
 
-    return exit_code
+	return exit_code
 
 if __name__ == "__main__":
-    exit(run_tests())
+	exit(run_tests())

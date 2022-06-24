@@ -38,7 +38,7 @@ allow_split_before_dict_value=False
 #     e = 1*2 - 3
 #     f = 1 + 2 + 3 + 4
 #
-arithmetic_precedence_indication=True
+arithmetic_precedence_indication=False
 
 # Number of blank lines surrounding top-level function and class
 # definitions.
@@ -52,7 +52,7 @@ blank_lines_between_top_level_imports_and_variables=1
 blank_line_before_class_docstring=False
 
 # Insert a blank line before a module docstring.
-blank_line_before_module_docstring=False
+blank_line_before_module_docstring=True
 
 # Insert a blank line before a 'def' or 'class' immediately nested
 # within another 'def' or 'class'. For example:
@@ -79,7 +79,7 @@ blank_line_before_nested_class_or_def=False
 #        'key1': 'value1',
 #        'key2': 'value2',
 #    })
-coalesce_brackets=False
+coalesce_brackets=True
 
 # The column limit.
 column_limit=80
@@ -118,7 +118,7 @@ dedent_closing_brackets=True
 
 # Disable the heuristic which places each list element on a separate line
 # if the list is comma-terminated.
-disable_ending_comma_heuristic=False
+disable_ending_comma_heuristic=True
 
 # Place each dictionary entry onto its own line.
 each_dict_entry_on_separate_line=True
@@ -189,7 +189,7 @@ join_multiple_lines=True
 no_spaces_around_selected_binary_operators=
 
 # Use spaces around default or named assigns.
-spaces_around_default_or_named_assign=False
+spaces_around_default_or_named_assign=True
 
 # Adds a space after the opening '{' and before the ending '}' dict
 # delimiters.
@@ -212,7 +212,7 @@ spaces_around_dict_delimiters=True
 spaces_around_list_delimiters=False
 
 # Use spaces around the power operator.
-spaces_around_power_operator=False
+spaces_around_power_operator=True
 
 # Use spaces around the subscript / slice operator.  For example:
 #
@@ -337,7 +337,7 @@ split_before_first_argument=False
 split_before_logical_operator=True
 
 # Split named assignments onto individual lines.
-split_before_named_assigns=True
+split_before_named_assigns=False
 
 # Set to True to split list comprehensions and generators that have
 # non-trivial expressions and multiple clauses before each of these
@@ -400,5 +400,5 @@ split_penalty_import_names=0
 split_penalty_logical_operator=300
 
 # Use the Tab character for indentation.
-use_tabs=False
+use_tabs=True
 

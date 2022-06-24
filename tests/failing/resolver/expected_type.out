@@ -2,4 +2,4 @@ tests/failing/resolver/expected_type.ri:4:12: error: expected type, found functi
     |
   4 |     let x: my_fn = ();
     |            ^
-rivetc: error: could not compile package `expected_type`, aborting due to previous error.
+rivetc: error: could not compile package `core`, aborting due to previous error

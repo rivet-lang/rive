@@ -8,7 +8,7 @@ mod my_mod {
     enum PrivateEnum { Variant }
 }
 
-fn main() void {
+fn main() {
     _ = my_mod::PrivateStruct{
         a: my_mod::PRIVATE_CONST,
         b: my_mod::PrivateEnum::Variant

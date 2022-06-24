@@ -1,5 +1,5 @@
-fn my_fn() void { }
+fn my_fn() { }
 
-fn main() void {
+fn main() {
     let x: my_fn = ();
 }

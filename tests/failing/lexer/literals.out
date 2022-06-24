@@ -40,4 +40,4 @@ tests/failing/lexer/literals.ri:21:1: error: unfinished string literal
      |
   21 | "
      | ^
-rivetc: error: could not compile package `literals`, aborting due to 10 previous errors.
+rivetc: error: could not compile package `core`, aborting due to 10 previous errors

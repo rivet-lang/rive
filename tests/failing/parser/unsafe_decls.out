@@ -42,4 +42,4 @@ tests/failing/parser/unsafe_decls.ri:20:8: error: `extend`s cannot be unsafe
      |
   20 | unsafe extend Enum { }
      |        ^
-rivetc: error: could not compile package `unsafe_decls`, aborting due to 11 previous errors.
+rivetc: error: could not compile package `core`, aborting due to 11 previous errors

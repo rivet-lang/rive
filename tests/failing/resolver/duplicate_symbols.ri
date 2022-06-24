@@ -1,4 +1,4 @@
-fn main() void {
+fn main() {
     let x = 1;
     let x = 1;
 
@@ -20,7 +20,7 @@ L2:
     };
 }
 
-fn other(a: i32) void {
+fn other(a: i32) {
     let a = 1;
 }
 

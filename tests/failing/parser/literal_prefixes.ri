@@ -1,7 +1,8 @@
-fn main() void {
+fn main() {
     _ = b'A'; // OK
     _ = c'B'; // BAD
 
+    _ = c"C string"; // OK
     _ = b"Byte string"; // OK
     _ = r"Raw string"; // OK
 

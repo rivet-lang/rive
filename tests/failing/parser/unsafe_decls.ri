@@ -21,4 +21,4 @@ unsafe extend Enum { }
 
 unsafe test "Unsafe objects" { }
 
-unsafe fn ok_func() void { } // OK
+unsafe fn ok_func() { } // OK

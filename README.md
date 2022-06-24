@@ -37,9 +37,9 @@ language with a clear and simple syntax and a low learning curve.
 are immutable by default.
 * [ ] **Ownership and Borrowing**: Rivet has a very simplified version of Rust's
 Ownership and Borrowing system. The lifetimes are inferred by the compiler.
-* [ ] **Struct inheritance and polymorphism**: Traits and Tagged Unions are also
+* [ ] **Struct inheritance and polymorphism**: Trait and Union types are also
 supported.
-* [ ] **Templates:** Reuse (and specialize) the same code for different types!
+* [ ] **Generics:** Specialize and reuse the same code for different types.
 
 ## Dependencies
 

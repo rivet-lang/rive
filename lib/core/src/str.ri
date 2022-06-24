@@ -1,0 +1,96 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import pkg::stdc: string;
+
+#[used]
+struct _str {
+    ptr: *const u8;
+    pub size: usize; // bytes count
+    pub len: usize; // runes count
+
+    #[used]
+    fn eq(self, other: str) bool {
+        if (self.ptr == none) {
+            panic("str::eq: none string");
+        }
+        if (self.size != other.size) {
+            return false;
+        }
+        if (self.size > 0) {
+            let last_idx = self.size - 1;
+            if (unsafe { self.ptr[last_idx] != other.ptr[last_idx] }) {
+                return false;
+            }
+        }
+        return mem::cmp(self.ptr, other.ptr, other.size) == 0;
+    }
+
+    #[used]
+    fn ne(self, other: str) bool { return !self.eq(other); }
+
+    #[used]
+    fn lt(self, other: str) bool {
+        let mut i: usize = 0;
+        while (i < self.size) {
+            if (i >= other.size or unsafe { self.ptr[i] > other.ptr[i] }) {
+                return false;
+            } elif (unsafe { self.ptr[i] < other.ptr[i] }) {
+                return true;
+            }
+            i++;
+        }
+        if (self.size < other.size) {
+            return true;
+        }
+        return false;
+    }
+
+    #[used]
+    fn gt(self, other: str) bool { return !self.lt(other); }
+
+    #[used]
+    fn le(self, other: str) bool { return self.lt(other) or self.eq(other); }
+
+    #[used]
+    fn ge(self, other: str) bool { return self.gt(other) or self.eq(other); }
+
+    #[used]
+    fn slice(&self, start: usize, end: usize) _str {
+        if (start > end or start > self.size or end > self.size) {
+            panic("string slice index out of range");
+        }
+        let size = end - start;
+        if (size == self.size) {
+            return self.*;
+        }
+        let ptr = unsafe { self.ptr + start };
+        return _str{
+            ptr: ptr,
+            size: size,
+            len: cstr_len_utf8(ptr, size)
+        };
+    }
+}
+
+extend str {
+    pub unsafe fn from_cstr(cstr: *const u8) str {
+        let size = unsafe { string::strlen(cstr) };
+        return as(_str{
+            ptr: cstr,
+            size: size,
+            len: if (size == 1) 1 else cstr_len_utf8(cstr, size)
+        }, str);
+    }
+
+    pub unsafe fn from_cstr_with_size(cstr: *const u8, size: usize) str {
+        return as(_str{
+            ptr: cstr,
+            size: size,
+            len: if (size == 1) 1 else cstr_len_utf8(cstr, size)
+        }, str);
+    }
+
+    pub fn is_empty(&self) bool { return self.size == 0; }
+}

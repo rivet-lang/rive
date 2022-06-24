@@ -4,6 +4,6 @@ tests/failing/parser/trait_fn.ri:2:5: error: attributes should be applied to a f
     |     ^
 tests/failing/parser/trait_fn.ri:3:5: error: unnecessary visibility qualifier
     |
-  3 |     pub fn vis() void;
+  3 |     pub fn vis();
     |     ^
-rivetc: error: could not compile package `trait_fn`, aborting due to 2 previous errors.
+rivetc: error: could not compile package `core`, aborting due to 2 previous errors

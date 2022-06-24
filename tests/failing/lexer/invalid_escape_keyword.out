@@ -6,4 +6,4 @@ tests/failing/lexer/invalid_escape_keyword.ri:2:1: error: expected keyword, foun
     |
   2 | @name
     | ^
-rivetc: error: could not compile package `invalid_escape_keyword`, aborting due to 2 previous errors.
+rivetc: error: could not compile package `core`, aborting due to 2 previous errors

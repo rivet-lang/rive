@@ -1,10 +1,12 @@
-extern "C" fn malloc(sz: usize) *c_void;
-extern "C" fn free(pointer: &c_void) c_void; // BAD
+extern "C" {
+    fn malloc(sz: usize) *const void;
+    fn free(pointer: &void); // BAD
+}
 
 struct St {
     f1: &&i32;
-    f2: *&i32;
-    f3: &*i32;
+    f2: *const &i32;
+    f3: &*const i32; // OK
 
     f4: ?*u8;
 
@@ -12,10 +14,10 @@ struct St {
 
     f6: ??i32;
 
-    f7: c_void;
+    f7: void;
 
     f8: pkg;
     f9: =;
 }
 
-fn main() void { }
+fn main() { }

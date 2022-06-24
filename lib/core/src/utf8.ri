@@ -1,0 +1,19 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+/// Returns the number of runes contained in `s`.
+pub fn str_len_utf8(s: str) usize {
+	return cstr_len_utf8(s.ptr, s.size);
+}
+
+/// Returns the number of runes contained in `s`.
+pub fn cstr_len_utf8(s: *const u8, size: usize) usize {
+	let mut l: usize = 0;
+	let mut i = 0;
+	while (i < as(size, i32)) {
+		l++;
+		i += unsafe { s[as(i, usize)] }.len_utf8();
+	}
+	return l;
+}

@@ -2,14 +2,10 @@ tests/failing/resolver/duplicate_symbols.ri:3:9: error: duplicate object `x`
     |
   3 |     let x = 1;
     |         ^
-tests/failing/resolver/duplicate_symbols.ri:12:1: error: duplicate object `L1`
-     |
-  12 | L1:
-     | ^
-tests/failing/resolver/duplicate_symbols.ri:15:9: error: duplicate object `L2`
-     |
-  15 |     let L2 = true;
-     |         ^
+tests/failing/resolver/duplicate_symbols.ri:7:13: error: duplicate object `y`
+    |
+  7 |         let y = 5; // disallow variable shadowing
+    |             ^
 tests/failing/resolver/duplicate_symbols.ri:19:13: error: duplicate object `L3`
      |
   19 |         let L3 = 1;
@@ -46,4 +42,4 @@ tests/failing/resolver/duplicate_symbols.ri:56:8: error: cannot extend non-local
      |
   56 | extend module::Game { }
      |        ^
-rivetc: error: could not compile package `duplicate_symbols`, aborting due to 12 previous errors.
+rivetc: error: could not compile package `core`, aborting due to 11 previous errors

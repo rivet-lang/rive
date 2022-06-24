@@ -14,4 +14,4 @@ tests/failing/resolver/unknown_symbol.ri:9:17: error: enum `MyEnum` has no varia
     |
   9 |     _ = MyEnum::Mark;
     |                 ^
-rivetc: error: could not compile package `unknown_symbol`, aborting due to 4 previous errors.
+rivetc: error: could not compile package `core`, aborting due to 4 previous errors

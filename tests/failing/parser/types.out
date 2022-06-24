@@ -1,40 +1,44 @@
-tests/failing/parser/types.ri:2:29: error: cannot use references inside `extern` blocks
+tests/failing/parser/types.ri:3:22: error: cannot use references inside `extern` blocks
     |
-  2 | extern "C" fn free(pointer: &c_void) c_void; // BAD
-    |                             ^
-    = help: use pointers instead: `*c_void`
-tests/failing/parser/types.ri:5:9: error: multi-level references are not allowed
+  3 |     fn free(pointer: &void); // BAD
+    |                      ^
+    = help: use pointers instead: `*const void`
+tests/failing/parser/types.ri:7:9: error: multi-level references are not allowed
     |
-  5 |     f1: &&i32;
+  7 |     f1: &&i32;
     |         ^
-tests/failing/parser/types.ri:6:9: error: cannot use pointers with references
+tests/failing/parser/types.ri:8:9: error: cannot use pointers with references
     |
-  6 |     f2: *&i32;
+  8 |     f2: *const &i32;
     |         ^
-tests/failing/parser/types.ri:7:9: error: cannot use references with pointers
-    |
-  7 |     f3: &*i32;
-    |         ^
-tests/failing/parser/types.ri:9:9: error: pointers cannot be optional
-    |
-  9 |     f4: ?*u8;
-    |         ^
-    = note: by default pointers can contain the value `none`
-tests/failing/parser/types.ri:11:9: error: tuples can have a maximum of 8 types
+tests/failing/parser/types.ri:11:11: error: expected `const`, found name `u8` 
      |
-  11 |     f5: (i32, i32, i32, i32, i32, i32, i32, i32, i32);
+  11 |     f4: ?*u8;
+     |           ^
+tests/failing/parser/types.ri:11:9: error: pointers cannot be optional
+     |
+  11 |     f4: ?*u8;
+     |         ^
+     = note: by default pointers can contain the value `none`
+tests/failing/parser/types.ri:13:9: error: tuples can have a maximum of 8 types
+     |
+  13 |     f5: (i32, i32, i32, i32, i32, i32, i32, i32, i32);
      |         ^
      = help: you can use a struct instead
-tests/failing/parser/types.ri:13:9: error: optional multi-level types are not allowed
+tests/failing/parser/types.ri:15:9: error: optional multi-level types are not allowed
      |
-  13 |     f6: ??i32;
+  15 |     f6: ??i32;
      |         ^
-tests/failing/parser/types.ri:17:9: error: expected type, found keyword `pkg`
+tests/failing/parser/types.ri:17:9: error: invalid use of `void` type
      |
-  17 |     f8: pkg;
+  17 |     f7: void;
      |         ^
-tests/failing/parser/types.ri:18:9: error: expected type, found token `=`
+tests/failing/parser/types.ri:19:9: error: expected type, found keyword `pkg`
      |
-  18 |     f9: =;
+  19 |     f8: pkg;
      |         ^
-rivetc: error: could not compile package `types`, aborting due to 9 previous errors.
+tests/failing/parser/types.ri:20:9: error: expected type, found token `=`
+     |
+  20 |     f9: =;
+     |         ^
+rivetc: error: could not compile package `core`, aborting due to 10 previous errors

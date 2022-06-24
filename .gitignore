@@ -1,2 +1,4 @@
 __pycache__
-syntax.ri
+core.ri
+*.o
+exe
