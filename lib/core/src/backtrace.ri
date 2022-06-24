@@ -4,71 +4,79 @@
 
 #![c_compile("thirdparty/libbacktrace/backtrace.c")]
 
+import pkg : eprint, eprintln, ARGS, String;
+
 import pkg::stdc: stdio, string;
+import pkg::demangle;
 
-struct backtrace_state;
+pub mod backtrace {
+    struct backtrace_state;
 
-type BacktraceErrorCB = fn(*mut void, *const u8, i32);
-type BacktraceFullCB = fn(*mut void, i32, *const u8, i32, *const u8) i32;
+    type BacktraceErrorCB = fn(*mut void, *const u8, i32);
+    type BacktraceFullCB = fn(*mut void, i32, *const u8, i32, *const u8) i32;
 
-extern "C" {
-    fn backtrace_create_state(
-        filename: *const u8, threaded: i32, error_cb: BacktraceErrorCB,
-        data: *const void
-    ) *mut backtrace_state;
+    extern "C" {
+        fn backtrace_create_state(
+            filename: *const u8, threaded: i32, error_cb: BacktraceErrorCB,
+            data: *const void
+        ) *mut backtrace_state;
 
-    fn backtrace_full(
-        state: *const backtrace_state, skip: i32, cb: BacktraceFullCB,
-        error_cb: BacktraceErrorCB, data: *const void
-    ) i32;
-}
+        fn backtrace_full(
+            state: *const backtrace_state, skip: i32, cb: BacktraceFullCB,
+            error_cb: BacktraceErrorCB, data: *const void
+        ) i32;
+    }
 
-static bt_state: *mut backtrace_state = unsafe {
-    backtrace_create_state(ARGS[0].ptr, 1, bt_error_handler, 0)
-};
+    static bt_state: *mut backtrace_state = unsafe {
+        backtrace_create_state(ARGS[0].ptr, 1, bt_error_handler, 0)
+    };
 
-struct BacktraceData {
-    mut frame_nr: usize;
-}
+    struct BacktraceData {
+        mut frame_nr: usize;
+    }
 
-fn bt_print_callback(
-    data: *mut void, pc: i32, filename_ptr: *const u8,
-    lineno: i32, func_ptr: *const u8
-) i32 {
-    // TODO(StunxFS): demangle function names
-    unsafe {
-        if (func_ptr != none and string::memcmp(func_ptr, c"_R4core10rivet_initF", 20) == 0) {
-            return 1; // stop backtracing
+    fn bt_print_callback(
+        data: *mut void, pc: i32, filename_ptr: *const u8,
+        lineno: i32, func_ptr: *const u8
+    ) i32 {
+        unsafe {
+            if (func_ptr != none and string::memcmp(func_ptr, c"_R4core10rivet_initF", 20) == 0) {
+                return 1; // stop backtracing
+            }
+
+            let filename = if (filename_ptr == none) c"<unknown-filename>" else filename_ptr;
+            let func_name = if (func_ptr == none) {
+                String::from_str("<unknown-function-name>")
+            } else {
+                demangle::demangle_symbol(func_ptr)
+            };
+
+            let mut bdata = as(data, *mut BacktraceData);
+            _ = stdio::fprintf(
+                stdio::stderr, c"   %s %s in %s:%d\n", if (bdata.frame_nr == 0) c"at" else c"by",
+                func_name.as_ptr(), filename, lineno
+            );
+            bdata.frame_nr++;
         }
-
-        let filename = if (filename_ptr == none) c"<unknown-filename>" else filename_ptr;
-        let func_name = if (func_ptr == none) c"<unknown-function-name>" else func_ptr;
-
-        let mut bdata = as(data, *mut BacktraceData);
-        _ = stdio::fprintf(
-            stdio::stderr, c"   %s %s in %s:%d\n",
-            if (bdata.frame_nr == 0) c"at" else c"by", func_name, filename, lineno
-        );
-        bdata.frame_nr++;
+        return 0;
     }
-    return 0;
-}
 
-fn bt_error_handler(data: *mut void, msg_ptr: *const u8, errnum: i32) {
-    eprint("libbacktrace error: ");
-    eprint(unsafe { str::from_cstr(msg_ptr) });
-    if (errnum > 0) {
-        eprint(" (");
-        eprint(unsafe { str::from_cstr(string::strerror(errnum)) });
-        eprint(")");
+    fn bt_error_handler(data: *mut void, msg_ptr: *const u8, errnum: i32) {
+        eprint("libbacktrace error: ");
+        eprint(unsafe { str::from_cstr(msg_ptr) });
+        if (errnum > 0) {
+            eprint(" (");
+            eprint(unsafe { str::from_cstr(string::strerror(errnum)) });
+            eprint(")");
+        }
+        eprintln();
     }
-    eprintln();
-}
 
-fn print_backtrace(frames_to_skip: i32 = 0) {
-    unsafe {
-        _ = backtrace_full(
-            bt_state, frames_to_skip, bt_print_callback, bt_error_handler, &BacktraceData{frame_nr: 0}
-        );
+    pub fn print(frames_to_skip: i32 = 0) {
+        unsafe {
+            _ = backtrace_full(
+                bt_state, frames_to_skip, bt_print_callback, bt_error_handler, &BacktraceData{frame_nr: 0}
+            );
+        }
     }
 }

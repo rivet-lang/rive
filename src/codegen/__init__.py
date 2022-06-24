@@ -725,8 +725,8 @@ class AST2RIR:
 			self.convert_stmt(stmt)
 
 	def convert_stmt(self, stmt):
-		#if self.comp.prefs.build_mode!=prefs.BuildMode.Release:
-		#    self.cur_fn.add_dbg_stmt_line(stmt.pos)
+		if self.comp.prefs.build_mode != prefs.BuildMode.Release:
+			self.cur_fn.add_dbg_stmt_line(stmt.pos)
 		if isinstance(stmt, ast.LabelStmt):
 			self.cur_fn.add_label(stmt.label)
 		elif isinstance(stmt, ast.GotoStmt):

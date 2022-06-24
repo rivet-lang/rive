@@ -6,6 +6,7 @@
 mod stdc;
 
 import pkg::stdc: stdio, stdlib;
+import pkg::backtrace;
 
 extern "C" {
     fn _R9init_argsZ(__argc: i32, __argv: *const *const u8);
@@ -46,7 +47,7 @@ struct _error {
             eprint(": ");
             eprintln(self.msg);
         }
-        print_backtrace(2);
+        backtrace::print(2);
         exit(1);
     }
 }
@@ -92,7 +93,7 @@ fn assert(cond: bool, msg: str) {
     if (!cond) {
         eprint("panic: assertion failed: ");
         eprintln(msg);
-        print_backtrace(2);
+        backtrace::print(2);
         exit(1);
     }
 }
@@ -100,7 +101,7 @@ fn assert(cond: bool, msg: str) {
 pub fn panic(s: str = "") no_return {
     eprint("panic: ");
     eprintln(s);
-    print_backtrace(1);
+    backtrace::print(1);
     exit(1);
 }
 
@@ -109,7 +110,7 @@ fn panic_if(cond: bool, msg: str) {
     if (cond) {
         eprint("panic: ");
         eprintln(msg);
-        print_backtrace(2);
+        backtrace::print(2);
         exit(1);
     }
 }

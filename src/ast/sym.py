@@ -181,11 +181,12 @@ class Sym:
 		unique_name = f"[{elem_typ.qualstr()}]"
 		if sym := self.find(unique_name):
 			return sym
-		from ..ast.type import Ptr
+		from ..ast.type import Ptr, Type as type_Type
 		return self.add_and_return(
 		    Type(
 		        Visibility.Public, unique_name, TypeKind.Slice,
-		        [Field("ptr", False, True, Ptr(self[0]))], SliceInfo(elem_typ)
+		        [Field("ptr", False, True, Ptr(type_Type(self[0])))],
+		        SliceInfo(elem_typ)
 		    )
 		)
 

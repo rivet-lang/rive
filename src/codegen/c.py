@@ -405,7 +405,9 @@ void _R9drop_argsZ(void) {
 			self.write("])")
 		elif inst.kind == InstKind.GetRef:
 			arg0 = inst.args[0]
-			if isinstance(arg0, (Ident, Selector, ArrayLiteral)):
+			if isinstance(
+			    arg0, (Ident, Selector, ArrayLiteral)
+			) or (isinstance(arg0, Inst) and arg0.kind == InstKind.LoadPtr):
 				self.write("(&")
 				self.gen_expr(arg0)
 				if isinstance(arg0, ArrayLiteral):

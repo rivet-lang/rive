@@ -1199,6 +1199,10 @@ class Parser:
 		self.next()
 		return ast.PkgExpr(pos)
 
+	def parse_super_expr(self):
+		self.next()
+		return ast.SuperExpr(self.scope, self.prev_tok.pos)
+
 	def empty_expr(self):
 		return ast.EmptyExpr(self.tok.pos)
 
@@ -1292,12 +1296,13 @@ class Parser:
 			return type.Type.unresolved(
 			    ast.SelfTyExpr(self.scope, self.prev_tok.pos)
 			)
-		elif self.tok.kind in (Kind.KeyPkg, Kind.Name):
+		elif self.tok.kind in (Kind.KeyPkg, Kind.KeySuper, Kind.Name):
 			# normal type
 			if self.peek_tok.kind == Kind.DoubleColon:
 				path_expr = self.parse_path_expr(
 				    self.parse_pkg_expr() if self.tok.kind ==
-				    Kind.KeyPkg else self.parse_ident()
+				    Kind.KeyPkg else self.parse_super_expr() if self.tok.kind ==
+				    Kind.KeySuper else elf.parse_ident()
 				)
 				if self.tok.kind == Kind.DoubleColon:
 					while True:

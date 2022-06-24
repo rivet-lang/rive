@@ -221,30 +221,7 @@ class Resolver:
 		if isinstance(expr, ast.ParExpr):
 			self.resolve_expr(expr.expr)
 		elif isinstance(expr, ast.Ident):
-			if expr.name == "_":
-				return # ignore special var
-			elif expr.is_comptime:
-				if not ast.is_comptime_constant(expr.name):
-					report.error(
-					    f"unknown comptime constant `{expr.name}`", expr.pos
-					)
-			elif obj := expr.scope.lookup(expr.name):
-				if isinstance(obj, sym.Label):
-					report.error("expected value, found label", expr.pos)
-				else:
-					expr.is_obj = True
-					expr.obj = obj
-					expr.typ = obj.typ
-			elif s := self.cur_sym.find(expr.name):
-				s.uses += 1
-				expr.sym = s
-			elif s := self.sf.find_imported_symbol(expr.name):
-				s.uses += 1
-				expr.sym = s
-			else:
-				report.error(
-				    f"cannot find `{expr.name}` in this scope", expr.pos
-				)
+			self.resolve_ident(expr)
 		elif isinstance(expr, ast.SelfExpr):
 			if self_ := expr.scope.lookup("self"):
 				expr.typ = self_.typ
@@ -337,6 +314,30 @@ class Resolver:
 		    pos
 		)
 		return None
+
+	def resolve_ident(self, ident):
+		if ident.name == "_":
+			return # ignore special var
+		elif ident.is_comptime:
+			if not ast.is_comptime_constant(ident.name):
+				report.error(
+				    f"unknown comptime constant `{ident.name}`", ident.pos
+				)
+		elif obj := ident.scope.lookup(ident.name):
+			if isinstance(obj, sym.Label):
+				report.error("expected value, found label", ident.pos)
+			else:
+				ident.is_obj = True
+				ident.obj = obj
+				ident.typ = obj.typ
+		elif s := self.cur_sym.find(ident.name):
+			s.uses += 1
+			ident.sym = s
+		elif s := self.sf.find_imported_symbol(ident.name):
+			s.uses += 1
+			ident.sym = s
+		else:
+			report.error(f"cannot find `{ident.name}` in this scope", ident.pos)
 
 	def resolve_path_expr(self, path):
 		if path.is_global:
@@ -500,7 +501,8 @@ class Resolver:
 			if typ.is_resolved():
 				return True # resolved
 			if isinstance(typ.expr, ast.Ident):
-				if s := self.cur_sym.find(typ.expr.name):
+				self.resolve_ident(typ.expr)
+				if s := typ.expr.sym:
 					if isinstance(s, sym.Type):
 						pos = typ.expr.pos
 						typ.resolve(s)

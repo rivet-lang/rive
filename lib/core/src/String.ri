@@ -7,7 +7,7 @@ trait ToString {
 }
 
 extend str for ToString {
-    fn to_string(&self) String { return String::from_str(self); }
+    fn to_string(&self) String { return String::from_str(self.*); }
 }
 
 struct String {
@@ -17,19 +17,19 @@ struct String {
 
     pub fn new() Self { return Self{}; }
 
-    /// Returns a dynamic string allocated on the heap with size `sz`.
+    /// Returns a dynamic string allocated on the heap with size `cap`.
     ///
-    /// NOTE: `with_capacity` allocates memory the size of `sz` + 1, where 1 is
+    /// NOTE: `with_capacity` allocates memory the size of `cap` + 1, where 1 is
     /// an extra space for the NULL character.
-    pub fn with_capacity(sz: usize) String {
-        let mut b = as(mem::alloc(sz + 1) catch unreachable!(), *mut u8);
+    pub fn with_capacity(cap: usize) String {
+        let mut b = as(mem::alloc(cap + 1) catch unreachable!(), *mut u8);
         unsafe {
-            b[sz] = 0;
+            b[cap] = 0;
         }
         return Self{
             ptr: b,
-            size: sz,
-            cap: sz
+            size: 0,
+            cap: cap
         };
     }
 
@@ -41,15 +41,17 @@ struct String {
         }
         let mut res = Self::with_capacity(bytes.len);
         _ = mem::copy(res.ptr, bytes.ptr, bytes.len) catch unreachable!();
+        res.size = bytes.len;
         return res;
     }
 
-    pub fn from_str(s: &str) String {
+    pub fn from_str(s: str) String {
         if (s.size == 0) {
             return Self::new();
         }
         let mut res = Self::with_capacity(s.size);
         _ = mem::copy(res.ptr, s.ptr, s.size) catch unreachable!();
+        res.size = s.size;
         return res;
     }
 

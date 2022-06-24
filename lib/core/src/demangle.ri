@@ -1,0 +1,62 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import pkg : println, panic, String;
+
+import pkg::stdc: stdlib, string;
+
+pub mod demangle {
+    struct Buffer {
+        mut buf: [u8; 100];
+        mut len: usize;
+
+        pub fn push(&mut self, byte: u8) {
+            if (self.len < 100) {
+                self.buf[self.len] = byte;
+                self.len++;
+            } else {
+                panic("Buffer::push: index out of range");
+            }
+        }
+
+        pub fn clear(&mut self) {
+            while (self.len > 0) {
+                self.buf[self.len] = 0;
+                self.len--;
+            }
+        }
+    }
+
+    pub fn demangle_symbol(name: *const u8) String {
+        let mut buf = Buffer{};
+        let size = unsafe { string::strlen(name) };
+        let mut res = String::with_capacity(size - 2);
+
+        let mut idx: usize = 2; // skip `_R`
+        while (idx < size) {
+            let byte = unsafe { name[idx] };
+            if (byte.is_digit()) {
+                buf.push(byte);
+                idx++;
+                continue;
+            }
+            if (!res.is_empty()) {
+                res.push_str("::");
+            }
+            let name_len = as(unsafe { stdlib::strtoul(&buf.buf[0], none, 10) }, usize);
+            let mut idx2: usize = 0;
+            while (idx2 < name_len) {
+                res.push(unsafe { name[idx] });
+                idx++;
+                idx2++;
+            }
+            buf.clear();
+            if (!unsafe { name[idx] }.is_digit()) {
+                break; // end
+            }
+        }
+
+        return res;
+    }
+}
