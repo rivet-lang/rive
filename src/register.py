@@ -331,7 +331,13 @@ class Register:
 		elif isinstance(stmt, ast.WhileStmt):
 			self.visit_stmt(stmt.stmt)
 		elif isinstance(stmt, ast.ForInStmt):
-			self.register_variables(stmt.scope, stmt.lefts)
+			for v in stmt.vars:
+				try:
+					stmt.scope.add(
+					    sym.Object(False, v, self.comp.void_t, False)
+					)
+				except utils.CompilerError as e:
+					report.error(e.args[0], stmt.pos)
 			self.visit_stmt(stmt.stmt)
 
 	def visit_expr(self, expr):

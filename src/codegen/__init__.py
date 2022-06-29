@@ -502,6 +502,8 @@ class InstKind(Enum):
 	Mult = auto_enum()
 	Div = auto_enum()
 	Mod = auto_enum()
+	Inc = auto_enum()
+	Dec = auto_enum()
 
 	# unary operators
 	Neg = auto_enum()
@@ -540,6 +542,8 @@ class InstKind(Enum):
 		elif self == InstKind.Mult: return "mult"
 		elif self == InstKind.Div: return "div"
 		elif self == InstKind.Mod: return "mod"
+		elif self == InstKind.Inc: return "inc"
+		elif self == InstKind.Dec: return "dec"
 		elif self == InstKind.Neg: return "neg"
 		elif self == InstKind.BitNot: return "bit_not"
 		elif self == InstKind.BooleanNot: return "boolean_not"
@@ -747,7 +751,104 @@ class AST2RIR:
 		elif isinstance(stmt, ast.GotoStmt):
 			self.cur_fn.add_br(stmt.label)
 		elif isinstance(stmt, ast.ForInStmt):
-			pass # TODO
+			old_entry_label = self.loop_entry_label
+			old_exit_label = self.loop_exit_label
+
+			vars_len = len(stmt.vars)
+			iterable_sym = stmt.iterable.typ.get_sym()
+			self.loop_entry_label = self.cur_fn.local_name()
+			body_label = self.cur_fn.local_name()
+			self.loop_exit_label = self.cur_fn.local_name()
+
+			self.cur_fn.add_comment("for in stmt")
+
+			if isinstance(stmt.iterable,
+			              ast.RangeExpr) or iterable_sym.kind in (
+			                  TypeKind.Array, TypeKind.Slice, TypeKind.Str
+			              ):
+				idx_name = self.cur_fn.local_name(
+				) if vars_len == 1 else stmt.vars[0]
+				if isinstance(stmt.iterable, ast.RangeExpr):
+					self.cur_fn.alloca(
+					    stmt.iterable.typ, idx_name,
+					    self.convert_expr(stmt.iterable.start)
+					)
+					idx = Ident(self.comp.usize_t, idx_name)
+					self.cur_fn.add_label(self.loop_entry_label)
+					self.cur_fn.add_cond_br(
+					    Inst(
+					        InstKind.Cmp, [
+					            Name(
+					                "<=" if stmt.iterable.is_inclusive else "<"
+					            ), idx,
+					            self.convert_expr(stmt.iterable.end)
+					        ]
+					    ), body_label, self.loop_exit_label
+					)
+					self.cur_fn.add_label(body_label)
+					self.cur_fn.add_inst(Inst(InstKind.Inc, [idx]))
+				else:
+					iterable = self.convert_expr(stmt.iterable)
+					self.cur_fn.alloca(
+					    self.comp.usize_t, idx_name,
+					    IntLiteral(self.comp.usize_t, "0")
+					)
+					idx = Ident(self.comp.usize_t, idx_name)
+					self.cur_fn.add_label(self.loop_entry_label)
+					if iterable_sym.kind == TypeKind.Array:
+						len_ = IntLiteral(
+						    self.comp.usize_t, iterable_sym.info.size.lit
+						)
+					elif iterable_sym.kind == TypeKind.Str and isinstance(
+					    iterable, StringLiteral
+					):
+						len_ = IntLiteral(self.comp.usize_t, iterable.size)
+					else:
+						len_ = Selector(
+						    self.comp.usize_t, iterable, Name("len")
+						)
+					self.cur_fn.add_cond_br(
+					    Inst(InstKind.Cmp, [Name("<"), idx, len_]), body_label,
+					    self.loop_exit_label
+					)
+
+					self.cur_fn.add_label(body_label)
+					value_t = self.comp.uint8_t if iterable_sym.kind == TypeKind.Str else iterable_sym.info.elem_typ
+					if iterable_sym.kind == TypeKind.Array:
+						value = Inst(
+						    InstKind.GetElementPtr,
+						    [iterable, Inst(InstKind.Inc, [idx])]
+						)
+					else:
+						value = Selector(
+						    type.Ptr(self.comp.void_t), iterable, Name("ptr")
+						)
+						if iterable_sym.kind == TypeKind.Slice:
+							value = Inst(
+							    InstKind.Add, [
+							        Inst(
+							            InstKind.Cast,
+							            [value, Type(type.Ptr(value_t))]
+							        ),
+							        Inst(InstKind.Inc, [idx])
+							    ]
+							)
+						else:
+							value = Inst(
+							    InstKind.GetElementPtr,
+							    [value, Inst(InstKind.Inc, [idx])]
+							)
+					self.cur_fn.alloca(
+					    value_t,
+					    stmt.vars[0] if vars_len == 1 else stmt.vars[1],
+					    Inst(InstKind.LoadPtr, [value])
+					)
+				self.convert_stmt(stmt.stmt)
+				self.cur_fn.add_br(self.loop_entry_label)
+				self.cur_fn.add_label(self.loop_exit_label)
+
+			self.loop_entry_label = old_entry_label
+			self.loop_exit_label = old_exit_label
 		elif isinstance(stmt, ast.WhileStmt):
 			old_entry_label = self.loop_entry_label
 			old_exit_label = self.loop_exit_label
@@ -1425,11 +1526,6 @@ class AST2RIR:
 						    "slice bounds out of range", expr.index.pos
 						)
 						report.note("start index > end index")
-					elif start_int == end_int:
-						report.error(
-						    "slice bounds out of range", expr.index.pos
-						)
-						report.note("start index == end index")
 					elif isinstance(left, StringLiteral): # comptime slicing
 						slen = end_int - start_int
 						s, _ = utils.bytestr(left.lit)
@@ -1439,30 +1535,57 @@ class AST2RIR:
 						)
 				tmp = self.cur_fn.local_name()
 				if s.kind == sym.TypeKind.Str:
-					inst = Inst(
-					    InstKind.Call, [
-					        Name("_R4core4_str5sliceM"),
-					        Inst(InstKind.GetRef, [left]), start, end
-					    ]
-					)
+					if end == None:
+						inst = Inst(
+						    InstKind.Call, [
+						        Name("_R4core4_str10slice_fromM"),
+						        Inst(InstKind.GetRef, [left]), start
+						    ]
+						)
+					else:
+						inst = Inst(
+						    InstKind.Call, [
+						        Name("_R4core4_str5sliceM"),
+						        Inst(InstKind.GetRef, [left]), start, end
+						    ]
+						)
 				elif s.kind == sym.TypeKind.Slice:
-					inst = Inst(
-					    InstKind.Call, [
-					        Name("_R4core6_slice5sliceM"),
-					        Inst(InstKind.GetRef, [left]), start, end
-					    ]
-					)
+					if end == None:
+						inst = Inst(
+						    InstKind.Call, [
+						        Name("_R4core6_slice10slice_fromM"),
+						        Inst(InstKind.GetRef, [left]), start
+						    ]
+						)
+					else:
+						inst = Inst(
+						    InstKind.Call, [
+						        Name("_R4core6_slice5sliceM"),
+						        Inst(InstKind.GetRef, [left]), start, end
+						    ]
+						)
 				else:
 					size, _ = self.comp.type_size(s.info.elem_typ)
-					inst = Inst(
-					    InstKind.Call, [
-					        Name("_R4core11array_sliceF"),
-					        Inst(InstKind.GetRef, [left]),
-					        IntLiteral(self.comp.usize_t, str(size)),
-					        IntLiteral(self.comp.usize_t, s.info.size.lit),
-					        start, end
-					    ]
-					)
+					if end == None:
+						inst = Inst(
+						    InstKind.Call, [
+						        Name("_R4core16array_slice_fromF"),
+						        Inst(InstKind.GetRef, [left]),
+						        IntLiteral(self.comp.usize_t, str(size)),
+						        IntLiteral(self.comp.usize_t, s.info.size.lit),
+						        start
+						    ]
+						)
+					else:
+						inst = Inst(
+						    InstKind.Call, [
+						        Name("_R4core11array_sliceF"),
+						        Inst(InstKind.GetRef, [left]),
+						        IntLiteral(self.comp.usize_t, str(size)),
+						        IntLiteral(self.comp.usize_t, s.info.size.lit),
+						        start, end
+						    ]
+						)
 				self.cur_fn.alloca(expr.typ, tmp, inst)
 				return Ident(expr.typ, tmp)
 			idx = self.convert_expr(expr.index)
@@ -1943,24 +2066,16 @@ class AST2RIR:
 
 			# comptime calculation
 			if isinstance(left, IntLiteral):
-				if expr.op == Kind.Inc:
-					res = left.value() + 1
-				else:
-					res = left.value() - 1
-				return IntLiteral(left.typ, str(res))
+				return left
 
 			# runtime calculation
 			if expr.op == Kind.Inc:
-				kind = InstKind.Add
+				kind = InstKind.Inc
 			else:
-				kind = InstKind.Sub
+				kind = InstKind.Dec
 			tmp = self.cur_fn.local_name()
-			self.cur_fn.alloca(
-			    expr.typ, tmp, Inst(kind,
-			                        [left, IntLiteral(expr.typ, "1")])
-			)
-			self.cur_fn.store(left, Ident(expr.typ, tmp))
-			return left
+			self.cur_fn.alloca(expr.typ, tmp, Inst(kind, [left]))
+			return Ident(expr.typ, tmp)
 		elif isinstance(expr, ast.Block):
 			self.convert_stmts(expr.stmts)
 			if expr.is_expr:

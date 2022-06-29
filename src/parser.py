@@ -625,22 +625,24 @@ class Parser:
 			self.expect(Kind.Lparen)
 			self.open_scope()
 			sc = self.scope
-			lefts = []
-			if self.accept(Kind.Lparen):
-				# multiple variables
-				while True:
-					lefts.append(self.parse_var_decl(True, False))
-					if not self.accept(Kind.Comma):
-						break
-				self.expect(Kind.Rparen)
-			else:
-				lefts = [self.parse_var_decl(False)]
+			vars = []
+			# single or multiple variables
+			while True:
+				vars.append(self.parse_name())
+				if not self.accept(Kind.Comma):
+					break
 			self.expect(Kind.KeyIn)
 			iterable = self.parse_expr()
+			if self.accept(Kind.DotDot): # range
+				is_inclusive = self.accept(Kind.Assign)
+				max = self.parse_expr()
+				iterable = ast.RangeExpr(
+				    iterable, max, is_inclusive, iterable.pos
+				)
 			self.expect(Kind.Rparen)
 			stmt = self.parse_stmt()
 			self.close_scope()
-			return ast.ForInStmt(sc, lefts, iterable, stmt, pos)
+			return ast.ForInStmt(sc, vars, iterable, stmt, pos)
 		elif self.accept(Kind.KeyGoto):
 			pos = self.tok.pos
 			label = self.parse_name()
@@ -661,8 +663,8 @@ class Parser:
 		return ast.ExprStmt(expr, expr.pos)
 
 	def parse_var_decl(self, support_ref = False, support_typ = True):
-		is_mut = self.accept(Kind.KeyMut)
 		is_ref = support_ref and self.accept(Kind.Amp)
+		is_mut = self.accept(Kind.KeyMut)
 		pos = self.tok.pos
 		name = self.parse_name()
 		has_typ = False
@@ -998,26 +1000,26 @@ class Parser:
 			elif self.accept(Kind.Lbracket):
 				index = self.empty_expr()
 				if self.accept(Kind.DotDot):
-					if self.tok.kind != Kind.Rbracket:
+					if self.tok.kind == Kind.Rbracket:
+						index = ast.RangeExpr(
+						    None, None, False, index.pos, False, False
+						)
+					else:
 						index = ast.RangeExpr(
 						    None, self.parse_expr(), False, index.pos, False,
 						    True
 						)
-					else:
-						index = ast.RangeExpr(
-						    None, None, False, index.pos, False, False
-						)
 				else:
 					index = self.parse_expr()
 					if self.accept(Kind.DotDot):
-						if self.tok.kind != Kind.Rbracket:
+						if self.tok.kind == Kind.Rbracket:
 							index = ast.RangeExpr(
-							    index, self.parse_expr(), False, index.pos,
-							    True, True
+							    index, None, False, index.pos, True, False
 							)
 						else:
 							index = ast.RangeExpr(
-							    None, None, False, index.pos, True, False
+							    index, self.parse_expr(), False, index.pos,
+							    True, True
 							)
 				self.expect(Kind.Rbracket)
 				expr = ast.IndexExpr(expr, index, expr.pos)
@@ -1043,12 +1045,6 @@ class Parser:
 					expr = ast.SelectorExpr(expr, name, expr.pos, field_pos)
 			elif self.tok.kind == Kind.DoubleColon:
 				expr = self.parse_path_expr(expr)
-			elif self.tok.kind == Kind.DotDot:
-				self.next()
-				is_inclusive = self.accept(Kind.Assign)
-				expr = ast.RangeExpr(
-				    expr, self.parse_expr(), is_inclusive, expr.pos
-				)
 			else:
 				break
 		return expr

@@ -461,6 +461,12 @@ void _R9drop_argsZ(void) {
 			elif inst.kind == InstKind.Lshift: self.write(" << ")
 			elif inst.kind == InstKind.Rshift: self.write(" >> ")
 			self.gen_expr(inst.args[1])
+		elif inst.kind in (InstKind.Inc, InstKind.Dec):
+			self.gen_expr(inst.args[0])
+			if inst.kind == InstKind.Inc:
+				self.write("++")
+			else:
+				self.write("--")
 		elif inst.kind in (InstKind.BitNot, InstKind.BooleanNot, InstKind.Neg):
 			if inst.kind == InstKind.BooleanNot:
 				self.write("!(")

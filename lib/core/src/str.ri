@@ -72,6 +72,11 @@ struct _str {
             len: cstr_len_utf8(ptr, size)
         };
     }
+
+    #[used]
+    fn slice_from(&self, start: usize) _str {
+        return self.slice(start, self.size);
+    }
 }
 
 extend str {

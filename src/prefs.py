@@ -63,7 +63,7 @@ Options:
       Whether 32-bit or 64-bit machine code will be generated.
 
    --check-syntax
-      Only scan and parse the files, but then stop.
+      Only scan and parse the package, but then stop.
 
    --check
       Scans, parses, and checks the files without compiling the package.

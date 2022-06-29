@@ -23,7 +23,7 @@ fn array_ne(arr: *const void, other_arr: *const void, len: usize) bool {
 
 #[used]
 fn array_slice(arr: *mut void, elem_size: usize, size: usize, start: usize, end: usize) _slice {
-    if (start > end or end > size or start == end) {
+    if (start > end or end > size) {
         panic("slice index out of range");
     }
     let len = end - start;
@@ -39,4 +39,9 @@ fn array_slice(arr: *mut void, elem_size: usize, size: usize, start: usize, end:
         elem_size: elem_size,
         len: len
     };
+}
+
+#[used]
+fn array_slice_from(arr: *mut void, elem_size: usize, size: usize, start: usize) _slice {
+    return array_slice(arr, elem_size, size, start, size);
 }

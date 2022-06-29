@@ -22,8 +22,13 @@ class Checker:
 
 	def check_files(self, source_files):
 		for sf in source_files:
+			old_cur_sym = self.cur_sym
+			if sf.mod_sym:
+				self.cur_sym = sf.mod_sym
 			self.unsafe_operations = 0
 			self.check_decls(sf.decls)
+			if sf.mod_sym:
+				self.cur_sym = old_cur_sym
 		if self.comp.prefs.pkg_type == prefs.PkgType.Bin:
 			if pkg_main := self.comp.pkg_sym.find("main"):
 				if not isinstance(pkg_main, sym.Fn):
@@ -234,9 +239,36 @@ class Checker:
 				)
 			self.check_stmt(stmt.stmt)
 		elif isinstance(stmt, ast.ForInStmt):
-			# TODO(StunxFS): check variables
-			self.check_expr(stmt.iterable)
-			self.check_stmt(stmt.stmt)
+			iterable_t = self.check_expr(stmt.iterable)
+			iterable_sym = iterable_t.get_sym()
+			vars_len = len(stmt.vars)
+			if isinstance(stmt.iterable, ast.RangeExpr):
+				if vars_len == 1:
+					stmt.scope.update_typ(
+					    stmt.vars[0], self.comp.untyped_to_type(iterable_t)
+					)
+				else:
+					report.error(
+					    f"expected 1 variable, found {vars_len}", stmt.pos
+					)
+				self.check_stmt(stmt.stmt)
+			elif iterable_sym.kind in (
+			    TypeKind.Array, TypeKind.Slice, TypeKind.Str
+			):
+				elem_typ = self.comp.uint8_t if iterable_sym.kind == TypeKind.Str else self.comp.untyped_to_type(
+				    iterable_sym.info.elem_typ
+				)
+				if vars_len == 1:
+					stmt.scope.update_typ(stmt.vars[0], elem_typ)
+				else:
+					stmt.scope.update_typ(stmt.vars[0], self.comp.usize_t)
+					stmt.scope.update_typ(stmt.vars[1], elem_typ)
+				self.check_stmt(stmt.stmt)
+			else:
+				report.error(
+				    f"cannot iterate over `{iterable_t}`", stmt.iterable.pos
+				)
+				report.note("expected array, slice or `str` value")
 		elif isinstance(stmt, ast.GotoStmt):
 			if not self.inside_unsafe_block():
 				report.error("`goto` requires a `unsafe` block", stmt.pos)

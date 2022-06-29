@@ -359,8 +359,8 @@ class WhileStmt:
 		self.pos = pos
 
 class ForInStmt:
-	def __init__(self, scope, lefts, iterable, stmt, pos):
-		self.lefts = lefts
+	def __init__(self, scope, vars, iterable, stmt, pos):
+		self.vars = vars
 		self.iterable = iterable
 		self.scope = scope
 		self.stmt = stmt

@@ -35,7 +35,7 @@ struct _slice {
 
     #[used]
     fn slice(&self, start: usize, end: usize) _slice {
-        if (start > end or end > self.len or start == end) {
+        if (start > end or end > self.len) {
             panic("slice index out of range");
         }
         let len = end - start;
@@ -47,6 +47,11 @@ struct _slice {
             elem_size: self.elem_size,
             len: len
         };
+    }
+
+    #[used]
+    fn slice_from(&self, start: usize) _slice {
+        return self.slice(start, self.len);
     }
 
     #[used]

@@ -1,4 +1,5 @@
 __pycache__
+src-self-hosted/
 core.ri
 *.o
 exe

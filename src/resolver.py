@@ -29,8 +29,13 @@ class Resolver:
 
 	def resolve_file(self, sf):
 		self.sf = sf
+		old_cur_sym = self.cur_sym
+		if sf.mod_sym:
+			self.cur_sym = sf.mod_sym
 		self.import_core_prelude()
 		self.resolve_decls(sf.decls)
+		if sf.mod_sym:
+			self.cur_sym = old_cur_sym
 
 	def resolve_decls(self, decls):
 		for decl in decls:
