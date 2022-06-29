@@ -5,7 +5,7 @@
 import pkg::Error;
 import pkg::stdc: stdlib, string;
 
-mod mem {
+pub mod mem {
     pub errtype OutOfMemoryError;
     pub errtype MemoryOverlapError;
 
@@ -128,7 +128,6 @@ mod mem {
         if (ptr != none) {
             unsafe {
                 stdlib::free(ptr);
-                ptr = none;
             }
         }
     }

@@ -10,10 +10,10 @@ pub fn str_len_utf8(s: str) usize {
 /// Returns the number of runes contained in `s`.
 pub fn cstr_len_utf8(s: *const u8, size: usize) usize {
 	let mut l: usize = 0;
-	let mut i = 0;
-	while (i < as(size, i32)) {
+	let mut i: usize = 0;
+	while (i < size) {
 		l++;
-		i += unsafe { s[as(i, usize)] }.len_utf8();
+		i += unsafe { s[i] }.len_utf8();
 	}
 	return l;
 }

@@ -4,8 +4,6 @@
 
 #![c_compile("thirdparty/libbacktrace/backtrace.c")]
 
-import pkg : eprint, eprintln, ARGS, String;
-
 import pkg::stdc: stdio, string;
 import pkg::demangle;
 
@@ -15,7 +13,7 @@ pub mod backtrace {
     type BacktraceErrorCB = fn(*mut void, *const u8, i32);
     type BacktraceFullCB = fn(*mut void, i32, *const u8, i32, *const u8) i32;
 
-    extern "C" {
+    extern (C) {
         fn backtrace_create_state(
             filename: *const u8, threaded: i32, error_cb: BacktraceErrorCB,
             data: *const void
@@ -36,7 +34,7 @@ pub mod backtrace {
     }
 
     fn bt_print_callback(
-        data: *mut void, pc: i32, filename_ptr: *const u8,
+        data: *mut void, pc: i32, filename_ptr: *mut u8,
         lineno: i32, func_ptr: *const u8
     ) i32 {
         unsafe {
@@ -44,18 +42,35 @@ pub mod backtrace {
                 return 1; // stop backtracing
             }
 
-            let filename = if (filename_ptr == none) c"<unknown-filename>" else filename_ptr;
+            let filename = if (filename_ptr == none) {
+                "<unknown-filename>".to_string()
+            } else {
+                String::from_cstr(filename_ptr)
+            };
+
             let func_name = if (func_ptr == none) {
-                String::from_str("<unknown-function-name>")
+                "<unknown-function-name>".to_string()
             } else {
                 demangle::demangle_symbol(func_ptr)
             };
 
-            let mut bdata = as(data, *mut BacktraceData);
-            _ = stdio::fprintf(
-                stdio::stderr, c"   %s %s in %s:%d\n", if (bdata.frame_nr == 0) c"at" else c"by",
-                func_name.as_ptr(), filename, lineno
+            let mut bdata = as(*mut BacktraceData, data);
+            let kw = if (bdata.frame_nr == 0) "at" else "by";
+
+            let lineno_str = lineno.to_string();
+
+            let mut res = String::with_capacity(
+                kw.size + func_name.size() + filename.size() + lineno_str.size() + 9
             );
+            res.push_str("   ");
+            res.push_str(kw);
+            res.push_str(" ");
+            res.push_string(func_name);
+            res.push_str(" in ");
+            res.push_string(filename);
+            res.push_str(":");
+            res.push_string(lineno_str);
+            eprintln(res.as_str());
             bdata.frame_nr++;
         }
         return 0;

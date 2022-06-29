@@ -2,6 +2,6 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-extend bool {
-    pub fn to_str(self) str { return if (self) "true" else "false"; }
+extend bool for ToString {
+    pub fn to_string(&self) String { return (if (self.*) "true" else "false").to_string(); }
 }

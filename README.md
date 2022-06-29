@@ -21,7 +21,7 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 
 Rivet's goal is to be a very powerful programming language and at the same time easy
 to use, with a syntax inspired mainly by Rust and C# (which are the coolest languages
-I've ever seen), and by other languages such as Python, Lua, TypeScript, etc.
+I've ever seen), and by other languages such as Python, Lua, TypeScript, D, etc.
 
 It is true that there are many programming languages and each of them specialized in
 a field; some with strange syntax in my opinion (like Lisp) and others with a high
@@ -33,7 +33,7 @@ language with a clear and simple syntax and a low learning curve.
 * [X] **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
 * [X] **Easy error handling**: Via result types: `fn func() !T { ... }`.
 * [X] **Named and optional arguments**: Very useful.
-* [ ] **Immutable values by default:** Variables, arguments and fields of struct
+* [X] **Immutable values by default:** Variables, arguments and fields of struct
 are immutable by default.
 * [ ] **Ownership and Borrowing**: Rivet has a very simplified version of Rust's
 Ownership and Borrowing system. The lifetimes are inferred by the compiler.

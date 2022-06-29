@@ -16,10 +16,10 @@ const MAX_THREE_B: u32 = 0x10000;
 pub errtype RuneFromU32Error;
 
 fn rune_from_u32(i: u32) !rune {
-    if (i > as(MAX_RUNE, u32) or (i >= 0xD800 and i <= 0xDFFF)) {
+    if (i > as(u32, MAX_RUNE) or (i >= 0xD800 and i <= 0xDFFF)) {
         raise RuneFromU32Error();
     }
-    return as(i, rune);
+    return as(rune, i);
 }
 
 /// Converts a digit in the given radix to a `rune`.
@@ -38,11 +38,11 @@ pub fn rune_from_digit(num: u32, radix: u32) ?rune {
         panic("rune_from_digit: radix is too high (maximum 36)");
     }
     if (num < radix) {
-        let num_ = as(num, u8);
+        let num_ = as(u8, num);
         if (num_ < 10) {
-            return as(b'0' + num_, rune);
+            return as(rune, b'0' + num_);
         } else {
-            return as(b'a' + num_ - 10, rune);
+            return as(rune, b'a' + num_ - 10);
         }
     }
     return none;
@@ -61,5 +61,5 @@ fn len_utf8(code: u32) usize {
 }
 
 extend rune {
-    fn len_utf8(self) usize { return len_utf8(as(self, u32)); }
+    fn len_utf8(self) usize { return len_utf8(as(u32, self)); }
 }

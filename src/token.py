@@ -107,7 +107,6 @@ class Kind(Enum):
 	KeyIn = auto_enum() # in
 	KeyIs = auto_enum() # is
 	KeyNotIs = auto_enum() # !is
-	KeyCast = auto_enum() # cast
 	KeyUnsafe = auto_enum() # unsafe
 	KeyOrElse = auto_enum() # orelse
 	KeyCatch = auto_enum() # catch
@@ -240,7 +239,6 @@ TOKEN_STRINGS = {
     Kind.KeyIn: "in",
     Kind.KeyIs: "is",
     Kind.KeyNotIs: "!is",
-    Kind.KeyCast: "cast",
     Kind.KeyUnsafe: "unsafe",
     Kind.KeyOrElse: "orelse",
     Kind.KeyCatch: "catch",

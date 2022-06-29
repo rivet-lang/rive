@@ -2,8 +2,6 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-import pkg : println, panic, String;
-
 import pkg::stdc: stdlib, string;
 
 pub mod demangle {
@@ -44,7 +42,7 @@ pub mod demangle {
             if (!res.is_empty()) {
                 res.push_str("::");
             }
-            let name_len = as(unsafe { stdlib::strtoul(&buf.buf[0], none, 10) }, usize);
+            let name_len = as(usize, unsafe { stdlib::strtoul(&buf.buf[0], none, 10) });
             let mut idx2: usize = 0;
             while (idx2 < name_len) {
                 res.push(unsafe { name[idx] });

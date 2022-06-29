@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file.
 
 pub mod string {
-    extern "C" {
+    extern (C) {
         pub fn memchr(cx: *const void, c: i32, n: usize) *mut void;
         pub fn memcmp(cx: *const void, ct: *const void, n: usize) i32;
         pub fn memcpy(dest: *mut void, src: *const void, n: usize) *mut void;

@@ -8,7 +8,7 @@ mod stdc;
 import pkg::stdc: stdio, stdlib;
 import pkg::backtrace;
 
-extern "C" {
+extern (C) {
     fn _R9init_argsZ(__argc: i32, __argv: *const *const u8);
     fn _R9drop_argsZ();
 
@@ -28,27 +28,6 @@ fn rivet_init(__argc: i32, __argv: *const *const u8, pkg_main: fn()) {
         pkg_main();
         // TODO(StunxFS): _R12drop_staticsZ();
         _R9drop_argsZ();
-    }
-}
-
-#[used]
-struct _error {
-    errtype_name: str;
-    msg: str;
-    tag: u8; // max: 255
-
-    #[used]
-    fn print(&self) {
-        eprint("[error] ");
-        if (self.msg.size == 0) {
-            eprintln(self.errtype_name);
-        } else {
-            eprint(self.errtype_name);
-            eprint(": ");
-            eprintln(self.msg);
-        }
-        backtrace::print(2);
-        exit(1);
     }
 }
 
@@ -139,7 +118,7 @@ unsafe fn write_buf_to_fd(fd: i32, buf_: *const u8, buf_len: usize) {
         unsafe {
             let x = stdio::write(fd, buf, remaining_bytes);
             buf += x;
-            remaining_bytes -= as(x, usize);
+            remaining_bytes -= as(usize, x);
         }
     }
 }

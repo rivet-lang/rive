@@ -61,7 +61,7 @@ class Compiler:
 		self.pkg_attrs = None
 		self.mod_sym = None # for `mod mod_name;`
 
-		self.ccompiler = "clang-12" # TODO(StunxFS): fix GCC
+		self.ccompiler = "gcc"
 
 		self.resolver = resolver.Resolver(self)
 		self.checker = checker.Checker(self)
@@ -96,11 +96,12 @@ class Compiler:
 						self.cgen.write_to_file(c_file)
 						args = [
 						    self.ccompiler, c_file, *self.prefs.objects_to_link,
+						    "-fno-builtin", "-Werror",
+						    "-m64" if self.prefs.target_bits == prefs.Bits.X64
+						    else "-m32",
 						    *[f"-l{l}" for l in self.prefs.library_to_link],
 						    *[f"-L{l}" for l in self.prefs.library_path], "-o",
 						    self.prefs.pkg_output,
-						    "-m64" if self.prefs.target_bits == prefs.Bits.X64
-						    else "-m32",
 						]
 						if self.prefs.build_mode == prefs.BuildMode.Release:
 							args.append("-flto")
@@ -110,7 +111,6 @@ class Compiler:
 						self.vlog(f"C compiler options: {args}")
 						res = utils.execute(*args)
 						if res.exit_code == 0:
-							# print(res.err)
 							os.remove(c_file)
 						else:
 							utils.error(
@@ -138,10 +138,16 @@ class Compiler:
 			utils.error("package `core` not found")
 
 	def check_pkg_attrs(self):
+		pkg_folder = os.path.join(prefs.RIVET_DIR, "objs", self.prefs.pkg_name)
 		for attr in self.pkg_attrs.attrs:
 			if attr.name == "c_compile":
+				if not os.path.exists(pkg_folder):
+					os.mkdir(pkg_folder)
 				cfile = os.path.realpath(attr.args[0].expr.lit)
-				objfile = f"{cfile}.{self.get_postfix()}.o"
+				objfile = os.path.join(
+				    pkg_folder,
+				    f"{os.path.basename(cfile)}.{self.get_postfix()}.o"
+				)
 				self.prefs.objects_to_link.append(objfile)
 				msg = f"c_compile: compiling object for C file `{cfile}`..."
 				if os.path.exists(objfile):
@@ -151,14 +157,11 @@ class Compiler:
 						continue
 				self.vlog(msg)
 				args = [
-				    self.ccompiler, cfile, f'-L{os.path.dirname(cfile)}', "-c",
-				    "-o", objfile, "-m64"
-				    if self.prefs.target_bits == prefs.Bits.X64 else "-m32",
+				    self.ccompiler, cfile, "-m64" if self.prefs.target_bits
+				    == prefs.Bits.X64 else "-m32", "-O3" if
+				    self.prefs.build_mode == prefs.BuildMode.Release else "-g",
+				    f'-L{os.path.dirname(cfile)}', "-c", "-o", objfile,
 				]
-				if self.prefs.build_mode == prefs.BuildMode.Release:
-					args.append("-O3")
-				else:
-					args.append("-g")
 				res = utils.execute(*args)
 				if res.exit_code != 0:
 					utils.error(
@@ -186,6 +189,7 @@ class Compiler:
 			postfix += "debug"
 		else:
 			postfix += "release"
+		postfix += f"-{self.ccompiler}"
 		return postfix
 
 	def parse_files(self):

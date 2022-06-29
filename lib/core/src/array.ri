@@ -35,7 +35,7 @@ fn array_slice(arr: *mut void, elem_size: usize, size: usize, start: usize, end:
         };
     }
     return _slice{
-        ptr: unsafe { as(arr, *mut u8) + (start * elem_size) },
+        ptr: unsafe { as(*mut u8, arr) + (start * elem_size) },
         elem_size: elem_size,
         len: len
     };

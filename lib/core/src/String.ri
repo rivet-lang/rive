@@ -2,7 +2,9 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-trait ToString {
+import pkg::stdc: string;
+
+pub trait ToString {
     fn to_string(&self) String;
 }
 
@@ -10,9 +12,9 @@ extend str for ToString {
     fn to_string(&self) String { return String::from_str(self.*); }
 }
 
-struct String {
+pub struct String {
     ptr: *mut u8;
-    mut size: usize;
+    mut size_: usize;
     mut cap: usize;
 
     pub fn new() Self { return Self{}; }
@@ -21,73 +23,104 @@ struct String {
     ///
     /// NOTE: `with_capacity` allocates memory the size of `cap` + 1, where 1 is
     /// an extra space for the NULL character.
-    pub fn with_capacity(cap: usize) String {
-        let mut b = as(mem::alloc(cap + 1) catch unreachable!(), *mut u8);
+    pub fn with_capacity(cap: usize) Self {
+        let mut b = as(*mut u8, mem::alloc(cap + 1) catch unreachable!());
         unsafe {
             b[cap] = 0;
         }
         return Self{
             ptr: b,
-            size: 0,
             cap: cap
+        };
+    }
+
+    pub unsafe fn from_raw(ptr: *mut u8, size: usize) Self {
+        if (size == 0) {
+            return Self::new();
+        }
+        return Self{
+            ptr: ptr,
+            size_: size,
+            cap: size
+        };
+    }
+
+    pub unsafe fn from_cstr(ptr: *mut u8) Self {
+        let size = unsafe { string::strlen(ptr) };
+        return Self{
+            ptr: ptr,
+            size_: size,
+            cap: size
         };
     }
 
     /// Returns a string with the bytes stored in `bytes`. If the length of
     /// `bytes` is 0, an empty string is returned instead.
-    pub fn from_bytes(bytes: [u8]) String {
+    pub fn from_bytes(bytes: [u8]) Self {
         if (bytes.len == 0) {
             return Self::new();
         }
         let mut res = Self::with_capacity(bytes.len);
         _ = mem::copy(res.ptr, bytes.ptr, bytes.len) catch unreachable!();
-        res.size = bytes.len;
+        res.size_ = bytes.len;
         return res;
     }
 
-    pub fn from_str(s: str) String {
+    pub fn from_str(s: str) Self {
         if (s.size == 0) {
             return Self::new();
         }
         let mut res = Self::with_capacity(s.size);
         _ = mem::copy(res.ptr, s.ptr, s.size) catch unreachable!();
-        res.size = s.size;
+        res.size_ = s.size;
         return res;
     }
 
     pub fn push(&mut self, val: u8) {
-        if (self.size >= self.cap) {
-            self.reserve(self.size + 1);
+        if (self.size_ >= self.cap) {
+            self.reserve(self.size_ + 1);
         }
         unsafe {
             _ = mem::copy(
-                self.ptr + self.size, &val, sizeof!(u8)
+                self.ptr + self.size_, &val, sizeof!(u8)
             ) catch unreachable!();
         }
-        self.size++;
+        self.size_++;
     }
 
     pub fn push_str(&mut self, s: str) {
-        if (self.size >= self.cap) {
+        if (self.size_ >= self.cap) {
             self.reserve(s.size);
         }
         unsafe {
             _ = mem::copy(
-                self.ptr + self.size, s.ptr, s.size
+                self.ptr + self.size_, s.ptr, s.size
             ) catch unreachable!();
         }
-        self.size += s.size;
+        self.size_ += s.size;
+    }
+
+    pub fn push_string(&mut self, s: String) {
+        if (self.size_ >= self.cap) {
+            self.reserve(s.size_);
+        }
+        unsafe {
+            _ = mem::copy(
+                self.ptr + self.size_, s.ptr, s.size_
+            ) catch unreachable!();
+        }
+        self.size_ += s.size_;
     }
 
     /// Returns the last byte of the string, and removes it. If the string is
     /// empty, this will panic.
     pub fn pop(&mut self) u8 {
-        if (self.size == 0) {
+        if (self.size_ == 0) {
             panic("String::pop: string is empty");
         }
-        let new_len = self.size - 1;
+        let new_len = self.size_ - 1;
         let last_elem = unsafe { self.ptr + new_len * sizeof!(u8) };
-        self.size = new_len;
+        self.size_ = new_len;
         return last_elem;
     }
 
@@ -101,9 +134,9 @@ struct String {
         while (required > cap) {
             cap *= 2;
         }
-        let mut new_data = as(mem::alloc(cap * sizeof!(u8)) catch unreachable!(), *mut u8);
+        let mut new_data = as(*mut u8, mem::alloc(cap * sizeof!(u8)) catch unreachable!());
         if (self.ptr != none) {
-            _ = mem::copy(new_data, self.ptr, self.size * sizeof!(u8)) catch unreachable!();
+            _ = mem::copy(new_data, self.ptr, self.size_ * sizeof!(u8)) catch unreachable!();
         }
         unsafe {
             mem::dealloc(self.ptr);
@@ -112,17 +145,29 @@ struct String {
         self.cap = cap;
     }
 
-    pub fn size(&self) usize { return self.size; }
+    pub fn size(&self) usize { return self.size_; }
 
-    pub fn is_empty(&self) bool { return self.size == 0; }
+    pub fn is_empty(&self) bool { return self.size_ == 0; }
 
     pub fn as_ptr(&self) *const u8 { return self.ptr; }
 
     pub unsafe fn as_mut_ptr(&self) *mut u8 { return self.ptr; }
 
     pub fn as_str(&self) str {
-        return unsafe { str::from_cstr_with_size(self.ptr, self.size) };
+        return unsafe { str::from_cstr_with_size(self.ptr, self.size_) };
     }
 
-    ~self { unsafe { mem::dealloc(self.ptr); } }
+    pub fn clone(&self) Self {
+        let mut res = Self::with_capacity(self.size_);
+        _ = mem::copy(res.ptr, self.ptr, self.size_) catch unreachable!();
+        return res;
+    }
+
+    ~self {
+        unsafe { mem::dealloc(self.ptr); }
+    }
+}
+
+extend String for ToString {
+    fn to_string(&self) Self { return self.clone(); }
 }

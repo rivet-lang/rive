@@ -447,4 +447,5 @@ class Prefs:
 	def build_rivet_dir(self):
 		if not path.isdir(RIVET_DIR):
 			os.mkdir(RIVET_DIR)
+			os.mkdir(path.join(RIVET_DIR, "objs"))
 			os.mkdir(path.join(RIVET_DIR, "libs"))

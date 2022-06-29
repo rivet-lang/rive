@@ -286,6 +286,7 @@ void _R9drop_argsZ(void) {
 		if isinstance(decl, FnDecl):
 			if decl.ret_typ == self.comp.no_return_t:
 				self.write("RIVET_NORETURN ")
+				self.protos.write("RIVET_NORETURN ")
 			if decl.is_pub:
 				self.write("RIVET_EXPORTED_SYMBOL ")
 			else:

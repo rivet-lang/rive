@@ -827,7 +827,7 @@ class Checker:
 						)
 					expr.typ = field.typ
 					expr.field_is_mut = field.is_mut
-				elif decl := left_sym.lookup(expr.field_name):
+				elif decl := left_sym.find(expr.field_name):
 					if isinstance(decl, sym.Fn):
 						if decl.is_method:
 							report.error(
@@ -1054,7 +1054,6 @@ class Checker:
 				report.note(
 				    "should handle this with `catch` or propagate with `.!`"
 				)
-
 			return expr.typ
 		elif isinstance(expr, ast.ReturnExpr):
 			if expr.has_expr:
@@ -1077,7 +1076,12 @@ class Checker:
 						report.note(
 						    f"in return argument of {self.cur_fn.sym_kind()} `{self.cur_fn.name}`"
 						)
-			elif self.cur_fn != None and self.cur_fn.ret_typ != self.comp.void_t:
+			elif self.cur_fn and not (
+			    (self.cur_fn.ret_typ == self.comp.void_t) or (
+			        isinstance(self.cur_fn.ret_typ, type.Result)
+			        and self.cur_fn.ret_typ.typ == self.comp.void_t
+			    )
+			):
 				report.error(
 				    f"expected `{self.cur_fn.ret_typ}` argument", expr.pos
 				)
@@ -1087,9 +1091,7 @@ class Checker:
 			expr.typ = self.comp.no_return_t
 			return expr.typ
 		elif isinstance(expr, ast.RaiseExpr):
-			if self.cur_fn != None and not isinstance(
-			    self.cur_fn.ret_typ, type.Result
-			):
+			if self.cur_fn and not isinstance(self.cur_fn.ret_typ, type.Result):
 				report.error(
 				    f"current {self.cur_fn.sym_kind()} does not returns a result value",
 				    expr.pos

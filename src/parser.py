@@ -89,14 +89,14 @@ class Parser:
 		self.scope = self.scope.parent
 
 	def parse_abi(self):
+		self.expect(Kind.Lparen)
 		abi_pos = self.tok.pos
-		abi_str = self.parse_string_literal().lit
-		if abi_f := sym.ABI.from_string(abi_str):
-			abi = abi_f
-		else:
-			report.error(f"unknown ABI: `{abi_str}`", abi_pos)
-			abi = sym.ABI.Rivet
-		return abi
+		abi = self.parse_name()
+		self.expect(Kind.Rparen)
+		if abi_f := sym.ABI.from_string(abi):
+			return abi_f
+		report.error(f"unknown ABI: `{abi}`", abi_pos)
+		return sym.ABI.Rivet
 
 	# ---- declarations --------------
 	def parse_decls(self):
@@ -871,13 +871,11 @@ class Parser:
 			else:
 				expr = ast.Block(sc, is_unsafe, stmts, None, False, pos)
 			self.inside_block = old_inside_block
-		elif self.accept(Kind.KeyCast) or self.accept(Kind.KeyAs):
-			if self.prev_tok.kind == Kind.KeyCast:
-				report.warn("deprecated expression", self.tok.pos)
+		elif self.accept(Kind.KeyAs):
 			self.expect(Kind.Lparen)
-			expr = self.parse_expr()
-			self.expect(Kind.Comma)
 			typ = self.parse_type()
+			self.expect(Kind.Comma)
+			expr = self.parse_expr()
 			self.expect(Kind.Rparen)
 			expr = ast.CastExpr(expr, typ, expr.pos)
 		elif self.tok.kind == Kind.Lbracket:
@@ -1302,7 +1300,7 @@ class Parser:
 				path_expr = self.parse_path_expr(
 				    self.parse_pkg_expr() if self.tok.kind ==
 				    Kind.KeyPkg else self.parse_super_expr() if self.tok.kind ==
-				    Kind.KeySuper else elf.parse_ident()
+				    Kind.KeySuper else self.parse_ident()
 				)
 				if self.tok.kind == Kind.DoubleColon:
 					while True:

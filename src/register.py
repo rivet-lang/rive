@@ -249,7 +249,7 @@ class Register:
 					if isinstance(decl.typ, type.Type):
 						if decl.typ._unresolved:
 							if isinstance(decl.typ.expr, ast.Ident):
-								if s := self.cur_sym.lookup(decl.typ.expr.name):
+								if s := self.cur_sym.find(decl.typ.expr.name):
 									if s.kind == sym.TypeKind.Alias and (
 									    isinstance(s.info.parent, type.Type)
 									    and s.info.parent.is_resolved()

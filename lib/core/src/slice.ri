@@ -15,12 +15,12 @@ struct _slice {
         if (idx >= self.len) {
             panic("slice index out of range");
         }
-        return unsafe { as(self.ptr, *mut u8) + idx * self.elem_size };
+        return unsafe { as(*mut u8, self.ptr) + idx * self.elem_size };
     }
 
     #[used]
     unsafe fn raw_get(&self, idx: usize) *mut void {
-        return unsafe { as(self.ptr, *mut u8) + idx * self.elem_size };
+        return unsafe { as(*mut u8, self.ptr) + idx * self.elem_size };
     }
 
     #[used]
@@ -28,9 +28,9 @@ struct _slice {
         if (idx >= self.len) {
             panic("slice index out of range");
         }
-        unsafe {
-            _ = string::memcpy(as(self.ptr, *mut u8) + self.elem_size * idx, val, self.elem_size);
-        }
+        _ = unsafe {
+            string::memcpy(as(*mut u8, self.ptr) + self.elem_size * idx, val, self.elem_size)
+        };
     }
 
     #[used]
@@ -43,7 +43,7 @@ struct _slice {
             return self.*;
         }
         return _slice{
-            ptr: unsafe { as(self.ptr, *mut u8) + (start * self.elem_size) },
+            ptr: unsafe { as(*mut u8, self.ptr) + (start * self.elem_size) },
             elem_size: self.elem_size,
             len: len
         };

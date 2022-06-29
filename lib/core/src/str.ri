@@ -77,19 +77,19 @@ struct _str {
 extend str {
     pub unsafe fn from_cstr(cstr: *const u8) str {
         let size = unsafe { string::strlen(cstr) };
-        return as(_str{
+        return as(str, _str{
             ptr: cstr,
             size: size,
             len: if (size == 1) 1 else cstr_len_utf8(cstr, size)
-        }, str);
+        });
     }
 
     pub unsafe fn from_cstr_with_size(cstr: *const u8, size: usize) str {
-        return as(_str{
+        return as(str, _str{
             ptr: cstr,
             size: size,
             len: if (size == 1) 1 else cstr_len_utf8(cstr, size)
-        }, str);
+        });
     }
 
     pub fn is_empty(&self) bool { return self.size == 0; }

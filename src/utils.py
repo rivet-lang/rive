@@ -93,7 +93,7 @@ def smart_quote(str, raw: bool):
 			ch = str[i]
 			if ((ch >= chr(37) and ch <= chr(90))
 			    or (ch >= chr(95) and ch <= chr(126))
-			    or (ch in [" ", "!", "#", "[", "]"])):
+			    or (ch in (" ", "!", "#", "[", "]"))):
 				# safe punctuation + digits + big latin letters, small latin
 				# letters + more safe punctuation, important punctuation exceptions,
 				# that are not placed conveniently in a consequitive span in

@@ -201,6 +201,13 @@ class Sym:
 		    )
 		)
 
+	def get_public_syms(self):
+		syms = []
+		for s in self.syms:
+			if s.vis.is_pub():
+				syms.append(s)
+		return syms
+
 	def find(self, name):
 		for sym in self.syms:
 			if sym.name == name:

@@ -3,16 +3,15 @@
 // that can be found in the LICENSE file.
 
 pub mod stdio {
-    pub struct _IO_FILE;
-    pub type FILE = _IO_FILE;
+    pub struct FILE;
 
-    extern "C" {
+    extern (C) {
         pub static stdin: *mut FILE;
         pub static stdout: *mut FILE;
         pub static stderr: *mut FILE;
     }
 
-    extern "C" {
+    extern (C) {
         pub fn fprintf(f: *mut FILE, fmt: *const u8, ...) i32;
         pub fn fflush(f: *mut FILE);
 

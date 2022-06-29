@@ -4,12 +4,12 @@
 
 pub mod stdlib {
     #[trusted]
-    extern "C" {
+    extern (C) {
         pub fn rand() i32;
         pub fn srand(seed: u32);
     }
 
-    extern "C" {
+    extern (C) {
         pub fn atof(nptr: *const u8) f64;
         pub fn atoi(nptr: *const u8) i32;
         pub fn atol(nptr: *const u8) i64;

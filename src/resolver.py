@@ -12,24 +12,11 @@ class Resolver:
 		self.comp = comp
 		self.sf = None
 		self.cur_sym = None
+		self.core_prelude = []
 
 		self.inside_is_comparation = False
 
 		self.self_sym = None
-
-	def resolve_selective_import_symbols(self, symbols, path_sym):
-		for isym in symbols:
-			if isym.is_self:
-				self.sf.imported_symbols[decl.alias] = path_sym
-			else:
-				if isym_ := path_sym.find(isym.name):
-					self.check_visibility(isym_, isym.pos)
-					self.sf.imported_symbols[isym.alias] = isym_
-				else:
-					report.error(
-					    f"could not find `{isym.name}` in {path_sym.sym_kind()} `{path_sym.name}`",
-					    isym.pos
-					)
 
 	def resolve_files(self, source_files):
 		register.Register(self.comp).visit_source_files(source_files)
@@ -42,6 +29,7 @@ class Resolver:
 
 	def resolve_file(self, sf):
 		self.sf = sf
+		self.import_core_prelude()
 		self.resolve_decls(sf.decls)
 
 	def resolve_decls(self, decls):
@@ -516,7 +504,7 @@ class Resolver:
 						report.error(
 						    f"expected type, found {s.sym_kind()}", typ.expr.pos
 						)
-				else:
+				elif typ.expr.is_obj:
 					report.error(
 					    f"cannot find type `{typ.expr.name}` in this scope",
 					    typ.expr.pos
@@ -611,3 +599,34 @@ class Resolver:
 				else:
 					return ast.IntegerLiteral(str(align), expr.pos)
 		return None
+
+	def check_imported_symbol(self, s, pos):
+		if s.name in self.sf.imported_symbols:
+			report.error(f"{s.sym_kind()} `{s.name}` is already imported", pos)
+		elif self.cur_sym.find(s.name):
+			report.error(
+			    f"another symbol with the name `{s.name}` already exists", pos
+			)
+			report.help("you can use `as` to change the name of the import")
+
+	def resolve_selective_import_symbols(self, symbols, path_sym):
+		for isym in symbols:
+			if isym.is_self:
+				self.sf.imported_symbols[decl.alias] = path_sym
+			else:
+				if isym_ := path_sym.find(isym.name):
+					self.check_visibility(isym_, isym.pos)
+					self.check_imported_symbol(isym_, isym.pos)
+					self.sf.imported_symbols[isym.alias] = isym_
+				else:
+					report.error(
+					    f"could not find `{isym.name}` in {path_sym.sym_kind()} `{path_sym.name}`",
+					    isym.pos
+					)
+
+	def import_core_prelude(self):
+		if len(self.core_prelude) == 0:
+			if core_pkg := self.comp.universe.find("core"):
+				self.core_prelude = core_pkg.get_public_syms()
+		for ps in self.core_prelude:
+			self.sf.imported_symbols[ps.name] = ps

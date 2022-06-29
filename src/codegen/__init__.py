@@ -24,6 +24,8 @@ MAX_UINT16 = 65535
 MAX_UINT32 = 4294967295
 MAX_UINT64 = 18446744073709551615
 
+MAX_RUNE = 0x10FFFF
+
 def prefix_type(tt):
 	prefix = ""
 	if isinstance(tt, type.Ptr):
@@ -575,9 +577,11 @@ class AST2RIR:
 		self.externs = list()
 		self.statics = list()
 		self.decls = list()
+
 		self.cur_fn = None
 		self.cur_fn_qualname = ""
 		self.cur_fn_is_main = False
+
 		self.loop_entry_label = ""
 		self.loop_exit_label = ""
 
@@ -718,6 +722,17 @@ class AST2RIR:
 		    args
 		)
 		self.convert_stmts(fn_decl.stmts)
+		if len(fn_decl.stmts) == 0 or (
+		    isinstance(fn_decl.stmts[-1], ast.ExprStmt) and not isinstance(
+		        fn_decl.stmts[-1].expr, (ast.ReturnExpr, ast.RaiseExpr)
+		    )
+		):
+			if isinstance(
+			    fn_decl.ret_typ, type.Result
+			) and fn_decl.ret_typ.typ == self.comp.void_t:
+				self.cur_fn.add_ret(self.result_void_ok(fn_decl.ret_typ))
+			elif fn_decl.ret_typ not in self.void_types:
+				self.cur_fn.add_ret(self.default_value(fn_decl.ret_typ))
 		return self.cur_fn
 
 	def convert_stmts(self, stmts):
@@ -1474,7 +1489,7 @@ class AST2RIR:
 				)
 			tmp = self.cur_fn.local_name()
 			if s.kind == sym.TypeKind.Slice:
-				inst = Inst(
+				value = Inst(
 				    InstKind.Cast, [
 				        Inst(
 				            InstKind.Call, [
@@ -1486,8 +1501,8 @@ class AST2RIR:
 				    ]
 				)
 			else:
-				inst = Inst(InstKind.GetElementPtr, [left, idx])
-			self.cur_fn.alloca(type.Ptr(expr.typ), tmp, inst)
+				value = Inst(InstKind.GetElementPtr, [left, idx])
+			self.cur_fn.alloca(type.Ptr(expr.typ), tmp, value)
 			return Ident(type.Ptr(expr.typ), tmp)
 		elif isinstance(expr, ast.UnaryExpr):
 			right = self.convert_expr_with_cast(expr.right_typ, expr.right)
@@ -2225,6 +2240,12 @@ class AST2RIR:
 			    IntLiteral(self.comp.usize_t, "0")
 			)
 			return tmp
+		elif isinstance(typ, type.Optional):
+			return self.optional_ok(typ, self.default_value(typ.typ))
+		elif isinstance(typ, type.Result):
+			if typ.typ == self.comp.void_t:
+				return self.result_void_ok(typ)
+			return self.result_ok(typ, self.default_value(typ.typ))
 		# TODO(StunxFS): Union,Trait
 		typ_sym = typ.get_sym()
 		if typ_sym.kind == TypeKind.Array:
@@ -2338,6 +2359,11 @@ class AST2RIR:
 				report.note(
 				    f"the literal `{val}` does not fit into the type `usize` whose range is `0..={max}`"
 				)
+		elif typ == self.comp.rune_t and (val < 0 or val > MAX_RUNE):
+			report.error("literal out of range for `rune`", pos)
+			report.note(
+			    f"the literal `{val}` does not fit into the type `rune` whose range is `0..={MAX_RUNE}`"
+			)
 
 	def get_type_symbols(self, root):
 		ts = list()
