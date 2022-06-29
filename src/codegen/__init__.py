@@ -789,7 +789,6 @@ class AST2RIR:
 					    ), body_label, self.loop_exit_label
 					)
 					self.cur_fn.add_label(body_label)
-					self.cur_fn.add_inst(Inst(InstKind.Inc, [idx]))
 				else:
 					iterable = self.convert_expr(stmt.iterable)
 					self.cur_fn.alloca(
@@ -818,10 +817,7 @@ class AST2RIR:
 					self.cur_fn.add_label(body_label)
 					value_t = self.comp.uint8_t if iterable_sym.kind == TypeKind.Str else iterable_sym.info.elem_typ
 					if iterable_sym.kind == TypeKind.Array:
-						value = Inst(
-						    InstKind.GetElementPtr,
-						    [iterable, Inst(InstKind.Inc, [idx])]
-						)
+						value = Inst(InstKind.GetElementPtr, [iterable, idx])
 					else:
 						value = Selector(
 						    type.Ptr(self.comp.void_t), iterable, Name("ptr")
@@ -832,21 +828,18 @@ class AST2RIR:
 							        Inst(
 							            InstKind.Cast,
 							            [value, Type(type.Ptr(value_t))]
-							        ),
-							        Inst(InstKind.Inc, [idx])
+							        ), idx
 							    ]
 							)
 						else:
-							value = Inst(
-							    InstKind.GetElementPtr,
-							    [value, Inst(InstKind.Inc, [idx])]
-							)
+							value = Inst(InstKind.GetElementPtr, [value, idx])
 					self.cur_fn.alloca(
 					    value_t,
 					    stmt.vars[0] if vars_len == 1 else stmt.vars[1],
 					    Inst(InstKind.LoadPtr, [value])
 					)
 				self.convert_stmt(stmt.stmt)
+				self.cur_fn.add_inst(Inst(InstKind.Inc, [idx]))
 				self.cur_fn.add_br(self.loop_entry_label)
 				self.cur_fn.add_label(self.loop_exit_label)
 
