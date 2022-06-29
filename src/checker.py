@@ -1555,6 +1555,11 @@ class Checker:
 		      ):
 			return False
 
+		if isinstance(expected, type.Variadic):
+			if isinstance(got, type.Variadic):
+				return expected.typ == got.typ
+			return expected.typ == got
+
 		if isinstance(expected, type.Fn) and isinstance(got, type.Fn):
 			return expected == got
 

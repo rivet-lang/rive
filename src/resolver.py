@@ -451,6 +451,10 @@ class Resolver:
 			return self.resolve_type(typ.typ)
 		elif isinstance(typ, type.Ptr):
 			return self.resolve_type(typ.typ)
+		elif isinstance(typ, type.Variadic):
+			if self.resolve_type(typ.typ):
+				typ.resolve(self.comp.universe.add_or_get_slice(typ.typ))
+				return True
 		elif isinstance(typ, type.Slice):
 			if self.resolve_type(typ.typ):
 				typ.resolve(self.comp.universe.add_or_get_slice(typ.typ))

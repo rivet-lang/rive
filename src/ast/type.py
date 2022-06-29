@@ -14,20 +14,16 @@ class _Ptr: # ugly hack =/
 		self.val.__class__ = val.__class__
 		self.val.__dict__ = val.__dict__
 
-class BaseType:
+class TBase:
 	def get_sym(self):
-		if isinstance(self, Type) or isinstance(self, Slice) or isinstance(
-		    self, Array
-		) or isinstance(self, Tuple):
+		if isinstance(self, (Type, Slice, Array, Tuple, Variadic)):
 			return self.sym
 		elif isinstance(self, Fn):
 			return self.info()
 		return self.typ.get_sym()
 
 	def unalias(self):
-		if isinstance(self, Result):
-			self.typ.unalias()
-		elif isinstance(self, Optional):
+		if isinstance(self, (Result, Optional)):
 			self.typ.unalias()
 		elif isinstance(self, Fn):
 			for i in range(len(self.args)):
@@ -36,20 +32,14 @@ class BaseType:
 		elif isinstance(self, Tuple):
 			for t in self.types:
 				t.unalias()
-		elif isinstance(self, Array):
-			self.typ.unalias()
-		elif isinstance(self, Slice):
-			self.typ.unalias()
-		elif isinstance(self, Ptr):
-			self.typ.unalias()
-		elif isinstance(self, Ref):
+		elif isinstance(self, (Array, Slice, Ptr, Ref)):
 			self.typ.unalias()
 		elif isinstance(self, Type):
 			if self.is_resolved() and self.sym.kind == TypeKind.Alias:
 				self.sym.info.parent.unalias()
 				_Ptr(self).store(self.sym.info.parent)
 
-class Type(BaseType):
+class Type(TBase):
 	def __init__(self, sym):
 		self.sym = sym
 		self.expr = None
@@ -82,7 +72,7 @@ class Type(BaseType):
 			return str(self.expr)
 		return str(self.sym.name)
 
-class Ref(BaseType):
+class Ref(TBase):
 	def __init__(self, typ, is_mut = False):
 		self.typ = typ
 		self.is_mut = is_mut
@@ -105,7 +95,7 @@ class Ref(BaseType):
 		kmut = "mut " if self.is_mut else ""
 		return f"&{kmut}{self.typ}"
 
-class Ptr(BaseType):
+class Ptr(TBase):
 	def __init__(self, typ, is_mut = False):
 		self.typ = typ
 		self.is_mut = is_mut
@@ -133,7 +123,7 @@ class Ptr(BaseType):
 		kmut = "mut " if self.is_mut else "const "
 		return f"*{kmut}{self.typ}"
 
-class Slice(BaseType):
+class Slice(TBase):
 	def __init__(self, typ):
 		self.typ = typ
 		self.sym = None
@@ -152,7 +142,26 @@ class Slice(BaseType):
 	def __str__(self):
 		return f"[{self.typ}]"
 
-class Array(BaseType):
+class Variadic(TBase):
+	def __init__(self, typ):
+		self.typ = typ
+		self.sym = None
+
+	def resolve(self, sym):
+		self.sym = sym
+
+	def qualstr(self):
+		return f"...{self.typ.qualstr()}"
+
+	def __eq__(self, other):
+		if not isinstance(other, Variadic):
+			return False
+		return self.typ == other.typ
+
+	def __str__(self):
+		return f"...[{self.typ}]"
+
+class Array(TBase):
 	def __init__(self, typ, size):
 		self.typ = typ
 		self.size = size
@@ -172,7 +181,7 @@ class Array(BaseType):
 	def __str__(self):
 		return f"[{self.typ}; {self.size}]"
 
-class Tuple(BaseType):
+class Tuple(TBase):
 	def __init__(self, types):
 		self.types = types
 		self.sym = None
@@ -186,7 +195,7 @@ class Tuple(BaseType):
 	def __str__(self):
 		return f"({', '.join([str(t) for t in self.types])})"
 
-class Fn(BaseType):
+class Fn(TBase):
 	def __init__(
 	    self, is_unsafe, is_extern, abi, is_method, args, is_variadic, ret_typ,
 	    rec_is_mut, rec_is_ref
@@ -270,7 +279,7 @@ class Fn(BaseType):
 	def __str__(self):
 		return self.stringify(False)
 
-class Optional(BaseType):
+class Optional(TBase):
 	def __init__(self, typ):
 		self.typ = typ
 		self.sym = None
@@ -286,7 +295,7 @@ class Optional(BaseType):
 	def __str__(self):
 		return f"?{self.typ}"
 
-class Result(BaseType):
+class Result(TBase):
 	def __init__(self, typ):
 		self.typ = typ
 		self.sym = None

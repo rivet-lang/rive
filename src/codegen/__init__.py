@@ -382,10 +382,10 @@ class RuneLiteral:
 		return self.__repr__()
 
 class StringLiteral:
-	def __init__(self, typ, lit, size, is_bytestr = False):
+	def __init__(self, typ, lit, size, is_bytestr = False, len_ = None):
 		self.typ = typ
 		self.lit = lit
-		self.len = len(lit)
+		self.len = len_ if len_ else len(lit)
 		self.size = size
 		self.is_bytestr = is_bytestr
 
@@ -396,12 +396,15 @@ class StringLiteral:
 		return self.__repr__()
 
 class ArrayLiteral:
-	def __init__(self, typ, elems):
+	def __init__(self, typ, elems, is_variadic_init = False):
 		self.typ = typ
 		self.elems = elems
+		self.is_variadic_init = is_variadic_init
 
 	def __repr__(self):
-		return f"[{', '.join([str(e) for e in self.elems])}]"
+		if self.is_variadic_init:
+			return f"{self.typ}... [{', '.join([str(e) for e in self.elems])}]"
+		return f"{self.typ} [{', '.join([str(e) for e in self.elems])}]"
 
 	def __str__(self):
 		return self.__repr__()
@@ -1030,7 +1033,7 @@ class AST2RIR:
 			_, size = utils.bytestr(expr.lit)
 			return StringLiteral(
 			    expr.typ, utils.smart_quote(expr.lit, expr.is_raw), str(size),
-			    expr.is_bytestr
+			    expr.is_bytestr, len(expr.lit)
 			)
 		elif isinstance(expr, ast.EnumVariantExpr):
 			return IntLiteral(
@@ -1281,6 +1284,40 @@ class AST2RIR:
 						args.append(
 						    self.convert_expr_with_cast(arg.typ, arg.expr)
 						)
+				else:
+					var_arg = expr.info.args[-1]
+					if variadic_count == 1 and isinstance(
+					    expr.args[-1].expr.typ, type.Variadic
+					):
+						arg = expr.args[-1]
+						args.append(
+						    self.convert_expr_with_cast(arg.typ, arg.expr)
+						)
+					elif variadic_count > 0:
+						vargs = []
+						for i in range(args_nr, len(expr.args)):
+							vargs.append(
+							    self.convert_expr_with_cast(
+							        var_arg.typ, expr.args[i].expr
+							    )
+							)
+						elem_size, _ = self.comp.type_size(var_arg.typ.typ)
+						args.append(
+						    Inst(
+						        InstKind.Call, [
+						            Name("_R4core6_slice10from_arrayF"),
+						            ArrayLiteral(var_arg.typ.typ, vargs, True),
+						            IntLiteral(
+						                self.comp.usize_t, str(elem_size)
+						            ),
+						            IntLiteral(
+						                self.comp.usize_t, str(len(vargs))
+						            )
+						        ]
+						    )
+						)
+					else:
+						args.append(Ident(var_arg.typ, "_R4core11empty_slice"))
 			inst = Inst(InstKind.Call, args)
 			if expr.info.ret_typ in self.void_types:
 				self.cur_fn.add_inst(inst)

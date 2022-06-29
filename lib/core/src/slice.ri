@@ -4,11 +4,22 @@
 
 import pkg::stdc: string;
 
+static empty_slice: _slice = _slice{};
+
 #[used]
 struct _slice {
     ptr: *mut void;
     elem_size: usize;
     len: usize;
+
+    #[used]
+    fn from_array(arr: *mut void, elem_size: usize, len: usize) _slice {
+        return _slice{
+            ptr: arr,
+            elem_size: elem_size,
+            len: len
+        };
+    }
 
     #[used]
     fn get(&self, idx: usize) *mut void {

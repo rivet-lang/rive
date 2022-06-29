@@ -518,10 +518,11 @@ class Fn(Sym):
 		self.is_main = False
 
 	def args_len(self):
+		from .type import Variadic
 		len_ = 0
-		for _ in self.args:
-			# TODO(StunxFS): if not isinstance(arg.typ, type.Variadic):
-			len_ += 1
+		for arg in self.args:
+			if not isinstance(arg.typ, Variadic):
+				len_ += 1
 		return len_
 
 	def kind(self):

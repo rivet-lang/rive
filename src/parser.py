@@ -545,6 +545,7 @@ class Parser:
 					arg_name = self.parse_name()
 					self.expect(Kind.Colon)
 					arg_typ = self.parse_type()
+					is_variadic = isinstance(arg_typ, type.Variadic)
 					arg_expr = self.empty_expr()
 					if self.accept(Kind.Assign):
 						has_named_args = True
@@ -1286,6 +1287,8 @@ class Parser:
 				report.help("you can use a struct instead")
 			self.expect(Kind.Rparen)
 			return type.Tuple(types)
+		elif self.accept(Kind.Ellipsis):
+			return type.Variadic(self.parse_type())
 		elif self.accept(Kind.KeySelfTy):
 			return type.Type.unresolved(
 			    ast.SelfTyExpr(self.scope, self.prev_tok.pos)

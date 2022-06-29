@@ -549,6 +549,8 @@ void _R9drop_argsZ(void) {
 		elif isinstance(expr, ArrayLiteral):
 			self.write("(")
 			self.gen_type(expr.typ)
+			if expr.is_variadic_init:
+				self.write("[]")
 			self.write("){ ")
 			for i, e in enumerate(expr.elems):
 				self.gen_expr(e)
