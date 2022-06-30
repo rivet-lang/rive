@@ -229,7 +229,7 @@ class Fn(TBase):
 		if self.is_unsafe:
 			res += "unsafe "
 		if self.is_extern:
-			res += f'extern "{self.abi}" '
+			res += f'extern ({self.abi}) '
 		res += "fn("
 		if self.is_method:
 			if self.rec_is_ref:

@@ -2,8 +2,6 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-mod swap {}
-
 pub type c_char = u8;
 pub type c_schar = i8;
 pub type c_uchar = u8;

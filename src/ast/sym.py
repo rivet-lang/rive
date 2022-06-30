@@ -95,8 +95,8 @@ class Sym:
 		self.parent = None
 		self.syms = []
 		self.index = symbol_count()
-		self.is_core = name == "core"
-		self.is_universe = False
+		self.is_core = isinstance(self, Pkg) and self.index == 22
+		self.is_universe = isinstance(self, Pkg) and self.index == 0
 		self.uses = 0
 
 	def add(self, sym):
@@ -542,7 +542,6 @@ class Fn(Sym):
 
 def universe():
 	uni = Pkg(Visibility.Private, "universe")
-	uni.is_universe = True
 	uni.add(Type(Visibility.Public, "void", TypeKind.Void))
 	uni.add(Type(Visibility.Public, "none", TypeKind.None_))
 	uni.add(Type(Visibility.Public, "bool", TypeKind.Bool))

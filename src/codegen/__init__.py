@@ -769,14 +769,12 @@ class AST2RIR:
 			              ast.RangeExpr) or iterable_sym.kind in (
 			                  TypeKind.Array, TypeKind.Slice, TypeKind.Str
 			              ):
-				idx_name = self.cur_fn.local_name(
-				) if vars_len == 1 else stmt.vars[0]
 				if isinstance(stmt.iterable, ast.RangeExpr):
 					self.cur_fn.alloca(
-					    stmt.iterable.typ, idx_name,
+					    stmt.iterable.typ, stmt.vars[0],
 					    self.convert_expr(stmt.iterable.start)
 					)
-					idx = Ident(self.comp.usize_t, idx_name)
+					idx = Ident(self.comp.usize_t, stmt.vars[0])
 					self.cur_fn.add_label(self.loop_entry_label)
 					self.cur_fn.add_cond_br(
 					    Inst(
@@ -790,6 +788,8 @@ class AST2RIR:
 					)
 					self.cur_fn.add_label(body_label)
 				else:
+					idx_name = self.cur_fn.local_name(
+					) if vars_len == 1 else stmt.vars[0]
 					iterable = self.convert_expr(stmt.iterable)
 					self.cur_fn.alloca(
 					    self.comp.usize_t, idx_name,
@@ -1006,8 +1006,6 @@ class AST2RIR:
 	def convert_expr(self, expr):
 		if isinstance(expr, ast.ParExpr):
 			return self.convert_expr(expr.expr)
-		elif isinstance(expr, ast.VoidLiteral):
-			return IntLiteral(self.comp.void_t, "0")
 		elif isinstance(expr, ast.NoneLiteral):
 			return NoneLiteral()
 		elif isinstance(expr, ast.BoolLiteral):

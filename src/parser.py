@@ -818,7 +818,7 @@ class Parser:
 			if has_expr:
 				expr = self.parse_expr()
 			else:
-				expr = ast.VoidLiteral(pos)
+				expr = self.empty_expr()
 			expr = ast.ReturnExpr(expr, has_expr, pos)
 		elif self.accept(Kind.KeyRaise):
 			pos = self.prev_tok.pos
@@ -831,7 +831,7 @@ class Parser:
 		elif self.accept(Kind.Lparen):
 			pos = self.prev_tok.pos
 			if self.accept(Kind.Rparen):
-				expr = ast.VoidLiteral(pos)
+				expr = self.empty_expr()
 			else:
 				e = self.parse_expr()
 				if self.accept(Kind.Comma): # tuple

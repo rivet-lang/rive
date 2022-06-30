@@ -331,10 +331,7 @@ class Checker:
 		elif isinstance(expr, ast.SelfExpr):
 			return expr.typ
 		elif isinstance(expr, ast.SelfTyExpr):
-			return self.comp.void_t #TODO
-		elif isinstance(expr, ast.VoidLiteral):
-			expr.typ = self.comp.void_t
-			return expr.typ
+			return self.comp.void_t # TODO
 		elif isinstance(expr, ast.NoneLiteral):
 			expr.typ = self.comp.none_t
 			return expr.typ

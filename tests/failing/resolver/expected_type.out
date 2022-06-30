@@ -1,5 +1,5 @@
-tests/failing/resolver/expected_type.ri:4:12: error: expected type, found function
+tests/failing/resolver/expected_type.ri:3:9: error: expected type, found function
     |
-  4 |     let x: my_fn = ();
-    |            ^
+  3 | fn x(a: my_fn) {}
+    |         ^
 rivetc: error: could not compile package `core`, aborting due to previous error

@@ -32,14 +32,12 @@ struct _str {
 
     #[used]
     fn lt(self, other: str) bool {
-        let mut i: usize = 0;
-        while (i < self.size) {
+        for (i in as(usize, 0)..self.size) {
             if (i >= other.size or unsafe { self.ptr[i] > other.ptr[i] }) {
                 return false;
             } elif (unsafe { self.ptr[i] < other.ptr[i] }) {
                 return true;
             }
-            i++;
         }
         if (self.size < other.size) {
             return true;

@@ -1,12 +1,12 @@
-extern "C" {
+extern (C) {
     pub fn abort(); // OK
 }
 
 mod module {
     extern pkg oreo; // BAD
-    extern "C" {
+    extern (C) {
         fn abort(); // OK
     }
 }
 
-extern "C" fn sss() {} // OK
+extern (C) fn sss() {} // OK

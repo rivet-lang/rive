@@ -1,4 +1,4 @@
-extern "C" {
+extern (C) {
     fn malloc(sz: usize) *const void;
     fn free(pointer: &void); // BAD
 }
