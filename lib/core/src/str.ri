@@ -9,53 +9,74 @@ struct _str {
     ptr: *const u8;
     pub size: usize; // bytes count
     pub len: usize; // runes count
+}
+
+extend str {
+    pub unsafe fn from_cstr(cstr: *const u8) str {
+        let size = unsafe { string::strlen(cstr) };
+        return _str{
+            ptr: cstr,
+            size: size,
+            len: if (size == 1) 1 else cstr_len_utf8(cstr, size)
+        };
+    }
+
+    pub unsafe fn from_cstr_with_size(cstr: *const u8, size: usize) str {
+        return _str{
+            ptr: cstr,
+            size: size,
+            len: if (size == 1) 1 else cstr_len_utf8(cstr, size)
+        };
+    }
+
+    pub fn is_empty(&self) bool { return self.size == 0; }
 
     #[used]
-    fn eq(self, other: str) bool {
+    fn ==(&self, rhs: &Self) bool {
         if (self.ptr == none) {
             panic("str::eq: none string");
         }
-        if (self.size != other.size) {
+        if (self.size != rhs.size) {
             return false;
         }
         if (self.size > 0) {
             let last_idx = self.size - 1;
-            if (unsafe { self.ptr[last_idx] != other.ptr[last_idx] }) {
+            if (unsafe { self.ptr[last_idx] != rhs.ptr[last_idx] }) {
                 return false;
             }
         }
-        return mem::cmp(self.ptr, other.ptr, other.size) == 0;
+        return mem::cmp(self.ptr, rhs.ptr, rhs.size) == 0;
     }
 
     #[used]
-    fn ne(self, other: str) bool { return !self.eq(other); }
+    fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
 
     #[used]
-    fn lt(self, other: str) bool {
-        for (i in as(usize, 0)..self.size) {
-            if (i >= other.size or unsafe { self.ptr[i] > other.ptr[i] }) {
+    fn <(&self, rhs: &Self) bool {
+        for (i in 0..self.size) {
+            if (i >= rhs.size or unsafe { self.ptr[i] > rhs.ptr[i] }) {
                 return false;
-            } elif (unsafe { self.ptr[i] < other.ptr[i] }) {
+            } elif (unsafe { self.ptr[i] < rhs.ptr[i] }) {
                 return true;
             }
         }
-        if (self.size < other.size) {
+        if (self.size < rhs.size) {
             return true;
         }
         return false;
     }
 
     #[used]
-    fn gt(self, other: str) bool { return !self.lt(other); }
+    fn >(&self, rhs: &Self) bool { return !self.<(rhs); }
 
     #[used]
-    fn le(self, other: str) bool { return self.lt(other) or self.eq(other); }
+    fn <=(&self, rhs: &Self) bool { return self.<(rhs) or self.==(rhs); }
 
     #[used]
-    fn ge(self, other: str) bool { return self.gt(other) or self.eq(other); }
+    fn >=(&self, rhs: &Self) bool { return self.>(rhs) or self.==(rhs); }
 
     #[used]
-    fn slice(&self, start: usize, end: usize) _str {
+    fn slice(&self, start: usize, end: usize) str {
         if (start > end or start > self.size or end > self.size) {
             panic("string slice index out of range");
         }
@@ -72,28 +93,11 @@ struct _str {
     }
 
     #[used]
-    fn slice_from(&self, start: usize) _str {
+    fn slice_from(&self, start: usize) str {
         return self.slice(start, self.size);
     }
 }
 
-extend str {
-    pub unsafe fn from_cstr(cstr: *const u8) str {
-        let size = unsafe { string::strlen(cstr) };
-        return as(str, _str{
-            ptr: cstr,
-            size: size,
-            len: if (size == 1) 1 else cstr_len_utf8(cstr, size)
-        });
-    }
-
-    pub unsafe fn from_cstr_with_size(cstr: *const u8, size: usize) str {
-        return as(str, _str{
-            ptr: cstr,
-            size: size,
-            len: if (size == 1) 1 else cstr_len_utf8(cstr, size)
-        });
-    }
-
-    pub fn is_empty(&self) bool { return self.size == 0; }
+extend str for ToString {
+    fn to_string(&self) String { return String::from_str(self.*); }
 }

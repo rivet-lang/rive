@@ -43,11 +43,9 @@ pub mod demangle {
                 res.push_str("::");
             }
             let name_len = as(usize, unsafe { stdlib::strtoul(&buf.buf[0], none, 10) });
-            let mut idx2: usize = 0;
-            while (idx2 < name_len) {
+            for (_ in 0..name_len) {
                 res.push(unsafe { name[idx] });
                 idx++;
-                idx2++;
             }
             buf.clear();
             if (!unsafe { name[idx] }.is_digit()) {

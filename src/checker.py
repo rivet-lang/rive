@@ -552,22 +552,33 @@ class Checker:
 			    Kind.Plus, Kind.Minus, Kind.Mult, Kind.Div, Kind.Mod, Kind.Xor,
 			    Kind.Amp, Kind.Pipe
 			):
+				promoted_type = self.comp.void_t
 				if isinstance(ltyp, type.Ptr) and isinstance(
 				    rtyp, type.Ptr
 				) and expr.op == Kind.Minus:
 					promoted_type = self.comp.isize_t
 				else:
-					promoted_type = self.promote(ltyp, rtyp)
-
-				if promoted_type == self.comp.void_t:
-					report.error(
-					    f"mismatched types `{ltyp}` and `{rtyp}`", expr.pos
-					)
-				elif isinstance(promoted_type, type.Optional):
-					report.error(
-					    f"operator `{expr.op}` cannot be used with `{promoted_type}`",
-					    expr.pos
-					)
+					lsym = ltyp.get_sym()
+					if lsym.kind == TypeKind.Struct:
+						if op_method := lsym.find(str(expr.op)):
+							promoted_type = op_method.ret_typ
+						else:
+							report.error(
+							    f"undefined operation `{ltyp}` {expr.op} `{rtyp}`",
+							    expr.pos
+							)
+					else:
+						promoted_type = self.promote(ltyp, rtyp)
+						if promoted_type == self.comp.void_t:
+							report.error(
+							    f"mismatched types `{ltyp}` and `{rtyp}`",
+							    expr.pos
+							)
+						elif isinstance(promoted_type, type.Optional):
+							report.error(
+							    f"operator `{expr.op}` cannot be used with `{promoted_type}`",
+							    expr.pos
+							)
 
 				return_type = promoted_type
 			elif expr.op == Kind.KeyOrElse:
@@ -787,6 +798,8 @@ class Checker:
 				end_t = self.check_expr(expr.end)
 			else:
 				end_t = self.comp.usize_t
+			if expr.typ in (self.comp.untyped_int_t, self.comp.untyped_float_t):
+				expr.typ = end_t
 			return expr.typ
 		elif isinstance(expr, ast.SelectorExpr):
 			expr.typ = self.comp.void_t
@@ -1590,6 +1603,12 @@ class Checker:
 				if t != got_sym.info.types[i]:
 					return False
 			return True
+
+		if self.comp.pkg_sym.is_core:
+			if exp_sym.kind == TypeKind.Str and got_sym == self.comp.str_struct:
+				return True
+			elif exp_sym.kind == TypeKind.Slice and got_sym == self.comp.slice_struct:
+				return True
 
 		return False
 

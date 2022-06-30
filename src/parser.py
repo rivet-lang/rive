@@ -510,7 +510,11 @@ class Parser:
 
 	def parse_fn_decl(self, doc_comment, attrs, vis, is_unsafe, abi):
 		pos = self.tok.pos
-		name = self.parse_name()
+		if self.tok.kind.is_overloadable_op():
+			name = str(self.tok.kind)
+			self.next()
+		else:
+			name = self.parse_name()
 
 		args = []
 		is_method = False
@@ -1041,6 +1045,9 @@ class Parser:
 					if self.tok.kind == Kind.Number:
 						name = self.tok.lit
 						self.next()
+					elif self.tok.kind.is_overloadable_op():
+						name = str(self.tok.kind)
+						self.next()
 					else:
 						name = self.parse_name()
 					expr = ast.SelectorExpr(expr, name, expr.pos, field_pos)
@@ -1346,9 +1353,9 @@ class Parser:
 					return self.comp.uint64_t
 				elif lit == "usize":
 					return self.comp.usize_t
-				elif lit == "untyped_int" and self.prefs.pkg_name == "core":
+				elif lit == "untyped_int" and self.comp.pkg_sym.is_core:
 					return self.comp.untyped_int_t
-				elif lit == "untyped_float" and self.prefs.pkg_name == "core":
+				elif lit == "untyped_float" and self.comp.pkg_sym.is_core:
 					return self.comp.untyped_float_t
 				elif lit == "f32":
 					return self.comp.float32_t

@@ -5,10 +5,10 @@
 import os
 from enum import IntEnum as Enum, auto as auto_enum
 
-from ..token import Kind
 from ..ast import sym, type
 from ..ast.sym import TypeKind
 from .. import ast, prefs, colors, report, utils
+from ..token import Kind, OVERLOADABLE_OPERATORS_STR
 
 MAX_INT8 = 127
 MIN_INT8 = -128
@@ -88,6 +88,9 @@ def mangle_symbol(s):
 				s.mangled_name = "4core6_error"
 			else:
 				res.insert(0, f"{len(s.name)}{s.name}")
+		elif s.name in OVERLOADABLE_OPERATORS_STR:
+			name = OVERLOADABLE_OPERATORS_STR[s.name]
+			res.insert(0, f"{len(name)}{name}")
 		else:
 			res.insert(0, f"{len(s.name)}{s.name}")
 		if s.parent == None:
@@ -1874,114 +1877,110 @@ class AST2RIR:
 						)
 
 			# comptime calculation
-			if isinstance(left, IntLiteral) and isinstance(right, IntLiteral):
-				computed = True
-				if expr.op == Kind.Plus:
-					res = left.value() + right.value()
-				elif expr.op == Kind.Minus:
-					res = left.value() - right.value()
-				elif expr.op == Kind.Mult:
-					res = left.value() * right.value()
-				elif expr.op == Kind.Div:
-					right_int = right.value()
-					if right_int == 0:
-						report.error("division by zero", expr.right.pos)
-						computed = False
-					else:
-						res = left.value() // right_int
-				elif expr.op == Kind.Mod:
-					right_int = right.value()
-					if right_int <= 0:
-						report.error(
-						    "module by zero or negative value", expr.right.pos
-						)
-						computed = False
-					else:
-						res = left.value() % right_int
-				elif expr.op == Kind.Amp:
-					res = left.value() & right.value()
-				elif expr.op == Kind.Pipe:
-					res = left.value() | right.value()
-				elif expr.op == Kind.Xor:
-					res = left.value() ^ right.value()
-				elif expr.op == Kind.Lshift:
-					res = left.value() << right.value()
-				elif expr.op == Kind.Rshift:
-					res = left.value() >> right.value()
-				elif expr.op == Kind.Eq:
-					res = int(left.value() == right.value())
-				elif expr.op == Kind.Ne:
-					res = int(left.value() != right.value())
-				elif expr.op == Kind.Lt:
-					res = int(left.value() < right.value())
-				elif expr.op == Kind.Gt:
-					res = int(left.value() > right.value())
-				elif expr.op == Kind.Le:
-					res = int(left.value() <= right.value())
-				elif expr.op == Kind.Ge:
-					res = int(left.value() >= right.value())
-				else:
-					computed = False
-				if computed:
-					return IntLiteral(expr.typ, str(res))
-			elif isinstance(left,
-			                FloatLiteral) and isinstance(right, FloatLiteral):
-				computed = True
-				if expr.op == Kind.Plus:
-					res = float(left.lit) + float(right.lit)
-				elif expr.op == Kind.Minus:
-					res = float(left.lit) - float(right.lit)
-				elif expr.op == Kind.Mult:
-					res = float(left.lit) * float(right.lit)
-				elif expr.op == Kind.Div:
-					res = float(left.lit) / float(right.lit)
-				elif expr.op == Kind.Eq:
-					res = float(left.lit) == float(right.lit)
-				elif expr.op == Kind.Ne:
-					res = float(left.lit) != float(right.lit)
-				elif expr.op == Kind.Lt:
-					res = float(left.lit) < float(right.lit)
-				elif expr.op == Kind.Gt:
-					res = float(left.lit) > float(right.lit)
-				elif expr.op == Kind.Le:
-					res = float(left.lit) <= float(right.lit)
-				elif expr.op == Kind.Ge:
-					res = float(left.lit) >= float(right.lit)
-				else:
-					computed = False
-				if computed:
-					return FloatLiteral(expr.typ, str(res))
-			elif isinstance(left, StringLiteral
-			                ) and isinstance(right, StringLiteral):
-				computed = True
-				if expr.op == Kind.Eq:
-					res = int(left.lit == right.lit)
-				elif expr.op == Kind.Ne:
-					res = int(left.lit != right.lit)
-				elif expr.op == Kind.Lt:
-					res = int(left.lit < right.lit)
-				elif expr.op == Kind.Gt:
-					res = int(left.lit > right.lit)
-				elif expr.op == Kind.Le:
-					res = int(left.lit <= right.lit)
-				elif expr.op == Kind.Ge:
-					res = int(left.lit >= right.lit)
-				else:
-					computed = False
-				if computed:
-					return IntLiteral(expr.typ, str(res))
-			elif expr.op in (Kind.Div,
-			                 Kind.Mod) and isinstance(right, IntLiteral):
+			skip_calc = False
+			if expr.op in (Kind.Div,
+			               Kind.Mod) and isinstance(right, IntLiteral):
 				val = right.value()
 				if expr.op == Kind.Div and val == 0:
 					report.error("division by zero", expr.pos)
+					skip_calc = True
 				elif val <= 0:
 					report.error("module by zero or negative value", expr.pos)
+					skip_calc = True
+
+			if not skip_calc:
+				if isinstance(left,
+				              IntLiteral) and isinstance(right, IntLiteral):
+					computed = True
+					if expr.op == Kind.Plus:
+						res = left.value() + right.value()
+					elif expr.op == Kind.Minus:
+						res = left.value() - right.value()
+					elif expr.op == Kind.Mult:
+						res = left.value() * right.value()
+					elif expr.op == Kind.Div:
+						res = left.value() // right.value()
+					elif expr.op == Kind.Mod:
+						res = left.value() % right.value()
+					elif expr.op == Kind.Amp:
+						res = left.value() & right.value()
+					elif expr.op == Kind.Pipe:
+						res = left.value() | right.value()
+					elif expr.op == Kind.Xor:
+						res = left.value() ^ right.value()
+					elif expr.op == Kind.Lshift:
+						res = left.value() << right.value()
+					elif expr.op == Kind.Rshift:
+						res = left.value() >> right.value()
+					elif expr.op == Kind.Eq:
+						res = int(left.value() == right.value())
+					elif expr.op == Kind.Ne:
+						res = int(left.value() != right.value())
+					elif expr.op == Kind.Lt:
+						res = int(left.value() < right.value())
+					elif expr.op == Kind.Gt:
+						res = int(left.value() > right.value())
+					elif expr.op == Kind.Le:
+						res = int(left.value() <= right.value())
+					elif expr.op == Kind.Ge:
+						res = int(left.value() >= right.value())
+					else:
+						computed = False
+					if computed:
+						return IntLiteral(expr.typ, str(res))
+				elif isinstance(left, FloatLiteral
+				                ) and isinstance(right, FloatLiteral):
+					computed = True
+					if expr.op == Kind.Plus:
+						res = float(left.lit) + float(right.lit)
+					elif expr.op == Kind.Minus:
+						res = float(left.lit) - float(right.lit)
+					elif expr.op == Kind.Mult:
+						res = float(left.lit) * float(right.lit)
+					elif expr.op == Kind.Div:
+						res = float(left.lit) / float(right.lit)
+					elif expr.op == Kind.Eq:
+						res = float(left.lit) == float(right.lit)
+					elif expr.op == Kind.Ne:
+						res = float(left.lit) != float(right.lit)
+					elif expr.op == Kind.Lt:
+						res = float(left.lit) < float(right.lit)
+					elif expr.op == Kind.Gt:
+						res = float(left.lit) > float(right.lit)
+					elif expr.op == Kind.Le:
+						res = float(left.lit) <= float(right.lit)
+					elif expr.op == Kind.Ge:
+						res = float(left.lit) >= float(right.lit)
+					else:
+						computed = False
+					if computed:
+						return FloatLiteral(expr.typ, str(res))
+				elif isinstance(left, StringLiteral
+				                ) and isinstance(right, StringLiteral):
+					computed = True
+					if expr.op == Kind.Eq:
+						res = int(left.lit == right.lit)
+					elif expr.op == Kind.Ne:
+						res = int(left.lit != right.lit)
+					elif expr.op == Kind.Lt:
+						res = int(left.lit < right.lit)
+					elif expr.op == Kind.Gt:
+						res = int(left.lit > right.lit)
+					elif expr.op == Kind.Le:
+						res = int(left.lit <= right.lit)
+					elif expr.op == Kind.Ge:
+						res = int(left.lit >= right.lit)
+					else:
+						computed = False
+					if computed:
+						return IntLiteral(expr.typ, str(res))
 
 			# runtime calculation
 			tmp = self.cur_fn.local_name()
-			if expr.op.is_relational():
-				typ_sym = expr.left.typ.get_sym()
+			typ_sym = expr.left.typ.get_sym()
+			if expr.op.is_overloadable_op() and typ_sym.kind in (
+			    TypeKind.Array, TypeKind.Slice, TypeKind.Str, TypeKind.Struct
+			):
 				if typ_sym.kind == TypeKind.Array:
 					if expr.op == Kind.Eq:
 						name = "_R4core8array_eqF"
@@ -1997,55 +1996,39 @@ class AST2RIR:
 					        ]
 					    )
 					)
-				elif typ_sym.kind == TypeKind.Slice:
-					if expr.op == Kind.Eq:
-						name = "_R4core6_slice2eqM"
-					elif expr.op == Kind.Ne:
-						name = "_R4core6_slice2neM"
+				else:
+					op_method = OVERLOADABLE_OPERATORS_STR[str(expr.op)]
 					self.cur_fn.alloca(
 					    expr.typ, tmp,
 					    Inst(
 					        InstKind.Call, [
-					            Name(name),
+					            Name(
+					                mangle_symbol(typ_sym) +
+					                f"{len(op_method)}{op_method}M"
+					            ),
 					            Inst(InstKind.GetRef, [left]),
 					            Inst(InstKind.GetRef, [right])
 					        ]
 					    )
 					)
-				elif expr.left.typ == self.comp.str_t and expr.right.typ == self.comp.str_t:
-					if expr.op == Kind.Eq:
-						name = "_R4core4_str2eqM"
-					elif expr.op == Kind.Ne:
-						name = "_R4core4_str3neM"
-					elif expr.op == Kind.Lt:
-						name = "_R4core4_str2ltM"
-					elif expr.op == Kind.Gt:
-						name = "_R4core4_str2gtM"
-					elif expr.op == Kind.Le:
-						name = "_R4core4_str2leM"
-					else:
-						name = "_R4core4_str2geM"
-					self.cur_fn.alloca(
-					    expr.typ, tmp,
-					    Inst(InstKind.Call, [Name(name), left, right])
-					)
+				return Ident(expr.typ, tmp)
+			if expr.op.is_relational():
+				if expr.op == Kind.Eq:
+					kind = "=="
+				elif expr.op == Kind.Ne:
+					kind = "!="
+				elif expr.op == Kind.Lt:
+					kind = "<"
+				elif expr.op == Kind.Gt:
+					kind = ">"
+				elif expr.op == Kind.Le:
+					kind = "<="
 				else:
-					if expr.op == Kind.Eq:
-						kind = "=="
-					elif expr.op == Kind.Ne:
-						kind = "!="
-					elif expr.op == Kind.Lt:
-						kind = "<"
-					elif expr.op == Kind.Gt:
-						kind = ">"
-					elif expr.op == Kind.Le:
-						kind = "<="
-					else:
-						kind = ">="
-					self.cur_fn.alloca(
-					    expr.typ, tmp,
-					    Inst(InstKind.Cmp, [Name(kind), left, right])
-					)
+					kind = ">="
+				self.cur_fn.alloca(
+				    expr.typ, tmp,
+				    Inst(InstKind.Cmp, [Name(kind), left, right])
+				)
 			elif expr.op in (Kind.Div, Kind.Mod):
 				is_div = expr.op == Kind.Div
 				kind = InstKind.Div if is_div else InstKind.Mod
@@ -2086,7 +2069,7 @@ class AST2RIR:
 				elif expr.op == Kind.Rshift:
 					kind = InstKind.Rshift
 				else:
-					assert False # unreachable
+					assert False, expr.op # unreachable
 				self.cur_fn.alloca(expr.typ, tmp, Inst(kind, [left, right]))
 			return Ident(expr.typ, tmp)
 		elif isinstance(expr, ast.PostfixExpr):

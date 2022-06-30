@@ -4,14 +4,6 @@
 
 import pkg::stdc: string;
 
-pub trait ToString {
-    fn to_string(&self) String;
-}
-
-extend str for ToString {
-    fn to_string(&self) String { return String::from_str(self.*); }
-}
-
 pub struct String {
     ptr: *mut u8;
     mut size_: usize;
@@ -145,9 +137,26 @@ pub struct String {
         self.cap = cap;
     }
 
-    pub fn size(&self) usize { return self.size_; }
+    #[used]
+    fn ==(&self, rhs: &Self) bool {
+        if (self.size_ != rhs.size_) {
+            return false;
+        }
+        if (self.size_ > 0) {
+            let last_idx = self.size_ - 1;
+            if (unsafe { self.ptr[last_idx] != rhs.ptr[last_idx] }) {
+                return false;
+            }
+        }
+        return mem::cmp(self.ptr, rhs.ptr, rhs.size_) == 0;
+    }
+
+    #[used]
+    fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
 
     pub fn is_empty(&self) bool { return self.size_ == 0; }
+
+    pub fn size(&self) usize { return self.size_; }
 
     pub fn as_ptr(&self) *const u8 { return self.ptr; }
 

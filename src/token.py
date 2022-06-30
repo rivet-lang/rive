@@ -115,23 +115,26 @@ class Kind(Enum):
 	KeywordEnd = auto_enum()
 
 	def is_start_of_type(self):
-		return self in [
+		return self in (
 		    Kind.Bang, Kind.Name, Kind.Lparen, Kind.Amp, Kind.Mult,
 		    Kind.Lbracket, Kind.Question
-		]
+		)
 
 	def is_assign(self):
-		return self in [
+		return self in (
 		    Kind.Assign, Kind.PlusAssign, Kind.MinusAssign, Kind.MultAssign,
 		    Kind.DivAssign, Kind.ModAssign, Kind.AmpAssign, Kind.PipeAssign,
 		    Kind.XorAssign,
-		]
+		)
 
 	def is_relational(self):
-		return self in [
+		return self in (
 		    Kind.Eq, Kind.Ne, Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge, Kind.KeyIs,
 		    Kind.KeyNotIs,
-		]
+		)
+
+	def is_overloadable_op(self):
+		return self in OVERLOADABLE_OPERATORS
 
 	def __repr__(self):
 		return TOKEN_STRINGS[self] if self in TOKEN_STRINGS else "unknown"
@@ -245,9 +248,34 @@ TOKEN_STRINGS = {
     # ==============================
 }
 
+OVERLOADABLE_OPERATORS = (
+    Kind.Plus, Kind.Minus, Kind.Mult, Kind.Div, Kind.Mod, Kind.Eq, Kind.Ne,
+    Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge
+)
+
+def generate_overloadable_op_map():
+	map = {}
+	for op in OVERLOADABLE_OPERATORS:
+		if op == Kind.Plus: gname = "_add_"
+		elif op == Kind.Minus: gname = "_sub_"
+		elif op == Kind.Mult: gname = "_mult_"
+		elif op == Kind.Div: gname = "_div_"
+		elif op == Kind.Mod: gname = "_mod_"
+		elif op == Kind.Eq: gname = "_eq_"
+		elif op == Kind.Ne: gname = "_ne_"
+		elif op == Kind.Lt: gname = "_lt_"
+		elif op == Kind.Gt: gname = "_gt_"
+		elif op == Kind.Le: gname = "_le_"
+		elif op == Kind.Ge: gname = "_ge_"
+		else: assert False
+		map[str(op)] = gname
+	return map
+
+OVERLOADABLE_OPERATORS_STR = generate_overloadable_op_map()
+
 def generate_keyword_map():
 	res = {}
-	for (i, k) in enumerate(Kind):
+	for i, k in enumerate(Kind):
 		if i > Kind.KeywordBegin - 1 and i < Kind.KeywordEnd - 1:
 			res[str(k)] = k
 	return res

@@ -113,7 +113,7 @@ extend u8 {
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z or 1-9 and `false` otherwise.
-    pub fn is_alphanum(self) bool {
+    pub fn is_alnum(self) bool {
         return self.is_letter() or self.is_digit();
     }
 

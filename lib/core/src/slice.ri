@@ -45,6 +45,17 @@ struct _slice {
     }
 
     #[used]
+    fn ==(&self, rhs: &Self) bool {
+        if (self.len != rhs.len) {
+            return false;
+        }
+        return unsafe { string::memcmp(self.ptr, rhs.ptr, self.len) == 0 };
+    }
+
+    #[used]
+    fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
+
+    #[used]
     fn slice(&self, start: usize, end: usize) _slice {
         if (start > end or end > self.len) {
             panic("slice index out of range");
@@ -64,15 +75,4 @@ struct _slice {
     fn slice_from(&self, start: usize) _slice {
         return self.slice(start, self.len);
     }
-
-    #[used]
-    fn eq(&self, other: &_slice) bool {
-        if (self.len != other.len) {
-            return false;
-        }
-        return unsafe { string::memcmp(self.ptr, other.ptr, self.len) == 0 };
-    }
-
-    #[used]
-    fn ne(&self, other: &_slice) bool { return !self.eq(other); }
 }
