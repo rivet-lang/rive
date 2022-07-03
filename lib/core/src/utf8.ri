@@ -2,13 +2,13 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-/// Returns the number of runes contained in `s`.
-pub fn str_len_utf8(s: str) usize {
-	return cstr_len_utf8(s.ptr, s.size);
+// Returns the number of runes contained in `s`.
+fn str_runes_count(s: str) usize {
+	return cstr_runes_count(s.ptr, s.size);
 }
 
-/// Returns the number of runes contained in `s`.
-pub fn cstr_len_utf8(s: *const u8, size: usize) usize {
+// Returns the number of runes contained in `s`.
+fn cstr_runes_count(s: *const u8, size: usize) usize {
 	let mut l: usize = 0;
 	let mut i: usize = 0;
 	while (i < size) {

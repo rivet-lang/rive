@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-import pkg::stdc: string;
+import pkg::stdc;
 
 static empty_slice: _slice = _slice{};
 
@@ -40,7 +40,7 @@ struct _slice {
             panic("slice index out of range");
         }
         _ = unsafe {
-            string::memcpy(as(*mut u8, self.ptr) + self.elem_size * idx, val, self.elem_size)
+            stdc::memcpy(as(*mut u8, self.ptr) + self.elem_size * idx, val, self.elem_size)
         };
     }
 
@@ -49,7 +49,7 @@ struct _slice {
         if (self.len != rhs.len) {
             return false;
         }
-        return unsafe { string::memcmp(self.ptr, rhs.ptr, self.len) == 0 };
+        return unsafe { stdc::memcmp(self.ptr, rhs.ptr, self.len) == 0 };
     }
 
     #[used]

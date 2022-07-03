@@ -182,7 +182,7 @@ void _R9drop_argsZ(void) {
 		res.writeln("int main(i32 __argc, char** __argv) {")
 		pkg_main = f"_R{len(self.comp.prefs.pkg_name)}{self.comp.prefs.pkg_name}4mainF"
 		res.writeln(
-		    f"  _R4core10rivet_initF(__argc, (u8**)__argv, {pkg_main});"
+		    f"  _R4core10rivet_mainF(__argc, (u8**)__argv, {pkg_main});"
 		)
 		res.writeln("  return 0;")
 		res.writeln("}")
@@ -283,7 +283,21 @@ void _R9drop_argsZ(void) {
 			self.gen_decl(decl)
 
 	def gen_decl(self, decl):
-		if isinstance(decl, FnDecl):
+		if isinstance(decl, VTable):
+			self.statics.writeln(
+			    f"static {decl.structure} {decl.name}[{decl.implement_nr}] = {{"
+			)
+			for i, ft in enumerate(decl.funcs):
+				self.statics.writeln('  {')
+				for f, impl in ft.items():
+					self.statics.writeln(f'    .{f} = (void*){impl}')
+				self.statics.write("  }")
+				if i < len(decl.funcs) - 1:
+					self.statics.writeln(",")
+				else:
+					self.statics.writeln()
+			self.statics.writeln("};")
+		elif isinstance(decl, FnDecl):
 			if decl.ret_typ == self.comp.no_return_t:
 				self.write("RIVET_NORETURN ")
 				self.protos.write("RIVET_NORETURN ")
@@ -399,11 +413,11 @@ void _R9drop_argsZ(void) {
 			self.gen_expr(inst.args[0])
 			self.write("))")
 		elif inst.kind == InstKind.GetElementPtr:
-			self.write("(&")
+			self.write("(")
 			self.gen_expr(inst.args[0])
-			self.write("[")
+			self.write(" + ")
 			self.gen_expr(inst.args[1])
-			self.write("])")
+			self.write(")")
 		elif inst.kind == InstKind.GetRef:
 			arg0 = inst.args[0]
 			if isinstance(
@@ -412,7 +426,7 @@ void _R9drop_argsZ(void) {
 				self.write("(&")
 				self.gen_expr(arg0)
 				if isinstance(arg0, ArrayLiteral):
-					self.write("[0U]")
+					self.write("[0]")
 				self.write(")")
 			else:
 				self.write(f"(&(({self.gen_type_str(arg0.typ)}[]){{ ")
@@ -592,23 +606,24 @@ void _R9drop_argsZ(void) {
 		elif isinstance(typ, type.Slice):
 			res.write("_R4core6_slice")
 		elif isinstance(typ, type.Array):
-			res.write(typ.sym.mangled_name)
-			if self.inside_func_ret_typ:
-				res.write("_Ret")
-				if not typ.sym.info.has_wrapper:
-					typ.sym.info.has_wrapper = True
-					name = f"{typ.sym.mangled_name}_Ret"
-					self.typedefs.writeln(f"typedef struct {name} {name};")
-					self.types.writeln(
-					    f"struct {name} {{ {self.gen_type_str(typ.sym.info.elem_typ)}* arr; }};"
-					)
+			if typ.sym:
+				res.write(typ.sym.mangled_name)
+				if self.inside_func_ret_typ:
+					res.write("_Ret")
+					if not typ.sym.info.has_wrapper:
+						typ.sym.info.has_wrapper = True
+						name = f"{typ.sym.mangled_name}_Ret"
+						self.typedefs.writeln(f"typedef struct {name} {name};")
+						self.types.writeln(
+						    f"struct {name} {{ {self.gen_type_str(typ.sym.info.elem_typ)}* arr; }};"
+						)
 		elif typ in (self.comp.void_t, self.comp.no_return_t):
 			res.write("void")
 		elif self.comp.is_number(typ) or typ in (
 		    self.comp.bool_t, self.comp.rune_t
 		):
 			res.write(typ.sym.name)
-		else:
+		elif typ.sym:
 			if typ.sym.kind == sym.TypeKind.Enum:
 				res.write(self.gen_type_str(typ.sym.info.underlying_typ))
 			else:
@@ -622,8 +637,12 @@ void _R9drop_argsZ(void) {
 		res = utils.Builder()
 		res.write(self.gen_type_str(fn_ptr.ret_typ))
 		res.write(f" (*{name})(")
+		if fn_ptr.is_method:
+			res.write("void* self")
+			if len(fn_ptr.args) > 0:
+				res.write(", ")
 		if len(fn_ptr.args) == 0:
-			res.write("void")
+			if not fn_ptr.is_method: res.write("void")
 		else:
 			for i, arg in enumerate(fn_ptr.args):
 				res.write(self.gen_type_str(arg))

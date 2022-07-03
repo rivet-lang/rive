@@ -578,7 +578,7 @@ class Resolver:
 					elif expr.op == Kind.Rshift:
 						return ast.IntegerLiteral(str(il >> ir), expr.pos)
 		elif isinstance(expr, ast.Ident):
-			if s := self.cur_sym.lookup(expr.name):
+			if s := self.cur_sym.find(expr.name):
 				if isinstance(s, sym.Const):
 					if s.has_evaled_expr:
 						return s.evaled_expr

@@ -107,9 +107,11 @@ class Checker:
 					typ_sym = decl.typ.get_sym()
 					trait_sym = decl.for_trait.get_sym()
 					if trait_sym.kind == TypeKind.Trait:
+						trait_sym.info.implements.append(typ_sym)
 						not_implemented = []
 						for proto in trait_sym.syms:
 							if d := typ_sym.find(proto.name):
+								d.uses += 1
 								# check signature
 								ptyp = proto.typ()
 								dtyp = d.typ()
@@ -120,9 +122,7 @@ class Checker:
 									)
 									report.note(f"expected `{ptyp}`")
 									report.note(f"found `{dtyp}`")
-							elif proto.has_body:
-								pass # trait implementation
-							else:
+							elif not proto.has_body: # trait implementation
 								not_implemented.append(proto.name)
 						if len(not_implemented) > 0:
 							word = "method" if len(
@@ -135,8 +135,6 @@ class Checker:
 							report.note(
 							    f"missing {word}: `{'`, `'.join(not_implemented)}`"
 							)
-						else:
-							typ_sym.implements.append(trait_sym.qualname())
 					else:
 						report.error(
 						    f"`{trait_sym.name}` is not a trait", decl.pos
@@ -1283,7 +1281,9 @@ class Checker:
 				value_t = self.comp.untyped_to_type(
 				    self.check_expr(expr.args[0].expr)
 				)
-				if not value_t.get_sym().implement_trait(info.qualname()):
+				if value_t.get_sym() in info.info.implements:
+					info.info.has_objects = True
+				else:
 					report.error(
 					    f"type `{value_t}` does not implement trait `{info.name}`",
 					    expr.args[0].pos
@@ -1489,14 +1489,15 @@ class Checker:
 					)
 				report.note(pos_msg)
 		elif expected_sym.kind == TypeKind.Trait:
-			got_t = self.comp.untyped_to_type(got)
-			got_sym = got_t.get_sym()
-			if not got_sym.implement_trait(expected_sym.qualname()):
-				report.error(
-				    f"type `{got_t}` does not implement trait `{expected_sym.name}`",
-				    pos
-				)
-				report.note(pos_msg)
+			if expected != got:
+				got_t = self.comp.untyped_to_type(got)
+				got_sym = got_t.get_sym()
+				if got_sym not in expected_sym.info.implements:
+					report.error(
+					    f"type `{got_t}` does not implement trait `{expected_sym.name}`",
+					    pos
+					)
+					report.note(pos_msg)
 		else:
 			try:
 				self.check_types(got, expected)
@@ -1568,7 +1569,7 @@ class Checker:
 		if isinstance(expected, type.Variadic):
 			if isinstance(got, type.Variadic):
 				return expected.typ == got.typ
-			return expected.typ == got
+			return self.check_compatible_types(got, expected.typ)
 
 		if isinstance(expected, type.Fn) and isinstance(got, type.Fn):
 			return expected == got
@@ -1592,6 +1593,11 @@ class Checker:
 			return self.promote_number(expected, got) == expected
 		elif expected == self.comp.error_t and got_sym.kind == TypeKind.ErrType:
 			return True # valid
+		elif exp_sym.kind == TypeKind.Trait:
+			if self.comp.untyped_to_type(got
+			                             ).get_sym() in exp_sym.info.implements:
+				exp_sym.info.has_objects = True
+				return True
 		elif exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:
 			return exp_sym.info.elem_typ == got_sym.info.elem_typ and exp_sym.info.size == got_sym.info.size
 		elif exp_sym.kind == TypeKind.Slice and got_sym.kind == TypeKind.Slice:

@@ -154,7 +154,30 @@ class Alias:
 		self.sy = sy
 
 	def __str__(self):
-		return f'type_alias "{self.name}" = {self.sy.name}'
+		return f'type_alias "{self.name}" = {self.sy.qualname()}'
+
+class VTable:
+	def __init__(self, structure, name, trait_name, implement_nr, funcs):
+		self.structure = structure
+		self.name = name
+		self.trait_name = trait_name
+		self.implement_nr = implement_nr
+		self.funcs = funcs
+
+	def __str__(self):
+		sb = utils.Builder()
+		sb.writeln(f'vtable for "{self.trait_name}" {{')
+		for i, ft in enumerate(self.funcs):
+			sb.writeln(f'  {i} {{')
+			for f, impl in ft.items():
+				sb.writeln(f'    "{f}": "{impl}"')
+			sb.write("  }")
+			if i < len(self.funcs) - 1:
+				sb.writeln(",")
+			else:
+				sb.writeln()
+		sb.write("}")
+		return str(sb)
 
 class RiUnion:
 	def __init__(self, is_pub, name, variants):
@@ -628,6 +651,43 @@ class AST2RIR:
 			elif ts.kind == sym.TypeKind.Enum:
 				for i, v in enumerate(ts.info.variants):
 					v.value = i
+			elif ts.kind == sym.TypeKind.Trait:
+				if ts.info.has_objects:
+					ts_name = mangle_symbol(ts)
+					self.types.append(
+					    Struct(
+					        ts.vis.is_pub(), False, False, ts_name, [
+					            Field("obj", type.Ptr(self.comp.void_t)),
+					            Field("idx", self.comp.usize_t)
+					        ]
+					    )
+					)
+					# Virtual table
+					vtbl_name = f"{ts_name}4Vtbl"
+					static_vtbl_name = f"{ts_name}4VTBL"
+					fields = list()
+					for m in ts.syms:
+						if isinstance(m, sym.Fn):
+							fields.append(Field(m.name, m.typ()))
+					self.types.append(
+					    Struct(False, False, False, vtbl_name, fields)
+					)
+					funcs = []
+					for its in ts.info.implements:
+						map = {}
+						for m in ts.syms:
+							if isinstance(m, sym.Fn):
+								if ts_method := its.find(m.name):
+									map[m.name] = mangle_symbol(ts_method)
+								else:
+									map[m.name] = mangle_symbol(m)
+						funcs.append(map)
+					self.decls.append(
+					    VTable(
+					        vtbl_name, static_vtbl_name, ts_name,
+					        len(ts.info.implements), funcs
+					    )
+					)
 			elif ts.kind == sym.TypeKind.Union:
 				if ts.info.is_c_union:
 					fields = list()
@@ -982,6 +1042,7 @@ class AST2RIR:
 
 	def convert_expr_with_cast(self, expected_typ, expr):
 		res_expr = self.convert_expr(expr)
+
 		if not isinstance(res_expr, (Skip, NoneLiteral, Inst)) and isinstance(
 		    res_expr.typ, (type.Ptr, type.Ref)
 		) and res_expr.typ.typ != self.comp.void_t:
@@ -993,6 +1054,11 @@ class AST2RIR:
 					nr_level -= 1
 			else:
 				res_expr = Inst(InstKind.LoadPtr, [res_expr])
+
+		expr_sym = expr.typ.get_sym()
+		expected_sym = expected_typ.get_sym()
+		if expected_sym.kind == TypeKind.Trait and expr_sym != expected_sym:
+			res_expr = self.trait_value(res_expr, expr.typ, expected_typ)
 
 		# wrap optional value
 		if isinstance(expected_typ, type.Optional
@@ -1024,7 +1090,14 @@ class AST2RIR:
 		elif isinstance(expr, ast.FloatLiteral):
 			return FloatLiteral(self.comp.float64_t, expr.lit)
 		elif isinstance(expr, ast.StringLiteral):
-			_, size = utils.bytestr(expr.lit)
+			bytes, size = utils.bytestr(expr.lit)
+			if expr.is_bytestr:
+				return ArrayLiteral(
+				    expr.typ, [
+				        IntLiteral(self.comp.uint8_t, str(b))
+				        for b in list(bytes)
+				    ]
+				)
 			return StringLiteral(
 			    expr.typ, utils.smart_quote(expr.lit, expr.is_raw), str(size),
 			    expr.is_bytestr, len(expr.lit)
@@ -1224,41 +1297,83 @@ class AST2RIR:
 			return ArrayLiteral(expr.typ, elems)
 		elif isinstance(expr, ast.CallExpr):
 			if expr.is_ctor:
-				# TODO(StunxFS): trait constructors
 				value = expr.args[0].expr
-				value_sym = self.comp.untyped_to_type(value.typ).get_sym()
 				typ_sym = expr.typ.get_sym()
-				if typ_sym.kind == sym.TypeKind.Union:
-					tmp = Ident(expr.typ, self.cur_fn.local_name())
-					self.cur_fn.alloca_var(tmp)
-					self.cur_fn.store(
-					    Selector(
-					        value.typ, tmp, Name(mangle_symbol(value_sym))
-					    ), self.convert_expr_with_cast(value.typ, value)
+				if typ_sym.kind == sym.TypeKind.Trait:
+					return self.trait_value(
+					    self.convert_expr_with_cast(value.typ, value),
+					    value.typ, expr.typ
 					)
-					if not typ_sym.info.is_c_union:
-						self.cur_fn.store(
-						    Selector(self.comp.usize_t, tmp, Name("idx")),
-						    IntLiteral(self.comp.usize_t, str(value_sym.index))
-						)
-					return tmp
-				return Skip()
-			if expr.is_closure:
-				name = self.convert_expr_with_cast(expr.left.typ, expr.left)
-			elif expr.info.is_extern:
-				name = Ident(expr.typ, expr.info.name)
-			else:
-				name = Ident(expr.typ, mangle_symbol(expr.info))
-			args = [name]
-			if expr.info.is_method:
-				self_expr = self.convert_expr_with_cast(
-				    expr.info.self_typ, expr.left.left
+				value_sym = self.comp.untyped_to_type(value.typ).get_sym()
+				tmp = Ident(expr.typ, self.cur_fn.local_name())
+				self.cur_fn.alloca_var(tmp)
+				self.cur_fn.store(
+				    Selector(value.typ, tmp, Name(mangle_symbol(value_sym))),
+				    self.convert_expr_with_cast(value.typ, value)
 				)
-				if expr.info.rec_is_ref and not isinstance(
-				    expr.left.left_typ, type.Ref
-				):
-					self_expr = Inst(InstKind.GetRef, [self_expr])
-				args.append(self_expr)
+				if not typ_sym.info.is_c_union:
+					self.cur_fn.store(
+					    Selector(self.comp.usize_t, tmp, Name("idx")),
+					    IntLiteral(self.comp.usize_t, str(value_sym.index))
+					)
+				return tmp
+
+			args = []
+			is_trait_call = False
+			if expr.info.is_method:
+				left_sym = expr.left.left_typ.get_sym()
+				if left_sym.kind == TypeKind.Trait:
+					is_trait_call = True
+					self_expr = self.convert_expr_with_cast(
+					    expr.info.self_typ, expr.left.left
+					)
+					args.append(
+					    Selector(
+					        type.Ptr(self.comp.void_t),
+					        Inst(
+					            InstKind.LoadPtr, [
+					                Inst(
+					                    InstKind.GetElementPtr, [
+					                        Name(
+					                            mangle_symbol(left_sym) +
+					                            "4VTBL"
+					                        ),
+					                        Selector(
+					                            self.comp.usize_t, self_expr,
+					                            Name("idx")
+					                        )
+					                    ]
+					                )
+					            ]
+					        ), Name(expr.info.name)
+					    )
+					)
+					args.append(
+					    Selector(
+					        type.Ptr(self.comp.void_t), self_expr, Name("obj")
+					    )
+					)
+			if not is_trait_call:
+				if expr.is_closure:
+					name = self.convert_expr_with_cast(expr.left.typ, expr.left)
+				elif expr.info.is_extern:
+					name = Ident(expr.typ, expr.info.name)
+				else:
+					name = Ident(expr.typ, mangle_symbol(expr.info))
+				args.append(name)
+				if expr.info.is_method:
+					self_expr = self.convert_expr_with_cast(
+					    expr.info.self_typ, expr.left.left
+					)
+					if expr.info.rec_is_ref and not isinstance(
+					    expr.left.left_typ, type.Ref
+					):
+						self_expr = Inst(InstKind.GetRef, [self_expr])
+					elif not expr.info.rec_is_ref and isinstance(
+					    expr.left.left_typ, type.Ref
+					):
+						self_expr = Inst(InstKind.LoadPtr, [self_expr])
+					args.append(self_expr)
 			args_len = expr.info.args_len()
 			for i, arg in enumerate(expr.args):
 				if expr.info.is_variadic and i == args_len:
@@ -1292,7 +1407,7 @@ class AST2RIR:
 						for i in range(args_nr, len(expr.args)):
 							vargs.append(
 							    self.convert_expr_with_cast(
-							        var_arg.typ, expr.args[i].expr
+							        var_arg.typ.typ, expr.args[i].expr
 							    )
 							)
 						elem_size, _ = self.comp.type_size(var_arg.typ.typ)
@@ -2326,6 +2441,21 @@ class AST2RIR:
 		)
 		return tmp
 
+	def trait_value(self, value, value_typ, trait_typ):
+		value_sym = self.comp.untyped_to_type(value_typ).get_sym()
+		typ_sym = trait_typ.get_sym()
+		tmp = Ident(trait_typ, self.cur_fn.local_name())
+		self.cur_fn.alloca_var(tmp)
+		self.cur_fn.store(
+		    Selector(type.Ptr(self.comp.void_t), tmp, Name("obj")),
+		    Inst(InstKind.GetRef, [value])
+		)
+		self.cur_fn.store(
+		    Selector(self.comp.usize_t, tmp, Name("idx")),
+		    IntLiteral(self.comp.usize_t, str(typ_sym.info.indexof(value_sym)))
+		)
+		return tmp
+
 	def panic(self, msg):
 		_, size = utils.bytestr(msg)
 		self.cur_fn.add_call(
@@ -2400,25 +2530,6 @@ class AST2RIR:
 				self.cur_fn.store(Selector(f.typ, tmp, Name(f.name)), val)
 			return tmp
 		return None
-
-	def is_const_value(self, val):
-		return not isinstance(val, Name)
-
-	def is_same_value(self, val, other_val):
-		if isinstance(val, NoneLiteral) and isinstance(other_val, NoneLiteral):
-			return True
-		elif isinstance(val, IntLiteral) and isinstance(other_val, IntLiteral):
-			return val.lit == other_val.lit
-		elif isinstance(val,
-		                FloatLiteral) and isinstance(other_val, FloatLiteral):
-			return val.lit == other_val.lit
-		elif isinstance(val,
-		                RuneLiteral) and isinstance(other_val, RuneLiteral):
-			return val.lit == other_val.lit
-		elif isinstance(val, StringLiteral
-		                ) and isinstance(other_val, StringLiteral):
-			return val.lit == other_val.lit
-		return False
 
 	def check_number_limit(self, typ, val, pos):
 		if typ == self.comp.int8_t and (val < MIN_INT8 or val > MAX_INT8):
@@ -2505,21 +2616,18 @@ class AST2RIR:
 		return ts
 
 	def sort_type_symbols(self, tss):
-		# TODO(StunxFS): support traits
 		dg = utils.DepGraph()
 		typ_names = list()
 		for ts in tss:
 			if ts.kind in (
-			    sym.TypeKind.Alias, sym.TypeKind.ErrType, sym.TypeKind.NoReturn,
-			    sym.TypeKind.Trait
+			    sym.TypeKind.Alias, sym.TypeKind.ErrType, sym.TypeKind.NoReturn
 			):
 				continue
 			ts.mangled_name = mangle_symbol(ts)
 			typ_names.append(ts.mangled_name)
 		for ts in tss:
 			if ts.kind in (
-			    sym.TypeKind.Alias, sym.TypeKind.ErrType, sym.TypeKind.NoReturn,
-			    sym.TypeKind.Trait
+			    sym.TypeKind.Alias, sym.TypeKind.ErrType, sym.TypeKind.NoReturn
 			):
 				continue
 			field_deps = list()

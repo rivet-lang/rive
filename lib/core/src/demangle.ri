@@ -2,15 +2,17 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-import pkg::stdc: stdlib, string;
+import pkg::stdc;
 
 pub mod demangle {
+    const BUFFER_SIZE: usize = 30;
+
     struct Buffer {
-        mut buf: [u8; 100];
+        mut buf: [u8; BUFFER_SIZE];
         mut len: usize;
 
         pub fn push(&mut self, byte: u8) {
-            if (self.len < 100) {
+            if (self.len < BUFFER_SIZE) {
                 self.buf[self.len] = byte;
                 self.len++;
             } else {
@@ -28,7 +30,7 @@ pub mod demangle {
 
     pub fn demangle_symbol(name: *const u8) String {
         let mut buf = Buffer{};
-        let size = unsafe { string::strlen(name) };
+        let size = unsafe { stdc::strlen(name) };
         let mut res = String::with_capacity(size - 2);
 
         let mut idx: usize = 2; // skip `_R`
@@ -42,7 +44,7 @@ pub mod demangle {
             if (!res.is_empty()) {
                 res.push_str("::");
             }
-            let name_len = as(usize, unsafe { stdlib::strtoul(&buf.buf[0], none, 10) });
+            let name_len = as(usize, unsafe { stdc::strtoul(&buf.buf[0], none, 10) });
             for (_ in 0..name_len) {
                 res.push(unsafe { name[idx] });
                 idx++;

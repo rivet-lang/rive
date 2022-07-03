@@ -454,6 +454,16 @@ class EnumInfo:
 			return True
 		return False
 
+class TraitInfo:
+	def __init__(self):
+		self.implements = []
+		self.has_objects = False
+
+	def indexof(self, impl):
+		for idx, i in enumerate(self.implements):
+			if i == impl: return idx
+		return -1
+
 class UnionInfo:
 	def __init__(self, variants, is_c_union):
 		self.variants = variants
@@ -469,7 +479,6 @@ class Type(Sym):
 		self.kind = kind
 		self.fields = fields
 		self.info = info
-		self.implements = []
 		self.size = -1
 		self.align = -1
 
@@ -483,9 +492,6 @@ class Type(Sym):
 		if _ := self.lookup_field(name):
 			return True
 		return False
-
-	def implement_trait(self, qname):
-		return qname in self.implements
 
 class Arg:
 	def __init__(self, name, typ, def_expr, has_def_expr, pos):

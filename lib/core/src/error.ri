@@ -4,6 +4,8 @@
 
 import pkg::backtrace;
 
+pub errtype Error;
+
 #[used]
 struct _error {
     errtype_name: str;

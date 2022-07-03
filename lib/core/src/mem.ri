@@ -2,8 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-import pkg::Error;
-import pkg::stdc: stdlib, string;
+import pkg::stdc;
 
 pub mod mem {
     pub errtype OutOfMemoryError;
@@ -15,7 +14,7 @@ pub mod mem {
     /// NOTE: Unlike the `mem::calloc` function, `mem::alloc` will not zero
     /// the memory block.
     pub fn alloc(size: usize) !*mut void {
-        let ptr = unsafe { stdlib::malloc(size) };
+        let ptr = unsafe { stdc::malloc(size) };
         if (ptr == none) {
             raise OutOfMemoryError("insufficient memory is available");
         }
@@ -25,7 +24,7 @@ pub mod mem {
     /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
     /// Returns a pointer to the memory address of the allocated space.
     pub fn calloc(n: usize) !*mut void {
-        let ptr = unsafe { stdlib::calloc(1, n) };
+        let ptr = unsafe { stdc::calloc(1, n) };
         if (ptr == none) {
             raise OutOfMemoryError("insufficient memory is available");
         }
@@ -43,7 +42,7 @@ pub mod mem {
             }
             return none;
         }
-        let ptr_ = unsafe { stdlib::realloc(ptr, sz) };
+        let ptr_ = unsafe { stdc::realloc(ptr, sz) };
         if (ptr_ == none) {
             raise OutOfMemoryError("insufficient memory is available");
         }
@@ -56,7 +55,7 @@ pub mod mem {
         if (s == none) {
             raise Error("argument `s` is none");
         }
-        return unsafe { string::memset(s, c, n) };
+        return unsafe { stdc::memset(s, c, n) };
     }
 
     /// Copies `sz` bytes from memory area `source` to memory area `dest` and returns
@@ -70,7 +69,7 @@ pub mod mem {
         if (src == none) {
             raise Error("argument `src` is none");
         }
-        return unsafe { string::memmove(dest, src, sz) };
+        return unsafe { stdc::memmove(dest, src, sz) };
     }
 
     /// Copies `sz` bytes from memory area `source` to memory area `dest` and returns
@@ -82,7 +81,7 @@ pub mod mem {
         if (src == dest) {
             raise MemoryOverlapError("`dest` and `src` do overlap");
         }
-        return unsafe { string::memcpy(dest, src, sz) };
+        return unsafe { stdc::memcpy(dest, src, sz) };
     }
 
     /// Allocates dynamically a `sz` bytes block of memory on the heap, then copies
@@ -120,14 +119,14 @@ pub mod mem {
     /// number of equal bytes. You should use a function that performs comparisons
     /// in constant time for this.
     pub fn cmp(s1: *const void, s2: *const void, n: usize) i32 {
-        return unsafe { string::memcmp(s1, s2, n) };
+        return unsafe { stdc::memcmp(s1, s2, n) };
     }
 
     /// Deallocates manually the memory referenced by `ptr`.
     pub unsafe fn dealloc(ptr: *mut void) {
         if (ptr != none) {
             unsafe {
-                stdlib::free(ptr);
+                stdc::free(ptr);
             }
         }
     }

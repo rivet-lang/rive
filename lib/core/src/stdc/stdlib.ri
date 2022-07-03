@@ -2,32 +2,30 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-pub mod stdlib {
-    #[trusted]
-    extern (C) {
-        pub fn rand() i32;
-        pub fn srand(seed: u32);
-    }
+#[trusted]
+extern (C) {
+    pub fn rand() i32;
+    pub fn srand(seed: u32);
+}
 
-    extern (C) {
-        pub fn atof(nptr: *const u8) f64;
-        pub fn atoi(nptr: *const u8) i32;
-        pub fn atol(nptr: *const u8) i64;
-        pub fn atoll(nptr: *const u8) i64;
+extern (C) {
+    pub fn atof(nptr: *const u8) f64;
+    pub fn atoi(nptr: *const u8) i32;
+    pub fn atol(nptr: *const u8) i64;
+    pub fn atoll(nptr: *const u8) i64;
 
-        pub fn strtod(nptr: *const u8, endptr: *const u8, base: i32) f64;
-        pub fn strtof(nptr: *const u8, endptr: *const u8, base: i32) f32;
-        pub fn strtol(nptr: *const u8, endptr: *const u8, base: i32) i64;
-        pub fn strtoll(nptr: *const u8, endptr: *const u8, base: i32) i64;
-        pub fn strtoul(nptr: *const u8, endptr: *const u8, base: i32) u64;
-        pub fn strtoull(nptr: *const u8, endptr: *const u8, base: i32) u64;
+    pub fn strtod(nptr: *const u8, endptr: *const u8, base: i32) f64;
+    pub fn strtof(nptr: *const u8, endptr: *const u8, base: i32) f32;
+    pub fn strtol(nptr: *const u8, endptr: *const u8, base: i32) i64;
+    pub fn strtoll(nptr: *const u8, endptr: *const u8, base: i32) i64;
+    pub fn strtoul(nptr: *const u8, endptr: *const u8, base: i32) u64;
+    pub fn strtoull(nptr: *const u8, endptr: *const u8, base: i32) u64;
 
-        pub fn malloc(size: usize) *mut void;
-        pub fn calloc(nobj: usize, size: usize) *mut void;
-        pub fn realloc(p: *mut void, size: usize) *mut void;
-        pub fn free(p: *mut void);
+    pub fn malloc(size: usize) *mut void;
+    pub fn calloc(nobj: usize, size: usize) *mut void;
+    pub fn realloc(p: *mut void, size: usize) *mut void;
+    pub fn free(p: *mut void);
 
-        pub fn exit(status: i32) no_return;
-        pub fn abort() no_return;
-    }
+    pub fn exit(status: i32) no_return;
+    pub fn abort() no_return;
 }

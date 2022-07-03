@@ -159,7 +159,7 @@ class Variadic(TBase):
 		return self.typ == other.typ
 
 	def __str__(self):
-		return f"...[{self.typ}]"
+		return f"...{self.typ}"
 
 class Array(TBase):
 	def __init__(self, typ, size):

@@ -2,7 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-import pkg::stdc: string;
+import pkg::stdc;
+import pkg::traits::ToString;
 
 pub struct String {
     ptr: *mut u8;
@@ -38,7 +39,7 @@ pub struct String {
     }
 
     pub unsafe fn from_cstr(ptr: *mut u8) Self {
-        let size = unsafe { string::strlen(ptr) };
+        let size = unsafe { stdc::strlen(ptr) };
         return Self{
             ptr: ptr,
             size_: size,

@@ -260,8 +260,7 @@ class Compiler:
 	# Returns the size and alignment (in bytes) of `typ`, similarly to
 	# C's `sizeof(T)` and `alignof(T)`.
 	def type_size(self, typ):
-		# TODO(StunxFS): calculate trait size
-		if isinstance(typ, type.Optional):
+		if isinstance(typ, (type.Result, type.Optional)):
 			return self.type_size(typ.typ)
 		elif isinstance(typ, (type.Ptr, type.Ref)):
 			return self.pointer_size, self.pointer_size
@@ -306,22 +305,24 @@ class Compiler:
 		elif sy.kind == sym.TypeKind.Str:
 			size = self.pointer_size * 3
 		elif sy.kind == sym.TypeKind.Slice:
-			size = self.pointer_size * 2
+			size = self.pointer_size * 3
+		elif sy.kind == sym.TypeKind.Trait:
+			size, align = self.pointer_size * 2, self.pointer_size
 		elif sy.kind == sym.TypeKind.Union:
 			for vtyp in sy.info.variants:
 				v_size, v_alignment = self.type_size(vtyp)
 				if v_size > size:
 					size = v_size
 					align = v_alignment
-			if not sy.info.no_tag:
+			if not sy.info.is_c_union:
 				# `tag: i32` field
 				size += 4
 		elif sy.kind in (sym.TypeKind.Struct, sym.TypeKind.Tuple):
 			total_size = 0
 			max_alignment = 0
-			types = list(map(lambda it: it.typ, sy.fields)) if sy.kind in (
-			    sym.TypeKind.Struct, sym.TypeKind.Str
-			) else sy.info.types
+			types = list(
+				map(lambda it: it.typ, sy.fields)
+			) if sy.kind==sym.TypeKind.Struct else sy.info.types
 			for ftyp in types:
 				field_size, alignment = self.type_size(ftyp)
 				if alignment > max_alignment:

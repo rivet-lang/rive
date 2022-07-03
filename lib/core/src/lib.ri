@@ -2,34 +2,12 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-/// The C standard library bindings.
-mod stdc;
+pub mod stdc;
+pub mod traits;
 
-import pkg::stdc: stdio, stdlib;
 import pkg::backtrace;
 
-extern (C) {
-    fn _R9init_argsZ(__argc: i32, __argv: *const *const u8);
-    fn _R9drop_argsZ();
-
-    fn _R12init_staticsZ();
-    // TODO(StunxFS): fn _R12drop_staticsZ();
-}
-
-pub errtype Error;
-
 pub static ARGS: [str] = [""][..];
-
-#[used]
-fn rivet_init(__argc: i32, __argv: *const *const u8, pkg_main: fn()) {
-    unsafe {
-        _R9init_argsZ(__argc, __argv);
-        _R12init_staticsZ();
-        pkg_main();
-        // TODO(StunxFS): _R12drop_staticsZ();
-        _R9drop_argsZ();
-    }
-}
 
 /// Prints a message to stdout. Unlike `println` stdout is not automatically
 /// flushed.
@@ -49,10 +27,10 @@ pub fn println(s: str = "") {
 /// Prints a message to stderr. Both stderr and stdout are flushed.
 pub fn eprint(s: str) {
     unsafe {
-        stdio::fflush(stdio::stdout);
-        stdio::fflush(stdio::stderr);
+        stdc::fflush(stdc::stdout);
+        stdc::fflush(stdc::stderr);
         write_buf_to_fd(2, s.ptr, s.size);
-        stdio::fflush(stdio::stderr);
+        stdc::fflush(stdc::stderr);
     }
 }
 
@@ -60,10 +38,10 @@ pub fn eprint(s: str) {
 /// flushed.
 pub fn eprintln(s: str = "") {
     unsafe {
-        stdio::fflush(stdio::stdout);
-        stdio::fflush(stdio::stderr);
+        stdc::fflush(stdc::stdout);
+        stdc::fflush(stdc::stderr);
         writeln_to_fd(2, s);
-        stdio::fflush(stdio::stderr);
+        stdc::fflush(stdc::stderr);
     }
 }
 
@@ -77,7 +55,7 @@ fn assert(cond: bool, msg: str) {
     }
 }
 
-pub fn panic(s: str = "") no_return {
+pub fn panic(s: str) no_return {
     eprint("panic: ");
     eprintln(s);
     backtrace::print(1);
@@ -99,15 +77,15 @@ pub fn exit(code: i32 = 0) no_return {
     unsafe {
         // TODO(StunxFS): _R12drop_staticsZ();
         _R9drop_argsZ();
-        stdlib::exit(code);
+        stdc::exit(code);
     }
 }
 
-pub fn abort() no_return {
+pub fn abort(s: str) no_return {
     unsafe {
         // TODO(StunxFS): _R12drop_staticsZ();
         _R9drop_argsZ();
-        stdlib::abort();
+        stdc::abort();
     }
 }
 
@@ -116,7 +94,7 @@ unsafe fn write_buf_to_fd(fd: i32, buf_: *const u8, buf_len: usize) {
     let mut remaining_bytes = buf_len;
     while (remaining_bytes > 0) {
         unsafe {
-            let x = stdio::write(fd, buf, remaining_bytes);
+            let x = stdc::write(fd, buf, remaining_bytes);
             buf += x;
             remaining_bytes -= as(usize, x);
         }

@@ -1,0 +1,22 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+extern (C) {
+    fn _R9init_argsZ(__argc: i32, __argv: *const *const u8);
+    fn _R9drop_argsZ();
+
+    fn _R12init_staticsZ();
+    // TODO(StunxFS): fn _R12drop_staticsZ();
+}
+
+#[used]
+fn rivet_main(__argc: i32, __argv: *const *const u8, pkg_main: fn()) {
+    unsafe {
+        _R9init_argsZ(__argc, __argv);
+        _R12init_staticsZ();
+        pkg_main();
+        // TODO(StunxFS): _R12drop_staticsZ();
+        _R9drop_argsZ();
+    }
+}

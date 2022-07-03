@@ -2,7 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-import pkg::stdc: string;
+import pkg::stdc;
+import pkg::traits::ToString;
 
 #[used]
 struct _str {
@@ -13,11 +14,11 @@ struct _str {
 
 extend str {
     pub unsafe fn from_cstr(cstr: *const u8) str {
-        let size = unsafe { string::strlen(cstr) };
+        let size = unsafe { stdc::strlen(cstr) };
         return _str{
             ptr: cstr,
             size: size,
-            len: if (size == 1) 1 else cstr_len_utf8(cstr, size)
+            len: if (size == 1) 1 else cstr_runes_count(cstr, size)
         };
     }
 
@@ -25,7 +26,7 @@ extend str {
         return _str{
             ptr: cstr,
             size: size,
-            len: if (size == 1) 1 else cstr_len_utf8(cstr, size)
+            len: if (size == 1) 1 else cstr_runes_count(cstr, size)
         };
     }
 
@@ -88,7 +89,7 @@ extend str {
         return _str{
             ptr: ptr,
             size: size,
-            len: cstr_len_utf8(ptr, size)
+            len: cstr_runes_count(ptr, size)
         };
     }
 

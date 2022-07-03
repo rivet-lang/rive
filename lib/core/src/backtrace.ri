@@ -4,7 +4,6 @@
 
 #![c_compile("thirdparty/libbacktrace/backtrace.c")]
 
-import pkg::stdc: stdio, string;
 import pkg::demangle;
 
 pub mod backtrace {
@@ -38,7 +37,7 @@ pub mod backtrace {
         lineno: i32, func_ptr: *const u8
     ) i32 {
         unsafe {
-            if (func_ptr != none and string::memcmp(func_ptr, c"_R4core10rivet_initF", 20) == 0) {
+            if (func_ptr != none and stdc::memcmp(func_ptr, c"_R4core10rivet_mainF", 20) == 0) {
                 return 1; // stop backtracing
             }
 
@@ -81,7 +80,7 @@ pub mod backtrace {
         eprint(unsafe { str::from_cstr(msg_ptr) });
         if (errnum > 0) {
             eprint(" (");
-            eprint(unsafe { str::from_cstr(string::strerror(errnum)) });
+            eprint(unsafe { str::from_cstr(stdc::strerror(errnum)) });
             eprint(")");
         }
         eprintln();

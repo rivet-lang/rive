@@ -131,7 +131,10 @@ class Register:
 					)
 					self.errtype_nr += 1
 			elif isinstance(decl, ast.TraitDecl):
-				ts = sym.Type(decl.vis, decl.name, sym.TypeKind.Trait)
+				ts = sym.Type(
+				    decl.vis, decl.name, sym.TypeKind.Trait,
+				    info = sym.TraitInfo()
+				)
 				old_cur_sym = self.cur_sym
 				self.cur_sym = ts
 				for d in decl.decls:
