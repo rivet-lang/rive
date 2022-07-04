@@ -4,7 +4,7 @@
 
 #![c_compile("thirdparty/libbacktrace/backtrace.c")]
 
-import pkg::demangle;
+using pkg::demangle;
 
 pub mod backtrace {
     struct backtrace_state;

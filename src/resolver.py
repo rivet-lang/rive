@@ -47,7 +47,7 @@ class Resolver:
 		    ast.TestDecl, ast.ExternPkg, ast.DestructorDecl
 		):
 			should_check = decl.attrs.if_check
-		if isinstance(decl, ast.ImportDecl):
+		if isinstance(decl, ast.UsingDecl):
 			if should_check:
 				if isinstance(decl.path, (ast.Ident, ast.PkgExpr)):
 					name = decl.path.name if isinstance(
@@ -56,7 +56,7 @@ class Resolver:
 					if len(decl.symbols) == 0:
 						if isinstance(decl.path, ast.PkgExpr):
 							report.error(
-							    "invalid `import` declaration", decl.path.pos
+							    "invalid `using` declaration", decl.path.pos
 							)
 						elif _ := self.comp.pkg_sym.find(name):
 							report.error(
@@ -69,7 +69,7 @@ class Resolver:
 							    "expected symbol list after name", decl.path.pos
 							)
 					elif sym_info := self.comp.universe.find(name):
-						self.resolve_selective_import_symbols(
+						self.resolve_selective_using_symbols(
 						    decl.symbols, sym_info
 						)
 					else:
@@ -84,7 +84,7 @@ class Resolver:
 							self.sf.imported_symbols[decl.alias
 							                         ] = decl.path.field_info
 						else:
-							self.resolve_selective_import_symbols(
+							self.resolve_selective_using_symbols(
 							    decl.symbols, decl.path.field_info
 							)
 		if isinstance(decl, ast.ExternDecl):
@@ -618,7 +618,7 @@ class Resolver:
 			)
 			report.help("you can use `as` to change the name of the import")
 
-	def resolve_selective_import_symbols(self, symbols, path_sym):
+	def resolve_selective_using_symbols(self, symbols, path_sym):
 		for isym in symbols:
 			if isym.is_self:
 				self.sf.imported_symbols[decl.alias] = path_sym

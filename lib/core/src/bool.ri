@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-import pkg::traits::ToString;
+using pkg::traits::ToString;
 
 extend bool for ToString {
     pub fn to_string(&self) String { return (if (self.*) "true" else "false").to_string(); }

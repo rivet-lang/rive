@@ -264,7 +264,7 @@ class Checker:
 				self.check_stmt(stmt.stmt)
 			else:
 				report.error(
-				    f"cannot iterate over `{iterable_t}`", stmt.iterable.pos
+				    f"`{iterable_t}` is not an iterable type", stmt.iterable.pos
 				)
 				report.note("expected array, slice or `str` value")
 		elif isinstance(stmt, ast.GotoStmt):

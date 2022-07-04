@@ -74,7 +74,7 @@ class Kind(Enum):
 	# ========== keywords ==========
 	KeyPkg = auto_enum() # pkg
 	KeyPub = auto_enum() # pub
-	KeyImport = auto_enum() # import
+	KeyUsing = auto_enum() # using
 	KeyAs = auto_enum() # as
 	KeyConst = auto_enum() # const
 	KeyStatic = auto_enum() # static
@@ -209,7 +209,7 @@ TOKEN_STRINGS = {
     Kind.KeySelfTy: "Self",
     Kind.KeyPkg: "pkg",
     Kind.KeyPub: "pub",
-    Kind.KeyImport: "import",
+    Kind.KeyUsing: "using",
     Kind.KeyAs: "as",
     Kind.KeyConst: "const",
     Kind.KeyStatic: "static",

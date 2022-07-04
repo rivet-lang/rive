@@ -143,14 +143,14 @@ class ExternPkg:
 		self.pkg_name = pkg_name
 		self.pos = pos
 
-class ImportDecl:
+class UsingDecl:
 	def __init__(self, attrs, path, alias, symbols):
 		self.attrs = attrs
 		self.path = path
 		self.alias = alias
 		self.symbols = symbols
 
-class ImportSymbol:
+class UsingSymbol:
 	def __init__(self, name, alias, is_self, pos):
 		self.name = name
 		self.alias = alias

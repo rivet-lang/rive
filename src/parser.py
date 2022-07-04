@@ -163,7 +163,7 @@ class Parser:
 		vis = self.parse_vis()
 		is_unsafe = self.accept(Kind.KeyUnsafe)
 		pos = self.tok.pos
-		if self.accept(Kind.KeyImport):
+		if self.accept(Kind.KeyUsing):
 			path = self.parse_expr()
 			if isinstance(path, ast.Ident):
 				alias = path.name
@@ -183,19 +183,17 @@ class Parser:
 					if self.accept(Kind.KeySelf):
 						if self.accept(Kind.KeyAs):
 							alias = self.parse_name()
-						symbols.append(ast.ImportSymbol("", alias, True))
+						symbols.append(ast.UsingSymbol("", alias, True))
 					else:
 						name = self.parse_name()
 						alias = name
 						if self.accept(Kind.KeyAs):
 							alias = self.parse_name()
-						symbols.append(
-						    ast.ImportSymbol(name, alias, False, pos)
-						)
+						symbols.append(ast.UsingSymbol(name, alias, False, pos))
 					if not self.accept(Kind.Comma):
 						break
 			self.expect(Kind.Semicolon)
-			return ast.ImportDecl(attrs, path, alias, symbols)
+			return ast.UsingDecl(attrs, path, alias, symbols)
 		elif self.accept(Kind.KeyExtern):
 			if self.tok.kind == Kind.KeyPkg and not self.is_pkg_level:
 				report.error(

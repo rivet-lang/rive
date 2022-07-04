@@ -865,7 +865,7 @@ class AST2RIR:
 					elif iterable_sym.kind == TypeKind.Str and isinstance(
 					    iterable, StringLiteral
 					):
-						len_ = IntLiteral(self.comp.usize_t, iterable.size)
+						len_ = IntLiteral(self.comp.usize_t, iterable.len)
 					else:
 						len_ = Selector(
 						    self.comp.usize_t, iterable, Name("len")

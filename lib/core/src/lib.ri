@@ -5,7 +5,7 @@
 pub mod stdc;
 pub mod traits;
 
-import pkg::backtrace;
+using pkg::backtrace;
 
 pub static ARGS: [str] = [""][..];
 
