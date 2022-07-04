@@ -7,7 +7,7 @@ import pkg::traits::ToString;
 
 pub struct String {
     ptr: *mut u8;
-    mut size_: usize;
+    mut len_: usize;
     mut cap: usize;
 
     pub fn new() Self { return Self{}; }
@@ -27,23 +27,23 @@ pub struct String {
         };
     }
 
-    pub unsafe fn from_raw(ptr: *mut u8, size: usize) Self {
-        if (size == 0) {
+    pub unsafe fn from_raw(ptr: *mut u8, len: usize) Self {
+        if (len == 0) {
             return Self::new();
         }
         return Self{
             ptr: ptr,
-            size_: size,
-            cap: size
+            len_: len,
+            cap: len
         };
     }
 
     pub unsafe fn from_cstr(ptr: *mut u8) Self {
-        let size = unsafe { stdc::strlen(ptr) };
+        let len = unsafe { stdc::strlen(ptr) };
         return Self{
             ptr: ptr,
-            size_: size,
-            cap: size
+            len_: len,
+            cap: len
         };
     }
 
@@ -55,65 +55,65 @@ pub struct String {
         }
         let mut res = Self::with_capacity(bytes.len);
         _ = mem::copy(res.ptr, bytes.ptr, bytes.len) catch unreachable!();
-        res.size_ = bytes.len;
+        res.len_ = bytes.len;
         return res;
     }
 
     pub fn from_str(s: str) Self {
-        if (s.size == 0) {
+        if (s.len == 0) {
             return Self::new();
         }
-        let mut res = Self::with_capacity(s.size);
-        _ = mem::copy(res.ptr, s.ptr, s.size) catch unreachable!();
-        res.size_ = s.size;
+        let mut res = Self::with_capacity(s.len);
+        _ = mem::copy(res.ptr, s.ptr, s.len) catch unreachable!();
+        res.len_ = s.len;
         return res;
     }
 
     pub fn push(&mut self, val: u8) {
-        if (self.size_ >= self.cap) {
-            self.reserve(self.size_ + 1);
+        if (self.len_ >= self.cap) {
+            self.reserve(self.len_ + 1);
         }
         unsafe {
             _ = mem::copy(
-                self.ptr + self.size_, &val, sizeof!(u8)
+                self.ptr + self.len_, &val, sizeof!(u8)
             ) catch unreachable!();
         }
-        self.size_++;
+        self.len_++;
     }
 
     pub fn push_str(&mut self, s: str) {
-        if (self.size_ >= self.cap) {
-            self.reserve(s.size);
+        if (self.len_ >= self.cap) {
+            self.reserve(s.len);
         }
         unsafe {
             _ = mem::copy(
-                self.ptr + self.size_, s.ptr, s.size
+                self.ptr + self.len_, s.ptr, s.len
             ) catch unreachable!();
         }
-        self.size_ += s.size;
+        self.len_ += s.len;
     }
 
     pub fn push_string(&mut self, s: String) {
-        if (self.size_ >= self.cap) {
-            self.reserve(s.size_);
+        if (self.len_ >= self.cap) {
+            self.reserve(s.len_);
         }
         unsafe {
             _ = mem::copy(
-                self.ptr + self.size_, s.ptr, s.size_
+                self.ptr + self.len_, s.ptr, s.len_
             ) catch unreachable!();
         }
-        self.size_ += s.size_;
+        self.len_ += s.len_;
     }
 
     /// Returns the last byte of the string, and removes it. If the string is
     /// empty, this will panic.
     pub fn pop(&mut self) u8 {
-        if (self.size_ == 0) {
+        if (self.len_ == 0) {
             panic("String::pop: string is empty");
         }
-        let new_len = self.size_ - 1;
+        let new_len = self.len_ - 1;
         let last_elem = unsafe { self.ptr + new_len * sizeof!(u8) };
-        self.size_ = new_len;
+        self.len_ = new_len;
         return last_elem;
     }
 
@@ -129,7 +129,7 @@ pub struct String {
         }
         let mut new_data = as(*mut u8, mem::alloc(cap * sizeof!(u8)) catch unreachable!());
         if (self.ptr != none) {
-            _ = mem::copy(new_data, self.ptr, self.size_ * sizeof!(u8)) catch unreachable!();
+            _ = mem::copy(new_data, self.ptr, self.len_ * sizeof!(u8)) catch unreachable!();
         }
         unsafe {
             mem::dealloc(self.ptr);
@@ -138,38 +138,43 @@ pub struct String {
         self.cap = cap;
     }
 
-    #[used]
     fn ==(&self, rhs: &Self) bool {
-        if (self.size_ != rhs.size_) {
+        if (self.len_ != rhs.len_) {
             return false;
         }
-        if (self.size_ > 0) {
-            let last_idx = self.size_ - 1;
+        if (self.len_ > 0) {
+            let last_idx = self.len_ - 1;
             if (unsafe { self.ptr[last_idx] != rhs.ptr[last_idx] }) {
                 return false;
             }
         }
-        return mem::cmp(self.ptr, rhs.ptr, rhs.size_) == 0;
+        return mem::cmp(self.ptr, rhs.ptr, rhs.len_) == 0;
     }
 
-    #[used]
     fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
 
-    pub fn is_empty(&self) bool { return self.size_ == 0; }
+    pub fn is_empty(&self) bool { return self.len_ == 0; }
 
-    pub fn size(&self) usize { return self.size_; }
+    pub fn len(&self) usize { return self.len_; }
+
+    /// Returns the number of runes contained in `self`.
+    pub fn runes_count(&self) usize { return cstr_runes_count(self.ptr, self.len_); }
 
     pub fn as_ptr(&self) *const u8 { return self.ptr; }
 
     pub unsafe fn as_mut_ptr(&self) *mut u8 { return self.ptr; }
 
+    pub fn as_bytes(&self) [u8] {
+        return unsafe { _slice::from_array(self.ptr, sizeof!(u8), self.len_) };
+    }
+
     pub fn as_str(&self) str {
-        return unsafe { str::from_cstr_with_size(self.ptr, self.size_) };
+        return unsafe { str::from_cstr_with_len(self.ptr, self.len_) };
     }
 
     pub fn clone(&self) Self {
-        let mut res = Self::with_capacity(self.size_);
-        _ = mem::copy(res.ptr, self.ptr, self.size_) catch unreachable!();
+        let mut res = Self::with_capacity(self.len_);
+        _ = mem::copy(res.ptr, self.ptr, self.len_) catch unreachable!();
         return res;
     }
 

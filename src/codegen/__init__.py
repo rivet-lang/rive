@@ -408,12 +408,10 @@ class RuneLiteral:
 		return self.__repr__()
 
 class StringLiteral:
-	def __init__(self, typ, lit, size, is_bytestr = False, len_ = None):
+	def __init__(self, typ, lit, len_):
 		self.typ = typ
 		self.lit = lit
-		self.len = len_ if len_ else len(lit)
-		self.size = size
-		self.is_bytestr = is_bytestr
+		self.len = len_
 
 	def __repr__(self):
 		return f'{self.typ} "{self.lit}"'
@@ -1099,8 +1097,7 @@ class AST2RIR:
 				    ]
 				)
 			return StringLiteral(
-			    expr.typ, utils.smart_quote(expr.lit, expr.is_raw), str(size),
-			    expr.is_bytestr, len(expr.lit)
+			    expr.typ, utils.smart_quote(expr.lit, expr.is_raw), str(size)
 			)
 		elif isinstance(expr, ast.EnumVariantExpr):
 			return IntLiteral(
@@ -2485,11 +2482,7 @@ class AST2RIR:
 			self.cur_fn.alloca_var(tmp)
 			self.cur_fn.store(
 			    Selector(type.Ptr(self.comp.uint8_t), tmp, Name("ptr")),
-			    StringLiteral(type.Ptr(self.comp.uint8_t), "", 0, True)
-			)
-			self.cur_fn.store(
-			    Selector(self.comp.usize_t, tmp, Name("size")),
-			    IntLiteral(self.comp.usize_t, "0")
+			    StringLiteral(type.Ptr(self.comp.uint8_t), "", 0)
 			)
 			self.cur_fn.store(
 			    Selector(self.comp.usize_t, tmp, Name("len")),

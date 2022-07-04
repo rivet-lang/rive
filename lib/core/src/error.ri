@@ -15,7 +15,7 @@ struct _error {
     #[used]
     fn print(&self) {
         eprint("[error] ");
-        if (self.msg.size == 0) {
+        if (self.msg.len == 0) {
             eprintln(self.errtype_name);
         } else {
             eprint(self.errtype_name);

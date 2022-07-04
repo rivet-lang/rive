@@ -63,3 +63,14 @@ fn len_utf8(code: u32) usize {
 extend rune {
     fn len_utf8(self) usize { return len_utf8(as(u32, self)); }
 }
+
+// Returns the number of runes contained in `s`.
+fn cstr_runes_count(s: *const u8, size: usize) usize {
+	let mut l: usize = 0;
+	let mut i: usize = 0;
+	while (i < size) {
+		l++;
+		i += unsafe { s[i] }.len_utf8();
+	}
+	return l;
+}

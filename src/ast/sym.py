@@ -571,8 +571,7 @@ def universe():
 	    Type(
 	        Visibility.Public, "str", TypeKind.Str, fields = [
 	            Field("ptr", False, True, Ptr(type_Type(uni[9]))),
-	            Field("len", False, True, type_Type(uni[13])),
-	            Field("size", False, True, type_Type(uni[13]))
+	            Field("len", False, True, type_Type(uni[13]))
 	        ]
 	    )
 	)

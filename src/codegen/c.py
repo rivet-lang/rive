@@ -554,11 +554,11 @@ void _R9drop_argsZ(void) {
 		elif isinstance(expr, RuneLiteral):
 			self.write(expr.lit)
 		elif isinstance(expr, StringLiteral):
-			if expr.is_bytestr or isinstance(expr.typ, type.Ptr):
+			if isinstance(expr.typ, type.Ptr):
 				self.write(f'(u8*)"{expr.lit}"')
 			else:
 				self.write(
-				    f'(_R4core4_str){{.ptr=((u8*)"{expr.lit}"), .len={expr.len}U, .size={expr.size}U}}'
+				    f'(_R4core4_str){{.ptr=((u8*)"{expr.lit}"), .len={expr.len}U}}'
 				)
 		elif isinstance(expr, ArrayLiteral):
 			self.write("(")

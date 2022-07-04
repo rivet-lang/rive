@@ -13,7 +13,7 @@ pub static ARGS: [str] = [""][..];
 /// flushed.
 pub fn print(s: str) {
     unsafe {
-        write_buf_to_fd(1, s.ptr, s.size);
+        write_buf_to_fd(1, s.ptr, s.len);
     }
 }
 
@@ -29,7 +29,7 @@ pub fn eprint(s: str) {
     unsafe {
         stdc::fflush(stdc::stdout);
         stdc::fflush(stdc::stderr);
-        write_buf_to_fd(2, s.ptr, s.size);
+        write_buf_to_fd(2, s.ptr, s.len);
         stdc::fflush(stdc::stderr);
     }
 }
@@ -89,9 +89,9 @@ pub fn abort(s: str) no_return {
     }
 }
 
-unsafe fn write_buf_to_fd(fd: i32, buf_: *const u8, buf_len: usize) {
+unsafe fn write_buf_to_fd(fd: i32, buf_: *const u8, len: usize) {
     let mut buf = buf_;
-    let mut remaining_bytes = buf_len;
+    let mut remaining_bytes = len;
     while (remaining_bytes > 0) {
         unsafe {
             let x = stdc::write(fd, buf, remaining_bytes);
@@ -103,7 +103,7 @@ unsafe fn write_buf_to_fd(fd: i32, buf_: *const u8, buf_len: usize) {
 
 unsafe fn writeln_to_fd(fd: i32, s: str) {
     unsafe {
-        write_buf_to_fd(fd, s.ptr, s.size);
+        write_buf_to_fd(fd, s.ptr, s.len);
         write_buf_to_fd(fd, c"\n", 1);
     }
 }

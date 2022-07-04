@@ -258,15 +258,17 @@ class Compiler:
 			return -1
 
 	# Returns the size and alignment (in bytes) of `typ`, similarly to
-	# C's `sizeof(T)` and `alignof(T)`.
+	# C's `sizeof(T)` and `_Alignof(T)`.
 	def type_size(self, typ):
 		if isinstance(typ, (type.Result, type.Optional)):
 			return self.type_size(typ.typ)
 		elif isinstance(typ, (type.Ptr, type.Ref)):
 			return self.pointer_size, self.pointer_size
 		elif isinstance(typ, type.Fn):
-			return self.pointer_size, 0
-		sy = typ.get_sym()
+			return self.pointer_size, self.pointer_size
+		return self.type_symbol_size(typ.get_sym())
+
+	def type_symbol_size(self, sy):
 		if sy.size != -1:
 			return sy.size, sy.align
 		size, align = 0, 0
@@ -278,9 +280,10 @@ class Compiler:
 		elif sy.kind == sym.TypeKind.Alias:
 			size, align = self.type_size(sy.info.parent)
 		elif sy.kind in (sym.TypeKind.Usize, sym.TypeKind.Isize):
-			size = self.pointer_size
+			size, align = self.pointer_size, self.pointer_size
 		elif sy.kind in (
-		    sym.TypeKind.Int8, sym.TypeKind.Uint8, sym.TypeKind.Bool
+		    sym.TypeKind.Int8, sym.TypeKind.Uint8, sym.TypeKind.Bool,
+		    sym.TypeKind.ErrType
 		):
 			size, align = 1, 1
 		elif sy.kind in (sym.TypeKind.Int16, sym.TypeKind.Uint16):
@@ -295,17 +298,15 @@ class Compiler:
 		    sym.TypeKind.UntypedFloat
 		):
 			size, align = 8, 8
-		elif sy.kind == sym.TypeKind.ErrType:
-			size, align = 1, 1
 		elif sy.kind == sym.TypeKind.Enum:
 			size, align = self.type_size(sy.info.underlying_typ)
 		elif sy.kind == sym.TypeKind.Array:
 			elem_size, elem_align = self.type_size(sy.info.elem_typ)
 			size, align = int(sy.info.size.lit) * elem_size, elem_align
 		elif sy.kind == sym.TypeKind.Str:
-			size = self.pointer_size * 3
+			size, align = self.type_symbol_size(self.str_struct)
 		elif sy.kind == sym.TypeKind.Slice:
-			size = self.pointer_size * 3
+			size, align = self.type_symbol_size(self.slice_struct)
 		elif sy.kind == sym.TypeKind.Trait:
 			size, align = self.pointer_size * 2, self.pointer_size
 		elif sy.kind == sym.TypeKind.Union:
@@ -321,8 +322,8 @@ class Compiler:
 			total_size = 0
 			max_alignment = 0
 			types = list(
-				map(lambda it: it.typ, sy.fields)
-			) if sy.kind==sym.TypeKind.Struct else sy.info.types
+			    map(lambda it: it.typ, sy.fields)
+			) if sy.kind == sym.TypeKind.Struct else sy.info.types
 			for ftyp in types:
 				field_size, alignment = self.type_size(ftyp)
 				if alignment > max_alignment:

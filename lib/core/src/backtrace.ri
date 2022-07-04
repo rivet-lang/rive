@@ -30,11 +30,11 @@ pub mod backtrace {
 
     struct BacktraceData {
         mut frame_nr: usize;
+        mut has_error: bool;
     }
 
     fn bt_print_callback(
-        data: *mut void, pc: i32, filename_ptr: *mut u8,
-        lineno: i32, func_ptr: *const u8
+        data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, func_ptr: *const u8
     ) i32 {
         unsafe {
             if (func_ptr != none and stdc::memcmp(func_ptr, c"_R4core10rivet_mainF", 20) == 0) {
@@ -59,7 +59,7 @@ pub mod backtrace {
             let lineno_str = lineno.to_string();
 
             let mut res = String::with_capacity(
-                kw.size + func_name.size() + filename.size() + lineno_str.size() + 9
+                kw.len + func_name.len() + filename.len() + lineno_str.len() + 9
             );
             res.push_str("   ");
             res.push_str(kw);
@@ -76,20 +76,25 @@ pub mod backtrace {
     }
 
     fn bt_error_handler(data: *mut void, msg_ptr: *const u8, errnum: i32) {
-        eprint("libbacktrace error: ");
-        eprint(unsafe { str::from_cstr(msg_ptr) });
-        if (errnum > 0) {
-            eprint(" (");
-            eprint(unsafe { str::from_cstr(stdc::strerror(errnum)) });
-            eprint(")");
+        let mut bdata = as(*mut BacktraceData, data);
+        if (!bdata.has_error) {
+            eprint("   libbacktrace error: ");
+            eprint(unsafe { str::from_cstr(msg_ptr) });
+            if (errnum > 0) {
+                eprint(" (");
+                eprint(unsafe { str::from_cstr(stdc::strerror(errnum)) });
+                eprint(")");
+            }
+            eprintln();
+            bdata.has_error = true;
         }
-        eprintln();
     }
 
     pub fn print(frames_to_skip: i32 = 0) {
         unsafe {
             _ = backtrace_full(
-                bt_state, frames_to_skip, bt_print_callback, bt_error_handler, &BacktraceData{frame_nr: 0}
+                bt_state, frames_to_skip, bt_print_callback, bt_error_handler,
+                &BacktraceData{}
             );
         }
     }
