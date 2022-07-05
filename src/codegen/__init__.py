@@ -1113,31 +1113,16 @@ class AST2RIR:
 				return Ident(expr.typ, mangle_symbol(expr.sym))
 			# comptime values
 			elif expr.is_comptime:
-				if expr.name == "_OS_":
+				if expr.name == "_FILE_":
 					return StringLiteral(
-					    self.comp.str_t, str(self.comp.prefs.target_os),
-					    len(str(self.comp.prefs.target_os))
+					    self.comp.str_t, expr.pos.file, len(expr.pos.file)
 					)
-				elif expr.name == "_ARCH_":
-					return StringLiteral(
-					    self.comp.str_t, str(self.comp.prefs.target_arch),
-					    len(str(self.comp.prefs.target_arch))
-					)
-				elif expr.name == "_ENDIAN_":
-					return StringLiteral(
-					    self.comp.str_t, str(self.comp.prefs.target_endian),
-					    len(str(self.comp.prefs.target_endian))
-					)
-				elif expr.name == "_BITS_":
-					return StringLiteral(
-					    self.comp.str_t, str(self.comp.prefs.target_bits),
-					    len(str(self.comp.prefs.target_bits))
-					)
-				elif expr.name == "_BACKEND_":
-					return StringLiteral(
-					    self.comp.str_t, str(self.comp.prefs.target_backend),
-					    len(str(self.comp.prefs.target_backend))
-					)
+				elif expr.name == "_LINE_":
+					line = str(expr.pos.line + 1)
+					return StringLiteral(self.comp.str_t, line, len(line))
+				elif expr.name == "_COLUMN_":
+					col = str(expr.pos.col)
+					return StringLiteral(self.comp.str_t, col, len(col))
 				elif expr.name == "_FUNCTION_":
 					return StringLiteral(
 					    self.comp.str_t, self.cur_fn_qualname,

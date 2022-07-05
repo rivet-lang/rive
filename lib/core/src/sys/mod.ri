@@ -1,0 +1,22 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+extern (C) {
+    fn get_nprocs() i32;
+}
+
+/// Returns true if the current executable is running on a 32-bit system.
+pub fn is_32bit() bool { return $if (_x32_) true $else false; }
+
+/// Returns true if the current executable is running on a 64-bit system.
+pub fn is_64bit() bool { return $if (_x64_) true $else false; }
+
+/// Returns true if the current executable is running on a little-endian system.
+pub fn is_little_endian() bool { return $if (_LITTLE_ENDIAN_) true $else false; }
+
+/// Returns true if the current executable is running on a big-endian system.
+pub fn is_big_endian() bool { return $if (_BIG_ENDIAN_) true $else false; }
+
+/// Returns the number of virtual CPU cores found on the system.
+pub fn nr_cpus() i32 { return unsafe { get_nprocs() }; }

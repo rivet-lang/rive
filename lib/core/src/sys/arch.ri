@@ -1,0 +1,19 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+pub enum Arch : u8 {
+    I386,
+    AMD64
+}
+
+/// Returns the current architecture.
+pub fn arch() Arch {
+    $if (_i386_) {
+        return .I386;
+    } $elif (_AMD64_) {
+        return .AMD64;
+    } $else {
+        panic("unknown host architecture");
+    }
+}

@@ -2,11 +2,12 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-extern (C) {
-    pub static environ: *const *const u8;
-
-    pub fn sysconf(name: i32) i64;
-
-    pub fn getpid() u32;
-    pub fn getppid() u32;
+pub enum CRuntime : u8 {
+    Glibc,
+    Bionic,
+    Musl,
+    Uclibc
 }
+
+/// Returns the current C runtime.
+pub fn c_runtime() CRuntime { return .Glibc; }

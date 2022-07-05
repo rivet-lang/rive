@@ -5,8 +5,8 @@
 from enum import IntEnum as Enum, auto as auto_enum
 
 COMPTIME_CONSTANTS = [
-    "_OS_", "_ARCH_", "_ENDIAN_", "_BITS_", "_BACKEND_", "_FUNCTION_",
-    "_RIVET_VERSION_", "_RIVET_COMMIT_"
+    "_FILE_", "_LINE_", "_COLUMN_", "_FUNCTION_", "_RIVET_VERSION_",
+    "_RIVET_COMMIT_"
 ]
 
 def is_comptime_constant(name):
