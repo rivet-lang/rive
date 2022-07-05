@@ -2,8 +2,6 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-using pkg::backtrace;
-
 pub errtype Error;
 
 #[used]
@@ -23,6 +21,6 @@ struct _error {
             eprintln(self.msg);
         }
         backtrace::print(2);
-        exit(1);
+        process::exit(1);
     }
 }

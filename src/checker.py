@@ -12,7 +12,7 @@ class Checker:
 		self.comp = comp
 
 		self.cur_fn = None
-		self.cur_sym = self.comp.pkg_sym
+		self.cur_sym = None
 		self.expected_type = self.comp.void_t
 
 		self.unsafe_operations = 0
@@ -21,11 +21,11 @@ class Checker:
 		self.void_types = (self.comp.void_t, self.comp.no_return_t)
 
 	def check_files(self, source_files):
+		self.cur_sym = self.comp.pkg_sym
 		for sf in source_files:
 			old_cur_sym = self.cur_sym
 			if sf.mod_sym:
 				self.cur_sym = sf.mod_sym
-			self.unsafe_operations = 0
 			self.check_decls(sf.decls)
 			if sf.mod_sym:
 				self.cur_sym = old_cur_sym
@@ -68,6 +68,8 @@ class Checker:
 				pass
 		elif isinstance(decl, ast.TraitDecl):
 			if should_check:
+				if decl.attrs.has("used"):
+					decl.sym.uses += 1
 				self.check_decls(decl.decls)
 		elif isinstance(decl, ast.UnionDecl):
 			if should_check:
@@ -859,7 +861,7 @@ class Checker:
 						)
 					return expr.typ
 				elif field := left_sym.lookup_field(expr.field_name):
-					if (not field.is_pub
+					if (not field.vis.is_pub()
 					    ) and not self.cur_sym.has_access_to(left_sym):
 						report.error(
 						    f"field `{expr.field_name}` of type `{left_sym.name}` is private",
@@ -1416,7 +1418,8 @@ class Checker:
 				report.error(
 				    f"cannot use `{expr.obj.name}` as mutable {kind}", expr.pos
 				)
-				report.help(f"consider making this {kind} mutable")
+				if not expr.obj.is_arg:
+					report.help(f"consider making this object mutable")
 			elif expr.sym:
 				self.check_sym_is_mut(expr.sym, expr.pos)
 		elif isinstance(expr, ast.SelfExpr):

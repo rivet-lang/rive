@@ -2,8 +2,6 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-using pkg::stdc;
-
 pub mod demangle {
     const BUFFER_SIZE: usize = 30;
 
@@ -11,7 +9,7 @@ pub mod demangle {
         mut buf: [u8; BUFFER_SIZE];
         mut len: usize;
 
-        pub fn push(&mut self, byte: u8) {
+        fn push(&mut self, byte: u8) {
             if (self.len < BUFFER_SIZE) {
                 self.buf[self.len] = byte;
                 self.len++;
@@ -20,7 +18,7 @@ pub mod demangle {
             }
         }
 
-        pub fn clear(&mut self) {
+        fn clear(&mut self) {
             while (self.len > 0) {
                 self.buf[self.len] = 0;
                 self.len--;

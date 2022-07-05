@@ -141,9 +141,13 @@ class Sym:
 		from ..ast import type
 		fields = []
 		if elem_typ != type.Type(self[0]):
-			fields.append(Field("value", False, False, elem_typ))
-		fields.append(Field("is_err", False, False, type.Type(self[2])))
-		fields.append(Field("err", False, False, type.Type(self[19])))
+			fields.append(Field("value", False, Visibility.Private, elem_typ))
+		fields.append(
+		    Field("is_err", False, Visibility.Private, type.Type(self[2]))
+		)
+		fields.append(
+		    Field("err", False, Visibility.Private, type.Type(self[19]))
+		)
 		return self.add_and_return(
 		    Type(
 		        Visibility.Public, unique_name, TypeKind.Struct, fields,
@@ -160,8 +164,11 @@ class Sym:
 		return self.add_and_return(
 		    Type(
 		        Visibility.Public, unique_name, TypeKind.Struct, [
-		            Field("value", False, False, elem_typ),
-		            Field("is_none", False, False, type.Type(self[2]))
+		            Field("value", False, Visibility.Private, elem_typ),
+		            Field(
+		                "is_none", False, Visibility.Private,
+		                type.Type(self[2])
+		            )
 		        ], StructInfo(False)
 		    )
 		)
@@ -184,9 +191,12 @@ class Sym:
 		from ..ast.type import Ptr, Type as type_Type
 		return self.add_and_return(
 		    Type(
-		        Visibility.Public, unique_name, TypeKind.Slice,
-		        [Field("ptr", False, True, Ptr(type_Type(self[0])))],
-		        SliceInfo(elem_typ)
+		        Visibility.Public, unique_name, TypeKind.Slice, [
+		            Field(
+		                "ptr", False, Visibility.Public,
+		                Ptr(type_Type(self[0]))
+		            )
+		        ], SliceInfo(elem_typ)
 		    )
 		)
 
@@ -219,23 +229,24 @@ class Sym:
 			return True
 		return False
 
+	def super_(self):
+		# package or module
+		p = self
+		while True:
+			if isinstance(p, (Pkg, Mod)):
+				break
+			p = p.parent
+			if p == None:
+				break
+		return p
+
 	def has_access_to(self, other):
-		if other == None or other.parent == None:
-			return False
-		if self == other:
-			return True
-		if self == other.parent:
-			return True
-		if other == self.parent:
-			return True
-		if self.parent == other.parent:
-			return True
-		return False
+		self_super = self.super_()
+		other_super = other.super_()
+		return self_super == other_super or self_super == other or self_super.parent == other.parent
 
 	def is_used(self):
-		if self.vis.is_pub():
-			return True
-		return self.uses > 0
+		return self.vis.is_pub() or self.uses > 0
 
 	def sym_kind(self):
 		if isinstance(self, Pkg):
@@ -293,11 +304,11 @@ class Static(Sym):
 
 class Field:
 	def __init__(
-	    self, name, is_mut, is_pub, typ, has_def_expr = False, def_expr = None
+	    self, name, is_mut, vis, typ, has_def_expr = False, def_expr = None
 	):
 		self.name = name
 		self.is_mut = is_mut
-		self.is_pub = is_pub
+		self.vis = vis
 		self.typ = typ
 		self.has_def_expr = has_def_expr
 		self.def_expr = def_expr
@@ -570,15 +581,16 @@ def universe():
 	uni.add(
 	    Type(
 	        Visibility.Public, "str", TypeKind.Str, fields = [
-	            Field("ptr", False, True, Ptr(type_Type(uni[9]))),
-	            Field("len", False, True, type_Type(uni[13]))
+	            Field("ptr", False, Visibility.Public, Ptr(type_Type(uni[9]))),
+	            Field("len", False, Visibility.Public, type_Type(uni[13]))
 	        ]
 	    )
 	)
 	uni.add(
 	    Type(
-	        Visibility.Public, "error", TypeKind.Struct,
-	        fields = [Field("msg", False, True, type_Type(uni[18]))]
+	        Visibility.Public, "error", TypeKind.Struct, fields = [
+	            Field("msg", False, Visibility.Public, type_Type(uni[18]))
+	        ]
 	    )
 	)
 	uni.add(Type(Visibility.Public, "no_return", TypeKind.NoReturn))

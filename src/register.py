@@ -16,8 +16,8 @@ class Register:
 		self.cur_fn_scope = None
 
 	def visit_source_files(self, source_files):
-		self.cur_sym = self.add_pkg(self.comp.prefs.pkg_name)
-		self.comp.pkg_sym = self.cur_sym
+		self.comp.pkg_sym = self.add_pkg(self.comp.prefs.pkg_name)
+		self.cur_sym = self.comp.pkg_sym
 		for sf in source_files:
 			self.visit_source_file(sf)
 
@@ -193,7 +193,7 @@ class Register:
 								else:
 									decl.sym.fields.append(
 									    sym.Field(
-									        d.name, d.is_mut, d.is_pub, d.typ
+									        d.name, d.is_mut, d.vis, d.typ
 									    )
 									)
 						elif isinstance(d, ast.FnDecl):

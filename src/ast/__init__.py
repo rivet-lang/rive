@@ -50,7 +50,7 @@ class Visibility(Enum):
 	def __str__(self):
 		return self.__repr__()
 
-# Used for `let` and `for` stmts, and guard exprs
+# Used in `let` stmts and guard exprs
 class VarDecl:
 	def __init__(self, is_mut, is_ref, name, has_typ, typ, pos):
 		self.is_mut = is_mut
@@ -240,12 +240,12 @@ class UnionDecl:
 
 class StructField:
 	def __init__(
-	    self, attrs, doc_comment, is_pub, is_mut, name, typ, def_expr,
+	    self, attrs, doc_comment, vis, is_mut, name, typ, def_expr,
 	    has_def_expr, pos
 	):
 		self.doc_comment = doc_comment
 		self.attrs = attrs
-		self.is_pub = is_pub
+		self.vis = vis
 		self.is_mut = is_mut
 		self.name = name
 		self.typ = typ

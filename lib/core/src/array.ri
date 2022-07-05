@@ -2,8 +2,6 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-using pkg::stdc;
-
 #[used]
 fn array_index(len: usize, idx: usize) {
     if (idx >= len) {

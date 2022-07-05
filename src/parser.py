@@ -420,7 +420,7 @@ class Parser:
 				def_expr = self.parse_expr()
 			self.expect(Kind.Semicolon)
 			return ast.StructField(
-			    attrs, doc_comment, vis.is_pub(), is_mut, name, typ, def_expr,
+			    attrs, doc_comment, vis, is_mut, name, typ, def_expr,
 			    has_def_expr, pos
 			)
 		elif self.accept(Kind.KeyEnum):

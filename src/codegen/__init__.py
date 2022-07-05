@@ -986,15 +986,14 @@ class AST2RIR:
 			elif isinstance(stmt.left, ast.IndexExpr):
 				left_sym = stmt.left.left_typ.get_sym()
 				if left_sym.kind == TypeKind.Slice and stmt.op == Kind.Assign:
+					rec = self.convert_expr_with_cast(
+					    stmt.left.left_typ, stmt.left.left
+					)
+					if not isinstance(stmt.left.left_typ, type.Ref):
+						rec = Inst(InstKind.GetRef, [rec])
 					self.cur_fn.add_call(
 					    "_R4core6_slice3setM", [
-					        Inst(
-					            InstKind.GetRef, [
-					                self.convert_expr_with_cast(
-					                    stmt.left.left_typ, stmt.left.left
-					                )
-					            ]
-					        ),
+					        rec,
 					        self.convert_expr(stmt.left.index),
 					        Inst(
 					            InstKind.GetRef, [

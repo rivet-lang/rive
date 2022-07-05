@@ -5,8 +5,6 @@
 pub mod stdc;
 pub mod traits;
 
-using pkg::backtrace;
-
 pub static ARGS: [str] = [""][..];
 
 /// Prints a message to stdout. Unlike `println` stdout is not automatically
@@ -51,7 +49,7 @@ fn assert(cond: bool, msg: str) {
         eprint("panic: assertion failed: ");
         eprintln(msg);
         backtrace::print(2);
-        exit(1);
+        process::exit(1);
     }
 }
 
@@ -59,7 +57,7 @@ pub fn panic(s: str) no_return {
     eprint("panic: ");
     eprintln(s);
     backtrace::print(1);
-    exit(1);
+    process::exit(1);
 }
 
 #[used]
@@ -68,24 +66,7 @@ fn panic_if(cond: bool, msg: str) {
         eprint("panic: ");
         eprintln(msg);
         backtrace::print(2);
-        exit(1);
-    }
-}
-
-/// Terminates execution immediately and returns exit `code` to the shell.
-pub fn exit(code: i32 = 0) no_return {
-    unsafe {
-        // TODO(StunxFS): _R12drop_staticsZ();
-        _R9drop_argsZ();
-        stdc::exit(code);
-    }
-}
-
-pub fn abort(s: str) no_return {
-    unsafe {
-        // TODO(StunxFS): _R12drop_staticsZ();
-        _R9drop_argsZ();
-        stdc::abort();
+        process::exit(1);
     }
 }
 
