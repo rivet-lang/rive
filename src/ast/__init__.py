@@ -701,15 +701,17 @@ class ParExpr:
 		return f"({self.expr})"
 
 class IndexExpr:
-	def __init__(self, left, index, pos):
+	def __init__(self, left, index, is_mut, pos):
 		self.left = left
 		self.index = index
+		self.is_mut = is_mut
 		self.left_typ = None
 		self.pos = pos
 		self.typ = None
 
 	def __repr__(self):
-		return f"{self.left}[{self.index}]"
+		kw = "mut " if self.is_mut else ""
+		return f"{self.left}[{kw}{self.index}]"
 
 	def __str__(self):
 		return self.__repr__()

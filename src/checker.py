@@ -739,12 +739,21 @@ class Checker:
 					)
 
 				if isinstance(expr.index, ast.RangeExpr):
+					if expr.is_mut:
+						if isinstance(
+						    expr.left_typ, type.Slice
+						) and not expr.left_typ.is_mut:
+							report.error(
+							    "cannot create a mutable slice from an immutable one"
+							)
+						else:
+							self.check_expr_is_mut(expr.left)
 					if left_sym.kind == TypeKind.Slice:
 						expr.typ = expr.left_typ
 					else:
 						expr.typ = type.Type(
 						    self.comp.universe.add_or_get_slice(
-						        left_sym.info.elem_typ
+						        left_sym.info.elem_typ, expr.is_mut
 						    )
 						)
 				elif left_sym.kind == TypeKind.Slice:
@@ -1604,6 +1613,8 @@ class Checker:
 		elif exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:
 			return exp_sym.info.elem_typ == got_sym.info.elem_typ and exp_sym.info.size == got_sym.info.size
 		elif exp_sym.kind == TypeKind.Slice and got_sym.kind == TypeKind.Slice:
+			if exp_sym.info.is_mut and not got_sym.info.is_mut:
+				return False
 			return exp_sym.info.elem_typ == got_sym.info.elem_typ
 		elif exp_sym.kind == TypeKind.Tuple and got_sym.kind == TypeKind.Tuple:
 			if len(exp_sym.info.types) != len(got_sym.info.types):

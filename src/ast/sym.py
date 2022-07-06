@@ -184,7 +184,7 @@ class Sym:
 		    )
 		)
 
-	def add_or_get_slice(self, elem_typ):
+	def add_or_get_slice(self, elem_typ, is_mut):
 		unique_name = f"[{elem_typ.qualstr()}]"
 		if sym := self.find(unique_name):
 			return sym
@@ -196,7 +196,7 @@ class Sym:
 		                "ptr", False, Visibility.Public,
 		                Ptr(type_Type(self[0]))
 		            )
-		        ], SliceInfo(elem_typ)
+		        ], SliceInfo(elem_typ, is_mut)
 		    )
 		)
 
@@ -437,8 +437,9 @@ class ArrayInfo:
 		self.has_wrapper = False # for return values in C backend
 
 class SliceInfo:
-	def __init__(self, elem_typ):
+	def __init__(self, elem_typ, is_mut):
 		self.elem_typ = elem_typ
+		self.is_mut = is_mut
 
 class TupleInfo:
 	def __init__(self, types):

@@ -453,11 +453,13 @@ class Resolver:
 			return self.resolve_type(typ.typ)
 		elif isinstance(typ, type.Variadic):
 			if self.resolve_type(typ.typ):
-				typ.resolve(self.comp.universe.add_or_get_slice(typ.typ))
+				typ.resolve(self.comp.universe.add_or_get_slice(typ.typ, False))
 				return True
 		elif isinstance(typ, type.Slice):
 			if self.resolve_type(typ.typ):
-				typ.resolve(self.comp.universe.add_or_get_slice(typ.typ))
+				typ.resolve(
+				    self.comp.universe.add_or_get_slice(typ.typ, typ.is_mut)
+				)
 				return True
 		elif isinstance(typ, type.Array):
 			if self.resolve_type(typ.typ):

@@ -124,23 +124,26 @@ class Ptr(TBase):
 		return f"*{kmut}{self.typ}"
 
 class Slice(TBase):
-	def __init__(self, typ):
+	def __init__(self, typ, is_mut = False):
 		self.typ = typ
+		self.is_mut = is_mut
 		self.sym = None
 
 	def resolve(self, sym):
 		self.sym = sym
 
 	def qualstr(self):
-		return f"[{self.typ.qualstr()}]"
+		kw = "mut " if self.is_mut else ""
+		return f"[{kw}{self.typ.qualstr()}]"
 
 	def __eq__(self, other):
 		if not isinstance(other, Slice):
 			return False
-		return self.typ == other.typ
+		return self.is_mut == other.is_mut and self.typ == other.typ
 
 	def __str__(self):
-		return f"[{self.typ}]"
+		kw = "mut " if self.is_mut else ""
+		return f"[{kw}{self.typ}]"
 
 class Variadic(TBase):
 	def __init__(self, typ):

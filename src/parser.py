@@ -1001,6 +1001,7 @@ class Parser:
 				    ), expr.pos
 				)
 			elif self.accept(Kind.Lbracket):
+				is_mut = self.accept(Kind.KeyMut)
 				index = self.empty_expr()
 				if self.accept(Kind.DotDot):
 					if self.tok.kind == Kind.Rbracket:
@@ -1025,7 +1026,11 @@ class Parser:
 							    True, True
 							)
 				self.expect(Kind.Rbracket)
-				expr = ast.IndexExpr(expr, index, expr.pos)
+				if is_mut and not isinstance(index, ast.RangeExpr):
+					report.error(
+					    "only slices can be marked as mutable", expr.pos
+					)
+				expr = ast.IndexExpr(expr, index, is_mut, expr.pos)
 			elif self.accept(Kind.Dot):
 				if self.accept(Kind.Mult):
 					expr = ast.SelectorExpr(
@@ -1273,13 +1278,23 @@ class Parser:
 			return type.Ptr(typ, is_mut)
 		elif self.accept(Kind.Lbracket):
 			# arrays or slices
+			mut_pos = self.tok.pos
+			is_mut = self.accept(Kind.KeyMut)
 			typ = self.parse_type()
 			if self.accept(Kind.Semicolon):
+				if is_mut:
+					report.error(
+					    "the element type of an array cannot be declared mutable",
+					    mut_pos
+					)
+					report.note(
+					    "this is only valid with slices"
+					)
 				size = self.parse_expr()
 				self.expect(Kind.Rbracket)
 				return type.Array(typ, size)
 			self.expect(Kind.Rbracket)
-			return type.Slice(typ)
+			return type.Slice(typ, is_mut)
 		elif self.accept(Kind.Lparen):
 			# tuples
 			types = []

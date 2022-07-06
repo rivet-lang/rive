@@ -2486,6 +2486,8 @@ class AST2RIR:
 			return ArrayLiteral(
 			    typ, [value for _ in range(0, int(typ_sym.info.size.lit))]
 			)
+		elif typ_sym.kind == TypeKind.Slice:
+			return Ident(typ, "_R4core11empty_slice")
 		elif typ_sym.kind == TypeKind.Enum:
 			return IntLiteral(typ_sym.info.underlying_typ, "0")
 		elif typ_sym.kind == TypeKind.Tuple:
