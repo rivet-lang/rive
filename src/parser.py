@@ -1287,9 +1287,7 @@ class Parser:
 					    "the element type of an array cannot be declared mutable",
 					    mut_pos
 					)
-					report.note(
-					    "this is only valid with slices"
-					)
+					report.note("this is only valid with slices")
 				size = self.parse_expr()
 				self.expect(Kind.Rbracket)
 				return type.Array(typ, size)

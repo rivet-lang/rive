@@ -2306,13 +2306,20 @@ class AST2RIR:
 						    )
 						)
 					else:
-						p_conv = self.convert_expr_with_cast(expr.typ, p)
-						self.cur_fn.alloca(
-						    self.comp.bool_t, tmp2,
-						    Inst(
-						        InstKind.Cmp, [Name("=="), match_expr, p_conv]
-						    )
-						)
+						p_conv = self.convert_expr_with_cast(p.typ, p)
+						if p.typ == self.comp.str_t:
+							inst = Inst(
+							    InstKind.Call, [
+							        Name("_R4core4_str4_eq_M"),
+							        Inst(InstKind.GetRef, [match_expr]),
+							        Inst(InstKind.GetRef, [p_conv]),
+							    ]
+							)
+						else:
+							inst = Inst(
+							    InstKind.Cmp, [Name("=="), match_expr, p_conv]
+							)
+						self.cur_fn.alloca(self.comp.bool_t, tmp2, inst)
 					self.cur_fn.add_cond_br(
 					    Ident(self.comp.bool_t, tmp2), b_label, next_pat
 					)
