@@ -101,7 +101,7 @@ class Ptr(TBase):
 		self.is_mut = is_mut
 
 	def qualstr(self):
-		kmut = "mut " if self.is_mut else "const "
+		kmut = "mut " if self.is_mut else ""
 		return f"*{kmut}{self.typ.qualstr()}"
 
 	def nr_level(self):
@@ -120,7 +120,7 @@ class Ptr(TBase):
 		return self.typ == other.typ
 
 	def __str__(self):
-		kmut = "mut " if self.is_mut else "const "
+		kmut = "mut " if self.is_mut else ""
 		return f"*{kmut}{self.typ}"
 
 class Slice(TBase):

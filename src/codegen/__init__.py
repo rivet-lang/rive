@@ -919,7 +919,38 @@ class AST2RIR:
 				cond = IntLiteral(self.comp.bool_t, "1")
 				self.cur_fn.add_br(body_label)
 			else:
-				cond = self.convert_expr_with_cast(self.comp.bool_t, stmt.cond)
+				if isinstance(stmt.cond, ast.GuardExpr):
+					gexpr = self.convert_expr_with_cast(
+					    stmt.cond.expr.typ, stmt.cond.expr
+					)
+					if stmt.cond.is_result:
+						cond = Inst(
+						    InstKind.BooleanNot,
+						    [Selector(self.comp.bool_t, gexpr, Name("is_err"))]
+						)
+					else:
+						cond = Inst(
+						    InstKind.BooleanNot, [
+						        Selector(
+						            self.comp.bool_t, gexpr, Name("is_none")
+						        )
+						    ]
+						)
+					self.cur_fn.alloca(
+					    stmt.cond.expr.typ.typ, stmt.cond.vars[0],
+					    Selector(stmt.cond.expr.typ.typ, gexpr, Name("value"))
+					)
+					if stmt.cond.has_cond:
+						gcond = self.convert_expr_with_cast(
+						    self.comp.bool_t, stmt.cond.cond
+						)
+						self.cur_fn.add_cond_br(
+						    gcond, body_label, self.loop_exit_label
+						)
+				else:
+					cond = self.convert_expr_with_cast(
+					    self.comp.bool_t, stmt.cond
+					)
 				if isinstance(cond, IntLiteral) and cond.lit == "1":
 					self.cur_fn.add_br(body_label)
 				else:
@@ -929,6 +960,7 @@ class AST2RIR:
 
 			gen_stmt = True
 			if isinstance(cond, IntLiteral) and cond.lit == "0":
+				self.cur_fn.add_comment("skip while stmt (cond: false)")
 				gen_stmt = False
 
 			self.cur_fn.add_label(body_label)
@@ -2231,7 +2263,35 @@ class AST2RIR:
 				if b.is_else:
 					self.cur_fn.add_label(else_label)
 				else:
-					cond = self.convert_expr_with_cast(b.expr.typ, b.cond)
+					if isinstance(b.cond, ast.GuardExpr):
+						gexpr = self.convert_expr_with_cast(
+						    b.cond.expr.typ, b.cond.expr
+						)
+						if b.cond.is_result:
+							cond = Inst(
+							    InstKind.BooleanNot, [
+							        Selector(
+							            self.comp.bool_t, gexpr, Name("is_err")
+							        )
+							    ]
+							)
+						else:
+							cond = Inst(
+							    InstKind.BooleanNot, [
+							        Selector(
+							            self.comp.bool_t, gexpr,
+							            Name("is_none")
+							        )
+							    ]
+							)
+						self.cur_fn.alloca(
+						    b.cond.expr.typ.typ, b.cond.vars[0],
+						    Selector(b.cond.expr.typ.typ, gexpr, Name("value"))
+						)
+					else:
+						cond = self.convert_expr_with_cast(
+						    self.comp.bool_t, b.cond
+						)
 					if isinstance(cond, IntLiteral) and cond.lit == "0":
 						continue # skip `if` branch with false condition
 					branch_label = self.cur_fn.local_name()
@@ -2247,6 +2307,14 @@ class AST2RIR:
 					else:
 						self.cur_fn.add_cond_br(cond, branch_label, next_branch)
 						self.cur_fn.add_label(branch_label)
+						if isinstance(b.cond, ast.GuardExpr):
+							if b.cond.has_cond:
+								gcond = self.convert_expr_with_cast(
+								    self.comp.bool_t, b.cond.cond
+								)
+								self.cur_fn.add_cond_br(
+								    gcond, branch_label, next_branch
+								)
 				if is_void_value:
 					self.convert_expr_with_cast(
 					    expr.typ, b.expr

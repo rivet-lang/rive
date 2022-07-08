@@ -616,12 +616,18 @@ class Parser:
 			pos = self.prev_tok.pos
 			is_inf = False
 			if self.accept(Kind.Lparen):
-				cond = self.parse_expr()
+				if self.tok.kind == Kind.KeyLet:
+					self.open_scope()
+					cond = self.parse_guard_expr()
+				else:
+					cond = self.parse_expr()
 				self.expect(Kind.Rparen)
 			else:
 				cond = ast.BoolLiteral(True, self.tok.pos)
 				is_inf = True
 			stmt = self.parse_stmt()
+			if isinstance(cond, ast.GuardExpr):
+				self.close_scope()
 			return ast.WhileStmt(cond, stmt, is_inf, pos)
 		elif self.accept(Kind.KeyFor):
 			pos = self.prev_tok.pos
@@ -1078,13 +1084,19 @@ class Parser:
 				op = self.tok.kind
 				self.next()
 				self.expect(Kind.Lparen)
-				cond = self.parse_expr()
+				if self.tok.kind == Kind.KeyLet:
+					self.open_scope()
+					cond = self.parse_guard_expr()
+				else:
+					cond = self.parse_expr()
 				self.expect(Kind.Rparen)
 				branches.append(
 				    ast.IfBranch(
 				        is_comptime, cond, self.parse_expr(), False, op
 				    )
 				)
+				if isinstance(cond, ast.GuardExpr):
+					self.close_scope()
 				if self.tok.kind not in (
 				    Kind.Dollar, Kind.KeyElif, Kind.KeyElse
 				):
@@ -1122,6 +1134,24 @@ class Parser:
 				break
 		self.expect(Kind.Rbrace)
 		return ast.MatchExpr(expr, branches, is_typematch, pos)
+
+	def parse_guard_expr(self):
+		self.expect(Kind.KeyLet)
+		pos = self.prev_tok.pos
+		vars = []
+		while True:
+			vars.append(self.parse_name())
+			if not self.accept(Kind.Comma):
+				break
+		self.expect(Kind.Assign)
+		e = self.parse_expr()
+		if self.accept(Kind.Semicolon):
+			has_cond = True
+			cond = self.parse_expr()
+		else:
+			has_cond = False
+			cond = self.empty_expr()
+		return ast.GuardExpr(vars, e, has_cond, cond, self.scope, pos)
 
 	def parse_path_expr(self, left):
 		self.expect(Kind.DoubleColon)

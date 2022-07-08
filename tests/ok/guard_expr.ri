@@ -1,0 +1,20 @@
+fn ret_none() ?i32 { return 3; }
+
+fn main() {
+    if (let val = ret_none()) {
+        assert!(val == 3);
+    }
+
+    if (let val1 = ret_none(); val1 >= 10) {
+        assert!(false);
+    }
+
+    while (let val2 = ret_none()) {
+        assert!(val2 == 3);
+        break;
+    }
+
+    while (let val3 = ret_none(); val3 >= 10) {
+        assert!(val3 >= 3);
+    }
+}

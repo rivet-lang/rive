@@ -233,10 +233,11 @@ class Checker:
 			if not stmt.is_inf and self.check_expr(
 			    stmt.cond
 			) != self.comp.bool_t:
-				report.error(
-				    "non-boolean expression used as `while` condition",
-				    stmt.cond.pos
-				)
+				if not isinstance(stmt.cond, ast.GuardExpr):
+					report.error(
+					    "non-boolean expression used as `while` condition",
+					    stmt.cond.pos
+					)
 			self.check_stmt(stmt.stmt)
 		elif isinstance(stmt, ast.ForInStmt):
 			iterable_t = self.check_expr(stmt.iterable)
@@ -1184,7 +1185,10 @@ class Checker:
 			else:
 				for i, b in enumerate(expr.branches):
 					if not b.is_else:
-						if self.check_expr(b.cond) != self.comp.bool_t:
+						bcond_t = self.check_expr(b.cond)
+						if not isinstance(
+						    b.cond, ast.GuardExpr
+						) and bcond_t != self.comp.bool_t:
 							report.error(
 							    "non-boolean expression used as `if` condition",
 							    b.cond.pos
@@ -1248,6 +1252,20 @@ class Checker:
 					except utils.CompilerError as e:
 						report.error(e.args[0], b.expr.pos)
 			expr.typ = expected_branch_typ
+			return expr.typ
+		elif isinstance(expr, ast.GuardExpr):
+			expr_t = self.check_expr(expr.expr)
+			if isinstance(expr_t, (type.Result, type.Optional)):
+				expr.is_result = isinstance(expr_t, type.Result)
+				expr.scope.update_typ(expr.vars[0], expr_t.typ)
+			else:
+				report.error("expected result or optional value", expr.expr.pos)
+			if expr.has_cond:
+				if self.check_expr(expr.cond) != self.comp.bool_t:
+					report.error(
+					    "guard condition must be boolean", expr.cond.pos
+					)
+			expr.typ = self.comp.void_t
 			return expr.typ
 		else:
 			print(expr.__class__, expr)

@@ -332,6 +332,7 @@ class Register:
 		elif isinstance(stmt, ast.ExprStmt):
 			self.visit_expr(stmt.expr)
 		elif isinstance(stmt, ast.WhileStmt):
+			self.visit_expr(stmt.cond)
 			self.visit_stmt(stmt.stmt)
 		elif isinstance(stmt, ast.ForInStmt):
 			for v in stmt.vars:
@@ -390,6 +391,17 @@ class Register:
 				for p in b.pats:
 					self.visit_expr(p)
 				self.visit_expr(b.expr)
+		elif isinstance(expr, ast.GuardExpr):
+			for v in expr.vars:
+				try:
+					expr.scope.add(
+					    sym.Object(False, v, self.comp.void_t, False)
+					)
+				except utils.CompilerError as e:
+					report.error(e.args[0], expr.pos)
+			self.visit_expr(expr.expr)
+			if expr.has_cond:
+				self.visit_expr(expr.cond)
 		elif isinstance(expr, ast.TupleLiteral):
 			for e in expr.exprs:
 				self.visit_expr(e)

@@ -289,6 +289,10 @@ class Resolver:
 				for p in b.pats:
 					self.resolve_expr(p)
 				self.resolve_expr(b.expr)
+		elif isinstance(expr, ast.GuardExpr):
+			self.resolve_expr(expr.expr)
+			if expr.has_cond:
+				self.resolve_expr(expr.cond)
 
 	def find_symbol(self, symbol, name, pos):
 		if s := symbol.find(name):

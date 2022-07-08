@@ -625,20 +625,18 @@ class CastExpr:
 class GuardExpr:
 	# Examples:
 	# if (let x = optional_or_result_fn()) { ... }
-	# if (let x = "A,B,C,D".split(","); x.len > 5) { ... }
 	# while (let byte = reader.read()) { ... }
-	def __init__(self, vars, expr, has_cond, cond, pos):
+	def __init__(self, vars, expr, has_cond, cond, scope, pos):
 		self.vars = vars
 		self.expr = expr
 		self.has_cond = has_cond
 		self.cond = cond
+		self.is_result = False
+		self.scope = scope
 		self.pos = pos
 
 	def __repr__(self):
-		if len(self.vars) == 1:
-			vars_str = str(self.vars[0])
-		else:
-			vars_str = f"({', '.join([str(v) for v in self.vars])})"
+		vars_str = f"{', '.join([str(v) for v in self.vars])}"
 		res = f"let {vars_str} = {self.expr}"
 		if self.has_cond:
 			res += f"; {self.cond}"
