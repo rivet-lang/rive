@@ -65,7 +65,7 @@ extend rune {
 }
 
 // Returns the number of runes contained in `s`.
-fn cstr_runes_count(s: *const u8, size: usize) usize {
+fn cstr_runes_count(s: *u8, size: usize) usize {
 	let mut l: usize = 0;
 	let mut i: usize = 0;
 	while (i < size) {

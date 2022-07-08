@@ -65,7 +65,7 @@ pub mod mem {
     /// in `source` are first copied into a temporary array that does not overlap
     /// `source` or `dest`, and the bytes are then copied from the temporary array to
     /// `dest`.
-    pub fn move(dest: *mut void, src: *const void, sz: usize) !*mut void {
+    pub fn move(dest: *mut void, src: *void, sz: usize) !*mut void {
         if (src == none) {
             raise Error("argument `src` is none");
         }
@@ -77,7 +77,7 @@ pub mod mem {
     ///
     /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem::move`, if the memory areas
     /// do overlap.
-    pub fn copy(dest: *mut void, src: *const void, sz: usize) !*mut void {
+    pub fn copy(dest: *mut void, src: *void, sz: usize) !*mut void {
         if (src == dest) {
             raise MemoryOverlapError("`dest` and `src` do overlap");
         }
@@ -87,7 +87,7 @@ pub mod mem {
     /// Allocates dynamically a `sz` bytes block of memory on the heap, then copies
     /// the contents of `source` into the allocated space and returns a pointer to
     /// the newly allocated space.
-    pub fn dup(src: *const void, sz: usize) !*mut void {
+    pub fn dup(src: *void, sz: usize) !*mut void {
         if (sz == 0) {
             return calloc(1).!;
         }
@@ -118,7 +118,7 @@ pub mod mem {
     /// as cryptographic secrets, because the required CPU time depends on the
     /// number of equal bytes. You should use a function that performs comparisons
     /// in constant time for this.
-    pub fn cmp(s1: *const void, s2: *const void, n: usize) i32 {
+    pub fn cmp(s1: *void, s2: *void, n: usize) i32 {
         return unsafe { stdc::memcmp(s1, s2, n) };
     }
 

@@ -26,7 +26,7 @@ pub mod demangle {
         }
     }
 
-    pub fn demangle_symbol(name: *const u8) String {
+    pub fn demangle_symbol(name: *u8) String {
         let mut buf = Buffer{};
         let size = unsafe { stdc::strlen(name) };
         let mut res = String::with_capacity(size - 2);

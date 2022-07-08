@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    fn _R9init_argsZ(__argc: i32, __argv: *const *const u8);
+    fn _R9init_argsZ(__argc: i32, __argv: **u8);
     fn _R9drop_argsZ();
 
     fn _R12init_staticsZ();
@@ -11,7 +11,7 @@ extern (C) {
 }
 
 #[used]
-fn rivet_main(__argc: i32, __argv: *const *const u8, pkg_main: fn()) {
+fn rivet_main(__argc: i32, __argv: **u8, pkg_main: fn()) {
     unsafe {
         _R9init_argsZ(__argc, __argv);
         _R12init_staticsZ();

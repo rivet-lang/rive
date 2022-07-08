@@ -9,12 +9,8 @@ tests/failing/parser/types.ri:7:9: error: multi-level references are not allowed
     |         ^
 tests/failing/parser/types.ri:8:9: error: cannot use pointers with references
     |
-  8 |     f2: *const &i32;
+  8 |     f2: *&i32;
     |         ^
-tests/failing/parser/types.ri:11:11: error: expected `const`, found name `u8` 
-     |
-  11 |     f4: ?*u8;
-     |           ^
 tests/failing/parser/types.ri:11:9: error: pointers cannot be optional
      |
   11 |     f4: ?*u8;
@@ -41,4 +37,4 @@ tests/failing/parser/types.ri:20:9: error: expected type, found token `=`
      |
   20 |     f9: =;
      |         ^
-rivetc: error: could not compile package `core`, aborting due to 10 previous errors
+rivetc: error: could not compile package `core`, aborting due to 9 previous errors

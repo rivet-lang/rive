@@ -9,18 +9,18 @@ using pkg::demangle;
 pub mod backtrace {
     struct backtrace_state;
 
-    type BacktraceErrorCB = fn(*mut void, *const u8, i32);
-    type BacktraceFullCB = fn(*mut void, i32, *const u8, i32, *const u8) i32;
+    type BacktraceErrorCB = fn(*mut void, *u8, i32);
+    type BacktraceFullCB = fn(*mut void, i32, *u8, i32, *u8) i32;
 
     extern (C) {
         fn backtrace_create_state(
-            filename: *const u8, threaded: i32, error_cb: BacktraceErrorCB,
-            data: *const void
+            filename: *u8, threaded: i32, error_cb: BacktraceErrorCB,
+            data: *void
         ) *mut backtrace_state;
 
         fn backtrace_full(
-            state: *const backtrace_state, skip: i32, cb: BacktraceFullCB,
-            error_cb: BacktraceErrorCB, data: *const void
+            state: *backtrace_state, skip: i32, cb: BacktraceFullCB,
+            error_cb: BacktraceErrorCB, data: *void
         ) i32;
     }
 
@@ -34,7 +34,7 @@ pub mod backtrace {
     }
 
     fn bt_print_callback(
-        data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, func_ptr: *const u8
+        data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, func_ptr: *u8
     ) i32 {
         unsafe {
             if (func_ptr != none and stdc::memcmp(func_ptr, c"_R4core10rivet_mainF", 20) == 0) {
@@ -75,7 +75,7 @@ pub mod backtrace {
         return 0;
     }
 
-    fn bt_error_handler(data: *mut void, msg_ptr: *const u8, errnum: i32) {
+    fn bt_error_handler(data: *mut void, msg_ptr: *u8, errnum: i32) {
         let mut bdata = as(*mut BacktraceData, data);
         if (!bdata.has_error) {
             eprint("   libbacktrace error: ");

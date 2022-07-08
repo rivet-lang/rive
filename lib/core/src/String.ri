@@ -159,7 +159,7 @@ pub struct String {
     /// Returns the number of runes contained in `self`.
     pub fn runes_count(&self) usize { return cstr_runes_count(self.ptr, self.len_); }
 
-    pub fn as_ptr(&self) *const u8 { return self.ptr; }
+    pub fn as_ptr(&self) *u8 { return self.ptr; }
 
     pub unsafe fn as_mut_ptr(&self) *mut u8 { return self.ptr; }
 

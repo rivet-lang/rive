@@ -34,7 +34,7 @@ struct _slice {
     }
 
     #[used]
-    fn set(&self, idx: usize, val: *const void) {
+    fn set(&self, idx: usize, val: *void) {
         if (idx >= self.len) {
             panic("slice index out of range");
         }

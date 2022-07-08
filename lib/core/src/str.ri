@@ -6,12 +6,12 @@ using pkg::traits::ToString;
 
 #[used]
 struct _str {
-    ptr: *const u8;
+    ptr: *u8;
     pub len: usize;
 }
 
 extend str {
-    pub unsafe fn from_cstr(cstr: *const u8) str {
+    pub unsafe fn from_cstr(cstr: *u8) str {
         let len = unsafe { stdc::strlen(cstr) };
         return _str{
             ptr: cstr,
@@ -19,7 +19,7 @@ extend str {
         };
     }
 
-    pub unsafe fn from_cstr_with_len(cstr: *const u8, len: usize) str {
+    pub unsafe fn from_cstr_with_len(cstr: *u8, len: usize) str {
         return _str{
             ptr: cstr,
             len: len

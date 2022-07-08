@@ -10,12 +10,12 @@ fn array_index(len: usize, idx: usize) {
 }
 
 #[used]
-fn array_eq(arr: *const void, other_arr: *const void, len: usize) bool {
+fn array_eq(arr: *void, other_arr: *void, len: usize) bool {
     return unsafe { stdc::memcmp(arr, other_arr, len) == 0 };
 }
 
 #[used]
-fn array_ne(arr: *const void, other_arr: *const void, len: usize) bool {
+fn array_ne(arr: *void, other_arr: *void, len: usize) bool {
     return !array_eq(arr, other_arr, len);
 }
 

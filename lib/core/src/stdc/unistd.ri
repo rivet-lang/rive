@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    pub static environ: *const *const u8;
+    pub static environ: **u8;
 
     pub fn sysconf(name: i32) i64;
 

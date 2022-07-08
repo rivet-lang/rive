@@ -11,11 +11,11 @@ extern (C) {
 }
 
 extern (C) {
-    pub fn fprintf(f: *mut FILE, fmt: *const u8, ...) i32;
+    pub fn fprintf(f: *mut FILE, fmt: *u8, ...) i32;
     pub fn fflush(f: *mut FILE);
 
-    pub fn printf(fmt: *const u8, ...) i32;
+    pub fn printf(fmt: *u8, ...) i32;
 
-    pub fn write(fd: i32, buf: *const void, count: usize) isize;
+    pub fn write(fd: i32, buf: *void, count: usize) isize;
     pub fn putchar(s: i32) i32;
 }

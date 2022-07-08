@@ -1,12 +1,12 @@
 extern (C) {
-    fn malloc(sz: usize) *const void;
+    fn malloc(sz: usize) *void;
     fn free(pointer: &void); // BAD
 }
 
 struct St {
     f1: &&i32;
-    f2: *const &i32;
-    f3: &*const i32; // OK
+    f2: *&i32;
+    f3: &*i32; // OK
 
     f4: ?*u8;
 

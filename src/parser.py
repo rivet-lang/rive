@@ -1270,8 +1270,6 @@ class Parser:
 		elif self.accept(Kind.Mult):
 			# pointers
 			is_mut = self.accept(Kind.KeyMut)
-			if not is_mut:
-				self.expect(Kind.KeyConst)
 			typ = self.parse_type()
 			if isinstance(typ, type.Ref):
 				report.error("cannot use pointers with references", pos)
@@ -1331,7 +1329,7 @@ class Parser:
 				lit = expr.name
 				if lit == "void":
 					if prev_tok_kind not in (
-					    Kind.KeyConst, Kind.KeyMut
+					    Kind.Mult, Kind.KeyMut
 					) and prev_tok_kind != Kind.Amp:
 						# valid only as pointer
 						report.error("invalid use of `void` type", pos)
