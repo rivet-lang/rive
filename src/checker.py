@@ -752,10 +752,11 @@ class Checker:
 					if left_sym.kind == TypeKind.Slice:
 						expr.typ = expr.left_typ
 					else:
-						expr.typ = type.Type(
-						    self.comp.universe.add_or_get_slice(
-						        left_sym.info.elem_typ, expr.is_mut
-						    )
+						expr.typ = type.Slice(
+						    left_sym.info.elem_typ, expr.is_mut
+						)
+						expr.typ.sym = self.comp.universe.add_or_get_slice(
+						    left_sym.info.elem_typ, expr.is_mut
 						)
 				elif left_sym.kind == TypeKind.Slice:
 					expr.typ = left_sym.info.elem_typ
@@ -1603,6 +1604,10 @@ class Checker:
 
 		if isinstance(expected, type.Fn) and isinstance(got, type.Fn):
 			return expected == got
+		elif isinstance(expected, type.Slice) and isinstance(got, type.Slice):
+			if expected.is_mut and not got.is_mut:
+				return False
+			return expected.elem_typ == got.elem_typ
 
 		if isinstance(expected, type.Ref) and isinstance(got, type.Ref):
 			if expected.is_mut and not got.is_mut:
@@ -1630,10 +1635,6 @@ class Checker:
 				return True
 		elif exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:
 			return exp_sym.info.elem_typ == got_sym.info.elem_typ and exp_sym.info.size == got_sym.info.size
-		elif exp_sym.kind == TypeKind.Slice and got_sym.kind == TypeKind.Slice:
-			if exp_sym.info.is_mut and not got_sym.info.is_mut:
-				return False
-			return exp_sym.info.elem_typ == got_sym.info.elem_typ
 		elif exp_sym.kind == TypeKind.Tuple and got_sym.kind == TypeKind.Tuple:
 			if len(exp_sym.info.types) != len(got_sym.info.types):
 				return False

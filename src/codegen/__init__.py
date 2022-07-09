@@ -1094,9 +1094,8 @@ class AST2RIR:
 		              ) and not isinstance(expected_typ.typ, type.Ref):
 			if isinstance(res_expr, NoneLiteral):
 				res_expr = self.optional_none(expected_typ)
-			elif not isinstance(res_expr, Skip) and not isinstance(
-			    res_expr.typ, type.Optional
-			):
+			elif not isinstance(res_expr, (Skip, NoneLiteral)
+			                    ) and not isinstance(expr.typ, type.Optional):
 				res_expr = self.optional_ok(expected_typ, res_expr)
 
 		return res_expr
