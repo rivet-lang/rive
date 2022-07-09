@@ -1,0 +1,17 @@
+fn main() {
+    match (1) {
+        1 => assert!(true),
+        else => assert!(false)
+    }
+
+    let x = 1;
+    match (x) {
+        1 => assert!(true),
+        else => assert!(false)
+    }
+
+    assert!(match (x) {
+        1 => true,
+        else => false
+    });
+}

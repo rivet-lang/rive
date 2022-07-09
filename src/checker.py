@@ -1418,7 +1418,8 @@ class Checker:
 		elif builtin_call.name in ("unreachable", "breakpoint"):
 			ret_typ = self.comp.no_return_t
 		elif builtin_call.name == "assert":
-			if self.check_expr(builtin_call.args[0]) != self.comp.bool_t:
+			cond = builtin_call.args[0]
+			if self.check_expr(cond) != self.comp.bool_t:
 				report.error(
 				    "non-boolean expression used as `assert` condition",
 				    cond.pos
