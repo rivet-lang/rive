@@ -313,6 +313,11 @@ class Checker:
 				expr.typ = expr.sym.typ
 			else:
 				expr.typ = self.comp.void_t
+			if isinstance(expr.typ,
+			              type.Ptr) and not self.inside_unsafe_block():
+				report.error(
+				    "pointers are usable only inside `unsafe` blocks", expr.pos
+				)
 			return expr.typ
 		elif isinstance(expr, ast.EnumVariantExpr):
 			expr.typ = self.comp.void_t
@@ -915,6 +920,11 @@ class Checker:
 							    f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
 							)
 			expr.left_typ = left_typ
+			if isinstance(expr.typ,
+			              type.Ptr) and not self.inside_unsafe_block():
+				report.error(
+				    "pointers are usable only inside `unsafe` blocks", expr.pos
+				)
 			return expr.typ
 		elif isinstance(expr, ast.PathExpr):
 			expr.typ = self.comp.void_t

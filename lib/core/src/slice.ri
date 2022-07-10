@@ -14,7 +14,7 @@ struct _slice {
     #[used]
     pub unsafe fn from_array(arr: *mut void, elem_size: usize, len: usize) _slice {
         return _slice{
-            ptr: arr,
+            ptr: unsafe { arr },
             elem_size: elem_size,
             len: len
         };

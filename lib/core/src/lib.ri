@@ -72,10 +72,10 @@ fn panic_if(cond: bool, msg: str) {
 }
 
 unsafe fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
-    let mut buf = buf_;
-    let mut remaining_bytes = len;
-    while (remaining_bytes > 0) {
-        unsafe {
+    unsafe {
+        let mut buf = buf_;
+        let mut remaining_bytes = len;
+        while (remaining_bytes > 0) {
             let x = stdc::write(fd, buf, remaining_bytes);
             buf += x;
             remaining_bytes -= as(usize, x);

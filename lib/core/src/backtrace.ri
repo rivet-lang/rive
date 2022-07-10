@@ -76,17 +76,19 @@ pub mod backtrace {
     }
 
     fn bt_error_handler(data: *mut void, msg_ptr: *u8, errnum: i32) {
-        let mut bdata = as(*mut BacktraceData, data);
-        if (!bdata.has_error) {
-            eprint("   libbacktrace error: ");
-            eprint(unsafe { str::from_cstr(msg_ptr) });
-            if (errnum > 0) {
-                eprint(" (");
-                eprint(unsafe { str::from_cstr(stdc::strerror(errnum)) });
-                eprint(")");
+        unsafe {
+            let mut bdata = as(*mut BacktraceData, data);
+            if (!bdata.has_error) {
+                eprint("   libbacktrace error: ");
+                eprint(str::from_cstr(msg_ptr));
+                if (errnum > 0) {
+                    eprint(" (");
+                    eprint(str::from_cstr(stdc::strerror(errnum)));
+                    eprint(")");
+                }
+                eprintln();
+                bdata.has_error = true;
             }
-            eprintln();
-            bdata.has_error = true;
         }
     }
 

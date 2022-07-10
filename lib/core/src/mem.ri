@@ -14,21 +14,25 @@ pub mod mem {
     /// NOTE: Unlike the `mem::calloc` function, `mem::alloc` will not zero
     /// the memory block.
     pub fn alloc(size: usize) !*mut void {
-        let ptr = unsafe { stdc::malloc(size) };
-        if (ptr == none) {
-            raise OutOfMemoryError("insufficient memory is available");
+        unsafe {
+            let ptr = stdc::malloc(size);
+            if (ptr == none) {
+                raise OutOfMemoryError("insufficient memory is available");
+            }
+            return ptr;
         }
-        return ptr;
     }
 
     /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
     /// Returns a pointer to the memory address of the allocated space.
     pub fn calloc(n: usize) !*mut void {
-        let ptr = unsafe { stdc::calloc(1, n) };
-        if (ptr == none) {
-            raise OutOfMemoryError("insufficient memory is available");
+        unsafe {
+            let ptr = stdc::calloc(1, n);
+            if (ptr == none) {
+                raise OutOfMemoryError("insufficient memory is available");
+            }
+            return ptr;
         }
-        return ptr;
     }
 
     /// Resizes the memory block `ptr` with `sz` bytes.
@@ -36,26 +40,28 @@ pub mod mem {
     /// NOTE: The `ptr` must be a pointer to an existing memory block previously
     /// allocated with `mem::alloc` or `mem::calloc`.
     pub fn realloc(ptr: *mut void, sz: usize) !*mut void {
-        if (sz == 0) {
-            unsafe {
+        unsafe {
+            if (sz == 0) {
                 dealloc(ptr);
+                return none;
             }
-            return none;
+            let ptr_ = stdc::realloc(ptr, sz);
+            if (ptr_ == none) {
+                raise OutOfMemoryError("insufficient memory is available");
+            }
+            return ptr_;
         }
-        let ptr_ = unsafe { stdc::realloc(ptr, sz) };
-        if (ptr_ == none) {
-            raise OutOfMemoryError("insufficient memory is available");
-        }
-        return ptr_;
     }
 
     /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
     /// constant byte `c`. It returns a pointer to the memory area `s`.
     pub fn set(s: *mut void, c: i32, n: usize) !*mut void {
-        if (s == none) {
-            raise Error("argument `s` is none");
+        unsafe {
+            if (s == none) {
+                raise Error("argument `s` is none");
+            }
+            return stdc::memset(s, c, n);
         }
-        return unsafe { stdc::memset(s, c, n) };
     }
 
     /// Copies `sz` bytes from memory area `source` to memory area `dest` and returns
@@ -66,10 +72,12 @@ pub mod mem {
     /// `source` or `dest`, and the bytes are then copied from the temporary array to
     /// `dest`.
     pub fn move(dest: *mut void, src: *void, sz: usize) !*mut void {
-        if (src == none) {
-            raise Error("argument `src` is none");
+        unsafe {
+            if (src == none) {
+                raise Error("argument `src` is none");
+            }
+            return stdc::memmove(dest, src, sz);
         }
-        return unsafe { stdc::memmove(dest, src, sz) };
     }
 
     /// Copies `sz` bytes from memory area `source` to memory area `dest` and returns
@@ -78,28 +86,34 @@ pub mod mem {
     /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem::move`, if the memory areas
     /// do overlap.
     pub fn copy(dest: *mut void, src: *void, sz: usize) !*mut void {
-        if (src == dest) {
-            raise MemoryOverlapError("`dest` and `src` do overlap");
+        unsafe {
+            if (src == dest) {
+                raise MemoryOverlapError("`dest` and `src` do overlap");
+            }
+            return stdc::memcpy(dest, src, sz);
         }
-        return unsafe { stdc::memcpy(dest, src, sz) };
     }
 
     /// Allocates dynamically a `sz` bytes block of memory on the heap, then copies
     /// the contents of `source` into the allocated space and returns a pointer to
     /// the newly allocated space.
     pub fn dup(src: *void, sz: usize) !*mut void {
-        if (sz == 0) {
-            return calloc(1).!;
+        unsafe {
+            if (sz == 0) {
+                return calloc(1).!;
+            }
+            return copy(alloc(sz).!, src, sz).!;
         }
-        return copy(alloc(sz).!, src, sz).!;
     }
 
     /// Swaps the values at two mutable locations, without deinitializing either one.
     pub fn swap(x: *mut void, y: *mut void) {
-        if (x != y) {
-            let tmp = x;
-            x = y;
-            y = tmp;
+        unsafe {
+            if (x != y) {
+                let tmp = x;
+                x = y;
+                y = tmp;
+            }
         }
     }
 
@@ -124,8 +138,8 @@ pub mod mem {
 
     /// Deallocates manually the memory referenced by `ptr`.
     pub unsafe fn dealloc(ptr: *mut void) {
-        if (ptr != none) {
-            unsafe {
+        unsafe {
+            if (ptr != none) {
                 stdc::free(ptr);
             }
         }
