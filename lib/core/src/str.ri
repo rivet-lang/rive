@@ -26,6 +26,14 @@ extend str {
         };
     }
 
+    #[used]
+    fn at(&self, idx: usize) u8 {
+        if (idx >= self.len) {
+            panic("string index out of range");
+        }
+        return unsafe { self.ptr[idx] };
+    }
+
     fn ==(&self, rhs: &Self) bool {
         unsafe {
             if (self.ptr == none) {

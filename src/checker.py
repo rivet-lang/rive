@@ -769,21 +769,16 @@ class Checker:
 					expr.typ = left_sym.info.elem_typ
 			else:
 				if not (
-				    isinstance(expr.left_typ, type.Ptr) or (
-				        expr.left_typ == self.comp.str_t
-				        and isinstance(expr.index, ast.RangeExpr)
-				    )
+				    isinstance(expr.left_typ, type.Ptr)
+				    or expr.left_typ == self.comp.str_t
 				):
 					report.error(
 					    f"type `{expr.left_typ}` does not support indexing",
 					    expr.pos
 					)
-					if expr.left_typ == self.comp.str_t:
-						report.note("`str` only support slicing")
-					else:
-						report.note(
-						    "only pointers, arrays and slices supports indexing"
-						)
+					report.note(
+					    "only pointers, arrays, slices and `str` supports indexing"
+					)
 				elif idx_t != self.comp.untyped_int_t and not self.comp.is_unsigned_int(
 				    idx_t
 				):
@@ -801,7 +796,10 @@ class Checker:
 						report.error("cannot slice a pointer", expr.index.pos)
 
 				if expr.left_typ == self.comp.str_t:
-					expr.typ = self.comp.str_t
+					if isinstance(expr.index, ast.RangeExpr):
+						expr.typ = self.comp.str_t
+					else:
+						expr.typ = self.comp.uint8_t
 				else:
 					expr.typ = expr.left_typ.typ
 			return expr.typ

@@ -1753,14 +1753,25 @@ class AST2RIR:
 					report.error("index cannot be negative", expr.index.pos)
 					report.note(f"the index is {idx.lit}")
 					return Skip()
-				if isinstance(s.info, sym.ArrayInfo):
-					arr_size = int(s.info.size.lit)
-					if idx_lit >= arr_size:
-						report.error("array index out of range", expr.index.pos)
+				if isinstance(s.info, sym.ArrayInfo
+				              ) or isinstance(left, StringLiteral):
+					size = int(left.len) if isinstance(left,
+					                                   StringLiteral) else int(
+					                                       s.info.size.lit
+					                                   )
+					if idx_lit >= size:
+						if isinstance(left, StringLiteral):
+							report.error(
+							    "string index out of range", expr.index.pos
+							)
+						else:
+							report.error(
+							    "array index out of range", expr.index.pos
+							)
 						report.note(
 						    f"the size is {s.info.size.lit} but the index is {idx.lit}"
 						)
-						if idx_lit == arr_size and idx_lit >= 0:
+						if idx_lit == size and idx_lit >= 0:
 							report.help(f"use `{idx_lit-1}` instead")
 						return Skip()
 			elif isinstance(s.info, sym.ArrayInfo):
@@ -1769,7 +1780,24 @@ class AST2RIR:
 				    [IntLiteral(self.comp.usize_t, s.info.size.lit), idx]
 				)
 			tmp = self.cur_fn.local_name()
-			if s.kind == sym.TypeKind.Slice:
+			if s.kind == sym.TypeKind.Str:
+				if isinstance(left,
+				              StringLiteral) and isinstance(idx, IntLiteral):
+					return IntLiteral(
+					    self.comp.uint8_t,
+					    str(bytearray(left.lit, "utf-8")[idx.value()])
+					)
+				self.cur_fn.alloca(
+				    expr.typ, tmp,
+				    Inst(
+				        InstKind.Call, [
+				            Name("_R4core4_str2atM"),
+				            Inst(InstKind.GetRef, [left]), idx
+				        ]
+				    )
+				)
+				return Ident(expr.typ, tmp)
+			elif s.kind == sym.TypeKind.Slice:
 				value = Inst(
 				    InstKind.Cast, [
 				        Inst(
