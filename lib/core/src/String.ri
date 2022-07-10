@@ -5,7 +5,7 @@
 using pkg::traits::ToString;
 
 pub struct String {
-    ptr: *mut u8;
+    mut ptr: *mut u8;
     mut len_: usize;
     mut cap: usize;
 

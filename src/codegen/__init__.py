@@ -1329,7 +1329,6 @@ class AST2RIR:
 					    IntLiteral(self.comp.usize_t, str(value_sym.index))
 					)
 				return tmp
-
 			args = []
 			is_trait_call = False
 			if expr.info.is_method:
@@ -1397,7 +1396,7 @@ class AST2RIR:
 					self.check_number_limit(arg_typ, arg_expr.value(), arg.pos)
 				args.append(arg_expr)
 			if expr.info.is_variadic:
-				args_nr = len(expr.info.args) - 1
+				args_nr = args_len
 				variadic_count = len(expr.args) - args_nr
 				if expr.info.is_extern:
 					for i in range(args_nr + 1, len(expr.args)):
@@ -1407,9 +1406,11 @@ class AST2RIR:
 						)
 				else:
 					var_arg = expr.info.args[-1]
-					if variadic_count == 1 and isinstance(
-					    expr.args[-1].expr.typ, type.Variadic
-					):
+					if variadic_count == 1 and len(expr.args
+					                               ) > 0 and isinstance(
+					                                   expr.args[-1].expr.typ,
+					                                   type.Variadic
+					                               ):
 						arg = expr.args[-1]
 						args.append(
 						    self.convert_expr_with_cast(arg.typ, arg.expr)

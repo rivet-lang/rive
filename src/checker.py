@@ -1484,10 +1484,13 @@ class Checker:
 		elif isinstance(expr, ast.PathExpr):
 			if expr.field_info:
 				self.check_sym_is_mut(expr.field_info)
-		elif isinstance(expr, ast.ArrayLiteral):
-			report.error("array literals cannot be modified", expr.pos)
 		elif isinstance(expr, ast.StringLiteral):
 			report.error("string literals cannot be modified", expr.pos)
+		elif isinstance(expr, ast.ArrayLiteral):
+			report.error("array literals cannot be modified", expr.pos)
+		elif isinstance(expr, ast.TupleLiteral):
+			for e in expr.exprs:
+				self.check_expr_is_mut(e)
 		elif isinstance(expr, ast.CastExpr):
 			self.check_expr_is_mut(expr.expr)
 		elif isinstance(expr, ast.Block) and expr.is_expr:

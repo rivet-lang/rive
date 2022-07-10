@@ -508,6 +508,7 @@ class Type(Sym):
 class Arg:
 	def __init__(self, name, typ, def_expr, has_def_expr, pos):
 		self.name = name
+		self.is_self = name == "self"
 		self.typ = typ
 		self.def_expr = def_expr
 		self.has_def_expr = has_def_expr
@@ -539,7 +540,7 @@ class Fn(Sym):
 		from .type import Variadic
 		len_ = 0
 		for arg in self.args:
-			if not isinstance(arg.typ, Variadic):
+			if not (arg.is_self or isinstance(arg.typ, Variadic)):
 				len_ += 1
 		return len_
 
