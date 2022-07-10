@@ -77,15 +77,15 @@ extend str {
     fn >=(&self, rhs: &Self) bool { return self.>(rhs) or self.==(rhs); }
 
     pub fn fmt(&self, args: ...traits::ToString) String {
-        let mut args_idx: usize = 0;
         let mut res = String::with_capacity(self.len);
+        let mut args_idx: usize = 0;
         let mut i: usize = 0;
         while (i < self.len) {
             let b = unsafe { self.ptr[i] };
-            let b2 = unsafe { if (i + 1 < self.len) self.ptr[i + 1] else 0 };
+            let b2 = if (i + 1 < self.len) unsafe { self.ptr[i + 1] } else 0;
             if (b == b'{' and b2 == b'}') {
-                i += 2;
                 res.push_string(args[args_idx++].to_string());
+                i++;
             } else {
                 res.push(b);
             }

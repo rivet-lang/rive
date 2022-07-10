@@ -1609,10 +1609,13 @@ class Checker:
 		      ):
 			return False
 
+		exp_sym = expected.get_sym()
+		got_sym = got.get_sym()
+
 		if isinstance(expected, type.Variadic):
 			if isinstance(got, type.Variadic):
-				return expected.typ == got.typ
-			return self.check_compatible_types(got, expected.typ)
+				return exp_sym.info.elem_typ == got.typ
+			return self.check_compatible_types(got, exp_sym.info.elem_typ)
 
 		if isinstance(expected, type.Fn) and isinstance(got, type.Fn):
 			return expected == got
@@ -1633,16 +1636,12 @@ class Checker:
 				return True
 			return expected.typ == got.typ
 
-		got_sym = got.get_sym()
-		exp_sym = expected.get_sym()
-
 		if self.comp.is_number(expected) and self.comp.is_number(got):
 			return self.promote_number(expected, got) == expected
 		elif expected == self.comp.error_t and got_sym.kind == TypeKind.ErrType:
 			return True # valid
 		elif exp_sym.kind == TypeKind.Trait:
-			if self.comp.untyped_to_type(got
-			                             ).get_sym() in exp_sym.info.implements:
+			if self.comp.untyped_to_type(got).get_sym() in exp_sym.info.implements:
 				exp_sym.info.has_objects = True
 				return True
 		elif exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:

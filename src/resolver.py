@@ -457,6 +457,9 @@ class Resolver:
 			return self.resolve_type(typ.typ)
 		elif isinstance(typ, type.Variadic):
 			if self.resolve_type(typ.typ):
+				elem_sym=typ.typ.get_sym()
+				if elem_sym.kind==type.TypeKind.Trait:
+					elem_sym.info.has_objects=True
 				typ.resolve(self.comp.universe.add_or_get_slice(typ.typ, False))
 				return True
 		elif isinstance(typ, type.Slice):
