@@ -106,17 +106,6 @@ pub mod mem {
         }
     }
 
-    /// Swaps the values at two mutable locations, without deinitializing either one.
-    pub fn swap(x: *mut void, y: *mut void) {
-        unsafe {
-            if (x != y) {
-                let tmp = x;
-                x = y;
-                y = tmp;
-            }
-        }
-    }
-
     /// Compares the first `n` bytes (each interpreted as `u8`) of the memory areas
     /// `s1` and `s2`. It returns an integer less than, equal to, or greater than
     /// zero, if the first n bytes of `s1` is found, respectively, to be less than,
