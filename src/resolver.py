@@ -135,9 +135,12 @@ class Resolver:
 		elif isinstance(decl, ast.ExtendDecl):
 			if should_check:
 				if self.resolve_type(decl.typ):
-					if decl.is_for_trait:
-						self.resolve_type(decl.for_trait)
 					self.self_sym = decl.typ.get_sym()
+					if decl.is_for_trait:
+						if self.resolve_type(decl.for_trait):
+							decl.for_trait.get_sym().info.implements.append(
+							    self.self_sym
+							)
 					if isinstance(
 					    decl.typ, (type.Array, type.Slice, type.Tuple)
 					):
@@ -457,9 +460,9 @@ class Resolver:
 			return self.resolve_type(typ.typ)
 		elif isinstance(typ, type.Variadic):
 			if self.resolve_type(typ.typ):
-				elem_sym=typ.typ.get_sym()
-				if elem_sym.kind==type.TypeKind.Trait:
-					elem_sym.info.has_objects=True
+				elem_sym = typ.typ.get_sym()
+				if elem_sym.kind == type.TypeKind.Trait:
+					elem_sym.info.has_objects = True
 				typ.resolve(self.comp.universe.add_or_get_slice(typ.typ, False))
 				return True
 		elif isinstance(typ, type.Slice):

@@ -10,62 +10,63 @@ pub static ARGS: [str] = [""][..];
 
 /// Prints a message to stdout. Unlike `println` stdout is not automatically
 /// flushed.
-pub fn print(s: str) {
+pub fn print(s: str, args: ...traits::ToString) {
+    let sx = s.fmt(args);
     unsafe {
-        write_buf_to_fd(1, s.ptr, s.len);
+        write_buf_to_fd(1, sx.ptr, sx.len_);
     }
 }
 
 /// Prints a message with a line end to stdout. stdout is flushed.
-pub fn println(s: str = "") {
+pub fn println(s: str = "", args: ...traits::ToString) {
+    let sx = s.fmt(args);
     unsafe {
-        writeln_to_fd(1, s);
+        writeln_to_fd(1, sx);
     }
 }
 
 /// Prints a message to stderr. Both stderr and stdout are flushed.
-pub fn eprint(s: str) {
+pub fn eprint(s: str, args: ...traits::ToString) {
+    let sx = s.fmt(args);
     unsafe {
         stdc::fflush(stdc::stdout);
         stdc::fflush(stdc::stderr);
-        write_buf_to_fd(2, s.ptr, s.len);
+        write_buf_to_fd(2, sx.ptr, sx.len_);
         stdc::fflush(stdc::stderr);
     }
 }
 
-/// Prints a message with a line end, to stderr. Both stderr and stdout are
+/// Prints a message with a line end to stderr. Both stderr and stdout are
 /// flushed.
-pub fn eprintln(s: str = "") {
+pub fn eprintln(s: str = "", args: ...traits::ToString) {
+    let sx = s.fmt(args);
     unsafe {
         stdc::fflush(stdc::stdout);
         stdc::fflush(stdc::stderr);
-        writeln_to_fd(2, s);
+        writeln_to_fd(2, sx);
         stdc::fflush(stdc::stderr);
-    }
-}
-
-#[used]
-fn assert(cond: bool, msg: str) {
-    if (!cond) {
-        eprint("panic: assertion failed: ");
-        eprintln(msg);
-        backtrace::print(2);
-        process::exit(1);
     }
 }
 
 pub fn panic(s: str) no_return {
-    eprint("panic: ");
-    eprintln(s);
+    eprintln("panic: {}", s);
     backtrace::print(1);
     process::exit(1);
 }
 
 #[used]
+fn assert(cond: bool, msg: str) {
+    if (!cond) {
+        eprintln("panic: assertion failed: {}", msg);
+        backtrace::print(2);
+        process::exit(1);
+    }
+}
+
+#[used]
 fn panic_if(cond: bool, msg: str) {
     if (cond) {
-        eprint("panic: ");
-        eprintln(msg);
+        eprintln("panic: {}", msg);
         backtrace::print(2);
         process::exit(1);
     }
@@ -74,18 +75,18 @@ fn panic_if(cond: bool, msg: str) {
 unsafe fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
     unsafe {
         let mut buf = buf_;
-        let mut remaining_bytes = len;
+        let mut x: isize = 0;
+        let mut remaining_bytes = as(isize, len);
         while (remaining_bytes > 0) {
-            let x = stdc::write(fd, buf, remaining_bytes);
-            buf += x;
-            remaining_bytes -= as(usize, x);
+            x = stdc::write(fd, buf + x, as(usize, remaining_bytes));
+            remaining_bytes -= x;
         }
     }
 }
 
-unsafe fn writeln_to_fd(fd: i32, s: str) {
+unsafe fn writeln_to_fd(fd: i32, s: String) {
     unsafe {
-        write_buf_to_fd(fd, s.ptr, s.len);
+        write_buf_to_fd(fd, s.ptr, s.len_);
         write_buf_to_fd(fd, c"\n", 1);
     }
 }

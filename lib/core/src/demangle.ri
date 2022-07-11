@@ -11,8 +11,7 @@ pub mod demangle {
 
         fn push(&mut self, byte: u8) {
             if (self.len < BUFFER_SIZE) {
-                self.buf[self.len] = byte;
-                self.len++;
+                self.buf[self.len++] = byte;
             } else {
                 panic("Buffer::push: index out of range");
             }
@@ -20,8 +19,7 @@ pub mod demangle {
 
         fn clear(&mut self) {
             while (self.len > 0) {
-                self.buf[self.len] = 0;
-                self.len--;
+                self.buf[self.len--] = 0;
             }
         }
     }
@@ -44,8 +42,7 @@ pub mod demangle {
             }
             let name_len = as(usize, unsafe { stdc::strtoul(&buf.buf[0], none, 10) });
             for (_ in 0..name_len) {
-                res.push(unsafe { name[idx] });
-                idx++;
+                res.push(unsafe { name[idx++] });
             }
             buf.clear();
             if (!unsafe { name[idx] }.is_digit()) {

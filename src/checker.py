@@ -109,7 +109,6 @@ class Checker:
 					typ_sym = decl.typ.get_sym()
 					trait_sym = decl.for_trait.get_sym()
 					if trait_sym.kind == TypeKind.Trait:
-						trait_sym.info.implements.append(typ_sym)
 						not_implemented = []
 						for proto in trait_sym.syms:
 							if d := typ_sym.find(proto.name):
@@ -1534,8 +1533,7 @@ class Checker:
 		elif expected_sym.kind == TypeKind.Trait:
 			if expected != got:
 				got_t = self.comp.untyped_to_type(got)
-				got_sym = got_t.get_sym()
-				if got_sym not in expected_sym.info.implements:
+				if got_t.get_sym() not in expected_sym.info.implements:
 					report.error(
 					    f"type `{got_t}` does not implement trait `{expected_sym.name}`",
 					    pos
@@ -1641,7 +1639,8 @@ class Checker:
 		elif expected == self.comp.error_t and got_sym.kind == TypeKind.ErrType:
 			return True # valid
 		elif exp_sym.kind == TypeKind.Trait:
-			if self.comp.untyped_to_type(got).get_sym() in exp_sym.info.implements:
+			if self.comp.untyped_to_type(got
+			                             ).get_sym() in exp_sym.info.implements:
 				exp_sym.info.has_objects = True
 				return True
 		elif exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:

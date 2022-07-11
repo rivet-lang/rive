@@ -114,8 +114,8 @@ pub struct String {
         if (self.len_ == 0) {
             panic("String::pop: string is empty");
         }
+        let new_len = self.len_ - 1;
         unsafe {
-            let new_len = self.len_ - 1;
             let last_elem = self.ptr + new_len * sizeof!(u8);
             self.len_ = new_len;
             return last_elem;
@@ -184,6 +184,7 @@ pub struct String {
     pub fn clone(&self) Self {
         let mut res = Self::with_capacity(self.len_);
         _ = unsafe { mem::copy(res.ptr, self.ptr, self.len_) catch unreachable!() };
+        res.len_ = self.len_;
         return res;
     }
 
