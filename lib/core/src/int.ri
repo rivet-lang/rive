@@ -22,6 +22,21 @@ pub const MAX_UINT16: u16 = 65535;
 pub const MAX_UINT32: u32 = 4294967295;
 pub const MAX_UINT64: u64 = 18446744073709551615;
 
+extend isize for ToString {
+	/// Returns the value of `self` as a `String`.
+	pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+}
+
+extend usize for ToString {
+	/// Returns the value of `self` as a `String`.
+	pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+}
+
+extend untyped_int for ToString {
+	/// Returns the value of `self` as a `String`.
+	pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+}
+
 extend i32 {
     /// Returns the string representation of `self` with `max` chars.
     pub fn str_l(self, max: i32) String {
@@ -40,18 +55,15 @@ extend i32 {
 
             let mut index = as(usize, max);
             let buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
-            buf[index] = 0;
-            index--;
+            buf[index--] = 0;
 
             while (n > 0) {
                 let n1 = as(i32, n / 100);
                 d = as(u32, as(i32, n) - (n1 * 100)) << 1;
                 n = n1;
-                buf[index] = DIGIT_PAIRS.ptr[d];
-                index--;
+                buf[index--] = DIGIT_PAIRS.ptr[d];
                 d++;
-                buf[index] = DIGIT_PAIRS.ptr[d];
-                index--;
+                buf[index--] = DIGIT_PAIRS.ptr[d];
             }
             index++;
 
@@ -73,9 +85,67 @@ extend i32 {
     }
 }
 
+extend i8 for ToString {
+	/// Returns the value of `self` as a `String`.
+	pub fn to_string(&self) String { return as(i32, self.*).str_l(5); }
+}
+
+extend i16 for ToString {
+	/// Returns the value of `self` as a `String`.
+	pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
+}
+
 extend i32 for ToString {
 	/// Returns the value of `self` as a `String`.
 	pub fn to_string(&self) String { return self.*.str_l(12); }
+}
+
+extend i64 for ToString {
+    pub fn to_string(&self) String {
+        unsafe {
+            if (self.* == 0) {
+                return "0".to_string();
+            }
+            let mut n = self.*;
+            let mut d: i64 = 0;
+
+            let mut is_neg = false;
+            if (n < 0) {
+                n = -n;
+                is_neg = true;
+            }
+
+            let max = 20;
+            let mut index = as(usize, max);
+            let buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
+            buf[index--] = 0;
+
+            while (n > 0) {
+                let n1 = n / as(i64, 100);
+                d = (n - (n1 * as(i64, 100))) << as(i64, 1);
+                n = n1;
+                buf[index--] = DIGIT_PAIRS.ptr[as(usize, d)];
+                d++;
+                buf[index--] = DIGIT_PAIRS.ptr[as(usize, d)];
+            }
+            index++;
+
+            if (d < 20) {
+				// remove head zero
+				index++;
+            }
+
+            if (is_neg) {
+				// prepend `-` if it's negative
+				index--;
+				buf[index] = b'-';
+            }
+
+            let diff = as(usize, max) - index;
+            _ = mem::move(buf, buf + index, diff + 1) catch unreachable!();
+            return String::from_raw(buf, diff);
+        }
+    }
 }
 
 extend u8 {
@@ -92,11 +162,9 @@ extend u8 {
         return (self >= b'0' and self <= b'9');
     }
 
-    /// Returns `true` if the byte is either in range 0-9, a-f or A-F and false`
-    /// otherwise.
-    pub fn is_hex_digit(self) bool {
-        return self.is_digit() or (self >= b'a' and self <= b'f')
-            or (self >= b'A' and self <= b'F');
+    /// Returns `true` if the byte is a binary digit (0 or 1) and `false` otherwise.
+    pub fn is_bin_digit(self) bool {
+        return self == b'0' or self == b'1';
     }
 
     /// Returns `true` if the byte is in range 0-7 and `false` otherwise.
@@ -104,9 +172,11 @@ extend u8 {
         return self >= b'0' or self <= b'7';
     }
 
-    /// Returns `true` if the byte is a binary digit (0 or 1) and `false` otherwise.
-    pub fn is_bin_digit(self) bool {
-        return self == b'0' or self == b'1';
+    /// Returns `true` if the byte is either in range 0-9, a-f or A-F and `false`
+    /// otherwise.
+    pub fn is_hex_digit(self) bool {
+        return self.is_digit() or (self >= b'a' and self <= b'f')
+            or (self >= b'A' and self <= b'F');
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z and `false` otherwise.
@@ -132,5 +202,94 @@ extend u8 {
     /// Calculates length to read from the first byte.
     pub fn len_utf8(self) usize {
         return as(usize, (as(u64, 0xE5000000) >> ((self >> 3) & 0x1E) & 3) + 1);
+    }
+
+    /// Returns the value of `self` as a ASCII `String`.
+	pub fn to_ascii_str(self) String {
+        let mut res = String::with_capacity(1);
+        res.push(self);
+        return res;
+	}
+}
+
+extend u8 for ToString {
+	/// Returns the value of `self` as a `String`.
+	pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
+}
+
+extend u16 for ToString {
+	/// Returns the value of `self` as a `String`.
+	pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
+}
+
+extend u32 for ToString {
+    pub fn to_string(&self) String {
+        unsafe {
+            if (self.* == 0) {
+                return "0".to_string();
+            }
+            let max: usize = 12;
+            let mut n = self.*;
+            let mut d: u32 = 0;
+
+            let mut index = max;
+            let buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
+            buf[index--] = 0;
+
+            while (n > 0) {
+                let n1 = n / as(u32, 100);
+                d = (n - (n1 * as(u32, 100))) << as(u32, 1);
+                n = n1;
+                buf[index--] = DIGIT_PAIRS.ptr[d];
+                d++;
+                buf[index--] = DIGIT_PAIRS.ptr[d];
+            }
+            index++;
+
+            if (d < 20) {
+				// remove head zero
+				index++;
+            }
+
+            let diff = max - index;
+            _ = mem::move(buf, buf + index, diff + 1) catch unreachable!();
+            return String::from_raw(buf, diff);
+        }
+    }
+}
+
+extend u64 for ToString {
+    pub fn to_string(&self) String {
+        unsafe {
+            if (self.* == 0) {
+                return "0".to_string();
+            }
+            let mut n = self.*;
+            let mut d: u64 = 0;
+
+            let max = 20;
+            let mut index = as(usize, max);
+            let buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
+            buf[index--] = 0;
+
+            while (n > 0) {
+                let n1 = n / as(u32, 100);
+                d = (n - (n1 * as(u32, 100))) << as(u32, 1);
+                n = n1;
+                buf[index--] = DIGIT_PAIRS.ptr[d];
+                d++;
+                buf[index--] = DIGIT_PAIRS.ptr[d];
+            }
+            index++;
+
+            if (d < 20) {
+				// remove head zero
+				index++;
+            }
+
+            let diff = as(usize, max) - index;
+            _ = mem::move(buf, buf + index, diff + 1) catch unreachable!();
+            return String::from_raw(buf, diff);
+        }
     }
 }

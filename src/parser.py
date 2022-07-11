@@ -1358,9 +1358,7 @@ class Parser:
 				expr = self.parse_ident()
 				lit = expr.name
 				if lit == "void":
-					if prev_tok_kind not in (
-					    Kind.Mult, Kind.KeyMut
-					) and prev_tok_kind != Kind.Amp:
+					if prev_tok_kind not in (Kind.Mult, Kind.KeyMut, Kind.Amp):
 						# valid only as pointer
 						report.error("invalid use of `void` type", pos)
 					return self.comp.void_t
@@ -1392,9 +1390,15 @@ class Parser:
 					return self.comp.uint64_t
 				elif lit == "usize":
 					return self.comp.usize_t
-				elif lit == "untyped_int" and self.comp.pkg_sym.is_core:
+				elif lit == "untyped_int" and (
+				    self.comp.prefs.pkg_name == "core"
+				    or self.comp.pkg_sym.is_core
+				):
 					return self.comp.untyped_int_t
-				elif lit == "untyped_float" and self.comp.pkg_sym.is_core:
+				elif lit == "untyped_float" and (
+				    self.comp.prefs.pkg_name == "core"
+				    or self.comp.pkg_sym.is_core
+				):
 					return self.comp.untyped_float_t
 				elif lit == "f32":
 					return self.comp.float32_t
