@@ -48,8 +48,10 @@ pub fn eprintln(s: str = "", args: ...traits::ToString) {
     }
 }
 
-pub fn panic(s: str) no_return {
-    eprintln("panic: {}", s);
+/// Terminates program execution immediately after displaying a message,
+/// followed by a backtrace.
+pub fn panic(s: str, args: ...traits::ToString) no_return {
+    eprintln("panic: {}", s.fmt(args));
     backtrace::print(1);
     process::exit(1);
 }

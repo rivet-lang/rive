@@ -2546,7 +2546,8 @@ class AST2RIR:
 		    "_R4core5panicF", [
 		        StringLiteral(
 		            self.comp.str_t, utils.smart_quote(msg, False), str(size)
-		        )
+		        ),
+		        Name("_R4core11empty_slice")
 		    ]
 		)
 
