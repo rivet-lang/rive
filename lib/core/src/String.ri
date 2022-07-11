@@ -9,7 +9,7 @@ pub struct String {
     mut len_: usize;
     mut cap: usize;
 
-    pub fn new() Self { return Self{}; }
+    pub fn new() Self { return Self::with_capacity(0); }
 
     /// Returns a dynamic string allocated on the heap with size `cap`.
     ///

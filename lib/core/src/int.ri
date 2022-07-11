@@ -23,18 +23,28 @@ pub const MAX_UINT32: u32 = 4294967295;
 pub const MAX_UINT64: u64 = 18446744073709551615;
 
 extend untyped_int for ToString {
-            /// Returns the value of `self` as a `String`.
-            pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+    /// Returns the value of `self` as a `String`.
+    pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
 }
 
 extend isize for ToString {
-            /// Returns the value of `self` as a `String`.
-            pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+    /// Returns the value of `self` as a `String`.
+    pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
 }
 
 extend usize for ToString {
-            /// Returns the value of `self` as a `String`.
-            pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+    /// Returns the value of `self` as a `String`.
+    pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+}
+
+extend i8 for ToString {
+    /// Returns the value of `self` as a `String`.
+    pub fn to_string(&self) String { return as(i32, self.*).str_l(5); }
+}
+
+extend i16 for ToString {
+    /// Returns the value of `self` as a `String`.
+    pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
 }
 
 extend i32 {
@@ -68,14 +78,14 @@ extend i32 {
             index++;
 
             if (d < 20) {
-                        // remove head zero
-                        index++;
+                // remove head zero
+                index++;
             }
 
             if (is_neg) {
-                        // prepend `-` if it's negative
-                        index--;
-                        buf[index] = b'-';
+                // prepend `-` if it's negative
+                index--;
+                buf[index] = b'-';
             }
 
             let diff = as(usize, max) - index;
@@ -85,19 +95,9 @@ extend i32 {
     }
 }
 
-extend i8 for ToString {
-            /// Returns the value of `self` as a `String`.
-            pub fn to_string(&self) String { return as(i32, self.*).str_l(5); }
-}
-
-extend i16 for ToString {
-            /// Returns the value of `self` as a `String`.
-            pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
-}
-
 extend i32 for ToString {
-            /// Returns the value of `self` as a `String`.
-            pub fn to_string(&self) String { return self.*.str_l(12); }
+    /// Returns the value of `self` as a `String`.
+    pub fn to_string(&self) String { return self.*.str_l(12); }
 }
 
 extend i64 for ToString {
@@ -116,13 +116,13 @@ extend i64 for ToString {
             }
 
             let max = 20;
-            let mut index = as(usize, max);
             let buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
+            let mut index = as(usize, max);
             buf[index--] = 0;
 
             while (n > 0) {
-                let n1 = n / as(i64, 100);
-                d = (n - (n1 * as(i64, 100))) << as(i64, 1);
+                let n1 = n / 100;
+                d = as(i64, as(u32, n - (n1 * 100))) << as(i64, 1);
                 n = n1;
                 buf[index--] = DIGIT_PAIRS.ptr[as(usize, d)];
                 d++;
@@ -131,14 +131,14 @@ extend i64 for ToString {
             index++;
 
             if (d < 20) {
-                                                // remove head zero
-                                                index++;
+                // remove head zero
+                index++;
             }
 
             if (is_neg) {
-                                                // prepend `-` if it's negative
-                                                index--;
-                                                buf[index] = b'-';
+                // prepend `-` if it's negative
+                index--;
+                buf[index] = b'-';
             }
 
             let diff = as(usize, max) - index;
@@ -213,13 +213,13 @@ extend u8 {
 }
 
 extend u8 for ToString {
-            /// Returns the value of `self` as a `String`.
-            pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
+    /// Returns the value of `self` as a `String`.
+    pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
 }
 
 extend u16 for ToString {
-            /// Returns the value of `self` as a `String`.
-            pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
+    /// Returns the value of `self` as a `String`.
+    pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
 }
 
 extend u32 for ToString {
@@ -237,8 +237,8 @@ extend u32 for ToString {
             buf[index--] = 0;
 
             while (n > 0) {
-                let n1 = n / as(u32, 100);
-                d = (n - (n1 * as(u32, 100))) << as(u32, 1);
+                let n1 = n / 100;
+                d = (n - (n1 * 100)) << as(u32, 1);
                 n = n1;
                 buf[index--] = DIGIT_PAIRS.ptr[d];
                 d++;
@@ -247,8 +247,8 @@ extend u32 for ToString {
             index++;
 
             if (d < 20) {
-                                                // remove head zero
-                                                index++;
+                // remove head zero
+                index++;
             }
 
             let diff = max - index;
@@ -273,8 +273,8 @@ extend u64 for ToString {
             buf[index--] = 0;
 
             while (n > 0) {
-                let n1 = n / as(u32, 100);
-                d = (n - (n1 * as(u32, 100))) << as(u32, 1);
+                let n1 = n / 100;
+                d = (n - (n1 * 100)) << as(u32, 1);
                 n = n1;
                 buf[index--] = DIGIT_PAIRS.ptr[d];
                 d++;
@@ -283,8 +283,8 @@ extend u64 for ToString {
             index++;
 
             if (d < 20) {
-                                                // remove head zero
-                                                index++;
+                // remove head zero
+                index++;
             }
 
             let diff = as(usize, max) - index;

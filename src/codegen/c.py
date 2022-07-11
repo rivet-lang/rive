@@ -536,17 +536,17 @@ void _R9drop_argsZ(void) {
 		elif isinstance(expr, NoneLiteral):
 			self.write("NULL")
 		elif isinstance(expr, IntLiteral):
-			if expr.value() == MAX_INT64:
+			if expr.value() == MIN_INT64:
 				# NOTE: `-9223372036854775808` is wrong because C compilers
 				# parse literal values without sign first, and `9223372036854775808`
 				# overflows `i64`, hence the consecutive subtraction by `1`.
-				self.write("(-9223372036854775807 - 1)")
+				self.write("(-9223372036854775807L - 1)")
 			else:
 				self.write(expr.lit)
-			if self.comp.is_unsigned_int(expr.typ):
-				self.write("U")
-			if self.comp.num_bits(expr.typ) == 64:
-				self.write("L")
+				if self.comp.num_bits(expr.typ) == 64:
+					if self.comp.is_unsigned_int(expr.typ):
+						self.write("U")
+					self.write("L")
 		elif isinstance(expr, FloatLiteral):
 			self.write(expr.lit)
 			if expr.typ == self.comp.float32_t:
