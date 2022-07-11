@@ -29,7 +29,7 @@ extend str {
     #[used]
     fn at(&self, idx: usize) u8 {
         if (idx >= self.len) {
-            panic("string index out of range");
+            panic("string index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { self.ptr[idx] };
     }
@@ -37,7 +37,9 @@ extend str {
     fn ==(&self, rhs: &Self) bool {
         unsafe {
             if (self.ptr == none) {
-                panic("str::==: none string");
+                panic("str::_eq_: left side of the operand is `none`");
+            } elif (rhs.ptr == none) {
+                panic("str::_eq_: right side of the operand is `none`");
             }
             if (self.len != rhs.len) {
                 return false;
@@ -109,15 +111,17 @@ extend str {
     fn slice(&self, start: usize, end: usize) str {
         unsafe {
             if (start > end or start > self.len or end > self.len) {
-                panic("string slice index out of range");
+                panic(
+                    "string slice index out of range (range: {}..{}, len: {})", start,
+                    end, self.len
+                );
             }
             let len = end - start;
             if (len == self.len) {
                 return self.*;
             }
-            let ptr = self.ptr + start;
             return _str{
-                ptr: ptr,
+                ptr: self.ptr + start,
                 len: len
             };
         }

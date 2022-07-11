@@ -5,7 +5,7 @@
 #[used]
 fn array_index(len: usize, idx: usize) {
     if (idx >= len) {
-        panic("array index out of range");
+        panic("array index out of range (index: {}, size: {})", idx, len);
     }
 }
 
@@ -22,7 +22,7 @@ fn array_ne(arr: *void, other_arr: *void, len: usize) bool {
 #[used]
 fn array_slice(arr: *mut void, elem_size: usize, size: usize, start: usize, end: usize) _slice {
     if (start > end or end > size) {
-        panic("slice index out of range");
+        panic("slice index out of range (range: {}..{}, len: {})", start, end, size);
     }
     unsafe {
         let len = end - start;

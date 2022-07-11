@@ -22,19 +22,19 @@ pub const MAX_UINT16: u16 = 65535;
 pub const MAX_UINT32: u32 = 4294967295;
 pub const MAX_UINT64: u64 = 18446744073709551615;
 
+extend untyped_int for ToString {
+            /// Returns the value of `self` as a `String`.
+            pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+}
+
 extend isize for ToString {
-	/// Returns the value of `self` as a `String`.
-	pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+            /// Returns the value of `self` as a `String`.
+            pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
 }
 
 extend usize for ToString {
-	/// Returns the value of `self` as a `String`.
-	pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
-}
-
-extend untyped_int for ToString {
-	/// Returns the value of `self` as a `String`.
-	pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+            /// Returns the value of `self` as a `String`.
+            pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
 }
 
 extend i32 {
@@ -68,14 +68,14 @@ extend i32 {
             index++;
 
             if (d < 20) {
-				// remove head zero
-				index++;
+                        // remove head zero
+                        index++;
             }
 
             if (is_neg) {
-				// prepend `-` if it's negative
-				index--;
-				buf[index] = b'-';
+                        // prepend `-` if it's negative
+                        index--;
+                        buf[index] = b'-';
             }
 
             let diff = as(usize, max) - index;
@@ -86,18 +86,18 @@ extend i32 {
 }
 
 extend i8 for ToString {
-	/// Returns the value of `self` as a `String`.
-	pub fn to_string(&self) String { return as(i32, self.*).str_l(5); }
+            /// Returns the value of `self` as a `String`.
+            pub fn to_string(&self) String { return as(i32, self.*).str_l(5); }
 }
 
 extend i16 for ToString {
-	/// Returns the value of `self` as a `String`.
-	pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
+            /// Returns the value of `self` as a `String`.
+            pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
 }
 
 extend i32 for ToString {
-	/// Returns the value of `self` as a `String`.
-	pub fn to_string(&self) String { return self.*.str_l(12); }
+            /// Returns the value of `self` as a `String`.
+            pub fn to_string(&self) String { return self.*.str_l(12); }
 }
 
 extend i64 for ToString {
@@ -131,14 +131,14 @@ extend i64 for ToString {
             index++;
 
             if (d < 20) {
-				// remove head zero
-				index++;
+                                                // remove head zero
+                                                index++;
             }
 
             if (is_neg) {
-				// prepend `-` if it's negative
-				index--;
-				buf[index] = b'-';
+                                                // prepend `-` if it's negative
+                                                index--;
+                                                buf[index] = b'-';
             }
 
             let diff = as(usize, max) - index;
@@ -205,21 +205,21 @@ extend u8 {
     }
 
     /// Returns the value of `self` as a ASCII `String`.
-	pub fn to_ascii_str(self) String {
+    pub fn to_ascii_string(self) String {
         let mut res = String::with_capacity(1);
         res.push(self);
         return res;
-	}
+    }
 }
 
 extend u8 for ToString {
-	/// Returns the value of `self` as a `String`.
-	pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
+            /// Returns the value of `self` as a `String`.
+            pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
 }
 
 extend u16 for ToString {
-	/// Returns the value of `self` as a `String`.
-	pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
+            /// Returns the value of `self` as a `String`.
+            pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
 }
 
 extend u32 for ToString {
@@ -247,8 +247,8 @@ extend u32 for ToString {
             index++;
 
             if (d < 20) {
-				// remove head zero
-				index++;
+                                                // remove head zero
+                                                index++;
             }
 
             let diff = max - index;
@@ -283,8 +283,8 @@ extend u64 for ToString {
             index++;
 
             if (d < 20) {
-				// remove head zero
-				index++;
+                                                // remove head zero
+                                                index++;
             }
 
             let diff = as(usize, max) - index;
