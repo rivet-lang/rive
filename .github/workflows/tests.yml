@@ -2,7 +2,7 @@ name: Tests
 
 on:
   push:
-    paths: ['lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**.ri']
+    paths: ['lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**']
     branches: [main]
 
 jobs:
