@@ -43,6 +43,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Setup Python3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
       - name: Run tests
         run: |
           python3 tests/run_ok_tests.py
@@ -57,6 +62,11 @@ jobs:
       RIVET_CC_TEST: gcc
     steps:
       - uses: actions/checkout@v2
+
+      - name: Setup Python3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
       - name: Run tests
         run: |
