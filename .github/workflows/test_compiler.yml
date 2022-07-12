@@ -6,12 +6,12 @@ on:
     branches: [main]
 
 jobs:
+  # Linux
   ubuntu-clang:
     runs-on: ubuntu-latest
     env:
       RIVET_CC_TEST: clang
     steps:
-      - name: Checkout Rivet source code
         uses: actions/checkout@v2
 
       - name: Run tests
@@ -27,7 +27,6 @@ jobs:
     env:
       RIVET_CC_TEST: gcc
     steps:
-      - name: Checkout Rivet source code
         uses: actions/checkout@v2
 
       - name: Run tests
@@ -38,12 +37,12 @@ jobs:
         run: |
           python3 tests/run_failing_tests.py
 
+  # Windows
   windows-msvc:
     runs-on: windows-2019
     env:
       RIVET_CC_TEST: msvc
     steps:
-      - name: Checkout Rivet source code
       - uses: actions/checkout@v2
 
       - name: Run tests
@@ -59,7 +58,6 @@ jobs:
     env:
       RIVET_CC_TEST: gcc
     steps:
-      - name: Checkout Rivet source code
       - uses: actions/checkout@v2
 
       - name: Run tests
