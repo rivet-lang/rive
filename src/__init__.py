@@ -350,7 +350,7 @@ class Compiler:
 			if cond.is_comptime:
 				report.error("invalid comptime condition", cond.pos)
 			# operating systems
-			elif cond.name == "_LINUX_":
+			elif cond.name in ("_LINUX_", "_WINDOWS_"):
 				return self.prefs.target_os.equals_to_string(cond.name)
 			# architectures
 			elif cond.name in ("_AMD64_", "_i386_"):

@@ -107,16 +107,18 @@ class OS(Enum):
 
 	@staticmethod
 	def from_string(name):
-		if name == "linux":
+		if name.startswith("linux"):
 			return OS.Linux
-		#elif name == "windows":
-		#    return OS.Windows
+		elif name in ("windows", "win32"):
+			return OS.Windows
 		#elif name=="macos":
 		#    return OS.Macos
 		return None
 
 	def equals_to_string(self, flag):
 		if flag == "_LINUX_" and self == OS.Linux:
+			return True
+		elif flag == "_WINDOWS_" and self == OS.Windows:
 			return True
 		return False
 
@@ -256,7 +258,7 @@ class Prefs:
 		self.check_syntax = False
 		self.check = False
 		self.emit_rir = False
-		self.keep_c=False
+		self.keep_c = False
 		self.is_verbose = False
 
 		if len(args) == 0:
@@ -412,10 +414,11 @@ class Prefs:
 	def filter_files(self):
 		new_inputs = []
 		for input in self.inputs:
-			if path.basename(input).count('.') == 1:
+			basename_input = path.basename(input)
+			if basename_input.count('.') == 1:
 				new_inputs.append(input)
 				continue
-			exts = path.basename(input)[:-3].split('.')[1:]
+			exts = basename_input[:-3].split('.')[1:]
 			should_compile = False
 			already_exts = []
 			for ext in exts:
