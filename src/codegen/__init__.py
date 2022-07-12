@@ -1073,9 +1073,10 @@ class AST2RIR:
 		res_expr = self.convert_expr(expr)
 
 		if isinstance(res_expr, IntLiteral) and self.comp.is_int(expected_typ):
-			res_expr.typ=expected_typ
-		elif isinstance(res_expr, FloatLiteral) and self.comp.is_float(expected_typ):
-			res_expr.typ=expected_typ
+			res_expr.typ = expected_typ
+		elif isinstance(res_expr,
+		                FloatLiteral) and self.comp.is_float(expected_typ):
+			res_expr.typ = expected_typ
 
 		if not isinstance(res_expr, (Skip, NoneLiteral, Inst)) and isinstance(
 		    res_expr.typ, (type.Ptr, type.Ref)

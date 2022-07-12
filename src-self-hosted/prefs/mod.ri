@@ -1,0 +1,107 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+using pkg::utils;
+
+pub(pkg) enum Backend {
+    C
+}
+
+pub(pkg) enum PackageType {
+	Bin, // .exe
+	Lib, // .rilib
+	DyLib, // .so, .dll, .dylib
+	StaticLib // .a, .lib
+}
+
+pub(pkg) enum BuildMode {
+	Debug,
+	Release,
+	Test
+}
+
+fn option(args: [str], param: str) ?str {
+    for (i, arg in args) {
+        if (param == arg) {
+            if (i + 1 < args.len) {
+                return args[i + 1];
+            }
+            break;
+        }
+    }
+    return none;
+}
+
+fn print_help() {
+    eprintln(utils::HELP);
+    process::exit(0);
+}
+
+fn print_version() {
+    eprintln(utils::VERSION);
+    process::exit(0);
+}
+
+pub(pkg) struct Prefs {
+    // Target info
+    pub mut target_os: sys::OS = sys::os();
+    pub mut target_arch: sys::Arch = sys::arch();
+    pub mut target_is_64bit: bool = sys::is_64bit();
+    pub mut target_is_little_endian: bool = sys::is_little_endian();
+
+    // Backend info
+    pub mut backend: Backend;
+    pub mut build_mode: BuildMode;
+
+    // Package info
+    pub mut pkg_name: str = "main";
+    pub mut pkg_output: str = "main";
+    pub mut pkg_typ: PackageType;
+    pub pkg_files: [mut u8];
+
+    pub mut check_syntax: bool;
+	pub mut check: bool;
+	pub mut emit_rir: bool;
+	pub mut is_verbose: bool;
+
+    pub fn from_cli() Self { return Self::new(ARGS[1..]); }
+
+    pub fn new(args: [str]) Self {
+        if (args.len == 0) {
+            print_help();
+        }
+
+        let mut prefs = Prefs{};
+        let mut i: usize = 0;
+        while (i < args.len) {
+            let arg = args[i];
+            let current_args = args[i..];
+            match (arg) {
+                // informative options
+                "-h", "--help" => print_help(),
+                "-V", "--version" => print_version(),
+
+                // compiler options
+                "--pkg-name" => {
+                    if (let pkg_name = option(current_args, arg)) {
+                        prefs.pkg_name = pkg_name;
+                        prefs.pkg_output = pkg_name;
+                    } else {
+                        eprintln("`--pkg-name` requires a name as argument");
+                    }
+                    i++;
+                },
+                "-r", "--release" => { prefs.build_mode = .Release; },
+                "-x32", "-x64" => { prefs.target_is_64bit = arg == "-x64"; },
+                "--check-syntax" => { prefs.check_syntax = true; },
+                "--check" => { prefs.check = true; },
+                "--emit-rir" => { prefs.emit_rir = true; },
+                "-v", "--verbose" => { prefs.is_verbose = true; },
+                else => eprintln("unknown option: `{}`", arg)
+            }
+            i++;
+        }
+        return prefs;
+    }
+}
