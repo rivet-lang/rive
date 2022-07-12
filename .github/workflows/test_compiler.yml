@@ -6,7 +6,6 @@ on:
     branches: [main]
 
 jobs:
-  # Linux
   ubuntu-clang:
     runs-on: ubuntu-latest
     env:
@@ -37,7 +36,6 @@ jobs:
         run: |
           python3 tests/run_failing_tests.py
 
-  # Windows
   windows-msvc:
     runs-on: windows-2019
     env:
