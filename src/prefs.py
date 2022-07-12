@@ -142,7 +142,7 @@ class Arch(Enum):
 		arch = platform.uname().machine
 		if arch in ("x86_64", "AMD64"):
 			return Arch.Amd64
-		elif arch == "x86":
+		elif arch in ("x86", "i386"):
 			return Arch.I386
 		else:
 			error(f"unknown target architecture: `{arch}`")
