@@ -69,7 +69,9 @@ class Register:
 						)
 						if os.path.exists(path):
 							if os.path.isdir(path):
-								files = glob.glob(os.path.join(path, "*.ri"))
+								files = self.comp.prefs.filter_files_list(
+								    glob.glob(os.path.join(path, "*.ri"))
+								)
 								if len(files) == 0:
 									report.error(
 									    f"cannot import module `{decl.name}` (.ri files not found)",

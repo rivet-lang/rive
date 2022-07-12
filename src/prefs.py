@@ -36,8 +36,8 @@ Options:
       Specify the backend to use while building the package.
 
       Current list of supported backends:
-        `c` (default)
-           Rivet outputs C source code which is passed to a C compiler to be compiled.
+        `c` (default): Rivet outputs C source code which is passed to a C compiler
+        to be compiled.
 
    -d <flag>, --define <flag>
       Define the provided flag.
@@ -412,14 +412,17 @@ class Prefs:
 		self.inputs = glob.glob("lib/core/src/*.ri")
 
 	def filter_files(self):
+		self.inputs = self.filter_files_list(self.inputs)
+
+	def filter_files_list(self, inputs):
 		new_inputs = []
-		for input in self.inputs:
+		for input in inputs:
 			basename_input = path.basename(input)
 			if basename_input.count('.') == 1:
 				new_inputs.append(input)
 				continue
 			exts = basename_input[:-3].split('.')[1:]
-			should_compile = False
+			should_compile = True
 			already_exts = []
 			for ext in exts:
 				if ext in already_exts:
@@ -451,7 +454,7 @@ class Prefs:
 					error(f"{input}: unknown special extension `{ext}`")
 			if should_compile:
 				new_inputs.append(input)
-		self.inputs = new_inputs
+		return new_inputs
 
 	def build_rivet_dir(self):
 		if not path.isdir(RIVET_DIR):

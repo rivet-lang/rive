@@ -4,13 +4,6 @@
 
 pub struct FILE;
 
-#[if (!_WINDOWS_)] // TODO: fixme
-extern (C) {
-    pub static stdin: *mut FILE;
-    pub static stdout: *mut FILE;
-    pub static stderr: *mut FILE;
-}
-
 extern (C) {
     pub fn fwrite(ptr: *void, size: usize, nobj: usize, stream: *mut FILE) usize;
     pub fn fprintf(f: *mut FILE, fmt: *u8, ...) i32;
