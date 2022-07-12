@@ -39,8 +39,6 @@ fn print_help() {
 }
 
 fn print_version() {
-    eprintln(utils::VERSION);
-    process::exit(0);
 }
 
 pub struct Prefs {
@@ -81,7 +79,10 @@ pub struct Prefs {
             match (arg) {
                 // informative options
                 "-h", "--help" => print_help(),
-                "-V", "--version" => print_version(),
+                "-V", "--version" => {
+                    eprintln(utils::VERSION);
+                    process::exit(0);
+                },
 
                 // compiler options
                 "--pkg-name" => {
