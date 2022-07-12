@@ -20,13 +20,13 @@ def run_tests():
 	utils.eprint(utils.bold(HEADER))
 	for file in OK_FILES:
 		res = utils.run_process(
-		    sys.executable, "rivetc.py", "-o", "test", "-cc", CC, file
+		    sys.executable, "rivetc.py", "-o", TEST_EXE, "-cc", CC, file
 		)
 		if res.exit_code == 0:
 			res = utils.run_process(".\\test.exe" if IS_WINDOWS else "./test")
 			if res.exit_code == 0:
 				utils.eprint(utils.bold(utils.green(" [ PASS ] ")), file)
-				os.remove("test")
+				os.remove(TEST_EXE)
 			else:
 				utils.eprint(utils.bold(utils.red(" [ FAIL ] ")), file)
 				utils.eprint(res.err)
