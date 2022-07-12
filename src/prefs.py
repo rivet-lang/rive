@@ -3,7 +3,7 @@
 # that can be found in the LICENSE file.
 
 from os import path
-import os, sys, glob
+import os, sys, glob, platform
 from ctypes import sizeof, c_voidp
 from enum import IntEnum as Enum, auto as auto_enum
 
@@ -133,7 +133,7 @@ class Arch(Enum):
 
 	@staticmethod
 	def get():
-		arch = os.uname().machine
+		arch = platform.uname().machine
 		if arch == "x86_64":
 			return Arch.Amd64
 		elif arch == "x86":
