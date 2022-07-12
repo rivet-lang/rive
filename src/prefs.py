@@ -134,7 +134,7 @@ class Arch(Enum):
 	@staticmethod
 	def get():
 		arch = platform.uname().machine
-		if arch == "x86_64":
+		if arch in ("x86_64", "AMD64"):
 			return Arch.Amd64
 		elif arch == "x86":
 			return Arch.I386

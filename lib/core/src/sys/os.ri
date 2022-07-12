@@ -12,6 +12,8 @@ pub enum OS : u8 {
 pub fn os() OS {
     $if (_LINUX_) {
         return .Linux;
+    } $elif (_WINDOWS_) {
+        return .Windows;
     } $else {
         panic("unknown host operating system");
     }
