@@ -13,7 +13,7 @@ CC = CC if CC else "gcc"
 def run_fail_tests():
 	exit_code = 0
 
-	FAIL_FILES = glob.glob(f"tests/failing/**/*.ri")
+	FAIL_FILES = glob.glob(os.path.join("tests", "failing", "**", "*.ri"))
 	FAIL_FILES.sort()
 	HEADER = f"------------------ Running {len(FAIL_FILES)} failing tests ------------------"
 

@@ -12,7 +12,7 @@ CC = CC if CC else "gcc"
 def run_tests():
 	exit_code = 0
 
-	OK_FILES = glob.glob(f"tests/ok/*.ri")
+	OK_FILES = glob.glob(os.path.join("tests", "ok", "*.ri"))
 	HEADER = f"---------------------- Running {len(OK_FILES)} tests ----------------------"
 
 	utils.eprint(utils.bold(HEADER))
