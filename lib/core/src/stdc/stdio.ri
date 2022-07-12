@@ -4,6 +4,7 @@
 
 pub struct FILE;
 
+#[if (!_WINDOWS_)] // TODO: fixme
 extern (C) {
     pub static stdin: *mut FILE;
     pub static stdout: *mut FILE;
