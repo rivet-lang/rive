@@ -101,7 +101,7 @@ pub struct Prefs {
                 "--emit-rir" => { prefs.emit_rir = true; },
                 "--keep-c" => { prefs.keep_c = true; },
                 "-v", "--verbose" => { prefs.is_verbose = true; },
-                else => eprintln("unknown option: `{}`", arg)
+                else => eprintln("error: unknown option: `{}`", arg)
             }
             i++;
         }

@@ -2,7 +2,7 @@ name: Test compiler
 
 on:
   push:
-    paths: ['lib/**.ri', 'src/**.py', 'tests/**.ri']
+    paths: ['lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**.ri']
     branches: [main]
 
 jobs:
