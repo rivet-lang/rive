@@ -62,6 +62,12 @@ Options:
    -x32, -x64
       Whether 32-bit or 64-bit machine code will be generated.
 
+   -cc <compiler>
+      Change the C compiler Rivet invokes to the specified compiler.
+
+      Officially supported/tested C compilers include:
+        `clang`, `gcc` and `msvc`.
+
    --check-syntax
       Only scan and parse the package, but then stop.
 
@@ -254,6 +260,7 @@ class Prefs:
 		self.library_to_link = []
 		self.objects_to_link = []
 
+		self.ccompiler = "gcc"
 		self.flags = []
 		self.check_syntax = False
 		self.check = False
@@ -379,6 +386,12 @@ class Prefs:
 				i += 1
 			elif arg in ("-x32", "-x64"):
 				self.target_bits = Bits.X32 if arg == "-x32" else Bits.X64
+			elif arg in ("-cc"):
+				if cc := option(current_args, arg):
+					self.ccompiler = cc
+				else:
+					error("`-cc` requires a name as argument")
+				i += 1
 			elif arg == "--check-syntax":
 				self.check_syntax = True
 			elif arg == "--check":

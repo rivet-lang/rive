@@ -6,6 +6,9 @@ import glob, sys, os
 
 import utils
 
+CC = os.getenv("RIVET_CC_TEST")
+CC = CC if CC else "gcc"
+
 def run_tests():
 	exit_code = 0
 
@@ -14,7 +17,9 @@ def run_tests():
 
 	utils.eprint(utils.bold(HEADER))
 	for file in OK_FILES:
-		res = utils.run_process(sys.executable, "rivetc.py", "-o", "test", file)
+		res = utils.run_process(
+		    sys.executable, "rivetc.py", "-o", "test", "-cc", CC, file
+		)
 		if res.exit_code == 0:
 			res = utils.run_process("./test")
 			if res.exit_code == 0:

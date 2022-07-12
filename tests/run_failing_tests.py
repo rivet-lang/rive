@@ -2,10 +2,13 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-import glob, sys
 from os import path
+import glob, sys, os
 
 import utils
+
+CC = os.getenv("RIVET_CC_TEST")
+CC = CC if CC else "gcc"
 
 def run_fail_tests():
 	exit_code = 0
@@ -19,7 +22,7 @@ def run_fail_tests():
 		res = utils.run_process(
 		    sys.executable,
 		    "rivetc.py", # TODO: "--pkg-name", utils.filename(file),
-		    file
+		    file, "-cc", CC
 		)
 		try:
 			outf = open(file.replace(".ri", ".out")).read()
