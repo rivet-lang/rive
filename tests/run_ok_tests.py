@@ -12,8 +12,10 @@ CC = CC if CC else "gcc"
 def run_tests():
 	exit_code = 0
 
+	IS_WINDOWS = sys.platform == "win32"
 	OK_FILES = glob.glob(os.path.join("tests", "ok", "*.ri"))
 	HEADER = f"---------------------- Running {len(OK_FILES)} tests ----------------------"
+	TEST_EXE = "test.exe" if IS_WINDOWS else "test"
 
 	utils.eprint(utils.bold(HEADER))
 	for file in OK_FILES:
@@ -21,7 +23,7 @@ def run_tests():
 		    sys.executable, "rivetc.py", "-o", "test", "-cc", CC, file
 		)
 		if res.exit_code == 0:
-			res = utils.run_process("./test")
+			res = utils.run_process(".\\test.exe" if IS_WINDOWS else "./test")
 			if res.exit_code == 0:
 				utils.eprint(utils.bold(utils.green(" [ PASS ] ")), file)
 				os.remove("test")
