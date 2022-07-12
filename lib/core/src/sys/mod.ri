@@ -2,12 +2,19 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+#[if (!_WINDOWS_)]
 extern (C) {
     fn get_nprocs() i32;
 }
 
 /// Returns the number of virtual CPU cores found on the system.
-pub fn nr_cpus() i32 { return unsafe { get_nprocs() }; }
+pub fn nr_cpus() i32 {
+    $if (_LINUX_) {
+        return unsafe { get_nprocs() };
+    } $else {
+        panic("`nr_cpus` only works on linux (for now)");
+    }
+}
 
 /// Returns true if the current executable is running on a 32-bit system.
 pub fn is_32bit() bool { return $if (_x32_) true $else false; }
