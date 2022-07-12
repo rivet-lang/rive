@@ -162,7 +162,7 @@ class Compiler:
 				    else "-g", f'-L{os.path.dirname(cfile)}', "-c", "-o",
 				    objfile,
 				]
-				print(args)
+				utils.eprint(args)
 				res = utils.execute(*args)
 				if res.exit_code != 0:
 					utils.error(
