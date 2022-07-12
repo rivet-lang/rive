@@ -4,18 +4,18 @@
 
 using pkg::utils;
 
-pub(pkg) enum Backend {
+pub enum Backend {
     C
 }
 
-pub(pkg) enum PackageType {
+pub enum PackageType {
 	Bin, // .exe
 	Lib, // .rilib
 	DyLib, // .so, .dll, .dylib
 	StaticLib // .a, .lib
 }
 
-pub(pkg) enum BuildMode {
+pub enum BuildMode {
 	Debug,
 	Release,
 	Test
@@ -43,7 +43,7 @@ fn print_version() {
     process::exit(0);
 }
 
-pub(pkg) struct Prefs {
+pub struct Prefs {
     // Target info
     pub mut target_os: sys::OS = sys::os();
     pub mut target_arch: sys::Arch = sys::arch();
@@ -63,6 +63,7 @@ pub(pkg) struct Prefs {
     pub mut check_syntax: bool;
 	pub mut check: bool;
 	pub mut emit_rir: bool;
+	pub mut keep_c: bool;
 	pub mut is_verbose: bool;
 
     pub fn from_cli() Self { return Self::new(ARGS[1..]); }
@@ -97,6 +98,7 @@ pub(pkg) struct Prefs {
                 "--check-syntax" => { prefs.check_syntax = true; },
                 "--check" => { prefs.check = true; },
                 "--emit-rir" => { prefs.emit_rir = true; },
+                "--keep-c" => { prefs.keep_c = true; },
                 "-v", "--verbose" => { prefs.is_verbose = true; },
                 else => eprintln("unknown option: `{}`", arg)
             }

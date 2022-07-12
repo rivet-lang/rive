@@ -2,8 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-pub(pkg) static VERSION: str = "0.1.0";
-pub(pkg) static HELP: str = "Usage: rivetc [OPTIONS] INPUTS
+pub static VERSION: str = "0.1.0";
+pub static HELP: str = "Usage: rivetc [OPTIONS] INPUTS
 
 The compiler can receive both files and directories as input, example:
    rivetc my_file.ri my_folder/ my_folder2/ other_file.ri
@@ -63,6 +63,9 @@ Options:
 
    --emit-rir
       Emit Rivet Intermediate Representation to a file.
+
+   --keep-c
+      Don't remove the output C source file.
 
    -v, --verbose
       Print additional messages to the console.

@@ -111,7 +111,8 @@ class Compiler:
 						self.vlog(f"C compiler options: {args}")
 						res = utils.execute(*args)
 						if res.exit_code == 0:
-							os.remove(c_file)
+							if not self.prefs.keep_c:
+								os.remove(c_file)
 						else:
 							utils.error(
 							    f"error while compiling the output C file `{c_file}`:\n{res.err}"

@@ -71,6 +71,9 @@ Options:
    --emit-rir
       Emit Rivet Intermediate Representation to a file.
 
+   --keep-c
+      Don't remove the output C source file.
+
    -v, --verbose
       Print additional messages to the console.
 
@@ -253,6 +256,7 @@ class Prefs:
 		self.check_syntax = False
 		self.check = False
 		self.emit_rir = False
+		self.keep_c=False
 		self.is_verbose = False
 
 		if len(args) == 0:
@@ -379,6 +383,8 @@ class Prefs:
 				self.check = True
 			elif arg == "--emit-rir":
 				self.emit_rir = True
+			elif arg == "--keep-c":
+				self.keep_c = True
 			elif arg in ("-v", "--verbose"):
 				self.is_verbose = True
 			elif path.isdir(arg):
