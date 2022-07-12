@@ -1,4 +1,4 @@
-name: Test compiler
+name: Tests
 
 on:
   push:
@@ -7,11 +7,11 @@ on:
 
 jobs:
   ubuntu-clang:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       RIVET_CC_TEST: clang
     steps:
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - name: Run tests
         run: |
@@ -22,11 +22,11 @@ jobs:
           python3 tests/run_failing_tests.py
 
   ubuntu-gcc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       RIVET_CC_TEST: gcc
     steps:
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - name: Run tests
         run: |
