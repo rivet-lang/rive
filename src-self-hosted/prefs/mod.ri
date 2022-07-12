@@ -90,7 +90,7 @@ pub struct Prefs {
                         prefs.pkg_name = pkg_name;
                         prefs.pkg_output = pkg_name;
                     } else {
-                        eprintln("`--pkg-name` requires a name as argument");
+                        eprintln("error: `--pkg-name` requires a name as argument");
                     }
                     i++;
                 },
