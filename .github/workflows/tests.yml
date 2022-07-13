@@ -2,7 +2,7 @@ name: Tests
 
 on:
   push:
-    paths: ['lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**']
+    paths: ['examples/**.ri', 'lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**']
     branches: [main]
 
 jobs:
@@ -13,7 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run tests
+      - name: Run examples
+        run: |
+          python3 tests/run_examples.py
+
+      - name: Run passing tests
         run: |
           python3 tests/run_ok_tests.py
 
@@ -28,7 +32,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run tests
+      - name: Run examples
+        run: |
+          python3 tests/run_examples.py
+
+      - name: Run passing tests
         run: |
           python3 tests/run_ok_tests.py
 
@@ -48,7 +56,11 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Run tests
+      - name: Run examples
+        run: |
+          python3 tests/run_examples.py
+
+      - name: Run passing tests
         run: |
           python3 tests/run_ok_tests.py
 
@@ -68,7 +80,11 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Run tests
+      - name: Run examples
+        run: |
+          python3 tests/run_examples.py
+
+      - name: Run passing tests
         run: |
           python3 tests/run_ok_tests.py
 

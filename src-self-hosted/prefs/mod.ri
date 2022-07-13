@@ -38,9 +38,6 @@ fn print_help() {
     process::exit(0);
 }
 
-fn print_version() {
-}
-
 pub struct Prefs {
     // Target info
     pub mut target_os: sys::OS = sys::os();
