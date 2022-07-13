@@ -12,13 +12,10 @@ struct _error {
 
     #[used]
     fn print(&self) {
-        eprint("[error] ");
         if (self.msg.len == 0) {
             eprintln(self.errtype_name);
         } else {
-            eprint(self.errtype_name);
-            eprint(": ");
-            eprintln(self.msg);
+            eprintln("{}: {}", self.errtype_name, self.msg);
         }
         backtrace::print(2);
         process::exit(1);

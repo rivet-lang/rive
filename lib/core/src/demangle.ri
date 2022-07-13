@@ -7,11 +7,11 @@ using pkg::utils::StaticBuffer;
 pub mod demangle {
     pub fn demangle_symbol(name: *u8) String {
         let mut buf = StaticBuffer{};
-        let size = unsafe { stdc::strlen(name) };
-        let mut res = String::with_capacity(size - 2);
+        let len = unsafe { stdc::strlen(name) };
+        let mut res = String::with_capacity(len - 2);
 
         let mut idx: usize = 2; // skip `_R`
-        while (idx < size) {
+        while (idx < len) {
             let byte = unsafe { name[idx] };
             if (byte.is_digit()) {
                 buf.push(byte);

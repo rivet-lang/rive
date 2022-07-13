@@ -41,35 +41,23 @@ pub mod backtrace {
                 return 1; // stop backtracing
             }
 
-            let filename = if (filename_ptr == none) {
-                "<unknown-filename>".to_string()
+            let file_name = if (filename_ptr == none) {
+                "???".to_string()
             } else {
                 String::from_cstr(filename_ptr)
             };
 
             let func_name = if (func_ptr == none) {
-                "<unknown-function-name>".to_string()
+                "??".to_string()
             } else {
                 demangle::demangle_symbol(func_ptr)
             };
 
             let mut bdata = as(*mut BacktraceData, data);
-            let kw = if (bdata.frame_nr == 0) "at" else "by";
-
-            let lineno_str = lineno.to_string();
-
-            let mut res = String::with_capacity(
-                kw.len + func_name.len() + filename.len() + lineno_str.len() + 9
+            eprintln(
+                "   {} {} in {}:{}", if (bdata.frame_nr == 0) "at" else "by", func_name,
+                file_name, lineno
             );
-            res.push_str("   ");
-            res.push_str(kw);
-            res.push_str(" ");
-            res.push_string(func_name);
-            res.push_str(" in ");
-            res.push_string(filename);
-            res.push_str(":");
-            res.push_string(lineno_str);
-            eprintln(res.as_str());
             bdata.frame_nr++;
         }
         return 0;
