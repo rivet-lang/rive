@@ -13,6 +13,7 @@ CC = CC if CC else "gcc"
 def run_fail_tests():
 	exit_code = 0
 
+	IS_WINDOWS = sys.platform == "win32"
 	FAIL_FILES = glob.glob(os.path.join("tests", "failing", "**", "*.ri"))
 	FAIL_FILES.sort()
 	HEADER = f"------------------ Running {len(FAIL_FILES)} failing tests ------------------"
@@ -30,7 +31,10 @@ def run_fail_tests():
 				utils.eprint(utils.bold(utils.green(" [ PASS ] ")), file)
 			else:
 				utils.eprint(utils.bold(utils.red(" [ FAIL ] ")), file)
-			if outf.strip() != res.err:
+			out = outf.strip()
+			if IS_WINDOWS:
+				out = out.replace("\\", "/")
+			if out != res.err:
 				utils.eprint(utils.bold("Expected:"))
 				utils.eprint(outf)
 				utils.eprint(utils.bold("Got:"))
