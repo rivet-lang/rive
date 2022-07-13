@@ -33,7 +33,7 @@ def run_fail_tests():
 				utils.eprint(utils.bold(utils.red(" [ FAIL ] ")), file)
 			out = outf.strip()
 			if IS_WINDOWS:
-				res.err = res.err.replace("\\", "/")
+				res.err = res.err.replace("\\", "/").replace("\r\n", "\n")
 			if out != res.err:
 				utils.eprint(utils.bold("Expected:"))
 				utils.eprint(out)
