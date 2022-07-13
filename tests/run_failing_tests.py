@@ -33,10 +33,10 @@ def run_fail_tests():
 				utils.eprint(utils.bold(utils.red(" [ FAIL ] ")), file)
 			out = outf.strip()
 			if IS_WINDOWS:
-				out = out.replace("\\", "/")
+				res.err = res.err.replace("\\", "/")
 			if out != res.err:
 				utils.eprint(utils.bold("Expected:"))
-				utils.eprint(outf)
+				utils.eprint(out)
 				utils.eprint(utils.bold("Got:"))
 				utils.eprint(res.err)
 				exit_code = 1
