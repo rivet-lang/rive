@@ -31,8 +31,8 @@ class ProcessResult:
 def execute(*args):
 	res = subprocess.run(args, capture_output = True)
 	return ProcessResult(
-	    res.stdout.decode().strip(),
-	    res.stderr.decode().strip(), res.returncode
+	    res.stdout.decode(encoding = 'UTF-8').strip(),
+	    res.stderr.decode(encoding = 'UTF-8').strip(), res.returncode
 	)
 
 class Builder:
