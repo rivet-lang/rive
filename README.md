@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.png" alt="Rivet logo" width="200" height="200"/>
+<img src="docs/assets/logo.png" alt="Rivet logo" width="200" height="200"/>
 
 # The Rivet programming language
 
@@ -8,8 +8,10 @@
 ![status](https://img.shields.io/badge/status-alpha-blue?style=flat-square)
 ![license](https://img.shields.io/github/license/rivet-lang/rivet?style=flat-square)
 
+[Documentation](docs/00_getting_started.md)
+
 <!--
-[Docs](docs/docs.md) •
+•
 [Changelog](CHANGELOG.md)
 -->
 
@@ -51,7 +53,7 @@ generating binaries directly without the need for a C compiler.
 
 > **NOTE:** To run the compiler you must have Python 3.
 
-> **NOTE:** At present, the test is successful only on **Linux** and **Windows**
+> **NOTE:** At present, the test is successful only on **Linux** and **Windows**.
 
 Just execute `python rivetc.py xxx.ri`.
 
