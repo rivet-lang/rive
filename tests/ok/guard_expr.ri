@@ -17,4 +17,14 @@ fn main() {
     while (let val3 = ret_none(); val3 >= 10) {
         assert!(val3 >= 3);
     }
+
+    match (let val4 = ret_none()) {
+        3 => assert!(val4 == 3),
+        else => assert!(false)
+    }
+
+    match (let val5 = ret_none(); val5 >= 10) {
+        3 => assert!(val5 == 3),
+        else => assert!(false)
+    }
 }

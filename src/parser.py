@@ -1110,7 +1110,11 @@ class Parser:
 		pos = self.prev_tok.pos
 		is_typematch = False
 		if self.accept(Kind.Lparen):
-			expr = self.parse_expr()
+			if self.tok.kind == Kind.KeyLet:
+				self.open_scope()
+				expr = self.parse_guard_expr()
+			else:
+				expr = self.parse_expr()
 			self.expect(Kind.Rparen)
 			is_typematch = self.accept(Kind.KeyIs)
 		else:
@@ -1133,6 +1137,7 @@ class Parser:
 			if not self.accept(Kind.Comma):
 				break
 		self.expect(Kind.Rbrace)
+		if isinstance(expr, ast.GuardExpr): self.close_scope()
 		return ast.MatchExpr(expr, branches, is_typematch, pos)
 
 	def parse_guard_expr(self):

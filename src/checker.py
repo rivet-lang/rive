@@ -1266,14 +1266,15 @@ class Checker:
 			if isinstance(expr_t, (type.Result, type.Optional)):
 				expr.is_result = isinstance(expr_t, type.Result)
 				expr.scope.update_typ(expr.vars[0], expr_t.typ)
+				expr.typ = expr_t.typ
 			else:
 				report.error("expected result or optional value", expr.expr.pos)
+				expr.typ = self.comp.void_t
 			if expr.has_cond:
 				if self.check_expr(expr.cond) != self.comp.bool_t:
 					report.error(
 					    "guard condition must be boolean", expr.cond.pos
 					)
-			expr.typ = self.comp.void_t
 			return expr.typ
 		else:
 			print(expr.__class__, expr)

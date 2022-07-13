@@ -499,9 +499,9 @@ void _R9drop_argsZ(void) {
 			else:
 				self.write("if (")
 				self.gen_expr(inst.args[0])
-				self.write(
-				    f") goto {inst.args[1].name}; else goto {inst.args[2].name}"
-				)
+				self.write(f") goto {inst.args[1].name}")
+				if len(inst.args) == 3:
+					self.write(f"; else goto {inst.args[2].name}")
 		elif inst.kind == InstKind.Call:
 			arg0 = inst.args[0]
 			args = inst.args[1:]

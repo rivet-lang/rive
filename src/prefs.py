@@ -8,91 +8,12 @@ from ctypes import sizeof, c_voidp
 from enum import IntEnum as Enum, auto as auto_enum
 
 from . import report
-from .utils import error, eprint, execute, is_valid_name, full_version
-
-HELP = """Usage: rivetc [OPTIONS] INPUTS
-
-The compiler can receive both files and directories as input, example:
-   rivetc my_file.ri my_folder/ my_folder2/ other_file.ri
-
-Options:
-   --pkg-name <name>
-      Specify the name of the package being built. By default: main.
-
-   --pkg-type bin|lib|dylib|staticlib
-      Specify the type of the package being built. By default: bin.
-
-   -r, --release
-      Compile the executable in release mode, where most optimizations are enabled.
-      Note that most Rivet warnings turn to errors, if you pass -r or --release, so
-      you will have to fix them first.
-
-   -o <filename>, --output <filename>
-      Force Rivet to output the package in a specific location
-      (relative to the current working directory if not absolute).
-      By default: main.
-
-   -b <backend>, --backend <backend>
-      Specify the backend to use while building the package.
-
-      Current list of supported backends:
-        `c` (default): Rivet outputs C source code which is passed to a C compiler
-        to be compiled.
-
-   -d <flag>, --define <flag>
-      Define the provided flag.
-
-   -L <path>
-      Add a directory to the library search path.
-
-   -os <name>, --target-os <name>
-      Change the target OS that Rivet tries to compile for. By default, the
-      target OS is the host system.
-
-      Current list of supported operating systems:
-        `linux`
-
-   -arch <arch>, --target-arch <arch>
-      Change the target architecture that Rivet tries to compile for. By
-      default, the target architecture is the host arch.
-
-      Current list of supported architectures:
-        `amd64`, `i386`
-
-   -x32, -x64
-      Whether 32-bit or 64-bit machine code will be generated.
-
-   -cc <compiler>
-      Change the C compiler Rivet invokes to the specified compiler.
-
-      Officially supported/tested C compilers include:
-        `clang`, `gcc` and `msvc`.
-
-   --check-syntax
-      Only scan and parse the package, but then stop.
-
-   --check
-      Scans, parses, and checks the files without compiling the package.
-
-   --emit-rir
-      Emit Rivet Intermediate Representation to a file.
-
-   --keep-c
-      Don't remove the output C source file.
-
-   -v, --verbose
-      Print additional messages to the console.
-
-   -V, --version
-      Print compiler version.
-
-   -h, --help
-      Print this message."""
+from .utils import error, eprint, execute, is_valid_name, full_version, HELP
 
 RIVET_DIR = path.join(path.expanduser("~"), ".rivet-lang")
 
 def option(args, param):
-	for (i, arg) in enumerate(args):
+	for i, arg in enumerate(args):
 		if param == arg:
 			if i + 1 < len(args):
 				return args[i + 1]
@@ -172,13 +93,10 @@ class Bits(Enum):
 
 	@staticmethod
 	def get():
-		if sizeof(c_voidp) == 8:
-			return Bits.X64
-		return Bits.X32
+		return Bits.X64 if sizeof(c_voidp) == 8 else Bits.X32
 
 	def __str__(self):
-		if self == Bits.X32: return "x32"
-		return "x64"
+		return "x64" if self == Bits.X64 else "x32"
 
 class Endian(Enum):
 	Little = auto_enum()
@@ -186,13 +104,10 @@ class Endian(Enum):
 
 	@staticmethod
 	def get():
-		if sys.byteorder == "little":
-			return Endian.Little
-		return Endian.Big
+		return Endian.Little if sys.byteorder == "little" else Endian.Big
 
 	def __str__(self):
-		if self == Endian.Little: return "little"
-		return "big"
+		return "little" if self == Endian.Little else "big"
 
 class Backend(Enum):
 	C = auto_enum()
@@ -250,7 +165,7 @@ class Prefs:
 		# package info
 		self.pkg_name = "core" # TODO: temp, should be "main"
 		self.pkg_type = PkgType.Bin
-		self.pkg_output = "main"
+		self.pkg_output = "main.exe" if self.target_os == OS.Windows else "main"
 		self.build_mode = BuildMode.Debug
 
 		self.library_path = [
@@ -420,6 +335,11 @@ class Prefs:
 
 		if not path.isabs(self.pkg_output):
 			self.pkg_output = path.join(os.getcwd(), self.pkg_output)
+
+		if self.target_os == OS.Windows and not self.pkg_output.endswith(
+		    ".exe"
+		):
+			self.pkg_output += ".exe"
 
 	def load_core_library(self):
 		self.inputs = glob.glob("lib/core/src/*.ri")

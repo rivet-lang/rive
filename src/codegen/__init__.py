@@ -306,6 +306,9 @@ class FnDecl:
 	def add_br(self, label):
 		self.add_inst(Inst(InstKind.Br, [Name(label)]))
 
+	def add_cond_single_br(self, cond, label1):
+		self.add_inst(Inst(InstKind.Br, [cond, Name(label1)]))
+
 	def add_cond_br(self, cond, label1, label2):
 		self.add_inst(Inst(InstKind.Br, [cond, Name(label1), Name(label2)]))
 
@@ -2371,15 +2374,43 @@ class AST2RIR:
 		elif isinstance(expr, ast.MatchExpr):
 			is_error_t = expr.expr.typ == self.comp.error_t
 			is_void_value = expr.typ in self.void_types
-			match_expr = self.convert_expr_with_cast(expr.expr.typ, expr.expr)
+			exit_match = self.cur_fn.local_name()
+			self.cur_fn.add_comment(f"match expr (end: {exit_match})")
 			tmp = Ident(
 			    expr.typ,
 			    self.cur_fn.local_name() if not is_void_value else ""
 			)
 			if not is_void_value:
 				self.cur_fn.alloca_var(tmp)
-			exit_match = self.cur_fn.local_name()
-			self.cur_fn.add_comment(f"match expr (end: {exit_match})")
+			is_guard_expr = isinstance(expr.expr, ast.GuardExpr)
+			if is_guard_expr:
+				gexpr = self.convert_expr_with_cast(
+				    expr.expr.typ, expr.expr.expr
+				)
+				if expr.expr.is_result:
+					cond = Selector(self.comp.bool_t, gexpr, Name("is_err"))
+				else:
+					cond = Selector(self.comp.bool_t, gexpr, Name("is_none"))
+				self.cur_fn.alloca(
+				    expr.expr.typ, expr.expr.vars[0],
+				    Selector(expr.expr.typ, gexpr, Name("value"))
+				)
+				self.cur_fn.add_cond_single_br(cond, exit_match)
+				if expr.expr.has_cond:
+					self.cur_fn.add_cond_single_br(
+					    Inst(
+					        InstKind.BooleanNot, [
+					            self.convert_expr_with_cast(
+					                self.comp.bool_t, expr.expr.cond
+					            )
+					        ]
+					    ), exit_match
+					)
+				match_expr = Ident(expr.expr.typ, expr.expr.vars[0])
+			else:
+				match_expr = self.convert_expr_with_cast(
+				    expr.expr.typ, expr.expr
+				)
 			for b in expr.branches:
 				b_label = "" if b.is_else else self.cur_fn.local_name()
 				b_exit = exit_match if b.is_else else self.cur_fn.local_name()
