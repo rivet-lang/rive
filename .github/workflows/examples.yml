@@ -1,0 +1,61 @@
+name: Tests
+
+on:
+  push:
+    paths: ['examples/**.ri', 'lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py']
+    branches: [main]
+
+jobs:
+  ubuntu-clang:
+    runs-on: ubuntu-20.04
+    env:
+      RIVET_CC_TEST: clang
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run examples
+        run: |
+          python3 tests/run_examples.py
+
+  ubuntu-gcc:
+    runs-on: ubuntu-20.04
+    env:
+      RIVET_CC_TEST: gcc
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run examples
+        run: |
+          python3 tests/run_examples.py
+
+  windows-msvc:
+    runs-on: windows-2019
+    env:
+      RIVET_CC_TEST: msvc
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run examples
+        run: |
+          python3 tests/run_examples.py
+
+  windows-gcc:
+    runs-on: windows-2019
+    env:
+      RIVET_CC_TEST: gcc
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run examples
+        run: |
+          python3 tests/run_examples.py
