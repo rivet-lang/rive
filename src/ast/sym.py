@@ -31,7 +31,7 @@ class Scope:
 	def add(self, obj):
 		if obj.name == "_":
 			return # ignore special var
-		if _ := self.lookup(obj.name):
+		if self.exists(obj.name):
 			raise CompilerError(f"duplicate object `{obj.name}`")
 		self.objects.append(obj)
 

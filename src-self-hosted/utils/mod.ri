@@ -55,6 +55,12 @@ Options:
    -x32, -x64
       Whether 32-bit or 64-bit machine code will be generated.
 
+   -cc <compiler>
+      Change the C compiler Rivet invokes to the specified compiler.
+
+      Officially supported/tested C compilers include:
+        `clang`, `gcc` and `msvc`.
+
    --check-syntax
       Only scan and parse the package, but then stop.
 

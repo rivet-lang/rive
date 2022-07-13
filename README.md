@@ -51,9 +51,9 @@ generating binaries directly without the need for a C compiler.
 
 > **NOTE:** To run the compiler you must have Python 3.
 
-> **NOTE:** Only **linux** is supported _for now_.
+> **NOTE:** At present, the test is successful only on **Linux**
 
-Just execute `python rivetc.py`.
+Just execute `python rivetc.py xxx.ri`.
 
 * * *
 

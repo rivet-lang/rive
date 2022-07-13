@@ -32,7 +32,7 @@ class Lexer:
 
 	@staticmethod
 	def from_file(file):
-		s = Lexer(open(file).read())
+		s = Lexer(open(file, encoding = 'UTF-8').read())
 		s.file = file
 		s.tokenize_remaining_text()
 		return s

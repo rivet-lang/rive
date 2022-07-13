@@ -303,8 +303,10 @@ void _R9drop_argsZ(void) {
 				self.protos.write("RIVET_NORETURN ")
 			if decl.is_pub:
 				self.write("RIVET_EXPORTED_SYMBOL ")
+				self.protos.write("RIVET_EXPORTED_SYMBOL ")
 			else:
 				self.write("RIVET_LOCAL_SYMBOL ")
+				self.protos.write("RIVET_LOCAL_SYMBOL ")
 			self.inside_func_ret_typ = isinstance(decl.ret_typ, type.Array)
 			ret_typ_str = self.gen_type_str(decl.ret_typ)
 			self.protos.write(ret_typ_str)

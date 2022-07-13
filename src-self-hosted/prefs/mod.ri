@@ -39,8 +39,6 @@ fn print_help() {
 }
 
 fn print_version() {
-    eprintln(utils::VERSION);
-    process::exit(0);
 }
 
 pub struct Prefs {
@@ -81,7 +79,10 @@ pub struct Prefs {
             match (arg) {
                 // informative options
                 "-h", "--help" => print_help(),
-                "-V", "--version" => print_version(),
+                "-V", "--version" => {
+                    eprintln(utils::VERSION);
+                    process::exit(0);
+                },
 
                 // compiler options
                 "--pkg-name" => {
@@ -89,7 +90,7 @@ pub struct Prefs {
                         prefs.pkg_name = pkg_name;
                         prefs.pkg_output = pkg_name;
                     } else {
-                        eprintln("`--pkg-name` requires a name as argument");
+                        eprintln("error: `--pkg-name` requires a name as argument");
                     }
                     i++;
                 },
@@ -100,7 +101,7 @@ pub struct Prefs {
                 "--emit-rir" => { prefs.emit_rir = true; },
                 "--keep-c" => { prefs.keep_c = true; },
                 "-v", "--verbose" => { prefs.is_verbose = true; },
-                else => eprintln("unknown option: `{}`", arg)
+                else => eprintln("error: unknown option: `{}`", arg)
             }
             i++;
         }

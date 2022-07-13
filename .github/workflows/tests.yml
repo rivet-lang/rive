@@ -1,0 +1,77 @@
+name: Tests
+
+on:
+  push:
+    paths: ['lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**']
+    branches: [main]
+
+jobs:
+  ubuntu-clang:
+    runs-on: ubuntu-20.04
+    env:
+      RIVET_CC_TEST: clang
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run tests
+        run: |
+          python3 tests/run_ok_tests.py
+
+      - name: Run failing tests
+        run: |
+          python3 tests/run_failing_tests.py
+
+  ubuntu-gcc:
+    runs-on: ubuntu-20.04
+    env:
+      RIVET_CC_TEST: gcc
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run tests
+        run: |
+          python3 tests/run_ok_tests.py
+
+      - name: Run failing tests
+        run: |
+          python3 tests/run_failing_tests.py
+
+  windows-msvc:
+    runs-on: windows-2019
+    env:
+      RIVET_CC_TEST: msvc
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run tests
+        run: |
+          python3 tests/run_ok_tests.py
+
+      - name: Run failing tests
+        run: |
+          python3 tests/run_failing_tests.py
+
+  windows-gcc:
+    runs-on: windows-2019
+    env:
+      RIVET_CC_TEST: gcc
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run tests
+        run: |
+          python3 tests/run_ok_tests.py
+
+      - name: Run failing tests
+        run: |
+          python3 tests/run_failing_tests.py

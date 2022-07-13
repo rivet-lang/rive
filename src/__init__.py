@@ -61,8 +61,6 @@ class Compiler:
 		self.pkg_attrs = None
 		self.mod_sym = None # for `mod mod_name;`
 
-		self.ccompiler = "gcc"
-
 		self.resolver = resolver.Resolver(self)
 		self.checker = checker.Checker(self)
 		self.ast2rir = codegen.AST2RIR(self)
@@ -95,10 +93,10 @@ class Compiler:
 						c_file = f"{self.prefs.pkg_name}.ri.c"
 						self.cgen.write_to_file(c_file)
 						args = [
-						    self.ccompiler, c_file, *self.prefs.objects_to_link,
-						    "-fno-builtin", "-Werror",
-						    "-m64" if self.prefs.target_bits == prefs.Bits.X64
-						    else "-m32",
+						    self.prefs.ccompiler, c_file,
+						    *self.prefs.objects_to_link, "-fno-builtin",
+						    "-Werror", "-m64" if self.prefs.target_bits
+						    == prefs.Bits.X64 else "-m32",
 						    *[f"-l{l}" for l in self.prefs.library_to_link],
 						    *[f"-L{l}" for l in self.prefs.library_path], "-o",
 						    self.prefs.pkg_output,
@@ -158,11 +156,13 @@ class Compiler:
 						continue
 				self.vlog(msg)
 				args = [
-				    self.ccompiler, cfile, "-m64" if self.prefs.target_bits
-				    == prefs.Bits.X64 else "-m32", "-O3" if
-				    self.prefs.build_mode == prefs.BuildMode.Release else "-g",
-				    f'-L{os.path.dirname(cfile)}', "-c", "-o", objfile,
+				    self.prefs.ccompiler, cfile, "-m64"
+				    if self.prefs.target_bits == prefs.Bits.X64 else "-m32",
+				    "-O3" if self.prefs.build_mode == prefs.BuildMode.Release
+				    else "-g", f'-L{os.path.dirname(cfile)}', "-c", "-o",
+				    objfile,
 				]
+				utils.eprint(args)
 				res = utils.execute(*args)
 				if res.exit_code != 0:
 					utils.error(
@@ -190,7 +190,7 @@ class Compiler:
 			postfix += "debug"
 		else:
 			postfix += "release"
-		postfix += f"-{self.ccompiler}"
+		postfix += f"-{self.prefs.ccompiler}"
 		return postfix
 
 	def parse_files(self):
