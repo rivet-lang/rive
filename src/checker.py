@@ -432,7 +432,7 @@ class Checker:
 				    expr.expr, ast.SelfTyExpr
 				) else expr.expr.sym if isinstance(
 				    expr.expr, ast.Ident
-				) else expr.expr.left_info
+				) else expr.expr.field_info
 				expr.typ = type.Type(expr_sym)
 				if expr_sym.kind == TypeKind.Struct:
 					for f in expr.fields:

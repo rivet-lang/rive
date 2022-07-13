@@ -5,6 +5,7 @@
 pub mod stdc;
 pub mod sys;
 pub mod traits;
+pub mod utils;
 
 pub static ARGS: [str] = [""][..];
 

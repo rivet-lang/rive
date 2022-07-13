@@ -2,30 +2,11 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+using pkg::utils::StaticBuffer;
+
 pub mod demangle {
-    const BUFFER_SIZE: usize = 30;
-
-    struct Buffer {
-        mut buf: [u8; BUFFER_SIZE];
-        mut len: usize;
-
-        fn push(&mut self, byte: u8) {
-            if (self.len < BUFFER_SIZE) {
-                self.buf[self.len++] = byte;
-            } else {
-                panic("Buffer::push: index out of range");
-            }
-        }
-
-        fn clear(&mut self) {
-            while (self.len > 0) {
-                self.buf[self.len--] = 0;
-            }
-        }
-    }
-
     pub fn demangle_symbol(name: *u8) String {
-        let mut buf = Buffer{};
+        let mut buf = StaticBuffer{};
         let size = unsafe { stdc::strlen(name) };
         let mut res = String::with_capacity(size - 2);
 
@@ -40,8 +21,7 @@ pub mod demangle {
             if (!res.is_empty()) {
                 res.push_str("::");
             }
-            let name_len = as(usize, unsafe { stdc::strtoul(&buf.buf[0], none, 10) });
-            for (_ in 0..name_len) {
+            for (_ in 0..as(usize, buf.as_u64())) {
                 res.push(unsafe { name[idx++] });
             }
             buf.clear();

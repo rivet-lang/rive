@@ -3,6 +3,7 @@
 // that can be found in the LICENSE file.
 
 using pkg::traits::ToString;
+using pkg::utils::StaticBuffer;
 
 #[used]
 struct _str {
@@ -57,19 +58,19 @@ extend str {
     fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
 
     fn <(&self, rhs: &Self) bool {
-        unsafe {
-            for (i in 0..self.len) {
+        for (i in 0..self.len) {
+            unsafe {
                 if (i >= rhs.len or self.ptr[i] > rhs.ptr[i]) {
                     return false;
                 } elif (self.ptr[i] < rhs.ptr[i]) {
                     return true;
                 }
             }
-            if (self.len < rhs.len) {
-                return true;
-            }
-            return false;
         }
+        if (self.len < rhs.len) {
+            return true;
+        }
+        return false;
     }
 
     fn >(&self, rhs: &Self) bool { return !self.<(rhs); }
@@ -80,28 +81,68 @@ extend str {
 
     pub fn fmt(&self, args: ...traits::ToString) String {
         let mut res = String::with_capacity(self.len);
+
         let mut args_idx: usize = 0;
         let mut i: usize = 0;
         while (i < self.len) {
             let b = unsafe { self.ptr[i] };
             let b2 = if (i + 1 < self.len) unsafe { self.ptr[i + 1] } else 0;
-            if (b == b'{' and b2 == b'}') {
-                res.push_string(args[args_idx++].to_string());
-                i++;
+            if (b == b'{') {
+                if (b2 == b'{') { // escaping '{'
+                    res.push(b'{');
+                    i++;
+                } elif (b2 == b'}') {
+                    let arg_idx = args_idx++;
+                    if (arg_idx >= args.len) {
+                        panic(
+                            "fmt: argument index out of range (index: {}, len: {})",
+                            arg_idx, args.len
+                        );
+                    }
+                    res.push_string(args[arg_idx].to_string());
+                    i++;
+                } elif (b2.is_digit()) {
+                    let start = i++;
+                    let buf = StaticBuffer{};
+                    while (unsafe { self.ptr[i] != b'}' }) {
+                        buf.push(unsafe { self.ptr[i++] });
+                        if (i >= self.len) {
+                            panic("fmt: incomplete format string (index: {})", start);
+                        }
+                    }
+                    let index = buf.as_u64();
+                    if (index >= args.len) {
+                        panic(
+                            "fmt: argument index out of range (index: {}, len: {})",
+                            index, args.len
+                        );
+                    }
+                    res.push_string(args[index].to_string());
+                } else {
+                    panic("fmt: expecting closing '}}' in format string (index: {})", i);
+                }
+            } elif (b == b'}') {
+                if (b2 == b'}') { // escaping '}'
+                    res.push(b'}');
+                    i++;
+                } else {
+                    panic("fmt: single '}}' encountered in format string (index: {})", i);
+                }
             } else {
                 res.push(b);
             }
             i++;
         }
+
         return res;
     }
-
-    pub fn is_empty(&self) bool { return self.len == 0; }
 
     /// Returns the number of runes contained in `self`.
     pub fn runes_count(&self) usize {
         return cstr_runes_count(unsafe { self.ptr }, self.len);
     }
+
+    pub fn is_empty(&self) bool { return self.len == 0; }
 
     pub fn as_bytes(&self) [u8] {
         return unsafe { _slice::from_array(as(*mut u8, self.ptr), sizeof!(u8), self.len) };

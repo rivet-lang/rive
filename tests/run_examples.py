@@ -23,7 +23,9 @@ def run_examples():
 		    sys.executable, "rivetc.py", "-o", EXAMPLE_EXE, "-cc", CC, file
 		)
 		if res.exit_code == 0:
-			res = utils.run_process(".\\example.exe" if IS_WINDOWS else "./example")
+			res = utils.run_process(
+			    ".\\example.exe" if IS_WINDOWS else "./example"
+			)
 			if res.exit_code == 0:
 				utils.eprint(utils.bold(utils.green(" [ PASS ] ")), file)
 				os.remove(EXAMPLE_EXE)
