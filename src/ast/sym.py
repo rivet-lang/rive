@@ -243,7 +243,11 @@ class Sym:
 	def has_access_to(self, other):
 		self_super = self.super_()
 		other_super = other.super_()
-		return self_super == other_super or self_super == other or self_super.parent == other.parent
+		return (
+		    self_super == other_super or self_super == other
+		    or self_super.parent == other.parent
+		    or self_super == other_super.parent
+		)
 
 	def is_used(self):
 		return self.vis.is_pub() or self.uses > 0

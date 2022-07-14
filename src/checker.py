@@ -1564,6 +1564,9 @@ class Checker:
 		if expected == got:
 			return True
 
+		if got == self.comp.no_return_t:
+			return True
+
 		if isinstance(expected, type.Result):
 			return self.check_compatible_types(got, expected.typ)
 		elif isinstance(expected,

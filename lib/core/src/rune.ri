@@ -15,37 +15,93 @@ const MAX_THREE_B: u32 = 0x10000;
 
 pub errtype RuneFromU32Error;
 
-fn rune_from_u32(i: u32) !rune {
-    if (i > as(u32, MAX_RUNE) or (i >= 0xD800 and i <= 0xDFFF)) {
-        raise RuneFromU32Error();
-    }
-    return as(rune, i);
+// Returns the number of runes contained in `s`.
+fn cstr_runes_count(s: *u8, size: usize) usize {
+	let mut l: usize = 0;
+	let mut i: usize = 0;
+	while (i < size) {
+		l++;
+		i += unsafe { s[i] }.len_utf8();
+	}
+	return l;
 }
 
-/// Converts a digit in the given radix to a `rune`.
-///
-/// A 'radix' here is sometimes also called a 'base'. A radix of two
-/// indicates a binary number, a radix of ten, decimal, and a radix of
-/// sixteen, hexadecimal, to give some common values. Arbitrary
-/// radices are supported.
-///
-/// `rune_from_digit()` will return `none` if the input is not a digit
-/// in the given radix.
-///
-/// Panics if given a radix larger than 36.
-pub fn rune_from_digit(num: u32, radix: u32) ?rune {
-    if (radix > 36) {
-        panic("rune_from_digit: radix is too high (maximum 36)");
-    }
-    if (num < radix) {
-        let num_ = as(u8, num);
-        if (num_ < 10) {
-            return as(rune, b'0' + num_);
-        } else {
-            return as(rune, b'a' + num_ - 10);
+extend rune {
+    pub fn from_u32(i: u32) !rune {
+        if (i > as(u32, MAX_RUNE) or (i >= 0xD800 and i <= 0xDFFF)) {
+            raise RuneFromU32Error();
         }
+        return as(rune, i);
     }
-    return none;
+
+    /// Converts a digit in the given radix to a `rune`.
+    ///
+    /// A 'radix' here is sometimes also called a 'base'. A radix of two
+    /// indicates a binary number, a radix of ten, decimal, and a radix of
+    /// sixteen, hexadecimal, to give some common values. Arbitrary
+    /// radices are supported.
+    ///
+    /// `rune_from_digit()` will return `none` if the input is not a digit
+    /// in the given radix.
+    ///
+    /// Panics if given a radix larger than 36.
+    pub fn from_digit(num: u32, radix: u32) ?rune {
+        if (radix > 36) {
+            panic("rune::from_digit: radix is too high (maximum 36)");
+        }
+        if (num < radix) {
+            let num_ = as(u8, num);
+            if (num_ < 10) {
+                return as(rune, b'0' + num_);
+            } else {
+                return as(rune, b'a' + num_ - 10);
+            }
+        }
+        return none;
+    }
+
+    fn len_utf8(self) usize { return len_utf8(as(u32, self)); }
+}
+
+extend rune for traits::ToString {
+    fn to_string(&self) String {
+        let len = self.len_utf8();
+        let mut res = String::with_capacity(len);
+        _ = unsafe { utf32_decode_to_buffer(as(u32, self.*), res.ptr) };
+        res.len_ = len;
+        return res;
+    }
+}
+
+fn utf32_decode_to_buffer(code: u32, buffer: *mut u8) i32 {
+    let icode = as(i32, code);
+	unsafe {
+		match {
+            (icode <= 127) => { // 0x7F
+                buffer[0] = as(u8, icode);
+                return 1;
+            },
+            (icode <= 2047) => { // 0x7FF
+                buffer[0] = as(u8, 192) | as(u8, icode >> 6); // 0xC0 - 110xxxxx
+                buffer[1] = as(u8, 128) | as(u8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                return 2;
+            },
+            (icode <= 65535) => { // 0xFFFF
+                buffer[0] = as(u8, 224) | as(u8, icode >> 12); // 0xE0 - 1110xxxx
+                buffer[1] = as(u8, 128) | (as(u8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[2] = as(u8, 128) | as(u8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                return 3;
+            },
+            (icode <= 1114111) => { // 0x10FFFF
+                buffer[0] = as(u8, 240) | as(u8, icode >> 18); // 0xF0 - 11110xxx
+                buffer[1] = as(u8, 128) | (as(u8, icode >> 12) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[2] = as(u8, 128) | (as(u8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[3] = as(u8, 128) | as(u8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                return 4;
+            },
+            else => return 0
+		}
+	}
 }
 
 fn len_utf8(code: u32) usize {
@@ -58,19 +114,4 @@ fn len_utf8(code: u32) usize {
     } else {
         4
     };
-}
-
-extend rune {
-    fn len_utf8(self) usize { return len_utf8(as(u32, self)); }
-}
-
-// Returns the number of runes contained in `s`.
-fn cstr_runes_count(s: *u8, size: usize) usize {
-	let mut l: usize = 0;
-	let mut i: usize = 0;
-	while (i < size) {
-		l++;
-		i += unsafe { s[i] }.len_utf8();
-	}
-	return l;
 }

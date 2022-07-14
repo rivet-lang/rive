@@ -401,8 +401,9 @@ class FloatLiteral:
 		return self.__repr__()
 
 class RuneLiteral:
-	def __init__(self, lit):
+	def __init__(self, typ, lit):
 		self.lit = lit
+		self.typ = typ
 
 	def __repr__(self):
 		return f"rune '{self.lit}'"
@@ -1121,7 +1122,7 @@ class AST2RIR:
 				b, _ = utils.bytestr(expr.lit)
 				return IntLiteral(expr.typ, str(b[0]))
 			else:
-				return RuneLiteral(expr.lit)
+				return RuneLiteral(self.comp.rune_t, expr.lit)
 		elif isinstance(expr, ast.IntegerLiteral):
 			return IntLiteral(expr.typ, expr.lit)
 		elif isinstance(expr, ast.FloatLiteral):
@@ -1389,10 +1390,6 @@ class AST2RIR:
 					    expr.left.left_typ, type.Ref
 					):
 						self_expr = Inst(InstKind.GetRef, [self_expr])
-					elif not expr.info.rec_is_ref and isinstance(
-					    expr.left.left_typ, type.Ref
-					):
-						self_expr = Inst(InstKind.LoadPtr, [self_expr])
 					args.append(self_expr)
 			args_len = expr.info.args_len()
 			for i, arg in enumerate(expr.args):

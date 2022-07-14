@@ -554,7 +554,7 @@ void _R9drop_argsZ(void) {
 			if expr.typ == self.comp.float32_t:
 				self.write("f")
 		elif isinstance(expr, RuneLiteral):
-			self.write(expr.lit)
+			self.write(f"L'{expr.lit}'")
 		elif isinstance(expr, StringLiteral):
 			if isinstance(expr.typ, type.Ptr):
 				self.write(f'(u8*)"{expr.lit}"')
