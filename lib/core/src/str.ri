@@ -35,53 +35,11 @@ extend str {
         return unsafe { self.ptr[idx] };
     }
 
-    fn ==(&self, rhs: &Self) bool {
-        unsafe {
-            if (self.ptr == none) {
-                panic("str::_eq_: left side of the operand is `none`");
-            } elif (rhs.ptr == none) {
-                panic("str::_eq_: right side of the operand is `none`");
-            }
-            if (self.len != rhs.len) {
-                return false;
-            }
-            if (self.len > 0) {
-                let last_idx = self.len - 1;
-                if (self.ptr[last_idx] != rhs.ptr[last_idx]) {
-                    return false;
-                }
-            }
-            return mem::cmp(self.ptr, rhs.ptr, rhs.len) == 0;
-        }
-    }
-
-    fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
-
-    fn <(&self, rhs: &Self) bool {
-        for (i in 0..self.len) {
-            unsafe {
-                if (i >= rhs.len or self.ptr[i] > rhs.ptr[i]) {
-                    return false;
-                } elif (self.ptr[i] < rhs.ptr[i]) {
-                    return true;
-                }
-            }
-        }
-        if (self.len < rhs.len) {
-            return true;
-        }
-        return false;
-    }
-
-    fn >(&self, rhs: &Self) bool { return !self.<(rhs); }
-
-    fn <=(&self, rhs: &Self) bool { return self.<(rhs) or self.==(rhs); }
-
-    fn >=(&self, rhs: &Self) bool { return self.>(rhs) or self.==(rhs); }
-
     pub fn fmt(&self, args: ...traits::ToString) String {
+        if (args.len == 0) {
+            return self.to_string();
+        }
         let mut res = String::with_capacity(self.len);
-
         let mut args_idx: usize = 0;
         let mut i: usize = 0;
         while (i < self.len) {
@@ -133,7 +91,6 @@ extend str {
             }
             i++;
         }
-
         return res;
     }
 
@@ -147,6 +104,45 @@ extend str {
     pub fn as_bytes(&self) [u8] {
         return unsafe { _slice::from_array(as(*mut u8, self.ptr), sizeof!(u8), self.len) };
     }
+
+    fn ==(&self, rhs: &Self) bool {
+        if (self.len != rhs.len) {
+            return false;
+        }
+        unsafe {
+            if (self.len > 0) {
+                let last_idx = self.len - 1;
+                if (self.ptr[last_idx] != rhs.ptr[last_idx]) {
+                    return false;
+                }
+            }
+            return mem::cmp(self.ptr, rhs.ptr, rhs.len) == 0;
+        }
+    }
+
+    fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
+
+    fn <(&self, rhs: &Self) bool {
+        for (i in 0..self.len) {
+            unsafe {
+                if (i >= rhs.len or self.ptr[i] > rhs.ptr[i]) {
+                    return false;
+                } elif (self.ptr[i] < rhs.ptr[i]) {
+                    return true;
+                }
+            }
+        }
+        if (self.len < rhs.len) {
+            return true;
+        }
+        return false;
+    }
+
+    fn >(&self, rhs: &Self) bool { return !self.<(rhs); }
+
+    fn <=(&self, rhs: &Self) bool { return self.<(rhs) or self.==(rhs); }
+
+    fn >=(&self, rhs: &Self) bool { return self.>(rhs) or self.==(rhs); }
 
     #[used]
     fn slice(&self, start: usize, end: usize) str {
