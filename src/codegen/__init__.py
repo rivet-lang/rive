@@ -85,7 +85,7 @@ def mangle_symbol(s):
 			    s.parent.is_core or s.parent.is_universe
 			):
 				res.insert(0, "4core6_error")
-				s.mangled_name = "4core6_error"
+				s.mangled_name = "_R4core6_error"
 			else:
 				res.insert(0, f"{len(s.name)}{s.name}")
 		elif s.name in OVERLOADABLE_OPERATORS_STR:
@@ -620,11 +620,11 @@ class AST2RIR:
 		self.loop_entry_label = ""
 		self.loop_exit_label = ""
 
+		self.void_types = (self.comp.void_t, self.comp.no_return_t)
+
 		self.init_statics = FnDecl(
 		    True, "_R12init_staticsZ", self.comp.void_t, []
 		)
-
-		self.void_types = (self.comp.void_t, self.comp.no_return_t)
 
 	def convert(self, source_files):
 		self.convert_types(self.comp.universe)
@@ -1429,21 +1429,7 @@ class AST2RIR:
 							        var_arg.typ.typ, expr.args[i].expr
 							    )
 							)
-						elem_size, _ = self.comp.type_size(var_arg.typ.typ)
-						args.append(
-						    Inst(
-						        InstKind.Call, [
-						            Name("_R4core6_slice10from_arrayF"),
-						            ArrayLiteral(var_arg.typ.typ, vargs, True),
-						            IntLiteral(
-						                self.comp.usize_t, str(elem_size)
-						            ),
-						            IntLiteral(
-						                self.comp.usize_t, str(len(vargs))
-						            )
-						        ]
-						    )
-						)
+						args.append(self.variadic_args(vargs, var_arg.typ.typ))
 					else:
 						args.append(Ident(var_arg.typ, "_R4core11empty_slice"))
 			inst = Inst(InstKind.Call, args)
@@ -1520,8 +1506,7 @@ class AST2RIR:
 							self.cur_fn.alloca(
 							    self.comp.error_t, expr.err_handler.varname,
 							    Selector(
-							        self.comp.error_t, res_value,
-							        Name(expr.err_handler.varname)
+							        self.comp.error_t, res_value, Name("err")
 							    )
 							)
 						if err_handler_is_void:
@@ -1559,14 +1544,20 @@ class AST2RIR:
 		elif isinstance(expr, ast.RaiseExpr):
 			name = mangle_symbol(self.cur_fn.ret_typ.sym)
 			errtype_tag = str(expr.expr.typ.sym.info.nr)
-			if len(expr.expr.args) > 0:
+			vargs = []
+			if len(expr.expr.args) == 0:
+				msg = StringLiteral(self.comp.str_t, "", 0)
+			else:
 				msg = self.convert_expr_with_cast(
 				    self.comp.str_t, expr.expr.args[0].expr
 				)
-			else:
-				msg = StringLiteral(self.comp.str_t, "", 0)
+				vargs = [
+				    self.convert_expr_with_cast(
+				        type.Type(self.comp.trait_to_string), a.expr
+				    ) for a in expr.expr.args[1:]
+				]
 			self.cur_fn.add_ret(
-			    self.result_err(expr.expr.typ, msg, errtype_tag)
+			    self.result_err(expr.expr.typ, msg, errtype_tag, vargs)
 			)
 			return Skip()
 		elif isinstance(expr, ast.ReturnExpr):
@@ -2511,32 +2502,28 @@ class AST2RIR:
 		)
 		return tmp
 
-	def result_err(self, typ, msg, tag):
+	def result_err(self, typ, msg, tag, args):
 		tmp = Ident(self.cur_fn.ret_typ, self.cur_fn.local_name())
 		self.cur_fn.alloca_var(tmp)
 		self.cur_fn.store(
 		    Selector(self.comp.bool_t, tmp, Name("is_err")),
 		    IntLiteral(self.comp.bool_t, "1")
 		)
-
-		err_value = Ident(self.comp.error_t, self.cur_fn.local_name())
-		self.cur_fn.alloca_var(err_value)
-
 		errtype_name = typ.get_sym().qualname()
 		self.cur_fn.store(
-		    Selector(self.comp.str_t, err_value, Name("errtype_name")),
-		    StringLiteral(self.comp.str_t, errtype_name, len(errtype_name))
-		)
-		self.cur_fn.store(
-		    Selector(self.comp.str_t, err_value, Name("msg")), msg
-		)
-		self.cur_fn.store(
-		    Selector(self.comp.uint8_t, err_value, Name("tag")),
-		    IntLiteral(self.comp.uint8_t, str(tag))
-		)
-
-		self.cur_fn.store(
-		    Selector(self.comp.error_t, tmp, Name("err")), err_value
+		    Selector(self.comp.error_t, tmp, Name("err")),
+		    Inst(
+		        InstKind.Call, [
+		            Name("_R4core6_error3newF"),
+		            StringLiteral(
+		                self.comp.str_t, errtype_name, len(errtype_name)
+		            ),
+		            IntLiteral(self.comp.uint8_t, str(tag)), msg,
+		            self.variadic_args(
+		                args, type.Type(self.comp.trait_to_string)
+		            )
+		        ]
+		    )
 		)
 		return tmp
 
@@ -2582,6 +2569,19 @@ class AST2RIR:
 		            self.comp.str_t, utils.smart_quote(msg, False), str(size)
 		        ),
 		        Name("_R4core11empty_slice")
+		    ]
+		)
+
+	def variadic_args(self, vargs, var_arg_typ):
+		if len(vargs) == 0:
+			return Name("_R4core11empty_slice")
+		elem_size, _ = self.comp.type_size(var_arg_typ)
+		return Inst(
+		    InstKind.Call, [
+		        Name("_R4core6_slice10from_arrayF"),
+		        ArrayLiteral(var_arg_typ, vargs, True),
+		        IntLiteral(self.comp.usize_t, str(elem_size)),
+		        IntLiteral(self.comp.usize_t, str(len(vargs)))
 		    ]
 		)
 

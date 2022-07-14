@@ -1,0 +1,17 @@
+fn result() ! {
+    raise Error("simple error");
+}
+
+fn result2() ! {
+    raise Error("simple error (raised: {}, idx: {})", true, 0);
+}
+
+fn main() {
+    result() catch |err| {
+        assert!(err.msg() == "simple error".to_string());
+    };
+
+    result2() catch |err2| {
+        assert!(err2.msg() == "simple error (raised: true, idx: 0)".to_string());
+    };
+}

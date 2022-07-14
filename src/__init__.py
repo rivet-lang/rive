@@ -57,6 +57,8 @@ class Compiler:
 		self.slice_struct = None # from `core` package
 		self.err_struct = None # from `core` package
 
+		self.trait_to_string = None
+
 		self.pkg_sym = None
 		self.pkg_attrs = None
 		self.mod_sym = None # for `mod mod_name;`
@@ -133,6 +135,10 @@ class Compiler:
 				self.err_struct = err_struct
 			else:
 				utils.error("cannot find type `_error` in package `core`")
+
+			if traits := self.core_pkg.find("traits"):
+				if to_string := traits.find("ToString"):
+					self.trait_to_string = to_string
 		else:
 			utils.error("package `core` not found")
 

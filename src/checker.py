@@ -1288,18 +1288,21 @@ class Checker:
 		expr.is_ctor = True
 		expr.typ = type.Type(info)
 		if info.kind == TypeKind.ErrType:
-			if len(expr.args) == 1:
+			if len(expr.args) >= 1:
 				msg_t = self.check_expr(expr.args[0].expr)
 				if msg_t != self.comp.str_t:
 					report.error(
 					    f"expected string value, found `{msg_t}`",
 					    expr.args[0].pos
 					)
-			elif len(expr.args) != 0:
-				report.error(
-				    f"expected 0 or 1 argument, found {len(expr.args)}",
-				    expr.pos
-				)
+				for arg in expr.args[1:]:
+					arg_t = self.comp.untyped_to_type(self.check_expr(arg.expr))
+					if arg_t.get_sym(
+					) not in self.comp.trait_to_string.info.implements:
+						report.error(
+						    f"type `{arg_t}` does not implement trait `ToString`",
+						    arg.pos
+						)
 		elif info.kind == TypeKind.Union:
 			if len(expr.args) == 1:
 				value_t = self.comp.untyped_to_type(

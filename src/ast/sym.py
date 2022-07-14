@@ -592,12 +592,6 @@ def universe():
 	        ]
 	    )
 	)
-	uni.add(
-	    Type(
-	        Visibility.Public, "error", TypeKind.Struct, fields = [
-	            Field("msg", False, Visibility.Public, type_Type(uni[18]))
-	        ]
-	    )
-	)
+	uni.add(Type(Visibility.Public, "error", TypeKind.Struct))
 	uni.add(Type(Visibility.Public, "no_return", TypeKind.NoReturn))
 	return uni

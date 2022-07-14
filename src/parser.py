@@ -1411,6 +1411,8 @@ class Parser:
 					return self.comp.float64_t
 				elif lit == "str":
 					return self.comp.str_t
+				elif lit == "error":
+					return self.comp.error_t
 				else:
 					return type.Type.unresolved(expr)
 			else:

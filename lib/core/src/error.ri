@@ -2,22 +2,52 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+using pkg::traits::ToString;
+
 pub errtype Error;
 
 #[used]
 struct _error {
     errtype_name: str;
-    msg: str;
+    msg_: String;
     tag: u8; // max: 255
 
     #[used]
+    fn new(errtype_name: str, tag: u8, msg: str, args: ...ToString) Self {
+        return Self{
+            errtype_name: errtype_name,
+            msg_: msg.fmt(args),
+            tag: tag
+        };
+    }
+
+    #[used]
     fn print(&self) {
-        if (self.msg.len == 0) {
+        if (self.msg_.len_ == 0) {
             eprintln(self.errtype_name);
         } else {
-            eprintln("{}: {}", self.errtype_name, self.msg);
+            eprintln("{}: {}", self.errtype_name, self.msg_);
         }
         backtrace::print(2);
         process::exit(1);
+    }
+
+    fn to_string_(&self) String {
+        if (self.msg_.len_ == 0) {
+            return self.errtype_name.to_string();
+        }
+        return "{}: {}".fmt(self.errtype_name, self.msg_);
+    }
+}
+
+extend error {
+    pub fn msg(&self) String {
+        return as(_error, self.*).msg_;
+    }
+}
+
+extend error for ToString {
+    pub fn to_string(&self) String {
+        return as(_error, self.*).to_string_();
     }
 }
