@@ -28,7 +28,7 @@ a field; some with strange syntax in my opinion (like Lisp) and others with a hi
 learning curve, but Rivet tries to be an exception by trying to become a unique
 language with a clear and simple syntax and a low learning curve.
 
-## Features
+## Basic features
 
 * [X] **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
 * [X] **Easy error handling**: Via result types: `fn func() !T { ... }`.
@@ -40,6 +40,10 @@ Ownership and Borrowing system. The lifetimes are inferred by the compiler.
 * [ ] **Struct inheritance and polymorphism**: Trait and Union types are also
 supported.
 * [ ] **Generics:** Specialize and reuse the same code for different types.
+
+## Roadmap
+* [ ] Make lib basically available
+* [ ] Make self hosted compiler
 
 ## Dependencies
 
@@ -59,6 +63,6 @@ Just execute `python rivetc.py xxx.ri`.
 
 <div align="center">
 
-Copyright (C) 2022 **The Rivet Team**
+Copyright © 2022 **The Rivet Team**
 
 </div>
