@@ -91,7 +91,7 @@ class Compiler:
 				else:
 					self.check_pkg_attrs()
 					if self.prefs.target_backend == prefs.Backend.C:
-						self.cgen.gen_rir(unique_rir)
+						self.cgen.gen(unique_rir)
 						c_file = f"{self.prefs.pkg_name}.ri.c"
 						self.cgen.write_to_file(c_file)
 						args = [

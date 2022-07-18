@@ -365,6 +365,9 @@ class Comment:
 		return self.__repr__()
 
 class NoneLiteral:
+	def __init__(self, typ):
+		self.typ = typ
+
 	def __repr__(self):
 		return "none"
 
@@ -377,11 +380,7 @@ class IntLiteral:
 		self.lit = lit
 
 	def value(self):
-		if self.lit.startswith("0x"):
-			return int(self.lit, 16)
-		elif self.lit.startswith("0b"):
-			return int(self.lit, 2)
-		return int(self.lit)
+		return int(self.lit, 0)
 
 	def __repr__(self):
 		return f"{self.typ} {self.lit}"
@@ -1114,7 +1113,7 @@ class AST2RIR:
 		if isinstance(expr, ast.ParExpr):
 			return self.convert_expr(expr.expr)
 		elif isinstance(expr, ast.NoneLiteral):
-			return NoneLiteral()
+			return NoneLiteral(self.comp.none_t)
 		elif isinstance(expr, ast.BoolLiteral):
 			return IntLiteral(self.comp.bool_t, str(int(expr.lit)))
 		elif isinstance(expr, ast.CharLiteral):
@@ -1128,11 +1127,13 @@ class AST2RIR:
 		elif isinstance(expr, ast.FloatLiteral):
 			return FloatLiteral(self.comp.float64_t, expr.lit)
 		elif isinstance(expr, ast.StringLiteral):
-			bytes, size = utils.bytestr(expr.lit)
+			escaped_val = utils.smart_quote(expr.lit, expr.is_raw)
+			bytes, _ = utils.bytestr(escaped_val)
+			_, size = utils.bytestr(expr.lit)
 			if expr.is_bytestr:
 				return ArrayLiteral(
 				    expr.typ, [
-				        IntLiteral(self.comp.uint8_t, str(b))
+				        IntLiteral(self.comp.uint8_t, chr(b))
 				        for b in list(bytes)
 				    ]
 				)
@@ -2587,7 +2588,7 @@ class AST2RIR:
 
 	def default_value(self, typ):
 		if isinstance(typ, type.Ptr) or isinstance(typ, type.Ref):
-			return NoneLiteral()
+			return NoneLiteral(self.comp.none_t)
 		if typ == self.comp.rune_t:
 			return RuneLiteral("0")
 		elif typ in (

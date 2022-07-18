@@ -63,7 +63,7 @@ Options:
       Change the C compiler Rivet invokes to the specified compiler.
 
       Officially supported/tested C compilers include:
-        `clang`, `gcc` and `msvc`.
+        `clang`, `gcc`, `mingw` and `msvc`
 
    --check-syntax
       Only scan and parse the package, but then stop.
@@ -120,11 +120,20 @@ class Builder:
 	def write(self, txt):
 		self.buf += txt
 
+	def write_octal_escape(self, c):
+		self.buf += chr(92) # '\'
+		self.buf += chr(48 + (c >> 6)) # octal digit 2
+		self.buf += chr(48 + ((c >> 3) & 7)) # octal digit 1
+		self.buf += chr(48 + (c & 7)) # octal digit 0
+
 	def writeln(self, txt = ""):
-		if txt == "":
+		if len(txt) == 0:
 			self.buf += "\n"
 		else:
 			self.buf += f"{txt}\n"
+
+	def len(self):
+		return len(self)
 
 	def __len__(self):
 		return len(self.buf)
@@ -138,18 +147,6 @@ class Builder:
 class CompilerError(Exception):
 	pass
 
-def index_any(s, chars):
-	for i, ss in enumerate(s):
-		for c in chars:
-			if c == ss:
-				return i
-	return -1
-
-def bytestr(string):
-	buf = bytearray((' ' * len(string)).encode('ascii'))
-	buf = string.encode('utf-8')
-	return (buf, len(buf))
-
 def eprint(*s, end = "\n"):
 	print(*s, end = end, file = sys.stderr)
 
@@ -160,6 +157,47 @@ def error(msg):
 
 def is_valid_name(ch):
 	return (ch >= "A" and ch <= "Z") or (ch >= "a" and ch <= "z") or ch == "_"
+
+def bytestr(s):
+	buf = s.encode("utf-8")
+	return buf, len(buf)
+
+def index_any(s, chars):
+	for i, ss in enumerate(s):
+		for c in chars:
+			if c == ss:
+				return i
+	return -1
+
+def escape_nonascii(original):
+	sb = Builder()
+	for c in original.encode("utf-8"):
+		if c < 32 or c > 126:
+			# Encode with a 3 digit octal escape code, which has the
+			# advantage to be limited/non dependant on what character
+			# will follow next, unlike hex escapes:
+			sb.write_octal_escape(c)
+		else:
+			sb.write(chr(c))
+	return str(sb)
+
+def decode_h_escapes(s_, start, escapes_pos):
+	if len(escapes_pos) == 0:
+		return s_
+	s = s_.encode("utf-8")
+	ss = [s[:escapes_pos[0] - start].decode()]
+	for i, pos in enumerate(escapes_pos):
+		idx = pos - start
+		end_idx = idx + 4 # len("\xXX") == 4
+		try:
+			ss.append(chr(int(s[idx + 2:end_idx], 16)))
+		except:
+			ss.append(chr(0))
+		if i + 1 < len(escapes_pos):
+			ss.append(s[end_idx:escapes_pos[i + 1] - start].decode())
+		else:
+			ss.append(s[end_idx:].decode())
+	return "".join(ss)
 
 def smart_quote(str, raw: bool):
 	len_ = len(str)

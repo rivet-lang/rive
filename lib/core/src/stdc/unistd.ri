@@ -9,4 +9,6 @@ extern (C) {
 
     pub fn getpid() u32;
     pub fn getppid() u32;
+
+    pub fn isatty(fd: i32) i32;
 }

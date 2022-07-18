@@ -9,11 +9,11 @@ LF = chr(10)
 CR = chr(13)
 NUM_SEP = "_"
 
-def is_hex_number(ch):
+def is_hex_digit(ch):
 	return ch.isdigit() or (ch >= "a"
 	                        and ch <= "f") or (ch >= "A" and ch <= "F")
 
-def is_bin_number(ch):
+def is_bin_digit(ch):
 	return ch in ("0", "1")
 
 class Lexer:
@@ -139,7 +139,7 @@ class Lexer:
 				    "cannot use `_` consecutively in a numeric literal",
 				    self.get_pos()
 				)
-			if not is_hex_number(ch) and ch != NUM_SEP:
+			if not is_hex_digit(ch) and ch != NUM_SEP:
 				if not ch.isdigit() and not ch.isalpha():
 					break
 				else:
@@ -174,7 +174,7 @@ class Lexer:
 				    "cannot use `_` consecutively in a numeric literal",
 				    self.get_pos()
 				)
-			if not is_bin_number(ch) and ch != NUM_SEP:
+			if not is_bin_digit(ch) and ch != NUM_SEP:
 				if not ch.isdigit() and not ch.isalpha():
 					break
 				elif not has_wrong_digit:
@@ -334,8 +334,9 @@ class Lexer:
 		backslash = "\\"
 		backslash_count = 1 if start_char == backslash else 0
 		is_raw = self.pos > 0 and self.text[self.pos - 1] == "r"
+		is_cstr = self.pos > 0 and self.text[self.pos - 1] == "c"
 		n_cr_chars = 0
-
+		h_escapes_pos = [] #pos list of \xXX
 		while True:
 			self.pos += 1
 			if self.pos >= self.text_len:
@@ -352,12 +353,17 @@ class Lexer:
 				n_cr_chars += 1
 			if c == LF:
 				self.inc_line_number()
+			if backslash_count % 2 == 1 and not (is_cstr or is_raw):
+				# escape `\x`
+				if c == "x":
+					h_escapes_pos.append(self.pos - 1)
 			if c != backslash:
 				backslash_count = 0
-
 		lit = ""
 		if start <= self.pos:
 			lit = self.text[start + 1:self.pos]
+			if len(h_escapes_pos) > 0:
+				lit = utils.decode_h_escapes(lit, start + 1, h_escapes_pos)
 			if n_cr_chars > 0:
 				lit = lit.replace("\r", "")
 		return lit

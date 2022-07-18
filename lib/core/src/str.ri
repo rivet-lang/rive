@@ -36,12 +36,10 @@ extend str {
     }
 
     pub fn fmt(&self, args: ...traits::ToString) String {
-        if (args.len == 0) {
-            return self.to_string();
-        }
+        if (args.len == 0) { return self.to_string(); }
         let mut res = String::with_capacity(self.len);
-        let mut args_idx: usize = 0;
         let mut i: usize = 0;
+        let mut args_idx: usize = 0;
         while (i < self.len) {
             let b = unsafe { self.ptr[i] };
             let b2 = if (i + 1 < self.len) unsafe { self.ptr[i + 1] } else 0;
@@ -53,8 +51,8 @@ extend str {
                     let arg_idx = args_idx++;
                     if (arg_idx >= args.len) {
                         panic(
-                            "fmt: argument index out of range (index: {}, len: {})",
-                            arg_idx, args.len
+                            "fmt: argument index out of range (argument index: {}, len: {}, index: {})",
+                            arg_idx, args.len, i
                         );
                     }
                     res.push_string(args[arg_idx].to_string());

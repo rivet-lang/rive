@@ -15,7 +15,7 @@ pub static ARGS: [str] = [""][..];
 pub fn print(s: str, args: ...traits::ToString) {
     let sx = s.fmt(args);
     unsafe {
-        write_buf_to_fd(1, sx.ptr, sx.len_);
+        utils::write_buf_to_fd(1, sx.ptr, sx.len_);
     }
 }
 
@@ -23,7 +23,7 @@ pub fn print(s: str, args: ...traits::ToString) {
 pub fn println(s: str = "", args: ...traits::ToString) {
     let sx = s.fmt(args);
     unsafe {
-        writeln_to_fd(1, sx);
+        utils::writeln_to_fd(1, sx);
     }
 }
 
@@ -33,7 +33,7 @@ pub fn eprint(s: str, args: ...traits::ToString) {
     unsafe {
         stdc::fflush(stdc::stdout);
         stdc::fflush(stdc::stderr);
-        write_buf_to_fd(2, sx.ptr, sx.len_);
+        utils::write_buf_to_fd(2, sx.ptr, sx.len_);
         stdc::fflush(stdc::stderr);
     }
 }
@@ -45,7 +45,7 @@ pub fn eprintln(s: str = "", args: ...traits::ToString) {
     unsafe {
         stdc::fflush(stdc::stdout);
         stdc::fflush(stdc::stderr);
-        writeln_to_fd(2, sx);
+        utils::writeln_to_fd(2, sx);
         stdc::fflush(stdc::stderr);
     }
 }
@@ -54,7 +54,7 @@ pub fn eprintln(s: str = "", args: ...traits::ToString) {
 /// followed by a backtrace.
 pub fn panic(s: str, args: ...traits::ToString) no_return {
     eprintln("panic: {}", s.fmt(args));
-    backtrace::print(1);
+    backtrace::print(2);
     process::exit(1);
 }
 
@@ -76,21 +76,18 @@ fn panic_if(cond: bool, msg: str) {
     }
 }
 
-unsafe fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
-    unsafe {
-        let mut buf = buf_;
-        let mut x: isize = 0;
-        let mut remaining_bytes = as(isize, len);
-        while (remaining_bytes > 0) {
-            x = stdc::write(fd, buf + x, as(usize, remaining_bytes));
-            remaining_bytes -= x;
-        }
-    }
+pub fn errno() i32 {
+    return $if (_LINUX_) unsafe {
+        stdc::__errno_location().*
+    } $else unsafe {
+        stdc::_errno().*
+    };
 }
 
-unsafe fn writeln_to_fd(fd: i32, s: String) {
+/// Returns error code representation in string.
+pub fn strerr(code: i32 = errno()) String {
     unsafe {
-        write_buf_to_fd(fd, s.ptr, s.len_);
-        write_buf_to_fd(fd, c"\n", 1);
+        let s = stdc::strerror(code);
+        return if (s == none) "".to_string() else String::from_cstr(s);
     }
 }

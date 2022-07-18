@@ -21,18 +21,6 @@ pub enum BuildMode {
 	Test
 }
 
-fn option(args: [str], param: str) ?str {
-    for (i, arg in args) {
-        if (param == arg) {
-            if (i + 1 < args.len) {
-                return args[i + 1];
-            }
-            break;
-        }
-    }
-    return none;
-}
-
 fn print_help() {
     eprintln(utils::HELP);
     process::exit(0);
@@ -83,11 +71,11 @@ pub struct Prefs {
 
                 // compiler options
                 "--pkg-name" => {
-                    if (let pkg_name = option(current_args, arg)) {
+                    if (let pkg_name = utils::option(current_args, arg)) {
                         prefs.pkg_name = pkg_name;
                         prefs.pkg_output = pkg_name;
                     } else {
-                        eprintln("error: `--pkg-name` requires a name as argument");
+                        utils::error("`--pkg-name` requires a name as argument");
                     }
                     i++;
                 },
@@ -98,7 +86,7 @@ pub struct Prefs {
                 "--emit-rir" => { prefs.emit_rir = true; },
                 "--keep-c" => { prefs.keep_c = true; },
                 "-v", "--verbose" => { prefs.is_verbose = true; },
-                else => eprintln("error: unknown option: `{}`", arg)
+                else => utils::error("unknown option: `{}`", arg)
             }
             i++;
         }

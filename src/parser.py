@@ -1344,6 +1344,9 @@ class Parser:
 			return type.Type.unresolved(
 			    ast.SelfTyExpr(self.scope, self.prev_tok.pos)
 			)
+		elif (self.comp.prefs.pkg_name == "core"
+		      or self.comp.pkg_sym.is_core) and self.accept(Kind.KeyNone):
+			return self.comp.none_t
 		elif self.tok.kind in (Kind.KeyPkg, Kind.KeySuper, Kind.Name):
 			# normal type
 			if self.peek_tok.kind == Kind.DoubleColon:
@@ -1395,6 +1398,12 @@ class Parser:
 					return self.comp.uint64_t
 				elif lit == "usize":
 					return self.comp.usize_t
+				elif lit == "f32":
+					return self.comp.float32_t
+				elif lit == "f64":
+					return self.comp.float64_t
+				elif lit == "str":
+					return self.comp.str_t
 				elif lit == "untyped_int" and (
 				    self.comp.prefs.pkg_name == "core"
 				    or self.comp.pkg_sym.is_core
@@ -1405,13 +1414,10 @@ class Parser:
 				    or self.comp.pkg_sym.is_core
 				):
 					return self.comp.untyped_float_t
-				elif lit == "f32":
-					return self.comp.float32_t
-				elif lit == "f64":
-					return self.comp.float64_t
-				elif lit == "str":
-					return self.comp.str_t
-				elif lit == "error":
+				elif lit == "error" and (
+				    self.comp.prefs.pkg_name == "core"
+				    or self.comp.pkg_sym.is_core
+				):
 					return self.comp.error_t
 				else:
 					return type.Type.unresolved(expr)

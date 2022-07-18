@@ -135,6 +135,7 @@ typedef u32 rune;
 
 typedef ptrdiff_t isize;
 typedef size_t usize;
+typedef void* _R4none;
 """
 
 class Gen:
@@ -147,7 +148,7 @@ class Gen:
 		self.statics = utils.Builder()
 		self.out = utils.Builder()
 
-	def gen_rir(self, rir_file):
+	def gen(self, rir_file):
 		self.gen_types(rir_file.types)
 		self.gen_externs(rir_file.externs)
 		self.gen_statics(rir_file.statics)
@@ -397,7 +398,8 @@ void _R9drop_argsZ(void) {
 					self.write("&")
 				self.gen_expr(arg0)
 				self.write(", ")
-				if not (isinstance(arg1, Ident) and arg1.use_arr_field):
+				if not ((isinstance(arg1, Ident) and arg1.use_arr_field)
+				        or isinstance(arg1, ArrayLiteral)):
 					self.write("&")
 				self.gen_expr(arg1)
 				size, _ = self.comp.type_size(arg0.typ)
@@ -425,15 +427,16 @@ void _R9drop_argsZ(void) {
 			if isinstance(
 			    arg0, (Ident, Selector, ArrayLiteral)
 			) or (isinstance(arg0, Inst) and arg0.kind == InstKind.LoadPtr):
-				self.write("(&")
-				self.gen_expr(arg0)
 				if isinstance(arg0, ArrayLiteral):
-					self.write("[0]")
-				self.write(")")
+					self.gen_expr(arg0)
+				else:
+					self.write("(&")
+					self.gen_expr(arg0)
+					self.write(")")
 			else:
-				self.write(f"(&(({self.gen_type_str(arg0.typ)}[]){{ ")
+				self.write(f"(({self.gen_type_str(arg0.typ)}[]){{ ")
 				self.gen_expr(arg0)
-				self.write(" }[0]))")
+				self.write(" })")
 		elif inst.kind == InstKind.Cast:
 			self.write("((")
 			self.gen_expr(inst.args[1])

@@ -195,7 +195,8 @@ class Register:
 								else:
 									decl.sym.fields.append(
 									    sym.Field(
-									        d.name, d.is_mut, d.vis, d.typ
+									        d.name, d.is_mut, d.vis, d.typ,
+									        d.has_def_expr, d.def_expr
 									    )
 									)
 						elif isinstance(d, ast.FnDecl):

@@ -32,20 +32,20 @@ language with a clear and simple syntax and a low learning curve.
 
 ## Basic features
 
-* [X] **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
-* [X] **Easy error handling**: Via result types: `fn func() !T { ... }`.
-* [X] **Named and optional arguments**: Very useful.
-* [X] **Immutable values by default:** Variables, arguments and fields of struct
+* **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
+* **Easy error handling**: Via result types: `fn func() !T { ... }`.
+* **Named and optional arguments**: Very useful.
+* **Immutable values by default:** Variables, arguments and fields of struct
 are immutable by default.
-* [ ] **Ownership and Borrowing**: Rivet has a very simplified version of Rust's
+* **Ownership and Borrowing**: Rivet has a very simplified version of Rust's
 Ownership and Borrowing system. The lifetimes are inferred by the compiler.
-* [ ] **Struct inheritance and polymorphism**: Trait and Union types are also
+* **Struct inheritance and polymorphism**: Trait and Union types are also
 supported.
-* [ ] **Generics:** Specialize and reuse the same code for different types.
+* **Generics:** Specialize and reuse the same code for different types.
 
 ## Roadmap
-* [ ] Make lib basically available
-* [ ] Make self hosted compiler
+* [ ] Make lib basically available.
+* [ ] Make self-hosted compiler.
 
 ## Dependencies
 

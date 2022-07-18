@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+using pkg::std::term;
+
 pub static VERSION: str = "0.1.0";
 pub static HELP: str = "Usage: rivetc [OPTIONS] INPUTS
 
@@ -81,3 +83,23 @@ Options:
 
    -h, --help
       Print this message.";
+
+pub fn option(args: [str], param: str) ?str {
+    for (i, arg in args) {
+        if (param == arg) {
+            if (i + 1 < args.len) {
+                return args[i + 1];
+            }
+            break;
+        }
+    }
+    return none;
+}
+
+pub fn error(msg: str, args: ...traits::ToString) {
+   eprintln(
+      "{} {} {}", term::bold("rivetc:"),
+      term::bold(term::red("error:").as_str()), msg.fmt(args)
+   );
+   process::exit(1);
+}
