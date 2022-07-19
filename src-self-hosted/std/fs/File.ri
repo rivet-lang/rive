@@ -3,6 +3,25 @@
 // that can be found in the LICENSE file.
 
 using pkg::stdc;
+using pkg::mem;
+
+const EOF: i32 = -1;
+const SEEK_END: i32 = 2;
+
+/// Reads the file in `path` and returns the contents.
+pub fn read_file(path: str) !String {
+	let mut f = File::open(path, "rb").!;
+	let res = f.read().!;
+	f.close();
+	return res;
+}
+
+/// Writes `text` data to a file in `path`.
+pub fn write_file(path: str, text: str) ! {
+	let mut f = File::open(path, "wb").!;
+	f.write(text);
+	f.close();
+}
 
 pub struct File {
     f: *mut stdc::FILE;
@@ -39,6 +58,46 @@ pub struct File {
     pub fn writelnf(&mut self, s: str, args: ...traits::ToString) {
 		self.write(s.fmt(args).as_str());
 		self.write("\n");
+    }
+
+    /// Returns the current file contents.
+    pub fn read(&mut self) !String {
+        if (self.is_opened) {
+            unsafe {
+                let seek = stdc::fseek(self.f, 0, SEEK_END);
+                if (seek != 0) {
+                    raise Error("fseek failed");
+                }
+
+                let fsize = stdc::ftell(self.f);
+                if (fsize < 0) {
+                    raise Error("ftell failed");
+                }
+
+                stdc::rewind(self.f);
+
+                // On some systems `ftell` can return values in the 64-bit range
+                // that, when cast to `i32`, can result in values below 0.
+                let allocate = as(i32, fsize);
+                if (as(i64, allocate) < fsize) {
+                    raise Error("{} cast to `i32` results in {}", fsize, as(i32, fsize));
+                }
+
+                let mut res = as(*mut u8, mem::alloc(as(usize, allocate) + 1).!);
+                let nelements = stdc::fread(res, 1, as(usize, allocate), self.f);
+                if (self.eof() and stdc::ferror(self.f) != 0) {
+                    mem::dealloc(res);
+                    raise Error("fread failed");
+                }
+                res[nelements] = 0;
+                return String::from_raw(res, nelements);
+            }
+        }
+    }
+
+    /// Returns true if the file is at end.
+    pub fn eof(&self) bool {
+        return unsafe { as(bool, stdc::feof(self.f)) };
     }
 
     /// Closes the current file.

@@ -107,7 +107,7 @@ class ProcessResult:
 		self.exit_code = exit_code
 
 def execute(*args):
-	res = subprocess.run(args, capture_output = True, encoding = 'UTF-8')
+	res = subprocess.run(args, capture_output = True, encoding = 'utf-8')
 	stdout = res.stdout.strip() if res.stdout else ""
 	stderr = res.stderr.strip() if res.stderr else ""
 	return ProcessResult(stdout, stderr, res.returncode)

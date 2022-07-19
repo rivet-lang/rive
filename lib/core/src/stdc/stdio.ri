@@ -6,11 +6,17 @@ pub struct FILE;
 
 extern (C) {
     pub fn fopen(path: *u8, mode: *u8) *mut FILE;
-    pub fn fwrite(ptr: *void, size: usize, nobj: usize, stream: *mut FILE) usize;
-    pub fn fprintf(f: *mut FILE, fmt: *u8, ...) i32;
+    pub fn feof(stream: *FILE) i32;
+    pub fn ferror(stream: *FILE) i32;
+    pub fn fseek(stream: *mut FILE, offset: u64, whence: i32) i32;
+    pub fn ftell(stream: *mut FILE) i64;
+    pub fn fread(ptr: *mut void, size: usize, nitems: usize, stream: *mut FILE) usize;
     pub fn fputs(s: *u8, stream: *mut FILE) i32;
-    pub fn fflush(f: *mut FILE) i32;
-    pub fn fclose(f: *mut FILE) i32;
+    pub fn fprintf(stream: *mut FILE, fmt: *u8, ...) i32;
+    pub fn fwrite(ptr: *void, size: usize, nobj: usize, stream: *mut FILE) usize;
+    pub fn fflush(stream: *mut FILE) i32;
+    pub fn fclose(stream: *mut FILE) i32;
+    pub fn rewind(stream: *mut FILE);
 
     pub fn putchar(s: i32) i32;
     pub fn printf(fmt: *u8, ...) i32;

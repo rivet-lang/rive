@@ -35,6 +35,23 @@ extend str {
         return unsafe { self.ptr[idx] };
     }
 
+    /// Returns a string formatted with all the values passed.
+    ///
+    /// Each replacement position is marked with `{}`:
+    ///
+    /// `"x: {}".fmt(1) == "x: 1"`
+    ///
+    /// It is also possible to use a specific position within the replace position:
+    ///
+    /// `"x: {1} | {0}".fmt(1, 2) == "x: 2 | 1"`
+    ///
+    /// If no argument is passed, the string is returned unchanged.
+    ///
+    /// To escape `{` and `}`, `{{` and `}}` can be used, this does not apply if no
+    /// argument is passed.
+    ///
+    /// If the replacement positions exceed the number of passed arguments, a panic
+    /// occurs.
     pub fn fmt(&self, args: ...traits::ToString) String {
         if (args.len == 0) { return self.to_string(); }
         let mut res = String::with_capacity(self.len);
