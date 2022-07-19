@@ -44,6 +44,7 @@ supported.
 * **Generics:** Specialize and reuse the same code for different types.
 
 ## Roadmap
+* [ ] Improve language design.
 * [ ] Make lib basically available.
 * [ ] Make self-hosted compiler.
 
