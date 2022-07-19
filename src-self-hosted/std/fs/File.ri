@@ -1,0 +1,55 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+using pkg::stdc;
+
+pub struct File {
+    f: *mut stdc::FILE;
+    mut is_opened: bool;
+
+    pub fn open(path: str, mode: str = "r") !File {
+		unsafe {
+			let f = stdc::fopen(path.ptr, mode.ptr);
+			if (f == none) {
+				raise Error("File::open: failed to open file '{}'", path);
+			}
+			return Self{
+				f: f,
+				is_opened: true
+			};
+        }
+    }
+
+	/// Writes the string `s` into the file.
+    pub fn write(&mut self, s: str) {
+		_ = unsafe { stdc::fputs(s.ptr, self.f) };
+    }
+
+	/// Writes the string `s` into the file and appends a '\n' character.
+	pub fn writeln(&mut self, s: str) {
+		self.write(s);
+		self.write("\n");
+	}
+
+    pub fn writef(&mut self, s: str, args: ...traits::ToString) {
+		self.write(s.fmt(args).as_str());
+    }
+
+    pub fn writelnf(&mut self, s: str, args: ...traits::ToString) {
+		self.write(s.fmt(args).as_str());
+		self.write("\n");
+    }
+
+    /// Closes the current file.
+    pub fn close(&mut self) {
+        if (!self.is_opened) {
+            return;
+        }
+        unsafe {
+            _ = stdc::fflush(self.f);
+            _ = stdc::fclose(self.f);
+        }
+        self.is_opened = false;
+    }
+}

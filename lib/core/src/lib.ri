@@ -31,10 +31,10 @@ pub fn println(s: str = "", args: ...traits::ToString) {
 pub fn eprint(s: str, args: ...traits::ToString) {
     let sx = s.fmt(args);
     unsafe {
-        stdc::fflush(stdc::stdout);
-        stdc::fflush(stdc::stderr);
+        _ = stdc::fflush(stdc::stdout);
+        _ = stdc::fflush(stdc::stderr);
         utils::write_buf_to_fd(2, sx.ptr, sx.len_);
-        stdc::fflush(stdc::stderr);
+        _ = stdc::fflush(stdc::stderr);
     }
 }
 
@@ -43,10 +43,10 @@ pub fn eprint(s: str, args: ...traits::ToString) {
 pub fn eprintln(s: str = "", args: ...traits::ToString) {
     let sx = s.fmt(args);
     unsafe {
-        stdc::fflush(stdc::stdout);
-        stdc::fflush(stdc::stderr);
+        _ = stdc::fflush(stdc::stdout);
+        _ = stdc::fflush(stdc::stderr);
         utils::writeln_to_fd(2, sx);
-        stdc::fflush(stdc::stderr);
+        _ = stdc::fflush(stdc::stderr);
     }
 }
 

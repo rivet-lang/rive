@@ -4,16 +4,16 @@
 
 # The Rivet programming language
 
-![issues](https://img.shields.io/github/issues/rivet-lang/rivet?style=flat-square)
-![status](https://img.shields.io/badge/status-alpha-blue?style=flat-square)
-![license](https://img.shields.io/github/license/rivet-lang/rivet?style=flat-square)
-
 [Documentation](docs/00_getting_started.md)
 
 <!--
 •
 [Changelog](CHANGELOG.md)
 -->
+
+![issues](https://img.shields.io/github/issues/rivet-lang/rivet?style=flat-square)
+![status](https://img.shields.io/badge/status-alpha-blue?style=flat-square)
+![license](https://img.shields.io/github/license/rivet-lang/rivet?style=flat-square)
 
 A general-purpose programming language, focused on simplicity, safety and stability.
 

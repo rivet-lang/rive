@@ -8,11 +8,12 @@ extern (C) {
     pub fn fopen(path: *u8, mode: *u8) *mut FILE;
     pub fn fwrite(ptr: *void, size: usize, nobj: usize, stream: *mut FILE) usize;
     pub fn fprintf(f: *mut FILE, fmt: *u8, ...) i32;
-    pub fn fflush(f: *mut FILE);
-    pub fn fclose(f: *mut FILE);
+    pub fn fputs(s: *u8, stream: *mut FILE) i32;
+    pub fn fflush(f: *mut FILE) i32;
+    pub fn fclose(f: *mut FILE) i32;
 
+    pub fn putchar(s: i32) i32;
     pub fn printf(fmt: *u8, ...) i32;
 
     pub fn write(fd: i32, buf: *void, count: usize) isize;
-    pub fn putchar(s: i32) i32;
 }
