@@ -245,11 +245,12 @@ class StaticVar:
 		return f'{kw}{kw2}static {self.typ} %"{self.name}"'
 
 class ExternFn:
-	def __init__(self, name, ret_typ, args, is_variadic):
+	def __init__(self, name, ret_typ, args, is_variadic, attrs):
 		self.name = name
 		self.ret_typ = ret_typ
 		self.args = args
 		self.is_variadic = is_variadic
+		self.attrs = attrs
 
 	def __str__(self):
 		sb = utils.Builder()
@@ -766,7 +767,9 @@ class AST2RIR:
 			if should_gen:
 				if d.is_extern and not d.has_body:
 					self.externs.append(
-					    ExternFn(d.name, d.ret_typ, d.args, d.is_variadic)
+					    ExternFn(
+					        d.name, d.ret_typ, d.args, d.is_variadic, d.attrs
+					    )
 					)
 				elif d.sym.is_used():
 					self.decls.append(self.convert_fn_decl(d))

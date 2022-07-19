@@ -232,12 +232,13 @@ class Parser:
 						    "`extern` blocks cannot be declared unsafe", pos
 						)
 					while not self.accept(Kind.Rbrace):
+						attrs2 = self.parse_attrs()
 						vis = self.parse_vis()
 						if self.tok.kind == Kind.KeyFn:
 							self.next()
 							protos.append(
 							    self.parse_fn_decl(
-							        doc_comment, attrs, vis, not is_trusted
+							        doc_comment, attrs2, vis, not is_trusted
 							        and (is_unsafe or abi != sym.ABI.Rivet), abi
 							    )
 							)
@@ -246,7 +247,7 @@ class Parser:
 							self.next()
 							protos.append(
 							    self.parse_static_decl(
-							        doc_comment, attrs, vis, True
+							        doc_comment, attrs2, vis, True
 							    )
 							)
 						else:

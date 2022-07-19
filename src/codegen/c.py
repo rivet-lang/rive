@@ -124,14 +124,14 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
 
+typedef u8 bool;
+typedef u32 rune;
+
 typedef float f32;
 typedef double f64;
 
 typedef i64 untyped_int;
 typedef f64 untyped_float;
-
-typedef u8 bool;
-typedef u32 rune;
 
 typedef ptrdiff_t isize;
 typedef size_t usize;
@@ -247,6 +247,8 @@ void _R9drop_argsZ(void) {
 			self.protos.write("extern ")
 			if extern.ret_typ == self.comp.no_return_t:
 				self.protos.write("RIVET_NORETURN ")
+			if extern.attrs.has("dllimport"):
+				self.protos.write("__declspec(dllimport)")
 			self.inside_func_ret_typ = True
 			self.protos.write(self.gen_type_str(extern.ret_typ))
 			self.inside_func_ret_typ = False
