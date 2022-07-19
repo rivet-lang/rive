@@ -500,12 +500,16 @@ class Resolver:
 			res = self.resolve_type(typ.ret_typ)
 			return res
 		elif isinstance(typ, type.Optional):
-			if not isinstance(typ.typ, (type.Ptr, type.Ref)):
-				typ.sym = self.comp.universe.add_or_get_optional(typ.typ)
-			return self.resolve_type(typ.typ)
+			if self.resolve_type(typ.typ):
+				if not isinstance(typ.typ, (type.Ptr, type.Ref)):
+					typ.sym = self.comp.universe.add_or_get_optional(typ.typ)
+				return True
+			return False
 		elif isinstance(typ, type.Result):
-			typ.sym = self.comp.universe.add_or_get_result(typ.typ)
-			return self.resolve_type(typ.typ)
+			if self.resolve_type(typ.typ):
+				typ.sym = self.comp.universe.add_or_get_result(typ.typ)
+				return True
+			return False
 		elif isinstance(typ, type.Type):
 			if typ.is_resolved():
 				return True # resolved

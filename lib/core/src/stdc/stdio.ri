@@ -5,9 +5,11 @@
 pub struct FILE;
 
 extern (C) {
+    pub fn fopen(path: *u8, mode: *u8) *mut FILE;
     pub fn fwrite(ptr: *void, size: usize, nobj: usize, stream: *mut FILE) usize;
     pub fn fprintf(f: *mut FILE, fmt: *u8, ...) i32;
     pub fn fflush(f: *mut FILE);
+    pub fn fclose(f: *mut FILE);
 
     pub fn printf(fmt: *u8, ...) i32;
 

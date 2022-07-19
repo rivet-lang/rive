@@ -2135,7 +2135,7 @@ class AST2RIR:
 			typ_sym = expr.left.typ.get_sym()
 			if expr.op.is_overloadable_op() and typ_sym.kind in (
 			    TypeKind.Array, TypeKind.Slice, TypeKind.Str, TypeKind.Struct
-			):
+			) and not isinstance(expr.left.typ, type.Ptr):
 				if typ_sym.kind == TypeKind.Array:
 					if expr.op == Kind.Eq:
 						name = "_R4core8array_eqF"
