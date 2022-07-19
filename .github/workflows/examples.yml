@@ -28,21 +28,21 @@ jobs:
         run: |
           python3 tests/run_examples.py
 
-  windows-msvc:
-    runs-on: windows-2019
-    env:
-      RIVET_CC_TEST: msvc
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Setup Python3
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Run examples
-        run: |
-          python3 tests/run_examples.py
+#  windows-msvc:
+#    runs-on: windows-2019
+#    env:
+#      RIVET_CC_TEST: msvc
+#    steps:
+#      - uses: actions/checkout@v2
+#
+#      - name: Setup Python3
+#        uses: actions/setup-python@v4
+#        with:
+#          python-version: '3.x'
+#
+#      - name: Run examples
+#        run: |
+#          python3 tests/run_examples.py
 
   windows-gcc:
     runs-on: windows-2019
