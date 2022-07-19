@@ -248,7 +248,7 @@ void _R9drop_argsZ(void) {
 			if extern.ret_typ == self.comp.no_return_t:
 				self.protos.write("RIVET_NORETURN ")
 			if extern.attrs.has("dllimport"):
-				self.protos.write("__declspec(dllimport)")
+				self.protos.write("__declspec(dllimport) ")
 			self.inside_func_ret_typ = True
 			self.protos.write(self.gen_type_str(extern.ret_typ))
 			self.inside_func_ret_typ = False

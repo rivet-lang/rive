@@ -100,7 +100,7 @@ extend str {
     pub fn is_empty(&self) bool { return self.len == 0; }
 
     pub fn as_bytes(&self) [u8] {
-        return unsafe { _slice::from_array(as(*mut u8, self.ptr), sizeof!(u8), self.len) };
+        return unsafe { _slice::from_array(as(*mut u8, self.ptr), size_of!(u8), self.len) };
     }
 
     fn ==(&self, rhs: &Self) bool {

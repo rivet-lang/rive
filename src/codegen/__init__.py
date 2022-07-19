@@ -1140,9 +1140,7 @@ class AST2RIR:
 				        for b in list(bytes)
 				    ]
 				)
-			return StringLiteral(
-			    expr.typ, utils.smart_quote(expr.lit, expr.is_raw), str(size)
-			)
+			return StringLiteral(expr.typ, escaped_val, str(size))
 		elif isinstance(expr, ast.EnumVariantExpr):
 			return IntLiteral(
 			    expr.typ.get_sym().info.underlying_typ, str(expr.info.value)
@@ -1197,7 +1195,7 @@ class AST2RIR:
 					    f"`{expr.name}` can only use string comptime values",
 					    expr.pos
 					)
-			elif expr.name == "mangleof":
+			elif expr.name == "mangle_of":
 				arg0 = expr.args[0]
 				if isinstance(arg0, ast.Ident):
 					mangled_name = mangle_symbol(arg0.sym)
@@ -1206,9 +1204,9 @@ class AST2RIR:
 				return StringLiteral(
 				    self.comp.str_t, mangled_name, len(mangled_name)
 				)
-			elif expr.name in ("sizeof", "alignof"):
+			elif expr.name in ("size_of", "align_of"):
 				size, align = self.comp.type_size(expr.args[0].typ)
-				if expr.name == "sizeof":
+				if expr.name == "size_of":
 					return IntLiteral(self.comp.usize_t, str(size))
 				else:
 					return IntLiteral(self.comp.usize_t, str(align))

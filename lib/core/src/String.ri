@@ -78,7 +78,7 @@ pub struct String {
         }
         unsafe {
             _ = mem::copy(
-                self.ptr + self.len_, &val, sizeof!(u8)
+                self.ptr + self.len_, &val, size_of!(u8)
             ) catch unreachable!();
         }
         self.len_++;
@@ -116,7 +116,7 @@ pub struct String {
         }
         let new_len = self.len_ - 1;
         unsafe {
-            let last_elem = self.ptr + new_len * sizeof!(u8);
+            let last_elem = self.ptr + new_len * size_of!(u8);
             self.len_ = new_len;
             return last_elem;
         }
@@ -133,9 +133,9 @@ pub struct String {
             cap *= 2;
         }
         unsafe {
-            let mut new_data = as(*mut u8, mem::alloc(cap * sizeof!(u8)) catch unreachable!());
+            let mut new_data = as(*mut u8, mem::alloc(cap * size_of!(u8)) catch unreachable!());
             if (self.ptr != none) {
-                _ = mem::copy(new_data, self.ptr, self.len_ * sizeof!(u8)) catch unreachable!();
+                _ = mem::copy(new_data, self.ptr, self.len_ * size_of!(u8)) catch unreachable!();
             }
             mem::dealloc(self.ptr);
             self.ptr = new_data;
@@ -174,7 +174,7 @@ pub struct String {
     pub unsafe fn as_mut_ptr(&self) *mut u8 { return unsafe { self.ptr }; }
 
     pub fn as_bytes(&self) [u8] {
-        return unsafe { _slice::from_array(self.ptr, sizeof!(u8), self.len_) };
+        return unsafe { _slice::from_array(self.ptr, size_of!(u8), self.len_) };
     }
 
     pub fn as_str(&self) str {

@@ -1420,9 +1420,9 @@ class Checker:
 
 	def check_builtin_call(self, builtin_call):
 		ret_typ = self.comp.void_t
-		if builtin_call.name == "mangleof":
+		if builtin_call.name == "mangle_of":
 			ret_typ = self.comp.str_t
-		elif builtin_call.name in ("sizeof", "alignof"):
+		elif builtin_call.name in ("size_of", "align_of"):
 			ret_typ = self.comp.usize_t
 		elif builtin_call.name in ("compile_warn", "compile_error"):
 			pass # TODO(StunxFS): check

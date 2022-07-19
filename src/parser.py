@@ -926,7 +926,7 @@ class Parser:
 			self.expect(Kind.Bang)
 			self.expect(Kind.Lparen)
 			args = []
-			if name in ("sizeof", "alignof", "default"):
+			if name in ("size_of", "align_of"):
 				pos = self.tok.pos
 				args.append(ast.TypeNode(self.parse_type(), pos))
 			elif self.tok.kind != Kind.Rparen:
