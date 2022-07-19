@@ -26,8 +26,7 @@ def run_fail_tests():
 		    file, "-cc", CC
 		)
 		try:
-			outf = open(file.replace(".ri", ".out"), "rb",
-			            encoding = 'UTF-8').read()
+			outf = open(file.replace(".ri", ".out"), "rb").read()
 			if outf.strip() == res.err:
 				utils.eprint(utils.bold(utils.green(" [ PASS ] ")), file)
 			else:
