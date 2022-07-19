@@ -8,9 +8,15 @@ mod my_mod {
     enum PrivateEnum { Variant }
 }
 
+mod my_mod2 {
+    pub fn func() {
+        _ = super::my_mod::PrivateStruct{
+            a: super::my_mod::PRIVATE_CONST,
+            b: super::my_mod::PrivateEnum::Variant
+        };
+    }
+}
+
 fn main() {
-    _ = my_mod::PrivateStruct{
-        a: my_mod::PRIVATE_CONST,
-        b: my_mod::PrivateEnum::Variant
-    };
+    my_mod2::func();
 }

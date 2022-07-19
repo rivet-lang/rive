@@ -244,9 +244,9 @@ class Sym:
 		self_super = self.super_()
 		other_super = other.super_()
 		return (
-		    self_super == other_super or self_super == other
-		    or self_super.parent == other.parent
+		    self_super == other or self_super == other_super
 		    or self_super == other_super.parent
+		    or self_super.parent == other.parent
 		)
 
 	def is_used(self):

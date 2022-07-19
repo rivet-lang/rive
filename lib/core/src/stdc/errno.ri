@@ -4,10 +4,10 @@
 
 #[if (!_WINDOWS_); trusted]
 extern (C) {
-    fn __errno_location() *mut i32;
+    pub fn __errno_location() *mut i32;
 }
 
 #[if (_WINDOWS_); trusted]
 extern (C) {
-    fn _errno() *mut i32;
+    pub fn _errno() *mut i32;
 }
