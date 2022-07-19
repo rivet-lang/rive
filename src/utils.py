@@ -108,7 +108,9 @@ class ProcessResult:
 
 def execute(*args):
 	res = subprocess.run(args, capture_output = True, encoding = 'UTF-8')
-	return ProcessResult(res.stdout.strip(), res.stderr.strip(), res.returncode)
+	stdout = res.stdout.strip() if res.stdout else ""
+	stderr = res.stderr.strip() if res.stderr else ""
+	return ProcessResult(stdout, stderr, res.returncode)
 
 class Builder:
 	def __init__(self):
