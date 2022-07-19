@@ -420,7 +420,7 @@ class Checker:
 						report.note(f"in element {i + 1} of array literal")
 			expr.typ = type.Type(
 			    self.comp.universe.add_or_get_array(
-			        elem_typ,
+			        self.comp.untyped_to_type(elem_typ),
 			        ast.IntegerLiteral(str(len(expr.elems)), expr.pos)
 			    )
 			)

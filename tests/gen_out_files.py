@@ -17,7 +17,7 @@ for file in FAIL_FILES:
 	)
 	if res.exit_code != 0:
 		utils.eprint(f"[OK] {file}")
-		with open(out_name, "w", encoding = 'UTF-8') as f:
+		with open(out_name, "wb", encoding = 'UTF-8') as f:
 			f.write(res.err)
 	else:
 		utils.eprint(f"[BAD: exit_code == 0] {file}")

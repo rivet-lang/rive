@@ -107,11 +107,8 @@ class ProcessResult:
 		self.exit_code = exit_code
 
 def execute(*args):
-	res = subprocess.run(args, capture_output = True)
-	return ProcessResult(
-	    res.stdout.decode(encoding = 'UTF-8').strip(),
-	    res.stderr.decode(encoding = 'UTF-8').strip(), res.returncode
-	)
+	res = subprocess.run(args, capture_output = True, encoding = 'UTF-8')
+	return ProcessResult(res.stdout.strip(), res.stderr.strip(), res.returncode)
 
 class Builder:
 	def __init__(self):
