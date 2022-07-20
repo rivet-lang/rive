@@ -1211,8 +1211,9 @@ class AST2RIR:
 				else:
 					return IntLiteral(self.comp.usize_t, str(align))
 			elif expr.name == "assert":
-				msg = utils.smart_quote(f"`{expr.args[0]}`", False)
-				_, size = utils.bytestr(msg)
+				msg_ = f"`{expr.args[0]}`"
+				msg = utils.smart_quote(msg_, False)
+				_, size = utils.bytestr(msg_)
 				self.cur_fn.add_call(
 				    "_R4core6assertF", [
 				        self.convert_expr(expr.args[0]),

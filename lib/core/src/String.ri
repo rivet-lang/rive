@@ -143,6 +143,55 @@ pub struct String {
         self.cap = cap;
     }
 
+    pub fn len(&self) usize { return self.len_; }
+
+    /// Returns the number of runes contained in `self`.
+    pub fn runes_count(&self) usize {
+        return cstr_runes_count(unsafe { self.ptr }, self.len_);
+    }
+
+	/// Returns the index of byte `b` if found in the string.
+	pub fn index_byte(self, b: u8) ?usize {
+		for (i in 0..self.len_) {
+			if (unsafe { self.ptr[i] == b }) {
+				return i;
+			}
+		}
+		return none;
+	}
+
+	/// Returns the position of the first character of the input string.
+	/// It will return `none` if the input string can't be found.
+	pub fn index(self, p: str) ?usize {
+		if (p.len > self.len_ or p.len == 0) {
+			return none;
+		}
+		let mut i: usize = 0;
+		while (i < self.len_) {
+			let mut j: usize = 0;
+			while (j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] }) {
+				j++;
+			}
+			if (j == p.len) {
+				return i;
+			}
+			i++;
+		}
+		return none;
+	}
+
+    pub fn as_ptr(&self) *u8 { return unsafe { self.ptr }; }
+
+    pub unsafe fn as_mut_ptr(&self) *mut u8 { return unsafe { self.ptr }; }
+
+    pub fn as_bytes(&self) [u8] {
+        return unsafe { _slice::from_array(self.ptr, size_of!(u8), self.len_) };
+    }
+
+    pub fn as_str(&self) str {
+        return unsafe { str::from_cstr_with_len(self.ptr, self.len_) };
+    }
+
     fn ==(&self, rhs: &Self) bool {
         if (self.len_ != rhs.len_) {
             return false;
@@ -160,26 +209,44 @@ pub struct String {
 
     fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
 
+	/// Returns `true` if the string contains `substr`.
+	pub fn contains(self, substr: str) bool {
+		if (substr.len == 0) {
+			return true;
+		}
+		if (let _ = self.index(substr)) {
+			return true;
+		}
+		return false;
+	}
+
+    /// Returns `true` if the string starts with `p`.
+	pub fn starts_with(self, p: str) bool {
+		if (p.len > self.len_) {
+            return false;
+		}
+		for (i in 0..p.len) {
+			if (unsafe { self.ptr[i] != p[i] }) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/// Returns `true` if the string ends with `p`.
+	pub fn ends_with(self, p: str) bool {
+		if (p.len > self.len_) {
+            return false;
+        }
+		for (i in 0..p.len) {
+			if (unsafe { p[i] != self.ptr[self.len_ - p.len + i] }) {
+				return false;
+			}
+		}
+		return true;
+	}
+
     pub fn is_empty(&self) bool { return self.len_ == 0; }
-
-    pub fn len(&self) usize { return self.len_; }
-
-    /// Returns the number of runes contained in `self`.
-    pub fn runes_count(&self) usize {
-        return cstr_runes_count(unsafe { self.ptr }, self.len_);
-    }
-
-    pub fn as_ptr(&self) *u8 { return unsafe { self.ptr }; }
-
-    pub unsafe fn as_mut_ptr(&self) *mut u8 { return unsafe { self.ptr }; }
-
-    pub fn as_bytes(&self) [u8] {
-        return unsafe { _slice::from_array(self.ptr, size_of!(u8), self.len_) };
-    }
-
-    pub fn as_str(&self) str {
-        return unsafe { str::from_cstr_with_len(self.ptr, self.len_) };
-    }
 
     pub fn clone(&self) Self {
         let mut res = Self::with_capacity(self.len_);
