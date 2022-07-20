@@ -35,15 +35,14 @@ language with a clear and simple syntax and a low learning curve.
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
 * **Easy error handling**: Via result types: `fn func() !T { ... }`.
 * **Named and optional arguments**: Very useful.
-* **Immutable values by default:** Variables, arguments and fields of struct
-are immutable by default.
-* **Ownership and Borrowing**: Rivet has a very simplified version of Rust's
-Ownership and Borrowing system. The lifetimes are inferred by the compiler.
+* **Immutable values by default:** Variables and fields of struct are immutable
+by default.
 * **Struct inheritance and polymorphism**: Trait and Union types are also
 supported.
 * **Generics:** Specialize and reuse the same code for different types.
 
 ## Roadmap
+
 * [ ] Improve language design.
 * [ ] Make lib basically available.
 * [ ] Make self-hosted compiler.
@@ -60,7 +59,11 @@ generating binaries directly without the need for a C compiler.
 
 > **NOTE:** At present, the test is successful only on **Linux** and **Windows**.
 
-Just execute `python rivetc.py xxx.ri`.
+Just execute `python rivetc.py some_file.ri`.
+
+You can see all available compiler options by using the `-h`/`--help` flag.
+
+`python rivetc.py -h`
 
 * * *
 

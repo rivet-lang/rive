@@ -5,24 +5,6 @@
 using pkg::stdc;
 using pkg::mem;
 
-const EOF: i32 = -1;
-const SEEK_END: i32 = 2;
-
-/// Reads the file in `path` and returns the contents.
-pub fn read_file(path: str) !String {
-	let mut f = File::open(path, "rb").!;
-	let res = f.read().!;
-	f.close();
-	return res;
-}
-
-/// Writes `text` data to a file in `path`.
-pub fn write_file(path: str, text: str) ! {
-	let mut f = File::open(path, "wb").!;
-	f.write(text);
-	f.close();
-}
-
 pub struct File {
     f: *mut stdc::FILE;
     mut is_opened: bool;
@@ -61,10 +43,10 @@ pub struct File {
     }
 
     /// Returns the current file contents.
-    pub fn read(&mut self) !String {
+    pub fn read_all(&mut self) !String {
         if (self.is_opened) {
             unsafe {
-                let seek = stdc::fseek(self.f, 0, SEEK_END);
+                let seek = stdc::fseek(self.f, 0, 2);
                 if (seek != 0) {
                     raise Error("fseek failed");
                 }
