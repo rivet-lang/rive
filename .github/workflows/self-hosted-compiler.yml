@@ -1,0 +1,45 @@
+name: Self-hosted compiler
+
+on:
+  push:
+    paths: ['src-self-hosted/**.ri', 'lib/**.ri', 'src/**.py']
+    branches: [main]
+
+jobs:
+  ubuntu-clang:
+    runs-on: ubuntu-20.04
+    env:
+      RIVET_CC_TEST: clang
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Building self-hosted compiler
+        run: |
+          python3 rivetc.py src-self-hosted/ -o rivetc && ./rivetc
+
+  ubuntu-gcc:
+    runs-on: ubuntu-20.04
+    env:
+      RIVET_CC_TEST: gcc
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Building self-hosted compiler
+        run: |
+          python3 rivetc.py src-self-hosted/ -o rivetc && ./rivetc
+
+  windows-gcc:
+    runs-on: windows-2019
+    env:
+      RIVET_CC_TEST: gcc
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Building self-hosted compiler
+        run: |
+          python3 rivetc.py src-self-hosted/ -o rivetc.exe && .\rivetc.exe
