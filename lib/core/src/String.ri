@@ -26,19 +26,14 @@ pub struct String {
         }
     }
 
-    pub unsafe fn from_raw(ptr: *mut u8, len: usize) Self {
+    pub unsafe fn from_raw(ptr: *mut u8) Self {
+        return unsafe { Self::from_raw_with_len(ptr, stdc::strlen(ptr)) };
+    }
+
+    pub unsafe fn from_raw_with_len(ptr: *mut u8, len: usize) Self {
         if (len == 0) {
             return Self::new();
         }
-        return Self{
-            ptr: unsafe { ptr },
-            len_: len,
-            cap: len
-        };
-    }
-
-    pub unsafe fn from_cstr(ptr: *mut u8) Self {
-        let len = unsafe { stdc::strlen(ptr) };
         return Self{
             ptr: unsafe { ptr },
             len_: len,
@@ -191,7 +186,7 @@ pub struct String {
     }
 
     pub fn as_str(&self) str {
-        return unsafe { str::from_cstr_with_len(self.ptr, self.len_) };
+        return unsafe { str::from_raw_with_len(self.ptr, self.len_) };
     }
 
     fn ==(&self, rhs: &Self) bool {

@@ -29,6 +29,6 @@ pub struct StaticBuffer {
     }
 
     pub fn as_str(&self) str {
-        return unsafe { str::from_cstr_with_len(&self.buf[0], self.len) };
+        return unsafe { str::from_raw_with_len(&self.buf[0], self.len) };
     }
 }

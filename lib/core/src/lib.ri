@@ -88,6 +88,6 @@ pub fn errno() i32 {
 pub fn strerr(code: i32 = errno()) String {
     unsafe {
         let s = stdc::strerror(code);
-        return if (s == none) "".to_string() else String::from_cstr(s);
+        return if (s == none) "".to_string() else String::from_raw(s);
     }
 }

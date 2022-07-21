@@ -72,7 +72,7 @@ pub struct File {
                     raise Error("fread failed");
                 }
                 res[nelements] = 0;
-                return String::from_raw(res, nelements);
+                return String::from_raw_with_len(res, nelements);
             }
         }
     }

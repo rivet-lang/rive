@@ -170,7 +170,7 @@ class Gen:
   };
   for (int i = 0; i < __argc; i++) {
 	u8* arg = __argv[i];
-	_R4core4_str tmp = _R4core4_str9from_cstrF(arg);
+	_R4core4_str tmp = _R4core4_str8from_rawF(arg);
 	_R4core6_slice3setM(&_R4core4ARGS, i, &tmp);
   }
 }

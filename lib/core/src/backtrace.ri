@@ -44,7 +44,7 @@ pub mod backtrace {
             let file_name = if (filename_ptr == none) {
                 "???".to_string()
             } else {
-                String::from_cstr(filename_ptr)
+                String::from_raw(filename_ptr)
             };
 
             let func_name = if (func_ptr == none) {
@@ -68,10 +68,10 @@ pub mod backtrace {
             let mut bdata = as(*mut BacktraceData, data);
             if (!bdata.has_error) {
                 eprint("   libbacktrace error: ");
-                eprint(str::from_cstr(msg_ptr));
+                eprint(str::from_raw(msg_ptr));
                 if (errnum > 0) {
                     eprint(" (");
-                    eprint(str::from_cstr(stdc::strerror(errnum)));
+                    eprint(str::from_raw(stdc::strerror(errnum)));
                     eprint(")");
                 }
                 eprintln();
