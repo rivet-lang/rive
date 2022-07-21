@@ -25,3 +25,8 @@ extern (C) {
 
     pub fn write(fd: i32, buf: *void, count: usize) isize;
 }
+
+extern (C) {
+	pub fn popen(cmd: *u8, modes: *u8) *mut FILE;
+	pub fn pclose(stream: *mut FILE) i32;
+}

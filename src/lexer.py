@@ -313,14 +313,11 @@ class Lexer:
 		elif is_bytelit:
 			_, len_ = utils.bytestr(ch)
 			if len_ > 1 and ch != (utils.BACKSLASH * 2):
-				self.pos = start
 				report.error(
 				    "byte literal may only contain one byte", self.get_pos()
 				)
-				self.pos += start
 		elif len_ != 1:
 			if len_ > 1:
-				self.pos = start
 				report.error(
 				    "character literal may only contain one codepoint",
 				    self.get_pos()
@@ -328,7 +325,6 @@ class Lexer:
 				report.help(
 				    "if you meant to write a string literal, use double quotes"
 				)
-				self.pos += start
 		return ch
 
 	def read_string(self):
