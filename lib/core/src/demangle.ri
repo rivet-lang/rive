@@ -18,12 +18,15 @@ pub mod demangle {
                 idx++;
                 continue;
             }
+
             if (!res.is_empty()) {
                 res.push_str("::");
             }
+
             for (_ in 0..as(usize, buf.as_u64())) {
                 res.push(unsafe { name[idx++] });
             }
+
             buf.clear();
             if (!unsafe { name[idx] }.is_digit()) {
                 break; // end

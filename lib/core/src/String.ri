@@ -76,36 +76,38 @@ pub struct String {
         if (self.len_ >= self.cap) {
             self.reserve(self.len_ + 1);
         }
-        unsafe {
-            _ = mem::copy(
-                self.ptr + self.len_, &val, size_of!(u8)
-            ) catch unreachable!();
-        }
+        _ = unsafe {
+            mem::copy(self.ptr + self.len_, &val, size_of!(u8)) catch unreachable!()
+        };
         self.len_++;
     }
 
-    pub fn push_str(&mut self, s: str) {
+    pub unsafe fn push_raw_with_len(&mut self, s: *u8, len: usize) {
         if (self.len_ >= self.cap) {
-            self.reserve(s.len);
+            self.reserve(len);
         }
+        _ = unsafe {
+            mem::copy(self.ptr + self.len_, s, len) catch unreachable!()
+        };
+        self.len_ += len;
+    }
+
+    pub unsafe fn push_raw(&mut self, s: *u8) {
         unsafe {
-            _ = mem::copy(
-                self.ptr + self.len_, s.ptr, s.len
-            ) catch unreachable!();
+            self.push_raw_with_len(s, stdc::strlen(s));
         }
-        self.len_ += s.len;
+    }
+
+    pub fn push_str(&mut self, s: str) {
+        unsafe {
+            self.push_raw_with_len(s.ptr, s.len);
+        }
     }
 
     pub fn push_string(&mut self, s: String) {
-        if (self.len_ >= self.cap) {
-            self.reserve(s.len_);
-        }
         unsafe {
-            _ = mem::copy(
-                self.ptr + self.len_, s.ptr, s.len_
-            ) catch unreachable!();
+            self.push_raw_with_len(s.ptr, s.len_);
         }
-        self.len_ += s.len_;
     }
 
     /// Returns the last byte of the string, and removes it. If the string is

@@ -13,4 +13,7 @@ extern (C) {
     pub fn getppid() u32;
 
     pub fn isatty(fd: i32) i32;
+
+    pub fn write(fd: i32, buf: *void, count: usize) isize;
+    pub fn read(fildes: i32, buf: *mut void, nbyte: usize) isize;
 }

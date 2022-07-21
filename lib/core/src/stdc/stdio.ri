@@ -15,18 +15,18 @@ extern (C) {
     pub fn fprintf(stream: *mut FILE, fmt: *u8, ...) i32;
     pub fn fwrite(ptr: *void, size: usize, nobj: usize, stream: *mut FILE) usize;
     pub fn fflush(stream: *mut FILE) i32;
+    pub fn fgets(s: *mut u8, n: usize, stream: *mut FILE) i32;
     pub fn fclose(stream: *mut FILE) i32;
+    pub fn fileno(stream: *FILE) i32;
     pub fn rewind(stream: *mut FILE);
-}
-
-extern (C) {
-    pub fn putchar(s: i32) i32;
-    pub fn printf(fmt: *u8, ...) i32;
-
-    pub fn write(fd: i32, buf: *void, count: usize) isize;
 }
 
 extern (C) {
 	pub fn popen(cmd: *u8, modes: *u8) *mut FILE;
 	pub fn pclose(stream: *mut FILE) i32;
+}
+
+extern (C) {
+    pub fn putchar(s: i32) i32;
+    pub fn printf(fmt: *u8, ...) i32;
 }

@@ -3,4 +3,5 @@
 // that can be found in the LICENSE file.
 
 pub mod fs;
+pub mod os;
 pub mod term;

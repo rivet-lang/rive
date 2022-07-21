@@ -395,11 +395,13 @@ class Checker:
 		elif isinstance(expr, ast.ArrayLiteral):
 			old_exp_typ = self.expected_type
 			has_exp_typ = False
+			size = ""
 			if not isinstance(self.expected_type, type.Fn):
 				elem_sym = self.expected_type.get_sym()
 				if elem_sym.kind == TypeKind.Array:
 					has_exp_typ = True
 					elem_typ = elem_sym.info.elem_typ
+					size = elem_sym.info.size.lit
 					self.expected_type = elem_typ
 				else:
 					elem_typ = self.comp.void_t
@@ -418,10 +420,18 @@ class Checker:
 					except utils.CompilerError as err:
 						report.error(err.args[0], e.pos)
 						report.note(f"in element {i + 1} of array literal")
+			if len(expr.elems) > 0:
+				arr_len = str(len(expr.elems))
+			else:
+				if not has_exp_typ:
+					report.error(
+					    "could not infer type and size of array", expr.pos
+					)
+				arr_len = size
 			expr.typ = type.Type(
 			    self.comp.universe.add_or_get_array(
 			        self.comp.untyped_to_type(elem_typ),
-			        ast.IntegerLiteral(str(len(expr.elems)), expr.pos)
+			        ast.IntegerLiteral(arr_len, expr.pos)
 			    )
 			)
 			self.expected_type = old_exp_typ
@@ -1348,7 +1358,7 @@ class Checker:
 		fn_args_len = len(info.args)
 		if info.is_variadic and not info.is_extern:
 			fn_args_len -= 1
-		if (fn_args_len < 0):
+		if fn_args_len < 0:
 			fn_args_len = 0
 
 		# name arguments
@@ -1425,7 +1435,7 @@ class Checker:
 		elif builtin_call.name in ("size_of", "align_of"):
 			ret_typ = self.comp.usize_t
 		elif builtin_call.name in ("compile_warn", "compile_error"):
-			pass # TODO(StunxFS): check
+			pass
 		elif builtin_call.name in ("unreachable", "breakpoint"):
 			ret_typ = self.comp.no_return_t
 		elif builtin_call.name == "assert":

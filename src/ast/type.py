@@ -82,7 +82,7 @@ class Ref(TBase):
 		return f"&{kmut}{self.typ.qualstr()}"
 
 	def nr_level(self):
-		return 0
+		return 1
 
 	def __eq__(self, other):
 		if not isinstance(other, Ref):

@@ -421,8 +421,10 @@ void _R9drop_argsZ(void) {
 		elif inst.kind == InstKind.GetElementPtr:
 			self.write("(")
 			self.gen_expr(inst.args[0])
-			self.write(" + ")
-			self.gen_expr(inst.args[1])
+			arg1 = inst.args[1]
+			if not (isinstance(arg1, IntLiteral) and arg1.lit == "0"):
+				self.write(" + ")
+				self.gen_expr(arg1)
 			self.write(")")
 		elif inst.kind == InstKind.GetRef:
 			arg0 = inst.args[0]

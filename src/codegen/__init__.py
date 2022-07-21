@@ -785,7 +785,7 @@ class AST2RIR:
 	def convert_fn_decl(self, fn_decl):
 		self.cur_fn_is_main = fn_decl.is_main
 		self.cur_fn_qualname = fn_decl.sym.qualname()
-		args = fn_decl.args
+		args = fn_decl.args.copy()
 		if fn_decl.is_method:
 			args.insert(
 			    0,
@@ -1084,13 +1084,13 @@ class AST2RIR:
 		                FloatLiteral) and self.comp.is_float(expected_typ):
 			res_expr.typ = expected_typ
 
-		if not isinstance(res_expr, (Skip, NoneLiteral, Inst)) and isinstance(
+		if (not isinstance(res_expr, (Skip, NoneLiteral, Inst))) and isinstance(
 		    res_expr.typ, (type.Ptr, type.Ref)
 		) and res_expr.typ.typ != self.comp.void_t:
 			if isinstance(expected_typ, (type.Ptr, type.Ref)):
 				nr_level_expected = expected_typ.nr_level()
 				nr_level = res_expr.typ.nr_level()
-				while nr_level_expected < nr_level:
+				while nr_level > nr_level_expected:
 					res_expr = Inst(InstKind.LoadPtr, [res_expr])
 					nr_level -= 1
 			else:
@@ -1311,6 +1311,8 @@ class AST2RIR:
 				)
 			return tmp
 		elif isinstance(expr, ast.ArrayLiteral):
+			if len(expr.elems) == 0:
+				return self.default_value(expr.typ)
 			elem_typ = expr.typ.get_sym().info.elem_typ
 			elems = []
 			for i, elem in enumerate(expr.elems):
@@ -1348,8 +1350,12 @@ class AST2RIR:
 				left_sym = expr.left.left_typ.get_sym()
 				if left_sym.kind == TypeKind.Trait:
 					is_trait_call = True
-					self_expr = self.convert_expr_with_cast(
-					    expr.info.self_typ, expr.left.left
+					self_expr = Inst(
+					    InstKind.LoadPtr, [
+					        self.convert_expr_with_cast(
+					            expr.info.self_typ, expr.left.left
+					        )
+					    ]
 					)
 					args.append(
 					    Selector(
