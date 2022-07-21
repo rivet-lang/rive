@@ -10,6 +10,12 @@ mod utils;
 
 pub static ARGS: [str] = [""][..];
 
+fn segfault_handler(_: i32) {
+    eprintln("panic: segmentation fault detected");
+    backtrace::print(3);
+    process::exit(1);
+}
+
 /// Prints a message to stdout. Unlike `println` stdout is not automatically
 /// flushed.
 pub fn print(s: str, args: ...traits::ToString) {

@@ -13,6 +13,7 @@ extern (C) {
 #[used]
 fn rivet_main(__argc: i32, __argv: **u8, pkg_main: fn()) {
     unsafe {
+        _ = stdc::signal(11, segfault_handler);
         _R9init_argsZ(__argc, __argv);
         _R12init_staticsZ();
         pkg_main();
