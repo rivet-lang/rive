@@ -4,6 +4,7 @@
 
 using pkg::traits::ToString;
 
+/// Represents a generic error.
 pub errtype Error;
 
 #[used]

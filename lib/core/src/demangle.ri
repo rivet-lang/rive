@@ -5,32 +5,39 @@
 using pkg::utils::StaticBuffer;
 
 pub mod demangle {
-    pub fn demangle_symbol(name: *u8) String {
+    pub fn demangle_symbol(name: str) String {
         let mut buf = StaticBuffer{};
-        let len = unsafe { stdc::strlen(name) };
-        let mut res = String::with_capacity(len - 2);
+        let mut res = String::with_capacity(name.len);
 
-        let mut idx: usize = 2; // skip `_R`
-        while (idx < len) {
-            let byte = unsafe { name[idx] };
-            if (byte.is_digit()) {
-                buf.push(byte);
-                idx++;
-                continue;
-            }
+        // 2 = skip `_R` if it is a Rivet symbol
+        let is_rivet_symbol = name.starts_with("_R");
+        let mut idx: usize = if (is_rivet_symbol) 2 else 0;
 
-            if (!res.is_empty()) {
-                res.push_str("::");
-            }
+        while (idx < name.len) {
+            let byte = unsafe { name.ptr[idx] };
+            if (is_rivet_symbol) {
+                if (byte.is_digit()) {
+                    buf.push(byte);
+                    idx++;
+                    continue;
+                }
 
-            for (_ in 0..as(usize, buf.as_u64())) {
-                res.push(unsafe { name[idx++] });
-            }
+                if (!res.is_empty()) {
+                    res.push_str("::");
+                }
 
-            buf.clear();
-            if (!unsafe { name[idx] }.is_digit()) {
-                break; // end
+                for (_ in 0..as(usize, buf.as_u64())) {
+                    res.push(unsafe { name.ptr[idx++] });
+                }
+                buf.clear();
+
+                if (!unsafe { name.ptr[idx] }.is_digit()) {
+                    break; // end
+                }
+            } else {
+                res.push(byte);
             }
+            idx++;
         }
 
         return res;

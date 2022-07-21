@@ -50,7 +50,7 @@ pub mod backtrace {
             let func_name = if (func_ptr == none) {
                 "??".to_string()
             } else {
-                demangle::demangle_symbol(func_ptr)
+                demangle::demangle_symbol(str::from_raw(func_ptr))
             };
 
             let mut bdata = as(*mut BacktraceData, data);
