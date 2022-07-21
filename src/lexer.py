@@ -288,8 +288,7 @@ class Lexer:
 		return self.read_dec_number()
 
 	def read_char(self):
-		len = 0
-		backslash = "\\"
+		len_ = 0
 		start = self.pos
 		is_bytelit = self.pos > 0 and self.text[self.pos - 1] == "b"
 
@@ -297,28 +296,31 @@ class Lexer:
 			self.pos += 1
 			if self.pos >= self.text_len:
 				break
-			if self.cur_char() != backslash:
-				len += 1
+			if self.cur_char() != utils.BACKSLASH:
+				len_ += 1
 			double_slash = self.expect("\\\\", self.pos - 2)
 			if self.cur_char() == "'" and (
-			    self.text[self.pos - 1] != backslash or double_slash
+			    self.text[self.pos - 1] != utils.BACKSLASH or double_slash
 			):
 				if double_slash:
-					len += 1
+					len_ += 1
 				break
-		len -= 1
+		len_ -= 1
 
 		ch = self.text[start + 1:self.pos]
-		if len == 0:
+		if len_ == 0:
 			report.error("empty character literal", self.get_pos())
 		elif is_bytelit:
-			_, len = utils.bytestr(ch)
-			if len > 1:
+			_, len_ = utils.bytestr(ch)
+			if len_ > 1 and ch != (utils.BACKSLASH * 2):
+				self.pos = start
 				report.error(
 				    "byte literal may only contain one byte", self.get_pos()
 				)
-		elif len != 1:
-			if len > 1:
+				self.pos += start
+		elif len_ != 1:
+			if len_ > 1:
+				self.pos = start
 				report.error(
 				    "character literal may only contain one codepoint",
 				    self.get_pos()
@@ -326,13 +328,13 @@ class Lexer:
 				report.help(
 				    "if you meant to write a string literal, use double quotes"
 				)
+				self.pos += start
 		return ch
 
 	def read_string(self):
 		start = self.pos
 		start_char = self.cur_char()
-		backslash = "\\"
-		backslash_count = 1 if start_char == backslash else 0
+		backslash_count = 1 if start_char == utils.BACKSLASH else 0
 		is_raw = self.pos > 0 and self.text[self.pos - 1] == "r"
 		is_cstr = self.pos > 0 and self.text[self.pos - 1] == "c"
 		n_cr_chars = 0
@@ -344,7 +346,7 @@ class Lexer:
 				report.error("unfinished string literal", self.get_pos())
 				return ""
 			c = self.cur_char()
-			if c == backslash:
+			if c == utils.BACKSLASH:
 				backslash_count += 1
 			# end of string
 			if c == '"' and (is_raw or backslash_count % 2 == 0):
@@ -357,7 +359,7 @@ class Lexer:
 				# escape `\x`
 				if c == "x":
 					h_escapes_pos.append(self.pos - 1)
-			if c != backslash:
+			if c != utils.BACKSLASH:
 				backslash_count = 0
 		lit = ""
 		if start <= self.pos:

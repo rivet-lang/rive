@@ -1,0 +1,24 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+// The `stat` definition used by the Linux kernel.
+pub struct Stat {
+    pub dev: dev_t;
+    pub ino: ino_t;
+    pub nlink: usize;
+
+    pub mode: u32;
+    pub uid: uid_t;
+    pub gid: gid_t;
+    __pad0: u32;
+    pub rdev: dev_t;
+    pub size: off_t;
+    pub blksize: isize;
+    pub blocks: i64;
+
+    pub atim: timespec;
+    pub mtim: timespec;
+    pub ctim: timespec;
+    __unused: [isize; 3];
+}

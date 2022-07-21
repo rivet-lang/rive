@@ -32,3 +32,7 @@ pub type uintptr_t = usize;
 pub type ssize_t = isize;
 
 pub type off_t = i64;
+pub type ino_t = u64;
+pub type dev_t = u64;
+pub type uid_t = u32;
+pub type gid_t = u32;

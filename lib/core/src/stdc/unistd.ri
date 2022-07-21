@@ -5,6 +5,8 @@
 extern (C) {
     pub static environ: **u8;
 
+	pub fn access(a: *u8, o: i32) i32;
+
     pub fn sysconf(name: i32) i64;
 
     pub fn getpid() u32;
