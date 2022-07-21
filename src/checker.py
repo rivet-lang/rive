@@ -338,6 +338,12 @@ class Checker:
 		elif isinstance(expr, ast.SelfTyExpr):
 			return self.comp.void_t # TODO
 		elif isinstance(expr, ast.NoneLiteral):
+			if isinstance(self.expected_type,
+			              type.Ptr) and not self.inside_unsafe_block():
+				report.error(
+				    "using `none` literal with pointers requires an `unsafe` block",
+				    expr.pos
+				)
 			expr.typ = self.comp.none_t
 			return expr.typ
 		elif isinstance(expr, ast.BoolLiteral):
