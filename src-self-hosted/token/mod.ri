@@ -1,0 +1,128 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+using pkg::traits::ToString;
+
+pub struct Token {
+    pub lit: String;
+    pub kind: Kind;
+    pub pos: Pos;
+}
+
+extend Token for ToString {
+    pub fn to_string(&self) String {
+        return "token(TODO)".to_string();
+    }
+}
+
+pub enum Kind {
+	Unknown, // unknown
+	EOF, // end of file
+	DocComment, // doc-comment
+	Name, // name
+	Number, // number
+	Char, // character
+	String, // string
+	Plus, // +
+	Minus, // -
+	Mult, // *
+	Div, // /
+	Mod, // %
+	Inc, // ++
+	Dec, // --
+	Assign, // =
+	PlusAssign, // +=
+	MinusAssign, // -=
+	MultAssign, // *=
+	DivAssign, // /=
+	ModAssign, // %=
+	AmpAssign, // &=
+	PipeAssign, // |=
+	XorAssign, // ^=
+	Eq, // ==
+	Ne, // !=
+	Lt, // <
+	Gt, // >
+	Le, // <=
+	Ge, // >=
+	Lshift, // <<
+	Rshift, // >>
+	Dot, // .
+	DotDot, // ..
+	Ellipsis, // ...
+	Arrow, // =>
+	Comma, // ,
+	Colon, // :
+	DoubleColon, // ::
+	Semicolon, // ;
+	Question, // ?
+	Bang, // !
+	Amp, // &
+	Pipe, // |
+	Xor, // ^
+	BitNot, // ~
+	Hash, // //
+	Dollar, // $
+	Lbrace, // {
+	Rbrace, // }
+	Lbracket, // [
+	Rbracket, // ]
+	Lparen, // (
+	Rparen, // )
+
+	// 6 literals, 38 keywords; Total: 44 keywords,
+	// +1 extra keyword (`!is` = `!` + keyword).
+	KeywordBegin,
+	// ========== literals ==========
+	KeyNone, // none
+	KeyTrue, // true
+	KeyFalse, // false
+	KeySuper, // super
+	KeySelf, // self
+	KeySelfTy, // Self
+	// ==============================
+
+	// ========== keywords ==========
+	KeyPkg, // pkg
+	KeyPub, // pub
+	KeyUsing, // using
+	KeyAs, // as
+	KeyConst, // const
+	KeyStatic, // static
+	KeyMod, // mod
+	KeyExtern, // extern
+	KeyTrait, // trait
+	KeyUnion, // union
+	KeyStruct, // struct
+	KeyEnum, // enum
+	KeyErrType, // errtype
+	KeyType, // type
+	KeyExtend, // extend
+	KeyTest, // test
+	KeyFn, // fn
+	KeyLet, // let
+	KeyMut, // mut
+	KeyIf, // if
+	KeyElif, // elif
+	KeyElse, // else
+	KeyMatch, // match
+	KeyWhile, // while
+	KeyFor, // for
+	KeyContinue, // continue
+	KeyBreak, // break
+	KeyReturn, // return
+	KeyRaise, // raise
+	KeyGoto, // goto
+	KeyAnd, // and
+	KeyOr, // or
+	KeyIn, // in
+	KeyIs, // is
+	KeyNotIs, // !is
+	KeyUnsafe, // unsafe
+	KeyOrElse, // orelse
+	KeyCatch, // catch
+	// ==============================
+
+	KeywordEnd
+}

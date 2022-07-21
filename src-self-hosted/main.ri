@@ -5,8 +5,19 @@
 pub mod std;
 
 pub mod prefs;
+pub mod token;
 pub mod utils;
 
 fn main() {
-    let prefs = prefs::Prefs::from_cli();
+    let compiler = Compiler::new();
+}
+
+struct Compiler {
+    pub mut prefs: prefs::Prefs;
+
+    pub fn new() Self {
+        return Self{
+            prefs: prefs::Prefs::from_cli()
+        };
+    }
 }
