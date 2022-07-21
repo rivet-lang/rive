@@ -39,10 +39,21 @@ fn f2(a: i32) {
 fn f3() { }
 ```
 
+A function body is made up of 1 or more statements and can be empty.
+
+```rust
+fn x() { /* empty body */ }
+fn y() {
+	let var = 1; // statement
+}
+```
+
 ## Arguments
 
 The arguments are declared as follows: `<name>: <type> [= default_value]`,
 for example: `arg1: i32`, `arg2: bool = false`.
+
+The arguments are immutable.
 
 They can also have default values, this bypasses the need to pass the
 argument each time the function is called: `arg1: i32 = 5`.

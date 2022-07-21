@@ -1,5 +1,7 @@
 # Statements
 
+Each statement must end with a semicolon.
+
 ## Variables
 
 Variables are like boxes that contain values.
@@ -36,6 +38,7 @@ Multiple values can be assigned on a single line via tuple-destructuring, exampl
 ```rust
 let (a, b, c) = (1, 2, 3);
 let (c: i32, d: i32, e: i32) = (4, 5, 6);
+let (f, g, h) = tuple_func();
 
 // this is a short form for:
 
@@ -46,4 +49,9 @@ let c = 3;
 let c: i32 = 4;
 let d: i32 = 5;
 let e: i32 = 6;
+
+let tmp_tuple_func = tuple_func();
+let f = tmp_tuple_func.0;
+let g = tmp_tuple_func.1;
+let h = tmp_tuple_func.2;
 ```

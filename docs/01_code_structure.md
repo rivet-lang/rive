@@ -8,6 +8,9 @@ This is a multiline comment.
 */
 ```
 
+You can use comments to make reminders, notes, or similar things in your
+code.
+
 ## Entry point
 
 In Rivet, the entry point of a program is a function named `main`.
@@ -43,9 +46,6 @@ extend Foo { /* ... */ }
 
 fn baz() { /* ... */ }
 ```
-
-You can use comments to make reminders, notes, or similar things in your
-code.
 
 * * *
 
