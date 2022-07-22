@@ -139,13 +139,12 @@ class Resolver:
 					self.self_sym = decl.typ.get_sym()
 					if decl.is_for_trait:
 						if self.resolve_type(decl.for_trait):
-							decl.for_trait.get_sym().info.implements.append(
-							    self.self_sym
-							)
+							ft_sym = decl.for_trait.get_sym()
+							if ft_sym.kind == sym.TypeKind.Trait:
+								ft_sym.info.implements.append(self.self_sym)
 					if isinstance(
 					    decl.typ, (type.Array, type.Slice, type.Tuple)
 					):
-						# TODO(StunxFS): better error messages
 						s = decl.typ.get_sym()
 						for d in decl.decls:
 							if isinstance(d, ast.FnDecl):
@@ -176,9 +175,14 @@ class Resolver:
 									except utils.CompilerError as e:
 										report.error(e.args[0], d.name_pos)
 								else:
-									report.error("expected method", d.name_pos)
+									report.error(
+									    f"{s.kind}s can only have methods",
+									    d.name_pos
+									)
 							else:
-								report.error("expected method", d.pos)
+								report.error(
+								    f"{s.kind}s can only have methods", d.pos
+								)
 					self.resolve_decls(decl.decls)
 					self.self_sym = None
 		elif isinstance(decl, ast.TestDecl):
