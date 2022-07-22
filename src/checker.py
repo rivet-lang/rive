@@ -105,41 +105,6 @@ class Checker:
 		elif isinstance(decl, ast.ExtendDecl):
 			if should_check:
 				self.check_decls(decl.decls)
-				if decl.is_for_trait:
-					typ_sym = decl.typ.get_sym()
-					trait_sym = decl.for_trait.get_sym()
-					if trait_sym.kind == TypeKind.Trait:
-						not_implemented = []
-						for proto in trait_sym.syms:
-							if d := typ_sym.find(proto.name):
-								d.uses += 1
-								# check signature
-								ptyp = proto.typ()
-								dtyp = d.typ()
-								if ptyp != dtyp:
-									report.error(
-									    f"type `{typ_sym.name}` incorrectly implements {d.kind()} `{d.name}` of trait `{trait_sym.name}`",
-									    d.name_pos
-									)
-									report.note(f"expected `{ptyp}`")
-									report.note(f"found `{dtyp}`")
-							elif not proto.has_body: # trait implementation
-								not_implemented.append(proto.name)
-						if len(not_implemented) > 0:
-							word = "method" if len(
-							    not_implemented
-							) == 1 else "methods"
-							report.error(
-							    f"type `{typ_sym.name}` does not implement trait `{trait_sym.name}`",
-							    decl.pos
-							)
-							report.note(
-							    f"missing {word}: `{'`, `'.join(not_implemented)}`"
-							)
-					else:
-						report.error(
-						    f"`{trait_sym.name}` is not a trait", decl.pos
-						)
 		elif isinstance(decl, ast.TestDecl):
 			self.check_stmts(decl.stmts)
 		elif isinstance(decl, ast.FnDecl):

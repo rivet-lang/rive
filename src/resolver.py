@@ -139,10 +139,46 @@ class Resolver:
 					self.self_sym = decl.typ.get_sym()
 					if decl.is_for_trait:
 						if self.resolve_type(decl.for_trait):
-							ft_sym = decl.for_trait.get_sym()
-							if ft_sym.kind == sym.TypeKind.Trait:
-								ft_sym.info.implements.append(self.self_sym)
-					if isinstance(
+							trait_sym = decl.for_trait.get_sym()
+							if trait_sym.kind == sym.TypeKind.Trait:
+								typ_sym = decl.typ.get_sym()
+								trait_sym.info.implements.append(typ_sym)
+								not_implemented = []
+								for proto in trait_sym.syms:
+									if d := typ_sym.find(proto.name):
+										d.uses += 1
+										# check signature
+										ptyp = proto.typ()
+										dtyp = d.typ()
+										if self.resolve_type(
+										    ptyp
+										) and self.resolve_type(
+										    dtyp
+										) and ptyp != dtyp:
+											report.error(
+											    f"type `{typ_sym.name}` incorrectly implements {d.kind()} `{d.name}` of trait `{trait_sym.name}`",
+											    d.name_pos
+											)
+											report.note(f"expected `{ptyp}`")
+											report.note(f"found `{dtyp}`")
+									elif not proto.has_body: # trait implementation
+										not_implemented.append(proto.name)
+								if len(not_implemented) > 0:
+									word = "method" if len(
+									    not_implemented
+									) == 1 else "methods"
+									report.error(
+									    f"type `{typ_sym.name}` does not implement trait `{trait_sym.name}`",
+									    decl.pos
+									)
+									report.note(
+									    f"missing {word}: `{'`, `'.join(not_implemented)}`"
+									)
+							else:
+								report.error(
+								    f"`{ft_sym.name}` is not a trait", decl.pos
+								)
+					elif isinstance(
 					    decl.typ, (type.Array, type.Slice, type.Tuple)
 					):
 						s = decl.typ.get_sym()
