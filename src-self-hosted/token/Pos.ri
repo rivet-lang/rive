@@ -9,15 +9,6 @@ pub struct Pos {
     pub line: usize;
     pub col: usize;
     pub pos: usize;
-
-    pub fn new(file: String, line: usize, col: usize, pos: usize) Self {
-        return Self{
-            file: file,
-            line: line,
-            col: col,
-            pos: pos
-        };
-    }
 }
 
 extend Pos for ToString {

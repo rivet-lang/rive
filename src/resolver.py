@@ -13,6 +13,7 @@ class Resolver:
 		self.sf = None
 		self.cur_sym = None
 		self.core_prelude = []
+		self.cur_fn_scope = None
 
 		self.inside_is_comparation = False
 
@@ -181,14 +182,18 @@ class Resolver:
 					self.resolve_decls(decl.decls)
 					self.self_sym = None
 		elif isinstance(decl, ast.TestDecl):
+			self.cur_fn_scope = decl.scope
 			self.resolve_stmts(decl.stmts)
+			self.cur_fn_scope = None
 		elif isinstance(decl, ast.FnDecl):
 			if should_check:
+				self.cur_fn_scope = decl.scope
 				for arg in decl.args:
 					self.resolve_type(arg.typ)
 					if arg.has_def_expr: self.resolve_expr(arg.def_expr)
 				self.resolve_type(decl.ret_typ)
 				self.resolve_stmts(decl.stmts)
+				self.cur_fn_scope = None
 		elif isinstance(decl, ast.DestructorDecl):
 			self.resolve_stmts(decl.stmts)
 
@@ -198,20 +203,41 @@ class Resolver:
 
 	def resolve_stmt(self, stmt):
 		if isinstance(stmt, ast.LetStmt):
+			self.register_variables(stmt.scope, stmt.lefts)
 			for l in stmt.lefts:
 				self.resolve_type(l.typ)
 			self.resolve_expr(stmt.right)
 		elif isinstance(stmt, ast.AssignStmt):
 			self.resolve_expr(stmt.left)
 			self.resolve_expr(stmt.right)
+		elif isinstance(stmt, ast.LabelStmt):
+			if self.cur_fn_scope != None:
+				try:
+					self.cur_fn_scope.add(sym.Label(stmt.label))
+				except utils.CompilerError as e:
+					report.error(e.args[0], stmt.pos)
 		elif isinstance(stmt, ast.ExprStmt):
 			self.resolve_expr(stmt.expr)
 		elif isinstance(stmt, ast.WhileStmt):
 			self.resolve_expr(stmt.cond)
 			self.resolve_stmt(stmt.stmt)
 		elif isinstance(stmt, ast.ForInStmt):
+			for v in stmt.vars:
+				try:
+					stmt.scope.add(
+					    sym.Object(False, v, self.comp.void_t, False)
+					)
+				except utils.CompilerError as e:
+					report.error(e.args[0], stmt.pos)
 			self.resolve_expr(stmt.iterable)
 			self.resolve_stmt(stmt.stmt)
+
+	def register_variables(self, scope, var_decls):
+		for vd in var_decls:
+			try:
+				scope.add(sym.Object(vd.is_mut, vd.name, vd.typ, False))
+			except utils.CompilerError as e:
+				report.error(e.args[0], vd.pos)
 
 	def resolve_expr(self, expr):
 		if isinstance(expr, ast.ParExpr):
@@ -269,6 +295,17 @@ class Resolver:
 			for a in expr.args:
 				self.resolve_expr(a.expr)
 			if expr.has_err_handler():
+				if expr.err_handler.has_varname():
+					# register error value
+					try:
+						expr.err_handler.scope.add(
+						    sym.Object(
+						        False, expr.err_handler.varname,
+						        self.comp.error_t, False
+						    )
+						)
+					except utils.CompilerError as e:
+						report.error(e.args[0], expr.err_handler.varname_pos)
 				self.resolve_expr(expr.err_handler.expr)
 		elif isinstance(expr, ast.ReturnExpr):
 			self.resolve_expr(expr.expr)
@@ -280,6 +317,20 @@ class Resolver:
 			if expr.is_expr: self.resolve_expr(expr.expr)
 		elif isinstance(expr, ast.IfExpr):
 			if expr.is_comptime:
+				# evalue comptime if expression
+				branch_idx = -1
+				for idx, b in enumerate(expr.branches):
+					cond_val = False
+					if not b.is_else:
+						cond_val = self.comp.evalue_comptime_condition(b.cond)
+					if branch_idx == -1:
+						if cond_val or b.is_else:
+							branch_idx = idx
+							if isinstance(b.expr, ast.Block):
+								for stmt in b.expr.stmts:
+									self.resolve_stmt(stmt)
+							break
+				expr.branch_idx = branch_idx
 				if expr.branch_idx > -1:
 					self.resolve_expr(expr.branches[expr.branch_idx].expr)
 			else:
@@ -293,6 +344,13 @@ class Resolver:
 					self.resolve_expr(p)
 				self.resolve_expr(b.expr)
 		elif isinstance(expr, ast.GuardExpr):
+			for v in expr.vars:
+				try:
+					expr.scope.add(
+					    sym.Object(False, v, self.comp.void_t, False)
+					)
+				except utils.CompilerError as e:
+					report.error(e.args[0], expr.pos)
 			self.resolve_expr(expr.expr)
 			if expr.has_cond:
 				self.resolve_expr(expr.cond)

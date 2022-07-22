@@ -104,7 +104,6 @@ class Register:
 					    decl.vis, decl.name, decl.typ, decl.expr
 					)
 					self.add_sym(const_sym, decl.pos)
-					self.visit_expr(decl.expr)
 					decl.sym = const_sym
 			elif isinstance(decl, ast.StaticDecl):
 				if should_register:
@@ -113,7 +112,6 @@ class Register:
 					    decl.typ
 					)
 					self.add_sym(static_sym, decl.pos)
-					self.visit_expr(decl.expr)
 					decl.sym = static_sym
 			elif isinstance(decl, ast.TypeDecl):
 				if should_register:
@@ -214,8 +212,6 @@ class Register:
 							)
 							sym_fn.rec_typ = self_typ
 							self.add_sym(sym_fn, decl.pos)
-							for stmt in d.stmts:
-								self.visit_stmt(stmt)
 						else:
 							report.error(
 							    "expected associated function or method", d.pos
@@ -285,8 +281,6 @@ class Register:
 					self.cur_sym = old_sym
 			elif isinstance(decl, ast.TestDecl):
 				self.cur_fn_scope = decl.scope
-				for stmt in decl.stmts:
-					self.visit_stmt(stmt)
 				self.cur_fn_scope = None
 			elif isinstance(decl, ast.FnDecl):
 				self.cur_fn_scope = decl.scope
@@ -315,140 +309,3 @@ class Register:
 				decl.scope.add(sym.Object(False, arg.name, arg.typ, True))
 			except utils.CompilerError as e:
 				report.error(e.args[0], arg.pos)
-			if arg.has_def_expr:
-				self.visit_expr(arg.def_expr)
-		for stmt in decl.stmts:
-			self.visit_stmt(stmt)
-
-	def visit_stmt(self, stmt):
-		if isinstance(stmt, ast.LetStmt):
-			self.register_variables(stmt.scope, stmt.lefts)
-			self.visit_expr(stmt.right)
-		elif isinstance(stmt, ast.AssignStmt):
-			self.visit_expr(stmt.right)
-		elif isinstance(stmt, ast.LabelStmt):
-			if self.cur_fn_scope != None:
-				try:
-					self.cur_fn_scope.add(sym.Label(stmt.label))
-				except utils.CompilerError as e:
-					report.error(e.args[0], stmt.pos)
-		elif isinstance(stmt, ast.ExprStmt):
-			self.visit_expr(stmt.expr)
-		elif isinstance(stmt, ast.WhileStmt):
-			self.visit_expr(stmt.cond)
-			self.visit_stmt(stmt.stmt)
-		elif isinstance(stmt, ast.ForInStmt):
-			for v in stmt.vars:
-				try:
-					stmt.scope.add(
-					    sym.Object(False, v, self.comp.void_t, False)
-					)
-				except utils.CompilerError as e:
-					report.error(e.args[0], stmt.pos)
-			self.visit_stmt(stmt.stmt)
-
-	def visit_expr(self, expr):
-		if isinstance(expr, ast.BuiltinCallExpr):
-			for a in expr.args:
-				self.visit_expr(a)
-		elif isinstance(expr, ast.CallExpr):
-			self.visit_expr(expr.left)
-			for a in expr.args:
-				self.visit_expr(a.expr)
-			if expr.has_err_handler():
-				if expr.err_handler.has_varname():
-					# register error value
-					try:
-						expr.err_handler.scope.add(
-						    sym.Object(
-						        False, expr.err_handler.varname,
-						        self.comp.error_t, False
-						    )
-						)
-					except utils.CompilerError as e:
-						report.error(e.args[0], expr.err_handler.varname_pos)
-				self.visit_expr(expr.err_handler.expr)
-		elif isinstance(expr, ast.IfExpr):
-			if expr.is_comptime:
-				# evalue comptime if expression
-				branch_idx = -1
-				for idx, b in enumerate(expr.branches):
-					cond_val = False
-					if not b.is_else:
-						cond_val = self.comp.evalue_comptime_condition(b.cond)
-					if branch_idx == -1:
-						if cond_val or b.is_else:
-							branch_idx = idx
-							if isinstance(b.expr, ast.Block):
-								for stmt in b.expr.stmts:
-									self.visit_stmt(stmt)
-							break
-				expr.branch_idx = branch_idx
-			else:
-				for b in expr.branches:
-					if not b.is_else: self.visit_expr(b.cond)
-					self.visit_expr(b.expr)
-		elif isinstance(expr, ast.MatchExpr):
-			self.visit_expr(expr.expr)
-			for b in expr.branches:
-				for p in b.pats:
-					self.visit_expr(p)
-				self.visit_expr(b.expr)
-		elif isinstance(expr, ast.GuardExpr):
-			for v in expr.vars:
-				try:
-					expr.scope.add(
-					    sym.Object(False, v, self.comp.void_t, False)
-					)
-				except utils.CompilerError as e:
-					report.error(e.args[0], expr.pos)
-			self.visit_expr(expr.expr)
-			if expr.has_cond:
-				self.visit_expr(expr.cond)
-		elif isinstance(expr, ast.TupleLiteral):
-			for e in expr.exprs:
-				self.visit_expr(e)
-		elif isinstance(expr, ast.ArrayLiteral):
-			for e in expr.elems:
-				self.visit_expr(e)
-		elif isinstance(expr, ast.StructLiteral):
-			for f in expr.fields:
-				self.visit_expr(f.expr)
-		elif isinstance(expr, ast.UnaryExpr):
-			self.visit_expr(expr.right)
-		elif isinstance(expr, ast.BinaryExpr):
-			self.visit_expr(expr.left)
-			self.visit_expr(expr.right)
-		elif isinstance(expr, ast.PostfixExpr):
-			self.visit_expr(expr.left)
-		elif isinstance(expr, ast.CastExpr):
-			self.visit_expr(expr.expr)
-		elif isinstance(expr, ast.IndexExpr):
-			self.visit_expr(expr.left)
-			self.visit_expr(expr.index)
-		elif isinstance(expr, ast.RangeExpr):
-			if expr.has_start: self.visit_expr(expr.start)
-			if expr.has_end: self.visit_expr(expr.end)
-		elif isinstance(expr, ast.SelectorExpr):
-			self.visit_expr(expr.left)
-		elif isinstance(expr, ast.PathExpr):
-			self.visit_expr(expr.left)
-		elif isinstance(expr, ast.ReturnExpr):
-			self.visit_expr(expr.expr)
-		elif isinstance(expr, ast.RaiseExpr):
-			self.visit_expr(expr.expr)
-		elif isinstance(expr, ast.Block):
-			self.cur_fn_scope = expr.scope
-			for stmt in expr.stmts:
-				self.visit_stmt(stmt)
-			if expr.is_expr: self.visit_expr(expr.expr)
-			self.cur_fn_scope = None
-		elif isinstance(expr, ast.ParExpr):
-			self.visit_expr(expr.expr)
-
-	def register_variables(self, scope, var_decls):
-		for vd in var_decls:
-			try:
-				scope.add(sym.Object(vd.is_mut, vd.name, vd.typ, False))
-			except utils.CompilerError as e:
-				report.error(e.args[0], vd.pos)

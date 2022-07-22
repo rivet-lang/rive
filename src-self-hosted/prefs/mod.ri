@@ -55,8 +55,8 @@ pub struct Prefs {
         if (args.len == 0) {
             print_help();
         }
-
         let mut prefs = Prefs{};
+
         let mut i: usize = 0;
         while (i < args.len) {
             let arg = args[i];
@@ -90,6 +90,7 @@ pub struct Prefs {
             }
             i++;
         }
+
         return prefs;
     }
 }

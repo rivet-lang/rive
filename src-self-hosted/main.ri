@@ -8,10 +8,6 @@ pub mod prefs;
 pub mod token;
 pub mod utils;
 
-fn main() {
-    let compiler = Compiler::new();
-}
-
 struct Compiler {
     pub mut prefs: prefs::Prefs;
 
@@ -20,4 +16,8 @@ struct Compiler {
             prefs: prefs::Prefs::from_cli()
         };
     }
+}
+
+fn main() {
+    let compiler = Compiler::new();
 }
