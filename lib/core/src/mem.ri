@@ -71,7 +71,7 @@ pub mod mem {
     pub fn copy(dest: *mut void, src: *void, sz: usize) ! {
         unsafe {
             if (src == dest) {
-                raise MemoryOverlapError("`dest` and `src` do overlap");
+                raise MemoryOverlapError("`dest` and `src` overlap");
             }
             _ = stdc::memcpy(dest, src, sz);
         }
