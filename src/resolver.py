@@ -43,200 +43,175 @@ class Resolver:
 			self.resolve_decl(decl)
 
 	def resolve_decl(self, decl):
-		should_check = True
-		if not decl.__class__ in (
-		    ast.TestDecl, ast.ExternPkg, ast.DestructorDecl, ast.ComptimeIfDecl
-		):
-			should_check = decl.attrs.if_check
 		if isinstance(decl, ast.ComptimeIfDecl):
 			if decl.branch_idx != -1:
 				self.resolve_decls(decl.branches[decl.branch_idx].decls)
 		elif isinstance(decl, ast.UsingDecl):
-			if should_check:
-				if isinstance(decl.path, (ast.Ident, ast.PkgExpr)):
-					name = decl.path.name if isinstance(
-					    decl.path, ast.Ident
-					) else self.comp.prefs.pkg_name
-					if len(decl.symbols) == 0:
-						if isinstance(decl.path, ast.PkgExpr):
-							report.error(
-							    "invalid `using` declaration", decl.path.pos
-							)
-						elif _ := self.comp.pkg_sym.find(name):
-							report.error(
-							    f"use of undeclared external package `{name}`",
-							    decl.path.pos
-							)
-							report.help(f"use `pkg::{name}` instead")
-						else:
-							report.error(
-							    "expected symbol list after name", decl.path.pos
-							)
-					elif sym_info := self.comp.universe.find(name):
-						self.resolve_selective_using_symbols(
-						    decl.symbols, sym_info
+			if isinstance(decl.path, (ast.Ident, ast.PkgExpr)):
+				name = decl.path.name if isinstance(
+				    decl.path, ast.Ident
+				) else self.comp.prefs.pkg_name
+				if len(decl.symbols) == 0:
+					if isinstance(decl.path, ast.PkgExpr):
+						report.error(
+						    "invalid `using` declaration", decl.path.pos
 						)
-					else:
+					elif _ := self.comp.pkg_sym.find(name):
 						report.error(
 						    f"use of undeclared external package `{name}`",
 						    decl.path.pos
 						)
-				elif isinstance(decl.path, ast.PathExpr):
-					self.resolve_expr(decl.path)
-					if not decl.path.has_error:
-						if len(decl.symbols) == 0:
-							self.sf.imported_symbols[decl.alias
-							                         ] = decl.path.field_info
-						else:
-							self.resolve_selective_using_symbols(
-							    decl.symbols, decl.path.field_info
-							)
+						report.help(f"use `pkg::{name}` instead")
+					else:
+						report.error(
+						    "expected symbol list after name", decl.path.pos
+						)
+				elif sym_info := self.comp.universe.find(name):
+					self.resolve_selective_using_symbols(decl.symbols, sym_info)
+				else:
+					report.error(
+					    f"use of undeclared external package `{name}`",
+					    decl.path.pos
+					)
+			elif isinstance(decl.path, ast.PathExpr):
+				self.resolve_expr(decl.path)
+				if not decl.path.has_error:
+					if len(decl.symbols) == 0:
+						self.sf.imported_symbols[decl.alias
+						                         ] = decl.path.field_info
+					else:
+						self.resolve_selective_using_symbols(
+						    decl.symbols, decl.path.field_info
+						)
 		if isinstance(decl, ast.ExternDecl):
-			if should_check:
-				self.resolve_decls(decl.protos)
+			self.resolve_decls(decl.protos)
 		elif isinstance(decl, ast.ConstDecl):
-			if should_check:
-				self.resolve_type(decl.typ)
-				self.resolve_expr(decl.expr)
+			self.resolve_type(decl.typ)
+			self.resolve_expr(decl.expr)
 		elif isinstance(decl, ast.StaticDecl):
-			if should_check:
-				self.resolve_type(decl.typ)
-				self.resolve_expr(decl.expr)
+			self.resolve_type(decl.typ)
+			self.resolve_expr(decl.expr)
 		elif isinstance(decl, ast.ModDecl):
-			if should_check:
-				old_sym = self.cur_sym
-				self.cur_sym = decl.sym
-				self.resolve_decls(decl.decls)
-				self.cur_sym = old_sym
+			old_sym = self.cur_sym
+			self.cur_sym = decl.sym
+			self.resolve_decls(decl.decls)
+			self.cur_sym = old_sym
 		elif isinstance(decl, ast.TypeDecl):
-			if should_check:
-				self.resolve_type(decl.parent)
+			self.resolve_type(decl.parent)
 		elif isinstance(decl, ast.TraitDecl):
-			if should_check:
-				self.resolve_decls(decl.decls)
+			self.resolve_decls(decl.decls)
 		elif isinstance(decl, ast.UnionDecl):
-			if should_check:
-				self.self_sym = decl.sym
-				for v in decl.variants:
-					self.resolve_type(v)
-				self.resolve_decls(decl.decls)
-				self.self_sym = None
+			self.self_sym = decl.sym
+			for v in decl.variants:
+				self.resolve_type(v)
+			self.resolve_decls(decl.decls)
+			self.self_sym = None
 		elif isinstance(decl, ast.EnumDecl):
-			if should_check:
-				self.self_sym = decl.sym
-				self.resolve_decls(decl.decls)
-				self.self_sym = None
+			self.self_sym = decl.sym
+			self.resolve_decls(decl.decls)
+			self.self_sym = None
 		elif isinstance(decl, ast.StructDecl):
-			if should_check:
-				self.self_sym = decl.sym
+			self.self_sym = decl.sym
+			self.resolve_decls(decl.decls)
+			self.self_sym = None
+		elif isinstance(decl, ast.StructField):
+			self.resolve_type(decl.typ)
+			if decl.has_def_expr:
+				self.resolve_expr(decl.def_expr)
+		elif isinstance(decl, ast.ExtendDecl):
+			if self.resolve_type(decl.typ):
+				self.self_sym = decl.typ.get_sym()
+				if decl.is_for_trait:
+					if self.resolve_type(decl.for_trait):
+						trait_sym = decl.for_trait.get_sym()
+						if trait_sym.kind == sym.TypeKind.Trait:
+							typ_sym = decl.typ.get_sym()
+							trait_sym.info.implements.append(typ_sym)
+							not_implemented = []
+							for proto in trait_sym.syms:
+								if d := typ_sym.find(proto.name):
+									d.uses += 1
+									# check signature
+									ptyp = proto.typ()
+									dtyp = d.typ()
+									if self.resolve_type(
+									    ptyp
+									) and self.resolve_type(
+									    dtyp
+									) and ptyp != dtyp:
+										report.error(
+										    f"type `{typ_sym.name}` incorrectly implements {d.kind()} `{d.name}` of trait `{trait_sym.name}`",
+										    d.name_pos
+										)
+										report.note(f"expected `{ptyp}`")
+										report.note(f"found `{dtyp}`")
+								elif not proto.has_body: # trait implementation
+									not_implemented.append(proto.name)
+							if len(not_implemented) > 0:
+								word = "method" if len(
+								    not_implemented
+								) == 1 else "methods"
+								report.error(
+								    f"type `{typ_sym.name}` does not implement trait `{trait_sym.name}`",
+								    decl.pos
+								)
+								report.note(
+								    f"missing {word}: `{'`, `'.join(not_implemented)}`"
+								)
+						else:
+							report.error(
+							    f"`{ft_sym.name}` is not a trait", decl.pos
+							)
+				elif isinstance(decl.typ, (type.Array, type.Slice, type.Tuple)):
+					s = decl.typ.get_sym()
+					for d in decl.decls:
+						if isinstance(d, ast.FnDecl):
+							if d.is_method:
+								self_typ = type.Type(self.self_sym)
+								if d.self_is_ref:
+									self_typ = type.Ref(self_typ, d.self_is_mut)
+								d.self_typ = self_typ
+								if not d.scope.exists("self"):
+									d.scope.add(
+									    sym.Object(
+									        False, "self", self_typ, True
+									    )
+									)
+								try:
+									d.sym = sym.Fn(
+									    sym.ABI.Rivet, d.vis, d.is_extern,
+									    d.is_unsafe, d.is_method, False, d.name,
+									    d.args, d.ret_typ, d.has_named_args,
+									    d.has_body, d.name_pos, d.self_is_mut,
+									    d.self_is_ref
+									)
+									d.sym.self_typ = self_typ
+									s.add(d.sym)
+								except utils.CompilerError as e:
+									report.error(e.args[0], d.name_pos)
+							else:
+								report.error(
+								    f"{s.kind}s can only have methods",
+								    d.name_pos
+								)
+						else:
+							report.error(
+							    f"{s.kind}s can only have methods", d.pos
+							)
 				self.resolve_decls(decl.decls)
 				self.self_sym = None
-		elif isinstance(decl, ast.StructField):
-			if should_check:
-				self.resolve_type(decl.typ)
-				if decl.has_def_expr:
-					self.resolve_expr(decl.def_expr)
-		elif isinstance(decl, ast.ExtendDecl):
-			if should_check:
-				if self.resolve_type(decl.typ):
-					self.self_sym = decl.typ.get_sym()
-					if decl.is_for_trait:
-						if self.resolve_type(decl.for_trait):
-							trait_sym = decl.for_trait.get_sym()
-							if trait_sym.kind == sym.TypeKind.Trait:
-								typ_sym = decl.typ.get_sym()
-								trait_sym.info.implements.append(typ_sym)
-								not_implemented = []
-								for proto in trait_sym.syms:
-									if d := typ_sym.find(proto.name):
-										d.uses += 1
-										# check signature
-										ptyp = proto.typ()
-										dtyp = d.typ()
-										if self.resolve_type(
-										    ptyp
-										) and self.resolve_type(
-										    dtyp
-										) and ptyp != dtyp:
-											report.error(
-											    f"type `{typ_sym.name}` incorrectly implements {d.kind()} `{d.name}` of trait `{trait_sym.name}`",
-											    d.name_pos
-											)
-											report.note(f"expected `{ptyp}`")
-											report.note(f"found `{dtyp}`")
-									elif not proto.has_body: # trait implementation
-										not_implemented.append(proto.name)
-								if len(not_implemented) > 0:
-									word = "method" if len(
-									    not_implemented
-									) == 1 else "methods"
-									report.error(
-									    f"type `{typ_sym.name}` does not implement trait `{trait_sym.name}`",
-									    decl.pos
-									)
-									report.note(
-									    f"missing {word}: `{'`, `'.join(not_implemented)}`"
-									)
-							else:
-								report.error(
-								    f"`{ft_sym.name}` is not a trait", decl.pos
-								)
-					elif isinstance(
-					    decl.typ, (type.Array, type.Slice, type.Tuple)
-					):
-						s = decl.typ.get_sym()
-						for d in decl.decls:
-							if isinstance(d, ast.FnDecl):
-								if d.is_method:
-									self_typ = type.Type(self.self_sym)
-									if d.self_is_ref:
-										self_typ = type.Ref(
-										    self_typ, d.self_is_mut
-										)
-									d.self_typ = self_typ
-									if not d.scope.exists("self"):
-										d.scope.add(
-										    sym.Object(
-										        False, "self", self_typ, True
-										    )
-										)
-									try:
-										d.sym = sym.Fn(
-										    sym.ABI.Rivet, d.vis, d.is_extern,
-										    d.is_unsafe, d.is_method, False,
-										    d.name, d.args, d.ret_typ,
-										    d.has_named_args, d.has_body,
-										    d.name_pos, d.self_is_mut,
-										    d.self_is_ref
-										)
-										d.sym.self_typ = self_typ
-										s.add(d.sym)
-									except utils.CompilerError as e:
-										report.error(e.args[0], d.name_pos)
-								else:
-									report.error(
-									    f"{s.kind}s can only have methods",
-									    d.name_pos
-									)
-							else:
-								report.error(
-								    f"{s.kind}s can only have methods", d.pos
-								)
-					self.resolve_decls(decl.decls)
-					self.self_sym = None
 		elif isinstance(decl, ast.TestDecl):
 			self.cur_fn_scope = decl.scope
 			self.resolve_stmts(decl.stmts)
 			self.cur_fn_scope = None
 		elif isinstance(decl, ast.FnDecl):
-			if should_check:
-				self.cur_fn_scope = decl.scope
-				for arg in decl.args:
-					self.resolve_type(arg.typ)
-					if arg.has_def_expr: self.resolve_expr(arg.def_expr)
-				self.resolve_type(decl.ret_typ)
-				self.resolve_stmts(decl.stmts)
-				self.cur_fn_scope = None
+			self.cur_fn_scope = decl.scope
+			for arg in decl.args:
+				self.resolve_type(arg.typ)
+				if arg.has_def_expr: self.resolve_expr(arg.def_expr)
+			self.resolve_type(decl.ret_typ)
+			self.resolve_stmts(decl.stmts)
+			self.cur_fn_scope = None
 		elif isinstance(decl, ast.DestructorDecl):
 			self.resolve_stmts(decl.stmts)
 

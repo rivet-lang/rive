@@ -43,86 +43,70 @@ class Checker:
 			self.check_decl(decl)
 
 	def check_decl(self, decl):
-		should_check = True
-		if not decl.__class__ in (
-		    ast.TestDecl, ast.ExternPkg, ast.DestructorDecl, ast.ComptimeIfDecl
-		):
-			should_check = decl.attrs.if_check
 		if isinstance(decl, ast.ComptimeIfDecl):
 			if decl.branch_idx != -1:
 				self.check_decls(decl.branches[decl.branch_idx].decls)
 		elif isinstance(decl, ast.ExternDecl):
-			if should_check:
-				self.check_decls(decl.protos)
+			self.check_decls(decl.protos)
 		elif isinstance(decl, ast.ConstDecl):
-			if should_check:
-				self.check_expr(decl.expr)
+			self.check_expr(decl.expr)
 		elif isinstance(decl, ast.StaticDecl):
-			if should_check and not decl.is_extern:
+			if not decl.is_extern:
 				self.check_expr(decl.expr)
 		elif isinstance(decl, ast.ModDecl):
-			if should_check:
-				old_sym = self.cur_sym
-				self.cur_sym = decl.sym
-				self.check_decls(decl.decls)
-				self.cur_sym = old_sym
+			old_sym = self.cur_sym
+			self.cur_sym = decl.sym
+			self.check_decls(decl.decls)
+			self.cur_sym = old_sym
 		elif isinstance(decl, ast.TypeDecl):
-			if should_check:
-				pass
+			pass
 		elif isinstance(decl, ast.TraitDecl):
-			if should_check:
-				if decl.attrs.has("used"):
-					decl.sym.uses += 1
-				self.check_decls(decl.decls)
+			if decl.attrs.has("used"):
+				decl.sym.uses += 1
+			self.check_decls(decl.decls)
 		elif isinstance(decl, ast.UnionDecl):
-			if should_check:
-				if decl.attrs.has("used"):
-					decl.sym.uses += 1
-				old_sym = self.cur_sym
-				self.cur_sym = decl.sym
-				self.check_decls(decl.decls)
-				self.cur_sym = old_sym
+			if decl.attrs.has("used"):
+				decl.sym.uses += 1
+			old_sym = self.cur_sym
+			self.cur_sym = decl.sym
+			self.check_decls(decl.decls)
+			self.cur_sym = old_sym
 		elif isinstance(decl, ast.EnumDecl):
-			if should_check:
-				if decl.attrs.has("used"):
-					decl.sym.uses += 1
-				old_sym = self.cur_sym
-				self.cur_sym = decl.sym
-				self.check_decls(decl.decls)
-				self.cur_sym = old_sym
+			if decl.attrs.has("used"):
+				decl.sym.uses += 1
+			old_sym = self.cur_sym
+			self.cur_sym = decl.sym
+			self.check_decls(decl.decls)
+			self.cur_sym = old_sym
 		elif isinstance(decl, ast.StructDecl):
-			if should_check:
-				if decl.attrs.has("used"):
-					decl.sym.uses += 1
-				old_sym = self.cur_sym
-				self.cur_sym = decl.sym
-				self.check_decls(decl.decls)
-				self.cur_sym = old_sym
+			if decl.attrs.has("used"):
+				decl.sym.uses += 1
+			old_sym = self.cur_sym
+			self.cur_sym = decl.sym
+			self.check_decls(decl.decls)
+			self.cur_sym = old_sym
 		elif isinstance(decl, ast.StructField):
-			if should_check:
-				if decl.has_def_expr:
-					old_expected_type = self.expected_type
-					self.expected_type = decl.typ
-					self.check_expr(decl.def_expr)
-					self.expected_type = old_expected_type
+			if decl.has_def_expr:
+				old_expected_type = self.expected_type
+				self.expected_type = decl.typ
+				self.check_expr(decl.def_expr)
+				self.expected_type = old_expected_type
 		elif isinstance(decl, ast.ExtendDecl):
-			if should_check:
-				self.check_decls(decl.decls)
+			self.check_decls(decl.decls)
 		elif isinstance(decl, ast.TestDecl):
 			self.check_stmts(decl.stmts)
 		elif isinstance(decl, ast.FnDecl):
-			if should_check:
-				if decl.is_main or decl.attrs.has("used"):
-					decl.sym.uses += 1
-				old_sym = self.cur_sym
-				self.cur_sym = decl.sym
-				self.cur_fn = decl.sym
-				for arg in decl.args:
-					if arg.has_def_expr:
-						self.check_expr(arg.def_expr)
-				self.check_stmts(decl.stmts)
-				self.cur_fn = None
-				self.cur_sym = old_sym
+			if decl.is_main or decl.attrs.has("used"):
+				decl.sym.uses += 1
+			old_sym = self.cur_sym
+			self.cur_sym = decl.sym
+			self.cur_fn = decl.sym
+			for arg in decl.args:
+				if arg.has_def_expr:
+					self.check_expr(arg.def_expr)
+			self.check_stmts(decl.stmts)
+			self.cur_fn = None
+			self.cur_sym = old_sym
 		elif isinstance(decl, ast.DestructorDecl):
 			self.check_stmts(decl.stmts)
 

@@ -2,9 +2,10 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-#[if (!_WINDOWS_)]
-extern (C) {
-    fn get_nprocs() i32;
+$if (!_WINDOWS_) {
+    extern (C) {
+        fn get_nprocs() i32;
+    }
 }
 
 /// Returns the number of virtual CPU cores found on the system.

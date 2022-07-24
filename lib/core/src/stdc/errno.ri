@@ -2,13 +2,13 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-#[if (!_WINDOWS_)]
-extern (C) {
-    pub fn __errno_location() *mut i32;
-}
-
-#[if (_WINDOWS_)]
-extern (C) {
-    #[dllimport]
-    pub fn _errno() *mut i32;
+$if (_WINDOWS_) {
+    extern (C) {
+        #[dllimport]
+        pub fn _errno() *mut i32;
+    }
+} $else {
+    extern (C) {
+        pub fn __errno_location() *mut i32;
+    }
 }

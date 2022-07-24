@@ -123,26 +123,20 @@ class Parser:
 			while True:
 				args = []
 				pos = self.tok.pos
-				if self.accept(Kind.KeyIf):
-					self.expect(Kind.Lparen)
-					cond = self.parse_expr()
+				attr_name = self.parse_name()
+				if self.accept(Kind.Lparen):
+					while True:
+						if self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
+							name = self.parse_name()
+							self.expect(Kind.Colon)
+						else:
+							name = ""
+						expr = self.parse_expr()
+						args.append(ast.AttrArg(name, expr))
+						if not self.accept(Kind.Comma):
+							break
 					self.expect(Kind.Rparen)
-					attrs.add(ast.Attr("if", [ast.AttrArg("", cond)], pos))
-				else:
-					attr_name = self.parse_name()
-					if self.accept(Kind.Lparen):
-						while True:
-							if self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
-								name = self.parse_name()
-								self.expect(Kind.Colon)
-							else:
-								name = ""
-							expr = self.parse_expr()
-							args.append(ast.AttrArg(name, expr))
-							if not self.accept(Kind.Comma):
-								break
-						self.expect(Kind.Rparen)
-					attrs.add(ast.Attr(attr_name, args, pos))
+				attrs.add(ast.Attr(attr_name, args, pos))
 				if not self.accept(Kind.Semicolon):
 					break
 			self.expect(Kind.Rbracket)

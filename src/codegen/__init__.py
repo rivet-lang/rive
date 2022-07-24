@@ -726,58 +726,45 @@ class AST2RIR:
 			self.convert_decl(d)
 
 	def convert_decl(self, d):
-		should_gen = True
-		if not d.__class__ in (
-		    ast.TestDecl, ast.ExternPkg, ast.DestructorDecl, ast.ComptimeIfDecl
-		):
-			should_gen = d.attrs.if_check
 		if isinstance(d, ast.ComptimeIfDecl):
 			if d.branch_idx != -1:
 				self.convert_decls(d.branches[d.branch_idx].decls)
 		elif isinstance(d, ast.ExternDecl):
-			if should_gen:
-				self.convert_decls(d.protos)
+			self.convert_decls(d.protos)
 		elif isinstance(d, ast.ConstDecl):
-			if should_gen:
-				self.convert_const(d.sym)
+			self.convert_const(d.sym)
 		elif isinstance(d, ast.StaticDecl):
-			if should_gen:
-				name = d.sym.name if d.is_extern else mangle_symbol(d.sym)
-				self.statics.append(
-				    StaticVar(d.vis.is_pub(), d.is_extern, d.typ, name)
+			name = d.sym.name if d.is_extern else mangle_symbol(d.sym)
+			self.statics.append(
+			    StaticVar(d.vis.is_pub(), d.is_extern, d.typ, name)
+			)
+			if not d.is_extern and name != "_R4core4ARGS": # TODO(StunxFS): temp
+				self.cur_fn = self.init_statics
+				self.cur_fn.store(
+				    Ident(d.typ, name),
+				    self.convert_expr_with_cast(d.typ, d.expr)
 				)
-				if not d.is_extern and name != "_R4core4ARGS": # TODO(StunxFS): temp
-					self.cur_fn = self.init_statics
-					self.cur_fn.store(
-					    Ident(d.typ, name),
-					    self.convert_expr_with_cast(d.typ, d.expr)
-					)
-					self.cur_fn = None
+				self.cur_fn = None
 		elif isinstance(d, ast.ModDecl):
-			if should_gen:
-				self.convert_decls(d.decls)
+			self.convert_decls(d.decls)
 		elif isinstance(d, ast.UnionDecl):
-			if should_gen and d.sym.is_used():
+			if d.sym.is_used():
 				self.convert_decls(d.decls)
 		elif isinstance(d, ast.StructDecl):
-			if should_gen and d.sym.is_used():
+			if d.sym.is_used():
 				self.convert_decls(d.decls)
 		elif isinstance(d, ast.EnumDecl):
-			if should_gen and d.sym.is_used():
+			if d.sym.is_used():
 				self.convert_decls(d.decls)
 		elif isinstance(d, ast.ExtendDecl):
-			if should_gen:
-				self.convert_decls(d.decls)
+			self.convert_decls(d.decls)
 		elif isinstance(d, ast.FnDecl):
-			if should_gen:
-				if d.is_extern and not d.has_body:
-					self.externs.append(
-					    ExternFn(
-					        d.name, d.ret_typ, d.args, d.is_variadic, d.attrs
-					    )
-					)
-				elif d.sym.is_used():
-					self.decls.append(self.convert_fn_decl(d))
+			if d.is_extern and not d.has_body:
+				self.externs.append(
+				    ExternFn(d.name, d.ret_typ, d.args, d.is_variadic, d.attrs)
+				)
+			elif d.sym.is_used():
+				self.decls.append(self.convert_fn_decl(d))
 		elif isinstance(d, ast.DestructorDecl):
 			self.cur_fn = FnDecl(
 			    True,

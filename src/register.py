@@ -45,15 +45,6 @@ class Register:
 
 	def visit_decls(self, decls):
 		for decl in decls:
-			should_register = True
-			if not decl.__class__ in (
-			    ast.TestDecl, ast.ExternPkg, ast.ComptimeIfDecl
-			):
-				if if_attr := decl.attrs.find("if"):
-					should_register = self.comp.evalue_comptime_condition(
-					    if_attr.args[0].expr
-					)
-					decl.attrs.if_check = should_register
 			if isinstance(decl, ast.ComptimeIfDecl):
 				# evalue comptime if declaration
 				branch_idx = -1
@@ -71,80 +62,71 @@ class Register:
 			elif isinstance(decl, ast.ExternPkg):
 				continue
 			elif isinstance(decl, ast.ExternDecl):
-				if should_register:
-					self.visit_decls(decl.protos)
+				self.visit_decls(decl.protos)
 			elif isinstance(decl, ast.ModDecl):
-				if should_register:
-					old_sym = self.cur_sym
-					self.cur_sym = self.add_mod(decl.vis, decl.name)
-					decl.sym = self.cur_sym
-					if decl.is_unloaded:
-						path = os.path.join(
-						    os.path.dirname(self.sf.file), decl.name
-						)
-						if os.path.exists(path):
-							if os.path.isdir(path):
-								files = self.comp.prefs.filter_files_list(
-								    glob.glob(os.path.join(path, "*.ri"))
-								)
-								if len(files) == 0:
-									report.error(
-									    f"cannot import module `{decl.name}` (.ri files not found)",
-									    decl.pos
-									)
-								else:
-									self.comp.mod_sym = self.cur_sym
-									parser.Parser(
-									    self.comp
-									).parse_extern_module_files(files)
-									if report.ERRORS > 0:
-										self.comp.abort()
-									self.comp.mod_sym = None
-							else:
+				old_sym = self.cur_sym
+				self.cur_sym = self.add_mod(decl.vis, decl.name)
+				decl.sym = self.cur_sym
+				if decl.is_unloaded:
+					path = os.path.join(
+					    os.path.dirname(self.sf.file), decl.name
+					)
+					if os.path.exists(path):
+						if os.path.isdir(path):
+							files = self.comp.prefs.filter_files_list(
+							    glob.glob(os.path.join(path, "*.ri"))
+							)
+							if len(files) == 0:
 								report.error(
-								    f"cannot import module `{decl.name}` (is a file)",
+								    f"cannot import module `{decl.name}` (.ri files not found)",
 								    decl.pos
 								)
+							else:
+								self.comp.mod_sym = self.cur_sym
+								parser.Parser(
+								    self.comp
+								).parse_extern_module_files(files)
+								if report.ERRORS > 0:
+									self.comp.abort()
+								self.comp.mod_sym = None
 						else:
 							report.error(
-							    f"cannot import module `{decl.name}` (not found)",
+							    f"cannot import module `{decl.name}` (is a file)",
 							    decl.pos
 							)
 					else:
-						self.visit_decls(decl.decls)
-					self.cur_sym = old_sym
+						report.error(
+						    f"cannot import module `{decl.name}` (not found)",
+						    decl.pos
+						)
+				else:
+					self.visit_decls(decl.decls)
+				self.cur_sym = old_sym
 			elif isinstance(decl, ast.ConstDecl):
-				if should_register:
-					const_sym = sym.Const(
-					    decl.vis, decl.name, decl.typ, decl.expr
-					)
-					self.add_sym(const_sym, decl.pos)
-					decl.sym = const_sym
+				const_sym = sym.Const(decl.vis, decl.name, decl.typ, decl.expr)
+				self.add_sym(const_sym, decl.pos)
+				decl.sym = const_sym
 			elif isinstance(decl, ast.StaticDecl):
-				if should_register:
-					static_sym = sym.Static(
-					    decl.vis, decl.is_mut, decl.is_extern, decl.name,
-					    decl.typ
-					)
-					self.add_sym(static_sym, decl.pos)
-					decl.sym = static_sym
+				static_sym = sym.Static(
+				    decl.vis, decl.is_mut, decl.is_extern, decl.name, decl.typ
+				)
+				self.add_sym(static_sym, decl.pos)
+				decl.sym = static_sym
 			elif isinstance(decl, ast.TypeDecl):
-				if should_register:
-					self.add_sym(
-					    sym.Type(
-					        decl.vis, decl.name, sym.TypeKind.Alias,
-					        info = sym.AliasInfo(decl.parent)
-					    ), decl.pos
-					)
+				self.add_sym(
+				    sym.Type(
+				        decl.vis, decl.name, sym.TypeKind.Alias,
+				        info = sym.AliasInfo(decl.parent)
+				    ), decl.pos
+				)
 			elif isinstance(decl, ast.ErrTypeDecl):
-				if should_register:
-					self.add_sym(
-					    sym.Type(
-					        decl.vis, decl.name, sym.TypeKind.ErrType,
-					        info = sym.ErrTypeInfo(self.errtype_nr)
-					    ), decl.pos
-					)
-					self.errtype_nr += 1
+				self.add_sym(
+				    sym.Type(
+				        decl.vis, decl.name, sym.TypeKind.ErrType,
+				        info = sym.ErrTypeInfo(self.errtype_nr)
+				    ), decl.pos
+				)
+				self.errtype_nr += 1
 			elif isinstance(decl, ast.TraitDecl):
 				ts = sym.Type(
 				    decl.vis, decl.name, sym.TypeKind.Trait,
@@ -157,82 +139,69 @@ class Register:
 				self.cur_sym = old_cur_sym
 				self.add_sym(ts, decl.pos)
 			elif isinstance(decl, ast.UnionDecl):
-				if should_register:
-					variants = []
-					for v in decl.variants:
-						if v in variants:
-							report.error(
-							    f"union `{decl.name}` has duplicate variant type `{v}`",
-							    decl.pos
-							)
-						else:
-							variants.append(v)
-					decl.sym = sym.Type(
-					    decl.vis, decl.name, sym.TypeKind.Union,
-					    info = sym.UnionInfo(
-					        variants, decl.attrs.has("c_union")
-					    )
-					)
-					old_cur_sym = self.cur_sym
-					self.cur_sym = decl.sym
-					for d in decl.decls:
-						if isinstance(d, ast.FnDecl):
-							self.visit_fn_decl(d)
-						else:
-							report.error(
-							    "expected associated function or method", d.pos
-							)
-					self.cur_sym = old_cur_sym
-					self.add_sym(decl.sym, decl.pos)
+				variants = []
+				for v in decl.variants:
+					if v in variants:
+						report.error(
+						    f"union `{decl.name}` has duplicate variant type `{v}`",
+						    decl.pos
+						)
+					else:
+						variants.append(v)
+				decl.sym = sym.Type(
+				    decl.vis, decl.name, sym.TypeKind.Union,
+				    info = sym.UnionInfo(variants, decl.attrs.has("c_union"))
+				)
+				old_cur_sym = self.cur_sym
+				self.cur_sym = decl.sym
+				for d in decl.decls:
+					if isinstance(d, ast.FnDecl):
+						self.visit_fn_decl(d)
+					else:
+						report.error(
+						    "expected associated function or method", d.pos
+						)
+				self.cur_sym = old_cur_sym
+				self.add_sym(decl.sym, decl.pos)
 			elif isinstance(decl, ast.StructDecl):
-				if should_register:
-					decl.sym = sym.Type(
-					    decl.vis, decl.name, sym.TypeKind.Struct, list(),
-					    sym.StructInfo(decl.is_opaque)
-					)
-					old_cur_sym = self.cur_sym
-					self.cur_sym = decl.sym
-					for d in decl.decls:
-						if isinstance(d, ast.StructField):
-							should_register_field = True
-							if if_attr := d.attrs.find("if"):
-								should_register_field = self.comp.evalue_comptime_condition(
-								    if_attr.args[0].expr
-								)
-							if should_register_field:
-								if decl.sym.has_field(d.name):
-									report.error(
-									    f"field `{d.name}` is already declared",
-									    d.pos
-									)
-								else:
-									decl.sym.fields.append(
-									    sym.Field(
-									        d.name, d.is_mut, d.vis, d.typ,
-									        d.has_def_expr, d.def_expr
-									    )
-									)
-						elif isinstance(d, ast.FnDecl):
-							self.visit_fn_decl(d)
-						elif isinstance(d, ast.DestructorDecl):
-							self_typ = type.Ref(type.Type(decl.sym))
-							d.self_typ = self_typ
-							d.scope.add(
-							    sym.Object(True, "self", self_typ, True)
-							)
-							sym_fn = sym.Fn(
-							    sym.ABI.Rivet, ast.Visibility.Public, False,
-							    False, True, False, "0_dtor", [],
-							    self.comp.void_t, False, True, d.pos, True, True
-							)
-							sym_fn.rec_typ = self_typ
-							self.add_sym(sym_fn, decl.pos)
-						else:
+				decl.sym = sym.Type(
+				    decl.vis, decl.name, sym.TypeKind.Struct, list(),
+				    sym.StructInfo(decl.is_opaque)
+				)
+				old_cur_sym = self.cur_sym
+				self.cur_sym = decl.sym
+				for d in decl.decls:
+					if isinstance(d, ast.StructField):
+						if decl.sym.has_field(d.name):
 							report.error(
-							    "expected associated function or method", d.pos
+							    f"field `{d.name}` is already declared", d.pos
 							)
-					self.cur_sym = old_cur_sym
-					self.add_sym(decl.sym, decl.pos)
+						else:
+							decl.sym.fields.append(
+							    sym.Field(
+							        d.name, d.is_mut, d.vis, d.typ,
+							        d.has_def_expr, d.def_expr
+							    )
+							)
+					elif isinstance(d, ast.FnDecl):
+						self.visit_fn_decl(d)
+					elif isinstance(d, ast.DestructorDecl):
+						self_typ = type.Ref(type.Type(decl.sym))
+						d.self_typ = self_typ
+						d.scope.add(sym.Object(True, "self", self_typ, True))
+						sym_fn = sym.Fn(
+						    sym.ABI.Rivet, ast.Visibility.Public, False, False,
+						    True, False, "0_dtor", [], self.comp.void_t, False,
+						    True, d.pos, True, True
+						)
+						sym_fn.rec_typ = self_typ
+						self.add_sym(sym_fn, decl.pos)
+					else:
+						report.error(
+						    "expected associated function or method", d.pos
+						)
+				self.cur_sym = old_cur_sym
+				self.add_sym(decl.sym, decl.pos)
 			elif isinstance(decl, ast.EnumDecl):
 				variants = []
 				for v in decl.variants:
@@ -261,44 +230,41 @@ class Register:
 				self.cur_sym = old_cur_sym
 				self.add_sym(decl.sym, decl.pos)
 			elif isinstance(decl, ast.ExtendDecl):
-				if should_register:
-					old_sym = self.cur_sym
-					if isinstance(decl.typ, type.Type):
-						if decl.typ._unresolved:
-							if isinstance(decl.typ.expr, ast.Ident):
-								if s := self.cur_sym.find(decl.typ.expr.name):
-									if s.kind == sym.TypeKind.Alias and (
-									    isinstance(s.info.parent, type.Type)
-									    and s.info.parent.is_resolved()
-									):
-										self.cur_sym = s.info.parent.sym
-									else:
-										self.cur_sym = s
+				old_sym = self.cur_sym
+				if isinstance(decl.typ, type.Type):
+					if decl.typ._unresolved:
+						if isinstance(decl.typ.expr, ast.Ident):
+							if s := self.cur_sym.find(decl.typ.expr.name):
+								if s.kind == sym.TypeKind.Alias and (
+								    isinstance(s.info.parent, type.Type)
+								    and s.info.parent.is_resolved()
+								):
+									self.cur_sym = s.info.parent.sym
 								else:
-									# placeholder
-									self.cur_sym = sym.Type(
-									    ast.Visibility.Private,
-									    decl.typ.expr.name,
-									    sym.TypeKind.Placeholder
-									)
-									old_sym.add(self.cur_sym)
-								for d in decl.decls:
-									self.visit_fn_decl(d)
+									self.cur_sym = s
 							else:
-								report.error(
-								    "cannot extend non-local types",
-								    decl.typ.expr.pos
+								# placeholder
+								self.cur_sym = sym.Type(
+								    ast.Visibility.Private, decl.typ.expr.name,
+								    sym.TypeKind.Placeholder
 								)
-						else:
-							self.cur_sym = decl.typ.sym
+								old_sym.add(self.cur_sym)
 							for d in decl.decls:
 								self.visit_fn_decl(d)
-					self.cur_sym = old_sym
+						else:
+							report.error(
+							    "cannot extend non-local types",
+							    decl.typ.expr.pos
+							)
+					else:
+						self.cur_sym = decl.typ.sym
+						for d in decl.decls:
+							self.visit_fn_decl(d)
+				self.cur_sym = old_sym
 			elif isinstance(decl, ast.TestDecl):
 				pass
 			elif isinstance(decl, ast.FnDecl):
-				if should_register:
-					self.visit_fn_decl(decl, decl.abi)
+				self.visit_fn_decl(decl, decl.abi)
 
 	def visit_fn_decl(self, decl, abi = sym.ABI.Rivet):
 		decl.sym = sym.Fn(
