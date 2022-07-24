@@ -5,14 +5,31 @@
 using pkg::utils;
 
 pub enum Backend {
-    C
+    C;
+
+    pub fn from_string(name: str) ?Backend {
+        match (name) {
+            "c" => return .C,
+            else => return none
+        }
+    }
 }
 
 pub enum PackageType {
 	Bin, // .exe
 	Lib, // .rilib
 	DyLib, // .so, .dll, .dylib
-	StaticLib // .a, .lib
+	StaticLib; // .a, .lib
+
+	pub fn from_string(typ: str) ?PackageType {
+        match (typ) {
+            "bin" => return .Bin,
+            "lib" => return .Lib,
+            "dylib" => return .DyLib,
+            "staticlib" => return .StaticLib,
+            else => return none
+        }
+	}
 }
 
 pub enum BuildMode {
@@ -32,6 +49,7 @@ pub struct Prefs {
     pub mut target_arch: sys::Arch = sys::arch();
     pub mut target_is_64bit: bool = sys::is_64bit();
     pub mut target_is_little_endian: bool = sys::is_little_endian();
+    pub mut target_c_runtime: sys::CRuntime = sys::c_runtime();
 
     // Backend info
     pub mut backend: Backend;
@@ -40,23 +58,26 @@ pub struct Prefs {
     // Package info
     pub mut pkg_name: str = "main";
     pub mut pkg_output: str = "main";
-    pub mut pkg_typ: PackageType;
+    pub mut pkg_type: PackageType;
     pub pkg_files: [mut u8];
 
+    pub mut ccompiler: str = "gcc";
     pub mut check_syntax: bool;
 	pub mut check: bool;
 	pub mut emit_rir: bool;
 	pub mut keep_c: bool;
 	pub mut is_verbose: bool;
 
-    pub fn from_cli() Self { return Self::new(ARGS[1..]); }
+    pub fn from_cli() Self {
+        return Self::new(ARGS[1..]);
+    }
 
     pub fn new(args: [str]) Self {
         if (args.len == 0) {
             print_help();
         }
-        let mut prefs = Prefs{};
 
+        let mut prefs = Prefs{};
         let mut i: usize = 0;
         while (i < args.len) {
             let arg = args[i];
@@ -79,13 +100,91 @@ pub struct Prefs {
                     }
                     i++;
                 },
-                "-r", "--release" => { prefs.build_mode = .Release; },
-                "-x32", "-x64" => { prefs.target_is_64bit = arg == "-x64"; },
-                "--check-syntax" => { prefs.check_syntax = true; },
-                "--check" => { prefs.check = true; },
-                "--emit-rir" => { prefs.emit_rir = true; },
-                "--keep-c" => { prefs.keep_c = true; },
-                "-v", "--verbose" => { prefs.is_verbose = true; },
+                "--pkg-type" => {
+                    if (let pkg_type = utils::option(current_args, arg)) {
+                        if (let typ = PackageType::from_string(pkg_type)) {
+                            prefs.pkg_type = typ;
+                        } else {
+                            utils::error("invalid package type: `{}`", pkg_type);
+                        }
+                    } else {
+                        utils::error("`--pkg-type` requires a name as argument");
+                    }
+                    i++;
+                },
+                "-r", "--release" => {
+                    prefs.build_mode = .Release;
+                },
+                "-o", "--output" => {
+                    if (let out = utils::option(current_args, arg)) {
+                        prefs.pkg_output = out;
+                    } else {
+                        utils::error("`{}` requires a filename as argument", arg);
+                    }
+                    i++;
+                },
+                "-b", "--backend" => {
+                    if (let b = utils::option(current_args, arg)) {
+                        if (let backend = Backend::from_string(b)) {
+                            prefs.backend = backend;
+                        } else {
+                            utils::error("unknown backend: `{}`", b);
+                        }
+                    } else {
+                        utils::error("`{}` requires a name as argument", arg);
+                    }
+                    i++;
+                },
+                "-os", "--target-os" => {
+                    if (let os_name = utils::option(current_args, arg)) {
+                        if (let os_flag = sys::OS::from_string(os_name)) {
+                            prefs.target_os = os_flag;
+                        } else {
+                            utils::error("unknown target operating system: `{}`", os_name);
+                        }
+                    } else {
+                        utils::error("`{}` requires a name as argument", arg);
+                    }
+                    i++;
+                },
+                "-arch", "--target-arch" => {
+                    if (let arch_name = utils::option(current_args, arg)) {
+                        if (let arch_flag = sys::Arch::from_string(arch_name)) {
+                            prefs.target_arch = arch_flag;
+                        } else {
+                            utils::error("unknown target architecture: `{}`", arch_name);
+                        }
+                    } else {
+                        utils::error("`{}` requires a name as argument", arg);
+                    }
+                    i++;
+                },
+                "-x32", "-x64" => {
+                    prefs.target_is_64bit = arg == "-x64";
+                },
+                "-cc" => {
+                    if (let cc = utils::option(current_args, arg)) {
+                        prefs.ccompiler = cc;
+                    } else {
+                        utils::error("`-cc` requires a name as argument");
+                    }
+                    i++;
+                },
+                "--check-syntax" => {
+                    prefs.check_syntax = true;
+                },
+                "--check" => {
+                    prefs.check = true;
+                },
+                "--emit-rir" => {
+                    prefs.emit_rir = true;
+                },
+                "--keep-c" => {
+                    prefs.keep_c = true;
+                },
+                "-v", "--verbose" => {
+                    prefs.is_verbose = true;
+                },
                 else => utils::error("unknown option: `{}`", arg)
             }
             i++;

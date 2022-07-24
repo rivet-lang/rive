@@ -4,7 +4,15 @@
 
 pub enum Arch : u8 {
     I386,
-    AMD64
+    AMD64;
+
+    pub fn from_string(arch: str) ?Arch {
+        match (arch) {
+            "i386" => return .I386,
+            "amd64" => return .AMD64,
+            else => return none
+        }
+    }
 }
 
 /// Returns the current architecture.

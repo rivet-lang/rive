@@ -73,11 +73,14 @@ def mangle_symbol(s):
 				res.insert(0, "4core6_slice")
 			elif s.kind == sym.TypeKind.Array:
 				name = "Array_"
-				name += prefix_type(s.info.elem_typ)
-				name += f"{mangle_symbol(s.info.elem_typ.get_sym())}_{s.info.size}"
+				name += f"{mangle_type(s.info.elem_typ)}_{s.info.size}"
 				res.insert(0, f"{len(name)}{name}")
 			elif s.kind == sym.TypeKind.Enum:
-				return str(s.info.underlying_typ)
+				if isinstance(root, sym.Fn):
+					name = s.name
+				else:
+					name = str(s.info.underlying_typ)
+				res.insert(0, f"{len(name)}{name}")
 			elif s.kind == sym.TypeKind.Str:
 				res.insert(0, "4core4_str")
 				s.mangled_name = "_R4core4_str"

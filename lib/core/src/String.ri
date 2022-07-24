@@ -112,11 +112,8 @@ pub struct String {
             panic("String::pop: string is empty");
         }
         let new_len = self.len_ - 1;
-        unsafe {
-            let last_elem = self.ptr + new_len * size_of!(u8);
-            self.len_ = new_len;
-            return last_elem;
-        }
+        self.len_ = new_len;
+        return unsafe { self.ptr + new_len };
     }
 
     /// Ensures that this String's capacity is at least `required` bytes larger

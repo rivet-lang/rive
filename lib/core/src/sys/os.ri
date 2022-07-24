@@ -5,7 +5,16 @@
 pub enum OS : u8 {
     Linux,
     Windows,
-    Macos
+    Macos;
+
+    pub fn from_string(name: str) ?OS {
+        match (name) {
+            "linux" => return .Linux,
+            "windows" => return .Windows,
+            "macos" => return .Macos,
+            else => return none
+        }
+    }
 }
 
 /// Returns the current operating system.
