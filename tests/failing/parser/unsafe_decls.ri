@@ -1,7 +1,7 @@
 unsafe const BAD: i32 = 0;
 
 unsafe static BAD: i32 = 0;
-unsafe static mut BAD2: i32 = 0; // BAD, unsafe by default (`m̀ut`)
+unsafe static mut BAD2: i32 = 0; // BAD, unsafe by default (`mut`)
 
 unsafe mod Bad {}
 
