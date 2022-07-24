@@ -23,7 +23,7 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 
 Rivet's goal is to be a very powerful programming language and at the same time easy
 to use, with a syntax inspired mainly by Rust and C# (which are the coolest languages
-I've ever seen), and by other languages such as Python, Lua, TypeScript, D, etc.
+I've ever seen), and by other languages such as Python, Lua, TypeScript, D, Zig, etc.
 
 It is true that there are many programming languages and each of them specialized in
 a field; some with strange syntax in my opinion (like Lisp) and others with a high

@@ -144,8 +144,9 @@ class ExternPkg:
 		self.pos = pos
 
 class UsingDecl:
-	def __init__(self, attrs, path, alias, symbols):
+	def __init__(self, attrs, vis, path, alias, symbols):
 		self.attrs = attrs
+		self.vis = vis
 		self.path = path
 		self.alias = alias
 		self.symbols = symbols

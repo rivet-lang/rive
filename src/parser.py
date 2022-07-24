@@ -224,7 +224,7 @@ class Parser:
 					if not self.accept(Kind.Comma):
 						break
 			self.expect(Kind.Semicolon)
-			return ast.UsingDecl(attrs, path, alias, symbols)
+			return ast.UsingDecl(attrs, vis, path, alias, symbols)
 		elif self.accept(Kind.KeyExtern):
 			if self.tok.kind == Kind.KeyPkg and not self.is_pkg_level:
 				report.error(

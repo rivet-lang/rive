@@ -191,7 +191,7 @@ class Register:
 						d.scope.add(sym.Object(True, "self", self_typ, True))
 						sym_fn = sym.Fn(
 						    sym.ABI.Rivet, ast.Visibility.Public, False, False,
-						    True, False, "0_dtor", [], self.comp.void_t, False,
+						    True, False, "_dtor", [], self.comp.void_t, False,
 						    True, d.pos, True, True
 						)
 						sym_fn.rec_typ = self_typ

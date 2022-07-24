@@ -603,7 +603,7 @@ class Checker:
 						)
 				else:
 					report.error(
-					    f"`{expr.op}` can only be used with traits, tagged unions and error values",
+					    f"`{expr.op}` can only be used with unions and error values",
 					    expr.left.pos
 					)
 				expr.typ = self.comp.bool_t
@@ -1179,11 +1179,11 @@ class Checker:
 			if expr.is_typematch:
 				if not (
 				    expr_typ == self.comp.error_t
-				    or expr_sym.kind in (TypeKind.Union, TypeKind.Trait)
+				    or expr_sym.kind != TypeKind.Union
 				):
 					report.error("invalid value for typematch", expr.expr.pos)
 					report.note(
-					    f"expected union, trait or error value, found `{expr_typ}`"
+					    f"expected union or error value, found `{expr_typ}`"
 					)
 				elif expr_sym.kind == TypeKind.Union and expr_sym.info.is_c_union:
 					report.error(
@@ -1199,14 +1199,6 @@ class Checker:
 							if pat_t not in expr_sym.info.variants:
 								report.error(
 								    f"union `{expr_sym.name}` has no variant `{pat_t}`",
-								    p.pos
-								)
-						elif expr_sym.kind == TypeKind.Trait:
-							if not pat_t_sym.implement_trait(
-							    expr_sym.qualname()
-							):
-								report.error(
-								    f"type `{pat_t}` does not implement trait `{expr_sym.name}`",
 								    p.pos
 								)
 						elif pat_t_sym.kind != TypeKind.ErrType:
