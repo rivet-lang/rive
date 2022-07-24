@@ -23,6 +23,8 @@ class Parser:
 		self.is_pkg_level = False
 
 		self.inside_extern = False
+		self.extern_is_trusted = False
+		self.extern_abi = sym.ABI.Rivet
 		self.inside_struct_decl = False
 		self.inside_trait = False
 		self.inside_block = False
@@ -249,11 +251,10 @@ class Parser:
 				decl = ast.ExternPkg(extern_pkg, pos)
 				self.comp.extern_packages.append(ast.ExternPkgInfo(extern_pkg))
 			else:
-				# extern function
+				# extern function or static
 				abi = self.parse_abi()
 				protos = []
 				if self.accept(Kind.Lbrace):
-					is_trusted = attrs.has("trusted")
 					if vis.is_pub():
 						report.error(
 						    "`extern` blocks cannot be declared public", pos
@@ -262,34 +263,14 @@ class Parser:
 						report.error(
 						    "`extern` blocks cannot be declared unsafe", pos
 						)
-					while not self.accept(Kind.Rbrace):
-						attrs2 = self.parse_attrs()
-						vis = self.parse_vis()
-						if self.tok.kind == Kind.KeyFn:
-							self.next()
-							protos.append(
-							    self.parse_fn_decl(
-							        doc_comment, attrs2, vis, not is_trusted
-							        and (is_unsafe or abi != sym.ABI.Rivet), abi
-							    )
-							)
-							self.expect(Kind.Semicolon)
-						elif self.tok.kind == Kind.KeyStatic:
-							self.next()
-							protos.append(
-							    self.parse_static_decl(
-							        doc_comment, attrs2, vis, True
-							    )
-							)
-						else:
-							report.error("invalid external declaration", pos)
-				elif self.tok.kind == Kind.KeyStatic:
-					self.next()
-					protos.append(
-					    self.parse_static_decl(doc_comment, attrs, vis, True)
-					)
-				elif self.tok.kind == Kind.KeyFn:
-					self.next()
+					self.extern_abi = abi
+					self.extern_is_trusted = attrs.has("trusted")
+					while True:
+						protos.append(self.parse_decl())
+						if self.tok.kind == Kind.Rbrace:
+							break
+					self.expect(Kind.Rbrace)
+				elif self.accept(Kind.KeyFn):
 					protos.append(
 					    self.parse_fn_decl(
 					        doc_comment, attrs, vis, is_unsafe
@@ -317,7 +298,9 @@ class Parser:
 				report.error(
 				    "static values cannot be declared unsafe", self.tok.pos
 				)
-			return self.parse_static_decl(doc_comment, attrs, vis, False)
+			return self.parse_static_decl(
+			    doc_comment, attrs, vis, self.inside_extern
+			)
 		elif self.accept(Kind.KeyMod):
 			pos = self.tok.pos
 			if is_unsafe:
@@ -503,7 +486,10 @@ class Parser:
 			)
 		elif self.accept(Kind.KeyFn):
 			return self.parse_fn_decl(
-			    doc_comment, attrs, vis, is_unsafe, sym.ABI.Rivet
+			    doc_comment, attrs, vis, not self.extern_is_trusted and (
+			        is_unsafe or
+			        (self.inside_extern and self.extern_abi != sym.ABI.Rivet)
+			    ), self.extern_abi if self.inside_extern else sym.ABI.Rivet
 			)
 		elif self.accept(Kind.KeyTest):
 			pos = self.prev_tok.pos
@@ -603,10 +589,8 @@ class Parser:
 
 		stmts = []
 		has_body = True
-		if self.inside_trait and self.tok.kind == Kind.Semicolon:
-			self.next()
-			has_body = False
-		elif self.inside_extern and self.tok.kind == Kind.Semicolon:
+		if (self.inside_trait
+		    or self.inside_extern) and self.accept(Kind.Semicolon):
 			has_body = False
 		else:
 			self.expect(Kind.Lbrace)
