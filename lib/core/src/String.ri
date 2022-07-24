@@ -49,7 +49,7 @@ pub struct String {
         }
         unsafe {
             let mut res = Self::with_capacity(bytes.len);
-            _ = mem::copy(res.ptr, bytes.ptr, bytes.len) catch unreachable!();
+            mem::copy(res.ptr, bytes.ptr, bytes.len) catch unreachable!();
             res.len_ = bytes.len;
             return res;
         }
@@ -61,7 +61,7 @@ pub struct String {
         }
         unsafe {
             let mut res = Self::with_capacity(s.len);
-            _ = mem::copy(res.ptr, s.ptr, s.len) catch unreachable!();
+            mem::copy(res.ptr, s.ptr, s.len) catch unreachable!();
             res.len_ = s.len;
             return res;
         }
@@ -71,9 +71,9 @@ pub struct String {
         if (self.len_ >= self.cap) {
             self.reserve(self.len_ + 1);
         }
-        _ = unsafe {
-            mem::copy(self.ptr + self.len_, &val, size_of!(u8)) catch unreachable!()
-        };
+        unsafe {
+            mem::copy(self.ptr + self.len_, &val, size_of!(u8)) catch unreachable!();
+        }
         self.len_++;
     }
 
@@ -81,9 +81,9 @@ pub struct String {
         if (self.len_ >= self.cap) {
             self.reserve(len);
         }
-        _ = unsafe {
-            mem::copy(self.ptr + self.len_, s, len) catch unreachable!()
-        };
+        unsafe {
+            mem::copy(self.ptr + self.len_, s, len) catch unreachable!();
+        }
         self.len_ += len;
     }
 
@@ -132,7 +132,7 @@ pub struct String {
         unsafe {
             let mut new_data = as(*mut u8, mem::alloc(cap * size_of!(u8)) catch unreachable!());
             if (self.ptr != none) {
-                _ = mem::copy(new_data, self.ptr, self.len_ * size_of!(u8)) catch unreachable!();
+                mem::copy(new_data, self.ptr, self.len_ * size_of!(u8)) catch unreachable!();
             }
             mem::dealloc(self.ptr);
             self.ptr = new_data;
@@ -247,7 +247,9 @@ pub struct String {
 
     pub fn clone(&self) Self {
         let mut res = Self::with_capacity(self.len_);
-        _ = unsafe { mem::copy(res.ptr, self.ptr, self.len_) catch unreachable!() };
+        unsafe {
+            mem::copy(res.ptr, self.ptr, self.len_) catch unreachable!();
+        }
         res.len_ = self.len_;
         return res;
     }

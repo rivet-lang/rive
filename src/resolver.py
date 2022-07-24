@@ -20,7 +20,7 @@ class Resolver:
 		self.self_sym = None
 
 	def resolve_files(self, source_files):
-		register.Register(self.comp).visit_source_files(source_files)
+		register.Register(self.comp).visit_files(source_files)
 		if report.ERRORS > 0:
 			return
 

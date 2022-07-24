@@ -14,11 +14,20 @@ class Register:
 		self.cur_sym = None
 		self.errtype_nr = 1
 
-	def visit_source_files(self, source_files):
+	def visit_files(self, source_files):
 		self.comp.pkg_sym = self.add_pkg(self.comp.prefs.pkg_name)
 		self.cur_sym = self.comp.pkg_sym
 		for sf in source_files:
-			self.visit_source_file(sf)
+			self.visit_file(sf)
+
+	def visit_file(self, sf):
+		self.sf = sf
+		old_cur_sym = self.cur_sym
+		if sf.mod_sym:
+			self.cur_sym = sf.mod_sym
+		self.visit_decls(sf.decls)
+		if sf.mod_sym:
+			self.cur_sym = old_cur_sym
 
 	def add_pkg(self, name):
 		idx = len(self.comp.universe.syms)
@@ -33,15 +42,6 @@ class Register:
 			self.cur_sym.add(sym)
 		except utils.CompilerError as e:
 			report.error(e.args[0], pos)
-
-	def visit_source_file(self, sf):
-		self.sf = sf
-		old_cur_sym = self.cur_sym
-		if sf.mod_sym:
-			self.cur_sym = sf.mod_sym
-		self.visit_decls(sf.decls)
-		if sf.mod_sym:
-			self.cur_sym = old_cur_sym
 
 	def visit_decls(self, decls):
 		for decl in decls:

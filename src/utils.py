@@ -288,7 +288,7 @@ def smart_quote(str, raw: bool):
 	return result
 
 class OrderedDepMap:
-	def __init__(self, keys = list(), data = {}):
+	def __init__(self, keys = list(), data = dict()):
 		self.keys = keys
 		self.data = data
 
@@ -367,7 +367,7 @@ class NodeNames:
 class DepGraph:
 	def __init__(self, acyclic = True, nodes = list()):
 		self.acyclic = acyclic
-		self.nodes = nodes
+		self.nodes = nodes.copy()
 
 	def add(self, name, deps):
 		self.nodes.append(DepGraphNode(name, deps))
@@ -380,10 +380,9 @@ class DepGraph:
 			node_deps.add(node.name, node.deps)
 		iterations = 0
 		resolved = DepGraph()
-		resolved.nodes = [] # fix bug
 		while node_deps.size() != 0:
 			iterations += 1
-			ready_set = []
+			ready_set = list()
 			for name in node_deps.keys:
 				if len(node_deps.get(name)) == 0:
 					ready_set.append(name)

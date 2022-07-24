@@ -54,43 +54,41 @@ pub mod mem {
     }
 
     /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
-    /// constant byte `c`. It returns a pointer to the memory area `s`.
-    pub fn set(s: *mut void, c: i32, n: usize) !*mut void {
+    /// constant byte `c`.
+    pub fn set(s: *mut void, c: i32, n: usize) ! {
         unsafe {
             if (s == none) {
                 raise Error("argument `s` is none");
             }
-            return stdc::memset(s, c, n);
+            _ = stdc::memset(s, c, n);
         }
     }
 
-    /// Copies `sz` bytes from memory area `source` to memory area `dest` and returns
-    /// a pointer to `dest`.
+    /// Copies `sz` bytes from memory area `source` to memory area `dest`.
+    ///
+    /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem::move`, if the memory areas
+    /// do overlap.
+    pub fn copy(dest: *mut void, src: *void, sz: usize) ! {
+        unsafe {
+            if (src == dest) {
+                raise MemoryOverlapError("`dest` and `src` do overlap");
+            }
+            _ = stdc::memcpy(dest, src, sz);
+        }
+    }
+
+    /// Copies `sz` bytes from memory area `source` to memory area `dest`.
     ///
     /// NOTE: The memory areas *MAY* overlap: copying takes place as though the bytes
     /// in `source` are first copied into a temporary array that does not overlap
     /// `source` or `dest`, and the bytes are then copied from the temporary array to
     /// `dest`.
-    pub fn move(dest: *mut void, src: *void, sz: usize) !*mut void {
+    pub fn move(dest: *mut void, src: *void, sz: usize) ! {
         unsafe {
             if (src == none) {
                 raise Error("argument `src` is none");
             }
-            return stdc::memmove(dest, src, sz);
-        }
-    }
-
-    /// Copies `sz` bytes from memory area `source` to memory area `dest` and returns
-    /// a pointer to `dest`.
-    ///
-    /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem::move`, if the memory areas
-    /// do overlap.
-    pub fn copy(dest: *mut void, src: *void, sz: usize) !*mut void {
-        unsafe {
-            if (src == dest) {
-                raise MemoryOverlapError("`dest` and `src` do overlap");
-            }
-            return stdc::memcpy(dest, src, sz);
+            _ = stdc::memmove(dest, src, sz);
         }
     }
 
@@ -102,7 +100,9 @@ pub mod mem {
             if (sz == 0) {
                 return calloc(1).!;
             }
-            return copy(alloc(sz).!, src, sz).!;
+            let res = alloc(sz).!;
+            copy(res, src, sz).!;
+            return res;
         }
     }
 

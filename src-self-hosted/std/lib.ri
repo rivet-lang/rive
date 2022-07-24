@@ -5,5 +5,3 @@
 pub mod fs;
 pub mod os;
 pub mod term;
-
-// pub using pkg::sys;
