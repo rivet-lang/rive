@@ -45,10 +45,13 @@ class Resolver:
 	def resolve_decl(self, decl):
 		should_check = True
 		if not decl.__class__ in (
-		    ast.TestDecl, ast.ExternPkg, ast.DestructorDecl
+		    ast.TestDecl, ast.ExternPkg, ast.DestructorDecl, ast.ComptimeIfDecl
 		):
 			should_check = decl.attrs.if_check
-		if isinstance(decl, ast.UsingDecl):
+		if isinstance(decl, ast.ComptimeIfDecl):
+			if decl.branch_idx != -1:
+				self.resolve_decls(decl.branches[decl.branch_idx].decls)
+		elif isinstance(decl, ast.UsingDecl):
 			if should_check:
 				if isinstance(decl.path, (ast.Ident, ast.PkgExpr)):
 					name = decl.path.name if isinstance(

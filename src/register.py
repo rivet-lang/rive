@@ -13,7 +13,6 @@ class Register:
 		self.sf = None
 		self.cur_sym = None
 		self.errtype_nr = 1
-		self.cur_fn_scope = None
 
 	def visit_source_files(self, source_files):
 		self.comp.pkg_sym = self.add_pkg(self.comp.prefs.pkg_name)
@@ -47,14 +46,30 @@ class Register:
 	def visit_decls(self, decls):
 		for decl in decls:
 			should_register = True
-			if not decl.__class__ in (ast.TestDecl, ast.ExternPkg):
+			if not decl.__class__ in (
+			    ast.TestDecl, ast.ExternPkg, ast.ComptimeIfDecl
+			):
 				if if_attr := decl.attrs.find("if"):
 					should_register = self.comp.evalue_comptime_condition(
 					    if_attr.args[0].expr
 					)
 					decl.attrs.if_check = should_register
-			if isinstance(decl, ast.ExternPkg):
-				continue # TODO(StunxFS): load external packages
+			if isinstance(decl, ast.ComptimeIfDecl):
+				# evalue comptime if declaration
+				branch_idx = -1
+				for idx, b in enumerate(decl.branches):
+					cond_val = False
+					if not b.is_else:
+						cond_val = self.comp.evalue_comptime_condition(b.cond)
+					if branch_idx == -1:
+						if cond_val or b.is_else:
+							branch_idx = idx
+							break
+				decl.branch_idx = branch_idx
+				if decl.branch_idx > -1:
+					self.visit_decls(decl.branches[decl.branch_idx].decls)
+			elif isinstance(decl, ast.ExternPkg):
+				continue
 			elif isinstance(decl, ast.ExternDecl):
 				if should_register:
 					self.visit_decls(decl.protos)
@@ -280,13 +295,10 @@ class Register:
 								self.visit_fn_decl(d)
 					self.cur_sym = old_sym
 			elif isinstance(decl, ast.TestDecl):
-				self.cur_fn_scope = decl.scope
-				self.cur_fn_scope = None
+				pass
 			elif isinstance(decl, ast.FnDecl):
-				self.cur_fn_scope = decl.scope
 				if should_register:
 					self.visit_fn_decl(decl, decl.abi)
-				self.cur_fn_scope = None
 
 	def visit_fn_decl(self, decl, abi = sym.ABI.Rivet):
 		decl.sym = sym.Fn(

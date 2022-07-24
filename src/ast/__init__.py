@@ -157,6 +157,19 @@ class UsingSymbol:
 		self.is_self = is_self
 		self.pos = pos
 
+class ComptimeIfDecl:
+	def __init__(self, branches, pos):
+		self.branches = branches
+		self.pos = pos
+		self.branch_idx = -1
+
+class ComptimeIfBranch:
+	def __init__(self, cond, decls, is_else, kind):
+		self.cond = cond
+		self.decls = decls
+		self.is_else = is_else
+		self.kind = kind
+
 class ExternDecl:
 	def __init__(self, attrs, abi, protos, pos):
 		self.attrs = attrs

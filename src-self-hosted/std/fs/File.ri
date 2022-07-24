@@ -79,7 +79,7 @@ pub struct File {
 
     /// Returns true if the file is at end.
     pub fn eof(&self) bool {
-        return unsafe { as(bool, stdc::feof(self.f)) };
+        return unsafe { stdc::feof(self.f) != 0 };
     }
 
     /// Closes the current file.

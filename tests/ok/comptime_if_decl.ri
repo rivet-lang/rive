@@ -1,0 +1,17 @@
+$if (_x64_) {
+    pub fn is_64bits() bool {
+        return true;
+    }
+} $else {
+    pub fn is_32bits() bool {
+        return true;
+    }
+}
+
+fn main() {
+    $if (_x64_) {
+        assert!(is_64bits());
+    } $else {
+        assert!(is_32bits());
+    }
+}

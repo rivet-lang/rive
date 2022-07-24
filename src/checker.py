@@ -45,10 +45,13 @@ class Checker:
 	def check_decl(self, decl):
 		should_check = True
 		if not decl.__class__ in (
-		    ast.TestDecl, ast.ExternPkg, ast.DestructorDecl
+		    ast.TestDecl, ast.ExternPkg, ast.DestructorDecl, ast.ComptimeIfDecl
 		):
 			should_check = decl.attrs.if_check
-		if isinstance(decl, ast.ExternDecl):
+		if isinstance(decl, ast.ComptimeIfDecl):
+			if decl.branch_idx != -1:
+				self.check_decls(decl.branches[decl.branch_idx].decls)
+		elif isinstance(decl, ast.ExternDecl):
 			if should_check:
 				self.check_decls(decl.protos)
 		elif isinstance(decl, ast.ConstDecl):

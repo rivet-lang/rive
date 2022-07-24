@@ -727,9 +727,14 @@ class AST2RIR:
 
 	def convert_decl(self, d):
 		should_gen = True
-		if not d.__class__ in (ast.TestDecl, ast.ExternPkg, ast.DestructorDecl):
+		if not d.__class__ in (
+		    ast.TestDecl, ast.ExternPkg, ast.DestructorDecl, ast.ComptimeIfDecl
+		):
 			should_gen = d.attrs.if_check
-		if isinstance(d, ast.ExternDecl):
+		if isinstance(d, ast.ComptimeIfDecl):
+			if d.branch_idx != -1:
+				self.convert_decls(d.branches[d.branch_idx].decls)
+		elif isinstance(d, ast.ExternDecl):
 			if should_gen:
 				self.convert_decls(d.protos)
 		elif isinstance(d, ast.ConstDecl):

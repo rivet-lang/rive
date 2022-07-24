@@ -157,13 +157,50 @@ class Parser:
 			return ast.Visibility.Public
 		return ast.Visibility.Private
 
+	def parse_comptime_if_decl(self):
+		branches = []
+		pos = self.tok.pos
+		while self.tok.kind in (Kind.KeyIf, Kind.KeyElif, Kind.KeyElse):
+			if self.accept(Kind.KeyElse):
+				self.expect(Kind.Lbrace)
+				decls = []
+				while self.tok.kind != Kind.Rbrace:
+					decls.append(self.parse_decl())
+				self.expect(Kind.Rbrace)
+				branches.append(
+				    ast.ComptimeIfBranch(
+				        self.empty_expr(), decls, True, Kind.KeyElse
+				    )
+				)
+				break
+			else:
+				op = self.tok.kind
+				self.next()
+				self.expect(Kind.Lparen)
+				cond = self.parse_expr()
+				self.expect(Kind.Rparen)
+				self.expect(Kind.Lbrace)
+				decls = []
+				while self.tok.kind != Kind.Rbrace:
+					decls.append(self.parse_decl())
+				self.expect(Kind.Rbrace)
+				branches.append(ast.ComptimeIfBranch(cond, decls, False, op))
+				if self.tok.kind not in (
+				    Kind.Dollar, Kind.KeyElif, Kind.KeyElse
+				):
+					break
+				self.expect(Kind.Dollar)
+		return ast.ComptimeIfDecl(branches, pos)
+
 	def parse_decl(self):
 		doc_comment = self.parse_doc_comment()
 		attrs = self.parse_attrs()
 		vis = self.parse_vis()
 		is_unsafe = self.accept(Kind.KeyUnsafe)
 		pos = self.tok.pos
-		if self.accept(Kind.KeyUsing):
+		if self.accept(Kind.Dollar):
+			return self.parse_comptime_if_decl()
+		elif self.accept(Kind.KeyUsing):
 			path = self.parse_expr()
 			if isinstance(path, ast.Ident):
 				alias = path.name
