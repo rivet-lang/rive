@@ -89,7 +89,7 @@ extend i32 {
             }
 
             let diff = as(usize, max) - index;
-            mem::move(buf, buf + index, diff + 1) catch unreachable!();
+            mem::move(buf, buf + index, diff + 1);
             return String::from_raw_with_len(buf, diff);
         }
     }
@@ -142,7 +142,7 @@ extend i64 for ToString {
             }
 
             let diff = as(usize, max) - index;
-            mem::move(buf, buf + index, diff + 1) catch unreachable!();
+            mem::move(buf, buf + index, diff + 1);
             return String::from_raw_with_len(buf, diff);
         }
     }
@@ -252,7 +252,7 @@ extend u32 for ToString {
             }
 
             let diff = max - index;
-            mem::move(buf, buf + index, diff + 1) catch unreachable!();
+            mem::move(buf, buf + index, diff + 1);
             return String::from_raw_with_len(buf, diff);
         }
     }
@@ -288,7 +288,7 @@ extend u64 for ToString {
             }
 
             let diff = as(usize, max) - index;
-            mem::move(buf, buf + index, diff + 1) catch unreachable!();
+            mem::move(buf, buf + index, diff + 1);
             return String::from_raw_with_len(buf, diff);
         }
     }

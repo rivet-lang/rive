@@ -6,7 +6,6 @@ using pkg::stdc;
 
 pub mod mem {
     pub errtype OutOfMemoryError;
-    pub errtype MemoryOverlapError;
 
     /// Allocates dynamically a `size` bytes block of memory on the heap.
     /// Returns a pointer to the memory address of the allocated space.
@@ -55,11 +54,8 @@ pub mod mem {
 
     /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
     /// constant byte `c`.
-    pub fn set(s: *mut void, c: i32, n: usize) ! {
+    pub fn set(s: *mut void, c: i32, n: usize) {
         unsafe {
-            if (s == none) {
-                raise Error("argument `s` is none");
-            }
             _ = stdc::memset(s, c, n);
         }
     }
@@ -68,11 +64,8 @@ pub mod mem {
     ///
     /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem::move`, if the memory areas
     /// do overlap.
-    pub fn copy(dest: *mut void, src: *void, sz: usize) ! {
+    pub fn copy(dest: *mut void, src: *void, sz: usize) {
         unsafe {
-            if (src == dest) {
-                raise MemoryOverlapError("`dest` and `src` overlap");
-            }
             _ = stdc::memcpy(dest, src, sz);
         }
     }
@@ -83,11 +76,8 @@ pub mod mem {
     /// in `source` are first copied into a temporary array that does not overlap
     /// `source` or `dest`, and the bytes are then copied from the temporary array to
     /// `dest`.
-    pub fn move(dest: *mut void, src: *void, sz: usize) ! {
+    pub fn move(dest: *mut void, src: *void, sz: usize) {
         unsafe {
-            if (src == none) {
-                raise Error("argument `src` is none");
-            }
             _ = stdc::memmove(dest, src, sz);
         }
     }
@@ -101,7 +91,7 @@ pub mod mem {
                 return calloc(1).!;
             }
             let res = alloc(sz).!;
-            copy(res, src, sz).!;
+            _ = stdc::memcpy(res, src, sz);
             return res;
         }
     }

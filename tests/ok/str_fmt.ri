@@ -1,14 +1,14 @@
 fn main() {
+    assert!("true: {}".fmt(true) == "true: true".to_string());
+    assert!("false: {}".fmt(false) == "false: false".to_string());
+
+    assert!("here is a number: {}".fmt(5) == "here is a number: 5".to_string());
+
+    assert!(
+        "reverse order: {2}, {1}, {0}".fmt(1, 2, 3) == "reverse order: 3, 2, 1".to_string()
+    );
+
     $if (!_WINDOWS_) {
-        assert!("true: {}".fmt(true) == "true: true".to_string());
-        assert!("false: {}".fmt(false) == "false: false".to_string());
-
-        assert!("here is a number: {}".fmt(5) == "here is a number: 5".to_string());
-
-        assert!(
-            "reverse order: {2}, {1}, {0}".fmt(1, 2, 3) == "reverse order: 3, 2, 1".to_string()
-        );
-
         assert!("rune: `{}`".fmt('Á') == "rune: `Á`".to_string());
     }
 }
