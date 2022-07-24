@@ -134,8 +134,7 @@ class Register:
 				)
 				old_cur_sym = self.cur_sym
 				self.cur_sym = ts
-				for d in decl.decls:
-					self.visit_fn_decl(d)
+				self.visit_decls(decl.decls)
 				self.cur_sym = old_cur_sym
 				self.add_sym(ts, decl.pos)
 			elif isinstance(decl, ast.UnionDecl):
@@ -154,13 +153,7 @@ class Register:
 				)
 				old_cur_sym = self.cur_sym
 				self.cur_sym = decl.sym
-				for d in decl.decls:
-					if isinstance(d, ast.FnDecl):
-						self.visit_fn_decl(d)
-					else:
-						report.error(
-						    "expected associated function or method", d.pos
-						)
+				self.visit_decls(decl.decls)
 				self.cur_sym = old_cur_sym
 				self.add_sym(decl.sym, decl.pos)
 			elif isinstance(decl, ast.StructDecl):
@@ -170,38 +163,21 @@ class Register:
 				)
 				old_cur_sym = self.cur_sym
 				self.cur_sym = decl.sym
-				for d in decl.decls:
-					if isinstance(d, ast.StructField):
-						if decl.sym.has_field(d.name):
-							report.error(
-							    f"field `{d.name}` is already declared", d.pos
-							)
-						else:
-							decl.sym.fields.append(
-							    sym.Field(
-							        d.name, d.is_mut, d.vis, d.typ,
-							        d.has_def_expr, d.def_expr
-							    )
-							)
-					elif isinstance(d, ast.FnDecl):
-						self.visit_fn_decl(d)
-					elif isinstance(d, ast.DestructorDecl):
-						self_typ = type.Ref(type.Type(decl.sym))
-						d.self_typ = self_typ
-						d.scope.add(sym.Object(True, "self", self_typ, True))
-						sym_fn = sym.Fn(
-						    sym.ABI.Rivet, ast.Visibility.Public, False, False,
-						    True, False, "_dtor", [], self.comp.void_t, False,
-						    True, d.pos, True, True
-						)
-						sym_fn.rec_typ = self_typ
-						self.add_sym(sym_fn, decl.pos)
-					else:
-						report.error(
-						    "expected associated function or method", d.pos
-						)
+				self.visit_decls(decl.decls)
 				self.cur_sym = old_cur_sym
 				self.add_sym(decl.sym, decl.pos)
+			elif isinstance(decl, ast.StructField):
+				if self.cur_sym.has_field(decl.name):
+					report.error(
+					    f"field `{decl.name}` is already declared", decl.pos
+					)
+				else:
+					self.cur_sym.fields.append(
+					    sym.Field(
+					        decl.name, decl.is_mut, decl.vis, decl.typ,
+					        decl.has_def_expr, decl.def_expr
+					    )
+					)
 			elif isinstance(decl, ast.EnumDecl):
 				variants = []
 				for v in decl.variants:
@@ -220,13 +196,7 @@ class Register:
 				)
 				old_cur_sym = self.cur_sym
 				self.cur_sym = decl.sym
-				for d in decl.decls:
-					if isinstance(d, ast.FnDecl):
-						self.visit_fn_decl(d)
-					else:
-						report.error(
-						    "expected associated function or method", d.pos
-						)
+				self.visit_decls(decl.decls)
 				self.cur_sym = old_cur_sym
 				self.add_sym(decl.sym, decl.pos)
 			elif isinstance(decl, ast.ExtendDecl):
@@ -249,8 +219,7 @@ class Register:
 								    sym.TypeKind.Placeholder
 								)
 								old_sym.add(self.cur_sym)
-							for d in decl.decls:
-								self.visit_fn_decl(d)
+							self.visit_decls(decl.decls)
 						else:
 							report.error(
 							    "cannot extend non-local types",
@@ -258,32 +227,41 @@ class Register:
 							)
 					else:
 						self.cur_sym = decl.typ.sym
-						for d in decl.decls:
-							self.visit_fn_decl(d)
+						self.visit_decls(decl.decls)
 				self.cur_sym = old_sym
 			elif isinstance(decl, ast.TestDecl):
 				pass
+			elif isinstance(decl, ast.DestructorDecl):
+				self_typ = type.Ref(type.Type(self.cur_sym))
+				decl.self_typ = self_typ
+				decl.scope.add(sym.Object(True, "self", self_typ, True))
+				sym_fn = sym.Fn(
+				    sym.ABI.Rivet, ast.Visibility.Public, False, False, True,
+				    False, "_dtor", [], self.comp.void_t, False, True, decl.pos,
+				    True, True
+				)
+				sym_fn.rec_typ = self_typ
+				self.add_sym(sym_fn, decl.pos)
 			elif isinstance(decl, ast.FnDecl):
-				self.visit_fn_decl(decl, decl.abi)
-
-	def visit_fn_decl(self, decl, abi = sym.ABI.Rivet):
-		decl.sym = sym.Fn(
-		    abi, decl.vis, decl.is_extern, decl.is_unsafe, decl.is_method,
-		    decl.is_variadic, decl.name, decl.args, decl.ret_typ,
-		    decl.has_named_args, decl.has_body, decl.name_pos, decl.self_is_mut,
-		    decl.self_is_ref
-		)
-		decl.sym.is_main = decl.is_main
-		if decl.is_method:
-			self_typ = type.Type(self.cur_sym)
-			if decl.self_is_ref:
-				self_typ = type.Ref(self_typ, decl.self_is_mut)
-			decl.self_typ = self_typ
-			decl.sym.self_typ = self_typ
-			decl.scope.add(sym.Object(False, "self", self_typ, True))
-		self.add_sym(decl.sym, decl.name_pos)
-		for arg in decl.args:
-			try:
-				decl.scope.add(sym.Object(False, arg.name, arg.typ, True))
-			except utils.CompilerError as e:
-				report.error(e.args[0], arg.pos)
+				decl.sym = sym.Fn(
+				    decl.abi, decl.vis, decl.is_extern, decl.is_unsafe,
+				    decl.is_method, decl.is_variadic, decl.name, decl.args,
+				    decl.ret_typ, decl.has_named_args, decl.has_body,
+				    decl.name_pos, decl.self_is_mut, decl.self_is_ref
+				)
+				decl.sym.is_main = decl.is_main
+				if decl.is_method:
+					self_typ = type.Type(self.cur_sym)
+					if decl.self_is_ref:
+						self_typ = type.Ref(self_typ, decl.self_is_mut)
+					decl.self_typ = self_typ
+					decl.sym.self_typ = self_typ
+					decl.scope.add(sym.Object(False, "self", self_typ, True))
+				self.add_sym(decl.sym, decl.name_pos)
+				for arg in decl.args:
+					try:
+						decl.scope.add(
+						    sym.Object(False, arg.name, arg.typ, True)
+						)
+					except utils.CompilerError as e:
+						report.error(e.args[0], arg.pos)

@@ -1,3 +1,11 @@
+struct Struct {
+    $if (_LINUX_) {
+        linux_field: i32 = 5;
+    } $elif (_WINDOWS_) {
+        windows_field: u32 = 10;
+    }
+}
+
 $if (_x64_) {
     pub fn is_64bits() bool {
         return true;
@@ -13,5 +21,12 @@ fn main() {
         assert!(is_64bits());
     } $else {
         assert!(is_32bits());
+    }
+
+    let st = Struct{};
+    $if (_LINUX_) {
+        assert!(st.linux_field == 5);
+    } $elif (_WINDOWS_) {
+        assert!(st.windows_field == 10);
     }
 }
