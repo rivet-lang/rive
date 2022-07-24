@@ -30,7 +30,7 @@ def _readline(file, line_nr):
 		line_nr = min(line_nr, len(lines) - 1)
 		return lines[line_nr]
 
-	lines = open(file).read().splitlines()
+	lines = open(file, encoding = 'UTF-8').read().splitlines()
 	FILE_LINES[file] = lines
 	line_nr = min(line_nr, len(lines) - 1)
 	return lines[line_nr]
