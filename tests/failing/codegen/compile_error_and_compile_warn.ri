@@ -1,0 +1,4 @@
+fn main() {
+    compile_warn!("a simple warn");
+    compile_error!("a simple error");
+}
