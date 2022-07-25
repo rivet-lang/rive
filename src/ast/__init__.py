@@ -982,24 +982,41 @@ class IfExpr:
 		return self.__repr__()
 
 class MatchBranch:
-	def __init__(self, pats, expr, is_else):
+	def __init__(
+	    self, pats, has_var, var_is_ref, var_is_mut, var_name, expr, is_else
+	):
 		self.pats = pats
+		self.has_var = has_var
+		self.var_is_ref = var_is_ref
+		self.var_is_mut = var_is_mut
+		self.var_name = var_name
+		self.var_type = None
 		self.expr = expr
 		self.is_else = is_else
 
 	def __repr__(self):
 		if self.is_else:
 			return f"else => {self.expr}"
-		return f"{', '.join([str(p) for p in self.pats])} => {self.expr}"
+		res = f"{', '.join([str(p) for p in self.pats])}"
+		if self.has_var:
+			res += f" as "
+			if self.var_is_ref:
+				res += "&"
+				if self.var_is_mut:
+					res += "mut "
+			res += "{self.var_name}"
+		res += f" => {self.expr}"
+		return res
 
 	def __str__(self):
 		return self.__repr__()
 
 class MatchExpr:
-	def __init__(self, expr, branches, is_typematch, pos):
+	def __init__(self, expr, branches, is_typematch, scope, pos):
 		self.expr = expr
 		self.branches = branches
 		self.is_typematch = is_typematch
+		self.scope = scope
 		self.pos = pos
 		self.typ = None
 

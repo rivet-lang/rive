@@ -1179,7 +1179,7 @@ class Checker:
 			if expr.is_typematch:
 				if not (
 				    expr_typ == self.comp.error_t
-				    or expr_sym.kind != TypeKind.Union
+				    or expr_sym.kind == TypeKind.Union
 				):
 					report.error("invalid value for typematch", expr.expr.pos)
 					report.note(

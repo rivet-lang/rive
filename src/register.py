@@ -230,7 +230,7 @@ class Register:
 						self.visit_decls(decl.decls)
 				self.cur_sym = old_sym
 			elif isinstance(decl, ast.DestructorDecl):
-				self_typ = type.Ref(type.Type(self.cur_sym))
+				self_typ = type.Ref(type.Type(self.cur_sym), True)
 				decl.self_typ = self_typ
 				decl.scope.add(sym.Object(True, "self", self_typ, True))
 				sym_fn = sym.Fn(

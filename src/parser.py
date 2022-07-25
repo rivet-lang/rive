@@ -1138,23 +1138,39 @@ class Parser:
 		self.expect(Kind.Lbrace)
 		while True:
 			pats = []
+			has_var = False
+			var_is_ref = False
+			var_is_mut = False
+			var_name = ""
 			is_else = self.accept(Kind.KeyElse)
 			if not is_else:
 				while True:
 					if is_typematch:
 						pos = self.tok.pos
 						pats.append(ast.TypeNode(self.parse_type(), pos))
+						if is_typematch and len(pats) == 1 and self.accept(
+						    Kind.KeyAs
+						):
+							var_is_ref = self.accept(Kind.Amp)
+							var_is_mut = var_is_ref and self.accept(Kind.KeyMut)
+							var_name = self.parse_name()
+							has_var = True
 					else:
 						pats.append(self.parse_expr())
 					if not self.accept(Kind.Comma):
 						break
 			self.expect(Kind.Arrow)
-			branches.append(ast.MatchBranch(pats, self.parse_expr(), is_else))
+			branches.append(
+			    ast.MatchBranch(
+			        pats, has_var, var_is_ref, var_is_mut, var_name,
+			        self.parse_expr(), is_else
+			    )
+			)
 			if not self.accept(Kind.Comma):
 				break
 		self.expect(Kind.Rbrace)
 		if isinstance(expr, ast.GuardExpr): self.close_scope()
-		return ast.MatchExpr(expr, branches, is_typematch, pos)
+		return ast.MatchExpr(expr, branches, is_typematch, self.scope, pos)
 
 	def parse_guard_expr(self):
 		self.expect(Kind.KeyLet)

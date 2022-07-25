@@ -61,26 +61,33 @@ def mangle_symbol(s):
 		if isinstance(s, sym.Type):
 			if s.kind.is_primitive():
 				name = str(s.kind)
-				res.insert(0, f"{len(name)}{name}")
+				name = f"{len(name)}{name}"
+				res.insert(0, name)
 			elif s.kind == sym.TypeKind.Tuple:
 				name = "Tuple_"
 				for i, tt in enumerate(s.info.types):
 					name += mangle_type(tt)
 					if i < len(s.info.types) - 1:
 						name += "_"
-				res.insert(0, f"{len(name)}{name}")
+				name = f"{len(name)}{name}"
+				res.insert(0, name)
+				s.mangled_name = name
 			elif s.kind == sym.TypeKind.Slice:
 				res.insert(0, "4core6_slice")
+				s.mangled_name = "_R4core6_slice"
 			elif s.kind == sym.TypeKind.Array:
-				name = "Array_"
-				name += f"{mangle_type(s.info.elem_typ)}_{s.info.size}"
-				res.insert(0, f"{len(name)}{name}")
+				name = f"Array_{mangle_type(s.info.elem_typ)}_{s.info.size}"
+				name = f"{len(name)}{name}"
+				res.insert(0, name)
+				s.mangled_name = name
 			elif s.kind == sym.TypeKind.Enum:
 				if isinstance(root, sym.Fn):
 					name = s.name
 				else:
 					name = str(s.info.underlying_typ)
-				res.insert(0, f"{len(name)}{name}")
+				name = f"{len(name)}{name}"
+				res.insert(0, name)
+				s.mangled_name = name
 			elif s.kind == sym.TypeKind.Str:
 				res.insert(0, "4core4_str")
 				s.mangled_name = "_R4core4_str"
@@ -93,7 +100,9 @@ def mangle_symbol(s):
 				res.insert(0, f"{len(s.name)}{s.name}")
 		elif s.name in OVERLOADABLE_OPERATORS_STR:
 			name = OVERLOADABLE_OPERATORS_STR[s.name]
-			res.insert(0, f"{len(name)}{name}")
+			name = f"{len(name)}{name}"
+			res.insert(0, name)
+			s.mangled_name = name
 		else:
 			res.insert(0, f"{len(s.name)}{s.name}")
 		if s.parent == None:
@@ -2452,6 +2461,14 @@ class AST2RIR:
 						self.cur_fn.add_label(next_pat)
 				if not b.is_else:
 					self.cur_fn.add_label(b_label)
+				if b.has_var:
+					union_value = Selector(
+					    b.var_type, match_expr,
+					    Name(mangle_symbol(b.var_type.get_sym()))
+					)
+					if b.var_is_ref:
+						union_value = Inst(InstKind.GetRef, [union_value])
+					self.cur_fn.alloca(b.var_type, b.var_name, union_value)
 				if is_void_value:
 					self.convert_expr_with_cast(
 					    expr.typ, b.expr

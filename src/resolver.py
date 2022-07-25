@@ -360,6 +360,16 @@ class Resolver:
 			for b in expr.branches:
 				for p in b.pats:
 					self.resolve_expr(p)
+				if b.has_var:
+					b.var_type = b.pats[0].typ
+					if b.var_is_ref:
+						b.var_type = type.Ref(b.var_type, b.var_is_mut)
+					try:
+						expr.scope.add(
+						    sym.Object(False, b.var_name, b.var_type, False)
+						)
+					except utils.CompilerError as e:
+						report.error(e.args[0], b.pats[0].pos)
 				self.resolve_expr(b.expr)
 		elif isinstance(expr, ast.GuardExpr):
 			for v in expr.vars:
