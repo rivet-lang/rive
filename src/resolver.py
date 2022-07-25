@@ -633,6 +633,7 @@ class Resolver:
 				if self.self_sym != None:
 					self.self_sym.uses += 1
 					typ.resolve(self.self_sym)
+					return True
 				else:
 					report.error("cannot resolve type for `Self`", typ.expr.pos)
 			else:
@@ -647,8 +648,8 @@ class Resolver:
 		elif isinstance(expr, ast.BinaryExpr):
 			if left := self.eval_size_expr(expr.left):
 				if right := self.eval_size_expr(expr.right):
-					il = int(left.lit)
-					ir = int(right.lit)
+					il = int(left.lit, 0)
+					ir = int(right.lit, 0)
 					if expr.op == Kind.Plus:
 						return ast.IntegerLiteral(str(il + ir), expr.pos)
 					elif expr.op == Kind.Minus:

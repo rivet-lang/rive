@@ -229,8 +229,6 @@ class Register:
 						self.cur_sym = decl.typ.sym
 						self.visit_decls(decl.decls)
 				self.cur_sym = old_sym
-			elif isinstance(decl, ast.TestDecl):
-				pass
 			elif isinstance(decl, ast.DestructorDecl):
 				self_typ = type.Ref(type.Type(self.cur_sym))
 				decl.self_typ = self_typ

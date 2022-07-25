@@ -1657,14 +1657,14 @@ class Checker:
 			bits_hi = bits_lo
 			bits_lo = old_bhi
 
-		if self.comp.is_float(type_hi):
+		if type_hi == self.comp.untyped_int_t:
+			return type_lo
+		elif self.comp.is_float(type_hi):
 			if self.comp.is_float(type_lo):
 				# float -> float (good)
 				return type_hi
 			# float -> int (bad)
 			return self.comp.void_t
-		elif type_hi == self.comp.untyped_int_t:
-			return type_lo
 
 		is_signed_lo = self.comp.is_signed_int(type_lo)
 		is_unsigned_lo = not is_signed_lo

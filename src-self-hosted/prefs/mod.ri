@@ -7,7 +7,7 @@ using pkg::utils;
 pub enum Backend {
     C;
 
-    pub fn from_str(name: str) ?Backend {
+    pub fn from_str(name: str) ?Self {
         match (name) {
             "c" => return .C,
             else => return none
@@ -21,7 +21,7 @@ pub enum PackageType {
 	DyLib, // .so, .dll, .dylib
 	StaticLib; // .a, .lib
 
-	pub fn from_str(typ: str) ?PackageType {
+	pub fn from_str(typ: str) ?Self {
         match (typ) {
             "bin" => return .Bin,
             "lib" => return .Lib,
