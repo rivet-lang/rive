@@ -7,7 +7,7 @@ using pkg::utils;
 pub enum Backend {
     C;
 
-    pub fn from_string(name: str) ?Backend {
+    pub fn from_str(name: str) ?Backend {
         match (name) {
             "c" => return .C,
             else => return none
@@ -21,7 +21,7 @@ pub enum PackageType {
 	DyLib, // .so, .dll, .dylib
 	StaticLib; // .a, .lib
 
-	pub fn from_string(typ: str) ?PackageType {
+	pub fn from_str(typ: str) ?PackageType {
         match (typ) {
             "bin" => return .Bin,
             "lib" => return .Lib,
@@ -102,7 +102,7 @@ pub struct Prefs {
                 },
                 "--pkg-type" => {
                     if (let pkg_type = utils::option(current_args, arg)) {
-                        if (let typ = PackageType::from_string(pkg_type)) {
+                        if (let typ = PackageType::from_str(pkg_type)) {
                             prefs.pkg_type = typ;
                         } else {
                             utils::error("invalid package type: `{}`", pkg_type);
@@ -125,7 +125,7 @@ pub struct Prefs {
                 },
                 "-b", "--backend" => {
                     if (let b = utils::option(current_args, arg)) {
-                        if (let backend = Backend::from_string(b)) {
+                        if (let backend = Backend::from_str(b)) {
                             prefs.backend = backend;
                         } else {
                             utils::error("unknown backend: `{}`", b);
@@ -137,7 +137,7 @@ pub struct Prefs {
                 },
                 "-os", "--target-os" => {
                     if (let os_name = utils::option(current_args, arg)) {
-                        if (let os_flag = sys::OS::from_string(os_name)) {
+                        if (let os_flag = sys::OS::from_str(os_name)) {
                             prefs.target_os = os_flag;
                         } else {
                             utils::error("unknown target operating system: `{}`", os_name);
@@ -149,7 +149,7 @@ pub struct Prefs {
                 },
                 "-arch", "--target-arch" => {
                     if (let arch_name = utils::option(current_args, arg)) {
-                        if (let arch_flag = sys::Arch::from_string(arch_name)) {
+                        if (let arch_flag = sys::Arch::from_str(arch_name)) {
                             prefs.target_arch = arch_flag;
                         } else {
                             utils::error("unknown target architecture: `{}`", arch_name);

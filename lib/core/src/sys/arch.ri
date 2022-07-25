@@ -6,7 +6,7 @@ pub enum Arch : u8 {
     I386,
     AMD64;
 
-    pub fn from_string(arch: str) ?Arch {
+    pub fn from_str(arch: str) ?Arch {
         match (arch) {
             "i386" => return .I386,
             "amd64" => return .AMD64,
