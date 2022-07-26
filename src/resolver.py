@@ -13,6 +13,7 @@ class Resolver:
 		self.sf = None
 		self.cur_sym = None
 		self.core_prelude = []
+		self.cur_fn = None
 		self.cur_fn_scope = None
 
 		self.inside_is_comparation = False
@@ -205,12 +206,14 @@ class Resolver:
 			self.resolve_stmts(decl.stmts)
 			self.cur_fn_scope = None
 		elif isinstance(decl, ast.FnDecl):
+			self.cur_fn=decl.sym
 			self.cur_fn_scope = decl.scope
 			for arg in decl.args:
 				self.resolve_type(arg.typ)
 				if arg.has_def_expr: self.resolve_expr(arg.def_expr)
 			self.resolve_type(decl.ret_typ)
 			self.resolve_stmts(decl.stmts)
+			self.cur_fn=None
 			self.cur_fn_scope = None
 		elif isinstance(decl, ast.DestructorDecl):
 			self.resolve_stmts(decl.stmts)
@@ -600,6 +603,9 @@ class Resolver:
 			if typ.is_resolved():
 				return True # resolved
 			if isinstance(typ.expr, ast.Ident):
+				if self.cur_fn and self.cur_fn.has_generic(typ.expr.name):
+					typ.is_generic = True
+					return True
 				self.resolve_ident(typ.expr)
 				if s := typ.expr.sym:
 					if isinstance(s, sym.Type):

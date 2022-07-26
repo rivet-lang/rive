@@ -44,6 +44,7 @@ class Type(TBase):
 		self.sym = sym
 		self.expr = None
 		self._unresolved = False
+		self.is_generic = False
 
 	@staticmethod
 	def unresolved(expr):
@@ -224,7 +225,7 @@ class Fn(TBase):
 		    self.is_unsafe, self.is_method, self.is_variadic,
 		    self.stringify(False), args, self.ret_typ, False,
 		    not self.is_extern, token.Pos("", 0, 0,
-		                                  0), self.rec_is_mut, self.rec_is_ref
+		                                  0), self.rec_is_mut, self.rec_is_ref, False, []
 		)
 
 	def stringify(self, qual):

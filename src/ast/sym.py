@@ -522,14 +522,17 @@ class Fn(Sym):
 	def __init__(
 	    self, abi, vis, is_extern, is_unsafe, is_method, is_variadic, name,
 	    args, ret_typ, has_named_args, has_body, name_pos, rec_is_mut,
-	    rec_is_ref
+	    rec_is_ref, is_generic, type_arguments
 	):
 		Sym.__init__(self, vis, name)
+		self.is_main = False
 		self.abi = abi
 		self.is_extern = is_extern
 		self.is_unsafe = is_unsafe
 		self.is_method = is_method
 		self.is_variadic = is_variadic
+		self.is_generic=is_generic
+		self.type_arguments=type_arguments
 		self.self_typ = None
 		self.rec_is_mut = rec_is_mut
 		self.rec_is_ref = rec_is_ref
@@ -538,7 +541,14 @@ class Fn(Sym):
 		self.has_named_args = has_named_args
 		self.has_body = has_body
 		self.name_pos = name_pos
-		self.is_main = False
+
+	def has_generic(self, name):
+		if not self.is_generic:
+			return False
+		for g in self.type_arguments:
+			if g.name==name:
+				return True
+		return False
 
 	def args_len(self):
 		from .type import Variadic

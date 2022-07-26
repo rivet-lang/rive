@@ -307,7 +307,7 @@ class FnDecl:
 	    self, doc_comment, attrs, vis, is_extern, is_unsafe, name, name_pos,
 	    args, ret_typ, stmts, scope, has_body = False, is_method = False,
 	    self_is_ref = False, self_is_mut = False, has_named_args = False,
-	    is_main = False, is_variadic = False, abi = None
+	    is_main = False, is_variadic = False, abi = None, is_generic=False, type_arguments=list()
 	):
 		self.doc_comment = doc_comment
 		self.attrs = attrs
@@ -319,11 +319,13 @@ class FnDecl:
 		self.self_is_ref = self_is_ref
 		self.self_is_mut = self_is_mut
 		self.self_typ = None
+		self.is_main = is_main
 		self.is_extern = is_extern
 		self.is_unsafe = is_unsafe
 		self.is_method = is_method
 		self.is_variadic = is_variadic
-		self.is_main = is_main
+		self.is_generic=is_generic
+		self.type_arguments=type_arguments
 		self.ret_typ = ret_typ
 		self.has_named_args = has_named_args
 		self.has_body = has_body

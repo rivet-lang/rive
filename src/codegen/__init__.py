@@ -771,7 +771,9 @@ class AST2RIR:
 		elif isinstance(d, ast.ExtendDecl):
 			self.convert_decls(d.decls)
 		elif isinstance(d, ast.FnDecl):
-			if d.is_extern and not d.has_body:
+			if d.is_generic:
+				return
+			elif d.is_extern and not d.has_body:
 				self.externs.append(
 				    ExternFn(d.name, d.ret_typ, d.args, d.is_variadic, d.attrs)
 				)

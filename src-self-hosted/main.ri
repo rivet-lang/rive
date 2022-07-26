@@ -18,6 +18,11 @@ struct Compiler {
     }
 }
 
+fn size_of<T>(_: T) usize {
+    return 0;
+}
+
 fn main() {
+    //_ = size_of<i32>(5);
     let compiler = Compiler::new();
 }

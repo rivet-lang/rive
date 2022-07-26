@@ -5,6 +5,8 @@
 # The Rivet programming language
 
 [Documentation](docs/00_getting_started.md)
+•
+[Roadmap](ROADMAP.md)
 
 <!--
 •

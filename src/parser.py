@@ -538,6 +538,20 @@ class Parser:
 		self_is_ref = False
 		self_is_mut = False
 		has_named_args = False
+
+		# parse type-arguments
+		is_generic=False
+		type_arguments=[]
+		if self.accept(Kind.Lt):
+			is_generic=True
+			while True:
+				generic_pos=self.tok.pos
+				generic_name = self.parse_name()
+				type_arguments.append(type.Generic(generic_name,generic_pos))
+				if not self.accept(Kind.Comma):
+					break
+			self.expect(Kind.Gt)
+
 		self.open_scope()
 		sc = self.scope
 		self.expect(Kind.Lparen)
@@ -601,7 +615,7 @@ class Parser:
 		    doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
 		    args, ret_typ, stmts, sc, has_body, is_method, self_is_ref,
 		    self_is_mut, has_named_args, self.is_pkg_level and name == "main",
-		    is_variadic, abi
+		    is_variadic, abi, is_generic, type_arguments
 		)
 
 	# ---- statements --------------------------
