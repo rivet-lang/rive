@@ -39,6 +39,22 @@ class TBase:
 				self.sym.info.parent.unalias()
 				_Ptr(self).store(self.sym.info.parent)
 
+class Generic(TBase):
+	def __init__(self, name, pos):
+		self.name=name
+		self.pos=pos
+
+	def qualstr(self):
+		return self.name
+
+	def __eq__(self, other):
+		if not isinstance(other, Generic):
+			return False
+		return self.name == other.name
+
+	def __str__(self):
+		return self.name
+
 class Type(TBase):
 	def __init__(self, sym):
 		self.sym = sym
