@@ -15,9 +15,6 @@ of stable and safe software. The syntax of the language is inspired by Rust.
 
 Rivet uses the C programming language as its main backend.
 
-> **NOTE:** Currently the language is in alpha state, and therefore its syntax
-and the language API is not stable, and may change in the long term.
-
 Before continuing, I assume you know how to use a console, otherwise you can
 read this tutorial:
 [The Linux command line for beginners](https://ubuntu.com/tutorials/command-line-for-beginners#1-overview).

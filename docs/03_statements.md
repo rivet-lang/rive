@@ -55,3 +55,11 @@ let f = tmp_tuple_func.0;
 let g = tmp_tuple_func.1;
 let h = tmp_tuple_func.2;
 ```
+
+* * *
+
+<div align="center">
+
+[back](02_functions.md) **|** [next](03_statements.md)
+
+</div>

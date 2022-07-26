@@ -19,8 +19,6 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 
 </div>
 
-> **NOTE:** Rivet is still in the development phase.
-
 Rivet's goal is to be a very powerful programming language and at the same time easy
 to use, with a syntax inspired mainly by Rust and C# (which are the coolest languages
 I've ever seen), and by other languages such as Python, Lua, TypeScript, D, Zig, etc.
@@ -41,23 +39,22 @@ by default.
 supported.
 * **Generics:** Specialize and reuse the same code for different types.
 
-## Roadmap
+## Important note
 
-* [ ] Improve language design.
-* [ ] Make lib basically available.
-* [ ] Make self-hosted compiler.
+Currently the language is in alpha state, and therefore its syntax and the language
+API is not stable, and may change in the long term. Not all features are implemented.
 
-## Dependencies
+## Run the compiler
+
+### Dependencies
+
+The compiler requires Python 3.
 
 The Rivet compiler currently generates C code, so a C compiler, which supports C11,
 is required to generate executables. Over time the compiler will add support for
 generating binaries directly without the need for a C compiler.
 
-## Run the compiler
-
-> **NOTE:** To run the compiler you must have Python 3.
-
-> **NOTE:** At present, the test is successful only on **Linux** and **Windows**.
+The compiler has been tested on **linux** and **windows**.
 
 Just execute `python rivetc.py some_file.ri`.
 
