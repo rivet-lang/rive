@@ -5,6 +5,8 @@
 # The Rivet programming language
 
 [Documentation](docs/00_getting_started.md)
+•
+[Roadmap](ROADMAP.md)
 
 <!--
 •
@@ -66,6 +68,6 @@ You can see all available compiler options by using the `-h`/`--help` flag.
 
 <div align="center">
 
-Copyright © 2022 **The Rivet Team**
+© 2022 **The Rivet Team**
 
 </div>
