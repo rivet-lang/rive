@@ -4,6 +4,11 @@ on:
   push:
     paths: ['src-self-hosted/**.ri', 'lib/**.ri', 'src/**.py']
     branches: [main]
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    paths-ignore:
+      - "**.md"
 
 jobs:
   ubuntu-clang:
