@@ -540,14 +540,14 @@ class Parser:
 		has_named_args = False
 
 		# parse type-arguments
-		is_generic=False
+		g_idx=0
 		type_arguments=[]
 		if self.accept(Kind.Lt):
-			is_generic=True
 			while True:
 				generic_pos=self.tok.pos
 				generic_name = self.parse_name()
-				type_arguments.append(type.Generic(generic_name,generic_pos))
+				type_arguments.append(type.Generic(generic_name,g_idx,generic_pos))
+				g_idx+=1
 				if not self.accept(Kind.Comma):
 					break
 			self.expect(Kind.Gt)
@@ -615,7 +615,7 @@ class Parser:
 		    doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
 		    args, ret_typ, stmts, sc, has_body, is_method, self_is_ref,
 		    self_is_mut, has_named_args, self.is_pkg_level and name == "main",
-		    is_variadic, abi, is_generic, type_arguments
+		    is_variadic, abi, type_arguments
 		)
 
 	# ---- statements --------------------------
@@ -1275,10 +1275,18 @@ class Parser:
 	def parse_ident(self, is_comptime = False):
 		pos = self.tok.pos
 		name = self.parse_name()
+		type_args=list()
+		if self.tok.kind==Kind.DoubleColon and self.peek_tok.kind==Kind.Lt:
+			self.advance(2)
+			while True:
+				type_args.append(self.parse_type())
+				if not self.accept(Kind.Comma):
+					break
+			self.expect(Kind.Gt)
 		sc = self.scope
 		if sc == None:
 			sc = sym.Scope(sc)
-		return ast.Ident(name, pos, sc, is_comptime)
+		return ast.Ident(name, pos, sc, is_comptime, type_args)
 
 	def parse_pkg_expr(self):
 		pos = self.tok.pos

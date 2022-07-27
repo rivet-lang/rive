@@ -930,6 +930,7 @@ class Checker:
 		elif isinstance(expr, ast.CallExpr):
 			expr.typ = self.comp.void_t
 			expr_left = expr.left
+
 			inside_parens = False
 			if isinstance(expr_left, ast.ParExpr
 			              ) and isinstance(expr_left.expr, ast.SelectorExpr):

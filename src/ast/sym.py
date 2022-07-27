@@ -2,6 +2,7 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
+import copy
 from enum import IntEnum as Enum, auto as auto_enum
 
 from ..ast import Visibility
@@ -87,7 +88,7 @@ def symbol_count():
 	return ret
 
 class Sym:
-	def __init__(self, vis, name):
+	def __init__(self, vis, name, type_arguments=list()):
 		self.vis = vis
 		self.name = name
 		self.mangled_name = ""
@@ -97,6 +98,8 @@ class Sym:
 		self.index = symbol_count()
 		self.is_core = isinstance(self, Pkg) and self.index == 22
 		self.is_universe = isinstance(self, Pkg) and self.index == 0
+		self.is_generic = len(type_arguments)>0
+		self.type_arguments=type_arguments
 		self.uses = 0
 
 	def add(self, sym):
@@ -218,6 +221,12 @@ class Sym:
 				syms.append(s)
 		return syms
 
+	def find_type_arg(self, name):
+		for type_arg in self.syms:
+			if type_arg.kind == TypeKind.TypeArg and type_arg.name==name:
+				return type_arg
+		return None
+
 	def find(self, name):
 		for sym in self.syms:
 			if sym.name == name:
@@ -274,9 +283,30 @@ class Sym:
 			return self.qualified_name
 		if self.parent == None or self.parent.is_universe:
 			self.qualified_name = self.name
+			if self.is_generic:
+				self.qualified_name += "::<>"
 			return self.qualified_name
 		self.qualified_name = f"{self.parent.qualname()}::{self.name}"
+		if self.is_generic:
+			self.qualified_name += "::<>"
 		return self.qualified_name
+
+	def inst_generic(self, type_args):
+		new_name = f"{self.name}::<{', '.join([t.qualstr() for t in type_args])}>"
+		if generic_sym := self.find(new_name):
+			return generic_sym
+		new_inst = copy.copy(self)
+		new_inst.name = new_name
+		if isinstance(self, Fn):
+			for typ_arg in self.type_arguments:
+				concrete_type = type_args[typ_arg.idx]
+				for arg in new_inst.args:
+					arg.typ=copy.copy(arg.typ)
+					arg.typ.resolve_generic(typ_arg, concrete_type)
+				new_inst.ret_typ=copy.copy(new_inst.ret_typ)
+				new_inst.ret_typ.resolve_generic(typ_arg, concrete_type)
+		self.syms.append(new_inst)
+		return new_inst
 
 	def __getitem__(self, idx):
 		if isinstance(idx, str):
@@ -320,6 +350,7 @@ class Field:
 class TypeKind(Enum):
 	Placeholder = auto_enum()
 	Void = auto_enum()
+	TypeArg = auto_enum()
 	None_ = auto_enum()
 	Bool = auto_enum()
 	Rune = auto_enum()
@@ -363,6 +394,8 @@ class TypeKind(Enum):
 	def __repr__(self):
 		if self == TypeKind.Void:
 			return "void"
+		elif self == TypeKind.TypeArg:
+			return "type argument"
 		elif self == TypeKind.None_:
 			return "none"
 		elif self == TypeKind.Bool:
@@ -522,17 +555,15 @@ class Fn(Sym):
 	def __init__(
 	    self, abi, vis, is_extern, is_unsafe, is_method, is_variadic, name,
 	    args, ret_typ, has_named_args, has_body, name_pos, rec_is_mut,
-	    rec_is_ref, is_generic, type_arguments
+	    rec_is_ref, type_arguments
 	):
-		Sym.__init__(self, vis, name)
+		Sym.__init__(self, vis, name, type_arguments)
 		self.is_main = False
 		self.abi = abi
 		self.is_extern = is_extern
 		self.is_unsafe = is_unsafe
 		self.is_method = is_method
 		self.is_variadic = is_variadic
-		self.is_generic=is_generic
-		self.type_arguments=type_arguments
 		self.self_typ = None
 		self.rec_is_mut = rec_is_mut
 		self.rec_is_ref = rec_is_ref
@@ -541,14 +572,6 @@ class Fn(Sym):
 		self.has_named_args = has_named_args
 		self.has_body = has_body
 		self.name_pos = name_pos
-
-	def has_generic(self, name):
-		if not self.is_generic:
-			return False
-		for g in self.type_arguments:
-			if g.name==name:
-				return True
-		return False
 
 	def args_len(self):
 		from .type import Variadic

@@ -39,9 +39,27 @@ class TBase:
 				self.sym.info.parent.unalias()
 				_Ptr(self).store(self.sym.info.parent)
 
+	def resolve_generic(self, generic_type, concrete_type):
+		if isinstance(self, (Result, Optional)):
+			self.typ.resolve_generic(generic_type, concrete_type)
+		elif isinstance(self, Fn):
+			for i in range(len(self.args)):
+				self.args[i].resolve_generic(generic_type, concrete_type)
+			self.ret_typ.resolve_generic(generic_type, concrete_type)
+		elif isinstance(self, Tuple):
+			for t in self.types:
+				t.resolve_generic(generic_type, concrete_type)
+		elif isinstance(self, (Array, Slice, Ptr, Ref)):
+			self.typ.resolve_generic(generic_type, concrete_type)
+		elif isinstance(self, Type):
+			if self.is_resolved() and self.sym.kind == TypeKind.TypeArg:
+				if self.sym.name == generic_type.name:
+					_Ptr(self).store(concrete_type)
+
 class Generic(TBase):
-	def __init__(self, name, pos):
+	def __init__(self, name, idx, pos):
 		self.name=name
+		self.idx=idx
 		self.pos=pos
 
 	def qualstr(self):
@@ -241,7 +259,7 @@ class Fn(TBase):
 		    self.is_unsafe, self.is_method, self.is_variadic,
 		    self.stringify(False), args, self.ret_typ, False,
 		    not self.is_extern, token.Pos("", 0, 0,
-		                                  0), self.rec_is_mut, self.rec_is_ref, False, []
+		                                  0), self.rec_is_mut, self.rec_is_ref, []
 		)
 
 	def stringify(self, qual):
