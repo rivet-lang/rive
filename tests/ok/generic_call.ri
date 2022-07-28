@@ -1,6 +1,6 @@
 fn size_of<T>() usize { return size_of!(T); }
 
 fn main() {
-    let x = size_of::<i32>();
-    assert!(x == 4);
+    assert!(size_of::<i32>() == 4);
+    assert!(size_of::<rune>() == 4);
 }

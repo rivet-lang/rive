@@ -449,7 +449,7 @@ class Ident:
 		if self.is_comptime:
 			return f"${self.name}"
 		elif self.has_type_args:
-			return f"{self.name}<{', '.join([str(t) for t in self.type_args])}>"
+			return f"{self.name}::<{', '.join([str(t) for t in self.type_args])}>"
 		return self.name
 
 	def __str__(self):
