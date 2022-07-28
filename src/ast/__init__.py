@@ -307,7 +307,8 @@ class FnDecl:
 	    self, doc_comment, attrs, vis, is_extern, is_unsafe, name, name_pos,
 	    args, ret_typ, stmts, scope, has_body = False, is_method = False,
 	    self_is_ref = False, self_is_mut = False, has_named_args = False,
-	    is_main = False, is_variadic = False, abi = None, type_arguments=list()
+	    is_main = False, is_variadic = False, abi = None,
+	    type_arguments = list()
 	):
 		self.doc_comment = doc_comment
 		self.attrs = attrs
@@ -324,8 +325,8 @@ class FnDecl:
 		self.is_unsafe = is_unsafe
 		self.is_method = is_method
 		self.is_variadic = is_variadic
-		self.is_generic=len(type_arguments)>0
-		self.type_arguments=type_arguments
+		self.is_generic = len(type_arguments) > 0
+		self.type_arguments = type_arguments
 		self.ret_typ = ret_typ
 		self.has_named_args = has_named_args
 		self.has_body = has_body
@@ -431,15 +432,15 @@ class PkgExpr:
 		return self.__repr__()
 
 class Ident:
-	def __init__(self, name, pos, scope, is_comptime, type_args=list()):
+	def __init__(self, name, pos, scope, is_comptime, type_args = list()):
 		self.name = name
 		self.obj = None
 		self.sym = None
 		self.is_obj = False
 		self.is_comptime = is_comptime
-		self.type_arg_idx=-1
-		self.type_args=type_args
-		self.has_type_args=len(type_args)>0
+		self.type_arg_idx = -1
+		self.type_args = type_args
+		self.has_type_args = len(type_args) > 0
 		self.scope = scope
 		self.pos = pos
 		self.typ = None

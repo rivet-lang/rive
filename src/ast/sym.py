@@ -88,7 +88,7 @@ def symbol_count():
 	return ret
 
 class Sym:
-	def __init__(self, vis, name, type_arguments=list()):
+	def __init__(self, vis, name, type_arguments = list()):
 		self.vis = vis
 		self.name = name
 		self.mangled_name = ""
@@ -98,9 +98,9 @@ class Sym:
 		self.index = symbol_count()
 		self.is_core = isinstance(self, Pkg) and self.index == 22
 		self.is_universe = isinstance(self, Pkg) and self.index == 0
-		self.is_generic = len(type_arguments)>0
-		self.is_generic_instance=False
-		self.type_arguments=type_arguments
+		self.is_generic = len(type_arguments) > 0
+		self.is_generic_instance = False
+		self.type_arguments = type_arguments
 		self.uses = 0
 
 	def add(self, sym):
@@ -223,9 +223,9 @@ class Sym:
 		return syms
 
 	def find_type_arg(self, name):
-		for i,type_arg in enumerate(self.syms):
-			if type_arg.kind == TypeKind.TypeArg and type_arg.name==name:
-				return type_arg,i
+		for i, type_arg in enumerate(self.syms):
+			if type_arg.kind == TypeKind.TypeArg and type_arg.name == name:
+				return type_arg, i
 		return None, -1
 
 	def find(self, name):
@@ -297,20 +297,20 @@ class Sym:
 		new_name = f"{self.name}::<{', '.join([t.qualstr() for t in type_args])}>"
 		if generic_sym := self.find(new_name):
 			return generic_sym
-		type_args_mangled=f"Lt_{'__'.join([mangle_type(t) for t in type_args])}_Gt"
+		type_args_mangled = f"Lt_{'__'.join([mangle_type(t) for t in type_args])}_Gt"
 		new_inst = copy.copy(self)
 		new_inst.name = new_name
 		new_inst.mangled_name = f"{mangle_symbol(self)}{len(type_args_mangled)}{type_args_mangled}"
-		new_inst.type_arguments=type_args
+		new_inst.type_arguments = type_args
 		new_inst.is_generic_instance = True
 		new_inst.parent = self
 		if isinstance(self, Fn):
 			for typ_arg in self.type_arguments:
 				concrete_type = type_args[typ_arg.idx]
 				for arg in new_inst.args:
-					arg.typ=copy.copy(arg.typ)
+					arg.typ = copy.copy(arg.typ)
 					arg.typ.resolve_generic(typ_arg, concrete_type)
-				new_inst.ret_typ=copy.copy(new_inst.ret_typ)
+				new_inst.ret_typ = copy.copy(new_inst.ret_typ)
 				new_inst.ret_typ.resolve_generic(typ_arg, concrete_type)
 		self.syms.append(new_inst)
 		return new_inst

@@ -540,14 +540,16 @@ class Parser:
 		has_named_args = False
 
 		# parse type-arguments
-		g_idx=0
-		type_arguments=[]
+		g_idx = 0
+		type_arguments = []
 		if self.accept(Kind.Lt):
 			while True:
-				generic_pos=self.tok.pos
+				generic_pos = self.tok.pos
 				generic_name = self.parse_name()
-				type_arguments.append(type.Generic(generic_name,g_idx,generic_pos))
-				g_idx+=1
+				type_arguments.append(
+				    type.Generic(generic_name, g_idx, generic_pos)
+				)
+				g_idx += 1
 				if not self.accept(Kind.Comma):
 					break
 			self.expect(Kind.Gt)
@@ -1275,8 +1277,8 @@ class Parser:
 	def parse_ident(self, is_comptime = False):
 		pos = self.tok.pos
 		name = self.parse_name()
-		type_args=list()
-		if self.tok.kind==Kind.DoubleColon and self.peek_tok.kind==Kind.Lt:
+		type_args = list()
+		if self.tok.kind == Kind.DoubleColon and self.peek_tok.kind == Kind.Lt:
 			self.advance(2)
 			while True:
 				type_args.append(self.parse_type())

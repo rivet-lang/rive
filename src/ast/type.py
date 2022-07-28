@@ -58,9 +58,9 @@ class TBase:
 
 class Generic(TBase):
 	def __init__(self, name, idx, pos):
-		self.name=name
-		self.idx=idx
-		self.pos=pos
+		self.name = name
+		self.idx = idx
+		self.pos = pos
 
 	def qualstr(self):
 		return self.name
@@ -258,8 +258,8 @@ class Fn(TBase):
 		    self.abi, Visibility.Public, self.is_extern,
 		    self.is_unsafe, self.is_method, self.is_variadic,
 		    self.stringify(False), args, self.ret_typ, False,
-		    not self.is_extern, token.Pos("", 0, 0,
-		                                  0), self.rec_is_mut, self.rec_is_ref, []
+		    not self.is_extern, token.Pos("", 0, 0, 0), self.rec_is_mut,
+		    self.rec_is_ref, []
 		)
 
 	def stringify(self, qual):

@@ -206,14 +206,14 @@ class Resolver:
 			self.resolve_stmts(decl.stmts)
 			self.cur_fn_scope = None
 		elif isinstance(decl, ast.FnDecl):
-			self.cur_fn=decl.sym
+			self.cur_fn = decl.sym
 			self.cur_fn_scope = decl.scope
 			for arg in decl.args:
 				self.resolve_type(arg.typ)
 				if arg.has_def_expr: self.resolve_expr(arg.def_expr)
 			self.resolve_type(decl.ret_typ)
 			self.resolve_stmts(decl.stmts)
-			self.cur_fn=None
+			self.cur_fn = None
 			self.cur_fn_scope = None
 		elif isinstance(decl, ast.DestructorDecl):
 			self.resolve_stmts(decl.stmts)
@@ -414,9 +414,9 @@ class Resolver:
 				)
 			return
 		elif self.cur_fn and self.cur_fn.is_generic:
-			if tup:= self.cur_fn.find_type_arg(ident.name):
+			if tup := self.cur_fn.find_type_arg(ident.name):
 				ident.sym = tup[0]
-				ident.type_arg_idx=tup[1]
+				ident.type_arg_idx = tup[1]
 				return
 
 		if obj := ident.scope.lookup(ident.name):
@@ -441,11 +441,17 @@ class Resolver:
 				report.error("objects cannot have type arguments", ident.pos)
 			elif ident.sym:
 				if ident.sym.is_generic:
-					ident.sym=ident.sym.inst_generic(ident.type_args)
+					ident.sym = ident.sym.inst_generic(ident.type_args)
 				else:
-					report.error(f"{ident.sym.sym_kind()} `{ident.name}` is not generic", ident.pos)
+					report.error(
+					    f"{ident.sym.sym_kind()} `{ident.name}` is not generic",
+					    ident.pos
+					)
 		elif ident.sym and ident.sym.is_generic:
-			report.error(f"expected {len(ident.sym.type_arguments)} type argument(s), found 0",ident.pos)
+			report.error(
+			    f"expected {len(ident.sym.type_arguments)} type argument(s), found 0",
+			    ident.pos
+			)
 			report.note(f"for generic {ident.sym.sym_kind()} `{ident.name}`")
 
 	def resolve_path_expr(self, path):
