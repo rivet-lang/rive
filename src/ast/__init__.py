@@ -437,8 +437,9 @@ class Ident:
 		self.sym = None
 		self.is_obj = False
 		self.is_comptime = is_comptime
-		self.has_type_args=len(type_args)>0
+		self.type_arg_idx=-1
 		self.type_args=type_args
+		self.has_type_args=len(type_args)>0
 		self.scope = scope
 		self.pos = pos
 		self.typ = None

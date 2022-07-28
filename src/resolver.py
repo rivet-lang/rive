@@ -414,8 +414,9 @@ class Resolver:
 				)
 			return
 		elif self.cur_fn and self.cur_fn.is_generic:
-			if type_arg := self.cur_fn.find_type_arg(ident.name):
-				ident.sym = type_arg
+			if tup:= self.cur_fn.find_type_arg(ident.name):
+				ident.sym = tup[0]
+				ident.type_arg_idx=tup[1]
 				return
 
 		if obj := ident.scope.lookup(ident.name):
@@ -438,10 +439,11 @@ class Resolver:
 		if ident.has_type_args:
 			if ident.is_obj:
 				report.error("objects cannot have type arguments", ident.pos)
-			elif ident.sym.is_generic:
-				ident.sym=ident.sym.inst_generic(ident.type_args)
-			else:
-				report.error(f"{ident.sym.sym_kind()} `{ident.name}` is not generic", ident.pos)
+			elif ident.sym:
+				if ident.sym.is_generic:
+					ident.sym=ident.sym.inst_generic(ident.type_args)
+				else:
+					report.error(f"{ident.sym.sym_kind()} `{ident.name}` is not generic", ident.pos)
 		elif ident.sym and ident.sym.is_generic:
 			report.error(f"expected {len(ident.sym.type_arguments)} type argument(s), found 0",ident.pos)
 			report.note(f"for generic {ident.sym.sym_kind()} `{ident.name}`")

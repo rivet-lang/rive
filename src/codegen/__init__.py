@@ -628,6 +628,7 @@ class AST2RIR:
 		self.cur_fn = None
 		self.cur_fn_qualname = ""
 		self.cur_fn_is_main = False
+		self.cur_concrete_types = []
 
 		self.loop_entry_label = ""
 		self.loop_exit_label = ""
@@ -772,7 +773,35 @@ class AST2RIR:
 			self.convert_decls(d.decls)
 		elif isinstance(d, ast.FnDecl):
 			if d.is_generic:
-				return
+				fn_decl = d
+				for g in d.sym.syms:
+					if not g.is_generic_instance:
+						continue
+					self.cur_concrete_types = g.type_arguments
+					self.cur_fn_qualname = fn_decl.sym.qualname()
+					args = fn_decl.args.copy()
+					if fn_decl.is_method:
+						args.insert(
+							0,
+							sym.Arg("self", fn_decl.self_typ, None, None, fn_decl.name_pos)
+						)
+					self.cur_fn = FnDecl(
+						fn_decl.vis.is_pub(), mangle_symbol(g), g.ret_typ,
+						args
+					)
+					self.convert_stmts(fn_decl.stmts)
+					if len(fn_decl.stmts) == 0 or (
+						isinstance(fn_decl.stmts[-1], ast.ExprStmt) and not isinstance(
+							fn_decl.stmts[-1].expr, (ast.ReturnExpr, ast.RaiseExpr)
+						)
+					):
+						if isinstance(
+							g.ret_typ, type.Result
+						) and g.ret_typ.typ == self.comp.void_t:
+							self.cur_fn.add_ret(self.result_void_ok(g.ret_typ))
+						elif g.ret_typ not in self.void_types:
+							self.cur_fn.add_ret(self.default_value(g.ret_typ))
+					self.decls.append(self.cur_fn)
 			elif d.is_extern and not d.has_body:
 				self.externs.append(
 				    ExternFn(d.name, d.ret_typ, d.args, d.is_variadic, d.attrs)
@@ -1082,6 +1111,7 @@ class AST2RIR:
 			_ = self.convert_expr(stmt.expr)
 
 	def convert_expr_with_cast(self, expected_typ, expr):
+		expected_typ=self.resolve_generic(expected_typ)
 		res_expr = self.convert_expr(expr)
 
 		if isinstance(res_expr, IntLiteral) and self.comp.is_int(expected_typ):
@@ -1211,7 +1241,7 @@ class AST2RIR:
 				    self.comp.str_t, mangled_name, len(mangled_name)
 				)
 			elif expr.name in ("size_of", "align_of"):
-				size, align = self.comp.type_size(expr.args[0].typ)
+				size, align = self.comp.type_size(self.resolve_generic(expr.args[0].typ))
 				if expr.name == "size_of":
 					return IntLiteral(self.comp.usize_t, str(size))
 				else:
@@ -2812,3 +2842,11 @@ class AST2RIR:
 				if ts.mangled_name == node.name:
 					types_sorted.append(ts)
 		return types_sorted
+
+	def resolve_generic(self, typ):
+		if len(self.cur_concrete_types)>0:
+			if isinstance(typ, type.Generic):
+				return self.cur_concrete_types[typ.idx]
+			elif isinstance(typ, type.Type) and typ.sym.kind==TypeKind.TypeArg and typ.expr.type_arg_idx>=0:
+				return self.cur_concrete_types[typ.expr.type_arg_idx]
+		return typ

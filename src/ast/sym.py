@@ -99,6 +99,7 @@ class Sym:
 		self.is_core = isinstance(self, Pkg) and self.index == 22
 		self.is_universe = isinstance(self, Pkg) and self.index == 0
 		self.is_generic = len(type_arguments)>0
+		self.is_generic_instance=False
 		self.type_arguments=type_arguments
 		self.uses = 0
 
@@ -222,10 +223,10 @@ class Sym:
 		return syms
 
 	def find_type_arg(self, name):
-		for type_arg in self.syms:
+		for i,type_arg in enumerate(self.syms):
 			if type_arg.kind == TypeKind.TypeArg and type_arg.name==name:
-				return type_arg
-		return None
+				return type_arg,i
+		return None, -1
 
 	def find(self, name):
 		for sym in self.syms:
@@ -292,11 +293,17 @@ class Sym:
 		return self.qualified_name
 
 	def inst_generic(self, type_args):
+		from ..codegen import mangle_symbol, mangle_type
 		new_name = f"{self.name}::<{', '.join([t.qualstr() for t in type_args])}>"
 		if generic_sym := self.find(new_name):
 			return generic_sym
+		type_args_mangled=f"Lt_{'__'.join([mangle_type(t) for t in type_args])}_Gt"
 		new_inst = copy.copy(self)
 		new_inst.name = new_name
+		new_inst.mangled_name = f"{mangle_symbol(self)}{len(type_args_mangled)}{type_args_mangled}"
+		new_inst.type_arguments=type_args
+		new_inst.is_generic_instance = True
+		new_inst.parent = self
 		if isinstance(self, Fn):
 			for typ_arg in self.type_arguments:
 				concrete_type = type_args[typ_arg.idx]
