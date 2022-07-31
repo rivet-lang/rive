@@ -639,7 +639,7 @@ class CastExpr:
 		self.typ = typ
 
 	def __repr__(self):
-		return f"cast({self.expr}, {self.typ})"
+		return f"as({self.typ}, {self.expr})"
 
 	def __str__(self):
 		return self.__repr__()
@@ -763,7 +763,7 @@ class CallExpr:
 		return l
 
 	def has_err_handler(self):
-		return self.err_handler.expr != None or self.err_handler.is_propagate
+		return self.err_handler.has_expr or self.err_handler.is_propagate
 
 	def __repr__(self):
 		res = f"{self.left}({', '.join([str(a) for a in self.args])})"
@@ -791,11 +791,14 @@ class CallArg:
 		return self.__repr__()
 
 class CallErrorHandler:
-	def __init__(self, is_propagate, varname, expr, varname_pos, scope, pos):
+	def __init__(
+	    self, is_propagate, varname, expr, has_expr, varname_pos, scope, pos
+	):
 		self.is_propagate = is_propagate
 		self.varname = varname
 		self.varname_pos = varname_pos
 		self.expr = expr
+		self.has_expr = has_expr
 		self.scope = scope
 		self.pos = pos
 

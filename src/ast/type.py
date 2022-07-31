@@ -6,6 +6,45 @@ from .. import token
 from . import Visibility
 from .sym import TypeKind, Fn as FnInfo, Arg
 
+def resolve_generic(typ, generic_type, concrete_type):
+	if isinstance(typ, Fn):
+		final_typ = copy.copy(typ)
+		typ_args = []
+		for t in typ.args:
+			typ_args.append(resolve_generic(t, generic_type, concrete_type))
+		#final_typ.args =
+		final_typ.ret_typ = resolve_generic(
+		    typ.ret_typ, generic_type, concrete_type
+		)
+		return final_typ
+	elif isinstance(typ, Tuple):
+		final_types = []
+		for t in typ.types:
+			final_types.append(resolve_generic(t, generic_type, concrete_type))
+		return Tuple(final_types)
+	elif isinstance(typ, (Result, Optional, Array, Slice, Ptr, Ref)):
+		final_typ = resolve_generic(typ.typ, generic_type, concrete_type)
+		if isinstance(typ, Result):
+			return Result(final_typ)
+		elif isinstance(typ, Optional):
+			return Optional(final_typ)
+		elif isinstance(typ, Slice):
+			return Slice(final_typ, typ.is_mut)
+		elif isinstance(typ, Ptr):
+			return Ptr(final_typ, typ.is_mut)
+		elif isinstance(typ, Ref):
+			return Ref(final_typ, typ.is_mut)
+		return Array(final_typ, typ.size)
+	elif isinstance(typ, Type):
+		if typ.is_resolved() and typ.sym.kind == TypeKind.TypeArg:
+			if (
+			    isinstance(generic_type, Generic)
+			    and typ.sym.name == generic_type.name
+			) or typ.sym.name == generic_type.sym.name:
+				return concrete_type
+		return typ
+	return typ
+
 class _Ptr: # ugly hack =/
 	def __init__(self, val):
 		self.val = val
@@ -38,23 +77,6 @@ class TBase:
 			if self.is_resolved() and self.sym.kind == TypeKind.Alias:
 				self.sym.info.parent.unalias()
 				_Ptr(self).store(self.sym.info.parent)
-
-	def resolve_generic(self, generic_type, concrete_type):
-		if isinstance(self, (Result, Optional)):
-			self.typ.resolve_generic(generic_type, concrete_type)
-		elif isinstance(self, Fn):
-			for i in range(len(self.args)):
-				self.args[i].resolve_generic(generic_type, concrete_type)
-			self.ret_typ.resolve_generic(generic_type, concrete_type)
-		elif isinstance(self, Tuple):
-			for t in self.types:
-				t.resolve_generic(generic_type, concrete_type)
-		elif isinstance(self, (Array, Slice, Ptr, Ref)):
-			self.typ.resolve_generic(generic_type, concrete_type)
-		elif isinstance(self, Type):
-			if self.is_resolved() and self.sym.kind == TypeKind.TypeArg:
-				if self.sym.name == generic_type.name:
-					_Ptr(self).store(concrete_type)
 
 class Generic(TBase):
 	def __init__(self, name, idx, pos):

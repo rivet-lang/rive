@@ -296,8 +296,8 @@ class Resolver:
 		elif isinstance(expr, ast.PostfixExpr):
 			self.resolve_expr(expr.left)
 		elif isinstance(expr, ast.CastExpr):
-			self.resolve_expr(expr.expr)
 			self.resolve_type(expr.typ)
+			self.resolve_expr(expr.expr)
 		elif isinstance(expr, ast.IndexExpr):
 			self.resolve_expr(expr.left)
 			self.resolve_expr(expr.index)
@@ -441,7 +441,20 @@ class Resolver:
 				report.error("objects cannot have type arguments", ident.pos)
 			elif ident.sym:
 				if ident.sym.is_generic:
-					ident.sym = ident.sym.inst_generic(ident.type_args)
+					len_i_ta = len(ident.type_args)
+					len_sym_ta = len(ident.sym.type_arguments)
+					for i in range(len_i_ta):
+						if not self.resolve_type(ident.type_args[i]):
+							return
+					if len_i_ta != len_sym_ta:
+						kw = "few" if len_i_ta < len_sym_ta else "many"
+						report.error(
+						    f"too {kw} type arguments to generic {ident.sym.sym_kind()} `{ident.name}`",
+						    ident.pos
+						)
+						report.note(f"expected {len_sym_ta}, found {len_i_ta}")
+					else:
+						ident.sym = ident.sym.inst_generic(ident.type_args)
 				else:
 					report.error(
 					    f"{ident.sym.sym_kind()} `{ident.name}` is not generic",

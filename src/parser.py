@@ -1020,6 +1020,7 @@ class Parser:
 				varname = ""
 				varname_pos = self.tok.pos
 				err_expr = None
+				has_err_expr = False
 				if self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Bang:
 					# check result value, if error propagate
 					err_handler_pos = self.peek_tok.pos
@@ -1031,11 +1032,12 @@ class Parser:
 						varname = self.parse_name()
 						self.expect(Kind.Pipe)
 					err_expr = self.parse_expr()
+					has_err_expr = True
 				expr = ast.CallExpr(
 				    expr, args,
 				    ast.CallErrorHandler(
-				        is_propagate, varname, err_expr, varname_pos,
-				        self.scope, err_handler_pos
+				        is_propagate, varname, err_expr, has_err_expr,
+				        varname_pos, self.scope, err_handler_pos
 				    ), expr.pos
 				)
 			elif self.accept(Kind.Lbracket):
