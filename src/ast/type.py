@@ -2,6 +2,8 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
+import copy
+
 from .. import token
 from . import Visibility
 from .sym import TypeKind, Fn as FnInfo, Arg
@@ -10,9 +12,9 @@ def resolve_generic(typ, generic_type, concrete_type):
 	if isinstance(typ, Fn):
 		final_typ = copy.copy(typ)
 		typ_args = []
-		for t in typ.args:
-			typ_args.append(resolve_generic(t, generic_type, concrete_type))
-		#final_typ.args =
+		for arg in typ.args:
+			typ_args.append(resolve_generic(arg, generic_type, concrete_type))
+		final_typ.args = typ_args
 		final_typ.ret_typ = resolve_generic(
 		    typ.ret_typ, generic_type, concrete_type
 		)

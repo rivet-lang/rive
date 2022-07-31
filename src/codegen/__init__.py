@@ -777,7 +777,7 @@ class AST2RIR:
 					if not g.is_generic_instance:
 						continue
 					self.cur_concrete_types = g.type_arguments
-					self.cur_fn_qualname = d.sym.qualname()
+					self.cur_fn_qualname = g.qualname()
 					args = g.args.copy()
 					if d.is_method:
 						args.insert(

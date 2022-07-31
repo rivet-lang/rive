@@ -436,36 +436,43 @@ class Resolver:
 			report.error(f"cannot find `{ident.name}` in this scope", ident.pos)
 
 		# resolve generic
-		if ident.has_type_args:
-			if ident.is_obj:
-				report.error("objects cannot have type arguments", ident.pos)
-			elif ident.sym:
-				if ident.sym.is_generic:
+		if ident.sym:
+			if ident.has_type_args:
+				if ident.is_obj:
+					report.error(
+					    "objects cannot have type arguments", ident.pos
+					)
+				elif ident.sym.is_generic:
 					len_i_ta = len(ident.type_args)
 					len_sym_ta = len(ident.sym.type_arguments)
+					errs = 0
 					for i in range(len_i_ta):
 						if not self.resolve_type(ident.type_args[i]):
-							return
+							errs += 1
 					if len_i_ta != len_sym_ta:
 						kw = "few" if len_i_ta < len_sym_ta else "many"
 						report.error(
-						    f"too {kw} type arguments to generic {ident.sym.sym_kind()} `{ident.name}`",
+						    f"too {kw} type arguments to {ident.sym.sym_kind()} `{ident.name}`",
 						    ident.pos
 						)
-						report.note(f"expected {len_sym_ta}, found {len_i_ta}")
-					else:
+						report.note(
+						    f"expected {len_sym_ta} type argument(s) found {len_i_ta}"
+						)
+					elif errs == 0:
 						ident.sym = ident.sym.inst_generic(ident.type_args)
 				else:
 					report.error(
 					    f"{ident.sym.sym_kind()} `{ident.name}` is not generic",
 					    ident.pos
 					)
-		elif ident.sym and ident.sym.is_generic:
-			report.error(
-			    f"expected {len(ident.sym.type_arguments)} type argument(s), found 0",
-			    ident.pos
-			)
-			report.note(f"for generic {ident.sym.sym_kind()} `{ident.name}`")
+			elif ident.sym.is_generic:
+				report.error(
+				    f"too few type arguments to {ident.sym.sym_kind()} `{ident.name}`",
+				    ident.pos
+				)
+				report.note(
+				    f"expected {len(ident.sym.type_arguments)} type argument(s), found 0"
+				)
 
 	def resolve_path_expr(self, path):
 		if path.is_global:
