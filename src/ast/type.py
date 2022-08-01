@@ -8,41 +8,59 @@ from .. import token
 from . import Visibility
 from .sym import TypeKind, Fn as FnInfo, Arg
 
-def resolve_generic(typ, generic_type, concrete_type):
+def resolve_generic(uni, typ, generic_type, concrete_type):
 	if isinstance(typ, Fn):
 		final_typ = copy.copy(typ)
 		typ_args = []
 		for arg in typ.args:
-			typ_args.append(resolve_generic(arg, generic_type, concrete_type))
+			typ_args.append(
+			    resolve_generic(uni, arg, generic_type, concrete_type)
+			)
 		final_typ.args = typ_args
 		final_typ.ret_typ = resolve_generic(
-		    typ.ret_typ, generic_type, concrete_type
+		    uni, typ.ret_typ, generic_type, concrete_type
 		)
 		return final_typ
 	elif isinstance(typ, Tuple):
 		final_types = []
 		for t in typ.types:
-			final_types.append(resolve_generic(t, generic_type, concrete_type))
-		return Tuple(final_types)
+			final_types.append(
+			    resolve_generic(uni, t, generic_type, concrete_type)
+			)
+		res = Tuple(final_types)
+		res.sym = uni.add_or_get_tuple(final_types)
+		return res
 	elif isinstance(typ, (Result, Optional, Array, Slice, Ptr, Ref)):
-		final_typ = resolve_generic(typ.typ, generic_type, concrete_type)
+		final_typ = resolve_generic(uni, typ.typ, generic_type, concrete_type)
 		if isinstance(typ, Result):
-			return Result(final_typ)
+			res = Result(final_typ)
+			res.sym = uni.add_or_get_result(final_typ)
+			return res
 		elif isinstance(typ, Optional):
-			return Optional(final_typ)
+			res = Optional(final_typ)
+			if not isinstance(final_typ, Ref):
+				res.sym = uni.add_or_get_optional(final_typ)
+			return res
 		elif isinstance(typ, Slice):
-			return Slice(final_typ, typ.is_mut)
+			res = Slice(final_typ, typ.is_mut)
+			res.sym = uni.add_or_get_slice(final_typ)
+			return res
 		elif isinstance(typ, Ptr):
 			return Ptr(final_typ, typ.is_mut)
 		elif isinstance(typ, Ref):
 			return Ref(final_typ, typ.is_mut)
-		return Array(final_typ, typ.size)
+		res = Array(final_typ, typ.size)
+		res.sym = uni.add_or_get_array(final_typ, typ.size)
+		return res
 	elif isinstance(typ, Type):
 		if typ.is_resolved() and typ.sym.kind == TypeKind.TypeArg:
 			if (
 			    isinstance(generic_type, Generic)
 			    and typ.sym.name == generic_type.name
-			) or typ.sym.name == generic_type.sym.name:
+			) or (
+			    isinstance(generic_type, Type)
+			    and typ.sym.name == generic_type.sym.name
+			):
 				return concrete_type
 		return typ
 	return typ

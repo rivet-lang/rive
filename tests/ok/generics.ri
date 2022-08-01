@@ -14,6 +14,10 @@ unsafe fn delete<T>(obj: *mut T) {
     }
 }
 
+fn triple<A, B, C>(a: A, b: B, c: C) (A, B, C) {
+    return (a, b, c);
+}
+
 fn main() {
     assert!(size_of::<i8>() == 1);
     assert!(size_of::<i32>() == 4);
@@ -30,4 +34,7 @@ fn main() {
         assert!(v != none);
         delete::<str>(v);
     }
+
+    let t = triple::<i32, bool, str>(5, true, "empty");
+    assert!(t.0 == 5 and t.1 and t.2 == "empty");
 }

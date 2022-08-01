@@ -2,7 +2,6 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-import copy
 from enum import IntEnum as Enum, auto as auto_enum
 
 from ..ast import Visibility
@@ -287,45 +286,12 @@ class Sym:
 		if self.parent == None or self.parent.is_universe:
 			self.qualified_name = self.name
 			if self.is_generic:
-				self.qualified_name += "::<>"
+				self.qualified_name += "<>"
 			return self.qualified_name
 		self.qualified_name = f"{self.parent.qualname()}::{self.name}"
 		if self.is_generic:
-			self.qualified_name += "::<>"
+			self.qualified_name += "<>"
 		return self.qualified_name
-
-	def inst_generic(self, type_args):
-		from ..ast.type import resolve_generic
-		from ..codegen import mangle_symbol, mangle_type
-
-		new_name = f"{self.name}<{', '.join([t.qualstr() for t in type_args])}>"
-		if generic_sym := self.find(new_name):
-			return generic_sym
-
-		type_args_mangled = f"Lt_{'__'.join([mangle_type(t) for t in type_args])}_Gt"
-		new_inst = copy.copy(self)
-		new_inst.name = new_name
-		new_inst.mangled_name = f"{mangle_symbol(self)}{len(type_args_mangled)}{type_args_mangled}"
-		new_inst.type_arguments = type_args
-		new_inst.is_generic = False
-		new_inst.is_generic_instance = True
-		new_inst.parent = self
-		if isinstance(self, Fn):
-			for typ_arg in self.type_arguments:
-				concrete_type = type_args[typ_arg.idx]
-				new_args = []
-				for arg in new_inst.args:
-					new_arg = copy.copy(arg)
-					new_arg.typ = resolve_generic(
-					    new_arg.typ, typ_arg, concrete_type
-					)
-					new_args.append(new_arg)
-				new_inst.args = new_args
-				new_inst.ret_typ = resolve_generic(
-				    new_inst.ret_typ, typ_arg, concrete_type
-				)
-		self.syms.append(new_inst)
-		return new_inst
 
 	def __getitem__(self, idx):
 		if isinstance(idx, str):
@@ -616,6 +582,8 @@ class Fn(Sym):
 		)
 
 def universe():
+	from ..ast.type import Ptr, Type as type_Type
+
 	uni = Pkg(Visibility.Private, "universe")
 	uni.add(Type(Visibility.Public, "void", TypeKind.Void))
 	uni.add(Type(Visibility.Public, "none", TypeKind.None_))
@@ -635,7 +603,6 @@ def universe():
 	uni.add(Type(Visibility.Public, "untyped_float", TypeKind.UntypedFloat))
 	uni.add(Type(Visibility.Public, "f32", TypeKind.Float32))
 	uni.add(Type(Visibility.Public, "f64", TypeKind.Float64))
-	from ..ast.type import Ptr, Type as type_Type
 	uni.add(
 	    Type(
 	        Visibility.Public, "str", TypeKind.Str, fields = [
@@ -646,4 +613,5 @@ def universe():
 	)
 	uni.add(Type(Visibility.Public, "error", TypeKind.Struct))
 	uni.add(Type(Visibility.Public, "no_return", TypeKind.NoReturn))
+
 	return uni
