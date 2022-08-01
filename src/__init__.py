@@ -2,7 +2,7 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-import os
+import os, copy
 
 from .ast import sym, type
 from . import (
@@ -204,6 +204,37 @@ class Compiler:
 			self.abort()
 
 	# ========================================================
+
+	def inst_generic(self, symbol, type_args):
+		new_name = f"{symbol.name}<{', '.join([t.qualstr() for t in type_args])}>"
+		if generic_sym := symbol.find(new_name):
+			return generic_sym
+
+		type_args_mangled = f"Lt_{'__'.join([codegen.mangle_type(t) for t in type_args])}_Gt"
+		new_inst = copy.copy(symbol)
+		new_inst.name = new_name
+		new_inst.mangled_name = f"{codegen.mangle_symbol(symbol)}{len(type_args_mangled)}{type_args_mangled}"
+		new_inst.type_arguments = type_args
+		new_inst.is_generic = False
+		new_inst.is_generic_instance = True
+		new_inst.parent = symbol
+		if isinstance(symbol, sym.Fn):
+			for typ_arg in symbol.type_arguments:
+				concrete_type = type_args[typ_arg.idx]
+				new_args = []
+				for arg in new_inst.args:
+					new_arg = copy.copy(arg)
+					new_arg.typ = type.resolve_generic(
+					    self.universe, new_arg.typ, typ_arg, concrete_type
+					)
+					new_args.append(new_arg)
+				new_inst.args = new_args
+				new_inst.ret_typ = type.resolve_generic(
+				    self.universe, new_inst.ret_typ, typ_arg, concrete_type
+				)
+		symbol.syms.append(new_inst)
+		return new_inst
+
 	def is_number(self, typ):
 		return self.is_int(typ) or self.is_float(typ)
 
@@ -280,7 +311,7 @@ class Compiler:
 		size, align = 0, 0
 		if sy.kind in (
 		    sym.TypeKind.Placeholder, sym.TypeKind.Void, sym.TypeKind.None_,
-		    sym.TypeKind.NoReturn
+		    sym.TypeKind.NoReturn, sym.TypeKind.TypeArg
 		):
 			pass
 		elif sy.kind == sym.TypeKind.Alias:
@@ -338,7 +369,7 @@ class Compiler:
 			size = self.round_up(total_size, max_alignment)
 			align = max_alignment
 		else:
-			raise Exception(f"type_size(): unsupported type `{typ}`")
+			raise Exception(f"type_size(): unsupported type `{sy.qualname()}`")
 		sy.size = size
 		sy.align = align
 		return size, align

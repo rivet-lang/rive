@@ -2,9 +2,68 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
+import copy
+
 from .. import token
 from . import Visibility
 from .sym import TypeKind, Fn as FnInfo, Arg
+
+def resolve_generic(uni, typ, generic_type, concrete_type):
+	if isinstance(typ, Fn):
+		final_typ = copy.copy(typ)
+		typ_args = []
+		for arg in typ.args:
+			typ_args.append(
+			    resolve_generic(uni, arg, generic_type, concrete_type)
+			)
+		final_typ.args = typ_args
+		final_typ.ret_typ = resolve_generic(
+		    uni, typ.ret_typ, generic_type, concrete_type
+		)
+		return final_typ
+	elif isinstance(typ, Tuple):
+		final_types = []
+		for t in typ.types:
+			final_types.append(
+			    resolve_generic(uni, t, generic_type, concrete_type)
+			)
+		res = Tuple(final_types)
+		res.sym = uni.add_or_get_tuple(final_types)
+		return res
+	elif isinstance(typ, (Result, Optional, Array, Slice, Ptr, Ref)):
+		final_typ = resolve_generic(uni, typ.typ, generic_type, concrete_type)
+		if isinstance(typ, Result):
+			res = Result(final_typ)
+			res.sym = uni.add_or_get_result(final_typ)
+			return res
+		elif isinstance(typ, Optional):
+			res = Optional(final_typ)
+			if not isinstance(final_typ, Ref):
+				res.sym = uni.add_or_get_optional(final_typ)
+			return res
+		elif isinstance(typ, Slice):
+			res = Slice(final_typ, typ.is_mut)
+			res.sym = uni.add_or_get_slice(final_typ)
+			return res
+		elif isinstance(typ, Ptr):
+			return Ptr(final_typ, typ.is_mut)
+		elif isinstance(typ, Ref):
+			return Ref(final_typ, typ.is_mut)
+		res = Array(final_typ, typ.size)
+		res.sym = uni.add_or_get_array(final_typ, typ.size)
+		return res
+	elif isinstance(typ, Type):
+		if typ.is_resolved() and typ.sym.kind == TypeKind.TypeArg:
+			if (
+			    isinstance(generic_type, Generic)
+			    and typ.sym.name == generic_type.name
+			) or (
+			    isinstance(generic_type, Type)
+			    and typ.sym.name == generic_type.sym.name
+			):
+				return concrete_type
+		return typ
+	return typ
 
 class _Ptr: # ugly hack =/
 	def __init__(self, val):
@@ -39,11 +98,29 @@ class TBase:
 				self.sym.info.parent.unalias()
 				_Ptr(self).store(self.sym.info.parent)
 
+class Generic(TBase):
+	def __init__(self, name, idx, pos):
+		self.name = name
+		self.idx = idx
+		self.pos = pos
+
+	def qualstr(self):
+		return self.name
+
+	def __eq__(self, other):
+		if not isinstance(other, Generic):
+			return False
+		return self.name == other.name
+
+	def __str__(self):
+		return self.name
+
 class Type(TBase):
 	def __init__(self, sym):
 		self.sym = sym
 		self.expr = None
 		self._unresolved = False
+		self.is_generic = False
 
 	@staticmethod
 	def unresolved(expr):
@@ -223,8 +300,8 @@ class Fn(TBase):
 		    self.abi, Visibility.Public, self.is_extern,
 		    self.is_unsafe, self.is_method, self.is_variadic,
 		    self.stringify(False), args, self.ret_typ, False,
-		    not self.is_extern, token.Pos("", 0, 0,
-		                                  0), self.rec_is_mut, self.rec_is_ref
+		    not self.is_extern, token.Pos("", 0, 0, 0), self.rec_is_mut,
+		    self.rec_is_ref, []
 		)
 
 	def stringify(self, qual):

@@ -87,7 +87,7 @@ def symbol_count():
 	return ret
 
 class Sym:
-	def __init__(self, vis, name):
+	def __init__(self, vis, name, type_arguments = list()):
 		self.vis = vis
 		self.name = name
 		self.mangled_name = ""
@@ -95,8 +95,11 @@ class Sym:
 		self.parent = None
 		self.syms = []
 		self.index = symbol_count()
-		self.is_core = isinstance(self, Pkg) and self.index == 22
 		self.is_universe = isinstance(self, Pkg) and self.index == 0
+		self.is_core = isinstance(self, Pkg) and self.index == 22
+		self.is_generic = len(type_arguments) > 0
+		self.is_generic_instance = False
+		self.type_arguments = type_arguments
 		self.uses = 0
 
 	def add(self, sym):
@@ -138,6 +141,7 @@ class Sym:
 		unique_name = f"Result_{mangle_type(elem_typ)}"
 		if sym := self.find(unique_name):
 			return sym
+
 		from ..ast import type
 		fields = []
 		if elem_typ != type.Type(self[0]):
@@ -160,6 +164,7 @@ class Sym:
 		unique_name = f"Optional_{mangle_type(elem_typ)}"
 		if sym := self.find(unique_name):
 			return sym
+
 		from ..ast import type
 		return self.add_and_return(
 		    Type(
@@ -218,6 +223,12 @@ class Sym:
 				syms.append(s)
 		return syms
 
+	def find_type_arg(self, name):
+		for i, type_arg in enumerate(self.syms):
+			if type_arg.kind == TypeKind.TypeArg and type_arg.name == name:
+				return (type_arg, i)
+		return None
+
 	def find(self, name):
 		for sym in self.syms:
 			if sym.name == name:
@@ -274,8 +285,12 @@ class Sym:
 			return self.qualified_name
 		if self.parent == None or self.parent.is_universe:
 			self.qualified_name = self.name
+			if self.is_generic:
+				self.qualified_name += "<>"
 			return self.qualified_name
 		self.qualified_name = f"{self.parent.qualname()}::{self.name}"
+		if self.is_generic:
+			self.qualified_name += "<>"
 		return self.qualified_name
 
 	def __getitem__(self, idx):
@@ -320,6 +335,7 @@ class Field:
 class TypeKind(Enum):
 	Placeholder = auto_enum()
 	Void = auto_enum()
+	TypeArg = auto_enum()
 	None_ = auto_enum()
 	Bool = auto_enum()
 	Rune = auto_enum()
@@ -363,6 +379,8 @@ class TypeKind(Enum):
 	def __repr__(self):
 		if self == TypeKind.Void:
 			return "void"
+		elif self == TypeKind.TypeArg:
+			return "type argument"
 		elif self == TypeKind.None_:
 			return "none"
 		elif self == TypeKind.Bool:
@@ -522,9 +540,10 @@ class Fn(Sym):
 	def __init__(
 	    self, abi, vis, is_extern, is_unsafe, is_method, is_variadic, name,
 	    args, ret_typ, has_named_args, has_body, name_pos, rec_is_mut,
-	    rec_is_ref
+	    rec_is_ref, type_arguments
 	):
-		Sym.__init__(self, vis, name)
+		Sym.__init__(self, vis, name, type_arguments)
+		self.is_main = False
 		self.abi = abi
 		self.is_extern = is_extern
 		self.is_unsafe = is_unsafe
@@ -538,7 +557,6 @@ class Fn(Sym):
 		self.has_named_args = has_named_args
 		self.has_body = has_body
 		self.name_pos = name_pos
-		self.is_main = False
 
 	def args_len(self):
 		from .type import Variadic
@@ -564,6 +582,8 @@ class Fn(Sym):
 		)
 
 def universe():
+	from ..ast.type import Ptr, Type as type_Type
+
 	uni = Pkg(Visibility.Private, "universe")
 	uni.add(Type(Visibility.Public, "void", TypeKind.Void))
 	uni.add(Type(Visibility.Public, "none", TypeKind.None_))
@@ -583,7 +603,6 @@ def universe():
 	uni.add(Type(Visibility.Public, "untyped_float", TypeKind.UntypedFloat))
 	uni.add(Type(Visibility.Public, "f32", TypeKind.Float32))
 	uni.add(Type(Visibility.Public, "f64", TypeKind.Float64))
-	from ..ast.type import Ptr, Type as type_Type
 	uni.add(
 	    Type(
 	        Visibility.Public, "str", TypeKind.Str, fields = [
@@ -594,4 +613,5 @@ def universe():
 	)
 	uni.add(Type(Visibility.Public, "error", TypeKind.Struct))
 	uni.add(Type(Visibility.Public, "no_return", TypeKind.NoReturn))
+
 	return uni
