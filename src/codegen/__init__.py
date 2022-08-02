@@ -1925,17 +1925,19 @@ class AST2RIR:
 			self.cur_fn.alloca(expr.typ, tmp, Inst(kind, [right]))
 			return Ident(expr.typ, tmp)
 		elif isinstance(expr, ast.BinaryExpr):
-			if isinstance(expr.left.typ, type.Optional):
+			expr_left_typ = self.unwrap(expr.left.typ)
+			expr_right_typ = self.unwrap(expr.right.typ)
+			if isinstance(expr_left_typ, type.Optional):
 				if expr.op in (
 				    Kind.Eq, Kind.Ne
-				) and not isinstance(expr.left.typ.typ, type.Ref):
-					left = self.convert_expr_with_cast(expr.left.typ, expr.left)
+				) and not isinstance(expr_left_typ.typ, type.Ref):
+					left = self.convert_expr_with_cast(expr_left_typ, expr.left)
 					val = Selector(self.comp.bool_t, left, Name("is_none"))
 					if expr.op == Kind.Ne:
 						val = Inst(InstKind.BooleanNot, [val])
 					return val
 				elif expr.op == Kind.KeyOrElse:
-					expr_typ = expr.left.typ
+					expr_typ = expr_left_typ
 					left = self.convert_expr_with_cast(expr_typ, expr.left)
 					is_none_label = self.cur_fn.local_name()
 					is_not_none_label = self.cur_fn.local_name()
@@ -1968,14 +1970,14 @@ class AST2RIR:
 					self.cur_fn.add_label(exit_label)
 					return tmp
 			elif expr.op in (Kind.KeyAnd, Kind.KeyOr):
-				left = self.convert_expr_with_cast(expr.left.typ, expr.left)
+				left = self.convert_expr_with_cast(expr_left_typ, expr.left)
 				if isinstance(left, IntLiteral):
 					if left.lit == "0" and expr.op == Kind.KeyAnd:
 						return left
 					elif left.lit == "1" and expr.op == Kind.KeyOr:
 						return left
 					return self.convert_expr_with_cast(
-					    expr.right.typ, expr.right
+					    expr_right_typ, expr.right
 					)
 
 				tmp = Ident(self.comp.bool_t, self.cur_fn.local_name())
@@ -1991,20 +1993,20 @@ class AST2RIR:
 
 				self.cur_fn.add_label(left_l)
 				self.cur_fn.store(
-				    tmp, self.convert_expr_with_cast(expr.left.typ, expr.right)
+				    tmp, self.convert_expr_with_cast(expr_left_typ, expr.right)
 				)
 
 				self.cur_fn.add_label(exit_l)
 				return tmp
 			elif expr.op in (Kind.KeyIs, Kind.KeyNotIs):
-				left = self.convert_expr_with_cast(expr.left.typ, expr.left)
+				left = self.convert_expr_with_cast(expr_left_typ, expr.left)
 				tmp = self.cur_fn.local_name()
 				if expr.op == Kind.KeyIs:
 					kind = "=="
 				else:
 					kind = "!="
-				left_sym = expr.left.typ.get_sym()
-				if expr.left.typ == self.comp.error_t:
+				left_sym = expr_left_typ.get_sym()
+				if expr_left_typ == self.comp.error_t:
 					self.cur_fn.alloca(
 					    expr.typ, tmp,
 					    Inst(
@@ -2013,7 +2015,7 @@ class AST2RIR:
 					            Selector(expr.typ, left, Name("tag")),
 					            IntLiteral(
 					                self.comp.usize_t,
-					                str(expr.right.typ.sym.info.nr)
+					                str(expr_right_typ.sym.info.nr)
 					            )
 					        ]
 					    )
@@ -2027,17 +2029,17 @@ class AST2RIR:
 					            Selector(expr.typ, left, Name("idx")),
 					            IntLiteral(
 					                self.comp.usize_t,
-					                str(expr.right.typ.sym.index)
+					                str(expr_right_typ.sym.index)
 					            )
 					        ]
 					    )
 					)
 				return Ident(expr.typ, tmp)
 
-			left = self.convert_expr_with_cast(expr.left.typ, expr.left)
-			right = self.convert_expr_with_cast(expr.right.typ, expr.right)
+			left = self.convert_expr_with_cast(expr_left_typ, expr.left)
+			right = self.convert_expr_with_cast(expr_right_typ, expr.right)
 
-			if self.comp.is_unsigned_int(expr.left.typ
+			if self.comp.is_unsigned_int(expr_left_typ
 			                             ) and isinstance(right, IntLiteral):
 				if expr.op == Kind.Lt and right.lit == "0":
 					report.warn(
@@ -2052,11 +2054,10 @@ class AST2RIR:
 					)
 				else:
 					self.check_number_limit(
-					    expr.left.typ, right.value(), expr.right.pos
+					    expr_left_typ, right.value(), expr.right.pos
 					)
-			elif isinstance(left, IntLiteral) and self.comp.is_unsigned_int(
-			    expr.right.typ
-			):
+			elif isinstance(left, IntLiteral
+			                ) and self.comp.is_unsigned_int(expr_right_typ):
 				if expr.op == Kind.Lt and left.lit == "0":
 					report.warn(
 					    "comparison is useless due to type limits",
@@ -2070,29 +2071,29 @@ class AST2RIR:
 					)
 				else:
 					self.check_number_limit(
-					    expr.left.typ, left.value(), expr.right.pos
+					    expr_left_typ, left.value(), expr.right.pos
 					)
 			elif expr.op in (Kind.Lshift,
 			                 Kind.Rshift) and isinstance(right, IntLiteral):
 				ivalue = right.value()
 				if ivalue < 0:
 					report.error("invalid negative shift count", expr.right.pos)
-				if expr.left.typ in (self.comp.int8_t, self.comp.uint8_t):
+				if expr_left_typ in (self.comp.int8_t, self.comp.uint8_t):
 					moffset = 7
-				elif expr.left.typ in (self.comp.int16_t, self.comp.uint16_t):
+				elif expr_left_typ in (self.comp.int16_t, self.comp.uint16_t):
 					moffset = 15
-				elif expr.left.typ in (
+				elif expr_left_typ in (
 				    self.comp.int32_t, self.comp.uint32_t,
 				    self.comp.untyped_int_t
 				):
 					moffset = 31
-				elif expr.left.typ in (self.comp.int64_t, self.comp.uint64_t):
+				elif expr_left_typ in (self.comp.int64_t, self.comp.uint64_t):
 					moffset = 63
 				else:
 					moffset = 64
 				if ivalue > moffset:
 					report.error(
-					    f"shift count for type `{expr.left.typ}` too large",
+					    f"shift count for type `{expr_left_typ}` too large",
 					    expr.right.pos
 					)
 					report.note(f"maximum: {moffset} bits")
@@ -2204,16 +2205,16 @@ class AST2RIR:
 
 			# runtime calculation
 			tmp = self.cur_fn.local_name()
-			typ_sym = expr.left.typ.get_sym()
+			typ_sym = expr_left_typ.get_sym()
 			if expr.op.is_overloadable_op() and typ_sym.kind in (
 			    TypeKind.Array, TypeKind.Slice, TypeKind.Str, TypeKind.Struct
-			) and not isinstance(expr.left.typ, type.Ptr):
+			) and not isinstance(expr_left_typ, type.Ptr):
 				if typ_sym.kind == TypeKind.Array:
 					if expr.op == Kind.Eq:
 						name = "_R4core8array_eqF"
 					elif expr.op == Kind.Ne:
 						name = "_R4core8array_neF"
-					size, _ = self.comp.type_size(expr.left.typ)
+					size, _ = self.comp.type_size(expr_left_typ)
 					self.cur_fn.alloca(
 					    expr.typ, tmp,
 					    Inst(

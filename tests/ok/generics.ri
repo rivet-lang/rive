@@ -18,6 +18,14 @@ fn triple<A, B, C>(a: A, b: B, c: C) (A, B, C) {
     return (a, b, c);
 }
 
+fn eq<T>(a: T, b: T) bool {
+    return a == b;
+}
+
+fn ne<T>(a: T, b: T) bool {
+    return a != b;
+}
+
 fn main() {
     assert!(size_of::<i8>() == 1);
     assert!(size_of::<i32>() == 4);
@@ -37,4 +45,14 @@ fn main() {
 
     let t = triple::<i32, bool, str>(5, true, "empty");
     assert!(t.0 == 5 and t.1 and t.2 == "empty");
+
+    assert!(eq::<u8>(2, 2));
+    assert!(eq::<i32>(2, 2));
+    assert!(eq::<str>("2", "2"));
+    assert!(eq::<String>("2".to_string(), "2".to_string()));
+
+    assert!(ne::<u8>(1, 2));
+    assert!(ne::<i32>(1, 2));
+    assert!(ne::<str>("1", "2"));
+    assert!(ne::<String>("1".to_string(), "2".to_string()));
 }

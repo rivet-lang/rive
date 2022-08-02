@@ -185,7 +185,7 @@ extend str {
         return unsafe { _slice::from_array(as(*mut u8, self.ptr), size_of!(u8), self.len) };
     }
 
-    fn ==(&self, rhs: &Self) bool {
+    pub fn ==(&self, rhs: &Self) bool {
         if (self.len != rhs.len) {
             return false;
         }
@@ -200,9 +200,9 @@ extend str {
         }
     }
 
-    fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
+    pub fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
 
-    fn <(&self, rhs: &Self) bool {
+    pub fn <(&self, rhs: &Self) bool {
         for (i in 0..self.len) {
             unsafe {
                 if (i >= rhs.len or self.ptr[i] > rhs.ptr[i]) {
@@ -218,11 +218,11 @@ extend str {
         return false;
     }
 
-    fn >(&self, rhs: &Self) bool { return !self.<(rhs); }
+    pub fn >(&self, rhs: &Self) bool { return !self.<(rhs); }
 
-    fn <=(&self, rhs: &Self) bool { return self.<(rhs) or self.==(rhs); }
+    pub fn <=(&self, rhs: &Self) bool { return self.<(rhs) or self.==(rhs); }
 
-    fn >=(&self, rhs: &Self) bool { return self.>(rhs) or self.==(rhs); }
+    pub fn >=(&self, rhs: &Self) bool { return self.>(rhs) or self.==(rhs); }
 
     #[used]
     fn slice(&self, start: usize, end: usize) str {

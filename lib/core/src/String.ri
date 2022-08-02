@@ -186,7 +186,7 @@ pub struct String {
         return unsafe { str::from_raw_with_len(self.ptr, self.len_) };
     }
 
-    fn ==(&self, rhs: &Self) bool {
+    pub fn ==(&self, rhs: &Self) bool {
         if (self.len_ != rhs.len_) {
             return false;
         }
@@ -201,7 +201,7 @@ pub struct String {
         return unsafe { mem::cmp(self.ptr, rhs.ptr, rhs.len_) == 0 };
     }
 
-    fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
+    pub fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
 
 	/// Returns `true` if the string contains `substr`.
 	pub fn contains(self, substr: str) bool {
