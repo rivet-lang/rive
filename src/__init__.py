@@ -220,19 +220,31 @@ class Compiler:
 		new_inst.parent = symbol
 		if isinstance(symbol, sym.Fn):
 			for typ_arg in symbol.type_arguments:
-				concrete_type = type_args[typ_arg.idx]
 				new_args = []
+				concrete_type = type_args[typ_arg.idx]
 				for arg in new_inst.args:
 					new_arg = copy.copy(arg)
 					new_arg.typ = type.resolve_generic(
 					    self.universe, new_arg.typ, typ_arg, concrete_type
 					)
 					new_args.append(new_arg)
-				new_inst.args = new_args
 				new_inst.ret_typ = type.resolve_generic(
 				    self.universe, new_inst.ret_typ, typ_arg, concrete_type
 				)
-		symbol.syms.append(new_inst)
+				new_inst.args = new_args
+			symbol.syms.append(new_inst)
+		elif isinstance(symbol, sym.Type):
+			new_fields = []
+			for typ_arg in symbol.type_arguments:
+				concrete_type = type_args[typ_arg.idx]
+				for f in new_inst.fields:
+					new_field = copy.copy(f)
+					new_field.typ = type.resolve_generic(
+						self.universe, new_field.typ, typ_arg, concrete_type
+					)
+					new_fields.append(new_field)
+			new_inst.fields = new_fields
+			symbol.parent.syms.append(new_inst)
 		return new_inst
 
 	def is_number(self, typ):

@@ -268,11 +268,13 @@ class StructField:
 		self.pos = pos
 
 class StructDecl:
-	def __init__(self, doc_comment, attrs, vis, name, decls, is_opaque, pos):
+	def __init__(self, doc_comment, attrs, vis, name, type_arguments, decls, is_opaque, pos):
 		self.doc_comment = doc_comment
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
+		self.is_generic = len(type_arguments) > 0
+		self.type_arguments = type_arguments
 		self.decls = decls
 		self.is_opaque = is_opaque
 		self.sym = None

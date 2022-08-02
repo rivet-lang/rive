@@ -11,8 +11,8 @@ class Resolver:
 	def __init__(self, comp):
 		self.comp = comp
 		self.sf = None
-		self.cur_sym = None
 		self.core_prelude = []
+		self.cur_mod = None
 		self.cur_fn = None
 		self.cur_fn_scope = None
 
@@ -25,19 +25,19 @@ class Resolver:
 		if report.ERRORS > 0:
 			return
 
-		self.cur_sym = self.comp.pkg_sym
+		self.cur_mod = self.comp.pkg_sym
 		for sf in source_files:
 			self.resolve_file(sf)
 
 	def resolve_file(self, sf):
 		self.sf = sf
-		old_cur_sym = self.cur_sym
+		old_cur_sym = self.cur_mod
 		if sf.mod_sym:
-			self.cur_sym = sf.mod_sym
+			self.cur_mod = sf.mod_sym
 		self.import_core_prelude()
 		self.resolve_decls(sf.decls)
 		if sf.mod_sym:
-			self.cur_sym = old_cur_sym
+			self.cur_mod = old_cur_sym
 
 	def resolve_decls(self, decls):
 		for decl in decls:
@@ -93,10 +93,10 @@ class Resolver:
 			self.resolve_type(decl.typ)
 			self.resolve_expr(decl.expr)
 		elif isinstance(decl, ast.ModDecl):
-			old_sym = self.cur_sym
-			self.cur_sym = decl.sym
+			old_sym = self.cur_mod
+			self.cur_mod = decl.sym
 			self.resolve_decls(decl.decls)
-			self.cur_sym = old_sym
+			self.cur_mod = old_sym
 		elif isinstance(decl, ast.TypeDecl):
 			self.resolve_type(decl.parent)
 		elif isinstance(decl, ast.TraitDecl):
@@ -413,7 +413,14 @@ class Resolver:
 				    f"unknown comptime constant `{ident.name}`", ident.pos
 				)
 			return
-		elif self.cur_fn and self.cur_fn.is_generic:
+
+		if self.self_sym and self.self_sym.is_generic:
+			if tup := self.self_sym.find_type_arg(ident.name):
+				ident.sym = tup[0]
+				ident.type_arg_idx = tup[1]
+				return
+
+		if self.cur_fn and self.cur_fn.is_generic:
 			if tup := self.cur_fn.find_type_arg(ident.name):
 				ident.sym = tup[0]
 				ident.type_arg_idx = tup[1]
@@ -426,7 +433,7 @@ class Resolver:
 				ident.is_obj = True
 				ident.obj = obj
 				ident.typ = obj.typ
-		elif s := self.cur_sym.find(ident.name):
+		elif s := self.cur_mod.find(ident.name):
 			s.uses += 1
 			ident.sym = s
 		elif s := self.sf.find_imported_symbol(ident.name):
@@ -496,10 +503,10 @@ class Resolver:
 			else:
 				path.has_error = True
 		elif isinstance(path.left, ast.SuperExpr):
-			if self.cur_sym.parent != None and not self.cur_sym.parent.is_universe:
-				path.left_info = self.cur_sym.parent
+			if self.cur_mod.parent != None and not self.cur_mod.parent.is_universe:
+				path.left_info = self.cur_mod.parent
 				if field_info := self.find_symbol(
-				    self.cur_sym.parent, path.field_name, path.field_pos
+				    self.cur_mod.parent, path.field_name, path.field_pos
 				):
 					field_info.uses += 1
 					path.field_info = field_info
@@ -508,16 +515,16 @@ class Resolver:
 			else:
 				report.error("current module has no parent", path.left.pos)
 		elif isinstance(path.left, ast.SelfExpr):
-			path.left_info = self.cur_sym
+			path.left_info = self.cur_mod
 			if field_info := self.find_symbol(
-			    self.cur_sym, path.field_name, path.field_pos
+			    self.cur_mod, path.field_name, path.field_pos
 			):
 				field_info.uses += 1
 				path.field_info = field_info
 			else:
 				path.has_error = True
 		elif isinstance(path.left, ast.Ident):
-			if local_sym := self.cur_sym.find(path.left.name):
+			if local_sym := self.cur_mod.find(path.left.name):
 				path.left_info = local_sym
 				if field_info := self.find_symbol(
 				    local_sym, path.field_name, path.field_pos
@@ -578,7 +585,7 @@ class Resolver:
 			path.has_error = True
 
 	def check_visibility(self, sym, pos):
-		if sym.vis == Visibility.Private and not self.cur_sym.has_access_to(
+		if sym.vis == Visibility.Private and not self.cur_mod.has_access_to(
 		    sym
 		):
 			report.error(f"{sym.sym_kind()} `{sym.name}` is private", pos)
@@ -732,7 +739,7 @@ class Resolver:
 					elif expr.op == Kind.Rshift:
 						return ast.IntegerLiteral(str(il >> ir), expr.pos)
 		elif isinstance(expr, ast.Ident):
-			if s := self.cur_sym.find(expr.name):
+			if s := self.cur_mod.find(expr.name):
 				if isinstance(s, sym.Const):
 					if s.has_evaled_expr:
 						return s.evaled_expr
@@ -766,7 +773,7 @@ class Resolver:
 	def check_imported_symbol(self, s, pos):
 		if s.name in self.sf.imported_symbols:
 			report.error(f"{s.sym_kind()} `{s.name}` is already imported", pos)
-		elif self.cur_sym.find(s.name):
+		elif self.cur_mod.find(s.name):
 			report.error(
 			    f"another symbol with the name `{s.name}` already exists", pos
 			)

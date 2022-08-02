@@ -397,7 +397,9 @@ class Parser:
 			name = self.parse_name()
 			is_opaque = self.accept(Kind.Semicolon)
 			decls = []
+			type_arguments=[]
 			if not is_opaque:
+				type_arguments = self.parse_type_arguments()
 				self.expect(Kind.Lbrace)
 				if self.tok.kind != Kind.Rbrace:
 					while self.tok.kind != Kind.Rbrace:
@@ -419,7 +421,7 @@ class Parser:
 				self.expect(Kind.Rbrace)
 			self.inside_struct_decl = old_inside_struct_decl
 			return ast.StructDecl(
-			    doc_comment, attrs, vis, name, decls, is_opaque, pos
+			    doc_comment, attrs, vis, name, type_arguments, decls, is_opaque, pos
 			)
 		elif self.inside_struct_decl and self.tok.kind in (
 		    Kind.KeyMut, Kind.Name
@@ -540,19 +542,7 @@ class Parser:
 		has_named_args = False
 
 		# parse type-arguments
-		g_idx = 0
-		type_arguments = []
-		if self.accept(Kind.Lt):
-			while True:
-				generic_pos = self.tok.pos
-				generic_name = self.parse_name()
-				type_arguments.append(
-				    type.Generic(generic_name, g_idx, generic_pos)
-				)
-				g_idx += 1
-				if not self.accept(Kind.Comma):
-					break
-			self.expect(Kind.Gt)
+		type_arguments = self.parse_type_arguments()
 
 		self.open_scope()
 		sc = self.scope
@@ -619,6 +609,23 @@ class Parser:
 		    self_is_mut, has_named_args, self.is_pkg_level and name == "main",
 		    is_variadic, abi, type_arguments
 		)
+
+	def parse_type_arguments(self):
+		# parse type-arguments
+		g_idx = 0
+		type_arguments = []
+		if self.accept(Kind.Lt):
+			while True:
+				generic_pos = self.tok.pos
+				generic_name = self.parse_name()
+				type_arguments.append(
+				    type.Generic(generic_name, g_idx, generic_pos)
+				)
+				g_idx += 1
+				if not self.accept(Kind.Comma):
+					break
+			self.expect(Kind.Gt)
+		return type_arguments
 
 	# ---- statements --------------------------
 	def parse_stmt(self):

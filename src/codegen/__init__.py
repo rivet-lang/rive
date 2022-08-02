@@ -628,7 +628,7 @@ class AST2RIR:
 		self.cur_fn = None
 		self.cur_fn_qualname = ""
 		self.cur_fn_is_main = False
-		self.cur_concrete_types = []
+		self.cur_concrete_types = {}
 
 		self.loop_entry_label = ""
 		self.loop_exit_label = ""
@@ -765,7 +765,14 @@ class AST2RIR:
 				self.convert_decls(d.decls)
 		elif isinstance(d, ast.StructDecl):
 			if d.sym.is_used():
+				if d.is_generic:
+					for g in d.sym.syms:
+						for i,gt in enumerate(d.type_arguments):
+							self.cur_concrete_types[gt.name] = d.type_arguments[gt.idx]
 				self.convert_decls(d.decls)
+				if d.is_generic:
+					for gt in d.type_arguments:
+						del self.cur_concrete_types[gt.name]
 		elif isinstance(d, ast.EnumDecl):
 			if d.sym.is_used():
 				self.convert_decls(d.decls)
@@ -776,7 +783,8 @@ class AST2RIR:
 				for g in d.sym.syms:
 					if not g.is_generic_instance:
 						continue
-					self.cur_concrete_types = g.type_arguments
+					for i,gt in enumerate(d.type_arguments):
+						self.cur_concrete_types[gt.name] = g.type_arguments[gt.idx]
 					self.cur_fn_qualname = g.qualname()
 					args = g.args.copy()
 					if d.is_method:
@@ -801,7 +809,8 @@ class AST2RIR:
 						elif g.ret_typ not in self.void_types:
 							self.cur_fn.add_ret(self.default_value(g.ret_typ))
 					self.decls.append(self.cur_fn)
-					self.cur_concrete_types = list()
+					for gt in d.type_arguments:
+						del self.cur_concrete_types[gt.name]
 			elif d.is_extern and not d.has_body:
 				self.externs.append(
 				    ExternFn(d.name, d.ret_typ, d.args, d.is_variadic, d.attrs)
@@ -2868,7 +2877,10 @@ class AST2RIR:
 					field_deps.append(dep)
 			elif ts.kind == sym.TypeKind.Struct:
 				for f in ts.fields:
-					dep = mangle_symbol(f.typ.get_sym())
+					dsym = f.typ.get_sym()
+					if dsym.kind == TypeKind.TypeArg:
+						has_generic = True
+					dep = mangle_symbol(dsym)
 					if dep not in typ_names or dep in field_deps or isinstance(
 					    f.typ, type.Optional
 					):
@@ -2894,7 +2906,7 @@ class AST2RIR:
 			return typ
 		elif isinstance(typ, type.Type):
 			if typ.sym.kind == TypeKind.TypeArg and typ.expr.type_arg_idx >= 0:
-				return self.cur_concrete_types[typ.expr.type_arg_idx]
+				return self.cur_concrete_types[typ.expr.name]
 			return type.Type(self.unwrap_symbol(typ.sym))
 		elif isinstance(typ, (type.Result, type.Optional, type.Ptr, type.Ref)):
 			return type.resolve_generic(

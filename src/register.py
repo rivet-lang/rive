@@ -159,10 +159,21 @@ class Register:
 			elif isinstance(decl, ast.StructDecl):
 				decl.sym = sym.Type(
 				    decl.vis, decl.name, sym.TypeKind.Struct, list(),
-				    sym.StructInfo(decl.is_opaque)
+				    sym.StructInfo(decl.is_opaque), decl.type_arguments
 				)
 				old_cur_sym = self.cur_sym
 				self.cur_sym = decl.sym
+				if decl.is_generic:
+					for type_arg in decl.type_arguments:
+						try:
+							decl.sym.add(
+							    sym.Type(
+							        ast.Visibility.Private, type_arg.name,
+							        sym.TypeKind.TypeArg
+							    )
+							)
+						except utils.CompilerError as e:
+							report.error(e.args[0], type_arg.pos)
 				self.visit_decls(decl.decls)
 				self.cur_sym = old_cur_sym
 				self.add_sym(decl.sym, decl.pos)
