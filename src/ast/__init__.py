@@ -440,6 +440,7 @@ class Ident:
 		self.sym = None
 		self.is_obj = False
 		self.is_comptime = is_comptime
+		self.inside_type=False
 		self.type_arg_idx = -1
 		self.type_args = type_args
 		self.has_type_args = len(type_args) > 0

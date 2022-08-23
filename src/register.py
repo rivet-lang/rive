@@ -259,6 +259,7 @@ class Register:
 				    decl.name_pos, decl.self_is_mut, decl.self_is_ref,
 				    decl.type_arguments
 				)
+				decl.sym.is_main = decl.is_main
 				if decl.is_generic:
 					for type_arg in decl.type_arguments:
 						try:
@@ -270,7 +271,6 @@ class Register:
 							)
 						except utils.CompilerError as e:
 							report.error(e.args[0], type_arg.pos)
-				decl.sym.is_main = decl.is_main
 				if decl.is_method:
 					self_typ = type.Type(self.cur_sym)
 					if decl.self_is_ref:

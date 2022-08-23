@@ -1136,7 +1136,7 @@ class Checker:
 		elif isinstance(expr, ast.Block):
 			if expr.is_unsafe:
 				if self.inside_unsafe:
-					report.warn("unnecesary `unsafe` block", expr.pos)
+					report.warn("unnecessary `unsafe` block", expr.pos)
 				self.inside_unsafe = True
 
 			expr.typ = self.comp.void_t
@@ -1148,7 +1148,7 @@ class Checker:
 			if expr.is_unsafe:
 				self.inside_unsafe = False
 				if self.unsafe_operations == 0:
-					report.warn("unnecesary `unsafe` block", expr.pos)
+					report.warn("unnecessary `unsafe` block", expr.pos)
 				else:
 					self.unsafe_operations = 0
 			return expr.typ

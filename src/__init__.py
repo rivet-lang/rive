@@ -206,7 +206,10 @@ class Compiler:
 	# ========================================================
 
 	def inst_generic(self, symbol, type_args):
-		new_name = f"{symbol.name}<{', '.join([t.qualstr() for t in type_args])}>"
+		if isinstance(symbol, sym.Fn) and symbol.is_method:
+			new_name = symbol.name
+		else:
+			new_name = f"{symbol.name}<{', '.join([t.qualstr() for t in type_args])}>"
 		if generic_sym := symbol.find(new_name):
 			return generic_sym
 
@@ -219,20 +222,33 @@ class Compiler:
 		new_inst.is_generic_instance = True
 		new_inst.parent = symbol
 		if isinstance(symbol, sym.Fn):
+			if new_inst.is_method and symbol.parent.is_generic_instance:
+				new_inst.self_typ=type.Type(self.inst_generic(symbol.parent, type_args))
 			for typ_arg in symbol.type_arguments:
 				new_args = []
 				concrete_type = type_args[typ_arg.idx]
 				for arg in new_inst.args:
 					new_arg = copy.copy(arg)
 					new_arg.typ = type.resolve_generic(
-					    self.universe, new_arg.typ, typ_arg, concrete_type
+					    self, new_arg.typ, typ_arg, concrete_type
 					)
 					new_args.append(new_arg)
 				new_inst.ret_typ = type.resolve_generic(
-				    self.universe, new_inst.ret_typ, typ_arg, concrete_type
+				    self, new_inst.ret_typ, typ_arg, concrete_type
 				)
 				new_inst.args = new_args
-			symbol.syms.append(new_inst)
+			if symbol.parent.is_generic_instance:
+				if new_inst.is_method:
+					new_inst.self_typ=type.Type(self.inst_generic(symbol.parent, type_args))
+				for typ_arg in symbol.parent.type_arguments:
+					concrete_type = type_args[typ_arg.idx]
+					for arg in new_inst.args:
+						arg.typ = type.resolve_generic(
+							self, arg.typ, typ_arg, concrete_type
+						)
+					new_inst.ret_typ = type.resolve_generic(
+						self, new_inst.ret_typ, typ_arg, concrete_type
+					)
 		elif isinstance(symbol, sym.Type):
 			new_fields = []
 			for typ_arg in symbol.type_arguments:
@@ -240,11 +256,18 @@ class Compiler:
 				for f in new_inst.fields:
 					new_field = copy.copy(f)
 					new_field.typ = type.resolve_generic(
-						self.universe, new_field.typ, typ_arg, concrete_type
+						self, new_field.typ, typ_arg, concrete_type
 					)
 					new_fields.append(new_field)
 			new_inst.fields = new_fields
-			symbol.parent.syms.append(new_inst)
+
+			new_syms = []
+			for s in new_inst.syms:
+				if not isinstance(s, sym.Type) and s.kind!=sym.TypeKind.TypeArg:
+					new_syms.append(self.inst_generic(s, type_args))
+			new_inst.syms=new_syms
+
+		symbol.syms.append(new_inst)
 		return new_inst
 
 	def is_number(self, typ):

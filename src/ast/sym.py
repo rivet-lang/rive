@@ -288,6 +288,9 @@ class Sym:
 			if self.is_generic:
 				self.qualified_name += "<>"
 			return self.qualified_name
+		if self.is_generic_instance and self.parent.is_generic:
+			self.qualified_name = f"{self.parent.parent.qualname()}::{self.name}"
+			return self.qualified_name
 		self.qualified_name = f"{self.parent.qualname()}::{self.name}"
 		if self.is_generic:
 			self.qualified_name += "<>"
