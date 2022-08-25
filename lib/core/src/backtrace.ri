@@ -15,12 +15,12 @@ pub mod backtrace {
     extern (C) {
         fn backtrace_create_state(
             filename: *u8, threaded: i32, error_cb: BacktraceErrorCB,
-            data: *void
+            data: *mut void
         ) *mut backtrace_state;
 
         fn backtrace_full(
             state: *backtrace_state, skip: i32, cb: BacktraceFullCB,
-            error_cb: BacktraceErrorCB, data: *void
+            error_cb: BacktraceErrorCB, data: *mut void
         ) i32;
     }
 
@@ -37,7 +37,10 @@ pub mod backtrace {
         data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, func_ptr: *u8
     ) i32 {
         unsafe {
-            if (func_ptr != none and stdc::memcmp(func_ptr, c"_R4core10rivet_mainF", 20) == 0) {
+            if (
+                func_ptr != none
+                and stdc::memcmp(func_ptr, c"_R4core10rivet_mainF", 20) == 0
+            ) {
                 return 1; // stop backtracing
             }
 
@@ -55,8 +58,8 @@ pub mod backtrace {
 
             let mut bdata = as(*mut BacktraceData, data);
             eprintln(
-                "   {} {} in {}:{}", if (bdata.frame_nr == 0) "at" else "by", func_name,
-                file_name, lineno
+                "   {} {} in {}:{}", if (bdata.frame_nr == 0) "at" else "by",
+                func_name, file_name, lineno
             );
             bdata.frame_nr++;
         }

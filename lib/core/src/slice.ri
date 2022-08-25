@@ -39,7 +39,9 @@ struct _slice {
             panic("slice index out of range (index: {}, len: {})", idx, self.len);
         }
         _ = unsafe {
-            stdc::memcpy(as(*mut u8, self.ptr) + self.elem_size * idx, val, self.elem_size)
+            stdc::memcpy(
+                as(*mut u8, self.ptr) + self.elem_size * idx, val, self.elem_size
+            )
         };
     }
 
@@ -57,7 +59,10 @@ struct _slice {
     #[used]
     fn slice(&self, start: usize, end: usize) _slice {
         if (start > end or end > self.len) {
-            panic("slice index out of range (range: {}..{}, len: {})", start, end, self.len);
+            panic(
+                "slice index out of range (range: {}..{}, len: {})", start, end,
+                self.len
+            );
         }
         let len = end - start;
         if (len == self.len) {
