@@ -1,9 +1,9 @@
 # Roadmap (`v0.1.0`)
 
 * [ ] Improve language design.
-* [ ] Class.
+* [ ] Classes.
 * [X] Generic functions.
 * [X] Generic structs.
-* [ ] Generic methods.
+* [X] Generic methods.
 * [ ] Make stdlib basically available.
 * [ ] Make self-hosted compiler.

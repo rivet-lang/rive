@@ -27,9 +27,9 @@ fn ne<T>(a: T, b: T) bool {
 }
 
 struct Generic<T> {
-    a: T;
+    mut a: T;
 
-    fn value(&self) T {
+    fn value(self) T {
         return self.a;
     }
 }
@@ -64,15 +64,22 @@ fn main() {
     assert!(ne::<str>("1", "2"));
     assert!(ne::<String>("1".to_string(), "2".to_string()));
 
-    assert!(Generic::<u8>{
-        a: 2
-    }.a == 2);
+    // generic insts
+    assert!(Generic::<u8>{ a: 2 }.a == 2);
+    assert!(Generic::<i32>{ a: 5 }.a == 5);
+    assert!(Generic::<str>{ a: "Abc" }.a == "Abc");
 
-    assert!(Generic::<i32>{
-        a: 5
-    }.a == 5);
+    // generic methods
+    assert!(Generic::<i8>{ a: 2 }.value() == 2);
+    assert!(Generic::<i64>{ a: 5 }.value() == 5);
+    assert!(Generic::<str>{ a: "Abc" }.value() == "Abc");
+    assert!(Generic::<bool>{ a: false }.value() == false);
 
-    assert!(Generic::<str>{
-        a: "Abc"
-    }.a == "Abc");
+    unsafe {
+        let mut res = new::<Generic<i8>>();
+        assert!(res != none);
+        res.a = 1;
+        assert!(res.a == 1);
+        delete::<Generic<i8>>(res);
+    }
 }

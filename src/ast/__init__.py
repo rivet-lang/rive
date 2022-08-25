@@ -278,7 +278,10 @@ class ClassDecl:
 		self.pos = pos
 
 class StructDecl:
-	def __init__(self, doc_comment, attrs, vis, name, type_arguments, decls, is_opaque, pos):
+	def __init__(
+	    self, doc_comment, attrs, vis, name, type_arguments, decls, is_opaque,
+	    pos
+	):
 		self.doc_comment = doc_comment
 		self.attrs = attrs
 		self.vis = vis
@@ -450,6 +453,7 @@ class Ident:
 		self.sym = None
 		self.is_obj = False
 		self.is_comptime = is_comptime
+		self.inside_type = False
 		self.type_arg_idx = -1
 		self.type_args = type_args
 		self.has_type_args = len(type_args) > 0
