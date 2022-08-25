@@ -443,7 +443,7 @@ class Resolver:
 			report.error(f"cannot find `{ident.name}` in this scope", ident.pos)
 
 		# resolve generic
-		if ident.sym:
+		if not ident.inside_type and ident.sym:
 			if ident.has_type_args:
 				if ident.is_obj:
 					report.error(
@@ -659,19 +659,31 @@ class Resolver:
 				return True # resolved
 			if isinstance(typ.expr, ast.Ident):
 				self.resolve_ident(typ.expr)
-				if s := typ.expr.sym:
-					if isinstance(s, sym.Type):
+				if typ.expr.sym != None:
+					if typ.has_type_args and typ.expr.sym.is_generic:
+						err = False
+						for typ_arg in typ.type_args:
+							if not self.resolve_type(typ_arg):
+								err = True
+						if err:
+							return False
+						typ.expr.sym = self.comp.inst_generic(
+						    typ.expr.sym, typ.type_args
+						)
+					if isinstance(typ.expr.sym, sym.Type):
 						pos = typ.expr.pos
-						typ.resolve(s)
-						if s.kind == sym.TypeKind.Alias: # unalias
-							if self.resolve_type(s.info.parent):
+						typ.resolve(typ.expr.sym)
+						if typ.expr.sym.kind == sym.TypeKind.Alias: # unalias
+							if self.resolve_type(typ.expr.sym.info.parent):
 								typ.unalias()
-						s.uses += 1
-						self.disallow_errtype_use(s.kind, pos)
+						typ_sym = typ.get_sym()
+						typ_sym.uses += 1
+						self.disallow_errtype_use(typ_sym.kind, pos)
 						return True
 					else:
 						report.error(
-						    f"expected type, found {s.sym_kind()}", typ.expr.pos
+						    f"expected type, found {typ.expr.sym.sym_kind()}",
+						    typ.expr.pos
 						)
 				elif typ.expr.is_obj:
 					report.error(

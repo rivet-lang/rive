@@ -8,60 +8,63 @@ from .. import token
 from . import Visibility
 from .sym import TypeKind, Fn as FnInfo, Arg
 
-def resolve_generic(uni, typ, generic_type, concrete_type):
+def resolve_generic(comp, typ, generic_type, concrete_type):
 	if isinstance(typ, Fn):
 		final_typ = copy.copy(typ)
 		typ_args = []
 		for arg in typ.args:
 			typ_args.append(
-			    resolve_generic(uni, arg, generic_type, concrete_type)
+			    resolve_generic(comp, arg, generic_type, concrete_type)
 			)
 		final_typ.args = typ_args
 		final_typ.ret_typ = resolve_generic(
-		    uni, typ.ret_typ, generic_type, concrete_type
+		    comp, typ.ret_typ, generic_type, concrete_type
 		)
 		return final_typ
 	elif isinstance(typ, Tuple):
 		final_types = []
 		for t in typ.types:
 			final_types.append(
-			    resolve_generic(uni, t, generic_type, concrete_type)
+			    resolve_generic(comp, t, generic_type, concrete_type)
 			)
 		res = Tuple(final_types)
-		res.sym = uni.add_or_get_tuple(final_types)
+		res.sym = comp.universe.add_or_get_tuple(final_types)
 		return res
 	elif isinstance(typ, (Result, Optional, Array, Slice, Ptr, Ref)):
-		final_typ = resolve_generic(uni, typ.typ, generic_type, concrete_type)
+		final_typ = resolve_generic(comp, typ.typ, generic_type, concrete_type)
 		if isinstance(typ, Result):
 			res = Result(final_typ)
-			res.sym = uni.add_or_get_result(final_typ)
+			res.sym = comp.universe.add_or_get_result(final_typ)
 			return res
 		elif isinstance(typ, Optional):
 			res = Optional(final_typ)
 			if not isinstance(final_typ, Ref):
-				res.sym = uni.add_or_get_optional(final_typ)
+				res.sym = comp.universe.add_or_get_optional(final_typ)
 			return res
 		elif isinstance(typ, Slice):
 			res = Slice(final_typ, typ.is_mut)
-			res.sym = uni.add_or_get_slice(final_typ)
+			res.sym = comp.universe.add_or_get_slice(final_typ)
 			return res
 		elif isinstance(typ, Ptr):
 			return Ptr(final_typ, typ.is_mut)
 		elif isinstance(typ, Ref):
 			return Ref(final_typ, typ.is_mut)
 		res = Array(final_typ, typ.size)
-		res.sym = uni.add_or_get_array(final_typ, typ.size)
+		res.sym = comp.universe.add_or_get_array(final_typ, typ.size)
 		return res
 	elif isinstance(typ, Type):
-		if typ.is_resolved() and typ.sym.kind == TypeKind.TypeArg:
-			if (
-			    isinstance(generic_type, Generic)
-			    and typ.sym.name == generic_type.name
-			) or (
-			    isinstance(generic_type, Type)
-			    and typ.sym.name == generic_type.sym.name
-			):
-				return concrete_type
+		if typ.is_resolved():
+			if typ.sym.kind == TypeKind.TypeArg:
+				if (
+				    isinstance(generic_type, Generic)
+				    and typ.sym.name == generic_type.name
+				) or (
+				    isinstance(generic_type, Type)
+				    and typ.sym.name == generic_type.sym.name
+				):
+					return concrete_type
+			elif typ.sym.is_generic and typ.has_type_args:
+				return Type(comp.inst_generic(typ.sym, typ.type_args))
 		return typ
 	return typ
 
@@ -75,7 +78,7 @@ class _Ptr: # ugly hack =/
 
 class TBase:
 	def get_sym(self):
-		if isinstance(self, (Type, Slice, Array, Tuple, Variadic)):
+		if isinstance(self, (Type, Slice, Array, Tuple, Variadic, Generic)):
 			return self.sym
 		elif isinstance(self, Fn):
 			return self.info()
@@ -102,6 +105,7 @@ class Generic(TBase):
 	def __init__(self, name, idx, pos):
 		self.name = name
 		self.idx = idx
+		self.sym = None
 		self.pos = pos
 
 	def qualstr(self):
@@ -116,15 +120,17 @@ class Generic(TBase):
 		return self.name
 
 class Type(TBase):
-	def __init__(self, sym):
+	def __init__(self, sym, type_args = []):
 		self.sym = sym
 		self.expr = None
 		self._unresolved = False
 		self.is_generic = False
+		self.has_type_args = len(type_args) > 0
+		self.type_args = type_args
 
 	@staticmethod
-	def unresolved(expr):
-		typ = Type(None)
+	def unresolved(expr, type_args = []):
+		typ = Type(None, type_args)
 		typ.expr = expr
 		typ._unresolved = True
 		return typ
@@ -142,12 +148,19 @@ class Type(TBase):
 	def __eq__(self, other):
 		if not isinstance(other, Type):
 			return False
+		if self.has_type_args != other.has_type_args:
+			return False
 		return self.sym == other.sym
 
 	def __str__(self):
 		if self._unresolved:
-			return str(self.expr)
-		return str(self.sym.name)
+			res = str(self.expr)
+		else:
+			res = str(self.sym.name)
+		if self.has_type_args:
+			if not (self.sym and self.sym.is_generic_instance):
+				res += f"<{', '.join([str(t) for t in self.type_args])}>"
+		return res
 
 class Ref(TBase):
 	def __init__(self, typ, is_mut = False):

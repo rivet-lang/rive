@@ -288,6 +288,9 @@ class Sym:
 			if self.is_generic:
 				self.qualified_name += "<>"
 			return self.qualified_name
+		if self.is_generic_instance and self.parent.is_generic:
+			self.qualified_name = f"{self.parent.parent.qualname()}::{self.name}<>"
+			return self.qualified_name
 		self.qualified_name = f"{self.parent.qualname()}::{self.name}"
 		if self.is_generic:
 			self.qualified_name += "<>"
@@ -508,7 +511,9 @@ class StructInfo:
 		self.is_opaque = is_opaque
 
 class Type(Sym):
-	def __init__(self, vis, name, kind, fields = [], info = None, type_arguments=[]):
+	def __init__(
+	    self, vis, name, kind, fields = [], info = None, type_arguments = []
+	):
 		Sym.__init__(self, vis, name, type_arguments)
 		self.kind = kind
 		self.fields = fields

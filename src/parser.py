@@ -28,6 +28,7 @@ class Parser:
 		self.inside_struct_decl = False
 		self.inside_trait = False
 		self.inside_block = False
+		self.inside_type = False
 
 	def parse_pkg(self):
 		self.is_pkg_level = True
@@ -397,7 +398,7 @@ class Parser:
 			name = self.parse_name()
 			is_opaque = self.accept(Kind.Semicolon)
 			decls = []
-			type_arguments=[]
+			type_arguments = []
 			if not is_opaque:
 				type_arguments = self.parse_type_arguments()
 				self.expect(Kind.Lbrace)
@@ -421,7 +422,8 @@ class Parser:
 				self.expect(Kind.Rbrace)
 			self.inside_struct_decl = old_inside_struct_decl
 			return ast.StructDecl(
-			    doc_comment, attrs, vis, name, type_arguments, decls, is_opaque, pos
+			    doc_comment, attrs, vis, name, type_arguments, decls, is_opaque,
+			    pos
 			)
 		elif self.inside_struct_decl and self.tok.kind in (
 		    Kind.KeyMut, Kind.Name
@@ -1297,7 +1299,9 @@ class Parser:
 		sc = self.scope
 		if sc == None:
 			sc = sym.Scope(sc)
-		return ast.Ident(name, pos, sc, is_comptime, type_args)
+		id = ast.Ident(name, pos, sc, is_comptime, type_args)
+		id.inside_type = self.inside_type
+		return id
 
 	def parse_pkg_expr(self):
 		pos = self.tok.pos
@@ -1313,6 +1317,8 @@ class Parser:
 
 	# ---- types -------------------------------
 	def parse_type(self):
+		old_inside_type = self.inside_type
+		self.inside_type = True
 		pos = self.tok.pos
 		if self.accept(Kind.Question):
 			# optional
@@ -1322,6 +1328,7 @@ class Parser:
 				report.note("by default pointers can contain the value `none`")
 			elif isinstance(typ, type.Optional):
 				report.error("optional multi-level types are not allowed", pos)
+			self.inside_type = old_inside_type
 			return type.Optional(typ)
 		elif self.tok.kind in (Kind.KeyUnsafe, Kind.KeyExtern, Kind.KeyFn):
 			# function types
@@ -1346,6 +1353,7 @@ class Parser:
 				ret_typ = self.parse_type()
 			if is_extern and self.inside_extern:
 				self.inside_extern = False
+			self.inside_type = old_inside_type
 			return type.Fn(
 			    is_unsafe, is_extern, abi, False, args, is_variadic, ret_typ,
 			    False, False
@@ -1366,6 +1374,7 @@ class Parser:
 				k = "mut " if is_mut else "const "
 				report.error("invalid use of `void` type", pos)
 				report.help("use `*{} void` instead")
+			self.inside_type = old_inside_type
 			return type.Ref(typ, is_mut)
 		elif self.accept(Kind.Mult):
 			# pointers
@@ -1373,6 +1382,7 @@ class Parser:
 			typ = self.parse_type()
 			if isinstance(typ, type.Ref):
 				report.error("cannot use pointers with references", pos)
+			self.inside_type = old_inside_type
 			return type.Ptr(typ, is_mut)
 		elif self.accept(Kind.Lbracket):
 			# arrays or slices
@@ -1388,8 +1398,10 @@ class Parser:
 					report.note("this is only valid with slices")
 				size = self.parse_expr()
 				self.expect(Kind.Rbracket)
+				self.inside_type = old_inside_type
 				return type.Array(typ, size)
 			self.expect(Kind.Rbracket)
+			self.inside_type = old_inside_type
 			return type.Slice(typ, is_mut)
 		elif self.accept(Kind.Lparen):
 			# tuples
@@ -1402,15 +1414,19 @@ class Parser:
 				report.error("tuples can have a maximum of 8 types", pos)
 				report.help("you can use a struct instead")
 			self.expect(Kind.Rparen)
+			self.inside_type = old_inside_type
 			return type.Tuple(types)
 		elif self.accept(Kind.Ellipsis):
+			self.inside_type = old_inside_type
 			return type.Variadic(self.parse_type())
 		elif self.accept(Kind.KeySelfTy):
+			self.inside_type = old_inside_type
 			return type.Type.unresolved(
 			    ast.SelfTyExpr(self.scope, self.prev_tok.pos)
 			)
 		elif (self.comp.prefs.pkg_name == "core"
 		      or self.comp.pkg_sym.is_core) and self.accept(Kind.KeyNone):
+			self.inside_type = old_inside_type
 			return self.comp.none_t
 		elif self.tok.kind in (Kind.KeyPkg, Kind.KeySuper, Kind.Name):
 			# normal type
@@ -1425,6 +1441,7 @@ class Parser:
 						path_expr = self.parse_path_expr(path_expr)
 						if self.tok.kind != Kind.DoubleColon:
 							break
+				self.inside_type = old_inside_type
 				return type.Type.unresolved(path_expr)
 			elif self.tok.kind == Kind.Name:
 				prev_tok_kind = self.prev_tok.kind
@@ -1434,62 +1451,95 @@ class Parser:
 					if prev_tok_kind not in (Kind.Mult, Kind.KeyMut, Kind.Amp):
 						# valid only as pointer
 						report.error("invalid use of `void` type", pos)
+					self.inside_type = old_inside_type
 					return self.comp.void_t
 				elif lit == "no_return":
 					if prev_tok_kind != Kind.Rparen and self.tok.kind != Kind.Lbrace:
 						report.error("invalid use of `no_return` type", pos)
+					self.inside_type = old_inside_type
 					return self.comp.no_return_t
 				elif lit == "bool":
+					self.inside_type = old_inside_type
 					return self.comp.bool_t
 				elif lit == "rune":
+					self.inside_type = old_inside_type
 					return self.comp.rune_t
 				elif lit == "i8":
+					self.inside_type = old_inside_type
 					return self.comp.int8_t
 				elif lit == "i16":
+					self.inside_type = old_inside_type
 					return self.comp.int16_t
 				elif lit == "i32":
+					self.inside_type = old_inside_type
 					return self.comp.int32_t
 				elif lit == "i64":
+					self.inside_type = old_inside_type
 					return self.comp.int64_t
 				elif lit == "isize":
+					self.inside_type = old_inside_type
 					return self.comp.isize_t
 				elif lit == "u8":
+					self.inside_type = old_inside_type
 					return self.comp.uint8_t
 				elif lit == "u16":
+					self.inside_type = old_inside_type
 					return self.comp.uint16_t
 				elif lit == "u32":
+					self.inside_type = old_inside_type
 					return self.comp.uint32_t
 				elif lit == "u64":
+					self.inside_type = old_inside_type
 					return self.comp.uint64_t
 				elif lit == "usize":
+					self.inside_type = old_inside_type
 					return self.comp.usize_t
 				elif lit == "f32":
+					self.inside_type = old_inside_type
 					return self.comp.float32_t
 				elif lit == "f64":
+					self.inside_type = old_inside_type
 					return self.comp.float64_t
 				elif lit == "str":
+					self.inside_type = old_inside_type
 					return self.comp.str_t
 				elif lit == "untyped_int" and (
 				    self.comp.prefs.pkg_name == "core"
 				    or self.comp.pkg_sym.is_core
 				):
+					self.inside_type = old_inside_type
 					return self.comp.untyped_int_t
 				elif lit == "untyped_float" and (
 				    self.comp.prefs.pkg_name == "core"
 				    or self.comp.pkg_sym.is_core
 				):
+					self.inside_type = old_inside_type
 					return self.comp.untyped_float_t
 				elif lit == "error" and (
 				    self.comp.prefs.pkg_name == "core"
 				    or self.comp.pkg_sym.is_core
 				):
+					self.inside_type = old_inside_type
 					return self.comp.error_t
 				else:
-					return type.Type.unresolved(expr)
+					self.inside_type = old_inside_type
+					concrete_types = self.parse_concrete_type_arguments()
+					return type.Type.unresolved(expr, concrete_types)
 			else:
 				report.error("expected type, found keyword `pkg`", pos)
 				self.next()
 		else:
 			report.error(f"expected type, found {self.tok}", pos)
 			self.next()
+		self.inside_type = old_inside_type
 		return type.Type.unresolved(self.empty_expr())
+
+	def parse_concrete_type_arguments(self):
+		concrete_types = []
+		if self.accept(Kind.Lt):
+			while True:
+				concrete_types.append(self.parse_type())
+				if not self.accept(Kind.Comma):
+					break
+			self.expect(Kind.Gt)
+		return concrete_types

@@ -97,7 +97,13 @@ def mangle_symbol(s):
 				res.insert(0, "4core6_error")
 				s.mangled_name = "_R4core6_error"
 			else:
-				res.insert(0, f"{len(s.name)}{s.name}")
+				if s.is_generic_instance:
+					name = s.name.replace("<",
+					                      "Lt_").replace(">", "_Gt"
+					                                    ).replace(", ", "_")
+				else:
+					name = s.name
+				res.insert(0, f"{len(name)}{name}")
 		elif s.name in OVERLOADABLE_OPERATORS_STR:
 			name = OVERLOADABLE_OPERATORS_STR[s.name]
 			name = f"{len(name)}{name}"
@@ -633,6 +639,8 @@ class AST2RIR:
 		self.loop_entry_label = ""
 		self.loop_exit_label = ""
 
+		self.inside_generic_type = False
+
 		self.void_types = (self.comp.void_t, self.comp.no_return_t)
 
 		self.init_statics = FnDecl(
@@ -766,11 +774,14 @@ class AST2RIR:
 		elif isinstance(d, ast.StructDecl):
 			if d.sym.is_used():
 				if d.is_generic:
+					self.inside_generic_type = True
 					for g in d.sym.syms:
-						for i,gt in enumerate(d.type_arguments):
-							self.cur_concrete_types[gt.name] = d.type_arguments[gt.idx]
+						for i, gt in enumerate(d.type_arguments):
+							self.cur_concrete_types[gt.name
+							                        ] = d.type_arguments[gt.idx]
 				self.convert_decls(d.decls)
 				if d.is_generic:
+					self.inside_generic_type = False
 					for gt in d.type_arguments:
 						del self.cur_concrete_types[gt.name]
 		elif isinstance(d, ast.EnumDecl):
@@ -779,18 +790,22 @@ class AST2RIR:
 		elif isinstance(d, ast.ExtendDecl):
 			self.convert_decls(d.decls)
 		elif isinstance(d, ast.FnDecl):
-			if d.is_generic:
+			if d.is_generic or self.inside_generic_type:
 				for g in d.sym.syms:
 					if not g.is_generic_instance:
 						continue
-					for i,gt in enumerate(d.type_arguments):
-						self.cur_concrete_types[gt.name] = g.type_arguments[gt.idx]
+					for i, gt in enumerate(d.type_arguments):
+						self.cur_concrete_types[gt.name
+						                        ] = g.type_arguments[gt.idx]
 					self.cur_fn_qualname = g.qualname()
 					args = g.args.copy()
 					if d.is_method:
 						args.insert(
 						    0,
-						    sym.Arg("self", d.self_typ, None, None, d.name_pos)
+						    sym.Arg(
+						        "self", self.unwrap(g.self_typ), None, None,
+						        d.name_pos
+						    )
 						)
 					self.cur_fn = FnDecl(
 					    d.vis.is_pub(), mangle_symbol(g), g.ret_typ, args
@@ -1054,9 +1069,7 @@ class AST2RIR:
 					self.cur_fn.alloca_var(ident)
 					self.cur_fn.store(
 					    ident,
-					    Selector(
-					        unwrapped_left_typ, right, Name(f"f{i}")
-					    )
+					    Selector(unwrapped_left_typ, right, Name(f"f{i}"))
 					)
 		elif isinstance(stmt, ast.AssignStmt):
 			left = None
@@ -2825,6 +2838,7 @@ class AST2RIR:
 				if s.name == "error" and root.is_universe:
 					continue
 				ts.append(s)
+				ts += self.get_type_symbols(s)
 			elif isinstance(s, sym.Pkg):
 				ts += self.get_type_symbols(s)
 			elif isinstance(s, sym.Mod):
@@ -2910,7 +2924,7 @@ class AST2RIR:
 			return type.Type(self.unwrap_symbol(typ.sym))
 		elif isinstance(typ, (type.Result, type.Optional, type.Ptr, type.Ref)):
 			return type.resolve_generic(
-			    self.comp.universe, typ, typ.typ, self.unwrap(typ.typ)
+			    self.comp, typ, typ.typ, self.unwrap(typ.typ)
 			)
 		#elif isinstance(typ, type.Fn):
 		#	for i in range(len(self.args)):
@@ -2922,7 +2936,7 @@ class AST2RIR:
 		if tsym.kind == TypeKind.Array:
 			return self.comp.universe.add_or_get_array(
 			    type.resolve_generic(
-			        self.comp.universe, typ, tsym.info.elem_typ,
+			        self.comp, typ, tsym.info.elem_typ,
 			        self.unwrap(tsym.info.elem_typ)
 			    ), tsym.info.size
 			)
@@ -2936,7 +2950,7 @@ class AST2RIR:
 			for old_t in tsym.info.types:
 				new_types.append(
 				    type.resolve_generic(
-				        self.comp.universe, old_t, old_t, self.unwrap(old_t)
+				        self.comp, old_t, old_t, self.unwrap(old_t)
 				    )
 				)
 			return self.comp.universe.add_or_get_tuple(new_types)
