@@ -82,6 +82,7 @@ class Kind(Enum):
 	KeyExtern = auto_enum() # extern
 	KeyTrait = auto_enum() # trait
 	KeyUnion = auto_enum() # union
+	KeyClass = auto_enum() # class
 	KeyStruct = auto_enum() # struct
 	KeyEnum = auto_enum() # enum
 	KeyErrType = auto_enum() # errtype
@@ -218,6 +219,7 @@ TOKEN_STRINGS = {
     Kind.KeyExtern: "extern",
     Kind.KeyTrait: "trait",
     Kind.KeyUnion: "union",
+    Kind.KeyClass: "class",
     Kind.KeyStruct: "struct",
     Kind.KeyEnum: "enum",
     Kind.KeyErrType: "errtype",

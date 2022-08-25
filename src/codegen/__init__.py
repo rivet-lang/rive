@@ -1043,9 +1043,9 @@ class AST2RIR:
 					    unwrapped_left_typ, value.value(), stmt.right.pos
 					)
 			else:
-				unwrapped_left_typ = self.unwrap(left.typ)
 				right = self.convert_expr(stmt.right)
 				for i, left in enumerate(stmt.lefts):
+					unwrapped_left_typ = self.unwrap(left.typ)
 					ident = Ident(
 					    unwrapped_left_typ,
 					    self.cur_fn.local_name()
@@ -1055,7 +1055,7 @@ class AST2RIR:
 					self.cur_fn.store(
 					    ident,
 					    Selector(
-					        unwrapped_left_typ.types[i], right, Name(f"f{i}")
+					        unwrapped_left_typ.sym.info.types[i], right, Name(f"f{i}")
 					    )
 					)
 		elif isinstance(stmt, ast.AssignStmt):

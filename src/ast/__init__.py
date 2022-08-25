@@ -267,6 +267,16 @@ class StructField:
 		self.has_def_expr = has_def_expr
 		self.pos = pos
 
+class ClassDecl:
+	def __init__(self, doc_comment, attrs, vis, name, decls, pos):
+		self.doc_comment = doc_comment
+		self.attrs = attrs
+		self.vis = vis
+		self.name = name
+		self.decls = decls
+		self.sym = None
+		self.pos = pos
+
 class StructDecl:
 	def __init__(self, doc_comment, attrs, vis, name, type_arguments, decls, is_opaque, pos):
 		self.doc_comment = doc_comment

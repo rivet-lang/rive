@@ -381,12 +381,43 @@ class Parser:
 				if not self.accept(Kind.Comma):
 					break
 			if self.accept(Kind.Semicolon):
-				# declarations: methods, consts, etc.
+				# declarations: methods, etc.
 				while self.tok.kind != Kind.Rbrace:
 					decls.append(self.parse_decl())
 			self.expect(Kind.Rbrace)
 			return ast.UnionDecl(
 			    doc_comment, attrs, vis, name, variants, decls, pos
+			)
+		elif self.accept(Kind.KeyClass):
+			old_inside_struct_decl = self.inside_struct_decl
+			self.inside_struct_decl = True
+			pos = self.tok.pos
+			if is_unsafe:
+				report.error("classes cannot be declared unsafe", pos)
+			name = self.parse_name()
+			decls = []
+			self.expect(Kind.Lbrace)
+			if self.tok.kind != Kind.Rbrace:
+				while self.tok.kind != Kind.Rbrace:
+					if self.accept(Kind.BitNot):
+						# destructor
+						pos = self.prev_tok.pos
+						self.expect(Kind.KeySelf)
+						self.expect(Kind.Lbrace)
+						self.open_scope()
+						sc = self.scope
+						stmts = []
+						while not self.accept(Kind.Rbrace):
+							stmts.append(self.parse_stmt())
+						self.close_scope()
+						decls.append(ast.DestructorDecl(sc, stmts, pos))
+					else:
+						# declaration: methods, etc.
+						decls.append(self.parse_decl())
+			self.expect(Kind.Rbrace)
+			self.inside_struct_decl = old_inside_struct_decl
+			return ast.ClassDecl(
+			    doc_comment, attrs, vis, name, decls, pos
 			)
 		elif self.accept(Kind.KeyStruct):
 			old_inside_struct_decl = self.inside_struct_decl

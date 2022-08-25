@@ -80,6 +80,7 @@ pub enum Kind {
 	KeyExtern, // extern
 	KeyTrait, // trait
 	KeyUnion, // union
+	KeyClass, // class
 	KeyStruct, // struct
 	KeyEnum, // enum
 	KeyErrType, // errtype
