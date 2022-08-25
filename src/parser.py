@@ -28,7 +28,7 @@ class Parser:
 		self.inside_struct_decl = False
 		self.inside_trait = False
 		self.inside_block = False
-		self.inside_type=False
+		self.inside_type = False
 
 	def parse_pkg(self):
 		self.is_pkg_level = True
@@ -398,7 +398,7 @@ class Parser:
 			name = self.parse_name()
 			is_opaque = self.accept(Kind.Semicolon)
 			decls = []
-			type_arguments=[]
+			type_arguments = []
 			if not is_opaque:
 				type_arguments = self.parse_type_arguments()
 				self.expect(Kind.Lbrace)
@@ -422,7 +422,8 @@ class Parser:
 				self.expect(Kind.Rbrace)
 			self.inside_struct_decl = old_inside_struct_decl
 			return ast.StructDecl(
-			    doc_comment, attrs, vis, name, type_arguments, decls, is_opaque, pos
+			    doc_comment, attrs, vis, name, type_arguments, decls, is_opaque,
+			    pos
 			)
 		elif self.inside_struct_decl and self.tok.kind in (
 		    Kind.KeyMut, Kind.Name
@@ -1298,8 +1299,8 @@ class Parser:
 		sc = self.scope
 		if sc == None:
 			sc = sym.Scope(sc)
-		id= ast.Ident(name, pos, sc, is_comptime, type_args)
-		id.inside_type=self.inside_type
+		id = ast.Ident(name, pos, sc, is_comptime, type_args)
+		id.inside_type = self.inside_type
 		return id
 
 	def parse_pkg_expr(self):
@@ -1534,7 +1535,7 @@ class Parser:
 		return type.Type.unresolved(self.empty_expr())
 
 	def parse_concrete_type_arguments(self):
-		concrete_types=[]
+		concrete_types = []
 		if self.accept(Kind.Lt):
 			while True:
 				concrete_types.append(self.parse_type())

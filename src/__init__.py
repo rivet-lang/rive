@@ -229,7 +229,7 @@ class Compiler:
 				for f in new_inst.fields:
 					new_field = copy.copy(f)
 					new_field.typ = type.resolve_generic(
-						self, new_field.typ, typ_arg, concrete_type
+					    self, new_field.typ, typ_arg, concrete_type
 					)
 					new_fields.append(new_field)
 			new_inst.fields = new_fields
@@ -240,13 +240,15 @@ class Compiler:
 					s.parent = new_inst
 					new_syms.append(self.inst_generic(s, type_args))
 					s.parent = symbol
-			new_inst.syms=new_syms
+			new_inst.syms = new_syms
 		elif isinstance(symbol, sym.Fn):
 			if new_inst.is_method and symbol.parent.is_generic_instance:
 				new_inst.self_typ = copy.copy(new_inst.self_typ)
-				new_inst.self_typ=type.Type(symbol.parent)
+				new_inst.self_typ = type.Type(symbol.parent)
 				if new_inst.rec_is_ref:
-					new_inst.self_typ = type.Ref(new_inst.self_typ, new_inst.rec_is_mut)
+					new_inst.self_typ = type.Ref(
+					    new_inst.self_typ, new_inst.rec_is_mut
+					)
 			for typ_arg in symbol.type_arguments:
 				new_args = []
 				concrete_type = type_args[typ_arg.idx]
@@ -261,14 +263,16 @@ class Compiler:
 				)
 				new_inst.args = new_args
 			if symbol.parent.is_generic_instance:
-				for i,typ_arg in enumerate(symbol.parent.parent.type_arguments):
+				for i, typ_arg in enumerate(
+				    symbol.parent.parent.type_arguments
+				):
 					concrete_type = type_args[i]
 					for arg in new_inst.args:
 						arg.typ = type.resolve_generic(
-							self, arg.typ, typ_arg, concrete_type
+						    self, arg.typ, typ_arg, concrete_type
 						)
 					new_inst.ret_typ = type.resolve_generic(
-						self, new_inst.ret_typ, typ_arg, concrete_type
+					    self, new_inst.ret_typ, typ_arg, concrete_type
 					)
 		symbol.syms.append(new_inst)
 		return new_inst

@@ -466,7 +466,9 @@ class Resolver:
 						    f"expected {len_sym_ta} type argument(s) found {len_i_ta}"
 						)
 					elif errs == 0:
-						ident.sym = self.comp.inst_generic(ident.sym, ident.type_args)
+						ident.sym = self.comp.inst_generic(
+						    ident.sym, ident.type_args
+						)
 				else:
 					report.error(
 					    f"{ident.sym.sym_kind()} `{ident.name}` is not generic",
@@ -659,13 +661,15 @@ class Resolver:
 				self.resolve_ident(typ.expr)
 				if typ.expr.sym != None:
 					if typ.has_type_args and typ.expr.sym.is_generic:
-						err=False
+						err = False
 						for typ_arg in typ.type_args:
 							if not self.resolve_type(typ_arg):
-								err=True
+								err = True
 						if err:
 							return False
-						typ.expr.sym=self.comp.inst_generic(typ.expr.sym, typ.type_args)
+						typ.expr.sym = self.comp.inst_generic(
+						    typ.expr.sym, typ.type_args
+						)
 					if isinstance(typ.expr.sym, sym.Type):
 						pos = typ.expr.pos
 						typ.resolve(typ.expr.sym)
@@ -678,7 +682,8 @@ class Resolver:
 						return True
 					else:
 						report.error(
-						    f"expected type, found {typ.expr.sym.sym_kind()}", typ.expr.pos
+						    f"expected type, found {typ.expr.sym.sym_kind()}",
+						    typ.expr.pos
 						)
 				elif typ.expr.is_obj:
 					report.error(

@@ -511,7 +511,9 @@ class StructInfo:
 		self.is_opaque = is_opaque
 
 class Type(Sym):
-	def __init__(self, vis, name, kind, fields = [], info = None, type_arguments=[]):
+	def __init__(
+	    self, vis, name, kind, fields = [], info = None, type_arguments = []
+	):
 		Sym.__init__(self, vis, name, type_arguments)
 		self.kind = kind
 		self.fields = fields

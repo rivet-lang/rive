@@ -98,9 +98,11 @@ def mangle_symbol(s):
 				s.mangled_name = "_R4core6_error"
 			else:
 				if s.is_generic_instance:
-					name = s.name.replace("<", "Lt").replace(">", "Gt").replace(", ", "_")
+					name = s.name.replace("<",
+					                      "Lt").replace(">", "Gt"
+					                                    ).replace(", ", "_")
 				else:
-					name=s.name
+					name = s.name
 				res.insert(0, f"{len(name)}{name}")
 		elif s.name in OVERLOADABLE_OPERATORS_STR:
 			name = OVERLOADABLE_OPERATORS_STR[s.name]
@@ -637,7 +639,7 @@ class AST2RIR:
 		self.loop_entry_label = ""
 		self.loop_exit_label = ""
 
-		self.inside_generic_type=False
+		self.inside_generic_type = False
 
 		self.void_types = (self.comp.void_t, self.comp.no_return_t)
 
@@ -772,13 +774,14 @@ class AST2RIR:
 		elif isinstance(d, ast.StructDecl):
 			if d.sym.is_used():
 				if d.is_generic:
-					self.inside_generic_type=True
+					self.inside_generic_type = True
 					for g in d.sym.syms:
-						for i,gt in enumerate(d.type_arguments):
-							self.cur_concrete_types[gt.name] = d.type_arguments[gt.idx]
+						for i, gt in enumerate(d.type_arguments):
+							self.cur_concrete_types[gt.name
+							                        ] = d.type_arguments[gt.idx]
 				self.convert_decls(d.decls)
 				if d.is_generic:
-					self.inside_generic_type=False
+					self.inside_generic_type = False
 					for gt in d.type_arguments:
 						del self.cur_concrete_types[gt.name]
 		elif isinstance(d, ast.EnumDecl):
@@ -791,14 +794,18 @@ class AST2RIR:
 				for g in d.sym.syms:
 					if not g.is_generic_instance:
 						continue
-					for i,gt in enumerate(d.type_arguments):
-						self.cur_concrete_types[gt.name] = g.type_arguments[gt.idx]
+					for i, gt in enumerate(d.type_arguments):
+						self.cur_concrete_types[gt.name
+						                        ] = g.type_arguments[gt.idx]
 					self.cur_fn_qualname = g.qualname()
 					args = g.args.copy()
 					if d.is_method:
 						args.insert(
 						    0,
-						    sym.Arg("self", self.unwrap(g.self_typ), None, None, d.name_pos)
+						    sym.Arg(
+						        "self", self.unwrap(g.self_typ), None, None,
+						        d.name_pos
+						    )
 						)
 					self.cur_fn = FnDecl(
 					    d.vis.is_pub(), mangle_symbol(g), g.ret_typ, args
@@ -1062,9 +1069,7 @@ class AST2RIR:
 					self.cur_fn.alloca_var(ident)
 					self.cur_fn.store(
 					    ident,
-					    Selector(
-					        unwrapped_left_typ, right, Name(f"f{i}")
-					    )
+					    Selector(unwrapped_left_typ, right, Name(f"f{i}"))
 					)
 		elif isinstance(stmt, ast.AssignStmt):
 			left = None

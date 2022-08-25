@@ -56,11 +56,11 @@ def resolve_generic(comp, typ, generic_type, concrete_type):
 		if typ.is_resolved():
 			if typ.sym.kind == TypeKind.TypeArg:
 				if (
-					isinstance(generic_type, Generic)
-					and typ.sym.name == generic_type.name
+				    isinstance(generic_type, Generic)
+				    and typ.sym.name == generic_type.name
 				) or (
-					isinstance(generic_type, Type)
-					and typ.sym.name == generic_type.sym.name
+				    isinstance(generic_type, Type)
+				    and typ.sym.name == generic_type.sym.name
 				):
 					return concrete_type
 			elif typ.sym.is_generic and typ.has_type_args:
@@ -120,16 +120,16 @@ class Generic(TBase):
 		return self.name
 
 class Type(TBase):
-	def __init__(self, sym, type_args=[]):
+	def __init__(self, sym, type_args = []):
 		self.sym = sym
 		self.expr = None
 		self._unresolved = False
 		self.is_generic = False
-		self.has_type_args=len(type_args)>0
-		self.type_args=type_args
+		self.has_type_args = len(type_args) > 0
+		self.type_args = type_args
 
 	@staticmethod
-	def unresolved(expr, type_args=[]):
+	def unresolved(expr, type_args = []):
 		typ = Type(None, type_args)
 		typ.expr = expr
 		typ._unresolved = True
@@ -154,9 +154,9 @@ class Type(TBase):
 
 	def __str__(self):
 		if self._unresolved:
-			res= str(self.expr)
+			res = str(self.expr)
 		else:
-			res=str(self.sym.name)
+			res = str(self.sym.name)
 		if self.has_type_args:
 			if not (self.sym and self.sym.is_generic_instance):
 				res += f"<{', '.join([str(t) for t in self.type_args])}>"
