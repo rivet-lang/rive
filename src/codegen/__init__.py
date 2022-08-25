@@ -1056,6 +1056,7 @@ class AST2RIR:
 					    ident,
 					    Selector(
 					        unwrapped_left_typ.sym.info.types[i], right, Name(f"f{i}")
+					        unwrapped_left_typ, right, Name(f"f{i}")
 					    )
 					)
 		elif isinstance(stmt, ast.AssignStmt):
@@ -1195,7 +1196,7 @@ class AST2RIR:
 			if expr.is_bytestr:
 				return ArrayLiteral(
 				    expr.typ, [
-				        IntLiteral(self.comp.uint8_t, chr(b))
+				        IntLiteral(self.comp.uint8_t, str(b))
 				        for b in list(bytes)
 				    ]
 				)
