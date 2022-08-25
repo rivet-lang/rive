@@ -127,7 +127,9 @@ pub struct String {
             cap *= 2;
         }
         unsafe {
-            let mut new_data = as(*mut u8, mem::alloc(cap * size_of!(u8)) catch unreachable!());
+            let mut new_data = as(
+                *mut u8, mem::alloc(cap * size_of!(u8)) catch unreachable!()
+            );
             if (self.ptr != none) {
                 mem::copy(new_data, self.ptr, self.len_ * size_of!(u8));
             }
