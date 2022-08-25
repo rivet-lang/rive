@@ -70,15 +70,16 @@ fn main() {
     assert!(Generic::<str>{ a: "Abc" }.a == "Abc");
 
     // generic methods
-    //assert!(Generic::<u8>{ a: 2 }.value() == 2);
-    //assert!(Generic::<i64>{ a: 5 }.value() == 5);
-    // FIXME: assert!(Generic::<str>{ a: "Abc" }.value() == "Abc");
+    assert!(Generic::<i8>{ a: 2 }.value() == 2);
+    assert!(Generic::<i64>{ a: 5 }.value() == 5);
+    assert!(Generic::<str>{ a: "Abc" }.value() == "Abc");
+    assert!(Generic::<bool>{ a: false }.value() == false);
 
     unsafe {
         let mut res = new::<Generic<i8>>();
         assert!(res != none);
-        delete::<Generic<i8>>(res);
         res.a = 1;
         assert!(res.a == 1);
+        delete::<Generic<i8>>(res);
     }
 }

@@ -97,7 +97,11 @@ def mangle_symbol(s):
 				res.insert(0, "4core6_error")
 				s.mangled_name = "_R4core6_error"
 			else:
-				res.insert(0, f"{len(s.name)}{s.name}")
+				if s.is_generic_instance:
+					name = s.name.replace("<", "Lt").replace(">", "Gt").replace(", ", "_")
+				else:
+					name=s.name
+				res.insert(0, f"{len(name)}{name}")
 		elif s.name in OVERLOADABLE_OPERATORS_STR:
 			name = OVERLOADABLE_OPERATORS_STR[s.name]
 			name = f"{len(name)}{name}"

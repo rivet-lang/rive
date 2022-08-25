@@ -466,9 +466,7 @@ class Resolver:
 						    f"expected {len_sym_ta} type argument(s) found {len_i_ta}"
 						)
 					elif errs == 0:
-						ident.sym = self.comp.inst_generic(
-						    ident.sym, ident.type_args
-						)
+						ident.sym = self.comp.inst_generic(ident.sym, ident.type_args)
 				else:
 					report.error(
 					    f"{ident.sym.sym_kind()} `{ident.name}` is not generic",
