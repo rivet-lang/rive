@@ -1055,7 +1055,6 @@ class AST2RIR:
 					self.cur_fn.store(
 					    ident,
 					    Selector(
-					        unwrapped_left_typ.sym.info.types[i], right, Name(f"f{i}")
 					        unwrapped_left_typ, right, Name(f"f{i}")
 					    )
 					)
