@@ -78,7 +78,7 @@ class _Ptr: # ugly hack =/
 
 class TBase:
 	def get_sym(self):
-		if isinstance(self, (Type, Slice, Array, Tuple, Variadic)):
+		if isinstance(self, (Type, Slice, Array, Tuple, Variadic, Generic)):
 			return self.sym
 		elif isinstance(self, Fn):
 			return self.info()
@@ -105,6 +105,7 @@ class Generic(TBase):
 	def __init__(self, name, idx, pos):
 		self.name = name
 		self.idx = idx
+		self.sym = None
 		self.pos = pos
 
 	def qualstr(self):

@@ -164,16 +164,7 @@ class Register:
 				old_cur_sym = self.cur_sym
 				self.cur_sym = decl.sym
 				if decl.is_generic:
-					for type_arg in decl.type_arguments:
-						try:
-							decl.sym.add(
-							    sym.Type(
-							        ast.Visibility.Private, type_arg.name,
-							        sym.TypeKind.TypeArg
-							    )
-							)
-						except utils.CompilerError as e:
-							report.error(e.args[0], type_arg.pos)
+					self.register_generics(decl)
 				self.visit_decls(decl.decls)
 				self.cur_sym = old_cur_sym
 				self.add_sym(decl.sym, decl.pos)
@@ -261,16 +252,7 @@ class Register:
 				)
 				decl.sym.is_main = decl.is_main
 				if decl.is_generic:
-					for type_arg in decl.type_arguments:
-						try:
-							decl.sym.add(
-							    sym.Type(
-							        ast.Visibility.Private, type_arg.name,
-							        sym.TypeKind.TypeArg
-							    )
-							)
-						except utils.CompilerError as e:
-							report.error(e.args[0], type_arg.pos)
+					self.register_generics(decl)
 				if decl.is_method:
 					self_typ = type.Type(self.cur_sym)
 					if decl.self_is_ref:
@@ -286,3 +268,15 @@ class Register:
 						)
 					except utils.CompilerError as e:
 						report.error(e.args[0], arg.pos)
+
+	def register_generics(self, decl):
+		for type_arg in decl.type_arguments:
+			try:
+				type_arg.sym = decl.sym.add_and_return(
+					sym.Type(
+						ast.Visibility.Private, type_arg.name,
+						sym.TypeKind.TypeArg
+					)
+				)
+			except utils.CompilerError as e:
+				report.error(e.args[0], type_arg.pos)
