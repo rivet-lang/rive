@@ -99,7 +99,7 @@ def mangle_symbol(s):
 			else:
 				if s.is_generic_instance:
 					name = s.name.replace("<",
-					                      "Lt").replace(">", "Gt"
+					                      "Lt_").replace(">", "_Gt"
 					                                    ).replace(", ", "_")
 				else:
 					name = s.name
