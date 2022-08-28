@@ -1,0 +1,38 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+using pkg::utils::StaticBuffer;
+
+pub fn demangle_symbol(name: str) String {
+    if (!name.starts_with("_R")) {
+        return name.to_string();
+    }
+
+    let mut idx: usize = 2;
+    let mut buf = StaticBuffer{};
+    let mut res = String::with_capacity(name.len);
+    while (idx < name.len) {
+        let byte = unsafe { name.ptr[idx] };
+        if (byte.is_digit()) {
+            buf.push(byte);
+            idx++;
+            continue;
+        }
+
+        if (!res.is_empty()) {
+            res.push_str("::");
+        }
+
+        for (_ in 0..as(usize, buf.as_u64())) {
+            res.push(unsafe { name.ptr[idx++] });
+        }
+        buf.clear();
+
+        if (!unsafe { name.ptr[idx] }.is_digit()) {
+            break; // end
+        }
+    }
+
+    return res;
+}

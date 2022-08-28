@@ -1,0 +1,40 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+using pkg::stdc;
+
+/// Returns the OS-assigned process identifier associated with this
+/// process.
+pub fn id() u32 {
+    return unsafe { stdc::getpid() };
+}
+
+/// Terminates the current process with the specified exit code.
+///
+/// This function will never return and will immediately terminate the
+/// current process. The exit code is passed through to the underlying
+/// OS and will be available for consumption by another process.
+pub fn exit(code: i32 = 0) no_return {
+    unsafe {
+        // TODO(StunxFS): super::_R12drop_staticsZ();
+        super::_R9drop_argsZ();
+        stdc::exit(code);
+    }
+}
+
+/// Terminates the process in an abnormal fashion.
+///
+/// The function will never return and will immediately terminate the
+/// current process in a platform specific "abnormal" manner.
+///
+/// The process's termination will be similar to that from the C 'abort()'
+/// function. On Unix, the process will terminate with signal SIGABRT,
+/// which typically means that the shell prints "Aborted".
+pub fn abort() no_return {
+    unsafe {
+        // TODO(StunxFS): super::_R12drop_staticsZ();
+        super::_R9drop_argsZ();
+        stdc::abort();
+    }
+}
