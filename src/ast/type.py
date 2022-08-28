@@ -114,7 +114,7 @@ class Generic(TBase):
 	def __eq__(self, other):
 		if not isinstance(other, Generic):
 			return False
-		return self.name == other.name
+		return self.name == other.name and self.sym == other.sym
 
 	def __str__(self):
 		return self.name
@@ -148,9 +148,14 @@ class Type(TBase):
 	def __eq__(self, other):
 		if not isinstance(other, Type):
 			return False
+		if self.sym == other.sym:
+			return True
 		if self.has_type_args != other.has_type_args:
 			return False
-		return self.sym == other.sym
+		if self.has_type_args and other.has_type_args:
+			if self.type_args != other.type_args:
+				return False
+		return False
 
 	def __str__(self):
 		if self._unresolved:

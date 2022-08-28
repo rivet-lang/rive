@@ -206,18 +206,17 @@ class Compiler:
 	# ========================================================
 
 	def inst_generic(self, symbol, type_args):
-		if isinstance(symbol, sym.Fn):
-			new_name = symbol.name
-		else:
-			new_name = f"{symbol.name}<{', '.join([t.qualstr() for t in type_args])}>"
-		if generic_sym := symbol.find(new_name):
-			if generic_sym.type_arguments == type_args:
-				return generic_sym
+		new_name = f"{symbol.name}<{', '.join([t.qualstr() for t in type_args])}>"
+		for _sym in symbol.syms:
+			if _sym.generic_name == new_name:
+				return _sym
 
 		type_args_mangled = f"Lt_{'__'.join([codegen.mangle_type(t) for t in type_args])}_Gt"
 		new_inst = copy.copy(symbol)
-		new_inst.name = new_name
+		if not (isinstance(symbol, sym.Fn) and symbol.is_method):
+			new_inst.name = new_name
 		new_inst.mangled_name = f"{codegen.mangle_symbol(symbol)}{len(type_args_mangled)}{type_args_mangled}"
+		new_inst.generic_name = new_name
 		new_inst.type_arguments = type_args
 		new_inst.is_generic = False
 		new_inst.is_generic_instance = True
@@ -249,24 +248,25 @@ class Compiler:
 					new_inst.self_typ = type.Ref(
 					    new_inst.self_typ, new_inst.rec_is_mut
 					)
-			for typ_arg in symbol.type_arguments:
-				new_args = []
-				concrete_type = type_args[typ_arg.idx]
-				for arg in new_inst.args:
-					new_arg = copy.copy(arg)
-					new_arg.typ = type.resolve_generic(
-					    self, new_arg.typ, typ_arg, concrete_type
+			new_args = [
+			    sym.Arg(
+			        arg.name, arg.typ, arg.def_expr, arg.has_def_expr, arg.pos
+			    ) for arg in symbol.args
+			]
+			if symbol.is_generic:
+				for typ_arg in symbol.type_arguments:
+					concrete_type = type_args[typ_arg.idx]
+					for i, arg in enumerate(new_args):
+						arg.typ = type.resolve_generic(
+						    self, arg.typ, typ_arg, concrete_type
+						)
+					new_inst.ret_typ = type.resolve_generic(
+					    self, new_inst.ret_typ, typ_arg, concrete_type
 					)
-					new_args.append(new_arg)
-				new_inst.ret_typ = type.resolve_generic(
-				    self, new_inst.ret_typ, typ_arg, concrete_type
-				)
-				new_inst.args = new_args
+			new_inst.args = new_args
 			if symbol.parent.is_generic_instance:
-				for i, typ_arg in enumerate(
-				    symbol.parent.parent.type_arguments
-				):
-					concrete_type = type_args[i]
+				for typ_arg in symbol.parent.parent.type_arguments:
+					concrete_type = type_args[typ_arg.idx]
 					for arg in new_inst.args:
 						arg.typ = type.resolve_generic(
 						    self, arg.typ, typ_arg, concrete_type

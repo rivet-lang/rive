@@ -92,6 +92,7 @@ class Sym:
 		self.name = name
 		self.mangled_name = ""
 		self.qualified_name = ""
+		self.generic_name = ""
 		self.parent = None
 		self.syms = []
 		self.index = symbol_count()
@@ -99,6 +100,7 @@ class Sym:
 		self.is_core = isinstance(self, Pkg) and self.index == 22
 		self.is_generic = len(type_arguments) > 0
 		self.is_generic_instance = False
+		self.is_generated = False
 		self.type_arguments = type_arguments
 		self.uses = 0
 
@@ -289,7 +291,7 @@ class Sym:
 				self.qualified_name += "<>"
 			return self.qualified_name
 		if self.is_generic_instance and self.parent.is_generic:
-			self.qualified_name = f"{self.parent.parent.qualname()}::{self.name}<>"
+			self.qualified_name = f"{self.parent.parent.qualname()}::{self.name}"
 			return self.qualified_name
 		self.qualified_name = f"{self.parent.qualname()}::{self.name}"
 		if self.is_generic:
