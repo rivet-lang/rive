@@ -32,6 +32,10 @@ struct Generic<T> {
     fn value(self) T {
         return self.a;
     }
+
+    fn set_value(&mut self, a: T) {
+        self.a = a;
+    }
 }
 
 fn main() {
@@ -74,6 +78,13 @@ fn main() {
     assert!(Generic::<i64>{ a: 5 }.value() == 5);
     assert!(Generic::<str>{ a: "Abc" }.value() == "Abc");
     assert!(Generic::<bool>{ a: false }.value() == false);
+
+    let mut x = Generic::<i64>{
+        a: 1
+    };
+    assert!(x.a == 1);
+    x.set_value(5);
+    assert!(x.a == 5);
 
     unsafe {
         let mut res = new::<Generic<i8>>();

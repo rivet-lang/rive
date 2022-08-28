@@ -100,7 +100,7 @@ def mangle_symbol(s):
 				if s.is_generic_instance:
 					name = s.name.replace("<",
 					                      "Lt_").replace(">", "_Gt"
-					                                    ).replace(", ", "_")
+					                                     ).replace(", ", "_")
 				else:
 					name = s.name
 				res.insert(0, f"{len(name)}{name}")
@@ -113,7 +113,10 @@ def mangle_symbol(s):
 			res.insert(0, f"{len(s.name)}{s.name}")
 		if s.parent == None:
 			break
-		s = s.parent
+		elif s.is_generic_instance:
+			s = s.parent.parent
+		else:
+			s = s.parent
 	res.insert(0, "_R")
 
 	if isinstance(root, sym.Fn):
@@ -776,14 +779,18 @@ class AST2RIR:
 				if d.is_generic:
 					self.inside_generic_type = True
 					for g in d.sym.syms:
-						for i, gt in enumerate(d.type_arguments):
+						if g.is_generated or not g.is_generic_instance:
+							continue
+						g.is_generated = True
+						for gt in d.type_arguments:
 							self.cur_concrete_types[gt.name
-							                        ] = d.type_arguments[gt.idx]
-				self.convert_decls(d.decls)
-				if d.is_generic:
+							                        ] = g.type_arguments[gt.idx]
+						self.convert_decls(d.decls)
+						for gt in d.type_arguments:
+							self.cur_concrete_types.pop(gt.name)
 					self.inside_generic_type = False
-					for gt in d.type_arguments:
-						del self.cur_concrete_types[gt.name]
+				else:
+					self.convert_decls(d.decls)
 		elif isinstance(d, ast.EnumDecl):
 			if d.sym.is_used():
 				self.convert_decls(d.decls)
@@ -792,9 +799,10 @@ class AST2RIR:
 		elif isinstance(d, ast.FnDecl):
 			if d.is_generic or self.inside_generic_type:
 				for g in d.sym.syms:
-					if not g.is_generic_instance:
+					if g.is_generated or not g.is_generic_instance:
 						continue
-					for i, gt in enumerate(d.type_arguments):
+					g.is_generated = True
+					for gt in d.type_arguments:
 						self.cur_concrete_types[gt.name
 						                        ] = g.type_arguments[gt.idx]
 					self.cur_fn_qualname = g.qualname()
@@ -825,7 +833,7 @@ class AST2RIR:
 							self.cur_fn.add_ret(self.default_value(g.ret_typ))
 					self.decls.append(self.cur_fn)
 					for gt in d.type_arguments:
-						del self.cur_concrete_types[gt.name]
+						self.cur_concrete_types.pop(gt.name)
 			elif d.is_extern and not d.has_body:
 				self.externs.append(
 				    ExternFn(d.name, d.ret_typ, d.args, d.is_variadic, d.attrs)
@@ -850,9 +858,9 @@ class AST2RIR:
 			    0,
 			    sym.Arg("self", fn_decl.self_typ, None, None, fn_decl.name_pos)
 			)
+		ret_typ = self.unwrap(fn_decl.ret_typ)
 		self.cur_fn = FnDecl(
-		    fn_decl.vis.is_pub(), mangle_symbol(fn_decl.sym), fn_decl.ret_typ,
-		    args
+		    fn_decl.vis.is_pub(), mangle_symbol(fn_decl.sym), ret_typ, args
 		)
 		self.convert_stmts(fn_decl.stmts)
 		if len(fn_decl.stmts) == 0 or (
@@ -861,11 +869,11 @@ class AST2RIR:
 		    )
 		):
 			if isinstance(
-			    fn_decl.ret_typ, type.Result
-			) and fn_decl.ret_typ.typ == self.comp.void_t:
-				self.cur_fn.add_ret(self.result_void_ok(fn_decl.ret_typ))
-			elif fn_decl.ret_typ not in self.void_types:
-				self.cur_fn.add_ret(self.default_value(fn_decl.ret_typ))
+			    ret_typ, type.Result
+			) and ret_typ.typ == self.comp.void_t:
+				self.cur_fn.add_ret(self.result_void_ok(ret_typ))
+			elif ret_typ not in self.void_types:
+				self.cur_fn.add_ret(self.default_value(ret_typ))
 		return self.cur_fn
 
 	def convert_stmts(self, stmts):
@@ -2890,6 +2898,8 @@ class AST2RIR:
 						continue
 					field_deps.append(dep)
 			elif ts.kind == sym.TypeKind.Struct:
+				if ts.is_generic:
+					continue
 				for f in ts.fields:
 					dsym = f.typ.get_sym()
 					if dsym.kind == TypeKind.TypeArg:
