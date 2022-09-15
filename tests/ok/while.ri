@@ -1,4 +1,4 @@
-func main() {
+fn main() {
     // Rivet only has 1 way to write loops: `while`, which always executes,
     // until the given condition is false.
     var mut x = 0;

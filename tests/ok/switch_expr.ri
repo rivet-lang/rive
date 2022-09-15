@@ -1,4 +1,4 @@
-func main() {
+fn main() {
     switch (1) {
         1 => assert!(true),
         else => assert!(false)

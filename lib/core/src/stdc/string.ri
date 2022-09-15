@@ -3,12 +3,12 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    pub func memchr(cx: *void, c: i32, n: usize) *mut void;
-    pub func memcmp(cx: *void, ct: *void, n: usize) i32;
-    pub func memcpy(dest: *mut void, src: *void, n: usize) *mut void;
-    pub func memmove(dest: *mut void, src: *void, n: usize) *mut void;
-    pub func memset(dest: *mut void, c: i32, n: usize) *mut void;
+    pub fn memchr(cx: *void, c: i32, n: usize) *mut void;
+    pub fn memcmp(cx: *void, ct: *void, n: usize) i32;
+    pub fn memcpy(dest: *mut void, src: *void, n: usize) *mut void;
+    pub fn memmove(dest: *mut void, src: *void, n: usize) *mut void;
+    pub fn memset(dest: *mut void, c: i32, n: usize) *mut void;
 
-    pub func strerror(code: i32) *mut u8;
-    pub func strlen(cs: *u8) usize;
+    pub fn strerror(code: i32) *mut u8;
+    pub fn strlen(cs: *u8) usize;
 }

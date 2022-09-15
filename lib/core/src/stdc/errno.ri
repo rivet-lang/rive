@@ -5,8 +5,8 @@
 extern (C) {
     $if (_WINDOWS_) {
         #[dllimport]
-        pub func _errno() *mut i32;
+        pub fn _errno() *mut i32;
     } $else {
-        pub func __errno_location() *mut i32;
+        pub fn __errno_location() *mut i32;
     }
 }

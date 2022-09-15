@@ -2,10 +2,10 @@ name: Tests
 
 on:
   push:
-    paths: ['examples/**.ri', 'lib/**.ri', 'src-self-hosted/**.ri', 'src/**.c', 'tests/**']
+    paths: ['examples/**.ri', 'lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**']
     branches: [main]
   pull_request:
-    paths: ['examples/**.ri', 'lib/**.ri', 'src-self-hosted/**.ri', 'src/**.c', 'tests/**']
+    paths: ['examples/**.ri', 'lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**']
     types: [opened, synchronize]
 
 jobs:

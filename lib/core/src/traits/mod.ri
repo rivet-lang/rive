@@ -3,5 +3,5 @@
 // that can be found in the LICENSE file.
 
 pub trait ToString {
-    func to_string(&self) String;
+    fn to_string(&self) String;
 }

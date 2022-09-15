@@ -1,8 +1,8 @@
-func default_arg(x: i32 = 1) {
+fn default_arg(x: i32 = 1) {
     assert!(x == 1 or x == 5 or x == 10);
 }
 
-func main() {
+fn main() {
     default_arg();
     default_arg(5);
     default_arg(x: 10);

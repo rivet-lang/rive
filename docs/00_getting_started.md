@@ -43,7 +43,7 @@ Let's start with the typical `Hello World!`:
 
 We create a file called `hello_world.ri` with the following content:
 ```rs
-func main() {
+fn main() {
     println("Hello World!");
 }
 ```

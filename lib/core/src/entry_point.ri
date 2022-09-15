@@ -3,15 +3,15 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    func _R9init_argsZ(__argc: i32, __argv: **u8);
-    func _R9drop_argsZ();
+    fn _R9init_argsZ(__argc: i32, __argv: **u8);
+    fn _R9drop_argsZ();
 
-    func _R12init_staticsZ();
-    // TODO(StunxFS): func _R12drop_staticsZ();
+    fn _R12init_staticsZ();
+    // TODO(StunxFS): fn _R12drop_staticsZ();
 }
 
 #[used]
-func rivet_main(__argc: i32, __argv: **u8, pkg_main: fn()) {
+fn rivet_main(__argc: i32, __argv: **u8, pkg_main: fn()) {
     unsafe {
         _ = stdc::signal(11, segfault_handler);
         _R9init_argsZ(__argc, __argv);

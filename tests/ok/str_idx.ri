@@ -1,4 +1,4 @@
-func main() {
+fn main() {
     var x = "String Literal";
     assert!(x[0] == b'S');
 

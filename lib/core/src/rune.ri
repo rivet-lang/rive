@@ -16,7 +16,7 @@ const MAX_THREE_B: u32 = 0x10000;
 pub errtype RuneFromU32Error;
 
 // Returns the number of runes contained in `s`.
-func cstr_runes_count(s: *u8, size: usize) usize {
+fn cstr_runes_count(s: *u8, size: usize) usize {
 	var mut l: usize = 0;
 	var mut i: usize = 0;
 	while (i < size) {
@@ -27,7 +27,7 @@ func cstr_runes_count(s: *u8, size: usize) usize {
 }
 
 extend rune {
-    pub func from_u32(i: u32) !rune {
+    pub fn from_u32(i: u32) !rune {
         if (i > as(u32, MAX_RUNE) or (i >= 0xD800 and i <= 0xDFFF)) {
             raise RuneFromU32Error();
         }
@@ -45,7 +45,7 @@ extend rune {
     /// in the given radix.
     ///
     /// Panics if given a radix larger than 36.
-    pub func from_digit(num: u32, radix: u32) ?rune {
+    pub fn from_digit(num: u32, radix: u32) ?rune {
         if (radix > 36) {
             panic("rune::from_digit: radix is too high (maximum 36)");
         }
@@ -60,11 +60,11 @@ extend rune {
         return none;
     }
 
-    func len_utf8(self) usize { return len_utf8(as(u32, self)); }
+    fn len_utf8(self) usize { return len_utf8(as(u32, self)); }
 }
 
 extend rune for traits::ToString {
-    func to_string(&self) String {
+    fn to_string(&self) String {
         var len = self.len_utf8();
         var mut res = String::with_capacity(len);
         _ = unsafe { utf32_decode_to_buffer(as(u32, self.*), res.ptr) };
@@ -73,7 +73,7 @@ extend rune for traits::ToString {
     }
 }
 
-func utf32_decode_to_buffer(code: u32, buffer: *mut u8) i32 {
+fn utf32_decode_to_buffer(code: u32, buffer: *mut u8) i32 {
     var icode = as(i32, code);
 	unsafe {
 		switch {
@@ -104,7 +104,7 @@ func utf32_decode_to_buffer(code: u32, buffer: *mut u8) i32 {
 	}
 }
 
-func len_utf8(code: u32) usize {
+fn len_utf8(code: u32) usize {
     return if (code < MAX_ONE_B) {
         1
     } else if (code < MAX_TWO_B) {

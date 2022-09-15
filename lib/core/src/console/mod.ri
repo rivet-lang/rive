@@ -6,7 +6,7 @@ using pkg::utils;
 
 /// Prints a message to stdout. Unlike `println` stdout is not automatically
 /// flushed.
-pub func print(s: str, args: ...traits::ToString) {
+pub fn print(s: str, args: ...traits::ToString) {
     var sx = s.fmt(args);
     unsafe {
         utils::write_buf_to_fd(1, sx.ptr, sx.len_);
@@ -14,7 +14,7 @@ pub func print(s: str, args: ...traits::ToString) {
 }
 
 /// Prints a message with a line end to stdout. stdout is flushed.
-pub func println(s: str = "", args: ...traits::ToString) {
+pub fn println(s: str = "", args: ...traits::ToString) {
     var sx = s.fmt(args);
     unsafe {
         utils::writeln_to_fd(1, sx);
@@ -22,7 +22,7 @@ pub func println(s: str = "", args: ...traits::ToString) {
 }
 
 /// Prints a message to stderr. Both stderr and stdout are flushed.
-pub func eprint(s: str, args: ...traits::ToString) {
+pub fn eprint(s: str, args: ...traits::ToString) {
     var sx = s.fmt(args);
     unsafe {
         _ = stdc::fflush(stdc::stdout);
@@ -34,7 +34,7 @@ pub func eprint(s: str, args: ...traits::ToString) {
 
 /// Prints a message with a line end to stderr. Both stderr and stdout are
 /// flushed.
-pub func eprintln(s: str = "", args: ...traits::ToString) {
+pub fn eprintln(s: str = "", args: ...traits::ToString) {
     var sx = s.fmt(args);
     unsafe {
         _ = stdc::fflush(stdc::stdout);

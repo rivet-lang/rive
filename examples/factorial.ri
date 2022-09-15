@@ -1,11 +1,11 @@
-func factorial(n: u32) u32 {
+fn factorial(n: u32) u32 {
 	if (n <= 1) {
 		return 1;
 	}
 	return n * factorial(n - 1);
 }
 
-func main() {
+fn main() {
 	var res = factorial(5);
 	println("factorial(5): {}", res);
 	assert!(res == 120);

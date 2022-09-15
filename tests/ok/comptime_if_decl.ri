@@ -7,16 +7,16 @@ struct Struct {
 }
 
 $if (_x64_) {
-    pub func is_64bits() bool {
+    pub fn is_64bits() bool {
         return true;
     }
 } $else {
-    pub func is_32bits() bool {
+    pub fn is_32bits() bool {
         return true;
     }
 }
 
-func main() {
+fn main() {
     $if (_x64_) {
         assert!(is_64bits());
     } $else {

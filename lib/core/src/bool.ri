@@ -5,7 +5,7 @@
 using pkg::traits::ToString;
 
 extend bool for ToString {
-    pub func to_string(&self) String {
+    pub fn to_string(&self) String {
         return (if (self.*) "true" else "false").to_string();
     }
 }

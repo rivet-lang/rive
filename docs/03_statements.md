@@ -38,7 +38,7 @@ Multiple values can be assigned on a single line via tuple-destructuring, exampl
 ```rust
 var (a, b, c) = (1, 2, 3);
 var (c: i32, d: i32, e: i32) = (4, 5, 6);
-var (f, g, h) = tuple_func();
+var (f, g, h) = tuple_fn();
 
 // this is a short form for:
 
@@ -50,16 +50,16 @@ var c: i32 = 4;
 var d: i32 = 5;
 var e: i32 = 6;
 
-var tmp_tuple_func = tuple_func();
-var f = tmp_tuple_func.0;
-var g = tmp_tuple_func.1;
-var h = tmp_tuple_func.2;
+var tmp_tuple_fn = tuple_fn();
+var f = tmp_tuple_fn.0;
+var g = tmp_tuple_fn.1;
+var h = tmp_tuple_fn.2;
 ```
 
 * * *
 
 <div align="center">
 
-[back](02_functions.md) **|** [next](03_statements.md)
+[back](02_fntions.md) **|** [next](03_statements.md)
 
 </div>

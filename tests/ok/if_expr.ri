@@ -1,4 +1,4 @@
-func main() {
+fn main() {
     var x = if (true) 1 else 2;
     assert!(x == 1);
 

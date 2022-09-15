@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-pub unsafe func write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
+pub unsafe fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
     unsafe {
         var mut buf = buf_;
         var mut x: isize = 0;
@@ -14,7 +14,7 @@ pub unsafe func write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
     }
 }
 
-pub unsafe func writeln_to_fd(fd: i32, s: String) {
+pub unsafe fn writeln_to_fd(fd: i32, s: String) {
     unsafe {
         write_buf_to_fd(fd, s.ptr, s.len_);
         write_buf_to_fd(fd, c"\n", 1);

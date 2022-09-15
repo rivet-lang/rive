@@ -5,28 +5,28 @@
 pub struct FILE;
 
 extern (C) {
-    pub func fopen(path: *u8, mode: *u8) *mut FILE;
-    pub func feof(stream: *FILE) i32;
-    pub func ferror(stream: *FILE) i32;
-    pub func fseek(stream: *mut FILE, offset: u64, whence: i32) i32;
-    pub func ftell(stream: *mut FILE) i64;
-    pub func fread(ptr: *mut void, size: usize, nitems: usize, stream: *mut FILE) usize;
-    pub func fputs(s: *u8, stream: *mut FILE) i32;
-    pub func fprintf(stream: *mut FILE, fmt: *u8, ...) i32;
-    pub func fwrite(ptr: *void, size: usize, nobj: usize, stream: *mut FILE) usize;
-    pub func fflush(stream: *mut FILE) i32;
-    pub func fgets(s: *mut u8, n: usize, stream: *mut FILE) i32;
-    pub func fclose(stream: *mut FILE) i32;
-    pub func fileno(stream: *FILE) i32;
-    pub func rewind(stream: *mut FILE);
+    pub fn fopen(path: *u8, mode: *u8) *mut FILE;
+    pub fn feof(stream: *FILE) i32;
+    pub fn ferror(stream: *FILE) i32;
+    pub fn fseek(stream: *mut FILE, offset: u64, whence: i32) i32;
+    pub fn ftell(stream: *mut FILE) i64;
+    pub fn fread(ptr: *mut void, size: usize, nitems: usize, stream: *mut FILE) usize;
+    pub fn fputs(s: *u8, stream: *mut FILE) i32;
+    pub fn fprintf(stream: *mut FILE, fmt: *u8, ...) i32;
+    pub fn fwrite(ptr: *void, size: usize, nobj: usize, stream: *mut FILE) usize;
+    pub fn fflush(stream: *mut FILE) i32;
+    pub fn fgets(s: *mut u8, n: usize, stream: *mut FILE) i32;
+    pub fn fclose(stream: *mut FILE) i32;
+    pub fn fileno(stream: *FILE) i32;
+    pub fn rewind(stream: *mut FILE);
 }
 
 extern (C) {
-	pub func popen(cmd: *u8, modes: *u8) *mut FILE;
-	pub func pclose(stream: *mut FILE) i32;
+	pub fn popen(cmd: *u8, modes: *u8) *mut FILE;
+	pub fn pclose(stream: *mut FILE) i32;
 }
 
 extern (C) {
-    pub func putchar(s: i32) i32;
-    pub func printf(fmt: *u8, ...) i32;
+    pub fn putchar(s: i32) i32;
+    pub fn printf(fmt: *u8, ...) i32;
 }

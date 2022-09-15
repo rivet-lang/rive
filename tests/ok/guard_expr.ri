@@ -1,8 +1,8 @@
-func ret_none() ?i32 {
+fn ret_none() ?i32 {
     return 3;
 }
 
-func main() {
+fn main() {
     if (var val = ret_none()) {
         assert!(val == 3);
     }

@@ -33,12 +33,11 @@ language with a clear and simple syntax and a low learning curve.
 ## Basic features
 
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
-* **Easy error handling**: Via result types: `fn func() !T { ... }`.
+* **Easy error handling**: Via result types: `fn my_fn() !T { ... }`.
 * **Named and optional arguments**: Very useful.
 * **Immutable values by default:** Variables and fields of struct are immutable
 by default.
-* **Struct inheritance and polymorphism**: Trait and Union types are also
-supported.
+* **Polymorphism**: Classes, Traits and Union types are also supported.
 * **Generics:** Specialize and reuse the same code for different types.
 
 ## Important note

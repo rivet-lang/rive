@@ -1,4 +1,4 @@
-func main() {
+fn main() {
     assert!("true: {}".fmt(true) == "true: true".to_string());
     assert!("false: {}".fmt(false) == "false: false".to_string());
 

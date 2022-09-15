@@ -7,7 +7,7 @@ pub enum OS : u8 {
     Windows,
     Macos;
 
-    pub func from_str(name: str) ?OS {
+    pub fn from_str(name: str) ?OS {
         switch (name) {
             "linux" => return .Linux,
             "windows" => return .Windows,
@@ -18,7 +18,7 @@ pub enum OS : u8 {
 }
 
 /// Returns the current operating system.
-pub func os() OS {
+pub fn os() OS {
     $if (_LINUX_) {
         return .Linux;
     } $else $if (_WINDOWS_) {

@@ -13,9 +13,9 @@ code.
 
 ## Entry point
 
-In Rivet, the entry point of a program is a function named `main`.
+In Rivet, the entry point of a program is a fntion named `main`.
 ```rust
-func main() {
+fn main() {
     // code goes here
 }
 ```
@@ -27,6 +27,8 @@ On the top level only declarations are allowed.
 using pkg::module;
 
 mod M { /* ... */ }
+
+var S: i32 = 0;
 
 const C: i32 = 0;
 
@@ -42,13 +44,13 @@ enum Foo { /* ... */ }
 
 extend Foo { /* ... */ }
 
-func baz() { /* ... */ }
+fn baz() { /* ... */ }
 ```
 
 * * *
 
 <div align="center">
 
-[back](00_getting_started.md) **|** [next](02_functions.md)
+[back](00_getting_started.md) **|** [next](02_fntions.md)
 
 </div>
