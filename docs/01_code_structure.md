@@ -13,7 +13,7 @@ code.
 
 ## Entry point
 
-In Rivet, the entry point of a program is a fntion named `main`.
+In Rivet, the entry point of a program is a function named `main`.
 ```rust
 fn main() {
     // code goes here
@@ -51,6 +51,6 @@ fn baz() { /* ... */ }
 
 <div align="center">
 
-[back](00_getting_started.md) **|** [next](02_fntions.md)
+[back](00_getting_started.md) **|** [next](02_functions.md)
 
 </div>

@@ -60,6 +60,6 @@ var h = tmp_tuple_fn.2;
 
 <div align="center">
 
-[back](02_fntions.md) **|** [next](03_statements.md)
+[back](02_functions.md) **|** [next](03_statements.md)
 
 </div>

@@ -12,7 +12,7 @@ pub fn id() u32 {
 
 /// Terminates the current process with the specified exit code.
 ///
-/// This fntion will never return and will immediately terminate the
+/// This function will never return and will immediately terminate the
 /// current process. The exit code is passed through to the underlying
 /// OS and will be available for consumption by another process.
 pub fn exit(code: i32 = 0) no_return {
@@ -25,11 +25,11 @@ pub fn exit(code: i32 = 0) no_return {
 
 /// Terminates the process in an abnormal fashion.
 ///
-/// The fntion will never return and will immediately terminate the
+/// The function will never return and will immediately terminate the
 /// current process in a platform specific "abnormal" manner.
 ///
 /// The process's termination will be similar to that from the C 'abort()'
-/// fntion. On Unix, the process will terminate with signal SIGABRT,
+/// function. On Unix, the process will terminate with signal SIGABRT,
 /// which typically means that the shell prints "Aborted".
 pub fn abort() no_return {
     unsafe {

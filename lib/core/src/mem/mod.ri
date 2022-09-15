@@ -9,7 +9,7 @@ pub errtype OutOfMemoryError;
 /// Allocates dynamically a `size` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
 ///
-/// NOTE: Unlike the `mem::calloc` fntion, `mem::alloc` will not zero
+/// NOTE: Unlike the `mem::calloc` function, `mem::alloc` will not zero
 /// the memory block.
 pub fn alloc(size: usize) !*mut void {
     unsafe {
@@ -108,7 +108,7 @@ pub fn dup(src: *void, sz: usize) !*mut void {
 ///
 /// NOTE: Do NOT use `mem::cmp` to compare security critical data, such
 /// as cryptographic secrets, because the required CPU time depends on the
-/// number of equal bytes. You should use a fntion that performs comparisons
+/// number of equal bytes. You should use a function that performs comparisons
 /// in constant time for this.
 pub fn cmp(s1: *void, s2: *void, n: usize) i32 {
     return unsafe { stdc::memcmp(s1, s2, n) };

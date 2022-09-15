@@ -59,8 +59,7 @@ class Kind(Enum):
 	Lparen = auto_enum() # (
 	Rparen = auto_enum() # )
 
-	# 6 literals, 34 keywords; Total: 40 keywords,
-	# +1 extra keyword (`!is` = `!` + keyword).
+	# 6 literals, 35 keywords; Total: 41 keywords.
 	KeywordBegin = auto_enum()
 	# ========== literals ==========
 	KwNone = auto_enum() # none
@@ -99,6 +98,7 @@ class Kind(Enum):
 	KwBreak = auto_enum() # break
 	KwReturn = auto_enum() # return
 	KwRaise = auto_enum() # raise
+	KwDefer = auto_enum() # defer
 	KwAnd = auto_enum() # and
 	KwOr = auto_enum() # or
 	KwIs = auto_enum() # is
@@ -231,6 +231,7 @@ TOKEN_STRINGS = {
     Kind.KwBreak: "break",
     Kind.KwReturn: "return",
     Kind.KwRaise: "raise",
+    Kind.KwDefer: "defer",
     Kind.KwAnd: "and",
     Kind.KwOr: "or",
     Kind.KwIs: "is",

@@ -3,9 +3,9 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    fn __acrt_iob_fn(index: u32) *mut FILE;
+    fn __acrt_iob_func(index: u32) *mut FILE;
 }
 
-pub var stdin: *mut FILE = unsafe { __acrt_iob_fn(0) };
-pub var stdout: *mut FILE = unsafe { __acrt_iob_fn(1) };
-pub var stderr: *mut FILE = unsafe { __acrt_iob_fn(2) };
+pub var stdin: *mut FILE = unsafe { __acrt_iob_func(0) };
+pub var stdout: *mut FILE = unsafe { __acrt_iob_func(1) };
+pub var stderr: *mut FILE = unsafe { __acrt_iob_func(2) };

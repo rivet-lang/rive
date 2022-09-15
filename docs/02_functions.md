@@ -3,7 +3,7 @@
 Functions contain a series of arguments, a return type, and a body with
 multiple statements.
 
-The way to declare fntions in Rivet is as follows:
+The way to declare functions in Rivet is as follows:
 
 ```rust
 fn <name>(<args>) [return_type] {
@@ -39,7 +39,7 @@ fn f2(a: i32) {
 fn f3() { }
 ```
 
-A fntion body is made up of 1 or more statements and can be empty.
+A function body is made up of 1 or more statements and can be empty.
 
 ```rust
 fn x() { /* empty body */ }
@@ -56,9 +56,9 @@ for example: `arg1: i32`, `arg2: bool = false`.
 The arguments are immutable.
 
 They can also have default values, this bypasses the need to pass the
-argument each time the fntion is called: `arg1: i32 = 5`.
+argument each time the function is called: `arg1: i32 = 5`.
 
-So, if we have a fntion called `f5` with a default value argument,
+So, if we have a function called `f5` with a default value argument,
 we can call it in 3 ways:
 
 ```rust
