@@ -8,5 +8,5 @@
 pub type SignalHandler = fn(i32);
 
 extern (C) {
-    pub fn signal(sig: i32, func: SignalHandler) *void;
+    pub func signal(sig: i32, func: SignalHandler) *void;
 }

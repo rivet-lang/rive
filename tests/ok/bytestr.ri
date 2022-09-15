@@ -1,4 +1,4 @@
-fn main() {
-    let x = b"Abcdef";
+func main() {
+    var x = b"Abcdef";
     assert!(x.len == 6);
 }

@@ -12,11 +12,11 @@ struct _str {
 }
 
 extend str {
-    pub unsafe fn from_raw(ptr: *u8) str {
+    pub unsafe func from_raw(ptr: *u8) str {
         return unsafe { str::from_raw_with_len(ptr, stdc::strlen(ptr)) };
     }
 
-    pub unsafe fn from_raw_with_len(ptr: *u8, len: usize) str {
+    pub unsafe func from_raw_with_len(ptr: *u8, len: usize) str {
         return _str{
             ptr: unsafe { ptr },
             len: len
@@ -24,7 +24,7 @@ extend str {
     }
 
     #[used]
-    fn at(&self, idx: usize) u8 {
+    func at(&self, idx: usize) u8 {
         if (idx >= self.len) {
             panic("string index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -48,20 +48,20 @@ extend str {
     ///
     /// If the replacement positions exceed the number of passed arguments, a panic
     /// occurs.
-    pub fn fmt(&self, args: ...traits::ToString) String {
+    pub func fmt(&self, args: ...traits::ToString) String {
         if (args.len == 0) { return self.to_string(); }
-        let mut res = String::with_capacity(self.len);
-        let mut i: usize = 0;
-        let mut args_idx: usize = 0;
+        var mut res = String::with_capacity(self.len);
+        var mut i: usize = 0;
+        var mut args_idx: usize = 0;
         while (i < self.len) {
-            let b = unsafe { self.ptr[i] };
-            let b2 = if (i + 1 < self.len) unsafe { self.ptr[i + 1] } else 0;
+            var b = unsafe { self.ptr[i] };
+            var b2 = if (i + 1 < self.len) unsafe { self.ptr[i + 1] } else 0;
             if (b == b'{') {
                 if (b2 == b'{') { // escaping '{'
                     res.push(b'{');
                     i++;
-                } elif (b2 == b'}') {
-                    let arg_idx = args_idx++;
+                } else if (b2 == b'}') {
+                    var arg_idx = args_idx++;
                     if (arg_idx >= args.len) {
                         panic(
                             "fmt: argument index out of range (argument index: {}, len: {}, index: {})",
@@ -70,16 +70,16 @@ extend str {
                     }
                     res.push_string(args[arg_idx].to_string());
                     i++;
-                } elif (b2.is_digit()) {
-                    let start = i++;
-                    let buf = StaticBuffer{};
+                } else if (b2.is_digit()) {
+                    var start = i++;
+                    var buf = StaticBuffer{};
                     while (unsafe { self.ptr[i] != b'}' }) {
                         buf.push(unsafe { self.ptr[i++] });
                         if (i >= self.len) {
                             panic("fmt: incomplete format string (index: {})", start);
                         }
                     }
-                    let index = buf.as_u64();
+                    var index = buf.as_u64();
                     if (index >= args.len) {
                         panic(
                             "fmt: argument index out of range (index: {}, len: {})",
@@ -90,7 +90,7 @@ extend str {
                 } else {
                     panic("fmt: expecting closing '}}' in format string (index: {})", i);
                 }
-            } elif (b == b'}') {
+            } else if (b == b'}') {
                 if (b2 == b'}') { // escaping '}'
                     res.push(b'}');
                     i++;
@@ -106,7 +106,7 @@ extend str {
     }
 
 	/// Returns the index of byte `b` if found in the string.
-	pub fn index_byte(self, b: u8) ?usize {
+	pub func index_byte(self, b: u8) ?usize {
 		for (i in 0..self.len) {
 			if (unsafe { self.ptr[i] == b }) {
 				return i;
@@ -117,13 +117,13 @@ extend str {
 
 	/// Returns the position of the first character of the input string.
 	/// It will return `none` if the input string can't be found.
-	pub fn index(self, p: str) ?usize {
+	pub func index(self, p: str) ?usize {
 		if (p.len > self.len or p.len == 0) {
 			return none;
 		}
-		let mut i: usize = 0;
+		var mut i: usize = 0;
 		while (i < self.len) {
-			let mut j: usize = 0;
+			var mut j: usize = 0;
 			while (j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] }) {
 				j++;
 			}
@@ -136,23 +136,23 @@ extend str {
 	}
 
     /// Returns the number of runes contained in `self`.
-    pub fn runes_count(&self) usize {
+    pub func runes_count(&self) usize {
         return cstr_runes_count(unsafe { self.ptr }, self.len);
     }
 
 	/// Returns `true` if the string contains `substr`.
-	pub fn contains(self, substr: str) bool {
+	pub func contains(self, substr: str) bool {
 		if (substr.len == 0) {
 			return true;
 		}
-		if (let _ = self.index(substr)) {
+		if (var _ = self.index(substr)) {
 			return true;
 		}
 		return false;
 	}
 
     /// Returns `true` if the string starts with `p`.
-	pub fn starts_with(self, p: str) bool {
+	pub func starts_with(self, p: str) bool {
 		if (p.len > self.len) {
             return false;
 		}
@@ -165,7 +165,7 @@ extend str {
 	}
 
 	/// Returns `true` if the string ends with `p`.
-	pub fn ends_with(self, p: str) bool {
+	pub func ends_with(self, p: str) bool {
 		if (p.len > self.len) {
             return false;
         }
@@ -177,21 +177,21 @@ extend str {
 		return true;
 	}
 
-    pub fn is_empty(&self) bool { return self.len == 0; }
+    pub func is_empty(&self) bool { return self.len == 0; }
 
-    pub fn as_ptr(&self) *u8 { return unsafe { self.ptr }; }
+    pub func as_ptr(&self) *u8 { return unsafe { self.ptr }; }
 
-    pub fn as_bytes(&self) [u8] {
+    pub func as_bytes(&self) [u8] {
         return unsafe { _slice::from_array(as(*mut u8, self.ptr), size_of!(u8), self.len) };
     }
 
-    pub fn ==(&self, rhs: &Self) bool {
+    pub func ==(&self, rhs: &Self) bool {
         if (self.len != rhs.len) {
             return false;
         }
         unsafe {
             if (self.len > 0) {
-                let last_idx = self.len - 1;
+                var last_idx = self.len - 1;
                 if (self.ptr[last_idx] != rhs.ptr[last_idx]) {
                     return false;
                 }
@@ -200,14 +200,14 @@ extend str {
         }
     }
 
-    pub fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
+    pub func !=(&self, rhs: &Self) bool { return !self.==(rhs); }
 
-    pub fn <(&self, rhs: &Self) bool {
+    pub func <(&self, rhs: &Self) bool {
         for (i in 0..self.len) {
             unsafe {
                 if (i >= rhs.len or self.ptr[i] > rhs.ptr[i]) {
                     return false;
-                } elif (self.ptr[i] < rhs.ptr[i]) {
+                } else if (self.ptr[i] < rhs.ptr[i]) {
                     return true;
                 }
             }
@@ -218,14 +218,14 @@ extend str {
         return false;
     }
 
-    pub fn >(&self, rhs: &Self) bool { return !self.<(rhs); }
+    pub func >(&self, rhs: &Self) bool { return !self.<(rhs); }
 
-    pub fn <=(&self, rhs: &Self) bool { return self.<(rhs) or self.==(rhs); }
+    pub func <=(&self, rhs: &Self) bool { return self.<(rhs) or self.==(rhs); }
 
-    pub fn >=(&self, rhs: &Self) bool { return self.>(rhs) or self.==(rhs); }
+    pub func >=(&self, rhs: &Self) bool { return self.>(rhs) or self.==(rhs); }
 
     #[used]
-    fn slice(&self, start: usize, end: usize) str {
+    func slice(&self, start: usize, end: usize) str {
         unsafe {
             if (start > end or start > self.len or end > self.len) {
                 panic(
@@ -233,7 +233,7 @@ extend str {
                     end, self.len
                 );
             }
-            let len = end - start;
+            var len = end - start;
             if (len == self.len) {
                 return self.*;
             }
@@ -245,11 +245,11 @@ extend str {
     }
 
     #[used]
-    fn slice_from(&self, start: usize) str {
+    func slice_from(&self, start: usize) str {
         return self.slice(start, self.len);
     }
 }
 
 extend str for ToString {
-    fn to_string(&self) String { return String::from_str(self.*); }
+    func to_string(&self) String { return String::from_str(self.*); }
 }

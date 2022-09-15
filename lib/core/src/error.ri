@@ -14,7 +14,7 @@ struct _error {
     tag: u8; // max: 255
 
     #[used]
-    fn new(errtype_name: str, tag: u8, msg: str, args: ...ToString) Self {
+    func new(errtype_name: str, tag: u8, msg: str, args: ...ToString) Self {
         return Self{
             errtype_name: errtype_name,
             msg_: msg.fmt(args),
@@ -23,7 +23,7 @@ struct _error {
     }
 
     #[used]
-    fn print(&self) {
+    func print(&self) {
         if (self.msg_.len_ == 0) {
             eprintln(self.errtype_name);
         } else {
@@ -33,7 +33,7 @@ struct _error {
         process::exit(1);
     }
 
-    fn to_string_(&self) String {
+    func to_string_(&self) String {
         if (self.msg_.len_ == 0) {
             return self.errtype_name.to_string();
         }
@@ -42,13 +42,13 @@ struct _error {
 }
 
 extend error {
-    pub fn msg(&self) String {
+    pub func msg(&self) String {
         return as(_error, self.*).msg_;
     }
 }
 
 extend error for ToString {
-    pub fn to_string(&self) String {
+    pub func to_string(&self) String {
         return as(_error, self.*).to_string_();
     }
 }

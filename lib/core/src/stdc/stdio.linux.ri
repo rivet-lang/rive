@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    pub static stdin: *mut FILE;
-    pub static stdout: *mut FILE;
-    pub static stderr: *mut FILE;
+    pub var stdin: *mut FILE;
+    pub var stdout: *mut FILE;
+    pub var stderr: *mut FILE;
 }

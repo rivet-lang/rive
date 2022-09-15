@@ -10,4 +10,6 @@ pub enum CRuntime : u8 {
 }
 
 /// Returns the current C runtime.
-pub fn c_runtime() CRuntime { return .Glibc; }
+pub func c_runtime() CRuntime {
+    return .Glibc;
+}

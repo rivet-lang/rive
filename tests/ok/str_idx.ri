@@ -1,7 +1,7 @@
-fn main() {
-    let x = "String Literal";
+func main() {
+    var x = "String Literal";
     assert!(x[0] == b'S');
 
-    let ch = "String Literal"[0];
+    var ch = "String Literal"[0];
     assert!(ch == b'S');
 }

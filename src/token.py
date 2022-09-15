@@ -59,57 +59,53 @@ class Kind(Enum):
 	Lparen = auto_enum() # (
 	Rparen = auto_enum() # )
 
-	# 6 literals, 38 keywords; Total: 44 keywords,
+	# 6 literals, 34 keywords; Total: 40 keywords,
 	# +1 extra keyword (`!is` = `!` + keyword).
 	KeywordBegin = auto_enum()
 	# ========== literals ==========
-	KeyNone = auto_enum() # none
-	KeyTrue = auto_enum() # true
-	KeyFalse = auto_enum() # false
-	KeySuper = auto_enum() # super
-	KeySelf = auto_enum() # self
-	KeySelfTy = auto_enum() # Self
+	KwNone = auto_enum() # none
+	KwTrue = auto_enum() # true
+	KwFalse = auto_enum() # false
+	KwSuper = auto_enum() # super
+	KwSelf = auto_enum() # self
+	KwSelfTy = auto_enum() # Self
 	# ==============================
 
 	# ========== keywords ==========
-	KeyPkg = auto_enum() # pkg
-	KeyPub = auto_enum() # pub
-	KeyUsing = auto_enum() # using
-	KeyAs = auto_enum() # as
-	KeyConst = auto_enum() # const
-	KeyStatic = auto_enum() # static
-	KeyMod = auto_enum() # mod
-	KeyExtern = auto_enum() # extern
-	KeyTrait = auto_enum() # trait
-	KeyUnion = auto_enum() # union
-	KeyStruct = auto_enum() # struct
-	KeyEnum = auto_enum() # enum
-	KeyErrType = auto_enum() # errtype
-	KeyType = auto_enum() # type
-	KeyExtend = auto_enum() # extend
-	KeyTest = auto_enum() # test
-	KeyFn = auto_enum() # fn
-	KeyLet = auto_enum() # let
-	KeyMut = auto_enum() # mut
-	KeyIf = auto_enum() # if
-	KeyElif = auto_enum() # elif
-	KeyElse = auto_enum() # else
-	KeyMatch = auto_enum() # match
-	KeyWhile = auto_enum() # while
-	KeyFor = auto_enum() # for
-	KeyContinue = auto_enum() # continue
-	KeyBreak = auto_enum() # break
-	KeyReturn = auto_enum() # return
-	KeyRaise = auto_enum() # raise
-	KeyGoto = auto_enum() # goto
-	KeyAnd = auto_enum() # and
-	KeyOr = auto_enum() # or
-	KeyIn = auto_enum() # in
-	KeyIs = auto_enum() # is
-	KeyNotIs = auto_enum() # !is
-	KeyUnsafe = auto_enum() # unsafe
-	KeyOrElse = auto_enum() # orelse
-	KeyCatch = auto_enum() # catch
+	KwPkg = auto_enum() # pkg
+	KwPub = auto_enum() # pub
+	KwUsing = auto_enum() # using
+	KwAs = auto_enum() # as
+	KwConst = auto_enum() # const
+	KwMod = auto_enum() # mod
+	KwExtern = auto_enum() # extern
+	KwTrait = auto_enum() # trait
+	KwUnion = auto_enum() # union
+	KwStruct = auto_enum() # struct
+	KwEnum = auto_enum() # enum
+	KwErrType = auto_enum() # errtype
+	KwType = auto_enum() # type
+	KwExtend = auto_enum() # extend
+	KwTest = auto_enum() # test
+	KwFunc = auto_enum() # func
+	KwVar = auto_enum() # var
+	KwMut = auto_enum() # mut
+	KwIf = auto_enum() # if
+	KwElse = auto_enum() # else
+	KwSwitch = auto_enum() # switch
+	KwWhile = auto_enum() # while
+	KwFor = auto_enum() # for
+	KwContinue = auto_enum() # continue
+	KwBreak = auto_enum() # break
+	KwReturn = auto_enum() # return
+	KwRaise = auto_enum() # raise
+	KwAnd = auto_enum() # and
+	KwOr = auto_enum() # or
+	KwIs = auto_enum() # is
+	KwNotIs = auto_enum() # !is
+	KwUnsafe = auto_enum() # unsafe
+	KwOrElse = auto_enum() # orelse
+	KwCatch = auto_enum() # catch
 	# ==============================
 
 	KeywordEnd = auto_enum()
@@ -117,8 +113,8 @@ class Kind(Enum):
 	def is_start_of_type(self):
 		return self in (
 		    Kind.Bang, Kind.Name, Kind.Lparen, Kind.Amp, Kind.Mult,
-		    Kind.Lbracket, Kind.Question, Kind.KeySelf, Kind.KeySuper,
-		    Kind.KeySelfTy
+		    Kind.Lbracket, Kind.Question, Kind.KwSelf, Kind.KwSuper,
+		    Kind.KwSelfTy
 		)
 
 	def is_assign(self):
@@ -130,8 +126,8 @@ class Kind(Enum):
 
 	def is_relational(self):
 		return self in (
-		    Kind.Eq, Kind.Ne, Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge, Kind.KeyIs,
-		    Kind.KeyNotIs,
+		    Kind.Eq, Kind.Ne, Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge, Kind.KwIs,
+		    Kind.KwNotIs,
 		)
 
 	def is_overloadable_op(self):
@@ -199,53 +195,49 @@ TOKEN_STRINGS = {
     Kind.Rparen: ")",
 
     # ========== literals ==========
-    Kind.KeyNone: "none",
-    Kind.KeyTrue: "true",
-    Kind.KeyFalse: "false",
-    Kind.KeySuper: "super",
-    Kind.KeySelf: "self",
+    Kind.KwNone: "none",
+    Kind.KwTrue: "true",
+    Kind.KwFalse: "false",
+    Kind.KwSuper: "super",
+    Kind.KwSelf: "self",
     # ==============================
 
     # ========== keywords ==========
-    Kind.KeySelfTy: "Self",
-    Kind.KeyPkg: "pkg",
-    Kind.KeyPub: "pub",
-    Kind.KeyUsing: "using",
-    Kind.KeyAs: "as",
-    Kind.KeyConst: "const",
-    Kind.KeyStatic: "static",
-    Kind.KeyMod: "mod",
-    Kind.KeyExtern: "extern",
-    Kind.KeyTrait: "trait",
-    Kind.KeyUnion: "union",
-    Kind.KeyStruct: "struct",
-    Kind.KeyEnum: "enum",
-    Kind.KeyErrType: "errtype",
-    Kind.KeyType: "type",
-    Kind.KeyExtend: "extend",
-    Kind.KeyTest: "test",
-    Kind.KeyFn: "fn",
-    Kind.KeyLet: "let",
-    Kind.KeyMut: "mut",
-    Kind.KeyIf: "if",
-    Kind.KeyElif: "elif",
-    Kind.KeyElse: "else",
-    Kind.KeyMatch: "match",
-    Kind.KeyWhile: "while",
-    Kind.KeyFor: "for",
-    Kind.KeyContinue: "continue",
-    Kind.KeyBreak: "break",
-    Kind.KeyReturn: "return",
-    Kind.KeyRaise: "raise",
-    Kind.KeyGoto: "goto",
-    Kind.KeyAnd: "and",
-    Kind.KeyOr: "or",
-    Kind.KeyIn: "in",
-    Kind.KeyIs: "is",
-    Kind.KeyNotIs: "!is",
-    Kind.KeyUnsafe: "unsafe",
-    Kind.KeyOrElse: "orelse",
-    Kind.KeyCatch: "catch",
+    Kind.KwSelfTy: "Self",
+    Kind.KwPkg: "pkg",
+    Kind.KwPub: "pub",
+    Kind.KwUsing: "using",
+    Kind.KwAs: "as",
+    Kind.KwConst: "const",
+    Kind.KwMod: "mod",
+    Kind.KwExtern: "extern",
+    Kind.KwTrait: "trait",
+    Kind.KwUnion: "union",
+    Kind.KwStruct: "struct",
+    Kind.KwEnum: "enum",
+    Kind.KwErrType: "errtype",
+    Kind.KwType: "type",
+    Kind.KwExtend: "extend",
+    Kind.KwTest: "test",
+    Kind.KwFunc: "func",
+    Kind.KwVar: "var",
+    Kind.KwMut: "mut",
+    Kind.KwIf: "if",
+    Kind.KwElse: "else",
+    Kind.KwSwitch: "switch",
+    Kind.KwWhile: "while",
+    Kind.KwFor: "for",
+    Kind.KwContinue: "continue",
+    Kind.KwBreak: "break",
+    Kind.KwReturn: "return",
+    Kind.KwRaise: "raise",
+    Kind.KwAnd: "and",
+    Kind.KwOr: "or",
+    Kind.KwIs: "is",
+    Kind.KwNotIs: "!is",
+    Kind.KwUnsafe: "unsafe",
+    Kind.KwOrElse: "orelse",
+    Kind.KwCatch: "catch",
     # ==============================
 }
 

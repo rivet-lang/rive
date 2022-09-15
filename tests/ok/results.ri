@@ -1,12 +1,12 @@
-fn result() ! {
+func result() ! {
     raise Error("simple error");
 }
 
-fn result2() ! {
+func result2() ! {
     raise Error("simple error (raised: {}, idx: {})", true, 0);
 }
 
-fn main() {
+func main() {
     result() catch |err| {
         assert!(err.msg() == "simple error".to_string());
     };

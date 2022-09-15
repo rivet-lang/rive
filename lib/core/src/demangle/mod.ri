@@ -4,16 +4,16 @@
 
 using pkg::utils::StaticBuffer;
 
-pub fn demangle_symbol(name: str) String {
+pub func demangle_symbol(name: str) String {
     if (!name.starts_with("_R")) {
         return name.to_string();
     }
 
-    let mut idx: usize = 2;
-    let mut buf = StaticBuffer{};
-    let mut res = String::with_capacity(name.len);
+    var mut idx: usize = 2;
+    var mut buf = StaticBuffer{};
+    var mut res = String::with_capacity(name.len);
     while (idx < name.len) {
-        let byte = unsafe { name.ptr[idx] };
+        var byte = unsafe { name.ptr[idx] };
         if (byte.is_digit()) {
             buf.push(byte);
             idx++;

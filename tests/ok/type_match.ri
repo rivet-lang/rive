@@ -2,15 +2,15 @@ union Any {
     i32, str;
 }
 
-fn main() {
-    let mut any = Any("String");
-    match (any) is {
+func main() {
+    var mut any = Any("String");
+    switch (any) is {
         str as any_s => assert!(any_s == "String"),
         else => assert!(false)
     }
 
     any = Any(5);
-    match (any) is {
+    switch (any) is {
         i32 as any_i => assert!(any_i == 5),
         else => assert!(false)
     }

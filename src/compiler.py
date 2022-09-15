@@ -489,7 +489,3 @@ class Compiler:
 			msg += f"; {report.WARNS} {word} emitted"
 		utils.error(msg)
 		exit(1)
-
-def main(args):
-	comp = Compiler(args)
-	comp.build_package()

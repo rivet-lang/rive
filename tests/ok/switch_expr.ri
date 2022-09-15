@@ -1,16 +1,16 @@
-fn main() {
-    match (1) {
+func main() {
+    switch (1) {
         1 => assert!(true),
         else => assert!(false)
     }
 
-    let x = 1;
-    match (x) {
+    var x = 1;
+    switch (x) {
         1 => assert!(true),
         else => assert!(false)
     }
 
-    assert!(match (x) {
+    assert!(switch (x) {
         1 => true,
         else => false
     });

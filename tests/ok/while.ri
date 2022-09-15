@@ -1,7 +1,7 @@
-fn main() {
+func main() {
     // Rivet only has 1 way to write loops: `while`, which always executes,
     // until the given condition is false.
-    let mut x = 0;
+    var mut x = 0;
     while { // infinite loop
         x++;
         if (x == 5) {

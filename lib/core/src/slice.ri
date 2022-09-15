@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file.
 
 #[used]
-static empty_slice: _slice = _slice{};
+var empty_slice: _slice = _slice{};
 
 #[used]
 struct _slice {
@@ -12,7 +12,7 @@ struct _slice {
     len: usize;
 
     #[used]
-    pub unsafe fn from_array(arr: *mut void, elem_size: usize, len: usize) _slice {
+    pub unsafe func from_array(arr: *mut void, elem_size: usize, len: usize) _slice {
         return _slice{
             ptr: unsafe { arr },
             elem_size: elem_size,
@@ -21,7 +21,7 @@ struct _slice {
     }
 
     #[used]
-    fn get(&self, idx: usize) *mut void {
+    func get(&self, idx: usize) *mut void {
         if (idx >= self.len) {
             panic("slice index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -29,12 +29,12 @@ struct _slice {
     }
 
     #[used]
-    unsafe fn raw_get(&self, idx: usize) *mut void {
+    unsafe func raw_get(&self, idx: usize) *mut void {
         return unsafe { as(*mut u8, self.ptr) + idx * self.elem_size };
     }
 
     #[used]
-    fn set(&self, idx: usize, val: *void) {
+    func set(&self, idx: usize, val: *void) {
         if (idx >= self.len) {
             panic("slice index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -46,7 +46,7 @@ struct _slice {
     }
 
     #[used]
-    fn ==(&self, rhs: &Self) bool {
+    func ==(&self, rhs: &Self) bool {
         if (self.len != rhs.len) {
             return false;
         }
@@ -54,17 +54,17 @@ struct _slice {
     }
 
     #[used]
-    fn !=(&self, rhs: &Self) bool { return !self.==(rhs); }
+    func !=(&self, rhs: &Self) bool { return !self.==(rhs); }
 
     #[used]
-    fn slice(&self, start: usize, end: usize) _slice {
+    func slice(&self, start: usize, end: usize) _slice {
         if (start > end or end > self.len) {
             panic(
                 "slice index out of range (range: {}..{}, len: {})", start, end,
                 self.len
             );
         }
-        let len = end - start;
+        var len = end - start;
         if (len == self.len) {
             return self.*;
         }
@@ -76,7 +76,7 @@ struct _slice {
     }
 
     #[used]
-    fn slice_from(&self, start: usize) _slice {
+    func slice_from(&self, start: usize) _slice {
         return self.slice(start, self.len);
     }
 }

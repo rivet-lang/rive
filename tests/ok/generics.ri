@@ -1,12 +1,14 @@
-fn size_of<T>() usize { return size_of!(T); }
+func size_of<T>() usize {
+    return size_of!(T);
+}
 
-unsafe fn new<T>() *mut T {
+unsafe func new<T>() *mut T {
     return unsafe {
         as(*mut T, mem::alloc(size_of::<T>()) catch none)
     };
 }
 
-unsafe fn delete<T>(obj: *mut T) {
+unsafe func delete<T>(obj: *mut T) {
     unsafe {
         if (obj != none) {
             mem::dealloc(obj);
@@ -14,48 +16,48 @@ unsafe fn delete<T>(obj: *mut T) {
     }
 }
 
-fn triple<A, B, C>(a: A, b: B, c: C) (A, B, C) {
+func triple<A, B, C>(a: A, b: B, c: C) (A, B, C) {
     return (a, b, c);
 }
 
-fn eq<T>(a: T, b: T) bool {
+func eq<T>(a: T, b: T) bool {
     return a == b;
 }
 
-fn ne<T>(a: T, b: T) bool {
+func ne<T>(a: T, b: T) bool {
     return a != b;
 }
 
 struct Generic<T> {
     mut a: T;
 
-    fn value(self) T {
+    func value(self) T {
         return self.a;
     }
 
-    fn set_value(&mut self, a: T) {
+    func set_value(&mut self, a: T) {
         self.a = a;
     }
 }
 
-fn main() {
+func main() {
     assert!(size_of::<i8>() == 1);
     assert!(size_of::<i32>() == 4);
     assert!(size_of::<rune>() == 4);
 
     unsafe {
         // --- i32 ---
-        let u = new::<i32>();
+        var u = new::<i32>();
         assert!(u != none);
         delete::<i32>(u);
 
         // --- str ---
-        let v = new::<str>();
+        var v = new::<str>();
         assert!(v != none);
         delete::<str>(v);
     }
 
-    let t = triple::<i32, bool, str>(5, true, "empty");
+    var t = triple::<i32, bool, str>(5, true, "empty");
     assert!(t.0 == 5 and t.1 and t.2 == "empty");
 
     assert!(eq::<u8>(2, 2));
@@ -79,7 +81,7 @@ fn main() {
     assert!(Generic::<str>{ a: "Abc" }.value() == "Abc");
     assert!(Generic::<bool>{ a: false }.value() == false);
 
-    let mut x = Generic::<i64>{
+    var mut x = Generic::<i64>{
         a: 1
     };
     assert!(x.a == 1);
@@ -87,7 +89,7 @@ fn main() {
     assert!(x.a == 5);
 
     unsafe {
-        let mut res = new::<Generic<i8>>();
+        var mut res = new::<Generic<i8>>();
         assert!(res != none);
         res.a = 1;
         assert!(res.a == 1);

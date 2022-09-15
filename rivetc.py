@@ -3,7 +3,9 @@
 # that can be found in the LICENSE file.
 
 import sys
-import src
+
+from src.compiler import Compiler
 
 if __name__ == "__main__":
-    src.main(sys.argv[1:])
+    comp = Compiler(sys.argv[1:])
+    comp.build_package()

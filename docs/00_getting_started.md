@@ -19,13 +19,31 @@ Before continuing, I assume you know how to use a console, otherwise you can
 read this tutorial:
 [The Linux command line for beginners](https://ubuntu.com/tutorials/command-line-for-beginners#1-overview).
 
+## Run the compiler
+
+### Dependencies
+
+* The compiler requires Python 3.
+
+* The Rivet compiler currently generates C code, so a C compiler, which supports C11,
+    is required to generate executables. Over time the compiler will add support for
+    generating binaries directly without the need for a C compiler.
+
+The compiler has been tested on **linux** and **windows**.
+
+Just execute `python rivetc.py some_file.ri`.
+
+You can see all available compiler options by using the `-h`/`--help` flag.
+
+`python rivetc.py -h`
+
 ## Hello World!
 
 Let's start with the typical `Hello World!`:
 
 We create a file called `hello_world.ri` with the following content:
 ```rs
-fn main() {
+func main() {
     println("Hello World!");
 }
 ```

@@ -1,11 +1,13 @@
-fn make_array() [i32; 4] { return [1, 2, 3, 4]; }
+func new_array() [i32; 4] {
+    return [1, 2, 3, 4];
+}
 
-fn main() {
-    let lit = [1, 2, 3, 4];
+func main() {
+    var lit = [1, 2, 3, 4];
     assert!(lit == [1, 2, 3, 4]);
     assert!(lit.len == 4);
 
-    let arr = make_array();
+    var arr = new_array();
     assert!(arr == [1, 2, 3, 4]);
     assert!(arr.len == 4);
 }

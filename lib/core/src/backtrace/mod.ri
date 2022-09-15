@@ -10,18 +10,18 @@ type BacktraceErrorCB = fn(*mut void, *u8, i32);
 type BacktraceFullCB = fn(*mut void, i32, *u8, i32, *u8) i32;
 
 extern (C) {
-    fn backtrace_create_state(
+    func backtrace_create_state(
         filename: *u8, threaded: i32, error_cb: BacktraceErrorCB,
         data: *mut void
     ) *mut backtrace_state;
 
-    fn backtrace_full(
+    func backtrace_full(
         state: *backtrace_state, skip: i32, cb: BacktraceFullCB,
         error_cb: BacktraceErrorCB, data: *mut void
     ) i32;
 }
 
-static bt_state: *mut backtrace_state = unsafe {
+var bt_state: *mut backtrace_state = unsafe {
     backtrace_create_state(ARGS[0].ptr, 1, bt_error_handler, 0)
 };
 
@@ -30,7 +30,7 @@ struct BacktraceData {
     mut has_error: bool;
 }
 
-fn bt_print_callback(
+func bt_print_callback(
     data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, func_ptr: *u8
 ) i32 {
     unsafe {
@@ -41,19 +41,19 @@ fn bt_print_callback(
             return 1; // stop backtracing
         }
 
-        let file_name = if (filename_ptr == none) {
+        var file_name = if (filename_ptr == none) {
             "???".to_string()
         } else {
             String::from_raw(filename_ptr)
         };
 
-        let func_name = if (func_ptr == none) {
+        var func_name = if (func_ptr == none) {
             "??".to_string()
         } else {
             demangle::demangle_symbol(str::from_raw(func_ptr))
         };
 
-        let mut bdata = as(*mut BacktraceData, data);
+        var mut bdata = as(*mut BacktraceData, data);
         eprintln(
             "   {} {} in {}:{}", if (bdata.frame_nr == 0) "at" else "by",
             func_name, file_name, lineno
@@ -63,9 +63,9 @@ fn bt_print_callback(
     return 0;
 }
 
-fn bt_error_handler(data: *mut void, msg_ptr: *u8, errnum: i32) {
+func bt_error_handler(data: *mut void, msg_ptr: *u8, errnum: i32) {
     unsafe {
-        let mut bdata = as(*mut BacktraceData, data);
+        var mut bdata = as(*mut BacktraceData, data);
         if (!bdata.has_error) {
             eprint("   libbacktrace error: ");
             eprint(str::from_raw(msg_ptr));
@@ -80,7 +80,7 @@ fn bt_error_handler(data: *mut void, msg_ptr: *u8, errnum: i32) {
     }
 }
 
-pub fn print(frames_to_skip: i32 = 0) {
+pub func print(frames_to_skip: i32 = 0) {
     unsafe {
         _ = backtrace_full(
             bt_state, frames_to_skip, bt_print_callback, bt_error_handler,

@@ -46,24 +46,6 @@ supported.
 Currently the language is in alpha state, and therefore its syntax and the language
 API is not stable, and may change in the long term. Not all features are implemented.
 
-## Run the compiler
-
-### Dependencies
-
-The compiler requires Python 3.
-
-The Rivet compiler currently generates C code, so a C compiler, which supports C11,
-is required to generate executables. Over time the compiler will add support for
-generating binaries directly without the need for a C compiler.
-
-The compiler has been tested on **linux** and **windows**.
-
-Just execute `python rivetc.py some_file.ri`.
-
-You can see all available compiler options by using the `-h`/`--help` flag.
-
-`python rivetc.py -h`
-
 * * *
 
 <div align="center">

@@ -5,6 +5,7 @@
 #![c_compile("thirdparty/libbacktrace/backtrace.c")]
 
 pub mod backtrace;
+pub mod console;
 pub mod demangle;
 pub mod mem;
 pub mod process;
@@ -14,81 +15,41 @@ pub mod traits;
 
 mod utils;
 
-pub static ARGS: [str] = [""][..];
+pub var ARGS: [str] = [""][..];
 
-fn segfault_handler(_: i32) {
+func segfault_handler(_: i32) {
     eprintln("panic: segmentation fault detected");
     backtrace::print(3);
     process::exit(1);
 }
 
-/// Prints a message to stdout. Unlike `println` stdout is not automatically
-/// flushed.
-pub fn print(s: str, args: ...traits::ToString) {
-    let sx = s.fmt(args);
-    unsafe {
-        utils::write_buf_to_fd(1, sx.ptr, sx.len_);
-    }
-}
-
-/// Prints a message with a line end to stdout. stdout is flushed.
-pub fn println(s: str = "", args: ...traits::ToString) {
-    let sx = s.fmt(args);
-    unsafe {
-        utils::writeln_to_fd(1, sx);
-    }
-}
-
-/// Prints a message to stderr. Both stderr and stdout are flushed.
-pub fn eprint(s: str, args: ...traits::ToString) {
-    let sx = s.fmt(args);
-    unsafe {
-        _ = stdc::fflush(stdc::stdout);
-        _ = stdc::fflush(stdc::stderr);
-        utils::write_buf_to_fd(2, sx.ptr, sx.len_);
-        _ = stdc::fflush(stdc::stderr);
-    }
-}
-
-/// Prints a message with a line end to stderr. Both stderr and stdout are
-/// flushed.
-pub fn eprintln(s: str = "", args: ...traits::ToString) {
-    let sx = s.fmt(args);
-    unsafe {
-        _ = stdc::fflush(stdc::stdout);
-        _ = stdc::fflush(stdc::stderr);
-        utils::writeln_to_fd(2, sx);
-        _ = stdc::fflush(stdc::stderr);
-    }
-}
-
 /// Terminates program execution immediately after displaying a message,
 /// followed by a backtrace.
-pub fn panic(s: str, args: ...traits::ToString) no_return {
-    eprintln("panic: {}", s.fmt(args));
+pub func panic(s: str, args: ...traits::ToString) no_return {
+    console::eprintln("panic: {}", s.fmt(args));
     backtrace::print(2);
     process::exit(1);
 }
 
 #[used]
-fn assert(cond: bool, msg: str) {
+func assert(cond: bool, msg: str) {
     if (!cond) {
-        eprintln("panic: assertion failed: {}", msg);
+        console::eprintln("panic: assertion failed: {}", msg);
         backtrace::print(2);
         process::exit(1);
     }
 }
 
 #[used]
-fn panic_if(cond: bool, msg: str) {
+func panic_if(cond: bool, msg: str) {
     if (cond) {
-        eprintln("panic: {}", msg);
+        console::eprintln("panic: {}", msg);
         backtrace::print(2);
         process::exit(1);
     }
 }
 
-pub fn errno() i32 {
+pub func errno() i32 {
     return $if (_LINUX_) unsafe {
         stdc::__errno_location().*
     } $else unsafe {
@@ -97,9 +58,9 @@ pub fn errno() i32 {
 }
 
 /// Returns error code representation in string.
-pub fn strerr(code: i32 = errno()) String {
+pub func strerr(code: i32 = errno()) String {
     unsafe {
-        let s = stdc::strerror(code);
+        var s = stdc::strerror(code);
         return if (s == none) "".to_string() else String::from_raw(s);
     }
 }

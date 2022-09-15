@@ -11,9 +11,9 @@ pub errtype OutOfMemoryError;
 ///
 /// NOTE: Unlike the `mem::calloc` function, `mem::alloc` will not zero
 /// the memory block.
-pub fn alloc(size: usize) !*mut void {
+pub func alloc(size: usize) !*mut void {
     unsafe {
-        let ptr = stdc::malloc(size);
+        var ptr = stdc::malloc(size);
         if (ptr == none) {
             raise OutOfMemoryError("insufficient memory is available");
         }
@@ -23,9 +23,9 @@ pub fn alloc(size: usize) !*mut void {
 
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
-pub fn calloc(n: usize) !*mut void {
+pub func calloc(n: usize) !*mut void {
     unsafe {
-        let ptr = stdc::calloc(1, n);
+        var ptr = stdc::calloc(1, n);
         if (ptr == none) {
             raise OutOfMemoryError("insufficient memory is available");
         }
@@ -37,13 +37,13 @@ pub fn calloc(n: usize) !*mut void {
 ///
 /// NOTE: The `ptr` must be a pointer to an existing memory block previously
 /// allocated with `mem::alloc` or `mem::calloc`.
-pub fn realloc(ptr: *mut void, sz: usize) !*mut void {
+pub func realloc(ptr: *mut void, sz: usize) !*mut void {
     unsafe {
         if (sz == 0) {
             dealloc(ptr);
             return none;
         }
-        let ptr_ = stdc::realloc(ptr, sz);
+        var ptr_ = stdc::realloc(ptr, sz);
         if (ptr_ == none) {
             raise OutOfMemoryError("insufficient memory is available");
         }
@@ -53,7 +53,7 @@ pub fn realloc(ptr: *mut void, sz: usize) !*mut void {
 
 /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
 /// constant byte `c`.
-pub fn set(s: *mut void, c: i32, n: usize) {
+pub func set(s: *mut void, c: i32, n: usize) {
     unsafe {
         _ = stdc::memset(s, c, n);
     }
@@ -63,7 +63,7 @@ pub fn set(s: *mut void, c: i32, n: usize) {
 ///
 /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem::move`, if the memory areas
 /// do overlap.
-pub fn copy(dest: *mut void, src: *void, sz: usize) {
+pub func copy(dest: *mut void, src: *void, sz: usize) {
     unsafe {
         _ = stdc::memcpy(dest, src, sz);
     }
@@ -75,7 +75,7 @@ pub fn copy(dest: *mut void, src: *void, sz: usize) {
 /// in `source` are first copied into a temporary array that does not overlap
 /// `source` or `dest`, and the bytes are then copied from the temporary array to
 /// `dest`.
-pub fn move(dest: *mut void, src: *void, sz: usize) {
+pub func move(dest: *mut void, src: *void, sz: usize) {
     unsafe {
         _ = stdc::memmove(dest, src, sz);
     }
@@ -84,12 +84,12 @@ pub fn move(dest: *mut void, src: *void, sz: usize) {
 /// Allocates dynamically a `sz` bytes block of memory on the heap, then copies
 /// the contents of `source` into the allocated space and returns a pointer to
 /// the newly allocated space.
-pub fn dup(src: *void, sz: usize) !*mut void {
+pub func dup(src: *void, sz: usize) !*mut void {
     unsafe {
         if (sz == 0) {
             return calloc(1).!;
         }
-        let res = alloc(sz).!;
+        var res = alloc(sz).!;
         _ = stdc::memcpy(res, src, sz);
         return res;
     }
@@ -98,7 +98,7 @@ pub fn dup(src: *void, sz: usize) !*mut void {
 /// Compares the first `n` bytes (each interpreted as `u8`) of the memory areas
 /// `s1` and `s2`. It returns an integer less than, equal to, or greater than
 /// zero, if the first n bytes of `s1` is found, respectively, to be less than,
-/// to match, or be greater than the first n bytes of `s2`.
+/// to switch, or be greater than the first n bytes of `s2`.
 ///
 /// For a nonzero return value, the sign is determined by the sign of the
 /// difference between the first pair of bytes (interpreted as `u8`) that
@@ -110,12 +110,12 @@ pub fn dup(src: *void, sz: usize) !*mut void {
 /// as cryptographic secrets, because the required CPU time depends on the
 /// number of equal bytes. You should use a function that performs comparisons
 /// in constant time for this.
-pub fn cmp(s1: *void, s2: *void, n: usize) i32 {
+pub func cmp(s1: *void, s2: *void, n: usize) i32 {
     return unsafe { stdc::memcmp(s1, s2, n) };
 }
 
 /// Deallocates manually the memory referenced by `ptr`.
-pub unsafe fn dealloc(ptr: *mut void) {
+pub unsafe func dealloc(ptr: *mut void) {
     unsafe {
         if (ptr != none) {
             stdc::free(ptr);
