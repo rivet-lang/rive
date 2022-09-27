@@ -23,36 +23,46 @@ pub const MAX_UINT32: u32 = 4294967295;
 pub const MAX_UINT64: u64 = 18446744073709551615;
 
 extend untyped_int for ToString {
-    /// Returns the value of `self` as a `String`.
-    pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+    /// Returns the value of `self` as a `string`.
+    pub fn to_string(&self) string {
+        return as(i64, self.*).to_string();
+    }
 }
 
 extend isize for ToString {
-    /// Returns the value of `self` as a `String`.
-    pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+    /// Returns the value of `self` as a `string`.
+    pub fn to_string(&self) string {
+        return as(i64, self.*).to_string();
+    }
 }
 
 extend usize for ToString {
-    /// Returns the value of `self` as a `String`.
-    pub fn to_string(&self) String { return as(i64, self.*).to_string(); }
+    /// Returns the value of `self` as a `string`.
+    pub fn to_string(&self) string {
+        return as(i64, self.*).to_string();
+    }
 }
 
 extend i8 for ToString {
-    /// Returns the value of `self` as a `String`.
-    pub fn to_string(&self) String { return as(i32, self.*).str_l(5); }
+    /// Returns the value of `self` as a `string`.
+    pub fn to_string(&self) string {
+        return as(i32, self.*).str_l(5);
+    }
 }
 
 extend i16 for ToString {
-    /// Returns the value of `self` as a `String`.
-    pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
+    /// Returns the value of `self` as a `string`.
+    pub fn to_string(&self) string {
+        return as(i32, self.*).str_l(7);
+    }
 }
 
 extend i32 {
     /// Returns the string representation of `self` with `max` chars.
-    pub fn str_l(self, max: i32) String {
+    pub fn str_l(self, max: i32) string {
         unsafe {
             if (self == 0) {
-                return "0".to_string();
+                return "0";
             }
             var mut n = as(i64, self);
             var mut d: u32 = 0;
@@ -90,21 +100,21 @@ extend i32 {
 
             var diff = as(usize, max) - index;
             mem::move(buf, buf + index, diff + 1);
-            return String::from_raw_with_len(buf, diff);
+            return string::from_raw_with_len(buf, diff);
         }
     }
 }
 
 extend i32 for ToString {
-    /// Returns the value of `self` as a `String`.
-    pub fn to_string(&self) String { return self.*.str_l(12); }
+    /// Returns the value of `self` as a `string`.
+    pub fn to_string(&self) string { return self.*.str_l(12); }
 }
 
 extend i64 for ToString {
-    pub fn to_string(&self) String {
+    pub fn to_string(&self) string {
         unsafe {
             if (self.* == 0) {
-                return "0".to_string();
+                return "0";
             }
             var mut n = self.*;
             var mut d: i64 = 0;
@@ -143,7 +153,7 @@ extend i64 for ToString {
 
             var diff = as(usize, max) - index;
             mem::move(buf, buf + index, diff + 1);
-            return String::from_raw_with_len(buf, diff);
+            return string::from_raw_with_len(buf, diff);
         }
     }
 }
@@ -204,29 +214,29 @@ extend u8 {
         return as(usize, (as(u64, 0xE5000000) >> ((self >> 3) & 0x1E) & 3) + 1);
     }
 
-    /// Returns the value of `self` as a ASCII `String`.
-    pub fn to_ascii_string(self) String {
-        var mut res = String::with_capacity(1);
+    /// Returns the value of `self` as a ASCII `string`.
+    pub fn to_ascii_string(self) string {
+        var mut res = string::with_capacity(1);
         res.push(self);
         return res;
     }
 }
 
 extend u8 for ToString {
-    /// Returns the value of `self` as a `String`.
-    pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
+    /// Returns the value of `self` as a `string`.
+    pub fn to_string(&self) string { return as(i32, self.*).str_l(7); }
 }
 
 extend u16 for ToString {
-    /// Returns the value of `self` as a `String`.
-    pub fn to_string(&self) String { return as(i32, self.*).str_l(7); }
+    /// Returns the value of `self` as a `string`.
+    pub fn to_string(&self) string { return as(i32, self.*).str_l(7); }
 }
 
 extend u32 for ToString {
-    pub fn to_string(&self) String {
+    pub fn to_string(&self) string {
         unsafe {
             if (self.* == 0) {
-                return "0".to_string();
+                return "0";
             }
             var max: usize = 12;
             var mut n = self.*;
@@ -253,16 +263,16 @@ extend u32 for ToString {
 
             var diff = max - index;
             mem::move(buf, buf + index, diff + 1);
-            return String::from_raw_with_len(buf, diff);
+            return string::from_raw_with_len(buf, diff);
         }
     }
 }
 
 extend u64 for ToString {
-    pub fn to_string(&self) String {
+    pub fn to_string(&self) string {
         unsafe {
             if (self.* == 0) {
-                return "0".to_string();
+                return "0";
             }
             var mut n = self.*;
             var mut d: u64 = 0;
@@ -289,7 +299,7 @@ extend u64 for ToString {
 
             var diff = as(usize, max) - index;
             mem::move(buf, buf + index, diff + 1);
-            return String::from_raw_with_len(buf, diff);
+            return string::from_raw_with_len(buf, diff);
         }
     }
 }

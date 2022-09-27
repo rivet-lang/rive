@@ -7,5 +7,4 @@ import sys
 from src.compiler import Compiler
 
 if __name__ == "__main__":
-    comp = Compiler(sys.argv[1:])
-    comp.build_package()
+    Compiler(sys.argv[1:]).run()

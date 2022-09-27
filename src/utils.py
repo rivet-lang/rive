@@ -423,3 +423,23 @@ class DepGraph:
 			if seen:
 				out.append(" * " + " -> ".join(cycle_names))
 		return "\n".join(out)
+
+class PkgDeps:
+	def __init__(self):
+		self.dg = DepGraph()
+		self.source_files = {}
+
+	def add_source_files(self, name, source_files):
+		self.source_files[name]=source_files
+
+	def add_pkg_deps(self, name, deps):
+		self.dg.add(name, deps)
+
+	def resolve(self):
+		self.dg.resolve()
+		if not self.dg.acyclic:
+			error("package deps cycle:\n"+self.dg.display_cycles())
+		source_files = []
+		for _, source_file in self.source_files.items():
+			source_files.append(source_file)
+		return source_files

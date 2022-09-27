@@ -2,10 +2,9 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
+from . import sym, type, report, token, ast, utils
 from .token import Kind
 from .lexer import Lexer
-from .ast import sym, type
-from . import report, token, ast, utils
 
 class Parser:
 	def __init__(self, comp):
@@ -25,22 +24,21 @@ class Parser:
 		self.inside_extern = False
 		self.extern_is_trusted = False
 		self.extern_abi = sym.ABI.Rivet
-		self.inside_struct_decl = False
+		self.inside_struct_or_class_decl = False
 		self.inside_trait = False
 		self.inside_block = False
-		self.inside_type = False
 
 	def parse_pkg(self):
 		self.is_pkg_level = True
-		return self.parse_module_files()
+		return self.parse_mod_files()
 
-	def parse_module_files(self):
+	def parse_mod_files(self):
 		source_files = []
 		for input in self.comp.prefs.inputs:
 			source_files.append(self.parse_file(input))
 		return source_files
 
-	def parse_extern_module_files(self, files):
+	def parse_extern_mod_files(self, files):
 		for file in files:
 			self.comp.source_files.append(self.parse_file(file))
 
@@ -146,9 +144,9 @@ class Parser:
 		return attrs
 
 	def parse_vis(self):
-		if self.accept(Kind.KeyPub):
+		if self.accept(Kind.KwPub):
 			if self.accept(Kind.Lparen):
-				self.expect(Kind.KeyPkg)
+				self.expect(Kind.KwPkg)
 				self.expect(Kind.Rparen)
 				return ast.Visibility.PublicInPkg
 			return ast.Visibility.Public
@@ -157,8 +155,8 @@ class Parser:
 	def parse_comptime_if_decl(self):
 		branches = []
 		pos = self.tok.pos
-		while self.tok.kind in (Kind.KeyIf, Kind.KeyElif, Kind.KeyElse):
-			if self.accept(Kind.KeyElse):
+		while self.tok.kind in (Kind.KwIf, Kind.KwElif, Kind.KwElse):
+			if self.accept(Kind.KwElse):
 				self.expect(Kind.Lbrace)
 				decls = []
 				while self.tok.kind != Kind.Rbrace:
@@ -166,7 +164,7 @@ class Parser:
 				self.expect(Kind.Rbrace)
 				branches.append(
 				    ast.ComptimeIfBranch(
-				        self.empty_expr(), decls, True, Kind.KeyElse
+				        self.empty_expr(), decls, True, Kind.KwElse
 				    )
 				)
 				break
@@ -183,7 +181,7 @@ class Parser:
 				self.expect(Kind.Rbrace)
 				branches.append(ast.ComptimeIfBranch(cond, decls, False, op))
 				if self.tok.kind not in (
-				    Kind.Dollar, Kind.KeyElif, Kind.KeyElse
+				    Kind.Dollar, Kind.KwElif, Kind.KwElse
 				):
 					break
 				self.expect(Kind.Dollar)
@@ -193,11 +191,11 @@ class Parser:
 		doc_comment = self.parse_doc_comment()
 		attrs = self.parse_attrs()
 		vis = self.parse_vis()
-		is_unsafe = self.accept(Kind.KeyUnsafe)
+		is_unsafe = self.accept(Kind.KwUnsafe)
 		pos = self.tok.pos
 		if self.accept(Kind.Dollar):
 			return self.parse_comptime_if_decl()
-		elif self.accept(Kind.KeyUsing):
+		elif self.accept(Kind.KwUsing):
 			path = self.parse_expr()
 			if isinstance(path, ast.Ident):
 				alias = path.name
@@ -209,33 +207,33 @@ class Parser:
 				report.error("expected name or path", path.pos)
 				alias = ""
 			symbols = list()
-			if self.accept(Kind.KeyAs):
+			if self.accept(Kind.KwAs):
 				alias = self.parse_name()
 			elif self.accept(Kind.Colon):
 				while True:
 					pos = self.tok.pos
-					if self.accept(Kind.KeySelf):
-						if self.accept(Kind.KeyAs):
+					if self.accept(Kind.KwSelf):
+						if self.accept(Kind.KwAs):
 							alias = self.parse_name()
 						symbols.append(ast.UsingSymbol("", alias, True))
 					else:
 						name = self.parse_name()
 						alias = name
-						if self.accept(Kind.KeyAs):
+						if self.accept(Kind.KwAs):
 							alias = self.parse_name()
 						symbols.append(ast.UsingSymbol(name, alias, False, pos))
 					if not self.accept(Kind.Comma):
 						break
 			self.expect(Kind.Semicolon)
 			return ast.UsingDecl(attrs, vis, path, alias, symbols)
-		elif self.accept(Kind.KeyExtern):
-			if self.tok.kind == Kind.KeyPkg and not self.is_pkg_level:
+		elif self.accept(Kind.KwExtern):
+			if self.tok.kind == Kind.KwPkg and not self.is_pkg_level:
 				report.error(
 				    "external packages can only be declared at the package level",
 				    pos,
 				)
 			self.inside_extern = True
-			if self.accept(Kind.KeyPkg):
+			if self.accept(Kind.KwPkg):
 				# extern package
 				if vis.is_pub():
 					report.error(
@@ -271,7 +269,7 @@ class Parser:
 						if self.tok.kind == Kind.Rbrace:
 							break
 					self.expect(Kind.Rbrace)
-				elif self.accept(Kind.KeyFn):
+				elif self.accept(Kind.KwFn):
 					protos.append(
 					    self.parse_fn_decl(
 					        doc_comment, attrs, vis, is_unsafe
@@ -283,7 +281,7 @@ class Parser:
 				decl = ast.ExternDecl(attrs, abi, protos, pos)
 			self.inside_extern = False
 			return decl
-		elif self.accept(Kind.KeyConst):
+		elif self.accept(Kind.KwConst):
 			pos = self.tok.pos
 			if is_unsafe:
 				report.error("constants cannot be declared unsafe", pos)
@@ -294,7 +292,7 @@ class Parser:
 			expr = self.parse_expr()
 			self.expect(Kind.Semicolon)
 			return ast.ConstDecl(doc_comment, attrs, vis, name, typ, expr, pos)
-		elif self.accept(Kind.KeyStatic):
+		elif self.accept(Kind.KwStatic):
 			if is_unsafe:
 				report.error(
 				    "static values cannot be declared unsafe", self.tok.pos
@@ -302,7 +300,7 @@ class Parser:
 			return self.parse_static_decl(
 			    doc_comment, attrs, vis, self.inside_extern
 			)
-		elif self.accept(Kind.KeyMod):
+		elif self.accept(Kind.KwMod):
 			pos = self.tok.pos
 			if is_unsafe:
 				report.error("modules cannot be declared unsafe", pos)
@@ -321,7 +319,7 @@ class Parser:
 			return ast.ModDecl(
 			    doc_comment, attrs, name, vis, decls, is_unloaded, pos
 			)
-		elif self.accept(Kind.KeyType):
+		elif self.accept(Kind.KwType):
 			pos = self.tok.pos
 			if is_unsafe:
 				report.error("type aliases cannot be declared unsafe", pos)
@@ -330,14 +328,14 @@ class Parser:
 			parent = self.parse_type()
 			self.expect(Kind.Semicolon)
 			return ast.TypeDecl(doc_comment, attrs, vis, name, parent, pos)
-		elif self.accept(Kind.KeyErrType):
+		elif self.accept(Kind.KwErrType):
 			pos = self.tok.pos
 			if is_unsafe:
 				report.error("error types cannot be declared unsafe", pos)
 			name = self.parse_name()
 			self.expect(Kind.Semicolon)
 			return ast.ErrTypeDecl(doc_comment, attrs, vis, name, pos)
-		elif self.accept(Kind.KeyTrait):
+		elif self.accept(Kind.KwTrait):
 			pos = self.tok.pos
 			if is_unsafe:
 				report.error("traits cannot be declared unsafe", pos)
@@ -355,12 +353,12 @@ class Parser:
 					    "attributes should be applied to a function or method",
 					    attrs_pos
 					)
-				if self.accept(Kind.KeyPub):
+				if self.accept(Kind.KwPub):
 					report.error(
 					    "unnecessary visibility qualifier", self.prev_tok.pos
 					)
-				is_unsafe = self.accept(Kind.KeyUnsafe)
-				self.expect(Kind.KeyFn)
+				is_unsafe = self.accept(Kind.KwUnsafe)
+				self.expect(Kind.KwFn)
 				decls.append(
 				    self.parse_fn_decl(
 				        doc_comment, attrs, ast.Visibility.Public, is_unsafe,
@@ -369,7 +367,7 @@ class Parser:
 				)
 			self.inside_trait = old_inside_trait
 			return ast.TraitDecl(doc_comment, attrs, vis, name, decls, pos)
-		elif self.accept(Kind.KeyUnion):
+		elif self.accept(Kind.KwUnion):
 			pos = self.tok.pos
 			if is_unsafe:
 				report.error("unions cannot be declared unsafe", pos)
@@ -389,47 +387,32 @@ class Parser:
 			return ast.UnionDecl(
 			    doc_comment, attrs, vis, name, variants, decls, pos
 			)
-		elif self.accept(Kind.KeyStruct):
-			old_inside_struct_decl = self.inside_struct_decl
-			self.inside_struct_decl = True
+		elif self.accept(Kind.KwStruct):
+			old_inside_struct_or_class_decl = self.inside_struct_or_class_decl
+			self.inside_struct_or_class_decl = True
 			pos = self.tok.pos
 			if is_unsafe:
 				report.error("structs cannot be declared unsafe", pos)
 			name = self.parse_name()
 			is_opaque = self.accept(Kind.Semicolon)
 			decls = []
-			type_arguments = []
 			if not is_opaque:
-				type_arguments = self.parse_type_arguments()
 				self.expect(Kind.Lbrace)
 				if self.tok.kind != Kind.Rbrace:
 					while self.tok.kind != Kind.Rbrace:
-						if self.accept(Kind.BitNot):
-							# destructor
-							pos = self.prev_tok.pos
-							self.expect(Kind.KeySelf)
-							self.expect(Kind.Lbrace)
-							self.open_scope()
-							sc = self.scope
-							stmts = []
-							while not self.accept(Kind.Rbrace):
-								stmts.append(self.parse_stmt())
-							self.close_scope()
-							decls.append(ast.DestructorDecl(sc, stmts, pos))
-						else:
-							# declaration: methods, consts, etc.
-							decls.append(self.parse_decl())
+						# declaration: methods, consts, etc.
+						decls.append(self.parse_decl())
 				self.expect(Kind.Rbrace)
-			self.inside_struct_decl = old_inside_struct_decl
+			self.inside_struct_or_class_decl = old_inside_struct_or_class_decl
 			return ast.StructDecl(
-			    doc_comment, attrs, vis, name, type_arguments, decls, is_opaque,
+			    doc_comment, attrs, vis, name, decls, is_opaque,
 			    pos
 			)
-		elif self.inside_struct_decl and self.tok.kind in (
-		    Kind.KeyMut, Kind.Name
+		elif self.inside_struct_or_class_decl and self.tok.kind in (
+		    Kind.KwMut, Kind.Name
 		):
-			# struct fields
-			is_mut = self.accept(Kind.KeyMut)
+			# fields
+			is_mut = self.accept(Kind.KwMut)
 			name = self.parse_name()
 			self.expect(Kind.Colon)
 			typ = self.parse_type()
@@ -438,16 +421,16 @@ class Parser:
 			if has_def_expr:
 				def_expr = self.parse_expr()
 			self.expect(Kind.Semicolon)
-			return ast.StructField(
+			return ast.FieldDecl(
 			    attrs, doc_comment, vis, is_mut, name, typ, def_expr,
 			    has_def_expr, pos
 			)
-		elif self.accept(Kind.KeyEnum):
+		elif self.accept(Kind.KwEnum):
 			pos = self.tok.pos
 			if is_unsafe:
 				report.error("enums cannot be declared unsafe", pos)
 			name = self.parse_name()
-			underlying_typ = self.comp.int32_t
+			underlying_typ = self.comp.i32_t
 			if self.accept(Kind.Colon):
 				underlying_typ = self.parse_type()
 			self.expect(Kind.Lbrace)
@@ -466,12 +449,12 @@ class Parser:
 			    doc_comment, attrs, vis, name, underlying_typ, variants, decls,
 			    pos
 			)
-		elif self.accept(Kind.KeyExtend):
+		elif self.accept(Kind.KwExtend):
 			pos = self.prev_tok.pos
 			if is_unsafe:
 				report.error("`extend`s cannot be unsafe", pos)
 			typ = self.parse_type()
-			is_for_trait = self.accept(Kind.KeyFor)
+			is_for_trait = self.accept(Kind.KwFor)
 			if is_for_trait:
 				for_trait = self.parse_type()
 			else:
@@ -488,14 +471,31 @@ class Parser:
 			return ast.ExtendDecl(
 			    attrs, typ, is_for_trait, for_trait, decls, pos
 			)
-		elif self.accept(Kind.KeyFn):
+		elif self.accept(Kind.KwFn):
 			return self.parse_fn_decl(
 			    doc_comment, attrs, vis, not self.extern_is_trusted and (
 			        is_unsafe or
 			        (self.inside_extern and self.extern_abi != sym.ABI.Rivet)
 			    ), self.extern_abi if self.inside_extern else sym.ABI.Rivet
 			)
-		elif self.accept(Kind.KeyTest):
+		elif self.inside_struct_or_class_decl and self.accept(Kind.BitNot):
+			# destructor
+			pos = self.prev_tok.pos
+			self.expect(Kind.KwSelfTy)
+			self.expect(Kind.Lparen)
+			self.accept(Kind.Amp)
+			self.accept(Kind.KwMut)
+			self.accept(Kind.KwSelf)
+			self.expect(Kind.Rparen)
+			self.expect(Kind.Lbrace)
+			self.open_scope()
+			sc = self.scope
+			stmts = []
+			while not self.accept(Kind.Rbrace):
+				stmts.append(self.parse_stmt())
+			self.close_scope()
+			decls.append(ast.DestructorDecl(sc, stmts, pos))
+		elif self.accept(Kind.KwTest):
 			pos = self.prev_tok.pos
 			name = self.tok.lit
 			self.expect(Kind.String)
@@ -514,7 +514,7 @@ class Parser:
 
 	def parse_static_decl(self, doc_comment, attrs, vis, is_extern):
 		pos = self.tok.pos
-		is_mut = self.accept(Kind.KeyMut)
+		is_mut = self.accept(Kind.KwMut)
 		name = self.parse_name()
 		self.expect(Kind.Colon)
 		typ = self.parse_type()
@@ -543,24 +543,21 @@ class Parser:
 		self_is_mut = False
 		has_named_args = False
 
-		# parse type-arguments
-		type_arguments = self.parse_type_arguments()
-
 		self.open_scope()
 		sc = self.scope
 		self.expect(Kind.Lparen)
 		if self.tok.kind != Kind.Rparen:
 			# receiver (`self`|`&self`|`&mut self`)
-			if self.tok.kind == Kind.KeySelf or (
-			    self.tok.kind == Kind.Amp and self.peek_tok.kind == Kind.KeySelf
+			if self.tok.kind == Kind.KwSelf or (
+			    self.tok.kind == Kind.Amp and self.peek_tok.kind == Kind.KwSelf
 			) or (
-			    self.tok.kind == Kind.Amp and self.peek_tok.kind == Kind.KeyMut
-			    and self.peek_token(2).kind == Kind.KeySelf
+			    self.tok.kind == Kind.Amp and self.peek_tok.kind == Kind.KwMut
+			    and self.peek_token(2).kind == Kind.KwSelf
 			):
 				is_method = True
 				self_is_ref = self.accept(Kind.Amp)
-				self_is_mut = self.accept(Kind.KeyMut)
-				self.expect(Kind.KeySelf)
+				self_is_mut = self.accept(Kind.KwMut)
+				self.expect(Kind.KwSelf)
 				if self.tok.kind != Kind.Rparen:
 					self.expect(Kind.Comma)
 			# arguments
@@ -609,29 +606,12 @@ class Parser:
 		    doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
 		    args, ret_typ, stmts, sc, has_body, is_method, self_is_ref,
 		    self_is_mut, has_named_args, self.is_pkg_level and name == "main",
-		    is_variadic, abi, type_arguments
+		    is_variadic, abi
 		)
-
-	def parse_type_arguments(self):
-		# parse type-arguments
-		g_idx = 0
-		type_arguments = []
-		if self.accept(Kind.Lt):
-			while True:
-				generic_pos = self.tok.pos
-				generic_name = self.parse_name()
-				type_arguments.append(
-				    type.Generic(generic_name, g_idx, generic_pos)
-				)
-				g_idx += 1
-				if not self.accept(Kind.Comma):
-					break
-			self.expect(Kind.Gt)
-		return type_arguments
 
 	# ---- statements --------------------------
 	def parse_stmt(self):
-		if self.accept(Kind.KeyLet):
+		if self.accept(Kind.KwLet):
 			# variable declarations
 			pos = self.prev_tok.pos
 			lefts = []
@@ -653,11 +633,11 @@ class Parser:
 			label = self.parse_name()
 			self.expect(Kind.Colon)
 			return ast.LabelStmt(label, pos)
-		elif self.accept(Kind.KeyWhile):
+		elif self.accept(Kind.KwWhile):
 			pos = self.prev_tok.pos
 			is_inf = False
 			if self.accept(Kind.Lparen):
-				if self.tok.kind == Kind.KeyLet:
+				if self.tok.kind == Kind.KwLet:
 					self.open_scope()
 					cond = self.parse_guard_expr()
 				else:
@@ -670,7 +650,7 @@ class Parser:
 			if isinstance(cond, ast.GuardExpr):
 				self.close_scope()
 			return ast.WhileStmt(cond, stmt, is_inf, pos)
-		elif self.accept(Kind.KeyFor):
+		elif self.accept(Kind.KwFor):
 			pos = self.prev_tok.pos
 			self.expect(Kind.Lparen)
 			self.open_scope()
@@ -681,7 +661,7 @@ class Parser:
 				vars.append(self.parse_name())
 				if not self.accept(Kind.Comma):
 					break
-			self.expect(Kind.KeyIn)
+			self.expect(Kind.KwIn)
 			iterable = self.parse_expr()
 			if self.accept(Kind.DotDot): # range
 				is_inclusive = self.accept(Kind.Assign)
@@ -693,7 +673,7 @@ class Parser:
 			stmt = self.parse_stmt()
 			self.close_scope()
 			return ast.ForInStmt(sc, vars, iterable, stmt, pos)
-		elif self.accept(Kind.KeyGoto):
+		elif self.accept(Kind.KwGoto):
 			pos = self.tok.pos
 			label = self.parse_name()
 			self.expect(Kind.Semicolon)
@@ -708,13 +688,13 @@ class Parser:
 			self.expect(Kind.Semicolon)
 			return ast.AssignStmt(expr, op, right, expr.pos)
 		elif not ((self.inside_block and self.tok.kind == Kind.Rbrace)
-		          or expr.__class__ in (ast.IfExpr, ast.MatchExpr, ast.Block)):
+		          or expr.__class__ in (ast.IfExpr, ast.SwitchExpr, ast.Block)):
 			self.expect(Kind.Semicolon)
 		return ast.ExprStmt(expr, expr.pos)
 
 	def parse_var_decl(self, support_ref = False, support_typ = True):
 		is_ref = support_ref and self.accept(Kind.Amp)
-		is_mut = self.accept(Kind.KeyMut)
+		is_mut = self.accept(Kind.KwMut)
 		pos = self.tok.pos
 		name = self.parse_name()
 		has_typ = False
@@ -730,16 +710,16 @@ class Parser:
 
 	def parse_or_expr(self):
 		left = self.parse_and_expr()
-		while self.accept(Kind.KeyOr):
+		while self.accept(Kind.KwOr):
 			right = self.parse_and_expr()
-			left = ast.BinaryExpr(left, Kind.KeyOr, right, left.pos)
+			left = ast.BinaryExpr(left, Kind.KwOr, right, left.pos)
 		return left
 
 	def parse_and_expr(self):
 		left = self.parse_equality_expr()
-		while self.accept(Kind.KeyAnd):
+		while self.accept(Kind.KwAnd):
 			right = self.parse_equality_expr()
-			left = ast.BinaryExpr(left, Kind.KeyAnd, right, left.pos)
+			left = ast.BinaryExpr(left, Kind.KwAnd, right, left.pos)
 		return left
 
 	def parse_equality_expr(self):
@@ -758,13 +738,13 @@ class Parser:
 		left = self.parse_shift_expr()
 		while True:
 			if self.tok.kind in [
-			    Kind.Gt, Kind.Lt, Kind.Ge, Kind.Le, Kind.KeyOrElse
+			    Kind.Gt, Kind.Lt, Kind.Ge, Kind.Le, Kind.KwOrElse
 			]:
 				op = self.tok.kind
 				self.next()
 				right = self.parse_shift_expr()
 				left = ast.BinaryExpr(left, op, right, left.pos)
-			elif self.tok.kind in [Kind.KeyIs, Kind.KeyNotIs]:
+			elif self.tok.kind in [Kind.KwIs, Kind.KwNotIs]:
 				op = self.tok.kind
 				self.next()
 				pos = self.tok.pos
@@ -825,7 +805,7 @@ class Parser:
 			op = self.tok.kind
 			pos = self.tok.pos
 			self.next()
-			is_ref_mut = op == Kind.Amp and self.accept(Kind.KeyMut)
+			is_ref_mut = op == Kind.Amp and self.accept(Kind.KwMut)
 			right = self.parse_unary_expr()
 			expr = ast.UnaryExpr(right, op, is_ref_mut, pos)
 		else:
@@ -835,13 +815,13 @@ class Parser:
 	def parse_primary_expr(self):
 		expr = self.empty_expr()
 		if self.tok.kind in [
-		    Kind.KeyTrue, Kind.KeyFalse, Kind.Char, Kind.Number, Kind.String,
-		    Kind.KeyNone, Kind.KeySelf, Kind.KeySuper, Kind.KeySelfTy
+		    Kind.KwTrue, Kind.KwFalse, Kind.Char, Kind.Number, Kind.String,
+		    Kind.KwNone, Kind.KwSelf, Kind.KwSuper, Kind.KwSelfTy
 		]:
 			expr = self.parse_literal()
 		elif self.accept(Kind.Dollar):
 			# comptime expressions
-			if self.tok.kind == Kind.KeyIf:
+			if self.tok.kind == Kind.KwIf:
 				expr = self.parse_if_expr(True)
 			else:
 				expr = self.parse_ident(True)
@@ -854,12 +834,12 @@ class Parser:
 			field_pos = self.tok.pos
 			field_name = self.parse_name()
 			expr = ast.PathExpr(True, None, field_name, pos, field_pos)
-		elif self.tok.kind in (Kind.KeyContinue, Kind.KeyBreak):
+		elif self.tok.kind in (Kind.KwContinue, Kind.KwBreak):
 			op = self.tok.kind
 			pos = self.tok.pos
 			self.next()
 			expr = ast.BranchExpr(op, pos)
-		elif self.accept(Kind.KeyReturn):
+		elif self.accept(Kind.KwReturn):
 			pos = self.prev_tok.pos
 			has_expr = self.tok.kind not in (
 			    Kind.Comma, Kind.Semicolon, Kind.Rbrace
@@ -869,14 +849,14 @@ class Parser:
 			else:
 				expr = self.empty_expr()
 			expr = ast.ReturnExpr(expr, has_expr, pos)
-		elif self.accept(Kind.KeyRaise):
+		elif self.accept(Kind.KwRaise):
 			pos = self.prev_tok.pos
 			expr = self.parse_expr()
 			expr = ast.RaiseExpr(expr, pos)
-		elif self.tok.kind == Kind.KeyIf:
+		elif self.tok.kind == Kind.KwIf:
 			expr = self.parse_if_expr(False)
-		elif self.accept(Kind.KeyMatch):
-			expr = self.parse_match_expr()
+		elif self.accept(Kind.KwSwitch):
+			expr = self.parse_switch_expr()
 		elif self.accept(Kind.Lparen):
 			pos = self.prev_tok.pos
 			if self.accept(Kind.Rparen):
@@ -898,10 +878,10 @@ class Parser:
 				else:
 					self.expect(Kind.Rparen)
 					expr = ast.ParExpr(e, e.pos)
-		elif self.tok.kind in (Kind.KeyUnsafe, Kind.Lbrace):
+		elif self.tok.kind in (Kind.KwUnsafe, Kind.Lbrace):
 			# block expression
 			pos = self.tok.pos
-			is_unsafe = self.accept(Kind.KeyUnsafe)
+			is_unsafe = self.accept(Kind.KwUnsafe)
 			self.expect(Kind.Lbrace)
 			old_inside_block = self.inside_block
 			self.inside_block = True
@@ -923,7 +903,7 @@ class Parser:
 			else:
 				expr = ast.Block(sc, is_unsafe, stmts, None, False, pos)
 			self.inside_block = old_inside_block
-		elif self.accept(Kind.KeyAs):
+		elif self.accept(Kind.KwAs):
 			self.expect(Kind.Lparen)
 			typ = self.parse_type()
 			self.expect(Kind.Comma)
@@ -941,7 +921,7 @@ class Parser:
 						break
 			self.expect(Kind.Rbracket)
 			expr = ast.ArrayLiteral(elems, pos)
-		elif self.tok.kind == Kind.KeyPkg:
+		elif self.tok.kind == Kind.KwPkg:
 			expr = self.parse_pkg_expr()
 		elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Char:
 			if self.tok.lit != "b":
@@ -1035,7 +1015,7 @@ class Parser:
 					err_handler_pos = self.peek_tok.pos
 					self.advance(2)
 					is_propagate = True
-				elif self.accept(Kind.KeyCatch):
+				elif self.accept(Kind.KwCatch):
 					if self.accept(Kind.Pipe):
 						varname_pos = self.tok.pos
 						varname = self.parse_name()
@@ -1050,7 +1030,7 @@ class Parser:
 				    ), expr.pos
 				)
 			elif self.accept(Kind.Lbracket):
-				is_mut = self.accept(Kind.KeyMut)
+				is_mut = self.accept(Kind.KwMut)
 				index = self.empty_expr()
 				if self.accept(Kind.DotDot):
 					if self.tok.kind == Kind.Rbracket:
@@ -1113,12 +1093,12 @@ class Parser:
 		branches = []
 		has_else = False
 		pos = self.tok.pos
-		while self.tok.kind in (Kind.KeyIf, Kind.KeyElif, Kind.KeyElse):
-			if self.accept(Kind.KeyElse):
+		while self.tok.kind in (Kind.KwIf, Kind.KwElif, Kind.KwElse):
+			if self.accept(Kind.KwElse):
 				branches.append(
 				    ast.IfBranch(
 				        is_comptime, self.empty_expr(), self.parse_expr(), True,
-				        Kind.KeyElse
+				        Kind.KwElse
 				    )
 				)
 				has_else = True
@@ -1127,7 +1107,7 @@ class Parser:
 				op = self.tok.kind
 				self.next()
 				self.expect(Kind.Lparen)
-				if self.tok.kind == Kind.KeyLet:
+				if self.tok.kind == Kind.KwLet:
 					self.open_scope()
 					cond = self.parse_guard_expr()
 				else:
@@ -1141,25 +1121,25 @@ class Parser:
 				if isinstance(cond, ast.GuardExpr):
 					self.close_scope()
 				if self.tok.kind not in (
-				    Kind.Dollar, Kind.KeyElif, Kind.KeyElse
+				    Kind.Dollar, Kind.KwElif, Kind.KwElse
 				):
 					break
 				if is_comptime:
 					self.expect(Kind.Dollar)
 		return ast.IfExpr(is_comptime, branches, has_else, pos)
 
-	def parse_match_expr(self):
+	def parse_switch_expr(self):
 		branches = []
 		pos = self.prev_tok.pos
-		is_typematch = False
+		is_typeswitch = False
 		if self.accept(Kind.Lparen):
-			if self.tok.kind == Kind.KeyLet:
+			if self.tok.kind == Kind.KwLet:
 				self.open_scope()
 				expr = self.parse_guard_expr()
 			else:
 				expr = self.parse_expr()
 			self.expect(Kind.Rparen)
-			is_typematch = self.accept(Kind.KeyIs)
+			is_typeswitch = self.accept(Kind.KwIs)
 		else:
 			expr = ast.BoolLiteral(True, pos)
 		self.expect(Kind.Lbrace)
@@ -1169,17 +1149,17 @@ class Parser:
 			var_is_ref = False
 			var_is_mut = False
 			var_name = ""
-			is_else = self.accept(Kind.KeyElse)
+			is_else = self.accept(Kind.KwElse)
 			if not is_else:
 				while True:
-					if is_typematch:
+					if is_typeswitch:
 						pos = self.tok.pos
 						pats.append(ast.TypeNode(self.parse_type(), pos))
-						if is_typematch and len(pats) == 1 and self.accept(
-						    Kind.KeyAs
+						if is_typeswitch and len(pats) == 1 and self.accept(
+						    Kind.KwAs
 						):
 							var_is_ref = self.accept(Kind.Amp)
-							var_is_mut = var_is_ref and self.accept(Kind.KeyMut)
+							var_is_mut = var_is_ref and self.accept(Kind.KwMut)
 							var_name = self.parse_name()
 							has_var = True
 					else:
@@ -1188,7 +1168,7 @@ class Parser:
 						break
 			self.expect(Kind.Arrow)
 			branches.append(
-			    ast.MatchBranch(
+			    ast.SwitchBranch(
 			        pats, has_var, var_is_ref, var_is_mut, var_name,
 			        self.parse_expr(), is_else
 			    )
@@ -1197,10 +1177,10 @@ class Parser:
 				break
 		self.expect(Kind.Rbrace)
 		if isinstance(expr, ast.GuardExpr): self.close_scope()
-		return ast.MatchExpr(expr, branches, is_typematch, self.scope, pos)
+		return ast.SwitchExpr(expr, branches, is_typeswitch, self.scope, pos)
 
 	def parse_guard_expr(self):
-		self.expect(Kind.KeyLet)
+		self.expect(Kind.KwLet)
 		pos = self.prev_tok.pos
 		vars = []
 		while True:
@@ -1226,9 +1206,9 @@ class Parser:
 		return expr
 
 	def parse_literal(self):
-		if self.tok.kind in [Kind.KeyTrue, Kind.KeyFalse]:
+		if self.tok.kind in [Kind.KwTrue, Kind.KwFalse]:
 			pos = self.tok.pos
-			lit = self.tok.kind == Kind.KeyTrue
+			lit = self.tok.kind == Kind.KwTrue
 			self.next()
 			return ast.BoolLiteral(lit, pos)
 		elif self.tok.kind == Kind.Char:
@@ -1237,13 +1217,13 @@ class Parser:
 			return self.parse_integer_literal()
 		elif self.tok.kind == Kind.String:
 			return self.parse_string_literal()
-		elif self.accept(Kind.KeySelf):
+		elif self.accept(Kind.KwSelf):
 			return ast.SelfExpr(self.scope, self.prev_tok.pos)
-		elif self.accept(Kind.KeySuper):
+		elif self.accept(Kind.KwSuper):
 			return ast.SuperExpr(self.scope, self.prev_tok.pos)
-		elif self.accept(Kind.KeyNone):
+		elif self.accept(Kind.KwNone):
 			return ast.NoneLiteral(self.prev_tok.pos)
-		elif self.accept(Kind.KeySelfTy):
+		elif self.accept(Kind.KwSelfTy):
 			return ast.SelfTyExpr(self.scope, self.prev_tok.pos)
 		else:
 			report.error(f"expected literal, found {self.tok}", self.tok.pos)
@@ -1317,8 +1297,6 @@ class Parser:
 
 	# ---- types -------------------------------
 	def parse_type(self):
-		old_inside_type = self.inside_type
-		self.inside_type = True
 		pos = self.tok.pos
 		if self.accept(Kind.Question):
 			# optional
@@ -1328,17 +1306,16 @@ class Parser:
 				report.note("by default pointers can contain the value `none`")
 			elif isinstance(typ, type.Optional):
 				report.error("optional multi-level types are not allowed", pos)
-			self.inside_type = old_inside_type
 			return type.Optional(typ)
-		elif self.tok.kind in (Kind.KeyUnsafe, Kind.KeyExtern, Kind.KeyFn):
+		elif self.tok.kind in (Kind.KwUnsafe, Kind.KwExtern, Kind.KwFn):
 			# function types
-			is_unsafe = self.accept(Kind.KeyUnsafe)
-			is_extern = self.accept(Kind.KeyExtern)
+			is_unsafe = self.accept(Kind.KwUnsafe)
+			is_extern = self.accept(Kind.KwExtern)
 			abi = self.parse_abi() if is_extern else sym.ABI.Rivet
 			if is_extern and not self.inside_extern: self.inside_extern = True
 			args = []
 			is_variadic = False
-			self.expect(Kind.KeyFn)
+			self.expect(Kind.KwFn)
 			self.expect(Kind.Lparen)
 			if self.tok.kind != Kind.Rparen:
 				while True:
@@ -1353,41 +1330,21 @@ class Parser:
 				ret_typ = self.parse_type()
 			if is_extern and self.inside_extern:
 				self.inside_extern = False
-			self.inside_type = old_inside_type
 			return type.Fn(
 			    is_unsafe, is_extern, abi, False, args, is_variadic, ret_typ,
 			    False, False
 			)
-		elif self.accept(Kind.Amp):
-			# references
-			is_mut = self.accept(Kind.KeyMut)
-			typ = self.parse_type()
-			if self.inside_extern:
-				k = "mut " if is_mut else "const "
-				report.error(
-				    "cannot use references inside `extern` blocks", pos
-				)
-				report.help(f"use pointers instead: `*{k}{typ}`")
-			elif isinstance(typ, type.Ref):
-				report.error("multi-level references are not allowed", pos)
-			elif typ == self.comp.void_t:
-				k = "mut " if is_mut else "const "
-				report.error("invalid use of `void` type", pos)
-				report.help("use `*{} void` instead")
-			self.inside_type = old_inside_type
-			return type.Ref(typ, is_mut)
 		elif self.accept(Kind.Mult):
 			# pointers
-			is_mut = self.accept(Kind.KeyMut)
+			is_mut = self.accept(Kind.KwMut)
 			typ = self.parse_type()
 			if isinstance(typ, type.Ref):
 				report.error("cannot use pointers with references", pos)
-			self.inside_type = old_inside_type
 			return type.Ptr(typ, is_mut)
 		elif self.accept(Kind.Lbracket):
 			# arrays or slices
 			mut_pos = self.tok.pos
-			is_mut = self.accept(Kind.KeyMut)
+			is_mut = self.accept(Kind.KwMut)
 			typ = self.parse_type()
 			if self.accept(Kind.Semicolon):
 				if is_mut:
@@ -1398,10 +1355,8 @@ class Parser:
 					report.note("this is only valid with slices")
 				size = self.parse_expr()
 				self.expect(Kind.Rbracket)
-				self.inside_type = old_inside_type
 				return type.Array(typ, size)
 			self.expect(Kind.Rbracket)
-			self.inside_type = old_inside_type
 			return type.Slice(typ, is_mut)
 		elif self.accept(Kind.Lparen):
 			# tuples
@@ -1414,115 +1369,80 @@ class Parser:
 				report.error("tuples can have a maximum of 8 types", pos)
 				report.help("you can use a struct instead")
 			self.expect(Kind.Rparen)
-			self.inside_type = old_inside_type
 			return type.Tuple(types)
 		elif self.accept(Kind.Ellipsis):
-			self.inside_type = old_inside_type
 			return type.Variadic(self.parse_type())
-		elif self.accept(Kind.KeySelfTy):
-			self.inside_type = old_inside_type
+		elif self.accept(Kind.KwSelfTy):
 			return type.Type.unresolved(
 			    ast.SelfTyExpr(self.scope, self.prev_tok.pos)
 			)
-		elif (self.comp.prefs.pkg_name == "core"
-		      or self.comp.pkg_sym.is_core) and self.accept(Kind.KeyNone):
-			self.inside_type = old_inside_type
+		elif self.accept(Kind.KwNone):
 			return self.comp.none_t
-		elif self.tok.kind in (Kind.KeyPkg, Kind.KeySuper, Kind.Name):
+		elif self.tok.kind in (Kind.KwPkg, Kind.KwSuper, Kind.Name):
 			# normal type
 			if self.peek_tok.kind == Kind.DoubleColon:
 				path_expr = self.parse_path_expr(
 				    self.parse_pkg_expr() if self.tok.kind ==
-				    Kind.KeyPkg else self.parse_super_expr() if self.tok.kind ==
-				    Kind.KeySuper else self.parse_ident()
+				    Kind.KwPkg else self.parse_super_expr() if self.tok.kind ==
+				    Kind.KwSuper else self.parse_ident()
 				)
 				if self.tok.kind == Kind.DoubleColon:
 					while True:
 						path_expr = self.parse_path_expr(path_expr)
 						if self.tok.kind != Kind.DoubleColon:
 							break
-				self.inside_type = old_inside_type
 				return type.Type.unresolved(path_expr)
 			elif self.tok.kind == Kind.Name:
 				prev_tok_kind = self.prev_tok.kind
 				expr = self.parse_ident()
 				lit = expr.name
 				if lit == "void":
-					if prev_tok_kind not in (Kind.Mult, Kind.KeyMut, Kind.Amp):
+					if prev_tok_kind not in (Kind.Mult, Kind.KwMut, Kind.Amp):
 						# valid only as pointer
 						report.error("invalid use of `void` type", pos)
-					self.inside_type = old_inside_type
 					return self.comp.void_t
 				elif lit == "no_return":
 					if prev_tok_kind != Kind.Rparen and self.tok.kind != Kind.Lbrace:
 						report.error("invalid use of `no_return` type", pos)
-					self.inside_type = old_inside_type
 					return self.comp.no_return_t
 				elif lit == "bool":
-					self.inside_type = old_inside_type
 					return self.comp.bool_t
 				elif lit == "rune":
-					self.inside_type = old_inside_type
 					return self.comp.rune_t
 				elif lit == "i8":
-					self.inside_type = old_inside_type
-					return self.comp.int8_t
+					return self.comp.i8_t
 				elif lit == "i16":
-					self.inside_type = old_inside_type
-					return self.comp.int16_t
+					return self.comp.i16_t
 				elif lit == "i32":
-					self.inside_type = old_inside_type
-					return self.comp.int32_t
+					return self.comp.i32_t
 				elif lit == "i64":
-					self.inside_type = old_inside_type
-					return self.comp.int64_t
+					return self.comp.i64_t
 				elif lit == "isize":
-					self.inside_type = old_inside_type
 					return self.comp.isize_t
 				elif lit == "u8":
-					self.inside_type = old_inside_type
-					return self.comp.uint8_t
+					return self.comp.u8_t
 				elif lit == "u16":
-					self.inside_type = old_inside_type
-					return self.comp.uint16_t
+					return self.comp.u16_t
 				elif lit == "u32":
-					self.inside_type = old_inside_type
-					return self.comp.uint32_t
+					return self.comp.u32_t
 				elif lit == "u64":
-					self.inside_type = old_inside_type
-					return self.comp.uint64_t
+					return self.comp.u64_t
 				elif lit == "usize":
-					self.inside_type = old_inside_type
 					return self.comp.usize_t
 				elif lit == "f32":
-					self.inside_type = old_inside_type
-					return self.comp.float32_t
+					return self.comp.f32_t
 				elif lit == "f64":
-					self.inside_type = old_inside_type
-					return self.comp.float64_t
-				elif lit == "str":
-					self.inside_type = old_inside_type
-					return self.comp.str_t
-				elif lit == "untyped_int" and (
-				    self.comp.prefs.pkg_name == "core"
-				    or self.comp.pkg_sym.is_core
-				):
-					self.inside_type = old_inside_type
+					return self.comp.f64_t
+				elif lit == "string":
+					return self.comp.string_t
+				# only available in `core`:
+				elif lit == "untyped_int":
 					return self.comp.untyped_int_t
-				elif lit == "untyped_float" and (
-				    self.comp.prefs.pkg_name == "core"
-				    or self.comp.pkg_sym.is_core
-				):
-					self.inside_type = old_inside_type
+				elif lit == "untyped_float":
 					return self.comp.untyped_float_t
-				elif lit == "error" and (
-				    self.comp.prefs.pkg_name == "core"
-				    or self.comp.pkg_sym.is_core
-				):
-					self.inside_type = old_inside_type
+				elif lit == "error":
 					return self.comp.error_t
 				else:
-					self.inside_type = old_inside_type
 					concrete_types = self.parse_concrete_type_arguments()
 					return type.Type.unresolved(expr, concrete_types)
 			else:
@@ -1531,15 +1451,4 @@ class Parser:
 		else:
 			report.error(f"expected type, found {self.tok}", pos)
 			self.next()
-		self.inside_type = old_inside_type
 		return type.Type.unresolved(self.empty_expr())
-
-	def parse_concrete_type_arguments(self):
-		concrete_types = []
-		if self.accept(Kind.Lt):
-			while True:
-				concrete_types.append(self.parse_type())
-				if not self.accept(Kind.Comma):
-					break
-			self.expect(Kind.Gt)
-		return concrete_types

@@ -9,12 +9,12 @@ pub errtype Error;
 
 #[used]
 struct _error {
-    errtype_name: str;
-    msg_: String;
+    errtype_name: string;
+    msg_: stringing;
     tag: u8; // max: 255
 
     #[used]
-    fn new(errtype_name: str, tag: u8, msg: str, args: ...ToString) Self {
+    fn new(errtype_name: string, tag: u8, msg: string, args: ...ToString) Self {
         return Self{
             errtype_name: errtype_name,
             msg_: msg.fmt(args),
@@ -33,7 +33,7 @@ struct _error {
         process::exit(1);
     }
 
-    fn to_string_(&self) String {
+    fn to_string_(&self) string {
         if (self.msg_.len_ == 0) {
             return self.errtype_name.to_string();
         }
@@ -42,13 +42,13 @@ struct _error {
 }
 
 extend error {
-    pub fn msg(&self) String {
+    pub fn msg(&self) string {
         return as(_error, self.*).msg_;
     }
 }
 
 extend error for ToString {
-    pub fn to_string(&self) String {
+    pub fn to_string(&self) string {
         return as(_error, self.*).to_string_();
     }
 }

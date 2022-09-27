@@ -12,17 +12,10 @@ COMPTIME_CONSTANTS = [
 def is_comptime_constant(name):
 	return name in COMPTIME_CONSTANTS
 
-class ExternPkgInfo:
-	def __init__(self, name, deps = list()):
-		self.name = name
-		self.deps = deps
-
-	def add_dep(self, dep):
-		self.deps.append(dep)
-
 class SourceFile:
-	def __init__(self, file, decls, mod_sym):
+	def __init__(self, file, decls, pkg_name, mod_sym):
 		self.file = file
+		self.pkg_name = pkg_name
 		self.mod_sym = mod_sym
 		self.decls = decls
 		self.imported_symbols = {}
@@ -32,26 +25,8 @@ class SourceFile:
 			return self.imported_symbols[name]
 		return None
 
-class Visibility(Enum):
-	Private = auto_enum()
-	Public = auto_enum() # Public outside current module
-	PublicInPkg = auto_enum() # Public inside current package
-
-	def is_pub(self):
-		return self != Visibility.Private
-
-	def __repr__(self):
-		if self == Visibility.Public:
-			return "pub"
-		elif self == Visibility.PublicInPkg:
-			return "pub(pkg)"
-		return "" # private
-
-	def __str__(self):
-		return self.__repr__()
-
-# Used in `let` stmts and guard exprs
-class VarDecl:
+# Used in `var` stmts and guard exprs
+class ObjDecl:
 	def __init__(self, is_mut, is_ref, name, has_typ, typ, pos):
 		self.is_mut = is_mut
 		self.is_ref = is_ref
@@ -189,21 +164,6 @@ class ConstDecl:
 		self.sym = None
 		self.pos = pos
 
-class StaticDecl:
-	def __init__(
-	    self, doc_comment, attrs, vis, is_extern, is_mut, name, typ, expr, pos
-	):
-		self.doc_comment = doc_comment
-		self.attrs = attrs
-		self.vis = vis
-		self.is_extern = is_extern
-		self.is_mut = is_mut
-		self.name = name
-		self.typ = typ
-		self.expr = expr
-		self.sym = None
-		self.pos = pos
-
 class ModDecl:
 	def __init__(self, doc_comment, attrs, name, vis, decls, is_unloaded, pos):
 		self.doc_comment = doc_comment
@@ -252,7 +212,7 @@ class UnionDecl:
 		self.sym = None
 		self.pos = pos
 
-class StructField:
+class FieldDecl:
 	def __init__(
 	    self, attrs, doc_comment, vis, is_mut, name, typ, def_expr,
 	    has_def_expr, pos
@@ -269,15 +229,13 @@ class StructField:
 
 class StructDecl:
 	def __init__(
-	    self, doc_comment, attrs, vis, name, type_arguments, decls, is_opaque,
+	    self, doc_comment, attrs, vis, name, decls, is_opaque,
 	    pos
 	):
 		self.doc_comment = doc_comment
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
-		self.is_generic = len(type_arguments) > 0
-		self.type_arguments = type_arguments
 		self.decls = decls
 		self.is_opaque = is_opaque
 		self.sym = None
@@ -312,8 +270,7 @@ class FnDecl:
 	    self, doc_comment, attrs, vis, is_extern, is_unsafe, name, name_pos,
 	    args, ret_typ, stmts, scope, has_body = False, is_method = False,
 	    self_is_ref = False, self_is_mut = False, has_named_args = False,
-	    is_main = False, is_variadic = False, abi = None,
-	    type_arguments = list()
+	    is_main = False, is_variadic = False, abi = None
 	):
 		self.doc_comment = doc_comment
 		self.attrs = attrs
@@ -322,16 +279,14 @@ class FnDecl:
 		self.name = name
 		self.name_pos = name_pos
 		self.args = args
+		self.self_typ = None
 		self.self_is_ref = self_is_ref
 		self.self_is_mut = self_is_mut
-		self.self_typ = None
 		self.is_main = is_main
 		self.is_extern = is_extern
 		self.is_unsafe = is_unsafe
 		self.is_method = is_method
 		self.is_variadic = is_variadic
-		self.is_generic = len(type_arguments) > 0
-		self.type_arguments = type_arguments
 		self.ret_typ = ret_typ
 		self.has_named_args = has_named_args
 		self.has_body = has_body
@@ -361,16 +316,11 @@ class AssignStmt:
 		self.right = right
 		self.pos = pos
 
-class LetStmt:
+class VarStmt:
 	def __init__(self, scope, lefts, right, pos):
 		self.lefts = lefts
 		self.right = right
 		self.scope = scope
-		self.pos = pos
-
-class LabelStmt:
-	def __init__(self, label, pos):
-		self.label = label
 		self.pos = pos
 
 class WhileStmt:
@@ -386,11 +336,6 @@ class ForInStmt:
 		self.iterable = iterable
 		self.scope = scope
 		self.stmt = stmt
-		self.pos = pos
-
-class GotoStmt:
-	def __init__(self, label, pos):
-		self.label = label
 		self.pos = pos
 
 class ExprStmt:
@@ -410,7 +355,7 @@ class EmptyExpr:
 		self.pos = pos
 
 	def __repr__(self):
-		return f'rivetc.EmptyExpr(pos: "{self.pos}")'
+		return f'ast.EmptyExpr(pos: "{self.pos}")'
 
 	def __str__(self):
 		return self.__repr__()
@@ -437,16 +382,12 @@ class PkgExpr:
 		return self.__repr__()
 
 class Ident:
-	def __init__(self, name, pos, scope, is_comptime, type_args = list()):
+	def __init__(self, name, pos, scope, is_comptime):
 		self.name = name
 		self.obj = None
 		self.sym = None
 		self.is_obj = False
 		self.is_comptime = is_comptime
-		self.inside_type = False
-		self.type_arg_idx = -1
-		self.type_args = type_args
-		self.has_type_args = len(type_args) > 0
 		self.scope = scope
 		self.pos = pos
 		self.typ = None
@@ -454,8 +395,6 @@ class Ident:
 	def __repr__(self):
 		if self.is_comptime:
 			return f"${self.name}"
-		elif self.has_type_args:
-			return f"{self.name}::<{', '.join([str(t) for t in self.type_args])}>"
 		return self.name
 
 	def __str__(self):
@@ -586,7 +525,7 @@ class EnumVariantExpr:
 	def __str__(self):
 		return self.__repr__()
 
-class StructLiteralField:
+class FieldLiteral:
 	def __init__(self, name, expr, pos):
 		self.name = name
 		self.expr = expr
@@ -652,8 +591,8 @@ class CastExpr:
 
 class GuardExpr:
 	# Examples:
-	# if (let x = optional_or_result_fn()) { ... }
-	# while (let byte = reader.read()) { ... }
+	# if (var x = optional_or_result_fn()) { ... }
+	# while (var byte = reader.read()) { ... }
 	def __init__(self, vars, expr, has_cond, cond, scope, pos):
 		self.vars = vars
 		self.expr = expr
@@ -665,7 +604,7 @@ class GuardExpr:
 
 	def __repr__(self):
 		vars_str = f"{', '.join([str(v) for v in self.vars])}"
-		res = f"let {vars_str} = {self.expr}"
+		res = f"var {vars_str} = {self.expr}"
 		if self.has_cond:
 			res += f"; {self.cond}"
 		return res
@@ -736,8 +675,9 @@ class IndexExpr:
 		self.typ = None
 
 	def __repr__(self):
-		kw = "mut " if self.is_mut else ""
-		return f"{self.left}[{kw}{self.index}]"
+		if self.is_mut:
+			return f"{self.left}[mut {self.index}]"
+		return f"{self.left}[{self.index}]"
 
 	def __str__(self):
 		return self.__repr__()
@@ -998,7 +938,7 @@ class IfExpr:
 	def __str__(self):
 		return self.__repr__()
 
-class MatchBranch:
+class SwitchBranch:
 	def __init__(
 	    self, pats, has_var, var_is_ref, var_is_mut, var_name, expr, is_else
 	):
@@ -1028,18 +968,18 @@ class MatchBranch:
 	def __str__(self):
 		return self.__repr__()
 
-class MatchExpr:
-	def __init__(self, expr, branches, is_typematch, scope, pos):
+class SwitchExpr:
+	def __init__(self, expr, branches, is_typeswitch, scope, pos):
 		self.expr = expr
 		self.branches = branches
-		self.is_typematch = is_typematch
+		self.is_typeswitch = is_typeswitch
 		self.scope = scope
 		self.pos = pos
 		self.typ = None
 
 	def __repr__(self):
-		kis = " is " if self.is_typematch else " "
-		return f"match ({self.expr}){kis}{{ " + ", ".join([
+		kis = " is " if self.is_typeswitch else " "
+		return f"switch ({self.expr}){kis}{{ " + ", ".join([
 		    str(b) for b in self.branches
 		]) + " }"
 

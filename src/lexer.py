@@ -505,12 +505,6 @@ class Lexer:
 				return token.Token("", Kind.Question, pos)
 			elif ch == "$":
 				return token.Token("", Kind.Dollar, pos)
-			elif ch == "@":
-				self.pos += 1
-				keyword = self.read_ident()
-				if not token.is_key(keyword):
-					report.error(f"expected keyword, found `{keyword}`", pos)
-				return token.Token(keyword, Kind.Name, pos)
 			elif ch == "#":
 				return token.Token("", Kind.Hash, pos)
 			elif ch == "&":

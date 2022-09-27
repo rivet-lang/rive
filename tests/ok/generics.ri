@@ -81,7 +81,7 @@ fn main() {
     assert!(Generic::<str>{ a: "Abc" }.value() == "Abc");
     assert!(Generic::<bool>{ a: false }.value() == false);
 
-    var mut x = Generic::<i64>{
+    var x = Generic::<i64>{
         a: 1
     };
     assert!(x.a == 1);
@@ -89,7 +89,7 @@ fn main() {
     assert!(x.a == 5);
 
     unsafe {
-        var mut res = new::<Generic<i8>>();
+        var res = new::<Generic<i8>>();
         assert!(res != none);
         res.a = 1;
         assert!(res.a == 1);

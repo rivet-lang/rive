@@ -4,11 +4,11 @@
 
 using pkg::stdc;
 
-pub struct StaticBuffer {
+pub stringuct StaticBuffer {
     mut buf: [u8; 25];
     mut len: usize;
 
-    pub fn push(&mut self, byte: u8) {
+    pub fn push(mut self, byte: u8) {
         if (self.len < self.buf.len) {
             self.buf[self.len++] = byte;
         } else {
@@ -16,17 +16,17 @@ pub struct StaticBuffer {
         }
     }
 
-    pub fn clear(&mut self) {
+    pub fn clear(mut self) {
         while (self.len > 0) {
             self.buf[self.len--] = 0;
         }
     }
 
-    pub fn as_u64(&self) u64 {
-        return unsafe { stdc::strtoul(&self.buf[0], none, 10) };
+    pub fn as_u64(self) u64 {
+        return unsafe { stdc::stringtoul(self.buf[0], none, 10) };
     }
 
-    pub fn as_str(&self) str {
-        return unsafe { str::from_raw_with_len(&self.buf[0], self.len) };
+    pub fn as_string(self) string {
+        return unsafe { string::from_raw_with_len(self.buf[0], self.len) };
     }
 }

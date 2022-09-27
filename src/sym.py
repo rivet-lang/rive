@@ -4,8 +4,15 @@
 
 from enum import IntEnum as Enum, auto as auto_enum
 
-from ..ast import Visibility
-from ..utils import CompilerError
+from .utils import CompilerError
+
+SYMBOL_COUNT = 0
+
+def symbol_count():
+	global SYMBOL_COUNT
+	ret = SYMBOL_COUNT
+	SYMBOL_COUNT += 1
+	return ret
 
 class Object:
 	def __init__(self, is_mut, name, typ, is_arg):
@@ -62,7 +69,7 @@ class ABI(Enum):
 	Rivet = auto_enum()
 	C = auto_enum()
 
-	@staticmethod
+	@varmethod
 	def from_string(abi):
 		if abi == "C":
 			return ABI.C
@@ -78,16 +85,27 @@ class ABI(Enum):
 	def __str__(self):
 		return self.__repr__()
 
-SYMBOL_COUNT = 0
+class Vis(Enum):
+	Priv = auto_enum()
+	Pub = auto_enum() # Public outside current module
+	PubInPkg = auto_enum() # Public inside current package
 
-def symbol_count():
-	global SYMBOL_COUNT
-	ret = SYMBOL_COUNT
-	SYMBOL_COUNT += 1
-	return ret
+	def is_pub(self):
+		return self != Vis.Priv
+
+	def __repr__(self):
+		if self == Vis.Pub:
+			return "pub"
+		elif self == Vis.PubInPkg:
+			return "pub(pkg)"
+		return "" # private
+
+	def __str__(self):
+		return self.__repr__()
 
 class Sym:
 	def __init__(self, vis, name, type_arguments = list()):
+		self.id = symbol_count()
 		self.vis = vis
 		self.name = name
 		self.mangled_name = ""
@@ -95,11 +113,8 @@ class Sym:
 		self.generic_name = ""
 		self.parent = None
 		self.syms = []
-		self.index = symbol_count()
-		self.is_universe = isinstance(self, Pkg) and self.index == 0
-		self.is_core = isinstance(self, Pkg) and self.index == 22
-		self.is_generic = len(type_arguments) > 0
-		self.is_generic_instance = False
+		self.is_universe = isinstance(self, Pkg) and self.id == 0
+		self.is_core = isinstance(self, Pkg) and self.id == 22
 		self.is_generated = False
 		self.type_arguments = type_arguments
 		self.uses = 0
@@ -144,19 +159,19 @@ class Sym:
 		if sym := self.find(unique_name):
 			return sym
 
-		from ..ast import type
+		from .ast import type
 		fields = []
 		if elem_typ != type.Type(self[0]):
-			fields.append(Field("value", False, Visibility.Private, elem_typ))
+			fields.append(Field("value", False, Vis.Priv, elem_typ))
 		fields.append(
-		    Field("is_err", False, Visibility.Private, type.Type(self[2]))
+		    Field("is_err", False, Vis.Priv, type.Type(self[2]))
 		)
 		fields.append(
-		    Field("err", False, Visibility.Private, type.Type(self[19]))
+		    Field("err", False, Vis.Priv, type.Type(self[19]))
 		)
 		return self.add_and_return(
 		    Type(
-		        Visibility.Public, unique_name, TypeKind.Struct, fields,
+		        Vis.Pub, unique_name, TypeKind.Struct, fields,
 		        StructInfo(False)
 		    )
 		)
@@ -167,13 +182,13 @@ class Sym:
 		if sym := self.find(unique_name):
 			return sym
 
-		from ..ast import type
+		from .ast import type
 		return self.add_and_return(
 		    Type(
-		        Visibility.Public, unique_name, TypeKind.Struct, [
-		            Field("value", False, Visibility.Private, elem_typ),
+		        Vis.Pub, unique_name, TypeKind.Struct, [
+		            Field("value", False, Vis.Priv, elem_typ),
 		            Field(
-		                "is_none", False, Visibility.Private,
+		                "is_none", False, Vis.Priv,
 		                type.Type(self[2])
 		            )
 		        ], StructInfo(False)
@@ -186,7 +201,7 @@ class Sym:
 			return sym
 		return self.add_and_return(
 		    Type(
-		        Visibility.Public, unique_name, TypeKind.Array,
+		        Vis.Pub, unique_name, TypeKind.Array,
 		        info = ArrayInfo(elem_typ, size)
 		    )
 		)
@@ -195,12 +210,12 @@ class Sym:
 		unique_name = f"[{elem_typ.qualstr()}]"
 		if sym := self.find(unique_name):
 			return sym
-		from ..ast.type import Ptr, Type as type_Type
+		from .type import Ptr, Type as type_Type
 		return self.add_and_return(
 		    Type(
-		        Visibility.Public, unique_name, TypeKind.Slice, [
+		        Vis.Pub, unique_name, TypeKind.Slice, [
 		            Field(
-		                "ptr", False, Visibility.Public,
+		                "ptr", False, Vis.Pub,
 		                Ptr(type_Type(self[0]))
 		            )
 		        ], SliceInfo(elem_typ, is_mut)
@@ -213,7 +228,7 @@ class Sym:
 			return sym
 		return self.add_and_return(
 		    Type(
-		        Visibility.Public, unique_name, TypeKind.Tuple,
+		        Vis.Pub, unique_name, TypeKind.Tuple,
 		        info = TupleInfo(types)
 		    )
 		)
@@ -265,15 +280,15 @@ class Sym:
 	def is_used(self):
 		return self.vis.is_pub() or self.uses > 0
 
-	def sym_kind(self):
+	def kind(self):
 		if isinstance(self, Pkg):
 			return "package"
 		elif isinstance(self, Mod):
 			return "module"
 		elif isinstance(self, Const):
 			return "constant"
-		elif isinstance(self, Static):
-			return "static"
+		elif isinstance(self, Var):
+			return "var"
 		elif isinstance(self, Type):
 			return "type"
 		elif isinstance(self, Fn):
@@ -287,15 +302,8 @@ class Sym:
 			return self.qualified_name
 		if self.parent == None or self.parent.is_universe:
 			self.qualified_name = self.name
-			if self.is_generic:
-				self.qualified_name += "<>"
-			return self.qualified_name
-		if self.is_generic_instance and self.parent.is_generic:
-			self.qualified_name = f"{self.parent.parent.qualname()}::{self.name}"
 			return self.qualified_name
 		self.qualified_name = f"{self.parent.qualname()}::{self.name}"
-		if self.is_generic:
-			self.qualified_name += "<>"
 		return self.qualified_name
 
 	def __getitem__(self, idx):
@@ -319,7 +327,7 @@ class Const(Sym):
 		self.has_ir_expr = False
 		self.typ = typ
 
-class Static(Sym):
+class Var(Sym):
 	def __init__(self, vis, is_mut, is_extern, name, typ):
 		Sym.__init__(self, vis, name)
 		self.is_extern = is_extern
@@ -358,16 +366,17 @@ class TypeKind(Enum):
 	UntypedFloat = auto_enum()
 	Float32 = auto_enum()
 	Float64 = auto_enum()
-	Str = auto_enum()
+	String = auto_enum()
 	Alias = auto_enum()
 	ErrType = auto_enum()
 	Array = auto_enum()
 	Slice = auto_enum()
 	Tuple = auto_enum()
+	Trait = auto_enum()
+	Union = auto_enum()
+	Class = auto_enum()
 	Enum = auto_enum()
 	Struct = auto_enum()
-	Union = auto_enum()
-	Trait = auto_enum()
 	NoReturn = auto_enum()
 
 	def is_primitive(self):
@@ -420,8 +429,8 @@ class TypeKind(Enum):
 			return "f32"
 		elif self == TypeKind.Float64:
 			return "f64"
-		elif self == TypeKind.Str:
-			return "str"
+		elif self == TypeKind.String:
+			return "string"
 		elif self == TypeKind.Alias:
 			return "alias"
 		elif self == TypeKind.ErrType:
@@ -432,14 +441,16 @@ class TypeKind(Enum):
 			return "slice"
 		elif self == TypeKind.Tuple:
 			return "tuple"
-		elif self == TypeKind.Enum:
-			return "enum"
-		elif self == TypeKind.Struct:
-			return "struct"
-		elif self == TypeKind.Union:
-			return "union"
 		elif self == TypeKind.Trait:
 			return "trait"
+		elif self == TypeKind.Union:
+			return "union"
+		elif self == TypeKind.Class:
+			return "class"
+		elif self == TypeKind.Struct:
+			return "struct"
+		elif self == TypeKind.Enum:
+			return "enum"
 		elif self == TypeKind.NoReturn:
 			return "no_return"
 		return "placeholder"
@@ -546,8 +557,8 @@ class Arg:
 class Fn(Sym):
 	def __init__(
 	    self, abi, vis, is_extern, is_unsafe, is_method, is_variadic, name,
-	    args, ret_typ, has_named_args, has_body, name_pos, rec_is_mut,
-	    rec_is_ref, type_arguments
+	    args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
+	    self_is_ref, type_arguments
 	):
 		Sym.__init__(self, vis, name, type_arguments)
 		self.is_main = False
@@ -557,8 +568,8 @@ class Fn(Sym):
 		self.is_method = is_method
 		self.is_variadic = is_variadic
 		self.self_typ = None
-		self.rec_is_mut = rec_is_mut
-		self.rec_is_ref = rec_is_ref
+		self.self_is_mut = self_is_mut
+		self.self_is_ref = self_is_ref
 		self.args = args
 		self.ret_typ = ret_typ
 		self.has_named_args = has_named_args
@@ -585,40 +596,39 @@ class Fn(Sym):
 			args.append(arg.typ)
 		return Fn(
 		    self.is_unsafe, self.is_extern, self.abi, self.is_method, args,
-		    self.is_variadic, self.ret_typ, self.rec_is_mut, self.rec_is_ref
+		    self.is_variadic, self.ret_typ, self.self_is_mut, self.self_is_ref
 		)
 
 def universe():
-	from ..ast.type import Ptr, Type as type_Type
+	from .type import Ptr, Type as type_Type
 
-	uni = Pkg(Visibility.Private, "universe")
-	uni.add(Type(Visibility.Public, "void", TypeKind.Void))
-	uni.add(Type(Visibility.Public, "none", TypeKind.None_))
-	uni.add(Type(Visibility.Public, "bool", TypeKind.Bool))
-	uni.add(Type(Visibility.Public, "rune", TypeKind.Rune))
-	uni.add(Type(Visibility.Public, "i8", TypeKind.Int8))
-	uni.add(Type(Visibility.Public, "i16", TypeKind.Int16))
-	uni.add(Type(Visibility.Public, "i32", TypeKind.Int32))
-	uni.add(Type(Visibility.Public, "i64", TypeKind.Int64))
-	uni.add(Type(Visibility.Public, "isize", TypeKind.Isize))
-	uni.add(Type(Visibility.Public, "u8", TypeKind.Uint8))
-	uni.add(Type(Visibility.Public, "u16", TypeKind.Uint16))
-	uni.add(Type(Visibility.Public, "u32", TypeKind.Uint32))
-	uni.add(Type(Visibility.Public, "u64", TypeKind.Uint64))
-	uni.add(Type(Visibility.Public, "usize", TypeKind.Usize))
-	uni.add(Type(Visibility.Public, "untyped_int", TypeKind.UntypedInt))
-	uni.add(Type(Visibility.Public, "untyped_float", TypeKind.UntypedFloat))
-	uni.add(Type(Visibility.Public, "f32", TypeKind.Float32))
-	uni.add(Type(Visibility.Public, "f64", TypeKind.Float64))
+	uni = Pkg(Vis.Priv, "universe")
+	uni.add(Type(Vis.Pub, "void", TypeKind.Void))
+	uni.add(Type(Vis.Pub, "none", TypeKind.None_))
+	uni.add(Type(Vis.Pub, "bool", TypeKind.Bool))
+	uni.add(Type(Vis.Pub, "rune", TypeKind.Rune))
+	uni.add(Type(Vis.Pub, "i8", TypeKind.Int8))
+	uni.add(Type(Vis.Pub, "i16", TypeKind.Int16))
+	uni.add(Type(Vis.Pub, "i32", TypeKind.Int32))
+	uni.add(Type(Vis.Pub, "i64", TypeKind.Int64))
+	uni.add(Type(Vis.Pub, "isize", TypeKind.Isize))
+	uni.add(Type(Vis.Pub, "u8", TypeKind.Uint8))
+	uni.add(Type(Vis.Pub, "u16", TypeKind.Uint16))
+	uni.add(Type(Vis.Pub, "u32", TypeKind.Uint32))
+	uni.add(Type(Vis.Pub, "u64", TypeKind.Uint64))
+	uni.add(Type(Vis.Pub, "usize", TypeKind.Usize))
+	uni.add(Type(Vis.Pub, "untyped_int", TypeKind.UntypedInt))
+	uni.add(Type(Vis.Pub, "untyped_float", TypeKind.UntypedFloat))
+	uni.add(Type(Vis.Pub, "f32", TypeKind.Float32))
+	uni.add(Type(Vis.Pub, "f64", TypeKind.Float64))
 	uni.add(
 	    Type(
-	        Visibility.Public, "str", TypeKind.Str, fields = [
-	            Field("ptr", False, Visibility.Public, Ptr(type_Type(uni[9]))),
-	            Field("len", False, Visibility.Public, type_Type(uni[13]))
+	        Vis.Pub, "string", TypeKind.String, fields = [
+	            Field("len", False, Vis.Pub, type_Type(uni[13]))
 	        ]
 	    )
 	)
-	uni.add(Type(Visibility.Public, "error", TypeKind.Struct))
-	uni.add(Type(Visibility.Public, "no_return", TypeKind.NoReturn))
+	uni.add(Type(Vis.Pub, "error", TypeKind.Struct))
+	uni.add(Type(Vis.Pub, "no_return", TypeKind.NoReturn))
 
 	return uni

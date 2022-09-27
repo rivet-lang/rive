@@ -42,18 +42,18 @@ fn bt_print_callback(
         }
 
         var file_name = if (filename_ptr == none) {
-            "???".to_string()
+            "???"
         } else {
-            String::from_raw(filename_ptr)
+            string::from_raw(filename_ptr)
         };
 
         var fn_name = if (fn_ptr == none) {
-            "??".to_string()
+            "??"
         } else {
             demangle::demangle_symbol(str::from_raw(fn_ptr))
         };
 
-        var mut bdata = as(*mut BacktraceData, data);
+        var bdata = as(*mut BacktraceData, data);
         eprintln(
             "   {} {} in {}:{}", if (bdata.frame_nr == 0) "at" else "by",
             fn_name, file_name, lineno
@@ -65,7 +65,7 @@ fn bt_print_callback(
 
 fn bt_error_handler(data: *mut void, msg_ptr: *u8, errnum: i32) {
     unsafe {
-        var mut bdata = as(*mut BacktraceData, data);
+        var bdata = as(*mut BacktraceData, data);
         if (!bdata.has_error) {
             eprint("   libbacktrace error: ");
             eprint(str::from_raw(msg_ptr));

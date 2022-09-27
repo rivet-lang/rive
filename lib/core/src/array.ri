@@ -26,8 +26,8 @@ fn array_slice(
     if (start > end or end > size) {
         panic("slice index out of range (range: {}..{}, len: {})", start, end, size);
     }
+    var len = end - start;
     unsafe {
-        var len = end - start;
         if (len == size) {
             return _slice{
                 ptr: arr,

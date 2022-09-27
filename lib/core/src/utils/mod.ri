@@ -4,9 +4,9 @@
 
 pub unsafe fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
     unsafe {
-        var mut buf = buf_;
-        var mut x: isize = 0;
-        var mut remaining_bytes = as(isize, len);
+        var buf = buf_;
+        var x: isize = 0;
+        var remaining_bytes = as(isize, len);
         while (remaining_bytes > 0) {
             x = stdc::write(fd, buf + x, as(usize, remaining_bytes));
             remaining_bytes -= x;
@@ -14,7 +14,7 @@ pub unsafe fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
     }
 }
 
-pub unsafe fn writeln_to_fd(fd: i32, s: String) {
+pub unsafe fn writeln_to_fd(fd: i32, s: string) {
     unsafe {
         write_buf_to_fd(fd, s.ptr, s.len_);
         write_buf_to_fd(fd, c"\n", 1);

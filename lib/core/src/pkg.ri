@@ -15,7 +15,7 @@ pub mod traits;
 
 mod utils;
 
-pub var ARGS: [str] = [""][..];
+pub var ARGS: [string] = [""][..];
 
 fn segfault_handler(_: i32) {
     eprintln("panic: segmentation fault detected");
@@ -25,14 +25,14 @@ fn segfault_handler(_: i32) {
 
 /// Terminates program execution immediately after displaying a message,
 /// followed by a backtrace.
-pub fn panic(s: str, args: ...traits::ToString) no_return {
+pub fn panic(s: string, args: ...traits::ToString) no_return {
     console::eprintln("panic: {}", s.fmt(args));
     backtrace::print(2);
     process::exit(1);
 }
 
 #[used]
-fn assert(cond: bool, msg: str) {
+fn assert(cond: bool, msg: string) {
     if (!cond) {
         console::eprintln("panic: assertion failed: {}", msg);
         backtrace::print(2);
@@ -41,7 +41,7 @@ fn assert(cond: bool, msg: str) {
 }
 
 #[used]
-fn panic_if(cond: bool, msg: str) {
+fn panic_if(cond: bool, msg: string) {
     if (cond) {
         console::eprintln("panic: {}", msg);
         backtrace::print(2);
@@ -61,6 +61,6 @@ pub fn errno() i32 {
 pub fn strerr(code: i32 = errno()) String {
     unsafe {
         var s = stdc::strerror(code);
-        return if (s == none) "".to_string() else String::from_raw(s);
+        return if (s == none) "" else String::from_raw(s);
     }
 }

@@ -4,15 +4,12 @@
 
 import os, copy
 
-from .ast import sym, type
 from . import (
-    ast, token, prefs, report, utils,
+    ast, sym, type, token, prefs, report, utils,
 
     # stages
-    parser, resolver, checker, codegen
+    parser
 )
-
-from .codegen import c
 
 class Compiler:
 	def __init__(self, args):
@@ -25,120 +22,110 @@ class Compiler:
 		self.none_t = type.Type(self.universe[1])
 		self.bool_t = type.Type(self.universe[2])
 		self.rune_t = type.Type(self.universe[3])
-		self.int8_t = type.Type(self.universe[4])
-		self.int16_t = type.Type(self.universe[5])
-		self.int32_t = type.Type(self.universe[6])
-		self.int64_t = type.Type(self.universe[7])
+		self.i8_t = type.Type(self.universe[4])
+		self.i16_t = type.Type(self.universe[5])
+		self.i32_t = type.Type(self.universe[6])
+		self.i64_t = type.Type(self.universe[7])
 		self.isize_t = type.Type(self.universe[8])
-		self.uint8_t = type.Type(self.universe[9])
-		self.uint16_t = type.Type(self.universe[10])
-		self.uint32_t = type.Type(self.universe[11])
-		self.uint64_t = type.Type(self.universe[12])
+		self.u8_t = type.Type(self.universe[9])
+		self.u16_t = type.Type(self.universe[10])
+		self.u32_t = type.Type(self.universe[11])
+		self.u64_t = type.Type(self.universe[12])
 		self.usize_t = type.Type(self.universe[13])
 		self.untyped_int_t = type.Type(self.universe[14])
 		self.untyped_float_t = type.Type(self.universe[15])
-		self.float32_t = type.Type(self.universe[16])
-		self.float64_t = type.Type(self.universe[17])
-		self.str_t = type.Type(self.universe[18])
+		self.f32_t = type.Type(self.universe[16])
+		self.f64_t = type.Type(self.universe[17])
+		self.string_t = type.Type(self.universe[18])
 		self.error_t = type.Type(self.universe[19])
 		self.no_return_t = type.Type(self.universe[20])
 
 		self.prefs = prefs.Prefs(args)
+
+		self.pkg_deps = utils.PkgDeps()
 		self.source_files = []
-		self.extern_packages = [
-		    ast.ExternPkgInfo("core"),
-		    # TODO(StunxFS): ast.ExternPkgInfo("std", ["core"])
-		]
 
 		self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
 
 		self.core_pkg = None
-		self.str_struct = None # from `core` package
+		self.string_class = None # from `core` package
 		self.slice_struct = None # from `core` package
-		self.err_struct = None # from `core` package
-
-		self.trait_to_string = None
+		self.error_struct = None # from `core` package
 
 		self.pkg_sym = None
 		self.pkg_attrs = None
-		self.mod_sym = None # for `mod mod_name;`
 
-		self.resolver = resolver.Resolver(self)
-		self.checker = checker.Checker(self)
-		self.ast2rir = codegen.AST2RIR(self)
-		self.cgen = c.Gen(self)
+	def run(self):
+		source_files = parser.Parser(self).parse_pkg()
 
-	def build_package(self):
-		self.parse_files()
-		if not self.prefs.check_syntax:
-			self.resolver.resolve_files(self.source_files)
-			if report.ERRORS > 0:
-				self.abort()
+		if report.ERRORS > 0:
+			self.abort()
 
-			self.load_core_pkg()
+		#if not self.prefs.check_syntax:
+		#	self.resolver.resolve_files(self.source_files)
+		#	if report.ERRORS > 0:
+		#		self.abort()
 
-			self.checker.check_files(self.source_files)
-			if report.ERRORS > 0:
-				self.abort()
+		#	self.load_core_syms()
 
-			if not self.prefs.check:
-				unique_rir = self.ast2rir.convert(self.source_files)
-				if report.ERRORS > 0:
-					self.abort()
-				if self.prefs.emit_rir:
-					with open(f"{self.prefs.pkg_name}.rir", "w+") as f:
-						f.write(str(unique_rir))
-				else:
-					self.check_pkg_attrs()
-					if self.prefs.target_backend == prefs.Backend.C:
-						self.cgen.gen(unique_rir)
-						c_file = f"{self.prefs.pkg_name}.ri.c"
-						self.cgen.write_to_file(c_file)
-						args = [
-						    self.prefs.ccompiler, c_file,
-						    *self.prefs.objects_to_link, "-fno-builtin",
-						    "-Werror", "-m64" if self.prefs.target_bits
-						    == prefs.Bits.X64 else "-m32",
-						    *[f"-l{l}" for l in self.prefs.library_to_link],
-						    *[f"-L{l}" for l in self.prefs.library_path], "-o",
-						    self.prefs.pkg_output,
-						]
-						if self.prefs.build_mode == prefs.BuildMode.Release:
-							args.append("-flto")
-							args.append("-O3")
-						else:
-							args.append("-g")
-						self.vlog(f"C compiler options: {args}")
-						res = utils.execute(*args)
-						if res.exit_code == 0:
-							if not self.prefs.keep_c:
-								os.remove(c_file)
-						else:
-							utils.error(
-							    f"error while compiling the output C file `{c_file}`:\n{res.err}"
-							)
+		#	self.checker.check_files(self.source_files)
+		#	if report.ERRORS > 0:
+		#		self.abort()
 
-	def load_core_pkg(self):
+		#	if not self.prefs.check:
+		#		unique_rir = self.ast2rir.convert(self.source_files)
+		#		if report.ERRORS > 0:
+		#			self.abort()
+		#		if self.prefs.emit_rir:
+		#			with open(f"{self.prefs.pkg_name}.rir", "w+") as f:
+		#				f.write(str(unique_rir))
+		#		else:
+		#			self.check_pkg_attrs()
+		#			if self.prefs.target_backend == prefs.Backend.C:
+		#				self.cgen.gen(unique_rir)
+		#				c_file = f"{self.prefs.pkg_name}.ri.c"
+		#				self.cgen.write_to_file(c_file)
+		#				args = [
+		#				    self.prefs.ccompiler, c_file,
+		#				    *self.prefs.objects_to_link, "-fno-builtin",
+		#				    "-Werror", "-m64" if self.prefs.target_bits
+		#				    == prefs.Bits.X64 else "-m32",
+		#				    *[f"-l{l}" for l in self.prefs.libraries_to_link],
+		#				    *[f"-L{l}" for l in self.prefs.library_path], "-o",
+		#				    self.prefs.pkg_output,
+		#				]
+		#				if self.prefs.build_mode == prefs.BuildMode.Release:
+		#					args.append("-flto")
+		#					args.append("-O3")
+		#				else:
+		#					args.append("-g")
+		#				self.vlog(f"C compiler options: {args}")
+		#				res = utils.execute(*args)
+		#				if res.exit_code == 0:
+		#					if not self.prefs.keep_c:
+		#						os.remove(c_file)
+		#				else:
+		#					utils.error(
+		#					    f"error while compiling the output C file `{c_file}`:\n{res.err}"
+		#					)
+
+	def load_core_syms(self):
 		if core_pkg := self.universe.find("core"):
 			self.core_pkg = core_pkg
-			if str_struct := self.core_pkg.find("_str"):
-				self.str_struct = str_struct
+			if string_class := self.core_pkg.find("string"):
+				self.string_class = string_class
 			else:
-				utils.error("cannot find type `_str` in package `core`")
+				utils.error("cannot find type `string` in package `core`")
 
 			if slice_struct := self.core_pkg.find("_slice"):
 				self.slice_struct = slice_struct
 			else:
 				utils.error("cannot find type `_slice` in package `core`")
 
-			if err_struct := self.core_pkg.find("_error"):
-				self.err_struct = err_struct
+			if error_struct := self.core_pkg.find("_error"):
+				self.error_struct = error_struct
 			else:
 				utils.error("cannot find type `_error` in package `core`")
-
-			if traits := self.core_pkg.find("traits"):
-				if to_string := traits.find("ToString"):
-					self.trait_to_string = to_string
 		else:
 			utils.error("package `core` not found")
 
@@ -198,84 +185,7 @@ class Compiler:
 		postfix += f"-{self.prefs.ccompiler}"
 		return postfix
 
-	def parse_files(self):
-		self.source_files = parser.Parser(self).parse_pkg()
-		if report.ERRORS > 0:
-			self.abort()
-
 	# ========================================================
-
-	def inst_generic(self, symbol, type_args):
-		new_name = f"{symbol.name}<{', '.join([t.qualstr() for t in type_args])}>"
-		for _sym in symbol.syms:
-			if _sym.generic_name == new_name:
-				return _sym
-
-		type_args_mangled = f"Lt_{'__'.join([codegen.mangle_type(t) for t in type_args])}_Gt"
-		new_inst = copy.copy(symbol)
-		if not (isinstance(symbol, sym.Fn) and symbol.is_method):
-			new_inst.name = new_name
-		new_inst.mangled_name = f"{codegen.mangle_symbol(symbol)}{len(type_args_mangled)}{type_args_mangled}"
-		new_inst.generic_name = new_name
-		new_inst.type_arguments = type_args
-		new_inst.is_generic = False
-		new_inst.is_generic_instance = True
-		new_inst.parent = symbol
-		if isinstance(symbol, sym.Type):
-			new_fields = []
-			for typ_arg in symbol.type_arguments:
-				concrete_type = type_args[typ_arg.idx]
-				for f in new_inst.fields:
-					new_field = copy.copy(f)
-					new_field.typ = type.resolve_generic(
-					    self, new_field.typ, typ_arg, concrete_type
-					)
-					new_fields.append(new_field)
-			new_inst.fields = new_fields
-
-			new_syms = []
-			for s in new_inst.syms:
-				if isinstance(s, sym.Fn):
-					s.parent = new_inst
-					new_syms.append(self.inst_generic(s, type_args))
-					s.parent = symbol
-			new_inst.syms = new_syms
-		elif isinstance(symbol, sym.Fn):
-			if new_inst.is_method and symbol.parent.is_generic_instance:
-				new_inst.self_typ = copy.copy(new_inst.self_typ)
-				new_inst.self_typ = type.Type(symbol.parent)
-				if new_inst.rec_is_ref:
-					new_inst.self_typ = type.Ref(
-					    new_inst.self_typ, new_inst.rec_is_mut
-					)
-			new_args = [
-			    sym.Arg(
-			        arg.name, arg.typ, arg.def_expr, arg.has_def_expr, arg.pos
-			    ) for arg in symbol.args
-			]
-			if symbol.is_generic:
-				for typ_arg in symbol.type_arguments:
-					concrete_type = type_args[typ_arg.idx]
-					for i, arg in enumerate(new_args):
-						arg.typ = type.resolve_generic(
-						    self, arg.typ, typ_arg, concrete_type
-						)
-					new_inst.ret_typ = type.resolve_generic(
-					    self, new_inst.ret_typ, typ_arg, concrete_type
-					)
-			new_inst.args = new_args
-			if symbol.parent.is_generic_instance:
-				for typ_arg in symbol.parent.parent.type_arguments:
-					concrete_type = type_args[typ_arg.idx]
-					for arg in new_inst.args:
-						arg.typ = type.resolve_generic(
-						    self, arg.typ, typ_arg, concrete_type
-						)
-					new_inst.ret_typ = type.resolve_generic(
-					    self, new_inst.ret_typ, typ_arg, concrete_type
-					)
-		symbol.syms.append(new_inst)
-		return new_inst
 
 	def is_number(self, typ):
 		return self.is_int(typ) or self.is_float(typ)
@@ -291,7 +201,7 @@ class Compiler:
 
 	def is_unsigned_int(self, typ):
 		return typ in (
-		    self.uint8_t, self.uint16_t, self.uint32_t, self.uint64_t,
+		    self.u8_t, self.u16_t, self.u32_t, self.u64_t,
 		    self.usize_t
 		)
 
@@ -383,7 +293,7 @@ class Compiler:
 			elem_size, elem_align = self.type_size(sy.info.elem_typ)
 			size, align = int(sy.info.size.lit) * elem_size, elem_align
 		elif sy.kind == sym.TypeKind.Str:
-			size, align = self.type_symbol_size(self.str_struct)
+			size, align = self.type_symbol_size(self.string_class)
 		elif sy.kind == sym.TypeKind.Slice:
 			size, align = self.type_symbol_size(self.slice_struct)
 		elif sy.kind == sym.TypeKind.Trait:

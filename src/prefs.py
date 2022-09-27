@@ -11,6 +11,7 @@ from . import report
 from .utils import error, eprint, execute, is_valid_name, full_version, HELP
 
 RIVET_DIR = path.join(path.expanduser("~"), ".rivet-lang")
+RIVETC_DIR = path.dirname(path.realpath(sys.argv[0]))
 
 def option(args, param):
 	for i, arg in enumerate(args):
@@ -23,7 +24,6 @@ def option(args, param):
 class OS(Enum):
 	Linux = auto_enum()
 	Windows = auto_enum()
-	Macos = auto_enum()
 
 	@staticmethod
 	def get():
@@ -38,8 +38,6 @@ class OS(Enum):
 			return OS.Linux
 		elif name in ("windows", "win32"):
 			return OS.Windows
-		#elif name=="macos":
-		#    return OS.Macos
 		return None
 
 	def equals_to_string(self, flag):
@@ -163,16 +161,17 @@ class Prefs:
 		self.target_backend = Backend.C
 
 		# package info
-		self.pkg_name = "core" # TODO: temp, should be "main"
+		self.pkg_name = "main"
 		self.pkg_type = PkgType.Bin
 		self.pkg_output = "main.exe" if self.target_os == OS.Windows else "main"
 		self.build_mode = BuildMode.Debug
 
 		self.library_path = [
-		    path.join(path.dirname(path.realpath(sys.argv[0])), "lib"),
-		    path.join(RIVET_DIR, "libs")
+		    path.join(RIVET_DIR, "libs"),
+		    path.join(RIVETC_DIR, "lib")
 		]
-		self.library_to_link = []
+
+		self.libraries_to_link = []
 		self.objects_to_link = []
 
 		self.ccompiler = "gcc"
@@ -341,8 +340,17 @@ class Prefs:
 		):
 			self.pkg_output += ".exe"
 
-	def load_core_library(self):
-		self.inputs = glob.glob("lib/core/src/*.ri")
+	def load_pkg_files(self, name):
+		files =[]
+		for l in self.library_path:
+			pkg_path =path.join(l, name)
+			if path.exists(pkg_path) and path.isdir(pkg_path):
+				files = self.load_mod_files(pkg_path)
+				break
+		return files
+
+	def load_mod_files(self, mod_path):
+		return glob.glob(path.join(mod_path, "src", "*.ri"))
 
 	def filter_files(self):
 		self.inputs = self.filter_files_list(self.inputs)

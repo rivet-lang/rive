@@ -17,8 +17,8 @@ pub errtype RuneFromU32Error;
 
 // Returns the number of runes contained in `s`.
 fn cstr_runes_count(s: *u8, size: usize) usize {
-	var mut l: usize = 0;
-	var mut i: usize = 0;
+	var l: usize = 0;
+	var i: usize = 0;
 	while (i < size) {
 		l++;
 		i += unsafe { s[i] }.len_utf8();
@@ -64,9 +64,9 @@ extend rune {
 }
 
 extend rune for traits::ToString {
-    fn to_string(&self) String {
+    fn to_string(&self) string {
         var len = self.len_utf8();
-        var mut res = String::with_capacity(len);
+        var res = string::with_capacity(len);
         _ = unsafe { utf32_decode_to_buffer(as(u32, self.*), res.ptr) };
         res.len_ = len;
         return res;
