@@ -5,7 +5,7 @@
 import copy
 
 from . import token
-from .sym import Vis, TypeKind, Fn as FnInfo, Arg
+from .sym import Vis, TypeKind, Fn as sym_Fn, Arg
 
 class _Ptr: # ugly hack =/
 	def __init__(self, val):
@@ -33,7 +33,7 @@ class TBase:
 		elif isinstance(self, Tuple):
 			for t in self.types:
 				t.unalias()
-		elif isinstance(self, (Array, Slice, Ptr, Ref)):
+		elif isinstance(self, (Array, Slice, Ptr)):
 			self.typ.unalias()
 		elif isinstance(self, Type):
 			if self.is_resolved() and self.sym.kind == TypeKind.Alias:
@@ -41,14 +41,14 @@ class TBase:
 				_Ptr(self).store(self.sym.info.parent)
 
 class Type(TBase):
-	def __init__(self, sym, type_args = []):
+	def __init__(self, sym):
 		self.sym = sym
 		self.expr = None
 		self._unresolved = False
 
 	@staticmethod
-	def unresolved(expr, type_args = []):
-		typ = Type(None, type_args)
+	def unresolved(expr):
+		typ = Type(None)
 		typ.expr = expr
 		typ._unresolved = True
 		return typ
@@ -83,8 +83,9 @@ class Ptr(TBase):
 		self.is_mut = is_mut
 
 	def qualstr(self):
-		kmut = "mut " if self.is_mut else ""
-		return f"*{kmut}{self.typ.qualstr()}"
+		if self.is_mut:
+			return f"*mut {self.typ.qualstr()}"
+		return f"*{self.typ.qualstr()}"
 
 	def nr_level(self):
 		nr = 0
@@ -102,8 +103,9 @@ class Ptr(TBase):
 		return self.typ == other.typ
 
 	def __str__(self):
-		kmut = "mut " if self.is_mut else ""
-		return f"*{kmut}{self.typ}"
+		if self.is_mut:
+			return f"*mut {self.typ}"
+		return f"*{self.typ}"
 
 class Slice(TBase):
 	def __init__(self, typ, is_mut = False):
@@ -115,8 +117,9 @@ class Slice(TBase):
 		self.sym = sym
 
 	def qualstr(self):
-		kw = "mut " if self.is_mut else ""
-		return f"[{kw}{self.typ.qualstr()}]"
+		if self.is_mut:
+			return f"[mut {self.typ.qualstr()}]"
+		return f"[{self.typ.qualstr()}]"
 
 	def __eq__(self, other):
 		if not isinstance(other, Slice):
@@ -124,8 +127,9 @@ class Slice(TBase):
 		return self.is_mut == other.is_mut and self.typ == other.typ
 
 	def __str__(self):
-		kw = "mut " if self.is_mut else ""
-		return f"[{kw}{self.typ}]"
+		if self.is_mut:
+			return f"[mut {self.typ}]"
+		return f"[{self.typ}]"
 
 class Variadic(TBase):
 	def __init__(self, typ):
@@ -147,15 +151,18 @@ class Variadic(TBase):
 		return f"...{self.typ}"
 
 class Array(TBase):
-	def __init__(self, typ, size):
+	def __init__(self, typ, size, is_mut = False):
 		self.typ = typ
 		self.size = size
+		self.is_mut = is_mut
 		self.sym = None
 
 	def resolve(self, sym):
 		self.sym = sym
 
 	def qualstr(self):
+		if self.is_mut:
+			return f"[mut {self.typ.qualstr()}; {self.size}]"
 		return f"[{self.typ.qualstr()}; {self.size}]"
 
 	def __eq__(self, other):
@@ -164,6 +171,8 @@ class Array(TBase):
 		return self.typ == other.typ and self.size == other.size
 
 	def __str__(self):
+		if self.is_mut:
+			return f"[mut {self.typ}; {self.size}]"
 		return f"[{self.typ}; {self.size}]"
 
 class Tuple(TBase):
@@ -183,13 +192,12 @@ class Tuple(TBase):
 class Fn(TBase):
 	def __init__(
 	    self, is_unsafe, is_extern, abi, is_method, args, is_variadic, ret_typ,
-	    self_is_mut, self_is_ref
+	    self_is_mut
 	):
 		self.is_unsafe = is_unsafe
 		self.is_extern = is_extern
 		self.abi = abi
 		self.is_method = is_method
-		self.self_is_ref = self_is_ref
 		self.self_is_mut = self_is_mut
 		self.args = args
 		self.is_variadic = is_variadic
@@ -201,12 +209,11 @@ class Fn(TBase):
 			args.append(
 			    Arg(f"arg{i+1}", arg, None, False, token.Pos("", 0, 0, 0))
 			)
-		return FnInfo(
+		return sym_Fn(
 		    self.abi, Vis.Public, self.is_extern,
 		    self.is_unsafe, self.is_method, self.is_variadic,
 		    self.stringify(False), args, self.ret_typ, False,
-		    not self.is_extern, token.Pos("", 0, 0, 0), self.self_is_mut,
-		    self.self_is_ref, []
+		    not self.is_extern, token.Pos("", 0, 0, 0), self.self_is_mut, []
 		)
 
 	def stringify(self, qual):
@@ -217,8 +224,6 @@ class Fn(TBase):
 			res += f'extern ({self.abi}) '
 		res += "fn("
 		if self.is_method:
-			if self.self_is_ref:
-				res += "&"
 			if self.self_is_mut:
 				res += "mut "
 			res += "self"
@@ -249,8 +254,6 @@ class Fn(TBase):
 		elif self.abi != got.abi:
 			return False
 		elif self.is_method != got.is_method:
-			return False
-		elif self.self_is_ref != got.self_is_ref:
 			return False
 		elif self.self_is_mut != got.self_is_mut:
 			return False

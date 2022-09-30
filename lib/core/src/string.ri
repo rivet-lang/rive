@@ -93,7 +93,7 @@ pub class string {
     /// occurs.
     pub fn fmt(self, args: ...traits::Tostring) string {
         if (args.len == 0) {
-            return self.to_string();
+            return self;
         }
         var res = string::with_capacity(self.len_);
         var i: usize = 0;
@@ -320,7 +320,7 @@ pub class string {
         return res;
     }
 
-    ~Self(&mut self) {
+    ~Self(mut self) {
         if (!self.is_ref) {
             unsafe {
                 mem::dealloc(self.ptr);
@@ -330,7 +330,7 @@ pub class string {
 }
 
 extend string for ToString {
-    fn to_string(&self) Self {
+    fn to_string(self) Self {
         return self.*;
     }
 }

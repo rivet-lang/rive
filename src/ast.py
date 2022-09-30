@@ -25,22 +25,26 @@ class SourceFile:
 			return self.imported_symbols[name]
 		return None
 
+	def __repr__(self):
+		return f"ast.SourceFile(file='{self.file}', pkg_name='{self.pkg_name}', decls={len(self.decls)})"
+
+	def __str__(self):
+		return self.__repr__()
+
 # Used in `var` stmts and guard exprs
 class ObjDecl:
-	def __init__(self, is_mut, is_ref, name, has_typ, typ, pos):
+	def __init__(self, is_mut, name, has_typ, typ, level, pos):
 		self.is_mut = is_mut
-		self.is_ref = is_ref
 		self.name = name
 		self.has_typ = has_typ
 		self.typ = typ
+		self.level = level
 		self.pos = pos
 
 	def __repr__(self):
 		res = ""
 		if self.is_mut:
 			res += "mut "
-		if self.is_ref:
-			res += "&"
 		res += self.name
 		if self.has_typ:
 			res += f": {self.typ}"
@@ -228,10 +232,7 @@ class FieldDecl:
 		self.pos = pos
 
 class StructDecl:
-	def __init__(
-	    self, doc_comment, attrs, vis, name, decls, is_opaque,
-	    pos
-	):
+	def __init__(self, doc_comment, attrs, vis, name, decls, is_opaque, pos):
 		self.doc_comment = doc_comment
 		self.attrs = attrs
 		self.vis = vis
@@ -269,8 +270,8 @@ class FnDecl:
 	def __init__(
 	    self, doc_comment, attrs, vis, is_extern, is_unsafe, name, name_pos,
 	    args, ret_typ, stmts, scope, has_body = False, is_method = False,
-	    self_is_ref = False, self_is_mut = False, has_named_args = False,
-	    is_main = False, is_variadic = False, abi = None
+	    self_is_mut = False, has_named_args = False, is_main = False,
+	    is_variadic = False, abi = None
 	):
 		self.doc_comment = doc_comment
 		self.attrs = attrs
@@ -280,7 +281,6 @@ class FnDecl:
 		self.name_pos = name_pos
 		self.args = args
 		self.self_typ = None
-		self.self_is_ref = self_is_ref
 		self.self_is_mut = self_is_mut
 		self.is_main = is_main
 		self.is_extern = is_extern
@@ -534,19 +534,6 @@ class FieldLiteral:
 
 	def __repr__(self):
 		return f"{self.name}: {self.expr}"
-
-	def __str__(self):
-		return self.__repr__()
-
-class StructLiteral:
-	def __init__(self, expr, fields, pos):
-		self.expr = expr
-		self.fields = fields
-		self.pos = pos
-		self.typ = None
-
-	def __repr__(self):
-		return f"{self.expr}{{ {', '.join([str(f) for f in self.fields])} }}"
 
 	def __str__(self):
 		return self.__repr__()

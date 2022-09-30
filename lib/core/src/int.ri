@@ -24,36 +24,36 @@ pub const MAX_UINT64: u64 = 18446744073709551615;
 
 extend untyped_int for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(&self) string {
-        return as(i64, self.*).to_string();
+    pub fn to_string(self) string {
+        return as(i64, self).to_string();
     }
 }
 
 extend isize for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(&self) string {
-        return as(i64, self.*).to_string();
+    pub fn to_string(self) string {
+        return as(i64, self).to_string();
     }
 }
 
 extend usize for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(&self) string {
-        return as(i64, self.*).to_string();
+    pub fn to_string(self) string {
+        return as(i64, self).to_string();
     }
 }
 
 extend i8 for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(&self) string {
-        return as(i32, self.*).str_l(5);
+    pub fn to_string(self) string {
+        return as(i32, self).str_l(5);
     }
 }
 
 extend i16 for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(&self) string {
-        return as(i32, self.*).str_l(7);
+    pub fn to_string(self) string {
+        return as(i32, self).str_l(7);
     }
 }
 
@@ -107,11 +107,11 @@ extend i32 {
 
 extend i32 for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(&self) string { return self.*.str_l(12); }
+    pub fn to_string(self) string { return self.str_l(12); }
 }
 
 extend i64 for ToString {
-    pub fn to_string(&self) string {
+    pub fn to_string(self) string {
         unsafe {
             if (self.* == 0) {
                 return "0";
@@ -224,16 +224,16 @@ extend u8 {
 
 extend u8 for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(&self) string { return as(i32, self.*).str_l(7); }
+    pub fn to_string(self) string { return as(i32, self.*).str_l(7); }
 }
 
 extend u16 for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(&self) string { return as(i32, self.*).str_l(7); }
+    pub fn to_string(self) string { return as(i32, self.*).str_l(7); }
 }
 
 extend u32 for ToString {
-    pub fn to_string(&self) string {
+    pub fn to_string(self) string {
         unsafe {
             if (self.* == 0) {
                 return "0";
@@ -269,7 +269,7 @@ extend u32 for ToString {
 }
 
 extend u64 for ToString {
-    pub fn to_string(&self) string {
+    pub fn to_string(self) string {
         unsafe {
             if (self.* == 0) {
                 return "0";

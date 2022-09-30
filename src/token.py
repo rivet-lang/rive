@@ -101,6 +101,8 @@ class Kind(Enum):
 	KwDefer = auto_enum() # defer
 	KwAnd = auto_enum() # and
 	KwOr = auto_enum() # or
+	KwIn = auto_enum() # in
+	KwNotIn = auto_enum() # !in
 	KwIs = auto_enum() # is
 	KwNotIs = auto_enum() # !is
 	KwUnsafe = auto_enum() # unsafe
@@ -234,6 +236,8 @@ TOKEN_STRINGS = {
     Kind.KwDefer: "defer",
     Kind.KwAnd: "and",
     Kind.KwOr: "or",
+    Kind.KwIn: "in",
+    Kind.KwNotIn: "!in",
     Kind.KwIs: "is",
     Kind.KwNotIs: "!is",
     Kind.KwUnsafe: "unsafe",

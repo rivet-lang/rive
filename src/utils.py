@@ -7,10 +7,11 @@ import sys, subprocess
 from . import colors
 
 VERSION = "0.1.0"
-HELP = """Usage: rivetc [OPTIONS] INPUTS
+HELP = """Usage: rivetc [OPTIONS] INPUT
 
-The compiler can receive both files and directories as input, example:
-   rivetc my_file.ri my_folder/ my_folder2/ other_file.ri
+rivetc expects a directory containing rivet code within a subfolder called
+"src", example:
+   rivetc my_folder/
 
 Options:
    --pkg-name <name>
@@ -430,16 +431,19 @@ class PkgDeps:
 		self.source_files = {}
 
 	def add_source_files(self, name, source_files):
-		self.source_files[name]=source_files
+		self.source_files[name] = source_files
 
 	def add_pkg_deps(self, name, deps):
 		self.dg.add(name, deps)
 
 	def resolve(self):
-		self.dg.resolve()
+		resolved = self.dg.resolve()
 		if not self.dg.acyclic:
-			error("package deps cycle:\n"+self.dg.display_cycles())
+			error("package deps cycle:\n" + self.dg.display_cycles())
 		source_files = []
-		for _, source_file in self.source_files.items():
-			source_files.append(source_file)
+		for node in resolved.nodes:
+			if node.name in self.source_files:
+				dep_source_files = self.source_files[node.name]
+				if len(dep_source_files) > 0:
+					source_files.append(*dep_source_files)
 		return source_files

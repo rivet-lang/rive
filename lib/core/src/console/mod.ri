@@ -15,9 +15,8 @@ pub fn print(s: string, args: ...traits::ToString) {
 
 /// Prints a message with a line end to stdout. stdout is flushed.
 pub fn println(s: string = "", args: ...traits::ToString) {
-    var sx = s.fmt(args);
     unsafe {
-        utils::writeln_to_fd(1, sx);
+        utils::writeln_to_fd(1, );
     }
 }
 
@@ -35,11 +34,10 @@ pub fn eprint(s: string, args: ...traits::ToString) {
 /// Prints a message with a line end to stderr. Both stderr and stdout are
 /// flushed.
 pub fn eprintln(s: string = "", args: ...traits::ToString) {
-    var sx = s.fmt(args);
     unsafe {
         _ = stdc::fflush(stdc::stdout);
         _ = stdc::fflush(stdc::stderr);
-        utils::writeln_to_fd(2, sx);
+        utils::writeln_to_fd(2, s.fmt(args));
         _ = stdc::fflush(stdc::stderr);
     }
 }

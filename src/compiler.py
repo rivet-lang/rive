@@ -2,14 +2,13 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-import os, copy
+from os import path
+import os, copy, glob
 
-from . import (
-    ast, sym, type, token, prefs, report, utils,
+from . import (ast, sym, type, token, prefs, report, utils,
 
-    # stages
-    parser
-)
+               # stages
+               parser)
 
 class Compiler:
 	def __init__(self, args):
@@ -52,11 +51,9 @@ class Compiler:
 		self.slice_struct = None # from `core` package
 		self.error_struct = None # from `core` package
 
-		self.pkg_sym = None
-		self.pkg_attrs = None
-
 	def run(self):
-		source_files = parser.Parser(self).parse_pkg()
+		self.load_root_pkg()
+		self.source_files = self.pkg_deps.resolve()
 
 		if report.ERRORS > 0:
 			self.abort()
@@ -108,6 +105,89 @@ class Compiler:
 		#					utils.error(
 		#					    f"error while compiling the output C file `{c_file}`:\n{res.err}"
 		#					)
+
+	def load_root_pkg(self):
+		files = self.filter_files(
+		    glob.glob(path.join(self.prefs.input, "src", "*.ri"))
+		)
+		if len(files) == 0:
+			utils.error("no input received")
+		source_files = parser.Parser(self).parse_pkg(self.prefs.pkg_name, files)
+		self.pkg_deps.add_source_files(self.prefs.pkg_name, source_files)
+
+	def load_pkg(self, pkg_name, pos):
+		source_files = parser.Parser(self).parse_pkg(
+		    pkg_name, self.get_pkg_files(pkg_name, pos)
+		)
+		self.pkg_deps.add_source_files(pkg_name, source_files)
+
+	def get_pkg_files(self, pkg_name, pos):
+		files = []
+		found = False
+		for l in self.prefs.library_path:
+			pkg_path = path.join(l, pkg_name)
+			if path.exists(pkg_path):
+				found = True
+				if path.isdir(pkg_path):
+					if path.isdir(path.join(pkg_path, "src")):
+						files = self.filter_files(
+						    glob.glob(path.join(pkg_path, "src", "*.ri"))
+						)
+					else:
+						report.error(
+						    f"`{pkg_name}` does not contain a `src` folder", pos
+						)
+				else:
+					report.error(f"`{pkg_name}` is not a directory", pos)
+				break
+		if not found:
+			report.error(f"package `{pkg_name}` not found", pos)
+		elif len(files) == 0:
+			report.error("no input received", pos)
+		return files
+
+	def filter_files(self, inputs):
+		new_inputs = []
+		for input in inputs:
+			basename_input = path.basename(input)
+			if basename_input.count('.') == 1:
+				new_inputs.append(input)
+				continue
+			exts = basename_input[:-3].split('.')[1:]
+			should_compile = True
+			already_exts = []
+			for ext in exts:
+				if ext in already_exts:
+					error(f"{input}: duplicate special extension `{ext}`")
+				already_exts.append(ext)
+				if ext.startswith("d_") or ext.startswith("notd_"):
+					if ext.startswith("d_"):
+						should_compile = should_compile and ext[
+						    2:] in self.prefs.flags
+					else:
+						should_compile = should_compile and ext[
+						    5:] not in self.prefs.flags
+				elif osf := OS.from_string(ext):
+					should_compile = should_compile and self.prefs.target_os == osf
+				elif arch := Arch.from_string(ext):
+					should_compile = should_compile and self.prefs.target_arch == arch
+				elif ext in ("x32", "x64"):
+					if ext == "x32":
+						should_compile = should_compile and self.prefs.target_bits == Bits.X32
+					else:
+						should_compile = should_compile and self.prefs.target_bits == Bits.X64
+				elif ext in ("little_endian", "big_endian"):
+					if ext == "little_endian":
+						should_compile = should_compile and self.prefs.target_endian == Endian.Little
+					else:
+						should_compile = should_compile and self.prefs.target_endian == Endian.Big
+				elif b := Backend.from_string(ext): # backends
+					should_compile = should_compile and self.prefs.target_backend == b
+				else:
+					error(f"{input}: unknown special extension `{ext}`")
+			if should_compile:
+				new_inputs.append(input)
+		return new_inputs
 
 	def load_core_syms(self):
 		if core_pkg := self.universe.find("core"):
@@ -201,8 +281,7 @@ class Compiler:
 
 	def is_unsigned_int(self, typ):
 		return typ in (
-		    self.u8_t, self.u16_t, self.u32_t, self.u64_t,
-		    self.usize_t
+		    self.u8_t, self.u16_t, self.u32_t, self.u64_t, self.usize_t
 		)
 
 	def is_float(self, typ):

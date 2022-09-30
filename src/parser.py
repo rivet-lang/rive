@@ -9,18 +9,20 @@ from .lexer import Lexer
 class Parser:
 	def __init__(self, comp):
 		self.comp = comp
+
 		self.lexer = None
+		self.scope = None
+		self.pkg_name = ""
+		self.pkg_deps = []
 
 		self.prev_tok = None
 		self.tok = None
 		self.peek_tok = None
-
-		self.scope = None
+		self.last_err_pos = None
 
 		# This field is `true` when we are in a root module, that is,
 		# a package.
 		self.is_pkg_level = False
-
 		self.inside_extern = False
 		self.extern_is_trusted = False
 		self.extern_abi = sym.ABI.Rivet
@@ -28,26 +30,26 @@ class Parser:
 		self.inside_trait = False
 		self.inside_block = False
 
-	def parse_pkg(self):
+	def parse_pkg(self, pkg_name, files):
+		self.pkg_name = pkg_name
+		self.pkg_deps = []
 		self.is_pkg_level = True
-		return self.parse_mod_files()
-
-	def parse_mod_files(self):
-		source_files = []
-		for input in self.comp.prefs.inputs:
-			source_files.append(self.parse_file(input))
+		source_files = self.parse_mod(files)
+		self.comp.pkg_deps.add_pkg_deps(pkg_name, self.pkg_deps)
 		return source_files
 
-	def parse_extern_mod_files(self, files):
+	def parse_mod(self, files):
+		source_files = []
 		for file in files:
-			self.comp.source_files.append(self.parse_file(file))
+			source_files.append(self.parse_file(file))
+		return source_files
 
 	def parse_file(self, file):
 		self.lexer = Lexer.from_file(file)
 		if report.ERRORS > 0:
-			return ast.SourceFile(file, [], None)
+			return ast.SourceFile(file, [], self.pkg_name, None)
 		self.advance(2)
-		return ast.SourceFile(file, self.parse_decls(), self.comp.mod_sym)
+		return ast.SourceFile(file, self.parse_decls(), self.pkg_name, None)
 
 	# ---- useful functions for working with tokens ----
 	def next(self):
@@ -71,6 +73,10 @@ class Parser:
 	def expect(self, kind):
 		if self.accept(kind):
 			return
+		elif self.last_err_pos and self.last_err_pos.pos == self.tok.pos.pos:
+			self.next() # avoid infinite output
+			return
+		self.last_err_pos = self.tok.pos
 		kstr = str(kind)
 		if token.is_key(kstr) or (len(kstr) > 0 and not kstr[0].isalpha()):
 			kstr = f"`{kstr}`"
@@ -89,6 +95,14 @@ class Parser:
 		self.scope.end = self.tok.pos.pos
 		self.scope = self.scope.parent
 
+	# ---- declarations --------------
+	def parse_doc_comment(self):
+		pos = self.tok.pos
+		lines = []
+		while self.accept(Kind.DocComment):
+			lines.append(self.prev_tok.lit)
+		return ast.DocComment(lines, pos)
+
 	def parse_abi(self):
 		self.expect(Kind.Lparen)
 		abi_pos = self.tok.pos
@@ -98,22 +112,6 @@ class Parser:
 			return abi_f
 		report.error(f"unknown ABI: `{abi}`", abi_pos)
 		return sym.ABI.Rivet
-
-	# ---- declarations --------------
-	def parse_decls(self):
-		decls = []
-		if self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang and self.is_pkg_level:
-			self.comp.pkg_attrs = self.parse_attrs(True)
-		while self.tok.kind != Kind.EOF:
-			decls.append(self.parse_decl())
-		return decls
-
-	def parse_doc_comment(self):
-		pos = self.tok.pos
-		lines = []
-		while self.accept(Kind.DocComment):
-			lines.append(self.prev_tok.lit)
-		return ast.DocComment(lines, pos)
 
 	def parse_attrs(self, parse_pkg_attrs = False):
 		attrs = ast.Attrs()
@@ -148,15 +146,15 @@ class Parser:
 			if self.accept(Kind.Lparen):
 				self.expect(Kind.KwPkg)
 				self.expect(Kind.Rparen)
-				return ast.Visibility.PublicInPkg
-			return ast.Visibility.Public
-		return ast.Visibility.Private
+				return sym.Vis.PubInPkg
+			return sym.Vis.Pub
+		return sym.Vis.Priv
 
 	def parse_comptime_if_decl(self):
 		branches = []
 		pos = self.tok.pos
-		while self.tok.kind in (Kind.KwIf, Kind.KwElif, Kind.KwElse):
-			if self.accept(Kind.KwElse):
+		while self.tok.kind in (Kind.KwIf, Kind.KwElse):
+			if self.accept(Kind.KwElse) and self.tok.kind != Kind.KwIf:
 				self.expect(Kind.Lbrace)
 				decls = []
 				while self.tok.kind != Kind.Rbrace:
@@ -168,24 +166,26 @@ class Parser:
 				    )
 				)
 				break
-			else:
-				op = self.tok.kind
-				self.next()
-				self.expect(Kind.Lparen)
-				cond = self.parse_expr()
-				self.expect(Kind.Rparen)
-				self.expect(Kind.Lbrace)
-				decls = []
-				while self.tok.kind != Kind.Rbrace:
-					decls.append(self.parse_decl())
-				self.expect(Kind.Rbrace)
-				branches.append(ast.ComptimeIfBranch(cond, decls, False, op))
-				if self.tok.kind not in (
-				    Kind.Dollar, Kind.KwElif, Kind.KwElse
-				):
-					break
-				self.expect(Kind.Dollar)
+			self.next()
+			self.expect(Kind.Lparen)
+			cond = self.parse_expr()
+			self.expect(Kind.Rparen)
+			self.expect(Kind.Lbrace)
+			decls = []
+			while self.tok.kind != Kind.Rbrace:
+				decls.append(self.parse_decl())
+			self.expect(Kind.Rbrace)
+			branches.append(ast.ComptimeIfBranch(cond, decls, False, Kind.KwIf))
+			if self.tok.kind not in (Kind.Dollar, Kind.KwElse):
+				break
+			self.expect(Kind.Dollar)
 		return ast.ComptimeIfDecl(branches, pos)
+
+	def parse_decls(self):
+		decls = []
+		while self.tok.kind != Kind.EOF:
+			decls.append(self.parse_decl())
+		return decls
 
 	def parse_decl(self):
 		doc_comment = self.parse_doc_comment()
@@ -245,12 +245,18 @@ class Parser:
 					    "`extern pkg` declarations cannot be declared unsafe",
 					    pos
 					)
+				extern_pkg_pos = self.tok.pos
 				extern_pkg = self.parse_name()
 				self.expect(Kind.Semicolon)
 				decl = ast.ExternPkg(extern_pkg, pos)
-				self.comp.extern_packages.append(ast.ExternPkgInfo(extern_pkg))
+				if extern_pkg == self.pkg_name:
+					report.error("a package cannot load itself", extern_pkg_pos)
+				else:
+					self.pkg_deps.append(extern_pkg)
+					if not self.comp.universe.exists(extern_pkg):
+						self.comp.load_pkg(extern_pkg, extern_pkg_pos)
 			else:
-				# extern function or static
+				# extern function or var
 				abi = self.parse_abi()
 				protos = []
 				if self.accept(Kind.Lbrace):
@@ -292,14 +298,12 @@ class Parser:
 			expr = self.parse_expr()
 			self.expect(Kind.Semicolon)
 			return ast.ConstDecl(doc_comment, attrs, vis, name, typ, expr, pos)
-		elif self.accept(Kind.KwStatic):
+		elif self.accept(Kind.KwVar):
 			if is_unsafe:
 				report.error(
 				    "static values cannot be declared unsafe", self.tok.pos
 				)
-			return self.parse_static_decl(
-			    doc_comment, attrs, vis, self.inside_extern
-			)
+			return self.parse_var_stmt(True)
 		elif self.accept(Kind.KwMod):
 			pos = self.tok.pos
 			if is_unsafe:
@@ -361,7 +365,7 @@ class Parser:
 				self.expect(Kind.KwFn)
 				decls.append(
 				    self.parse_fn_decl(
-				        doc_comment, attrs, ast.Visibility.Public, is_unsafe,
+				        doc_comment, attrs, sym.Vis.Pub, is_unsafe,
 				        sym.ABI.Rivet
 				    )
 				)
@@ -405,8 +409,7 @@ class Parser:
 				self.expect(Kind.Rbrace)
 			self.inside_struct_or_class_decl = old_inside_struct_or_class_decl
 			return ast.StructDecl(
-			    doc_comment, attrs, vis, name, decls, is_opaque,
-			    pos
+			    doc_comment, attrs, vis, name, decls, is_opaque, pos
 			)
 		elif self.inside_struct_or_class_decl and self.tok.kind in (
 		    Kind.KwMut, Kind.Name
@@ -539,7 +542,6 @@ class Parser:
 		args = []
 		is_method = False
 		is_variadic = False
-		self_is_ref = False
 		self_is_mut = False
 		has_named_args = False
 
@@ -547,15 +549,12 @@ class Parser:
 		sc = self.scope
 		self.expect(Kind.Lparen)
 		if self.tok.kind != Kind.Rparen:
-			# receiver (`self`|`&self`|`&mut self`)
+			# receiver (`self`|`mut self`)
 			if self.tok.kind == Kind.KwSelf or (
-			    self.tok.kind == Kind.Amp and self.peek_tok.kind == Kind.KwSelf
-			) or (
-			    self.tok.kind == Kind.Amp and self.peek_tok.kind == Kind.KwMut
-			    and self.peek_token(2).kind == Kind.KwSelf
+			    self.tok.kind == Kind.KwMut
+			    and self.peek_tok.kind == Kind.KwSelf
 			):
 				is_method = True
-				self_is_ref = self.accept(Kind.Amp)
 				self_is_mut = self.accept(Kind.KwMut)
 				self.expect(Kind.KwSelf)
 				if self.tok.kind != Kind.Rparen:
@@ -604,40 +603,20 @@ class Parser:
 		self.close_scope()
 		return ast.FnDecl(
 		    doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
-		    args, ret_typ, stmts, sc, has_body, is_method, self_is_ref,
-		    self_is_mut, has_named_args, self.is_pkg_level and name == "main",
-		    is_variadic, abi
+		    args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
+		    has_named_args, self.is_pkg_level and name == "main", is_variadic,
+		    abi
 		)
 
 	# ---- statements --------------------------
 	def parse_stmt(self):
-		if self.accept(Kind.KwLet):
-			# variable declarations
-			pos = self.prev_tok.pos
-			lefts = []
-			if self.accept(Kind.Lparen):
-				# multiple variables
-				while True:
-					lefts.append(self.parse_var_decl())
-					if not self.accept(Kind.Comma):
-						break
-				self.expect(Kind.Rparen)
-			else:
-				lefts.append(self.parse_var_decl())
-			self.expect(Kind.Assign)
-			right = self.parse_expr()
-			self.expect(Kind.Semicolon)
-			return ast.LetStmt(self.scope, lefts, right, pos)
-		elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
-			pos = self.tok.pos
-			label = self.parse_name()
-			self.expect(Kind.Colon)
-			return ast.LabelStmt(label, pos)
+		if self.accept(Kind.KwVar):
+			return self.parse_var_stmt()
 		elif self.accept(Kind.KwWhile):
 			pos = self.prev_tok.pos
 			is_inf = False
 			if self.accept(Kind.Lparen):
-				if self.tok.kind == Kind.KwLet:
+				if self.tok.kind == Kind.KwVar:
 					self.open_scope()
 					cond = self.parse_guard_expr()
 				else:
@@ -673,12 +652,6 @@ class Parser:
 			stmt = self.parse_stmt()
 			self.close_scope()
 			return ast.ForInStmt(sc, vars, iterable, stmt, pos)
-		elif self.accept(Kind.KwGoto):
-			pos = self.tok.pos
-			label = self.parse_name()
-			self.expect(Kind.Semicolon)
-			return ast.GotoStmt(label, pos)
-
 		expr = self.parse_expr()
 		if self.tok.kind.is_assign():
 			# assignment
@@ -692,8 +665,28 @@ class Parser:
 			self.expect(Kind.Semicolon)
 		return ast.ExprStmt(expr, expr.pos)
 
-	def parse_var_decl(self, support_ref = False, support_typ = True):
-		is_ref = support_ref and self.accept(Kind.Amp)
+	def parse_var_stmt(self, inside_global = False):
+		# variable declarations
+		pos = self.prev_tok.pos
+		lefts = []
+		if self.accept(Kind.Lparen):
+			# multiple variables
+			while True:
+				lefts.append(self.parse_var_decl(inside_global))
+				if not self.accept(Kind.Comma):
+					break
+			self.expect(Kind.Rparen)
+		else:
+			lefts.append(self.parse_var_decl(inside_global))
+		self.expect(Kind.Assign)
+		if self.inside_extern:
+			right = self.empty_expr()
+		else:
+			right = self.parse_expr()
+		self.expect(Kind.Semicolon)
+		return ast.VarStmt(self.scope, lefts, right, pos)
+
+	def parse_var_decl(self, inside_global = False, support_typ = True):
 		is_mut = self.accept(Kind.KwMut)
 		pos = self.tok.pos
 		name = self.parse_name()
@@ -702,7 +695,8 @@ class Parser:
 		if support_typ and self.accept(Kind.Colon):
 			typ = self.parse_type()
 			has_typ = True
-		return ast.VarDecl(is_mut, is_ref, name, has_typ, typ, pos)
+		level = sym.ObjectLevel.Global if inside_global else sym.ObjectLevel.Local
+		return ast.ObjDecl(is_mut, name, has_typ, typ, level, pos)
 
 	# ---- expressions -------------------------
 	def parse_expr(self):
@@ -960,20 +954,7 @@ class Parser:
 			expr = self.parse_ident()
 
 		while True:
-			if self.accept(Kind.Lbrace):
-				fields = []
-				if self.tok.kind != Kind.Rbrace:
-					while True:
-						fpos = self.tok.pos
-						name = self.parse_name()
-						self.expect(Kind.Colon)
-						value = self.parse_expr()
-						fields.append(ast.StructLiteralField(name, value, fpos))
-						if not self.accept(Kind.Comma):
-							break
-				self.expect(Kind.Rbrace)
-				expr = ast.StructLiteral(expr, fields, expr.pos)
-			elif self.tok.kind in [Kind.Inc, Kind.Dec]:
+			if self.tok.kind in [Kind.Inc, Kind.Dec]:
 				op = self.tok.kind
 				self.next()
 				expr = ast.PostfixExpr(expr, op, expr.pos)
@@ -1093,8 +1074,8 @@ class Parser:
 		branches = []
 		has_else = False
 		pos = self.tok.pos
-		while self.tok.kind in (Kind.KwIf, Kind.KwElif, Kind.KwElse):
-			if self.accept(Kind.KwElse):
+		while self.tok.kind in (Kind.KwIf, Kind.KwElse):
+			if self.accept(Kind.KwElse) and self.tok.kind != Kind.KwIf:
 				branches.append(
 				    ast.IfBranch(
 				        is_comptime, self.empty_expr(), self.parse_expr(), True,
@@ -1103,29 +1084,25 @@ class Parser:
 				)
 				has_else = True
 				break
+			self.next()
+			self.expect(Kind.Lparen)
+			if self.tok.kind == Kind.KwVar:
+				self.open_scope()
+				cond = self.parse_guard_expr()
 			else:
-				op = self.tok.kind
-				self.next()
-				self.expect(Kind.Lparen)
-				if self.tok.kind == Kind.KwLet:
-					self.open_scope()
-					cond = self.parse_guard_expr()
-				else:
-					cond = self.parse_expr()
-				self.expect(Kind.Rparen)
-				branches.append(
-				    ast.IfBranch(
-				        is_comptime, cond, self.parse_expr(), False, op
-				    )
-				)
-				if isinstance(cond, ast.GuardExpr):
-					self.close_scope()
-				if self.tok.kind not in (
-				    Kind.Dollar, Kind.KwElif, Kind.KwElse
-				):
-					break
-				if is_comptime:
-					self.expect(Kind.Dollar)
+				cond = self.parse_expr()
+			self.expect(Kind.Rparen)
+			branches.append(
+			    ast.IfBranch(
+			        is_comptime, cond, self.parse_expr(), False, Kind.KwIf
+			    )
+			)
+			if isinstance(cond, ast.GuardExpr):
+				self.close_scope()
+			if self.tok.kind not in (Kind.Dollar, Kind.KwElse):
+				break
+			if is_comptime:
+				self.expect(Kind.Dollar)
 		return ast.IfExpr(is_comptime, branches, has_else, pos)
 
 	def parse_switch_expr(self):
@@ -1133,7 +1110,7 @@ class Parser:
 		pos = self.prev_tok.pos
 		is_typeswitch = False
 		if self.accept(Kind.Lparen):
-			if self.tok.kind == Kind.KwLet:
+			if self.tok.kind == Kind.KwVar:
 				self.open_scope()
 				expr = self.parse_guard_expr()
 			else:
@@ -1180,7 +1157,7 @@ class Parser:
 		return ast.SwitchExpr(expr, branches, is_typeswitch, self.scope, pos)
 
 	def parse_guard_expr(self):
-		self.expect(Kind.KwLet)
+		self.expect(Kind.KwVar)
 		pos = self.prev_tok.pos
 		vars = []
 		while True:
@@ -1268,19 +1245,10 @@ class Parser:
 	def parse_ident(self, is_comptime = False):
 		pos = self.tok.pos
 		name = self.parse_name()
-		type_args = list()
-		if self.tok.kind == Kind.DoubleColon and self.peek_tok.kind == Kind.Lt:
-			self.advance(2)
-			while True:
-				type_args.append(self.parse_type())
-				if not self.accept(Kind.Comma):
-					break
-			self.expect(Kind.Gt)
 		sc = self.scope
 		if sc == None:
 			sc = sym.Scope(sc)
-		id = ast.Ident(name, pos, sc, is_comptime, type_args)
-		id.inside_type = self.inside_type
+		id = ast.Ident(name, pos, sc, is_comptime)
 		return id
 
 	def parse_pkg_expr(self):
@@ -1332,14 +1300,12 @@ class Parser:
 				self.inside_extern = False
 			return type.Fn(
 			    is_unsafe, is_extern, abi, False, args, is_variadic, ret_typ,
-			    False, False
+			    False
 			)
 		elif self.accept(Kind.Mult):
 			# pointers
 			is_mut = self.accept(Kind.KwMut)
 			typ = self.parse_type()
-			if isinstance(typ, type.Ref):
-				report.error("cannot use pointers with references", pos)
 			return type.Ptr(typ, is_mut)
 		elif self.accept(Kind.Lbracket):
 			# arrays or slices
@@ -1347,15 +1313,9 @@ class Parser:
 			is_mut = self.accept(Kind.KwMut)
 			typ = self.parse_type()
 			if self.accept(Kind.Semicolon):
-				if is_mut:
-					report.error(
-					    "the element type of an array cannot be declared mutable",
-					    mut_pos
-					)
-					report.note("this is only valid with slices")
 				size = self.parse_expr()
 				self.expect(Kind.Rbracket)
-				return type.Array(typ, size)
+				return type.Array(typ, size, is_mut)
 			self.expect(Kind.Rbracket)
 			return type.Slice(typ, is_mut)
 		elif self.accept(Kind.Lparen):
@@ -1443,8 +1403,7 @@ class Parser:
 				elif lit == "error":
 					return self.comp.error_t
 				else:
-					concrete_types = self.parse_concrete_type_arguments()
-					return type.Type.unresolved(expr, concrete_types)
+					return type.Type.unresolved(expr)
 			else:
 				report.error("expected type, found keyword `pkg`", pos)
 				self.next()

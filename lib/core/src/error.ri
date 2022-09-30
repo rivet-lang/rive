@@ -15,15 +15,15 @@ struct _error {
 
     #[used]
     fn new(errtype_name: string, tag: u8, msg: string, args: ...ToString) Self {
-        return Self{
+        return Self(
             errtype_name: errtype_name,
             msg_: msg.fmt(args),
             tag: tag
-        };
+        );
     }
 
     #[used]
-    fn print(&self) {
+    fn print(self) {
         if (self.msg_.len_ == 0) {
             eprintln(self.errtype_name);
         } else {
@@ -33,22 +33,22 @@ struct _error {
         process::exit(1);
     }
 
-    fn to_string_(&self) string {
+    fn to_string_(self) string {
         if (self.msg_.len_ == 0) {
-            return self.errtype_name.to_string();
+            return self.errtype_name;
         }
         return "{}: {}".fmt(self.errtype_name, self.msg_);
     }
 }
 
 extend error {
-    pub fn msg(&self) string {
-        return as(_error, self.*).msg_;
+    pub fn msg(self) string {
+        return as(_error, self).msg_;
     }
 }
 
 extend error for ToString {
-    pub fn to_string(&self) string {
-        return as(_error, self.*).to_string_();
+    pub fn to_string(self) string {
+        return as(_error, self).to_string_();
     }
 }

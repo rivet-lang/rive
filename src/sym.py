@@ -14,13 +14,18 @@ def symbol_count():
 	SYMBOL_COUNT += 1
 	return ret
 
+class ObjectLevel(Enum):
+	Global = auto_enum()
+	Arg = auto_enum()
+	Local = auto_enum()
+
 class Object:
-	def __init__(self, is_mut, name, typ, is_arg):
+	def __init__(self, is_mut, name, typ, level):
 		self.name = name
 		self.is_mut = is_mut
 		self.is_changed = False
 		self.is_used = False
-		self.is_arg = is_arg
+		self.level = level
 		self.typ = typ
 
 class Label:
@@ -69,7 +74,7 @@ class ABI(Enum):
 	Rivet = auto_enum()
 	C = auto_enum()
 
-	@varmethod
+	@staticmethod
 	def from_string(abi):
 		if abi == "C":
 			return ABI.C
@@ -163,12 +168,8 @@ class Sym:
 		fields = []
 		if elem_typ != type.Type(self[0]):
 			fields.append(Field("value", False, Vis.Priv, elem_typ))
-		fields.append(
-		    Field("is_err", False, Vis.Priv, type.Type(self[2]))
-		)
-		fields.append(
-		    Field("err", False, Vis.Priv, type.Type(self[19]))
-		)
+		fields.append(Field("is_err", False, Vis.Priv, type.Type(self[2])))
+		fields.append(Field("err", False, Vis.Priv, type.Type(self[19])))
 		return self.add_and_return(
 		    Type(
 		        Vis.Pub, unique_name, TypeKind.Struct, fields,
@@ -187,10 +188,7 @@ class Sym:
 		    Type(
 		        Vis.Pub, unique_name, TypeKind.Struct, [
 		            Field("value", False, Vis.Priv, elem_typ),
-		            Field(
-		                "is_none", False, Vis.Priv,
-		                type.Type(self[2])
-		            )
+		            Field("is_none", False, Vis.Priv, type.Type(self[2]))
 		        ], StructInfo(False)
 		    )
 		)
@@ -213,12 +211,9 @@ class Sym:
 		from .type import Ptr, Type as type_Type
 		return self.add_and_return(
 		    Type(
-		        Vis.Pub, unique_name, TypeKind.Slice, [
-		            Field(
-		                "ptr", False, Vis.Pub,
-		                Ptr(type_Type(self[0]))
-		            )
-		        ], SliceInfo(elem_typ, is_mut)
+		        Vis.Pub, unique_name, TypeKind.Slice,
+		        [Field("ptr", False, Vis.Pub, Ptr(type_Type(self[0])))],
+		        SliceInfo(elem_typ, is_mut)
 		    )
 		)
 
@@ -227,10 +222,7 @@ class Sym:
 		if sym := self.find(unique_name):
 			return sym
 		return self.add_and_return(
-		    Type(
-		        Vis.Pub, unique_name, TypeKind.Tuple,
-		        info = TupleInfo(types)
-		    )
+		    Type(Vis.Pub, unique_name, TypeKind.Tuple, info = TupleInfo(types))
 		)
 
 	def get_public_syms(self):
@@ -558,7 +550,7 @@ class Fn(Sym):
 	def __init__(
 	    self, abi, vis, is_extern, is_unsafe, is_method, is_variadic, name,
 	    args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
-	    self_is_ref, type_arguments
+	    type_arguments
 	):
 		Sym.__init__(self, vis, name, type_arguments)
 		self.is_main = False
@@ -569,7 +561,6 @@ class Fn(Sym):
 		self.is_variadic = is_variadic
 		self.self_typ = None
 		self.self_is_mut = self_is_mut
-		self.self_is_ref = self_is_ref
 		self.args = args
 		self.ret_typ = ret_typ
 		self.has_named_args = has_named_args
@@ -596,7 +587,7 @@ class Fn(Sym):
 			args.append(arg.typ)
 		return Fn(
 		    self.is_unsafe, self.is_extern, self.abi, self.is_method, args,
-		    self.is_variadic, self.ret_typ, self.self_is_mut, self.self_is_ref
+		    self.is_variadic, self.ret_typ, self.self_is_mut
 		)
 
 def universe():
@@ -623,9 +614,8 @@ def universe():
 	uni.add(Type(Vis.Pub, "f64", TypeKind.Float64))
 	uni.add(
 	    Type(
-	        Vis.Pub, "string", TypeKind.String, fields = [
-	            Field("len", False, Vis.Pub, type_Type(uni[13]))
-	        ]
+	        Vis.Pub, "string", TypeKind.String,
+	        fields = [Field("len", False, Vis.Pub, type_Type(uni[13]))]
 	    )
 	)
 	uni.add(Type(Vis.Pub, "error", TypeKind.Struct))

@@ -121,7 +121,7 @@ class Backend(Enum):
 
 class PkgType(Enum):
 	Bin = auto_enum() # .exe
-	Lib = auto_enum() # .rilib
+	Lib = auto_enum() # .rilib?
 	DyLib = auto_enum() # .so, .dll, .dylib
 	StaticLib = auto_enum() # .a, .lib
 
@@ -151,8 +151,6 @@ class BuildMode(Enum):
 
 class Prefs:
 	def __init__(self, args: [str]):
-		self.inputs = []
-
 		# target info
 		self.target_os = OS.get()
 		self.target_arch = Arch.get()
@@ -161,7 +159,8 @@ class Prefs:
 		self.target_backend = Backend.C
 
 		# package info
-		self.pkg_name = "main"
+		self.input = ""
+		self.pkg_name = ""
 		self.pkg_type = PkgType.Bin
 		self.pkg_output = "main.exe" if self.target_os == OS.Windows else "main"
 		self.build_mode = BuildMode.Debug
@@ -186,8 +185,6 @@ class Prefs:
 			eprint(HELP)
 			exit(0)
 
-		self.load_core_library()
-
 		i = 0
 		flags = []
 		while i < len(args):
@@ -209,15 +206,7 @@ class Prefs:
 				exit(0)
 
 			# compiler options
-			if arg.endswith(".ri"):
-				if path.isdir(arg):
-					error(f"unable to read '{arg}': is a directory")
-				elif not path.exists(arg):
-					error(f"unable to read '{arg}': file not found")
-				elif arg in self.inputs:
-					error(f"duplicate file '{arg}'")
-				self.inputs.append(arg)
-			elif arg == "--pkg-name":
+			if arg == "--pkg-name":
 				if pkg_name := option(current_args, arg):
 					self.pkg_name = pkg_name
 					self.pkg_output = pkg_name
@@ -316,19 +305,22 @@ class Prefs:
 				self.keep_c = True
 			elif arg in ("-v", "--verbose"):
 				self.is_verbose = True
-			elif path.isdir(arg):
-				files = glob.glob(f"{arg}/*.ri")
-				if len(files) == 0:
-					error(f"`{arg}` does not have .ri files")
-				for f in files:
-					self.inputs.append(f)
-			else:
+			elif arg.startswith("-"):
 				error(f"unknown option: `{arg}`")
+			else:
+				if len(self.input) > 0:
+					error("the compiler can only receive one package")
+				elif not path.exists(arg):
+					error(f"`{arg}` does not exist")
+				elif not path.isdir(arg):
+					error(f"`{arg}` is not a directory")
+				elif not path.isdir(path.join(arg, "src")):
+					error(f"`{arg}` does not contain a `src` folder")
+				else:
+					self.input = arg
+					if self.pkg_name == "":
+						self.pkg_name = path.basename(path.normpath(arg))
 			i += 1
-
-		self.filter_files()
-		if len(self.inputs) == 0:
-			error("no input received")
 
 		self.build_rivet_dir()
 
@@ -339,63 +331,6 @@ class Prefs:
 		    ".exe"
 		):
 			self.pkg_output += ".exe"
-
-	def load_pkg_files(self, name):
-		files =[]
-		for l in self.library_path:
-			pkg_path =path.join(l, name)
-			if path.exists(pkg_path) and path.isdir(pkg_path):
-				files = self.load_mod_files(pkg_path)
-				break
-		return files
-
-	def load_mod_files(self, mod_path):
-		return glob.glob(path.join(mod_path, "src", "*.ri"))
-
-	def filter_files(self):
-		self.inputs = self.filter_files_list(self.inputs)
-
-	def filter_files_list(self, inputs):
-		new_inputs = []
-		for input in inputs:
-			basename_input = path.basename(input)
-			if basename_input.count('.') == 1:
-				new_inputs.append(input)
-				continue
-			exts = basename_input[:-3].split('.')[1:]
-			should_compile = True
-			already_exts = []
-			for ext in exts:
-				if ext in already_exts:
-					error(f"{input}: duplicate special extension `{ext}`")
-				already_exts.append(ext)
-				if ext.startswith("d_") or ext.startswith("notd_"):
-					if ext.startswith("d_"):
-						should_compile = should_compile and ext[2:] in self.flags
-					else:
-						should_compile = should_compile and ext[
-						    5:] not in self.flags
-				elif osf := OS.from_string(ext):
-					should_compile = should_compile and self.target_os == osf
-				elif arch := Arch.from_string(ext):
-					should_compile = should_compile and self.target_arch == arch
-				elif ext in ("x32", "x64"):
-					if ext == "x32":
-						should_compile = should_compile and self.target_bits == Bits.X32
-					else:
-						should_compile = should_compile and self.target_bits == Bits.X64
-				elif ext in ("little_endian", "big_endian"):
-					if ext == "little_endian":
-						should_compile = should_compile and self.target_endian == Endian.Little
-					else:
-						should_compile = should_compile and self.target_endian == Endian.Big
-				elif b := Backend.from_string(ext): # backends
-					should_compile = should_compile and self.target_backend == b
-				else:
-					error(f"{input}: unknown special extension `{ext}`")
-			if should_compile:
-				new_inputs.append(input)
-		return new_inputs
 
 	def build_rivet_dir(self):
 		if not path.isdir(RIVET_DIR):
