@@ -143,7 +143,7 @@ class Compiler:
 		if not found:
 			report.error(f"package `{pkg_name}` not found", pos)
 		elif len(files) == 0:
-			report.error("no input received", pos)
+			report.error(f"package `{pkg_name}` contains no rivet files", pos)
 		return files
 
 	def filter_files(self, inputs):

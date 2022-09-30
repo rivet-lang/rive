@@ -13,10 +13,10 @@ def is_comptime_constant(name):
 	return name in COMPTIME_CONSTANTS
 
 class SourceFile:
-	def __init__(self, file, decls, pkg_name, mod_sym):
+	def __init__(self, file, decls, pkg_name, sym):
 		self.file = file
 		self.pkg_name = pkg_name
-		self.mod_sym = mod_sym
+		self.sym = sym
 		self.decls = decls
 		self.imported_symbols = {}
 
@@ -231,6 +231,16 @@ class FieldDecl:
 		self.has_def_expr = has_def_expr
 		self.pos = pos
 
+class ClassDecl:
+	def __init__(self, doc_comment, attrs, vis, name, decls, pos):
+		self.doc_comment = doc_comment
+		self.attrs = attrs
+		self.vis = vis
+		self.name = name
+		self.decls = decls
+		self.sym = None
+		self.pos = pos
+
 class StructDecl:
 	def __init__(self, doc_comment, attrs, vis, name, decls, is_opaque, pos):
 		self.doc_comment = doc_comment
@@ -302,7 +312,8 @@ class TestDecl:
 		self.pos = pos
 
 class DestructorDecl:
-	def __init__(self, scope, stmts, pos):
+	def __init__(self, self_is_mut, scope, stmts, pos):
+		self.self_is_mut = self_is_mut
 		self.stmts = stmts
 		self.scope = scope
 		self.self_typ = None
@@ -525,19 +536,6 @@ class EnumVariantExpr:
 	def __str__(self):
 		return self.__repr__()
 
-class FieldLiteral:
-	def __init__(self, name, expr, pos):
-		self.name = name
-		self.expr = expr
-		self.pos = pos
-		self.typ = None
-
-	def __repr__(self):
-		return f"{self.name}: {self.expr}"
-
-	def __str__(self):
-		return self.__repr__()
-
 class TupleLiteral:
 	def __init__(self, exprs, pos):
 		self.exprs = exprs
@@ -675,7 +673,7 @@ class CallExpr:
 		self.args = args
 		self.err_handler = err_handler
 		self.info = None
-		self.is_ctor = False # Trait_or_Union_or_Errtype(value)
+		self.is_ctor = False # Class_Struct_Trait_Union_or_Errtype(value)
 		self.is_closure = False
 		self.pos = pos
 		self.typ = None

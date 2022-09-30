@@ -442,8 +442,5 @@ class PkgDeps:
 			error("package deps cycle:\n" + self.dg.display_cycles())
 		source_files = []
 		for node in resolved.nodes:
-			if node.name in self.source_files:
-				dep_source_files = self.source_files[node.name]
-				if len(dep_source_files) > 0:
-					source_files.append(*dep_source_files)
+			source_files += self.source_files[node.name]
 		return source_files

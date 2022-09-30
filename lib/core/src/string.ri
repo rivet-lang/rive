@@ -22,19 +22,19 @@ pub class string {
         unsafe {
             var b = as(*mut u8, mem::alloc(cap + 1) catch unreachable!());
             b[cap] = 0;
-            return Self{
+            return Self(
                 ptr: b,
                 len: cap
-            };
+            );
         }
     }
 
     pub unsafe fn from_lit(ptr: *mut u8) Self {
-        return Self{
+        return Self(
             ptr: unsafe { ptr },
             len_: len,
             is_ref: true
-        };
+        );
     }
 
     pub unsafe fn from_raw(ptr: *mut u8) Self {
@@ -45,11 +45,11 @@ pub class string {
         if (len == 0) {
             return Self::new();
         }
-        return Self{
+        return Self(
             ptr: unsafe { ptr },
             len_: len,
             cap: len
-        };
+        );
     }
 
     /// Returns a string with the bytes stored in `bytes`. If the length of
@@ -117,7 +117,7 @@ pub class string {
                     i++;
                 } else if (b2.is_digit()) {
                     var start = i++;
-                    var buf = StaticBuffer{};
+                    var buf = StaticBuffer();
                     while (unsafe { self.ptr[i] != b'}' }) {
                         buf.push(unsafe { self.ptr[i++] });
                         if (i >= self.len_) {
@@ -199,7 +199,7 @@ pub class string {
         return unsafe { string::from_raw_with_len(self.ptr, self.len_) };
     }
 
-    pub fn ==(self, rhs: &Self) bool {
+    pub fn ==(self, rhs: Self) bool {
         if (self.len_ != rhs.len_) {
             return false;
         }
@@ -214,11 +214,11 @@ pub class string {
         }
     }
 
-    pub fn !=(self, rhs: &Self) bool {
+    pub fn !=(self, rhs: Self) bool {
         return !self.==(rhs);
     }
 
-    pub fn <(self, rhs: &Self) bool {
+    pub fn <(self, rhs: Self) bool {
         for (i in 0..self.len_) {
             unsafe {
                 if (i >= rhs.len or self.ptr[i] > rhs.ptr[i]) {
@@ -234,15 +234,15 @@ pub class string {
         return false;
     }
 
-    pub fn >(self, rhs: &Self) bool {
+    pub fn >(self, rhs: Self) bool {
         return !self.<(rhs);
     }
 
-    pub fn <=(self, rhs: &Self) bool {
+    pub fn <=(self, rhs: Self) bool {
         return self.<(rhs) or self.==(rhs);
     }
 
-    pub fn >=(self, rhs: &Self) bool {
+    pub fn >=(self, rhs: Self) bool {
         return self.>(rhs) or self.==(rhs);
     }
 
@@ -298,11 +298,11 @@ pub class string {
             if (len == self.len_) {
                 return self;
             }
-            return string{
+            return string(
                 ptr: self.ptr + start,
                 len: len,
                 is_ref: true
-            };
+            );
         }
     }
 
@@ -331,6 +331,6 @@ pub class string {
 
 extend string for ToString {
     fn to_string(self) Self {
-        return self.*;
+        return self;
     }
 }

@@ -1,2 +1,8 @@
+extern pkg core;
+
 fn nop() {
+}
+
+test "¿Tests?" {
+    assert!(true);
 }

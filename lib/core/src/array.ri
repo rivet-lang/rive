@@ -29,17 +29,17 @@ fn array_slice(
     var len = end - start;
     unsafe {
         if (len == size) {
-            return _slice{
+            return _slice(
                 ptr: arr,
                 elem_size: elem_size,
                 len: len
-            };
+            );
         }
-        return _slice{
+        return _slice(
             ptr: as(*mut u8, arr) + (start * elem_size),
             elem_size: elem_size,
             len: len
-        };
+        );
     }
 }
 

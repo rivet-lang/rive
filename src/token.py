@@ -59,7 +59,6 @@ class Kind(Enum):
 	Lparen = auto_enum() # (
 	Rparen = auto_enum() # )
 
-	# 6 literals, 35 keywords; Total: 41 keywords.
 	KeywordBegin = auto_enum()
 	# ========== literals ==========
 	KwNone = auto_enum() # none
@@ -80,6 +79,7 @@ class Kind(Enum):
 	KwExtern = auto_enum() # extern
 	KwTrait = auto_enum() # trait
 	KwUnion = auto_enum() # union
+	KwClass = auto_enum() # class
 	KwStruct = auto_enum() # struct
 	KwEnum = auto_enum() # enum
 	KwErrType = auto_enum() # errtype
@@ -215,6 +215,7 @@ TOKEN_STRINGS = {
     Kind.KwExtern: "extern",
     Kind.KwTrait: "trait",
     Kind.KwUnion: "union",
+    Kind.KwClass: "class",
     Kind.KwStruct: "struct",
     Kind.KwEnum: "enum",
     Kind.KwErrType: "errtype",

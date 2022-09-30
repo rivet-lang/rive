@@ -391,6 +391,22 @@ class Parser:
 			return ast.UnionDecl(
 			    doc_comment, attrs, vis, name, variants, decls, pos
 			)
+		elif self.accept(Kind.KwClass):
+			old_inside_struct_or_class_decl = self.inside_struct_or_class_decl
+			self.inside_struct_or_class_decl = True
+			pos = self.tok.pos
+			if is_unsafe:
+				report.error("class cannot be declared unsafe", pos)
+			name = self.parse_name()
+			decls = []
+			self.expect(Kind.Lbrace)
+			if self.tok.kind != Kind.Rbrace:
+				while self.tok.kind != Kind.Rbrace:
+					# declaration: methods, consts, etc.
+					decls.append(self.parse_decl())
+			self.expect(Kind.Rbrace)
+			self.inside_struct_or_class_decl = old_inside_struct_or_class_decl
+			return ast.ClassDecl(doc_comment, attrs, vis, name, decls, pos)
 		elif self.accept(Kind.KwStruct):
 			old_inside_struct_or_class_decl = self.inside_struct_or_class_decl
 			self.inside_struct_or_class_decl = True
@@ -486,9 +502,8 @@ class Parser:
 			pos = self.prev_tok.pos
 			self.expect(Kind.KwSelfTy)
 			self.expect(Kind.Lparen)
-			self.accept(Kind.Amp)
-			self.accept(Kind.KwMut)
-			self.accept(Kind.KwSelf)
+			self_is_mut = self.accept(Kind.KwMut)
+			self.expect(Kind.KwSelf)
 			self.expect(Kind.Rparen)
 			self.expect(Kind.Lbrace)
 			self.open_scope()
@@ -497,7 +512,7 @@ class Parser:
 			while not self.accept(Kind.Rbrace):
 				stmts.append(self.parse_stmt())
 			self.close_scope()
-			decls.append(ast.DestructorDecl(sc, stmts, pos))
+			return ast.DestructorDecl(self_is_mut, sc, stmts, pos)
 		elif self.accept(Kind.KwTest):
 			pos = self.prev_tok.pos
 			name = self.tok.lit
