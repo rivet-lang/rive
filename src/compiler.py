@@ -5,10 +5,12 @@
 from os import path
 import os, copy, glob
 
-from . import (ast, sym, type, token, prefs, report, utils,
+from . import (
+    ast, sym, type, token, prefs, report, utils,
 
-               # stages
-               parser)
+    # stages
+    parser, register
+)
 
 class Compiler:
 	def __init__(self, args):
@@ -40,10 +42,6 @@ class Compiler:
 		self.never_t = type.Type(self.universe[20])
 
 		self.prefs = prefs.Prefs(args)
-
-		self.pkg_deps = utils.PkgDeps()
-		self.source_files = []
-
 		self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
 
 		self.core_pkg = None
@@ -51,16 +49,23 @@ class Compiler:
 		self.slice_struct = None # from `core` package
 		self.error_struct = None # from `core` package
 
+		self.pkg_deps = utils.PkgDeps()
+		self.source_files = []
+
+		self.register = register.Register(self)
+
 	def run(self):
 		self.load_root_pkg()
 		if report.ERRORS > 0:
 			self.abort()
 		self.source_files = self.pkg_deps.resolve()
-
-		#if not self.prefs.check_syntax:
-		#	self.resolver.resolve_files(self.source_files)
-		#	if report.ERRORS > 0:
-		#		self.abort()
+		if not self.prefs.check_syntax:
+			self.register.walk_files(self.source_files)
+			if report.ERRORS > 0:
+				self.abort()
+			#self.resolver.resolve_files(self.source_files)
+			#if report.ERRORS > 0:
+			#	self.abort()
 
 		#	self.load_core_syms()
 

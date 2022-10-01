@@ -16,12 +16,12 @@ class _Ptr: # ugly hack =/
 		self.val.__dict__ = val.__dict__
 
 class TBase:
-	def get_sym(self):
-		if isinstance(self, (Type, Slice, Array, Tuple, Variadic)):
+	def symbol(self):
+		if isinstance(self, (Slice, Array, Tuple, Variadic)):
 			return self.sym
 		elif isinstance(self, Fn):
 			return self.info()
-		return self.typ.get_sym()
+		return self.typ.symbol()
 
 	def unalias(self):
 		if isinstance(self, (Result, Optional)):
@@ -62,6 +62,12 @@ class Type(TBase):
 
 	def qualstr(self):
 		return self.sym.qualname()
+
+	def symbol(self):
+		sy = self.sym
+		while sy.kind == TypeKind.Alias:
+			sy = sy.info.parent.symbol()
+		return sy
 
 	def __eq__(self, other):
 		if not isinstance(other, Type):

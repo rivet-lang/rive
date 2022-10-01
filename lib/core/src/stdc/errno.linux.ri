@@ -3,10 +3,5 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    $if (_WINDOWS_) {
-        #[dllimport]
-        pub fn _errno() *mut i32;
-    } $else {
-        pub fn __errno_location() *mut i32;
-    }
+    pub fn __errno_location() *mut i32;
 }

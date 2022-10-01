@@ -137,19 +137,6 @@ class UseSymbol:
 		self.is_self = is_self
 		self.pos = pos
 
-class ComptimeIfDecl:
-	def __init__(self, branches, pos):
-		self.branches = branches
-		self.pos = pos
-		self.branch_idx = -1
-
-class ComptimeIfBranch:
-	def __init__(self, cond, decls, is_else, kind):
-		self.cond = cond
-		self.decls = decls
-		self.is_else = is_else
-		self.kind = kind
-
 class ExternDecl:
 	def __init__(self, attrs, abi, protos, pos):
 		self.attrs = attrs
@@ -158,14 +145,14 @@ class ExternDecl:
 		self.pos = pos
 
 class ModDecl:
-	def __init__(self, doc_comment, attrs, name, vis, decls, is_unloaded, pos):
+	def __init__(self, doc_comment, attrs, name, vis, decls, is_inline, pos):
 		self.doc_comment = doc_comment
 		self.attrs = attrs
 		self.name = name
 		self.vis = vis
 		self.decls = decls
 		self.sym = None
-		self.is_unloaded = is_unloaded
+		self.is_inline = is_inline
 		self.pos = pos
 
 class ConstDecl:
@@ -283,6 +270,7 @@ class FnDecl:
 	    self_is_mut = False, has_named_args = False, is_main = False,
 	    is_variadic = False, abi = None
 	):
+		self.sym = None
 		self.doc_comment = doc_comment
 		self.attrs = attrs
 		self.vis = vis
@@ -300,16 +288,8 @@ class FnDecl:
 		self.ret_typ = ret_typ
 		self.has_named_args = has_named_args
 		self.has_body = has_body
-		self.sym = None
 		self.scope = scope
 		self.stmts = stmts
-
-class TestDecl:
-	def __init__(self, scope, name, stmts, pos):
-		self.name = name
-		self.stmts = stmts
-		self.scope = scope
-		self.pos = pos
 
 class DestructorDecl:
 	def __init__(self, self_is_mut, scope, stmts, pos):
@@ -317,6 +297,13 @@ class DestructorDecl:
 		self.stmts = stmts
 		self.scope = scope
 		self.self_typ = None
+		self.pos = pos
+
+class TestDecl:
+	def __init__(self, scope, name, stmts, pos):
+		self.name = name
+		self.stmts = stmts
+		self.scope = scope
 		self.pos = pos
 
 # ------ Statements --------

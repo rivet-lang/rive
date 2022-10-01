@@ -79,12 +79,13 @@ class Parser:
 				sf_sym = self.comp.universe.add_and_return(
 				    sym.Pkg(sym.Vis.Priv, self.pkg_name)
 				)
-		elif mod_sym := self.file_parent_sym.find(self.mod_name):
-			sf_sym = mod_sym
 		else:
-			sf_sym = self.file_parent_sym.add_and_return(
-			    sym.Mod(self.mod_vis, self.mod_name)
-			)
+			if mod_sym := self.file_parent_sym.find(self.mod_name):
+				sf_sym = mod_sym
+			else:
+				sf_sym = self.file_parent_sym.add_and_return(
+				    sym.Mod(self.mod_vis, self.mod_name)
+				)
 		self.file_sym = sf_sym
 		return ast.SourceFile(
 		    file, self.parse_decls(), self.pkg_name, self.file_sym
@@ -189,37 +190,6 @@ class Parser:
 			return sym.Vis.Pub
 		return sym.Vis.Priv
 
-	def parse_comptime_if_decl(self):
-		branches = []
-		pos = self.tok.pos
-		while self.tok.kind in (Kind.KwIf, Kind.KwElse):
-			if self.accept(Kind.KwElse) and self.tok.kind != Kind.KwIf:
-				self.expect(Kind.Lbrace)
-				decls = []
-				while self.tok.kind != Kind.Rbrace:
-					decls.append(self.parse_decl())
-				self.expect(Kind.Rbrace)
-				branches.append(
-				    ast.ComptimeIfBranch(
-				        self.empty_expr(), decls, True, Kind.KwElse
-				    )
-				)
-				break
-			self.next()
-			self.expect(Kind.Lparen)
-			cond = self.parse_expr()
-			self.expect(Kind.Rparen)
-			self.expect(Kind.Lbrace)
-			decls = []
-			while self.tok.kind != Kind.Rbrace:
-				decls.append(self.parse_decl())
-			self.expect(Kind.Rbrace)
-			branches.append(ast.ComptimeIfBranch(cond, decls, False, Kind.KwIf))
-			if self.tok.kind not in (Kind.Dollar, Kind.KwElse):
-				break
-			self.expect(Kind.Dollar)
-		return ast.ComptimeIfDecl(branches, pos)
-
 	def parse_decls(self):
 		decls = []
 		while self.tok.kind != Kind.EOF:
@@ -232,9 +202,7 @@ class Parser:
 		vis = self.parse_vis()
 		is_unsafe = self.accept(Kind.KwUnsafe)
 		pos = self.tok.pos
-		if self.accept(Kind.Dollar):
-			return self.parse_comptime_if_decl()
-		elif self.accept(Kind.KwUse):
+		if self.accept(Kind.KwUse):
 			path = self.parse_expr()
 			if isinstance(path, ast.Ident):
 				alias = path.name
@@ -332,8 +300,15 @@ class Parser:
 				report.error("modules cannot be declared unsafe", pos)
 			name = self.parse_name()
 			decls = []
-			is_unloaded = self.accept(Kind.Semicolon)
-			if is_unloaded:
+			is_inline = not self.accept(Kind.Semicolon)
+			if is_inline:
+				old_is_pkg_level = self.is_pkg_level
+				self.is_pkg_level = False
+				self.expect(Kind.Lbrace)
+				while not self.accept(Kind.Rbrace):
+					decls.append(self.parse_decl())
+				self.is_pkg_level = old_is_pkg_level
+			else:
 				mod_path = os.path.join(self.file_dir, name)
 				if os.path.isdir(mod_path):
 					files = self.comp.filter_files(
@@ -349,15 +324,8 @@ class Parser:
 					self.mod_deps.append(self.file_sym.qualname() + "::" + name)
 				else:
 					report.error(f"module `{name}` not found", pos)
-			else:
-				old_is_pkg_level = self.is_pkg_level
-				self.is_pkg_level = False
-				self.expect(Kind.Lbrace)
-				while not self.accept(Kind.Rbrace):
-					decls.append(self.parse_decl())
-				self.is_pkg_level = old_is_pkg_level
 			return ast.ModDecl(
-			    doc_comment, attrs, name, vis, decls, is_unloaded, pos
+			    doc_comment, attrs, name, vis, decls, is_inline, pos
 			)
 		elif self.accept(Kind.KwConst):
 			pos = self.tok.pos
@@ -373,7 +341,7 @@ class Parser:
 		elif self.accept(Kind.KwLet):
 			if is_unsafe:
 				report.error(
-				    "static values cannot be declared unsafe", self.tok.pos
+				    "pkg/mod variables cannot be declared unsafe", self.tok.pos
 				)
 			return self.parse_let_stmt(True)
 		elif self.accept(Kind.KwType):
@@ -455,7 +423,6 @@ class Parser:
 			self.expect(Kind.Lbrace)
 			if self.tok.kind != Kind.Rbrace:
 				while self.tok.kind != Kind.Rbrace:
-					# declaration: methods, consts, etc.
 					decls.append(self.parse_decl())
 			self.expect(Kind.Rbrace)
 			self.inside_struct_or_class_decl = old_inside_struct_or_class_decl
@@ -473,7 +440,6 @@ class Parser:
 				self.expect(Kind.Lbrace)
 				if self.tok.kind != Kind.Rbrace:
 					while self.tok.kind != Kind.Rbrace:
-						# declaration: methods, consts, etc.
 						decls.append(self.parse_decl())
 				self.expect(Kind.Rbrace)
 			self.inside_struct_or_class_decl = old_inside_struct_or_class_decl
@@ -534,12 +500,7 @@ class Parser:
 			decls = []
 			self.expect(Kind.Lbrace)
 			while not self.accept(Kind.Rbrace):
-				decl = self.parse_decl()
-				if not isinstance(decl, ast.FnDecl):
-					report.error(
-					    "expected associated function or method", decl.pos
-					)
-				decls.append(decl)
+				decls.append(self.parse_decl())
 			return ast.ExtendDecl(
 			    attrs, typ, is_for_trait, for_trait, decls, pos
 			)

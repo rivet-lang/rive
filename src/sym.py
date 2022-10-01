@@ -16,6 +16,7 @@ def new_symbol_id():
 
 class ObjLevel(Enum):
 	Global = auto_enum()
+	Rec = auto_enum()
 	Arg = auto_enum()
 	Local = auto_enum()
 
@@ -27,10 +28,6 @@ class Obj:
 		self.is_used = False
 		self.level = level
 		self.typ = typ
-
-class Label:
-	def __init__(self, name):
-		self.name = name
 
 class Scope:
 	def __init__(self, start, parent = None):
@@ -131,14 +128,14 @@ class Sym:
 				for ss in sym.syms:
 					if asym.exists(ss.name):
 						raise CompilerError(
-						    f"type `{asym.name}` has duplicate symbol: `{ss.name}`"
+						    f"{asym.kind} `{asym.name}` has duplicate symbol `{ss.name}`"
 						)
 					asym.syms.append(ss)
 				asym.info = sym.info
 				return
 			else:
 				raise CompilerError(
-				    f"another symbol with this name already exists: `{sym.name}`"
+				    f"{self.kind} `{self.name}` has duplicate symbol `{sym.name}`"
 				)
 		sym.parent = self
 		self.syms.append(sym)
@@ -149,12 +146,10 @@ class Sym:
 		self.syms.append(sym)
 		return self.syms[idx]
 
-	def add_or_extend_mod(self, sym):
+	def add_or_get_mod(self, sym):
 		if m := self.find(sym.name):
 			return m
-		nm = self.add_and_return(sym)
-		nm.parent = self
-		return nm
+		return self.add_and_return(sym)
 
 	def add_or_get_result(self, elem_typ):
 		from ..codegen import mangle_type
@@ -230,12 +225,6 @@ class Sym:
 				syms.append(s)
 		return syms
 
-	def find_type_arg(self, name):
-		for i, type_arg in enumerate(self.syms):
-			if type_arg.kind == TypeKind.TypeArg and type_arg.name == name:
-				return (type_arg, i)
-		return None
-
 	def find(self, name):
 		for sym in self.syms:
 			if sym.name == name:
@@ -297,8 +286,6 @@ class Sym:
 		return self.qualified_name
 
 	def __getitem__(self, idx):
-		if isinstance(idx, str):
-			return self.find(idx)
 		return self.syms[idx]
 
 class Pkg(Sym):
@@ -518,19 +505,19 @@ class Type(Sym):
 	def __init__(self, vis, name, kind, fields = [], info = None):
 		Sym.__init__(self, vis, name)
 		self.kind = kind
-		self.fields = fields
+		self.fields = fields.copy()
 		self.info = info
 		self.size = -1
 		self.align = -1
 
-	def lookup_field(self, name):
+	def find_field(self, name):
 		for f in self.fields:
 			if f.name == name:
 				return f
 		return None
 
 	def has_field(self, name):
-		if _ := self.lookup_field(name):
+		if _ := self.find_field(name):
 			return True
 		return False
 
@@ -546,10 +533,9 @@ class Arg:
 class Fn(Sym):
 	def __init__(
 	    self, abi, vis, is_extern, is_unsafe, is_method, is_variadic, name,
-	    args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
-	    type_arguments
+	    args, ret_typ, has_named_args, has_body, name_pos, self_is_mut
 	):
-		Sym.__init__(self, vis, name, type_arguments)
+		Sym.__init__(self, vis, name)
 		self.is_main = False
 		self.abi = abi
 		self.is_extern = is_extern
