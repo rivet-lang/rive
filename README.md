@@ -30,7 +30,12 @@ a field; some with strange syntax in my opinion (like Lisp) and others with a hi
 learning curve, but Rivet tries to be an exception by trying to become a unique
 language with a clear and simple syntax and a low learning curve.
 
-## Basic features
+## Important note
+
+Currently the language is in alpha state, and therefore its syntax and the language
+API is not stable, and may change in the long term. Not all features are implemented.
+
+## Features
 
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
 * **Easy error handling**: Via result types: `fn my_fn() !T { ... }`.
@@ -39,11 +44,6 @@ language with a clear and simple syntax and a low learning curve.
 by default.
 * **Polymorphism**: Classes, Traits and Union types are also supported.
 * **Generics:** Specialize and reuse the same code for different types.
-
-## Important note
-
-Currently the language is in alpha state, and therefore its syntax and the language
-API is not stable, and may change in the long term. Not all features are implemented.
 
 * * *
 
