@@ -3,9 +3,9 @@ union Any {
 }
 
 test "type switch" {
-    var any = Any("String");
+    let mut any = Any("string");
     switch (any) is {
-        str as any_s => assert!(any_s == "String"),
+        string as any_s => assert!(any_s == "string"),
         else => assert!(false)
     }
 

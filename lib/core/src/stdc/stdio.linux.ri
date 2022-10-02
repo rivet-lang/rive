@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    pub var stdin: *mut FILE;
-    pub var stdout: *mut FILE;
-    pub var stderr: *mut FILE;
+    pub let stdin: *mut FILE;
+    pub let stdout: *mut FILE;
+    pub let stderr: *mut FILE;
 }

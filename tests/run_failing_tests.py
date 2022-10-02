@@ -22,7 +22,7 @@ def run_fail_tests():
 	for file in FAIL_FILES:
 		res = utils.run_process(
 		    sys.executable,
-		    "rivetc.py", # TODO: "--pkg-name", utils.filename(file),
+		    "rivetc.py",
 		    file, "-cc", CC
 		)
 		try:

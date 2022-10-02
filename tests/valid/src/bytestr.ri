@@ -1,4 +1,4 @@
 test "byte string literal" {
-    var x = b"Abcdef";
+    let x = b"Abcdef";
     assert!(x.len == 6);
 }

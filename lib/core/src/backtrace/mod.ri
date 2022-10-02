@@ -21,7 +21,7 @@ extern (C) {
     ) i32;
 }
 
-var bt_state: *mut backtrace_state = unsafe {
+let bt_state: *mut backtrace_state = unsafe {
     backtrace_create_state(ARGS[0].ptr, 1, bt_error_handler, 0)
 };
 
@@ -41,19 +41,19 @@ fn bt_print_callback(
             return 1; // stop backtracing
         }
 
-        var file_name = if (filename_ptr == none) {
+        let file_name = if (filename_ptr == none) {
             "???"
         } else {
             string::from_raw(filename_ptr)
         };
 
-        var fn_name = if (fn_ptr == none) {
+        let fn_name = if (fn_ptr == none) {
             "??"
         } else {
             demangle::demangle_symbol(str::from_raw(fn_ptr))
         };
 
-        var bdata = as(*mut BacktraceData, data);
+        let bdata = as(*mut BacktraceData, data);
         eprintln(
             "   {} {} in {}:{}", if (bdata.frame_nr == 0) "at" else "by",
             fn_name, file_name, lineno
@@ -65,7 +65,7 @@ fn bt_print_callback(
 
 fn bt_error_handler(data: *mut void, msg_ptr: *u8, errnum: i32) {
     unsafe {
-        var bdata = as(*mut BacktraceData, data);
+        let bdata = as(*mut BacktraceData, data);
         if (!bdata.has_error) {
             eprint("   libbacktrace error: ");
             eprint(str::from_raw(msg_ptr));
@@ -82,7 +82,7 @@ fn bt_error_handler(data: *mut void, msg_ptr: *u8, errnum: i32) {
 
 pub fn print(frames_to_skip: i32 = 0) {
     unsafe {
-        var bt_data = BacktraceData();
+        let bt_data = BacktraceData();
         _ = backtrace_full(
             bt_state, frames_to_skip, bt_print_callback, bt_error_handler,
             &mut bt_data

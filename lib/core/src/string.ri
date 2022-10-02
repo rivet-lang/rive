@@ -20,21 +20,14 @@ pub class string {
     /// an extra space for the NULL character.
     pub fn with_capacity(cap: usize) Self {
         unsafe {
-            var b = as(*mut u8, mem::alloc(cap + 1) catch unreachable!());
+            let b = as(*mut u8, mem::alloc(cap + 1) catch unreachable!());
             b[cap] = 0;
-            return Self(
-                ptr: b,
-                len: cap
-            );
+            return Self(b, cap);
         }
     }
 
     pub unsafe fn from_lit(ptr: *mut u8) Self {
-        return Self(
-            ptr: unsafe { ptr },
-            len_: len,
-            is_ref: true
-        );
+        return Self(unsafe { ptr }, len, is_ref: true);
     }
 
     pub unsafe fn from_raw(ptr: *mut u8) Self {
@@ -45,11 +38,7 @@ pub class string {
         if (len == 0) {
             return Self::new();
         }
-        return Self(
-            ptr: unsafe { ptr },
-            len_: len,
-            cap: len
-        );
+        return Self(unsafe { ptr }, len);
     }
 
     /// Returns a string with the bytes stored in `bytes`. If the length of
@@ -59,7 +48,7 @@ pub class string {
             return Self::new();
         }
         unsafe {
-            var res = Self::with_capacity(bytes.len);
+            let res = Self::with_capacity(bytes.len);
             mem::copy(res.ptr, bytes.ptr, bytes.len);
             res.len_ = bytes.len;
             return res;
@@ -95,18 +84,18 @@ pub class string {
         if (args.len == 0) {
             return self;
         }
-        var res = string::with_capacity(self.len_);
-        var i: usize = 0;
-        var args_idx: usize = 0;
+        let res = StringBuilder::with_capacity(self.len_);
+        let i: usize = 0;
+        let args_idx: usize = 0;
         while (i < self.len_) {
-            var b = unsafe { self.ptr[i] };
-            var b2 = if (i + 1 < self.len_) unsafe { self.ptr[i + 1] } else 0;
+            let b = unsafe { self.ptr[i] };
+            let b2 = if (i + 1 < self.len_) unsafe { self.ptr[i + 1] } else 0;
             if (b == b'{') {
                 if (b2 == b'{') { // escaping '{'
                     res.push(b'{');
                     i++;
                 } else if (b2 == b'}') {
-                    var arg_idx = args_idx++;
+                    let arg_idx = args_idx++;
                     if (arg_idx >= args.len) {
                         panic(
                             "fmt: argument index out of range (argument index: {}, len: {}, index: {})",
@@ -116,15 +105,15 @@ pub class string {
                     res.push_string(args[arg_idx].to_string());
                     i++;
                 } else if (b2.is_digit()) {
-                    var start = i++;
-                    var buf = StaticBuffer();
+                    let start = i++;
+                    let buf = StaticBuffer();
                     while (unsafe { self.ptr[i] != b'}' }) {
                         buf.push(unsafe { self.ptr[i++] });
                         if (i >= self.len_) {
                             panic("fmt: incomplete format string (index: {})", start);
                         }
                     }
-                    var index = buf.as_u64();
+                    let index = buf.as_u64();
                     if (index >= args.len) {
                         panic(
                             "fmt: argument index out of range (index: {}, len: {})",
@@ -147,10 +136,12 @@ pub class string {
             }
             i++;
         }
-        return res;
+        return res.to_string();
     }
 
-    pub fn len(self) usize { return self.len_; }
+    pub fn len(self) usize {
+        return self.len_;
+    }
 
     /// Returns the number of runes contained in `self`.
     pub fn runes_count(self) usize {
@@ -173,9 +164,9 @@ pub class string {
 		if (p.len > self.len_ or p.len == 0) {
 			return none;
 		}
-		var i: usize = 0;
+		let i: usize = 0;
 		while (i < self.len_) {
-			var j: usize = 0;
+			let j: usize = 0;
 			while (j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] }) {
 				j++;
 			}
@@ -187,9 +178,13 @@ pub class string {
 		return none;
 	}
 
-    pub fn as_ptr(self) *u8 { return unsafe { self.ptr }; }
+    pub fn as_ptr(self) *u8 {
+        return unsafe { self.ptr };
+    }
 
-    pub unsafe fn as_mut_ptr(self) *mut u8 { return unsafe { self.ptr }; }
+    pub unsafe fn as_mut_ptr(self) *mut u8 {
+        return unsafe { self.ptr };
+    }
 
     pub fn as_bytes(self) [u8] {
         return unsafe { _slice::from_array(self.ptr, size_of!(u8), self.len_) };
@@ -205,7 +200,7 @@ pub class string {
         }
         unsafe {
             if (self.len_ > 0) {
-                var last_idx = self.len_ - 1;
+                let last_idx = self.len_ - 1;
                 if (self.ptr[last_idx] != rhs.ptr[last_idx]) {
                     return false;
                 }
@@ -251,7 +246,7 @@ pub class string {
 		if (substr.len == 0) {
 			return true;
 		}
-		if (var _ = self.index(substr)) {
+		if (let _ = self.index(substr)) {
 			return true;
 		}
 		return false;
@@ -283,7 +278,9 @@ pub class string {
 		return true;
 	}
 
-    pub fn is_empty(self) bool { return self.len_ == 0; }
+    pub fn is_empty(self) bool {
+        return self.len_ == 0;
+    }
 
     #[used]
     fn slice(self, start: usize, end: usize) string {
@@ -294,15 +291,11 @@ pub class string {
                     end, self.len_
                 );
             }
-            var len = end - start;
+            let len = end - start;
             if (len == self.len_) {
                 return self;
             }
-            return string(
-                ptr: self.ptr + start,
-                len: len,
-                is_ref: true
-            );
+            return string(self.ptr + start, len, is_ref: true);
         }
     }
 
@@ -312,7 +305,7 @@ pub class string {
     }
 
     pub fn clone(self) Self {
-        var res = Self::with_capacity(self.len_);
+        let res = Self::with_capacity(self.len_);
         unsafe {
             mem::copy(res.ptr, self.ptr, self.len_);
         }

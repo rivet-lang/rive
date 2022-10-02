@@ -4,9 +4,9 @@
 
 pub unsafe fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
     unsafe {
-        var buf = buf_;
-        var x: isize = 0;
-        var remaining_bytes = as(isize, len);
+        let buf = buf_;
+        let x: isize = 0;
+        let remaining_bytes = as(isize, len);
         while (remaining_bytes > 0) {
             x = stdc::write(fd, buf + x, as(usize, remaining_bytes));
             remaining_bytes -= x;

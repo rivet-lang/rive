@@ -87,7 +87,7 @@ class Kind(Enum):
 	KwExtend = auto_enum() # extend
 	KwTest = auto_enum() # test
 	KwFn = auto_enum() # fn
-	KwVar = auto_enum() # var
+	KwLet = auto_enum() # let
 	KwMut = auto_enum() # mut
 	KwIf = auto_enum() # if
 	KwElse = auto_enum() # else
@@ -223,7 +223,7 @@ TOKEN_STRINGS = {
     Kind.KwExtend: "extend",
     Kind.KwTest: "test",
     Kind.KwFn: "fn",
-    Kind.KwVar: "var",
+    Kind.KwLet: "let",
     Kind.KwMut: "mut",
     Kind.KwIf: "if",
     Kind.KwElse: "else",

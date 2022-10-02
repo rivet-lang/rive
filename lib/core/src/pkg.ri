@@ -15,7 +15,7 @@ pub mod traits;
 
 mod utils;
 
-pub var ARGS: [string] = [""][..];
+pub let ARGS: [string] = [""][..];
 
 fn segfault_handler(_: i32) {
     eprintln("panic: segmentation fault detected");
@@ -60,7 +60,7 @@ pub fn errno() i32 {
 /// Returns error code representation in string.
 pub fn strerr(code: i32 = errno()) String {
     unsafe {
-        var s = stdc::strerror(code);
+        let s = stdc::strerror(code);
         return if (s == none) "" else String::from_raw(s);
     }
 }

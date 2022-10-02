@@ -9,11 +9,11 @@ pub fn demangle_symbol(name: string) string {
         return name;
     }
 
-    var idx: usize = 2;
-    var buf = StaticBuffer();
-    var res = string::with_capacity(name.len);
+    let idx: usize = 2;
+    let buf = StaticBuffer();
+    let res = string::with_capacity(name.len);
     while (idx < name.len) {
-        var byte = unsafe { name.ptr[idx] };
+        let byte = unsafe { name.ptr[idx] };
         if (byte.is_digit()) {
             buf.push(byte);
             idx++;

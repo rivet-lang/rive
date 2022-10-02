@@ -370,12 +370,12 @@ class Parser:
 			expr = self.parse_expr()
 			self.expect(Kind.Semicolon)
 			return ast.ConstDecl(doc_comment, attrs, vis, name, typ, expr, pos)
-		elif self.accept(Kind.KwVar):
+		elif self.accept(Kind.KwLet):
 			if is_unsafe:
 				report.error(
 				    "static values cannot be declared unsafe", self.tok.pos
 				)
-			return self.parse_var_stmt(True)
+			return self.parse_let_stmt(True)
 		elif self.accept(Kind.KwType):
 			pos = self.tok.pos
 			if is_unsafe:
@@ -662,13 +662,13 @@ class Parser:
 
 	# ---- statements --------------------------
 	def parse_stmt(self):
-		if self.accept(Kind.KwVar):
-			return self.parse_var_stmt()
+		if self.accept(Kind.KwLet):
+			return self.parse_let_stmt()
 		elif self.accept(Kind.KwWhile):
 			pos = self.prev_tok.pos
 			is_inf = False
 			if self.accept(Kind.Lparen):
-				if self.tok.kind == Kind.KwVar:
+				if self.tok.kind == Kind.KwLet:
 					self.open_scope()
 					cond = self.parse_guard_expr()
 				else:
@@ -717,7 +717,7 @@ class Parser:
 			self.expect(Kind.Semicolon)
 		return ast.ExprStmt(expr, expr.pos)
 
-	def parse_var_stmt(self, inside_global = False):
+	def parse_let_stmt(self, inside_global = False):
 		# variable declarations
 		pos = self.prev_tok.pos
 		lefts = []
@@ -736,7 +736,7 @@ class Parser:
 			self.expect(Kind.Assign)
 			right = self.parse_expr()
 		self.expect(Kind.Semicolon)
-		return ast.VarStmt(self.scope, lefts, right, pos)
+		return ast.LetStmt(self.scope, lefts, right, pos)
 
 	def parse_var_decl(self, inside_global = False, support_typ = True):
 		is_mut = self.accept(Kind.KwMut)
@@ -1138,7 +1138,7 @@ class Parser:
 				break
 			self.next()
 			self.expect(Kind.Lparen)
-			if self.tok.kind == Kind.KwVar:
+			if self.tok.kind == Kind.KwLet:
 				self.open_scope()
 				cond = self.parse_guard_expr()
 			else:
@@ -1162,7 +1162,7 @@ class Parser:
 		pos = self.prev_tok.pos
 		is_typeswitch = False
 		if self.accept(Kind.Lparen):
-			if self.tok.kind == Kind.KwVar:
+			if self.tok.kind == Kind.KwLet:
 				self.open_scope()
 				expr = self.parse_guard_expr()
 			else:
@@ -1209,7 +1209,7 @@ class Parser:
 		return ast.SwitchExpr(expr, branches, is_typeswitch, self.scope, pos)
 
 	def parse_guard_expr(self):
-		self.expect(Kind.KwVar)
+		self.expect(Kind.KwLet)
 		pos = self.prev_tok.pos
 		vars = []
 		while True:

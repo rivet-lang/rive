@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    pub var environ: **u8;
+    pub let environ: **u8;
 
 	pub fn access(a: *u8, o: i32) i32;
 

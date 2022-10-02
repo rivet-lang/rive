@@ -17,8 +17,8 @@ pub errtype RuneFromU32Error;
 
 // Returns the number of runes contained in `s`.
 fn cstr_runes_count(s: *u8, size: usize) usize {
-	var l: usize = 0;
-	var i: usize = 0;
+	let l: usize = 0;
+	let i: usize = 0;
 	while (i < size) {
 		l++;
 		i += unsafe { s[i] }.len_utf8();
@@ -50,7 +50,7 @@ extend rune {
             panic("rune::from_digit: radix is too high (maximum 36)");
         }
         if (num < radix) {
-            var num_ = as(u8, num);
+            let num_ = as(u8, num);
             if (num_ < 10) {
                 return as(rune, b'0' + num_);
             } else {
@@ -65,8 +65,8 @@ extend rune {
 
 extend rune for traits::ToString {
     fn to_string(self) string {
-        var len = self.len_utf8();
-        var res = string::with_capacity(len);
+        let len = self.len_utf8();
+        let res = string::with_capacity(len);
         _ = unsafe { utf32_decode_to_buffer(as(u32, self), res.ptr) };
         res.len_ = len;
         return res;
@@ -74,7 +74,7 @@ extend rune for traits::ToString {
 }
 
 fn utf32_decode_to_buffer(code: u32, buffer: *mut u8) i32 {
-    var icode = as(i32, code);
+    let icode = as(i32, code);
 	unsafe {
 		switch {
             (icode <= 127) => { // 0x7F

@@ -4,7 +4,7 @@ test "switch expression" {
         else => assert!(false)
     }
 
-    var x = 1;
+    let x = 1;
     switch (x) {
         1 => assert!(true),
         else => assert!(false)

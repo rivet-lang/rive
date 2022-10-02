@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file.
 
 #[used]
-var empty_slice: _slice = _slice();
+let empty_slice: _slice = _slice();
 
 #[used]
 struct _slice {
@@ -13,11 +13,7 @@ struct _slice {
 
     #[used]
     pub unsafe fn from_array(arr: *mut void, elem_size: usize, len: usize) _slice {
-        return _slice(
-            ptr: unsafe { arr },
-            elem_size: elem_size,
-            len: len
-        );
+        return _slice(unsafe { arr }, elem_size, len);
     }
 
     #[used]
@@ -54,7 +50,9 @@ struct _slice {
     }
 
     #[used]
-    fn !=(self, rhs: Self) bool { return !self.==(rhs); }
+    fn !=(self, rhs: Self) bool {
+        return !self.==(rhs);
+    }
 
     #[used]
     fn slice(self, start: usize, end: usize) _slice {
@@ -64,14 +62,13 @@ struct _slice {
                 self.len
             );
         }
-        var len = end - start;
+        let len = end - start;
         if (len == self.len) {
             return self.*;
         }
         return _slice(
-            ptr: unsafe { as(*mut u8, self.ptr) + (start * self.elem_size) },
-            elem_size: self.elem_size,
-            len: len
+            unsafe { as(*mut u8, self.ptr) + (start * self.elem_size) },
+            self.elem_size, len
         );
     }
 

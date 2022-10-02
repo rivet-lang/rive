@@ -13,7 +13,7 @@ pub errtype OutOfMemoryError;
 /// the memory block.
 pub fn alloc(size: usize) !*mut void {
     unsafe {
-        var ptr = stdc::malloc(size);
+        let ptr = stdc::malloc(size);
         if (ptr == none) {
             raise OutOfMemoryError("insufficient memory is available");
         }
@@ -25,7 +25,7 @@ pub fn alloc(size: usize) !*mut void {
 /// Returns a pointer to the memory address of the allocated space.
 pub fn calloc(n: usize) !*mut void {
     unsafe {
-        var ptr = stdc::calloc(1, n);
+        let ptr = stdc::calloc(1, n);
         if (ptr == none) {
             raise OutOfMemoryError("insufficient memory is available");
         }
@@ -43,7 +43,7 @@ pub fn realloc(ptr: *mut void, sz: usize) !*mut void {
             dealloc(ptr);
             return none;
         }
-        var ptr_ = stdc::realloc(ptr, sz);
+        let ptr_ = stdc::realloc(ptr, sz);
         if (ptr_ == none) {
             raise OutOfMemoryError("insufficient memory is available");
         }
@@ -89,7 +89,7 @@ pub fn dup(src: *void, sz: usize) !*mut void {
         if (sz == 0) {
             return calloc(1).!;
         }
-        var res = alloc(sz).!;
+        let res = alloc(sz).!;
         _ = stdc::memcpy(res, src, sz);
         return res;
     }

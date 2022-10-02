@@ -4,15 +4,15 @@
 
 /// Reads the file in `path` and returns the contents.
 pub fn read_file(path: string) !string {
-	var mut f = File::open(path, "rb").!;
-	var res = f.read_all().!;
+	let mut f = File::open(path, "rb").!;
+	let res = f.read_all().!;
 	f.close();
 	return res;
 }
 
 /// Writes `text` data to a file in `path`.
 pub fn write_file(path: string, text: string) ! {
-	var mut f = File::open(path, "wb").!;
+	let mut f = File::open(path, "wb").!;
 	f.write(text);
 	f.close();
 }

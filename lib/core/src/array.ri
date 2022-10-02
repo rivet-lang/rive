@@ -26,20 +26,12 @@ fn array_slice(
     if (start > end or end > size) {
         panic("slice index out of range (range: {}..{}, len: {})", start, end, size);
     }
-    var len = end - start;
+    let len = end - start;
     unsafe {
         if (len == size) {
-            return _slice(
-                ptr: arr,
-                elem_size: elem_size,
-                len: len
-            );
+            return _slice(arr, elem_size, len);
         }
-        return _slice(
-            ptr: as(*mut u8, arr) + (start * elem_size),
-            elem_size: elem_size,
-            len: len
-        );
+        return _slice(as(*mut u8, arr) + (start * elem_size), elem_size, len);
     }
 }
 

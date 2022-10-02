@@ -3,33 +3,33 @@ fn ret_none() ?i32 {
 }
 
 test "if guard" {
-    if (var val = ret_none()) {
+    if (let val = ret_none()) {
         assert!(val == 3);
     }
 
-    if (var val1 = ret_none(); val1 >= 10) {
+    if (let val1 = ret_none(); val1 >= 10) {
         assert!(false);
     }
 }
 
 test "while guard" {
-    while (var val2 = ret_none()) {
+    while (let val2 = ret_none()) {
         assert!(val2 == 3);
         break;
     }
 
-    while (var val3 = ret_none(); val3 >= 10) {
+    while (let val3 = ret_none(); val3 >= 10) {
         assert!(val3 >= 3);
     }
 }
 
 test "switch guard" {
-    switch (var val4 = ret_none()) {
+    switch (let val4 = ret_none()) {
         3 => assert!(val4 == 3),
         else => assert!(false)
     }
 
-    switch (var val5 = ret_none(); val5 >= 10) {
+    switch (let val5 = ret_none(); val5 >= 10) {
         3 => assert!(val5 == 3),
         else => assert!(false)
     }

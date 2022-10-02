@@ -327,7 +327,7 @@ class AssignStmt:
 		self.right = right
 		self.pos = pos
 
-class VarStmt:
+class LetStmt:
 	def __init__(self, scope, lefts, right, pos):
 		self.lefts = lefts
 		self.right = right

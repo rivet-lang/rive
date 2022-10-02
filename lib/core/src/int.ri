@@ -4,7 +4,7 @@
 
 using pkg::traits::ToString;
 
-var DIGIT_PAIRS: str = "0010203040506070809001112131415161718191021222324252627"
+let DIGIT_PAIRS: str = "0010203040506070809001112131415161718191021222324252627"
     "28292031323334353637383930414243444546474849405152535455565758595061626364656667"
     "68696071727374757677787970818283848586878889809192939495969798999";
 
@@ -64,21 +64,21 @@ extend i32 {
             if (self == 0) {
                 return "0";
             }
-            var mut n = as(i64, self);
-            var mut d: u32 = 0;
+            let mut n = as(i64, self);
+            let mut d: u32 = 0;
 
-            var mut is_neg = false;
+            let mut is_neg = false;
             if (n < 0) {
                 n = -n;
                 is_neg = true;
             }
 
-            var mut index = as(usize, max);
-            var buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
+            let mut index = as(usize, max);
+            let buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
             buf[index--] = 0;
 
             while (n > 0) {
-                var n1 = as(i32, n / 100);
+                let n1 = as(i32, n / 100);
                 d = as(u32, as(i32, n) - (n1 * 100)) << 1;
                 n = n1;
                 buf[index--] = DIGIT_PAIRS.ptr[d];
@@ -98,7 +98,7 @@ extend i32 {
                 buf[index] = b'-';
             }
 
-            var diff = as(usize, max) - index;
+            let diff = as(usize, max) - index;
             mem::move(buf, buf + index, diff + 1);
             return string::from_raw_with_len(buf, diff);
         }
@@ -116,22 +116,22 @@ extend i64 for ToString {
             if (self.* == 0) {
                 return "0";
             }
-            var mut n = self.*;
-            var mut d: i64 = 0;
+            let mut n = self.*;
+            let mut d: i64 = 0;
 
-            var mut is_neg = false;
+            let mut is_neg = false;
             if (n < 0) {
                 n = -n;
                 is_neg = true;
             }
 
-            var max = 20;
-            var buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
-            var mut index = as(usize, max);
+            let max = 20;
+            let buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
+            let mut index = as(usize, max);
             buf[index--] = 0;
 
             while (n > 0) {
-                var n1 = as(i64, n / 100);
+                let n1 = as(i64, n / 100);
                 d = as(i64, as(u32, n - (n1 * 100))) << as(i64, 1);
                 n = n1;
                 buf[index--] = DIGIT_PAIRS.ptr[as(usize, d)];
@@ -151,7 +151,7 @@ extend i64 for ToString {
                 buf[index] = b'-';
             }
 
-            var diff = as(usize, max) - index;
+            let diff = as(usize, max) - index;
             mem::move(buf, buf + index, diff + 1);
             return string::from_raw_with_len(buf, diff);
         }
@@ -216,7 +216,7 @@ extend u8 {
 
     /// Returns the value of `self` as a ASCII `string`.
     pub fn to_ascii_string(self) string {
-        var mut res = string::with_capacity(1);
+        let mut res = string::with_capacity(1);
         res.push(self);
         return res;
     }
@@ -238,16 +238,16 @@ extend u32 for ToString {
             if (self.* == 0) {
                 return "0";
             }
-            var max: usize = 12;
-            var mut n = self.*;
-            var mut d: u32 = 0;
+            let max: usize = 12;
+            let mut n = self.*;
+            let mut d: u32 = 0;
 
-            var mut index = max;
-            var buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
+            let mut index = max;
+            let buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
             buf[index--] = 0;
 
             while (n > 0) {
-                var n1 = n / 100;
+                let n1 = n / 100;
                 d = (n - (n1 * 100)) << as(u32, 1);
                 n = n1;
                 buf[index--] = DIGIT_PAIRS.ptr[d];
@@ -261,7 +261,7 @@ extend u32 for ToString {
                 index++;
             }
 
-            var diff = max - index;
+            let diff = max - index;
             mem::move(buf, buf + index, diff + 1);
             return string::from_raw_with_len(buf, diff);
         }
@@ -274,16 +274,16 @@ extend u64 for ToString {
             if (self.* == 0) {
                 return "0";
             }
-            var mut n = self.*;
-            var mut d: u64 = 0;
+            let mut n = self.*;
+            let mut d: u64 = 0;
 
-            var max = 20;
-            var mut index = as(usize, max);
-            var buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
+            let max = 20;
+            let mut index = as(usize, max);
+            let buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
             buf[index--] = 0;
 
             while (n > 0) {
-                var n1 = n / 100;
+                let n1 = n / 100;
                 d = (n - (n1 * 100)) << as(u32, 1);
                 n = n1;
                 buf[index--] = DIGIT_PAIRS.ptr[d];
@@ -297,7 +297,7 @@ extend u64 for ToString {
                 index++;
             }
 
-            var diff = as(usize, max) - index;
+            let diff = as(usize, max) - index;
             mem::move(buf, buf + index, diff + 1);
             return string::from_raw_with_len(buf, diff);
         }

@@ -1,7 +1,5 @@
 test "while statement" {
-    // Rivet only has 1 way to write loops: `while`, which always executes,
-    // until the given condition is false.
-    var x = 0;
+    let mut x = 0;
     while { // infinite loop
         x++;
         if (x == 5) {

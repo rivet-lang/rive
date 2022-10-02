@@ -5,7 +5,7 @@
 using core::stdc;
 
 /// User's home directory.
-pub var HOME_DIR: string = $if (_LINUX_) get("HOME") $else get("USERPROFILE");
+pub let HOME_DIR: string = $if (_LINUX_) get("HOME") $else get("USERPROFILE");
 
 /// Returns `true` if the environment variable exists.
 pub fn exists(name: string) bool {
@@ -15,7 +15,7 @@ pub fn exists(name: string) bool {
 /// Returns the value of the environment variable named by the key.
 pub fn get(name: string) string {
 	unsafe {
-		var s = stdc::getenv(name.ptr);
+		let s = stdc::getenv(name.ptr);
 		return if (s == none) "" else string::from_raw(s);
 	}
 }

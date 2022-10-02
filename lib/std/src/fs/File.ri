@@ -2,8 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-using pkg::stdc;
-using pkg::mem;
+using core::stdc;
+using core::mem;
 
 pub struct File {
     f: *mut stdc::FILE;
@@ -11,7 +11,7 @@ pub struct File {
 
     pub fn open(path: string, mode: string = "r") !File {
 		unsafe {
-			var f = stdc::fopen(path.ptr, mode.ptr);
+			let f = stdc::fopen(path.ptr, mode.ptr);
 			if (f == none) {
 				raise Error("File::open: failed to open file '{}'".fmt(path));
 			}
@@ -45,12 +45,12 @@ pub struct File {
             return "";
         }
         unsafe {
-            var seek = stdc::fseek(self.f, 0, 2);
+            let seek = stdc::fseek(self.f, 0, 2);
             if (seek != 0) {
                 raise Error("fseek failed");
             }
 
-            var fsize = stdc::ftell(self.f);
+            let fsize = stdc::ftell(self.f);
             if (fsize < 0) {
                 raise Error("ftell failed");
             }
@@ -59,13 +59,13 @@ pub struct File {
 
             // On some systems `ftell` can return values in the 64-bit range
             // that, when cast to `i32`, can result in values below 0.
-            var allocate = as(i32, fsize);
+            let allocate = as(i32, fsize);
             if (as(i64, allocate) < fsize) {
                 raise Error("{} cast to `i32` results in {}".fmt(fsize, as(i32, fsize)));
             }
 
-            var mut res = as(*mut u8, mem::alloc(as(usize, allocate) + 1).!);
-            var nelements = stdc::fread(res, 1, as(usize, allocate), self.f);
+            let mut res = as(*mut u8, mem::alloc(as(usize, allocate) + 1).!);
+            let nelements = stdc::fread(res, 1, as(usize, allocate), self.f);
 
             if (self.eof() and stdc::ferror(self.f) != 0) {
                 mem::dealloc(res);

@@ -17,7 +17,7 @@ $if (_x64_) {
 }
 
 test "comptime `if` declaration" {
-    var st = Struct{};
+    let st = Struct{};
     $if (_LINUX_) {
         assert!(st.linux_field == 5);
     } $else $if (_WINDOWS_) {
