@@ -2,7 +2,7 @@ union Any {
     i32, str;
 }
 
-fn main() {
+test "type switch" {
     var any = Any("String");
     switch (any) is {
         str as any_s => assert!(any_s == "String"),

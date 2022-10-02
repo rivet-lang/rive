@@ -1,7 +1,0 @@
-extern pkg std;
-
-using std::console;
-
-fn main() {
-    console::println("Hello World!");
-}

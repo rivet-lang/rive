@@ -1,4 +1,4 @@
-fn main() {
+test "for in statement" {
     var sum = 0;
     for (i in 0..10) {
         sum += i;

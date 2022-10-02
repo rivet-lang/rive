@@ -16,17 +16,19 @@ $if (_x64_) {
     }
 }
 
-fn main() {
-    $if (_x64_) {
-        assert!(is_64bits());
-    } $else {
-        assert!(is_32bits());
-    }
-
+test "comptime `if` declaration" {
     var st = Struct{};
     $if (_LINUX_) {
         assert!(st.linux_field == 5);
     } $else $if (_WINDOWS_) {
         assert!(st.windows_field == 10);
+    }
+}
+
+test "comptime `if` statement" {
+    $if (_x64_) {
+        assert!(is_64bits());
+    } $else {
+        assert!(is_32bits());
     }
 }

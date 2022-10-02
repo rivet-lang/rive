@@ -1,4 +1,4 @@
-fn main() {
+test "string index" {
     var x = "String Literal";
     assert!(x[0] == b'S');
 

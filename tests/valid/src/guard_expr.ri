@@ -2,7 +2,7 @@ fn ret_none() ?i32 {
     return 3;
 }
 
-fn main() {
+test "if guard" {
     if (var val = ret_none()) {
         assert!(val == 3);
     }
@@ -10,7 +10,9 @@ fn main() {
     if (var val1 = ret_none(); val1 >= 10) {
         assert!(false);
     }
+}
 
+test "while guard" {
     while (var val2 = ret_none()) {
         assert!(val2 == 3);
         break;
@@ -19,7 +21,9 @@ fn main() {
     while (var val3 = ret_none(); val3 >= 10) {
         assert!(val3 >= 3);
     }
+}
 
+test "switch guard" {
     switch (var val4 = ret_none()) {
         3 => assert!(val4 == 3),
         else => assert!(false)

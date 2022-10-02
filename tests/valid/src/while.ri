@@ -1,4 +1,4 @@
-fn main() {
+test "while statement" {
     // Rivet only has 1 way to write loops: `while`, which always executes,
     // until the given condition is false.
     var x = 0;
