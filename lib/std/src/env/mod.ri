@@ -1,0 +1,35 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+using core::stdc;
+
+/// User's home directory.
+pub var HOME_DIR: string = $if (_LINUX_) get("HOME") $else get("USERPROFILE");
+
+/// Returns `true` if the environment variable exists.
+pub fn exists(name: string) bool {
+	return unsafe { stdc::getenv(name.ptr) != none };
+}
+
+/// Returns the value of the environment variable named by the key.
+pub fn get(name: string) string {
+	unsafe {
+		var s = stdc::getenv(name.ptr);
+		return if (s == none) "" else string::from_raw(s);
+	}
+}
+
+/// Sets the value of an environment variable with `name` to `value`.
+pub fn set(name: string, value: string, overwrite: bool = true) ! {
+	if (unsafe { stdc::setenv(name.ptr, value.ptr, overwrite) == -1 }) {
+		raise Error("env::set: {}".fmt(core::strerr()));
+	}
+}
+
+/// Removes an environment variable with `name`.
+pub fn remove(name: string) ! {
+	if (unsafe { stdc::unsetenv(name.ptr) } == -1) {
+		raise Error("env::remove: {}".fmt(core::strerr()));
+	}
+}

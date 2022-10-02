@@ -16,7 +16,7 @@ pub fn print(s: string, args: ...traits::ToString) {
 /// Prints a message with a line end to stdout. stdout is flushed.
 pub fn println(s: string = "", args: ...traits::ToString) {
     unsafe {
-        utils::writeln_to_fd(1, );
+        utils::writeln_to_fd(1, s.fmt(args));
     }
 }
 

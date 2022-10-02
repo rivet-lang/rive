@@ -9,8 +9,8 @@ from . import colors
 VERSION = "0.1.0"
 HELP = """Usage: rivetc [OPTIONS] INPUT
 
-rivetc expects a directory containing rivet code within a subfolder called
-"src", example:
+The compiler can receive a file or a directory as input, examples:
+   rivetc my_file.ri
    rivetc my_folder/
 
 Options:
@@ -290,8 +290,8 @@ def smart_quote(str, raw: bool):
 
 class OrderedDepMap:
 	def __init__(self, keys = list(), data = dict()):
-		self.keys = keys
-		self.data = data
+		self.keys = keys.copy()
+		self.data = data.copy()
 
 	def set(self, name, deps):
 		if name not in self.data:
@@ -335,8 +335,8 @@ class DepGraphNode:
 
 class NodeNames:
 	def __init__(self, is_cycle = dict(), names = dict()):
-		self.is_cycle = is_cycle
-		self.names = names
+		self.is_cycle = is_cycle.copy()
+		self.names = names.copy()
 
 	def is_part_of_cycle(self, name, already_seen):
 		seen = False
@@ -428,6 +428,7 @@ class DepGraph:
 class PkgDeps:
 	def __init__(self):
 		self.dg = DepGraph()
+		self.mod_deps = {}
 		self.source_files = {}
 
 	def add_source_files(self, name, source_files):
@@ -436,11 +437,27 @@ class PkgDeps:
 	def add_pkg_deps(self, name, deps):
 		self.dg.add(name, deps)
 
+	def add_pkg_mod_deps(self, pkg_name, name, deps):
+		if pkg_name in self.mod_deps:
+			self.mod_deps[pkg_name].add(name, deps)
+		else:
+			dg = DepGraph()
+			dg.add(name, deps)
+			self.mod_deps[pkg_name] = dg
+
 	def resolve(self):
 		resolved = self.dg.resolve()
-		if not self.dg.acyclic:
-			error("package deps cycle:\n" + self.dg.display_cycles())
+		if not resolved.acyclic:
+			error("package deps cycle:\n" + resolved.display_cycles())
 		source_files = []
 		for node in resolved.nodes:
-			source_files += self.source_files[node.name]
+			# resolve module dependency
+			resolved_mods = self.mod_deps[node.name].resolve()
+			if not resolved_mods.acyclic:
+				error(
+				    f"package `{node.name}` module deps cycle:\n" +
+				    resolved_mods.display_cycles()
+				)
+			for node_mods in resolved_mods.nodes:
+				source_files += self.source_files[node_mods.name]
 		return source_files

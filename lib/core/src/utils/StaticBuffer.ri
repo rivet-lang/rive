@@ -4,7 +4,7 @@
 
 using pkg::stdc;
 
-pub stringuct StaticBuffer {
+pub struct StaticBuffer {
     mut buf: [u8; 25];
     mut len: usize;
 

@@ -53,10 +53,9 @@ class Compiler:
 
 	def run(self):
 		self.load_root_pkg()
-		self.source_files = self.pkg_deps.resolve()
-
 		if report.ERRORS > 0:
 			self.abort()
+		self.source_files = self.pkg_deps.resolve()
 
 		#if not self.prefs.check_syntax:
 		#	self.resolver.resolve_files(self.source_files)
@@ -107,19 +106,23 @@ class Compiler:
 		#					)
 
 	def load_root_pkg(self):
-		files = self.filter_files(
-		    glob.glob(path.join(self.prefs.input, "src", "*.ri"))
-		)
+		if path.isdir(self.prefs.input):
+			files = self.filter_files(
+			    glob.glob(path.join(self.prefs.input, "*.ri"))
+			)
+			src_dir = path.join(self.prefs.input, "src")
+			if path.isdir(src_dir): # support `src/` directory
+				files += glob.glob(path.join(src_dir, "*.ri"))
+		else:
+			files = [self.prefs.input]
 		if len(files) == 0:
 			utils.error("no input received")
-		source_files = parser.Parser(self).parse_pkg(self.prefs.pkg_name, files)
-		self.pkg_deps.add_source_files(self.prefs.pkg_name, source_files)
+		parser.Parser(self).parse_pkg(self.prefs.pkg_name, files)
 
 	def load_pkg(self, pkg_name, pos):
-		source_files = parser.Parser(self).parse_pkg(
+		parser.Parser(self).parse_pkg(
 		    pkg_name, self.get_pkg_files(pkg_name, pos)
 		)
-		self.pkg_deps.add_source_files(pkg_name, source_files)
 
 	def get_pkg_files(self, pkg_name, pos):
 		files = []
@@ -127,15 +130,16 @@ class Compiler:
 		for l in self.prefs.library_path:
 			pkg_path = path.join(l, pkg_name)
 			if path.exists(pkg_path):
+				pkg_path = path.relpath(pkg_path)
 				found = True
 				if path.isdir(pkg_path):
+					files = self.filter_files(
+					    glob.glob(path.join(pkg_path, "*.ri"))
+					)
+					# support `src/` directory
 					if path.isdir(path.join(pkg_path, "src")):
-						files = self.filter_files(
+						files += self.filter_files(
 						    glob.glob(path.join(pkg_path, "src", "*.ri"))
-						)
-					else:
-						report.error(
-						    f"`{pkg_name}` does not contain a `src` folder", pos
 						)
 				else:
 					report.error(f"`{pkg_name}` is not a directory", pos)
@@ -167,9 +171,9 @@ class Compiler:
 					else:
 						should_compile = should_compile and ext[
 						    5:] not in self.prefs.flags
-				elif osf := OS.from_string(ext):
+				elif osf := prefs.OS.from_string(ext):
 					should_compile = should_compile and self.prefs.target_os == osf
-				elif arch := Arch.from_string(ext):
+				elif arch := prefs.Arch.from_string(ext):
 					should_compile = should_compile and self.prefs.target_arch == arch
 				elif ext in ("x32", "x64"):
 					if ext == "x32":

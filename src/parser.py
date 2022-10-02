@@ -2,7 +2,9 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-from . import sym, type, report, token, ast, utils
+import os, glob
+
+from . import ast, sym, type, report, token, utils
 from .token import Kind
 from .lexer import Lexer
 
@@ -11,14 +13,23 @@ class Parser:
 		self.comp = comp
 
 		self.lexer = None
-		self.scope = None
-		self.pkg_name = ""
-		self.pkg_deps = []
-
 		self.prev_tok = None
 		self.tok = None
 		self.peek_tok = None
 		self.last_err_pos = None
+
+		self.pkg_name = ""
+		self.pkg_deps = []
+		self.mod_vis = sym.Vis.Priv
+		self.mod_name = ""
+		self.mod_deps = []
+
+		self.file_path = ""
+		self.file_dir = ""
+		self.file_parent_sym = None
+		self.file_sym = None
+
+		self.scope = None
 
 		# This field is `true` when we are in a root module, that is,
 		# a package.
@@ -31,25 +42,53 @@ class Parser:
 		self.inside_block = False
 
 	def parse_pkg(self, pkg_name, files):
-		self.pkg_name = pkg_name
-		self.pkg_deps = []
 		self.is_pkg_level = True
-		source_files = self.parse_mod(files)
-		self.comp.pkg_deps.add_pkg_deps(pkg_name, self.pkg_deps)
-		return source_files
-
-	def parse_mod(self, files):
+		self.pkg_name = pkg_name
 		source_files = []
 		for file in files:
-			source_files.append(self.parse_file(file))
-		return source_files
+			self.file_path = file
+			self.file_dir = os.path.dirname(file)
+			source_files.append(self.parse_file(file, True))
+		self.comp.pkg_deps.add_pkg_deps(pkg_name, self.pkg_deps)
+		self.comp.pkg_deps.add_pkg_mod_deps(pkg_name, pkg_name, self.mod_deps)
+		self.comp.pkg_deps.add_source_files(pkg_name, source_files)
 
-	def parse_file(self, file):
+	def parse_mod(self, pkg_name, parent, vis, name, files):
+		self.pkg_name = pkg_name
+		self.mod_vis = vis
+		self.mod_name = name
+		self.file_parent_sym = parent
+		source_files = []
+		for file in files:
+			self.file_path = file
+			self.file_dir = os.path.dirname(file)
+			source_files.append(self.parse_file(file, False))
+		qualname = parent.qualname() + "::" + name
+		self.comp.pkg_deps.add_pkg_mod_deps(pkg_name, qualname, self.mod_deps)
+		self.comp.pkg_deps.add_source_files(qualname, source_files)
+
+	def parse_file(self, file, from_pkg):
 		self.lexer = Lexer.from_file(file)
 		if report.ERRORS > 0:
 			return ast.SourceFile(file, [], self.pkg_name, None)
 		self.advance(2)
-		return ast.SourceFile(file, self.parse_decls(), self.pkg_name, None)
+		if from_pkg:
+			if pkg_sym := self.comp.universe.find(self.pkg_name):
+				sf_sym = pkg_sym
+			else:
+				sf_sym = self.comp.universe.add_and_return(
+				    sym.Pkg(sym.Vis.Priv, self.pkg_name)
+				)
+		elif mod_sym := self.file_parent_sym.find(self.mod_name):
+			sf_sym = mod_sym
+		else:
+			sf_sym = self.file_parent_sym.add_and_return(
+			    sym.Mod(self.mod_vis, self.mod_name)
+			)
+		self.file_sym = sf_sym
+		return ast.SourceFile(
+		    file, self.parse_decls(), self.pkg_name, self.file_sym
+		)
 
 	# ---- useful functions for working with tokens ----
 	def next(self):
@@ -287,6 +326,39 @@ class Parser:
 				decl = ast.ExternDecl(attrs, abi, protos, pos)
 			self.inside_extern = False
 			return decl
+		elif self.accept(Kind.KwMod):
+			pos = self.tok.pos
+			if is_unsafe:
+				report.error("modules cannot be declared unsafe", pos)
+			name = self.parse_name()
+			decls = []
+			is_unloaded = self.accept(Kind.Semicolon)
+			if is_unloaded:
+				mod_path = os.path.join(self.file_dir, name)
+				if os.path.isdir(mod_path):
+					files = self.comp.filter_files(
+					    glob.glob(os.path.join(mod_path, "*.ri"))
+					)
+					if len(files) == 0:
+						report.error(
+						    f"module `{name}` contains no rivet files", pos
+						)
+					Parser(
+					    self.comp
+					).parse_mod(self.pkg_name, self.file_sym, vis, name, files)
+					self.mod_deps.append(self.file_sym.qualname() + "::" + name)
+				else:
+					report.error(f"module `{name}` not found", pos)
+			else:
+				old_is_pkg_level = self.is_pkg_level
+				self.is_pkg_level = False
+				self.expect(Kind.Lbrace)
+				while not self.accept(Kind.Rbrace):
+					decls.append(self.parse_decl())
+				self.is_pkg_level = old_is_pkg_level
+			return ast.ModDecl(
+			    doc_comment, attrs, name, vis, decls, is_unloaded, pos
+			)
 		elif self.accept(Kind.KwConst):
 			pos = self.tok.pos
 			if is_unsafe:
@@ -304,25 +376,6 @@ class Parser:
 				    "static values cannot be declared unsafe", self.tok.pos
 				)
 			return self.parse_var_stmt(True)
-		elif self.accept(Kind.KwMod):
-			pos = self.tok.pos
-			if is_unsafe:
-				report.error("modules cannot be declared unsafe", pos)
-			name = self.parse_name()
-			decls = []
-			is_unloaded = self.accept(Kind.Semicolon)
-			if not is_unloaded:
-				old_is_pkg_level = self.is_pkg_level
-				self.is_pkg_level = False
-
-				self.expect(Kind.Lbrace)
-				while not self.accept(Kind.Rbrace):
-					decls.append(self.parse_decl())
-
-				self.is_pkg_level = old_is_pkg_level
-			return ast.ModDecl(
-			    doc_comment, attrs, name, vis, decls, is_unloaded, pos
-			)
 		elif self.accept(Kind.KwType):
 			pos = self.tok.pos
 			if is_unsafe:
@@ -530,22 +583,6 @@ class Parser:
 			self.next()
 		return ast.EmptyDecl()
 
-	def parse_static_decl(self, doc_comment, attrs, vis, is_extern):
-		pos = self.tok.pos
-		is_mut = self.accept(Kind.KwMut)
-		name = self.parse_name()
-		self.expect(Kind.Colon)
-		typ = self.parse_type()
-		if is_extern:
-			expr = self.empty_expr()
-		else:
-			self.expect(Kind.Assign)
-			expr = self.parse_expr()
-		self.expect(Kind.Semicolon)
-		return ast.StaticDecl(
-		    doc_comment, attrs, vis, is_extern, is_mut, name, typ, expr, pos
-		)
-
 	def parse_fn_decl(self, doc_comment, attrs, vis, is_unsafe, abi):
 		pos = self.tok.pos
 		if self.tok.kind.is_overloadable_op():
@@ -693,10 +730,10 @@ class Parser:
 			self.expect(Kind.Rparen)
 		else:
 			lefts.append(self.parse_var_decl(inside_global))
-		self.expect(Kind.Assign)
-		if self.inside_extern:
+		if inside_global and self.inside_extern:
 			right = self.empty_expr()
 		else:
+			self.expect(Kind.Assign)
 			right = self.parse_expr()
 		self.expect(Kind.Semicolon)
 		return ast.VarStmt(self.scope, lefts, right, pos)
@@ -710,7 +747,7 @@ class Parser:
 		if support_typ and self.accept(Kind.Colon):
 			typ = self.parse_type()
 			has_typ = True
-		level = sym.ObjectLevel.Global if inside_global else sym.ObjectLevel.Local
+		level = sym.ObjLevel.Global if inside_global else sym.ObjLevel.Local
 		return ast.ObjDecl(is_mut, name, has_typ, typ, level, pos)
 
 	# ---- expressions -------------------------

@@ -312,14 +312,13 @@ class Prefs:
 					error("the compiler can only receive one package")
 				elif not path.exists(arg):
 					error(f"`{arg}` does not exist")
-				elif not path.isdir(arg):
-					error(f"`{arg}` is not a directory")
-				elif not path.isdir(path.join(arg, "src")):
-					error(f"`{arg}` does not contain a `src` folder")
 				else:
 					self.input = arg
 					if self.pkg_name == "":
-						self.pkg_name = path.basename(path.normpath(arg))
+						if path.isfile(arg):
+							self.pkg_name = path.splitext(path.basename(arg))[0]
+						else:
+							self.pkg_name = path.basename(path.normpath(arg))
 			i += 1
 
 		self.build_rivet_dir()

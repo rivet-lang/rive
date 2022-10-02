@@ -157,17 +157,6 @@ class ExternDecl:
 		self.protos = protos
 		self.pos = pos
 
-class ConstDecl:
-	def __init__(self, doc_comment, attrs, vis, name, typ, expr, pos):
-		self.doc_comment = doc_comment
-		self.attrs = attrs
-		self.vis = vis
-		self.name = name
-		self.typ = typ
-		self.expr = expr
-		self.sym = None
-		self.pos = pos
-
 class ModDecl:
 	def __init__(self, doc_comment, attrs, name, vis, decls, is_unloaded, pos):
 		self.doc_comment = doc_comment
@@ -177,6 +166,17 @@ class ModDecl:
 		self.decls = decls
 		self.sym = None
 		self.is_unloaded = is_unloaded
+		self.pos = pos
+
+class ConstDecl:
+	def __init__(self, doc_comment, attrs, vis, name, typ, expr, pos):
+		self.doc_comment = doc_comment
+		self.attrs = attrs
+		self.vis = vis
+		self.name = name
+		self.typ = typ
+		self.expr = expr
+		self.sym = None
 		self.pos = pos
 
 class TypeDecl:

@@ -1,0 +1,36 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+class Result {
+	pub output: string;
+	pub exit_code: i32;
+}
+
+/// Starts the specified command, waits for it to complete, and returns
+/// both its output and the exit code.
+pub fn execute(cmd: string) Result {
+    var pcmd = if (cmd.contains("2>")) cmd else "{} 2>&1".fmt(cmd);
+
+    unsafe {
+        var f = stdc::popen(pcmd.as_ptr(), c"r");
+        if (f == none) {
+            return Result("execute(\"{}\") failed".fmt(cmd), -1);
+        }
+
+        var fd = stdc::fileno(f);
+        var buf: [u8; 4096] = [];
+        var pbuf: *mut u8 = &mut buf[0];
+        var mut output = string::with_capacity(1024);
+
+        while {
+            var len = stdc::read(fd, pbuf, 4096);
+            if (len == 0 or len == -1) {
+                break;
+            }
+            output.push_raw_with_len(pbuf, as(usize, len));
+        }
+
+        return Result(output, stdc::pclose(f));
+    }
+}

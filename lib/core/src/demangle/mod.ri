@@ -4,13 +4,13 @@
 
 using pkg::utils::StaticBuffer;
 
-pub fn demangle_symbol(name: str) string {
+pub fn demangle_symbol(name: string) string {
     if (!name.starts_with("_R")) {
-        return name.to_string();
+        return name;
     }
 
     var idx: usize = 2;
-    var buf = StaticBuffer{};
+    var buf = StaticBuffer();
     var res = string::with_capacity(name.len);
     while (idx < name.len) {
         var byte = unsafe { name.ptr[idx] };

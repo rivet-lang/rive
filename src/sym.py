@@ -8,18 +8,18 @@ from .utils import CompilerError
 
 SYMBOL_COUNT = 0
 
-def symbol_count():
+def new_symbol_id():
 	global SYMBOL_COUNT
 	ret = SYMBOL_COUNT
 	SYMBOL_COUNT += 1
 	return ret
 
-class ObjectLevel(Enum):
+class ObjLevel(Enum):
 	Global = auto_enum()
 	Arg = auto_enum()
 	Local = auto_enum()
 
-class Object:
+class Obj:
 	def __init__(self, is_mut, name, typ, level):
 		self.name = name
 		self.is_mut = is_mut
@@ -109,20 +109,17 @@ class Vis(Enum):
 		return self.__repr__()
 
 class Sym:
-	def __init__(self, vis, name, type_arguments = list()):
-		self.id = symbol_count()
+	def __init__(self, vis, name):
+		self.id = new_symbol_id()
 		self.vis = vis
 		self.name = name
 		self.mangled_name = ""
 		self.qualified_name = ""
-		self.generic_name = ""
 		self.parent = None
 		self.syms = []
-		self.is_universe = isinstance(self, Pkg) and self.id == 0
-		self.is_core = isinstance(self, Pkg) and self.id == 22
-		self.is_generated = False
-		self.type_arguments = type_arguments
 		self.uses = 0
+		self.is_universe = isinstance(self, Pkg) and self.id == 0
+		self.is_generated = False
 
 	def add(self, sym):
 		if asym := self.find(sym.name):
@@ -148,6 +145,7 @@ class Sym:
 
 	def add_and_return(self, sym):
 		idx = len(self.syms)
+		sym.parent = self
 		self.syms.append(sym)
 		return self.syms[idx]
 
@@ -516,10 +514,8 @@ class StructInfo:
 		self.is_opaque = is_opaque
 
 class Type(Sym):
-	def __init__(
-	    self, vis, name, kind, fields = [], info = None, type_arguments = []
-	):
-		Sym.__init__(self, vis, name, type_arguments)
+	def __init__(self, vis, name, kind, fields = [], info = None):
+		Sym.__init__(self, vis, name)
 		self.kind = kind
 		self.fields = fields
 		self.info = info
