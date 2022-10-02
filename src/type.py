@@ -33,7 +33,7 @@ class TBase:
 		elif isinstance(self, Tuple):
 			for t in self.types:
 				t.unalias()
-		elif isinstance(self, (Array, Slice, Ptr)):
+		elif isinstance(self, (Array, Slice, Ptr, Ref)):
 			self.typ.unalias()
 		elif isinstance(self, Type):
 			if self.is_resolved() and self.sym.kind == TypeKind.Alias:
@@ -76,6 +76,28 @@ class Type(TBase):
 		else:
 			res = str(self.sym.name)
 		return res
+
+class Ref(TBase):
+	def __init__(self, typ, is_mut = False):
+		self.typ = typ
+		self.is_mut = is_mut
+
+	def qualstr(self):
+		if self.is_mut:
+			return f"&mut {self.typ.qualstr()}"
+		return f"&{self.typ.qualstr()}"
+
+	def __eq__(self, other):
+		if not isinstance(other, Ref):
+			return False
+		elif self.is_mut and not other.is_mut:
+			return False
+		return self.typ == other.typ
+
+	def __str__(self):
+		if self.is_mut:
+			return f"&mut {self.typ}"
+		return f"&{self.typ}"
 
 class Ptr(TBase):
 	def __init__(self, typ, is_mut = False):

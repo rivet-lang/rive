@@ -1354,6 +1354,11 @@ class Parser:
 			    is_unsafe, is_extern, abi, False, args, is_variadic, ret_typ,
 			    False
 			)
+		elif self.accept(Kind.Amp):
+			# references
+			is_mut = self.accept(Kind.KwMut)
+			typ = self.parse_type()
+			return type.Ref(typ, is_mut)
 		elif self.accept(Kind.Mult):
 			# pointers
 			is_mut = self.accept(Kind.KwMut)
