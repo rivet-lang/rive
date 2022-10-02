@@ -43,8 +43,10 @@ Let's start with the typical `Hello World!`:
 
 We create a file called `hello_world.ri` with the following content:
 ```rs
+use core::console;
+
 fn main() {
-    println("Hello World!");
+    console::println("Hello World!");
 }
 ```
 

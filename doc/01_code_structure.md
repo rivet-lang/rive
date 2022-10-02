@@ -24,13 +24,13 @@ fn main() {
 
 On the top level only declarations are allowed.
 ```rust
-using pkg::module;
+use pkg::foo;
 
-mod M { /* ... */ }
+mod Foo { /* ... */ }
 
-var S: i32 = 0;
+const Foo: i32 = 0;
 
-const C: i32 = 0;
+let Foo: i32 = 0;
 
 type Foo = i32;
 
@@ -45,6 +45,8 @@ enum Foo { /* ... */ }
 extend Foo { /* ... */ }
 
 fn baz() { /* ... */ }
+
+test "test name =D" { /* ... */ }
 ```
 
 * * *

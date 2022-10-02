@@ -44,7 +44,7 @@ A function body is made up of 1 or more statements and can be empty.
 ```rust
 fn x() { /* empty body */ }
 fn y() {
-	var my_var = 1; // statement
+	let my_var = 1; // statement
 }
 ```
 
