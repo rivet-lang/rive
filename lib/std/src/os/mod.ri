@@ -20,7 +20,7 @@ pub fn execute(cmd: string) Result {
 
         let fd = stdc::fileno(f);
         let buf: [u8; 4096] = [];
-        let pbuf: *mut u8 = &mut buf[0];
+        let pbuf: *mut u8 = addr_of_mut!(buf[0]);
         let mut output = string::with_capacity(1024);
 
         while {

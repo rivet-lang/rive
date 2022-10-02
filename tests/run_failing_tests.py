@@ -20,11 +20,7 @@ def run_fail_tests():
 
 	utils.eprint(utils.bold(HEADER))
 	for file in FAIL_FILES:
-		res = utils.run_process(
-		    sys.executable,
-		    "rivetc.py",
-		    file, "-cc", CC
-		)
+		res = utils.run_process(sys.executable, "rivetc.py", file, "-cc", CC)
 		try:
 			outf = open(file.replace(".ri", ".out"), encoding = 'UTF-8').read()
 			if outf.strip() == res.err:

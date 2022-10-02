@@ -11,10 +11,7 @@ import utils
 FAIL_FILES = glob.glob(f"tests/invalid/*.ri")
 for file in FAIL_FILES:
 	out_name = file.replace(".ri", ".out")
-	res = utils.run_process(
-	    sys.executable, "rivetc.py",
-	    file
-	)
+	res = utils.run_process(sys.executable, "rivetc.py", file)
 	if res.exit_code != 0:
 		utils.eprint(f"[OK] {file}")
 		with open(out_name, "w", encoding = 'UTF-8') as f:

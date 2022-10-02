@@ -120,9 +120,8 @@ class Compiler:
 		parser.Parser(self).parse_pkg(self.prefs.pkg_name, files)
 
 	def load_pkg(self, pkg_name, pos):
-		parser.Parser(self).parse_pkg(
-		    pkg_name, self.get_pkg_files(pkg_name, pos)
-		)
+		parser.Parser(self
+		              ).parse_pkg(pkg_name, self.get_pkg_files(pkg_name, pos))
 
 	def get_pkg_files(self, pkg_name, pos):
 		files = []

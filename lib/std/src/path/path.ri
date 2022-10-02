@@ -40,7 +40,7 @@ pub fn is_readable(path: string) bool {
 /// Returns true if `path` is a directory.
 pub fn is_dir(path: string) bool {
     let statbuf = stdc::Stat();
-    if (unsafe { stdc::stat(path.ptr, &statbuf) != 0 }) {
+    if (unsafe { stdc::stat(path.ptr, addr_of_mut!(statbuf)) != 0 }) {
         return false;
     }
     return (as(i32, statbuf.mode) & S_IFMT) == S_IFDIR;
@@ -59,7 +59,7 @@ pub fn is_absolute(path: string) bool {
 /// Returns a boolean indicating whether `path` is a link.
 pub fn is_link(path: string) bool {
     let statbuf = stdc::Stat();
-    if (unsafe { stdc::lstat(path.ptr, &statbuf) != 0 }) {
+    if (unsafe { stdc::lstat(path.ptr, addr_of_mut!(statbuf)) != 0 }) {
         return false;
     }
     return (as(i32, statbuf.mode) & S_IFMT) == S_IFLNK;
