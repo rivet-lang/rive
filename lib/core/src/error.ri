@@ -8,18 +8,14 @@ use pkg::traits::ToString;
 pub errtype Error;
 
 #[used]
-struct _error {
+struct _Error {
     errtype_name: string;
-    msg_: stringing;
+    msg_: string;
     tag: u8; // max: 255
 
     #[used]
     fn new(errtype_name: string, tag: u8, msg: string, args: ...ToString) Self {
-        return Self(
-            errtype_name: errtype_name,
-            msg_: msg.fmt(args),
-            tag: tag
-        );
+        return Self(errtype_name, msg.fmt(args), tag);
     }
 
     #[used]
@@ -43,12 +39,12 @@ struct _error {
 
 extend error {
     pub fn msg(self) string {
-        return as(_error, self).msg_;
+        return as(_Error, self).msg_;
     }
 }
 
 extend error for ToString {
     pub fn to_string(self) string {
-        return as(_error, self).to_string_();
+        return as(_Error, self).to_string_();
     }
 }

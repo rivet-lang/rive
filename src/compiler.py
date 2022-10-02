@@ -200,15 +200,15 @@ class Compiler:
 			else:
 				utils.error("cannot find type `string` in package `core`")
 
-			if slice_struct := self.core_pkg.find("_slice"):
+			if slice_struct := self.core_pkg.find("Slice"):
 				self.slice_struct = slice_struct
 			else:
-				utils.error("cannot find type `_slice` in package `core`")
+				utils.error("cannot find type `Slice` in package `core`")
 
-			if error_struct := self.core_pkg.find("_error"):
+			if error_struct := self.core_pkg.find("_Error"):
 				self.error_struct = error_struct
 			else:
-				utils.error("cannot find type `_error` in package `core`")
+				utils.error("cannot find type `_Error` in package `core`")
 		else:
 			utils.error("package `core` not found")
 
