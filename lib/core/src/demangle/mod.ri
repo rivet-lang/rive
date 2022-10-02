@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-using pkg::utils::StaticBuffer;
+use pkg::utils::StaticBuffer;
 
 pub fn demangle_symbol(name: string) string {
     if (!name.starts_with("_R")) {

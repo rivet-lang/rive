@@ -72,7 +72,7 @@ class Kind(Enum):
 	# ========== keywords ==========
 	KwPkg = auto_enum() # pkg
 	KwPub = auto_enum() # pub
-	KwUsing = auto_enum() # using
+	KwUse = auto_enum() # use
 	KwAs = auto_enum() # as
 	KwConst = auto_enum() # const
 	KwMod = auto_enum() # mod
@@ -208,7 +208,7 @@ TOKEN_STRINGS = {
     Kind.KwSelfTy: "Self",
     Kind.KwPkg: "pkg",
     Kind.KwPub: "pub",
-    Kind.KwUsing: "using",
+    Kind.KwUse: "use",
     Kind.KwAs: "as",
     Kind.KwConst: "const",
     Kind.KwMod: "mod",

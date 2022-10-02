@@ -234,7 +234,7 @@ class Parser:
 		pos = self.tok.pos
 		if self.accept(Kind.Dollar):
 			return self.parse_comptime_if_decl()
-		elif self.accept(Kind.KwUsing):
+		elif self.accept(Kind.KwUse):
 			path = self.parse_expr()
 			if isinstance(path, ast.Ident):
 				alias = path.name
@@ -254,17 +254,17 @@ class Parser:
 					if self.accept(Kind.KwSelf):
 						if self.accept(Kind.KwAs):
 							alias = self.parse_name()
-						symbols.append(ast.UsingSymbol("", alias, True))
+						symbols.append(ast.UseSymbol("", alias, True))
 					else:
 						name = self.parse_name()
 						alias = name
 						if self.accept(Kind.KwAs):
 							alias = self.parse_name()
-						symbols.append(ast.UsingSymbol(name, alias, False, pos))
+						symbols.append(ast.UseSymbol(name, alias, False, pos))
 					if not self.accept(Kind.Comma):
 						break
 			self.expect(Kind.Semicolon)
-			return ast.UsingDecl(attrs, vis, path, alias, symbols)
+			return ast.UseDecl(attrs, vis, path, alias, symbols)
 		elif self.accept(Kind.KwExtern):
 			if self.tok.kind == Kind.KwPkg and not self.is_pkg_level:
 				report.error(

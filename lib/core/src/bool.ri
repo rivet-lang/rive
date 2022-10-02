@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-using pkg::traits::ToString;
+use pkg::traits::ToString;
 
 extend bool for ToString {
     pub fn to_string(self) string {

@@ -31,7 +31,7 @@ class SourceFile:
 	def __str__(self):
 		return self.__repr__()
 
-# Used in `var` stmts and guard exprs
+# Used in `let` stmts and guard exprs
 class ObjDecl:
 	def __init__(self, is_mut, name, has_typ, typ, level, pos):
 		self.is_mut = is_mut
@@ -122,7 +122,7 @@ class ExternPkg:
 		self.pkg_name = pkg_name
 		self.pos = pos
 
-class UsingDecl:
+class UseDecl:
 	def __init__(self, attrs, vis, path, alias, symbols):
 		self.attrs = attrs
 		self.vis = vis
@@ -130,7 +130,7 @@ class UsingDecl:
 		self.alias = alias
 		self.symbols = symbols
 
-class UsingSymbol:
+class UseSymbol:
 	def __init__(self, name, alias, is_self, pos):
 		self.name = name
 		self.alias = alias

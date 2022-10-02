@@ -2,8 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-using core::stdc;
-using core::mem;
+use core::stdc;
+use core::mem;
 
 pub struct File {
     f: *mut stdc::FILE;

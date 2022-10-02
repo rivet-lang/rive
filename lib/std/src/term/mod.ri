@@ -2,8 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-using core::stdc;
-using pkg::env;
+use core::stdc;
+use pkg::env;
 
 /// Returns 1 if the `fd` file descriptor is open and refers to a
 /// terminal.
