@@ -15,7 +15,7 @@ pub fn id() u32 {
 /// This function will never return and will immediately terminate the
 /// current process. The exit code is passed through to the underlying
 /// OS and will be available for consumption by another process.
-pub fn exit(code: i32 = 0) no_return {
+pub fn exit(code: i32 = 0) never {
     unsafe {
         // TODO(StunxFS): super::_R12drop_staticsZ();
         super::_R9drop_argsZ();
@@ -31,7 +31,7 @@ pub fn exit(code: i32 = 0) no_return {
 /// The process's termination will be similar to that from the C 'abort()'
 /// function. On Unix, the process will terminate with signal SIGABRT,
 /// which typically means that the shell prints "Aborted".
-pub fn abort() no_return {
+pub fn abort() never {
     unsafe {
         // TODO(StunxFS): super::_R12drop_staticsZ();
         super::_R9drop_argsZ();

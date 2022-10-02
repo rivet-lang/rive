@@ -1418,10 +1418,10 @@ class Parser:
 						# valid only as pointer
 						report.error("invalid use of `void` type", pos)
 					return self.comp.void_t
-				elif lit == "no_return":
+				elif lit == "never":
 					if prev_tok_kind != Kind.Rparen and self.tok.kind != Kind.Lbrace:
-						report.error("invalid use of `no_return` type", pos)
-					return self.comp.no_return_t
+						report.error("invalid use of `never` type", pos)
+					return self.comp.never_t
 				elif lit == "bool":
 					return self.comp.bool_t
 				elif lit == "rune":

@@ -37,7 +37,7 @@ class Compiler:
 		self.f64_t = type.Type(self.universe[17])
 		self.string_t = type.Type(self.universe[18])
 		self.error_t = type.Type(self.universe[19])
-		self.no_return_t = type.Type(self.universe[20])
+		self.never_t = type.Type(self.universe[20])
 
 		self.prefs = prefs.Prefs(args)
 
@@ -345,7 +345,7 @@ class Compiler:
 		size, align = 0, 0
 		if sy.kind in (
 		    sym.TypeKind.Placeholder, sym.TypeKind.Void, sym.TypeKind.None_,
-		    sym.TypeKind.NoReturn, sym.TypeKind.TypeArg
+		    sym.TypeKind.Never, sym.TypeKind.TypeArg
 		):
 			pass
 		elif sy.kind == sym.TypeKind.Alias:
@@ -374,7 +374,7 @@ class Compiler:
 		elif sy.kind == sym.TypeKind.Array:
 			elem_size, elem_align = self.type_size(sy.info.elem_typ)
 			size, align = int(sy.info.size.lit) * elem_size, elem_align
-		elif sy.kind == sym.TypeKind.Str:
+		elif sy.kind == sym.TypeKind.String:
 			size, align = self.type_symbol_size(self.string_class)
 		elif sy.kind == sym.TypeKind.Slice:
 			size, align = self.type_symbol_size(self.slice_struct)
@@ -389,29 +389,26 @@ class Compiler:
 			if not sy.info.is_c_union:
 				# `tag: i32` field
 				size += 4
-		elif sy.kind in (sym.TypeKind.Struct, sym.TypeKind.Tuple):
+		elif sy.kind in (
+		    sym.TypeKind.Struct, sym.TypeKind.Tuple, sym.TypeKind.Class
+		):
 			total_size = 0
 			max_alignment = 0
-			types = list(
+			types = sy.info.types if sy.kind == sym.TypeKind.Tuple else list(
 			    map(lambda it: it.typ, sy.fields)
-			) if sy.kind == sym.TypeKind.Struct else sy.info.types
+			)
 			for ftyp in types:
 				field_size, alignment = self.type_size(ftyp)
 				if alignment > max_alignment:
 					max_alignment = alignment
-				total_size = self.round_up(total_size, alignment) + field_size
-			size = self.round_up(total_size, max_alignment)
+				total_size = utils.round_up(total_size, alignment) + field_size
+			size = utils.round_up(total_size, max_alignment)
 			align = max_alignment
 		else:
 			raise Exception(f"type_size(): unsupported type `{sy.qualname()}`")
 		sy.size = size
 		sy.align = align
 		return size, align
-
-	# Rounds the number `n` up to the next multiple `multiple`.
-	# NOTE: `multiple` must be a power of 2.
-	def round_up(self, n, multiple):
-		return (n + multiple - 1) & (-multiple)
 
 	def evalue_comptime_condition(self, cond):
 		if isinstance(cond, ast.BoolLiteral):

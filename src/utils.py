@@ -101,6 +101,11 @@ def full_version():
 	commit_date = execute("git", "log", "-n", "1", '--pretty=format:%h %as').out
 	return f"rivetc {VERSION} ({commit_date})"
 
+# Rounds the number `n` up to the next multiple `multiple`.
+# NOTE: `multiple` must be a power of 2.
+def round_up(n, multiple):
+	return (n + multiple - 1) & (-multiple)
+
 class ProcessResult:
 	def __init__(self, out, err, exit_code):
 		self.out = out

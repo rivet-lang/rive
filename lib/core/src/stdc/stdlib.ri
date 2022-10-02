@@ -30,6 +30,6 @@ extern (C) {
     pub fn setenv(name: *u8, value: *u8, replace: bool) i32;
     pub fn unsetenv(name: *u8) i32;
 
-    pub fn exit(status: i32) no_return;
-    pub fn abort() no_return;
+    pub fn exit(status: i32) never;
+    pub fn abort() never;
 }

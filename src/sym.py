@@ -337,6 +337,7 @@ class Field:
 
 class TypeKind(Enum):
 	Placeholder = auto_enum()
+	Never = auto_enum()
 	Void = auto_enum()
 	TypeArg = auto_enum()
 	None_ = auto_enum()
@@ -362,12 +363,11 @@ class TypeKind(Enum):
 	Array = auto_enum()
 	Slice = auto_enum()
 	Tuple = auto_enum()
+	Enum = auto_enum()
 	Trait = auto_enum()
 	Union = auto_enum()
 	Class = auto_enum()
-	Enum = auto_enum()
 	Struct = auto_enum()
-	NoReturn = auto_enum()
 
 	def is_primitive(self):
 		if self in (
@@ -375,7 +375,8 @@ class TypeKind(Enum):
 		    TypeKind.Int8, TypeKind.Int16, TypeKind.Int32, TypeKind.Int64,
 		    TypeKind.Isize, TypeKind.Uint8, TypeKind.Uint16, TypeKind.Uint32,
 		    TypeKind.Uint64, TypeKind.Usize, TypeKind.UntypedInt,
-		    TypeKind.UntypedFloat, TypeKind.Float32, TypeKind.Float64
+		    TypeKind.UntypedFloat, TypeKind.Float32, TypeKind.Float64,
+		    TypeKind.Never
 		):
 			return True
 		return False
@@ -441,8 +442,8 @@ class TypeKind(Enum):
 			return "struct"
 		elif self == TypeKind.Enum:
 			return "enum"
-		elif self == TypeKind.NoReturn:
-			return "no_return"
+		elif self == TypeKind.Never:
+			return "never"
 		return "placeholder"
 
 	def __str__(self):
@@ -615,6 +616,6 @@ def universe():
 	    )
 	)
 	uni.add(Type(Vis.Pub, "error", TypeKind.Struct))
-	uni.add(Type(Vis.Pub, "no_return", TypeKind.NoReturn))
+	uni.add(Type(Vis.Pub, "never", TypeKind.Never))
 
 	return uni
