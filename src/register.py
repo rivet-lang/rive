@@ -15,8 +15,7 @@ class Register:
 	def walk_files(self, source_files):
 		for sf in source_files:
 			old_sym = self.sym
-			if sf.sym:
-				self.sym = sf.sym
+			self.sym = sf.sym
 			self.source_file = sf
 			self.walk_decls(self.source_file.decls)
 			self.sym = old_sym
@@ -106,21 +105,13 @@ class Register:
 			#elif isinstance(decl, ast.ExtendDecl):
 			#	self.walk_decls(decl.decls)
 			elif isinstance(decl, ast.FnDecl):
-				args = []
-				for arg in decl.args:
-					args.append(
-					    sym.Arg(
-					        arg.name, arg.typ, arg.def_expr, arg.has_def_expr,
-					        arg.pos
-					    )
-					)
 				try:
 					self.sym.add_and_return(
 					    sym.Fn(
 					        self.abi, decl.vis, decl.is_extern, decl.is_unsafe,
-					        decl.is_method, decl.is_variadic, decl.name, args,
-					        decl.ret_typ, decl.has_named_args, decl.has_body,
-					        decl.name_pos, decl.self_is_mut
+					        decl.is_method, decl.is_variadic, decl.name,
+					        decl.args, decl.ret_typ, decl.has_named_args,
+					        decl.has_body, decl.name_pos, decl.self_is_mut
 					    )
 					)
 				except utils.CompilerError as e:
@@ -131,8 +122,8 @@ class Register:
 				        self.abi, sym.Vis.Priv, False, True, True, False,
 				        f"_dtor_for_id_{self.sym.id}_", [
 				            sym.Arg(
-				                "self", type.Type(self.sym), None, False,
-				                decl.pos
+				                "self", decl.self_is_mut, type.Type(self.sym),
+				                None, False, decl.pos
 				            )
 				        ], self.comp.void_t, False, True, decl.pos,
 				        decl.self_is_mut

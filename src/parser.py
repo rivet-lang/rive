@@ -579,6 +579,7 @@ class Parser:
 					break
 				else:
 					arg_pos = self.tok.pos
+					arg_is_mut = self.accept(Kind.KwMut)
 					arg_name = self.parse_name()
 					self.expect(Kind.Colon)
 					arg_typ = self.parse_type()
@@ -589,7 +590,7 @@ class Parser:
 						arg_expr = self.parse_expr()
 					args.append(
 					    sym.Arg(
-					        arg_name, arg_typ, arg_expr,
+					        arg_name, arg_is_mut, arg_typ, arg_expr,
 					        not isinstance(arg_expr, ast.EmptyExpr), arg_pos
 					    )
 					)
