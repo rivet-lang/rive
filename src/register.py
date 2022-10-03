@@ -14,18 +14,16 @@ class Register:
 
 	def walk_files(self, source_files):
 		for sf in source_files:
-			old_sym = self.sym
 			self.sym = sf.sym
 			self.source_file = sf
 			self.walk_decls(self.source_file.decls)
-			self.sym = old_sym
 
 	def walk_decls(self, decls):
 		for decl in decls:
 			old_abi = self.abi
 			old_sym = self.sym
 			if isinstance(decl, ast.ExternDecl):
-				self.walk_decls(decl.protos)
+				self.walk_decls(decl.decls)
 			elif isinstance(decl, ast.ModDecl):
 				decl.sym = self.sym.add_or_get_mod(sym.Mod(decl.vis, decl.name))
 				self.sym = decl.sym

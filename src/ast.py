@@ -63,8 +63,8 @@ class DocComment:
 		self.lines = lines
 		self.pos = pos
 
-	def has_doc(self):
-		return len(self.lines) > 0
+	def is_empty(self):
+		return len(self.lines) == 0
 
 	def merge(self):
 		res = ""
@@ -138,15 +138,15 @@ class UseSymbol:
 		self.pos = pos
 
 class ExternDecl:
-	def __init__(self, attrs, abi, protos, pos):
+	def __init__(self, attrs, abi, decls, pos):
 		self.attrs = attrs
 		self.abi = abi
-		self.protos = protos
+		self.decls = decls
 		self.pos = pos
 
 class ModDecl:
-	def __init__(self, doc_comment, attrs, name, vis, decls, is_inline, pos):
-		self.doc_comment = doc_comment
+	def __init__(self, docs, attrs, name, vis, decls, is_inline, pos):
+		self.docs = docs
 		self.attrs = attrs
 		self.name = name
 		self.vis = vis
@@ -156,8 +156,8 @@ class ModDecl:
 		self.pos = pos
 
 class ConstDecl:
-	def __init__(self, doc_comment, attrs, vis, name, typ, expr, pos):
-		self.doc_comment = doc_comment
+	def __init__(self, docs, attrs, vis, name, typ, expr, pos):
+		self.docs = docs
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
@@ -167,8 +167,8 @@ class ConstDecl:
 		self.pos = pos
 
 class TypeDecl:
-	def __init__(self, doc_comment, attrs, vis, name, parent, pos):
-		self.doc_comment = doc_comment
+	def __init__(self, docs, attrs, vis, name, parent, pos):
+		self.docs = docs
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
@@ -176,16 +176,30 @@ class TypeDecl:
 		self.pos = pos
 
 class ErrTypeDecl:
-	def __init__(self, doc_comment, attrs, vis, name, pos):
-		self.doc_comment = doc_comment
+	def __init__(self, docs, attrs, vis, name, pos):
+		self.docs = docs
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
 		self.pos = pos
 
+class EnumDecl:
+	def __init__(
+	    self, docs, attrs, vis, name, underlying_typ, variants, decls, pos
+	):
+		self.docs = docs
+		self.attrs = attrs
+		self.vis = vis
+		self.name = name
+		self.underlying_typ = underlying_typ
+		self.variants = variants
+		self.decls = decls
+		self.sym = None
+		self.pos = pos
+
 class TraitDecl:
-	def __init__(self, doc_comment, attrs, vis, name, decls, pos):
-		self.doc_comment = doc_comment
+	def __init__(self, docs, attrs, vis, name, decls, pos):
+		self.docs = docs
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
@@ -193,8 +207,8 @@ class TraitDecl:
 		self.pos = pos
 
 class UnionDecl:
-	def __init__(self, doc_comment, attrs, vis, name, variants, decls, pos):
-		self.doc_comment = doc_comment
+	def __init__(self, docs, attrs, vis, name, variants, decls, pos):
+		self.docs = docs
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
@@ -203,24 +217,9 @@ class UnionDecl:
 		self.sym = None
 		self.pos = pos
 
-class FieldDecl:
-	def __init__(
-	    self, attrs, doc_comment, vis, is_mut, name, typ, def_expr,
-	    has_def_expr, pos
-	):
-		self.doc_comment = doc_comment
-		self.attrs = attrs
-		self.vis = vis
-		self.is_mut = is_mut
-		self.name = name
-		self.typ = typ
-		self.def_expr = def_expr
-		self.has_def_expr = has_def_expr
-		self.pos = pos
-
 class ClassDecl:
-	def __init__(self, doc_comment, attrs, vis, name, decls, pos):
-		self.doc_comment = doc_comment
+	def __init__(self, docs, attrs, vis, name, decls, pos):
+		self.docs = docs
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
@@ -229,8 +228,8 @@ class ClassDecl:
 		self.pos = pos
 
 class StructDecl:
-	def __init__(self, doc_comment, attrs, vis, name, decls, is_opaque, pos):
-		self.doc_comment = doc_comment
+	def __init__(self, docs, attrs, vis, name, decls, is_opaque, pos):
+		self.docs = docs
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
@@ -239,19 +238,18 @@ class StructDecl:
 		self.sym = None
 		self.pos = pos
 
-class EnumDecl:
+class FieldDecl:
 	def __init__(
-	    self, doc_comment, attrs, vis, name, underlying_typ, variants, decls,
-	    pos
+	    self, attrs, docs, vis, is_mut, name, typ, def_expr, has_def_expr, pos
 	):
-		self.doc_comment = doc_comment
+		self.docs = docs
 		self.attrs = attrs
 		self.vis = vis
+		self.is_mut = is_mut
 		self.name = name
-		self.underlying_typ = underlying_typ
-		self.variants = variants
-		self.decls = decls
-		self.sym = None
+		self.typ = typ
+		self.def_expr = def_expr
+		self.has_def_expr = has_def_expr
 		self.pos = pos
 
 class ExtendDecl:
@@ -265,13 +263,13 @@ class ExtendDecl:
 
 class FnDecl:
 	def __init__(
-	    self, doc_comment, attrs, vis, is_extern, is_unsafe, name, name_pos,
-	    args, ret_typ, stmts, scope, has_body = False, is_method = False,
+	    self, docs, attrs, vis, is_extern, is_unsafe, name, name_pos, args,
+	    ret_typ, stmts, scope, has_body = False, is_method = False,
 	    self_is_mut = False, has_named_args = False, is_main = False,
 	    is_variadic = False, abi = None
 	):
 		self.sym = None
-		self.doc_comment = doc_comment
+		self.docs = docs
 		self.attrs = attrs
 		self.vis = vis
 		self.abi = abi

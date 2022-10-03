@@ -9,7 +9,7 @@ from . import (
     ast, sym, type, token, prefs, report, utils,
 
     # stages
-    parser, register
+    parser, register, resolver, checker
 )
 
 class Compiler:
@@ -53,6 +53,8 @@ class Compiler:
 		self.source_files = []
 
 		self.register = register.Register(self)
+		self.resolver = resolver.Resolver(self)
+		self.checker = checker.Checker(self)
 
 	def run(self):
 		self.load_root_pkg()
@@ -63,15 +65,15 @@ class Compiler:
 			self.register.walk_files(self.source_files)
 			if report.ERRORS > 0:
 				self.abort()
-			#self.resolver.resolve_files(self.source_files)
-			#if report.ERRORS > 0:
-			#	self.abort()
+			self.resolver.resolve_files(self.source_files)
+			if report.ERRORS > 0:
+				self.abort()
 
-		#	self.load_core_syms()
+			self.load_core_syms()
 
-		#	self.checker.check_files(self.source_files)
-		#	if report.ERRORS > 0:
-		#		self.abort()
+			self.checker.check_files(self.source_files)
+			if report.ERRORS > 0:
+				self.abort()
 
 		#	if not self.prefs.check:
 		#		unique_rir = self.ast2rir.convert(self.source_files)

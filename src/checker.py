@@ -4,29 +4,27 @@
 
 from . import ast, sym, type, report, utils
 
-class Resolver:
+class Checker:
 	def __init__(self, comp):
 		self.comp = comp
 		self.source_file = None
 		self.sym = None
 
-	def resolve_files(self, source_files):
+	def check_files(self, source_files):
 		for sf in source_files:
 			self.sym = sf.sym
 			self.source_file = sf
-			self.resolve_decls(self.source_file.decls)
+			self.check_decls(self.source_file.decls)
 
-	def resolve_decls(self, decls):
+	def check_decls(self, decls):
 		for decl in decls:
 			old_sym = self.sym
 			if isinstance(decl, ast.UseDecl):
 				pass
 			elif isinstance(decl, ast.ExternDecl):
-				self.resolve_decls(decl.decls)
+				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.ModDecl):
-				if decl.is_inline:
-					self.sym = decl.sym
-					self.resolve_decls(decl.decls)
+				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.ConstDecl):
 				pass
 			elif isinstance(decl, ast.TypeDecl):
