@@ -136,7 +136,7 @@ class Register:
 				self.add_sym(
 				    sym.Fn(
 				        self.abi, sym.Vis.Priv, False, True, True, False,
-				        f"_dtor_for_id_{self.sym.id}_", [
+				        "_dtor", [
 				            sym.Arg(
 				                "self", decl.self_is_mut, type.Type(self.sym),
 				                None, False, decl.pos

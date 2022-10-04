@@ -10,12 +10,13 @@ pub errtype Error;
 #[used]
 struct _Error {
     errtype_name: string;
-    msg_: string;
     tag: u8; // max: 255
+    msg_: string;
+    code_: i64;
 
     #[used]
-    fn new(errtype_name: string, tag: u8, msg: string, args: ...ToString) Self {
-        return Self(errtype_name, msg.fmt(args), tag);
+    fn new(errtype_name: string, tag: u8, msg: string, code: i64) Self {
+        return Self(errtype_name, tag, msg, code);
     }
 
     #[used]
@@ -40,6 +41,10 @@ struct _Error {
 extend error {
     pub fn msg(self) string {
         return as(_Error, self).msg_;
+    }
+
+    pub fn code(self) i64 {
+        return as(_Error, self).code_;
     }
 }
 

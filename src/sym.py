@@ -129,10 +129,9 @@ class Sym:
 					asym.add(ss)
 				asym.info = sym.info
 				return
-			else:
-				raise CompilerError(
-				    f"{self.typeof()} `{self.name}` has duplicate symbol `{sym.name}`"
-				)
+			raise CompilerError(
+				f"{self.typeof()} `{self.name}` has duplicate symbol `{sym.name}`"
+			)
 		sym.parent = self
 		self.syms.append(sym)
 

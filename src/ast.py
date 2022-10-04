@@ -305,18 +305,18 @@ class TestDecl:
 		self.pos = pos
 
 # ------ Statements --------
-class AssignStmt:
-	def __init__(self, left, op, right, pos):
-		self.left = left
-		self.op = op
-		self.right = right
-		self.pos = pos
-
 class LetStmt:
 	def __init__(self, scope, lefts, right, pos):
 		self.lefts = lefts
 		self.right = right
 		self.scope = scope
+		self.pos = pos
+
+class AssignStmt:
+	def __init__(self, left, op, right, pos):
+		self.left = left
+		self.op = op
+		self.right = right
 		self.pos = pos
 
 class WhileStmt:
@@ -731,6 +731,19 @@ class CallErrorHandler:
 	def __str__(self):
 		return self.__repr__()
 
+class BuiltinCallExpr:
+	def __init__(self, name, args, pos):
+		self.name = name
+		self.args = args
+		self.pos = pos
+		self.typ = None
+
+	def __repr__(self):
+		return f"{self.name}!({', '.join([str(a) for a in self.args])})"
+
+	def __str__(self):
+		return self.__repr__()
+
 class RangeExpr:
 	def __init__(
 	    self, start, end, is_inclusive, pos, has_start = True, has_end = True
@@ -750,19 +763,6 @@ class RangeExpr:
 		if not self.has_start and self.has_end:
 			return f"{sep}{self.end}"
 		return f"{self.start}{sep}{self.end}"
-
-	def __str__(self):
-		return self.__repr__()
-
-class BuiltinCallExpr:
-	def __init__(self, name, args, pos):
-		self.name = name
-		self.args = args
-		self.pos = pos
-		self.typ = None
-
-	def __repr__(self):
-		return f"{self.name}!({', '.join([str(a) for a in self.args])})"
 
 	def __str__(self):
 		return self.__repr__()

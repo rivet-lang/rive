@@ -4,6 +4,7 @@
 
 extern pkg std;
 
+use std::process { exit };
 use std::console { eprintln, print, println };
 
 let SUPPORT_COLOR: bool = console::can_show_color_on_stdout();
@@ -129,5 +130,6 @@ struct TestRunner {
             }
         }
         self.print_summary_tests();
+        exit(if (self.fail_tests > 0) 1 else 0);
     }
 }

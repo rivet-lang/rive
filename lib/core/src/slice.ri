@@ -64,7 +64,7 @@ struct Slice {
         }
         let len = end - start;
         if (len == self.len) {
-            return self.*;
+            return self;
         }
         return Slice(
             unsafe { as(*mut u8, self.ptr) + (start * self.elem_size) },
