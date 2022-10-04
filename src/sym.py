@@ -90,7 +90,6 @@ class ABI(Enum):
 class Vis(Enum):
 	Priv = auto_enum()
 	Pub = auto_enum() # Public outside current module
-	PubInPkg = auto_enum() # Public inside current package
 
 	def is_pub(self):
 		return self != Vis.Priv
@@ -98,8 +97,6 @@ class Vis(Enum):
 	def __repr__(self):
 		if self == Vis.Pub:
 			return "pub"
-		elif self == Vis.PubInPkg:
-			return "pub(pkg)"
 		return "" # private
 
 	def __str__(self):

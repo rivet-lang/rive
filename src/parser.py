@@ -183,10 +183,6 @@ class Parser:
 
 	def parse_vis(self):
 		if self.accept(Kind.KwPub):
-			if self.accept(Kind.Lparen):
-				self.expect(Kind.KwPkg)
-				self.expect(Kind.Rparen)
-				return sym.Vis.PubInPkg
 			return sym.Vis.Pub
 		return sym.Vis.Priv
 
