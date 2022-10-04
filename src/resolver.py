@@ -99,7 +99,7 @@ class Resolver:
 				self.self_sym = decl.typ.symbol()
 				self.resolve_type(decl.typ)
 				self.resolve_decls(decl.decls)
-			elif isinstance(decl, ast.FnDecl):
+			elif isinstance(decl, ast.FuncDecl):
 				self.resolve_type(decl.ret_typ)
 				for stmt in decl.stmts:
 					self.resolve_stmt(stmt)
@@ -151,9 +151,7 @@ class Resolver:
 		elif isinstance(expr, ast.GuardExpr):
 			for v in expr.vars:
 				try:
-					expr.scope.add(
-					    sym.Obj(False, v, self.comp.void_t, False)
-					)
+					expr.scope.add(sym.Obj(False, v, self.comp.void_t, False))
 				except utils.CompilerError as e:
 					report.error(e.args[0], expr.pos)
 			self.resolve_expr(expr.expr)
@@ -390,7 +388,7 @@ class Resolver:
 				res = self.resolve_type(t)
 			typ.resolve(self.comp.universe.add_or_get_tuple(typ.types))
 			return res
-		elif isinstance(typ, type.Fn):
+		elif isinstance(typ, type.Func):
 			res = False
 			for i in range(len(typ.args)):
 				res = self.resolve_type(typ.args[i])

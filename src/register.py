@@ -148,10 +148,10 @@ class Register:
 					report.error(
 					    f"invalid type `{decl.typ}` to extend", decl.pos
 					)
-			elif isinstance(decl, ast.FnDecl):
+			elif isinstance(decl, ast.FuncDecl):
 				try:
 					decl.sym = self.sym.add_and_return(
-					    sym.Fn(
+					    sym.Func(
 					        self.abi, decl.vis, decl.is_extern, decl.is_unsafe,
 					        decl.is_method, decl.is_variadic, decl.name,
 					        decl.args, decl.ret_typ, decl.has_named_args,
@@ -162,7 +162,7 @@ class Register:
 					report.error(e.args[0], decl.name_pos)
 			elif isinstance(decl, ast.DestructorDecl):
 				self.add_sym(
-				    sym.Fn(
+				    sym.Func(
 				        self.abi, sym.Vis.Priv, False, True, True, False,
 				        "_dtor", [
 				            sym.Arg(

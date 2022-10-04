@@ -9,7 +9,7 @@ pub struct File {
     f: *mut stdc::FILE;
     mut is_opened: bool;
 
-    pub fn open(path: string, mode: string = "r") !File {
+    pub func open(path: string, mode: string = "r") !File {
 		unsafe {
 			let f = stdc::fopen(path.ptr, mode.ptr);
 			if (f == none) {
@@ -20,27 +20,27 @@ pub struct File {
     }
 
 	/// Writes the string `s` into the file.
-    pub fn write(mut self, s: string) {
+    pub func write(mut self, s: string) {
 		_ = unsafe { stdc::fputs(s.ptr, self.f) };
     }
 
 	/// Writes the string `s` into the file and appends a '\n' character.
-	pub fn writeln(mut self, s: string) {
+	pub func writeln(mut self, s: string) {
 		self.write(s);
 		self.write("\n");
 	}
 
-    pub fn writef(mut self, s: string, args: ...traits::Tostring) {
+    pub func writef(mut self, s: string, args: ...traits::Tostring) {
 		self.write(s.fmt(args));
     }
 
-    pub fn writelnf(mut self, s: string, args: ...traits::Tostring) {
+    pub func writelnf(mut self, s: string, args: ...traits::Tostring) {
 		self.write(s.fmt(args));
 		self.write("\n");
     }
 
     /// Returns the current file contents.
-    pub fn read_all(mut self) !string {
+    pub func read_all(mut self) !string {
         if (!self.is_opened) {
             return "";
         }
@@ -78,12 +78,12 @@ pub struct File {
     }
 
     /// Returns true if the file is at end.
-    pub fn eof(self) bool {
+    pub func eof(self) bool {
         return unsafe { stdc::feof(self.f) != 0 };
     }
 
     /// Closes the current file.
-    pub fn close(mut self) {
+    pub func close(mut self) {
         if (!self.is_opened) {
             return;
         }

@@ -2,15 +2,15 @@ name: Tests
 
 on:
   push:
-    paths: ['examples/**.ri', 'lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**']
+    paths: ['examples/**.ri', 'lib/**.ri', 'src/**.py', 'tests/**']
     branches: [main]
   pull_request:
-    paths: ['examples/**.ri', 'lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**']
+    paths: ['examples/**.ri', 'lib/**.ri', 'src/**.py', 'tests/**']
     types: [opened, synchronize]
 
 jobs:
   ubuntu-clang:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       RIVET_CC_TEST: clang
     steps:
@@ -29,7 +29,7 @@ jobs:
           python3 tests/run_failing_tests.py
 
   ubuntu-gcc:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       RIVET_CC_TEST: gcc
     steps:

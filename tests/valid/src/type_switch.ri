@@ -1,5 +1,5 @@
 sumtype Any {
-    i32, str;
+    i32, string;
 }
 
 test "type switch" {

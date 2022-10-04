@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file.
 
 extend none for traits::ToString {
-    pub fn to_string(self) string {
+    pub func to_string(self) string {
         return "none";
     }
 }

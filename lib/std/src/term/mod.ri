@@ -7,23 +7,23 @@ use pkg::env;
 
 /// Returns 1 if the `fd` file descriptor is open and refers to a
 /// terminal.
-pub fn is_atty(fd: i32) i32 {
+pub func is_atty(fd: i32) i32 {
 	return unsafe { stdc::isatty(fd) };
 }
 
 /// Returns true if colors are allowed in stdout, false otherwise.
 #[inline]
-pub fn can_show_color_on_stdout() bool {
+pub func can_show_color_on_stdout() bool {
 	return supports_escape_sequences(1);
 }
 
 /// Returns true if colors are allowed in stderr, false otherwise.
 #[inline]
-pub fn can_show_color_on_stderr() bool {
+pub func can_show_color_on_stderr() bool {
 	return supports_escape_sequences(2);
 }
 
-fn supports_escape_sequences(fd: i32) bool {
+func supports_escape_sequences(fd: i32) bool {
 	if (env::get("TERM") == "dumb") {
 		return false;
 	}

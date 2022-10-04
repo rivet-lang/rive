@@ -45,7 +45,7 @@ We create a file called `hello_world.ri` with the following content:
 ```rs
 use core::console;
 
-fn main() {
+func main() {
     console::println("Hello World!");
 }
 ```

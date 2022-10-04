@@ -1,4 +1,4 @@
-fn ret_none() ?i32 {
+func ret_none() ?i32 {
     return 3;
 }
 

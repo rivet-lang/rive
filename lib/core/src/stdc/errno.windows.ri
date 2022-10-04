@@ -4,5 +4,5 @@
 
 extern (C) {
     #[dllimport]
-    pub fn _errno() *mut i32;
+    pub func _errno() *mut i32;
 }

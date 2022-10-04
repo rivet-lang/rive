@@ -3,5 +3,5 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    fn get_nprocs() i32;
+    func get_nprocs() i32;
 }

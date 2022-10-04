@@ -261,7 +261,7 @@ class ExtendDecl:
 		self.decls = decls
 		self.pos = pos
 
-class FnDecl:
+class FuncDecl:
 	def __init__(
 	    self, docs, attrs, vis, is_extern, is_unsafe, name, name_pos, args,
 	    ret_typ, stmts, scope, has_body = False, is_method = False,

@@ -5,8 +5,8 @@
 // TODO(StunxFS): replace the argument type of `SignalHandler` from `i32`
 // to an enum that enumerates all possible signals.
 
-pub type SignalHandler = fn(i32);
+pub type SignalHandler = func(i32);
 
 extern (C) {
-    pub fn signal(sig: i32, func: SignalHandler) *void;
+    pub func signal(sig: i32, handler: SignalHandler) *void;
 }

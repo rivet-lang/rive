@@ -279,7 +279,7 @@ class Parser:
 						if self.tok.kind == Kind.Rbrace:
 							break
 					self.expect(Kind.Rbrace)
-				elif self.accept(Kind.KwFn):
+				elif self.accept(Kind.KwFunc):
 					protos.append(
 					    self.parse_fn_decl(
 					        doc_comment, attrs, vis, is_unsafe
@@ -380,7 +380,7 @@ class Parser:
 					    "unnecessary visibility qualifier", self.prev_tok.pos
 					)
 				is_unsafe = self.accept(Kind.KwUnsafe)
-				self.expect(Kind.KwFn)
+				self.expect(Kind.KwFunc)
 				decls.append(
 				    self.parse_fn_decl(
 				        doc_comment, attrs, sym.Vis.Pub, is_unsafe,
@@ -501,7 +501,7 @@ class Parser:
 			return ast.ExtendDecl(
 			    attrs, typ, is_for_trait, for_trait, decls, pos
 			)
-		elif self.accept(Kind.KwFn):
+		elif self.accept(Kind.KwFunc):
 			return self.parse_fn_decl(
 			    doc_comment, attrs, vis, not self.extern_is_trusted and (
 			        is_unsafe or
@@ -612,7 +612,7 @@ class Parser:
 			while not self.accept(Kind.Rbrace):
 				stmts.append(self.parse_stmt())
 		self.close_scope()
-		return ast.FnDecl(
+		return ast.FuncDecl(
 		    doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
 		    args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
 		    has_named_args, self.is_pkg_level and name == "main", is_variadic,
@@ -1286,7 +1286,7 @@ class Parser:
 			elif isinstance(typ, type.Optional):
 				report.error("optional multi-level types are not allowed", pos)
 			return type.Optional(typ)
-		elif self.tok.kind in (Kind.KwUnsafe, Kind.KwExtern, Kind.KwFn):
+		elif self.tok.kind in (Kind.KwUnsafe, Kind.KwExtern, Kind.KwFunc):
 			# function types
 			is_unsafe = self.accept(Kind.KwUnsafe)
 			is_extern = self.accept(Kind.KwExtern)
@@ -1294,7 +1294,7 @@ class Parser:
 			if is_extern and not self.inside_extern: self.inside_extern = True
 			args = []
 			is_variadic = False
-			self.expect(Kind.KwFn)
+			self.expect(Kind.KwFunc)
 			self.expect(Kind.Lparen)
 			if self.tok.kind != Kind.Rparen:
 				while True:
@@ -1309,7 +1309,7 @@ class Parser:
 				ret_typ = self.parse_type()
 			if is_extern and self.inside_extern:
 				self.inside_extern = False
-			return type.Fn(
+			return type.Func(
 			    is_unsafe, is_extern, abi, False, args, is_variadic, ret_typ,
 			    False
 			)

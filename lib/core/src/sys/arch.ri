@@ -6,7 +6,7 @@ pub enum Arch : u8 {
     I386,
     AMD64;
 
-    pub fn from_string(arch: string) ?Arch {
+    pub func from_string(arch: string) ?Arch {
         switch (arch) {
             "i386" => return .I386,
             "amd64" => return .AMD64,
@@ -16,7 +16,7 @@ pub enum Arch : u8 {
 }
 
 /// Returns the current architecture.
-pub fn arch() Arch {
+pub func arch() Arch {
     $if (_i386_) {
         return .I386;
     } $else $if (_AMD64_) {

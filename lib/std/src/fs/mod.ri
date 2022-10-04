@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file.
 
 /// Reads the file in `path` and returns the contents.
-pub fn read_file(path: string) !string {
+pub func read_file(path: string) !string {
 	let mut f = File::open(path, "rb").!;
 	let res = f.read_all().!;
 	f.close();
@@ -11,7 +11,7 @@ pub fn read_file(path: string) !string {
 }
 
 /// Writes `text` data to a file in `path`.
-pub fn write_file(path: string, text: string) ! {
+pub func write_file(path: string, text: string) ! {
 	let mut f = File::open(path, "wb").!;
 	f.write(text);
 	f.close();

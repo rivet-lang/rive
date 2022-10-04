@@ -6,7 +6,7 @@ use pkg::stdc;
 
 /// Returns the OS-assigned process identifier associated with this
 /// process.
-pub fn id() u32 {
+pub func id() u32 {
     return unsafe { stdc::getpid() };
 }
 
@@ -15,7 +15,7 @@ pub fn id() u32 {
 /// This function will never return and will immediately terminate the
 /// current process. The exit code is passed through to the underlying
 /// OS and will be available for consumption by another process.
-pub fn exit(code: i32 = 0) never {
+pub func exit(code: i32 = 0) never {
     unsafe {
         // TODO(StunxFS): super::_R12drop_staticsZ();
         super::_R9drop_argsZ();
@@ -28,10 +28,10 @@ pub fn exit(code: i32 = 0) never {
 /// The function will never return and will immediately terminate the
 /// current process in a platform specific "abnormal" manner.
 ///
-/// The process's termination will be similar to that from the C 'abort()'
-/// function. On Unix, the process will terminate with signal SIGABRT,
+/// The process's termination will be similar to that from the C `abort()`
+/// function. On Unix, the process will terminate with signal `SIGABRT`,
 /// which typically means that the shell prints "Aborted".
-pub fn abort() never {
+pub func abort() never {
     unsafe {
         // TODO(StunxFS): super::_R12drop_staticsZ();
         super::_R9drop_argsZ();

@@ -12,12 +12,12 @@ struct Slice {
     len: usize;
 
     #[used]
-    pub unsafe fn from_array(arr: *mut void, elem_size: usize, len: usize) Slice {
+    pub unsafe func from_array(arr: *mut void, elem_size: usize, len: usize) Slice {
         return Slice(unsafe { arr }, elem_size, len);
     }
 
     #[used]
-    fn get(self, idx: usize) *mut void {
+    func get(self, idx: usize) *mut void {
         if (idx >= self.len) {
             panic("slice index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -25,12 +25,12 @@ struct Slice {
     }
 
     #[used]
-    unsafe fn raw_get(self, idx: usize) *mut void {
+    unsafe func raw_get(self, idx: usize) *mut void {
         return unsafe { as(*mut u8, self.ptr) + idx * self.elem_size };
     }
 
     #[used]
-    fn set(self, idx: usize, val: *void) {
+    func set(self, idx: usize, val: *void) {
         if (idx >= self.len) {
             panic("slice index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -42,7 +42,7 @@ struct Slice {
     }
 
     #[used]
-    fn ==(self, rhs: Self) bool {
+    func ==(self, rhs: Self) bool {
         if (self.len != rhs.len) {
             return false;
         }
@@ -50,12 +50,12 @@ struct Slice {
     }
 
     #[used]
-    fn !=(self, rhs: Self) bool {
+    func !=(self, rhs: Self) bool {
         return !self.==(rhs);
     }
 
     #[used]
-    fn slice(self, start: usize, end: usize) Slice {
+    func slice(self, start: usize, end: usize) Slice {
         if (start > end or end > self.len) {
             panic(
                 "slice index out of range (range: {}..{}, len: {})", start, end,
@@ -73,7 +73,7 @@ struct Slice {
     }
 
     #[used]
-    fn slice_from(self, start: usize) Slice {
+    func slice_from(self, start: usize) Slice {
         return self.slice(start, self.len);
     }
 }

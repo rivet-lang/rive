@@ -10,7 +10,7 @@ let DIGIT_PAIRS: string = "00102030405060708090011121314151617181910212223242526
 
 extend untyped_int for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(self) string {
+    pub func to_string(self) string {
         return as(i64, self).to_string();
     }
 }
@@ -22,7 +22,7 @@ extend i8 {
 
 extend i8 for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(self) string {
+    pub func to_string(self) string {
         return as(i32, self).str_l(5);
     }
 }
@@ -34,7 +34,7 @@ extend i16 {
 
 extend i16 for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(self) string {
+    pub func to_string(self) string {
         return as(i32, self).str_l(7);
     }
 }
@@ -44,7 +44,7 @@ extend i32 {
     pub const MIN: i32 = -2147483648;
 
     /// Returns the string representation of `self` with `max` chars.
-    pub fn str_l(self, max: i32) string {
+    pub func str_l(self, max: i32) string {
         unsafe {
             if (self == 0) {
                 return "0";
@@ -92,7 +92,7 @@ extend i32 {
 
 extend i32 for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(self) string {
+    pub func to_string(self) string {
         return self.str_l(12);
     }
 }
@@ -103,7 +103,7 @@ extend i64 {
 }
 
 extend i64 for ToString {
-    pub fn to_string(self) string {
+    pub func to_string(self) string {
         unsafe {
             if (self == 0) {
                 return "0";
@@ -152,7 +152,7 @@ extend i64 for ToString {
 
 extend isize for ToString {
     /// Returns the value of `self` as a `string`.
-    pub fn to_string(self) string {
+    pub func to_string(self) string {
         return as(i64, self).to_string();
     }
 }

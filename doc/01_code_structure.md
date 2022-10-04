@@ -15,7 +15,7 @@ code.
 
 In Rivet, the entry point of a program is a function named `main`.
 ```rust
-fn main() {
+func main() {
     // code goes here
 }
 ```
@@ -36,7 +36,7 @@ type Foo = i32;
 
 trait Foo { /* ... */ }
 
-union Foo { /* ... */ }
+sumtype Foo { /* ... */ }
 
 struct Foo { /* ... */ }
 
@@ -44,7 +44,7 @@ enum Foo { /* ... */ }
 
 extend Foo { /* ... */ }
 
-fn baz() { /* ... */ }
+func baz() { /* ... */ }
 
 test "test name =D" { /* ... */ }
 ```

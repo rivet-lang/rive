@@ -5,7 +5,7 @@
 import copy
 
 from . import token
-from .sym import Vis, TypeKind, Fn as sym_Fn, Arg
+from .sym import Vis, TypeKind, Func as sym_Func, Arg
 
 class _Ptr: # ugly hack =/
 	def __init__(self, val):
@@ -19,14 +19,14 @@ class TBase:
 	def symbol(self):
 		if isinstance(self, (Slice, Array, Tuple, Variadic)):
 			return self.sym
-		elif isinstance(self, Fn):
+		elif isinstance(self, Func):
 			return self.info()
 		return self.typ.symbol()
 
 	def unalias(self):
 		if isinstance(self, (Result, Optional)):
 			self.typ.unalias()
-		elif isinstance(self, Fn):
+		elif isinstance(self, Func):
 			for i in range(len(self.args)):
 				self.args[i].unalias()
 			self.ret_typ.unalias()
@@ -217,7 +217,7 @@ class Tuple(TBase):
 	def __str__(self):
 		return f"({', '.join([str(t) for t in self.types])})"
 
-class Fn(TBase):
+class Func(TBase):
 	def __init__(
 	    self, is_unsafe, is_extern, abi, is_method, args, is_variadic, ret_typ,
 	    self_is_mut
@@ -237,7 +237,7 @@ class Fn(TBase):
 			args.append(
 			    Arg(f"arg{i+1}", arg, None, False, token.Pos("", 0, 0, 0))
 			)
-		return sym_Fn(
+		return sym_Func(
 		    self.abi, Vis.Public, self.is_extern,
 		    self.is_unsafe, self.is_method, self.is_variadic,
 		    self.stringify(False), args, self.ret_typ, False,
@@ -274,7 +274,7 @@ class Fn(TBase):
 		return res
 
 	def __eq__(self, got):
-		if not isinstance(got, Fn): return False
+		if not isinstance(got, Func): return False
 		if self.is_unsafe != got.is_unsafe:
 			return False
 		elif self.is_extern != got.is_extern:

@@ -45,7 +45,7 @@ class Checker:
 				pass
 			elif isinstance(decl, ast.ExtendDecl):
 				pass
-			elif isinstance(decl, ast.FnDecl):
+			elif isinstance(decl, ast.FuncDecl):
 				pass
 			elif isinstance(decl, ast.DestructorDecl):
 				pass

@@ -2,190 +2,190 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-pub fn fmt(msg: string, open: string, close: string) string {
+pub func fmt(msg: string, open: string, close: string) string {
 	return "\x1b[{}m{}\x1b[{}m".fmt(open, msg, close);
 }
 
-pub fn fmt_rgb(r: i32, g: i32, b: i32, msg: string, open: string, close: string) string {
+pub func fmt_rgb(r: i32, g: i32, b: i32, msg: string, open: string, close: string) string {
 	return "\x1b[{};2;{};{};{}m{}\x1b[{}m".fmt(open, r, g, b, msg, close);
 }
 
-pub fn rgb(r: i32, g: i32, b: i32, msg: string) string {
+pub func rgb(r: i32, g: i32, b: i32, msg: string) string {
 	return fmt_rgb(r, g, b, msg, "38", "39");
 }
 
-pub fn bg_rgb(r: i32, g: i32, b: i32, msg: string) string {
+pub func bg_rgb(r: i32, g: i32, b: i32, msg: string) string {
 	return fmt_rgb(r, g, b, msg, "48", "49");
 }
 
-pub fn from_hex(hex: i32, msg: string) string {
+pub func from_hex(hex: i32, msg: string) string {
 	return fmt_rgb(hex >> 16, hex >> 8 & 0xFF, hex & 0xFF, msg, "38", "39");
 }
 
-pub fn bg_hex(hex: i32, msg: string) string {
+pub func bg_hex(hex: i32, msg: string) string {
 	return fmt_rgb(hex >> 16, hex >> 8 & 0xFF, hex & 0xFF, msg, "48", "49");
 }
 
-pub fn bg_black(msg: string) string {
+pub func bg_black(msg: string) string {
 	return fmt(msg, "40", "49");
 }
 
-pub fn bright_bg_black(msg: string) string {
+pub func bright_bg_black(msg: string) string {
 	return fmt(msg, "100", "49");
 }
 
-pub fn bg_blue(msg: string) string {
+pub func bg_blue(msg: string) string {
 	return fmt(msg, "44", "49");
 }
 
-pub fn bright_bg_blue(msg: string) string {
+pub func bright_bg_blue(msg: string) string {
 	return fmt(msg, "104", "49");
 }
 
-pub fn bg_cyan(msg: string) string {
+pub func bg_cyan(msg: string) string {
 	return fmt(msg, "46", "49");
 }
 
-pub fn bright_bg_cyan(msg: string) string {
+pub func bright_bg_cyan(msg: string) string {
 	return fmt(msg, "106", "49");
 }
 
-pub fn bg_green(msg: string) string {
+pub func bg_green(msg: string) string {
 	return fmt(msg, "42", "49");
 }
 
-pub fn bright_bg_green(msg: string) string {
+pub func bright_bg_green(msg: string) string {
 	return fmt(msg, "102", "49");
 }
 
-pub fn bg_magenta(msg: string) string {
+pub func bg_magenta(msg: string) string {
 	return fmt(msg, "45", "49");
 }
 
-pub fn bright_bg_magenta(msg: string) string {
+pub func bright_bg_magenta(msg: string) string {
 	return fmt(msg, "105", "49");
 }
 
-pub fn bg_red(msg: string) string {
+pub func bg_red(msg: string) string {
 	return fmt(msg, "41", "49");
 }
 
-pub fn bright_bg_red(msg: string) string {
+pub func bright_bg_red(msg: string) string {
 	return fmt(msg, "101", "49");
 }
 
-pub fn bg_white(msg: string) string {
+pub func bg_white(msg: string) string {
 	return fmt(msg, "47", "49");
 }
 
-pub fn bright_bg_white(msg: string) string {
+pub func bright_bg_white(msg: string) string {
 	return fmt(msg, "107", "49");
 }
 
-pub fn bg_yellow(msg: string) string {
+pub func bg_yellow(msg: string) string {
 	return fmt(msg, "43", "49");
 }
 
-pub fn bright_bg_yellow(msg: string) string {
+pub func bright_bg_yellow(msg: string) string {
 	return fmt(msg, "103", "49");
 }
 
-pub fn black(msg: string) string {
+pub func black(msg: string) string {
 	return fmt(msg, "30", "39");
 }
 
-pub fn bright_black(msg: string) string {
+pub func bright_black(msg: string) string {
 	return fmt(msg, "90", "39");
 }
 
-pub fn blue(msg: string) string {
+pub func blue(msg: string) string {
 	return fmt(msg, "34", "39");
 }
 
-pub fn bright_blue(msg: string) string {
+pub func bright_blue(msg: string) string {
 	return fmt(msg, "94", "39");
 }
 
-pub fn bold(msg: string) string {
+pub func bold(msg: string) string {
 	return fmt(msg, "1", "22");
 }
 
-pub fn cyan(msg: string) string {
+pub func cyan(msg: string) string {
 	return fmt(msg, "36", "39");
 }
 
-pub fn bright_cyan(msg: string) string {
+pub func bright_cyan(msg: string) string {
 	return fmt(msg, "96", "39");
 }
 
-pub fn dim(msg: string) string {
+pub func dim(msg: string) string {
 	return fmt(msg, "2", "22");
 }
 
-pub fn green(msg: string) string {
+pub func green(msg: string) string {
 	return fmt(msg, "32", "39");
 }
 
-pub fn bright_green(msg: string) string {
+pub func bright_green(msg: string) string {
 	return fmt(msg, "92", "39");
 }
 
-pub fn gray(msg: string) string {
+pub func gray(msg: string) string {
 	return bright_black(msg);
 }
 
-pub fn hidden(msg: string) string {
+pub func hidden(msg: string) string {
 	return fmt(msg, "8", "28");
 }
 
-pub fn italic(msg: string) string {
+pub func italic(msg: string) string {
 	return fmt(msg, "3", "23");
 }
 
-pub fn inverse(msg: string) string {
+pub func inverse(msg: string) string {
 	return fmt(msg, "7", "27");
 }
 
-pub fn magenta(msg: string) string {
+pub func magenta(msg: string) string {
 	return fmt(msg, "35", "39");
 }
 
-pub fn bright_magenta(msg: string) string {
+pub func bright_magenta(msg: string) string {
 	return fmt(msg, "95", "39");
 }
 
-pub fn reset(msg: string) string {
+pub func reset(msg: string) string {
 	return fmt(msg, "0", "0");
 }
 
-pub fn red(msg: string) string {
+pub func red(msg: string) string {
 	return fmt(msg, "31", "39");
 }
 
-pub fn bright_red(msg: string) string {
+pub func bright_red(msg: string) string {
 	return fmt(msg, "91", "39");
 }
 
-pub fn strikethrough(msg: string) string {
+pub func strikethrough(msg: string) string {
 	return fmt(msg, "9", "29");
 }
 
-pub fn underline(msg: string) string {
+pub func underline(msg: string) string {
 	return fmt(msg, "4", "24");
 }
 
-pub fn white(msg: string) string {
+pub func white(msg: string) string {
 	return fmt(msg, "37", "39");
 }
 
-pub fn bright_white(msg: string) string {
+pub func bright_white(msg: string) string {
 	return fmt(msg, "97", "39");
 }
 
-pub fn yellow(msg: string) string {
+pub func yellow(msg: string) string {
 	return fmt(msg, "33", "39");
 }
 
-pub fn bright_yellow(msg: string) string {
+pub func bright_yellow(msg: string) string {
 	return fmt(msg, "93", "39");
 }

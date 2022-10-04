@@ -1,4 +1,4 @@
-fn new_array() [i32; 4] {
+func new_array() [i32; 4] {
     return [1, 2, 3, 4];
 }
 
