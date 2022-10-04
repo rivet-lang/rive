@@ -389,7 +389,7 @@ class Parser:
 				)
 			self.inside_trait = old_inside_trait
 			return ast.TraitDecl(doc_comment, attrs, vis, name, decls, pos)
-		elif self.accept(Kind.KwUnion):
+		elif self.accept(Kind.KwSumType):
 			pos = self.tok.pos
 			if is_unsafe:
 				report.error("unions cannot be declared unsafe", pos)
@@ -406,7 +406,7 @@ class Parser:
 				while self.tok.kind != Kind.Rbrace:
 					decls.append(self.parse_decl())
 			self.expect(Kind.Rbrace)
-			return ast.UnionDecl(
+			return ast.SumTypeDecl(
 			    doc_comment, attrs, vis, name, variants, decls, pos
 			)
 		elif self.accept(Kind.KwClass):

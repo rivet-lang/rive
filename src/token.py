@@ -78,7 +78,7 @@ class Kind(Enum):
 	KwMod = auto_enum() # mod
 	KwExtern = auto_enum() # extern
 	KwTrait = auto_enum() # trait
-	KwUnion = auto_enum() # union
+	KwSumType = auto_enum() # sumtype
 	KwClass = auto_enum() # class
 	KwStruct = auto_enum() # struct
 	KwEnum = auto_enum() # enum
@@ -214,7 +214,7 @@ TOKEN_STRINGS = {
     Kind.KwMod: "mod",
     Kind.KwExtern: "extern",
     Kind.KwTrait: "trait",
-    Kind.KwUnion: "union",
+    Kind.KwSumType: "sumtype",
     Kind.KwClass: "class",
     Kind.KwStruct: "struct",
     Kind.KwEnum: "enum",

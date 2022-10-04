@@ -56,10 +56,10 @@ class Register:
 					self.walk_decls(decl.decls)
 				except utils.CompilerError as e:
 					report.error(e.args[0], decl.pos)
-			elif isinstance(decl, ast.UnionDecl):
+			elif isinstance(decl, ast.SumTypeDecl):
 				try:
 					decl.sym = self.sym.add_and_return(
-					    sym.Type(decl.vis, decl.name, TypeKind.Union)
+					    sym.Type(decl.vis, decl.name, TypeKind.SumType)
 					)
 					self.sym = decl.sym
 					self.walk_decls(decl.decls)

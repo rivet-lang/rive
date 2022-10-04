@@ -206,7 +206,7 @@ class TraitDecl:
 		self.decls = decls
 		self.pos = pos
 
-class UnionDecl:
+class SumTypeDecl:
 	def __init__(self, docs, attrs, vis, name, variants, decls, pos):
 		self.docs = docs
 		self.attrs = attrs
@@ -658,7 +658,7 @@ class CallExpr:
 		self.left = left
 		self.args = args
 		self.err_handler = err_handler
-		self.is_ctor = False # Class_Struct_Trait_Union_or_Errtype(value)
+		self.is_ctor = False # Class_Struct_Trait_SumType_or_Errtype(value)
 		self.is_closure = False
 		self.pos = pos
 		self.typ = None

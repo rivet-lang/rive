@@ -35,7 +35,7 @@ class Checker:
 				pass
 			elif isinstance(decl, ast.TraitDecl):
 				pass
-			elif isinstance(decl, ast.UnionDecl):
+			elif isinstance(decl, ast.SumTypeDecl):
 				pass
 			elif isinstance(decl, ast.ClassDecl):
 				pass

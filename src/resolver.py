@@ -82,7 +82,7 @@ class Resolver:
 			elif isinstance(decl, ast.TraitDecl):
 				self.self_sym = decl.sym
 				self.resolve_decls(decl.decls)
-			elif isinstance(decl, ast.UnionDecl):
+			elif isinstance(decl, ast.SumTypeDecl):
 				self.self_sym = decl.sym
 				self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.ClassDecl):
@@ -143,7 +143,7 @@ class Resolver:
 			for e in expr.exprs:
 				self.resolve_expr(e)
 		elif isinstance(expr, ast.ArrayLiteral):
-			for e in expr.exprs:
+			for e in expr.elems:
 				self.resolve_expr(e)
 		elif isinstance(expr, ast.CastExpr):
 			self.resolve_type(expr.typ)
@@ -152,7 +152,7 @@ class Resolver:
 			for v in expr.vars:
 				try:
 					expr.scope.add(
-					    sym.Object(False, v, self.comp.void_t, False)
+					    sym.Obj(False, v, self.comp.void_t, False)
 					)
 				except utils.CompilerError as e:
 					report.error(e.args[0], expr.pos)

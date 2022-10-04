@@ -374,7 +374,7 @@ class Compiler:
 			size, align = self.type_symbol_size(self.slice_struct)
 		elif sy.kind == sym.TypeKind.Trait:
 			size, align = self.pointer_size * 2, self.pointer_size
-		elif sy.kind == sym.TypeKind.Union:
+		elif sy.kind == sym.TypeKind.SumType:
 			for vtyp in sy.info.variants:
 				v_size, v_alignment = self.type_size(vtyp)
 				if v_size > size:
