@@ -7,7 +7,7 @@
 pub mod stdc;
 pub mod backtrace;
 pub mod console;
-pub mod demangle;
+mod demangle;
 pub mod mem;
 pub mod process;
 pub mod sys;

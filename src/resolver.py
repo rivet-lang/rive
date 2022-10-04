@@ -27,13 +27,13 @@ class Resolver:
 				if isinstance(decl.path, (ast.Ident, ast.PkgExpr)):
 					name = decl.path.name if isinstance(
 					    decl.path, ast.Ident
-					) else self.comp.prefs.pkg_name
+					) else self.source_file.pkg_name
 					if len(decl.symbols) == 0:
 						if isinstance(decl.path, ast.PkgExpr):
 							report.error(
-							    "invalid `using` declaration", decl.path.pos
+							    "invalid `use` declaration", decl.path.pos
 							)
-						elif _ := self.comp.pkg_sym.find(name):
+						elif _ := self.source_file.sym.find(name):
 							report.error(
 							    f"use of undeclared external package `{name}`",
 							    decl.path.pos
@@ -58,9 +58,13 @@ class Resolver:
 						if len(decl.symbols) == 0:
 							self.source_file.imported_symbols[
 							    decl.alias] = decl.path.field_info
+							if decl.vis.is_pub(): # reexport symbol
+								self.source_file.sym.reexported_syms[
+								    decl.alias] = decl.path.field_info
 						else:
 							self.resolve_selective_use_symbols(
-							    decl.symbols, decl.path.field_info
+							    decl.symbols, decl.path.field_info,
+							    decl.vis.is_pub()
 							)
 			elif isinstance(decl, ast.ExternDecl):
 				self.resolve_decls(decl.decls)
@@ -532,15 +536,19 @@ class Resolver:
 			)
 			report.help("you can use `as` to change the name of the import")
 
-	def resolve_selective_use_symbols(self, symbols, path_sym):
+	def resolve_selective_use_symbols(self, symbols, path_sym, is_pub):
 		for isym in symbols:
 			if isym.is_self:
 				self.source_file.imported_symbols[isym.alias] = path_sym
+				if is_pub: # reexport symbol
+					self.source_file.sym.reexported_syms[isym.alias] = path_sym
 			else:
 				if isym_ := path_sym.find(isym.name):
 					self.check_vis(isym_, isym.pos)
 					self.check_imported_symbol(isym_, isym.pos)
 					self.source_file.imported_symbols[isym.alias] = isym_
+					if is_pub: # reexport symbol
+						self.source_file.sym.reexported_syms[isym.alias] = isym_
 				else:
 					report.error(
 					    f"could not find `{isym.name}` in {path_sym.typeof()} `{path_sym.name}`",

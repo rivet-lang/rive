@@ -114,6 +114,7 @@ class Sym:
 		self.qualified_name = ""
 		self.parent = None
 		self.syms = []
+		self.reexported_syms = {}
 		self.uses = 0
 		self.is_universe = isinstance(self, Pkg) and self.id == 0
 		self.is_generated = False
@@ -228,6 +229,8 @@ class Sym:
 		for sym in self.syms:
 			if sym.name == name:
 				return sym
+		if name in self.reexported_syms:
+			return self.reexported_syms[name]
 		return None
 
 	def exists(self, name):
