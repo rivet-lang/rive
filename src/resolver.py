@@ -515,12 +515,13 @@ class Resolver:
 						expr.field_info.has_evaled_expr = True
 						return expr.field_info.evaled_expr
 		elif isinstance(expr, ast.BuiltinCallExpr):
-			if expr.name in ("sizeof", "alignof"):
-				size, align = self.comp.type_size(expr.args[0].typ)
-				if expr.name == "sizeof":
-					return ast.IntegerLiteral(str(size), expr.pos)
-				else:
-					return ast.IntegerLiteral(str(align), expr.pos)
+			if expr.name in ("size_of", "align_of"):
+				if self.resolve_type(expr.args[0].typ):
+					size, align = self.comp.type_size(expr.args[0].typ)
+					if expr.name == "size_of":
+						return ast.IntegerLiteral(str(size), expr.pos)
+					else:
+						return ast.IntegerLiteral(str(align), expr.pos)
 		return None
 
 	def check_vis(self, sym, pos):

@@ -10,22 +10,6 @@ pub class string {
 
     is_ref: bool;
 
-    pub fn new() Self {
-        return Self::with_capacity(0);
-    }
-
-    /// Returns a dynamic string allocated on the heap with size `cap`.
-    ///
-    /// NOTE: `with_capacity` allocates memory the size of `cap` + 1, where 1 is
-    /// an extra space for the NULL character.
-    pub fn with_capacity(cap: usize) Self {
-        unsafe {
-            let b = as(*mut u8, mem::alloc(cap + 1) catch unreachable!());
-            b[cap] = 0;
-            return Self(b, cap);
-        }
-    }
-
     pub unsafe fn from_lit(ptr: *mut u8) Self {
         return Self(unsafe { ptr }, len, is_ref: true);
     }
@@ -137,15 +121,6 @@ pub class string {
             i++;
         }
         return res.to_string();
-    }
-
-    pub fn len(self) usize {
-        return self.len_;
-    }
-
-    /// Returns the number of runes contained in `self`.
-    pub fn runes_count(self) usize {
-        return cstr_runes_count(unsafe { self.ptr }, self.len_);
     }
 
 	/// Returns the index of byte `b` if found in the string.
@@ -273,6 +248,15 @@ pub class string {
 		}
 		return true;
 	}
+
+    /// Returns the number of runes contained in `self`.
+    pub fn runes_count(self) usize {
+        return cstr_runes_count(unsafe { self.ptr }, self.len_);
+    }
+
+    pub fn len(self) usize {
+        return self.len_;
+    }
 
     pub fn is_empty(self) bool {
         return self.len_ == 0;

@@ -929,23 +929,23 @@ class Parser:
 		elif self.tok.kind == Kind.KwPkg:
 			expr = self.parse_pkg_expr()
 		elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Char:
-			if self.tok.lit != "b":
+			if self.tok.lit == "b":
+				expr = self.parse_character_literal()
+			else:
 				report.error(
 				    "only `b` is recognized as a valid prefix for a character literal",
 				    self.tok.pos,
 				)
 				self.next()
-			else:
-				expr = self.parse_character_literal()
 		elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.String:
-			if self.tok.lit not in ("c", "b", "r"):
+			if self.tok.lit in ("c", "b", "r"):
+				expr = self.parse_string_literal()
+			else:
 				report.error(
 				    "only `c`, `b` and `r` are recognized as valid prefixes for a string literal",
 				    self.tok.pos,
 				)
 				self.next()
-			else:
-				expr = self.parse_string_literal()
 		elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Bang: # builtin call
 			name = self.parse_name()
 			self.expect(Kind.Bang)

@@ -63,11 +63,12 @@ class Compiler:
 			self.register.walk_files(self.source_files)
 			if report.ERRORS > 0:
 				self.abort()
+
+			self.load_core_syms()
+
 			self.resolver.resolve_files(self.source_files)
 			if report.ERRORS > 0:
 				self.abort()
-
-			self.load_core_syms()
 
 			self.checker.check_files(self.source_files)
 			if report.ERRORS > 0:
@@ -298,7 +299,7 @@ class Compiler:
 		return self.float_bits(typ)
 
 	def int_bits(self, typ):
-		typ_sym = typ.get_sym()
+		typ_sym = typ.symbol()
 		if typ_sym.kind == sym.TypeKind.UntypedInt:
 			return 75 # only for checker
 		elif typ_sym.kind in (sym.TypeKind.Int8, sym.TypeKind.Uint8):
@@ -315,7 +316,7 @@ class Compiler:
 			return -1
 
 	def float_bits(self, typ):
-		typ_sym = typ.get_sym()
+		typ_sym = typ.symbol()
 		if typ_sym.kind == sym.TypeKind.Float32:
 			return 32
 		elif typ_sym.kind in (sym.TypeKind.Float64, sym.TypeKind.UntypedFloat):
@@ -332,7 +333,7 @@ class Compiler:
 			return self.pointer_size, self.pointer_size
 		elif isinstance(typ, type.Fn):
 			return self.pointer_size, self.pointer_size
-		return self.type_symbol_size(typ.get_sym())
+		return self.type_symbol_size(typ.symbol())
 
 	def type_symbol_size(self, sy):
 		if sy.size != -1:
@@ -369,8 +370,6 @@ class Compiler:
 		elif sy.kind == sym.TypeKind.Array:
 			elem_size, elem_align = self.type_size(sy.info.elem_typ)
 			size, align = int(sy.info.size.lit) * elem_size, elem_align
-		elif sy.kind == sym.TypeKind.String:
-			size, align = self.type_symbol_size(self.string_class)
 		elif sy.kind == sym.TypeKind.Slice:
 			size, align = self.type_symbol_size(self.slice_struct)
 		elif sy.kind == sym.TypeKind.Trait:
@@ -385,7 +384,8 @@ class Compiler:
 				# `tag: i32` field
 				size += 4
 		elif sy.kind in (
-		    sym.TypeKind.Struct, sym.TypeKind.Tuple, sym.TypeKind.Class
+		    sym.TypeKind.Struct, sym.TypeKind.Tuple, sym.TypeKind.Class,
+		    sym.TypeKind.String
 		):
 			total_size = 0
 			max_alignment = 0
@@ -400,7 +400,9 @@ class Compiler:
 			size = utils.round_up(total_size, max_alignment)
 			align = max_alignment
 		else:
-			raise Exception(f"type_size(): unsupported type `{sy.qualname()}`")
+			raise Exception(
+			    f"Compiler.type_size(): unsupported type `{sy.qualname()}`"
+			)
 		sy.size = size
 		sy.align = align
 		return size, align
