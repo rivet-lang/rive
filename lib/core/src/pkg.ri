@@ -58,9 +58,9 @@ pub fn errno() i32 {
 }
 
 /// Returns error code representation in string.
-pub fn strerr(code: i32 = errno()) String {
+pub fn strerr(code: i32 = errno()) string {
     unsafe {
         let s = stdc::strerror(code);
-        return if (s == none) "" else String::from_raw(s);
+        return if (s == none) "" else string::from_raw(s);
     }
 }

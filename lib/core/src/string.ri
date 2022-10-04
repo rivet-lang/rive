@@ -187,11 +187,7 @@ pub class string {
     }
 
     pub fn as_bytes(self) [u8] {
-        return unsafe { _slice::from_array(self.ptr, size_of!(u8), self.len_) };
-    }
-
-    pub fn as_str(self) string {
-        return unsafe { string::from_raw_with_len(self.ptr, self.len_) };
+        return unsafe { Slice::from_array(self.ptr, size_of!(u8), self.len_) };
     }
 
     pub fn ==(self, rhs: Self) bool {

@@ -19,6 +19,14 @@ struct _Error {
         return Self(errtype_name, tag, msg, code);
     }
 
+    pub fn msg(self) string {
+        return self.msg_;
+    }
+
+    pub fn code(self) i64 {
+        return self.code_;
+    }
+
     #[used]
     fn print(self) {
         if (self.msg_.len_ == 0) {
@@ -30,26 +38,10 @@ struct _Error {
         process::exit(1);
     }
 
-    fn to_string_(self) string {
+    fn to_string(self) string {
         if (self.msg_.len_ == 0) {
             return self.errtype_name;
         }
         return "{}: {}".fmt(self.errtype_name, self.msg_);
-    }
-}
-
-extend error {
-    pub fn msg(self) string {
-        return as(_Error, self).msg_;
-    }
-
-    pub fn code(self) i64 {
-        return as(_Error, self).code_;
-    }
-}
-
-extend error for ToString {
-    pub fn to_string(self) string {
-        return as(_Error, self).to_string_();
     }
 }

@@ -45,9 +45,7 @@ class Compiler:
 		self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
 
 		self.core_pkg = None
-		self.string_class = None # from `core` package
 		self.slice_struct = None # from `core` package
-		self.error_struct = None # from `core` package
 
 		self.pkg_deps = utils.PkgDeps()
 		self.source_files = []
@@ -202,20 +200,10 @@ class Compiler:
 	def load_core_syms(self):
 		if core_pkg := self.universe.find("core"):
 			self.core_pkg = core_pkg
-			if string_class := self.core_pkg.find("string"):
-				self.string_class = string_class
-			else:
-				utils.error("cannot find type `string` in package `core`")
-
 			if slice_struct := self.core_pkg.find("Slice"):
 				self.slice_struct = slice_struct
 			else:
 				utils.error("cannot find type `Slice` in package `core`")
-
-			if error_struct := self.core_pkg.find("_Error"):
-				self.error_struct = error_struct
-			else:
-				utils.error("cannot find type `_Error` in package `core`")
 		else:
 			utils.error("package `core` not found")
 

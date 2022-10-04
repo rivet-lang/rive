@@ -35,11 +35,17 @@ class Register:
 				)
 			elif isinstance(decl, ast.TypeDecl):
 				self.add_sym(
-				    sym.Type(decl.vis, decl.name, TypeKind.Alias), decl.pos
+				    sym.Type(
+				        decl.vis, decl.name, TypeKind.Alias,
+				        info = sym.AliasInfo(decl.parent)
+				    ), decl.pos
 				)
 			elif isinstance(decl, ast.ErrTypeDecl):
 				self.add_sym(
-				    sym.Type(decl.vis, decl.name, TypeKind.ErrType), decl.pos
+				    sym.Type(
+				        decl.vis, decl.name, TypeKind.ErrType,
+				        info = sym.ErrTypeInfo(sym.SYMBOL_COUNT)
+				    ), decl.pos
 				)
 			elif isinstance(decl, ast.TraitDecl):
 				try:
@@ -61,26 +67,45 @@ class Register:
 					report.error(e.args[0], decl.pos)
 			elif isinstance(decl, ast.ClassDecl):
 				try:
-					decl.sym = self.sym.add_and_return(
-					    sym.Type(decl.vis, decl.name, TypeKind.Class)
-					)
+					if self.source_file.sym.is_core_pkg(
+					) and decl.name == "string":
+						decl.sym = self.comp.string_t.sym
+					else:
+						decl.sym = self.sym.add_and_return(
+						    sym.Type(decl.vis, decl.name, TypeKind.Class)
+						)
 					self.sym = decl.sym
 					self.walk_decls(decl.decls)
 				except utils.CompilerError as e:
 					report.error(e.args[0], decl.pos)
 			elif isinstance(decl, ast.StructDecl):
 				try:
-					decl.sym = self.sym.add_and_return(
-					    sym.Type(decl.vis, decl.name, TypeKind.Struct)
-					)
+					if self.source_file.sym.is_core_pkg(
+					) and decl.name == "_Error":
+						decl.sym = self.comp.error_t.sym
+					else:
+						decl.sym = self.sym.add_and_return(
+						    sym.Type(decl.vis, decl.name, TypeKind.Struct)
+						)
 					self.sym = decl.sym
 					self.walk_decls(decl.decls)
 				except utils.CompilerError as e:
 					report.error(e.args[0], decl.pos)
 			elif isinstance(decl, ast.EnumDecl):
 				try:
+					info = sym.EnumInfo(decl.underlying_typ)
+					for i, v in enumerate(decl.variants):
+						if info.has_variant(v):
+							report.error(
+							    f"enum `{decl.name}` has duplicate variant `{v}`",
+							    decl.pos
+							)
+							continue
+						info.add_variant(v, i)
 					decl.sym = self.sym.add_and_return(
-					    sym.Type(decl.vis, decl.name, TypeKind.Enum)
+					    sym.Type(
+					        decl.vis, decl.name, TypeKind.Enum, info = info
+					    )
 					)
 					self.sym = decl.sym
 					self.walk_decls(decl.decls)
@@ -104,12 +129,15 @@ class Register:
 					if decl.typ.sym != None:
 						self.sym = decl.typ.sym
 					elif isinstance(decl.typ.expr, ast.Ident):
-						self.sym = self.sym.add_and_return(
-						    sym.Type(
-						        sym.Vis.Priv, decl.typ.expr.name,
-						        TypeKind.Placeholder
-						    )
-						)
+						if typ_sym := self.sym.find(decl.typ.expr.name):
+							self.sym = typ_sym
+						else:
+							self.sym = self.sym.add_and_return(
+							    sym.Type(
+							        sym.Vis.Priv, decl.typ.expr.name,
+							        TypeKind.Placeholder
+							    )
+							)
 					else:
 						report.error(
 						    f"invalid type `{decl.typ}` to extend", decl.pos

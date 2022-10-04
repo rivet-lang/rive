@@ -222,7 +222,7 @@ class Parser:
 					if self.accept(Kind.KwSelf):
 						if self.accept(Kind.KwAs):
 							alias = self.parse_name()
-						symbols.append(ast.UseSymbol("", alias, True))
+						symbols.append(ast.UseSymbol("", alias, True, pos))
 					else:
 						name = self.parse_name()
 						alias = name

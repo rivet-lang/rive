@@ -130,7 +130,7 @@ class Sym:
 				asym.info = sym.info
 				return
 			raise CompilerError(
-				f"{self.typeof()} `{self.name}` has duplicate symbol `{sym.name}`"
+			    f"{self.typeof()} `{self.name}` has duplicate symbol `{sym.name}`"
 			)
 		sym.parent = self
 		self.syms.append(sym)
@@ -283,6 +283,9 @@ class Sym:
 			return self.qualified_name
 		self.qualified_name = f"{self.parent.qualname()}::{self.name}"
 		return self.qualified_name
+
+	def is_core_pkg(self):
+		return isinstance(self, Pkg) and self.name == "core"
 
 	def __getitem__(self, idx):
 		return self.syms[idx]
@@ -442,8 +445,8 @@ class AliasInfo:
 		self.parent = parent
 
 class ErrTypeInfo:
-	def __init__(self, nr):
-		self.nr = nr
+	def __init__(self, id):
+		self.id = id
 
 class ArrayInfo:
 	def __init__(self, elem_typ, size):
@@ -461,14 +464,17 @@ class TupleInfo:
 		self.types = types
 
 class EnumVariant:
-	def __init__(self, name):
+	def __init__(self, name, value):
 		self.name = name
-		self.value = 0
+		self.value = value
 
 class EnumInfo:
-	def __init__(self, underlying_typ, variants):
+	def __init__(self, underlying_typ):
 		self.underlying_typ = underlying_typ
-		self.variants = variants
+		self.variants = []
+
+	def add_variant(self, name, value):
+		self.variants.append(EnumVariant(name, value))
 
 	def get_variant(self, name):
 		for v in self.variants:
