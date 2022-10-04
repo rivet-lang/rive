@@ -216,7 +216,7 @@ class Parser:
 			symbols = list()
 			if self.accept(Kind.KwAs):
 				alias = self.parse_name()
-			elif self.accept(Kind.Colon):
+			elif self.accept(Kind.Lbrace):
 				while True:
 					pos = self.tok.pos
 					if self.accept(Kind.KwSelf):
@@ -231,6 +231,7 @@ class Parser:
 						symbols.append(ast.UseSymbol(name, alias, False, pos))
 					if not self.accept(Kind.Comma):
 						break
+				self.expect(Kind.Rbrace)
 			self.expect(Kind.Semicolon)
 			return ast.UseDecl(attrs, vis, path, alias, symbols)
 		elif self.accept(Kind.KwExtern):
