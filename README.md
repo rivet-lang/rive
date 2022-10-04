@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="docs/assets/logo.png" alt="Rivet logo" width="200" height="200"/>
+<img src="doc/assets/logo.png" alt="Rivet logo" width="200" height="200"/>
 
 # The Rivet programming language
 
-[Documentation](docs/00_getting_started.md)
+[Documentation](doc/00_getting_started.md)
 •
 [Roadmap](ROADMAP.md)
 

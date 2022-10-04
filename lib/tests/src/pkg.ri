@@ -4,9 +4,18 @@
 
 extern pkg std;
 
-use std::console;
+use std::console { eprintln, print, println };
 
 let SUPPORT_COLOR: bool = console::can_show_color_on_stdout();
+
+let OK_STATUS: string = bold(green(" [  OK  ] "));
+let FAIL_STATUS: string = bold(red(" [ FAIL ] "));
+let SKIP_STATUS: string = bold(yellow(" [ SKIP ] "));
+let DIVIDER: string = bold(header("", "-"));
+
+extern (C) {
+    let test_runner: TestRunner;
+}
 
 fn header(txt: string, sep: string) string {
     if (SUPPORT_COLOR) {
@@ -43,47 +52,82 @@ fn yellow(txt: string) string {
     return txt;
 }
 
-let OK_STATUS: string = bold(green(" [  OK  ] "));
-let FAIL_STATUS: string = bold(red(" [ FAIL ] "));
-let SKIP_STATUS: string = bold(yellow(" [ SKIP ] "));
-let DIVIDER: string = bold(header("", "-"));
-
-#[inline]
-fn print_header() {
-    console::println(bold(header("Glaz Test Runner", "-")));
+enum TestResult : u8 {
+    Ok,
+    Skipped,
+    ErrorRaised,
+    Failed
 }
 
-#[inline]
-fn print_test_ok(name: string) {
-    console::println(OK_STATUS.concat(name));
+struct Test {
+    name: string;
+    test_fn: fn(&mut Test);
+    result: TestResult;
+    err_pos: string;
+    err: core::_Error;
 }
 
-#[inline]
-fn print_test_fail(name: string, pos: string) {
-    console::eprintln(FAIL_STATUS.concat(name));
-    console::eprintln(pos);
-}
+struct TestRunner {
+    tests: [Test];
+    mut ok_tests: i32;
+    mut fail_tests: i32;
+    mut skip_tests: i32;
 
-#[inline]
-fn print_test_skip(name: string) {
-    console::eprintln(SKIP_STATUS.concat(name));
-}
-
-fn print_summary_tests(fail_tests: i32, ok_tests: i32, skip_tests: i32, total_tests: i32) {
-    console::println(DIVIDER);
-    console::print(bold("Summary for all tests: "));
-    if (ok_tests > 0) {
-        console::print(bold(green("{} passed".fmt(ok_tests))));
-        console::print(", ");
+    fn print_header(self) {
+        println(bold(header("Rivet TestRunner", "-")));
     }
-    if (fail_tests > 0) {
-        console::print(bold(red("{} failed".fmt(fail_tests))));
-        console::print(", ");
+
+    fn print_test_ok(self, name: string) {
+        println(OK_STATUS.concat(name));
+        self.ok_tests++;
     }
-    if (skip_tests > 0) {
-        console::print(bold(yellow("{} skipped".fmt(skip_tests))));
-        console::print(", ");
+
+    fn print_test_skip(self, name: string) {
+        eprintln(SKIP_STATUS.concat(name));
+        self.skip_tests++;
     }
-    console::println(bold("{} total.".fmt(total_tests)));
-    console::println(DIVIDER);
+
+    fn print_test_fail(self, name: string, pos: string) {
+        eprintln(FAIL_STATUS.concat(name));
+        eprintln(pos);
+        self.fail_tests++;
+    }
+
+    fn print_summary_tests(self) {
+        println(DIVIDER);
+        print(bold("Summary for all tests: "));
+        if (self.ok_tests > 0) {
+            print("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
+        }
+        if (self.fail_tests > 0) {
+            print("{}, ", bold(red("{} failed".fmt(self.fail_tests))));
+        }
+        if (self.skip_tests > 0) {
+            print("{}, ", bold(yellow("{} skipped".fmt(self.skip_tests))));
+        }
+        println(bold("{} total.".fmt(self.tests.len)));
+        println(DIVIDER);
+    }
+
+    fn run(mut self) {
+        for (test_ in self.tests) {
+            test_.test_fn(&mut test_);
+            switch (test_.result) {
+                .Ok => {
+                    self.print_test_ok(test_.name);
+                }
+                .Skipped => {
+                    self.print_test_skip(test_.name);
+                }
+                .Fail => {
+                    self.print_test_fail(test_.name, test_.err_pos);
+                }
+                .ErrorRaised => {
+                    self.print_test_fail(test_.name, test_.err_pos);
+                    eprintln("    Error raised: {}", test_.err);
+                }
+            }
+        }
+        self.print_summary_tests();
+    }
 }
