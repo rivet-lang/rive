@@ -126,21 +126,21 @@ class Sym:
 				asym.kind = sym.kind
 				asym.fields = sym.fields
 				for ss in sym.syms:
-					if asym.exists(ss.name):
-						raise CompilerError(
-						    f"{asym.kind} `{asym.name}` has duplicate symbol `{ss.name}`"
-						)
-					asym.syms.append(ss)
+					asym.add(ss)
 				asym.info = sym.info
 				return
 			else:
 				raise CompilerError(
-				    f"{self.kind} `{self.name}` has duplicate symbol `{sym.name}`"
+				    f"{self.typeof()} `{self.name}` has duplicate symbol `{sym.name}`"
 				)
 		sym.parent = self
 		self.syms.append(sym)
 
 	def add_and_return(self, sym):
+		if _ := self.find(sym.name):
+			raise CompilerError(
+			    f"{self.typeof()} `{self.name}` has duplicate symbol `{sym.name}`"
+			)
 		idx = len(self.syms)
 		sym.parent = self
 		self.syms.append(sym)
@@ -259,7 +259,7 @@ class Sym:
 	def is_used(self):
 		return self.vis.is_pub() or self.uses > 0
 
-	def kind(self):
+	def typeof(self):
 		if isinstance(self, Pkg):
 			return "package"
 		elif isinstance(self, Mod):

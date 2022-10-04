@@ -89,7 +89,7 @@ class Register:
 			elif isinstance(decl, ast.FieldDecl):
 				if self.sym.has_field(decl.name):
 					report.error(
-					    f"{self.sym.kind} `{self.sym.name}` has duplicate field `{decl.name}`",
+					    f"{self.typeof()} `{self.sym.name}` has duplicate field `{decl.name}`",
 					    decl.pos
 					)
 				else:
@@ -99,12 +99,30 @@ class Register:
 					        decl.has_def_expr, decl.def_expr
 					    )
 					)
-			# TODO:
-			#elif isinstance(decl, ast.ExtendDecl):
-			#	self.walk_decls(decl.decls)
+			elif isinstance(decl, ast.ExtendDecl):
+				if isinstance(decl.typ, type.Type):
+					if decl.typ.sym != None:
+						self.sym = decl.typ.sym
+					elif isinstance(decl.typ.expr, ast.Ident):
+						self.sym = self.sym.add_and_return(
+						    sym.Type(
+						        sym.Vis.Priv, decl.typ.expr.name,
+						        TypeKind.Placeholder
+						    )
+						)
+					else:
+						report.error(
+						    f"invalid type `{decl.typ}` to extend", decl.pos
+						)
+						continue
+					self.walk_decls(decl.decls)
+				else:
+					report.error(
+					    f"invalid type `{decl.typ}` to extend", decl.pos
+					)
 			elif isinstance(decl, ast.FnDecl):
 				try:
-					self.sym.add_and_return(
+					decl.sym = self.sym.add_and_return(
 					    sym.Fn(
 					        self.abi, decl.vis, decl.is_extern, decl.is_unsafe,
 					        decl.is_method, decl.is_variadic, decl.name,
@@ -113,7 +131,7 @@ class Register:
 					    )
 					)
 				except utils.CompilerError as e:
-					report.error(e.args[0], decl.pos)
+					report.error(e.args[0], decl.name_pos)
 			elif isinstance(decl, ast.DestructorDecl):
 				self.add_sym(
 				    sym.Fn(

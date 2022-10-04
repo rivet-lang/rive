@@ -511,7 +511,7 @@ class StringLiteral:
 class EnumVariantExpr:
 	def __init__(self, variant, pos):
 		self.variant = variant
-		self.info = None
+		self.sym = None
 		self.pos = pos
 		self.typ = None
 
@@ -654,10 +654,10 @@ class IndexExpr:
 
 class CallExpr:
 	def __init__(self, left, args, err_handler, pos):
+		self.sym = None
 		self.left = left
 		self.args = args
 		self.err_handler = err_handler
-		self.info = None
 		self.is_ctor = False # Class_Struct_Trait_Union_or_Errtype(value)
 		self.is_closure = False
 		self.pos = pos
