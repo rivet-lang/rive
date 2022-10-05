@@ -2,5 +2,132 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-class StringBuilder {
+pub class StringBuilder {
+    mut ptr: *mut u8;
+    mut len_: usize;
+    mut cap: usize;
+
+    pub func new() Self {
+        return Self::with_capacity(0);
+    }
+
+    /// Returns a string builder with capacity `cap`.
+    pub func with_capacity(cap: usize) Self {
+        unsafe {
+            let mut p = as(*mut u8, mem::alloc(cap + 1) catch unreachable!());
+            p[cap] = 0;
+            return Self(p, cap: cap);
+        }
+    }
+
+    pub unsafe func from_raw(ptr: *mut u8) Self {
+        return unsafe { Self::from_raw_with_len(ptr, stdc::strlen(ptr)) };
+    }
+
+    pub unsafe func from_raw_with_len(ptr: *mut u8, len: usize) Self {
+        if (len == 0) {
+            return Self::new();
+        }
+        return Self(unsafe { ptr }, len, len);
+    }
+
+    /// Returns a string with the bytes stored in `bytes`. If the length of
+    /// `bytes` is 0, an empty string is returned instead.
+    pub func from_bytes(bytes: [u8]) Self {
+        if (bytes.len == 0) {
+            return Self::new();
+        }
+        unsafe {
+            let mut res = Self::with_capacity(bytes.len);
+            mem::copy(res.ptr, bytes.ptr, bytes.len);
+            res.len_ = bytes.len;
+            return res;
+        }
+    }
+
+    pub func from_string(s: string) Self {
+        if (s.len == 0) {
+            return Self::new();
+        }
+        unsafe {
+            let mut res = Self::with_capacity(s.len);
+            mem::copy(res.ptr, s.ptr, s.len);
+            res.len_ = s.len;
+            return res;
+        }
+    }
+
+    pub func append_byte(mut self, val: u8) {
+        if (self.len_ >= self.cap) {
+            self.reserve(self.len_ + 1);
+        }
+        unsafe {
+            mem::copy(self.ptr + self.len_, addr_of!(val), size_of!(u8));
+        }
+        self.len_++;
+    }
+
+    pub unsafe func append_raw(mut self, s: *u8) {
+        unsafe {
+            self.append_raw_with_len(s, stdc::strlen(s));
+        }
+    }
+
+    pub unsafe func append_raw_with_len(mut self, s: *u8, len: usize) {
+        if (self.len_ >= self.cap) {
+            self.reserve(len);
+        }
+        unsafe {
+            mem::copy(self.ptr + self.len_, s, len);
+        }
+        self.len_ += len;
+    }
+
+    pub func append_string(mut self, s: string) {
+        unsafe {
+            self.append_raw_with_len(s.ptr, s.len);
+        }
+    }
+
+    /// Ensures that this string's capacity is at least `required` bytes larger
+    /// than its size.
+    pub func reserve(mut self, required: usize) {
+        if (required <= self.cap) {
+            return;
+        }
+        let mut cap = if (self.cap > 0) self.cap else 2;
+        while (required > cap) {
+            cap *= 2;
+        }
+        unsafe {
+            let mut new_data = as(
+                *mut u8, mem::alloc(cap * size_of!(u8)) catch unreachable!()
+            );
+            if (self.ptr != none) {
+                mem::copy(new_data, self.ptr, self.len_ * size_of!(u8));
+            }
+            mem::dealloc(self.ptr);
+            self.ptr = new_data;
+        }
+        self.cap = cap;
+    }
+
+    /// Returns the number of runes contained in `self`.
+    pub func runes_count(self) usize {
+        return cstr_runes_count(unsafe { self.ptr }, self.len_);
+    }
+
+    pub func len(self) usize {
+        return self.len_;
+    }
+
+    pub func is_empty(self) bool {
+        return self.len_ == 0;
+    }
+}
+
+extend StringBuilder for Tostring {
+    func to_string(self) string {
+        return string(self.ptr, self.len_);
+    }
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-use core::stdc;
+use core { stdc, StringBuilder };
 
 class Result {
 	pub output: string;
