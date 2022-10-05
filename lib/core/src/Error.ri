@@ -3,9 +3,18 @@
 // that can be found in the LICENSE file.
 
 use pkg::traits::ToString;
+use pkg::console { eprintln };
 
 /// Represents a generic error.
 pub errtype Error;
+
+/// An error that is raised when an invalid value provided for an
+/// argument of a function.
+pub errtype ArgumentError;
+
+/// An error that is raised when requested function does not have
+/// an implementation.
+pub errtype NotImplementedError;
 
 #[used]
 struct _Error {

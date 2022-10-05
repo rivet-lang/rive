@@ -33,6 +33,17 @@ class Register:
 				    sym.Const(decl.vis, decl.name, decl.typ, decl.expr),
 				    decl.pos
 				)
+			elif isinstance(decl, ast.LetDecl):
+				for v in decl.lefts:
+					try:
+						self.source_file.sym.add(
+						    sym.Var(
+						        decl.vis, v.is_mut, decl.is_extern, v.name,
+						        v.typ
+						    )
+						)
+					except utils.CompilerError as e:
+						report.error(e.args[0], v.pos)
 			elif isinstance(decl, ast.TypeDecl):
 				self.add_sym(
 				    sym.Type(
@@ -50,7 +61,10 @@ class Register:
 			elif isinstance(decl, ast.TraitDecl):
 				try:
 					decl.sym = self.sym.add_and_return(
-					    sym.Type(decl.vis, decl.name, TypeKind.Trait)
+					    sym.Type(
+					        decl.vis, decl.name, TypeKind.Trait,
+					        info = sym.TraitInfo()
+					    )
 					)
 					self.sym = decl.sym
 					self.walk_decls(decl.decls)
@@ -114,7 +128,7 @@ class Register:
 			elif isinstance(decl, ast.FieldDecl):
 				if self.sym.has_field(decl.name):
 					report.error(
-					    f"{self.typeof()} `{self.sym.name}` has duplicate field `{decl.name}`",
+					    f"{self.sym.typeof()} `{self.sym.name}` has duplicate field `{decl.name}`",
 					    decl.pos
 					)
 				else:

@@ -45,7 +45,7 @@ class Resolver:
 							)
 					elif sym_info := self.comp.universe.find(name):
 						self.resolve_selective_use_symbols(
-						    decl.symbols, sym_info
+						    decl.symbols, sym_info, decl.vis.is_pub()
 						)
 					else:
 						report.error(
@@ -74,6 +74,9 @@ class Resolver:
 					self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.ConstDecl):
 				self.resolve_expr(decl.expr)
+			elif isinstance(decl, ast.LetDecl):
+				if not decl.is_extern:
+					self.resolve_expr(decl.right)
 			elif isinstance(decl, ast.TypeDecl):
 				self.resolve_type(decl.parent)
 			elif isinstance(decl, ast.EnumDecl):
@@ -84,6 +87,8 @@ class Resolver:
 				self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.SumTypeDecl):
 				self.self_sym = decl.sym
+				for v in decl.variants:
+					self.resolve_type(v)
 				self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.ClassDecl):
 				self.self_sym = decl.sym
@@ -97,9 +102,25 @@ class Resolver:
 					self.resolve_expr(decl.def_expr)
 			elif isinstance(decl, ast.ExtendDecl):
 				self.self_sym = decl.typ.symbol()
-				self.resolve_type(decl.typ)
-				self.resolve_decls(decl.decls)
+				if self.resolve_type(decl.typ):
+					self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.FuncDecl):
+				decl.scope.add(
+				    sym.Obj(
+				        decl.self_is_mut, "self", type.Type(self.self_sym),
+				        sym.ObjLevel.Rec
+				    )
+				)
+				for arg in decl.args:
+					self.resolve_type(arg.typ)
+					try:
+						decl.scope.add(
+						    sym.Obj(
+						        arg.is_mut, arg.name, arg.typ, sym.ObjLevel.Arg
+						    )
+						)
+					except utils.CompilerError as e:
+						report.error(e.args[0], arg.pos)
 				self.resolve_type(decl.ret_typ)
 				for stmt in decl.stmts:
 					self.resolve_stmt(stmt)
@@ -113,14 +134,34 @@ class Resolver:
 			self.self_sym = old_self_sym
 
 	def resolve_stmt(self, stmt):
-		if isinstance(stmt, ast.AssignStmt):
-			pass
-		elif isinstance(stmt, ast.LetStmt):
-			pass
+		if isinstance(stmt, ast.LetStmt):
+			for v in stmt.lefts:
+				if v.has_typ:
+					self.resolve_type(v.typ)
+				try:
+					stmt.scope.add(
+					    sym.Obj(v.is_mut, v.name, v.typ, sym.ObjLevel.Local)
+					)
+				except utils.CompilerError as e:
+					report.error(e.args[0], v.pos)
+			self.resolve_expr(stmt.right)
+		elif isinstance(stmt, ast.AssignStmt):
+			self.resolve_expr(stmt.left)
+			self.resolve_expr(stmt.right)
 		elif isinstance(stmt, ast.WhileStmt):
 			self.resolve_expr(stmt.cond)
 			self.resolve_stmt(stmt.stmt)
 		elif isinstance(stmt, ast.ForInStmt):
+			for v in stmt.vars:
+				try:
+					# TODO:
+					# stmt.scope.add(sym.Obj(v.is_mut, v.name, self.comp.void_t, sym.ObjLevel.Local))
+					stmt.scope.add(
+					    sym.Obj(False, v, self.comp.void_t, sym.ObjLevel.Local)
+					)
+				except utils.CompilerError as e:
+					report.error(e.args[0], v.pos)
+			self.resolve_expr(stmt.iterable)
 			self.resolve_stmt(stmt.stmt)
 		elif isinstance(stmt, ast.ExprStmt):
 			self.resolve_expr(stmt.expr)
@@ -132,7 +173,7 @@ class Resolver:
 		elif isinstance(expr, ast.TypeNode):
 			self.resolve_type(expr.typ)
 		elif isinstance(expr, ast.Ident):
-			pass
+			self.resolve_ident(expr)
 		elif isinstance(expr, ast.SelfExpr):
 			pass
 		elif isinstance(expr, ast.SuperExpr):
@@ -184,11 +225,12 @@ class Resolver:
 			if expr.has_end:
 				self.resolve_expr(expr.end)
 		elif isinstance(expr, ast.SelectorExpr):
-			pass
+			self.resolve_expr(expr.left)
 		elif isinstance(expr, ast.PathExpr):
 			self.resolve_path_expr(expr)
 		elif isinstance(expr, ast.ReturnExpr):
-			self.resolve_expr(expr.expr)
+			if expr.has_expr:
+				self.resolve_expr(expr.expr)
 		elif isinstance(expr, ast.RaiseExpr):
 			self.resolve_expr(expr.expr)
 		elif isinstance(expr, ast.Block):
@@ -197,9 +239,23 @@ class Resolver:
 			if expr.is_expr:
 				self.resolve_expr(expr.expr)
 		elif isinstance(expr, ast.IfExpr):
-			pass
+			if expr.is_comptime:
+				for i, b in enumerate(expr.branches):
+					if b.is_else or self.comp.evalue_comptime_condition(b.cond):
+						b.branch_idx = i
+						self.resolve_expr(b.expr)
+						break
+			else:
+				for b in expr.branches:
+					if not b.is_else:
+						self.resolve_expr(b.cond)
+					self.resolve_expr(b.expr)
 		elif isinstance(expr, ast.SwitchExpr):
-			pass
+			for b in expr.branches:
+				if not b.is_else:
+					for pat in b.pats:
+						self.resolve_expr(pat)
+				self.resolve_expr(b.expr)
 
 	def find_symbol(self, symbol, name, pos):
 		if s := symbol.find(name):
@@ -227,15 +283,14 @@ class Resolver:
 				    f"unknown comptime constant `{ident.name}`", ident.pos
 				)
 			return
+		elif ident.name == "string":
+			return self.comp.string_t.sym
 		elif obj := ident.scope.lookup(ident.name):
-			if isinstance(obj, sym.Label):
-				report.error("expected value, found label", ident.pos)
-			else:
-				ident.is_obj = True
-				ident.obj = obj
-				ident.typ = obj.typ
+			ident.is_obj = True
+			ident.obj = obj
+			ident.typ = obj.typ
 		elif s := self.source_file.sym.find(ident.name):
-			if s.kind == sym.TypeKind.Placeholder:
+			if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
 				report.error(
 				    f"cannot find `{ident.name}` in this scope", ident.pos
 				)

@@ -281,7 +281,7 @@ class Parser:
 					self.expect(Kind.Rbrace)
 				elif self.accept(Kind.KwFunc):
 					protos.append(
-					    self.parse_fn_decl(
+					    self.parse_func_decl(
 					        doc_comment, attrs, vis, is_unsafe
 					        or abi != sym.ABI.Rivet, abi
 					    )
@@ -337,10 +337,32 @@ class Parser:
 			return ast.ConstDecl(doc_comment, attrs, vis, name, typ, expr, pos)
 		elif self.accept(Kind.KwLet):
 			if is_unsafe:
+				word = "package" if isinstance(
+				    self.file_sym, sym.Pkg
+				) else "module"
 				report.error(
-				    "pkg/mod variables cannot be declared unsafe", self.tok.pos
+				    f"{word} variables cannot be declared unsafe", self.tok.pos
 				)
-			return self.parse_let_stmt(True)
+			# variable declarations
+			pos = self.prev_tok.pos
+			lefts = []
+			if self.accept(Kind.Lparen):
+				# multiple variables
+				while True:
+					lefts.append(self.parse_var_decl(True))
+					if not self.accept(Kind.Comma):
+						break
+				self.expect(Kind.Rparen)
+			else:
+				lefts.append(self.parse_var_decl(True))
+			if not self.inside_extern and self.accept(Kind.Assign):
+				right = self.parse_expr()
+			else:
+				right = self.empty_expr()
+			self.expect(Kind.Semicolon)
+			return ast.LetDecl(
+			    doc_comment, attrs, vis, self.inside_extern, lefts, right, pos
+			)
 		elif self.accept(Kind.KwType):
 			pos = self.tok.pos
 			if is_unsafe:
@@ -382,7 +404,7 @@ class Parser:
 				is_unsafe = self.accept(Kind.KwUnsafe)
 				self.expect(Kind.KwFunc)
 				decls.append(
-				    self.parse_fn_decl(
+				    self.parse_func_decl(
 				        doc_comment, attrs, sym.Vis.Pub, is_unsafe,
 				        sym.ABI.Rivet
 				    )
@@ -502,7 +524,7 @@ class Parser:
 			    attrs, typ, is_for_trait, for_trait, decls, pos
 			)
 		elif self.accept(Kind.KwFunc):
-			return self.parse_fn_decl(
+			return self.parse_func_decl(
 			    doc_comment, attrs, vis, not self.extern_is_trusted and (
 			        is_unsafe or
 			        (self.inside_extern and self.extern_abi != sym.ABI.Rivet)
@@ -541,7 +563,7 @@ class Parser:
 			self.next()
 		return ast.EmptyDecl()
 
-	def parse_fn_decl(self, doc_comment, attrs, vis, is_unsafe, abi):
+	def parse_func_decl(self, doc_comment, attrs, vis, is_unsafe, abi):
 		pos = self.tok.pos
 		if self.tok.kind.is_overloadable_op():
 			name = str(self.tok.kind)
@@ -622,7 +644,22 @@ class Parser:
 	# ---- statements --------------------------
 	def parse_stmt(self):
 		if self.accept(Kind.KwLet):
-			return self.parse_let_stmt()
+			# variable declarations
+			pos = self.prev_tok.pos
+			lefts = []
+			if self.accept(Kind.Lparen):
+				# multiple variables
+				while True:
+					lefts.append(self.parse_var_decl(False))
+					if not self.accept(Kind.Comma):
+						break
+				self.expect(Kind.Rparen)
+			else:
+				lefts.append(self.parse_var_decl(False))
+			self.expect(Kind.Assign)
+			right = self.parse_expr()
+			self.expect(Kind.Semicolon)
+			return ast.LetStmt(self.scope, lefts, right, pos)
 		elif self.accept(Kind.KwWhile):
 			pos = self.prev_tok.pos
 			is_inf = False
@@ -676,27 +713,6 @@ class Parser:
 			self.expect(Kind.Semicolon)
 		return ast.ExprStmt(expr, expr.pos)
 
-	def parse_let_stmt(self, inside_global = False):
-		# variable declarations
-		pos = self.prev_tok.pos
-		lefts = []
-		if self.accept(Kind.Lparen):
-			# multiple variables
-			while True:
-				lefts.append(self.parse_var_decl(inside_global))
-				if not self.accept(Kind.Comma):
-					break
-			self.expect(Kind.Rparen)
-		else:
-			lefts.append(self.parse_var_decl(inside_global))
-		if inside_global and self.inside_extern:
-			right = self.empty_expr()
-		else:
-			self.expect(Kind.Assign)
-			right = self.parse_expr()
-		self.expect(Kind.Semicolon)
-		return ast.LetStmt(self.scope, lefts, right, pos)
-
 	def parse_var_decl(self, inside_global = False, support_typ = True):
 		is_mut = self.accept(Kind.KwMut)
 		pos = self.tok.pos
@@ -706,8 +722,7 @@ class Parser:
 		if support_typ and self.accept(Kind.Colon):
 			typ = self.parse_type()
 			has_typ = True
-		level = sym.ObjLevel.Global if inside_global else sym.ObjLevel.Local
-		return ast.ObjDecl(is_mut, name, has_typ, typ, level, pos)
+		return ast.ObjDecl(is_mut, name, has_typ, typ, sym.ObjLevel.Local, pos)
 
 	# ---- expressions -------------------------
 	def parse_expr(self):
@@ -1301,8 +1316,16 @@ class Parser:
 					if is_extern and self.accept(Kind.Ellipsis):
 						is_variadic = True
 						break
-					args.append(self.parse_type())
-					if not self.accept(Kind.Comma): break
+					pos = self.tok.pos
+					is_mut = self.accept(Kind.KwMut)
+					arg_typ = self.parse_type()
+					args.append(
+					    sym.Arg(
+					        f"arg{len(args)}", is_mut, arg_typ, None, False, pos
+					    )
+					)
+					if not self.accept(Kind.Comma):
+						break
 			self.expect(Kind.Rparen)
 			ret_typ = self.comp.void_t
 			if self.tok.kind.is_start_of_type():

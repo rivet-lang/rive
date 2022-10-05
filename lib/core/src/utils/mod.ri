@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+use pkg::stdc;
+
 pub unsafe func write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
     unsafe {
         let buf = buf_;

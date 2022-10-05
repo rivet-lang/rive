@@ -15,7 +15,6 @@ def new_symbol_id():
 	return ret
 
 class ObjLevel(Enum):
-	Global = auto_enum()
 	Rec = auto_enum()
 	Arg = auto_enum()
 	Local = auto_enum()
@@ -601,12 +600,7 @@ def universe():
 	uni.add(Type(Vis.Pub, "untyped_float", TypeKind.UntypedFloat))
 	uni.add(Type(Vis.Pub, "f32", TypeKind.Float32))
 	uni.add(Type(Vis.Pub, "f64", TypeKind.Float64))
-	uni.add(
-	    Type(
-	        Vis.Pub, "string", TypeKind.String,
-	        fields = [Field("len", False, Vis.Pub, type_Type(uni[13]))]
-	    )
-	)
+	uni.add(Type(Vis.Pub, "string", TypeKind.String))
 	uni.add(Type(Vis.Pub, "error", TypeKind.Struct))
 	uni.add(Type(Vis.Pub, "never", TypeKind.Never))
 

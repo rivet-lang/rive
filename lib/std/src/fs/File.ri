@@ -2,8 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-use core::stdc;
-use core::mem;
+use core { stdc, mem, traits, Error };
 
 pub struct File {
     f: *mut stdc::FILE;
@@ -30,11 +29,11 @@ pub struct File {
 		self.write("\n");
 	}
 
-    pub func writef(mut self, s: string, args: ...traits::Tostring) {
+    pub func writef(mut self, s: string, args: ...traits::ToString) {
 		self.write(s.fmt(args));
     }
 
-    pub func writelnf(mut self, s: string, args: ...traits::Tostring) {
+    pub func writelnf(mut self, s: string, args: ...traits::ToString) {
 		self.write(s.fmt(args));
 		self.write("\n");
     }

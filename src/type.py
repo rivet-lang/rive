@@ -28,7 +28,7 @@ class TBase:
 			self.typ.unalias()
 		elif isinstance(self, Func):
 			for i in range(len(self.args)):
-				self.args[i].unalias()
+				self.args[i].typ.unalias()
 			self.ret_typ.unalias()
 		elif isinstance(self, Tuple):
 			for t in self.types:
@@ -65,8 +65,6 @@ class Type(TBase):
 
 	def symbol(self):
 		sy = self.sym
-		while sy and sy.kind == TypeKind.Alias:
-			sy = sy.info.parent.symbol()
 		return sy
 
 	def __eq__(self, other):
@@ -232,16 +230,11 @@ class Func(TBase):
 		self.ret_typ = ret_typ
 
 	def info(self):
-		args = []
-		for i, arg in enumerate(self.args):
-			args.append(
-			    Arg(f"arg{i+1}", arg, None, False, token.Pos("", 0, 0, 0))
-			)
 		return sym_Func(
-		    self.abi, Vis.Public, self.is_extern,
+		    self.abi, Vis.Pub, self.is_extern,
 		    self.is_unsafe, self.is_method, self.is_variadic,
-		    self.stringify(False), args, self.ret_typ, False,
-		    not self.is_extern, token.Pos("", 0, 0, 0), self.self_is_mut, []
+		    self.stringify(False), self.args, self.ret_typ, False,
+		    not self.is_extern, token.Pos("", 0, 0, 0), self.self_is_mut
 		)
 
 	def stringify(self, qual):
@@ -250,7 +243,7 @@ class Func(TBase):
 			res += "unsafe "
 		if self.is_extern:
 			res += f'extern ({self.abi}) '
-		res += "fn("
+		res += "func("
 		if self.is_method:
 			if self.self_is_mut:
 				res += "mut "
@@ -258,10 +251,12 @@ class Func(TBase):
 			if len(self.args) > 0:
 				res += ", "
 		for i, arg in enumerate(self.args):
+			if arg.is_mut:
+				res += "mut "
 			if qual:
-				res += arg.qualstr()
+				res += arg.typ.qualstr()
 			else:
-				res += str(arg)
+				res += str(arg.typ)
 			if i < len(self.args) - 1:
 				res += ", "
 		if self.is_extern and self.is_variadic:
@@ -288,7 +283,9 @@ class Func(TBase):
 		elif len(self.args) != len(got.args):
 			return False
 		for i, arg in enumerate(self.args):
-			if arg != got.args[i]:
+			if arg.is_mut != got.args[i].is_mut:
+				return False
+			if arg.typ != got.args[i].typ:
 				return False
 		return self.ret_typ == got.ret_typ
 

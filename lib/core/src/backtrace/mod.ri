@@ -2,7 +2,10 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-use pkg::demangle;
+// #![c_compile("../thirdparty/libbacktrace/backtrace.c")]
+
+use pkg { stdc, demangle };
+use pkg::console { eprint, eprintln };
 
 struct backtrace_state;
 
@@ -50,7 +53,7 @@ func bt_print_callback(
         let func_name = if (func_ptr == none) {
             "??"
         } else {
-            demangle::demangle_symbol(str::from_raw(func_ptr))
+            demangle::demangle_symbol(string::from_raw(func_ptr))
         };
 
         let bdata = as(*mut BacktraceData, data);
@@ -68,10 +71,10 @@ func bt_error_handler(data: *mut void, msg_ptr: *u8, errnum: i32) {
         let bdata = as(*mut BacktraceData, data);
         if (!bdata.has_error) {
             eprint("   libbacktrace error: ");
-            eprint(str::from_raw(msg_ptr));
+            eprint(string::from_raw(msg_ptr));
             if (errnum > 0) {
                 eprint(" (");
-                eprint(str::from_raw(stdc::strerror(errnum)));
+                eprint(string::from_raw(stdc::strerror(errnum)));
                 eprint(")");
             }
             eprintln();

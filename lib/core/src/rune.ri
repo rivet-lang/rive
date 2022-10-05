@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+use pkg::process { panic };
+
 const MAX_ONE_B: u32 = 0x80;
 const MAX_TWO_B: u32 = 0x800;
 const MAX_THREE_B: u32 = 0x10000;
@@ -28,7 +30,7 @@ extend rune {
     pub const REPLACEMENT_CHARACTER: rune = 0xFFFD;
 
     pub func from_u32(i: u32) !rune {
-        if (i > as(u32, MAX_RUNE) or (i >= 0xD800 and i <= 0xDFFF)) {
+        if (i > as(u32, Self::MAX) or (i >= 0xD800 and i <= 0xDFFF)) {
             raise RuneFromU32Error();
         }
         return as(rune, i);
@@ -68,10 +70,9 @@ extend rune {
 extend rune for traits::ToString {
     func to_string(self) string {
         let len = self.len_utf8();
-        let res = string::with_capacity(len);
+        let res = mem::alloc(len + 1) catch unreachable!();
         _ = unsafe { utf32_decode_to_buffer(as(u32, self), res.ptr) };
-        res.len_ = len;
-        return res;
+        return string(res, len);
     }
 }
 

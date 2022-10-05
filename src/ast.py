@@ -166,6 +166,16 @@ class ConstDecl:
 		self.sym = None
 		self.pos = pos
 
+class LetDecl:
+	def __init__(self, docs, attrs, vis, is_extern, lefts, right, pos):
+		self.docs = docs
+		self.attrs = attrs
+		self.vis = vis
+		self.is_extern = is_extern
+		self.lefts = lefts
+		self.right = right
+		self.pos = pos
+
 class TypeDecl:
 	def __init__(self, docs, attrs, vis, name, parent, pos):
 		self.docs = docs

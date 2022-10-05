@@ -2,8 +2,6 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-// #![c_compile("thirdparty/libbacktrace/backtrace.c")]
-
 pub mod stdc;
 pub mod backtrace;
 pub mod console;
@@ -18,16 +16,8 @@ mod utils;
 pub let ARGS: [string] = [""][..];
 
 func segfault_handler(_: i32) {
-    eprintln("panic: segmentation fault detected");
+    console::eprintln("panic: segmentation fault detected");
     backtrace::print(3);
-    process::exit(1);
-}
-
-/// Terminates program execution immediately after displaying a message,
-/// followed by a backtrace.
-pub func panic(s: string, args: ...traits::ToString) never {
-    console::eprintln("panic: {}", s.fmt(args));
-    backtrace::print(2);
     process::exit(1);
 }
 

@@ -11,7 +11,7 @@ pub func demangle_symbol(name: string) string {
 
     let idx: usize = 2;
     let buf = StaticBuffer();
-    let res = string::with_capacity(name.len);
+    let res = StringBuilder::with_capacity(name.len);
     while (idx < name.len) {
         let byte = unsafe { name.ptr[idx] };
         if (byte.is_digit()) {
@@ -34,5 +34,5 @@ pub func demangle_symbol(name: string) string {
             break; // end
         }
     }
-    return res;
+    return res.to_string();
 }

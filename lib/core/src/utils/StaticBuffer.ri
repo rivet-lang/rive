@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-use pkg::stdc;
+use pkg { stdc, process };
 
 pub struct StaticBuffer {
     mut buf: [u8; 25];
@@ -12,7 +12,7 @@ pub struct StaticBuffer {
         if (self.len < self.buf.len) {
             self.buf[self.len++] = byte;
         } else {
-            panic("StaticBuffer::push: cannot push byte (len: {})", self.len);
+            process::panic("StaticBuffer::push: cannot push byte (len: {})", self.len);
         }
     }
 
