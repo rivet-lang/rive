@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-use core { stdc, Error };
+use core::stdc;
 
 /// User's home directory.
 pub let HOME_DIR: string = $if (_LINUX_) get("HOME") $else get("USERPROFILE");

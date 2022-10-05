@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+use pkg::traits::ToString;
+
 pub class StringBuilder {
     mut ptr: *mut u8;
     mut len_: usize;
@@ -126,7 +128,7 @@ pub class StringBuilder {
     }
 }
 
-extend StringBuilder for Tostring {
+extend StringBuilder for ToString {
     func to_string(self) string {
         return string(self.ptr, self.len_);
     }

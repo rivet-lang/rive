@@ -2,9 +2,9 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-use core { stdc, StringBuilder };
+use core::stdc;
 
-class Result {
+struct Result {
 	pub output: string;
 	pub exit_code: i32;
 }
@@ -24,7 +24,6 @@ pub func execute(cmd: string) Result {
         let buf: [u8; 4096] = [];
         let pbuf: *mut u8 = addr_of_mut!(buf[0]);
         let mut output = StringBuilder::with_capacity(1024);
-
         while {
             let len = stdc::read(fd, pbuf, 4096);
             if (len == 0 or len == -1) {
@@ -32,7 +31,6 @@ pub func execute(cmd: string) Result {
             }
             output.push_raw_with_len(pbuf, as(usize, len));
         }
-
         return Result(output.to_string(), stdc::pclose(f));
     }
 }

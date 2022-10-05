@@ -9,11 +9,13 @@ from . import ast, sym, type, report, utils
 class Resolver:
 	def __init__(self, comp):
 		self.comp = comp
+		self.preludes = {}
 		self.source_file = None
 		self.sym = None
 		self.self_sym = None
 
 	def resolve_files(self, source_files):
+		self.load_preludes()
 		for sf in source_files:
 			self.sym = sf.sym
 			self.source_file = sf
@@ -104,6 +106,8 @@ class Resolver:
 				self.self_sym = decl.typ.symbol()
 				if self.resolve_type(decl.typ):
 					self.resolve_decls(decl.decls)
+				if decl.is_for_trait:
+					self.resolve_type(decl.for_trait)
 			elif isinstance(decl, ast.FuncDecl):
 				decl.scope.add(
 				    sym.Obj(
@@ -274,6 +278,11 @@ class Resolver:
 		)
 		return None
 
+	def find_prelude(self, name):
+		if name in self.preludes:
+			return self.preludes[name]
+		return None
+
 	def resolve_ident(self, ident):
 		if ident.name == "_":
 			return # ignore special var
@@ -284,11 +293,15 @@ class Resolver:
 				)
 			return
 		elif ident.name == "string":
-			return self.comp.string_t.sym
+			self.comp.string_t.sym.uses += 1
+			ident.sym = self.comp.string_t.sym
 		elif obj := ident.scope.lookup(ident.name):
 			ident.is_obj = True
 			ident.obj = obj
 			ident.typ = obj.typ
+		elif s := self.find_prelude(ident.name):
+			s.uses += 1
+			ident.sym = s
 		elif s := self.source_file.sym.find(ident.name):
 			if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
 				report.error(
@@ -352,6 +365,15 @@ class Resolver:
 				path.left_info = local_sym
 				if field_info := self.find_symbol(
 				    local_sym, path.field_name, path.field_pos
+				):
+					field_info.uses += 1
+					path.field_info = field_info
+				else:
+					path.has_error = True
+			elif prelude_sym := self.find_prelude(path.left.name):
+				path.left_info = prelude_sym
+				if field_info := self.find_symbol(
+				    prelude_sym, path.field_name, path.field_pos
 				):
 					field_info.uses += 1
 					path.field_info = field_info
@@ -620,3 +642,8 @@ class Resolver:
 					    f"could not find `{isym.name}` in {path_sym.typeof()} `{path_sym.name}`",
 					    isym.pos
 					)
+
+	def load_preludes(self):
+		for core_sym in self.comp.core_pkg:
+			if not isinstance(core_sym, sym.Mod) and core_sym.vis.is_pub():
+				self.preludes[core_sym.name] = core_sym
