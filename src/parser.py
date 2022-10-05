@@ -795,7 +795,7 @@ class Parser:
 	def parse_multiplicative_expr(self):
 		left = self.parse_unary_expr()
 		while True:
-			if self.tok.kind in [Kind.Mult, Kind.Div, Kind.Mod]:
+			if self.tok.kind in [Kind.Mul, Kind.Div, Kind.Mod]:
 				op = self.tok.kind
 				self.next()
 				right = self.parse_unary_expr()
@@ -1053,7 +1053,7 @@ class Parser:
 					)
 				expr = ast.IndexExpr(expr, index, is_mut, expr.pos)
 			elif self.accept(Kind.Dot):
-				if self.accept(Kind.Mult):
+				if self.accept(Kind.Mul):
 					expr = ast.SelectorExpr(
 					    expr, "", expr.pos, self.prev_tok.pos,
 					    is_indirect = True
@@ -1318,7 +1318,7 @@ class Parser:
 			is_mut = self.accept(Kind.KwMut)
 			typ = self.parse_type()
 			return type.Ref(typ, is_mut)
-		elif self.accept(Kind.Mult):
+		elif self.accept(Kind.Mul):
 			# pointers
 			is_mut = self.accept(Kind.KwMut)
 			typ = self.parse_type()
@@ -1373,7 +1373,7 @@ class Parser:
 				expr = self.parse_ident()
 				lit = expr.name
 				if lit == "void":
-					if prev_tok_kind not in (Kind.Mult, Kind.KwMut, Kind.Amp):
+					if prev_tok_kind not in (Kind.Mul, Kind.KwMut, Kind.Amp):
 						# valid only as pointer
 						report.error("invalid use of `void` type", pos)
 					return self.comp.void_t

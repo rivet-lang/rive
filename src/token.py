@@ -14,7 +14,7 @@ class Kind(Enum):
 	String = auto_enum() # string
 	Plus = auto_enum() # +
 	Minus = auto_enum() # -
-	Mult = auto_enum() # *
+	Mul = auto_enum() # *
 	Div = auto_enum() # /
 	Mod = auto_enum() # %
 	Inc = auto_enum() # ++
@@ -22,7 +22,7 @@ class Kind(Enum):
 	Assign = auto_enum() # =
 	PlusAssign = auto_enum() # +=
 	MinusAssign = auto_enum() # -=
-	MultAssign = auto_enum() # *=
+	MulAssign = auto_enum() # *=
 	DivAssign = auto_enum() # /=
 	ModAssign = auto_enum() # %=
 	AmpAssign = auto_enum() # &=
@@ -114,14 +114,14 @@ class Kind(Enum):
 
 	def is_start_of_type(self):
 		return self in (
-		    Kind.Bang, Kind.Name, Kind.Lparen, Kind.Amp, Kind.Mult,
+		    Kind.Bang, Kind.Name, Kind.Lparen, Kind.Amp, Kind.Mul,
 		    Kind.Lbracket, Kind.Question, Kind.KwSelf, Kind.KwSuper,
 		    Kind.KwSelfTy
 		)
 
 	def is_assign(self):
 		return self in (
-		    Kind.Assign, Kind.PlusAssign, Kind.MinusAssign, Kind.MultAssign,
+		    Kind.Assign, Kind.PlusAssign, Kind.MinusAssign, Kind.MulAssign,
 		    Kind.DivAssign, Kind.ModAssign, Kind.AmpAssign, Kind.PipeAssign,
 		    Kind.XorAssign,
 		)
@@ -151,7 +151,7 @@ TOKEN_STRINGS = {
     Kind.String: "string",
     Kind.Plus: "+",
     Kind.Minus: "-",
-    Kind.Mult: "*",
+    Kind.Mul: "*",
     Kind.Div: "/",
     Kind.Mod: "%",
     Kind.Inc: "++",
@@ -159,7 +159,7 @@ TOKEN_STRINGS = {
     Kind.Assign: "=",
     Kind.PlusAssign: "+=",
     Kind.MinusAssign: "-=",
-    Kind.MultAssign: "*=",
+    Kind.MulAssign: "*=",
     Kind.DivAssign: "/=",
     Kind.ModAssign: "%=",
     Kind.AmpAssign: "&=",
@@ -248,7 +248,7 @@ TOKEN_STRINGS = {
 }
 
 OVERLOADABLE_OPERATORS = (
-    Kind.Plus, Kind.Minus, Kind.Mult, Kind.Div, Kind.Mod, Kind.Eq, Kind.Ne,
+    Kind.Plus, Kind.Minus, Kind.Mul, Kind.Div, Kind.Mod, Kind.Eq, Kind.Ne,
     Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge
 )
 
@@ -257,7 +257,7 @@ def generate_overloadable_op_map():
 	for op in OVERLOADABLE_OPERATORS:
 		if op == Kind.Plus: gname = "_add_"
 		elif op == Kind.Minus: gname = "_sub_"
-		elif op == Kind.Mult: gname = "_mult_"
+		elif op == Kind.Mul: gname = "_mul_"
 		elif op == Kind.Div: gname = "_div_"
 		elif op == Kind.Mod: gname = "_mod_"
 		elif op == Kind.Eq: gname = "_eq_"

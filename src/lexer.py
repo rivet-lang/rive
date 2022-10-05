@@ -427,8 +427,8 @@ class Lexer:
 			elif ch == "*":
 				if nextc == "=":
 					self.pos += 1
-					return token.Token("", Kind.MultAssign, pos)
-				return token.Token("", Kind.Mult, pos)
+					return token.Token("", Kind.MulAssign, pos)
+				return token.Token("", Kind.Mul, pos)
 			elif ch == "/":
 				if nextc == "/":
 					start_pos = self.pos

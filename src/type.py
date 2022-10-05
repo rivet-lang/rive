@@ -65,7 +65,7 @@ class Type(TBase):
 
 	def symbol(self):
 		sy = self.sym
-		while sy.kind == TypeKind.Alias:
+		while sy and sy.kind == TypeKind.Alias:
 			sy = sy.info.parent.symbol()
 		return sy
 

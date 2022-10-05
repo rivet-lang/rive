@@ -227,8 +227,7 @@ class Resolver:
 				    f"unknown comptime constant `{ident.name}`", ident.pos
 				)
 			return
-
-		if obj := ident.scope.lookup(ident.name):
+		elif obj := ident.scope.lookup(ident.name):
 			if isinstance(obj, sym.Label):
 				report.error("expected value, found label", ident.pos)
 			else:
@@ -236,9 +235,17 @@ class Resolver:
 				ident.obj = obj
 				ident.typ = obj.typ
 		elif s := self.source_file.sym.find(ident.name):
+			if s.kind == sym.TypeKind.Placeholder:
+				report.error(
+				    f"cannot find `{ident.name}` in this scope", ident.pos
+				)
 			s.uses += 1
 			ident.sym = s
 		elif s := self.source_file.find_imported_symbol(ident.name):
+			if s.kind == sym.TypeKind.Placeholder:
+				report.error(
+				    f"cannot find `{ident.name}` in this scope", ident.pos
+				)
 			s.uses += 1
 			ident.sym = s
 		else:
@@ -414,9 +421,9 @@ class Resolver:
 					if isinstance(typ.expr.sym, sym.Type):
 						pos = typ.expr.pos
 						typ.resolve(typ.expr.sym)
-						#if typ.expr.sym.kind == sym.TypeKind.Alias: # unalias
-						#	if self.resolve_type(typ.expr.sym.info.parent):
-						#		typ.unalias()
+						if typ.expr.sym.kind == sym.TypeKind.Alias: # unalias
+							if self.resolve_type(typ.expr.sym.info.parent):
+								typ.unalias()
 						typ_sym = typ.symbol()
 						typ_sym.uses += 1
 						return True
@@ -433,7 +440,12 @@ class Resolver:
 			elif isinstance(typ.expr, ast.PathExpr):
 				self.resolve_path_expr(typ.expr)
 				if not typ.expr.has_error:
-					if isinstance(typ.expr.field_info, sym.Type):
+					if typ.expr.field_info.kind == sym.TypeKind.Placeholder:
+						report.error(
+						    f"cannot find type `{typ.expr.field_info.name}`",
+						    typ.expr.pos
+						)
+					elif isinstance(typ.expr.field_info, sym.Type):
 						pos = typ.expr.pos
 						typ.resolve(typ.expr.field_info)
 						if typ.expr.field_info.kind == sym.TypeKind.Alias: # unalias
