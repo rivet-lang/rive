@@ -409,8 +409,9 @@ class Ident:
 class SelfExpr:
 	def __init__(self, scope, pos):
 		self.scope = scope
-		self.pos = pos
+		self.is_mut = False
 		self.typ = None
+		self.pos = pos
 
 	def __repr__(self):
 		return "self"
@@ -433,6 +434,7 @@ class SuperExpr:
 class SelfTyExpr:
 	def __init__(self, scope, pos):
 		self.scope = scope
+		self.sym = None
 		self.pos = pos
 
 	def __repr__(self):

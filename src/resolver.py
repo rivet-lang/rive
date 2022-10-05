@@ -129,6 +129,12 @@ class Resolver:
 				for stmt in decl.stmts:
 					self.resolve_stmt(stmt)
 			elif isinstance(decl, ast.DestructorDecl):
+				decl.scope.add(
+				    sym.Obj(
+				        decl.self_is_mut, "self", type.Type(self.self_sym),
+				        sym.ObjLevel.Rec
+				    )
+				)
 				for stmt in decl.stmts:
 					self.resolve_stmt(stmt)
 			elif isinstance(decl, ast.TestDecl):
@@ -158,8 +164,6 @@ class Resolver:
 		elif isinstance(stmt, ast.ForInStmt):
 			for v in stmt.vars:
 				try:
-					# TODO:
-					# stmt.scope.add(sym.Obj(v.is_mut, v.name, self.comp.void_t, sym.ObjLevel.Local))
 					stmt.scope.add(
 					    sym.Obj(False, v, self.comp.void_t, sym.ObjLevel.Local)
 					)
@@ -179,11 +183,18 @@ class Resolver:
 		elif isinstance(expr, ast.Ident):
 			self.resolve_ident(expr)
 		elif isinstance(expr, ast.SelfExpr):
-			pass
+			if self_ := expr.scope.lookup("self"):
+				expr.is_mut = self_.is_mut
+				expr.typ = type.Type(self.self_sym)
+			else:
+				report.error("cannot resolve `self` expression", expr.pos)
 		elif isinstance(expr, ast.SuperExpr):
-			pass
+			pass # TODO
 		elif isinstance(expr, ast.SelfTyExpr):
-			pass
+			if self.self_sym:
+				expr.sym = self.self_sym
+			else:
+				report.error("cannot resolve `Self` expression", expr.pos)
 		elif isinstance(expr, ast.TupleLiteral):
 			for e in expr.exprs:
 				self.resolve_expr(e)

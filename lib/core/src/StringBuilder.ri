@@ -129,7 +129,7 @@ pub class StringBuilder {
 }
 
 extend StringBuilder for ToString {
-    func to_string(self) string {
+    pub func to_string(self) string {
         return string(self.ptr, self.len_);
     }
 }
