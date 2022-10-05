@@ -2,6 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+use pkg::stdc;
 use pkg::utils;
 
 /// Prints a message to stdout. Unlike `println` stdout is not automatically
@@ -40,4 +41,26 @@ pub func eprintln(s: string = "", args: ...traits::ToString) {
         utils::writeln_to_fd(2, s.fmt(args));
         _ = stdc::fflush(stdc::stderr);
     }
+}
+
+/// Returns 1 if the `fd` file descriptor is open and refers to a
+/// terminal.
+pub func is_atty(fd: i32) i32 {
+	return unsafe { stdc::isatty(fd) };
+}
+
+/// Returns true if colors are allowed in stdout, false otherwise.
+#[inline]
+pub func can_show_color_on_stdout() bool {
+	return supports_escape_sequences(1);
+}
+
+/// Returns true if colors are allowed in stderr, false otherwise.
+#[inline]
+pub func can_show_color_on_stderr() bool {
+	return supports_escape_sequences(2);
+}
+
+func supports_escape_sequences(fd: i32) bool {
+	return is_atty(fd) > 0;
 }
