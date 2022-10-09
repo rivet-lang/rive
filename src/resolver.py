@@ -77,6 +77,8 @@ class Resolver:
 			elif isinstance(decl, ast.ConstDecl):
 				self.resolve_expr(decl.expr)
 			elif isinstance(decl, ast.LetDecl):
+				for v in decl.lefts:
+					self.resolve_type(v.typ)
 				if not decl.is_extern:
 					self.resolve_expr(decl.right)
 			elif isinstance(decl, ast.TypeDecl):
@@ -103,11 +105,11 @@ class Resolver:
 				if decl.has_def_expr:
 					self.resolve_expr(decl.def_expr)
 			elif isinstance(decl, ast.ExtendDecl):
-				self.self_sym = decl.typ.symbol()
 				if self.resolve_type(decl.typ):
+					self.self_sym = decl.typ.symbol()
 					self.resolve_decls(decl.decls)
-				if decl.is_for_trait:
-					self.resolve_type(decl.for_trait)
+					if decl.is_for_trait:
+						self.resolve_type(decl.for_trait)
 			elif isinstance(decl, ast.FuncDecl):
 				decl.scope.add(
 				    sym.Obj(
@@ -296,6 +298,7 @@ class Resolver:
 
 	def resolve_ident(self, ident):
 		if ident.name == "_":
+			ident.is_obj=True
 			return # ignore special var
 		elif ident.is_comptime:
 			if not ast.is_comptime_constant(ident.name):
@@ -313,6 +316,7 @@ class Resolver:
 		elif s := self.find_prelude(ident.name):
 			s.uses += 1
 			ident.sym = s
+			ident.is_obj = isinstance(s,sym.Var)
 		elif s := self.source_file.sym.find(ident.name):
 			if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
 				report.error(

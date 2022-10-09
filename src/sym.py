@@ -62,7 +62,7 @@ class Scope:
 	def dont_lookup_parent(self):
 		return self.detached_from_parent or self.parent == None
 
-	def update_typ(self, name, typ):
+	def update_type(self, name, typ):
 		if obj := self.lookup(name):
 			obj.typ = typ
 
@@ -288,6 +288,11 @@ class Sym:
 
 	def __getitem__(self, idx):
 		return self.syms[idx]
+
+	def __eq__(self, other):
+		if other==None:
+			return False
+		return self.id == other.id
 
 class Pkg(Sym):
 	pass

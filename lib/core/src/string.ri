@@ -6,6 +6,8 @@ use pkg::traits::ToString;
 use pkg::process { panic };
 use pkg::utils { StaticBuffer };
 
+let empty_string: string = string("", 0);
+
 pub class string {
     ptr: *mut u8;
     len: usize;

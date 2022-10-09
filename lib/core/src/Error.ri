@@ -10,10 +10,10 @@ pub class Error /* : ToString */ {
 
     #[virtual]
     pub func to_string(self) string {
-        let type_name = typeof!(self);
-        if (self.msg.len == 0) {
+        let type_name = type_of!(self);
+        if (self.msg == "") {
             return type_name;
         }
-        return "{}: {}".fmt(type_name, self.msg_);
+        return "{}: {}".fmt(type_name, self.msg);
     }
 }

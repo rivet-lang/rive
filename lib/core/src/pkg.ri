@@ -42,10 +42,10 @@ func assert(cond: bool, msg: string) {
 
 pub func errno() i32 {
     return $if (_LINUX_) unsafe {
-        stdc::__errno_location().*
+        stdc::__errno_location()
     } $else unsafe {
-        stdc::_errno().*
-    };
+        stdc::_errno()
+    }.*;
 }
 
 /// Returns error code representation in string.
