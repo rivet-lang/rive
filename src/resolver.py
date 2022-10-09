@@ -257,7 +257,7 @@ class Resolver:
 			if expr.is_comptime:
 				for i, b in enumerate(expr.branches):
 					if b.is_else or self.comp.evalue_comptime_condition(b.cond):
-						b.branch_idx = i
+						expr.branch_idx = i
 						self.resolve_expr(b.expr)
 						break
 			else:
