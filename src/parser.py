@@ -372,13 +372,6 @@ class Parser:
 			parent = self.parse_type()
 			self.expect(Kind.Semicolon)
 			return ast.TypeDecl(doc_comment, attrs, vis, name, parent, pos)
-		elif self.accept(Kind.KwErrType):
-			pos = self.tok.pos
-			if is_unsafe:
-				report.error("error types cannot be declared unsafe", pos)
-			name = self.parse_name()
-			self.expect(Kind.Semicolon)
-			return ast.ErrTypeDecl(doc_comment, attrs, vis, name, pos)
 		elif self.accept(Kind.KwTrait):
 			pos = self.tok.pos
 			if is_unsafe:

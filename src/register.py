@@ -51,13 +51,6 @@ class Register:
 				        info = sym.AliasInfo(decl.parent)
 				    ), decl.pos
 				)
-			elif isinstance(decl, ast.ErrTypeDecl):
-				self.add_sym(
-				    sym.Type(
-				        decl.vis, decl.name, TypeKind.ErrType,
-				        info = sym.ErrTypeInfo(sym.SYMBOL_COUNT)
-				    ), decl.pos
-				)
 			elif isinstance(decl, ast.TraitDecl):
 				try:
 					decl.sym = self.sym.add_and_return(

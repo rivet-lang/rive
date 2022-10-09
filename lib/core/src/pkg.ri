@@ -5,6 +5,7 @@
 pub mod stdc;
 pub mod backtrace;
 pub mod console;
+pub mod errors;
 pub mod mem;
 pub mod process;
 pub mod sys;

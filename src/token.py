@@ -82,7 +82,6 @@ class Kind(Enum):
 	KwClass = auto_enum() # class
 	KwStruct = auto_enum() # struct
 	KwEnum = auto_enum() # enum
-	KwErrType = auto_enum() # errtype
 	KwType = auto_enum() # type
 	KwExtend = auto_enum() # extend
 	KwTest = auto_enum() # test
@@ -218,7 +217,6 @@ TOKEN_STRINGS = {
     Kind.KwClass: "class",
     Kind.KwStruct: "struct",
     Kind.KwEnum: "enum",
-    Kind.KwErrType: "errtype",
     Kind.KwType: "type",
     Kind.KwExtend: "extend",
     Kind.KwTest: "test",

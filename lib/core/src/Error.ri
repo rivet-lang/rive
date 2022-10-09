@@ -3,54 +3,17 @@
 // that can be found in the LICENSE file.
 
 use pkg::traits::ToString;
-use pkg::console { eprintln };
-
-/// Represents a generic error.
-pub errtype Error;
-
-/// An error that is raised when an invalid value provided for an
-/// argument of a function.
-pub errtype ArgumentError;
-
-/// An error that is raised when requested function does not have
-/// an implementation.
-pub errtype NotImplementedError;
 
 #[used]
-struct _Error {
-    errtype_name: string;
-    tag: u8; // max: 255
-    msg_: string;
-    code_: i64;
+pub class Error /* : ToString */ {
+    pub msg: string;
 
-    #[used]
-    func new(errtype_name: string, tag: u8, msg: string, code: i64) Self {
-        return Self(errtype_name, tag, msg, code);
-    }
-
-    pub func msg(self) string {
-        return self.msg_;
-    }
-
-    pub func code(self) i64 {
-        return self.code_;
-    }
-
-    #[used]
-    func print(self) {
-        if (self.msg_.len_ == 0) {
-            eprintln(self.errtype_name);
-        } else {
-            eprintln("{}: {}", self.errtype_name, self.msg_);
+    #[virtual]
+    pub func to_string(self) string {
+        let type_name = typeof!(self);
+        if (self.msg.len == 0) {
+            return type_name;
         }
-        backtrace::print(2);
-        process::exit(1);
-    }
-
-    func to_string(self) string {
-        if (self.msg_.len_ == 0) {
-            return self.errtype_name;
-        }
-        return "{}: {}".fmt(self.errtype_name, self.msg_);
+        return "{}: {}".fmt(type_name, self.msg_);
     }
 }

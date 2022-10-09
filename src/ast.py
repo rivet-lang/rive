@@ -185,14 +185,6 @@ class TypeDecl:
 		self.parent = parent
 		self.pos = pos
 
-class ErrTypeDecl:
-	def __init__(self, docs, attrs, vis, name, pos):
-		self.docs = docs
-		self.attrs = attrs
-		self.vis = vis
-		self.name = name
-		self.pos = pos
-
 class EnumDecl:
 	def __init__(
 	    self, docs, attrs, vis, name, underlying_typ, variants, decls, pos

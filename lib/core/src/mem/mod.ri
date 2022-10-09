@@ -3,8 +3,7 @@
 // that can be found in the LICENSE file.
 
 use pkg::stdc;
-
-pub errtype OutOfMemoryError;
+use pkg::errors { OutOfMemoryError };
 
 /// Allocates dynamically a `size` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.

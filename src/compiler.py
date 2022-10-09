@@ -341,7 +341,7 @@ class Compiler:
 		size, align = 0, 0
 		if sy.kind in (
 		    sym.TypeKind.Placeholder, sym.TypeKind.Void, sym.TypeKind.None_,
-		    sym.TypeKind.Never, sym.TypeKind.TypeArg
+		    sym.TypeKind.Never
 		):
 			pass
 		elif sy.kind == sym.TypeKind.Alias:
@@ -349,8 +349,7 @@ class Compiler:
 		elif sy.kind in (sym.TypeKind.Usize, sym.TypeKind.Isize):
 			size, align = self.pointer_size, self.pointer_size
 		elif sy.kind in (
-		    sym.TypeKind.Int8, sym.TypeKind.Uint8, sym.TypeKind.Bool,
-		    sym.TypeKind.ErrType
+		    sym.TypeKind.Int8, sym.TypeKind.Uint8, sym.TypeKind.Bool
 		):
 			size, align = 1, 1
 		elif sy.kind in (sym.TypeKind.Int16, sym.TypeKind.Uint16):

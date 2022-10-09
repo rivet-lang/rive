@@ -327,7 +327,6 @@ class TypeKind(Enum):
 	Placeholder = auto_enum()
 	Never = auto_enum()
 	Void = auto_enum()
-	TypeArg = auto_enum()
 	None_ = auto_enum()
 	Bool = auto_enum()
 	Rune = auto_enum()
@@ -347,7 +346,6 @@ class TypeKind(Enum):
 	Float64 = auto_enum()
 	String = auto_enum()
 	Alias = auto_enum()
-	ErrType = auto_enum()
 	Array = auto_enum()
 	Slice = auto_enum()
 	Tuple = auto_enum()
@@ -372,8 +370,6 @@ class TypeKind(Enum):
 	def __repr__(self):
 		if self == TypeKind.Void:
 			return "void"
-		elif self == TypeKind.TypeArg:
-			return "type argument"
 		elif self == TypeKind.None_:
 			return "none"
 		elif self == TypeKind.Bool:
@@ -412,8 +408,6 @@ class TypeKind(Enum):
 			return "string"
 		elif self == TypeKind.Alias:
 			return "alias"
-		elif self == TypeKind.ErrType:
-			return "errtype"
 		elif self == TypeKind.Array:
 			return "array"
 		elif self == TypeKind.Slice:
@@ -442,10 +436,6 @@ class TypeKind(Enum):
 class AliasInfo:
 	def __init__(self, parent):
 		self.parent = parent
-
-class ErrTypeInfo:
-	def __init__(self, id):
-		self.id = id
 
 class ArrayInfo:
 	def __init__(self, elem_typ, size):

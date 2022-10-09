@@ -3,14 +3,12 @@
 // that can be found in the LICENSE file.
 
 use pkg::process { panic };
+use pkg::errors { RuneFromU32Error };
 
 const MAX_ONE_B: u32 = 0x80;
 const MAX_TWO_B: u32 = 0x800;
 const MAX_THREE_B: u32 = 0x10000;
 
-pub errtype RuneFromU32Error;
-
-// Returns the number of runes contained in `s`.
 func cstr_runes_count(s: *u8, size: usize) usize {
 	let l: usize = 0;
 	let i: usize = 0;

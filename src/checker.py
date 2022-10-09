@@ -31,8 +31,6 @@ class Checker:
 				pass
 			elif isinstance(decl, ast.TypeDecl):
 				pass
-			elif isinstance(decl, ast.ErrTypeDecl):
-				pass
 			elif isinstance(decl, ast.EnumDecl):
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.TraitDecl):
