@@ -1432,8 +1432,6 @@ class Parser:
 					return self.comp.untyped_int_t
 				elif lit == "untyped_float":
 					return self.comp.untyped_float_t
-				elif lit == "error":
-					return self.comp.error_t
 				else:
 					return type.Type.unresolved(expr)
 			else:

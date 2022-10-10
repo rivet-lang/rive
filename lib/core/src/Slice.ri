@@ -2,6 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+use pkg::mem;
 use pkg::process { panic };
 
 #[used]
@@ -11,7 +12,7 @@ let empty_slice: Slice = Slice();
 struct Slice {
     ptr: *mut void;
     elem_size: usize;
-    len: usize;
+    pub len: usize;
 
     #[used]
     pub unsafe func from_array(arr: *mut void, elem_size: usize, len: usize) Slice {
@@ -36,11 +37,11 @@ struct Slice {
         if (idx >= self.len) {
             panic("slice index out of range (index: {}, len: {})", idx, self.len);
         }
-        _ = unsafe {
-            stdc::memcpy(
+        unsafe {
+            mem::copy(
                 as(*mut u8, self.ptr) + self.elem_size * idx, val, self.elem_size
-            )
-        };
+            );
+        }
     }
 
     #[used]
@@ -48,7 +49,7 @@ struct Slice {
         if (self.len != rhs.len) {
             return false;
         }
-        return unsafe { stdc::memcmp(self.ptr, rhs.ptr, self.len) == 0 };
+        return unsafe { mem::cmp(self.ptr, rhs.ptr, self.len) == 0 };
     }
 
     #[used]

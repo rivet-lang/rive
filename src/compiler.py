@@ -45,7 +45,7 @@ class Compiler:
 		self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
 
 		self.core_pkg = None
-		self.slice_struct = None # from `core` package
+		self.slice_sym = None # from `core` package
 
 		self.pkg_deps = utils.PkgDeps()
 		self.source_files = []
@@ -201,8 +201,8 @@ class Compiler:
 	def load_core_syms(self):
 		if core_pkg := self.universe.find("core"):
 			self.core_pkg = core_pkg
-			if slice_struct := self.core_pkg.find("Slice"):
-				self.slice_struct = slice_struct
+			if slice_sym := self.core_pkg.find("Slice"):
+				self.slice_sym = slice_sym
 			else:
 				utils.error("cannot find type `Slice` in package `core`")
 		else:
@@ -274,7 +274,7 @@ class Compiler:
 
 	def is_signed_int(self, typ):
 		return typ in (
-		    self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.isize_t,
+		    self.i8_t, self.i16_t, self.i32_t, self.i64_t, self.isize_t,
 		    self.untyped_int_t
 		)
 
@@ -284,13 +284,13 @@ class Compiler:
 		)
 
 	def is_float(self, typ):
-		return typ in (self.float32_t, self.float64_t, self.untyped_float_t)
+		return typ in (self.f32_t, self.f64_t, self.untyped_float_t)
 
 	def untyped_to_type(self, typ):
 		if typ == self.untyped_int_t:
-			return self.int32_t
+			return self.i32_t
 		elif typ == self.untyped_float_t:
-			return self.float64_t
+			return self.f64_t
 		return typ
 
 	def num_bits(self, typ):
@@ -370,7 +370,7 @@ class Compiler:
 			elem_size, elem_align = self.type_size(sy.info.elem_typ)
 			size, align = int(sy.info.size.lit) * elem_size, elem_align
 		elif sy.kind == sym.TypeKind.Slice:
-			size, align = self.type_symbol_size(self.slice_struct)
+			size, align = self.type_symbol_size(self.slice_sym)
 		elif sy.kind == sym.TypeKind.Trait:
 			size, align = self.pointer_size * 2, self.pointer_size
 		elif sy.kind == sym.TypeKind.SumType:

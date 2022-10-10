@@ -662,7 +662,7 @@ class CallExpr:
 		self.left = left
 		self.args = args
 		self.err_handler = err_handler
-		self.is_ctor = False # Class_Struct_Trait_SumType_or_Errtype(value)
+		self.is_ctor = False # Class_Struct_Trait_or_SumType(value)
 		self.is_closure = False
 		self.pos = pos
 		self.typ = None

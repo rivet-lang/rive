@@ -290,7 +290,7 @@ class Sym:
 		return self.syms[idx]
 
 	def __eq__(self, other):
-		if other==None:
+		if other == None:
 			return False
 		return self.id == other.id
 
@@ -565,11 +565,8 @@ class Func(Sym):
 
 	def typ(self):
 		from .type import Func
-		args = []
-		for arg in self.args:
-			args.append(arg.typ)
 		return Func(
-		    self.is_unsafe, self.is_extern, self.abi, self.is_method, args,
+		    self.is_unsafe, self.is_extern, self.abi, self.is_method, self.args,
 		    self.is_variadic, self.ret_typ, self.self_is_mut
 		)
 

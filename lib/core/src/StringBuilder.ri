@@ -5,7 +5,7 @@
 use pkg::traits::ToString;
 
 pub class StringBuilder {
-    mut ptr: *mut u8;
+    pub ptr: *mut u8;
     mut len_: usize;
     mut cap: usize;
 
@@ -59,7 +59,7 @@ pub class StringBuilder {
         }
     }
 
-    pub func append_byte(mut self, val: u8) {
+    pub func write_byte(mut self, val: u8) {
         if (self.len_ >= self.cap) {
             self.reserve(self.len_ + 1);
         }
@@ -69,14 +69,16 @@ pub class StringBuilder {
         self.len_++;
     }
 
-    pub unsafe func append_raw(mut self, s: *u8) {
+    pub unsafe func write_raw(mut self, s: *u8) {
         unsafe {
-            self.append_raw_with_len(s, stdc::strlen(s));
+            self.write_raw_with_len(s, stdc::strlen(s));
         }
     }
 
-    pub unsafe func append_raw_with_len(mut self, s: *u8, len: usize) {
-        if (self.len_ >= self.cap) {
+    pub unsafe func write_raw_with_len(mut self, s: *u8, len: usize) {
+        if (len == 0) {
+            return;
+        } else if (self.len_ >= self.cap) {
             self.reserve(len);
         }
         unsafe {
@@ -85,9 +87,9 @@ pub class StringBuilder {
         self.len_ += len;
     }
 
-    pub func append_string(mut self, s: string) {
+    pub func write_string(mut self, s: string) {
         unsafe {
-            self.append_raw_with_len(s.ptr, s.len);
+            self.write_raw_with_len(s.ptr, s.len);
         }
     }
 

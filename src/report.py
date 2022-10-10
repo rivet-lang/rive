@@ -10,7 +10,6 @@ WARNS_ARE_ERRORS = False
 ERRORS = 0
 WARNS = 0
 
-LAST_LINE_NR_LEN = -1
 FOOT = colors.bold(colors.blue("="))
 
 def color(kind, msg):
@@ -33,14 +32,14 @@ def warn(msg, pos):
 	WARNS += 1
 
 def wrap_text(msg):
-	return f"\n{' ' * LAST_LINE_NR_LEN}   ".join(textwrap.wrap(msg, width = 80))
+	return f"\n   ".join(textwrap.wrap(msg, width = 80))
 
 def note(msg):
 	utils.eprint(
-	    f"{' ' * LAST_LINE_NR_LEN} {FOOT} {colors.bold(colors.green('note:'))} {wrap_text(msg)}"
+	    f"   {FOOT} {colors.bold(colors.green('note:'))} {wrap_text(msg)}"
 	)
 
 def help(msg):
 	utils.eprint(
-	    f"{' ' * LAST_LINE_NR_LEN} {FOOT} {colors.bold(colors.cyan('help:'))} {wrap_text(msg)}"
+	    f"   {FOOT} {colors.bold(colors.cyan('help:'))} {wrap_text(msg)}"
 	)

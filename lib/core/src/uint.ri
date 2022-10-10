@@ -64,7 +64,7 @@ extend u8 {
 
     /// Returns the value of `self` as a ASCII `string`.
     pub func to_ascii_string(self) string {
-        return string::from_bytes([self]);
+        return string::from_byte(self);
     }
 }
 

@@ -10,7 +10,7 @@ pub struct File {
 
     pub func open(path: string, mode: string = "r") !File {
 		unsafe {
-			let f = stdc::fopen(path.ptr, mode.ptr);
+			let f = stdc::fopen(path.as_ptr(), mode.as_ptr());
 			if (f == none) {
 				raise Error("File::open: failed to open file '{}'".fmt(path));
 			}
@@ -20,7 +20,7 @@ pub struct File {
 
 	/// Writes the string `s` into the file.
     pub func write(mut self, s: string) {
-		_ = unsafe { stdc::fputs(s.ptr, self.f) };
+		_ = unsafe { stdc::fputs(s.as_ptr(), self.f) };
     }
 
 	/// Writes the string `s` into the file and appends a '\n' character.

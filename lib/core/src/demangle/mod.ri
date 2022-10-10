@@ -10,11 +10,12 @@ pub func demangle_symbol(name: string) string {
         return name;
     }
 
-    let idx: usize = 2;
+    let name_ptr = unsafe { name.as_ptr() };
+    let mut idx: usize = 2;
     let buf = StaticBuffer();
     let res = StringBuilder::with_capacity(name.len);
     while (idx < name.len) {
-        let byte = unsafe { name.ptr[idx] };
+        let byte = unsafe { name_ptr[idx] };
         if (byte.is_digit()) {
             buf.push(byte);
             idx++;
@@ -22,16 +23,16 @@ pub func demangle_symbol(name: string) string {
         }
 
         if (!res.is_empty()) {
-            res.push_str("::");
+            res.write_string("::");
         }
 
         for (_ in 0..as(usize, buf.as_u64())) {
-            res.push(unsafe { name.ptr[idx++] });
+            res.write_byte(unsafe { name_ptr[idx++] });
         }
 
         buf.clear();
 
-        if (!unsafe { name.ptr[idx] }.is_digit()) {
+        if (!unsafe { name_ptr[idx] }.is_digit()) {
             break; // end
         }
     }

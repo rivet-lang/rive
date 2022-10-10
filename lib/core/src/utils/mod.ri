@@ -18,7 +18,7 @@ pub unsafe func write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
 
 pub unsafe func writeln_to_fd(fd: i32, s: string) {
     unsafe {
-        write_buf_to_fd(fd, s.ptr, s.len);
+        write_buf_to_fd(fd, s.as_ptr(), s.len);
         write_buf_to_fd(fd, c"\n", 1);
     }
 }

@@ -298,7 +298,7 @@ class Resolver:
 
 	def resolve_ident(self, ident):
 		if ident.name == "_":
-			ident.is_obj=True
+			ident.is_obj = True
 			return # ignore special var
 		elif ident.is_comptime:
 			if not ast.is_comptime_constant(ident.name):
@@ -316,7 +316,6 @@ class Resolver:
 		elif s := self.find_prelude(ident.name):
 			s.uses += 1
 			ident.sym = s
-			ident.is_obj = isinstance(s,sym.Var)
 		elif s := self.source_file.sym.find(ident.name):
 			if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
 				report.error(
@@ -490,7 +489,7 @@ class Resolver:
 		elif isinstance(typ, type.Func):
 			res = False
 			for i in range(len(typ.args)):
-				res = self.resolve_type(typ.args[i])
+				res = self.resolve_type(typ.args[i].typ)
 			res = self.resolve_type(typ.ret_typ)
 			return res
 		elif isinstance(typ, type.Optional):

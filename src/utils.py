@@ -163,9 +163,14 @@ def error(msg):
 def is_valid_name(ch):
 	return (ch >= "A" and ch <= "Z") or (ch >= "a" and ch <= "z") or ch == "_"
 
+class Bytestr:
+	def __init__(self, buf, len_):
+		self.buf = buf
+		self.len = len_
+
 def bytestr(s):
 	buf = s.encode("utf-8")
-	return buf, len(buf)
+	return Bytestr(buf, len(buf))
 
 def index_any(s, chars):
 	for i, ss in enumerate(s):

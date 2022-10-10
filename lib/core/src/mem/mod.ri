@@ -22,7 +22,7 @@ pub func alloc(size: usize) !*mut void {
 
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
-pub func calloc(n: usize) !*mut void {
+pub func alloc_zeroed(n: usize) !*mut void {
     unsafe {
         let ptr = stdc::calloc(1, n);
         if (ptr == none) {
@@ -60,8 +60,8 @@ pub func set(s: *mut void, c: i32, n: usize) {
 
 /// Copies `sz` bytes from memory area `source` to memory area `dest`.
 ///
-/// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem::move`, if the memory areas
-/// do overlap.
+/// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem::move`, if the memory
+/// areas do overlap.
 pub func copy(dest: *mut void, src: *void, sz: usize) {
     unsafe {
         _ = stdc::memcpy(dest, src, sz);
@@ -86,10 +86,10 @@ pub func move(dest: *mut void, src: *void, sz: usize) {
 pub func dup(src: *void, sz: usize) !*mut void {
     unsafe {
         if (sz == 0) {
-            return calloc(1).!;
+            return alloc_zeroed(1).!;
         }
         let res = alloc(sz).!;
-        _ = stdc::memcpy(res, src, sz);
+        copy(res, src, sz);
         return res;
     }
 }
