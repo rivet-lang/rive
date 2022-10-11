@@ -749,7 +749,7 @@ class Parser:
 		left = self.parse_shift_expr()
 		while True:
 			if self.tok.kind in [
-			    Kind.Gt, Kind.Lt, Kind.Ge, Kind.Le, Kind.KwOrElse
+			    Kind.Gt, Kind.Lt, Kind.Ge, Kind.Le, Kind.OrElse
 			]:
 				op = self.tok.kind
 				self.next()

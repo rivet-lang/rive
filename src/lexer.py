@@ -502,6 +502,9 @@ class Lexer:
 			elif ch == ";":
 				return token.Token("", Kind.Semicolon, pos)
 			elif ch == "?":
+				if nextc == "?":
+					self.pos += 1
+					return token.Token("", Kind.OrElse, pos)
 				return token.Token("", Kind.Question, pos)
 			elif ch == "$":
 				return token.Token("", Kind.Dollar, pos)

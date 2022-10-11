@@ -45,6 +45,7 @@ class Kind(Enum):
 	DoubleColon = auto_enum() # ::
 	Semicolon = auto_enum() # ;
 	Question = auto_enum() # ?
+	OrElse = auto_enum() # ??
 	Bang = auto_enum() # !
 	Amp = auto_enum() # &
 	Pipe = auto_enum() # |
@@ -105,7 +106,6 @@ class Kind(Enum):
 	KwIs = auto_enum() # is
 	KwNotIs = auto_enum() # !is
 	KwUnsafe = auto_enum() # unsafe
-	KwOrElse = auto_enum() # orelse
 	KwCatch = auto_enum() # catch
 	# ==============================
 
@@ -181,6 +181,7 @@ TOKEN_STRINGS = {
     Kind.DoubleColon: "::",
     Kind.Semicolon: ";",
     Kind.Question: "?",
+    Kind.OrElse: "??",
     Kind.Bang: "!",
     Kind.Amp: "&",
     Kind.Pipe: "|",
@@ -240,7 +241,6 @@ TOKEN_STRINGS = {
     Kind.KwIs: "is",
     Kind.KwNotIs: "!is",
     Kind.KwUnsafe: "unsafe",
-    Kind.KwOrElse: "orelse",
     Kind.KwCatch: "catch",
     # ==============================
 }

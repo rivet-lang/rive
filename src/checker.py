@@ -51,12 +51,18 @@ class Checker:
 			elif isinstance(decl, ast.StructDecl):
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.FieldDecl):
-				pass
+				if decl.has_def_expr:
+					old_expected_type=self.expected_type
+					self.check_expr(decl.def_expr)
+					self.expected_type=old_expected_type
 			elif isinstance(decl, ast.ExtendDecl):
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.FuncDecl):
+				old_expected_type=self.expected_type
 				self.cur_fn = decl.sym
+				self.expected_type=decl.ret_typ
 				self.check_stmts(decl.stmts)
+				self.expected_type=old_expected_type
 			elif isinstance(decl, ast.DestructorDecl):
 				self.check_stmts(decl.stmts)
 			elif isinstance(decl, ast.TestDecl):
@@ -455,7 +461,7 @@ class Checker:
 							)
 
 				return_type = promoted_type
-			elif expr.op == Kind.KwOrElse:
+			elif expr.op == Kind.OrElse:
 				if isinstance(ltyp, type.Optional):
 					if not self.check_compatible_types(
 					    rtyp, ltyp.typ
@@ -1030,7 +1036,9 @@ class Checker:
 				if i == 0: expr.typ = expr_typ
 			return expr.typ
 		elif isinstance(expr, ast.SwitchExpr):
+			old_expected_type=self.expected_type
 			expr_typ = self.check_expr(expr.expr)
+			self.expected_type=expr_typ
 			expr_sym = expr_typ.symbol()
 			expected_branch_typ = self.comp.void_t
 			if expr.is_typeswitch:
@@ -1069,6 +1077,7 @@ class Checker:
 					except utils.CompilerError as e:
 						report.error(e.args[0], b.expr.pos)
 			expr.typ = expected_branch_typ
+			self.expected_type=old_expected_type
 			return expr.typ
 		return self.comp.void_t
 
