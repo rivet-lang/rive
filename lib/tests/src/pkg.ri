@@ -120,7 +120,7 @@ struct TestRunner {
                 .Skipped => {
                     self.print_test_skip(test_.name);
                 },
-                .Fail => {
+                .Failed => {
                     self.print_test_fail(test_.name, test_.err_pos);
                 },
                 .ErrorRaised => {

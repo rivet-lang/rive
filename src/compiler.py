@@ -56,10 +56,11 @@ class Compiler:
 
 	def run(self):
 		self.load_pkg("core", token.NO_POS)
+		self.load_pkg("std", token.NO_POS)
 		self.load_root_pkg()
 		if report.ERRORS > 0:
 			self.abort()
-		self.source_files = self.pkg_deps.resolve()
+		self.source_files = self.pkg_deps.resolve(self.prefs.is_verbose)
 		if not self.prefs.check_syntax:
 			self.register.walk_files(self.source_files)
 			if report.ERRORS > 0:

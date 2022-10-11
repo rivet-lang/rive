@@ -417,7 +417,7 @@ class DepGraph:
 		out = []
 		for node in self.nodes:
 			for dep in node.deps:
-				out.append(f" * {node.name} -> {dep}")
+				out.append(f" > {node.name} -> {dep}")
 		return "\n".join(out)
 
 	def display_cycles(self):
@@ -432,7 +432,7 @@ class DepGraph:
 				continue
 			seen, cycle_names = nn.is_part_of_cycle(k, cycle_names)
 			if seen:
-				out.append(" * " + " -> ".join(cycle_names))
+				out.append(" > " + " -> ".join(cycle_names))
 		return "\n".join(out)
 
 class PkgDeps:
@@ -455,10 +455,18 @@ class PkgDeps:
 			dg.add(name, deps)
 			self.mod_deps[pkg_name] = dg
 
-	def resolve(self):
+	def resolve(self, is_verbose):
 		resolved = self.dg.resolve()
 		if not resolved.acyclic:
 			error("package deps cycle:\n" + resolved.display_cycles())
+		if is_verbose:
+			print("--- resolved dependencies graph ---")
+			print(self.dg.display())
+			print("-----------------------------------")
+			print("-------- imported packages --------")
+			for node in resolved.nodes:
+				print(" >", node.name)
+			print("-----------------------------------")
 		source_files = []
 		for node in resolved.nodes:
 			# resolve module dependency
