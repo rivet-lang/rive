@@ -44,25 +44,23 @@ class Checker:
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.TraitDecl):
 				self.check_decls(decl.decls)
-			elif isinstance(decl, ast.SumTypeDecl):
-				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.ClassDecl):
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.StructDecl):
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.FieldDecl):
 				if decl.has_def_expr:
-					old_expected_type=self.expected_type
+					old_expected_type = self.expected_type
 					self.check_expr(decl.def_expr)
-					self.expected_type=old_expected_type
+					self.expected_type = old_expected_type
 			elif isinstance(decl, ast.ExtendDecl):
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.FuncDecl):
-				old_expected_type=self.expected_type
+				old_expected_type = self.expected_type
 				self.cur_fn = decl.sym
-				self.expected_type=decl.ret_typ
+				self.expected_type = decl.ret_typ
 				self.check_stmts(decl.stmts)
-				self.expected_type=old_expected_type
+				self.expected_type = old_expected_type
 			elif isinstance(decl, ast.DestructorDecl):
 				self.check_stmts(decl.stmts)
 			elif isinstance(decl, ast.TestDecl):
@@ -481,26 +479,9 @@ class Checker:
 				return expr.typ
 			elif expr.op in (Kind.KwIs, Kind.KwNotIs):
 				lsym = ltyp.symbol()
-				if lsym.kind == TypeKind.SumType:
-					if lsym.info.is_c_union:
-						report.error(
-						    f"sumtype `{lsym.name}` does not support operator `{expr.op}`",
-						    expr.left.pos
-						)
-						report.note(
-						    f"`{lsym.name}` is marked with `#[c_union]`"
-						)
-					elif rtyp not in lsym.info.variants:
-						report.error(
-						    f"sumtype `{lsym.name}` has no variant `{rtyp}`",
-						    expr.right.pos
-						)
-						report.note(
-						    f"in right operand for operator `{expr.op}`"
-						)
-				else:
+				if lsym.kind != TypeKind.Class:
 					report.error(
-					    f"`{expr.op}` can only be used with sumtype values",
+					    f"`{expr.op}` can only be used with classes",
 					    expr.left.pos
 					)
 				expr.typ = self.comp.bool_t
@@ -687,8 +668,8 @@ class Checker:
 						self.check_call(expr_left.sym, expr)
 				elif isinstance(expr_left.sym,
 				                sym.Type) and expr_left.sym.kind in (
-				                    TypeKind.SumType, TypeKind.Trait,
-				                    TypeKind.Struct, TypeKind.Class
+				                    TypeKind.Trait, TypeKind.Struct,
+				                    TypeKind.Class
 				                ):
 					expr.sym = expr_left.sym
 					self.check_ctor(expr_left.sym, expr)
@@ -771,8 +752,8 @@ class Checker:
 					self.check_call(expr.sym, expr)
 				elif isinstance(expr_left.field_info,
 				                sym.Type) and expr_left.field_info.kind in (
-				                    TypeKind.SumType, TypeKind.Trait,
-				                    TypeKind.Class, TypeKind.Struct
+				                    TypeKind.Trait, TypeKind.Class,
+				                    TypeKind.Struct
 				                ):
 					self.check_ctor(expr_left.field_info, expr)
 				else:
@@ -1036,19 +1017,15 @@ class Checker:
 				if i == 0: expr.typ = expr_typ
 			return expr.typ
 		elif isinstance(expr, ast.SwitchExpr):
-			old_expected_type=self.expected_type
+			old_expected_type = self.expected_type
 			expr_typ = self.check_expr(expr.expr)
-			self.expected_type=expr_typ
+			self.expected_type = expr_typ
 			expr_sym = expr_typ.symbol()
 			expected_branch_typ = self.comp.void_t
 			if expr.is_typeswitch:
-				if expr_sym.kind != TypeKind.SumType:
+				if expr_sym.kind != TypeKind.Class:
 					report.error("invalid value for typeswitch", expr.expr.pos)
-					report.note(f"expected sumtype, found `{expr_typ}`")
-				elif expr_sym.kind == TypeKind.SumType and expr_sym.info.is_c_union:
-					report.error(
-					    "cannot use C union values in typeswitch", expr.expr.pos
-					)
+					report.note(f"expected class value, found `{expr_typ}`")
 			for i, b in enumerate(expr.branches):
 				for p in b.pats:
 					pat_t = self.check_expr(p)
@@ -1057,12 +1034,6 @@ class Checker:
 							self.check_expr_is_mut(expr.expr)
 						pat_t = self.comp.untyped_to_type(pat_t)
 						pat_t_sym = pat_t.symbol()
-						if expr_sym.kind == TypeKind.SumType:
-							if pat_t not in expr_sym.info.variants:
-								report.error(
-								    f"sumtype `{expr_sym.name}` has no variant `{pat_t}`",
-								    p.pos
-								)
 					else:
 						try:
 							self.check_types(pat_t, expr_typ)
@@ -1077,7 +1048,7 @@ class Checker:
 					except utils.CompilerError as e:
 						report.error(e.args[0], b.expr.pos)
 			expr.typ = expected_branch_typ
-			self.expected_type=old_expected_type
+			self.expected_type = old_expected_type
 			return expr.typ
 		return self.comp.void_t
 
@@ -1085,21 +1056,7 @@ class Checker:
 		info.uses += 1
 		expr.is_ctor = True
 		expr.typ = type.Type(info)
-		if info.kind == TypeKind.SumType:
-			if len(expr.args) == 1:
-				value_t = self.comp.untyped_to_type(
-				    self.check_expr(expr.args[0].expr)
-				)
-				if value_t not in info.info.variants:
-					report.error(
-					    f"union `{info.name}` has no variant `{value_t}`",
-					    expr.args[0].pos
-					)
-			else:
-				report.error(
-				    f"expected 1 argument, found {len(expr.args)}", expr.pos
-				)
-		elif info.kind == TypeKind.Trait:
+		if info.kind == TypeKind.Trait:
 			if len(expr.args) == 1:
 				value_t = self.comp.untyped_to_type(
 				    self.check_expr(expr.args[0].expr)
@@ -1205,18 +1162,7 @@ class Checker:
 	):
 		expected_sym = expected.symbol()
 		pos_msg = f"in argument `{arg_name}` of {func_kind} `{func_name}`"
-		if expected_sym.kind == TypeKind.SumType:
-			if expected != got:
-				got_t = self.comp.untyped_to_type(got)
-				report.error(
-				    f"expected type `{expected}`, found `{got_t}`", pos
-				)
-				if got_t in expected_sym.info.variants:
-					report.help(
-					    f"try wrapping the expression, i.e. `{expected}(value)`"
-					)
-				report.note(pos_msg)
-		elif expected_sym.kind == TypeKind.Trait:
+		if expected_sym.kind == TypeKind.Trait:
 			if expected != got:
 				got_t = self.comp.untyped_to_type(got)
 				if got_t.symbol() not in expected_sym.info.implements:
@@ -1241,9 +1187,10 @@ class Checker:
 					got_str = f"?{expected}"
 			else:
 				got_str = str(got)
-			raise utils.CompilerError(
-			    f"expected type `{expected}`, found `{got_str}`"
-			)
+			if got != self.comp.void_t and expected != self.comp.void_t:
+				raise utils.CompilerError(
+				    f"expected type `{expected}`, found `{got_str}`"
+				)
 
 	def check_compatible_types(self, got, expected):
 		if expected == got:

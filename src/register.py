@@ -13,7 +13,9 @@ class Register:
 		self.sym = None
 
 	def walk_files(self, source_files):
-		for sf in source_files:
+		for i, sf in enumerate(source_files):
+			if self.comp.core_pkg == None and sf.sym.is_core_pkg():
+				self.comp.core_pkg = sf.sym
 			self.sym = sf.sym
 			self.source_file = sf
 			self.walk_decls(self.source_file.decls)
@@ -63,15 +65,6 @@ class Register:
 					self.walk_decls(decl.decls)
 				except utils.CompilerError as e:
 					report.error(e.args[0], decl.pos)
-			elif isinstance(decl, ast.SumTypeDecl):
-				try:
-					decl.sym = self.sym.add_and_return(
-					    sym.Type(decl.vis, decl.name, TypeKind.SumType)
-					)
-					self.sym = decl.sym
-					self.walk_decls(decl.decls)
-				except utils.CompilerError as e:
-					report.error(e.args[0], decl.pos)
 			elif isinstance(decl, ast.ClassDecl):
 				try:
 					if self.source_file.sym.is_core_pkg(
@@ -87,13 +80,15 @@ class Register:
 					report.error(e.args[0], decl.pos)
 			elif isinstance(decl, ast.StructDecl):
 				try:
-					if self.source_file.sym.is_core_pkg(
-					) and decl.name == "_Error":
+					is_core_pkg = self.source_file.sym.is_core_pkg()
+					if is_core_pkg and decl.name == "_Error":
 						decl.sym = self.comp.error_t.sym
 					else:
 						decl.sym = self.sym.add_and_return(
 						    sym.Type(decl.vis, decl.name, TypeKind.Struct)
 						)
+						if is_core_pkg and decl.name == "Slice":
+							self.comp.slice_sym = decl.sym
 					self.sym = decl.sym
 					self.walk_decls(decl.decls)
 				except utils.CompilerError as e:

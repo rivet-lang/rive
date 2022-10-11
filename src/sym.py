@@ -356,7 +356,6 @@ class TypeKind(Enum):
 	Tuple = auto_enum()
 	Enum = auto_enum()
 	Trait = auto_enum()
-	SumType = auto_enum()
 	Class = auto_enum()
 	Struct = auto_enum()
 
@@ -421,8 +420,6 @@ class TypeKind(Enum):
 			return "tuple"
 		elif self == TypeKind.Trait:
 			return "trait"
-		elif self == TypeKind.SumType:
-			return "union"
 		elif self == TypeKind.Class:
 			return "class"
 		elif self == TypeKind.Struct:
@@ -490,11 +487,6 @@ class TraitInfo:
 		for idx, i in enumerate(self.implements):
 			if i == impl: return idx
 		return -1
-
-class SumTypeInfo:
-	def __init__(self, variants, is_c_union):
-		self.variants = variants
-		self.is_c_union = is_c_union # C-like union
 
 class StructInfo:
 	def __init__(self, is_opaque):

@@ -8,8 +8,8 @@ use pkg::errors { OutOfMemoryError };
 /// Allocates dynamically a `size` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
 ///
-/// NOTE: Unlike the `mem::calloc` function, `mem::alloc` will not zero
-/// the memory block.
+/// NOTE: Unlike the `mem::alloc_zeroed` function, `mem::alloc` will
+/// not zero the memory block.
 pub func alloc(size: usize) !*mut void {
     unsafe {
         let ptr = stdc::malloc(size);
@@ -35,7 +35,7 @@ pub func alloc_zeroed(n: usize) !*mut void {
 /// Resizes the memory block `ptr` with `sz` bytes.
 ///
 /// NOTE: The `ptr` must be a pointer to an existing memory block previously
-/// allocated with `mem::alloc` or `mem::calloc`.
+/// allocated with `mem::alloc` or `mem::alloc_zeroed`.
 pub func realloc(ptr: *mut void, sz: usize) !*mut void {
     unsafe {
         if (sz == 0) {

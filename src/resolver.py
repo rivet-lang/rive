@@ -89,11 +89,6 @@ class Resolver:
 			elif isinstance(decl, ast.TraitDecl):
 				self.self_sym = decl.sym
 				self.resolve_decls(decl.decls)
-			elif isinstance(decl, ast.SumTypeDecl):
-				self.self_sym = decl.sym
-				for v in decl.variants:
-					self.resolve_type(v)
-				self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.ClassDecl):
 				self.self_sym = decl.sym
 				self.resolve_decls(decl.decls)

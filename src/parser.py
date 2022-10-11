@@ -404,26 +404,6 @@ class Parser:
 				)
 			self.inside_trait = old_inside_trait
 			return ast.TraitDecl(doc_comment, attrs, vis, name, decls, pos)
-		elif self.accept(Kind.KwSumType):
-			pos = self.tok.pos
-			if is_unsafe:
-				report.error("unions cannot be declared unsafe", pos)
-			name = self.parse_name()
-			self.expect(Kind.Lbrace)
-			variants = []
-			decls = []
-			while True:
-				variants.append(self.parse_type())
-				if not self.accept(Kind.Comma):
-					break
-			if self.accept(Kind.Semicolon):
-				# declarations: methods, consts, etc.
-				while self.tok.kind != Kind.Rbrace:
-					decls.append(self.parse_decl())
-			self.expect(Kind.Rbrace)
-			return ast.SumTypeDecl(
-			    doc_comment, attrs, vis, name, variants, decls, pos
-			)
 		elif self.accept(Kind.KwClass):
 			old_inside_struct_or_class_decl = self.inside_struct_or_class_decl
 			self.inside_struct_or_class_decl = True

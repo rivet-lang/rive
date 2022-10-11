@@ -64,8 +64,6 @@ class Compiler:
 			if report.ERRORS > 0:
 				self.abort()
 
-			self.load_core_syms()
-
 			self.resolver.resolve_files(self.source_files)
 			if report.ERRORS > 0:
 				self.abort()
@@ -197,16 +195,6 @@ class Compiler:
 			if should_compile:
 				new_inputs.append(input)
 		return new_inputs
-
-	def load_core_syms(self):
-		if core_pkg := self.universe.find("core"):
-			self.core_pkg = core_pkg
-			if slice_sym := self.core_pkg.find("Slice"):
-				self.slice_sym = slice_sym
-			else:
-				utils.error("cannot find type `Slice` in package `core`")
-		else:
-			utils.error("package `core` not found")
 
 	def check_pkg_attrs(self):
 		pkg_folder = os.path.join(prefs.RIVET_DIR, "objs", self.prefs.pkg_name)
@@ -416,20 +404,18 @@ class Compiler:
 			elif cond.name in ("_LINUX_", "_WINDOWS_"):
 				return self.prefs.target_os.equals_to_string(cond.name)
 			# architectures
-			elif cond.name in ("_AMD64_", "_i386_"):
+			elif cond.name in ("_i386_", "_AMD64_"):
 				return self.prefs.target_arch.equals_to_string(cond.name)
 			# bits
 			elif cond.name in ("_x32_", "_x64_"):
 				if cond.name == "_x32_":
 					return self.prefs.target_bits == prefs.Bits.X32
-				else:
-					return self.prefs.target_bits == prefs.Bits.X64
+				return self.prefs.target_bits == prefs.Bits.X64
 			# endian
 			elif cond.name in ("_LITTLE_ENDIAN_", "_BIG_ENDIAN_"):
 				if cond.name == "_LITTLE_ENDIAN_":
 					return self.prefs.target_endian == prefs.Endian.Little
-				else:
-					return self.prefs.target_endian == prefs.Endian.Big
+				return self.prefs.target_endian == prefs.Endian.Big
 			else:
 				if cond.name.startswith("_") and cond.name.endswith("_"):
 					report.error(f"unknown builtin flag: `{cond}`", cond.pos)
@@ -438,20 +424,17 @@ class Compiler:
 		elif isinstance(cond, ast.UnaryExpr):
 			if cond.op == token.Kind.Bang:
 				return not self.evalue_comptime_condition(cond.right)
-			else:
-				report.error(f"expected `!`, found token `{cond.op}`", cond.pos)
+			report.error(f"expected `!`, found token `{cond.op}`", cond.pos)
 		elif isinstance(cond, ast.BinaryExpr):
 			if cond.op in (token.Kind.KeyAnd, token.Kind.KeyOr):
 				if cond.op == token.Kind.KeyAnd:
 					return self.evalue_comptime_condition(
 					    cond.left
 					) and self.evalue_comptime_condition(cond.right)
-				else:
-					return self.evalue_comptime_condition(
-					    cond.left
-					) or self.evalue_comptime_condition(cond.right)
-			else:
-				report.error("invalid comptime condition", cond.pos)
+				return self.evalue_comptime_condition(
+				    cond.left
+				) or self.evalue_comptime_condition(cond.right)
+			report.error("invalid comptime condition", cond.pos)
 		elif isinstance(cond, ast.ParExpr):
 			return self.evalue_comptime_condition(cond.expr)
 		else:
