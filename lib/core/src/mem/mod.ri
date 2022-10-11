@@ -52,7 +52,7 @@ pub func realloc(ptr: *mut void, sz: usize) !*mut void {
 
 /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
 /// constant byte `c`.
-pub func set(s: *mut void, c: i32, n: usize) {
+pub func set(s: *mut void, c: i32, n: usize) void {
     unsafe {
         _ = stdc::memset(s, c, n);
     }
@@ -62,7 +62,7 @@ pub func set(s: *mut void, c: i32, n: usize) {
 ///
 /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem::move`, if the memory
 /// areas do overlap.
-pub func copy(dest: *mut void, src: *void, sz: usize) {
+pub func copy(dest: *mut void, src: *void, sz: usize) void {
     unsafe {
         _ = stdc::memcpy(dest, src, sz);
     }
@@ -74,7 +74,7 @@ pub func copy(dest: *mut void, src: *void, sz: usize) {
 /// in `source` are first copied into a temporary array that does not overlap
 /// `source` or `dest`, and the bytes are then copied from the temporary array to
 /// `dest`.
-pub func move(dest: *mut void, src: *void, sz: usize) {
+pub func move(dest: *mut void, src: *void, sz: usize) void {
     unsafe {
         _ = stdc::memmove(dest, src, sz);
     }
@@ -114,7 +114,7 @@ pub func cmp(s1: *void, s2: *void, n: usize) i32 {
 }
 
 /// Deallocates manually the memory referenced by `ptr`.
-pub unsafe func dealloc(ptr: *mut void) {
+pub unsafe func dealloc(ptr: *mut void) void {
     unsafe {
         if (ptr != none) {
             stdc::free(ptr);

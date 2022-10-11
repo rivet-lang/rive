@@ -9,7 +9,7 @@ use pkg::console { eprint, eprintln };
 
 struct backtrace_state;
 
-type BacktraceErrorCB = func(*mut void, *mut u8, i32);
+type BacktraceErrorCB = func(*mut void, *mut u8, i32) void;
 type BacktraceFullCB = func(*mut void, i32, *mut u8, i32, *mut u8) i32;
 
 extern (C) {
@@ -66,7 +66,7 @@ func bt_print_callback(
     return 0;
 }
 
-func bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) {
+func bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) void {
     unsafe {
         let bdata = as(*mut BacktraceData, data);
         if (!bdata.has_error) {
@@ -83,7 +83,7 @@ func bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) {
     }
 }
 
-pub func print(frames_to_skip: i32 = 0) {
+pub func print(frames_to_skip: i32 = 0) void {
     unsafe {
         let mut bt_data = BacktraceData();
         _ = backtrace_full(

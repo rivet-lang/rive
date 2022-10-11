@@ -1,17 +1,17 @@
-func result() ! {
+func result() !void {
     raise Error("simple error");
 }
 
-func result2() ! {
+func result2() !void {
     raise Error("simple error (raised: {}, idx: {})", true, 0);
 }
 
 test "catch result error" {
     result() catch |err| {
-        assert!(err.msg() == "simple error");
+        assert!(err.msg == "simple error");
     };
 
     result2() catch |err2| {
-        assert!(err2.msg() == "simple error (raised: true, idx: 0)");
+        assert!(err2.msg == "simple error (raised: true, idx: 0)");
     };
 }

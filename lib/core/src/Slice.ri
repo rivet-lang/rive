@@ -33,7 +33,7 @@ struct Slice {
     }
 
     #[used]
-    func set(self, idx: usize, val: *void) {
+    func set(self, idx: usize, val: *void) void {
         if (idx >= self.len) {
             panic("slice index out of range (index: {}, len: {})", idx, self.len);
         }

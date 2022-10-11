@@ -18,7 +18,7 @@ extern (C) {
     pub func fgets(s: *mut u8, n: usize, stream: *mut FILE) i32;
     pub func fclose(stream: *mut FILE) i32;
     pub func fileno(stream: *FILE) i32;
-    pub func rewind(stream: *mut FILE);
+    pub func rewind(stream: *mut FILE) void;
 }
 
 extern (C) {

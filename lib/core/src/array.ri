@@ -5,7 +5,7 @@
 use pkg::process { panic };
 
 #[used]
-func array_index(len: usize, idx: usize) {
+func array_index(len: usize, idx: usize) void {
     if (idx >= len) {
         panic("array index out of range (index: {}, size: {})", idx, len);
     }

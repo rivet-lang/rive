@@ -610,10 +610,8 @@ class Parser:
 					break
 		self.expect(Kind.Rparen)
 
-		ret_typ = self.comp.void_t
 		is_result = self.accept(Kind.Bang)
-		if self.tok.kind not in (Kind.Lbrace, Kind.Semicolon):
-			ret_typ = self.parse_type()
+		ret_typ = self.parse_type()
 		if is_result:
 			ret_typ = type.Result(ret_typ)
 
@@ -1320,9 +1318,7 @@ class Parser:
 					if not self.accept(Kind.Comma):
 						break
 			self.expect(Kind.Rparen)
-			ret_typ = self.comp.void_t
-			if self.tok.kind.is_start_of_type():
-				ret_typ = self.parse_type()
+			ret_typ = self.parse_type()
 			if is_extern and self.inside_extern:
 				self.inside_extern = False
 			return type.Func(
@@ -1389,9 +1385,6 @@ class Parser:
 				expr = self.parse_ident()
 				lit = expr.name
 				if lit == "void":
-					if prev_tok_kind not in (Kind.Mul, Kind.KwMut, Kind.Amp):
-						# valid only as pointer
-						report.error("invalid use of `void` type", pos)
 					return self.comp.void_t
 				elif lit == "never":
 					if prev_tok_kind != Kind.Rparen and self.tok.kind != Kind.Lbrace:

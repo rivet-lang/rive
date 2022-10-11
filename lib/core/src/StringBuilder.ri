@@ -59,7 +59,7 @@ pub class StringBuilder {
         }
     }
 
-    pub func write_byte(mut self, val: u8) {
+    pub func write_byte(mut self, val: u8) void {
         if (self.len_ >= self.cap) {
             self.reserve(self.len_ + 1);
         }
@@ -69,13 +69,13 @@ pub class StringBuilder {
         self.len_++;
     }
 
-    pub unsafe func write_raw(mut self, s: *u8) {
+    pub unsafe func write_raw(mut self, s: *u8) void {
         unsafe {
             self.write_raw_with_len(s, stdc::strlen(s));
         }
     }
 
-    pub unsafe func write_raw_with_len(mut self, s: *u8, len: usize) {
+    pub unsafe func write_raw_with_len(mut self, s: *u8, len: usize) void {
         if (len == 0) {
             return;
         } else if (self.len_ >= self.cap) {
@@ -87,7 +87,7 @@ pub class StringBuilder {
         self.len_ += len;
     }
 
-    pub func write_string(mut self, s: string) {
+    pub func write_string(mut self, s: string) void {
         unsafe {
             self.write_raw_with_len(s.ptr, s.len);
         }
@@ -95,7 +95,7 @@ pub class StringBuilder {
 
     /// Ensures that this string's capacity is at least `required` bytes larger
     /// than its size.
-    pub func reserve(mut self, required: usize) {
+    pub func reserve(mut self, required: usize) void {
         if (required <= self.cap) {
             return;
         }

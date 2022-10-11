@@ -19,21 +19,21 @@ pub struct File {
     }
 
 	/// Writes the string `s` into the file.
-    pub func write(mut self, s: string) {
+    pub func write(mut self, s: string) void {
 		_ = unsafe { stdc::fputs(s.as_ptr(), self.f) };
     }
 
 	/// Writes the string `s` into the file and appends a '\n' character.
-	pub func writeln(mut self, s: string) {
+	pub func writeln(mut self, s: string) void {
 		self.write(s);
 		self.write("\n");
 	}
 
-    pub func writef(mut self, s: string, args: ...traits::ToString) {
+    pub func writef(mut self, s: string, args: ...traits::ToString) void {
 		self.write(s.fmt(args));
     }
 
-    pub func writelnf(mut self, s: string, args: ...traits::ToString) {
+    pub func writelnf(mut self, s: string, args: ...traits::ToString) void {
 		self.write(s.fmt(args));
 		self.write("\n");
     }
@@ -82,7 +82,7 @@ pub struct File {
     }
 
     /// Closes the current file.
-    pub func close(mut self) {
+    pub func close(mut self) void {
         if (!self.is_opened) {
             return;
         }

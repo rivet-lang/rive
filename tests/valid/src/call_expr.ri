@@ -1,4 +1,4 @@
-func default_arg(x: i32 = 1) {
+func default_arg(x: i32 = 1) void {
     assert!(x == 1 or x == 5 or x == 10);
 }
 

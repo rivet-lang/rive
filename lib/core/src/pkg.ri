@@ -16,14 +16,14 @@ mod utils;
 
 pub let ARGS: [string] = [""][..];
 
-func segfault_handler(_: i32) {
+func segfault_handler(_: i32) void {
     console::eprintln("panic: segmentation fault detected");
     backtrace::print(3);
     process::exit(1);
 }
 
 #[used]
-func panic_if(cond: bool, msg: string) {
+func panic_if(cond: bool, msg: string) void {
     if (cond) {
         console::eprintln("panic: {}", msg);
         backtrace::print(2);
@@ -32,7 +32,7 @@ func panic_if(cond: bool, msg: string) {
 }
 
 #[used]
-func assert(cond: bool, msg: string) {
+func assert(cond: bool, msg: string) void {
     if (!cond) {
         console::eprintln("panic: assertion failed: {}", msg);
         backtrace::print(2);

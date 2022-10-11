@@ -21,14 +21,14 @@ pub func get(name: string) string {
 }
 
 /// Sets the value of an environment variable with `name` to `value`.
-pub func set(name: string, value: string, overwrite: bool = true) ! {
+pub func set(name: string, value: string, overwrite: bool = true) !void {
 	if (unsafe { stdc::setenv(name.as_ptr(), value.as_ptr(), overwrite) == -1 }) {
 		raise Error("env::set: {}".fmt(core::strerr()));
 	}
 }
 
 /// Removes an environment variable with `name`.
-pub func remove(name: string) ! {
+pub func remove(name: string) !void {
 	if (unsafe { stdc::unsetenv(name.as_ptr()) } == -1) {
 		raise Error("env::remove: {}".fmt(core::strerr()));
 	}

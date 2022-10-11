@@ -8,7 +8,7 @@ pub struct StaticBuffer {
     mut buf: [u8; 25];
     mut len: usize;
 
-    pub func push(mut self, byte: u8) {
+    pub func push(mut self, byte: u8) void {
         if (self.len < self.buf.len) {
             self.buf[self.len++] = byte;
         } else {
@@ -16,7 +16,7 @@ pub struct StaticBuffer {
         }
     }
 
-    pub func clear(mut self) {
+    pub func clear(mut self) void {
         while (self.len > 0) {
             self.buf[self.len--] = 0;
         }
