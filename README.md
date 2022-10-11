@@ -23,7 +23,8 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 
 Rivet's goal is to be a very powerful programming language and at the same time easy
 to use, with a syntax inspired mainly by Rust and C# (which are the coolest languages
-I've ever seen), and by other languages such as Python, Lua, TypeScript, D, Zig, etc.
+I've ever seen), and by other languages such as Python, Lua, TypeScript, D, Zig, Go,
+etc.
 
 It is true that there are many programming languages and each of them specialized in
 a field; some with strange syntax in my opinion (like Lisp) and others with a high
@@ -42,7 +43,7 @@ API is not stable, and may change in the long term. Not all features are impleme
 * **Named and optional arguments**: Very useful.
 * **Immutable values by default:** Variables and fields of struct are immutable
 by default.
-* **Polymorphism**: Classes, Traits and Union types are also supported.
+* **Polymorphism**: Classes and Traits are supported.
 * **Generics:** Specialize and reuse the same code for different types.
 
 * * *
