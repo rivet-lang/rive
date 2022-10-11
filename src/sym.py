@@ -567,6 +567,7 @@ def universe():
 
 	uni = Pkg(Vis.Priv, "universe")
 	uni.add(Type(Vis.Pub, "void", TypeKind.Void))
+	uni.add(Type(Vis.Pub, "never", TypeKind.Never))
 	uni.add(Type(Vis.Pub, "none", TypeKind.None_))
 	uni.add(Type(Vis.Pub, "bool", TypeKind.Bool))
 	uni.add(Type(Vis.Pub, "rune", TypeKind.Rune))
@@ -585,7 +586,6 @@ def universe():
 	uni.add(Type(Vis.Pub, "f32", TypeKind.Float32))
 	uni.add(Type(Vis.Pub, "f64", TypeKind.Float64))
 	uni.add(Type(Vis.Pub, "string", TypeKind.String))
-	uni.add(Type(Vis.Pub, "error", TypeKind.Struct))
-	uni.add(Type(Vis.Pub, "never", TypeKind.Never))
+	uni.add(Type(Vis.Pub, "Error", TypeKind.Class))
 
 	return uni

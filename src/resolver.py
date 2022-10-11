@@ -227,6 +227,17 @@ class Resolver:
 			for arg in expr.args:
 				self.resolve_expr(arg.expr)
 			if expr.err_handler.has_expr:
+				if expr.err_handler.has_varname():
+					# register error value
+					try:
+						expr.err_handler.scope.add(
+						    sym.Obj(
+						        False, expr.err_handler.varname,
+						        self.comp.error_t, False
+						    )
+						)
+					except utils.CompilerError as e:
+						report.error(e.args[0], expr.err_handler.varname_pos)
 				self.resolve_expr(expr.err_handler.expr)
 		elif isinstance(expr, ast.BuiltinCallExpr):
 			for arg in expr.args:
@@ -263,6 +274,7 @@ class Resolver:
 						self.resolve_expr(b.cond)
 					self.resolve_expr(b.expr)
 		elif isinstance(expr, ast.SwitchExpr):
+			self.resolve_expr(expr.expr)
 			for b in expr.branches:
 				if not b.is_else:
 					for pat in b.pats:
@@ -653,6 +665,7 @@ class Resolver:
 					)
 
 	def load_preludes(self):
-		for core_sym in self.comp.core_pkg:
-			if not isinstance(core_sym, sym.Mod) and core_sym.vis.is_pub():
+		self.preludes["Error"] = self.comp.error_t.sym
+		for core_sym in self.comp.core_pkg.syms:
+			if core_sym.vis.is_pub() and not isinstance(core_sym, sym.Mod):
 				self.preludes[core_sym.name] = core_sym

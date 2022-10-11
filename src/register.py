@@ -67,9 +67,11 @@ class Register:
 					report.error(e.args[0], decl.pos)
 			elif isinstance(decl, ast.ClassDecl):
 				try:
-					if self.source_file.sym.is_core_pkg(
-					) and decl.name == "string":
+					is_core_pkg = self.source_file.sym.is_core_pkg()
+					if is_core_pkg and decl.name == "string":
 						decl.sym = self.comp.string_t.sym
+					elif is_core_pkg and decl.name == "Error":
+						decl.sym = self.comp.error_t.sym
 					else:
 						decl.sym = self.sym.add_and_return(
 						    sym.Type(decl.vis, decl.name, TypeKind.Class)
@@ -80,15 +82,12 @@ class Register:
 					report.error(e.args[0], decl.pos)
 			elif isinstance(decl, ast.StructDecl):
 				try:
-					is_core_pkg = self.source_file.sym.is_core_pkg()
-					if is_core_pkg and decl.name == "_Error":
-						decl.sym = self.comp.error_t.sym
-					else:
-						decl.sym = self.sym.add_and_return(
-						    sym.Type(decl.vis, decl.name, TypeKind.Struct)
-						)
-						if is_core_pkg and decl.name == "Slice":
-							self.comp.slice_sym = decl.sym
+					decl.sym = self.sym.add_and_return(
+					    sym.Type(decl.vis, decl.name, TypeKind.Struct)
+					)
+					if self.source_file.sym.is_core_pkg(
+					) and decl.name == "Slice":
+						self.comp.slice_sym = decl.sym
 					self.sym = decl.sym
 					self.walk_decls(decl.decls)
 				except utils.CompilerError as e:

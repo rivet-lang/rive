@@ -296,6 +296,8 @@ class Pos:
 	def __str__(self):
 		return self.__repr__()
 
+NO_POS = Pos("", 0, 0, 0)
+
 class Token:
 	def __init__(self, lit, kind, pos):
 		self.lit = lit

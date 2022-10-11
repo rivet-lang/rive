@@ -341,9 +341,20 @@ class Checker:
 			self.expected_type = old_exp_typ
 			return expr.typ
 		elif isinstance(expr, ast.GuardExpr):
-			self.check_expr(expr.expr)
+			expr_t = self.check_expr(expr.expr)
+			if isinstance(expr_t, (type.Result, type.Optional)):
+				expr.is_result = isinstance(expr_t, type.Result)
+				expr.scope.update_type(expr.vars[0], expr_t.typ)
+				expr.typ = expr_t.typ
+			else:
+				report.error("expected result or optional value", expr.expr.pos)
+				expr.typ = self.comp.void_t
 			if expr.has_cond:
-				self.check_expr(expr.cond)
+				if self.check_expr(expr.cond) != self.comp.bool_t:
+					report.error(
+					    "guard condition must be boolean", expr.cond.pos
+					)
+			return expr.typ
 		elif isinstance(expr, ast.UnaryExpr):
 			expr.typ = self.check_expr(expr.right)
 			expr.right_typ = expr.typ
@@ -718,7 +729,7 @@ class Checker:
 							)
 					else:
 						report.error(
-						    f"expected method, found {m.sym_kind()}",
+						    f"expected method, found {m.typeof()}",
 						    expr_left.field_pos
 						)
 				elif f := left_sym.find_field(expr_left.field_name):
@@ -758,7 +769,7 @@ class Checker:
 					self.check_ctor(expr_left.field_info, expr)
 				else:
 					report.error(
-					    f"expected function, found {expr_left.field_info.sym_kind()}",
+					    f"expected function, found {expr_left.field_info.typeof()}",
 					    expr.pos
 					)
 			else:
@@ -921,7 +932,7 @@ class Checker:
 							expr.typ = decl.typ()
 					else:
 						report.error(
-						    f"cannot take value of {decl.sym_kind()} `{left_sym.name}::{expr.field_name}`",
+						    f"cannot take value of {decl.typeof()} `{left_sym.name}::{expr.field_name}`",
 						    expr.field_pos
 						)
 				else:
@@ -976,11 +987,50 @@ class Checker:
 			return expr.typ
 		elif isinstance(expr, ast.ReturnExpr):
 			if expr.has_expr:
-				self.check_expr(expr.expr)
-			return self.comp.never_t
+				if self.cur_fn.ret_typ == self.comp.void_t:
+					report.error(
+					    f"void {self.cur_fn.typeof()} `{self.cur_fn.name}` should not return a value",
+					    expr.expr.pos
+					)
+				else:
+					old_expected_type = self.expected_type
+					self.expected_type = self.cur_fn.ret_typ.typ if isinstance(
+					    self.cur_fn.ret_typ, type.Result
+					) else self.cur_fn.ret_typ
+					ret_typ = self.check_expr(expr.expr)
+					self.expected_type = old_expected_type
+					try:
+						self.check_types(ret_typ, self.cur_fn.ret_typ)
+					except utils.CompilerError as e:
+						report.error(e.args[0], expr.expr.pos)
+						report.note(
+						    f"in return argument of {self.cur_fn.typeof()} `{self.cur_fn.name}`"
+						)
+			elif self.cur_fn and not (
+			    (self.cur_fn.ret_typ == self.comp.void_t) or (
+			        isinstance(self.cur_fn.ret_typ, type.Result)
+			        and self.cur_fn.ret_typ.typ == self.comp.void_t
+			    )
+			):
+				report.error(
+				    f"expected `{self.cur_fn.ret_typ}` argument", expr.pos
+				)
+				report.note(
+				    f"in return argument of {self.cur_fn.typeof()} `{self.cur_fn.name}`"
+				)
+			expr.typ = self.comp.never_t
+			return expr.typ
 		elif isinstance(expr, ast.RaiseExpr):
-			self.check_expr(expr.expr)
-			return self.comp.never_t
+			if self.cur_fn and not isinstance(self.cur_fn.ret_typ, type.Result):
+				report.error(
+				    f"current {self.cur_fn.typeof()} does not returns a result value",
+				    expr.pos
+				)
+			expr_typ = self.check_expr(expr.expr)
+			#if expr_typ.symbol().kind != TypeKind.ErrType:
+			#	report.error("expected a errtype value", expr.expr.pos)
+			expr.typ = self.comp.never_t
+			return expr.typ
 		elif isinstance(expr, ast.Block):
 			expr.typ = self.comp.void_t
 			if expr.is_unsafe:

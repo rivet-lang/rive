@@ -4,12 +4,12 @@
 
 pub enum Arch : u8 {
     I386,
-    AMD64;
+    Amd64;
 
     pub func from_string(arch: string) ?Arch {
         switch (arch) {
             "i386" => return .I386,
-            "amd64" => return .AMD64,
+            "amd64" => return .Amd64,
             else => return none
         }
     }
@@ -20,7 +20,7 @@ pub func arch() Arch {
     $if (_i386_) {
         return .I386;
     } $else $if (_AMD64_) {
-        return .AMD64;
+        return .Amd64;
     } $else {
         panic("unknown host architecture");
     }
