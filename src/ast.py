@@ -214,7 +214,7 @@ class ClassDecl:
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
-		self.bases=bases
+		self.bases = bases
 		self.decls = decls
 		self.sym = None
 		self.pos = pos

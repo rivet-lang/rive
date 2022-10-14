@@ -413,7 +413,7 @@ class Parser:
 			if is_unsafe:
 				report.error("class cannot be declared unsafe", pos)
 			name = self.parse_name()
-			bases=[]
+			bases = []
 			if self.accept(Kind.Colon):
 				while True:
 					bases.append(self.parse_type())
@@ -426,7 +426,9 @@ class Parser:
 					decls.append(self.parse_decl())
 			self.expect(Kind.Rbrace)
 			self.inside_struct_or_class_decl = old_inside_struct_or_class_decl
-			return ast.ClassDecl(doc_comment, attrs, vis, name,bases, decls, pos)
+			return ast.ClassDecl(
+			    doc_comment, attrs, vis, name, bases, decls, pos
+			)
 		elif self.accept(Kind.KwStruct):
 			old_inside_struct_or_class_decl = self.inside_struct_or_class_decl
 			self.inside_struct_or_class_decl = True
@@ -1350,7 +1352,7 @@ class Parser:
 							break
 				return type.Type.unresolved(path_expr)
 			elif self.tok.kind == Kind.Name:
-				prev_tok_kind=self.prev_tok.kind
+				prev_tok_kind = self.prev_tok.kind
 				expr = self.parse_ident()
 				lit = expr.name
 				if lit == "void":

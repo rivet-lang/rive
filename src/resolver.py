@@ -93,8 +93,8 @@ class Resolver:
 				self.self_sym = decl.sym
 				for base in decl.bases:
 					if self.resolve_type(base):
-						base_sym=base.symbol()
-						if base_sym.kind==sym.TypeKind.Trait:
+						base_sym = base.symbol()
+						if base_sym.kind == sym.TypeKind.Trait:
 							base_sym.info.implements.append(decl.sym)
 				self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.StructDecl):

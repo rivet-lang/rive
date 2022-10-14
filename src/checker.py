@@ -45,18 +45,24 @@ class Checker:
 			elif isinstance(decl, ast.TraitDecl):
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.ClassDecl):
-				has_base=False
+				has_base = False
 				for base in decl.bases:
-					base_sym=base.symbol()
-					if base_sym.kind==TypeKind.Class:
+					base_sym = base.symbol()
+					if base_sym.kind == TypeKind.Class:
 						if has_base:
-							report.error("classes cannot have multiple base classes", decl.pos)
+							report.error(
+							    "classes cannot have multiple base classes",
+							    decl.pos
+							)
 						else:
-							has_base=True
-					elif base_sym.kind==TypeKind.Trait:
+							has_base = True
+					elif base_sym.kind == TypeKind.Trait:
 						pass
 					else:
-						report.error(f"base type `{base_}` of class `{decl.name}` is not a class", decl.pos)
+						report.error(
+						    f"base type `{base_}` of class `{decl.name}` is not a class",
+						    decl.pos
+						)
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.StructDecl):
 				self.check_decls(decl.decls)

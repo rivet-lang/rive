@@ -61,7 +61,7 @@ class Kind(Enum):
 	Rparen = auto_enum() # )
 
 	KeywordBegin = auto_enum()
-    # ========== keywords ==========
+	# ========== keywords ==========
 	KwAnd = auto_enum() # and
 	KwAs = auto_enum() # as
 	KwBase = auto_enum() # base
