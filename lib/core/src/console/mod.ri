@@ -9,7 +9,7 @@ use pkg { stdc, traits, utils };
 pub func print(s: string, args: ...traits::ToString) void {
     let sx = s.fmt(args);
     unsafe {
-        utils::write_buf_to_fd(1, sx.as_ptr(), sx.len);
+        utils::write_buf_to_fd(1, sx.ptr, sx.len);
     }
 }
 
@@ -26,7 +26,7 @@ pub func eprint(s: string, args: ...traits::ToString) void {
     unsafe {
         _ = stdc::fflush(stdc::stdout);
         _ = stdc::fflush(stdc::stderr);
-        utils::write_buf_to_fd(2, sx.as_ptr(), sx.len);
+        utils::write_buf_to_fd(2, sx.ptr, sx.len);
         _ = stdc::fflush(stdc::stderr);
     }
 }

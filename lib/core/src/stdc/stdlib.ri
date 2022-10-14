@@ -24,7 +24,7 @@ extern (C) {
     pub func malloc(size: usize) *mut void;
     pub func calloc(nobj: usize, size: usize) *mut void;
     pub func realloc(p: *mut void, size: usize) *mut void;
-    pub func free(p: *mut void) void;
+    pub func free(p: *void) void;
 
     pub func getenv(name: *u8) *mut u8;
     pub func setenv(name: *u8, value: *u8, replace: bool) i32;

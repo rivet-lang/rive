@@ -9,20 +9,20 @@ use pkg::utils { StaticBuffer };
 let empty_string: string = string("", 0);
 
 pub class string : ToString {
-    ptr: *mut u8;
+    pub ptr: *u8;
     pub len: usize;
 
     is_ref: bool;
 
-    pub unsafe func from_lit(ptr: *mut u8) Self {
+    pub unsafe func from_lit(ptr: *u8) Self {
         return Self(unsafe { ptr }, stdc::strlen(ptr), is_ref: true);
     }
 
-    pub unsafe func from_raw(ptr: *mut u8, is_ref: bool = false) Self {
+    pub unsafe func from_raw(ptr: *u8, is_ref: bool = false) Self {
         return unsafe { Self::from_raw_with_len(ptr, stdc::strlen(ptr), is_ref) };
     }
 
-    pub unsafe func from_raw_with_len(ptr: *mut u8, len: usize, is_ref: bool = false) Self {
+    pub unsafe func from_raw_with_len(ptr: *u8, len: usize, is_ref: bool = false) Self {
         if (len == 0) {
             return "";
         }
@@ -174,16 +174,10 @@ pub class string : ToString {
 		return none;
 	}
 
-    pub unsafe func as_ptr(self) *u8 {
-        return unsafe { self.ptr };
-    }
-
-    pub unsafe func as_mut_ptr(self) *mut u8 {
-        return unsafe { self.ptr };
-    }
-
     pub func as_bytes(self) [u8] {
-        return unsafe { Slice::from_array(self.ptr, size_of!(u8), self.len) };
+        return unsafe {
+            Slice::from_array(as(*mut u8, self.ptr), size_of!(u8), self.len)
+        };
     }
 
     pub func ==(self, rhs: Self) bool {
@@ -309,7 +303,7 @@ pub class string : ToString {
         return self;
     }
 
-    ~Self(mut self) {
+    ~Self(self) {
         if (!self.is_ref) {
             unsafe {
                 mem::dealloc(self.ptr);

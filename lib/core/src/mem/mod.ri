@@ -114,7 +114,7 @@ pub func cmp(s1: *void, s2: *void, n: usize) i32 {
 }
 
 /// Deallocates manually the memory referenced by `ptr`.
-pub unsafe func dealloc(ptr: *mut void) void {
+pub unsafe func dealloc(ptr: *void) void {
     unsafe {
         if (ptr != none) {
             stdc::free(ptr);

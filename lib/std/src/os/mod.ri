@@ -15,7 +15,7 @@ pub func execute(cmd: string) Result {
     let pcmd = if (cmd.contains("2>")) cmd else "{} 2>&1".fmt(cmd);
 
     unsafe {
-        let f = stdc::popen(pcmd.as_ptr(), c"r");
+        let f = stdc::popen(pcmd.ptr, c"r");
         if (f == none) {
             return Result("execute(\"{}\") failed".fmt(cmd), -1);
         }

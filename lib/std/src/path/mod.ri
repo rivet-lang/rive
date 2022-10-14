@@ -21,28 +21,28 @@ pub const MAX_PATH_LEN: i32 = $if (_WINDOWS_) 260 $else 4096;
 
 /// Returns true if `path` (file or directory) exists.
 pub func exists(path: string) bool {
-    return unsafe { stdc::access(path.as_ptr(), F_OK) != -1 };
+    return unsafe { stdc::access(path.ptr, F_OK) != -1 };
 }
 
 /// Returns `true` if `path` is executable.
 pub func is_executable(path: string) bool {
-    return unsafe { stdc::access(path.as_ptr(), X_OK) != -1 };
+    return unsafe { stdc::access(path.ptr, X_OK) != -1 };
 }
 
 /// Returns `true` if `path` is writable.
 pub func is_writable(path: string) bool {
-    return unsafe { stdc::access(path.as_ptr(), W_OK) != -1 };
+    return unsafe { stdc::access(path.ptr, W_OK) != -1 };
 }
 
 /// Returns `true` if `path` is readable.
 pub func is_readable(path: string) bool {
-    return unsafe { stdc::access(path.as_ptr(), R_OK) != -1 };
+    return unsafe { stdc::access(path.ptr, R_OK) != -1 };
 }
 
 /// Returns true if `path` is a directory.
 pub func is_dir(path: string) bool {
     let mut statbuf = stdc::Stat();
-    if (unsafe { stdc::stat(path.as_ptr(), addr_of_mut!(statbuf)) != 0 }) {
+    if (unsafe { stdc::stat(path.ptr, addr_of_mut!(statbuf)) != 0 }) {
         return false;
     }
     return (as(i32, statbuf.mode) & S_IFMT) == S_IFDIR;
@@ -61,7 +61,7 @@ pub func is_absolute(path: string) bool {
 /// Returns a boolean indicating whether `path` is a link.
 pub func is_link(path: string) bool {
     let mut statbuf = stdc::Stat();
-    if (unsafe { stdc::lstat(path.as_ptr(), addr_of_mut!(statbuf)) != 0 }) {
+    if (unsafe { stdc::lstat(path.ptr, addr_of_mut!(statbuf)) != 0 }) {
         return false;
     }
     return (as(i32, statbuf.mode) & S_IFMT) == S_IFLNK;

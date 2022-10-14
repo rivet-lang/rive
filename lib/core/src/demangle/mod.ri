@@ -10,7 +10,7 @@ pub func demangle_symbol(name: string) string {
         return name;
     }
 
-    let name_ptr = unsafe { name.as_ptr() };
+    let name_ptr = unsafe { name.ptr };
     let mut idx: usize = 2;
     let buf = StaticBuffer();
     let res = StringBuilder::with_capacity(name.len);

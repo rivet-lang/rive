@@ -130,7 +130,7 @@ pub class StringBuilder : ToString {
     }
 
     pub func to_string(self) string {
-        return string(self.ptr, self.len_, is_ref: true);
+        return string(self.ptr, self.len_);
     }
 
     ~Self(mut self) {
