@@ -8,7 +8,7 @@ pub struct StaticBuffer {
     mut buf: [u8; 25];
     mut len: usize;
 
-    pub func push(mut self, byte: u8) void {
+    pub fn push(mut self, byte: u8) void {
         if (self.len < self.buf.len) {
             self.buf[self.len++] = byte;
         } else {
@@ -16,17 +16,17 @@ pub struct StaticBuffer {
         }
     }
 
-    pub func clear(mut self) void {
+    pub fn clear(mut self) void {
         while (self.len > 0) {
             self.buf[self.len--] = 0;
         }
     }
 
-    pub func as_u64(self) u64 {
+    pub fn as_u64(self) u64 {
         return unsafe { stdc::strtoul(self.buf[0], none, 10) };
     }
 
-    pub func as_string(self) string {
+    pub fn as_string(self) string {
         return unsafe { string::from_raw_with_len(self.buf[0], self.len) };
     }
 }

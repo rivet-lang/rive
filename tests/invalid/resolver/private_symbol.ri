@@ -9,7 +9,7 @@ mod my_mod {
 }
 
 mod my_mod2 {
-    pub fn func() {
+    pub fn fn() {
         _ = super::my_mod::PrivateStruct{
             a: super::my_mod::PRIVATE_CONST,
             b: super::my_mod::PrivateEnum::Variant
@@ -18,5 +18,5 @@ mod my_mod2 {
 }
 
 fn main() {
-    my_mod2::func();
+    my_mod2::fn();
 }

@@ -1,8 +1,8 @@
-func result() !void {
+fn result() !void {
     raise Error("simple error");
 }
 
-func result2() !void {
+fn result2() !void {
     raise Error("simple error (raised: {}, idx: {})", true, 0);
 }
 

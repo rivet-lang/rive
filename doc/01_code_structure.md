@@ -15,7 +15,7 @@ code.
 
 In Rivet, the entry point of a program is a function named `main`.
 ```rust
-func main() {
+fn main() {
     // code goes here
 }
 ```
@@ -42,7 +42,7 @@ enum Foo { /* ... */ }
 
 extend Foo { /* ... */ }
 
-func baz() { /* ... */ }
+fn baz() { /* ... */ }
 
 test "test name =D" { /* ... */ }
 ```

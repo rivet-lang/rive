@@ -3,6 +3,6 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    pub func stat(__file: *u8, __buf: *mut Stat) i32;
-	pub func lstat(file: *u8, buf: *mut Stat) i32;
+    pub fn stat(__file: *u8, __buf: *mut Stat) i32;
+	pub fn lstat(file: *u8, buf: *mut Stat) i32;
 }

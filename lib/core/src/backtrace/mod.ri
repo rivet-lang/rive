@@ -9,16 +9,16 @@ use pkg::console { eprint, eprintln };
 
 struct backtrace_state;
 
-type BacktraceErrorCB = func(*mut void, *mut u8, i32) void;
-type BacktraceFullCB = func(*mut void, i32, *mut u8, i32, *mut u8) i32;
+type BacktraceErrorCB = fn(*mut void, *mut u8, i32) void;
+type BacktraceFullCB = fn(*mut void, i32, *mut u8, i32, *mut u8) i32;
 
 extern (C) {
-    func backtrace_create_state(
+    fn backtrace_create_state(
         filename: *u8, threaded: i32, error_cb: BacktraceErrorCB,
         data: *mut void
     ) *mut backtrace_state;
 
-    func backtrace_full(
+    fn backtrace_full(
         state: *backtrace_state, skip: i32, cb: BacktraceFullCB,
         error_cb: BacktraceErrorCB, data: *mut void
     ) i32;
@@ -33,7 +33,7 @@ struct BacktraceData {
     mut has_error: bool;
 }
 
-func bt_print_callback(
+fn bt_print_callback(
     data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, func_ptr: *mut u8
 ) i32 {
     unsafe {
@@ -66,7 +66,7 @@ func bt_print_callback(
     return 0;
 }
 
-func bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) void {
+fn bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) void {
     unsafe {
         let bdata = as(*mut BacktraceData, data);
         if (!bdata.has_error) {
@@ -83,7 +83,7 @@ func bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) void {
     }
 }
 
-pub func print(frames_to_skip: i32 = 0) void {
+pub fn print(frames_to_skip: i32 = 0) void {
     unsafe {
         let mut bt_data = BacktraceData();
         _ = backtrace_full(

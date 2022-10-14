@@ -281,9 +281,9 @@ class Parser:
 						if self.tok.kind == Kind.Rbrace:
 							break
 					self.expect(Kind.Rbrace)
-				elif self.accept(Kind.KwFunc):
+				elif self.accept(Kind.KwFn):
 					protos.append(
-					    self.parse_func_decl(
+					    self.parse_fn_decl(
 					        doc_comment, attrs, vis, is_unsafe
 					        or abi != sym.ABI.Rivet, abi
 					    )
@@ -397,9 +397,9 @@ class Parser:
 					    "unnecessary visibility qualifier", self.prev_tok.pos
 					)
 				is_unsafe = self.accept(Kind.KwUnsafe)
-				self.expect(Kind.KwFunc)
+				self.expect(Kind.KwFn)
 				decls.append(
-				    self.parse_func_decl(
+				    self.parse_fn_decl(
 				        doc_comment, attrs, sym.Vis.Pub, is_unsafe,
 				        sym.ABI.Rivet
 				    )
@@ -506,8 +506,8 @@ class Parser:
 			return ast.ExtendDecl(
 			    attrs, typ, is_for_trait, for_trait, decls, pos
 			)
-		elif self.accept(Kind.KwFunc):
-			return self.parse_func_decl(
+		elif self.accept(Kind.KwFn):
+			return self.parse_fn_decl(
 			    doc_comment, attrs, vis, not self.extern_is_trusted and (
 			        is_unsafe or
 			        (self.inside_extern and self.extern_abi != sym.ABI.Rivet)
@@ -546,7 +546,7 @@ class Parser:
 			self.next()
 		return ast.EmptyDecl()
 
-	def parse_func_decl(self, doc_comment, attrs, vis, is_unsafe, abi):
+	def parse_fn_decl(self, doc_comment, attrs, vis, is_unsafe, abi):
 		pos = self.tok.pos
 		if self.tok.kind.is_overloadable_op():
 			name = str(self.tok.kind)
@@ -615,7 +615,7 @@ class Parser:
 			while not self.accept(Kind.Rbrace):
 				stmts.append(self.parse_stmt())
 		self.close_scope()
-		return ast.FuncDecl(
+		return ast.FnDecl(
 		    doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
 		    args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
 		    has_named_args, self.is_pkg_level and name == "main", is_variadic,
@@ -1264,7 +1264,7 @@ class Parser:
 			elif isinstance(typ, type.Optional):
 				report.error("optional multi-level types are not allowed", pos)
 			return type.Optional(typ)
-		elif self.tok.kind in (Kind.KwUnsafe, Kind.KwExtern, Kind.KwFunc):
+		elif self.tok.kind in (Kind.KwUnsafe, Kind.KwExtern, Kind.KwFn):
 			# function types
 			is_unsafe = self.accept(Kind.KwUnsafe)
 			is_extern = self.accept(Kind.KwExtern)
@@ -1272,7 +1272,7 @@ class Parser:
 			if is_extern and not self.inside_extern: self.inside_extern = True
 			args = []
 			is_variadic = False
-			self.expect(Kind.KwFunc)
+			self.expect(Kind.KwFn)
 			self.expect(Kind.Lparen)
 			if self.tok.kind != Kind.Rparen:
 				while True:
@@ -1293,7 +1293,7 @@ class Parser:
 			ret_typ = self.parse_type()
 			if is_extern and self.inside_extern:
 				self.inside_extern = False
-			return type.Func(
+			return type.Fn(
 			    is_unsafe, is_extern, abi, False, args, is_variadic, ret_typ,
 			    False
 			)

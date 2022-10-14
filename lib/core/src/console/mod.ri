@@ -6,7 +6,7 @@ use pkg { stdc, traits, utils };
 
 /// Prints a message to stdout. Unlike `println` stdout is not automatically
 /// flushed.
-pub func print(s: string, args: ...traits::ToString) void {
+pub fn print(s: string, args: ...traits::ToString) void {
     let sx = s.fmt(args);
     unsafe {
         utils::write_buf_to_fd(1, sx.ptr, sx.len);
@@ -14,14 +14,14 @@ pub func print(s: string, args: ...traits::ToString) void {
 }
 
 /// Prints a message with a line end to stdout. stdout is flushed.
-pub func println(s: string = "", args: ...traits::ToString) void {
+pub fn println(s: string = "", args: ...traits::ToString) void {
     unsafe {
         utils::writeln_to_fd(1, s.fmt(args));
     }
 }
 
 /// Prints a message to stderr. Both stderr and stdout are flushed.
-pub func eprint(s: string, args: ...traits::ToString) void {
+pub fn eprint(s: string, args: ...traits::ToString) void {
     let sx = s.fmt(args);
     unsafe {
         _ = stdc::fflush(stdc::stdout);
@@ -33,7 +33,7 @@ pub func eprint(s: string, args: ...traits::ToString) void {
 
 /// Prints a message with a line end to stderr. Both stderr and stdout are
 /// flushed.
-pub func eprintln(s: string = "", args: ...traits::ToString) void {
+pub fn eprintln(s: string = "", args: ...traits::ToString) void {
     unsafe {
         _ = stdc::fflush(stdc::stdout);
         _ = stdc::fflush(stdc::stderr);
@@ -44,22 +44,22 @@ pub func eprintln(s: string = "", args: ...traits::ToString) void {
 
 /// Returns 1 if the `fd` file descriptor is open and refers to a
 /// terminal.
-pub func is_atty(fd: i32) i32 {
+pub fn is_atty(fd: i32) i32 {
 	return unsafe { stdc::isatty(fd) };
 }
 
 /// Returns true if colors are allowed in stdout, false otherwise.
 #[inline]
-pub func can_show_color_on_stdout() bool {
+pub fn can_show_color_on_stdout() bool {
 	return supports_escape_sequences(1);
 }
 
 /// Returns true if colors are allowed in stderr, false otherwise.
 #[inline]
-pub func can_show_color_on_stderr() bool {
+pub fn can_show_color_on_stderr() bool {
 	return supports_escape_sequences(2);
 }
 
-func supports_escape_sequences(fd: i32) bool {
+fn supports_escape_sequences(fd: i32) bool {
 	return is_atty(fd) > 0;
 }

@@ -5,24 +5,24 @@
 use pkg::process { panic };
 
 #[used]
-func array_index(len: usize, idx: usize) void {
+fn array_index(len: usize, idx: usize) void {
     if (idx >= len) {
         panic("array index out of range (index: {}, size: {})", idx, len);
     }
 }
 
 #[used]
-func array_eq(arr: *void, other_arr: *void, len: usize) bool {
+fn array_eq(arr: *void, other_arr: *void, len: usize) bool {
     return unsafe { stdc::memcmp(arr, other_arr, len) == 0 };
 }
 
 #[used]
-func array_ne(arr: *void, other_arr: *void, len: usize) bool {
+fn array_ne(arr: *void, other_arr: *void, len: usize) bool {
     return unsafe { !array_eq(arr, other_arr, len) };
 }
 
 #[used]
-func array_slice(
+fn array_slice(
     arr: *mut void, elem_size: usize, size: usize, start: usize, end: usize
 ) Slice {
     if (start > end or end > size) {
@@ -38,7 +38,7 @@ func array_slice(
 }
 
 #[used]
-func array_slice_from(
+fn array_slice_from(
     arr: *mut void, elem_size: usize, size: usize, start: usize
 ) Slice {
     return unsafe { array_slice(arr, elem_size, size, start, size) };

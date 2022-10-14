@@ -11,7 +11,7 @@ struct Result {
 
 /// Starts the specified command, waits for it to complete, and returns
 /// both its output and the exit code.
-pub func execute(cmd: string) Result {
+pub fn execute(cmd: string) Result {
     let pcmd = if (cmd.contains("2>")) cmd else "{} 2>&1".fmt(cmd);
 
     unsafe {

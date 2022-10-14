@@ -5,7 +5,7 @@
 use pkg::stdc;
 
 /// Returns the number of virtual CPU cores found on the system.
-pub func nr_cpus() i32 {
+pub fn nr_cpus() i32 {
     $if (_LINUX_) {
         return unsafe { stdc::get_nprocs() };
     } $else {
@@ -14,21 +14,21 @@ pub func nr_cpus() i32 {
 }
 
 /// Returns true if the current executable is running on a 32-bit system.
-pub func is_32bit() bool {
+pub fn is_32bit() bool {
     return size_of!(*void) == 4;
 }
 
 /// Returns true if the current executable is running on a 64-bit system.
-pub func is_64bit() bool {
+pub fn is_64bit() bool {
     return size_of!(*void) == 8;
 }
 
 /// Returns true if the current executable is running on a little-endian system.
-pub func is_little_endian() bool {
+pub fn is_little_endian() bool {
     return unsafe { as(i32, as(*i8, addr_of!(1)).*) } == 1;
 }
 
 /// Returns true if the current executable is running on a big-endian system.
-pub func is_big_endian() bool {
+pub fn is_big_endian() bool {
     return unsafe { as(i32, as(*i8, addr_of!(1)).*) } == 0;
 }

@@ -78,7 +78,7 @@ class Kind(Enum):
 	KwExtern = auto_enum() # extern
 	KwFalse = auto_enum() # false
 	KwFor = auto_enum() # for
-	KwFunc = auto_enum() # func
+	KwFn = auto_enum() # fn
 	KwIf = auto_enum() # if
 	KwIn = auto_enum() # in
 	KwIs = auto_enum() # is
@@ -125,7 +125,7 @@ class Kind(Enum):
 	def is_relational(self):
 		return self in (
 		    Kind.Eq, Kind.Ne, Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge, Kind.KwIs,
-		    Kind.KwNotIs,
+		    Kind.KwNotIs, Kind.KwIn, Kind.KwNotIn
 		)
 
 	def is_overloadable_op(self):
@@ -210,7 +210,7 @@ TOKEN_STRINGS = {
     Kind.KwExtern: "extern",
     Kind.KwFalse: "false",
     Kind.KwFor: "for",
-    Kind.KwFunc: "func",
+    Kind.KwFn: "fn",
     Kind.KwIf: "if",
     Kind.KwIn: "in",
     Kind.KwIs: "is",

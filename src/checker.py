@@ -73,7 +73,7 @@ class Checker:
 					self.expected_type = old_expected_type
 			elif isinstance(decl, ast.ExtendDecl):
 				self.check_decls(decl.decls)
-			elif isinstance(decl, ast.FuncDecl):
+			elif isinstance(decl, ast.FnDecl):
 				old_expected_type = self.expected_type
 				self.cur_fn = decl.sym
 				self.expected_type = decl.ret_typ
@@ -224,7 +224,7 @@ class Checker:
 				expr.typ = self.comp.string_t
 			elif expr.is_obj:
 				expr.typ = expr.obj.typ
-			elif isinstance(expr.sym, sym.Func):
+			elif isinstance(expr.sym, sym.Fn):
 				expr.sym.uses += 1
 				expr.typ = expr.sym.typ()
 			elif isinstance(expr.sym, sym.Const):
@@ -314,7 +314,7 @@ class Checker:
 			old_exp_typ = self.expected_type
 			has_exp_typ = False
 			size = ""
-			if not isinstance(self.expected_type, type.Func):
+			if not isinstance(self.expected_type, type.Fn):
 				elem_sym = self.expected_type.symbol()
 				if elem_sym.kind == TypeKind.Array:
 					has_exp_typ = True
@@ -689,7 +689,7 @@ class Checker:
 				expr.sym = expr_left.sym
 				self.check_ctor(expr_left.sym, expr)
 			elif isinstance(expr_left, ast.Ident):
-				if isinstance(expr_left.sym, sym.Func):
+				if isinstance(expr_left.sym, sym.Fn):
 					expr.sym = expr_left.sym
 					if expr.sym.is_main:
 						report.error(
@@ -705,7 +705,7 @@ class Checker:
 					expr.sym = expr_left.sym
 					self.check_ctor(expr_left.sym, expr)
 				elif expr_left.is_obj:
-					if isinstance(expr_left.typ, type.Func):
+					if isinstance(expr_left.typ, type.Fn):
 						expr.sym = expr_left.typ.info()
 						expr.is_closure = True
 						self.check_call(expr.sym, expr)
@@ -718,7 +718,7 @@ class Checker:
 				expr_left.left_typ = self.check_expr(expr_left.left)
 				left_sym = expr_left.left_typ.symbol()
 				if m := left_sym.find(expr_left.field_name):
-					if isinstance(m, sym.Func):
+					if isinstance(m, sym.Fn):
 						if m.is_method:
 							expr.sym = m
 							if isinstance(expr_left.left_typ, type.Optional):
@@ -753,7 +753,7 @@ class Checker:
 						    expr_left.field_pos
 						)
 				elif f := left_sym.find_field(expr_left.field_name):
-					if isinstance(f.typ, type.Func):
+					if isinstance(f.typ, type.Fn):
 						if inside_parens:
 							expr.sym = f.typ.info()
 							expr.is_closure = True
@@ -778,7 +778,7 @@ class Checker:
 					    expr_left.field_pos
 					)
 			elif isinstance(expr_left, ast.PathExpr):
-				if isinstance(expr_left.field_info, sym.Func):
+				if isinstance(expr_left.field_info, sym.Fn):
 					expr.sym = expr_left.field_info
 					self.check_call(expr.sym, expr)
 				elif isinstance(expr_left.field_info,
@@ -932,7 +932,7 @@ class Checker:
 					expr.typ = field.typ
 					expr.field_is_mut = field.is_mut
 				elif decl := left_sym.find(expr.field_name):
-					if isinstance(decl, sym.Func):
+					if isinstance(decl, sym.Fn):
 						if decl.is_method:
 							report.error(
 							    f"cannot take value of method `{expr.field_name}`",
@@ -974,7 +974,7 @@ class Checker:
 			return expr.typ
 		elif isinstance(expr, ast.PathExpr):
 			expr.typ = self.comp.void_t
-			if isinstance(expr.field_info, sym.Func):
+			if isinstance(expr.field_info, sym.Fn):
 				if expr.field_info.is_method:
 					report.error(
 					    f"cannot take value of method `{expr.field_name}`",
@@ -1320,7 +1320,7 @@ class Checker:
 				return exp_sym.info.elem_typ == got.typ
 			return self.check_compatible_types(got, exp_sym.info.elem_typ)
 
-		if isinstance(expected, type.Func) and isinstance(got, type.Func):
+		if isinstance(expected, type.Fn) and isinstance(got, type.Fn):
 			return expected == got
 		elif isinstance(expected, type.Slice) and isinstance(got, type.Slice):
 			if expected.is_mut != got.is_mut:

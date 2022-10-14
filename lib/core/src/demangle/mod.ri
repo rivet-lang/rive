@@ -5,7 +5,7 @@
 use pkg::StringBuilder;
 use pkg::utils::StaticBuffer;
 
-pub func demangle_symbol(name: string) string {
+pub fn demangle_symbol(name: string) string {
     if (!name.starts_with("_R")) {
         return name;
     }

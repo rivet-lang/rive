@@ -6,7 +6,7 @@ multiple statements.
 The way to declare functions in Rivet is as follows:
 
 ```rust
-func <name>(<args>) [return_type] {
+fn <name>(<args>) [return_type] {
 	...
 }
 ```
@@ -14,7 +14,7 @@ func <name>(<args>) [return_type] {
 For example:
 
 ```rust
-func add(a: i32, b: i32) i32 {
+fn add(a: i32, b: i32) i32 {
 	return a + b;
 }
 ```
@@ -26,24 +26,24 @@ Functions can omit the return type if they return nothing, as well as have
 
 ```rust
 // `f1` returns a simple numeric value of type `i32`.
-func f1() i32 {
+fn f1() i32 {
 	return 0;
 }
 
 // `f2` takes an argument of type `i32` and prints it to the console.
-func f2(a: i32) {
+fn f2(a: i32) {
 	println("a: {}", a);
 }
 
 // `f3` takes no arguments and returns void.
-func f3() { }
+fn f3() { }
 ```
 
 A function body is made up of 1 or more statements and can be empty.
 
 ```rust
-func x() { /* empty body */ }
-func y() {
+fn x() { /* empty body */ }
+fn y() {
 	let my_var = 1; // statement
 }
 ```
@@ -62,7 +62,7 @@ So, if we have a function called `f5` with a default value argument,
 we can call it in 3 ways:
 
 ```rust
-func f5(arg1: i32 = 5) {
+fn f5(arg1: i32 = 5) {
 	println("arg1: {}", arg1);
 }
 

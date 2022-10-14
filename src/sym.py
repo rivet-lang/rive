@@ -268,7 +268,7 @@ class Sym:
 			return "var"
 		elif isinstance(self, Type):
 			return "type"
-		elif isinstance(self, Func):
+		elif isinstance(self, Fn):
 			if self.is_method:
 				return "method"
 			return "function"
@@ -517,7 +517,7 @@ class Arg:
 		self.has_def_expr = has_def_expr
 		self.pos = pos
 
-class Func(Sym):
+class Fn(Sym):
 	def __init__(
 	    self, abi, vis, is_extern, is_unsafe, is_method, is_variadic, name,
 	    args, ret_typ, has_named_args, has_body, name_pos, self_is_mut
@@ -551,8 +551,8 @@ class Func(Sym):
 		return "function"
 
 	def typ(self):
-		from .type import Func
-		return Func(
+		from .type import Fn
+		return Fn(
 		    self.is_unsafe, self.is_extern, self.abi, self.is_method, self.args,
 		    self.is_variadic, self.ret_typ, self.self_is_mut
 		)

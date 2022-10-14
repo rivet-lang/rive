@@ -10,7 +10,7 @@ use pkg::errors { OutOfMemoryError };
 ///
 /// NOTE: Unlike the `mem::alloc_zeroed` function, `mem::alloc` will
 /// not zero the memory block.
-pub func alloc(size: usize) !*mut void {
+pub fn alloc(size: usize) !*mut void {
     unsafe {
         let ptr = stdc::malloc(size);
         if (ptr == none) {
@@ -22,7 +22,7 @@ pub func alloc(size: usize) !*mut void {
 
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
-pub func alloc_zeroed(n: usize) !*mut void {
+pub fn alloc_zeroed(n: usize) !*mut void {
     unsafe {
         let ptr = stdc::calloc(1, n);
         if (ptr == none) {
@@ -36,7 +36,7 @@ pub func alloc_zeroed(n: usize) !*mut void {
 ///
 /// NOTE: The `ptr` must be a pointer to an existing memory block previously
 /// allocated with `mem::alloc` or `mem::alloc_zeroed`.
-pub func realloc(ptr: *mut void, sz: usize) !*mut void {
+pub fn realloc(ptr: *mut void, sz: usize) !*mut void {
     unsafe {
         if (sz == 0) {
             dealloc(ptr);
@@ -52,7 +52,7 @@ pub func realloc(ptr: *mut void, sz: usize) !*mut void {
 
 /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
 /// constant byte `c`.
-pub func set(s: *mut void, c: i32, n: usize) void {
+pub fn set(s: *mut void, c: i32, n: usize) void {
     unsafe {
         _ = stdc::memset(s, c, n);
     }
@@ -62,7 +62,7 @@ pub func set(s: *mut void, c: i32, n: usize) void {
 ///
 /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem::move`, if the memory
 /// areas do overlap.
-pub func copy(dest: *mut void, src: *void, sz: usize) void {
+pub fn copy(dest: *mut void, src: *void, sz: usize) void {
     unsafe {
         _ = stdc::memcpy(dest, src, sz);
     }
@@ -74,7 +74,7 @@ pub func copy(dest: *mut void, src: *void, sz: usize) void {
 /// in `source` are first copied into a temporary array that does not overlap
 /// `source` or `dest`, and the bytes are then copied from the temporary array to
 /// `dest`.
-pub func move(dest: *mut void, src: *void, sz: usize) void {
+pub fn move(dest: *mut void, src: *void, sz: usize) void {
     unsafe {
         _ = stdc::memmove(dest, src, sz);
     }
@@ -83,7 +83,7 @@ pub func move(dest: *mut void, src: *void, sz: usize) void {
 /// Allocates dynamically a `sz` bytes block of memory on the heap, then copies
 /// the contents of `source` into the allocated space and returns a pointer to
 /// the newly allocated space.
-pub func dup(src: *void, sz: usize) !*mut void {
+pub fn dup(src: *void, sz: usize) !*mut void {
     unsafe {
         if (sz == 0) {
             return alloc_zeroed(1).!;
@@ -109,12 +109,12 @@ pub func dup(src: *void, sz: usize) !*mut void {
 /// as cryptographic secrets, because the required CPU time depends on the
 /// number of equal bytes. You should use a function that performs comparisons
 /// in constant time for this.
-pub func cmp(s1: *void, s2: *void, n: usize) i32 {
+pub fn cmp(s1: *void, s2: *void, n: usize) i32 {
     return unsafe { stdc::memcmp(s1, s2, n) };
 }
 
 /// Deallocates manually the memory referenced by `ptr`.
-pub unsafe func dealloc(ptr: *void) void {
+pub unsafe fn dealloc(ptr: *void) void {
     unsafe {
         if (ptr != none) {
             stdc::free(ptr);

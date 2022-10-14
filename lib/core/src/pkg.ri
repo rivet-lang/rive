@@ -16,14 +16,14 @@ mod utils;
 
 pub let ARGS: [string] = [""][..];
 
-func segfault_handler(_: i32) void {
+fn segfault_handler(_: i32) void {
     console::eprintln("panic: segmentation fault detected");
     backtrace::print(3);
     process::exit(1);
 }
 
 #[used]
-func panic_if(cond: bool, msg: string) void {
+fn panic_if(cond: bool, msg: string) void {
     if (cond) {
         console::eprintln("panic: {}", msg);
         backtrace::print(2);
@@ -32,7 +32,7 @@ func panic_if(cond: bool, msg: string) void {
 }
 
 #[used]
-func assert(cond: bool, msg: string) void {
+fn assert(cond: bool, msg: string) void {
     if (!cond) {
         console::eprintln("panic: assertion failed: {}", msg);
         backtrace::print(2);
@@ -40,7 +40,7 @@ func assert(cond: bool, msg: string) void {
     }
 }
 
-pub func errno() i32 {
+pub fn errno() i32 {
     return $if (_LINUX_) unsafe {
         stdc::__errno_location()
     } $else unsafe {
@@ -49,7 +49,7 @@ pub func errno() i32 {
 }
 
 /// Returns error code representation in string.
-pub func strerr(code: i32 = errno()) string {
+pub fn strerr(code: i32 = errno()) string {
     unsafe {
         let s = stdc::strerror(code);
         return if (s == none) "" else string::from_raw(s);

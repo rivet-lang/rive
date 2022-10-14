@@ -110,7 +110,7 @@ class Resolver:
 					self.resolve_decls(decl.decls)
 					if decl.is_for_trait:
 						self.resolve_type(decl.for_trait)
-			elif isinstance(decl, ast.FuncDecl):
+			elif isinstance(decl, ast.FnDecl):
 				decl.scope.add(
 				    sym.Obj(
 				        decl.self_is_mut, "self", type.Type(self.self_sym),
@@ -486,7 +486,7 @@ class Resolver:
 				res = self.resolve_type(t)
 			typ.resolve(self.comp.universe.add_or_get_tuple(typ.types))
 			return res
-		elif isinstance(typ, type.Func):
+		elif isinstance(typ, type.Fn):
 			res = False
 			for i in range(len(typ.args)):
 				res = self.resolve_type(typ.args[i].typ)

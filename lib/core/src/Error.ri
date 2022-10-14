@@ -9,7 +9,7 @@ pub class Error : ToString {
     pub msg: string;
 
     #[virtual]
-    pub func to_string(self) string {
+    pub fn to_string(self) string {
         let type_name = type_of!(self);
         if (self.msg == "") {
             return type_name;

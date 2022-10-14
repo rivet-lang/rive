@@ -8,12 +8,12 @@ use core::stdc;
 pub let HOME_DIR: string = $if (_LINUX_) get("HOME") $else get("USERPROFILE");
 
 /// Returns `true` if the environment variable exists.
-pub func exists(name: string) bool {
+pub fn exists(name: string) bool {
 	return unsafe { stdc::getenv(name.ptr) != none };
 }
 
 /// Returns the value of the environment variable named by the key.
-pub func get(name: string) string {
+pub fn get(name: string) string {
 	unsafe {
 		let s = stdc::getenv(name.ptr);
 		return if (s == none) "" else string::from_raw(s);
@@ -21,14 +21,14 @@ pub func get(name: string) string {
 }
 
 /// Sets the value of an environment variable with `name` to `value`.
-pub func set(name: string, value: string, overwrite: bool = true) !void {
+pub fn set(name: string, value: string, overwrite: bool = true) !void {
 	if (unsafe { stdc::setenv(name.ptr, value.ptr, overwrite) == -1 }) {
 		raise Error("env::set: {}".fmt(core::strerr()));
 	}
 }
 
 /// Removes an environment variable with `name`.
-pub func remove(name: string) !void {
+pub fn remove(name: string) !void {
 	if (unsafe { stdc::unsetenv(name.ptr) } == -1) {
 		raise Error("env::remove: {}".fmt(core::strerr()));
 	}

@@ -18,35 +18,35 @@ extern (Rivet) {
     let test_runner: TestRunner;
 }
 
-func header(txt: string, sep: string) string {
+fn header(txt: string, sep: string) string {
     if (SUPPORT_COLOR) {
         // TODO: return console::header(txt, sep);
     }
     return txt;
 }
 
-func bold(txt: string) string {
+fn bold(txt: string) string {
     if (SUPPORT_COLOR) {
         return console::bold(txt);
     }
     return txt;
 }
 
-func green(txt: string) string {
+fn green(txt: string) string {
     if (SUPPORT_COLOR) {
         return console::green(txt);
     }
     return txt;
 }
 
-func red(txt: string) string {
+fn red(txt: string) string {
     if (SUPPORT_COLOR) {
         return console::red(txt);
     }
     return txt;
 }
 
-func yellow(txt: string) string {
+fn yellow(txt: string) string {
     if (SUPPORT_COLOR) {
         return console::yellow(txt);
     }
@@ -62,7 +62,7 @@ enum TestResult : u8 {
 
 struct Test {
     name: string;
-    test_func : func (*Test) void;
+    test_fn : fn (*Test) void;
     result: TestResult;
     err_pos: string;
     err: Error;
@@ -74,7 +74,7 @@ struct TestRunner {
     mut fail_tests: i32;
     mut skip_tests: i32;
 
-    func run(mut self) void {
+    fn run(mut self) void {
         for (test_ in self.tests) {
             (test_.test_func)(addr_of!(test_));
             switch (test_.result) {
@@ -97,7 +97,7 @@ struct TestRunner {
         exit(as(i32, self.fail_tests != 0));
     }
 
-    func print_summary_tests(self) void {
+    fn print_summary_tests(self) void {
         println(DIVIDER);
         print(bold("Summary for all tests: "));
         if (self.ok_tests > 0) {
@@ -113,21 +113,21 @@ struct TestRunner {
         println(DIVIDER);
     }
 
-    func print_header(self) void {
+    fn print_header(self) void {
         println(bold(header("Rivet TestRunner", "-")));
     }
 
-    func print_test_ok(self, name: string) void {
+    fn print_test_ok(self, name: string) void {
         println(OK_STATUS.concat(name));
         self.ok_tests++;
     }
 
-    func print_test_skip(self, name: string) void {
+    fn print_test_skip(self, name: string) void {
         eprintln(SKIP_STATUS.concat(name));
         self.skip_tests++;
     }
 
-    func print_test_failed(self, name: string, pos: string) void {
+    fn print_test_failed(self, name: string, pos: string) void {
         eprintln(FAILED_STATUS.concat(name));
         eprintln(pos);
         self.fail_tests++;

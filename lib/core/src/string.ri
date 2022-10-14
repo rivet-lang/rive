@@ -14,22 +14,22 @@ pub class string : ToString {
 
     is_ref: bool;
 
-    pub unsafe func from_lit(ptr: *u8) Self {
+    pub unsafe fn from_lit(ptr: *u8) Self {
         return Self(unsafe { ptr }, stdc::strlen(ptr), is_ref: true);
     }
 
-    pub unsafe func from_raw(ptr: *u8, is_ref: bool = false) Self {
+    pub unsafe fn from_raw(ptr: *u8, is_ref: bool = false) Self {
         return unsafe { Self::from_raw_with_len(ptr, stdc::strlen(ptr), is_ref) };
     }
 
-    pub unsafe func from_raw_with_len(ptr: *u8, len: usize, is_ref: bool = false) Self {
+    pub unsafe fn from_raw_with_len(ptr: *u8, len: usize, is_ref: bool = false) Self {
         if (len == 0) {
             return "";
         }
         return Self(unsafe { ptr }, len, is_ref);
     }
 
-    pub func from_byte(byte: u8) Self {
+    pub fn from_byte(byte: u8) Self {
         unsafe {
             let res = as(*mut u8, mem::alloc(2) catch unreachable!());
             res[0] = byte;
@@ -40,7 +40,7 @@ pub class string : ToString {
 
     /// Returns a string with the bytes stored in `bytes`. If the length of
     /// `bytes` is 0, an empty string is returned instead.
-    pub func from_bytes(bytes: [u8]) Self {
+    pub fn from_bytes(bytes: [u8]) Self {
         if (bytes.len == 0) {
             return "";
         }
@@ -53,14 +53,14 @@ pub class string : ToString {
     }
 
     #[used]
-    func at(self, idx: usize) u8 {
+    fn at(self, idx: usize) u8 {
         if (idx >= self.len) {
             panic("string index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { self.ptr[idx] };
     }
 
-    pub func concat(self, others: ...Self) Self {
+    pub fn concat(self, others: ...Self) Self {
         let mut sb = StringBuilder::from_string(self);
         for (other in others) {
             sb.write_string(other);
@@ -85,7 +85,7 @@ pub class string : ToString {
     ///
     /// If the replacement positions exceed the number of passed arguments, a panic
     /// occurs.
-    pub func fmt(self, args: ...traits::ToString) Self {
+    pub fn fmt(self, args: ...traits::ToString) Self {
         if (args.len == 0) {
             return self;
         }
@@ -145,7 +145,7 @@ pub class string : ToString {
     }
 
 	/// Returns the index of byte `b` if found in the string.
-	pub func index_byte(self, b: u8) ?usize {
+	pub fn index_byte(self, b: u8) ?usize {
 		for (i in 0..self.len) {
 			if (unsafe { self.ptr[i] == b }) {
 				return i;
@@ -156,7 +156,7 @@ pub class string : ToString {
 
 	/// Returns the position of the first character of the input string.
 	/// It will return `none` if the input string can't be found.
-	pub func index(self, p: string) ?usize {
+	pub fn index(self, p: string) ?usize {
 		if (p.len > self.len or p.len == 0) {
 			return none;
 		}
@@ -174,13 +174,13 @@ pub class string : ToString {
 		return none;
 	}
 
-    pub func as_bytes(self) [u8] {
+    pub fn as_bytes(self) [u8] {
         return unsafe {
             Slice::from_array(as(*mut u8, self.ptr), size_of!(u8), self.len)
         };
     }
 
-    pub func ==(self, rhs: Self) bool {
+    pub fn ==(self, rhs: Self) bool {
         if (self.len != rhs.len) {
             return false;
         }
@@ -195,11 +195,11 @@ pub class string : ToString {
         }
     }
 
-    pub func !=(self, rhs: Self) bool {
+    pub fn !=(self, rhs: Self) bool {
         return !self.==(rhs);
     }
 
-    pub func <(self, rhs: Self) bool {
+    pub fn <(self, rhs: Self) bool {
         for (i in 0..self.len) {
             unsafe {
                 if (i >= rhs.len or self.ptr[i] > rhs.ptr[i]) {
@@ -215,20 +215,20 @@ pub class string : ToString {
         return false;
     }
 
-    pub func >(self, rhs: Self) bool {
+    pub fn >(self, rhs: Self) bool {
         return !self.<(rhs);
     }
 
-    pub func <=(self, rhs: Self) bool {
+    pub fn <=(self, rhs: Self) bool {
         return self.<(rhs) or self.==(rhs);
     }
 
-    pub func >=(self, rhs: Self) bool {
+    pub fn >=(self, rhs: Self) bool {
         return self.>(rhs) or self.==(rhs);
     }
 
 	/// Returns `true` if the string contains `substr`.
-	pub func contains(self, substr: string) bool {
+	pub fn contains(self, substr: string) bool {
 		if (substr.len == 0) {
 			return true;
 		}
@@ -239,7 +239,7 @@ pub class string : ToString {
 	}
 
     /// Returns `true` if the string starts with `p`.
-	pub func starts_with(self, p: string) bool {
+	pub fn starts_with(self, p: string) bool {
 		if (p.len > self.len) {
             return false;
 		}
@@ -252,7 +252,7 @@ pub class string : ToString {
 	}
 
 	/// Returns `true` if the string ends with `p`.
-	pub func ends_with(self, p: string) bool {
+	pub fn ends_with(self, p: string) bool {
 		if (p.len > self.len) {
             return false;
         }
@@ -265,16 +265,16 @@ pub class string : ToString {
 	}
 
     /// Returns the number of runes contained in `self`.
-    pub func runes_count(self) usize {
+    pub fn runes_count(self) usize {
         return cstr_runes_count(unsafe { self.ptr }, self.len);
     }
 
-    pub func is_empty(self) bool {
+    pub fn is_empty(self) bool {
         return self.len == 0;
     }
 
     #[used]
-    func slice(self, start: usize, end: usize) Self {
+    fn slice(self, start: usize, end: usize) Self {
         unsafe {
             if (start > end or start > self.len or end > self.len) {
                 panic(
@@ -291,15 +291,15 @@ pub class string : ToString {
     }
 
     #[used]
-    func slice_from(self, start: usize) Self {
+    fn slice_from(self, start: usize) Self {
         return self.slice(start, self.len);
     }
 
-    pub func clone(self) Self {
+    pub fn clone(self) Self {
         return Self::from_bytes(self.as_bytes());
     }
 
-    pub func to_string(self) Self {
+    pub fn to_string(self) Self {
         return self;
     }
 
