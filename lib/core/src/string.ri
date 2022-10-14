@@ -14,15 +14,18 @@ pub class string : ToString {
 
     is_ref: bool;
 
-    pub unsafe fn from_lit(ptr: *u8) Self {
+    #[unsafe]
+    pub fn from_lit(ptr: *u8) Self {
         return Self(unsafe { ptr }, stdc::strlen(ptr), is_ref: true);
     }
 
-    pub unsafe fn from_raw(ptr: *u8, is_ref: bool = false) Self {
+    #[unsafe]
+    pub fn from_raw(ptr: *u8, is_ref: bool = false) Self {
         return unsafe { Self::from_raw_with_len(ptr, stdc::strlen(ptr), is_ref) };
     }
 
-    pub unsafe fn from_raw_with_len(ptr: *u8, len: usize, is_ref: bool = false) Self {
+    #[unsafe]
+    pub fn from_raw_with_len(ptr: *u8, len: usize, is_ref: bool = false) Self {
         if (len == 0) {
             return "";
         }

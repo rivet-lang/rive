@@ -164,7 +164,10 @@ class Parser:
 			while True:
 				args = []
 				pos = self.tok.pos
-				attr_name = self.parse_name()
+				if self.accept(Kind.KwUnsafe):
+					attr_name="unsafe"
+				else:
+					attr_name = self.parse_name()
 				if self.accept(Kind.Lparen):
 					while True:
 						if self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
@@ -198,7 +201,6 @@ class Parser:
 		doc_comment = self.parse_doc_comment()
 		attrs = self.parse_attrs()
 		vis = self.parse_vis()
-		is_unsafe = self.accept(Kind.KwUnsafe)
 		pos = self.tok.pos
 		if self.accept(Kind.KwUse):
 			path = self.parse_expr()
@@ -246,11 +248,6 @@ class Parser:
 					    "`extern pkg` declarations cannot be declared public",
 					    pos
 					)
-				elif is_unsafe:
-					report.error(
-					    "`extern pkg` declarations cannot be declared unsafe",
-					    pos
-					)
 				extern_pkg_pos = self.tok.pos
 				extern_pkg = self.parse_name()
 				self.expect(Kind.Semicolon)
@@ -270,10 +267,6 @@ class Parser:
 						report.error(
 						    "`extern` blocks cannot be declared public", pos
 						)
-					elif is_unsafe:
-						report.error(
-						    "`extern` blocks cannot be declared unsafe", pos
-						)
 					self.extern_abi = abi
 					self.extern_is_trusted = attrs.has("trusted")
 					while True:
@@ -284,7 +277,7 @@ class Parser:
 				elif self.accept(Kind.KwFn):
 					protos.append(
 					    self.parse_fn_decl(
-					        doc_comment, attrs, vis, is_unsafe
+					        doc_comment, attrs, vis, attrs.has("unsafe")
 					        or abi != sym.ABI.Rivet, abi
 					    )
 					)
@@ -295,8 +288,6 @@ class Parser:
 			return decl
 		elif self.accept(Kind.KwMod):
 			pos = self.tok.pos
-			if is_unsafe:
-				report.error("modules cannot be declared unsafe", pos)
 			name = self.parse_name()
 			decls = []
 			is_inline = not self.accept(Kind.Semicolon)
@@ -328,8 +319,6 @@ class Parser:
 			)
 		elif self.accept(Kind.KwConst):
 			pos = self.tok.pos
-			if is_unsafe:
-				report.error("constants cannot be declared unsafe", pos)
 			name = self.parse_name()
 			self.expect(Kind.Colon)
 			typ = self.parse_type()
@@ -338,13 +327,6 @@ class Parser:
 			self.expect(Kind.Semicolon)
 			return ast.ConstDecl(doc_comment, attrs, vis, name, typ, expr, pos)
 		elif self.accept(Kind.KwLet):
-			if is_unsafe:
-				word = "package" if isinstance(
-				    self.file_sym, sym.Pkg
-				) else "module"
-				report.error(
-				    f"{word} variables cannot be declared unsafe", self.tok.pos
-				)
 			# variable declarations
 			pos = self.prev_tok.pos
 			lefts = []
@@ -367,8 +349,6 @@ class Parser:
 			)
 		elif self.accept(Kind.KwType):
 			pos = self.tok.pos
-			if is_unsafe:
-				report.error("type aliases cannot be declared unsafe", pos)
 			name = self.parse_name()
 			self.expect(Kind.Assign)
 			parent = self.parse_type()
@@ -376,8 +356,6 @@ class Parser:
 			return ast.TypeDecl(doc_comment, attrs, vis, name, parent, pos)
 		elif self.accept(Kind.KwTrait):
 			pos = self.tok.pos
-			if is_unsafe:
-				report.error("traits cannot be declared unsafe", pos)
 			name = self.parse_name()
 			decls = []
 			old_inside_trait = self.inside_trait
@@ -410,8 +388,6 @@ class Parser:
 			old_inside_struct_or_class_decl = self.inside_struct_or_class_decl
 			self.inside_struct_or_class_decl = True
 			pos = self.tok.pos
-			if is_unsafe:
-				report.error("class cannot be declared unsafe", pos)
 			name = self.parse_name()
 			bases = []
 			if self.accept(Kind.Colon):
@@ -433,8 +409,6 @@ class Parser:
 			old_inside_struct_or_class_decl = self.inside_struct_or_class_decl
 			self.inside_struct_or_class_decl = True
 			pos = self.tok.pos
-			if is_unsafe:
-				report.error("structs cannot be declared unsafe", pos)
 			name = self.parse_name()
 			is_opaque = self.accept(Kind.Semicolon)
 			decls = []
@@ -467,8 +441,6 @@ class Parser:
 			)
 		elif self.accept(Kind.KwEnum):
 			pos = self.tok.pos
-			if is_unsafe:
-				report.error("enums cannot be declared unsafe", pos)
 			name = self.parse_name()
 			underlying_typ = self.comp.i32_t
 			if self.accept(Kind.Colon):
@@ -491,8 +463,6 @@ class Parser:
 			)
 		elif self.accept(Kind.KwExtend):
 			pos = self.prev_tok.pos
-			if is_unsafe:
-				report.error("`extend`s cannot be unsafe", pos)
 			typ = self.parse_type()
 			is_for_trait = self.accept(Kind.KwFor)
 			if is_for_trait:
@@ -509,7 +479,7 @@ class Parser:
 		elif self.accept(Kind.KwFn):
 			return self.parse_fn_decl(
 			    doc_comment, attrs, vis, not self.extern_is_trusted and (
-			        is_unsafe or
+			        attrs.has("unsafe") or
 			        (self.inside_extern and self.extern_abi != sym.ABI.Rivet)
 			    ), self.extern_abi if self.inside_extern else sym.ABI.Rivet
 			)

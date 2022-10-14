@@ -22,11 +22,13 @@ pub class StringBuilder : ToString {
         }
     }
 
-    pub unsafe fn from_raw(ptr: *mut u8) Self {
+    #[unsafe]
+    pub fn from_raw(ptr: *mut u8) Self {
         return unsafe { Self::from_raw_with_len(ptr, stdc::strlen(ptr)) };
     }
 
-    pub unsafe fn from_raw_with_len(ptr: *mut u8, len: usize) Self {
+    #[unsafe]
+    pub fn from_raw_with_len(ptr: *mut u8, len: usize) Self {
         if (len == 0) {
             return Self::new();
         }
@@ -69,13 +71,15 @@ pub class StringBuilder : ToString {
         self.len_++;
     }
 
-    pub unsafe fn write_raw(mut self, s: *u8) void {
+    #[unsafe]
+    pub fn write_raw(mut self, s: *u8) void {
         unsafe {
             self.write_raw_with_len(s, stdc::strlen(s));
         }
     }
 
-    pub unsafe fn write_raw_with_len(mut self, s: *u8, len: usize) void {
+    #[unsafe]
+    pub fn write_raw_with_len(mut self, s: *u8, len: usize) void {
         if (len == 0) {
             return;
         } else if (self.len_ >= self.cap) {

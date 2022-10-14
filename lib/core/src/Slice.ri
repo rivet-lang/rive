@@ -14,8 +14,8 @@ struct Slice {
     elem_size: usize;
     pub len: usize;
 
-    #[used]
-    pub unsafe fn from_array(arr: *mut void, elem_size: usize, len: usize) Slice {
+    #[used; unsafe]
+    pub fn from_array(arr: *mut void, elem_size: usize, len: usize) Slice {
         return Slice(unsafe { arr }, elem_size, len);
     }
 
@@ -27,8 +27,8 @@ struct Slice {
         return unsafe { as(*mut u8, self.ptr) + idx * self.elem_size };
     }
 
-    #[used]
-    unsafe fn raw_get(self, idx: usize) *mut void {
+    #[used; unsafe]
+    fn raw_get(self, idx: usize) *mut void {
         return unsafe { as(*mut u8, self.ptr) + idx * self.elem_size };
     }
 

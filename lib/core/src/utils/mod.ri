@@ -4,7 +4,8 @@
 
 use pkg::stdc;
 
-pub unsafe fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) void {
+#[unsafe]
+pub fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) void {
     unsafe {
         let buf = buf_;
         let x: isize = 0;
@@ -16,7 +17,8 @@ pub unsafe fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) void {
     }
 }
 
-pub unsafe fn writeln_to_fd(fd: i32, s: string) void {
+#[unsafe]
+pub fn writeln_to_fd(fd: i32, s: string) void {
     unsafe {
         write_buf_to_fd(fd, s.ptr, s.len);
         write_buf_to_fd(fd, c"\n", 1);

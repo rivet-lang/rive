@@ -39,7 +39,7 @@ API is not stable, and may change in the long term. Not all features are impleme
 ## Features
 
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
-* **Easy error handling**: Via result types: `func my_fn() !T { ... }`.
+* **Easy error handling**: Via result types: `fn my_fn() !T { ... }`.
 * **Named and optional arguments**: Very useful.
 * **Immutable values by default:** Variables and fields of struct are immutable
 by default.
