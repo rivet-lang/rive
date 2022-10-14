@@ -14,12 +14,12 @@ extern (C) {
     pub func atol(nptr: *u8) i64;
     pub func atoll(nptr: *u8) i64;
 
-    pub func strtod(nptr: *u8, endptr: *u8, base: i32) f64;
-    pub func strtof(nptr: *u8, endptr: *u8, base: i32) f32;
-    pub func strtol(nptr: *u8, endptr: *u8, base: i32) i64;
-    pub func strtoll(nptr: *u8, endptr: *u8, base: i32) i64;
-    pub func strtoul(nptr: *u8, endptr: *u8, base: i32) u64;
-    pub func strtoull(nptr: *u8, endptr: *u8, base: i32) u64;
+    pub func strtod(nptr: *u8, endptr: *u8, base_: i32) f64;
+    pub func strtof(nptr: *u8, endptr: *u8, base_: i32) f32;
+    pub func strtol(nptr: *u8, endptr: *u8, base_: i32) i64;
+    pub func strtoll(nptr: *u8, endptr: *u8, base_: i32) i64;
+    pub func strtoul(nptr: *u8, endptr: *u8, base_: i32) u64;
+    pub func strtoull(nptr: *u8, endptr: *u8, base_: i32) u64;
 
     pub func malloc(size: usize) *mut void;
     pub func calloc(nobj: usize, size: usize) *mut void;

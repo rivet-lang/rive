@@ -483,11 +483,6 @@ class TraitInfo:
 		self.implements = []
 		self.has_objects = False
 
-	def indexof(self, impl):
-		for idx, i in enumerate(self.implements):
-			if i == impl: return idx
-		return -1
-
 class StructInfo:
 	def __init__(self, is_opaque):
 		self.is_opaque = is_opaque

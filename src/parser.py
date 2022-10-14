@@ -413,6 +413,12 @@ class Parser:
 			if is_unsafe:
 				report.error("class cannot be declared unsafe", pos)
 			name = self.parse_name()
+			bases=[]
+			if self.accept(Kind.Colon):
+				while True:
+					bases.append(self.parse_type())
+					if not self.accept(Kind.Comma):
+						break
 			decls = []
 			self.expect(Kind.Lbrace)
 			if self.tok.kind != Kind.Rbrace:
@@ -420,7 +426,7 @@ class Parser:
 					decls.append(self.parse_decl())
 			self.expect(Kind.Rbrace)
 			self.inside_struct_or_class_decl = old_inside_struct_or_class_decl
-			return ast.ClassDecl(doc_comment, attrs, vis, name, decls, pos)
+			return ast.ClassDecl(doc_comment, attrs, vis, name,bases, decls, pos)
 		elif self.accept(Kind.KwStruct):
 			old_inside_struct_or_class_decl = self.inside_struct_or_class_decl
 			self.inside_struct_or_class_decl = True
@@ -809,7 +815,7 @@ class Parser:
 		expr = self.empty_expr()
 		if self.tok.kind in [
 		    Kind.KwTrue, Kind.KwFalse, Kind.Char, Kind.Number, Kind.String,
-		    Kind.KwNone, Kind.KwSelf, Kind.KwSuper, Kind.KwSelfTy
+		    Kind.KwNone, Kind.KwSelf, Kind.KwBase, Kind.KwSelfTy
 		]:
 			expr = self.parse_literal()
 		elif self.accept(Kind.Dollar):
@@ -1121,34 +1127,18 @@ class Parser:
 		self.expect(Kind.Lbrace)
 		while True:
 			pats = []
-			has_var = False
-			var_is_ref = False
-			var_is_mut = False
-			var_name = ""
 			is_else = self.accept(Kind.KwElse)
 			if not is_else:
 				while True:
 					if is_typeswitch:
 						pos = self.tok.pos
 						pats.append(ast.TypeNode(self.parse_type(), pos))
-						if is_typeswitch and len(pats) == 1 and self.accept(
-						    Kind.KwAs
-						):
-							var_is_ref = self.accept(Kind.Amp)
-							var_is_mut = var_is_ref and self.accept(Kind.KwMut)
-							var_name = self.parse_name()
-							has_var = True
 					else:
 						pats.append(self.parse_expr())
 					if not self.accept(Kind.Comma):
 						break
 			self.expect(Kind.Arrow)
-			branches.append(
-			    ast.SwitchBranch(
-			        pats, has_var, var_is_ref, var_is_mut, var_name,
-			        self.parse_expr(), is_else
-			    )
-			)
+			branches.append(ast.SwitchBranch(pats, self.parse_expr(), is_else))
 			if not self.accept(Kind.Comma):
 				break
 		self.expect(Kind.Rbrace)
@@ -1193,14 +1183,16 @@ class Parser:
 			return self.parse_integer_literal()
 		elif self.tok.kind == Kind.String:
 			return self.parse_string_literal()
-		elif self.accept(Kind.KwSelf):
-			return ast.SelfExpr(self.scope, self.prev_tok.pos)
-		elif self.accept(Kind.KwSuper):
-			return ast.SuperExpr(self.scope, self.prev_tok.pos)
 		elif self.accept(Kind.KwNone):
 			return ast.NoneLiteral(self.prev_tok.pos)
+		elif self.accept(Kind.KwSelf):
+			return ast.SelfExpr(self.scope, self.prev_tok.pos)
 		elif self.accept(Kind.KwSelfTy):
 			return ast.SelfTyExpr(self.scope, self.prev_tok.pos)
+		elif self.accept(Kind.KwBase):
+			return ast.BaseExpr(self.scope, self.prev_tok.pos)
+		elif self.accept(Kind.KwBaseTy):
+			return ast.BaseTyExpr(self.scope, self.prev_tok.pos)
 		else:
 			report.error(f"expected literal, found {self.tok}", self.tok.pos)
 		return self.empty_expr()
@@ -1254,10 +1246,6 @@ class Parser:
 		pos = self.tok.pos
 		self.next()
 		return ast.PkgExpr(pos)
-
-	def parse_super_expr(self):
-		self.next()
-		return ast.SuperExpr(self.scope, self.prev_tok.pos)
 
 	def empty_expr(self):
 		return ast.EmptyExpr(self.tok.pos)
@@ -1348,13 +1336,12 @@ class Parser:
 			)
 		elif self.accept(Kind.KwNone):
 			return self.comp.none_t
-		elif self.tok.kind in (Kind.KwPkg, Kind.KwSuper, Kind.Name):
-			# normal type
+		elif self.tok.kind in (Kind.KwPkg, Kind.Name):
 			if self.peek_tok.kind == Kind.DoubleColon:
+				# normal type
 				path_expr = self.parse_path_expr(
 				    self.parse_pkg_expr() if self.tok.kind ==
-				    Kind.KwPkg else self.parse_super_expr() if self.tok.kind ==
-				    Kind.KwSuper else self.parse_ident()
+				    Kind.KwPkg else self.parse_ident()
 				)
 				if self.tok.kind == Kind.DoubleColon:
 					while True:
@@ -1363,7 +1350,7 @@ class Parser:
 							break
 				return type.Type.unresolved(path_expr)
 			elif self.tok.kind == Kind.Name:
-				prev_tok_kind = self.prev_tok.kind
+				prev_tok_kind=self.prev_tok.kind
 				expr = self.parse_ident()
 				lit = expr.name
 				if lit == "void":

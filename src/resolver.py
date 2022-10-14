@@ -91,6 +91,8 @@ class Resolver:
 				self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.ClassDecl):
 				self.self_sym = decl.sym
+				for base in decl.bases:
+					self.resolve_type(base)
 				self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.StructDecl):
 				self.self_sym = decl.sym
@@ -185,13 +187,13 @@ class Resolver:
 				expr.typ = type.Type(self.self_sym)
 			else:
 				report.error("cannot resolve `self` expression", expr.pos)
-		elif isinstance(expr, ast.SuperExpr):
-			pass # TODO
 		elif isinstance(expr, ast.SelfTyExpr):
 			if self.self_sym:
 				expr.sym = self.self_sym
 			else:
 				report.error("cannot resolve `Self` expression", expr.pos)
+		elif isinstance(expr, ast.BaseExpr):
+			pass # TODO
 		elif isinstance(expr, ast.TupleLiteral):
 			for e in expr.exprs:
 				self.resolve_expr(e)
@@ -360,18 +362,6 @@ class Resolver:
 				path.field_info = field_info
 			else:
 				path.has_error = True
-		elif isinstance(path.left, ast.SuperExpr):
-			if self.source_file.sym.parent and not self.source_file.sym.parent.is_universe:
-				path.left_info = self.source_file.sym.parent
-				if field_info := self.find_symbol(
-				    self.source_file.sym.parent, path.field_name, path.field_pos
-				):
-					field_info.uses += 1
-					path.field_info = field_info
-				else:
-					path.has_error = True
-			else:
-				report.error("current module has no parent", path.left.pos)
 		elif isinstance(path.left, ast.SelfExpr):
 			path.left_info = self.source_file.sym
 			if field_info := self.find_symbol(

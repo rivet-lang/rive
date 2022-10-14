@@ -10,11 +10,11 @@ use std::console { self, can_show_color_on_stdout, eprintln, print, println };
 let SUPPORT_COLOR: bool = can_show_color_on_stdout();
 
 let OK_STATUS: string = bold(green(" [  OK  ] "));
-let FAIL_STATUS: string = bold(red(" [ FAIL ] "));
+let FAILED_STATUS: string = bold(red(" [ FAIL ] "));
 let SKIP_STATUS: string = bold(yellow(" [ SKIP ] "));
 let DIVIDER: string = bold(header("", "-"));
 
-extern (C) {
+extern (Rivet) {
     let test_runner: TestRunner;
 }
 
@@ -62,7 +62,7 @@ enum TestResult : u8 {
 
 struct Test {
     name: string;
-    test_func : func (&mut Test) void;
+    test_func : func (*Test) void;
     result: TestResult;
     err_pos: string;
     err: Error;
@@ -74,24 +74,27 @@ struct TestRunner {
     mut fail_tests: i32;
     mut skip_tests: i32;
 
-    func print_header(self) void {
-        println(bold(header("Rivet TestRunner", "-")));
-    }
-
-    func print_test_ok(self, name: string) void {
-        println(OK_STATUS.concat(name));
-        self.ok_tests++;
-    }
-
-    func print_test_skip(self, name: string) void {
-        eprintln(SKIP_STATUS.concat(name));
-        self.skip_tests++;
-    }
-
-    func print_test_fail(self, name: string, pos: string) void {
-        eprintln(FAIL_STATUS.concat(name));
-        eprintln(pos);
-        self.fail_tests++;
+    func run(mut self) void {
+        for (test_ in self.tests) {
+            (test_.test_func)(addr_of!(test_));
+            switch (test_.result) {
+                .Ok => {
+                    self.print_test_ok(test_.name);
+                },
+                .Skipped => {
+                    self.print_test_skip(test_.name);
+                },
+                .Failed => {
+                    self.print_test_failed(test_.name, test_.err_pos);
+                },
+                .ErrorRaised => {
+                    self.print_test_failed(test_.name, test_.err_pos);
+                    eprintln("    Error raised: {}", test_.err);
+                }
+            }
+        }
+        self.print_summary_tests();
+        exit(as(i32, self.fail_tests != 0));
     }
 
     func print_summary_tests(self) void {
@@ -110,26 +113,23 @@ struct TestRunner {
         println(DIVIDER);
     }
 
-    func run(mut self) void {
-        for (test_ in self.tests) {
-            (test_.test_func)(&mut test_);
-            switch (test_.result) {
-                .Ok => {
-                    self.print_test_ok(test_.name);
-                },
-                .Skipped => {
-                    self.print_test_skip(test_.name);
-                },
-                .Failed => {
-                    self.print_test_fail(test_.name, test_.err_pos);
-                },
-                .ErrorRaised => {
-                    self.print_test_fail(test_.name, test_.err_pos);
-                    eprintln("    Error raised: {}", test_.err);
-                }
-            }
-        }
-        self.print_summary_tests();
-        exit(as(i32, self.fail_tests != 0));
+    func print_header(self) void {
+        println(bold(header("Rivet TestRunner", "-")));
+    }
+
+    func print_test_ok(self, name: string) void {
+        println(OK_STATUS.concat(name));
+        self.ok_tests++;
+    }
+
+    func print_test_skip(self, name: string) void {
+        eprintln(SKIP_STATUS.concat(name));
+        self.skip_tests++;
+    }
+
+    func print_test_failed(self, name: string, pos: string) void {
+        eprintln(FAILED_STATUS.concat(name));
+        eprintln(pos);
+        self.fail_tests++;
     }
 }

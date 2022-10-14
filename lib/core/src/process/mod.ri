@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-use pkg { stdc, traits, console, backtrace };
+use pkg { stdc, traits, console, backtrace, _R9drop_argsZ };
 
 /// Returns the OS-assigned process identifier associated with this
 /// process.
@@ -25,8 +25,8 @@ pub func panic(s: string = "", args: ...traits::ToString) never {
 /// OS and will be available for consumption by another process.
 pub func exit(code: i32 = 0) never {
     unsafe {
-        // TODO(StunxFS): super::_R12drop_staticsZ();
-        super::_R9drop_argsZ();
+        // TODO(StunxFS): _R12drop_staticsZ();
+        _R9drop_argsZ();
         stdc::exit(code);
     }
 }
@@ -41,8 +41,8 @@ pub func exit(code: i32 = 0) never {
 /// which typically means that the shell prints "Aborted".
 pub func abort() never {
     unsafe {
-        // TODO(StunxFS): super::_R12drop_staticsZ();
-        super::_R9drop_argsZ();
+        // TODO(StunxFS): _R12drop_staticsZ();
+        _R9drop_argsZ();
         stdc::abort();
     }
 }

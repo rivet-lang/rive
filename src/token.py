@@ -65,7 +65,8 @@ class Kind(Enum):
 	KwNone = auto_enum() # none
 	KwTrue = auto_enum() # true
 	KwFalse = auto_enum() # false
-	KwSuper = auto_enum() # super
+	KwBase = auto_enum() # base
+	KwBaseTy = auto_enum() # Base
 	KwSelf = auto_enum() # self
 	KwSelfTy = auto_enum() # Self
 	# ==============================
@@ -74,7 +75,6 @@ class Kind(Enum):
 	KwPkg = auto_enum() # pkg
 	KwPub = auto_enum() # pub
 	KwUse = auto_enum() # use
-	KwAs = auto_enum() # as
 	KwConst = auto_enum() # const
 	KwMod = auto_enum() # mod
 	KwExtern = auto_enum() # extern
@@ -98,6 +98,7 @@ class Kind(Enum):
 	KwReturn = auto_enum() # return
 	KwRaise = auto_enum() # raise
 	KwDefer = auto_enum() # defer
+	KwAs = auto_enum() # as
 	KwAnd = auto_enum() # and
 	KwOr = auto_enum() # or
 	KwIn = auto_enum() # in
@@ -199,16 +200,16 @@ TOKEN_STRINGS = {
     Kind.KwNone: "none",
     Kind.KwTrue: "true",
     Kind.KwFalse: "false",
-    Kind.KwSuper: "super",
+    Kind.KwBase: "base",
+    Kind.KwBaseTy: "Base",
     Kind.KwSelf: "self",
+    Kind.KwSelfTy: "Self",
     # ==============================
 
     # ========== keywords ==========
-    Kind.KwSelfTy: "Self",
     Kind.KwPkg: "pkg",
     Kind.KwPub: "pub",
     Kind.KwUse: "use",
-    Kind.KwAs: "as",
     Kind.KwConst: "const",
     Kind.KwMod: "mod",
     Kind.KwExtern: "extern",
@@ -232,6 +233,7 @@ TOKEN_STRINGS = {
     Kind.KwReturn: "return",
     Kind.KwRaise: "raise",
     Kind.KwDefer: "defer",
+    Kind.KwAs: "as",
     Kind.KwAnd: "and",
     Kind.KwOr: "or",
     Kind.KwIn: "in",

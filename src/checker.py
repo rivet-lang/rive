@@ -45,6 +45,18 @@ class Checker:
 			elif isinstance(decl, ast.TraitDecl):
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.ClassDecl):
+				has_base=False
+				for base in decl.bases:
+					base_sym=base.symbol()
+					if base_sym.kind==TypeKind.Class:
+						if has_base:
+							report.error("classes cannot have multiple base classes", decl.pos)
+						else:
+							has_base=True
+					elif base_sym.kind==TypeKind.Trait:
+						base_sym.info.implements.append(decl.sym)
+					else:
+						report.error(f"base type `{base_}` of class `{decl.name}` is not a class", decl.pos)
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.StructDecl):
 				self.check_decls(decl.decls)
@@ -240,10 +252,12 @@ class Checker:
 			return expr.typ
 		elif isinstance(expr, ast.SelfExpr):
 			return expr.typ
-		elif isinstance(expr, ast.SuperExpr):
-			pass # TODO
 		elif isinstance(expr, ast.SelfTyExpr):
 			return type.Type(expr.sym)
+		elif isinstance(expr, ast.BaseExpr):
+			pass # TODO
+		elif isinstance(expr, ast.BaseTyExpr):
+			pass # TODO
 		elif isinstance(expr, ast.NoneLiteral):
 			return self.comp.none_t
 		elif isinstance(expr, ast.BoolLiteral):
@@ -1080,8 +1094,6 @@ class Checker:
 				for p in b.pats:
 					pat_t = self.check_expr(p)
 					if expr.is_typeswitch:
-						if b.var_is_mut:
-							self.check_expr_is_mut(expr.expr)
 						pat_t = self.comp.untyped_to_type(pat_t)
 						pat_t_sym = pat_t.symbol()
 					else:

@@ -4,12 +4,12 @@
 
 /// An error that is raised when an invalid value provided for an
 /// argument of a function.
-pub class ArgumentError /* : Error */ { }
+pub class ArgumentError : Error { }
 
 /// An error that is raised when requested function does not have
 /// an implementation.
-pub class NotImplementedError /* : Error */ { }
+pub class NotImplementedError : Error { }
 
-pub class OutOfMemoryError /* : Error */ { }
+pub class OutOfMemoryError : Error { }
 
-pub class RuneFromU32Error /* : Error */ { }
+pub class RuneFromU32Error : Error { }
