@@ -4,7 +4,7 @@
 
 use pkg::traits::ToString;
 
-pub class StringBuilder {
+pub class StringBuilder : ToString {
     pub ptr: *mut u8;
     mut len_: usize;
     mut cap: usize;
@@ -128,10 +128,14 @@ pub class StringBuilder {
     pub func is_empty(self) bool {
         return self.len_ == 0;
     }
-}
 
-extend StringBuilder for ToString {
     pub func to_string(self) string {
-        return string(self.ptr, self.len_);
+        return string(self.ptr, self.len_, is_ref: true);
+    }
+
+    ~Self(mut self) {
+        unsafe {
+            mem::dealloc(self.ptr);
+        }
     }
 }

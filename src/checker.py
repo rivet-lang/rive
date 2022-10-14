@@ -54,7 +54,7 @@ class Checker:
 						else:
 							has_base=True
 					elif base_sym.kind==TypeKind.Trait:
-						base_sym.info.implements.append(decl.sym)
+						pass
 					else:
 						report.error(f"base type `{base_}` of class `{decl.name}` is not a class", decl.pos)
 				self.check_decls(decl.decls)

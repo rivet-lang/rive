@@ -8,7 +8,7 @@ use pkg::utils { StaticBuffer };
 
 let empty_string: string = string("", 0);
 
-pub class string {
+pub class string : ToString {
     ptr: *mut u8;
     pub len: usize;
 
@@ -305,17 +305,15 @@ pub class string {
         return Self::from_bytes(self.as_bytes());
     }
 
+    pub func to_string(self) Self {
+        return self;
+    }
+
     ~Self(mut self) {
         if (!self.is_ref) {
             unsafe {
                 mem::dealloc(self.ptr);
             }
         }
-    }
-}
-
-extend string for ToString {
-    func to_string(self) Self {
-        return self;
     }
 }

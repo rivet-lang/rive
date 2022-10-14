@@ -61,52 +61,49 @@ class Kind(Enum):
 	Rparen = auto_enum() # )
 
 	KeywordBegin = auto_enum()
-	# ========== literals ==========
-	KwNone = auto_enum() # none
-	KwTrue = auto_enum() # true
-	KwFalse = auto_enum() # false
+    # ========== keywords ==========
+	KwAnd = auto_enum() # and
+	KwAs = auto_enum() # as
 	KwBase = auto_enum() # base
 	KwBaseTy = auto_enum() # Base
-	KwSelf = auto_enum() # self
-	KwSelfTy = auto_enum() # Self
-	# ==============================
-
-	# ========== keywords ==========
+	KwBreak = auto_enum() # break
+	KwCatch = auto_enum() # catch
+	KwClass = auto_enum() # class
+	KwConst = auto_enum() # const
+	KwContinue = auto_enum() # continue
+	KwDefer = auto_enum() # defer
+	KwElse = auto_enum() # else
+	KwEnum = auto_enum() # enum
+	KwExtend = auto_enum() # extend
+	KwExtern = auto_enum() # extern
+	KwFalse = auto_enum() # false
+	KwFor = auto_enum() # for
+	KwFunc = auto_enum() # func
+	KwIf = auto_enum() # if
+	KwIn = auto_enum() # in
+	KwIs = auto_enum() # is
+	KwLet = auto_enum() # let
+	KwMod = auto_enum() # mod
+	KwMut = auto_enum() # mut
+	KwNone = auto_enum() # none
+	KwNotIn = auto_enum() # !in
+	KwNotIs = auto_enum() # !is
+	KwOr = auto_enum() # or
 	KwPkg = auto_enum() # pkg
 	KwPub = auto_enum() # pub
-	KwUse = auto_enum() # use
-	KwConst = auto_enum() # const
-	KwMod = auto_enum() # mod
-	KwExtern = auto_enum() # extern
-	KwTrait = auto_enum() # trait
-	KwClass = auto_enum() # class
-	KwStruct = auto_enum() # struct
-	KwEnum = auto_enum() # enum
-	KwType = auto_enum() # type
-	KwExtend = auto_enum() # extend
-	KwTest = auto_enum() # test
-	KwFunc = auto_enum() # func
-	KwLet = auto_enum() # let
-	KwMut = auto_enum() # mut
-	KwIf = auto_enum() # if
-	KwElse = auto_enum() # else
-	KwSwitch = auto_enum() # switch
-	KwWhile = auto_enum() # while
-	KwFor = auto_enum() # for
-	KwContinue = auto_enum() # continue
-	KwBreak = auto_enum() # break
-	KwReturn = auto_enum() # return
 	KwRaise = auto_enum() # raise
-	KwDefer = auto_enum() # defer
-	KwAs = auto_enum() # as
-	KwAnd = auto_enum() # and
-	KwOr = auto_enum() # or
-	KwIn = auto_enum() # in
-	KwNotIn = auto_enum() # !in
-	KwIs = auto_enum() # is
-	KwNotIs = auto_enum() # !is
+	KwReturn = auto_enum() # return
+	KwSelf = auto_enum() # self
+	KwSelfTy = auto_enum() # Self
+	KwStruct = auto_enum() # struct
+	KwSwitch = auto_enum() # switch
+	KwTest = auto_enum() # test
+	KwTrait = auto_enum() # trait
+	KwTrue = auto_enum() # true
+	KwType = auto_enum() # type
 	KwUnsafe = auto_enum() # unsafe
-	KwCatch = auto_enum() # catch
+	KwUse = auto_enum() # use
+	KwWhile = auto_enum() # while
 	# ==============================
 
 	KeywordEnd = auto_enum()
@@ -196,52 +193,49 @@ TOKEN_STRINGS = {
     Kind.Lparen: "(",
     Kind.Rparen: ")",
 
-    # ========== literals ==========
-    Kind.KwNone: "none",
-    Kind.KwTrue: "true",
-    Kind.KwFalse: "false",
+    # ========== keywords ==========
+    Kind.KwAnd: "and",
+    Kind.KwAs: "as",
     Kind.KwBase: "base",
     Kind.KwBaseTy: "Base",
-    Kind.KwSelf: "self",
-    Kind.KwSelfTy: "Self",
-    # ==============================
-
-    # ========== keywords ==========
+    Kind.KwBreak: "break",
+    Kind.KwCatch: "catch",
+    Kind.KwClass: "class",
+    Kind.KwConst: "const",
+    Kind.KwContinue: "continue",
+    Kind.KwDefer: "defer",
+    Kind.KwElse: "else",
+    Kind.KwEnum: "enum",
+    Kind.KwExtend: "extend",
+    Kind.KwExtern: "extern",
+    Kind.KwFalse: "false",
+    Kind.KwFor: "for",
+    Kind.KwFunc: "func",
+    Kind.KwIf: "if",
+    Kind.KwIn: "in",
+    Kind.KwIs: "is",
+    Kind.KwLet: "let",
+    Kind.KwMod: "mod",
+    Kind.KwMut: "mut",
+    Kind.KwNone: "none",
+    Kind.KwNotIn: "!in",
+    Kind.KwNotIs: "!is",
+    Kind.KwOr: "or",
     Kind.KwPkg: "pkg",
     Kind.KwPub: "pub",
-    Kind.KwUse: "use",
-    Kind.KwConst: "const",
-    Kind.KwMod: "mod",
-    Kind.KwExtern: "extern",
-    Kind.KwTrait: "trait",
-    Kind.KwClass: "class",
-    Kind.KwStruct: "struct",
-    Kind.KwEnum: "enum",
-    Kind.KwType: "type",
-    Kind.KwExtend: "extend",
-    Kind.KwTest: "test",
-    Kind.KwFunc: "func",
-    Kind.KwLet: "let",
-    Kind.KwMut: "mut",
-    Kind.KwIf: "if",
-    Kind.KwElse: "else",
-    Kind.KwSwitch: "switch",
-    Kind.KwWhile: "while",
-    Kind.KwFor: "for",
-    Kind.KwContinue: "continue",
-    Kind.KwBreak: "break",
-    Kind.KwReturn: "return",
     Kind.KwRaise: "raise",
-    Kind.KwDefer: "defer",
-    Kind.KwAs: "as",
-    Kind.KwAnd: "and",
-    Kind.KwOr: "or",
-    Kind.KwIn: "in",
-    Kind.KwNotIn: "!in",
-    Kind.KwIs: "is",
-    Kind.KwNotIs: "!is",
+    Kind.KwReturn: "return",
+    Kind.KwSelf: "self",
+    Kind.KwSelfTy: "Self",
+    Kind.KwStruct: "struct",
+    Kind.KwSwitch: "switch",
+    Kind.KwTest: "test",
+    Kind.KwTrait: "trait",
+    Kind.KwTrue: "true",
+    Kind.KwType: "type",
     Kind.KwUnsafe: "unsafe",
-    Kind.KwCatch: "catch",
+    Kind.KwUse: "use",
+    Kind.KwWhile: "while",
     # ==============================
 }
 
