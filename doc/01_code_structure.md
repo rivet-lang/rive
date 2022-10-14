@@ -36,8 +36,6 @@ type Foo = i32;
 
 trait Foo { /* ... */ }
 
-sumtype Foo { /* ... */ }
-
 struct Foo { /* ... */ }
 
 enum Foo { /* ... */ }
