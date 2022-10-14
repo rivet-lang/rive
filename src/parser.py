@@ -46,6 +46,8 @@ class Parser:
 		self.pkg_name = pkg_name
 		if self.pkg_name == "std":
 			self.pkg_deps.append("core")
+		elif self.pkg_name=="tests":
+			self.pkg_deps.append("std")
 		source_files = []
 		for file in files:
 			self.file_path = file
