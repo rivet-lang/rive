@@ -2,144 +2,150 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+use pkg::process::panic;
 use pkg::traits::ToString;
 
 pub class StringBuilder : ToString {
-    pub ptr: *mut u8;
-    mut len_: usize;
-    mut cap: usize;
+	pub ptr: *mut u8;
+	mut len_: usize;
+	mut cap: usize;
 
-    pub fn new() Self {
-        return Self::with_capacity(0);
-    }
+	/// Returns a string builder with capacity `cap`.
+	pub fn new(cap: usize = 0) Self {
+		unsafe {
+			let mut p = as(*mut u8, mem::alloc(cap + 1) catch unreachable!());
+			p[cap] = 0;
+			return Self(p, cap: cap);
+		}
+	}
 
-    /// Returns a string builder with capacity `cap`.
-    pub fn with_capacity(cap: usize) Self {
-        unsafe {
-            let mut p = as(*mut u8, mem::alloc(cap + 1) catch unreachable!());
-            p[cap] = 0;
-            return Self(p, cap: cap);
-        }
-    }
+	pub fn from_string(s: string) Self {
+		if (s.len == 0) {
+			return Self::new();
+		}
+		unsafe {
+			let mut res = Self::new(s.len);
+			mem::copy(res.ptr, s.ptr, s.len);
+			res.len_ = s.len;
+			return res;
+		}
+	}
 
-    #[unsafe]
-    pub fn from_raw(ptr: *mut u8) Self {
-        return unsafe { Self::from_raw_with_len(ptr, stdc::strlen(ptr)) };
-    }
+	pub fn write_byte(mut self, val: u8) void {
+		if (self.len_ >= self.cap) {
+			self.reserve(self.len_ + 1);
+		}
+		unsafe {
+			mem::copy(self.ptr + self.len_, addr_of!(val), size_of!(u8));
+		}
+		self.len_++;
+	}
 
-    #[unsafe]
-    pub fn from_raw_with_len(ptr: *mut u8, len: usize) Self {
-        if (len == 0) {
-            return Self::new();
-        }
-        return Self(unsafe { ptr }, len, len);
-    }
+	#[unsafe]
+	pub fn write_raw(mut self, s: *u8) void {
+		unsafe {
+			self.write_raw_with_len(s, stdc::strlen(s));
+		}
+	}
 
-    /// Returns a string with the bytes stored in `bytes`. If the length of
-    /// `bytes` is 0, an empty string is returned instead.
-    pub fn from_bytes(bytes: [u8]) Self {
-        if (bytes.len == 0) {
-            return Self::new();
-        }
-        unsafe {
-            let mut res = Self::with_capacity(bytes.len);
-            mem::copy(res.ptr, bytes.ptr, bytes.len);
-            res.len_ = bytes.len;
-            return res;
-        }
-    }
+	#[unsafe]
+	pub fn write_raw_with_len(mut self, s: *u8, len: usize) void {
+		if (len == 0) {
+			return;
+		} else if (self.len_ >= self.cap) {
+			self.reserve(len);
+		}
+		unsafe {
+			mem::copy(self.ptr + self.len_, s, len);
+		}
+		self.len_ += len;
+	}
 
-    pub fn from_string(s: string) Self {
-        if (s.len == 0) {
-            return Self::new();
-        }
-        unsafe {
-            let mut res = Self::with_capacity(s.len);
-            mem::copy(res.ptr, s.ptr, s.len);
-            res.len_ = s.len;
-            return res;
-        }
-    }
+	pub fn write_string(mut self, s: string) void {
+		unsafe {
+			self.write_raw_with_len(s.ptr, s.len);
+		}
+	}
 
-    pub fn write_byte(mut self, val: u8) void {
-        if (self.len_ >= self.cap) {
-            self.reserve(self.len_ + 1);
-        }
-        unsafe {
-            mem::copy(self.ptr + self.len_, addr_of!(val), size_of!(u8));
-        }
-        self.len_++;
-    }
+	pub fn write_line(mut self, s: string) void {
+		unsafe {
+			self.write_raw_with_len(s.ptr, s.len);
+			self.write_byte(0x0A);
+		}
+	}
 
-    #[unsafe]
-    pub fn write_raw(mut self, s: *u8) void {
-        unsafe {
-            self.write_raw_with_len(s, stdc::strlen(s));
-        }
-    }
+	pub fn write_join(mut self, ss: [string], sep: string = "") void {
+		if (ss.len == 1) {
+			self.write_string(ss[0]);
+		} else {
+			for (i, s in ss) {
+				self.write_string(s);
+				if (i < ss.len - 1) {
+					self.write_string(sep);
+				}
+			}
+		}
+	}
 
-    #[unsafe]
-    pub fn write_raw_with_len(mut self, s: *u8, len: usize) void {
-        if (len == 0) {
-            return;
-        } else if (self.len_ >= self.cap) {
-            self.reserve(len);
-        }
-        unsafe {
-            mem::copy(self.ptr + self.len_, s, len);
-        }
-        self.len_ += len;
-    }
+	pub fn write_fmt(mut self, s: string, args: ...traits::ToString) void {
+		self.write_string(s.fmt(args));
+	}
 
-    pub fn write_string(mut self, s: string) void {
-        unsafe {
-            self.write_raw_with_len(s.ptr, s.len);
-        }
-    }
+	pub fn writeln_fmt(mut self, s: string, args: ...traits::ToString) void {
+		self.write_string(s.fmt(args));
+		self.write_string("\n");
+	}
 
-    /// Ensures that this string's capacity is at least `required` bytes larger
-    /// than its size.
-    pub fn reserve(mut self, required: usize) void {
-        if (required <= self.cap) {
-            return;
-        }
-        let mut cap = if (self.cap > 0) self.cap else 2;
-        while (required > cap) {
-            cap *= 2;
-        }
-        unsafe {
-            let mut new_data = as(
-                *mut u8, mem::alloc(cap * size_of!(u8)) catch unreachable!()
-            );
-            if (self.ptr != none) {
-                mem::copy(new_data, self.ptr, self.len_ * size_of!(u8));
-            }
-            mem::dealloc(self.ptr);
-            self.ptr = new_data;
-        }
-        self.cap = cap;
-    }
+	/// Ensures that this string's capacity is at least `required` bytes larger
+	/// than its size.
+	pub fn reserve(mut self, required: usize) void {
+		if (required <= self.cap) {
+			return;
+		}
+		let mut cap = if (self.cap > 0) self.cap else 2;
+		while (required > cap) {
+			cap *= 2;
+		}
+		unsafe {
+			let mut new_data = as(
+				*mut u8, mem::alloc(cap * size_of!(u8)) catch unreachable!()
+			);
+			if (self.ptr != none) {
+				mem::copy(new_data, self.ptr, self.len_ * size_of!(u8));
+			}
+			mem::dealloc(self.ptr);
+			self.ptr = new_data;
+		}
+		self.cap = cap;
+	}
 
-    /// Returns the number of runes contained in `self`.
-    pub fn runes_count(self) usize {
-        return cstr_runes_count(unsafe { self.ptr }, self.len_);
-    }
+	/// Returns the number of runes contained in `self`.
+	pub fn runes_count(self) usize {
+		return cstr_runes_count(unsafe { self.ptr }, self.len_);
+	}
 
-    pub fn len(self) usize {
-        return self.len_;
-    }
+	pub fn clear(mut self) void {
+		unsafe {
+			mem::dealloc(self.ptr);
+		}
+		self = Self::new();
+	}
 
-    pub fn is_empty(self) bool {
-        return self.len_ == 0;
-    }
+	pub fn len(self) usize {
+		return self.len_;
+	}
 
-    pub fn to_string(self) string {
-        return string(self.ptr, self.len_);
-    }
+	pub fn is_empty(self) bool {
+		return self.len_ == 0;
+	}
 
-    ~Self(mut self) {
-        unsafe {
-            mem::dealloc(self.ptr);
-        }
-    }
+	pub fn to_string(self) string {
+		return string(self.ptr, self.len_).clone();
+	}
+
+	~Self(mut self) {
+		unsafe {
+			mem::dealloc(self.ptr);
+		}
+	}
 }

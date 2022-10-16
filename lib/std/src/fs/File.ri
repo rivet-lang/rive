@@ -4,7 +4,7 @@
 
 use core { stdc, mem, traits };
 
-pub struct File {
+pub class File {
     f: *mut stdc::FILE;
     mut is_opened: bool;
 
@@ -29,11 +29,11 @@ pub struct File {
 		self.write("\n");
 	}
 
-    pub fn writef(mut self, s: string, args: ...traits::ToString) void {
+    pub fn write_fmt(mut self, s: string, args: ...traits::ToString) void {
 		self.write(s.fmt(args));
     }
 
-    pub fn writelnf(mut self, s: string, args: ...traits::ToString) void {
+    pub fn writeln_fmt(mut self, s: string, args: ...traits::ToString) void {
 		self.write(s.fmt(args));
 		self.write("\n");
     }

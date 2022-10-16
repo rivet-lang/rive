@@ -94,7 +94,7 @@ pub class string : ToString {
         }
         let mut i: usize = 0;
         let mut args_idx: usize = 0;
-        let mut res = StringBuilder::with_capacity(self.len);
+        let mut res = StringBuilder::new(self.len);
         while (i < self.len) {
             let b = unsafe { self.ptr[i] };
             let b2 = if (i + 1 < self.len) unsafe { self.ptr[i + 1] } else 0;
