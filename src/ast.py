@@ -220,11 +220,12 @@ class ClassDecl:
 		self.pos = pos
 
 class StructDecl:
-	def __init__(self, docs, attrs, vis, name, decls, is_opaque, pos):
+	def __init__(self, docs, attrs, vis, name, bases, decls, is_opaque, pos):
 		self.docs = docs
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
+		self.bases = bases
 		self.decls = decls
 		self.is_opaque = is_opaque
 		self.sym = None
@@ -245,11 +246,9 @@ class FieldDecl:
 		self.pos = pos
 
 class ExtendDecl:
-	def __init__(self, attrs, typ, is_for_trait, for_trait, decls, pos):
+	def __init__(self, attrs, typ, decls, pos):
 		self.attrs = attrs
 		self.typ = typ
-		self.is_for_trait = is_for_trait
-		self.for_trait = for_trait
 		self.decls = decls
 		self.pos = pos
 

@@ -65,6 +65,17 @@ class Checker:
 						)
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.StructDecl):
+				for base in decl.bases:
+					base_sym = base.symbol()
+					if base_sym.kind == TypeKind.Struct:
+						pass
+					elif base_sym.kind == TypeKind.Trait:
+						pass
+					else:
+						report.error(
+						    f"base type `{base_}` of struct `{decl.name}` is not a struct",
+						    decl.pos
+						)
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.FieldDecl):
 				if decl.has_def_expr:

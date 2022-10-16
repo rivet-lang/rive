@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-extend none for traits::ToString {
+struct None : traits::ToString {
     pub fn to_string(self) string {
         return "none";
     }

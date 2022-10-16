@@ -4,7 +4,7 @@
 
 use pkg::traits::ToString;
 
-extend bool for ToString {
+struct bool : ToString {
     pub fn to_string(self) string {
         return if (self) "true" else "false";
     }

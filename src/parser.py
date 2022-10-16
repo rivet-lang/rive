@@ -411,8 +411,14 @@ class Parser:
 			pos = self.tok.pos
 			name = self.parse_name()
 			is_opaque = self.accept(Kind.Semicolon)
+			bases = []
 			decls = []
 			if not is_opaque:
+				if self.accept(Kind.Colon):
+					while True:
+						bases.append(self.parse_type())
+						if not self.accept(Kind.Comma):
+							break
 				self.expect(Kind.Lbrace)
 				if self.tok.kind != Kind.Rbrace:
 					while self.tok.kind != Kind.Rbrace:
@@ -420,7 +426,7 @@ class Parser:
 				self.expect(Kind.Rbrace)
 			self.inside_struct_or_class_decl = old_inside_struct_or_class_decl
 			return ast.StructDecl(
-			    doc_comment, attrs, vis, name, decls, is_opaque, pos
+			    doc_comment, attrs, vis, name, bases, decls, is_opaque, pos
 			)
 		elif self.inside_struct_or_class_decl and self.tok.kind in (
 		    Kind.KwMut, Kind.Name
@@ -464,18 +470,11 @@ class Parser:
 		elif self.accept(Kind.KwExtend):
 			pos = self.prev_tok.pos
 			typ = self.parse_type()
-			is_for_trait = self.accept(Kind.KwFor)
-			if is_for_trait:
-				for_trait = self.parse_type()
-			else:
-				for_trait = None
 			decls = []
 			self.expect(Kind.Lbrace)
 			while not self.accept(Kind.Rbrace):
 				decls.append(self.parse_decl())
-			return ast.ExtendDecl(
-			    attrs, typ, is_for_trait, for_trait, decls, pos
-			)
+			return ast.ExtendDecl(attrs, typ, decls, pos)
 		elif self.accept(Kind.KwFn):
 			return self.parse_fn_decl(
 			    doc_comment, attrs, vis, not self.extern_is_trusted and (

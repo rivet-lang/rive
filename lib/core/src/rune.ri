@@ -2,8 +2,9 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-use pkg::process { panic };
-use pkg::errors { RuneFromU32Error };
+use pkg::process::panic;
+use pkg::traits::ToString;
+use pkg::errors::RuneFromU32Error;
 
 const MAX_ONE_B: u32 = 0x80;
 const MAX_TWO_B: u32 = 0x800;
@@ -18,7 +19,7 @@ fn cstr_runes_count(s: *u8, size: usize) usize {
 	return l;
 }
 
-extend rune {
+struct rune : ToString {
     /// The highest valid codepoint a `rune` can have.
     pub const MAX: rune = 0x10FFFF;
 
@@ -62,9 +63,7 @@ extend rune {
     fn len_utf8(self) usize {
         return len_utf8(as(u32, self));
     }
-}
 
-extend rune for traits::ToString {
     fn to_string(self) string {
         let len = self.len_utf8();
         let res = as(*mut u8, mem::alloc(len + 1) catch unreachable!());

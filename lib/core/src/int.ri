@@ -8,38 +8,34 @@ let DIGIT_PAIRS: string = "00102030405060708090011121314151617181910212223242526
     "28292031323334353637383930414243444546474849405152535455565758595061626364656667"
     "68696071727374757677787970818283848586878889809192939495969798999";
 
-extend untyped_int for ToString {
-    /// Returns the value of `self` as a `string`.
+struct untyped_int : ToString {
+    /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         return as(i64, self).to_string();
     }
 }
 
-extend i8 {
+struct i8 : ToString {
     pub const MAX: i8 = 127;
     pub const MIN: i8 = -128;
-}
 
-extend i8 for ToString {
-    /// Returns the value of `self` as a `string`.
+    /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         return as(i32, self).str_l(5);
     }
 }
 
-extend i16 {
+struct i16 : ToString {
     pub const MAX: i16 = 32767;
     pub const MIN: i16 = -32768;
-}
 
-extend i16 for ToString {
-    /// Returns the value of `self` as a `string`.
+    /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         return as(i32, self).str_l(7);
     }
 }
 
-extend i32 {
+struct i32 : ToString {
     pub const MAX: i32 = 2147483647;
     pub const MIN: i32 = -2147483648;
 
@@ -88,21 +84,18 @@ extend i32 {
             return string::from_raw_with_len(buf, diff);
         }
     }
-}
 
-extend i32 for ToString {
-    /// Returns the value of `self` as a `string`.
+    /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         return self.str_l(12);
     }
 }
 
-extend i64 {
+struct i64 : ToString {
     pub const MAX: i64 = 9223372036854775807;
     pub const MIN: i64 = -9223372036854775808;
-}
 
-extend i64 for ToString {
+    /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         unsafe {
             if (self == 0) {
@@ -150,8 +143,8 @@ extend i64 for ToString {
     }
 }
 
-extend isize for ToString {
-    /// Returns the value of `self` as a `string`.
+struct isize : ToString {
+    /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         return as(i64, self).to_string();
     }

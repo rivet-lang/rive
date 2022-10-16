@@ -82,12 +82,43 @@ class Register:
 					report.error(e.args[0], decl.pos)
 			elif isinstance(decl, ast.StructDecl):
 				try:
-					decl.sym = self.sym.add_and_return(
-					    sym.Type(decl.vis, decl.name, TypeKind.Struct)
-					)
-					if self.source_file.sym.is_core_pkg(
-					) and decl.name == "Slice":
-						self.comp.slice_sym = decl.sym
+					is_core_pkg = self.source_file.sym.is_core_pkg()
+					if is_core_pkg and decl.name == "None":
+						decl.sym = self.comp.none_t.sym
+					elif is_core_pkg and decl.name == "bool":
+						decl.sym = self.comp.bool_t.sym
+					elif is_core_pkg and decl.name == "rune":
+						decl.sym = self.comp.rune_t.sym
+					elif is_core_pkg and decl.name == "untyped_int":
+						decl.sym = self.comp.untyped_int_t.sym
+					elif is_core_pkg and decl.name == "untyped_float":
+						decl.sym = self.comp.untyped_float_t.sym
+					elif is_core_pkg and decl.name == "i8":
+						decl.sym = self.comp.i8_t.sym
+					elif is_core_pkg and decl.name == "i16":
+						decl.sym = self.comp.i16_t.sym
+					elif is_core_pkg and decl.name == "i32":
+						decl.sym = self.comp.i32_t.sym
+					elif is_core_pkg and decl.name == "i64":
+						decl.sym = self.comp.i64_t.sym
+					elif is_core_pkg and decl.name == "isize":
+						decl.sym = self.comp.isize_t.sym
+					elif is_core_pkg and decl.name == "u8":
+						decl.sym = self.comp.u8_t.sym
+					elif is_core_pkg and decl.name == "u16":
+						decl.sym = self.comp.u16_t.sym
+					elif is_core_pkg and decl.name == "u32":
+						decl.sym = self.comp.u32_t.sym
+					elif is_core_pkg and decl.name == "u64":
+						decl.sym = self.comp.u64_t.sym
+					elif is_core_pkg and decl.name == "usize":
+						decl.sym = self.comp.usize_t.sym
+					else:
+						decl.sym = self.sym.add_and_return(
+						    sym.Type(decl.vis, decl.name, TypeKind.Struct)
+						)
+						if is_core_pkg and decl.name == "Slice":
+							self.comp.slice_sym = decl.sym
 					self.sym = decl.sym
 					self.walk_decls(decl.decls)
 				except utils.CompilerError as e:

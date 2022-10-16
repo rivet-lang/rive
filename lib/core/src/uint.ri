@@ -4,7 +4,7 @@
 
 use pkg::traits::ToString;
 
-extend u8 {
+struct u8 : ToString {
     pub const MAX: u8 = 255;
 
     /// Returns `true` if the byte is a white space character. The following
@@ -66,31 +66,26 @@ extend u8 {
     pub fn to_ascii_string(self) string {
         return string::from_byte(self);
     }
-}
 
-extend u8 for ToString {
-    /// Returns the value of `self` as a `string`.
+    /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         return as(i32, self).str_l(7);
     }
 }
 
-extend u16 {
+struct u16 : ToString {
     pub const MAX: u16 = 65535;
-}
 
-extend u16 for ToString {
-    /// Returns the value of `self` as a `string`.
+    /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         return as(i32, self).str_l(7);
     }
 }
 
-extend u32 {
+struct u32 : ToString {
     pub const MAX: u32 = 4294967295;
-}
 
-extend u32 for ToString {
+    /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         unsafe {
             if (self == 0) {
@@ -126,11 +121,10 @@ extend u32 for ToString {
     }
 }
 
-extend u64 {
+struct u64 : ToString {
     pub const MAX: u64 = 18446744073709551615;
-}
 
-extend u64 for ToString {
+    /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         unsafe {
             if (self == 0) {
@@ -166,8 +160,8 @@ extend u64 for ToString {
     }
 }
 
-extend usize for ToString {
-    /// Returns the value of `self` as a `string`.
+struct usize : ToString {
+    /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         return as(i64, self).to_string();
     }
