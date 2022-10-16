@@ -3,6 +3,7 @@
 // that can be found in the LICENSE file.
 
 use pkg::stdc;
+use pkg::process::panic;
 
 /// Returns the number of virtual CPU cores found on the system.
 pub fn nr_cpus() i32 {

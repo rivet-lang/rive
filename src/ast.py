@@ -228,6 +228,7 @@ class StructDecl:
 		self.bases = bases
 		self.decls = decls
 		self.is_opaque = is_opaque
+		self.is_primitive = False
 		self.sym = None
 		self.pos = pos
 
