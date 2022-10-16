@@ -2,8 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-use std::process { exit };
-use std::console { self, can_show_color_on_stdout, eprintln, print, println };
+use core::process { exit };
+use core::console { self, can_show_color_on_stdout, eprintln, print, println };
 
 let SUPPORT_COLOR: bool = can_show_color_on_stdout();
 

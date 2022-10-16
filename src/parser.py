@@ -44,10 +44,8 @@ class Parser:
 	def parse_pkg(self, pkg_name, files):
 		self.is_pkg_level = True
 		self.pkg_name = pkg_name
-		if self.pkg_name == "std":
+		if self.pkg_name in ("std", "tests"):
 			self.pkg_deps.append("core")
-		elif self.pkg_name == "tests":
-			self.pkg_deps.append("std")
 		source_files = []
 		for file in files:
 			self.file_path = file
