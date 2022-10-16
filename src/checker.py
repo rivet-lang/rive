@@ -828,6 +828,11 @@ class Checker:
 		elif isinstance(expr, ast.BuiltinCallExpr):
 			expr.typ = self.comp.void_t
 			if expr.name in ("addr_of", "addr_of_mut"):
+				if not self.inside_unsafe_block():
+					report.error(
+					    f"`{expr.name}` should be called inside an `unsafe` block",
+					    expr.pos
+					)
 				is_addr_of_mut = expr.name == "addr_of_mut"
 				arg0 = expr.args[0]
 				if is_addr_of_mut:

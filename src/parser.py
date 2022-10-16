@@ -46,7 +46,7 @@ class Parser:
 		self.pkg_name = pkg_name
 		if self.pkg_name == "std":
 			self.pkg_deps.append("core")
-		elif self.pkg_name=="tests":
+		elif self.pkg_name == "tests":
 			self.pkg_deps.append("std")
 		source_files = []
 		for file in files:
@@ -167,7 +167,7 @@ class Parser:
 				args = []
 				pos = self.tok.pos
 				if self.accept(Kind.KwUnsafe):
-					attr_name="unsafe"
+					attr_name = "unsafe"
 				else:
 					attr_name = self.parse_name()
 				if self.accept(Kind.Lparen):
@@ -279,8 +279,8 @@ class Parser:
 				elif self.accept(Kind.KwFn):
 					protos.append(
 					    self.parse_fn_decl(
-					        doc_comment, attrs, vis, attrs.has("unsafe")
-					        or abi != sym.ABI.Rivet, abi
+					        doc_comment, attrs, vis,
+					        attrs.has("unsafe") or abi != sym.ABI.Rivet, abi
 					    )
 					)
 				else:

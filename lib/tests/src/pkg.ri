@@ -74,7 +74,7 @@ struct TestRunner {
 
     fn run(mut self) void {
         for (test_ in self.tests) {
-            (test_.test_fn)(addr_of!(test_));
+            (test_.test_fn)(unsafe { addr_of!(test_) });
             switch (test_.result) {
                 .Ok => {
                     self.print_test_ok(test_.name);
