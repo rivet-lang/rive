@@ -882,14 +882,10 @@ class Checker:
 				if is_addr_of_mut:
 					self.check_expr_is_mut(arg0)
 				expr.typ = type.Ptr(self.check_expr(arg0), is_addr_of_mut)
-			elif expr.name == "mangle_of":
-				expr.typ = self.comp.string_t
 			elif expr.name in ("size_of", "align_of"):
 				expr.typ = self.comp.usize_t
 			elif expr.name == "type_of":
 				expr.typ = self.comp.string_t # TODO: core::TypeInfo
-			elif expr.name in ("compile_warn", "compile_error"):
-				pass
 			elif expr.name in ("unreachable", "breakpoint"):
 				expr.typ = self.comp.never_t
 			elif expr.name == "assert":
