@@ -5,13 +5,17 @@
 use pkg::stdc;
 use pkg::process::panic;
 
+#if !_LINUX_
+use pkg::process::panic;
+#endif
+
 /// Returns the number of virtual CPU cores found on the system.
 pub fn nr_cpus() i32 {
-    $if (_LINUX_) {
-        return unsafe { stdc::get_nprocs() };
-    } $else {
-        panic("`nr_cpus` only works on linux (for now)");
-    }
+#if _LINUX_
+    return unsafe { stdc::get_nprocs() };
+#else
+    panic("`nr_cpus` only works on linux (for now)");
+#endif
 }
 
 /// Returns true if the current executable is running on a 32-bit system.

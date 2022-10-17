@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+use pkg::process::panic;
+
 pub enum Arch : u8 {
     I386,
     Amd64;
@@ -17,11 +19,11 @@ pub enum Arch : u8 {
 
 /// Returns the current architecture.
 pub fn arch() Arch {
-    $if (_i386_) {
-        return .I386;
-    } $else $if (_AMD64_) {
-        return .Amd64;
-    } $else {
-        panic("unknown host architecture");
-    }
+#if _i386_
+    return .I386;
+#elif _AMD64_
+    return .Amd64;
+#else
+    panic("unknown host architecture");
+#endif
 }

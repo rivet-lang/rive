@@ -270,17 +270,10 @@ class Resolver:
 			if expr.is_expr:
 				self.resolve_expr(expr.expr)
 		elif isinstance(expr, ast.IfExpr):
-			if expr.is_comptime:
-				for i, b in enumerate(expr.branches):
-					if b.is_else or self.comp.evalue_comptime_condition(b.cond):
-						expr.branch_idx = i
-						self.resolve_expr(b.expr)
-						break
-			else:
-				for b in expr.branches:
-					if not b.is_else:
-						self.resolve_expr(b.cond)
-					self.resolve_expr(b.expr)
+			for b in expr.branches:
+				if not b.is_else:
+					self.resolve_expr(b.cond)
+				self.resolve_expr(b.expr)
 		elif isinstance(expr, ast.SwitchExpr):
 			self.resolve_expr(expr.expr)
 			for b in expr.branches:

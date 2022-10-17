@@ -16,23 +16,34 @@ def is_hex_digit(ch):
 def is_bin_digit(ch):
 	return ch in ("0", "1")
 
+class Conditional:
+	def __init__(self):
+		self.matched = False
+		self.else_found = False
+		self.skip_section = False
+
 class Lexer:
-	def __init__(self, text):
+	def __init__(self, comp, text):
+		self.comp = comp
 		self.file = "<in-memory>"
 		self.text = text
 		self.text_len = len(text)
+
 		self.line = 0
 		self.last_nl_pos = 0
 		self.pos = 0
+
 		self.is_started = False
 		self.is_cr_lf = False
+
+		self.conditional_stack = []
 
 		self.all_tokens = []
 		self.tidx = 0
 
 	@staticmethod
-	def from_file(file):
-		s = Lexer(open(file, encoding = 'UTF-8').read())
+	def from_file(comp, file):
+		s = Lexer(comp, open(file, encoding = 'UTF-8').read())
 		s.file = file
 		s.tokenize_remaining_text()
 		return s
@@ -44,10 +55,10 @@ class Lexer:
 			if t.kind == Kind.EOF:
 				break
 
-	def cur_char(self):
+	def current_char(self):
 		return self.text[self.pos]
 
-	def get_pos(self):
+	def current_pos(self):
 		return token.Pos(
 		    self.file, self.line, max(1, self.current_column()), self.pos
 		)
@@ -57,7 +68,7 @@ class Lexer:
 		self.inc_line_number()
 
 	def eat_to_end_of_line(self):
-		while self.pos < self.text_len and self.cur_char() != LF:
+		while self.pos < self.text_len and self.current_char() != LF:
 			self.pos += 1
 
 	def inc_line_number(self):
@@ -69,12 +80,12 @@ class Lexer:
 	def current_column(self):
 		return self.pos - self.last_nl_pos
 
-	def is_nl(self, ch):
+	def is_new_line(self, ch):
 		return ch in (CR, LF)
 
 	def skip_whitespace(self):
 		while self.pos < self.text_len:
-			c = self.cur_char()
+			c = self.current_char()
 			if c == chr(8):
 				self.pos += 1
 				continue
@@ -88,13 +99,13 @@ class Lexer:
 			    and self.text[self.pos + 1] == LF
 			):
 				self.is_cr_lf = True
-			if self.is_nl(c) and not (
+			if self.is_new_line(c) and not (
 			    self.pos > 0 and self.text[self.pos - 1] == CR and c == LF
 			):
 				self.inc_line_number()
 			self.pos += 1
 
-	def expect(self, want, start_pos):
+	def matches(self, want, start_pos):
 		end_pos = start_pos + len(want)
 		if (
 		    start_pos < 0 or end_pos < 0 or start_pos >= self.text_len
@@ -109,49 +120,55 @@ class Lexer:
 	def peek_token(self, n):
 		idx = self.tidx + n
 		if idx >= len(self.all_tokens):
-			return token.Token("", Kind.EOF, self.get_pos())
+			return token.Token("", Kind.EOF, self.current_pos())
 		return self.all_tokens[idx]
+
+	def look_ahead(self, pos):
+		return self.text[self.pos +
+		                 pos] if self.pos + pos < self.text_len else chr(0)
 
 	def read_ident(self):
 		start = self.pos
 		self.pos += 1
 		while self.pos < self.text_len:
 			c = self.text[self.pos]
-			if not (utils.is_valid_name(c) or c.isdigit()):
-				break
-			self.pos += 1
+			if utils.is_valid_name(c) or c.isdigit():
+				self.pos += 1
+				continue
+			break
 		lit = self.text[start:self.pos]
-		self.pos -= 1 # fix pos
+		self.pos -= 1
 		return lit
 
 	def read_hex_number(self):
 		start = self.pos
 		self.pos += 2 # skip '0x'
-		if self.pos < self.text_len and self.cur_char() == NUM_SEP:
+		if self.pos < self.text_len and self.current_char() == NUM_SEP:
 			report.error(
 			    "separator `_` is only valid between digits in a numeric literal",
-			    self.get_pos(),
+			    self.current_pos(),
 			)
 		while self.pos < self.text_len:
-			ch = self.cur_char()
+			ch = self.current_char()
 			if ch == NUM_SEP and self.text[self.pos + 1] == NUM_SEP:
 				report.error(
 				    "cannot use `_` consecutively in a numeric literal",
-				    self.get_pos()
+				    self.current_pos()
 				)
 			if not is_hex_digit(ch) and ch != NUM_SEP:
 				if not ch.isdigit() and not ch.isalpha():
 					break
 				else:
 					report.error(
-					    f"this hexadecimal number has unsuitable digit `{self.cur_char()}`",
-					    self.get_pos(),
+					    f"this hexadecimal number has unsuitable digit `{self.current_char()}`",
+					    self.current_pos(),
 					)
 			self.pos += 1
 		if self.text[self.pos - 1] == NUM_SEP:
 			self.pos -= 1
 			report.error(
-			    "cannot use `_` at the end of a numeric literal", self.get_pos()
+			    "cannot use `_` at the end of a numeric literal",
+			    self.current_pos()
 			)
 			self.pos += 1
 		lit = self.text[start:self.pos]
@@ -162,17 +179,17 @@ class Lexer:
 		start = self.pos
 		has_wrong_digit = False
 		self.pos += 2 # skip '0b'
-		if self.pos < self.text_len and self.cur_char() == NUM_SEP:
+		if self.pos < self.text_len and self.current_char() == NUM_SEP:
 			report.error(
 			    "separator `_` is only valid between digits in a numeric literal",
-			    self.get_pos(),
+			    self.current_pos(),
 			)
 		while self.pos < self.text_len:
-			ch = self.cur_char()
+			ch = self.current_char()
 			if ch == NUM_SEP and self.text[self.pos + 1] == NUM_SEP:
 				report.error(
 				    "cannot use `_` consecutively in a numeric literal",
-				    self.get_pos()
+				    self.current_pos()
 				)
 			if not is_bin_digit(ch) and ch != NUM_SEP:
 				if not ch.isdigit() and not ch.isalpha():
@@ -180,14 +197,15 @@ class Lexer:
 				elif not has_wrong_digit:
 					has_wrong_digit = True
 					report.error(
-					    f"this binary number has unsuitable digit `{self.cur_char()}`",
-					    self.get_pos(),
+					    f"this binary number has unsuitable digit `{self.current_char()}`",
+					    self.current_pos(),
 					)
 			self.pos += 1
 		if self.text[self.pos - 1] == NUM_SEP:
 			self.pos -= 1
 			report.error(
-			    "cannot use `_` at the end of a numeric literal", self.get_pos()
+			    "cannot use `_` at the end of a numeric literal",
+			    self.current_pos()
 			)
 			self.pos += 1
 		lit = self.text[start:self.pos]
@@ -197,25 +215,26 @@ class Lexer:
 	def read_dec_number(self):
 		start = self.pos
 		while self.pos < self.text_len:
-			ch = self.cur_char()
+			ch = self.current_char()
 			if ch == NUM_SEP and self.text[self.pos + 1] == NUM_SEP:
 				report.error(
 				    "cannot use `_` consecutively in a numeric literal",
-				    self.get_pos()
+				    self.current_pos()
 				)
 			if not ch.isdigit() and ch != NUM_SEP:
 				if not ch.isalpha() or ch in ["e", "E"]:
 					break
 				else:
 					report.error(
-					    f"this number has unsuitable digit `{self.cur_char()}`",
-					    self.get_pos(),
+					    f"this number has unsuitable digit `{self.current_char()}`",
+					    self.current_pos(),
 					)
 			self.pos += 1
 		if self.text[self.pos - 1] == NUM_SEP:
 			self.pos -= 1
 			report.error(
-			    "cannot use `_` at the end of a numeric literal", self.get_pos()
+			    "cannot use `_` at the end of a numeric literal",
+			    self.current_pos()
 			)
 			self.pos += 1
 
@@ -234,7 +253,7 @@ class Lexer:
 							else:
 								report.error(
 								    f"this number has unsuitable digit `{c}`",
-								    self.get_pos(),
+								    self.current_pos(),
 								)
 						self.pos += 1
 				elif self.text[self.pos] == ".":
@@ -250,7 +269,7 @@ class Lexer:
 					self.pos -= 1
 					report.error(
 					    "float literals should have a digit after the decimal point",
-					    self.get_pos(),
+					    self.current_pos(),
 					)
 					fl = self.text[start:self.pos]
 					report.help(f"use `{fl}.0` instead of `{fl}`")
@@ -263,17 +282,14 @@ class Lexer:
 				self.pos += 1
 			while self.pos < self.text_len:
 				c = self.text[self.pos]
-				has_suffix = c == "f"
 				if not c.isdigit():
-					if has_suffix:
-						self.read_ident()
 					if not c.isalpha():
 						# 6e6.str()
 						break
 					elif not has_suffix:
 						report.error(
 						    f"this number has unsuitable digit `{c}`",
-						    self.get_pos()
+						    self.current_pos()
 						)
 				self.pos += 1
 		lit = self.text[start:self.pos]
@@ -281,9 +297,9 @@ class Lexer:
 		return lit
 
 	def read_number(self):
-		if self.expect("0x", self.pos):
+		if self.matches("0x", self.pos):
 			return self.read_hex_number()
-		elif self.expect("0b", self.pos):
+		elif self.matches("0b", self.pos):
 			return self.read_bin_number()
 		return self.read_dec_number()
 
@@ -296,10 +312,10 @@ class Lexer:
 			self.pos += 1
 			if self.pos >= self.text_len:
 				break
-			if self.cur_char() != utils.BACKSLASH:
+			if self.current_char() != utils.BACKSLASH:
 				len_ += 1
-			double_slash = self.expect("\\\\", self.pos - 2)
-			if self.cur_char() == "'" and (
+			double_slash = self.matches("\\\\", self.pos - 2)
+			if self.current_char() == "'" and (
 			    self.text[self.pos - 1] != utils.BACKSLASH or double_slash
 			):
 				if double_slash:
@@ -309,18 +325,18 @@ class Lexer:
 
 		ch = self.text[start + 1:self.pos]
 		if len_ == 0:
-			report.error("empty character literal", self.get_pos())
+			report.error("empty character literal", self.current_pos())
 		elif is_bytelit:
 			len_ = utils.bytestr(ch).len
 			if len_ > 1 and ch != (utils.BACKSLASH * 2):
 				report.error(
-				    "byte literal may only contain one byte", self.get_pos()
+				    "byte literal may only contain one byte", self.current_pos()
 				)
 		elif len_ != 1:
 			if len_ > 1:
 				report.error(
 				    "character literal may only contain one codepoint",
-				    self.get_pos()
+				    self.current_pos()
 				)
 				report.help(
 				    "if you meant to write a string literal, use double quotes"
@@ -328,8 +344,9 @@ class Lexer:
 		return ch
 
 	def read_string(self):
+		start_pos = self.current_pos()
 		start = self.pos
-		start_char = self.cur_char()
+		start_char = self.current_char()
 		backslash_count = 1 if start_char == utils.BACKSLASH else 0
 		is_raw = self.pos > 0 and self.text[self.pos - 1] == "r"
 		is_cstr = self.pos > 0 and self.text[self.pos - 1] == "c"
@@ -339,9 +356,9 @@ class Lexer:
 			self.pos += 1
 			if self.pos >= self.text_len:
 				self.pos = start
-				report.error("unfinished string literal", self.get_pos())
+				report.error("unfinished string literal", start_pos)
 				return ""
-			c = self.cur_char()
+			c = self.current_char()
 			if c == utils.BACKSLASH:
 				backslash_count += 1
 			# end of string
@@ -371,9 +388,9 @@ class Lexer:
 			cidx = self.tidx
 			self.tidx += 1
 			if cidx >= len(self.all_tokens):
-				return token.Token("", Kind.EOF, self.get_pos())
+				return token.Token("", Kind.EOF, self.current_pos())
 			return self.all_tokens[cidx]
-		return token.Token("", Kind.EOF, self.get_pos())
+		return token.Token("", Kind.EOF, self.current_pos())
 
 	def _next(self):
 		while True:
@@ -383,12 +400,10 @@ class Lexer:
 				self.is_started = True
 			self.skip_whitespace()
 			if self.pos >= self.text_len:
-				return token.Token("", Kind.EOF, self.get_pos())
-
-			ch = self.cur_char()
-			nextc = self.text[self.pos +
-			                  1] if self.pos + 1 < self.text_len else chr(0)
-			pos = self.get_pos()
+				return token.Token("", Kind.EOF, self.current_pos())
+			pos = self.current_pos()
+			ch = self.current_char()
+			nextc = self.look_ahead(1)
 			if utils.is_valid_name(ch):
 				lit = self.read_ident()
 				return token.Token(lit, token.lookup(lit), pos)
@@ -432,7 +447,7 @@ class Lexer:
 			elif ch == "/":
 				if nextc == "/":
 					start_pos = self.pos
-					if self.expect("///", start_pos):
+					if self.matches("///", start_pos):
 						start_pos += 3
 						self.ignore_line()
 						line = self.text[start_pos:self.pos].strip()
@@ -444,15 +459,17 @@ class Lexer:
 					self.pos += 1
 					while self.pos < self.text_len - 1:
 						self.pos += 1
-						if self.cur_char() == LF:
+						if self.current_char() == LF:
 							self.inc_line_number()
 							continue
-						elif self.expect("*/", self.pos):
+						elif self.matches("*/", self.pos):
 							self.pos += 1
 							break
 					if self.pos >= self.text_len:
 						self.pos = start_pos
-						report.error("comment not terminated", self.get_pos())
+						report.error(
+						    "comment not terminated", self.current_pos()
+						)
 					continue
 				elif nextc == "=":
 					self.pos += 1
@@ -509,6 +526,9 @@ class Lexer:
 			elif ch == "$":
 				return token.Token("", Kind.Dollar, pos)
 			elif ch == "#":
+				if nextc != "[":
+					self.pp_directive()
+					continue
 				return token.Token("", Kind.Hash, pos)
 			elif ch == "&":
 				if nextc == "=":
@@ -517,11 +537,17 @@ class Lexer:
 				return token.Token("", Kind.Amp, pos)
 			elif ch == "!":
 				if (
-				    nextc == "i" and self.text[self.pos + 2] == "s"
+				    self.matches("is", self.pos)
 				    and self.text[self.pos + 3].isspace()
 				):
 					self.pos += 2
 					return token.Token("", Kind.KeyNotIs, pos)
+				elif (
+				    self.matches("in", self.pos)
+				    and self.text[self.pos + 3].isspace()
+				):
+					self.pos += 2
+					return token.Token("", Kind.KeyNotIn, pos)
 				elif nextc == "=":
 					self.pos += 1
 					return token.Token("", Kind.Ne, pos)
@@ -559,4 +585,178 @@ class Lexer:
 			else:
 				report.error(f"invalid character `{ch}`", pos)
 				break
-		return token.Token("", Kind.EOF, self.get_pos())
+		return token.Token("", Kind.EOF, self.current_pos())
+
+	def pp_directive(self):
+		pos = self.current_pos()
+		self.pos += 1 # skip '#'
+		self.skip_whitespace()
+		kw = self.read_ident()
+
+		if kw == "if":
+			self.pos += 1 #fix
+			self.pp_if()
+		elif kw == "elif":
+			self.pos += 1 #fix
+			self.pp_elif()
+		elif kw == "else":
+			self.pp_else()
+		elif kw == "endif":
+			self.pp_endif()
+		else:
+			report.error(f"invalid preprocessing directive: `{kw}`", pos)
+			return
+
+		if len(self.conditional_stack
+		       ) > 0 and self.conditional_stack[-1].skip_section:
+			# skip tokens until next preprocessing directive
+			while self.pos < self.text_len:
+				cc = self.current_char()
+				if cc == '#':
+					self.pos -= 1
+					return
+				if cc == '\n':
+					self.inc_line_number()
+				self.pos += 1
+			# if we get EOF, then no corresponding `#endif` has been written
+			if self.pos == self.text_len:
+				report.error("expected `#endif`, found end of file", pos)
+
+	def pp_if(self):
+		self.skip_whitespace()
+		cond = self.pp_expression()
+		self.conditional_stack.append(Conditional())
+		if cond and (
+		    len(self.conditional_stack) == 1
+		    or not self.conditional_stack[-2].skip_section
+		):
+			# condition true => process code within if
+			self.conditional_stack[-1].matched = True
+		else:
+			# skip lines until next preprocessing directive
+			self.conditional_stack[-1].skip_section = True
+
+	def pp_elif(self):
+		pos = self.current_pos()
+		self.skip_whitespace()
+		cond = self.pp_expression()
+		if len(self.conditional_stack
+		       ) == 0 or self.conditional_stack[-1].else_found:
+			report.error("unexpected `#elif`", pos)
+			return
+
+		if cond and (not self.conditional_stack[-1].matched) and (
+		    len(self.conditional_stack) == 1
+		    or not self.conditional_stack[-2].skip_section
+		):
+			# condition true => process code within if
+			self.conditional_stack[-1].matched = True
+			self.conditional_stack[-1].skip_section = False
+		else:
+			# skip lines until next preprocessing directive
+			self.conditional_stack[-1].skip_section = True
+
+	def pp_else(self):
+		pos = self.current_pos()
+		self.skip_whitespace()
+		if len(self.conditional_stack
+		       ) == 0 or self.conditional_stack[-1].else_found:
+			report.error("unexpected `#else`", pos)
+			return
+
+		if (not self.conditional_stack[-1].matched) and (
+		    len(self.conditional_stack) == 1
+		    or not self.conditional_stack[-2].skip_section
+		):
+			# condition true => process code within if
+			self.conditional_stack[-1].matched = True
+			self.conditional_stack[-1].skip_section = False
+		else:
+			# skip lines until next preprocessing directive
+			self.conditional_stack[-1].skip_section = True
+
+	def pp_endif(self):
+		pos = self.current_pos()
+		if len(self.conditional_stack) == 0:
+			report.error("unexpected `#endif`", pos)
+			return
+		self.conditional_stack.pop()
+
+	def pp_expression(self):
+		return self.pp_or_expression()
+
+	def pp_or_expression(self):
+		left = self.pp_and_expression()
+		self.skip_whitespace()
+		while self.pos < self.text_len and self.matches("or", self.pos):
+			self.pos += 2
+			self.skip_whitespace()
+			right = self.pp_and_expression()
+			left = left or right
+		return left
+
+	def pp_and_expression(self):
+		left = self.pp_equality_expression()
+		self.skip_whitespace()
+		while self.pos < self.text_len and self.matches("and", self.pos):
+			self.pos += 3
+			self.skip_whitespace()
+			right = self.pp_equality_expression()
+			left = left and right
+		return left
+
+	def pp_equality_expression(self):
+		left = self.pp_unary_expression()
+		self.skip_whitespace()
+		while True:
+			if self.pos < self.text_len and self.matches("==", self.pos):
+				self.pos += 2
+				self.skip_whitespace()
+				right = self.pp_unary_expression()
+				left = left == right
+			elif self.pos < self.text_len and self.matches("!=", self.pos):
+				self.pos += 2
+				self.skip_whitespace()
+				right = self.pp_unary_expression()
+				left = left != right
+			else:
+				break
+		return left
+
+	def pp_unary_expression(self):
+		if self.pos < self.text_len and self.matches("!", self.pos):
+			self.pos += 1
+			self.skip_whitespace()
+			return not self.pp_unary_expression()
+		return self.pp_primary_expression()
+
+	def pp_primary_expression(self):
+		pos = self.current_pos()
+		cc = self.current_char()
+		if self.pos >= self.text_len:
+			report.error("expected identifier", pos)
+		elif utils.is_valid_name(cc):
+			return self.pp_symbol()
+		elif cc == '(':
+			self.pos += 1
+			self.skip_whitespace()
+			result = self.pp_expression()
+			self.skip_whitespace()
+			if self.pos < self.text_len and self.current_char() == ')':
+				self.pos += 1
+			else:
+				report.error("expected `)`", self.current_pos())
+			return result
+		return False
+
+	def pp_symbol(self):
+		pos = self.current_pos()
+		ident = self.read_ident()
+		defined = False
+		if ident == "true":
+			defined = True
+		elif ident == "false":
+			defined = False
+		else:
+			defined = self.comp.evalue_pp_symbol(ident, pos)
+		return defined

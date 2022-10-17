@@ -14,7 +14,9 @@ pub mod traits;
 mod demangle;
 mod utils;
 
-pub let ARGS: [string] = [""][..];
+extern (Rivet) {
+    pub let ARGS: [string];
+}
 
 fn segfault_handler(_: i32) void {
     console::eprintln("panic: segmentation fault detected");
@@ -41,11 +43,11 @@ fn assert(cond: bool, msg: string) void {
 }
 
 pub fn errno() i32 {
-    return $if (_LINUX_) unsafe {
-        stdc::__errno_location().*
-    } $else unsafe {
-        stdc::_errno().*
-    };
+#if _LINUX_
+    return unsafe { stdc::__errno_location().* };
+#else
+    return unsafe { stdc::_errno().* };
+#endif
 }
 
 /// Returns error code representation in string.

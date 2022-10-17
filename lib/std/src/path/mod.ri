@@ -13,11 +13,11 @@ const S_IFMT: i32  = 0xF000; // type of file
 const S_IFDIR: i32 = 0x4000; // directory
 const S_IFLNK: i32 = 0xA000; // link
 
-pub const SEPARATOR: u8 = $if (_WINDOWS_) b'\\' $else b'/';
-pub const SEPARATOR_STR: string = $if (_WINDOWS_) "\\" $else "/";
-pub const DELIMITER: string = $if (_WINDOWS_) ";" $else ":";
+pub const SEPARATOR: u8 = #if _WINDOWS_ b'\\' #else b'/' #endif;
+pub let SEPARATOR_STR: string = #if _WINDOWS_ "\\" #else "/" #endif;
+pub let DELIMITER: string = #if _WINDOWS_ ";" #else ":" #endif;
 
-pub const MAX_PATH_LEN: i32 = $if (_WINDOWS_) 260 $else 4096;
+pub const MAX_PATH_LEN: i32 = #if _WINDOWS_ 260 #else 4096 #endif;
 
 /// Returns true if `path` (file or directory) exists.
 pub fn exists(path: string) bool {

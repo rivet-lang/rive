@@ -883,27 +883,23 @@ class Block:
 		return self.__repr__()
 
 class IfBranch:
-	def __init__(self, is_comptime, cond, expr, is_else, op):
-		self.is_comptime = is_comptime
+	def __init__(self, cond, expr, is_else, op):
 		self.cond = cond
 		self.expr = expr
 		self.is_else = is_else
 		self.op = op
 
 	def __repr__(self):
-		prefix = "$" if self.is_comptime else ""
 		if self.is_else:
-			return f"{prefix}else {self.expr}"
-		return f"{prefix}{self.op} ({self.cond}) {self.expr}"
+			return f"else {self.expr}"
+		return f"if ({self.cond}) {self.expr}"
 
 	def __str__(self):
 		return self.__repr__()
 
 class IfExpr:
-	def __init__(self, is_comptime, branches, has_else, pos):
-		self.is_comptime = is_comptime
+	def __init__(self, branches, has_else, pos):
 		self.branches = branches
-		self.branch_idx = -1 # for comptime
 		self.has_else = has_else
 		self.pos = pos
 		self.typ = None

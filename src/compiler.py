@@ -396,52 +396,27 @@ class Compiler:
 		sy.align = align
 		return size, align
 
-	def evalue_comptime_condition(self, cond):
-		if isinstance(cond, ast.BoolLiteral):
-			return cond.lit
-		elif isinstance(cond, ast.Ident):
-			if cond.is_comptime:
-				report.error("invalid comptime condition", cond.pos)
-			# operating systems
-			elif cond.name in ("_LINUX_", "_WINDOWS_"):
-				return self.prefs.target_os.equals_to_string(cond.name)
-			# architectures
-			elif cond.name in ("_i386_", "_AMD64_"):
-				return self.prefs.target_arch.equals_to_string(cond.name)
-			# bits
-			elif cond.name in ("_x32_", "_x64_"):
-				if cond.name == "_x32_":
-					return self.prefs.target_bits == prefs.Bits.X32
-				return self.prefs.target_bits == prefs.Bits.X64
-			# endian
-			elif cond.name in ("_LITTLE_ENDIAN_", "_BIG_ENDIAN_"):
-				if cond.name == "_LITTLE_ENDIAN_":
-					return self.prefs.target_endian == prefs.Endian.Little
-				return self.prefs.target_endian == prefs.Endian.Big
-			else:
-				if cond.name.startswith("_") and cond.name.endswith("_"):
-					report.error(f"unknown builtin flag: `{cond}`", cond.pos)
-					return False
-				return cond.name in self.prefs.flags
-		elif isinstance(cond, ast.UnaryExpr):
-			if cond.op == token.Kind.Bang:
-				return not self.evalue_comptime_condition(cond.right)
-			report.error(f"expected `!`, found token `{cond.op}`", cond.pos)
-		elif isinstance(cond, ast.BinaryExpr):
-			if cond.op in (token.Kind.KeyAnd, token.Kind.KeyOr):
-				if cond.op == token.Kind.KeyAnd:
-					return self.evalue_comptime_condition(
-					    cond.left
-					) and self.evalue_comptime_condition(cond.right)
-				return self.evalue_comptime_condition(
-				    cond.left
-				) or self.evalue_comptime_condition(cond.right)
-			report.error("invalid comptime condition", cond.pos)
-		elif isinstance(cond, ast.ParExpr):
-			return self.evalue_comptime_condition(cond.expr)
-		else:
-			report.error("invalid comptime condition", cond.pos)
-		return False
+	def evalue_pp_symbol(self, name, pos):
+		# operating systems
+		if name in ("_LINUX_", "_WINDOWS_"):
+			return self.prefs.target_os.equals_to_string(name)
+		# architectures
+		elif name in ("_i386_", "_AMD64_"):
+			return self.prefs.target_arch.equals_to_string(name)
+		# bits
+		elif name in ("_x32_", "_x64_"):
+			if name == "_x32_":
+				return self.prefs.target_bits == prefs.Bits.X32
+			return self.prefs.target_bits == prefs.Bits.X64
+		# endian
+		elif name in ("_LITTLE_ENDIAN_", "_BIG_ENDIAN_"):
+			if name == "_LITTLE_ENDIAN_":
+				return self.prefs.target_endian == prefs.Endian.Little
+			return self.prefs.target_endian == prefs.Endian.Big
+		if name.startswith("_") and name.endswith("_"):
+			report.error(f"unknown builtin flag: `{cond}`", pos)
+			return False
+		return name in self.prefs.flags
 
 	# ========================================================
 

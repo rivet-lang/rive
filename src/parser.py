@@ -18,6 +18,8 @@ class Parser:
 		self.peek_tok = None
 		self.last_err_pos = None
 
+		self.conditional_stack = []
+
 		self.pkg_name = ""
 		self.pkg_deps = []
 		self.mod_vis = sym.Vis.Priv
@@ -70,7 +72,7 @@ class Parser:
 		self.comp.pkg_deps.add_source_files(qualname, source_files)
 
 	def parse_file(self, file, from_pkg):
-		self.lexer = Lexer.from_file(file)
+		self.lexer = Lexer.from_file(self.comp, file)
 		if report.ERRORS > 0:
 			return ast.SourceFile(file, [], self.pkg_name, None)
 		self.advance(2)
@@ -790,11 +792,7 @@ class Parser:
 		]:
 			expr = self.parse_literal()
 		elif self.accept(Kind.Dollar):
-			# comptime expressions
-			if self.tok.kind == Kind.KwIf:
-				expr = self.parse_if_expr(True)
-			else:
-				expr = self.parse_ident(True)
+			expr = self.parse_ident(True)
 		elif self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Name:
 			pos = self.tok.pos
 			self.next()
@@ -824,7 +822,7 @@ class Parser:
 			expr = self.parse_expr()
 			expr = ast.RaiseExpr(expr, pos)
 		elif self.tok.kind == Kind.KwIf:
-			expr = self.parse_if_expr(False)
+			expr = self.parse_if_expr()
 		elif self.accept(Kind.KwSwitch):
 			expr = self.parse_switch_expr()
 		elif self.accept(Kind.Lparen):
@@ -1046,7 +1044,7 @@ class Parser:
 				break
 		return expr
 
-	def parse_if_expr(self, is_comptime):
+	def parse_if_expr(self):
 		branches = []
 		has_else = False
 		pos = self.tok.pos
@@ -1054,8 +1052,7 @@ class Parser:
 			if self.accept(Kind.KwElse) and self.tok.kind != Kind.KwIf:
 				branches.append(
 				    ast.IfBranch(
-				        is_comptime, self.empty_expr(), self.parse_expr(), True,
-				        Kind.KwElse
+				        self.empty_expr(), self.parse_expr(), True, Kind.KwElse
 				    )
 				)
 				has_else = True
@@ -1069,17 +1066,13 @@ class Parser:
 				cond = self.parse_expr()
 			self.expect(Kind.Rparen)
 			branches.append(
-			    ast.IfBranch(
-			        is_comptime, cond, self.parse_expr(), False, Kind.KwIf
-			    )
+			    ast.IfBranch(cond, self.parse_expr(), False, Kind.KwIf)
 			)
 			if isinstance(cond, ast.GuardExpr):
 				self.close_scope()
-			if self.tok.kind not in (Kind.Dollar, Kind.KwElse):
+			if self.tok.kind != Kind.KwElse:
 				break
-			if is_comptime:
-				self.expect(Kind.Dollar)
-		return ast.IfExpr(is_comptime, branches, has_else, pos)
+		return ast.IfExpr(branches, has_else, pos)
 
 	def parse_switch_expr(self):
 		branches = []

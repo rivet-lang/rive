@@ -1086,9 +1086,6 @@ class Checker:
 					self.unsafe_ops = 0
 			return expr.typ
 		elif isinstance(expr, ast.IfExpr):
-			if expr.is_comptime:
-				expr.typ = self.check_expr(expr.branches[expr.branch_idx].expr)
-				return expr.typ
 			for i, b in enumerate(expr.branches):
 				if not b.is_else:
 					bcond_t = self.check_expr(b.cond)
@@ -1100,7 +1097,8 @@ class Checker:
 						    b.cond.pos
 						)
 				expr_typ = self.check_expr(b.expr)
-				if i == 0: expr.typ = expr_typ
+				if i == 0:
+					expr.typ = expr_typ
 			return expr.typ
 		elif isinstance(expr, ast.SwitchExpr):
 			old_expected_type = self.expected_type

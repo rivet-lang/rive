@@ -5,7 +5,7 @@
 use core::stdc;
 
 /// User's home directory.
-pub let HOME_DIR: string = $if (_LINUX_) get("HOME") $else get("USERPROFILE");
+pub let HOME_DIR: string = #if _LINUX_ get("HOME") #else get("USERPROFILE") #endif;
 
 /// Returns `true` if the environment variable exists.
 pub fn exists(name: string) bool {
