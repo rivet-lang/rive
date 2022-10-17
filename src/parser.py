@@ -18,8 +18,6 @@ class Parser:
 		self.peek_tok = None
 		self.last_err_pos = None
 
-		self.conditional_stack = []
-
 		self.pkg_name = ""
 		self.pkg_deps = []
 		self.mod_vis = sym.Vis.Priv

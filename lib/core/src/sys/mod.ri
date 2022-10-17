@@ -3,7 +3,6 @@
 // that can be found in the LICENSE file.
 
 use pkg::stdc;
-use pkg::process::panic;
 
 #if !_LINUX_
 use pkg::process::panic;
