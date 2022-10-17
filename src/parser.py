@@ -470,11 +470,17 @@ class Parser:
 		elif self.accept(Kind.KwExtend):
 			pos = self.prev_tok.pos
 			typ = self.parse_type()
+			bases = []
+			if self.accept(Kind.Colon):
+				while True:
+					bases.append(self.parse_type())
+					if not self.accept(Kind.Comma):
+						break
 			decls = []
 			self.expect(Kind.Lbrace)
 			while not self.accept(Kind.Rbrace):
 				decls.append(self.parse_decl())
-			return ast.ExtendDecl(attrs, typ, decls, pos)
+			return ast.ExtendDecl(attrs, typ, bases, decls, pos)
 		elif self.accept(Kind.KwFn):
 			return self.parse_fn_decl(
 			    doc_comment, attrs, vis, not self.extern_is_trusted and (

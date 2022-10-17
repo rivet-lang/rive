@@ -112,6 +112,11 @@ class Resolver:
 			elif isinstance(decl, ast.ExtendDecl):
 				if self.resolve_type(decl.typ):
 					self.self_sym = decl.typ.symbol()
+					for base in decl.bases:
+						if self.resolve_type(base):
+							base_sym = base.symbol()
+							if base_sym.kind == sym.TypeKind.Trait:
+								base_sym.info.implements.append(self.self_sym)
 					self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.FnDecl):
 				decl.scope.add(

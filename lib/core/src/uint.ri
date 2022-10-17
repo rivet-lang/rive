@@ -4,7 +4,7 @@
 
 use pkg::traits::ToString;
 
-struct u8 : ToString {
+extend u8 : ToString {
     pub const MAX: u8 = 255;
 
     /// Returns `true` if the byte is a white space character. The following
@@ -73,7 +73,7 @@ struct u8 : ToString {
     }
 }
 
-struct u16 : ToString {
+extend u16 : ToString {
     pub const MAX: u16 = 65535;
 
     /// Returns the value of `self` as a string.
@@ -82,7 +82,7 @@ struct u16 : ToString {
     }
 }
 
-struct u32 : ToString {
+extend u32 : ToString {
     pub const MAX: u32 = 4294967295;
 
     /// Returns the value of `self` as a string.
@@ -121,7 +121,7 @@ struct u32 : ToString {
     }
 }
 
-struct u64 : ToString {
+extend u64 : ToString {
     pub const MAX: u64 = 18446744073709551615;
 
     /// Returns the value of `self` as a string.
@@ -160,7 +160,7 @@ struct u64 : ToString {
     }
 }
 
-struct usize : ToString {
+extend usize : ToString {
     /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         return as(i64, self).to_string();

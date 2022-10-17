@@ -247,9 +247,10 @@ class FieldDecl:
 		self.pos = pos
 
 class ExtendDecl:
-	def __init__(self, attrs, typ, decls, pos):
+	def __init__(self, attrs, typ, bases, decls, pos):
 		self.attrs = attrs
 		self.typ = typ
+		self.bases = bases
 		self.decls = decls
 		self.pos = pos
 

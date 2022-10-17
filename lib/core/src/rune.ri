@@ -19,7 +19,7 @@ fn cstr_runes_count(s: *u8, size: usize) usize {
 	return l;
 }
 
-struct rune : ToString {
+extend rune : ToString {
     /// The highest valid codepoint a `rune` can have.
     pub const MAX: rune = 0x10FFFF;
 
