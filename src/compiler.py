@@ -88,7 +88,7 @@ class Compiler:
 		#				c_file = f"{self.prefs.pkg_name}.ri.c"
 		#				self.cgen.write_to_file(c_file)
 		#				args = [
-		#				    self.prefs.ccompiler, c_file,
+		#				    self.prefs.backend_compiler, c_file,
 		#				    *self.prefs.objects_to_link, "-fno-builtin",
 		#				    "-Werror", "-m64" if self.prefs.target_bits
 		#				    == prefs.Bits.X64 else "-m32",
@@ -218,7 +218,7 @@ class Compiler:
 						continue
 				self.vlog(msg)
 				args = [
-				    self.prefs.ccompiler, cfile, "-m64"
+				    self.prefs.backend_compiler, cfile, "-m64"
 				    if self.prefs.target_bits == prefs.Bits.X64 else "-m32",
 				    "-O3" if self.prefs.build_mode == prefs.BuildMode.Release
 				    else "-g", f'-L{os.path.dirname(cfile)}', "-c", "-o",
@@ -251,7 +251,7 @@ class Compiler:
 			postfix += "debug"
 		else:
 			postfix += "release"
-		postfix += f"-{self.prefs.ccompiler}"
+		postfix += f"-{self.prefs.backend_compiler}"
 		return postfix
 
 	# ========================================================

@@ -121,7 +121,7 @@ class Backend(Enum):
 
 class PkgType(Enum):
 	Bin = auto_enum() # .exe
-	Lib = auto_enum() # .rilib?
+	Lib = auto_enum() # .rilib
 	DyLib = auto_enum() # .so, .dll, .dylib
 	StaticLib = auto_enum() # .a, .lib
 
@@ -173,7 +173,7 @@ class Prefs:
 		self.libraries_to_link = []
 		self.objects_to_link = []
 
-		self.ccompiler = "gcc"
+		self.backend_compiler = "gcc"
 		self.flags = []
 		self.check_syntax = False
 		self.check = False
@@ -244,6 +244,12 @@ class Prefs:
 				else:
 					error(f"`{arg}` requires a name as argument")
 				i += 1
+			elif arg == "--backend-compiler":
+				if backend_compiler := option(current_args, arg):
+					self.backend_compiler = backend_compiler
+				else:
+					error("`--backend-compiler` requires a name as argument")
+				i += 1
 			elif arg in ("-d", "--define"):
 				if flag := option(current_args, arg):
 					if not flag.isupper():
@@ -289,12 +295,6 @@ class Prefs:
 				i += 1
 			elif arg in ("-x32", "-x64"):
 				self.target_bits = Bits.X32 if arg == "-x32" else Bits.X64
-			elif arg in ("-cc"):
-				if cc := option(current_args, arg):
-					self.ccompiler = cc
-				else:
-					error("`-cc` requires a name as argument")
-				i += 1
 			elif arg == "--check-syntax":
 				self.check_syntax = True
 			elif arg == "--check":

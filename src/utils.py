@@ -37,6 +37,12 @@ Options:
         `c` (default): Rivet outputs C source code which is passed to a C compiler
         to be compiled.
 
+   --backend-compiler <compiler>
+      Change the backend compiler Rivet invokes to the specified compiler.
+
+      Officially supported/tested backend compilers include:
+        C: `clang`, `gcc` and `mingw`
+
    -d <flag>, --define <flag>
       Define the provided flag.
 
@@ -59,12 +65,6 @@ Options:
 
    -x32, -x64
       Whether 32-bit or 64-bit machine code will be generated.
-
-   -cc <compiler>
-      Change the C compiler Rivet invokes to the specified compiler.
-
-      Officially supported/tested C compilers include:
-        `clang`, `gcc`, `mingw` and `msvc`
 
    --check-syntax
       Only scan and parse the package, but then stop.
