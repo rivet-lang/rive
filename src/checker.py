@@ -60,7 +60,7 @@ class Checker:
 						pass
 					else:
 						report.error(
-						    f"base type `{base_}` of class `{decl.name}` is not a class",
+						    f"base type `{base}` of class `{decl.name}` is not a class",
 						    decl.pos
 						)
 				self.check_decls(decl.decls)
@@ -73,7 +73,7 @@ class Checker:
 						pass
 					else:
 						report.error(
-						    f"base type `{base_}` of struct `{decl.name}` is not a struct",
+						    f"base type `{base}` of struct `{decl.name}` is not a struct",
 						    decl.pos
 						)
 				self.check_decls(decl.decls)
@@ -83,6 +83,39 @@ class Checker:
 					self.check_expr(decl.def_expr)
 					self.expected_type = old_expected_type
 			elif isinstance(decl, ast.ExtendDecl):
+				self_sym = decl.typ.symbol()
+				has_base_class = False
+				for base in decl.bases:
+					base_sym = base.symbol()
+					base_kind = str(base_sym.kind)
+					if base_sym.kind == TypeKind.Class:
+						if self_sym.kind != TypeKind.Class:
+							report.error(
+							    "only classes can inherit from other classes",
+							    decl.pos
+							)
+							return
+						if has_base_class:
+							report.error(
+							    "classes cannot have multiple base classes",
+							    decl.pos
+							)
+							return
+						has_base_class = True
+					elif base_sym.kind == TypeKind.Struct:
+						if self_sym.kind != TypeKind.Struct:
+							report.error(
+							    "only structs can inherit from other structs",
+							    decl.pos
+							)
+							return
+					elif base_sym.kind == TypeKind.Trait:
+						pass
+					else:
+						report.error(
+						    f"base type `{base}` of {base_kind} `{self_sym.name}` is not a {base_kind}",
+						    decl.pos
+						)
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.FnDecl):
 				old_expected_type = self.expected_type
