@@ -553,7 +553,7 @@ class Fn(Sym):
 	def typ(self):
 		from .type import Fn
 		return Fn(
-		    self.is_unsafe, self.is_extern, self.abi, self.is_method, self.args,
+		    self.is_extern, self.abi, self.is_method, self.args,
 		    self.is_variadic, self.ret_typ, self.self_is_mut
 		)
 

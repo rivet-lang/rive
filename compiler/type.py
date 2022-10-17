@@ -5,7 +5,7 @@
 import copy
 
 from . import token
-from .sym import Vis, TypeKind, Fn as sym_Fn, Arg
+from .sym import Vis, TypeKind, Fn as sym_Fn, Arg, ABI
 
 class _Ptr: # ugly hack =/
 	def __init__(self, val):
@@ -217,10 +217,9 @@ class Tuple(TBase):
 
 class Fn(TBase):
 	def __init__(
-	    self, is_unsafe, is_extern, abi, is_method, args, is_variadic, ret_typ,
-	    self_is_mut
+	    self, is_extern, abi, is_method, args, is_variadic, ret_typ, self_is_mut
 	):
-		self.is_unsafe = is_unsafe
+		self.is_unsafe = abi != ABI.Rivet
 		self.is_extern = is_extern
 		self.abi = abi
 		self.is_method = is_method
@@ -239,11 +238,9 @@ class Fn(TBase):
 
 	def stringify(self, qual):
 		res = ""
-		if self.is_unsafe:
-			res += "unsafe "
 		if self.is_extern:
 			res += f'extern ({self.abi}) '
-		res += "func("
+		res += "fn("
 		if self.is_method:
 			if self.self_is_mut:
 				res += "mut "

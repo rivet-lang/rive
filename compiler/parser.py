@@ -35,7 +35,6 @@ class Parser:
 		# a package.
 		self.is_pkg_level = False
 		self.inside_extern = False
-		self.extern_is_trusted = False
 		self.extern_abi = sym.ABI.Rivet
 		self.inside_struct_or_class_decl = False
 		self.inside_trait = False
@@ -268,7 +267,6 @@ class Parser:
 						    "`extern` blocks cannot be declared public", pos
 						)
 					self.extern_abi = abi
-					self.extern_is_trusted = attrs.has("trusted")
 					while True:
 						protos.append(self.parse_decl())
 						if self.tok.kind == Kind.Rbrace:
@@ -483,10 +481,10 @@ class Parser:
 			return ast.ExtendDecl(attrs, typ, bases, decls, pos)
 		elif self.accept(Kind.KwFn):
 			return self.parse_fn_decl(
-			    doc_comment, attrs, vis, not self.extern_is_trusted and (
-			        attrs.has("unsafe") or
-			        (self.inside_extern and self.extern_abi != sym.ABI.Rivet)
-			    ), self.extern_abi if self.inside_extern else sym.ABI.Rivet
+			    doc_comment, attrs, vis,
+			    attrs.has("unsafe")
+			    or (self.inside_extern and self.extern_abi != sym.ABI.Rivet),
+			    self.extern_abi if self.inside_extern else sym.ABI.Rivet
 			)
 		elif self.inside_struct_or_class_decl and self.accept(Kind.BitNot):
 			# destructor
@@ -1230,9 +1228,8 @@ class Parser:
 			elif isinstance(typ, type.Optional):
 				report.error("optional multi-level types are not allowed", pos)
 			return type.Optional(typ)
-		elif self.tok.kind in (Kind.KwUnsafe, Kind.KwExtern, Kind.KwFn):
+		elif self.tok.kind in (Kind.KwExtern, Kind.KwFn):
 			# function types
-			is_unsafe = self.accept(Kind.KwUnsafe)
 			is_extern = self.accept(Kind.KwExtern)
 			abi = self.parse_abi() if is_extern else sym.ABI.Rivet
 			if is_extern and not self.inside_extern: self.inside_extern = True
@@ -1260,8 +1257,7 @@ class Parser:
 			if is_extern and self.inside_extern:
 				self.inside_extern = False
 			return type.Fn(
-			    is_unsafe, is_extern, abi, False, args, is_variadic, ret_typ,
-			    False
+			    is_extern, abi, False, args, is_variadic, ret_typ, False
 			)
 		elif self.accept(Kind.Amp):
 			# references
