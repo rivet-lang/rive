@@ -3,7 +3,8 @@
 // that can be found in the LICENSE file.
 
 use core::process { exit };
-use core::console { self, can_show_color_on_stdout, eprintln, print, println };
+use core::console { self, eprintln, print, println };
+use core::console::color { self, can_show_color_on_stdout };
 
 let SUPPORT_COLOR: bool = can_show_color_on_stdout();
 
@@ -25,28 +26,28 @@ fn header(txt: string, sep: string) string {
 
 fn bold(txt: string) string {
     if (SUPPORT_COLOR) {
-        return console::bold(txt);
+        return color::bold(txt);
     }
     return txt;
 }
 
 fn green(txt: string) string {
     if (SUPPORT_COLOR) {
-        return console::green(txt);
+        return color::green(txt);
     }
     return txt;
 }
 
 fn red(txt: string) string {
     if (SUPPORT_COLOR) {
-        return console::red(txt);
+        return color::red(txt);
     }
     return txt;
 }
 
 fn yellow(txt: string) string {
     if (SUPPORT_COLOR) {
-        return console::yellow(txt);
+        return color::yellow(txt);
     }
     return txt;
 }

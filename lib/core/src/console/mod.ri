@@ -4,6 +4,8 @@
 
 use pkg { stdc, traits, utils };
 
+pub mod color;
+
 /// Prints a message to stdout. Unlike `println` stdout is not automatically
 /// flushed.
 pub fn print(s: string, args: ...traits::ToString) void {
@@ -46,20 +48,4 @@ pub fn eprintln(s: string = "", args: ...traits::ToString) void {
 /// terminal.
 pub fn is_atty(fd: i32) i32 {
 	return unsafe { stdc::isatty(fd) };
-}
-
-/// Returns true if colors are allowed in stdout, false otherwise.
-#[inline]
-pub fn can_show_color_on_stdout() bool {
-	return supports_escape_sequences(1);
-}
-
-/// Returns true if colors are allowed in stderr, false otherwise.
-#[inline]
-pub fn can_show_color_on_stderr() bool {
-	return supports_escape_sequences(2);
-}
-
-fn supports_escape_sequences(fd: i32) bool {
-	return is_atty(fd) > 0;
 }
