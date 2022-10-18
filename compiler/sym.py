@@ -532,6 +532,21 @@ class Type(Sym):
 					return s
 		return None
 
+	def is_subtype_of(self, t):
+		if self == t:
+			return True
+		if self.kind == TypeKind.Class and self.info.base:
+			if self.info.base == t:
+				return True
+			return self.info.base.is_subtype_of(t)
+		elif self.kind == TypeKind.Struct:
+			for base in self.info.bases:
+				if base == t:
+					return True
+				if base.is_subtype_of(t):
+					return True
+		return False
+
 class Arg:
 	def __init__(self, name, is_mut, typ, def_expr, has_def_expr, pos):
 		self.name = name
