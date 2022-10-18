@@ -400,7 +400,7 @@ class Checker:
 			)
 			self.expected_type = old_exp_typ
 			return expr.typ
-		elif isinstance(expr, ast.CastExpr):
+		elif isinstance(expr, ast.AsExpr):
 			old_exp_typ = self.expected_type
 			self.expected_type = expr.typ
 			self.check_expr(expr.expr)
@@ -1529,7 +1529,7 @@ class Checker:
 			report.error("array literals cannot be modified", expr.pos)
 		elif isinstance(expr, ast.TupleLiteral):
 			report.error("tuple literals cannot be modified", expr.pos)
-		elif isinstance(expr, ast.CastExpr):
+		elif isinstance(expr, ast.AsExpr):
 			self.check_expr_is_mut(expr.expr)
 		elif isinstance(expr, ast.Block) and expr.is_expr:
 			self.check_expr_is_mut(expr.expr)

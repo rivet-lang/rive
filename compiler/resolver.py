@@ -212,7 +212,7 @@ class Resolver:
 		elif isinstance(expr, ast.ArrayLiteral):
 			for e in expr.elems:
 				self.resolve_expr(e)
-		elif isinstance(expr, ast.CastExpr):
+		elif isinstance(expr, ast.AsExpr):
 			self.resolve_type(expr.typ)
 			self.resolve_expr(expr.expr)
 		elif isinstance(expr, ast.GuardExpr):

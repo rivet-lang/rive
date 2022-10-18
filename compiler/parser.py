@@ -879,7 +879,7 @@ class Parser:
 			self.expect(Kind.Comma)
 			expr = self.parse_expr()
 			self.expect(Kind.Rparen)
-			expr = ast.CastExpr(expr, typ, expr.pos)
+			expr = ast.AsExpr(expr, typ, expr.pos)
 		elif self.tok.kind == Kind.Lbracket:
 			elems = []
 			pos = self.tok.pos

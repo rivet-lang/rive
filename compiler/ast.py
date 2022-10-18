@@ -553,7 +553,7 @@ class ArrayLiteral:
 	def __str__(self):
 		return self.__repr__()
 
-class CastExpr:
+class AsExpr:
 	def __init__(self, expr, typ, pos):
 		self.expr = expr
 		self.pos = pos
