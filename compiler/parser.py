@@ -1275,9 +1275,11 @@ class Parser:
 			is_mut = self.accept(Kind.KwMut)
 			typ = self.parse_type()
 			if self.accept(Kind.Semicolon):
+				if is_mut:
+					report.error("arrays are mutable by default", mut_pos)
 				size = self.parse_expr()
 				self.expect(Kind.Rbracket)
-				return type.Array(typ, size, is_mut)
+				return type.Array(typ, size)
 			self.expect(Kind.Rbracket)
 			return type.Slice(typ, is_mut)
 		elif self.accept(Kind.Lparen):

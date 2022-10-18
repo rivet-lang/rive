@@ -177,18 +177,15 @@ class Variadic(TBase):
 		return f"...{self.typ}"
 
 class Array(TBase):
-	def __init__(self, typ, size, is_mut = False):
+	def __init__(self, typ, size):
 		self.typ = typ
 		self.size = size
-		self.is_mut = is_mut
 		self.sym = None
 
 	def resolve(self, sym):
 		self.sym = sym
 
 	def qualstr(self):
-		if self.is_mut:
-			return f"[mut {self.typ.qualstr()}; {self.size}]"
 		return f"[{self.typ.qualstr()}; {self.size}]"
 
 	def __eq__(self, other):
@@ -197,8 +194,6 @@ class Array(TBase):
 		return self.typ == other.typ and self.size == other.size
 
 	def __str__(self):
-		if self.is_mut:
-			return f"[mut {self.typ}; {self.size}]"
 		return f"[{self.typ}; {self.size}]"
 
 class Tuple(TBase):

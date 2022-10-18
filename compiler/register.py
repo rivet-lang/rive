@@ -75,7 +75,10 @@ class Register:
 						decl.sym = self.comp.error_t.sym
 					else:
 						decl.sym = self.sym.add_and_return(
-						    sym.Type(decl.vis, decl.name, TypeKind.Class)
+						    sym.Type(
+						        decl.vis, decl.name, TypeKind.Class,
+						        info = sym.ClassInfo()
+						    )
 						)
 					self.sym = decl.sym
 					self.walk_decls(decl.decls)
@@ -85,7 +88,10 @@ class Register:
 				try:
 					is_core_pkg = self.source_file.sym.is_core_pkg()
 					decl.sym = self.sym.add_and_return(
-					    sym.Type(decl.vis, decl.name, TypeKind.Struct)
+					    sym.Type(
+					        decl.vis, decl.name, TypeKind.Struct,
+					        info = sym.StructInfo(decl.is_opaque)
+					    )
 					)
 					if is_core_pkg and decl.name == "Slice":
 						self.comp.slice_sym = decl.sym

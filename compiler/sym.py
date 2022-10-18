@@ -484,9 +484,14 @@ class TraitInfo:
 		self.implements = []
 		self.has_objects = False
 
+class ClassInfo:
+	def __init__(self):
+		self.base = None
+
 class StructInfo:
 	def __init__(self, is_opaque):
 		self.is_opaque = is_opaque
+		self.bases = []
 
 class Type(Sym):
 	def __init__(self, vis, name, kind, fields = [], info = None):
@@ -501,12 +506,31 @@ class Type(Sym):
 		for f in self.fields:
 			if f.name == name:
 				return f
+		if self.kind == TypeKind.Class and self.info.base:
+			if f := self.info.base.find_field(name):
+				return f
+		elif self.kind == TypeKind.Struct:
+			for base in self.info.bases:
+				if f := base.find_field(name):
+					return f
 		return None
 
 	def has_field(self, name):
 		if _ := self.find_field(name):
 			return True
 		return False
+
+	def find(self, name):
+		if s := Sym.find(self, name):
+			return s
+		if self.kind == TypeKind.Class and self.info.base:
+			if s := Sym.find(self.info.base, name):
+				return s
+		elif self.kind == TypeKind.Struct:
+			for base in self.info.bases:
+				if s := Sym.find(base, name):
+					return s
+		return None
 
 class Arg:
 	def __init__(self, name, is_mut, typ, def_expr, has_def_expr, pos):
@@ -582,6 +606,6 @@ def universe():
 	uni.add(Type(Vis.Pub, "f32", TypeKind.Float32))
 	uni.add(Type(Vis.Pub, "f64", TypeKind.Float64))
 	uni.add(Type(Vis.Pub, "string", TypeKind.String))
-	uni.add(Type(Vis.Pub, "Error", TypeKind.Class))
+	uni.add(Type(Vis.Pub, "Error", TypeKind.Class, info = ClassInfo()))
 
 	return uni
