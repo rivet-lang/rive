@@ -29,7 +29,7 @@ extend rune : ToString {
 
     pub fn from_u32(i: u32) !rune {
         if (i > as(u32, Self::MAX) or (i >= 0xD800 and i <= 0xDFFF)) {
-            raise RuneFromU32Error();
+            return RuneFromU32Error();
         }
         return as(rune, i);
     }

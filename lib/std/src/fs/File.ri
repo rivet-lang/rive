@@ -12,7 +12,7 @@ pub class File {
 		unsafe {
 			let f = stdc::fopen(path.ptr, mode.ptr);
 			if (f == none) {
-				raise Error("File::open: failed to open file '{}'".fmt(path));
+				return Error("File::open: failed to open file '{}'".fmt(path));
 			}
 			return Self(f, true);
         }
@@ -46,12 +46,12 @@ pub class File {
         unsafe {
             let seek = stdc::fseek(self.f, 0, 2);
             if (seek != 0) {
-                raise Error("fseek failed");
+                return Error("fseek failed");
             }
 
             let fsize = stdc::ftell(self.f);
             if (fsize < 0) {
-                raise Error("ftell failed");
+                return Error("ftell failed");
             }
 
             stdc::rewind(self.f);
@@ -60,7 +60,7 @@ pub class File {
             // that, when cast to `i32`, can result in values below 0.
             let allocate = as(i32, fsize);
             if (as(i64, allocate) < fsize) {
-                raise Error("{} cast to `i32` results in {}".fmt(fsize, as(i32, fsize)));
+                return Error("{} cast to `i32` results in {}".fmt(fsize, as(i32, fsize)));
             }
 
             let mut res = as(*mut u8, mem::alloc(as(usize, allocate) + 1).!);
@@ -68,7 +68,7 @@ pub class File {
 
             if (self.eof() and stdc::ferror(self.f) != 0) {
                 mem::dealloc(res);
-                raise Error("fread failed");
+                return Error("fread failed");
             }
 
             res[nelements] = 0;

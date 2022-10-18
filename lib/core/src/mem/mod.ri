@@ -14,7 +14,7 @@ pub fn alloc(size: usize) !*mut void {
     unsafe {
         let ptr = stdc::malloc(size);
         if (ptr == none) {
-            raise OutOfMemoryError("insufficient memory is available");
+            return OutOfMemoryError("insufficient memory is available");
         }
         return ptr;
     }
@@ -26,7 +26,7 @@ pub fn alloc_zeroed(n: usize) !*mut void {
     unsafe {
         let ptr = stdc::calloc(1, n);
         if (ptr == none) {
-            raise OutOfMemoryError("insufficient memory is available");
+            return OutOfMemoryError("insufficient memory is available");
         }
         return ptr;
     }
@@ -44,7 +44,7 @@ pub fn realloc(ptr: *mut void, sz: usize) !*mut void {
         }
         let ptr_ = stdc::realloc(ptr, sz);
         if (ptr_ == none) {
-            raise OutOfMemoryError("insufficient memory is available");
+            return OutOfMemoryError("insufficient memory is available");
         }
         return ptr_;
     }

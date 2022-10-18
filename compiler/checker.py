@@ -1103,17 +1103,6 @@ class Checker:
 				)
 			expr.typ = self.comp.never_t
 			return expr.typ
-		elif isinstance(expr, ast.RaiseExpr):
-			if self.cur_fn and not isinstance(self.cur_fn.ret_typ, type.Result):
-				report.error(
-				    f"current {self.cur_fn.typeof()} does not returns a result value",
-				    expr.pos
-				)
-			expr_typ = self.check_expr(expr.expr)
-			#if expr_typ.symbol().kind != TypeKind.ErrType:
-			#	report.error("expected a errtype value", expr.expr.pos)
-			expr.typ = self.comp.never_t
-			return expr.typ
 		elif isinstance(expr, ast.Block):
 			expr.typ = self.comp.void_t
 			if expr.is_unsafe:

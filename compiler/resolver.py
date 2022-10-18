@@ -276,8 +276,6 @@ class Resolver:
 		elif isinstance(expr, ast.ReturnExpr):
 			if expr.has_expr:
 				self.resolve_expr(expr.expr)
-		elif isinstance(expr, ast.RaiseExpr):
-			self.resolve_expr(expr.expr)
 		elif isinstance(expr, ast.Block):
 			for stmt in expr.stmts:
 				self.resolve_stmt(stmt)
