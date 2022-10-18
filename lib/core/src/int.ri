@@ -144,6 +144,9 @@ extend i64 : ToString {
 }
 
 extend isize : ToString {
+    pub const MIN: i64 = #if _i386_ i32::MIN #else i64::MIN #endif;
+    pub const MAX: i64 = #if _i386_ i32::MAX #else i64::MAX #endif;
+
     /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         return as(i64, self).to_string();
