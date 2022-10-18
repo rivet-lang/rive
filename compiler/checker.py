@@ -274,8 +274,10 @@ class Checker:
 			elif isinstance(expr.sym, sym.Const):
 				expr.typ = expr.sym.typ
 			elif isinstance(expr.sym, sym.Var):
-				if (expr.sym.is_mut
-				    or expr.sym.is_extern) and not self.inside_unsafe_block():
+				if (
+				    expr.sym.is_mut or
+				    (expr.sym.is_extern and expr.sym.abi != sym.ABI.Rivet)
+				) and not self.inside_unsafe_block():
 					if expr.sym.is_extern:
 						report.error(
 						    "use of external objects is unsafe and requires `unsafe` block",
@@ -1027,23 +1029,33 @@ class Checker:
 					)
 				expr.typ = expr.field_info.typ()
 			elif isinstance(expr.left_info, sym.Type):
-				if expr.left_info.kind == TypeKind.Enum:
-					expr.typ = type.Type(expr.left_info)
+				expr.typ = type.Type(expr.left_info)
+			elif isinstance(expr.field_info, sym.Type):
+				expr.typ = type.Type(expr.field_info)
 			elif isinstance(expr.field_info, sym.Const):
 				expr.typ = expr.field_info.typ
 			elif isinstance(expr.field_info, sym.Var):
-				if expr.field_info.is_mut and not self.inside_unsafe_block():
-					report.error(
-					    "use of mutable global objects is unsafe and requires `unsafe` block",
-					    expr.pos
-					)
-					report.note(
-					    "mutable global objects can be mutated by multiple threads: "
-					    "aliasing violations or data races will cause undefined behavior"
-					)
+				if (
+				    expr.field_info.is_mut or (
+				        expr.field_info.is_extern
+				        and expr.field_info.abi != sym.ABI.Rivet
+				    )
+				) and not self.inside_unsafe_block():
+					if expr.field_info.is_extern:
+						report.error(
+						    "use of external objects is unsafe and requires `unsafe` block",
+						    expr.pos
+						)
+					else:
+						report.error(
+						    "use of mutable global objects is unsafe and requires `unsafe` block",
+						    expr.pos
+						)
+						report.note(
+						    "mutable global objects can be mutated by multiple threads: "
+						    "aliasing violations or data races will cause undefined behavior"
+						)
 				expr.typ = expr.field_info.typ
-			elif isinstance(expr.field_info, sym.Type):
-				expr.typ = type.Type(expr.field_info)
 			else:
 				report.error(
 				    "unexpected bug for path expression", expr.field_pos

@@ -10,7 +10,9 @@ pub use core::stdc;
 pub use core::sys;
 pub use core::traits;
 
+pub mod conv;
 pub mod env;
 pub mod fs;
+pub mod math;
 pub mod os;
 pub mod path;

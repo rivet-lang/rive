@@ -75,6 +75,7 @@ class Resolver:
 					self.sym = decl.sym
 					self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.ConstDecl):
+				self.resolve_type(decl.typ)
 				self.resolve_expr(decl.expr)
 			elif isinstance(decl, ast.LetDecl):
 				for v in decl.lefts:

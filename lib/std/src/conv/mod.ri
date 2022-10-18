@@ -1,0 +1,14 @@
+// (C) 2021 Glaz Developers. All rights reserved. Use of this source code
+// is governed by an MIT license that can be found in the LICENSE file.
+
+/// Returns 1 if `b` is true, otherwise 0.
+#[inline]
+pub fn bool_to_i32(b: bool) i32 {
+    return if (b) 1 else 0;
+}
+
+/// Returns true if `i == 1`, otherwise false.
+#[inline]
+pub fn i32_to_bool(i: i32) bool {
+    return i == 1;
+}

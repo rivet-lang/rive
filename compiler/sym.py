@@ -102,8 +102,9 @@ class Vis(Enum):
 		return self.__repr__()
 
 class Sym:
-	def __init__(self, vis, name):
+	def __init__(self, vis, name, abi = ABI.Rivet):
 		self.id = new_symbol_id()
+		self.abi = abi
 		self.vis = vis
 		self.name = name
 		self.mangled_name = ""
@@ -311,8 +312,8 @@ class Const(Sym):
 		self.typ = typ
 
 class Var(Sym):
-	def __init__(self, vis, is_mut, is_extern, name, typ):
-		Sym.__init__(self, vis, name)
+	def __init__(self, vis, is_mut, is_extern, abi, name, typ):
+		Sym.__init__(self, vis, name, abi)
 		self.is_extern = is_extern
 		self.is_mut = is_mut
 		self.typ = typ

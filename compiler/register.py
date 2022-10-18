@@ -25,6 +25,7 @@ class Register:
 			old_abi = self.abi
 			old_sym = self.sym
 			if isinstance(decl, ast.ExternDecl):
+				self.abi = decl.abi
 				self.walk_decls(decl.decls)
 			elif isinstance(decl, ast.ModDecl):
 				decl.sym = self.sym.add_or_get_mod(sym.Mod(decl.vis, decl.name))
@@ -40,8 +41,8 @@ class Register:
 					try:
 						self.source_file.sym.add(
 						    sym.Var(
-						        decl.vis, v.is_mut, decl.is_extern, v.name,
-						        v.typ
+						        decl.vis, v.is_mut, decl.is_extern, self.abi,
+						        v.name, v.typ
 						    )
 						)
 					except utils.CompilerError as e:
