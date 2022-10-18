@@ -1,8 +1,8 @@
-class Base {
+class Base1 {
     field1: i32;
 }
 
-class Base2 : Base {
+class Base2 : Base1 {
     field2: bool;
 }
 
