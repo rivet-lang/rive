@@ -37,7 +37,7 @@ pub class StringBuilder : ToString {
             self.reserve(self.len_ + 1);
         }
         unsafe {
-            mem::copy(self.ptr + self.len_, addr_of!(val), size_of!(u8));
+            mem::copy(ptr_add!(self.ptr, self.len_), addr_of!(val), size_of!(u8));
         }
         self.len_++;
     }
@@ -57,7 +57,7 @@ pub class StringBuilder : ToString {
             self.reserve(len);
         }
         unsafe {
-            mem::copy(self.ptr + self.len_, s, len);
+            mem::copy(ptr_add!(self.ptr, self.len_), s, len);
         }
         self.len_ += len;
     }

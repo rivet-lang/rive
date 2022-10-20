@@ -25,7 +25,7 @@ extern (C) {
 }
 
 let bt_state: *mut backtrace_state = unsafe {
-    backtrace_create_state(ARGS[0].ptr, 1, bt_error_handler, 0)
+    backtrace_create_state(ARGS[0].ptr, 1, bt_error_handler, none)
 };
 
 struct BacktraceData {

@@ -481,20 +481,14 @@ class Checker:
 			    Kind.Amp, Kind.Pipe
 			):
 				if isinstance(ltyp, type.Ptr):
-					if (isinstance(rtyp, type.Ptr)
-					    and expr.op != Kind.Minus) or (
-					        not isinstance(rtyp, type.Ptr)
-					        and expr.op not in (Kind.Plus, Kind.Minus)
-					    ):
-						report.error(
-						    f"invalid operator `{expr.op}` to `{ltyp}` and `{rtyp}`",
-						    expr.pos
+					report.error("pointer arithmetic is not allowed", expr.pos)
+					if expr.op == Kind.Plus:
+						report.help(
+						    "use the `ptr_add` builtin function instead"
 						)
-					elif expr.op in (Kind.Plus, Kind.Minus
-					                 ) and not self.inside_unsafe_block():
-						report.error(
-						    "pointer arithmetic is only allowed inside `unsafe` block",
-						    expr.pos
+					elif expr.op == Kind.Minus:
+						report.help(
+						    "use the `ptr_diff` builtin function instead"
 						)
 				elif isinstance(ltyp, type.Ref):
 					report.error(
@@ -884,6 +878,33 @@ class Checker:
 				if is_addr_of_mut:
 					self.check_expr_is_mut(arg0)
 				expr.typ = type.Ptr(self.check_expr(arg0), is_addr_of_mut)
+			elif expr.name in ("ptr_add", "ptr_diff"):
+				if not self.inside_unsafe_block():
+					report.error(
+					    f"`{expr.name}` should be called inside an `unsafe` block",
+					    expr.pos
+					)
+				elif len(expr.args) == 0:
+					report.error(
+					    "expected 1 or more arguments, found 0", expr.pos
+					)
+				else:
+					ptr_t = self.check_expr(expr.args[0])
+					if not isinstance(ptr_t, type.Ptr):
+						report.error(
+						    "a pointer was expected as the first argument",
+						    expr.pos
+						)
+						return expr.typ
+					for arg in expr.args[1:]:
+						arg_t = self.check_expr(arg)
+						if not self.comp.is_int(arg_t):
+							report.error(
+							    f"expected integer value, found `{arg_t}`",
+							    expr.pos
+							)
+							return expr.typ
+					expr.typ = self.comp.isize_t if expr.name == "ptr_diff" else ptr_t
 			elif expr.name in ("size_of", "align_of"):
 				expr.typ = self.comp.usize_t
 			elif expr.name == "type_of":
@@ -1337,13 +1358,8 @@ class Checker:
 			if expected.typ == self.comp.void_t:
 				return True
 			return expected.typ == got.typ
-		elif isinstance(expected, type.Ptr):
-			if got == self.comp.none_t:
-				return True # allow *[const|mut] T == none
-			elif self.comp.is_int(got):
-				return True
-		elif self.comp.is_int(expected) and isinstance(got, type.Ptr):
-			return True
+		elif isinstance(expected, type.Ptr) and got == self.comp.none_t:
+			return True # allow *[const|mut] T == none
 		elif expected == self.comp.none_t and (
 		    isinstance(got, type.Optional) or isinstance(got, type.Ptr)
 		):
@@ -1413,15 +1429,7 @@ class Checker:
 		return False
 
 	def promote(self, left_typ, right_typ):
-		if isinstance(left_typ, type.Ptr):
-			if self.comp.is_int(right_typ):
-				return left_typ
-			return self.comp.void_t
-		elif isinstance(right_typ, type.Ptr):
-			if self.comp.is_int(left_typ):
-				return right_typ
-			return self.comp.void_t
-		elif left_typ == right_typ:
+		if left_typ == right_typ:
 			return left_typ
 		elif self.comp.is_number(left_typ) and self.comp.is_number(right_typ):
 			return self.promote_number(left_typ, right_typ)

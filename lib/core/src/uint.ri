@@ -115,7 +115,7 @@ extend u32 : ToString {
             }
 
             let diff = max - index;
-            mem::move(buf, buf + index, diff + 1);
+            mem::move(buf, ptr_add!(buf, index), diff + 1);
             return string::from_raw_with_len(buf, diff);
         }
     }
@@ -154,7 +154,7 @@ extend u64 : ToString {
             }
 
             let diff = as(usize, max) - index;
-            mem::move(buf, buf + index, diff + 1);
+            mem::move(buf, ptr_add!(buf, index), diff + 1);
             return string::from_raw_with_len(buf, diff);
         }
     }

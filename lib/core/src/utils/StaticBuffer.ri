@@ -23,10 +23,10 @@ pub struct StaticBuffer {
     }
 
     pub fn as_u64(self) u64 {
-        return unsafe { stdc::strtoul(self.buf[0], none, 10) };
+        return unsafe { stdc::strtoul(addr_of!(self.buf[0]), none, 10) };
     }
 
     pub fn as_string(self) string {
-        return unsafe { string::from_raw_with_len(self.buf[0], self.len) };
+        return unsafe { string::from_raw_with_len(addr_of!(self.buf[0]), self.len) };
     }
 }
