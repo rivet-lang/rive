@@ -307,9 +307,9 @@ class Checker:
 		elif isinstance(expr, ast.SelfTyExpr):
 			return type.Type(expr.sym)
 		elif isinstance(expr, ast.BaseExpr):
-			pass # TODO
+			return expr.typ
 		elif isinstance(expr, ast.BaseTyExpr):
-			pass # TODO
+			return type.Type(expr.sym)
 		elif isinstance(expr, ast.NoneLiteral):
 			return self.comp.none_t
 		elif isinstance(expr, ast.BoolLiteral):

@@ -128,6 +128,13 @@ class Resolver:
 								self.self_sym.info.bases.append(base_sym)
 					self.resolve_decls(decl.decls)
 			elif isinstance(decl, ast.FnDecl):
+				if decl.is_method and self.self_sym.kind == sym.TypeKind.Class and self.self_sym.info.base:
+					decl.scope.add(
+					    sym.Obj(
+					        decl.self_is_mut, "base",
+					        type.Type(self.self_sym.info.base), sym.ObjLevel.Rec
+					    )
+					)
 				decl.scope.add(
 				    sym.Obj(
 				        decl.self_is_mut, "self", type.Type(self.self_sym),
@@ -148,6 +155,13 @@ class Resolver:
 				for stmt in decl.stmts:
 					self.resolve_stmt(stmt)
 			elif isinstance(decl, ast.DestructorDecl):
+				if self.self_sym.kind == sym.TypeKind.Class and self.self_sym.info.base:
+					decl.scope.add(
+					    sym.Obj(
+					        decl.self_is_mut, "base",
+					        type.Type(self.self_sym.info.base), sym.ObjLevel.Rec
+					    )
+					)
 				decl.scope.add(
 				    sym.Obj(
 				        decl.self_is_mut, "self", type.Type(self.self_sym),
@@ -213,7 +227,34 @@ class Resolver:
 			else:
 				report.error("cannot resolve `Self` expression", expr.pos)
 		elif isinstance(expr, ast.BaseExpr):
-			pass # TODO
+			if base_ := expr.scope.lookup("base"):
+				if self.self_sym.kind == sym.TypeKind.Class:
+					if self.self_sym.info.base:
+						expr.is_mut = base_.is_mut
+						expr.typ = type.Type(self.self_sym.info.base)
+					else:
+						report.error(
+						    "class `{self.self_sym.name}` has no base class",
+						    expr.pos
+						)
+				else:
+					report.error("only classes can use `base`", expr.pos)
+			else:
+				report.error("cannot resolve `base` expression", expr.pos)
+		elif isinstance(expr, ast.BaseTyExpr):
+			if self.self_sym:
+				if self.self_sym.kind == sym.TypeKind.Class:
+					if self.self_sym.info.base:
+						expr.sym = self.self_sym.info.base
+					else:
+						report.error(
+						    "class `{self.self_sym.name}` has no base class",
+						    expr.pos
+						)
+				else:
+					report.error("only classes can use `base`", expr.pos)
+			else:
+				report.error("cannot resolve `Base` expression", expr.pos)
 		elif isinstance(expr, ast.TupleLiteral):
 			for e in expr.exprs:
 				self.resolve_expr(e)
