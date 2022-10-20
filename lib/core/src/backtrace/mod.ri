@@ -29,17 +29,16 @@ let bt_state: *mut backtrace_state = unsafe {
 };
 
 struct BacktraceData {
-    mut frame_nr: usize;
     mut has_error: bool;
 }
 
 fn bt_print_callback(
-    data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, func_ptr: *mut u8
+    data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, fn_ptr: *mut u8
 ) i32 {
     unsafe {
         if (
-            func_ptr != none
-            and stdc::memcmp(func_ptr, c"_R4core10rivet_mainF", 20) == 0
+            fn_ptr != none
+            and stdc::memcmp(fn_ptr, c"_R4core10rivet_mainF", 20) == 0
         ) {
             return 1; // stop backtracing
         }
@@ -50,18 +49,13 @@ fn bt_print_callback(
             string::from_raw(filename_ptr)
         };
 
-        let func_name = if (func_ptr == none) {
+        let fn_name = if (fn_ptr == none) {
             "??"
         } else {
-            demangle::demangle_symbol(string::from_raw(func_ptr))
+            demangle::demangle_symbol(string::from_raw(fn_ptr))
         };
 
-        let bdata = as(*mut BacktraceData, data);
-        eprintln(
-            "   {} {} in {}:{}", if (bdata.frame_nr == 0) "at" else "by",
-            func_name, file_name, lineno
-        );
-        bdata.frame_nr++;
+        eprintln("   at {} ({}:{})", fn_name, file_name, lineno);
     }
     return 0;
 }
