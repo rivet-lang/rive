@@ -31,11 +31,11 @@ read this tutorial:
 
 The compiler has been tested on **linux** and **windows**.
 
-Just execute `python rivetc.py some_file.ri`.
+Just execute `python3 rivetc some_file.ri`.
 
 You can see all available compiler options by using the `-h`/`--help` flag.
 
-`python rivetc.py -h`
+`python3 rivetc -h`
 
 ## Hello World!
 

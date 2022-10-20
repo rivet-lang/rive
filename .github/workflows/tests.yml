@@ -2,10 +2,10 @@ name: Tests
 
 on:
   push:
-    paths: ['lib/**.ri', 'src/**.py', 'tests/**']
+    paths: ['lib/**.ri', 'rivetc/src/**.py', 'tests/**']
     branches: [main]
   pull_request:
-    paths: ['lib/**.ri', 'src/**.py', 'tests/**']
+    paths: ['lib/**.ri', 'rivetc/src/**.py', 'tests/**']
     types: [opened, synchronize]
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
 
       - name: Run passing tests
         run: |
-          python3 rivetc.py tests/valid
+          python3 rivetc tests/valid
 
       - name: Run failing tests
         run: |
@@ -33,7 +33,7 @@ jobs:
 
       - name: Run passing tests
         run: |
-          python3 rivetc.py tests/valid
+          python3 rivetc tests/valid
 
       - name: Run failing tests
         run: |
@@ -53,7 +53,7 @@ jobs:
 
       - name: Run passing tests
         run: |
-          python3 rivetc.py tests/valid
+          python3 rivetc tests/valid
 
       - name: Run failing tests
         run: |

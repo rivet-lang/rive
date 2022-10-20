@@ -3,7 +3,7 @@ fn result() !void {
 }
 
 fn result2() !void {
-    return Error("simple error (returnd: {}, idx: {})", true, 0);
+    return Error("simple error (returned: {}, idx: {})", true, 0);
 }
 
 test "catch result error" {
@@ -12,6 +12,6 @@ test "catch result error" {
     };
 
     result2() catch |err2| {
-        assert!(err2.msg == "simple error (returnd: true, idx: 0)");
+        assert!(err2.msg == "simple error (returned: true, idx: 0)");
     };
 }

@@ -4,7 +4,6 @@
 
 import sys
 
-from compiler import Compiler
+from src import Compiler
 
-if __name__ == "__main__":
-	Compiler(sys.argv[1:]).run()
+Compiler(sys.argv[1:]).run()

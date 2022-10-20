@@ -6,10 +6,6 @@
 /// argument of a function.
 pub class ArgumentError : Error { }
 
-/// An error that is raised when requested function does not have
-/// an implementation.
-pub class NotImplementedError : Error { }
-
 pub class OutOfMemoryError : Error { }
 
 pub class RuneFromU32Error : Error { }
