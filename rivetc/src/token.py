@@ -91,6 +91,7 @@ class Kind(Enum):
 	KwOr = auto_enum() # or
 	KwPkg = auto_enum() # pkg
 	KwPub = auto_enum() # pub
+	KwProt = auto_enum() # prot
 	KwReturn = auto_enum() # return
 	KwSelf = auto_enum() # self
 	KwSelfTy = auto_enum() # Self
@@ -222,6 +223,7 @@ TOKEN_STRINGS = {
     Kind.KwOr: "or",
     Kind.KwPkg: "pkg",
     Kind.KwPub: "pub",
+    Kind.KwProt: "prot",
     Kind.KwReturn: "return",
     Kind.KwSelf: "self",
     Kind.KwSelfTy: "Self",

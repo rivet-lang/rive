@@ -89,13 +89,16 @@ class ABI(Enum):
 class Vis(Enum):
 	Priv = auto_enum()
 	Pub = auto_enum() # Public outside current module
+	Prot = auto_enum() # Protected inside current class
 
 	def is_pub(self):
-		return self != Vis.Priv
+		return self == Vis.Pub
 
 	def __repr__(self):
 		if self == Vis.Pub:
 			return "pub"
+		elif self == Vis.Prot:
+			return "prot"
 		return "" # private
 
 	def __str__(self):

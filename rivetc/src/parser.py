@@ -188,6 +188,8 @@ class Parser:
 	def parse_vis(self):
 		if self.accept(Kind.KwPub):
 			return sym.Vis.Pub
+		elif self.accept(Kind.KwProt):
+			return sym.Vis.Prot
 		return sym.Vis.Priv
 
 	def parse_decls(self):
