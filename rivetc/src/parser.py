@@ -31,9 +31,6 @@ class Parser:
 
 		self.scope = None
 
-		# This field is `true` when we are in a root module, that is,
-		# a package.
-		self.is_pkg_level = False
 		self.inside_extern = False
 		self.extern_abi = sym.ABI.Rivet
 		self.inside_struct_or_class_decl = False
@@ -41,7 +38,6 @@ class Parser:
 		self.inside_block = False
 
 	def parse_pkg(self, pkg_name, files):
-		self.is_pkg_level = True
 		self.pkg_name = pkg_name
 		if self.pkg_name in ("std", "tests"):
 			self.pkg_deps.append("core")
@@ -236,7 +232,9 @@ class Parser:
 			self.expect(Kind.Semicolon)
 			return ast.UseDecl(attrs, vis, path, alias, symbols)
 		elif self.accept(Kind.KwExtern):
-			if self.tok.kind == Kind.KwPkg and not self.is_pkg_level:
+			if self.tok.kind == Kind.KwPkg and not isinstance(
+			    self.file_sym, sym.Pkg
+			):
 				report.error(
 				    "external packages can only be declared at the package level",
 				    pos,
@@ -292,12 +290,9 @@ class Parser:
 			decls = []
 			is_inline = not self.accept(Kind.Semicolon)
 			if is_inline:
-				old_is_pkg_level = self.is_pkg_level
-				self.is_pkg_level = False
 				self.expect(Kind.Lbrace)
 				while not self.accept(Kind.Rbrace):
 					decls.append(self.parse_decl())
-				self.is_pkg_level = old_is_pkg_level
 			else:
 				mod_path = os.path.join(self.file_dir, name)
 				if os.path.isdir(mod_path):
@@ -593,8 +588,10 @@ class Parser:
 		return ast.FnDecl(
 		    doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
 		    args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
-		    has_named_args, self.is_pkg_level and name == "main", is_variadic,
-		    abi
+		    has_named_args,
+		    isinstance(self.file_sym, sym.Pkg)
+		    and self.file_sym.name == self.prefs.pkg_name and name == "main",
+		    is_variadic, abi
 		)
 
 	# ---- statements --------------------------

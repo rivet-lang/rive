@@ -84,10 +84,10 @@ pub fn move(dest: *mut void, src: *void, sz: usize) void {
 /// the contents of `source` into the allocated space and returns a pointer to
 /// the newly allocated space.
 pub fn dup(src: *void, sz: usize) !*mut void {
+    if (sz == 0) {
+        return alloc_zeroed(1).!;
+    }
     unsafe {
-        if (sz == 0) {
-            return alloc_zeroed(1).!;
-        }
         let res = alloc(sz).!;
         copy(res, src, sz);
         return res;
