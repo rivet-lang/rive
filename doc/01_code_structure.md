@@ -15,7 +15,7 @@ code.
 
 In Rivet, the entry point of a program is a function named `main`.
 ```rust
-fn main() {
+fn main() void {
     // code goes here
 }
 ```

@@ -35,9 +35,17 @@ class Checker:
 			elif isinstance(decl, ast.ModDecl):
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.ConstDecl):
-				self.check_expr(decl.expr)
+				old_expected_type = self.expected_type
+				field_typ = self.check_expr(decl.expr)
+				self.expected_type = old_expected_type
+				try:
+					self.check_compatible_types(field_typ, decl.typ)
+				except utils.CompilerError as e:
+					report.error(e.args[0], decl.pos)
 			elif isinstance(decl, ast.LetDecl):
+				old_expected_type = self.expected_type
 				self.check_expr(decl.right)
+				self.expected_type = old_expected_type
 			elif isinstance(decl, ast.TypeDecl):
 				pass
 			elif isinstance(decl, ast.EnumDecl):
@@ -73,15 +81,19 @@ class Checker:
 						pass
 					else:
 						report.error(
-						    f"base type `{base}` of struct `{decl.name}` is not a struct",
+						    f"structs can only inherit traits and embed other structs",
 						    decl.pos
 						)
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.FieldDecl):
 				if decl.has_def_expr:
 					old_expected_type = self.expected_type
-					self.check_expr(decl.def_expr)
+					field_typ = self.check_expr(decl.def_expr)
 					self.expected_type = old_expected_type
+					try:
+						self.check_compatible_types(field_typ, decl.typ)
+					except utils.CompilerError as e:
+						report.error(e.args[0], decl.pos)
 			elif isinstance(decl, ast.ExtendDecl):
 				self_sym = decl.typ.symbol()
 				has_base_class = False
@@ -119,6 +131,15 @@ class Checker:
 				self.check_decls(decl.decls)
 			elif isinstance(decl, ast.FnDecl):
 				old_expected_type = self.expected_type
+				for arg in decl.args:
+					if arg.has_def_expr:
+						self.expected_type = arg.typ
+						def_expr_t = self.check_expr(arg.def_expr)
+						self.expected_type = old_expected_type
+						try:
+							self.check_compatible_types(def_expr_t, arg.typ)
+						except utils.CompilerError as e:
+							report.error(e.args[0], arg.pos)
 				self.cur_fn = decl.sym
 				self.expected_type = decl.ret_typ
 				self.check_stmts(decl.stmts)
@@ -875,9 +896,10 @@ class Checker:
 					    f"`{expr.name}` should be called inside an `unsafe` block",
 					    expr.pos
 					)
-				elif len(expr.args) == 0:
+				elif len(expr.args) < 2:
 					report.error(
-					    "expected 1 or more arguments, found 0", expr.pos
+					    f"expected 2 or more arguments, found {len(expr.args)}",
+					    expr.pos
 					)
 				else:
 					ptr_t = self.check_expr(expr.args[0])
@@ -1213,6 +1235,8 @@ class Checker:
 			    f"{kind} `{info.name}` should be called inside `unsafe` block",
 			    expr.pos
 			)
+		elif info.is_method and info.self_is_mut:
+			self.check_expr_is_mut(expr.left.left)
 
 		func_args_len = len(info.args)
 		if info.is_variadic and not info.is_extern:
@@ -1278,6 +1302,9 @@ class Checker:
 			self.expected_type = arg_fn.typ
 			arg.typ = self.check_expr(arg.expr)
 			self.expected_type = oet
+
+			if arg_fn.is_mut:
+				self.check_expr_is_mut(arg.expr)
 
 			if not (
 			    info.is_variadic and info.is_extern and i >= len(info.args) - 1

@@ -116,7 +116,7 @@ pub class string : ToString {
                 } else if (b2.is_digit()) {
                     let start = i;
                     i += 1;
-                    let buf = StaticBuffer();
+                    let mut buf = StaticBuffer();
                     while (unsafe { self.ptr[i] != b'}' }) {
                         buf.push(unsafe { self.ptr[i] });
                         i += 1;
