@@ -54,7 +54,7 @@ class OS(Enum):
 
 class Arch(Enum):
 	Amd64 = auto_enum() # aka x86_64
-	I386 = auto_enum() # aka x86
+	X86 = auto_enum()
 
 	@staticmethod
 	def get():
@@ -62,7 +62,7 @@ class Arch(Enum):
 		if arch in ("x86_64", "AMD64"):
 			return Arch.Amd64
 		elif arch in ("x86", "i386"):
-			return Arch.I386
+			return Arch.X86
 		else:
 			error(f"unknown target architecture: `{arch}`")
 
@@ -70,19 +70,19 @@ class Arch(Enum):
 	def from_string(arch):
 		if arch == "amd64":
 			return Arch.Amd64
-		elif arch == "i386":
-			return Arch.I386
+		elif arch == "x86":
+			return Arch.X86
 		return None
 
 	def equals_to_string(self, flag):
 		if flag == "_AMD64_" and self == Arch.Amd64:
 			return True
-		elif flag == "_i386_" and self == Arch.I386:
+		elif flag == "_X86_" and self == Arch.X86:
 			return True
 		return False
 
 	def __str__(self):
-		if self == Arch.I386: return "i386"
+		if self == Arch.X86: return "x86"
 		return "amd64"
 
 class Bits(Enum):

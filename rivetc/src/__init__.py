@@ -401,7 +401,7 @@ class Compiler:
 		if name in ("_LINUX_", "_WINDOWS_"):
 			return self.prefs.target_os.equals_to_string(name)
 		# architectures
-		elif name in ("_i386_", "_AMD64_"):
+		elif name in ("_X86_", "_AMD64_"):
 			return self.prefs.target_arch.equals_to_string(name)
 		# bits
 		elif name in ("_x32_", "_x64_"):
@@ -414,7 +414,7 @@ class Compiler:
 				return self.prefs.target_endian == prefs.Endian.Little
 			return self.prefs.target_endian == prefs.Endian.Big
 		if name.startswith("_") and name.endswith("_"):
-			report.error(f"unknown builtin flag: `{cond}`", pos)
+			report.error(f"unknown builtin flag: `{name}`", pos)
 			return False
 		return name in self.prefs.flags
 

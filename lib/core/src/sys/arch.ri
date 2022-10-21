@@ -5,12 +5,12 @@
 use pkg::process::panic;
 
 pub enum Arch : u8 {
-    I386,
+    X86,
     Amd64;
 
     pub fn from_string(arch: string) ?Arch {
         switch (arch) {
-            "i386" => return .I386,
+            "i386" => return .X86,
             "amd64" => return .Amd64,
             else => return none
         }
@@ -19,8 +19,8 @@ pub enum Arch : u8 {
 
 /// Returns the current architecture.
 pub fn arch() Arch {
-#if _i386_
-    return .I386;
+#if _X86_
+    return .X86;
 #elif _AMD64_
     return .Amd64;
 #else

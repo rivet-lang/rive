@@ -167,7 +167,7 @@ extend u64 : ToString {
 }
 
 extend usize : ToString {
-    pub const MAX: u64 = #if _i386_ u32::MAX #else u64::MAX #endif;
+    pub const MAX: u64 = #if _AMD64_ u64::MAX #else u32::MAX #endif;
 
     /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
