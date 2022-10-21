@@ -188,9 +188,6 @@ class Resolver:
 				except utils.CompilerError as e:
 					report.error(e.args[0], v.pos)
 			self.resolve_expr(stmt.right)
-		elif isinstance(stmt, ast.AssignStmt):
-			self.resolve_expr(stmt.left)
-			self.resolve_expr(stmt.right)
 		elif isinstance(stmt, ast.WhileStmt):
 			self.resolve_expr(stmt.cond)
 			self.resolve_stmt(stmt.stmt)
@@ -213,6 +210,9 @@ class Resolver:
 			report.note("unexpected bug, please, report it")
 		elif isinstance(expr, ast.TypeNode):
 			self.resolve_type(expr.typ)
+		elif isinstance(expr, ast.AssignExpr):
+			self.resolve_expr(expr.left)
+			self.resolve_expr(expr.right)
 		elif isinstance(expr, ast.Ident):
 			self.resolve_ident(expr)
 		elif isinstance(expr, ast.SelfExpr):

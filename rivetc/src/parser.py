@@ -633,15 +633,8 @@ class Parser:
 			self.close_scope()
 			return ast.ForInStmt(sc, vars, iterable, stmt, pos)
 		expr = self.parse_expr()
-		if self.tok.kind.is_assign():
-			# assignment
-			op = self.tok.kind
-			self.next()
-			right = self.parse_expr()
-			self.expect(Kind.Semicolon)
-			return ast.AssignStmt(expr, op, right, expr.pos)
-		elif not ((self.inside_block and self.tok.kind == Kind.Rbrace)
-		          or expr.__class__ in (ast.IfExpr, ast.SwitchExpr, ast.Block)):
+		if not ((self.inside_block and self.tok.kind == Kind.Rbrace)
+		        or expr.__class__ in (ast.IfExpr, ast.SwitchExpr, ast.Block)):
 			self.expect(Kind.Semicolon)
 		return ast.ExprStmt(expr, expr.pos)
 
@@ -904,7 +897,12 @@ class Parser:
 			expr = self.parse_ident()
 
 		while True:
-			if self.accept(Kind.Lparen):
+			if self.tok.kind.is_assign():
+				# assignment
+				op = self.tok.kind
+				self.next()
+				return ast.AssignExpr(expr, op, self.parse_expr(), expr.pos)
+			elif self.accept(Kind.Lparen):
 				args = []
 				if self.tok.kind != Kind.Rparen:
 					expecting_named_arg = False

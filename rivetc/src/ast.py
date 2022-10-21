@@ -304,13 +304,6 @@ class LetStmt:
 		self.scope = scope
 		self.pos = pos
 
-class AssignStmt:
-	def __init__(self, left, op, right, pos):
-		self.left = left
-		self.op = op
-		self.right = right
-		self.pos = pos
-
 class WhileStmt:
 	def __init__(self, cond, stmt, is_inf, pos):
 		self.cond = cond
@@ -358,6 +351,14 @@ class TypeNode:
 
 	def __str__(self):
 		return self.__repr__()
+
+class AssignExpr:
+	def __init__(self, left, op, right, pos):
+		self.left = left
+		self.op = op
+		self.right = right
+		self.typ = None
+		self.pos = pos
 
 class PkgExpr:
 	def __init__(self, pos):

@@ -82,8 +82,8 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
                 underscores = true;
                 continue;
             },
-            (b'0' <= c and c <= b'9') => { d = c - b'0'; },
-            (b'a' <= cl and cl <= b'z') => { d = cl - b'a' + 1; },
+            (b'0' <= c and c <= b'9') => d = c - b'0',
+            (b'a' <= cl and cl <= b'z') => d = cl - b'a' + 1,
             else => return Error("strconv::string_to_uint: invalid syntax")
         }
 

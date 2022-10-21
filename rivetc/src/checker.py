@@ -176,20 +176,6 @@ class Checker:
 							)
 							vd.typ = vtyp
 							stmt.scope.update_type(vd.name, vtyp)
-		elif isinstance(stmt, ast.AssignStmt):
-			left_t = self.check_expr(stmt.left)
-			old_expected_type = self.expected_type
-			self.expected_type = left_t
-			right_t = self.check_expr(stmt.right)
-			if right_t == self.comp.void_t:
-				report.error("void expression used as value", stmt.right.pos)
-			self.expected_type = old_expected_type
-			if isinstance(stmt.left, ast.Ident) and stmt.left.name == "_":
-				return
-			try:
-				self.check_types(right_t, left_t)
-			except utils.CompilerError as e:
-				report.error(e.args[0], stmt.right.pos)
 		elif isinstance(stmt, ast.ExprStmt):
 			expr_typ = self.check_expr(stmt.expr)
 			if not (
@@ -244,6 +230,22 @@ class Checker:
 		if isinstance(expr, ast.EmptyExpr):
 			pass # error raised in `Resolver`
 		elif isinstance(expr, ast.TypeNode):
+			return expr.typ
+		elif isinstance(expr, ast.AssignExpr):
+			expr.typ = self.comp.void_t
+			left_t = self.check_expr(expr.left)
+			old_expected_type = self.expected_type
+			self.expected_type = left_t
+			right_t = self.check_expr(expr.right)
+			if right_t == self.comp.void_t:
+				report.error("void expression used as value", expr.right.pos)
+			self.expected_type = old_expected_type
+			if isinstance(expr.left, ast.Ident) and (expr.left.name == "_"):
+				return expr.typ
+			try:
+				self.check_types(right_t, left_t)
+			except utils.CompilerError as e:
+				report.error(e.args[0], expr.right.pos)
 			return expr.typ
 		elif isinstance(expr, ast.EnumValueExpr):
 			expr.typ = self.comp.void_t
