@@ -590,7 +590,7 @@ class Parser:
 		    args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
 		    has_named_args,
 		    isinstance(self.file_sym, sym.Pkg)
-		    and self.file_sym.name == self.prefs.pkg_name and name == "main",
+		    and self.file_sym.name == self.comp.prefs.pkg_name and name == "main",
 		    is_variadic, abi
 		)
 
