@@ -424,18 +424,12 @@ class Lexer:
 
 			# delimiters and operators
 			if ch == "+":
-				if nextc == "+":
-					self.pos += 1
-					return token.Token("", Kind.Inc, pos)
-				elif nextc == "=":
+				if nextc == "=":
 					self.pos += 1
 					return token.Token("", Kind.PlusAssign, pos)
 				return token.Token("", Kind.Plus, pos)
 			elif ch == "-":
-				if nextc == "-":
-					self.pos += 1
-					return token.Token("", Kind.Dec, pos)
-				elif nextc == "=":
+				if nextc == "=":
 					self.pos += 1
 					return token.Token("", Kind.MinusAssign, pos)
 				return token.Token("", Kind.Minus, pos)
