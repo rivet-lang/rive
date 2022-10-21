@@ -194,9 +194,8 @@ class Checker:
 			expr_typ = self.check_expr(stmt.expr)
 			if not (
 			    isinstance(expr_typ, type.Result) and expr_typ.typ
-			    in self.void_types or isinstance(expr_typ, type.Optional)
-			    and expr_typ.typ in self.void_types or expr_typ
-			    in self.void_types or isinstance(stmt.expr, ast.PostfixExpr)
+			    in self.void_types or isinstance(expr_typ, type.Optional) and
+			    expr_typ.typ in self.void_types or expr_typ in self.void_types
 			):
 				report.warn("expression evaluated but not used", stmt.expr.pos)
 		elif isinstance(stmt, ast.WhileStmt):
@@ -630,16 +629,6 @@ class Checker:
 				expr.typ = self.comp.bool_t
 			else:
 				expr.typ = return_type
-			return expr.typ
-		elif isinstance(expr, ast.PostfixExpr):
-			expr.typ = self.check_expr(expr.left)
-			if self.comp.is_int(expr.typ):
-				self.check_expr_is_mut(expr.left)
-			else:
-				report.error(
-				    f"operator `{expr.op}` can only be used with numeric values",
-				    expr.pos
-				)
 			return expr.typ
 		elif isinstance(expr, ast.ParExpr):
 			expr.typ = self.check_expr(expr.expr)
@@ -1543,8 +1532,6 @@ class Checker:
 		elif isinstance(expr, ast.BinaryExpr):
 			self.check_expr_is_mut(expr.left)
 			self.check_expr_is_mut(expr.right)
-		elif isinstance(expr, ast.PostfixExpr):
-			self.check_expr_is_mut(expr.left)
 
 	def check_sym_is_mut(self, sy, pos):
 		if isinstance(sy, sym.Const):

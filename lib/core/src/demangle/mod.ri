@@ -18,7 +18,7 @@ pub fn demangle_symbol(name: string) string {
         let byte = unsafe { name_ptr[idx] };
         if (byte.is_digit()) {
             buf.push(byte);
-            idx++;
+            idx += 1;
             continue;
         }
 
@@ -27,7 +27,8 @@ pub fn demangle_symbol(name: string) string {
         }
 
         for (_ in 0..as(usize, buf.as_u64())) {
-            res.write_byte(unsafe { name_ptr[idx++] });
+            res.write_byte(unsafe { name_ptr[idx] });
+            idx += 1;
         }
 
         buf.clear();

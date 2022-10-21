@@ -101,9 +101,10 @@ pub class string : ToString {
             if (b == b'{') {
                 if (b2 == b'{') { // escaping '{'
                     res.write_byte(b'{');
-                    i++;
+                    i += 1;
                 } else if (b2 == b'}') {
-                    let arg_idx = args_idx++;
+                    let arg_idx = args_idx;
+                    args_idx += 1;
                     if (arg_idx >= args.len) {
                         panic(
                             "fmt: argument index out of range (argument index: {}, len: {}, index: {})",
@@ -111,12 +112,14 @@ pub class string : ToString {
                         );
                     }
                     res.write_string(args[arg_idx].to_string());
-                    i++;
+                    i += 1;
                 } else if (b2.is_digit()) {
-                    let start = i++;
+                    let start = i;
+                    i += 1;
                     let buf = StaticBuffer();
                     while (unsafe { self.ptr[i] != b'}' }) {
-                        buf.push(unsafe { self.ptr[i++] });
+                        buf.push(unsafe { self.ptr[i] });
+                        i += 1;
                         if (i >= self.len) {
                             panic("fmt: incomplete format string (index: {})", start);
                         }
@@ -135,14 +138,14 @@ pub class string : ToString {
             } else if (b == b'}') {
                 if (b2 == b'}') { // escaping '}'
                     res.write_byte(b'}');
-                    i++;
+                    i += 1;
                 } else {
                     panic("fmt: single '}}' encountered in format string (index: {})", i);
                 }
             } else {
                 res.write_byte(b);
             }
-            i++;
+            i += 1;
         }
         return res.to_string();
     }
@@ -167,12 +170,12 @@ pub class string : ToString {
 		while (i < self.len) {
 			let mut j: usize = 0;
 			while (j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] }) {
-				j++;
+				j += 1;
 			}
 			if (j == p.len) {
 				return i;
 			}
-			i++;
+			i += 1;
 		}
 		return none;
 	}

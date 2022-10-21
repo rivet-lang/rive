@@ -118,17 +118,17 @@ struct TestRunner {
 
     fn print_test_ok(self, name: string) void {
         println(OK_STATUS.concat(name));
-        self.ok_tests++;
+        self.ok_tests += 1;
     }
 
     fn print_test_skip(self, name: string) void {
         eprintln(SKIP_STATUS.concat(name));
-        self.skip_tests++;
+        self.skip_tests += 1;
     }
 
     fn print_test_failed(self, name: string, pos: string) void {
         eprintln(FAILED_STATUS.concat(name));
         eprintln(pos);
-        self.fail_tests++;
+        self.fail_tests += 1;
     }
 }

@@ -17,8 +17,6 @@ class Kind(Enum):
 	Mul = auto_enum() # *
 	Div = auto_enum() # /
 	Mod = auto_enum() # %
-	Inc = auto_enum() # ++
-	Dec = auto_enum() # --
 	Assign = auto_enum() # =
 	PlusAssign = auto_enum() # +=
 	MinusAssign = auto_enum() # -=
@@ -150,8 +148,6 @@ TOKEN_STRINGS = {
     Kind.Mul: "*",
     Kind.Div: "/",
     Kind.Mod: "%",
-    Kind.Inc: "++",
-    Kind.Dec: "--",
     Kind.Assign: "=",
     Kind.PlusAssign: "+=",
     Kind.MinusAssign: "-=",

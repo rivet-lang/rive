@@ -278,8 +278,6 @@ class Resolver:
 		elif isinstance(expr, ast.BinaryExpr):
 			self.resolve_expr(expr.left)
 			self.resolve_expr(expr.right)
-		elif isinstance(expr, ast.PostfixExpr):
-			self.resolve_expr(expr.left)
 		elif isinstance(expr, ast.ParExpr):
 			self.resolve_expr(expr.expr)
 		elif isinstance(expr, ast.IndexExpr):

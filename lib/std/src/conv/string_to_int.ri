@@ -43,11 +43,11 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
                     // manage leading zeros in decimal base's numbers
                     s.len >= 2 and (s[1] >= b'0' and s[1] <= b'9') => {
                         base_ = 10;
-                        start_index++;
+                        start_index += 1;
                     },
                     else => {
                         base_ = 8;
-                        start_index++;
+                        start_index += 1;
                     }
                 }
             }
@@ -175,7 +175,7 @@ fn underscore_ok(s_: string) bool {
 
     // optional sign.
     if (s.len >= 1 and (s[0] == b'-' or s[0] == b'+')) {
-        i++;
+        i += 1;
     }
 
     // optional base prefix.

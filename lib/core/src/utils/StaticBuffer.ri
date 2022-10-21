@@ -10,7 +10,8 @@ pub struct StaticBuffer {
 
     pub fn push(mut self, byte: u8) void {
         if (self.len < self.buf.len) {
-            self.buf[self.len++] = byte;
+            self.buf[self.len] = byte;
+            self.len += 1;
         } else {
             process::panic("StaticBuffer::push: cannot push byte (len: {})", self.len);
         }
@@ -18,7 +19,8 @@ pub struct StaticBuffer {
 
     pub fn clear(mut self) void {
         while (self.len > 0) {
-            self.buf[self.len--] = 0;
+            self.buf[self.len] = 0;
+            self.len -= 1;
         }
     }
 

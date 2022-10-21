@@ -97,21 +97,24 @@ extend u32 : ToString {
 
             let mut index = max;
             let buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
-            buf[index--] = 0;
+            buf[index] = 0;
+            index -= 1;
 
             while (n > 0) {
                 let n1 = n / 100;
                 d = (n - (n1 * 100)) << as(u32, 1);
                 n = n1;
-                buf[index--] = DIGIT_PAIRS.ptr[d];
-                d++;
-                buf[index--] = DIGIT_PAIRS.ptr[d];
+                buf[index] = DIGIT_PAIRS.ptr[d];
+                index -= 1;
+                d += 1;
+                buf[index] = DIGIT_PAIRS.ptr[d];
+                index -= 1;
             }
-            index++;
+            index += 1;
 
             if (d < 20) {
                 // remove head zero
-                index++;
+                index += 1;
             }
 
             let diff = max - index;
@@ -136,21 +139,24 @@ extend u64 : ToString {
             let max = 20;
             let mut index = as(usize, max);
             let buf = as(*mut u8, mem::alloc(as(usize, max + 1)) catch unreachable!());
-            buf[index--] = 0;
+            buf[index] = 0;
+            index -= 1;
 
             while (n > 0) {
                 let n1 = n / 100;
                 d = (n - (n1 * 100)) << as(u32, 1);
                 n = n1;
-                buf[index--] = DIGIT_PAIRS.ptr[d];
-                d++;
-                buf[index--] = DIGIT_PAIRS.ptr[d];
+                buf[index] = DIGIT_PAIRS.ptr[d];
+                index -= 1;
+                d += 1;
+                buf[index] = DIGIT_PAIRS.ptr[d];
+                index -= 1;
             }
-            index++;
+            index += 1;
 
             if (d < 20) {
                 // remove head zero
-                index++;
+                index += 1;
             }
 
             let diff = as(usize, max) - index;

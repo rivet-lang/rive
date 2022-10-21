@@ -39,7 +39,7 @@ pub class StringBuilder : ToString {
         unsafe {
             mem::copy(ptr_add!(self.ptr, self.len_), addr_of!(val), size_of!(u8));
         }
-        self.len_++;
+        self.len_ += 1;
     }
 
     #[unsafe]

@@ -619,19 +619,6 @@ class BinaryExpr:
 	def __str__(self):
 		return self.__repr__()
 
-class PostfixExpr:
-	def __init__(self, left, op, pos):
-		self.left = left
-		self.op = op
-		self.pos = pos
-		self.typ = None
-
-	def __repr__(self):
-		return f"{self.left}{self.op}"
-
-	def __str__(self):
-		return self.__repr__()
-
 class ParExpr:
 	def __init__(self, expr, pos):
 		self.expr = expr

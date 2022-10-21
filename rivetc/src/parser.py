@@ -904,11 +904,7 @@ class Parser:
 			expr = self.parse_ident()
 
 		while True:
-			if self.tok.kind in [Kind.Inc, Kind.Dec]:
-				op = self.tok.kind
-				self.next()
-				expr = ast.PostfixExpr(expr, op, expr.pos)
-			elif self.accept(Kind.Lparen):
+			if self.accept(Kind.Lparen):
 				args = []
 				if self.tok.kind != Kind.Rparen:
 					expecting_named_arg = False
