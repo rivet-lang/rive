@@ -357,26 +357,7 @@ class Parser:
 			self.inside_trait = True
 			self.expect(Kind.Lbrace)
 			while not self.accept(Kind.Rbrace):
-				doc_comment = self.parse_doc_comment()
-				attrs_pos = self.tok.pos
-				attrs = self.parse_attrs()
-				if attrs.has_attrs():
-					report.error(
-					    "attributes should be applied to a function or method",
-					    attrs_pos
-					)
-				if self.accept(Kind.KwPub):
-					report.error(
-					    "unnecessary visibility qualifier", self.prev_tok.pos
-					)
-				is_unsafe = self.accept(Kind.KwUnsafe)
-				self.expect(Kind.KwFn)
-				decls.append(
-				    self.parse_fn_decl(
-				        doc_comment, attrs, sym.Vis.Pub, is_unsafe,
-				        sym.ABI.Rivet
-				    )
-				)
+				decls.append(self.parse_decl())
 			self.inside_trait = old_inside_trait
 			return ast.TraitDecl(doc_comment, attrs, vis, name, decls, pos)
 		elif self.accept(Kind.KwClass):
@@ -423,9 +404,8 @@ class Parser:
 			return ast.StructDecl(
 			    doc_comment, attrs, vis, name, bases, decls, is_opaque, pos
 			)
-		elif self.inside_struct_or_class_decl and self.tok.kind in (
-		    Kind.KwMut, Kind.Name
-		):
+		elif (self.inside_struct_or_class_decl or
+		      self.inside_trait) and self.tok.kind in (Kind.KwMut, Kind.Name):
 			# fields
 			is_mut = self.accept(Kind.KwMut)
 			name = self.parse_name()
@@ -590,8 +570,8 @@ class Parser:
 		    args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
 		    has_named_args,
 		    isinstance(self.file_sym, sym.Pkg)
-		    and self.file_sym.name == self.comp.prefs.pkg_name and name == "main",
-		    is_variadic, abi
+		    and self.file_sym.name == self.comp.prefs.pkg_name
+		    and name == "main", is_variadic, abi
 		)
 
 	# ---- statements --------------------------
