@@ -187,14 +187,14 @@ class TypeDecl:
 
 class EnumDecl:
 	def __init__(
-	    self, docs, attrs, vis, name, underlying_typ, variants, decls, pos
+	    self, docs, attrs, vis, name, underlying_typ, values, decls, pos
 	):
 		self.docs = docs
 		self.attrs = attrs
 		self.vis = vis
 		self.name = name
 		self.underlying_typ = underlying_typ
-		self.variants = variants
+		self.values = values
 		self.decls = decls
 		self.sym = None
 		self.pos = pos
@@ -514,15 +514,15 @@ class StringLiteral:
 	def __str__(self):
 		return self.__repr__()
 
-class EnumVariantExpr:
-	def __init__(self, variant, pos):
-		self.variant = variant
+class EnumValueExpr:
+	def __init__(self, value, pos):
+		self.value = value
 		self.sym = None
 		self.pos = pos
 		self.typ = None
 
 	def __repr__(self):
-		return f".{self.variant}"
+		return f".{self.value}"
 
 	def __str__(self):
 		return self.__repr__()

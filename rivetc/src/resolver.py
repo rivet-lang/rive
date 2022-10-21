@@ -340,12 +340,10 @@ class Resolver:
 			self.check_vis(s, pos)
 			return s
 		elif isinstance(symbol, sym.Type) and symbol.kind == sym.TypeKind.Enum:
-			if symbol.info.has_variant(name):
+			if symbol.info.has_value(name):
 				return symbol
 			else:
-				report.error(
-				    f"enum `{symbol.name}` has no variant `{name}`", pos
-				)
+				report.error(f"enum `{symbol.name}` has no value `{name}`", pos)
 				return None
 		report.error(
 		    f"could not find `{name}` in {symbol.typeof()} `{symbol.name}`", pos

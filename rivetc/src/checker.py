@@ -246,16 +246,16 @@ class Checker:
 			pass # error raised in `Resolver`
 		elif isinstance(expr, ast.TypeNode):
 			return expr.typ
-		elif isinstance(expr, ast.EnumVariantExpr):
+		elif isinstance(expr, ast.EnumValueExpr):
 			expr.typ = self.comp.void_t
 			_sym = self.expected_type.symbol()
 			if _sym.kind == TypeKind.Enum:
-				if v := _sym.info.get_variant(expr.variant):
+				if v := _sym.info.get_value(expr.value):
 					expr.info = v
 					expr.typ = type.Type(_sym)
 				else:
 					report.error(
-					    f"enum `{_sym.name}` has no variant `{expr.variant}`",
+					    f"enum `{_sym.name}` has no value `{expr.value}`",
 					    expr.pos
 					)
 			else:

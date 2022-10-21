@@ -427,19 +427,18 @@ class Parser:
 			if self.accept(Kind.Colon):
 				underlying_typ = self.parse_type()
 			self.expect(Kind.Lbrace)
-			variants = []
+			values = []
 			decls = []
 			while True:
-				variants.append(self.parse_name())
+				values.append(self.parse_name())
 				if not self.accept(Kind.Comma):
 					break
 			if self.accept(Kind.Semicolon):
-				# declarations: methods, consts, etc.
 				while self.tok.kind != Kind.Rbrace:
 					decls.append(self.parse_decl())
 			self.expect(Kind.Rbrace)
 			return ast.EnumDecl(
-			    doc_comment, attrs, vis, name, underlying_typ, variants, decls,
+			    doc_comment, attrs, vis, name, underlying_typ, values, decls,
 			    pos
 			)
 		elif self.accept(Kind.KwExtend):
@@ -777,7 +776,7 @@ class Parser:
 		elif self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Name:
 			pos = self.tok.pos
 			self.next()
-			expr = ast.EnumVariantExpr(self.parse_name(), pos)
+			expr = ast.EnumValueExpr(self.parse_name(), pos)
 		elif self.accept(Kind.DoubleColon):
 			pos = self.prev_tok.pos
 			field_pos = self.tok.pos

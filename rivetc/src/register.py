@@ -102,14 +102,14 @@ class Register:
 			elif isinstance(decl, ast.EnumDecl):
 				try:
 					info = sym.EnumInfo(decl.underlying_typ)
-					for i, v in enumerate(decl.variants):
-						if info.has_variant(v):
+					for i, v in enumerate(decl.values):
+						if info.has_value(v):
 							report.error(
-							    f"enum `{decl.name}` has duplicate variant `{v}`",
+							    f"enum `{decl.name}` has duplicate value `{v}`",
 							    decl.pos
 							)
 							continue
-						info.add_variant(v, i)
+						info.add_value(v, i)
 					decl.sym = self.sym.add_and_return(
 					    sym.Type(
 					        decl.vis, decl.name, TypeKind.Enum, info = info

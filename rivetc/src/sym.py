@@ -458,7 +458,7 @@ class TupleInfo:
 	def __init__(self, types):
 		self.types = types
 
-class EnumVariant:
+class EnumValue:
 	def __init__(self, name, value):
 		self.name = name
 		self.value = value
@@ -466,19 +466,19 @@ class EnumVariant:
 class EnumInfo:
 	def __init__(self, underlying_typ):
 		self.underlying_typ = underlying_typ
-		self.variants = []
+		self.values = []
 
-	def add_variant(self, name, value):
-		self.variants.append(EnumVariant(name, value))
+	def add_value(self, name, value):
+		self.values.append(EnumValue(name, value))
 
-	def get_variant(self, name):
-		for v in self.variants:
+	def get_value(self, name):
+		for v in self.values:
 			if v.name == name:
 				return v
 		return None
 
-	def has_variant(self, name):
-		if _ := self.get_variant(name):
+	def has_value(self, name):
+		if _ := self.get_value(name):
 			return True
 		return False
 
