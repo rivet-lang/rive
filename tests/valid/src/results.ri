@@ -3,7 +3,7 @@ fn result() !void {
 }
 
 fn result2() !void {
-    return Error("simple error (returned: {}, idx: {})", true, 0);
+    return Error("simple error (returned: {}, idx: {})".fmt(true, 0));
 }
 
 test "catch result error" {
