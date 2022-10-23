@@ -33,7 +33,7 @@ fn array_slice(
         if (len == size) {
             return Slice(arr, elem_size, len);
         }
-        return Slice(as(*mut u8, arr) + (start * elem_size), elem_size, len);
+        return Slice(ptr_add!(as(*mut u8, arr), start * elem_size), elem_size, len);
     }
 }
 

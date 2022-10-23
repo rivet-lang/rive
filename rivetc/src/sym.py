@@ -535,6 +535,17 @@ class Type(Sym):
 					return s
 		return None
 
+	def full_fields(self):
+		fields = []
+		if self.kind == TypeKind.Class and self.info.base:
+			fields += self.info.base.full_fields()
+		elif self.kind == TypeKind.Struct:
+			for base in self.info.bases:
+				fields += base.full_fields()
+		for f in self.fields:
+			fields.append(f)
+		return fields
+
 	def is_subtype_of(self, t):
 		if self == t:
 			return True

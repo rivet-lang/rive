@@ -657,6 +657,12 @@ class CallExpr:
 		self.pos = pos
 		self.typ = None
 
+	def has_named_args(self):
+		for arg in self.args:
+			if arg.is_named:
+				return True
+		return False
+
 	def get_named_arg(self, name):
 		for arg in self.args:
 			if arg.is_named and arg.name == name:

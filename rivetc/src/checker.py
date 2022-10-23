@@ -1224,6 +1224,41 @@ class Checker:
 				report.error(
 				    f"expected 1 argument, found {len(expr.args)}", expr.pos
 				)
+		else:
+			type_fields = info.full_fields()
+			if not expr.has_named_args():
+				expr_args_len = len(expr.args)
+				if expr_args_len > len(type_fields):
+					report.error(
+					    f"too many arguments to {info.kind} `{info.name}`",
+					    expr.pos
+					)
+					report.note(
+					    f"expected {len(type_fields)} argument(s), found {expr_args_len}"
+					)
+					return
+
+			for i, arg in enumerate(expr.args):
+				field_typ = self.comp.void_t
+				if arg.is_named:
+					found = False
+					for field in type_fields:
+						if field.name == arg.name:
+							field_typ = field.typ
+							found = True
+							break
+					if not found:
+						report.error(
+						    f"type `{info.name}` has no field `{arg.name}`",
+						    arg.pos
+						)
+				else:
+					field_typ = type_fields[i].typ
+				arg_t = self.check_expr(arg.expr)
+				try:
+					self.check_types(arg_t, field_typ)
+				except utils.CompilerError as e:
+					report.error(e.args[0], arg.pos)
 
 	def check_call(self, info, expr):
 		info.uses += 1
@@ -1244,7 +1279,7 @@ class Checker:
 		if func_args_len < 0:
 			func_args_len = 0
 
-		# name arguments
+		# named arguments
 		err = False
 		for arg in expr.args:
 			if arg.is_named:
