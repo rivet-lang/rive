@@ -11,7 +11,7 @@ pub class File {
     pub fn open(path: string, mode: string = "r") !File {
 		unsafe {
 			let f = stdc::fopen(path.ptr, mode.ptr);
-			if (f == none) {
+			if f == none {
 				return Error("File::open: failed to open file '{}'".fmt(path));
 			}
 			return Self(f, true);
@@ -40,17 +40,17 @@ pub class File {
 
     /// Returns the current file contents.
     pub fn read_all(mut self) !string {
-        if (!self.is_opened) {
+        if !self.is_opened {
             return "";
         }
         unsafe {
             let seek = stdc::fseek(self.f, 0, 2);
-            if (seek != 0) {
+            if seek != 0 {
                 return Error("fseek failed");
             }
 
             let fsize = stdc::ftell(self.f);
-            if (fsize < 0) {
+            if fsize < 0 {
                 return Error("ftell failed");
             }
 
@@ -59,14 +59,14 @@ pub class File {
             // On some systems `ftell` can return values in the 64-bit range
             // that, when cast to `i32`, can result in values below 0.
             let allocate = as(i32, fsize);
-            if (as(i64, allocate) < fsize) {
+            if as(i64, allocate) < fsize {
                 return Error("{} cast to `i32` results in {}".fmt(fsize, as(i32, fsize)));
             }
 
             let mut res = as(*mut u8, mem::alloc(as(usize, allocate) + 1).!);
             let nelements = stdc::fread(res, 1, as(usize, allocate), self.f);
 
-            if (self.eof() and stdc::ferror(self.f) != 0) {
+            if self.eof() and stdc::ferror(self.f) != 0 {
                 mem::dealloc(res);
                 return Error("fread failed");
             }
@@ -83,7 +83,7 @@ pub class File {
 
     /// Closes the current file.
     pub fn close(mut self) void {
-        if (!self.is_opened) {
+        if !self.is_opened {
             return;
         }
         unsafe {

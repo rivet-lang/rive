@@ -9,7 +9,7 @@ pub struct StaticBuffer {
     mut len: usize;
 
     pub fn push(mut self, byte: u8) void {
-        if (self.len < self.buf.len) {
+        if self.len < self.buf.len {
             self.buf[self.len] = byte;
             self.len += 1;
         } else {

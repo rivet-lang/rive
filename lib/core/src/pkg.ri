@@ -26,7 +26,7 @@ fn segfault_handler(_: i32) void {
 
 #[used]
 fn panic_if(cond: bool, msg: string) void {
-    if (cond) {
+    if cond {
         console::eprintln("panic: {}", msg);
         backtrace::print(2);
         process::exit(1);
@@ -35,7 +35,7 @@ fn panic_if(cond: bool, msg: string) void {
 
 #[used]
 fn assert(cond: bool, msg: string) void {
-    if (!cond) {
+    if !cond {
         console::eprintln("panic: assertion failed: {}", msg);
         backtrace::print(2);
         process::exit(1);
@@ -56,6 +56,6 @@ pub fn errno() i32 {
 pub fn strerr(code: i32 = errno()) string {
     unsafe {
         let s = stdc::strerror(code);
-        return if (s == none) "" else string::from_raw(s);
+        return if s == none { "" } else { string::from_raw(s) };
     }
 }

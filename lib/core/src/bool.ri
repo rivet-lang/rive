@@ -6,6 +6,6 @@ use pkg::traits::ToString;
 
 extend bool : ToString {
     pub fn to_string(self) string {
-        return if (self) "true" else "false";
+        return if self { "true" } else { "false" };
     }
 }

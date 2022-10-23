@@ -11,7 +11,7 @@ pub class Error : ToString {
     #[virtual]
     pub fn to_string(self) string {
         let type_name = type_of!(self);
-        if (self.msg == "") {
+        if self.msg == "" {
             return type_name;
         }
         return "{}: {}".fmt(type_name, self.msg);

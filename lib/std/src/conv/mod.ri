@@ -5,7 +5,7 @@
 /// Returns 1 if `b` is true, otherwise 0.
 #[inline]
 pub fn bool_to_i32(b: bool) i32 {
-    return if (b) 1 else 0;
+    return if b { 1 } else { 0 };
 }
 
 /// Returns true if `i == 1`, otherwise false.

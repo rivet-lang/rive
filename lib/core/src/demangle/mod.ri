@@ -6,7 +6,7 @@ use pkg::StringBuilder;
 use pkg::utils::StaticBuffer;
 
 pub fn demangle_symbol(name: string) string {
-    if (!name.starts_with("_R")) {
+    if !name.starts_with("_R") {
         return name;
     }
 
@@ -16,13 +16,13 @@ pub fn demangle_symbol(name: string) string {
     let mut res = StringBuilder::new(name.len);
     while idx < name.len {
         let byte = unsafe { name_ptr[idx] };
-        if (byte.is_digit()) {
+        if byte.is_digit() {
             buf.push(byte);
             idx += 1;
             continue;
         }
 
-        if (!res.is_empty()) {
+        if !res.is_empty() {
             res.write_string("::");
         }
 
@@ -33,7 +33,7 @@ pub fn demangle_symbol(name: string) string {
 
         buf.clear();
 
-        if (!unsafe { name_ptr[idx] }.is_digit()) {
+        if !unsafe { name_ptr[idx] }.is_digit() {
             break; // end
         }
     }

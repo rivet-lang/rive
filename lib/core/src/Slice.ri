@@ -21,7 +21,7 @@ struct Slice {
 
     #[used]
     fn get(self, idx: usize) *mut void {
-        if (idx >= self.len) {
+        if idx >= self.len {
             panic("slice index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { ptr_add!(as(*mut u8, self.ptr), idx * self.elem_size) };
@@ -34,7 +34,7 @@ struct Slice {
 
     #[used]
     fn set(self, idx: usize, val: *void) void {
-        if (idx >= self.len) {
+        if idx >= self.len {
             panic("slice index out of range (index: {}, len: {})", idx, self.len);
         }
         unsafe {
@@ -46,7 +46,7 @@ struct Slice {
 
     #[used]
     fn ==(self, rhs: Self) bool {
-        if (self.len != rhs.len) {
+        if self.len != rhs.len {
             return false;
         }
         return unsafe { mem::cmp(self.ptr, rhs.ptr, self.len) == 0 };
@@ -59,14 +59,14 @@ struct Slice {
 
     #[used]
     fn slice(self, start: usize, end: usize) Slice {
-        if (start > end or end > self.len) {
+        if start > end or end > self.len {
             panic(
                 "slice index out of range (range: {}..{}, len: {})", start, end,
                 self.len
             );
         }
         let len = end - start;
-        if (len == self.len) {
+        if len == self.len {
             return self;
         }
         return Slice(

@@ -28,7 +28,7 @@ extend rune : ToString {
     pub const REPLACEMENT_CHARACTER: rune = 0xFFFD;
 
     pub fn from_u32(i: u32) !rune {
-        if (i > as(u32, Self::MAX) or (i >= 0xD800 and i <= 0xDFFF)) {
+        if (i > as(u32, Self::MAX)) or (i >= 0xD800 and i <= 0xDFFF) {
             return RuneFromU32Error();
         }
         return as(rune, i);
@@ -46,12 +46,12 @@ extend rune : ToString {
     ///
     /// Panics if given a radix larger than 36.
     pub fn from_digit(num: u32, radix: u32) ?rune {
-        if (radix > 36) {
+        if radix > 36 {
             panic("rune::from_digit: radix is too high (maximum 36)");
         }
-        if (num < radix) {
+        if num < radix {
             let num_ = as(u8, num);
-            if (num_ < 10) {
+            if num_ < 10 {
                 return as(rune, b'0' + num_);
             } else {
                 return as(rune, b'a' + num_ - 10);
@@ -104,11 +104,11 @@ fn utf32_decode_to_buffer(code: u32, buffer: *mut u8) i32 {
 }
 
 fn len_utf8(code: u32) usize {
-    return if (code < MAX_ONE_B) {
+    return if code < MAX_ONE_B {
         1
-    } else if (code < MAX_TWO_B) {
+    } else if code < MAX_TWO_B {
         2
-    } else if (code < MAX_THREE_B) {
+    } else if code < MAX_THREE_B {
         3
     } else {
         4

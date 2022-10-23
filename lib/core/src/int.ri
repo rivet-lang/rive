@@ -42,14 +42,14 @@ extend i32 : ToString {
     /// Returns the string representation of `self` with `max` chars.
     pub fn str_l(self, max: i32) string {
         unsafe {
-            if (self == 0) {
+            if self == 0 {
                 return "0";
             }
             let mut n = as(i64, self);
             let mut d: u32 = 0;
 
             let mut is_neg = false;
-            if (n < 0) {
+            if n < 0 {
                 n = -n;
                 is_neg = true;
             }
@@ -71,12 +71,12 @@ extend i32 : ToString {
             }
             index += 1;
 
-            if (d < 20) {
+            if d < 20 {
                 // remove head zero
                 index += 1;
             }
 
-            if (is_neg) {
+            if is_neg {
                 // prepend `-` if it's negative
                 index -= 1;
                 buf[index] = b'-';
@@ -101,14 +101,14 @@ extend i64 : ToString {
     /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         unsafe {
-            if (self == 0) {
+            if self == 0 {
                 return "0";
             }
             let mut n = self;
             let mut d: i64 = 0;
 
             let mut is_neg = false;
-            if (n < 0) {
+            if n < 0 {
                 n = -n;
                 is_neg = true;
             }
@@ -131,12 +131,12 @@ extend i64 : ToString {
             }
             index += 1;
 
-            if (d < 20) {
+            if d < 20 {
                 // remove head zero
                 index += 1;
             }
 
-            if (is_neg) {
+            if is_neg {
                 // prepend `-` if it's negative
                 index -= 1;
                 buf[index] = b'-';

@@ -6,7 +6,7 @@ use pkg::process { panic };
 
 #[used]
 fn array_index(len: usize, idx: usize) void {
-    if (idx >= len) {
+    if idx >= len {
         panic("array index out of range (index: {}, size: {})", idx, len);
     }
 }
@@ -25,12 +25,12 @@ fn array_ne(arr: *void, other_arr: *void, len: usize) bool {
 fn array_slice(
     arr: *mut void, elem_size: usize, size: usize, start: usize, end: usize
 ) Slice {
-    if (start > end or end > size) {
+    if start > end or end > size {
         panic("slice index out of range (range: {}..{}, len: {})", start, end, size);
     }
     let len = end - start;
     unsafe {
-        if (len == size) {
+        if len == size {
             return Slice(arr, elem_size, len);
         }
         return Slice(ptr_add!(as(*mut u8, arr), start * elem_size), elem_size, len);

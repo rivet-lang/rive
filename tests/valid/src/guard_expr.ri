@@ -3,11 +3,11 @@ fn ret_none() ?i32 {
 }
 
 test "if guard" {
-    if (let val = ret_none()) {
+    if let val = ret_none() {
         assert!(val == 3);
     }
 
-    if (let val1 = ret_none(); val1 >= 10) {
+    if let val1 = ret_none(); val1 >= 10 {
         assert!(false);
     }
 }

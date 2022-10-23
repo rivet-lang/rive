@@ -16,20 +16,20 @@ pub fn exists(name: string) bool {
 pub fn get(name: string) string {
 	unsafe {
 		let s = stdc::getenv(name.ptr);
-		return if (s == none) "" else string::from_raw(s);
+		return if s == none { "" } else { string::from_raw(s) };
 	}
 }
 
 /// Sets the value of an environment variable with `name` to `value`.
 pub fn set(name: string, value: string, overwrite: bool = true) !void {
-	if (unsafe { stdc::setenv(name.ptr, value.ptr, overwrite) == -1 }) {
+	if unsafe { stdc::setenv(name.ptr, value.ptr, overwrite) == -1 } {
 		return Error("env::set: {}".fmt(core::strerr()));
 	}
 }
 
 /// Removes an environment variable with `name`.
 pub fn remove(name: string) !void {
-	if (unsafe { stdc::unsetenv(name.ptr) } == -1) {
+	if unsafe { stdc::unsetenv(name.ptr) } == -1 {
 		return Error("env::remove: {}".fmt(core::strerr()));
 	}
 }

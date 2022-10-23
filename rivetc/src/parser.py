@@ -1025,13 +1025,13 @@ class Parser:
 				has_else = True
 				break
 			self.next()
-			self.expect(Kind.Lparen)
 			if self.tok.kind == Kind.KwLet:
 				self.open_scope()
 				cond = self.parse_guard_expr()
 			else:
 				cond = self.parse_expr()
-			self.expect(Kind.Rparen)
+			if isinstance(cond, ast.ParExpr):
+				report.warn("invalid",cond.pos)
 			branches.append(
 			    ast.IfBranch(cond, self.parse_expr(), False, Kind.KwIf)
 			)

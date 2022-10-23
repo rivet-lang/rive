@@ -21,7 +21,7 @@ pub class StringBuilder : ToString {
     }
 
     pub fn from_string(s: string) Self {
-        if (s.len == 0) {
+        if s.len == 0 {
             return Self::new();
         }
         unsafe {
@@ -33,7 +33,7 @@ pub class StringBuilder : ToString {
     }
 
     pub fn write_byte(mut self, val: u8) void {
-        if (self.len_ >= self.cap) {
+        if self.len_ >= self.cap {
             self.reserve(self.len_ + 1);
         }
         unsafe {
@@ -51,9 +51,9 @@ pub class StringBuilder : ToString {
 
     #[unsafe]
     pub fn write_raw_with_len(mut self, s: *u8, len: usize) void {
-        if (len == 0) {
+        if len == 0 {
             return;
-        } else if (self.len_ >= self.cap) {
+        } else if self.len_ >= self.cap {
             self.reserve(len);
         }
         unsafe {
@@ -76,12 +76,12 @@ pub class StringBuilder : ToString {
     }
 
     pub fn write_join(mut self, ss: [string], sep: string = "") void {
-        if (ss.len == 1) {
+        if ss.len == 1 {
             self.write_string(ss[0]);
         } else {
             for i, s in ss {
                 self.write_string(s);
-                if (i < ss.len - 1) {
+                if i < ss.len - 1 {
                     self.write_string(sep);
                 }
             }
@@ -100,10 +100,10 @@ pub class StringBuilder : ToString {
     /// Ensures that this string's capacity is at least `required` bytes larger
     /// than its size.
     pub fn reserve(mut self, required: usize) void {
-        if (required <= self.cap) {
+        if required <= self.cap {
             return;
         }
-        let mut cap = if (self.cap > 0) self.cap else 2;
+        let mut cap = if self.cap > 0 { self.cap } else { 2 };
         while required > cap {
             cap *= 2;
         }
@@ -111,7 +111,7 @@ pub class StringBuilder : ToString {
             let mut new_data = as(
                 *mut u8, mem::alloc(cap * size_of!(u8)) catch unreachable!()
             );
-            if (self.ptr != none) {
+            if self.ptr != none {
                 mem::copy(new_data, self.ptr, self.len_ * size_of!(u8));
             }
             mem::dealloc(self.ptr);
@@ -126,7 +126,7 @@ pub class StringBuilder : ToString {
     }
 
     pub fn clear(mut self) void {
-        if (self.is_moved) {
+        if self.is_moved {
             self.is_moved = false;
         }
         self.len_ = 0;
@@ -141,7 +141,7 @@ pub class StringBuilder : ToString {
     }
 
     pub fn to_string(self) string {
-        if (self.is_moved) {
+        if self.is_moved {
             return "";
         }
         self.is_moved = true;
@@ -150,7 +150,7 @@ pub class StringBuilder : ToString {
 
     ~Self(mut self) {
         unsafe {
-            if (!self.is_moved) {
+            if !self.is_moved {
                 mem::dealloc(self.ptr);
             }
         }

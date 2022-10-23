@@ -36,20 +36,17 @@ fn bt_print_callback(
     data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, fn_ptr: *mut u8
 ) i32 {
     unsafe {
-        if (
-            fn_ptr != none
-            and stdc::memcmp(fn_ptr, c"_R4core10rivet_mainF", 20) == 0
-        ) {
+        if fn_ptr != none and stdc::memcmp(fn_ptr, c"_R4core10rivet_mainF", 20) == 0 {
             return 1; // stop backtracing
         }
 
-        let file_name = if (filename_ptr == none) {
+        let file_name = if filename_ptr == none {
             "???"
         } else {
             string::from_raw(filename_ptr)
         };
 
-        let fn_name = if (fn_ptr == none) {
+        let fn_name = if fn_ptr == none {
             "??"
         } else {
             demangle::demangle_symbol(string::from_raw(fn_ptr))
@@ -63,10 +60,10 @@ fn bt_print_callback(
 fn bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) void {
     unsafe {
         let bdata = as(*mut BacktraceData, data);
-        if (!bdata.has_error) {
+        if !bdata.has_error {
             eprint("   libbacktrace error: ");
             eprint(string::from_raw(msg_ptr));
-            if (errnum > 0) {
+            if errnum > 0 {
                 eprint(" (");
                 eprint(string::from_raw(stdc::strerror(errnum)));
                 eprint(")");

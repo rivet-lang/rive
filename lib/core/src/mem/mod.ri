@@ -13,7 +13,7 @@ use pkg::errors::OutOfMemoryError;
 pub fn alloc(size: usize) !*mut void {
     unsafe {
         let ptr = stdc::malloc(size);
-        if (ptr == none) {
+        if ptr == none {
             return OutOfMemoryError("insufficient memory is available");
         }
         return ptr;
@@ -25,7 +25,7 @@ pub fn alloc(size: usize) !*mut void {
 pub fn alloc_zeroed(n: usize) !*mut void {
     unsafe {
         let ptr = stdc::calloc(1, n);
-        if (ptr == none) {
+        if ptr == none {
             return OutOfMemoryError("insufficient memory is available");
         }
         return ptr;
@@ -38,12 +38,12 @@ pub fn alloc_zeroed(n: usize) !*mut void {
 /// allocated with `mem::alloc` or `mem::alloc_zeroed`.
 pub fn realloc(ptr: *mut void, sz: usize) !*mut void {
     unsafe {
-        if (sz == 0) {
+        if sz == 0 {
             dealloc(ptr);
             return none;
         }
         let ptr_ = stdc::realloc(ptr, sz);
-        if (ptr_ == none) {
+        if ptr_ == none {
             return OutOfMemoryError("insufficient memory is available");
         }
         return ptr_;
@@ -84,7 +84,7 @@ pub fn move(dest: *mut void, src: *void, sz: usize) void {
 /// the contents of `source` into the allocated space and returns a pointer to
 /// the newly allocated space.
 pub fn dup(src: *void, sz: usize) !*mut void {
-    if (sz == 0) {
+    if sz == 0 {
         return alloc_zeroed(1).!;
     }
     unsafe {
@@ -117,7 +117,7 @@ pub fn cmp(s1: *void, s2: *void, n: usize) i32 {
 #[unsafe]
 pub fn dealloc(ptr: *void) void {
     unsafe {
-        if (ptr != none) {
+        if ptr != none {
             stdc::free(ptr);
         }
     }

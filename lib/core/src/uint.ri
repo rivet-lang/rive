@@ -88,7 +88,7 @@ extend u32 : ToString {
     /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         unsafe {
-            if (self == 0) {
+            if self == 0 {
                 return "0";
             }
             let max: usize = 12;
@@ -112,7 +112,7 @@ extend u32 : ToString {
             }
             index += 1;
 
-            if (d < 20) {
+            if d < 20 {
                 // remove head zero
                 index += 1;
             }
@@ -130,7 +130,7 @@ extend u64 : ToString {
     /// Returns the value of `self` as a string.
     pub fn to_string(self) string {
         unsafe {
-            if (self == 0) {
+            if self == 0 {
                 return "0";
             }
             let mut n = self;
@@ -154,7 +154,7 @@ extend u64 : ToString {
             }
             index += 1;
 
-            if (d < 20) {
+            if d < 20 {
                 // remove head zero
                 index += 1;
             }
