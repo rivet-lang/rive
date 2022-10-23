@@ -35,7 +35,7 @@ class Parser:
 		self.extern_abi = sym.ABI.Rivet
 		self.inside_struct_or_class = False
 		self.inside_trait = False
-		self.inside_switch_header=False
+		self.inside_switch_header = False
 		self.inside_block = False
 
 	def parse_pkg(self, pkg_name, files):
@@ -596,7 +596,7 @@ class Parser:
 		elif self.accept(Kind.KwWhile):
 			pos = self.prev_tok.pos
 			is_inf = False
-			if self.tok.kind==Kind.Lbrace:
+			if self.tok.kind == Kind.Lbrace:
 				cond = ast.BoolLiteral(True, self.tok.pos)
 				is_inf = True
 			else:
@@ -688,7 +688,7 @@ class Parser:
 				right = self.parse_shift_expr()
 				left = ast.BinaryExpr(left, op, right, left.pos)
 			elif self.tok.kind in [Kind.KwIs, Kind.KwNotIs]:
-				if self.inside_switch_header and self.peek_tok.kind==Kind.Lbrace:
+				if self.inside_switch_header and self.peek_tok.kind == Kind.Lbrace:
 					break
 				op = self.tok.kind
 				self.next()
@@ -1046,8 +1046,8 @@ class Parser:
 		branches = []
 		pos = self.prev_tok.pos
 		is_typeswitch = False
-		old_inside_switch_header=self.inside_switch_header
-		if self.tok.kind==Kind.Lbrace:
+		old_inside_switch_header = self.inside_switch_header
+		if self.tok.kind == Kind.Lbrace:
 			expr = ast.BoolLiteral(True, pos)
 		else:
 			if self.tok.kind == Kind.KwLet:
@@ -1057,7 +1057,7 @@ class Parser:
 				expr = self.parse_expr()
 			is_typeswitch = self.accept(Kind.KwIs)
 		self.expect(Kind.Lbrace)
-		self.inside_switch_header=old_inside_switch_header
+		self.inside_switch_header = old_inside_switch_header
 		while True:
 			pats = []
 			is_else = self.accept(Kind.KwElse)
