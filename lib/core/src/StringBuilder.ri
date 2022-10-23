@@ -79,7 +79,7 @@ pub class StringBuilder : ToString {
         if (ss.len == 1) {
             self.write_string(ss[0]);
         } else {
-            for (i, s in ss) {
+            for i, s in ss {
                 self.write_string(s);
                 if (i < ss.len - 1) {
                     self.write_string(sep);

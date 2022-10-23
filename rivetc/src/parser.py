@@ -604,15 +604,12 @@ class Parser:
 					cond = self.parse_guard_expr()
 				else:
 					cond = self.parse_expr()
-				if isinstance(cond, ast.ParExpr):
-					report.warn("invalid",cond.pos)
 			stmt = self.parse_stmt()
 			if isinstance(cond, ast.GuardExpr):
 				self.close_scope()
 			return ast.WhileStmt(cond, stmt, is_inf, pos)
 		elif self.accept(Kind.KwFor):
 			pos = self.prev_tok.pos
-			self.expect(Kind.Lparen)
 			self.open_scope()
 			sc = self.scope
 			vars = []
@@ -629,7 +626,6 @@ class Parser:
 				iterable = ast.RangeExpr(
 				    iterable, max, is_inclusive, iterable.pos
 				)
-			self.expect(Kind.Rparen)
 			stmt = self.parse_stmt()
 			self.close_scope()
 			return ast.ForInStmt(sc, vars, iterable, stmt, pos)

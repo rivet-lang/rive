@@ -26,7 +26,7 @@ pub fn demangle_symbol(name: string) string {
             res.write_string("::");
         }
 
-        for (_ in 0..as(usize, buf.as_u64())) {
+        for _ in 0..as(usize, buf.as_u64()) {
             res.write_byte(unsafe { name_ptr[idx] });
             idx += 1;
         }

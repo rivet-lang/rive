@@ -65,7 +65,7 @@ pub class string : ToString {
 
     pub fn concat(self, others: ...Self) Self {
         let mut sb = StringBuilder::from_string(self);
-        for (other in others) {
+        for other in others {
             sb.write_string(other);
         }
         return sb.to_string();
@@ -152,7 +152,7 @@ pub class string : ToString {
 
     /// Returns the index of byte `b` if found in the string.
     pub fn index_byte(self, b: u8) ?usize {
-        for (i in 0..self.len) {
+        for i in 0..self.len {
             if (unsafe { self.ptr[i] == b }) {
                 return i;
             }
@@ -206,7 +206,7 @@ pub class string : ToString {
     }
 
     pub fn <(self, rhs: Self) bool {
-        for (i in 0..self.len) {
+        for i in 0..self.len {
             unsafe {
                 if (i >= rhs.len or self.ptr[i] > rhs.ptr[i]) {
                     return false;
@@ -249,7 +249,7 @@ pub class string : ToString {
         if (p.len > self.len) {
             return false;
         }
-        for (i in 0..p.len) {
+        for i in 0..p.len {
             if (unsafe { self.ptr[i] != p[i] }) {
                 return false;
             }
@@ -262,7 +262,7 @@ pub class string : ToString {
         if (p.len > self.len) {
             return false;
         }
-        for (i in 0..p.len) {
+        for i in 0..p.len {
             if (unsafe { p[i] != self.ptr[self.len - p.len + i] }) {
                 return false;
             }

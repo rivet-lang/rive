@@ -72,7 +72,7 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
     };
     let mut underscores = false;
     let mut n: u64 = 0;
-    for (i in start_index..s.len) {
+    for i in start_index..s.len {
         let c = s[i];
         let cl = lower(c);
 
@@ -190,7 +190,7 @@ fn underscore_ok(s_: string) bool {
     }
 
     // number proper.
-    for (i_ in i..s.len) {
+    for i_ in i..s.len {
         // digits are always okay.
         if ((b'0' <= s[i_] and s[i_] <= b'9') or (hex and b'a' <= lower(s[i_])
             and lower(s[i_]) <= b'f')) {
