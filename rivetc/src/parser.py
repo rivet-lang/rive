@@ -1030,8 +1030,6 @@ class Parser:
 				cond = self.parse_guard_expr()
 			else:
 				cond = self.parse_expr()
-			if isinstance(cond, ast.ParExpr):
-				report.warn("invalid",cond.pos)
 			branches.append(
 			    ast.IfBranch(cond, self.parse_expr(), False, Kind.KwIf)
 			)
@@ -1073,7 +1071,8 @@ class Parser:
 			if not self.accept(Kind.Comma):
 				break
 		self.expect(Kind.Rbrace)
-		if isinstance(expr, ast.GuardExpr): self.close_scope()
+		if isinstance(expr, ast.GuardExpr):
+			self.close_scope()
 		return ast.SwitchExpr(expr, branches, is_typeswitch, self.scope, pos)
 
 	def parse_guard_expr(self):

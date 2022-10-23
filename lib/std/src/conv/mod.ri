@@ -2,6 +2,11 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+class InvalidSyntaxError : Error { }
+class InvalidBaseError : Error { }
+class InvalidBitSizeError : Error { }
+class ValueOutOfRangeError : Error { }
+
 /// Returns 1 if `b` is true, otherwise 0.
 #[inline]
 pub fn bool_to_i32(b: bool) i32 {
