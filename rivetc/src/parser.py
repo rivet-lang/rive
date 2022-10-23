@@ -1047,6 +1047,7 @@ class Parser:
 		pos = self.prev_tok.pos
 		is_typeswitch = False
 		old_inside_switch_header = self.inside_switch_header
+		self.inside_switch_header = True
 		if self.tok.kind == Kind.Lbrace:
 			expr = ast.BoolLiteral(True, pos)
 		else:

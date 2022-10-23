@@ -74,9 +74,9 @@ struct TestRunner {
     mut skip_tests: i32;
 
     fn run(mut self) void {
-        for (test_ in self.tests) {
+        for test_ in self.tests {
             (test_.test_fn)(unsafe { addr_of!(test_) });
-            switch (test_.result) {
+            switch test_.result {
                 .Ok => {
                     self.print_test_ok(test_.name);
                 },
@@ -99,13 +99,13 @@ struct TestRunner {
     fn print_summary_tests(self) void {
         println(DIVIDER);
         print(bold("Summary for all tests: "));
-        if (self.ok_tests > 0) {
+        if self.ok_tests > 0 {
             print("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
         }
-        if (self.fail_tests > 0) {
+        if self.fail_tests > 0 {
             print("{}, ", bold(red("{} failed".fmt(self.fail_tests))));
         }
-        if (self.skip_tests > 0) {
+        if self.skip_tests > 0 {
             print("{}, ", bold(yellow("{} skipped".fmt(self.skip_tests))));
         }
         println(bold("{} total.".fmt(self.tests.len)));
