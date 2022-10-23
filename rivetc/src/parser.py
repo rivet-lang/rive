@@ -33,8 +33,9 @@ class Parser:
 
 		self.inside_extern = False
 		self.extern_abi = sym.ABI.Rivet
-		self.inside_struct_or_class_decl = False
+		self.inside_struct_or_class = False
 		self.inside_trait = False
+		self.inside_switch_header=False
 		self.inside_block = False
 
 	def parse_pkg(self, pkg_name, files):
@@ -361,8 +362,8 @@ class Parser:
 			self.inside_trait = old_inside_trait
 			return ast.TraitDecl(doc_comment, attrs, vis, name, decls, pos)
 		elif self.accept(Kind.KwClass):
-			old_inside_struct_or_class_decl = self.inside_struct_or_class_decl
-			self.inside_struct_or_class_decl = True
+			old_inside_struct_or_class = self.inside_struct_or_class
+			self.inside_struct_or_class = True
 			pos = self.tok.pos
 			name = self.parse_name()
 			bases = []
@@ -377,13 +378,13 @@ class Parser:
 				while self.tok.kind != Kind.Rbrace:
 					decls.append(self.parse_decl())
 			self.expect(Kind.Rbrace)
-			self.inside_struct_or_class_decl = old_inside_struct_or_class_decl
+			self.inside_struct_or_class = old_inside_struct_or_class
 			return ast.ClassDecl(
 			    doc_comment, attrs, vis, name, bases, decls, pos
 			)
 		elif self.accept(Kind.KwStruct):
-			old_inside_struct_or_class_decl = self.inside_struct_or_class_decl
-			self.inside_struct_or_class_decl = True
+			old_inside_struct_or_class = self.inside_struct_or_class
+			self.inside_struct_or_class = True
 			pos = self.tok.pos
 			name = self.parse_name()
 			is_opaque = self.accept(Kind.Semicolon)
@@ -400,11 +401,11 @@ class Parser:
 					while self.tok.kind != Kind.Rbrace:
 						decls.append(self.parse_decl())
 				self.expect(Kind.Rbrace)
-			self.inside_struct_or_class_decl = old_inside_struct_or_class_decl
+			self.inside_struct_or_class = old_inside_struct_or_class
 			return ast.StructDecl(
 			    doc_comment, attrs, vis, name, bases, decls, is_opaque, pos
 			)
-		elif (self.inside_struct_or_class_decl or
+		elif (self.inside_struct_or_class or
 		      self.inside_trait) and self.tok.kind in (Kind.KwMut, Kind.Name):
 			# fields
 			is_mut = self.accept(Kind.KwMut)
@@ -462,7 +463,7 @@ class Parser:
 			    or (self.inside_extern and self.extern_abi != sym.ABI.Rivet),
 			    self.extern_abi if self.inside_extern else sym.ABI.Rivet
 			)
-		elif self.inside_struct_or_class_decl and self.accept(Kind.BitNot):
+		elif self.inside_struct_or_class and self.accept(Kind.BitNot):
 			# destructor
 			pos = self.prev_tok.pos
 			self.expect(Kind.KwSelfTy)
@@ -687,6 +688,8 @@ class Parser:
 				right = self.parse_shift_expr()
 				left = ast.BinaryExpr(left, op, right, left.pos)
 			elif self.tok.kind in [Kind.KwIs, Kind.KwNotIs]:
+				if self.inside_switch_header and self.peek_tok.kind==Kind.Lbrace:
+					break
 				op = self.tok.kind
 				self.next()
 				pos = self.tok.pos
@@ -1043,17 +1046,18 @@ class Parser:
 		branches = []
 		pos = self.prev_tok.pos
 		is_typeswitch = False
-		if self.accept(Kind.Lparen):
+		old_inside_switch_header=self.inside_switch_header
+		if self.tok.kind==Kind.Lbrace:
+			expr = ast.BoolLiteral(True, pos)
+		else:
 			if self.tok.kind == Kind.KwLet:
 				self.open_scope()
 				expr = self.parse_guard_expr()
 			else:
 				expr = self.parse_expr()
-			self.expect(Kind.Rparen)
 			is_typeswitch = self.accept(Kind.KwIs)
-		else:
-			expr = ast.BoolLiteral(True, pos)
 		self.expect(Kind.Lbrace)
+		self.inside_switch_header=old_inside_switch_header
 		while True:
 			pats = []
 			is_else = self.accept(Kind.KwElse)

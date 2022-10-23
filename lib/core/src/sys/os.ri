@@ -10,7 +10,7 @@ pub enum OS : u8 {
     Macos;
 
     pub fn from_string(name: string) ?OS {
-        switch (name) {
+        switch name {
             "linux" => return .Linux,
             "windows" => return .Windows,
             "macos" => return .Macos,
