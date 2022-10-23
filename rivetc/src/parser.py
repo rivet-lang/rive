@@ -595,16 +595,17 @@ class Parser:
 		elif self.accept(Kind.KwWhile):
 			pos = self.prev_tok.pos
 			is_inf = False
-			if self.accept(Kind.Lparen):
+			if self.tok.kind==Kind.Lbrace:
+				cond = ast.BoolLiteral(True, self.tok.pos)
+				is_inf = True
+			else:
 				if self.tok.kind == Kind.KwLet:
 					self.open_scope()
 					cond = self.parse_guard_expr()
 				else:
 					cond = self.parse_expr()
-				self.expect(Kind.Rparen)
-			else:
-				cond = ast.BoolLiteral(True, self.tok.pos)
-				is_inf = True
+				if isinstance(cond, ast.ParExpr):
+					report.warn("invalid",cond.pos)
 			stmt = self.parse_stmt()
 			if isinstance(cond, ast.GuardExpr):
 				self.close_scope()

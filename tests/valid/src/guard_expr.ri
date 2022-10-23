@@ -13,12 +13,12 @@ test "if guard" {
 }
 
 test "while guard" {
-    while (let val2 = ret_none()) {
+    while let val2 = ret_none() {
         assert!(val2 == 3);
         break;
     }
 
-    while (let val3 = ret_none(); val3 >= 10) {
+    while let val3 = ret_none(); val3 >= 10 {
         assert!(val3 >= 3);
     }
 }

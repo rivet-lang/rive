@@ -104,7 +104,7 @@ pub class StringBuilder : ToString {
             return;
         }
         let mut cap = if (self.cap > 0) self.cap else 2;
-        while (required > cap) {
+        while required > cap {
             cap *= 2;
         }
         unsafe {

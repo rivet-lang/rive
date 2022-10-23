@@ -18,7 +18,7 @@ pub struct StaticBuffer {
     }
 
     pub fn clear(mut self) void {
-        while (self.len > 0) {
+        while self.len > 0 {
             self.buf[self.len] = 0;
             self.len -= 1;
         }

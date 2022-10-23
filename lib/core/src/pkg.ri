@@ -43,11 +43,13 @@ fn assert(cond: bool, msg: string) void {
 }
 
 pub fn errno() i32 {
+    return unsafe {
 #if _LINUX_
-    return unsafe { stdc::__errno_location().* };
+        stdc::__errno_location().*
 #else
-    return unsafe { stdc::_errno().* };
+        stdc::_errno().*
 #endif
+    };
 }
 
 /// Returns error code representation in string.

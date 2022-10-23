@@ -8,7 +8,7 @@ test "while statement" {
     }
     assert!(x == 5);
 
-    while (x < 10) {
+    while x < 10 {
         x += 1;
     }
     assert!(x == 10);

@@ -100,7 +100,7 @@ extend u32 : ToString {
             buf[index] = 0;
             index -= 1;
 
-            while (n > 0) {
+            while n > 0 {
                 let n1 = n / 100;
                 d = (n - (n1 * 100)) << as(u32, 1);
                 n = n1;
@@ -142,7 +142,7 @@ extend u64 : ToString {
             buf[index] = 0;
             index -= 1;
 
-            while (n > 0) {
+            while n > 0 {
                 let n1 = n / 100;
                 d = (n - (n1 * 100)) << as(u32, 1);
                 n = n1;

@@ -10,7 +10,7 @@ pub fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) void {
         let buf = buf_;
         let x: isize = 0;
         let remaining_bytes = as(isize, len);
-        while (remaining_bytes > 0) {
+        while remaining_bytes > 0 {
             x = stdc::write(fd, ptr_add!(buf, x), as(usize, remaining_bytes));
             remaining_bytes -= x;
         }
