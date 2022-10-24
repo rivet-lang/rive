@@ -470,11 +470,13 @@ class Type(Sym):
 				return f
 		if self.kind == TypeKind.Class and self.info.base:
 			if f := self.info.base.find_field(name):
-				return f
+				if f.vis in (Vis.Pub, Vis.Prot):
+					return f
 		elif self.kind == TypeKind.Struct:
 			for base in self.info.bases:
 				if f := base.find_field(name):
-					return f
+					if f.vis in (Vis.Pub, Vis.Prot):
+						return f
 		return None
 
 	def has_field(self, name):
@@ -497,10 +499,14 @@ class Type(Sym):
 	def full_fields(self):
 		fields = []
 		if self.kind == TypeKind.Class and self.info.base:
-			fields += self.info.base.full_fields()
+			for field in self.info.base.fields:
+				if field.vis in (Vis.Pub, Vis.Prot):
+					fields.append(field)
 		elif self.kind == TypeKind.Struct:
 			for base in self.info.bases:
-				fields += base.full_fields()
+				for field in base.fields:
+					if field.vis in (Vis.Pub, Vis.Prot):
+						fields.append(field)
 		for f in self.fields:
 			fields.append(f)
 		return fields

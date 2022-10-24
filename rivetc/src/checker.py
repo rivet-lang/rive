@@ -1247,6 +1247,7 @@ class Checker:
 						    f"type `{info.name}` has no field `{arg.name}`",
 						    arg.pos
 						)
+						continue
 				else:
 					field_typ = type_fields[i].typ
 				arg_t = self.check_expr(arg.expr)
