@@ -16,7 +16,7 @@ def color(kind, msg):
     return colors.red(msg) if kind == "error:" else colors.yellow(msg)
 
 def fmt_msg(pos, kind, msg):
-    return f"{colors.bold(f'{pos}: {color(kind,kind)} {msg}')}"
+    return f"{colors.bold(f'{pos}: {color(kind,kind)}')} {msg}"
 
 def error(msg, pos):
     global ERRORS
