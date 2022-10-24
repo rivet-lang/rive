@@ -50,7 +50,7 @@ fn main() void {
 
 Then we compile that file:
 ```bash
-$ python3 rivetc hello_world.ri -o hello_world
+$ python3 rivetc hello_world.ri
 ```
 
 We'll get an executable called `hello_world` as output, so we run it:
