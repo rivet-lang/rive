@@ -357,7 +357,7 @@ class Resolver:
 			ident.typ = obj.typ
 		elif s := self.find_prelude(ident.name):
 			ident.sym = s
-		elif s := self.source_file.sym.find(ident.name):
+		elif s := self.sym.find(ident.name):
 			if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
 				report.error(
 				    f"cannot find `{ident.name}` in this scope", ident.pos

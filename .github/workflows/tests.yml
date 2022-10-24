@@ -22,7 +22,7 @@ jobs:
 
       - name: Run failing tests
         run: |
-          python3 tests/run_failing_tests.py
+          python3 tests/run_invalid_tests.py
 
   ubuntu-gcc:
     runs-on: ubuntu-latest
@@ -37,7 +37,7 @@ jobs:
 
       - name: Run failing tests
         run: |
-          python3 tests/run_failing_tests.py
+          python3 tests/run_invalid_tests.py
 
   windows-gcc:
     runs-on: windows-2019
@@ -57,4 +57,4 @@ jobs:
 
       - name: Run failing tests
         run: |
-          python3 tests/run_failing_tests.py
+          python3 tests/run_invalid_tests.py

@@ -9,6 +9,4 @@ assignees: ''
 **Rivet version:**
 **OS:**
 
-* * *
-
 <!-- Please provide a detailed description of your problem. -->

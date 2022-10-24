@@ -33,12 +33,14 @@ class Parser:
 
 		self.inside_extern = False
 		self.extern_abi = sym.ABI.Rivet
+		self.inside_pkg = False
 		self.inside_struct_or_class = False
 		self.inside_trait = False
 		self.inside_switch_header = False
 		self.inside_block = False
 
 	def parse_pkg(self, pkg_name, files):
+		self.inside_pkg = True
 		self.pkg_name = pkg_name
 		if self.pkg_name in ("std", "tests"):
 			self.pkg_deps.append("core")
@@ -233,9 +235,7 @@ class Parser:
 			self.expect(Kind.Semicolon)
 			return ast.UseDecl(attrs, vis, path, alias, symbols)
 		elif self.accept(Kind.KwExtern):
-			if self.tok.kind == Kind.KwPkg and not isinstance(
-			    self.file_sym, sym.Pkg
-			):
+			if self.tok.kind == Kind.KwPkg and self.inside_pkg:
 				report.error(
 				    "external packages can only be declared at the package level",
 				    pos,
@@ -286,6 +286,8 @@ class Parser:
 			self.inside_extern = False
 			return decl
 		elif self.accept(Kind.KwMod):
+			old_inside_pkg = self.inside_pkg
+			self.inside_pkg = False
 			pos = self.tok.pos
 			name = self.parse_name()
 			decls = []
@@ -310,6 +312,7 @@ class Parser:
 					self.mod_deps.append(self.file_sym.qualname() + "::" + name)
 				else:
 					report.error(f"module `{name}` not found", pos)
+			self.inside_pkg = old_inside_pkg
 			return ast.ModDecl(
 			    doc_comment, attrs, name, vis, decls, is_inline, pos
 			)
@@ -568,8 +571,7 @@ class Parser:
 		return ast.FnDecl(
 		    doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
 		    args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
-		    has_named_args,
-		    isinstance(self.file_sym, sym.Pkg)
+		    has_named_args, self.inside_pkg
 		    and self.file_sym.name == self.comp.prefs.pkg_name
 		    and name == "main", is_variadic, abi
 		)
@@ -1189,8 +1191,6 @@ class Parser:
 			if isinstance(typ, type.Ptr):
 				report.error("pointers cannot be optional", pos)
 				report.note("by default pointers can contain the value `none`")
-			elif isinstance(typ, type.Optional):
-				report.error("optional multi-level types are not allowed", pos)
 			return type.Optional(typ)
 		elif self.tok.kind in (Kind.KwExtern, Kind.KwFn):
 			# function types

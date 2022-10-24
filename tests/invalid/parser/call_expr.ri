@@ -1,6 +1,0 @@
-fn main() {
-    zet(white, simple, clear);
-    xx("", 5, name: 5, fallout: true);
-
-    qy(first: 5, last: 10, 9); // FAIL
-}
