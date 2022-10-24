@@ -42,7 +42,7 @@ enum Foo { /* ... */ }
 
 extend Foo { /* ... */ }
 
-fn baz() { /* ... */ }
+fn foo() { /* ... */ }
 
 test "test name =D" { /* ... */ }
 ```
