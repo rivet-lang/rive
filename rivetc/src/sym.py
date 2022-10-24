@@ -115,7 +115,6 @@ class Sym:
 		self.parent = None
 		self.syms = []
 		self.reexported_syms = {}
-		self.uses = 0
 		self.is_universe = isinstance(self, Pkg) and self.id == 0
 		self.is_generated = False
 
@@ -257,9 +256,6 @@ class Sym:
 		    or self_super == other_super.parent
 		    or self_super.parent == other.parent
 		)
-
-	def is_used(self):
-		return self.vis.is_pub() or self.uses > 0
 
 	def typeof(self):
 		if isinstance(self, Pkg):

@@ -364,28 +364,24 @@ class Resolver:
 				)
 			return
 		elif ident.name == "string":
-			self.comp.string_t.sym.uses += 1
 			ident.sym = self.comp.string_t.sym
 		elif obj := ident.scope.lookup(ident.name):
 			ident.is_obj = True
 			ident.obj = obj
 			ident.typ = obj.typ
 		elif s := self.find_prelude(ident.name):
-			s.uses += 1
 			ident.sym = s
 		elif s := self.source_file.sym.find(ident.name):
 			if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
 				report.error(
 				    f"cannot find `{ident.name}` in this scope", ident.pos
 				)
-			s.uses += 1
 			ident.sym = s
 		elif s := self.source_file.find_imported_symbol(ident.name):
 			if s.kind == sym.TypeKind.Placeholder:
 				report.error(
 				    f"cannot find `{ident.name}` in this scope", ident.pos
 				)
-			s.uses += 1
 			ident.sym = s
 		else:
 			report.error(f"cannot find `{ident.name}` in this scope", ident.pos)
@@ -396,7 +392,6 @@ class Resolver:
 			if field_info := self.find_symbol(
 			    self.comp.universe, path.field_name, path.field_pos
 			):
-				field_info.uses += 1
 				path.field_info = field_info
 			else:
 				path.has_error = True
@@ -406,7 +401,6 @@ class Resolver:
 			if field_info := self.find_symbol(
 			    pkg_sym, path.field_name, path.field_pos
 			):
-				field_info.uses += 1
 				path.field_info = field_info
 			else:
 				path.has_error = True
@@ -415,7 +409,6 @@ class Resolver:
 			if field_info := self.find_symbol(
 			    self.source_file.sym, path.field_name, path.field_pos
 			):
-				field_info.uses += 1
 				path.field_info = field_info
 			else:
 				path.has_error = True
@@ -425,7 +418,6 @@ class Resolver:
 				if field_info := self.find_symbol(
 				    local_sym, path.field_name, path.field_pos
 				):
-					field_info.uses += 1
 					path.field_info = field_info
 				else:
 					path.has_error = True
@@ -434,7 +426,6 @@ class Resolver:
 				if field_info := self.find_symbol(
 				    prelude_sym, path.field_name, path.field_pos
 				):
-					field_info.uses += 1
 					path.field_info = field_info
 				else:
 					path.has_error = True
@@ -445,7 +436,6 @@ class Resolver:
 				if field_info := self.find_symbol(
 				    imported_sym, path.field_name, path.field_pos
 				):
-					field_info.uses += 1
 					path.field_info = field_info
 				else:
 					path.has_error = True
@@ -454,7 +444,6 @@ class Resolver:
 				if field_info := self.find_symbol(
 				    package, path.field_name, path.field_pos
 				):
-					field_info.uses += 1
 					path.field_info = field_info
 				else:
 					path.has_error = True
@@ -471,7 +460,6 @@ class Resolver:
 				if field_info := self.find_symbol(
 				    path.left.field_info, path.field_name, path.field_pos
 				):
-					field_info.uses += 1
 					path.field_info = field_info
 				else:
 					path.has_error = True
@@ -481,7 +469,6 @@ class Resolver:
 				if field_info := self.find_symbol(
 				    self.self_sym, path.field_name, path.field_pos
 				):
-					field_info.uses += 1
 					path.field_info = field_info
 				else:
 					path.has_error = True
@@ -561,7 +548,6 @@ class Resolver:
 							if self.resolve_type(typ.expr.sym.info.parent):
 								typ.unalias()
 						typ_sym = typ.symbol()
-						typ_sym.uses += 1
 						return True
 					else:
 						report.error(
@@ -589,7 +575,6 @@ class Resolver:
 							    typ.expr.field_info.info.parent
 							):
 								typ.unalias()
-						typ.sym.uses += 1
 						return True
 					else:
 						report.error(
@@ -598,7 +583,6 @@ class Resolver:
 						)
 			elif isinstance(typ.expr, ast.SelfTyExpr):
 				if self.self_sym != None:
-					self.self_sym.uses += 1
 					typ.resolve(self.self_sym)
 					return True
 				else:

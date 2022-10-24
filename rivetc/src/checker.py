@@ -291,7 +291,6 @@ class Checker:
 			elif expr.is_obj:
 				expr.typ = expr.obj.typ
 			elif isinstance(expr.sym, sym.Fn):
-				expr.sym.uses += 1
 				expr.typ = expr.sym.typ()
 			elif isinstance(expr.sym, sym.Const):
 				expr.typ = expr.sym.typ
@@ -314,7 +313,6 @@ class Checker:
 						    "mutable global objects can be mutated by multiple threads: "
 						    "aliasing violations or data races will cause undefined behavior"
 						)
-				expr.sym.uses += 1
 				expr.typ = expr.sym.typ
 			else:
 				expr.typ = self.comp.void_t
@@ -1205,7 +1203,6 @@ class Checker:
 		return self.comp.void_t
 
 	def check_ctor(self, info, expr):
-		info.uses += 1
 		expr.is_ctor = True
 		expr.typ = type.Type(info)
 		if info.kind == TypeKind.Trait:
@@ -1261,7 +1258,6 @@ class Checker:
 					report.error(e.args[0], arg.pos)
 
 	def check_call(self, info, expr):
-		info.uses += 1
 		kind = info.kind()
 		expr.typ = info.ret_typ
 
