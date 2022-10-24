@@ -1,5 +1,5 @@
 class Base1 {
-    field1: i32;
+    prot field1: i32;
 }
 
 class Base2 : Base1 {
