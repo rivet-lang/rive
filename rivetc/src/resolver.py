@@ -526,13 +526,10 @@ class Resolver:
 			return res
 		elif isinstance(typ, type.Optional):
 			if self.resolve_type(typ.typ):
-				#if not isinstance(typ.typ, (type.Ptr, type.Ref)):
-				#	typ.sym = self.comp.universe.add_or_get_optional(typ.typ)
 				return True
 			return False
 		elif isinstance(typ, type.Result):
 			if self.resolve_type(typ.typ):
-				#typ.sym = self.comp.universe.add_or_get_result(typ.typ)
 				return True
 			return False
 		elif isinstance(typ, type.Type):

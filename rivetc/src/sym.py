@@ -228,41 +228,6 @@ class Sym:
 		return self.id == other.id
 
 class Pkg(Sym):
-	def add_or_get_result(self, elem_typ):
-		from ..codegen import mangle_type
-		unique_name = f"Result_{mangle_type(elem_typ)}"
-		if sym := self.find(unique_name):
-			return sym
-
-		from .ast import type
-		fields = []
-		if elem_typ != type.Type(self[0]):
-			fields.append(Field("value", False, Vis.Priv, elem_typ))
-		fields.append(Field("is_err", False, Vis.Priv, type.Type(self[2])))
-		fields.append(Field("err", False, Vis.Priv, type.Type(self[19])))
-		return self.add_and_return(
-		    Type(
-		        Vis.Pub, unique_name, TypeKind.Struct, fields,
-		        StructInfo(False)
-		    )
-		)
-
-	def add_or_get_optional(self, elem_typ):
-		from ..codegen import mangle_type
-		unique_name = f"Optional_{mangle_type(elem_typ)}"
-		if sym := self.find(unique_name):
-			return sym
-
-		from .ast import type
-		return self.add_and_return(
-		    Type(
-		        Vis.Pub, unique_name, TypeKind.Struct, [
-		            Field("value", False, Vis.Priv, elem_typ),
-		            Field("is_none", False, Vis.Priv, type.Type(self[2]))
-		        ], StructInfo(False)
-		    )
-		)
-
 	def add_or_get_array(self, elem_typ, size):
 		unique_name = f"[{elem_typ.qualstr()}; {size}]"
 		if sym := self.find(unique_name):
