@@ -6,12 +6,11 @@ import sys, subprocess
 
 from . import colors
 
-VERSION = "0.1.0"
+VERSION = "0.1.0a"
 HELP = """Usage: rivetc [OPTIONS] INPUT
 
 The compiler can receive a file or a directory as input, examples:
-   rivetc my_file.ri
-   rivetc my_folder/
+   `rivetc my_file.ri` or `rivetc my_folder/`
 
 Options:
    --pkg-name <name>
