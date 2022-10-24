@@ -1,4 +1,4 @@
-# Roadmap (`v0.1.0`)
+# Roadmap
 
 * [x] Improve language design.
 * [ ] Make standard library basically available.
