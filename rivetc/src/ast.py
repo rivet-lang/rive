@@ -426,18 +426,6 @@ class BaseExpr:
 	def __str__(self):
 		return self.__repr__()
 
-class BaseTyExpr:
-	def __init__(self, scope, pos):
-		self.scope = scope
-		self.sym = None
-		self.pos = pos
-
-	def __repr__(self):
-		return "Base"
-
-	def __str__(self):
-		return self.__repr__()
-
 class NoneLiteral:
 	def __init__(self, pos):
 		self.pos = pos

@@ -1123,8 +1123,6 @@ class Parser:
 			return ast.SelfTyExpr(self.scope, self.prev_tok.pos)
 		elif self.accept(Kind.KwBase):
 			return ast.BaseExpr(self.scope, self.prev_tok.pos)
-		elif self.accept(Kind.KwBaseTy):
-			return ast.BaseTyExpr(self.scope, self.prev_tok.pos)
 		else:
 			report.error(f"expected literal, found {self.tok}", self.tok.pos)
 		return self.empty_expr()

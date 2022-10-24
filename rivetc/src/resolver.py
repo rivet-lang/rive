@@ -241,20 +241,6 @@ class Resolver:
 					report.error("only classes can use `base`", expr.pos)
 			else:
 				report.error("cannot resolve `base` expression", expr.pos)
-		elif isinstance(expr, ast.BaseTyExpr):
-			if self.self_sym:
-				if self.self_sym.kind == sym.TypeKind.Class:
-					if self.self_sym.info.base:
-						expr.sym = self.self_sym.info.base
-					else:
-						report.error(
-						    "class `{self.self_sym.name}` has no base class",
-						    expr.pos
-						)
-				else:
-					report.error("only classes can use `base`", expr.pos)
-			else:
-				report.error("cannot resolve `Base` expression", expr.pos)
 		elif isinstance(expr, ast.TupleLiteral):
 			for e in expr.exprs:
 				self.resolve_expr(e)

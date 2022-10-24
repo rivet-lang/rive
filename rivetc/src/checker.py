@@ -328,8 +328,6 @@ class Checker:
 			return type.Type(expr.sym)
 		elif isinstance(expr, ast.BaseExpr):
 			return expr.typ
-		elif isinstance(expr, ast.BaseTyExpr):
-			return type.Type(expr.sym)
 		elif isinstance(expr, ast.NoneLiteral):
 			return self.comp.none_t
 		elif isinstance(expr, ast.BoolLiteral):

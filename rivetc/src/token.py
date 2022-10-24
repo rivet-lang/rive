@@ -63,7 +63,6 @@ class Kind(Enum):
 	KwAnd = auto_enum() # and
 	KwAs = auto_enum() # as
 	KwBase = auto_enum() # base
-	KwBaseTy = auto_enum() # Base
 	KwBreak = auto_enum() # break
 	KwCatch = auto_enum() # catch
 	KwClass = auto_enum() # class
@@ -193,7 +192,6 @@ TOKEN_STRINGS = {
     Kind.KwAnd: "and",
     Kind.KwAs: "as",
     Kind.KwBase: "base",
-    Kind.KwBaseTy: "Base",
     Kind.KwBreak: "break",
     Kind.KwCatch: "catch",
     Kind.KwClass: "class",
