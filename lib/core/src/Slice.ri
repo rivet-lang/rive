@@ -48,7 +48,7 @@ struct Slice {
     }
 
     fn !=(self, rhs: Self) bool {
-        return !self.==(rhs);
+        return !(self == rhs);
     }
 
     fn slice(self, start: usize, end: usize) Slice {

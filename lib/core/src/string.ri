@@ -205,7 +205,7 @@ pub class string : ToString {
     }
 
     pub fn !=(self, rhs: Self) bool {
-        return !self.==(rhs);
+        return !(self == rhs);
     }
 
     pub fn <(self, rhs: Self) bool {
@@ -225,15 +225,15 @@ pub class string : ToString {
     }
 
     pub fn >(self, rhs: Self) bool {
-        return !self.<(rhs);
+        return !(self < rhs);
     }
 
     pub fn <=(self, rhs: Self) bool {
-        return self.<(rhs) or self.==(rhs);
+        return self < rhs or self == rhs;
     }
 
     pub fn >=(self, rhs: Self) bool {
-        return self.>(rhs) or self.==(rhs);
+        return self > rhs or self == rhs;
     }
 
     /// Returns `true` if the string contains `substr`.

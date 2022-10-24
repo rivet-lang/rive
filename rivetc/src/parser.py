@@ -1002,9 +1002,6 @@ class Parser:
 					if self.tok.kind == Kind.Number:
 						name = self.tok.lit
 						self.next()
-					elif self.tok.kind.is_overloadable_op():
-						name = str(self.tok.kind)
-						self.next()
 					else:
 						name = self.parse_name()
 					expr = ast.SelectorExpr(expr, name, expr.pos, field_pos)
