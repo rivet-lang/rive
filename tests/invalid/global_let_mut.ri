@@ -1,0 +1,5 @@
+let mut MUTABLE_STATIC: i32 = 3;
+
+fn main() void {
+    let x = MUTABLE_STATIC;
+}

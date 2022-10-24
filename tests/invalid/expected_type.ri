@@ -1,0 +1,5 @@
+fn my_fn() void { }
+
+fn x(a: my_fn) void {}
+
+fn main() void { }
