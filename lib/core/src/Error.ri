@@ -4,11 +4,9 @@
 
 use pkg::traits::ToString;
 
-#[used]
 pub class Error : ToString {
     pub msg: string;
 
-    #[virtual]
     pub fn to_string(self) string {
         let type_name = type_of!(self);
         if self.msg == "" {

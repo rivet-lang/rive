@@ -24,7 +24,6 @@ fn segfault_handler(_: i32) void {
     process::exit(1);
 }
 
-#[used]
 fn panic_if(cond: bool, msg: string) void {
     if cond {
         console::eprintln("panic: {}", msg);
@@ -33,7 +32,6 @@ fn panic_if(cond: bool, msg: string) void {
     }
 }
 
-#[used]
 fn assert(cond: bool, msg: string) void {
     if !cond {
         console::eprintln("panic: assertion failed: {}", msg);

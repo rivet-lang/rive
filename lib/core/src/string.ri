@@ -55,7 +55,6 @@ pub class string : ToString {
         }
     }
 
-    #[used]
     fn at(self, idx: usize) u8 {
         if idx >= self.len {
             panic("string index out of range (index: {}, len: {})", idx, self.len);
@@ -283,7 +282,6 @@ pub class string : ToString {
         return self.len == 0;
     }
 
-    #[used]
     fn slice(self, start: usize, end: usize) Self {
         unsafe {
             if start > end or start > self.len or end > self.len {
@@ -300,7 +298,6 @@ pub class string : ToString {
         }
     }
 
-    #[used]
     fn slice_from(self, start: usize) Self {
         return self.slice(start, self.len);
     }

@@ -10,7 +10,6 @@ extern (C) {
     // TODO(StunxFS): fn _R12drop_staticsZ();
 }
 
-#[used]
 fn rivet_main(__argc: i32, __argv: **u8, pkg_main: fn() void) void {
     unsafe {
         _ = stdc::signal(11, segfault_handler);

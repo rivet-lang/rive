@@ -4,24 +4,20 @@
 
 use pkg::process { panic };
 
-#[used]
 fn array_index(len: usize, idx: usize) void {
     if idx >= len {
         panic("array index out of range (index: {}, size: {})", idx, len);
     }
 }
 
-#[used]
 fn array_eq(arr: *void, other_arr: *void, len: usize) bool {
     return unsafe { stdc::memcmp(arr, other_arr, len) == 0 };
 }
 
-#[used]
 fn array_ne(arr: *void, other_arr: *void, len: usize) bool {
     return unsafe { !array_eq(arr, other_arr, len) };
 }
 
-#[used]
 fn array_slice(
     arr: *mut void, elem_size: usize, size: usize, start: usize, end: usize
 ) Slice {
@@ -37,7 +33,6 @@ fn array_slice(
     }
 }
 
-#[used]
 fn array_slice_from(
     arr: *mut void, elem_size: usize, size: usize, start: usize
 ) Slice {

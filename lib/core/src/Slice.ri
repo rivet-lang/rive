@@ -5,21 +5,18 @@
 use pkg::mem;
 use pkg::process { panic };
 
-#[used]
 let empty_slice: Slice = Slice();
 
-#[used]
 struct Slice {
     ptr: *mut void;
     elem_size: usize;
     pub len: usize;
 
-    #[used; unsafe]
+    #[unsafe]
     pub fn from_array(arr: *mut void, elem_size: usize, len: usize) Slice {
         return Slice(unsafe { arr }, elem_size, len);
     }
 
-    #[used]
     fn get(self, idx: usize) *mut void {
         if idx >= self.len {
             panic("slice index out of range (index: {}, len: {})", idx, self.len);
@@ -27,12 +24,11 @@ struct Slice {
         return unsafe { ptr_add!(as(*mut u8, self.ptr), idx * self.elem_size) };
     }
 
-    #[used; unsafe]
+    #[unsafe]
     fn raw_get(self, idx: usize) *mut void {
         return unsafe { ptr_add!(as(*mut u8, self.ptr), idx * self.elem_size) };
     }
 
-    #[used]
     fn set(self, idx: usize, val: *void) void {
         if idx >= self.len {
             panic("slice index out of range (index: {}, len: {})", idx, self.len);
@@ -44,7 +40,6 @@ struct Slice {
         }
     }
 
-    #[used]
     fn ==(self, rhs: Self) bool {
         if self.len != rhs.len {
             return false;
@@ -52,12 +47,10 @@ struct Slice {
         return unsafe { mem::cmp(self.ptr, rhs.ptr, self.len) == 0 };
     }
 
-    #[used]
     fn !=(self, rhs: Self) bool {
         return !self.==(rhs);
     }
 
-    #[used]
     fn slice(self, start: usize, end: usize) Slice {
         if start > end or end > self.len {
             panic(
@@ -75,7 +68,6 @@ struct Slice {
         );
     }
 
-    #[used]
     fn slice_from(self, start: usize) Slice {
         return self.slice(start, self.len);
     }
