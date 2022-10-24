@@ -67,7 +67,7 @@ Excellent! You have compiled your first program in Rivet!
 
 ## Editor/IDE support
 
-* [LiteX](https://github.com/lite-xl/lite-xl-plugins/blob/master/plugins/language_rivet.lua)
+* [LiteXL](https://github.com/lite-xl/lite-xl-plugins/blob/master/plugins/language_rivet.lua)
 (Syntax-highlighting only).
 
 * * *
