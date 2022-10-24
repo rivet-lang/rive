@@ -1,0 +1,5 @@
+use std::console::println;
+
+fn main() void {
+    println("Hello World!");
+}
