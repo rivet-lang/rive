@@ -14,10 +14,9 @@ class Checker:
         self.sym = None
         self.cur_fn = None
 
+        self.inside_unsafe = False
         self.expected_type = self.comp.void_t
         self.void_types = (self.comp.void_t, self.comp.never_t)
-        self.unsafe_ops = 0
-        self.inside_unsafe = False
 
     def check_files(self, source_files):
         for sf in source_files:
@@ -298,7 +297,7 @@ class Checker:
                 if (
                     expr.sym.is_mut or
                     (expr.sym.is_extern and expr.sym.abi != sym.ABI.Rivet)
-                ) and not self.inside_unsafe_block():
+                ) and not self.inside_unsafe:
                     if expr.sym.is_extern:
                         report.error(
                             "use of external objects is unsafe and requires `unsafe` block",
@@ -316,8 +315,7 @@ class Checker:
                 expr.typ = expr.sym.typ
             else:
                 expr.typ = self.comp.void_t
-            if isinstance(expr.typ,
-                          type.Ptr) and not self.inside_unsafe_block():
+            if isinstance(expr.typ, type.Ptr) and not self.inside_unsafe:
                 report.error(
                     "pointers are usable only inside `unsafe` blocks", expr.pos
                 )
@@ -607,7 +605,7 @@ class Checker:
                     )
                 elif expr.op == Kind.Lshift and self.comp.is_signed_int(
                     ltyp
-                ) and not self.inside_unsafe_block():
+                ) and not self.inside_unsafe:
                     report.warn(
                         f"shifting a value from a signed type `{ltyp}` can change the sign",
                         expr.left.pos
@@ -707,7 +705,7 @@ class Checker:
                         expr.index.pos
                     )
                 elif isinstance(expr.left_typ, type.Ptr):
-                    if not self.inside_unsafe_block():
+                    if not self.inside_unsafe:
                         report.error(
                             "pointer indexing is only allowed inside `unsafe` blocks",
                             expr.pos
@@ -876,7 +874,7 @@ class Checker:
         elif isinstance(expr, ast.BuiltinCallExpr):
             expr.typ = self.comp.void_t
             if expr.name in ("addr_of", "addr_of_mut"):
-                if not self.inside_unsafe_block():
+                if not self.inside_unsafe:
                     report.error(
                         f"`{expr.name}` should be called inside an `unsafe` block",
                         expr.pos
@@ -887,7 +885,7 @@ class Checker:
                     self.check_expr_is_mut(arg0)
                 expr.typ = type.Ptr(self.check_expr(arg0), is_addr_of_mut)
             elif expr.name in ("ptr_add", "ptr_diff"):
-                if not self.inside_unsafe_block():
+                if not self.inside_unsafe:
                     report.error(
                         f"`{expr.name}` should be called inside an `unsafe` block",
                         expr.pos
@@ -963,8 +961,7 @@ class Checker:
                     report.error(
                         f"invalid indirect for `{left_typ}`", expr.field_pos
                     )
-                elif isinstance(left_typ,
-                                type.Ptr) and not self.inside_unsafe_block():
+                elif isinstance(left_typ, type.Ptr) and not self.inside_unsafe:
                     report.error(
                         "dereference of pointer is unsafe and requires `unsafe` block",
                         expr.pos
@@ -1043,8 +1040,7 @@ class Checker:
                                 f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                             )
             expr.left_typ = left_typ
-            if isinstance(expr.typ,
-                          type.Ptr) and not self.inside_unsafe_block():
+            if isinstance(expr.typ, type.Ptr) and not self.inside_unsafe:
                 report.error(
                     "pointers are usable only inside `unsafe` blocks", expr.pos
                 )
@@ -1070,7 +1066,7 @@ class Checker:
                         expr.field_info.is_extern
                         and expr.field_info.abi != sym.ABI.Rivet
                     )
-                ) and not self.inside_unsafe_block():
+                ) and not self.inside_unsafe:
                     if expr.field_info.is_extern:
                         report.error(
                             "use of external objects is unsafe and requires `unsafe` block",
@@ -1145,11 +1141,6 @@ class Checker:
                 expr.typ = self.check_expr(expr.expr)
             if expr.is_unsafe:
                 self.inside_unsafe = False
-                if self.unsafe_ops == 0:
-                    #report.warn("unnecessary `unsafe` block", expr.pos)
-                    pass
-                else:
-                    self.unsafe_ops = 0
             return expr.typ
         elif isinstance(expr, ast.IfExpr):
             for i, b in enumerate(expr.branches):
@@ -1260,7 +1251,7 @@ class Checker:
         kind = info.kind()
         expr.typ = info.ret_typ
 
-        if info.is_unsafe and not self.inside_unsafe_block():
+        if info.is_unsafe and not self.inside_unsafe:
             report.warn(
                 f"{kind} `{info.name}` should be called inside `unsafe` block",
                 expr.pos
@@ -1523,10 +1514,6 @@ class Checker:
         else:
             # signed number -> unsigned number (bad)
             return self.comp.void_t
-
-    def inside_unsafe_block(self):
-        self.unsafe_ops += 1
-        return self.inside_unsafe
 
     def check_expr_is_mut(self, expr):
         if isinstance(expr, ast.ParExpr):
