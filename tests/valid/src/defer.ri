@@ -1,0 +1,16 @@
+fn test_defer() i32 {
+    let mut a = 1;
+
+    {
+        defer a = 2;
+        a = 1;
+    }
+    assert!(a == 2);
+
+    a = 5;
+    return a;
+}
+
+test "defer stmt" {
+    assert!(test_fn() == 5);
+}
