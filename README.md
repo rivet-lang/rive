@@ -30,6 +30,15 @@ a field; some with strange syntax in my opinion (like Lisp) and others with a hi
 learning curve, but Rivet tries to be an exception by trying to become a unique
 language with a clear and simple syntax and a low learning curve.
 
+```rs
+// A simple sample: the classic "Hello World"
+
+fn main() void {
+    Console::println("Hello World!");
+}
+```
+<sub>More samples in the [`samples/`](samples/) folder</sub>
+
 ## Important note
 
 Currently the language is in alpha state, and therefore its syntax and the language
