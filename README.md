@@ -37,7 +37,7 @@ fn main() void {
     Console::println("Hello World!");
 }
 ```
-<sub>More samples in the [`samples/`](samples/) folder</sub>
+<sub>More samples in the [`samples/`](samples/) folder</sub>.
 
 ## Important note
 

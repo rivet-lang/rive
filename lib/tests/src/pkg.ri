@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file.
 
 use core::process { exit };
-use core::console { self, eprintln, print, println };
+use core::Console { self, eprintln, print, println };
 use core::console::color { self, can_show_color_on_stdout };
 
 let SUPPORT_COLOR: bool = can_show_color_on_stdout();
@@ -19,7 +19,7 @@ extern (Rivet) {
 
 fn header(txt: string, sep: string) string {
     if (SUPPORT_COLOR) {
-        // TODO: return console::header(txt, sep);
+        // TODO: return Console::header(txt, sep);
     }
     return txt;
 }
