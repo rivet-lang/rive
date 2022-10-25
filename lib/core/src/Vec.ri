@@ -5,7 +5,7 @@
 use pkg::mem;
 use pkg::process::panic;
 
-let empty_slice: Vec = Vec();
+let empty_vec: Vec = Vec();
 
 class Vec {
     mut ptr: *mut void;
