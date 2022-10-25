@@ -1434,8 +1434,6 @@ class Checker:
         if isinstance(expected, type.Fn) and isinstance(got, type.Fn):
             return expected == got
         elif isinstance(expected, type.Vec) and isinstance(got, type.Vec):
-            if expected.is_mut != got.is_mut:
-                return False
             return expected.elem_typ == got.elem_typ
 
         if isinstance(expected, type.Ref) and isinstance(got, type.Ref):
