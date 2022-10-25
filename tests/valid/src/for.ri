@@ -1,4 +1,4 @@
-use core::console { println };
+use core::Console { println };
 
 test "for in statement" {
     let sum = 0;

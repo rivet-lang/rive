@@ -2,23 +2,16 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-use pkg::console::is_atty;
-
 /// Returns true if colors are allowed in stdout, false otherwise.
 #[inline]
 pub fn can_show_color_on_stdout() bool {
-	return supports_escape_sequences(1);
+	return Console::is_atty(1);
 }
 
 /// Returns true if colors are allowed in stderr, false otherwise.
 #[inline]
 pub fn can_show_color_on_stderr() bool {
-	return supports_escape_sequences(2);
-}
-
-#[inline]
-fn supports_escape_sequences(fd: i32) bool {
-	return is_atty(fd) > 0;
+	return Console::is_atty(2);
 }
 
 pub fn fmt(msg: string, open: string, close: string) string {

@@ -19,14 +19,14 @@ extern (Rivet) {
 }
 
 fn segfault_handler(_: i32) void {
-    console::eprintln("panic: segmentation fault detected");
+    Console::eprintln("panic: segmentation fault detected");
     backtrace::print(3);
     process::exit(1);
 }
 
 fn panic_if(cond: bool, msg: string) void {
     if cond {
-        console::eprintln("panic: {}", msg);
+        Console::eprintln("panic: {}", msg);
         backtrace::print(2);
         process::exit(1);
     }
@@ -34,7 +34,7 @@ fn panic_if(cond: bool, msg: string) void {
 
 fn assert(cond: bool, msg: string) void {
     if !cond {
-        console::eprintln("panic: assertion failed: {}", msg);
+        Console::eprintln("panic: assertion failed: {}", msg);
         backtrace::print(2);
         process::exit(1);
     }

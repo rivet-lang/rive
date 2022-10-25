@@ -5,7 +5,7 @@
 // #![c_compile("../thirdparty/libbacktrace/backtrace.c")]
 
 use pkg { stdc, demangle };
-use pkg::console { eprint, eprintln };
+use pkg::Console { eprint, eprintln };
 
 struct backtrace_state;
 

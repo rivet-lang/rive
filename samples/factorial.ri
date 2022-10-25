@@ -1,5 +1,3 @@
-use std::console { println };
-
 fn factorial(n: u32) u32 {
 	if n <= 1 {
 		return 1;
@@ -9,6 +7,6 @@ fn factorial(n: u32) u32 {
 
 fn main() void {
 	let res = factorial(5);
-	println("factorial(5): {}", res);
+	Console::println("factorial(5): {}", res);
 	assert!(res == 120);
 }

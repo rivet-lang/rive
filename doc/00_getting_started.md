@@ -41,10 +41,8 @@ Let's start with the typical `Hello World!`:
 
 We create a file called `hello_world.ri` with the following content:
 ```rs
-use core::console;
-
 fn main() void {
-    console::println("Hello World!");
+    Console::println("Hello World!");
 }
 ```
 

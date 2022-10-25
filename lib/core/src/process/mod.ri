@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-use pkg { stdc, traits, console, backtrace, _R9drop_argsZ };
+use pkg { stdc, traits, backtrace, _R9drop_argsZ };
 
 /// Returns the OS-assigned process identifier associated with this
 /// process.
@@ -13,7 +13,7 @@ pub fn id() u32 {
 /// Terminates current thread execution immediately after displaying a
 /// message, followed by a backtrace.
 pub fn panic(s: string = "", args: ...traits::ToString) never {
-    console::eprintln("panic: {}", s.fmt(args));
+    Console::eprintln("panic: {}", s.fmt(args));
     backtrace::print(2);
     exit(1);
 }
