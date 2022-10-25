@@ -229,7 +229,7 @@ class Checker:
                     )
                 self.check_stmt(stmt.stmt)
             elif iterable_sym.kind in (
-                TypeKind.Array, TypeKind.Slice, TypeKind.String
+                TypeKind.Array, TypeKind.Vec, TypeKind.String
             ):
                 elem_typ = self.comp.u8_t if iterable_sym.kind == TypeKind.String else self.comp.untyped_to_type(
                     iterable_sym.info.elem_typ
@@ -372,10 +372,10 @@ class Checker:
                     types.append(tt)
             expr.typ = type.Type(self.comp.universe.add_or_get_tuple(types))
             return expr.typ
-        elif isinstance(expr, ast.ArrayLiteral):
+        elif isinstance(expr, ast.VecLiteral):
             old_exp_typ = self.expected_type
-            has_exp_typ = False
             size = ""
+            has_exp_typ = False
             if not isinstance(self.expected_type, type.Fn):
                 elem_sym = self.expected_type.symbol()
                 if elem_sym.kind == TypeKind.Array:
@@ -399,21 +399,31 @@ class Checker:
                         self.check_types(typ, elem_typ)
                     except utils.CompilerError as err:
                         report.error(err.args[0], e.pos)
-                        report.note(f"in element {i + 1} of array literal")
-            if len(expr.elems) > 0:
-                arr_len = str(len(expr.elems))
-            else:
-                if not has_exp_typ:
-                    report.error(
-                        "could not infer type and size of array", expr.pos
+                        if expr.is_arr:
+                            report.note(f"in element {i + 1} of array literal")
+                        else:
+                            report.note(f"in element {i + 1} of vector literal")
+            if expr.is_arr:
+                if len(expr.elems) > 0:
+                    arr_len = str(len(expr.elems))
+                else:
+                    if not has_exp_typ:
+                        report.error(
+                            "could not infer type and size of array", expr.pos
+                        )
+                    arr_len = size
+                expr.typ = type.Type(
+                    self.comp.universe.add_or_get_array(
+                        self.comp.untyped_to_type(elem_typ),
+                        ast.IntegerLiteral(arr_len, expr.pos)
                     )
-                arr_len = size
-            expr.typ = type.Type(
-                self.comp.universe.add_or_get_array(
-                    self.comp.untyped_to_type(elem_typ),
-                    ast.IntegerLiteral(arr_len, expr.pos)
                 )
-            )
+            else:
+                expr.typ = type.Type(
+                    self.comp.universe.add_or_get_vec(
+                        self.comp.untyped_to_type(elem_typ)
+                    )
+                )
             self.expected_type = old_exp_typ
             return expr.typ
         elif isinstance(expr, ast.AsExpr):
@@ -654,7 +664,7 @@ class Checker:
             expr.left_typ = self.check_expr(expr.left)
             left_sym = expr.left_typ.symbol()
             idx_t = self.check_expr(expr.index)
-            if left_sym.kind in (TypeKind.Array, TypeKind.Slice):
+            if left_sym.kind in (TypeKind.Array, TypeKind.Vec):
                 if idx_t != self.comp.untyped_int_t and not self.comp.is_unsigned_int(
                     idx_t
                 ):
@@ -665,23 +675,21 @@ class Checker:
                 if isinstance(expr.index, ast.RangeExpr):
                     if expr.is_mut:
                         if isinstance(
-                            expr.left_typ, type.Slice
+                            expr.left_typ, type.Vec
                         ) and not expr.left_typ.is_mut:
                             report.error(
                                 "cannot create a mutable slice from an immutable one"
                             )
                         else:
                             self.check_expr_is_mut(expr.left)
-                    if left_sym.kind == TypeKind.Slice:
+                    if left_sym.kind == TypeKind.Vec:
                         expr.typ = expr.left_typ
                     else:
-                        expr.typ = type.Slice(
-                            left_sym.info.elem_typ, expr.is_mut
-                        )
+                        expr.typ = type.Vec(left_sym.info.elem_typ, expr.is_mut)
                         expr.typ.sym = self.comp.universe.add_or_get_slice(
                             left_sym.info.elem_typ, expr.is_mut
                         )
-                elif left_sym.kind == TypeKind.Slice:
+                elif left_sym.kind == TypeKind.Vec:
                     expr.typ = left_sym.info.elem_typ
                 else:
                     expr.typ = left_sym.info.elem_typ
@@ -976,8 +984,6 @@ class Checker:
                     expr.typ = left_typ.typ
             else:
                 left_sym = left_typ.symbol()
-                if left_sym.kind == TypeKind.Slice:
-                    left_sym = self.comp.slice_sym
                 if isinstance(left_typ, type.Optional):
                     report.error(
                         "fields of an optional value cannot be accessed directly",
@@ -1035,7 +1041,7 @@ class Checker:
                         expr.field_pos
                     )
                     if expr.field_name.isdigit():
-                        if left_sym.kind in (TypeKind.Array, TypeKind.Slice):
+                        if left_sym.kind in (TypeKind.Array, TypeKind.Vec):
                             report.note(
                                 f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                             )
@@ -1427,7 +1433,7 @@ class Checker:
 
         if isinstance(expected, type.Fn) and isinstance(got, type.Fn):
             return expected == got
-        elif isinstance(expected, type.Slice) and isinstance(got, type.Slice):
+        elif isinstance(expected, type.Vec) and isinstance(got, type.Vec):
             if expected.is_mut != got.is_mut:
                 return False
             return expected.elem_typ == got.elem_typ
@@ -1462,7 +1468,7 @@ class Checker:
             return True
 
         if self.sym.is_core_pkg():
-            if exp_sym.kind == TypeKind.Slice and got_sym == self.comp.slice_sym:
+            if exp_sym.kind == TypeKind.Vec and got_sym == self.comp.vec_sym:
                 return True
 
         return False
@@ -1563,7 +1569,7 @@ class Checker:
             report.error("`none` cannot be modified", expr.pos)
         elif isinstance(expr, ast.StringLiteral):
             report.error("string literals cannot be modified", expr.pos)
-        elif isinstance(expr, ast.ArrayLiteral):
+        elif isinstance(expr, ast.VecLiteral):
             report.error("array literals cannot be modified", expr.pos)
         elif isinstance(expr, ast.TupleLiteral):
             report.error("tuple literals cannot be modified", expr.pos)

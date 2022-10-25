@@ -244,7 +244,7 @@ class Resolver:
         elif isinstance(expr, ast.TupleLiteral):
             for e in expr.exprs:
                 self.resolve_expr(e)
-        elif isinstance(expr, ast.ArrayLiteral):
+        elif isinstance(expr, ast.VecLiteral):
             for e in expr.elems:
                 self.resolve_expr(e)
         elif isinstance(expr, ast.AsExpr):
@@ -474,7 +474,7 @@ class Resolver:
                 elem_sym = typ.typ.symbol()
                 if elem_sym.kind == type.TypeKind.Trait:
                     elem_sym.info.has_objects = True
-                typ.resolve(self.comp.universe.add_or_get_slice(typ.typ, False))
+                typ.resolve(self.comp.universe.add_or_get_vec(typ.typ))
                 return True
         elif isinstance(typ, type.Array):
             if self.resolve_type(typ.typ):
@@ -492,11 +492,9 @@ class Resolver:
                 report.error(
                     "array size cannot use non-constant value", typ.size.pos
                 )
-        elif isinstance(typ, type.Slice):
+        elif isinstance(typ, type.Vec):
             if self.resolve_type(typ.typ):
-                typ.resolve(
-                    self.comp.universe.add_or_get_slice(typ.typ, typ.is_mut)
-                )
+                typ.resolve(self.comp.universe.add_or_get_vec(typ.typ))
                 return True
         elif isinstance(typ, type.Tuple):
             res = False

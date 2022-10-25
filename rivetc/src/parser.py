@@ -866,7 +866,8 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Rbracket)
-            expr = ast.ArrayLiteral(elems, pos)
+            is_arr = self.accept(Kind.Bang)
+            expr = ast.VecLiteral(elems, is_arr, pos)
         elif self.tok.kind == Kind.KwPkg:
             expr = self.parse_pkg_expr()
         elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Char:
@@ -1241,18 +1242,15 @@ class Parser:
             typ = self.parse_type()
             return type.Ptr(typ, is_mut)
         elif self.accept(Kind.Lbracket):
-            # arrays or slices
+            # arrays or vectors
             mut_pos = self.tok.pos
-            is_mut = self.accept(Kind.KwMut)
             typ = self.parse_type()
             if self.accept(Kind.Semicolon):
-                if is_mut:
-                    report.error("arrays are mutable by default", mut_pos)
                 size = self.parse_expr()
                 self.expect(Kind.Rbracket)
                 return type.Array(typ, size)
             self.expect(Kind.Rbracket)
-            return type.Slice(typ, is_mut)
+            return type.Vec(typ)
         elif self.accept(Kind.Lparen):
             # tuples
             types = []

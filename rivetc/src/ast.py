@@ -534,16 +534,22 @@ class TupleLiteral:
     def __str__(self):
         return self.__repr__()
 
-class ArrayLiteral:
-    def __init__(self, elems, pos):
+class VecLiteral:
+    def __init__(self, elems, is_arr, pos):
         self.elems = elems
         self.pos = pos
+        self.is_arr = is_arr
         self.typ = None
 
     def __repr__(self):
         if len(self.elems) == 0:
+            if self.is_arr:
+                return "[]!"
             return "[]"
-        return f"[{', '.join([str(e) for e in self.elems])}]"
+        res = f"[{', '.join([str(e) for e in self.elems])}]"
+        if self.is_arr:
+            res += "!"
+        return res
 
     def __str__(self):
         return self.__repr__()

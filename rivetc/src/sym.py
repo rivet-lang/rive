@@ -4,6 +4,7 @@
 
 from enum import IntEnum as Enum, auto as auto_enum
 
+from .token import NO_POS
 from .utils import CompilerError
 
 SYMBOL_COUNT = 0
@@ -232,25 +233,54 @@ class Pkg(Sym):
         unique_name = f"[{elem_typ.qualstr()}; {size}]"
         if sym := self.find(unique_name):
             return sym
-        return self.add_and_return(
-            Type(
-                Vis.Pub, unique_name, TypeKind.Array,
-                info = ArrayInfo(elem_typ, size)
+        from .type import Ptr, Type as type_Type
+        arr_sym = Type(
+            Vis.Pub, unique_name, TypeKind.Array,
+            info = ArrayInfo(elem_typ, size)
+        )
+        arr_sym.add(
+            Fn(
+                ABI.Rivet, Vis.Pub, False, False, True, False, "as_vec", [],
+                type_Type(self.add_or_get_vec(elem_typ)), False, True, NO_POS,
+                True
             )
         )
+        return self.add_and_return(arr_sym)
 
-    def add_or_get_slice(self, elem_typ, is_mut):
+    def add_or_get_vec(self, elem_typ):
         unique_name = f"[{elem_typ.qualstr()}]"
         if sym := self.find(unique_name):
             return sym
         from .type import Ptr, Type as type_Type
-        return self.add_and_return(
-            Type(
-                Vis.Pub, unique_name, TypeKind.Slice,
-                [Field("ptr", False, Vis.Pub, Ptr(type_Type(self[0])))],
-                SliceInfo(elem_typ, is_mut)
+        vec_sym = Type(
+            Vis.Pub, unique_name, TypeKind.Vec, info = VecInfo(elem_typ)
+        )
+        vec_sym.add(
+            Fn(
+                ABI.Rivet, Vis.Pub, False, False, True, False, "len", [],
+                type_Type(self[14]), False, True, NO_POS, False
             )
         )
+        vec_sym.add(
+            Fn(
+                ABI.Rivet, Vis.Pub, False, False, True, False, "cap", [],
+                type_Type(self[14]), False, True, NO_POS, False
+            )
+        )
+        vec_sym.add(
+            Fn(
+                ABI.Rivet, Vis.Pub, False, False, True, False, "push",
+                [Arg("value", False, elem_typ, None, False, NO_POS)],
+                type_Type(self[0]), False, True, NO_POS, True
+            )
+        )
+        vec_sym.add(
+            Fn(
+                ABI.Rivet, Vis.Pub, False, False, True, False, "pop", [],
+                elem_typ, False, True, NO_POS, True
+            )
+        )
+        return self.add_and_return(vec_sym)
 
     def add_or_get_tuple(self, types):
         unique_name = f"({', '.join([t.qualstr() for t in types])})"
@@ -315,7 +345,7 @@ class TypeKind(Enum):
     String = auto_enum()
     Alias = auto_enum()
     Array = auto_enum()
-    Slice = auto_enum()
+    Vec = auto_enum()
     Tuple = auto_enum()
     Enum = auto_enum()
     Trait = auto_enum()
@@ -377,8 +407,8 @@ class TypeKind(Enum):
             return "alias"
         elif self == TypeKind.Array:
             return "array"
-        elif self == TypeKind.Slice:
-            return "slice"
+        elif self == TypeKind.Vec:
+            return "vector"
         elif self == TypeKind.Tuple:
             return "tuple"
         elif self == TypeKind.Trait:
@@ -408,10 +438,9 @@ class ArrayInfo:
         self.size = size
         self.has_wrapper = False # for return values in C backend
 
-class SliceInfo:
-    def __init__(self, elem_typ, is_mut):
+class VecInfo:
+    def __init__(self, elem_typ):
         self.elem_typ = elem_typ
-        self.is_mut = is_mut
 
 class TupleInfo:
     def __init__(self, types):

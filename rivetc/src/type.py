@@ -17,7 +17,7 @@ class _Ptr: # ugly hack =/
 
 class TBase:
     def symbol(self):
-        if isinstance(self, (Slice, Array, Tuple, Variadic)):
+        if isinstance(self, (Vec, Array, Tuple, Variadic)):
             return self.sym
         elif isinstance(self, Fn):
             return self.info()
@@ -33,7 +33,7 @@ class TBase:
         elif isinstance(self, Tuple):
             for t in self.types:
                 t.unalias()
-        elif isinstance(self, (Array, Slice, Ptr, Ref)):
+        elif isinstance(self, (Array, Vec, Ptr, Ref)):
             self.typ.unalias()
         elif isinstance(self, Type):
             if self.is_resolved() and self.sym.kind == TypeKind.Alias:
@@ -133,28 +133,23 @@ class Ptr(TBase):
             return f"*mut {self.typ}"
         return f"*{self.typ}"
 
-class Slice(TBase):
-    def __init__(self, typ, is_mut = False):
+class Vec(TBase):
+    def __init__(self, typ):
         self.typ = typ
-        self.is_mut = is_mut
         self.sym = None
 
     def resolve(self, sym):
         self.sym = sym
 
     def qualstr(self):
-        if self.is_mut:
-            return f"[mut {self.typ.qualstr()}]"
         return f"[{self.typ.qualstr()}]"
 
     def __eq__(self, other):
-        if not isinstance(other, Slice):
+        if not isinstance(other, Vec):
             return False
-        return self.is_mut == other.is_mut and self.typ == other.typ
+        return self.typ == other.typ
 
     def __str__(self):
-        if self.is_mut:
-            return f"[mut {self.typ}]"
         return f"[{self.typ}]"
 
 class Variadic(TBase):

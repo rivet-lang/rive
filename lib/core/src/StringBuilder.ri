@@ -76,12 +76,12 @@ pub class StringBuilder : ToString {
     }
 
     pub fn write_join(mut self, ss: [string], sep: string = "") void {
-        if ss.len == 1 {
+        if ss.len() == 1 {
             self.write_string(ss[0]);
         } else {
             for i, s in ss {
                 self.write_string(s);
-                if i < ss.len - 1 {
+                if i < ss.len() - 1 {
                     self.write_string(sep);
                 }
             }

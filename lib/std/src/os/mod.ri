@@ -20,7 +20,7 @@ pub fn execute(cmd: string) Result {
             return Result("execute(\"{}\") failed".fmt(cmd), -1);
         }
         let fd = stdc::fileno(f);
-        let mut buf: [u8; 4096] = [];
+        let mut buf: [u8; 4096] = []!;
         let pbuf: *mut u8 = addr_of_mut!(buf[0]);
         let mut output = StringBuilder::new(1024);
         while {

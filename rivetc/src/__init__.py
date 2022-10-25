@@ -45,7 +45,7 @@ class Compiler:
         self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
 
         self.core_pkg = None
-        self.slice_sym = None # from `core` package
+        self.vec_sym = None # from `core` package
 
         self.pkg_deps = utils.PkgDeps()
         self.source_files = []
