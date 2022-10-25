@@ -1,0 +1,49 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+pub struct Console {
+    /// Prints a message to stdout. Unlike `println` stdout is not automatically
+    /// flushed.
+    pub fn print(s: string, args: ...traits::ToString) void {
+        let sx = s.fmt(args);
+        unsafe {
+            utils::write_buf_to_fd(1, sx.ptr, sx.len);
+        }
+    }
+
+    /// Prints a message with a line end to stdout. stdout is flushed.
+    pub fn println(s: string = "", args: ...traits::ToString) void {
+        unsafe {
+            utils::writeln_to_fd(1, s.fmt(args));
+        }
+    }
+
+    /// Prints a message to stderr. Both stderr and stdout are flushed.
+    pub fn eprint(s: string, args: ...traits::ToString) void {
+        let sx = s.fmt(args);
+        unsafe {
+            _ = stdc::fflush(stdc::stdout);
+            _ = stdc::fflush(stdc::stderr);
+            utils::write_buf_to_fd(2, sx.ptr, sx.len);
+            _ = stdc::fflush(stdc::stderr);
+        }
+    }
+
+    /// Prints a message with a line end to stderr. Both stderr and stdout are
+    /// flushed.
+    pub fn eprintln(s: string = "", args: ...traits::ToString) void {
+        unsafe {
+            _ = stdc::fflush(stdc::stdout);
+            _ = stdc::fflush(stdc::stderr);
+            utils::writeln_to_fd(2, s.fmt(args));
+            _ = stdc::fflush(stdc::stderr);
+        }
+    }
+
+    /// Returns `true` if the `fd` file descriptor is open and refers to a
+    /// terminal.
+    pub fn is_atty(fd: i32) bool {
+        return unsafe { stdc::isatty(fd) == 1 };
+    }
+}
