@@ -66,7 +66,7 @@ pub class File {
             let mut res = as(*mut u8, mem::alloc(as(usize, allocate) + 1).!);
             let nelements = stdc::fread(res, 1, as(usize, allocate), self.f);
 
-            if self.eof() and stdc::ferror(self.f) != 0 {
+            if self.eof() && stdc::ferror(self.f) != 0 {
                 mem::dealloc(res);
                 return Error("fread failed");
             }

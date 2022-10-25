@@ -166,13 +166,13 @@ pub class string : ToString {
     /// Returns the position of the first character of the input string.
     /// It will return `none` if the input string can't be found.
     pub fn index(self, p: string) ?usize {
-        if p.len > self.len or p.len == 0 {
+        if p.len > self.len || p.len == 0 {
             return none;
         }
         let mut i: usize = 0;
         while i < self.len {
             let mut j: usize = 0;
-            while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } {
+            while j < p.len && unsafe { self.ptr[i + j] == p.ptr[j] } {
                 j += 1;
             }
             if j == p.len {
@@ -211,7 +211,7 @@ pub class string : ToString {
     pub fn <(self, rhs: Self) bool {
         for i in 0..self.len {
             unsafe {
-                if i >= rhs.len or self.ptr[i] > rhs.ptr[i] {
+                if i >= rhs.len || self.ptr[i] > rhs.ptr[i] {
                     return false;
                 } else if self.ptr[i] < rhs.ptr[i] {
                     return true;
@@ -229,11 +229,11 @@ pub class string : ToString {
     }
 
     pub fn <=(self, rhs: Self) bool {
-        return self < rhs or self == rhs;
+        return self < rhs || self == rhs;
     }
 
     pub fn >=(self, rhs: Self) bool {
-        return self > rhs or self == rhs;
+        return self > rhs || self == rhs;
     }
 
     /// Returns `true` if the string contains `substr`.
@@ -284,7 +284,7 @@ pub class string : ToString {
 
     fn slice(self, start: usize, end: usize) Self {
         unsafe {
-            if start > end or start > self.len or end > self.len {
+            if start > end || start > self.len || end > self.len {
                 panic(
                     "string slice index out of range (range: {}..{}, len: {})", start,
                     end, self.len

@@ -36,7 +36,7 @@ fn bt_print_callback(
     data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, fn_ptr: *mut u8
 ) i32 {
     unsafe {
-        if fn_ptr != none and stdc::memcmp(fn_ptr, c"_R4core10rivet_mainF", 20) == 0 {
+        if fn_ptr != none && stdc::memcmp(fn_ptr, c"_R4core10rivet_mainF", 20) == 0 {
             return 1; // stop backtracing
         }
 

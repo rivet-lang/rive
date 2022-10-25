@@ -51,6 +51,8 @@ class Kind(Enum):
     BitNot = auto_enum() # ~
     Hash = auto_enum() # #
     Dollar = auto_enum() # $
+    And = auto_enum() # &&
+    Or = auto_enum() # ||
     Lbrace = auto_enum() # {
     Rbrace = auto_enum() # }
     Lbracket = auto_enum() # [
@@ -60,7 +62,6 @@ class Kind(Enum):
 
     KeywordBegin = auto_enum()
     # ========== keywords ==========
-    KwAnd = auto_enum() # and
     KwAs = auto_enum() # as
     KwBase = auto_enum() # base
     KwBreak = auto_enum() # break
@@ -86,7 +87,6 @@ class Kind(Enum):
     KwNone = auto_enum() # none
     KwNotIn = auto_enum() # !in
     KwNotIs = auto_enum() # !is
-    KwOr = auto_enum() # or
     KwPkg = auto_enum() # pkg
     KwPub = auto_enum() # pub
     KwProt = auto_enum() # prot
@@ -190,7 +190,6 @@ TOKEN_STRINGS = {
     Kind.Rparen: ")",
 
     # ========== keywords ==========
-    Kind.KwAnd: "and",
     Kind.KwAs: "as",
     Kind.KwBase: "base",
     Kind.KwBreak: "break",
@@ -216,7 +215,6 @@ TOKEN_STRINGS = {
     Kind.KwNone: "none",
     Kind.KwNotIn: "!in",
     Kind.KwNotIs: "!is",
-    Kind.KwOr: "or",
     Kind.KwPkg: "pkg",
     Kind.KwPub: "pub",
     Kind.KwProt: "prot",

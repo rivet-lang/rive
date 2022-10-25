@@ -525,21 +525,18 @@ class Lexer:
                     continue
                 return token.Token("", Kind.Hash, pos)
             elif ch == "&":
-                if nextc == "=":
+                if nextc == "&" and self.look_ahead(2).isspace():
+                    self.pos += 1
+                    return token.Token("", Kind.And, pos)
+                elif nextc == "=":
                     self.pos += 1
                     return token.Token("", Kind.AmpAssign, pos)
                 return token.Token("", Kind.Amp, pos)
             elif ch == "!":
-                if (
-                    self.matches("is", self.pos)
-                    and self.text[self.pos + 3].isspace()
-                ):
+                if self.matches("is ", self.pos):
                     self.pos += 2
                     return token.Token("", Kind.KeyNotIs, pos)
-                elif (
-                    self.matches("in", self.pos)
-                    and self.text[self.pos + 3].isspace()
-                ):
+                elif self.matches("in ", self.pos):
                     self.pos += 2
                     return token.Token("", Kind.KeyNotIn, pos)
                 elif nextc == "=":
@@ -547,7 +544,10 @@ class Lexer:
                     return token.Token("", Kind.Ne, pos)
                 return token.Token("", Kind.Bang, pos)
             elif ch == "|":
-                if nextc == "=":
+                if nextc == "|" and self.look_ahead(2).isspace():
+                    self.pos += 1
+                    return token.Token("", Kind.Or, pos)
+                elif nextc == "=":
                     self.pos += 1
                     return token.Token("", Kind.PipeAssign, pos)
                 return token.Token("", Kind.Pipe, pos)

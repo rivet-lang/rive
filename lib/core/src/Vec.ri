@@ -117,7 +117,7 @@ class Vec {
     }
 
     fn slice(self, start: usize, end: usize) Self {
-        if start > end or end > self.len_ {
+        if start > end || end > self.len_ {
             panic(
                 "slice index out of range (range: {}..{}, len: {})", start, end,
                 self.len_
