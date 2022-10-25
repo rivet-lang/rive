@@ -37,10 +37,7 @@ fn main() void {
     Console::println("Hello World!");
 }
 ```
-
-<div align="center">
-<sub>More samples in the [`samples/`](samples/) folder</sub>.
-</div>
+<sub>More samples in the [`samples/`](samples/) folder</sub>
 
 ## Important note
 
