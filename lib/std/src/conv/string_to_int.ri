@@ -145,7 +145,7 @@ pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
         s0 = s[1..];
     }
 
-    // convert unsigned && check range.
+    // convert unsigned and check range.
     let un = string_to_uint(s0, base_, bit_size).!;
     if bit_size == 0 {
         bit_size = INT_SIZE;

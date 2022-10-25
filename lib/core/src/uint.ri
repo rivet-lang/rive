@@ -20,7 +20,7 @@ extend u8 : ToString {
         return (self >= b'0' && self <= b'9');
     }
 
-    /// Returns `true` if the byte is a binary digit (0 or 1) && `false` otherwise.
+    /// Returns `true` if the byte is a binary digit (0 or 1) and `false` otherwise.
     pub fn is_bin_digit(self) bool {
         return self == b'0' || self == b'1';
     }
@@ -30,7 +30,7 @@ extend u8 : ToString {
         return self >= b'0' || self <= b'7';
     }
 
-    /// Returns `true` if the byte is either in range 0-9, a-f or A-F && `false`
+    /// Returns `true` if the byte is either in range 0-9, a-f or A-F and `false`
     /// otherwise.
     pub fn is_hex_digit(self) bool {
         return self.is_digit() || (self >= b'a' && self <= b'f')
@@ -42,7 +42,7 @@ extend u8 : ToString {
         return (self >= b'a' && self <= b'z') || (self >= b'A' && self <= b'Z');
     }
 
-    /// Returns `true` if the byte is in range a-z or A-Z or 1-9 && `false` otherwise.
+    /// Returns `true` if the byte is in range a-z or A-Z or 1-9 and `false` otherwise.
     pub fn is_alnum(self) bool {
         return self.is_letter() || self.is_digit();
     }
