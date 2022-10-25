@@ -319,6 +319,11 @@ class ForInStmt:
         self.stmt = stmt
         self.pos = pos
 
+class DeferStmt:
+    def __init__(self, expr, pos):
+        self.expr = expr
+        self.pos = pos
+
 class ExprStmt:
     def __init__(self, expr, pos):
         self.expr = expr
