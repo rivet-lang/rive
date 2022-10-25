@@ -632,12 +632,13 @@ class Parser:
             stmt = self.parse_stmt()
             self.close_scope()
             return ast.ForInStmt(sc, vars, iterable, stmt, pos)
-        elif self.accept(Kind.KwDefer):
+        elif self.accept(Kind.KwDefer) or self.accept(Kind.KwErrDefer):
+            is_errdefer = self.prev_tok.kind == Kind.KwErrDefer
             pos = self.prev_tok.pos
             expr = self.parse_expr()
             if expr.__class__ not in (ast.IfExpr, ast.SwitchExpr, ast.Block):
                 self.expect(Kind.Semicolon)
-            return ast.DeferStmt(expr, pos)
+            return ast.DeferStmt(expr, is_errdefer, pos)
         expr = self.parse_expr()
         if not ((self.inside_block and self.tok.kind == Kind.Rbrace)
                 or expr.__class__ in (ast.IfExpr, ast.SwitchExpr, ast.Block)):

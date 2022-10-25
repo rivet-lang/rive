@@ -14,3 +14,25 @@ fn test_defer() i32 {
 test "defer stmt" {
     assert!(test_defer() == 5);
 }
+
+struct ErrDefer {
+    mut i: i32;
+}
+
+fn test_errdefer(mut err_defer: ErrDefer, err: bool) !void {
+    defer err_defer.i = 1;
+    errdefer err_defer.i = 2;
+
+    if err {
+        return Error();
+    }
+}
+
+test "errdefer stmt" {
+    let mut err_defer = ErrDefer(i: 0);
+    test_errdefer(err_defer, false) catch { };
+    assert!(err_defer.i == 1);
+
+    test_errdefer(err_defer, true) catch { };
+    assert!(err_defer.i == 2);
+}

@@ -320,8 +320,9 @@ class ForInStmt:
         self.pos = pos
 
 class DeferStmt:
-    def __init__(self, expr, pos):
+    def __init__(self, expr, is_errdefer, pos):
         self.expr = expr
+        self.is_errdefer = is_errdefer
         self.pos = pos
 
 class ExprStmt:
