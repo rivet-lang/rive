@@ -12,5 +12,5 @@ fn test_defer() i32 {
 }
 
 test "defer stmt" {
-    assert!(test_fn() == 5);
+    assert!(test_defer() == 5);
 }
