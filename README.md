@@ -51,7 +51,7 @@ API is not stable, and may change in the long term. Not all features are impleme
 * **Named and optional arguments**: Very useful.
 * **Immutable values by default:** Variables and fields of struct are immutable
 by default.
-* **Polymorphism**: Classes and Traits are supported.
+* **Polymorphism**: Classes, Traits and Embedded Structs are supported.
 * **Generics:** Specialize and reuse the same code for different types.
 
 * * *
