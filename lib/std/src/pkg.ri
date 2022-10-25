@@ -3,7 +3,6 @@
 // that can be found in the LICENSE file.
 
 pub use core::backtrace;
-pub use core::console;
 pub use core::mem;
 pub use core::process;
 pub use core::stdc;

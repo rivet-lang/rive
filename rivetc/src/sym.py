@@ -122,12 +122,7 @@ class Sym:
         if asym := self.find(sym.name):
             if isinstance(asym, Type) and asym.kind == TypeKind.Placeholder:
                 # update placeholder
-                asym.vis = sym.vis
-                asym.kind = sym.kind
-                asym.fields = sym.fields
-                for ss in sym.syms:
-                    asym.add(ss)
-                asym.info = sym.info
+                asym.update(sym)
                 return
             raise CompilerError(
                 f"{self.typeof()} `{self.name}` has duplicate symbol `{sym.name}`"
@@ -136,11 +131,16 @@ class Sym:
         self.syms.append(sym)
 
     def add_and_return(self, sym):
-        if _ := self.find(sym.name):
-            raise CompilerError(
-                f"{self.typeof()} `{self.name}` has duplicate symbol `{sym.name}`"
-            )
         idx = len(self.syms)
+        for i, asym in enumerate(self.syms):
+            if asym.name == sym.name:
+                if isinstance(asym, Type) and asym.kind == TypeKind.Placeholder:
+                    # update placeholder
+                    asym.update(sym)
+                    return self.syms[i]
+                raise CompilerError(
+                    f"{self.typeof()} `{self.name}` has duplicate symbol `{sym.name}`"
+                )
         sym.parent = self
         self.syms.append(sym)
         return self.syms[idx]
@@ -525,6 +525,16 @@ class Type(Sym):
                 if base.is_subtype_of(t):
                     return True
         return False
+
+    def update(self, other):
+        if self.kind == TypeKind.Placeholder:
+            # update placeholder
+            self.vis = other.vis
+            self.kind = other.kind
+            self.fields = other.fields
+            for ss in other.syms:
+                self.add(ss)
+            self.info = other.info
 
 class Arg:
     def __init__(self, name, is_mut, typ, def_expr, has_def_expr, pos):

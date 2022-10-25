@@ -4,9 +4,8 @@
 
 use core::process { exit };
 use core::Console { self, eprintln, print, println };
-use core::console::color { self, can_show_color_on_stdout };
 
-let SUPPORT_COLOR: bool = can_show_color_on_stdout();
+let SUPPORT_COLOR: bool = Console::can_show_color_on_stdout();
 
 let OK_STATUS: string = bold(green(" [  OK  ] "));
 let FAILED_STATUS: string = bold(red(" [ FAIL ] "));
@@ -26,28 +25,28 @@ fn header(txt: string, sep: string) string {
 
 fn bold(txt: string) string {
     if (SUPPORT_COLOR) {
-        return color::bold(txt);
+        return Console::bold(txt);
     }
     return txt;
 }
 
 fn green(txt: string) string {
     if (SUPPORT_COLOR) {
-        return color::green(txt);
+        return Console::green(txt);
     }
     return txt;
 }
 
 fn red(txt: string) string {
     if (SUPPORT_COLOR) {
-        return color::red(txt);
+        return Console::red(txt);
     }
     return txt;
 }
 
 fn yellow(txt: string) string {
     if (SUPPORT_COLOR) {
-        return color::yellow(txt);
+        return Console::yellow(txt);
     }
     return txt;
 }
