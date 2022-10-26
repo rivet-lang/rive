@@ -674,21 +674,12 @@ class Checker:
                         expr.index.pos
                     )
                 if isinstance(expr.index, ast.RangeExpr):
-                    if expr.is_mut:
-                        if isinstance(
-                            expr.left_typ, type.Vec
-                        ) and not expr.left_typ.is_mut:
-                            report.error(
-                                "cannot create a mutable slice from an immutable one"
-                            )
-                        else:
-                            self.check_expr_is_mut(expr.left)
                     if left_sym.kind == TypeKind.Vec:
                         expr.typ = expr.left_typ
                     else:
-                        expr.typ = type.Vec(left_sym.info.elem_typ, expr.is_mut)
-                        expr.typ.sym = self.comp.universe.add_or_get_slice(
-                            left_sym.info.elem_typ, expr.is_mut
+                        expr.typ = type.Vec(left_sym.info.elem_typ)
+                        expr.typ.sym = self.comp.universe.add_or_get_vec(
+                            left_sym.info.elem_typ
                         )
                 elif left_sym.kind == TypeKind.Vec:
                     expr.typ = left_sym.info.elem_typ

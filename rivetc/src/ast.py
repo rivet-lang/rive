@@ -630,10 +630,9 @@ class ParExpr:
         return f"({self.expr})"
 
 class IndexExpr:
-    def __init__(self, left, index, is_mut, pos):
+    def __init__(self, left, index, pos):
         self.left = left
         self.index = index
-        self.is_mut = is_mut
         self.left_typ = None
         self.pos = pos
         self.typ = None

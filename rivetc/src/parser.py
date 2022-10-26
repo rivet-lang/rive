@@ -965,7 +965,6 @@ class Parser:
                     ), expr.pos
                 )
             elif self.accept(Kind.Lbracket):
-                is_mut = self.accept(Kind.KwMut)
                 index = self.empty_expr()
                 if self.accept(Kind.DotDot):
                     if self.tok.kind == Kind.Rbracket:
@@ -990,11 +989,7 @@ class Parser:
                                 True, True
                             )
                 self.expect(Kind.Rbracket)
-                if is_mut and not isinstance(index, ast.RangeExpr):
-                    report.error(
-                        "only slices can be marked as mutable", expr.pos
-                    )
-                expr = ast.IndexExpr(expr, index, is_mut, expr.pos)
+                expr = ast.IndexExpr(expr, index, expr.pos)
             elif self.accept(Kind.Dot):
                 if self.accept(Kind.Mul):
                     expr = ast.SelectorExpr(

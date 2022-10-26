@@ -234,18 +234,12 @@ class Pkg(Sym):
         if sym := self.find(unique_name):
             return sym
         from .type import Ptr, Type as type_Type
-        arr_sym = Type(
-            Vis.Pub, unique_name, TypeKind.Array,
-            info = ArrayInfo(elem_typ, size)
-        )
-        arr_sym.add(
-            Fn(
-                ABI.Rivet, Vis.Pub, False, False, True, False, "as_vec", [],
-                type_Type(self.add_or_get_vec(elem_typ)), False, True, NO_POS,
-                True
+        return self.add_and_return(
+            Type(
+                Vis.Pub, unique_name, TypeKind.Array,
+                info = ArrayInfo(elem_typ, size)
             )
         )
-        return self.add_and_return(arr_sym)
 
     def add_or_get_vec(self, elem_typ):
         unique_name = f"[{elem_typ.qualstr()}]"
@@ -278,6 +272,12 @@ class Pkg(Sym):
             Fn(
                 ABI.Rivet, Vis.Pub, False, False, True, False, "pop", [],
                 elem_typ, False, True, NO_POS, True
+            )
+        )
+        vec_sym.add(
+            Fn(
+                ABI.Rivet, Vis.Pub, False, False, True, False, "clone", [],
+                type_Type(vec_sym), False, True, NO_POS, False
             )
         )
         return self.add_and_return(vec_sym)
