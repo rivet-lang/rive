@@ -130,10 +130,10 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 /// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to i8, i16, i32, and
 /// i64. If `bit_size` is below 0 or above 64, an error is returned.
 pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
-    let mut bit_size = bit_size_;
     if s == "" {
         return InvalidSyntaxError("strconv::string_to_int: invalid syntax");
     }
+    let mut bit_size = bit_size_;
 
     // pick off leading sign.
     let mut s0 = s;
@@ -186,7 +186,8 @@ fn underscore_ok(s_: string) bool {
     if s.len - i >= 2 and s[i] == b'0' and (
         lower(s[i + 1]) == b'b' or lower(s[i + 1]) == b'o' or lower(s[i + 1]) == b'x'
     ) {
-        saw = b'0'; // base prefix counts as a digit for "underscore as digit separator"
+        // base prefix counts as a digit for "underscore as digit separator"
+        saw = b'0';
         hex = lower(s[i + 1]) == b'x';
         i += 2;
     }
