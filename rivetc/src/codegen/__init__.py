@@ -102,6 +102,13 @@ class Codegen:
     def __init__(self, comp):
         self.comp = comp
         self.out_rir = ir.RIRFile(self.comp.prefs.pkg_name)
+        self.void_types = (self.comp.void_t, self.comp.never_t)
+
+        self.cur_fn = None
+        self.cur_fn_is_main = False
+
+        self.loop_entry_label = ""
+        self.loop_exit_label = ""
 
     def gen_source_files(self, source_files):
         self.gen_types()
@@ -173,11 +180,39 @@ class Codegen:
 
     def ir_type_from_type(self, typ):
         if isinstance(typ, type.Result):
-            return ir_type.Type(f"Result_{mangle_type(typ.typ)}")
+            name = f"Result_{mangle_type(typ.typ)}"
+            is_void = typ.typ in self.void_types
+            self.out_rir.types.append(
+                ir.Struct(
+                    False, False, False, name, [
+                        ir.Field(
+                            "value",
+                            ir_type.Type("u8")
+                            if is_void else self.ir_type_from_type(typ.typ)
+                        ),
+                        ir.Field("is_err", ir_type.Type("bool")),
+                        ir.Field("err", ir_type.Type("_R4core5Error"))
+                    ]
+                )
+            )
+            return ir_type.Type(name)
         elif isinstance(typ, type.Optional):
             if isinstance(typ.typ, type.Ref):
                 return ir_type.Pointer(self.ir_type_from_type(typ.typ))
-            return ir_type.Type(f"Optional_{mangle_type(typ.typ)}")
+            name = f"Optional_{mangle_type(typ.typ)}"
+            is_void = typ.typ in self.void_types
+            self.out_rir.types.append(
+                ir.Struct(
+                    False, False, False, name, [
+                        ir.Field(
+                            "value",
+                            ir_type.Type("u8") if is_void else typ.typ
+                        ),
+                        ir.Field("is_none", ir_type.Type("bool"))
+                    ]
+                )
+            )
+            return ir_type.Type(name)
         elif isinstance(typ, type.Fn):
             args = []
             for arg in typ.args:
@@ -191,7 +226,11 @@ class Codegen:
             return ir_type.Type("_R4core3Vec")
         elif isinstance(typ, (type.Ptr, type.Ref)):
             return ir_type.Pointer(self.ir_type_from_type(typ.typ))
-        return ir_type.Type(mangle_symbol(typ.symbol()))
+        typ_sym = typ.symbol()
+        res = ir_type.Type(mangle_symbol(typ_sym))
+        if typ_sym.kind == TypeKind.Class:
+            return res.ptr()
+        return res
 
     def gen_types(self):
         type_symbols = self.sort_type_symbols(
@@ -251,10 +290,18 @@ class Codegen:
                     )
             elif ts.kind == sym.TypeKind.Class:
                 fields = list()
+                if ts.info.base:
+                    fields.append(
+                        ir.Field(
+                            "base",
+                            ir_type.Type(mangle_symbol(ts.info.base)).ptr()
+                        )
+                    )
                 for f in ts.fields:
                     fields.append(
                         ir.Field(f.name, self.ir_type_from_type(f.typ))
                     )
+                fields.append(ir.Field("_rc", ir_type.Type("usize")))
                 self.out_rir.types.append(
                     ir.Struct(
                         ts.vis.is_pub(), False, False, mangle_symbol(ts), fields
@@ -262,6 +309,10 @@ class Codegen:
                 )
             elif ts.kind == sym.TypeKind.Struct:
                 fields = list()
+                for base in ts.info.bases:
+                    fields.append(
+                        ir.Field(base.name, ir_type.Type(mangle_symbol(base)))
+                    )
                 for f in ts.fields:
                     fields.append(
                         ir.Field(f.name, self.ir_type_from_type(f.typ))
@@ -317,6 +368,13 @@ class Codegen:
                         continue
                     field_deps.append(dep)
             elif ts.kind == sym.TypeKind.Class:
+                if ts.info.base:
+                    dep = mangle_symbol(ts.info.base)
+                    if dep not in typ_names or dep in field_deps or isinstance(
+                        f.typ, type.Optional
+                    ):
+                        continue
+                    field_deps.append(dep)
                 for f in ts.fields:
                     dsym = f.typ.symbol()
                     dep = mangle_symbol(dsym)
@@ -326,6 +384,13 @@ class Codegen:
                         continue
                     field_deps.append(dep)
             elif ts.kind == sym.TypeKind.Struct:
+                for base in ts.info.bases:
+                    dep = mangle_symbol(base)
+                    if dep not in typ_names or dep in field_deps or isinstance(
+                        f.typ, type.Optional
+                    ):
+                        continue
+                    field_deps.append(dep)
                 for f in ts.fields:
                     dsym = f.typ.symbol()
                     dep = mangle_symbol(dsym)
