@@ -30,3 +30,7 @@ extern (C) {
     pub fn putchar(s: i32) i32;
     pub fn printf(fmt: *u8, ...) i32;
 }
+
+extern (C) {
+    pub fn asprintf(strp: **u8, fmt: *u8, ...) i32;
+}

@@ -9,16 +9,16 @@ from . import (
     ast, sym, type, token, prefs, report, utils,
 
     # stages
-    parser, register, resolver, checker
+    parser, register, resolver, checker, codegen
 )
 
 class Compiler:
     def __init__(self, args):
-        # `universe` is the mega-package where all the packages being
-        # compiled reside.
+        #  `universe` is the mega-package where all the packages being
+        #  compiled reside.
         self.universe = sym.universe()
 
-        # Primitive types.
+        #  Primitive types.
         self.void_t = type.Type(self.universe[0])
         self.never_t = type.Type(self.universe[1])
         self.none_t = type.Type(self.universe[2])
@@ -53,6 +53,7 @@ class Compiler:
         self.register = register.Register(self)
         self.resolver = resolver.Resolver(self)
         self.checker = checker.Checker(self)
+        self.codegen = codegen.Codegen(self)
 
     def run(self):
         self.load_pkg("core", token.NO_POS)
@@ -74,42 +75,10 @@ class Compiler:
             if report.ERRORS > 0:
                 self.abort()
 
-        #	if not self.prefs.check:
-        #		unique_rir = self.ast2rir.convert(self.source_files)
-        #		if report.ERRORS > 0:
-        #			self.abort()
-        #		if self.prefs.emit_rir:
-        #			with open(f"{self.prefs.pkg_name}.rir", "w+") as f:
-        #				f.write(str(unique_rir))
-        #		else:
-        #			self.check_pkg_attrs()
-        #			if self.prefs.target_backend == prefs.Backend.C:
-        #				self.cgen.gen(unique_rir)
-        #				c_file = f"{self.prefs.pkg_name}.ri.c"
-        #				self.cgen.write_to_file(c_file)
-        #				args = [
-        #				    self.prefs.backend_compiler, c_file,
-        #				    *self.prefs.objects_to_link, "-fno-builtin",
-        #				    "-Werror", "-m64" if self.prefs.target_bits
-        #				    == prefs.Bits.X64 else "-m32",
-        #				    *[f"-l{l}" for l in self.prefs.libraries_to_link],
-        #				    *[f"-L{l}" for l in self.prefs.library_path], "-o",
-        #				    self.prefs.pkg_output,
-        #				]
-        #				if self.prefs.build_mode == prefs.BuildMode.Release:
-        #					args.append("-flto")
-        #					args.append("-O3")
-        #				else:
-        #					args.append("-g")
-        #				self.vlog(f"C compiler options: {args}")
-        #				res = utils.execute(*args)
-        #				if res.exit_code == 0:
-        #					if not self.prefs.keep_c:
-        #						os.remove(c_file)
-        #				else:
-        #					utils.error(
-        #					    f"error while compiling the output C file `{c_file}`:\n{res.err}"
-        #					)
+            if not self.prefs.check:
+                self.codegen.gen_source_files(self.source_files)
+                if report.ERRORS > 0:
+                    self.abort()
 
     def load_root_pkg(self):
         if path.isdir(self.prefs.input):
@@ -141,7 +110,7 @@ class Compiler:
                     files = self.filter_files(
                         glob.glob(path.join(pkg_path, "*.ri"))
                     )
-                    # support `src/` directory
+                    #  support `src/` directory
                     if path.isdir(path.join(pkg_path, "src")):
                         files += self.filter_files(
                             glob.glob(path.join(pkg_path, "src", "*.ri"))
@@ -197,62 +166,6 @@ class Compiler:
             if should_compile:
                 new_inputs.append(input)
         return new_inputs
-
-    def check_pkg_attrs(self):
-        pkg_folder = os.path.join(prefs.RIVET_DIR, "objs", self.prefs.pkg_name)
-        for attr in self.pkg_attrs.attrs:
-            if attr.name == "c_compile":
-                if not os.path.exists(pkg_folder):
-                    os.mkdir(pkg_folder)
-                cfile = os.path.realpath(attr.args[0].expr.lit)
-                objfile = os.path.join(
-                    pkg_folder,
-                    f"{os.path.basename(cfile)}.{self.get_postfix()}.o"
-                )
-                self.prefs.objects_to_link.append(objfile)
-                msg = f"c_compile: compiling object for C file `{cfile}`..."
-                if os.path.exists(objfile):
-                    if os.path.getmtime(objfile) < os.path.getmtime(cfile):
-                        msg = f"c_compile: {objfile} is older than {cfile}, rebuilding..."
-                    else:
-                        continue
-                self.vlog(msg)
-                args = [
-                    self.prefs.backend_compiler, cfile, "-m64"
-                    if self.prefs.target_bits == prefs.Bits.X64 else "-m32",
-                    "-O3" if self.prefs.build_mode == prefs.BuildMode.Release
-                    else "-g", f'-L{os.path.dirname(cfile)}', "-c", "-o",
-                    objfile,
-                ]
-                res = utils.execute(*args)
-                if res.exit_code != 0:
-                    utils.error(
-                        f"error while compiling the object file `{objfile}`:\n{res.err}"
-                    )
-            else:
-                report.error(
-                    f"unknown package attribute `{attr.name}`", attr.pos
-                )
-        if report.ERRORS > 0:
-            self.abort()
-
-    def get_postfix(self):
-        postfix = str(self.prefs.target_os).lower()
-        postfix += "-"
-        postfix += str(self.prefs.target_arch).lower()
-        postfix += "-"
-        postfix += str(self.prefs.target_bits).lower()
-        postfix += "-"
-        postfix += str(self.prefs.target_endian).lower()
-        postfix += "-"
-        postfix += str(self.prefs.target_backend).lower()
-        postfix += "-"
-        if self.prefs.build_mode == prefs.BuildMode.Debug:
-            postfix += "debug"
-        else:
-            postfix += "release"
-        postfix += f"-{self.prefs.backend_compiler}"
-        return postfix
 
     # ========================================================
 
@@ -370,7 +283,7 @@ class Compiler:
                     size = v_size
                     align = v_alignment
             if not sy.info.is_c_union:
-                # `tag: i32` field
+                #  `tag: i32` field
                 size += 4
         elif sy.kind in (
             sym.TypeKind.Struct, sym.TypeKind.Tuple, sym.TypeKind.Class,
@@ -397,18 +310,18 @@ class Compiler:
         return size, align
 
     def evalue_pp_symbol(self, name, pos):
-        # operating systems
+        #  operating systems
         if name in ("_LINUX_", "_WINDOWS_"):
             return self.prefs.target_os.equals_to_string(name)
-        # architectures
+        #  architectures
         elif name in ("_X86_", "_AMD64_"):
             return self.prefs.target_arch.equals_to_string(name)
-        # bits
+        #  bits
         elif name in ("_x32_", "_x64_"):
             if name == "_x32_":
                 return self.prefs.target_bits == prefs.Bits.X32
             return self.prefs.target_bits == prefs.Bits.X64
-        # endian
+        #  endian
         elif name in ("_LITTLE_ENDIAN_", "_BIG_ENDIAN_"):
             if name == "_LITTLE_ENDIAN_":
                 return self.prefs.target_endian == prefs.Endian.Little

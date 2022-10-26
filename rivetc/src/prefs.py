@@ -162,7 +162,7 @@ class Prefs:
         self.input = ""
         self.pkg_name = ""
         self.pkg_type = PkgType.Bin
-        self.pkg_output = "main.exe" if self.target_os == OS.Windows else "main"
+        self.pkg_output = ""
         self.build_mode = BuildMode.Debug
 
         self.library_path = [
@@ -209,7 +209,6 @@ class Prefs:
             if arg == "--pkg-name":
                 if pkg_name := option(current_args, arg):
                     self.pkg_name = pkg_name
-                    self.pkg_output = pkg_name
                     if not is_valid_name(self.pkg_name):
                         error(f"invalid package name `{self.pkg_name}`")
                 else:
@@ -323,13 +322,14 @@ class Prefs:
 
         self.build_rivet_dir()
 
-        if not path.isabs(self.pkg_output):
-            self.pkg_output = path.join(os.getcwd(), self.pkg_output)
-
+        self.pkg_output = self.pkg_name
         if self.target_os == OS.Windows and not self.pkg_output.endswith(
             ".exe"
         ):
             self.pkg_output += ".exe"
+
+        if not path.isabs(self.pkg_output):
+            self.pkg_output = path.join(os.getcwd(), self.pkg_output)
 
     def build_rivet_dir(self):
         if not path.isdir(RIVET_DIR):
