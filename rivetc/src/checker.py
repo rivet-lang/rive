@@ -583,26 +583,25 @@ class Checker:
                     )
                 expr.typ = self.comp.bool_t
                 return expr.typ
-            elif expr.op in (Kind.And, Kind.Or):
-                op_str = "&&" if expr.op == Kind.And else "||"
+            elif expr.op in (Kind.KwAnd, Kind.KwOr):
                 if ltyp != self.comp.bool_t:
                     report.error(
-                        f"non-boolean expression in left operand for `{op_str}`",
+                        f"non-boolean expression in left operand for `{expr.op}`",
                         expr.left.pos
                     )
                 elif rtyp != self.comp.bool_t:
                     report.error(
-                        f"non-boolean expression in right operand for `{op_str}`",
+                        f"non-boolean expression in right operand for `{expr.op}`",
                         expr.right.pos
                     )
                 elif isinstance(expr.left, ast.BinaryExpr):
                     if expr.left.op != expr.op and expr.left.op in (
-                        Kind.And, Kind.Or
+                        Kind.KwAnd, Kind.KwOr
                     ):
-                        # use `(a && b) || c` instead of `a && b || c`
+                        # use `(a and b) or c` instead of `a and b or c`
                         report.error("ambiguous boolean expression", expr.pos)
                         report.help(
-                            f"use `({expr.left}) {op_str} {expr.right}` instead"
+                            f"use `({expr.left}) {expr.op} {expr.right}` instead"
                         )
                 expr.typ = self.comp.bool_t
                 return expr.typ
@@ -625,7 +624,7 @@ class Checker:
                 return expr.typ
 
             if ltyp == self.comp.bool_t and rtyp == self.comp.bool_t and expr.op not in (
-                Kind.Eq, Kind.Ne, Kind.And, Kind.Or, Kind.Pipe, Kind.Amp
+                Kind.Eq, Kind.Ne, Kind.KwAnd, Kind.KwOr, Kind.Pipe, Kind.Amp
             ):
                 report.error(
                     "boolean values only support the following operators: `==`, `!=`, `and`, `or`, `&` and `|`",

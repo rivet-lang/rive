@@ -21,26 +21,26 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 
     let mut start_index: usize = 0;
     switch {
-        (base_ <= 2 && base_ <= 36) => { /* valid base; nothing to do */ },
+        (base_ <= 2 and base_ <= 36) => { /* valid base; nothing to do */ },
         (base_ == 0) => {
             // look for octal, hex prefix.
             base_ = 10;
             if s[0] == b'0' {
                 switch {
-                    s.len >= 3 && lower(s[1]) == b'b' => {
+                    s.len >= 3 and lower(s[1]) == b'b' => {
                         base_ = 2;
                         start_index += 2;
                     },
-                    s.len >= 3 && lower(s[1]) == b'o' => {
+                    s.len >= 3 and lower(s[1]) == b'o' => {
                         base_ = 8;
                         start_index += 2;
                     },
-                    s.len >= 3 && lower(s[1]) == b'x' => {
+                    s.len >= 3 and lower(s[1]) == b'x' => {
                         base_ = 16;
                         start_index += 2;
                     },
                     // manage leading zeros in decimal base's numbers
-                    s.len >= 2 && (s[1] >= b'0' && s[1] <= b'9') => {
+                    s.len >= 2 and (s[1] >= b'0' and s[1] <= b'9') => {
                         base_ = 10;
                         start_index += 1;
                     },
@@ -58,7 +58,7 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 
     if bit_size == 0 {
         bit_size = INT_SIZE;
-    } else if bit_size < 0 || bit_size > 64 {
+    } else if bit_size < 0 or bit_size > 64 {
         return InvalidBitSizeError(
             "strconv::string_to_uint: invalid bit size {}".fmt(bit_size)
         );
@@ -81,12 +81,12 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 
         let mut d: u8 = 0;
         switch {
-            (c == b'_' && base0) => {
+            (c == b'_' and base0) => {
                 underscores = true;
                 continue;
             },
-            (b'0' <= c && c <= b'9') => d = c - b'0',
-            (b'a' <= cl && cl <= b'z') => d = cl - b'a' + 1,
+            (b'0' <= c and c <= b'9') => d = c - b'0',
+            (b'a' <= cl and cl <= b'z') => d = cl - b'a' + 1,
             else => return InvalidSyntaxError("strconv::string_to_uint: invalid syntax")
         }
 
@@ -101,14 +101,14 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
         n *= as(u64, base_);
 
         let n1 = n + as(u64, d);
-        if n1 < n || n1 > max_val {
+        if n1 < n or n1 > max_val {
             // `n + d` overflows
             return ValueOutOfRangeError("strconv::string_to_uint: value out of range");
         }
         n = n1;
     }
 
-    if underscores && !underscore_ok(s) {
+    if underscores and !underscore_ok(s) {
         return InvalidSyntaxError("strconv::string_to_uint: invalid syntax");
     }
 
@@ -152,10 +152,10 @@ pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
     }
 
     let cutoff = as(u64, 1) << as(u32, bit_size - 1);
-    if !neg && un >= cutoff {
+    if !neg and un >= cutoff {
         return ValueOutOfRangeError("strconv::string_to_int: value out of range");
     }
-    if neg && un > cutoff {
+    if neg and un > cutoff {
         return ValueOutOfRangeError("strconv::string_to_int: value out of range");
     }
 
@@ -169,25 +169,24 @@ pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
 fn underscore_ok(s_: string) bool {
     let s = s_;
     // saw tracks the last character (class) we saw:
-    //     ^ for beginning of number,
-    //     0 for a digit or base prefix,
-    //     _ for an underscore,
-    //     ! for none of the above.
+    // ^ for beginning of number,
+    // 0 for a digit or base prefix,
+    // _ for an underscore,
+    // ! for none of the above.
     let mut saw = b'^';
     let mut i: usize = 0;
 
     // optional sign.
-    if s.len >= 1 && (s[0] == b'-' || s[0] == b'+') {
+    if s.len >= 1 and (s[0] == b'-' or s[0] == b'+') {
         i += 1;
     }
 
     // optional base prefix.
     let mut hex = false;
-    if s.len - i >= 2 && s[i] == b'0' && (
-        lower(s[i + 1]) == b'b' || lower(s[i + 1]) == b'o' || lower(s[i + 1]) == b'x'
+    if s.len - i >= 2 and s[i] == b'0' and (
+        lower(s[i + 1]) == b'b' or lower(s[i + 1]) == b'o' or lower(s[i + 1]) == b'x'
     ) {
-        // base prefix counts as a digit for "underscore as digit separator"
-        saw = b'0';
+        saw = b'0'; // base prefix counts as a digit for "underscore as digit separator"
         hex = lower(s[i + 1]) == b'x';
         i += 2;
     }
@@ -195,8 +194,8 @@ fn underscore_ok(s_: string) bool {
     // number proper.
     for i_ in i..s.len {
         // digits are always okay.
-        if (b'0' <= s[i_] && s[i_] <= b'9') ||
-            (hex && b'a' <= lower(s[i_]) && lower(s[i_]) <= b'f') {
+        if (b'0' <= s[i_] and s[i_] <= b'9') or
+            (hex and b'a' <= lower(s[i_]) and lower(s[i_]) <= b'f') {
             saw = b'0';
             continue;
         }

@@ -25,7 +25,7 @@ pub fn execute(cmd: string) Result {
         let mut output = StringBuilder::new(1024);
         while {
             let len = stdc::read(fd, pbuf, 4096);
-            if len == 0 || len == -1 {
+            if len == 0 or len == -1 {
                 break;
             }
             output.write_raw_with_len(pbuf, as(usize, len));
