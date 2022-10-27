@@ -271,7 +271,9 @@ class Codegen:
         elif isinstance(typ, (type.Ptr, type.Ref)):
             return ir.Pointer(self.convert_type(typ.typ))
         typ_sym = typ.symbol()
-        if typ_sym.kind.is_primitive():
+        if typ_sym.kind == TypeKind.Never:
+            return ir.Type("void")
+        elif typ_sym.kind.is_primitive():
             return ir.Type(typ_sym.name)
         res = ir.Type(mangle_symbol(typ_sym))
         if typ_sym.kind == TypeKind.Class:
