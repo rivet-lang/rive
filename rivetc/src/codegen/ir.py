@@ -162,9 +162,13 @@ class GlobalVar:
         self.name = name
 
     def __str__(self):
-        kw = "pub " if self.is_pub else ""
-        kw2 = "extern " if self.is_extern else ""
-        return f'{kw}{kw2}let @{self.name}: {self.typ}'
+        if self.is_pub:
+            kw = "pub "
+        elif self.is_extern:
+            kw = "extern "
+        else:
+            kw = ""
+        return f'{kw}let %{self.name}: {self.typ}'
 
 class FnDecl:
     def __init__(self, is_pub, attrs, is_extern, name, args, is_variadic, ret_typ):
@@ -242,10 +246,10 @@ class FnDecl:
 
     def __str__(self):
         sb = utils.Builder()
-        if self.is_pub:
-            sb.write("pub ")
         if self.is_extern:
             sb.write("extern ")
+        elif self.is_pub:
+            sb.write("pub ")
         sb.write(f'fn {self.name}(')
         for i, arg in enumerate(self.args):
             sb.write(f'%{arg.name}: {arg.typ}')
