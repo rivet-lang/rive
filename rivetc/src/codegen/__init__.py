@@ -9,7 +9,7 @@ from ..token import Kind, OVERLOADABLE_OPERATORS_STR
 from .. import ast, sym, type, prefs, colors, report, utils
 
 from . import ir
-from .c import CBackend
+from .c import CGen
 
 def prefix_type(tt):
     prefix = ""
@@ -109,6 +109,8 @@ class Codegen:
         self.cur_fn = None
         self.cur_fn_is_main = False
 
+        self.generated_opt_res_types = []
+
         self.loop_entry_label = ""
         self.loop_exit_label = ""
 
@@ -123,7 +125,7 @@ class Codegen:
                     f.write(str(self.out_rir).strip())
             if self.comp.prefs.target_backend == prefs.Backend.C:
                 # self.check_pkg_attrs()
-                CBackend(self.comp).gen(self.out_rir)
+                CGen(self.comp).gen(self.out_rir)
 
     def check_pkg_attrs(self):
         pkg_folder = os.path.join(
@@ -185,7 +187,7 @@ class Codegen:
 
     def gen_decl(self, decl):
         if isinstance(decl, ast.ExternDecl):
-            pass
+            self.gen_decls(decl.decls)
         elif isinstance(decl, ast.ModDecl):
             if decl.is_inline:
                 self.gen_decls(decl.decls)
@@ -202,53 +204,64 @@ class Codegen:
         elif isinstance(decl, ast.ExtendDecl):
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.FnDecl):
-            pass
+            fn_decl = ir.FnDecl(
+                decl.vis.is_pub(), decl.attrs, decl.is_extern, mangle_symbol(decl.sym),
+                [], False, self.convert_type(decl.ret_typ)
+            )
+            if decl.is_extern:
+                self.out_rir.externs.append(fn_decl)
+            else:
+                self.out_rir.decls.append(fn_decl)
         elif isinstance(decl, ast.DestructorDecl):
             pass
         elif isinstance(decl, ast.TestDecl):
             if self.comp.prefs.build_mode==prefs.BuildMode.Test:
                 pass
 
-    def ir_from_type(self, typ):
+    def convert_type(self, typ):
         if isinstance(typ, type.Result):
             name = f"Result_{mangle_type(typ.typ)}"
-            is_void = typ.typ in self.void_types
-            self.out_rir.types.append(
-                ir.Struct(
-                    False, False, False, name, [
-                        ir.Field(
-                            "value",
-                            ir.Type("u8")
-                            if is_void else self.ir_from_type(typ.typ)
-                        ),
-                        ir.Field("is_err", ir.Type("bool")),
-                        ir.Field("err", ir.Type("_R4core5Error"))
-                    ]
+            if name not in self.generated_opt_res_types:
+                is_void = typ.typ in self.void_types
+                self.out_rir.types.append(
+                    ir.Struct(
+                        False, False, False, name, [
+                            ir.Field(
+                                "value",
+                                ir.Type("u8")
+                                if is_void else self.convert_type(typ.typ)
+                            ),
+                            ir.Field("is_err", ir.Type("bool")),
+                            ir.Field("err", ir.Type("_R4core5Error"))
+                        ]
+                    )
                 )
-            )
+                self.generated_opt_res_types.append(name)
             return ir.Type(name)
         elif isinstance(typ, type.Optional):
             if isinstance(typ.typ, type.Ref):
-                return ir.Pointer(self.ir_from_type(typ.typ))
+                return ir.Pointer(self.convert_type(typ.typ))
             name = f"Optional_{mangle_type(typ.typ)}"
-            is_void = typ.typ in self.void_types
-            self.out_rir.types.append(
-                ir.Struct(
-                    False, False, False, name, [
-                        ir.Field(
-                            "value",
-                            ir.Type("u8") if is_void else typ.typ
-                        ),
-                        ir.Field("is_none", ir.Type("bool"))
-                    ]
+            if name not in self.generated_opt_res_types:
+                is_void = typ.typ in self.void_types
+                self.out_rir.types.append(
+                    ir.Struct(
+                        False, False, False, name, [
+                            ir.Field(
+                                "value",
+                                ir.Type("u8") if is_void else typ.typ
+                            ),
+                            ir.Field("is_none", ir.Type("bool"))
+                        ]
+                    )
                 )
-            )
+                self.generated_opt_res_types.append(name)
             return ir.Type(name)
         elif isinstance(typ, type.Fn):
             args = []
             for arg in typ.args:
-                args.append(self.ir_from_type(arg.typ))
-            return ir.Function(args, self.ir_from_type(typ.ret_typ))
+                args.append(self.convert_type(arg.typ))
+            return ir.Function(args, self.convert_type(typ.ret_typ))
         elif isinstance(typ, type.Tuple):
             return ir.Type(mangle_symbol(typ.symbol()))
         elif isinstance(typ, type.Array):
@@ -256,8 +269,10 @@ class Codegen:
         elif isinstance(typ, type.Vec):
             return ir.Type("_R4core3Vec")
         elif isinstance(typ, (type.Ptr, type.Ref)):
-            return ir.Pointer(self.ir_from_type(typ.typ))
+            return ir.Pointer(self.convert_type(typ.typ))
         typ_sym = typ.symbol()
+        if typ_sym.kind.is_primitive():
+            return ir.Type(typ_sym.name)
         res = ir.Type(mangle_symbol(typ_sym))
         if typ_sym.kind == TypeKind.Class:
             return res.ptr()
@@ -271,7 +286,7 @@ class Codegen:
             if ts.kind == sym.TypeKind.Tuple:
                 fields = list()
                 for i, f in enumerate(ts.info.types):
-                    fields.append(ir.Field(f"f{i}", self.ir_from_type(f)))
+                    fields.append(ir.Field(f"f{i}", self.convert_type(f)))
                 self.out_rir.types.append(
                     ir.Struct(False, False, False, mangle_symbol(ts), fields)
                 )
@@ -297,7 +312,7 @@ class Codegen:
                         if isinstance(m, sym.Fn):
                             fields.append(
                                 ir.Field(
-                                    m.name, self.ir_from_type(m.typ())
+                                    m.name, self.convert_type(m.typ())
                                 )
                             )
                     self.out_rir.types.append(
@@ -330,7 +345,7 @@ class Codegen:
                     )
                 for f in ts.fields:
                     fields.append(
-                        ir.Field(f.name, self.ir_from_type(f.typ))
+                        ir.Field(f.name, self.convert_type(f.typ))
                     )
                 fields.append(ir.Field("_rc", ir.Type("usize")))
                 self.out_rir.types.append(
@@ -346,7 +361,7 @@ class Codegen:
                     )
                 for f in ts.fields:
                     fields.append(
-                        ir.Field(f.name, self.ir_from_type(f.typ))
+                        ir.Field(f.name, self.convert_type(f.typ))
                     )
                 self.out_rir.types.append(
                     ir.Struct(

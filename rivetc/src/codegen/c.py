@@ -8,16 +8,15 @@ from . import c_headers
 from .. import prefs, utils
 
 # NOTE: some of the words in `C_RESERVED` are not reserved in C, but are
-# in C++, or have special meaning in Rivet, thus need escaping too.
-# `small` should not be needed, but see:
+# in C++, thus need escaping too. `small` should not be needed, but see:
 # https://stackoverflow.com/questions/5874215/what-is-rpcndr-h
 C_RESERVED = [
-    'auto', 'bool', 'break', 'case', 'char', 'class', 'complex', 'const',
-    'continue', 'default', 'delete', 'do', 'double', 'else', 'enum', 'export',
-    'extern', 'false', 'float', 'for', 'goto', 'if', 'inline', 'int', 'long',
-    'namespace', 'new', 'register', 'restrict', 'return', 'short', 'signed',
-    'sizeof', 'static', 'struct', 'switch', 'typedef', 'typename', 'union',
-    'unix', 'unsigned', 'void', 'volatile', 'while', 'template', 'true', 'small'
+    'auto', 'bool', 'case', 'char', 'complex',
+    'default', 'delete', 'do', 'double', 'export',
+    'float', 'goto', 'inline', 'int', 'long',
+    'namespace', 'new', 'register', 'restrict', 'short', 'signed',
+    'sizeof', 'static', 'typedef', 'typename', 'union',
+    'unix', 'unsigned', 'void', 'volatile', 'template', 'small'
 ]
 
 def c_escape(kw):
@@ -25,7 +24,7 @@ def c_escape(kw):
         return f"_ri_{kw}"
     return kw
 
-class CBackend:
+class CGen:
     def __init__(self, comp):
         self.comp = comp
         self.out = utils.Builder()

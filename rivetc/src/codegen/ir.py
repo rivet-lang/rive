@@ -30,7 +30,7 @@ class Pointer:
         return str(self)
 
     def __str__(self):
-        return f"{self.typ}*"
+        return f"*{self.typ}"
 
 class Array:
     def __init__(self, typ, size):
@@ -44,7 +44,7 @@ class Array:
         return str(self)
 
     def __str__(self):
-        return f"{self.typ}{[self.size]}"
+        return f"{[self.size]}{self.typ}"
 
 class Function:
     def __init__(self, args, ret_typ):
@@ -58,7 +58,7 @@ class Function:
         return str(self)
 
     def __str__(self):
-        return f"function({', '.join([str(arg) for arg in self.args])}) {self.ret_typ}"
+        return f"*fn({', '.join([str(arg) for arg in self.args])}) {self.ret_typ}"
 
 class RIRFile:
     def __init__(self, pkg_name):
@@ -111,11 +111,11 @@ class VTable:
 
     def __str__(self):
         sb = utils.Builder()
-        sb.writeln(f'virtual_table "{self.trait_name}" {{')
+        sb.writeln(f'virtual_table {self.trait_name} {{')
         for i, ft in enumerate(self.funcs):
             sb.writeln(f'  {i} {{')
             for f, impl in ft.items():
-                sb.writeln(f'    "{f}": "{impl}"')
+                sb.writeln(f'    {f}: {impl}')
             sb.write("  }")
             if i < len(self.funcs) - 1:
                 sb.writeln(",")
@@ -135,13 +135,13 @@ class Struct:
     def __str__(self):
         sb = utils.Builder()
         if self.is_pub:
-            sb.write("public ")
+            sb.write("pub ")
         if self.is_opaque:
-            sb.write(f'type "{self.name}" opaque')
+            sb.write(f'type {self.name} opaque')
         else:
-            sb.writeln(f'type "{self.name}" {{')
+            sb.writeln(f'type {self.name} {{')
             for i, f in enumerate(self.fields):
-                sb.write(f'  {f.typ} "{f.name}"')
+                sb.write(f'  {f.name}: {f.typ}')
                 if i < len(self.fields) - 1:
                     sb.writeln(",")
                 else:
@@ -154,7 +154,7 @@ class Field:
         self.name = name
         self.typ = typ
 
-class StaticVar:
+class GlobalVar:
     def __init__(self, is_pub, is_extern, typ, name):
         self.is_pub = is_pub
         self.is_extern = is_extern
@@ -162,36 +162,19 @@ class StaticVar:
         self.name = name
 
     def __str__(self):
-        kw = "public " if self.is_pub else ""
+        kw = "pub " if self.is_pub else ""
         kw2 = "extern " if self.is_extern else ""
-        return f'{kw}{kw2}static {self.typ} %"{self.name}"'
-
-class ExternFn:
-    def __init__(self, name, ret_typ, args, is_variadic, attrs):
-        self.name = name
-        self.ret_typ = ret_typ
-        self.args = args
-        self.is_variadic = is_variadic
-        self.attrs = attrs
-
-    def __str__(self):
-        sb = utils.Builder()
-        sb.write(f'extern function "{self.name}"(')
-        for i, arg in enumerate(self.args):
-            sb.write(f'{arg.typ} %"{arg.name}"')
-            if i < len(self.args) - 1:
-                sb.write(", ")
-        if self.is_variadic:
-            sb.write(", ...")
-        sb.write(f") {self.ret_typ}")
-        return str(sb)
+        return f'{kw}{kw2}let @{self.name}: {self.typ}'
 
 class FnDecl:
-    def __init__(self, is_pub, name, ret_typ, args):
+    def __init__(self, is_pub, attrs, is_extern, name, args, is_variadic, ret_typ):
         self.is_pub = is_pub
+        self.attrs=attrs
+        self.is_extern=is_extern
         self.name = name
-        self.ret_typ = ret_typ
         self.args = args
+        self.is_variadic=is_variadic
+        self.ret_typ = ret_typ
         self.locals = 0
         self.bb = list()
 
@@ -240,9 +223,6 @@ class FnDecl:
         args_ += args
         self.add_inst(Inst(InstKind.Call, args_))
 
-    def unreachable(self):
-        self.add_inst(Inst(InstKind.Unreachable, []))
-
     def breakpoint(self):
         self.add_inst(Inst(InstKind.Breakpoint, []))
 
@@ -263,18 +243,30 @@ class FnDecl:
     def __str__(self):
         sb = utils.Builder()
         if self.is_pub:
-            sb.write("public ")
-        sb.write(f'function "{self.name}"(')
+            sb.write("pub ")
+        if self.is_extern:
+            sb.write("extern ")
+        sb.write(f'fn {self.name}(')
         for i, arg in enumerate(self.args):
-            sb.write(f'{arg.typ} %"{arg.name}"')
+            sb.write(f'%{arg.name}: {arg.typ}')
             if i < len(self.args) - 1:
                 sb.write(", ")
-        sb.writeln(f") {self.ret_typ} {{")
-        for i in self.bb:
-            if isinstance(i, Label): sb.writeln()
-            else: sb.write("  ")
-            sb.writeln(str(i))
-        sb.write("}")
+        if self.is_variadic:
+            if len(self.args)>0:
+                self.write(", ")
+            sb.write("...")
+        sb.write(f") {self.ret_typ}")
+        if self.is_extern:
+            sb.writeln("")
+        else:
+            sb.writeln(" {")
+            for i in self.bb:
+                if isinstance(i, Label):
+                    sb.writeln()
+                else:
+                    sb.write("  ")
+                sb.writeln(str(i))
+            sb.write("}")
         return str(sb)
 
 class Comment:
@@ -366,7 +358,7 @@ class Ident: # Variables, local and static values
         self.use_arr_field = False
 
     def __repr__(self):
-        return f'{self.typ} %"{self.name}"'
+        return f'{self.typ} %{self.name}'
 
     def __str__(self):
         return self.__repr__()
@@ -417,7 +409,7 @@ class Alloca:
         self.typ = typ
 
     def __repr__(self):
-        return f'{self.typ} %"{self.name}" = {self.inst}'
+        return f'{self.typ} %{self.name} = {self.inst}'
 
     def __str__(self):
         return self.__repr__()
@@ -436,7 +428,6 @@ class InstKind(Enum):
     Select = auto_enum()
 
     DbgStmtLine = auto_enum()
-    Unreachable = auto_enum()
     Breakpoint = auto_enum()
 
     # arithmetic operators
@@ -478,7 +469,6 @@ class InstKind(Enum):
         elif self == InstKind.Cmp: return "cmp"
         elif self == InstKind.Select: return "select"
         elif self == InstKind.DbgStmtLine: return "dbg_stmt_line"
-        elif self == InstKind.Unreachable: return "unreachable"
         elif self == InstKind.Breakpoint: return "breakpoint"
         elif self == InstKind.Add: return "add"
         elif self == InstKind.Sub: return "sub"
