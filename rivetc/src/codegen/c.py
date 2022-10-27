@@ -34,13 +34,6 @@ class CGen:
         with open(c_file, "w+") as out:
             out.write(c_headers.HEADER)
             out.write(str(self.out).strip())
-            out.write("int main(i32 __argc, char** __argv) {\n")
-            pkg_main = f"_R{len(self.comp.prefs.pkg_name)}{self.comp.prefs.pkg_name}4mainF"
-            out.write(
-                f"  _R4core10rivet_mainF(__argc, (u8**)__argv, {pkg_main});\n"
-            )
-            out.write("  return 0;\n")
-            out.write("}\n")
 
         args = [
             self.comp.prefs.backend_compiler, "-o", self.comp.prefs.pkg_output,

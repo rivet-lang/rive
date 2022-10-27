@@ -119,6 +119,25 @@ class Codegen:
         for source_file in source_files:
             self.sf = source_file
             self.gen_decls(source_file.decls)
+
+        # generate 'main' fn
+        argc = ir.Ident(ir.Type("int"), "_argc")
+        argv = ir.Ident(ir.Type("char").ptr().ptr(), "_argv")
+        main_fn = ir.FnDecl(
+            False, [], False, "main",
+            [
+                argc, argv
+            ], False, ir.Type("void")
+        )
+        pkg_main = f"_R{len(self.comp.prefs.pkg_name)}{self.comp.prefs.pkg_name}4mainF"
+        main_fn.add_call(
+            pkg_main, [argc, ir.Inst(ir.InstKind.Cast, [
+                ir.Type("u8").ptr().ptr(), argv
+            ])]
+        )
+        main_fn.add_ret(ir.IntLit(ir.Type("int"), "0"))
+        self.out_rir.decls.append(main_fn)
+
         if report.ERRORS == 0:
             if self.comp.prefs.emit_rir:
                 with open(f"{self.comp.prefs.pkg_name}.rir", "w+") as f:

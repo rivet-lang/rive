@@ -223,8 +223,7 @@ class FnDecl:
         self.add_inst(Inst(InstKind.Br, [cond, Name(label1), Name(label2)]))
 
     def add_call(self, name, args = list()):
-        args_ = [Name(name)]
-        args_ += args
+        args_ = [Name(name), *args]
         self.add_inst(Inst(InstKind.Call, args_))
 
     def breakpoint(self):
@@ -283,7 +282,7 @@ class Comment:
     def __str__(self):
         return self.__repr__()
 
-class NoneLiteral:
+class NoneLit:
     def __init__(self, typ):
         self.typ = typ
 
@@ -293,7 +292,7 @@ class NoneLiteral:
     def __str__(self):
         return self.__repr__()
 
-class IntLiteral:
+class IntLit:
     def __init__(self, typ, lit):
         self.typ = typ
         self.lit = lit
@@ -307,7 +306,7 @@ class IntLiteral:
     def __str__(self):
         return self.__repr__()
 
-class FloatLiteral:
+class FloatLit:
     def __init__(self, typ, lit):
         self.typ = typ
         self.lit = lit
@@ -318,7 +317,7 @@ class FloatLiteral:
     def __str__(self):
         return self.__repr__()
 
-class RuneLiteral:
+class RuneLit:
     def __init__(self, typ, lit):
         self.lit = lit
         self.typ = typ
@@ -329,7 +328,7 @@ class RuneLiteral:
     def __str__(self):
         return self.__repr__()
 
-class StringLiteral:
+class StringLit:
     def __init__(self, typ, lit, len_):
         self.typ = typ
         self.lit = lit
@@ -341,7 +340,7 @@ class StringLiteral:
     def __str__(self):
         return self.__repr__()
 
-class ArrayLiteral:
+class ArrayLit:
     def __init__(self, typ, elems, is_variadic_init = False):
         self.typ = typ
         self.elems = elems
@@ -355,7 +354,7 @@ class ArrayLiteral:
     def __str__(self):
         return self.__repr__()
 
-class Ident: # Variables, local and static values
+class Ident: # Local and global values
     def __init__(self, typ, name):
         self.typ = typ
         self.name = name
@@ -387,7 +386,7 @@ class Name: # Simple identifier, e.g. labels
         return self.name
 
     def __str__(self):
-        return self.__repr__()
+        return self.name
 
 class Label:
     def __init__(self, label):
