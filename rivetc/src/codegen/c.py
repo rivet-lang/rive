@@ -34,7 +34,6 @@ class CBackend:
         c_file = f"{self.comp.prefs.pkg_name}.ri.c"
         with open(c_file, "w+") as out:
             out.write(c_headers.HEADER)
-            out.write(c_headers.RIVET_TYPES)
             out.write(str(self.out).strip())
             out.write("int main(i32 __argc, char** __argv) {\n")
             pkg_main = f"_R{len(self.comp.prefs.pkg_name)}{self.comp.prefs.pkg_name}4mainF"
@@ -45,12 +44,13 @@ class CBackend:
             out.write("}\n")
 
         args = [
-            self.comp.prefs.backend_compiler, c_file,
-            *self.comp.prefs.objects_to_link, "-fno-builtin", "-Werror",
+            self.comp.prefs.backend_compiler, "-o", self.comp.prefs.pkg_output,
+            "-fno-builtin", "-Werror",
             "-m64" if self.comp.prefs.target_bits == prefs.Bits.X64 else "-m32",
             *[f"-l{l}" for l in self.comp.prefs.libraries_to_link],
-            *[f"-L{l}" for l in self.comp.prefs.library_path], "-o",
-            self.comp.prefs.pkg_output,
+            *[f"-L{l}" for l in self.comp.prefs.library_path],
+            *self.comp.prefs.objects_to_link,
+            c_file
         ]
         if self.comp.prefs.build_mode == prefs.BuildMode.Release:
             args.append("-flto")

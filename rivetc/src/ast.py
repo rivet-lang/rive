@@ -97,7 +97,6 @@ class Attr:
 class Attrs:
     def __init__(self):
         self.attrs = []
-        self.if_check = True
 
     def add(self, attr):
         self.attrs.append(attr)
