@@ -136,14 +136,13 @@ class Resolver:
                             type.Type(self.self_sym.info.base), sym.ObjLevel.Rec
                         )
                     )
-                self_typ=type.Type(self.self_sym)
+                self_typ = type.Type(self.self_sym)
                 decl.scope.add(
                     sym.Obj(
-                        decl.self_is_mut, "self", self_typ,
-                        sym.ObjLevel.Rec
+                        decl.self_is_mut, "self", self_typ, sym.ObjLevel.Rec
                     )
                 )
-                decl.self_typ=self_typ
+                decl.self_typ = self_typ
                 for arg in decl.args:
                     self.resolve_type(arg.typ)
                     try:
@@ -165,14 +164,13 @@ class Resolver:
                             type.Type(self.self_sym.info.base), sym.ObjLevel.Rec
                         )
                     )
-                self_typ=type.Type(self.self_sym)
+                self_typ = type.Type(self.self_sym)
                 decl.scope.add(
                     sym.Obj(
-                        decl.self_is_mut, "self", self_typ,
-                        sym.ObjLevel.Rec
+                        decl.self_is_mut, "self", self_typ, sym.ObjLevel.Rec
                     )
                 )
-                decl.self_typ=self_typ
+                decl.self_typ = self_typ
                 for stmt in decl.stmts:
                     self.resolve_stmt(stmt)
             elif isinstance(decl, ast.TestDecl):

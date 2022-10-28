@@ -57,7 +57,7 @@ class Compiler:
 
     def run(self):
         self.load_pkg("core", token.NO_POS)
-        if self.prefs.build_mode==prefs.BuildMode.Test:
+        if self.prefs.build_mode == prefs.BuildMode.Test:
             self.load_pkg("tests", token.NO_POS)
         else:
             self.load_pkg("std", token.NO_POS)

@@ -11,12 +11,11 @@ from .. import prefs, utils
 # in C++, thus need escaping too. `small` should not be needed, but see:
 # https://stackoverflow.com/questions/5874215/what-is-rpcndr-h
 C_RESERVED = [
-    'auto', 'bool', 'case', 'char', 'complex',
-    'default', 'delete', 'do', 'double', 'export',
-    'float', 'goto', 'inline', 'int', 'long',
-    'namespace', 'new', 'register', 'restrict', 'short', 'signed',
-    'sizeof', 'small', 'static', 'typedef', 'typename', 'union',
-    'unix', 'unsigned', 'void', 'volatile', 'template'
+    'auto', 'bool', 'case', 'char', 'complex', 'default', 'delete', 'do',
+    'double', 'export', 'float', 'goto', 'inline', 'int', 'long', 'namespace',
+    'new', 'register', 'restrict', 'short', 'signed', 'sizeof', 'small',
+    'static', 'typedef', 'typename', 'union', 'unix', 'unsigned', 'void',
+    'volatile', 'template'
 ]
 
 def c_escape(kw):
@@ -43,13 +42,12 @@ class CGen:
             out.write(str(self.out).strip())
 
         args = [
-            self.comp.prefs.target_backend_compiler, "-o", self.comp.prefs.pkg_output,
-            "-fno-builtin", "-Werror",
+            self.comp.prefs.target_backend_compiler, "-o",
+            self.comp.prefs.pkg_output, "-fno-builtin", "-Werror",
             "-m64" if self.comp.prefs.target_bits == prefs.Bits.X64 else "-m32",
             *[f"-l{l}" for l in self.comp.prefs.libraries_to_link],
             *[f"-L{l}" for l in self.comp.prefs.library_path],
-            *self.comp.prefs.objects_to_link,
-            c_file
+            *self.comp.prefs.objects_to_link, c_file
         ]
         if self.comp.prefs.build_mode == prefs.BuildMode.Release:
             args.append("-flto")
@@ -78,12 +76,12 @@ class CGen:
             self.typedefs.writeln(f"typedef struct {s.name} {s.name};")
             if not s.is_opaque:
                 self.writeln(f"struct {s.name} {{")
-                for i,f in enumerate(s.fields):
+                for i, f in enumerate(s.fields):
                     self.write("  ")
                     self.write_type(f.typ, f.name)
-                    if not isinstance(f.typ, (ir.Array,ir.Function)):
+                    if not isinstance(f.typ, (ir.Array, ir.Function)):
                         self.write(f" {f.name}")
-                    if i<len(s.fields)-1:
+                    if i < len(s.fields) - 1:
                         self.writeln(";")
                     else:
                         self.writeln(";")
@@ -101,11 +99,11 @@ class CGen:
             if isinstance(decl, ir.FnDecl):
                 self.write_type(decl.ret_typ)
                 self.write(f" {decl.name}(")
-                for i,arg in enumerate(decl.args):
+                for i, arg in enumerate(decl.args):
                     self.write_type(arg.typ, arg.name)
-                    if not isinstance(arg.typ, (ir.Array,ir.Function)):
+                    if not isinstance(arg.typ, (ir.Array, ir.Function)):
                         self.write(f" {arg.name}")
-                    if i<len(decl.args)-1:
+                    if i < len(decl.args) - 1:
                         self.write(", ")
                 self.writeln(") {")
                 self.writeln("}")
@@ -113,22 +111,22 @@ class CGen:
                 pass
             self.writeln()
 
-    def write_type(self, typ, wrap=""):
+    def write_type(self, typ, wrap = ""):
         if isinstance(typ, ir.Pointer):
-            self.write_type(typ.typ,wrap)
+            self.write_type(typ.typ, wrap)
             self.write("*")
         elif isinstance(typ, ir.Array):
             self.write_type(typ.typ)
-            if len(wrap)>0:
+            if len(wrap) > 0:
                 self.write(f" {wrap}")
             self.write(f"[{typ.size}]")
         elif isinstance(typ, ir.Function):
             self.write_type(typ.ret_typ)
             self.write("(*")
-            if len(wrap)>0:
+            if len(wrap) > 0:
                 self.write(wrap)
             self.write(")(")
-            for i,arg in enumerate(typ.args):
+            for i, arg in enumerate(typ.args):
                 self.write_type(arg)
             self.write(")")
         else:

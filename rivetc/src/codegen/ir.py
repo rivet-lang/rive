@@ -167,13 +167,15 @@ class GlobalVar:
         return f'{kw}let %{self.name}: {self.typ}'
 
 class FnDecl:
-    def __init__(self, is_pub, attrs, is_extern, name, args, is_variadic, ret_typ):
+    def __init__(
+        self, is_pub, attrs, is_extern, name, args, is_variadic, ret_typ
+    ):
         self.is_pub = is_pub
-        self.attrs=attrs
-        self.is_extern=is_extern
+        self.attrs = attrs
+        self.is_extern = is_extern
         self.name = name
         self.args = args
-        self.is_variadic=is_variadic
+        self.is_variadic = is_variadic
         self.ret_typ = ret_typ
         self.locals = 0
         self.bb = list()
@@ -251,7 +253,7 @@ class FnDecl:
             if i < len(self.args) - 1:
                 sb.write(", ")
         if self.is_variadic:
-            if len(self.args)>0:
+            if len(self.args) > 0:
                 self.write(", ")
             sb.write("...")
         sb.write(f") {self.ret_typ}")

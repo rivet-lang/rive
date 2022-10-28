@@ -102,7 +102,7 @@ class Codegen:
         self.cur_fn_is_main = False
 
         self.generated_opt_res_types = []
-        self.generated_array_returns=[]
+        self.generated_array_returns = []
         self.generated_tests = []
 
         self.loop_entry_label = ""
@@ -118,19 +118,20 @@ class Codegen:
         argc = ir.Ident(ir.Type("int"), "_argc")
         argv = ir.Ident(ir.Type("char").ptr().ptr(), "_argv")
         main_fn = ir.FnDecl(
-            False, [], False, "main",
-            [
-                argc, argv
-            ], False, ir.Type("int")
+            False, [], False, "main", [argc, argv], False, ir.Type("int")
         )
-        if self.comp.prefs.build_mode==prefs.BuildMode.Test:
+        if self.comp.prefs.build_mode == prefs.BuildMode.Test:
             for gtest in self.generated_tests:
                 main_fn.add_call(gtest, [])
         else:
             main_fn.add_call(
-                f"_R{len(self.comp.prefs.pkg_name)}{self.comp.prefs.pkg_name}4mainF", [argc, ir.Inst(ir.InstKind.Cast, [
-                    ir.Type("u8").ptr().ptr(), argv
-                ])]
+                f"_R{len(self.comp.prefs.pkg_name)}{self.comp.prefs.pkg_name}4mainF",
+                [
+                    argc,
+                    ir.Inst(
+                        ir.InstKind.Cast, [ir.Type("u8").ptr().ptr(), argv]
+                    )
+                ]
             )
         main_fn.add_ret(ir.IntLit(ir.Type("i32"), "0"))
         self.out_rir.decls.append(main_fn)
@@ -220,58 +221,53 @@ class Codegen:
         elif isinstance(decl, ast.ExtendDecl):
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.FnDecl):
-            args=[]
+            args = []
             if decl.is_method:
                 self_typ = self.ir_type(decl.self_typ)
-                if decl.self_is_mut and decl.self_typ.sym.kind!=TypeKind.Class:
-                    self_typ=self_typ.ptr()
+                if decl.self_is_mut and decl.self_typ.sym.kind != TypeKind.Class:
+                    self_typ = self_typ.ptr()
                 args.append(ir.Ident(self_typ, "self"))
-            args += [ir.Ident(self.ir_type(arg.typ), arg.name) for arg in decl.args]
-            ret_typ=self.ir_type(decl.ret_typ)
+            args += [
+                ir.Ident(self.ir_type(arg.typ), arg.name) for arg in decl.args
+            ]
+            ret_typ = self.ir_type(decl.ret_typ)
             if isinstance(ret_typ, ir.Array):
                 # In C functions cannot return an array, so we create a special
                 # struct for this.
-                if self.comp.prefs.target_backend==prefs.Backend.C:
+                if self.comp.prefs.target_backend == prefs.Backend.C:
                     name = f"ArrayReturn{len(self.generated_array_returns)}"
                     name = f"_R{len(name)}{name}"
                     if name not in self.generated_array_returns:
                         self.out_rir.structs.append(
-                            ir.Struct(
-                                False, name, [
-                                    ir.Field(
-                                        "arr",
-                                        ret_typ
-                                    )
-                                ]
-                            )
+                            ir.Struct(False, name, [ir.Field("arr", ret_typ)])
                         )
                         self.generated_array_returns.append(name)
-                    ret_typ=ir.Type(name)
+                    ret_typ = ir.Type(name)
             fn_decl = ir.FnDecl(
-                decl.vis.is_pub(), decl.attrs, decl.is_extern, mangle_symbol(decl.sym),
-                args, False, ret_typ
+                decl.vis.is_pub(), decl.attrs, decl.is_extern,
+                mangle_symbol(decl.sym), args, False, ret_typ
             )
-            self.cur_fn=fn_decl
+            self.cur_fn = fn_decl
             if decl.is_extern:
                 self.out_rir.externs.append(fn_decl)
             else:
                 self.out_rir.decls.append(fn_decl)
         elif isinstance(decl, ast.DestructorDecl):
             dtor_fn = ir.FnDecl(
-                False, [], False,f"{mangle_type(decl.self_typ)}6_dtor_",
-                [], False, ir.Type("_R7Result__R4void")
+                False, [], False, f"{mangle_type(decl.self_typ)}6_dtor_", [],
+                False, ir.Type("_R7Result__R4void")
             )
-            self.cur_fn=dtor_fn
+            self.cur_fn = dtor_fn
             self.out_rir.decls.append(dtor_fn)
         elif isinstance(decl, ast.TestDecl):
-            if self.comp.prefs.build_mode==prefs.BuildMode.Test:
-                test_name =f"__test{len(self.generated_tests)}__"
+            if self.comp.prefs.build_mode == prefs.BuildMode.Test:
+                test_name = f"__test{len(self.generated_tests)}__"
                 test_name = f"_R{len(test_name)}{test_name}"
                 test_fn = ir.FnDecl(
-                    False, [], False, test_name,
-                    [], False, ir.Type("_R7Result__R4void")
+                    False, [], False, test_name, [], False,
+                    ir.Type("_R7Result__R4void")
                 )
-                self.cur_fn=test_fn
+                self.cur_fn = test_fn
                 self.generated_tests.append(test_name)
                 self.out_rir.decls.append(test_fn)
 
@@ -306,7 +302,8 @@ class Codegen:
                         False, name, [
                             ir.Field(
                                 "value",
-                                ir.Type("u8") if is_void else self.ir_type(typ.typ)
+                                ir.Type("u8")
+                                if is_void else self.ir_type(typ.typ)
                             ),
                             ir.Field("is_none", ir.Type("bool"))
                         ]
@@ -332,7 +329,7 @@ class Codegen:
             return ir.Type("void")
         elif typ_sym.kind == TypeKind.None_:
             return ir.Type("void*")
-        elif typ_sym.kind==TypeKind.Enum:
+        elif typ_sym.kind == TypeKind.Enum:
             return ir.Type(str(typ_sym.info.underlying_typ))
         elif typ_sym.kind.is_primitive():
             return ir.Type(typ_sym.name)
@@ -374,9 +371,7 @@ class Codegen:
                     for m in ts.syms:
                         if isinstance(m, sym.Fn):
                             fields.append(
-                                ir.Field(
-                                    m.name, self.ir_type(m.typ())
-                                )
+                                ir.Field(m.name, self.ir_type(m.typ()))
                             )
                     self.out_rir.structs.append(
                         ir.Struct(False, vtbl_name, fields)
@@ -399,7 +394,7 @@ class Codegen:
                     )
             elif ts.kind in (TypeKind.Class, TypeKind.String, TypeKind.Vec):
                 fields = list()
-                if ts.kind==TypeKind.Class and ts.info.base:
+                if ts.kind == TypeKind.Class and ts.info.base:
                     fields.append(
                         ir.Field(
                             "base",
@@ -407,14 +402,10 @@ class Codegen:
                         )
                     )
                 for f in ts.fields:
-                    fields.append(
-                        ir.Field(f.name, self.ir_type(f.typ))
-                    )
+                    fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 fields.append(ir.Field("_rc", ir.Type("usize")))
                 self.out_rir.structs.append(
-                    ir.Struct(
-                        False, mangle_symbol(ts), fields
-                    )
+                    ir.Struct(False, mangle_symbol(ts), fields)
                 )
             elif ts.kind == TypeKind.Struct:
                 fields = list()
@@ -423,21 +414,16 @@ class Codegen:
                         ir.Field(base.name, ir.Type(mangle_symbol(base)))
                     )
                 for f in ts.fields:
-                    fields.append(
-                        ir.Field(f.name, self.ir_type(f.typ))
-                    )
+                    fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 self.out_rir.structs.append(
-                    ir.Struct(
-                        ts.info.is_opaque,
-                        mangle_symbol(ts), fields
-                    )
+                    ir.Struct(ts.info.is_opaque, mangle_symbol(ts), fields)
                 )
 
     def get_type_symbols(self, root):
         ts = list()
         for s in root.syms:
             if isinstance(s, sym.Type):
-                if s.kind!=TypeKind.Vec: # avoid duplicated struct
+                if s.kind != TypeKind.Vec: # avoid duplicated struct
                     ts.append(s)
                 ts += self.get_type_symbols(s)
             elif isinstance(s, sym.Pkg):

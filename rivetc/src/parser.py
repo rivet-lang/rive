@@ -44,7 +44,7 @@ class Parser:
         self.pkg_name = pkg_name
         if self.pkg_name in ("std", "tests"):
             self.pkg_deps.append("core")
-        elif self.comp.prefs.pkg_name==pkg_name and self.comp.prefs.build_mode==prefs.BuildMode.Test:
+        elif self.comp.prefs.pkg_name == pkg_name and self.comp.prefs.build_mode == prefs.BuildMode.Test:
             self.pkg_deps.append("tests")
         source_files = []
         for file in files:
