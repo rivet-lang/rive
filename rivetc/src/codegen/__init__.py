@@ -64,10 +64,7 @@ def mangle_symbol(s):
                 res.insert(0, name)
                 s.mangled_name = name
             elif s.kind == sym.TypeKind.Enum:
-                if isinstance(root, sym.Fn):
-                    name = s.name
-                else:
-                    name = mangle_type(s.info.underlying_typ)
+                name = mangle_type(s.info.underlying_typ)
                 name = f"{len(name)}{name}"
                 res.insert(0, name)
                 s.mangled_name = name
@@ -227,9 +224,16 @@ class Codegen:
         elif isinstance(decl, ast.ExtendDecl):
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.FnDecl):
+            args=[]
+            if decl.is_method:
+                self_typ = self.ir_type(decl.self_typ)
+                if decl.self_is_mut and decl.self_typ.sym.kind!=TypeKind.Class:
+                    self_typ=self_typ.ptr()
+                args.append(ir.Ident(self_typ, "self"))
+            args += [ir.Ident(self.ir_type(arg.typ), arg.name) for arg in decl.args]
             fn_decl = ir.FnDecl(
                 decl.vis.is_pub(), decl.attrs, decl.is_extern, mangle_symbol(decl.sym),
-                [ir.Ident(self.ir_type(arg.typ), arg.name) for arg in decl.args], False, self.ir_type(decl.ret_typ)
+                args, False, self.ir_type(decl.ret_typ)
             )
             self.cur_fn=fn_decl
             if decl.is_extern:
@@ -237,7 +241,12 @@ class Codegen:
             else:
                 self.out_rir.decls.append(fn_decl)
         elif isinstance(decl, ast.DestructorDecl):
-            pass
+            dtor_fn = ir.FnDecl(
+                False, [], False,f"{mangle_type(decl.self_typ)}6_dtor_",
+                [], False, ir.Type("_R7Result__R4void")
+            )
+            self.cur_fn=dtor_fn
+            self.out_rir.decls.append(dtor_fn)
         elif isinstance(decl, ast.TestDecl):
             if self.comp.prefs.build_mode==prefs.BuildMode.Test:
                 test_name =f"__test{len(self.generated_tests)}__"

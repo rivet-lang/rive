@@ -85,8 +85,9 @@ class Resolver:
             elif isinstance(decl, ast.TypeDecl):
                 self.resolve_type(decl.parent)
             elif isinstance(decl, ast.EnumDecl):
-                self.self_sym = decl.sym
-                self.resolve_decls(decl.decls)
+                if self.resolve_type(decl.underlying_typ):
+                    self.self_sym = decl.sym
+                    self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.TraitDecl):
                 self.self_sym = decl.sym
                 self.resolve_decls(decl.decls)
@@ -135,12 +136,14 @@ class Resolver:
                             type.Type(self.self_sym.info.base), sym.ObjLevel.Rec
                         )
                     )
+                self_typ=type.Type(self.self_sym)
                 decl.scope.add(
                     sym.Obj(
-                        decl.self_is_mut, "self", type.Type(self.self_sym),
+                        decl.self_is_mut, "self", self_typ,
                         sym.ObjLevel.Rec
                     )
                 )
+                decl.self_typ=self_typ
                 for arg in decl.args:
                     self.resolve_type(arg.typ)
                     try:
@@ -162,12 +165,14 @@ class Resolver:
                             type.Type(self.self_sym.info.base), sym.ObjLevel.Rec
                         )
                     )
+                self_typ=type.Type(self.self_sym)
                 decl.scope.add(
                     sym.Obj(
-                        decl.self_is_mut, "self", type.Type(self.self_sym),
+                        decl.self_is_mut, "self", self_typ,
                         sym.ObjLevel.Rec
                     )
                 )
+                decl.self_typ=self_typ
                 for stmt in decl.stmts:
                     self.resolve_stmt(stmt)
             elif isinstance(decl, ast.TestDecl):
