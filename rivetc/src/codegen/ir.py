@@ -168,7 +168,7 @@ class GlobalVar:
 
 class FnDecl:
     def __init__(
-        self, is_pub, attrs, is_extern, name, args, is_variadic, ret_typ
+        self, is_pub, attrs, is_extern, name, args, is_variadic, ret_typ, is_never
     ):
         self.is_pub = is_pub
         self.attrs = attrs
@@ -177,6 +177,8 @@ class FnDecl:
         self.args = args
         self.is_variadic = is_variadic
         self.ret_typ = ret_typ
+        self.is_never=is_never
+
         self.locals = 0
         self.bb = list()
 

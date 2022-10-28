@@ -103,7 +103,7 @@ class CGen:
     def gen_decls(self, decls):
         for decl in decls:
             if isinstance(decl, ir.FnDecl):
-                if isinstance(decl.ret_typ, ir.Type) and decl.ret_typ.name=="never":
+                if decl.is_never:
                     self.write("RIVET_NEVER ")
                     self.protos.write("RIVET_NEVER ")
                 if decl.is_pub:
@@ -131,6 +131,8 @@ class CGen:
                             self.write(", ")
                 self.protos.writeln(");")
                 self.writeln(") {")
+                if decl.is_never:
+                    self.writeln("  while (1);")
                 self.writeln("}")
             else:
                 self.globals.writeln(

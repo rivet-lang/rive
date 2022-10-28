@@ -118,7 +118,7 @@ class Codegen:
         argc = ir.Ident(ir.Type("int"), "_argc")
         argv = ir.Ident(ir.Type("char").ptr().ptr(), "_argv")
         main_fn = ir.FnDecl(
-            False, [], False, "main", [argc, argv], False, ir.Type("int")
+            False, [], False, "main", [argc, argv], False, ir.Type("int"), False
         )
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
             for gtest in self.generated_tests:
@@ -245,7 +245,7 @@ class Codegen:
                     ret_typ = ir.Type(name)
             fn_decl = ir.FnDecl(
                 decl.vis.is_pub(), decl.attrs, decl.is_extern,
-                mangle_symbol(decl.sym), args, False, ret_typ
+                mangle_symbol(decl.sym), args, False, ret_typ, decl.ret_typ==self.comp.never_t
             )
             self.cur_fn = fn_decl
             if decl.is_extern:
@@ -255,7 +255,7 @@ class Codegen:
         elif isinstance(decl, ast.DestructorDecl):
             dtor_fn = ir.FnDecl(
                 False, [], False, f"{mangle_type(decl.self_typ)}6_dtor_", [],
-                False, ir.Type("_R7Result__R4void")
+                False, ir.Type("_R7Result__R4void"),False
             )
             self.cur_fn = dtor_fn
             self.out_rir.decls.append(dtor_fn)
@@ -265,7 +265,7 @@ class Codegen:
                 test_name = f"_R{len(test_name)}{test_name}"
                 test_fn = ir.FnDecl(
                     False, [], False, test_name, [], False,
-                    ir.Type("_R7Result__R4void")
+                    ir.Type("_R7Result__R4void"),False
                 )
                 self.cur_fn = test_fn
                 self.generated_tests.append(test_name)
