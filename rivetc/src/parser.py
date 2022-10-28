@@ -4,9 +4,9 @@
 
 import os, glob
 
-from . import ast, sym, type, report, token, utils
 from .token import Kind
 from .lexer import Lexer
+from . import ast, sym, type, prefs, report, token, utils
 
 class Parser:
     def __init__(self, comp):
@@ -44,6 +44,8 @@ class Parser:
         self.pkg_name = pkg_name
         if self.pkg_name in ("std", "tests"):
             self.pkg_deps.append("core")
+        elif self.comp.prefs.pkg_name==pkg_name and self.comp.prefs.build_mode==prefs.BuildMode.Test:
+            self.pkg_deps.append("tests")
         source_files = []
         for file in files:
             self.file_path = file

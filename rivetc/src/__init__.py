@@ -57,9 +57,10 @@ class Compiler:
 
     def run(self):
         self.load_pkg("core", token.NO_POS)
-        self.load_pkg("std", token.NO_POS)
         if self.prefs.build_mode==prefs.BuildMode.Test:
             self.load_pkg("tests", token.NO_POS)
+        else:
+            self.load_pkg("std", token.NO_POS)
         self.load_root_pkg()
         if report.ERRORS > 0:
             self.abort()

@@ -24,6 +24,9 @@ Options:
       Note that most Rivet warnings turn to errors, if you pass -r or --release, so
       you will have to fix them first.
 
+   -t, --test
+      Compile the current project for testing.
+
    -o <filename>, --output <filename>
       Force Rivet to output the package in a specific location
       (relative to the current working directory if not absolute).

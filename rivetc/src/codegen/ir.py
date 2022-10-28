@@ -125,17 +125,13 @@ class VTable:
         return str(sb)
 
 class Struct:
-    def __init__(self, is_pub, is_union, is_opaque, name, fields):
-        self.is_pub = is_pub
-        self.is_union = is_union
+    def __init__(self, is_opaque, name, fields):
         self.is_opaque = is_opaque
         self.name = name
         self.fields = fields
 
     def __str__(self):
         sb = utils.Builder()
-        if self.is_pub:
-            sb.write("pub ")
         if self.is_opaque:
             sb.write(f'type {self.name} opaque')
         else:

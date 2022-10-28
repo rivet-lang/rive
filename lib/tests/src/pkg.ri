@@ -107,7 +107,7 @@ struct TestRunner {
         if self.skip_tests > 0 {
             print("{}, ", bold(yellow("{} skipped".fmt(self.skip_tests))));
         }
-        println(bold("{} total.".fmt(self.tests.len)));
+        println(bold("{} total.".fmt(self.tests.len())));
         println(DIVIDER);
     }
 

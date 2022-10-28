@@ -226,6 +226,8 @@ class Prefs:
             elif arg in ("-r", "--release"):
                 self.build_mode = BuildMode.Release
                 report.WARNS_ARE_ERRORS = True
+            elif arg in ("-t", "--test"):
+                self.build_mode = BuildMode.Test
             elif arg in ("-o", "--output"):
                 if out := option(current_args, arg):
                     self.pkg_output = out
