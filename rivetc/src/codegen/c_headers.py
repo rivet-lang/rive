@@ -70,7 +70,6 @@ typedef i64 untyped_int;
 typedef f64 untyped_float;
 typedef ptrdiff_t isize;
 typedef size_t usize;
-typedef void* _R4none;
 
 """
 

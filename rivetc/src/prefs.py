@@ -157,6 +157,7 @@ class Prefs:
         self.target_bits = Bits.get()
         self.target_endian = Endian.get()
         self.target_backend = Backend.C
+        self.target_backend_compiler = "gcc"
 
         # package info
         self.input = ""
@@ -173,7 +174,6 @@ class Prefs:
         self.libraries_to_link = []
         self.objects_to_link = []
 
-        self.backend_compiler = "gcc"
         self.flags = []
         self.check_syntax = False
         self.check = False
@@ -247,7 +247,7 @@ class Prefs:
                 i += 1
             elif arg == "--backend-compiler":
                 if backend_compiler := option(current_args, arg):
-                    self.backend_compiler = backend_compiler
+                    self.target_backend_compiler = backend_compiler
                 else:
                     error("`--backend-compiler` requires a name as argument")
                 i += 1

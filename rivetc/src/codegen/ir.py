@@ -63,9 +63,9 @@ class Function:
 class RIRFile:
     def __init__(self, pkg_name):
         self.pkg_name = pkg_name
-        self.types = []
+        self.structs = []
         self.externs = []
-        self.statics = []
+        self.globals = []
         self.decls = []
 
     def __repr__(self):
@@ -81,16 +81,16 @@ class RIRFile:
             "// and is subject to change without notice. Knock yourself out."
         )
         sb.writeln()
-        for i, t in enumerate(self.types):
-            sb.writeln(str(t))
-            if i < len(self.types) - 1:
+        for i, s in enumerate(self.structs):
+            sb.writeln(str(s))
+            if i < len(self.structs) - 1:
                 sb.writeln()
         sb.writeln()
         for i, e in enumerate(self.externs):
             sb.writeln(str(e))
         sb.writeln()
-        for i, s in enumerate(self.statics):
-            sb.writeln(str(s))
+        for i, g in enumerate(self.globals):
+            sb.writeln(str(g))
         sb.writeln()
         for i, d in enumerate(self.decls):
             sb.writeln(str(d))
@@ -354,7 +354,6 @@ class Ident: # Local and global values
     def __init__(self, typ, name):
         self.typ = typ
         self.name = name
-        self.use_arr_field = False
 
     def __repr__(self):
         return f'{self.typ} %{self.name}'
