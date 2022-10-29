@@ -46,7 +46,7 @@ def readline(pos, kind):
     return f"{line_str} {SEP} {line}\n{' ' * LAST_LINE_NR_LEN} {SEP} {marker}"
 
 def fmt_msg(pos, kind, msg):
-    return f"{colors.bold(f'{pos}: {color(kind,kind)} {msg}')}"
+    return f"{colors.bold(f'{pos}: {color(kind,kind)}')} {msg}"
 
 def error(msg, pos):
     global ERRORS

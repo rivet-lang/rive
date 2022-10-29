@@ -94,6 +94,8 @@ class Compiler:
             utils.eprint("------------------------------")
         for node in g_resolved.nodes:
             for fp in self.parsed_files:
+                if not fp.sym:
+                    continue
                 if fp.sym.name == node.name:
                     self.source_files.append(fp)
         self.parsed_files.clear()
@@ -101,6 +103,8 @@ class Compiler:
     def import_graph(self):
         g = utils.DepGraph()
         for fp in self.parsed_files:
+            if not fp.sym:
+                continue
             deps = []
             if fp.sym.name not in ["libc", "runtime"]:
                 deps.append("runtime")
@@ -192,24 +196,29 @@ class Compiler:
                     glob.glob(path.join(path.relpath(abspath), "*.ri"))
                 )
         else:
+            name = pathx[pathx.rfind("/") + 1:]
+            full_name = pathx.replace("/", "::")
             for l in self.prefs.library_path:
-                #  support `src/` directory
+                mod_path = path.relpath(path.join(l, pathx))
+                if path.isdir(mod_path):
+                    found = True
+                    files = self.filter_files(
+                        glob.glob(path.join(mod_path, "*.ri"))
+                    )
+                # support `src/` directory
                 if pathx.count("/") > 0:
-                    slash_idx = pathx.find("/")
-                    mod_path = path.join(
-                        l, pathx[:slash_idx] + "/src" + pathx[slash_idx:]
+                    slash_idx = pathx.find("/")+1
+                    src_dir = path.join(
+                        l, pathx[:slash_idx], "src", pathx[slash_idx:]
                     )
                 else:
-                    mod_path = path.join(l, pathx + "/src")
-                if path.exists(mod_path):
-                    mod_path = path.relpath(mod_path)
-                    if path.isdir(mod_path):
-                        found = True
-                        name = pathx[pathx.rfind("/") + 1:]
-                        full_name = pathx.replace("/", "::")
-                        files = self.filter_files(
-                            glob.glob(path.join(mod_path, "*.ri"))
-                        )
+                    src_dir = path.join(mod_path, "src")
+                if path.isdir(src_dir):
+                    if not found: found = True
+                    files = self.filter_files(
+                        glob.glob(path.join(src_dir, "*.ri"))
+                    )
+                if found:
                     break
         if not found:
             report.error(f"module `{pathx}` not found", pos)
