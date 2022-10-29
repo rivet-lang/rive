@@ -156,7 +156,7 @@ class Prefs:
         self.target_backend = Backend.C
         self.target_backend_compiler = "gcc"
 
-        # package info
+        # module info
         self.input = ""
         self.mod_name = ""
         self.mod_type = ModType.Bin
@@ -208,7 +208,7 @@ class Prefs:
                 if mod_name := option(current_args, arg):
                     self.mod_name = mod_name
                     if not is_valid_name(self.mod_name):
-                        error(f"invalid package name `{self.mod_name}`")
+                        error(f"invalid module name `{self.mod_name}`")
                 else:
                     error("`--mod-name` requires a name as argument")
                 i += 1
@@ -217,9 +217,9 @@ class Prefs:
                     if mod_typ := ModType.from_string(typ):
                         self.mod_typ = mod_typ
                     else:
-                        error(f"invalid package type: `{typ}`")
+                        error(f"invalid module type: `{typ}`")
                 else:
-                    error("`--mod-type` requires a package type as argument")
+                    error("`--mod-type` requires a module type as argument")
                 i += 1
             elif arg in ("-r", "--release"):
                 self.build_mode = BuildMode.Release
@@ -308,7 +308,7 @@ class Prefs:
                 error(f"unknown option: `{arg}`")
             else:
                 if len(self.input) > 0:
-                    error("the compiler can only receive one package")
+                    error("the compiler can only receive one module")
                 elif not path.exists(arg):
                     error(f"`{arg}` does not exist")
                 else:
@@ -317,7 +317,7 @@ class Prefs:
                         if path.isfile(arg):
                             self.mod_name = path.splitext(path.basename(arg))[0]
                         else:
-                            self.mod_name = path.basename(path.normpath(arg))
+                            self.mod_name = path.basename(path.realpath(arg))
             i += 1
 
         self.build_rivet_dir()
