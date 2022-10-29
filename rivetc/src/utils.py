@@ -16,7 +16,7 @@ Options:
    --pkg-name <name>
       Specify the name of the package being built. By default: main.
 
-   --pkg-type bin|lib|dylib|staticlib
+   --pkg-type bin|dylib|staticlib
       Specify the type of the package being built. By default: bin.
 
    -r, --release

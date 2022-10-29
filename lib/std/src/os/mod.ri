@@ -4,6 +4,8 @@
 
 import "libc";
 
+import "../strings" { Builder };
+
 struct Result {
 	pub output: string;
 	pub exit_code: i32;
@@ -16,12 +18,12 @@ pub fn execute(cmd: string) Result {
     unsafe {
         let f = libc::popen(pcmd.ptr, c"r");
         if f == nil {
-            return Result("execute(\"{}\") failed".fmt(cmd), -1);
+            return Result("execute( {} ) failed".fmt(cmd), -1);
         }
         let fd = libc::fileno(f);
         let mut buf: [u8; 4096] = []!;
         let pbuf: *mut u8 = addr_of_mut!(buf[0]);
-        let mut output = StringBuilder::new(1024);
+        let mut output = Builder::new(1024);
         while {
             let len = libc::read(fd, pbuf, 4096);
             if len == 0 or len == -1 {

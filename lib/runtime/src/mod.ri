@@ -5,14 +5,14 @@
 import "libc";
 
 fn segfault_handler(_: i32) {
-    Console::eprintln("panic: segmentation fault detected");
+    console_eprintln("panic: segmentation fault detected");
     bt_print(3);
     process_exit(1);
 }
 
 fn panic_if(cond: bool, msg: string) {
     if cond {
-        Console::eprintln("panic: {}", msg);
+        console_eprintln("panic: {}", msg);
         bt_print(2);
         process_exit(1);
     }
@@ -20,27 +20,9 @@ fn panic_if(cond: bool, msg: string) {
 
 fn assert(cond: bool, msg: string) {
     if !cond {
-        Console::eprintln("panic: assertion failed: {}", msg);
+        console_eprintln("panic: assertion failed: {}", msg);
         bt_print(2);
         process_exit(1);
-    }
-}
-
-pub fn errno() i32 {
-    return unsafe {
-#if _LINUX_
-        libc::__errno_location().*
-#else
-        libc::_errno().*
-#endif
-    };
-}
-
-/// Returns error code representation in string.
-pub fn strerr(code: i32 = errno()) string {
-    unsafe {
-        let s = libc::strerror(code);
-        return if s == nil { "" } else { string::from_raw(s) };
     }
 }
 

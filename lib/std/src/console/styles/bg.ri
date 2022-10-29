@@ -1,0 +1,67 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+pub fn bg_black(msg: string) string {
+    return fmt(msg, "40", "49");
+}
+
+pub fn bg_blue(msg: string) string {
+    return fmt(msg, "44", "49");
+}
+
+pub fn bg_cyan(msg: string) string {
+    return fmt(msg, "46", "49");
+}
+
+pub fn bg_green(msg: string) string {
+    return fmt(msg, "42", "49");
+}
+
+pub fn bg_magenta(msg: string) string {
+    return fmt(msg, "45", "49");
+}
+
+pub fn bg_red(msg: string) string {
+    return fmt(msg, "41", "49");
+}
+
+pub fn bg_white(msg: string) string {
+    return fmt(msg, "47", "49");
+}
+
+pub fn bg_yellow(msg: string) string {
+    return fmt(msg, "43", "49");
+}
+
+pub fn bg_bright_black(msg: string) string {
+    return fmt(msg, "100", "49");
+}
+
+pub fn bg_bright_blue(msg: string) string {
+    return fmt(msg, "104", "49");
+}
+
+pub fn bg_bright_cyan(msg: string) string {
+    return fmt(msg, "106", "49");
+}
+
+pub fn bg_bright_green(msg: string) string {
+    return fmt(msg, "102", "49");
+}
+
+pub fn bg_bright_magenta(msg: string) string {
+    return fmt(msg, "105", "49");
+}
+
+pub fn bg_bright_red(msg: string) string {
+    return fmt(msg, "101", "49");
+}
+
+pub fn bg_bright_white(msg: string) string {
+    return fmt(msg, "107", "49");
+}
+
+pub fn bg_bright_yellow(msg: string) string {
+    return fmt(msg, "103", "49");
+}

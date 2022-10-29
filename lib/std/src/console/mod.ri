@@ -1,0 +1,67 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+pub import "runtime" {
+    console_print as print,
+    console_println as println,
+    console_eprint as eprint,
+    console_eprintln as eprintln,
+    console_is_atty as is_atty
+/*
+    // colors
+    console_can_show_color_on_stdout as can_show_color_on_stdout,
+    console_can_show_color_on_stderr as can_show_color_on_stderr,
+    console_fmt as fmt,
+    console_fmt_rgb as fmt_rgb,
+    console_from_hex as from_hex,
+    console_bg_rgb as bg_rgb,
+    console_bg_hex as bg_hex,
+    console_rgb as rgb,
+    console_reset as reset,
+    console_bold as bold,
+    console_dim as dim,
+    console_hidden as hidden,
+    console_italic as italic,
+    console_inverse as inverse,
+    console_strikethrough as strikethrough,
+    console_underline as underline,
+
+    // color - foreground
+    console_black as black,
+    console_blue as blue,
+    console_cyan as cyan,
+    console_green as green,
+    console_gray as gray,
+    console_magenta as magenta,
+    console_red as red,
+    console_white as white,
+    console_yellow as yellow,
+    console_bright_black as bright_black,
+    console_bright_blue as bright_blue,
+    console_bright_cyan as bright_cyan,
+    console_bright_green as bright_green,
+    console_bright_magenta as bright_magenta,
+    console_bright_red as bright_red,
+    console_bright_white as bright_white,
+    console_bright_yellow as bright_yellow,
+
+    // color - background
+    console_bg_black as bg_black,
+    console_bg_blue as bg_blue,
+    console_bg_cyan as bg_cyan,
+    console_bg_green as bg_green,
+    console_bg_magenta as bg_magenta,
+    console_bg_red as bg_red,
+    console_bg_white as bg_white,
+    console_bg_yellow as bg_yellow,
+    console_bg_bright_black as bg_bright_black,
+    console_bg_bright_blue as bg_bright_blue,
+    console_bg_bright_cyan as bg_bright_cyan,
+    console_bg_bright_green as bg_bright_green,
+    console_bg_bright_magenta as bg_bright_magenta,
+    console_bg_bright_red as bg_bright_red,
+    console_bg_bright_white as bg_bright_white,
+    console_bg_bright_yellow as bg_bright_yellow
+*/
+};

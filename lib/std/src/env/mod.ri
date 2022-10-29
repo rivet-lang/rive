@@ -3,6 +3,7 @@
 // that can be found in the LICENSE file.
 
 import "libc";
+import "runtime";
 
 /// User's home directory.
 pub let HOME_DIR: string = #if _LINUX_ get("HOME") #else get("USERPROFILE") #endif;
@@ -23,13 +24,13 @@ pub fn get(name: string) string {
 /// Sets the value of an environment variable with `name` to `value`.
 pub fn set(name: string, value: string, overwrite: bool = true) ! {
 	if unsafe { libc::setenv(name.ptr, value.ptr, overwrite) == -1 } {
-		return Error("env::set: {}".fmt(core::strerr()));
+		return runtime::last_errno_error();
 	}
 }
 
 /// Removes an environment variable with `name`.
 pub fn remove(name: string) ! {
 	if unsafe { libc::unsetenv(name.ptr) } == -1 {
-		return Error("env::remove: {}".fmt(core::strerr()));
+		return runtime::last_errno_error();
 	}
 }

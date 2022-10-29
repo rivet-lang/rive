@@ -51,7 +51,7 @@ fn bt_print_callback(
             demangle_symbol(string::from_raw(fn_ptr))
         };
 
-        Console::eprintln("   at {} ({}:{})", fn_name, file_name, lineno);
+        console_eprintln("   at {} ({}:{})", fn_name, file_name, lineno);
     }
     return 0;
 }
@@ -60,14 +60,14 @@ fn bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) {
     unsafe {
         let bdata = as(*mut BacktraceData, data);
         if !bdata.has_error {
-            Console::eprint("   libbacktrace error: ");
-            Console::eprint(string::from_raw(msg_ptr));
+            console_eprint("   libbacktrace error: ");
+            console_eprint(string::from_raw(msg_ptr));
             if errnum > 0 {
-                Console::eprint(" (");
-                Console::eprint(string::from_raw(libc::strerror(errnum)));
-                Console::eprint(")");
+                console_eprint(" (");
+                console_eprint(string::from_raw(libc::strerror(errnum)));
+                console_eprint(")");
             }
-            Console::eprintln();
+            console_eprintln();
             bdata.has_error = true;
         }
     }

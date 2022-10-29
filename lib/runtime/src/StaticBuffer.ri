@@ -4,7 +4,7 @@
 
 import "libc";
 
-pub struct StaticBuffer {
+struct StaticBuffer {
     mut buf: [u8; 25];
     mut len: usize;
 

@@ -13,7 +13,7 @@ pub fn process_id() u32 {
 /// Terminates current thread execution immediately after displaying a
 /// message, followed by a backtrace.
 pub fn process_panic(s: string = "", args: ...ToString) never {
-    Console::eprintln("panic: {}", s.fmt(args));
+    console_eprintln("panic: {}", s.fmt(args));
     bt_print(2);
     process_exit(1);
 }

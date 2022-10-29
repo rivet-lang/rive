@@ -35,8 +35,10 @@ fn main(
         _R8set_argsZ(init_args(_argc, _argv));
         _R12init_globalsZ();
 #if _TESTS_
-        tr.run();
-        tr.print_summary_tests();
+        if tr.tests.len > 0 {
+            tr.run();
+            tr.print_summary_tests();
+        }
 #else
         pkg_main();
 #endif

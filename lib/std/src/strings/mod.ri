@@ -2,7 +2,4 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-class InvalidSyntaxError : Error { }
-class InvalidBaseError : Error { }
-class InvalidBitSizeError : Error { }
-class ValueOutOfRangeError : Error { }
+pub import "runtime" { StringBuilder as Builder };

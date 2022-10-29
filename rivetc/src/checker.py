@@ -159,7 +159,7 @@ class Checker:
                     self.expected_type = stmt.lefts[0].typ
                 right_typ = self.check_expr(stmt.right)
                 if right_typ == self.comp.void_t:
-                    report.error("void expression used as value", stmt.pos)
+                    report.error("void expression used as value", stmt.right.pos)
                 if stmt.lefts[0].has_typ:
                     try:
                         self.check_types(right_typ, self.expected_type)

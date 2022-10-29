@@ -4,7 +4,7 @@
 
 #if _TESTS_
 
-let SUPPORT_COLOR: bool = Console::can_show_color_on_stdout();
+let SUPPORT_COLOR: bool = console_is_atty(1);
 
 let OK_STATUS: string = bold(green("OK"));
 let FAILED_STATUS: string = bold(red("FAIL"));
@@ -14,32 +14,32 @@ extern (Rivet) {
     let test_runner: TestRunner;
 }
 
-fn bold(txt: string) string {
-    if SUPPORT_COLOR {
-        return Console::bold(txt);
+pub fn bold(msg: string) string {
+    if !SUPPORT_COLOR {
+        return msg;
     }
-    return txt;
+    return "\x1b[1m{}\x1b[22m".fmt(msg);
 }
 
-fn green(txt: string) string {
-    if SUPPORT_COLOR {
-        return Console::green(txt);
+pub fn green(msg: string) string {
+    if !SUPPORT_COLOR {
+        return msg;
     }
-    return txt;
+    return "\x1b[32m{}\x1b[39m".fmt(msg);
 }
 
-fn red(txt: string) string {
-    if SUPPORT_COLOR {
-        return Console::red(txt);
+pub fn red(msg: string) string {
+    if !SUPPORT_COLOR {
+        return msg;
     }
-    return txt;
+    return "\x1b[31m{}\x1b[39m".fmt(msg);
 }
 
-fn yellow(txt: string) string {
-    if SUPPORT_COLOR {
-        return Console::yellow(txt);
+pub fn yellow(msg: string) string {
+    if !SUPPORT_COLOR {
+        return msg;
     }
-    return txt;
+    return "\x1b[33m{}\x1b[39m".fmt(msg);
 }
 
 fn assert_test(cond: bool, msg: string, pos: string, mut test_: Test) {
@@ -80,7 +80,7 @@ pub struct TestRunner {
 
     fn run(mut self) {
         for i, test_ in self.tests {
-            Console::eprint(" [{}/{}] '{}' ... ", i + 1, self.tests.len, test_.name);
+            console_eprint(" [{}/{}] '{}' ... ", i + 1, self.tests.len, test_.name);
             (test_.func)(unsafe { addr_of!(test_) });
             switch test_.result {
                 .Ok => {
@@ -102,38 +102,38 @@ pub struct TestRunner {
     }
 
     fn print_summary_tests(&self) {
-        Console::eprint(bold("Summary for all tests: "));
+        console_eprint(bold("Summary for all tests: "));
         if self.ok_tests > 0 {
-            Console::eprint("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
+            console_eprint("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
         }
         if self.fail_tests > 0 {
-            Console::eprint("{}, ", bold(red("{} failed".fmt(self.fail_tests))));
+            console_eprint("{}, ", bold(red("{} failed".fmt(self.fail_tests))));
         }
         if self.skip_tests > 0 {
-            Console::eprint("{}, ", bold(yellow("{} skipped".fmt(self.skip_tests))));
+            console_eprint("{}, ", bold(yellow("{} skipped".fmt(self.skip_tests))));
         }
-        Console::eprintln(bold("{} total.".fmt(self.tests.len)));
+        console_eprintln(bold("{} total.".fmt(self.tests.len)));
     }
 
     fn print_ok(&self) {
-        Console::eprintln(OK_STATUS);
+        console_eprintln(OK_STATUS);
         self.ok_tests += 1;
     }
 
     fn print_skip(&self) {
-        Console::eprintln(SKIP_STATUS);
+        console_eprintln(SKIP_STATUS);
         self.skip_tests += 1;
     }
 
     fn print_failed(&self, pos: string, msg: string) {
-        Console::eprintln(FAILED_STATUS);
-        Console::eprintln("     at {}: {}", bold(pos), msg);
+        console_eprintln(FAILED_STATUS);
+        console_eprintln("     at {}: {}", bold(pos), msg);
         self.fail_tests += 1;
     }
 
     fn print_error_returned(&self, pos: string, err: Error) {
-        Console::eprintln(FAILED_STATUS);
-        Console::eprintln("     at {}: error returned: {}", bold(pos), err);
+        console_eprintln(FAILED_STATUS);
+        console_eprintln("     at {}: error returned: {}", bold(pos), err);
         self.fail_tests += 1;
     }
 }

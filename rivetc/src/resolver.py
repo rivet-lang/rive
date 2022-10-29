@@ -23,9 +23,6 @@ class Resolver:
 
     def load_preludes(self):
         self.preludes["Error"] = self.comp.error_t.sym
-        for core_sym in self.comp.runtime_mod.syms:
-            if core_sym.vis.is_pub():
-                self.preludes[core_sym.name] = core_sym
 
     def resolve_decls(self, decls):
         for decl in decls:
@@ -289,6 +286,8 @@ class Resolver:
                 self.resolve_expr(b.expr)
 
     def find_symbol(self, symbol, name, pos):
+        if isinstance(symbol, sym.SymRef):
+            symbol = symbol.ref
         if s := symbol.find(name):
             self.check_vis(s, pos)
             if isinstance(s, sym.SymRef):
@@ -381,17 +380,17 @@ class Resolver:
                     path.field_info = field_info
                 else:
                     path.has_error = True
-            elif package := self.comp.universe.find(path.left.name):
-                path.left_info = package
+            elif module := self.comp.universe.find(path.left.name):
+                path.left_info = module
                 if field_info := self.find_symbol(
-                    package, path.field_name, path.field_pos
+                    module, path.field_name, path.field_pos
                 ):
                     path.field_info = field_info
                 else:
                     path.has_error = True
             else:
                 report.error(
-                    f"use of undeclared external package `{path.left.name}`",
+                    f"use of undeclared module `{path.left.name}`",
                     path.left.pos
                 )
                 path.has_error = True

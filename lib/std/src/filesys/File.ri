@@ -5,6 +5,7 @@
 import "libc";
 
 import "../mem";
+import "../traits" { ToString };
 
 pub class File {
     f: *mut libc::FILE;
