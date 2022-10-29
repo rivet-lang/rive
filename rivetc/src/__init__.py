@@ -45,9 +45,9 @@ class Compiler:
         self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
 
         self.runtime_mod = None
-        self.vec_sym = None # from `runtime` package
+        self.vec_sym = None # from `runtime` module
 
-        self.pkg_attrs = ast.Attrs()
+        self.mod_attrs = ast.Attrs()
 
         self.parsed_files = []
         self.source_files = []
@@ -152,10 +152,10 @@ class Compiler:
             files = [self.prefs.input]
         if len(files) == 0:
             utils.error("no input received")
-        root_sym = sym.Mod(sym.Vis.Priv, self.prefs.pkg_name)
+        root_sym = sym.Mod(sym.Vis.Priv, self.prefs.mod_name)
         self.universe.add(root_sym)
         self.parsed_files += parser.Parser(self).parse_mod(
-            self.prefs.pkg_name, root_sym, sym.Vis.Priv, files
+            self.prefs.mod_name, root_sym, sym.Vis.Priv, files
         )
 
     def load_mod_and_parse(self, pathx, alias, file_path, pos):
@@ -184,8 +184,8 @@ class Compiler:
             if path.isdir(pathx):
                 found = True
                 abspath = path.abspath(pathx)
-                pkg_basedir = path.dirname(abspath)[:-4] # skip `src/`
-                names = abspath[pkg_basedir.rfind("/") + 1:].split("/")
+                mod_basedir = path.dirname(abspath)[:-4] # skip `src/`
+                names = abspath[mod_basedir.rfind("/") + 1:].split("/")
                 full_name = ("::".join([names[0],
                                         *names[2:]])).replace("/", "::")
             os.chdir(old_wd)
@@ -198,19 +198,19 @@ class Compiler:
                 #  support `src/` directory
                 if pathx.count("/") > 0:
                     slash_idx = pathx.find("/")
-                    pkg_path = path.join(
+                    mod_path = path.join(
                         l, pathx[:slash_idx] + "/src" + pathx[slash_idx:]
                     )
                 else:
-                    pkg_path = path.join(l, pathx + "/src")
-                if path.exists(pkg_path):
-                    pkg_path = path.relpath(pkg_path)
-                    if path.isdir(pkg_path):
+                    mod_path = path.join(l, pathx + "/src")
+                if path.exists(mod_path):
+                    mod_path = path.relpath(mod_path)
+                    if path.isdir(mod_path):
                         found = True
                         name = pathx[pathx.rfind("/") + 1:]
                         full_name = pathx.replace("/", "::")
                         files = self.filter_files(
-                            glob.glob(path.join(pkg_path, "*.ri"))
+                            glob.glob(path.join(mod_path, "*.ri"))
                         )
                     break
         if not found:
@@ -429,9 +429,9 @@ class Compiler:
 
     def abort(self):
         if report.ERRORS == 1:
-            msg = f"could not compile package `{self.prefs.pkg_name}`, aborting due to previous error"
+            msg = f"could not compile module `{self.prefs.mod_name}`, aborting due to previous error"
         else:
-            msg = f"could not compile package `{self.prefs.pkg_name}`, aborting due to {report.ERRORS} previous errors"
+            msg = f"could not compile module `{self.prefs.mod_name}`, aborting due to {report.ERRORS} previous errors"
         if report.WARNS > 0:
             word = "warning" if report.WARNS == 1 else "warnings"
             msg += f"; {report.WARNS} {word} emitted"

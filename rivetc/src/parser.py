@@ -18,7 +18,7 @@ class Parser:
         self.peek_tok = None
         self.last_err_pos = None
 
-        self.pkg_name = ""
+        self.mod_name = ""
         self.mod_vis = sym.Vis.Priv
         self.mod_name = ""
 
@@ -37,8 +37,8 @@ class Parser:
         self.inside_switch_header = False
         self.inside_block = False
 
-    def parse_mod(self, pkg_name, mod_sym, vis, files):
-        self.pkg_name = pkg_name
+    def parse_mod(self, mod_name, mod_sym, vis, files):
+        self.mod_name = mod_name
         self.mod_name = mod_sym.name
         self.mod_vis = vis
         source_files = []
@@ -52,10 +52,10 @@ class Parser:
     def parse_file(self, file):
         self.lexer = Lexer.from_file(self.comp, file)
         if report.ERRORS > 0:
-            return ast.SourceFile(file, [], self.pkg_name, None)
+            return ast.SourceFile(file, [], self.mod_name, None)
         self.advance(2)
         return ast.SourceFile(
-            file, self.parse_decls(), self.pkg_name, self.file_sym
+            file, self.parse_decls(), self.mod_name, self.file_sym
         )
 
     # ---- useful functions for working with tokens ----
@@ -120,10 +120,10 @@ class Parser:
         report.error(f"unknown ABI: `{abi}`", abi_pos)
         return sym.ABI.Rivet
 
-    def parse_attrs(self, parse_pkg_attrs = False):
+    def parse_attrs(self, parse_mod_attrs = False):
         attrs = ast.Attrs()
         while self.accept(Kind.Hash):
-            if parse_pkg_attrs:
+            if parse_mod_attrs:
                 self.expect(Kind.Bang)
             self.expect(Kind.Lbracket)
             while True:
@@ -146,8 +146,8 @@ class Parser:
                             break
                     self.expect(Kind.Rparen)
                 attr = ast.Attr(attr_name, args, pos)
-                if parse_pkg_attrs:
-                    self.comp.pkg_attrs.add(attr)
+                if parse_mod_attrs:
+                    self.comp.mod_attrs.add(attr)
                 else:
                     attrs.add(attr)
                 if not self.accept(Kind.Semicolon):
@@ -487,7 +487,7 @@ class Parser:
             doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
             args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
             self_is_ref, has_named_args,
-            self.file_sym.name == self.comp.prefs.pkg_name and name == "main",
+            self.file_sym.name == self.comp.prefs.mod_name and name == "main",
             is_variadic, abi
         )
 
@@ -1090,7 +1090,7 @@ class Parser:
         id = ast.Ident(name, pos, sc, is_comptime)
         return id
 
-    def parse_pkg_expr(self):
+    def parse_mod_expr(self):
         pos = self.tok.pos
         self.next()
         return ast.PkgExpr(pos)

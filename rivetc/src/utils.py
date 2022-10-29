@@ -13,11 +13,11 @@ The compiler can receive a file or a directory as input, examples:
    `rivetc my_file.ri` or `rivetc my_folder/`
 
 Options:
-   --pkg-name <name>
-      Specify the name of the package being built. By default: main.
+   --mod-name <name>
+      Specify the name of the module being built. By default: main.
 
-   --pkg-type bin|dylib|staticlib
-      Specify the type of the package being built. By default: bin.
+   --mod-type bin|dylib|staticlib
+      Specify the type of the module being built. By default: bin.
 
    -r, --release
       Compile the executable in release mode, where most optimizations are enabled.
@@ -28,12 +28,12 @@ Options:
       Compile the current project for testing.
 
    -o <filename>, --output <filename>
-      Force Rivet to output the package in a specific location
+      Force Rivet to output the module in a specific location
       (relative to the current working directory if not absolute).
       By default: main.
 
    -b <backend>, --backend <backend>
-      Specify the backend to use while building the package.
+      Specify the backend to use while building the module.
 
       Current list of supported backends:
         `c` (default): Rivet outputs C source code which is passed to a C compiler
@@ -69,10 +69,10 @@ Options:
       Whether 32-bit or 64-bit machine code will be generated.
 
    --check-syntax
-      Only scan and parse the package, but then stop.
+      Only scan and parse the module, but then stop.
 
    --check
-      Scans, parses, and checks the files without compiling the package.
+      Scans, parses, and checks the files without compiling the module.
 
    --emit-rir
       Emit Rivet Intermediate Representation to a file.

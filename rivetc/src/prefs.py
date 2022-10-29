@@ -119,7 +119,7 @@ class Backend(Enum):
     def __str__(self):
         return "C"
 
-class PkgType(Enum):
+class ModType(Enum):
     Bin = auto_enum() # .exe
     DyLib = auto_enum() # .so, .dll, .dylib
     StaticLib = auto_enum() # .a, .lib
@@ -127,11 +127,11 @@ class PkgType(Enum):
     @staticmethod
     def from_string(typ):
         if typ == "bin":
-            return PkgType.Bin
+            return ModType.Bin
         elif typ == "dylib":
-            return PkgType.DyLib
+            return ModType.DyLib
         elif typ == "static":
-            return PkgType.StaticLib
+            return ModType.StaticLib
         return None
 
 class BuildMode(Enum):
@@ -158,10 +158,10 @@ class Prefs:
 
         # package info
         self.input = ""
-        self.pkg_name = ""
-        self.pkg_type = PkgType.Bin
-        self.pkg_dir = ""
-        self.pkg_output = ""
+        self.mod_name = ""
+        self.mod_type = ModType.Bin
+        self.mod_dir = ""
+        self.mod_output = ""
         self.build_mode = BuildMode.Debug
 
         self.library_path = [
@@ -204,22 +204,22 @@ class Prefs:
                 exit(0)
 
             # compiler options
-            if arg == "--pkg-name":
-                if pkg_name := option(current_args, arg):
-                    self.pkg_name = pkg_name
-                    if not is_valid_name(self.pkg_name):
-                        error(f"invalid package name `{self.pkg_name}`")
+            if arg == "--mod-name":
+                if mod_name := option(current_args, arg):
+                    self.mod_name = mod_name
+                    if not is_valid_name(self.mod_name):
+                        error(f"invalid package name `{self.mod_name}`")
                 else:
-                    error("`--pkg-name` requires a name as argument")
+                    error("`--mod-name` requires a name as argument")
                 i += 1
-            elif arg == "--pkg-type":
+            elif arg == "--mod-type":
                 if typ := option(current_args, arg):
-                    if pkg_typ := PkgType.from_string(typ):
-                        self.pkg_typ = pkg_typ
+                    if mod_typ := ModType.from_string(typ):
+                        self.mod_typ = mod_typ
                     else:
                         error(f"invalid package type: `{typ}`")
                 else:
-                    error("`--pkg-type` requires a package type as argument")
+                    error("`--mod-type` requires a package type as argument")
                 i += 1
             elif arg in ("-r", "--release"):
                 self.build_mode = BuildMode.Release
@@ -228,9 +228,9 @@ class Prefs:
                 self.build_mode = BuildMode.Test
             elif arg in ("-o", "--output"):
                 if out := option(current_args, arg):
-                    self.pkg_output = out
-                    if path.isdir(self.pkg_output):
-                        error(f"{arg}: `{self.pkg_output}` is a directory")
+                    self.mod_output = out
+                    if path.isdir(self.mod_output):
+                        error(f"{arg}: `{self.mod_output}` is a directory")
                 else:
                     error(f"`{arg}` requires a filename as argument")
                 i += 1
@@ -313,24 +313,24 @@ class Prefs:
                     error(f"`{arg}` does not exist")
                 else:
                     self.input = arg
-                    if self.pkg_name == "":
+                    if self.mod_name == "":
                         if path.isfile(arg):
-                            self.pkg_name = path.splitext(path.basename(arg))[0]
+                            self.mod_name = path.splitext(path.basename(arg))[0]
                         else:
-                            self.pkg_name = path.basename(path.normpath(arg))
+                            self.mod_name = path.basename(path.normpath(arg))
             i += 1
 
         self.build_rivet_dir()
 
-        self.pkg_output = self.pkg_name
-        if self.target_os == OS.Windows and not self.pkg_output.endswith(
+        self.mod_output = self.mod_name
+        if self.target_os == OS.Windows and not self.mod_output.endswith(
             ".exe"
         ):
-            self.pkg_output += ".exe"
-        if not path.isabs(self.pkg_output):
-            self.pkg_output = path.join(os.getcwd(), self.pkg_output)
+            self.mod_output += ".exe"
+        if not path.isabs(self.mod_output):
+            self.mod_output = path.join(os.getcwd(), self.mod_output)
 
-        self.pkg_dir = path.dirname(path.abspath(self.input)) if path.isfile(
+        self.mod_dir = path.dirname(path.abspath(self.input)) if path.isfile(
             self.input
         ) else self.input
 

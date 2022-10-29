@@ -42,7 +42,7 @@ class CGen:
         self.gen_globals(out_rir.globals)
         self.gen_decls(out_rir.decls)
 
-        c_file = f"{self.comp.prefs.pkg_name}.ri.c"
+        c_file = f"{self.comp.prefs.mod_name}.ri.c"
         with open(c_file, "w+") as out:
             out.write(c_headers.HEADER)
             out.write(str(self.typedefs).strip() + "\n\n")
@@ -53,7 +53,7 @@ class CGen:
 
         args = [
             self.comp.prefs.target_backend_compiler, "-o",
-            self.comp.prefs.pkg_output, "-Werror", "-fno-builtin",
+            self.comp.prefs.mod_output, "-Werror", "-fno-builtin",
             "-m64" if self.comp.prefs.target_bits == prefs.Bits.X64 else "-m32",
         ]
         if self.comp.prefs.build_mode == prefs.BuildMode.Release:
@@ -63,12 +63,14 @@ class CGen:
             args.append("-g")
         if self.comp.prefs.target_os == prefs.OS.Windows:
             args.append(f"-municode")
+
         for l in self.comp.prefs.library_path:
             args.append(f"-L{l}")
         for l in self.comp.prefs.libraries_to_link:
             args.append(f"-l{l}")
         for obj in self.comp.prefs.objects_to_link:
             args.append(obj)
+
         args.append(c_file)
         self.comp.vlog(f"C compiler options: {args}")
 

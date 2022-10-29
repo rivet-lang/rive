@@ -100,7 +100,7 @@ class TestInfo:
 class Codegen:
     def __init__(self, comp):
         self.comp = comp
-        self.out_rir = ir.RIRFile(self.comp.prefs.pkg_name)
+        self.out_rir = ir.RIRFile(self.comp.prefs.mod_name)
         self.void_types = (self.comp.void_t, self.comp.never_t)
 
         self.sf = None
@@ -266,7 +266,7 @@ class Codegen:
                         [argv, ir.Type("u8").ptr().ptr()]
                     ),
                     ir.Name(
-                        f"_R{len(self.comp.prefs.pkg_name)}{self.comp.prefs.pkg_name}4mainF"
+                        f"_R{len(self.comp.prefs.mod_name)}{self.comp.prefs.mod_name}4mainF"
                     )
                 ]
             )
@@ -275,26 +275,26 @@ class Codegen:
 
         if report.ERRORS == 0:
             if self.comp.prefs.emit_rir:
-                with open(f"{self.comp.prefs.pkg_name}.rir", "w+") as f:
+                with open(f"{self.comp.prefs.mod_name}.rir", "w+") as f:
                     f.write(str(self.out_rir).strip())
             if self.comp.prefs.target_backend == prefs.Backend.C:
-                self.check_pkg_attrs()
+                self.check_mod_attrs()
                 CGen(self.comp).gen(self.out_rir)
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
-                if os.system(self.comp.prefs.pkg_output) == 0:
-                    os.remove(self.comp.prefs.pkg_output)
+                if os.system(self.comp.prefs.mod_output) == 0:
+                    os.remove(self.comp.prefs.mod_output)
 
-    def check_pkg_attrs(self):
-        pkg_folder = os.path.join(
-            prefs.RIVET_DIR, "obj", self.comp.prefs.pkg_name
+    def check_mod_attrs(self):
+        mod_folder = os.path.join(
+            prefs.RIVET_DIR, "obj", self.comp.prefs.mod_name
         )
-        for attr in self.comp.pkg_attrs.attrs:
+        for attr in self.comp.mod_attrs.attrs:
             if attr.name == "c_compile":
-                if not os.path.exists(pkg_folder):
-                    os.mkdir(pkg_folder)
+                if not os.path.exists(mod_folder):
+                    os.mkdir(mod_folder)
                 cfile = os.path.realpath(attr.args[0].expr.lit)
                 objfile = os.path.join(
-                    pkg_folder,
+                    mod_folder,
                     f"{os.path.basename(cfile)}.{self.comp.prefs.get_obj_postfix()}.o"
                 )
                 self.comp.prefs.objects_to_link.append(objfile)
@@ -356,7 +356,10 @@ class Codegen:
         elif isinstance(decl, ast.FnDecl):
             if self.inside_trait and not decl.has_body:
                 return
-            if decl.is_main and self.comp.prefs.build_mode == prefs.BuildMode.Test:
+            if decl.is_main and (
+                self.comp.prefs.build_mode == prefs.BuildMode.Test
+                or self.comp.prefs.mod_type != prefs.ModType.Bin
+            ):
                 return
             args = []
             if decl.is_method:
