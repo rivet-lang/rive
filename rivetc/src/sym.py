@@ -107,6 +107,7 @@ class Vis(Enum):
 
 class Sym:
     def __init__(self, vis, name, abi = ABI.Rivet):
+        self.attrs = None
         self.id = new_symbol_id()
         self.abi = abi
         self.vis = vis

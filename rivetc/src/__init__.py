@@ -47,8 +47,6 @@ class Compiler:
         self.runtime_mod = None
         self.vec_sym = None # from `runtime` module
 
-        self.mod_attrs = ast.Attrs()
-
         self.parsed_files = []
         self.source_files = []
 

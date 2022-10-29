@@ -121,6 +121,8 @@ class Parser:
         return sym.ABI.Rivet
 
     def parse_attrs(self, parse_mod_attrs = False):
+        if self.file_sym.attrs==None:
+            self.file_sym.attrs=ast.Attrs()
         attrs = ast.Attrs()
         while self.accept(Kind.Hash):
             if parse_mod_attrs:
@@ -147,7 +149,7 @@ class Parser:
                     self.expect(Kind.Rparen)
                 attr = ast.Attr(attr_name, args, pos)
                 if parse_mod_attrs:
-                    self.comp.mod_attrs.add(attr)
+                    self.file_sym.attrs.add(attr)
                 else:
                     attrs.add(attr)
                 if not self.accept(Kind.Semicolon):

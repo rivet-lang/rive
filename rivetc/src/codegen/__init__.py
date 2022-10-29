@@ -129,6 +129,9 @@ class Codegen:
         )
         self.out_rir.decls.append(self.init_args_fn)
 
+        for mod in self.comp.universe.syms:
+            if isinstance(mod, sym.Mod):
+                self.gen_mod_attrs(mod.name, mod.attrs)
         for source_file in source_files:
             self.sf = source_file
             self.gen_decls(source_file.decls)
@@ -278,17 +281,14 @@ class Codegen:
                 with open(f"{self.comp.prefs.mod_name}.rir", "w+") as f:
                     f.write(str(self.out_rir).strip())
             if self.comp.prefs.target_backend == prefs.Backend.C:
-                self.check_mod_attrs()
                 CGen(self.comp).gen(self.out_rir)
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
                 if os.system(self.comp.prefs.mod_output) == 0:
                     os.remove(self.comp.prefs.mod_output)
 
-    def check_mod_attrs(self):
-        mod_folder = os.path.join(
-            prefs.RIVET_DIR, "obj", self.comp.prefs.mod_name
-        )
-        for attr in self.comp.mod_attrs.attrs:
+    def gen_mod_attrs(self, mod_name, attrs):
+        mod_folder = os.path.join(prefs.RIVET_DIR, "obj", mod_name)
+        for attr in attrs.attrs:
             if attr.name == "c_compile":
                 if not os.path.exists(mod_folder):
                     os.mkdir(mod_folder)
