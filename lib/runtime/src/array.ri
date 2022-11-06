@@ -1,0 +1,40 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "libc";
+
+fn array_index(len: usize, idx: usize) {
+    if idx >= len {
+        process_panic("array index out of range (index: {}, size: {})", idx, len);
+    }
+}
+
+fn array_eq(arr: *void, other_arr: *void, len: usize) bool {
+    return unsafe { libc::memcmp(arr, other_arr, len) == 0 };
+}
+
+fn array_ne(arr: *void, other_arr: *void, len: usize) bool {
+    return unsafe { !array_eq(arr, other_arr, len) };
+}
+
+fn array_slice(
+    arr: *mut void, elem_size: usize, size: usize, start: usize, end: usize
+) Vec {
+    if start > end or end > size {
+        process_panic("slice index out of range (range: {}..{}, len: {})", start, end, size);
+    }
+    let len = end - start;
+    unsafe {
+        if len == size {
+            return Vec(arr, elem_size, len);
+        }
+        return Vec(ptr_add!(as(*mut u8, arr), start * elem_size), elem_size, len);
+    }
+}
+
+fn array_slice_from(
+    arr: *mut void, elem_size: usize, size: usize, start: usize
+) Vec {
+    return unsafe { array_slice(arr, elem_size, size, start, size) };
+}

@@ -1,0 +1,7 @@
+tests/invalid/duplicate_symbols.ri:15:4: error: package `duplicate_symbols` has duplicate symbol `other`
+tests/invalid/duplicate_symbols.ri:20:7: error: package `duplicate_symbols` has duplicate symbol `RuntimeError`
+tests/invalid/duplicate_symbols.ri:23:8: error: package `duplicate_symbols` has duplicate symbol `Gota`
+tests/invalid/duplicate_symbols.ri:27:12: error: module `module` has duplicate symbol `App`
+tests/invalid/duplicate_symbols.ri:30:6: error: enum `State` has duplicate value `Idle`
+tests/invalid/duplicate_symbols.ri:39:9: error: type `Game` has duplicate field `art`
+rivetc: error: could not compile package `duplicate_symbols`, aborting due to 6 previous errors

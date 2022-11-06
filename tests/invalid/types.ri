@@ -1,0 +1,19 @@
+extern (C) {
+    fn malloc(sz: usize) *void;
+    fn free(pointer: &void) void; // FAIL
+}
+
+struct St {
+    f1: &i32; // FAIL
+
+    f2: ?*u8;
+
+    f3: (i32, i32, i32, i32, i32, i32, i32, i32, i32);
+
+    f4: void;
+
+    f5: pkg;
+    f6: =;
+}
+
+fn main() { }

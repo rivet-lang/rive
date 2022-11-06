@@ -1,0 +1,169 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+class Vec {
+    mut ptr: *mut void;
+    elem_size: usize;
+    mut len_: usize;
+    mut cap_: usize;
+    is_ref: bool;
+
+    #[unsafe]
+    fn new(elem_size: usize, cap: usize) Self {
+        return Self(
+            unsafe { mem_alloc_zeroed(cap * elem_size) catch unreachable!() },
+            elem_size, 0, cap
+        );
+    }
+
+    #[unsafe]
+    fn from_array(arr: *mut void, elem_size: usize, len: usize) Self {
+        let mut vec = Self(
+            unsafe { mem_alloc_zeroed(len * elem_size) catch unreachable!() },
+            elem_size, len, len
+        );
+        unsafe {
+            mem_copy(vec.ptr, arr, elem_size * len);
+        }
+        return vec;
+    }
+
+    fn get(self, idx: usize) *mut void {
+        if idx >= self.len_ {
+            process_panic("vector index out of range (index: {}, len: {})", idx, self.len_);
+        }
+        return unsafe { ptr_add!(as(*mut u8, self.ptr), idx * self.elem_size) };
+    }
+
+    #[unsafe]
+    fn raw_get(self, idx: usize) *mut void {
+        return unsafe { ptr_add!(as(*mut u8, self.ptr), idx * self.elem_size) };
+    }
+
+    fn set(self, idx: usize, val: *void) {
+        if idx >= self.len_ {
+            process_panic("vector index out of range (index: {}, len: {})", idx, self.len_);
+        }
+        unsafe {
+            mem_copy(
+                ptr_add!(as(*mut u8, self.ptr), self.elem_size * idx), val,
+                self.elem_size
+            );
+        }
+    }
+
+    fn push(mut self, val: *void) {
+        if self.len_ >= self.cap_ {
+            self.reserve(self.len_ + 1);
+        }
+        unsafe {
+            mem_copy(
+                ptr_add!(self.ptr, self.elem_size * self.len_), val,
+                self.elem_size
+            );
+        }
+        self.len_ += 1;
+    }
+
+    /// Returns the last element of the vector, and removes it. If the
+    /// `vector` is empty, this will process_panic.
+    fn pop(mut self) *void {
+        if self.len_ == 0 {
+            process_panic("Vec::pop: vector is empty");
+        }
+        let new_len = self.len_ - 1;
+        unsafe {
+            let last_elem = ptr_add!(self.ptr, new_len * self.elem_size);
+            self.len_ = new_len;
+            return last_elem;
+        }
+    }
+
+    fn len(self) usize {
+        return self.len_;
+    }
+
+    fn cap(self) usize {
+        return self.cap_;
+    }
+
+    fn is_empty(self) bool {
+        return self.len_ == 0;
+    }
+
+    fn ==(self, rhs: Self) bool {
+        if self.len_ != rhs.len_ {
+            return false;
+        }
+        return unsafe { mem_cmp(self.ptr, rhs.ptr, self.len_) == 0 };
+    }
+
+    fn !=(self, rhs: Self) bool {
+        return !(self == rhs);
+    }
+
+    fn reserve(mut self, required: usize) {
+        if required <= self.cap_ {
+            return;
+        }
+        let mut cap = if self.cap_ > 0 { self.cap_ } else { 2 };
+        while required > cap {
+            cap *= 2;
+        }
+        unsafe {
+            let new_size = cap * self.elem_size;
+            let new_ptr = mem_alloc(new_size) catch unreachable!();
+            if self.ptr != nil {
+                mem_copy(new_ptr, self.ptr, self.len_ * self.elem_size);
+            }
+            self.ptr = new_ptr;
+        }
+        self.cap_ = cap;
+    }
+
+    fn slice(self, start: usize, end: usize) Self {
+        if start > end or end > self.len_ {
+            process_panic(
+                "slice index out of range (range: {}..{}, len: {})", start, end,
+                self.len_
+            );
+        }
+        let len = end - start;
+        if len == self.len_ {
+            return self;
+        }
+        return Self(
+            unsafe { ptr_add!(as(*mut u8, self.ptr), start * self.elem_size) },
+            self.elem_size, len, len, true
+        );
+    }
+
+    fn slice_from(self, start: usize) Self {
+        return self.slice(start, self.len_);
+    }
+
+    /// Returns an independent copy of `self`.
+    pub fn clone(self) Self {
+        let mut size = self.cap_ * self.elem_size;
+        if size == 0 {
+            size += 1;
+        }
+        let mut vec = Self(
+            mem_alloc_zeroed(size) catch unreachable!(),
+            self.elem_size, self.len_, self.cap_
+        );
+        unsafe {
+            mem_copy(vec.ptr, self.ptr, size);
+        }
+        return vec;
+    }
+
+    ~Self(mut self) {
+        unsafe {
+            if !self.is_ref {
+                mem_dealloc(self.ptr);
+            }
+        }
+    }
+}

@@ -1,0 +1,2 @@
+tests/invalid/extern_decl.ri:6:16: error: package `oreo` not found
+rivetc: error: could not compile package `extern_decl`, aborting due to previous error

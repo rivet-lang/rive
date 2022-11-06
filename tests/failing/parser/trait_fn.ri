@@ -1,4 +1,0 @@
-trait Trait {
-    #[inline]
-    pub fn vis();
-}

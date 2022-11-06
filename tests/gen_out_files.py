@@ -4,17 +4,14 @@
 
 # Script used to generate the `.out` files
 
-import os, glob, sys
+import os, glob, sys, utils
 
-import utils
-
-FAIL_FILES = glob.glob(f"tests/failing/**/*.ri")
+FAIL_FILES = glob.glob(f"tests/invalid/*.ri")
 for file in FAIL_FILES:
 	out_name = file.replace(".ri", ".out")
-	res = utils.run_process(
-	    sys.executable, "rivetc.py", # TODO: "--pkg-name", utils.filename(file),
-	    file
-	)
+	if os.path.exists(out_name):
+		continue
+	res = utils.run_process(sys.executable, "rivetc", file)
 	if res.exit_code != 0:
 		utils.eprint(f"[OK] {file}")
 		with open(out_name, "w", encoding = 'UTF-8') as f:

@@ -1,0 +1,51 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "libc";
+
+pub struct Console {
+    /// Prints a message to stdout. Unlike `println` stdout is not automatically
+    /// flushed.
+    pub fn print(s: string, args: ...ToString) {
+        let sx = s.fmt(args);
+        unsafe {
+            write_buf_to_fd(1, sx.ptr, sx.len);
+        }
+    }
+
+    /// Prints a message with a line end to stdout. stdout is flushed.
+    pub fn println(s: string = "", args: ...ToString) {
+        unsafe {
+            writeln_to_fd(1, s.fmt(args));
+        }
+    }
+
+    /// Prints a message to stderr. Both stderr and stdout are flushed.
+    pub fn eprint(s: string, args: ...ToString) {
+        let sx = s.fmt(args);
+        unsafe {
+            _ = libc::fflush(libc::stdout);
+            _ = libc::fflush(libc::stderr);
+            write_buf_to_fd(2, sx.ptr, sx.len);
+            _ = libc::fflush(libc::stderr);
+        }
+    }
+
+    /// Prints a message with a line end to stderr. Both stderr and stdout are
+    /// flushed.
+    pub fn eprintln(s: string = "", args: ...ToString) {
+        unsafe {
+            _ = libc::fflush(libc::stdout);
+            _ = libc::fflush(libc::stderr);
+            writeln_to_fd(2, s.fmt(args));
+            _ = libc::fflush(libc::stderr);
+        }
+    }
+
+    /// Returns `true` if the `fd` file descriptor is open and refers to a
+    /// terminal.
+    pub fn is_atty(fd: i32) bool {
+        return unsafe { libc::isatty(fd) == 1 };
+    }
+}

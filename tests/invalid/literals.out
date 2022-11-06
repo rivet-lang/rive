@@ -1,0 +1,13 @@
+tests/invalid/literals.ri:2:6: error: this hexadecimal number has unsuitable digit `G`
+tests/invalid/literals.ri:5:7: error: this binary number has unsuitable digit `3`
+tests/invalid/literals.ri:7:2: error: cannot use `_` consecutively in a numeric literal
+tests/invalid/literals.ri:8:4: error: cannot use `_` at the end of a numeric literal
+tests/invalid/literals.ri:10:3: error: separator `_` is only valid between digits in a numeric literal
+tests/invalid/literals.ri:11:3: error: separator `_` is only valid between digits in a numeric literal
+tests/invalid/literals.ri:13:2: error: float literals should have a digit after the decimal point
+   = help: use `1.0` instead of `1`
+tests/invalid/literals.ri:17:4: error: character literal may only contain one codepoint
+   = help: if you meant to write a string literal, use double quotes
+tests/invalid/literals.ri:18:2: error: empty character literal
+tests/invalid/literals.ri:20:1: error: unfinished string literal
+rivetc: error: could not compile package `literals`, aborting due to 10 previous errors

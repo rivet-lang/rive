@@ -1,0 +1,14 @@
+class Base1 {
+    prot field1: i32;
+}
+
+class Base2 : Base1 {
+    field2: bool;
+}
+
+test "inheritance, fields" {
+    let x = Base2();
+    if x.field2 {
+        _ = x.field1;
+    }
+}

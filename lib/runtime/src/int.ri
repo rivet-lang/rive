@@ -1,0 +1,158 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+let DIGIT_PAIRS: string = "0010203040506070809001112131415161718191021222324252627"
+    "28292031323334353637383930414243444546474849405152535455565758595061626364656667"
+    "68696071727374757677787970818283848586878889809192939495969798999";
+
+extend untyped_int : ToString {
+    /// Returns the value of `self` as a string.
+    pub fn to_string(&self) string {
+        return as(i64, self.*).to_string();
+    }
+}
+
+extend i8 : ToString {
+    pub const MAX: i8 = 127;
+    pub const MIN: i8 = -128;
+
+    /// Returns the value of `self` as a string.
+    pub fn to_string(&self) string {
+        return as(i32, self.*).str_l(5);
+    }
+}
+
+extend i16 : ToString {
+    pub const MAX: i16 = 32767;
+    pub const MIN: i16 = -32768;
+
+    /// Returns the value of `self` as a string.
+    pub fn to_string(&self) string {
+        return as(i32, self.*).str_l(7);
+    }
+}
+
+extend i32 : ToString {
+    pub const MAX: i32 = 2147483647;
+    pub const MIN: i32 = -2147483648;
+
+    /// Returns the string representation of `self` with `max` chars.
+    pub fn str_l(self, max: i32) string {
+        unsafe {
+            if self == 0 {
+                return "0";
+            }
+            let mut n = as(i64, self);
+            let mut d: u32 = 0;
+
+            let mut is_neg = false;
+            if n < 0 {
+                n = -n;
+                is_neg = true;
+            }
+
+            let mut index = as(usize, max);
+            let buf = as(*mut u8, mem_alloc(as(usize, max + 1)) catch unreachable!());
+            buf[index] = 0;
+            index -= 1;
+
+            while n > 0 {
+                let n1 = as(i32, n / 100);
+                d = as(u32, as(i32, n) - (n1 * 100)) << 1;
+                n = n1;
+                buf[index] = DIGIT_PAIRS.ptr[d];
+                index -= 1;
+                d += 1;
+                buf[index] = DIGIT_PAIRS.ptr[d];
+                index -= 1;
+            }
+            index += 1;
+
+            if d < 20 {
+                // remove head zero
+                index += 1;
+            }
+
+            if is_neg {
+                // prepend `-` if it's negative
+                index -= 1;
+                buf[index] = b'-';
+            }
+
+            let diff = as(usize, max) - index;
+            mem_move(buf, ptr_add!(buf, index), diff + 1);
+            return string::from_raw_with_len(buf, diff);
+        }
+    }
+
+    /// Returns the value of `self` as a string.
+    pub fn to_string(&self) string {
+        return self.*.str_l(12);
+    }
+}
+
+extend i64 : ToString {
+    pub const MAX: i64 = 9223372036854775807;
+    pub const MIN: i64 = -9223372036854775808;
+
+    /// Returns the value of `self` as a string.
+    pub fn to_string(&self) string {
+        unsafe {
+            if self.* == 0 {
+                return "0";
+            }
+            let mut n = self.*;
+            let mut d: i64 = 0;
+
+            let mut is_neg = false;
+            if n < 0 {
+                n = -n;
+                is_neg = true;
+            }
+
+            let max = 20;
+            let buf = as(*mut u8, mem_alloc(as(usize, max + 1)) catch unreachable!());
+            let mut index = as(usize, max);
+            buf[index] = 0;
+            index -= 1;
+
+            while n > 0 {
+                let n1 = as(i64, n / 100);
+                d = as(i64, as(u32, n - (n1 * 100))) << as(i64, 1);
+                n = n1;
+                buf[index] = DIGIT_PAIRS.ptr[as(usize, d)];
+                index -= 1;
+                d += 1;
+                buf[index] = DIGIT_PAIRS.ptr[as(usize, d)];
+                index -= 1;
+            }
+            index += 1;
+
+            if d < 20 {
+                // remove head zero
+                index += 1;
+            }
+
+            if is_neg {
+                // prepend `-` if it's negative
+                index -= 1;
+                buf[index] = b'-';
+            }
+
+            let diff = as(usize, max) - index;
+            mem_move(buf, ptr_add!(buf, index), diff + 1);
+            return string::from_raw_with_len(buf, diff);
+        }
+    }
+}
+
+extend isize : ToString {
+    pub const MIN: i64 = #if _AMD64_ i64::MIN #else i32::MIN #endif;
+    pub const MAX: i64 = #if _AMD64_ i64::MAX #else i32::MAX #endif;
+
+    /// Returns the value of `self` as a string.
+    pub fn to_string(&self) string {
+        return as(i64, self.*).to_string();
+    }
+}

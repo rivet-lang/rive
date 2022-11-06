@@ -1,0 +1,17 @@
+test "switch expression" {
+    switch 1 {
+        1 => assert!(true),
+        else => assert!(false)
+    }
+
+    let x = 1;
+    switch x {
+        1 => assert!(true),
+        else => assert!(false)
+    }
+
+    assert!(switch x {
+        1 => true,
+        else => false
+    });
+}

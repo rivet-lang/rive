@@ -1,0 +1,84 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+#![c_compile("lib/thirdparty/libbacktrace/backtrace.c")]
+
+import "libc";
+
+struct backtrace_state;
+
+type BacktraceErrorCB = fn(*mut void, *mut u8, i32);
+type BacktraceFullCB = fn(*mut void, i32, *mut u8, i32, *mut u8) i32;
+
+extern (C) {
+    fn backtrace_create_state(
+        filename: *u8, threaded: i32, error_cb: BacktraceErrorCB,
+        data: *mut void
+    ) *mut backtrace_state;
+
+    fn backtrace_full(
+        state: *backtrace_state, skip: i32, cb: BacktraceFullCB,
+        error_cb: BacktraceErrorCB, data: *mut void
+    ) i32;
+}
+
+let state: *mut backtrace_state = unsafe {
+    backtrace_create_state(ARGS[0].ptr, 1, bt_error_handler, nil)
+};
+
+struct BacktraceData {
+    mut has_error: bool;
+}
+
+fn bt_print_callback(
+    data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, fn_ptr: *mut u8
+) i32 {
+    unsafe {
+        if fn_ptr != nil and libc::memcmp(fn_ptr, c"_R4core10rivet_mainF", 20) == 0 {
+            return 1; // stop backtracing
+        }
+
+        let file_name = if filename_ptr == nil {
+            "???"
+        } else {
+            string::from_raw(filename_ptr)
+        };
+
+        let fn_name = if fn_ptr == nil {
+            "??"
+        } else {
+            demangle_symbol(string::from_raw(fn_ptr))
+        };
+
+        Console::eprintln("   at {} ({}:{})", fn_name, file_name, lineno);
+    }
+    return 0;
+}
+
+fn bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) {
+    unsafe {
+        let bdata = as(*mut BacktraceData, data);
+        if !bdata.has_error {
+            Console::eprint("   libbacktrace error: ");
+            Console::eprint(string::from_raw(msg_ptr));
+            if errnum > 0 {
+                Console::eprint(" (");
+                Console::eprint(string::from_raw(libc::strerror(errnum)));
+                Console::eprint(")");
+            }
+            Console::eprintln();
+            bdata.has_error = true;
+        }
+    }
+}
+
+pub fn bt_print(frames_to_skip: i32 = 0) {
+    unsafe {
+        let mut data = BacktraceData();
+        _ = backtrace_full(
+            state, frames_to_skip, bt_print_callback, bt_error_handler,
+            addr_of_mut!(data)
+        );
+    }
+}

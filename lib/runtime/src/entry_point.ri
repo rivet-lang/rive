@@ -1,0 +1,49 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "libc";
+
+extern (Rivet) {
+    pub let ARGS: [string];
+}
+
+extern (C) {
+    fn _R12init_globalsZ();
+    fn _R12drop_globalsZ();
+    fn _R8set_argsZ(args: [string]);
+}
+
+extern (C) fn init_args(_argc: i32, _argv: **u8) [string] {
+    let mut args: [string] = [];
+    for i in 0.._argc {
+        args.push(unsafe { string::from_raw(_argv[as(usize, i)]) });
+    }
+    return args;
+}
+
+#if _TESTS_
+import "test_runner";
+
+fn tests_main(_argc: i32, _argv: **u8, mut tr: test_runner::TestRunner) {
+    unsafe {
+        _ = libc::signal(11, segfault_handler);
+        _R8set_argsZ(init_args(_argc, _argv));
+        _R12init_globalsZ();
+        tr.print_header();
+        tr.run();
+        tr.print_summary_tests();
+        _R12drop_globalsZ();
+    }
+}
+#else
+fn main(_argc: i32, _argv: **u8, pkg_main: fn()) {
+    unsafe {
+        _ = libc::signal(11, segfault_handler);
+        _R8set_argsZ(init_args(_argc, _argv));
+        _R12init_globalsZ();
+        pkg_main();
+        _R12drop_globalsZ();
+    }
+}
+#endif

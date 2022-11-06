@@ -1,0 +1,2 @@
+tests/invalid/call_expr.ri:5:28: error: expected named argument, found single expression
+rivetc: error: could not compile package `call_expr`, aborting due to previous error

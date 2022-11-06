@@ -1,0 +1,21 @@
+struct Xyz {
+    a: [[i32; 4]; 5];
+    b: [fn(); 8];
+    c: [[fn(); 7]; 10];
+}
+
+fn new_array() [i32; 4] {
+    return [1, 2, 3, 4]!;
+}
+
+test "array literal" {
+    let lit = [1, 2, 3, 4]!;
+    assert!(lit == [1, 2, 3, 4]!);
+    assert!(lit.len == 4);
+}
+
+test "array returned from function" {
+    let arr = new_array();
+    assert!(arr == [1, 2, 3, 4]!);
+    assert!(arr.len == 4);
+}

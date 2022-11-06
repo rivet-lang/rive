@@ -1,0 +1,312 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "libc";
+
+let empty_string: string = string(c"", 0, true);
+
+pub class string : ToString {
+    pub ptr: *u8;
+    pub len: usize;
+    is_ref: bool;
+
+    #[unsafe]
+    pub fn from_raw(ptr: *u8, is_ref: bool = false) Self {
+        return unsafe { Self::from_raw_with_len(ptr, libc::strlen(ptr), is_ref) };
+    }
+
+    #[unsafe]
+    pub fn from_raw_with_len(ptr: *u8, len: usize, is_ref: bool = false) Self {
+        if len == 0 {
+            return "";
+        }
+        return Self(unsafe { ptr }, len, is_ref);
+    }
+
+    pub fn from_byte(byte: u8) Self {
+        unsafe {
+            let res = as(*mut u8, mem_alloc(2) catch unreachable!());
+            res[0] = byte;
+            res[1] = 0;
+            return Self(res, 1);
+        }
+    }
+
+    /// Returns a string with the bytes stored in `bytes`. If the length of
+    /// `bytes` is 0, an empty string is returned instead.
+    pub fn from_bytes(bytes: [u8]) Self {
+        if bytes.len() == 0 {
+            return "";
+        }
+        unsafe {
+            let res = as(*mut u8, mem_alloc(bytes.len() + 1) catch unreachable!());
+            res[bytes.len()] = 0;
+            mem_copy(res, addr_of!(bytes[0]), bytes.len());
+            return Self(res, bytes.len());
+        }
+    }
+
+    fn at(self, idx: usize) u8 {
+        if idx >= self.len {
+            process_panic("string index out of range (index: {}, len: {})", idx, self.len);
+        }
+        return unsafe { self.ptr[idx] };
+    }
+
+    pub fn concat(self, others: ...Self) Self {
+        let mut sb = StringBuilder::from_string(self);
+        for other in others {
+            sb.write_string(other);
+        }
+        return sb.to_string();
+    }
+
+    /// Returns a string formatted with all the values passed.
+    ///
+    /// Each replacement position is marked with `{}`:
+    ///
+    /// `"x: {}".fmt(1) == "x: 1"`
+    ///
+    /// It is also possible to use a specific position within the replace position:
+    ///
+    /// `"x: {1} | {0}".fmt(1, 2) == "x: 2 | 1"`
+    ///
+    /// If no argument is passed, the string is returned unchanged.
+    ///
+    /// To escape `{` and `}`, `{{` and `}}` can be used, this does not apply if no
+    /// argument is passed.
+    ///
+    /// If the replacement positions exceed the number of passed arguments, a process_panic
+    /// occurs.
+    pub fn fmt(self, args: ...ToString) Self {
+        if args.len() == 0 {
+            return self;
+        }
+        let mut i: usize = 0;
+        let mut args_idx: usize = 0;
+        let mut res = StringBuilder::new(self.len);
+        while i < self.len {
+            let b = unsafe { self.ptr[i] };
+            let b2 = if i + 1 < self.len unsafe { self.ptr[i + 1] } else { 0 };
+            switch b {
+                b'{' => {
+                    if b2 == b'{' { // escaping '{'
+                        res.write_byte(b'{');
+                        i += 1;
+                    } else if b2 == b'}' {
+                        let arg_idx = args_idx;
+                        args_idx += 1;
+                        if arg_idx >= args.len() {
+                            process_panic(
+                                "fmt: argument index out of range (argument index: {}, len: {}, index: {})",
+                                arg_idx, args.len(), i
+                            );
+                        }
+                        res.write_string(args[arg_idx].to_string());
+                        i += 1;
+                    } else if b2.is_digit() {
+                        let start = i;
+                        i += 1;
+                        let mut buf = StaticBuffer();
+                        while unsafe { self.ptr[i] != b'}' } {
+                            buf.push(unsafe { self.ptr[i] });
+                            i += 1;
+                            if i >= self.len {
+                                process_panic("fmt: incomplete format string (index: {})", start);
+                            }
+                        }
+                        let index = buf.as_u64();
+                        if index >= args.len() {
+                            process_panic(
+                                "fmt: argument index out of range (index: {}, len: {})",
+                                index, args.len()
+                            );
+                        }
+                        res.write_string(args[index].to_string());
+                    } else {
+                        process_panic("fmt: expecting closing '}}' in format string (index: {})", i);
+                    }
+                },
+                b'}' => {
+                    if b2 == b'}' { // escaping '}'
+                        res.write_byte(b'}');
+                        i += 1;
+                    } else {
+                        process_panic(
+                            "fmt: single '}}' encountered in format string (index: {})", i
+                        );
+                    }
+                },
+                else => res.write_byte(b)
+            }
+            i += 1;
+        }
+        return res.to_string();
+    }
+
+    /// Returns the index of byte `b` if found in the string.
+    pub fn index_byte(self, b: u8) ?usize {
+        for i in 0..self.len {
+            if unsafe { self.ptr[i] == b } {
+                return i;
+            }
+        }
+        return nil;
+    }
+
+    /// Returns the position of the first character of the input string.
+    /// It will return `nil` if the input string can't be found.
+    pub fn index(self, p: string) ?usize {
+        if p.len > self.len or p.len == 0 {
+            return nil;
+        }
+        let mut i: usize = 0;
+        while i < self.len {
+            let mut j: usize = 0;
+            while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } {
+                j += 1;
+            }
+            if j == p.len {
+                return i;
+            }
+            i += 1;
+        }
+        return nil;
+    }
+
+    pub fn as_bytes(self) [u8] {
+        return unsafe {
+            Vec::from_array(as(*mut u8, self.ptr), size_of!(u8), self.len)
+        };
+    }
+
+    pub fn ==(self, rhs: Self) bool {
+        if self.len != rhs.len {
+            return false;
+        }
+        unsafe {
+            if self.len > 0 {
+                let last_idx = self.len - 1;
+                if self.ptr[last_idx] != rhs.ptr[last_idx] {
+                    return false;
+                }
+            }
+            return mem_cmp(self.ptr, rhs.ptr, rhs.len) == 0;
+        }
+    }
+
+    pub fn !=(self, rhs: Self) bool {
+        return !(self == rhs);
+    }
+
+    pub fn <(self, rhs: Self) bool {
+        for i in 0..self.len {
+            unsafe {
+                if i >= rhs.len or self.ptr[i] > rhs.ptr[i] {
+                    return false;
+                } else if self.ptr[i] < rhs.ptr[i] {
+                    return true;
+                }
+            }
+        }
+        if self.len < rhs.len {
+            return true;
+        }
+        return false;
+    }
+
+    pub fn >(self, rhs: Self) bool {
+        return !(self < rhs);
+    }
+
+    pub fn <=(self, rhs: Self) bool {
+        return self < rhs or self == rhs;
+    }
+
+    pub fn >=(self, rhs: Self) bool {
+        return self > rhs or self == rhs;
+    }
+
+    /// Returns `true` if the string contains `substr`.
+    pub fn contains(self, substr: string) bool {
+        if substr.len == 0 {
+            return true;
+        }
+        if let _ = self.index(substr) {
+            return true;
+        }
+        return false;
+    }
+
+    /// Returns `true` if the string starts with `p`.
+    pub fn starts_with(self, p: string) bool {
+        if p.len > self.len {
+            return false;
+        }
+        for i in 0..p.len {
+            if unsafe { self.ptr[i] != p[i] } {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns `true` if the string ends with `p`.
+    pub fn ends_with(self, p: string) bool {
+        if p.len > self.len {
+            return false;
+        }
+        for i in 0..p.len {
+            if unsafe { p[i] != self.ptr[self.len - p.len + i] } {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns the number of runes contained in `self`.
+    pub fn runes_count(self) usize {
+        return cstr_runes_count(unsafe { self.ptr }, self.len);
+    }
+
+    pub fn is_empty(self) bool {
+        return self.len == 0;
+    }
+
+    fn slice(self, start: usize, end: usize) Self {
+        unsafe {
+            if start > end or start > self.len or end > self.len {
+                process_panic(
+                    "string slice index out of range (range: {}..{}, len: {})", start,
+                    end, self.len
+                );
+            }
+            let len = end - start;
+            if len == self.len {
+                return self;
+            }
+            return Self(ptr_add!(self.ptr, start), len, is_ref: true);
+        }
+    }
+
+    fn slice_from(self, start: usize) Self {
+        return self.slice(start, self.len);
+    }
+
+    pub fn clone(self) Self {
+        return Self::from_bytes(self.as_bytes());
+    }
+
+    pub fn to_string(self) Self {
+        return self;
+    }
+
+    ~Self(self) {
+        if !self.is_ref {
+            unsafe {
+                mem_dealloc(self.ptr);
+            }
+        }
+    }
+}

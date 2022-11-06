@@ -1,5 +1,0 @@
-tests/failing/parser/call_expr.ri:5:28: error: expected named argument, found single expression
-    |
-  5 |     qy(first: 5, last: 10, 9); // FAIL
-    |                            ^
-rivetc: error: could not compile package `core`, aborting due to previous error

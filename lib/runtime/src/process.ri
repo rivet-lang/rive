@@ -1,0 +1,46 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "libc";
+
+/// Returns the OS-assigned process identifier associated with this
+/// process.
+pub fn process_id() u32 {
+    return unsafe { libc::getpid() };
+}
+
+/// Terminates current thread execution immediately after displaying a
+/// message, followed by a backtrace.
+pub fn process_panic(s: string = "", args: ...ToString) never {
+    Console::eprintln("panic: {}", s.fmt(args));
+    bt_print(2);
+    process_exit(1);
+}
+
+/// Terminates the current process with the specified exit code.
+///
+/// This function will never return and will immediately terminate the
+/// current process. The exit code is passed through to the underlying
+/// OS and will be available for consumption by another process.
+pub fn process_exit(code: i32 = 0) never {
+    unsafe {
+        _R12drop_globalsZ();
+        libc::exit(code);
+    }
+}
+
+/// Terminates the process in an abnormal fashion.
+///
+/// The function will never return and will immediately terminate the
+/// current process in a platform specific "abnormal" manner.
+///
+/// The process's termination will be similar to that from the C `abort()`
+/// function. On Unix, the process will terminate with signal `SIGABRT`,
+/// which typically means that the shell prints "Aborted".
+pub fn process_abort() never {
+    unsafe {
+        _R12drop_globalsZ();
+        libc::abort();
+    }
+}

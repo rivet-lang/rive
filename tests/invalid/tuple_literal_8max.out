@@ -1,0 +1,2 @@
+tests/invalid/tuple_literal_8max.ri:3:9: error: tuples can have a maximum of 8 expressions
+rivetc: error: could not compile package `tuple_literal_8max`, aborting due to previous error

@@ -1,0 +1,38 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+pub fn demangle_symbol(name: string) string {
+    if !name.starts_with("_R") {
+        return name;
+    }
+
+    let name_ptr = unsafe { name.ptr };
+    let mut idx: usize = 2;
+    let mut buf = StaticBuffer();
+    let mut res = StringBuilder::new(name.len);
+    while idx < name.len {
+        let byte = unsafe { name_ptr[idx] };
+        if byte.is_digit() {
+            buf.push(byte);
+            idx += 1;
+            continue;
+        }
+
+        if !res.is_empty() {
+            res.write_string("::");
+        }
+
+        for _ in 0..as(usize, buf.as_u64()) {
+            res.write_byte(unsafe { name_ptr[idx] });
+            idx += 1;
+        }
+
+        buf.clear();
+
+        if !unsafe { name_ptr[idx] }.is_digit() {
+            break; // end
+        }
+    }
+    return res.to_string();
+}

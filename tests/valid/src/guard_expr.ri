@@ -1,0 +1,36 @@
+fn ret_nil() ?i32 {
+    return 3;
+}
+
+test "if guard" {
+    if let val = ret_nil() {
+        assert!(val == 3);
+    }
+
+    if let val1 = ret_nil(); val1 >= 10 {
+        assert!(false);
+    }
+}
+
+test "while guard" {
+    while let val2 = ret_nil() {
+        assert!(val2 == 3);
+        break;
+    }
+
+    while let val3 = ret_nil(); val3 >= 10 {
+        assert!(val3 >= 3);
+    }
+}
+
+test "switch guard" {
+    switch let val4 = ret_nil() {
+        3 => assert!(val4 == 3),
+        else => assert!(false)
+    }
+
+    switch let val5 = ret_nil(); val5 >= 10 {
+        3 => assert!(val5 == 3),
+        else => assert!(false)
+    }
+}

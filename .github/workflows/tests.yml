@@ -2,74 +2,42 @@ name: Tests
 
 on:
   push:
-    paths: ['examples/**.ri', 'lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**']
+    paths: ['lib/**.ri', 'rivetc/src/**.py', 'tests/**']
     branches: [main]
   pull_request:
-    paths: ['examples/**.ri', 'lib/**.ri', 'src-self-hosted/**.ri', 'src/**.py', 'tests/**']
+    paths: ['lib/**.ri', 'rivetc/src/**.py', 'tests/**']
     types: [opened, synchronize]
 
 jobs:
   ubuntu-clang:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       RIVET_CC_TEST: clang
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run examples
-        run: |
-          python3 tests/run_examples.py
-
       - name: Run passing tests
         run: |
-          python3 tests/run_ok_tests.py
+          python3 rivetc tests/valid
 
       - name: Run failing tests
         run: |
-          python3 tests/run_failing_tests.py
+          python3 tests/run_invalid_tests.py
 
   ubuntu-gcc:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       RIVET_CC_TEST: gcc
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run examples
-        run: |
-          python3 tests/run_examples.py
-
       - name: Run passing tests
         run: |
-          python3 tests/run_ok_tests.py
+          python3 rivetc tests/valid
 
       - name: Run failing tests
         run: |
-          python3 tests/run_failing_tests.py
-
-#  windows-msvc:
-#    runs-on: windows-2019
-#    env:
-#      RIVET_CC_TEST: msvc
-#    steps:
-#      - uses: actions/checkout@v2
-#
-#      - name: Setup Python3
-#        uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.x'
-#
-#      - name: Run examples
-#        run: |
-#          python3 tests/run_examples.py
-#
-#      - name: Run passing tests
-#        run: |
-#          python3 tests/run_ok_tests.py
-#
-#      - name: Run failing tests
-#        run: |
-#          python3 tests/run_failing_tests.py
+          python3 tests/run_invalid_tests.py
 
   windows-gcc:
     runs-on: windows-2019
@@ -83,14 +51,10 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Run examples
-        run: |
-          python3 tests/run_examples.py
-
       - name: Run passing tests
         run: |
-          python3 tests/run_ok_tests.py
+          python3 rivetc tests/valid
 
       - name: Run failing tests
         run: |
-          python3 tests/run_failing_tests.py
+          python3 tests/run_invalid_tests.py

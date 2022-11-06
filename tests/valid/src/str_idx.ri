@@ -1,0 +1,7 @@
+test "string index" {
+    let x = "String Literal";
+    assert!(x[0] == b'S');
+
+    let ch = "String Literal"[0];
+    assert!(ch == b'S');
+}

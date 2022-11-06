@@ -1,0 +1,19 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+pub class Error : ToString {
+    pub msg: string;
+
+    pub fn to_string(self) string {
+        let type_name = "Error";
+        if self.msg == "" {
+            return type_name;
+        }
+        return "{}: {}".fmt(type_name, self.msg);
+    }
+}
+
+pub class OutOfMemoryError : Error { }
+
+pub class RuneFromU32Error : Error { }

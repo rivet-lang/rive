@@ -1,0 +1,18 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+/// Reads the file in `path` and returns the contents.
+pub fn read_file(path: string) !string {
+	let mut f = File::open(path, "rb").!;
+	let res = f.read_all().!;
+	f.close();
+	return res;
+}
+
+/// Writes `text` data to a file in `path`.
+pub fn write_file(path: string, text: string) ! {
+	let mut f = File::open(path, "wb").!;
+	f.write(text);
+	f.close();
+}
