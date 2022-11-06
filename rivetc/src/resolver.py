@@ -180,6 +180,8 @@ class Resolver:
                     report.error(e.args[0], v.pos)
             self.resolve_expr(stmt.iterable)
             self.resolve_stmt(stmt.stmt)
+        elif isinstance(stmt, ast.DeferStmt):
+            self.resolve_expr(stmt.expr)
         elif isinstance(stmt, ast.ExprStmt):
             self.resolve_expr(stmt.expr)
 

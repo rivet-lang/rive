@@ -244,6 +244,8 @@ class Checker:
                     f"`{iterable_t}` is not an iterable type", stmt.iterable.pos
                 )
                 report.note("expected array, slice or string value")
+        elif isinstance(stmt, ast.DeferStmt):
+            self.check_expr(stmt.expr)
 
     def check_expr(self, expr):
         if isinstance(expr, ast.EmptyExpr):
