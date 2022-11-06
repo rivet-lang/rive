@@ -486,9 +486,9 @@ class Parser:
         return ast.FnDecl(
             doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
             args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
-            self_is_ref, has_named_args, self.inside_pkg
-            and self.file_sym.name == self.comp.prefs.pkg_name
-            and name == "main", is_variadic, abi
+            self_is_ref, has_named_args,
+            self.file_sym.name == self.comp.prefs.pkg_name and name == "main",
+            is_variadic, abi
         )
 
     # ---- statements --------------------------

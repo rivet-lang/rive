@@ -1,0 +1,143 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+#if _TESTS_
+
+let SUPPORT_COLOR: bool = Console::can_show_color_on_stdout();
+
+let OK_STATUS: string = bold(green("OK"));
+let FAILED_STATUS: string = bold(red("FAIL"));
+let SKIP_STATUS: string = bold(yellow("SKIP"));
+
+extern (Rivet) {
+    let test_runner: TestRunner;
+}
+
+fn bold(txt: string) string {
+    if SUPPORT_COLOR {
+        return Console::bold(txt);
+    }
+    return txt;
+}
+
+fn green(txt: string) string {
+    if SUPPORT_COLOR {
+        return Console::green(txt);
+    }
+    return txt;
+}
+
+fn red(txt: string) string {
+    if SUPPORT_COLOR {
+        return Console::red(txt);
+    }
+    return txt;
+}
+
+fn yellow(txt: string) string {
+    if SUPPORT_COLOR {
+        return Console::yellow(txt);
+    }
+    return txt;
+}
+
+fn assert_test(cond: bool, msg: string, pos: string, mut test_: Test) {
+    if !cond {
+        test_.result = .Failed;
+        test_.err_msg = "assertion failed: {}".fmt(msg);
+        test_.err_pos = pos;
+    }
+}
+
+fn test_error_returned(err: Error, pos: string, mut test_: Test) {
+    test_.result = .ErrorReturned;
+    test_.err = err;
+    test_.err_pos = pos;
+}
+
+enum TestResult : u8 {
+    Ok,
+    Skipped,
+    Failed,
+    ErrorReturned
+}
+
+struct Test {
+    name: string;
+    func : fn (*Test);
+    result: TestResult;
+    err_pos: string;
+    err_msg: string;
+    err: Error;
+}
+
+import "libc";
+
+pub struct TestRunner {
+    tests: [Test];
+    mut ok_tests: u64;
+    mut fail_tests: u64;
+    mut skip_tests: u64;
+
+    fn run(mut self) {
+        for i in 0..self.tests.len {
+            let mut test_ = self.tests[i];
+            Console::eprint(" [{}/{}] '{}' ... ", i + 1, self.tests.len, test_.name);
+            (test_.func)(unsafe { addr_of!(test_) });
+            switch test_.result {
+                .Ok => {
+                    self.print_ok();
+                },
+                .Skipped => {
+                    self.print_skip();
+                },
+                .Failed => {
+                    self.print_failed(test_.err_pos, test_.err_msg);
+                },
+                .ErrorReturned => {
+                    self.print_error_returned(test_.err_pos, test_.err);
+                }
+            }
+        }
+        self.print_summary_tests();
+        process_exit(as(i32, self.fail_tests != 0));
+    }
+
+    fn print_summary_tests(&self) {
+        Console::eprint(bold("Summary for all tests: "));
+        if self.ok_tests > 0 {
+            Console::eprint("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
+        }
+        if self.fail_tests > 0 {
+            Console::eprint("{}, ", bold(red("{} failed".fmt(self.fail_tests))));
+        }
+        if self.skip_tests > 0 {
+            Console::eprint("{}, ", bold(yellow("{} skipped".fmt(self.skip_tests))));
+        }
+        Console::eprintln(bold("{} total.".fmt(self.tests.len)));
+    }
+
+    fn print_ok(&self) {
+        Console::eprintln(OK_STATUS);
+        self.ok_tests += 1;
+    }
+
+    fn print_skip(&self) {
+        Console::eprintln(SKIP_STATUS);
+        self.skip_tests += 1;
+    }
+
+    fn print_failed(&self, pos: string, msg: string) {
+        Console::eprintln(FAILED_STATUS);
+        Console::eprintln("     at {}: {}", bold(pos), msg);
+        self.fail_tests += 1;
+    }
+
+    fn print_error_returned(&self, pos: string, err: Error) {
+        Console::eprintln(FAILED_STATUS);
+        Console::eprintln("     at {}: error returned: {}", bold(pos), err);
+        self.fail_tests += 1;
+    }
+}
+#endif

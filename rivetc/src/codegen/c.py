@@ -302,9 +302,9 @@ class CGen:
         elif inst.kind in (InstKind.Inc, InstKind.Dec):
             self.gen_expr(inst.args[0])
             if inst.kind == InstKind.Inc:
-                self.write("+= 1")
+                self.write(" += 1")
             else:
-                self.write("-= 1")
+                self.write(" -= 1")
         elif inst.kind in (InstKind.BitNot, InstKind.BooleanNot, InstKind.Neg):
             if inst.kind == InstKind.BooleanNot:
                 self.write("!(")

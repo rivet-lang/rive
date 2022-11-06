@@ -29,6 +29,11 @@ class Vec {
         return vec;
     }
 
+    #[unsafe]
+    fn from_array_no_alloc(arr: *mut void, elem_size: usize, len: usize) Self {
+        return Self(unsafe { arr }, elem_size, len, len);
+    }
+
     fn get(self, idx: usize) *mut void {
         if idx >= self.len {
             process_panic("vector index out of range (index: {}, len: {})", idx, self.len);

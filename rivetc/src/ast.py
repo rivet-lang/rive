@@ -147,17 +147,6 @@ class ExternDecl:
         self.decls = decls
         self.pos = pos
 
-class ModDecl:
-    def __init__(self, docs, attrs, name, vis, decls, is_inline, pos):
-        self.docs = docs
-        self.attrs = attrs
-        self.name = name
-        self.vis = vis
-        self.decls = decls
-        self.sym = None
-        self.is_inline = is_inline
-        self.pos = pos
-
 class ConstDecl:
     def __init__(self, docs, attrs, vis, name, typ, expr, pos):
         self.docs = docs

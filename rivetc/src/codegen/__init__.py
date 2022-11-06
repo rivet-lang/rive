@@ -89,6 +89,11 @@ def mangle_symbol(s):
     root.mangled_name = "".join(res)
     return root.mangled_name
 
+class TestInfo:
+    def __init__(self, name, func):
+        self.name = name
+        self.func = func
+
 class Codegen:
     def __init__(self, comp):
         self.comp = comp
@@ -103,6 +108,7 @@ class Codegen:
         self.cur_fn_ret_typ = self.comp.void_t
 
         self.inside_trait = False
+        self.inside_test = False
 
         self.generated_opt_res_types = []
         self.generated_array_returns = []
@@ -150,28 +156,13 @@ class Codegen:
             False, [], False, "main", [argc, argv], False, ir.Type("int"), False
         )
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
+            self.cur_fn = main_fn
             test_runner = ir.Ident(
-                ir.Type(
-                    mangle_symbol(
-                        self.comp.universe["runtime"]["testing"]["TestRunner"]
-                    )
-                ), "test_runner"
+                ir.Type("_R7runtime10TestRunner"), "_test_runner"
             )
             main_fn.alloca(test_runner)
             tests_field = ir.Selector(
                 ir.Type("_R7runtime3Vec"), test_runner, ir.Name("tests")
-            )
-            main_fn.store(
-                tests_field,
-                ir.Inst(
-                    ir.InstKind.Call, [
-                        ir.Name("_R7runtime3Vec3newF"),
-                        ir.IntLit(ir.Type("usize"), "40"),
-                        ir.IntLit(
-                            ir.Type("usize"), str(len(self.generated_tests))
-                        )
-                    ]
-                )
             )
             main_fn.store(
                 ir.Selector(ir.Type("u64"), test_runner, ir.Name("ok_tests")),
@@ -185,10 +176,75 @@ class Codegen:
                 ir.Selector(ir.Type("u64"), test_runner, ir.Name("skip_tests")),
                 ir.IntLit(ir.Type("u64"), "0")
             )
-            #for gtest in self.generated_tests:
-            #    pass#main_fn.add_call(gtest, [])
+            tests_vec = ir.Selector(
+                ir.Type("_R7runtime3Vec").ptr(True), test_runner,
+                ir.Name("tests")
+            )
+            test_t = ir.Type("_R7runtime4Test").ptr()
+            gtests_array = []
+            for i, gtest in enumerate(self.generated_tests):
+                test_value = ir.Ident(
+                    ir.Type("_R7runtime4Test"), f"test_value_{i}"
+                )
+                main_fn.alloca(test_value)
+                main_fn.store(
+                    ir.Selector(ir.Type("u8"), test_value, ir.Name("result")),
+                    ir.IntLit(ir.Type("u8"), "0")
+                )
+                main_fn.store(
+                    ir.Selector(
+                        ir.Type("_R7runtime6string"), test_value,
+                        ir.Name("err_pos")
+                    ),
+                    ir.Ident(
+                        ir.Type("_R7runtime6string"), "_R7runtime12empty_string"
+                    )
+                )
+                main_fn.store(
+                    ir.Selector(
+                        ir.Type("_R7runtime6string"), test_value,
+                        ir.Name("err_msg")
+                    ),
+                    ir.Ident(
+                        ir.Type("_R7runtime6string"), "_R7runtime12empty_string"
+                    )
+                )
+                main_fn.store(
+                    ir.Selector(
+                        ir.Type("_R7runtime6string").ptr(True), test_value,
+                        ir.Name("name")
+                    ), self.gen_string_lit(gtest.name)
+                )
+                main_fn.store(
+                    ir.Selector(
+                        ir.Function(test_t, ir.Type("void")), test_value,
+                        ir.Name("func")
+                    ), ir.Name(gtest.func)
+                )
+                gtests_array.append(test_value)
+            test_t_size, _ = self.comp.type_size(
+                type.Type(self.comp.universe["runtime"]["Test"])
+            )
+            main_fn.store(
+                tests_field,
+                ir.Inst(
+                    ir.InstKind.Call, [
+                        ir.Name("_R7runtime3Vec19from_array_no_allocF"),
+                        ir.ArrayLit(
+                            ir.Array(
+                                ir.Type("_R7runtime4Test"),
+                                str(len(self.generated_tests))
+                            ), gtests_array
+                        ),
+                        ir.IntLit(ir.Type("usize"), str(test_t_size)),
+                        ir.IntLit(
+                            ir.Type("usize"), str(len(self.generated_tests))
+                        )
+                    ]
+                )
+            )
             main_fn.add_call(
-                "_R7runtime10tests_mainF", [
+                "_R7runtime4mainF", [
                     argc,
                     ir.Inst(
                         ir.InstKind.Cast,
@@ -296,6 +352,8 @@ class Codegen:
         elif isinstance(decl, ast.FnDecl):
             if self.inside_trait and not decl.has_body:
                 return
+            if decl.is_main and self.comp.prefs.build_mode == prefs.BuildMode.Test:
+                return
             args = []
             if decl.is_method:
                 self_typ = self.ir_type(decl.self_typ)
@@ -352,19 +410,20 @@ class Codegen:
             self.out_rir.decls.append(dtor_fn)
         elif isinstance(decl, ast.TestDecl):
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
-                test_name = f"__test{len(self.generated_tests)}__"
-                test_name = f"_R{len(test_name)}{test_name}"
+                self.inside_test = True
+                test_name = utils.smart_quote(decl.name, True)
+                test_func = f"__test{len(self.generated_tests)}__"
+                test_func = f"_R{len(test_func)}{test_func}"
                 test_fn = ir.FnDecl(
-                    False, [], False, test_name, [], False,
-                    ir.Type("_R7Result__R4void"), False
+                    False, [], False, test_func,
+                    [ir.Ident(ir.Type("_R7runtime4Test").ptr(), "test")], False,
+                    ir.Type("void"), False
                 )
                 self.cur_fn = test_fn
-                self.cur_fn.add_call(
-                    "printf", [ir.StringLit(decl.name, len(decl.name))]
-                )
                 self.gen_stmts(decl.stmts)
-                self.generated_tests.append(test_name)
+                self.generated_tests.append(TestInfo(test_name, test_func))
                 self.out_rir.decls.append(test_fn)
+                self.inside_test = False
 
     def gen_stmts(self, stmts):
         for stmt in stmts:
@@ -421,7 +480,7 @@ class Codegen:
                             ir.Type("usize"), iterable_sym.info.size.lit
                         )
                     elif iterable_sym.kind == TypeKind.String and isinstance(
-                        iterable, ast.StringLiteral
+                        iterable, ir.StringLit
                     ):
                         len_ = ir.IntLit(ir.Type("usize"), iterable.len)
                     else:
@@ -550,7 +609,7 @@ class Codegen:
                 if isinstance(left_ir_typ, ir.Array):
                     self.cur_fn.alloca(ident)
                     self.cur_fn.add_call(
-                        "_R7runtime3mem4copyF", [
+                        "_R7runtime8mem_copyF", [
                             ident,
                             self.gen_expr_with_cast(left.typ, stmt.right),
                             ir.Name(
@@ -574,7 +633,7 @@ class Codegen:
                     if isinstance(left_ir_typ, ir.Array):
                         self.cur_fn.alloca(ident)
                         self.cur_fn.add_call(
-                            "_R7runtime3mem4copyF", [
+                            "_R7runtime8mem_copyF", [
                                 ident,
                                 ir.Selector(
                                     left_ir_typ, right, ir.Name(f"f{i}")
@@ -687,7 +746,7 @@ class Codegen:
                     ]
                 )
             if expr.typ == self.comp.string_t:
-                return self.gen_string_lit(escaped_val, size)
+                return self.gen_string_lit(escaped_val)
             return ir.StringLit(escaped_val, str(size))
         elif isinstance(expr, ast.EnumValueExpr):
             return ir.IntLit(
@@ -730,13 +789,22 @@ class Codegen:
             elif expr.name == "assert":
                 msg_ = f"`{expr.args[0]}`"
                 msg = utils.smart_quote(msg_, False)
-                self.cur_fn.add_call(
-                    "_R7runtime6assertF", [
-                        self.gen_expr(expr.args[0]),
-                        self.gen_string_lit(msg,
-                                            utils.bytestr(msg_).len)
-                    ]
-                )
+                if self.inside_test:
+                    pos = utils.smart_quote(str(expr.pos), False)
+                    self.cur_fn.add_call(
+                        "_R7runtime11assert_testF", [
+                            self.gen_expr(expr.args[0]),
+                            self.gen_string_lit(msg),
+                            self.gen_string_lit(pos),
+                            ir.Ident(ir.Type("_R7runtime4Test").ptr(), "test")
+                        ]
+                    )
+                else:
+                    self.cur_fn.add_call(
+                        "_R7runtime6assertF",
+                        [self.gen_expr(expr.args[0]),
+                         self.gen_string_lit(msg)]
+                    )
             elif expr.name in ("ptr_add", "ptr_diff"):
                 return ir.Inst(
                     ir.InstKind.Add
@@ -822,7 +890,7 @@ class Codegen:
                 value = self.gen_expr_with_cast(expr.left.typ, expr.right)
                 if isinstance(expr_left_typ_ir, ir.Array):
                     self.cur_fn.add_call(
-                        "_R7runtime3mem4copyF", [
+                        "_R7runtime8mem_copyF", [
                             ident,
                             self.gen_expr_with_cast(left.typ, stmt.right),
                             ir.Name(
@@ -1018,7 +1086,7 @@ class Codegen:
                     id = ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
                     self.cur_fn.alloca(id)
                     self.cur_fn.add_call(
-                        "_R7runtime3mem4copyF", [
+                        "_R7runtime8mem_copyF", [
                             ir.Selector(
                                 self.ir_type(expr.sym.ret_typ), inst,
                                 ir.Name("arr")
@@ -1057,38 +1125,51 @@ class Codegen:
                         if self.cur_fn_is_main:
                             self.cur_fn.add_call(
                                 "_R7runtime11error_printF", [
-                                    ir.Inst(
-                                        ir.InstKind.GetRef, [
-                                            ir.Selector(
-                                                self.ir_type(self.comp.error_t),
-                                                res_value, ir.Name("err")
-                                            )
-                                        ]
+                                    ir.Selector(
+                                        self.ir_type(self.comp.error_t),
+                                        res_value, ir.Name("err")
                                     )
                                 ]
                             )
                         else:
-                            tmp2 = ir.Ident(
-                                self.ir_type(self.cur_fn_ret_typ),
-                                self.cur_fn.local_name()
-                            )
-                            self.cur_fn.alloca(tmp2)
-                            self.cur_fn.store(
-                                ir.Selector(
-                                    ir.Type("bool"), tmp2, ir.Name("is_err")
-                                ), ir.IntLit(ir.Type("bool"), "1")
-                            )
-                            self.cur_fn.store(
-                                ir.Selector(
-                                    self.ir_type(self.comp.error_t), tmp2,
-                                    ir.Name("err")
-                                ),
-                                ir.Selector(
-                                    self.ir_type(self.comp.error_t), res_value,
-                                    ir.Name("err")
+                            if self.inside_test:
+                                pos = utils.smart_quote(str(expr.pos), False)
+                                self.cur_fn.add_call(
+                                    "_R7runtime19test_error_returnedF", [
+                                        ir.Selector(
+                                            self.ir_type(self.comp.error_t),
+                                            res_value, ir.Name("err")
+                                        ),
+                                        self.gen_string_lit(pos),
+                                        ir.Ident(
+                                            ir.Type("_R7runtime4Test"), "test"
+                                        )
+                                    ]
                                 )
-                            )
-                            self.cur_fn.add_ret(tmp2)
+                                self.cur_fn.add_ret_void()
+                            else:
+                                tmp2 = ir.Ident(
+                                    self.ir_type(self.cur_fn_ret_typ),
+                                    self.cur_fn.local_name()
+                                )
+                                self.cur_fn.alloca(tmp2)
+                                self.cur_fn.store(
+                                    ir.Selector(
+                                        ir.Type("bool"), tmp2,
+                                        ir.Name("is_err")
+                                    ), ir.IntLit(ir.Type("bool"), "1")
+                                )
+                                self.cur_fn.store(
+                                    ir.Selector(
+                                        self.ir_type(self.comp.error_t), tmp2,
+                                        ir.Name("err")
+                                    ),
+                                    ir.Selector(
+                                        self.ir_type(self.comp.error_t),
+                                        res_value, ir.Name("err")
+                                    )
+                                )
+                                self.cur_fn.add_ret(tmp2)
                         self.cur_fn.add_label(else_value)
                         if is_void_value:
                             return ir.Skip()
@@ -1758,7 +1839,16 @@ class Codegen:
         elif isinstance(expr, ast.ReturnExpr):
             wrap_result = isinstance(self.cur_fn_ret_typ, type.Result)
             ret_typ = self.cur_fn_ret_typ.typ if wrap_result else self.cur_fn_ret_typ
-            if expr.has_expr:
+            if self.inside_test:
+                self.cur_fn.store(
+                    ir.Selector(
+                        ir.Type("u8"),
+                        ir.Ident(ir.Type("_R7runtime4Test").ptr(), "test"),
+                        ir.Name("result")
+                    ), ir.IntLit(ir.Type("u8"), "1")
+                )
+                self.cur_fn.add_ret_void()
+            elif expr.has_expr:
                 is_array = self.cur_fn_ret_typ.symbol().kind == TypeKind.Array
                 expr_ = self.gen_expr_with_cast(ret_typ, expr.expr)
                 if is_array and self.comp.prefs.target_backend == prefs.Backend.C:
@@ -1769,7 +1859,7 @@ class Codegen:
                     )
                     self.cur_fn.alloca(tmp)
                     self.cur_fn.add_call(
-                        "_R7runtime3mem4copyF", [
+                        "_R7runtime8mem_copyF", [
                             ir.Selector(
                                 self.ir_type(ret_typ), tmp, ir.Name("arr")
                             ), expr_,
@@ -1889,9 +1979,7 @@ class Codegen:
     def panic(self, msg):
         self.cur_fn.add_call(
             "_R7runtime13process_panicF", [
-                self.gen_string_lit(
-                    utils.smart_quote(msg, False), str(utils.bytestr(msg).len)
-                ),
+                self.gen_string_lit(utils.smart_quote(msg, False)),
                 self.empty_vec(self.comp.universe["[runtime::ToString]"])
             ]
         )
@@ -1902,7 +1990,7 @@ class Codegen:
         elem_size, _ = self.comp.type_size(var_arg_typ_)
         return ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R7runtime3Vec10from_arrayF"),
+                ir.Name("_R7runtime3Vec19from_array_no_allocF"),
                 ir.ArrayLit(self.ir_type(var_arg_typ_), vargs),
                 ir.IntLit(ir.Type("usize"), str(elem_size)),
                 ir.IntLit(ir.Type("usize"), str(len(vargs)))
@@ -1991,7 +2079,8 @@ class Codegen:
             ]
         )
 
-    def gen_string_lit(self, lit, size):
+    def gen_string_lit(self, lit):
+        size = utils.bytestr(lit).len
         if size == 0:
             return ir.Ident(
                 ir.Type("_R7runtime6string"), "_R7runtime12empty_string"
@@ -2200,7 +2289,8 @@ class Codegen:
         ts = []
         for s in root.syms:
             if isinstance(s, sym.Type):
-                if s.kind != TypeKind.Vec and not s.kind.is_primitive():
+                if s.kind not in (TypeKind.Vec, TypeKind.Alias,
+                                  TypeKind.Never) and not s.kind.is_primitive():
                     ts.append(s)
             ts += self.get_type_symbols(s)
         return ts
@@ -2209,13 +2299,9 @@ class Codegen:
         dg = utils.DepGraph()
         typ_names = []
         for ts in tss:
-            if ts.kind in (TypeKind.Alias, TypeKind.Never):
-                continue
             ts.mangled_name = mangle_symbol(ts)
             typ_names.append(ts.mangled_name)
         for ts in tss:
-            if ts.kind in (TypeKind.Alias, TypeKind.Never):
-                continue
             field_deps = []
             if ts.kind == TypeKind.Array:
                 dsym = ts.info.elem_typ.symbol()
@@ -2230,7 +2316,7 @@ class Codegen:
                 for f in ts.info.types:
                     dep = mangle_symbol(f.symbol())
                     if dep not in typ_names or dep in field_deps or isinstance(
-                        f, type.Ref
+                        f, type.Optional
                     ):
                         continue
                     field_deps.append(dep)

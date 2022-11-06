@@ -22,28 +22,24 @@ extern (C) fn init_args(_argc: i32, _argv: **u8) [string] {
     return args;
 }
 
+fn main(
+    _argc: i32, _argv: **u8,
 #if _TESTS_
-import "test_runner";
-
-fn tests_main(_argc: i32, _argv: **u8, mut tr: test_runner::TestRunner) {
+    mut tr: TestRunner
+#else
+    pkg_main: fn()
+#endif
+) {
     unsafe {
         _ = libc::signal(11, segfault_handler);
         _R8set_argsZ(init_args(_argc, _argv));
         _R12init_globalsZ();
-        tr.print_header();
+#if _TESTS_
         tr.run();
         tr.print_summary_tests();
-        _R12drop_globalsZ();
-    }
-}
 #else
-fn main(_argc: i32, _argv: **u8, pkg_main: fn()) {
-    unsafe {
-        _ = libc::signal(11, segfault_handler);
-        _R8set_argsZ(init_args(_argc, _argv));
-        _R12init_globalsZ();
         pkg_main();
+#endif
         _R12drop_globalsZ();
     }
 }
-#endif

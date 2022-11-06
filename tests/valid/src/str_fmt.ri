@@ -8,7 +8,5 @@ test "str.fmt()" {
         "reverse order: {2}, {1}, {0}".fmt(1, 2, 3) == "reverse order: 3, 2, 1"
     );
 
-#if !_WINDOWS_
     assert!("rune: `{}`".fmt('Á') == "rune: `Á`");
-#endif
 }

@@ -1,3 +1,8 @@
+/*
+struct ErrDefer {
+    mut i: i32;
+}
+
 fn test_defer() i32 {
     let mut a = 1;
 
@@ -13,10 +18,6 @@ fn test_defer() i32 {
 
 test "defer stmt" {
     assert!(test_defer() == 5);
-}
-
-struct ErrDefer {
-    mut i: i32;
 }
 
 fn test_errdefer(mut err_defer: ErrDefer, err: bool) ! {
@@ -36,3 +37,4 @@ test "errdefer stmt" {
     test_errdefer(err_defer, true) catch { };
     assert!(err_defer.i == 2);
 }
+*/

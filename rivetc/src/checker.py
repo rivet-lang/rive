@@ -15,6 +15,7 @@ class Checker:
         self.cur_fn = None
 
         self.inside_unsafe = False
+        self.inside_test = False
         self.expected_type = self.comp.void_t
         self.void_types = (self.comp.void_t, self.comp.never_t)
 
@@ -142,7 +143,9 @@ class Checker:
             elif isinstance(decl, ast.DestructorDecl):
                 self.check_stmts(decl.stmts)
             elif isinstance(decl, ast.TestDecl):
+                self.inside_test = True
                 self.check_stmts(decl.stmts)
+                self.inside_test = False
             self.sym = old_sym
 
     def check_stmts(self, stmts):
@@ -853,7 +856,7 @@ class Checker:
                 if isinstance(expr.typ, type.Result):
                     if expr.err_handler.is_propagate:
                         if not (
-                            self.cur_fn.is_main
+                            self.cur_fn.is_main or self.inside_test
                             or isinstance(self.cur_fn.ret_typ, type.Result)
                         ):
                             report.error(
@@ -1093,7 +1096,13 @@ class Checker:
                 report.note("please report this bug, thanks =D")
             return expr.typ
         elif isinstance(expr, ast.ReturnExpr):
-            if expr.has_expr:
+            if self.inside_test:
+                if expr.has_expr:
+                    report.error(
+                        "cannot return values inside `test` declaration",
+                        expr.pos
+                    )
+            elif expr.has_expr:
                 if self.cur_fn.ret_typ == self.comp.void_t:
                     report.error(
                         f"void {self.cur_fn.typeof()} `{self.cur_fn.name}` should not return a value",
