@@ -424,10 +424,6 @@ class Codegen:
                         iterable, ast.StringLiteral
                     ):
                         len_ = ir.IntLit(ir.Type("usize"), iterable.len)
-                    elif iterable_sym.kind == TypeKind.Vec:
-                        len_ = ir.Selector(
-                            ir.Type("usize"), iterable, ir.Name("len_")
-                        )
                     else:
                         len_ = ir.Selector(
                             ir.Type("usize"), iterable, ir.Name("len")
@@ -1126,8 +1122,7 @@ class Codegen:
                         self.cur_fn.alloca(
                             tmp2,
                             self.gen_expr_with_cast(
-                                expr.sym.ret_typ.typ,
-                                expr.err_handler.expr
+                                expr.sym.ret_typ.typ, expr.err_handler.expr
                             )
                         )
                         self.cur_fn.add_br(exit_l)

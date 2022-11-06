@@ -244,7 +244,11 @@ class Mod(Sym):
             return sym
         from .type import Ptr, Type as type_Type
         vec_sym = Type(
-            Vis.Pub, unique_name, TypeKind.Vec, info = VecInfo(elem_typ)
+            Vis.Pub, unique_name, TypeKind.Vec, info = VecInfo(elem_typ),
+            fields = [
+                Field("len", False, Vis.Pub, type_Type(self[14])),
+                Field("cap", False, Vis.Pub, type_Type(self[14]))
+            ]
         )
         vec_sym.add(
             Fn(
@@ -257,18 +261,6 @@ class Mod(Sym):
             Fn(
                 ABI.Rivet, Vis.Pub, False, False, True, False, "pop", [],
                 elem_typ, False, True, NO_POS, True, False
-            )
-        )
-        vec_sym.add(
-            Fn(
-                ABI.Rivet, Vis.Pub, False, False, True, False, "len", [],
-                type_Type(self[14]), False, True, NO_POS, False, False
-            )
-        )
-        vec_sym.add(
-            Fn(
-                ABI.Rivet, Vis.Pub, False, False, True, False, "cap", [],
-                type_Type(self[14]), False, True, NO_POS, False, False
             )
         )
         vec_sym.add(

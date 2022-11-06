@@ -55,12 +55,12 @@ pub class StringBuilder : ToString {
     }
 
     pub fn write_join(mut self, ss: [string], sep: string = "") {
-        if ss.len() == 1 {
+        if ss.len == 1 {
             self.write_string(ss[0]);
         } else {
             for i, s in ss {
                 self.write_string(s);
-                if i < ss.len() - 1 {
+                if i < ss.len - 1 {
                     self.write_string(sep);
                 }
             }
@@ -78,26 +78,26 @@ pub class StringBuilder : ToString {
 
     /// Returns the number of runes contained in `self`.
     pub fn runes_count(self) usize {
-        return cstr_runes_count(unsafe { as(*u8, self.inner.ptr) }, self.inner.len_);
+        return cstr_runes_count(unsafe { as(*u8, self.inner.ptr) }, self.inner.len);
     }
 
     pub fn clear(mut self) {
-        self.inner.len_ = 0;
+        self.inner.len = 0;
     }
 
     pub fn len(self) usize {
-        return self.inner.len_;
+        return self.inner.len;
     }
 
     pub fn cap(self) usize {
-        return self.inner.cap_;
+        return self.inner.cap;
     }
 
     pub fn is_empty(self) bool {
-        return self.inner.len_ == 0;
+        return self.inner.len == 0;
     }
 
     pub fn to_string(self) string {
-        return string(unsafe { as(*u8, self.inner.ptr) }, self.inner.len_);
+        return string(unsafe { as(*u8, self.inner.ptr) }, self.inner.len);
     }
 }

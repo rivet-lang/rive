@@ -36,14 +36,14 @@ pub class string : ToString {
     /// Returns a string with the bytes stored in `bytes`. If the length of
     /// `bytes` is 0, an empty string is returned instead.
     pub fn from_bytes(bytes: [u8]) Self {
-        if bytes.len() == 0 {
+        if bytes.len == 0 {
             return "";
         }
         unsafe {
-            let res = as(*mut u8, mem_alloc(bytes.len() + 1) catch unreachable!());
-            res[bytes.len()] = 0;
-            mem_copy(res, addr_of!(bytes[0]), bytes.len());
-            return Self(res, bytes.len());
+            let res = as(*mut u8, mem_alloc(bytes.len + 1) catch unreachable!());
+            res[bytes.len] = 0;
+            mem_copy(res, addr_of!(bytes[0]), bytes.len);
+            return Self(res, bytes.len);
         }
     }
 
@@ -80,7 +80,7 @@ pub class string : ToString {
     /// If the replacement positions exceed the number of passed arguments, a process_panic
     /// occurs.
     pub fn fmt(self, args: ...ToString) Self {
-        if args.len() == 0 {
+        if args.len == 0 {
             return self;
         }
         let mut i: usize = 0;
@@ -97,10 +97,10 @@ pub class string : ToString {
                     } else if b2 == b'}' {
                         let arg_idx = args_idx;
                         args_idx += 1;
-                        if arg_idx >= args.len() {
+                        if arg_idx >= args.len {
                             process_panic(
                                 "fmt: argument index out of range (argument index: {}, len: {}, index: {})",
-                                arg_idx, args.len(), i
+                                arg_idx, args.len, i
                             );
                         }
                         res.write_string(args[arg_idx].to_string());
@@ -117,10 +117,10 @@ pub class string : ToString {
                             }
                         }
                         let index = buf.as_u64();
-                        if index >= args.len() {
+                        if index >= args.len {
                             process_panic(
                                 "fmt: argument index out of range (index: {}, len: {})",
-                                index, args.len()
+                                index, args.len
                             );
                         }
                         res.write_string(args[index].to_string());

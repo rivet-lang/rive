@@ -5,8 +5,8 @@
 class Vec {
     mut ptr: *mut void;
     elem_size: usize;
-    mut len_: usize;
-    mut cap_: usize;
+    mut len: usize;
+    mut cap: usize;
     is_ref: bool;
 
     #[unsafe]
@@ -30,8 +30,8 @@ class Vec {
     }
 
     fn get(self, idx: usize) *mut void {
-        if idx >= self.len_ {
-            process_panic("vector index out of range (index: {}, len: {})", idx, self.len_);
+        if idx >= self.len {
+            process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { ptr_add!(as(*mut u8, self.ptr), idx * self.elem_size) };
     }
@@ -42,8 +42,8 @@ class Vec {
     }
 
     fn set(self, idx: usize, val: *void) {
-        if idx >= self.len_ {
-            process_panic("vector index out of range (index: {}, len: {})", idx, self.len_);
+        if idx >= self.len {
+            process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
         }
         unsafe {
             mem_copy(
@@ -54,49 +54,41 @@ class Vec {
     }
 
     fn push(mut self, val: *void) {
-        if self.len_ >= self.cap_ {
-            self.reserve(self.len_ + 1);
+        if self.len >= self.cap {
+            self.reserve(self.len + 1);
         }
         unsafe {
             mem_copy(
-                ptr_add!(self.ptr, self.elem_size * self.len_), val,
+                ptr_add!(self.ptr, self.elem_size * self.len), val,
                 self.elem_size
             );
         }
-        self.len_ += 1;
+        self.len += 1;
     }
 
     /// Returns the last element of the vector, and removes it. If the
     /// `vector` is empty, this will process_panic.
     fn pop(mut self) *void {
-        if self.len_ == 0 {
+        if self.len == 0 {
             process_panic("Vec::pop: vector is empty");
         }
-        let new_len = self.len_ - 1;
+        let new_len = self.len - 1;
         unsafe {
             let last_elem = ptr_add!(self.ptr, new_len * self.elem_size);
-            self.len_ = new_len;
+            self.len = new_len;
             return last_elem;
         }
     }
 
-    fn len(self) usize {
-        return self.len_;
-    }
-
-    fn cap(self) usize {
-        return self.cap_;
-    }
-
     fn is_empty(self) bool {
-        return self.len_ == 0;
+        return self.len == 0;
     }
 
     fn ==(self, rhs: Self) bool {
-        if self.len_ != rhs.len_ {
+        if self.len != rhs.len {
             return false;
         }
-        return unsafe { mem_cmp(self.ptr, rhs.ptr, self.len_) == 0 };
+        return unsafe { mem_cmp(self.ptr, rhs.ptr, self.len) == 0 };
     }
 
     fn !=(self, rhs: Self) bool {
@@ -104,10 +96,10 @@ class Vec {
     }
 
     fn reserve(mut self, required: usize) {
-        if required <= self.cap_ {
+        if required <= self.cap {
             return;
         }
-        let mut cap = if self.cap_ > 0 { self.cap_ } else { 2 };
+        let mut cap = if self.cap > 0 { self.cap } else { 2 };
         while required > cap {
             cap *= 2;
         }
@@ -115,22 +107,22 @@ class Vec {
             let new_size = cap * self.elem_size;
             let new_ptr = mem_alloc(new_size) catch unreachable!();
             if self.ptr != nil {
-                mem_copy(new_ptr, self.ptr, self.len_ * self.elem_size);
+                mem_copy(new_ptr, self.ptr, self.len * self.elem_size);
             }
             self.ptr = new_ptr;
         }
-        self.cap_ = cap;
+        self.cap = cap;
     }
 
     fn slice(self, start: usize, end: usize) Self {
-        if start > end or end > self.len_ {
+        if start > end or end > self.len {
             process_panic(
                 "slice index out of range (range: {}..{}, len: {})", start, end,
-                self.len_
+                self.len
             );
         }
         let len = end - start;
-        if len == self.len_ {
+        if len == self.len {
             return self;
         }
         return Self(
@@ -140,18 +132,18 @@ class Vec {
     }
 
     fn slice_from(self, start: usize) Self {
-        return self.slice(start, self.len_);
+        return self.slice(start, self.len);
     }
 
     /// Returns an independent copy of `self`.
     pub fn clone(self) Self {
-        let mut size = self.cap_ * self.elem_size;
+        let mut size = self.cap * self.elem_size;
         if size == 0 {
             size += 1;
         }
         let mut vec = Self(
             mem_alloc_zeroed(size) catch unreachable!(),
-            self.elem_size, self.len_, self.cap_
+            self.elem_size, self.len, self.cap
         );
         unsafe {
             mem_copy(vec.ptr, self.ptr, size);
