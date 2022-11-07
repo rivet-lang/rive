@@ -25,12 +25,10 @@ fn array_slice(
         process_panic("slice index out of range (range: {}..{}, len: {})", start, end, size);
     }
     let len = end - start;
-    unsafe {
-        if len == size {
-            return Vec(arr, elem_size, len);
-        }
-        return Vec(ptr_add!(as(*mut u8, arr), start * elem_size), elem_size, len);
+    if len == size {
+        return unsafe { Vec::from_array(arr, elem_size, len) };
     }
+    return unsafe { Vec::from_array(ptr_add!(arr, start), elem_size, len) };
 }
 
 fn array_slice_from(

@@ -350,7 +350,9 @@ class Checker:
                 expr.typ = type.Type(
                     self.comp.universe.add_or_get_array(
                         self.comp.u8_t,
-                        utils.bytestr(expr.lit).len
+                        ast.IntegerLiteral(
+                            str(utils.bytestr(expr.lit).len), expr.pos
+                        )
                     )
                 )
             elif expr.is_cstr:

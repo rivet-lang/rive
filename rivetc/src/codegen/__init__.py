@@ -94,6 +94,9 @@ class TestInfo:
         self.name = name
         self.func = func
 
+    def __lt__(self, other):
+        return self.name < other.name
+
 class Codegen:
     def __init__(self, comp):
         self.comp = comp
@@ -182,6 +185,7 @@ class Codegen:
             )
             test_t = ir.Type("_R7runtime4Test").ptr()
             gtests_array = []
+            self.generated_tests.sort()
             for i, gtest in enumerate(self.generated_tests):
                 test_value = ir.Ident(
                     ir.Type("_R7runtime4Test"), f"test_value_{i}"
@@ -608,15 +612,7 @@ class Codegen:
                 )
                 if isinstance(left_ir_typ, ir.Array):
                     self.cur_fn.alloca(ident)
-                    self.cur_fn.add_call(
-                        "_R7runtime8mem_copyF", [
-                            ident,
-                            self.gen_expr_with_cast(left.typ, stmt.right),
-                            ir.Name(
-                                f"sizeof({left_ir_typ.typ}) * {left_ir_typ.size}"
-                            )
-                        ]
-                    )
+                    val = self.gen_expr_with_cast(left.typ, stmt.right, ident)
                 else:
                     self.cur_fn.alloca(
                         ident, self.gen_expr_with_cast(left.typ, stmt.right)
@@ -631,6 +627,7 @@ class Codegen:
                         if left.name == "_" else left.name
                     )
                     if isinstance(left_ir_typ, ir.Array):
+                        size, _ = self.comp.type_size(left.typ)
                         self.cur_fn.alloca(ident)
                         self.cur_fn.add_call(
                             "_R7runtime8mem_copyF", [
@@ -638,10 +635,7 @@ class Codegen:
                                 ir.Selector(
                                     left_ir_typ, right, ir.Name(f"f{i}")
                                 ),
-                                ir.IntLit(
-                                    ir.Type("usize"),
-                                    f"sizeof({left_ir_typ.typ} * {left_ir_typ.size})"
-                                )
+                                ir.IntLit(ir.Type("usize"), str(size))
                             ]
                         )
                     else:
@@ -652,9 +646,9 @@ class Codegen:
         elif isinstance(stmt, ast.ExprStmt):
             _ = self.gen_expr(stmt.expr)
 
-    def gen_expr_with_cast(self, expected_typ_, expr):
+    def gen_expr_with_cast(self, expected_typ_, expr, custom_tmp = None):
         expected_typ = self.ir_type(expected_typ_)
-        res_expr = self.gen_expr(expr)
+        res_expr = self.gen_expr(expr, custom_tmp)
 
         if isinstance(res_expr, ir.IntLit) and self.comp.is_int(expected_typ_):
             res_expr.typ = expected_typ
@@ -717,7 +711,7 @@ class Codegen:
 
         return res_expr
 
-    def gen_expr(self, expr):
+    def gen_expr(self, expr, custom_tmp = None):
         if isinstance(expr, ast.ParExpr):
             return self.gen_expr(expr.expr)
         elif isinstance(expr, ast.NilLiteral):
@@ -887,18 +881,10 @@ class Codegen:
                 return
             expr_left_typ_ir = self.ir_type(expr.left.typ)
             if expr.op == Kind.Assign:
-                value = self.gen_expr_with_cast(expr.left.typ, expr.right)
                 if isinstance(expr_left_typ_ir, ir.Array):
-                    self.cur_fn.add_call(
-                        "_R7runtime8mem_copyF", [
-                            ident,
-                            self.gen_expr_with_cast(left.typ, stmt.right),
-                            ir.Name(
-                                f"sizeof({expr_left_typ_ir.typ}) * {expr_left_typ_ir.size}"
-                            )
-                        ]
-                    )
+                    self.gen_expr_with_cast(left.typ, stmt.right, ident)
                 else:
+                    value = self.gen_expr_with_cast(expr.left.typ, expr.right)
                     self.cur_fn.store(left, value)
             else:
                 right = self.gen_expr_with_cast(expr.left.typ, expr.right)
@@ -1080,22 +1066,26 @@ class Codegen:
                 self.cur_fn.add_inst(inst)
             else:
                 is_void_value = expr.typ in self.void_types
-                tmp = self.cur_fn.local_name()
+                tmp = "" if custom_tmp else self.cur_fn.local_name()
                 if isinstance(expr.sym.ret_typ, type.Array):
                     size, _ = self.comp.type_size(expr.sym.ret_typ)
-                    id = ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
-                    self.cur_fn.alloca(id)
+                    if custom_tmp:
+                        id = custom_tmp
+                    else:
+                        id = ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
+                        self.cur_fn.alloca(id)
                     self.cur_fn.add_call(
                         "_R7runtime8mem_copyF", [
+                            id,
                             ir.Selector(
                                 self.ir_type(expr.sym.ret_typ), inst,
                                 ir.Name("arr")
-                            ), id,
+                            ),
                             ir.IntLit(ir.Type("usize"), str(size))
                         ]
                     )
-                elif expr.sym.is_method and expr.sym.name=="pop" and left_sym.kind==TypeKind.Vec:
-                    ret_typ=self.ir_type(expr.sym.ret_typ)
+                elif expr.sym.is_method and expr.sym.name == "pop" and left_sym.kind == TypeKind.Vec:
+                    ret_typ = self.ir_type(expr.sym.ret_typ)
                     value = ir.Inst(ir.InstKind.Cast, [inst, ret_typ.ptr()])
                     self.cur_fn.try_alloca(
                         ret_typ, tmp, ir.Inst(ir.InstKind.LoadPtr, [value])
@@ -1289,6 +1279,15 @@ class Codegen:
                 elems.append(element)
             arr_lit = ir.ArrayLit(self.ir_type(elem_typ), elems)
             if expr.is_arr:
+                if custom_tmp:
+                    size, _ = self.comp.type_size(expr.typ)
+                    self.cur_fn.add_call(
+                        "_R7runtime8mem_copyF", [
+                            custom_tmp, arr_lit,
+                            ir.IntLit(ir.Type("usize"), str(size))
+                        ]
+                    )
+                    return ir.Skip()
                 return arr_lit
             return ir.Inst(
                 ir.InstKind.Call, [
