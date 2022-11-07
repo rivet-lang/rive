@@ -1094,6 +1094,12 @@ class Codegen:
                             ir.IntLit(ir.Type("usize"), str(size))
                         ]
                     )
+                elif expr.sym.is_method and expr.sym.name=="pop" and left_sym.kind==TypeKind.Vec:
+                    ret_typ=self.ir_type(expr.sym.ret_typ)
+                    value = ir.Inst(ir.InstKind.Cast, [inst, ret_typ.ptr()])
+                    self.cur_fn.try_alloca(
+                        ret_typ, tmp, ir.Inst(ir.InstKind.LoadPtr, [value])
+                    )
                 else:
                     self.cur_fn.try_alloca(
                         self.ir_type(expr.sym.ret_typ), tmp, inst
