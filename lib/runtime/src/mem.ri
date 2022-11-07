@@ -35,7 +35,7 @@ pub fn mem_alloc_zeroed(n: usize) !*mut void {
 ///
 /// NOTE: The `ptr` must be a pointer to an existing memory block previously
 /// allocated with `mem::alloc` or `mem::alloc_zeroed`.
-pub fn mem_realloc(ptr: *mut void, sz: usize) !*mut void {
+pub fn mem_resize(ptr: *mut void, sz: usize) !*mut void {
     unsafe {
         if sz == 0 {
             mem_dealloc(ptr);

@@ -5,7 +5,7 @@
 pub import "runtime" {
     mem_alloc as alloc,
     mem_alloc_zeroed as alloc_zeroed,
-    mem_realloc as realloc,
+    mem_resize as resize,
     mem_set as set,
     mem_copy as copy,
     mem_move as move,
