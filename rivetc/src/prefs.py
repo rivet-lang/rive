@@ -352,8 +352,8 @@ class Prefs:
         postfix += "_"
         postfix += str(self.target_backend).lower()
         postfix += f"_{self.target_backend_compiler}"
-        if self.build_mode == BuildMode.Debug:
-            postfix += "_debug"
-        else:
+        if self.build_mode == BuildMode.Release:
             postfix += "_release"
+        else:
+            postfix += "_debug"
         return postfix

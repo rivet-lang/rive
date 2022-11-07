@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+#if !_RELEASE_ // skip backtrace in release mode
+
 #![c_compile("lib/thirdparty/libbacktrace/backtrace.c")]
 
 import "libc";
@@ -64,7 +66,7 @@ fn bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) {
             console_eprint(string::from_raw(msg_ptr));
             if errnum > 0 {
                 console_eprint(" (");
-                console_eprint(string::from_raw(libc::strerror(errnum)));
+                console_eprint(strerr(errnum));
                 console_eprint(")");
             }
             console_eprintln();
@@ -72,8 +74,10 @@ fn bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) {
         }
     }
 }
+#endif
 
 pub fn bt_print(frames_to_skip: i32 = 0) {
+#if !_RELEASE_
     unsafe {
         let mut data = BacktraceData();
         _ = backtrace_full(
@@ -81,4 +85,5 @@ pub fn bt_print(frames_to_skip: i32 = 0) {
             addr_of_mut!(data)
         );
     }
+#endif
 }

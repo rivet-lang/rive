@@ -50,7 +50,7 @@ class Lexer:
 
     def tokenize_remaining_text(self):
         while True:
-            t = self._next()
+            t = self.internal_next()
             self.all_tokens.append(t)
             if t.kind == Kind.EOF:
                 break
@@ -129,7 +129,6 @@ class Lexer:
 
     def read_ident(self):
         start = self.pos
-        self.pos += 1
         while self.pos < self.text_len:
             c = self.text[self.pos]
             if utils.is_valid_name(c) or c.isdigit():
@@ -392,7 +391,7 @@ class Lexer:
             return self.all_tokens[cidx]
         return token.Token("", Kind.EOF, self.current_pos())
 
-    def _next(self):
+    def internal_next(self):
         while True:
             if self.is_started:
                 self.pos += 1
@@ -401,6 +400,7 @@ class Lexer:
             self.skip_whitespace()
             if self.pos >= self.text_len:
                 return token.Token("", Kind.EOF, self.current_pos())
+            self.skip_whitespace()
             pos = self.current_pos()
             ch = self.current_char()
             nextc = self.look_ahead(1)
@@ -586,12 +586,13 @@ class Lexer:
         self.pos += 1 # skip '#'
         self.skip_whitespace()
         kw = self.read_ident()
+        self.skip_whitespace()
 
         if kw == "if":
-            self.pos += 1 #fix
+            self.pos += 1 # fix
             self.pp_if()
         elif kw == "elif":
-            self.pos += 1 #fix
+            self.pos += 1 # fix
             self.pp_elif()
         elif kw == "else":
             self.pp_else()
@@ -601,12 +602,11 @@ class Lexer:
             report.error(f"invalid preprocessing directive: `{kw}`", pos)
             return
 
-        if len(self.conditional_stack
-               ) > 0 and self.conditional_stack[-1].skip_section:
+        if len(self.conditional_stack) > 0 and self.conditional_stack[-1].skip_section:
             # skip tokens until next preprocessing directive
             while self.pos < self.text_len:
                 cc = self.current_char()
-                if cc == '#':
+                if cc == '#' and self.look_ahead(1) not in ("!", "["):
                     self.pos -= 1
                     return
                 if cc == '\n':
@@ -619,6 +619,7 @@ class Lexer:
     def pp_if(self):
         self.skip_whitespace()
         cond = self.pp_expression()
+        self.skip_whitespace()
         self.conditional_stack.append(Conditional())
         if cond and (
             len(self.conditional_stack) == 1
@@ -626,6 +627,7 @@ class Lexer:
         ):
             # condition true => process code within if
             self.conditional_stack[-1].matched = True
+            self.conditional_stack[-1].skip_section = False
         else:
             # skip lines until next preprocessing directive
             self.conditional_stack[-1].skip_section = True
@@ -634,6 +636,7 @@ class Lexer:
         pos = self.current_pos()
         self.skip_whitespace()
         cond = self.pp_expression()
+        self.skip_whitespace()
         if len(self.conditional_stack
                ) == 0 or self.conditional_stack[-1].else_found:
             report.error("unexpected `#elif`", pos)
@@ -713,12 +716,11 @@ class Lexer:
                 self.skip_whitespace()
                 right = self.pp_unary_expression()
                 left = left != right
-            else:
-                break
+            break
         return left
 
     def pp_unary_expression(self):
-        if self.pos < self.text_len and self.matches("!", self.pos):
+        if self.pos < self.text_len and self.current_char() == "!":
             self.pos += 1
             self.skip_whitespace()
             return not self.pp_unary_expression()
@@ -735,11 +737,13 @@ class Lexer:
             self.pos += 1
             self.skip_whitespace()
             result = self.pp_expression()
+            self.pos += 1
             self.skip_whitespace()
-            if self.pos < self.text_len and self.current_char() == ')':
+            cc = self.current_char()
+            if self.pos < self.text_len and cc == ')':
                 self.pos += 1
             else:
-                report.error("expected `)`", self.current_pos())
+                report.error(f"expected `)`, found `{cc}`", self.current_pos())
             return result
         return False
 
