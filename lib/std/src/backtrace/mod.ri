@@ -2,9 +2,4 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-// TODO: use public import list with alias
-import "runtime";
-
-pub fn print(frames_to_skip: i32 = 0) {
-    runtime::bt_print(frames_to_skip);
-}
+pub import "runtime" { bt_print as print };

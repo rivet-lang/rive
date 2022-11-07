@@ -73,7 +73,7 @@ class Compiler:
                             self.parsed_files += parser.Parser(self).parse_mod(
                                 sf.sym.name, mod_sym, decl.vis, mod.files
                             )
-                        sf.imported_symbols[mod.alias] = mod_sym
+                        decl.alias = mod.alias
                         decl.mod_sym = mod_sym
         self.resolve_deps()
 

@@ -225,6 +225,11 @@ class Sym:
             return False
         return self.id == other.id
 
+class SymRef(Sym):
+    def __init__(self, vis, name, ref):
+        Sym.__init__(self, vis, name)
+        self.ref = ref
+
 class Mod(Sym):
     def add_or_get_array(self, elem_typ, size):
         unique_name = f"[{elem_typ.qualstr()}; {size}]"

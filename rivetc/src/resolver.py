@@ -31,19 +31,7 @@ class Resolver:
         for decl in decls:
             old_sym = self.sym
             old_self_sym = self.self_sym
-            if isinstance(decl, ast.ImportDecl):
-                for import_info in decl.import_list:
-                    if symbol := decl.mod_sym.find(import_info.name):
-                        self.check_vis(symbol, import_info.pos)
-                        self.check_imported_symbol(symbol, import_info.pos)
-                        self.source_file.imported_symbols[import_info.alias
-                                                          ] = symbol
-                    else:
-                        report.error(
-                            f"could not find `{import_info.name}` in module `{decl.mod_sym.name}`",
-                            import_info.pos
-                        )
-            elif isinstance(decl, ast.ExternDecl):
+            if isinstance(decl, ast.ExternDecl):
                 self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.ConstDecl):
                 self.resolve_type(decl.typ)
@@ -303,6 +291,8 @@ class Resolver:
     def find_symbol(self, symbol, name, pos):
         if s := symbol.find(name):
             self.check_vis(s, pos)
+            if isinstance(s, sym.SymRef):
+                return s.ref
             return s
         elif isinstance(symbol, sym.Type) and symbol.kind == sym.TypeKind.Enum:
             if symbol.info.has_value(name):
@@ -345,13 +335,15 @@ class Resolver:
                 )
             ident.sym = s
         elif s := self.source_file.find_imported_symbol(ident.name):
-            if s.kind == sym.TypeKind.Placeholder:
+            if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
                 report.error(
                     f"cannot find `{ident.name}` in this scope", ident.pos
                 )
             ident.sym = s
         else:
             report.error(f"cannot find `{ident.name}` in this scope", ident.pos)
+        if isinstance(ident.sym, sym.SymRef):
+            ident.sym = ident.sym.ref
 
     def resolve_path_expr(self, path):
         if path.is_global:
@@ -602,12 +594,3 @@ class Resolver:
     def check_vis(self, sym, pos):
         if sym.vis == Vis.Priv and not self.source_file.sym.has_access_to(sym):
             report.error(f"{sym.typeof()} `{sym.name}` is private", pos)
-
-    def check_imported_symbol(self, s, pos):
-        if s.name in self.source_file.imported_symbols:
-            report.error(f"{s.typeof()} `{s.name}` is already imported", pos)
-        elif self.source_file.sym.find(s.name):
-            report.error(
-                f"another symbol with the name `{s.name}` already exists", pos
-            )
-            report.help("you can use `as` to change the name of the import")

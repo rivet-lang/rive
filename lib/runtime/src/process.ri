@@ -18,18 +18,6 @@ pub fn process_panic(s: string = "", args: ...ToString) never {
     process_exit(1);
 }
 
-/// Terminates the current process with the specified exit code.
-///
-/// This function will never return and will immediately terminate the
-/// current process. The exit code is passed through to the underlying
-/// OS and will be available for consumption by another process.
-pub fn process_exit(code: i32 = 0) never {
-    unsafe {
-        _R12drop_globalsZ();
-        libc::exit(code);
-    }
-}
-
 /// Terminates the process in an abnormal fashion.
 ///
 /// The function will never return and will immediately terminate the
@@ -42,5 +30,17 @@ pub fn process_abort() never {
     unsafe {
         _R12drop_globalsZ();
         libc::abort();
+    }
+}
+
+/// Terminates the current process with the specified exit code.
+///
+/// This function will never return and will immediately terminate the
+/// current process. The exit code is passed through to the underlying
+/// OS and will be available for consumption by another process.
+pub fn process_exit(code: i32 = 0) never {
+    unsafe {
+        _R12drop_globalsZ();
+        libc::exit(code);
     }
 }

@@ -25,7 +25,41 @@ class Register:
         for decl in decls:
             old_abi = self.abi
             old_sym = self.sym
-            if isinstance(decl, ast.ExternDecl):
+            if isinstance(decl, ast.ImportDecl):
+                if len(decl.import_list) == 0:
+                    if decl.vis.is_pub():
+                        try:
+                            self.sym.add(
+                                sym.SymRef(
+                                    decl.vis, decl.alias, symbol
+                                )
+                            )
+                        except utils.CompilerError as e:
+                            report.error(e.args[0], decl.pos)
+                    else:
+                        self.source_file.imported_symbols[decl.alias] = decl.mod_sym
+                for import_info in decl.import_list:
+                    if symbol := decl.mod_sym.find(import_info.name):
+                        self.check_vis(symbol, import_info.pos)
+                        self.check_imported_symbol(symbol, import_info.pos)
+                        if decl.vis.is_pub():
+                            try:
+                                self.sym.add(
+                                    sym.SymRef(
+                                        decl.vis, import_info.alias, symbol
+                                    )
+                                )
+                            except utils.CompilerError as e:
+                                report.error(e.args[0], decl.pos)
+                        else:
+                            self.source_file.imported_symbols[import_info.alias
+                                                              ] = symbol
+                    else:
+                        report.error(
+                            f"could not find `{import_info.name}` in module `{decl.mod_sym.name}`",
+                            import_info.pos
+                        )
+            elif isinstance(decl, ast.ExternDecl):
                 self.abi = decl.abi
                 self.walk_decls(decl.decls)
             elif isinstance(decl, ast.ConstDecl):
@@ -186,3 +220,16 @@ class Register:
             self.sym.add(sy)
         except utils.CompilerError as e:
             report.error(e.args[0], pos)
+
+    def check_vis(self, sym_, pos):
+        if sym_.vis == sym.Vis.Priv and not self.sym.has_access_to(sym_):
+            report.error(f"{sym_.typeof()} `{sym_.name}` is private", pos)
+
+    def check_imported_symbol(self, s, pos):
+        if s.name in self.source_file.imported_symbols:
+            report.error(f"{s.typeof()} `{s.name}` is already imported", pos)
+        elif self.source_file.sym.find(s.name):
+            report.error(
+                f"another symbol with the name `{s.name}` already exists", pos
+            )
+            report.help("you can use `as` to change the name of the import")
