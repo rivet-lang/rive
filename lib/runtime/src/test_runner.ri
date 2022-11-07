@@ -72,8 +72,6 @@ struct Test {
     err: Error;
 }
 
-import "libc";
-
 pub struct TestRunner {
     tests: [Test];
     mut ok_tests: u64;
@@ -81,8 +79,7 @@ pub struct TestRunner {
     mut skip_tests: u64;
 
     fn run(mut self) {
-        for i in 0..self.tests.len {
-            let mut test_ = self.tests[i];
+        for i, test_ in self.tests {
             Console::eprint(" [{}/{}] '{}' ... ", i + 1, self.tests.len, test_.name);
             (test_.func)(unsafe { addr_of!(test_) });
             switch test_.result {

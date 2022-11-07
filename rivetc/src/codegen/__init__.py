@@ -500,8 +500,6 @@ class Codegen:
                     value_t = self.comp.u8_t if iterable_sym.kind == TypeKind.String else iterable_sym.info.elem_typ
                     value_t_ir = self.ir_type(value_t)
                     value_t_is_boxed = value_t.symbol().is_boxed()
-                    if not value_t_is_boxed:
-                        value_t_ir = value_t_ir.ptr()
                     if iterable_sym.kind == TypeKind.Array:
                         value = ir.Inst(
                             ir.InstKind.GetElementPtr, [iterable, idx],
@@ -515,7 +513,10 @@ class Codegen:
                             value = ir.Inst(
                                 ir.InstKind.Add, [
                                     ir.Inst(
-                                        ir.InstKind.Cast, [value, value_t_ir]
+                                        ir.InstKind.Cast, [
+                                            value,
+                                            value_t_ir.ptr(value_t_is_boxed)
+                                        ]
                                     ), idx
                                 ]
                             )
@@ -526,7 +527,6 @@ class Codegen:
                     self.cur_fn.try_alloca(
                         value_t_ir,
                         stmt.vars[0] if vars_len == 1 else stmt.vars[1],
-                        value if value_t_is_boxed else
                         ir.Inst(ir.InstKind.LoadPtr, [value])
                     )
                 self.gen_stmt(stmt.stmt)
