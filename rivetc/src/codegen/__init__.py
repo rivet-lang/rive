@@ -109,6 +109,7 @@ class Codegen:
         self.cur_fn = None
         self.cur_fn_is_main = False
         self.cur_fn_ret_typ = self.comp.void_t
+        self.cur_fn_defer_stmts=[]
 
         self.inside_trait = False
         self.inside_test = False
@@ -400,7 +401,14 @@ class Codegen:
             self.cur_fn.arr_ret_struct = arr_ret_struct
             self.cur_fn_is_main = decl.is_main
             self.cur_fn_ret_typ = decl.ret_typ
+            for defer_stmt in decl.defer_stmts:
+                defer_stmt.flag_var=self.cur_fn.local_name()
+                self.cur_fn_defer_stmts.append(defer_stmt)
+                self.cur_fn.alloca(ir.Ident(ir.Type("bool"), defer_stmt.flag_var),
+                ir.IntLit(ir.Type("bool"), "0"))
+            self.cur_fn_defer_stmts=decl.defer_stmts
             self.gen_stmts(decl.stmts)
+            self.gen_defer_stmts()
             if decl.is_extern and not decl.has_body:
                 self.out_rir.externs.append(fn_decl)
             else:
@@ -415,7 +423,14 @@ class Codegen:
                 [self_arg], False, ir.Type("void"), False
             )
             self.cur_fn = dtor_fn
+            for defer_stmt in decl.defer_stmts:
+                defer_stmt.flag_var=self.cur_fn.local_name()
+                self.cur_fn_defer_stmts.append(defer_stmt)
+                self.cur_fn.alloca(ir.Ident(ir.Type("bool"), defer_stmt.flag_var),
+                ir.IntLit(ir.Type("bool"), "0"))
+            self.cur_fn_defer_stmts=decl.defer_stmts
             self.gen_stmts(decl.stmts)
+            self.gen_defer_stmts()
             self.out_rir.decls.append(dtor_fn)
         elif isinstance(decl, ast.TestDecl):
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
@@ -648,6 +663,9 @@ class Codegen:
                             ident,
                             ir.Selector(left_ir_typ, right, ir.Name(f"f{i}"))
                         )
+        elif isinstance(stmt, ast.DeferStmt):
+            self.cur_fn.store(ir.Ident(ir.Type("bool"), stmt.flag_var),
+            ir.IntLit(ir.Type("bool"), "1"))
         elif isinstance(stmt, ast.ExprStmt):
             _ = self.gen_expr(stmt.expr)
 
@@ -1849,6 +1867,7 @@ class Codegen:
         elif isinstance(expr, ast.ReturnExpr):
             wrap_result = isinstance(self.cur_fn_ret_typ, type.Result)
             ret_typ = self.cur_fn_ret_typ.typ if wrap_result else self.cur_fn_ret_typ
+            self.gen_defer_stmts(wrap_result)
             if self.inside_test:
                 self.cur_fn.store(
                     ir.Selector(
@@ -1893,6 +1912,21 @@ class Codegen:
         else:
             raise Exception(expr.__class__)
         return ir.Skip()
+
+    def gen_defer_stmts(self, gen_errdefer=False):
+        for defer_stmt in self.cur_fn_defer_stmts:
+            if defer_stmt.is_errdefer and not gen_errdefer:
+                continue
+            defer_start=self.cur_fn.local_name()
+            defer_end=self.cur_fn.local_name()
+            self.cur_fn.add_comment(f"defer stmt (start: {defer_start}, end: {defer_end})")
+            self.cur_fn.add_cond_br(
+                ir.Ident(ir.Type("bool"), defer_stmt.flag_var),
+                defer_start, defer_end
+            )
+            self.cur_fn.add_label(defer_start)
+            self.gen_expr(defer_stmt.expr)
+            self.cur_fn.add_label(defer_end)
 
     def gen_class_instance(self, name):
         tmp = ir.Ident(ir.Type(name).ptr(True), self.cur_fn.local_name())

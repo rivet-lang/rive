@@ -274,6 +274,7 @@ class FnDecl:
         self.has_body = has_body
         self.scope = scope
         self.stmts = stmts
+        self.defer_stmts = []
 
 class DestructorDecl:
     def __init__(self, self_is_mut, scope, stmts, pos):
@@ -282,6 +283,7 @@ class DestructorDecl:
         self.scope = scope
         self.self_typ = None
         self.pos = pos
+        self.defer_stmts = []
 
 class TestDecl:
     def __init__(self, scope, name, stmts, pos):
@@ -317,6 +319,7 @@ class DeferStmt:
     def __init__(self, expr, is_errdefer, pos):
         self.expr = expr
         self.is_errdefer = is_errdefer
+        self.flag_var = ""
         self.pos = pos
 
 class ExprStmt:

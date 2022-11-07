@@ -15,7 +15,7 @@ pub fn process_id() u32 {
 pub fn process_panic(s: string = "", args: ...ToString) never {
     console_eprintln("panic: {}", s.fmt(args));
     bt_print(2);
-    process_exit(1);
+    process_exit(101);
 }
 
 /// Terminates the process in an abnormal fashion.

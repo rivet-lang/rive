@@ -19,6 +19,8 @@ class Checker:
         self.expected_type = self.comp.void_t
         self.void_types = (self.comp.void_t, self.comp.never_t)
 
+        self.defer_stmts=[]
+
     def check_files(self, source_files):
         for sf in source_files:
             self.sym = sf.sym
@@ -140,8 +142,12 @@ class Checker:
                 self.expected_type = decl.ret_typ
                 self.check_stmts(decl.stmts)
                 self.expected_type = old_expected_type
+                decl.defer_stmts=self.defer_stmts
+                self.defer_stmts=[]
             elif isinstance(decl, ast.DestructorDecl):
                 self.check_stmts(decl.stmts)
+                decl.defer_stmts=self.defer_stmts
+                self.defer_stmts=[]
             elif isinstance(decl, ast.TestDecl):
                 self.inside_test = True
                 self.check_stmts(decl.stmts)
@@ -246,6 +252,7 @@ class Checker:
                 report.note("expected array, slice or string value")
         elif isinstance(stmt, ast.DeferStmt):
             self.check_expr(stmt.expr)
+            self.defer_stmts.append(stmt)
 
     def check_expr(self, expr):
         if isinstance(expr, ast.EmptyExpr):
@@ -1205,6 +1212,9 @@ class Checker:
                         report.error(e.args[0], b.expr.pos)
             expr.typ = expected_branch_typ
             self.expected_type = old_expected_type
+            return expr.typ
+        elif isinstance(expr, ast.BranchExpr):
+            expr.typ = self.comp.never_t
             return expr.typ
         return self.comp.void_t
 

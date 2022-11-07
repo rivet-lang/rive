@@ -6,9 +6,9 @@
 
 let SUPPORT_COLOR: bool = console_is_atty(1);
 
-let OK_STATUS: string = bold(green("OK"));
-let FAILED_STATUS: string = bold(red("FAIL"));
-let SKIP_STATUS: string = bold(yellow("SKIP"));
+let OK_STATUS: string = bold(green("-> OK"));
+let FAILED_STATUS: string = bold(red("-> FAIL"));
+let SKIP_STATUS: string = bold(yellow("-> SKIP"));
 
 extern (Rivet) {
     let test_runner: TestRunner;
@@ -80,7 +80,7 @@ pub struct TestRunner {
 
     fn run(mut self) {
         for i, test_ in self.tests {
-            console_eprint(" [{}/{}] '{}' ... ", i + 1, self.tests.len, test_.name);
+            console_eprint(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
             (test_.func)(unsafe { addr_of!(test_) });
             switch test_.result {
                 .Ok => {
