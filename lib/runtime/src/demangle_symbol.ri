@@ -2,7 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-pub fn demangle_symbol(name: string) string {
+#if !_RELEASE_ // skip `demangle_symbol` in release mode
+fn demangle_symbol(name: string) string {
     if !name.starts_with("_R") {
         return name;
     }
@@ -36,3 +37,4 @@ pub fn demangle_symbol(name: string) string {
     }
     return res.to_string();
 }
+#endif
