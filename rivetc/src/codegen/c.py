@@ -72,7 +72,7 @@ class CGen:
             args.append(obj)
 
         args.append(c_file)
-        self.comp.vlog(f"C compiler options: {args}")
+        self.comp.vlog(f"C compiler arguments: {' '.join(args)}")
 
         res = utils.execute(*args)
         if res.exit_code == 0:

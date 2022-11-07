@@ -74,12 +74,14 @@ class Compiler:
                         decl.alias = mod.alias
                         decl.mod_sym = mod_sym
         self.resolve_deps()
+        if report.ERRORS > 0:
+            self.abort()
 
     def resolve_deps(self):
         g = self.import_graph()
         g_resolved = g.resolve()
         if self.prefs.is_verbose:
-            utils.eprint("------ resolved dependencies graph ------")
+            utils.eprint("-----= resolved dependencies graph =-----")
             utils.eprint(g_resolved.display())
             utils.eprint("-----------------------------------------")
         cycles = g_resolved.display_cycles()
@@ -88,10 +90,10 @@ class Compiler:
                 f"import cycle detected between the following modules:\n{cycles}"
             )
         if self.prefs.is_verbose:
-            utils.eprint("------ imported modules ------")
+            utils.eprint("----------= imported modules =-----------")
             for node in g_resolved.nodes:
-                utils.eprint(f"> {node.name}")
-            utils.eprint("------------------------------")
+                utils.eprint(f" > {node.name}")
+            utils.eprint("-----------------------------------------")
         for node in g_resolved.nodes:
             for fp in self.parsed_files:
                 if not fp.sym:
@@ -125,8 +127,6 @@ class Compiler:
         )
         self.load_root_mod()
         self.import_modules()
-        if report.ERRORS > 0:
-            self.abort()
         if not self.prefs.check_syntax:
             self.register.walk_files(self.source_files)
             if report.ERRORS > 0:

@@ -333,6 +333,7 @@ class Prefs:
         self.mod_dir = path.dirname(path.abspath(self.input)) if path.isfile(
             self.input
         ) else self.input
+        self.library_path.append(self.mod_dir)
 
     def build_rivet_dir(self):
         if not path.isdir(RIVET_DIR):

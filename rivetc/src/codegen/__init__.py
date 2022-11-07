@@ -288,6 +288,8 @@ class Codegen:
 
     def gen_mod_attrs(self, mod_name, attrs):
         mod_folder = os.path.join(prefs.RIVET_DIR, "obj", mod_name)
+        if attrs==None:
+            return
         for attr in attrs.attrs:
             if attr.name == "c_compile":
                 if not os.path.exists(mod_folder):
