@@ -16,7 +16,7 @@ def run_fail_tests():
 	FAIL_FILES = glob.glob(os.path.join("tests", "invalid", "*.ri"))
 	FAIL_FILES.sort()
 	for i, file in enumerate(FAIL_FILES):
-		start=f" [{i+1}/{len(FAIL_FILES)}]"
+		start = f" [{i+1}/{len(FAIL_FILES)}]"
 		res = utils.run_process(sys.executable, "rivetc", file)
 		try:
 			outf = open(file.replace(".ri", ".out"), encoding = 'UTF-8').read()
@@ -39,17 +39,16 @@ def run_fail_tests():
 				utils.eprint("Exit code: 0")
 		except FileNotFoundError:
 			utils.eprint(
-			    utils.bold(utils.yellow("-> SKIP (.out file not found)")),
-			    file
+			    utils.bold(utils.yellow("-> SKIP (.out file not found)")), file
 			)
 			skip += 1
-	utils.eprint(utils.bold("Summary for all tests: "), end="")
+	utils.eprint(utils.bold("Summary for all tests: "), end = "")
 	if ok > 0:
-		utils.eprint(utils.bold(utils.green(f"{ok} passed"))+ ", ", end="")
+		utils.eprint(utils.bold(utils.green(f"{ok} passed")) + ", ", end = "")
 	if fail > 0:
-		utils.eprint(utils.bold(utils.red(f"{fail} failed"))+ ", ", end="")
+		utils.eprint(utils.bold(utils.red(f"{fail} failed")) + ", ", end = "")
 	if skip > 0:
-		utils.eprint(utils.bold(utils.yellow(f"{skip} skipped")), end="")
+		utils.eprint(utils.bold(utils.yellow(f"{skip} skipped")), end = "")
 	utils.eprint(utils.bold(f"{len(FAIL_FILES)} total."))
 
 	return exit_code

@@ -188,13 +188,13 @@ class Compiler:
                 abspath = path.abspath(pathx)
                 mod_basedir = path.dirname(abspath)
                 if mod_basedir.endswith("src/"):
-                    mod_basedir =mod_basedir[:-4] # skip `src/`
+                    mod_basedir = mod_basedir[:-4] # skip `src/`
                 names = abspath[mod_basedir.rfind("/") + 1:].split("/")
                 if mod_basedir.endswith("src/"):
                     full_name = ("::".join([names[0],
                                             *names[2:]])).replace("/", "::")
                 else:
-                    full_name="::".join(names)
+                    full_name = "::".join(names)
             os.chdir(old_wd)
             if found:
                 files = self.filter_files(
@@ -212,7 +212,7 @@ class Compiler:
                     )
                 # support `src/` directory
                 if pathx.count("/") > 0:
-                    slash_idx = pathx.find("/")+1
+                    slash_idx = pathx.find("/") + 1
                     src_dir = path.join(
                         l, pathx[:slash_idx], "src", pathx[slash_idx:]
                     )

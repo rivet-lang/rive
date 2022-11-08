@@ -602,7 +602,8 @@ class Lexer:
             report.error(f"invalid preprocessing directive: `{kw}`", pos)
             return
 
-        if len(self.conditional_stack) > 0 and self.conditional_stack[-1].skip_section:
+        if len(self.conditional_stack
+               ) > 0 and self.conditional_stack[-1].skip_section:
             # skip tokens until next preprocessing directive
             while self.pos < self.text_len:
                 cc = self.current_char()

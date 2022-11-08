@@ -121,8 +121,8 @@ class Parser:
         return sym.ABI.Rivet
 
     def parse_attrs(self, parse_mod_attrs = False):
-        if self.file_sym.attrs==None:
-            self.file_sym.attrs=ast.Attrs()
+        if self.file_sym.attrs == None:
+            self.file_sym.attrs = ast.Attrs()
         attrs = ast.Attrs()
         while self.accept(Kind.Hash):
             if parse_mod_attrs:

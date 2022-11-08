@@ -109,7 +109,7 @@ class Codegen:
         self.cur_fn = None
         self.cur_fn_is_main = False
         self.cur_fn_ret_typ = self.comp.void_t
-        self.cur_fn_defer_stmts=[]
+        self.cur_fn_defer_stmts = []
 
         self.inside_trait = False
         self.inside_test = False
@@ -289,7 +289,7 @@ class Codegen:
 
     def gen_mod_attrs(self, mod_name, attrs):
         mod_folder = os.path.join(prefs.RIVET_DIR, "obj", mod_name)
-        if attrs==None:
+        if attrs == None:
             return
         for attr in attrs.attrs:
             if attr.name == "c_compile":
@@ -402,11 +402,13 @@ class Codegen:
             self.cur_fn_is_main = decl.is_main
             self.cur_fn_ret_typ = decl.ret_typ
             for defer_stmt in decl.defer_stmts:
-                defer_stmt.flag_var=self.cur_fn.local_name()
+                defer_stmt.flag_var = self.cur_fn.local_name()
                 self.cur_fn_defer_stmts.append(defer_stmt)
-                self.cur_fn.alloca(ir.Ident(ir.Type("bool"), defer_stmt.flag_var),
-                ir.IntLit(ir.Type("bool"), "0"))
-            self.cur_fn_defer_stmts=decl.defer_stmts
+                self.cur_fn.alloca(
+                    ir.Ident(ir.Type("bool"), defer_stmt.flag_var),
+                    ir.IntLit(ir.Type("bool"), "0")
+                )
+            self.cur_fn_defer_stmts = decl.defer_stmts
             self.gen_stmts(decl.stmts)
             self.gen_defer_stmts()
             if decl.is_extern and not decl.has_body:
@@ -424,11 +426,13 @@ class Codegen:
             )
             self.cur_fn = dtor_fn
             for defer_stmt in decl.defer_stmts:
-                defer_stmt.flag_var=self.cur_fn.local_name()
+                defer_stmt.flag_var = self.cur_fn.local_name()
                 self.cur_fn_defer_stmts.append(defer_stmt)
-                self.cur_fn.alloca(ir.Ident(ir.Type("bool"), defer_stmt.flag_var),
-                ir.IntLit(ir.Type("bool"), "0"))
-            self.cur_fn_defer_stmts=decl.defer_stmts
+                self.cur_fn.alloca(
+                    ir.Ident(ir.Type("bool"), defer_stmt.flag_var),
+                    ir.IntLit(ir.Type("bool"), "0")
+                )
+            self.cur_fn_defer_stmts = decl.defer_stmts
             self.gen_stmts(decl.stmts)
             self.gen_defer_stmts()
             self.out_rir.decls.append(dtor_fn)
@@ -664,8 +668,10 @@ class Codegen:
                             ir.Selector(left_ir_typ, right, ir.Name(f"f{i}"))
                         )
         elif isinstance(stmt, ast.DeferStmt):
-            self.cur_fn.store(ir.Ident(ir.Type("bool"), stmt.flag_var),
-            ir.IntLit(ir.Type("bool"), "1"))
+            self.cur_fn.store(
+                ir.Ident(ir.Type("bool"), stmt.flag_var),
+                ir.IntLit(ir.Type("bool"), "1")
+            )
         elif isinstance(stmt, ast.ExprStmt):
             _ = self.gen_expr(stmt.expr)
 
@@ -1293,7 +1299,7 @@ class Codegen:
             if len(expr.elems) == 0:
                 if expr.is_arr:
                     return self.default_value(expr.typ)
-                tmp=ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
+                tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
                 self.cur_fn.alloca(tmp, self.empty_vec(typ_sym))
                 return tmp
             elem_typ = typ_sym.info.elem_typ
@@ -1314,14 +1320,17 @@ class Codegen:
                     )
                     return ir.Skip()
                 return arr_lit
-            tmp=ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
-            self.cur_fn.alloca(tmp, ir.Inst(
-                ir.InstKind.Call, [
-                    ir.Name("_R7runtime3Vec10from_arrayF"), arr_lit,
-                    ir.IntLit(ir.Type("usize"), str(size)),
-                    ir.IntLit(ir.Type("usize"), str(len(elems)))
-                ]
-            ))
+            tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
+            self.cur_fn.alloca(
+                tmp,
+                ir.Inst(
+                    ir.InstKind.Call, [
+                        ir.Name("_R7runtime3Vec10from_arrayF"), arr_lit,
+                        ir.IntLit(ir.Type("usize"), str(size)),
+                        ir.IntLit(ir.Type("usize"), str(len(elems)))
+                    ]
+                )
+            )
             return tmp
         elif isinstance(expr, ast.PathExpr):
             if isinstance(expr.field_info, sym.Const):
@@ -1917,16 +1926,18 @@ class Codegen:
             raise Exception(expr.__class__)
         return ir.Skip()
 
-    def gen_defer_stmts(self, gen_errdefer=False):
+    def gen_defer_stmts(self, gen_errdefer = False):
         for defer_stmt in self.cur_fn_defer_stmts:
             if defer_stmt.is_errdefer and not gen_errdefer:
                 continue
-            defer_start=self.cur_fn.local_name()
-            defer_end=self.cur_fn.local_name()
-            self.cur_fn.add_comment(f"defer stmt (start: {defer_start}, end: {defer_end})")
+            defer_start = self.cur_fn.local_name()
+            defer_end = self.cur_fn.local_name()
+            self.cur_fn.add_comment(
+                f"defer stmt (start: {defer_start}, end: {defer_end})"
+            )
             self.cur_fn.add_cond_br(
-                ir.Ident(ir.Type("bool"), defer_stmt.flag_var),
-                defer_start, defer_end
+                ir.Ident(ir.Type("bool"), defer_stmt.flag_var), defer_start,
+                defer_end
             )
             self.cur_fn.add_label(defer_start)
             self.gen_expr(defer_stmt.expr)
