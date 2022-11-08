@@ -61,7 +61,7 @@ extend u8 : ToString {
     }
 
     /// Returns the value of `self` as a ASCII `string`.
-    pub fn to_ascii_string(self) string {
+    pub fn to_ascii(self) string {
         return string::from_byte(self);
     }
 

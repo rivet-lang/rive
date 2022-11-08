@@ -21,3 +21,11 @@ test "`for` statement with vector" {
     }
     assert!(sum == 55);
 }
+
+test "`for` statement with string" {
+    let mut sum = 0;
+    for b in "Hello World!" {
+        sum += as(i32, b);
+    }
+    assert!(sum == 1085);
+}
