@@ -1,20 +1,20 @@
 trait ToStr {
-    fn to_str1(self) string;
+    fn to_str1(&self) string;
 }
 
 fn my_print(v: ToStr) {
     _ = v.to_str1();
 }
 
-extend string for ToStr {
+extend string : ToStr {
     fn to_str1(self) string {
         return self;
     }
 }
 
-extend bool for ToStr {
-    fn to_str1(self) string {
-        return if self { "true" } else { "false" };
+extend bool : ToStr {
+    fn to_str1(&self) string {
+        return if self.* { "true" } else { "false" };
     }
 }
 

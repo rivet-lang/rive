@@ -1,2 +1,4 @@
 tests/invalid/expected_type.ri:3:9: error: expected type, found function
-rivetc: error: could not compile package `expected_type`, aborting due to previous error
+  3 | fn x(a: my_fn) {}
+    |         ^
+rivetc: error: could not compile module `expected_type`, aborting due to previous error

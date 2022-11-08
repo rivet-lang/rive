@@ -1,4 +1,0 @@
-tests/invalid/global_let_mut.ri:4:13: error: use of mutable global objects is unsafe and requires `unsafe` block
-   = note: mutable global objects can be mutated by multiple threads: aliasing violations
-   or data races will cause undefined behavior
-rivetc: error: could not compile package `global_let_mut`, aborting due to previous error

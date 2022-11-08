@@ -313,11 +313,11 @@ class Checker:
                         )
                     else:
                         report.error(
-                            "use of mutable global objects is unsafe and requires `unsafe` block",
+                            "use of mutable module variables is unsafe and requires `unsafe` block",
                             expr.pos
                         )
                         report.note(
-                            "mutable global objects can be mutated by multiple threads: "
+                            "mutable module variables can be mutated by multiple threads: "
                             "aliasing violations or data races will cause undefined behavior"
                         )
                 expr.typ = expr.sym.typ
@@ -1092,11 +1092,11 @@ class Checker:
                         )
                     else:
                         report.error(
-                            "use of mutable global objects is unsafe and requires `unsafe` block",
+                            "use of mutable module variables is unsafe and requires `unsafe` block",
                             expr.pos
                         )
                         report.note(
-                            "mutable global objects can be mutated by multiple threads: "
+                            "mutable module variables can be mutated by multiple threads: "
                             "aliasing violations or data races will cause undefined behavior"
                         )
                 expr.typ = expr.field_info.typ

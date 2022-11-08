@@ -22,20 +22,7 @@ class RuntimeError : Error { } // FAIL
 struct Gota { }
 struct Gota { } // FAIL
 
-mod module {
-    struct App { }
-    struct App { } // FAIL
-}
-
 enum State {
     Idle,
     Idle // FAIL
-}
-
-// OK, extend `module` mod
-mod module {
-    struct Game {
-        art: bool;
-        art: bool; // FAIL
-    }
 }

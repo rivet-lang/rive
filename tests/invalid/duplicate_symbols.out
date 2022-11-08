@@ -1,7 +1,13 @@
-tests/invalid/duplicate_symbols.ri:15:4: error: package `duplicate_symbols` has duplicate symbol `other`
-tests/invalid/duplicate_symbols.ri:20:7: error: package `duplicate_symbols` has duplicate symbol `RuntimeError`
-tests/invalid/duplicate_symbols.ri:23:8: error: package `duplicate_symbols` has duplicate symbol `Gota`
-tests/invalid/duplicate_symbols.ri:27:12: error: module `module` has duplicate symbol `App`
-tests/invalid/duplicate_symbols.ri:30:6: error: enum `State` has duplicate value `Idle`
-tests/invalid/duplicate_symbols.ri:39:9: error: type `Game` has duplicate field `art`
-rivetc: error: could not compile package `duplicate_symbols`, aborting due to 6 previous errors
+tests/invalid/duplicate_symbols.ri:15:4: error: module `duplicate_symbols` has duplicate symbol `other`
+  15 | fn other(a: i32) { // FAIL
+     |    ^
+tests/invalid/duplicate_symbols.ri:20:7: error: module `duplicate_symbols` has duplicate symbol `RuntimeError`
+  20 | class RuntimeError : Error { } // FAIL
+     |       ^
+tests/invalid/duplicate_symbols.ri:23:8: error: module `duplicate_symbols` has duplicate symbol `Gota`
+  23 | struct Gota { } // FAIL
+     |        ^
+tests/invalid/duplicate_symbols.ri:25:6: error: enum `State` has duplicate value `Idle`
+  25 | enum State {
+     |      ^
+rivetc: error: could not compile module `duplicate_symbols`, aborting due to 4 previous errors
