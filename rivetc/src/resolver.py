@@ -155,7 +155,7 @@ class Resolver:
         elif isinstance(stmt, ast.WhileStmt):
             self.resolve_expr(stmt.cond)
             self.resolve_stmt(stmt.stmt)
-        elif isinstance(stmt, ast.ForInStmt):
+        elif isinstance(stmt, ast.ForStmt):
             for v in stmt.vars:
                 try:
                     stmt.scope.add(

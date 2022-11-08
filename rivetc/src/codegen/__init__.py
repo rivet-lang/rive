@@ -454,7 +454,7 @@ class Codegen:
             self.gen_stmt(stmt)
 
     def gen_stmt(self, stmt):
-        if isinstance(stmt, ast.ForInStmt):
+        if isinstance(stmt, ast.ForStmt):
             old_entry_label = self.loop_entry_label
             old_exit_label = self.loop_exit_label
             vars_len = len(stmt.vars)

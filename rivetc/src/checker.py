@@ -219,7 +219,7 @@ class Checker:
                         stmt.cond.pos
                     )
             self.check_stmt(stmt.stmt)
-        elif isinstance(stmt, ast.ForInStmt):
+        elif isinstance(stmt, ast.ForStmt):
             iterable_t = self.check_expr(stmt.iterable)
             iterable_sym = iterable_t.symbol()
             vars_len = len(stmt.vars)

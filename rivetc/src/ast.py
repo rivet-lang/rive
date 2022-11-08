@@ -307,7 +307,7 @@ class WhileStmt:
         self.is_inf = is_inf
         self.pos = pos
 
-class ForInStmt:
+class ForStmt:
     def __init__(self, scope, vars, iterable, stmt, pos):
         self.vars = vars
         self.iterable = iterable
