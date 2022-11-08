@@ -1567,6 +1567,16 @@ class Checker:
                 report.error("cannot use `self` as mutable value", expr.pos)
                 report.help("consider making `self` as mutable: `mut self`")
         elif isinstance(expr, ast.SelectorExpr):
+            if isinstance(expr.left, ast.Ident):
+                if expr.left.obj.level==sym.ObjLevel.Arg and not expr.left.obj.is_mut:
+                    report.error(f"cannot use `{expr.left.name}` as mutable argument", expr.pos)
+                    report.help(
+                        f"consider making this argument mutable: `mut {expr.left.name}`"
+                    )
+            elif isinstance(expr.left, ast.SelfExpr):
+                if not expr.left.is_mut:
+                    report.error("cannot use `self` as mutable receiver", expr.pos)
+                    report.help("consider making `self` as mutable: `mut self`")
             if expr.is_indirect and isinstance(
                 expr.left_typ, (type.Ptr, type.Ref)
             ):
