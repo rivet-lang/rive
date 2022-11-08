@@ -1293,7 +1293,9 @@ class Codegen:
             if len(expr.elems) == 0:
                 if expr.is_arr:
                     return self.default_value(expr.typ)
-                return self.empty_vec(typ_sym)
+                tmp=ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
+                self.cur_fn.alloca(tmp, self.empty_vec(typ_sym))
+                return tmp
             elem_typ = typ_sym.info.elem_typ
             size, _ = self.comp.type_size(elem_typ)
             elems = []
@@ -1312,13 +1314,15 @@ class Codegen:
                     )
                     return ir.Skip()
                 return arr_lit
-            return ir.Inst(
+            tmp=ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
+            self.cur_fn.alloca(tmp, ir.Inst(
                 ir.InstKind.Call, [
                     ir.Name("_R7runtime3Vec10from_arrayF"), arr_lit,
                     ir.IntLit(ir.Type("usize"), str(size)),
                     ir.IntLit(ir.Type("usize"), str(len(elems)))
                 ]
-            )
+            ))
+            return tmp
         elif isinstance(expr, ast.PathExpr):
             if isinstance(expr.field_info, sym.Const):
                 return self.gen_const(expr.field_info)
