@@ -2,8 +2,25 @@ fn default_arg(x: i32 = 1) {
     assert!(x == 1 or x == 5 or x == 10);
 }
 
-test "default arguments" {
+test "call expression with default arguments" {
     default_arg();
     default_arg(5);
     default_arg(x: 10);
+}
+
+fn foo(a: bool = false, b: bool = false) { }
+
+fn bar(a: bool, b: bool = true) { }
+
+fn baz(a: bool, b: bool) { }
+
+fn qux(a: bool) { }
+
+test "call expression with named arguments" {
+    foo(a: true, b: true);
+    bar(true, b: true);
+    baz(true, true);
+
+    let a = true;
+    qux(a);
 }

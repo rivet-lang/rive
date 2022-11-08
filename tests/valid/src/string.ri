@@ -1,3 +1,5 @@
+import "libc";
+
 test "string.fmt()" {
     assert!("true: {}".fmt(true) == "true: true");
     assert!("false: {}".fmt(false) == "false: false");
@@ -22,4 +24,14 @@ test "string index" {
 test "string.concat()" {
     let x = "Hello ".concat("World!");
     assert!(x == "Hello World!");
+}
+
+test "byte string literal" {
+    let x = b"Abcdef";
+    assert!(x.len == 6);
+}
+
+test "C string literal" {
+    let pstr = c"Hello World!";
+    assert!(unsafe { libc::strlen(pstr) == 12 });
 }

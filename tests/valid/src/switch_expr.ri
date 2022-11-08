@@ -1,4 +1,11 @@
-test "switch expression" {
+test "`switch` expression" {
+    assert!(switch 1 {
+        1 => true,
+        else => false
+    });
+}
+
+test "`switch` expression as statement" {
     switch 1 {
         1 => assert!(true),
         else => assert!(false)
@@ -9,9 +16,4 @@ test "switch expression" {
         1 => assert!(true),
         else => assert!(false)
     }
-
-    assert!(switch x {
-        1 => true,
-        else => false
-    });
 }

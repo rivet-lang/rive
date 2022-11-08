@@ -8,7 +8,7 @@ fn test_defer() i32 {
     return a;
 }
 
-test "defer stmt" {
+test "`defer` statement" {
     assert!(test_defer() == 5);
 }
 
@@ -21,7 +21,7 @@ fn test_errdefer(mut err_defer: ErrDefer, err: bool) ! {
     }
 }
 
-test "errdefer stmt" {
+test "`errdefer` statement" {
     let mut err_defer = ErrDefer(i: 0);
     test_errdefer(err_defer, false) catch { };
     assert!(err_defer.i == 1);
