@@ -21,28 +21,28 @@ pub const MAX_PATH_LEN: i32 = #if _WINDOWS_ 260 #else 4096 #endif;
 
 /// Returns true if `path` (file or directory) exists.
 pub fn exists(path: string) bool {
-    return unsafe { libc::access(path.ptr, F_OK) != -1 };
+    return unsafe { libc.access(path.ptr, F_OK) != -1 };
 }
 
 /// Returns `true` if `path` is executable.
 pub fn is_executable(path: string) bool {
-    return unsafe { libc::access(path.ptr, X_OK) != -1 };
+    return unsafe { libc.access(path.ptr, X_OK) != -1 };
 }
 
 /// Returns `true` if `path` is writable.
 pub fn is_writable(path: string) bool {
-    return unsafe { libc::access(path.ptr, W_OK) != -1 };
+    return unsafe { libc.access(path.ptr, W_OK) != -1 };
 }
 
 /// Returns `true` if `path` is readable.
 pub fn is_readable(path: string) bool {
-    return unsafe { libc::access(path.ptr, R_OK) != -1 };
+    return unsafe { libc.access(path.ptr, R_OK) != -1 };
 }
 
 /// Returns true if `path` is a directory.
 pub fn is_dir(path: string) bool {
-    let mut statbuf = libc::Stat();
-    if unsafe { libc::stat(path.ptr, addr_of_mut!(statbuf)) != 0 } {
+    let mut statbuf = libc.Stat();
+    if unsafe { libc.stat(path.ptr, addr_of_mut!(statbuf)) != 0 } {
         return false;
     }
     return (as(i32, statbuf.mode) & S_IFMT) == S_IFDIR;
@@ -60,8 +60,8 @@ pub fn is_absolute(path: string) bool {
 
 /// Returns a boolean indicating whether `path` is a link.
 pub fn is_link(path: string) bool {
-    let mut statbuf = libc::Stat();
-    if unsafe { libc::lstat(path.ptr, addr_of_mut!(statbuf)) != 0 } {
+    let mut statbuf = libc.Stat();
+    if unsafe { libc.lstat(path.ptr, addr_of_mut!(statbuf)) != 0 } {
         return false;
     }
     return (as(i32, statbuf.mode) & S_IFMT) == S_IFLNK;

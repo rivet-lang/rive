@@ -16,7 +16,7 @@ fn lower(c: u8) u8 {
 /// A sign prefix is not permitted.
 pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
     if s_ == "" {
-        return InvalidSyntaxError("strconv::string_to_uint: invalid syntax");
+        return InvalidSyntaxError("strconv.string_to_uint: invalid syntax");
     }
     let s = s_;
     let base0 = base__ == 0;
@@ -56,7 +56,7 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
             }
         },
         else => return InvalidBaseError(
-            "strconv::string_to_uint: invalid base {}".fmt(base_)
+            "strconv.string_to_uint: invalid base {}".fmt(base_)
         )
     }
 
@@ -64,16 +64,16 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
         bit_size = INT_SIZE;
     } else if bit_size < 0 or bit_size > 64 {
         return InvalidBitSizeError(
-            "strconv::string_to_uint: invalid bit size {}".fmt(bit_size)
+            "strconv.string_to_uint: invalid bit size {}".fmt(bit_size)
         );
     }
 
     // Cutoff is the smallest number such that `cutoff * base > MAX_U64`.
     // Use compile-time constants for common cases.
-    let cutoff: u64 = u64::MAX / as(u64, base_) + as(u64, 1);
+    let cutoff: u64 = u64.MAX / as(u64, base_) + as(u64, 1);
 
     let max_val: u64 = if bit_size == 64 {
-        u64::MAX
+        u64.MAX
     } else {
         (as(u64, 1) << as(u64, bit_size)) - as(u64, 1)
     };
@@ -91,29 +91,29 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
             },
             (b'0' <= c and c <= b'9') => d = c - b'0',
             (b'a' <= cl and cl <= b'z') => d = cl - b'a' + 1,
-            else => return InvalidSyntaxError("strconv::string_to_uint: invalid syntax")
+            else => return InvalidSyntaxError("strconv.string_to_uint: invalid syntax")
         }
 
         if d >= as(u8, base_) {
-            return InvalidSyntaxError("strconv::string_to_uint: invalid syntax");
+            return InvalidSyntaxError("strconv.string_to_uint: invalid syntax");
         }
 
         if n >= cutoff {
             // `n * base_` overflows
-            return ValueOutOfRangeError("strconv::string_to_uint: value out of range");
+            return ValueOutOfRangeError("strconv.string_to_uint: value out of range");
         }
         n *= as(u64, base_);
 
         let n1 = n + as(u64, d);
         if n1 < n or n1 > max_val {
             // `n + d` overflows
-            return ValueOutOfRangeError("strconv::string_to_uint: value out of range");
+            return ValueOutOfRangeError("strconv.string_to_uint: value out of range");
         }
         n = n1;
     }
 
     if underscores and !underscore_ok(s) {
-        return InvalidSyntaxError("strconv::string_to_uint: invalid syntax");
+        return InvalidSyntaxError("strconv.string_to_uint: invalid syntax");
     }
 
     return n;
@@ -135,7 +135,7 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 /// i64. If `bit_size` is below 0 or above 64, an error is returned.
 pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
     if s == "" {
-        return InvalidSyntaxError("strconv::string_to_int: invalid syntax");
+        return InvalidSyntaxError("strconv.string_to_int: invalid syntax");
     }
 
     // pick off leading sign.
@@ -157,10 +157,10 @@ pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
 
     let cutoff = as(u64, 1) << as(u32, bit_size - 1);
     if !neg and un >= cutoff {
-        return ValueOutOfRangeError("strconv::string_to_int: value out of range");
+        return ValueOutOfRangeError("strconv.string_to_int: value out of range");
     }
     if neg and un > cutoff {
-        return ValueOutOfRangeError("strconv::string_to_int: value out of range");
+        return ValueOutOfRangeError("strconv.string_to_int: value out of range");
     }
 
     return if neg { -as(i64, un) } else { as(i64, un) };

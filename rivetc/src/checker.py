@@ -949,7 +949,7 @@ class Checker:
             elif expr.name in ("size_of", "align_of"):
                 expr.typ = self.comp.usize_t
             elif expr.name == "type_of":
-                expr.typ = self.comp.string_t # TODO: core::TypeInfo
+                expr.typ = self.comp.string_t # TODO: runtime.TypeInfo
             elif expr.name in ("unreachable", "breakpoint"):
                 expr.typ = self.comp.never_t
             elif expr.name == "assert":
@@ -1090,12 +1090,12 @@ class Checker:
                                     expr.field_pos
                                 )
                                 report.help(
-                                    f"use `{left_sym.name}::{expr.field_name}` instead"
+                                    f"use `{left_sym.name}.{expr.field_name}` instead"
                                 )
                                 expr.typ = decl.typ()
                         else:
                             report.error(
-                                f"cannot take value of {decl.typeof()} `{left_sym.name}::{expr.field_name}`",
+                                f"cannot take value of {decl.typeof()} `{left_sym.name}.{expr.field_name}`",
                                 expr.field_pos
                             )
                     else:

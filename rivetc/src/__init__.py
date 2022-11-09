@@ -191,10 +191,10 @@ class Compiler:
                     mod_basedir = mod_basedir[:-4] # skip `src/`
                 names = abspath[mod_basedir.rfind("/") + 1:].split("/")
                 if mod_basedir.endswith("src/"):
-                    full_name = ("::".join([names[0],
-                                            *names[2:]])).replace("/", "::")
+                    full_name = (".".join([names[0],
+                                            *names[2:]])).replace("/", ".")
                 else:
-                    full_name = "::".join(names)
+                    full_name = ".".join(names)
             os.chdir(old_wd)
             if found:
                 files = self.filter_files(
@@ -202,7 +202,7 @@ class Compiler:
                 )
         else:
             name = pathx[pathx.rfind("/") + 1:]
-            full_name = pathx.replace("/", "::")
+            full_name = pathx.replace("/", ".")
             for l in self.prefs.library_path:
                 mod_path = path.relpath(path.join(l, pathx))
                 if path.isdir(mod_path):

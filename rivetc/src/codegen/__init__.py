@@ -42,7 +42,7 @@ def mangle_symbol(s):
         if s.is_universe:
             break
         if isinstance(s, sym.Mod):
-            name = s.name.replace("::", "__")
+            name = s.name.replace(".", "__")
             res.insert(0, f"{len(name)}{name}")
         elif isinstance(s, sym.Type):
             if s.kind == TypeKind.Tuple:
@@ -2101,7 +2101,7 @@ class Codegen:
         self.cur_fn.add_call(
             "_R7runtime13process_panicF", [
                 self.gen_string_lit(utils.smart_quote(msg, False)),
-                self.empty_vec(self.comp.universe["[runtime::ToString]"])
+                self.empty_vec(self.comp.universe["[runtime.ToString]"])
             ]
         )
 

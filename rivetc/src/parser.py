@@ -918,13 +918,7 @@ class Parser:
                         is_nilcheck = True
                     )
                 else:
-                    field_pos = self.tok.pos
-                    if self.tok.kind == Kind.Number:
-                        name = self.tok.lit
-                        self.next()
-                    else:
-                        name = self.parse_name()
-                    expr = ast.SelectorExpr(expr, name, expr.pos, field_pos)
+                    expr = self.parse_selector_expr(expr)
             elif self.tok.kind == Kind.DoubleColon:
                 expr = self.parse_path_expr(expr)
             else:
@@ -1015,6 +1009,15 @@ class Parser:
             cond = self.empty_expr()
         return ast.GuardExpr(vars, e, has_cond, cond, self.scope, pos)
 
+    def parse_selector_expr(self, left):
+        field_pos = self.tok.pos
+        if self.tok.kind == Kind.Number:
+            name = self.tok.lit
+            self.next()
+        else:
+            name = self.parse_name()
+        return ast.SelectorExpr(left, name, left.pos, field_pos)
+
     def parse_path_expr(self, left):
         self.expect(Kind.DoubleColon)
         pos = self.tok.pos
@@ -1091,11 +1094,6 @@ class Parser:
             sc = sym.Scope(sc)
         id = ast.Ident(name, pos, sc, is_comptime)
         return id
-
-    def parse_mod_expr(self):
-        pos = self.tok.pos
-        self.next()
-        return ast.PkgExpr(pos)
 
     def empty_expr(self):
         return ast.EmptyExpr(self.tok.pos)
@@ -1181,65 +1179,62 @@ class Parser:
         elif self.accept(Kind.KwNil):
             return self.comp.nil_t
         elif self.tok.kind == Kind.Name:
-            if self.peek_tok.kind == Kind.DoubleColon:
-                # normal type
-                path_expr = self.parse_path_expr(self.parse_ident())
+            prev_tok_kind = self.prev_tok.kind
+            expr=self.parse_ident()
+            if self.accept(Kind.Dot):
+                return type.Type.unresolved(self.parse_selector_expr(expr))
+            elif self.accept(Kind.DoubleColon):
+                path_expr = self.parse_path_expr(expr)
                 if self.tok.kind == Kind.DoubleColon:
                     while True:
                         path_expr = self.parse_path_expr(path_expr)
                         if self.tok.kind != Kind.DoubleColon:
                             break
                 return type.Type.unresolved(path_expr)
-            elif self.tok.kind == Kind.Name:
-                prev_tok_kind = self.prev_tok.kind
-                expr = self.parse_ident()
-                lit = expr.name
-                if lit == "void":
-                    return self.comp.void_t
-                elif lit == "never":
-                    if prev_tok_kind != Kind.Rparen and self.tok.kind != Kind.Lbrace:
-                        report.error("invalid use of `never` type", pos)
-                    return self.comp.never_t
-                elif lit == "bool":
-                    return self.comp.bool_t
-                elif lit == "rune":
-                    return self.comp.rune_t
-                elif lit == "i8":
-                    return self.comp.i8_t
-                elif lit == "i16":
-                    return self.comp.i16_t
-                elif lit == "i32":
-                    return self.comp.i32_t
-                elif lit == "i64":
-                    return self.comp.i64_t
-                elif lit == "isize":
-                    return self.comp.isize_t
-                elif lit == "u8":
-                    return self.comp.u8_t
-                elif lit == "u16":
-                    return self.comp.u16_t
-                elif lit == "u32":
-                    return self.comp.u32_t
-                elif lit == "u64":
-                    return self.comp.u64_t
-                elif lit == "usize":
-                    return self.comp.usize_t
-                elif lit == "f32":
-                    return self.comp.f32_t
-                elif lit == "f64":
-                    return self.comp.f64_t
-                elif lit == "string":
-                    return self.comp.string_t
-                # only available in `core`:
-                elif lit == "untyped_int":
-                    return self.comp.untyped_int_t
-                elif lit == "untyped_float":
-                    return self.comp.untyped_float_t
-                else:
-                    return type.Type.unresolved(expr)
-            else:
-                report.error("expected type, found keyword `pkg`", pos)
-                self.next()
+            # normal type
+            lit = expr.name
+            if lit == "void":
+                return self.comp.void_t
+            elif lit == "never":
+                if prev_tok_kind != Kind.Rparen and self.tok.kind != Kind.Lbrace:
+                    report.error("invalid use of `never` type", pos)
+                return self.comp.never_t
+            elif lit == "bool":
+                return self.comp.bool_t
+            elif lit == "rune":
+                return self.comp.rune_t
+            elif lit == "i8":
+                return self.comp.i8_t
+            elif lit == "i16":
+                return self.comp.i16_t
+            elif lit == "i32":
+                return self.comp.i32_t
+            elif lit == "i64":
+                return self.comp.i64_t
+            elif lit == "isize":
+                return self.comp.isize_t
+            elif lit == "u8":
+                return self.comp.u8_t
+            elif lit == "u16":
+                return self.comp.u16_t
+            elif lit == "u32":
+                return self.comp.u32_t
+            elif lit == "u64":
+                return self.comp.u64_t
+            elif lit == "usize":
+                return self.comp.usize_t
+            elif lit == "f32":
+                return self.comp.f32_t
+            elif lit == "f64":
+                return self.comp.f64_t
+            elif lit == "string":
+                return self.comp.string_t
+            # only available in `runtime`:
+            elif lit == "untyped_int":
+                return self.comp.untyped_int_t
+            elif lit == "untyped_float":
+                return self.comp.untyped_float_t
+            return type.Type.unresolved(expr)
         else:
             report.error(f"expected type, found {self.tok}", pos)
             self.next()

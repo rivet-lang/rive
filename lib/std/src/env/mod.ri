@@ -10,27 +10,27 @@ pub let HOME_DIR: string = #if _LINUX_ get("HOME") #else get("USERPROFILE") #end
 
 /// Returns `true` if the environment variable exists.
 pub fn exists(name: string) bool {
-	return unsafe { libc::getenv(name.ptr) != nil };
+	return unsafe { libc.getenv(name.ptr) != nil };
 }
 
 /// Returns the value of the environment variable named by the key.
 pub fn get(name: string) string {
 	unsafe {
-		let s = libc::getenv(name.ptr);
-		return if s == nil { "" } else { string::from_raw(s) };
+		let s = libc.getenv(name.ptr);
+		return if s == nil { "" } else { string.from_raw(s) };
 	}
 }
 
 /// Sets the value of an environment variable with `name` to `value`.
 pub fn set(name: string, value: string, overwrite: bool = true) ! {
-	if unsafe { libc::setenv(name.ptr, value.ptr, overwrite) == -1 } {
-		return runtime::last_errno_error();
+	if unsafe { libc.setenv(name.ptr, value.ptr, overwrite) == -1 } {
+		return runtime.last_errno_error();
 	}
 }
 
 /// Removes an environment variable with `name`.
 pub fn remove(name: string) ! {
-	if unsafe { libc::unsetenv(name.ptr) } == -1 {
-		return runtime::last_errno_error();
+	if unsafe { libc.unsetenv(name.ptr) } == -1 {
+		return runtime.last_errno_error();
 	}
 }

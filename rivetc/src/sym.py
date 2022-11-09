@@ -208,7 +208,7 @@ class Sym:
         if self.parent == None or self.parent.is_universe:
             self.qualified_name = self.name
             return self.qualified_name
-        self.qualified_name = f"{self.parent.qualname()}::{self.name}"
+        self.qualified_name = f"{self.parent.qualname()}.{self.name}"
         return self.qualified_name
 
     def is_runtime_mod(self):

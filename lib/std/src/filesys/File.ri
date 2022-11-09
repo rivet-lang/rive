@@ -8,21 +8,21 @@ import "../mem";
 import "../traits" { ToString };
 
 pub class File {
-    f: *mut libc::FILE;
+    f: *mut libc.FILE;
     mut is_opened: bool;
 
     pub fn open(path: string, mode: string = "r") !File {
         unsafe {
-            if let f = libc::fopen(path.ptr, mode.ptr) {
+            if let f = libc.fopen(path.ptr, mode.ptr) {
                 return Self(f, true);
             }
         }
-        return Error("File::open: failed to open file '{}'".fmt(path));
+        return Error("File.open: failed to open file '{}'".fmt(path));
     }
 
     /// Writes the string `s` into the file.
     pub fn write(mut self, s: string) {
-        _ = unsafe { libc::fputs(s.ptr, self.f) };
+        _ = unsafe { libc.fputs(s.ptr, self.f) };
     }
 
     /// Writes the string `s` into the file and appends a '\n' character.
@@ -46,17 +46,17 @@ pub class File {
             return "";
         }
         unsafe {
-            let seek = libc::fseek(self.f, 0, 2);
+            let seek = libc.fseek(self.f, 0, 2);
             if seek != 0 {
                 return Error("fseek failed");
             }
 
-            let fsize = libc::ftell(self.f);
+            let fsize = libc.ftell(self.f);
             if fsize < 0 {
                 return Error("ftell failed");
             }
 
-            libc::rewind(self.f);
+            libc.rewind(self.f);
 
             // On some systems `ftell` can return values in the 64-bit range
             // that, when cast to `i32`, can result in values below 0.
@@ -65,22 +65,22 @@ pub class File {
                 return Error("{} cast to `i32` results in {}".fmt(fsize, as(i32, fsize)));
             }
 
-            let mut res = as(*mut u8, mem::alloc(as(usize, allocate) + 1).!);
-            let nelements = libc::fread(res, 1, as(usize, allocate), self.f);
+            let mut res = as(*mut u8, mem.alloc(as(usize, allocate) + 1).!);
+            let nelements = libc.fread(res, 1, as(usize, allocate), self.f);
 
-            if self.eof() and libc::ferror(self.f) != 0 {
-                mem::dealloc(res);
+            if self.eof() and libc.ferror(self.f) != 0 {
+                mem.dealloc(res);
                 return Error("fread failed");
             }
 
             res[nelements] = 0;
-            return string::from_raw_with_len(res, nelements);
+            return string.from_raw_with_len(res, nelements);
         }
     }
 
     /// Returns true if the file is at end.
     pub fn eof(self) bool {
-        return unsafe { libc::feof(self.f) != 0 };
+        return unsafe { libc.feof(self.f) != 0 };
     }
 
     /// Closes the current file.
@@ -89,8 +89,8 @@ pub class File {
             return;
         }
         unsafe {
-            _ = libc::fflush(self.f);
-            _ = libc::fclose(self.f);
+            _ = libc.fflush(self.f);
+            _ = libc.fclose(self.f);
         }
         self.is_opened = false;
     }

@@ -535,6 +535,28 @@ class Resolver:
                         f"cannot find type `{typ.expr.name}` in this scope",
                         typ.expr.pos
                     )
+            elif isinstance(typ.expr, ast.SelectorExpr):
+                self.resolve_selector_expr(typ.expr)
+                if not typ.expr.not_found:
+                    if typ.expr.field_sym.kind == sym.TypeKind.Placeholder:
+                        report.error(
+                            f"cannot find type `{typ.expr.field_sym.name}`",
+                            typ.expr.pos
+                        )
+                    elif isinstance(typ.expr.field_sym, sym.Type):
+                        pos = typ.expr.pos
+                        typ.resolve(typ.expr.field_sym)
+                        if typ.expr.field_sym.kind == sym.TypeKind.Alias: # unalias
+                            if self.resolve_type(
+                                typ.expr.field_sym.info.parent
+                            ):
+                                typ.unalias()
+                        return True
+                    else:
+                        report.error(
+                            f"expected type, found {typ.expr.field_sym.typeof()}",
+                            typ.expr.pos
+                        )
             elif isinstance(typ.expr, ast.PathExpr):
                 self.resolve_path_expr(typ.expr)
                 if not typ.expr.not_found:
@@ -610,6 +632,16 @@ class Resolver:
                 report.error(
                     f"cannot find `{expr.name}` in this scope", expr.pos
                 )
+        elif isinstance(expr, ast.SelectorExpr):
+            self.resolve_selector_expr(expr)
+            if not expr.not_found:
+                if isinstance(expr.field_sym, sym.Const):
+                    if expr.field_sym.has_evaled_expr:
+                        return expr.field_sym.evaled_expr
+                    if evaled_expr := self.eval_size(expr.field_sym.expr):
+                        expr.field_sym.evaled_expr = evaled_expr
+                        expr.field_sym.has_evaled_expr = True
+                        return expr.field_sym.evaled_expr
         elif isinstance(expr, ast.PathExpr):
             self.resolve_path_expr(expr)
             if not expr.not_found:

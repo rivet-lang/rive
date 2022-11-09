@@ -9,9 +9,9 @@ import "../process";
 /// Returns the number of virtual CPU cores found on the system.
 pub fn nr_cpus() i32 {
 #if _LINUX_
-    return unsafe { libc::get_nprocs() };
+    return unsafe { libc.get_nprocs() };
 #else
-    process::panic("`nr_cpus` only works on linux (for now)");
+    process.panic("`nr_cpus` only works on linux (for now)");
 #endif
 }
 

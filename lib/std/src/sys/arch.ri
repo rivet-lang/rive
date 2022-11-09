@@ -24,6 +24,6 @@ pub fn arch() Arch {
 #elif _AMD64_
     return .Amd64;
 #else
-    process::panic("unknown host architecture");
+    process.panic("unknown host architecture");
 #endif
 }
