@@ -36,7 +36,7 @@ language with a clear and simple syntax and a low learning curve.
 import "std/console";
 
 fn main() {
-    console::println("Hello World!");
+    console.println("Hello World!");
 }
 ```
 <sub>More samples in the [`samples/`](samples/) folder</sub>

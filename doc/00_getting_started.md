@@ -44,7 +44,7 @@ We create a file called `hello_world.ri` with the following content:
 import "std/console";
 
 fn main() {
-    console::println("Hello World!");
+    console.println("Hello World!");
 }
 ```
 
