@@ -411,6 +411,8 @@ class Codegen:
             self.cur_fn_defer_stmts = decl.defer_stmts
             self.gen_stmts(decl.stmts)
             self.gen_defer_stmts()
+            if str(fn_decl.ret_typ)=="_R7Result__R4void":
+                self.cur_fn.add_ret(self.result_void(decl.ret_typ))
             if decl.is_extern and not decl.has_body:
                 self.out_rir.externs.append(fn_decl)
             else:

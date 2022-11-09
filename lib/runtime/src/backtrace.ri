@@ -2,6 +2,18 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+pub fn bt_print(frames_to_skip: i32 = 0) {
+#if !_RELEASE_
+    unsafe {
+        let mut data = BacktraceData();
+        _ = backtrace_full(
+            state, frames_to_skip, bt_print_callback, bt_error_handler,
+            addr_of_mut!(data)
+        );
+    }
+#endif
+}
+
 #if !_RELEASE_ // skip backtrace in release mode
 
 #![c_compile("lib/thirdparty/libbacktrace/backtrace.c")]
@@ -38,7 +50,7 @@ fn bt_print_callback(
 ) i32 {
     unsafe {
         if let safe_fn_ptr = fn_ptr {
-            if libc.memcmp(safe_fn_ptr, c"_R4core10rivet_mainF", 20) == 0 {
+            if libc.memcmp(safe_fn_ptr, c"_R7runtime4mainF", 16) == 0 {
                 return -1; // stop backtracing
             }
         }
@@ -73,16 +85,39 @@ fn bt_error_handler(data: *mut void, msg_ptr: ?*mut u8, errnum: i32) {
         }
     }
 }
-#endif
 
-pub fn bt_print(frames_to_skip: i32 = 0) {
-#if !_RELEASE_
-    unsafe {
-        let mut data = BacktraceData();
-        _ = backtrace_full(
-            state, frames_to_skip, bt_print_callback, bt_error_handler,
-            addr_of_mut!(data)
-        );
+fn demangle_symbol(name: string) string {
+    if !name.starts_with("_R") {
+        return name;
     }
-#endif
+
+    let name_ptr = unsafe { name.ptr };
+    let mut idx: usize = 2;
+    let mut buf = StaticBuffer();
+    let mut res = StringBuilder.new(name.len);
+    while idx < name.len {
+        let byte = unsafe { name_ptr[idx] };
+        if byte.is_digit() {
+            buf.push(byte);
+            idx += 1;
+            continue;
+        }
+
+        if !res.is_empty() {
+            res.write_string(".");
+        }
+
+        for _ in 0..as(usize, buf.as_u64()) {
+            res.write_byte(unsafe { name_ptr[idx] });
+            idx += 1;
+        }
+
+        buf.clear();
+
+        if !unsafe { name_ptr[idx] }.is_digit() {
+            break; // end
+        }
+    }
+    return res.to_string();
 }
+#endif
