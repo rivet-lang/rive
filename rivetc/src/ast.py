@@ -371,7 +371,7 @@ class Ident:
         self.is_obj = False
         self.is_sym = False
         self.is_comptime = is_comptime
-        self.not_found=False
+        self.not_found = False
         self.scope = scope
         self.pos = pos
         self.typ = None

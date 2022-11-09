@@ -1165,7 +1165,7 @@ class Parser:
             return self.comp.nil_t
         elif self.tok.kind == Kind.Name:
             prev_tok_kind = self.prev_tok.kind
-            expr=self.parse_ident()
+            expr = self.parse_ident()
             if self.accept(Kind.Dot):
                 return type.Type.unresolved(self.parse_selector_expr(expr))
             # normal type

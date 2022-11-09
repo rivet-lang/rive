@@ -742,8 +742,9 @@ class Checker:
             expr.typ = self.comp.void_t
 
             expr_left = expr.left
-            if isinstance(expr_left, ast.ParExpr
-                          ) and isinstance(expr_left.expr, ast.SelectorExpr) and not expr_left.expr.is_symbol_access:
+            if isinstance(expr_left, ast.ParExpr) and isinstance(
+                expr_left.expr, ast.SelectorExpr
+            ) and not expr_left.expr.is_symbol_access:
                 expr_left = expr_left.expr
                 inside_parens = True
 
@@ -800,7 +801,9 @@ class Checker:
                             if m.is_method:
                                 expr.sym = m
                                 m.self_typ = type.Type(left_sym)
-                                if isinstance(expr_left.left_typ, type.Optional):
+                                if isinstance(
+                                    expr_left.left_typ, type.Optional
+                                ):
                                     report.error(
                                         "optional value cannot be called directly",
                                         expr_left.field_pos
@@ -1023,7 +1026,9 @@ class Checker:
                             f"invalid indirect for `{left_typ}`", expr.field_pos
                         )
                     elif left_typ.typ == self.comp.void_t:
-                        report.error("invalid indirect for `*void`", expr.field_pos)
+                        report.error(
+                            "invalid indirect for `*void`", expr.field_pos
+                        )
                         report.help(
                             "consider casting this to another pointer type, e.g. `*u8`"
                         )

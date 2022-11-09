@@ -192,7 +192,7 @@ class Compiler:
                 names = abspath[mod_basedir.rfind("/") + 1:].split("/")
                 if mod_basedir.endswith("src/"):
                     full_name = (".".join([names[0],
-                                            *names[2:]])).replace("/", ".")
+                                           *names[2:]])).replace("/", ".")
                 else:
                     full_name = ".".join(names)
             os.chdir(old_wd)
