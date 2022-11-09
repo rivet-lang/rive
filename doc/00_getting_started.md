@@ -41,8 +41,10 @@ Let's start with the typical `Hello World!`:
 
 We create a file called `hello_world.ri` with the following content:
 ```rs
-fn main() void {
-    Console::println("Hello World!");
+import "std/console";
+
+fn main() {
+    console::println("Hello World!");
 }
 ```
 

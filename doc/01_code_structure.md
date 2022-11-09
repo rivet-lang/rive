@@ -15,7 +15,7 @@ code.
 
 In Rivet, the entry point of a program is a function named `main`.
 ```rust
-fn main() void {
+fn main() {
     // code goes here
 }
 ```
@@ -24,9 +24,7 @@ fn main() void {
 
 On the top level only declarations are allowed.
 ```rust
-use pkg::foo;
-
-mod Foo { /* ... */ }
+import "module" { import_list, ... };
 
 const Foo: i32 = 0;
 
@@ -44,7 +42,7 @@ extend Foo { /* ... */ }
 
 fn foo() { /* ... */ }
 
-test "test name =D" { /* ... */ }
+test "Foo" { /* ... */ }
 ```
 
 * * *

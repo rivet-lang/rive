@@ -30,22 +30,22 @@ fn f1() i32 {
 }
 
 // `f2` takes an argument of type `i32` and prints it to the console.
-fn f2(a: i32) void {
+fn f2(a: i32) {
 	println("a: {}", a);
 }
 
 // `f3` takes no arguments and returns void.
-fn f3() void { }
+fn f3() { }
 ```
 
 A function body is made up of 1 or more statements and can be empty.
 
 ```rust
-fn x() void {
+fn x() {
 	/* empty body */
 }
 
-fn y() void {
+fn y() {
 	let my_var = 1; // statement
 }
 ```
@@ -64,7 +64,7 @@ So, if we have a function called `f5` with a default value argument,
 we can call it in 3 ways:
 
 ```rust
-fn f5(arg1: i32 = 5) void {
+fn f5(arg1: i32 = 5) {
 	println("arg1: {}", arg1);
 }
 

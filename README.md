@@ -33,8 +33,10 @@ language with a clear and simple syntax and a low learning curve.
 ```rs
 // A simple sample: the classic "Hello World"
 
-fn main() void {
-    Console::println("Hello World!");
+import "std/console";
+
+fn main() {
+    console::println("Hello World!");
 }
 ```
 <sub>More samples in the [`samples/`](samples/) folder</sub>
