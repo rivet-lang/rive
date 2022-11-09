@@ -369,7 +369,9 @@ class Ident:
         self.obj = None
         self.sym = None
         self.is_obj = False
+        self.is_sym = False
         self.is_comptime = is_comptime
+        self.not_found=False
         self.scope = scope
         self.pos = pos
         self.typ = None
@@ -757,12 +759,16 @@ class SelectorExpr:
         is_nilcheck = False
     ):
         self.left = left
+        self.left_sym = None
+        self.left_typ = None
         self.field_name = field_name
         self.field_is_mut = False
         self.field_pos = field_pos
-        self.left_typ = None
+        self.field_sym = None
         self.is_indirect = is_indirect
         self.is_nilcheck = is_nilcheck
+        self.is_symbol_access = False
+        self.not_found = False
         self.pos = pos
         self.typ = None
 
@@ -785,7 +791,7 @@ class PathExpr:
         self.field_info = None
         self.field_pos = field_pos
         self.is_last = False
-        self.has_error = False
+        self.not_found = False
         self.pos = pos
         self.typ = None
 

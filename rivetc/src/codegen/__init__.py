@@ -1258,6 +1258,28 @@ class Codegen:
                         return tmp2
                 return ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
         elif isinstance(expr, ast.SelectorExpr):
+            if expr.is_symbol_access:
+                if isinstance(expr.field_sym, sym.Const):
+                    return self.gen_const(expr.field_sym)
+                elif isinstance(
+                    expr.left_sym, sym.Type
+                ) and expr.left_sym.kind == TypeKind.Enum:
+                    if v := expr.left_sym.info.get_value(expr.field_name):
+                        return ir.IntLit(
+                            self.ir_type(expr.left_sym.info.underlying_typ),
+                            str(v.value)
+                        )
+                elif isinstance(expr.left_sym, sym.Fn):
+                    return ir.Ident(
+                        self.ir_type(expr.typ), mangle_symbol(expr.left_sym)
+                    )
+                elif isinstance(
+                    expr.field_sym, sym.Var
+                ) and expr.field_sym.is_extern and expr.field_sym.abi!=sym.ABI.Rivet:
+                    return ir.Ident(self.ir_type(expr.typ), expr.field_sym.name)
+                return ir.Ident(
+                    self.ir_type(expr.typ), mangle_symbol(expr.field_sym)
+                )
             left_sym = expr.left_typ.symbol()
             left = self.gen_expr_with_cast(expr.left_typ, expr.left)
             ir_left_typ = self.ir_type(expr.left.typ)

@@ -261,7 +261,7 @@ class Resolver:
             if expr.has_end:
                 self.resolve_expr(expr.end)
         elif isinstance(expr, ast.SelectorExpr):
-            self.resolve_expr(expr.left)
+            self.resolve_selector_expr(expr)
         elif isinstance(expr, ast.PathExpr):
             self.resolve_path_expr(expr)
         elif isinstance(expr, ast.ReturnExpr):
@@ -321,28 +321,62 @@ class Resolver:
             return
         elif ident.name == "string":
             ident.sym = self.comp.string_t.sym
+            ident.is_sym = True
         elif obj := ident.scope.lookup(ident.name):
-            ident.is_obj = True
             ident.obj = obj
             ident.typ = obj.typ
+            ident.is_obj = True
         elif s := self.find_prelude(ident.name):
             ident.sym = s
+            ident.is_sym = True
         elif s := self.sym.find(ident.name):
             if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
                 report.error(
                     f"cannot find `{ident.name}` in this scope", ident.pos
                 )
+                ident.not_found = True
             ident.sym = s
+            ident.is_sym = True
         elif s := self.source_file.find_imported_symbol(ident.name):
             if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
                 report.error(
                     f"cannot find `{ident.name}` in this scope", ident.pos
                 )
+                ident.not_found = True
             ident.sym = s
+            ident.is_sym = True
         else:
             report.error(f"cannot find `{ident.name}` in this scope", ident.pos)
+            ident.not_found = True
         if isinstance(ident.sym, sym.SymRef):
             ident.sym = ident.sym.ref
+
+    def resolve_selector_expr(self, expr):
+        self.resolve_expr(expr.left)
+        if not (expr.is_indirect or expr.is_nilcheck):
+            if isinstance(expr.left,ast.Ident) and expr.left.is_sym:
+                if isinstance(expr.left.sym, (sym.Var, sym.Const)):
+                    return
+                expr.is_symbol_access=True
+                if expr.left.not_found:
+                    expr.not_found = True
+                    return
+                expr.left_sym=expr.left.sym
+            elif isinstance(expr.left, ast.SelectorExpr) and expr.left.is_symbol_access:
+                if isinstance(expr.left.field_sym, (sym.Var, sym.Const)):
+                    return
+                expr.is_symbol_access = True
+                if expr.left.not_found:
+                    expr.not_found = True
+                    return
+                expr.left_sym=expr.left.field_sym
+            if expr.is_symbol_access:
+                if field_sym := self.find_symbol(
+                    expr.left_sym, expr.field_name, expr.field_pos
+                ):
+                    expr.field_sym = field_sym
+                else:
+                    expr.not_found = True
 
     def resolve_path_expr(self, path):
         if path.is_global:
@@ -352,7 +386,7 @@ class Resolver:
             ):
                 path.field_info = field_info
             else:
-                path.has_error = True
+                path.not_found = True
         elif isinstance(path.left, ast.Ident):
             if local_sym := self.source_file.sym.find(path.left.name):
                 path.left_info = local_sym
@@ -361,7 +395,7 @@ class Resolver:
                 ):
                     path.field_info = field_info
                 else:
-                    path.has_error = True
+                    path.not_found = True
             elif prelude_sym := self.find_prelude(path.left.name):
                 path.left_info = prelude_sym
                 if field_info := self.find_symbol(
@@ -369,7 +403,7 @@ class Resolver:
                 ):
                     path.field_info = field_info
                 else:
-                    path.has_error = True
+                    path.not_found = True
             elif imported_sym := self.source_file.find_imported_symbol(
                 path.left.name
             ):
@@ -379,7 +413,7 @@ class Resolver:
                 ):
                     path.field_info = field_info
                 else:
-                    path.has_error = True
+                    path.not_found = True
             elif module := self.comp.universe.find(path.left.name):
                 path.left_info = module
                 if field_info := self.find_symbol(
@@ -387,23 +421,23 @@ class Resolver:
                 ):
                     path.field_info = field_info
                 else:
-                    path.has_error = True
+                    path.not_found = True
             else:
                 report.error(
                     f"use of undeclared module `{path.left.name}`",
                     path.left.pos
                 )
-                path.has_error = True
+                path.not_found = True
         elif isinstance(path.left, ast.PathExpr):
             self.resolve_expr(path.left)
-            if not path.left.has_error:
+            if not path.left.not_found:
                 path.left_info = path.left.field_info
                 if field_info := self.find_symbol(
                     path.left.field_info, path.field_name, path.field_pos
                 ):
                     path.field_info = field_info
                 else:
-                    path.has_error = True
+                    path.not_found = True
         elif isinstance(path.left, ast.SelfTyExpr):
             if self.self_sym != None:
                 path.left_info = self.self_sym
@@ -412,12 +446,12 @@ class Resolver:
                 ):
                     path.field_info = field_info
                 else:
-                    path.has_error = True
+                    path.not_found = True
             else:
                 report.error("cannot resolve `Self`", path.left.pos)
         else:
             report.error("bad use of path expression", path.pos)
-            path.has_error = True
+            path.not_found = True
 
     def resolve_type(self, typ):
         if isinstance(typ, type.Ref):
@@ -497,7 +531,7 @@ class Resolver:
                     )
             elif isinstance(typ.expr, ast.PathExpr):
                 self.resolve_path_expr(typ.expr)
-                if not typ.expr.has_error:
+                if not typ.expr.not_found:
                     if typ.expr.field_info.kind == sym.TypeKind.Placeholder:
                         report.error(
                             f"cannot find type `{typ.expr.field_info.name}`",
@@ -572,7 +606,7 @@ class Resolver:
                 )
         elif isinstance(expr, ast.PathExpr):
             self.resolve_path_expr(expr)
-            if not expr.has_error:
+            if not expr.not_found:
                 if isinstance(expr.field_info, sym.Const):
                     if expr.field_info.has_evaled_expr:
                         return expr.field_info.evaled_expr

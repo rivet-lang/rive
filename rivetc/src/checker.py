@@ -743,7 +743,7 @@ class Checker:
 
             expr_left = expr.left
             if isinstance(expr_left, ast.ParExpr
-                          ) and isinstance(expr_left.expr, ast.SelectorExpr):
+                          ) and isinstance(expr_left.expr, ast.SelectorExpr) and not expr_left.expr.is_symbol_access:
                 expr_left = expr_left.expr
                 inside_parens = True
 
@@ -777,70 +777,86 @@ class Checker:
                             expr_left.pos
                         )
             elif isinstance(expr_left, ast.SelectorExpr):
-                expr_left.left_typ = self.check_expr(expr_left.left)
-                left_sym = expr_left.left_typ.symbol()
-                if m := left_sym.find(expr_left.field_name):
-                    if isinstance(m, sym.Fn):
-                        if m.is_method:
-                            expr.sym = m
-                            m.self_typ = type.Type(left_sym)
-                            if isinstance(expr_left.left_typ, type.Optional):
+                if expr_left.is_symbol_access:
+                    if isinstance(expr_left.field_sym, sym.Fn):
+                        expr.sym = expr_left.field_sym
+                        self.check_call(expr.sym, expr)
+                    elif isinstance(expr_left.field_sym,
+                                    sym.Type) and expr_left.field_sym.kind in (
+                                        TypeKind.Trait, TypeKind.Class,
+                                        TypeKind.Struct
+                                    ):
+                        self.check_ctor(expr_left.field_sym, expr)
+                    else:
+                        report.error(
+                            f"expected function, found {expr_left.field_sym.typeof()}",
+                            expr.pos
+                        )
+                else:
+                    expr_left.left_typ = self.check_expr(expr_left.left)
+                    left_sym = expr_left.left_typ.symbol()
+                    if m := left_sym.find(expr_left.field_name):
+                        if isinstance(m, sym.Fn):
+                            if m.is_method:
+                                expr.sym = m
+                                m.self_typ = type.Type(left_sym)
+                                if isinstance(expr_left.left_typ, type.Optional):
+                                    report.error(
+                                        "optional value cannot be called directly",
+                                        expr_left.field_pos
+                                    )
+                                    report.help(
+                                        "use the nil-check syntax: `foo.?.method()`"
+                                    )
+                                    report.help(
+                                        "or use `orelse`: `(foo orelse 5).method()`"
+                                    )
+                                elif isinstance(expr_left.left_typ, type.Ptr):
+                                    report.error(
+                                        "unexpected pointer type as receiver",
+                                        expr.pos
+                                    )
+                                    report.help(
+                                        "consider dereferencing this pointer"
+                                    )
+                                else:
+                                    self.check_call(m, expr)
+                            else:
                                 report.error(
-                                    "optional value cannot be called directly",
+                                    f"`{expr_left.field_name}` is not a method",
+                                    expr_left.field_pos
+                                )
+                        else:
+                            report.error(
+                                f"expected method, found {m.typeof()}",
+                                expr_left.field_pos
+                            )
+                    elif f := left_sym.find_field(expr_left.field_name):
+                        if isinstance(f.typ, type.Fn):
+                            if inside_parens:
+                                expr.sym = f.typ.info()
+                                expr.is_closure = True
+                                expr.left.typ = f.typ
+                                expr_left.typ = f.typ
+                                self.check_call(expr.sym, expr)
+                            else:
+                                report.error(
+                                    f"type `{left_sym.name}` has no method `{expr_left.field_name}`",
                                     expr_left.field_pos
                                 )
                                 report.help(
-                                    "use the nil-check syntax: `foo.?.method()`"
+                                    f"to call the function stored in `{expr_left.field_name}`, surround the field access with parentheses"
                                 )
-                                report.help(
-                                    "or use `orelse`: `(foo orelse 5).method()`"
-                                )
-                            elif isinstance(expr_left.left_typ, type.Ptr):
-                                report.error(
-                                    "unexpected pointer type as receiver",
-                                    expr.pos
-                                )
-                                report.help(
-                                    "consider dereferencing this pointer"
-                                )
-                            else:
-                                self.check_call(m, expr)
                         else:
                             report.error(
-                                f"`{expr_left.field_name}` is not a method",
+                                f"field `{expr_left.field_name}` of type `{left_sym.name}` is not function type",
                                 expr_left.field_pos
                             )
                     else:
                         report.error(
-                            f"expected method, found {m.typeof()}",
+                            f"type `{left_sym.name}` has no method `{expr_left.field_name}`",
                             expr_left.field_pos
                         )
-                elif f := left_sym.find_field(expr_left.field_name):
-                    if isinstance(f.typ, type.Fn):
-                        if inside_parens:
-                            expr.sym = f.typ.info()
-                            expr.is_closure = True
-                            expr.left.typ = f.typ
-                            expr_left.typ = f.typ
-                            self.check_call(expr.sym, expr)
-                        else:
-                            report.error(
-                                f"type `{left_sym.name}` has no method `{expr_left.field_name}`",
-                                expr_left.field_pos
-                            )
-                            report.help(
-                                f"to call the function stored in `{expr_left.field_name}`, surround the field access with parentheses"
-                            )
-                    else:
-                        report.error(
-                            f"field `{expr_left.field_name}` of type `{left_sym.name}` is not function type",
-                            expr_left.field_pos
-                        )
-                else:
-                    report.error(
-                        f"type `{left_sym.name}` has no method `{expr_left.field_name}`",
-                        expr_left.field_pos
-                    )
             elif isinstance(expr_left, ast.PathExpr):
                 if isinstance(expr_left.field_info, sym.Fn):
                     expr.sym = expr_left.field_info
@@ -962,100 +978,137 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.SelectorExpr):
             expr.typ = self.comp.void_t
-            left_typ = self.check_expr(expr.left)
-            expr.left_typ = left_typ
-            if expr.is_nilcheck:
-                if not isinstance(left_typ, type.Optional):
-                    report.error(
-                        "cannot check a non-optional value", expr.field_pos
-                    )
-                else:
-                    expr.typ = left_typ.typ
-            elif expr.is_indirect:
-                if not (
-                    isinstance(left_typ, type.Ptr)
-                    or isinstance(left_typ, type.Ref)
-                ):
-                    report.error(
-                        f"invalid indirect for `{left_typ}`", expr.field_pos
-                    )
-                elif isinstance(left_typ, type.Ptr) and not self.inside_unsafe:
-                    report.error(
-                        "dereference of pointer is unsafe and requires `unsafe` block",
-                        expr.pos
-                    )
-                elif left_typ.typ == self.comp.void_t:
-                    report.error("invalid indirect for `*void`", expr.field_pos)
-                    report.help(
-                        "consider casting this to another pointer type, e.g. `*u8`"
-                    )
-                else:
-                    expr.field_is_mut = left_typ.is_mut
-                    expr.typ = left_typ.typ
-            else:
-                left_sym = left_typ.symbol()
-                if isinstance(left_typ, type.Optional):
-                    report.error(
-                        "fields of an optional value cannot be accessed directly",
-                        expr.pos
-                    )
-                    report.help("handle it with `.?` or `orelse`")
-                elif left_sym.kind == TypeKind.Array and expr.field_name == "len":
-                    expr.typ = self.comp.usize_t
-                elif left_sym.kind == TypeKind.Tuple and expr.field_name.isdigit(
-                ):
-                    idx = int(expr.field_name)
-                    if idx < len(left_sym.info.types):
-                        expr.typ = left_sym.info.types[idx]
-                    else:
+            if expr.is_symbol_access:
+                if isinstance(expr.field_sym, sym.Fn):
+                    if expr.field_sym.is_method:
                         report.error(
-                            f"type `{left_sym.name}` has no field `{expr.field_name}`",
-                            expr.pos
-                        )
-                elif field := left_sym.find_field(expr.field_name):
-                    if (not field.vis.is_pub()
-                        ) and not self.sym.has_access_to(left_sym):
-                        report.error(
-                            f"field `{expr.field_name}` of type `{left_sym.name}` is private",
+                            f"cannot take value of method `{expr.field_name}`",
                             expr.field_pos
                         )
-                    expr.typ = field.typ
-                    expr.field_is_mut = field.is_mut
-                elif decl := left_sym.find(expr.field_name):
-                    if isinstance(decl, sym.Fn):
-                        if decl.is_method:
+                    expr.typ = expr.field_sym.typ()
+                elif isinstance(expr.left_sym, sym.Type):
+                    expr.typ = type.Type(expr.left_sym)
+                elif isinstance(expr.field_sym, sym.Type):
+                    expr.typ = type.Type(expr.field_sym)
+                elif isinstance(expr.field_sym, sym.Const):
+                    expr.typ = expr.field_sym.typ
+                elif isinstance(expr.field_sym, sym.Var):
+                    if (
+                        expr.field_sym.is_mut or (
+                            expr.field_sym.is_extern
+                            and expr.field_sym.abi != sym.ABI.Rivet
+                        )
+                    ) and not self.inside_unsafe:
+                        if expr.field_sym.is_extern:
                             report.error(
-                                f"cannot take value of method `{expr.field_name}`",
-                                expr.field_pos
-                            )
-                            report.help(
-                                f"use parentheses to call the method: `{expr}()`"
+                                "use of external objects is unsafe and requires `unsafe` block",
+                                expr.pos
                             )
                         else:
                             report.error(
-                                f"cannot take value of associated function `{expr.field_name}` from value",
-                                expr.field_pos
+                                "use of mutable module variables is unsafe and requires `unsafe` block",
+                                expr.pos
                             )
-                            report.help(
-                                f"use `{left_sym.name}::{expr.field_name}` instead"
+                            report.note(
+                                "mutable module variables can be mutated by multiple threads: "
+                                "aliasing violations or data races will cause undefined behavior"
                             )
-                            expr.typ = decl.typ()
-                    else:
-                        report.error(
-                            f"cannot take value of {decl.typeof()} `{left_sym.name}::{expr.field_name}`",
-                            expr.field_pos
-                        )
+                    expr.typ = expr.field_sym.typ
                 else:
                     report.error(
-                        f"type `{left_sym.name}` has no field `{expr.field_name}`",
-                        expr.field_pos
+                        "unexpected bug for selector expression", expr.field_pos
                     )
-                    if expr.field_name.isdigit():
-                        if left_sym.kind in (TypeKind.Array, TypeKind.Vec):
-                            report.note(
-                                f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
+                    report.note("please report this bug, thanks =D")
+            else:
+                left_typ = self.check_expr(expr.left)
+                expr.left_typ = left_typ
+                if expr.is_nilcheck:
+                    if not isinstance(left_typ, type.Optional):
+                        report.error(
+                            "cannot check a non-optional value", expr.field_pos
+                        )
+                    else:
+                        expr.typ = left_typ.typ
+                elif expr.is_indirect:
+                    if not (
+                        isinstance(left_typ, type.Ptr)
+                        or isinstance(left_typ, type.Ref)
+                    ):
+                        report.error(
+                            f"invalid indirect for `{left_typ}`", expr.field_pos
+                        )
+                    elif left_typ.typ == self.comp.void_t:
+                        report.error("invalid indirect for `*void`", expr.field_pos)
+                        report.help(
+                            "consider casting this to another pointer type, e.g. `*u8`"
+                        )
+                    else:
+                        expr.field_is_mut = left_typ.is_mut
+                        expr.typ = left_typ.typ
+                else:
+                    left_sym = left_typ.symbol()
+                    if isinstance(left_typ, type.Optional):
+                        report.error(
+                            "fields of an optional value cannot be accessed directly",
+                            expr.pos
+                        )
+                        report.help("handle it with `.?` or `orelse`")
+                    elif left_sym.kind == TypeKind.Array and expr.field_name == "len":
+                        expr.typ = self.comp.usize_t
+                    elif left_sym.kind == TypeKind.Tuple and expr.field_name.isdigit(
+                    ):
+                        idx = int(expr.field_name)
+                        if idx < len(left_sym.info.types):
+                            expr.typ = left_sym.info.types[idx]
+                        else:
+                            report.error(
+                                f"type `{left_sym.name}` has no field `{expr.field_name}`",
+                                expr.pos
                             )
-            expr.left_typ = left_typ
+                    elif field := left_sym.find_field(expr.field_name):
+                        if (not field.vis.is_pub()
+                            ) and not self.sym.has_access_to(left_sym):
+                            report.error(
+                                f"field `{expr.field_name}` of type `{left_sym.name}` is private",
+                                expr.field_pos
+                            )
+                        expr.typ = field.typ
+                        expr.field_is_mut = field.is_mut
+                    elif decl := left_sym.find(expr.field_name):
+                        if isinstance(decl, sym.Fn):
+                            if decl.is_method:
+                                report.error(
+                                    f"cannot take value of method `{expr.field_name}`",
+                                    expr.field_pos
+                                )
+                                report.help(
+                                    f"use parentheses to call the method: `{expr}()`"
+                                )
+                            else:
+                                report.error(
+                                    f"cannot take value of associated function `{expr.field_name}` from value",
+                                    expr.field_pos
+                                )
+                                report.help(
+                                    f"use `{left_sym.name}::{expr.field_name}` instead"
+                                )
+                                expr.typ = decl.typ()
+                        else:
+                            report.error(
+                                f"cannot take value of {decl.typeof()} `{left_sym.name}::{expr.field_name}`",
+                                expr.field_pos
+                            )
+                    else:
+                        report.error(
+                            f"type `{left_sym.name}` has no field `{expr.field_name}`",
+                            expr.field_pos
+                        )
+                        if expr.field_name.isdigit():
+                            if left_sym.kind in (TypeKind.Array, TypeKind.Vec):
+                                report.note(
+                                    f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
+                                )
+                expr.left_typ = left_typ
             return expr.typ
         elif isinstance(expr, ast.PathExpr):
             expr.typ = self.comp.void_t

@@ -193,7 +193,7 @@ class Sym:
         elif isinstance(self, Const):
             return "constant"
         elif isinstance(self, Var):
-            return "var"
+            return "variable"
         elif isinstance(self, Type):
             return "type"
         elif isinstance(self, Fn):
