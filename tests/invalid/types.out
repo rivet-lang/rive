@@ -1,12 +1,8 @@
-tests/invalid/types.ri:9:9: error: pointers cannot be optional
-  9 |     f2: ?*u8;
+tests/invalid/types.ri:9:9: error: tuples can have a maximum of 8 types
+  9 |     f2: (i32, i32, i32, i32, i32, i32, i32, i32, i32);
     |         ^
-    = note: by default pointers can contain the value `nil`
-tests/invalid/types.ri:11:9: error: tuples can have a maximum of 8 types
-  11 |     f3: (i32, i32, i32, i32, i32, i32, i32, i32, i32);
+    = help: you can use a struct instead
+tests/invalid/types.ri:14:9: error: expected type, found token `=`
+  14 |     f5: =;
      |         ^
-     = help: you can use a struct instead
-tests/invalid/types.ri:16:9: error: expected type, found token `=`
-  16 |     f6: =;
-     |         ^
-rivetc: error: could not compile module `types`, aborting due to 3 previous errors
+rivetc: error: could not compile module `types`, aborting due to 2 previous errors

@@ -10,13 +10,13 @@ import "libc";
 
 struct backtrace_state;
 
-type BacktraceErrorCB = fn(*mut void, *mut u8, i32);
-type BacktraceFullCB = fn(*mut void, i32, *mut u8, i32, *mut u8) i32;
+type BacktraceErrorCB = fn(*mut void, ?*mut u8, i32);
+type BacktraceFullCB = fn(*mut void, i32, ?*mut u8, i32, ?*mut u8) i32;
 
 extern (C) {
     fn backtrace_create_state(
         filename: *u8, threaded: i32, error_cb: BacktraceErrorCB,
-        data: *mut void
+        data: ?*mut void
     ) *mut backtrace_state;
 
     fn backtrace_full(
@@ -34,31 +34,30 @@ struct BacktraceData {
 }
 
 fn bt_print_callback(
-    data: *mut void, pc: i32, filename_ptr: *mut u8, lineno: i32, fn_ptr: *mut u8
+    data: *mut void, pc: i32, filename_ptr: ?*mut u8, lineno: i32, fn_ptr: ?*mut u8
 ) i32 {
     unsafe {
-        if fn_ptr != nil and libc::memcmp(fn_ptr, c"_R4core10rivet_mainF", 20) == 0 {
-            return 1; // stop backtracing
+        if let safe_fn_ptr = fn_ptr {
+            if libc::memcmp(safe_fn_ptr, c"_R4core10rivet_mainF", 20) == 0 {
+                return -1; // stop backtracing
+            }
         }
-
         let file_name = if filename_ptr == nil {
             "???"
         } else {
             string::from_raw(filename_ptr)
         };
-
         let fn_name = if fn_ptr == nil {
-            "??"
+            "???"
         } else {
             demangle_symbol(string::from_raw(fn_ptr))
         };
-
         console_eprintln("   at {} ({}:{})", fn_name, file_name, lineno);
     }
     return 0;
 }
 
-fn bt_error_handler(data: *mut void, msg_ptr: *mut u8, errnum: i32) {
+fn bt_error_handler(data: *mut void, msg_ptr: ?*mut u8, errnum: i32) {
     unsafe {
         let bdata = as(*mut BacktraceData, data);
         if !bdata.has_error {

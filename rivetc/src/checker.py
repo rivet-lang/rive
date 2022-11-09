@@ -325,10 +325,6 @@ class Checker:
                 expr.typ = expr.sym.typ
             else:
                 expr.typ = self.comp.void_t
-            if isinstance(expr.typ, type.Ptr) and not self.inside_unsafe:
-                report.error(
-                    "pointers are usable only inside `unsafe` blocks", expr.pos
-                )
             return expr.typ
         elif isinstance(expr, ast.SelfExpr):
             return expr.typ
@@ -1060,10 +1056,6 @@ class Checker:
                                 f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                             )
             expr.left_typ = left_typ
-            if isinstance(expr.typ, type.Ptr) and not self.inside_unsafe:
-                report.error(
-                    "pointers are usable only inside `unsafe` blocks", expr.pos
-                )
             return expr.typ
         elif isinstance(expr, ast.PathExpr):
             expr.typ = self.comp.void_t
@@ -1426,11 +1418,7 @@ class Checker:
             if expected.typ == self.comp.void_t:
                 return True
             return expected.typ == got.typ
-        elif isinstance(expected, type.Ptr) and got == self.comp.nil_t:
-            return True # allow *[mut] T == nil
-        elif expected == self.comp.nil_t and (
-            isinstance(got, type.Optional) or isinstance(got, type.Ptr)
-        ):
+        elif expected == self.comp.nil_t and isinstance(got, type.Optional):
             return True
 
         if (isinstance(expected, type.Ref)

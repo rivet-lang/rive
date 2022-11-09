@@ -30,7 +30,7 @@ class Register:
                     if decl.vis.is_pub():
                         try:
                             self.sym.add(
-                                sym.SymRef(decl.vis, decl.alias, symbol)
+                                sym.SymRef(decl.vis, decl.alias, decl.mod_sym)
                             )
                         except utils.CompilerError as e:
                             report.error(e.args[0], decl.pos)

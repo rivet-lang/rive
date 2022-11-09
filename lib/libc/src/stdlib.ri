@@ -6,24 +6,24 @@ extern (C) {
     pub fn rand() i32;
     pub fn srand(seed: u32);
 
-    pub fn atof(nptr: *u8) f64;
-    pub fn atoi(nptr: *u8) i32;
-    pub fn atol(nptr: *u8) i64;
-    pub fn atoll(nptr: *u8) i64;
+    pub fn atof(nptr: ?*u8) f64;
+    pub fn atoi(nptr: ?*u8) i32;
+    pub fn atol(nptr: ?*u8) i64;
+    pub fn atoll(nptr: ?*u8) i64;
 
-    pub fn strtod(nptr: *u8, endptr: *u8, base_: i32) f64;
-    pub fn strtof(nptr: *u8, endptr: *u8, base_: i32) f32;
-    pub fn strtol(nptr: *u8, endptr: *u8, base_: i32) i64;
-    pub fn strtoll(nptr: *u8, endptr: *u8, base_: i32) i64;
-    pub fn strtoul(nptr: *u8, endptr: *u8, base_: i32) u64;
-    pub fn strtoull(nptr: *u8, endptr: *u8, base_: i32) u64;
+    pub fn strtod(nptr: *u8, endptr: ?*u8, base_: i32) f64;
+    pub fn strtof(nptr: *u8, endptr: ?*u8, base_: i32) f32;
+    pub fn strtol(nptr: *u8, endptr: ?*u8, base_: i32) i64;
+    pub fn strtoll(nptr: *u8, endptr: ?*u8, base_: i32) i64;
+    pub fn strtoul(nptr: *u8, endptr: ?*u8, base_: i32) u64;
+    pub fn strtoull(nptr: *u8, endptr: ?*u8, base_: i32) u64;
 
-    pub fn malloc(size: usize) *mut void;
-    pub fn calloc(nobj: usize, size: usize) *mut void;
-    pub fn realloc(p: *mut void, size: usize) *mut void;
+    pub fn malloc(size: usize) ?*mut void;
+    pub fn calloc(nobj: usize, size: usize) ?*mut void;
+    pub fn realloc(p: ?*mut void, size: usize) ?*mut void;
     pub fn free(p: *void);
 
-    pub fn getenv(name: *u8) *mut u8;
+    pub fn getenv(name: *u8) ?*mut u8;
     pub fn setenv(name: *u8, value: *u8, replace: bool) i32;
     pub fn unsetenv(name: *u8) i32;
 

@@ -12,33 +12,32 @@ pub class File {
     mut is_opened: bool;
 
     pub fn open(path: string, mode: string = "r") !File {
-		unsafe {
-			let f = libc::fopen(path.ptr, mode.ptr);
-			if f == nil {
-				return Error("File::open: failed to open file '{}'".fmt(path));
-			}
-			return Self(f, true);
+        unsafe {
+            if let f = libc::fopen(path.ptr, mode.ptr) {
+                return Self(f, true);
+            }
         }
+        return Error("File::open: failed to open file '{}'".fmt(path));
     }
 
-	/// Writes the string `s` into the file.
+    /// Writes the string `s` into the file.
     pub fn write(mut self, s: string) {
-		_ = unsafe { libc::fputs(s.ptr, self.f) };
+        _ = unsafe { libc::fputs(s.ptr, self.f) };
     }
 
-	/// Writes the string `s` into the file and appends a '\n' character.
-	pub fn writeln(mut self, s: string) {
-		self.write(s);
-		self.write("\n");
-	}
+    /// Writes the string `s` into the file and appends a '\n' character.
+    pub fn writeln(mut self, s: string) {
+        self.write(s);
+        self.write("\n");
+    }
 
     pub fn write_fmt(mut self, s: string, args: ...ToString) {
-		self.write(s.fmt(args));
+        self.write(s.fmt(args));
     }
 
     pub fn writeln_fmt(mut self, s: string, args: ...ToString) {
-		self.write(s.fmt(args));
-		self.write("\n");
+        self.write(s.fmt(args));
+        self.write("\n");
     }
 
     /// Returns the current file contents.

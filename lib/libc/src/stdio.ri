@@ -5,7 +5,7 @@
 pub struct FILE;
 
 extern (C) {
-    pub fn fopen(path: *u8, mode: *u8) *mut FILE;
+    pub fn fopen(path: *u8, mode: *u8) ?*mut FILE;
     pub fn feof(stream: *FILE) i32;
     pub fn ferror(stream: *FILE) i32;
     pub fn fseek(stream: *mut FILE, offset: u64, whence: i32) i32;
@@ -20,10 +20,10 @@ extern (C) {
     pub fn fileno(stream: *FILE) i32;
     pub fn rewind(stream: *mut FILE) void;
 
-	pub fn popen(cmd: *u8, modes: *u8) *mut FILE;
+	pub fn popen(cmd: *u8, modes: *u8) ?*mut FILE;
 	pub fn pclose(stream: *mut FILE) i32;
 
     pub fn putchar(s: i32) i32;
     pub fn printf(fmt: *u8, ...) i32;
-    pub fn asprintf(strp: **u8, fmt: *u8, ...) i32;
+    pub fn asprintf(strp: *?*u8, fmt: *u8, ...) i32;
 }

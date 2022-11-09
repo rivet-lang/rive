@@ -111,9 +111,7 @@ class Vec {
         unsafe {
             let new_size = cap * self.elem_size;
             let new_ptr = mem_alloc(new_size) catch unreachable!();
-            if self.ptr != nil {
-                mem_copy(new_ptr, self.ptr, self.len * self.elem_size);
-            }
+            mem_copy(new_ptr, self.ptr, self.len * self.elem_size);
             self.ptr = new_ptr;
         }
         self.cap = cap;

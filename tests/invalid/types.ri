@@ -6,14 +6,12 @@ extern (C) {
 struct St {
     f1: &i32; // FAIL
 
-    f2: ?*u8;
+    f2: (i32, i32, i32, i32, i32, i32, i32, i32, i32);
 
-    f3: (i32, i32, i32, i32, i32, i32, i32, i32, i32);
+    f3: void;
 
-    f4: void;
-
-    f5: pkg;
-    f6: =;
+    f4: pkg;
+    f5: =;
 }
 
 fn main() { }

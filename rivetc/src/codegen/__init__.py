@@ -584,19 +584,30 @@ class Codegen:
                             ]
                         )
                     else:
-                        cond = ir.Inst(
-                            ir.InstKind.BooleanNot, [
+                        if isinstance(stmt.cond.typ, (type.Ref, type.Ptr)):
+                            cond = ir.Inst(
+                                ir.InstKind.Cmp, [
+                                    ir.Name("!="),
+                                    gexpr, ir.NilLit(ir.Type("void").ptr())
+                                ]
+                            )
+                            self.cur_fn.try_alloca(
+                                self.ir_type(stmt.cond.expr.typ.typ), stmt.cond.vars[0], gexpr
+                            )
+                        else:
+                            cond = ir.Inst(
+                                ir.InstKind.BooleanNot, [
+                                    ir.Selector(
+                                        ir.Type("bool"), gexpr, ir.Name("is_nil")
+                                    )
+                                ]
+                            )
+                            self.cur_fn.try_alloca(
+                                stmt.cond.expr.typ.typ, stmt.cond.vars[0],
                                 ir.Selector(
-                                    ir.Type("bool"), gexpr, ir.Name("is_nil")
+                                    self.ir_type(stmt.cond.expr.typ.typ), gexpr, ir.Name("value")
                                 )
-                            ]
-                        )
-                    self.cur_fn.try_alloca(
-                        stmt.cond.expr.typ.typ, stmt.cond.vars[0],
-                        ir.Selector(
-                            stmt.cond.expr.typ.typ, gexpr, ir.Name("value")
-                        )
-                    )
+                            )
                     if stmt.cond.has_cond:
                         gcond = self.gen_expr_with_cast(
                             self.comp.bool_t, stmt.cond.cond
@@ -731,7 +742,7 @@ class Codegen:
 
         # wrap optional value
         if isinstance(expected_typ_, type.Optional
-                      ) and not isinstance(expected_typ_.typ, type.Ref):
+                      ) and not isinstance(expected_typ, ir.Pointer):
             if isinstance(res_expr, ir.NilLit):
                 res_expr = self.optional_nil(expected_typ_)
             elif not isinstance(res_expr, ir.Skip
@@ -1490,7 +1501,7 @@ class Codegen:
             if isinstance(expr_left_typ, type.Optional):
                 if expr.op in (
                     Kind.Eq, Kind.Ne
-                ) and not isinstance(expr_left_typ.typ, type.Ref):
+                ) and not isinstance(expr_left_typ.typ, (type.Ref, type.Ptr)):
                     left = self.gen_expr_with_cast(expr_left_typ, expr.left)
                     val = ir.Selector(ir.Type("bool"), left, ir.Name("is_nil"))
                     if expr.op == Kind.Ne:
@@ -1708,21 +1719,32 @@ class Codegen:
                                 ]
                             )
                         else:
-                            cond = ir.Inst(
-                                ir.InstKind.BooleanNot, [
+                            if isinstance(b.cond.typ, (type.Ref, type.Ptr)):
+                                cond = ir.Inst(
+                                    ir.InstKind.Cmp, [
+                                        ir.Name("!="),
+                                        gexpr, ir.NilLit(ir.Type("void").ptr())
+                                    ]
+                                )
+                                self.cur_fn.try_alloca(
+                                    self.ir_type(b.cond.expr.typ.typ), b.cond.vars[0], gexpr
+                                )
+                            else:
+                                cond = ir.Inst(
+                                    ir.InstKind.BooleanNot, [
+                                        ir.Selector(
+                                            ir.Type("bool"), gexpr,
+                                            ir.Name("is_nil")
+                                        )
+                                    ]
+                                )
+                                self.cur_fn.try_alloca(
+                                    self.ir_type(b.cond.expr.typ.typ), b.cond.vars[0],
                                     ir.Selector(
-                                        ir.Type("bool"), gexpr,
-                                        ir.Name("is_nil")
+                                        self.ir_type(b.cond.expr.typ.typ), gexpr,
+                                        ir.Name("value")
                                     )
-                                ]
-                            )
-                        self.cur_fn.try_alloca(
-                            self.ir_type(b.cond.expr.typ.typ), b.cond.vars[0],
-                            ir.Selector(
-                                self.ir_type(b.cond.expr.typ.typ), gexpr,
-                                ir.Name("value")
-                            )
-                        )
+                                )
                     else:
                         cond = self.gen_expr_with_cast(self.comp.bool_t, b.cond)
                     branch_label = self.cur_fn.local_name()
@@ -1783,15 +1805,26 @@ class Codegen:
                         ir.Type("bool"), gexpr, ir.Name("is_err")
                     )
                 else:
-                    cond = ir.Selector(
-                        ir.Type("bool"), gexpr, ir.Name("is_nil")
-                    )
-                self.cur_fn.try_alloca(
-                    self.ir_type(expr.expr.typ), expr.expr.vars[0],
-                    ir.Selector(
-                        self.ir_type(expr.expr.typ), gexpr, ir.Name("value")
-                    )
-                )
+                    if isinstance(expr.expr.typ, (type.Ref, type.Ptr)):
+                        cond = ir.Inst(
+                            ir.InstKind.Cmp, [
+                                ir.Name("!="),
+                                gexpr, ir.NilLit(ir.Type("void").ptr())
+                            ]
+                        )
+                        self.cur_fn.try_alloca(
+                            self.ir_type(expr.expr.typ), expr.expr.vars[0], gexpr
+                        )
+                    else:
+                        cond = ir.Selector(
+                            ir.Type("bool"), gexpr, ir.Name("is_nil")
+                        )
+                        self.cur_fn.try_alloca(
+                            self.ir_type(expr.expr.typ), expr.expr.vars[0],
+                            ir.Selector(
+                                self.ir_type(expr.expr.typ), gexpr, ir.Name("value")
+                            )
+                        )
                 self.cur_fn.add_cond_single_br(cond, exit_switch)
                 if expr.expr.has_cond:
                     self.cur_fn.add_cond_single_br(
@@ -1923,7 +1956,7 @@ class Codegen:
                 self.cur_fn.add_ret_void()
             return ir.Skip()
         else:
-            raise Exception(expr.__class__)
+            raise Exception(expr.__class__, expr.pos)
         return ir.Skip()
 
     def gen_defer_stmts(self, gen_errdefer = False):
@@ -2202,8 +2235,8 @@ class Codegen:
                 self.generated_opt_res_types.append(name)
             return ir.Type(name)
         elif isinstance(typ, type.Optional):
-            if isinstance(typ.typ, type.Ref):
-                return ir.Pointer(self.ir_type(typ.typ))
+            if isinstance(typ.typ, (type.Ref, type.Ptr)):
+                return self.ir_type(typ.typ)
             name = f"_R9Optional_{mangle_type(typ.typ)}"
             if name not in self.generated_opt_res_types:
                 is_void = typ.typ in self.void_types

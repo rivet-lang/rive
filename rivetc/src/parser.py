@@ -1105,11 +1105,7 @@ class Parser:
         pos = self.tok.pos
         if self.accept(Kind.Question):
             # optional
-            typ = self.parse_type()
-            if isinstance(typ, type.Ptr):
-                report.error("pointers cannot be optional", pos)
-                report.note("by default pointers can contain the value `nil`")
-            return type.Optional(typ)
+            return type.Optional(self.parse_type())
         elif self.tok.kind in (Kind.KwExtern, Kind.KwFn):
             # function types
             is_extern = self.accept(Kind.KwExtern)
