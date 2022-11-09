@@ -262,8 +262,6 @@ class Resolver:
                 self.resolve_expr(expr.end)
         elif isinstance(expr, ast.SelectorExpr):
             self.resolve_selector_expr(expr)
-        elif isinstance(expr, ast.PathExpr):
-            self.resolve_path_expr(expr)
         elif isinstance(expr, ast.ReturnExpr):
             if expr.has_expr:
                 self.resolve_expr(expr.expr)
@@ -384,81 +382,6 @@ class Resolver:
                 else:
                     expr.not_found = True
 
-    def resolve_path_expr(self, path):
-        if path.is_global:
-            path.left_info = self.comp.universe
-            if field_info := self.find_symbol(
-                self.comp.universe, path.field_name, path.field_pos
-            ):
-                path.field_info = field_info
-            else:
-                path.not_found = True
-        elif isinstance(path.left, ast.Ident):
-            if local_sym := self.source_file.sym.find(path.left.name):
-                path.left_info = local_sym
-                if field_info := self.find_symbol(
-                    local_sym, path.field_name, path.field_pos
-                ):
-                    path.field_info = field_info
-                else:
-                    path.not_found = True
-            elif prelude_sym := self.find_prelude(path.left.name):
-                path.left_info = prelude_sym
-                if field_info := self.find_symbol(
-                    prelude_sym, path.field_name, path.field_pos
-                ):
-                    path.field_info = field_info
-                else:
-                    path.not_found = True
-            elif imported_sym := self.source_file.find_imported_symbol(
-                path.left.name
-            ):
-                path.left_info = imported_sym
-                if field_info := self.find_symbol(
-                    imported_sym, path.field_name, path.field_pos
-                ):
-                    path.field_info = field_info
-                else:
-                    path.not_found = True
-            elif module := self.comp.universe.find(path.left.name):
-                path.left_info = module
-                if field_info := self.find_symbol(
-                    module, path.field_name, path.field_pos
-                ):
-                    path.field_info = field_info
-                else:
-                    path.not_found = True
-            else:
-                report.error(
-                    f"use of undeclared module `{path.left.name}`",
-                    path.left.pos
-                )
-                path.not_found = True
-        elif isinstance(path.left, ast.PathExpr):
-            self.resolve_expr(path.left)
-            if not path.left.not_found:
-                path.left_info = path.left.field_info
-                if field_info := self.find_symbol(
-                    path.left.field_info, path.field_name, path.field_pos
-                ):
-                    path.field_info = field_info
-                else:
-                    path.not_found = True
-        elif isinstance(path.left, ast.SelfTyExpr):
-            if self.self_sym != None:
-                path.left_info = self.self_sym
-                if field_info := self.find_symbol(
-                    self.self_sym, path.field_name, path.field_pos
-                ):
-                    path.field_info = field_info
-                else:
-                    path.not_found = True
-            else:
-                report.error("cannot resolve `Self`", path.left.pos)
-        else:
-            report.error("bad use of path expression", path.pos)
-            path.not_found = True
-
     def resolve_type(self, typ):
         if isinstance(typ, type.Ref):
             return self.resolve_type(typ.typ)
@@ -557,28 +480,6 @@ class Resolver:
                             f"expected type, found {typ.expr.field_sym.typeof()}",
                             typ.expr.pos
                         )
-            elif isinstance(typ.expr, ast.PathExpr):
-                self.resolve_path_expr(typ.expr)
-                if not typ.expr.not_found:
-                    if typ.expr.field_info.kind == sym.TypeKind.Placeholder:
-                        report.error(
-                            f"cannot find type `{typ.expr.field_info.name}`",
-                            typ.expr.pos
-                        )
-                    elif isinstance(typ.expr.field_info, sym.Type):
-                        pos = typ.expr.pos
-                        typ.resolve(typ.expr.field_info)
-                        if typ.expr.field_info.kind == sym.TypeKind.Alias: # unalias
-                            if self.resolve_type(
-                                typ.expr.field_info.info.parent
-                            ):
-                                typ.unalias()
-                        return True
-                    else:
-                        report.error(
-                            f"expected type, found {typ.expr.field_info.typeof()}",
-                            typ.expr.pos
-                        )
             elif isinstance(typ.expr, ast.SelfTyExpr):
                 if self.self_sym != None:
                     typ.resolve(self.self_sym)
@@ -642,16 +543,6 @@ class Resolver:
                         expr.field_sym.evaled_expr = evaled_expr
                         expr.field_sym.has_evaled_expr = True
                         return expr.field_sym.evaled_expr
-        elif isinstance(expr, ast.PathExpr):
-            self.resolve_path_expr(expr)
-            if not expr.not_found:
-                if isinstance(expr.field_info, sym.Const):
-                    if expr.field_info.has_evaled_expr:
-                        return expr.field_info.evaled_expr
-                    if evaled_expr := self.eval_size(expr.field_info.expr):
-                        expr.field_info.evaled_expr = evaled_expr
-                        expr.field_info.has_evaled_expr = True
-                        return expr.field_info.evaled_expr
         elif isinstance(expr, ast.BuiltinCallExpr):
             if expr.name in ("size_of", "align_of"):
                 if self.resolve_type(expr.args[0].typ):

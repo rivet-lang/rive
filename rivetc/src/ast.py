@@ -782,25 +782,6 @@ class SelectorExpr:
     def __str__(self):
         return self.__repr__()
 
-class PathExpr:
-    def __init__(self, is_global, left, field_name, pos, field_pos):
-        self.is_global = is_global
-        self.left = left
-        self.left_info = None
-        self.field_name = field_name
-        self.field_info = None
-        self.field_pos = field_pos
-        self.is_last = False
-        self.not_found = False
-        self.pos = pos
-        self.typ = None
-
-    def __repr__(self):
-        return f"{self.left}::{self.field_name}"
-
-    def __str__(self):
-        return self.__repr__()
-
 class BranchExpr:
     def __init__(self, op, pos):
         self.op = op

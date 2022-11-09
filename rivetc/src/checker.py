@@ -857,21 +857,6 @@ class Checker:
                             f"type `{left_sym.name}` has no method `{expr_left.field_name}`",
                             expr_left.field_pos
                         )
-            elif isinstance(expr_left, ast.PathExpr):
-                if isinstance(expr_left.field_info, sym.Fn):
-                    expr.sym = expr_left.field_info
-                    self.check_call(expr.sym, expr)
-                elif isinstance(expr_left.field_info,
-                                sym.Type) and expr_left.field_info.kind in (
-                                    TypeKind.Trait, TypeKind.Class,
-                                    TypeKind.Struct
-                                ):
-                    self.check_ctor(expr_left.field_info, expr)
-                else:
-                    report.error(
-                        f"expected function, found {expr_left.field_info.typeof()}",
-                        expr.pos
-                    )
             else:
                 report.error(
                     "invalid expression used in call expression", expr.pos
@@ -1109,49 +1094,6 @@ class Checker:
                                     f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                                 )
                 expr.left_typ = left_typ
-            return expr.typ
-        elif isinstance(expr, ast.PathExpr):
-            expr.typ = self.comp.void_t
-            if isinstance(expr.field_info, sym.Fn):
-                if expr.field_info.is_method:
-                    report.error(
-                        f"cannot take value of method `{expr.field_name}`",
-                        expr.field_pos
-                    )
-                expr.typ = expr.field_info.typ()
-            elif isinstance(expr.left_info, sym.Type):
-                expr.typ = type.Type(expr.left_info)
-            elif isinstance(expr.field_info, sym.Type):
-                expr.typ = type.Type(expr.field_info)
-            elif isinstance(expr.field_info, sym.Const):
-                expr.typ = expr.field_info.typ
-            elif isinstance(expr.field_info, sym.Var):
-                if (
-                    expr.field_info.is_mut or (
-                        expr.field_info.is_extern
-                        and expr.field_info.abi != sym.ABI.Rivet
-                    )
-                ) and not self.inside_unsafe:
-                    if expr.field_info.is_extern:
-                        report.error(
-                            "use of external objects is unsafe and requires `unsafe` block",
-                            expr.pos
-                        )
-                    else:
-                        report.error(
-                            "use of mutable module variables is unsafe and requires `unsafe` block",
-                            expr.pos
-                        )
-                        report.note(
-                            "mutable module variables can be mutated by multiple threads: "
-                            "aliasing violations or data races will cause undefined behavior"
-                        )
-                expr.typ = expr.field_info.typ
-            else:
-                report.error(
-                    "unexpected bug for path expression", expr.field_pos
-                )
-                report.note("please report this bug, thanks =D")
             return expr.typ
         elif isinstance(expr, ast.ReturnExpr):
             if self.inside_test:
@@ -1610,7 +1552,9 @@ class Checker:
                 report.error("cannot use `self` as mutable value", expr.pos)
                 report.help("consider making `self` as mutable: `mut self`")
         elif isinstance(expr, ast.SelectorExpr):
-            if isinstance(expr.left, ast.Ident):
+            if expr.is_symbol_access:
+                self.check_sym_is_mut(expr.field_sym, expr.pos)
+            elif isinstance(expr.left, ast.Ident):
                 if expr.left.obj.level == sym.ObjLevel.Arg and not expr.left.obj.is_mut:
                     report.error(
                         f"cannot use `{expr.left.name}` as mutable argument",
@@ -1641,9 +1585,6 @@ class Checker:
                     f"field `{expr.field_name}` of type `{expr.left_typ.symbol().name}` is immutable",
                     expr.pos
                 )
-        elif isinstance(expr, ast.PathExpr):
-            if expr.field_info:
-                self.check_sym_is_mut(expr.field_info)
         elif isinstance(expr, ast.NilLiteral):
             report.error("`nil` cannot be modified", expr.pos)
         elif isinstance(expr, ast.StringLiteral):

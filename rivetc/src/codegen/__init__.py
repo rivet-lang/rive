@@ -1368,28 +1368,6 @@ class Codegen:
                 )
             )
             return tmp
-        elif isinstance(expr, ast.PathExpr):
-            if isinstance(expr.field_info, sym.Const):
-                return self.gen_const(expr.field_info)
-            elif isinstance(
-                expr.left_info, sym.Type
-            ) and expr.left_info.kind == TypeKind.Enum:
-                if v := expr.left_info.info.get_value(expr.field_name):
-                    return ir.IntLit(
-                        self.ir_type(expr.left_info.info.underlying_typ),
-                        str(v.value)
-                    )
-            elif isinstance(expr.left_info, sym.Fn):
-                return ir.Ident(
-                    self.ir_type(expr.typ), mangle_symbol(expr.left_info)
-                )
-            elif isinstance(
-                expr.field_info, sym.Var
-            ) and expr.field_info.is_extern:
-                return ir.Ident(self.ir_type(expr.typ), expr.field_info.name)
-            return ir.Ident(
-                self.ir_type(expr.typ), mangle_symbol(expr.field_info)
-            )
         elif isinstance(expr, ast.IndexExpr):
             s = expr.left.typ.symbol()
             left = self.gen_expr_with_cast(expr.left_typ, expr.left)

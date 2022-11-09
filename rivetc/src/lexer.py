@@ -506,9 +506,6 @@ class Lexer:
             elif ch == ",":
                 return token.Token("", Kind.Comma, pos)
             elif ch == ":":
-                if nextc == ":":
-                    self.pos += 1
-                    return token.Token("", Kind.DoubleColon, pos)
                 return token.Token("", Kind.Colon, pos)
             elif ch == ";":
                 return token.Token("", Kind.Semicolon, pos)

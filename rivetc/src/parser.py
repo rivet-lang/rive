@@ -696,11 +696,6 @@ class Parser:
             pos = self.tok.pos
             self.next()
             expr = ast.EnumValueExpr(self.parse_name(), pos)
-        elif self.accept(Kind.DoubleColon):
-            pos = self.prev_tok.pos
-            field_pos = self.tok.pos
-            field_name = self.parse_name()
-            expr = ast.PathExpr(True, None, field_name, pos, field_pos)
         elif self.tok.kind in (Kind.KwContinue, Kind.KwBreak):
             op = self.tok.kind
             pos = self.tok.pos
@@ -919,8 +914,6 @@ class Parser:
                     )
                 else:
                     expr = self.parse_selector_expr(expr)
-            elif self.tok.kind == Kind.DoubleColon:
-                expr = self.parse_path_expr(expr)
             else:
                 break
         return expr
@@ -1017,14 +1010,6 @@ class Parser:
         else:
             name = self.parse_name()
         return ast.SelectorExpr(left, name, left.pos, field_pos)
-
-    def parse_path_expr(self, left):
-        self.expect(Kind.DoubleColon)
-        pos = self.tok.pos
-        name = self.parse_name()
-        expr = ast.PathExpr(False, left, name, left.pos, pos)
-        expr.is_last = self.tok.kind != Kind.DoubleColon
-        return expr
 
     def parse_literal(self):
         if self.tok.kind in [Kind.KwTrue, Kind.KwFalse]:
@@ -1183,14 +1168,6 @@ class Parser:
             expr=self.parse_ident()
             if self.accept(Kind.Dot):
                 return type.Type.unresolved(self.parse_selector_expr(expr))
-            elif self.accept(Kind.DoubleColon):
-                path_expr = self.parse_path_expr(expr)
-                if self.tok.kind == Kind.DoubleColon:
-                    while True:
-                        path_expr = self.parse_path_expr(path_expr)
-                        if self.tok.kind != Kind.DoubleColon:
-                            break
-                return type.Type.unresolved(path_expr)
             # normal type
             lit = expr.name
             if lit == "void":
