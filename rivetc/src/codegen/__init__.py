@@ -587,25 +587,28 @@ class Codegen:
                         if isinstance(stmt.cond.typ, (type.Ref, type.Ptr)):
                             cond = ir.Inst(
                                 ir.InstKind.Cmp, [
-                                    ir.Name("!="),
-                                    gexpr, ir.NilLit(ir.Type("void").ptr())
+                                    ir.Name("!="), gexpr,
+                                    ir.NilLit(ir.Type("void").ptr())
                                 ]
                             )
                             self.cur_fn.try_alloca(
-                                self.ir_type(stmt.cond.expr.typ.typ), stmt.cond.vars[0], gexpr
+                                self.ir_type(stmt.cond.expr.typ.typ),
+                                stmt.cond.vars[0], gexpr
                             )
                         else:
                             cond = ir.Inst(
                                 ir.InstKind.BooleanNot, [
                                     ir.Selector(
-                                        ir.Type("bool"), gexpr, ir.Name("is_nil")
+                                        ir.Type("bool"), gexpr,
+                                        ir.Name("is_nil")
                                     )
                                 ]
                             )
                             self.cur_fn.try_alloca(
                                 stmt.cond.expr.typ.typ, stmt.cond.vars[0],
                                 ir.Selector(
-                                    self.ir_type(stmt.cond.expr.typ.typ), gexpr, ir.Name("value")
+                                    self.ir_type(stmt.cond.expr.typ.typ), gexpr,
+                                    ir.Name("value")
                                 )
                             )
                     if stmt.cond.has_cond:
@@ -1722,12 +1725,13 @@ class Codegen:
                             if isinstance(b.cond.typ, (type.Ref, type.Ptr)):
                                 cond = ir.Inst(
                                     ir.InstKind.Cmp, [
-                                        ir.Name("!="),
-                                        gexpr, ir.NilLit(ir.Type("void").ptr())
+                                        ir.Name("!="), gexpr,
+                                        ir.NilLit(ir.Type("void").ptr())
                                     ]
                                 )
                                 self.cur_fn.try_alloca(
-                                    self.ir_type(b.cond.expr.typ.typ), b.cond.vars[0], gexpr
+                                    self.ir_type(b.cond.expr.typ.typ),
+                                    b.cond.vars[0], gexpr
                                 )
                             else:
                                 cond = ir.Inst(
@@ -1739,10 +1743,11 @@ class Codegen:
                                     ]
                                 )
                                 self.cur_fn.try_alloca(
-                                    self.ir_type(b.cond.expr.typ.typ), b.cond.vars[0],
+                                    self.ir_type(b.cond.expr.typ.typ),
+                                    b.cond.vars[0],
                                     ir.Selector(
-                                        self.ir_type(b.cond.expr.typ.typ), gexpr,
-                                        ir.Name("value")
+                                        self.ir_type(b.cond.expr.typ.typ),
+                                        gexpr, ir.Name("value")
                                     )
                                 )
                     else:
@@ -1808,12 +1813,13 @@ class Codegen:
                     if isinstance(expr.expr.typ, (type.Ref, type.Ptr)):
                         cond = ir.Inst(
                             ir.InstKind.Cmp, [
-                                ir.Name("!="),
-                                gexpr, ir.NilLit(ir.Type("void").ptr())
+                                ir.Name("!="), gexpr,
+                                ir.NilLit(ir.Type("void").ptr())
                             ]
                         )
                         self.cur_fn.try_alloca(
-                            self.ir_type(expr.expr.typ), expr.expr.vars[0], gexpr
+                            self.ir_type(expr.expr.typ), expr.expr.vars[0],
+                            gexpr
                         )
                     else:
                         cond = ir.Selector(
@@ -1822,7 +1828,8 @@ class Codegen:
                         self.cur_fn.try_alloca(
                             self.ir_type(expr.expr.typ), expr.expr.vars[0],
                             ir.Selector(
-                                self.ir_type(expr.expr.typ), gexpr, ir.Name("value")
+                                self.ir_type(expr.expr.typ), gexpr,
+                                ir.Name("value")
                             )
                         )
                 self.cur_fn.add_cond_single_br(cond, exit_switch)
