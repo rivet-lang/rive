@@ -17,7 +17,7 @@ extern (C) {
 extern (C) fn init_args(_argc: i32, _argv: **u8) [string] {
     let mut args: [string] = [];
     for i in 0.._argc {
-        args.push(unsafe { string::from_raw(_argv[as(usize, i)]) });
+        args.push(unsafe { string.from_raw(_argv[as(usize, i)]) });
     }
     return args;
 }
@@ -31,7 +31,7 @@ fn main(
 #endif
 ) {
     unsafe {
-        _ = libc::signal(11, segfault_handler);
+        _ = libc.signal(11, segfault_handler);
         _R8set_argsZ(init_args(_argc, _argv));
         _R12init_globalsZ();
 #if _TESTS_

@@ -24,10 +24,10 @@ pub fn console_println(s: string = "", args: ...ToString) {
 pub fn console_eprint(s: string, args: ...ToString) {
     let sx = s.fmt(args);
     unsafe {
-        _ = libc::fflush(libc::stdout);
-        _ = libc::fflush(libc::stderr);
+        _ = libc.fflush(libc.stdout);
+        _ = libc.fflush(libc.stderr);
         write_buf_to_fd(2, sx.ptr, sx.len);
-        _ = libc::fflush(libc::stderr);
+        _ = libc.fflush(libc.stderr);
     }
 }
 
@@ -35,15 +35,15 @@ pub fn console_eprint(s: string, args: ...ToString) {
 /// flushed.
 pub fn console_eprintln(s: string = "", args: ...ToString) {
     unsafe {
-        _ = libc::fflush(libc::stdout);
-        _ = libc::fflush(libc::stderr);
+        _ = libc.fflush(libc.stdout);
+        _ = libc.fflush(libc.stderr);
         writeln_to_fd(2, s.fmt(args));
-        _ = libc::fflush(libc::stderr);
+        _ = libc.fflush(libc.stderr);
     }
 }
 
 /// Returns `true` if the `fd` file descriptor is open and refers to a
 /// terminal.
 pub fn console_is_atty(fd: i32) bool {
-    return unsafe { libc::isatty(fd) == 1 };
+    return unsafe { libc.isatty(fd) == 1 };
 }

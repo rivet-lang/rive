@@ -11,7 +11,7 @@ fn demangle_symbol(name: string) string {
     let name_ptr = unsafe { name.ptr };
     let mut idx: usize = 2;
     let mut buf = StaticBuffer();
-    let mut res = StringBuilder::new(name.len);
+    let mut res = StringBuilder.new(name.len);
     while idx < name.len {
         let byte = unsafe { name_ptr[idx] };
         if byte.is_digit() {
@@ -21,7 +21,7 @@ fn demangle_symbol(name: string) string {
         }
 
         if !res.is_empty() {
-            res.write_string("::");
+            res.write_string(".");
         }
 
         for _ in 0..as(usize, buf.as_u64()) {

@@ -9,15 +9,15 @@ pub class StringBuilder : ToString {
 
     /// Returns a string builder with capacity `cap`.
     pub fn new(cap: usize = 0) Self {
-        return Self(unsafe { Vec::new(size_of!(u8), cap) });
+        return Self(unsafe { Vec.new(size_of!(u8), cap) });
     }
 
     pub fn from_string(s: string) Self {
         if s.len == 0 {
-            return Self::new();
+            return Self.new();
         }
         return Self(unsafe {
-            Vec::from_array(as(*mut u8, s.ptr), size_of!(u8), s.len)
+            Vec.from_array(as(*mut u8, s.ptr), size_of!(u8), s.len)
         });
     }
 
@@ -28,7 +28,7 @@ pub class StringBuilder : ToString {
     #[unsafe]
     pub fn write_raw(mut self, s: *u8) {
         unsafe {
-            self.write_raw_with_len(s, libc::strlen(s));
+            self.write_raw_with_len(s, libc.strlen(s));
         }
     }
 

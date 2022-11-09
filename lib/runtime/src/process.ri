@@ -7,7 +7,7 @@ import "libc";
 /// Returns the OS-assigned process identifier associated with this
 /// process.
 pub fn process_id() u32 {
-    return unsafe { libc::getpid() };
+    return unsafe { libc.getpid() };
 }
 
 /// Terminates current thread execution immediately after displaying a
@@ -29,7 +29,7 @@ pub fn process_panic(s: string = "", args: ...ToString) never {
 pub fn process_abort() never {
     unsafe {
         _R12drop_globalsZ();
-        libc::abort();
+        libc.abort();
     }
 }
 
@@ -41,6 +41,6 @@ pub fn process_abort() never {
 pub fn process_exit(code: i32 = 0) never {
     unsafe {
         _R12drop_globalsZ();
-        libc::exit(code);
+        libc.exit(code);
     }
 }

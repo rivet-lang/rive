@@ -82,7 +82,7 @@ extend i32 : ToString {
 
             let diff = as(usize, max) - index;
             mem_move(buf, ptr_add!(buf, index), diff + 1);
-            return string::from_raw_with_len(buf, diff);
+            return string.from_raw_with_len(buf, diff);
         }
     }
 
@@ -142,14 +142,14 @@ extend i64 : ToString {
 
             let diff = as(usize, max) - index;
             mem_move(buf, ptr_add!(buf, index), diff + 1);
-            return string::from_raw_with_len(buf, diff);
+            return string.from_raw_with_len(buf, diff);
         }
     }
 }
 
 extend isize : ToString {
-    pub const MIN: isize = #if _x64_ i64::MIN #else i32::MIN #endif;
-    pub const MAX: isize = #if _x64_ i64::MAX #else i32::MAX #endif;
+    pub const MIN: isize = #if _x64_ i64.MIN #else i32.MIN #endif;
+    pub const MAX: isize = #if _x64_ i64.MAX #else i32.MAX #endif;
 
     /// Returns the value of `self` as a string.
     pub fn to_string(&self) string {

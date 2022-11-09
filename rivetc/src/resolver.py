@@ -319,14 +319,14 @@ class Resolver:
                     f"unknown comptime constant `{ident.name}`", ident.pos
                 )
             return
-        elif ident.name == "string":
-            ident.sym = self.comp.string_t.sym
-            ident.is_sym = True
         elif obj := ident.scope.lookup(ident.name):
             ident.obj = obj
             ident.typ = obj.typ
             ident.is_obj = True
         elif s := self.find_prelude(ident.name):
+            ident.sym = s
+            ident.is_sym = True
+        elif s := self.comp.universe.find(ident.name):
             ident.sym = s
             ident.is_sym = True
         elif s := self.sym.find(ident.name):
@@ -354,6 +354,12 @@ class Resolver:
     def resolve_selector_expr(self, expr):
         self.resolve_expr(expr.left)
         if not (expr.is_indirect or expr.is_nilcheck):
+            if isinstance(expr.left,ast.SelfTyExpr):
+                expr.is_symbol_access=True
+                if expr.left.sym==None:
+                    expr.not_found = True
+                    return
+                expr.left_sym=expr.left.sym
             if isinstance(expr.left,ast.Ident) and expr.left.is_sym:
                 if isinstance(expr.left.sym, (sym.Var, sym.Const)):
                     return

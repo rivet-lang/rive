@@ -15,7 +15,7 @@ pub class string : ToString {
     pub fn from_raw(ptr: ?*u8, is_ref: bool = false) Self {
         if let safe_ptr = ptr {
             return unsafe {
-                Self::from_raw_with_len(safe_ptr, libc::strlen(ptr), is_ref)
+                Self.from_raw_with_len(safe_ptr, libc.strlen(ptr), is_ref)
             };
         }
         return empty_string;
@@ -63,7 +63,7 @@ pub class string : ToString {
     }
 
     pub fn concat(self, others: ...Self) Self {
-        let mut sb = StringBuilder::from_string(self);
+        let mut sb = StringBuilder.from_string(self);
         for other in others {
             sb.write_string(other);
         }
@@ -93,7 +93,7 @@ pub class string : ToString {
         }
         let mut i: usize = 0;
         let mut args_idx: usize = 0;
-        let mut res = StringBuilder::new(self.len);
+        let mut res = StringBuilder.new(self.len);
         while i < self.len {
             let b = unsafe { self.ptr[i] };
             let b2 = if i + 1 < self.len unsafe { self.ptr[i + 1] } else { 0 };
@@ -185,7 +185,7 @@ pub class string : ToString {
 
     pub fn as_bytes(self) [u8] {
         return unsafe {
-            Vec::from_array(as(*mut u8, self.ptr), size_of!(u8), self.len)
+            Vec.from_array(as(*mut u8, self.ptr), size_of!(u8), self.len)
         };
     }
 
@@ -303,7 +303,7 @@ pub class string : ToString {
     }
 
     pub fn clone(self) Self {
-        return Self::from_bytes(self.as_bytes());
+        return Self.from_bytes(self.as_bytes());
     }
 
     pub fn to_string(self) Self {

@@ -21,17 +21,17 @@ pub class RuneFromU32Error : Error { }
 pub fn errno() i32 {
     return unsafe {
 #if _LINUX_
-        libc::__errno_location().*
+        libc.__errno_location().*
 #else
-        libc::_errno().*
+        libc._errno().*
 #endif
     };
 }
 
 fn strerr(code: i32 = errno()) string {
     unsafe {
-        let s = libc::strerror(code);
-        return if s == nil { "" } else { string::from_raw(s) };
+        let s = libc.strerror(code);
+        return if s == nil { "" } else { string.from_raw(s) };
     }
 }
 

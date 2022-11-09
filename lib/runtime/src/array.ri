@@ -11,7 +11,7 @@ fn array_index(len: usize, idx: usize) {
 }
 
 fn array_eq(arr: *void, other_arr: *void, len: usize) bool {
-    return unsafe { libc::memcmp(arr, other_arr, len) == 0 };
+    return unsafe { libc.memcmp(arr, other_arr, len) == 0 };
 }
 
 fn array_ne(arr: *void, other_arr: *void, len: usize) bool {
@@ -26,9 +26,9 @@ fn array_slice(
     }
     let len = end - start;
     if len == size {
-        return unsafe { Vec::from_array(arr, elem_size, len) };
+        return unsafe { Vec.from_array(arr, elem_size, len) };
     }
-    return unsafe { Vec::from_array(ptr_add!(arr, start), elem_size, len) };
+    return unsafe { Vec.from_array(ptr_add!(arr, start), elem_size, len) };
 }
 
 fn array_slice_from(

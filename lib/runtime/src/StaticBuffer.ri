@@ -10,7 +10,7 @@ struct StaticBuffer {
 
     pub fn push(mut self, byte: u8) {
         if self.len > self.buf.len {
-            process_panic("StaticBuffer::push: cannot push byte (len: {})", self.len);
+            process_panic("StaticBuffer.push: cannot push byte (len: {})", self.len);
         }
         self.buf[self.len] = byte;
         self.len += 1;
@@ -24,10 +24,10 @@ struct StaticBuffer {
     }
 
     pub fn as_u64(self) u64 {
-        return unsafe { libc::strtoul(addr_of!(self.buf[0]), nil, 10) };
+        return unsafe { libc.strtoul(addr_of!(self.buf[0]), nil, 10) };
     }
 
     pub fn as_string(self) string {
-        return unsafe { string::from_raw_with_len(addr_of!(self.buf[0]), self.len) };
+        return unsafe { string.from_raw_with_len(addr_of!(self.buf[0]), self.len) };
     }
 }

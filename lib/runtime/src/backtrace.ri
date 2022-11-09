@@ -38,19 +38,19 @@ fn bt_print_callback(
 ) i32 {
     unsafe {
         if let safe_fn_ptr = fn_ptr {
-            if libc::memcmp(safe_fn_ptr, c"_R4core10rivet_mainF", 20) == 0 {
+            if libc.memcmp(safe_fn_ptr, c"_R4core10rivet_mainF", 20) == 0 {
                 return -1; // stop backtracing
             }
         }
         let file_name = if filename_ptr == nil {
             "???"
         } else {
-            string::from_raw(filename_ptr)
+            string.from_raw(filename_ptr)
         };
         let fn_name = if fn_ptr == nil {
             "???"
         } else {
-            demangle_symbol(string::from_raw(fn_ptr))
+            demangle_symbol(string.from_raw(fn_ptr))
         };
         console_eprintln("   at {} ({}:{})", fn_name, file_name, lineno);
     }
@@ -62,7 +62,7 @@ fn bt_error_handler(data: *mut void, msg_ptr: ?*mut u8, errnum: i32) {
         let bdata = as(*mut BacktraceData, data);
         if !bdata.has_error {
             console_eprint("   libbacktrace error: ");
-            console_eprint(string::from_raw(msg_ptr));
+            console_eprint(string.from_raw(msg_ptr));
             if errnum > 0 {
                 console_eprint(" (");
                 console_eprint(strerr(errnum));

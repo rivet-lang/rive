@@ -75,7 +75,7 @@ class Vec {
     /// `vector` is empty, this will process_panic.
     fn pop(mut self) *void {
         if self.len == 0 {
-            process_panic("Vec::pop: vector is empty");
+            process_panic("Vec.pop: vector is empty");
         }
         let new_len = self.len - 1;
         unsafe {

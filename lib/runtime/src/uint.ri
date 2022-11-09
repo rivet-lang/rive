@@ -62,7 +62,7 @@ extend u8 : ToString {
 
     /// Returns the value of `self` as a ASCII `string`.
     pub fn to_ascii(self) string {
-        return string::from_byte(self);
+        return string.from_byte(self);
     }
 
     /// Returns the value of `self` as a string.
@@ -117,7 +117,7 @@ extend u32 : ToString {
 
             let diff = max - index;
             mem_move(buf, ptr_add!(buf, index), diff + 1);
-            return string::from_raw_with_len(buf, diff);
+            return string.from_raw_with_len(buf, diff);
         }
     }
 }
@@ -159,13 +159,13 @@ extend u64 : ToString {
 
             let diff = as(usize, max) - index;
             mem_move(buf, ptr_add!(buf, index), diff + 1);
-            return string::from_raw_with_len(buf, diff);
+            return string.from_raw_with_len(buf, diff);
         }
     }
 }
 
 extend usize : ToString {
-    pub const MAX: usize = #if _x64_ u64::MAX #else u32::MAX #endif;
+    pub const MAX: usize = #if _x64_ u64.MAX #else u32.MAX #endif;
 
     /// Returns the value of `self` as a string.
     pub fn to_string(&self) string {
