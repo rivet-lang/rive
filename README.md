@@ -32,7 +32,6 @@ language with a clear and simple syntax and a low learning curve.
 
 ```rs
 // A simple sample: the classic "Hello World"
-
 import "std/console";
 
 fn main() {
