@@ -1,12 +1,9 @@
-<<<<<<< HEAD
 struct Xyz {
     a: [[i32; 4]; 5];
     b: [fn(); 8];
     c: [[fn(); 7]; 10];
 }
 
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 fn new_array() [i32; 4] {
     return [1, 2, 3, 4]!;
 }

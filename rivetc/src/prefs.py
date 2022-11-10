@@ -119,35 +119,19 @@ class Backend(Enum):
     def __str__(self):
         return "C"
 
-<<<<<<< HEAD
 class ModType(Enum):
     Bin = auto_enum() # .exe
-=======
-class PkgType(Enum):
-    Bin = auto_enum() # .exe
-    Lib = auto_enum() # .rilib
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     DyLib = auto_enum() # .so, .dll, .dylib
     StaticLib = auto_enum() # .a, .lib
 
     @staticmethod
     def from_string(typ):
         if typ == "bin":
-<<<<<<< HEAD
             return ModType.Bin
         elif typ == "dylib":
             return ModType.DyLib
         elif typ == "static":
             return ModType.StaticLib
-=======
-            return PkgType.Bin
-        elif typ == "lib":
-            return PkgType.Lib
-        elif typ == "dylib":
-            return PkgType.DyLib
-        elif typ == "static":
-            return PkgType.StaticLib
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         return None
 
 class BuildMode(Enum):
@@ -172,7 +156,6 @@ class Prefs:
         self.target_backend = Backend.C
         self.target_backend_compiler = "gcc"
 
-<<<<<<< HEAD
         # module info
         self.input = ""
         self.mod_name = ""
@@ -183,17 +166,6 @@ class Prefs:
 
         self.library_path = [
             path.join(RIVET_DIR, "lib"),
-=======
-        # package info
-        self.input = ""
-        self.pkg_name = ""
-        self.pkg_type = PkgType.Bin
-        self.pkg_output = ""
-        self.build_mode = BuildMode.Debug
-
-        self.library_path = [
-            path.join(RIVET_DIR, "libs"),
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             path.join(RIVETC_DIR, "lib")
         ]
 
@@ -232,7 +204,6 @@ class Prefs:
                 exit(0)
 
             # compiler options
-<<<<<<< HEAD
             if arg == "--mod-name":
                 if mod_name := option(current_args, arg):
                     self.mod_name = mod_name
@@ -249,24 +220,6 @@ class Prefs:
                         error(f"invalid module type: `{typ}`")
                 else:
                     error("`--mod-type` requires a module type as argument")
-=======
-            if arg == "--pkg-name":
-                if pkg_name := option(current_args, arg):
-                    self.pkg_name = pkg_name
-                    if not is_valid_name(self.pkg_name):
-                        error(f"invalid package name `{self.pkg_name}`")
-                else:
-                    error("`--pkg-name` requires a name as argument")
-                i += 1
-            elif arg == "--pkg-type":
-                if typ := option(current_args, arg):
-                    if pkg_typ := PkgType.from_string(typ):
-                        self.pkg_typ = pkg_typ
-                    else:
-                        error(f"invalid package type: `{typ}`")
-                else:
-                    error("`--pkg-type` requires a package type as argument")
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 i += 1
             elif arg in ("-r", "--release"):
                 self.build_mode = BuildMode.Release
@@ -275,15 +228,9 @@ class Prefs:
                 self.build_mode = BuildMode.Test
             elif arg in ("-o", "--output"):
                 if out := option(current_args, arg):
-<<<<<<< HEAD
                     self.mod_output = out
                     if path.isdir(self.mod_output):
                         error(f"{arg}: `{self.mod_output}` is a directory")
-=======
-                    self.pkg_output = out
-                    if path.isdir(self.pkg_output):
-                        error(f"{arg}: `{self.pkg_output}` is a directory")
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 else:
                     error(f"`{arg}` requires a filename as argument")
                 i += 1
@@ -361,33 +308,20 @@ class Prefs:
                 error(f"unknown option: `{arg}`")
             else:
                 if len(self.input) > 0:
-<<<<<<< HEAD
                     error("the compiler can only receive one module")
-=======
-                    error("the compiler can only receive one package")
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 elif not path.exists(arg):
                     error(f"`{arg}` does not exist")
                 else:
                     self.input = arg
-<<<<<<< HEAD
                     if self.mod_name == "":
                         if path.isfile(arg):
                             self.mod_name = path.splitext(path.basename(arg))[0]
                         else:
                             self.mod_name = path.basename(path.realpath(arg))
-=======
-                    if self.pkg_name == "":
-                        if path.isfile(arg):
-                            self.pkg_name = path.splitext(path.basename(arg))[0]
-                        else:
-                            self.pkg_name = path.basename(path.normpath(arg))
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             i += 1
 
         self.build_rivet_dir()
 
-<<<<<<< HEAD
         if len(self.mod_output) == 0:
             self.mod_output = self.mod_name
         if self.target_os == OS.Windows and not self.mod_output.endswith(
@@ -401,21 +335,10 @@ class Prefs:
             self.input
         ) else self.input
         self.library_path.append(self.mod_dir)
-=======
-        self.pkg_output = self.pkg_name
-        if self.target_os == OS.Windows and not self.pkg_output.endswith(
-            ".exe"
-        ):
-            self.pkg_output += ".exe"
-
-        if not path.isabs(self.pkg_output):
-            self.pkg_output = path.join(os.getcwd(), self.pkg_output)
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def build_rivet_dir(self):
         if not path.isdir(RIVET_DIR):
             os.mkdir(RIVET_DIR)
-<<<<<<< HEAD
             os.mkdir(path.join(RIVET_DIR, "obj"))
             os.mkdir(path.join(RIVET_DIR, "lib"))
 
@@ -435,7 +358,3 @@ class Prefs:
         else:
             postfix += "_debug"
         return postfix
-=======
-            os.mkdir(path.join(RIVET_DIR, "objs"))
-            os.mkdir(path.join(RIVET_DIR, "libs"))
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

@@ -7,12 +7,8 @@ fn factorial(n: u32) u32 {
 	return n * factorial(n - 1);
 }
 
-fn main() void {
+fn main() {
 	let res = factorial(5);
-<<<<<<< HEAD:samples/factorial.ri
 	console.println("factorial(5): {}", res);
-=======
-	Console::println("factorial(5): {}", res);
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:examples/factorial.ri
 	assert!(res == 120);
 }

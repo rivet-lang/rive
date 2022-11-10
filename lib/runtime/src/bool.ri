@@ -2,14 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-<<<<<<< HEAD:lib/runtime/src/bool.ri
 extend bool : ToString {
     pub fn to_string(&self) string {
         return if self.* { "true" } else { "false" };
-=======
-extend none : traits::ToString {
-    pub fn to_string(self) string {
-        return "none";
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/ptr.ri
     }
 }

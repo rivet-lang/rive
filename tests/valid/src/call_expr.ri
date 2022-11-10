@@ -1,21 +1,12 @@
-<<<<<<< HEAD
 fn default_arg(x: i32 = 1) {
     assert!(x == 1 or x == 5 or x == 10);
 }
 
 test "call expression with default arguments" {
-=======
-fn default_arg(x: i32 = 1) void {
-    assert!(x == 1 or x == 5 or x == 10);
-}
-
-test "default arguments" {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     default_arg();
     default_arg(5);
     default_arg(x: 10);
 }
-<<<<<<< HEAD
 
 fn foo(a: bool = false, b: bool = false) { }
 
@@ -33,5 +24,3 @@ test "call expression with named arguments" {
     let a = true;
     qux(a);
 }
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

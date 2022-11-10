@@ -15,18 +15,12 @@ class Checker:
         self.cur_fn = None
 
         self.inside_unsafe = False
-<<<<<<< HEAD
         self.inside_test = False
         self.expected_type = self.comp.void_t
         self.void_types = (self.comp.void_t, self.comp.never_t)
 
         self.defer_stmts = []
 
-=======
-        self.expected_type = self.comp.void_t
-        self.void_types = (self.comp.void_t, self.comp.never_t)
-
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def check_files(self, source_files):
         for sf in source_files:
             self.sym = sf.sym
@@ -36,15 +30,7 @@ class Checker:
     def check_decls(self, decls):
         for decl in decls:
             old_sym = self.sym
-<<<<<<< HEAD
             if isinstance(decl, ast.ExternDecl):
-=======
-            if isinstance(decl, ast.UseDecl):
-                pass
-            elif isinstance(decl, ast.ExternDecl):
-                self.check_decls(decl.decls)
-            elif isinstance(decl, ast.ModDecl):
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 self.check_decls(decl.decls)
             elif isinstance(decl, ast.ConstDecl):
                 old_expected_type = self.expected_type
@@ -156,7 +142,6 @@ class Checker:
                 self.expected_type = decl.ret_typ
                 self.check_stmts(decl.stmts)
                 self.expected_type = old_expected_type
-<<<<<<< HEAD
                 decl.defer_stmts = self.defer_stmts
                 self.defer_stmts = []
             elif isinstance(decl, ast.DestructorDecl):
@@ -167,12 +152,6 @@ class Checker:
                 self.inside_test = True
                 self.check_stmts(decl.stmts)
                 self.inside_test = False
-=======
-            elif isinstance(decl, ast.DestructorDecl):
-                self.check_stmts(decl.stmts)
-            elif isinstance(decl, ast.TestDecl):
-                self.check_stmts(decl.stmts)
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             self.sym = old_sym
 
     def check_stmts(self, stmts):
@@ -186,13 +165,9 @@ class Checker:
                     self.expected_type = stmt.lefts[0].typ
                 right_typ = self.check_expr(stmt.right)
                 if right_typ == self.comp.void_t:
-<<<<<<< HEAD
                     report.error(
                         "void expression used as value", stmt.right.pos
                     )
-=======
-                    report.error("void expression used as value", stmt.pos)
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 if stmt.lefts[0].has_typ:
                     try:
                         self.check_types(right_typ, self.expected_type)
@@ -246,11 +221,7 @@ class Checker:
                         stmt.cond.pos
                     )
             self.check_stmt(stmt.stmt)
-<<<<<<< HEAD
         elif isinstance(stmt, ast.ForStmt):
-=======
-        elif isinstance(stmt, ast.ForInStmt):
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             iterable_t = self.check_expr(stmt.iterable)
             iterable_sym = iterable_t.symbol()
             vars_len = len(stmt.vars)
@@ -264,17 +235,8 @@ class Checker:
                         f"expected 1 variable, found {vars_len}", stmt.pos
                     )
                 self.check_stmt(stmt.stmt)
-<<<<<<< HEAD
             elif iterable_sym.kind in (TypeKind.Array, TypeKind.Vec):
                 elem_typ = self.comp.untyped_to_type(iterable_sym.info.elem_typ)
-=======
-            elif iterable_sym.kind in (
-                TypeKind.Array, TypeKind.Vec, TypeKind.String
-            ):
-                elem_typ = self.comp.u8_t if iterable_sym.kind == TypeKind.String else self.comp.untyped_to_type(
-                    iterable_sym.info.elem_typ
-                )
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 if vars_len == 1:
                     stmt.scope.update_type(stmt.vars[0], elem_typ)
                 else:
@@ -285,14 +247,10 @@ class Checker:
                 report.error(
                     f"`{iterable_t}` is not an iterable type", stmt.iterable.pos
                 )
-<<<<<<< HEAD
                 report.note("expected array or slice value")
         elif isinstance(stmt, ast.DeferStmt):
             self.check_expr(stmt.expr)
             self.defer_stmts.append(stmt)
-=======
-                report.note("expected array, slice or string value")
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def check_expr(self, expr):
         if isinstance(expr, ast.EmptyExpr):
@@ -353,31 +311,16 @@ class Checker:
                         )
                     else:
                         report.error(
-<<<<<<< HEAD
                             "use of mutable module variables is unsafe and requires `unsafe` block",
                             expr.pos
                         )
                         report.note(
                             "mutable module variables can be mutated by multiple threads: "
-=======
-                            "use of mutable global objects is unsafe and requires `unsafe` block",
-                            expr.pos
-                        )
-                        report.note(
-                            "mutable global objects can be mutated by multiple threads: "
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                             "aliasing violations or data races will cause undefined behavior"
                         )
                 expr.typ = expr.sym.typ
             else:
                 expr.typ = self.comp.void_t
-<<<<<<< HEAD
-=======
-            if isinstance(expr.typ, type.Ptr) and not self.inside_unsafe:
-                report.error(
-                    "pointers are usable only inside `unsafe` blocks", expr.pos
-                )
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             return expr.typ
         elif isinstance(expr, ast.SelfExpr):
             return expr.typ
@@ -385,7 +328,6 @@ class Checker:
             return type.Type(expr.sym)
         elif isinstance(expr, ast.BaseExpr):
             return expr.typ
-<<<<<<< HEAD
         elif isinstance(expr, ast.NilLiteral):
             expr.typ = self.comp.nil_t
             return expr.typ
@@ -419,31 +361,6 @@ class Checker:
             else:
                 expr.typ = self.comp.string_t
             return expr.typ
-=======
-        elif isinstance(expr, ast.NoneLiteral):
-            return self.comp.none_t
-        elif isinstance(expr, ast.BoolLiteral):
-            return self.comp.bool_t
-        elif isinstance(expr, ast.CharLiteral):
-            if expr.is_byte:
-                return self.comp.u8_t
-            return self.comp.rune_t
-        elif isinstance(expr, ast.IntegerLiteral):
-            return self.comp.untyped_int_t
-        elif isinstance(expr, ast.FloatLiteral):
-            return self.comp.untyped_float_t
-        elif isinstance(expr, ast.StringLiteral):
-            if expr.is_bytestr:
-                return type.Type(
-                    self.comp.universe.add_or_get_array(
-                        self.comp.u8_t,
-                        utils.bytestr(expr.lit).len
-                    )
-                )
-            elif expr.is_cstr:
-                return type.Ptr(self.comp.u8_t, False)
-            return self.comp.string_t
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif isinstance(expr, ast.TupleLiteral):
             types = []
             old_expected_type = self.expected_type
@@ -473,20 +390,12 @@ class Checker:
             has_exp_typ = False
             if not isinstance(self.expected_type, type.Fn):
                 elem_sym = self.expected_type.symbol()
-<<<<<<< HEAD
                 if elem_sym.kind in (TypeKind.Array, TypeKind.Vec):
                     has_exp_typ = True
                     elem_typ = elem_sym.info.elem_typ
                     self.expected_type = elem_typ
                     if elem_sym.kind == TypeKind.Array:
                         size = elem_sym.info.size.lit
-=======
-                if elem_sym.kind == TypeKind.Array:
-                    has_exp_typ = True
-                    elem_typ = elem_sym.info.elem_typ
-                    size = elem_sym.info.size.lit
-                    self.expected_type = elem_typ
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 else:
                     elem_typ = self.comp.void_t
             else:
@@ -825,7 +734,6 @@ class Checker:
                     expr.typ = expr.left_typ.typ
             return expr.typ
         elif isinstance(expr, ast.CallExpr):
-<<<<<<< HEAD
             inside_parens = False
             expr.typ = self.comp.void_t
 
@@ -833,14 +741,6 @@ class Checker:
             if isinstance(expr_left, ast.ParExpr) and isinstance(
                 expr_left.expr, ast.SelectorExpr
             ) and not expr_left.expr.is_symbol_access:
-=======
-            expr.typ = self.comp.void_t
-            expr_left = expr.left
-
-            inside_parens = False
-            if isinstance(expr_left, ast.ParExpr
-                          ) and isinstance(expr_left.expr, ast.SelectorExpr):
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 expr_left = expr_left.expr
                 inside_parens = True
 
@@ -859,11 +759,7 @@ class Checker:
                 elif isinstance(expr_left.sym,
                                 sym.Type) and expr_left.sym.kind in (
                                     TypeKind.Trait, TypeKind.Struct,
-<<<<<<< HEAD
                                     TypeKind.Class, TypeKind.String
-=======
-                                    TypeKind.Class
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                                 ):
                     expr.sym = expr_left.sym
                     self.check_ctor(expr_left.sym, expr)
@@ -878,7 +774,6 @@ class Checker:
                             expr_left.pos
                         )
             elif isinstance(expr_left, ast.SelectorExpr):
-<<<<<<< HEAD
                 if expr_left.is_symbol_access:
                     if isinstance(expr_left.field_sym, sym.Fn):
                         expr.sym = expr_left.field_sym
@@ -961,85 +856,6 @@ class Checker:
                             f"type `{left_sym.name}` has no method `{expr_left.field_name}`",
                             expr_left.field_pos
                         )
-=======
-                expr_left.left_typ = self.check_expr(expr_left.left)
-                left_sym = expr_left.left_typ.symbol()
-                if m := left_sym.find(expr_left.field_name):
-                    if isinstance(m, sym.Fn):
-                        if m.is_method:
-                            expr.sym = m
-                            if isinstance(expr_left.left_typ, type.Optional):
-                                report.error(
-                                    "optional value cannot be called directly",
-                                    expr_left.field_pos
-                                )
-                                report.help(
-                                    "use the none-check syntax: `foo.?.method()`"
-                                )
-                                report.help(
-                                    "or use `orelse`: `(foo orelse 5).method()`"
-                                )
-                            elif isinstance(expr_left.left_typ, type.Ptr):
-                                report.error(
-                                    "unexpected pointer type as receiver",
-                                    expr.pos
-                                )
-                                report.help(
-                                    "consider dereferencing this pointer"
-                                )
-                            else:
-                                self.check_call(m, expr)
-                        else:
-                            report.error(
-                                f"`{expr_left.field_name}` is not a method",
-                                expr_left.field_pos
-                            )
-                    else:
-                        report.error(
-                            f"expected method, found {m.typeof()}",
-                            expr_left.field_pos
-                        )
-                elif f := left_sym.find_field(expr_left.field_name):
-                    if isinstance(f.typ, type.Fn):
-                        if inside_parens:
-                            expr.sym = f.typ.info()
-                            expr.is_closure = True
-                            expr.left.typ = f.typ
-                            self.check_call(expr.sym, expr)
-                        else:
-                            report.error(
-                                f"type `{left_sym.name}` has no method `{expr_left.field_name}`",
-                                expr_left.field_pos
-                            )
-                            report.help(
-                                f"to call the function stored in `{expr_left.field_name}`, surround the field access with parentheses"
-                            )
-                    else:
-                        report.error(
-                            f"field `{expr_left.field_name}` of type `{left_sym.name}` is not function type",
-                            expr_left.field_pos
-                        )
-                else:
-                    report.error(
-                        f"type `{left_sym.name}` has no method `{expr_left.field_name}`",
-                        expr_left.field_pos
-                    )
-            elif isinstance(expr_left, ast.PathExpr):
-                if isinstance(expr_left.field_info, sym.Fn):
-                    expr.sym = expr_left.field_info
-                    self.check_call(expr.sym, expr)
-                elif isinstance(expr_left.field_info,
-                                sym.Type) and expr_left.field_info.kind in (
-                                    TypeKind.Trait, TypeKind.Class,
-                                    TypeKind.Struct
-                                ):
-                    self.check_ctor(expr_left.field_info, expr)
-                else:
-                    report.error(
-                        f"expected function, found {expr_left.field_info.typeof()}",
-                        expr.pos
-                    )
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             else:
                 report.error(
                     "invalid expression used in call expression", expr.pos
@@ -1049,11 +865,7 @@ class Checker:
                 if isinstance(expr.typ, type.Result):
                     if expr.err_handler.is_propagate:
                         if not (
-<<<<<<< HEAD
                             self.cur_fn.is_main or self.inside_test
-=======
-                            self.cur_fn.is_main
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                             or isinstance(self.cur_fn.ret_typ, type.Result)
                         ):
                             report.error(
@@ -1120,13 +932,8 @@ class Checker:
                     expr.typ = self.comp.isize_t if expr.name == "ptr_diff" else ptr_t
             elif expr.name in ("size_of", "align_of"):
                 expr.typ = self.comp.usize_t
-<<<<<<< HEAD
             elif expr.name == "type_name":
                 expr.typ = self.comp.string_t
-=======
-            elif expr.name == "type_of":
-                expr.typ = self.comp.string_t # TODO: core::TypeInfo
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             elif expr.name in ("unreachable", "breakpoint"):
                 expr.typ = self.comp.never_t
             elif expr.name == "assert":
@@ -1155,7 +962,6 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.SelectorExpr):
             expr.typ = self.comp.void_t
-<<<<<<< HEAD
             if expr.is_symbol_access:
                 if isinstance(expr.field_sym, sym.Fn):
                     if expr.field_sym.is_method:
@@ -1298,152 +1104,6 @@ class Checker:
                         expr.pos
                     )
             elif expr.has_expr:
-=======
-            left_typ = self.check_expr(expr.left)
-            expr.left_typ = left_typ
-            if expr.is_nonecheck:
-                if not isinstance(left_typ, type.Optional):
-                    report.error(
-                        "cannot check a non-optional value", expr.field_pos
-                    )
-                else:
-                    expr.typ = left_typ.typ
-            elif expr.is_indirect:
-                if not (
-                    isinstance(left_typ, type.Ptr)
-                    or isinstance(left_typ, type.Ref)
-                ):
-                    report.error(
-                        f"invalid indirect for `{left_typ}`", expr.field_pos
-                    )
-                elif isinstance(left_typ, type.Ptr) and not self.inside_unsafe:
-                    report.error(
-                        "dereference of pointer is unsafe and requires `unsafe` block",
-                        expr.pos
-                    )
-                elif left_typ.typ == self.comp.void_t:
-                    report.error("invalid indirect for `*void`", expr.field_pos)
-                    report.help(
-                        "consider casting this to another pointer type, e.g. `*u8`"
-                    )
-                else:
-                    expr.field_is_mut = left_typ.is_mut
-                    expr.typ = left_typ.typ
-            else:
-                left_sym = left_typ.symbol()
-                if isinstance(left_typ, type.Optional):
-                    report.error(
-                        "fields of an optional value cannot be accessed directly",
-                        expr.pos
-                    )
-                    report.help("handle it with `.?` or `orelse`")
-                elif left_sym.kind == TypeKind.Array and expr.field_name == "len":
-                    expr.typ = self.comp.usize_t
-                elif left_sym.kind == TypeKind.Tuple and expr.field_name.isdigit(
-                ):
-                    idx = int(expr.field_name)
-                    if idx < len(left_sym.info.types):
-                        expr.typ = left_sym.info.types[idx]
-                    else:
-                        report.error(
-                            f"type `{left_sym.name}` has no field `{expr.field_name}`",
-                            expr.pos
-                        )
-                elif field := left_sym.find_field(expr.field_name):
-                    if (not field.vis.is_pub()
-                        ) and not self.sym.has_access_to(left_sym):
-                        report.error(
-                            f"field `{expr.field_name}` of type `{left_sym.name}` is private",
-                            expr.field_pos
-                        )
-                    expr.typ = field.typ
-                    expr.field_is_mut = field.is_mut
-                elif decl := left_sym.find(expr.field_name):
-                    if isinstance(decl, sym.Fn):
-                        if decl.is_method:
-                            report.error(
-                                f"cannot take value of method `{expr.field_name}`",
-                                expr.field_pos
-                            )
-                            report.help(
-                                f"use parentheses to call the method: `{expr}()`"
-                            )
-                        else:
-                            report.error(
-                                f"cannot take value of associated function `{expr.field_name}` from value",
-                                expr.field_pos
-                            )
-                            report.help(
-                                f"use `{left_sym.name}::{expr.field_name}` instead"
-                            )
-                            expr.typ = decl.typ()
-                    else:
-                        report.error(
-                            f"cannot take value of {decl.typeof()} `{left_sym.name}::{expr.field_name}`",
-                            expr.field_pos
-                        )
-                else:
-                    report.error(
-                        f"type `{left_sym.name}` has no field `{expr.field_name}`",
-                        expr.field_pos
-                    )
-                    if expr.field_name.isdigit():
-                        if left_sym.kind in (TypeKind.Array, TypeKind.Vec):
-                            report.note(
-                                f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
-                            )
-            expr.left_typ = left_typ
-            if isinstance(expr.typ, type.Ptr) and not self.inside_unsafe:
-                report.error(
-                    "pointers are usable only inside `unsafe` blocks", expr.pos
-                )
-            return expr.typ
-        elif isinstance(expr, ast.PathExpr):
-            expr.typ = self.comp.void_t
-            if isinstance(expr.field_info, sym.Fn):
-                if expr.field_info.is_method:
-                    report.error(
-                        f"cannot take value of method `{expr.field_name}`",
-                        expr.field_pos
-                    )
-                expr.typ = expr.field_info.typ()
-            elif isinstance(expr.left_info, sym.Type):
-                expr.typ = type.Type(expr.left_info)
-            elif isinstance(expr.field_info, sym.Type):
-                expr.typ = type.Type(expr.field_info)
-            elif isinstance(expr.field_info, sym.Const):
-                expr.typ = expr.field_info.typ
-            elif isinstance(expr.field_info, sym.Var):
-                if (
-                    expr.field_info.is_mut or (
-                        expr.field_info.is_extern
-                        and expr.field_info.abi != sym.ABI.Rivet
-                    )
-                ) and not self.inside_unsafe:
-                    if expr.field_info.is_extern:
-                        report.error(
-                            "use of external objects is unsafe and requires `unsafe` block",
-                            expr.pos
-                        )
-                    else:
-                        report.error(
-                            "use of mutable global objects is unsafe and requires `unsafe` block",
-                            expr.pos
-                        )
-                        report.note(
-                            "mutable global objects can be mutated by multiple threads: "
-                            "aliasing violations or data races will cause undefined behavior"
-                        )
-                expr.typ = expr.field_info.typ
-            else:
-                report.error(
-                    "unexpected bug for path expression", expr.field_pos
-                )
-                report.note("please report this bug, thanks =D")
-            return expr.typ
-        elif isinstance(expr, ast.ReturnExpr):
-            if expr.has_expr:
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 if self.cur_fn.ret_typ == self.comp.void_t:
                     report.error(
                         f"void {self.cur_fn.typeof()} `{self.cur_fn.name}` should not return a value",
@@ -1543,12 +1203,9 @@ class Checker:
             expr.typ = expected_branch_typ
             self.expected_type = old_expected_type
             return expr.typ
-<<<<<<< HEAD
         elif isinstance(expr, ast.BranchExpr):
             expr.typ = self.comp.never_t
             return expr.typ
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         return self.comp.void_t
 
     def check_ctor(self, info, expr):
@@ -1601,10 +1258,7 @@ class Checker:
                         continue
                 else:
                     field_typ = type_fields[i].typ
-<<<<<<< HEAD
                 arg.typ = field_typ
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 arg_t = self.check_expr(arg.expr)
                 try:
                     self.check_types(arg_t, field_typ)
@@ -1722,11 +1376,7 @@ class Checker:
 
     def check_types(self, got, expected):
         if not self.check_compatible_types(got, expected):
-<<<<<<< HEAD
             if got == self.comp.nil_t:
-=======
-            if got == self.comp.none_t:
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 if isinstance(expected, type.Optional):
                     got_str = str(expected)
                 else:
@@ -1752,20 +1402,11 @@ class Checker:
             return expected.typ == got.typ
         elif isinstance(expected,
                         type.Optional) and not isinstance(got, type.Optional):
-<<<<<<< HEAD
             if got == self.comp.nil_t:
                 return True
             return self.check_compatible_types(got, expected.typ)
         elif isinstance(expected, type.Ptr) and isinstance(got, type.Ref):
             # allow &[mut] T == *[mut] T and &T == *T inside `unsafe` block
-=======
-            if got == self.comp.none_t:
-                return True
-            return self.check_compatible_types(got, expected.typ)
-        elif isinstance(expected, type.Ptr) and isinstance(got, type.Ref):
-            # allow &[mut] T == *[const|mut] T and &T == *const T inside
-            # `unsafe` block
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             if not self.inside_unsafe:
                 return False
             if expected.is_mut and not got.is_mut:
@@ -1773,15 +1414,7 @@ class Checker:
             if expected.typ == self.comp.void_t:
                 return True
             return expected.typ == got.typ
-<<<<<<< HEAD
         elif expected == self.comp.nil_t and isinstance(got, type.Optional):
-=======
-        elif isinstance(expected, type.Ptr) and got == self.comp.none_t:
-            return True # allow *[const|mut] T == none
-        elif expected == self.comp.none_t and (
-            isinstance(got, type.Optional) or isinstance(got, type.Ptr)
-        ):
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             return True
 
         if (isinstance(expected, type.Ref)
@@ -1831,11 +1464,8 @@ class Checker:
                 return True
         elif exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:
             return exp_sym.info.elem_typ == got_sym.info.elem_typ and exp_sym.info.size == got_sym.info.size
-<<<<<<< HEAD
         elif exp_sym.kind == TypeKind.Vec and got_sym.kind == TypeKind.Vec:
             return exp_sym.info.elem_typ == got_sym.info.elem_typ
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif exp_sym.kind == TypeKind.Tuple and got_sym.kind == TypeKind.Tuple:
             if len(exp_sym.info.types) != len(got_sym.info.types):
                 return False
@@ -1844,11 +1474,7 @@ class Checker:
                     return False
             return True
 
-<<<<<<< HEAD
         if self.sym.is_runtime_mod():
-=======
-        if self.sym.is_core_pkg():
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             if exp_sym.kind == TypeKind.Vec and got_sym == self.comp.vec_sym:
                 return True
 
@@ -1927,7 +1553,6 @@ class Checker:
                 report.error("cannot use `self` as mutable value", expr.pos)
                 report.help("consider making `self` as mutable: `mut self`")
         elif isinstance(expr, ast.SelectorExpr):
-<<<<<<< HEAD
             if expr.is_symbol_access:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
             elif isinstance(expr.left, ast.Ident):
@@ -1945,8 +1570,6 @@ class Checker:
                         "cannot use `self` as mutable receiver", expr.pos
                     )
                     report.help("consider making `self` as mutable: `mut self`")
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             if expr.is_indirect and isinstance(
                 expr.left_typ, (type.Ptr, type.Ref)
             ):
@@ -1963,16 +1586,8 @@ class Checker:
                     f"field `{expr.field_name}` of type `{expr.left_typ.symbol().name}` is immutable",
                     expr.pos
                 )
-<<<<<<< HEAD
         elif isinstance(expr, ast.NilLiteral):
             report.error("`nil` cannot be modified", expr.pos)
-=======
-        elif isinstance(expr, ast.PathExpr):
-            if expr.field_info:
-                self.check_sym_is_mut(expr.field_info)
-        elif isinstance(expr, ast.NoneLiteral):
-            report.error("`none` cannot be modified", expr.pos)
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif isinstance(expr, ast.StringLiteral):
             report.error("string literals cannot be modified", expr.pos)
         elif isinstance(expr, ast.VecLiteral):

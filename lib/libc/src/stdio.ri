@@ -19,10 +19,6 @@ extern (C) {
     pub fn fclose(stream: *mut FILE) i32;
     pub fn fileno(stream: *FILE) i32;
     pub fn rewind(stream: *mut FILE) void;
-<<<<<<< HEAD:lib/libc/src/stdio.ri
-=======
-}
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/stdc/stdio.ri
 
 	pub fn popen(cmd: *u8, modes: *u8) ?*mut FILE;
 	pub fn pclose(stream: *mut FILE) i32;
@@ -30,8 +26,4 @@ extern (C) {
     pub fn putchar(s: i32) i32;
     pub fn printf(fmt: *u8, ...) i32;
     pub fn asprintf(strp: *?*u8, fmt: *u8, ...) i32;
-}
-
-extern (C) {
-    pub fn asprintf(strp: **u8, fmt: *u8, ...) i32;
 }

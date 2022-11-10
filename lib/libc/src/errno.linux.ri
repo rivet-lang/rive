@@ -3,14 +3,5 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-<<<<<<< HEAD
-<<<<<<<< HEAD:lib/libc/src/errno.linux.ri
     pub fn __errno_location() *mut i32;
-========
-    pub fn stat(__file: *u8, __buf: *mut Stat) i32;
-	pub fn lstat(file: *u8, buf: *mut Stat) i32;
->>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/stdc/stat.ri
-=======
-    pub fn __errno_location() *mut i32;
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 }

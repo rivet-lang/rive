@@ -50,11 +50,7 @@ class Lexer:
 
     def tokenize_remaining_text(self):
         while True:
-<<<<<<< HEAD
             t = self.internal_next()
-=======
-            t = self._next()
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             self.all_tokens.append(t)
             if t.kind == Kind.EOF:
                 break
@@ -133,10 +129,6 @@ class Lexer:
 
     def read_ident(self):
         start = self.pos
-<<<<<<< HEAD
-=======
-        self.pos += 1
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         while self.pos < self.text_len:
             c = self.text[self.pos]
             if utils.is_valid_name(c) or c.isdigit():
@@ -399,11 +391,7 @@ class Lexer:
             return self.all_tokens[cidx]
         return token.Token("", Kind.EOF, self.current_pos())
 
-<<<<<<< HEAD
     def internal_next(self):
-=======
-    def _next(self):
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         while True:
             if self.is_started:
                 self.pos += 1
@@ -412,10 +400,7 @@ class Lexer:
             self.skip_whitespace()
             if self.pos >= self.text_len:
                 return token.Token("", Kind.EOF, self.current_pos())
-<<<<<<< HEAD
             self.skip_whitespace()
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             pos = self.current_pos()
             ch = self.current_char()
             nextc = self.look_ahead(1)
@@ -521,12 +506,6 @@ class Lexer:
             elif ch == ",":
                 return token.Token("", Kind.Comma, pos)
             elif ch == ":":
-<<<<<<< HEAD
-=======
-                if nextc == ":":
-                    self.pos += 1
-                    return token.Token("", Kind.DoubleColon, pos)
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 return token.Token("", Kind.Colon, pos)
             elif ch == ";":
                 return token.Token("", Kind.Semicolon, pos)
@@ -538,11 +517,7 @@ class Lexer:
             elif ch == "$":
                 return token.Token("", Kind.Dollar, pos)
             elif ch == "#":
-<<<<<<< HEAD
                 if nextc not in ("!", "["):
-=======
-                if nextc != "[":
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                     self.pp_directive()
                     continue
                 return token.Token("", Kind.Hash, pos)
@@ -608,7 +583,6 @@ class Lexer:
         self.pos += 1 # skip '#'
         self.skip_whitespace()
         kw = self.read_ident()
-<<<<<<< HEAD
         self.skip_whitespace()
 
         if kw == "if":
@@ -616,14 +590,6 @@ class Lexer:
             self.pp_if()
         elif kw == "elif":
             self.pos += 1 # fix
-=======
-
-        if kw == "if":
-            self.pos += 1 #fix
-            self.pp_if()
-        elif kw == "elif":
-            self.pos += 1 #fix
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             self.pp_elif()
         elif kw == "else":
             self.pp_else()
@@ -638,11 +604,7 @@ class Lexer:
             # skip tokens until next preprocessing directive
             while self.pos < self.text_len:
                 cc = self.current_char()
-<<<<<<< HEAD
                 if cc == '#' and self.look_ahead(1) not in ("!", "["):
-=======
-                if cc == '#':
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                     self.pos -= 1
                     return
                 if cc == '\n':
@@ -655,10 +617,7 @@ class Lexer:
     def pp_if(self):
         self.skip_whitespace()
         cond = self.pp_expression()
-<<<<<<< HEAD
         self.skip_whitespace()
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.conditional_stack.append(Conditional())
         if cond and (
             len(self.conditional_stack) == 1
@@ -666,10 +625,7 @@ class Lexer:
         ):
             # condition true => process code within if
             self.conditional_stack[-1].matched = True
-<<<<<<< HEAD
             self.conditional_stack[-1].skip_section = False
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         else:
             # skip lines until next preprocessing directive
             self.conditional_stack[-1].skip_section = True
@@ -678,10 +634,7 @@ class Lexer:
         pos = self.current_pos()
         self.skip_whitespace()
         cond = self.pp_expression()
-<<<<<<< HEAD
         self.skip_whitespace()
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         if len(self.conditional_stack
                ) == 0 or self.conditional_stack[-1].else_found:
             report.error("unexpected `#elif`", pos)
@@ -761,20 +714,11 @@ class Lexer:
                 self.skip_whitespace()
                 right = self.pp_unary_expression()
                 left = left != right
-<<<<<<< HEAD
             break
         return left
 
     def pp_unary_expression(self):
         if self.pos < self.text_len and self.current_char() == "!":
-=======
-            else:
-                break
-        return left
-
-    def pp_unary_expression(self):
-        if self.pos < self.text_len and self.matches("!", self.pos):
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             self.pos += 1
             self.skip_whitespace()
             return not self.pp_unary_expression()
@@ -791,7 +735,6 @@ class Lexer:
             self.pos += 1
             self.skip_whitespace()
             result = self.pp_expression()
-<<<<<<< HEAD
             self.pos += 1
             self.skip_whitespace()
             cc = self.current_char()
@@ -799,13 +742,6 @@ class Lexer:
                 self.pos += 1
             else:
                 report.error(f"expected `)`, found `{cc}`", self.current_pos())
-=======
-            self.skip_whitespace()
-            if self.pos < self.text_len and self.current_char() == ')':
-                self.pos += 1
-            else:
-                report.error("expected `)`", self.current_pos())
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             return result
         return False
 

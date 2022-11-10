@@ -4,24 +4,15 @@
 
 /// Reads the file in `path` and returns the contents.
 pub fn read_file(path: string) !string {
-<<<<<<< HEAD:lib/std/src/filesys/mod.ri
 	let mut f = File.open(path, "rb").!;
-=======
-	let mut f = File::open(path, "rb").!;
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/std/src/fs/mod.ri
 	let res = f.read_all().!;
 	f.close();
 	return res;
 }
 
 /// Writes `text` data to a file in `path`.
-<<<<<<< HEAD:lib/std/src/filesys/mod.ri
 pub fn write_file(path: string, text: string) ! {
 	let mut f = File.open(path, "wb").!;
-=======
-pub fn write_file(path: string, text: string) !void {
-	let mut f = File::open(path, "wb").!;
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/std/src/fs/mod.ri
 	f.write(text);
 	f.close();
 }

@@ -2,13 +2,9 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-<<<<<<< HEAD
 import "libc";
 
 import "../strings" { Builder };
-=======
-use core::stdc;
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
 struct Result {
 	pub output: string;
@@ -19,7 +15,6 @@ struct Result {
 /// both its output and the exit code.
 pub fn execute(cmd: string) Result {
     let pcmd = if cmd.contains("2>") { cmd } else { "{} 2>&1".fmt(cmd) };
-<<<<<<< HEAD
     unsafe {
         if let f = libc.popen(pcmd.ptr, c"r") {
             let fd = libc.fileno(f);
@@ -36,25 +31,5 @@ pub fn execute(cmd: string) Result {
             return Result(output.to_string(), libc.pclose(f));
         }
         return Result("execute( {} ) failed".fmt(cmd), -1);
-=======
-
-    unsafe {
-        let f = stdc::popen(pcmd.ptr, c"r");
-        if f == none {
-            return Result("execute(\"{}\") failed".fmt(cmd), -1);
-        }
-        let fd = stdc::fileno(f);
-        let mut buf: [u8; 4096] = []!;
-        let pbuf: *mut u8 = addr_of_mut!(buf[0]);
-        let mut output = StringBuilder::new(1024);
-        while {
-            let len = stdc::read(fd, pbuf, 4096);
-            if len == 0 or len == -1 {
-                break;
-            }
-            output.write_raw_with_len(pbuf, as(usize, len));
-        }
-        return Result(output.to_string(), stdc::pclose(f));
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     }
 }

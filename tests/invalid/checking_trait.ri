@@ -1,34 +1,20 @@
 trait ToStr {
-<<<<<<< HEAD
     fn to_str1(&self) string;
-=======
-    fn to_str1(self) string;
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 }
 
 fn my_print(v: ToStr) {
     _ = v.to_str1();
 }
 
-<<<<<<< HEAD
 extend string : ToStr {
-=======
-extend string for ToStr {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     fn to_str1(self) string {
         return self;
     }
 }
 
-<<<<<<< HEAD
 extend bool : ToStr {
     fn to_str1(&self) string {
         return if self.* { "true" } else { "false" };
-=======
-extend bool for ToStr {
-    fn to_str1(self) string {
-        return if self { "true" } else { "false" };
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     }
 }
 

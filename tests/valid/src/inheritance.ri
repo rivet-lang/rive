@@ -7,16 +7,10 @@ class Base2 : Base1 {
 }
 
 test "inheritance, fields" {
-<<<<<<< HEAD
     /*
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     let x = Base2();
     if x.field2 {
         _ = x.field1;
     }
-<<<<<<< HEAD
     */
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 }

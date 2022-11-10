@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 fn main() {
-=======
-fn main() void {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     let x = 1;
     let x = 1; // FAIL
 
@@ -12,19 +8,11 @@ fn main() void {
     }
 }
 
-<<<<<<< HEAD
 fn other(a: i32) {
     let a = 1;
 }
 
 fn other(a: i32) { // FAIL
-=======
-fn other(a: i32) void {
-    let a = 1;
-}
-
-fn other(a: i32) void { // FAIL
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     let a = 1;
 }
 
@@ -34,26 +22,7 @@ class RuntimeError : Error { } // FAIL
 struct Gota { }
 struct Gota { } // FAIL
 
-<<<<<<< HEAD
-=======
-mod module {
-    struct App { }
-    struct App { } // FAIL
-}
-
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 enum State {
     Idle,
     Idle // FAIL
 }
-<<<<<<< HEAD
-=======
-
-// OK, extend `module` mod
-mod module {
-    struct Game {
-        art: bool;
-        art: bool; // FAIL
-    }
-}
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

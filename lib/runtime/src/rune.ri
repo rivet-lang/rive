@@ -2,13 +2,6 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-<<<<<<< HEAD:lib/runtime/src/rune.ri
-=======
-use pkg::process::panic;
-use pkg::traits::ToString;
-use pkg::errors::RuneFromU32Error;
-
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/rune.ri
 const MAX_ONE_B: u32 = 0x80;
 const MAX_TWO_B: u32 = 0x800;
 const MAX_THREE_B: u32 = 0x10000;
@@ -31,11 +24,7 @@ extend rune : ToString {
     pub const REPLACEMENT_CHARACTER: rune = 0xFFFD;
 
     pub fn from_u32(i: u32) !rune {
-<<<<<<< HEAD:lib/runtime/src/rune.ri
         if (i > as(u32, Self.MAX)) or (i >= 0xD800 and i <= 0xDFFF) {
-=======
-        if (i > as(u32, Self::MAX)) or (i >= 0xD800 and i <= 0xDFFF) {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/rune.ri
             return RuneFromU32Error();
         }
         return as(rune, i);
@@ -54,11 +43,7 @@ extend rune : ToString {
     /// Panics if given a radix larger than 36.
     pub fn from_digit(num: u32, radix: u32) ?rune {
         if radix > 36 {
-<<<<<<< HEAD:lib/runtime/src/rune.ri
             process_panic("rune.from_digit: radix is too high (maximum 36)");
-=======
-            panic("rune::from_digit: radix is too high (maximum 36)");
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/rune.ri
         }
         if num < radix {
             let num_ = as(u8, num);
@@ -75,19 +60,11 @@ extend rune : ToString {
         return len_utf8(as(u32, self));
     }
 
-<<<<<<< HEAD:lib/runtime/src/rune.ri
     fn to_string(&self) string {
         let len = self.len_utf8();
         let res = as(*mut u8, mem_alloc(len + 1) catch unreachable!());
         _ = unsafe { utf32_decode_to_buffer(as(u32, self.*), res) };
         return string(unsafe { res }, len);
-=======
-    fn to_string(self) string {
-        let len = self.len_utf8();
-        let res = as(*mut u8, mem::alloc(len + 1) catch unreachable!());
-        _ = unsafe { utf32_decode_to_buffer(as(u32, self), res) };
-        return string(res, len);
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/rune.ri
     }
 }
 

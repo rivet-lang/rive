@@ -1,4 +1,4 @@
-fn main() void {
+fn main() {
     _ = b'A'; // OK
     _ = c'B'; // FAIL
 

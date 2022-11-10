@@ -1,63 +1,35 @@
-<<<<<<< HEAD
 fn ret_nil() ?i32 {
-=======
-fn ret_none() ?i32 {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     return 3;
 }
 
 test "if guard" {
-<<<<<<< HEAD
     if let val = ret_nil() {
         assert!(val == 3);
     }
 
     if let val1 = ret_nil(); val1 >= 10 {
-=======
-    if let val = ret_none() {
-        assert!(val == 3);
-    }
-
-    if let val1 = ret_none(); val1 >= 10 {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         assert!(false);
     }
 }
 
 test "while guard" {
-<<<<<<< HEAD
     while let val2 = ret_nil() {
-=======
-    while let val2 = ret_none() {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         assert!(val2 == 3);
         break;
     }
 
-<<<<<<< HEAD
     while let val3 = ret_nil(); val3 >= 10 {
-=======
-    while let val3 = ret_none(); val3 >= 10 {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         assert!(val3 >= 3);
     }
 }
 
 test "switch guard" {
-<<<<<<< HEAD
     switch let val4 = ret_nil() {
-=======
-    switch let val4 = ret_none() {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         3 => assert!(val4 == 3),
         else => assert!(false)
     }
 
-<<<<<<< HEAD
     switch let val5 = ret_nil(); val5 >= 10 {
-=======
-    switch let val5 = ret_none(); val5 >= 10 {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         3 => assert!(val5 == 3),
         else => assert!(false)
     }

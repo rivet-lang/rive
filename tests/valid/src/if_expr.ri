@@ -1,14 +1,9 @@
-<<<<<<< HEAD
 test "`if` expression" {
-=======
-test "if expression" {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     let x = if true { 1 } else { 2 };
     assert!(x == 1);
 
     assert!((if true { 1 } else { 2 }) == 1);
 }
-<<<<<<< HEAD
 
 test "`if` expression as statement" {
     let x = 18;
@@ -18,5 +13,3 @@ test "`if` expression as statement" {
         assert!(false);
     }
 }
-=======
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

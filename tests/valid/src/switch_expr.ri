@@ -1,4 +1,3 @@
-<<<<<<< HEAD:tests/valid/src/switch_expr.ri
 test "`switch` expression" {
     assert!(switch 1 {
         1 => true,
@@ -7,9 +6,6 @@ test "`switch` expression" {
 }
 
 test "`switch` expression as statement" {
-=======
-test "switch expression" {
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:tests/ok/match_expr.ri
     switch 1 {
         1 => assert!(true),
         else => assert!(false)
@@ -20,12 +16,4 @@ test "switch expression" {
         1 => assert!(true),
         else => assert!(false)
     }
-<<<<<<< HEAD:tests/valid/src/switch_expr.ri
-=======
-
-    assert!(switch x {
-        1 => true,
-        else => false
-    });
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:tests/ok/match_expr.ri
 }

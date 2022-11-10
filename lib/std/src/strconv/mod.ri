@@ -2,9 +2,3 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-<<<<<<< HEAD:lib/std/src/strconv/mod.ri
-=======
-extern (C) {
-    pub fn get_nprocs() i32;
-}
->>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/libc/src/unistd.linux.ri
