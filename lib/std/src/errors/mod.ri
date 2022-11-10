@@ -2,14 +2,10 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-pub import "runtime" {
-    OutOfMemoryError, RuneFromU32Error, ErrnoError
-};
+/// An error that is raised when an invalid value provided for an
+/// argument of a function.
+pub class ArgumentError : Error { }
 
-pub class InvalidSyntaxError : Error { }
+pub class OutOfMemoryError : Error { }
 
-pub class InvalidBaseError : Error { }
-
-pub class InvalidBitSizeError : Error { }
-
-pub class ValueOutOfRangeError : Error { }
+pub class RuneFromU32Error : Error { }

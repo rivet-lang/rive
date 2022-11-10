@@ -3,5 +3,9 @@
 // that can be found in the LICENSE file.
 
 pub trait ToString {
+<<<<<<< HEAD:lib/runtime/src/traits.ri
     fn to_string(&self) string;
+=======
+    fn to_string(self) string;
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/traits/mod.ri
 }

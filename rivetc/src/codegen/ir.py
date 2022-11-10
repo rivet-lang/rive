@@ -10,8 +10,13 @@ class Type:
     def __init__(self, name):
         self.name = name
 
+<<<<<<< HEAD
     def ptr(self, is_managed = False):
         return Pointer(self, is_managed)
+=======
+    def ptr(self):
+        return Pointer(self)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def __repr__(self):
         return str(self)
@@ -20,6 +25,7 @@ class Type:
         return self.name
 
 class Pointer:
+<<<<<<< HEAD
     def __init__(self, typ, is_managed = False):
         self.typ = typ
         self.is_managed = is_managed
@@ -36,13 +42,23 @@ class Pointer:
             ptr = ptr.typ
             nr += 1
         return nr
+=======
+    def __init__(self, typ):
+        self.typ = typ
+
+    def ptr(self):
+        return Pointer(self)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def __repr__(self):
         return str(self)
 
     def __str__(self):
+<<<<<<< HEAD
         if self.is_managed:
             return f"+{self.typ}"
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         return f"*{self.typ}"
 
 class Array:
@@ -100,7 +116,11 @@ class RIRFile:
                 sb.writeln()
         sb.writeln()
         for i, e in enumerate(self.externs):
+<<<<<<< HEAD
             sb.write(str(e))
+=======
+            sb.writeln(str(e))
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         sb.writeln()
         for i, g in enumerate(self.globals):
             sb.writeln(str(g))
@@ -172,6 +192,7 @@ class GlobalVar:
 
     def __str__(self):
         if self.is_pub:
+<<<<<<< HEAD
             kw = "export "
         elif self.is_extern:
             kw = "extern "
@@ -188,6 +209,18 @@ class FnDecl:
     def __init__(
         self, is_pub, attrs, is_extern, name, args, is_variadic, ret_typ,
         is_never
+=======
+            kw = "pub "
+        elif self.is_extern:
+            kw = "extern "
+        else:
+            kw = ""
+        return f'{kw}let %{self.name}: {self.typ}'
+
+class FnDecl:
+    def __init__(
+        self, is_pub, attrs, is_extern, name, args, is_variadic, ret_typ, is_never
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     ):
         self.is_pub = is_pub
         self.attrs = attrs
@@ -196,6 +229,7 @@ class FnDecl:
         self.args = args
         self.is_variadic = is_variadic
         self.ret_typ = ret_typ
+<<<<<<< HEAD
         self.is_never = is_never
         self.arr_ret_struct = ""
 
@@ -213,12 +247,30 @@ class FnDecl:
 
     def add_label(self, label):
         self.instrs.append(Label(label))
+=======
+        self.is_never=is_never
+
+        self.locals = 0
+        self.bb = list()
+
+    def add_comment(self, comment):
+        self.bb.append(Comment(comment))
+
+    def local_name(self):
+        name = f"_{self.locals}_"
+        self.locals += 1
+        return name
+
+    def add_label(self, label):
+        self.bb.append(Label(label))
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def add_and_get_label(self):
         label = self.local_name()
         self.add_label(label)
         return label
 
+<<<<<<< HEAD
     def breakpoint(self):
         self.add_inst(Inst(InstKind.Breakpoint, []))
 
@@ -235,6 +287,13 @@ class FnDecl:
             self.add_inst(Inst(InstKind.Alloca, [var, val]))
         else:
             self.add_inst(Inst(InstKind.Alloca, [var]))
+=======
+    def alloca(self, typ, tmp, inst):
+        self.add_inst(Alloca(typ, tmp, inst))
+
+    def alloca_var(self, var):
+        self.add_inst(Inst(InstKind.Alloca, [var]))
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def store(self, var, val):
         self.add_inst(Inst(InstKind.Store, [var, val]))
@@ -243,7 +302,11 @@ class FnDecl:
         self.add_inst(Inst(InstKind.StorePtr, [var, val]))
 
     def add_inst(self, inst):
+<<<<<<< HEAD
         self.instrs.append(inst)
+=======
+        self.bb.append(inst)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def add_br(self, label):
         self.add_inst(Inst(InstKind.Br, [Name(label)]))
@@ -258,6 +321,12 @@ class FnDecl:
         args_ = [Name(name), *args]
         self.add_inst(Inst(InstKind.Call, args_))
 
+<<<<<<< HEAD
+=======
+    def breakpoint(self):
+        self.add_inst(Inst(InstKind.Breakpoint, []))
+
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def add_ret(self, expr):
         self.add_inst(Inst(InstKind.Ret, [expr]))
 
@@ -272,6 +341,7 @@ class FnDecl:
             )
         )
 
+<<<<<<< HEAD
     def add_local(self, name, typ):
         if self.exists_local(name):
             raise Exception(f"duplicate local name `{name}`")
@@ -283,14 +353,20 @@ class FnDecl:
                 return True
         return False
 
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def __str__(self):
         sb = utils.Builder()
         if self.is_extern:
             sb.write("extern ")
         elif self.is_pub:
+<<<<<<< HEAD
             sb.write("export ")
         else:
             sb.write("local ")
+=======
+            sb.write("pub ")
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         sb.write(f'fn {self.name}(')
         for i, arg in enumerate(self.args):
             sb.write(f'%{arg.name}: {arg.typ}')
@@ -298,14 +374,22 @@ class FnDecl:
                 sb.write(", ")
         if self.is_variadic:
             if len(self.args) > 0:
+<<<<<<< HEAD
                 sb.write(", ")
+=======
+                self.write(", ")
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             sb.write("...")
         sb.write(f") {self.ret_typ}")
         if self.is_extern:
             sb.writeln("")
         else:
             sb.writeln(" {")
+<<<<<<< HEAD
             for i in self.instrs:
+=======
+            for i in self.bb:
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 if isinstance(i, Label):
                     sb.writeln()
                 else:
@@ -324,12 +408,20 @@ class Comment:
     def __str__(self):
         return self.__repr__()
 
+<<<<<<< HEAD
 class NilLit:
+=======
+class NoneLit:
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def __init__(self, typ):
         self.typ = typ
 
     def __repr__(self):
+<<<<<<< HEAD
         return "nil"
+=======
+        return "none"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def __str__(self):
         return self.__repr__()
@@ -371,6 +463,7 @@ class RuneLit:
         return self.__repr__()
 
 class StringLit:
+<<<<<<< HEAD
     def __init__(self, lit, len_):
         self.lit = lit
         self.len = len_
@@ -378,16 +471,36 @@ class StringLit:
 
     def __repr__(self):
         return f'u8* "{self.lit}"'
+=======
+    def __init__(self, typ, lit, len_):
+        self.typ = typ
+        self.lit = lit
+        self.len = len_
+
+    def __repr__(self):
+        return f'{self.typ} "{self.lit}"'
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def __str__(self):
         return self.__repr__()
 
 class ArrayLit:
+<<<<<<< HEAD
     def __init__(self, typ, elems):
         self.typ = typ
         self.elems = elems
 
     def __repr__(self):
+=======
+    def __init__(self, typ, elems, is_variadic_init = False):
+        self.typ = typ
+        self.elems = elems
+        self.is_variadic_init = is_variadic_init
+
+    def __repr__(self):
+        if self.is_variadic_init:
+            return f"{self.typ}... [{', '.join([str(e) for e in self.elems])}]"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         return f"{self.typ} [{', '.join([str(e) for e in self.elems])}]"
 
     def __str__(self):
@@ -395,11 +508,19 @@ class ArrayLit:
 
 class Ident: # Local and global values
     def __init__(self, typ, name):
+<<<<<<< HEAD
         self.name = name
         self.typ = typ
 
     def __repr__(self):
         return f'%{self.name}'
+=======
+        self.typ = typ
+        self.name = name
+
+    def __repr__(self):
+        return f'{self.typ} %{self.name}'
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def __str__(self):
         return self.__repr__()
@@ -411,7 +532,11 @@ class Selector:
         self.name = name
 
     def __repr__(self):
+<<<<<<< HEAD
         return f'{self.left}.{self.name}'
+=======
+        return f'({self.typ} ({self.left}).{self.name})'
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def __str__(self):
         return self.__repr__()
@@ -437,15 +562,33 @@ class Label:
         return self.__repr__()
 
 class Skip:
+<<<<<<< HEAD
     def __init__(self):
         self.typ = Type("void")
 
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def __repr__(self):
         return "<skip>"
 
     def __str__(self):
         return self.__repr__()
 
+<<<<<<< HEAD
+=======
+class Alloca:
+    def __init__(self, typ, name, inst):
+        self.name = name
+        self.inst = inst
+        self.typ = typ
+
+    def __repr__(self):
+        return f'{self.typ} %{self.name} = {self.inst}'
+
+    def __str__(self):
+        return self.__repr__()
+
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 class InstKind(Enum):
     Nop = auto_enum()
     Alloca = auto_enum()
@@ -526,6 +669,7 @@ class InstKind(Enum):
         return self.__repr__()
 
 class Inst:
+<<<<<<< HEAD
     def __init__(self, kind, args, typ = Type("void")):
         self.kind = kind
         self.args = args
@@ -540,6 +684,15 @@ class Inst:
             return f'{self.kind} {self.args[0]}({", ".join([str(arg) for arg in self.args[1:]])})'
         if self.kind == InstKind.Cast:
             return f"{self.kind} {self.args[0]} as {self.args[1]}"
+=======
+    def __init__(self, kind, args):
+        self.kind = kind
+        self.args = args
+
+    def __repr__(self):
+        if self.kind == InstKind.Call:
+            return f'{self.kind} {self.args[0]}({", ".join([str(arg) for arg in self.args[1:]])})'
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         return f"{self.kind} {', '.join([str(arg) for arg in self.args])}"
 
     def __str__(self):

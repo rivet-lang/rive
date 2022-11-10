@@ -2,7 +2,11 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+<<<<<<< HEAD:lib/runtime/src/process.ri
 import "libc";
+=======
+use pkg { stdc, traits, backtrace, _R9drop_argsZ };
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/process/mod.ri
 
 /// Returns the OS-assigned process identifier associated with this
 /// process.
@@ -12,10 +16,30 @@ pub fn process_id() u32 {
 
 /// Terminates current thread execution immediately after displaying a
 /// message, followed by a backtrace.
+<<<<<<< HEAD:lib/runtime/src/process.ri
 pub fn process_panic(s: string = "", args: ...ToString) never {
     console_eprintln("panic: {}", s.fmt(args));
     bt_print(2);
     process_exit(101);
+=======
+pub fn panic(s: string = "", args: ...traits::ToString) never {
+    Console::eprintln("panic: {}", s.fmt(args));
+    backtrace::print(2);
+    exit(1);
+}
+
+/// Terminates the current process with the specified exit code.
+///
+/// This function will never return and will immediately terminate the
+/// current process. The exit code is passed through to the underlying
+/// OS and will be available for consumption by another process.
+pub fn exit(code: i32 = 0) never {
+    unsafe {
+        // TODO(StunxFS): _R12drop_staticsZ();
+        _R9drop_argsZ();
+        stdc::exit(code);
+    }
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/process/mod.ri
 }
 
 /// Terminates the process in an abnormal fashion.
@@ -26,6 +50,7 @@ pub fn process_panic(s: string = "", args: ...ToString) never {
 /// The process's termination will be similar to that from the C `abort()`
 /// function. On Unix, the process will terminate with signal `SIGABRT`,
 /// which typically means that the shell prints "Aborted".
+<<<<<<< HEAD:lib/runtime/src/process.ri
 pub fn process_abort() never {
     unsafe {
         drop_globals();
@@ -42,5 +67,12 @@ pub fn process_exit(code: i32 = 0) never {
     unsafe {
         drop_globals();
         libc.exit(code);
+=======
+pub fn abort() never {
+    unsafe {
+        // TODO(StunxFS): _R12drop_staticsZ();
+        _R9drop_argsZ();
+        stdc::abort();
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/process/mod.ri
     }
 }

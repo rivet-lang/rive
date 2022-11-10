@@ -1,10 +1,18 @@
 test "vectors" {
     let mut vec = ["A", "B"];
+<<<<<<< HEAD
     assert!(vec.len == 2);
     vec.push("C");
     assert!(vec.len == 3);
     let p = vec.pop();
     assert!(vec.len == 2);
+=======
+    assert!(vec.len() == 2);
+    vec.push("C");
+    assert!(vec.len() == 3);
+    let p = vec.pop();
+    assert!(vec.len() == 2);
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     assert!(p == "C");
 }
 
@@ -12,8 +20,15 @@ test "vector from array" {
     let mut arr = [1, 2, 3]!;
     let mut vec = arr[..];
     vec.push(2);
+<<<<<<< HEAD
     assert!(vec.len == 4);
 
     let vec2 = vec.clone();
     assert!(vec2.len == 4);
+=======
+    assert!(vec.len() == 4);
+
+    let vec2 = vec.clone();
+    assert!(vec2.len() == 4);
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 }

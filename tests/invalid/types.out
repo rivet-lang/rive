@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 tests/invalid/types.ri:9:9: error: tuples can have a maximum of 8 types
   9 |     f2: (i32, i32, i32, i32, i32, i32, i32, i32, i32);
     |         ^
@@ -6,3 +7,12 @@ tests/invalid/types.ri:14:9: error: expected type, found token `=`
   14 |     f5: =;
      |         ^
 rivetc: error: could not compile module `types`, aborting due to 2 previous errors
+=======
+tests/invalid/types.ri:9:9: error: pointers cannot be optional
+   = note: by default pointers can contain the value `none`
+tests/invalid/types.ri:11:9: error: tuples can have a maximum of 8 types
+   = help: you can use a struct instead
+tests/invalid/types.ri:15:9: error: expected type, found keyword `pkg`
+tests/invalid/types.ri:16:9: error: expected type, found token `=`
+rivetc: error: could not compile package `types`, aborting due to 4 previous errors
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

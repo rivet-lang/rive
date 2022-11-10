@@ -18,9 +18,17 @@ class Parser:
         self.peek_tok = None
         self.last_err_pos = None
 
+<<<<<<< HEAD
         self.mod_name = ""
         self.mod_vis = sym.Vis.Priv
         self.mod_name = ""
+=======
+        self.pkg_name = ""
+        self.pkg_deps = []
+        self.mod_vis = sym.Vis.Priv
+        self.mod_name = ""
+        self.mod_deps = []
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
         self.file_path = ""
         self.file_dir = ""
@@ -37,14 +45,39 @@ class Parser:
         self.inside_switch_header = False
         self.inside_block = False
 
+<<<<<<< HEAD
     def parse_mod(self, mod_name, mod_sym, vis, files):
         self.mod_name = mod_name
         self.mod_name = mod_sym.name
         self.mod_vis = vis
+=======
+    def parse_pkg(self, pkg_name, files):
+        self.inside_pkg = True
+        self.pkg_name = pkg_name
+        if self.pkg_name in ("std", "tests"):
+            self.pkg_deps.append("core")
+        elif self.comp.prefs.pkg_name == pkg_name and self.comp.prefs.build_mode == prefs.BuildMode.Test:
+            self.pkg_deps.append("tests")
         source_files = []
         for file in files:
             self.file_path = file
             self.file_dir = os.path.dirname(file)
+            source_files.append(self.parse_file(file, True))
+        self.comp.pkg_deps.add_pkg_deps(pkg_name, self.pkg_deps)
+        self.comp.pkg_deps.add_pkg_mod_deps(pkg_name, pkg_name, self.mod_deps)
+        self.comp.pkg_deps.add_source_files(pkg_name, source_files)
+
+    def parse_mod(self, pkg_name, parent, vis, name, files):
+        self.pkg_name = pkg_name
+        self.mod_vis = vis
+        self.mod_name = name
+        self.file_parent_sym = parent
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
+        source_files = []
+        for file in files:
+            self.file_path = file
+            self.file_dir = os.path.dirname(file)
+<<<<<<< HEAD
             self.file_sym = mod_sym
             source_files.append(self.parse_file(file))
         return source_files
@@ -56,6 +89,35 @@ class Parser:
         self.advance(2)
         return ast.SourceFile(
             file, self.parse_decls(), self.mod_name, self.file_sym
+=======
+            source_files.append(self.parse_file(file, False))
+        qualname = parent.qualname() + "::" + name
+        self.comp.pkg_deps.add_pkg_mod_deps(pkg_name, qualname, self.mod_deps)
+        self.comp.pkg_deps.add_source_files(qualname, source_files)
+
+    def parse_file(self, file, from_pkg):
+        self.lexer = Lexer.from_file(self.comp, file)
+        if report.ERRORS > 0:
+            return ast.SourceFile(file, [], self.pkg_name, None)
+        self.advance(2)
+        if from_pkg:
+            if pkg_sym := self.comp.universe.find(self.pkg_name):
+                sf_sym = pkg_sym
+            else:
+                sf_sym = self.comp.universe.add_and_return(
+                    sym.Pkg(sym.Vis.Priv, self.pkg_name)
+                )
+        else:
+            if mod_sym := self.file_parent_sym.find(self.mod_name):
+                sf_sym = mod_sym
+            else:
+                sf_sym = self.file_parent_sym.add_and_return(
+                    sym.Mod(self.mod_vis, self.mod_name)
+                )
+        self.file_sym = sf_sym
+        return ast.SourceFile(
+            file, self.parse_decls(), self.pkg_name, self.file_sym
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         )
 
     # ---- useful functions for working with tokens ----
@@ -120,12 +182,19 @@ class Parser:
         report.error(f"unknown ABI: `{abi}`", abi_pos)
         return sym.ABI.Rivet
 
+<<<<<<< HEAD
     def parse_attrs(self, parse_mod_attrs = False):
         if self.file_sym.attrs == None:
             self.file_sym.attrs = ast.Attrs()
         attrs = ast.Attrs()
         while self.accept(Kind.Hash):
             if parse_mod_attrs:
+=======
+    def parse_attrs(self, parse_pkg_attrs = False):
+        attrs = ast.Attrs()
+        while self.accept(Kind.Hash):
+            if parse_pkg_attrs:
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 self.expect(Kind.Bang)
             self.expect(Kind.Lbracket)
             while True:
@@ -147,11 +216,15 @@ class Parser:
                         if not self.accept(Kind.Comma):
                             break
                     self.expect(Kind.Rparen)
+<<<<<<< HEAD
                 attr = ast.Attr(attr_name, args, pos)
                 if parse_mod_attrs:
                     self.file_sym.attrs.add(attr)
                 else:
                     attrs.add(attr)
+=======
+                attrs.add(ast.Attr(attr_name, args, pos))
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 if not self.accept(Kind.Semicolon):
                     break
             self.expect(Kind.Rbracket)
@@ -172,6 +245,7 @@ class Parser:
 
     def parse_decl(self):
         doc_comment = self.parse_doc_comment()
+<<<<<<< HEAD
         attrs = self.parse_attrs(
             self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
         )
@@ -182,10 +256,28 @@ class Parser:
             path = self.tok.lit
             self.expect(Kind.String)
             alias = ""
+=======
+        attrs = self.parse_attrs()
+        vis = self.parse_vis()
+        pos = self.tok.pos
+        if self.accept(Kind.KwUse):
+            path = self.parse_expr()
+            if isinstance(path, ast.Ident):
+                alias = path.name
+            elif isinstance(path, ast.PkgExpr):
+                alias = self.comp.prefs.pkg_name
+            elif isinstance(path, ast.PathExpr):
+                alias = path.field_name
+            else:
+                report.error("expected name or path", path.pos)
+                alias = ""
+            symbols = list()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             if self.accept(Kind.KwAs):
                 alias = self.parse_name()
             elif self.accept(Kind.Lbrace):
                 while True:
+<<<<<<< HEAD
                     info_pos = self.tok.pos
                     name = self.parse_name()
                     info_alias = name
@@ -194,10 +286,24 @@ class Parser:
                     import_list.append(
                         ast.ImportListInfo(name, info_alias, info_pos)
                     )
+=======
+                    pos = self.tok.pos
+                    if self.accept(Kind.KwSelf):
+                        if self.accept(Kind.KwAs):
+                            alias = self.parse_name()
+                        symbols.append(ast.UseSymbol("", alias, True, pos))
+                    else:
+                        name = self.parse_name()
+                        alias = name
+                        if self.accept(Kind.KwAs):
+                            alias = self.parse_name()
+                        symbols.append(ast.UseSymbol(name, alias, False, pos))
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                     if not self.accept(Kind.Comma):
                         break
                 self.expect(Kind.Rbrace)
             self.expect(Kind.Semicolon)
+<<<<<<< HEAD
             return ast.ImportDecl(attrs, vis, path, alias, import_list, pos)
         elif self.accept(Kind.KwExtern):
             self.inside_extern = True
@@ -227,6 +333,91 @@ class Parser:
             decl = ast.ExternDecl(attrs, abi, protos, pos)
             self.inside_extern = False
             return decl
+=======
+            return ast.UseDecl(attrs, vis, path, alias, symbols)
+        elif self.accept(Kind.KwExtern):
+            if self.tok.kind == Kind.KwPkg and self.inside_pkg:
+                report.error(
+                    "external packages can only be declared at the package level",
+                    pos,
+                )
+            self.inside_extern = True
+            if self.accept(Kind.KwPkg):
+                # extern package
+                if vis.is_pub():
+                    report.error(
+                        "`extern pkg` declarations cannot be declared public",
+                        pos
+                    )
+                extern_pkg_pos = self.tok.pos
+                extern_pkg = self.parse_name()
+                self.expect(Kind.Semicolon)
+                decl = ast.ExternPkg(extern_pkg, pos)
+                if extern_pkg == self.pkg_name:
+                    report.error("a package cannot load itself", extern_pkg_pos)
+                else:
+                    self.pkg_deps.append(extern_pkg)
+                    if not self.comp.universe.exists(extern_pkg):
+                        self.comp.load_pkg(extern_pkg, extern_pkg_pos)
+            else:
+                # extern function or var
+                abi = self.parse_abi()
+                protos = []
+                if self.accept(Kind.Lbrace):
+                    if vis.is_pub():
+                        report.error(
+                            "`extern` blocks cannot be declared public", pos
+                        )
+                    self.extern_abi = abi
+                    while True:
+                        protos.append(self.parse_decl())
+                        if self.tok.kind == Kind.Rbrace:
+                            break
+                    self.expect(Kind.Rbrace)
+                elif self.accept(Kind.KwFn):
+                    protos.append(
+                        self.parse_fn_decl(
+                            doc_comment, attrs, vis,
+                            attrs.has("unsafe") or abi != sym.ABI.Rivet, abi
+                        )
+                    )
+                else:
+                    report.error("invalid external declaration", pos)
+                decl = ast.ExternDecl(attrs, abi, protos, pos)
+            self.inside_extern = False
+            return decl
+        elif self.accept(Kind.KwMod):
+            old_inside_pkg = self.inside_pkg
+            self.inside_pkg = False
+            pos = self.tok.pos
+            name = self.parse_name()
+            decls = []
+            is_inline = not self.accept(Kind.Semicolon)
+            if is_inline:
+                self.expect(Kind.Lbrace)
+                while not self.accept(Kind.Rbrace):
+                    decls.append(self.parse_decl())
+            else:
+                mod_path = os.path.join(self.file_dir, name)
+                if os.path.isdir(mod_path):
+                    files = self.comp.filter_files(
+                        glob.glob(os.path.join(mod_path, "*.ri"))
+                    )
+                    if len(files) == 0:
+                        report.error(
+                            f"module `{name}` contains no rivet files", pos
+                        )
+                    Parser(
+                        self.comp
+                    ).parse_mod(self.pkg_name, self.file_sym, vis, name, files)
+                    self.mod_deps.append(self.file_sym.qualname() + "::" + name)
+                else:
+                    report.error(f"module `{name}` not found", pos)
+            self.inside_pkg = old_inside_pkg
+            return ast.ModDecl(
+                doc_comment, attrs, name, vis, decls, is_inline, pos
+            )
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif self.accept(Kind.KwConst):
             pos = self.tok.pos
             name = self.parse_name()
@@ -255,8 +446,12 @@ class Parser:
                 right = self.empty_expr()
             self.expect(Kind.Semicolon)
             return ast.LetDecl(
+<<<<<<< HEAD
                 doc_comment, attrs, vis, self.inside_extern, self.extern_abi,
                 lefts, right, pos
+=======
+                doc_comment, attrs, vis, self.inside_extern, lefts, right, pos
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             )
         elif self.accept(Kind.KwType):
             pos = self.tok.pos
@@ -423,13 +618,17 @@ class Parser:
         is_method = False
         is_variadic = False
         self_is_mut = False
+<<<<<<< HEAD
         self_is_ref = False
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         has_named_args = False
 
         self.open_scope()
         sc = self.scope
         self.expect(Kind.Lparen)
         if self.tok.kind != Kind.Rparen:
+<<<<<<< HEAD
             # receiver (`self`|`&self`|`mut self`)
             if self.tok.kind == Kind.KwSelf or (
                 self.tok.kind in (Kind.Amp, Kind.KwMut)
@@ -437,6 +636,14 @@ class Parser:
             ):
                 is_method = True
                 self_is_ref = self.accept(Kind.Amp)
+=======
+            # receiver (`self`|`mut self`)
+            if self.tok.kind == Kind.KwSelf or (
+                self.tok.kind == Kind.KwMut
+                and self.peek_tok.kind == Kind.KwSelf
+            ):
+                is_method = True
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 self_is_mut = self.accept(Kind.KwMut)
                 self.expect(Kind.KwSelf)
                 if self.tok.kind != Kind.Rparen:
@@ -468,10 +675,14 @@ class Parser:
         self.expect(Kind.Rparen)
 
         is_result = self.accept(Kind.Bang)
+<<<<<<< HEAD
         if self.tok.kind in (Kind.Lbrace, Kind.Semicolon):
             ret_typ = self.comp.void_t # default: `void`
         else:
             ret_typ = self.parse_type()
+=======
+        ret_typ = self.parse_type()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         if is_result:
             ret_typ = type.Result(ret_typ)
 
@@ -488,9 +699,15 @@ class Parser:
         return ast.FnDecl(
             doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
             args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
+<<<<<<< HEAD
             self_is_ref, has_named_args,
             self.file_sym.name == self.comp.prefs.mod_name and name == "main",
             is_variadic, abi
+=======
+            has_named_args, self.inside_pkg
+            and self.file_sym.name == self.comp.prefs.pkg_name
+            and name == "main", is_variadic, abi
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         )
 
     # ---- statements --------------------------
@@ -548,7 +765,11 @@ class Parser:
                 )
             stmt = self.parse_stmt()
             self.close_scope()
+<<<<<<< HEAD
             return ast.ForStmt(sc, vars, iterable, stmt, pos)
+=======
+            return ast.ForInStmt(sc, vars, iterable, stmt, pos)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif self.accept(Kind.KwDefer) or self.accept(Kind.KwErrDefer):
             is_errdefer = self.prev_tok.kind == Kind.KwErrDefer
             pos = self.prev_tok.pos
@@ -687,7 +908,11 @@ class Parser:
         expr = self.empty_expr()
         if self.tok.kind in [
             Kind.KwTrue, Kind.KwFalse, Kind.Char, Kind.Number, Kind.String,
+<<<<<<< HEAD
             Kind.KwNil, Kind.KwSelf, Kind.KwBase, Kind.KwSelfTy
+=======
+            Kind.KwNone, Kind.KwSelf, Kind.KwBase, Kind.KwSelfTy
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         ]:
             expr = self.parse_literal()
         elif self.accept(Kind.Dollar):
@@ -696,6 +921,14 @@ class Parser:
             pos = self.tok.pos
             self.next()
             expr = ast.EnumValueExpr(self.parse_name(), pos)
+<<<<<<< HEAD
+=======
+        elif self.accept(Kind.DoubleColon):
+            pos = self.prev_tok.pos
+            field_pos = self.tok.pos
+            field_name = self.parse_name()
+            expr = ast.PathExpr(True, None, field_name, pos, field_pos)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif self.tok.kind in (Kind.KwContinue, Kind.KwBreak):
             op = self.tok.kind
             pos = self.tok.pos
@@ -780,6 +1013,11 @@ class Parser:
             self.expect(Kind.Rbracket)
             is_arr = self.accept(Kind.Bang)
             expr = ast.VecLiteral(elems, is_arr, pos)
+<<<<<<< HEAD
+=======
+        elif self.tok.kind == Kind.KwPkg:
+            expr = self.parse_pkg_expr()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Char:
             if self.tok.lit == "b":
                 expr = self.parse_character_literal()
@@ -907,6 +1145,7 @@ class Parser:
                         is_indirect = True
                     )
                 elif self.accept(Kind.Question):
+<<<<<<< HEAD
                     # check optional value, if nil panic
                     expr = ast.SelectorExpr(
                         expr, "", expr.pos, self.prev_tok.pos,
@@ -914,6 +1153,23 @@ class Parser:
                     )
                 else:
                     expr = self.parse_selector_expr(expr)
+=======
+                    # check optional value, if none panic
+                    expr = ast.SelectorExpr(
+                        expr, "", expr.pos, self.prev_tok.pos,
+                        is_nonecheck = True
+                    )
+                else:
+                    field_pos = self.tok.pos
+                    if self.tok.kind == Kind.Number:
+                        name = self.tok.lit
+                        self.next()
+                    else:
+                        name = self.parse_name()
+                    expr = ast.SelectorExpr(expr, name, expr.pos, field_pos)
+            elif self.tok.kind == Kind.DoubleColon:
+                expr = self.parse_path_expr(expr)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             else:
                 break
         return expr
@@ -1002,6 +1258,7 @@ class Parser:
             cond = self.empty_expr()
         return ast.GuardExpr(vars, e, has_cond, cond, self.scope, pos)
 
+<<<<<<< HEAD
     def parse_selector_expr(self, left):
         field_pos = self.tok.pos
         if self.tok.kind == Kind.Number:
@@ -1010,6 +1267,15 @@ class Parser:
         else:
             name = self.parse_name()
         return ast.SelectorExpr(left, name, left.pos, field_pos)
+=======
+    def parse_path_expr(self, left):
+        self.expect(Kind.DoubleColon)
+        pos = self.tok.pos
+        name = self.parse_name()
+        expr = ast.PathExpr(False, left, name, left.pos, pos)
+        expr.is_last = self.tok.kind != Kind.DoubleColon
+        return expr
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def parse_literal(self):
         if self.tok.kind in [Kind.KwTrue, Kind.KwFalse]:
@@ -1023,8 +1289,13 @@ class Parser:
             return self.parse_integer_literal()
         elif self.tok.kind == Kind.String:
             return self.parse_string_literal()
+<<<<<<< HEAD
         elif self.accept(Kind.KwNil):
             return ast.NilLiteral(self.prev_tok.pos)
+=======
+        elif self.accept(Kind.KwNone):
+            return ast.NoneLiteral(self.prev_tok.pos)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif self.accept(Kind.KwSelf):
             return ast.SelfExpr(self.scope, self.prev_tok.pos)
         elif self.accept(Kind.KwSelfTy):
@@ -1080,6 +1351,14 @@ class Parser:
         id = ast.Ident(name, pos, sc, is_comptime)
         return id
 
+<<<<<<< HEAD
+=======
+    def parse_pkg_expr(self):
+        pos = self.tok.pos
+        self.next()
+        return ast.PkgExpr(pos)
+
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def empty_expr(self):
         return ast.EmptyExpr(self.tok.pos)
 
@@ -1088,7 +1367,15 @@ class Parser:
         pos = self.tok.pos
         if self.accept(Kind.Question):
             # optional
+<<<<<<< HEAD
             return type.Optional(self.parse_type())
+=======
+            typ = self.parse_type()
+            if isinstance(typ, type.Ptr):
+                report.error("pointers cannot be optional", pos)
+                report.note("by default pointers can contain the value `none`")
+            return type.Optional(typ)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif self.tok.kind in (Kind.KwExtern, Kind.KwFn):
             # function types
             is_extern = self.accept(Kind.KwExtern)
@@ -1114,6 +1401,7 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Rparen)
+<<<<<<< HEAD
             if self.tok.kind.is_start_of_type():
                 ret_typ = self.parse_type()
             else:
@@ -1122,6 +1410,13 @@ class Parser:
                 self.inside_extern = False
             return type.Fn(
                 is_extern, abi, False, args, is_variadic, ret_typ, False, False
+=======
+            ret_typ = self.parse_type()
+            if is_extern and self.inside_extern:
+                self.inside_extern = False
+            return type.Fn(
+                is_extern, abi, False, args, is_variadic, ret_typ, False
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             )
         elif self.accept(Kind.Amp):
             # references
@@ -1161,6 +1456,7 @@ class Parser:
             return type.Type.unresolved(
                 ast.SelfTyExpr(self.scope, self.prev_tok.pos)
             )
+<<<<<<< HEAD
         elif self.accept(Kind.KwNil):
             return self.comp.nil_t
         elif self.tok.kind == Kind.Name:
@@ -1212,6 +1508,73 @@ class Parser:
             elif lit == "untyped_float":
                 return self.comp.untyped_float_t
             return type.Type.unresolved(expr)
+=======
+        elif self.accept(Kind.KwNone):
+            return self.comp.none_t
+        elif self.tok.kind in (Kind.KwPkg, Kind.Name):
+            if self.peek_tok.kind == Kind.DoubleColon:
+                # normal type
+                path_expr = self.parse_path_expr(
+                    self.parse_pkg_expr() if self.tok.kind ==
+                    Kind.KwPkg else self.parse_ident()
+                )
+                if self.tok.kind == Kind.DoubleColon:
+                    while True:
+                        path_expr = self.parse_path_expr(path_expr)
+                        if self.tok.kind != Kind.DoubleColon:
+                            break
+                return type.Type.unresolved(path_expr)
+            elif self.tok.kind == Kind.Name:
+                prev_tok_kind = self.prev_tok.kind
+                expr = self.parse_ident()
+                lit = expr.name
+                if lit == "void":
+                    return self.comp.void_t
+                elif lit == "never":
+                    if prev_tok_kind != Kind.Rparen and self.tok.kind != Kind.Lbrace:
+                        report.error("invalid use of `never` type", pos)
+                    return self.comp.never_t
+                elif lit == "bool":
+                    return self.comp.bool_t
+                elif lit == "rune":
+                    return self.comp.rune_t
+                elif lit == "i8":
+                    return self.comp.i8_t
+                elif lit == "i16":
+                    return self.comp.i16_t
+                elif lit == "i32":
+                    return self.comp.i32_t
+                elif lit == "i64":
+                    return self.comp.i64_t
+                elif lit == "isize":
+                    return self.comp.isize_t
+                elif lit == "u8":
+                    return self.comp.u8_t
+                elif lit == "u16":
+                    return self.comp.u16_t
+                elif lit == "u32":
+                    return self.comp.u32_t
+                elif lit == "u64":
+                    return self.comp.u64_t
+                elif lit == "usize":
+                    return self.comp.usize_t
+                elif lit == "f32":
+                    return self.comp.f32_t
+                elif lit == "f64":
+                    return self.comp.f64_t
+                elif lit == "string":
+                    return self.comp.string_t
+                # only available in `core`:
+                elif lit == "untyped_int":
+                    return self.comp.untyped_int_t
+                elif lit == "untyped_float":
+                    return self.comp.untyped_float_t
+                else:
+                    return type.Type.unresolved(expr)
+            else:
+                report.error("expected type, found keyword `pkg`", pos)
+                self.next()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         else:
             report.error(f"expected type, found {self.tok}", pos)
             self.next()

@@ -1,0 +1,10 @@
+use core::Console { println };
+
+test "for in statement" {
+    let sum = 0;
+    for i in 0..10 {
+        sum += i;
+    }
+    println("sum: {}", sum);
+    assert!(sum == 45);
+}

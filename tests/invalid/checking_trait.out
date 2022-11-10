@@ -1,5 +1,21 @@
+<<<<<<< HEAD
 tests/invalid/checking_trait.ri:24:14: error: type `i32` does not implement trait `ToStr`
   24 |     my_print(1); // FAIL
      |              ^
      = note: in argument `v` of function `my_print`
 rivetc: error: could not compile module `checking_trait`, aborting due to previous error
+=======
+tests/invalid/checking_trait.ri:5:23: error: expected type, found token `{`
+tests/invalid/checking_trait.ri:6:5: error: expected `{`, found name `_` 
+tests/invalid/checking_trait.ri:9:15: error: expected `{`, found keyword `for` 
+tests/invalid/checking_trait.ri:9:15: error: expected declaration, found keyword `for`
+tests/invalid/checking_trait.ri:9:19: error: expected declaration, found name `ToStr`
+tests/invalid/checking_trait.ri:9:25: error: expected declaration, found token `{`
+tests/invalid/checking_trait.ri:15:13: error: expected `{`, found keyword `for` 
+tests/invalid/checking_trait.ri:15:13: error: expected declaration, found keyword `for`
+tests/invalid/checking_trait.ri:15:17: error: expected declaration, found name `ToStr`
+tests/invalid/checking_trait.ri:15:23: error: expected declaration, found token `{`
+tests/invalid/checking_trait.ri:21:11: error: expected type, found token `{`
+tests/invalid/checking_trait.ri:22:5: error: expected `{`, found name `my_print` 
+rivetc: error: could not compile package `checking_trait`, aborting due to 12 previous errors
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

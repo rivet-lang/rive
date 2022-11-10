@@ -19,6 +19,7 @@ jobs:
       - name: Run passing tests
         run: |
           python3 rivetc -t tests/valid
+          python3 rivetc tests/valid
 
       - name: Run failing tests
         run: |
@@ -34,6 +35,7 @@ jobs:
       - name: Run passing tests
         run: |
           python3 rivetc -t tests/valid
+          python3 rivetc tests/valid
 
       - name: Run failing tests
         run: |

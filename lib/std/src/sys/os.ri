@@ -2,7 +2,11 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+<<<<<<< HEAD:lib/std/src/sys/os.ri
 import "../process";
+=======
+use pkg::process::panic;
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/sys/os.ri
 
 pub enum OS : u8 {
     Linux,
@@ -26,6 +30,10 @@ pub fn os() OS {
 #elif _WINDOWS_
     return .Windows;
 #else
+<<<<<<< HEAD:lib/std/src/sys/os.ri
     process.panic("unknown host operating system");
+=======
+    panic("unknown host operating system");
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/sys/os.ri
 #endif
 }

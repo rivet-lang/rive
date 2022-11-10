@@ -113,6 +113,17 @@ class Ptr(TBase):
             return f"*mut {self.typ.qualstr()}"
         return f"*{self.typ.qualstr()}"
 
+<<<<<<< HEAD
+=======
+    def nr_level(self):
+        nr = 0
+        ptr = self
+        while isinstance(ptr, Ptr):
+            ptr = ptr.typ
+            nr += 1
+        return nr
+
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def __eq__(self, other):
         if not isinstance(other, Ptr):
             return False
@@ -199,25 +210,39 @@ class Tuple(TBase):
 
 class Fn(TBase):
     def __init__(
+<<<<<<< HEAD
         self, is_extern, abi, is_method, args, is_variadic, ret_typ,
         self_is_mut, self_is_ref
+=======
+        self, is_extern, abi, is_method, args, is_variadic, ret_typ, self_is_mut
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     ):
         self.is_unsafe = abi != ABI.Rivet
         self.is_extern = is_extern
         self.abi = abi
         self.is_method = is_method
         self.self_is_mut = self_is_mut
+<<<<<<< HEAD
         self.self_is_ref = self_is_ref
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.args = args
         self.is_variadic = is_variadic
         self.ret_typ = ret_typ
 
     def info(self):
         return sym_Fn(
+<<<<<<< HEAD
             self.abi, Vis.Pub, self.is_extern, self.is_unsafe, self.is_method,
             self.is_variadic, self.stringify(False),
             self.args, self.ret_typ, False, not self.is_extern,
             token.Pos("", 0, 0, 0), self.self_is_mut, self.self_is_ref
+=======
+            self.abi, Vis.Pub, self.is_extern,
+            self.is_unsafe, self.is_method, self.is_variadic,
+            self.stringify(False), self.args, self.ret_typ, False,
+            not self.is_extern, token.Pos("", 0, 0, 0), self.self_is_mut
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         )
 
     def stringify(self, qual):
@@ -228,8 +253,11 @@ class Fn(TBase):
         if self.is_method:
             if self.self_is_mut:
                 res += "mut "
+<<<<<<< HEAD
             elif self.self.self_is_ref:
                 res += "&"
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             res += "self"
             if len(self.args) > 0:
                 res += ", "
@@ -251,9 +279,12 @@ class Fn(TBase):
             res += str(self.ret_typ)
         return res
 
+<<<<<<< HEAD
     def qualstr(self):
         return str(self)
 
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def __eq__(self, got):
         if not isinstance(got, Fn): return False
         if self.is_unsafe != got.is_unsafe:

@@ -4,6 +4,7 @@
 
 import os
 
+<<<<<<< HEAD
 from .. import prefs, utils
 
 from .ir import InstKind
@@ -13,6 +14,13 @@ MIN_INT64 = -9223372036854775808
 
 # NOTE: some of the words in `C_RESERVED` are not reserved in C, but are
 # in C++, thus need escaping too. `small` should not be needed, but see
+=======
+from . import ir, c_headers
+from .. import prefs, utils
+
+# NOTE: some of the words in `C_RESERVED` are not reserved in C, but are
+# in C++, thus need escaping too. `small` should not be needed, but see:
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 # https://stackoverflow.com/questions/5874215/what-is-rpcndr-h
 C_RESERVED = [
     'auto', 'bool', 'case', 'char', 'complex', 'default', 'delete', 'do',
@@ -42,7 +50,11 @@ class CGen:
         self.gen_globals(out_rir.globals)
         self.gen_decls(out_rir.decls)
 
+<<<<<<< HEAD
         c_file = f"{self.comp.prefs.mod_name}.ri.c"
+=======
+        c_file = f"{self.comp.prefs.pkg_name}.ri.c"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         with open(c_file, "w+") as out:
             out.write(c_headers.HEADER)
             out.write(str(self.typedefs).strip() + "\n\n")
@@ -53,14 +65,23 @@ class CGen:
 
         args = [
             self.comp.prefs.target_backend_compiler, "-o",
+<<<<<<< HEAD
             self.comp.prefs.mod_output, "-Werror", "-fno-builtin",
             "-m64" if self.comp.prefs.target_bits == prefs.Bits.X64 else "-m32",
+=======
+            self.comp.prefs.pkg_output, "-fno-builtin", "-Werror",
+            "-m64" if self.comp.prefs.target_bits == prefs.Bits.X64 else "-m32",
+            *[f"-l{l}" for l in self.comp.prefs.libraries_to_link],
+            *[f"-L{l}" for l in self.comp.prefs.library_path],
+            *self.comp.prefs.objects_to_link, c_file
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         ]
         if self.comp.prefs.build_mode == prefs.BuildMode.Release:
             args.append("-flto")
             args.append("-O3")
         else:
             args.append("-g")
+<<<<<<< HEAD
         if self.comp.prefs.target_os == prefs.OS.Windows:
             args.append(f"-municode")
 
@@ -73,6 +94,9 @@ class CGen:
 
         args.append(c_file)
         self.comp.vlog(f"C compiler arguments: {' '.join(args)}")
+=======
+        self.comp.vlog(f"C compiler options: {args}")
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
         res = utils.execute(*args)
         if res.exit_code == 0:
@@ -107,6 +131,7 @@ class CGen:
             self.structs.writeln()
 
     def gen_externs(self, externs):
+<<<<<<< HEAD
         for extern_fn in externs:
             self.gen_fn_decl(extern_fn)
 
@@ -120,11 +145,51 @@ class CGen:
             self.globals.write(" ")
             self.globals.write(g.name)
             self.globals.writeln(";")
+=======
+        pass
+
+    def gen_globals(self, globals):
+        pass
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def gen_decls(self, decls):
         for decl in decls:
             if isinstance(decl, ir.FnDecl):
+<<<<<<< HEAD
                 self.gen_fn_decl(decl)
+=======
+                if decl.is_never:
+                    self.write("RIVET_NEVER ")
+                    self.protos.write("RIVET_NEVER ")
+                if decl.is_pub:
+                    self.write("RIVET_EXPORT ")
+                    self.protos.write("RIVET_EXPORT ")
+                else:
+                    self.write("RIVET_LOCAL ")
+                    self.protos.write("RIVET_LOCAL ")
+                ret_typ=self.gen_type(decl.ret_typ)
+                self.protos.write(f"{ret_typ} {decl.name}(")
+                self.write(f"{ret_typ} {decl.name}(")
+                if len(decl.args)==0:
+                    self.write("void")
+                    self.protos.write("void")
+                else:
+                    for i, arg in enumerate(decl.args):
+                        arg_typ=self.gen_type(arg.typ, arg.name)
+                        self.protos.write(arg_typ)
+                        self.write(arg_typ)
+                        if not isinstance(arg.typ, (ir.Array, ir.Function)):
+                            self.protos.write(f" {arg.name}")
+                            self.write(f" {arg.name}")
+                        if i < len(decl.args) - 1:
+                            self.protos.write(", ")
+                            self.write(", ")
+                self.protos.writeln(");")
+                self.writeln(") {")
+                if decl.is_never:
+                    self.writeln("  while (1);")
+                self.writeln("}")
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             else:
                 self.globals.writeln(
                     f"static {decl.structure} {decl.name}[{decl.implement_nr}] = {{"
@@ -141,6 +206,7 @@ class CGen:
                 self.globals.writeln("};")
             self.writeln()
 
+<<<<<<< HEAD
     def gen_fn_decl(self, decl):
         if decl.is_never:
             if not decl.is_extern:
@@ -396,11 +462,14 @@ class CGen:
         else:
             self.write(self.gen_type(expr))
 
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def write_type(self, typ, wrap = ""):
         self.write(self.gen_type(typ, wrap))
 
     def gen_type(self, typ, wrap = ""):
         if isinstance(typ, ir.Pointer):
+<<<<<<< HEAD
             return f"{self.gen_type(typ.typ, wrap)}*"
         elif isinstance(typ, ir.Array):
             sizes = []
@@ -421,10 +490,21 @@ class CGen:
             sb = utils.Builder()
             sb.write(self.gen_type(typ.typ, wrap))
             if not isinstance(typ.typ, ir.Array):
+=======
+            sb=utils.Builder()
+            sb.write(self.gen_type(typ.typ, wrap))
+            sb.write("*")
+            return str(sb)
+        elif isinstance(typ, ir.Array):
+            sb=utils.Builder()
+            sb.write(self.gen_type(typ.typ))
+            if len(wrap) > 0:
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 sb.write(f" {wrap}")
             sb.write(f"[{typ.size}]")
             return str(sb)
         elif isinstance(typ, ir.Function):
+<<<<<<< HEAD
             sb = utils.Builder()
             sb.write(self.gen_type(typ.ret_typ))
             sb.write(" (*")
@@ -441,3 +521,17 @@ class CGen:
             sb.write(")")
             return str(sb)
         return str(typ)
+=======
+            sb=utils.Builder()
+            sb.write(self.gen_type(typ.ret_typ))
+            sb.write("(*")
+            if len(wrap) > 0:
+                sb.write(wrap)
+            sb.write(")(")
+            for i, arg in enumerate(typ.args):
+                sb.write(self.gen_type(arg))
+            sb.write(")")
+            return str(sb)
+        else:
+            return str(typ)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

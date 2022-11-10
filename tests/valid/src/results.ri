@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 fn result() ! {
     return Error("simple error");
 }
 
 fn result2() ! {
+=======
+fn result() !void {
+    return Error("simple error");
+}
+
+fn result2() !void {
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     return Error("simple error (returned: {}, idx: {})".fmt(true, 0));
 }
 

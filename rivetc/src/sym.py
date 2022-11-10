@@ -107,7 +107,10 @@ class Vis(Enum):
 
 class Sym:
     def __init__(self, vis, name, abi = ABI.Rivet):
+<<<<<<< HEAD
         self.attrs = None
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.id = new_symbol_id()
         self.abi = abi
         self.vis = vis
@@ -116,7 +119,12 @@ class Sym:
         self.qualified_name = ""
         self.parent = None
         self.syms = []
+<<<<<<< HEAD
         self.is_universe = isinstance(self, Mod) and self.id == 0
+=======
+        self.reexported_syms = {}
+        self.is_universe = isinstance(self, Pkg) and self.id == 0
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.is_generated = False
 
     def add(self, sym):
@@ -162,6 +170,11 @@ class Sym:
         for sym in self.syms:
             if sym.name == name:
                 return sym
+<<<<<<< HEAD
+=======
+        if name in self.reexported_syms:
+            return self.reexported_syms[name]
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         return None
 
     def exists(self, name):
@@ -169,10 +182,18 @@ class Sym:
             return True
         return False
 
+<<<<<<< HEAD
     def mod(self):
         p = self
         while True:
             if isinstance(p, Mod):
+=======
+    def super_(self):
+        # package or module
+        p = self
+        while True:
+            if isinstance(p, (Pkg, Mod)):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 break
             p = p.parent
             if p == None:
@@ -180,6 +201,7 @@ class Sym:
         return p
 
     def has_access_to(self, other):
+<<<<<<< HEAD
         self_mod = self.mod()
         other_mod = other.mod()
         return (
@@ -189,11 +211,29 @@ class Sym:
 
     def typeof(self):
         if isinstance(self, Mod):
+=======
+        self_super = self.super_()
+        other_super = other.super_()
+        return (
+            self_super == other or self_super == other_super
+            or self_super == other_super.parent
+            or self_super.parent == other.parent
+        )
+
+    def typeof(self):
+        if isinstance(self, Pkg):
+            return "package"
+        elif isinstance(self, Mod):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             return "module"
         elif isinstance(self, Const):
             return "constant"
         elif isinstance(self, Var):
+<<<<<<< HEAD
             return "variable"
+=======
+            return "var"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif isinstance(self, Type):
             return "type"
         elif isinstance(self, Fn):
@@ -208,6 +248,7 @@ class Sym:
         if self.parent == None or self.parent.is_universe:
             self.qualified_name = self.name
             return self.qualified_name
+<<<<<<< HEAD
         self.qualified_name = f"{self.parent.qualname()}.{self.name}"
         return self.qualified_name
 
@@ -219,6 +260,15 @@ class Sym:
             if s := self.find(idx):
                 return s
             raise Exception(f"cannot find symbol `{idx}` in `{self.name}`")
+=======
+        self.qualified_name = f"{self.parent.qualname()}::{self.name}"
+        return self.qualified_name
+
+    def is_core_pkg(self):
+        return isinstance(self, Pkg) and self.name == "core"
+
+    def __getitem__(self, idx):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         return self.syms[idx]
 
     def __eq__(self, other):
@@ -226,12 +276,16 @@ class Sym:
             return False
         return self.id == other.id
 
+<<<<<<< HEAD
 class SymRef(Sym):
     def __init__(self, vis, name, ref):
         Sym.__init__(self, vis, name)
         self.ref = ref
 
 class Mod(Sym):
+=======
+class Pkg(Sym):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def add_or_get_array(self, elem_typ, size):
         unique_name = f"[{elem_typ.qualstr()}; {size}]"
         if sym := self.find(unique_name):
@@ -250,6 +304,7 @@ class Mod(Sym):
             return sym
         from .type import Ptr, Type as type_Type
         vec_sym = Type(
+<<<<<<< HEAD
             Vis.Pub, unique_name, TypeKind.Vec, info = VecInfo(elem_typ),
             fields = [
                 Field("len", False, Vis.Pub, type_Type(self[14])),
@@ -261,24 +316,53 @@ class Mod(Sym):
                 ABI.Rivet, Vis.Pub, False, False, True, False, "push",
                 [Arg("value", False, elem_typ, None, False, NO_POS)],
                 type_Type(self[0]), False, True, NO_POS, True, False
+=======
+            Vis.Pub, unique_name, TypeKind.Vec, info = VecInfo(elem_typ)
+        )
+        vec_sym.add(
+            Fn(
+                ABI.Rivet, Vis.Pub, False, False, True, False, "len", [],
+                type_Type(self[14]), False, True, NO_POS, False
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
+            )
+        )
+        vec_sym.add(
+            Fn(
+<<<<<<< HEAD
+                ABI.Rivet, Vis.Pub, False, False, True, False, "pop", [],
+                elem_typ, False, True, NO_POS, True, False
+=======
+                ABI.Rivet, Vis.Pub, False, False, True, False, "cap", [],
+                type_Type(self[14]), False, True, NO_POS, False
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
+            )
+        )
+        vec_sym.add(
+            Fn(
+<<<<<<< HEAD
+                ABI.Rivet, Vis.Pub, False, False, True, False, "is_empty", [],
+                type_Type(self[3]), False, True, NO_POS, False, False
+=======
+                ABI.Rivet, Vis.Pub, False, False, True, False, "push",
+                [Arg("value", False, elem_typ, None, False, NO_POS)],
+                type_Type(self[0]), False, True, NO_POS, True
             )
         )
         vec_sym.add(
             Fn(
                 ABI.Rivet, Vis.Pub, False, False, True, False, "pop", [],
-                elem_typ, False, True, NO_POS, True, False
-            )
-        )
-        vec_sym.add(
-            Fn(
-                ABI.Rivet, Vis.Pub, False, False, True, False, "is_empty", [],
-                type_Type(self[3]), False, True, NO_POS, False, False
+                elem_typ, False, True, NO_POS, True
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             )
         )
         vec_sym.add(
             Fn(
                 ABI.Rivet, Vis.Pub, False, False, True, False, "clone", [],
+<<<<<<< HEAD
                 type_Type(vec_sym), False, True, NO_POS, False, False
+=======
+                type_Type(vec_sym), False, True, NO_POS, False
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             )
         )
         return self.add_and_return(vec_sym)
@@ -291,6 +375,12 @@ class Mod(Sym):
             Type(Vis.Pub, unique_name, TypeKind.Tuple, info = TupleInfo(types))
         )
 
+<<<<<<< HEAD
+=======
+class Mod(Sym):
+    pass
+
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 class Const(Sym):
     def __init__(self, vis, name, typ, expr):
         Sym.__init__(self, vis, name)
@@ -323,7 +413,11 @@ class TypeKind(Enum):
     Placeholder = auto_enum()
     Never = auto_enum()
     Void = auto_enum()
+<<<<<<< HEAD
     Nil = auto_enum()
+=======
+    None_ = auto_enum()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     Bool = auto_enum()
     Rune = auto_enum()
     Int8 = auto_enum()
@@ -352,7 +446,11 @@ class TypeKind(Enum):
 
     def is_primitive(self):
         if self in (
+<<<<<<< HEAD
             TypeKind.Void, TypeKind.Nil, TypeKind.Bool, TypeKind.Rune,
+=======
+            TypeKind.Void, TypeKind.None_, TypeKind.Bool, TypeKind.Rune,
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             TypeKind.Int8, TypeKind.Int16, TypeKind.Int32, TypeKind.Int64,
             TypeKind.Isize, TypeKind.Uint8, TypeKind.Uint16, TypeKind.Uint32,
             TypeKind.Uint64, TypeKind.Usize, TypeKind.UntypedInt,
@@ -365,8 +463,13 @@ class TypeKind(Enum):
     def __repr__(self):
         if self == TypeKind.Void:
             return "void"
+<<<<<<< HEAD
         elif self == TypeKind.Nil:
             return "nil"
+=======
+        elif self == TypeKind.None_:
+            return "none"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif self == TypeKind.Bool:
             return "bool"
         elif self == TypeKind.Rune:
@@ -473,12 +576,15 @@ class TraitInfo:
         self.implements = []
         self.has_objects = False
 
+<<<<<<< HEAD
     def indexof(self, sym):
         for idx, s in enumerate(self.implements):
             if sym == s:
                 return idx
         return 0
 
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 class ClassInfo:
     def __init__(self):
         self.base = None
@@ -569,11 +675,14 @@ class Type(Sym):
                 self.add(ss)
             self.info = other.info
 
+<<<<<<< HEAD
     def is_boxed(self):
         return self.kind in (
             TypeKind.Trait, TypeKind.Class, TypeKind.String, TypeKind.Vec
         )
 
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 class Arg:
     def __init__(self, name, is_mut, typ, def_expr, has_def_expr, pos):
         self.name = name
@@ -587,8 +696,12 @@ class Arg:
 class Fn(Sym):
     def __init__(
         self, abi, vis, is_extern, is_unsafe, is_method, is_variadic, name,
+<<<<<<< HEAD
         args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
         self_is_ref
+=======
+        args, ret_typ, has_named_args, has_body, name_pos, self_is_mut
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     ):
         Sym.__init__(self, vis, name)
         self.is_main = False
@@ -599,7 +712,10 @@ class Fn(Sym):
         self.is_variadic = is_variadic
         self.self_typ = None
         self.self_is_mut = self_is_mut
+<<<<<<< HEAD
         self.self_is_ref = self_is_ref
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.args = args
         self.ret_typ = ret_typ
         self.has_named_args = has_named_args
@@ -623,16 +739,27 @@ class Fn(Sym):
         from .type import Fn
         return Fn(
             self.is_extern, self.abi, self.is_method, self.args,
+<<<<<<< HEAD
             self.is_variadic, self.ret_typ, self.self_is_mut, self.self_is_ref
+=======
+            self.is_variadic, self.ret_typ, self.self_is_mut
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         )
 
 def universe():
     from .type import Ptr, Type as type_Type
 
+<<<<<<< HEAD
     uni = Mod(Vis.Priv, "universe")
     uni.add(Type(Vis.Pub, "void", TypeKind.Void))
     uni.add(Type(Vis.Pub, "never", TypeKind.Never))
     uni.add(Type(Vis.Pub, "nil", TypeKind.Nil))
+=======
+    uni = Pkg(Vis.Priv, "universe")
+    uni.add(Type(Vis.Pub, "void", TypeKind.Void))
+    uni.add(Type(Vis.Pub, "never", TypeKind.Never))
+    uni.add(Type(Vis.Pub, "none", TypeKind.None_))
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     uni.add(Type(Vis.Pub, "bool", TypeKind.Bool))
     uni.add(Type(Vis.Pub, "rune", TypeKind.Rune))
     uni.add(Type(Vis.Pub, "i8", TypeKind.Int8))

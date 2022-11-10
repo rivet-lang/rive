@@ -2,16 +2,27 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+<<<<<<< HEAD:lib/std/src/sys/mod.ri
 import "libc";
 
 import "../process";
+=======
+use pkg::stdc;
+use pkg::process::panic;
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/sys/mod.ri
 
 /// Returns the number of virtual CPU cores found on the system.
 pub fn nr_cpus() i32 {
 #if _LINUX_
+<<<<<<< HEAD:lib/std/src/sys/mod.ri
     return unsafe { libc.get_nprocs() };
 #else
     process.panic("`nr_cpus` only works on linux (for now)");
+=======
+    return unsafe { stdc::get_nprocs() };
+#else
+    panic("`nr_cpus` only works on linux (for now)");
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c:lib/core/src/sys/mod.ri
 #endif
 }
 

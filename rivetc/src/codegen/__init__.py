@@ -5,7 +5,11 @@
 import os
 
 from ..sym import TypeKind
+<<<<<<< HEAD
 from ..token import Kind, OVERLOADABLE_OPERATORS_STR, NO_POS
+=======
+from ..token import Kind, OVERLOADABLE_OPERATORS_STR
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 from .. import ast, sym, type, prefs, colors, report, utils
 
 from . import ir
@@ -41,11 +45,20 @@ def mangle_symbol(s):
     while True:
         if s.is_universe:
             break
+<<<<<<< HEAD
         if isinstance(s, sym.Mod):
             name = s.name.replace(".", "__")
             res.insert(0, f"{len(name)}{name}")
         elif isinstance(s, sym.Type):
             if s.kind == TypeKind.Tuple:
+=======
+        if isinstance(s, sym.Type):
+            if s.kind.is_primitive():
+                name = str(s.kind)
+                name = f"{len(name)}{name}"
+                res.insert(0, name)
+            elif s.kind == TypeKind.Tuple:
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 name = "Tuple_"
                 for i, tt in enumerate(s.info.types):
                     name += mangle_type(tt)
@@ -55,16 +68,26 @@ def mangle_symbol(s):
                 res.insert(0, name)
                 s.mangled_name = name
             elif s.kind == TypeKind.Vec:
+<<<<<<< HEAD
                 res.insert(0, "7runtime3Vec")
                 s.mangled_name = "_R7runtime3Vec"
+=======
+                res.insert(0, "4core3Vec")
+                s.mangled_name = "_R4core3Vec"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             elif s.kind == TypeKind.Array:
                 name = f"Array_{mangle_type(s.info.elem_typ)}_{s.info.size}"
                 name = f"{len(name)}{name}"
                 res.insert(0, name)
                 s.mangled_name = name
             elif s.kind == TypeKind.String:
+<<<<<<< HEAD
                 res.insert(0, "7runtime6string")
                 s.mangled_name = "_R7runtime6string"
+=======
+                res.insert(0, "4core6String")
+                s.mangled_name = "_R4core6String"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             else:
                 res.insert(0, f"{len(s.name)}{s.name}")
         elif s.name in OVERLOADABLE_OPERATORS_STR:
@@ -89,6 +112,7 @@ def mangle_symbol(s):
     root.mangled_name = "".join(res)
     return root.mangled_name
 
+<<<<<<< HEAD
 class TestInfo:
     def __init__(self, name, func):
         self.name = name
@@ -101,10 +125,17 @@ class Codegen:
     def __init__(self, comp):
         self.comp = comp
         self.out_rir = ir.RIRFile(self.comp.prefs.mod_name)
+=======
+class Codegen:
+    def __init__(self, comp):
+        self.comp = comp
+        self.out_rir = ir.RIRFile(self.comp.prefs.pkg_name)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.void_types = (self.comp.void_t, self.comp.never_t)
 
         self.sf = None
 
+<<<<<<< HEAD
         self.init_global_vars_fn = None
         self.cur_fn = None
         self.cur_fn_is_main = False
@@ -113,6 +144,10 @@ class Codegen:
 
         self.inside_trait = False
         self.inside_test = False
+=======
+        self.cur_fn = None
+        self.cur_fn_is_main = False
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
         self.generated_opt_res_types = []
         self.generated_array_returns = []
@@ -123,6 +158,7 @@ class Codegen:
 
     def gen_source_files(self, source_files):
         self.gen_types()
+<<<<<<< HEAD
         # generate '_R7runtime12init_globalsF' function
         self.init_global_vars_fn = ir.FnDecl(
             False, [], False, "_R7runtime12init_globalsF", [], False, ir.Type("void"),
@@ -133,10 +169,13 @@ class Codegen:
         for mod in self.comp.universe.syms:
             if isinstance(mod, sym.Mod):
                 self.gen_mod_attrs(mod.name, mod.attrs)
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         for source_file in source_files:
             self.sf = source_file
             self.gen_decls(source_file.decls)
 
+<<<<<<< HEAD
         # generate '_R12drop_globalsZ' function
         g_fn = ir.FnDecl(
             False, [], False, "_R7runtime12drop_globalsF", [], False, ir.Type("void"),
@@ -144,6 +183,8 @@ class Codegen:
         )
         self.out_rir.decls.append(g_fn)
 
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         # generate 'main' fn
         argc = ir.Ident(ir.Type("int"), "_argc")
         argv = ir.Ident(ir.Type("char").ptr().ptr(), "_argv")
@@ -151,6 +192,7 @@ class Codegen:
             False, [], False, "main", [argc, argv], False, ir.Type("int"), False
         )
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
+<<<<<<< HEAD
             self.cur_fn = main_fn
             test_runner = ir.Ident(
                 ir.Type("_R7runtime10TestRunner"), "_test_runner"
@@ -263,10 +305,26 @@ class Codegen:
                 ]
             )
         main_fn.add_ret(ir.IntLit(ir.Type("int"), "0"))
+=======
+            for gtest in self.generated_tests:
+                main_fn.add_call(gtest, [])
+        else:
+            main_fn.add_call(
+                f"_R{len(self.comp.prefs.pkg_name)}{self.comp.prefs.pkg_name}4mainF",
+                [
+                    argc,
+                    ir.Inst(
+                        ir.InstKind.Cast, [ir.Type("u8").ptr().ptr(), argv]
+                    )
+                ]
+            )
+        main_fn.add_ret(ir.IntLit(ir.Type("i32"), "0"))
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.out_rir.decls.append(main_fn)
 
         if report.ERRORS == 0:
             if self.comp.prefs.emit_rir:
+<<<<<<< HEAD
                 with open(f"{self.comp.prefs.mod_name}.rir", "w+") as f:
                     f.write(str(self.out_rir).strip())
             if self.comp.prefs.target_backend == prefs.Backend.C:
@@ -287,6 +345,26 @@ class Codegen:
                 objfile = os.path.join(
                     mod_folder,
                     f"{os.path.basename(cfile)}.{self.comp.prefs.get_obj_postfix()}.o"
+=======
+                with open(f"{self.comp.prefs.pkg_name}.rir", "w+") as f:
+                    f.write(str(self.out_rir).strip())
+            if self.comp.prefs.target_backend == prefs.Backend.C:
+                # self.check_pkg_attrs()
+                CGen(self.comp).gen(self.out_rir)
+
+    def check_pkg_attrs(self):
+        pkg_folder = os.path.join(
+            prefs.RIVET_DIR, "objs", self.comp.prefs.pkg_name
+        )
+        for attr in self.pkg_attrs.attrs:
+            if attr.name == "c_compile":
+                if not os.path.exists(pkg_folder):
+                    os.mkdir(pkg_folder)
+                cfile = os.path.realpath(attr.args[0].expr.lit)
+                objfile = os.path.join(
+                    pkg_folder,
+                    f"{os.path.basename(cfile)}.{self.get_postfix()}.o"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 )
                 self.comp.prefs.objects_to_link.append(objfile)
                 msg = f"c_compile: compiling object for C file `{cfile}`..."
@@ -295,9 +373,15 @@ class Codegen:
                         msg = f"c_compile: {objfile} is older than {cfile}, rebuilding..."
                     else:
                         continue
+<<<<<<< HEAD
                 self.comp.vlog(msg)
                 args = [
                     self.comp.prefs.target_backend_compiler, cfile, "-m64" if
+=======
+                self.vlog(msg)
+                args = [
+                    self.comp.prefs.backend_compiler, cfile, "-m64" if
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                     self.comp.prefs.target_bits == prefs.Bits.X64 else "-m32",
                     "-O3" if self.comp.prefs.build_mode
                     == prefs.BuildMode.Release else "-g",
@@ -311,6 +395,27 @@ class Codegen:
         if report.ERRORS > 0:
             self.abort()
 
+<<<<<<< HEAD
+=======
+    def get_postfix(self):
+        postfix = str(self.comp.prefs.target_os).lower()
+        postfix += "-"
+        postfix += str(self.comp.prefs.target_arch).lower()
+        postfix += "-"
+        postfix += str(self.comp.prefs.target_bits).lower()
+        postfix += "-"
+        postfix += str(self.comp.prefs.target_endian).lower()
+        postfix += "-"
+        postfix += str(self.comp.prefs.target_backend).lower()
+        postfix += "-"
+        if self.comp.prefs.build_mode == prefs.BuildMode.Debug:
+            postfix += "debug"
+        else:
+            postfix += "release"
+        postfix += f"-{self.comp.prefs.backend_compiler}"
+        return postfix
+
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def gen_decls(self, decls):
         for decl in decls:
             self.gen_decl(decl)
@@ -318,6 +423,7 @@ class Codegen:
     def gen_decl(self, decl):
         if isinstance(decl, ast.ExternDecl):
             self.gen_decls(decl.decls)
+<<<<<<< HEAD
         elif isinstance(decl, ast.LetDecl):
             for l in decl.lefts:
                 is_extern = decl.is_extern and decl.abi != sym.ABI.Rivet
@@ -338,6 +444,17 @@ class Codegen:
             self.inside_trait = True
             self.gen_decls(decl.decls)
             self.inside_trait = False
+=======
+        elif isinstance(decl, ast.ModDecl):
+            if decl.is_inline:
+                self.gen_decls(decl.decls)
+        elif isinstance(decl, ast.LetDecl):
+            pass
+        elif isinstance(decl, ast.EnumDecl):
+            self.gen_decls(decl.decls)
+        elif isinstance(decl, ast.TraitDecl):
+            self.gen_decls(decl.decls)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif isinstance(decl, ast.ClassDecl):
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.StructDecl):
@@ -345,6 +462,7 @@ class Codegen:
         elif isinstance(decl, ast.ExtendDecl):
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.FnDecl):
+<<<<<<< HEAD
             if self.inside_trait and not decl.has_body:
                 return
             if decl.is_main and (
@@ -365,6 +483,18 @@ class Codegen:
                 args.append(ir.Ident(arg_typ, arg.name))
             ret_typ = self.ir_type(decl.ret_typ)
             arr_ret_struct = ""
+=======
+            args = []
+            if decl.is_method:
+                self_typ = self.ir_type(decl.self_typ)
+                if decl.self_is_mut and decl.self_typ.sym.kind != TypeKind.Class:
+                    self_typ = self_typ.ptr()
+                args.append(ir.Ident(self_typ, "self"))
+            args += [
+                ir.Ident(self.ir_type(arg.typ), arg.name) for arg in decl.args
+            ]
+            ret_typ = self.ir_type(decl.ret_typ)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             if isinstance(ret_typ, ir.Array):
                 # In C functions cannot return an array, so we create a special
                 # struct for this.
@@ -372,13 +502,17 @@ class Codegen:
                     name = f"ArrayReturn{len(self.generated_array_returns)}"
                     name = f"_R{len(name)}{name}"
                     if name not in self.generated_array_returns:
+<<<<<<< HEAD
                         arr_ret_struct = name
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                         self.out_rir.structs.append(
                             ir.Struct(False, name, [ir.Field("arr", ret_typ)])
                         )
                         self.generated_array_returns.append(name)
                     ret_typ = ir.Type(name)
             fn_decl = ir.FnDecl(
+<<<<<<< HEAD
                 decl.vis.is_pub(), decl.attrs, decl.is_extern
                 and not decl.has_body, decl.sym.name if decl.is_extern
                 and not decl.has_body else mangle_symbol(decl.sym), args,
@@ -402,10 +536,18 @@ class Codegen:
             if str(fn_decl.ret_typ) == "_R7Result__R4void":
                 self.cur_fn.add_ret(self.result_void(decl.ret_typ))
             if decl.is_extern and not decl.has_body:
+=======
+                decl.vis.is_pub(), decl.attrs, decl.is_extern,
+                mangle_symbol(decl.sym), args, False, ret_typ, decl.ret_typ==self.comp.never_t
+            )
+            self.cur_fn = fn_decl
+            if decl.is_extern:
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 self.out_rir.externs.append(fn_decl)
             else:
                 self.out_rir.decls.append(fn_decl)
         elif isinstance(decl, ast.DestructorDecl):
+<<<<<<< HEAD
             self_typ = self.ir_type(decl.self_typ)
             if decl.self_is_mut and decl.self_typ.sym.kind != TypeKind.Class:
                 self_typ = self_typ.ptr()
@@ -2196,6 +2338,25 @@ class Codegen:
             ir.IntLit(ir.Type("usize"), str(typ_sym.info.indexof(value_sym)))
         )
         return tmp
+=======
+            dtor_fn = ir.FnDecl(
+                False, [], False, f"{mangle_type(decl.self_typ)}6_dtor_", [],
+                False, ir.Type("_R7Result__R4void"),False
+            )
+            self.cur_fn = dtor_fn
+            self.out_rir.decls.append(dtor_fn)
+        elif isinstance(decl, ast.TestDecl):
+            if self.comp.prefs.build_mode == prefs.BuildMode.Test:
+                test_name = f"__test{len(self.generated_tests)}__"
+                test_name = f"_R{len(test_name)}{test_name}"
+                test_fn = ir.FnDecl(
+                    False, [], False, test_name, [], False,
+                    ir.Type("_R7Result__R4void"),False
+                )
+                self.cur_fn = test_fn
+                self.generated_tests.append(test_name)
+                self.out_rir.decls.append(test_fn)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def ir_type(self, typ):
         if isinstance(typ, type.Result):
@@ -2211,15 +2372,24 @@ class Codegen:
                                 if is_void else self.ir_type(typ.typ)
                             ),
                             ir.Field("is_err", ir.Type("bool")),
+<<<<<<< HEAD
                             ir.Field("err", self.ir_type(self.comp.error_t))
+=======
+                            ir.Field("err", ir.Type("_R5Error"))
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                         ]
                     )
                 )
                 self.generated_opt_res_types.append(name)
             return ir.Type(name)
         elif isinstance(typ, type.Optional):
+<<<<<<< HEAD
             if isinstance(typ.typ, (type.Ref, type.Ptr)):
                 return self.ir_type(typ.typ)
+=======
+            if isinstance(typ.typ, type.Ref):
+                return ir.Pointer(self.ir_type(typ.typ))
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             name = f"_R9Optional_{mangle_type(typ.typ)}"
             if name not in self.generated_opt_res_types:
                 is_void = typ.typ in self.void_types
@@ -2231,7 +2401,11 @@ class Codegen:
                                 ir.Type("u8")
                                 if is_void else self.ir_type(typ.typ)
                             ),
+<<<<<<< HEAD
                             ir.Field("is_nil", ir.Type("bool"))
+=======
+                            ir.Field("is_none", ir.Type("bool"))
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                         ]
                     )
                 )
@@ -2245,6 +2419,7 @@ class Codegen:
         elif isinstance(typ, type.Tuple):
             return ir.Type(mangle_symbol(typ.symbol()))
         elif isinstance(typ, type.Array):
+<<<<<<< HEAD
             return ir.Array(self.ir_type(typ.typ), typ.size)
         elif isinstance(typ, type.Vec):
             return ir.Type("_R7runtime3Vec").ptr(True)
@@ -2261,13 +2436,30 @@ class Codegen:
             return ir.Type("void")
         elif typ_sym.kind == TypeKind.Nil:
             return ir.Type("void").ptr()
+=======
+            return ir.Array(typ.typ, typ.size)
+        elif isinstance(typ, type.Vec):
+            return ir.Type("_R4core3Vec")
+        elif isinstance(typ, (type.Ptr, type.Ref)):
+            return ir.Pointer(self.ir_type(typ.typ))
+        typ_sym = typ.symbol()
+        if typ_sym.kind == TypeKind.Never:
+            return ir.Type("void")
+        elif typ_sym.kind == TypeKind.None_:
+            return ir.Type("void*")
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif typ_sym.kind == TypeKind.Enum:
             return ir.Type(str(typ_sym.info.underlying_typ))
         elif typ_sym.kind.is_primitive():
             return ir.Type(typ_sym.name)
         res = ir.Type(mangle_symbol(typ_sym))
+<<<<<<< HEAD
         if typ_sym.is_boxed():
             return res.ptr(True)
+=======
+        if typ_sym.kind == TypeKind.Class:
+            return res.ptr()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         return res
 
     def gen_types(self):
@@ -2276,7 +2468,11 @@ class Codegen:
         )
         for ts in type_symbols:
             if ts.kind == TypeKind.Tuple:
+<<<<<<< HEAD
                 fields = []
+=======
+                fields = list()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 for i, f in enumerate(ts.info.types):
                     fields.append(ir.Field(f"f{i}", self.ir_type(f)))
                 self.out_rir.structs.append(
@@ -2291,16 +2487,22 @@ class Codegen:
                     self.out_rir.structs.append(
                         ir.Struct(
                             False, ts_name, [
+<<<<<<< HEAD
                                 ir.Field("obj",
                                          ir.Type("void").ptr()),
                                 ir.Field("idx", ir.Type("usize")),
                                 ir.Field("_rc", ir.Type("usize"))
+=======
+                                ir.Field("obj", ir.Pointer("void")),
+                                ir.Field("idx", ir.Type("usize"))
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                             ]
                         )
                     )
                     # Virtual table
                     vtbl_name = f"{ts_name}4Vtbl"
                     static_vtbl_name = f"{ts_name}4VTBL"
+<<<<<<< HEAD
                     fields = []
                     for m in ts.syms:
                         if isinstance(m, sym.Fn):
@@ -2314,6 +2516,14 @@ class Codegen:
                                 )
                             )
                             fields.append(ir.Field(m.name, self.ir_type(proto)))
+=======
+                    fields = list()
+                    for m in ts.syms:
+                        if isinstance(m, sym.Fn):
+                            fields.append(
+                                ir.Field(m.name, self.ir_type(m.typ()))
+                            )
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                     self.out_rir.structs.append(
                         ir.Struct(False, vtbl_name, fields)
                     )
@@ -2334,10 +2544,21 @@ class Codegen:
                         )
                     )
             elif ts.kind in (TypeKind.Class, TypeKind.String, TypeKind.Vec):
+<<<<<<< HEAD
                 fields = []
                 if ts.kind == TypeKind.Class and ts.info.base:
                     for f in ts.info.base.fields:
                         fields.append(ir.Field(f.name, self.ir_type(f.typ)))
+=======
+                fields = list()
+                if ts.kind == TypeKind.Class and ts.info.base:
+                    fields.append(
+                        ir.Field(
+                            "base",
+                            ir.Type(mangle_symbol(ts.info.base)).ptr()
+                        )
+                    )
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 for f in ts.fields:
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 fields.append(ir.Field("_rc", ir.Type("usize")))
@@ -2345,7 +2566,11 @@ class Codegen:
                     ir.Struct(False, mangle_symbol(ts), fields)
                 )
             elif ts.kind == TypeKind.Struct:
+<<<<<<< HEAD
                 fields = []
+=======
+                fields = list()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 for base in ts.info.bases:
                     fields.append(
                         ir.Field(base.name, ir.Type(mangle_symbol(base)))
@@ -2357,6 +2582,7 @@ class Codegen:
                 )
 
     def get_type_symbols(self, root):
+<<<<<<< HEAD
         ts = []
         for s in root.syms:
             if isinstance(s, sym.Type):
@@ -2364,30 +2590,67 @@ class Codegen:
                                   TypeKind.Never) and not s.kind.is_primitive():
                     ts.append(s)
             ts += self.get_type_symbols(s)
+=======
+        ts = list()
+        for s in root.syms:
+            if isinstance(s, sym.Type):
+                if s.kind != TypeKind.Vec: # avoid duplicated struct
+                    ts.append(s)
+                ts += self.get_type_symbols(s)
+            elif isinstance(s, sym.Pkg):
+                ts += self.get_type_symbols(s)
+            elif isinstance(s, sym.Mod):
+                ts += self.get_type_symbols(s)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         return ts
 
     def sort_type_symbols(self, tss):
         dg = utils.DepGraph()
+<<<<<<< HEAD
         typ_names = []
         for ts in tss:
             ts.mangled_name = mangle_symbol(ts)
             typ_names.append(ts.mangled_name)
         for ts in tss:
             field_deps = []
+=======
+        typ_names = list()
+        for ts in tss:
+            if ts.kind in (TypeKind.Alias, TypeKind.Never):
+                continue
+            ts.mangled_name = mangle_symbol(ts)
+            typ_names.append(ts.mangled_name)
+        for ts in tss:
+            if ts.kind in (TypeKind.Alias, TypeKind.Never):
+                continue
+            field_deps = list()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             if ts.kind == TypeKind.Array:
                 dsym = ts.info.elem_typ.symbol()
                 dep = mangle_symbol(dsym)
                 if dep in typ_names:
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Vec:
+<<<<<<< HEAD
                 dep = mangle_symbol(ts.info.elem_typ.symbol())
+=======
+                dsym = ts.info.elem_typ.symbol()
+                dep = mangle_symbol(dsym)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 if dep in typ_names:
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Tuple:
                 for f in ts.info.types:
+<<<<<<< HEAD
                     dep = mangle_symbol(f.symbol())
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f, type.Optional
+=======
+                    dsym = f.symbol()
+                    dep = mangle_symbol(dsym)
+                    if dep not in typ_names or dep in field_deps or isinstance(
+                        f, type.Ref
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                     ):
                         continue
                     field_deps.append(dep)
@@ -2400,7 +2663,12 @@ class Codegen:
                         continue
                     field_deps.append(dep)
                 for f in ts.fields:
+<<<<<<< HEAD
                     dep = mangle_symbol(f.typ.symbol())
+=======
+                    dsym = f.typ.symbol()
+                    dep = mangle_symbol(dsym)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f.typ, type.Optional
                     ):
@@ -2415,7 +2683,12 @@ class Codegen:
                         continue
                     field_deps.append(dep)
                 for f in ts.fields:
+<<<<<<< HEAD
                     dep = mangle_symbol(f.typ.symbol())
+=======
+                    dsym = f.typ.symbol()
+                    dep = mangle_symbol(dsym)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f.typ, type.Optional
                     ):
@@ -2428,7 +2701,11 @@ class Codegen:
                 "codegen: the following types form a dependency cycle:\n" +
                 dg_sorted.display_cycles()
             )
+<<<<<<< HEAD
         types_sorted = []
+=======
+        types_sorted = list()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         for node in dg_sorted.nodes:
             for ts in tss:
                 if ts.mangled_name == node.name:

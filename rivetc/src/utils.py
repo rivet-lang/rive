@@ -13,11 +13,19 @@ The compiler can receive a file or a directory as input, examples:
    `rivetc my_file.ri` or `rivetc my_folder/`
 
 Options:
+<<<<<<< HEAD
    --mod-name <name>
       Specify the name of the module being built. By default: main.
 
    --mod-type bin|dylib|staticlib
       Specify the type of the module being built. By default: bin.
+=======
+   --pkg-name <name>
+      Specify the name of the package being built. By default: main.
+
+   --pkg-type bin|lib|dylib|staticlib
+      Specify the type of the package being built. By default: bin.
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
    -r, --release
       Compile the executable in release mode, where most optimizations are enabled.
@@ -28,12 +36,20 @@ Options:
       Compile the current project for testing.
 
    -o <filename>, --output <filename>
+<<<<<<< HEAD
       Force Rivet to output the module in a specific location
+=======
+      Force Rivet to output the package in a specific location
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
       (relative to the current working directory if not absolute).
       By default: main.
 
    -b <backend>, --backend <backend>
+<<<<<<< HEAD
       Specify the backend to use while building the module.
+=======
+      Specify the backend to use while building the package.
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
       Current list of supported backends:
         `c` (default): Rivet outputs C source code which is passed to a C compiler
@@ -69,10 +85,17 @@ Options:
       Whether 32-bit or 64-bit machine code will be generated.
 
    --check-syntax
+<<<<<<< HEAD
       Only scan and parse the module, but then stop.
 
    --check
       Scans, parses, and checks the files without compiling the module.
+=======
+      Only scan and parse the package, but then stop.
+
+   --check
+      Scans, parses, and checks the files without compiling the package.
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
    --emit-rir
       Emit Rivet Intermediate Representation to a file.
@@ -139,9 +162,12 @@ class Builder:
         else:
             self.buf += f"{txt}\n"
 
+<<<<<<< HEAD
     def clear(self):
         self.buf = ""
 
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def len(self):
         return len(self)
 
@@ -304,7 +330,11 @@ def smart_quote(str, raw: bool):
     return result
 
 class OrderedDepMap:
+<<<<<<< HEAD
     def __init__(self, keys = [], data = {}):
+=======
+    def __init__(self, keys = list(), data = dict()):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.keys = keys.copy()
         self.data = data.copy()
 
@@ -349,7 +379,11 @@ class DepGraphNode:
         self.deps = deps
 
 class NodeNames:
+<<<<<<< HEAD
     def __init__(self, is_cycle = {}, names = {}):
+=======
+    def __init__(self, is_cycle = dict(), names = dict()):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.is_cycle = is_cycle.copy()
         self.names = names.copy()
 
@@ -381,7 +415,11 @@ class NodeNames:
         return False, new_already_seen
 
 class DepGraph:
+<<<<<<< HEAD
     def __init__(self, acyclic = True, nodes = []):
+=======
+    def __init__(self, acyclic = True, nodes = list()):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.acyclic = acyclic
         self.nodes = nodes.copy()
 
@@ -398,7 +436,11 @@ class DepGraph:
         resolved = DepGraph()
         while node_deps.size() != 0:
             iterations += 1
+<<<<<<< HEAD
             ready_set = []
+=======
+            ready_set = list()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             for name in node_deps.keys:
                 if len(node_deps.get(name)) == 0:
                     ready_set.append(name)
@@ -439,3 +481,51 @@ class DepGraph:
             if seen:
                 out.append(" > " + " -> ".join(cycle_names))
         return "\n".join(out)
+<<<<<<< HEAD
+=======
+
+class PkgDeps:
+    def __init__(self):
+        self.dg = DepGraph()
+        self.mod_deps = {}
+        self.source_files = {}
+
+    def add_source_files(self, name, source_files):
+        self.source_files[name] = source_files
+
+    def add_pkg_deps(self, name, deps):
+        self.dg.add(name, deps)
+
+    def add_pkg_mod_deps(self, pkg_name, name, deps):
+        if pkg_name in self.mod_deps:
+            self.mod_deps[pkg_name].add(name, deps)
+        else:
+            dg = DepGraph()
+            dg.add(name, deps)
+            self.mod_deps[pkg_name] = dg
+
+    def resolve(self, is_verbose):
+        resolved = self.dg.resolve()
+        if not resolved.acyclic:
+            error("package deps cycle:\n" + resolved.display_cycles())
+        if is_verbose:
+            print("--- resolved dependencies graph ---")
+            print(self.dg.display())
+            print("-----------------------------------")
+            print("-------- imported packages --------")
+            for node in resolved.nodes:
+                print(" >", node.name)
+            print("-----------------------------------")
+        source_files = []
+        for node in resolved.nodes:
+            # resolve module dependency
+            resolved_mods = self.mod_deps[node.name].resolve()
+            if not resolved_mods.acyclic:
+                error(
+                    f"package `{node.name}` module deps cycle:\n" +
+                    resolved_mods.display_cycles()
+                )
+            for node_mods in resolved_mods.nodes:
+                source_files += self.source_files[node_mods.name]
+        return source_files
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

@@ -21,15 +21,70 @@ class Resolver:
             self.source_file = sf
             self.resolve_decls(self.source_file.decls)
 
+<<<<<<< HEAD
     def load_preludes(self):
         self.preludes["Error"] = self.comp.error_t.sym
 
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def resolve_decls(self, decls):
         for decl in decls:
             old_sym = self.sym
             old_self_sym = self.self_sym
+<<<<<<< HEAD
             if isinstance(decl, ast.ExternDecl):
                 self.resolve_decls(decl.decls)
+=======
+            if isinstance(decl, ast.UseDecl):
+                if isinstance(decl.path, (ast.Ident, ast.PkgExpr)):
+                    name = decl.path.name if isinstance(
+                        decl.path, ast.Ident
+                    ) else self.source_file.pkg_name
+                    if len(decl.symbols) == 0:
+                        if isinstance(decl.path, ast.PkgExpr):
+                            report.error(
+                                "invalid `use` declaration", decl.path.pos
+                            )
+                        elif _ := self.source_file.sym.find(name):
+                            report.error(
+                                f"use of undeclared external package `{name}`",
+                                decl.path.pos
+                            )
+                            report.help(f"use `pkg::{name}` instead")
+                        else:
+                            report.error(
+                                "expected symbol list after name", decl.path.pos
+                            )
+                    elif sym_info := self.comp.universe.find(name):
+                        self.resolve_selective_use_symbols(
+                            decl.symbols, sym_info, decl.vis.is_pub()
+                        )
+                    else:
+                        report.error(
+                            f"use of undeclared external package `{name}`",
+                            decl.path.pos
+                        )
+                elif isinstance(decl.path, ast.PathExpr):
+                    self.resolve_expr(decl.path)
+                    if not decl.path.has_error:
+                        if len(decl.symbols) == 0:
+                            self.source_file.imported_symbols[
+                                decl.alias] = decl.path.field_info
+                            if decl.vis.is_pub(): # reexport symbol
+                                self.source_file.sym.reexported_syms[
+                                    decl.alias] = decl.path.field_info
+                        else:
+                            self.resolve_selective_use_symbols(
+                                decl.symbols, decl.path.field_info,
+                                decl.vis.is_pub()
+                            )
+            elif isinstance(decl, ast.ExternDecl):
+                self.resolve_decls(decl.decls)
+            elif isinstance(decl, ast.ModDecl):
+                if decl.is_inline:
+                    self.sym = decl.sym
+                    self.resolve_decls(decl.decls)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             elif isinstance(decl, ast.ConstDecl):
                 self.resolve_type(decl.typ)
                 self.resolve_expr(decl.expr)
@@ -92,6 +147,7 @@ class Resolver:
                             type.Type(self.self_sym.info.base), sym.ObjLevel.Rec
                         )
                     )
+<<<<<<< HEAD
                 if decl.is_method:
                     self_typ = type.Type(self.self_sym)
                     if decl.self_is_ref:
@@ -102,6 +158,15 @@ class Resolver:
                         )
                     )
                     decl.self_typ = self_typ
+=======
+                self_typ = type.Type(self.self_sym)
+                decl.scope.add(
+                    sym.Obj(
+                        decl.self_is_mut, "self", self_typ, sym.ObjLevel.Rec
+                    )
+                )
+                decl.self_typ = self_typ
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 for arg in decl.args:
                     self.resolve_type(arg.typ)
                     try:
@@ -112,8 +177,11 @@ class Resolver:
                         )
                     except utils.CompilerError as e:
                         report.error(e.args[0], arg.pos)
+<<<<<<< HEAD
                     if arg.has_def_expr:
                         self.resolve_expr(arg.def_expr)
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                 self.resolve_type(decl.ret_typ)
                 for stmt in decl.stmts:
                     self.resolve_stmt(stmt)
@@ -155,7 +223,11 @@ class Resolver:
         elif isinstance(stmt, ast.WhileStmt):
             self.resolve_expr(stmt.cond)
             self.resolve_stmt(stmt.stmt)
+<<<<<<< HEAD
         elif isinstance(stmt, ast.ForStmt):
+=======
+        elif isinstance(stmt, ast.ForInStmt):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             for v in stmt.vars:
                 try:
                     stmt.scope.add(
@@ -165,8 +237,11 @@ class Resolver:
                     report.error(e.args[0], v.pos)
             self.resolve_expr(stmt.iterable)
             self.resolve_stmt(stmt.stmt)
+<<<<<<< HEAD
         elif isinstance(stmt, ast.DeferStmt):
             self.resolve_expr(stmt.expr)
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif isinstance(stmt, ast.ExprStmt):
             self.resolve_expr(stmt.expr)
 
@@ -184,7 +259,11 @@ class Resolver:
         elif isinstance(expr, ast.SelfExpr):
             if self_ := expr.scope.lookup("self"):
                 expr.is_mut = self_.is_mut
+<<<<<<< HEAD
                 expr.typ = self_.typ
+=======
+                expr.typ = type.Type(self.self_sym)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             else:
                 report.error("cannot resolve `self` expression", expr.pos)
         elif isinstance(expr, ast.SelfTyExpr):
@@ -261,7 +340,13 @@ class Resolver:
             if expr.has_end:
                 self.resolve_expr(expr.end)
         elif isinstance(expr, ast.SelectorExpr):
+<<<<<<< HEAD
             self.resolve_selector_expr(expr)
+=======
+            self.resolve_expr(expr.left)
+        elif isinstance(expr, ast.PathExpr):
+            self.resolve_path_expr(expr)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif isinstance(expr, ast.ReturnExpr):
             if expr.has_expr:
                 self.resolve_expr(expr.expr)
@@ -284,12 +369,17 @@ class Resolver:
                 self.resolve_expr(b.expr)
 
     def find_symbol(self, symbol, name, pos):
+<<<<<<< HEAD
         if isinstance(symbol, sym.SymRef):
             symbol = symbol.ref
         if s := symbol.find(name):
             self.check_vis(s, pos)
             if isinstance(s, sym.SymRef):
                 return s.ref
+=======
+        if s := symbol.find(name):
+            self.check_vis(s, pos)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             return s
         elif isinstance(symbol, sym.Type) and symbol.kind == sym.TypeKind.Enum:
             if symbol.info.has_value(name):
@@ -317,6 +407,7 @@ class Resolver:
                     f"unknown comptime constant `{ident.name}`", ident.pos
                 )
             return
+<<<<<<< HEAD
         elif obj := ident.scope.lookup(ident.name):
             ident.obj = obj
             ident.typ = obj.typ
@@ -327,11 +418,22 @@ class Resolver:
         elif s := self.comp.universe.find(ident.name):
             ident.sym = s
             ident.is_sym = True
+=======
+        elif ident.name == "string":
+            ident.sym = self.comp.string_t.sym
+        elif obj := ident.scope.lookup(ident.name):
+            ident.is_obj = True
+            ident.obj = obj
+            ident.typ = obj.typ
+        elif s := self.find_prelude(ident.name):
+            ident.sym = s
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif s := self.sym.find(ident.name):
             if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
                 report.error(
                     f"cannot find `{ident.name}` in this scope", ident.pos
                 )
+<<<<<<< HEAD
                 ident.not_found = True
             ident.sym = s
             ident.is_sym = True
@@ -383,6 +485,109 @@ class Resolver:
                     expr.field_sym = field_sym
                 else:
                     expr.not_found = True
+=======
+            ident.sym = s
+        elif s := self.source_file.find_imported_symbol(ident.name):
+            if s.kind == sym.TypeKind.Placeholder:
+                report.error(
+                    f"cannot find `{ident.name}` in this scope", ident.pos
+                )
+            ident.sym = s
+        else:
+            report.error(f"cannot find `{ident.name}` in this scope", ident.pos)
+
+    def resolve_path_expr(self, path):
+        if path.is_global:
+            path.left_info = self.comp.universe
+            if field_info := self.find_symbol(
+                self.comp.universe, path.field_name, path.field_pos
+            ):
+                path.field_info = field_info
+            else:
+                path.has_error = True
+        elif isinstance(path.left, ast.PkgExpr):
+            pkg_sym = self.comp.universe.find(self.source_file.pkg_name)
+            path.left_info = pkg_sym
+            if field_info := self.find_symbol(
+                pkg_sym, path.field_name, path.field_pos
+            ):
+                path.field_info = field_info
+            else:
+                path.has_error = True
+        elif isinstance(path.left, ast.SelfExpr):
+            path.left_info = self.source_file.sym
+            if field_info := self.find_symbol(
+                self.source_file.sym, path.field_name, path.field_pos
+            ):
+                path.field_info = field_info
+            else:
+                path.has_error = True
+        elif isinstance(path.left, ast.Ident):
+            if local_sym := self.source_file.sym.find(path.left.name):
+                path.left_info = local_sym
+                if field_info := self.find_symbol(
+                    local_sym, path.field_name, path.field_pos
+                ):
+                    path.field_info = field_info
+                else:
+                    path.has_error = True
+            elif prelude_sym := self.find_prelude(path.left.name):
+                path.left_info = prelude_sym
+                if field_info := self.find_symbol(
+                    prelude_sym, path.field_name, path.field_pos
+                ):
+                    path.field_info = field_info
+                else:
+                    path.has_error = True
+            elif imported_sym := self.source_file.find_imported_symbol(
+                path.left.name
+            ):
+                path.left_info = imported_sym
+                if field_info := self.find_symbol(
+                    imported_sym, path.field_name, path.field_pos
+                ):
+                    path.field_info = field_info
+                else:
+                    path.has_error = True
+            elif package := self.comp.universe.find(path.left.name):
+                path.left_info = package
+                if field_info := self.find_symbol(
+                    package, path.field_name, path.field_pos
+                ):
+                    path.field_info = field_info
+                else:
+                    path.has_error = True
+            else:
+                report.error(
+                    f"use of undeclared external package `{path.left.name}`",
+                    path.left.pos
+                )
+                path.has_error = True
+        elif isinstance(path.left, ast.PathExpr):
+            self.resolve_expr(path.left)
+            if not path.left.has_error:
+                path.left_info = path.left.field_info
+                if field_info := self.find_symbol(
+                    path.left.field_info, path.field_name, path.field_pos
+                ):
+                    path.field_info = field_info
+                else:
+                    path.has_error = True
+        elif isinstance(path.left, ast.SelfTyExpr):
+            if self.self_sym != None:
+                path.left_info = self.self_sym
+                if field_info := self.find_symbol(
+                    self.self_sym, path.field_name, path.field_pos
+                ):
+                    path.field_info = field_info
+                else:
+                    path.has_error = True
+            else:
+                report.error("cannot resolve `Self`", path.left.pos)
+        else:
+            report.error("bad use of path expression", path.pos)
+            path.has_error = True
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def resolve_type(self, typ):
         if isinstance(typ, type.Ref):
@@ -460,6 +665,7 @@ class Resolver:
                         f"cannot find type `{typ.expr.name}` in this scope",
                         typ.expr.pos
                     )
+<<<<<<< HEAD
             elif isinstance(typ.expr, ast.SelectorExpr):
                 self.resolve_selector_expr(typ.expr)
                 if not typ.expr.not_found:
@@ -474,12 +680,32 @@ class Resolver:
                         if typ.expr.field_sym.kind == sym.TypeKind.Alias: # unalias
                             if self.resolve_type(
                                 typ.expr.field_sym.info.parent
+=======
+            elif isinstance(typ.expr, ast.PathExpr):
+                self.resolve_path_expr(typ.expr)
+                if not typ.expr.has_error:
+                    if typ.expr.field_info.kind == sym.TypeKind.Placeholder:
+                        report.error(
+                            f"cannot find type `{typ.expr.field_info.name}`",
+                            typ.expr.pos
+                        )
+                    elif isinstance(typ.expr.field_info, sym.Type):
+                        pos = typ.expr.pos
+                        typ.resolve(typ.expr.field_info)
+                        if typ.expr.field_info.kind == sym.TypeKind.Alias: # unalias
+                            if self.resolve_type(
+                                typ.expr.field_info.info.parent
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                             ):
                                 typ.unalias()
                         return True
                     else:
                         report.error(
+<<<<<<< HEAD
                             f"expected type, found {typ.expr.field_sym.typeof()}",
+=======
+                            f"expected type, found {typ.expr.field_info.typeof()}",
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
                             typ.expr.pos
                         )
             elif isinstance(typ.expr, ast.SelfTyExpr):
@@ -535,6 +761,7 @@ class Resolver:
                 report.error(
                     f"cannot find `{expr.name}` in this scope", expr.pos
                 )
+<<<<<<< HEAD
         elif isinstance(expr, ast.SelectorExpr):
             self.resolve_selector_expr(expr)
             if not expr.not_found:
@@ -545,6 +772,18 @@ class Resolver:
                         expr.field_sym.evaled_expr = evaled_expr
                         expr.field_sym.has_evaled_expr = True
                         return expr.field_sym.evaled_expr
+=======
+        elif isinstance(expr, ast.PathExpr):
+            self.resolve_path_expr(expr)
+            if not expr.has_error:
+                if isinstance(expr.field_info, sym.Const):
+                    if expr.field_info.has_evaled_expr:
+                        return expr.field_info.evaled_expr
+                    if evaled_expr := self.eval_size(expr.field_info.expr):
+                        expr.field_info.evaled_expr = evaled_expr
+                        expr.field_info.has_evaled_expr = True
+                        return expr.field_info.evaled_expr
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         elif isinstance(expr, ast.BuiltinCallExpr):
             if expr.name in ("size_of", "align_of"):
                 if self.resolve_type(expr.args[0].typ):
@@ -558,3 +797,40 @@ class Resolver:
     def check_vis(self, sym, pos):
         if sym.vis == Vis.Priv and not self.source_file.sym.has_access_to(sym):
             report.error(f"{sym.typeof()} `{sym.name}` is private", pos)
+<<<<<<< HEAD
+=======
+
+    def check_imported_symbol(self, s, pos):
+        if s.name in self.source_file.imported_symbols:
+            report.error(f"{s.typeof()} `{s.name}` is already imported", pos)
+        elif self.source_file.sym.find(s.name):
+            report.error(
+                f"another symbol with the name `{s.name}` already exists", pos
+            )
+            report.help("you can use `as` to change the name of the import")
+
+    def resolve_selective_use_symbols(self, symbols, path_sym, is_pub):
+        for isym in symbols:
+            if isym.is_self:
+                self.source_file.imported_symbols[isym.alias] = path_sym
+                if is_pub: # reexport symbol
+                    self.source_file.sym.reexported_syms[isym.alias] = path_sym
+            else:
+                if isym_ := path_sym.find(isym.name):
+                    self.check_vis(isym_, isym.pos)
+                    self.check_imported_symbol(isym_, isym.pos)
+                    self.source_file.imported_symbols[isym.alias] = isym_
+                    if is_pub: # reexport symbol
+                        self.source_file.sym.reexported_syms[isym.alias] = isym_
+                else:
+                    report.error(
+                        f"could not find `{isym.name}` in {path_sym.typeof()} `{path_sym.name}`",
+                        isym.pos
+                    )
+
+    def load_preludes(self):
+        self.preludes["Error"] = self.comp.error_t.sym
+        for core_sym in self.comp.core_pkg.syms:
+            if core_sym.vis.is_pub() and not isinstance(core_sym, sym.Mod):
+                self.preludes[core_sym.name] = core_sym
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

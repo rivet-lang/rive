@@ -2,35 +2,60 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+<<<<<<< HEAD
 import "libc";
 import "runtime";
+=======
+use core::stdc;
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
 /// User's home directory.
 pub let HOME_DIR: string = #if _LINUX_ get("HOME") #else get("USERPROFILE") #endif;
 
 /// Returns `true` if the environment variable exists.
 pub fn exists(name: string) bool {
+<<<<<<< HEAD
 	return unsafe { libc.getenv(name.ptr) != nil };
+=======
+	return unsafe { stdc::getenv(name.ptr) != none };
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 }
 
 /// Returns the value of the environment variable named by the key.
 pub fn get(name: string) string {
 	unsafe {
+<<<<<<< HEAD
 		let s = libc.getenv(name.ptr);
 		return if s == nil { "" } else { string.from_raw(s) };
+=======
+		let s = stdc::getenv(name.ptr);
+		return if s == none { "" } else { string::from_raw(s) };
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 	}
 }
 
 /// Sets the value of an environment variable with `name` to `value`.
+<<<<<<< HEAD
 pub fn set(name: string, value: string, overwrite: bool = true) ! {
 	if unsafe { libc.setenv(name.ptr, value.ptr, overwrite) == -1 } {
 		return runtime.last_errno_error();
+=======
+pub fn set(name: string, value: string, overwrite: bool = true) !void {
+	if unsafe { stdc::setenv(name.ptr, value.ptr, overwrite) == -1 } {
+		return Error("env::set: {}".fmt(core::strerr()));
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 	}
 }
 
 /// Removes an environment variable with `name`.
+<<<<<<< HEAD
 pub fn remove(name: string) ! {
 	if unsafe { libc.unsetenv(name.ptr) } == -1 {
 		return runtime.last_errno_error();
+=======
+pub fn remove(name: string) !void {
+	if unsafe { stdc::unsetenv(name.ptr) } == -1 {
+		return Error("env::remove: {}".fmt(core::strerr()));
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 	}
 }

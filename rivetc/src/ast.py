@@ -31,7 +31,11 @@ class SourceFile:
     def __str__(self):
         return self.__repr__()
 
+<<<<<<< HEAD
 # Used in `let` decls/stmts and guard exprs
+=======
+# Used in `let` stmts and guard exprs
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 class ObjDecl:
     def __init__(self, is_mut, name, has_typ, typ, level, pos):
         self.is_mut = is_mut
@@ -40,7 +44,10 @@ class ObjDecl:
         self.typ = typ
         self.level = level
         self.pos = pos
+<<<<<<< HEAD
         self.sym = None
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def __repr__(self):
         res = ""
@@ -116,12 +123,24 @@ class Attrs:
     def has_attrs(self):
         return len(self.attrs) > 0
 
+<<<<<<< HEAD
 class ImportDecl:
     def __init__(self, attrs, vis, path, alias, import_list, pos):
+=======
+class ExternPkg:
+    def __init__(self, pkg_name, pos):
+        self.attrs = Attrs()
+        self.pkg_name = pkg_name
+        self.pos = pos
+
+class UseDecl:
+    def __init__(self, attrs, vis, path, alias, symbols):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.attrs = attrs
         self.vis = vis
         self.path = path
         self.alias = alias
+<<<<<<< HEAD
         self.import_list = import_list
         self.mod_sym = None
         self.pos = pos
@@ -140,6 +159,17 @@ class ImportedMod:
         self.full_name = full_name
         self.files = files
 
+=======
+        self.symbols = symbols
+
+class UseSymbol:
+    def __init__(self, name, alias, is_self, pos):
+        self.name = name
+        self.alias = alias
+        self.is_self = is_self
+        self.pos = pos
+
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 class ExternDecl:
     def __init__(self, attrs, abi, decls, pos):
         self.attrs = attrs
@@ -147,6 +177,20 @@ class ExternDecl:
         self.decls = decls
         self.pos = pos
 
+<<<<<<< HEAD
+=======
+class ModDecl:
+    def __init__(self, docs, attrs, name, vis, decls, is_inline, pos):
+        self.docs = docs
+        self.attrs = attrs
+        self.name = name
+        self.vis = vis
+        self.decls = decls
+        self.sym = None
+        self.is_inline = is_inline
+        self.pos = pos
+
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 class ConstDecl:
     def __init__(self, docs, attrs, vis, name, typ, expr, pos):
         self.docs = docs
@@ -159,12 +203,19 @@ class ConstDecl:
         self.pos = pos
 
 class LetDecl:
+<<<<<<< HEAD
     def __init__(self, docs, attrs, vis, is_extern, abi, lefts, right, pos):
+=======
+    def __init__(self, docs, attrs, vis, is_extern, lefts, right, pos):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.docs = docs
         self.attrs = attrs
         self.vis = vis
         self.is_extern = is_extern
+<<<<<<< HEAD
         self.abi = abi
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.lefts = lefts
         self.right = right
         self.pos = pos
@@ -250,8 +301,13 @@ class FnDecl:
     def __init__(
         self, docs, attrs, vis, is_extern, is_unsafe, name, name_pos, args,
         ret_typ, stmts, scope, has_body = False, is_method = False,
+<<<<<<< HEAD
         self_is_mut = False, self_is_ref = False, has_named_args = False,
         is_main = False, is_variadic = False, abi = None
+=======
+        self_is_mut = False, has_named_args = False, is_main = False,
+        is_variadic = False, abi = None
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     ):
         self.sym = None
         self.docs = docs
@@ -263,7 +319,10 @@ class FnDecl:
         self.args = args
         self.self_typ = None
         self.self_is_mut = self_is_mut
+<<<<<<< HEAD
         self.self_is_ref = self_is_ref
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.is_main = is_main
         self.is_extern = is_extern
         self.is_unsafe = is_unsafe
@@ -274,7 +333,10 @@ class FnDecl:
         self.has_body = has_body
         self.scope = scope
         self.stmts = stmts
+<<<<<<< HEAD
         self.defer_stmts = []
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
 class DestructorDecl:
     def __init__(self, self_is_mut, scope, stmts, pos):
@@ -283,7 +345,10 @@ class DestructorDecl:
         self.scope = scope
         self.self_typ = None
         self.pos = pos
+<<<<<<< HEAD
         self.defer_stmts = []
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
 class TestDecl:
     def __init__(self, scope, name, stmts, pos):
@@ -307,7 +372,11 @@ class WhileStmt:
         self.is_inf = is_inf
         self.pos = pos
 
+<<<<<<< HEAD
 class ForStmt:
+=======
+class ForInStmt:
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def __init__(self, scope, vars, iterable, stmt, pos):
         self.vars = vars
         self.iterable = iterable
@@ -319,7 +388,10 @@ class DeferStmt:
     def __init__(self, expr, is_errdefer, pos):
         self.expr = expr
         self.is_errdefer = is_errdefer
+<<<<<<< HEAD
         self.flag_var = ""
+=======
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.pos = pos
 
 class ExprStmt:
@@ -363,15 +435,32 @@ class AssignExpr:
         self.typ = None
         self.pos = pos
 
+<<<<<<< HEAD
+=======
+class PkgExpr:
+    def __init__(self, pos):
+        self.pos = pos
+
+    def __repr__(self):
+        return "pkg"
+
+    def __str__(self):
+        return self.__repr__()
+
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 class Ident:
     def __init__(self, name, pos, scope, is_comptime):
         self.name = name
         self.obj = None
         self.sym = None
         self.is_obj = False
+<<<<<<< HEAD
         self.is_sym = False
         self.is_comptime = is_comptime
         self.not_found = False
+=======
+        self.is_comptime = is_comptime
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.scope = scope
         self.pos = pos
         self.typ = None
@@ -421,13 +510,21 @@ class BaseExpr:
     def __str__(self):
         return self.__repr__()
 
+<<<<<<< HEAD
 class NilLiteral:
+=======
+class NoneLiteral:
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     def __init__(self, pos):
         self.pos = pos
         self.typ = None
 
     def __repr__(self):
+<<<<<<< HEAD
         return "nil"
+=======
+        return "none"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def __str__(self):
         return self.__repr__()
@@ -627,6 +724,11 @@ class IndexExpr:
         self.typ = None
 
     def __repr__(self):
+<<<<<<< HEAD
+=======
+        if self.is_mut:
+            return f"{self.left}[mut {self.index}]"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         return f"{self.left}[{self.index}]"
 
     def __str__(self):
@@ -756,6 +858,7 @@ class RangeExpr:
 class SelectorExpr:
     def __init__(
         self, left, field_name, pos, field_pos, is_indirect = False,
+<<<<<<< HEAD
         is_nilcheck = False
     ):
         self.left = left
@@ -769,19 +872,56 @@ class SelectorExpr:
         self.is_nilcheck = is_nilcheck
         self.is_symbol_access = False
         self.not_found = False
+=======
+        is_nonecheck = False
+    ):
+        self.left = left
+        self.field_name = field_name
+        self.field_is_mut = False
+        self.field_pos = field_pos
+        self.left_typ = None
+        self.is_indirect = is_indirect
+        self.is_nonecheck = is_nonecheck
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.pos = pos
         self.typ = None
 
     def __repr__(self):
         if self.is_indirect:
             return f"{self.left}.*"
+<<<<<<< HEAD
         elif self.is_nilcheck:
+=======
+        elif self.is_nonecheck:
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             return f"{self.left}.?"
         return f"{self.left}.{self.field_name}"
 
     def __str__(self):
         return self.__repr__()
 
+<<<<<<< HEAD
+=======
+class PathExpr:
+    def __init__(self, is_global, left, field_name, pos, field_pos):
+        self.is_global = is_global
+        self.left = left
+        self.left_info = None
+        self.field_name = field_name
+        self.field_info = None
+        self.field_pos = field_pos
+        self.is_last = False
+        self.has_error = False
+        self.pos = pos
+        self.typ = None
+
+    def __repr__(self):
+        return f"{self.left}::{self.field_name}"
+
+    def __str__(self):
+        return self.__repr__()
+
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 class BranchExpr:
     def __init__(self, op, pos):
         self.op = op
@@ -845,7 +985,11 @@ class IfBranch:
     def __repr__(self):
         if self.is_else:
             return f"else {self.expr}"
+<<<<<<< HEAD
         return f"if {self.cond} {self.expr}"
+=======
+        return f"if ({self.cond}) {self.expr}"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def __str__(self):
         return self.__repr__()
@@ -888,7 +1032,11 @@ class SwitchExpr:
 
     def __repr__(self):
         kis = " is " if self.is_typeswitch else " "
+<<<<<<< HEAD
         return f"switch {self.expr}{kis}{{ " + ", ".join([
+=======
+        return f"switch ({self.expr}){kis}{{ " + ", ".join([
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             str(b) for b in self.branches
         ]) + " }"
 

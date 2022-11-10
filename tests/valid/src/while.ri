@@ -1,0 +1,15 @@
+test "while statement" {
+    let mut x = 0;
+    while { // infinite loop
+        x += 1;
+        if x == 5 {
+            break;
+        }
+    }
+    assert!(x == 5);
+
+    while x < 10 {
+        x += 1;
+    }
+    assert!(x == 10);
+}

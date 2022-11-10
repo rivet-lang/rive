@@ -1,4 +1,8 @@
 tests/invalid/call_expr.ri:5:28: error: expected named argument, found single expression
+<<<<<<< HEAD
   5 |     qy(first: 5, last: 10, 9); // FAIL
     |                            ^
 rivetc: error: could not compile module `call_expr`, aborting due to previous error
+=======
+rivetc: error: could not compile package `call_expr`, aborting due to previous error
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

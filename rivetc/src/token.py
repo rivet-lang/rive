@@ -40,6 +40,10 @@ class Kind(Enum):
     Arrow = auto_enum() # =>
     Comma = auto_enum() # ,
     Colon = auto_enum() # :
+<<<<<<< HEAD
+=======
+    DoubleColon = auto_enum() # ::
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     Semicolon = auto_enum() # ;
     Question = auto_enum() # ?
     OrElse = auto_enum() # ??
@@ -77,6 +81,7 @@ class Kind(Enum):
     KwFor = auto_enum() # for
     KwFn = auto_enum() # fn
     KwIf = auto_enum() # if
+<<<<<<< HEAD
     KwImport = auto_enum() # import
     KwIn = auto_enum() # in
     KwIs = auto_enum() # is
@@ -86,6 +91,18 @@ class Kind(Enum):
     KwNotIn = auto_enum() # !in
     KwNotIs = auto_enum() # !is
     KwOr = auto_enum() # or
+=======
+    KwIn = auto_enum() # in
+    KwIs = auto_enum() # is
+    KwLet = auto_enum() # let
+    KwMod = auto_enum() # mod
+    KwMut = auto_enum() # mut
+    KwNone = auto_enum() # none
+    KwNotIn = auto_enum() # !in
+    KwNotIs = auto_enum() # !is
+    KwOr = auto_enum() # or
+    KwPkg = auto_enum() # pkg
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     KwPub = auto_enum() # pub
     KwProt = auto_enum() # prot
     KwReturn = auto_enum() # return
@@ -98,6 +115,10 @@ class Kind(Enum):
     KwTrue = auto_enum() # true
     KwType = auto_enum() # type
     KwUnsafe = auto_enum() # unsafe
+<<<<<<< HEAD
+=======
+    KwUse = auto_enum() # use
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     KwWhile = auto_enum() # while
     # ==============================
 
@@ -106,7 +127,12 @@ class Kind(Enum):
     def is_start_of_type(self):
         return self in (
             Kind.Bang, Kind.Name, Kind.Lparen, Kind.Amp, Kind.Mul,
+<<<<<<< HEAD
             Kind.Lbracket, Kind.Question, Kind.KwSelf, Kind.KwSelfTy
+=======
+            Kind.Lbracket, Kind.Question, Kind.KwSelf, Kind.KwSuper,
+            Kind.KwSelfTy
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         )
 
     def is_assign(self):
@@ -167,6 +193,10 @@ TOKEN_STRINGS = {
     Kind.Arrow: "=>",
     Kind.Comma: ",",
     Kind.Colon: ":",
+<<<<<<< HEAD
+=======
+    Kind.DoubleColon: "::",
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     Kind.Semicolon: ";",
     Kind.Question: "?",
     Kind.OrElse: "??",
@@ -203,6 +233,7 @@ TOKEN_STRINGS = {
     Kind.KwFor: "for",
     Kind.KwFn: "fn",
     Kind.KwIf: "if",
+<<<<<<< HEAD
     Kind.KwImport: "import",
     Kind.KwIn: "in",
     Kind.KwIs: "is",
@@ -212,6 +243,18 @@ TOKEN_STRINGS = {
     Kind.KwNotIn: "!in",
     Kind.KwNotIs: "!is",
     Kind.KwOr: "or",
+=======
+    Kind.KwIn: "in",
+    Kind.KwIs: "is",
+    Kind.KwLet: "let",
+    Kind.KwMod: "mod",
+    Kind.KwMut: "mut",
+    Kind.KwNone: "none",
+    Kind.KwNotIn: "!in",
+    Kind.KwNotIs: "!is",
+    Kind.KwOr: "or",
+    Kind.KwPkg: "pkg",
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     Kind.KwPub: "pub",
     Kind.KwProt: "prot",
     Kind.KwReturn: "return",
@@ -224,6 +267,10 @@ TOKEN_STRINGS = {
     Kind.KwTrue: "true",
     Kind.KwType: "type",
     Kind.KwUnsafe: "unsafe",
+<<<<<<< HEAD
+=======
+    Kind.KwUse: "use",
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
     Kind.KwWhile: "while",
     # ==============================
 }

@@ -1,4 +1,8 @@
 tests/invalid/invalid_character.ri:1:1: error: invalid character ```
+<<<<<<< HEAD
   1 | `
     | ^
 rivetc: error: could not compile module `invalid_character`, aborting due to previous error
+=======
+rivetc: error: could not compile package `invalid_character`, aborting due to previous error
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

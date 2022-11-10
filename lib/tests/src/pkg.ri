@@ -1,0 +1,133 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+use core::process { exit };
+use core::Console { self, eprintln, print, println };
+
+let SUPPORT_COLOR: bool = Console::can_show_color_on_stdout();
+
+let OK_STATUS: string = bold(green(" [  OK  ] "));
+let FAILED_STATUS: string = bold(red(" [ FAIL ] "));
+let SKIP_STATUS: string = bold(yellow(" [ SKIP ] "));
+let DIVIDER: string = bold(header("", "-"));
+
+extern (Rivet) {
+    let test_runner: TestRunner;
+}
+
+fn header(txt: string, sep: string) string {
+    if (SUPPORT_COLOR) {
+        // TODO: return Console::header(txt, sep);
+    }
+    return txt;
+}
+
+fn bold(txt: string) string {
+    if (SUPPORT_COLOR) {
+        return Console::bold(txt);
+    }
+    return txt;
+}
+
+fn green(txt: string) string {
+    if (SUPPORT_COLOR) {
+        return Console::green(txt);
+    }
+    return txt;
+}
+
+fn red(txt: string) string {
+    if (SUPPORT_COLOR) {
+        return Console::red(txt);
+    }
+    return txt;
+}
+
+fn yellow(txt: string) string {
+    if (SUPPORT_COLOR) {
+        return Console::yellow(txt);
+    }
+    return txt;
+}
+
+enum TestResult : u8 {
+    Ok,
+    Skipped,
+    ErrorRaised,
+    Failed
+}
+
+struct Test {
+    name: string;
+    test_fn : fn (*Test) void;
+    result: TestResult;
+    err_pos: string;
+    err: Error;
+}
+
+struct TestRunner {
+    tests: [Test];
+    mut ok_tests: i32;
+    mut fail_tests: i32;
+    mut skip_tests: i32;
+
+    fn run(mut self) void {
+        for test_ in self.tests {
+            (test_.test_fn)(unsafe { addr_of!(test_) });
+            switch test_.result {
+                .Ok => {
+                    self.print_test_ok(test_.name);
+                },
+                .Skipped => {
+                    self.print_test_skip(test_.name);
+                },
+                .Failed => {
+                    self.print_test_failed(test_.name, test_.err_pos);
+                },
+                .ErrorRaised => {
+                    self.print_test_failed(test_.name, test_.err_pos);
+                    eprintln("    Error raised: {}", test_.err);
+                }
+            }
+        }
+        self.print_summary_tests();
+        exit(as(i32, self.fail_tests != 0));
+    }
+
+    fn print_summary_tests(self) void {
+        println(DIVIDER);
+        print(bold("Summary for all tests: "));
+        if self.ok_tests > 0 {
+            print("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
+        }
+        if self.fail_tests > 0 {
+            print("{}, ", bold(red("{} failed".fmt(self.fail_tests))));
+        }
+        if self.skip_tests > 0 {
+            print("{}, ", bold(yellow("{} skipped".fmt(self.skip_tests))));
+        }
+        println(bold("{} total.".fmt(self.tests.len())));
+        println(DIVIDER);
+    }
+
+    fn print_header(self) void {
+        println(bold(header("Rivet TestRunner", "-")));
+    }
+
+    fn print_test_ok(self, name: string) void {
+        println(OK_STATUS.concat(name));
+        self.ok_tests += 1;
+    }
+
+    fn print_test_skip(self, name: string) void {
+        eprintln(SKIP_STATUS.concat(name));
+        self.skip_tests += 1;
+    }
+
+    fn print_test_failed(self, name: string, pos: string) void {
+        eprintln(FAILED_STATUS.concat(name));
+        eprintln(pos);
+        self.fail_tests += 1;
+    }
+}

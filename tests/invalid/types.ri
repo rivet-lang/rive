@@ -6,6 +6,7 @@ extern (C) {
 struct St {
     f1: &i32; // FAIL
 
+<<<<<<< HEAD
     f2: (i32, i32, i32, i32, i32, i32, i32, i32, i32);
 
     f3: void;
@@ -15,3 +16,16 @@ struct St {
 }
 
 fn main() { }
+=======
+    f2: ?*u8;
+
+    f3: (i32, i32, i32, i32, i32, i32, i32, i32, i32);
+
+    f4: void;
+
+    f5: pkg;
+    f6: =;
+}
+
+fn main() void { }
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c

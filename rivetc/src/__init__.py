@@ -14,14 +14,22 @@ from . import (
 
 class Compiler:
     def __init__(self, args):
+<<<<<<< HEAD
         #  `universe` is the mega-module where all the modules being
+=======
+        #  `universe` is the mega-package where all the packages being
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         #  compiled reside.
         self.universe = sym.universe()
 
         #  Primitive types.
         self.void_t = type.Type(self.universe[0])
         self.never_t = type.Type(self.universe[1])
+<<<<<<< HEAD
         self.nil_t = type.Type(self.universe[2])
+=======
+        self.none_t = type.Type(self.universe[2])
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.bool_t = type.Type(self.universe[3])
         self.rune_t = type.Type(self.universe[4])
         self.i8_t = type.Type(self.universe[5])
@@ -44,10 +52,17 @@ class Compiler:
         self.prefs = prefs.Prefs(args)
         self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
 
+<<<<<<< HEAD
         self.runtime_mod = None
         self.vec_sym = None # from `runtime` module
 
         self.parsed_files = []
+=======
+        self.core_pkg = None
+        self.vec_sym = None # from `core` package
+
+        self.pkg_deps = utils.PkgDeps()
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         self.source_files = []
 
         self.register = register.Register(self)
@@ -55,6 +70,7 @@ class Compiler:
         self.checker = checker.Checker(self)
         self.codegen = codegen.Codegen(self)
 
+<<<<<<< HEAD
     def import_modules(self):
         for sf in self.parsed_files:
             for decl in sf.decls:
@@ -127,22 +143,50 @@ class Compiler:
         )
         self.load_root_mod()
         self.import_modules()
+=======
+    def run(self):
+        self.load_pkg("core", token.NO_POS)
+        if self.prefs.build_mode == prefs.BuildMode.Test:
+            self.load_pkg("tests", token.NO_POS)
+        else:
+            self.load_pkg("std", token.NO_POS)
+        self.load_root_pkg()
+        if report.ERRORS > 0:
+            self.abort()
+        self.source_files = self.pkg_deps.resolve(self.prefs.is_verbose)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         if not self.prefs.check_syntax:
             self.register.walk_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
+<<<<<<< HEAD
             self.resolver.resolve_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
             self.checker.check_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
+=======
+
+            self.resolver.resolve_files(self.source_files)
+            if report.ERRORS > 0:
+                self.abort()
+
+            self.checker.check_files(self.source_files)
+            if report.ERRORS > 0:
+                self.abort()
+
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             if not self.prefs.check:
                 self.codegen.gen_source_files(self.source_files)
                 if report.ERRORS > 0:
                     self.abort()
 
+<<<<<<< HEAD
     def load_root_mod(self):
+=======
+    def load_root_pkg(self):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         if path.isdir(self.prefs.input):
             files = self.filter_files(
                 glob.glob(path.join(self.prefs.input, "*.ri"))
@@ -154,6 +198,7 @@ class Compiler:
             files = [self.prefs.input]
         if len(files) == 0:
             utils.error("no input received")
+<<<<<<< HEAD
         root_sym = sym.Mod(sym.Vis.Priv, self.prefs.mod_name)
         self.universe.add(root_sym)
         self.parsed_files += parser.Parser(self).parse_mod(
@@ -232,11 +277,48 @@ class Compiler:
         return ast.ImportedMod(
             found, name, name if len(alias) == 0 else alias, full_name, files
         )
+=======
+        parser.Parser(self).parse_pkg(self.prefs.pkg_name, files)
+
+    def load_pkg(self, pkg_name, pos):
+        parser.Parser(self
+                      ).parse_pkg(pkg_name, self.get_pkg_files(pkg_name, pos))
+
+    def get_pkg_files(self, pkg_name, pos):
+        files = []
+        found = False
+        for l in self.prefs.library_path:
+            pkg_path = path.join(l, pkg_name)
+            if path.exists(pkg_path):
+                pkg_path = path.relpath(pkg_path)
+                found = True
+                if path.isdir(pkg_path):
+                    files = self.filter_files(
+                        glob.glob(path.join(pkg_path, "*.ri"))
+                    )
+                    #  support `src/` directory
+                    if path.isdir(path.join(pkg_path, "src")):
+                        files += self.filter_files(
+                            glob.glob(path.join(pkg_path, "src", "*.ri"))
+                        )
+                else:
+                    report.error(f"`{pkg_name}` is not a directory", pos)
+                break
+        if not found:
+            report.error(f"package `{pkg_name}` not found", pos)
+        elif len(files) == 0:
+            report.error(f"package `{pkg_name}` contains no rivet files", pos)
+        return files
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
 
     def filter_files(self, inputs):
         new_inputs = []
         for input in inputs:
+<<<<<<< HEAD
             basename_input = path.basename(path.relpath(input))
+=======
+            basename_input = path.basename(input)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             if basename_input.count('.') == 1:
                 new_inputs.append(input)
                 continue
@@ -343,7 +425,11 @@ class Compiler:
             return self.type_size(typ.typ)
         elif isinstance(typ, (type.Ptr, type.Ref)):
             return self.pointer_size, self.pointer_size
+<<<<<<< HEAD
         elif isinstance(typ, type.Fn):
+=======
+        elif isinstance(typ, type.Func):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             return self.pointer_size, self.pointer_size
         return self.type_symbol_size(typ.symbol())
 
@@ -352,7 +438,11 @@ class Compiler:
             return sy.size, sy.align
         size, align = 0, 0
         if sy.kind in (
+<<<<<<< HEAD
             sym.TypeKind.Placeholder, sym.TypeKind.Void, sym.TypeKind.Nil,
+=======
+            sym.TypeKind.Placeholder, sym.TypeKind.Void, sym.TypeKind.None_,
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             sym.TypeKind.Never
         ):
             pass
@@ -381,9 +471,29 @@ class Compiler:
         elif sy.kind == sym.TypeKind.Array:
             elem_size, elem_align = self.type_size(sy.info.elem_typ)
             size, align = int(sy.info.size.lit) * elem_size, elem_align
+<<<<<<< HEAD
         elif sy.is_boxed():
             size, align = self.pointer_size, self.pointer_size
         elif sy.kind in (sym.TypeKind.Struct, sym.TypeKind.Tuple):
+=======
+        elif sy.kind == sym.TypeKind.Slice:
+            size, align = self.type_symbol_size(self.slice_sym)
+        elif sy.kind == sym.TypeKind.Trait:
+            size, align = self.pointer_size * 2, self.pointer_size
+        elif sy.kind == sym.TypeKind.SumType:
+            for vtyp in sy.info.variants:
+                v_size, v_alignment = self.type_size(vtyp)
+                if v_size > size:
+                    size = v_size
+                    align = v_alignment
+            if not sy.info.is_c_union:
+                #  `tag: i32` field
+                size += 4
+        elif sy.kind in (
+            sym.TypeKind.Struct, sym.TypeKind.Tuple, sym.TypeKind.Class,
+            sym.TypeKind.String
+        ):
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             total_size = 0
             max_alignment = 0
             types = sy.info.types if sy.kind == sym.TypeKind.Tuple else list(
@@ -421,6 +531,7 @@ class Compiler:
             if name == "_LITTLE_ENDIAN_":
                 return self.prefs.target_endian == prefs.Endian.Little
             return self.prefs.target_endian == prefs.Endian.Big
+<<<<<<< HEAD
         # build modes
         elif name in ("_DEBUG_", "_RELEASE_", "_TESTS_"):
             if name == "_DEBUG_":
@@ -430,6 +541,10 @@ class Compiler:
             return self.prefs.build_mode == prefs.BuildMode.Test
         elif name.startswith("_") and name.endswith("_"):
             report.error(f"unknown runtime flag: `{name}`", pos)
+=======
+        if name.startswith("_") and name.endswith("_"):
+            report.error(f"unknown builtin flag: `{name}`", pos)
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
             return False
         return name in self.prefs.flags
 
@@ -441,9 +556,15 @@ class Compiler:
 
     def abort(self):
         if report.ERRORS == 1:
+<<<<<<< HEAD
             msg = f"could not compile module `{self.prefs.mod_name}`, aborting due to previous error"
         else:
             msg = f"could not compile module `{self.prefs.mod_name}`, aborting due to {report.ERRORS} previous errors"
+=======
+            msg = f"could not compile package `{self.prefs.pkg_name}`, aborting due to previous error"
+        else:
+            msg = f"could not compile package `{self.prefs.pkg_name}`, aborting due to {report.ERRORS} previous errors"
+>>>>>>> fd5cbb707991f17d1cc05e277c0ef9c401dd652c
         if report.WARNS > 0:
             word = "warning" if report.WARNS == 1 else "warnings"
             msg += f"; {report.WARNS} {word} emitted"
