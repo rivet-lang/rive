@@ -15,9 +15,9 @@ extern (C) {
 }
 
 extern (C) fn init_args(_argc: i32, _argv: **u8) [string] {
-    let mut args: [string] = [];
-    for i in 0.._argc {
-        args.push(unsafe { string.from_raw(_argv[as(usize, i)]) });
+    let mut args: [string] = unsafe { Vec.new(size_of!(string), as(usize, _argc)) };
+    for i in 0..as(usize, _argc) {
+        args.push(unsafe { string.from_raw(_argv[i]) });
     }
     return args;
 }
