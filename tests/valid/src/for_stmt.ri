@@ -22,9 +22,9 @@ test "`for` statement with vector" {
     assert!(sum == 55);
 }
 
-test "`for` statement with string" {
+test "`for` statement with `string.as_bytes()`" {
     let mut sum = 0;
-    for b in "Hello World!" {
+    for b in "Hello World!".as_bytes() {
         sum += as(i32, b);
     }
     assert!(sum == 1085);

@@ -322,7 +322,8 @@ class Prefs:
 
         self.build_rivet_dir()
 
-        self.mod_output = self.mod_name
+        if len(self.mod_output) == 0:
+            self.mod_output = self.mod_name
         if self.target_os == OS.Windows and not self.mod_output.endswith(
             ".exe"
         ):

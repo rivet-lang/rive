@@ -33,5 +33,5 @@ test "byte string literal" {
 
 test "C string literal" {
     let pstr = c"Hello World!";
-    assert!(unsafe { libc::strlen(pstr) == 12 });
+    assert!(unsafe { libc.strlen(pstr) == 12 });
 }

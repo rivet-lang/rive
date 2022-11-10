@@ -471,7 +471,7 @@ class Codegen:
             self.cur_fn.add_comment("for in stmt")
             if isinstance(stmt.iterable,
                           ast.RangeExpr) or iterable_sym.kind in (
-                              TypeKind.Array, TypeKind.Vec, TypeKind.String
+                              TypeKind.Array, TypeKind.Vec
                           ):
                 if isinstance(stmt.iterable, ast.RangeExpr):
                     self.cur_fn.try_alloca(
@@ -509,10 +509,6 @@ class Codegen:
                         len_ = ir.IntLit(
                             ir.Type("usize"), iterable_sym.info.size.lit
                         )
-                    elif iterable_sym.kind == TypeKind.String and isinstance(
-                        iterable, ir.StringLit
-                    ):
-                        len_ = ir.IntLit(ir.Type("usize"), iterable.len)
                     else:
                         len_ = ir.Selector(
                             ir.Type("usize"), iterable, ir.Name("len")
@@ -523,7 +519,7 @@ class Codegen:
                     )
 
                     self.cur_fn.add_label(body_label)
-                    value_t = self.comp.u8_t if iterable_sym.kind == TypeKind.String else iterable_sym.info.elem_typ
+                    value_t = iterable_sym.info.elem_typ
                     value_t_ir = self.ir_type(value_t)
                     value_t_is_boxed = value_t.symbol().is_boxed()
                     if iterable_sym.kind == TypeKind.Array:
@@ -982,20 +978,10 @@ class Codegen:
                     else:
                         field = type_fields[i]
                     initted_fields.append(field.name)
-                    if field.name == "msg" and typ_sym != self.comp.error_t.sym:
-                        sltor = ir.Selector(
-                            self.ir_type(self.comp.error_t), tmp,
-                            ir.Name("base")
-                        )
-                        sltor = ir.Selector(
-                            self.ir_type(field.typ), sltor, ir.Name(field.name)
-                        )
-                    else:
-                        sltor = ir.Selector(
-                            self.ir_type(field.typ), tmp, ir.Name(field.name)
-                        )
                     self.cur_fn.store(
-                        sltor, self.gen_expr_with_cast(field.typ, f.expr)
+                        ir.Selector(
+                            self.ir_type(field.typ), tmp, ir.Name(field.name)
+                        ), self.gen_expr_with_cast(field.typ, f.expr)
                     )
                 for f in typ_sym.fields:
                     if f.name in initted_fields:
@@ -2362,12 +2348,8 @@ class Codegen:
             elif ts.kind in (TypeKind.Class, TypeKind.String, TypeKind.Vec):
                 fields = []
                 if ts.kind == TypeKind.Class and ts.info.base:
-                    fields.append(
-                        ir.Field(
-                            "base",
-                            ir.Type(mangle_symbol(ts.info.base)).ptr()
-                        )
-                    )
+                    for f in ts.info.base.fields:
+                        fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 for f in ts.fields:
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 fields.append(ir.Field("_rc", ir.Type("usize")))

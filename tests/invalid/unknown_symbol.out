@@ -7,7 +7,7 @@ tests/invalid/unknown_symbol.ri:7:13: error: cannot find `UnknownStruct` in this
 tests/invalid/unknown_symbol.ri:8:13: error: cannot find `unknown_var` in this scope
   8 |     let z = unknown_var;
     |             ^
-tests/invalid/unknown_symbol.ri:9:17: error: enum `MyEnum` has no value `Mark`
-  9 |     _ = MyEnum::Mark;
-    |                 ^
+tests/invalid/unknown_symbol.ri:9:16: error: enum `MyEnum` has no value `Mark`
+  9 |     _ = MyEnum.Mark;
+    |                ^
 rivetc: error: could not compile module `unknown_symbol`, aborting due to 4 previous errors

@@ -31,7 +31,7 @@ class Vec {
 
     #[unsafe]
     fn from_array_no_alloc(arr: *mut void, elem_size: usize, len: usize) Self {
-        return Self(unsafe { arr }, elem_size, len, len);
+        return Self(unsafe { arr }, elem_size, len, len, is_ref: true);
     }
 
     fn get(self, idx: usize) *mut void {

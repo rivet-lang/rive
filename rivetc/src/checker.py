@@ -235,12 +235,8 @@ class Checker:
                         f"expected 1 variable, found {vars_len}", stmt.pos
                     )
                 self.check_stmt(stmt.stmt)
-            elif iterable_sym.kind in (
-                TypeKind.Array, TypeKind.Vec, TypeKind.String
-            ):
-                elem_typ = self.comp.u8_t if iterable_sym.kind == TypeKind.String else self.comp.untyped_to_type(
-                    iterable_sym.info.elem_typ
-                )
+            elif iterable_sym.kind in (TypeKind.Array, TypeKind.Vec):
+                elem_typ = self.comp.untyped_to_type(iterable_sym.info.elem_typ)
                 if vars_len == 1:
                     stmt.scope.update_type(stmt.vars[0], elem_typ)
                 else:
@@ -251,7 +247,7 @@ class Checker:
                 report.error(
                     f"`{iterable_t}` is not an iterable type", stmt.iterable.pos
                 )
-                report.note("expected array, slice or string value")
+                report.note("expected array or slice value")
         elif isinstance(stmt, ast.DeferStmt):
             self.check_expr(stmt.expr)
             self.defer_stmts.append(stmt)
@@ -936,8 +932,8 @@ class Checker:
                     expr.typ = self.comp.isize_t if expr.name == "ptr_diff" else ptr_t
             elif expr.name in ("size_of", "align_of"):
                 expr.typ = self.comp.usize_t
-            elif expr.name == "type_of":
-                expr.typ = self.comp.string_t # TODO: runtime.TypeInfo
+            elif expr.name == "type_name":
+                expr.typ = self.comp.string_t
             elif expr.name in ("unreachable", "breakpoint"):
                 expr.typ = self.comp.never_t
             elif expr.name == "assert":

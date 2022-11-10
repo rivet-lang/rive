@@ -6,5 +6,5 @@ fn main() {
     unknown_fn();
     let x = UnknownStruct();
     let z = unknown_var;
-    _ = MyEnum::Mark;
+    _ = MyEnum.Mark;
 }

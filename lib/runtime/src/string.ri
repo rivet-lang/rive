@@ -185,7 +185,7 @@ pub class string : ToString {
 
     pub fn as_bytes(self) [u8] {
         return unsafe {
-            Vec.from_array(as(*mut u8, self.ptr), size_of!(u8), self.len)
+            Vec.from_array_no_alloc(as(*mut u8, self.ptr), size_of!(u8), self.len)
         };
     }
 

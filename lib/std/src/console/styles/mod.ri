@@ -6,12 +6,12 @@ import "std/console";
 
 #[inline]
 pub fn stdout_support_styles() bool {
-    return console::is_atty(1);
+    return console.is_atty(1);
 }
 
 #[inline]
 pub fn stderr_support_styles() bool {
-    return console::is_atty(2);
+    return console.is_atty(2);
 }
 
 pub fn fmt(msg: string, open: string, close: string) string {
