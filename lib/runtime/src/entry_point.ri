@@ -5,21 +5,19 @@
 import "libc";
 
 extern (Rivet) {
-    pub let ARGS: [string];
+    pub let mut ARGS: [string];
+
+    fn init_globals();
+    fn drop_globals();
 }
 
-extern (C) {
-    fn _R12init_globalsZ();
-    fn _R12drop_globalsZ();
-    fn _R8set_argsZ(args: [string]);
-}
-
-extern (C) fn init_args(_argc: i32, _argv: **u8) [string] {
-    let mut args: [string] = unsafe { Vec.new(size_of!(string), as(usize, _argc)) };
-    for i in 0..as(usize, _argc) {
-        args.push(unsafe { string.from_raw(_argv[i]) });
+extern (C) fn init_args(_argc: i32, _argv: **u8) {
+    unsafe {
+        ARGS = Vec.new(size_of!(string), as(usize, _argc));
+        for i in 0..as(usize, _argc) {
+            ARGS.push(string.from_raw(_argv[i]));
+        }
     }
-    return args;
 }
 
 fn main(
@@ -32,8 +30,9 @@ fn main(
 ) {
     unsafe {
         _ = libc.signal(11, segfault_handler);
-        _R8set_argsZ(init_args(_argc, _argv));
-        _R12init_globalsZ();
+        init_args(_argc, _argv);
+        init_globals();
+
 #if _TESTS_
         if tr.tests.len > 0 {
             tr.run();
@@ -42,6 +41,7 @@ fn main(
 #else
         pkg_main();
 #endif
-        _R12drop_globalsZ();
+
+        drop_globals();
     }
 }

@@ -105,7 +105,7 @@ class Codegen:
 
         self.sf = None
 
-        self.init_args_fn = None
+        self.init_global_vars_fn = None
         self.cur_fn = None
         self.cur_fn_is_main = False
         self.cur_fn_ret_typ = self.comp.void_t
@@ -123,12 +123,12 @@ class Codegen:
 
     def gen_source_files(self, source_files):
         self.gen_types()
-        # generate '_R12init_globalsZ' function
-        self.init_args_fn = ir.FnDecl(
-            False, [], False, "_R12init_globalsZ", [], False, ir.Type("void"),
+        # generate '_R7runtime12init_globalsF' function
+        self.init_global_vars_fn = ir.FnDecl(
+            False, [], False, "_R7runtime12init_globalsF", [], False, ir.Type("void"),
             False
         )
-        self.out_rir.decls.append(self.init_args_fn)
+        self.out_rir.decls.append(self.init_global_vars_fn)
 
         for mod in self.comp.universe.syms:
             if isinstance(mod, sym.Mod):
@@ -139,22 +139,10 @@ class Codegen:
 
         # generate '_R12drop_globalsZ' function
         g_fn = ir.FnDecl(
-            False, [], False, "_R12drop_globalsZ", [], False, ir.Type("void"),
+            False, [], False, "_R7runtime12drop_globalsF", [], False, ir.Type("void"),
             False
         )
         self.out_rir.decls.append(g_fn)
-
-        # generate '_R8set_argsZ' function
-        set_args_fn = ir.FnDecl(
-            False, [], False, "_R8set_argsZ",
-            [ir.Ident(ir.Type("_R7runtime3Vec").ptr(True), "args")], False,
-            ir.Type("void"), False
-        )
-        set_args_fn.store(
-            ir.Ident(ir.Type("_R7runtime3Vec").ptr(True), "_R7runtime4ARGS"),
-            ir.Ident(ir.Type("_R7runtime3Vec").ptr(True), "args")
-        )
-        self.out_rir.decls.append(set_args_fn)
 
         # generate 'main' fn
         argc = ir.Ident(ir.Type("int"), "_argc")
@@ -339,7 +327,7 @@ class Codegen:
                     ir.GlobalVar(decl.vis.is_pub(), is_extern, typ, name)
                 )
                 if not decl.is_extern:
-                    self.cur_fn = self.init_args_fn
+                    self.cur_fn = self.init_global_vars_fn
                     self.cur_fn.store(
                         ir.Ident(typ, name),
                         self.gen_expr_with_cast(l.typ, decl.right)
@@ -1040,7 +1028,7 @@ class Codegen:
             if not is_trait_call:
                 if expr.is_closure:
                     name = self.gen_expr_with_cast(expr.left.typ, expr.left)
-                elif expr.sym.is_extern and not expr.sym.has_body:
+                elif expr.sym.is_extern and expr.sym.abi!=sym.ABI.Rivet and not expr.sym.has_body:
                     name = ir.Name(expr.sym.name)
                 else:
                     name = ir.Name(mangle_symbol(expr.sym))

@@ -28,7 +28,7 @@ pub fn process_panic(s: string = "", args: ...ToString) never {
 /// which typically means that the shell prints "Aborted".
 pub fn process_abort() never {
     unsafe {
-        _R12drop_globalsZ();
+        drop_globals();
         libc.abort();
     }
 }
@@ -40,7 +40,7 @@ pub fn process_abort() never {
 /// OS and will be available for consumption by another process.
 pub fn process_exit(code: i32 = 0) never {
     unsafe {
-        _R12drop_globalsZ();
+        drop_globals();
         libc.exit(code);
     }
 }
