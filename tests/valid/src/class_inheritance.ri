@@ -4,6 +4,14 @@ class A {
 
 class B : A {
     c: i32;
+
+    fn set_i(mut self, i: i32) {
+        self.i = i;
+    }
+
+    fn set_base_i(mut self, i: i32) {
+        base.i = i;
+    }
 }
 
 test "inheritance: using inherited fields" {
@@ -16,4 +24,15 @@ test "inheritance: using inherited fields" {
     let b3 = B(1, 2);
     assert!(b3.i == 1);
     assert!(b3.c == 2);
+}
+
+test "inheritance: using `base`" {
+    let mut b2 = B();
+    assert!(b2.i == 10);
+
+    b2.set_i(5);
+    assert!(b2.i == 5);
+
+    b2.set_base_i(8);
+    assert!(b2.i == 8);
 }

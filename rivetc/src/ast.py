@@ -397,6 +397,19 @@ class SelfExpr:
     def __str__(self):
         return self.__repr__()
 
+class BaseExpr:
+    def __init__(self, scope, pos):
+        self.scope = scope
+        self.is_mut = False
+        self.pos = pos
+        self.typ = None
+
+    def __repr__(self):
+        return "base"
+
+    def __str__(self):
+        return self.__repr__()
+
 class SelfTyExpr:
     def __init__(self, scope, pos):
         self.scope = scope
@@ -405,18 +418,6 @@ class SelfTyExpr:
 
     def __repr__(self):
         return "Self"
-
-    def __str__(self):
-        return self.__repr__()
-
-class BaseExpr:
-    def __init__(self, scope, pos):
-        self.scope = scope
-        self.pos = pos
-        self.typ = None
-
-    def __repr__(self):
-        return "base"
 
     def __str__(self):
         return self.__repr__()

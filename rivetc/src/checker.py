@@ -1548,9 +1548,10 @@ class Checker:
                     )
             elif expr.sym:
                 self.check_sym_is_mut(expr.sym, expr.pos)
-        elif isinstance(expr, ast.SelfExpr):
+        elif isinstance(expr, (ast.SelfExpr, ast.BaseExpr)):
             if not expr.is_mut:
-                report.error("cannot use `self` as mutable value", expr.pos)
+                kw = "self" if isinstance(expr, ast.SelfExpr) else "base"
+                report.error(f"cannot use `{kw}` as mutable value", expr.pos)
                 report.help("consider making `self` as mutable: `mut self`")
         elif isinstance(expr, ast.SelectorExpr):
             if expr.is_symbol_access:
@@ -1564,10 +1565,11 @@ class Checker:
                     report.help(
                         f"consider making this argument mutable: `mut {expr.left.name}`"
                     )
-            elif isinstance(expr.left, ast.SelfExpr):
+            elif isinstance(expr.left, (ast.SelfExpr, ast.BaseExpr)):
                 if not expr.left.is_mut:
+                    kw = "self" if isinstance(expr.left, ast.SelfExpr) else "base"
                     report.error(
-                        "cannot use `self` as mutable receiver", expr.pos
+                        f"cannot use `{kw}` as mutable receiver", expr.pos
                     )
                     report.help("consider making `self` as mutable: `mut self`")
             if expr.is_indirect and isinstance(

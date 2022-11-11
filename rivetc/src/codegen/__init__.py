@@ -776,7 +776,7 @@ class Codegen:
                 self.ir_type(expr.typ.symbol().info.underlying_typ),
                 str(expr.info.value)
             )
-        elif isinstance(expr, ast.SelfExpr):
+        elif isinstance(expr, (ast.SelfExpr, ast.BaseExpr)):
             self_typ = self.ir_type(expr.typ)
             if expr.is_mut and not expr.typ.symbol().is_boxed():
                 self_typ = self_typ.ptr()
