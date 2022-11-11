@@ -16,7 +16,7 @@ fn lower(c: u8) u8 {
 /// A sign prefix is not permitted.
 pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
     if s_ == "" {
-        return InvalidSyntaxError("strconv.string_to_uint: invalid syntax");
+        return InvalidSyntaxError("empty string");
     }
     let s = s_;
     let base0 = base__ == 0;
@@ -25,7 +25,7 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 
     let mut start_index: usize = 0;
     switch {
-        (base_ <= 2 and base_ <= 36) => { /* valid base; nothing to do */ },
+        (base_ >= 2 and base_ <= 36) => { /* valid base; nothing to do */ },
         (base_ == 0) => {
             // look for octal, hex prefix.
             base_ = 10;
@@ -33,44 +33,44 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
                 switch {
                     (s.len >= 3 and lower(s[1]) == b'b') => {
                         base_ = 2;
-                        start_index += 2;
+                        start_index = 2;
                     },
                     (s.len >= 3 and lower(s[1]) == b'o') => {
                         base_ = 8;
-                        start_index += 2;
+                        start_index = 2;
                     },
                     (s.len >= 3 and lower(s[1]) == b'x') => {
                         base_ = 16;
-                        start_index += 2;
+                        start_index = 2;
                     },
                     // manage leading zeros in decimal base's numbers
                     s.len >= 2 and (s[1] >= b'0' and s[1] <= b'9') => {
                         base_ = 10;
-                        start_index += 1;
+                        start_index = 1;
                     },
                     else => {
                         base_ = 8;
-                        start_index += 1;
+                        start_index = 1;
                     }
                 }
             }
         },
-        else => return InvalidBaseError(
-            "strconv.string_to_uint: invalid base {}".fmt(base_)
-        )
+        else => return InvalidBaseError("invalid base {}".fmt(base_))
     }
 
     if bit_size == 0 {
         bit_size = INT_SIZE;
     } else if bit_size < 0 or bit_size > 64 {
-        return InvalidBitSizeError(
-            "strconv.string_to_uint: invalid bit size {}".fmt(bit_size)
-        );
+        return InvalidBitSizeError("invalid bit size {}".fmt(bit_size));
     }
 
     // Cutoff is the smallest number such that `cutoff * base > MAX_U64`.
     // Use compile-time constants for common cases.
-    let cutoff: u64 = u64.MAX / as(u64, base_) + as(u64, 1);
+    let cutoff: u64 = switch base_ {
+        10 => u64.MAX / 10 + 1,
+        16 => u64.MAX / 16 + 1,
+        else => u64.MAX / as(u64, base_) + as(u64, 1)
+    };
 
     let max_val: u64 = if bit_size == 64 {
         u64.MAX
@@ -91,29 +91,29 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
             },
             (b'0' <= c and c <= b'9') => d = c - b'0',
             (b'a' <= cl and cl <= b'z') => d = cl - b'a' + 1,
-            else => return InvalidSyntaxError("strconv.string_to_uint: invalid syntax")
+            else => return InvalidSyntaxError("invalid syntax")
         }
 
         if d >= as(u8, base_) {
-            return InvalidSyntaxError("strconv.string_to_uint: invalid syntax");
+            return InvalidSyntaxError("invalid syntax");
         }
 
         if n >= cutoff {
             // `n * base_` overflows
-            return ValueOutOfRangeError("strconv.string_to_uint: value out of range");
+            return ValueOutOfRangeError("value out of range");
         }
         n *= as(u64, base_);
 
         let n1 = n + as(u64, d);
         if n1 < n or n1 > max_val {
             // `n + d` overflows
-            return ValueOutOfRangeError("strconv.string_to_uint: value out of range");
+            return ValueOutOfRangeError("value out of range");
         }
         n = n1;
     }
 
     if underscores and !underscore_ok(s) {
-        return InvalidSyntaxError("strconv.string_to_uint: invalid syntax");
+        return InvalidSyntaxError("invalid syntax");
     }
 
     return n;
@@ -135,7 +135,7 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 /// i64. If `bit_size` is below 0 or above 64, an error is returned.
 pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
     if s == "" {
-        return InvalidSyntaxError("strconv.string_to_int: invalid syntax");
+        return InvalidSyntaxError("invalid syntax");
     }
 
     // pick off leading sign.
@@ -157,10 +157,10 @@ pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
 
     let cutoff = as(u64, 1) << as(u32, bit_size - 1);
     if !neg and un >= cutoff {
-        return ValueOutOfRangeError("strconv.string_to_int: value out of range");
+        return ValueOutOfRangeError("value out of range");
     }
     if neg and un > cutoff {
-        return ValueOutOfRangeError("strconv.string_to_int: value out of range");
+        return ValueOutOfRangeError("value out of range");
     }
 
     return if neg { -as(i64, un) } else { as(i64, un) };
@@ -171,7 +171,7 @@ pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
 /// simply. Underscore must appear only between digits or between a base
 /// prefix and a digit.
 fn underscore_ok(s_: string) bool {
-    let s = s_;
+    let mut s = s_;
     // saw tracks the last character (class) we saw:
     // ^ for beginning of number,
     // 0 for a digit or base prefix,
@@ -182,18 +182,18 @@ fn underscore_ok(s_: string) bool {
 
     // optional sign.
     if s.len >= 1 and (s[0] == b'-' or s[0] == b'+') {
-        i += 1;
+        s = s[1..];
     }
 
     // optional base prefix.
     let mut hex = false;
-    if s.len - i >= 2 and s[i] == b'0' and (
-        lower(s[i + 1]) == b'b' or lower(s[i + 1]) == b'o' or lower(s[i + 1]) == b'x'
+    if s.len >= 2 and s[i] == b'0' and (
+        lower(s[1]) == b'b' or lower(s[1]) == b'o' or lower(s[1]) == b'x'
     ) {
         // base prefix counts as a digit for "underscore as digit separator"
+        i = 2;
         saw = b'0';
-        hex = lower(s[i + 1]) == b'x';
-        i += 2;
+        hex = lower(s[1]) == b'x';
     }
 
     // number proper.
