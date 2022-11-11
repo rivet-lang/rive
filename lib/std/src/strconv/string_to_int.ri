@@ -127,7 +127,7 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 /// If the base argument is 0, the true base is implied by the string's
 /// prefix following the sign (if present): 2 for "0b", 8 for "0" or "0o",
 /// 16 for "0x", and 10 otherwise. Also, for argument base 0 only,
-/// underscore characters are permitted as defined by the Glaz syntax for
+/// underscore characters are permitted as defined by the Rivet syntax for
 /// integer literals.
 ///
 /// The `bit_size` argument specifies the integer type that the result must
