@@ -971,7 +971,7 @@ class Codegen:
                             self.ir_type(field.typ), tmp, ir.Name(field.name)
                         ), self.gen_expr_with_cast(field.typ, f.expr)
                     )
-                for f in typ_sym.fields:
+                for f in typ_sym.full_fields():
                     if f.name in initted_fields:
                         continue
                     if f.typ.symbol().kind == TypeKind.Array:
@@ -979,9 +979,13 @@ class Codegen:
                     sltor = ir.Selector(
                         self.ir_type(f.typ), tmp, ir.Name(f.name)
                     )
+                    if f.has_def_expr:
+                        value=self.gen_expr_with_cast(f.typ, f.def_expr, sltor)
+                    else:
+                        value=self.default_value(f.typ)
                     self.cur_fn.store(
                         ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name)),
-                        self.default_value(f.typ)
+                        value
                     )
                 return tmp
             args = []
@@ -2114,27 +2118,27 @@ class Codegen:
                     self.default_value(typ)
                 )
             return tmp
-        elif typ_sym.kind == TypeKind.Struct:
-            tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
-            self.cur_fn.alloca(tmp)
-            for f in typ_sym.fields:
+        elif typ_sym.kind == TypeKind.Class:
+            tmp = self.gen_class_instance(mangle_symbol(typ_sym))
+            for f in typ_sym.full_fields():
                 if f.typ.symbol().kind == TypeKind.Array:
                     continue
                 if f.has_def_expr:
-                    val = self.gen_expr_with_cast(f.typ, f.def_expr)
+                    val = self.gen_expr_with_cast(f.typ, f.def_expr, tmp)
                 else:
                     val = self.default_value(f.typ)
                 self.cur_fn.store(
                     ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name)), val
                 )
             return tmp
-        elif typ_sym.kind == TypeKind.Class:
-            tmp = self.gen_class_instance(mangle_symbol(typ_sym))
-            for f in typ_sym.fields:
+        elif typ_sym.kind == TypeKind.Struct:
+            tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
+            self.cur_fn.alloca(tmp)
+            for f in typ_sym.full_fields():
                 if f.typ.symbol().kind == TypeKind.Array:
                     continue
                 if f.has_def_expr:
-                    val = self.gen_expr_with_cast(f.typ, f.def_expr)
+                    val = self.gen_expr_with_cast(f.typ, f.def_expr, tmp)
                 else:
                     val = self.default_value(f.typ)
                 self.cur_fn.store(
@@ -2335,10 +2339,7 @@ class Codegen:
                     )
             elif ts.kind in (TypeKind.Class, TypeKind.String, TypeKind.Vec):
                 fields = []
-                if ts.kind == TypeKind.Class and ts.info.base:
-                    for f in ts.info.base.fields:
-                        fields.append(ir.Field(f.name, self.ir_type(f.typ)))
-                for f in ts.fields:
+                for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 fields.append(ir.Field("_rc", ir.Type("usize")))
                 self.out_rir.structs.append(
@@ -2346,11 +2347,7 @@ class Codegen:
                 )
             elif ts.kind == TypeKind.Struct:
                 fields = []
-                for base in ts.info.bases:
-                    fields.append(
-                        ir.Field(base.name, ir.Type(mangle_symbol(base)))
-                    )
-                for f in ts.fields:
+                for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 self.out_rir.structs.append(
                     ir.Struct(ts.info.is_opaque, mangle_symbol(ts), fields)

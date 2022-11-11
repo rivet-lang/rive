@@ -56,7 +56,7 @@ Any help is welcome.
 * **Immutable values by default:** Variables and fields of struct are immutable
 by default.
 * **Polymorphism**: Classes, Traits and Embedded Structs are supported.
-* **Generics:** Specialize and reuse the same code for different types.
+* **Generics:** Specialize and reuse the same code for different types (**coming soon**).
 
 * * *
 

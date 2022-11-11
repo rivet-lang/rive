@@ -1,0 +1,19 @@
+class A {
+    prot i: i32 = 10;
+}
+
+class B : A {
+    c: i32;
+}
+
+test "inheritance: using inherited fields" {
+    let b = B(i: 99);
+    assert!(b.i == 99);
+
+    let b2 = B();
+    assert!(b2.i == 10);
+
+    let b3 = B(1, 2);
+    assert!(b3.i == 1);
+    assert!(b3.c == 2);
+}
