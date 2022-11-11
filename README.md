@@ -45,6 +45,9 @@ fn main() {
 Currently the language is in alpha state, and therefore its syntax and the language
 API is not stable, and may change in the long term. Not all features are implemented.
 
+Only linux is supported. Windows is not well supported, and macOS is not supported yet.
+Any help is welcome.
+
 ## Features
 
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.

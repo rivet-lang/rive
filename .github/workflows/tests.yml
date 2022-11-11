@@ -39,22 +39,22 @@ jobs:
         run: |
           python3 tests/run_invalid_tests.py
 
-  windows-gcc:
-    runs-on: windows-2019
-    env:
-      RIVET_CC_TEST: gcc
-    steps:
-      - uses: actions/checkout@v2
+  # windows-gcc:
+  #   runs-on: windows-2019
+  #   env:
+  #     RIVET_CC_TEST: gcc
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Setup Python3
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
+  #     - name: Setup Python3
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: '3.x'
 
-      - name: Run passing tests
-        run: |
-          python3 rivetc -t tests/valid
+  #     - name: Run passing tests
+  #       run: |
+  #         python3 rivetc -t tests/valid
 
-      - name: Run failing tests
-        run: |
-          python3 tests/run_invalid_tests.py
+  #     - name: Run failing tests
+  #       run: |
+  #         python3 tests/run_invalid_tests.py
