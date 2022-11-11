@@ -492,7 +492,7 @@ class Parser:
             doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
             args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
             self_is_ref, has_named_args,
-            self.file_sym.name == self.comp.prefs.mod_name and name == "main",
+            self.file_sym.is_root and name == "main",
             is_variadic, abi
         )
 

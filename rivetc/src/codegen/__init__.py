@@ -1144,7 +1144,7 @@ class Codegen:
                     if expr.err_handler.is_propagate:
                         if self.cur_fn_is_main:
                             self.cur_fn.add_call(
-                                "_R7runtime11error_printF", [
+                                "_R7runtime11error_panicF", [
                                     ir.Selector(
                                         self.ir_type(self.comp.error_t),
                                         res_value, ir.Name("err")

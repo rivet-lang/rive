@@ -196,6 +196,7 @@ class Register:
                             decl.self_is_ref
                         )
                     )
+                    decl.sym.is_main = decl.is_main
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.name_pos)
             elif isinstance(decl, ast.DestructorDecl):

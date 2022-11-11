@@ -155,6 +155,7 @@ class Compiler:
         if len(files) == 0:
             utils.error("no input received")
         root_sym = sym.Mod(sym.Vis.Priv, self.prefs.mod_name)
+        root_sym.is_root = True
         self.universe.add(root_sym)
         self.parsed_files += parser.Parser(self).parse_mod(
             self.prefs.mod_name, root_sym, sym.Vis.Priv, files

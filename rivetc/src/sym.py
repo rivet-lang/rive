@@ -117,7 +117,7 @@ class Sym:
         self.parent = None
         self.syms = []
         self.is_universe = isinstance(self, Mod) and self.id == 0
-        self.is_generated = False
+        self.is_root = False
 
     def add(self, sym):
         if asym := self.find(sym.name):
