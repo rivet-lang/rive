@@ -428,6 +428,8 @@ class Codegen:
             self.out_rir.decls.append(dtor_fn)
         elif isinstance(decl, ast.TestDecl):
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
+                if not self.sf.sym.is_root:
+                    return # skip non-root module tests
                 self.inside_test = True
                 test_name = utils.smart_quote(decl.name, True)
                 test_func = f"__test{len(self.generated_tests)}__"
