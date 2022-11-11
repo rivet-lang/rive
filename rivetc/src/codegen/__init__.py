@@ -125,8 +125,8 @@ class Codegen:
         self.gen_types()
         # generate '_R7runtime12init_globalsF' function
         self.init_global_vars_fn = ir.FnDecl(
-            False, [], False, "_R7runtime12init_globalsF", [], False, ir.Type("void"),
-            False
+            False, [], False, "_R7runtime12init_globalsF", [], False,
+            ir.Type("void"), False
         )
         self.out_rir.decls.append(self.init_global_vars_fn)
 
@@ -139,8 +139,8 @@ class Codegen:
 
         # generate '_R12drop_globalsZ' function
         g_fn = ir.FnDecl(
-            False, [], False, "_R7runtime12drop_globalsF", [], False, ir.Type("void"),
-            False
+            False, [], False, "_R7runtime12drop_globalsF", [], False,
+            ir.Type("void"), False
         )
         self.out_rir.decls.append(g_fn)
 
@@ -457,10 +457,9 @@ class Codegen:
             body_label = self.cur_fn.local_name()
             self.loop_exit_label = self.cur_fn.local_name()
             self.cur_fn.add_comment("for in stmt")
-            if isinstance(stmt.iterable,
-                          ast.RangeExpr) or iterable_sym.kind in (
-                              TypeKind.Array, TypeKind.Vec
-                          ):
+            if isinstance(
+                stmt.iterable, ast.RangeExpr
+            ) or iterable_sym.kind in (TypeKind.Array, TypeKind.Vec):
                 if isinstance(stmt.iterable, ast.RangeExpr):
                     self.cur_fn.try_alloca(
                         self.ir_type(stmt.iterable.typ), stmt.vars[0],
@@ -980,9 +979,11 @@ class Codegen:
                         self.ir_type(f.typ), tmp, ir.Name(f.name)
                     )
                     if f.has_def_expr:
-                        value=self.gen_expr_with_cast(f.typ, f.def_expr, sltor)
+                        value = self.gen_expr_with_cast(
+                            f.typ, f.def_expr, sltor
+                        )
                     else:
-                        value=self.default_value(f.typ)
+                        value = self.default_value(f.typ)
                     self.cur_fn.store(
                         ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name)),
                         value
@@ -1032,7 +1033,7 @@ class Codegen:
             if not is_trait_call:
                 if expr.is_closure:
                     name = self.gen_expr_with_cast(expr.left.typ, expr.left)
-                elif expr.sym.is_extern and expr.sym.abi!=sym.ABI.Rivet and not expr.sym.has_body:
+                elif expr.sym.is_extern and expr.sym.abi != sym.ABI.Rivet and not expr.sym.has_body:
                     name = ir.Name(expr.sym.name)
                 else:
                     name = ir.Name(mangle_symbol(expr.sym))
@@ -1968,9 +1969,10 @@ class Codegen:
         self.cur_fn.alloca(
             tmp,
             ir.Inst(
-                ir.InstKind.Call,
-                [ir.Name("_R7runtime14internal_allocF"),
-                 ir.Name(f"sizeof({name})")]
+                ir.InstKind.Call, [
+                    ir.Name("_R7runtime14internal_allocF"),
+                    ir.Name(f"sizeof({name})")
+                ]
             )
         )
         self.cur_fn.store(
@@ -2341,7 +2343,7 @@ class Codegen:
                 fields = []
                 for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
-                if ts.kind==TypeKind.Class and ts.info.is_base:
+                if ts.kind == TypeKind.Class and ts.info.is_base:
                     fields.append(ir.Field("_id", ir.Type("usize")))
                 fields.append(ir.Field("_rc", ir.Type("usize")))
                 self.out_rir.structs.append(

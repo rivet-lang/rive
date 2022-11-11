@@ -482,7 +482,7 @@ class TraitInfo:
 class ClassInfo:
     def __init__(self):
         self.base = None
-        self.is_base=False
+        self.is_base = False
 
 class StructInfo:
     def __init__(self, is_opaque):
@@ -494,7 +494,7 @@ class Type(Sym):
         Sym.__init__(self, vis, name)
         self.kind = kind
         self.fields = fields.copy()
-        self.full_fields_=[]
+        self.full_fields_ = []
         self.info = info
         self.size = -1
         self.align = -1
@@ -532,17 +532,17 @@ class Type(Sym):
         return None
 
     def full_fields(self):
-        if len(self.full_fields_)>0:
+        if len(self.full_fields_) > 0:
             return self.full_fields_
         fields = []
         if self.kind == TypeKind.Class and self.info.base:
-            fields+=self.info.base.full_fields()
+            fields += self.info.base.full_fields()
         elif self.kind == TypeKind.Struct:
             for base in self.info.bases:
-                fields+=base.full_fields()
+                fields += base.full_fields()
         for f in self.fields:
             fields.append(f)
-        self.full_fields_=fields
+        self.full_fields_ = fields
         return fields
 
     def is_subtype_of(self, t):

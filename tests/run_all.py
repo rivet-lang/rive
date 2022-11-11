@@ -5,7 +5,7 @@
 import os
 
 if os.system("python3.11 rivetc -t tests/valid/") != 0:
-    exit(1)
+	exit(1)
 print()
 if os.system("python3.11 tests/run_invalid_tests.py") != 0:
-    exit(1)
+	exit(1)

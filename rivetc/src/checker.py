@@ -1538,7 +1538,7 @@ class Checker:
                     f"cannot use constant `${expr.name}` as mutable value",
                     expr.pos
                 )
-            elif expr.name=="_":
+            elif expr.name == "_":
                 return
             elif expr.is_obj and not expr.obj.is_mut:
                 kind = "argument" if expr.obj.level == sym.ObjLevel.Arg else "object"
@@ -1571,7 +1571,9 @@ class Checker:
                     )
             elif isinstance(expr.left, (ast.SelfExpr, ast.BaseExpr)):
                 if not expr.left.is_mut:
-                    kw = "self" if isinstance(expr.left, ast.SelfExpr) else "base"
+                    kw = "self" if isinstance(
+                        expr.left, ast.SelfExpr
+                    ) else "base"
                     report.error(
                         f"cannot use `{kw}` as mutable receiver", expr.pos
                     )
@@ -1607,7 +1609,10 @@ class Checker:
         elif isinstance(expr, ast.IndexExpr):
             if isinstance(expr.left.typ, type.Ptr):
                 if not expr.left.typ.is_mut:
-                    report.error("cannot modify elements of an immutable pointer", expr.pos)
+                    report.error(
+                        "cannot modify elements of an immutable pointer",
+                        expr.pos
+                    )
                 return
             self.check_expr_is_mut(expr.left)
         elif isinstance(expr, ast.UnaryExpr):
