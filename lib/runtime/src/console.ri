@@ -47,3 +47,24 @@ pub fn console_eprintln(s: string = "", args: ...ToString) {
 pub fn console_is_atty(fd: i32) bool {
     return unsafe { libc.isatty(fd) == 1 };
 }
+
+#[unsafe]
+fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
+    unsafe {
+        let buf = buf_;
+        let mut x: isize = 0;
+        let mut remaining_bytes = as(isize, len);
+        while remaining_bytes > 0 {
+            x = libc.write(fd, ptr_add!(buf, x), as(usize, remaining_bytes));
+            remaining_bytes -= x;
+        }
+    }
+}
+
+#[unsafe]
+fn writeln_to_fd(fd: i32, s: string) {
+    unsafe {
+        write_buf_to_fd(fd, s.ptr, s.len);
+        write_buf_to_fd(fd, c"\n", 1);
+    }
+}

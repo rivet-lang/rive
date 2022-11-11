@@ -1,5 +1,5 @@
 class A {
-    prot i: i32 = 10;
+    prot mut i: i32 = 10;
 }
 
 class B : A {

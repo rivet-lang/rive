@@ -260,6 +260,7 @@ class Checker:
         elif isinstance(expr, ast.AssignExpr):
             expr.typ = self.comp.void_t
             left_t = self.check_expr(expr.left)
+            self.check_expr_is_mut(expr.left)
             old_expected_type = self.expected_type
             self.expected_type = left_t
             right_t = self.check_expr(expr.right)
@@ -1537,6 +1538,8 @@ class Checker:
                     f"cannot use constant `${expr.name}` as mutable value",
                     expr.pos
                 )
+            elif expr.name=="_":
+                return
             elif expr.is_obj and not expr.obj.is_mut:
                 kind = "argument" if expr.obj.level == sym.ObjLevel.Arg else "object"
                 report.error(
@@ -1556,6 +1559,7 @@ class Checker:
         elif isinstance(expr, ast.SelectorExpr):
             if expr.is_symbol_access:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
+                return
             elif isinstance(expr.left, ast.Ident):
                 if expr.left.obj.level == sym.ObjLevel.Arg and not expr.left.obj.is_mut:
                     report.error(
@@ -1585,7 +1589,7 @@ class Checker:
                     )
             elif not expr.field_is_mut:
                 report.error(
-                    f"field `{expr.field_name}` of type `{expr.left_typ.symbol().name}` is immutable",
+                    f"field `{expr.field_name}` of type `{expr.left.typ.symbol().name}` is immutable",
                     expr.pos
                 )
         elif isinstance(expr, ast.NilLiteral):
@@ -1601,6 +1605,10 @@ class Checker:
         elif isinstance(expr, ast.Block) and expr.is_expr:
             self.check_expr_is_mut(expr.expr)
         elif isinstance(expr, ast.IndexExpr):
+            if isinstance(expr.left.typ, type.Ptr):
+                if not expr.left.typ.is_mut:
+                    report.error("cannot modify elements of an immutable pointer", expr.pos)
+                return
             self.check_expr_is_mut(expr.left)
         elif isinstance(expr, ast.UnaryExpr):
             self.check_expr_is_mut(expr.right)

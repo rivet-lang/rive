@@ -66,10 +66,10 @@ enum TestResult : u8 {
 struct Test {
     name: string;
     func : fn (*Test);
-    result: TestResult;
-    err_pos: string;
-    err_msg: string;
-    err: Error;
+    mut result: TestResult;
+    mut err_pos: string;
+    mut err_msg: string;
+    mut err: Error;
 }
 
 pub struct TestRunner {
@@ -115,23 +115,23 @@ pub struct TestRunner {
         console_eprintln(bold("{} total.".fmt(self.tests.len)));
     }
 
-    fn print_ok(&self) {
+    fn print_ok(mut self) {
         console_eprintln(OK_STATUS);
         self.ok_tests += 1;
     }
 
-    fn print_skip(&self) {
+    fn print_skip(mut self) {
         console_eprintln(SKIP_STATUS);
         self.skip_tests += 1;
     }
 
-    fn print_failed(&self, pos: string, msg: string) {
+    fn print_failed(mut self, pos: string, msg: string) {
         console_eprintln(FAILED_STATUS);
         console_eprintln("     at {}: {}", bold(pos), msg);
         self.fail_tests += 1;
     }
 
-    fn print_error_returned(&self, pos: string, err: Error) {
+    fn print_error_returned(mut self, pos: string, err: Error) {
         console_eprintln(FAILED_STATUS);
         console_eprintln("     at {}: error returned: {}", bold(pos), err);
         self.fail_tests += 1;
