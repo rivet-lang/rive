@@ -1965,7 +1965,7 @@ class Codegen:
             tmp,
             ir.Inst(
                 ir.InstKind.Call,
-                [ir.Name("malloc"),
+                [ir.Name("_R7runtime14internal_allocF"),
                  ir.Name(f"sizeof({name})")]
             )
         )
