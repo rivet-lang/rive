@@ -387,7 +387,7 @@ class Compiler:
             total_size = 0
             max_alignment = 0
             types = sy.info.types if sy.kind == sym.TypeKind.Tuple else list(
-                map(lambda it: it.typ, sy.fields)
+                map(lambda it: it.typ, sy.full_fields())
             )
             for ftyp in types:
                 field_size, alignment = self.type_size(ftyp)

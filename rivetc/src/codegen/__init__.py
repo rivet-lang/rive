@@ -2341,6 +2341,8 @@ class Codegen:
                 fields = []
                 for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
+                if ts.kind==TypeKind.Class and ts.info.is_base:
+                    fields.append(ir.Field("_id", ir.Type("usize")))
                 fields.append(ir.Field("_rc", ir.Type("usize")))
                 self.out_rir.structs.append(
                     ir.Struct(False, mangle_symbol(ts), fields)

@@ -161,6 +161,9 @@ class Parser:
         if self.accept(Kind.KwPub):
             return sym.Vis.Pub
         elif self.accept(Kind.KwProt):
+            if not self.inside_struct_or_class:
+                report.error("invalid use of `prot`", self.prev_tok.pos)
+                report.note("only valid with classes and structs")
             return sym.Vis.Prot
         return sym.Vis.Priv
 

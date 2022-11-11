@@ -56,6 +56,7 @@ class Resolver:
                             base_sym.info.implements.append(decl.sym)
                         elif base_sym.kind == sym.TypeKind.Class:
                             decl.sym.info.base = base_sym
+                            base_sym.is_base = True
                 self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.StructDecl):
                 self.self_sym = decl.sym

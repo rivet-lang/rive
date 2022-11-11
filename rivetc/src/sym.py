@@ -482,6 +482,7 @@ class TraitInfo:
 class ClassInfo:
     def __init__(self):
         self.base = None
+        self.is_base=False
 
 class StructInfo:
     def __init__(self, is_opaque):
