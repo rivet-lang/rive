@@ -58,7 +58,7 @@ fn bt_print_callback(
             string.from_raw(filename_ptr)
         };
         let fn_name = if fn_ptr == nil {
-            "???"
+            "??"
         } else {
             demangle_symbol(string.from_raw(fn_ptr))
         };

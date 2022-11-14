@@ -7,3 +7,12 @@ extend nil : ToString {
         return "nil";
     }
 }
+
+fn cstr_runes_count(s: *u8, size: usize) usize {
+	let (mut l: usize, mut i: usize) = (0, 0);
+	while i < size {
+		l += 1;
+		i += unsafe { s[i] }.len_utf8();
+	}
+	return l;
+}

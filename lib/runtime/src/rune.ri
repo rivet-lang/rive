@@ -6,15 +6,6 @@ const MAX_ONE_B: u32 = 0x80;
 const MAX_TWO_B: u32 = 0x800;
 const MAX_THREE_B: u32 = 0x10000;
 
-fn cstr_runes_count(s: *u8, size: usize) usize {
-	let (mut l: usize, mut i: usize) = (0, 0);
-	while i < size {
-		l += 1;
-		i += unsafe { s[i] }.len_utf8();
-	}
-	return l;
-}
-
 extend rune : ToString {
     /// The highest valid codepoint a `rune` can have.
     pub const MAX: rune = 0x10FFFF;

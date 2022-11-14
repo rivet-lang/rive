@@ -27,32 +27,32 @@ pub class string : ToString {
             return empty_string;
         }
         if let safe_ptr = ptr {
-            return Self(unsafe { safe_ptr }, len, is_ref);
+            return Self(safe_ptr, len, is_ref);
         }
         return empty_string;
     }
 
     pub fn from_byte(byte: u8) Self {
+        let res = as(*mut u8, mem_alloc(2) catch unreachable!());
         unsafe {
-            let res = as(*mut u8, mem_alloc(2) catch unreachable!());
             res[0] = byte;
             res[1] = 0;
-            return Self(res, 1);
         }
+        return Self(res, 1);
     }
 
     /// Returns a string with the bytes stored in `bytes`. If the length of
     /// `bytes` is 0, an empty string is returned instead.
     pub fn from_bytes(bytes: [u8]) Self {
         if bytes.len == 0 {
-            return "";
+            return empty_string;
         }
+        let res = as(*mut u8, mem_alloc(bytes.len + 1) catch unreachable!());
         unsafe {
-            let res = as(*mut u8, mem_alloc(bytes.len + 1) catch unreachable!());
-            res[bytes.len] = 0;
             mem_copy(res, addr_of!(bytes[0]), bytes.len);
-            return Self(res, bytes.len);
+            res[bytes.len] = 0;
         }
+        return Self(res, bytes.len);
     }
 
     fn at(self, idx: usize) u8 {
@@ -200,8 +200,8 @@ pub class string : ToString {
                     return false;
                 }
             }
-            return mem_cmp(self.ptr, rhs.ptr, rhs.len) == 0;
         }
+        return mem_cmp(self.ptr, rhs.ptr, rhs.len) == 0;
     }
 
     pub fn !=(self, rhs: Self) bool {
@@ -303,7 +303,15 @@ pub class string : ToString {
     }
 
     pub fn clone(self) Self {
-        return Self.from_bytes(self.as_bytes());
+        if self.len == 0 {
+            return empty_string;
+        }
+        let res = as(*mut u8, mem_alloc(self.len + 1) catch unreachable!());
+        unsafe {
+            mem_copy(res, self.ptr, self.len);
+            res[self.len] = 0;
+        }
+        return Self(res, self.len);
     }
 
     pub fn to_string(self) Self {

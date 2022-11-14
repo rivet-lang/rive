@@ -35,7 +35,7 @@ extend f32 : ToString {
             let mut cstr: ?*u8 = nil;
             let len = libc.asprintf(addr_of!(cstr), c"%g", self);
             if len == -1 {
-                return ""; // fail
+                return empty_string; // fail
             }
             return string.from_raw_with_len(cstr, as(usize, len));
         }
@@ -61,7 +61,7 @@ extend f64 : ToString {
             let mut cstr: ?*u8 = nil;
             let len = libc.asprintf(addr_of!(cstr), c"%g", self);
             if len == -1 {
-                return ""; // fail
+                return empty_string; // fail
             }
             return string.from_raw_with_len(cstr, as(usize, len));
         }

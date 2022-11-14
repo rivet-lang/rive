@@ -1436,10 +1436,11 @@ class Codegen:
                     expr_typ_ir, tmp,
                     ir.Inst(
                         ir.InstKind.Call,
-                        [ir.Name("_R7runtime6string2atM"), left, idx]
+                        [ir.Name("_R7runtime6string2atM"), left, idx],
+                        expr_typ_ir
                     )
                 )
-                return ir.Ident(expr.typ, tmp)
+                return ir.Ident(expr_typ_ir, tmp)
             elif s.kind == TypeKind.Vec:
                 expr_typ_ir2 = expr_typ_ir.ptr()
                 value = ir.Inst(
