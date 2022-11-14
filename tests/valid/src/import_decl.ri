@@ -1,0 +1,5 @@
+import "./mod" { * };
+
+test "`import` declaration: using `*` (glob)" {
+    assert!(add(2, 2) == 4);
+}

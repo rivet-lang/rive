@@ -117,11 +117,12 @@ class Attrs:
         return len(self.attrs) > 0
 
 class ImportDecl:
-    def __init__(self, attrs, vis, path, alias, import_list, pos):
+    def __init__(self, attrs, vis, path, alias, glob, import_list, pos):
         self.attrs = attrs
         self.vis = vis
         self.path = path
         self.alias = alias
+        self.glob = glob
         self.import_list = import_list
         self.mod_sym = None
         self.pos = pos

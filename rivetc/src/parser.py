@@ -185,23 +185,28 @@ class Parser:
             path = self.tok.lit
             self.expect(Kind.String)
             alias = ""
+            glob = False
             if self.accept(Kind.KwAs):
                 alias = self.parse_name()
             elif self.accept(Kind.Lbrace):
                 while True:
                     info_pos = self.tok.pos
-                    name = self.parse_name()
-                    info_alias = name
-                    if self.accept(Kind.KwAs):
-                        info_alias = self.parse_name()
-                    import_list.append(
-                        ast.ImportListInfo(name, info_alias, info_pos)
-                    )
+                    if self.accept(Kind.Mul):
+                        glob = True
+                        break
+                    else:
+                        name = self.parse_name()
+                        info_alias = name
+                        if self.accept(Kind.KwAs):
+                            info_alias = self.parse_name()
+                        import_list.append(
+                            ast.ImportListInfo(name, info_alias, info_pos)
+                        )
                     if not self.accept(Kind.Comma):
                         break
                 self.expect(Kind.Rbrace)
             self.expect(Kind.Semicolon)
-            return ast.ImportDecl(attrs, vis, path, alias, import_list, pos)
+            return ast.ImportDecl(attrs, vis, path, alias, glob, import_list, pos)
         elif self.accept(Kind.KwExtern):
             self.inside_extern = True
             # extern function or var
