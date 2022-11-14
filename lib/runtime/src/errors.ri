@@ -18,6 +18,8 @@ pub class Error : ToString {
     }
 }
 
+pub class InvalidArgumentError : Error { }
+
 pub class OutOfMemoryError : Error { }
 
 pub class RuneFromU32Error : Error { }

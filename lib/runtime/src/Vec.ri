@@ -12,7 +12,7 @@ class Vec {
     #[unsafe]
     fn new(elem_size: usize, cap: usize) Self {
         return Self(
-            unsafe { mem_alloc_zeroed(cap * elem_size) catch unreachable!() },
+            unsafe { mem_zeroed(cap * elem_size) catch unreachable!() },
             elem_size, 0, cap
         );
     }
@@ -20,7 +20,7 @@ class Vec {
     #[unsafe]
     fn from_array(arr: *mut void, elem_size: usize, len: usize) Self {
         let mut vec = Self(
-            unsafe { mem_alloc_zeroed(len * elem_size) catch unreachable!() },
+            unsafe { mem_zeroed(len * elem_size) catch unreachable!() },
             elem_size, len, len
         );
         unsafe {
@@ -145,7 +145,7 @@ class Vec {
             size += 1;
         }
         let mut vec = Self(
-            mem_alloc_zeroed(size) catch unreachable!(),
+            mem_zeroed(size) catch unreachable!(),
             self.elem_size, self.len, self.cap
         );
         unsafe {

@@ -7,39 +7,40 @@ import "libc";
 /// Allocates dynamically a `size` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
 ///
-/// NOTE: Unlike the `mem.alloc_zeroed` function, `mem.alloc` will
+/// NOTE: Unlike the `mem.zeroed` function, `mem.alloc` will
 /// not zero the memory block.
 pub fn mem_alloc(size: usize) !*mut void {
-    if let safe_ptr = unsafe { libc.malloc(size) } {
-        return safe_ptr;
+    if let new = unsafe { libc.malloc(size) } {
+        return new;
     }
     return OutOfMemoryError("insufficient memory is available");
 }
 
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
-pub fn mem_alloc_zeroed(n: usize) !*mut void {
-    if let safe_ptr = unsafe { libc.calloc(1, n) } {
-        return safe_ptr;
-    }
-    return OutOfMemoryError("insufficient memory is available");
+pub fn mem_zeroed(n: usize) !*mut void {
+    let new = mem_alloc(n) catch |err| {
+        return err;
+    };
+    mem_set(new, 0, n);
+    return new;
 }
 
 /// Resizes the memory block `ptr` with `sz` bytes.
 ///
 /// NOTE: The `ptr` must be a pointer to an existing memory block previously
-/// allocated with `mem.alloc` or `mem.alloc_zeroed`.
-pub fn mem_resize(ptr: ?*mut void, sz: usize) !?*mut void {
+/// allocated with `mem.alloc` or `mem.zeroed`.
+pub fn mem_resize(ptr: ?*mut void, sz: usize) !*mut void {
     if sz == 0 {
         if let safe_ptr = ptr {
             unsafe {
                 mem_dealloc(safe_ptr);
             }
-            return nil;
         }
+        return InvalidArgumentError("argument `sz` is 0");
     }
-    if let safe_ptr2 = unsafe { libc.realloc(ptr, sz) } {
-        return safe_ptr2;
+    if let new = unsafe { libc.realloc(ptr, sz) } {
+        return new;
     }
     return OutOfMemoryError("insufficient memory is available");
 }
@@ -48,7 +49,10 @@ pub fn mem_resize(ptr: ?*mut void, sz: usize) !?*mut void {
 /// byte `c`.
 pub fn mem_set(s: *mut void, c: u8, n: usize) {
     unsafe {
-        _ = libc.memset(s, as(i32, c), n);
+        let mut s_b = as(*mut u8, s);
+        for i in 0..n {
+            s_b[i] = c;
+        }
     }
 }
 
@@ -58,7 +62,11 @@ pub fn mem_set(s: *mut void, c: u8, n: usize) {
 /// areas do overlap.
 pub fn mem_copy(dest: *mut void, src: *void, sz: usize) {
     unsafe {
-        _ = libc.memcpy(dest, src, sz);
+        let mut dest_b = as(*mut u8, dest);
+        let src_b = as(*u8, src);
+        for i in 0..sz {
+            dest_b[i] = src_b[i];
+        }
     }
 }
 
@@ -79,11 +87,11 @@ pub fn mem_move(dest: *mut void, src: *void, sz: usize) {
 /// the newly allocated space.
 pub fn mem_dup(src: *void, sz: usize) !*mut void {
     if sz == 0 {
-        return mem_alloc_zeroed(1).!;
+        return mem_zeroed(1).!;
     }
-    let res = mem_alloc(sz).!;
-    mem_copy(res, src, sz);
-    return res;
+    let new = mem_alloc(sz).!;
+    mem_copy(new, src, sz);
+    return new;
 }
 
 /// Compares the first `n` bytes (each interpreted as `u8`) of the memory areas
