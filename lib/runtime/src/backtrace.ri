@@ -27,7 +27,7 @@ extern (C) {
     fn backtrace_create_state(
         filename: *u8, threaded: i32, error_cb: BacktraceErrorCB,
         data: ?*mut void
-    ) *mut backtrace_state;
+    ) ?*mut backtrace_state;
 
     fn backtrace_full(
         state: *backtrace_state, skip: i32, cb: BacktraceFullCB,
@@ -36,7 +36,7 @@ extern (C) {
 }
 
 let state: *mut backtrace_state = unsafe {
-    backtrace_create_state(ARGS[0].ptr, 1, bt_error_handler, nil)
+    backtrace_create_state(ARGS[0].ptr, 1, bt_error_handler, nil).?
 };
 
 struct BacktraceData {

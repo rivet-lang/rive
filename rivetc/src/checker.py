@@ -42,7 +42,11 @@ class Checker:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.LetDecl):
                 old_expected_type = self.expected_type
-                self.check_expr(decl.right)
+                expr_t = self.check_expr(decl.right)
+                try:
+                    self.check_compatible_types(decl.lefts[0].typ, expr_t)
+                except utils.CompilerError as e:
+                    report.error(e.args[0], decl.pos)
                 self.expected_type = old_expected_type
             elif isinstance(decl, ast.TypeDecl):
                 pass
@@ -138,6 +142,9 @@ class Checker:
                             self.check_compatible_types(def_expr_t, arg.typ)
                         except utils.CompilerError as e:
                             report.error(e.args[0], arg.pos)
+                if isinstance(decl.ret_typ, type.Ptr) and decl.abi != sym.ABI.Rivet:
+                    report.error(f"`{decl.name}` should return an optional pointer", decl.name_pos)
+                    report.note("this is because Rivet cannot ensure that the function does not always return `nil`")
                 self.cur_fn = decl.sym
                 self.expected_type = decl.ret_typ
                 self.check_stmts(decl.stmts)
@@ -1398,6 +1405,8 @@ class Checker:
 
         if isinstance(expected, type.Result):
             return self.check_compatible_types(got, expected.typ)
+        elif isinstance(got, type.Optional) and not isinstance(expected, type.Optional):
+            return False
         elif isinstance(expected,
                         type.Optional) and isinstance(got, type.Optional):
             return expected.typ == got.typ
