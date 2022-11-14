@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+import "libc";
+
 fn error_panic(err: Error) {
     process_panic(err.to_string());
 }

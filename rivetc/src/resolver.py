@@ -322,13 +322,7 @@ class Resolver:
             ident.obj = obj
             ident.typ = obj.typ
             ident.is_obj = True
-        elif s := self.find_prelude(ident.name):
-            ident.sym = s
-            ident.is_sym = True
-        elif s := self.comp.universe.find(ident.name):
-            ident.sym = s
-            ident.is_sym = True
-        elif s := self.sym.find(ident.name):
+        elif s := self.source_file.find_imported_symbol(ident.name):
             if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
                 report.error(
                     f"cannot find `{ident.name}` in this scope", ident.pos
@@ -336,7 +330,16 @@ class Resolver:
                 ident.not_found = True
             ident.sym = s
             ident.is_sym = True
-        elif s := self.source_file.find_imported_symbol(ident.name):
+        elif s := self.find_prelude(ident.name):
+            ident.sym = s
+            ident.is_sym = True
+        elif s := self.comp.universe.find(ident.name):
+            if isinstance(s, sym.Mod):
+                report.error("use of a non-imported module", ident.pos)
+                report.note("consider adding an `import` with the path to the module")
+            ident.sym = s
+            ident.is_sym = True
+        elif s := self.sym.find(ident.name):
             if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
                 report.error(
                     f"cannot find `{ident.name}` in this scope", ident.pos
