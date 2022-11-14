@@ -60,7 +60,7 @@ class CGen:
             args.append("-flto")
             args.append("-O3")
         else:
-            args.append("-g")
+            args.append("-g3")
         if self.comp.prefs.target_os == prefs.OS.Windows:
             args.append(f"-municode")
 

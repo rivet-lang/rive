@@ -188,12 +188,12 @@ class Compiler:
                 found = True
                 abspath = path.abspath(pathx)
                 mod_basedir = path.dirname(abspath)
-                if mod_basedir.endswith("src/"):
+                if mod_basedir.endswith("/src"):
                     mod_basedir = mod_basedir[:-4] # skip `src/`
                 names = abspath[mod_basedir.rfind("/") + 1:].split("/")
-                if mod_basedir.endswith("src/"):
-                    full_name = (".".join([names[0],
-                                           *names[2:]])).replace("/", ".")
+                if "src" in names:
+                    src_idx = names.index("src")
+                    full_name = ".".join([*names[:src_idx], *names[src_idx + 1:]])
                 else:
                     full_name = ".".join(names)
             os.chdir(old_wd)
