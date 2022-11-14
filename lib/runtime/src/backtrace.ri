@@ -18,8 +18,6 @@ pub fn bt_print(frames_to_skip: i32 = 0) {
 
 #![c_compile("lib/thirdparty/libbacktrace/backtrace.c")]
 
-import "libc";
-
 struct backtrace_state;
 
 type BacktraceErrorCB = fn(*mut void, ?*mut u8, i32);
@@ -50,7 +48,7 @@ fn bt_print_callback(
 ) i32 {
     unsafe {
         if let safe_fn_ptr = fn_ptr {
-            if libc.memcmp(safe_fn_ptr, c"_R7runtime4mainF", 16) == 0 {
+            if mem_cmp(safe_fn_ptr, c"_R7runtime4mainF", 16) == 0 {
                 return -1; // stop backtracing
             }
         }
