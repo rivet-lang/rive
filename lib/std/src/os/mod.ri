@@ -2,34 +2,3 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-import "libc";
-
-import "../strings" { Builder };
-
-struct Result {
-	pub output: string;
-	pub exit_code: i32;
-}
-
-/// Starts the specified command, waits for it to complete, and returns
-/// both its output and the exit code.
-pub fn execute(cmd: string) Result {
-    let pcmd = if cmd.contains("2>") { cmd } else { "{} 2>&1".fmt(cmd) };
-    unsafe {
-        if let f = libc.popen(pcmd.ptr, c"r") {
-            let fd = libc.fileno(f);
-            let mut buf: [u8; 4096] = []!;
-            let pbuf: *mut u8 = addr_of_mut!(buf[0]);
-            let mut output = Builder.new(1024);
-            while {
-                let len = libc.read(fd, pbuf, 4096);
-                if len == 0 or len == -1 {
-                    break;
-                }
-                output.write_raw_with_len(pbuf, as(usize, len));
-            }
-            return Result(output.to_string(), libc.pclose(f));
-        }
-        return Result("execute( {} ) failed".fmt(cmd), -1);
-    }
-}
