@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-import "libc";
+import "c/libc";
 
 struct StaticBuffer {
     mut buf: [u8; 25];

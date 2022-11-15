@@ -1,0 +1,87 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "c" { * };
+
+pub struct FILE;
+
+#if _LINUX_
+    extern (C) {
+        pub let stdin: *mut FILE;
+        pub let stdout: *mut FILE;
+        pub let stderr: *mut FILE;
+    }
+
+    pub struct fpos_t {
+        f1: [char; 16];
+        f2: longlong;
+        f3: double;
+    }
+
+    pub const _IOFBF: i32 = 0;
+	pub const _IOLBF: i32 = 1;
+	pub const _IONBF: i32 = 2;
+
+	pub const BUFSIZ: i32 = 1024;
+	pub const EOF: i32 = -1;
+	pub const FOPEN_MAX: i32 = 1000;
+	pub const FILENAME_MAX: i32 = 4096;
+	pub const L_tmpnam: i32 = 20;
+	pub const SEEK_SET: i32 = 0;
+	pub const SEEK_CUR: i32 = 1;
+	pub const SEEK_END: i32 = 2;
+
+	pub const TMP_MAX: i32 = 308915776;
+#endif
+
+#if _WINDOWS_
+    extern (C) {
+        fn __acrt_iob_fn(index: u32) *mut FILE;
+    }
+
+    pub type fpos_t = i64;
+
+	pub const _IOFBF: i32 = 0x0000;
+	pub const _IOLBF: i32 = 0x0004;
+	pub const _IONBF: i32 = 0x0040;
+
+	pub const BUFSIZ: i32 = 512;
+	pub const EOF: i32 = -1;
+	pub const FOPEN_MAX: i32 = 20;
+	pub const FILENAME_MAX: i32 = 260;
+	pub const L_tmpnam: i32 = 15; // "\\" + 12 + NUL
+	pub const SEEK_SET: i32 = 0;
+	pub const SEEK_CUR: i32 = 1;
+	pub const SEEK_END: i32 = 2;
+
+	pub const TMP_MAX: i32 = 32767; // SHRT_MAX
+
+    pub let stdin: *mut FILE = unsafe { __acrt_iob_fn(0) };
+    pub let stdout: *mut FILE = unsafe { __acrt_iob_fn(1) };
+    pub let stderr: *mut FILE = unsafe { __acrt_iob_fn(2) };
+#endif
+
+extern (C) {
+    pub fn fopen(path: *u8, mode: *u8) ?*mut FILE;
+    pub fn feof(stream: *FILE) i32;
+    pub fn ferror(stream: *FILE) i32;
+    pub fn fseek(stream: *mut FILE, offset: u64, whence: i32) i32;
+    pub fn ftell(stream: *mut FILE) i64;
+    pub fn fread(ptr: *mut void, size: usize, nitems: usize, stream: *mut FILE) usize;
+    pub fn fputs(s: *u8, stream: *mut FILE) i32;
+    pub fn fprintf(stream: *mut FILE, fmt: *u8, ...) i32;
+    pub fn fwrite(ptr: *void, size: usize, nobj: usize, stream: *mut FILE) usize;
+    pub fn fflush(stream: *mut FILE) i32;
+    pub fn fgets(s: *mut u8, n: usize, stream: *mut FILE) i32;
+    pub fn fclose(stream: *mut FILE) i32;
+    pub fn fileno(stream: *FILE) i32;
+    pub fn rewind(stream: *mut FILE) void;
+
+    pub fn printf(fmt: *u8, ...) i32;
+    pub fn asprintf(strp: *?*u8, fmt: *u8, ...) i32;
+    pub fn putchar(s: i32) i32;
+
+	pub fn popen(cmd: *u8, modes: *u8) ?*mut FILE;
+	pub fn pclose(stream: *mut FILE) i32;
+}

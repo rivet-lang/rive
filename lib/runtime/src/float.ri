@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-import "libc";
+import "c/libc";
 
 extend untyped_float : ToString {
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit

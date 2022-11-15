@@ -31,6 +31,22 @@ def prefix_type(tt):
     return prefix
 
 def mangle_type(typ):
+    if isinstance(typ, type.Fn):
+        s = "fn_"
+        if typ.is_unsafe:
+            s += "unsafe_"
+        if typ.is_extern:
+            s += f"extern_{typ.abi}_"
+        if typ.is_method:
+            s += "m_"
+        if typ.self_is_mut:
+            s += "_sm_"
+        elif typ.self_is_ref:
+            s += "_sr_"
+        if typ.is_variadic:
+            s += "_v_"
+        s += f"_args{len(typ.args)}"
+        return s
     return f"{prefix_type(typ)}{mangle_symbol(typ.symbol())}"
 
 def mangle_symbol(s):

@@ -2,7 +2,9 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
-import "libc";
+import "c/libc";
+
+pub import "c" { ErrnoError, last_errno_error };
 
 fn error_panic(err: Error) {
     process_panic(err.to_string());
@@ -25,28 +27,3 @@ pub class InvalidArgumentError : Error { }
 pub class OutOfMemoryError : Error { }
 
 pub class RuneFromU32Error : Error { }
-
-pub fn errno() i32 {
-    return unsafe {
-#if _LINUX_
-        libc.__errno_location().?.*
-#else
-        libc._errno().*
-#endif
-    };
-}
-
-fn strerr(code: i32 = errno()) string {
-    unsafe {
-        let s = libc.strerror(code);
-        return if s == nil { "" } else { string.from_raw(s) };
-    }
-}
-
-pub class ErrnoError : Error {
-    pub code: i32;
-}
-
-pub fn last_errno_error() ErrnoError {
-    return ErrnoError(strerr(), errno());
-}

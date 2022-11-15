@@ -2,6 +2,12 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+#if _LINUX_
+    pub const RAND_MAX: i32 = 0x7fffffff;
+#elif
+    pub const RAND_MAX: i32 = 0x7fff;
+#endif
+
 extern (C) {
     pub fn rand() i32;
     pub fn srand(seed: u32);

@@ -108,7 +108,7 @@ class Compiler:
             if not fp.sym:
                 continue
             deps = []
-            if fp.sym.name not in ["libc", "runtime"]:
+            if fp.sym.name not in ["c.libc", "c", "runtime"]:
                 deps.append("runtime")
             for d in fp.decls:
                 if isinstance(d, ast.ImportDecl):
@@ -116,6 +116,8 @@ class Compiler:
                         continue # module not found
                     if d.mod_sym.name == fp.sym.name:
                         report.error("import cycle detected", d.pos)
+                        continue
+                    if fp.sym.name == "c" and d.mod_sym.name == "c.libc":
                         continue
                     deps.append(d.mod_sym.name)
             g.add(fp.sym.name, deps)

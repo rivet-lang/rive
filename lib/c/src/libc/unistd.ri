@@ -3,8 +3,6 @@
 // that can be found in the LICENSE file.
 
 extern (C) {
-    pub let environ: **u8;
-
 	pub fn access(a: *u8, o: i32) i32;
 
     pub fn sysconf(name: i32) i64;
@@ -16,4 +14,8 @@ extern (C) {
 
     pub fn write(fd: i32, buf: *void, count: usize) isize;
     pub fn read(fildes: i32, buf: *mut void, nbyte: usize) isize;
+
+#if _LINUX_
+    pub fn get_nprocs() i32;
+#endif
 }

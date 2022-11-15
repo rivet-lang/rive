@@ -2,6 +2,9 @@
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file.
 
+import "c" { * };
+
+#if _AMD64_
 // The `stat` definition used by the Linux kernel.
 pub struct Stat {
     pub dev: dev_t;
@@ -21,4 +24,10 @@ pub struct Stat {
     pub mtim: timespec;
     pub ctim: timespec;
     __unused: [isize; 3];
+}
+#endif
+
+extern (C) {
+    pub fn stat(__file: *u8, __buf: *mut Stat) i32;
+	pub fn lstat(file: *u8, buf: *mut Stat) i32;
 }
