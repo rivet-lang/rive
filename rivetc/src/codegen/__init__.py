@@ -742,9 +742,12 @@ class Codegen:
                 )
                 nr_level += 1
 
+        expr_sym = expr.typ.symbol()
         expected_sym = expected_typ_.symbol()
         if expected_sym.kind == TypeKind.Trait and expected_typ_ != expr.typ:
             res_expr = self.trait_value(res_expr, expr.typ, expected_typ_)
+        elif expected_sym.kind == TypeKind.Class and expr_sym.is_subtype_of(expected_sym):
+            res_expr = self.class_upcast(res_expr, expr.typ, expected_typ_)
 
         # wrap optional value
         if isinstance(expected_typ_, type.Optional
@@ -966,7 +969,7 @@ class Codegen:
                         expr.typ
                     )
                 if typ_sym.is_boxed():
-                    tmp = self.gen_class_instance(mangle_symbol(typ_sym))
+                    tmp = self.boxed_instance(mangle_symbol(typ_sym), typ_sym.id)
                 else:
                     tmp = ir.Ident(
                         self.ir_type(expr.typ), self.cur_fn.local_name()
@@ -1035,7 +1038,7 @@ class Codegen:
                                             ),
                                             ir.Selector(
                                                 self.comp.usize_t, self_expr,
-                                                ir.Name("idx")
+                                                ir.Name("_id")
                                             )
                                         ]
                                     )
@@ -1561,20 +1564,32 @@ class Codegen:
                 else:
                     kind = "!="
                 left_sym = expr_left_typ.symbol()
-                self.cur_fn.alloca(
-                    self.ir_type(expr.typ), tmp,
-                    ir.Inst(
+                expr_right_sym=expr_right_typ.symbol()
+                if left_sym.kind==TypeKind.Trait:
+                    cmp=ir.Inst(
                         ir.InstKind.Cmp, [
                             ir.Name(kind),
                             ir.Selector(
-                                self.ir_type(expr.typ), left, ir.Name("id")
+                                self.ir_type(expr.typ), left, ir.Name("_id")
                             ),
                             ir.IntLit(
-                                ir.Type("usize"), str(expr_right_typ.sym.id)
+                                ir.Type("usize"), str(left_sym.info.indexof(expr_right_sym))
                             )
                         ]
                     )
-                )
+                else:
+                    cmp=ir.Inst(
+                        ir.InstKind.Cmp, [
+                            ir.Name(kind),
+                            ir.Selector(
+                                self.ir_type(expr.typ), left, ir.Name("_id")
+                            ),
+                            ir.IntLit(
+                                ir.Type("usize"), str(expr_right_sym.id)
+                            )
+                        ]
+                    )
+                self.cur_fn.try_alloca(self.ir_type(expr.typ), tmp,cmp)
                 return ir.Ident(self.ir_type(expr.typ), tmp)
 
             left = self.gen_expr_with_cast(expr_left_typ, expr.left)
@@ -1974,23 +1989,6 @@ class Codegen:
             self.gen_expr(defer_stmt.expr)
             self.cur_fn.add_label(defer_end)
 
-    def gen_class_instance(self, name):
-        tmp = ir.Ident(ir.Type(name).ptr(True), self.cur_fn.local_name())
-        self.cur_fn.alloca(
-            tmp,
-            ir.Inst(
-                ir.InstKind.Call, [
-                    ir.Name("_R7runtime14internal_allocF"),
-                    ir.Name(f"sizeof({name})")
-                ]
-            )
-        )
-        self.cur_fn.store(
-            ir.Selector(ir.Type("usize"), tmp, ir.Name("_rc")),
-            ir.IntLit(ir.Type("usize"), "1")
-        )
-        return tmp
-
     def gen_const(self, const_sym):
         if const_sym.has_evaled_expr:
             const_sym.has_ir_expr = True
@@ -2131,7 +2129,7 @@ class Codegen:
                 )
             return tmp
         elif typ_sym.kind == TypeKind.Class:
-            tmp = self.gen_class_instance(mangle_symbol(typ_sym))
+            tmp = self.boxed_instance(mangle_symbol(typ_sym))
             for f in typ_sym.full_fields():
                 if f.typ.symbol().kind == TypeKind.Array:
                     continue
@@ -2176,7 +2174,7 @@ class Codegen:
             return ir.Ident(
                 ir.Type("_R7runtime6string"), "_R7runtime12empty_string"
             )
-        tmp = self.gen_class_instance("_R7runtime6string")
+        tmp = self.boxed_instance("_R7runtime6string", 19)
         self.cur_fn.store(
             ir.Selector(ir.Type("u8").ptr(), tmp, ir.Name("ptr")),
             ir.StringLit(lit, size)
@@ -2191,12 +2189,34 @@ class Codegen:
         )
         return tmp
 
+    def boxed_instance(self, name, id, is_trait=False):
+        tmp = ir.Ident(ir.Type(name).ptr(True), self.cur_fn.local_name())
+        self.cur_fn.alloca(
+            tmp,
+            ir.Inst(
+                ir.InstKind.Call, [
+                    ir.Name("_R7runtime14internal_allocF"),
+                    ir.Name(f"sizeof({name})")
+                ]
+            )
+        )
+        self.cur_fn.store(
+            ir.Selector(ir.Type("usize"), tmp, ir.Name("_rc")),
+            ir.IntLit(ir.Type("usize"), "1")
+        )
+        if not is_trait:
+            self.cur_fn.store(
+                ir.Selector(ir.Type("usize"), tmp, ir.Name("_id")),
+                ir.IntLit(ir.Type("usize"), str(id))
+            )
+        return tmp
+
     def trait_value(self, value, value_typ, trait_typ):
         value_sym = self.comp.untyped_to_type(value_typ).symbol()
-        typ_sym = trait_typ.symbol()
+        trait_sym = trait_typ.symbol()
         is_boxed = value_typ.symbol().is_boxed()
         size, _ = self.comp.type_size(value_typ)
-        tmp = self.gen_class_instance(mangle_symbol(typ_sym))
+        tmp = self.boxed_instance(mangle_symbol(trait_sym), 0, True)
         self.cur_fn.store(
             ir.Selector(ir.Type("void").ptr(), tmp, ir.Name("obj")),
             value if is_boxed else ir.Inst(
@@ -2208,10 +2228,18 @@ class Codegen:
             )
         )
         self.cur_fn.store(
-            ir.Selector(ir.Type("usize"), tmp, ir.Name("idx")),
-            ir.IntLit(ir.Type("usize"), str(typ_sym.info.indexof(value_sym)))
+            ir.Selector(ir.Type("usize"), tmp, ir.Name("_id")),
+            ir.IntLit(ir.Type("usize"), str(trait_sym.info.indexof(value_sym)))
         )
         return tmp
+
+    def class_upcast(self, value, value_typ, class_typ):
+        value_sym = self.comp.untyped_to_type(value_typ).symbol()
+        class_sym = class_typ.symbol()
+        class_typ_ir=self.ir_type(class_typ)
+        return ir.Inst(ir.InstKind.Cast, [
+            value, class_typ_ir
+        ], class_typ_ir)
 
     def ir_type(self, typ):
         if isinstance(typ, type.Result):
@@ -2307,10 +2335,9 @@ class Codegen:
                     self.out_rir.structs.append(
                         ir.Struct(
                             False, ts_name, [
-                                ir.Field("obj",
-                                         ir.Type("void").ptr()),
-                                ir.Field("idx", ir.Type("usize")),
-                                ir.Field("_rc", ir.Type("usize"))
+                                ir.Field("_id", ir.Type("usize")),
+                                ir.Field("_rc", ir.Type("usize")),
+                                ir.Field("obj", ir.Type("void").ptr())
                             ]
                         )
                     )
@@ -2343,19 +2370,20 @@ class Codegen:
                                 else:
                                     map[m.name] = mangle_symbol(m)
                         funcs.append(map)
-                    self.out_rir.decls.append(
-                        ir.VTable(
-                            vtbl_name, static_vtbl_name, ts_name,
-                            len(ts.info.implements), funcs
+                    if len(funcs) > 0:
+                        self.out_rir.decls.append(
+                            ir.VTable(
+                                vtbl_name, static_vtbl_name, ts_name,
+                                len(ts.info.implements), funcs
+                            )
                         )
-                    )
             elif ts.kind in (TypeKind.Class, TypeKind.String, TypeKind.Vec):
-                fields = []
+                fields = [
+                    ir.Field("_rc", ir.Type("usize")),
+                    ir.Field("_id", ir.Type("usize"))
+                ]
                 for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
-                if ts.kind == TypeKind.Class and ts.info.is_base:
-                    fields.append(ir.Field("_id", ir.Type("usize")))
-                fields.append(ir.Field("_rc", ir.Type("usize")))
                 self.out_rir.structs.append(
                     ir.Struct(False, mangle_symbol(ts), fields)
                 )

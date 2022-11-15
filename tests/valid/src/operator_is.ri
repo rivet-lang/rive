@@ -1,0 +1,23 @@
+trait Any { }
+
+struct MyStruct : Any { }
+
+test "operator `is` with traits" {
+    let a = Any(MyStruct());
+    assert!(a is MyStruct);
+}
+
+class Abc { }
+class Def : Abc { }
+
+fn class_upcast(a: Abc) bool {
+    return a is Def;
+}
+
+test "operator `is` with classes" {
+    let a = Abc();
+    assert!(a is Abc);
+
+    let d = Def();
+    assert!(class_upcast(d));
+}

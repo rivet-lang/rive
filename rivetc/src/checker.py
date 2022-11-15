@@ -597,9 +597,9 @@ class Checker:
                 return expr.typ
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
                 lsym = ltyp.symbol()
-                if lsym.kind != TypeKind.Class:
+                if lsym.kind not in (TypeKind.Class, TypeKind.Trait):
                     report.error(
-                        f"`{expr.op}` can only be used with classes",
+                        f"`{expr.op}` can only be used with classes and traits",
                         expr.left.pos
                     )
                 expr.typ = self.comp.bool_t
@@ -1369,7 +1369,9 @@ class Checker:
         if expected_sym.kind == TypeKind.Trait:
             if expected != got:
                 got_t = self.comp.untyped_to_type(got)
-                if got_t.symbol() not in expected_sym.info.implements:
+                if got_t.symbol() in expected_sym.info.implements:
+                    expected_sym.info.has_objects = True
+                else:
                     report.error(
                         f"type `{got_t}` does not implement trait `{expected_sym.name}`",
                         pos
@@ -1471,6 +1473,9 @@ class Checker:
             if self.comp.untyped_to_type(got
                                          ).symbol() in exp_sym.info.implements:
                 exp_sym.info.has_objects = True
+                return True
+        elif exp_sym.kind == TypeKind.Class and got_sym.kind == TypeKind.Class:
+            if got_sym.is_subtype_of(exp_sym):
                 return True
         elif exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:
             return exp_sym.info.elem_typ == got_sym.info.elem_typ and exp_sym.info.size == got_sym.info.size

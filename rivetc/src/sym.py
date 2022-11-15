@@ -545,6 +545,16 @@ class Type(Sym):
         self.full_fields_ = fields
         return fields
 
+    def update(self, other):
+        if self.kind == TypeKind.Placeholder:
+            # update placeholder
+            self.vis = other.vis
+            self.kind = other.kind
+            self.fields = other.fields
+            for ss in other.syms:
+                self.add(ss)
+            self.info = other.info
+
     def is_subtype_of(self, t):
         if self == t:
             return True
@@ -559,16 +569,6 @@ class Type(Sym):
                 if base.is_subtype_of(t):
                     return True
         return False
-
-    def update(self, other):
-        if self.kind == TypeKind.Placeholder:
-            # update placeholder
-            self.vis = other.vis
-            self.kind = other.kind
-            self.fields = other.fields
-            for ss in other.syms:
-                self.add(ss)
-            self.info = other.info
 
     def is_boxed(self):
         return self.kind in (
