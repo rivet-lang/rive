@@ -1,4 +1,4 @@
-import "libc";
+import "c/libc";
 
 test "string.fmt()" {
     assert!("true: {}".fmt(true) == "true: true");
