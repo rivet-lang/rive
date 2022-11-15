@@ -1,11 +1,11 @@
-name: Tests
+name: Compiler Tests
 
 on:
   push:
-    paths: ['lib/**.ri', 'rivetc/src/**.py', 'tests/**']
+    paths: ['lib/**.ri', 'rivetc/**.py', 'tests/**']
     branches: [main]
   pull_request:
-    paths: ['lib/**.ri', 'rivetc/src/**.py', 'tests/**']
+    paths: ['lib/**.ri', 'rivetc/**.py', 'tests/**']
     types: [opened, synchronize]
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
 
       - name: Run passing tests
         run: |
-          python3 rivetc -t tests/valid
+          python3 rivetc --backend-compiler clang -t tests/valid
 
       - name: Run failing tests
         run: |

@@ -1,29 +1,11 @@
 import "c/libc";
 
-test "string.fmt()" {
-    assert!("true: {}".fmt(true) == "true: true");
-    assert!("false: {}".fmt(false) == "false: false");
-
-    assert!("here is a number: {}".fmt(5) == "here is a number: 5");
-
-    assert!(
-        "reverse order: {2}, {1}, {0}".fmt(1, 2, 3) == "reverse order: 3, 2, 1"
-    );
-
-    assert!("rune: `{}`".fmt('Á') == "rune: `Á`");
-}
-
 test "string index" {
     let x = "String Literal";
     assert!(x[0] == b'S');
 
     let ch = "String Literal"[0];
     assert!(ch == b'S');
-}
-
-test "string.concat()" {
-    let x = "Hello ".concat("World!");
-    assert!(x == "Hello World!");
 }
 
 test "byte string literal" {

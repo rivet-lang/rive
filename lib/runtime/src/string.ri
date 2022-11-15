@@ -154,7 +154,7 @@ pub class string : ToString {
     }
 
     /// Returns the index of byte `b` if found in the string.
-    pub fn index_byte(self, b: u8) ?usize {
+    pub fn index_of_byte(self, b: u8) ?usize {
         for i in 0..self.len {
             if unsafe { self.ptr[i] == b } {
                 return i;
@@ -165,7 +165,7 @@ pub class string : ToString {
 
     /// Returns the position of the first character of the input string.
     /// It will return `nil` if the input string can't be found.
-    pub fn index(self, p: string) ?usize {
+    pub fn index_of(self, p: string) ?usize {
         if p.len > self.len or p.len == 0 {
             return nil;
         }
@@ -241,7 +241,7 @@ pub class string : ToString {
         if substr.len == 0 {
             return true;
         }
-        if let _ = self.index(substr) {
+        if let _ = self.index_of(substr) {
             return true;
         }
         return false;
