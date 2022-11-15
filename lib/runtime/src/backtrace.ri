@@ -54,15 +54,15 @@ fn bt_print_callback(
                 return -1; // stop backtracing
             }
         }
+        let fn_name = if fn_ptr == nil {
+            "???"
+        } else {
+            demangle_symbol(string.from_raw(fn_ptr))
+        };
         let file_name = if filename_ptr == nil {
             "???"
         } else {
             string.from_raw(filename_ptr)
-        };
-        let fn_name = if fn_ptr == nil {
-            "??"
-        } else {
-            demangle_symbol(string.from_raw(fn_ptr))
         };
         console_eprintln("   at {} ({}:{})", fn_name, file_name, lineno);
     }

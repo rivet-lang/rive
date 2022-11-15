@@ -37,3 +37,10 @@ fn internal_dup(src: *void, sz: usize) *mut void {
         process_panic("internal error: cannot duplicate memory");
     };
 }
+
+fn class_downcast(current_id: usize, expected_id: usize) {
+    // TODO: replace indexes with names
+    if current_id != expected_id {
+        process_panic("cannot cast {} to {}", current_id, expected_id);
+    }
+}

@@ -36,3 +36,13 @@ test "inheritance: using `base`" {
     b2.set_base_i(8);
     assert!(b2.i == 8);
 }
+
+test "inheritance: downcast" {
+    let b = B(c: 5);
+
+    let a = as(A, b);
+    assert!(a.i == 10);
+
+    let b2 = as(B, a);
+    assert!(b2.c == 5);
+}

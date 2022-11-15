@@ -862,13 +862,18 @@ class Codegen:
                     self.cur_fn.breakpoint()
         elif isinstance(expr, ast.AsExpr):
             ir_typ = self.ir_type(expr.typ)
-            res = self.gen_expr_with_cast(expr.typ, expr.expr)
+            res = self.gen_expr_with_cast(expr.expr.typ, expr.expr)
             if isinstance(res, ir.IntLit):
                 if self.comp.is_int(ir_typ) or expr.typ == self.comp.bool_t:
                     res.typ = ir_typ
                     return res
             typ_sym = expr.expr.typ.symbol()
             expr_typ_sym = expr.typ.symbol()
+            if typ_sym.kind == TypeKind.Class and typ_sym.kind == expr_typ_sym.kind:
+                if typ_sym.is_subtype_of(expr_typ_sym): # up-casting
+                    return self.class_upcast(res, expr.typ, expr.expr.typ)
+                if expr_typ_sym.is_subtype_of(typ_sym): # down-casting
+                    return self.class_downcast(res, expr.expr.typ, expr.typ)
             tmp = self.cur_fn.local_name()
             self.cur_fn.try_alloca(
                 ir_typ, tmp, ir.Inst(ir.InstKind.Cast, [res, ir_typ])
@@ -2237,6 +2242,18 @@ class Codegen:
         value_sym = self.comp.untyped_to_type(value_typ).symbol()
         class_sym = class_typ.symbol()
         class_typ_ir=self.ir_type(class_typ)
+        return ir.Inst(ir.InstKind.Cast, [
+            value, class_typ_ir
+        ], class_typ_ir)
+
+    def class_downcast(self, value, value_typ, class_typ):
+        value_sym = self.comp.untyped_to_type(value_typ).symbol()
+        class_sym = class_typ.symbol()
+        class_typ_ir=self.ir_type(class_typ)
+        self.cur_fn.add_call("_R7runtime14class_downcastF", [
+            ir.Selector(ir.Type("usize"), value, ir.Name("_id")),
+            ir.IntLit(ir.Type("usize"), str(class_sym.id))
+        ])
         return ir.Inst(ir.InstKind.Cast, [
             value, class_typ_ir
         ], class_typ_ir)

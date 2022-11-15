@@ -564,8 +564,6 @@ class Type(Sym):
             return self.info.base.is_subtype_of(t)
         elif self.kind == TypeKind.Struct:
             for base in self.info.bases:
-                if base == t:
-                    return True
                 if base.is_subtype_of(t):
                     return True
         return False

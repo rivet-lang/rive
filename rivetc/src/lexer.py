@@ -528,17 +528,17 @@ class Lexer:
                 return token.Token("", Kind.Amp, pos)
             elif ch == "!":
                 if (
-                    self.matches("is", self.pos)
+                    self.matches("is", self.pos + 1)
                     and self.text[self.pos + 3].isspace()
                 ):
                     self.pos += 2
-                    return token.Token("", Kind.KeyNotIs, pos)
+                    return token.Token("", Kind.KwNotIs, pos)
                 elif (
-                    self.matches("in", self.pos)
+                    self.matches("in", self.pos + 1)
                     and self.text[self.pos + 3].isspace()
                 ):
                     self.pos += 2
-                    return token.Token("", Kind.KeyNotIn, pos)
+                    return token.Token("", Kind.KwNotIn, pos)
                 elif nextc == "=":
                     self.pos += 1
                     return token.Token("", Kind.Ne, pos)
