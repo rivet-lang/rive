@@ -41,6 +41,8 @@ fn internal_dup(src: *void, sz: usize) *mut void {
 fn class_downcast(current_id: usize, expected_id: usize) {
     // TODO: replace indexes with names
     if current_id != expected_id {
-        process_panic("cannot cast {} to {}", current_id, expected_id);
+        console_eprintln("panic: cannot cast {} to {}", current_id, expected_id);
+        bt_print(3);
+        process_exit(1);
     }
 }

@@ -52,11 +52,11 @@ Any help is welcome.
 
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
 * **Easy error handling**: Via result types: `fn my_fn() !T { ... }`.
+* **Not NULL values by default**: This is only possible with optional pointers.
 * **Named and optional arguments**: Very useful.
-* **Immutable values by default:** Variables and fields of struct are immutable
-by default.
+* **Immutable values**: Variables and fields of struct are immutable by default.
 * **Polymorphism**: Classes, Traits and Embedded Structs are supported.
-* **Generics:** Specialize and reuse the same code for different types (**coming soon**).
+* **Generics**: Specialize and reuse the same code for different types (**coming soon**).
 
 * * *
 
