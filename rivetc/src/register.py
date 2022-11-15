@@ -45,14 +45,13 @@ class Register:
                         if decl.vis.is_pub():
                             try:
                                 self.sym.add(
-                                    sym.SymRef(
-                                        decl.vis, symbol.name, symbol
-                                    )
+                                    sym.SymRef(decl.vis, symbol.name, symbol)
                                 )
                             except utils.CompilerError as e:
                                 report.error(e.args[0], decl.pos)
                         else:
-                            self.source_file.imported_symbols[symbol.name] = symbol
+                            self.source_file.imported_symbols[symbol.name
+                                                              ] = symbol
                 for import_info in decl.import_list:
                     if symbol := decl.mod_sym.find(import_info.name):
                         self.check_vis(symbol, import_info.pos)

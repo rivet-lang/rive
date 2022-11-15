@@ -206,7 +206,9 @@ class Parser:
                         break
                 self.expect(Kind.Rbrace)
             self.expect(Kind.Semicolon)
-            return ast.ImportDecl(attrs, vis, path, alias, glob, import_list, pos)
+            return ast.ImportDecl(
+                attrs, vis, path, alias, glob, import_list, pos
+            )
         elif self.accept(Kind.KwExtern):
             self.inside_extern = True
             # extern function or var
@@ -496,9 +498,8 @@ class Parser:
         return ast.FnDecl(
             doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
             args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
-            self_is_ref, has_named_args,
-            self.file_sym.is_root and name == "main",
-            is_variadic, abi
+            self_is_ref, has_named_args, self.file_sym.is_root
+            and name == "main", is_variadic, abi
         )
 
     # ---- statements --------------------------

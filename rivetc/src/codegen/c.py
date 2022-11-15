@@ -287,7 +287,8 @@ class CGen:
         elif inst.kind in (
             InstKind.Add, InstKind.Sub, InstKind.Mult, InstKind.Div,
             InstKind.Mod, InstKind.BitAnd, InstKind.BitOr, InstKind.BitXor,
-            InstKind.Lshift, InstKind.Rshift, InstKind.BooleanAnd, InstKind.BooleanOr
+            InstKind.Lshift, InstKind.Rshift, InstKind.BooleanAnd,
+            InstKind.BooleanOr
         ):
             self.gen_expr(inst.args[0])
             if inst.kind == InstKind.Add: self.write(" + ")

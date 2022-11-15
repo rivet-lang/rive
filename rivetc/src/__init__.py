@@ -195,7 +195,9 @@ class Compiler:
                 names = abspath[mod_basedir.rfind("/") + 1:].split("/")
                 if "src" in names:
                     src_idx = names.index("src")
-                    full_name = ".".join([*names[:src_idx], *names[src_idx + 1:]])
+                    full_name = ".".join([
+                        *names[:src_idx], *names[src_idx + 1:]
+                    ])
                 else:
                     full_name = ".".join(names)
             os.chdir(old_wd)

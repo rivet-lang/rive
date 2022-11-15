@@ -336,7 +336,9 @@ class Resolver:
         elif s := self.comp.universe.find(ident.name):
             if isinstance(s, sym.Mod):
                 report.error("use of a non-imported module", ident.pos)
-                report.note("consider adding an `import` with the path to the module")
+                report.note(
+                    "consider adding an `import` with the path to the module"
+                )
             ident.sym = s
             ident.is_sym = True
         elif s := self.sym.find(ident.name):

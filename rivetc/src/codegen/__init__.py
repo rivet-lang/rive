@@ -746,7 +746,9 @@ class Codegen:
         expected_sym = expected_typ_.symbol()
         if expected_sym.kind == TypeKind.Trait and expected_typ_ != expr.typ:
             res_expr = self.trait_value(res_expr, expr.typ, expected_typ_)
-        elif expected_sym.kind == TypeKind.Class and expr_sym.is_subtype_of(expected_sym):
+        elif expected_sym.kind == TypeKind.Class and expr_sym.is_subtype_of(
+            expected_sym
+        ):
             res_expr = self.class_upcast(res_expr, expr.typ, expected_typ_)
 
         # wrap optional value
@@ -974,7 +976,9 @@ class Codegen:
                         expr.typ
                     )
                 if typ_sym.is_boxed():
-                    tmp = self.boxed_instance(mangle_symbol(typ_sym), typ_sym.id)
+                    tmp = self.boxed_instance(
+                        mangle_symbol(typ_sym), typ_sym.id
+                    )
                 else:
                     tmp = ir.Ident(
                         self.ir_type(expr.typ), self.cur_fn.local_name()
@@ -1558,7 +1562,7 @@ class Codegen:
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
                 right = self.gen_expr_with_cast(expr_left_typ, expr.right)
                 tmp = ir.Ident(self.comp.bool_t, self.cur_fn.local_name())
-                inst = ir.InstKind.BooleanAnd if expr.op==Kind.KwAnd else ir.InstKind.BooleanOr
+                inst = ir.InstKind.BooleanAnd if expr.op == Kind.KwAnd else ir.InstKind.BooleanOr
                 self.cur_fn.alloca(tmp, ir.Inst(inst, [left, right]))
                 return tmp
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
@@ -1569,32 +1573,31 @@ class Codegen:
                 else:
                     kind = "!="
                 left_sym = expr_left_typ.symbol()
-                expr_right_sym=expr_right_typ.symbol()
-                if left_sym.kind==TypeKind.Trait:
-                    cmp=ir.Inst(
+                expr_right_sym = expr_right_typ.symbol()
+                if left_sym.kind == TypeKind.Trait:
+                    cmp = ir.Inst(
                         ir.InstKind.Cmp, [
                             ir.Name(kind),
                             ir.Selector(
                                 self.ir_type(expr.typ), left, ir.Name("_id")
                             ),
                             ir.IntLit(
-                                ir.Type("usize"), str(left_sym.info.indexof(expr_right_sym))
+                                ir.Type("usize"),
+                                str(left_sym.info.indexof(expr_right_sym))
                             )
                         ]
                     )
                 else:
-                    cmp=ir.Inst(
+                    cmp = ir.Inst(
                         ir.InstKind.Cmp, [
                             ir.Name(kind),
                             ir.Selector(
                                 self.ir_type(expr.typ), left, ir.Name("_id")
                             ),
-                            ir.IntLit(
-                                ir.Type("usize"), str(expr_right_sym.id)
-                            )
+                            ir.IntLit(ir.Type("usize"), str(expr_right_sym.id))
                         ]
                     )
-                self.cur_fn.try_alloca(self.ir_type(expr.typ), tmp,cmp)
+                self.cur_fn.try_alloca(self.ir_type(expr.typ), tmp, cmp)
                 return ir.Ident(self.ir_type(expr.typ), tmp)
 
             left = self.gen_expr_with_cast(expr_left_typ, expr.left)
@@ -2194,7 +2197,7 @@ class Codegen:
         )
         return tmp
 
-    def boxed_instance(self, name, id, is_trait=False):
+    def boxed_instance(self, name, id, is_trait = False):
         tmp = ir.Ident(ir.Type(name).ptr(True), self.cur_fn.local_name())
         self.cur_fn.alloca(
             tmp,
@@ -2241,22 +2244,20 @@ class Codegen:
     def class_upcast(self, value, value_typ, class_typ):
         value_sym = self.comp.untyped_to_type(value_typ).symbol()
         class_sym = class_typ.symbol()
-        class_typ_ir=self.ir_type(class_typ)
-        return ir.Inst(ir.InstKind.Cast, [
-            value, class_typ_ir
-        ], class_typ_ir)
+        class_typ_ir = self.ir_type(class_typ)
+        return ir.Inst(ir.InstKind.Cast, [value, class_typ_ir], class_typ_ir)
 
     def class_downcast(self, value, value_typ, class_typ):
         value_sym = self.comp.untyped_to_type(value_typ).symbol()
         class_sym = class_typ.symbol()
-        class_typ_ir=self.ir_type(class_typ)
-        self.cur_fn.add_call("_R7runtime14class_downcastF", [
-            ir.Selector(ir.Type("usize"), value, ir.Name("_id")),
-            ir.IntLit(ir.Type("usize"), str(class_sym.id))
-        ])
-        return ir.Inst(ir.InstKind.Cast, [
-            value, class_typ_ir
-        ], class_typ_ir)
+        class_typ_ir = self.ir_type(class_typ)
+        self.cur_fn.add_call(
+            "_R7runtime14class_downcastF", [
+                ir.Selector(ir.Type("usize"), value, ir.Name("_id")),
+                ir.IntLit(ir.Type("usize"), str(class_sym.id))
+            ]
+        )
+        return ir.Inst(ir.InstKind.Cast, [value, class_typ_ir], class_typ_ir)
 
     def ir_type(self, typ):
         if isinstance(typ, type.Result):
@@ -2354,7 +2355,8 @@ class Codegen:
                             False, ts_name, [
                                 ir.Field("_id", ir.Type("usize")),
                                 ir.Field("_rc", ir.Type("usize")),
-                                ir.Field("obj", ir.Type("void").ptr())
+                                ir.Field("obj",
+                                         ir.Type("void").ptr())
                             ]
                         )
                     )
