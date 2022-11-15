@@ -46,3 +46,13 @@ test "inheritance: downcast" {
     let b2 = as(B, a);
     assert!(b2.c == 5);
 }
+
+test "inheritance: typeswitch" {
+    let b = B(c: 5);
+
+    let a = as(A, b);
+    switch a is {
+        B => assert!(true),
+        else => assert!(false)
+    }
+}
