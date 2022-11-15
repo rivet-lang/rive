@@ -1874,18 +1874,24 @@ class Codegen:
                     ) if i < len(b.pats) - 1 else b_exit
                     tmp2 = self.cur_fn.local_name()
                     if expr.is_typeswitch:
-                        self.cur_fn.alloca(
+                        if p.typ.sym.kind == TypeKind.Trait:
+                            value_idx = ir.IntLit(
+                                ir.Type("usize"),
+                                str(expr.typ.symbol().indexof(p.typ.sym))
+                            )
+                        else:
+                            value_idx = ir.IntLit(
+                                ir.Type("usize"), str(p.typ.sym.id)
+                            )
+                        self.cur_fn.try_alloca(
                             ir.Type("bool"), tmp2,
                             ir.Inst(
                                 ir.InstKind.Cmp, [
                                     ir.Name("=="),
                                     ir.Selector(
                                         self.ir_type(expr.expr.typ),
-                                        switch_expr, ir.Name("id")
-                                    ),
-                                    ir.IntLit(
-                                        ir.Type("usize"), str(p.typ.sym.id)
-                                    )
+                                        switch_expr, ir.Name("_id")
+                                    ), value_idx
                                 ]
                             )
                         )
