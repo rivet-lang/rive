@@ -1,0 +1,5 @@
+test "operator `in`" {
+    assert!(true in [true, false, true]);
+    assert!(1 in [1, 2, 3]);
+    assert!("Hello" in ["Hello", "World"]);
+}

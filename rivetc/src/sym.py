@@ -434,11 +434,12 @@ class ArrayInfo:
     def __init__(self, elem_typ, size):
         self.elem_typ = elem_typ
         self.size = size
-        self.has_wrapper = False # for return values in C backend
+        self.has_contains_method = False
 
 class VecInfo:
     def __init__(self, elem_typ):
         self.elem_typ = elem_typ
+        self.has_contains_method = False
 
 class TupleInfo:
     def __init__(self, types):

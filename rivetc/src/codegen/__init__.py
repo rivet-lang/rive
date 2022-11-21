@@ -1599,6 +1599,92 @@ class Codegen:
                     )
                 self.cur_fn.try_alloca(self.ir_type(expr.typ), tmp, cmp)
                 return ir.Ident(self.ir_type(expr.typ), tmp)
+            elif expr.op in (Kind.KwIn, Kind.KwNotIn):
+                expr_left_typ = self.comp.untyped_to_type(expr_left_typ)
+                left = self.gen_expr_with_cast(expr_left_typ, expr.left)
+                right = self.gen_expr_with_cast(expr.right.typ, expr.right)
+                left_sym = expr_left_typ.symbol()
+                right_sym = expr.right.typ.symbol()
+                contains_method = f"contains_{right_sym.id}"
+                full_name = f"_R7runtime3Vec{len(contains_method)}{contains_method}"
+                if not right_sym.info.has_contains_method:
+                    right_sym.info.has_contains_method = True
+                    self_id = ir.Ident(
+                        ir.Type("_R7runtime3Vec").ptr(True), "self"
+                    )
+                    elem_id = ir.Ident(self.ir_type(expr_left_typ), "_elem_")
+                    contains_decl = ir.FnDecl(
+                        False, [], False, full_name, [self_id, elem_id], False,
+                        ir.Type("bool"), False
+                    )
+                    inc_v = ir.Ident(
+                        ir.Type("usize"), contains_decl.local_name()
+                    )
+                    contains_decl.alloca(
+                        inc_v, ir.IntLit(ir.Type("usize"), "0")
+                    )
+                    cond_l = contains_decl.local_name()
+                    body_l = contains_decl.local_name()
+                    ret_l = contains_decl.local_name()
+                    continue_l = contains_decl.local_name()
+                    exit_l = contains_decl.local_name()
+                    contains_decl.add_br(cond_l)
+                    contains_decl.add_label(cond_l)
+                    contains_decl.add_cond_br(
+                        ir.Inst(
+                            ir.InstKind.Cmp, [
+                                ir.Name("<"), inc_v,
+                                ir.Selector(
+                                    ir.Type("usize"), self_id, ir.Name("len")
+                                )
+                            ]
+                        ), body_l, exit_l
+                    )
+                    contains_decl.add_label(body_l)
+                    cur_elem = ir.Inst(
+                        ir.InstKind.LoadPtr, [
+                            ir.Inst(
+                                ir.InstKind.Cast, [
+                                    ir.Inst(
+                                        ir.InstKind.Call, [
+                                            ir.Name("_R7runtime3Vec7raw_getM"),
+                                            self_id, inc_v
+                                        ]
+                                    ),
+                                    self.ir_type(expr_left_typ).ptr()
+                                ]
+                            )
+                        ]
+                    )
+                    if right_sym.info.elem_typ.symbol().kind.is_primitive():
+                        cond = ir.Inst(
+                            ir.InstKind.Cmp, [ir.Name("=="), cur_elem, elem_id]
+                        )
+                    else:
+                        cond = ir.Inst(
+                            ir.InstKind.Call, [
+                                ir.Name(f"{mangle_symbol(left_sym)}4_eq_M"),
+                                cur_elem, elem_id
+                            ]
+                        )
+                    contains_decl.add_cond_br(cond, ret_l, continue_l)
+                    contains_decl.add_label(ret_l)
+                    contains_decl.add_ret(ir.IntLit(ir.Type("bool"), "1"))
+                    contains_decl.add_label(continue_l)
+                    contains_decl.add_inst(ir.Inst(ir.InstKind.Inc, [inc_v]))
+                    contains_decl.add_br(cond_l)
+                    contains_decl.add_label(exit_l)
+                    contains_decl.add_ret(ir.IntLit(ir.Type("bool"), "0"))
+                    self.out_rir.decls.append(contains_decl)
+                call = ir.Inst(
+                    ir.InstKind.Call, [ir.Name(full_name), right, left],
+                    ir.Type("bool")
+                )
+                if expr.op == Kind.KwNotIn:
+                    call = ir.Inst(
+                        ir.InstKind.BooleanNot, [call], ir.Type("bool")
+                    )
+                return call
 
             left = self.gen_expr_with_cast(expr_left_typ, expr.left)
             right = self.gen_expr_with_cast(expr.right.typ, expr.right)

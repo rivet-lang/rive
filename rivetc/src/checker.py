@@ -602,6 +602,31 @@ class Checker:
                     )
                     expr.typ = ltyp
                 return expr.typ
+            elif expr.op in (Kind.KwIn, Kind.KwNotIn):
+                expr.typ = self.comp.bool_t
+                lsym = ltyp.symbol()
+                rsym = rtyp.symbol()
+                if rsym.kind not in (TypeKind.Vec, TypeKind.Array):
+                    report.error(
+                        f"operator `{expr.op}` can only be used with arrays and vectors",
+                        expor.pos
+                    )
+                    return expr.typ
+                elem_typ = rsym.info.elem_typ
+                op_m = "==" if expr.op == Kind.KwIn else "!="
+                try:
+                    self.check_types(ltyp, elem_typ)
+                    if not lsym.kind.is_primitive() and not lsym.exists(op_m):
+                        report.error(
+                            f"cannot use operator `{expr.op}` with type `{lsym.name}`",
+                            expr.pos
+                        )
+                        report.help(
+                            f"the type should define the operator `{op_m}`"
+                        )
+                except utils.CompilerError as e:
+                    report.error(e.args[0], expr.pos)
+                return expr.typ
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
                 lsym = ltyp.symbol()
                 if lsym.kind not in (TypeKind.Class, TypeKind.Trait):
