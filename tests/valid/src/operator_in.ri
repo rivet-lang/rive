@@ -3,3 +3,8 @@ test "operator `in`" {
     assert!(1 in [1, 2, 3]);
     assert!("Hello" in ["Hello", "World"]);
 }
+
+test "operator `!in`" {
+    assert!(5 !in [1, 2, 3]);
+    assert!("Rivet" !in ["Hello", "World"]);
+}

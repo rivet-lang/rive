@@ -1,6 +1,6 @@
 test "`nil` literal" {
     let x: ?i32 = nil;
-    assert!((x ?? 5) == 5);
+    assert!(x == nil);
 }
 
 test "operator `??`" {
