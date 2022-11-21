@@ -1,3 +1,7 @@
+struct Optional {
+    a: ?i32;
+}
+
 test "`nil` literal" {
     let x: ?i32 = nil;
     assert!(x == nil);
@@ -10,6 +14,11 @@ test "operator `??`" {
     assert!((x ?? 5) == 1);
 }
 
+test "operator `.?`" {
+    let mut x: ?i32 = 5;
+    assert!(x.? == 5);
+}
+
 test "guard expr with optionals" {
     let mut x: ?i32 = 100;
     if let y = x {
@@ -17,4 +26,13 @@ test "guard expr with optionals" {
     } else {
         assert!(false);
     }
+}
+
+test "optional field" {
+    let opt = Optional();
+    assert!(opt.a == nil);
+
+    let opt2 = Optional(a: 5);
+    assert!(opt2.a != nil);
+    assert!(opt2.a.? == 5);
 }
