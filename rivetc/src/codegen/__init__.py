@@ -2187,12 +2187,14 @@ class Codegen:
         )
 
     def default_value(self, typ):
-        if isinstance(typ, type.Ptr) or isinstance(typ, type.Ref):
+        if isinstance(typ, (type.Ptr, type.Ref)):
             return ir.NilLit(ir.Type("void").ptr())
+        if isinstance(typ, type.Optional):
+            return self.optional_nil(typ)
         if typ == self.comp.rune_t:
             return ir.RuneLit("\\0")
         elif typ in (
-            self.comp.void_t, self.comp.bool_t, self.comp.i8_t, self.comp.i16_t,
+            self.comp.bool_t, self.comp.i8_t, self.comp.i16_t,
             self.comp.i32_t, self.comp.i64_t, self.comp.u8_t, self.comp.u16_t,
             self.comp.u32_t, self.comp.u64_t, self.comp.isize_t,
             self.comp.usize_t
@@ -2204,8 +2206,6 @@ class Codegen:
             return ir.Ident(
                 ir.Type("_R7runtime6string"), "_R7runtime12empty_string"
             )
-        elif isinstance(typ, type.Optional):
-            return self.optional_value(typ, self.default_value(typ.typ))
         elif isinstance(typ, type.Result):
             if typ.typ == self.comp.void_t:
                 return self.result_void(typ)
