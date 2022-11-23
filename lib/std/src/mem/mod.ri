@@ -1,0 +1,15 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+pub import "runtime" {
+    mem_alloc as alloc,
+    mem_zeroed as zeroed,
+    mem_resize as resize,
+    mem_set as set,
+    mem_copy as copy,
+    mem_move as move,
+    mem_dup as dup,
+    mem_cmp as cmp,
+    mem_dealloc as dealloc
+};

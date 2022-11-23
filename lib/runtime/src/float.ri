@@ -1,0 +1,69 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "c/libc";
+
+extend untyped_float : ToString {
+    /// Returns the IEEE 754 binary representation of `self`, with the sign bit
+    /// of `self` and the result in the same bit position.
+    pub fn bits(self) u64 {
+        return as(f64, self).bits();
+    }
+
+    pub fn to_string(self) string {
+        return as(f64, self).to_string();
+    }
+}
+
+extend f32 : ToString {
+    /// Returns the floating-point number corresponding to the IEEE 754 binary
+    /// representation `b`, with the sign bit of b and the result in the same
+    /// bit position.
+    pub fn from_bits(b: u32) f32 {
+        return unsafe { as(*f32, addr_of!(b)).* };
+    }
+
+    /// Returns the IEEE 754 binary representation of `self`, with the sign bit
+    /// of `self` and the result in the same bit position.
+    pub fn bits(self) u32 {
+        return unsafe { as(*u32, addr_of!(self)).* };
+    }
+
+    pub fn to_string(self) string {
+        unsafe {
+            let mut cstr: ?*u8 = nil;
+            let len = libc.asprintf(addr_of!(cstr), c"%g", self);
+            if len == -1 {
+                return empty_string; // fail
+            }
+            return string.from_raw_with_len(cstr, as(usize, len));
+        }
+    }
+}
+
+extend f64 : ToString {
+    /// Returns the floating-point number corresponding to the IEEE 754 binary
+    /// representation `b`, with the sign bit of b and the result in the same
+    /// bit position.
+    pub fn from_bits(b: u64) f64 {
+        return unsafe { as(*f64, addr_of!(b)).* };
+    }
+
+    /// Returns the IEEE 754 binary representation of `self`, with the sign bit
+    /// of `self` and the result in the same bit position.
+    pub fn bits(self) u64 {
+        return unsafe { as(*u64, addr_of!(self)).* };
+    }
+
+    pub fn to_string(self) string {
+        unsafe {
+            let mut cstr: ?*u8 = nil;
+            let len = libc.asprintf(addr_of!(cstr), c"%g", self);
+            if len == -1 {
+                return empty_string; // fail
+            }
+            return string.from_raw_with_len(cstr, as(usize, len));
+        }
+    }
+}

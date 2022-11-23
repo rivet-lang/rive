@@ -1,0 +1,17 @@
+fn result() ! {
+    return Error("simple error");
+}
+
+fn result2() ! {
+    return Error("simple error (returned: {}, idx: {})".fmt(true, 0));
+}
+
+test "catch result error" {
+    result() catch |err| {
+        assert!(err.msg == "simple error");
+    };
+
+    result2() catch |err2| {
+        assert!(err2.msg == "simple error (returned: true, idx: 0)");
+    };
+}

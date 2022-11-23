@@ -1,0 +1,42 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+extern (C) {
+    pub let environ: **u8;
+}
+
+pub type char = u8;
+pub type schar = i8;
+pub type uchar = u8;
+
+pub type short = i16;
+pub type ushort = u16;
+
+pub type int = i32;
+pub type uint = u32;
+
+pub type long = i64;
+pub type longlong = i64;
+
+pub type ulong = u64;
+pub type ulonglong = u64;
+
+pub type float = f32;
+pub type double = f64;
+
+pub type wchar_t = u32;
+pub type intmax_t = i64;
+pub type uintmax_t = u64;
+
+pub type size_t = usize;
+pub type ptrdiff_t = isize;
+pub type intptr_t = isize;
+pub type uintptr_t = usize;
+pub type ssize_t = isize;
+
+pub type off_t = i64;
+pub type ino_t = u64;
+pub type dev_t = u64;
+pub type uid_t = u32;
+pub type gid_t = u32;

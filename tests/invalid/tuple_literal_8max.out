@@ -1,0 +1,4 @@
+tests/invalid/tuple_literal_8max.ri:3:9: error: tuples can have a maximum of 8 expressions
+  3 |     _ = (1, 2, 3, 4, 5, 6, 7, 8, 9); // FAIL
+    |         ^
+rivetc: error: could not compile module `tuple_literal_8max`, aborting due to previous error

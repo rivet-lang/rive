@@ -1,0 +1,24 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+#if _LINUX_
+extern (C) {
+    pub fn __errno_location() ?*mut i32;
+}
+
+pub const EDOM: i32 = 33;
+pub const EILSEQ: i32 = 84;
+pub const ERANGE: i32 = 34;
+#endif
+
+#if _WINDOWS_
+extern (C) {
+    #[dllimport]
+    pub fn _errno() *mut i32;
+}
+
+pub const EDOM: i32 = 33;
+pub const EILSEQ: i32 = 42;
+pub const ERANGE: i32 = 34;
+#endif

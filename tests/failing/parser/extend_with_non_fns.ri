@@ -1,5 +1,0 @@
-extend u8 {
-    const BAD: i32 = 1;
-
-    struct Bad2 {}
-}

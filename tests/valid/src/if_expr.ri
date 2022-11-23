@@ -1,0 +1,15 @@
+test "`if` expression" {
+    let x = if true { 1 } else { 2 };
+    assert!(x == 1);
+
+    assert!((if true { 1 } else { 2 }) == 1);
+}
+
+test "`if` expression as statement" {
+    let x = 18;
+    if x == 18 {
+        assert!(true);
+    } else {
+        assert!(false);
+    }
+}

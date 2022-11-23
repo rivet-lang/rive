@@ -1,0 +1,31 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "../process";
+
+pub enum OS : u8 {
+    Linux,
+    Windows,
+    Macos;
+
+    pub fn from_string(name: string) ?OS {
+        switch name {
+            "linux" => return .Linux,
+            "windows" => return .Windows,
+            "macos" => return .Macos,
+            else => return nil
+        }
+    }
+}
+
+/// Returns the current operating system.
+pub fn os() OS {
+#if _LINUX_
+    return .Linux;
+#elif _WINDOWS_
+    return .Windows;
+#else
+    process.panic("unknown host operating system");
+#endif
+}

@@ -1,0 +1,101 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "c/libc";
+
+pub class StringBuilder : ToString {
+    mut inner: Vec;
+
+    /// Returns a string builder with capacity `cap`.
+    pub fn new(cap: usize = 0) Self {
+        return Self(unsafe { Vec.new(size_of!(u8), cap) });
+    }
+
+    pub fn from_string(s: string) Self {
+        if s.len == 0 {
+            return Self.new();
+        }
+        return Self(unsafe {
+            Vec.from_array(as(*mut u8, s.ptr), size_of!(u8), s.len)
+        });
+    }
+
+    pub fn write_byte(mut self, val: u8) {
+        self.inner.push(unsafe { addr_of!(val) });
+    }
+
+    #[unsafe]
+    pub fn write_raw(mut self, s: *u8) {
+        unsafe {
+            self.write_raw_with_len(s, libc.strlen(s));
+        }
+    }
+
+    #[unsafe]
+    pub fn write_raw_with_len(mut self, s: *u8, len: usize) {
+        for i in 0..len {
+            self.write_byte(unsafe { s[i] });
+        }
+    }
+
+    pub fn write_string(mut self, s: string) {
+        unsafe {
+            self.write_raw_with_len(s.ptr, s.len);
+        }
+    }
+
+    pub fn writeln(mut self, s: string) {
+        unsafe {
+            self.write_raw_with_len(s.ptr, s.len);
+        }
+        self.write_byte(0x0A);
+    }
+
+    pub fn write_join(mut self, ss: [string], sep: string = "") {
+        if ss.len == 1 {
+            self.write_string(ss[0]);
+        } else {
+            for i, s in ss {
+                self.write_string(s);
+                if i < ss.len - 1 {
+                    self.write_string(sep);
+                }
+            }
+        }
+    }
+
+    pub fn write_fmt(mut self, s: string, args: ...ToString) {
+        self.write_string(s.fmt(args));
+    }
+
+    pub fn writeln_fmt(mut self, s: string, args: ...ToString) {
+        self.write_string(s.fmt(args));
+        self.write_string("\n");
+    }
+
+    /// Returns the number of runes contained in `self`.
+    pub fn runes_count(self) usize {
+        return cstr_runes_count(as(*u8, self.inner.ptr), self.inner.len);
+    }
+
+    pub fn clear(mut self) {
+        self.inner.len = 0;
+    }
+
+    pub fn len(self) usize {
+        return self.inner.len;
+    }
+
+    pub fn cap(self) usize {
+        return self.inner.cap;
+    }
+
+    pub fn is_empty(self) bool {
+        return self.inner.len == 0;
+    }
+
+    pub fn to_string(self) string {
+        return string(as(*u8, self.inner.ptr), self.inner.len);
+    }
+}

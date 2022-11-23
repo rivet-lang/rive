@@ -1,0 +1,32 @@
+name: Library Tests
+
+on:
+  push:
+    paths: ['lib/**.ri']
+    branches: [main]
+  pull_request:
+    paths: ['lib/**.ri']
+    types: [opened, synchronize]
+
+jobs:
+  ubuntu-clang:
+    runs-on: ubuntu-latest
+    env:
+      RIVET_CC_TEST: clang
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run runtime tests
+        run: |
+          python3 rivetc --backend-compiler clang -t lib/runtime/tests/
+
+  ubuntu-gcc:
+    runs-on: ubuntu-latest
+    env:
+      RIVET_CC_TEST: gcc
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run runtime tests
+        run: |
+          python3 rivetc -t lib/runtime/tests/

@@ -1,0 +1,10 @@
+fn main() {
+    _ = b'A'; // OK
+    _ = c'B'; // FAIL
+
+    _ = c"C string"; // OK
+    _ = b"Byte string"; // OK
+    _ = r"Raw string"; // OK
+
+    _ = v"V string"; // FAIL
+}

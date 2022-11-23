@@ -1,0 +1,48 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "c/libc";
+
+fn segfault_handler(_: i32) {
+    console_eprintln("panic: segmentation fault detected");
+    bt_print(3);
+    process_exit(1);
+}
+
+fn panic_if(cond: bool, msg: string) {
+    if cond {
+        console_eprintln("panic: {}", msg);
+        bt_print(2);
+        process_exit(1);
+    }
+}
+
+fn assert(cond: bool, msg: string) {
+    if !cond {
+        console_eprintln("panic: assertion failed: {}", msg);
+        bt_print(2);
+        process_exit(1);
+    }
+}
+
+fn internal_alloc(size: usize) *mut void {
+    return mem_alloc(size) catch {
+        process_panic("internal error: cannot allocate memory");
+    };
+}
+
+fn internal_dup(src: *void, sz: usize) *mut void {
+    return mem_dup(src, sz) catch {
+        process_panic("internal error: cannot duplicate memory");
+    };
+}
+
+fn class_downcast(current_id: usize, expected_id: usize) {
+    // TODO: replace indexes with names
+    if current_id != expected_id {
+        console_eprintln("panic: cannot cast {} to {}", current_id, expected_id);
+        bt_print(3);
+        process_exit(1);
+    }
+}

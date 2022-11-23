@@ -1,0 +1,47 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "c/libc";
+
+extern (Rivet) {
+    pub let mut ARGS: [string];
+
+    fn init_globals();
+    fn drop_globals();
+}
+
+extern (C) fn init_args(_argc: i32, _argv: **u8) {
+    unsafe {
+        ARGS = Vec.new(size_of!(string), as(usize, _argc));
+        for i in 0..as(usize, _argc) {
+            ARGS.push(string.from_raw(_argv[i]));
+        }
+    }
+}
+
+fn main(
+    _argc: i32, _argv: **u8,
+#if _TESTS_
+    mut tr: TestRunner
+#else
+    pkg_main: fn()
+#endif
+) {
+    unsafe {
+        _ = libc.signal(11, segfault_handler);
+        init_args(_argc, _argv);
+        init_globals();
+
+#if _TESTS_
+        if tr.tests.len > 0 {
+            tr.run();
+            tr.print_summary_tests();
+        }
+#else
+        pkg_main();
+#endif
+
+        drop_globals();
+    }
+}

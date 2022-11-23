@@ -1,0 +1,71 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "std/console";
+
+#[inline]
+pub fn stdout_support_styles() bool {
+    return console.is_atty(1);
+}
+
+#[inline]
+pub fn stderr_support_styles() bool {
+    return console.is_atty(2);
+}
+
+pub fn fmt(msg: string, open: string, close: string) string {
+    return "\x1b[{}m{}\x1b[{}m".fmt(open, msg, close);
+}
+
+pub fn fmt_rgb(r: i32, g: i32, b: i32, msg: string, open: string, close: string) string {
+    return "\x1b[{};2;{};{};{}m{}\x1b[{}m".fmt(open, r, g, b, msg, close);
+}
+
+pub fn from_hex(hex: i32, msg: string) string {
+    return fmt_rgb(hex >> 16, hex >> 8 & 0xFF, hex & 0xFF, msg, "38", "39");
+}
+
+pub fn bg_rgb(r: i32, g: i32, b: i32, msg: string) string {
+    return fmt_rgb(r, g, b, msg, "48", "49");
+}
+
+pub fn bg_hex(hex: i32, msg: string) string {
+    return fmt_rgb(hex >> 16, hex >> 8 & 0xFF, hex & 0xFF, msg, "48", "49");
+}
+
+pub fn rgb(r: i32, g: i32, b: i32, msg: string) string {
+    return fmt_rgb(r, g, b, msg, "38", "39");
+}
+
+pub fn reset(msg: string) string {
+    return fmt(msg, "0", "0");
+}
+
+pub fn bold(msg: string) string {
+    return fmt(msg, "1", "22");
+}
+
+pub fn dim(msg: string) string {
+    return fmt(msg, "2", "22");
+}
+
+pub fn hidden(msg: string) string {
+    return fmt(msg, "8", "28");
+}
+
+pub fn italic(msg: string) string {
+    return fmt(msg, "3", "23");
+}
+
+pub fn inverse(msg: string) string {
+    return fmt(msg, "7", "27");
+}
+
+pub fn strikethrough(msg: string) string {
+    return fmt(msg, "9", "29");
+}
+
+pub fn underline(msg: string) string {
+    return fmt(msg, "4", "24");
+}

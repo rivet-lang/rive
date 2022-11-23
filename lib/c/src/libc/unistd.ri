@@ -1,0 +1,21 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+extern (C) {
+	pub fn access(a: *u8, o: i32) i32;
+
+    pub fn sysconf(name: i32) i64;
+
+    pub fn getpid() u32;
+    pub fn getppid() u32;
+
+    pub fn isatty(fd: i32) i32;
+
+    pub fn write(fd: i32, buf: *void, count: usize) isize;
+    pub fn read(fildes: i32, buf: *mut void, nbyte: usize) isize;
+
+#if _LINUX_
+    pub fn get_nprocs() i32;
+#endif
+}

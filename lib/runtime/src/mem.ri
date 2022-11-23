@@ -1,0 +1,122 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "c/libc";
+
+/// Allocates dynamically a `size` bytes block of memory on the heap.
+/// Returns a pointer to the memory address of the allocated space.
+///
+/// NOTE: Unlike the `mem.zeroed` function, `mem.alloc` will
+/// not zero the memory block.
+pub fn mem_alloc(size: usize) !*mut void {
+    if let new = unsafe { libc.malloc(size) } {
+        return new;
+    }
+    return OutOfMemoryError("insufficient memory is available");
+}
+
+/// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
+/// Returns a pointer to the memory address of the allocated space.
+pub fn mem_zeroed(n: usize) !*mut void {
+    let new = mem_alloc(n) catch |err| {
+        return err;
+    };
+    mem_set(new, 0, n);
+    return new;
+}
+
+/// Resizes the memory block `ptr` with `sz` bytes.
+///
+/// NOTE: The `ptr` must be a pointer to an existing memory block previously
+/// allocated with `mem.alloc` or `mem.zeroed`.
+pub fn mem_resize(ptr: ?*mut void, sz: usize) !*mut void {
+    if sz == 0 {
+        if let safe_ptr = ptr {
+            unsafe {
+                mem_dealloc(safe_ptr);
+            }
+        }
+        return InvalidArgumentError("argument `sz` is 0");
+    }
+    if let new = unsafe { libc.realloc(ptr, sz) } {
+        return new;
+    }
+    return OutOfMemoryError("insufficient memory is available");
+}
+
+/// Fills the first `n` bytes of the memory area pointed to by `s`, with the
+/// byte `c`.
+pub fn mem_set(s: *mut void, c: u8, n: usize) {
+    unsafe {
+        let mut s_b = as(*mut u8, s);
+        for i in 0..n {
+            s_b[i] = c;
+        }
+    }
+}
+
+/// Copies `sz` bytes from memory area `src` to memory area `dest`.
+///
+/// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem.move`, if the memory
+/// areas do overlap.
+pub fn mem_copy(dest: *mut void, src: *void, sz: usize) {
+    unsafe {
+        let mut dest_b = as(*mut u8, dest);
+        let src_b = as(*u8, src);
+        for i in 0..sz {
+            dest_b[i] = src_b[i];
+        }
+    }
+}
+
+/// Copies `sz` bytes from memory area `src` to memory area `dest`.
+///
+/// NOTE: The memory areas *MAY* overlap: copying takes place as though the bytes
+/// in `src` are first copied into a temporary array that does not overlap
+/// `src` or `dest`, and the bytes are then copied from the temporary array to
+/// `dest`.
+pub fn mem_move(dest: *mut void, src: *void, sz: usize) {
+    unsafe {
+        _ = libc.memmove(dest, src, sz);
+    }
+}
+
+/// Allocates dynamically a `sz` bytes block of memory on the heap, then copies
+/// the contents of `src` into the allocated space and returns a pointer to
+/// the newly allocated space.
+pub fn mem_dup(src: *void, sz: usize) !*mut void {
+    if sz == 0 {
+        return mem_zeroed(1).!;
+    }
+    let new = mem_alloc(sz).!;
+    mem_copy(new, src, sz);
+    return new;
+}
+
+/// Compares the first `n` bytes (each interpreted as `u8`) of the memory areas
+/// `s1` and `s2`. It returns an integer less than, equal to, or greater than
+/// zero, if the first n bytes of `s1` is found, respectively, to be less than,
+/// to match, or be greater than the first n bytes of `s2`.
+///
+/// For a nonzero return value, the sign is determined by the sign of the
+/// difference between the first pair of bytes (interpreted as `u8`) that
+/// differ in `s1` and `s2`.
+///
+/// If n is zero, the return value is zero.
+///
+/// NOTE: Do NOT use `mem.cmp` to compare security critical data, such
+/// as cryptographic secrets, because the required CPU time depends on the
+/// number of equal bytes. You should use a function that performs comparisons
+/// in constant time for this.
+pub fn mem_cmp(s1: *void, s2: *void, n: usize) i32 {
+    return unsafe { libc.memcmp(s1, s2, n) };
+}
+
+/// Deallocates manually the memory referenced by `ptr`.
+#[unsafe]
+pub fn mem_dealloc(ptr: *void) {
+    unsafe {
+        libc.free(ptr);
+    }
+}

@@ -1,0 +1,29 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "../process";
+
+pub enum Arch : u8 {
+    X86,
+    Amd64;
+
+    pub fn from_string(arch: string) ?Arch {
+        switch arch {
+            "i386" => return .X86,
+            "amd64" => return .Amd64,
+            else => return nil
+        }
+    }
+}
+
+/// Returns the current architecture.
+pub fn arch() Arch {
+#if _X86_
+    return .X86;
+#elif _AMD64_
+    return .Amd64;
+#else
+    process.panic("unknown host architecture");
+#endif
+}

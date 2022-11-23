@@ -1,0 +1,33 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "c/libc";
+
+struct StaticBuffer {
+    mut buf: [u8; 25];
+    mut len: usize;
+
+    pub fn push(mut self, byte: u8) {
+        if self.len > self.buf.len {
+            process_panic("StaticBuffer.push: cannot push byte (len: {})", self.len);
+        }
+        self.buf[self.len] = byte;
+        self.len += 1;
+    }
+
+    pub fn clear(mut self) {
+        while self.len > 0 {
+            self.buf[self.len] = 0;
+            self.len -= 1;
+        }
+    }
+
+    pub fn as_u64(self) u64 {
+        return unsafe { libc.strtoul(addr_of!(self.buf[0]), nil, 10) };
+    }
+
+    pub fn as_string(self) string {
+        return unsafe { string.from_raw_with_len(addr_of!(self.buf[0]), self.len) };
+    }
+}

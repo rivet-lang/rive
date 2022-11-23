@@ -1,0 +1,68 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "libc";
+
+const F_OK: i32 = 0;
+const X_OK: i32 = 1;
+const W_OK: i32 = 2;
+const R_OK: i32 = 4;
+
+const S_IFMT: i32  = 0xF000; // type of file
+const S_IFDIR: i32 = 0x4000; // directory
+const S_IFLNK: i32 = 0xA000; // link
+
+pub const SEPARATOR: u8 = #if _WINDOWS_ b'\\' #else b'/' #endif;
+pub let SEPARATOR_STR: string = #if _WINDOWS_ "\\" #else "/" #endif;
+pub let DELIMITER: string = #if _WINDOWS_ ";" #else ":" #endif;
+
+pub const MAX_PATH_LEN: i32 = #if _WINDOWS_ 260 #else 4096 #endif;
+
+/// Returns true if `path` (file or directory) exists.
+pub fn exists(path: string) bool {
+    return unsafe { libc.access(path.ptr, F_OK) != -1 };
+}
+
+/// Returns `true` if `path` is executable.
+pub fn is_executable(path: string) bool {
+    return unsafe { libc.access(path.ptr, X_OK) != -1 };
+}
+
+/// Returns `true` if `path` is writable.
+pub fn is_writable(path: string) bool {
+    return unsafe { libc.access(path.ptr, W_OK) != -1 };
+}
+
+/// Returns `true` if `path` is readable.
+pub fn is_readable(path: string) bool {
+    return unsafe { libc.access(path.ptr, R_OK) != -1 };
+}
+
+/// Returns true if `path` is a directory.
+pub fn is_dir(path: string) bool {
+    let mut statbuf = libc.Stat();
+    if unsafe { libc.stat(path.ptr, addr_of_mut!(statbuf)) != 0 } {
+        return false;
+    }
+    return (as(i32, statbuf.mode) & S_IFMT) == S_IFDIR;
+}
+
+/// Returns true if `path` is a file.
+pub fn is_file(path: string) bool {
+    return exists(path) and !is_dir(path);
+}
+
+/// Returns `true` if path is absolute.
+pub fn is_absolute(path: string) bool {
+    return path.len > 0 and path[0] == b'/';
+}
+
+/// Returns a boolean indicating whether `path` is a link.
+pub fn is_link(path: string) bool {
+    let mut statbuf = libc.Stat();
+    if unsafe { libc.lstat(path.ptr, addr_of_mut!(statbuf)) != 0 } {
+        return false;
+    }
+    return (as(i32, statbuf.mode) & S_IFMT) == S_IFLNK;
+}

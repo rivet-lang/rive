@@ -1,0 +1,97 @@
+// Copyright (C) 2022 The Rivet Team. All rights reserved.
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file.
+
+import "c/libc";
+
+import "../mem";
+import "../traits" { ToString };
+
+pub class File {
+    f: *mut libc.FILE;
+    mut is_opened: bool;
+
+    pub fn open(path: string, mode: string = "r") !File {
+        unsafe {
+            if let f = libc.fopen(path.ptr, mode.ptr) {
+                return Self(f, true);
+            }
+        }
+        return Error("File.open: failed to open file '{}'".fmt(path));
+    }
+
+    /// Writes the string `s` into the file.
+    pub fn write(mut self, s: string) {
+        _ = unsafe { libc.fputs(s.ptr, self.f) };
+    }
+
+    /// Writes the string `s` into the file and appends a '\n' character.
+    pub fn writeln(mut self, s: string) {
+        self.write(s);
+        self.write("\n");
+    }
+
+    pub fn write_fmt(mut self, s: string, args: ...ToString) {
+        self.write(s.fmt(args));
+    }
+
+    pub fn writeln_fmt(mut self, s: string, args: ...ToString) {
+        self.write(s.fmt(args));
+        self.write("\n");
+    }
+
+    /// Returns the current file contents.
+    pub fn read_all(mut self) !string {
+        if !self.is_opened {
+            return "";
+        }
+        unsafe {
+            let seek = libc.fseek(self.f, 0, 2);
+            if seek != 0 {
+                return Error("fseek failed");
+            }
+
+            let fsize = libc.ftell(self.f);
+            if fsize < 0 {
+                return Error("ftell failed");
+            }
+
+            libc.rewind(self.f);
+
+            // On some systems `ftell` can return values in the 64-bit range
+            // that, when cast to `i32`, can result in values below 0.
+            let allocate = as(i32, fsize);
+            if as(i64, allocate) < fsize {
+                return Error("{} cast to `i32` results in {}".fmt(fsize, as(i32, fsize)));
+            }
+
+            let mut res = as(*mut u8, mem.alloc(as(usize, allocate) + 1).!);
+            let nelements = libc.fread(res, 1, as(usize, allocate), self.f);
+
+            if self.eof() and libc.ferror(self.f) != 0 {
+                mem.dealloc(res);
+                return Error("fread failed");
+            }
+
+            res[nelements] = 0;
+            return string.from_raw_with_len(res, nelements);
+        }
+    }
+
+    /// Returns true if the file is at end.
+    pub fn eof(self) bool {
+        return unsafe { libc.feof(self.f) != 0 };
+    }
+
+    /// Closes the current file.
+    pub fn close(mut self) {
+        if !self.is_opened {
+            return;
+        }
+        unsafe {
+            _ = libc.fflush(self.f);
+            _ = libc.fclose(self.f);
+        }
+        self.is_opened = false;
+    }
+}
