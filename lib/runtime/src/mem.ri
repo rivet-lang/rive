@@ -19,9 +19,7 @@ pub fn mem_alloc(size: usize) !*mut void {
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
 pub fn mem_zeroed(n: usize) !*mut void {
-    let new = mem_alloc(n) catch |err| {
-        return err;
-    };
+    let new = mem_alloc(n).!;
     mem_set(new, 0, n);
     return new;
 }
