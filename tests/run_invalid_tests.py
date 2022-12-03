@@ -1,6 +1,6 @@
-# Copyright (C) 2022 The Rivet Team. All rights reserved.
-# Use of this source code is governed by an MIT license
-# that can be found in the LICENSE file.
+# Copyright (C) 2022 The Rivet Developers. All rights reserved.
+# Use of this source code is governed by an MIT license that can
+# be found in the LICENSE file.
 
 from os import path
 import glob, sys, os, utils

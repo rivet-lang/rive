@@ -62,6 +62,6 @@ Any help is welcome.
 
 <div align="center">
 
-© 2022 **The Rivet Team**
+© 2022 **The Rivet Developers**
 
 </div>
