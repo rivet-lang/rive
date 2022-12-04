@@ -32,7 +32,9 @@ fn main(
     unsafe {
         _ = libc.signal(11, segfault_handler);
         init_args(_argc, _argv);
+#if !_TESTS_ // `init_string_lits` is called after
         init_string_lits();
+#endif
         init_globals();
 
 #if _TESTS_

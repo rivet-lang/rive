@@ -176,6 +176,7 @@ class Codegen:
         )
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
             self.cur_fn = main_fn
+            self.cur_fn.add_call("_R7runtime16init_string_litsF")
             test_runner = ir.Ident(
                 ir.Type("_R7runtime10TestRunner"), "_test_runner"
             )
@@ -756,7 +757,7 @@ class Codegen:
             res_expr = self.trait_value(res_expr, expr.typ, expected_typ_)
         elif expected_sym.kind == TypeKind.Class and expr_sym.is_subtype_of(
             expected_sym
-        ):
+        ) and expr_sym != expected_sym:
             res_expr = self.class_upcast(res_expr, expr.typ, expected_typ_)
 
         # wrap optional value
@@ -880,8 +881,10 @@ class Codegen:
             typ_sym = expr.expr.typ.symbol()
             expr_typ_sym = expr.typ.symbol()
             if typ_sym.kind == TypeKind.Class and typ_sym.kind == expr_typ_sym.kind:
+                if typ_sym == expr_typ_sym:
+                    return res
                 if typ_sym.is_subtype_of(expr_typ_sym): # up-casting
-                    return self.class_upcast(res, expr.typ, expr.expr.typ)
+                    return self.class_upcast(res, expr.expr.typ, expr.typ)
                 if expr_typ_sym.is_subtype_of(typ_sym): # down-casting
                     return self.class_downcast(res, expr.expr.typ, expr.typ)
             tmp = self.cur_fn.local_name()
