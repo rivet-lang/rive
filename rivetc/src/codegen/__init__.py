@@ -130,6 +130,7 @@ class Codegen:
         self.inside_trait = False
         self.inside_test = False
 
+        self.generated_string_literals = {}
         self.generated_opt_res_types = []
         self.generated_array_returns = []
         self.generated_tests = []
@@ -139,6 +140,13 @@ class Codegen:
 
     def gen_source_files(self, source_files):
         self.gen_types()
+        # generate 'init_string_lits_fn' function
+        self.init_string_lits_fn = ir.FnDecl(
+            False, [], False, "_R7runtime16init_string_litsF", [], False,
+            ir.Type("void"), False
+        )
+        self.out_rir.decls.append(self.init_string_lits_fn)
+
         # generate '_R7runtime12init_globalsF' function
         self.init_global_vars_fn = ir.FnDecl(
             False, [], False, "_R7runtime12init_globalsF", [], False,
@@ -2194,10 +2202,9 @@ class Codegen:
         if typ == self.comp.rune_t:
             return ir.RuneLit("\\0")
         elif typ in (
-            self.comp.bool_t, self.comp.i8_t, self.comp.i16_t,
-            self.comp.i32_t, self.comp.i64_t, self.comp.u8_t, self.comp.u16_t,
-            self.comp.u32_t, self.comp.u64_t, self.comp.isize_t,
-            self.comp.usize_t
+            self.comp.bool_t, self.comp.i8_t, self.comp.i16_t, self.comp.i32_t,
+            self.comp.i64_t, self.comp.u8_t, self.comp.u16_t, self.comp.u32_t,
+            self.comp.u64_t, self.comp.isize_t, self.comp.usize_t
         ):
             return ir.IntLit(self.ir_type(typ), "0")
         elif typ in (self.comp.f32_t, self.comp.f64_t):
@@ -2272,40 +2279,61 @@ class Codegen:
         size = utils.bytestr(lit).len
         if size == 0:
             return ir.Ident(
-                ir.Type("_R7runtime6string"), "_R7runtime12empty_string"
+                ir.Type("_R7runtime6string").ptr(True),
+                "_R7runtime12empty_string"
             )
-        tmp = self.boxed_instance("_R7runtime6string", 19)
-        self.cur_fn.store(
+        lit_hash = hash(lit)
+        if lit_hash in self.generated_string_literals:
+            return ir.Ident(
+                ir.Type("_R7runtime6string").ptr(True),
+                self.generated_string_literals[lit_hash]
+            )
+        tmp = self.boxed_instance(
+            "_R7runtime6string", 19,
+            custom_name = f"str_lit{len(self.generated_string_literals)}"
+        )
+        self.out_rir.globals.append(
+            ir.GlobalVar(
+                False, False,
+                ir.Type("_R7runtime6string").ptr(True), tmp.name
+            )
+        )
+        self.init_string_lits_fn.store(
             ir.Selector(ir.Type("u8").ptr(), tmp, ir.Name("ptr")),
             ir.StringLit(lit, size)
         )
-        self.cur_fn.store(
+        self.init_string_lits_fn.store(
             ir.Selector(ir.Type("usize"), tmp, ir.Name("len")),
             ir.IntLit(ir.Type("usize"), str(size))
         )
-        self.cur_fn.store(
+        self.init_string_lits_fn.store(
             ir.Selector(ir.Type("bool"), tmp, ir.Name("is_ref")),
             ir.IntLit(ir.Type("bool"), "1")
         )
+        self.generated_string_literals[lit_hash] = tmp.name
         return tmp
 
-    def boxed_instance(self, name, id, is_trait = False):
-        tmp = ir.Ident(ir.Type(name).ptr(True), self.cur_fn.local_name())
-        self.cur_fn.alloca(
-            tmp,
-            ir.Inst(
-                ir.InstKind.Call, [
-                    ir.Name("_R7runtime14internal_allocF"),
-                    ir.Name(f"sizeof({name})")
-                ]
-            )
+    def boxed_instance(self, name, id, is_trait = False, custom_name = None):
+        tmp = ir.Ident(
+            ir.Type(name).ptr(True), custom_name or self.cur_fn.local_name()
         )
-        self.cur_fn.store(
+        to_fn = self.init_string_lits_fn if custom_name else self.cur_fn
+        inst = ir.Inst(
+            ir.InstKind.Call, [
+                ir.Name("_R7runtime14internal_allocF"),
+                ir.Name(f"sizeof({name})")
+            ]
+        )
+        if custom_name:
+            to_fn.store(tmp, inst)
+        else:
+            to_fn.alloca(tmp, inst)
+        to_fn.store(
             ir.Selector(ir.Type("usize"), tmp, ir.Name("_rc")),
             ir.IntLit(ir.Type("usize"), "1")
         )
         if not is_trait:
-            self.cur_fn.store(
+            to_fn.store(
                 ir.Selector(ir.Type("usize"), tmp, ir.Name("_id")),
                 ir.IntLit(ir.Type("usize"), str(id))
             )
