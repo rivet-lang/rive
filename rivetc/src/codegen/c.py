@@ -19,7 +19,7 @@ C_RESERVED = [
     'double', 'export', 'float', 'goto', 'inline', 'int', 'long', 'namespace',
     'new', 'register', 'restrict', 'short', 'signed', 'sizeof', 'small',
     'static', 'typedef', 'typename', 'union', 'unix', 'unsigned', 'void',
-    'volatile', 'template'
+    'volatile', 'template', 'far', 'near', 'huge'
 ]
 
 def c_escape(kw):

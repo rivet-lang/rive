@@ -183,8 +183,8 @@ class Compiler:
         if pathx.startswith("./") or is_super:
             pathx2 = pathx[3 if is_super else 2:]
             name = pathx2[pathx2.rfind("/") + 1:]
-            old_wd = os.getcwd()
             dirname = path.abspath(path.dirname(file_path))
+            old_wd = os.getcwd()
             os.chdir(dirname)
             if path.isdir(pathx):
                 found = True

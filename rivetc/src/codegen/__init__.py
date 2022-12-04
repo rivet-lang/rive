@@ -800,7 +800,10 @@ class Codegen:
                     ]
                 )
             if expr.typ == self.comp.string_t:
-                return self.gen_string_lit(escaped_val)
+                return self.gen_string_lit(
+                    escaped_val,
+                    utils.bytestr(expr.lit).len
+                )
             return ir.StringLit(escaped_val, str(size))
         elif isinstance(expr, ast.EnumValueExpr):
             return ir.IntLit(
@@ -1025,10 +1028,11 @@ class Codegen:
                         )
                     else:
                         value = self.default_value(f.typ)
-                    self.cur_fn.store(
-                        ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name)),
-                        value
-                    )
+                        self.cur_fn.store(
+                            ir.Selector(
+                                self.ir_type(f.typ), tmp, ir.Name(f.name)
+                            ), value
+                        )
                 return tmp
             args = []
             is_trait_call = False
@@ -1152,13 +1156,21 @@ class Codegen:
                 elif expr.sym.is_method and expr.sym.name == "pop" and left_sym.kind == TypeKind.Vec:
                     ret_typ = self.ir_type(expr.sym.ret_typ)
                     value = ir.Inst(ir.InstKind.Cast, [inst, ret_typ.ptr()])
-                    self.cur_fn.try_alloca(
-                        ret_typ, tmp, ir.Inst(ir.InstKind.LoadPtr, [value])
-                    )
+                    if custom_tmp:
+                        self.cur_fn.store(
+                            custom_tmp, ir.Inst(ir.InstKind.LoadPtr, [value])
+                        )
+                    else:
+                        self.cur_fn.try_alloca(
+                            ret_typ, tmp, ir.Inst(ir.InstKind.LoadPtr, [value])
+                        )
                 else:
-                    self.cur_fn.try_alloca(
-                        self.ir_type(expr.sym.ret_typ), tmp, inst
-                    )
+                    if custom_tmp:
+                        self.cur_fn.store(custom_tmp, inst)
+                    else:
+                        self.cur_fn.try_alloca(
+                            self.ir_type(expr.sym.ret_typ), tmp, inst
+                        )
                 if expr.has_err_handler():
                     err_handler_is_void = (
                         not expr.err_handler.is_propagate
@@ -2197,7 +2209,7 @@ class Codegen:
             ]
         )
 
-    def default_value(self, typ):
+    def default_value(self, typ, custom_tmp = None):
         if isinstance(typ, (type.Ptr, type.Ref)):
             return ir.NilLit(ir.Type("void").ptr())
         if isinstance(typ, type.Optional):
@@ -2239,7 +2251,10 @@ class Codegen:
                 )
             return tmp
         elif typ_sym.kind == TypeKind.Class:
-            tmp = self.boxed_instance(mangle_symbol(typ_sym))
+            if custom_tmp:
+                tmp = custom_tmp
+            else:
+                tmp = self.boxed_instance(mangle_symbol(typ_sym))
             for f in typ_sym.full_fields():
                 if f.typ.symbol().kind == TypeKind.Array:
                     continue
@@ -2252,8 +2267,11 @@ class Codegen:
                 )
             return tmp
         elif typ_sym.kind == TypeKind.Struct:
-            tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
-            self.cur_fn.alloca(tmp)
+            if custom_tmp:
+                tmp = custom_tmp
+            else:
+                tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
+                self.cur_fn.alloca(tmp)
             for f in typ_sym.full_fields():
                 if f.typ.symbol().kind == TypeKind.Array:
                     continue
@@ -2278,8 +2296,8 @@ class Codegen:
             ]
         )
 
-    def gen_string_lit(self, lit):
-        size = utils.bytestr(lit).len
+    def gen_string_lit(self, lit, size = None):
+        size = size or utils.bytestr(lit).len
         if size == 0:
             return ir.Ident(
                 ir.Type("_R7runtime6string").ptr(True),
