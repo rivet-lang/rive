@@ -428,6 +428,11 @@ class Codegen:
             self.gen_defer_stmts()
             if str(fn_decl.ret_typ) == "_R7Result__R4void":
                 self.cur_fn.add_ret(self.result_void(decl.ret_typ))
+            elif str(fn_decl.ret_typ) != "void" and not (
+                len(fn_decl.instrs) > 0 and isinstance(fn_decl.instrs[-1], ir.Inst) and
+                fn_decl.instrs[-1].kind == ir.InstKind.Ret
+            ):
+                self.cur_fn.add_ret(self.default_value(decl.ret_typ))
             if decl.is_extern and not decl.has_body:
                 self.out_rir.externs.append(fn_decl)
             else:

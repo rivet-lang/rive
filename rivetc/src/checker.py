@@ -498,7 +498,7 @@ class Checker:
                         expr.pos
                     )
                     report.note("unsigned values cannot be negated")
-                elif not self.comp.is_signed_int(expr.typ):
+                elif not (self.comp.is_signed_int(expr.typ) or self.comp.is_float(expr.typ)):
                     report.error(
                         "operator `-` can only be used with signed values",
                         expr.pos
