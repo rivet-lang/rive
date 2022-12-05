@@ -9,8 +9,11 @@ pub import "runtime" {
     process_abort as abort,
     process_exit as exit
 };
+import "runtime";
 
 import "../strings" { Builder };
+
+pub let ARGS: [string] = unsafe { runtime.ARGS };
 
 struct Result {
 	pub output: string;

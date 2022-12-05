@@ -153,6 +153,33 @@ pub class string : ToString {
         return res.to_string();
     }
 
+    /// Returns the number of occurrences of `substr` in the string or -1 if no
+    /// `substr` could be found.
+    pub fn count(self, substr: string) usize {
+        if self.len == 0 or substr.len == 0 {
+            return 0;
+        }
+        if substr.len > self.len {
+            return 0;
+        }
+        let mut n: usize = 0;
+        if substr.len == 1 {
+            for l in self.as_bytes() {
+                if l == substr[0] {
+                    n += 1;
+                }
+            }
+            return n;
+        }
+        let mut i: usize = 0;
+        while {
+            i = self.index_after_of(substr, i) ?? return n;
+            i += substr.len;
+            n += 1;
+        }
+        return 0;
+    }
+
     /// Returns the index of byte `b` if found in the string.
     pub fn index_of_byte(self, b: u8) ?usize {
         for i in 0..self.len {
@@ -181,6 +208,168 @@ pub class string : ToString {
             i += 1;
         }
         return nil;
+    }
+
+    /// Returns the position of the input string, starting search from `start` position.
+    pub fn index_after_of(self, p: string, start: usize) ?usize {
+        if p.len > self.len {
+            return nil;
+        }
+        let mut strt = start;
+        if start >= self.len {
+            return nil;
+        }
+        let mut i = strt;
+        while i < self.len {
+            let mut j: usize = 0;
+            let mut ii = i;
+            while j < p.len and unsafe { self.ptr[ii] == p.ptr[j] } {
+                j += 1;
+                ii += 1;
+            }
+            if j == p.len {
+                return i;
+            }
+            i += 1;
+        }
+        return nil;
+    }
+
+    /// Returns the string found between `start` string and `end` string.
+    pub fn find_between(self, start: string, end: string) string {
+        let start_pos = self.index_of(start) ?? return empty_string;
+        let val = self.slice(start_pos + start.len, self.len);
+        let end_pos = val.index_of(end) ?? return val;
+        return val.slice(0, end_pos);
+    }
+
+    /// Strips any of ` `, `\n`, `\t`, `\v`, `\f`, `\r` from the start and end of
+    /// the string.
+    #[inline]
+    pub fn trim_space(self) string {
+        return self.trim(" \n\t\v\f\r");
+    }
+
+    /// Strips any of the characters given in `cutset` from the start and end of
+    /// the string.
+    pub fn trim(self, cutset: string) string {
+        if self.len < 1 or cutset.len < 1 {
+            return self;
+        }
+        let (mut pos_left: usize, mut pos_right: usize) = (0, self.len - 1);
+        let mut cs_match = true;
+        while pos_left <= self.len and pos_right >= -1 and cs_match {
+            cs_match = false;
+            for cs in cutset.as_bytes() {
+                if unsafe { self.ptr[pos_left] == cs } {
+                    pos_left += 1;
+                    cs_match = true;
+                    break;
+                }
+            }
+            for cs2 in cutset.as_bytes() {
+                if unsafe { self.ptr[pos_right] == cs2 } {
+                    pos_right -= 1;
+                    cs_match = true;
+                    break;
+                }
+            }
+            if pos_left > pos_right {
+                return empty_string;
+            }
+        }
+        return self.slice(pos_left, pos_right + 1);
+    }
+
+    /// Strips any of the characters given in `cutset` from the left of the
+    /// string.
+    pub fn trim_left(self, cutset: string) string {
+        if self.len < 1 or cutset.len < 1 {
+            return self;
+        }
+        let mut pos: usize = 0;
+        while pos < self.len {
+            let mut found = false;
+            for cs in cutset.as_bytes() {
+                if unsafe { self.ptr[pos] == cs } {
+                    found = true;
+                    break;
+                }
+            }
+            if !found {
+                break;
+            }
+            pos += 1;
+        }
+        return self.slice(pos, self.len);
+    }
+
+    /// Strips any of the characters given in `cutset` from the right of the
+    /// string.
+    pub fn trim_right(self, cutset: string) string {
+        if self.len < 1 or cutset.len < 1 {
+            return self;
+        }
+        let mut pos = self.len - 1;
+        while pos >= 0 {
+            let mut found = false;
+            for cs in cutset.as_bytes() {
+                if unsafe { self.ptr[pos] == cs } {
+                    found = true;
+                }
+            }
+            if !found {
+                break;
+            }
+            pos -= 1;
+        }
+        if pos < 0 {
+            return empty_string;
+        }
+        return self.slice(pos + 1, self.len);
+    }
+
+    /// Replaces all occurences of `rep` with the string passed in `with_`.
+    pub fn replace(self, rep: string, with_: string) string {
+        if self.len == 0 or rep.len == 0 or rep.len > self.len {
+            return self;
+        } else if !self.contains(rep) {
+            return self;
+        }
+        let mut idx: usize = 0;
+        let mut idxs: [usize] = [];
+        while {
+            idx = self.index_after_of(rep, idx) ?? break;
+            idxs.push(idx);
+            idx += rep.len;
+        }
+        if idxs.len == 0 {
+            return self;
+        }
+        let new_len = self.len + idxs.len * (with_.len - rep.len);
+        let mut b = as(*mut u8, mem_alloc(new_len) catch unreachable!());
+        let (mut b_i: usize, mut s_idx: usize) = (0, 0);
+        unsafe {
+            for rep_pos in idxs {
+                for i in s_idx..rep_pos {
+                    b[b_i] = self.ptr[i];
+                    b_i += 1;
+                }
+                s_idx = rep_pos + rep.len;
+                for i2 in 0..with_.len {
+                    b[b_i] = with_.ptr[i2];
+                    b_i += 1;
+                }
+            }
+            if s_idx < self.len {
+                for i3 in s_idx..self.len {
+                    b[b_i] = self.ptr[i3];
+                    b_i += 1;
+                }
+            }
+            b[new_len] = 0;
+        }
+        return unsafe { string.from_raw_with_len(b, new_len) };
     }
 
     pub fn as_bytes(self) [u8] {

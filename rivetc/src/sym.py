@@ -23,6 +23,7 @@ class ObjLevel(Enum):
 class Obj:
     def __init__(self, is_mut, name, typ, level):
         self.name = name
+        self.ir_name = name
         self.is_mut = is_mut
         self.is_changed = False
         self.is_used = False
@@ -66,6 +67,10 @@ class Scope:
     def update_type(self, name, typ):
         if obj := self.lookup(name):
             obj.typ = typ
+
+    def update_ir_name(self, name, ir_name):
+        if obj := self.lookup(name):
+            obj.ir_name = ir_name
 
 class ABI(Enum):
     Rivet = auto_enum()

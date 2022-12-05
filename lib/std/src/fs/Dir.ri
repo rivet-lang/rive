@@ -1,0 +1,26 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "c/libc";
+
+pub struct Dir {
+    pub fn walk(path: string) ![string] {
+        unsafe {
+            if let dir = libc.opendir(path.ptr) {
+                let mut res: [string] = [];
+                while let ent = libc.readdir(dir) {
+                    let bptr = addr_of!(ent.*.d_name[0]);
+                    if (bptr[0] == 0 or (bptr[0] == b'.' and bptr[1] == 0)
+                        or (bptr[0] == b'.' and bptr[1] == b'.' and bptr[2] == 0)) {
+                        continue;
+                    }
+                    res.push(string.from_raw(bptr).clone());
+                }
+                _ = libc.closedir(dir);
+                return res;
+            }
+        }
+        return Error("walk: couldn't open '{}'".fmt(path));
+    }
+}

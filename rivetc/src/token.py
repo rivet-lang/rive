@@ -265,7 +265,7 @@ KEYWORDS = generate_keyword_map()
 def lookup(lit):
     return KEYWORDS[lit] if lit in KEYWORDS else Kind.Name
 
-def is_key(lit):
+def is_keyword(lit):
     return lit in KEYWORDS
 
 class Pos:
@@ -293,7 +293,7 @@ class Token:
         string = str(self.kind)
         if not string[0].isalpha():
             return f"token `{string}`"
-        if is_key(self.lit):
+        if self.kind == Kind.Name and is_keyword(self.lit):
             string = "keyword"
         if self.lit != "" and self.kind != Kind.DocComment:
             string += f" `{self.lit}`"

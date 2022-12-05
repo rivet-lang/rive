@@ -1,0 +1,22 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+pub struct dirent {
+#if _x32_
+    pub d_ino: u32;
+    pub d_off: u32;
+#else
+    pub d_ino: u64;
+    pub d_off: u64;
+#endif
+    pub d_reclen: u16;
+    pub d_type: u8;
+    pub d_name: [u8; 256];
+}
+
+extern (C) {
+	pub fn opendir(d: *u8) ?*dirent;
+	pub fn readdir(d: *dirent) ?*dirent;
+	pub fn closedir(d: *dirent) i32;
+}

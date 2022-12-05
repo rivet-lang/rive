@@ -85,7 +85,7 @@ class Parser:
             return
         self.last_err_pos = self.tok.pos
         kstr = str(kind)
-        if token.is_key(kstr) or (len(kstr) > 0 and not kstr[0].isalpha()):
+        if token.is_keyword(kstr) or (len(kstr) > 0 and not kstr[0].isalpha()):
             kstr = f"`{kstr}`"
         report.error(f"expected {kstr}, found {self.tok} ", self.tok.pos)
 

@@ -58,8 +58,10 @@ def mangle_symbol(s):
         if s.is_universe:
             break
         if isinstance(s, sym.Mod):
-            name = s.name.replace(".", "__")
-            res.insert(0, f"{len(name)}{name}")
+            s.mangled_name = "".join([
+                f"{len(n)}{n}" for n in s.name.split(".")
+            ])
+            res.insert(0, s.mangled_name)
         elif isinstance(s, sym.Type):
             if s.kind == TypeKind.Tuple:
                 name = "Tuple_"
@@ -658,8 +660,10 @@ class Codegen:
                 left_ir_typ = self.ir_type(left.typ)
                 ident = ir.Ident(
                     left_ir_typ,
-                    self.cur_fn.local_name() if left.name == "_" else left.name
+                    self.cur_fn.local_name()
+                    if left.name == "_" else self.cur_fn.unique_name(left.name)
                 )
+                stmt.scope.update_ir_name(left.name, ident.name)
                 if isinstance(left_ir_typ, ir.Array):
                     self.cur_fn.alloca(ident)
                     val = self.gen_expr_with_cast(left.typ, stmt.right, ident)
@@ -673,9 +677,10 @@ class Codegen:
                     left_ir_typ = self.ir_type(left.typ)
                     ident = ir.Ident(
                         left_ir_typ,
-                        self.cur_fn.local_name()
-                        if left.name == "_" else left.name
+                        self.cur_fn.local_name() if left.name == "_" else
+                        self.cur_fn.unique_name(left.name)
                     )
+                    stmt.scope.update_ir_name(left.name, ident.name)
                     if isinstance(left_ir_typ, ir.Array):
                         size, _ = self.comp.type_size(left.typ)
                         self.cur_fn.alloca(ident)
@@ -833,7 +838,7 @@ class Codegen:
             i_typ = self.ir_type(expr.typ)
             if expr.obj.level == sym.ObjLevel.Arg and expr.obj.is_mut:
                 i_typ = i_typ.ptr()
-            return ir.Ident(i_typ, expr.name)
+            return ir.Ident(i_typ, expr.obj.ir_name)
         elif isinstance(expr, ast.BuiltinCallExpr):
             if expr.name in ("size_of", "align_of"):
                 size, align = self.comp.type_size(expr.args[0].typ)
@@ -989,7 +994,9 @@ class Codegen:
                         self.gen_expr_with_cast(value.typ, value), value.typ,
                         expr.typ
                     )
-                if typ_sym.is_boxed():
+                if custom_tmp:
+                    tmp = custom_tmp
+                elif typ_sym.is_boxed():
                     tmp = self.boxed_instance(
                         mangle_symbol(typ_sym), typ_sym.id
                     )
@@ -1023,16 +1030,13 @@ class Codegen:
                         self.ir_type(f.typ), tmp, ir.Name(f.name)
                     )
                     if f.has_def_expr:
-                        value = self.gen_expr_with_cast(
-                            f.typ, f.def_expr, sltor
-                        )
+                        value = self.gen_expr_with_cast(f.typ, f.def_expr)
                     else:
                         value = self.default_value(f.typ)
-                        self.cur_fn.store(
-                            ir.Selector(
-                                self.ir_type(f.typ), tmp, ir.Name(f.name)
-                            ), value
-                        )
+                    self.cur_fn.store(
+                        ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name)),
+                        value
+                    )
                 return tmp
             args = []
             is_trait_call = False
@@ -1547,10 +1551,12 @@ class Codegen:
                     return val
                 elif expr.op == Kind.OrElse:
                     expr_typ = expr_left_typ
+                    is_not_never = expr.right.typ != self.comp.never_t
                     left = self.gen_expr_with_cast(expr_typ, expr.left)
                     is_nil_label = self.cur_fn.local_name()
                     is_not_nil_label = self.cur_fn.local_name()
-                    exit_label = self.cur_fn.local_name()
+                    exit_label = self.cur_fn.local_name(
+                    ) if is_not_never else ""
                     if isinstance(expr_typ.typ, type.Ref):
                         cond = ir.Inst(
                             ir.InstKind.Cmp,
@@ -1569,8 +1575,9 @@ class Codegen:
                     )
                     self.cur_fn.add_label(is_nil_label)
                     right = self.gen_expr_with_cast(expr_typ.typ, expr.right)
-                    self.cur_fn.store(tmp, right)
-                    self.cur_fn.add_br(exit_label)
+                    if is_not_never:
+                        self.cur_fn.store(tmp, right)
+                        self.cur_fn.add_br(exit_label)
                     self.cur_fn.add_label(is_not_nil_label)
                     if isinstance(expr_typ.typ, type.Ref):
                         self.cur_fn.store(tmp, left)
@@ -1579,7 +1586,8 @@ class Codegen:
                             tmp,
                             ir.Selector(expr_typ.typ, left, ir.Name("value"))
                         )
-                    self.cur_fn.add_label(exit_label)
+                    if is_not_never:
+                        self.cur_fn.add_label(exit_label)
                     return tmp
             elif expr.op in (Kind.KwAnd, Kind.KwOr):
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
@@ -1679,7 +1687,8 @@ class Codegen:
                             )
                         ]
                     )
-                    if right_sym.info.elem_typ.symbol().kind.is_primitive():
+                    right_kind = right_sym.info.elem_typ.symbol().kind
+                    if right_kind.is_primitive() or right_kind == TypeKind.Enum:
                         cond = ir.Inst(
                             ir.InstKind.Cmp, [ir.Name("=="), cur_elem, elem_id]
                         )
@@ -2254,17 +2263,16 @@ class Codegen:
             if custom_tmp:
                 tmp = custom_tmp
             else:
-                tmp = self.boxed_instance(mangle_symbol(typ_sym))
+                tmp = self.boxed_instance(mangle_symbol(typ_sym), typ_sym.id)
             for f in typ_sym.full_fields():
                 if f.typ.symbol().kind == TypeKind.Array:
                     continue
+                sltor = ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name))
                 if f.has_def_expr:
-                    val = self.gen_expr_with_cast(f.typ, f.def_expr, tmp)
+                    val = self.gen_expr_with_cast(f.typ, f.def_expr, sltor)
                 else:
                     val = self.default_value(f.typ)
-                self.cur_fn.store(
-                    ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name)), val
-                )
+                    self.cur_fn.store(sltor, val)
             return tmp
         elif typ_sym.kind == TypeKind.Struct:
             if custom_tmp:
@@ -2275,13 +2283,12 @@ class Codegen:
             for f in typ_sym.full_fields():
                 if f.typ.symbol().kind == TypeKind.Array:
                     continue
+                sltor = ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name))
                 if f.has_def_expr:
-                    val = self.gen_expr_with_cast(f.typ, f.def_expr, tmp)
+                    val = self.gen_expr_with_cast(f.typ, f.def_expr, sltor)
                 else:
                     val = self.default_value(f.typ)
-                self.cur_fn.store(
-                    ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name)), val
-                )
+                    self.cur_fn.store(sltor, val)
             return tmp
         return None
 

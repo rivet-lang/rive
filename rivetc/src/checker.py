@@ -90,6 +90,7 @@ class Checker:
             elif isinstance(decl, ast.FieldDecl):
                 if decl.has_def_expr:
                     old_expected_type = self.expected_type
+                    self.expected_type = decl.typ
                     field_typ = self.check_expr(decl.def_expr)
                     self.expected_type = old_expected_type
                     try:
@@ -616,7 +617,8 @@ class Checker:
                 op_m = "==" if expr.op == Kind.KwIn else "!="
                 try:
                     self.check_types(ltyp, elem_typ)
-                    if not lsym.kind.is_primitive() and not lsym.exists(op_m):
+                    if not lsym.kind.is_primitive(
+                    ) and lsym.kind != TypeKind.Enum and not lsym.exists(op_m):
                         report.error(
                             f"cannot use operator `{expr.op}` with type `{lsym.name}`",
                             expr.pos
@@ -1299,7 +1301,10 @@ class Checker:
                 else:
                     field_typ = type_fields[i].typ
                 arg.typ = field_typ
+                old_expected_type = self.expected_type
+                self.expected_type = field_typ
                 arg_t = self.check_expr(arg.expr)
+                self.expected_type = old_expected_type
                 try:
                     self.check_types(arg_t, field_typ)
                 except utils.CompilerError as e:
@@ -1608,7 +1613,9 @@ class Checker:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
                 return
             elif isinstance(expr.left, ast.Ident):
-                if expr.left.obj.level == sym.ObjLevel.Arg and not expr.left.obj.is_mut:
+                if expr.left.sym:
+                    self.check_sym_is_mut(expr.left.sym, expr.pos)
+                elif expr.left.obj.level == sym.ObjLevel.Arg and not expr.left.obj.is_mut:
                     report.error(
                         f"cannot use `{expr.left.name}` as mutable argument",
                         expr.pos

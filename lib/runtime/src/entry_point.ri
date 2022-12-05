@@ -36,7 +36,6 @@ fn main(
         init_string_lits();
 #endif
         init_globals();
-
 #if _TESTS_
         if tr.tests.len > 0 {
             tr.run();
@@ -45,7 +44,6 @@ fn main(
 #else
         pkg_main();
 #endif
-
         drop_globals();
     }
 }

@@ -201,6 +201,7 @@ class FnDecl:
 
         self.locals = []
         self.locals_nr = 0
+        self.uniq_ids = 0
         self.instrs = list()
 
     def add_comment(self, comment):
@@ -274,7 +275,7 @@ class FnDecl:
 
     def add_local(self, name, typ):
         if self.exists_local(name):
-            raise Exception(f"duplicate local name `{name}`")
+            raise Exception(f"{self.name}: duplicate local name `{name}`")
         self.locals.append(Local(name, typ))
 
     def exists_local(self, name):
@@ -282,6 +283,13 @@ class FnDecl:
             if local.name == name:
                 return True
         return False
+
+    def unique_name(self, name):
+        if self.exists_local(name):
+            id = self.uniq_ids
+            self.uniq_ids += 1
+            return f"{name}_{id}"
+        return name
 
     def __str__(self):
         sb = utils.Builder()

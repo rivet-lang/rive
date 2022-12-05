@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "libc";
+import "c/libc";
 
 const F_OK: i32 = 0;
 const X_OK: i32 = 1;
@@ -40,7 +40,7 @@ pub fn is_readable(path: string) bool {
 }
 
 /// Returns true if `path` is a directory.
-pub fn is_dir(path: string) bool {
+pub fn is_directory(path: string) bool {
     let mut statbuf = libc.Stat();
     if unsafe { libc.stat(path.ptr, addr_of_mut!(statbuf)) != 0 } {
         return false;
@@ -50,7 +50,7 @@ pub fn is_dir(path: string) bool {
 
 /// Returns true if `path` is a file.
 pub fn is_file(path: string) bool {
-    return exists(path) and !is_dir(path);
+    return exists(path) and !is_directory(path);
 }
 
 /// Returns `true` if path is absolute.
