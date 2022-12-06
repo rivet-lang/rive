@@ -762,14 +762,18 @@ class Codegen:
                 )
                 nr_level += 1
 
+        if hasattr(expr, "expected_typ"):
+            expr_typ = expr.expected_typ
+        else:
+            expr_typ = expr.typ
         expr_sym = expr.typ.symbol()
         expected_sym = expected_typ_.symbol()
-        if expected_sym.kind == TypeKind.Trait and expected_typ_ != expr.typ:
-            res_expr = self.trait_value(res_expr, expr.typ, expected_typ_)
+        if expected_sym.kind == TypeKind.Trait and expected_typ_ != expr_typ:
+            res_expr = self.trait_value(res_expr, expr_typ, expected_typ_)
         elif expected_sym.kind == TypeKind.Class and expr_sym.is_subtype_of(
             expected_sym
         ) and expr_sym != expected_sym:
-            res_expr = self.class_upcast(res_expr, expr.typ, expected_typ_)
+            res_expr = self.class_upcast(res_expr, expr_typ, expected_typ_)
 
         # wrap optional value
         if isinstance(expected_typ_, type.Optional
@@ -777,7 +781,7 @@ class Codegen:
             if isinstance(res_expr, ir.NilLit):
                 res_expr = self.optional_nil(expected_typ_)
             elif not isinstance(res_expr, ir.Skip
-                                ) and not isinstance(expr.typ, type.Optional):
+                                ) and not isinstance(expr_typ, type.Optional):
                 res_expr = self.optional_value(expected_typ_, res_expr)
 
         return res_expr
@@ -1935,7 +1939,7 @@ class Codegen:
             exit_switch = self.cur_fn.local_name()
             self.cur_fn.add_comment(f"switch expr (end: {exit_switch})")
             tmp = ir.Ident(
-                self.ir_type(expr.typ),
+                self.ir_type(expr.expected_typ),
                 self.cur_fn.local_name() if not is_void_value else ""
             )
             if not is_void_value:
@@ -2001,7 +2005,11 @@ class Codegen:
                         if p.typ.sym.kind == TypeKind.Trait:
                             value_idx = ir.IntLit(
                                 ir.Type("usize"),
-                                str(expr.typ.symbol().indexof(p.typ.sym))
+                                str(
+                                    expr.expected_typ.symbol().indexof(
+                                        p.typ.sym
+                                    )
+                                )
                             )
                         else:
                             value_idx = ir.IntLit(
@@ -2021,17 +2029,20 @@ class Codegen:
                         )
                     else:
                         p_conv = self.gen_expr_with_cast(p.typ, p)
-                        if p.typ == self.comp.string_t:
-                            inst = ir.Inst(
-                                ir.InstKind.Call, [
-                                    ir.Name("_R7runtime6string4_eq_M"),
-                                    switch_expr, p_conv,
-                                ]
-                            )
-                        else:
+                        p_typ_sym = p.typ.symbol()
+                        if p_typ_sym.kind.is_primitive(
+                        ) or p_typ_sym.kind == TypeKind.Enum:
                             inst = ir.Inst(
                                 ir.InstKind.Cmp,
                                 [ir.Name("=="), switch_expr, p_conv]
+                            )
+                        else:
+                            inst = ir.Inst(
+                                ir.InstKind.Call, [
+                                    ir
+                                    .Name(f"{mangle_symbol(p_typ_sym)}4_eq_M"),
+                                    switch_expr, p_conv,
+                                ]
                             )
                         self.cur_fn.try_alloca(ir.Type("bool"), tmp2, inst)
                     self.cur_fn.add_cond_br(
@@ -2043,11 +2054,11 @@ class Codegen:
                     self.cur_fn.add_label(b_label)
                 if is_void_value:
                     self.gen_expr_with_cast(
-                        expr.typ, b.expr
+                        expr.expected_typ, b.expr
                     ) # ignore void value
                 else:
                     self.cur_fn.store(
-                        tmp, self.gen_expr_with_cast(expr.typ, b.expr)
+                        tmp, self.gen_expr_with_cast(expr.expected_typ, b.expr)
                     )
                 self.cur_fn.add_br(exit_switch)
                 if not b.is_else:

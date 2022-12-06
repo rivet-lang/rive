@@ -888,6 +888,7 @@ class SwitchExpr:
         self.scope = scope
         self.pos = pos
         self.typ = None
+        self.expected_typ = None
 
     def __repr__(self):
         kis = " is " if self.is_typeswitch else " "

@@ -25,6 +25,7 @@ class Checker:
         for sf in source_files:
             self.sym = sf.sym
             self.source_file = sf
+            self.expected_type = self.comp.void_t
             self.check_decls(self.source_file.decls)
 
     def check_decls(self, decls):
@@ -227,11 +228,13 @@ class Checker:
                             stmt.scope.update_type(vd.name, vtyp)
         elif isinstance(stmt, ast.ExprStmt):
             expr_typ = self.check_expr(stmt.expr)
-            if not (
-                isinstance(expr_typ, type.Result) and expr_typ.typ
-                in self.void_types or isinstance(expr_typ, type.Optional) and
-                expr_typ.typ in self.void_types or expr_typ in self.void_types
-            ):
+            if not ((
+                isinstance(expr_typ, type.Result)
+                and expr_typ.typ in self.void_types
+            ) or (
+                isinstance(expr_typ, type.Optional)
+                and expr_typ.typ in self.void_types
+            ) or expr_typ in self.void_types):
                 report.warn("expression evaluated but not used", stmt.expr.pos)
         elif isinstance(stmt, ast.WhileStmt):
             if not stmt.is_inf and self.check_expr(
@@ -348,7 +351,8 @@ class Checker:
         elif isinstance(expr, ast.SelfExpr):
             return expr.typ
         elif isinstance(expr, ast.SelfTyExpr):
-            return type.Type(expr.sym)
+            expr.typ = type.Type(expr.sym)
+            return expr.typ
         elif isinstance(expr, ast.BaseExpr):
             return expr.typ
         elif isinstance(expr, ast.NilLiteral):
@@ -408,7 +412,7 @@ class Checker:
             expr.typ = type.Type(self.comp.universe.add_or_get_tuple(types))
             return expr.typ
         elif isinstance(expr, ast.VecLiteral):
-            old_exp_typ = self.expected_type
+            old_expected_type = self.expected_type
             size = ""
             has_exp_typ = False
             if not isinstance(self.expected_type, type.Fn):
@@ -460,13 +464,13 @@ class Checker:
                         self.comp.untyped_to_type(elem_typ)
                     )
                 )
-            self.expected_type = old_exp_typ
+            self.expected_type = old_expected_type
             return expr.typ
         elif isinstance(expr, ast.AsExpr):
-            old_exp_typ = self.expected_type
+            old_expected_type = self.expected_type
             self.expected_type = expr.typ
             self.check_expr(expr.expr)
-            self.expected_type = old_exp_typ
+            self.expected_type = old_expected_type
             return expr.typ
         elif isinstance(expr, ast.GuardExpr):
             expr_t = self.check_expr(expr.expr)
@@ -1149,12 +1153,10 @@ class Checker:
                 expr.left_typ = left_typ
             return expr.typ
         elif isinstance(expr, ast.ReturnExpr):
-            if self.inside_test:
-                if expr.has_expr:
-                    report.error(
-                        "cannot return values inside `test` declaration",
-                        expr.pos
-                    )
+            if self.inside_test and expr.has_expr:
+                report.error(
+                    "cannot return values inside `test` declaration", expr.pos
+                )
             elif expr.has_expr:
                 if self.cur_fn.ret_typ == self.comp.void_t:
                     report.error(
@@ -1166,14 +1168,14 @@ class Checker:
                     self.expected_type = self.cur_fn.ret_typ.typ if isinstance(
                         self.cur_fn.ret_typ, type.Result
                     ) else self.cur_fn.ret_typ
-                    ret_typ = self.check_expr(expr.expr)
+                    expr_typ = self.check_expr(expr.expr)
                     self.expected_type = old_expected_type
                     try:
-                        self.check_types(ret_typ, self.cur_fn.ret_typ)
+                        self.check_types(expr_typ, self.cur_fn.ret_typ)
                     except utils.CompilerError as e:
                         if not (
                             isinstance(self.cur_fn.ret_typ, type.Result)
-                            and ret_typ.symbol().is_subtype_of(
+                            and expr_typ.symbol().is_subtype_of(
                                 self.comp.error_t.sym
                             )
                         ):
@@ -1196,7 +1198,6 @@ class Checker:
             expr.typ = self.comp.never_t
             return expr.typ
         elif isinstance(expr, ast.Block):
-            expr.typ = self.comp.void_t
             if expr.is_unsafe:
                 if self.inside_unsafe:
                     report.warn("unnecessary `unsafe` block", expr.pos)
@@ -1205,6 +1206,8 @@ class Checker:
                 self.check_stmt(stmt)
             if expr.is_expr:
                 expr.typ = self.check_expr(expr.expr)
+            else:
+                expr.typ = self.comp.void_t
             if expr.is_unsafe:
                 self.inside_unsafe = False
             return expr.typ
@@ -1224,40 +1227,44 @@ class Checker:
                     expr.typ = expr_typ
             return expr.typ
         elif isinstance(expr, ast.SwitchExpr):
-            old_expected_type = self.expected_type
+            expr.typ = self.comp.void_t
             expr_typ = self.check_expr(expr.expr)
-            self.expected_type = expr_typ
             expr_sym = expr_typ.symbol()
-            expected_branch_typ = self.comp.void_t
-            if expr.is_typeswitch:
-                if expr_sym.kind != TypeKind.Class:
-                    report.error("invalid value for typeswitch", expr.expr.pos)
-                    report.note(f"expected class value, found `{expr_typ}`")
+            if expr.is_typeswitch and expr_sym.kind != TypeKind.Class:
+                report.error("invalid value for typeswitch", expr.expr.pos)
+                report.note(f"expected class value, found `{expr_typ}`")
+            expected_branch_typ = self.expected_type
             for i, b in enumerate(expr.branches):
-                for p in b.pats:
-                    pat_t = self.check_expr(p)
-                    if expr.is_typeswitch:
-                        pat_t = self.comp.untyped_to_type(pat_t)
-                        pat_t_sym = pat_t.symbol()
-                    else:
+                old_expected_type = self.expected_type
+                self.expected_type = expr_typ
+                if not b.is_else:
+                    for p in b.pats:
+                        pat_t = self.check_expr(p)
+                        if expr.is_typeswitch:
+                            pat_t = self.comp.untyped_to_type(pat_t)
                         try:
                             self.check_types(pat_t, expr_typ)
                         except utils.CompilerError as e:
                             report.error(e.args[0], p.pos)
+                self.expected_type = old_expected_type
                 branch_t = self.check_expr(b.expr)
                 if i == 0:
-                    expected_branch_typ = branch_t
+                    if expected_branch_typ == self.comp.void_t:
+                        expected_branch_typ = branch_t
+                    expr.expected_typ = expected_branch_typ
+                    expr.typ = branch_t
                 else:
                     try:
                         self.check_types(branch_t, expected_branch_typ)
                     except utils.CompilerError as e:
                         report.error(e.args[0], b.expr.pos)
-            expr.typ = expected_branch_typ
-            self.expected_type = old_expected_type
             return expr.typ
         elif isinstance(expr, ast.BranchExpr):
             expr.typ = self.comp.never_t
             return expr.typ
+        elif isinstance(expr, ast.EmptyExpr):
+            report.error("unexpected empty expression")
+            report.note("bug detected on parser")
         return self.comp.void_t
 
     def check_ctor(self, info, expr):

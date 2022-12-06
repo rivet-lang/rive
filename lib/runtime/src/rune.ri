@@ -61,8 +61,8 @@ extend rune : ToString {
 
 fn utf32_decode_to_buffer(code: u32, buffer: *mut u8) i32 {
     let icode = as(i32, code);
-	unsafe {
-		switch {
+    unsafe {
+        switch {
             (icode <= 127) => { // 0x7F
                 buffer[0] = as(u8, icode);
                 return 1;
@@ -86,8 +86,8 @@ fn utf32_decode_to_buffer(code: u32, buffer: *mut u8) i32 {
                 return 4;
             },
             else => return 0
-		}
-	}
+        }
+    }
 }
 
 fn len_utf8(code: u32) usize {

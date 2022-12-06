@@ -9,11 +9,11 @@ pub enum Arch as u8 {
     Amd64;
 
     pub fn from_string(arch: string) ?Arch {
-        switch arch {
-            "i386" => return .X86,
-            "amd64" => return .Amd64,
-            else => return nil
-        }
+        return switch arch {
+            "i386" => .X86,
+            "amd64" => .Amd64,
+            else => nil
+        };
     }
 }
 
