@@ -25,8 +25,8 @@ class Obj:
         self.name = name
         self.ir_name = name
         self.is_mut = is_mut
-        self.is_changed = False
         self.is_used = False
+        self.is_changed = False
         self.level = level
         self.typ = typ
 

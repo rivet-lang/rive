@@ -181,13 +181,14 @@ class TypeDecl:
 
 class EnumDecl:
     def __init__(
-        self, docs, attrs, vis, name, underlying_typ, values, decls, pos
+        self, docs, attrs, vis, name, underlying_typ, bases, values, decls, pos
     ):
         self.docs = docs
         self.attrs = attrs
         self.vis = vis
         self.name = name
         self.underlying_typ = underlying_typ
+        self.bases = bases
         self.values = values
         self.decls = decls
         self.sym = None

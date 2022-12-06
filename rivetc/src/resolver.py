@@ -42,6 +42,11 @@ class Resolver:
                 self.resolve_type(decl.parent)
             elif isinstance(decl, ast.EnumDecl):
                 if self.resolve_type(decl.underlying_typ):
+                    for base in decl.bases:
+                        if self.resolve_type(base):
+                            base_sym = base.symbol()
+                            if base_sym.kind == sym.TypeKind.Trait:
+                                base_sym.info.implements.append(decl.sym)
                     self.self_sym = decl.sym
                     self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.TraitDecl):

@@ -350,8 +350,14 @@ class Parser:
             pos = self.tok.pos
             name = self.parse_name()
             underlying_typ = self.comp.i32_t
-            if self.accept(Kind.Colon):
+            if self.accept(Kind.KwAs):
                 underlying_typ = self.parse_type()
+            bases = []
+            if self.accept(Kind.Colon):
+                while True:
+                    bases.append(self.parse_type())
+                    if not self.accept(Kind.Comma):
+                        break
             self.expect(Kind.Lbrace)
             values = []
             decls = []
@@ -364,8 +370,8 @@ class Parser:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
-                doc_comment, attrs, vis, name, underlying_typ, values, decls,
-                pos
+                doc_comment, attrs, vis, name, underlying_typ, bases, values,
+                decls, pos
             )
         elif self.accept(Kind.KwExtend):
             pos = self.prev_tok.pos

@@ -4,7 +4,7 @@
 
 import "../process";
 
-pub enum Arch : u8 {
+pub enum Arch as u8 {
     X86,
     Amd64;
 

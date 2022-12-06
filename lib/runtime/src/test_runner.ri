@@ -56,7 +56,7 @@ fn test_error_returned(err: Error, pos: string, mut test_: Test) {
     test_.err_pos = pos;
 }
 
-enum TestResult : u8 {
+enum TestResult as u8 {
     Ok,
     Skipped,
     Failed,

@@ -4,7 +4,7 @@
 
 import "../process";
 
-pub enum OS : u8 {
+pub enum OS as u8 {
     Linux,
     Windows,
     Macos;

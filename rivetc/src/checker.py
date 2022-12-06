@@ -51,6 +51,13 @@ class Checker:
             elif isinstance(decl, ast.TypeDecl):
                 pass
             elif isinstance(decl, ast.EnumDecl):
+                for base in decl.bases:
+                    base_sym = base.symbol()
+                    if base_sym.kind != TypeKind.Trait:
+                        report.error(
+                            f"base type `{base}` of enum `{decl.name}` is not a trait",
+                            decl.pos
+                        )
                 self.check_decls(decl.decls)
             elif isinstance(decl, ast.TraitDecl):
                 self.check_decls(decl.decls)
@@ -498,7 +505,10 @@ class Checker:
                         expr.pos
                     )
                     report.note("unsigned values cannot be negated")
-                elif not (self.comp.is_signed_int(expr.typ) or self.comp.is_float(expr.typ)):
+                elif not (
+                    self.comp.is_signed_int(expr.typ)
+                    or self.comp.is_float(expr.typ)
+                ):
                     report.error(
                         "operator `-` can only be used with signed values",
                         expr.pos
