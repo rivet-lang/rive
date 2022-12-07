@@ -245,6 +245,8 @@ class Checker:
                         "non-boolean expression used as `while` condition",
                         stmt.cond.pos
                     )
+            if stmt.has_continue_expr:
+                self.check_expr(stmt.continue_expr)
             self.check_stmt(stmt.stmt)
         elif isinstance(stmt, ast.ForStmt):
             iterable_t = self.check_expr(stmt.iterable)

@@ -139,6 +139,7 @@ class Codegen:
 
         self.loop_entry_label = ""
         self.loop_exit_label = ""
+        self.while_continue_expr = None
 
     def gen_source_files(self, source_files):
         self.gen_types()
@@ -586,6 +587,7 @@ class Codegen:
             self.loop_entry_label = self.cur_fn.local_name()
             body_label = self.cur_fn.local_name()
             self.loop_exit_label = self.cur_fn.local_name()
+            self.while_continue_expr = stmt.continue_expr
             self.cur_fn.add_label(self.loop_entry_label)
             if stmt.is_inf:
                 cond = ir.IntLit(self.comp.bool_t, "1")
@@ -653,6 +655,8 @@ class Codegen:
             self.cur_fn.add_label(body_label)
             if gen_stmt:
                 self.gen_stmt(stmt.stmt)
+                if stmt.has_continue_expr:
+                    self.gen_expr(stmt.continue_expr)
                 self.cur_fn.add_comment(
                     f"while stmt (goto to `{self.loop_entry_label}` for continue)"
                 )
@@ -660,6 +664,7 @@ class Codegen:
             self.cur_fn.add_label(self.loop_exit_label)
             self.loop_entry_label = old_entry_label
             self.loop_exit_label = old_exit_label
+            self.while_continue_expr = None
         elif isinstance(stmt, ast.LetStmt):
             if len(stmt.lefts) == 1:
                 left = stmt.lefts[0]
@@ -2068,6 +2073,10 @@ class Codegen:
                 return tmp
         elif isinstance(expr, ast.BranchExpr):
             if expr.op == Kind.KwContinue:
+                if self.while_continue_expr != None and not isinstance(
+                    self.while_continue_expr, ast.EmptyExpr
+                ):
+                    self.gen_expr(self.while_continue_expr)
                 self.cur_fn.add_br(self.loop_entry_label)
             else:
                 self.cur_fn.add_br(self.loop_exit_label)

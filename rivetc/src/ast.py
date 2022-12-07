@@ -303,8 +303,10 @@ class LetStmt:
         self.pos = pos
 
 class WhileStmt:
-    def __init__(self, cond, stmt, is_inf, pos):
+    def __init__(self, cond, continue_expr, stmt, is_inf, pos):
         self.cond = cond
+        self.continue_expr = continue_expr
+        self.has_continue_expr = not isinstance(continue_expr, EmptyExpr)
         self.stmt = stmt
         self.is_inf = is_inf
         self.pos = pos

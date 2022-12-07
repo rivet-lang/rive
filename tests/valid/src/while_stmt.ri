@@ -16,3 +16,17 @@ test "`while` statement without condition (infinite loop)" {
     }
     assert!(x == 5);
 }
+
+test "`while` statement with continue expression" {
+    let mut x = 0;
+    while x < 10 : x += 1 { }
+    assert!(x == 10);
+
+    x = 0;
+    while x < 10 : x += 1 {
+        if x == 5 {
+            continue; // `continue` respects the continue expression
+        }
+    }
+    assert!(x == 10);
+}

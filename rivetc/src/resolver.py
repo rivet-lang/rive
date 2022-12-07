@@ -160,6 +160,8 @@ class Resolver:
             self.resolve_expr(stmt.right)
         elif isinstance(stmt, ast.WhileStmt):
             self.resolve_expr(stmt.cond)
+            if stmt.has_continue_expr:
+                self.resolve_expr(stmt.continue_expr)
             self.resolve_stmt(stmt.stmt)
         elif isinstance(stmt, ast.ForStmt):
             for v in stmt.vars:

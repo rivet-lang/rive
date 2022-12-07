@@ -530,6 +530,7 @@ class Parser:
         elif self.accept(Kind.KwWhile):
             pos = self.prev_tok.pos
             is_inf = False
+            continue_expr = self.empty_expr()
             if self.tok.kind == Kind.Lbrace:
                 cond = ast.BoolLiteral(True, self.tok.pos)
                 is_inf = True
@@ -539,10 +540,12 @@ class Parser:
                     cond = self.parse_guard_expr()
                 else:
                     cond = self.parse_expr()
+                if self.accept(Kind.Colon):
+                    continue_expr = self.parse_expr()
             stmt = self.parse_stmt()
             if isinstance(cond, ast.GuardExpr):
                 self.close_scope()
-            return ast.WhileStmt(cond, stmt, is_inf, pos)
+            return ast.WhileStmt(cond, continue_expr, stmt, is_inf, pos)
         elif self.accept(Kind.KwFor):
             pos = self.prev_tok.pos
             self.open_scope()
