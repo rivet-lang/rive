@@ -82,7 +82,7 @@ pub struct TestRunner {
         for i, test_ in self.tests {
             console_eprint(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
             (test_.func)(unsafe { addr_of!(test_) });
-            switch test_.result {
+            switch test_.result is {
                 .Ok => {
                     self.print_ok();
                 },

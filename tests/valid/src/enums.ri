@@ -1,0 +1,56 @@
+enum SimpleEnum {
+    Abc,
+    Def,
+    Ghi
+}
+
+test "enums: enum literal" {
+    let mut abc = SimpleEnum.Abc;
+    assert!(abc is .Abc);
+    abc = .Def;
+    assert!(abc is .Def);
+}
+
+test "enums: ordinal value" {
+    assert!(as(i32, SimpleEnum.Abc) == 0);
+    assert!(as(i32, SimpleEnum.Def) == 1);
+    assert!(as(i32, SimpleEnum.Ghi) == 2);
+}
+
+enum OverridedValue {
+    Abc,
+    Def = 10,
+    Ghi
+}
+
+test "enums: overrided ordinal value" {
+    assert!(as(i32, OverridedValue.Abc) == 0);
+    assert!(as(i32, OverridedValue.Def) == 10);
+    assert!(as(i32, OverridedValue.Ghi) == 11);
+}
+
+test "enums: enum variant switch" {
+    let abc = SimpleEnum.Abc;
+    switch abc is {
+        .Abc => assert!(true),
+        else => assert!(false)
+    }
+}
+
+enum AdvancedEnum {
+    Abc(i32),
+    Def,
+    Ghi(rune)
+}
+
+test "enums: advanced enum" {
+    let mut e = AdvancedEnum.Abc(6);
+    if e is .Abc {
+        assert!(as(i32, e) == 6);
+    }
+    e = .Def();
+    switch e is {
+        .Def => assert!(true),
+        else => assert!(false)
+    }
+}

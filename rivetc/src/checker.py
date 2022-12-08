@@ -306,8 +306,26 @@ class Checker:
             _sym = self.expected_type.symbol()
             if _sym.kind == TypeKind.Enum:
                 if v := _sym.info.get_value(expr.value):
-                    expr.info = v
+                    expr.sym = v
                     expr.typ = type.Type(_sym)
+                    if _sym.info.has_tagged_value and not expr.from_is_cmp and not expr.is_instance:
+                        report.error(
+                            f"cannot use variant `{expr}` as a simple value",
+                            expr.pos
+                        )
+                        report.note(f"make an instance instead: `{expr}()`")
+                    elif expr.has_value_arg:
+                        if v.has_typ:
+                            try:
+                                self.check_types(
+                                    self.check_expr(expr.value_arg), v.typ
+                                )
+                            except utils.CompilerError as e:
+                                report.error(e.args[0], expr.pos)
+                        else:
+                            report.error(
+                                f"`.{v.name}` not expects value", expr.pos
+                            )
                 else:
                     report.error(
                         f"enum `{_sym.name}` has no value `{expr.value}`",
@@ -573,33 +591,30 @@ class Checker:
                 Kind.Amp, Kind.Pipe
             ):
                 promoted_type = self.comp.void_t
-                if isinstance(ltyp, type.Ptr) and isinstance(
-                    rtyp, type.Ptr
-                ) and expr.op == Kind.Minus:
-                    promoted_type = self.comp.isize_t
-                else:
-                    lsym = ltyp.symbol()
-                    if lsym.kind == TypeKind.Struct:
-                        if op_method := lsym.find(str(expr.op)):
-                            promoted_type = op_method.ret_typ
-                        else:
-                            report.error(
-                                f"undefined operation `{ltyp}` {expr.op} `{rtyp}`",
-                                expr.pos
-                            )
+                lsym = ltyp.symbol()
+                if lsym.kind == TypeKind.Enum:
+                    report.error(
+                        f"operator `{expr.op}` cannot be used with enums"
+                    )
+                elif lsym.kind in (TypeKind.Struct, TypeKind.Class):
+                    if op_method := lsym.find(str(expr.op)):
+                        promoted_type = op_method.ret_typ
                     else:
-                        promoted_type = self.promote(ltyp, rtyp)
-                        if promoted_type == self.comp.void_t:
-                            report.error(
-                                f"mismatched types `{ltyp}` and `{rtyp}`",
-                                expr.pos
-                            )
-                        elif isinstance(promoted_type, type.Optional):
-                            report.error(
-                                f"operator `{expr.op}` cannot be used with `{promoted_type}`",
-                                expr.pos
-                            )
-
+                        report.error(
+                            f"undefined operation `{ltyp}` {expr.op} `{rtyp}`",
+                            expr.pos
+                        )
+                else:
+                    promoted_type = self.promote(ltyp, rtyp)
+                    if promoted_type == self.comp.void_t:
+                        report.error(
+                            f"mismatched types `{ltyp}` and `{rtyp}`", expr.pos
+                        )
+                    elif isinstance(promoted_type, type.Optional):
+                        report.error(
+                            f"operator `{expr.op}` cannot be used with `{promoted_type}`",
+                            expr.pos
+                        )
                 return_type = promoted_type
             elif expr.op == Kind.OrElse:
                 if isinstance(ltyp, type.Optional):
@@ -647,9 +662,11 @@ class Checker:
                 return expr.typ
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
                 lsym = ltyp.symbol()
-                if lsym.kind not in (TypeKind.Class, TypeKind.Trait):
+                if lsym.kind not in (
+                    TypeKind.Class, TypeKind.Trait, TypeKind.Enum
+                ):
                     report.error(
-                        f"`{expr.op}` can only be used with classes and traits",
+                        f"`{expr.op}` can only be used with classes, traits and enums",
                         expr.left.pos
                     )
                 expr.typ = self.comp.bool_t
@@ -842,6 +859,29 @@ class Checker:
                                         TypeKind.Struct
                                     ):
                         self.check_ctor(expr_left.field_sym, expr)
+                    elif expr_left.left_sym.kind == TypeKind.Enum and expr_left.left_sym.info.has_tagged_value:
+                        expr.is_ctor = True
+                        value_info = expr_left.field_sym.info.get_value(
+                            expr_left.field_name
+                        )
+                        if not value_info.has_typ:
+                            report.error(
+                                f"`{expr_left}` not expects an value", expr.pos
+                            )
+                        elif len(expr.args) != 1:
+                            report.error(
+                                f"expected 1 argument, found {len(expr.args)}",
+                                expr.pos
+                            )
+                        else:
+                            try:
+                                self.check_compatible_types(
+                                    self.check_expr(expr.args[0].expr),
+                                    value_info.typ
+                                )
+                            except utils.CompilerError as e:
+                                report.error(e.args[0], expr.pos)
+                        expr.typ = type.Type(expr_left.left_sym)
                     else:
                         report.error(
                             f"expected function, found {expr_left.field_sym.typeof()}",
@@ -1232,9 +1272,14 @@ class Checker:
             expr.typ = self.comp.void_t
             expr_typ = self.check_expr(expr.expr)
             expr_sym = expr_typ.symbol()
-            if expr.is_typeswitch and expr_sym.kind != TypeKind.Class:
+            if expr.is_typeswitch and expr_sym.kind not in (
+                TypeKind.Class, TypeKind.Enum
+            ):
                 report.error("invalid value for typeswitch", expr.expr.pos)
-                report.note(f"expected class value, found `{expr_typ}`")
+                report.note(f"expected class or enum value, found `{expr_typ}`")
+            elif expr_sym.kind == TypeKind.Enum and not expr.is_typeswitch:
+                report.error("cannot use `switch` with a enum value", expr.pos)
+                report.note(f"use a typeswitch instead")
             expected_branch_typ = self.expected_type
             for i, b in enumerate(expr.branches):
                 old_expected_type = self.expected_type

@@ -382,7 +382,10 @@ class Compiler:
         ):
             size, align = 8, 8
         elif sy.kind == sym.TypeKind.Enum:
-            size, align = self.type_size(sy.info.underlying_typ)
+            if sy.info.has_tagged_value:
+                size, align = self.pointer_size, self.pointer_size
+            else:
+                size, align = self.type_size(sy.info.underlying_typ)
         elif sy.kind == sym.TypeKind.Array:
             elem_size, elem_align = self.type_size(sy.info.elem_typ)
             size, align = int(sy.info.size.lit) * elem_size, elem_align

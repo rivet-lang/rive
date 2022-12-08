@@ -42,6 +42,24 @@ class Resolver:
                 self.resolve_type(decl.parent)
             elif isinstance(decl, ast.EnumDecl):
                 if self.resolve_type(decl.underlying_typ):
+                    for i, value in enumerate(decl.sym.info.values):
+                        if not self.resolve_type(value.typ):
+                            continue
+                        d_v = decl.values[i]
+                        if d_v.has_value:
+                            value.value = self.eval_size(d_v.value).lit
+                        else:
+                            if i > 0:
+                                last_value = decl.values[i - 1]
+                                if last_value.has_value:
+                                    value.value = str(
+                                        int(
+                                            self.eval_size(last_value.value
+                                                           ).lit, 0
+                                        ) + 1
+                                    )
+                                    continue
+                            value.value = str(i)
                     for base in decl.bases:
                         if self.resolve_type(base):
                             base_sym = base.symbol()
@@ -519,7 +537,7 @@ class Resolver:
                         return ast.IntegerLiteral(str(il + ir), expr.pos)
                     elif expr.op == Kind.Minus:
                         return ast.IntegerLiteral(str(il - ir), expr.pos)
-                    elif expr.op == Kind.Mult:
+                    elif expr.op == Kind.Mul:
                         return ast.IntegerLiteral(str(il * ir), expr.pos)
                     elif expr.op == Kind.Div:
                         return ast.IntegerLiteral(str(il // ir), expr.pos)

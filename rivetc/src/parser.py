@@ -361,8 +361,20 @@ class Parser:
             self.expect(Kind.Lbrace)
             values = []
             decls = []
+            has_tagged_value = False
             while True:
-                values.append(self.parse_name())
+                v_name = self.parse_name()
+                has_typ = self.accept(Kind.Lparen)
+                value = self.empty_expr()
+                if has_typ:
+                    has_tagged_value = True
+                    typ = self.parse_type()
+                    self.expect(Kind.Rparen)
+                else:
+                    typ = self.comp.void_t
+                    if self.accept(Kind.Assign):
+                        value = self.parse_expr()
+                values.append(ast.EnumValue(v_name, typ, has_typ, value))
                 if not self.accept(Kind.Comma):
                     break
             if self.accept(Kind.Semicolon):
@@ -371,7 +383,7 @@ class Parser:
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
                 doc_comment, attrs, vis, name, underlying_typ, bases, values,
-                decls, pos
+                has_tagged_value, decls, pos
             )
         elif self.accept(Kind.KwExtend):
             pos = self.prev_tok.pos
@@ -638,7 +650,13 @@ class Parser:
                 op = self.tok.kind
                 self.next()
                 pos = self.tok.pos
-                right = ast.TypeNode(self.parse_type(), pos)
+                if self.accept(Kind.Dot):
+                    name = self.parse_name()
+                    right = ast.EnumValueExpr(
+                        name, self.empty_expr(), False, False, pos, True
+                    )
+                else:
+                    right = ast.TypeNode(self.parse_type(), pos)
                 left = ast.BinaryExpr(left, op, right, left.pos)
             else:
                 break
@@ -714,7 +732,19 @@ class Parser:
         elif self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Name:
             pos = self.tok.pos
             self.next()
-            expr = ast.EnumValueExpr(self.parse_name(), pos)
+            name = self.parse_name()
+            has_value_arg = False
+            value_arg = self.empty_expr()
+            is_instance = False
+            if self.accept(Kind.Lparen):
+                if not self.accept(Kind.Rparen):
+                    has_value_arg = True
+                    value_arg = self.parse_expr()
+                    self.expect(Kind.Rparen)
+                is_instance = True
+            expr = ast.EnumValueExpr(
+                name, value_arg, has_value_arg, is_instance, pos
+            )
         elif self.tok.kind in (Kind.KwContinue, Kind.KwBreak):
             op = self.tok.kind
             pos = self.tok.pos
@@ -989,7 +1019,15 @@ class Parser:
                 while True:
                     if is_typeswitch:
                         pos = self.tok.pos
-                        pats.append(ast.TypeNode(self.parse_type(), pos))
+                        if self.accept(Kind.Dot):
+                            pats.append(
+                                ast.EnumValueExpr(
+                                    self.parse_name(), self.empty_expr(), False,
+                                    False, pos, True
+                                )
+                            )
+                        else:
+                            pats.append(ast.TypeNode(self.parse_type(), pos))
                     else:
                         pats.append(self.parse_expr())
                     if not self.accept(Kind.Comma):

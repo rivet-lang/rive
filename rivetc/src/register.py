@@ -145,15 +145,17 @@ class Register:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.EnumDecl):
                 try:
-                    info = sym.EnumInfo(decl.underlying_typ)
-                    for i, v in enumerate(decl.values):
-                        if info.has_value(v):
+                    info = sym.EnumInfo(
+                        decl.underlying_typ, decl.has_tagged_value
+                    )
+                    for i, value in enumerate(decl.values):
+                        if info.has_value(value.name):
                             report.error(
-                                f"enum `{decl.name}` has duplicate value `{v}`",
+                                f"enum `{decl.name}` has duplicate value `{value.name}`",
                                 decl.pos
                             )
                             continue
-                        info.add_value(v, i)
+                        info.add_value(value.name, value.has_typ, value.typ)
                     decl.sym = self.sym.add_and_return(
                         sym.Type(
                             decl.vis, decl.name, TypeKind.Enum, info = info

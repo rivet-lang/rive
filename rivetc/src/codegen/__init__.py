@@ -826,9 +826,13 @@ class Codegen:
                 )
             return ir.StringLit(escaped_val, str(size))
         elif isinstance(expr, ast.EnumValueExpr):
+            enum_sym = expr.typ.symbol()
+            if expr.is_instance:
+                return self.tagged_enum_value(
+                    enum_sym, expr.sym.name, expr.value_arg
+                )
             return ir.IntLit(
-                self.ir_type(expr.typ.symbol().info.underlying_typ),
-                str(expr.info.value)
+                self.ir_type(enum_sym.info.underlying_typ), str(expr.sym.value)
             )
         elif isinstance(expr, (ast.SelfExpr, ast.BaseExpr)):
             self_typ = self.ir_type(expr.typ)
@@ -910,6 +914,25 @@ class Codegen:
                     return self.class_upcast(res, expr.expr.typ, expr.typ)
                 if expr_typ_sym.is_subtype_of(typ_sym): # down-casting
                     return self.class_downcast(res, expr.expr.typ, expr.typ)
+            elif typ_sym.kind == TypeKind.Enum and typ_sym.info.has_tagged_value:
+                tmp = self.cur_fn.local_name()
+                self.cur_fn.try_alloca(
+                    ir_typ, tmp,
+                    ir.Inst(
+                        ir.InstKind.LoadPtr, [
+                            ir.Inst(
+                                ir.InstKind.Cast, [
+                                    ir.Selector(
+                                        ir.Type("void").ptr(), res,
+                                        ir.Name("obj")
+                                    ),
+                                    ir_typ.ptr(True)
+                                ]
+                            )
+                        ]
+                    )
+                )
+                return ir.Ident(ir_typ, tmp)
             tmp = self.cur_fn.local_name()
             self.cur_fn.try_alloca(
                 ir_typ, tmp, ir.Inst(ir.InstKind.Cast, [res, ir_typ])
@@ -1008,6 +1031,11 @@ class Codegen:
                     return self.trait_value(
                         self.gen_expr_with_cast(value.typ, value), value.typ,
                         expr.typ
+                    )
+                elif typ_sym.kind == TypeKind.Enum:
+                    return self.tagged_enum_value(
+                        typ_sym, expr.left.field_name, expr.args[0].expr,
+                        custom_tmp = custom_tmp
                     )
                 if custom_tmp:
                     tmp = custom_tmp
@@ -1614,19 +1642,36 @@ class Codegen:
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
                 tmp = self.cur_fn.local_name()
-                if expr.op == Kind.KwIs:
-                    kind = "=="
-                else:
-                    kind = "!="
+                kind = "==" if expr.op == Kind.KwIs else "!="
                 left_sym = expr_left_typ.symbol()
                 expr_right_sym = expr_right_typ.symbol()
-                if left_sym.kind == TypeKind.Trait:
+                if left_sym.kind == TypeKind.Enum:
+                    if left_sym.info.has_tagged_value:
+                        cmp = ir.Inst(
+                            ir.InstKind.Cmp, [
+                                ir.Name(kind),
+                                ir.Selector(
+                                    ir.Type("usize"), left, ir.Name("_id")
+                                ),
+                                ir.IntLit(
+                                    ir.Type("usize"), str(expr.right.sym.value)
+                                )
+                            ]
+                        )
+                    else:
+                        cmp = ir.Inst(
+                            ir.InstKind.Cmp, [
+                                ir.Name(kind), left,
+                                ir.IntLit(
+                                    ir.Type("usize"), str(expr.right.sym.value)
+                                )
+                            ]
+                        )
+                elif left_sym.kind == TypeKind.Trait:
                     cmp = ir.Inst(
                         ir.InstKind.Cmp, [
                             ir.Name(kind),
-                            ir.Selector(
-                                self.ir_type(expr.typ), left, ir.Name("_id")
-                            ),
+                            ir.Selector(ir.Type("usize"), left, ir.Name("_id")),
                             ir.IntLit(
                                 ir.Type("usize"),
                                 str(left_sym.info.indexof(expr_right_sym))
@@ -1637,9 +1682,7 @@ class Codegen:
                     cmp = ir.Inst(
                         ir.InstKind.Cmp, [
                             ir.Name(kind),
-                            ir.Selector(
-                                self.ir_type(expr.typ), left, ir.Name("_id")
-                            ),
+                            ir.Selector(ir.Type("usize"), left, ir.Name("_id")),
                             ir.IntLit(ir.Type("usize"), str(expr_right_sym.id))
                         ]
                     )
@@ -1777,18 +1820,7 @@ class Codegen:
                     )
                 return ir.Ident(expr.typ, tmp)
             if expr.op.is_relational():
-                if expr.op == Kind.Eq:
-                    kind = "=="
-                elif expr.op == Kind.Ne:
-                    kind = "!="
-                elif expr.op == Kind.Lt:
-                    kind = "<"
-                elif expr.op == Kind.Gt:
-                    kind = ">"
-                elif expr.op == Kind.Le:
-                    kind = "<="
-                else:
-                    kind = ">="
+                kind = str(expr.op)
                 self.cur_fn.try_alloca(
                     self.ir_type(expr.typ), tmp,
                     ir.Inst(ir.InstKind.Cmp, [ir.Name(kind), left, right])
@@ -2016,22 +2048,35 @@ class Codegen:
                                     )
                                 )
                             )
+                        elif p.typ.sym.kind == TypeKind.Enum:
+                            value_idx = ir.IntLit(
+                                ir.Type("usize"), str(p.sym.value)
+                            )
                         else:
                             value_idx = ir.IntLit(
                                 ir.Type("usize"), str(p.typ.sym.id)
                             )
-                        self.cur_fn.try_alloca(
-                            ir.Type("bool"), tmp2,
-                            ir.Inst(
-                                ir.InstKind.Cmp, [
-                                    ir.Name("=="),
-                                    ir.Selector(
-                                        self.ir_type(expr.expr.typ),
-                                        switch_expr, ir.Name("_id")
-                                    ), value_idx
-                                ]
+                        if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.has_tagged_value:
+                            self.cur_fn.try_alloca(
+                                ir.Type("bool"), tmp2,
+                                ir.Inst(
+                                    ir.InstKind.Cmp,
+                                    [ir.Name("=="), switch_expr, value_idx]
+                                )
                             )
-                        )
+                        else:
+                            self.cur_fn.try_alloca(
+                                ir.Type("bool"), tmp2,
+                                ir.Inst(
+                                    ir.InstKind.Cmp, [
+                                        ir.Name("=="),
+                                        ir.Selector(
+                                            self.ir_type(expr.expr.typ),
+                                            switch_expr, ir.Name("_id")
+                                        ), value_idx
+                                    ]
+                                )
+                            )
                     else:
                         p_conv = self.gen_expr_with_cast(p.typ, p)
                         p_typ_sym = p.typ.symbol()
@@ -2344,7 +2389,7 @@ class Codegen:
             )
         tmp = self.boxed_instance(
             "_R7runtime6string", 19,
-            custom_name = f"str_lit{len(self.generated_string_literals)}"
+            custom_name = f"STR_LIT{len(self.generated_string_literals)}"
         )
         self.out_rir.globals.append(
             ir.GlobalVar(
@@ -2367,7 +2412,7 @@ class Codegen:
         self.generated_string_literals[lit_hash] = tmp.name
         return tmp
 
-    def boxed_instance(self, name, id, is_trait = False, custom_name = None):
+    def boxed_instance(self, name, id, not_id = False, custom_name = None):
         tmp = ir.Ident(
             ir.Type(name).ptr(True), custom_name or self.cur_fn.local_name()
         )
@@ -2386,7 +2431,7 @@ class Codegen:
             ir.Selector(ir.Type("usize"), tmp, ir.Name("_rc")),
             ir.IntLit(ir.Type("usize"), "1")
         )
-        if not is_trait:
+        if not not_id:
             to_fn.store(
                 ir.Selector(ir.Type("usize"), tmp, ir.Name("_id")),
                 ir.IntLit(ir.Type("usize"), str(id))
@@ -2413,6 +2458,34 @@ class Codegen:
             ir.Selector(ir.Type("usize"), tmp, ir.Name("_id")),
             ir.IntLit(ir.Type("usize"), str(trait_sym.info.indexof(value_sym)))
         )
+        return tmp
+
+    def tagged_enum_value(self, enum_sym, value_name, value, custom_tmp = None):
+        if custom_tmp:
+            tmp = custom_tmp
+        else:
+            tmp = self.boxed_instance(
+                mangle_symbol(enum_sym), enum_sym.id, True
+            )
+        usize_t = ir.Type("usize")
+        value_info = enum_sym.info.get_value(value_name)
+        self.cur_fn.store(
+            ir.Selector(usize_t, tmp, ir.Name("_id")),
+            ir.IntLit(usize_t, value_info.value)
+        )
+        if value_info.has_typ and not isinstance(value, ast.EmptyExpr):
+            arg0 = self.gen_expr_with_cast(value_info.typ, value)
+            size, _ = self.comp.type_size(value_info.typ)
+            value = ir.Inst(
+                ir.InstKind.Call, [
+                    ir.Name("_R7runtime12internal_dupF"),
+                    ir.Inst(ir.InstKind.GetRef, [arg0]),
+                    ir.IntLit(usize_t, str(size))
+                ]
+            )
+        else:
+            value = ir.NilLit(ir.Type("void").ptr())
+        self.cur_fn.store(ir.Selector(usize_t, tmp, ir.Name("obj")), value)
         return tmp
 
     def class_upcast(self, value, value_typ, class_typ):
@@ -2498,6 +2571,8 @@ class Codegen:
         elif typ_sym.kind == TypeKind.Nil:
             return ir.Type("void").ptr()
         elif typ_sym.kind == TypeKind.Enum:
+            if typ_sym.info.has_tagged_value:
+                return ir.Type(mangle_symbol(typ_sym)).ptr(True)
             return ir.Type(str(typ_sym.info.underlying_typ))
         elif typ_sym.kind.is_primitive():
             return ir.Type(typ_sym.name)
@@ -2519,8 +2594,19 @@ class Codegen:
                     ir.Struct(False, mangle_symbol(ts), fields)
                 )
             elif ts.kind == TypeKind.Enum:
-                for i, v in enumerate(ts.info.values):
-                    v.value = i
+                # TODO: in the self-hosted compiler calculate the enum value here
+                # not in register nor resolver.
+                if ts.info.has_tagged_value:
+                    self.out_rir.structs.append(
+                        ir.Struct(
+                            ts.vis.is_pub(), mangle_symbol(ts), [
+                                ir.Field("_rc", ir.Type("usize")),
+                                ir.Field("_id", ir.Type("usize")),
+                                ir.Field("obj",
+                                         ir.Type("void").ptr())
+                            ]
+                        )
+                    )
             elif ts.kind == TypeKind.Trait:
                 if ts.info.has_objects:
                     ts_name = mangle_symbol(ts)

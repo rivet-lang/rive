@@ -179,9 +179,18 @@ class TypeDecl:
         self.parent = parent
         self.pos = pos
 
+class EnumValue:
+    def __init__(self, name, typ, has_typ, value):
+        self.name = name
+        self.typ = typ
+        self.has_typ = has_typ
+        self.has_value = not isinstance(value, EmptyExpr)
+        self.value = value
+
 class EnumDecl:
     def __init__(
-        self, docs, attrs, vis, name, underlying_typ, bases, values, decls, pos
+        self, docs, attrs, vis, name, underlying_typ, bases, values,
+        has_tagged_value, decls, pos
     ):
         self.docs = docs
         self.attrs = attrs
@@ -190,6 +199,7 @@ class EnumDecl:
         self.underlying_typ = underlying_typ
         self.bases = bases
         self.values = values
+        self.has_tagged_value = has_tagged_value
         self.decls = decls
         self.sym = None
         self.pos = pos
@@ -504,13 +514,22 @@ class StringLiteral:
         return self.__repr__()
 
 class EnumValueExpr:
-    def __init__(self, value, pos):
+    def __init__(
+        self, value, value_arg, has_value_arg, is_instance, pos,
+        from_is_cmp = False
+    ):
         self.value = value
+        self.value_arg = value_arg
+        self.has_value_arg = has_value_arg
+        self.is_instance = is_instance
+        self.from_is_cmp = from_is_cmp
         self.sym = None
         self.pos = pos
         self.typ = None
 
     def __repr__(self):
+        if self.has_value_arg:
+            return f".{self.value}({self.value_arg})"
         return f".{self.value}"
 
     def __str__(self):
