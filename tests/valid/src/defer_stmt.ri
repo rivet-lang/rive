@@ -9,7 +9,7 @@ fn test_defer() i32 {
 }
 
 test "`defer` statement" {
-    assert!(test_defer() == 5);
+    @assert(test_defer() == 5);
 }
 
 fn test_errdefer(mut err_defer: ErrDefer, err: bool) ! {
@@ -24,8 +24,8 @@ fn test_errdefer(mut err_defer: ErrDefer, err: bool) ! {
 test "`errdefer` statement" {
     let mut err_defer = ErrDefer(i: 0);
     test_errdefer(err_defer, false) catch { };
-    assert!(err_defer.i == 1);
+    @assert(err_defer.i == 1);
 
     test_errdefer(err_defer, true) catch { };
-    assert!(err_defer.i == 2);
+    @assert(err_defer.i == 2);
 }

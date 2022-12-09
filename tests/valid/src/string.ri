@@ -2,18 +2,18 @@ import "c/libc";
 
 test "string index" {
     let x = "String Literal";
-    assert!(x[0] == b'S');
+    @assert(x[0] == b'S');
 
     let ch = "String Literal"[0];
-    assert!(ch == b'S');
+    @assert(ch == b'S');
 }
 
 test "byte string literal" {
     let x = b"Abcdef";
-    assert!(x.len == 6);
+    @assert(x.len == 6);
 }
 
 test "C string literal" {
     let pstr = c"Hello World!";
-    assert!(unsafe { libc.strlen(pstr) == 12 });
+    @assert(unsafe { libc.strlen(pstr) == 12 });
 }

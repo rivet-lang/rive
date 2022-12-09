@@ -53,7 +53,7 @@ extend rune : ToString {
 
     fn to_string(&self) string {
         let len = self.len_utf8();
-        let res = as(*mut u8, mem_alloc(len + 1) catch unreachable!());
+        let res = as(*mut u8, mem_alloc(len + 1) catch @unreachable());
         _ = unsafe { utf32_decode_to_buffer(as(u32, self.*), res) };
         return string(unsafe { res }, len);
     }

@@ -4,7 +4,7 @@ struct MyStruct : Any { }
 
 test "operator `is` with traits" {
     let a = Any(MyStruct());
-    assert!(a is MyStruct);
+    @assert(a is MyStruct);
 }
 
 class Abc { }
@@ -16,8 +16,8 @@ fn class_upcast(a: Abc) bool {
 
 test "operator `is` with classes" {
     let a = Abc();
-    assert!(a is Abc);
+    @assert(a is Abc);
 
     let d = Def();
-    assert!(class_upcast(d));
+    @assert(class_upcast(d));
 }

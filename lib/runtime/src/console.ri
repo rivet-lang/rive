@@ -55,7 +55,7 @@ fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
         let mut x: isize = 0;
         let mut remaining_bytes = as(isize, len);
         while remaining_bytes > 0 {
-            x = libc.write(fd, ptr_add!(buf, x), as(usize, remaining_bytes));
+            x = libc.write(fd, @ptr_add(buf, x), as(usize, remaining_bytes));
             remaining_bytes -= x;
         }
     }

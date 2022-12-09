@@ -37,6 +37,7 @@ class Kind(Enum):
     Dot = auto_enum() # .
     DotDot = auto_enum() # ..
     Ellipsis = auto_enum() # ...
+    At = auto_enum() # @
     Arrow = auto_enum() # =>
     Comma = auto_enum() # ,
     Colon = auto_enum() # :
@@ -49,7 +50,6 @@ class Kind(Enum):
     Xor = auto_enum() # ^
     BitNot = auto_enum() # ~
     Hash = auto_enum() # #
-    Dollar = auto_enum() # $
     Lbrace = auto_enum() # {
     Rbrace = auto_enum() # }
     Lbracket = auto_enum() # [
@@ -164,6 +164,7 @@ TOKEN_STRINGS = {
     Kind.Dot: ".",
     Kind.DotDot: "..",
     Kind.Ellipsis: "...",
+    Kind.At: "@",
     Kind.Arrow: "=>",
     Kind.Comma: ",",
     Kind.Colon: ":",
@@ -176,7 +177,6 @@ TOKEN_STRINGS = {
     Kind.Xor: "^",
     Kind.BitNot: "~",
     Kind.Hash: "#",
-    Kind.Dollar: "$",
     Kind.Lbrace: "{",
     Kind.Rbrace: "}",
     Kind.Lbracket: "[",

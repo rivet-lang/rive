@@ -474,6 +474,8 @@ class Lexer:
                     self.pos += 1
                     return token.Token("", Kind.ModAssign, pos)
                 return token.Token("", Kind.Mod, pos)
+            elif ch == "@":
+                return token.Token("", Kind.At, pos)
             #
             elif ch == "=":
                 if nextc == "=":
@@ -514,8 +516,6 @@ class Lexer:
                     self.pos += 1
                     return token.Token("", Kind.OrElse, pos)
                 return token.Token("", Kind.Question, pos)
-            elif ch == "$":
-                return token.Token("", Kind.Dollar, pos)
             elif ch == "#":
                 if nextc not in ("!", "["):
                     self.pp_directive()

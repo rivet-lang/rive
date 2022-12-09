@@ -28,7 +28,7 @@ pub fn execute(cmd: string) Result {
         if let f = libc.popen(pcmd.ptr, c"r") {
             let fd = libc.fileno(f);
             let mut buf: [u8; 4096] = []!;
-            let pbuf: *mut u8 = addr_of_mut!(buf[0]);
+            let pbuf: *mut u8 = @addr_of_mut(buf[0]);
             let mut output = Builder.new(1024);
             while {
                 let len = libc.read(fd, pbuf, 4096);

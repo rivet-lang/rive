@@ -3,7 +3,7 @@ test "`for` statement" {
     for i in 0..10 {
         sum += i;
     }
-    assert!(sum == 45);
+    @assert(sum == 45);
 }
 
 test "`for` statement with array" {
@@ -11,7 +11,7 @@ test "`for` statement with array" {
     for i in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]! {
         sum += i;
     }
-    assert!(sum == 55);
+    @assert(sum == 55);
 }
 
 test "`for` statement with vector" {
@@ -19,7 +19,7 @@ test "`for` statement with vector" {
     for i in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] {
         sum += i;
     }
-    assert!(sum == 55);
+    @assert(sum == 55);
 }
 
 test "`for` statement with `string.as_bytes()`" {
@@ -27,5 +27,5 @@ test "`for` statement with `string.as_bytes()`" {
     for b in "Hello World!".as_bytes() {
         sum += as(i32, b);
     }
-    assert!(sum == 1085);
+    @assert(sum == 1085);
 }

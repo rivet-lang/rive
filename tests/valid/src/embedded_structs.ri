@@ -8,14 +8,14 @@ struct E : D {
 
 test "embedded structs: using embedded fields" {
     let e = E();
-    assert!(e.m == 155);
-    assert!(e.m1 == 0);
+    @assert(e.m == 155);
+    @assert(e.m1 == 0);
 
     let e2 = E(1, 2);
-    assert!(e2.m == 1);
-    assert!(e2.m1 == 2);
+    @assert(e2.m == 1);
+    @assert(e2.m1 == 2);
 
     let e3 = E(m1: 100);
-    assert!(e3.m == 155);
-    assert!(e3.m1 == 100);
+    @assert(e3.m == 155);
+    @assert(e3.m1 == 100);
 }

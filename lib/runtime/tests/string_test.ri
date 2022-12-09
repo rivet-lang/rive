@@ -1,49 +1,49 @@
 test "string.concat()" {
     let x = "Hello ".concat("World!");
-    assert!(x == "Hello World!");
+    @assert(x == "Hello World!");
 }
 
 test "string.fmt()" {
-    assert!("true: {}".fmt(true) == "true: true");
-    assert!("false: {}".fmt(false) == "false: false");
+    @assert("true: {}".fmt(true) == "true: true");
+    @assert("false: {}".fmt(false) == "false: false");
 
-    assert!("here is a number: {}".fmt(5) == "here is a number: 5");
+    @assert("here is a number: {}".fmt(5) == "here is a number: 5");
 
-    assert!(
+    @assert(
         "reverse order: {2}, {1}, {0}".fmt(1, 2, 3) == "reverse order: 3, 2, 1"
     );
 
-    //assert!("rune: `{}`".fmt('Á') == "rune: `Á`");
+    //@assert("rune: `{}`".fmt('Á') == "rune: `Á`");
 }
 
 test "string.index_of_byte()" {
     if let i = "aeiou".index_of_byte(b'e') {
-        assert!(i == 1);
+        @assert(i == 1);
     } else {
-        assert!(false);
+        @assert(false);
     }
 }
 
 test "string.index()" {
     if let i = "aeiou".index_of("io") {
-        assert!(i == 2);
+        @assert(i == 2);
     } else {
-        assert!(false);
+        @assert(false);
     }
 }
 
 test "string.contains()" {
-    assert!("The Rivet language".contains("Rivet"));
+    @assert("The Rivet language".contains("Rivet"));
 }
 
 test "string.starts_with()" {
-    assert!("The Rivet language".starts_with("The"));
+    @assert("The Rivet language".starts_with("The"));
 }
 
 test "string.ends_with()" {
-    assert!("The Rivet language".ends_with("language"));
+    @assert("The Rivet language".ends_with("language"));
 }
 
 test "string.runes_count()" {
-    assert!("José".runes_count() == 4);
+    @assert("José".runes_count() == 4);
 }

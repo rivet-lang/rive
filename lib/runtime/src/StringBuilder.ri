@@ -9,7 +9,7 @@ pub class StringBuilder : ToString {
 
     /// Returns a string builder with capacity `cap`.
     pub fn new(cap: usize = 0) Self {
-        return Self(unsafe { Vec.new(size_of!(u8), cap) });
+        return Self(unsafe { Vec.new(@size_of(u8), cap) });
     }
 
     pub fn from_string(s: string) Self {
@@ -17,12 +17,12 @@ pub class StringBuilder : ToString {
             return Self.new();
         }
         return Self(unsafe {
-            Vec.from_array(as(*mut u8, s.ptr), size_of!(u8), s.len)
+            Vec.from_array(as(*mut u8, s.ptr), @size_of(u8), s.len)
         });
     }
 
     pub fn write_byte(mut self, val: u8) {
-        self.inner.push(unsafe { addr_of!(val) });
+        self.inner.push(unsafe { @addr_of(val) });
     }
 
     #[unsafe]

@@ -727,8 +727,24 @@ class Parser:
             Kind.KwNil, Kind.KwSelf, Kind.KwBase, Kind.KwSelfTy
         ]:
             expr = self.parse_literal()
-        elif self.accept(Kind.Dollar):
-            expr = self.parse_ident(True)
+        elif self.accept(Kind.At):
+            pos=self.prev_tok.pos
+            if self.peek_token(1).kind == Kind.Lparen: # builtin call
+                name = self.parse_name()
+                self.expect(Kind.Lparen)
+                args = []
+                if name in ("size_of", "align_of"):
+                    pos = self.tok.pos
+                    args.append(ast.TypeNode(self.parse_type(), pos))
+                elif self.tok.kind != Kind.Rparen:
+                    while True:
+                        args.append(self.parse_expr())
+                        if not self.accept(Kind.Comma):
+                            break
+                self.expect(Kind.Rparen)
+                expr = ast.BuiltinCallExpr(name, args, expr.pos)
+            else: # builtin variable
+                expr = self.parse_ident(True)
         elif self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Name:
             pos = self.tok.pos
             self.next()
@@ -847,21 +863,6 @@ class Parser:
                     self.tok.pos,
                 )
                 self.next()
-        elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Bang: # builtin call
-            name = self.parse_name()
-            self.expect(Kind.Bang)
-            self.expect(Kind.Lparen)
-            args = []
-            if name in ("size_of", "align_of"):
-                pos = self.tok.pos
-                args.append(ast.TypeNode(self.parse_type(), pos))
-            elif self.tok.kind != Kind.Rparen:
-                while True:
-                    args.append(self.parse_expr())
-                    if not self.accept(Kind.Comma):
-                        break
-            self.expect(Kind.Rparen)
-            expr = ast.BuiltinCallExpr(name, args, expr.pos)
         else:
             expr = self.parse_ident()
 

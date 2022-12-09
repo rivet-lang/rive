@@ -10,5 +10,5 @@ fn factorial(n: u32) u32 {
 fn main() {
 	let res = factorial(5);
 	console.println("factorial(5): {}", res);
-	assert!(res == 120);
+	@assert(res == 120);
 }

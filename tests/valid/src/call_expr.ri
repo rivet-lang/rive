@@ -1,5 +1,5 @@
 fn default_arg(x: i32 = 1) {
-    assert!(x == 1 or x == 5 or x == 10);
+    @assert(x == 1 or x == 5 or x == 10);
 }
 
 test "call expression with default arguments" {

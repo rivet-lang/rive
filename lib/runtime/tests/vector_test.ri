@@ -1,9 +1,9 @@
 test "vectors: push and pop" {
     let mut vec = ["A", "B"];
-    assert!(vec.len == 2);
+    @assert(vec.len == 2);
     vec.push("C");
-    assert!(vec.len == 3);
+    @assert(vec.len == 3);
     let p = vec.pop();
-    assert!(vec.len == 2);
-    assert!(p == "C");
+    @assert(vec.len == 2);
+    @assert(p == "C");
 }

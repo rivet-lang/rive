@@ -3,7 +3,7 @@ test "`while` statement" {
     while x < 10 {
         x += 1;
     }
-    assert!(x == 10);
+    @assert(x == 10);
 }
 
 test "`while` statement without condition (infinite loop)" {
@@ -14,13 +14,13 @@ test "`while` statement without condition (infinite loop)" {
             break;
         }
     }
-    assert!(x == 5);
+    @assert(x == 5);
 }
 
 test "`while` statement with continue expression" {
     let mut x = 0;
     while x < 10 : x += 1 { }
-    assert!(x == 10);
+    @assert(x == 10);
 
     x = 0;
     while x < 10 : x += 1 {
@@ -28,5 +28,5 @@ test "`while` statement with continue expression" {
             continue; // `continue` respects the continue expression
         }
     }
-    assert!(x == 10);
+    @assert(x == 10);
 }

@@ -12,7 +12,7 @@ class Vec {
     #[unsafe]
     fn new(elem_size: usize, cap: usize) Self {
         return Self(
-            unsafe { mem_zeroed(cap * elem_size) catch unreachable!() },
+            unsafe { mem_zeroed(cap * elem_size) catch @unreachable() },
             elem_size, 0, cap
         );
     }
@@ -20,7 +20,7 @@ class Vec {
     #[unsafe]
     fn from_array(arr: *mut void, elem_size: usize, len: usize) Self {
         let mut vec = Self(
-            unsafe { mem_zeroed(len * elem_size) catch unreachable!() },
+            unsafe { mem_zeroed(len * elem_size) catch @unreachable() },
             elem_size, len, len
         );
         unsafe {
@@ -38,12 +38,12 @@ class Vec {
         if idx >= self.len {
             process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
         }
-        return unsafe { ptr_add!(as(*mut u8, self.ptr), idx * self.elem_size) };
+        return unsafe { @ptr_add(as(*mut u8, self.ptr), idx * self.elem_size) };
     }
 
     #[unsafe]
     fn raw_get(self, idx: usize) *mut void {
-        return unsafe { ptr_add!(as(*mut u8, self.ptr), idx * self.elem_size) };
+        return unsafe { @ptr_add(as(*mut u8, self.ptr), idx * self.elem_size) };
     }
 
     fn set(self, idx: usize, val: *void) {
@@ -52,7 +52,7 @@ class Vec {
         }
         unsafe {
             mem_copy(
-                ptr_add!(as(*mut u8, self.ptr), self.elem_size * idx), val,
+                @ptr_add(as(*mut u8, self.ptr), self.elem_size * idx), val,
                 self.elem_size
             );
         }
@@ -64,7 +64,7 @@ class Vec {
         }
         unsafe {
             mem_copy(
-                ptr_add!(self.ptr, self.elem_size * self.len), val,
+                @ptr_add(self.ptr, self.elem_size * self.len), val,
                 self.elem_size
             );
         }
@@ -79,7 +79,7 @@ class Vec {
         }
         let new_len = self.len - 1;
         unsafe {
-            let last_elem = ptr_add!(self.ptr, new_len * self.elem_size);
+            let last_elem = @ptr_add(self.ptr, new_len * self.elem_size);
             self.len = new_len;
             return last_elem;
         }
@@ -110,7 +110,7 @@ class Vec {
         }
         unsafe {
             let new_size = cap * self.elem_size;
-            let new_ptr = mem_alloc(new_size) catch unreachable!();
+            let new_ptr = mem_alloc(new_size) catch @unreachable();
             mem_copy(new_ptr, self.ptr, self.len * self.elem_size);
             self.ptr = new_ptr;
         }
@@ -129,7 +129,7 @@ class Vec {
             return self;
         }
         return Self(
-            unsafe { ptr_add!(as(*mut u8, self.ptr), start * self.elem_size) },
+            unsafe { @ptr_add(as(*mut u8, self.ptr), start * self.elem_size) },
             self.elem_size, len, len, true
         );
     }
@@ -145,7 +145,7 @@ class Vec {
             size += 1;
         }
         let mut vec = Self(
-            mem_zeroed(size) catch unreachable!(),
+            mem_zeroed(size) catch @unreachable(),
             self.elem_size, self.len, self.cap
         );
         unsafe {

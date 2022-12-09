@@ -8,10 +8,10 @@ fn result2() ! {
 
 test "catch result error" {
     result() catch |err| {
-        assert!(err.msg == "simple error");
+        @assert(err.msg == "simple error");
     };
 
     result2() catch |err2| {
-        assert!(err2.msg == "simple error (returned: true, idx: 0)");
+        @assert(err2.msg == "simple error (returned: true, idx: 0)");
     };
 }

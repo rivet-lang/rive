@@ -53,7 +53,7 @@ extend i32 : ToString {
             }
 
             let mut index = as(usize, max);
-            let buf = as(*mut u8, mem_alloc(as(usize, max + 1)) catch unreachable!());
+            let buf = as(*mut u8, mem_alloc(as(usize, max + 1)) catch @unreachable());
             buf[index] = 0;
             index -= 1;
 
@@ -81,7 +81,7 @@ extend i32 : ToString {
             }
 
             let diff = as(usize, max) - index;
-            mem_move(buf, ptr_add!(buf, index), diff + 1);
+            mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
     }
@@ -112,7 +112,7 @@ extend i64 : ToString {
             }
 
             let max = 20;
-            let buf = as(*mut u8, mem_alloc(as(usize, max + 1)) catch unreachable!());
+            let buf = as(*mut u8, mem_alloc(as(usize, max + 1)) catch @unreachable());
             let mut index = as(usize, max);
             buf[index] = 0;
             index -= 1;
@@ -141,7 +141,7 @@ extend i64 : ToString {
             }
 
             let diff = as(usize, max) - index;
-            mem_move(buf, ptr_add!(buf, index), diff + 1);
+            mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
     }

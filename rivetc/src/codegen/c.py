@@ -45,6 +45,8 @@ class CGen:
         c_file = f"{self.comp.prefs.mod_name}.ri.c"
         with open(c_file, "w+") as out:
             out.write(c_headers.HEADER)
+            if self.comp.prefs.build_mode != prefs.BuildMode.Release:
+                out.write(c_headers.RIVET_BREAKPOINT)
             out.write(str(self.typedefs).strip() + "\n\n")
             out.write(str(self.structs).strip() + "\n\n")
             out.write(str(self.protos).strip() + "\n\n")
@@ -283,7 +285,7 @@ class CGen:
         elif inst.kind == InstKind.DbgStmtLine:
             self.write(f'#line {inst.args[1].name} "{inst.args[0].name}"')
         elif inst.kind == InstKind.Breakpoint:
-            self.write("RIVET_BREAKPOINT()")
+            self.write("RIVET_BREAKPOINT")
         elif inst.kind in (
             InstKind.Add, InstKind.Sub, InstKind.Mult, InstKind.Div,
             InstKind.Mod, InstKind.BitAnd, InstKind.BitOr, InstKind.BitXor,

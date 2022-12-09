@@ -28,7 +28,7 @@ fn array_slice(
     if len == size {
         return unsafe { Vec.from_array(arr, elem_size, len) };
     }
-    return unsafe { Vec.from_array(ptr_add!(arr, start), elem_size, len) };
+    return unsafe { Vec.from_array(@ptr_add(arr, start), elem_size, len) };
 }
 
 fn array_slice_from(

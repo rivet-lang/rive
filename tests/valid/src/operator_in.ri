@@ -1,10 +1,10 @@
 test "operator `in`" {
-    assert!(true in [true, false, true]);
-    assert!(1 in [1, 2, 3]);
-    assert!("Hello" in ["Hello", "World"]);
+    @assert(true in [true, false, true]);
+    @assert(1 in [1, 2, 3]);
+    @assert("Hello" in ["Hello", "World"]);
 }
 
 test "operator `!in`" {
-    assert!(5 !in [1, 2, 3]);
-    assert!("Rivet" !in ["Hello", "World"]);
+    @assert(5 !in [1, 2, 3]);
+    @assert("Rivet" !in ["Hello", "World"]);
 }

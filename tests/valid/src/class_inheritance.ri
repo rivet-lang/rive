@@ -16,35 +16,35 @@ class B : A {
 
 test "inheritance: using inherited fields" {
     let b = B(i: 99);
-    assert!(b.i == 99);
+    @assert(b.i == 99);
 
     let b2 = B();
-    assert!(b2.i == 10);
+    @assert(b2.i == 10);
 
     let b3 = B(1, 2);
-    assert!(b3.i == 1);
-    assert!(b3.c == 2);
+    @assert(b3.i == 1);
+    @assert(b3.c == 2);
 }
 
 test "inheritance: using `base`" {
     let mut b2 = B();
-    assert!(b2.i == 10);
+    @assert(b2.i == 10);
 
     b2.set_i(5);
-    assert!(b2.i == 5);
+    @assert(b2.i == 5);
 
     b2.set_base_i(8);
-    assert!(b2.i == 8);
+    @assert(b2.i == 8);
 }
 
 test "inheritance: downcast" {
     let b = B(c: 5);
 
     let a = as(A, b);
-    assert!(a.i == 10);
+    @assert(a.i == 10);
 
     let b2 = as(B, a);
-    assert!(b2.c == 5);
+    @assert(b2.c == 5);
 }
 
 test "inheritance: typeswitch" {
@@ -52,7 +52,7 @@ test "inheritance: typeswitch" {
 
     let a = as(A, b);
     switch a is {
-        B => assert!(true),
-        else => assert!(false)
+        B => @assert(true),
+        else => @assert(false)
     }
 }
