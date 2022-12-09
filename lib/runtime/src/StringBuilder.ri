@@ -17,7 +17,7 @@ pub class StringBuilder : ToString {
             return Self.new();
         }
         return Self(unsafe {
-            Vec.from_array(as(*mut u8, s.ptr), @size_of(u8), s.len)
+            Vec.from_array(@as(*mut u8, s.ptr), @size_of(u8), s.len)
         });
     }
 
@@ -76,7 +76,7 @@ pub class StringBuilder : ToString {
 
     /// Returns the number of runes contained in `self`.
     pub fn runes_count(self) usize {
-        return cstr_runes_count(as(*u8, self.inner.ptr), self.inner.len);
+        return cstr_runes_count(@as(*u8, self.inner.ptr), self.inner.len);
     }
 
     pub fn clear(mut self) {
@@ -96,6 +96,6 @@ pub class StringBuilder : ToString {
     }
 
     pub fn to_string(self) string {
-        return string(as(*u8, self.inner.ptr), self.inner.len);
+        return string(@as(*u8, self.inner.ptr), self.inner.len);
     }
 }

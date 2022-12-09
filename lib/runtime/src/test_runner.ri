@@ -98,7 +98,7 @@ pub struct TestRunner {
             }
         }
         self.print_summary_tests();
-        process_exit(as(i32, self.fail_tests != 0));
+        process_exit(@as(i32, self.fail_tests != 0));
     }
 
     fn print_summary_tests(&self) {

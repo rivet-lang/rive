@@ -69,13 +69,13 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
     let cutoff: u64 = switch base_ {
         10 => u64.MAX / 10 + 1,
         16 => u64.MAX / 16 + 1,
-        else => u64.MAX / as(u64, base_) + as(u64, 1)
+        else => u64.MAX / @as(u64, base_) + @as(u64, 1)
     };
 
     let max_val: u64 = if bit_size == 64 {
         u64.MAX
     } else {
-        (as(u64, 1) << as(u64, bit_size)) - as(u64, 1)
+        (@as(u64, 1) << @as(u64, bit_size)) - @as(u64, 1)
     };
     let mut underscores = false;
     let mut n: u64 = 0;
@@ -94,7 +94,7 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
             else => return InvalidSyntaxError("invalid syntax")
         }
 
-        if d >= as(u8, base_) {
+        if d >= @as(u8, base_) {
             return InvalidSyntaxError("invalid syntax");
         }
 
@@ -102,9 +102,9 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
             // `n * base_` overflows
             return ValueOutOfRangeError("value out of range");
         }
-        n *= as(u64, base_);
+        n *= @as(u64, base_);
 
-        let n1 = n + as(u64, d);
+        let n1 = n + @as(u64, d);
         if n1 < n or n1 > max_val {
             // `n + d` overflows
             return ValueOutOfRangeError("value out of range");
@@ -155,7 +155,7 @@ pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
         bit_size = INT_SIZE;
     }
 
-    let cutoff = as(u64, 1) << as(u32, bit_size - 1);
+    let cutoff = @as(u64, 1) << @as(u32, bit_size - 1);
     if !neg and un >= cutoff {
         return ValueOutOfRangeError("value out of range");
     }
@@ -163,7 +163,7 @@ pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
         return ValueOutOfRangeError("value out of range");
     }
 
-    return if neg { -as(i64, un) } else { as(i64, un) };
+    return if neg { -@as(i64, un) } else { @as(i64, un) };
 }
 
 /// Reports whether the underscores in `s_` are allowed.

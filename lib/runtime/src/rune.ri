@@ -15,10 +15,10 @@ extend rune : ToString {
     pub const REPLACEMENT_CHARACTER: rune = 0xFFFD;
 
     pub fn from_u32(i: u32) !rune {
-        if (i > as(u32, Self.MAX)) or (i >= 0xD800 and i <= 0xDFFF) {
+        if (i > @as(u32, Self.MAX)) or (i >= 0xD800 and i <= 0xDFFF) {
             return RuneFromU32Error();
         }
-        return as(rune, i);
+        return @as(rune, i);
     }
 
     /// Converts a digit in the given radix to a `rune`.
@@ -37,52 +37,52 @@ extend rune : ToString {
             process_panic("rune.from_digit: radix is too high (maximum 36)");
         }
         if num < radix {
-            let num_ = as(u8, num);
+            let num_ = @as(u8, num);
             if num_ < 10 {
-                return as(rune, b'0' + num_);
+                return @as(rune, b'0' + num_);
             } else {
-                return as(rune, b'a' + num_ - 10);
+                return @as(rune, b'a' + num_ - 10);
             }
         }
         return nil;
     }
 
     fn len_utf8(self) usize {
-        return len_utf8(as(u32, self));
+        return len_utf8(@as(u32, self));
     }
 
     fn to_string(&self) string {
         let len = self.len_utf8();
-        let res = as(*mut u8, mem_alloc(len + 1) catch @unreachable());
-        _ = unsafe { utf32_decode_to_buffer(as(u32, self.*), res) };
+        let res = @as(*mut u8, mem_alloc(len + 1) catch @unreachable());
+        _ = unsafe { utf32_decode_to_buffer(@as(u32, self.*), res) };
         return string(unsafe { res }, len);
     }
 }
 
 fn utf32_decode_to_buffer(code: u32, buffer: *mut u8) i32 {
-    let icode = as(i32, code);
+    let icode = @as(i32, code);
     unsafe {
         switch {
             (icode <= 127) => { // 0x7F
-                buffer[0] = as(u8, icode);
+                buffer[0] = @as(u8, icode);
                 return 1;
             },
             (icode <= 2047) => { // 0x7FF
-                buffer[0] = as(u8, 192) | as(u8, icode >> 6); // 0xC0 - 110xxxxx
-                buffer[1] = as(u8, 128) | as(u8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[0] = @as(u8, 192) | @as(u8, icode >> 6); // 0xC0 - 110xxxxx
+                buffer[1] = @as(u8, 128) | @as(u8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
                 return 2;
             },
             (icode <= 65535) => { // 0xFFFF
-                buffer[0] = as(u8, 224) | as(u8, icode >> 12); // 0xE0 - 1110xxxx
-                buffer[1] = as(u8, 128) | (as(u8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
-                buffer[2] = as(u8, 128) | as(u8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[0] = @as(u8, 224) | @as(u8, icode >> 12); // 0xE0 - 1110xxxx
+                buffer[1] = @as(u8, 128) | (@as(u8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[2] = @as(u8, 128) | @as(u8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
                 return 3;
             },
             (icode <= 1114111) => { // 0x10FFFF
-                buffer[0] = as(u8, 240) | as(u8, icode >> 18); // 0xF0 - 11110xxx
-                buffer[1] = as(u8, 128) | (as(u8, icode >> 12) & 63); // 0x80 - 0x3F - 10xxxxxx
-                buffer[2] = as(u8, 128) | (as(u8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
-                buffer[3] = as(u8, 128) | as(u8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[0] = @as(u8, 240) | @as(u8, icode >> 18); // 0xF0 - 11110xxx
+                buffer[1] = @as(u8, 128) | (@as(u8, icode >> 12) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[2] = @as(u8, 128) | (@as(u8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[3] = @as(u8, 128) | @as(u8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
                 return 4;
             },
             else => return 0

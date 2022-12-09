@@ -9,7 +9,7 @@ let DIGIT_PAIRS: string = "00102030405060708090011121314151617181910212223242526
 extend untyped_int : ToString {
     /// Returns the value of `self` as a string.
     pub fn to_string(&self) string {
-        return as(i64, self.*).to_string();
+        return @as(i64, self.*).to_string();
     }
 }
 
@@ -19,7 +19,7 @@ extend i8 : ToString {
 
     /// Returns the value of `self` as a string.
     pub fn to_string(&self) string {
-        return as(i32, self.*).str_l(5);
+        return @as(i32, self.*).str_l(5);
     }
 }
 
@@ -29,7 +29,7 @@ extend i16 : ToString {
 
     /// Returns the value of `self` as a string.
     pub fn to_string(&self) string {
-        return as(i32, self.*).str_l(7);
+        return @as(i32, self.*).str_l(7);
     }
 }
 
@@ -43,7 +43,7 @@ extend i32 : ToString {
             if self == 0 {
                 return "0";
             }
-            let mut n = as(i64, self);
+            let mut n = @as(i64, self);
             let mut d: u32 = 0;
 
             let mut is_neg = false;
@@ -52,14 +52,14 @@ extend i32 : ToString {
                 is_neg = true;
             }
 
-            let mut index = as(usize, max);
-            let buf = as(*mut u8, mem_alloc(as(usize, max + 1)) catch @unreachable());
+            let mut index = @as(usize, max);
+            let buf = @as(*mut u8, mem_alloc(@as(usize, max + 1)) catch @unreachable());
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
-                let n1 = as(i32, n / 100);
-                d = as(u32, as(i32, n) - (n1 * 100)) << 1;
+                let n1 = @as(i32, n / 100);
+                d = @as(u32, @as(i32, n) - (n1 * 100)) << 1;
                 n = n1;
                 buf[index] = DIGIT_PAIRS.ptr[d];
                 index -= 1;
@@ -80,7 +80,7 @@ extend i32 : ToString {
                 buf[index] = b'-';
             }
 
-            let diff = as(usize, max) - index;
+            let diff = @as(usize, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
@@ -112,19 +112,19 @@ extend i64 : ToString {
             }
 
             let max = 20;
-            let buf = as(*mut u8, mem_alloc(as(usize, max + 1)) catch @unreachable());
-            let mut index = as(usize, max);
+            let buf = @as(*mut u8, mem_alloc(@as(usize, max + 1)) catch @unreachable());
+            let mut index = @as(usize, max);
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
-                let n1 = as(i64, n / 100);
-                d = as(i64, as(u32, n - (n1 * 100))) << as(i64, 1);
+                let n1 = @as(i64, n / 100);
+                d = @as(i64, @as(u32, n - (n1 * 100))) << @as(i64, 1);
                 n = n1;
-                buf[index] = DIGIT_PAIRS.ptr[as(usize, d)];
+                buf[index] = DIGIT_PAIRS.ptr[@as(usize, d)];
                 index -= 1;
                 d += 1;
-                buf[index] = DIGIT_PAIRS.ptr[as(usize, d)];
+                buf[index] = DIGIT_PAIRS.ptr[@as(usize, d)];
                 index -= 1;
             }
             index += 1;
@@ -140,7 +140,7 @@ extend i64 : ToString {
                 buf[index] = b'-';
             }
 
-            let diff = as(usize, max) - index;
+            let diff = @as(usize, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
@@ -153,6 +153,6 @@ extend isize : ToString {
 
     /// Returns the value of `self` as a string.
     pub fn to_string(&self) string {
-        return as(i64, self.*).to_string();
+        return @as(i64, self.*).to_string();
     }
 }

@@ -45,7 +45,7 @@ pub fn is_directory(path: string) bool {
     if unsafe { libc.stat(path.ptr, @addr_of_mut(statbuf)) != 0 } {
         return false;
     }
-    return (as(i32, statbuf.mode) & S_IFMT) == S_IFDIR;
+    return @as(i32, statbuf.mode) & S_IFMT == S_IFDIR;
 }
 
 /// Returns true if `path` is a file.
@@ -64,5 +64,5 @@ pub fn is_link(path: string) bool {
     if unsafe { libc.lstat(path.ptr, @addr_of_mut(statbuf)) != 0 } {
         return false;
     }
-    return (as(i32, statbuf.mode) & S_IFMT) == S_IFLNK;
+    return @as(i32, statbuf.mode) & S_IFMT == S_IFLNK;
 }

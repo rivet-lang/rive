@@ -14,8 +14,8 @@ extern (Rivet) {
 
 extern (C) fn init_args(_argc: i32, _argv: **u8) {
     unsafe {
-        ARGS = Vec.new(@size_of(string), as(usize, _argc));
-        for i in 0..as(usize, _argc) {
+        ARGS = Vec.new(@size_of(string), @as(usize, _argc));
+        for i in 0..@as(usize, _argc) {
             ARGS.push(string.from_raw(_argv[i]));
         }
     }

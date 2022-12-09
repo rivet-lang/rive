@@ -392,7 +392,7 @@ class Ident:
 
     def __repr__(self):
         if self.is_comptime:
-            return f"${self.name}"
+            return f"@{self.name}"
         return self.name
 
     def __str__(self):
@@ -567,18 +567,6 @@ class VecLiteral:
     def __str__(self):
         return self.__repr__()
 
-class AsExpr:
-    def __init__(self, expr, typ, pos):
-        self.expr = expr
-        self.pos = pos
-        self.typ = typ
-
-    def __repr__(self):
-        return f"as({self.typ}, {self.expr})"
-
-    def __str__(self):
-        return self.__repr__()
-
 class GuardExpr:
     # Examples:
     # if (var x = optional_or_result_fn()) { ... }
@@ -749,7 +737,7 @@ class BuiltinCallExpr:
         self.typ = None
 
     def __repr__(self):
-        return f"{self.name}!({', '.join([str(a) for a in self.args])})"
+        return f"@{self.name}({', '.join([str(a) for a in self.args])})"
 
     def __str__(self):
         return self.__repr__()

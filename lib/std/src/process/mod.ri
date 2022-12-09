@@ -35,7 +35,7 @@ pub fn execute(cmd: string) Result {
                 if len == 0 or len == -1 {
                     break;
                 }
-                output.write_raw_with_len(pbuf, as(usize, len));
+                output.write_raw_with_len(pbuf, @as(usize, len));
             }
             return Result(output.to_string(), libc.pclose(f));
         }

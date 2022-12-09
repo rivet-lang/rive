@@ -728,15 +728,20 @@ class Parser:
         ]:
             expr = self.parse_literal()
         elif self.accept(Kind.At):
-            pos=self.prev_tok.pos
+            pos = self.prev_tok.pos
             if self.peek_token(1).kind == Kind.Lparen: # builtin call
-                name = self.parse_name()
+                if self.accept(Kind.KwAs):
+                    name = "as"
+                else:
+                    name = self.parse_name()
                 self.expect(Kind.Lparen)
                 args = []
-                if name in ("size_of", "align_of"):
+                if name in ("as", "size_of", "align_of"):
                     pos = self.tok.pos
                     args.append(ast.TypeNode(self.parse_type(), pos))
-                elif self.tok.kind != Kind.Rparen:
+                    if self.tok.kind != Kind.Rparen:
+                        self.expect(Kind.Comma)
+                if self.tok.kind != Kind.Rparen:
                     while True:
                         args.append(self.parse_expr())
                         if not self.accept(Kind.Comma):
@@ -826,13 +831,6 @@ class Parser:
             else:
                 expr = ast.Block(sc, is_unsafe, stmts, None, False, pos)
             self.inside_block = old_inside_block
-        elif self.accept(Kind.KwAs):
-            self.expect(Kind.Lparen)
-            typ = self.parse_type()
-            self.expect(Kind.Comma)
-            expr = self.parse_expr()
-            self.expect(Kind.Rparen)
-            expr = ast.AsExpr(expr, typ, expr.pos)
         elif self.tok.kind == Kind.Lbracket:
             elems = []
             pos = self.tok.pos

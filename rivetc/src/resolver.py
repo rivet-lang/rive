@@ -239,9 +239,6 @@ class Resolver:
         elif isinstance(expr, ast.VecLiteral):
             for e in expr.elems:
                 self.resolve_expr(e)
-        elif isinstance(expr, ast.AsExpr):
-            self.resolve_type(expr.typ)
-            self.resolve_expr(expr.expr)
         elif isinstance(expr, ast.GuardExpr):
             for v in expr.vars:
                 try:

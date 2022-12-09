@@ -486,12 +486,6 @@ class Checker:
                 )
             self.expected_type = old_expected_type
             return expr.typ
-        elif isinstance(expr, ast.AsExpr):
-            old_expected_type = self.expected_type
-            self.expected_type = expr.typ
-            self.check_expr(expr.expr)
-            self.expected_type = old_expected_type
-            return expr.typ
         elif isinstance(expr, ast.GuardExpr):
             expr_t = self.check_expr(expr.expr)
             if isinstance(expr_t, (type.Result, type.Optional)):
@@ -662,9 +656,11 @@ class Checker:
                 return expr.typ
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
                 lsym = ltyp.symbol()
-                if not (lsym.kind in (
-                    TypeKind.Class, TypeKind.Trait, TypeKind.Enum
-                ) or isinstance(ltyp, type.Optional)):
+                if not (
+                    lsym.kind
+                    in (TypeKind.Class, TypeKind.Trait, TypeKind.Enum)
+                    or isinstance(ltyp, type.Optional)
+                ):
                     report.error(
                         f"`{expr.op}` can only be used with classes, trait, enums and optionals",
                         expr.left.pos
@@ -731,9 +727,8 @@ class Checker:
                 report.error(
                     "error values only support `is` and `!is`", expr.pos
                 )
-            elif isinstance(ltyp, type.Optional) and expr.op not in (
-                Kind.KwIs, Kind.KwNotIs
-            ):
+            elif isinstance(ltyp, type.Optional
+                            ) and expr.op not in (Kind.KwIs, Kind.KwNotIs):
                 report.error(
                     "optional values only support `is` and `!is`", expr.pos
                 )
@@ -995,7 +990,13 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.BuiltinCallExpr):
             expr.typ = self.comp.void_t
-            if expr.name in ("addr_of", "addr_of_mut"):
+            if expr.name == "as":
+                old_expected_type = self.expected_type
+                self.expected_type = expr.typ
+                self.check_expr(expr.args[1])
+                self.expected_type = old_expected_type
+                expr.typ = expr.args[0].typ
+            elif expr.name in ("addr_of", "addr_of_mut"):
                 if not self.inside_unsafe:
                     report.error(
                         f"`{expr.name}` should be called inside an `unsafe` block",
@@ -1726,8 +1727,6 @@ class Checker:
             report.error("array literals cannot be modified", expr.pos)
         elif isinstance(expr, ast.TupleLiteral):
             report.error("tuple literals cannot be modified", expr.pos)
-        elif isinstance(expr, ast.AsExpr):
-            self.check_expr_is_mut(expr.expr)
         elif isinstance(expr, ast.Block) and expr.is_expr:
             self.check_expr_is_mut(expr.expr)
         elif isinstance(expr, ast.IndexExpr):

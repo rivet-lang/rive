@@ -859,7 +859,48 @@ class Codegen:
                 i_typ = i_typ.ptr()
             return ir.Ident(i_typ, expr.obj.ir_name)
         elif isinstance(expr, ast.BuiltinCallExpr):
-            if expr.name in ("size_of", "align_of"):
+            if expr.name == "as":
+                arg1 = expr.args[1]
+                ir_typ = self.ir_type(expr.typ)
+                res = self.gen_expr_with_cast(arg1.typ, arg1)
+                if isinstance(res, ir.IntLit):
+                    if self.comp.is_int(ir_typ) or expr.typ == self.comp.bool_t:
+                        res.typ = ir_typ
+                        return res
+                typ_sym = arg1.typ.symbol()
+                expr_typ_sym = expr.typ.symbol()
+                if typ_sym.kind == TypeKind.Class and typ_sym.kind == expr_typ_sym.kind:
+                    if typ_sym == expr_typ_sym:
+                        return res
+                    if typ_sym.is_subtype_of(expr_typ_sym): # up-casting
+                        return self.class_upcast(res, arg1.typ, expr.typ)
+                    if expr_typ_sym.is_subtype_of(typ_sym): # down-casting
+                        return self.class_downcast(res, arg1.typ, expr.typ)
+                elif typ_sym.kind == TypeKind.Enum and typ_sym.info.has_tagged_value:
+                    tmp = self.cur_fn.local_name()
+                    self.cur_fn.try_alloca(
+                        ir_typ, tmp,
+                        ir.Inst(
+                            ir.InstKind.LoadPtr, [
+                                ir.Inst(
+                                    ir.InstKind.Cast, [
+                                        ir.Selector(
+                                            ir.Type("void").ptr(), res,
+                                            ir.Name("obj")
+                                        ),
+                                        ir_typ.ptr(True)
+                                    ]
+                                )
+                            ]
+                        )
+                    )
+                    return ir.Ident(ir_typ, tmp)
+                tmp = self.cur_fn.local_name()
+                self.cur_fn.try_alloca(
+                    ir_typ, tmp, ir.Inst(ir.InstKind.Cast, [res, ir_typ])
+                )
+                return ir.Ident(ir_typ, tmp)
+            elif expr.name in ("size_of", "align_of"):
                 size, align = self.comp.type_size(expr.args[0].typ)
                 if expr.name == "size_of":
                     return ir.IntLit(ir.Type("usize"), str(size))
@@ -898,46 +939,6 @@ class Codegen:
             elif expr.name == "breakpoint":
                 if self.comp.prefs.build_mode != prefs.BuildMode.Release:
                     self.cur_fn.breakpoint()
-        elif isinstance(expr, ast.AsExpr):
-            ir_typ = self.ir_type(expr.typ)
-            res = self.gen_expr_with_cast(expr.expr.typ, expr.expr)
-            if isinstance(res, ir.IntLit):
-                if self.comp.is_int(ir_typ) or expr.typ == self.comp.bool_t:
-                    res.typ = ir_typ
-                    return res
-            typ_sym = expr.expr.typ.symbol()
-            expr_typ_sym = expr.typ.symbol()
-            if typ_sym.kind == TypeKind.Class and typ_sym.kind == expr_typ_sym.kind:
-                if typ_sym == expr_typ_sym:
-                    return res
-                if typ_sym.is_subtype_of(expr_typ_sym): # up-casting
-                    return self.class_upcast(res, expr.expr.typ, expr.typ)
-                if expr_typ_sym.is_subtype_of(typ_sym): # down-casting
-                    return self.class_downcast(res, expr.expr.typ, expr.typ)
-            elif typ_sym.kind == TypeKind.Enum and typ_sym.info.has_tagged_value:
-                tmp = self.cur_fn.local_name()
-                self.cur_fn.try_alloca(
-                    ir_typ, tmp,
-                    ir.Inst(
-                        ir.InstKind.LoadPtr, [
-                            ir.Inst(
-                                ir.InstKind.Cast, [
-                                    ir.Selector(
-                                        ir.Type("void").ptr(), res,
-                                        ir.Name("obj")
-                                    ),
-                                    ir_typ.ptr(True)
-                                ]
-                            )
-                        ]
-                    )
-                )
-                return ir.Ident(ir_typ, tmp)
-            tmp = self.cur_fn.local_name()
-            self.cur_fn.try_alloca(
-                ir_typ, tmp, ir.Inst(ir.InstKind.Cast, [res, ir_typ])
-            )
-            return ir.Ident(ir_typ, tmp)
         elif isinstance(expr, ast.TupleLiteral):
             expr_sym = expr.typ.symbol()
             tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
@@ -1584,16 +1585,20 @@ class Codegen:
             expr_left_typ = expr.left.typ
             expr_right_typ = expr.right.typ
             if isinstance(expr_left_typ, type.Optional):
-                if expr.op in (
-                    Kind.KwIs, Kind.KwNotIs
-                ):
+                if expr.op in (Kind.KwIs, Kind.KwNotIs):
                     left = self.gen_expr_with_cast(expr_left_typ, expr.left)
                     if isinstance(expr_left_typ.typ, (type.Ref, type.Ptr)):
-                        op="==" if expr.op == Kind.KwIs else "!="
-                        return ir.Inst(ir.InstKind.Cmp, [op, left, ir.NilLit(ir.Type("void").ptr())], ir.Type("bool"))
+                        op = "==" if expr.op == Kind.KwIs else "!="
+                        return ir.Inst(
+                            ir.InstKind.Cmp,
+                            [op, left,
+                             ir.NilLit(ir.Type("void").ptr())], ir.Type("bool")
+                        )
                     val = ir.Selector(ir.Type("bool"), left, ir.Name("is_nil"))
                     if expr.op == Kind.KwNotIs:
-                        val = ir.Inst(ir.InstKind.BooleanNot, [val], ir.Type("bool"))
+                        val = ir.Inst(
+                            ir.InstKind.BooleanNot, [val], ir.Type("bool")
+                        )
                     return val
                 elif expr.op == Kind.OrElse:
                     expr_typ = expr_left_typ

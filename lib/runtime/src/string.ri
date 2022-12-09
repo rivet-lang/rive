@@ -33,7 +33,7 @@ pub class string : ToString {
     }
 
     pub fn from_byte(byte: u8) Self {
-        let res = as(*mut u8, mem_alloc(2) catch @unreachable());
+        let res = @as(*mut u8, mem_alloc(2) catch @unreachable());
         unsafe {
             res[0] = byte;
             res[1] = 0;
@@ -47,7 +47,7 @@ pub class string : ToString {
         if bytes.len == 0 {
             return empty_string;
         }
-        let res = as(*mut u8, mem_alloc(bytes.len + 1) catch @unreachable());
+        let res = @as(*mut u8, mem_alloc(bytes.len + 1) catch @unreachable());
         unsafe {
             mem_copy(res, @addr_of(bytes[0]), bytes.len);
             res[bytes.len] = 0;
@@ -340,7 +340,7 @@ pub class string : ToString {
             return self;
         }
         let new_len = self.len + idxs.len * (with_.len - rep.len);
-        let mut b = as(*mut u8, mem_alloc(new_len) catch @unreachable());
+        let mut b = @as(*mut u8, mem_alloc(new_len) catch @unreachable());
         let (mut b_i: usize, mut s_idx: usize) = (0, 0);
         unsafe {
             for rep_pos in idxs {
@@ -367,7 +367,7 @@ pub class string : ToString {
 
     pub fn as_bytes(self) [u8] {
         return unsafe {
-            Vec.from_array_no_alloc(as(*mut u8, self.ptr), @size_of(u8), self.len)
+            Vec.from_array_no_alloc(@as(*mut u8, self.ptr), @size_of(u8), self.len)
         };
     }
 
@@ -488,7 +488,7 @@ pub class string : ToString {
         if self.len == 0 {
             return empty_string;
         }
-        let res = as(*mut u8, mem_alloc(self.len + 1) catch @unreachable());
+        let res = @as(*mut u8, mem_alloc(self.len + 1) catch @unreachable());
         unsafe {
             mem_copy(res, self.ptr, self.len);
             res[self.len] = 0;

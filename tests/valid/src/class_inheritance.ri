@@ -40,17 +40,17 @@ test "inheritance: using `base`" {
 test "inheritance: downcast" {
     let b = B(c: 5);
 
-    let a = as(A, b);
+    let a = @as(A, b);
     @assert(a.i == 10);
 
-    let b2 = as(B, a);
+    let b2 = @as(B, a);
     @assert(b2.c == 5);
 }
 
 test "inheritance: typeswitch" {
     let b = B(c: 5);
 
-    let a = as(A, b);
+    let a = @as(A, b);
     switch a is {
         B => @assert(true),
         else => @assert(false)

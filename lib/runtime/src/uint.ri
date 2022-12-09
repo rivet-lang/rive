@@ -57,7 +57,7 @@ extend u8 : ToString {
 
     /// Calculates length to read from the first byte.
     pub fn len_utf8(self) usize {
-        return as(usize, (as(u64, 0xE5000000) >> ((self >> 3) & 0x1E) & 3) + 1);
+        return @as(usize, (@as(u64, 0xE5000000) >> ((self >> 3) & 0x1E) & 3) + 1);
     }
 
     /// Returns the value of `self` as a ASCII `string`.
@@ -67,7 +67,7 @@ extend u8 : ToString {
 
     /// Returns the value of `self` as a string.
     pub fn to_string(&self) string {
-        return as(i32, self.*).str_l(7);
+        return @as(i32, self.*).str_l(7);
     }
 }
 
@@ -76,7 +76,7 @@ extend u16 : ToString {
 
     /// Returns the value of `self` as a string.
     pub fn to_string(&self) string {
-        return as(i32, self.*).str_l(7);
+        return @as(i32, self.*).str_l(7);
     }
 }
 
@@ -94,13 +94,13 @@ extend u32 : ToString {
             let mut d: u32 = 0;
 
             let mut index = max;
-            let buf = as(*mut u8, mem_alloc(as(usize, max + 1)) catch @unreachable());
+            let buf = @as(*mut u8, mem_alloc(@as(usize, max + 1)) catch @unreachable());
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
                 let n1 = n / 100;
-                d = (n - (n1 * 100)) << as(u32, 1);
+                d = (n - (n1 * 100)) << @as(u32, 1);
                 n = n1;
                 buf[index] = DIGIT_PAIRS.ptr[d];
                 index -= 1;
@@ -135,14 +135,14 @@ extend u64 : ToString {
             let mut d: u64 = 0;
 
             let max = 20;
-            let mut index = as(usize, max);
-            let buf = as(*mut u8, mem_alloc(as(usize, max + 1)) catch @unreachable());
+            let mut index = @as(usize, max);
+            let buf = @as(*mut u8, mem_alloc(@as(usize, max + 1)) catch @unreachable());
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
                 let n1 = n / 100;
-                d = (n - (n1 * 100)) << as(u32, 1);
+                d = (n - (n1 * 100)) << @as(u32, 1);
                 n = n1;
                 buf[index] = DIGIT_PAIRS.ptr[d];
                 index -= 1;
@@ -157,7 +157,7 @@ extend u64 : ToString {
                 index += 1;
             }
 
-            let diff = as(usize, max) - index;
+            let diff = @as(usize, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
@@ -169,6 +169,6 @@ extend usize : ToString {
 
     /// Returns the value of `self` as a string.
     pub fn to_string(&self) string {
-        return as(u64, self.*).to_string();
+        return @as(u64, self.*).to_string();
     }
 }
