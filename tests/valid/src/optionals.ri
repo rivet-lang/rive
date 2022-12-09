@@ -4,7 +4,7 @@ struct Optional {
 
 test "`nil` literal" {
     let x: ?i32 = nil;
-    @assert(x == nil);
+    @assert(x is nil);
 }
 
 test "operator `??`" {
@@ -30,9 +30,9 @@ test "guard expr with optionals" {
 
 test "optional field" {
     let opt = Optional();
-    @assert(opt.a == nil);
+    @assert(opt.a is nil);
 
     let opt2 = Optional(a: 5);
-    @assert(opt2.a != nil);
+    @assert(opt2.a !is nil);
     @assert(opt2.a.? == 5);
 }

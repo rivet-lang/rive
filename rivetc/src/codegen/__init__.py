@@ -1585,12 +1585,15 @@ class Codegen:
             expr_right_typ = expr.right.typ
             if isinstance(expr_left_typ, type.Optional):
                 if expr.op in (
-                    Kind.Eq, Kind.Ne
-                ) and not isinstance(expr_left_typ.typ, (type.Ref, type.Ptr)):
+                    Kind.KwIs, Kind.KwNotIs
+                ):
                     left = self.gen_expr_with_cast(expr_left_typ, expr.left)
+                    if isinstance(expr_left_typ.typ, (type.Ref, type.Ptr)):
+                        op="==" if expr.op == Kind.KwIs else "!="
+                        return ir.Inst(ir.InstKind.Cmp, [op, left, ir.NilLit(ir.Type("void").ptr())], ir.Type("bool"))
                     val = ir.Selector(ir.Type("bool"), left, ir.Name("is_nil"))
-                    if expr.op == Kind.Ne:
-                        val = ir.Inst(ir.InstKind.BooleanNot, [val])
+                    if expr.op == Kind.KwNotIs:
+                        val = ir.Inst(ir.InstKind.BooleanNot, [val], ir.Type("bool"))
                     return val
                 elif expr.op == Kind.OrElse:
                     expr_typ = expr_left_typ

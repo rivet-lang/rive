@@ -662,11 +662,11 @@ class Checker:
                 return expr.typ
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
                 lsym = ltyp.symbol()
-                if lsym.kind not in (
+                if not (lsym.kind in (
                     TypeKind.Class, TypeKind.Trait, TypeKind.Enum
-                ):
+                ) or isinstance(ltyp, type.Optional)):
                     report.error(
-                        f"`{expr.op}` can only be used with classes, traits and enums",
+                        f"`{expr.op}` can only be used with classes, trait, enums and optionals",
                         expr.left.pos
                     )
                 expr.typ = self.comp.bool_t
@@ -730,6 +730,12 @@ class Checker:
             ):
                 report.error(
                     "error values only support `is` and `!is`", expr.pos
+                )
+            elif isinstance(ltyp, type.Optional) and expr.op not in (
+                Kind.KwIs, Kind.KwNotIs
+            ):
+                report.error(
+                    "optional values only support `is` and `!is`", expr.pos
                 )
 
             if not self.check_compatible_types(rtyp, ltyp):
