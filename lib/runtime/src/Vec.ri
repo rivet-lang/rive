@@ -11,18 +11,12 @@ class Vec {
 
     #[unsafe]
     fn new(elem_size: usize, cap: usize) Self {
-        return Self(
-            unsafe { mem_zeroed(cap * elem_size) catch @unreachable() },
-            elem_size, 0, cap
-        );
+        return Self(unsafe { internal_zeroed(cap * elem_size) }, elem_size, 0, cap);
     }
 
     #[unsafe]
     fn from_array(arr: *mut void, elem_size: usize, len: usize) Self {
-        let mut vec = Self(
-            unsafe { mem_zeroed(len * elem_size) catch @unreachable() },
-            elem_size, len, len
-        );
+        let mut vec = Self(unsafe { internal_zeroed(len * elem_size) }, elem_size, len, len);
         unsafe {
             mem_copy(vec.ptr, arr, elem_size * len);
         }
@@ -110,7 +104,7 @@ class Vec {
         }
         unsafe {
             let new_size = cap * self.elem_size;
-            let new_ptr = mem_alloc(new_size) catch @unreachable();
+            let new_ptr = internal_alloc(new_size);
             mem_copy(new_ptr, self.ptr, self.len * self.elem_size);
             self.ptr = new_ptr;
         }
@@ -144,10 +138,7 @@ class Vec {
         if size == 0 {
             size += 1;
         }
-        let mut vec = Self(
-            mem_zeroed(size) catch @unreachable(),
-            self.elem_size, self.len, self.cap
-        );
+        let mut vec = Self(internal_zeroed(size), self.elem_size, self.len, self.cap);
         unsafe {
             mem_copy(vec.ptr, self.ptr, size);
         }

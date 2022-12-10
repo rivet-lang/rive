@@ -94,7 +94,7 @@ extend u32 : ToString {
             let mut d: u32 = 0;
 
             let mut index = max;
-            let buf = @as(*mut u8, mem_alloc(@as(usize, max + 1)) catch @unreachable());
+            let buf = @as(*mut u8, internal_alloc(@as(usize, max + 1)));
             buf[index] = 0;
             index -= 1;
 
@@ -136,7 +136,7 @@ extend u64 : ToString {
 
             let max = 20;
             let mut index = @as(usize, max);
-            let buf = @as(*mut u8, mem_alloc(@as(usize, max + 1)) catch @unreachable());
+            let buf = @as(*mut u8, internal_alloc(@as(usize, max + 1)));
             buf[index] = 0;
             index -= 1;
 

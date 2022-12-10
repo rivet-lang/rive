@@ -1526,15 +1526,6 @@ class Checker:
             if got == self.comp.nil_t:
                 return True
             return self.check_compatible_types(got, expected.typ)
-        elif isinstance(expected, type.Ptr) and isinstance(got, type.Ref):
-            # allow &[mut] T == *[mut] T and &T == *T inside `unsafe` block
-            if not self.inside_unsafe:
-                return False
-            if expected.is_mut and not got.is_mut:
-                return False
-            if expected.typ == self.comp.void_t:
-                return True
-            return expected.typ == got.typ
         elif expected == self.comp.nil_t and isinstance(got, type.Optional):
             return True
 

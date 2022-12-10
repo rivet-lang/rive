@@ -39,21 +39,19 @@ extend i32 : ToString {
 
     /// Returns the string representation of `self` with `max` chars.
     pub fn str_l(self, max: i32) string {
+        if self == 0 {
+            return "0";
+        }
+        let mut n = @as(i64, self);
+        let mut d: u32 = 0;
+        let mut is_neg = false;
+        if n < 0 {
+            n = -n;
+            is_neg = true;
+        }
         unsafe {
-            if self == 0 {
-                return "0";
-            }
-            let mut n = @as(i64, self);
-            let mut d: u32 = 0;
-
-            let mut is_neg = false;
-            if n < 0 {
-                n = -n;
-                is_neg = true;
-            }
-
             let mut index = @as(usize, max);
-            let buf = @as(*mut u8, mem_alloc(@as(usize, max + 1)) catch @unreachable());
+            let buf = @as(*mut u8, internal_alloc(@as(usize, max + 1)));
             buf[index] = 0;
             index -= 1;
 
@@ -98,21 +96,20 @@ extend i64 : ToString {
 
     /// Returns the value of `self` as a string.
     pub fn to_string(&self) string {
+        if self.* == 0 {
+            return "0";
+        }
+        let mut n = self.*;
+        let mut d: i64 = 0;
+
+        let mut is_neg = false;
+        if n < 0 {
+            n = -n;
+            is_neg = true;
+        }
         unsafe {
-            if self.* == 0 {
-                return "0";
-            }
-            let mut n = self.*;
-            let mut d: i64 = 0;
-
-            let mut is_neg = false;
-            if n < 0 {
-                n = -n;
-                is_neg = true;
-            }
-
             let max = 20;
-            let buf = @as(*mut u8, mem_alloc(@as(usize, max + 1)) catch @unreachable());
+            let buf = @as(*mut u8, internal_alloc(@as(usize, max + 1)));
             let mut index = @as(usize, max);
             buf[index] = 0;
             index -= 1;

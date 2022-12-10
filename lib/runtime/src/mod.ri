@@ -32,6 +32,12 @@ fn internal_alloc(size: usize) *mut void {
     };
 }
 
+fn internal_zeroed(size: usize) *mut void {
+    return mem_zeroed(size) catch {
+        process_panic("internal error: cannot allocate zeroed memory");
+    };
+}
+
 fn internal_dup(src: *void, sz: usize) *mut void {
     return mem_dup(src, sz) catch {
         process_panic("internal error: cannot duplicate memory");

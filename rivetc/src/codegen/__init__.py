@@ -1564,8 +1564,8 @@ class Codegen:
             right = self.gen_expr_with_cast(expr.right_typ, expr.right)
             if expr.op == Kind.Amp:
                 tmp = self.cur_fn.local_name()
-                self.cur_fn.alloca(
-                    self.ir_type(expr.typ), tmp, Inst(InstKind.GetRef, [right])
+                self.cur_fn.try_alloca(
+                    self.ir_type(expr.typ), tmp, ir.Inst(ir.InstKind.GetRef, [right])
                 )
                 return ir.Ident(self.ir_type(expr.typ), tmp)
 
