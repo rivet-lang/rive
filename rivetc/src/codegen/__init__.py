@@ -1697,7 +1697,7 @@ class Codegen:
                 self.cur_fn.try_alloca(self.ir_type(expr.typ), tmp, cmp)
                 return ir.Ident(self.ir_type(expr.typ), tmp)
             elif expr.op in (Kind.KwIn, Kind.KwNotIn):
-                expr_left_typ = self.comp.untyped_to_type(expr_left_typ)
+                expr_left_typ = self.comp.comptime_number_to_type(expr_left_typ)
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
                 right = self.gen_expr_with_cast(expr.right.typ, expr.right)
                 left_sym = expr_left_typ.symbol()
@@ -2447,7 +2447,7 @@ class Codegen:
         return tmp
 
     def trait_value(self, value, value_typ, trait_typ):
-        value_sym = self.comp.untyped_to_type(value_typ).symbol()
+        value_sym = self.comp.comptime_number_to_type(value_typ).symbol()
         trait_sym = trait_typ.symbol()
         is_boxed = value_typ.symbol().is_boxed()
         size, _ = self.comp.type_size(value_typ)
@@ -2497,13 +2497,13 @@ class Codegen:
         return tmp
 
     def class_upcast(self, value, value_typ, class_typ):
-        value_sym = self.comp.untyped_to_type(value_typ).symbol()
+        value_sym = self.comp.comptime_number_to_type(value_typ).symbol()
         class_sym = class_typ.symbol()
         class_typ_ir = self.ir_type(class_typ)
         return ir.Inst(ir.InstKind.Cast, [value, class_typ_ir], class_typ_ir)
 
     def class_downcast(self, value, value_typ, class_typ):
-        value_sym = self.comp.untyped_to_type(value_typ).symbol()
+        value_sym = self.comp.comptime_number_to_type(value_typ).symbol()
         class_sym = class_typ.symbol()
         class_typ_ir = self.ir_type(class_typ)
         self.cur_fn.add_call(

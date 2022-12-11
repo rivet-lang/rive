@@ -341,8 +341,8 @@ class TypeKind(Enum):
     Uint64 = auto_enum()
     Isize = auto_enum()
     Usize = auto_enum()
-    UntypedInt = auto_enum()
-    UntypedFloat = auto_enum()
+    ComptimeInt = auto_enum()
+    ComptimeFloat = auto_enum()
     Float32 = auto_enum()
     Float64 = auto_enum()
     String = auto_enum()
@@ -360,8 +360,8 @@ class TypeKind(Enum):
             TypeKind.Void, TypeKind.Nil, TypeKind.Bool, TypeKind.Rune,
             TypeKind.Int8, TypeKind.Int16, TypeKind.Int32, TypeKind.Int64,
             TypeKind.Isize, TypeKind.Uint8, TypeKind.Uint16, TypeKind.Uint32,
-            TypeKind.Uint64, TypeKind.Usize, TypeKind.UntypedInt,
-            TypeKind.UntypedFloat, TypeKind.Float32, TypeKind.Float64,
+            TypeKind.Uint64, TypeKind.Usize, TypeKind.ComptimeInt,
+            TypeKind.ComptimeFloat, TypeKind.Float32, TypeKind.Float64,
             TypeKind.Never
         ):
             return True
@@ -396,10 +396,10 @@ class TypeKind(Enum):
             return "u64"
         elif self == TypeKind.Usize:
             return "usize"
-        elif self == TypeKind.UntypedInt:
-            return "untyped_int"
-        elif self == TypeKind.UntypedFloat:
-            return "untyped_float"
+        elif self == TypeKind.ComptimeInt:
+            return "comptime_int"
+        elif self == TypeKind.ComptimeFloat:
+            return "comptime_float"
         elif self == TypeKind.Float32:
             return "f32"
         elif self == TypeKind.Float64:
@@ -655,8 +655,8 @@ def universe():
     uni.add(Type(Vis.Pub, "u32", TypeKind.Uint32))
     uni.add(Type(Vis.Pub, "u64", TypeKind.Uint64))
     uni.add(Type(Vis.Pub, "usize", TypeKind.Usize))
-    uni.add(Type(Vis.Pub, "untyped_int", TypeKind.UntypedInt))
-    uni.add(Type(Vis.Pub, "untyped_float", TypeKind.UntypedFloat))
+    uni.add(Type(Vis.Pub, "comptime_int", TypeKind.ComptimeInt))
+    uni.add(Type(Vis.Pub, "comptime_float", TypeKind.ComptimeFloat))
     uni.add(Type(Vis.Pub, "f32", TypeKind.Float32))
     uni.add(Type(Vis.Pub, "f64", TypeKind.Float64))
     uni.add(Type(Vis.Pub, "string", TypeKind.String))

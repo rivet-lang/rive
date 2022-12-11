@@ -46,8 +46,7 @@ class Vec {
         }
         unsafe {
             mem_copy(
-                @ptr_add(@as(*mut u8, self.ptr), self.elem_size * idx), val,
-                self.elem_size
+                @ptr_add(@as(*mut u8, self.ptr), self.elem_size * idx), val, self.elem_size
             );
         }
     }
@@ -57,26 +56,20 @@ class Vec {
             self.reserve(self.len + 1);
         }
         unsafe {
-            mem_copy(
-                @ptr_add(self.ptr, self.elem_size * self.len), val,
-                self.elem_size
-            );
+            mem_copy(@ptr_add(self.ptr, self.elem_size * self.len), val, self.elem_size);
         }
         self.len += 1;
     }
 
     /// Returns the last element of the vector, and removes it. If the
-    /// `vector` is empty, this will process_panic.
+    /// `vector` is empty, this will panic.
     fn pop(mut self) *void {
         if self.len == 0 {
             process_panic("Vec.pop: vector is empty");
         }
         let new_len = self.len - 1;
-        unsafe {
-            let last_elem = @ptr_add(self.ptr, new_len * self.elem_size);
-            self.len = new_len;
-            return last_elem;
-        }
+        self.len = new_len;
+        return unsafe { @ptr_add(self.ptr, new_len * self.elem_size) };
     }
 
     fn is_empty(self) bool {
@@ -102,8 +95,8 @@ class Vec {
         while required > cap {
             cap *= 2;
         }
+        let new_size = cap * self.elem_size;
         unsafe {
-            let new_size = cap * self.elem_size;
             let new_ptr = internal_alloc(new_size);
             mem_copy(new_ptr, self.ptr, self.len * self.elem_size);
             self.ptr = new_ptr;
@@ -114,8 +107,7 @@ class Vec {
     fn slice(self, start: usize, end: usize) Self {
         if start > end or end > self.len {
             process_panic(
-                "slice index out of range (range: {}..{}, len: {})", start, end,
-                self.len
+                "slice index out of range (range: {}..{}, len: {})", start, end, self.len
             );
         }
         let len = end - start;

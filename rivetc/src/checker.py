@@ -198,7 +198,7 @@ class Checker:
                         report.error(e.args[0], stmt.pos)
                     self.expected_type = self.comp.void_t
                 else:
-                    right_typ = self.comp.untyped_to_type(right_typ)
+                    right_typ = self.comp.comptime_number_to_type(right_typ)
                     stmt.lefts[0].typ = right_typ
                     stmt.scope.update_type(stmt.lefts[0].name, right_typ)
             else:
@@ -221,7 +221,7 @@ class Checker:
                                 "cannot modify blank identifier (`_`)", vd.pos
                             )
                         if not vd.has_typ:
-                            vtyp = self.comp.untyped_to_type(
+                            vtyp = self.comp.comptime_number_to_type(
                                 symbol.info.types[i]
                             )
                             vd.typ = vtyp
@@ -255,7 +255,7 @@ class Checker:
             if isinstance(stmt.iterable, ast.RangeExpr):
                 if vars_len == 1:
                     stmt.scope.update_type(
-                        stmt.vars[0], self.comp.untyped_to_type(iterable_t)
+                        stmt.vars[0], self.comp.comptime_number_to_type(iterable_t)
                     )
                 else:
                     report.error(
@@ -263,7 +263,7 @@ class Checker:
                     )
                 self.check_stmt(stmt.stmt)
             elif iterable_sym.kind in (TypeKind.Array, TypeKind.Vec):
-                elem_typ = self.comp.untyped_to_type(iterable_sym.info.elem_typ)
+                elem_typ = self.comp.comptime_number_to_type(iterable_sym.info.elem_typ)
                 if vars_len == 1:
                     stmt.scope.update_type(stmt.vars[0], elem_typ)
                 else:
@@ -388,10 +388,10 @@ class Checker:
                 expr.typ = self.comp.rune_t
             return expr.typ
         elif isinstance(expr, ast.IntegerLiteral):
-            expr.typ = self.comp.untyped_int_t
+            expr.typ = self.comp.comptime_int_t
             return expr.typ
         elif isinstance(expr, ast.FloatLiteral):
-            expr.typ = self.comp.untyped_float_t
+            expr.typ = self.comp.comptime_float_t
             return expr.typ
         elif isinstance(expr, ast.StringLiteral):
             if expr.is_bytestr:
@@ -421,7 +421,7 @@ class Checker:
             for i, e in enumerate(expr.exprs):
                 if has_expected:
                     self.expected_type = expected_types[i]
-                tt = self.comp.untyped_to_type(self.check_expr(e))
+                tt = self.comp.comptime_number_to_type(self.check_expr(e))
                 if tt == self.comp.void_t:
                     report.error("void expression used as value", e.pos)
                 if has_expected:
@@ -474,14 +474,14 @@ class Checker:
                     arr_len = size
                 expr.typ = type.Type(
                     self.comp.universe.add_or_get_array(
-                        self.comp.untyped_to_type(elem_typ),
+                        self.comp.comptime_number_to_type(elem_typ),
                         ast.IntegerLiteral(arr_len, expr.pos)
                     )
                 )
             else:
                 expr.typ = type.Type(
                     self.comp.universe.add_or_get_vec(
-                        self.comp.untyped_to_type(elem_typ)
+                        self.comp.comptime_number_to_type(elem_typ)
                     )
                 )
             self.expected_type = old_expected_type
@@ -754,7 +754,7 @@ class Checker:
             left_sym = expr.left_typ.symbol()
             idx_t = self.check_expr(expr.index)
             if left_sym.kind in (TypeKind.Array, TypeKind.Vec):
-                if idx_t != self.comp.untyped_int_t and not self.comp.is_unsigned_int(
+                if idx_t != self.comp.comptime_int_t and not self.comp.is_unsigned_int(
                     idx_t
                 ):
                     report.error(
@@ -785,7 +785,7 @@ class Checker:
                     report.note(
                         "only pointers, arrays, slices and string supports indexing"
                     )
-                elif idx_t != self.comp.untyped_int_t and not self.comp.is_unsigned_int(
+                elif idx_t != self.comp.comptime_int_t and not self.comp.is_unsigned_int(
                     idx_t
                 ):
                     report.error(
@@ -1062,7 +1062,7 @@ class Checker:
                 end_t = self.check_expr(expr.end)
             else:
                 end_t = self.comp.usize_t
-            if expr.typ in (self.comp.untyped_int_t, self.comp.untyped_float_t):
+            if expr.typ in (self.comp.comptime_int_t, self.comp.comptime_float_t):
                 expr.typ = end_t
             return expr.typ
         elif isinstance(expr, ast.SelectorExpr):
@@ -1295,7 +1295,7 @@ class Checker:
                     for p in b.pats:
                         pat_t = self.check_expr(p)
                         if expr.is_typeswitch:
-                            pat_t = self.comp.untyped_to_type(pat_t)
+                            pat_t = self.comp.comptime_number_to_type(pat_t)
                         try:
                             self.check_types(pat_t, expr_typ)
                         except utils.CompilerError as e:
@@ -1326,7 +1326,7 @@ class Checker:
         expr.typ = type.Type(info)
         if info.kind == TypeKind.Trait:
             if len(expr.args) == 1:
-                value_t = self.comp.untyped_to_type(
+                value_t = self.comp.comptime_number_to_type(
                     self.check_expr(expr.args[0].expr)
                 )
                 if value_t.symbol() in info.info.implements:
@@ -1476,7 +1476,7 @@ class Checker:
         pos_msg = f"in argument `{arg_name}` of {func_kind} `{func_name}`"
         if expected_sym.kind == TypeKind.Trait:
             if expected != got:
-                got_t = self.comp.untyped_to_type(got)
+                got_t = self.comp.comptime_number_to_type(got)
                 if got_t.symbol() in expected_sym.info.implements:
                     expected_sym.info.has_objects = True
                 else:
@@ -1570,7 +1570,7 @@ class Checker:
         if self.comp.is_number(expected) and self.comp.is_number(got):
             return self.promote_number(expected, got) == expected
         elif exp_sym.kind == TypeKind.Trait:
-            if self.comp.untyped_to_type(got
+            if self.comp.comptime_number_to_type(got
                                          ).symbol() in exp_sym.info.implements:
                 exp_sym.info.has_objects = True
                 return True
@@ -1616,7 +1616,7 @@ class Checker:
             bits_hi = bits_lo
             bits_lo = old_bhi
 
-        if type_hi == self.comp.untyped_int_t:
+        if type_hi == self.comp.comptime_int_t:
             return type_lo
         elif self.comp.is_float(type_hi):
             if self.comp.is_float(type_lo):

@@ -1263,10 +1263,10 @@ class Parser:
             elif lit == "string":
                 return self.comp.string_t
             # only available in `runtime`:
-            elif lit == "untyped_int":
-                return self.comp.untyped_int_t
-            elif lit == "untyped_float":
-                return self.comp.untyped_float_t
+            elif lit == "comptime_int":
+                return self.comp.comptime_int_t
+            elif lit == "comptime_float":
+                return self.comp.comptime_float_t
             return type.Type.unresolved(expr)
         else:
             report.error(f"expected type, found {self.tok}", pos)

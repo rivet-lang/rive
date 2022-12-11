@@ -66,8 +66,8 @@ typedef u8 bool;
 typedef u32 rune;
 typedef float f32;
 typedef double f64;
-typedef i64 untyped_int;
-typedef f64 untyped_float;
+typedef i64 comptime_int;
+typedef f64 comptime_float;
 typedef ptrdiff_t isize;
 typedef size_t usize;
 

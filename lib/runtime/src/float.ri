@@ -4,7 +4,7 @@
 
 import "c/libc";
 
-extend untyped_float : ToString {
+extend comptime_float : ToString {
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     pub fn bits(self) u64 {

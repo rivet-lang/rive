@@ -6,7 +6,7 @@ let DIGIT_PAIRS: string = "00102030405060708090011121314151617181910212223242526
     "28292031323334353637383930414243444546474849405152535455565758595061626364656667"
     "68696071727374757677787970818283848586878889809192939495969798999";
 
-extend untyped_int : ToString {
+extend comptime_int : ToString {
     /// Returns the value of `self` as a string.
     pub fn to_string(&self) string {
         return @as(i64, self.*).to_string();

@@ -34,8 +34,8 @@ class Compiler:
         self.u32_t = type.Type(self.universe[12])
         self.u64_t = type.Type(self.universe[13])
         self.usize_t = type.Type(self.universe[14])
-        self.untyped_int_t = type.Type(self.universe[15])
-        self.untyped_float_t = type.Type(self.universe[16])
+        self.comptime_int_t = type.Type(self.universe[15])
+        self.comptime_float_t = type.Type(self.universe[16])
         self.f32_t = type.Type(self.universe[17])
         self.f64_t = type.Type(self.universe[18])
         self.string_t = type.Type(self.universe[19])
@@ -292,7 +292,7 @@ class Compiler:
     def is_signed_int(self, typ):
         return typ in (
             self.i8_t, self.i16_t, self.i32_t, self.i64_t, self.isize_t,
-            self.untyped_int_t
+            self.comptime_int_t
         )
 
     def is_unsigned_int(self, typ):
@@ -301,12 +301,12 @@ class Compiler:
         )
 
     def is_float(self, typ):
-        return typ in (self.f32_t, self.f64_t, self.untyped_float_t)
+        return typ in (self.f32_t, self.f64_t, self.comptime_float_t)
 
-    def untyped_to_type(self, typ):
-        if typ == self.untyped_int_t:
+    def comptime_number_to_type(self, typ):
+        if typ == self.comptime_int_t:
             return self.i32_t
-        elif typ == self.untyped_float_t:
+        elif typ == self.comptime_float_t:
             return self.f64_t
         return typ
 
@@ -317,7 +317,7 @@ class Compiler:
 
     def int_bits(self, typ):
         typ_sym = typ.symbol()
-        if typ_sym.kind == sym.TypeKind.UntypedInt:
+        if typ_sym.kind == sym.TypeKind.ComptimeInt:
             return 75 # only for checker
         elif typ_sym.kind in (sym.TypeKind.Int8, sym.TypeKind.Uint8):
             return 8
@@ -336,7 +336,7 @@ class Compiler:
         typ_sym = typ.symbol()
         if typ_sym.kind == sym.TypeKind.Float32:
             return 32
-        elif typ_sym.kind in (sym.TypeKind.Float64, sym.TypeKind.UntypedFloat):
+        elif typ_sym.kind in (sym.TypeKind.Float64, sym.TypeKind.ComptimeFloat):
             return 64
         else:
             return -1
@@ -373,12 +373,12 @@ class Compiler:
             size, align = 2, 2
         elif sy.kind in (
             sym.TypeKind.Int32, sym.TypeKind.Uint32, sym.TypeKind.Rune,
-            sym.TypeKind.Float32, sym.TypeKind.UntypedInt
+            sym.TypeKind.Float32, sym.TypeKind.ComptimeInt
         ):
             size, align = 4, 4
         elif sy.kind in (
             sym.TypeKind.Int64, sym.TypeKind.Uint64, sym.TypeKind.Float64,
-            sym.TypeKind.UntypedFloat
+            sym.TypeKind.ComptimeFloat
         ):
             size, align = 8, 8
         elif sy.kind == sym.TypeKind.Enum:
