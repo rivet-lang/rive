@@ -1,0 +1,25 @@
+struct User {
+    name: string;
+    pwd: string;
+}
+
+test "constructors: using spread operator with structs" {
+    let user1 = User("Cati", "fresh1fruit");
+    @assert(user1.name == "Cati" and user1.pwd == "fresh1fruit");
+
+    let user2 = User(pwd: "fresh2girl", ...user1);
+    @assert(user2.name == "Cati" and user2.pwd == "fresh2girl");
+}
+
+class User2 {
+    name: string;
+    pwd: string;
+}
+
+test "constructors: using spread operator with classes" {
+    let user1 = User2("Cati", "fresh1fruit");
+    @assert(user1.name == "Cati" and user1.pwd == "fresh1fruit");
+
+    let user2 = User2(pwd: "fresh2girl", ...user1);
+    @assert(user2.name == "Cati" and user2.pwd == "fresh2girl");
+}

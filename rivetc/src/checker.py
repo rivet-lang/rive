@@ -1330,7 +1330,12 @@ class Checker:
         expr.is_ctor = True
         expr.typ = type.Type(info)
         if info.kind == TypeKind.Trait:
-            if len(expr.args) == 1:
+            if expr.has_spread_expr:
+                report.error(
+                    "cannot use spread expression with trait constructor",
+                    expr.pos
+                )
+            elif len(expr.args) == 1:
                 value_t = self.comp.comptime_number_to_type(
                     self.check_expr(expr.args[0].expr)
                 )
@@ -1385,6 +1390,14 @@ class Checker:
                     self.check_types(arg_t, field_typ)
                 except utils.CompilerError as e:
                     report.error(e.args[0], arg.pos)
+            if expr.has_spread_expr:
+                spread_expr_t = self.check_expr(expr.spread_expr)
+                if spread_expr_t != expr.typ:
+                    report.error(
+                        f"expected type `{expr.typ}`, found `{spread_expr_t}`",
+                        expr.pos
+                    )
+                    report.note("in spread expression of constructor")
 
     def check_call(self, info, expr):
         kind = info.kind()
@@ -1472,6 +1485,27 @@ class Checker:
                 self.check_argument_type(
                     arg.typ, arg_fn.typ, arg.pos, arg_fn.name, kind, info.name
                 )
+
+        if expr.has_spread_expr:
+            spread_expr_t = self.check_expr(expr.spread_expr)
+            spread_expr_sym = spread_expr_t.symbol()
+            if spread_expr_sym.kind != TypeKind.Vec:
+                report.error(
+                    "spread operator can only be used with vectors",
+                    expr.spread_expr.pos
+                )
+            elif not isinstance(info.args[-1].typ, type.Variadic):
+                report.error(
+                    "unexpected spread expression", expr.spread_expr.pos
+                )
+            else:
+                last_arg_typ = info.args[-1].typ
+                vec_t = type.Vec(last_arg_typ)
+                vec_t.sym = last_arg_typ.sym
+                try:
+                    self.check_types(spread_expr_t, vec_t)
+                except utils.CompilerError as e:
+                    report.error(e.args[0], expr.spread_expr.pos)
         return expr.typ
 
     def check_argument_type(

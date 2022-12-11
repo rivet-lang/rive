@@ -645,10 +645,14 @@ class IndexExpr:
         return self.__repr__()
 
 class CallExpr:
-    def __init__(self, left, args, err_handler, pos):
+    def __init__(
+        self, left, args, has_spread_expr, spread_expr, err_handler, pos
+    ):
         self.sym = None
         self.left = left
         self.args = args
+        self.has_spread_expr = has_spread_expr
+        self.spread_expr = spread_expr
         self.err_handler = err_handler
         self.is_ctor = False # Class_Struct_or_Trait(value)
         self.is_closure = False
@@ -674,13 +678,20 @@ class CallExpr:
         for arg in self.args:
             if not arg.is_named:
                 l += 1
+        if self.has_spread_expr:
+            l += 1
         return l
 
     def has_err_handler(self):
         return self.err_handler.has_expr or self.err_handler.is_propagate
 
     def __repr__(self):
-        res = f"{self.left}({', '.join([str(a) for a in self.args])})"
+        res = f"{self.left}({', '.join([str(a) for a in self.args])}"
+        if self.has_spread_expr:
+            if len(self.args) > 0:
+                res += ", "
+            res += f"...{self.spread_expr}"
+        res += ")"
         if self.has_err_handler():
             res += str(self.err_handler)
         return res

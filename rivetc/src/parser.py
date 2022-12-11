@@ -872,6 +872,8 @@ class Parser:
                 return ast.AssignExpr(expr, op, self.parse_expr(), expr.pos)
             elif self.accept(Kind.Lparen):
                 args = []
+                has_spread_expr = False
+                spread_expr = self.empty_expr()
                 if self.tok.kind != Kind.Rparen:
                     expecting_named_arg = False
                     while True:
@@ -886,6 +888,15 @@ class Parser:
                             expr2 = self.parse_expr()
                             args.append(ast.CallArg(expr2, name_p, name))
                             expecting_named_arg = True
+                        elif self.accept(Kind.Ellipsis):
+                            spread_pos = self.prev_tok.pos
+                            has_spread_expr = True
+                            spread_expr = self.parse_expr()
+                            if self.tok.kind == Kind.Comma:
+                                report.error(
+                                    "spread expression must be the final argument",
+                                    spread_pos
+                                )
                         else:
                             if expecting_named_arg:
                                 report.error(
@@ -916,7 +927,7 @@ class Parser:
                     err_expr = self.parse_expr()
                     has_err_expr = True
                 expr = ast.CallExpr(
-                    expr, args,
+                    expr, args, has_spread_expr, spread_expr,
                     ast.CallErrorHandler(
                         is_propagate, varname, err_expr, has_err_expr,
                         varname_pos, self.scope, err_handler_pos

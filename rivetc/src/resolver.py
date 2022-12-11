@@ -262,6 +262,8 @@ class Resolver:
             self.resolve_expr(expr.left)
             for arg in expr.args:
                 self.resolve_expr(arg.expr)
+            if expr.has_spread_expr:
+                self.resolve_expr(expr.spread_expr)
             if expr.err_handler.has_expr:
                 if expr.err_handler.has_varname():
                     # register error value

@@ -1065,27 +1065,33 @@ class Codegen:
                             self.ir_type(field.typ), tmp, ir.Name(field.name)
                         ), self.gen_expr_with_cast(field.typ, f.expr)
                     )
+                if expr.has_spread_expr:
+                    spread_val = self.gen_expr_with_cast(
+                        expr.spread_expr.typ, expr.spread_expr
+                    )
+                else:
+                    spread_val = None
                 for f in typ_sym.full_fields():
                     if f.name in initted_fields:
                         continue
                     if f.typ.symbol().kind == TypeKind.Array:
                         continue
-                    sltor = ir.Selector(
-                        self.ir_type(f.typ), tmp, ir.Name(f.name)
-                    )
+                    f_typ = self.ir_type(f.typ)
+                    sltor = ir.Selector(f_typ, tmp, ir.Name(f.name))
                     if f.has_def_expr:
                         value = self.gen_expr_with_cast(f.typ, f.def_expr)
+                    elif expr.has_spread_expr:
+                        value = ir.Selector(f_typ, spread_val, ir.Name(f.name))
                     else:
                         value = self.default_value(f.typ)
                     self.cur_fn.store(
-                        ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name)),
-                        value
+                        ir.Selector(f_typ, tmp, ir.Name(f.name)), value
                     )
                 return tmp
             args = []
             is_trait_call = False
             if not expr.sym:
-                raise Exception(f"expr.sym is None [ {expr} ] @ {expr.pos}")
+                raise Exception(f"expr.sym is None [ {expr} ] at {expr.pos}")
             if expr.sym.is_method:
                 left_sym = expr.sym.self_typ.symbol()
                 if left_sym.kind == TypeKind.Trait:
@@ -1152,7 +1158,13 @@ class Codegen:
                 if fn_arg.is_mut:
                     arg_typ = type.Ptr(arg_typ)
                 args.append(self.gen_expr_with_cast(arg_typ, arg.expr))
-            if expr.sym.is_variadic:
+            if expr.has_spread_expr:
+                args.append(
+                    self.gen_expr_with_cast(
+                        expr.spread_expr.typ, expr.spread_expr
+                    )
+                )
+            elif expr.sym.is_variadic:
                 variadic_count = len(expr.args) - args_len
                 if expr.sym.is_extern:
                     for i in range(args_len, len(expr.args)):
