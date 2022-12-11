@@ -42,24 +42,24 @@ class Resolver:
                 self.resolve_type(decl.parent)
             elif isinstance(decl, ast.EnumDecl):
                 if self.resolve_type(decl.underlying_typ):
-                    for i, value in enumerate(decl.sym.info.values):
-                        if not self.resolve_type(value.typ):
+                    for i, variant in enumerate(decl.sym.info.variants):
+                        if not self.resolve_type(variant.typ):
                             continue
-                        d_v = decl.values[i]
+                        d_v = decl.variants[i]
                         if d_v.has_value:
-                            value.value = self.eval_size(d_v.value).lit
+                            variant.value = self.eval_size(d_v.value).lit
                         else:
                             if i > 0:
-                                last_value = decl.values[i - 1]
-                                if last_value.has_value:
-                                    value.value = str(
+                                last_variant = decl.variants[i - 1]
+                                if last_variant.has_value:
+                                    variant.value = str(
                                         int(
-                                            self.eval_size(last_value.value
+                                            self.eval_size(last_variant.value
                                                            ).lit, 0
                                         ) + 1
                                     )
                                     continue
-                            value.value = str(i)
+                            variant.value = str(i)
                     for base in decl.bases:
                         if self.resolve_type(base):
                             base_sym = base.symbol()
@@ -315,10 +315,10 @@ class Resolver:
                 return s.ref
             return s
         elif isinstance(symbol, sym.Type) and symbol.kind == sym.TypeKind.Enum:
-            if symbol.info.has_value(name):
+            if symbol.info.has_variant(name):
                 return symbol
             else:
-                report.error(f"enum `{symbol.name}` has no value `{name}`", pos)
+                report.error(f"enum `{symbol.name}` has no variant `{name}`", pos)
                 return None
         report.error(
             f"could not find `{name}` in {symbol.typeof()} `{symbol.name}`", pos

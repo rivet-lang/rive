@@ -301,14 +301,14 @@ class Checker:
             except utils.CompilerError as e:
                 report.error(e.args[0], expr.right.pos)
             return expr.typ
-        elif isinstance(expr, ast.EnumValueExpr):
+        elif isinstance(expr, ast.EnumLiteral):
             expr.typ = self.comp.void_t
             _sym = self.expected_type.symbol()
             if _sym.kind == TypeKind.Enum:
-                if v := _sym.info.get_value(expr.value):
+                if v := _sym.info.get_variant(expr.value):
                     expr.sym = v
                     expr.typ = type.Type(_sym)
-                    if _sym.info.has_tagged_value and not expr.from_is_cmp and not expr.is_instance:
+                    if _sym.info.is_advanced_enum and not expr.from_is_cmp and not expr.is_instance:
                         report.error(
                             f"cannot use variant `{expr}` as a simple value",
                             expr.pos
@@ -860,12 +860,12 @@ class Checker:
                                         TypeKind.Struct
                                     ):
                         self.check_ctor(expr_left.field_sym, expr)
-                    elif expr_left.left_sym.kind == TypeKind.Enum and expr_left.left_sym.info.has_tagged_value:
+                    elif expr_left.left_sym.kind == TypeKind.Enum and expr_left.left_sym.info.is_advanced_enum:
                         expr.is_ctor = True
-                        value_info = expr_left.field_sym.info.get_value(
+                        variant_info = expr_left.field_sym.info.get_variant(
                             expr_left.field_name
                         )
-                        if not value_info.has_typ:
+                        if not variant_info.has_typ:
                             report.error(
                                 f"`{expr_left}` not expects an value", expr.pos
                             )
@@ -878,7 +878,7 @@ class Checker:
                             try:
                                 self.check_compatible_types(
                                     self.check_expr(expr.args[0].expr),
-                                    value_info.typ
+                                    variant_info.typ
                                 )
                             except utils.CompilerError as e:
                                 report.error(e.args[0], expr.pos)

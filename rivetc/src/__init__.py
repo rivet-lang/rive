@@ -382,7 +382,7 @@ class Compiler:
         ):
             size, align = 8, 8
         elif sy.kind == sym.TypeKind.Enum:
-            if sy.info.has_tagged_value:
+            if sy.info.is_advanced_enum:
                 size, align = self.pointer_size, self.pointer_size
             else:
                 size, align = self.type_size(sy.info.underlying_typ)

@@ -359,22 +359,22 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Lbrace)
-            values = []
+            variants = []
             decls = []
-            has_tagged_value = False
+            is_advanced_enum = False
             while True:
                 v_name = self.parse_name()
                 has_typ = self.accept(Kind.Lparen)
-                value = self.empty_expr()
+                variant = self.empty_expr()
                 if has_typ:
-                    has_tagged_value = True
+                    is_advanced_enum = True
                     typ = self.parse_type()
                     self.expect(Kind.Rparen)
                 else:
                     typ = self.comp.void_t
                     if self.accept(Kind.Assign):
-                        value = self.parse_expr()
-                values.append(ast.EnumValue(v_name, typ, has_typ, value))
+                        variant = self.parse_expr()
+                variants.append(ast.EnumVariant(v_name, typ, has_typ, variant))
                 if not self.accept(Kind.Comma):
                     break
             if self.accept(Kind.Semicolon):
@@ -382,8 +382,8 @@ class Parser:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
-                doc_comment, attrs, vis, name, underlying_typ, bases, values,
-                has_tagged_value, decls, pos
+                doc_comment, attrs, vis, name, underlying_typ, bases, variants,
+                is_advanced_enum, decls, pos
             )
         elif self.accept(Kind.KwExtend):
             pos = self.prev_tok.pos
@@ -652,7 +652,7 @@ class Parser:
                 pos = self.tok.pos
                 if self.accept(Kind.Dot):
                     name = self.parse_name()
-                    right = ast.EnumValueExpr(
+                    right = ast.EnumLiteral(
                         name, self.empty_expr(), False, False, pos, True
                     )
                 else:
@@ -763,7 +763,7 @@ class Parser:
                     value_arg = self.parse_expr()
                     self.expect(Kind.Rparen)
                 is_instance = True
-            expr = ast.EnumValueExpr(
+            expr = ast.EnumLiteral(
                 name, value_arg, has_value_arg, is_instance, pos
             )
         elif self.tok.kind in (Kind.KwContinue, Kind.KwBreak):
@@ -1020,7 +1020,7 @@ class Parser:
                         pos = self.tok.pos
                         if self.accept(Kind.Dot):
                             pats.append(
-                                ast.EnumValueExpr(
+                                ast.EnumLiteral(
                                     self.parse_name(), self.empty_expr(), False,
                                     False, pos, True
                                 )

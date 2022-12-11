@@ -450,7 +450,7 @@ class TupleInfo:
     def __init__(self, types):
         self.types = types
 
-class EnumValue:
+class EnumVariant:
     def __init__(self, name, has_typ, typ):
         self.name = name
         self.has_typ = has_typ
@@ -458,22 +458,22 @@ class EnumValue:
         self.value = "0"
 
 class EnumInfo:
-    def __init__(self, underlying_typ, has_tagged_value):
+    def __init__(self, underlying_typ, is_advanced_enum):
         self.underlying_typ = underlying_typ
-        self.has_tagged_value = has_tagged_value
-        self.values = []
+        self.is_advanced_enum = is_advanced_enum
+        self.variants = []
 
-    def add_value(self, name, has_typ, typ):
-        self.values.append(EnumValue(name, has_typ, typ))
+    def add_variant(self, name, has_typ, typ):
+        self.variants.append(EnumVariant(name, has_typ, typ))
 
-    def get_value(self, name):
-        for v in self.values:
+    def get_variant(self, name):
+        for v in self.variants:
             if v.name == name:
                 return v
         return None
 
-    def has_value(self, name):
-        if _ := self.get_value(name):
+    def has_variant(self, name):
+        if _ := self.get_variant(name):
             return True
         return False
 
@@ -579,7 +579,7 @@ class Type(Sym):
 
     def is_boxed(self):
         if self.kind == TypeKind.Enum:
-            return self.info.has_tagged_value
+            return self.info.is_advanced_enum
         return self.kind in (
             TypeKind.Trait, TypeKind.Class, TypeKind.String, TypeKind.Vec
         )

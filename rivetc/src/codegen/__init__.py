@@ -825,10 +825,10 @@ class Codegen:
                     utils.bytestr(expr.lit).len
                 )
             return ir.StringLit(escaped_val, str(size))
-        elif isinstance(expr, ast.EnumValueExpr):
+        elif isinstance(expr, ast.EnumLiteral):
             enum_sym = expr.typ.symbol()
             if expr.is_instance:
-                return self.tagged_enum_value(
+                return self.advanced_enum_value(
                     enum_sym, expr.sym.name, expr.value_arg
                 )
             return ir.IntLit(
@@ -876,7 +876,7 @@ class Codegen:
                         return self.class_upcast(res, arg1.typ, expr.typ)
                     if expr_typ_sym.is_subtype_of(typ_sym): # down-casting
                         return self.class_downcast(res, arg1.typ, expr.typ)
-                elif typ_sym.kind == TypeKind.Enum and typ_sym.info.has_tagged_value:
+                elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_advanced_enum:
                     tmp = self.cur_fn.local_name()
                     self.cur_fn.try_alloca(
                         ir_typ, tmp,
@@ -1034,7 +1034,7 @@ class Codegen:
                         expr.typ
                     )
                 elif typ_sym.kind == TypeKind.Enum:
-                    return self.tagged_enum_value(
+                    return self.advanced_enum_value(
                         typ_sym, expr.left.field_name, expr.args[0].expr,
                         custom_tmp = custom_tmp
                     )
@@ -1346,7 +1346,7 @@ class Codegen:
                 elif isinstance(
                     expr.left_sym, sym.Type
                 ) and expr.left_sym.kind == TypeKind.Enum:
-                    if v := expr.left_sym.info.get_value(expr.field_name):
+                    if v := expr.left_sym.info.get_variant(expr.field_name):
                         return ir.IntLit(
                             self.ir_type(expr.left_sym.info.underlying_typ),
                             str(v.value)
@@ -1654,7 +1654,7 @@ class Codegen:
                 left_sym = expr_left_typ.symbol()
                 expr_right_sym = expr_right_typ.symbol()
                 if left_sym.kind == TypeKind.Enum:
-                    if left_sym.info.has_tagged_value:
+                    if left_sym.info.is_advanced_enum:
                         cmp = ir.Inst(
                             ir.InstKind.Cmp, [
                                 ir.Name(kind),
@@ -2064,7 +2064,7 @@ class Codegen:
                             value_idx = ir.IntLit(
                                 ir.Type("usize"), str(p.typ.sym.id)
                             )
-                        if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.has_tagged_value:
+                        if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.is_advanced_enum:
                             self.cur_fn.try_alloca(
                                 ir.Type("bool"), tmp2,
                                 ir.Inst(
@@ -2468,7 +2468,7 @@ class Codegen:
         )
         return tmp
 
-    def tagged_enum_value(self, enum_sym, value_name, value, custom_tmp = None):
+    def advanced_enum_value(self, enum_sym, variant_name, value, custom_tmp = None):
         if custom_tmp:
             tmp = custom_tmp
         else:
@@ -2476,14 +2476,14 @@ class Codegen:
                 mangle_symbol(enum_sym), enum_sym.id, True
             )
         usize_t = ir.Type("usize")
-        value_info = enum_sym.info.get_value(value_name)
+        variant_info = enum_sym.info.get_variant(variant_name)
         self.cur_fn.store(
             ir.Selector(usize_t, tmp, ir.Name("_id")),
-            ir.IntLit(usize_t, value_info.value)
+            ir.IntLit(usize_t, variant_info.value)
         )
-        if value_info.has_typ and not isinstance(value, ast.EmptyExpr):
-            arg0 = self.gen_expr_with_cast(value_info.typ, value)
-            size, _ = self.comp.type_size(value_info.typ)
+        if variant_info.has_typ and not isinstance(value, ast.EmptyExpr):
+            arg0 = self.gen_expr_with_cast(variant_info.typ, value)
+            size, _ = self.comp.type_size(variant_info.typ)
             value = ir.Inst(
                 ir.InstKind.Call, [
                     ir.Name("_R7runtime12internal_dupF"),
@@ -2579,7 +2579,7 @@ class Codegen:
         elif typ_sym.kind == TypeKind.Nil:
             return ir.Type("void").ptr()
         elif typ_sym.kind == TypeKind.Enum:
-            if typ_sym.info.has_tagged_value:
+            if typ_sym.info.is_advanced_enum:
                 return ir.Type(mangle_symbol(typ_sym)).ptr(True)
             return ir.Type(str(typ_sym.info.underlying_typ))
         elif typ_sym.kind.is_primitive():
@@ -2604,7 +2604,7 @@ class Codegen:
             elif ts.kind == TypeKind.Enum:
                 # TODO: in the self-hosted compiler calculate the enum value here
                 # not in register nor resolver.
-                if ts.info.has_tagged_value:
+                if ts.info.is_advanced_enum:
                     self.out_rir.structs.append(
                         ir.Struct(
                             ts.vis.is_pub(), mangle_symbol(ts), [
