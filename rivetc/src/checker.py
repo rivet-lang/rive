@@ -1568,6 +1568,8 @@ class Checker:
             return expected.typ == got.typ
 
         if self.comp.is_number(expected) and self.comp.is_number(got):
+            if self.comp.is_comptime_number(expected) or self.comp.is_comptime_number(got):
+                return True
             return self.promote_number(expected, got) == expected
         elif exp_sym.kind == TypeKind.Trait:
             if self.comp.comptime_number_to_type(got
@@ -1616,9 +1618,7 @@ class Checker:
             bits_hi = bits_lo
             bits_lo = old_bhi
 
-        if type_hi == self.comp.comptime_int_t:
-            return type_lo
-        elif self.comp.is_float(type_hi):
+        if self.comp.is_float(type_hi):
             if self.comp.is_float(type_lo):
                 # float -> float (good)
                 return type_hi

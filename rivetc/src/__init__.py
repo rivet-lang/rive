@@ -303,6 +303,9 @@ class Compiler:
     def is_float(self, typ):
         return typ in (self.f32_t, self.f64_t, self.comptime_float_t)
 
+    def is_comptime_number(self, typ):
+        return typ == self.comptime_int_t or typ == self.comptime_float_t
+
     def comptime_number_to_type(self, typ):
         if typ == self.comptime_int_t:
             return self.i32_t
