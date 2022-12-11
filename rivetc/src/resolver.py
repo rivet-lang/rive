@@ -318,7 +318,9 @@ class Resolver:
             if symbol.info.has_variant(name):
                 return symbol
             else:
-                report.error(f"enum `{symbol.name}` has no variant `{name}`", pos)
+                report.error(
+                    f"enum `{symbol.name}` has no variant `{name}`", pos
+                )
                 return None
         report.error(
             f"could not find `{name}` in {symbol.typeof()} `{symbol.name}`", pos

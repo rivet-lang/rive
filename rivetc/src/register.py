@@ -155,7 +155,9 @@ class Register:
                                 decl.pos
                             )
                             continue
-                        info.add_variant(variant.name, variant.has_typ, variant.typ)
+                        info.add_variant(
+                            variant.name, variant.has_typ, variant.typ
+                        )
                     decl.sym = self.sym.add_and_return(
                         sym.Type(
                             decl.vis, decl.name, TypeKind.Enum, info = info

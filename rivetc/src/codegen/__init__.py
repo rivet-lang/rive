@@ -1565,7 +1565,8 @@ class Codegen:
             if expr.op == Kind.Amp:
                 tmp = self.cur_fn.local_name()
                 self.cur_fn.try_alloca(
-                    self.ir_type(expr.typ), tmp, ir.Inst(ir.InstKind.GetRef, [right])
+                    self.ir_type(expr.typ), tmp,
+                    ir.Inst(ir.InstKind.GetRef, [right])
                 )
                 return ir.Ident(self.ir_type(expr.typ), tmp)
 
@@ -2468,7 +2469,9 @@ class Codegen:
         )
         return tmp
 
-    def advanced_enum_value(self, enum_sym, variant_name, value, custom_tmp = None):
+    def advanced_enum_value(
+        self, enum_sym, variant_name, value, custom_tmp = None
+    ):
         if custom_tmp:
             tmp = custom_tmp
         else:

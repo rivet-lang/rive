@@ -255,7 +255,8 @@ class Checker:
             if isinstance(stmt.iterable, ast.RangeExpr):
                 if vars_len == 1:
                     stmt.scope.update_type(
-                        stmt.vars[0], self.comp.comptime_number_to_type(iterable_t)
+                        stmt.vars[0],
+                        self.comp.comptime_number_to_type(iterable_t)
                     )
                 else:
                     report.error(
@@ -263,7 +264,9 @@ class Checker:
                     )
                 self.check_stmt(stmt.stmt)
             elif iterable_sym.kind in (TypeKind.Array, TypeKind.Vec):
-                elem_typ = self.comp.comptime_number_to_type(iterable_sym.info.elem_typ)
+                elem_typ = self.comp.comptime_number_to_type(
+                    iterable_sym.info.elem_typ
+                )
                 if vars_len == 1:
                     stmt.scope.update_type(stmt.vars[0], elem_typ)
                 else:
@@ -1062,7 +1065,9 @@ class Checker:
                 end_t = self.check_expr(expr.end)
             else:
                 end_t = self.comp.usize_t
-            if expr.typ in (self.comp.comptime_int_t, self.comp.comptime_float_t):
+            if expr.typ in (
+                self.comp.comptime_int_t, self.comp.comptime_float_t
+            ):
                 expr.typ = end_t
             return expr.typ
         elif isinstance(expr, ast.SelectorExpr):
@@ -1568,12 +1573,14 @@ class Checker:
             return expected.typ == got.typ
 
         if self.comp.is_number(expected) and self.comp.is_number(got):
-            if self.comp.is_comptime_number(expected) or self.comp.is_comptime_number(got):
+            if self.comp.is_comptime_number(
+                expected
+            ) or self.comp.is_comptime_number(got):
                 return True
             return self.promote_number(expected, got) == expected
         elif exp_sym.kind == TypeKind.Trait:
-            if self.comp.comptime_number_to_type(got
-                                         ).symbol() in exp_sym.info.implements:
+            if self.comp.comptime_number_to_type(got).symbol(
+            ) in exp_sym.info.implements:
                 exp_sym.info.has_objects = True
                 return True
         elif exp_sym.kind == TypeKind.Class and got_sym.kind == TypeKind.Class:

@@ -21,32 +21,13 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 </div>
 
 Rivet's goal is to be a very powerful programming language and at the same time easy
-to use, with a syntax inspired mainly by Rust and C# (which are the coolest languages
-I've ever seen), and by other languages such as Python, Lua, TypeScript, D, Zig, Go,
-etc.
+to use, with a syntax inspired mainly by Zig, Rust and C# (which are the coolest languages
+I've ever seen), and by other languages such as Python, Lua, TypeScript, D, Go, etc.
 
 It is true that there are many programming languages and each of them specialized in
 a field; some with strange syntax in my opinion (like Lisp) and others with a high
 learning curve, but Rivet tries to be an exception by trying to become a unique
 language with a clear and simple syntax and a low learning curve.
-
-```rs
-// A simple sample: the classic "Hello World"
-import "std/console";
-
-fn main() {
-    console.println("Hello World!");
-}
-```
-<sub>More samples in the [`samples/`](samples/) folder</sub>
-
-## Important note
-
-Currently the language is in alpha state, and therefore its syntax and the language
-API is not stable, and may change in the long term. Not all features are implemented.
-
-Only linux is supported. Windows is not well supported, and macOS is not supported yet.
-Any help is welcome.
 
 ## Features
 
@@ -57,6 +38,26 @@ Any help is welcome.
 * **Immutable values**: Variables and fields of struct are immutable by default.
 * **Polymorphism**: Classes, Traits and Embedded Structs are supported.
 * **Generics**: Specialize and reuse the same code for different types (**coming soon**).
+
+## Important note
+
+Currently the language is in alpha state, and therefore its syntax and the language
+API is not stable, and may change in the long term. Not all features are implemented.
+
+Only linux is supported. Windows is not well supported, and macOS is not supported yet.
+Any help is welcome.
+
+## Samples
+
+```rs
+// A simple sample: the classic "Hello World"
+import "std/console";
+
+fn main() {
+    console.println("Hello World!");
+}
+```
+More samples in the [`samples/`](samples/) folder.
 
 * * *
 
