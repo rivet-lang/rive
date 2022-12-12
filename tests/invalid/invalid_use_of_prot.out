@@ -1,5 +1,5 @@
 tests/invalid/invalid_use_of_prot.ri:1:1: error: invalid use of `prot`
-  1 | prot fn protected_fn() {}
-    | ^
-    = note: only valid with classes and structs
+    1 | prot fn protected_fn() {}
+      | ^
+      = note: only valid with classes and structs
 rivetc: error: could not compile module `invalid_use_of_prot`, aborting due to previous error

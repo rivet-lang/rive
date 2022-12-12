@@ -1,6 +1,6 @@
 tests/invalid/mutable_module_variable.ri:4:13: error: use of mutable module variables is unsafe and requires `unsafe` block
-  4 |     let x = MUTABLE_STATIC;
-    |             ^
-    = note: mutable module variables can be mutated by multiple threads: aliasing violations
-      or data races will cause undefined behavior
+    4 |     let x = MUTABLE_STATIC;
+      |             ^
+      = note: mutable module variables can be mutated by multiple threads: aliasing violations
+        or data races will cause undefined behavior
 rivetc: error: could not compile module `mutable_module_variable`, aborting due to previous error

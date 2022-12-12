@@ -1,4 +1,4 @@
 tests/invalid/call_expr.ri:5:28: error: expected named argument, found single expression
-  5 |     qy(first: 5, last: 10, 9); // FAIL
-    |                            ^
+    5 |     qy(first: 5, last: 10, 9); // FAIL
+      |                            ^
 rivetc: error: could not compile module `call_expr`, aborting due to previous error
