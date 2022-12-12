@@ -543,6 +543,7 @@ class Checker:
                         report.error(
                             "cannot reference a pointer indexing", expr.pos
                         )
+                    right.is_ref = True
                 elif isinstance(expr.typ, type.Ref):
                     report.error(
                         "cannot take the address of other reference", expr.pos
@@ -638,7 +639,7 @@ class Checker:
                 if rsym.kind not in (TypeKind.Vec, TypeKind.Array):
                     report.error(
                         f"operator `{expr.op}` can only be used with arrays and vectors",
-                        expor.pos
+                        expr.pos
                     )
                     return expr.typ
                 elem_typ = rsym.info.elem_typ

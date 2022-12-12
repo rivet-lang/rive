@@ -12,7 +12,7 @@
 	pub const SIGINT: i32 = 2;
 	pub const SIGSEGV: i32 = 11;
 	pub const SIGTERM: i32 = 15;
-#elif _WINDOWS_
+#else_if _WINDOWS_
 	pub const SIGABRT: i32 = 22;
 	pub const SIGFPE: i32 = 8;
 	pub const SIGILL: i32 = 4;

@@ -484,8 +484,6 @@ class InstKind(Enum):
     BitNot = auto_enum()
 
     # boolean operators
-    BooleanAnd = auto_enum()
-    BooleanOr = auto_enum()
     BooleanNot = auto_enum()
 
     # bitwise operators
@@ -521,8 +519,6 @@ class InstKind(Enum):
         elif self == InstKind.Dec: return "dec"
         elif self == InstKind.Neg: return "neg"
         elif self == InstKind.BitNot: return "bit_not"
-        elif self == InstKind.BooleanAnd: return "boolean_and"
-        elif self == InstKind.BooleanOr: return "boolean_or"
         elif self == InstKind.BooleanNot: return "boolean_not"
         elif self == InstKind.BitAnd: return "bit_and"
         elif self == InstKind.BitOr: return "bit_or"

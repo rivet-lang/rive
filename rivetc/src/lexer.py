@@ -588,7 +588,7 @@ class Lexer:
         if kw == "if":
             self.pos += 1 # fix
             self.pp_if()
-        elif kw == "elif":
+        elif kw == "else_if":
             self.pos += 1 # fix
             self.pp_elif()
         elif kw == "else":
@@ -637,7 +637,7 @@ class Lexer:
         self.skip_whitespace()
         if len(self.conditional_stack
                ) == 0 or self.conditional_stack[-1].else_found:
-            report.error("unexpected `#elif`", pos)
+            report.error("unexpected `#else_if`", pos)
             return
 
         if cond and (not self.conditional_stack[-1].matched) and (
@@ -691,30 +691,13 @@ class Lexer:
         return left
 
     def pp_and_expression(self):
-        left = self.pp_equality_expression()
+        left = self.pp_unary_expression()
         self.skip_whitespace()
         while self.pos < self.text_len and self.matches("and", self.pos):
             self.pos += 3
             self.skip_whitespace()
-            right = self.pp_equality_expression()
+            right = self.pp_unary_expression()
             left = left and right
-        return left
-
-    def pp_equality_expression(self):
-        left = self.pp_unary_expression()
-        self.skip_whitespace()
-        while True:
-            if self.pos < self.text_len and self.matches("==", self.pos):
-                self.pos += 2
-                self.skip_whitespace()
-                right = self.pp_unary_expression()
-                left = left == right
-            elif self.pos < self.text_len and self.matches("!=", self.pos):
-                self.pos += 2
-                self.skip_whitespace()
-                right = self.pp_unary_expression()
-                left = left != right
-            break
         return left
 
     def pp_unary_expression(self):

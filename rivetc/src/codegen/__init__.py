@@ -1555,17 +1555,17 @@ class Codegen:
             elif s.kind == TypeKind.Vec:
                 expr_typ_ir2 = expr_typ_ir.ptr()
                 value = ir.Inst(
-                    ir.InstKind.LoadPtr, [
+                    ir.InstKind.Cast, [
                         ir.Inst(
-                            ir.InstKind.Cast, [
-                                ir.Inst(
-                                    ir.InstKind.Call,
-                                    [ir.Name("_R7runtime3Vec3getM"), left, idx]
-                                ), expr_typ_ir2
-                            ], expr_typ_ir2
-                        )
-                    ]
+                            ir.InstKind.Call,
+                            [ir.Name("_R7runtime3Vec3getM"), left, idx]
+                        ), expr_typ_ir2
+                    ], expr_typ_ir2
                 )
+                if expr.is_ref:
+                    expr_typ_ir = expr_typ_ir.ptr()
+                else:
+                    value = ir.Inst(ir.InstKind.LoadPtr, [value])
             else:
                 if not s.is_boxed():
                     expr_typ_ir = expr_typ_ir.ptr()
@@ -1655,10 +1655,21 @@ class Codegen:
                     return tmp
             elif expr.op in (Kind.KwAnd, Kind.KwOr):
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
-                right = self.gen_expr_with_cast(expr_left_typ, expr.right)
-                tmp = ir.Ident(self.comp.bool_t, self.cur_fn.local_name())
-                inst = ir.InstKind.BooleanAnd if expr.op == Kind.KwAnd else ir.InstKind.BooleanOr
-                self.cur_fn.alloca(tmp, ir.Inst(inst, [left, right]))
+                tmp = ir.Ident(
+                    self.ir_type(self.comp.bool_t), self.cur_fn.local_name()
+                )
+                self.cur_fn.alloca(tmp, left)
+                left_l = self.cur_fn.local_name()
+                exit_l = self.cur_fn.local_name()
+                if expr.op == Kind.KwAnd:
+                    self.cur_fn.add_cond_br(left, left_l, exit_l)
+                else:
+                    self.cur_fn.add_cond_br(left, exit_l, left_l)
+                self.cur_fn.add_label(left_l)
+                self.cur_fn.store(
+                    tmp, self.gen_expr_with_cast(expr_left_typ, expr.right)
+                )
+                self.cur_fn.add_label(exit_l)
                 return tmp
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)

@@ -289,8 +289,7 @@ class CGen:
         elif inst.kind in (
             InstKind.Add, InstKind.Sub, InstKind.Mult, InstKind.Div,
             InstKind.Mod, InstKind.BitAnd, InstKind.BitOr, InstKind.BitXor,
-            InstKind.Lshift, InstKind.Rshift, InstKind.BooleanAnd,
-            InstKind.BooleanOr
+            InstKind.Lshift, InstKind.Rshift
         ):
             self.gen_expr(inst.args[0])
             if inst.kind == InstKind.Add: self.write(" + ")
@@ -303,8 +302,6 @@ class CGen:
             elif inst.kind == InstKind.BitXor: self.write(" ^ ")
             elif inst.kind == InstKind.Lshift: self.write(" << ")
             elif inst.kind == InstKind.Rshift: self.write(" >> ")
-            elif inst.kind == InstKind.BooleanAnd: self.write(" && ")
-            elif inst.kind == InstKind.BooleanOr: self.write(" || ")
             self.gen_expr(inst.args[1])
         elif inst.kind in (InstKind.Inc, InstKind.Dec):
             self.gen_expr(inst.args[0])

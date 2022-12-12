@@ -62,6 +62,25 @@ pub class string : ToString {
         return unsafe { self.ptr[idx] };
     }
 
+    pub fn repeat(self, count: usize) string {
+        if count == 0 {
+            return empty_string;
+        } else if count == 1 {
+            return self;
+        }
+        let len = self.len * count;
+        let res = @as(*mut u8, internal_alloc(len));
+        unsafe {
+            for i in 0..count {
+                for j in 0..self.len {
+                    res[i * self.len + j] = self.ptr[j];
+                }
+            }
+            res[len] = 0;
+        }
+        return Self(res, len);
+    }
+
     pub fn concat(self, others: ...Self) Self {
         let mut sb = StringBuilder.from_string(self);
         for other in others {
@@ -369,6 +388,89 @@ pub class string : ToString {
         return unsafe {
             Vec.from_array_no_alloc(@as(*mut u8, self.ptr), @size_of(u8), self.len)
         };
+    }
+
+    /// Splits the string based on the passed `delim` substring. It returns the
+    /// first nth parts. When nth == 0, return all the splits.
+    /// The last returned element has the remainder of the string, even if the
+    /// remainder contains more `delim` substrings.
+    pub fn split(self, delim: string, nth: usize = 0) [string] {
+        let (mut i: usize, mut res: [string]) = (0, []);
+        switch delim.len {
+            0 => {
+                i = 1;
+                for ch in self.as_bytes() {
+                    if nth > 0 and i >= nth {
+                        res.push(self[i..]);
+                        break;
+                    }
+                    res.push(ch.to_ascii());
+                    i += 1;
+                }
+                return res;
+            },
+            1 => {
+                let mut start: usize = 0;
+                let delim_byte = delim[0];
+                while i < self.len {
+                    if unsafe { self.ptr[i] == delim_byte } {
+                        if nth > 0 and res.len == nth - 1 {
+                            break;
+                        }
+                        let val = self[start..i];
+                        res.push(val);
+                        start = i + delim.len;
+                        i = start;
+                    } else {
+                        i += 1;
+                    }
+                }
+                if nth < 1 or res.len < nth {
+                    res.push(self[start..]);
+                }
+                return res;
+            },
+            else => {
+                let mut start: usize = 0;
+                while i <= self.len {
+                    let is_delim = i + delim.len <= self.len and self[i..i + delim.len] == delim;
+                    if is_delim {
+                        if nth > 0 and res.len == nth - 1 {
+                            break;
+                        }
+                        res.push(self[start..i]);
+                        start = i + delim.len;
+                        i = start;
+                    } else {
+                        i += 1;
+                    }
+                }
+                if nth < 1 or res.len < nth {
+                    res.push(self[start..]);
+                }
+                return res;
+            }
+        }
+    }
+
+    /// Splits the string by newline characters.
+    pub fn split_into_lines(self) [string] {
+        let mut res: [string] = [];
+        if self.len == 0 {
+            return res;
+        }
+        let (mut start: usize, mut end: usize) = (0, 0);
+        for i in 0..self.len {
+            if unsafe { self.ptr[i] == 10 } {
+                end = if i > 0 and unsafe { self.ptr[i - 1] == 13 } { i - 1 } else { i };
+                res.push(if start == end { "" } else { self[start..end] });
+                start = i + 1;
+            }
+        }
+        if start < self.len {
+            res.push(self[start..]);
+        }
+        return res;
     }
 
     pub fn ==(self, rhs: Self) bool {

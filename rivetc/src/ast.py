@@ -636,6 +636,7 @@ class IndexExpr:
         self.index = index
         self.left_typ = None
         self.pos = pos
+        self.is_ref = False
         self.typ = None
 
     def __repr__(self):

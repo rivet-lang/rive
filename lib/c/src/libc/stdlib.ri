@@ -4,7 +4,7 @@
 
 #if _LINUX_
     pub const RAND_MAX: i32 = 0x7fffffff;
-#elif _WINDOWS_
+#else_if _WINDOWS_
     pub const RAND_MAX: i32 = 0x7fff;
 #endif
 

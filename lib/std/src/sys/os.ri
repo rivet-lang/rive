@@ -23,7 +23,7 @@ pub enum OS as u8 {
 pub fn os() OS {
 #if _LINUX_
     return .Linux;
-#elif _WINDOWS_
+#else_if _WINDOWS_
     return .Windows;
 #else
     process.panic("unknown host operating system");

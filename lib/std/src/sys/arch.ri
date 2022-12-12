@@ -21,7 +21,7 @@ pub enum Arch as u8 {
 pub fn arch() Arch {
 #if _X86_
     return .X86;
-#elif _AMD64_
+#else_if _AMD64_
     return .Amd64;
 #else
     process.panic("unknown host architecture");
