@@ -400,10 +400,8 @@ class Lexer:
             self.skip_whitespace()
             if self.pos >= self.text_len:
                 return token.Token("", Kind.EOF, self.current_pos())
-            self.skip_whitespace()
             pos = self.current_pos()
-            ch = self.current_char()
-            nextc = self.look_ahead(1)
+            ch, nextc = self.current_char(), self.look_ahead(1)
             if utils.is_valid_name(ch):
                 lit = self.read_ident()
                 return token.Token(lit, token.lookup(lit), pos)
@@ -421,7 +419,6 @@ class Lexer:
                 return token.Token(
                     self.read_number().replace("_", ""), Kind.Number, pos
                 )
-
             # delimiters and operators
             if ch == "+":
                 if nextc == "=":
@@ -584,13 +581,10 @@ class Lexer:
         self.skip_whitespace()
         kw = self.read_ident()
         self.skip_whitespace()
-
         if kw == "if":
-            self.pos += 1 # fix
             self.pp_if()
         elif kw == "else_if":
-            self.pos += 1 # fix
-            self.pp_elif()
+            self.pp_else_if()
         elif kw == "else":
             self.pp_else()
         elif kw == "endif":
@@ -598,7 +592,6 @@ class Lexer:
         else:
             report.error(f"invalid preprocessing directive: `{kw}`", pos)
             return
-
         if len(self.conditional_stack
                ) > 0 and self.conditional_stack[-1].skip_section:
             # skip tokens until next preprocessing directive
@@ -615,6 +608,7 @@ class Lexer:
                 report.error("expected `#endif`, found end of file", pos)
 
     def pp_if(self):
+        self.pos += 1
         self.skip_whitespace()
         cond = self.pp_expression()
         self.skip_whitespace()
@@ -629,8 +623,10 @@ class Lexer:
         else:
             # skip lines until next preprocessing directive
             self.conditional_stack[-1].skip_section = True
+        self.pos -= 1
 
-    def pp_elif(self):
+    def pp_else_if(self):
+        self.pos += 1
         pos = self.current_pos()
         self.skip_whitespace()
         cond = self.pp_expression()
@@ -638,9 +634,7 @@ class Lexer:
         if len(self.conditional_stack
                ) == 0 or self.conditional_stack[-1].else_found:
             report.error("unexpected `#else_if`", pos)
-            return
-
-        if cond and (not self.conditional_stack[-1].matched) and (
+        elif cond and (not self.conditional_stack[-1].matched) and (
             len(self.conditional_stack) == 1
             or not self.conditional_stack[-2].skip_section
         ):
@@ -650,6 +644,7 @@ class Lexer:
         else:
             # skip lines until next preprocessing directive
             self.conditional_stack[-1].skip_section = True
+        self.pos -= 1
 
     def pp_else(self):
         pos = self.current_pos()
@@ -657,9 +652,7 @@ class Lexer:
         if len(self.conditional_stack
                ) == 0 or self.conditional_stack[-1].else_found:
             report.error("unexpected `#else`", pos)
-            return
-
-        if (not self.conditional_stack[-1].matched) and (
+        elif (not self.conditional_stack[-1].matched) and (
             len(self.conditional_stack) == 1
             or not self.conditional_stack[-2].skip_section
         ):
@@ -711,14 +704,13 @@ class Lexer:
         pos = self.current_pos()
         cc = self.current_char()
         if self.pos >= self.text_len:
-            report.error("expected identifier", pos)
+            report.error("expected name, found end of file", pos)
         elif utils.is_valid_name(cc):
             return self.pp_symbol()
         elif cc == '(':
             self.pos += 1
             self.skip_whitespace()
             result = self.pp_expression()
-            self.pos += 1
             self.skip_whitespace()
             cc = self.current_char()
             if self.pos < self.text_len and cc == ')':
@@ -730,7 +722,9 @@ class Lexer:
 
     def pp_symbol(self):
         pos = self.current_pos()
+        p = self.current_char()
         ident = self.read_ident()
+        self.pos += 1
         defined = False
         if ident == "true":
             defined = True

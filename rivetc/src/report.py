@@ -2,6 +2,7 @@
 # Use of this source code is governed by an MIT license that can
 # be found in the LICENSE file.
 
+import os
 import textwrap
 
 from . import utils, colors
@@ -48,7 +49,8 @@ def readline(pos, kind):
     return f"{line_str} {SEP} {line}\n      {SEP} {marker}"
 
 def fmt_msg(pos, kind, msg):
-    return colors.bold(f'{pos}: {color(kind,kind)} {msg}')
+    file = os.path.relpath(pos.file)
+    return colors.bold(f'{file}:{pos.line + 1}:{pos.col}: {color(kind,kind)} {msg}')
 
 def error(msg, pos):
     global ERRORS
@@ -70,10 +72,8 @@ def wrap_text(msg):
 
 def note(msg):
     utils.eprint(
-        f"      {FOOT} {colors.bold(colors.green('note:'))} {wrap_text(msg)}"
+        f"      {FOOT} {colors.bold(colors.cyan('note:'))} {wrap_text(msg)}"
     )
 
 def help(msg):
-    utils.eprint(
-        f"      {FOOT} {colors.bold(colors.cyan('help:'))} {wrap_text(msg)}"
-    )
+    utils.eprint(f"      {FOOT} {colors.bold('help:')} {wrap_text(msg)}")
