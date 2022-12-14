@@ -47,6 +47,7 @@ fn assert_test(cond: bool, msg: string, pos: string, mut test_: Test) {
         test_.result = .Failed;
         test_.err_msg = "assertion failed: {}".fmt(msg);
         test_.err_pos = pos;
+        test_.early_return = true;
     }
 }
 
@@ -54,6 +55,7 @@ fn test_error_returned(err: Error, pos: string, mut test_: Test) {
     test_.result = .ErrorReturned;
     test_.err = err;
     test_.err_pos = pos;
+    test_.early_return = true;
 }
 
 enum TestResult as u8 {
@@ -67,6 +69,7 @@ struct Test {
     name: string;
     func : fn (*Test);
     mut result: TestResult;
+    mut early_return: bool;
     mut err_pos: string;
     mut err_msg: string;
     mut err: Error;

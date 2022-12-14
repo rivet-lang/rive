@@ -50,7 +50,9 @@ def readline(pos, kind):
 
 def fmt_msg(pos, kind, msg):
     file = os.path.relpath(pos.file)
-    return colors.bold(f'{file}:{pos.line + 1}:{pos.col}: {color(kind,kind)} {msg}')
+    return colors.bold(
+        f'{file}:{pos.line + 1}:{pos.col}: {color(kind,kind)} {msg}'
+    )
 
 def error(msg, pos):
     global ERRORS
@@ -72,7 +74,7 @@ def wrap_text(msg):
 
 def note(msg):
     utils.eprint(
-        f"      {FOOT} {colors.bold(colors.cyan('note:'))} {wrap_text(msg)}"
+        f"      {FOOT} {colors.bold(colors.blue('note:'))} {wrap_text(msg)}"
     )
 
 def help(msg):

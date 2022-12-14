@@ -2,8 +2,12 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import "c";
 import "c/libc";
 pub import "runtime" {
+    process_executable as executable,
+    process_set_cwd as set_cwd,
+    process_get_cwd as get_cwd,
     process_id as id,
     process_panic as panic,
     process_abort as abort,

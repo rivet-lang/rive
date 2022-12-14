@@ -2,9 +2,16 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import "c";
 import "c/libc";
 
 pub struct Dir {
+    pub fn remove(dir: string) ! {
+        if unsafe { libc.rmdir(dir.ptr) == -1 } {
+            return c.last_errno_error();
+        }
+    }
+
     pub fn walk(path: string) ![string] {
         unsafe {
             if let dir = libc.opendir(path.ptr) {

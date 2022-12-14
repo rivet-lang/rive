@@ -344,6 +344,7 @@ class Codegen:
             self.gen_decl(decl)
 
     def gen_decl(self, decl):
+        self.cur_fn_defer_stmts = []
         if isinstance(decl, ast.ExternDecl):
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.LetDecl):
@@ -419,12 +420,10 @@ class Codegen:
             self.cur_fn_ret_typ = decl.ret_typ
             for defer_stmt in decl.defer_stmts:
                 defer_stmt.flag_var = self.cur_fn.local_name()
-                self.cur_fn_defer_stmts.append(defer_stmt)
                 self.cur_fn.alloca(
                     ir.Ident(ir.Type("bool"), defer_stmt.flag_var),
                     ir.IntLit(ir.Type("bool"), "0")
                 )
-            self.cur_fn_defer_stmts = decl.defer_stmts
             self.gen_stmts(decl.stmts)
             self.gen_defer_stmts()
             if str(fn_decl.ret_typ) == "_R7Result__R4void":
@@ -451,12 +450,10 @@ class Codegen:
             self.cur_fn = dtor_fn
             for defer_stmt in decl.defer_stmts:
                 defer_stmt.flag_var = self.cur_fn.local_name()
-                self.cur_fn_defer_stmts.append(defer_stmt)
                 self.cur_fn.alloca(
                     ir.Ident(ir.Type("bool"), defer_stmt.flag_var),
                     ir.IntLit(ir.Type("bool"), "0")
                 )
-            self.cur_fn_defer_stmts = decl.defer_stmts
             self.gen_stmts(decl.stmts)
             self.gen_defer_stmts()
             self.out_rir.decls.append(dtor_fn)
@@ -627,7 +624,8 @@ class Codegen:
                                 ]
                             )
                             self.cur_fn.try_alloca(
-                                stmt.cond.expr.typ.typ, stmt.cond.vars[0],
+                                self.ir_type(stmt.cond.expr.typ.typ),
+                                stmt.cond.vars[0],
                                 ir.Selector(
                                     self.ir_type(stmt.cond.expr.typ.typ), gexpr,
                                     ir.Name("value")
@@ -714,6 +712,7 @@ class Codegen:
                 ir.Ident(ir.Type("bool"), stmt.flag_var),
                 ir.IntLit(ir.Type("bool"), "1")
             )
+            self.cur_fn_defer_stmts.append(stmt)
         elif isinstance(stmt, ast.ExprStmt):
             _ = self.gen_expr(stmt.expr)
 
@@ -912,15 +911,29 @@ class Codegen:
                 msg_ = f"`{expr.args[0]}`"
                 msg = utils.smart_quote(msg_, False)
                 if self.inside_test:
+                    tmp_id = ir.Ident(ir.Type("_R7runtime4Test").ptr(), "test")
                     pos = utils.smart_quote(str(expr.pos), False)
                     self.cur_fn.add_call(
                         "_R7runtime11assert_testF", [
                             self.gen_expr(expr.args[0]),
-                            self.gen_string_lit(msg),
-                            self.gen_string_lit(pos),
-                            ir.Ident(ir.Type("_R7runtime4Test").ptr(), "test")
+                            self.gen_string_lit(msg,
+                                                utils.bytestr(msg_).len),
+                            self.gen_string_lit(
+                                pos,
+                                utils.bytestr(str(expr.pos)).len
+                            ), tmp_id
                         ]
                     )
+                    l1 = self.cur_fn.local_name()
+                    l2 = self.cur_fn.local_name()
+                    self.cur_fn.add_cond_br(
+                        ir.Selector(
+                            ir.Type("bool"), tmp_id, ir.Name("early_return")
+                        ), l1, l2
+                    )
+                    self.cur_fn.add_label(l1)
+                    self.cur_fn.add_ret_void()
+                    self.cur_fn.add_label(l2)
                 else:
                     self.cur_fn.add_call(
                         "_R7runtime6assertF",
@@ -2161,7 +2174,6 @@ class Codegen:
         elif isinstance(expr, ast.ReturnExpr):
             wrap_result = isinstance(self.cur_fn_ret_typ, type.Result)
             ret_typ = self.cur_fn_ret_typ.typ if wrap_result else self.cur_fn_ret_typ
-            self.gen_defer_stmts(wrap_result)
             if self.inside_test:
                 self.cur_fn.store(
                     ir.Selector(
@@ -2170,6 +2182,7 @@ class Codegen:
                         ir.Name("result")
                     ), ir.IntLit(ir.Type("u8"), "1")
                 )
+                self.gen_defer_stmts()
                 self.cur_fn.add_ret_void()
             elif expr.has_expr:
                 is_array = self.cur_fn_ret_typ.symbol().kind == TypeKind.Array
@@ -2197,30 +2210,42 @@ class Codegen:
                         expr_ = self.result_error(self.cur_fn_ret_typ, expr_)
                     else:
                         expr_ = self.result_value(self.cur_fn_ret_typ, expr_)
+                self.gen_defer_stmts(
+                    wrap_result,
+                    ir.Selector(ir.Type("bool"), expr_, ir.Name("is_err"))
+                )
                 self.cur_fn.add_ret(expr_)
             elif wrap_result:
+                self.gen_defer_stmts()
                 self.cur_fn.add_ret(self.result_void(self.cur_fn_ret_typ))
             else:
+                self.gen_defer_stmts()
                 self.cur_fn.add_ret_void()
             return ir.Skip()
         else:
             raise Exception(expr.__class__, expr.pos)
         return ir.Skip()
 
-    def gen_defer_stmts(self, gen_errdefer = False):
-        for defer_stmt in self.cur_fn_defer_stmts:
+    def gen_defer_stmts(self, gen_errdefer = False, last_ret_was_err = None):
+        for i in range(len(self.cur_fn_defer_stmts) - 1, -1, -1):
+            defer_stmt = self.cur_fn_defer_stmts[i]
             if defer_stmt.is_errdefer and not gen_errdefer:
                 continue
             defer_start = self.cur_fn.local_name()
             defer_end = self.cur_fn.local_name()
             self.cur_fn.add_comment(
-                f"defer stmt (start: {defer_start}, end: {defer_end})"
+                f"defer_stmt (start: {defer_start}, end: {defer_end}, is_errdefer: {defer_stmt.is_errdefer})"
             )
             self.cur_fn.add_cond_br(
                 ir.Ident(ir.Type("bool"), defer_stmt.flag_var), defer_start,
                 defer_end
             )
             self.cur_fn.add_label(defer_start)
+            if defer_stmt.is_errdefer:
+                self.cur_fn.add_cond_single_br(
+                    ir.Inst(ir.InstKind.BooleanNot, [last_ret_was_err]),
+                    defer_end
+                )
             self.gen_expr(defer_stmt.expr)
             self.cur_fn.add_label(defer_end)
 

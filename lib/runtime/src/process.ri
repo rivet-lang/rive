@@ -2,7 +2,40 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import "c";
 import "c/libc";
+
+/// Returns the path name of the executable that started the current process.
+pub fn process_executable() !string {
+    let mut res: [u8; libc.MAX_PATH_LEN] = []!;
+    let count = unsafe {
+        libc.readlink(c"/proc/self/exe", @addr_of(res[0]), libc.MAX_PATH_LEN)
+    };
+    if count < 0 {
+        return Error("failed at reading /proc/self/exe to get exe path");
+    }
+    return unsafe {
+        string.from_raw_with_len(@addr_of(res[0]), @as(usize, count)).clone()
+    };
+}
+
+/// Sets the current working directory to the new directory in `path`.
+pub fn process_set_cwd(path: string) ! {
+    if unsafe { libc.chdir(path.ptr) == -1 } {
+        return c.last_errno_error();
+    }
+}
+
+/// Returns the absolute path of the current working directory.
+pub fn process_get_cwd() !string {
+    unsafe {
+        let mut buf: [u8; libc.MAX_PATH_LEN] = []!;
+        if let res = libc.getcwd(@addr_of_mut(buf[0]), libc.MAX_PATH_LEN) {
+            return string.from_raw(@addr_of(buf[0])).clone();
+        }
+    }
+    return c.last_errno_error();
+}
 
 /// Returns the OS-assigned process identifier associated with this
 /// process.

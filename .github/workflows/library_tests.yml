@@ -20,6 +20,10 @@ jobs:
         run: |
           python3 rivetc --backend-compiler clang -t lib/runtime/tests/
 
+      - name: Run standard library tests
+        run: |
+          python3 rivetc --backend-compiler clang -t lib/std/tests/
+
   ubuntu-gcc:
     runs-on: ubuntu-latest
     env:
@@ -30,3 +34,7 @@ jobs:
       - name: Run runtime tests
         run: |
           python3 rivetc -t lib/runtime/tests/
+
+      - name: Run standard library tests
+        run: |
+          python3 rivetc -t lib/std/tests/

@@ -4,6 +4,22 @@
 
 import "c" { * };
 
+pub const MAX_PATH_LEN: usize = 4096;
+pub const MAX_NAME_LEN: usize = 255;
+
+pub const STDIN_FILENO: i32 = 0;
+pub const STDOUT_FILENO: i32 = 1;
+pub const STDERR_FILENO: i32 = 2;
+
+pub const F_OK: i32 = 0;
+pub const X_OK: i32 = 1;
+pub const W_OK: i32 = 2;
+pub const R_OK: i32 = 4;
+
+pub const S_IFMT: i32  = 0xF000; // file
+pub const S_IFDIR: i32 = 0x4000; // directory
+pub const S_IFLNK: i32 = 0xA000; // link
+
 pub struct FILE;
 
 #if _LINUX_

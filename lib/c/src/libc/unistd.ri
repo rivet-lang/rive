@@ -15,6 +15,12 @@ extern (C) {
     pub fn write(fd: i32, buf: *void, count: usize) isize;
     pub fn read(fildes: i32, buf: *mut void, nbyte: usize) isize;
 
+    pub fn rmdir(path: *u8) i32;
+    pub fn chdir(path: *u8) i32;
+    pub fn getcwd(buf: *u8, size: usize) ?*u8;
+
+    pub fn readlink(path: *u8, buf: *u8, size: usize) isize;
+
 #if _LINUX_
     pub fn get_nprocs() i32;
 #endif

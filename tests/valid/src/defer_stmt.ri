@@ -13,8 +13,8 @@ test "`defer` statement" {
 }
 
 fn test_errdefer(mut err_defer: ErrDefer, err: bool) ! {
-    defer err_defer.i = 1;
-    errdefer err_defer.i = 2;
+    defer err_defer.i += 1;
+    errdefer err_defer.i += 2;
 
     if err {
         return Error();
@@ -27,5 +27,5 @@ test "`errdefer` statement" {
     @assert(err_defer.i == 1);
 
     test_errdefer(err_defer, true) catch { };
-    @assert(err_defer.i == 2);
+    @assert(err_defer.i == 4);
 }

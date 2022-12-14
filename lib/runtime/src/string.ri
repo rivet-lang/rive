@@ -249,6 +249,34 @@ pub class string : ToString {
         return nil;
     }
 
+    /// Linear search for the last index of `byte` inside a string.
+    pub fn last_index_of_byte(self, byte: u8) ?usize {
+        let mut i: usize = self.len;
+        while i != 0 {
+            i -= 1;
+            if unsafe { self.ptr[i] == byte } {
+                return i;
+            }
+        }
+        return nil;
+    }
+
+    /// Returns the position of the last occurence of the input string.
+    fn last_index_of(self, p: string) ?usize {
+        if p.len > self.len or p.len == 0 {
+            return nil;
+        }
+        let mut i: usize = self.len - p.len;
+        while i >= 0 : i -= 1 {
+            let mut j: usize = 0;
+            while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
+            if j == p.len {
+                return i;
+            }
+        }
+        return nil;
+    }
+
     /// Returns the string found between `start` string and `end` string.
     pub fn find_between(self, start: string, end: string) string {
         let start_pos = self.index_of(start) ?? return empty_string;
@@ -390,6 +418,35 @@ pub class string : ToString {
         };
     }
 
+    /// Splits the string to an array by any of the `delim` chars.
+    /// Example:
+    /// >> "first row\nsecond row".split_any(" \n") == ['first', 'row', 'second', 'row']
+    /// Split a string using the chars in the delimiter string as delimiters chars.
+    /// If the delimiter string is empty then `.split()` is used.
+    pub fn split_any(self, delim: string) [string] {
+        let (mut i: usize, mut res: [string]) = (0, []);
+        // check empty source string
+        if self.len > 0 {
+            // if empty delimiter string using default split
+            if delim.len <= 0 {
+                return self.split("");
+            }
+            for index, ch in self.as_bytes() {
+                for delim_ch in delim.as_bytes() {
+                    if ch == delim_ch {
+                        res.push(self[i..index]);
+                        i = index + 1;
+                        break;
+                    }
+                }
+            }
+            if i < self.len {
+                res.push(self[i..]);
+            }
+        }
+        return res;
+    }
+
     /// Splits the string based on the passed `delim` substring. It returns the
     /// first nth parts. When nth == 0, return all the splits.
     /// The last returned element has the remainder of the string, even if the
@@ -417,8 +474,7 @@ pub class string : ToString {
                         if nth > 0 and res.len == nth - 1 {
                             break;
                         }
-                        let val = self[start..i];
-                        res.push(val);
+                        res.push(self[start..i]);
                         start = i + delim.len;
                         i = start;
                     } else {
@@ -471,6 +527,19 @@ pub class string : ToString {
             res.push(self[start..]);
         }
         return res;
+    }
+
+    /// Returns an iterator that iterates over the slices of `self` that are not
+    /// any of the bytes in `delimiter_bytes`.
+    ///
+    /// `tokenize("   abc def    ghi  ", " ")` will return slices for "abc", "def",
+    /// "ghi", nil, in that order.
+    ///
+    /// If `self` is empty, the iterator will return nil.
+    /// If `delimiter_bytes` does not exist in self, the iterator will return `self`,
+    /// nil, in that order.
+    pub fn tokenize(self, delimiter_bytes: string) TokenIterator {
+        return TokenIterator(self, delimiter_bytes.as_bytes());
     }
 
     pub fn ==(self, rhs: Self) bool {
@@ -608,5 +677,59 @@ pub class string : ToString {
                 mem_dealloc(self.ptr);
             }
         }
+    }
+}
+
+pub struct TokenIterator {
+    buffer: string;
+    delimiter_bytes: [u8];
+    mut index: usize;
+
+    /// Returns a slice of the current token, or nil if tokenization is
+    /// complete, and advances to the next token.
+    pub fn next(mut self) ?string {
+        let result = self.peek() ?? return nil;
+        self.index += result.len;
+        return result;
+    }
+
+    /// Returns a slice of the current token, or nil if tokenization is
+    /// complete. Does not advance to the next token.
+    pub fn peek(mut self) ?string {
+        // move to beginning of token
+        while self.index < self.buffer.len and self.is_split_byte(self.buffer[self.index])
+            : self.index += 1 {}
+        let start = self.index;
+        if start == self.buffer.len {
+            return nil;
+        }
+        // move to end of token
+        let mut end = start;
+        while end < self.buffer.len and !self.is_split_byte(self.buffer[end])
+            : end += 1 {}
+        return self.buffer[start..end];
+    }
+
+    /// Returns a slice of the remaining bytes. Does not affect iterator state.
+    pub fn rest(self) string {
+        // move to beginning of token
+        let mut index: usize = self.index;
+        while index < self.buffer.len and self.is_split_byte(self.buffer[index])
+            : index += 1 {}
+        return self.buffer[index..];
+    }
+
+    /// Resets the iterator to the initial token.
+    pub fn reset(mut self) {
+        self.index = 0;
+    }
+
+    fn is_split_byte(self, byte: u8) bool {
+        for delimiter_byte in self.delimiter_bytes {
+            if byte == delimiter_byte {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -192,6 +192,9 @@ class Compiler:
                 mod_basedir = path.dirname(abspath)
                 if mod_basedir.endswith("/src"):
                     mod_basedir = mod_basedir[:-4] # skip `src/`
+                if "/src" in mod_basedir and not mod_basedir.endswith("/src"):
+                    first_part = mod_basedir[:mod_basedir.rfind("/")]
+                    mod_basedir = mod_basedir[:first_part.rfind("/")]
                 names = abspath[mod_basedir.rfind("/") + 1:].split("/")
                 if "src" in names:
                     src_idx = names.index("src")

@@ -1,0 +1,155 @@
+import "std/fs/path";
+import "std/process";
+
+let CWD: string = process.get_cwd() catch "";
+
+test "fs.path.is_absolute()" {
+    @assert(path.is_absolute("") == false);
+    @assert(path.is_absolute("/home/foo") == true);
+    @assert(path.is_absolute("/home/foo/..") == true);
+    @assert(path.is_absolute("bar/") == false);
+    @assert(path.is_absolute("./baz") == false);
+}
+
+test "fs.path.resolve()" {
+    @assert(path.resolve(".").! == CWD);
+    @assert(path.resolve("a/b/c/", "../../..").! == CWD);
+
+    @assert(path.resolve("/a/b", "c").! == "/a/b/c");
+    @assert(path.resolve("/a/b", "c", "//d", "e///").! == "/d/e");
+    @assert(path.resolve("/a/b/c", "..", "../").! == "/a");
+    @assert(path.resolve("/", "..", "..").! == "/");
+    @assert(path.resolve("/a/b/c/").! == "/a/b/c");
+
+    @assert(path.resolve("/var/lib", "../", "file/").! == "/var/file");
+    @assert(path.resolve("/var/lib", "/../", "file/").! == "/file");
+    @assert(path.resolve("/some/dir", ".", "/absolute/").! == "/absolute");
+    @assert(
+        path.resolve("/foo/tmp.3/", "../tmp.3/cycles/root.js").!
+            == "/foo/tmp.3/cycles/root.js"
+    );
+}
+
+test "fs.path.dirname()" {
+    if let d1 = path.dirname("/a/b/c") {
+        @assert(d1 == "/a/b");
+    } else {
+        @assert(false);
+    }
+    if let d2 = path.dirname("/a/b/c///") {
+        @assert(d2 == "/a/b");
+    } else {
+        @assert(false);
+    }
+    if let d3 = path.dirname("/a") {
+        @assert(d3 == "/");
+    } else {
+        @assert(false);
+    }
+    @assert(path.dirname("/") is nil);
+    @assert(path.dirname("//") is nil);
+    @assert(path.dirname("///") is nil);
+    @assert(path.dirname("////") is nil);
+    @assert(path.dirname("") is nil);
+    @assert(path.dirname("a") is nil);
+    @assert(path.dirname("a/") is nil);
+    @assert(path.dirname("a//") is nil);
+}
+
+test "fs.path.basename()" {
+    @assert(path.basename("") == "");
+    @assert(path.basename("/") == "");
+    @assert(path.basename("/dir/basename.ext") == "basename.ext");
+    @assert(path.basename("/basename.ext") == "basename.ext");
+    @assert(path.basename("basename.ext") == "basename.ext");
+    @assert(path.basename("basename.ext/") == "basename.ext");
+    @assert(path.basename("basename.ext//") == "basename.ext");
+    @assert(path.basename("/aaa/bbb") == "bbb");
+    @assert(path.basename("/aaa/") == "aaa");
+    @assert(path.basename("/aaa/b") == "b");
+    @assert(path.basename("/a/b") == "b");
+    @assert(path.basename("//a") == "a");
+
+    @assert(path.basename("\\dir\\basename.ext") == "\\dir\\basename.ext");
+    @assert(path.basename("\\basename.ext") == "\\basename.ext");
+    @assert(path.basename("basename.ext") == "basename.ext");
+    @assert(path.basename("basename.ext\\") == "basename.ext\\");
+    @assert(path.basename("basename.ext\\\\") == "basename.ext\\\\");
+    @assert(path.basename("foo") == "foo");
+}
+
+test "fs.path.extension()" {
+    @assert(path.extension("") == "");
+    @assert(path.extension(".") == "");
+    @assert(path.extension("a.") == ".");
+    @assert(path.extension("abc.") == ".");
+    @assert(path.extension(".a") == "");
+    @assert(path.extension(".file") == "");
+    @assert(path.extension(".gitignore") == "");
+    @assert(path.extension(".image.png") == ".png");
+    @assert(path.extension("file.ext") == ".ext");
+    @assert(path.extension("file.ext.") == ".");
+    @assert(path.extension("very-long-file.bruh") == ".bruh");
+    @assert(path.extension("a.b.c") == ".c");
+    @assert(path.extension("a.b.c/") == ".c");
+
+    @assert(path.extension("/") == "");
+    @assert(path.extension("/.") == "");
+    @assert(path.extension("/a.") == ".");
+    @assert(path.extension("/abc.") == ".");
+    @assert(path.extension("/.a") == "");
+    @assert(path.extension("/.file") == "");
+    @assert(path.extension("/.gitignore") == "");
+    @assert(path.extension("/file.ext") == ".ext");
+    @assert(path.extension("/file.ext.") == ".");
+    @assert(path.extension("/very-long-file.bruh") == ".bruh");
+    @assert(path.extension("/a.b.c") == ".c");
+    @assert(path.extension("/a.b.c/") == ".c");
+
+    @assert(path.extension("/foo/bar/bam/") == "");
+    @assert(path.extension("/foo/bar/bam/.") == "");
+    @assert(path.extension("/foo/bar/bam/a.") == ".");
+    @assert(path.extension("/foo/bar/bam/abc.") == ".");
+    @assert(path.extension("/foo/bar/bam/.a") == "");
+    @assert(path.extension("/foo/bar/bam/.file") == "");
+    @assert(path.extension("/foo/bar/bam/.gitignore") == "");
+    @assert(path.extension("/foo/bar/bam/file.ext") == ".ext");
+    @assert(path.extension("/foo/bar/bam/file.ext.") == ".");
+    @assert(path.extension("/foo/bar/bam/very-long-file.bruh") == ".bruh");
+    @assert(path.extension("/foo/bar/bam/a.b.c") == ".c");
+    @assert(path.extension("/foo/bar/bam/a.b.c/") == ".c");
+}
+
+test "fs.path.relative()" {
+    @assert(path.relative("/var/lib", "/var").! == "..");
+    @assert(path.relative("/var/lib", "/bin").! == "../../bin");
+    @assert(path.relative("/var/lib", "/var/lib").! == "");
+    @assert(path.relative("/var/lib", "/var/apache").! == "../apache");
+    @assert(path.relative("/var/", "/var/lib").! == "lib");
+    @assert(path.relative("/", "/var/lib").! == "var/lib");
+    @assert(
+        path.relative("/foo/test", "/foo/test/bar/package.json").! == "bar/package.json"
+    );
+    @assert(path.relative("/Users/a/web/b/test/mails", "/Users/a/web/b").! == "../..");
+    @assert(path.relative("/foo/bar/baz-quux", "/foo/bar/baz").! == "../baz");
+    @assert(path.relative("/foo/bar/baz", "/foo/bar/baz-quux").! == "../baz-quux");
+    @assert(path.relative("/baz-quux", "/baz").! == "../baz");
+    @assert(path.relative("/baz", "/baz-quux").! == "../baz-quux");
+}
+
+test "fs.path.join()" {
+    @assert(path.join().! == "");
+    @assert(path.join("/a/b", "c").! == "/a/b/c");
+    @assert(path.join("/a/b/", "c").! == "/a/b/c");
+    @assert(path.join("/", "a", "b/", "c").! == "/a/b/c");
+    @assert(path.join( "/a/", "b/", "c").! == "/a/b/c");
+    @assert(
+        path.join("/home/stunxfs/dev/rivet/lib/std/src/fs/", "mod.ri").! ==
+        "/home/stunxfs/dev/rivet/lib/std/src/fs/mod.ri"
+    );
+    @assert(path.join("a", "/c").! == "a/c");
+    @assert(path.join("a/", "/c").! == "a/c");
+    @assert(path.join("", "/", "a", "", "b/", "c", "").! == "/a/b/c");
+    @assert(path.join("/a/", "", "", "b/", "c").! == "/a/b/c");
+    @assert(path.join("", "").! == "");
+}
