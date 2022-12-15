@@ -126,22 +126,27 @@ class Ptr(TBase):
         return f"*{self.typ}"
 
 class Vec(TBase):
-    def __init__(self, typ):
+    def __init__(self, typ, is_mut):
         self.typ = typ
+        self.is_mut = is_mut
         self.sym = None
 
     def resolve(self, sym):
         self.sym = sym
 
     def qualstr(self):
+        if self.is_mut:
+            return f"[mut {self.typ.qualstr()}]"
         return f"[{self.typ.qualstr()}]"
 
     def __eq__(self, other):
         if not isinstance(other, Vec):
             return False
-        return self.typ == other.typ
+        return self.typ == other.typ and self.is_mut == other.is_mut
 
     def __str__(self):
+        if self.is_mut:
+            return f"[mut {self.typ}]"
         return f"[{self.typ}]"
 
 class Variadic(TBase):
@@ -164,23 +169,28 @@ class Variadic(TBase):
         return f"...{self.typ}"
 
 class Array(TBase):
-    def __init__(self, typ, size):
+    def __init__(self, typ, size, is_mut):
         self.typ = typ
         self.size = size
+        self.is_mut = is_mut
         self.sym = None
 
     def resolve(self, sym):
         self.sym = sym
 
     def qualstr(self):
+        if self.is_mut:
+            return f"[mut {self.typ.qualstr()}; {self.size}]"
         return f"[{self.typ.qualstr()}; {self.size}]"
 
     def __eq__(self, other):
         if not isinstance(other, Array):
             return False
-        return self.typ == other.typ and self.size == other.size
+        return self.typ == other.typ and self.size == other.size and self.is_mut == other.is_mut
 
     def __str__(self):
+        if self.is_mut:
+            return f"[mut {self.typ}; {self.size}]"
         return f"[{self.typ}; {self.size}]"
 
 class Tuple(TBase):

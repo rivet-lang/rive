@@ -2145,24 +2145,34 @@ class Codegen:
                             )
                         if b.has_var and i == 0:
                             var_t = self.ir_type(b.var_typ)
-                            var_t2 = var_t.ptr() if b.var_is_mut or not isinstance(var_t, ir.Pointer) else var_t
+                            var_t2 = var_t.ptr(
+                            ) if b.var_is_mut or not isinstance(
+                                var_t, ir.Pointer
+                            ) else var_t
                             if expr.expr.typ.sym.kind == TypeKind.Enum:
-                                val = ir.Inst(ir.InstKind.Cast, [
-                                    ir.Selector(
-                                        ir.Type("void").ptr(), switch_expr, ir.Name("obj")
-                                    ),
-                                    var_t2
-                                ])
-                                if not (b.var_is_mut or (
-                                    isinstance(var_t, ir.Pointer) and var_t.is_managed
-                                )):
+                                val = ir.Inst(
+                                    ir.InstKind.Cast, [
+                                        ir.Selector(
+                                            ir.Type("void").ptr(), switch_expr,
+                                            ir.Name("obj")
+                                        ), var_t2
+                                    ]
+                                )
+                                if not (
+                                    b.var_is_mut or (
+                                        isinstance(var_t, ir.Pointer)
+                                        and var_t.is_managed
+                                    )
+                                ):
                                     val = ir.Inst(ir.InstKind.LoadPtr, [val])
-                                if b.var_is_mut and not isinstance(var_t, ir.Pointer):
+                                if b.var_is_mut and not isinstance(
+                                    var_t, ir.Pointer
+                                ):
                                     var_t = var_t.ptr()
                             else:
-                                val = ir.Inst(ir.InstKind.Cast, [
-                                    switch_expr, var_t
-                                ])
+                                val = ir.Inst(
+                                    ir.InstKind.Cast, [switch_expr, var_t]
+                                )
                             self.cur_fn.try_alloca(var_t, b.var_name, val)
                     else:
                         p_conv = self.gen_expr_with_cast(p.typ, p)
@@ -2191,9 +2201,13 @@ class Codegen:
                     self.cur_fn.add_label(b_label)
                     if b.has_cond:
                         self.cur_fn.add_cond_single_br(
-                            ir.Inst(ir.InstKind.BooleanNot, [
-                                self.gen_expr_with_cast(self.comp.bool_t, b.cond)
-                            ]), b_exit
+                            ir.Inst(
+                                ir.InstKind.BooleanNot, [
+                                    self.gen_expr_with_cast(
+                                        self.comp.bool_t, b.cond
+                                    )
+                                ]
+                            ), b_exit
                         )
                 if is_void_value:
                     self.gen_expr_with_cast(
@@ -2474,8 +2488,8 @@ class Codegen:
         return ir.Inst(
             ir.InstKind.Call, [
                 ir.Name("_R7runtime3Vec3newF"),
-                ir.IntLit(ir.Type("usize"), str(size)),
-                cap or ir.IntLit(ir.Type("usize"), "0")
+                ir.IntLit(ir.Type("usize"), str(size)), cap
+                or ir.IntLit(ir.Type("usize"), "0")
             ]
         )
 
@@ -2555,8 +2569,8 @@ class Codegen:
             ir.Selector(ir.Type("void").ptr(), tmp, ir.Name("obj")),
             value if is_boxed else ir.Inst(
                 ir.InstKind.Call, [
-                    ir.Name("_R7runtime12internal_dupF"),
-                    value, ir.IntLit(ir.Name("usize"), str(size))
+                    ir.Name("_R7runtime12internal_dupF"), value,
+                    ir.IntLit(ir.Name("usize"), str(size))
                 ]
             )
         )

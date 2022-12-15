@@ -242,26 +242,32 @@ class SymRef(Sym):
         self.ref = ref
 
 class Mod(Sym):
-    def add_or_get_array(self, elem_typ, size):
-        unique_name = f"[{elem_typ.qualstr()}; {size}]"
+    def add_or_get_array(self, elem_typ, size, is_mut = False):
+        if is_mut:
+            unique_name = f"[mut {elem_typ.qualstr()}; {size}]"
+        else:
+            unique_name = f"[{elem_typ.qualstr()}; {size}]"
         if sym := self.find(unique_name):
             return sym
         from .type import Ptr, Type as type_Type
         return self.add_and_return(
             Type(
                 Vis.Pub, unique_name, TypeKind.Array,
-                info = ArrayInfo(elem_typ, size)
+                info = ArrayInfo(elem_typ, size, is_mut)
             )
         )
 
-    def add_or_get_vec(self, elem_typ):
-        unique_name = f"[{elem_typ.qualstr()}]"
+    def add_or_get_vec(self, elem_typ, is_mut = False):
+        if is_mut:
+            unique_name = f"[mut {elem_typ.qualstr()}]"
+        else:
+            unique_name = f"[{elem_typ.qualstr()}]"
         if sym := self.find(unique_name):
             return sym
         from .type import Ptr, Type as type_Type
         vec_sym = Type(
-            Vis.Pub, unique_name, TypeKind.Vec, info = VecInfo(elem_typ),
-            fields = [
+            Vis.Pub, unique_name, TypeKind.Vec,
+            info = VecInfo(elem_typ, is_mut), fields = [
                 Field("len", False, Vis.Pub, type_Type(self[14])),
                 Field("cap", False, Vis.Pub, type_Type(self[14]))
             ]
@@ -441,14 +447,16 @@ class AliasInfo:
         self.parent = parent
 
 class ArrayInfo:
-    def __init__(self, elem_typ, size):
+    def __init__(self, elem_typ, size, is_mut):
         self.elem_typ = elem_typ
         self.size = size
+        self.is_mut = is_mut
         self.has_contains_method = False
 
 class VecInfo:
-    def __init__(self, elem_typ):
+    def __init__(self, elem_typ, is_mut):
         self.elem_typ = elem_typ
+        self.is_mut = is_mut
         self.has_contains_method = False
 
 class TupleInfo:

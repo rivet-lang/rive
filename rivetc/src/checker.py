@@ -439,6 +439,7 @@ class Checker:
         elif isinstance(expr, ast.VecLiteral):
             old_expected_type = self.expected_type
             size = ""
+            is_mut = False
             has_exp_typ = False
             if not isinstance(self.expected_type, type.Fn):
                 elem_sym = self.expected_type.symbol()
@@ -448,6 +449,7 @@ class Checker:
                     self.expected_type = elem_typ
                     if elem_sym.kind == TypeKind.Array:
                         size = elem_sym.info.size.lit
+                    is_mut = elem_sym.info.is_mut
                 else:
                     elem_typ = self.comp.void_t
             else:
@@ -480,13 +482,13 @@ class Checker:
                 expr.typ = type.Type(
                     self.comp.universe.add_or_get_array(
                         self.comp.comptime_number_to_type(elem_typ),
-                        ast.IntegerLiteral(arr_len, expr.pos)
+                        ast.IntegerLiteral(arr_len, expr.pos), is_mut
                     )
                 )
             else:
                 expr.typ = type.Type(
                     self.comp.universe.add_or_get_vec(
-                        self.comp.comptime_number_to_type(elem_typ)
+                        self.comp.comptime_number_to_type(elem_typ), is_mut
                     )
                 )
             self.expected_type = old_expected_type
@@ -774,9 +776,11 @@ class Checker:
                     if left_sym.kind == TypeKind.Vec:
                         expr.typ = expr.left_typ
                     else:
-                        expr.typ = type.Vec(left_sym.info.elem_typ)
+                        expr.typ = type.Vec(
+                            left_sym.info.elem_typ, left_sym.info.is_mut
+                        )
                         expr.typ.sym = self.comp.universe.add_or_get_vec(
-                            left_sym.info.elem_typ
+                            left_sym.info.elem_typ, left_sym.info.is_mut
                         )
                 elif left_sym.kind == TypeKind.Vec:
                     expr.typ = left_sym.info.elem_typ
@@ -1006,16 +1010,25 @@ class Checker:
             if expr.name == "vec":
                 if len(expr.args) in (1, 2):
                     elem_t = expr.args[0].typ
-                    expr.typ = type.Type(self.comp.universe.add_or_get_vec(elem_t))
+                    expr.typ = type.Type(
+                        self.comp.universe.add_or_get_vec(
+                            elem_t, expr.vec_is_mut
+                        )
+                    )
                     if len(expr.args) == 2:
                         arg1_t = self.check_expr(expr.args[1])
                         try:
                             self.check_types(arg1_t, self.comp.usize_t)
                         except utils.CompilerError as e:
                             report.error(e.args[0], expr.args[1].pos)
-                            report.note("in second argument of builtin function `vec`")
+                            report.note(
+                                "in second argument of builtin function `vec`"
+                            )
                 else:
-                    report.error(f"expected 1 or 2 arguments, found {len(expr.args)}", expr.pos)
+                    report.error(
+                        f"expected 1 or 2 arguments, found {len(expr.args)}",
+                        expr.pos
+                    )
             elif expr.name == "as":
                 old_expected_type = self.expected_type
                 self.expected_type = expr.typ
@@ -1332,7 +1345,9 @@ class Checker:
                         if b.var_is_mut:
                             self.check_expr_is_mut(expr.expr)
                         if len(b.pats) != 1:
-                            report.error("multiple patterns cannot have var", b.var_pos)
+                            report.error(
+                                "multiple patterns cannot have var", b.var_pos
+                            )
                         elif expr_sym.is_boxed():
                             var_t = self.comp.void_t
                             if expr_sym.kind == TypeKind.Enum:
@@ -1340,18 +1355,28 @@ class Checker:
                                 if pat0.has_typ:
                                     var_t = pat0.typ
                                 else:
-                                    report.error("cannot use void expression", b.pats[0].pos)
-                                expr.scope.update_is_hidden_ref(b.var_name, b.var_is_mut)
+                                    report.error(
+                                        "cannot use void expression",
+                                        b.pats[0].pos
+                                    )
+                                expr.scope.update_is_hidden_ref(
+                                    b.var_name, b.var_is_mut
+                                )
                             else:
                                 var_t = b.pats[0].typ
                             b.var_typ = var_t
                             expr.scope.update_type(b.var_name, var_t)
                         else:
-                            report.error("only boxed types can have vars", b.var_pos)
+                            report.error(
+                                "only boxed types can have vars", b.var_pos
+                            )
                     if b.has_cond:
                         cond_t = self.check_expr(b.cond)
                         if cond_t != self.comp.bool_t:
-                            report.error("non-boolean expression use as `switch` branch condition", b.cond.pos)
+                            report.error(
+                                "non-boolean expression use as `switch` branch condition",
+                                b.cond.pos
+                            )
                 self.expected_type = old_expected_type
                 branch_t = self.check_expr(b.expr)
                 if i == 0:
@@ -1547,7 +1572,7 @@ class Checker:
                 )
             else:
                 last_arg_typ = info.args[-1].typ
-                vec_t = type.Vec(last_arg_typ)
+                vec_t = type.Vec(last_arg_typ, False)
                 vec_t.sym = last_arg_typ.sym
                 try:
                     self.check_types(spread_expr_t, vec_t)
@@ -1668,8 +1693,12 @@ class Checker:
             if got_sym.is_subtype_of(exp_sym):
                 return True
         elif exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:
+            if exp_sym.info.is_mut and not got_sym.info.is_mut:
+                return False
             return exp_sym.info.elem_typ == got_sym.info.elem_typ and exp_sym.info.size == got_sym.info.size
         elif exp_sym.kind == TypeKind.Vec and got_sym.kind == TypeKind.Vec:
+            if exp_sym.info.is_mut and not got_sym.info.is_mut:
+                return False
             return exp_sym.info.elem_typ == got_sym.info.elem_typ
         elif exp_sym.kind == TypeKind.Tuple and got_sym.kind == TypeKind.Tuple:
             if len(exp_sym.info.types) != len(got_sym.info.types):
@@ -1806,6 +1835,8 @@ class Checker:
             report.error("array literals cannot be modified", expr.pos)
         elif isinstance(expr, ast.TupleLiteral):
             report.error("tuple literals cannot be modified", expr.pos)
+        elif isinstance(expr, ast.EnumLiteral) and expr.is_instance:
+            report.error("enum literals cannot be modified", expr.pos)
         elif isinstance(expr, ast.Block) and expr.is_expr:
             self.check_expr_is_mut(expr.expr)
         elif isinstance(expr, ast.IndexExpr):
@@ -1816,7 +1847,12 @@ class Checker:
                         expr.pos
                     )
                 return
-            self.check_expr_is_mut(expr.left)
+            expr_sym = expr.left.typ.symbol()
+            if not expr_sym.info.is_mut:
+                report.error(
+                    f"cannot modify elements of an immutable {expr_sym.kind}",
+                    expr.pos
+                )
         elif isinstance(expr, ast.UnaryExpr):
             self.check_expr_is_mut(expr.right)
         elif isinstance(expr, ast.BinaryExpr):

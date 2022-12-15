@@ -749,7 +749,14 @@ class Parser:
                     name = self.parse_name()
                 self.expect(Kind.Lparen)
                 args = []
-                if name in ("vec", "as", "size_of", "align_of"):
+                vec_is_mut = False
+                if name == "vec":
+                    pos = self.tok.pos
+                    vec_is_mut = self.accept(Kind.KwMut)
+                    args.append(ast.TypeNode(self.parse_type(), pos))
+                    if self.tok.kind != Kind.Rparen:
+                        self.expect(Kind.Comma)
+                elif name in ("as", "size_of", "align_of"):
                     pos = self.tok.pos
                     args.append(ast.TypeNode(self.parse_type(), pos))
                     if self.tok.kind != Kind.Rparen:
@@ -761,6 +768,7 @@ class Parser:
                             break
                 self.expect(Kind.Rparen)
                 expr = ast.BuiltinCallExpr(name, args, expr.pos)
+                expr.vec_is_mut = vec_is_mut
             else: # builtin variable
                 expr = self.parse_ident(True)
         elif self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Name:
@@ -1070,7 +1078,12 @@ class Parser:
                     has_cond = True
                     cond = self.parse_expr()
             self.expect(Kind.Arrow)
-            branches.append(ast.SwitchBranch(pats, has_var, var_is_mut, var_name, var_pos, has_cond, cond, self.parse_expr(), is_else))
+            branches.append(
+                ast.SwitchBranch(
+                    pats, has_var, var_is_mut, var_name, var_pos, has_cond,
+                    cond, self.parse_expr(), is_else
+                )
+            )
             if not self.accept(Kind.Comma):
                 break
         self.expect(Kind.Rbrace)
@@ -1229,14 +1242,14 @@ class Parser:
             return type.Ptr(typ, is_mut)
         elif self.accept(Kind.Lbracket):
             # arrays or vectors
-            mut_pos = self.tok.pos
+            is_mut = self.accept(Kind.KwMut)
             typ = self.parse_type()
             if self.accept(Kind.Semicolon):
                 size = self.parse_expr()
                 self.expect(Kind.Rbracket)
-                return type.Array(typ, size)
+                return type.Array(typ, size, is_mut)
             self.expect(Kind.Rbracket)
-            return type.Vec(typ)
+            return type.Vec(typ, is_mut)
         elif self.accept(Kind.Lparen):
             # tuples
             types = []

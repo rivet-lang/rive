@@ -29,7 +29,7 @@ pub fn process_set_cwd(path: string) ! {
 /// Returns the absolute path of the current working directory.
 pub fn process_get_cwd() !string {
     unsafe {
-        let mut buf: [u8; libc.MAX_PATH_LEN] = []!;
+        let mut buf: [mut u8; libc.MAX_PATH_LEN] = []!;
         if let res = libc.getcwd(@addr_of_mut(buf[0]), libc.MAX_PATH_LEN) {
             return string.from_raw(@addr_of(buf[0])).clone();
         }

@@ -747,6 +747,7 @@ class BuiltinCallExpr:
         self.name = name
         self.args = args
         self.pos = pos
+        self.vec_is_mut = False
         self.typ = None
 
     def __repr__(self):
@@ -889,7 +890,10 @@ class IfExpr:
         return self.__repr__()
 
 class SwitchBranch:
-    def __init__(self, pats, has_var, var_is_mut, var_name, var_pos, has_cond, cond, expr, is_else):
+    def __init__(
+        self, pats, has_var, var_is_mut, var_name, var_pos, has_cond, cond,
+        expr, is_else
+    ):
         self.pats = pats
         self.has_var = has_var
         self.var_is_mut = var_is_mut

@@ -310,8 +310,8 @@ class Resolver:
                         try:
                             expr.scope.add(
                                 sym.Obj(
-                                    b.var_is_mut, b.var_name,
-                                    self.comp.void_t, sym.ObjLevel.Local
+                                    b.var_is_mut, b.var_name, self.comp.void_t,
+                                    sym.ObjLevel.Local
                                 )
                             )
                         except utils.CompilerError as e:
@@ -450,7 +450,9 @@ class Resolver:
                         )
                     typ.size = typ_size
                     typ.resolve(
-                        self.comp.universe.add_or_get_array(typ.typ, typ_size)
+                        self.comp.universe.add_or_get_array(
+                            typ.typ, typ_size, typ.is_mut
+                        )
                     )
                     return True
                 report.error(
@@ -458,7 +460,9 @@ class Resolver:
                 )
         elif isinstance(typ, type.Vec):
             if self.resolve_type(typ.typ):
-                typ.resolve(self.comp.universe.add_or_get_vec(typ.typ))
+                typ.resolve(
+                    self.comp.universe.add_or_get_vec(typ.typ, typ.is_mut)
+                )
                 return True
         elif isinstance(typ, type.Tuple):
             res = False
