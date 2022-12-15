@@ -4,7 +4,7 @@
 
 import "c/libc";
 
-pub import "c" { ErrnoError, last_errno_error };
+import "c" { pub ErrnoError, pub last_errno_error };
 
 fn error_panic(err: Error) {
     process_panic(err.to_string());

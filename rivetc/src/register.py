@@ -53,14 +53,25 @@ class Register:
                             self.source_file.imported_symbols[symbol.name
                                                               ] = symbol
                 for import_info in decl.import_list:
-                    if symbol := decl.mod_sym.find(import_info.name):
+                    if import_info.name == "self":
+                        if import_info.is_pub:
+                            try:
+                                self.sym.add(
+                                    sym.SymRef(sym.Vis.Pub, decl.alias, decl.mod_sym)
+                                )
+                            except utils.CompilerError as e:
+                                report.error(e.args[0], decl.pos)
+                        else:
+                            self.source_file.imported_symbols[decl.alias
+                                                            ] = decl.mod_sym
+                    elif symbol := decl.mod_sym.find(import_info.name):
                         self.check_vis(symbol, import_info.pos)
                         self.check_imported_symbol(symbol, import_info.pos)
-                        if decl.vis.is_pub():
+                        if import_info.is_pub:
                             try:
                                 self.sym.add(
                                     sym.SymRef(
-                                        decl.vis, import_info.alias, symbol
+                                        sym.Vis.Pub, import_info.alias, symbol
                                     )
                                 )
                             except utils.CompilerError as e:

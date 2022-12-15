@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-pub import "runtime" {
-    console_print as print,
-    console_println as println,
-    console_eprint as eprint,
-    console_eprintln as eprintln,
-    console_is_atty as is_atty
+import "runtime" {
+    pub console_print as print,
+    pub console_println as println,
+    pub console_eprint as eprint,
+    pub console_eprintln as eprintln,
+    pub console_is_atty as is_atty
 };

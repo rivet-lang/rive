@@ -4,16 +4,16 @@
 
 import "c";
 import "c/libc";
-pub import "runtime" {
-    process_executable as executable,
-    process_set_cwd as set_cwd,
-    process_get_cwd as get_cwd,
-    process_id as id,
-    process_panic as panic,
-    process_abort as abort,
-    process_exit as exit
+import "runtime" {
+    self,
+    pub process_id as id,
+    pub process_panic as panic,
+    pub process_abort as abort,
+    pub process_exit as exit,
+    pub process_executable as executable,
+    pub process_set_cwd as set_cwd,
+    pub process_get_cwd as get_cwd
 };
-import "runtime";
 
 import "../strings" { Builder };
 

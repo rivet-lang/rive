@@ -3,12 +3,10 @@
 // be found in the LICENSE file.
 
 import "c";
-import "c/libc";
-import "runtime";
-
-pub import "c/libc" {
-    MAX_PATH_LEN
+import "c/libc" {
+    self, pub MAX_PATH_LEN
 };
+import "runtime";
 
 import "../../mem";
 import "../../strings";

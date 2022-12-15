@@ -128,7 +128,8 @@ class ImportDecl:
         self.pos = pos
 
 class ImportListInfo:
-    def __init__(self, name, alias, pos):
+    def __init__(self, is_pub, name, alias, pos):
+        self.is_pub = is_pub
         self.name = name
         self.alias = alias
         self.pos = pos
