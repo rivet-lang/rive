@@ -7,3 +7,17 @@ test "vector from array" {
     let vec2 = vec.clone();
     @assert(vec2.len == 4);
 }
+
+test "`@vec` builtin function" {
+    {
+        let mut v = @vec(i32);
+        v.push(5);
+        @assert(v[0] == 5);
+    }
+    {
+        let mut v = @vec(i32, 2);
+        v.push(5);
+        @assert(v.cap == 2);
+        @assert(v[0] == 5);
+    }
+}

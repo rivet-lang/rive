@@ -863,7 +863,12 @@ class Codegen:
                 i_typ = i_typ.ptr()
             return ir.Ident(i_typ, expr.obj.ir_name)
         elif isinstance(expr, ast.BuiltinCallExpr):
-            if expr.name == "as":
+            if expr.name == "vec":
+                typ_sym = expr.typ.symbol()
+                if len(expr.args) == 2:
+                    return self.empty_vec(typ_sym, self.gen_expr(expr.args[1]))
+                return self.empty_vec(typ_sym)
+            elif expr.name == "as":
                 arg1 = expr.args[1]
                 ir_typ = self.ir_type(expr.typ)
                 res = self.gen_expr_with_cast(arg1.typ, arg1)
@@ -2434,14 +2439,14 @@ class Codegen:
             return tmp
         return None
 
-    def empty_vec(self, typ_sym):
+    def empty_vec(self, typ_sym, cap = None):
         elem_typ = typ_sym.info.elem_typ
         size, _ = self.comp.type_size(elem_typ)
         return ir.Inst(
             ir.InstKind.Call, [
                 ir.Name("_R7runtime3Vec3newF"),
                 ir.IntLit(ir.Type("usize"), str(size)),
-                ir.IntLit(ir.Type("usize"), "0")
+                cap or ir.IntLit(ir.Type("usize"), "0")
             ]
         )
 

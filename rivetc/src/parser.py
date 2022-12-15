@@ -749,7 +749,7 @@ class Parser:
                     name = self.parse_name()
                 self.expect(Kind.Lparen)
                 args = []
-                if name in ("as", "size_of", "align_of"):
+                if name in ("vec", "as", "size_of", "align_of"):
                     pos = self.tok.pos
                     args.append(ast.TypeNode(self.parse_type(), pos))
                     if self.tok.kind != Kind.Rparen:
