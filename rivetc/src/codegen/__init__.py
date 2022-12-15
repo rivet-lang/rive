@@ -490,91 +490,65 @@ class Codegen:
             body_label = self.cur_fn.local_name()
             self.loop_exit_label = self.cur_fn.local_name()
             self.cur_fn.add_comment("for in stmt")
-            if isinstance(
-                stmt.iterable, ast.RangeExpr
-            ) or iterable_sym.kind in (TypeKind.Array, TypeKind.Vec):
-                if isinstance(stmt.iterable, ast.RangeExpr):
-                    self.cur_fn.try_alloca(
-                        self.ir_type(stmt.iterable.typ), stmt.vars[0],
-                        self.gen_expr_with_cast(
-                            stmt.iterable.typ, stmt.iterable.start
-                        )
-                    )
-                    idx = ir.Ident(ir.Type("usize"), stmt.vars[0])
-                    self.cur_fn.add_label(self.loop_entry_label)
-                    self.cur_fn.add_cond_br(
-                        ir.Inst(
-                            ir.InstKind.Cmp, [
-                                ir.Name(
-                                    "<=" if stmt.iterable.is_inclusive else "<"
-                                ), idx,
-                                self.gen_expr_with_cast(
-                                    stmt.iterable.typ, stmt.iterable.end
-                                )
-                            ]
-                        ), body_label, self.loop_exit_label
-                    )
-                    self.cur_fn.add_label(body_label)
-                else:
-                    idx_name = self.cur_fn.local_name(
-                    ) if vars_len == 1 else stmt.vars[0]
-                    iterable = self.gen_expr(stmt.iterable)
-                    self.cur_fn.try_alloca(
-                        ir.Type("usize"), idx_name,
-                        ir.IntLit(ir.Type("usize"), "0")
-                    )
-                    idx = ir.Ident(ir.Type("usize"), idx_name)
-                    self.cur_fn.add_label(self.loop_entry_label)
-                    if iterable_sym.kind == TypeKind.Array:
-                        len_ = ir.IntLit(
-                            ir.Type("usize"), iterable_sym.info.size.lit
-                        )
-                    else:
-                        len_ = ir.Selector(
-                            ir.Type("usize"), iterable, ir.Name("len")
-                        )
-                    self.cur_fn.add_cond_br(
-                        ir.Inst(ir.InstKind.Cmp, [ir.Name("<"), idx, len_]),
-                        body_label, self.loop_exit_label
-                    )
+            idx_name = self.cur_fn.local_name(
+            ) if vars_len == 1 else stmt.vars[0]
+            iterable = self.gen_expr(stmt.iterable)
+            self.cur_fn.try_alloca(
+                ir.Type("usize"), idx_name,
+                ir.IntLit(ir.Type("usize"), "0")
+            )
+            idx = ir.Ident(ir.Type("usize"), idx_name)
+            self.cur_fn.add_label(self.loop_entry_label)
+            if iterable_sym.kind == TypeKind.Array:
+                len_ = ir.IntLit(
+                    ir.Type("usize"), iterable_sym.info.size.lit
+                )
+            else:
+                len_ = ir.Selector(
+                    ir.Type("usize"), iterable, ir.Name("len")
+                )
+            self.cur_fn.add_cond_br(
+                ir.Inst(ir.InstKind.Cmp, [ir.Name("<"), idx, len_]),
+                body_label, self.loop_exit_label
+            )
 
-                    self.cur_fn.add_label(body_label)
-                    value_t = iterable_sym.info.elem_typ
-                    value_t_ir = self.ir_type(value_t)
-                    value_t_is_boxed = value_t.symbol().is_boxed()
-                    if iterable_sym.kind == TypeKind.Array:
-                        value = ir.Inst(
-                            ir.InstKind.GetElementPtr, [iterable, idx],
-                            value_t_ir
-                        )
-                    else:
-                        value = ir.Selector(
-                            ir.Type("void").ptr(), iterable, ir.Name("ptr")
-                        )
-                        if iterable_sym.kind == TypeKind.Vec:
-                            value = ir.Inst(
-                                ir.InstKind.Add, [
-                                    ir.Inst(
-                                        ir.InstKind.Cast, [
-                                            value,
-                                            value_t_ir.ptr(value_t_is_boxed)
-                                        ]
-                                    ), idx
+            self.cur_fn.add_label(body_label)
+            value_t = iterable_sym.info.elem_typ
+            value_t_ir = self.ir_type(value_t)
+            value_t_is_boxed = value_t.symbol().is_boxed()
+            if iterable_sym.kind == TypeKind.Array:
+                value = ir.Inst(
+                    ir.InstKind.GetElementPtr, [iterable, idx],
+                    value_t_ir
+                )
+            else:
+                value = ir.Selector(
+                    ir.Type("void").ptr(), iterable, ir.Name("ptr")
+                )
+                if iterable_sym.kind == TypeKind.Vec:
+                    value = ir.Inst(
+                        ir.InstKind.Add, [
+                            ir.Inst(
+                                ir.InstKind.Cast, [
+                                    value,
+                                    value_t_ir.ptr(value_t_is_boxed)
                                 ]
-                            )
-                        else:
-                            value = ir.Inst(
-                                ir.InstKind.GetElementPtr, [value, idx]
-                            )
-                    self.cur_fn.try_alloca(
-                        value_t_ir,
-                        stmt.vars[0] if vars_len == 1 else stmt.vars[1],
-                        ir.Inst(ir.InstKind.LoadPtr, [value])
+                            ), idx
+                        ]
                     )
-                self.gen_stmt(stmt.stmt)
-                self.cur_fn.add_inst(ir.Inst(ir.InstKind.Inc, [idx]))
-                self.cur_fn.add_br(self.loop_entry_label)
-                self.cur_fn.add_label(self.loop_exit_label)
+                else:
+                    value = ir.Inst(
+                        ir.InstKind.GetElementPtr, [value, idx]
+                    )
+            self.cur_fn.try_alloca(
+                value_t_ir,
+                stmt.vars[0] if vars_len == 1 else stmt.vars[1],
+                ir.Inst(ir.InstKind.LoadPtr, [value])
+            )
+            self.gen_stmt(stmt.stmt)
+            self.cur_fn.add_inst(ir.Inst(ir.InstKind.Inc, [idx]))
+            self.cur_fn.add_br(self.loop_entry_label)
+            self.cur_fn.add_label(self.loop_exit_label)
             self.loop_entry_label = old_entry_label
             self.loop_exit_label = old_exit_label
         elif isinstance(stmt, ast.WhileStmt):

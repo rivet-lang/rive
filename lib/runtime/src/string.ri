@@ -71,8 +71,10 @@ pub class string : ToString {
         let len = self.len * count;
         let res = @as(*mut u8, internal_alloc(len));
         unsafe {
-            for i in 0..count {
-                for j in 0..self.len {
+            let mut i: usize = 0;
+            while i < count : i += 1 {
+                let mut j: usize = 0;
+                while j < self.len : j += 1 {
                     res[i * self.len + j] = self.ptr[j];
                 }
             }
@@ -200,7 +202,8 @@ pub class string : ToString {
 
     /// Returns the index of byte `b` if found in the string.
     pub fn index_of_byte(self, b: u8) ?usize {
-        for i in 0..self.len {
+        let mut i: usize = 0;
+        while i < self.len : i += 1 {
             if unsafe { self.ptr[i] == b } {
                 return i;
             }
@@ -391,19 +394,22 @@ pub class string : ToString {
         let (mut b_i: usize, mut s_idx: usize) = (0, 0);
         unsafe {
             for rep_pos in idxs {
-                for i in s_idx..rep_pos {
+                let mut i: usize = s_idx;
+                while i < rep_pos : i += 1 {
                     b[b_i] = self.ptr[i];
                     b_i += 1;
                 }
                 s_idx = rep_pos + rep.len;
-                for i2 in 0..with_.len {
-                    b[b_i] = with_.ptr[i2];
+                i = 0;
+                while i < with_.len : i += 1 {
+                    b[b_i] = with_.ptr[i];
                     b_i += 1;
                 }
             }
             if s_idx < self.len {
-                for i3 in s_idx..self.len {
-                    b[b_i] = self.ptr[i3];
+                let mut i: usize = s_idx;
+                while i < self.len : i += 1 {
+                    b[b_i] = self.ptr[i];
                     b_i += 1;
                 }
             }
@@ -516,7 +522,8 @@ pub class string : ToString {
             return res;
         }
         let (mut start: usize, mut end: usize) = (0, 0);
-        for i in 0..self.len {
+        let mut i: usize = 0;
+        while i < self.len : i += 1 {
             if unsafe { self.ptr[i] == 10 } {
                 end = if i > 0 and unsafe { self.ptr[i - 1] == 13 } { i - 1 } else { i };
                 res.push(if start == end { "" } else { self[start..end] });
@@ -562,7 +569,8 @@ pub class string : ToString {
     }
 
     pub fn <(self, rhs: Self) bool {
-        for i in 0..self.len {
+        let mut i: usize = 0;
+        while i < self.len : i += 1 {
             unsafe {
                 if i >= rhs.len or self.ptr[i] > rhs.ptr[i] {
                     return false;
@@ -605,7 +613,8 @@ pub class string : ToString {
         if p.len > self.len {
             return false;
         }
-        for i in 0..p.len {
+        let mut i: usize = 0;
+        while i < p.len : i += 1 {
             if unsafe { self.ptr[i] != p[i] } {
                 return false;
             }
@@ -618,7 +627,8 @@ pub class string : ToString {
         if p.len > self.len {
             return false;
         }
-        for i in 0..p.len {
+        let mut i: usize = 0;
+        while i < p.len : i += 1 {
             if unsafe { p[i] != self.ptr[self.len - p.len + i] } {
                 return false;
             }

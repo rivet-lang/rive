@@ -48,7 +48,8 @@ pub fn mem_resize(ptr: ?*mut void, sz: usize) !*mut void {
 pub fn mem_set(s: *mut void, c: u8, n: usize) {
     unsafe {
         let mut s_b = @as(*mut u8, s);
-        for i in 0..n {
+        let mut i: usize = 0;
+        while i < n : i += 1 {
             s_b[i] = c;
         }
     }
@@ -60,9 +61,10 @@ pub fn mem_set(s: *mut void, c: u8, n: usize) {
 /// areas do overlap.
 pub fn mem_copy(dest: *mut void, src: *void, sz: usize) {
     unsafe {
-        let mut dest_b = @as(*mut u8, dest);
         let src_b = @as(*u8, src);
-        for i in 0..sz {
+        let mut dest_b = @as(*mut u8, dest);
+        let mut i: usize = 0;
+        while i < sz : i += 1 {
             dest_b[i] = src_b[i];
         }
     }

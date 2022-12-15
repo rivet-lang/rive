@@ -254,18 +254,7 @@ class Checker:
             iterable_t = self.check_expr(stmt.iterable)
             iterable_sym = iterable_t.symbol()
             vars_len = len(stmt.vars)
-            if isinstance(stmt.iterable, ast.RangeExpr):
-                if vars_len == 1:
-                    stmt.scope.update_type(
-                        stmt.vars[0],
-                        self.comp.comptime_number_to_type(iterable_t)
-                    )
-                else:
-                    report.error(
-                        f"expected 1 variable, found {vars_len}", stmt.pos
-                    )
-                self.check_stmt(stmt.stmt)
-            elif iterable_sym.kind in (TypeKind.Array, TypeKind.Vec):
+            if iterable_sym.kind in (TypeKind.Array, TypeKind.Vec):
                 elem_typ = self.comp.comptime_number_to_type(
                     iterable_sym.info.elem_typ
                 )
