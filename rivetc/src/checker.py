@@ -1328,6 +1328,10 @@ class Checker:
                             self.check_types(pat_t, expr_typ)
                         except utils.CompilerError as e:
                             report.error(e.args[0], p.pos)
+                    if b.has_cond:
+                        cond_t = self.check_expr(b.cond)
+                        if cond_t != self.comp.bool_t:
+                            report.error("non-boolean expression use as `switch` branch condition", b.cond.pos)
                 self.expected_type = old_expected_type
                 branch_t = self.check_expr(b.expr)
                 if i == 0:

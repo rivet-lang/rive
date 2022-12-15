@@ -306,6 +306,8 @@ class Resolver:
                 if not b.is_else:
                     for pat in b.pats:
                         self.resolve_expr(pat)
+                    if b.has_cond:
+                        self.resolve_expr(b.cond)
                 self.resolve_expr(b.expr)
 
     def find_symbol(self, symbol, name, pos):

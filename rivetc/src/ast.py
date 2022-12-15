@@ -889,15 +889,21 @@ class IfExpr:
         return self.__repr__()
 
 class SwitchBranch:
-    def __init__(self, pats, expr, is_else):
+    def __init__(self, pats, has_cond, cond, expr, is_else):
         self.pats = pats
+        self.has_cond = has_cond
+        self.cond = cond
         self.expr = expr
         self.is_else = is_else
 
     def __repr__(self):
         if self.is_else:
             return f"else => {self.expr}"
-        return f"{', '.join([str(p) for p in self.pats])} => {self.expr}"
+        res = f"{', '.join([str(p) for p in self.pats])}"
+        if self.has_cond:
+            res += " if {self.cond}"
+        res += " => {self.expr}"
+        return res
 
     def __str__(self):
         return self.__repr__()

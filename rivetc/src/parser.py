@@ -1037,6 +1037,8 @@ class Parser:
         self.inside_switch_header = old_inside_switch_header
         while True:
             pats = []
+            has_cond = False
+            cond = self.empty_expr()
             is_else = self.accept(Kind.KwElse)
             if not is_else:
                 while True:
@@ -1055,8 +1057,11 @@ class Parser:
                         pats.append(self.parse_expr())
                     if not self.accept(Kind.Comma):
                         break
+                if self.accept(Kind.KwIf):
+                    has_cond = True
+                    cond = self.parse_expr()
             self.expect(Kind.Arrow)
-            branches.append(ast.SwitchBranch(pats, self.parse_expr(), is_else))
+            branches.append(ast.SwitchBranch(pats, has_cond, cond, self.parse_expr(), is_else))
             if not self.accept(Kind.Comma):
                 break
         self.expect(Kind.Rbrace)

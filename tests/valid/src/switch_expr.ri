@@ -17,3 +17,12 @@ test "`switch` expression as statement" {
         else => @assert(false)
     }
 }
+
+test "`switch` branch condition" {
+    let v = 1;
+    let x = 5;
+    @assert(switch v {
+        1 if x == 5 => true,
+        else => false
+    });
+}

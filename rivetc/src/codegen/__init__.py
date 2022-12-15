@@ -2166,6 +2166,12 @@ class Codegen:
                         self.cur_fn.add_label(next_pat)
                 if not b.is_else:
                     self.cur_fn.add_label(b_label)
+                    if b.has_cond:
+                        self.cur_fn.add_cond_single_br(
+                            ir.Inst(ir.InstKind.BooleanNot, [
+                                self.gen_expr_with_cast(self.comp.bool_t, b.cond)
+                            ]), b_exit
+                        )
                 if is_void_value:
                     self.gen_expr_with_cast(
                         expr.expected_typ, b.expr
