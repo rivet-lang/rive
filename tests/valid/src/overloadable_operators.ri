@@ -1,0 +1,58 @@
+struct Vec {
+    x: i32;
+    y: i32;
+
+    pub fn +(&self, other: &Vec) Vec {
+        return Vec(self.x + other.x, self.y + other.y);
+    }
+
+    pub fn -(&self, other: &Vec) Vec {
+        return Vec(self.x - other.x, self.y - other.y);
+    }
+
+    pub fn *(&self, other: &Vec) Vec {
+        return Vec(self.x * other.x, self.y * other.y);
+    }
+
+    pub fn /(&self, other: &Vec) Vec {
+        return Vec(self.x / other.x, self.y / other.y);
+    }
+}
+
+let VEC: Vec = Vec(2, 2);
+
+test "overloadable operators: +" {
+    let mut v1 = VEC;
+    v1 = v1 + VEC;
+    @assert(v1.x == 4 and v1.y == 4);
+    v1 += VEC;
+    @assert(v1.x == 6 and v1.y == 6);
+}
+
+test "overloadable operators: -" {
+    let mut v1 = VEC;
+    v1 = v1 - VEC;
+    @assert(v1.x == 0 and v1.y == 0);
+    v1 += VEC;
+    @assert(v1.x == 2 and v1.y == 2);
+    v1 -= VEC;
+    @assert(v1.x == 0 and v1.y == 0);
+}
+
+test "overloadable operators: *" {
+    let mut v1 = VEC;
+    v1 = v1 * VEC;
+    @assert(v1.x == 4 and v1.y == 4);
+    v1 *= VEC;
+    @assert(v1.x == 8 and v1.y == 8);
+}
+
+test "overloadable operators: /" {
+    let mut v1 = VEC;
+    v1 = v1 / VEC;
+    @assert(v1.x == 1 and v1.y == 1);
+    v1 += VEC;
+    @assert(v1.x == 2 and v1.y == 2);
+    v1 /= VEC;
+    @assert(v1.x == 1 and v1.y == 1);
+}

@@ -988,7 +988,9 @@ class Checker:
                         f"{expr.sym.kind()} `{expr.sym.name}` does not returns a result value",
                         expr.err_handler.pos
                     )
-            elif isinstance(expr.typ, type.Result) and not self.inside_guard_expr:
+            elif isinstance(
+                expr.typ, type.Result
+            ) and not self.inside_guard_expr:
                 report.error(
                     f"{expr.sym.kind()} `{expr.sym.name}` returns a result",
                     expr.pos

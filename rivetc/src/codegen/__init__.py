@@ -604,8 +604,7 @@ class Codegen:
                         )
                         var_t = self.ir_type(stmt.cond.expr.typ.typ)
                         self.cur_fn.try_alloca(
-                            var_t,
-                            stmt.cond.vars[0],
+                            var_t, stmt.cond.vars[0],
                             ir.Selector(var_t, gexpr, ir.Name("value"))
                         )
                     else:
@@ -1013,6 +1012,7 @@ class Codegen:
             if left == None:
                 return
             expr_left_typ_ir = self.ir_type(expr.left.typ)
+            expr_left_sym = expr.left.typ.symbol()
             if expr.op == Kind.Assign:
                 if isinstance(expr_left_typ_ir, ir.Array):
                     self.gen_expr_with_cast(left.typ, stmt.right, ident)
@@ -1020,24 +1020,36 @@ class Codegen:
                     value = self.gen_expr_with_cast(expr.left.typ, expr.right)
                     self.cur_fn.store(left, value)
             else:
+                single_op = expr.op.single()
                 right = self.gen_expr_with_cast(expr.left.typ, expr.right)
-                if expr.op == Kind.PlusAssign:
-                    op_kind = ir.InstKind.Add
-                elif expr.op == Kind.MinusAssign:
-                    op_kind = ir.InstKind.Sub
-                elif expr.op == Kind.MulAssign:
-                    op_kind = ir.InstKind.Mult
-                elif expr.op == Kind.DivAssign:
-                    op_kind = ir.InstKind.Div
-                elif expr.op == Kind.ModAssign:
-                    op_kind = ir.InstKind.Mod
-                elif expr.op == Kind.AmpAssign:
-                    op_kind = ir.InstKind.BitAnd
-                elif expr.op == Kind.PipeAssign:
-                    op_kind = ir.InstKind.BitOr
-                elif expr.op == Kind.XorAssign:
-                    op_kind = ir.InstKind.BitXor
-                self.cur_fn.store(left, ir.Inst(op_kind, [left, right]))
+                if expr_left_sym.kind in (TypeKind.Class, TypeKind.Struct
+                                          ) and expr_left_sym.exists(
+                                              str(single_op)
+                                          ):
+                    ov_m = OVERLOADABLE_OPERATORS_STR[str(single_op)]
+                    left_operand = left
+                    right_operand = right
+                    if not isinstance(expr_left_typ_ir, ir.Pointer):
+                        left_operand = ir.Inst(
+                            ir.InstKind.GetRef, [left_operand]
+                        )
+                        right_operand = ir.Inst(
+                            ir.InstKind.GetRef, [right_operand]
+                        )
+                    self.cur_fn.store(
+                        left,
+                        ir.Inst(
+                            ir.InstKind.Call, [
+                                ir.Name(
+                                    f"{mangle_symbol(expr_left_sym)}{len(ov_m)}{ov_m}M"
+                                ), left_operand, right_operand
+                            ]
+                        )
+                    )
+                elif op_kind := ir.get_ir_op(single_op):
+                    self.cur_fn.store(left, ir.Inst(op_kind, [left, right]))
+                else:
+                    assert False
         elif isinstance(expr, ast.Block):
             self.gen_stmts(expr.stmts)
             if expr.is_expr:
@@ -1883,27 +1895,13 @@ class Codegen:
                     self.ir_type(expr.typ), tmp, ir.Inst(kind, [left, right])
                 )
             else:
-                if expr.op == Kind.Plus:
-                    kind = ir.InstKind.Add
-                elif expr.op == Kind.Minus:
-                    kind = ir.InstKind.Sub
-                elif expr.op == Kind.Mul:
-                    kind = ir.InstKind.Mult
-                elif expr.op == Kind.Amp:
-                    kind = ir.InstKind.BitAnd
-                elif expr.op == Kind.Pipe:
-                    kind = ir.InstKind.BitOr
-                elif expr.op == Kind.Xor:
-                    kind = ir.InstKind.BitXor
-                elif expr.op == Kind.Lshift:
-                    kind = ir.InstKind.Lshift
-                elif expr.op == Kind.Rshift:
-                    kind = ir.InstKind.Rshift
+                if op_kind := ir.get_ir_op(expr.op):
+                    self.cur_fn.try_alloca(
+                        self.ir_type(expr.typ), tmp,
+                        ir.Inst(op_kind, [left, right])
+                    )
                 else:
-                    assert False, expr.op # unreachable
-                self.cur_fn.try_alloca(
-                    self.ir_type(expr.typ), tmp, ir.Inst(kind, [left, right])
-                )
+                    assert False
             return ir.Ident(self.ir_type(expr.typ), tmp)
         elif isinstance(expr, ast.IfExpr):
             is_void_value = expr.typ in self.void_types
@@ -1953,8 +1951,8 @@ class Codegen:
                             )
                             var_t = self.ir_type(b.cond.expr.typ.typ)
                             self.cur_fn.try_alloca(
-                                var_t,
-                                b.cond.vars[0], ir.Selector(var_t, gexpr, ir.Name("value"))
+                                var_t, b.cond.vars[0],
+                                ir.Selector(var_t, gexpr, ir.Name("value"))
                             )
                         else:
                             if isinstance(b.cond.typ, (type.Ref, type.Ptr)):

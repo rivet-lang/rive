@@ -4,7 +4,33 @@
 
 from enum import IntEnum as Enum, auto as auto_enum
 
+from ..token import Kind
 from .. import utils
+
+def get_ir_op(op):
+    if op == Kind.Plus:
+        op_kind = InstKind.Add
+    elif op == Kind.Minus:
+        op_kind = InstKind.Sub
+    elif op == Kind.Mul:
+        op_kind = InstKind.Mult
+    elif op == Kind.Div:
+        op_kind = InstKind.Div
+    elif op == Kind.Mod:
+        op_kind = InstKind.Mod
+    elif op == Kind.Amp:
+        op_kind = InstKind.BitAnd
+    elif op == Kind.Pipe:
+        op_kind = InstKind.BitOr
+    elif op == Kind.Xor:
+        op_kind = InstKind.BitXor
+    elif op == Kind.Lshift:
+        op_kind = InstKind.Lshift
+    elif op == Kind.Rshift:
+        op_kind = InstKind.Rshift
+    else:
+        return None
+    return op_kind
 
 class Type:
     def __init__(self, name):

@@ -103,6 +103,25 @@ class Kind(Enum):
 
     KeywordEnd = auto_enum()
 
+    def single(self):
+        if self == Kind.PlusAssign:
+            return Kind.Plus
+        elif self == Kind.MinusAssign:
+            return Kind.Minus
+        elif self == Kind.MulAssign:
+            return Kind.Mul
+        elif self == Kind.DivAssign:
+            return Kind.Div
+        elif self == Kind.ModAssign:
+            return Kind.Mod
+        elif self == Kind.AmpAssign:
+            return Kind.Amp
+        elif self == Kind.PipeAssign:
+            return Kind.Pipe
+        elif self == Kind.XorAssign:
+            return Kind.Xor
+        return self
+
     def is_start_of_type(self):
         return self in (
             Kind.Bang, Kind.Name, Kind.Lparen, Kind.Amp, Kind.Mul,

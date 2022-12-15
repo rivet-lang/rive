@@ -198,7 +198,9 @@ class Parser:
                         if self.accept(Kind.KwAs):
                             info_alias = self.parse_name()
                         import_list.append(
-                            ast.ImportListInfo(is_pub, name, info_alias, info_pos)
+                            ast.ImportListInfo(
+                                is_pub, name, info_alias, info_pos
+                            )
                         )
                     elif self.accept(Kind.Mul):
                         glob = True
@@ -209,7 +211,9 @@ class Parser:
                         if self.accept(Kind.KwAs):
                             info_alias = self.parse_name()
                         import_list.append(
-                            ast.ImportListInfo(is_pub, name, info_alias, info_pos)
+                            ast.ImportListInfo(
+                                is_pub, name, info_alias, info_pos
+                            )
                         )
                     if not self.accept(Kind.Comma):
                         break
