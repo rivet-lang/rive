@@ -602,6 +602,12 @@ class Codegen:
                                 )
                             ]
                         )
+                        var_t = self.ir_type(stmt.cond.expr.typ.typ)
+                        self.cur_fn.try_alloca(
+                            var_t,
+                            stmt.cond.vars[0],
+                            ir.Selector(var_t, gexpr, ir.Name("value"))
+                        )
                     else:
                         if isinstance(stmt.cond.typ, (type.Ref, type.Ptr)):
                             cond = ir.Inst(
@@ -1945,6 +1951,11 @@ class Codegen:
                                     )
                                 ]
                             )
+                            var_t = self.ir_type(b.cond.expr.typ.typ)
+                            self.cur_fn.try_alloca(
+                                var_t,
+                                b.cond.vars[0], ir.Selector(var_t, gexpr, ir.Name("value"))
+                            )
                         else:
                             if isinstance(b.cond.typ, (type.Ref, type.Ptr)):
                                 cond = ir.Inst(
@@ -2032,6 +2043,11 @@ class Codegen:
                 if expr.expr.is_result:
                     cond = ir.Selector(
                         ir.Type("bool"), gexpr, ir.Name("is_err")
+                    )
+                    var_t = self.ir_type(expr.expr.typ)
+                    self.cur_fn.try_alloca(
+                        var_t, expr.expr.vars[0],
+                        ir.Selector(var_t, gexpr, ir.Name("value"))
                     )
                 else:
                     if isinstance(expr.expr.typ, (type.Ref, type.Ptr)):

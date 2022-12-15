@@ -19,6 +19,8 @@ class Checker:
         self.expected_type = self.comp.void_t
         self.void_types = (self.comp.void_t, self.comp.never_t)
 
+        self.inside_guard_expr = False
+
         self.defer_stmts = []
 
     def check_files(self, source_files):
@@ -490,6 +492,8 @@ class Checker:
             self.expected_type = old_expected_type
             return expr.typ
         elif isinstance(expr, ast.GuardExpr):
+            old_inside_guard_expr = self.inside_guard_expr
+            self.inside_guard_expr = True
             expr_t = self.check_expr(expr.expr)
             if isinstance(expr_t, (type.Result, type.Optional)):
                 expr.is_result = isinstance(expr_t, type.Result)
@@ -503,6 +507,7 @@ class Checker:
                     report.error(
                         "guard condition must be boolean", expr.cond.pos
                     )
+            self.inside_guard_expr = old_inside_guard_expr
             return expr.typ
         elif isinstance(expr, ast.UnaryExpr):
             expr.typ = self.check_expr(expr.right)
@@ -983,7 +988,7 @@ class Checker:
                         f"{expr.sym.kind()} `{expr.sym.name}` does not returns a result value",
                         expr.err_handler.pos
                     )
-            elif isinstance(expr.typ, type.Result):
+            elif isinstance(expr.typ, type.Result) and not self.inside_guard_expr:
                 report.error(
                     f"{expr.sym.kind()} `{expr.sym.name}` returns a result",
                     expr.pos

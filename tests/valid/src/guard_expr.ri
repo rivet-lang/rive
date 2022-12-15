@@ -2,6 +2,10 @@ fn ret_nil() ?i32 {
     return 3;
 }
 
+fn ret_err() !i32 {
+    return 3;
+}
+
 test "if guard" {
     if let val = ret_nil() {
         @assert(val == 3);
@@ -9,6 +13,10 @@ test "if guard" {
 
     if let val1 = ret_nil(); val1 >= 10 {
         @assert(false);
+    }
+
+    if let val2 = ret_err() {
+        @assert(val2 == 3);
     }
 }
 
@@ -25,12 +33,17 @@ test "while guard" {
 
 test "switch guard" {
     switch let val4 = ret_nil() {
-        3 => @assert(val4 == 3),
+        3 => @assert(true),
         else => @assert(false)
     }
 
     switch let val5 = ret_nil(); val5 >= 10 {
-        3 => @assert(val5 == 3),
+        3 => @assert(true),
+        else => @assert(false)
+    }
+
+    switch let val6 = ret_err() {
+        3 => @assert(true),
         else => @assert(false)
     }
 }
