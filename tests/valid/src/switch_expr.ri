@@ -26,3 +26,17 @@ test "`switch` branch condition" {
         else => false
     });
 }
+
+class SwitchBase { }
+class SwitchSon : SwitchBase {
+    name: string;
+}
+
+test "`switch` branch variable" {
+    let ss = SwitchSon(name: "Rivet");
+    let sb = @as(SwitchBase, ss);
+    @assert(switch sb is {
+        SwitchSon as sb_ss => sb_ss.name == "Rivet",
+        else => false
+    });
+}

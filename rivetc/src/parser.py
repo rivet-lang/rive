@@ -1037,6 +1037,10 @@ class Parser:
         self.inside_switch_header = old_inside_switch_header
         while True:
             pats = []
+            has_var = False
+            var_is_mut = False
+            var_name = ""
+            var_pos = token.NO_POS
             has_cond = False
             cond = self.empty_expr()
             is_else = self.accept(Kind.KwElse)
@@ -1057,11 +1061,16 @@ class Parser:
                         pats.append(self.parse_expr())
                     if not self.accept(Kind.Comma):
                         break
+                if self.accept(Kind.KwAs):
+                    has_var = True
+                    var_is_mut = self.accept(Kind.KwMut)
+                    var_pos = self.tok.pos
+                    var_name = self.parse_name()
                 if self.accept(Kind.KwIf):
                     has_cond = True
                     cond = self.parse_expr()
             self.expect(Kind.Arrow)
-            branches.append(ast.SwitchBranch(pats, has_cond, cond, self.parse_expr(), is_else))
+            branches.append(ast.SwitchBranch(pats, has_var, var_is_mut, var_name, var_pos, has_cond, cond, self.parse_expr(), is_else))
             if not self.accept(Kind.Comma):
                 break
         self.expect(Kind.Rbrace)

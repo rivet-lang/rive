@@ -859,7 +859,9 @@ class Codegen:
                 return ir.Ident(self.ir_type(expr.typ), mangle_symbol(expr.sym))
             # runtime object
             i_typ = self.ir_type(expr.typ)
-            if expr.obj.level == sym.ObjLevel.Arg and expr.obj.is_mut:
+            if (expr.obj.level == sym.ObjLevel.Arg and expr.obj.is_mut) or (
+                expr.obj.is_hidden_ref and not isinstance(i_typ, ir.Pointer)
+            ):
                 i_typ = i_typ.ptr()
             return ir.Ident(i_typ, expr.obj.ir_name)
         elif isinstance(expr, ast.BuiltinCallExpr):
@@ -2141,6 +2143,27 @@ class Codegen:
                                     ]
                                 )
                             )
+                        if b.has_var and i == 0:
+                            var_t = self.ir_type(b.var_typ)
+                            var_t2 = var_t.ptr() if b.var_is_mut or not isinstance(var_t, ir.Pointer) else var_t
+                            if expr.expr.typ.sym.kind == TypeKind.Enum:
+                                val = ir.Inst(ir.InstKind.Cast, [
+                                    ir.Selector(
+                                        ir.Type("void").ptr(), switch_expr, ir.Name("obj")
+                                    ),
+                                    var_t2
+                                ])
+                                if not (b.var_is_mut or (
+                                    isinstance(var_t, ir.Pointer) and var_t.is_managed
+                                )):
+                                    val = ir.Inst(ir.InstKind.LoadPtr, [val])
+                                if b.var_is_mut and not isinstance(var_t, ir.Pointer):
+                                    var_t = var_t.ptr()
+                            else:
+                                val = ir.Inst(ir.InstKind.Cast, [
+                                    switch_expr, var_t
+                                ])
+                            self.cur_fn.try_alloca(var_t, b.var_name, val)
                     else:
                         p_conv = self.gen_expr_with_cast(p.typ, p)
                         p_typ_sym = p.typ.symbol()
@@ -2526,13 +2549,14 @@ class Codegen:
         is_boxed = value_typ.symbol().is_boxed()
         size, _ = self.comp.type_size(value_typ)
         tmp = self.boxed_instance(mangle_symbol(trait_sym), 0, True)
+        if not isinstance(value.typ, ir.Pointer):
+            value = ir.Inst(ir.InstKind.GetRef, [value])
         self.cur_fn.store(
             ir.Selector(ir.Type("void").ptr(), tmp, ir.Name("obj")),
             value if is_boxed else ir.Inst(
                 ir.InstKind.Call, [
                     ir.Name("_R7runtime12internal_dupF"),
-                    ir.Inst(ir.InstKind.GetRef, [value]),
-                    ir.IntLit(ir.Name("usize"), str(size))
+                    value, ir.IntLit(ir.Name("usize"), str(size))
                 ]
             )
         )

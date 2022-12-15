@@ -48,6 +48,14 @@ test "enums: advanced enum" {
     if e is .Abc {
         @assert(@as(i32, e) == 6);
     }
+    switch e is {
+        .Abc as e_abc => @assert(e_abc == 6),
+        else => @assert(false)
+    }
+    switch e is {
+        .Abc as mut e_abc2 => @assert(e_abc2 == 6),
+        else => @assert(false)
+    }
     e = .Def();
     switch e is {
         .Def => @assert(true),

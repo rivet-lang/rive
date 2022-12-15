@@ -889,8 +889,13 @@ class IfExpr:
         return self.__repr__()
 
 class SwitchBranch:
-    def __init__(self, pats, has_cond, cond, expr, is_else):
+    def __init__(self, pats, has_var, var_is_mut, var_name, var_pos, has_cond, cond, expr, is_else):
         self.pats = pats
+        self.has_var = has_var
+        self.var_is_mut = var_is_mut
+        self.var_name = var_name
+        self.var_pos = var_pos
+        self.var_typ = None
         self.has_cond = has_cond
         self.cond = cond
         self.expr = expr

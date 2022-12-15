@@ -271,7 +271,7 @@ class Resolver:
                         expr.err_handler.scope.add(
                             sym.Obj(
                                 False, expr.err_handler.varname,
-                                self.comp.error_t, False
+                                self.comp.error_t, sym.ObjLevel.Local
                             )
                         )
                     except utils.CompilerError as e:
@@ -306,6 +306,16 @@ class Resolver:
                 if not b.is_else:
                     for pat in b.pats:
                         self.resolve_expr(pat)
+                    if b.has_var:
+                        try:
+                            expr.scope.add(
+                                sym.Obj(
+                                    b.var_is_mut, b.var_name,
+                                    self.comp.void_t, sym.ObjLevel.Local
+                                )
+                            )
+                        except utils.CompilerError as e:
+                            report.error(e.args[0], expr.var_pos)
                     if b.has_cond:
                         self.resolve_expr(b.cond)
                 self.resolve_expr(b.expr)

@@ -1328,6 +1328,26 @@ class Checker:
                             self.check_types(pat_t, expr_typ)
                         except utils.CompilerError as e:
                             report.error(e.args[0], p.pos)
+                    if b.has_var:
+                        if b.var_is_mut:
+                            self.check_expr_is_mut(expr.expr)
+                        if len(b.pats) != 1:
+                            report.error("multiple patterns cannot have var", b.var_pos)
+                        elif expr_sym.is_boxed():
+                            var_t = self.comp.void_t
+                            if expr_sym.kind == TypeKind.Enum:
+                                pat0 = b.pats[0].sym
+                                if pat0.has_typ:
+                                    var_t = pat0.typ
+                                else:
+                                    report.error("cannot use void expression", b.pats[0].pos)
+                                expr.scope.update_is_hidden_ref(b.var_name, b.var_is_mut)
+                            else:
+                                var_t = b.pats[0].typ
+                            b.var_typ = var_t
+                            expr.scope.update_type(b.var_name, var_t)
+                        else:
+                            report.error("only boxed types can have vars", b.var_pos)
                     if b.has_cond:
                         cond_t = self.check_expr(b.cond)
                         if cond_t != self.comp.bool_t:
