@@ -253,16 +253,23 @@ class Checker:
         elif isinstance(stmt, ast.ForStmt):
             iterable_t = self.check_expr(stmt.iterable)
             iterable_sym = iterable_t.symbol()
-            vars_len = len(stmt.vars)
             if iterable_sym.kind in (TypeKind.Array, TypeKind.Vec):
                 elem_typ = self.comp.comptime_number_to_type(
                     iterable_sym.info.elem_typ
                 )
-                if vars_len == 1:
-                    stmt.scope.update_type(stmt.vars[0], elem_typ)
-                else:
-                    stmt.scope.update_type(stmt.vars[0], self.comp.usize_t)
-                    stmt.scope.update_type(stmt.vars[1], elem_typ)
+                if stmt.value.is_mut and not iterable_sym.info.is_mut:
+                    report.error(
+                        f"cannot modify immutable {iterable_sym.kind}",
+                        stmt.iterable.pos
+                    )
+                elif stmt.value.is_ref:
+                    elem_typ = type.Ref(elem_typ)
+                if stmt.index != None:
+                    stmt.scope.update_type(stmt.index.name, self.comp.usize_t)
+                stmt.scope.update_type(stmt.value.name, elem_typ)
+                stmt.scope.update_is_hidden_ref(
+                    stmt.value.name, stmt.value.is_mut
+                )
                 self.check_stmt(stmt.stmt)
             else:
                 report.error(

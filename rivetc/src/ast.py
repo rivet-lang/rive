@@ -33,8 +33,9 @@ class SourceFile:
 
 # Used in `let` decls/stmts and guard exprs
 class ObjDecl:
-    def __init__(self, is_mut, name, has_typ, typ, level, pos):
+    def __init__(self, is_mut, is_ref, name, has_typ, typ, level, pos):
         self.is_mut = is_mut
+        self.is_ref = is_ref
         self.name = name
         self.has_typ = has_typ
         self.typ = typ
@@ -46,6 +47,8 @@ class ObjDecl:
         res = ""
         if self.is_mut:
             res += "mut "
+        if self.is_ref:
+            res += "&"
         res += self.name
         if self.has_typ:
             res += f": {self.typ}"
@@ -323,8 +326,9 @@ class WhileStmt:
         self.pos = pos
 
 class ForStmt:
-    def __init__(self, scope, vars, iterable, stmt, pos):
-        self.vars = vars
+    def __init__(self, scope, index, value, iterable, stmt, pos):
+        self.index = index
+        self.value = value
         self.iterable = iterable
         self.scope = scope
         self.stmt = stmt

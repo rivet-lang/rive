@@ -21,3 +21,20 @@ test "`for` statement with `string.as_bytes()`" {
     }
     @assert(sum == 1085);
 }
+
+test "`for` statement with referenced value" {
+    let mut res = 0;
+    let arr: [mut i32] = [1, 2, 3];
+    for &value in arr {
+        res += value.*;
+    }
+    @assert(res == 6);
+}
+
+test "`for` statement with mutable value" {
+    let arr: [mut i32] = [1, 2, 3];
+    for mut elem in arr {
+        elem = elem * 2;
+    }
+    @assert(arr == [2, 4, 6]);
+}

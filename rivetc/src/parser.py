@@ -575,23 +575,19 @@ class Parser:
             pos = self.prev_tok.pos
             self.open_scope()
             sc = self.scope
-            vars = []
-            # single or multiple variables
-            while True:
-                vars.append(self.parse_name())
-                if not self.accept(Kind.Comma):
-                    break
+            # single or 2 variables
+            if self.peek_token(1).kind == Kind.Comma:
+                index = self.parse_var_decl(support_mut = False)
+                self.expect(Kind.Comma)
+                value = self.parse_var_decl(support_ref = True)
+            else:
+                index = None
+                value = self.parse_var_decl(support_ref = True)
             self.expect(Kind.KwIn)
             iterable = self.parse_expr()
-            if self.accept(Kind.DotDot): # range
-                is_inclusive = self.accept(Kind.Assign)
-                max = self.parse_expr()
-                iterable = ast.RangeExpr(
-                    iterable, max, is_inclusive, iterable.pos
-                )
             stmt = self.parse_stmt()
             self.close_scope()
-            return ast.ForStmt(sc, vars, iterable, stmt, pos)
+            return ast.ForStmt(sc, index, value, iterable, stmt, pos)
         elif self.accept(Kind.KwDefer) or self.accept(Kind.KwErrDefer):
             is_errdefer = self.prev_tok.kind == Kind.KwErrDefer
             pos = self.prev_tok.pos
@@ -605,8 +601,12 @@ class Parser:
             self.expect(Kind.Semicolon)
         return ast.ExprStmt(expr, expr.pos)
 
-    def parse_var_decl(self, inside_global = False, support_typ = True):
-        is_mut = self.accept(Kind.KwMut)
+    def parse_var_decl(
+        self, inside_global = False, support_typ = True, support_ref = False,
+        support_mut = True
+    ):
+        is_mut = support_mut and self.accept(Kind.KwMut)
+        is_ref = support_ref and not is_mut and self.accept(Kind.Amp)
         pos = self.tok.pos
         name = self.parse_name()
         has_typ = False
@@ -614,7 +614,9 @@ class Parser:
         if support_typ and self.accept(Kind.Colon):
             typ = self.parse_type()
             has_typ = True
-        return ast.ObjDecl(is_mut, name, has_typ, typ, sym.ObjLevel.Local, pos)
+        return ast.ObjDecl(
+            is_mut, is_ref, name, has_typ, typ, sym.ObjLevel.Local, pos
+        )
 
     # ---- expressions -------------------------
     def parse_expr(self):

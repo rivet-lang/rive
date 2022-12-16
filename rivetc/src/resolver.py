@@ -182,13 +182,25 @@ class Resolver:
                 self.resolve_expr(stmt.continue_expr)
             self.resolve_stmt(stmt.stmt)
         elif isinstance(stmt, ast.ForStmt):
-            for v in stmt.vars:
+            if stmt.index != None:
                 try:
                     stmt.scope.add(
-                        sym.Obj(False, v, self.comp.void_t, sym.ObjLevel.Local)
+                        sym.Obj(
+                            stmt.index.is_mut, stmt.index.name,
+                            self.comp.void_t, sym.ObjLevel.Local
+                        )
                     )
                 except utils.CompilerError as e:
                     report.error(e.args[0], v.pos)
+            try:
+                stmt.scope.add(
+                    sym.Obj(
+                        stmt.value.is_mut, stmt.value.name, self.comp.void_t,
+                        sym.ObjLevel.Local
+                    )
+                )
+            except utils.CompilerError as e:
+                report.error(e.args[0], v.pos)
             self.resolve_expr(stmt.iterable)
             self.resolve_stmt(stmt.stmt)
         elif isinstance(stmt, ast.DeferStmt):

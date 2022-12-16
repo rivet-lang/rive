@@ -484,67 +484,56 @@ class Codegen:
         if isinstance(stmt, ast.ForStmt):
             old_entry_label = self.loop_entry_label
             old_exit_label = self.loop_exit_label
-            vars_len = len(stmt.vars)
             iterable_sym = stmt.iterable.typ.symbol()
             self.loop_entry_label = self.cur_fn.local_name()
             body_label = self.cur_fn.local_name()
             self.loop_exit_label = self.cur_fn.local_name()
             self.cur_fn.add_comment("for in stmt")
-            idx_name = self.cur_fn.local_name(
-            ) if vars_len == 1 else stmt.vars[0]
+            idx_name = stmt.index.name if stmt.index else self.cur_fn.local_name(
+            )
             iterable = self.gen_expr(stmt.iterable)
             self.cur_fn.try_alloca(
-                ir.Type("usize"), idx_name,
-                ir.IntLit(ir.Type("usize"), "0")
+                ir.Type("usize"), idx_name, ir.IntLit(ir.Type("usize"), "0")
             )
             idx = ir.Ident(ir.Type("usize"), idx_name)
             self.cur_fn.add_label(self.loop_entry_label)
             if iterable_sym.kind == TypeKind.Array:
-                len_ = ir.IntLit(
-                    ir.Type("usize"), iterable_sym.info.size.lit
-                )
+                len_ = ir.IntLit(ir.Type("usize"), iterable_sym.info.size.lit)
             else:
-                len_ = ir.Selector(
-                    ir.Type("usize"), iterable, ir.Name("len")
-                )
+                len_ = ir.Selector(ir.Type("usize"), iterable, ir.Name("len"))
             self.cur_fn.add_cond_br(
-                ir.Inst(ir.InstKind.Cmp, [ir.Name("<"), idx, len_]),
-                body_label, self.loop_exit_label
+                ir.Inst(ir.InstKind.Cmp, [ir.Name("<"), idx, len_]), body_label,
+                self.loop_exit_label
             )
-
             self.cur_fn.add_label(body_label)
-            value_t = iterable_sym.info.elem_typ
-            value_t_ir = self.ir_type(value_t)
-            value_t_is_boxed = value_t.symbol().is_boxed()
+            value_t_ir = self.ir_type(iterable_sym.info.elem_typ)
+            value_is_ref_or_is_mut = stmt.value.is_ref or stmt.value.is_mut
+            value_t_is_boxed = isinstance(
+                value_t_ir, ir.Pointer
+            ) and value_t_ir.is_managed
             if iterable_sym.kind == TypeKind.Array:
                 value = ir.Inst(
-                    ir.InstKind.GetElementPtr, [iterable, idx],
-                    value_t_ir
+                    ir.InstKind.GetElementPtr, [iterable, idx], value_t_ir
                 )
             else:
                 value = ir.Selector(
                     ir.Type("void").ptr(), iterable, ir.Name("ptr")
                 )
-                if iterable_sym.kind == TypeKind.Vec:
-                    value = ir.Inst(
-                        ir.InstKind.Add, [
-                            ir.Inst(
-                                ir.InstKind.Cast, [
-                                    value,
-                                    value_t_ir.ptr(value_t_is_boxed)
-                                ]
-                            ), idx
-                        ]
-                    )
-                else:
-                    value = ir.Inst(
-                        ir.InstKind.GetElementPtr, [value, idx]
-                    )
-            self.cur_fn.try_alloca(
-                value_t_ir,
-                stmt.vars[0] if vars_len == 1 else stmt.vars[1],
-                ir.Inst(ir.InstKind.LoadPtr, [value])
-            )
+                value = ir.Inst(
+                    ir.InstKind.Add, [
+                        ir.Inst(
+                            ir.InstKind.Cast,
+                            [value, value_t_ir.ptr(value_t_is_boxed)]
+                        ), idx
+                    ]
+                )
+            if value_is_ref_or_is_mut and not isinstance(value_t_ir, ir.Pointer):
+                value_t_ir = ir.Pointer(value_t_ir)
+            if not value_is_ref_or_is_mut:
+                value = ir.Inst(ir.InstKind.LoadPtr, [value])
+            unique_ir_name = self.cur_fn.unique_name(stmt.value.name)
+            self.cur_fn.try_alloca(value_t_ir, unique_ir_name, value)
+            stmt.scope.update_ir_name(stmt.value.name, unique_ir_name)
             self.gen_stmt(stmt.stmt)
             self.cur_fn.add_inst(ir.Inst(ir.InstKind.Inc, [idx]))
             self.cur_fn.add_br(self.loop_entry_label)
@@ -880,11 +869,7 @@ class Codegen:
                         )
                     )
                     return ir.Ident(ir_typ, tmp)
-                tmp = self.cur_fn.local_name()
-                self.cur_fn.try_alloca(
-                    ir_typ, tmp, ir.Inst(ir.InstKind.Cast, [res, ir_typ])
-                )
-                return ir.Ident(ir_typ, tmp)
+                return ir.Inst(ir.InstKind.Cast, [res, ir_typ], ir_typ)
             elif expr.name in ("size_of", "align_of"):
                 size, align = self.comp.type_size(expr.args[0].typ)
                 if expr.name == "size_of":
@@ -959,14 +944,14 @@ class Codegen:
                          ir.Type("void")]
                     )
                 else:
-                    left = self.gen_expr(expr.left)
+                    left = self.gen_expr_with_cast(expr.left.typ, expr.left)
             elif isinstance(expr.left, ast.SelectorExpr):
                 if expr.left.is_indirect:
                     left = ir.Inst(
                         ir.InstKind.LoadPtr, [self.gen_expr(expr.left.left)]
                     )
                 else:
-                    left = self.gen_expr(expr.left)
+                    left = self.gen_expr_with_cast(expr.left.typ, expr.left)
             elif isinstance(expr.left, ast.IndexExpr):
                 left_ir_typ = self.ir_type(expr.left.left_typ)
                 left_sym = expr.left.left_typ.symbol()
@@ -1821,7 +1806,7 @@ class Codegen:
                 return call
 
             left = self.gen_expr_with_cast(expr_left_typ, expr.left)
-            right = self.gen_expr_with_cast(expr.right.typ, expr.right)
+            right = self.gen_expr_with_cast(expr_right_typ, expr.right)
 
             # runtime calculation
             tmp = self.cur_fn.local_name()
@@ -2142,7 +2127,7 @@ class Codegen:
                                 if b.var_is_mut and not isinstance(
                                     var_t, ir.Pointer
                                 ):
-                                    var_t = var_t.ptr()
+                                    var_t = var_t.ptr(True)
                             else:
                                 val = ir.Inst(
                                     ir.InstKind.Cast, [switch_expr, var_t]
@@ -2534,14 +2519,14 @@ class Codegen:
     def trait_value(self, value, value_typ, trait_typ):
         value_sym = self.comp.comptime_number_to_type(value_typ).symbol()
         trait_sym = trait_typ.symbol()
-        is_boxed = value_typ.symbol().is_boxed()
         size, _ = self.comp.type_size(value_typ)
         tmp = self.boxed_instance(mangle_symbol(trait_sym), 0, True)
-        if not isinstance(value.typ, ir.Pointer):
+        is_ptr = isinstance(value.typ, ir.Pointer)
+        if not is_ptr:
             value = ir.Inst(ir.InstKind.GetRef, [value])
         self.cur_fn.store(
             ir.Selector(ir.Type("void").ptr(), tmp, ir.Name("obj")),
-            value if is_boxed else ir.Inst(
+            value if is_ptr else ir.Inst(
                 ir.InstKind.Call, [
                     ir.Name("_R7runtime12internal_dupF"), value,
                     ir.IntLit(ir.Name("usize"), str(size))
