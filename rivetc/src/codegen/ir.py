@@ -71,6 +71,22 @@ class Pointer:
             return f"+{self.typ}"
         return f"*{self.typ}"
 
+VOID_T = Type("void")
+VOID_PTR_T = VOID_T.ptr()
+BOOL_T = Type("bool")
+RUNE_T = Type("rune")
+INT_T = Type("int")
+CHAR_T = Type("char")
+U8_T = Type("u8")
+U64_T = Type("u64")
+F64_T = Type("f64")
+ISIZE_T = Type("isize")
+USIZE_T = Type("usize")
+VEC_T = Type("_R7runtime3Vec")
+STRING_T = Type("_R7runtime6string")
+TEST_T = Type("_R7runtime4Test")
+TEST_RUNNER_T = Type("_R7runtime10TestRunner")
+
 class Array:
     def __init__(self, typ, size):
         self.typ = typ

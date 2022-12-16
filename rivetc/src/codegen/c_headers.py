@@ -62,14 +62,16 @@ typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
-typedef u8 bool;
-typedef u32 rune;
-typedef float f32;
-typedef double f64;
-typedef i64 comptime_int;
-typedef f64 comptime_float;
 typedef ptrdiff_t isize;
 typedef size_t usize;
+typedef i64 comptime_int;
+
+typedef u8 bool;
+typedef u32 rune;
+
+typedef float f32;
+typedef double f64;
+typedef f64 comptime_float;
 
 """
 
@@ -89,4 +91,5 @@ RIVET_BREAKPOINT = """
 		#define RIVET_BREAKPOINT        { raise (SIGTRAP); }
 	#endif
 #endif
+
 """
