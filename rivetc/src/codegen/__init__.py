@@ -826,8 +826,13 @@ class Codegen:
                             ir.InstKind.LoadPtr, [
                                 ir.Inst(
                                     ir.InstKind.Cast, [
-                                        ir.Selector(
-                                            ir.VOID_PTR_T, res, ir.Name("obj")
+                                        ir.Inst(
+                                            ir.InstKind.Call, [
+                                                ir
+                                                .Name("_R7runtime9enum_castF"),
+                                                res,
+                                                expr.typ.symbol().id
+                                            ]
                                         ),
                                         ir_typ.ptr(True)
                                     ]

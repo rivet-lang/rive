@@ -45,10 +45,27 @@ fn internal_dup(src: *void, sz: usize) *mut void {
 }
 
 fn class_downcast(current_id: usize, expected_id: usize) {
-    // TODO: replace indexes with names
     if current_id != expected_id {
+        // TODO: replace indexes with names
         console_eprintln("panic: cannot cast {} to {}", current_id, expected_id);
         bt_print(3);
         process_exit(1);
     }
+}
+
+struct EnumInfo {
+    _rc: usize;
+    _id: usize;
+    obj: *void;
+}
+
+fn enum_cast(ptr: *void, expected_id: usize) *void {
+    let enum_info = @as(*EnumInfo, ptr);
+    if enum_info._id != expected_id {
+        // TODO: replace indexes with names
+        console_eprintln("panic: cannot cast {} to {}", enum_info._id, expected_id);
+        bt_print(3);
+        process_exit(1);
+    }
+    return enum_info.obj;
 }
