@@ -906,7 +906,6 @@ class Checker:
                         if isinstance(m, sym.Fn):
                             if m.is_method:
                                 expr.sym = m
-                                m.self_typ = type.Type(left_sym)
                                 if isinstance(
                                     expr_left.left_typ, type.Optional
                                 ):

@@ -265,7 +265,7 @@ class FnDecl:
     def breakpoint(self):
         self.add_inst(Inst(InstKind.Breakpoint, []))
 
-    def try_alloca(self, typ, var, val = None):
+    def inline_alloca(self, typ, var, val = None):
         self.add_local(var, typ)
         if val:
             self.add_inst(Inst(InstKind.Alloca, [Ident(typ, var), val]))

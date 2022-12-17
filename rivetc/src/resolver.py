@@ -79,7 +79,9 @@ class Resolver:
                             base_sym.info.implements.append(decl.sym)
                         elif base_sym.kind == sym.TypeKind.Class:
                             decl.sym.info.base = base_sym
-                            base_sym.is_base = True
+                            base_sym.info.is_base = True
+                            base_sym.info.childrens.append(decl.sym)
+                            decl.sym.info.is_child = True
                 self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.StructDecl):
                 self.self_sym = decl.sym
@@ -126,6 +128,17 @@ class Resolver:
                         )
                     )
                     decl.self_typ = self_typ
+                    decl.sym.self_typ = self_typ
+                if self.self_sym:
+                    if virtual_m := self.self_sym.find_in_base(decl.name):
+                        if not decl.attrs.has("override"):
+                            report.error(
+                                f"`{decl.sym.qualname()}` hides inherited method `{virtual_m.qualname()}`",
+                                decl.name_pos
+                            )
+                            report.help(
+                                "use the `override` attribute if hiding was intentional"
+                            )
                 for arg in decl.args:
                     self.resolve_type(arg.typ)
                     try:
@@ -236,6 +249,7 @@ class Resolver:
                     if self.self_sym.info.base:
                         expr.is_mut = base_.is_mut
                         expr.typ = type.Type(self.self_sym.info.base)
+                        self.self_sym.info.use_base = True
                     else:
                         report.error(
                             "class `{self.self_sym.name}` has no base class",

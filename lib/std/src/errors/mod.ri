@@ -2,8 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-pub import "runtime" {
-    OutOfMemoryError, RuneFromU32Error, ErrnoError
+import "runtime" {
+    pub OutOfMemoryError, pub RuneFromU32Error, pub ErrnoError
 };
 
 pub class InvalidSyntaxError : Error { }

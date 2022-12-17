@@ -276,25 +276,28 @@ class Mod(Sym):
             Fn(
                 ABI.Rivet, Vis.Pub, False, False, True, False, "push",
                 [Arg("value", False, elem_typ, None, False, NO_POS)],
-                type_Type(self[0]), False, True, NO_POS, True, False
+                type_Type(self[0]), False, True, NO_POS, True, False,
+                type_Type(vec_sym)
             )
         )
         vec_sym.add(
             Fn(
                 ABI.Rivet, Vis.Pub, False, False, True, False, "pop", [],
-                elem_typ, False, True, NO_POS, True, False
+                elem_typ, False, True, NO_POS, True, False, type_Type(vec_sym)
             )
         )
         vec_sym.add(
             Fn(
                 ABI.Rivet, Vis.Pub, False, False, True, False, "is_empty", [],
-                type_Type(self[3]), False, True, NO_POS, False, False
+                type_Type(self[3]), False, True, NO_POS, False, False,
+                type_Type(vec_sym)
             )
         )
         vec_sym.add(
             Fn(
                 ABI.Rivet, Vis.Pub, False, False, True, False, "clone", [],
-                type_Type(vec_sym), False, True, NO_POS, False, False
+                type_Type(vec_sym), False, True, NO_POS, False, False,
+                type_Type(vec_sym)
             )
         )
         return self.add_and_return(vec_sym)
@@ -485,6 +488,12 @@ class EnumInfo:
                 return v
         return None
 
+    def get_variant_by_type(self, typ):
+        for v in self.variants:
+            if v.has_typ and v.typ == typ:
+                return v
+        return None
+
     def has_variant(self, name):
         if _ := self.get_variant(name):
             return True
@@ -499,12 +508,16 @@ class TraitInfo:
         for idx, s in enumerate(self.implements):
             if sym == s:
                 return idx
+        assert False, (sym.name, sym.id) # unreachable
         return 0
 
 class ClassInfo:
     def __init__(self):
         self.base = None
         self.is_base = False
+        self.use_base = False
+        self.is_child = False
+        self.childrens = []
 
 class StructInfo:
     def __init__(self, is_opaque):
@@ -541,9 +554,7 @@ class Type(Sym):
             return True
         return False
 
-    def find(self, name):
-        if s := Sym.find(self, name):
-            return s
+    def find_in_base(self, name):
         if self.kind == TypeKind.Class and self.info.base:
             if s := Sym.find(self.info.base, name):
                 return s
@@ -551,6 +562,12 @@ class Type(Sym):
             for base in self.info.bases:
                 if s := Sym.find(base, name):
                     return s
+
+    def find(self, name):
+        if s := Sym.find(self, name):
+            return s
+        if s := self.find_in_base(name):
+            return s
         return None
 
     def full_fields(self):
@@ -611,7 +628,7 @@ class Fn(Sym):
     def __init__(
         self, abi, vis, is_extern, is_unsafe, is_method, is_variadic, name,
         args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
-        self_is_ref
+        self_is_ref, self_typ = None
     ):
         Sym.__init__(self, vis, name)
         self.is_main = False
@@ -620,7 +637,7 @@ class Fn(Sym):
         self.is_unsafe = is_unsafe
         self.is_method = is_method
         self.is_variadic = is_variadic
-        self.self_typ = None
+        self.self_typ = self_typ
         self.self_is_mut = self_is_mut
         self.self_is_ref = self_is_ref
         self.args = args

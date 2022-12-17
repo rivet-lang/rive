@@ -49,10 +49,42 @@ test "inheritance: downcast" {
 
 test "inheritance: typeswitch" {
     let b = B(c: 5);
-
     let a = @as(A, b);
-    switch a is {
-        B => @assert(true),
-        else => @assert(false)
+    @assert(switch a is {
+        B => true,
+        else => false
+    });
+}
+
+class Animal {
+    pub fn speak(self) string {
+        return "~ Animal.speaks() ~";
     }
+}
+
+class Dog : Animal {
+    #[override]
+    pub fn speak(self) string {
+        return "woof";
+    }
+}
+
+class Cat : Animal {
+    #[override]
+    pub fn speak(self) string {
+        return "meow";
+    }
+}
+
+class NonAnimal : Animal { }
+
+test "inheritance: virtual methods and `#[override]`" {
+    let non_animal = NonAnimal();
+    @assert(non_animal.speak() == "~ Animal.speaks() ~");
+
+    let dog = Dog();
+    @assert(dog.speak() == "woof");
+
+    let cat = Cat();
+    @assert(cat.speak() == "meow");
 }
