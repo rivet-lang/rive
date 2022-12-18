@@ -6,7 +6,7 @@ import os
 
 from ..sym import TypeKind
 from ..token import Kind, OVERLOADABLE_OPERATORS_STR, NO_POS
-from .. import ast, sym, type, prefs, colors, report, utils
+from .. import ast, sym, type, token, prefs, colors, report, utils
 
 from . import ir
 from .c import CGen
@@ -2649,21 +2649,23 @@ class Codegen:
                     for m in ts.syms:
                         if isinstance(m, sym.Fn):
                             fields.append(
-                                ir.Field(m.name, self.ir_type(m.typ(), True))
+                                ir.Field(token.real_name(m.name),
+                                self.ir_type(m.typ(), True))
                             )
                     index_of_vtbl = [(ts.id, 0)]
                     childrens = [ts] + ts.info.childrens
                     funcs = []
                     for idx, child in enumerate(childrens):
-                        map = {}
+                        map_fns = {}
                         for m in ts.syms:
                             if isinstance(m, sym.Fn):
+                                real_name = token.real_name(m.name)
                                 if ts_method := child.find(m.name):
-                                    map[m.name] = mangle_symbol(ts_method)
+                                    map_fns[real_name] = mangle_symbol(ts_method)
                                 else:
-                                    map[m.name] = mangle_symbol(m)
+                                    map_fns[real_name] = mangle_symbol(m)
                         index_of_vtbl.append((child.id, idx))
-                        funcs.append(map)
+                        funcs.append(map_fns)
                     if len(funcs) > 0:
                         self.out_rir.structs.append(
                             ir.Struct(False, vtbl_name, fields)

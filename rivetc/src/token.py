@@ -247,10 +247,16 @@ TOKEN_STRINGS = {
     # ==============================
 }
 
-OVERLOADABLE_OPERATORS = (
+OVERLOADABLE_OPERATORS = [
     Kind.Plus, Kind.Minus, Kind.Mul, Kind.Div, Kind.Mod, Kind.Eq, Kind.Ne,
     Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge
-)
+]
+
+def real_name(name):
+    for op in OVERLOADABLE_OPERATORS:
+        if str(op) == name:
+            return OVERLOADABLE_OPERATORS_STR[name]
+    return name
 
 def generate_overloadable_op_map():
     map = {}
