@@ -516,6 +516,7 @@ class ClassInfo:
         self.base = None
         self.is_base = False
         self.use_base = False
+        self.traits = []
         self.is_child = False
         self.childrens = []
 
@@ -523,6 +524,7 @@ class StructInfo:
     def __init__(self, is_opaque):
         self.is_opaque = is_opaque
         self.bases = []
+        self.traits = []
 
 class Type(Sym):
     def __init__(self, vis, name, kind, fields = [], info = None):
@@ -689,7 +691,7 @@ def universe():
     uni.add(Type(Vis.Pub, "comptime_float", TypeKind.ComptimeFloat))
     uni.add(Type(Vis.Pub, "f32", TypeKind.Float32))
     uni.add(Type(Vis.Pub, "f64", TypeKind.Float64))
-    uni.add(Type(Vis.Pub, "string", TypeKind.String))
+    uni.add(Type(Vis.Pub, "string", TypeKind.String, info = ClassInfo()))
     uni.add(Type(Vis.Pub, "Error", TypeKind.Class, info = ClassInfo()))
 
     return uni

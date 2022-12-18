@@ -133,8 +133,13 @@ class CGen:
                 )
                 for i, ft in enumerate(decl.funcs):
                     self.globals.writeln('  {')
-                    for f, impl in ft.items():
-                        self.globals.writeln(f'    .{f} = (void*){impl}')
+                    items = ft.items()
+                    for i2, (f, impl) in enumerate(items):
+                        self.globals.write(f'    .{f} = (void*){impl}')
+                        if i2 < len(items) - 1:
+                            self.globals.writeln(", ")
+                        else:
+                            self.globals.writeln()
                     self.globals.write("  }")
                     if i < len(decl.funcs) - 1:
                         self.globals.writeln(",")

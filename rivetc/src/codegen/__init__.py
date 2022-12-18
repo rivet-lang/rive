@@ -2380,10 +2380,22 @@ class Codegen:
                 ]
             )
         )
-        self.cur_fn.store(
-            ir.Selector(ir.USIZE_T, tmp, ir.Name("_id")),
-            ir.IntLit(ir.USIZE_T, str(trait_sym.info.indexof(value_sym)))
-        )
+        vtbl_idx = trait_sym.info.indexof(value_sym)
+        if value_sym.kind == TypeKind.Class and value_sym.info.is_base:
+            index = ir.Inst(
+                ir.InstKind.Call, [
+                    ir.Name(f"{mangle_symbol(value_sym)}17__index_of_vtbl__"),
+                    ir.Selector(ir.USIZE_T, value, ir.Name("_id"))
+                ], ir.USIZE_T
+            )
+            if vtbl_idx > 0:
+                index = ir.Inst(
+                    ir.InstKind.Add,
+                    [ir.IntLit(ir.USIZE_T, str(vtbl_idx)), index], ir.USIZE_T
+                )
+        else:
+            index = ir.IntLit(ir.USIZE_T, str(vtbl_idx))
+        self.cur_fn.store(ir.Selector(ir.USIZE_T, tmp, ir.Name("_id")), index)
         return tmp
 
     def advanced_enum_value(
@@ -2649,8 +2661,10 @@ class Codegen:
                     for m in ts.syms:
                         if isinstance(m, sym.Fn):
                             fields.append(
-                                ir.Field(token.real_name(m.name),
-                                self.ir_type(m.typ(), True))
+                                ir.Field(
+                                    token.real_name(m.name),
+                                    self.ir_type(m.typ(), True)
+                                )
                             )
                     index_of_vtbl = [(ts.id, 0)]
                     childrens = [ts] + ts.info.childrens
@@ -2661,7 +2675,9 @@ class Codegen:
                             if isinstance(m, sym.Fn):
                                 real_name = token.real_name(m.name)
                                 if ts_method := child.find(m.name):
-                                    map_fns[real_name] = mangle_symbol(ts_method)
+                                    map_fns[real_name] = mangle_symbol(
+                                        ts_method
+                                    )
                                 else:
                                     map_fns[real_name] = mangle_symbol(m)
                         index_of_vtbl.append((child.id, idx))

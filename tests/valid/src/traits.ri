@@ -1,0 +1,34 @@
+trait Speaker {
+    fn speak(&self) string;
+}
+
+class Animal2 : Speaker {
+    fn speak(self) string {
+        return "~ Animal2.speak() ~";
+    }
+}
+
+class Frog : Animal2 {
+    #[override]
+    fn speak(self) string {
+        return "Croack";
+    }
+}
+
+class Lion : Animal2 { }
+
+fn speaker(s: Speaker) string {
+    return s.speak();
+}
+
+test "traits: calling class method" {
+    @assert(speaker(Animal2()) == "~ Animal2.speak() ~");
+}
+
+test "traits: calling inherited method" {
+    @assert(speaker(Lion()) == "~ Animal2.speak() ~");
+}
+
+test "traits: calling overrided method" {
+    @assert(speaker(Frog()) == "Croack");
+}

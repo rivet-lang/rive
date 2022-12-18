@@ -76,12 +76,15 @@ class Resolver:
                     if self.resolve_type(base):
                         base_sym = base.symbol()
                         if base_sym.kind == sym.TypeKind.Trait:
+                            decl.sym.info.traits.append(base_sym)
                             base_sym.info.implements.append(decl.sym)
                         elif base_sym.kind == sym.TypeKind.Class:
                             decl.sym.info.base = base_sym
                             base_sym.info.is_base = True
                             base_sym.info.childrens.append(decl.sym)
                             decl.sym.info.is_child = True
+                            for b_trait in base_sym.info.traits:
+                                b_trait.info.implements.append(decl.sym)
                 self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.StructDecl):
                 self.self_sym = decl.sym
@@ -89,9 +92,12 @@ class Resolver:
                     if self.resolve_type(base):
                         base_sym = base.symbol()
                         if base_sym.kind == sym.TypeKind.Trait:
+                            decl.sym.info.traits.append(base_sym)
                             base_sym.info.implements.append(decl.sym)
                         elif base_sym.kind == sym.TypeKind.Struct:
                             decl.sym.info.bases.append(base_sym)
+                            for b_trait in base_sym.info.traits:
+                                b_trait.info.implements.append(decl.sym)
                 self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.FieldDecl):
                 self.resolve_type(decl.typ)
@@ -538,7 +544,7 @@ class Resolver:
                     )
             elif isinstance(typ.expr, ast.SelectorExpr):
                 self.resolve_selector_expr(typ.expr)
-                if not typ.expr.not_found:
+                if not typ.expr.not_found and typ.expr.field_sym:
                     if typ.expr.field_sym.kind == sym.TypeKind.Placeholder:
                         report.error(
                             f"cannot find type `{typ.expr.field_sym.name}`",
