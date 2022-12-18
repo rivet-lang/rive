@@ -86,18 +86,10 @@ pub struct TestRunner {
             console_eprint(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
             (test_.func)(test_);
             switch test_.result is {
-                .Ok => {
-                    self.print_ok();
-                },
-                .Skipped => {
-                    self.print_skip();
-                },
-                .Failed => {
-                    self.print_failed(test_.err_pos, test_.err_msg);
-                },
-                .ErrorReturned => {
-                    self.print_error_returned(test_.err_pos, test_.err);
-                }
+                .Ok => self.print_ok(),
+                .Skipped => self.print_skip(),
+                .Failed => self.print_failed(test_.err_pos, test_.err_msg),
+                .ErrorReturned => self.print_error_returned(test_.err_pos, test_.err)
             }
         }
         self.print_summary_tests();
