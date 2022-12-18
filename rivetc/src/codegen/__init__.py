@@ -2595,7 +2595,10 @@ class Codegen:
             if gen_self_arg:
                 args.append(ir.VOID_PTR_T)
             for arg in typ.args:
-                args.append(self.ir_type(arg.typ))
+                arg_t = self.ir_type(arg.typ)
+                if arg.is_mut and not isinstance(arg_t, ir.Pointer):
+                    arg_t = ir.Pointer(arg_t)
+                args.append(arg_t)
             return ir.Function(args, self.ir_type(typ.ret_typ))
         elif isinstance(typ, type.Tuple):
             return ir.Type(mangle_symbol(typ.symbol()))

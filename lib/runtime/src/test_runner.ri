@@ -67,7 +67,7 @@ enum TestResult as u8 {
 
 struct Test {
     name: string;
-    func : fn (*Test);
+    func : fn (mut Test);
     mut result: TestResult;
     mut early_return: bool;
     mut err_pos: string;
@@ -76,15 +76,15 @@ struct Test {
 }
 
 pub struct TestRunner {
-    tests: [Test];
+    tests: [mut Test];
     mut ok_tests: u64;
     mut fail_tests: u64;
     mut skip_tests: u64;
 
     fn run(mut self) {
-        for i, test_ in self.tests {
+        for i, mut test_ in self.tests {
             console_eprint(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
-            (test_.func)(unsafe { @addr_of(test_) });
+            (test_.func)(test_);
             switch test_.result is {
                 .Ok => {
                     self.print_ok();
