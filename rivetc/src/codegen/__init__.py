@@ -536,54 +536,9 @@ class Codegen:
                 self.cur_fn.add_br(body_label)
             else:
                 if isinstance(stmt.cond, ast.GuardExpr):
-                    gexpr = self.gen_expr_with_cast(
-                        stmt.cond.expr.typ, stmt.cond.expr
+                    cond = self.gen_guard_expr(
+                        stmt.cond, body_label, self.loop_exit_label
                     )
-                    if stmt.cond.is_result:
-                        cond = ir.Inst(
-                            InstKind.BooleanNot,
-                            [ir.Selector(ir.BOOL_T, gexpr, ir.Name("is_err"))]
-                        )
-                        var_t = self.ir_type(stmt.cond.expr.typ.typ)
-                        self.cur_fn.inline_alloca(
-                            var_t, stmt.cond.vars[0],
-                            ir.Selector(var_t, gexpr, ir.Name("value"))
-                        )
-                    else:
-                        if isinstance(stmt.cond.typ, (type.Ref, type.Ptr)):
-                            cond = ir.Inst(
-                                ir.InstKind.Cmp, [
-                                    ir.Name("!="), gexpr,
-                                    ir.NilLit(ir.VOID_PTR_T)
-                                ]
-                            )
-                            self.cur_fn.inline_alloca(
-                                self.ir_type(stmt.cond.expr.typ.typ),
-                                stmt.cond.vars[0], gexpr
-                            )
-                        else:
-                            cond = ir.Inst(
-                                ir.InstKind.BooleanNot, [
-                                    ir.Selector(
-                                        ir.BOOL_T, gexpr, ir.Name("is_nil")
-                                    )
-                                ]
-                            )
-                            self.cur_fn.inline_alloca(
-                                self.ir_type(stmt.cond.expr.typ.typ),
-                                stmt.cond.vars[0],
-                                ir.Selector(
-                                    self.ir_type(stmt.cond.expr.typ.typ), gexpr,
-                                    ir.Name("value")
-                                )
-                            )
-                    if stmt.cond.has_cond:
-                        gcond = self.gen_expr_with_cast(
-                            self.comp.bool_t, stmt.cond.cond
-                        )
-                        self.cur_fn.add_cond_br(
-                            gcond, body_label, self.loop_exit_label
-                        )
                 else:
                     cond = self.gen_expr_with_cast(self.comp.bool_t, stmt.cond)
                 if isinstance(cond, ir.IntLit) and cond.lit == "1":
@@ -1887,50 +1842,7 @@ class Codegen:
                     self.cur_fn.add_label(else_label)
                 else:
                     if isinstance(b.cond, ast.GuardExpr):
-                        gexpr = self.gen_expr_with_cast(
-                            b.cond.expr.typ, b.cond.expr
-                        )
-                        if b.cond.is_result:
-                            cond = ir.Inst(
-                                ir.InstKind.BooleanNot, [
-                                    ir.Selector(
-                                        ir.BOOL_T, gexpr, ir.Name("is_err")
-                                    )
-                                ]
-                            )
-                            var_t = self.ir_type(b.cond.expr.typ.typ)
-                            self.cur_fn.inline_alloca(
-                                var_t, b.cond.vars[0],
-                                ir.Selector(var_t, gexpr, ir.Name("value"))
-                            )
-                        else:
-                            if isinstance(b.cond.typ, (type.Ref, type.Ptr)):
-                                cond = ir.Inst(
-                                    ir.InstKind.Cmp, [
-                                        ir.Name("!="), gexpr,
-                                        ir.NilLit(ir.VOID_PTR_T)
-                                    ]
-                                )
-                                self.cur_fn.inline_alloca(
-                                    self.ir_type(b.cond.expr.typ.typ),
-                                    b.cond.vars[0], gexpr
-                                )
-                            else:
-                                cond = ir.Inst(
-                                    ir.InstKind.BooleanNot, [
-                                        ir.Selector(
-                                            ir.BOOL_T, gexpr, ir.Name("is_nil")
-                                        )
-                                    ]
-                                )
-                                self.cur_fn.inline_alloca(
-                                    self.ir_type(b.cond.expr.typ.typ),
-                                    b.cond.vars[0],
-                                    ir.Selector(
-                                        self.ir_type(b.cond.expr.typ.typ),
-                                        gexpr, ir.Name("value")
-                                    )
-                                )
+                        cond = self.gen_guard_expr(b.cond, "", "", False)
                     else:
                         cond = self.gen_expr_with_cast(self.comp.bool_t, b.cond)
                     branch_label = self.cur_fn.local_name()
@@ -1985,34 +1897,7 @@ class Codegen:
                 self.cur_fn.alloca(tmp)
             is_guard_expr = isinstance(expr.expr, ast.GuardExpr)
             if is_guard_expr:
-                gexpr = self.gen_expr_with_cast(expr.expr.typ, expr.expr.expr)
-                if expr.expr.is_result:
-                    cond = ir.Selector(ir.BOOL_T, gexpr, ir.Name("is_err"))
-                    var_t = self.ir_type(expr.expr.typ)
-                    self.cur_fn.inline_alloca(
-                        var_t, expr.expr.vars[0],
-                        ir.Selector(var_t, gexpr, ir.Name("value"))
-                    )
-                else:
-                    if isinstance(expr.expr.typ, (type.Ref, type.Ptr)):
-                        cond = ir.Inst(
-                            ir.InstKind.Cmp,
-                            [ir.Name("!="), gexpr,
-                             ir.NilLit(ir.VOID_PTR_T)]
-                        )
-                        self.cur_fn.inline_alloca(
-                            self.ir_type(expr.expr.typ), expr.expr.vars[0],
-                            gexpr
-                        )
-                    else:
-                        cond = ir.Selector(ir.BOOL_T, gexpr, ir.Name("is_nil"))
-                        self.cur_fn.inline_alloca(
-                            self.ir_type(expr.expr.typ), expr.expr.vars[0],
-                            ir.Selector(
-                                self.ir_type(expr.expr.typ), gexpr,
-                                ir.Name("value")
-                            )
-                        )
+                cond = self.gen_guard_expr(expr.expr, "", "", False)
                 self.cur_fn.add_cond_single_br(cond, exit_switch)
                 if expr.expr.has_cond:
                     self.cur_fn.add_cond_single_br(
@@ -2025,7 +1910,7 @@ class Codegen:
                         ), exit_switch
                     )
                 switch_expr = ir.Ident(
-                    self.ir_type(expr.expr.typ), expr.expr.vars[0]
+                    self.ir_type(expr.expr.typ), expr.expr.vars[0].name
                 )
             else:
                 switch_expr = self.gen_expr_with_cast(expr.expr.typ, expr.expr)
@@ -2551,6 +2436,48 @@ class Codegen:
             ]
         )
         return ir.Inst(ir.InstKind.Cast, [value, class_typ_ir], class_typ_ir)
+
+    def gen_guard_expr(self, expr, entry_label, exit_label, gen_cond = True):
+        assert isinstance(expr, ast.GuardExpr)
+        gexpr = self.gen_expr_with_cast(expr.typ, expr.expr)
+        var_name = self.cur_fn.unique_name(expr.vars[0].name)
+        expr.scope.update_ir_name(expr.vars[0].name, var_name)
+        if expr.is_result:
+            cond = ir.Inst(
+                ir.InstKind.BooleanNot,
+                [ir.Selector(ir.BOOL_T, gexpr, ir.Name("is_err"))]
+            )
+            var_t = self.ir_type(expr.typ)
+            self.cur_fn.inline_alloca(
+                var_t, var_name, ir.Selector(var_t, gexpr, ir.Name("value"))
+            )
+        else:
+            if isinstance(expr.typ, (type.Ref, type.Ptr)):
+                cond = ir.Inst(
+                    ir.InstKind.Cmp,
+                    [ir.Name("!="), gexpr,
+                     ir.NilLit(ir.VOID_PTR_T)]
+                )
+                self.cur_fn.inline_alloca(
+                    self.ir_type(expr.typ), var_name, gexpr
+                )
+            else:
+                cond = ir.Inst(
+                    ir.InstKind.BooleanNot,
+                    [ir.Selector(ir.BOOL_T, gexpr, ir.Name("is_nil"))]
+                )
+                self.cur_fn.inline_alloca(
+                    self.ir_type(expr.typ), var_name,
+                    ir.Selector(
+                        self.ir_type(expr.expr.typ.typ), gexpr,
+                        ir.Name("value")
+                    )
+                )
+        if expr.has_cond and gen_cond:
+            self.cur_fn.add_cond_br(
+                self.gen_expr(expr.cond), entry_label, exit_label
+            )
+        return cond
 
     def ir_type(self, typ, gen_self_arg = False):
         if isinstance(typ, type.Result):

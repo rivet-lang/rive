@@ -6,43 +6,52 @@ fn ret_err() !i32 {
     return 3;
 }
 
-test "if guard" {
+test "guard expression with mutable variable" {
+    if let mut val = ret_nil() {
+        @assert(val == 3);
+        val += 2;
+        @assert(val == 5);
+    }
+}
+
+test "`if` expression with guard expression" {
     if let val = ret_nil() {
         @assert(val == 3);
     }
 
-    if let val1 = ret_nil(); val1 >= 10 {
+    if let val = ret_nil(); val != 3 {
         @assert(false);
     }
 
-    if let val2 = ret_err() {
-        @assert(val2 == 3);
+    if let val = ret_err() {
+        @assert(val == 3);
     }
 }
 
-test "while guard" {
-    while let val2 = ret_nil() {
-        @assert(val2 == 3);
+test "`while` expression with guard expression" {
+    while let val = ret_nil() {
+        @assert(val == 3);
         break;
     }
 
-    while let val3 = ret_nil(); val3 >= 10 {
-        @assert(val3 >= 3);
+    while let val = ret_nil(); val == 3 {
+        @assert(val == 3);
+        break;
     }
 }
 
-test "switch guard" {
-    switch let val4 = ret_nil() {
+test "`switch` expression with guard expression" {
+    switch let val = ret_nil() {
         3 => @assert(true),
         else => @assert(false)
     }
 
-    switch let val5 = ret_nil(); val5 >= 10 {
+    switch let val = ret_nil(); val == 3 {
         3 => @assert(true),
         else => @assert(false)
     }
 
-    switch let val6 = ret_err() {
+    switch let val = ret_err() {
         3 => @assert(true),
         else => @assert(false)
     }

@@ -268,7 +268,9 @@ class Resolver:
         elif isinstance(expr, ast.GuardExpr):
             for v in expr.vars:
                 try:
-                    expr.scope.add(sym.Obj(False, v, self.comp.void_t, False))
+                    expr.scope.add(
+                        sym.Obj(v.is_mut, v.name, self.comp.void_t, False)
+                    )
                 except utils.CompilerError as e:
                     report.error(e.args[0], expr.pos)
             self.resolve_expr(expr.expr)

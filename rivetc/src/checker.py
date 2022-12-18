@@ -495,7 +495,10 @@ class Checker:
             expr_t = self.check_expr(expr.expr)
             if isinstance(expr_t, (type.Result, type.Optional)):
                 expr.is_result = isinstance(expr_t, type.Result)
-                expr.scope.update_type(expr.vars[0], expr_t.typ)
+                var0 = expr.vars[0]
+                expr.scope.update_type(var0.name, expr_t.typ)
+                if var0.is_mut:
+                    self.check_expr_is_mut(expr.expr)
                 expr.typ = expr_t.typ
             else:
                 report.error("expected result or optional value", expr.expr.pos)
@@ -503,7 +506,8 @@ class Checker:
             if expr.has_cond:
                 if self.check_expr(expr.cond) != self.comp.bool_t:
                     report.error(
-                        "guard condition must be boolean", expr.cond.pos
+                        "non-boolean expression used as guard condition",
+                        expr.cond.pos
                     )
             self.inside_guard_expr = old_inside_guard_expr
             return expr.typ

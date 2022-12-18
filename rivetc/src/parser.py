@@ -577,12 +577,18 @@ class Parser:
             sc = self.scope
             # single or 2 variables
             if self.peek_token(1).kind == Kind.Comma:
-                index = self.parse_var_decl(support_mut = False)
+                index = self.parse_var_decl(
+                    support_mut = False, support_typ = False
+                )
                 self.expect(Kind.Comma)
-                value = self.parse_var_decl(support_ref = True)
+                value = self.parse_var_decl(
+                    support_ref = True, support_typ = False
+                )
             else:
                 index = None
-                value = self.parse_var_decl(support_ref = True)
+                value = self.parse_var_decl(
+                    support_ref = True, support_typ = False
+                )
             self.expect(Kind.KwIn)
             iterable = self.parse_expr()
             stmt = self.parse_stmt()
@@ -1098,7 +1104,7 @@ class Parser:
         pos = self.prev_tok.pos
         vars = []
         while True:
-            vars.append(self.parse_name())
+            vars.append(self.parse_var_decl(support_typ = False))
             if not self.accept(Kind.Comma):
                 break
         self.expect(Kind.Assign)
