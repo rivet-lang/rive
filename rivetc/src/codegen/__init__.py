@@ -4,7 +4,7 @@
 
 import os
 
-from ..sym import TypeKind
+from ..sym import TypeKind, Vis
 from ..token import Kind, OVERLOADABLE_OPERATORS_STR, NO_POS
 from .. import ast, sym, type, token, prefs, colors, report, utils
 
@@ -325,7 +325,7 @@ class Codegen:
                 name = l.name if is_extern else mangle_symbol(l.sym)
                 typ = self.ir_type(l.typ)
                 self.out_rir.globals.append(
-                    ir.GlobalVar(decl.vis.is_pub(), is_extern, typ, name)
+                    ir.GlobalVar(is_extern or decl.vis == Vis.Export, is_extern, typ, name)
                 )
                 if not decl.is_extern:
                     self.cur_fn = self.init_global_vars_fn
@@ -380,7 +380,7 @@ class Codegen:
                         self.generated_array_returns.append(name)
                     ret_typ = ir.Type(name)
             fn_decl = ir.FnDecl(
-                decl.vis.is_pub(), decl.attrs, decl.is_extern
+                decl.vis == Vis.Export, decl.attrs, decl.is_extern
                 and not decl.has_body, decl.sym.name if decl.is_extern
                 and not decl.has_body else mangle_symbol(decl.sym), args,
                 decl.is_variadic and decl.is_extern, ret_typ,
@@ -784,11 +784,14 @@ class Codegen:
                 expr_typ_sym = expr.typ.symbol()
                 if typ_sym.kind == TypeKind.Class and typ_sym.kind == expr_typ_sym.kind:
                     if typ_sym == expr_typ_sym:
-                        return res
-                    if typ_sym.is_subtype_of(expr_typ_sym): # up-casting
-                        return self.class_upcast(res, arg1.typ, expr.typ)
-                    if expr_typ_sym.is_subtype_of(typ_sym): # down-casting
-                        return self.class_downcast(res, arg1.typ, expr.typ)
+                        value = res
+                    elif typ_sym.is_subtype_of(expr_typ_sym): # up-casting
+                        value = self.class_upcast(res, arg1.typ, expr.typ)
+                    elif expr_typ_sym.is_subtype_of(typ_sym): # down-casting
+                        value = self.class_downcast(res, arg1.typ, expr.typ)
+                    tmp = self.cur_fn.local_name()
+                    self.cur_fn.inline_alloca(ir_typ, tmp, value)
+                    return ir.Ident(ir_typ, tmp)
                 elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_advanced_enum:
                     tmp = self.cur_fn.local_name()
                     self.cur_fn.inline_alloca(
@@ -814,7 +817,9 @@ class Codegen:
                         )
                     )
                     return ir.Ident(ir_typ, tmp)
-                return ir.Inst(ir.InstKind.Cast, [res, ir_typ], ir_typ)
+                tmp = self.cur_fn.local_name()
+                self.cur_fn.inline_alloca(ir_typ, tmp, ir.Inst(ir.InstKind.Cast, [res, ir_typ], ir_typ))
+                return ir.Ident(ir_typ, tmp)
             elif expr.name in ("size_of", "align_of"):
                 size, align = self.comp.type_size(expr.args[0].typ)
                 if expr.name == "size_of":
@@ -2587,7 +2592,7 @@ class Codegen:
                 if ts.info.is_advanced_enum:
                     self.out_rir.structs.append(
                         ir.Struct(
-                            ts.vis.is_pub(), mangle_symbol(ts), [
+                            ts.vis == Vis.Export, mangle_symbol(ts), [
                                 ir.Field("_rc", ir.USIZE_T),
                                 ir.Field("_id", ir.USIZE_T),
                                 ir.Field("obj", ir.VOID_PTR_T)

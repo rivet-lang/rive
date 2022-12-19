@@ -1,9 +1,9 @@
 import "std/fs/path";
 import "std/process";
 
-let CWD: string = process.get_cwd() catch "";
+let CWD: string = process.get_cwd() catch ".";
 
-test "fs.path.is_absolute()" {
+test "std.fs.path.is_absolute()" {
     @assert(path.is_absolute("") == false);
     @assert(path.is_absolute("/home/foo") == true);
     @assert(path.is_absolute("/home/foo/..") == true);
@@ -11,7 +11,7 @@ test "fs.path.is_absolute()" {
     @assert(path.is_absolute("./baz") == false);
 }
 
-test "fs.path.resolve()" {
+test "std.fs.path.resolve()" {
     @assert(path.resolve(".").! == CWD);
     @assert(path.resolve("a/b/c/", "../../..").! == CWD);
 
@@ -30,7 +30,7 @@ test "fs.path.resolve()" {
     );
 }
 
-test "fs.path.dirname()" {
+test "std.fs.path.dirname()" {
     if let d1 = path.dirname("/a/b/c") {
         @assert(d1 == "/a/b");
     } else {
@@ -56,7 +56,7 @@ test "fs.path.dirname()" {
     @assert(path.dirname("a//") is nil);
 }
 
-test "fs.path.basename()" {
+test "std.fs.path.basename()" {
     @assert(path.basename("") == "");
     @assert(path.basename("/") == "");
     @assert(path.basename("/dir/basename.ext") == "basename.ext");
@@ -78,7 +78,7 @@ test "fs.path.basename()" {
     @assert(path.basename("foo") == "foo");
 }
 
-test "fs.path.extension()" {
+test "std.fs.path.extension()" {
     @assert(path.extension("") == "");
     @assert(path.extension(".") == "");
     @assert(path.extension("a.") == ".");
@@ -120,7 +120,7 @@ test "fs.path.extension()" {
     @assert(path.extension("/foo/bar/bam/a.b.c/") == ".c");
 }
 
-test "fs.path.relative()" {
+test "std.fs.path.relative()" {
     @assert(path.relative("/var/lib", "/var").! == "..");
     @assert(path.relative("/var/lib", "/bin").! == "../../bin");
     @assert(path.relative("/var/lib", "/var/lib").! == "");
@@ -137,7 +137,7 @@ test "fs.path.relative()" {
     @assert(path.relative("/baz", "/baz-quux").! == "../baz-quux");
 }
 
-test "fs.path.join()" {
+test "std.fs.path.join()" {
     @assert(path.join().! == "");
     @assert(path.join("/a/b", "c").! == "/a/b/c");
     @assert(path.join("/a/b/", "c").! == "/a/b/c");

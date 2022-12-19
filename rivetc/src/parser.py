@@ -158,7 +158,9 @@ class Parser:
         return attrs
 
     def parse_vis(self):
-        if self.accept(Kind.KwPub):
+        if self.accept(Kind.KwExport):
+            return sym.Vis.Export
+        elif self.accept(Kind.KwPub):
             return sym.Vis.Pub
         elif self.accept(Kind.KwProt):
             if not self.inside_struct_or_class:
