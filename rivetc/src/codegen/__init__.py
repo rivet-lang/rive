@@ -325,7 +325,10 @@ class Codegen:
                 name = l.name if is_extern else mangle_symbol(l.sym)
                 typ = self.ir_type(l.typ)
                 self.out_rir.globals.append(
-                    ir.GlobalVar(is_extern or decl.vis == Vis.Export, is_extern, typ, name)
+                    ir.GlobalVar(
+                        is_extern or decl.vis == Vis.Export, is_extern, typ,
+                        name
+                    )
                 )
                 if not decl.is_extern:
                     self.cur_fn = self.init_global_vars_fn
@@ -818,7 +821,10 @@ class Codegen:
                     )
                     return ir.Ident(ir_typ, tmp)
                 tmp = self.cur_fn.local_name()
-                self.cur_fn.inline_alloca(ir_typ, tmp, ir.Inst(ir.InstKind.Cast, [res, ir_typ], ir_typ))
+                self.cur_fn.inline_alloca(
+                    ir_typ, tmp,
+                    ir.Inst(ir.InstKind.Cast, [res, ir_typ], ir_typ)
+                )
                 return ir.Ident(ir_typ, tmp)
             elif expr.name in ("size_of", "align_of"):
                 size, align = self.comp.type_size(expr.args[0].typ)

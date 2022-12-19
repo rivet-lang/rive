@@ -244,6 +244,12 @@ class SymRef(Sym):
         Sym.__init__(self, vis, name)
         self.ref = ref
 
+    def typeof(self):
+        return self.ref.typeof()
+
+    def is_runtime_mod(self):
+        return self.ref.is_runtime_mod()
+
 class Mod(Sym):
     def add_or_get_array(self, elem_typ, size, is_mut = False):
         if is_mut:
