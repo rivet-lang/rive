@@ -540,7 +540,7 @@ pub class string : ToString, Hasher {
     /// Returns an iterator that iterates over the slices of `self` that are not
     /// any of the bytes in `delimiter_bytes`.
     ///
-    /// `"   abc def    ghi  ".tokenize(" ")` will return slices for "abc", "def",
+    /// `"   abc def    ghi  ".tokenize(b' ')` will return slices for "abc", "def",
     /// "ghi", nil, in that order.
     ///
     /// If `self` is empty, the iterator will return nil.

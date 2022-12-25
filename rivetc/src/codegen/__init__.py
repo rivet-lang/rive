@@ -1577,9 +1577,7 @@ class Codegen:
             right = self.gen_expr_with_cast(expr.right_typ, expr.right)
             if expr.op == Kind.Amp:
                 tmp = self.cur_fn.local_name()
-                if isinstance(
-                    value, ir.Inst
-                ) and value.kind == ir.InstKind.LoadPtr:
+                if isinstance(right, ir.Inst) and value.kind == ir.InstKind.LoadPtr:
                     value = value.args[0]
                 else:
                     value = ir.Inst(ir.InstKind.GetRef, [right])
