@@ -1,0 +1,26 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+#![c_compile("lib/thirdparty/wyhash/wyhash.c")]
+
+extern (C) {
+    // the default secret parameters
+    pub let _wyp: [u64; 4];
+
+    fn _wyrot(x: u64) u64;
+    fn _wymum(a: *u64, b: *u64);
+    fn _wymix(a: u64, b: u64) u64;
+    fn _wyr8(p: *u8) u64;
+    fn _wyr4(p: *u8) u64;
+    fn _wyr3(p: *u8, k: usize) u64;
+    pub fn wyhash(key: *void, len: usize, seed: u64, secret: *u64) u64;
+    pub fn wyhash64(a: u64, b: u64) u64;
+    fn wyrand(seed: *u64) u64;
+    fn wy2u01(r: u64) f64;
+    fn wy2gau(r: u64) f64;
+
+#if !WYHASH_32BIT_MUM
+    fn wy2u0k(r: u64, k: u64) u64;
+#endif
+}

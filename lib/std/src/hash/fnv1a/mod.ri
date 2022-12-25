@@ -1,0 +1,82 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+// This module implements a FNV-1a hash.
+// See: https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function
+
+const FNV32_PRIME: u32 = 16777619;
+const FNV32_OFFSET_BASIS: u32 = 2166136261;
+
+const FNV64_PRIME: u64 = 1099511628211;
+const FNV64_OFFSET_BASIS: u64 = 14695981039346656037;
+
+/// Returns a fnv1a hash of the memory block, described by the dynamic
+/// byte array `data`.
+#[inline]
+pub fn sum32(data: [u8]) u32 {
+    let mut hash = FNV32_OFFSET_BASIS;
+    let mut i: usize = 0;
+    while i < data.len : i += 1 {
+        hash = (hash ^ @as(u32, data[i])) * FNV32_PRIME;
+    }
+    return hash;
+}
+
+/// Returns a fnv1a hash of `data_len` bytes starting at
+/// the address in the given &byte pointer `data`.
+#[inline; unsafe]
+pub fn sum32_bytes(data: *u8, data_len: usize) u32 {
+    let mut hash = FNV32_OFFSET_BASIS;
+    let mut i: usize = 0;
+    while i < data_len : i += 1 {
+        hash = unsafe { (hash ^ @as(u32, data[i])) * FNV32_PRIME };
+    }
+    return hash;
+}
+
+/// Returns a fnv1a hash of the string, described by `data`
+#[inline]
+pub fn sum32_string(data: string) u32 {
+    let mut hash = FNV32_OFFSET_BASIS;
+    let mut i: usize = 0;
+    while i < data.len : i += 1 {
+        hash = (hash ^ @as(u32, data[i])) * FNV32_PRIME;
+    }
+    return hash;
+}
+
+/// Returns a fnv1a hash of the memory block, described by the dynamic
+/// byte array `data`.
+#[inline]
+pub fn sum64(data: [u8]) u64 {
+    let mut hash = FNV64_OFFSET_BASIS;
+    let mut i: usize = 0;
+    while i < data.len : i += 1 {
+        hash = (hash ^ @as(u64, data[i])) * FNV64_PRIME;
+    }
+    return hash;
+}
+
+/// Returns a fnv1a hash of `data_len` bytes starting at
+/// the address in the given &byte pointer `data`.
+#[inline; unsafe]
+pub fn sum64_bytes(data: *u8, data_len: usize) u64 {
+    let mut hash = FNV64_OFFSET_BASIS;
+    let mut i: usize = 0;
+    while i < data_len : i += 1 {
+        hash = unsafe { (hash ^ @as(u64, data[i])) * FNV64_PRIME };
+    }
+    return hash;
+}
+
+/// Returns a fnv1a hash of the string, described by `data`
+#[inline]
+pub fn sum64_string(data: string) u64 {
+    let mut hash = FNV64_OFFSET_BASIS;
+    let mut i: usize = 0;
+    while i < data.len : i += 1 {
+        hash = (hash ^ @as(u32, data[i])) * FNV64_PRIME;
+    }
+    return hash;
+}
