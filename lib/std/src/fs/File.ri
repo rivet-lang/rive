@@ -21,6 +21,7 @@ pub class File {
     }
 
     /// Writes the string `s` into the file.
+    #[inline]
     pub fn write(mut self, s: string) {
         _ = unsafe { libc.fputs(s.ptr, self.f) };
     }
@@ -31,6 +32,7 @@ pub class File {
         self.write("\n");
     }
 
+    #[inline]
     pub fn write_fmt(mut self, s: string, args: ...ToString) {
         self.write(s.fmt(args));
     }
@@ -79,6 +81,7 @@ pub class File {
     }
 
     /// Returns true if the file is at end.
+    #[inline]
     pub fn eof(self) bool {
         return unsafe { libc.feof(self.f) != 0 };
     }

@@ -45,6 +45,9 @@ class Type:
     def __str__(self):
         return self.name
 
+    def __eq__(self, other):
+        return str(self) == str(other)
+
 class Pointer:
     def __init__(self, typ, is_managed = False):
         self.typ = typ
@@ -57,8 +60,6 @@ class Pointer:
         nr = 0
         ptr = self
         while isinstance(ptr, Pointer):
-            if ptr.is_managed:
-                break
             ptr = ptr.typ
             nr += 1
         return nr
@@ -70,6 +71,9 @@ class Pointer:
         if self.is_managed:
             return f"+{self.typ}"
         return f"*{self.typ}"
+
+    def __eq__(self, other):
+        return str(self) == str(other)
 
 VOID_T = Type("void")
 VOID_PTR_T = VOID_T.ptr()
@@ -101,6 +105,9 @@ class Array:
     def __str__(self):
         return f"{[self.size]}{self.typ}"
 
+    def __eq__(self, other):
+        return str(self) == str(other)
+
 class Function:
     def __init__(self, args, ret_typ):
         self.args = args
@@ -114,6 +121,9 @@ class Function:
 
     def __str__(self):
         return f"*fn({', '.join([str(arg) for arg in self.args])}) {self.ret_typ}"
+
+    def __eq__(self, other):
+        return str(self) == str(other)
 
 class RIRFile:
     def __init__(self, pkg_name):

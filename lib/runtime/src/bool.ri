@@ -3,6 +3,7 @@
 // be found in the LICENSE file.
 
 extend bool : ToString {
+    #[inline]
     pub fn to_string(&self) string {
         return if self.* { "true" } else { "false" };
     }

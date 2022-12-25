@@ -293,6 +293,12 @@ class Parser:
         elif self.accept(Kind.KwTrait):
             pos = self.tok.pos
             name = self.parse_name()
+            bases = []
+            if self.accept(Kind.Colon):
+                while True:
+                    bases.append(self.parse_type())
+                    if not self.accept(Kind.Comma):
+                        break
             decls = []
             old_inside_trait = self.inside_trait
             self.inside_trait = True
@@ -300,7 +306,9 @@ class Parser:
             while not self.accept(Kind.Rbrace):
                 decls.append(self.parse_decl())
             self.inside_trait = old_inside_trait
-            return ast.TraitDecl(doc_comment, attrs, vis, name, decls, pos)
+            return ast.TraitDecl(
+                doc_comment, attrs, vis, name, bases, decls, pos
+            )
         elif self.accept(Kind.KwClass):
             old_inside_struct_or_class = self.inside_struct_or_class
             self.inside_struct_or_class = True

@@ -75,8 +75,7 @@ typedef f64 comptime_float;
 
 """
 
-RIVET_BREAKPOINT = """
-#if !defined(RIVET_BREAKPOINT)
+RIVET_BREAKPOINT = """#if !defined(RIVET_BREAKPOINT)
 	#if (defined (__i386__) || defined (__x86_64__)) && defined (__GNUC__) && __GNUC__ >= 2
 		#define RIVET_BREAKPOINT        { __asm__ __volatile__ (\"int $03\"); }
 	#elif (defined (_MSC_VER) || defined (__DMC__)) && defined (_M_IX86)

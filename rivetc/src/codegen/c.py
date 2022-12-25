@@ -118,9 +118,12 @@ class CGen:
                 self.globals.write("RIVET_LOCAL ")
             if g.is_extern:
                 self.globals.write("extern ")
-            self.globals.write(self.gen_type(g.typ))
-            self.globals.write(" ")
-            self.globals.write(g.name)
+            if isinstance(g.typ, ir.Array):
+                self.globals.write(self.gen_type(g.typ, g.name))
+            else:
+                self.globals.write(self.gen_type(g.typ))
+                self.globals.write(" ")
+                self.globals.write(g.name)
             self.globals.writeln(";")
 
     def gen_decls(self, decls):
@@ -160,7 +163,12 @@ class CGen:
             else:
                 self.write("RIVET_LOCAL ")
                 self.protos.write("RIVET_LOCAL ")
-        ret_typ = self.gen_type(decl.ret_typ)
+        if decl.attrs.has("inline") and not decl.is_extern:
+            self.write("inline ")
+        if isinstance(decl.ret_typ, ir.Function):
+            ret_typ = self.gen_type(decl.ret_typ.ret_typ) + " (*"
+        else:
+            ret_typ = self.gen_type(decl.ret_typ)
         self.protos.write(f"{ret_typ} {decl.name}(")
         if not decl.is_extern:
             self.write(f"{ret_typ} {decl.name}(")
@@ -190,8 +198,20 @@ class CGen:
                 if not decl.is_extern:
                     self.write("...")
                 self.protos.write("...")
+        if isinstance(decl.ret_typ, ir.Function):
+            self.protos.write(")) (")
+            for i, arg in enumerate(decl.ret_typ.args):
+                self.protos.write(self.gen_type(arg))
+                if i < len(decl.ret_typ.args) - 1:
+                    self.protos.write(", ")
         self.protos.writeln(");")
         if not decl.is_extern:
+            if isinstance(decl.ret_typ, ir.Function):
+                self.write(") (")
+                for i, arg in enumerate(decl.ret_typ.args):
+                    self.write(self.gen_type(arg))
+                    if i < len(decl.ret_typ.args) - 1:
+                        self.write(", ")
             self.writeln(") {")
             self.gen_instrs(decl.instrs)
             if decl.is_never:
@@ -247,22 +267,18 @@ class CGen:
         elif inst.kind == InstKind.GetElementPtr:
             self.write("(")
             self.gen_expr(inst.args[0])
-            arg1 = inst.args[1]
-            if not (isinstance(arg1, ir.IntLit) and arg1.lit == "0"):
-                self.write(" + ")
-                self.gen_expr(arg1)
+            self.write(" + ")
+            self.gen_expr(inst.args[1])
             self.write(")")
         elif inst.kind == InstKind.GetRef:
             arg0 = inst.args[0]
-            if isinstance(
-                arg0, (ir.Ident, ir.Selector, ir.ArrayLit)
-            ) or (isinstance(arg0, ir.Inst) and arg0.kind == InstKind.LoadPtr):
+            if isinstance(arg0, (ir.Ident, ir.Selector, ir.ArrayLit)):
                 if isinstance(arg0, ir.ArrayLit):
                     self.gen_expr(arg0)
                 else:
-                    self.write("(&")
+                    self.write("(&(")
                     self.gen_expr(arg0)
-                    self.write(")")
+                    self.write("))")
             else:
                 self.write(f"(({self.gen_type(arg0.typ)}[]){{ ")
                 self.gen_expr(arg0)

@@ -16,6 +16,7 @@ pub let SEPARATOR_STR: string = #if _WINDOWS_ "\\" #else "/" #endif;
 pub let DELIMITER: string = #if _WINDOWS_ ";" #else ":" #endif;
 
 /// Returns `true` if the given byte is a valid path separator
+#[inline]
 pub fn is_separator(byte: u8) bool {
 #if _WINDOWS_
     return byte == b'/' or byte == b'\\';
@@ -25,21 +26,25 @@ pub fn is_separator(byte: u8) bool {
 }
 
 /// Returns `true` if `path` (file or directory) exists.
+#[inline]
 pub fn exists(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.F_OK) != -1 };
 }
 
 /// Returns `true` if `path` is executable.
+#[inline]
 pub fn is_executable(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.X_OK) != -1 };
 }
 
 /// Returns `true` if `path` is writable.
+#[inline]
 pub fn is_writable(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.W_OK) != -1 };
 }
 
 /// Returns `true` if `path` is readable.
+#[inline]
 pub fn is_readable(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.R_OK) != -1 };
 }
@@ -54,11 +59,13 @@ pub fn is_directory(path: string) bool {
 }
 
 /// Returns `true` if `path` is a file.
+#[inline]
 pub fn is_file(path: string) bool {
     return exists(path) and !is_directory(path);
 }
 
 /// Returns `true` if path is absolute.
+#[inline]
 pub fn is_absolute(path: string) bool {
     return path.len > 0 and path[0] == SEPARATOR;
 }
@@ -149,13 +156,13 @@ pub fn resolve(paths: ...string) !string {
     let mut first_index: usize = 0;
     let mut have_abs = false;
     let mut max_size: usize = 0;
-    for i, p0 in paths {
-        if is_absolute(p0) {
+    for i, p in paths {
+        if is_absolute(p) {
             first_index = i;
             have_abs = true;
             max_size = 0;
         }
-        max_size += p0.len + 1;
+        max_size += p.len + 1;
     }
     let mut result_index: usize = 0;
     let result = if have_abs {
@@ -171,7 +178,7 @@ pub fn resolve(paths: ...string) !string {
         mem.dealloc(result)
     }
     for p in paths[first_index..] {
-        let mut components = p.tokenize(SEPARATOR_STR);
+        let mut components = p.tokenize(SEPARATOR);
         while let component = components.next() {
             if component == "." {
                 continue;
@@ -219,8 +226,8 @@ pub fn resolve(paths: ...string) !string {
 pub fn relative(from: string, to: string) !string {
     let resolved_from = resolve(from).!;
     let resolved_to = resolve(to).!;
-    let mut from_it = from.tokenize(SEPARATOR_STR);
-    let mut to_it = to.tokenize(SEPARATOR_STR);
+    let mut from_it = from.tokenize(SEPARATOR);
+    let mut to_it = to.tokenize(SEPARATOR);
     while {
         let from_component = from_it.next() ?? return to_it.rest();
         let to_rest = to_it.rest();
@@ -274,13 +281,16 @@ pub fn join(paths: ...string) !string {
     let mut all_paths_provided_were_empty = false;
     let mut first_path_index: usize = 0;
     for index, path in paths {
-        if path.len == 0 {
+        if path.len > 0 {
+            first_path_index = index;
+            all_paths_provided_were_empty = false;
+            break;
+        } else {
+            all_paths_provided_were_empty = true;
             continue;
         }
-        first_path_index = index;
-        all_paths_provided_were_empty = true;
     }
-    if !all_paths_provided_were_empty {
+    if all_paths_provided_were_empty {
         // all paths provided were empty, so return early.
         return "";
     }
@@ -307,9 +317,10 @@ pub fn join(paths: ...string) !string {
     errdefer unsafe {
         mem.dealloc(buf);
     }
-    mem.copy(buf, paths[first_path_index].ptr, paths[first_path_index].len);
-    let mut buf_index: usize = paths[first_path_index].len;
-    let mut prev_path = paths[first_path_index];
+    let paths_first_path_index_value = paths[first_path_index];
+    mem.copy(buf, paths_first_path_index_value.ptr, paths_first_path_index_value.len);
+    let mut buf_index: usize = paths_first_path_index_value.len;
+    let mut prev_path = paths_first_path_index_value;
     @assert(prev_path.len > 0);
     let mut i: usize = first_path_index + 1;
     while i < paths.len : i += 1 {

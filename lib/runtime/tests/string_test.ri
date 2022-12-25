@@ -47,3 +47,15 @@ test "string.ends_with()" {
 test "string.runes_count()" {
     @assert("José".runes_count() == 4);
 }
+
+test "string.tokenize()" {
+    let mut iterator = "   abc def    ghi  ".tokenize(b' ');
+    let mut res = @vec(string, 3);
+    while let w = iterator.next() {
+        res.push(w);
+    }
+    @assert(res.len == 3);
+    @assert(res[0] == "abc");
+    @assert(res[1] == "def");
+    @assert(res[2] == "ghi");
+}

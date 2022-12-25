@@ -8,6 +8,7 @@ pub class ErrnoError : Error {
     pub code: i32;
 }
 
+#[inline]
 pub fn errno() i32 {
     return unsafe {
 #if _LINUX_
@@ -25,6 +26,7 @@ pub fn strerr(code: i32 = errno()) string {
     }
 }
 
+#[inline]
 pub fn last_errno_error() ErrnoError {
     return ErrnoError(strerr(), errno());
 }

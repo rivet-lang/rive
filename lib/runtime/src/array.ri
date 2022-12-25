@@ -10,10 +10,12 @@ fn array_index(len: usize, idx: usize) {
     }
 }
 
+#[inline]
 fn array_eq(arr: *void, other_arr: *void, len: usize) bool {
     return unsafe { libc.memcmp(arr, other_arr, len) == 0 };
 }
 
+#[inline]
 fn array_ne(arr: *void, other_arr: *void, len: usize) bool {
     return unsafe { !array_eq(arr, other_arr, len) };
 }
@@ -30,6 +32,7 @@ fn array_slice(arr: *mut void, elem_size: usize, size: usize, start: usize, end:
     };
 }
 
+#[inline]
 fn array_slice_from(arr: *mut void, elem_size: usize, size: usize, start: usize) Vec {
     return unsafe { array_slice(arr, elem_size, size, start, size) };
 }

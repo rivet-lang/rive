@@ -23,11 +23,11 @@ struct StaticBuffer {
         }
     }
 
-    pub fn as_u64(self) u64 {
+    pub fn as_u64(&self) u64 {
         return unsafe { libc.strtoul(@addr_of(self.buf[0]), nil, 10) };
     }
 
-    pub fn as_string(self) string {
+    pub fn as_string(&self) string {
         return unsafe { string.from_raw_with_len(@addr_of(self.buf[0]), self.len) };
     }
 }

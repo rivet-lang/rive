@@ -10,6 +10,7 @@ pub enum CRuntime as u8 {
 }
 
 /// Returns the current C runtime.
+#[inline]
 pub fn c_runtime() CRuntime {
     return .Glibc;
 }

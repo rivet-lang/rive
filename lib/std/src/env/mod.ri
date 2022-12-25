@@ -2,35 +2,45 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import "c";
 import "c/libc";
-import "runtime";
 
 /// User's home directory.
-pub let HOME_DIR: string = #if _LINUX_ get("HOME") #else get("USERPROFILE") #endif;
+pub let HOME_DIR: string =
+#if _LINUX_
+	get("HOME")
+#else
+	get("USERPROFILE")
+#endif ?? "";
 
 /// Returns `true` if the environment variable exists.
+#[inline]
 pub fn exists(name: string) bool {
-	return unsafe { libc.getenv(name.ptr) !is nil };
+	return if let _ = get(name) { true } else { false };
 }
 
 /// Returns the value of the environment variable named by the key.
-pub fn get(name: string) string {
-	unsafe {
-		let s = libc.getenv(name.ptr);
-		return if s is nil { "" } else { string.from_raw(s) };
-	}
+#[inline]
+pub fn get(name: string) ?string {
+	return unsafe {
+		if let s = libc.getenv(name.ptr) {
+			string.from_raw(s)
+		} else {
+			nil
+		}
+	};
 }
 
 /// Sets the value of an environment variable with `name` to `value`.
 pub fn set(name: string, value: string, overwrite: bool = true) ! {
 	if unsafe { libc.setenv(name.ptr, value.ptr, overwrite) == -1 } {
-		return runtime.last_errno_error();
+		return c.last_errno_error();
 	}
 }
 
 /// Removes an environment variable with `name`.
 pub fn remove(name: string) ! {
 	if unsafe { libc.unsetenv(name.ptr) } == -1 {
-		return runtime.last_errno_error();
+		return c.last_errno_error();
 	}
 }

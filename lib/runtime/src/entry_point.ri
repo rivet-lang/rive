@@ -12,11 +12,11 @@ extern (Rivet) {
     fn drop_globals();
 }
 
-extern (C) fn init_args(_argc: i32, _argv: **u8) {
+extern (C) fn init_args(_argc: usize, _argv: **u8) {
     unsafe {
-        ARGS = @vec(string, @as(usize, _argc));
+        ARGS = @vec(string, _argc);
         let mut i: usize = 0;
-        while i < @as(usize, _argc) : i += 1 {
+        while i < _argc : i += 1 {
             ARGS.push(string.from_raw(_argv[i]));
         }
     }
@@ -32,11 +32,12 @@ fn main(
 ) {
     unsafe {
         _ = libc.signal(11, segfault_handler);
-        init_args(_argc, _argv);
+        init_args(@as(usize, _argc), _argv);
 #if !_TESTS_ // `init_string_lits` is called after
         init_string_lits();
 #endif
         init_globals();
+        runtime_started = true;
 #if _TESTS_
         if tr.tests.len > 0 {
             tr.run();

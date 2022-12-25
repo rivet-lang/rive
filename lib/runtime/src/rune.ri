@@ -47,6 +47,7 @@ extend rune : ToString {
         return nil;
     }
 
+    #[inline]
     fn len_utf8(self) usize {
         return len_utf8(@as(u32, self));
     }
@@ -90,6 +91,7 @@ fn utf32_decode_to_buffer(code: u32, buffer: *mut u8) i32 {
     }
 }
 
+#[inline]
 fn len_utf8(code: u32) usize {
     return if code < MAX_ONE_B {
         1

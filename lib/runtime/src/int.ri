@@ -8,6 +8,7 @@ let DIGIT_PAIRS: string = "00102030405060708090011121314151617181910212223242526
 
 extend comptime_int : ToString {
     /// Returns the value of `self` as a string.
+    #[inline]
     pub fn to_string(&self) string {
         return @as(i64, self.*).to_string();
     }
@@ -18,6 +19,7 @@ extend i8 : ToString {
     pub const MIN: i8 = -128;
 
     /// Returns the value of `self` as a string.
+    #[inline]
     pub fn to_string(&self) string {
         return @as(i32, self.*).str_l(5);
     }
@@ -28,6 +30,7 @@ extend i16 : ToString {
     pub const MIN: i16 = -32768;
 
     /// Returns the value of `self` as a string.
+    #[inline]
     pub fn to_string(&self) string {
         return @as(i32, self.*).str_l(7);
     }
@@ -85,6 +88,7 @@ extend i32 : ToString {
     }
 
     /// Returns the value of `self` as a string.
+    #[inline]
     pub fn to_string(&self) string {
         return self.*.str_l(12);
     }
@@ -149,6 +153,7 @@ extend isize : ToString {
     pub const MAX: isize = #if _x64_ i64.MAX #else i32.MAX #endif;
 
     /// Returns the value of `self` as a string.
+    #[inline]
     pub fn to_string(&self) string {
         return @as(i64, self.*).to_string();
     }

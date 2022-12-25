@@ -6,7 +6,7 @@ import "c/libc";
 
 let empty_string: string = string(c"", 0, true);
 
-pub class string : ToString {
+pub class string : ToString, Hasher {
     pub ptr: *u8;
     pub len: usize;
     is_ref: bool;
@@ -106,7 +106,7 @@ pub class string : ToString {
     /// To escape `{` and `}`, `{{` and `}}` can be used, this does not apply if no
     /// argument is passed.
     ///
-    /// If the replacement positions exceed the number of passed arguments, a process_panic
+    /// If the replacement positions exceed the number of passed arguments, a panic
     /// occurs.
     pub fn fmt(self, args: ...ToString) Self {
         if args.len == 0 {
@@ -128,7 +128,7 @@ pub class string : ToString {
                         args_idx += 1;
                         if arg_idx >= args.len {
                             process_panic(
-                                "fmt: argument index out of range (argument index: {}, len: {}, index: {})",
+                                "string.fmt(): argument index out of range (argument index: {}, len: {}, index: {})",
                                 arg_idx, args.len, i
                             );
                         }
@@ -142,19 +142,19 @@ pub class string : ToString {
                             buf.push(unsafe { self.ptr[i] });
                             i += 1;
                             if i >= self.len {
-                                process_panic("fmt: incomplete format string (index: {})", start);
+                                process_panic("string.fmt(): incomplete format string (index: {})", start);
                             }
                         }
                         let index = buf.as_u64();
                         if index >= args.len {
                             process_panic(
-                                "fmt: argument index out of range (index: {}, len: {})",
+                                "string.fmt(): argument index out of range (index: {}, len: {})",
                                 index, args.len
                             );
                         }
                         res.write_string(args[index].to_string());
                     } else {
-                        process_panic("fmt: expecting closing '}}' in format string (index: {})", i);
+                        process_panic("string.fmt(): expecting closing `}}` in format string (index: {})", i);
                     }
                 },
                 b'}' => {
@@ -163,7 +163,7 @@ pub class string : ToString {
                         i += 1;
                     } else {
                         process_panic(
-                            "fmt: single '}}' encountered in format string (index: {})", i
+                            "string.fmt(): single `}}` encountered in format string (index: {})", i
                         );
                     }
                 },
@@ -418,6 +418,7 @@ pub class string : ToString {
         return unsafe { string.from_raw_with_len(b, new_len) };
     }
 
+    #[inline]
     pub fn as_bytes(self) [u8] {
         return unsafe {
             Vec.from_array_no_alloc(@as(*mut u8, self.ptr), @size_of(u8), self.len)
@@ -539,14 +540,15 @@ pub class string : ToString {
     /// Returns an iterator that iterates over the slices of `self` that are not
     /// any of the bytes in `delimiter_bytes`.
     ///
-    /// `tokenize("   abc def    ghi  ", " ")` will return slices for "abc", "def",
+    /// `"   abc def    ghi  ".tokenize(" ")` will return slices for "abc", "def",
     /// "ghi", nil, in that order.
     ///
     /// If `self` is empty, the iterator will return nil.
     /// If `delimiter_bytes` does not exist in self, the iterator will return `self`,
     /// nil, in that order.
-    pub fn tokenize(self, delimiter_bytes: string) TokenIterator {
-        return TokenIterator(self, delimiter_bytes.as_bytes());
+    #[inline]
+    pub fn tokenize(self, delimiter_bytes: ...u8) TokenIterator {
+        return TokenIterator(self, delimiter_bytes);
     }
 
     pub fn ==(self, rhs: Self) bool {
@@ -564,6 +566,7 @@ pub class string : ToString {
         return mem_cmp(self.ptr, rhs.ptr, rhs.len) == 0;
     }
 
+    #[inline]
     pub fn !=(self, rhs: Self) bool {
         return !(self == rhs);
     }
@@ -585,14 +588,17 @@ pub class string : ToString {
         return false;
     }
 
+    #[inline]
     pub fn >(self, rhs: Self) bool {
         return !(self < rhs);
     }
 
+    #[inline]
     pub fn <=(self, rhs: Self) bool {
         return self < rhs or self == rhs;
     }
 
+    #[inline]
     pub fn >=(self, rhs: Self) bool {
         return self > rhs or self == rhs;
     }
@@ -637,10 +643,12 @@ pub class string : ToString {
     }
 
     /// Returns the number of runes contained in `self`.
+    #[inline]
     pub fn runes_count(self) usize {
         return cstr_runes_count(unsafe { self.ptr }, self.len);
     }
 
+    #[inline]
     pub fn is_empty(self) bool {
         return self.len == 0;
     }
@@ -661,6 +669,7 @@ pub class string : ToString {
         }
     }
 
+    #[inline]
     fn slice_from(self, start: usize) Self {
         return self.slice(start, self.len);
     }
@@ -677,6 +686,15 @@ pub class string : ToString {
         return Self(res, self.len);
     }
 
+    pub fn hash(self) usize {
+        let mut hash_: usize = 0;
+        for c in self.as_bytes() {
+            hash_ = hash_ * 31 + @as(usize, c);
+        }
+        return hash_;
+    }
+
+    #[inline]
     pub fn to_string(self) Self {
         return self;
     }
@@ -721,7 +739,7 @@ pub struct TokenIterator {
     }
 
     /// Returns a slice of the remaining bytes. Does not affect iterator state.
-    pub fn rest(self) string {
+    pub fn rest(&self) string {
         // move to beginning of token
         let mut index: usize = self.index;
         while index < self.buffer.len and self.is_split_byte(self.buffer[index])
@@ -734,7 +752,7 @@ pub struct TokenIterator {
         self.index = 0;
     }
 
-    fn is_split_byte(self, byte: u8) bool {
+    fn is_split_byte(&self, byte: u8) bool {
         for delimiter_byte in self.delimiter_bytes {
             if byte == delimiter_byte {
                 return true;

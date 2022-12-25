@@ -6,6 +6,7 @@ import "c/libc";
 
 import "c" { pub ErrnoError, pub last_errno_error };
 
+#[inline]
 fn error_panic(err: Error) {
     process_panic(err.to_string());
 }

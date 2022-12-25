@@ -3,6 +3,7 @@
 // be found in the LICENSE file.
 
 extend nil : ToString {
+    #[inline]
     pub fn to_string(&self) string {
         return "nil";
     }

@@ -39,6 +39,7 @@ pub fn process_get_cwd() !string {
 
 /// Returns the OS-assigned process identifier associated with this
 /// process.
+#[inline]
 pub fn process_id() u32 {
     return unsafe { libc.getpid() };
 }

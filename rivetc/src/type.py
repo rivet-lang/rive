@@ -108,6 +108,16 @@ class Ptr(TBase):
         self.typ = typ
         self.is_mut = is_mut
 
+    def nr_level(self):
+        level = 0
+        p = self
+        while isinstance(p, Ptr):
+            level += 1
+            p = p.typ
+            if isinstance(p, Optional):
+                p = p.typ
+        return level
+
     def qualstr(self):
         if self.is_mut:
             return f"*mut {self.typ.qualstr()}"
@@ -292,6 +302,10 @@ class Optional(TBase):
     def __init__(self, typ):
         self.typ = typ
         self.sym = None
+
+    def is_ref_or_ptr(self):
+        return self.typ.__class__ in (Ref, Ptr,
+                                      Fn) or self.typ.symbol().is_boxed()
 
     def qualstr(self):
         return f"?{self.typ.qualstr()}"

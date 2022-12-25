@@ -63,6 +63,12 @@ class Checker:
                         )
                 self.check_decls(decl.decls)
             elif isinstance(decl, ast.TraitDecl):
+                for base in decl.bases:
+                    base_sym = base.symbol()
+                    if base_sym.kind != TypeKind.Trait:
+                        report.error(
+                            f"traits can only inherit traits", decl.pos
+                        )
                 self.check_decls(decl.decls)
             elif isinstance(decl, ast.ClassDecl):
                 has_base = False
@@ -1042,6 +1048,8 @@ class Checker:
                     )
                 is_addr_of_mut = expr.name == "addr_of_mut"
                 arg0 = expr.args[0]
+                if isinstance(arg0, ast.IndexExpr):
+                    arg0.is_ref = True
                 if is_addr_of_mut:
                     self.check_expr_is_mut(arg0)
                 expr.typ = type.Ptr(self.check_expr(arg0), is_addr_of_mut)
@@ -1178,13 +1186,7 @@ class Checker:
                         expr.typ = left_typ.typ
                 else:
                     left_sym = left_typ.symbol()
-                    if isinstance(left_typ, type.Optional):
-                        report.error(
-                            "fields of an optional value cannot be accessed directly",
-                            expr.pos
-                        )
-                        report.help("handle it with `.?` or `orelse`")
-                    elif left_sym.kind == TypeKind.Array and expr.field_name == "len":
+                    if left_sym.kind == TypeKind.Array and expr.field_name == "len":
                         expr.typ = self.comp.usize_t
                     elif left_sym.kind == TypeKind.Tuple and expr.field_name.isdigit(
                     ):
@@ -1240,6 +1242,21 @@ class Checker:
                                     f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                                 )
                 expr.left_typ = left_typ
+            if isinstance(expr.left_typ,
+                          type.Ptr) and expr.left_typ.nr_level() > 1:
+                report.error(
+                    "fields of an multi-level pointer cannot be accessed directly",
+                    expr.pos
+                )
+                report.help(f"use `{expr.left}.*.{expr.field_name}` instead")
+            elif isinstance(
+                expr.left_typ, type.Optional
+            ) and not expr.is_nilcheck:
+                report.error(
+                    "fields of an optional value cannot be accessed directly",
+                    expr.pos
+                )
+                report.help("handle it with `.?` or `orelse`")
             return expr.typ
         elif isinstance(expr, ast.ReturnExpr):
             if self.inside_test and expr.has_expr:
@@ -1411,7 +1428,7 @@ class Checker:
                     self.check_expr(expr.args[0].expr)
                 )
                 if value_t.symbol() in info.info.implements:
-                    info.info.has_objects = True
+                    info.info.mark_has_objects()
                 else:
                     report.error(
                         f"type `{value_t}` does not implement trait `{info.name}`",
@@ -1588,7 +1605,7 @@ class Checker:
             if expected != got:
                 got_t = self.comp.comptime_number_to_type(got)
                 if got_t.symbol() in expected_sym.info.implements:
-                    expected_sym.info.has_objects = True
+                    expected_sym.info.mark_has_objects()
                 else:
                     report.error(
                         f"type `{got_t}` does not implement trait `{expected_sym.name}`",
@@ -1630,7 +1647,10 @@ class Checker:
             return False
         elif isinstance(expected,
                         type.Optional) and isinstance(got, type.Optional):
-            return expected.typ == got.typ
+            if isinstance(expected.typ,
+                          type.Ptr) and isinstance(got.typ, type.Ptr):
+                return self.check_pointer(expected.typ.ty, got.typ.typ)
+            return expected.typ == got.typ.typ
         elif isinstance(expected,
                         type.Optional) and not isinstance(got, type.Optional):
             if got == self.comp.nil_t:
@@ -1670,12 +1690,7 @@ class Checker:
                 return False
             return expected.typ == got.typ
         elif isinstance(expected, type.Ptr) and isinstance(got, type.Ptr):
-            if expected.is_mut and not got.is_mut:
-                return False
-            if expected.typ == self.comp.void_t:
-                # *void == *T, is valid
-                return True
-            return expected.typ == got.typ
+            return self.check_pointer(expected, got)
 
         if self.comp.is_number(expected) and self.comp.is_number(got):
             if self.comp.is_comptime_number(
@@ -1686,7 +1701,7 @@ class Checker:
         elif exp_sym.kind == TypeKind.Trait:
             if self.comp.comptime_number_to_type(got).symbol(
             ) in exp_sym.info.implements:
-                exp_sym.info.has_objects = True
+                exp_sym.info.mark_has_objects()
                 return True
         elif exp_sym.kind == TypeKind.Class and got_sym.kind == TypeKind.Class:
             if got_sym.is_subtype_of(exp_sym):
@@ -1712,6 +1727,14 @@ class Checker:
                 return True
 
         return False
+
+    def check_pointer(self, expected, got):
+        if expected.is_mut and not got.is_mut:
+            return False
+        if expected.typ == self.comp.void_t:
+            # *void == *T, is valid
+            return True
+        return expected.typ == got.typ
 
     def promote(self, left_typ, right_typ):
         if left_typ == right_typ:

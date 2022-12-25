@@ -8,6 +8,7 @@ pub class StringBuilder : ToString {
     mut inner: Vec;
 
     /// Returns a string builder with capacity `cap`.
+    #[inline]
     pub fn new(cap: usize = 0) Self {
         return Self(unsafe { Vec.new(@size_of(u8), cap) });
     }
@@ -21,11 +22,12 @@ pub class StringBuilder : ToString {
         });
     }
 
+    #[inline]
     pub fn write_byte(mut self, val: u8) {
         self.inner.push(unsafe { @addr_of(val) });
     }
 
-    #[unsafe]
+    #[unsafe; inline]
     pub fn write_raw(mut self, s: *u8) {
         unsafe {
             self.write_raw_with_len(s, libc.strlen(s));
@@ -40,6 +42,7 @@ pub class StringBuilder : ToString {
         }
     }
 
+    #[inline]
     pub fn write_string(mut self, s: string) {
         unsafe {
             self.write_raw_with_len(s.ptr, s.len);
@@ -66,6 +69,7 @@ pub class StringBuilder : ToString {
         }
     }
 
+    #[inline]
     pub fn write_fmt(mut self, s: string, args: ...ToString) {
         self.write_string(s.fmt(args));
     }
@@ -76,26 +80,32 @@ pub class StringBuilder : ToString {
     }
 
     /// Returns the number of runes contained in `self`.
+    #[inline]
     pub fn runes_count(self) usize {
         return cstr_runes_count(@as(*u8, self.inner.ptr), self.inner.len);
     }
 
+    #[inline]
     pub fn clear(mut self) {
         self.inner.len = 0;
     }
 
+    #[inline]
     pub fn len(self) usize {
         return self.inner.len;
     }
 
+    #[inline]
     pub fn cap(self) usize {
         return self.inner.cap;
     }
 
+    #[inline]
     pub fn is_empty(self) bool {
         return self.inner.len == 0;
     }
 
+    #[inline]
     pub fn to_string(self) string {
         return string(@as(*u8, self.inner.ptr), self.inner.len);
     }

@@ -5,3 +5,7 @@
 pub trait ToString {
     fn to_string(&self) string;
 }
+
+pub trait Hasher {
+    fn hash(&self) usize;
+}

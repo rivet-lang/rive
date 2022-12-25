@@ -4,8 +4,16 @@
 
 import "c/libc";
 
+let mut runtime_started: bool = false;
+
 fn segfault_handler(_: i32) {
-    console_eprintln("panic: segmentation fault detected");
+    console_eprintln(
+        if unsafe { runtime_started } {
+            "panic: segmentation fault detected"
+        } else {
+            "panic: segmentation fault detected while starting the runtime"
+        }
+    );
     bt_print(3);
     process_exit(1);
 }
@@ -26,21 +34,31 @@ fn assert(cond: bool, msg: string) {
     }
 }
 
+#[inline]
 fn internal_alloc(size: usize) *mut void {
     return mem_alloc(size) catch {
         process_panic("internal error: cannot allocate memory");
     };
 }
 
+#[inline]
 fn internal_zeroed(size: usize) *mut void {
     return mem_zeroed(size) catch {
         process_panic("internal error: cannot allocate zeroed memory");
     };
 }
 
+#[inline]
 fn internal_dup(src: *void, sz: usize) *mut void {
     return mem_dup(src, sz) catch {
         process_panic("internal error: cannot duplicate memory");
+    };
+}
+
+#[inline]
+fn internal_resize(ptr: ?*mut void, sz: usize) *mut void {
+    return mem_resize(ptr, sz) catch {
+        process_panic("internal error: cannot resize memory");
     };
 }
 

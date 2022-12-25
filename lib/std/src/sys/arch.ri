@@ -8,6 +8,7 @@ pub enum Arch as u8 {
     X86,
     Amd64;
 
+    #[inline]
     pub fn from_string(arch: string) ?Arch {
         return switch arch {
             "i386" => .X86,
@@ -18,6 +19,7 @@ pub enum Arch as u8 {
 }
 
 /// Returns the current architecture.
+#[inline]
 pub fn arch() Arch {
 #if _X86_
     return .X86;

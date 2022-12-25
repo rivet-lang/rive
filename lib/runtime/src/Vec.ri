@@ -9,7 +9,7 @@ class Vec {
     mut cap: usize;
     is_ref: bool;
 
-    #[unsafe]
+    #[unsafe; inline]
     fn new(elem_size: usize, cap: usize) Self {
         return Self(unsafe { internal_zeroed(cap * elem_size) }, elem_size, 0, cap);
     }
@@ -23,12 +23,12 @@ class Vec {
         return vec;
     }
 
-    #[unsafe]
+    #[unsafe; inline]
     fn from_array_no_alloc(arr: *mut void, elem_size: usize, len: usize) Self {
         return Self(unsafe { arr }, elem_size, len, len, is_ref: true);
     }
 
-    #[unsafe]
+    #[unsafe; inline]
     fn raw_get(self, idx: usize) *mut void {
         return unsafe { @ptr_add(@as(*mut u8, self.ptr), idx * self.elem_size) };
     }
@@ -72,6 +72,7 @@ class Vec {
         return unsafe { @ptr_add(self.ptr, new_len * self.elem_size) };
     }
 
+    #[inline]
     fn is_empty(self) bool {
         return self.len == 0;
     }
@@ -83,6 +84,7 @@ class Vec {
         return unsafe { mem_cmp(self.ptr, rhs.ptr, self.len) == 0 };
     }
 
+    #[inline]
     fn !=(self, rhs: Self) bool {
         return !(self == rhs);
     }
@@ -120,6 +122,7 @@ class Vec {
         );
     }
 
+    #[inline]
     fn slice_from(self, start: usize) Self {
         return self.slice(start, self.len);
     }

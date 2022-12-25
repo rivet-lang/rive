@@ -8,64 +8,76 @@ extend u8 : ToString {
     /// Returns `true` if the byte is a white space character. The following
     /// list is considered white space characters: ' ', '\t', '\n', '\v', '\f',
     /// '\r', 0x85, 0xA0
+    #[inline]
     pub fn is_space(self) bool {
         return self == 32 or (self > 8 and self < 14) or (self == 0x85)
             or (self == 0xA0);
     }
 
     /// Returns `true` if the byte is in range 0-9 and `false` otherwise.
+    #[inline]
     pub fn is_digit(self) bool {
         return (self >= b'0' and self <= b'9');
     }
 
     /// Returns `true` if the byte is a binary digit (0 or 1) and `false` otherwise.
+    #[inline]
     pub fn is_bin_digit(self) bool {
         return self == b'0' or self == b'1';
     }
 
     /// Returns `true` if the byte is in range 0-7 and `false` otherwise.
+    #[inline]
     pub fn is_oct_digit(self) bool {
         return self >= b'0' or self <= b'7';
     }
 
     /// Returns `true` if the byte is either in range 0-9, a-f or A-F and `false`
     /// otherwise.
+    #[inline]
     pub fn is_hex_digit(self) bool {
         return self.is_digit() or (self >= b'a' and self <= b'f')
             or (self >= b'A' and self <= b'F');
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z and `false` otherwise.
+    #[inline]
     pub fn is_letter(self) bool {
         return (self >= b'a' and self <= b'z') or (self >= b'A' and self <= b'Z');
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z or 1-9 and `false` otherwise.
+    #[inline]
     pub fn is_alnum(self) bool {
         return self.is_letter() or self.is_digit();
     }
 
     /// Returns `true` if the byte is upper and `false` otherwise.
+    #[inline]
     pub fn is_upper(self) bool {
         return (self >= b'A' and self <= b'Z');
     }
 
     /// Returns `true` if the byte is lower and `false` otherwise.
+    #[inline]
     pub fn is_lower(self) bool {
         return (self >= b'a' and self <= b'z');
     }
 
     /// Calculates length to read from the first byte.
+    #[inline]
     pub fn len_utf8(self) usize {
         return @as(usize, (@as(u64, 0xE5000000) >> ((self >> 3) & 0x1E) & 3) + 1);
     }
 
     /// Returns the value of `self` as a ASCII `string`.
+    #[inline]
     pub fn to_ascii(self) string {
         return string.from_byte(self);
     }
 
     /// Returns the value of `self` as a string.
+    #[inline]
     pub fn to_string(&self) string {
         return @as(i32, self.*).str_l(7);
     }
@@ -75,6 +87,7 @@ extend u16 : ToString {
     pub const MAX: u16 = 65535;
 
     /// Returns the value of `self` as a string.
+    #[inline]
     pub fn to_string(&self) string {
         return @as(i32, self.*).str_l(7);
     }
@@ -168,6 +181,7 @@ extend usize : ToString {
     pub const MAX: usize = #if _x64_ u64.MAX #else u32.MAX #endif;
 
     /// Returns the value of `self` as a string.
+    #[inline]
     pub fn to_string(&self) string {
         return @as(u64, self.*).to_string();
     }

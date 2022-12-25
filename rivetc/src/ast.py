@@ -209,11 +209,12 @@ class EnumDecl:
         self.pos = pos
 
 class TraitDecl:
-    def __init__(self, docs, attrs, vis, name, decls, pos):
+    def __init__(self, docs, attrs, vis, name, bases, decls, pos):
         self.docs = docs
         self.attrs = attrs
         self.vis = vis
         self.name = name
+        self.bases = bases
         self.decls = decls
         self.pos = pos
 

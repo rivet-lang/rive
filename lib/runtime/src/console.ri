@@ -14,6 +14,7 @@ pub fn console_print(s: string, args: ...ToString) {
 }
 
 /// Prints a message with a line end to stdout. stdout is flushed.
+#[inline]
 pub fn console_println(s: string = "", args: ...ToString) {
     unsafe {
         writeln_to_fd(1, s.fmt(args));
@@ -44,6 +45,7 @@ pub fn console_eprintln(s: string = "", args: ...ToString) {
 
 /// Returns `true` if the `fd` file descriptor is open and refers to a
 /// terminal.
+#[inline]
 pub fn console_is_atty(fd: i32) bool {
     return unsafe { libc.isatty(fd) == 1 };
 }

@@ -510,8 +510,9 @@ class EnumInfo:
 
 class TraitInfo:
     def __init__(self):
-        self.implements = []
         self.has_objects = False
+        self.bases = []
+        self.implements = []
 
     def indexof(self, sym):
         for idx, s in enumerate(self.implements):
@@ -519,6 +520,16 @@ class TraitInfo:
                 return idx
         assert False, (sym.name, sym.id) # unreachable
         return 0
+
+    def implement(self, implementor):
+        self.implements.append(implementor)
+        for b in self.bases:
+            b.info.implement(implementor)
+
+    def mark_has_objects(self):
+        self.has_objects = True
+        for b in self.bases:
+            b.info.has_objects = True
 
 class ClassInfo:
     def __init__(self):
@@ -569,7 +580,7 @@ class Type(Sym):
         if self.kind == TypeKind.Class and self.info.base:
             if s := Sym.find(self.info.base, name):
                 return s
-        elif self.kind == TypeKind.Struct:
+        elif self.kind in (TypeKind.Struct, TypeKind.Trait):
             for base in self.info.bases:
                 if s := Sym.find(base, name):
                     return s
@@ -656,6 +667,12 @@ class Fn(Sym):
         self.has_named_args = has_named_args
         self.has_body = has_body
         self.name_pos = name_pos
+
+    def get_arg(self, idx):
+        arg = self.args[idx]
+        if arg.is_self:
+            return self.args[idx + 1]
+        return self.args[idx]
 
     def args_len(self):
         from .type import Variadic
