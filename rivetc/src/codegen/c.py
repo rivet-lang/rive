@@ -280,9 +280,9 @@ class CGen:
                     self.gen_expr(arg0)
                     self.write("))")
             else:
-                self.write(f"(({self.gen_type(arg0.typ)}[]){{ ")
+                self.write(f"({self.gen_type(arg0.typ)}[]){{ ")
                 self.gen_expr(arg0)
-                self.write(" })")
+                self.write(" }")
         elif inst.kind == InstKind.Cast:
             self.write("((")
             self.gen_expr(inst.args[1])

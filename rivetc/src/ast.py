@@ -383,6 +383,12 @@ class AssignExpr:
         self.typ = None
         self.pos = pos
 
+    def __repr__(self):
+        return f"{self.left} {self.op} {self.right}"
+
+    def __str__(self):
+        return self.__repr__()
+
 class Ident:
     def __init__(self, name, pos, scope, is_comptime):
         self.name = name

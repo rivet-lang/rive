@@ -686,12 +686,9 @@ pub class string : ToString, Hasher {
         return Self(res, self.len);
     }
 
+    #[inline]
     pub fn hash(self) usize {
-        let mut hash_: usize = 0;
-        for c in self.as_bytes() {
-            hash_ = hash_ * 31 + @as(usize, c);
-        }
-        return hash_;
+        return sum64_string(self);
     }
 
     #[inline]

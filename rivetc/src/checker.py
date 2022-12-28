@@ -294,7 +294,7 @@ class Checker:
         elif isinstance(expr, ast.AssignExpr):
             expr.typ = self.comp.void_t
             left_t = self.check_expr(expr.left)
-            self.check_expr_is_mut(expr.left)
+            self.check_expr_is_mut(expr.left, True)
             old_expected_type = self.expected_type
             self.expected_type = left_t
             right_t = self.check_expr(expr.right)
@@ -1243,7 +1243,7 @@ class Checker:
                                 )
                 expr.left_typ = left_typ
             if isinstance(expr.left_typ,
-                          type.Ptr) and expr.left_typ.nr_level() > 1:
+                          type.Ptr) and expr.left_typ.nr_level() > 1 and not expr.is_indirect:
                 report.error(
                     "fields of an multi-level pointer cannot be accessed directly",
                     expr.pos
@@ -1643,13 +1643,16 @@ class Checker:
         if isinstance(expected, type.Result):
             return self.check_compatible_types(got, expected.typ)
         elif isinstance(got, type.Optional
+                        ) and isinstance(expected, type.Ptr):
+            return self.check_pointer(expected, got.typ)
+        elif isinstance(got, type.Optional
                         ) and not isinstance(expected, type.Optional):
             return False
         elif isinstance(expected,
                         type.Optional) and isinstance(got, type.Optional):
             if isinstance(expected.typ,
                           type.Ptr) and isinstance(got.typ, type.Ptr):
-                return self.check_pointer(expected.typ.ty, got.typ.typ)
+                return self.check_pointer(expected.typ, got.typ)
             return expected.typ == got.typ.typ
         elif isinstance(expected,
                         type.Optional) and not isinstance(got, type.Optional):
@@ -1782,7 +1785,7 @@ class Checker:
             # signed number -> unsigned number (bad)
             return self.comp.void_t
 
-    def check_expr_is_mut(self, expr):
+    def check_expr_is_mut(self, expr, from_assign = False):
         if isinstance(expr, ast.ParExpr):
             self.check_expr_is_mut(expr.expr)
         elif isinstance(expr, ast.Ident):
@@ -1856,9 +1859,16 @@ class Checker:
         elif isinstance(expr, ast.VecLiteral):
             report.error("array literals cannot be modified", expr.pos)
         elif isinstance(expr, ast.TupleLiteral):
-            report.error("tuple literals cannot be modified", expr.pos)
+            if from_assign:
+                for e in expr.exprs:
+                    self.check_expr_is_mut(e)
+            else:
+                report.error("tuple literals cannot be modified", expr.pos)
         elif isinstance(expr, ast.EnumLiteral) and expr.is_instance:
             report.error("enum literals cannot be modified", expr.pos)
+        elif isinstance(expr, ast.BuiltinCallExpr):
+            for arg in expr.args:
+                self.check_expr_is_mut(arg)
         elif isinstance(expr, ast.Block) and expr.is_expr:
             self.check_expr_is_mut(expr.expr)
         elif isinstance(expr, ast.IndexExpr):

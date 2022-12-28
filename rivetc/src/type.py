@@ -248,7 +248,7 @@ class Fn(TBase):
         if self.is_method:
             if self.self_is_mut:
                 res += "mut "
-            elif self.self.self_is_ref:
+            elif self.self_is_ref:
                 res += "&"
             res += "self"
             if len(self.args) > 0:
