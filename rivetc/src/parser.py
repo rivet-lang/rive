@@ -1084,7 +1084,16 @@ class Parser:
                         else:
                             pats.append(ast.TypeNode(self.parse_type(), pos))
                     else:
-                        pats.append(self.parse_expr())
+                        branch_expr = self.parse_expr()
+                        if self.accept(Kind.DotDot) or self.accept(Kind.Ellipsis):
+                            if self.prev_tok.kind == Kind.DotDot:
+                                report.error(
+                                    "switch only supports inclusive ranges, not exclusive",
+                                    self.prev_tok.pos
+                                )
+                                report.help("use `...` instead of `..`")
+                            branch_expr = ast.RangeExpr(branch_expr, self.parse_expr(), True, branch_expr.pos)
+                        pats.append(branch_expr)
                     if not self.accept(Kind.Comma):
                         break
                 if self.accept(Kind.KwAs):

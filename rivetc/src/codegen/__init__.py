@@ -2013,26 +2013,41 @@ class Codegen:
                                 )
                             self.cur_fn.inline_alloca(var_t, b.var_name, val)
                     else:
-                        p_conv = self.gen_expr_with_cast(p.typ, p)
                         p_typ_sym = p.typ.symbol()
-                        if p_typ_sym.kind.is_primitive(
-                        ) or p_typ_sym.kind == TypeKind.Enum:
-                            inst = ir.Inst(
-                                ir.InstKind.Cmp,
-                                [ir.Name("=="), switch_expr, p_conv]
+                        tmp2_i = ir.Ident(ir.BOOL_T, tmp2)
+                        if isinstance(p, ast.RangeExpr):
+                            rend_l = self.cur_fn.local_name()
+                            start = self.gen_expr_with_cast(p.typ, p.start)
+                            end = self.gen_expr_with_cast(p.typ, p.end)
+                            self.cur_fn.alloca(tmp2_i)
+                            self.cur_fn.add_cond_br(
+                                ir.Inst(
+                                    ir.InstKind.Cmp,
+                                    [ir.Name(">="), switch_expr, start]
+                                ), rend_l, next_pat
                             )
+                            self.cur_fn.add_label(rend_l)
+                            self.cur_fn.store(tmp2_i, ir.Inst(
+                                ir.InstKind.Cmp, [ir.Name("<="), switch_expr, end]
+                            ))
                         else:
-                            inst = ir.Inst(
-                                ir.InstKind.Call, [
-                                    ir
-                                    .Name(f"{mangle_symbol(p_typ_sym)}4_eq_M"),
-                                    switch_expr, p_conv,
-                                ]
-                            )
-                        self.cur_fn.inline_alloca(ir.BOOL_T, tmp2, inst)
-                    self.cur_fn.add_cond_br(
-                        ir.Ident(ir.BOOL_T, tmp2), b_label, next_pat
-                    )
+                            p_conv = self.gen_expr_with_cast(p.typ, p)
+                            if p_typ_sym.kind.is_primitive(
+                            ) or p_typ_sym.kind == TypeKind.Enum:
+                                inst = ir.Inst(
+                                    ir.InstKind.Cmp,
+                                    [ir.Name("=="), switch_expr, p_conv]
+                                )
+                            else:
+                                inst = ir.Inst(
+                                    ir.InstKind.Call, [
+                                        ir
+                                        .Name(f"{mangle_symbol(p_typ_sym)}4_eq_M"),
+                                        switch_expr, p_conv,
+                                    ]
+                                )
+                            self.cur_fn.inline_alloca(ir.BOOL_T, tmp2, inst)
+                    self.cur_fn.add_cond_br(ir.Ident(ir.BOOL_T, tmp2), b_label, next_pat)
                     if i < len(b.pats) - 1:
                         self.cur_fn.add_label(next_pat)
                 if not b.is_else:

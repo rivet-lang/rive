@@ -40,3 +40,15 @@ test "`switch` branch variable" {
         else => false
     });
 }
+
+test "`switch` branch with range condition" {
+    let x = 5;
+    @assert(switch x {
+        1...10 => true,
+        else => false
+    });
+    @assert(switch x {
+        20...30 => false,
+        else => true
+    });
+}

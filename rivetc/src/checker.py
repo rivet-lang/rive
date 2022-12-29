@@ -315,7 +315,9 @@ class Checker:
                 if v := _sym.info.get_variant(expr.value):
                     expr.sym = v
                     expr.typ = type.Type(_sym)
-                    if _sym.info.is_advanced_enum and not expr.from_is_cmp and not expr.is_instance:
+                    if expr.is_instance and not _sym.info.is_advanced_enum:
+                        report.error(f"`.{v.name}` not expects value", expr.pos)
+                    elif _sym.info.is_advanced_enum and not expr.from_is_cmp and not expr.is_instance:
                         report.error(
                             f"cannot use variant `{expr}` as a simple value",
                             expr.pos
