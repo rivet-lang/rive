@@ -1,0 +1,54 @@
+import "std/strconv";
+
+test "std.strconv.atoi()" {
+    @assert(strconv.atoi("16").! == 16);
+    @assert(strconv.atoi("+16").! == 16);
+    @assert(strconv.atoi("-16").! == -16);
+
+    // invalid strings
+    @assert(if let _ = strconv.atoi("") {
+        false
+    } else {
+        true
+    });
+    @assert(if let _ = strconv.atoi("str") {
+        false
+    } else {
+        true
+    });
+    @assert(if let _ = strconv.atoi("string_longer_than_10_chars") {
+        false
+    } else {
+        true
+    });
+}
+
+test "std.strconv.string_to_int()" {
+    // different bases
+    @assert(strconv.string_to_int("16", 16, 0).! == 0x16);
+    // TODO: @assert(strconv.string_to_int("16", 8, 0).! == 0o16);
+    @assert(strconv.string_to_int("11", 2, 0).! == 3);
+
+    // different bit sizes
+    @assert(strconv.string_to_int("127", 10, 8).! == 127);
+    @assert(strconv.string_to_int("128", 10, 8).! == 127);
+    @assert(strconv.string_to_int("32767", 10, 16).! == 32767);
+    @assert(strconv.string_to_int("32768", 10, 16).! == 32767);
+    @assert(strconv.string_to_int("2147483647", 10, 32).! == 2147483647);
+    @assert(strconv.string_to_int("2147483648", 10, 32).! == 2147483647);
+    @assert(strconv.string_to_int("9223372036854775807", 10, 64).! == 9223372036854775807);
+    @assert(strconv.string_to_int("9223372036854775808", 10, 64).! == 9223372036854775807);
+    @assert(strconv.string_to_int("baobab", 36, 64).! == 683058467);
+
+    // invalid bit sizes
+    @assert(if let _ = strconv.string_to_int("123", 10, -1) {
+        false
+    } else {
+        true
+    });
+    @assert(if let _ = strconv.string_to_int("123", 10, 65) {
+        false
+    } else {
+        true
+    });
+}

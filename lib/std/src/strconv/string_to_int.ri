@@ -170,10 +170,15 @@ pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
     return if neg { -@as(i64, un) } else { @as(i64, un) };
 }
 
+/// Equivalent to parse_int(s, 10, 0), converted to type i64.
+#[inline]
+pub fn atoi(s: string) !i64 {
+    return string_to_int(s, 10, 0).!;
+}
+
 /// Reports whether the underscores in `s_` are allowed.
-/// Checking them in this one function lets all the parsers skip over them
-/// simply. Underscore must appear only between digits or between a base
-/// prefix and a digit.
+/// Checking them in this one function lets all the parsers skip over them simply.
+/// Underscore must appear only between digits or between a base prefix and a digit.
 fn underscore_ok(s_: string) bool {
     let mut s = s_;
     // saw tracks the last character (class) we saw:

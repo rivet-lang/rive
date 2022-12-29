@@ -303,10 +303,10 @@ class Lexer:
         return self.read_dec_number()
 
     def read_char(self):
-        len_ = 0
         start = self.pos
         is_bytelit = self.pos > 0 and self.text[self.pos - 1] == "b"
 
+        len_ = 0
         while True:
             self.pos += 1
             if self.pos >= self.text_len:
@@ -323,15 +323,12 @@ class Lexer:
         len_ -= 1
 
         ch = self.text[start + 1:self.pos]
+
         if len_ == 0:
             report.error("empty character literal", self.current_pos())
         elif is_bytelit:
-            ch2 = ch.replace("\\", "") if ch.startswith("\\") else ch
-            len_ = utils.bytestr(ch2).len
-            if len_ > 1:
-                report.error(
-                    "byte literal may only contain one byte", self.current_pos()
-                )
+            if utils.bytestr(ch).len > 1 and ch[0] != utils.BACKSLASH:
+                report.error("byte literal may only contain one byte", self.current_pos())
         elif len_ != 1:
             if len_ > 1:
                 report.error(

@@ -338,8 +338,10 @@ class Checker:
                                 report.error(e.args[0], expr.pos)
                         else:
                             report.error(
-                                f"`.{v.name}` not expects value", expr.pos
+                                f"`.{v.name}` not expects a value", expr.pos
                             )
+                    elif v.has_typ and not expr.has_value_arg and not expr.from_is_cmp:
+                        report.error(f"`.{v.name}` expects a value", expr.pos)
                 else:
                     report.error(
                         f"enum `{_sym.name}` has no value `{expr.value}`",
