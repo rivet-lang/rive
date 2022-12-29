@@ -205,6 +205,8 @@ class Resolver:
             if stmt.has_continue_expr:
                 self.resolve_expr(stmt.continue_expr)
             self.resolve_stmt(stmt.stmt)
+            if stmt.has_else_stmt:
+                self.resolve_stmt(stmt.else_stmt)
         elif isinstance(stmt, ast.ForStmt):
             if stmt.index != None:
                 try:

@@ -572,6 +572,8 @@ class Codegen:
                 )
                 self.cur_fn.add_br(self.loop_entry_label)
             self.cur_fn.add_label(self.loop_exit_label)
+            if stmt.has_else_stmt:
+                self.gen_stmt(stmt.else_stmt)
             self.loop_entry_label = old_entry_label
             self.loop_exit_label = old_exit_label
             self.while_continue_expr = old_while_continue_expr

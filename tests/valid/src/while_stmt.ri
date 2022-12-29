@@ -30,3 +30,16 @@ test "`while` statement with continue expression" {
     }
     @assert(x == 10);
 }
+
+test "`while` statement with `else` statement" {
+    let mut res = 0;
+    while {
+        res += 1;
+        if res == 10 {
+            break;
+        }
+    } else {
+        res += 5;
+    }
+    @assert(res == 15);
+}

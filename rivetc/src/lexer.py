@@ -326,8 +326,9 @@ class Lexer:
         if len_ == 0:
             report.error("empty character literal", self.current_pos())
         elif is_bytelit:
-            len_ = utils.bytestr(ch).len
-            if len_ > 1 and ch != (utils.BACKSLASH * 2):
+            ch2 = ch.replace("\\", "") if ch.startswith("\\") else ch
+            len_ = utils.bytestr(ch2).len
+            if len_ > 1:
                 report.error(
                     "byte literal may only contain one byte", self.current_pos()
                 )

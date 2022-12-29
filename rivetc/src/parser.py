@@ -580,7 +580,10 @@ class Parser:
             stmt = self.parse_stmt()
             if isinstance(cond, ast.GuardExpr):
                 self.close_scope()
-            return ast.WhileStmt(cond, continue_expr, stmt, is_inf, pos)
+            else_stmt = None
+            if self.accept(Kind.KwElse):
+                else_stmt = self.parse_stmt()
+            return ast.WhileStmt(cond, continue_expr, stmt, else_stmt, is_inf, pos)
         elif self.accept(Kind.KwFor):
             pos = self.prev_tok.pos
             self.open_scope()

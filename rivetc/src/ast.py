@@ -318,12 +318,14 @@ class LetStmt:
         self.pos = pos
 
 class WhileStmt:
-    def __init__(self, cond, continue_expr, stmt, is_inf, pos):
+    def __init__(self, cond, continue_expr, stmt, else_stmt, is_inf, pos):
         self.cond = cond
+        self.is_inf = is_inf
         self.continue_expr = continue_expr
         self.has_continue_expr = not isinstance(continue_expr, EmptyExpr)
         self.stmt = stmt
-        self.is_inf = is_inf
+        self.else_stmt = else_stmt
+        self.has_else_stmt = else_stmt != None
         self.pos = pos
 
 class ForStmt:

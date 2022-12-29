@@ -256,6 +256,8 @@ class Checker:
             if stmt.has_continue_expr:
                 self.check_expr(stmt.continue_expr)
             self.check_stmt(stmt.stmt)
+            if stmt.has_else_stmt:
+                self.check_stmt(stmt.else_stmt)
         elif isinstance(stmt, ast.ForStmt):
             iterable_t = self.check_expr(stmt.iterable)
             iterable_sym = iterable_t.symbol()
@@ -326,9 +328,12 @@ class Checker:
                     elif expr.has_value_arg:
                         if v.has_typ:
                             try:
+                                old_expected_type = self.expected_type
+                                self.expected_type = v.typ
                                 self.check_types(
                                     self.check_expr(expr.value_arg), v.typ
                                 )
+                                self.expected_type = old_expected_type
                             except utils.CompilerError as e:
                                 report.error(e.args[0], expr.pos)
                         else:
