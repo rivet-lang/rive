@@ -14,6 +14,10 @@ test "string.fmt()" {
     );
 
     @assert("rune: `{}`".fmt('Á') == "rune: `Á`");
+
+    @assert("{0:-4}k".fmt(1) == "1   k");
+    @assert("{:4}k".fmt(2004) == "2004k");
+    @assert("{:4}k".fmt(20) == "20  k");
 }
 
 test "string.index_of_byte()" {

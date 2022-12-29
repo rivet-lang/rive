@@ -27,7 +27,11 @@ struct StaticBuffer {
         return unsafe { libc.strtoul(@addr_of(self.buf[0]), nil, 10) };
     }
 
+    pub fn as_isize(&self) isize {
+        return unsafe { @as(isize, libc.strtol(@addr_of(self.buf[0]), nil, 10))};
+    }
+
     pub fn as_string(&self) string {
-        return unsafe { string.from_raw_with_len(@addr_of(self.buf[0]), self.len) };
+        return unsafe { string.from_raw_with_len(@addr_of(self.buf[0]), self.len).clone() };
     }
 }
