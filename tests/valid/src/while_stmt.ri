@@ -33,13 +33,21 @@ test "`while` statement with continue expression" {
 
 test "`while` statement with `else` statement" {
     let mut res = 0;
-    while {
+    while res < 10 {
         res += 1;
-        if res == 10 {
+    } else {
+        res += 5;
+    }
+    @assert(res == 15);
+
+    res = 0;
+    while res < 100 {
+        res += 1;
+        if res == 50 {
             break;
         }
     } else {
         res += 5;
     }
-    @assert(res == 15);
+    @assert(res == 50);
 }

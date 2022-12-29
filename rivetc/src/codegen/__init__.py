@@ -540,6 +540,7 @@ class Codegen:
             self.loop_entry_label = self.cur_fn.local_name()
             body_label = self.cur_fn.local_name()
             self.loop_exit_label = self.cur_fn.local_name()
+            else_stmt_label = self.cur_fn.local_name() if stmt.has_else_stmt else ""
             self.while_continue_expr = stmt.continue_expr
             self.cur_fn.add_label(self.loop_entry_label)
             if stmt.is_inf:
@@ -548,7 +549,7 @@ class Codegen:
             else:
                 if isinstance(stmt.cond, ast.GuardExpr):
                     cond = self.gen_guard_expr(
-                        stmt.cond, body_label, self.loop_exit_label
+                        stmt.cond, body_label, else_stmt_label if stmt.has_else_stmt else self.loop_exit_label
                     )
                 else:
                     cond = self.gen_expr_with_cast(self.comp.bool_t, stmt.cond)
@@ -556,7 +557,7 @@ class Codegen:
                     self.cur_fn.add_br(body_label)
                 else:
                     self.cur_fn.add_cond_br(
-                        cond, body_label, self.loop_exit_label
+                        cond, body_label, else_stmt_label if stmt.has_else_stmt else self.loop_exit_label
                     )
             gen_stmt = True
             if isinstance(cond, ir.IntLit) and cond.lit == "0":
@@ -571,9 +572,10 @@ class Codegen:
                     f"while stmt (goto to `{self.loop_entry_label}` for continue)"
                 )
                 self.cur_fn.add_br(self.loop_entry_label)
-            self.cur_fn.add_label(self.loop_exit_label)
             if stmt.has_else_stmt:
+                self.cur_fn.add_label(else_stmt_label)
                 self.gen_stmt(stmt.else_stmt)
+            self.cur_fn.add_label(self.loop_exit_label)
             self.loop_entry_label = old_entry_label
             self.loop_exit_label = old_exit_label
             self.while_continue_expr = old_while_continue_expr
