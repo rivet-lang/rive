@@ -515,11 +515,9 @@ class Codegen:
                         ), idx
                     ]
                 )
-            if value_is_ref_or_is_mut and not isinstance(
-                value_t_ir, ir.Pointer
-            ):
+            if value_is_ref_or_is_mut and not isinstance(value_t_ir, ir.Pointer):
                 value_t_ir = ir.Pointer(value_t_ir)
-            if not value_is_ref_or_is_mut:
+            if not value_is_ref_or_is_mut or (isinstance(value_t_ir, ir.Pointer) and value_t_ir.is_managed):
                 value = ir.Inst(ir.InstKind.LoadPtr, [value])
             unique_ir_name = self.cur_fn.unique_name(stmt.value.name)
             self.cur_fn.inline_alloca(value_t_ir, unique_ir_name, value)
@@ -1699,6 +1697,31 @@ class Codegen:
                         ]
                     )
                 self.cur_fn.inline_alloca(self.ir_type(expr.typ), tmp, cmp)
+                if expr.has_var:
+                    expr_var_exit_label = self.cur_fn.local_name()
+                    self.cur_fn.add_cond_single_br(ir.Inst(ir.InstKind.BooleanNot, [cmp]), expr_var_exit_label)
+                    var_t = self.ir_type(expr.var.typ)
+                    var_t2 = var_t.ptr() if expr.var.is_mut or not isinstance(var_t, ir.Pointer) else var_t
+                    if left_sym.kind == TypeKind.Class:
+                        val = ir.Inst(ir.InstKind.Cast, [left, var_t])
+                    else:
+                        val = ir.Inst(
+                            ir.InstKind.Cast, [
+                                ir.Selector(ir.VOID_PTR_T, left, ir.Name("obj")), var_t2
+                            ]
+                        )
+                        if not (
+                            expr.var.is_mut or (isinstance(var_t, ir.Pointer) and var_t.is_managed)
+                        ):
+                            val = ir.Inst(ir.InstKind.LoadPtr, [val])
+                        if expr.var.is_mut and not isinstance(
+                            var_t, ir.Pointer
+                        ):
+                            var_t = var_t.ptr(True)
+                    unique_name = self.cur_fn.unique_name(expr.var.name)
+                    expr.scope.update_ir_name(expr.var.name, unique_name)
+                    self.cur_fn.inline_alloca(var_t, unique_name, val)
+                    self.cur_fn.add_label(expr_var_exit_label)
                 return ir.Ident(self.ir_type(expr.typ), tmp)
             elif expr.op in (Kind.KwIn, Kind.KwNotIn):
                 expr_left_typ = self.comp.comptime_number_to_type(expr_left_typ)

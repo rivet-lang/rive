@@ -622,15 +622,24 @@ class UnaryExpr:
         return self.__repr__()
 
 class BinaryExpr:
-    def __init__(self, left, op, right, pos):
+    def __init__(self, left, op, right, pos, var=None, scope=None):
         self.left = left
         self.op = op
         self.right = right
+        self.has_var = var != None
+        self.var = var
+        self.scope = scope
         self.pos = pos
         self.typ = None
 
     def __repr__(self):
-        return f"{self.left} {self.op} {self.right}"
+        res = f"{self.left} {self.op} {self.right}"
+        if self.has_var:
+            res += " as "
+            if self.var.is_mut:
+                res += " mut "
+            res += self.var.name
+        return res
 
     def __str__(self):
         return self.__repr__()

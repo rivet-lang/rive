@@ -691,6 +691,18 @@ class Checker:
                         f"`{expr.op}` can only be used with classes, trait, enums and optionals",
                         expr.left.pos
                     )
+                if expr.has_var:
+                    if lsym.kind == TypeKind.Enum:
+                        if expr.right.sym.has_typ:
+                            expr.scope.update_type(expr.var.name, expr.right.sym.typ)
+                            expr.var.typ = expr.right.sym.typ
+                        else:
+                            report.error("variant `{expr.right}` has no value", expr.right.pos)
+                    else:
+                        expr.scope.update_type(expr.var.name, rtyp)
+                        expr.var.typ = rtyp
+                    if expr.var.is_mut:
+                        expr.scope.update_is_hidden_ref(expr.var.name, True)
                 expr.typ = self.comp.bool_t
                 return expr.typ
             elif expr.op in (Kind.KwAnd, Kind.KwOr):

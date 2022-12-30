@@ -7,7 +7,10 @@ test "operator `is` with traits" {
     @assert(a is MyStruct);
 }
 
-class Abc { }
+class Abc {
+    prot field: i32;
+}
+
 class Def : Abc { }
 
 fn class_upcast(a: Abc) bool {
@@ -20,4 +23,17 @@ test "operator `is` with classes" {
 
     let d = Def();
     @assert(class_upcast(d));
+}
+
+fn check_field(abc: Abc) bool {
+    return if abc is Def as def {
+        def.field == 555
+    } else {
+        false
+    };
+}
+
+test "operator `is` with variable" {
+    let def = Def(555);
+    @assert(check_field(def));
 }

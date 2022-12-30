@@ -294,6 +294,13 @@ class Resolver:
         elif isinstance(expr, ast.BinaryExpr):
             self.resolve_expr(expr.left)
             self.resolve_expr(expr.right)
+            if expr.has_var:
+                try:
+                    expr.scope.add(
+                        sym.Obj(False, expr.var.name, self.comp.void_t, sym.ObjLevel.Local)
+                    )
+                except utils.CompilerError as e:
+                    report.error(e.args[0], expr.var.pos)
         elif isinstance(expr, ast.ParExpr):
             self.resolve_expr(expr.expr)
         elif isinstance(expr, ast.IndexExpr):

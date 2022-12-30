@@ -691,7 +691,11 @@ class Parser:
                     )
                 else:
                     right = ast.TypeNode(self.parse_type(), pos)
-                left = ast.BinaryExpr(left, op, right, left.pos)
+                if self.accept(Kind.KwAs):
+                    var = self.parse_var_decl(support_ref=False)
+                else:
+                    var = None
+                left = ast.BinaryExpr(left, op, right, left.pos, var, self.scope)
             else:
                 break
         return left
