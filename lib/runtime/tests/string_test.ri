@@ -18,6 +18,8 @@ test "string.fmt()" {
     @assert("{0:-4}k".fmt(1) == "1   k");
     @assert("{:4}k".fmt(2004) == "2004k");
     @assert("{:4}k".fmt(20) == "20  k");
+    @assert("{:4}k".fmt(2004) == "20  k");
+    @assert("|{:2}|".fmt(2222) == "|2222|");
 }
 
 test "string.index_of_byte()" {

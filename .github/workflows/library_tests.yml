@@ -2,10 +2,10 @@ name: Library Tests
 
 on:
   push:
-    paths: ['lib/**.ri']
+    paths: ['lib/**.ri', 'rivetc/**.py']
     branches: [main]
   pull_request:
-    paths: ['lib/**.ri']
+    paths: ['lib/**.ri', 'rivetc/**.py']
     types: [opened, synchronize]
 
 jobs:

@@ -37,28 +37,36 @@ fn assert(cond: bool, msg: string) {
 #[inline]
 fn internal_alloc(size: usize) *mut void {
     return mem_alloc(size) catch {
-        process_panic("internal error: cannot allocate memory");
+        process_panic(
+            "internal error: cannot allocate memory" #if _DEBUG_ " (size: {})", size #endif
+        );
     };
 }
 
 #[inline]
 fn internal_zeroed(size: usize) *mut void {
     return mem_zeroed(size) catch {
-        process_panic("internal error: cannot allocate zeroed memory");
+        process_panic(
+            "internal error: cannot allocate zeroed memory" #if _DEBUG_ " (size: {})", size #endif
+        );
     };
 }
 
 #[inline]
 fn internal_dup(src: *void, sz: usize) *mut void {
     return mem_dup(src, sz) catch {
-        process_panic("internal error: cannot duplicate memory");
+        process_panic(
+            "internal error: cannot duplicate memory" #if _DEBUG_ " (size: {})", sz #endif
+        );
     };
 }
 
 #[inline]
 fn internal_resize(ptr: ?*mut void, sz: usize) *mut void {
     return mem_resize(ptr, sz) catch {
-        process_panic("internal error: cannot resize memory");
+        process_panic(
+            "internal error: cannot resize memory" #if _DEBUG_ " (size: {})", sz #endif
+        );
     };
 }
 

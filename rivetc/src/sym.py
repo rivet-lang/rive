@@ -584,6 +584,7 @@ class Type(Sym):
             for base in self.info.bases:
                 if s := Sym.find(base, name):
                     return s
+        return None
 
     def find(self, name):
         if s := Sym.find(self, name):
@@ -672,7 +673,7 @@ class Fn(Sym):
         arg = self.args[idx]
         if arg.is_self:
             return self.args[idx + 1]
-        return self.args[idx]
+        return arg
 
     def args_len(self):
         from .type import Variadic

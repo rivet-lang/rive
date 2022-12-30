@@ -1573,11 +1573,7 @@ class Codegen:
                 kind = ir.InstKind.BitNot
             else:
                 kind = ir.InstKind.Neg
-            tmp = self.cur_fn.local_name()
-            self.cur_fn.inline_alloca(
-                self.ir_type(expr.typ), tmp, ir.Inst(kind, [right])
-            )
-            return ir.Ident(self.ir_type(expr.typ), tmp)
+            return ir.Inst(kind, [right])
         elif isinstance(expr, ast.BinaryExpr):
             expr_left_typ = expr.left.typ
             expr_right_typ = expr.right.typ
