@@ -1,0 +1,27 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "../token";
+
+pub class Node {
+    pos: token.Pos;
+}
+
+pub class Decl : Node {
+    name: string;
+}
+
+pub class Stmt : Node {
+}
+
+pub class Expr : Node {
+    // typ: Type;
+}
+
+pub class SourceFile {
+    pub file: string;
+    pub mod_name: string;
+    pub sym: u8;
+    pub decls: [Decl];
+}

@@ -1,0 +1,202 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "std/fs";
+import "std/sys";
+import "std/process";
+import "std/fs/path";
+import "std/console" { eprintln };
+
+import "../ast";
+import "../token";
+import "../utils";
+
+pub enum Backend as u8 {
+    C;
+
+    pub fn from_string(name: string) ?Self {
+        return switch name {
+            "c" => .C,
+            else => nil
+        };
+    }
+}
+
+pub enum OutputMode as u8 {
+    Bin
+}
+
+pub enum OptimizeMode as u8 {
+	Debug,
+	Release
+}
+
+pub enum LinkMode as u8 {
+    Static,
+    Dynamic
+}
+
+fn print_help() void {
+    eprintln(utils.HELP);
+    process.exit(0);
+}
+
+pub class Prefs {
+    // Target info
+    pub mut target_os: sys.OS = sys.os();
+    pub mut target_arch: sys.Arch = sys.arch();
+    pub mut target_is_64bit: bool = sys.is_64bit();
+    pub mut target_is_little_endian: bool = sys.is_little_endian();
+    pub mut target_c_runtime: sys.CRuntime = sys.c_runtime();
+    pub mut target_backend: Backend;
+    pub mut target_backend_compiler: string = "gcc";
+
+    // Module info
+    pub mut input: string;
+    pub mut mod_name: string;
+    pub mut mod_output: string;
+    pub mut source_files: [ast.SourceFile];
+
+    // Output info
+    pub mut output_mode: OutputMode;
+    pub mut optimize_mode: OptimizeMode;
+    pub mut is_test: bool;
+    pub mut run_output: bool;
+    pub mut run_output_args: [string];
+
+    pub mut flags: [string];
+    pub mut check_syntax: bool;
+	pub mut check: bool;
+	pub mut emit_rir: bool;
+	pub mut keep_c: bool;
+	pub mut is_verbose: bool;
+
+    pub fn new(args: [string], is_test: bool, run_output: bool) Self {
+        let mut prefs = Prefs(is_test: is_test, run_output: run_output);
+        let mut options: [string] = [];
+        let mut i: usize = 0;
+        while i < args.len : i += 1 {
+            let arg = args[i];
+            if arg.len > 1 and arg[0] == b'-' and arg !in ["-L", "-d", "--define"] and
+                arg in options
+            {
+                utils.error("duplicate option: `{}`", arg);
+            } else {
+                options.push(arg);
+            }
+            let current_args = args[i..];
+            switch arg {
+                // informative options
+                "-h", "--help" => print_help(),
+                "-V", "--version" => {
+                    eprintln(utils.VERSION);
+                    process.exit(0);
+                },
+
+                // compiler options
+                "--mod-name" => {
+                    if let mod_name = utils.option(current_args, arg) {
+                        prefs.mod_name = mod_name;
+                        prefs.mod_output = mod_name;
+                    } else {
+                        utils.error("`--mod-name` requires a name as argument");
+                    }
+                    i += 1;
+                },
+                "-r", "--release" => prefs.optimize_mode = .Release,
+                "-o", "--output" => {
+                    if let out = utils.option(current_args, arg) {
+                        prefs.mod_output = out;
+                    } else {
+                        utils.error("`{}` requires a filename as argument", arg);
+                    }
+                    i += 1;
+                },
+                "-b", "--backend" => {
+                    if let b = utils.option(current_args, arg) {
+                        if let backend = Backend.from_string(b) {
+                            prefs.target_backend = backend;
+                        } else {
+                            utils.error("unknown backend: `{}`", b);
+                        }
+                    } else {
+                        utils.error("`{}` requires a name as argument", arg);
+                    }
+                    i += 1;
+                },
+                "--backend-compiler" => {
+                    if let bc = utils.option(current_args, arg) {
+                        prefs.target_backend_compiler = bc;
+                    } else {
+                        utils.error("`--backend-compiler` requires a name as argument");
+                    }
+                    i += 1;
+                },
+                "-d", "--define" => {
+                    if let flag = utils.option(current_args, arg) {
+                        if flag.starts_with("_") and flag.ends_with("_") {
+                            utils.error("flag `{}` should have a upper case name", flag);
+                        } else if flag in prefs.flags {
+                            utils.error("duplicate flag: `{}`", flag);
+                        } else {
+                            prefs.flags.push(flag);
+                        }
+                    } else {
+                        utils.error("`{}` requires a name as argument", arg);
+                    }
+                    i += 1;
+                },
+                "-os", "--target-os" => {
+                    if let os_name = utils.option(current_args, arg) {
+                        if let os_flag = sys.OS.from_string(os_name) {
+                            prefs.target_os = os_flag;
+                        } else {
+                            utils.error("unknown target operating system: `{}`", os_name);
+                        }
+                    } else {
+                        utils.error("`{}` requires a name as argument", arg);
+                    }
+                    i += 1;
+                },
+                "-arch", "--target-arch" => {
+                    if let arch_name = utils.option(current_args, arg) {
+                        if let arch_flag = sys.Arch.from_string(arch_name) {
+                            prefs.target_arch = arch_flag;
+                        } else {
+                            utils.error("unknown target architecture: `{}`", arch_name);
+                        }
+                    } else {
+                        utils.error("`{}` requires a name as argument", arg);
+                    }
+                    i += 1;
+                },
+                "-x32", "-x64" => prefs.target_is_64bit = arg == "-x64",
+                "--check-syntax" => prefs.check_syntax = true,
+                "--check" => prefs.check = true,
+                "--emit-rir" => prefs.emit_rir = true,
+                "--keep-c" => prefs.keep_c = true,
+                "-v", "--verbose" => prefs.is_verbose = true,
+                else => {
+                    if arg.starts_with("-") {
+                        utils.error("unknown option: `{}`", arg);
+                    } else if prefs.input != "" {
+                        utils.error("the compiler can only receive one module");
+                    } else {
+                        prefs.input = arg;
+                    }
+                }
+            }
+        }
+
+        if path.is_directory(prefs.input) {
+            let files = fs.Dir.walk(prefs.input) catch [];
+        }
+
+        return prefs;
+    }
+
+    pub fn evalue_pp_symbol(self, name: string, pos: token.Pos) bool {
+        return name in self.flags;
+    }
+}

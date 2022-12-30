@@ -1,0 +1,149 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "std/fs";
+import "std/traits";
+import "std/console";
+import "std/process";
+import "std/console/styles";
+
+pub let VERSION: string = "0.1.0b";
+
+#[inline]
+pub fn is_name_char(ch: u8) bool {
+    return ch.is_letter() or ch == b'_';
+}
+
+#[inline]
+pub fn is_new_line(ch: u8) bool {
+    return ch == 10 or ch == 13;
+}
+
+pub fn skip_bom(file_content: string) string {
+   // BOM check
+   if file_content.len >= 3 {
+      unsafe {
+         if file_content[0] == 0xEF and file_content[1] == 0xBB and file_content[2] == 0xBF {
+            // skip three BOM bytes
+            return file_content[3..];
+         }
+      }
+   }
+   return file_content;
+}
+
+struct CachedFile {
+   path: string;
+   content: string;
+   mut lines: [string];
+}
+
+class SourceCache {
+   mut sources: [CachedFile];
+
+   pub fn find(self, path: string) ?string {
+      for source in self.sources {
+         if source.path == path {
+            return source.content;
+         }
+      }
+      return nil;
+   }
+
+   pub fn find_line(mut self, path: string, line: usize) ?string {
+      if let lines = self.find_lines(path) {
+         return lines[line];
+      }
+      return nil;
+   }
+
+   pub fn find_lines(mut self, path: string) ?[string] {
+      let mut i: usize = 0;
+      while i < self.sources.len : i += 1 {
+         let mut cached = self.sources[i];
+         if cached.path == path {
+            if cached.lines.is_empty() {
+               cached.lines = cached.content.split_into_lines();
+            }
+            return cached.lines;
+         }
+      }
+      return nil;
+   }
+}
+
+pub let mut source_cache: SourceCache = SourceCache();
+
+pub fn read_file(path: string) !string {
+   if let res = unsafe { source_cache.find(path) } {
+      return res;
+   }
+   let content = skip_bom(fs.read_file(path).!);
+   unsafe {
+      source_cache.sources.push(CachedFile(path, content));
+   }
+   return content;
+}
+
+#[inline]
+pub fn min(a: usize, b: usize) usize {
+   return if a < b { a } else { b };
+}
+
+#[inline]
+pub fn max(a: usize, b: usize) usize {
+   return if a > b { a } else { b };
+}
+
+pub fn option(args: [string], param: string) ?string {
+    for i, arg in args {
+        if param == arg {
+            if i + 1 < args.len {
+                return args[i + 1];
+            }
+            break;
+        }
+    }
+    return nil;
+}
+
+pub fn error(msg: string, args: ...traits.ToString) never {
+   console.eprintln(
+      "{} {} {}", styles.bold("rivet:"),
+      styles.bold(styles.red("error:")), msg.fmt(args)
+   );
+   process.exit(1);
+}
+
+let StderrSupportStyles: bool = styles.stderr_support_styles();
+
+#[inline]
+pub fn bold(msg: string) string {
+    return if StderrSupportStyles { styles.bold(msg) } else { msg };
+}
+
+#[inline]
+pub fn red(msg: string) string {
+    return if StderrSupportStyles { styles.red(msg) } else { msg };
+}
+
+#[inline]
+pub fn yellow(msg: string) string {
+    return if StderrSupportStyles { styles.yellow(msg) } else { msg };
+}
+
+#[inline]
+pub fn cyan(msg: string) string {
+    return if StderrSupportStyles { styles.cyan(msg) } else { msg };
+}
+
+#[inline]
+pub fn blue(msg: string) string {
+    return if StderrSupportStyles { styles.blue(msg) } else { msg };
+}
+
+#[inline]
+pub fn green(msg: string) string {
+    return if StderrSupportStyles { styles.green(msg) } else { msg };
+}

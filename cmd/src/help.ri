@@ -1,0 +1,13 @@
+let HELP: string = "Usage: rivet [COMMAND] [OPTIONS]
+
+Commands:
+  build            Build project
+  run              Create executable and run immediately
+  test             Create and run a test build
+
+  version          Print version number and exit
+  help             Print this help and exit
+
+General Options:
+  -h, --help       Print command-specific usage
+";

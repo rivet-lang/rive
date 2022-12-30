@@ -1,0 +1,57 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "rivet/prefs";
+import "rivet/token";
+import "rivet/tokenizer";
+
+let prefs_: prefs.Prefs = prefs.Prefs();
+
+fn tokenize(text: string) [token.Token] {
+    let mut tokenizer_ = tokenizer.Tokenizer.new(text, prefs_);
+    let mut tokens: [token.Token] = [];
+    let mut token = tokenizer_.next();
+    while {
+        tokens.push(token);
+        token = tokenizer_.next();
+        if token.kind == .EOF {
+            break;
+        }
+    }
+    return tokens;
+}
+
+test "tokenizer: simple `fn main()`" {
+    let tokens = tokenize("fn main() { }");
+    @assert(tokens.len == 6);
+    @assert(tokens[0].kind == .KwFn);
+    @assert(tokens[1].kind == .Name and tokens[1].lit == "main");
+    @assert(tokens[2].kind == .Lparen);
+    @assert(tokens[3].kind == .Rparen);
+    @assert(tokens[4].kind == .Lbrace);
+    @assert(tokens[5].kind == .Rbrace);
+}
+
+test "tokenizer: number constant input format" {
+	let mut c = 0xa0;
+	@assert(c == 0xa0);
+	c = 0b1001;
+	@assert(c == 9);
+	c = 1000000;
+	@assert(c == 1000000);
+}
+
+test "tokenizer: float conversion and reading" {
+	let d = 23000000e-3;
+	@assert(@as(i32, d) == 23000);
+	let mut e = 1.2E3 * -1e-1;
+	@assert(e == -120.0);
+	e = 1.2E3 * 1e-1;
+	let x = 55.0;
+	@assert(e == 120.0);
+	@assert(1.23e+10 == 1.23e10);
+	@assert(1.23e+10 == 1.23e0010);
+	@assert((-1.23e+10) == (1.23e0010 * -1.0));
+	@assert(x == 55.0);
+}

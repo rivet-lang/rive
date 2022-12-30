@@ -1,0 +1,318 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "std/traits";
+
+pub enum Kind : traits.ToString {
+    Unknown, // unknown
+    EOF, // end of file
+    DocComment, // doc-comment
+    Name, // name
+    Number, // number
+    Char, // character
+    String, // string
+    Plus, // +
+    Minus, // -
+    Mul, // *
+    Div, // /
+    Mod, // %
+    Assign, // =
+    PlusAssign, // +=
+    MinusAssign, // -=
+    MulAssign, // *=
+    DivAssign, // /=
+    ModAssign, // %=
+    AmpAssign, // &=
+    PipeAssign, // |=
+    XorAssign, // ^=
+    Eq, // ==
+    Ne, // !=
+    Lt, // <
+    Gt, // >
+    Le, // <=
+    Ge, // >=
+    Lshift, // <<
+    Rshift, // >>
+    Dot, // .
+    DotDot, // ..
+    Ellipsis, // ...
+    At, // @
+    Arrow, // =>
+    Comma, // ,
+    Colon, // :
+    Semicolon, // ;
+    Question, // ?
+    OrElse, // ??
+    Bang, // !
+    Amp, // &
+    Pipe, // |
+    Xor, // ^
+    BitNot, // ~
+    Hash, // #
+    Lbrace, // {
+    Rbrace, // }
+    Lbracket, // [
+    Rbracket, // ]
+    Lparen, // (
+    Rparen, // )
+
+    KeywordBegin,
+    // ========== keywords ==========
+    KwAnd, // and
+    KwAs, // as
+    KwBase, // base
+    KwBreak, // break
+    KwCatch, // catch
+    KwClass, // class
+    KwConst, // const
+    KwContinue, // continue
+    KwDefer, // defer
+    KwElse, // else
+    KwEnum, // enum
+    KwErrDefer, // errdefer
+    KwExtend, // extend
+    KwExtern, // extern
+    KwExport, // export
+    KwFalse, // false
+    KwFor, // for
+    KwFn, // fn
+    KwIf, // if
+    KwImport, // import
+    KwIn, // in
+    KwIs, // is
+    KwLet, // let
+    KwMut, // mut
+    KwNil, // nil
+    KwNotIn, // !in
+    KwNotIs, // !is
+    KwOr, // or
+    KwPub, // pub
+    KwProt, // prot
+    KwReturn, // return
+    KwSelf, // self
+    KwSelfTy, // Self
+    KwStruct, // struct
+    KwSwitch, // switch
+    KwTest, // test
+    KwTrait, // trait
+    KwTrue, // true
+    KwType, // type
+    KwUnsafe, // unsafe
+    KwWhile, // while
+    // ==============================
+
+    KeywordEnd;
+
+    pub fn single(self) Kind {
+        return switch self is {
+            .PlusAssign => .Plus,
+            .MinusAssign => .Minus,
+            .MulAssign => .Mul,
+            .DivAssign => .Div,
+            .ModAssign => .Mod,
+            .AmpAssign => .Amp,
+            .PipeAssign => .Pipe,
+            .XorAssign => .Xor,
+            else => self
+        };
+    }
+
+    pub fn is_start_of_type(self) bool {
+        return self in [
+            .Bang, .Name, .Lparen, .Amp, .Mul, .Lbracket, .Question, .KwSelf, .KwSelfTy
+        ];
+    }
+
+    pub fn is_assign(self) bool {
+        return self in [
+            .Assign, .PlusAssign, .MinusAssign, .MulAssign, .DivAssign, .ModAssign,
+            .AmpAssign, .PipeAssign, .XorAssign
+        ];
+    }
+
+    pub fn is_relational(self) bool {
+        return self in [
+            .Eq, .Ne, .Lt, .Gt, .Le, .Ge, .KwIs, .KwNotIs, .KwIn, .KwNotIn
+        ];
+    }
+
+    pub fn to_string(&self) string {
+        for km in Kind_Strings {
+            if km.key == self.* {
+                return km.value;
+            }
+        }
+        return "unknown-kind";
+    }
+}
+
+pub class KindMap {
+    pub key: Kind;
+    pub value: string;
+}
+
+pub let Kind_Strings: [KindMap] = [
+    KindMap(.Unknown, "unknown"),
+    KindMap(.EOF, "end of file"),
+    KindMap(.DocComment, "doc-comment"),
+    KindMap(.Name, "name"),
+    KindMap(.Number, "number"),
+    KindMap(.Char, "character"),
+    KindMap(.String, "string"),
+    KindMap(.Plus, "+"),
+    KindMap(.Minus, "-"),
+    KindMap(.Mul, "*"),
+    KindMap(.Div, "/"),
+    KindMap(.Mod, "%"),
+    KindMap(.Assign, "="),
+    KindMap(.PlusAssign, "+="),
+    KindMap(.MinusAssign, "-="),
+    KindMap(.MulAssign, "*="),
+    KindMap(.DivAssign, "/="),
+    KindMap(.ModAssign, "%="),
+    KindMap(.AmpAssign, "&="),
+    KindMap(.PipeAssign, "|="),
+    KindMap(.XorAssign, "^="),
+    KindMap(.Eq, "=="),
+    KindMap(.Ne, "!="),
+    KindMap(.Lt, "<"),
+    KindMap(.Gt, ">"),
+    KindMap(.Le, "<="),
+    KindMap(.Ge, ">="),
+    KindMap(.Lshift, "<<"),
+    KindMap(.Rshift, ">>"),
+    KindMap(.Dot, "."),
+    KindMap(.DotDot, ".."),
+    KindMap(.Ellipsis, "..."),
+    KindMap(.At, "@"),
+    KindMap(.Arrow, "=>"),
+    KindMap(.Comma, ","),
+    KindMap(.Colon, ":"),
+    KindMap(.Semicolon, ";"),
+    KindMap(.Question, "?"),
+    KindMap(.OrElse, "??"),
+    KindMap(.Bang, "!"),
+    KindMap(.Amp, "&"),
+    KindMap(.Pipe, "|"),
+    KindMap(.Xor, "^"),
+    KindMap(.BitNot, "~"),
+    KindMap(.Lbrace, "{"),
+    KindMap(.Rbrace, "}"),
+    KindMap(.Lbracket, "["),
+    KindMap(.Rbracket, "]"),
+    KindMap(.Lparen, "("),
+    KindMap(.Rparen, ")"),
+    KindMap(.KwAnd, "and"),
+    KindMap(.KwAs, "as"),
+    KindMap(.KwBase, "base"),
+    KindMap(.KwBreak, "break"),
+    KindMap(.KwCatch, "catch"),
+    KindMap(.KwClass, "class"),
+    KindMap(.KwConst, "const"),
+    KindMap(.KwContinue, "continue"),
+    KindMap(.KwDefer, "defer"),
+    KindMap(.KwElse, "else"),
+    KindMap(.KwEnum, "enum"),
+    KindMap(.KwErrDefer, "errdefer"),
+    KindMap(.KwExtend, "extend"),
+    KindMap(.KwExtern, "extern"),
+    KindMap(.KwExport, "export"),
+    KindMap(.KwFalse, "false"),
+    KindMap(.KwFor, "for"),
+    KindMap(.KwFn, "fn"),
+    KindMap(.KwIf, "if"),
+    KindMap(.KwImport, "import"),
+    KindMap(.KwIn, "in"),
+    KindMap(.KwIs, "is"),
+    KindMap(.KwLet, "let"),
+    KindMap(.KwMut, "mut"),
+    KindMap(.KwNil, "nil"),
+    KindMap(.KwNotIn, "!in"),
+    KindMap(.KwNotIs, "!is"),
+    KindMap(.KwOr, "or"),
+    KindMap(.KwPub, "pub"),
+    KindMap(.KwProt, "prot"),
+    KindMap(.KwReturn, "return"),
+    KindMap(.KwSelf, "self"),
+    KindMap(.KwSelfTy, "Self"),
+    KindMap(.KwStruct, "struct"),
+    KindMap(.KwSwitch, "switch"),
+    KindMap(.KwTest, "test"),
+    KindMap(.KwTrait, "trait"),
+    KindMap(.KwTrue, "true"),
+    KindMap(.KwType, "type"),
+    KindMap(.KwUnsafe, "unsafe"),
+    KindMap(.KwWhile, "while")
+];
+
+pub fn lookup(str: string) Kind {
+    return switch str {
+        "and" => .KwAnd,
+        "as" => .KwAs,
+        "base" => .KwBase,
+        "break" => .KwBreak,
+        "catch" => .KwCatch,
+        "class" => .KwClass,
+        "const" => .KwConst,
+        "continue" => .KwContinue,
+        "defer" => .KwDefer,
+        "else" => .KwElse,
+        "enum" => .KwEnum,
+        "errdefer" => .KwErrDefer,
+        "extend" => .KwExtend,
+        "extern" => .KwExtern,
+        "false" => .KwFalse,
+        "for" => .KwFor,
+        "fn" => .KwFn,
+        "if" => .KwIf,
+        "import" => .KwImport,
+        "in" => .KwIn,
+        "is" => .KwIs,
+        "let" => .KwLet,
+        "mut" => .KwMut,
+        "nil" => .KwNil,
+        "!in" => .KwNotIn,
+        "!is" => .KwNotIs,
+        "or" => .KwOr,
+        "pub" => .KwPub,
+        "prot" => .KwProt,
+        "return" => .KwReturn,
+        "self" => .KwSelf,
+        "Self" => .KwSelfTy,
+        "struct" => .KwStruct,
+        "switch" => .KwSwitch,
+        "test" => .KwTest,
+        "trait" => .KwTrait,
+        "true" => .KwTrue,
+        "type" => .KwType,
+        "unsafe" => .KwUnsafe,
+        "while" => .KwWhile,
+        else => .Name
+    };
+}
+
+pub fn is_keyword(lit: string) bool {
+    return lookup(lit) != .Name;
+}
+
+pub fn is_overloadable_operator(kind: Kind) bool {
+    return kind in [.Plus, .Minus, .Mul, .Div, .Mod, .Eq, .Ne, .Lt, .Gt, .Le, .Ge];
+}
+
+pub fn overloadable_operator_name(kind: Kind) string {
+    return switch kind is {
+        .Plus => "_add_",
+        .Minus => "_sub_",
+        .Mul => "_mul_",
+        .Div => "_div_",
+        .Mod => "_mod_",
+        .Eq => "_eq_",
+        .Ne => "_ne_",
+        .Lt => "_lt_",
+        .Gt => "_gt_",
+        .Le => "_le_",
+        .Ge => "_ge_",
+        else => "_unknown_operator_"
+    };
+}

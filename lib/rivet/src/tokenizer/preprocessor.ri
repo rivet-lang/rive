@@ -1,0 +1,195 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "../utils";
+
+extend Tokenizer {
+    struct Conditional {
+        mut matched: bool;
+        mut else_found: bool;
+        mut skip_section: bool;
+    }
+
+    fn pp_directive(mut self) {
+        let mut pos = self.current_pos();
+        self.pos += 1; // skip '#'
+        self.skip_whitespace();
+        let pp_dir = self.read_ident();
+        pos.len += pp_dir.len;
+        self.skip_whitespace();
+        switch pp_dir {
+            "if" => self.pp_if(),
+            "else_if" => self.pp_else_if(),
+            "else" => self.pp_else(),
+            "endif" => self.pp_endif(),
+            else => {
+                self.error("invalid preprocessing directive: `{}`".fmt(pp_dir), pos).emit();
+                return;
+            }
+        }
+        if self.conditional_stack.len > 0
+            and self.conditional_stack[self.conditional_stack.len - 1].skip_section {
+            // skip tokens until next preprocessing directive
+            while self.pos < self.text.len : self.pos += 1 {
+                let cc = self.current_char();
+                if cc == b'#' and self.look_ahead(1) !in [b'!', b'['] {
+                    self.pos -= 1;
+                    return;
+                } else if utils.is_new_line(cc) {
+                    self.inc_line_number();
+                }
+            }
+            // if we get EOF, then no corresponding `#endif` has been written
+            if self.pos == self.text.len {
+                self.error("expected `#endif`, found end of file", pos).emit();
+            }
+        }
+    }
+
+    fn pp_if(mut self) {
+        self.pos += 1;
+        self.skip_whitespace();
+        let cond = self.pp_expression();
+        self.skip_whitespace();
+        self.pos -= 1;
+        self.conditional_stack.push(Conditional());
+        if cond and (self.conditional_stack.len == 1
+            or !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
+            // condition true => process code within if
+            let cond_s = &mut self.conditional_stack[self.conditional_stack.len - 1];
+            cond_s.matched = true;
+            cond_s.skip_section = false;
+        } else {
+            // skip lines until next preprocessing directive
+            let cond_s = &mut self.conditional_stack[self.conditional_stack.len - 1];
+            cond_s.skip_section = true;
+        }
+    }
+
+    fn pp_else_if(mut self) {
+        self.pos += 1;
+        let pos = self.current_pos();
+        self.skip_whitespace();
+        let cond = self.pp_expression();
+        self.skip_whitespace();
+        self.pos -= 1;
+        if self.conditional_stack.is_empty() or
+            self.conditional_stack[self.conditional_stack.len - 1].else_found {
+            self.error("unexpected `#else_if`", pos).emit();
+        } else if cond and !self.conditional_stack[self.conditional_stack.len - 1].matched
+            and (self.conditional_stack.len == 1 or
+                !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
+            // condition true => process code within if
+            let cond_s = &mut self.conditional_stack[self.conditional_stack.len - 1];
+            cond_s.matched = true;
+            cond_s.skip_section = false;
+        } else {
+            // skip lines until next preprocessing directive
+            let cond_s = &mut self.conditional_stack[self.conditional_stack.len - 1];
+            cond_s.skip_section = true;
+        }
+    }
+
+    fn pp_else(mut self) {
+        let pos = self.current_pos();
+        self.skip_whitespace();
+        if self.conditional_stack.is_empty() or
+            self.conditional_stack[self.conditional_stack.len - 1].else_found {
+            self.error("unexpected `#else`", pos).emit();
+        } else if !self.conditional_stack[self.conditional_stack.len - 1].matched
+            and (self.conditional_stack.len == 1 or
+                !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
+            // condition true => process code within if
+            let cond_s = &mut self.conditional_stack[self.conditional_stack.len - 1];
+            cond_s.matched = true;
+            cond_s.skip_section = false;
+        } else {
+            // skip lines until next preprocessing directive
+            let cond_s = &mut self.conditional_stack[self.conditional_stack.len - 1];
+            cond_s.skip_section = true;
+        }
+    }
+
+    fn pp_endif(mut self) {
+        let pos = self.current_pos();
+        if self.conditional_stack.is_empty() {
+            self.error("unexpected `#endif`", pos).emit();
+        } else {
+            _ = self.conditional_stack.pop();
+        }
+    }
+
+    fn pp_expression(mut self) bool {
+        return self.pp_or_expression();
+    }
+
+    fn pp_or_expression(mut self) bool {
+        let mut left = self.pp_and_expression();
+        self.skip_whitespace();
+        while self.pos < self.text.len and self.matches("or", self.pos) {
+            self.pos += 2;
+            self.skip_whitespace();
+            let right = self.pp_and_expression();
+            left = left or right;
+        }
+        return left;
+    }
+
+    fn pp_and_expression(mut self) bool {
+        let mut left = self.pp_unary_expression();
+        self.skip_whitespace();
+        while self.pos < self.text.len and self.matches("and", self.pos) {
+            self.pos += 3;
+            self.skip_whitespace();
+            let right = self.pp_unary_expression();
+            left = left and right;
+        }
+        return left;
+    }
+
+    fn pp_unary_expression(mut self) bool {
+        if self.pos < self.text.len and self.current_char() == b'!' {
+            self.pos += 1;
+            self.skip_whitespace();
+            return !self.pp_unary_expression();
+        }
+        return self.pp_primary_expression();
+    }
+
+    fn pp_primary_expression(mut self) bool {
+        let pos = self.current_pos();
+        let mut cc = self.current_char();
+        if self.pos >= self.text.len {
+            self.error("expected name, found end of file", pos).emit();
+        } else if utils.is_name_char(cc) {
+            return self.pp_symbol();
+        } else if cc == b'(' {
+            self.pos += 1;
+            self.skip_whitespace();
+            let result = self.pp_expression();
+            self.skip_whitespace();
+            cc = self.current_char();
+            if self.pos < self.text.len and cc == b')' {
+                self.pos += 1;
+            } else {
+                self.error("expected `)`, found `{}`".fmt(cc.to_ascii()), self.current_pos()).emit();
+            }
+            return result;
+        }
+        return false;
+    }
+
+    fn pp_symbol(mut self) bool {
+        let pos = self.current_pos();
+        let name = self.read_ident();
+        self.pos += 1;
+        return if name == "true" {
+            true
+        } else if name == "false" {
+            false
+        } else {
+            self.prefs.evalue_pp_symbol(name, pos)
+        };
+    }
+}

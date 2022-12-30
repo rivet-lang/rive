@@ -1,0 +1,113 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "std/strings";
+import "std/console";
+
+import "../prefs";
+import "../token";
+import "../utils";
+
+pub let mut reports: ReportTable = ReportTable();
+
+pub class ReportTable {
+    pub mut prefs: prefs.Prefs;
+    pub mut errors: usize;
+    pub mut warns: usize;
+}
+
+pub enum ReportKind as u8 {
+    Error,
+    Warn,
+    Note,
+    Help
+}
+
+pub class ReportExtra {
+    pub kind: ReportKind;
+    pub msg: string;
+}
+
+#[inline]
+pub fn error(msg: string, pos: token.Pos) Report {
+    return Report(.Error, pos, msg);
+}
+
+#[inline]
+pub fn warn(msg: string, pos: token.Pos) Report {
+    return Report(.Warn, pos, msg);
+}
+
+pub class Report {
+    pub kind: ReportKind;
+    pub pos: token.Pos;
+    pub msg: string;
+    pub mut extras: [ReportExtra];
+
+    #[inline]
+    pub fn add_note(mut self, msg: string) {
+        self.extras.push(ReportExtra(.Note, msg));
+    }
+
+    #[inline]
+    pub fn add_help(mut self, msg: string) {
+        self.extras.push(ReportExtra(.Help, msg));
+    }
+
+    pub fn emit(self) {
+        console.eprintln(
+            utils.bold("{}: {} {}"), self.pos,
+            if self.kind is .Error { utils.red("error:") } else { utils.yellow("warning:") },
+            self.msg
+        );
+        formatted_line(self.pos);
+        unsafe {
+            if self.kind is .Error {
+                reports.errors += 1;
+            } else {
+                reports.warns += 1;
+            }
+        }
+        for extra in self.extras {
+            console.eprintln(
+                utils.bold("      {} {}"), if extra.kind is .Note {
+                    utils.cyan("note")
+                } else {
+                    "help"
+                }, extra.msg
+            );
+        }
+    }
+}
+
+fn formatted_line(pos: token.Pos) {
+    if let line = unsafe { utils.source_cache.find_line(pos.file, pos.line) } {
+        console.eprintln(
+            "{} {} {}", utils.bold(utils.blue("{:5}".fmt(pos.line + 1))),
+            utils.bold(utils.blue("|")), line.replace("\t", " ")
+        );
+		let start_column = utils.max(0, utils.min(pos.col - 1, line.len));
+		let end_column = utils.max(0, utils.min((pos.col - 1) + utils.max(0, pos.len), line.len));
+        let mut sb = strings.Builder.new(line.len);
+        let mut i: usize = 0;
+        while i < start_column {
+            let b = line[i];
+            if b.is_space() {
+                sb.write_byte(b);
+                i += 1;
+            } else {
+                let char_len = b.len_utf8();
+                sb.write_string(" ".repeat(line[i..i + char_len].runes_count()));
+                i += char_len;
+            }
+        }
+        sb.write_string(utils.green("^"));
+        if pos.len > 1 {
+            sb.write_string(
+                utils.green("~".repeat(line[start_column..end_column].runes_count() - 1))
+            );
+        }
+        console.eprintln("      {} {}", utils.bold(utils.blue("|")), sb.to_string());
+    }
+}

@@ -1,0 +1,545 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "std/traits";
+
+import "../token";
+
+let mut SYM_IDS: usize = 0;
+
+fn new_sym_id() usize {
+    let res = unsafe { SYM_IDS };
+    unsafe {
+        SYM_IDS += 1;
+    }
+    return res;
+}
+
+pub enum ABI as u8 {
+    Rivet,
+    C;
+
+    pub fn from_string(abi: string) ?ABI {
+        return switch abi {
+            "C" => .C,
+            "Rivet" => .Rivet,
+            else => nil
+        };
+    }
+}
+
+pub enum Vis as u8 : traits.ToString {
+    Priv,
+    Prot, // Protected inside current class
+    Pub, // Public outside current module
+    Export; // Public outside current module and library/object file
+
+    pub fn is_pub(self) bool {
+        return self in [.Export, .Pub];
+    }
+
+    pub fn to_string(&self) string {
+        return switch self.* is {
+            .Prot => "prot",
+            .Pub => "pub",
+            .Export => "export",
+            else => "" // private
+        };
+    }
+}
+
+pub class Sym {
+    pub id: usize = new_sym_id();
+    pub abi: ABI;
+    pub mut vis: Vis;
+    pub parent: ?Sym;
+    pub name: string;
+    pub mut scope: Scope;
+    pub mut mangled_name: string;
+    pub mut qualified_name: string;
+    pub is_universe: bool;
+    pub is_root: bool;
+
+    pub fn ==(self, other: Self) bool {
+        return self.id == other.id;
+    }
+}
+
+pub class Mod : Sym { }
+
+pub class Const : Sym {
+    pub expr: Expr;
+    pub evaled_expr: ?Expr;
+    pub typ: Type;
+}
+
+pub enum VarLevel as u8 {
+    Mod, // module-level
+    Rec, // receiver: `self`
+    Arg, // argument-level
+    Local // inside function
+}
+
+pub class Var : Sym {
+    pub is_extern: bool;
+    pub ir_name: string; // used for duplicate objects in IR
+    pub is_mut: bool;
+    pub is_used: bool;
+    pub is_changed: bool;
+    pub is_hidden_ref: bool;
+    pub level: VarLevel;
+    pub typ: Type;
+}
+
+pub class Field {
+    pub vis: Vis;
+    pub name: string;
+    pub is_mut: bool;
+    pub def_expr: ?Expr;
+    pub typ: Type;
+}
+
+pub enum TypeKind : traits.ToString {
+    Placeholder,
+    Never,
+    Void,
+    Nil,
+    Bool,
+    Rune,
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    Uint8,
+    Uint16,
+    Uint32,
+    Uint64,
+    Isize,
+    Usize,
+    ComptimeInt,
+    ComptimeFloat,
+    Float32,
+    Float64,
+    String,
+    Alias,
+    Array,
+    Vector,
+    Tuple,
+    Enum,
+    Trait,
+    Class,
+    Struct;
+
+    pub fn is_primitive(self) bool {
+        return self in [
+            .Void, .Nil, .Bool, .Rune, .Int8, .Int16, .Int32, .Int64, .Isize, .Uint8,
+            .Uint16, .Uint32, .Uint64, .Usize, .ComptimeInt, .ComptimeFloat, .Float32,
+            .Float64, .Never
+        ];
+    }
+
+    pub fn to_string(&self) string {
+        return switch self.* is {
+            .Nil => "nil",
+            .Bool => "bool",
+            .Rune => "rune",
+            .Int8 => "i8",
+            .Int16 => "i16",
+            .Int32 => "i32",
+            .Int64 => "i64",
+            .Isize => "isize",
+            .Uint8 => "u8",
+            .Uint16 => "u16",
+            .Uint32 => "u32",
+            .Uint64 => "u64",
+            .Usize => "usize",
+            .ComptimeInt => "comptime_int",
+            .ComptimeFloat => "comptime_float",
+            .Float32 => "f32",
+            .Float64 => "f64",
+            .String => "string",
+            .Alias => "alias",
+            .Array => "array",
+            .Vector => "vector",
+            .Tuple => "tuple",
+            .Trait => "trait",
+            .Class => "class",
+            .Struct => "struct",
+            .Enum => "enum",
+            .Never => "never",
+            else => "placeholder"
+        };
+    }
+}
+
+pub class TypeInfo { }
+
+pub class AliasInfo : TypeInfo {
+    pub parent: Type;
+}
+
+pub class ArrayInfo : TypeInfo {
+    pub elem_typ: Type;
+    pub size: isize;
+    pub has_contains_method: bool;
+}
+
+pub class VectorInfo : TypeInfo {
+    pub elem_typ: Type;
+    pub has_contains_method: bool;
+}
+
+pub class TupleInfo : TypeInfo {
+    pub types: [Type];
+}
+
+pub class EnumVariant {
+    pub name: string;
+    pub value: isize;
+    pub has_typ: bool;
+    pub typ: Type;
+}
+
+pub class EnumInfo : TypeInfo {
+    pub underlying_typ: Type;
+    pub mut variants: [EnumVariant];
+    pub is_advanced_enum: bool;
+
+    pub fn add_value(mut self, name: string, variant: isize) {
+        self.variants.push(EnumVariant(name, variant));
+    }
+
+    pub fn get_value(self, name: string) ?EnumVariant {
+        for v in self.variants {
+            if v.name == name {
+                return v;
+            }
+        }
+        return nil;
+    }
+
+    pub fn get_variant_by_type(self, typ: Type) ?EnumVariant {
+        for v in self.variants {
+            if v.has_typ and v.typ == typ {
+                return v;
+            }
+        }
+        return nil;
+    }
+
+    pub fn has_value(self, name: string) bool {
+        if let _ = self.get_value(name) {
+            return true;
+        }
+        return false;
+    }
+}
+
+pub class TraitInfo : TypeInfo {
+    pub bases: [mut TypeSym];
+    pub mut implements: [TypeSym];
+    pub mut has_objects: bool;
+
+    pub fn index_of(self, type_sym: TypeSym) ?usize {
+        for i, ts in self.implements {
+            if ts.id == type_sym.id {
+                return i;
+            }
+        }
+        return nil;
+    }
+
+    pub fn implement(mut self, type_sym: TypeSym) {
+        self.implements.push(type_sym);
+        for mut b in self.bases {
+            @as(TraitInfo, b.info).implement(type_sym);
+        }
+    }
+
+    pub fn mark_has_objects(mut self) {
+        self.has_objects = true;
+        for mut b in self.bases {
+            @as(TraitInfo, b.info).has_objects = true;
+        }
+    }
+}
+
+pub class ClassInfo : TypeInfo {
+    pub mut base_sym: TypeSym;
+    pub is_base: bool;
+    pub use_base: bool;
+    pub traits: [TypeSym];
+    pub is_child: bool;
+    pub childrens: [TypeSym];
+}
+
+pub class StructInfo : TypeInfo {
+    pub is_opaque: bool;
+    pub bases: [mut TypeSym];
+    pub traits: [TypeSym];
+}
+
+pub class TypeSym : Sym {
+    pub mut fields: [Field];
+    pub mut full_fields_: [Field];
+    pub mut kind: TypeKind;
+    pub mut info: TypeInfo;
+    pub mut size: isize = -1;
+    pub mut align: isize = -1;
+
+    pub fn lookup_field(self, name: string) ?Field {
+        for f in self.fields {
+            if f.name == name {
+                return f;
+            }
+        }
+        if self.info is ClassInfo as class_info {
+            if let f = class_info.base_sym.lookup_field(name) {
+                if f.vis in [.Pub, .Prot] {
+                    return f;
+                }
+            }
+        } else if self.info is StructInfo as struct_info {
+            for b in struct_info.bases {
+                if let f = b.lookup_field(name) {
+                    if f.vis in [.Pub, .Prot] {
+                        return f;
+                    }
+                }
+            }
+        }
+        return nil;
+    }
+
+    #[inline]
+    pub fn has_field(self, name: string) bool {
+        return if let _ = self.lookup_field(name) { true } else { false };
+    }
+
+    pub fn lookup_in_base(self, name: string) ?Sym {
+        if self.info is ClassInfo as class_info {
+            if let s = class_info.base_sym.lookup(name) {
+                return s;
+            }
+        } else if self.info is StructInfo or self.info is TraitInfo {
+            let bases = if self.info is StructInfo {
+                @as(StructInfo, self.info).bases
+            } else {
+                @as(TraitInfo, self.info).bases
+            };
+            for b in bases {
+                if let s = b.lookup(name) {
+                    return s;
+                }
+            }
+        }
+        return nil;
+    }
+
+    pub fn lookup(self, name: string) ?Sym {
+        if let s = base.scope.lookup(name) {
+            return s;
+        } else if let s = self.lookup_in_base(name) {
+            return s;
+        }
+        return nil;
+    }
+
+    pub fn full_fields(mut self) [Field] {
+        if !self.full_fields_.is_empty() {
+            return self.full_fields_;
+        }
+        let mut fields = @vec(Field);
+        if self.info is ClassInfo as class_info {
+            for bf in class_info.base_sym.full_fields() {
+                fields.push(bf);
+            }
+        } else if self.info is StructInfo as struct_info {
+            for mut b in struct_info.bases {
+                for bf in b.full_fields() {
+                    fields.push(bf);
+                }
+            }
+        }
+        for f in self.fields {
+            fields.push(f);
+        }
+        self.full_fields_ = fields;
+        return fields;
+    }
+
+    pub fn update(mut self, other: TypeSym) ! {
+        if self.kind is .Placeholder {
+            // update placeholder
+            self.vis = other.vis;
+            self.kind = other.kind;
+            self.fields = other.fields;
+            for s in other.scope.syms {
+                self.scope.add(s).!;
+            }
+            self.info = other.info;
+        }
+    }
+
+    pub fn is_subtype_of(self, other: TypeSym) bool {
+        if self == other {
+            return true;
+        }
+        if self.info is ClassInfo as class_info {
+            if class_info.base_sym == other {
+                return true;
+            }
+            return class_info.base_sym.is_subtype_of(other);
+        } else if self.info is StructInfo as struct_info {
+            for b in struct_info.bases {
+                if b.is_subtype_of(other) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    pub fn is_boxed(self) bool {
+        if self.info is EnumInfo as enum_info {
+            return enum_info.is_advanced_enum;
+        }
+        return self.kind is .Trait or self.kind is .Class or self.kind is .String
+            or self.kind is .Vector;
+    }
+
+    // TODO: fix inheritance of overloaded operators
+    #[inline; override]
+    pub fn ==(self, rhs: Self) bool {
+        return self.id == rhs.id;
+    }
+}
+
+pub class Arg {
+    pub name: string;
+    pub is_mut: bool;
+    pub is_self: bool;
+    pub def_expr: ?Expr;
+    pub pos: token.Pos;
+    pub typ: Type;
+}
+
+pub class FnSym : Sym {
+    pub is_extern: bool;
+    pub is_unsafe: bool;
+    pub is_main: bool;
+    pub is_method: bool;
+    pub is_variadic: bool;
+    pub self_typ: Type;
+    pub self_is_mut: bool;
+    pub self_is_ref: bool;
+    pub args: [Arg];
+    pub has_named_args: bool;
+    pub has_body: bool;
+    pub ret_typ: Type;
+
+    pub fn get_arg(self, idx: usize) Arg {
+        let arg = self.args[idx];
+        if arg.is_self {
+            return self.args[idx + 1];
+        }
+        return arg;
+    }
+
+    pub fn args_len(self) usize {
+        let mut len: usize = 0;
+        for arg in self.args {
+            if !(arg.is_self or arg.typ is Variadic) {
+                len += 1;
+            }
+        }
+        return len;
+    }
+
+    #[inline]
+    pub fn kind(self) string {
+        return if self.is_method { "method" } else { "function" };
+    }
+}
+
+pub class Scope {
+    pub start: usize;
+    pub end: usize;
+    pub mut parent: ?Scope;
+    pub mut detached_from_parent: bool;
+    pub mut syms: [Sym];
+
+    pub fn add(mut self, sym: Sym) ! {
+        if sym.name == "_" and sym is Var {
+            return; // ignore blank var
+        } else if self.exists(sym.name) {
+            return Error("duplicate symbol `{}`".fmt(sym.name));
+        }
+        self.syms.push(sym);
+    }
+
+    #[inline]
+    pub fn exists(self, name: string) bool {
+        return if let _ = self.lookup(name) { true } else { false };
+    }
+
+    pub fn lookup(self, name: string) ?Sym {
+        let mut sc_: ?Scope = self;
+        while let sc = sc_ {
+            for sym in self.syms {
+                if sym.name == name {
+                    return sym;
+                }
+            }
+            if sc.dont_lookup_parent() {
+                break;
+            }
+            sc_ = sc.parent;
+        }
+        return nil;
+    }
+
+    fn dont_lookup_parent(self) bool {
+        if self.detached_from_parent or self.parent is nil {
+            return true;
+        }
+        return if let parent = self.parent {
+            parent is Mod
+        } else {
+            false
+        };
+    }
+}
+
+pub fn universe() Mod {
+    return Mod(
+        vis: .Priv,
+        name: "universe",
+        scope: Scope(
+            syms: [
+                TypeSym(vis: .Pub, name: "void", kind: .Void),
+                TypeSym(vis: .Pub, name: "never", kind: .Never),
+                TypeSym(vis: .Pub, name: "nil", kind: .Nil),
+                TypeSym(vis: .Pub, name: "bool", kind: .Bool),
+                TypeSym(vis: .Pub, name: "rune", kind: .Rune),
+                TypeSym(vis: .Pub, name: "i8", kind: .Int8),
+                TypeSym(vis: .Pub, name: "i16", kind: .Int16),
+                TypeSym(vis: .Pub, name: "i32", kind: .Int32),
+                TypeSym(vis: .Pub, name: "i64", kind: .Int64),
+                TypeSym(vis: .Pub, name: "isize", kind: .Isize),
+                TypeSym(vis: .Pub, name: "u8", kind: .Uint8),
+                TypeSym(vis: .Pub, name: "u16", kind: .Uint16),
+                TypeSym(vis: .Pub, name: "u32", kind: .Uint32),
+                TypeSym(vis: .Pub, name: "u64", kind: .Uint64),
+                TypeSym(vis: .Pub, name: "usize", kind: .Usize),
+                TypeSym(vis: .Pub, name: "comptime_int", kind: .ComptimeInt),
+                TypeSym(vis: .Pub, name: "comptime_float", kind: .ComptimeFloat),
+                TypeSym(vis: .Pub, name: "f32", kind: .Float32),
+                TypeSym(vis: .Pub, name: "f64", kind: .Float64),
+                TypeSym(vis: .Pub, name: "string", kind: .String),
+                TypeSym(vis: .Pub, name: "Error", kind: .Class, info: ClassInfo())
+            ]
+        )
+    );
+}

@@ -1,0 +1,32 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "./ast";
+import "./utils";
+import "./prefs";
+import "./report";
+import "./tokenizer";
+
+import "std/console";
+
+pub class Compiler {
+    pub mut table: ast.Table;
+    pub mut prefs: prefs.Prefs;
+
+    pub fn new(args: [string], is_test: bool, run_output: bool) Self {
+        let prefs_ = prefs.Prefs.new(args, is_test, run_output);
+        unsafe {
+            report.reports.prefs = prefs_;
+        }
+
+        let mut tokenizer_ = tokenizer.Tokenizer.from_file("main.ri", prefs_);
+        console.println(">>> tokenized text, token list:");
+        let mut tok = tokenizer_.next();
+        while tok.kind !is .EOF : tok = tokenizer_.next() {
+            console.println("    {}", tok);
+        }
+
+        return Self(table: ast.Table.new(), prefs: prefs_);
+    }
+}
