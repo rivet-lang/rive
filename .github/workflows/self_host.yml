@@ -19,7 +19,7 @@ jobs:
       - name: Compile self-hosted compiler
         run: |
           python3 rivetc --backend-compiler clang -o rivet cmd/
-          ./rivet --version
+          ./rivet version
 
   ubuntu-gcc:
     runs-on: ubuntu-latest
@@ -31,4 +31,4 @@ jobs:
       - name: Compile self-hosted compiler
         run: |
           python3 rivetc -o rivet cmd/
-          ./rivet --version
+          ./rivet version
