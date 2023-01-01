@@ -364,7 +364,10 @@ class Codegen:
                 args.append(ir.Ident(self_typ, "self"))
             for arg in decl.args:
                 arg_typ = self.ir_type(arg.typ)
-                if arg.is_mut and not (arg.typ.symbol().is_boxed() or isinstance(arg.typ, (type.Ptr, type.Ref))):
+                if arg.is_mut and not (
+                    arg.typ.symbol().is_boxed()
+                    or isinstance(arg.typ, (type.Ptr, type.Ref))
+                ):
                     arg_typ = arg_typ.ptr()
                 args.append(ir.Ident(arg_typ, arg.name))
             ret_typ = self.ir_type(decl.ret_typ)
@@ -515,9 +518,13 @@ class Codegen:
                         ), idx
                     ]
                 )
-            if value_is_ref_or_is_mut and not isinstance(value_t_ir, ir.Pointer):
+            if value_is_ref_or_is_mut and not isinstance(
+                value_t_ir, ir.Pointer
+            ):
                 value_t_ir = ir.Pointer(value_t_ir)
-            if not value_is_ref_or_is_mut or (isinstance(value_t_ir, ir.Pointer) and value_t_ir.is_managed):
+            if not value_is_ref_or_is_mut or (
+                isinstance(value_t_ir, ir.Pointer) and value_t_ir.is_managed
+            ):
                 value = ir.Inst(ir.InstKind.LoadPtr, [value])
             unique_ir_name = self.cur_fn.unique_name(stmt.value.name)
             self.cur_fn.inline_alloca(value_t_ir, unique_ir_name, value)
@@ -538,7 +545,8 @@ class Codegen:
             self.loop_entry_label = self.cur_fn.local_name()
             body_label = self.cur_fn.local_name()
             self.loop_exit_label = self.cur_fn.local_name()
-            else_stmt_label = self.cur_fn.local_name() if stmt.has_else_stmt else ""
+            else_stmt_label = self.cur_fn.local_name(
+            ) if stmt.has_else_stmt else ""
             self.while_continue_expr = stmt.continue_expr
             self.cur_fn.add_label(self.loop_entry_label)
             if stmt.is_inf:
@@ -547,7 +555,8 @@ class Codegen:
             else:
                 if isinstance(stmt.cond, ast.GuardExpr):
                     cond = self.gen_guard_expr(
-                        stmt.cond, body_label, else_stmt_label if stmt.has_else_stmt else self.loop_exit_label
+                        stmt.cond, body_label, else_stmt_label
+                        if stmt.has_else_stmt else self.loop_exit_label
                     )
                 else:
                     cond = self.gen_expr_with_cast(self.comp.bool_t, stmt.cond)
@@ -555,7 +564,8 @@ class Codegen:
                     self.cur_fn.add_br(body_label)
                 else:
                     self.cur_fn.add_cond_br(
-                        cond, body_label, else_stmt_label if stmt.has_else_stmt else self.loop_exit_label
+                        cond, body_label, else_stmt_label
+                        if stmt.has_else_stmt else self.loop_exit_label
                     )
             gen_stmt = True
             if isinstance(cond, ir.IntLit) and cond.lit == "0":
@@ -719,7 +729,10 @@ class Codegen:
             return ir.IntLit(ir.BOOL_T, str(int(expr.lit)))
         elif isinstance(expr, ast.CharLiteral):
             if expr.is_byte:
-                return ir.IntLit(ir.U8_T, str(utils.bytestr(self.decode_escape(expr.lit)).buf[0]))
+                return ir.IntLit(
+                    ir.U8_T,
+                    str(utils.bytestr(self.decode_escape(expr.lit)).buf[0])
+                )
             return ir.RuneLit(ir.RUNE_T, expr.lit)
         elif isinstance(expr, ast.IntegerLiteral):
             return ir.IntLit(self.ir_type(expr.typ), expr.lit)
@@ -789,15 +802,20 @@ class Codegen:
                 return self.empty_vec(typ_sym)
             elif expr.name == "as":
                 arg1 = expr.args[1]
-                arg1_is_voidptr = isinstance(arg1.typ, type.Ptr) and arg1.typ.typ == self.comp.void_t
+                arg1_is_voidptr = isinstance(
+                    arg1.typ, type.Ptr
+                ) and arg1.typ.typ == self.comp.void_t
                 if (
-                    isinstance(expr.typ, type.Ptr) and expr.typ.symbol().is_boxed()
+                    isinstance(expr.typ, type.Ptr)
+                    and expr.typ.symbol().is_boxed()
                     and (arg1.typ == expr.typ.typ or arg1_is_voidptr)
                 ):
                     if not arg1_is_voidptr:
                         return self.gen_expr(arg1)
                     ir_typ = self.ir_type(expr.typ.typ)
-                    return ir.Inst(ir.InstKind.Cast, [self.gen_expr(arg1), ir_typ], ir_typ)
+                    return ir.Inst(
+                        ir.InstKind.Cast, [self.gen_expr(arg1), ir_typ], ir_typ
+                    )
                 else:
                     ir_typ = self.ir_type(expr.typ)
                 res = self.gen_expr_with_cast(arg1.typ, arg1)
@@ -924,18 +942,31 @@ class Codegen:
                 if isinstance(expr.right, ast.CallExpr):
                     right = self.gen_expr(expr.right)
                     for i, l in enumerate(expr.left.exprs):
-                        left, require_store_ptr = self.gen_left_assign(l, expr.right)
+                        left, require_store_ptr = self.gen_left_assign(
+                            l, expr.right
+                        )
                         if left == None:
                             continue
                         inst = ir.InstKind.StorePtr if require_store_ptr else ir.InstKind.Store
                         self.cur_fn.add_inst(
-                            ir.Inst(inst, [left, ir.Selector(l.typ, right, ir.Name(f"f{i}"))])
+                            ir.Inst(
+                                inst, [
+                                    left,
+                                    ir.Selector(l.typ, right, ir.Name(f"f{i}"))
+                                ]
+                            )
                         )
                 else:
                     for i, l in enumerate(expr.left.exprs):
-                        self.gen_expr(ast.AssignExpr(l, expr.op, expr.right.exprs[i], expr.pos))
+                        self.gen_expr(
+                            ast.AssignExpr(
+                                l, expr.op, expr.right.exprs[i], expr.pos
+                            )
+                        )
                 return
-            left, require_store_ptr = self.gen_left_assign(expr.left, expr.right)
+            left, require_store_ptr = self.gen_left_assign(
+                expr.left, expr.right
+            )
             if left == None:
                 return
             expr_left_typ_ir = self.ir_type(expr.left.typ)
@@ -1559,7 +1590,9 @@ class Codegen:
             right = self.gen_expr_with_cast(expr.right_typ, expr.right)
             if expr.op == Kind.Amp:
                 tmp = self.cur_fn.local_name()
-                if isinstance(right, ir.Inst) and value.kind == ir.InstKind.LoadPtr:
+                if isinstance(
+                    right, ir.Inst
+                ) and value.kind == ir.InstKind.LoadPtr:
                     value = value.args[0]
                 else:
                     value = ir.Inst(ir.InstKind.GetRef, [right])
@@ -1695,19 +1728,29 @@ class Codegen:
                 self.cur_fn.inline_alloca(self.ir_type(expr.typ), tmp, cmp)
                 if expr.has_var:
                     expr_var_exit_label = self.cur_fn.local_name()
-                    self.cur_fn.add_cond_single_br(ir.Inst(ir.InstKind.BooleanNot, [cmp]), expr_var_exit_label)
+                    self.cur_fn.add_cond_single_br(
+                        ir.Inst(ir.InstKind.BooleanNot, [cmp]),
+                        expr_var_exit_label
+                    )
                     var_t = self.ir_type(expr.var.typ)
-                    var_t2 = var_t.ptr() if expr.var.is_mut or not isinstance(var_t, ir.Pointer) else var_t
+                    var_t2 = var_t.ptr() if expr.var.is_mut or not isinstance(
+                        var_t, ir.Pointer
+                    ) else var_t
                     if left_sym.kind == TypeKind.Class:
                         val = ir.Inst(ir.InstKind.Cast, [left, var_t])
                     else:
                         val = ir.Inst(
                             ir.InstKind.Cast, [
-                                ir.Selector(ir.VOID_PTR_T, left, ir.Name("obj")), var_t2
+                                ir.Selector(
+                                    ir.VOID_PTR_T, left, ir.Name("obj")
+                                ), var_t2
                             ]
                         )
                         if not (
-                            expr.var.is_mut or (isinstance(var_t, ir.Pointer) and var_t.is_managed)
+                            expr.var.is_mut or (
+                                isinstance(var_t, ir.Pointer)
+                                and var_t.is_managed
+                            )
                         ):
                             val = ir.Inst(ir.InstKind.LoadPtr, [val])
                         if expr.var.is_mut and not isinstance(
@@ -2049,9 +2092,13 @@ class Codegen:
                                 ), rend_l, next_pat
                             )
                             self.cur_fn.add_label(rend_l)
-                            self.cur_fn.store(tmp2_i, ir.Inst(
-                                ir.InstKind.Cmp, [ir.Name("<="), switch_expr, end]
-                            ))
+                            self.cur_fn.store(
+                                tmp2_i,
+                                ir.Inst(
+                                    ir.InstKind.Cmp,
+                                    [ir.Name("<="), switch_expr, end]
+                                )
+                            )
                         else:
                             p_conv = self.gen_expr_with_cast(p.typ, p)
                             if p_typ_sym.kind.is_primitive(
@@ -2063,13 +2110,15 @@ class Codegen:
                             else:
                                 inst = ir.Inst(
                                     ir.InstKind.Call, [
-                                        ir
-                                        .Name(f"{mangle_symbol(p_typ_sym)}4_eq_M"),
-                                        switch_expr, p_conv,
+                                        ir.Name(
+                                            f"{mangle_symbol(p_typ_sym)}4_eq_M"
+                                        ), switch_expr, p_conv,
                                     ]
                                 )
                             self.cur_fn.inline_alloca(ir.BOOL_T, tmp2, inst)
-                    self.cur_fn.add_cond_br(ir.Ident(ir.BOOL_T, tmp2), b_label, next_pat)
+                    self.cur_fn.add_cond_br(
+                        ir.Ident(ir.BOOL_T, tmp2), b_label, next_pat
+                    )
                     if i < len(b.pats) - 1:
                         self.cur_fn.add_label(next_pat)
                 if not b.is_else:
@@ -2170,18 +2219,17 @@ class Codegen:
         require_store_ptr = False
         if isinstance(expr, ast.Ident):
             if expr.name == "_":
-                self.cur_fn.add_inst(ir.Inst(
-                    ir.InstKind.Cast,
-                    [self.gen_expr(right), ir.VOID_T]
-                ))
+                self.cur_fn.add_inst(
+                    ir.Inst(
+                        ir.InstKind.Cast, [self.gen_expr(right), ir.VOID_T]
+                    )
+                )
                 return None, require_store_ptr
             else:
                 left = self.gen_expr_with_cast(expr.typ, expr)
         elif isinstance(expr, ast.SelectorExpr):
             if expr.is_indirect:
-                left = ir.Inst(
-                    ir.InstKind.LoadPtr, [self.gen_expr(expr.left)]
-                )
+                left = ir.Inst(ir.InstKind.LoadPtr, [self.gen_expr(expr.left)])
             else:
                 left = self.gen_expr_with_cast(expr.typ, expr)
         elif isinstance(expr, ast.IndexExpr):
@@ -2189,14 +2237,10 @@ class Codegen:
             left_sym = expr.left_typ.symbol()
             sym_is_class = left_sym.is_boxed()
             if left_sym.kind == TypeKind.Vec and expr.op == Kind.Assign:
-                rec = self.gen_expr_with_cast(
-                    expr.left_typ, expr.left
-                )
+                rec = self.gen_expr_with_cast(expr.left_typ, expr.left)
                 if not isinstance(left_ir_typ, ir.Pointer):
                     rec = ir.Inst(ir.InstKind.GetRef, [rec])
-                expr_right = self.gen_expr_with_cast(
-                    expr.right.typ, expr.right
-                )
+                expr_right = self.gen_expr_with_cast(expr.right.typ, expr.right)
                 val_sym = expr.right.typ.symbol()
                 self.cur_fn.add_call(
                     "_R7runtime3Vec3setM", [
@@ -2908,8 +2952,8 @@ class Codegen:
         dg_sorted = dg.resolve()
         if not dg_sorted.acyclic:
             utils.error(
-                "rivetc.codegen: the following types form a dependency cycle:\n" +
-                dg_sorted.display_cycles()
+                "rivetc.codegen: the following types form a dependency cycle:\n"
+                + dg_sorted.display_cycles()
             )
         types_sorted = []
         for node in dg_sorted.nodes:

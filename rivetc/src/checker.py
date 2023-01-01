@@ -694,10 +694,15 @@ class Checker:
                 if expr.has_var:
                     if lsym.kind == TypeKind.Enum:
                         if expr.right.sym.has_typ:
-                            expr.scope.update_type(expr.var.name, expr.right.sym.typ)
+                            expr.scope.update_type(
+                                expr.var.name, expr.right.sym.typ
+                            )
                             expr.var.typ = expr.right.sym.typ
                         else:
-                            report.error("variant `{expr.right}` has no value", expr.right.pos)
+                            report.error(
+                                "variant `{expr.right}` has no value",
+                                expr.right.pos
+                            )
                     else:
                         expr.scope.update_type(expr.var.name, rtyp)
                         expr.var.typ = rtyp
@@ -1268,8 +1273,9 @@ class Checker:
                                     f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                                 )
                 expr.left_typ = left_typ
-            if isinstance(expr.left_typ,
-                          type.Ptr) and expr.left_typ.nr_level() > 1 and not expr.is_indirect:
+            if isinstance(
+                expr.left_typ, type.Ptr
+            ) and expr.left_typ.nr_level() > 1 and not expr.is_indirect:
                 report.error(
                     "fields of an multi-level pointer cannot be accessed directly",
                     expr.pos
@@ -1668,8 +1674,7 @@ class Checker:
 
         if isinstance(expected, type.Result):
             return self.check_compatible_types(got, expected.typ)
-        elif isinstance(got, type.Optional
-                        ) and isinstance(expected, type.Ptr):
+        elif isinstance(got, type.Optional) and isinstance(expected, type.Ptr):
             return self.check_pointer(expected, got.typ)
         elif isinstance(got, type.Optional
                         ) and not isinstance(expected, type.Optional):

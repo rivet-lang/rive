@@ -622,7 +622,7 @@ class UnaryExpr:
         return self.__repr__()
 
 class BinaryExpr:
-    def __init__(self, left, op, right, pos, var=None, scope=None):
+    def __init__(self, left, op, right, pos, var = None, scope = None):
         self.left = left
         self.op = op
         self.right = right

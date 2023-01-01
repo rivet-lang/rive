@@ -583,7 +583,9 @@ class Parser:
             else_stmt = None
             if self.accept(Kind.KwElse):
                 else_stmt = self.parse_stmt()
-            return ast.WhileStmt(cond, continue_expr, stmt, else_stmt, is_inf, pos)
+            return ast.WhileStmt(
+                cond, continue_expr, stmt, else_stmt, is_inf, pos
+            )
         elif self.accept(Kind.KwFor):
             pos = self.prev_tok.pos
             self.open_scope()
@@ -692,10 +694,12 @@ class Parser:
                 else:
                     right = ast.TypeNode(self.parse_type(), pos)
                 if self.accept(Kind.KwAs):
-                    var = self.parse_var_decl(support_ref=False)
+                    var = self.parse_var_decl(support_ref = False)
                 else:
                     var = None
-                left = ast.BinaryExpr(left, op, right, left.pos, var, self.scope)
+                left = ast.BinaryExpr(
+                    left, op, right, left.pos, var, self.scope
+                )
             else:
                 break
         return left
@@ -1092,14 +1096,18 @@ class Parser:
                             pats.append(ast.TypeNode(self.parse_type(), pos))
                     else:
                         branch_expr = self.parse_expr()
-                        if self.accept(Kind.DotDot) or self.accept(Kind.Ellipsis):
+                        if self.accept(Kind.DotDot
+                                       ) or self.accept(Kind.Ellipsis):
                             if self.prev_tok.kind == Kind.DotDot:
                                 report.error(
                                     "switch only supports inclusive ranges, not exclusive",
                                     self.prev_tok.pos
                                 )
                                 report.help("use `...` instead of `..`")
-                            branch_expr = ast.RangeExpr(branch_expr, self.parse_expr(), True, branch_expr.pos)
+                            branch_expr = ast.RangeExpr(
+                                branch_expr, self.parse_expr(), True,
+                                branch_expr.pos
+                            )
                         pats.append(branch_expr)
                     if not self.accept(Kind.Comma):
                         break

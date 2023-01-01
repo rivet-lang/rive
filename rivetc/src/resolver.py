@@ -297,7 +297,10 @@ class Resolver:
             if expr.has_var:
                 try:
                     expr.scope.add(
-                        sym.Obj(False, expr.var.name, self.comp.void_t, sym.ObjLevel.Local)
+                        sym.Obj(
+                            False, expr.var.name, self.comp.void_t,
+                            sym.ObjLevel.Local
+                        )
                     )
                 except utils.CompilerError as e:
                     report.error(e.args[0], expr.var.pos)
