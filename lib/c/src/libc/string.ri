@@ -3,11 +3,11 @@
 // be found in the LICENSE file.
 
 extern (C) {
-    pub fn memchr(cx: *void, c: i32, n: usize) ?*mut void;
-    pub fn memcmp(cx: *void, ct: *void, n: usize) i32;
-    pub fn memcpy(dest: *mut void, src: *void, n: usize) ?*mut void;
-    pub fn memmove(dest: *mut void, src: *void, n: usize) ?*mut void;
-    pub fn memset(dest: *mut void, c: i32, n: usize) ?*mut void;
+    pub fn memchr(cx: anyptr, c: i32, n: usize) ?mut_anyptr;
+    pub fn memcmp(cx: anyptr, ct: anyptr, n: usize) i32;
+    pub fn memcpy(dest: mut_anyptr, src: anyptr, n: usize) ?mut_anyptr;
+    pub fn memmove(dest: mut_anyptr, src: anyptr, n: usize) ?mut_anyptr;
+    pub fn memset(dest: mut_anyptr, c: i32, n: usize) ?mut_anyptr;
 
     pub fn strerror(code: i32) ?*mut u8;
     pub fn strlen(cs: ?*u8) usize;

@@ -41,6 +41,9 @@ class Compiler:
         self.string_t = type.Type(self.universe[19])
         self.error_t = type.Type(self.universe[20])
 
+        self.anyptr_t = type.Ptr(self.void_t)
+        self.mut_anyptr_t = type.Ptr(self.void_t, True)
+
         self.prefs = prefs.Prefs(args)
         self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
 

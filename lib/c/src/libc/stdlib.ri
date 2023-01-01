@@ -24,10 +24,10 @@ extern (C) {
     pub fn strtoul(nptr: *u8, endptr: ?*u8, base_: i32) u64;
     pub fn strtoull(nptr: *u8, endptr: ?*u8, base_: i32) u64;
 
-    pub fn malloc(size: usize) ?*mut void;
-    pub fn calloc(nobj: usize, size: usize) ?*mut void;
-    pub fn realloc(p: ?*mut void, size: usize) ?*mut void;
-    pub fn free(p: *void);
+    pub fn malloc(size: usize) ?mut_anyptr;
+    pub fn calloc(nobj: usize, size: usize) ?mut_anyptr;
+    pub fn realloc(p: ?mut_anyptr, size: usize) ?mut_anyptr;
+    pub fn free(p: anyptr);
 
     pub fn getenv(name: *u8) ?*mut u8;
     pub fn setenv(name: *u8, value: *u8, replace: bool) i32;

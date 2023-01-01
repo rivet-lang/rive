@@ -12,8 +12,8 @@ extern (C) {
 
     pub fn isatty(fd: i32) i32;
 
-    pub fn write(fd: i32, buf: *void, count: usize) isize;
-    pub fn read(fildes: i32, buf: *mut void, nbyte: usize) isize;
+    pub fn write(fd: i32, buf: anyptr, count: usize) isize;
+    pub fn read(fildes: i32, buf: mut_anyptr, nbyte: usize) isize;
 
     pub fn rmdir(path: *u8) i32;
     pub fn chdir(path: *u8) i32;

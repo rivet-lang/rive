@@ -84,15 +84,15 @@ extern (C) {
     pub fn ferror(stream: *FILE) i32;
     pub fn fseek(stream: *mut FILE, offset: u64, whence: i32) i32;
     pub fn ftell(stream: *mut FILE) i64;
-    pub fn fread(ptr: *mut void, size: usize, nitems: usize, stream: *mut FILE) usize;
+    pub fn fread(ptr: mut_anyptr, size: usize, nitems: usize, stream: *mut FILE) usize;
     pub fn fputs(s: *u8, stream: *mut FILE) i32;
     pub fn fprintf(stream: *mut FILE, fmt: *u8, ...) i32;
-    pub fn fwrite(ptr: *void, size: usize, nobj: usize, stream: *mut FILE) usize;
+    pub fn fwrite(ptr: anyptr, size: usize, nobj: usize, stream: *mut FILE) usize;
     pub fn fflush(stream: *mut FILE) i32;
     pub fn fgets(s: *mut u8, n: usize, stream: *mut FILE) i32;
     pub fn fclose(stream: *mut FILE) i32;
     pub fn fileno(stream: *FILE) i32;
-    pub fn rewind(stream: *mut FILE) void;
+    pub fn rewind(stream: *mut FILE);
 
     pub fn printf(fmt: *u8, ...) i32;
     pub fn asprintf(strp: *?*u8, fmt: *u8, ...) i32;

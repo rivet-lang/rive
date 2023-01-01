@@ -14,7 +14,7 @@ extern (C) {
     fn _wyr8(p: *u8) u64;
     fn _wyr4(p: *u8) u64;
     fn _wyr3(p: *u8, k: usize) u64;
-    pub fn wyhash(key: *void, len: usize, seed: u64, secret: *u64) u64;
+    pub fn wyhash(key: anyptr, len: usize, seed: u64, secret: *u64) u64;
     pub fn wyhash64(a: u64, b: u64) u64;
     fn wyrand(seed: *u64) u64;
     fn wy2u01(r: u64) f64;

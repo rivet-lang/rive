@@ -119,7 +119,11 @@ class Ptr(TBase):
         return level
 
     def qualstr(self):
-        if self.is_mut:
+        if str(self.typ) == "void":
+            if self.is_mut:
+                return "mut_anyptr"
+            return "anyptr"
+        elif self.is_mut:
             return f"*mut {self.typ.qualstr()}"
         return f"*{self.typ.qualstr()}"
 
@@ -131,7 +135,11 @@ class Ptr(TBase):
         return self.typ == other.typ
 
     def __str__(self):
-        if self.is_mut:
+        if str(self.typ) == "void":
+            if self.is_mut:
+                return "mut_anyptr"
+            return "anyptr"
+        elif self.is_mut:
             return f"*mut {self.typ}"
         return f"*{self.typ}"
 

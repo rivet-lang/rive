@@ -20,7 +20,6 @@ class Parser:
 
         self.mod_name = ""
         self.mod_vis = sym.Vis.Priv
-        self.mod_name = ""
 
         self.file_path = ""
         self.file_dir = ""
@@ -1312,12 +1311,14 @@ class Parser:
                 return type.Type.unresolved(self.parse_selector_expr(expr))
             # normal type
             lit = expr.name
-            if lit == "void":
-                return self.comp.void_t
-            elif lit == "never":
+            if lit == "never":
                 if prev_tok_kind != Kind.Rparen and self.tok.kind != Kind.Lbrace:
                     report.error("invalid use of `never` type", pos)
                 return self.comp.never_t
+            elif lit == "anyptr":
+                return self.comp.anyptr_t
+            elif lit == "mut_anyptr":
+                return self.comp.mut_anyptr_t
             elif lit == "bool":
                 return self.comp.bool_t
             elif lit == "rune":
@@ -1349,10 +1350,11 @@ class Parser:
             elif lit == "string":
                 return self.comp.string_t
             # only available in `runtime`:
-            elif lit == "comptime_int":
-                return self.comp.comptime_int_t
-            elif lit == "comptime_float":
-                return self.comp.comptime_float_t
+            elif self.mod_name == "runtime":
+                if lit == "comptime_int":
+                    return self.comp.comptime_int_t
+                elif lit == "comptime_float":
+                    return self.comp.comptime_float_t
             return type.Type.unresolved(expr)
         else:
             report.error(f"expected type, found {self.tok}", pos)

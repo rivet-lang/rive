@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 class Vec {
-    mut ptr: *mut void;
+    mut ptr: mut_anyptr;
     elem_size: usize;
     mut len: usize;
     mut cap: usize;
@@ -20,7 +20,7 @@ class Vec {
     }
 
     #[unsafe]
-    fn from_array(arr: *mut void, elem_size: usize, len: usize) Self {
+    fn from_array(arr: mut_anyptr, elem_size: usize, len: usize) Self {
         let mut vec = Self(unsafe { internal_zeroed(len * elem_size) }, elem_size, len, len);
         unsafe {
             mem_copy(vec.ptr, arr, elem_size * len);
@@ -29,23 +29,23 @@ class Vec {
     }
 
     #[unsafe; inline]
-    fn from_array_no_alloc(arr: *mut void, elem_size: usize, len: usize) Self {
+    fn from_array_no_alloc(arr: mut_anyptr, elem_size: usize, len: usize) Self {
         return Self(unsafe { arr }, elem_size, len, len, is_ref: true);
     }
 
     #[unsafe; inline]
-    fn raw_get(self, idx: usize) *mut void {
+    fn raw_get(self, idx: usize) mut_anyptr {
         return unsafe { @ptr_add(@as(*mut u8, self.ptr), idx * self.elem_size) };
     }
 
-    fn get(self, idx: usize) *mut void {
+    fn get(self, idx: usize) mut_anyptr {
         if idx >= self.len {
             process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { @ptr_add(@as(*mut u8, self.ptr), idx * self.elem_size) };
     }
 
-    fn set(self, idx: usize, val: *void) {
+    fn set(self, idx: usize, val: anyptr) {
         if idx >= self.len {
             process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -56,7 +56,7 @@ class Vec {
         }
     }
 
-    fn push(mut self, val: *void) {
+    fn push(mut self, val: anyptr) {
         if self.len >= self.cap {
             self.reserve(self.len + 1);
         }
@@ -68,7 +68,7 @@ class Vec {
 
     /// Returns the last element of the vector, and removes it. If the
     /// vector is empty, this will panic.
-    fn pop(mut self) *void {
+    fn pop(mut self) anyptr {
         if self.len == 0 {
             process_panic("Vec.pop: vector is empty");
         }

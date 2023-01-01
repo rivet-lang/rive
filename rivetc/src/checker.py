@@ -1197,7 +1197,7 @@ class Checker:
                         )
                     elif left_typ.typ == self.comp.void_t:
                         report.error(
-                            "invalid indirect for `*void`", expr.field_pos
+                            "invalid indirect for `anyptr`", expr.field_pos
                         )
                         report.help(
                             "consider casting this to another pointer type, e.g. `*u8`"
@@ -1756,7 +1756,7 @@ class Checker:
         if expected.is_mut and not got.is_mut:
             return False
         if expected.typ == self.comp.void_t:
-            # *void == *T, is valid
+            # anyptr == *T, is valid
             return True
         return expected.typ == got.typ
 
