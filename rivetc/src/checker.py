@@ -1058,9 +1058,14 @@ class Checker:
             elif expr.name == "as":
                 old_expected_type = self.expected_type
                 self.expected_type = expr.typ
-                self.check_expr(expr.args[1])
+                expr_t = self.check_expr(expr.args[1])
                 self.expected_type = old_expected_type
                 expr.typ = expr.args[0].typ
+                if expr.typ == expr_t:
+                    report.warn(
+                        f"attempt to cast an expression that is already of type `{expr.typ}`",
+                        expr.pos
+                    )
             elif expr.name in ("addr_of", "addr_of_mut"):
                 if not self.inside_unsafe:
                     report.error(

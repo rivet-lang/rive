@@ -107,7 +107,7 @@ extend u32 : ToString {
             let mut d: u32 = 0;
 
             let mut index = max;
-            let buf = @as(*mut u8, internal_alloc(@as(usize, max + 1)));
+            let buf = @as(*mut u8, internal_alloc(max + 1));
             buf[index] = 0;
             index -= 1;
 

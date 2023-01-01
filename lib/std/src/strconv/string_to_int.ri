@@ -159,7 +159,7 @@ pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
         bit_size = INT_SIZE;
     }
 
-    let cutoff = @as(u64, 1) << @as(u32, bit_size - 1);
+    let cutoff = @as(u64, 1) << bit_size - 1;
     if !neg and un >= cutoff {
         return ValueOutOfRangeError("value out of range");
     }
