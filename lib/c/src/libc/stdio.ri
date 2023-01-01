@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "c" { * };
+import { * } from "c";
 
 pub const MAX_PATH_LEN: usize = 4096;
 pub const MAX_NAME_LEN: usize = 255;

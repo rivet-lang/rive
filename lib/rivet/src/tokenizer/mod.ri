@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 import "std/strings";
-import "std/process" { panic };
+import "std/process";
 
 import "../token";
 import "../prefs";
@@ -80,7 +80,7 @@ pub class Tokenizer {
         self.eofs += 1;
         if self.eofs > 50 {
             self.line -= 1;
-            panic("the end of file `{}` has been reached 50 times already".fmt(self.file));
+            process.panic("the end of file `{}` has been reached 50 times already".fmt(self.file));
         }
         if self.pos != self.text.len and self.eofs == 1 {
             self.inc_line_number();

@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "std/errors" {
+import {
     pub InvalidSyntaxError, pub InvalidBaseError, pub InvalidBitSizeError,
     pub ValueOutOfRangeError
-};
+} from "std/errors";
 
 const INT_SIZE: u32 = #if _x64_ 64 #else 32 #endif;
 

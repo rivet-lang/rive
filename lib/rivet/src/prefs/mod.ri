@@ -4,9 +4,9 @@
 
 import "std/fs";
 import "std/sys";
+import "std/console";
 import "std/process";
 import "std/fs/path";
-import "std/console" { eprintln };
 
 import "../ast";
 import "../token";
@@ -38,7 +38,7 @@ pub enum LinkMode as u8 {
 }
 
 fn print_help() void {
-    eprintln(utils.HELP);
+    console.eprintln(utils.HELP);
     process.exit(0);
 }
 
@@ -90,7 +90,7 @@ pub class Prefs {
                 // informative options
                 "-h", "--help" => print_help(),
                 "-V", "--version" => {
-                    eprintln(utils.VERSION);
+                    console.eprintln(utils.VERSION);
                     process.exit(0);
                 },
 

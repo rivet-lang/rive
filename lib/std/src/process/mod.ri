@@ -4,7 +4,7 @@
 
 import "c";
 import "c/libc";
-import "runtime" {
+import {
     self,
     pub process_id as id,
     pub process_panic as panic,
@@ -13,9 +13,9 @@ import "runtime" {
     pub process_executable as executable,
     pub process_set_cwd as set_cwd,
     pub process_get_cwd as get_cwd
-};
+} from "runtime";
 
-import "../strings" { Builder };
+import { Builder } from "../strings";
 
 pub let ARGS: [string] = unsafe { runtime.ARGS };
 

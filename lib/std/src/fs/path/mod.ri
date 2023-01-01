@@ -3,9 +3,7 @@
 // be found in the LICENSE file.
 
 import "c";
-import "c/libc" {
-    self, pub MAX_PATH_LEN
-};
+import { self, pub MAX_PATH_LEN } from "c/libc";
 import "runtime";
 
 import "../../mem";
@@ -220,13 +218,13 @@ pub fn resolve(paths: ...string) !string {
     };
 }
 
-/// Returns the relative path from `from` to `to`. If `from` and `to` each
+/// Returns the relative path from `from_` to `to`. If `from` and `to` each
 /// resolve to the same path (after calling `resolve` on each), a zero-length
 /// string is returned.
-pub fn relative(from: string, to: string) !string {
-    let resolved_from = resolve(from).!;
+pub fn relative(from_: string, to: string) !string {
+    let resolved_from = resolve(from_).!;
     let resolved_to = resolve(to).!;
-    let mut from_it = from.tokenize(SEPARATOR);
+    let mut from_it = from_.tokenize(SEPARATOR);
     let mut to_it = to.tokenize(SEPARATOR);
     while {
         let from_component = from_it.next() ?? return to_it.rest();

@@ -75,8 +75,9 @@ class Kind(Enum):
     KwExtern = auto_enum() # extern
     KwExport = auto_enum() # export
     KwFalse = auto_enum() # false
-    KwFor = auto_enum() # for
     KwFn = auto_enum() # fn
+    KwFor = auto_enum() # for
+    KwFrom = auto_enum() # fn
     KwIf = auto_enum() # if
     KwImport = auto_enum() # import
     KwIn = auto_enum() # in
@@ -221,8 +222,9 @@ TOKEN_STRINGS = {
     Kind.KwExtern: "extern",
     Kind.KwExport: "export",
     Kind.KwFalse: "false",
-    Kind.KwFor: "for",
     Kind.KwFn: "fn",
+    Kind.KwFor: "for",
+    Kind.KwFrom: "from",
     Kind.KwIf: "if",
     Kind.KwImport: "import",
     Kind.KwIn: "in",

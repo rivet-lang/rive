@@ -1,0 +1,34 @@
+name: Self-hosted compiler
+
+on:
+  push:
+    paths: ['lib/**.ri', 'rivetc/**.py', 'cmd/**.ri']
+    branches: [main]
+  pull_request:
+    paths: ['lib/**.ri', 'rivetc/**.py', 'cmd/**.ri']
+    types: [opened, synchronize]
+
+jobs:
+  ubuntu-clang:
+    runs-on: ubuntu-latest
+    env:
+      RIVET_CC_TEST: clang
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Compile self-hosted compiler
+        run: |
+          python3 rivetc --backend-compiler clang -o rivet cmd/
+          ./rivet --version
+
+  ubuntu-gcc:
+    runs-on: ubuntu-latest
+    env:
+      RIVET_CC_TEST: gcc
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Compile self-hosted compiler
+        run: |
+          python3 rivetc -o rivet cmd/
+          ./rivet --version

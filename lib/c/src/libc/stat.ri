@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "c" { * };
+import { * } from "c";
 
 #if _AMD64_
 // The `stat` definition used by the Linux kernel.

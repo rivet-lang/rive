@@ -184,13 +184,8 @@ class Parser:
         pos = self.tok.pos
         if self.accept(Kind.KwImport):
             import_list = []
-            path = self.tok.lit
-            self.expect(Kind.String)
-            alias = ""
             glob = False
-            if self.accept(Kind.KwAs):
-                alias = self.parse_name()
-            elif self.accept(Kind.Lbrace):
+            if self.accept(Kind.Lbrace):
                 while True:
                     is_pub = self.accept(Kind.KwPub)
                     info_pos = self.tok.pos
@@ -220,6 +215,12 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
                 self.expect(Kind.Rbrace)
+                self.expect(Kind.KwFrom)
+            path = self.tok.lit
+            self.expect(Kind.String)
+            alias = ""
+            if len(import_list) == 0 and self.accept(Kind.KwAs):
+                alias = self.parse_name()
             self.expect(Kind.Semicolon)
             return ast.ImportDecl(
                 attrs, vis, path, alias, glob, import_list, pos

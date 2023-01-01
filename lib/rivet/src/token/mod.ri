@@ -2,11 +2,11 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "std/traits" { ToString };
+import "std/traits";
 
 pub let NO_POS: Pos = Pos();
 
-pub struct Pos : ToString {
+pub struct Pos : traits.ToString {
     pub file: string;
     pub line: usize;
     pub col: usize;
@@ -22,7 +22,7 @@ pub struct Pos : ToString {
     }
 }
 
-pub struct Token : ToString {
+pub struct Token : traits.ToString {
     pub lit: string;
     pub kind: Kind;
     pub len: usize;
