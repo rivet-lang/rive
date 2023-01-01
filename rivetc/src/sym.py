@@ -99,7 +99,6 @@ class ABI(Enum):
 
 class Vis(Enum):
     Priv = auto_enum()
-    Prot = auto_enum() # Protected inside current class
     Pub = auto_enum() # Public outside current module
     Export = auto_enum() # Public outside current module and library/object file
 
@@ -107,9 +106,7 @@ class Vis(Enum):
         return self in (Vis.Export, Vis.Pub)
 
     def __repr__(self):
-        if self == Vis.Prot:
-            return "prot"
-        elif self == Vis.Pub:
+        if self == Vis.Pub:
             return "pub"
         elif self == Vis.Export:
             return "export"
@@ -562,13 +559,11 @@ class Type(Sym):
                 return f
         if self.kind == TypeKind.Class and self.info.base:
             if f := self.info.base.find_field(name):
-                if f.vis in (Vis.Pub, Vis.Prot):
-                    return f
+                return f
         elif self.kind == TypeKind.Struct:
             for base in self.info.bases:
                 if f := base.find_field(name):
-                    if f.vis in (Vis.Pub, Vis.Prot):
-                        return f
+                    return f
         return None
 
     def has_field(self, name):

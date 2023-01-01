@@ -1,5 +1,5 @@
 struct D {
-    prot m: u8 = 155;
+    m: u8 = 155;
 }
 
 struct E : D {

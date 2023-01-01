@@ -252,7 +252,7 @@ class Compiler:
                 new_inputs.append(input)
                 continue
             exts = basename_input[:-3].split('.')[1:]
-            should_compile = True
+            should_compile = False
             already_exts = []
             for ext in exts:
                 if ext in already_exts:

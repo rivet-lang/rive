@@ -31,7 +31,6 @@ pub enum ABI as u8 {
 
 pub enum Vis as u8 : traits.ToString {
     Priv,
-    Prot, // Protected inside current class
     Pub, // Public outside current module
     Export; // Public outside current module and library/object file
 
@@ -41,7 +40,6 @@ pub enum Vis as u8 : traits.ToString {
 
     pub fn to_string(&self) string {
         return switch self.* is {
-            .Prot => "prot",
             .Pub => "pub",
             .Export => "export",
             else => "" // private
@@ -296,16 +294,12 @@ pub class TypeSym : Sym {
         }
         if self.info is ClassInfo as class_info {
             if let f = class_info.base_sym.lookup_field(name) {
-                if f.vis in [.Pub, .Prot] {
-                    return f;
-                }
+                return f;
             }
         } else if self.info is StructInfo as struct_info {
             for b in struct_info.bases {
                 if let f = b.lookup_field(name) {
-                    if f.vis in [.Pub, .Prot] {
-                        return f;
-                    }
+                    return f;
                 }
             }
         }

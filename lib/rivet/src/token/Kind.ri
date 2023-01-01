@@ -75,8 +75,9 @@ pub enum Kind : traits.ToString {
     KwExtern, // extern
     KwExport, // export
     KwFalse, // false
-    KwFor, // for
     KwFn, // fn
+    KwFor, // for
+    KwFrom, // from
     KwIf, // if
     KwImport, // import
     KwIn, // in
@@ -88,7 +89,6 @@ pub enum Kind : traits.ToString {
     KwNotIs, // !is
     KwOr, // or
     KwPub, // pub
-    KwProt, // prot
     KwReturn, // return
     KwSelf, // self
     KwSelfTy, // Self
@@ -219,8 +219,9 @@ pub let Kind_Strings: [KindMap] = [
     KindMap(.KwExtern, "extern"),
     KindMap(.KwExport, "export"),
     KindMap(.KwFalse, "false"),
-    KindMap(.KwFor, "for"),
     KindMap(.KwFn, "fn"),
+    KindMap(.KwFor, "for"),
+    KindMap(.KwFrom, "from"),
     KindMap(.KwIf, "if"),
     KindMap(.KwImport, "import"),
     KindMap(.KwIn, "in"),
@@ -232,7 +233,6 @@ pub let Kind_Strings: [KindMap] = [
     KindMap(.KwNotIs, "!is"),
     KindMap(.KwOr, "or"),
     KindMap(.KwPub, "pub"),
-    KindMap(.KwProt, "prot"),
     KindMap(.KwReturn, "return"),
     KindMap(.KwSelf, "self"),
     KindMap(.KwSelfTy, "Self"),
