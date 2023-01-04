@@ -362,24 +362,6 @@ class Checker:
             elif isinstance(expr.sym, sym.Const):
                 expr.typ = expr.sym.typ
             elif isinstance(expr.sym, sym.Var):
-                if (
-                    expr.sym.is_mut or
-                    (expr.sym.is_extern and expr.sym.abi != sym.ABI.Rivet)
-                ) and not self.inside_unsafe:
-                    if expr.sym.is_extern:
-                        report.error(
-                            "use of external objects is unsafe and requires `unsafe` block",
-                            expr.pos
-                        )
-                    else:
-                        report.error(
-                            "use of mutable module variables is unsafe and requires `unsafe` block",
-                            expr.pos
-                        )
-                        report.note(
-                            "mutable module variables can be mutated by multiple threads: "
-                            "aliasing violations or data races will cause undefined behavior"
-                        )
                 expr.typ = expr.sym.typ
             else:
                 expr.typ = self.comp.void_t
@@ -1161,26 +1143,6 @@ class Checker:
                 elif isinstance(expr.field_sym, sym.Const):
                     expr.typ = expr.field_sym.typ
                 elif isinstance(expr.field_sym, sym.Var):
-                    if (
-                        expr.field_sym.is_mut or (
-                            expr.field_sym.is_extern
-                            and expr.field_sym.abi != sym.ABI.Rivet
-                        )
-                    ) and not self.inside_unsafe:
-                        if expr.field_sym.is_extern:
-                            report.error(
-                                "use of external objects is unsafe and requires `unsafe` block",
-                                expr.pos
-                            )
-                        else:
-                            report.error(
-                                "use of mutable module variables is unsafe and requires `unsafe` block",
-                                expr.pos
-                            )
-                            report.note(
-                                "mutable module variables can be mutated by multiple threads: "
-                                "aliasing violations or data races will cause undefined behavior"
-                            )
                     expr.typ = expr.field_sym.typ
                 else:
                     report.error(
