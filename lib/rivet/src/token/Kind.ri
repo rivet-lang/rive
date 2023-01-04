@@ -276,7 +276,6 @@ pub fn lookup(str: string) Kind {
         "!is" => .KwNotIs,
         "or" => .KwOr,
         "pub" => .KwPub,
-        "prot" => .KwProt,
         "return" => .KwReturn,
         "self" => .KwSelf,
         "Self" => .KwSelfTy,

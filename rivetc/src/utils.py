@@ -264,6 +264,7 @@ def smart_quote(str, raw: bool):
                 continue
             if next == BACKSLASH:
                 # escaped backslash - keep as is
+                current = 0
                 skip_next = True
                 result += DOUBLE_ESCAPE
                 continue
@@ -273,6 +274,7 @@ def smart_quote(str, raw: bool):
                     result += DOUBLE_ESCAPE
                     continue
                 if next in INVALID_ESCAPES:
+                    current = 0
                     skip_next = True
                     result += next
                     continue
@@ -280,6 +282,7 @@ def smart_quote(str, raw: bool):
                 skip_next = True
                 result += current
                 result += next
+                current = 0
                 continue
         if current == BACKSLASH_N:
             # keep newlines in string
@@ -293,13 +296,6 @@ def smart_quote(str, raw: bool):
             current = chr(0)
             skip_next = True
             continue
-        if not raw:
-            if current == BACKSLASH_R and next == BACKSLASH_N:
-                # Windows style new line \r\n
-                skip_next = True
-                result += BACKSLASH
-                result += "n"
-                continue
         result += current
     return result
 

@@ -11,6 +11,7 @@ pub import "std/math";
 pub import "std/mem";
 pub import "std/os";
 pub import "std/process";
+pub import "std/semver";
 pub import "std/strconv";
 pub import "std/strings";
 pub import "std/sys";
