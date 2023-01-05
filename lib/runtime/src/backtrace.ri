@@ -4,9 +4,9 @@
 
 #if !_RELEASE_ // skip backtrace in release mode
 
-import "c";
+#![c_compile("lib/runtime/thirdparty/libbacktrace/backtrace.c")]
 
-#![c_compile("lib/thirdparty/libbacktrace/backtrace.c")]
+import "c";
 
 struct backtrace_state;
 

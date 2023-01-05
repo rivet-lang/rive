@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-#![c_compile("lib/thirdparty/wyhash/wyhash.c")]
+#![c_compile("lib/c/thirdparty/wyhash/wyhash.c")]
 
 extern (C) {
     // the default secret parameters
