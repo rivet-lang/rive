@@ -9,7 +9,6 @@ pub import "std/errors";
 pub import "std/fs";
 pub import "std/math";
 pub import "std/mem";
-pub import "std/os";
 pub import "std/process";
 pub import "std/semver";
 pub import "std/strconv";
