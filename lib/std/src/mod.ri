@@ -4,6 +4,7 @@
 
 pub import "std/backtrace";
 pub import "std/console";
+pub import "std/dynlib";
 pub import "std/env";
 pub import "std/errors";
 pub import "std/fs";

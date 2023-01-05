@@ -280,7 +280,9 @@ class Codegen:
         if attrs == None:
             return
         for attr in attrs.attrs:
-            if attr.name == "c_compile":
+            if attr.name == "link_library":
+                self.comp.prefs.libraries_to_link.append(attr.args[0].expr.lit)
+            elif attr.name == "c_compile":
                 if not os.path.exists(mod_folder):
                     os.mkdir(mod_folder)
                 cfile = os.path.realpath(attr.args[0].expr.lit)

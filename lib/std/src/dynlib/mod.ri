@@ -1,0 +1,65 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "c/libc";
+
+#if _LINUX_
+#![link_library("dl")]
+#endif
+
+pub let SHARED_LIB_EXT: string = get_shared_library_extension();
+
+class SymbolNotFoundError : Error {}
+
+/// Returns a library name with the operating system specific extension for shared
+/// libraries.
+#[inline]
+pub fn library_name(libname: string) string {
+    return libname.concat(SHARED_LIB_EXT);
+}
+
+pub fn load(path: string, global_symbols: bool = false) !Library {
+    let flags = if global_symbols { libc.RTLD_NOW | libc.RTLD_GLOBAL } else { libc.RTLD_NOW };
+    if let ptr = unsafe { libc.dlopen(path.ptr, flags) } {
+        return Library(path, ptr);
+    }
+    return Error("cannot load '{}': {}".fmt(path, dlerror()));
+}
+
+struct Library {
+    lib: string;
+    ptr: mut_anyptr;
+
+    pub fn symbol_address(self, symbol: string) !anyptr {
+        if let ptr = unsafe { libc.dlsym(self.ptr, symbol.ptr) } {
+            return ptr;
+        }
+        return SymbolNotFoundError(
+            "cannot found symbol '{}' in library '{}': {}".fmt(symbol, self.lib, dlerror())
+        );
+    }
+
+    #[inline]
+    pub fn unload(mut self) bool {
+        return @as(bool, unsafe { libc.dlclose(self.ptr) });
+    }
+}
+
+fn dlerror() string {
+    if let err = unsafe { libc.dlerror() } {
+        return unsafe { string.from_raw(err) }.clone();
+    }
+    return "";
+}
+
+#[inline]
+fn get_shared_library_extension() string {
+#if _LINUX_
+    return ".so";
+#else_if _WINDOWS_
+    return ".dll";
+#else
+    return ".dylib";
+#endif
+}

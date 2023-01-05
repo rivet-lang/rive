@@ -1,0 +1,15 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+pub const RTLD_LAZY: i32 = 0x001;
+pub const RTLD_NOW: i32 = 0x002;
+pub const RTLD_BINDING_MASK: i32 = 0x3;
+pub const RTLD_GLOBAL: i32 = 0x100;
+
+extern (C) {
+    pub fn dlopen(__file: *u8, __mode: i32) ?mut_anyptr;
+    pub fn dlclose(__handle: anyptr) i32;
+    pub fn dlsym(__handle: anyptr, __name: *u8) ?anyptr;
+    pub fn dlerror() ?*u8;
+}
