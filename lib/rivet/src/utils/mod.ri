@@ -76,7 +76,7 @@ class SourceCache {
 pub let mut source_cache: SourceCache = SourceCache();
 
 pub fn read_file(path: string) !string {
-   if let res = unsafe { source_cache.find(path) } {
+   if let res = source_cache.find(path) {
       return res;
    }
    let content = skip_bom(fs.read_file(path).!);

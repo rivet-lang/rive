@@ -16,9 +16,7 @@ pub class Compiler {
 
     pub fn new(args: [string], is_test: bool, run_output: bool) Self {
         let prefs_ = prefs.Prefs.new(args, is_test, run_output);
-        unsafe {
-            report.reports.prefs = prefs_;
-        }
+        report.reports.prefs = prefs_;
 
         let mut tokenizer_ = tokenizer.Tokenizer.from_file("main.ri", prefs_);
         console.println(">>> tokenized text, token list:");

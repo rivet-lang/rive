@@ -757,7 +757,7 @@ pub struct StringFormatter {
                         if b2 == b':' {
                             self.i += 1;
                         }
-                        let (has_fwidth, fwidth) = self.fwidth();
+                        let (has_fwidth, mut fwidth) = self.fwidth();
                         let arg_idx = args_idx;
                         args_idx += 1;
                         if arg_idx >= args.len {
@@ -767,12 +767,19 @@ pub struct StringFormatter {
                             );
                         }
                         let value = args[arg_idx].to_string();
-                        if has_fwidth and fwidth >= 0 {
-                            self.res.write_string(" ".repeat(@as(usize, fwidth) - value.len));
+                        if has_fwidth and fwidth > 0 {
+                            let value_len = @as(isize, value.len);
+                            if value_len <= fwidth {
+                                self.res.write_string(" ".repeat(@as(usize, value_len - fwidth)));
+                            }
                         }
                         self.res.write_string(value);
                         if has_fwidth and fwidth < 0 {
-                            self.res.write_string(" ".repeat(@as(usize, -fwidth) - value.len));
+                            fwidth = -fwidth;
+                            let value_len = @as(isize, value.len);
+                            if value_len <= fwidth {
+                                self.res.write_string(" ".repeat(@as(usize, value_len - fwidth)));
+                            }
                         }
                         if !has_fwidth {
                             self.i += 1;
