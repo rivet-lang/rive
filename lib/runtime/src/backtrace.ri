@@ -4,7 +4,7 @@
 
 #if !_RELEASE_ // skip backtrace in release mode
 
-#![c_compile("lib/runtime/thirdparty/libbacktrace/backtrace.c")]
+#![compile_c_source("lib/runtime/thirdparty/libbacktrace/backtrace.c")]
 
 import "c";
 

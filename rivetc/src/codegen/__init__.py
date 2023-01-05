@@ -282,7 +282,7 @@ class Codegen:
         for attr in attrs.attrs:
             if attr.name == "link_library":
                 self.comp.prefs.libraries_to_link.append(attr.args[0].expr.lit)
-            elif attr.name == "c_compile":
+            elif attr.name == "compile_c_source":
                 if not os.path.exists(mod_folder):
                     os.mkdir(mod_folder)
                 cfile = os.path.realpath(attr.args[0].expr.lit)
@@ -291,10 +291,10 @@ class Codegen:
                     f"{os.path.basename(cfile)}.{self.comp.prefs.get_obj_postfix()}.o"
                 )
                 self.comp.prefs.objects_to_link.append(objfile)
-                msg = f"c_compile: compiling object for C file `{cfile}`..."
+                msg = f"compile_c_source: compiling object for C file `{cfile}`..."
                 if os.path.exists(objfile):
                     if os.path.getmtime(objfile) < os.path.getmtime(cfile):
-                        msg = f"c_compile: {objfile} is older than {cfile}, rebuilding..."
+                        msg = f"compile_c_source: {objfile} is older than {cfile}, rebuilding..."
                     else:
                         continue
                 self.comp.vlog(msg)
