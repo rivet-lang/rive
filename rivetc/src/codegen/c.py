@@ -65,15 +65,13 @@ class CGen:
             args.append("-g3")
         if self.comp.prefs.target_os == prefs.OS.Windows:
             args.append(f"-municode")
-
-        args.append(c_file)
-
         for l in self.comp.prefs.library_path:
             args.append(f"-L{l}")
-        for l in self.comp.prefs.libraries_to_link:
-            args.append(f"-l{l}")
+        args.append(c_file)
         for obj in self.comp.prefs.objects_to_link:
             args.append(obj)
+        for l in self.comp.prefs.libraries_to_link:
+            args.append(f"-l{l}")
         self.comp.vlog(f"C compiler arguments: {' '.join(args)}")
 
         res = utils.execute(*args)
