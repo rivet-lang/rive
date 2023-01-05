@@ -180,9 +180,12 @@ class Checker:
                 decl.defer_stmts = self.defer_stmts
                 self.defer_stmts = []
             elif isinstance(decl, ast.TestDecl):
+                old_cur_fn = self.cur_fn
+                self.cur_fn = None
                 self.inside_test = True
                 self.check_stmts(decl.stmts)
                 self.inside_test = False
+                self.cur_fn = old_cur_fn
             self.sym = old_sym
 
     def check_stmts(self, stmts):
@@ -991,7 +994,7 @@ class Checker:
             if expr.has_err_handler():
                 if isinstance(expr.typ, type.Result):
                     if expr.err_handler.is_propagate:
-                        if not (
+                        if self.cur_fn and not (
                             self.cur_fn.is_main or self.inside_test
                             or isinstance(self.cur_fn.ret_typ, type.Result)
                         ):

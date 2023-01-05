@@ -8,7 +8,7 @@ let mut runtime_started: bool = false;
 
 fn segfault_handler(_: i32) {
     console_eprintln(
-        if unsafe { runtime_started } {
+        if runtime_started {
             "panic: segmentation fault detected"
         } else {
             "panic: segmentation fault detected while starting the runtime"

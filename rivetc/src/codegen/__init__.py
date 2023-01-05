@@ -642,6 +642,7 @@ class Codegen:
     def gen_expr_with_cast(self, expected_typ_, expr, custom_tmp = None):
         expected_typ = self.ir_type(expected_typ_)
         res_expr = self.gen_expr(expr, custom_tmp)
+        assert res_expr != None
 
         if isinstance(res_expr, ir.IntLit) and self.comp.is_int(expected_typ_):
             res_expr.typ = expected_typ
@@ -943,7 +944,7 @@ class Codegen:
                     right = self.gen_expr(expr.right)
                     for i, l in enumerate(expr.left.exprs):
                         left, require_store_ptr = self.gen_left_assign(
-                            l, expr.right
+                            l, expr.right, expr.op
                         )
                         if left == None:
                             continue
@@ -963,12 +964,12 @@ class Codegen:
                                 l, expr.op, expr.right.exprs[i], expr.pos
                             )
                         )
-                return
+                return ir.Skip()
             left, require_store_ptr = self.gen_left_assign(
-                expr.left, expr.right
+                expr.left, expr.right, expr.op
             )
             if left == None:
-                return
+                return ir.Skip()
             expr_left_typ_ir = self.ir_type(expr.left.typ)
             expr_left_sym = expr.left.typ.symbol()
             if expr.op == Kind.Assign:
@@ -2214,7 +2215,7 @@ class Codegen:
             raise Exception(expr.__class__, expr.pos)
         return ir.Skip()
 
-    def gen_left_assign(self, expr, right):
+    def gen_left_assign(self, expr, right, assign_op):
         left = None
         require_store_ptr = False
         if isinstance(expr, ast.Ident):
@@ -2236,12 +2237,12 @@ class Codegen:
             left_ir_typ = self.ir_type(expr.left_typ)
             left_sym = expr.left_typ.symbol()
             sym_is_class = left_sym.is_boxed()
-            if left_sym.kind == TypeKind.Vec and expr.op == Kind.Assign:
+            if left_sym.kind == TypeKind.Vec and assign_op == Kind.Assign:
                 rec = self.gen_expr_with_cast(expr.left_typ, expr.left)
                 if not isinstance(left_ir_typ, ir.Pointer):
                     rec = ir.Inst(ir.InstKind.GetRef, [rec])
-                expr_right = self.gen_expr_with_cast(expr.right.typ, expr.right)
-                val_sym = expr.right.typ.symbol()
+                expr_right = self.gen_expr_with_cast(right.typ, right)
+                val_sym = right.typ.symbol()
                 self.cur_fn.add_call(
                     "_R7runtime3Vec3setM", [
                         rec,

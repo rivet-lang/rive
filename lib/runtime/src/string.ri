@@ -194,6 +194,18 @@ pub class string : ToString, Hasher {
         return nil;
     }
 
+    /// Returns the position of any of the characters in the input string if found.
+    pub fn index_of_any(self, chars: string) ?usize {
+        for i, b in self.as_bytes() {
+            for c in chars.as_bytes() {
+                if b == c {
+                    return i;
+                }
+            }
+        }
+        return nil;
+    }
+
     /// Linear search for the last index of `byte` inside a string.
     pub fn last_index_of_byte(self, byte: u8) ?usize {
         let mut i: usize = self.len;

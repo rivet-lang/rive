@@ -1,0 +1,227 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+let COMPARATOR_SEP: string = " ";
+let COMPARATOR_SET_SEP: string = " || ";
+let HYPHEN_RANGE_SEP: string = " - ";
+let X_RANGE_SYMBOLS: string = "Xx*";
+
+enum Operator as u8 {
+    Gt,
+    Lt,
+    Ge,
+    Le,
+    Eq
+}
+
+class InvalidComparatorFormatError : Error { }
+
+struct Comparator {
+    ver: Version;
+    op: Operator;
+
+    fn parse(input: string) ?Comparator {
+        let mut op = Operator.Eq;
+        let raw_version: string = switch {
+            input.starts_with(">=") => {
+                op = .Ge;
+                input[2..]
+            },
+            input.starts_with("<=") => {
+                op = .Le;
+                input[2..]
+            },
+            input.starts_with(">") => {
+                op = .Gt;
+                input[1..]
+            },
+            input.starts_with("<") => {
+                op = .Lt;
+                input[1..]
+            },
+            input.starts_with("=") => input[1..],
+            else => input
+        };
+        return Comparator(coerce(raw_version) catch return nil, op);
+    }
+
+    #[inline]
+    fn satisfies(&self, ver: Version) bool {
+        return switch self.op is {
+            .Gt => ver > self.ver,
+            .Lt => ver < self.ver,
+            .Ge => ver >= self.ver,
+            .Le => ver <= self.ver,
+            .Eq => ver == self.ver,
+            else => false
+        };
+    }
+}
+
+struct ComparatorSet {
+    comparators: [Comparator];
+
+    fn parse(input: string) !ComparatorSet {
+        let raw_comparators = input.split(COMPARATOR_SEP);
+        if raw_comparators.len > 2 {
+            return InvalidComparatorFormatError(
+                "invalid format of comparator set for input '{}'".fmt(input)
+            );
+        }
+        let mut comparators = @vec(Comparator);
+        for raw_comp in raw_comparators {
+            comparators.push(
+                Comparator.parse(raw_comp) ?? return InvalidComparatorFormatError(
+                    "invalid comparator '{}' in input '{}'".fmt(raw_comp, input)
+                )
+            );
+        }
+        return ComparatorSet(comparators);
+    }
+
+    #[inline]
+    fn expand(input: string) ?ComparatorSet {
+        return switch input[0] {
+            b'~' => expand_tilda(input[1..]),
+            b'^' => expand_tilda(input[1..]),
+            else => {
+                if input.contains(HYPHEN_RANGE_SEP) {
+                    expand_hyphen(input)
+                } else {
+                    Range.expand_x(input)
+                }
+            }
+        };
+    }
+
+    fn satisfies(&self, ver: Version) bool {
+        for comp in self.comparators {
+            if !comp.satisfies(ver) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+struct Range {
+    comparator_sets: [ComparatorSet];
+
+    fn parse(input: string) ?Range {
+        let raw_comparator_sets = input.split(COMPARATOR_SET_SEP);
+        let mut comparator_sets = @vec(ComparatorSet);
+        for raw_comp_set in raw_comparator_sets {
+            if can_expand(raw_comp_set) {
+                comparator_sets.push(ComparatorSet.expand(raw_comp_set) ?? return nil);
+            } else {
+                comparator_sets.push(ComparatorSet.parse(raw_comp_set) catch return nil);
+            }
+        }
+        return Range(comparator_sets);
+    }
+
+    fn parse_x(input: string) ?Version {
+        let mut raw_ver = RawVersion.parse(input).complete();
+        for typ in VERSIONS {
+            if raw_ver.raw_ints[typ].index_of_any(X_RANGE_SYMBOLS) is nil {
+                continue;
+            }
+            switch typ {
+                VER_MAJOR => {
+                    raw_ver.raw_ints[VER_MAJOR] = "0";
+                    raw_ver.raw_ints[VER_MINOR] = "0";
+                    raw_ver.raw_ints[VER_PATCH] = "0";
+                },
+                VER_MINOR => {
+                    raw_ver.raw_ints[VER_MINOR] = "0";
+                    raw_ver.raw_ints[VER_PATCH] = "0";
+                },
+                VER_PATCH => raw_ver.raw_ints[VER_PATCH] = "0",
+                else => { }
+            }
+        }
+        if raw_ver.is_valid() {
+            return raw_ver.to_version();
+        }
+        return nil;
+    }
+
+    fn expand_x(raw_range: string) ?ComparatorSet {
+        let min_ver = Range.parse_x(raw_range) ?? return nil;
+        if min_ver.major == 0 {
+            return ComparatorSet([Comparator(min_ver, .Ge)]);
+        }
+        let mut max_ver = min_ver;
+        max_ver = if min_ver.minor == 0 {
+            min_ver.increment(.Major)
+        } else {
+            min_ver.increment(.Minor)
+        };
+        return make_comparator_set_ge_lt(min_ver, max_ver);
+    }
+
+    fn satisfies(&self, ver: Version) bool {
+        let mut final_result = false;
+        for set in self.comparator_sets {
+            final_result = final_result or set.satisfies(ver);
+        }
+        return final_result;
+    }
+}
+
+fn can_expand(input: string) bool {
+    let input0 = input[0];
+    return input0 == b'~' or input0 == b'^' or input.contains(HYPHEN_RANGE_SEP)
+        or input.index_of_any(X_RANGE_SYMBOLS) !is nil;
+}
+
+fn expand_tilda(raw_version: string) ?ComparatorSet {
+    let min_ver = coerce(raw_version) catch return nil;
+    let mut max_ver = min_ver;
+    max_ver = if min_ver.minor == 0 and min_ver.patch == 0 {
+        min_ver.increment(.Major)
+    } else {
+        min_ver.increment(.Minor)
+    };
+    return make_comparator_set_ge_lt(min_ver, max_ver);
+}
+
+fn expand_caret(raw_version: string) ?ComparatorSet {
+    let min_ver = coerce(raw_version) catch return nil;
+    let mut max_ver = min_ver;
+    max_ver = if min_ver.major == 0 {
+        min_ver.increment(.Minor)
+    } else {
+        min_ver.increment(.Major)
+    };
+    return make_comparator_set_ge_lt(min_ver, max_ver);
+}
+
+fn expand_hyphen(raw_range: string) ?ComparatorSet {
+    let raw_versions = raw_range.split(HYPHEN_RANGE_SEP);
+    if raw_versions.len != 2 {
+        return nil;
+    }
+    let min_ver = coerce(raw_versions[0]) catch return nil;
+    let raw_max_ver = RawVersion.parse(raw_versions[1]);
+    if raw_max_ver.is_missing(VER_MAJOR) {
+        return nil;
+    }
+    let mut max_ver = raw_max_ver.coerce() catch return nil;
+    if raw_max_ver.is_missing(VER_MINOR) {
+        max_ver = max_ver.increment(.Minor);
+        return make_comparator_set_ge_lt(min_ver, max_ver);
+    }
+    return make_comparator_set_ge_le(min_ver, max_ver);
+}
+
+#[inline]
+fn make_comparator_set_ge_lt(min: Version, max: Version) ComparatorSet {
+    return ComparatorSet([Comparator(min, .Ge), Comparator(max, .Lt)]);
+}
+
+#[inline]
+fn make_comparator_set_ge_le(min: Version, max: Version) ComparatorSet {
+    return ComparatorSet([Comparator(min, .Ge), Comparator(max, .Le)]);
+}

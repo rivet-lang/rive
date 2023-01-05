@@ -1,0 +1,163 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+/// Represents the different types of version increments.
+pub enum Increment as u8 {
+	Major,
+	Minor,
+	Patch
+}
+
+pub class EmptyInputError : Error {
+    #[override; inline]
+    pub fn to_string(self) string {
+        return "empty input";
+    }
+}
+
+pub class InvalidVersionFormatError : Error {
+    input: string;
+
+    #[override; inline]
+    pub fn to_string(self) string {
+        return "invalid version format for input '{}'".fmt(self.input);
+    }
+}
+
+/// Represents a semantic version in semver format.
+pub class Version {
+    pub major: u64;
+    pub minor: u64;
+    pub patch: u64;
+    pub prerelease: string;
+    pub metadata: string;
+
+    /// Returns a `Version` structure parsed from `input` `string`.
+    pub fn from_string(input: string) !Self {
+        if input.is_empty() {
+            return EmptyInputError();
+        }
+        let raw_version = RawVersion.parse(input);
+        if let validated = raw_version.validate() {
+            return validated;
+        }
+        return InvalidVersionFormatError(input: input);
+    }
+
+    /// Returns a `Version` structure with given `major`, `minor` and `patch` versions.
+    #[inline]
+    pub fn build(major: u64, minor: u64, patch: u64) Self {
+        // TODO: check if versions are greater than zero.
+        return Version(major, minor, patch, "", "");
+    }
+
+    /// Returns a `Version` structure with incremented values.
+    #[inline]
+    pub fn increment(self, typ: Increment) Self {
+        let mut major = self.major;
+        let mut minor = self.minor;
+        let mut patch = self.patch;
+        switch typ is {
+            .Major => {
+                major += 1;
+                minor = 0;
+                patch = 0;
+            },
+            .Minor => {
+                minor += 1;
+                patch = 0;
+            },
+            .Patch => {
+                patch += 1;
+            }
+        }
+        return Version(major, minor, patch, self.prerelease, self.metadata);
+    }
+
+    /// Satisfies returns `true` if the `input` expression can be validated to `true`
+    /// when run against this `Version`.
+    #[inline]
+    pub fn satisfies(self, input: string) bool {
+        return if let range = Range.parse(input) {
+            range.satisfies(self)
+        } else {
+            false
+        };
+    }
+
+    #[inline]
+    pub fn ==(self, v2: Self) bool {
+        return self.major == v2.major and self.minor == v2.minor and self.patch == v2.patch
+            and self.prerelease == v2.prerelease;
+    }
+
+    #[inline]
+    pub fn !=(self, v2: Self) bool {
+        return !(self == v2);
+    }
+
+    pub fn >(self, v2: Self) bool {
+        if self.major < v2.major {
+            return false;
+        } else if self.major > v2.major {
+            return true;
+        } else if self.minor < v2.minor {
+            return false;
+        } else if self.minor > v2.minor {
+            return true;
+        }
+        return self.patch > v2.patch;
+    }
+
+    pub fn <(self, v2: Self) bool {
+        if self.major > v2.major {
+            return false;
+        } else if self.major < v2.major {
+            return true;
+        } else if self.minor > v2.minor {
+            return false;
+        } else if self.minor < v2.minor {
+            return true;
+        }
+        return self.patch < v2.patch;
+    }
+
+    #[inline]
+    pub fn >=(self, v2: Self) bool {
+        return self == v2 or self > v2;
+    }
+
+    #[inline]
+    pub fn <=(self, v2: Self) bool {
+        return self == v2 or self < v2;
+    }
+
+    pub fn to_string(self) string {
+        let common_string = "{}.{}.{}".fmt(self.major, self.minor, self.patch);
+        let prerelease_string = if self.prerelease.is_empty() { "" } else {
+            "-".concat(self.prerelease)
+        };
+        let metadata_string = if self.metadata.is_empty() { "" } else {
+            "+".concat(self.metadata)
+        };
+        return common_string.concat(prerelease_string, metadata_string);
+    }
+}
+
+/// Converts the `input` version to a `Version` struct.
+/// coerce will strip any contents *after* the parsed version string.
+#[inline]
+pub fn coerce(input: string) !Version {
+    if let version = RawVersion.parse(input).coerce() {
+        return version;
+    }
+    return Error("invalid version for input '{}'".fmt(input));
+}
+
+/// Returns `true` if the `input` `string` can be converted to a semantic `Version`
+/// struct.
+#[inline]
+pub fn is_valid(input: string) bool {
+	return RawVersion.parse(input).is_valid();
+}

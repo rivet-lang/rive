@@ -1,0 +1,21 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+fn is_valid_string(input: string) bool {
+    for c in input.as_bytes() {
+        if !(c.is_letter() or c.is_digit() or c == b'.' or c == b'-') {
+            return false;
+        }
+    }
+    return true;
+}
+
+fn is_valid_number(input: string) bool {
+    for c in input.as_bytes() {
+        if !c.is_digit() {
+            return false;
+        }
+    }
+    return true;
+}
