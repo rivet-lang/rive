@@ -182,6 +182,9 @@ class Parser:
             if self.accept(Kind.Lbrace):
                 while True:
                     is_pub = self.accept(Kind.KwPub)
+                    if is_pub:
+                        report.warn("deprecated", self.prev_tok.pos)
+                    is_pub = self.accept(Kind.KwExport)
                     info_pos = self.tok.pos
                     if self.accept(Kind.KwSelf):
                         name = "self"

@@ -2,11 +2,11 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "c/libc";
-
 #if _LINUX_
 #![link_library("dl")]
 #endif
+
+import "c/libc";
 
 pub let SHARED_LIB_EXT: string = get_shared_library_extension();
 

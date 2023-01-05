@@ -2,4 +2,4 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import { pub StringBuilder as Builder } from "runtime";
+import { export StringBuilder as Builder } from "runtime";

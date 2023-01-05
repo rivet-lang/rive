@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 import "c/libc";
-import { pub ErrnoError, pub last_errno_error } from "c";
+import { export ErrnoError, export last_errno_error } from "c";
 
 #[inline]
 fn error_panic(err: Error) {

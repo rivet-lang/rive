@@ -2,4 +2,4 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import { pub bt_print as print } from "runtime";
+import { export bt_print as print } from "runtime";

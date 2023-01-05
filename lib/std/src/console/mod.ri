@@ -3,9 +3,9 @@
 // be found in the LICENSE file.
 
 import {
-    pub console_print as print,
-    pub console_println as println,
-    pub console_eprint as eprint,
-    pub console_eprintln as eprintln,
-    pub console_is_atty as is_atty
+    export console_print as print,
+    export console_println as println,
+    export console_eprint as eprint,
+    export console_eprintln as eprintln,
+    export console_is_atty as is_atty
 } from "runtime";

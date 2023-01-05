@@ -2,7 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import { pub OutOfMemoryError, pub RuneFromU32Error, pub ErrnoError } from "runtime";
+import { export ErrnoError } from "c";
+import { export OutOfMemoryError, export RuneFromU32Error } from "runtime";
 
 pub class InvalidSyntaxError : Error { }
 

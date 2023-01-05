@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 import "c";
-import { self, pub MAX_PATH_LEN } from "c/libc";
+import { self, export MAX_PATH_LEN } from "c/libc";
 import "runtime";
 
 import "../../mem";

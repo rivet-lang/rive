@@ -3,13 +3,13 @@
 // be found in the LICENSE file.
 
 import {
-    pub mem_alloc as alloc,
-    pub mem_zeroed as zeroed,
-    pub mem_resize as resize,
-    pub mem_set as set,
-    pub mem_copy as copy,
-    pub mem_move as move,
-    pub mem_dup as dup,
-    pub mem_cmp as cmp,
-    pub mem_dealloc as dealloc
+    export mem_alloc as alloc,
+    export mem_zeroed as zeroed,
+    export mem_resize as resize,
+    export mem_set as set,
+    export mem_copy as copy,
+    export mem_move as move,
+    export mem_dup as dup,
+    export mem_cmp as cmp,
+    export mem_dealloc as dealloc
 } from "runtime";

@@ -6,13 +6,13 @@ import "c";
 import "c/libc";
 import {
     self,
-    pub process_id as id,
-    pub process_panic as panic,
-    pub process_abort as abort,
-    pub process_exit as exit,
-    pub process_executable as executable,
-    pub process_set_cwd as set_cwd,
-    pub process_get_cwd as get_cwd
+    export process_id as id,
+    export process_panic as panic,
+    export process_abort as abort,
+    export process_exit as exit,
+    export process_executable as executable,
+    export process_set_cwd as set_cwd,
+    export process_get_cwd as get_cwd
 } from "runtime";
 
 import { Builder } from "../strings";
