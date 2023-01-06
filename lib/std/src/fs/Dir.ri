@@ -5,7 +5,19 @@
 import "c";
 import "c/libc";
 
+import "./path";
+
 pub struct Dir {
+    pub fn create(path_: string, mode: u32 = 511 /* 0o777 */) ! {
+        if path_ == "." {
+            return;
+        }
+        let rpath = path.resolve(path_).!;
+        if unsafe { libc.mkdir(rpath.ptr, mode) } == -1 {
+            return c.last_errno_error();
+        }
+    }
+
     pub fn remove(dir: string) ! {
         if unsafe { libc.rmdir(dir.ptr) == -1 } {
             return c.last_errno_error();

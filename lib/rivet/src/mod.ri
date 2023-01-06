@@ -2,16 +2,22 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import "std/traits";
+import "std/env";
 import "std/fs";
 import "std/fs/path";
 import "std/console";
-import "std/traits";
+import "std/process";
 
 import "./ast";
 import "./utils";
 import "./prefs";
 import "./report";
 import "./tokenizer";
+
+// TODO(StunxFS): use `.!`, fix `.!` in let decls.
+let RIVET_DIR: string = path.join(env.HOME_DIR, ".rivet-lang") catch "";
+let RIVETC_DIR: string = path.dirname(process.executable() catch "") ?? ".";
 
 pub class Compiler {
     pub mut table: ast.Table;
@@ -22,18 +28,27 @@ pub class Compiler {
         let prefs_ = prefs.Prefs.new(args, is_test, run_output).!;
         report.reports.prefs = prefs_;
         let mut compiler = Self(table: ast.Table.new(prefs_), prefs: prefs_);
-        compiler.load_root_module();
+        compiler.build_rivet_directory().!;
+        compiler.load_root_module().!;
         return compiler;
     }
 
-    pub fn load_root_module(mut self) {
+    fn build_rivet_directory(self) ! {
+        if !path.is_directory(RIVET_DIR) {
+            fs.Dir.create(RIVET_DIR).!;
+            fs.Dir.create(path.join(RIVET_DIR, "obj").!).!;
+            fs.Dir.create(path.join(RIVET_DIR, "lib").!).!;
+        }
+    }
+
+    fn load_root_module(mut self) ! {
         let files = if path.is_directory(self.prefs.input) {
             let mut filtered_files = self.table.filter_files(
-                fs.Dir.walk(self.prefs.input) catch []
+                fs.Dir.walk(self.prefs.input).!
             );
-            let src_dir = path.join(self.prefs.input, "src") catch "";
+            let src_dir = path.join(self.prefs.input, "src").!;
             if path.is_directory(src_dir) { // support `src/` directory
-                for file in self.table.filter_files(fs.Dir.walk(src_dir) catch []) {
+                for file in self.table.filter_files(fs.Dir.walk(src_dir).!) {
                     filtered_files.push(file);
                 }
             }
