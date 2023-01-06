@@ -199,7 +199,7 @@ pub class Prefs {
         }
 
         if prefs.is_test {
-            prefs.mod_output = "_tests_runner_";
+            prefs.mod_output = "_rivet_tests_runner_";
         } else if prefs.mod_output.is_empty() {
             prefs.mod_output = prefs.mod_name;
         }
