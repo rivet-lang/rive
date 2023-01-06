@@ -19,14 +19,14 @@ pub fn errno() i32 {
     };
 }
 
-pub fn strerr(code: i32 = errno()) string {
+pub fn last_errno_msg(code: i32 = errno()) string {
     unsafe {
-        let s = libc.strerror(code);
+        let s = libc.last_errno_error(code);
         return if s is nil { "" } else { string.from_raw(s) };
     }
 }
 
 #[inline]
 pub fn last_errno_error() ErrnoError {
-    return ErrnoError(strerr(), errno());
+    return ErrnoError(last_errno_msg(), errno());
 }

@@ -16,7 +16,7 @@ import "./report";
 import "./tokenizer";
 
 // TODO(StunxFS): use `.!`, fix `.!` in let decls.
-let RIVET_DIR: string = path.join(env.HOME_DIR, ".rivet-lang") catch "";
+let RIVET_DIR: string = path.join(env.HOME_DIR, ".rivet-lang") catch ".";
 let RIVETC_DIR: string = path.dirname(process.executable() catch "") ?? ".";
 
 pub class Compiler {
