@@ -75,4 +75,23 @@ pub class Compiler {
             console.println(msg, args);
         }
     }
+
+    fn abort(self) {
+        let mut msg = if report.reports.errors == 1 {
+            "could not compile module `{}`, aborting due to previous error".fmt(self.prefs.mod_name)
+        } else {
+            "could not compile module `{}`, aborting due to {} previous errors".fmt(
+                self.prefs.mod_name, report.reports.errors
+            )
+        };
+        if report.reports.warns > 0 {
+            msg = msg.concat(", {} {} emitted", report.reports.warns, if report.reports.warns == 1 {
+                "warning"
+            } else {
+                "warnings"
+            });
+        }
+        utils.error(msg);
+        process.exit(1);
+    }
 }
