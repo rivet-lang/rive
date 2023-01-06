@@ -198,10 +198,10 @@ pub class Prefs {
             utils.error("no input received");
         }
 
-        if prefs.mod_output.is_empty() {
-            prefs.mod_output = prefs.mod_name;
-        } else if prefs.is_test {
+        if prefs.is_test {
             prefs.mod_output = "_tests_runner_";
+        } else if prefs.mod_output.is_empty() {
+            prefs.mod_output = prefs.mod_name;
         }
 
         if prefs.target_os is .Windows and !prefs.mod_output.ends_with(".exe") {

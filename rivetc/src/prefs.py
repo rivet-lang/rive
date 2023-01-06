@@ -322,10 +322,10 @@ class Prefs:
 
         self.build_rivet_dir()
 
-        if len(self.mod_output) == 0:
-            self.mod_output = self.mod_name
-        elif self.build_mode == BuildMode.Test:
+        if self.build_mode == BuildMode.Test:
             self.mod_output = f"_tests_runner_"
+        elif len(self.mod_output) == 0:
+            self.mod_output = self.mod_name
         if self.target_os == OS.Windows and not self.mod_output.endswith(
             ".exe"
         ):
