@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/rivet-lang/logo/logo.png" alt="Rivet logo" width="200" height="200"/>
+<img src="https://github.com/rivet-lang/logo/blob/main/logo.png" alt="Rivet logo" width="200" height="200"/>
 
 # The Rivet programming language
 
