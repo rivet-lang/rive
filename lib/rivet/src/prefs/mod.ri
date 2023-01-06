@@ -201,7 +201,7 @@ pub class Prefs {
         if prefs.mod_output.is_empty() {
             prefs.mod_output = prefs.mod_name;
         } else if prefs.is_test {
-            prefs.mod_output = "_tests_runner_{}_".fmt(prefs.mod_name);
+            prefs.mod_output = "_tests_runner_";
         }
 
         if prefs.target_os is .Windows and !prefs.mod_output.ends_with(".exe") {

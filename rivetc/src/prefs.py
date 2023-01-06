@@ -325,7 +325,7 @@ class Prefs:
         if len(self.mod_output) == 0:
             self.mod_output = self.mod_name
         elif self.build_mode == BuildMode.Test:
-            self.mod_output = f"_tests_runner_{self.mod_name}_"
+            self.mod_output = f"_tests_runner_"
         if self.target_os == OS.Windows and not self.mod_output.endswith(
             ".exe"
         ):
