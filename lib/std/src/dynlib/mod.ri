@@ -28,7 +28,7 @@ pub fn load(path: string, global_symbols: bool = false) !Library {
 }
 
 struct Library {
-    lib: string;
+    pub path: string;
     ptr: mut_anyptr;
 
     pub fn symbol_address(self, symbol: string) !anyptr {
