@@ -1,12 +1,14 @@
 <div align="center">
 
-<img src="doc/assets/logo.png" alt="Rivet logo" width="200" height="200"/>
+<img src="https://github.com/rivet-lang/logo/logo.png" alt="Rivet logo" width="200" height="200"/>
 
 # The Rivet programming language
 
 A general-purpose programming language, focused on simplicity, safety and stability.
 
-[Documentation](doc/00_getting_started.md)
+[Website](https://rivet-lang.github.io)
+•
+[Documentation](http://the-rivet-programming-language-documentation.rtfd.io/)
 •
 [Roadmap](ROADMAP.md)
 •
