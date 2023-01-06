@@ -65,7 +65,7 @@ fn bt_error_handler(data: mut_anyptr, msg_ptr: ?*mut u8, errnum: i32) {
             console_eprint(string.from_raw(msg_ptr));
             if errnum > 0 {
                 console_eprint(" (");
-                console_eprint(c.strerr(errnum));
+                console_eprint(c.errno_msg(errnum));
                 console_eprint(")");
             }
             console_eprintln();
