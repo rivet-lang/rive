@@ -85,7 +85,7 @@ pub class Compiler {
             )
         };
         if report.reports.warns > 0 {
-            msg = msg.concat(", {} {} emitted", report.reports.warns, if report.reports.warns == 1 {
+            msg = msg.fmt(", {} {} emitted", report.reports.warns, if report.reports.warns == 1 {
                 "warning"
             } else {
                 "warnings"
