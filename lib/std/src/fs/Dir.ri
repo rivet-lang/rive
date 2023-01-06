@@ -14,7 +14,7 @@ pub struct Dir {
         }
         let rpath = path.resolve(path_).!;
         if unsafe { libc.mkdir(rpath.ptr, mode) } == -1 {
-            return Error("cannot create directory `{}`: {}".fmt(path_, c.errno_msg());
+            return Error("cannot create directory `{}`: {}".fmt(path_, c.errno_msg()));
         }
     }
 
