@@ -10,7 +10,7 @@ from enum import IntEnum as Enum, auto as auto_enum
 from . import report
 from .utils import error, eprint, execute, is_valid_name, full_version, HELP
 
-RIVET_DIR = path.join(path.expanduser("~"), ".rivet-lang")
+RIVET_DIR = path.join(path.expanduser("~"), ".rivet_lang")
 RIVETC_DIR = path.dirname(path.realpath(sys.argv[0]))
 
 def option(args, param):
