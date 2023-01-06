@@ -770,7 +770,7 @@ pub struct StringFormatter {
                         if has_fwidth and fwidth > 0 {
                             let value_len = @as(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, value_len - fwidth)));
+                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }
                         }
                         self.res.write_string(value);
@@ -778,7 +778,7 @@ pub struct StringFormatter {
                             fwidth = -fwidth;
                             let value_len = @as(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, value_len - fwidth)));
+                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }
                         }
                         if !has_fwidth {
@@ -812,7 +812,7 @@ pub struct StringFormatter {
                         if has_fwidth and fwidth > 0 {
                             let value_len = @as(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, value_len - fwidth)));
+                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }
                         }
                         self.res.write_string(value);
@@ -820,7 +820,7 @@ pub struct StringFormatter {
                             fwidth = -fwidth;
                             let value_len = @as(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, value_len - fwidth)));
+                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }
                         }
                     } else {

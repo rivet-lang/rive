@@ -184,12 +184,13 @@ extend Tokenizer {
         let pos = self.current_pos();
         let name = self.read_ident();
         self.pos += 1;
+        pos.len += name.len;
         return if name == "true" {
             true
         } else if name == "false" {
             false
         } else {
-            self.prefs.evalue_pp_symbol(name, pos)
+            self.table.evalue_pp_symbol(name, pos)
         };
     }
 }

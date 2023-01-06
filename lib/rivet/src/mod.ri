@@ -13,18 +13,20 @@ import "std/console";
 pub class Compiler {
     pub mut table: ast.Table;
     pub mut prefs: prefs.Prefs;
+    pub mut source_files: [string];
 
     pub fn new(args: [string], is_test: bool, run_output: bool) Self {
         let prefs_ = prefs.Prefs.new(args, is_test, run_output);
         report.reports.prefs = prefs_;
 
-        let mut tokenizer_ = tokenizer.Tokenizer.from_file("main.ri", prefs_);
+        let t = ast.Table.new(prefs_);
+        let mut tokenizer_ = tokenizer.Tokenizer.from_file("main.ri", prefs_, t);
         console.println(">>> tokenized text, token list:");
         let mut tok = tokenizer_.next();
         while tok.kind !is .EOF : tok = tokenizer_.next() {
             console.println("    {}", tok);
         }
 
-        return Self(table: ast.Table.new(), prefs: prefs_);
+        return Self(table: t, prefs: prefs_);
     }
 }

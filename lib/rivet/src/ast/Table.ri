@@ -2,10 +2,47 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import "std/sys";
+
+import "../prefs";
+import "../report";
+import "../token";
+
 pub class Table {
     pub mut universe: Mod;
+    pub mut prefs: prefs.Prefs;
+    pub mut source_files: [SourceFile];
 
-    pub fn new() Table {
-        return Table(universe: universe());
+    pub pointer_size: usize;
+
+    pub mut runtime_mod: Mod;
+
+    #[inline]
+    pub fn new(prefs: prefs.Prefs) Table {
+        return Table(universe(), prefs, pointer_size: if prefs.target_is_64bit {
+            8
+        } else {
+            4
+        });
+    }
+
+    pub fn evalue_pp_symbol(self, name: string, pos: token.Pos) bool {
+        switch name {
+            // operating systems
+            /*"_LINUX_", "_WINDOWS_" => {
+                return if let os = sys.Arch.from_string(name) {
+                    os is self.prefs.target_os
+                } else {
+                    false
+                };
+            },*/
+            else => {
+                if name.starts_with("_") and name.ends_with("_") {
+                    report.error("unknown runtime flag: `{}`".fmt(name), pos).emit();
+                    return false;
+                }
+                return name in self.prefs.flags;
+            }
+        }
     }
 }

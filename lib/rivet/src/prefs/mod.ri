@@ -8,7 +8,6 @@ import "std/console";
 import "std/process";
 import "std/fs/path";
 
-import "../ast";
 import "../token";
 import "../utils";
 
@@ -56,7 +55,6 @@ pub class Prefs {
     pub mut input: string;
     pub mut mod_name: string;
     pub mut mod_output: string;
-    pub mut source_files: [ast.SourceFile];
 
     // Output info
     pub mut output_mode: OutputMode;
@@ -194,9 +192,5 @@ pub class Prefs {
         }
 
         return prefs;
-    }
-
-    pub fn evalue_pp_symbol(self, name: string, pos: token.Pos) bool {
-        return name in self.flags;
     }
 }

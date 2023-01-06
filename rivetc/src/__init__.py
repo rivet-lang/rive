@@ -422,18 +422,18 @@ class Compiler:
         return size, align
 
     def evalue_pp_symbol(self, name, pos):
-        #  operating systems
+        # operating systems
         if name in ("_LINUX_", "_WINDOWS_"):
             return self.prefs.target_os.equals_to_string(name)
-        #  architectures
+        # architectures
         elif name in ("_X86_", "_AMD64_"):
             return self.prefs.target_arch.equals_to_string(name)
-        #  bits
+        # bits
         elif name in ("_x32_", "_x64_"):
             if name == "_x32_":
                 return self.prefs.target_bits == prefs.Bits.X32
             return self.prefs.target_bits == prefs.Bits.X64
-        #  endian
+        # endian
         elif name in ("_LITTLE_ENDIAN_", "_BIG_ENDIAN_"):
             if name == "_LITTLE_ENDIAN_":
                 return self.prefs.target_endian == prefs.Endian.Little
