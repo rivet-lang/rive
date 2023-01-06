@@ -3,10 +3,12 @@
 // be found in the LICENSE file.
 
 import "std/sys";
+import "std/fs/path";
 
+import "../token";
 import "../prefs";
 import "../report";
-import "../token";
+import "../utils";
 
 pub class Table {
     pub mut universe: Mod;
@@ -76,5 +78,57 @@ pub class Table {
                 name in self.prefs.flags
             }
         }
+    }
+
+    pub fn filter_files(self, inputs: [string]) [string] {
+        let mut new_inputs = @vec(string);
+        for input in inputs {
+            let basename_input = path.basename(input);
+            if !input.ends_with(".ri") {
+                continue;
+            } else if basename_input.count(".") == 1 {
+                new_inputs.push(input);
+                continue;
+            }
+            let exts = basename_input[..basename_input.len - 3].split(".")[1..];
+            let mut already_exts = @vec(string);
+            let mut should_compile = false;
+            for ext in exts {
+                if ext in already_exts {
+                    utils.error("{}: duplicate special extension `{}`", input, ext);
+                    continue;
+                }
+                already_exts.push(ext);
+                if ext.starts_with("d_") or ext.starts_with("notd_") {
+                    should_compile = should_compile and if ext.starts_with("d_") {
+                        ext[2..] in self.prefs.flags
+                    } else {
+                        ext[2..] !in self.prefs.flags
+                    };
+                } else if let os = sys.OS.from_string(ext) {
+                    should_compile = should_compile and self.prefs.target_os == os;
+                } else if let arch = sys.Arch.from_string(ext) {
+                    should_compile = should_compile and self.prefs.target_arch == arch;
+                } else if ext in ["x32", "x64"] {
+                    should_compile = should_compile and if ext == "x32" {
+                        !self.prefs.target_is_64bit
+                    } else {
+                        self.prefs.target_is_64bit
+                    };
+                } else if ext in ["little_endian", "big_endian"] {
+                    should_compile = should_compile and if ext == "little_endian" {
+                        self.prefs.target_is_little_endian
+                    } else {
+                        !self.prefs.target_is_little_endian
+                    };
+                } else if let backend = prefs.Backend.from_string(ext) {
+                    should_compile = should_compile and backend == self.prefs.target_backend;
+                } else {
+                    utils.error("{}: unknown special extension `{}`", input, ext);
+                    break;
+                }
+            }
+        }
+        return new_inputs;
     }
 }

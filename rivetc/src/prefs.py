@@ -305,7 +305,7 @@ class Prefs:
             elif arg in ("-v", "--verbose"):
                 self.is_verbose = True
             elif arg.startswith("-"):
-                error(f"unknown option: `{arg}`")
+                error(f"unknown option `{arg}`")
             else:
                 if len(self.input) > 0:
                     error("the compiler can only receive one module")
@@ -324,8 +324,8 @@ class Prefs:
 
         if len(self.mod_output) == 0:
             self.mod_output = self.mod_name
-        if self.build_mode == BuildMode.Test:
-            self.mod_output = f"_tests_runner_{self.mod_output}_"
+        elif self.build_mode == BuildMode.Test:
+            self.mod_output = f"_tests_runner_{self.mod_name}_"
         if self.target_os == OS.Windows and not self.mod_output.endswith(
             ".exe"
         ):

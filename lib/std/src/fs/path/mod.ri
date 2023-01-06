@@ -348,3 +348,20 @@ pub fn join(paths: ...string) !string {
     // no need for shrink since buf is exactly the correct size.
     return unsafe { string.from_raw(buf) };
 }
+
+/// Joins the current working directory with the given `path` (if the `path` is
+/// relative) and returns the absolute path representation.
+pub fn absolute(path: string) !string {
+    let cwd = runtime.process_get_cwd().!;
+    if path.is_empty() {
+        return cwd;
+    }
+    let rpath = resolve(path).!;
+    if rpath == "." {
+        return cwd;
+    }
+    if is_absolute(rpath) {
+        return rpath;
+    }
+    return resolve(join(cwd, rpath).!).!;
+}

@@ -247,7 +247,7 @@ class Compiler:
     def filter_files(self, inputs):
         new_inputs = []
         for input in inputs:
-            basename_input = path.basename(path.relpath(input))
+            basename_input = path.basename(input)
             if basename_input.count('.') == 1:
                 new_inputs.append(input)
                 continue
@@ -257,6 +257,7 @@ class Compiler:
             for ext in exts:
                 if ext in already_exts:
                     error(f"{input}: duplicate special extension `{ext}`")
+                    continue
                 already_exts.append(ext)
                 if ext.startswith("d_") or ext.startswith("notd_"):
                     if ext.startswith("d_"):
@@ -283,6 +284,7 @@ class Compiler:
                     should_compile = should_compile and self.prefs.target_backend == b
                 else:
                     error(f"{input}: unknown special extension `{ext}`")
+                    break
             if should_compile:
                 new_inputs.append(input)
         return new_inputs

@@ -2,31 +2,62 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import "std/fs";
+import "std/fs/path";
+import "std/console";
+import "std/traits";
+
 import "./ast";
 import "./utils";
 import "./prefs";
 import "./report";
 import "./tokenizer";
 
-import "std/console";
-
 pub class Compiler {
     pub mut table: ast.Table;
     pub mut prefs: prefs.Prefs;
     pub mut source_files: [string];
 
-    pub fn new(args: [string], is_test: bool, run_output: bool) Self {
-        let prefs_ = prefs.Prefs.new(args, is_test, run_output);
+    pub fn new(args: [string], is_test: bool, run_output: bool) !Self {
+        let prefs_ = prefs.Prefs.new(args, is_test, run_output).!;
         report.reports.prefs = prefs_;
+        let mut compiler = Self(table: ast.Table.new(prefs_), prefs: prefs_);
+        compiler.load_root_module();
+        return compiler;
+    }
 
-        let t = ast.Table.new(prefs_);
-        let mut tokenizer_ = tokenizer.Tokenizer.from_file("main.ri", prefs_, t);
-        console.println(">>> tokenized text, token list:");
-        let mut tok = tokenizer_.next();
-        while tok.kind !is .EOF : tok = tokenizer_.next() {
-            console.println("    {}", tok);
+    pub fn load_root_module(mut self) {
+        let files = if path.is_directory(self.prefs.input) {
+            let mut filtered_files = self.table.filter_files(
+                fs.Dir.walk(self.prefs.input) catch []
+            );
+            let src_dir = path.join(self.prefs.input, "src") catch "";
+            if path.is_directory(src_dir) { // support `src/` directory
+                for file in self.table.filter_files(fs.Dir.walk(src_dir) catch []) {
+                    filtered_files.push(file);
+                }
+            }
+            filtered_files
+        } else {
+            [self.prefs.input]
+        };
+        if files.is_empty() {
+            utils.error("no input received");
+        } else if self.prefs.is_verbose {
+            self.vlog(">> loaded root module files:");
+            for file in files {
+                self.vlog("    {}", file);
+            }
         }
+        let root_sym = ast.Mod(vis: .Priv, name: self.prefs.mod_name, is_root: true);
+        self.table.universe.scope.add(root_sym) catch |err| utils.error(
+            "Compiler.load_root_module(): {}", err
+        );
+    }
 
-        return Self(table: t, prefs: prefs_);
+    fn vlog(self, msg: string, args: ...traits.ToString) {
+        if self.prefs.is_verbose {
+            console.println(msg, args);
+        }
     }
 }
