@@ -21,7 +21,7 @@ pub fn errno() i32 {
 
 pub fn errno_msg(code: i32 = errno()) string {
     unsafe {
-        let s = libc.strerr(code);
+        let s = libc.strerror(code);
         return if s is nil { "" } else { string.from_raw(s) };
     }
 }
