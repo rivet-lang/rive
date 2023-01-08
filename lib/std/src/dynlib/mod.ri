@@ -27,11 +27,11 @@ pub fn load(path: string, global_symbols: bool = false) !Library {
     return Error("cannot load '{}': {}".fmt(path, dlerror()));
 }
 
-struct Library {
+class Library {
     pub path: string;
     ptr: mut_anyptr;
 
-    pub fn symbol_address(self, symbol: string) !anyptr {
+    pub fn address_of(self, symbol: string) !anyptr {
         if let ptr = unsafe { libc.dlsym(self.ptr, symbol.ptr) } {
             return ptr;
         }
@@ -41,8 +41,12 @@ struct Library {
     }
 
     #[inline]
-    pub fn unload(mut self) bool {
-        return @as(bool, unsafe { libc.dlclose(self.ptr) });
+    pub fn exists(self, symbol: string) bool {
+        return if let _ = self.address_of(symbol) { true } else { false };
+    }
+
+    ~Self(mut self) {
+        _ = unsafe { libc.dlclose(self.ptr) };
     }
 }
 
