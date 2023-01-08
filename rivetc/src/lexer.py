@@ -16,6 +16,9 @@ def is_hex_digit(ch):
 def is_bin_digit(ch):
     return ch in ("0", "1")
 
+def is_oct_digit(ch):
+    return ch >= "0" and ch <= "7"
+
 class Conditional:
     def __init__(self):
         self.matched = False
@@ -170,6 +173,10 @@ class Lexer:
                 self.current_pos()
             )
             self.pos += 1
+        elif start + 2 == self.pos:
+            self.pos -= 1
+            report.error("number part of this hexadecimal is not provided", self.current_pos())
+            self.pos += 1
         lit = self.text[start:self.pos]
         self.pos -= 1 # fix pos
         return lit
@@ -207,6 +214,51 @@ class Lexer:
                 self.current_pos()
             )
             self.pos += 1
+        elif start + 2 == self.pos:
+            self.pos -= 1
+            report.error("number part of this binary is not provided", self.current_pos())
+            self.pos += 1
+        lit = self.text[start:self.pos]
+        self.pos -= 1 # fix pos
+        return lit
+
+    def read_oct_number(self):
+        start = self.pos
+        has_wrong_digit = False
+        self.pos += 2 # skip '0b'
+        if self.pos < self.text_len and self.current_char() == NUM_SEP:
+            report.error(
+                "separator `_` is only valid between digits in a numeric literal",
+                self.current_pos(),
+            )
+        while self.pos < self.text_len:
+            ch = self.current_char()
+            if ch == NUM_SEP and self.text[self.pos + 1] == NUM_SEP:
+                report.error(
+                    "cannot use `_` consecutively in a numeric literal",
+                    self.current_pos()
+                )
+            if not is_oct_digit(ch) and ch != NUM_SEP:
+                if not ch.isdigit() and not ch.isalpha():
+                    break
+                elif not has_wrong_digit:
+                    has_wrong_digit = True
+                    report.error(
+                        f"this octal number has unsuitable digit `{self.current_char()}`",
+                        self.current_pos(),
+                    )
+            self.pos += 1
+        if self.text[self.pos - 1] == NUM_SEP:
+            self.pos -= 1
+            report.error(
+                "cannot use `_` at the end of a numeric literal",
+                self.current_pos()
+            )
+            self.pos += 1
+        elif start + 2 == self.pos:
+            self.pos -= 1
+            report.error("number part of this octal is not provided", self.current_pos())
+            self.pos += 1
         lit = self.text[start:self.pos]
         self.pos -= 1 # fix pos
         return lit
@@ -236,7 +288,8 @@ class Lexer:
                 self.current_pos()
             )
             self.pos += 1
-
+        call_method = False # true for, e.g., 5.method(), 5.5.method(), 5e5.method()
+        is_range = False # true for, e.g., 5..10
         # fractional part
         if self.pos < self.text_len and self.text[self.pos] == ".":
             self.pos += 1
@@ -248,6 +301,8 @@ class Lexer:
                         if not c.isdigit():
                             if not c.isalpha() or c in ["e", "E"]:
                                 # 16.6.str()
+                                if c == "." and self.pos + 1 < self.text_len and self.text[self.pos + 1].isalpha():
+                                    call_method = True
                                 break
                             else:
                                 report.error(
@@ -257,11 +312,13 @@ class Lexer:
                         self.pos += 1
                 elif self.text[self.pos] == ".":
                     # 4.. a range
+                    is_range = True
                     self.pos -= 1
                 elif self.text[self.pos] in ["e", "E"]:
                     pass # 6.e6
                 elif self.text[self.pos].isalpha():
                     # 16.str()
+                    call_method = True
                     self.pos -= 1
                 else:
                     # 5.
@@ -273,9 +330,10 @@ class Lexer:
                     fl = self.text[start:self.pos]
                     report.help(f"use `{fl}.0` instead of `{fl}`")
                     self.pos += 1
-
         # exponential part
+        has_exp = False
         if self.pos < self.text_len and self.text[self.pos] in ["e", "E"]:
+            has_exp = True
             self.pos += 1
             if self.pos < self.text_len and self.text[self.pos] in ["-", "+"]:
                 self.pos += 1
@@ -284,6 +342,8 @@ class Lexer:
                 if not c.isdigit():
                     if not c.isalpha():
                         # 6e6.str()
+                        if c == "." and self.pos + 1 < self.text_len and self.text[self.pos + 1].isalpha():
+                            call_method = True
                         break
                     elif not has_suffix:
                         report.error(
@@ -291,6 +351,17 @@ class Lexer:
                             self.current_pos()
                         )
                 self.pos += 1
+        if self.text[self.pos - 1] in ("e", "E"):
+            self.pos -= 1
+            report.error("exponent has no digits", self.current_pos())
+            self.pos += 1
+        elif self.pos < self.text_len and self.text[self.pos] == "." and not is_range and not call_method:
+            self.pos -= 1
+            if has_exp:
+                report.error("exponential part should be integer", self.current_pos())
+            else:
+                report.error("too many decimal points in number", self.current_pos())
+            self.pos += 1
         lit = self.text[start:self.pos]
         self.pos -= 1 # fix pos
         return lit
@@ -300,6 +371,8 @@ class Lexer:
             return self.read_hex_number()
         elif self.matches("0b", self.pos):
             return self.read_bin_number()
+        elif self.matches("0o", self.pos):
+            return self.read_oct_number()
         return self.read_dec_number()
 
     def read_char(self):
@@ -406,16 +479,10 @@ class Lexer:
                 lit = self.read_ident()
                 return token.Token(lit, token.lookup(lit), pos)
             elif ch.isdigit():
-                # decimals with 0 prefix
-                start_pos = self.pos
-                while start_pos < self.text_len and self.text[start_pos] == '0':
-                    start_pos += 1
-                prefix_zero_num = start_pos - self.pos
-                if start_pos == self.text_len or (
-                    ch == '0' and not self.text[start_pos].isdigit()
-                ):
-                    prefix_zero_num -= 1
-                self.pos += prefix_zero_num
+                # decimals with 0 prefix = error
+                if ch == "0" and nextc.isdigit():
+                    report.error("leading zeros in decimal integer literals are not permitted", self.current_pos())
+                    report.help("use an `0o` prefix for octal integers")
                 return token.Token(
                     self.read_number().replace("_", ""), Kind.Number, pos
                 )

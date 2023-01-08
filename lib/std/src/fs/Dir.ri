@@ -8,7 +8,7 @@ import "c/libc";
 import "./path";
 
 pub struct Dir {
-    pub fn make(path_: string, mode: usize = 511 /* 0o777 */) ! {
+    pub fn make(path_: string, mode: usize = 0o777) ! {
         if path_ == "." {
             return;
         }

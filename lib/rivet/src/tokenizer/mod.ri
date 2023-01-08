@@ -243,6 +243,10 @@ pub class Tokenizer {
 
         if self.text[self.pos - 1] == NUM_SEP {
             self.error("cannot use `_` at the end of a numeric literal").emit();
+        } else if start + 2 == self.pos {
+            self.pos -= 1;
+            self.error("number part of this hexadecimal is not provided").emit();
+            self.pos += 1;
         }
 
         let lit = self.text[start..self.pos];
@@ -277,7 +281,54 @@ pub class Tokenizer {
         }
 
         if self.text[self.pos - 1] == NUM_SEP {
+            self.pos -= 1;
             self.error("cannot use `_` at the end of a numeric literal").emit();
+            self.pos += 1;
+        } else if start + 2 == self.pos {
+            self.pos -= 1;
+            self.error("number part of this binary is not provided").emit();
+            self.pos += 1;
+        }
+
+        let lit = self.text[start..self.pos];
+        self.pos -= 1; // fix pos
+        return lit;
+    }
+
+    fn read_oct_number(mut self) string {
+        let start = self.pos;
+        self.pos += 2; // skip '0b'
+        if self.pos < self.text.len and self.current_char() == NUM_SEP {
+            self.error("separator `_` is only valid between digits in a numeric literal").emit();
+        }
+
+        while self.pos < self.text.len : self.pos += 1 {
+            let ch = self.current_char();
+            if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
+                self.error("cannot use `_` consecutively in a numeric literal").emit();
+            }
+
+            if !ch.is_oct_digit() and ch != NUM_SEP {
+                if !ch.is_digit() and !ch.is_letter() {
+                    break;
+                } else {
+                    self.error(
+                        "this octal number has unsuitable digit `{}`".fmt(
+                            self.current_char().to_ascii()
+                        )
+                    ).emit();
+                }
+            }
+        }
+
+        if self.text[self.pos - 1] == NUM_SEP {
+            self.pos -= 1;
+            self.error("cannot use `_` at the end of a numeric literal").emit();
+            self.pos += 1;
+        } else if start + 2 == self.pos {
+            self.pos -= 1;
+            self.error("number part of this octal is not provided").emit();
+            self.pos += 1;
         }
 
         let lit = self.text[start..self.pos];
@@ -313,6 +364,8 @@ pub class Tokenizer {
             self.error("cannot use `_` at the end of a numeric literal").emit();
         }
 
+        let mut call_method = false; // true for, e.g., 5.method(), 5.5.method(), 5e5.method()
+        let mut is_range = false; // true for, e.g., 5..10
         // fractional part
         if self.pos < self.text.len and self.text[self.pos] == b'.' {
             self.pos += 1;
@@ -324,6 +377,9 @@ pub class Tokenizer {
                         if !c.is_digit() {
                             if !c.is_letter() or c in [b'e', b'E'] {
                                 // 16.6.to_string()
+                                if c == b'.' and self.look_ahead(1).is_letter() {
+                                    call_method = true;
+                                }
                                 break;
                             } else {
                                 self.error(
@@ -336,21 +392,29 @@ pub class Tokenizer {
                     }
                 } else if self.current_char() == b'.' {
                     // 4.. a range
+                    is_range = true;
                     self.pos -= 1;
                 } else if self.current_char() in [b'e', b'E'] {
                     // 6.e6
                 } else if self.current_char().is_letter() {
                     // 16.to_string()
+                    call_method = true;
                     self.pos -= 1;
                 } else {
                     // 6.
                     self.pos -= 1;
-                    self.error("float literals should have a digit after the decimal point").emit();
+                    let mut err = self.error("float literals should have a digit after the decimal point");
+                    let fl = self.text[start..self.pos];
+                    err.add_help("use `{0}.0` instead of `{0}`".fmt(fl));
+                    err.emit();
+                    self.pos += 1;
                 }
             }
         }
         // exponential part
+        let mut has_exp = false;
         if self.pos < self.text.len and self.current_char() in [b'e', b'E'] {
+            has_exp = true;
             self.pos += 1;
             if self.pos < self.text.len and self.current_char() in [b'-', b'+'] {
                 self.pos += 1;
@@ -360,12 +424,28 @@ pub class Tokenizer {
                 if !c2.is_digit() {
                     if !c2.is_letter() {
                         // 6e6.to_string()
+                        if c2 == b'.' and self.look_ahead(1).is_letter() {
+                            call_method = true;
+                        }
                         break;
                     } else {
                         self.error("this number has unsuitable digit `{}`".fmt(c2.to_ascii())).emit();
                     }
                 }
             }
+        }
+        if self.text[self.pos - 1] in [b'e', b'E'] {
+            self.pos -= 1;
+            self.error("exponent has no digits").emit();
+            self.pos += 1;
+        } else if self.current_char() == b'.' and !is_range and !call_method {
+            self.pos -= 1;
+            if has_exp {
+                self.error("exponential part should be integer").emit();
+            } else {
+                self.error("too many decimal points in number").emit();
+            }
+            self.pos += 1;
         }
         let lit = self.text[start..self.pos];
         self.pos -= 1; // fix pos
@@ -376,6 +456,7 @@ pub class Tokenizer {
         switch {
             self.matches("0x", self.pos) => return self.read_hex_number(),
             self.matches("0b", self.pos) => return self.read_bin_number(),
+            self.matches("0o", self.pos) => return self.read_oct_number(),
             else => return self.read_dec_number()
         }
     }
@@ -498,17 +579,14 @@ pub class Tokenizer {
                 let lit = self.read_ident();
                 return self.new_token(token.lookup(lit), lit, lit.len);
             } else if ch.is_digit() or (ch == b'.' and nextc.is_digit()) {
-                // decimals with 0 prefix
-                let mut start_pos = self.pos;
-                while start_pos < self.text.len and self.text[start_pos] == b'0'
-                    : start_pos += 1 {}
-
-                let mut prefix_zero_num = start_pos - self.pos;
-                if start_pos == self.text.len or (ch == b'0' and !self.text[start_pos].is_digit()) {
-                    prefix_zero_num -= 1;
+                // decimals with 0 prefix = error
+                if ch == b'0' and nextc.is_digit() {
+                    let mut err = self.error(
+                        "leading zeros in decimal integer literals are not permitted"
+                    );
+                    err.add_help("use an `0o` prefix for octal integers");
+                    err.emit();
                 }
-                self.pos += prefix_zero_num;
-
                 let lit = self.read_number();
                 return self.new_token(.Number, self.number_literal_without_separator(lit), lit.len);
             }
