@@ -17,9 +17,7 @@ fn main() {
     switch cmd {
         "build", "run", "test" => {
             let is_test = cmd == "test";
-            let compiler = rivet.Compiler.new(
-                process.ARGS[2..], is_test, is_test or cmd == "run"
-            ).!;
+            rivet.Compiler.new(process.ARGS[2..], is_test, is_test or cmd == "run").!.run().!;
         },
         "version" => {
             console.eprintln("rivet {}", utils.VERSION);

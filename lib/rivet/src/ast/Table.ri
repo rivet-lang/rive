@@ -13,7 +13,7 @@ import "../utils";
 pub class Table {
     pub mut universe: Mod;
     pub mut prefs: prefs.Prefs;
-    pub mut source_files: [SourceFile];
+    pub mut source_files: [mut SourceFile];
 
     pub pointer_size: usize;
 

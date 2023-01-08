@@ -72,7 +72,7 @@ class Compiler:
                             mod_sym = sym.Mod(decl.vis, mod.full_name)
                             self.universe.add(mod_sym)
                             self.parsed_files += parser.Parser(self).parse_mod(
-                                sf.sym.name, mod_sym, decl.vis, mod.files
+                                mod_sym, mod.files
                             )
                         decl.alias = mod.alias
                         decl.mod_sym = mod_sym
@@ -162,18 +162,14 @@ class Compiler:
         root_sym = sym.Mod(sym.Vis.Priv, self.prefs.mod_name)
         root_sym.is_root = True
         self.universe.add(root_sym)
-        self.parsed_files += parser.Parser(self).parse_mod(
-            self.prefs.mod_name, root_sym, sym.Vis.Priv, files
-        )
+        self.parsed_files += parser.Parser(self).parse_mod(root_sym, files)
 
     def load_mod_and_parse(self, pathx, alias, file_path, pos):
         mod = self.load_mod(pathx, alias, file_path, pos)
         if mod.found:
             mod_sym = sym.Mod(sym.Vis.Priv, mod.full_name)
             self.universe.add(mod_sym)
-            return parser.Parser(self).parse_mod(
-                mod.full_name, mod_sym, sym.Vis.Priv, mod.files
-            )
+            return parser.Parser(self).parse_mod(mod_sym, mod.files)
         return []
 
     def load_mod(self, pathx, alias, file_path, pos):

@@ -18,6 +18,7 @@ import {
 import { Builder } from "../strings";
 
 pub let ARGS: [string] = unsafe { runtime.ARGS };
+pub let WD_AT_STARTUP: string = get_cwd() catch ".";
 
 struct Result {
 	pub output: string;

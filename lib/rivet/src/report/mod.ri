@@ -2,14 +2,27 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import "std/env";
 import "std/strings";
 import "std/console";
+import "std/fs/path";
+import "std/process";
 
 import "../prefs";
 import "../token";
 import "../utils";
 
 pub let mut reports: ReportTable = ReportTable();
+
+#[inline]
+pub fn total_errors() usize {
+    return reports.errors;
+}
+
+#[inline]
+pub fn total_warns() usize {
+    return reports.warns;
+}
 
 pub class ReportTable {
     pub mut prefs: prefs.Prefs;
@@ -57,7 +70,8 @@ pub class Report {
 
     pub fn emit(self) {
         console.eprintln(
-            utils.bold("{}: {} {}"), self.pos,
+            utils.bold("{}:{}:{}: {} {}"), path_styled_for_error_messages(self.pos.file),
+            self.pos.line, self.pos.col,
             if self.kind is .Error { utils.red("error:") } else { utils.yellow("warning:") },
             self.msg
         );
@@ -68,13 +82,12 @@ pub class Report {
             reports.warns += 1;
         }
         for extra in self.extras {
-            console.eprintln(
-                utils.bold("      {} {}"), if extra.kind is .Note {
-                    utils.cyan("note")
-                } else {
-                    "help"
-                }, extra.msg
-            );
+            let start = utils.bold("      {} {}".fmt(utils.blue("="), if extra.kind is .Note {
+                utils.cyan("note:")
+            } else {
+                "help:"
+            }));
+            console.eprintln(utils.bold("{} {}"), start, extra.msg);
         }
     }
 }
@@ -85,8 +98,8 @@ fn formatted_line(pos: token.Pos) {
             "{} {} {}", utils.bold(utils.blue("{:5}".fmt(pos.line + 1))),
             utils.bold(utils.blue("|")), line.replace("\t", " ")
         );
-		let start_column = utils.max(0, utils.min(pos.col - 1, line.len));
-		let end_column = utils.max(0, utils.min((pos.col - 1) + utils.max(0, pos.len), line.len));
+        let start_column = utils.max(0, utils.min(pos.col - 1, line.len));
+        let end_column = utils.max(0, utils.min((pos.col - 1) + utils.max(0, pos.len), line.len));
         let mut sb = strings.Builder.new(line.len);
         let mut i: usize = 0;
         while i < start_column {
@@ -108,4 +121,18 @@ fn formatted_line(pos: token.Pos) {
         }
         console.eprintln("      {} {}", utils.bold(utils.blue("|")), sb.to_string());
     }
+}
+
+let NORMALIZED_WORKDIR: string = process.WD_AT_STARTUP.replace("\\", "/").concat("/");
+let ERROR_PATHS_ABSOLUTE: bool = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";
+
+// NOTE: path_styled_for_error_messages will *always* use `/` in the error paths, no
+// matter the OS, to ensure stable compiler error output in the tests.
+pub fn path_styled_for_error_messages(path_: string) string {
+    let rpath = (path.resolve(path_) catch path_).replace("\\", "/");
+    return if ERROR_PATHS_ABSOLUTE {
+        rpath
+    } else {
+        path.relative(NORMALIZED_WORKDIR, rpath) catch path_
+    };
 }

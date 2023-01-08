@@ -18,13 +18,9 @@ class Parser:
         self.peek_tok = None
         self.last_err_pos = None
 
-        self.mod_name = ""
-        self.mod_vis = sym.Vis.Priv
-
         self.file_path = ""
         self.file_dir = ""
-        self.file_parent_sym = None
-        self.file_sym = None
+        self.mod_sym = None
 
         self.scope = None
 
@@ -36,25 +32,22 @@ class Parser:
         self.inside_switch_header = False
         self.inside_block = False
 
-    def parse_mod(self, mod_name, mod_sym, vis, files):
-        self.mod_name = mod_name
-        self.mod_name = mod_sym.name
-        self.mod_vis = vis
+    def parse_mod(self, mod_sym, files):
+        self.mod_sym = mod_sym
         source_files = []
         for file in files:
-            self.file_path = file
-            self.file_dir = os.path.dirname(file)
-            self.file_sym = mod_sym
             source_files.append(self.parse_file(file))
         return source_files
 
     def parse_file(self, file):
+        self.file_path = file
+        self.file_dir = os.path.dirname(file)
         self.lexer = Lexer.from_file(self.comp, file)
         if report.ERRORS > 0:
-            return ast.SourceFile(file, [], self.mod_name, None)
+            return ast.SourceFile(file, [], self.mod_sym.name, None)
         self.advance(2)
         return ast.SourceFile(
-            file, self.parse_decls(), self.mod_name, self.file_sym
+            file, self.parse_decls(), self.mod_sym.name, self.mod_sym
         )
 
     # ---- useful functions for working with tokens ----
@@ -120,8 +113,8 @@ class Parser:
         return sym.ABI.Rivet
 
     def parse_attrs(self, parse_mod_attrs = False):
-        if self.file_sym.attrs == None:
-            self.file_sym.attrs = ast.Attrs()
+        if self.mod_sym.attrs == None:
+            self.mod_sym.attrs = ast.Attrs()
         attrs = ast.Attrs()
         while self.accept(Kind.Hash):
             if parse_mod_attrs:
@@ -148,7 +141,7 @@ class Parser:
                     self.expect(Kind.Rparen)
                 attr = ast.Attr(attr_name, args, pos)
                 if parse_mod_attrs:
-                    self.file_sym.attrs.add(attr)
+                    self.mod_sym.attrs.add(attr)
                 else:
                     attrs.add(attr)
                 if not self.accept(Kind.Semicolon):
@@ -537,7 +530,7 @@ class Parser:
         return ast.FnDecl(
             doc_comment, attrs, vis, self.inside_extern, is_unsafe, name, pos,
             args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
-            self_is_ref, has_named_args, self.file_sym.is_root
+            self_is_ref, has_named_args, self.mod_sym.is_root
             and name == "main", is_variadic, abi
         )
 
@@ -1356,7 +1349,7 @@ class Parser:
             elif lit == "string":
                 return self.comp.string_t
             # only available in `runtime`:
-            elif self.mod_name == "runtime":
+            elif self.mod_sym.name == "runtime":
                 if lit == "comptime_int":
                     return self.comp.comptime_int_t
                 elif lit == "comptime_float":

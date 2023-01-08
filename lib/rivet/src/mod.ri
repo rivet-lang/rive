@@ -13,7 +13,7 @@ import "./ast";
 import "./utils";
 import "./prefs";
 import "./report";
-import "./tokenizer";
+import "./parser";
 
 // TODO(StunxFS): use `.!`, fix `.!` in let decls.
 let RIVET_DIR: string = path.join(env.HOME_DIR, ".rivet_lang") catch ".";
@@ -29,7 +29,6 @@ pub class Compiler {
         report.reports.prefs = prefs_;
         let mut compiler = Self(table: ast.Table.new(prefs_), prefs: prefs_);
         compiler.make_rivet_directory().!;
-        compiler.load_root_module().!;
         return compiler;
     }
 
@@ -40,6 +39,10 @@ pub class Compiler {
             fs.Dir.make(path.join(RIVET_DIR, "obj").!).!;
             fs.Dir.make(path.join(RIVET_DIR, "lib").!).!;
         }
+    }
+
+    pub fn run(mut self) ! {
+        self.load_root_module().!;
     }
 
     fn load_root_module(mut self) ! {
@@ -69,6 +72,13 @@ pub class Compiler {
         self.table.universe.scope.add(root_sym) catch |err| utils.error(
             "Compiler.load_root_module(): {}", err
         );
+        self.parse_files(root_sym, files);
+    }
+
+    fn parse_files(mut self, mod_sym: ast.Sym, files: [string]) {
+        for sf in parser.Parser(table: self.table, prefs: self.prefs).parse_module(mod_sym, files) {
+            self.table.source_files.push(sf);
+        }
     }
 
     fn vlog(self, msg: string, args: ...traits.ToString) {

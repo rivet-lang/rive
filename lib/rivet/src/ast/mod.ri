@@ -4,6 +4,12 @@
 
 import "../token";
 
+pub class SourceFile {
+    pub file: string;
+    pub mod_sym: Sym;
+    pub decls: [Decl];
+}
+
 pub class Node {
     pos: token.Pos;
 }
@@ -17,11 +23,4 @@ pub class Stmt : Node {
 
 pub class Expr : Node {
     // typ: Type;
-}
-
-pub class SourceFile {
-    pub file: string;
-    pub mod_name: string;
-    pub sym: u8;
-    pub decls: [Decl];
 }

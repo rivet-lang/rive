@@ -26,9 +26,10 @@ pub struct Dir {
         }
     }
 
-    pub fn walk(path: string) ![string] {
+    pub fn walk(path_: string) ![string] {
+        let rpath = path.resolve(path_).!;
         unsafe {
-            if let dir = libc.opendir(path.ptr) {
+            if let dir = libc.opendir(path_.ptr) {
                 let mut res: [string] = [];
                 while let ent = libc.readdir(dir) {
                     let bptr = @addr_of(ent.*.d_name[0]);
@@ -36,12 +37,12 @@ pub struct Dir {
                         or (bptr[0] == b'.' and bptr[1] == b'.' and bptr[2] == 0)) {
                         continue;
                     }
-                    res.push(string.from_raw(bptr).clone());
+                    res.push(path.join(rpath, string.from_raw(bptr).clone()).!);
                 }
                 _ = libc.closedir(dir);
                 return res;
             }
         }
-        return Error("walk: couldn't open '{}'".fmt(path));
+        return Error("walk: couldn't open '{}'".fmt(path_));
     }
 }

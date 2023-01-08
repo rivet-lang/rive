@@ -1,0 +1,120 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "std/fs/path";
+
+import "../ast";
+import "../utils";
+import "../prefs";
+import "../report";
+import "../token";
+import "../tokenizer";
+
+pub class Parser {
+    mut table: ast.Table;
+    mut prefs: prefs.Prefs;
+
+    mut tokenizer: tokenizer.Tokenizer;
+    mut prev_tok: token.Token;
+    mut tok: token.Token;
+    mut peek_tok: token.Token;
+    mut last_err_pos: token.Pos;
+
+    mut mod_sym: ast.Sym;
+    mut file_path: string;
+    mut file_dir: string;
+    mut scope: ?ast.Scope;
+
+    mut inside_extern: bool;
+    mut extern_abi: ast.ABI;
+    mut inside_pkg: bool;
+    mut inside_struct_or_class: bool;
+    mut inside_trait: bool;
+    mut inside_switch_header: bool;
+    mut inside_block: bool;
+
+    pub fn parse_module(mut self, mod_sym: ast.Sym, files: [string]) [mut ast.SourceFile] {
+        self.mod_sym = mod_sym;
+        let mut source_files = @vec(mut ast.SourceFile);
+        for file in files {
+            source_files.push(self.parse_file(file));
+        }
+        return source_files;
+    }
+
+    pub fn parse_file(mut self, file: string) ast.SourceFile {
+        self.file_path = file;
+        self.file_dir = path.dirname(file) ?? file;
+        self.tokenizer = tokenizer.Tokenizer.from_file(file, self.prefs, self.table);
+        if report.total_errors() > 0 {
+            return ast.SourceFile(file, self.mod_sym, []);
+        }
+        self.advance(2);
+        return ast.SourceFile(file, self.mod_sym, self.parse_decls());
+    }
+
+    // ---- useful functions for working with tokens ----
+    fn next(mut self) {
+        self.prev_tok = self.tok;
+        self.tok = self.peek_tok;
+        self.peek_tok = self.tokenizer.next();
+    }
+
+    #[inline]
+    fn peek_token(self, n: usize) token.Token {
+        return self.tokenizer.peek_token(n - 2);
+    }
+
+    fn advance(mut self, n: usize) {
+        let mut i: usize = 0;
+        while i < n : i += 1 { self.next(); }
+    }
+
+    #[inline]
+    fn accept(mut self, kind: token.Kind) bool {
+        return if self.tok.kind == kind {
+            self.next();
+            true
+        } else {
+            false
+        };
+    }
+
+    fn expect(mut self, kind: token.Kind) {
+        if self.accept(kind) {
+            return;
+        } else if self.last_err_pos.pos == self.tok.pos.pos {
+            self.next(); // avoid infinite output
+            return;
+        }
+        self.last_err_pos = self.tok.pos;
+        let mut kstr = kind.to_string();
+        if token.is_keyword(kstr) or (kstr.len > 0 and !kstr[0].is_letter()) {
+            kstr = "`{}`".fmt(kstr);
+        }
+        report.error("expected {}, found {}".fmt(kstr, self.tok), self.tok.pos).emit();
+    }
+
+    // ---- utilities ------------------
+    fn parse_name(mut self) string {
+        let lit = self.tok.lit;
+        self.expect(.Name);
+        return lit;
+    }
+
+    #[inline]
+    fn open_scope(mut self) {
+        self.scope = ast.Scope(start: self.tok.pos.pos, parent: self.scope);
+    }
+
+    fn close_scope(mut self) {
+        self.scope.?.end = self.tok.pos.pos;
+        self.scope = self.scope.?.parent;
+    }
+
+    // ---- declarations --------------
+    fn parse_decls(mut self) [ast.Decl] {
+        return [];
+    }
+}

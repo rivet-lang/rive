@@ -459,7 +459,7 @@ pub class FnSym : Sym {
 
 pub class Scope {
     pub start: usize;
-    pub end: usize;
+    pub mut end: usize;
     pub mut parent: ?Scope;
     pub mut detached_from_parent: bool;
     pub mut syms: [Sym];
