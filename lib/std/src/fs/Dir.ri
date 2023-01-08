@@ -8,19 +8,21 @@ import "c/libc";
 import "./path";
 
 pub struct Dir {
-    pub fn create(path_: string, mode: u32 = 511 /* 0o777 */) ! {
+    pub fn make(path_: string, mode: usize = 511 /* 0o777 */) ! {
         if path_ == "." {
             return;
         }
         let rpath = path.resolve(path_).!;
         if unsafe { libc.mkdir(rpath.ptr, mode) } == -1 {
-            return Error("cannot create directory `{}`: {}".fmt(path_, c.errno_msg()));
+            return Error("cannot make directory `{}`: {}".fmt(path_, c.errno_msg()));
         }
     }
 
     pub fn remove(dir: string) ! {
-        if unsafe { libc.rmdir(dir.ptr) == -1 } {
+        let rpath = path.resolve(dir).!;
+        if unsafe { libc.rmdir(rpath.ptr) == -1 } {
             return c.last_errno_error();
+            return Error("cannot remove directory `{}`: {}".fmt(dir, c.errno_msg()));
         }
     }
 

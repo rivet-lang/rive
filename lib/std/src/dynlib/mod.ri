@@ -36,7 +36,7 @@ struct Library {
             return ptr;
         }
         return SymbolNotFoundError(
-            "cannot found symbol '{}' in library '{}': {}".fmt(symbol, self.lib, dlerror())
+            "cannot found symbol '{}' in library '{}': {}".fmt(symbol, self.path, dlerror())
         );
     }
 

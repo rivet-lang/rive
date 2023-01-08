@@ -386,8 +386,8 @@ class CGen:
                     self.write("L")
         elif isinstance(expr, ir.FloatLit):
             self.write(expr.lit)
-            if expr.typ.name == "f32":
-                self.write("F")
+            if str(expr.typ) == "f32":
+                self.write("f")
         elif isinstance(expr, ir.RuneLit):
             self.write(f"L'{expr.lit}'")
         elif isinstance(expr, ir.StringLit):

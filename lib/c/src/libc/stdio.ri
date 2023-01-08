@@ -20,6 +20,19 @@ pub const S_IFMT: i32  = 0xF000; // file
 pub const S_IFDIR: i32 = 0x4000; // directory
 pub const S_IFLNK: i32 = 0xA000; // link
 
+pub const O_RDONLY: i32 = 0x00000;
+pub const O_WRONLY: i32 = 0x00001;
+pub const O_RDWR: i32 = 0x00002;
+pub const O_CREATE: i32 = 0x00040;
+pub const O_EXCL: i32 = 0x00080;
+pub const O_NOCTTY: i32 = 0x00100;
+pub const O_TRUNC: i32 = 0x00200;
+pub const O_NONBLOCK: i32 = 0x00800;
+pub const O_APPEND: i32 = 0x00400;
+pub const O_SYNC: i32 = 0x01000;
+pub const O_ASYNC: i32 = 0x02000;
+pub const O_CLOEXEC: i32 = 0x80000;
+
 pub struct FILE;
 
 #if _LINUX_

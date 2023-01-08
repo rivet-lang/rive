@@ -26,25 +26,25 @@ pub fn is_separator(byte: u8) bool {
 /// Returns `true` if `path` (file or directory) exists.
 #[inline]
 pub fn exists(path: string) bool {
-    return unsafe { libc.access(path.ptr, libc.F_OK) != -1 };
+    return unsafe { libc.access(path.ptr, libc.O_RDONLY) == 0 };
 }
 
 /// Returns `true` if `path` is executable.
 #[inline]
 pub fn is_executable(path: string) bool {
-    return unsafe { libc.access(path.ptr, libc.X_OK) != -1 };
+    return unsafe { libc.access(path.ptr, libc.X_OK) == 0 };
 }
 
 /// Returns `true` if `path` is writable.
 #[inline]
 pub fn is_writable(path: string) bool {
-    return unsafe { libc.access(path.ptr, libc.W_OK) != -1 };
+    return unsafe { libc.access(path.ptr, libc.W_OK) == 0 };
 }
 
 /// Returns `true` if `path` is readable.
 #[inline]
 pub fn is_readable(path: string) bool {
-    return unsafe { libc.access(path.ptr, libc.R_OK) != -1 };
+    return unsafe { libc.access(path.ptr, libc.R_OK) == 0 };
 }
 
 /// Returns `true` if `path` is a directory.
@@ -309,11 +309,12 @@ pub fn join(paths: ...string) !string {
             sum += if prev_sep and this_sep { this_path.len - 1 } else { this_path.len };
             prev_path = this_path;
         }
-        sum
+        sum + 1 // + 1 = NLL character
     };
     let buf = @as(*mut u8, mem.alloc(total_len).!);
-    errdefer unsafe {
-        mem.dealloc(buf);
+    unsafe {
+        errdefer mem.dealloc(buf);
+        buf[total_len] = 0;
     }
     let paths_first_path_index_value = paths[first_path_index];
     mem.copy(buf, paths_first_path_index_value.ptr, paths_first_path_index_value.len);
