@@ -87,7 +87,7 @@ pub class Report {
             } else {
                 "help:"
             }));
-            console.eprintln(utils.bold("{} {}"), start, extra.msg);
+            console.eprintln("{} {}", start, extra.msg);
         }
     }
 }

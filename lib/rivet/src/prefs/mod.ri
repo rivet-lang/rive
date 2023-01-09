@@ -189,6 +189,13 @@ pub class Prefs {
                         utils.error("`{}` does not exist", arg);
                     } else {
                         prefs.input = arg;
+                        if prefs.mod_name.is_empty() {
+                            prefs.mod_name = if path.is_file(arg) {
+                                path.basename(arg).all_before_of(".ri")
+                            } else {
+                                path.basename(path.resolve(arg) catch arg)
+                            };
+                        }
                     }
                 }
             }

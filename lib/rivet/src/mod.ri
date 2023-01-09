@@ -24,12 +24,12 @@ pub class Compiler {
     pub mut prefs: prefs.Prefs;
     pub mut source_files: [string];
 
-    pub fn new(args: [string], is_test: bool, run_output: bool) !Self {
+    pub fn new(args: [string], is_test: bool, run_output: bool) ! {
         let prefs_ = prefs.Prefs.new(args, is_test, run_output).!;
         report.reports.prefs = prefs_;
         let mut compiler = Self(table: ast.Table.new(prefs_), prefs: prefs_);
         compiler.make_rivet_directory().!;
-        return compiler;
+        compiler.run().!;
     }
 
     fn make_rivet_directory(self) ! {
@@ -78,6 +78,9 @@ pub class Compiler {
     fn parse_files(mut self, mod_sym: ast.Sym, files: [string]) {
         for sf in parser.Parser(table: self.table, prefs: self.prefs).parse_module(mod_sym, files) {
             self.table.source_files.push(sf);
+        }
+        if report.total_errors() > 0 {
+            self.abort();
         }
     }
 

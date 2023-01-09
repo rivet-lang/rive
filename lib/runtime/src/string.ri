@@ -142,6 +142,15 @@ pub class string : ToString, Hasher {
         return 0;
     }
 
+    /// Returns the contents before `sub` in the string.
+    /// If the substring is not found, it returns the full input string.
+    pub fn all_before_of(self, sub: string) string {
+        if let pos = self.index_of(sub) {
+            return self[..pos];
+        }
+        return self;
+    }
+
     /// Returns the index of byte `b` if found in the string.
     pub fn index_of_byte(self, b: u8) ?usize {
         let mut i: usize = 0;
