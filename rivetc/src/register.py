@@ -18,7 +18,7 @@ class Register:
                 self.comp.runtime_mod = sf.sym
             self.sym = sf.sym
             self.source_file = sf
-            self.walk_decls(source_file.decls)
+            self.walk_decls(self.source_file.decls)
 
     def walk_decls(self, decls):
         for decl in decls:
