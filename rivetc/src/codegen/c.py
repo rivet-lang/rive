@@ -67,6 +67,8 @@ class CGen:
             args.append(f"-municode")
         for l in self.comp.prefs.library_path:
             args.append(f"-L{l}")
+        for f in self.comp.prefs.flags:
+            args.append(f"-D{f}")
         args.append(c_file)
         for obj in self.comp.prefs.objects_to_link:
             args.append(obj)
