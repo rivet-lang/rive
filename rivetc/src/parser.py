@@ -1075,16 +1075,16 @@ class Parser:
             if not is_else:
                 while True:
                     if is_typeswitch:
-                        pos = self.tok.pos
+                        t_pos = self.tok.pos
                         if self.accept(Kind.Dot):
                             pats.append(
                                 ast.EnumLiteral(
                                     self.parse_name(), self.empty_expr(), False,
-                                    False, pos, True
+                                    False, t_pos, True
                                 )
                             )
                         else:
-                            pats.append(ast.TypeNode(self.parse_type(), pos))
+                            pats.append(ast.TypeNode(self.parse_type(), t_pos))
                     else:
                         branch_expr = self.parse_expr()
                         if self.accept(Kind.DotDot

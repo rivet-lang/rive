@@ -39,7 +39,7 @@ pub enum Vis as u8 : traits.ToString {
     }
 
     pub fn to_string(&self) string {
-        return switch self.* is {
+        return switch self.* {
             .Pub => "pub",
             .Export => "export",
             else => "" // private
@@ -138,7 +138,7 @@ pub enum TypeKind : traits.ToString {
     }
 
     pub fn to_string(&self) string {
-        return switch self.* is {
+        return switch self.* {
             .Nil => "nil",
             .Bool => "bool",
             .Rune => "rune",

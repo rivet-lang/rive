@@ -105,7 +105,7 @@ pub enum Kind : traits.ToString {
     KeywordEnd;
 
     pub fn single(self) Kind {
-        return switch self is {
+        return switch self {
             .PlusAssign => .Plus,
             .MinusAssign => .Minus,
             .MulAssign => .Mul,
@@ -300,7 +300,7 @@ pub fn is_overloadable_operator(kind: Kind) bool {
 }
 
 pub fn overloadable_operator_name(kind: Kind) string {
-    return switch kind is {
+    return switch kind {
         .Plus => "_add_",
         .Minus => "_sub_",
         .Mul => "_mul_",
