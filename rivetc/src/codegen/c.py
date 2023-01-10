@@ -293,14 +293,6 @@ class CGen:
             self.gen_expr(inst.args[0])
             self.write(" ")
             self.gen_expr(inst.args[2])
-        elif inst.kind == InstKind.Select:
-            self.write("(")
-            self.gen_expr(inst.args[0])
-            self.write(") ? (")
-            self.gen_expr(inst.args[1])
-            self.write(") : (")
-            self.gen_expr(inst.args[2])
-            self.write(")")
         elif inst.kind == InstKind.DbgStmtLine:
             self.write(f'#line {inst.args[1].name} "{inst.args[0].name}"')
         elif inst.kind == InstKind.Breakpoint:

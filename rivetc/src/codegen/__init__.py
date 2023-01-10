@@ -121,7 +121,7 @@ class Codegen:
         self.out_rir = ir.RIRFile(self.comp.prefs.mod_name)
         self.void_types = (self.comp.void_t, self.comp.never_t)
 
-        self.sf = None
+        self.source_file = None
 
         self.init_global_vars_fn = None
         self.cur_fn = None
@@ -161,7 +161,7 @@ class Codegen:
             if isinstance(mod, sym.Mod):
                 self.gen_mod_attrs(mod.name, mod.attrs)
         for source_file in source_files:
-            self.sf = source_file
+            self.source_file = source_file
             self.gen_decls(source_file.decls)
 
         # generate '_R12drop_globalsZ' function
@@ -451,7 +451,7 @@ class Codegen:
             self.out_rir.decls.append(dtor_fn)
         elif isinstance(decl, ast.TestDecl):
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
-                if not self.sf.sym.is_root:
+                if not self.source_file.sym.is_root:
                     return # skip non-root module tests
                 self.inside_test = True
                 test_name = utils.smart_quote(decl.name, True)

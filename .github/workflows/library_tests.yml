@@ -24,6 +24,10 @@ jobs:
         run: |
           python3 rivetc --backend-compiler clang -t lib/std/tests/
 
+      - name: Run Rivet self-hosted tests
+        run: |
+          python3 rivetc --backend-compiler clang -t lib/rivet/tests/
+
   ubuntu-gcc:
     runs-on: ubuntu-latest
     env:
@@ -38,3 +42,7 @@ jobs:
       - name: Run standard library tests
         run: |
           python3 rivetc -t lib/std/tests/
+
+      - name: Run Rivet self-hosted tests
+        run: |
+          python3 rivetc -t lib/rivet/tests/

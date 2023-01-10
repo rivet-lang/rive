@@ -517,7 +517,6 @@ class InstKind(Enum):
 
     Cast = auto_enum()
     Cmp = auto_enum()
-    Select = auto_enum()
 
     DbgStmtLine = auto_enum()
     Breakpoint = auto_enum()
@@ -559,7 +558,6 @@ class InstKind(Enum):
         elif self == InstKind.GetRef: return "get_ref"
         elif self == InstKind.Cast: return "cast"
         elif self == InstKind.Cmp: return "cmp"
-        elif self == InstKind.Select: return "select"
         elif self == InstKind.DbgStmtLine: return "dbg_stmt_line"
         elif self == InstKind.Breakpoint: return "breakpoint"
         elif self == InstKind.Add: return "add"

@@ -9,10 +9,8 @@ import "../token";
 let mut SYM_IDS: usize = 0;
 
 fn new_sym_id() usize {
-    let res = unsafe { SYM_IDS };
-    unsafe {
-        SYM_IDS += 1;
-    }
+    let res = SYM_IDS;
+    SYM_IDS += 1;
     return res;
 }
 
@@ -20,6 +18,7 @@ pub enum ABI as u8 {
     Rivet,
     C;
 
+    #[inline]
     pub fn from_string(abi: string) ?ABI {
         return switch abi {
             "C" => .C,
@@ -34,10 +33,12 @@ pub enum Vis as u8 : traits.ToString {
     Pub, // Public outside current module
     Export; // Public outside current module and library/object file
 
+    #[inline]
     pub fn is_pub(self) bool {
         return self in [.Export, .Pub];
     }
 
+    #[inline]
     pub fn to_string(&self) string {
         return switch self.* {
             .Pub => "pub",
@@ -59,6 +60,7 @@ pub class Sym {
     pub is_universe: bool;
     pub is_root: bool;
 
+    #[inline]
     pub fn ==(self, other: Self) bool {
         return self.id == other.id;
     }
@@ -129,6 +131,7 @@ pub enum TypeKind : traits.ToString {
     Class,
     Struct;
 
+    #[inline]
     pub fn is_primitive(self) bool {
         return self in [
             .Void, .Nil, .Bool, .Rune, .Int8, .Int16, .Int32, .Int64, .Isize, .Uint8,
@@ -137,6 +140,7 @@ pub enum TypeKind : traits.ToString {
         ];
     }
 
+    #[inline]
     pub fn to_string(&self) string {
         return switch self.* {
             .Nil => "nil",
@@ -204,6 +208,7 @@ pub class EnumInfo : TypeInfo {
     pub mut variants: [EnumVariant];
     pub is_advanced_enum: bool;
 
+    #[inline]
     pub fn add_value(mut self, name: string, variant: isize) {
         self.variants.push(EnumVariant(name, variant));
     }
@@ -227,10 +232,11 @@ pub class EnumInfo : TypeInfo {
     }
 
     pub fn has_value(self, name: string) bool {
-        if let _ = self.get_value(name) {
-            return true;
-        }
-        return false;
+        return if let _ = self.get_value(name) {
+            true
+        } else {
+            false
+        };
     }
 }
 
@@ -403,7 +409,7 @@ pub class TypeSym : Sym {
             or self.kind is .Vector;
     }
 
-    // TODO: fix inheritance of overloaded operators
+    // TODO(StunxFS): fix inheritance of overloaded operators
     #[inline; override]
     pub fn ==(self, rhs: Self) bool {
         return self.id == rhs.id;

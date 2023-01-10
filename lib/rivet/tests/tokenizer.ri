@@ -5,11 +5,12 @@
 import "rivet/prefs";
 import "rivet/token";
 import "rivet/tokenizer";
+import { Table } from "rivet/ast";
 
 let prefs_: prefs.Prefs = prefs.Prefs();
 
 fn tokenize(text: string) [token.Token] {
-    let mut tokenizer_ = tokenizer.Tokenizer.new(text, prefs_);
+    let mut tokenizer_ = tokenizer.Tokenizer.new(text, prefs_, Table.new(prefs_));
     let mut tokens: [token.Token] = [];
     let mut token = tokenizer_.next();
     while {

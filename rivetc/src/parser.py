@@ -44,11 +44,9 @@ class Parser:
         self.file_dir = os.path.dirname(file)
         self.lexer = Lexer.from_file(self.comp, file)
         if report.ERRORS > 0:
-            return ast.SourceFile(file, [], self.mod_sym.name, None)
+            return ast.SourceFile(file, [], None)
         self.advance(2)
-        return ast.SourceFile(
-            file, self.parse_decls(), self.mod_sym.name, self.mod_sym
-        )
+        return ast.SourceFile(file, self.parse_decls(), self.mod_sym)
 
     # ---- useful functions for working with tokens ----
     def next(self):

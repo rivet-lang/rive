@@ -13,9 +13,8 @@ def is_comptime_constant(name):
     return name in COMPTIME_CONSTANTS
 
 class SourceFile:
-    def __init__(self, file, decls, pkg_name, sym):
+    def __init__(self, file, decls, sym):
         self.file = file
-        self.pkg_name = pkg_name
         self.sym = sym
         self.decls = decls
         self.imported_symbols = {}
@@ -26,7 +25,7 @@ class SourceFile:
         return None
 
     def __repr__(self):
-        return f"ast.SourceFile(file='{self.file}', pkg_name='{self.pkg_name}', decls={len(self.decls)})"
+        return f"ast.SourceFile(file='{self.file}', mod_name='{self.sym.name}', decls={len(self.decls)})"
 
     def __str__(self):
         return self.__repr__()
