@@ -24,7 +24,7 @@ class TBase:
         return self.typ.symbol()
 
     def unalias(self):
-        if isinstance(self, (Result, Optional)):
+        if isinstance(self, (Result, Option)):
             self.typ.unalias()
         elif isinstance(self, Fn):
             for i in range(len(self.args)):
@@ -114,7 +114,7 @@ class Ptr(TBase):
         while isinstance(p, Ptr):
             level += 1
             p = p.typ
-            if isinstance(p, Optional):
+            if isinstance(p, Option):
                 p = p.typ
         return level
 
@@ -306,7 +306,7 @@ class Fn(TBase):
     def __str__(self):
         return self.stringify(False)
 
-class Optional(TBase):
+class Option(TBase):
     def __init__(self, typ):
         self.typ = typ
         self.sym = None
@@ -319,7 +319,7 @@ class Optional(TBase):
         return f"?{self.typ.qualstr()}"
 
     def __eq__(self, other):
-        if not isinstance(other, Optional):
+        if not isinstance(other, Option):
             return False
         return self.typ == other.typ
 

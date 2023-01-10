@@ -544,7 +544,7 @@ class Resolver:
                 res = self.resolve_type(typ.args[i].typ)
             res = self.resolve_type(typ.ret_typ)
             return res
-        elif isinstance(typ, type.Optional):
+        elif isinstance(typ, type.Option):
             if self.resolve_type(typ.typ):
                 return True
             return False

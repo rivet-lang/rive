@@ -243,7 +243,7 @@ class Checker:
                 isinstance(expr_typ, type.Result)
                 and expr_typ.typ in self.void_types
             ) or (
-                isinstance(expr_typ, type.Optional)
+                isinstance(expr_typ, type.Option)
                 and expr_typ.typ in self.void_types
             ) or expr_typ in self.void_types):
                 report.warn("expression evaluated but not used", stmt.expr.pos)
@@ -493,7 +493,7 @@ class Checker:
             old_inside_guard_expr = self.inside_guard_expr
             self.inside_guard_expr = True
             expr_t = self.check_expr(expr.expr)
-            if isinstance(expr_t, (type.Result, type.Optional)):
+            if isinstance(expr_t, (type.Result, type.Option)):
                 expr.is_result = isinstance(expr_t, type.Result)
                 var0 = expr.vars[0]
                 expr.scope.update_type(var0.name, expr_t.typ)
@@ -501,7 +501,7 @@ class Checker:
                     self.check_expr_is_mut(expr.expr)
                 expr.typ = expr_t.typ
             else:
-                report.error("expected result or optional value", expr.expr.pos)
+                report.error("expected result or option value", expr.expr.pos)
                 expr.typ = self.comp.void_t
             if expr.has_cond:
                 if self.check_expr(expr.cond) != self.comp.bool_t:
@@ -611,14 +611,14 @@ class Checker:
                         report.error(
                             f"mismatched types `{ltyp}` and `{rtyp}`", expr.pos
                         )
-                    elif isinstance(promoted_type, type.Optional):
+                    elif isinstance(promoted_type, type.Option):
                         report.error(
                             f"operator `{expr.op}` cannot be used with `{promoted_type}`",
                             expr.pos
                         )
                 return_type = promoted_type
             elif expr.op == Kind.OrElse:
-                if isinstance(ltyp, type.Optional):
+                if isinstance(ltyp, type.Option):
                     if not self.check_compatible_types(
                         rtyp, ltyp.typ
                     ) and rtyp != self.comp.never_t:
@@ -630,7 +630,7 @@ class Checker:
                     expr.typ = ltyp.typ
                 else:
                     report.error(
-                        "expected optional value in left operand for operator `orelse`",
+                        "expected option value in left operand for operator `orelse`",
                         expr.pos
                     )
                     expr.typ = ltyp
@@ -666,10 +666,10 @@ class Checker:
                 if not (
                     lsym.kind
                     in (TypeKind.Class, TypeKind.Trait, TypeKind.Enum)
-                    or isinstance(ltyp, type.Optional)
+                    or isinstance(ltyp, type.Option)
                 ):
                     report.error(
-                        f"`{expr.op}` can only be used with classes, trait, enums and optionals",
+                        f"`{expr.op}` can only be used with classes, trait, enums and options",
                         expr.left.pos
                     )
                 if expr.has_var:
@@ -757,10 +757,10 @@ class Checker:
                     report.error("advanced enum values only support `is` and `!is`", expr.pos)
                 elif expr.op not in (Kind.Eq, Kind.Ne):
                     report.error("enum values only support `==` and `!=`", expr.pos)
-            elif isinstance(ltyp, type.Optional
+            elif isinstance(ltyp, type.Option
                             ) and expr.op not in (Kind.KwIs, Kind.KwNotIs):
                 report.error(
-                    "optional values only support `is` and `!is`", expr.pos
+                    "option values only support `is` and `!is`", expr.pos
                 )
 
             if not self.check_compatible_types(rtyp, ltyp):
@@ -930,10 +930,10 @@ class Checker:
                             if m.is_method:
                                 expr.sym = m
                                 if isinstance(
-                                    expr_left.left_typ, type.Optional
+                                    expr_left.left_typ, type.Option
                                 ):
                                     report.error(
-                                        "optional value cannot be called directly",
+                                        "option value cannot be called directly",
                                         expr_left.field_pos
                                     )
                                     report.help(
@@ -1158,9 +1158,9 @@ class Checker:
                 left_typ = self.check_expr(expr.left)
                 expr.left_typ = left_typ
                 if expr.is_nilcheck:
-                    if not isinstance(left_typ, type.Optional):
+                    if not isinstance(left_typ, type.Option):
                         report.error(
-                            "cannot check a non-optional value", expr.field_pos
+                            "cannot check a non-option value", expr.field_pos
                         )
                     else:
                         expr.typ = left_typ.typ
@@ -1249,10 +1249,10 @@ class Checker:
                 )
                 report.help(f"use `{expr.left}.*.{expr.field_name}` instead")
             elif isinstance(
-                expr.left_typ, type.Optional
+                expr.left_typ, type.Option
             ) and not expr.is_nilcheck:
                 report.error(
-                    "fields of an optional value cannot be accessed directly",
+                    "fields of an option value cannot be accessed directly",
                     expr.pos
                 )
                 report.help("handle it with `.?` or `orelse`")
@@ -1625,7 +1625,7 @@ class Checker:
     def check_types(self, got, expected):
         if not self.check_compatible_types(got, expected):
             if got == self.comp.nil_t:
-                if isinstance(expected, type.Optional):
+                if isinstance(expected, type.Option):
                     got_str = str(expected)
                 else:
                     got_str = f"?{expected}"
@@ -1645,23 +1645,23 @@ class Checker:
 
         if isinstance(expected, type.Result):
             return self.check_compatible_types(got, expected.typ)
-        elif isinstance(got, type.Optional) and isinstance(expected, type.Ptr):
+        elif isinstance(got, type.Option) and isinstance(expected, type.Ptr):
             return self.check_pointer(expected, got.typ)
-        elif isinstance(got, type.Optional
-                        ) and not isinstance(expected, type.Optional):
+        elif isinstance(got, type.Option
+                        ) and not isinstance(expected, type.Option):
             return False
         elif isinstance(expected,
-                        type.Optional) and isinstance(got, type.Optional):
+                        type.Option) and isinstance(got, type.Option):
             if isinstance(expected.typ,
                           type.Ptr) and isinstance(got.typ, type.Ptr):
                 return self.check_pointer(expected.typ, got.typ)
             return expected.typ == got.typ.typ
         elif isinstance(expected,
-                        type.Optional) and not isinstance(got, type.Optional):
+                        type.Option) and not isinstance(got, type.Option):
             if got == self.comp.nil_t:
                 return True
             return self.check_compatible_types(got, expected.typ)
-        elif expected == self.comp.nil_t and isinstance(got, type.Optional):
+        elif expected == self.comp.nil_t and isinstance(got, type.Option):
             return True
 
         if (isinstance(expected, type.Ref)

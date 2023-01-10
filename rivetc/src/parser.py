@@ -1226,7 +1226,7 @@ class Parser:
         pos = self.tok.pos
         if self.accept(Kind.Question):
             # optional
-            return type.Optional(self.parse_type())
+            return type.Option(self.parse_type())
         elif self.tok.kind in (Kind.KwExtern, Kind.KwFn):
             # function types
             is_extern = self.accept(Kind.KwExtern)

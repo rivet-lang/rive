@@ -1,4 +1,4 @@
-struct Optional {
+struct Option {
     a: ?i32;
 }
 
@@ -19,7 +19,7 @@ test "operator `.?`" {
     @assert(x.? == 5);
 }
 
-test "guard expr with optionals" {
+test "guard expr with options" {
     let mut x: ?i32 = 100;
     if let y = x {
         @assert(y == 100);
@@ -28,11 +28,11 @@ test "guard expr with optionals" {
     }
 }
 
-test "optional field" {
-    let opt = Optional();
+test "options field" {
+    let opt = Option();
     @assert(opt.a is nil);
 
-    let opt2 = Optional(a: 5);
+    let opt2 = Option(a: 5);
     @assert(opt2.a !is nil);
     @assert(opt2.a.? == 5);
 }

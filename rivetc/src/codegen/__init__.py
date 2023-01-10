@@ -26,7 +26,7 @@ def prefix_type(tt):
         if tt.is_mut:
             prefix += "mut_"
         prefix += prefix_type(tt.typ)
-    elif isinstance(tt, type.Optional):
+    elif isinstance(tt, type.Option):
         prefix += "opt_" + prefix_type(tt.typ)
     return prefix
 
@@ -714,11 +714,11 @@ class Codegen:
 
         # wrap optional value
         if isinstance(expected_typ_,
-                      type.Optional) and not expected_typ_.is_ref_or_ptr():
+                      type.Option) and not expected_typ_.is_ref_or_ptr():
             if isinstance(res_expr, ir.NilLit):
                 res_expr = self.optional_nil(expected_typ_)
             elif not isinstance(res_expr, ir.Skip
-                                ) and not isinstance(expr_typ, type.Optional):
+                                ) and not isinstance(expr_typ, type.Option):
                 res_expr = self.optional_value(expected_typ_, res_expr)
 
         return res_expr
@@ -1616,7 +1616,7 @@ class Codegen:
         elif isinstance(expr, ast.BinaryExpr):
             expr_left_typ = expr.left.typ
             expr_right_typ = expr.right.typ
-            if isinstance(expr_left_typ, type.Optional):
+            if isinstance(expr_left_typ, type.Option):
                 if expr.op in (Kind.KwIs, Kind.KwNotIs):
                     left = self.gen_expr_with_cast(expr_left_typ, expr.left)
                     if expr_left_typ.is_ref_or_ptr():
@@ -2385,7 +2385,7 @@ class Codegen:
     def default_value(self, typ, custom_tmp = None):
         if isinstance(typ, (type.Ptr, type.Ref)):
             return ir.NilLit(ir.VOID_PTR_T)
-        if isinstance(typ, type.Optional):
+        if isinstance(typ, type.Option):
             if typ.is_ref_or_ptr():
                 return ir.NilLit(ir.VOID_PTR_T)
             return self.optional_nil(typ)
@@ -2667,7 +2667,7 @@ class Codegen:
                 )
                 self.generated_opt_res_types.append(name)
             return ir.Type(name)
-        elif isinstance(typ, type.Optional):
+        elif isinstance(typ, type.Option):
             if typ.is_ref_or_ptr():
                 return self.ir_type(typ.typ)
             name = f"_R9Optional_{mangle_type(typ.typ)}"
@@ -2918,7 +2918,7 @@ class Codegen:
                 for f in ts.info.types:
                     dep = mangle_symbol(f.symbol())
                     if dep not in typ_names or dep in field_deps or isinstance(
-                        f, type.Optional
+                        f, type.Option
                     ):
                         continue
                     field_deps.append(dep)
@@ -2937,7 +2937,7 @@ class Codegen:
                 for f in ts.fields:
                     dep = mangle_symbol(f.typ.symbol())
                     if dep not in typ_names or dep in field_deps or isinstance(
-                        f.typ, type.Optional
+                        f.typ, type.Option
                     ):
                         continue
                     field_deps.append(dep)
@@ -2950,7 +2950,7 @@ class Codegen:
                 for f in ts.fields:
                     dep = mangle_symbol(f.typ.symbol())
                     if dep not in typ_names or dep in field_deps or isinstance(
-                        f.typ, type.Optional
+                        f.typ, type.Option
                     ):
                         continue
                     field_deps.append(dep)

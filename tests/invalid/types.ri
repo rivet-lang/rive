@@ -1,6 +1,5 @@
 extern (C) {
-    fn malloc(sz: usize) *void;
-    fn free(pointer: &void) void; // FAIL
+    fn malloc(sz: usize) anyptr;
 }
 
 struct St {
