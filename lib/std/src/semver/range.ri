@@ -48,7 +48,7 @@ struct Comparator {
 
     #[inline]
     fn satisfies(&self, ver: Version) bool {
-        return switch self.op is {
+        return switch self.op {
             .Gt => ver > self.ver,
             .Lt => ver < self.ver,
             .Ge => ver >= self.ver,

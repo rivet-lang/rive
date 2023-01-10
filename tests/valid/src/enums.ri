@@ -31,7 +31,7 @@ test "enums: overrided ordinal value" {
 
 test "enums: enum variant switch" {
     let abc = SimpleEnum.Abc;
-    switch abc is {
+    switch abc {
         .Abc => @assert(true),
         else => @assert(false)
     }

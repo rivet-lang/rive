@@ -58,7 +58,7 @@ pub class Version {
         let mut major = self.major;
         let mut minor = self.minor;
         let mut patch = self.patch;
-        switch typ is {
+        switch typ {
             .Major => {
                 major += 1;
                 minor = 0;
