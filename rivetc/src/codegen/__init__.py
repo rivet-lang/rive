@@ -299,12 +299,14 @@ class Codegen:
                         continue
                 self.comp.vlog(msg)
                 args = [
-                    self.comp.prefs.target_backend_compiler, cfile, "-m64" if
+                    self.comp.prefs.target_backend_compiler, "-o", objfile, cfile, "-m64" if
                     self.comp.prefs.target_bits == prefs.Bits.X64 else "-m32",
                     "-O3" if self.comp.prefs.build_mode
                     == prefs.BuildMode.Release else "-g",
-                    f'-L{os.path.dirname(cfile)}', "-c", "-o", objfile,
+                    f'-L{os.path.dirname(cfile)}', "-c",
                 ]
+                for f in self.comp.prefs.flags:
+                    args.append(f"-D{f}")
                 res = utils.execute(*args)
                 if res.exit_code != 0:
                     utils.error(
