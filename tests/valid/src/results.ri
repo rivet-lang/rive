@@ -6,6 +6,16 @@ fn result2() ! {
     return Error("simple error (returned: {}, idx: {})".fmt(true, 0));
 }
 
+fn result3() !i32 {
+    return 5;
+}
+
+let RESULT_VALUE: i32 = result3().!;
+
+test "propagate result in `let` declaration" {
+    @assert(RESULT_VALUE == 5);
+}
+
 test "catch result error" {
     result() catch |err| {
         @assert(err is Error);

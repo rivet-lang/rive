@@ -131,6 +131,7 @@ class Codegen:
 
         self.inside_trait = False
         self.inside_test = False
+        self.inside_let_decl = False
 
         self.generated_string_literals = {}
         self.generated_opt_res_types = []
@@ -325,6 +326,7 @@ class Codegen:
         if isinstance(decl, ast.ExternDecl):
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.LetDecl):
+            self.inside_let_decl = True
             for l in decl.lefts:
                 is_extern = decl.is_extern and decl.abi != sym.ABI.Rivet
                 name = l.name if is_extern else mangle_symbol(l.sym)
@@ -341,6 +343,7 @@ class Codegen:
                         ir.Ident(typ, name),
                         self.gen_expr_with_cast(l.typ, decl.right)
                     )
+            self.inside_let_decl = False
         elif isinstance(decl, ast.EnumDecl):
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.TraitDecl):
@@ -1280,21 +1283,14 @@ class Codegen:
                     )
                     exit_l = "" if expr.err_handler.is_propagate else self.cur_fn.local_name(
                     )
-                    if err_handler_is_void:
-                        self.cur_fn.add_cond_br(
-                            ir.Selector(
-                                ir.BOOL_T, res_value, ir.Name("is_err")
-                            ), panic_l, exit_l
-                        )
-                    else:
-                        self.cur_fn.add_cond_br(
-                            ir.Selector(
-                                ir.BOOL_T, res_value, ir.Name("is_err")
-                            ), panic_l, else_value
-                        )
+                    self.cur_fn.add_cond_br(
+                        ir.Selector(
+                            ir.BOOL_T, res_value, ir.Name("is_err")
+                        ), panic_l, exit_l if err_handler_is_void else else_value
+                    )
                     self.cur_fn.add_label(panic_l)
                     if expr.err_handler.is_propagate:
-                        if self.cur_fn_is_main:
+                        if self.cur_fn_is_main or self.inside_let_decl:
                             self.cur_fn.add_call(
                                 "_R7runtime11error_panicF", [
                                     ir.Selector(

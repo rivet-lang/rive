@@ -20,6 +20,7 @@ class Checker:
         self.void_types = (self.comp.void_t, self.comp.never_t)
 
         self.inside_guard_expr = False
+        self.inside_let_decl = False
 
         self.defer_stmts = []
 
@@ -44,6 +45,7 @@ class Checker:
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.LetDecl):
+                self.inside_let_decl = True
                 old_expected_type = self.expected_type
                 expr_t = self.check_expr(decl.right)
                 try:
@@ -51,6 +53,7 @@ class Checker:
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
                 self.expected_type = old_expected_type
+                self.inside_let_decl = False
             elif isinstance(decl, ast.TypeDecl):
                 pass
             elif isinstance(decl, ast.EnumDecl):
@@ -1000,7 +1003,7 @@ class Checker:
                 if isinstance(expr.typ, type.Result):
                     if expr.err_handler.is_propagate:
                         if self.cur_fn and not (
-                            self.cur_fn.is_main or self.inside_test
+                            self.cur_fn.is_main or self.inside_test or self.inside_let_decl
                             or isinstance(self.cur_fn.ret_typ, type.Result)
                         ):
                             report.error(
@@ -1743,7 +1746,7 @@ class Checker:
     def check_pointer(self, expected, got):
         if expected.is_mut and not got.is_mut:
             return False
-        if expected.typ == self.comp.void_t:
+        elif expected.typ == self.comp.void_t:
             # anyptr == *T, is valid
             return True
         return expected.typ == got.typ
