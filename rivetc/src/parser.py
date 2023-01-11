@@ -1273,13 +1273,16 @@ class Parser:
             return type.Ptr(typ, is_mut)
         elif self.accept(Kind.Lbracket):
             # arrays or vectors
-            is_mut = self.accept(Kind.KwMut)
-            typ = self.parse_type()
-            if self.accept(Kind.Semicolon):
+            if self.tok.kind != Kind.Rbracket:
+                # array
                 size = self.parse_expr()
                 self.expect(Kind.Rbracket)
+                is_mut = self.accept(Kind.KwMut)
+                typ = self.parse_type()
                 return type.Array(typ, size, is_mut)
             self.expect(Kind.Rbracket)
+            is_mut = self.accept(Kind.KwMut)
+            typ = self.parse_type()
             return type.Vec(typ, is_mut)
         elif self.accept(Kind.Lparen):
             # tuples

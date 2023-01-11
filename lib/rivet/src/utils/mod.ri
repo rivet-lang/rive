@@ -36,11 +36,11 @@ pub fn skip_bom(file_content: string) string {
 struct CachedFile {
    path: string;
    content: string;
-   mut lines: [string];
+   mut lines: []string;
 }
 
 class SourceCache {
-   mut sources: [CachedFile];
+   mut sources: []CachedFile;
 
    pub fn find(self, path: string) ?string {
       for source in self.sources {
@@ -58,7 +58,7 @@ class SourceCache {
       return nil;
    }
 
-   pub fn find_lines(mut self, path: string) ?[string] {
+   pub fn find_lines(mut self, path: string) ?[]string {
       let mut i: usize = 0;
       while i < self.sources.len : i += 1 {
          let mut cached = self.sources[i];
@@ -96,7 +96,7 @@ pub fn max(a: usize, b: usize) usize {
    return if a > b { a } else { b };
 }
 
-pub fn option(args: [string], param: string) ?string {
+pub fn option(args: []string, param: string) ?string {
     for i, arg in args {
         if param == arg {
             if i + 1 < args.len {

@@ -13,7 +13,7 @@ import "../utils";
 pub class Table {
     pub mut universe: Mod;
     pub mut prefs: prefs.Prefs;
-    pub mut source_files: [mut SourceFile];
+    pub mut source_files: []SourceFile;
 
     pub pointer_size: usize;
 
@@ -80,7 +80,7 @@ pub class Table {
         }
     }
 
-    pub fn filter_files(self, inputs: [string]) [string] {
+    pub fn filter_files(self, inputs: []string) []string {
         let mut new_inputs = @vec(string);
         for input in inputs {
             let basename_input = path.basename(input);

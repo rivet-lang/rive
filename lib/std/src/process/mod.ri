@@ -17,7 +17,7 @@ import {
 
 import { Builder } from "../strings";
 
-pub let ARGS: [string] = unsafe { runtime.ARGS };
+pub let ARGS: []string = unsafe { runtime.ARGS };
 pub let WD_AT_STARTUP: string = get_cwd() catch ".";
 
 struct Result {
@@ -32,7 +32,7 @@ pub fn execute(cmd: string) Result {
     unsafe {
         if let f = libc.popen(pcmd.ptr, c"r") {
             let fd = libc.fileno(f);
-            let mut buf: [mut u8; 4096] = []!;
+            let mut buf: [4096]mut u8 = []!;
             let pbuf: *mut u8 = @addr_of_mut(buf[0]);
             let mut output = Builder.new(1024);
             while {

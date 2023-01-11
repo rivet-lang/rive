@@ -6,7 +6,7 @@
 
 extern (C) {
     // the default secret parameters
-    pub let _wyp: [u64; 4];
+    pub let _wyp: [4]u64;
 
     fn _wyrot(x: u64) u64;
     fn _wymum(a: *u64, b: *u64);

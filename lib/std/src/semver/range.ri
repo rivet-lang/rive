@@ -60,7 +60,7 @@ struct Comparator {
 }
 
 struct ComparatorSet {
-    comparators: [Comparator];
+    comparators: []Comparator;
 
     fn parse(input: string) !ComparatorSet {
         let raw_comparators = input.split(COMPARATOR_SEP);
@@ -106,7 +106,7 @@ struct ComparatorSet {
 }
 
 struct Range {
-    comparator_sets: [ComparatorSet];
+    comparator_sets: []ComparatorSet;
 
     fn parse(input: string) ?Range {
         let raw_comparator_sets = input.split(COMPARATOR_SET_SEP);

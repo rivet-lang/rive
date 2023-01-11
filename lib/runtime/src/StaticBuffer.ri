@@ -5,7 +5,7 @@
 import "c/libc";
 
 struct StaticBuffer {
-    buf: [mut u8; 25];
+    buf: [25]mut u8;
     mut len: usize;
 
     pub fn push(mut self, byte: u8) {

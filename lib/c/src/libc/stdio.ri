@@ -43,7 +43,7 @@ pub struct FILE;
     }
 
     pub struct fpos_t {
-        f1: [char; 16];
+        f1: [16]char;
         f2: longlong;
         f3: double;
     }

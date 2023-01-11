@@ -154,8 +154,8 @@ class Vec(TBase):
 
     def qualstr(self):
         if self.is_mut:
-            return f"[mut {self.typ.qualstr()}]"
-        return f"[{self.typ.qualstr()}]"
+            return f"[]mut {self.typ.qualstr()}"
+        return f"[]{self.typ.qualstr()}"
 
     def __eq__(self, other):
         if not isinstance(other, Vec):
@@ -164,8 +164,8 @@ class Vec(TBase):
 
     def __str__(self):
         if self.is_mut:
-            return f"[mut {self.typ}]"
-        return f"[{self.typ}]"
+            return f"[]mut {self.typ}"
+        return f"[]{self.typ}"
 
 class Variadic(TBase):
     def __init__(self, typ):
@@ -198,8 +198,8 @@ class Array(TBase):
 
     def qualstr(self):
         if self.is_mut:
-            return f"[mut {self.typ.qualstr()}; {self.size}]"
-        return f"[{self.typ.qualstr()}; {self.size}]"
+            return f"[{self.size}]mut {self.typ.qualstr()}"
+        return f"[{self.size}]{self.typ.qualstr()}"
 
     def __eq__(self, other):
         if not isinstance(other, Array):
@@ -208,8 +208,8 @@ class Array(TBase):
 
     def __str__(self):
         if self.is_mut:
-            return f"[mut {self.typ}; {self.size}]"
-        return f"[{self.typ}; {self.size}]"
+            return f"[{self.size}]mut {self.typ}"
+        return f"[{self.size}]{self.typ}"
 
 class Tuple(TBase):
     def __init__(self, types):

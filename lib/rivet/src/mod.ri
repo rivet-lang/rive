@@ -22,9 +22,9 @@ let RIVETC_DIR: string = path.dirname(process.executable() catch ".") ?? ".";
 pub class Compiler {
     pub mut table: ast.Table;
     pub mut prefs: prefs.Prefs;
-    pub mut source_files: [string];
+    pub mut source_files: []string;
 
-    pub fn new(args: [string], is_test: bool, run_output: bool) ! {
+    pub fn new(args: []string, is_test: bool, run_output: bool) ! {
         let prefs_ = prefs.Prefs.new(args, is_test, run_output).!;
         report.reports.prefs = prefs_;
         let mut compiler = Self(table: ast.Table.new(prefs_), prefs: prefs_);
@@ -75,7 +75,7 @@ pub class Compiler {
         self.parse_files(root_sym, files);
     }
 
-    fn parse_files(mut self, mod_sym: ast.Sym, files: [string]) {
+    fn parse_files(mut self, mod_sym: ast.Sym, files: []string) {
         for sf in parser.Parser(table: self.table, prefs: self.prefs).parse_module(mod_sym, files) {
             self.table.source_files.push(sf);
         }

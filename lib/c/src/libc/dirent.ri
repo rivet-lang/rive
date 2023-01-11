@@ -3,16 +3,11 @@
 // be found in the LICENSE file.
 
 pub struct dirent {
-#if _x32_
-    pub d_ino: u32;
-    pub d_off: u32;
-#else
-    pub d_ino: u64;
-    pub d_off: u64;
-#endif
+    pub d_ino: usize;
+    pub d_off: usize;
     pub d_reclen: u16;
     pub d_type: u8;
-    pub d_name: [u8; 256];
+    pub d_name: [256]u8;
 }
 
 extern (C) {

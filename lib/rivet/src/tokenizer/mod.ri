@@ -23,12 +23,12 @@ pub class Tokenizer {
     mut pos: usize;
     mut line: usize;
     mut last_nl_pos: usize;
-    mut all_tokens: [token.Token];
+    mut all_tokens: []token.Token;
     mut tidx: usize;
     mut is_started: bool;
     mut is_cr_lf: bool;
     mut eofs: usize;
-    mut conditional_stack: [Conditional];
+    mut conditional_stack: []Conditional;
 
     pub fn new(text: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
         let mut t = Tokenizer(table: table, prefs: prefs, text: text);

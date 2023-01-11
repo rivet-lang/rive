@@ -56,7 +56,7 @@ pub class Report {
     pub kind: ReportKind;
     pub pos: token.Pos;
     pub msg: string;
-    pub mut extras: [ReportExtra];
+    pub mut extras: []ReportExtra;
 
     #[inline]
     pub fn add_note(mut self, msg: string) {

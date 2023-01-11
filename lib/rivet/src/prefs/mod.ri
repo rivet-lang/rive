@@ -62,22 +62,22 @@ pub class Prefs {
     pub mut optimize_mode: OptimizeMode;
     pub mut is_test: bool;
     pub mut run_output: bool;
-    pub mut run_output_args: [string];
+    pub mut run_output_args: []string;
 
-    pub mut library_path: [string];
-    pub mut libraries_to_link: [string];
-    pub mut objects_to_link: [string];
+    pub mut library_path: []string;
+    pub mut libraries_to_link: []string;
+    pub mut objects_to_link: []string;
 
-    pub mut flags: [string];
+    pub mut flags: []string;
     pub mut check_syntax: bool;
 	pub mut check: bool;
 	pub mut emit_rir: bool;
 	pub mut keep_c: bool;
 	pub mut is_verbose: bool;
 
-    pub fn new(args: [string], is_test: bool, run_output: bool) !Self {
+    pub fn new(args: []string, is_test: bool, run_output: bool) !Self {
         let mut prefs = Prefs(is_test: is_test, run_output: run_output);
-        let mut options: [string] = [];
+        let mut options: []string = [];
         let mut i: usize = 0;
         while i < args.len : i += 1 {
             let arg = args[i];

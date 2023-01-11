@@ -7,12 +7,12 @@ import { atoi } from "std/strconv";
 const VER_MAJOR: u64 = 0;
 const VER_MINOR: u64 = 1;
 const VER_PATCH: u64 = 2;
-const VERSIONS: [u64] = [VER_MAJOR, VER_MINOR, VER_PATCH];
+const VERSIONS: []u64 = [VER_MAJOR, VER_MINOR, VER_PATCH];
 
 struct RawVersion {
     prerelease: string;
     metadata: string;
-    raw_ints: [mut string];
+    raw_ints: []mut string;
 
     // // TODO: Rewrite using regex:
     // /(\d+)\.(\d+)\.(\d+)(?:\-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-]+))?/

@@ -23,7 +23,7 @@ pub struct Stat {
     pub atim: timespec;
     pub mtim: timespec;
     pub ctim: timespec;
-    __unused: [isize; 3];
+    __unused: [3]isize;
 }
 #endif
 

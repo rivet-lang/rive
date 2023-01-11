@@ -193,7 +193,7 @@ pub class VectorInfo : TypeInfo {
 }
 
 pub class TupleInfo : TypeInfo {
-    pub types: [Type];
+    pub types: []Type;
 }
 
 pub class EnumVariant {
@@ -205,7 +205,7 @@ pub class EnumVariant {
 
 pub class EnumInfo : TypeInfo {
     pub underlying_typ: Type;
-    pub mut variants: [EnumVariant];
+    pub mut variants: []EnumVariant;
     pub is_advanced_enum: bool;
 
     #[inline]
@@ -241,8 +241,8 @@ pub class EnumInfo : TypeInfo {
 }
 
 pub class TraitInfo : TypeInfo {
-    pub bases: [mut TypeSym];
-    pub mut implements: [TypeSym];
+    pub bases: []mut TypeSym;
+    pub mut implements: []TypeSym;
     pub mut has_objects: bool;
 
     pub fn index_of(self, type_sym: TypeSym) ?usize {
@@ -273,20 +273,20 @@ pub class ClassInfo : TypeInfo {
     pub mut base_sym: TypeSym;
     pub is_base: bool;
     pub use_base: bool;
-    pub traits: [TypeSym];
+    pub traits: []TypeSym;
     pub is_child: bool;
-    pub childrens: [TypeSym];
+    pub childrens: []TypeSym;
 }
 
 pub class StructInfo : TypeInfo {
     pub is_opaque: bool;
-    pub bases: [mut TypeSym];
-    pub traits: [TypeSym];
+    pub bases: []mut TypeSym;
+    pub traits: []TypeSym;
 }
 
 pub class TypeSym : Sym {
-    pub mut fields: [Field];
-    pub mut full_fields_: [Field];
+    pub mut fields: []Field;
+    pub mut full_fields_: []Field;
     pub mut kind: TypeKind;
     pub mut info: TypeInfo;
     pub mut size: isize = -1;
@@ -346,7 +346,7 @@ pub class TypeSym : Sym {
         return nil;
     }
 
-    pub fn full_fields(mut self) [Field] {
+    pub fn full_fields(mut self) []Field {
         if !self.full_fields_.is_empty() {
             return self.full_fields_;
         }
@@ -434,7 +434,7 @@ pub class FnSym : Sym {
     pub self_typ: Type;
     pub self_is_mut: bool;
     pub self_is_ref: bool;
-    pub args: [Arg];
+    pub args: []Arg;
     pub has_named_args: bool;
     pub has_body: bool;
     pub ret_typ: Type;
@@ -468,7 +468,7 @@ pub class Scope {
     pub mut end: usize;
     pub mut parent: ?Scope;
     pub mut detached_from_parent: bool;
-    pub mut syms: [Sym];
+    pub mut syms: []Sym;
 
     pub fn add(mut self, sym: Sym) ! {
         if sym.name == "_" and sym is Var {

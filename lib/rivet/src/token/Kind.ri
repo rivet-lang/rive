@@ -152,7 +152,7 @@ pub class KindMap {
     pub value: string;
 }
 
-pub let Kind_Strings: [KindMap] = [
+pub let Kind_Strings: []KindMap = [
     KindMap(.Unknown, "unknown"),
     KindMap(.EOF, "end of file"),
     KindMap(.DocComment, "doc-comment"),

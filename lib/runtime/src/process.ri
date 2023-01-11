@@ -7,7 +7,7 @@ import "c/libc";
 
 /// Returns the path name of the executable that started the current process.
 pub fn process_executable() !string {
-    let mut res: [u8; libc.MAX_PATH_LEN] = []!;
+    let mut res: [libc.MAX_PATH_LEN]u8 = []!;
     let count = unsafe {
         libc.readlink(c"/proc/self/exe", @addr_of(res[0]), libc.MAX_PATH_LEN)
     };
@@ -29,7 +29,7 @@ pub fn process_set_cwd(path: string) ! {
 /// Returns the absolute path of the current working directory.
 pub fn process_get_cwd() !string {
     unsafe {
-        let mut buf: [mut u8; libc.MAX_PATH_LEN] = []!;
+        let mut buf: [libc.MAX_PATH_LEN]mut u8 = []!;
         if let res = libc.getcwd(@addr_of_mut(buf[0]), libc.MAX_PATH_LEN) {
             return string.from_raw(@addr_of(buf[0])).clone();
         }

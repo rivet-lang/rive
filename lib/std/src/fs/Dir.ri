@@ -26,11 +26,11 @@ pub struct Dir {
         }
     }
 
-    pub fn walk(path_: string) ![string] {
+    pub fn walk(path_: string) ![]string {
         let rpath = path.resolve(path_).!;
         unsafe {
             if let dir = libc.opendir(path_.ptr) {
-                let mut res: [string] = [];
+                let mut res = @vec(string);
                 while let ent = libc.readdir(dir) {
                     let bptr = @addr_of(ent.*.d_name[0]);
                     if (bptr[0] == 0 or (bptr[0] == b'.' and bptr[1] == 0)

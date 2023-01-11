@@ -250,9 +250,9 @@ class SymRef(Sym):
 class Mod(Sym):
     def add_or_get_array(self, elem_typ, size, is_mut = False):
         if is_mut:
-            unique_name = f"[mut {elem_typ.qualstr()}; {size}]"
+            unique_name = f"[{size}]mut {elem_typ.qualstr()}"
         else:
-            unique_name = f"[{elem_typ.qualstr()}; {size}]"
+            unique_name = f"[{size}]{elem_typ.qualstr()}"
         if sym := self.find(unique_name):
             return sym
         from .type import Ptr, Type as type_Type
@@ -265,9 +265,9 @@ class Mod(Sym):
 
     def add_or_get_vec(self, elem_typ, is_mut = False):
         if is_mut:
-            unique_name = f"[mut {elem_typ.qualstr()}]"
+            unique_name = f"[]mut {elem_typ.qualstr()}"
         else:
-            unique_name = f"[{elem_typ.qualstr()}]"
+            unique_name = f"[]{elem_typ.qualstr()}"
         if sym := self.find(unique_name):
             return sym
         from .type import Ptr, Type as type_Type

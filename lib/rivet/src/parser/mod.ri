@@ -34,7 +34,7 @@ pub class Parser {
     mut inside_switch_header: bool;
     mut inside_block: bool;
 
-    pub fn parse_module(mut self, mod_sym: ast.Sym, files: [string]) [mut ast.SourceFile] {
+    pub fn parse_module(mut self, mod_sym: ast.Sym, files: []string) []ast.SourceFile {
         self.mod_sym = mod_sym;
         let mut source_files = @vec(mut ast.SourceFile);
         for file in files {
@@ -114,7 +114,7 @@ pub class Parser {
     }
 
     // ---- declarations --------------
-    fn parse_decls(mut self) [ast.Decl] {
+    fn parse_decls(mut self) []ast.Decl {
         return [];
     }
 }

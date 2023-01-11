@@ -56,7 +56,7 @@ pub class StringBuilder : ToString {
         self.write_byte(0x0A);
     }
 
-    pub fn write_join(mut self, ss: [string], sep: string = "") {
+    pub fn write_join(mut self, ss: []string, sep: string = "") {
         if ss.len == 1 {
             self.write_string(ss[0]);
         } else {

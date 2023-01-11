@@ -76,7 +76,7 @@ struct Test {
 }
 
 pub struct TestRunner {
-    tests: [mut Test];
+    tests: []mut Test;
     mut ok_tests: u64;
     mut fail_tests: u64;
     mut skip_tests: u64;

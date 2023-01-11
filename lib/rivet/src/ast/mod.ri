@@ -5,7 +5,7 @@
 import "../token";
 
 pub struct ImportedSymbols {
-    mut syms: [(string, Sym)];
+    mut syms: [](string, Sym);
 
     #[inline]
     pub fn add(mut self, name: string, sym: Sym) {
@@ -25,7 +25,7 @@ pub struct ImportedSymbols {
 pub class SourceFile {
     pub file: string;
     pub mod_sym: Sym;
-    pub decls: [Decl];
+    pub decls: []Decl;
     pub mut imported_symbols: ImportedSymbols;
 }
 

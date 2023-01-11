@@ -43,7 +43,7 @@ pub class string : ToString, Hasher {
 
     /// Returns a string with the bytes stored in `bytes`. If the length of
     /// `bytes` is 0, an empty string is returned instead.
-    pub fn from_bytes(bytes: [u8]) Self {
+    pub fn from_bytes(bytes: []u8) Self {
         if bytes.len == 0 {
             return empty_string;
         }
@@ -343,7 +343,7 @@ pub class string : ToString, Hasher {
             return self;
         }
         let mut idx: usize = 0;
-        let mut idxs: [usize] = [];
+        let mut idxs = @vec(usize);
         while {
             idx = self.index_after_of(rep, idx) ?? break;
             idxs.push(idx);
@@ -382,7 +382,7 @@ pub class string : ToString, Hasher {
     }
 
     #[inline]
-    pub fn as_bytes(self) [u8] {
+    pub fn as_bytes(self) []u8 {
         return unsafe {
             Vec.from_array_no_alloc(@as(*mut u8, self.ptr), @size_of(u8), self.len)
         };
@@ -393,8 +393,8 @@ pub class string : ToString, Hasher {
     /// >> "first row\nsecond row".split_any(" \n") == ['first', 'row', 'second', 'row']
     /// Split a string using the chars in the delimiter string as delimiters chars.
     /// If the delimiter string is empty then `.split()` is used.
-    pub fn split_any(self, delim: string) [string] {
-        let (mut i: usize, mut res: [string]) = (0, []);
+    pub fn split_any(self, delim: string) []string {
+        let (mut i: usize, mut res: []string) = (0, []);
         // check empty source string
         if self.len > 0 {
             // if empty delimiter string using default split
@@ -421,8 +421,8 @@ pub class string : ToString, Hasher {
     /// first nth parts. When nth == 0, return all the splits.
     /// The last returned element has the remainder of the string, even if the
     /// remainder contains more `delim` substrings.
-    pub fn split(self, delim: string, nth: usize = 0) [string] {
-        let (mut i: usize, mut res: [string]) = (0, []);
+    pub fn split(self, delim: string, nth: usize = 0) []string {
+        let (mut i: usize, mut res) = (0, @vec(string));
         switch delim.len {
             0 => {
                 i = 1;
@@ -480,8 +480,8 @@ pub class string : ToString, Hasher {
     }
 
     /// Splits the string by newline characters.
-    pub fn split_into_lines(self) [string] {
-        let mut res: [string] = [];
+    pub fn split_into_lines(self) []string {
+        let mut res: []string = [];
         if self.len == 0 {
             return res;
         }
@@ -670,7 +670,7 @@ pub class string : ToString, Hasher {
 
 pub struct TokenIterator {
     buffer: string;
-    delimiter_bytes: [u8];
+    delimiter_bytes: []u8;
     mut index: usize;
 
     /// Returns a slice of the current token, or nil if tokenization is

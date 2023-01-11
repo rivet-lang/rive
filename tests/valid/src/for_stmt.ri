@@ -24,7 +24,7 @@ test "`for` statement with `string.as_bytes()`" {
 
 test "`for` statement with referenced value" {
     let mut res = 0;
-    let arr: [mut i32] = [1, 2, 3];
+    let arr: []mut i32 = [1, 2, 3];
     for &value in arr {
         res += value.*;
     }
@@ -32,7 +32,7 @@ test "`for` statement with referenced value" {
 }
 
 test "`for` statement with mutable value" {
-    let arr: [mut i32] = [1, 2, 3];
+    let arr: []mut i32 = [1, 2, 3];
     for mut elem in arr {
         elem = elem * 2;
     }

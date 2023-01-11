@@ -4,7 +4,7 @@
 
 import { Builder } from "std/strings";
 
-const INVALID_ESCAPES: [u8] = r"({`.".as_bytes();
+const INVALID_ESCAPES: []u8 = r"({`.".as_bytes();
 const BACKSLASH: u8 = 92;
 const BACKSLASH_R: u8 = 13;
 const BACKSLASH_N: u8 = 10;

@@ -14,7 +14,7 @@ const FNV64_OFFSET_BASIS: u64 = 14695981039346656037;
 /// Returns a fnv1a hash of the memory block, described by the dynamic
 /// byte array `data`.
 #[inline]
-pub fn sum32(data: [u8]) u32 {
+pub fn sum32(data: []u8) u32 {
     let mut hash = FNV32_OFFSET_BASIS;
     let mut i: usize = 0;
     while i < data.len : i += 1 {
@@ -49,7 +49,7 @@ pub fn sum32_string(data: string) u32 {
 /// Returns a fnv1a hash of the memory block, described by the dynamic
 /// byte array `data`.
 #[inline]
-pub fn sum64(data: [u8]) u64 {
+pub fn sum64(data: []u8) u64 {
     let mut hash = FNV64_OFFSET_BASIS;
     let mut i: usize = 0;
     while i < data.len : i += 1 {
