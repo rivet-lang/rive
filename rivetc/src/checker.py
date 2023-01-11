@@ -754,9 +754,14 @@ class Checker:
                 )
             elif lsym.kind == TypeKind.Enum:
                 if lsym.info.is_advanced_enum:
-                    report.error("advanced enum values only support `is` and `!is`", expr.pos)
+                    report.error(
+                        "advanced enum values only support `is` and `!is`",
+                        expr.pos
+                    )
                 elif expr.op not in (Kind.Eq, Kind.Ne):
-                    report.error("enum values only support `==` and `!=`", expr.pos)
+                    report.error(
+                        "enum values only support `==` and `!=`", expr.pos
+                    )
             elif isinstance(ltyp, type.Option
                             ) and expr.op not in (Kind.KwIs, Kind.KwNotIs):
                 report.error(
@@ -929,9 +934,7 @@ class Checker:
                         if isinstance(m, sym.Fn):
                             if m.is_method:
                                 expr.sym = m
-                                if isinstance(
-                                    expr_left.left_typ, type.Option
-                                ):
+                                if isinstance(expr_left.left_typ, type.Option):
                                     report.error(
                                         "option value cannot be called directly",
                                         expr_left.field_pos
@@ -1342,10 +1345,15 @@ class Checker:
                 report.note(f"expected class or enum value, found `{expr_typ}`")
             elif expr_sym.kind == TypeKind.Enum:
                 if expr_sym.info.is_advanced_enum and not expr.is_typeswitch:
-                    report.error("cannot use `switch` with a advanced enum value", expr.pos)
+                    report.error(
+                        "cannot use `switch` with a advanced enum value",
+                        expr.pos
+                    )
                     report.note(f"use a typeswitch instead")
                 elif not expr_sym.info.is_advanced_enum and expr.is_typeswitch:
-                    report.error("cannot use typeswitch with a enum value", expr.pos)
+                    report.error(
+                        "cannot use typeswitch with a enum value", expr.pos
+                    )
                     report.note(f"use a simple `switch` instead")
             expected_branch_typ = self.expected_type
             for i, b in enumerate(expr.branches):
@@ -1647,11 +1655,10 @@ class Checker:
             return self.check_compatible_types(got, expected.typ)
         elif isinstance(got, type.Option) and isinstance(expected, type.Ptr):
             return self.check_pointer(expected, got.typ)
-        elif isinstance(got, type.Option
-                        ) and not isinstance(expected, type.Option):
+        elif isinstance(got,
+                        type.Option) and not isinstance(expected, type.Option):
             return False
-        elif isinstance(expected,
-                        type.Option) and isinstance(got, type.Option):
+        elif isinstance(expected, type.Option) and isinstance(got, type.Option):
             if isinstance(expected.typ,
                           type.Ptr) and isinstance(got.typ, type.Ptr):
                 return self.check_pointer(expected.typ, got.typ)

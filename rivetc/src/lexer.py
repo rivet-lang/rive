@@ -175,7 +175,10 @@ class Lexer:
             self.pos += 1
         elif start + 2 == self.pos:
             self.pos -= 1
-            report.error("number part of this hexadecimal is not provided", self.current_pos())
+            report.error(
+                "number part of this hexadecimal is not provided",
+                self.current_pos()
+            )
             self.pos += 1
         lit = self.text[start:self.pos]
         self.pos -= 1 # fix pos
@@ -216,7 +219,9 @@ class Lexer:
             self.pos += 1
         elif start + 2 == self.pos:
             self.pos -= 1
-            report.error("number part of this binary is not provided", self.current_pos())
+            report.error(
+                "number part of this binary is not provided", self.current_pos()
+            )
             self.pos += 1
         lit = self.text[start:self.pos]
         self.pos -= 1 # fix pos
@@ -257,7 +262,9 @@ class Lexer:
             self.pos += 1
         elif start + 2 == self.pos:
             self.pos -= 1
-            report.error("number part of this octal is not provided", self.current_pos())
+            report.error(
+                "number part of this octal is not provided", self.current_pos()
+            )
             self.pos += 1
         lit = self.text[start:self.pos]
         self.pos -= 1 # fix pos
@@ -301,7 +308,8 @@ class Lexer:
                         if not c.isdigit():
                             if not c.isalpha() or c in ["e", "E"]:
                                 # 16.6.str()
-                                if c == "." and self.pos + 1 < self.text_len and self.text[self.pos + 1].isalpha():
+                                if c == "." and self.pos + 1 < self.text_len and self.text[
+                                    self.pos + 1].isalpha():
                                     call_method = True
                                 break
                             else:
@@ -342,7 +350,8 @@ class Lexer:
                 if not c.isdigit():
                     if not c.isalpha():
                         # 6e6.str()
-                        if c == "." and self.pos + 1 < self.text_len and self.text[self.pos + 1].isalpha():
+                        if c == "." and self.pos + 1 < self.text_len and self.text[
+                            self.pos + 1].isalpha():
                             call_method = True
                         break
                     elif not has_suffix:
@@ -355,12 +364,17 @@ class Lexer:
             self.pos -= 1
             report.error("exponent has no digits", self.current_pos())
             self.pos += 1
-        elif self.pos < self.text_len and self.text[self.pos] == "." and not is_range and not call_method:
+        elif self.pos < self.text_len and self.text[
+            self.pos] == "." and not is_range and not call_method:
             self.pos -= 1
             if has_exp:
-                report.error("exponential part should be integer", self.current_pos())
+                report.error(
+                    "exponential part should be integer", self.current_pos()
+                )
             else:
-                report.error("too many decimal points in number", self.current_pos())
+                report.error(
+                    "too many decimal points in number", self.current_pos()
+                )
             self.pos += 1
         lit = self.text[start:self.pos]
         self.pos -= 1 # fix pos
@@ -481,7 +495,10 @@ class Lexer:
             elif ch.isdigit():
                 # decimals with 0 prefix = error
                 if ch == "0" and nextc.isdigit():
-                    report.error("leading zeros in decimal integer literals are not permitted", self.current_pos())
+                    report.error(
+                        "leading zeros in decimal integer literals are not permitted",
+                        self.current_pos()
+                    )
                     report.help("use an `0o` prefix for octal integers")
                 return token.Token(
                     self.read_number().replace("_", ""), Kind.Number, pos

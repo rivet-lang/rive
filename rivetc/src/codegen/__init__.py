@@ -299,8 +299,9 @@ class Codegen:
                         continue
                 self.comp.vlog(msg)
                 args = [
-                    self.comp.prefs.target_backend_compiler, "-o", objfile, cfile, "-m64" if
-                    self.comp.prefs.target_bits == prefs.Bits.X64 else "-m32",
+                    self.comp.prefs.target_backend_compiler, "-o", objfile,
+                    cfile, "-m64" if self.comp.prefs.target_bits
+                    == prefs.Bits.X64 else "-m32",
                     "-O3" if self.comp.prefs.build_mode
                     == prefs.BuildMode.Release else "-g",
                     f'-L{os.path.dirname(cfile)}', "-c",
@@ -742,7 +743,9 @@ class Codegen:
         elif isinstance(expr, ast.IntegerLiteral):
             if expr.lit.startswith("0o") or expr.lit.startswith("0b"):
                 # use hex variants
-                return ir.IntLit(self.ir_type(expr.typ), str(hex(int(expr.lit, 0))))
+                return ir.IntLit(
+                    self.ir_type(expr.typ), str(hex(int(expr.lit, 0)))
+                )
             return ir.IntLit(self.ir_type(expr.typ), expr.lit)
         elif isinstance(expr, ast.FloatLiteral):
             return ir.FloatLit(ir.F64_T, expr.lit)
