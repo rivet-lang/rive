@@ -31,7 +31,7 @@ pub enum ABI as u8 {
 pub class Sym {
     pub id: usize = new_sym_id();
     pub abi: ABI;
-    pub is_public: bool;
+    pub mut is_public: bool;
     pub parent: ?Sym;
     pub name: string;
     pub mut scope: Scope;
@@ -73,7 +73,7 @@ pub class Var : Sym {
 }
 
 pub class Field {
-    pub vis: Vis;
+    pub is_public: bool;
     pub name: string;
     pub is_mut: bool;
     pub def_expr: ?Expr;
@@ -352,7 +352,7 @@ pub class TypeSym : Sym {
     pub fn update(mut self, other: TypeSym) ! {
         if self.kind is .Placeholder {
             // update placeholder
-            self.vis = other.vis;
+            self.is_public = other.is_public;
             self.kind = other.kind;
             self.fields = other.fields;
             for s in other.scope.syms {
@@ -494,31 +494,31 @@ pub class Scope {
 
 pub fn universe() Mod {
     return Mod(
-        vis: .Priv,
+        is_public: false,
         name: "universe",
         scope: Scope(
             syms: [
-                TypeSym(vis: .Pub, name: "void", kind: .Void),
-                TypeSym(vis: .Pub, name: "never", kind: .Never),
-                TypeSym(vis: .Pub, name: "nil", kind: .Nil),
-                TypeSym(vis: .Pub, name: "bool", kind: .Bool),
-                TypeSym(vis: .Pub, name: "rune", kind: .Rune),
-                TypeSym(vis: .Pub, name: "i8", kind: .Int8),
-                TypeSym(vis: .Pub, name: "i16", kind: .Int16),
-                TypeSym(vis: .Pub, name: "i32", kind: .Int32),
-                TypeSym(vis: .Pub, name: "i64", kind: .Int64),
-                TypeSym(vis: .Pub, name: "isize", kind: .Isize),
-                TypeSym(vis: .Pub, name: "u8", kind: .Uint8),
-                TypeSym(vis: .Pub, name: "u16", kind: .Uint16),
-                TypeSym(vis: .Pub, name: "u32", kind: .Uint32),
-                TypeSym(vis: .Pub, name: "u64", kind: .Uint64),
-                TypeSym(vis: .Pub, name: "usize", kind: .Usize),
-                TypeSym(vis: .Pub, name: "comptime_int", kind: .ComptimeInt),
-                TypeSym(vis: .Pub, name: "comptime_float", kind: .ComptimeFloat),
-                TypeSym(vis: .Pub, name: "f32", kind: .Float32),
-                TypeSym(vis: .Pub, name: "f64", kind: .Float64),
-                TypeSym(vis: .Pub, name: "string", kind: .String),
-                TypeSym(vis: .Pub, name: "Error", kind: .Class, info: ClassInfo())
+                TypeSym(is_public: true, name: "void", kind: .Void),
+                TypeSym(is_public: true, name: "never", kind: .Never),
+                TypeSym(is_public: true, name: "nil", kind: .Nil),
+                TypeSym(is_public: true, name: "bool", kind: .Bool),
+                TypeSym(is_public: true, name: "rune", kind: .Rune),
+                TypeSym(is_public: true, name: "i8", kind: .Int8),
+                TypeSym(is_public: true, name: "i16", kind: .Int16),
+                TypeSym(is_public: true, name: "i32", kind: .Int32),
+                TypeSym(is_public: true, name: "i64", kind: .Int64),
+                TypeSym(is_public: true, name: "isize", kind: .Isize),
+                TypeSym(is_public: true, name: "u8", kind: .Uint8),
+                TypeSym(is_public: true, name: "u16", kind: .Uint16),
+                TypeSym(is_public: true, name: "u32", kind: .Uint32),
+                TypeSym(is_public: true, name: "u64", kind: .Uint64),
+                TypeSym(is_public: true, name: "usize", kind: .Usize),
+                TypeSym(is_public: true, name: "comptime_int", kind: .ComptimeInt),
+                TypeSym(is_public: true, name: "comptime_float", kind: .ComptimeFloat),
+                TypeSym(is_public: true, name: "f32", kind: .Float32),
+                TypeSym(is_public: true, name: "f64", kind: .Float64),
+                TypeSym(is_public: true, name: "string", kind: .String),
+                TypeSym(is_public: true, name: "Error", kind: .Class, info: ClassInfo())
             ]
         )
     );

@@ -67,7 +67,7 @@ pub class Compiler {
                 self.vlog("  {}", file);
             }
         }
-        let root_sym = ast.Mod(vis: .Priv, name: self.prefs.mod_name, is_root: true);
+        let root_sym = ast.Mod(name: self.prefs.mod_name, is_root: true);
         self.table.universe.scope.add(root_sym) catch |err| utils.error(
             "Compiler.load_root_module(): {}", err
         );
