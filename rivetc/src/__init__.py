@@ -69,7 +69,7 @@ class Compiler:
                         if mod_sym_ := self.universe.find(mod.full_name):
                             mod_sym = mod_sym_ # module already imported
                         else:
-                            mod_sym = sym.Mod(decl.vis, mod.full_name)
+                            mod_sym = sym.Mod(False, mod.full_name)
                             self.universe.add(mod_sym)
                             self.parsed_files += parser.Parser(self).parse_mod(
                                 mod_sym, mod.files
@@ -159,7 +159,7 @@ class Compiler:
             files = [self.prefs.input]
         if len(files) == 0:
             utils.error("no input received")
-        root_sym = sym.Mod(sym.Vis.Priv, self.prefs.mod_name)
+        root_sym = sym.Mod(False, self.prefs.mod_name)
         root_sym.is_root = True
         self.universe.add(root_sym)
         self.parsed_files += parser.Parser(self).parse_mod(root_sym, files)
@@ -167,7 +167,7 @@ class Compiler:
     def load_mod_and_parse(self, pathx, alias, file_path, pos):
         mod = self.load_mod(pathx, alias, file_path, pos)
         if mod.found:
-            mod_sym = sym.Mod(sym.Vis.Priv, mod.full_name)
+            mod_sym = sym.Mod(False, mod.full_name)
             self.universe.add(mod_sym)
             return parser.Parser(self).parse_mod(mod_sym, mod.files)
         return []

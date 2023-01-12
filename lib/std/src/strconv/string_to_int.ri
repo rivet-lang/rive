@@ -2,10 +2,12 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import {
-    export InvalidSyntaxError, export InvalidBaseError, export InvalidBitSizeError,
-    export ValueOutOfRangeError
-} from "std/errors";
+import "std/errors";
+
+pub alias InvalidSyntaxError = errors.InvalidSyntaxError;
+pub alias InvalidBaseError = errors.InvalidBaseError;
+pub alias InvalidBitSizeError = errors.InvalidBitSizeError;
+pub alias ValueOutOfRangeError = errors.ValueOutOfRangeError;
 
 const INT_SIZE: u32 = #if _x64_ 64 #else 32 #endif;
 

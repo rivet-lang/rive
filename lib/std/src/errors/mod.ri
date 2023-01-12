@@ -2,8 +2,12 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import { export ErrnoError } from "c";
-import { export OutOfMemoryError, export RuneFromU32Error } from "runtime";
+import "c";
+import "runtime";
+
+pub alias ErrnoError = c.ErrnoError;
+pub alias OutOfMemoryError = runtime.OutOfMemoryError;
+pub alias RuneFromU32Error = runtime.RuneFromU32Error;
 
 pub class InvalidSyntaxError : Error { }
 

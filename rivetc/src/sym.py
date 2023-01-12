@@ -97,30 +97,12 @@ class ABI(Enum):
     def __str__(self):
         return self.__repr__()
 
-class Vis(Enum):
-    Priv = auto_enum()
-    Pub = auto_enum() # Public outside current module
-    Export = auto_enum() # Public outside current module and library/object file
-
-    def is_pub(self):
-        return self in (Vis.Export, Vis.Pub)
-
-    def __repr__(self):
-        if self == Vis.Pub:
-            return "pub"
-        elif self == Vis.Export:
-            return "export"
-        return "" # private
-
-    def __str__(self):
-        return self.__repr__()
-
 class Sym:
-    def __init__(self, vis, name, abi = ABI.Rivet):
+    def __init__(self, is_public, name, abi = ABI.Rivet):
         self.attrs = None
         self.id = new_symbol_id()
         self.abi = abi
-        self.vis = vis
+        self.is_public = is_public
         self.name = name
         self.mangled_name = ""
         self.qualified_name = ""
@@ -237,10 +219,10 @@ class Sym:
         return self.id == other.id
 
 class SymRef(Sym):
-    def __init__(self, vis, name, ref, is_from_alias = False):
-        Sym.__init__(self, vis, name)
+    def __init__(self, is_public, name, ref):
+        Sym.__init__(self, is_public, name)
         self.ref = ref
-        self.is_from_alias = is_from_alias # temporal
+        self.ref_resolved = False
 
     def typeof(self):
         return self.ref.typeof()
@@ -259,7 +241,7 @@ class Mod(Sym):
         from .type import Ptr, Type as type_Type
         return self.add_and_return(
             Type(
-                Vis.Pub, unique_name, TypeKind.Array,
+                True, unique_name, TypeKind.Array,
                 info = ArrayInfo(elem_typ, size, is_mut)
             )
         )
@@ -273,15 +255,15 @@ class Mod(Sym):
             return sym
         from .type import Ptr, Type as type_Type
         vec_sym = Type(
-            Vis.Pub, unique_name, TypeKind.Vec,
+            True, unique_name, TypeKind.Vec,
             info = VecInfo(elem_typ, is_mut), fields = [
-                Field("len", False, Vis.Pub, type_Type(self[14])),
-                Field("cap", False, Vis.Pub, type_Type(self[14]))
+                Field("len", False, True, type_Type(self[14])),
+                Field("cap", False, True, type_Type(self[14]))
             ]
         )
         vec_sym.add(
             Fn(
-                ABI.Rivet, Vis.Pub, False, False, True, False, "push",
+                ABI.Rivet, True, False, False, True, False, "push",
                 [Arg("value", False, elem_typ, None, False, NO_POS)],
                 type_Type(self[0]), False, True, NO_POS, True, False,
                 type_Type(vec_sym)
@@ -289,20 +271,20 @@ class Mod(Sym):
         )
         vec_sym.add(
             Fn(
-                ABI.Rivet, Vis.Pub, False, False, True, False, "pop", [],
+                ABI.Rivet, True, False, False, True, False, "pop", [],
                 elem_typ, False, True, NO_POS, True, False, type_Type(vec_sym)
             )
         )
         vec_sym.add(
             Fn(
-                ABI.Rivet, Vis.Pub, False, False, True, False, "is_empty", [],
+                ABI.Rivet, True, False, False, True, False, "is_empty", [],
                 type_Type(self[3]), False, True, NO_POS, False, False,
                 type_Type(vec_sym)
             )
         )
         vec_sym.add(
             Fn(
-                ABI.Rivet, Vis.Pub, False, False, True, False, "clone", [],
+                ABI.Rivet, True, False, False, True, False, "clone", [],
                 type_Type(vec_sym), False, True, NO_POS, False, False,
                 type_Type(vec_sym)
             )
@@ -314,12 +296,12 @@ class Mod(Sym):
         if sym := self.find(unique_name):
             return sym
         return self.add_and_return(
-            Type(Vis.Pub, unique_name, TypeKind.Tuple, info = TupleInfo(types))
+            Type(True, unique_name, TypeKind.Tuple, info = TupleInfo(types))
         )
 
 class Const(Sym):
-    def __init__(self, vis, name, typ, expr):
-        Sym.__init__(self, vis, name)
+    def __init__(self, is_public, name, typ, expr):
+        Sym.__init__(self, is_public, name)
         self.expr = expr
         self.evaled_expr = None
         self.has_evaled_expr = False
@@ -328,19 +310,19 @@ class Const(Sym):
         self.typ = typ
 
 class Var(Sym):
-    def __init__(self, vis, is_mut, is_extern, abi, name, typ):
-        Sym.__init__(self, vis, name, abi)
+    def __init__(self, is_public, is_mut, is_extern, abi, name, typ):
+        Sym.__init__(self, is_public, name, abi)
         self.is_extern = is_extern
         self.is_mut = is_mut
         self.typ = typ
 
 class Field:
     def __init__(
-        self, name, is_mut, vis, typ, has_def_expr = False, def_expr = None
+        self, name, is_mut, is_public, typ, has_def_expr = False, def_expr = None
     ):
         self.name = name
         self.is_mut = is_mut
-        self.vis = vis
+        self.is_public = is_public
         self.typ = typ
         self.has_def_expr = has_def_expr
         self.def_expr = def_expr
@@ -546,8 +528,8 @@ class StructInfo:
         self.traits = []
 
 class Type(Sym):
-    def __init__(self, vis, name, kind, fields = [], info = None):
-        Sym.__init__(self, vis, name)
+    def __init__(self, is_public, name, kind, fields = [], info = None):
+        Sym.__init__(self, is_public, name)
         self.kind = kind
         self.fields = fields.copy()
         self.full_fields_ = []
@@ -646,11 +628,11 @@ class Arg:
 
 class Fn(Sym):
     def __init__(
-        self, abi, vis, is_extern, is_unsafe, is_method, is_variadic, name,
+        self, abi, is_public, is_extern, is_unsafe, is_method, is_variadic, name,
         args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
         self_is_ref, self_typ = None
     ):
-        Sym.__init__(self, vis, name)
+        Sym.__init__(self, is_public, name)
         self.is_main = False
         self.abi = abi
         self.is_extern = is_extern
@@ -695,27 +677,27 @@ class Fn(Sym):
 def universe():
     from .type import Ptr, Type as type_Type
 
-    uni = Mod(Vis.Priv, "universe")
-    uni.add(Type(Vis.Pub, "void", TypeKind.Void))
-    uni.add(Type(Vis.Pub, "never", TypeKind.Never))
-    uni.add(Type(Vis.Pub, "nil", TypeKind.Nil))
-    uni.add(Type(Vis.Pub, "bool", TypeKind.Bool))
-    uni.add(Type(Vis.Pub, "rune", TypeKind.Rune))
-    uni.add(Type(Vis.Pub, "i8", TypeKind.Int8))
-    uni.add(Type(Vis.Pub, "i16", TypeKind.Int16))
-    uni.add(Type(Vis.Pub, "i32", TypeKind.Int32))
-    uni.add(Type(Vis.Pub, "i64", TypeKind.Int64))
-    uni.add(Type(Vis.Pub, "isize", TypeKind.Isize))
-    uni.add(Type(Vis.Pub, "u8", TypeKind.Uint8))
-    uni.add(Type(Vis.Pub, "u16", TypeKind.Uint16))
-    uni.add(Type(Vis.Pub, "u32", TypeKind.Uint32))
-    uni.add(Type(Vis.Pub, "u64", TypeKind.Uint64))
-    uni.add(Type(Vis.Pub, "usize", TypeKind.Usize))
-    uni.add(Type(Vis.Pub, "comptime_int", TypeKind.ComptimeInt))
-    uni.add(Type(Vis.Pub, "comptime_float", TypeKind.ComptimeFloat))
-    uni.add(Type(Vis.Pub, "f32", TypeKind.Float32))
-    uni.add(Type(Vis.Pub, "f64", TypeKind.Float64))
-    uni.add(Type(Vis.Pub, "string", TypeKind.String, info = ClassInfo()))
-    uni.add(Type(Vis.Pub, "Error", TypeKind.Class, info = ClassInfo()))
+    uni = Mod(False, "universe")
+    uni.add(Type(True, "void", TypeKind.Void))
+    uni.add(Type(True, "never", TypeKind.Never))
+    uni.add(Type(True, "nil", TypeKind.Nil))
+    uni.add(Type(True, "bool", TypeKind.Bool))
+    uni.add(Type(True, "rune", TypeKind.Rune))
+    uni.add(Type(True, "i8", TypeKind.Int8))
+    uni.add(Type(True, "i16", TypeKind.Int16))
+    uni.add(Type(True, "i32", TypeKind.Int32))
+    uni.add(Type(True, "i64", TypeKind.Int64))
+    uni.add(Type(True, "isize", TypeKind.Isize))
+    uni.add(Type(True, "u8", TypeKind.Uint8))
+    uni.add(Type(True, "u16", TypeKind.Uint16))
+    uni.add(Type(True, "u32", TypeKind.Uint32))
+    uni.add(Type(True, "u64", TypeKind.Uint64))
+    uni.add(Type(True, "usize", TypeKind.Usize))
+    uni.add(Type(True, "comptime_int", TypeKind.ComptimeInt))
+    uni.add(Type(True, "comptime_float", TypeKind.ComptimeFloat))
+    uni.add(Type(True, "f32", TypeKind.Float32))
+    uni.add(Type(True, "f64", TypeKind.Float64))
+    uni.add(Type(True, "string", TypeKind.String, info = ClassInfo()))
+    uni.add(Type(True, "Error", TypeKind.Class, info = ClassInfo()))
 
     return uni

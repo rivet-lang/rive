@@ -2,4 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import { export ToString, export Hasher } from "runtime";
+import "runtime";
+
+pub alias ToString = runtime.ToString;
+pub alias Hasher = runtime.Hasher;

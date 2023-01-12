@@ -3,12 +3,13 @@
 // be found in the LICENSE file.
 
 import "c";
-import { self, export MAX_PATH_LEN } from "c/libc";
+import "c/libc";
 import "runtime";
 
 import "../../mem";
 import "../../strings";
 
+pub alias MAX_PATH_LEN = libc.MAX_PATH_LEN;
 pub const SEPARATOR: u8 = #if _WINDOWS_ b'\\' #else b'/' #endif;
 pub let SEPARATOR_STR: string = #if _WINDOWS_ "\\" #else "/" #endif;
 pub let DELIMITER: string = #if _WINDOWS_ ";" #else ":" #endif;

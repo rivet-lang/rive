@@ -28,30 +28,10 @@ pub enum ABI as u8 {
     }
 }
 
-pub enum Vis as u8 : traits.ToString {
-    Priv,
-    Pub, // Public outside current module
-    Export; // Public outside current module and library/object file
-
-    #[inline]
-    pub fn is_pub(self) bool {
-        return self in [.Export, .Pub];
-    }
-
-    #[inline]
-    pub fn to_string(&self) string {
-        return switch self.* {
-            .Pub => "pub",
-            .Export => "export",
-            else => "" // private
-        };
-    }
-}
-
 pub class Sym {
     pub id: usize = new_sym_id();
     pub abi: ABI;
-    pub mut vis: Vis;
+    pub is_public: bool;
     pub parent: ?Sym;
     pub name: string;
     pub mut scope: Scope;

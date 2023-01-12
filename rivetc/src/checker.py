@@ -914,7 +914,7 @@ class Checker:
                                         TypeKind.Struct
                                     ):
                         self.check_ctor(expr_left.field_sym, expr)
-                    elif expr_left.left_sym.kind == TypeKind.Enum and expr_left.left_sym.info.is_advanced_enum:
+                    elif isinstance(expr_left.left_sym, sym.Type) and expr_left.left_sym.kind == TypeKind.Enum and expr_left.left_sym.info.is_advanced_enum:
                         expr.is_ctor = True
                         variant_info = expr_left.field_sym.info.get_variant(
                             expr_left.field_name
@@ -1202,7 +1202,7 @@ class Checker:
                                 expr.pos
                             )
                     elif field := left_sym.find_field(expr.field_name):
-                        if (not field.vis.is_pub()
+                        if (not field.is_public
                             ) and not self.sym.has_access_to(left_sym):
                             report.error(
                                 f"field `{expr.field_name}` of type `{left_sym.name}` is private",

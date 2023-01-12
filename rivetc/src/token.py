@@ -74,7 +74,6 @@ class Kind(Enum):
     KwErrDefer = auto_enum() # errdefer
     KwExtend = auto_enum() # extend
     KwExtern = auto_enum() # extern
-    KwExport = auto_enum() # export
     KwFalse = auto_enum() # false
     KwFn = auto_enum() # fn
     KwFor = auto_enum() # for
@@ -221,7 +220,6 @@ TOKEN_STRINGS = {
     Kind.KwErrDefer: "errdefer",
     Kind.KwExtend: "extend",
     Kind.KwExtern: "extern",
-    Kind.KwExport: "export",
     Kind.KwFalse: "false",
     Kind.KwFn: "fn",
     Kind.KwFor: "for",

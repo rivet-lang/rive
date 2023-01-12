@@ -119,9 +119,9 @@ class Attrs:
         return len(self.attrs) > 0
 
 class ImportDecl:
-    def __init__(self, attrs, vis, path, alias, glob, import_list, pos):
+    def __init__(self, attrs, is_public, path, alias, glob, import_list, pos):
         self.attrs = attrs
-        self.vis = vis
+        self.is_public = is_public
         self.path = path
         self.alias = alias
         self.glob = glob
@@ -130,8 +130,7 @@ class ImportDecl:
         self.pos = pos
 
 class ImportListInfo:
-    def __init__(self, is_pub, name, alias, pos):
-        self.is_pub = is_pub
+    def __init__(self, name, alias, pos):
         self.name = name
         self.alias = alias
         self.pos = pos
@@ -152,10 +151,10 @@ class ExternDecl:
         self.pos = pos
 
 class ConstDecl:
-    def __init__(self, docs, attrs, vis, name, typ, expr, pos):
+    def __init__(self, docs, attrs, is_public, name, typ, expr, pos):
         self.docs = docs
         self.attrs = attrs
-        self.vis = vis
+        self.is_public = is_public
         self.name = name
         self.typ = typ
         self.expr = expr
@@ -163,10 +162,10 @@ class ConstDecl:
         self.pos = pos
 
 class LetDecl:
-    def __init__(self, docs, attrs, vis, is_extern, abi, lefts, right, pos):
+    def __init__(self, docs, attrs, is_public, is_extern, abi, lefts, right, pos):
         self.docs = docs
         self.attrs = attrs
-        self.vis = vis
+        self.is_public = is_public
         self.is_extern = is_extern
         self.abi = abi
         self.lefts = lefts
@@ -174,22 +173,23 @@ class LetDecl:
         self.pos = pos
 
 class TypeDecl:
-    def __init__(self, docs, attrs, vis, name, parent, pos):
+    def __init__(self, docs, attrs, is_public, name, parent, pos):
         self.docs = docs
         self.attrs = attrs
-        self.vis = vis
+        self.is_public = is_public
         self.name = name
         self.parent = parent
         self.pos = pos
 
 class AliasDecl:
-    def __init__(self, docs, attrs, vis, name, parent, is_typealias, pos):
+    def __init__(self, docs, attrs, is_public, name, parent, is_typealias, pos):
         self.docs = docs
         self.attrs = attrs
-        self.vis = vis
+        self.is_public = is_public
         self.name = name
         self.parent = parent
         self.is_typealias = is_typealias
+        self.sym = None
         self.pos = pos
 
 class EnumVariant:
@@ -202,12 +202,12 @@ class EnumVariant:
 
 class EnumDecl:
     def __init__(
-        self, docs, attrs, vis, name, underlying_typ, bases, variants,
+        self, docs, attrs, is_public, name, underlying_typ, bases, variants,
         is_advanced_enum, decls, pos
     ):
         self.docs = docs
         self.attrs = attrs
-        self.vis = vis
+        self.is_public = is_public
         self.name = name
         self.underlying_typ = underlying_typ
         self.bases = bases
@@ -218,20 +218,20 @@ class EnumDecl:
         self.pos = pos
 
 class TraitDecl:
-    def __init__(self, docs, attrs, vis, name, bases, decls, pos):
+    def __init__(self, docs, attrs, is_public, name, bases, decls, pos):
         self.docs = docs
         self.attrs = attrs
-        self.vis = vis
+        self.is_public = is_public
         self.name = name
         self.bases = bases
         self.decls = decls
         self.pos = pos
 
 class ClassDecl:
-    def __init__(self, docs, attrs, vis, name, bases, decls, pos):
+    def __init__(self, docs, attrs, is_public, name, bases, decls, pos):
         self.docs = docs
         self.attrs = attrs
-        self.vis = vis
+        self.is_public = is_public
         self.name = name
         self.bases = bases
         self.decls = decls
@@ -239,10 +239,10 @@ class ClassDecl:
         self.pos = pos
 
 class StructDecl:
-    def __init__(self, docs, attrs, vis, name, bases, decls, is_opaque, pos):
+    def __init__(self, docs, attrs, is_public, name, bases, decls, is_opaque, pos):
         self.docs = docs
         self.attrs = attrs
-        self.vis = vis
+        self.is_public = is_public
         self.name = name
         self.bases = bases
         self.decls = decls
@@ -252,11 +252,11 @@ class StructDecl:
 
 class FieldDecl:
     def __init__(
-        self, attrs, docs, vis, is_mut, name, typ, def_expr, has_def_expr, pos
+        self, attrs, docs, is_public, is_mut, name, typ, def_expr, has_def_expr, pos
     ):
         self.docs = docs
         self.attrs = attrs
-        self.vis = vis
+        self.is_public = is_public
         self.is_mut = is_mut
         self.name = name
         self.typ = typ
@@ -274,7 +274,7 @@ class ExtendDecl:
 
 class FnDecl:
     def __init__(
-        self, docs, attrs, vis, is_extern, is_unsafe, name, name_pos, args,
+        self, docs, attrs, is_public, is_extern, is_unsafe, name, name_pos, args,
         ret_typ, stmts, scope, has_body = False, is_method = False,
         self_is_mut = False, self_is_ref = False, has_named_args = False,
         is_main = False, is_variadic = False, abi = None
@@ -282,7 +282,7 @@ class FnDecl:
         self.sym = None
         self.docs = docs
         self.attrs = attrs
-        self.vis = vis
+        self.is_public = is_public
         self.abi = abi
         self.name = name
         self.name_pos = name_pos

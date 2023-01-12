@@ -5,7 +5,7 @@
 import copy
 
 from . import token
-from .sym import Vis, TypeKind, Fn as sym_Fn, Arg, ABI
+from .sym import TypeKind, Fn as sym_Fn, Arg, ABI
 
 class _Ptr: # ugly hack =/
     def __init__(self, val):
@@ -238,7 +238,7 @@ class Fn(TBase):
 
     def info(self):
         return sym_Fn(
-            self.abi, Vis.Pub, self.is_extern, self.is_unsafe, self.is_method,
+            self.abi, True, self.is_extern, self.is_unsafe, self.is_method,
             self.is_variadic, self.stringify(False),
             self.args, self.ret_typ, False, not self.is_extern,
             token.Pos("", 0, 0, 0), self.self_is_mut, self.self_is_ref

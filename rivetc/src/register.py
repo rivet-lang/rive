@@ -26,60 +26,28 @@ class Register:
             old_sym = self.sym
             if isinstance(decl, ast.ImportDecl):
                 if len(decl.import_list) == 0:
-                    if decl.vis.is_pub():
+                    if decl.is_public:
                         try:
                             self.sym.add(
-                                sym.SymRef(decl.vis, decl.alias, decl.mod_sym)
+                                sym.SymRef(decl.is_public, decl.alias, decl.mod_sym)
                             )
                         except utils.CompilerError as e:
                             report.error(e.args[0], decl.pos)
                     else:
-                        self.source_file.imported_symbols[decl.alias
-                                                          ] = decl.mod_sym
+                        self.source_file.imported_symbols[decl.alias] = decl.mod_sym
                 if decl.glob:
                     for symbol in decl.mod_sym.syms:
-                        if not symbol.vis.is_pub():
+                        if not symbol.is_public:
                             continue
                         self.check_imported_symbol(symbol, decl.pos)
-                        if decl.vis.is_pub():
-                            try:
-                                self.sym.add(
-                                    sym.SymRef(decl.vis, symbol.name, symbol)
-                                )
-                            except utils.CompilerError as e:
-                                report.error(e.args[0], decl.pos)
-                        else:
-                            self.source_file.imported_symbols[symbol.name
-                                                              ] = symbol
+                        self.source_file.imported_symbols[symbol.name] = symbol
                 for import_info in decl.import_list:
                     if import_info.name == "self":
-                        if import_info.is_pub:
-                            try:
-                                self.sym.add(
-                                    sym.SymRef(
-                                        sym.Vis.Pub, decl.alias, decl.mod_sym
-                                    )
-                                )
-                            except utils.CompilerError as e:
-                                report.error(e.args[0], decl.pos)
-                        else:
-                            self.source_file.imported_symbols[decl.alias
-                                                              ] = decl.mod_sym
+                        self.source_file.imported_symbols[decl.alias] = decl.mod_sym
                     elif symbol := decl.mod_sym.find(import_info.name):
                         self.check_vis(symbol, import_info.pos)
                         self.check_imported_symbol(symbol, import_info.pos)
-                        if import_info.is_pub:
-                            try:
-                                self.sym.add(
-                                    sym.SymRef(
-                                        sym.Vis.Pub, import_info.alias, symbol
-                                    )
-                                )
-                            except utils.CompilerError as e:
-                                report.error(e.args[0], decl.pos)
-                        else:
-                            self.source_file.imported_symbols[import_info.alias
-                                                              ] = symbol
+                        self.source_file.imported_symbols[import_info.alias] = symbol
                     else:
                         report.error(
                             f"could not find `{import_info.name}` in module `{decl.mod_sym.name}`",
@@ -90,14 +58,14 @@ class Register:
                 self.walk_decls(decl.decls)
             elif isinstance(decl, ast.ConstDecl):
                 self.add_sym(
-                    sym.Const(decl.vis, decl.name, decl.typ, decl.expr),
+                    sym.Const(decl.is_public, decl.name, decl.typ, decl.expr),
                     decl.pos
                 )
             elif isinstance(decl, ast.LetDecl):
                 for v in decl.lefts:
                     try:
                         v_sym = sym.Var(
-                            decl.vis, v.is_mut, decl.is_extern, self.abi,
+                            decl.is_public, v.is_mut, decl.is_extern, self.abi,
                             v.name, v.typ
                         )
                         self.source_file.sym.add(v_sym)
@@ -107,7 +75,7 @@ class Register:
             elif isinstance(decl, ast.TypeDecl):
                 self.add_sym(
                     sym.Type(
-                        decl.vis, decl.name, TypeKind.Alias,
+                        decl.is_public, decl.name, TypeKind.Alias,
                         info = sym.AliasInfo(decl.parent)
                     ), decl.pos
                 )
@@ -116,20 +84,21 @@ class Register:
                     if decl.is_typealias:
                         self.add_sym(
                             sym.Type(
-                                decl.vis, decl.name, TypeKind.Alias,
+                                decl.is_public, decl.name, TypeKind.Alias,
                                 info = sym.AliasInfo(decl.parent)
                             ), decl.pos
                         )
                     else:
                         # updated later
-                        self.sym.add(sym.SymRef(decl.vis, decl.name, decl.parent, True))
+                        decl.sym = sym.SymRef(decl.is_public, decl.name, decl.parent)
+                        self.sym.add(decl.sym)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.TraitDecl):
                 try:
                     decl.sym = self.sym.add_and_return(
                         sym.Type(
-                            decl.vis, decl.name, TypeKind.Trait,
+                            decl.is_public, decl.name, TypeKind.Trait,
                             info = sym.TraitInfo()
                         )
                     )
@@ -147,7 +116,7 @@ class Register:
                     else:
                         decl.sym = self.sym.add_and_return(
                             sym.Type(
-                                decl.vis, decl.name, TypeKind.Class,
+                                decl.is_public, decl.name, TypeKind.Class,
                                 info = sym.ClassInfo()
                             )
                         )
@@ -161,7 +130,7 @@ class Register:
                 try:
                     decl.sym = self.sym.add_and_return(
                         sym.Type(
-                            decl.vis, decl.name, TypeKind.Struct,
+                            decl.is_public, decl.name, TypeKind.Struct,
                             info = sym.StructInfo(decl.is_opaque)
                         )
                     )
@@ -186,7 +155,7 @@ class Register:
                         )
                     decl.sym = self.sym.add_and_return(
                         sym.Type(
-                            decl.vis, decl.name, TypeKind.Enum, info = info
+                            decl.is_public, decl.name, TypeKind.Enum, info = info
                         )
                     )
                     self.sym = decl.sym
@@ -202,7 +171,7 @@ class Register:
                 else:
                     self.sym.fields.append(
                         sym.Field(
-                            decl.name, decl.is_mut, decl.vis, decl.typ,
+                            decl.name, decl.is_mut, decl.is_public, decl.typ,
                             decl.has_def_expr, decl.def_expr
                         )
                     )
@@ -234,7 +203,7 @@ class Register:
                 try:
                     decl.sym = self.sym.add_and_return(
                         sym.Fn(
-                            self.abi, decl.vis, decl.is_extern, decl.is_unsafe,
+                            self.abi, decl.is_public, decl.is_extern, decl.is_unsafe,
                             decl.is_method, decl.is_variadic, decl.name,
                             decl.args, decl.ret_typ, decl.has_named_args,
                             decl.has_body, decl.name_pos, decl.self_is_mut,
@@ -247,7 +216,7 @@ class Register:
             elif isinstance(decl, ast.DestructorDecl):
                 self.add_sym(
                     sym.Fn(
-                        self.abi, sym.Vis.Priv, False, True, True, False,
+                        self.abi, False, False, True, True, False,
                         "_dtor", [
                             sym.Arg(
                                 "self", decl.self_is_mut, type.Type(self.sym),
@@ -267,7 +236,7 @@ class Register:
             report.error(e.args[0], pos)
 
     def check_vis(self, sym_, pos):
-        if sym_.vis == sym.Vis.Priv and not self.sym.has_access_to(sym_):
+        if not sym_.is_public and not self.sym.has_access_to(sym_):
             report.error(f"{sym_.typeof()} `{sym_.name}` is private", pos)
 
     def check_imported_symbol(self, s, pos):

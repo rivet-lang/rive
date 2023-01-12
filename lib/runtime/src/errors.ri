@@ -3,7 +3,10 @@
 // be found in the LICENSE file.
 
 import "c/libc";
-import { export ErrnoError, export last_errno_error } from "c";
+import "c";
+
+pub alias ErrnoError = c.ErrnoError;
+pub alias last_errno_error = c.last_errno_error;
 
 #[inline]
 fn error_panic(err: Error) {

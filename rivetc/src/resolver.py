@@ -2,7 +2,6 @@
 # Use of this source code is governed by an MIT license that can
 # be found in the LICENSE file.
 
-from .sym import Vis
 from .token import Kind
 from . import ast, sym, type, report, utils
 
@@ -43,7 +42,8 @@ class Resolver:
             elif isinstance(decl, ast.AliasDecl):
                 if decl.is_typealias:
                     self.resolve_type(decl.parent)
-                else:
+                elif not decl.sym.ref_resolved:
+                    decl.sym.ref_resolved = True
                     self.resolve_expr(decl.parent)
             elif isinstance(decl, ast.EnumDecl):
                 if self.resolve_type(decl.underlying_typ):
@@ -382,7 +382,7 @@ class Resolver:
         if s := symbol.find(name):
             self.check_vis(s, pos)
             if isinstance(s, sym.SymRef):
-                return s.ref
+                return self.clean_sym_ref(s)
             return s
         elif isinstance(symbol, sym.Type) and symbol.kind == sym.TypeKind.Enum:
             if symbol.info.has_variant(name):
@@ -429,7 +429,7 @@ class Resolver:
             ident.is_sym = True
         elif s := self.comp.universe.find(ident.name):
             if isinstance(s, sym.Mod):
-                report.error("use of a non-imported module", ident.pos)
+                report.error(f"use of non-imported module `{ident.name}`", ident.pos)
                 report.note(
                     "consider adding an `import` with the path to the module"
                 )
@@ -464,13 +464,17 @@ class Resolver:
             report.error(f"cannot find `{ident.name}` in this scope", ident.pos)
             ident.not_found = True
         elif isinstance(ident.sym, sym.SymRef):
-            if ident.sym.is_from_alias: # from `alias`
-                self.resolve_expr(ident.sym.ref)
-                if isinstance(ident.sym.ref, ast.SelectorExpr) and ident.sym.ref.is_symbol_access and not ident.sym.ref.not_found:
-                    ident.sym.ref = ident.sym.ref.field_sym
-                elif ident.sym.ref.sym:
-                    ident.sym.ref = ident.sym.ref.sym
-            ident.sym = ident.sym.ref
+            ident.sym = self.clean_sym_ref(ident.sym)
+
+    def clean_sym_ref(self, sym_ref):
+        if not sym_ref.ref_resolved:
+            sym_ref.ref_resolved = True
+            self.resolve_expr(sym_ref.ref)
+        if isinstance(sym_ref.ref, ast.SelectorExpr) and sym_ref.ref.is_symbol_access and not sym_ref.ref.not_found:
+            return sym_ref.ref.field_sym
+        elif isinstance(sym_ref.ref, ast.Ident) and sym_ref.ref.sym:
+            return sym_ref.ref.sym
+        return sym_ref.ref
 
     def resolve_selector_expr(self, expr):
         self.resolve_expr(expr.left)
@@ -481,7 +485,7 @@ class Resolver:
                     expr.not_found = True
                     return
                 expr.left_sym = expr.left.sym
-            if isinstance(expr.left, ast.Ident) and expr.left.is_sym:
+            elif isinstance(expr.left, ast.Ident) and expr.left.is_sym:
                 if isinstance(expr.left.sym, (sym.Var, sym.Const)):
                     return
                 expr.is_symbol_access = True
@@ -683,5 +687,5 @@ class Resolver:
         return None
 
     def check_vis(self, sym, pos):
-        if sym.vis == Vis.Priv and not self.source_file.sym.has_access_to(sym):
+        if not sym.is_public and not self.source_file.sym.has_access_to(sym):
             report.error(f"{sym.typeof()} `{sym.name}` is private", pos)

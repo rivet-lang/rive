@@ -2,14 +2,14 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import {
-    export mem_alloc as alloc,
-    export mem_zeroed as zeroed,
-    export mem_resize as resize,
-    export mem_set as set,
-    export mem_copy as copy,
-    export mem_move as move,
-    export mem_dup as dup,
-    export mem_cmp as cmp,
-    export mem_dealloc as dealloc
-} from "runtime";
+import "runtime";
+
+pub alias alloc = runtime.mem_alloc;
+pub alias zeroed = runtime.mem_zeroed;
+pub alias resize = runtime.mem_resize;
+pub alias set = runtime.mem_set;
+pub alias copy = runtime.mem_copy;
+pub alias move = runtime.mem_move;
+pub alias dup = runtime.mem_dup;
+pub alias cmp = runtime.mem_cmp;
+pub alias dealloc = runtime.mem_dealloc;

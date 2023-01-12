@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import {
-    export console_print as print,
-    export console_println as println,
-    export console_eprint as eprint,
-    export console_eprintln as eprintln,
-    export console_is_atty as is_atty
-} from "runtime";
+import "runtime";
+
+pub alias print = runtime.console_print;
+pub alias println = runtime.console_println;
+pub alias eprint = runtime.console_eprint;
+pub alias eprintln = runtime.console_eprintln;
+pub alias is_atty = runtime.console_is_atty;

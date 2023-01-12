@@ -4,18 +4,17 @@
 
 import "c";
 import "c/libc";
-import {
-    self,
-    export process_id as id,
-    export process_panic as panic,
-    export process_abort as abort,
-    export process_exit as exit,
-    export process_executable as executable,
-    export process_set_cwd as set_cwd,
-    export process_get_cwd as get_cwd
-} from "runtime";
+import "runtime";
 
 import { Builder } from "../strings";
+
+pub alias id = runtime.process_id;
+pub alias panic = runtime.process_panic;
+pub alias abort = runtime.process_abort;
+pub alias exit = runtime.process_exit;
+pub alias executable = runtime.process_executable;
+pub alias set_cwd = runtime.process_set_cwd;
+pub alias get_cwd = runtime.process_get_cwd;
 
 pub let ARGS: []string = unsafe { runtime.ARGS };
 pub let WD_AT_STARTUP: string = get_cwd() catch ".";

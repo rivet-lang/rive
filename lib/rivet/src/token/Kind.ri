@@ -59,6 +59,7 @@ pub enum Kind : traits.ToString {
 
     KeywordBegin,
     // ========== keywords ==========
+    KwAlias, // alias
     KwAnd, // and
     KwAs, // as
     KwBase, // base
@@ -73,7 +74,6 @@ pub enum Kind : traits.ToString {
     KwErrDefer, // errdefer
     KwExtend, // extend
     KwExtern, // extern
-    KwExport, // export
     KwFalse, // false
     KwFn, // fn
     KwFor, // for
@@ -203,6 +203,8 @@ pub let Kind_Strings: []KindMap = [
     KindMap(.Rbracket, "]"),
     KindMap(.Lparen, "("),
     KindMap(.Rparen, ")"),
+
+    KindMap(.KwAlias, "alias"),
     KindMap(.KwAnd, "and"),
     KindMap(.KwAs, "as"),
     KindMap(.KwBase, "base"),
@@ -217,7 +219,6 @@ pub let Kind_Strings: []KindMap = [
     KindMap(.KwErrDefer, "errdefer"),
     KindMap(.KwExtend, "extend"),
     KindMap(.KwExtern, "extern"),
-    KindMap(.KwExport, "export"),
     KindMap(.KwFalse, "false"),
     KindMap(.KwFn, "fn"),
     KindMap(.KwFor, "for"),
@@ -248,6 +249,7 @@ pub let Kind_Strings: []KindMap = [
 
 pub fn lookup(str: string) Kind {
     return switch str {
+        "alias" => .KwAlias,
         "and" => .KwAnd,
         "as" => .KwAs,
         "base" => .KwBase,

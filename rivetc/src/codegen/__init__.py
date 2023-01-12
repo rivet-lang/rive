@@ -4,7 +4,7 @@
 
 import os
 
-from ..sym import TypeKind, Vis
+from ..sym import TypeKind
 from ..token import Kind, OVERLOADABLE_OPERATORS_STR, NO_POS
 from .. import ast, sym, type, token, prefs, colors, report, utils
 
@@ -333,7 +333,7 @@ class Codegen:
                 typ = self.ir_type(l.typ)
                 self.out_rir.globals.append(
                     ir.GlobalVar(
-                        is_extern or decl.vis == Vis.Export, is_extern, typ,
+                        is_extern, is_extern, typ,
                         name
                     )
                 )
@@ -394,7 +394,7 @@ class Codegen:
                         self.generated_array_returns.append(name)
                     ret_typ = ir.Type(name)
             fn_decl = ir.FnDecl(
-                decl.vis == Vis.Export, decl.attrs, decl.is_extern
+                False, decl.attrs, decl.is_extern
                 and not decl.has_body, decl.sym.name if decl.is_extern
                 and not decl.has_body else mangle_symbol(decl.sym), args,
                 decl.is_variadic and decl.is_extern, ret_typ,
@@ -2739,7 +2739,7 @@ class Codegen:
                 if ts.info.is_advanced_enum:
                     self.out_rir.structs.append(
                         ir.Struct(
-                            ts.vis == Vis.Export, mangle_symbol(ts), [
+                            False, mangle_symbol(ts), [
                                 ir.Field("_rc", ir.USIZE_T),
                                 ir.Field("_id", ir.USIZE_T),
                                 ir.Field("obj", ir.VOID_PTR_T)
