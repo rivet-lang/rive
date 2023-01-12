@@ -172,15 +172,6 @@ class LetDecl:
         self.right = right
         self.pos = pos
 
-class TypeDecl:
-    def __init__(self, docs, attrs, is_public, name, parent, pos):
-        self.docs = docs
-        self.attrs = attrs
-        self.is_public = is_public
-        self.name = name
-        self.parent = parent
-        self.pos = pos
-
 class AliasDecl:
     def __init__(self, docs, attrs, is_public, name, parent, is_typealias, pos):
         self.docs = docs

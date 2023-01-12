@@ -72,13 +72,6 @@ class Register:
                         v.sym = v_sym
                     except utils.CompilerError as e:
                         report.error(e.args[0], v.pos)
-            elif isinstance(decl, ast.TypeDecl):
-                self.add_sym(
-                    sym.Type(
-                        decl.is_public, decl.name, TypeKind.Alias,
-                        info = sym.AliasInfo(decl.parent)
-                    ), decl.pos
-                )
             elif isinstance(decl, ast.AliasDecl):
                 try:
                     if decl.is_typealias:

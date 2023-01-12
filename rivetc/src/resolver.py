@@ -37,8 +37,6 @@ class Resolver:
                     self.resolve_type(v.typ)
                 if not decl.is_extern:
                     self.resolve_expr(decl.right)
-            elif isinstance(decl, ast.TypeDecl):
-                self.resolve_type(decl.parent)
             elif isinstance(decl, ast.AliasDecl):
                 if decl.is_typealias:
                     self.resolve_type(decl.parent)

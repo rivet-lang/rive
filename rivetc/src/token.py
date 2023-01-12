@@ -97,7 +97,6 @@ class Kind(Enum):
     KwTest = auto_enum() # test
     KwTrait = auto_enum() # trait
     KwTrue = auto_enum() # true
-    KwType = auto_enum() # type
     KwUnsafe = auto_enum() # unsafe
     KwWhile = auto_enum() # while
     # ==============================
@@ -126,7 +125,8 @@ class Kind(Enum):
     def is_start_of_type(self):
         return self in (
             Kind.Bang, Kind.Name, Kind.Lparen, Kind.Amp, Kind.Mul,
-            Kind.Lbracket, Kind.Question, Kind.KwSelf, Kind.KwSelfTy
+            Kind.Lbracket, Kind.Question, Kind.KwSelf, Kind.KwSelfTy,
+            Kind.KwFn
         )
 
     def is_assign(self):
@@ -243,7 +243,6 @@ TOKEN_STRINGS = {
     Kind.KwTest: "test",
     Kind.KwTrait: "trait",
     Kind.KwTrue: "true",
-    Kind.KwType: "type",
     Kind.KwUnsafe: "unsafe",
     Kind.KwWhile: "while",
     # ==============================

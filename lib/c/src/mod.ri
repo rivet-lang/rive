@@ -6,38 +6,38 @@ extern (C) {
     pub let environ: **u8;
 }
 
-pub type char = u8;
-pub type schar = i8;
-pub type uchar = u8;
+pub alias char = u8;
+pub alias schar = i8;
+pub alias uchar = u8;
 
-pub type short = i16;
-pub type ushort = u16;
+pub alias short = i16;
+pub alias ushort = u16;
 
-pub type int = i32;
-pub type uint = u32;
+pub alias int = i32;
+pub alias uint = u32;
 
-pub type long = i64;
-pub type longlong = i64;
+pub alias long = i64;
+pub alias longlong = i64;
 
-pub type ulong = u64;
-pub type ulonglong = u64;
+pub alias ulong = u64;
+pub alias ulonglong = u64;
 
-pub type float = f32;
-pub type double = f64;
+pub alias float = f32;
+pub alias double = f64;
 
-pub type wchar_t = u32;
-pub type intmax_t = i64;
-pub type uintmax_t = u64;
+pub alias wchar_t = u32;
+pub alias intmax_t = i64;
+pub alias uintmax_t = u64;
 
-pub type size_t = usize;
-pub type ptrdiff_t = isize;
-pub type intptr_t = isize;
-pub type uintptr_t = usize;
-pub type ssize_t = isize;
+pub alias size_t = usize;
+pub alias ptrdiff_t = isize;
+pub alias intptr_t = isize;
+pub alias uintptr_t = usize;
+pub alias ssize_t = isize;
 
-pub type off_t = i64;
-pub type ino_t = u64;
-pub type dev_t = u64;
-pub type uid_t = u32;
-pub type gid_t = u32;
-pub type mode_t = usize;
+pub alias off_t = i64;
+pub alias ino_t = u64;
+pub alias dev_t = u64;
+pub alias uid_t = u32;
+pub alias gid_t = u32;
+pub alias mode_t = usize;

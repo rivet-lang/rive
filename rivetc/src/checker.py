@@ -54,8 +54,6 @@ class Checker:
                     report.error(e.args[0], decl.pos)
                 self.expected_type = old_expected_type
                 self.inside_let_decl = False
-            elif isinstance(decl, ast.TypeDecl):
-                pass
             elif isinstance(decl, ast.EnumDecl):
                 for base in decl.bases:
                     base_sym = base.symbol()

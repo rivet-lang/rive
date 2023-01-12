@@ -264,13 +264,6 @@ class Parser:
                 doc_comment, attrs, is_public, self.inside_extern, self.extern_abi,
                 lefts, right, pos
             )
-        elif self.accept(Kind.KwType):
-            pos = self.tok.pos
-            name = self.parse_name()
-            self.expect(Kind.Assign)
-            parent = self.parse_type()
-            self.expect(Kind.Semicolon)
-            return ast.TypeDecl(doc_comment, attrs, is_public, name, parent, pos)
         elif self.accept(Kind.KwAlias):
             pos = self.tok.pos
             name = self.parse_name()

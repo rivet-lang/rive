@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-// TODO(StunxFS): replace the argument type of `SignalHandler` from
+// TODO(StunxFS): replace the argument alias of `SignalHandler` from
 // `i32` to an enum that enumerates all possible signals.
 
 #if _LINUX_
@@ -21,7 +21,7 @@
 	pub const SIGTERM: i32 = 15;
 #endif
 
-pub type SignalHandler = fn(i32);
+pub alias SignalHandler = fn (i32);
 
 extern (C) {
     pub fn signal(sig: i32, handler: SignalHandler) ?SignalHandler;

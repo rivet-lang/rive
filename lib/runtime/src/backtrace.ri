@@ -14,8 +14,8 @@ struct BacktraceData {
     mut has_error: bool;
 }
 
-type BacktraceErrorCB = fn (mut_anyptr, ?*mut u8, i32);
-type BacktraceFullCB = fn (mut_anyptr, i32, ?*mut u8, i32, ?*mut u8) i32;
+alias BacktraceErrorCB = fn (mut_anyptr, ?*mut u8, i32);
+alias BacktraceFullCB = fn (mut_anyptr, i32, ?*mut u8, i32, ?*mut u8) i32;
 
 extern (C) {
     fn backtrace_create_state(
