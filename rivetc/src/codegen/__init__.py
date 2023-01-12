@@ -885,15 +885,6 @@ class Codegen:
                 if expr.name == "size_of":
                     return ir.IntLit(ir.USIZE_T, str(size))
                 return ir.IntLit(ir.USIZE_T, str(align))
-            elif expr.name in ("addr_of", "addr_of_mut"):
-                value = self.gen_expr(expr.args[0])
-                if isinstance(expr.args[0], ast.IndexExpr):
-                    return value
-                elif isinstance(
-                    value, ir.Inst
-                ) and value.kind == ir.InstKind.LoadPtr:
-                    return value.args[0]
-                return ir.Inst(ir.InstKind.GetRef, [value], value.typ.ptr())
             elif expr.name == "assert":
                 msg_ = f"`{expr.args[0]}`"
                 msg = utils.smart_quote(msg_, False)
@@ -1599,11 +1590,11 @@ class Codegen:
                 tmp = self.cur_fn.local_name()
                 if isinstance(
                     right, ir.Inst
-                ) and value.kind == ir.InstKind.LoadPtr:
-                    value = value.args[0]
+                ) and right.kind == ir.InstKind.LoadPtr:
+                    right = right.args[0]
                 else:
-                    value = ir.Inst(ir.InstKind.GetRef, [right])
-                self.cur_fn.inline_alloca(self.ir_type(expr.typ), tmp, value)
+                    right = ir.Inst(ir.InstKind.GetRef, [right])
+                self.cur_fn.inline_alloca(self.ir_type(expr.typ), tmp, right)
                 return ir.Ident(self.ir_type(expr.typ), tmp)
 
             # runtime calculation

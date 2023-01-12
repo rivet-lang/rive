@@ -24,7 +24,7 @@ pub class StringBuilder : ToString {
 
     #[inline]
     pub fn write_byte(mut self, val: u8) {
-        self.inner.push(unsafe { @addr_of(val) });
+        self.inner.push(unsafe { &val });
     }
 
     #[unsafe; inline]

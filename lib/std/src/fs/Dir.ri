@@ -32,7 +32,7 @@ pub struct Dir {
             if let dir = libc.opendir(path_.ptr) {
                 let mut res = @vec(string);
                 while let ent = libc.readdir(dir) {
-                    let bptr = @addr_of(ent.*.d_name[0]);
+                    let bptr: *u8 = &ent.*.d_name[0];
                     if (bptr[0] == 0 or (bptr[0] == b'.' and bptr[1] == 0)
                         or (bptr[0] == b'.' and bptr[1] == b'.' and bptr[2] == 0)) {
                         continue;

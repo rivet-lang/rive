@@ -24,20 +24,20 @@ extend f32 : ToString {
     /// bit position.
     #[inline]
     pub fn from_bits(b: u32) f32 {
-        return unsafe { @as(*f32, @addr_of(b)).* };
+        return unsafe { @as(*f32, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     #[inline]
-    pub fn bits(self) u32 {
-        return unsafe { @as(*u32, @addr_of(self)).* };
+    pub fn bits(&self) u32 {
+        return unsafe { @as(*u32, self).* };
     }
 
     pub fn to_string(self) string {
         unsafe {
             let mut cstr: ?*u8 = nil;
-            let len = libc.asprintf(@addr_of(cstr), c"%g", self);
+            let len = libc.asprintf(&cstr, c"%g", self);
             if len == -1 {
                 return empty_string; // fail
             }
@@ -52,20 +52,20 @@ extend f64 : ToString {
     /// bit position.
     #[inline]
     pub fn from_bits(b: u64) f64 {
-        return unsafe { @as(*f64, @addr_of(b)).* };
+        return unsafe { @as(*f64, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     #[inline]
-    pub fn bits(self) u64 {
-        return unsafe { @as(*u64, @addr_of(self)).* };
+    pub fn bits(&self) u64 {
+        return unsafe { @as(*u64, self).* };
     }
 
     pub fn to_string(self) string {
         unsafe {
             let mut cstr: ?*u8 = nil;
-            let len = libc.asprintf(@addr_of(cstr), c"%g", self);
+            let len = libc.asprintf(&cstr, c"%g", self);
             if len == -1 {
                 return empty_string; // fail
             }

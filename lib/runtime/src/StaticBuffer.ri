@@ -24,14 +24,14 @@ struct StaticBuffer {
     }
 
     pub fn as_u64(&self) u64 {
-        return unsafe { libc.strtoul(@addr_of(self.buf[0]), nil, 10) };
+        return unsafe { libc.strtoul(&self.buf[0], nil, 10) };
     }
 
     pub fn as_isize(&self) isize {
-        return unsafe { @as(isize, libc.strtol(@addr_of(self.buf[0]), nil, 10))};
+        return unsafe { @as(isize, libc.strtol(&self.buf[0], nil, 10))};
     }
 
     pub fn as_string(&self) string {
-        return unsafe { string.from_raw_with_len(@addr_of(self.buf[0]), self.len).clone() };
+        return unsafe { string.from_raw_with_len(&self.buf[0], self.len).clone() };
     }
 }

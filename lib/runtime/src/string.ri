@@ -49,7 +49,7 @@ pub class string : ToString, Hasher {
         }
         let res = @as(*mut u8, internal_alloc(bytes.len + 1));
         unsafe {
-            mem_copy(res, @addr_of(bytes[0]), bytes.len);
+            mem_copy(res, &bytes[0], bytes.len);
             res[bytes.len] = 0;
         }
         return Self(res, bytes.len);

@@ -268,11 +268,13 @@ class Fn(TBase):
                 res += ", "
         if self.is_extern and self.is_variadic:
             res += ", ..."
-        res += ") "
-        if qual:
-            res += self.ret_typ.qualstr()
-        else:
-            res += str(self.ret_typ)
+        res += ")"
+        if str(self.ret_typ) != "void":
+            res += " "
+            if qual:
+                res += self.ret_typ.qualstr()
+            else:
+                res += str(self.ret_typ)
         return res
 
     def qualstr(self):

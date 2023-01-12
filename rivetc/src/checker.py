@@ -545,11 +545,16 @@ class Checker:
                         expr.pos
                     )
             elif expr.op == Kind.Amp:
+                expected_pointer = isinstance(self.expected_type, type.Ptr) or (
+                    isinstance(self.expected_type, type.Option) and isinstance(
+                        self.expected_type.typ, type.Ptr
+                    )
+                )
                 right = expr.right
                 if isinstance(right, ast.ParExpr):
                     right = right.expr
                 if isinstance(right, ast.IndexExpr):
-                    if isinstance(right.left_typ, type.Ptr):
+                    if isinstance(right.left_typ, type.Ptr) and not expected_pointer:
                         report.error(
                             "cannot reference a pointer indexing", expr.pos
                         )
@@ -564,7 +569,14 @@ class Checker:
                     )
                 elif expr.is_ref_mut:
                     self.check_expr_is_mut(right)
-                expr.typ = type.Ref(expr.typ, expr.is_ref_mut)
+                if expected_pointer:
+                    if not self.inside_unsafe:
+                        report.error(
+                            "cannot take the address of a value outside of an `unsafe` block", expr.pos
+                        )
+                    expr.typ = type.Ptr(expr.typ, expr.is_ref_mut)
+                else:
+                    expr.typ = type.Ref(expr.typ, expr.is_ref_mut)
             return expr.typ
         elif isinstance(expr, ast.BinaryExpr):
             ltyp = self.check_expr(expr.left)
@@ -1064,19 +1076,6 @@ class Checker:
                         f"attempt to cast an expression that is already of type `{expr.typ}`",
                         expr.pos
                     )
-            elif expr.name in ("addr_of", "addr_of_mut"):
-                if not self.inside_unsafe:
-                    report.error(
-                        f"`{expr.name}` should be called inside an `unsafe` block",
-                        expr.pos
-                    )
-                is_addr_of_mut = expr.name == "addr_of_mut"
-                arg0 = expr.args[0]
-                if isinstance(arg0, ast.IndexExpr):
-                    arg0.is_ref = True
-                if is_addr_of_mut:
-                    self.check_expr_is_mut(arg0)
-                expr.typ = type.Ptr(self.check_expr(arg0), is_addr_of_mut)
             elif expr.name in ("ptr_add", "ptr_diff"):
                 if not self.inside_unsafe:
                     report.error(
