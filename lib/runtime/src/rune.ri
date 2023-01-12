@@ -54,13 +54,13 @@ extend rune : ToString {
 
     fn to_string(&self) string {
         let len = self.len_utf8();
-        let res = @as(*mut u8, internal_alloc(len + 1));
+        let res = @as([*]mut u8, internal_alloc(len + 1));
         _ = unsafe { utf32_decode_to_buffer(@as(u32, self.*), res) };
         return string(unsafe { res }, len);
     }
 }
 
-fn utf32_decode_to_buffer(code: u32, buffer: *mut u8) i32 {
+fn utf32_decode_to_buffer(code: u32, buffer: [*]mut u8) i32 {
     let icode = @as(i32, code);
     unsafe {
         switch {

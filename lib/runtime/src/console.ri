@@ -51,7 +51,7 @@ pub fn console_is_atty(fd: i32) bool {
 }
 
 #[unsafe]
-fn write_buf_to_fd(fd: i32, buf_: *u8, len: usize) {
+fn write_buf_to_fd(fd: i32, buf_: [*]u8, len: usize) {
     unsafe {
         let buf = buf_;
         let mut x: isize = 0;

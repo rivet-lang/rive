@@ -17,12 +17,12 @@ extern (C) {
     pub fn atol(nptr: ?*u8) i64;
     pub fn atoll(nptr: ?*u8) i64;
 
-    pub fn strtod(nptr: *u8, endptr: ?*u8, base_: i32) f64;
-    pub fn strtof(nptr: *u8, endptr: ?*u8, base_: i32) f32;
-    pub fn strtol(nptr: *u8, endptr: ?*u8, base_: i32) i64;
-    pub fn strtoll(nptr: *u8, endptr: ?*u8, base_: i32) i64;
-    pub fn strtoul(nptr: *u8, endptr: ?*u8, base_: i32) u64;
-    pub fn strtoull(nptr: *u8, endptr: ?*u8, base_: i32) u64;
+    pub fn strtod(nptr: [*]u8, endptr: ?*u8, base_: i32) f64;
+    pub fn strtof(nptr: [*]u8, endptr: ?*u8, base_: i32) f32;
+    pub fn strtol(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
+    pub fn strtoll(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
+    pub fn strtoul(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
+    pub fn strtoull(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
 
     pub fn malloc(size: usize) ?mut_anyptr;
     pub fn calloc(nobj: usize, size: usize) ?mut_anyptr;

@@ -9,7 +9,7 @@ extend nil : ToString {
     }
 }
 
-fn cstr_runes_count(s: *u8, size: usize) usize {
+fn cstr_runes_count(s: [*]u8, size: usize) usize {
 	let (mut l: usize, mut i: usize) = (0, 0);
 	while i < size {
 		l += 1;

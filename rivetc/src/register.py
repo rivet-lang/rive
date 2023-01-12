@@ -29,12 +29,15 @@ class Register:
                     if decl.is_public:
                         try:
                             self.sym.add(
-                                sym.SymRef(decl.is_public, decl.alias, decl.mod_sym)
+                                sym.SymRef(
+                                    decl.is_public, decl.alias, decl.mod_sym
+                                )
                             )
                         except utils.CompilerError as e:
                             report.error(e.args[0], decl.pos)
                     else:
-                        self.source_file.imported_symbols[decl.alias] = decl.mod_sym
+                        self.source_file.imported_symbols[decl.alias
+                                                          ] = decl.mod_sym
                 if decl.glob:
                     for symbol in decl.mod_sym.syms:
                         if not symbol.is_public:
@@ -43,11 +46,13 @@ class Register:
                         self.source_file.imported_symbols[symbol.name] = symbol
                 for import_info in decl.import_list:
                     if import_info.name == "self":
-                        self.source_file.imported_symbols[decl.alias] = decl.mod_sym
+                        self.source_file.imported_symbols[decl.alias
+                                                          ] = decl.mod_sym
                     elif symbol := decl.mod_sym.find(import_info.name):
                         self.check_vis(symbol, import_info.pos)
                         self.check_imported_symbol(symbol, import_info.pos)
-                        self.source_file.imported_symbols[import_info.alias] = symbol
+                        self.source_file.imported_symbols[import_info.alias
+                                                          ] = symbol
                     else:
                         report.error(
                             f"could not find `{import_info.name}` in module `{decl.mod_sym.name}`",
@@ -83,7 +88,9 @@ class Register:
                         )
                     else:
                         # updated later
-                        decl.sym = sym.SymRef(decl.is_public, decl.name, decl.parent)
+                        decl.sym = sym.SymRef(
+                            decl.is_public, decl.name, decl.parent
+                        )
                         self.sym.add(decl.sym)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
@@ -148,7 +155,8 @@ class Register:
                         )
                     decl.sym = self.sym.add_and_return(
                         sym.Type(
-                            decl.is_public, decl.name, TypeKind.Enum, info = info
+                            decl.is_public, decl.name, TypeKind.Enum,
+                            info = info
                         )
                     )
                     self.sym = decl.sym
@@ -196,11 +204,11 @@ class Register:
                 try:
                     decl.sym = self.sym.add_and_return(
                         sym.Fn(
-                            self.abi, decl.is_public, decl.is_extern, decl.is_unsafe,
-                            decl.is_method, decl.is_variadic, decl.name,
-                            decl.args, decl.ret_typ, decl.has_named_args,
-                            decl.has_body, decl.name_pos, decl.self_is_mut,
-                            decl.self_is_ref
+                            self.abi, decl.is_public, decl.is_extern,
+                            decl.is_unsafe, decl.is_method, decl.is_variadic,
+                            decl.name, decl.args, decl.ret_typ,
+                            decl.has_named_args, decl.has_body, decl.name_pos,
+                            decl.self_is_mut, decl.self_is_ref
                         )
                     )
                     decl.sym.is_main = decl.is_main
@@ -209,8 +217,7 @@ class Register:
             elif isinstance(decl, ast.DestructorDecl):
                 self.add_sym(
                     sym.Fn(
-                        self.abi, False, False, True, True, False,
-                        "_dtor", [
+                        self.abi, False, False, True, True, False, "_dtor", [
                             sym.Arg(
                                 "self", decl.self_is_mut, type.Type(self.sym),
                                 None, False, decl.pos

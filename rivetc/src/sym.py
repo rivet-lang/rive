@@ -255,8 +255,8 @@ class Mod(Sym):
             return sym
         from .type import Ptr, Type as type_Type
         vec_sym = Type(
-            True, unique_name, TypeKind.Vec,
-            info = VecInfo(elem_typ, is_mut), fields = [
+            True, unique_name, TypeKind.Vec, info = VecInfo(elem_typ, is_mut),
+            fields = [
                 Field("len", False, True, type_Type(self[14])),
                 Field("cap", False, True, type_Type(self[14]))
             ]
@@ -271,8 +271,8 @@ class Mod(Sym):
         )
         vec_sym.add(
             Fn(
-                ABI.Rivet, True, False, False, True, False, "pop", [],
-                elem_typ, False, True, NO_POS, True, False, type_Type(vec_sym)
+                ABI.Rivet, True, False, False, True, False, "pop", [], elem_typ,
+                False, True, NO_POS, True, False, type_Type(vec_sym)
             )
         )
         vec_sym.add(
@@ -318,7 +318,8 @@ class Var(Sym):
 
 class Field:
     def __init__(
-        self, name, is_mut, is_public, typ, has_def_expr = False, def_expr = None
+        self, name, is_mut, is_public, typ, has_def_expr = False,
+        def_expr = None
     ):
         self.name = name
         self.is_mut = is_mut
@@ -628,8 +629,8 @@ class Arg:
 
 class Fn(Sym):
     def __init__(
-        self, abi, is_public, is_extern, is_unsafe, is_method, is_variadic, name,
-        args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
+        self, abi, is_public, is_extern, is_unsafe, is_method, is_variadic,
+        name, args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
         self_is_ref, self_typ = None
     ):
         Sym.__init__(self, is_public, name)

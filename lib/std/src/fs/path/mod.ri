@@ -165,10 +165,10 @@ pub fn resolve(paths: ...string) !string {
     }
     let mut result_index: usize = 0;
     let result = if have_abs {
-        @as(*mut u8, mem.alloc(max_size).!)
+        @as([*]mut u8, mem.alloc(max_size).!)
     } else {
         let cwd = runtime.process_get_cwd().!;
-        let tmp = @as(*mut u8, mem.alloc(max_size + cwd.len + 1).!);
+        let tmp = @as([*]mut u8, mem.alloc(max_size + cwd.len + 1).!);
         mem.copy(tmp, cwd.ptr, cwd.len);
         result_index += cwd.len;
         tmp
@@ -240,7 +240,7 @@ pub fn relative(from_: string, to: string) !string {
             up_count += 1;
         }
         let up_index_end = up_count * 3;
-        let result = @as(*mut u8, mem.alloc(up_index_end + to_rest.len).!);
+        let result = @as([*]mut u8, mem.alloc(up_index_end + to_rest.len).!);
         errdefer unsafe {
             mem.dealloc(result);
         }
@@ -312,7 +312,7 @@ pub fn join(paths: ...string) !string {
         }
         sum + 1 // + 1 = NLL character
     };
-    let buf = @as(*mut u8, mem.alloc(total_len).!);
+    let buf = @as([*]mut u8, mem.alloc(total_len).!);
     unsafe {
         errdefer mem.dealloc(buf);
         buf[total_len] = 0;

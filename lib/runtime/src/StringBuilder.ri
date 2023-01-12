@@ -35,7 +35,7 @@ pub class StringBuilder : ToString {
     }
 
     #[unsafe]
-    pub fn write_raw_with_len(mut self, s: *u8, len: usize) {
+    pub fn write_raw_with_len(mut self, s: [*]u8, len: usize) {
         let mut i: usize = 0;
         while i < len : i += 1 {
             self.write_byte(unsafe { s[i] });

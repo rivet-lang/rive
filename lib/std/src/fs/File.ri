@@ -67,7 +67,7 @@ pub class File {
                 return Error("{} cast to `i32` results in {}".fmt(fsize, @as(i32, fsize)));
             }
 
-            let mut res = @as(*mut u8, mem.alloc(@as(usize, allocate) + 1).!);
+            let mut res = @as([*]mut u8, mem.alloc(@as(usize, allocate) + 1).!);
             let nelements = libc.fread(res, 1, @as(usize, allocate), self.f);
 
             if self.eof() and libc.ferror(self.f) != 0 {

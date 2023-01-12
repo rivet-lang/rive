@@ -7,12 +7,12 @@ import "c/libc";
 let empty_string: string = string(c"", 0, true);
 
 pub class string : ToString, Hasher {
-    pub ptr: *u8;
+    pub ptr: [*]u8;
     pub len: usize;
     is_ref: bool;
 
     #[unsafe]
-    pub fn from_raw(ptr: ?*u8, is_ref: bool = false) Self {
+    pub fn from_raw(ptr: ?[*]u8, is_ref: bool = false) Self {
         if let safe_ptr = ptr {
             return unsafe {
                 Self.from_raw_with_len(safe_ptr, libc.strlen(ptr), is_ref)
@@ -22,7 +22,7 @@ pub class string : ToString, Hasher {
     }
 
     #[unsafe]
-    pub fn from_raw_with_len(ptr: ?*u8, len: usize, is_ref: bool = false) Self {
+    pub fn from_raw_with_len(ptr: ?[*]u8, len: usize, is_ref: bool = false) Self {
         if len == 0 {
             return empty_string;
         }
@@ -33,7 +33,7 @@ pub class string : ToString, Hasher {
     }
 
     pub fn from_byte(byte: u8) Self {
-        let res = @as(*mut u8, internal_alloc(2));
+        let res = @as([*]mut u8, internal_alloc(2));
         unsafe {
             res[0] = byte;
             res[1] = 0;
@@ -47,7 +47,7 @@ pub class string : ToString, Hasher {
         if bytes.len == 0 {
             return empty_string;
         }
-        let res = @as(*mut u8, internal_alloc(bytes.len + 1));
+        let res = @as([*]mut u8, internal_alloc(bytes.len + 1));
         unsafe {
             mem_copy(res, &bytes[0], bytes.len);
             res[bytes.len] = 0;
@@ -69,7 +69,7 @@ pub class string : ToString, Hasher {
             return self;
         }
         let len = self.len * count;
-        let res = @as(*mut u8, internal_alloc(len));
+        let res = @as([*]mut u8, internal_alloc(len));
         unsafe {
             let mut i: usize = 0;
             while i < count : i += 1 {
@@ -353,7 +353,7 @@ pub class string : ToString, Hasher {
             return self;
         }
         let new_len = self.len + idxs.len * (with_.len - rep.len);
-        let mut b = @as(*mut u8, internal_alloc(new_len));
+        let mut b = @as([*]mut u8, internal_alloc(new_len));
         let (mut b_i: usize, mut s_idx: usize) = (0, 0);
         unsafe {
             for rep_pos in idxs {
@@ -641,7 +641,7 @@ pub class string : ToString, Hasher {
         if self.len == 0 {
             return empty_string;
         }
-        let res = @as(*mut u8, internal_alloc(self.len + 1));
+        let res = @as([*]mut u8, internal_alloc(self.len + 1));
         unsafe {
             mem_copy(res, self.ptr, self.len);
             res[self.len] = 0;

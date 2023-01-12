@@ -175,9 +175,7 @@ class Parser:
                         if self.accept(Kind.KwAs):
                             info_alias = self.parse_name()
                         import_list.append(
-                            ast.ImportListInfo(
-                                name, info_alias, info_pos
-                            )
+                            ast.ImportListInfo(name, info_alias, info_pos)
                         )
                     elif self.accept(Kind.Mul):
                         glob = True
@@ -188,9 +186,7 @@ class Parser:
                         if self.accept(Kind.KwAs):
                             info_alias = self.parse_name()
                         import_list.append(
-                            ast.ImportListInfo(
-                                name, info_alias, info_pos
-                            )
+                            ast.ImportListInfo(name, info_alias, info_pos)
                         )
                     if not self.accept(Kind.Comma):
                         break
@@ -241,7 +237,9 @@ class Parser:
             self.expect(Kind.Assign)
             expr = self.parse_expr()
             self.expect(Kind.Semicolon)
-            return ast.ConstDecl(doc_comment, attrs, is_public, name, typ, expr, pos)
+            return ast.ConstDecl(
+                doc_comment, attrs, is_public, name, typ, expr, pos
+            )
         elif self.accept(Kind.KwLet):
             # variable declarations
             pos = self.prev_tok.pos
@@ -261,8 +259,8 @@ class Parser:
                 right = self.empty_expr()
             self.expect(Kind.Semicolon)
             return ast.LetDecl(
-                doc_comment, attrs, is_public, self.inside_extern, self.extern_abi,
-                lefts, right, pos
+                doc_comment, attrs, is_public, self.inside_extern,
+                self.extern_abi, lefts, right, pos
             )
         elif self.accept(Kind.KwAlias):
             pos = self.tok.pos
@@ -279,7 +277,9 @@ class Parser:
                     while self.accept(Kind.Dot):
                         parent = self.parse_selector_expr(parent)
             self.expect(Kind.Semicolon)
-            return ast.AliasDecl(doc_comment, attrs, is_public, name, parent, is_typealias, pos)
+            return ast.AliasDecl(
+                doc_comment, attrs, is_public, name, parent, is_typealias, pos
+            )
         elif self.accept(Kind.KwTrait):
             pos = self.tok.pos
             name = self.parse_name()
@@ -341,7 +341,8 @@ class Parser:
                 self.expect(Kind.Rbrace)
             self.inside_struct_or_class = old_inside_struct_or_class
             return ast.StructDecl(
-                doc_comment, attrs, is_public, name, bases, decls, is_opaque, pos
+                doc_comment, attrs, is_public, name, bases, decls, is_opaque,
+                pos
             )
         elif (self.inside_struct_or_class or
               self.inside_trait) and self.tok.kind in (Kind.KwMut, Kind.Name):
@@ -395,8 +396,8 @@ class Parser:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
-                doc_comment, attrs, is_public, name, underlying_typ, bases, variants,
-                is_advanced_enum, decls, pos
+                doc_comment, attrs, is_public, name, underlying_typ, bases,
+                variants, is_advanced_enum, decls, pos
             )
         elif self.accept(Kind.KwExtend):
             pos = self.prev_tok.pos
@@ -527,8 +528,8 @@ class Parser:
                 stmts.append(self.parse_stmt())
         self.close_scope()
         return ast.FnDecl(
-            doc_comment, attrs, is_public, self.inside_extern, is_unsafe, name, pos,
-            args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
+            doc_comment, attrs, is_public, self.inside_extern, is_unsafe, name,
+            pos, args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
             self_is_ref, has_named_args, self.mod_sym.is_root
             and name == "main", is_variadic, abi
         )
@@ -1265,22 +1266,28 @@ class Parser:
         elif self.accept(Kind.Amp):
             # references
             is_mut = self.accept(Kind.KwMut)
-            typ = self.parse_type()
-            return type.Ref(typ, is_mut)
+            return type.Ref(self.parse_type(), is_mut)
         elif self.accept(Kind.Mul):
             # pointers
             is_mut = self.accept(Kind.KwMut)
+            if self.tok.kind == Kind.Mul:
+                report.error("cannot declare pointer to pointer", pos)
+                report.help(f"use an indexable pointer instead (`[*]T`)")
             typ = self.parse_type()
             return type.Ptr(typ, is_mut)
         elif self.accept(Kind.Lbracket):
             # arrays or vectors
             if self.tok.kind != Kind.Rbracket:
+                # indexable pointers
+                if self.accept(Kind.Mul):
+                    self.expect(Kind.Rbracket)
+                    is_mut = self.accept(Kind.KwMut)
+                    return type.Ptr(self.parse_type(), is_mut, True)
                 # array
                 size = self.parse_expr()
                 self.expect(Kind.Rbracket)
                 is_mut = self.accept(Kind.KwMut)
-                typ = self.parse_type()
-                return type.Array(typ, size, is_mut)
+                return type.Array(self.parse_type(), size, is_mut)
             self.expect(Kind.Rbracket)
             is_mut = self.accept(Kind.KwMut)
             typ = self.parse_type()

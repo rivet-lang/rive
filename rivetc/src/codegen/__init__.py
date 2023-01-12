@@ -332,10 +332,7 @@ class Codegen:
                 name = l.name if is_extern else mangle_symbol(l.sym)
                 typ = self.ir_type(l.typ)
                 self.out_rir.globals.append(
-                    ir.GlobalVar(
-                        is_extern, is_extern, typ,
-                        name
-                    )
+                    ir.GlobalVar(is_extern, is_extern, typ, name)
                 )
                 if not decl.is_extern:
                     self.cur_fn = self.init_global_vars_fn
@@ -394,11 +391,10 @@ class Codegen:
                         self.generated_array_returns.append(name)
                     ret_typ = ir.Type(name)
             fn_decl = ir.FnDecl(
-                False, decl.attrs, decl.is_extern
-                and not decl.has_body, decl.sym.name if decl.is_extern
-                and not decl.has_body else mangle_symbol(decl.sym), args,
-                decl.is_variadic and decl.is_extern, ret_typ,
-                decl.ret_typ == self.comp.never_t
+                False, decl.attrs, decl.is_extern and not decl.has_body,
+                decl.sym.name if decl.is_extern and not decl.has_body else
+                mangle_symbol(decl.sym), args, decl.is_variadic
+                and decl.is_extern, ret_typ, decl.ret_typ == self.comp.never_t
             )
             self.cur_fn = fn_decl
             self.cur_fn.arr_ret_struct = arr_ret_struct
@@ -1275,9 +1271,8 @@ class Codegen:
                     exit_l = "" if expr.err_handler.is_propagate else self.cur_fn.local_name(
                     )
                     self.cur_fn.add_cond_br(
-                        ir.Selector(
-                            ir.BOOL_T, res_value, ir.Name("is_err")
-                        ), panic_l, exit_l if err_handler_is_void else else_value
+                        ir.Selector(ir.BOOL_T, res_value, ir.Name("is_err")),
+                        panic_l, exit_l if err_handler_is_void else else_value
                     )
                     self.cur_fn.add_label(panic_l)
                     if expr.err_handler.is_propagate:

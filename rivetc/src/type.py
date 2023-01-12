@@ -104,9 +104,10 @@ class Ref(TBase):
         return f"&{self.typ}"
 
 class Ptr(TBase):
-    def __init__(self, typ, is_mut = False):
+    def __init__(self, typ, is_mut = False, is_indexable = False):
         self.typ = typ
         self.is_mut = is_mut
+        self.is_indexable = is_indexable or str(typ) == "void"
 
     def nr_level(self):
         level = 0
@@ -122,7 +123,11 @@ class Ptr(TBase):
         if str(self.typ) == "void":
             return "mut_anyptr" if self.is_mut else "anyptr"
         elif self.is_mut:
+            if self.is_indexable:
+                return f"[*]mut {self.typ.qualstr()}"
             return f"*mut {self.typ.qualstr()}"
+        if self.is_indexable:
+            return f"[*]{self.typ.qualstr()}"
         return f"*{self.typ.qualstr()}"
 
     def __eq__(self, other):
@@ -130,13 +135,19 @@ class Ptr(TBase):
             return False
         elif self.is_mut and not other.is_mut:
             return False
+        elif self.is_indexable and not other.is_indexable:
+            return False
         return self.typ == other.typ
 
     def __str__(self):
         if str(self.typ) == "void":
             return "mut_anyptr" if self.is_mut else "anyptr"
         elif self.is_mut:
+            if self.is_indexable:
+                return f"[*]mut {self.typ}"
             return f"*mut {self.typ}"
+        if self.is_indexable:
+            return f"[*]{self.typ}"
         return f"*{self.typ}"
 
 class Vec(TBase):

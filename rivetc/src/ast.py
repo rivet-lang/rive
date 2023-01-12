@@ -162,7 +162,9 @@ class ConstDecl:
         self.pos = pos
 
 class LetDecl:
-    def __init__(self, docs, attrs, is_public, is_extern, abi, lefts, right, pos):
+    def __init__(
+        self, docs, attrs, is_public, is_extern, abi, lefts, right, pos
+    ):
         self.docs = docs
         self.attrs = attrs
         self.is_public = is_public
@@ -230,7 +232,9 @@ class ClassDecl:
         self.pos = pos
 
 class StructDecl:
-    def __init__(self, docs, attrs, is_public, name, bases, decls, is_opaque, pos):
+    def __init__(
+        self, docs, attrs, is_public, name, bases, decls, is_opaque, pos
+    ):
         self.docs = docs
         self.attrs = attrs
         self.is_public = is_public
@@ -243,7 +247,8 @@ class StructDecl:
 
 class FieldDecl:
     def __init__(
-        self, attrs, docs, is_public, is_mut, name, typ, def_expr, has_def_expr, pos
+        self, attrs, docs, is_public, is_mut, name, typ, def_expr, has_def_expr,
+        pos
     ):
         self.docs = docs
         self.attrs = attrs
@@ -265,8 +270,8 @@ class ExtendDecl:
 
 class FnDecl:
     def __init__(
-        self, docs, attrs, is_public, is_extern, is_unsafe, name, name_pos, args,
-        ret_typ, stmts, scope, has_body = False, is_method = False,
+        self, docs, attrs, is_public, is_extern, is_unsafe, name, name_pos,
+        args, ret_typ, stmts, scope, has_body = False, is_method = False,
         self_is_mut = False, self_is_ref = False, has_named_args = False,
         is_main = False, is_variadic = False, abi = None
     ):

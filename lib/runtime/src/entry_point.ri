@@ -12,7 +12,7 @@ extern (Rivet) {
     fn drop_globals();
 }
 
-extern (C) fn init_args(_argc: usize, _argv: **u8) {
+extern (C) fn init_args(_argc: usize, _argv: [*]*u8) {
     unsafe {
         ARGS = @vec(string, _argc);
         let mut i: usize = 0;
@@ -23,7 +23,7 @@ extern (C) fn init_args(_argc: usize, _argv: **u8) {
 }
 
 fn main(
-    _argc: i32, _argv: **u8,
+    _argc: i32, _argv: [*]*u8,
 #if _TESTS_
     mut tr: TestRunner
 #else

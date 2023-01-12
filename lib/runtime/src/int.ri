@@ -54,7 +54,7 @@ extend i32 : ToString {
         }
         unsafe {
             let mut index = @as(usize, max);
-            let buf = @as(*mut u8, internal_alloc(@as(usize, max + 1)));
+            let buf = @as([*]mut u8, internal_alloc(@as(usize, max + 1)));
             buf[index] = 0;
             index -= 1;
 
@@ -113,7 +113,7 @@ extend i64 : ToString {
         }
         unsafe {
             let max = 20;
-            let buf = @as(*mut u8, internal_alloc(@as(usize, max + 1)));
+            let buf = @as([*]mut u8, internal_alloc(@as(usize, max + 1)));
             let mut index = @as(usize, max);
             buf[index] = 0;
             index -= 1;

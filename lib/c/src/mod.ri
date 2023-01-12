@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 extern (C) {
-    pub let environ: **u8;
+    pub let environ: [*]*u8;
 }
 
 pub alias char = u8;

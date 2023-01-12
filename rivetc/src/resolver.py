@@ -427,7 +427,9 @@ class Resolver:
             ident.is_sym = True
         elif s := self.comp.universe.find(ident.name):
             if isinstance(s, sym.Mod):
-                report.error(f"use of non-imported module `{ident.name}`", ident.pos)
+                report.error(
+                    f"use of non-imported module `{ident.name}`", ident.pos
+                )
                 report.note(
                     "consider adding an `import` with the path to the module"
                 )
@@ -468,7 +470,9 @@ class Resolver:
         if not sym_ref.ref_resolved:
             sym_ref.ref_resolved = True
             self.resolve_expr(sym_ref.ref)
-        if isinstance(sym_ref.ref, ast.SelectorExpr) and sym_ref.ref.is_symbol_access and not sym_ref.ref.not_found:
+        if isinstance(
+            sym_ref.ref, ast.SelectorExpr
+        ) and sym_ref.ref.is_symbol_access and not sym_ref.ref.not_found:
             return sym_ref.ref.field_sym
         elif isinstance(sym_ref.ref, ast.Ident) and sym_ref.ref.sym:
             return sym_ref.ref.sym

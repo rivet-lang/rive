@@ -543,16 +543,22 @@ class Checker:
                         expr.pos
                     )
             elif expr.op == Kind.Amp:
-                expected_pointer = isinstance(self.expected_type, type.Ptr) or (
-                    isinstance(self.expected_type, type.Option) and isinstance(
-                        self.expected_type.typ, type.Ptr
-                    )
-                )
+                if isinstance(self.expected_type, type.Ptr):
+                    expected_pointer = True
+                    indexable_pointer = self.expected_type.is_indexable
+                elif isinstance(self.expected_type, type.Option) and isinstance(self.expected_type.typ, type.Ptr):
+                    expected_pointer = True
+                    indexable_pointer = self.expected_type.typ.is_indexable
+                else:
+                    expected_pointer = False
+                    indexable_pointer = False
                 right = expr.right
                 if isinstance(right, ast.ParExpr):
                     right = right.expr
                 if isinstance(right, ast.IndexExpr):
-                    if isinstance(right.left_typ, type.Ptr) and not expected_pointer:
+                    if isinstance(
+                        right.left_typ, type.Ptr
+                    ) and not expected_pointer:
                         report.error(
                             "cannot reference a pointer indexing", expr.pos
                         )
@@ -570,9 +576,10 @@ class Checker:
                 if expected_pointer:
                     if not self.inside_unsafe:
                         report.error(
-                            "cannot take the address of a value outside of an `unsafe` block", expr.pos
+                            "cannot take the address of a value outside of an `unsafe` block",
+                            expr.pos
                         )
-                    expr.typ = type.Ptr(expr.typ, expr.is_ref_mut)
+                    expr.typ = type.Ptr(expr.typ, expr.is_ref_mut, indexable_pointer)
                 else:
                     expr.typ = type.Ref(expr.typ, expr.is_ref_mut)
             return expr.typ
@@ -850,6 +857,8 @@ class Checker:
                         )
                     elif isinstance(expr.index, ast.RangeExpr):
                         report.error("cannot slice a pointer", expr.index.pos)
+                    elif not expr.left_typ.is_indexable:
+                        report.error("cannot index a non-indexable pointer", expr.pos)
 
                 if expr.left_typ == self.comp.string_t:
                     if isinstance(expr.index, ast.RangeExpr):
@@ -912,7 +921,9 @@ class Checker:
                                         TypeKind.Struct
                                     ):
                         self.check_ctor(expr_left.field_sym, expr)
-                    elif isinstance(expr_left.left_sym, sym.Type) and expr_left.left_sym.kind == TypeKind.Enum and expr_left.left_sym.info.is_advanced_enum:
+                    elif isinstance(
+                        expr_left.left_sym, sym.Type
+                    ) and expr_left.left_sym.kind == TypeKind.Enum and expr_left.left_sym.info.is_advanced_enum:
                         expr.is_ctor = True
                         variant_info = expr_left.field_sym.info.get_variant(
                             expr_left.field_name
@@ -1013,7 +1024,8 @@ class Checker:
                 if isinstance(expr.typ, type.Result):
                     if expr.err_handler.is_propagate:
                         if self.cur_fn and not (
-                            self.cur_fn.is_main or self.inside_test or self.inside_let_decl
+                            self.cur_fn.is_main or self.inside_test
+                            or self.inside_let_decl
                             or isinstance(self.cur_fn.ret_typ, type.Result)
                         ):
                             report.error(
@@ -1093,6 +1105,9 @@ class Checker:
                             expr.pos
                         )
                         return expr.typ
+                    elif not ptr_t.is_indexable:
+                        report.error(f"`{expr.name}` requires indexable pointers", expr.pos)
+                        return expr.typ
                     for arg in expr.args[1:]:
                         arg_t = self.check_expr(arg)
                         if not self.comp.is_int(arg_t):
@@ -1171,7 +1186,7 @@ class Checker:
                     if not (
                         isinstance(left_typ, type.Ptr)
                         or isinstance(left_typ, type.Ref)
-                    ):
+                    ) or (isinstance(left_typ, type.Ptr) and left_typ.is_indexable):
                         report.error(
                             f"invalid indirect for `{left_typ}`", expr.field_pos
                         )
