@@ -182,6 +182,16 @@ class TypeDecl:
         self.parent = parent
         self.pos = pos
 
+class AliasDecl:
+    def __init__(self, docs, attrs, vis, name, parent, is_typealias, pos):
+        self.docs = docs
+        self.attrs = attrs
+        self.vis = vis
+        self.name = name
+        self.parent = parent
+        self.is_typealias = is_typealias
+        self.pos = pos
+
 class EnumVariant:
     def __init__(self, name, typ, has_typ, value):
         self.name = name

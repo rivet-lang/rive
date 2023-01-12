@@ -111,6 +111,20 @@ class Register:
                         info = sym.AliasInfo(decl.parent)
                     ), decl.pos
                 )
+            elif isinstance(decl, ast.AliasDecl):
+                try:
+                    if decl.is_typealias:
+                        self.add_sym(
+                            sym.Type(
+                                decl.vis, decl.name, TypeKind.Alias,
+                                info = sym.AliasInfo(decl.parent)
+                            ), decl.pos
+                        )
+                    else:
+                        # updated later
+                        self.sym.add(sym.SymRef(decl.vis, decl.name, decl.parent, True))
+                except utils.CompilerError as e:
+                    report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.TraitDecl):
                 try:
                     decl.sym = self.sym.add_and_return(

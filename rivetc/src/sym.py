@@ -237,9 +237,10 @@ class Sym:
         return self.id == other.id
 
 class SymRef(Sym):
-    def __init__(self, vis, name, ref):
+    def __init__(self, vis, name, ref, is_from_alias = False):
         Sym.__init__(self, vis, name)
         self.ref = ref
+        self.is_from_alias = is_from_alias # temporal
 
     def typeof(self):
         return self.ref.typeof()
@@ -454,6 +455,7 @@ class TypeKind(Enum):
 class AliasInfo:
     def __init__(self, parent):
         self.parent = parent
+        self.is_resolved = False
 
 class ArrayInfo:
     def __init__(self, elem_typ, size, is_mut):

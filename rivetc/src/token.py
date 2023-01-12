@@ -59,6 +59,7 @@ class Kind(Enum):
 
     KeywordBegin = auto_enum()
     # ========== keywords ==========
+    KwAlias = auto_enum() # alias
     KwAnd = auto_enum() # and
     KwAs = auto_enum() # as
     KwBase = auto_enum() # base
@@ -205,6 +206,7 @@ TOKEN_STRINGS = {
     Kind.Rparen: ")",
 
     # ========== keywords ==========
+    Kind.KwAlias: "alias",
     Kind.KwAnd: "and",
     Kind.KwAs: "as",
     Kind.KwBase: "base",

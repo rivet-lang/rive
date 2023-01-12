@@ -279,6 +279,22 @@ class Parser:
             parent = self.parse_type()
             self.expect(Kind.Semicolon)
             return ast.TypeDecl(doc_comment, attrs, vis, name, parent, pos)
+        elif self.accept(Kind.KwAlias):
+            pos = self.tok.pos
+            name = self.parse_name()
+            self.expect(Kind.Assign)
+            if self.tok.kind.is_start_of_type() and self.tok.kind != Kind.Name:
+                is_typealias = True
+                parent = self.parse_type()
+            else:
+                is_typealias = False
+                parent = self.parse_ident()
+                if self.accept(Kind.Dot):
+                    parent = self.parse_selector_expr(parent)
+                    while self.accept(Kind.Dot):
+                        parent = self.parse_selector_expr(parent)
+            self.expect(Kind.Semicolon)
+            return ast.AliasDecl(doc_comment, attrs, vis, name, parent, is_typealias, pos)
         elif self.accept(Kind.KwTrait):
             pos = self.tok.pos
             name = self.parse_name()
@@ -1308,7 +1324,10 @@ class Parser:
             prev_tok_kind = self.prev_tok.kind
             expr = self.parse_ident()
             if self.accept(Kind.Dot):
-                return type.Type.unresolved(self.parse_selector_expr(expr))
+                res = self.parse_selector_expr(expr)
+                while self.accept(Kind.Dot):
+                    res = self.parse_selector_expr(res)
+                return type.Type.unresolved(res)
             # normal type
             lit = expr.name
             if lit == "never":

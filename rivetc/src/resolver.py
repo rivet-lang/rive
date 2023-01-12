@@ -40,6 +40,11 @@ class Resolver:
                     self.resolve_expr(decl.right)
             elif isinstance(decl, ast.TypeDecl):
                 self.resolve_type(decl.parent)
+            elif isinstance(decl, ast.AliasDecl):
+                if decl.is_typealias:
+                    self.resolve_type(decl.parent)
+                else:
+                    self.resolve_expr(decl.parent)
             elif isinstance(decl, ast.EnumDecl):
                 if self.resolve_type(decl.underlying_typ):
                     for i, variant in enumerate(decl.sym.info.variants):
@@ -459,6 +464,12 @@ class Resolver:
             report.error(f"cannot find `{ident.name}` in this scope", ident.pos)
             ident.not_found = True
         elif isinstance(ident.sym, sym.SymRef):
+            if ident.sym.is_from_alias: # from `alias`
+                self.resolve_expr(ident.sym.ref)
+                if isinstance(ident.sym.ref, ast.SelectorExpr) and ident.sym.ref.is_symbol_access and not ident.sym.ref.not_found:
+                    ident.sym.ref = ident.sym.ref.field_sym
+                elif ident.sym.ref.sym:
+                    ident.sym.ref = ident.sym.ref.sym
             ident.sym = ident.sym.ref
 
     def resolve_selector_expr(self, expr):
@@ -599,7 +610,7 @@ class Resolver:
                             typ.expr.pos
                         )
             elif isinstance(typ.expr, ast.SelfTyExpr):
-                if self.self_sym != None:
+                if self.self_sym:
                     typ.resolve(self.self_sym)
                     return True
                 else:
