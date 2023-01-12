@@ -25,7 +25,7 @@ pub fn remove_directory(dir: string) ! {
     }
 }
 
-pub fn walk_directory(path_: string) ![]string {
+pub fn walk_directory(path_: string, ext: string = "") ![]string {
     let rpath = path.resolve(path_).!;
     unsafe {
         if let dir = libc.opendir(path_.ptr) {
@@ -36,7 +36,11 @@ pub fn walk_directory(path_: string) ![]string {
                     or (bptr[0] == b'.' and bptr[1] == b'.' and bptr[2] == 0)) {
                     continue;
                 }
-                res.push(path.join(rpath, string.from_raw(bptr).clone()).!);
+                let full_path = path.join(rpath, string.from_raw(bptr).clone()).!;
+                if !ext.is_empty() and path.extension(full_path) != ext {
+                    continue;
+                }
+                res.push(full_path);
             }
             _ = libc.closedir(dir);
             return res;

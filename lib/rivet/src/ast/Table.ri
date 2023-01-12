@@ -84,9 +84,7 @@ pub class Table {
         let mut new_inputs = @vec(string);
         for input in inputs {
             let basename_input = path.basename(input);
-            if !input.ends_with(".ri") {
-                continue;
-            } else if basename_input.count(".") == 1 {
+            if basename_input.count(".") == 1 {
                 new_inputs.push(input);
                 continue;
             }

@@ -47,11 +47,11 @@ pub class Compiler {
     fn load_root_module(mut self) ! {
         let files = if path.is_directory(self.prefs.input) {
             let mut filtered_files = self.table.filter_files(
-                fs.walk_directory(self.prefs.input).!
+                fs.walk_directory(self.prefs.input, ".ri").!
             );
             let src_dir = path.join(self.prefs.input, "src").!;
             if path.is_directory(src_dir) { // support `src/` directory
-                for file in self.table.filter_files(fs.walk_directory(src_dir).!) {
+                for file in self.table.filter_files(fs.walk_directory(src_dir, ".ri").!) {
                     filtered_files.push(file);
                 }
             }
