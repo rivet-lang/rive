@@ -22,23 +22,13 @@ pub struct ImportedSymbols {
     }
 }
 
+pub class Node {
+    pub pos: token.Pos;
+}
+
 pub class SourceFile {
     pub file: string;
     pub mod_sym: Sym;
     pub decls: []Decl;
     pub mut imported_symbols: ImportedSymbols;
-}
-
-pub class Node {
-    pos: token.Pos;
-}
-
-pub class Decl : Node {
-    name: string;
-}
-
-pub class Stmt : Node {
-}
-
-pub class Expr : Node {
 }

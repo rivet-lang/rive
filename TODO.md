@@ -8,7 +8,7 @@
 - [X] implement `switch advance_enum_obj is { .Value as val => { ... } }`.
 - [X] check advance enums casts.
 - [X] `@vec` builtin function.
-- [X] mutable arrays/vectors: `- []mut T`/`- [SIZE]mut T`.
+- [X] mutable arrays/vectors: `[]mut T`/`[SIZE]mut T`.
 - [X] `for &v in iterable {` and `for mut v in iterable`.
 
 ## Self-hosted compiler

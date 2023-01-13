@@ -66,6 +66,7 @@ class Kind(Enum):
     KwBreak = auto_enum() # break
     KwCatch = auto_enum() # catch
     KwClass = auto_enum() # class
+    KwComptime = auto_enum() # comptime
     KwConst = auto_enum() # const
     KwContinue = auto_enum() # continue
     KwDefer = auto_enum() # defer
@@ -211,6 +212,7 @@ TOKEN_STRINGS = {
     Kind.KwBreak: "break",
     Kind.KwCatch: "catch",
     Kind.KwClass: "class",
+    Kind.KwComptime: "comptime",
     Kind.KwConst: "const",
     Kind.KwContinue: "continue",
     Kind.KwDefer: "defer",

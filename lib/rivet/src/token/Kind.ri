@@ -66,6 +66,7 @@ pub enum Kind : traits.ToString {
     KwBreak, // break
     KwCatch, // catch
     KwClass, // class
+    KwComptime, // comptime
     KwConst, // const
     KwContinue, // continue
     KwDefer, // defer
@@ -211,6 +212,7 @@ pub let Kind_Strings: []KindMap = [
     KindMap(.KwBreak, "break"),
     KindMap(.KwCatch, "catch"),
     KindMap(.KwClass, "class"),
+    KindMap(.KwComptime, "comptime"),
     KindMap(.KwConst, "const"),
     KindMap(.KwContinue, "continue"),
     KindMap(.KwDefer, "defer"),
@@ -255,6 +257,7 @@ pub fn lookup(str: string) Kind {
         "break" => .KwBreak,
         "catch" => .KwCatch,
         "class" => .KwClass,
+        "comptime" => .KwComptime,
         "const" => .KwConst,
         "continue" => .KwContinue,
         "defer" => .KwDefer,
