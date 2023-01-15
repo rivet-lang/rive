@@ -4,13 +4,13 @@
 
 import "../process";
 
-pub enum OS as u8 {
+public enum OS as u8 {
     Linux,
     Windows,
     Macos;
 
     #[inline]
-    pub fn from_string(name: string) ?OS {
+    public fn from_string(name: string) ?OS {
         return switch name {
             "linux", "_LINUX_" => .Linux,
             "windows", "_WINDOWS_" => .Windows,
@@ -22,7 +22,7 @@ pub enum OS as u8 {
 
 /// Returns the current operating system.
 #[inline]
-pub fn os() OS {
+public fn os() OS {
 #if _LINUX_
     return .Linux;
 #else_if _WINDOWS_

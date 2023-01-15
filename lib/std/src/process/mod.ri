@@ -8,25 +8,25 @@ import "runtime";
 
 import { Builder } from "../strings";
 
-pub alias id = runtime.process_id;
-pub alias panic = runtime.process_panic;
-pub alias abort = runtime.process_abort;
-pub alias exit = runtime.process_exit;
-pub alias executable = runtime.process_executable;
-pub alias set_cwd = runtime.process_set_cwd;
-pub alias get_cwd = runtime.process_get_cwd;
+public alias id = runtime.process_id;
+public alias panic = runtime.process_panic;
+public alias abort = runtime.process_abort;
+public alias exit = runtime.process_exit;
+public alias executable = runtime.process_executable;
+public alias set_cwd = runtime.process_set_cwd;
+public alias get_cwd = runtime.process_get_cwd;
 
-pub let ARGS: []string = unsafe { runtime.ARGS };
-pub let WD_AT_STARTUP: string = get_cwd() catch ".";
+public let ARGS: []string = unsafe { runtime.ARGS };
+public let WD_AT_STARTUP: string = get_cwd() catch ".";
 
 struct Result {
-	pub output: string;
-	pub exit_code: i32;
+	public output: string;
+	public exit_code: i32;
 }
 
 /// Starts the specified command, waits for it to complete, and returns
 /// both its output and the exit code.
-pub fn execute(cmd: string) Result {
+public fn execute(cmd: string) Result {
     let pcmd = if cmd.contains("2>") { cmd } else { "{} 2>&1".fmt(cmd) };
     unsafe {
         if let f = libc.popen(pcmd.ptr, c"r") {

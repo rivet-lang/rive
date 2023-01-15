@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-pub enum CRuntime as u8 {
+public enum CRuntime as u8 {
     Glibc,
     Bionic,
     Musl,
@@ -11,6 +11,6 @@ pub enum CRuntime as u8 {
 
 /// Returns the current C runtime.
 #[inline]
-pub fn c_runtime() CRuntime {
+public fn c_runtime() CRuntime {
     return .Glibc;
 }

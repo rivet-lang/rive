@@ -117,7 +117,7 @@ fn demangle_symbol(name: string) string {
 }
 #endif
 
-pub fn bt_print(frames_to_skip: i32 = 0) {
+public fn bt_print(frames_to_skip: i32 = 0) {
 #if _RELEASE_
     _ = frames_to_skip;
 #else

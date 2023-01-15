@@ -4,12 +4,12 @@
 
 import "c/libc";
 
-pub class ErrnoError : Error {
-    pub code: i32;
+public class ErrnoError : Error {
+    public code: i32;
 }
 
 #[inline]
-pub fn errno() i32 {
+public fn errno() i32 {
     return unsafe {
 #if _LINUX_
         libc.__errno_location().?.*
@@ -19,7 +19,7 @@ pub fn errno() i32 {
     };
 }
 
-pub fn errno_msg(code: i32 = errno()) string {
+public fn errno_msg(code: i32 = errno()) string {
     unsafe {
         let s = libc.strerror(code);
         return if s is nil { "" } else { string.from_raw(s) };
@@ -27,6 +27,6 @@ pub fn errno_msg(code: i32 = errno()) string {
 }
 
 #[inline]
-pub fn last_errno_error() ErrnoError {
+public fn last_errno_error() ErrnoError {
     return ErrnoError(errno_msg(), errno());
 }

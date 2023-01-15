@@ -2,19 +2,19 @@ struct Vec {
     x: i32;
     y: i32;
 
-    pub fn +(&self, other: &Vec) Vec {
+    fn +(&self, other: &Vec) Vec {
         return Vec(self.x + other.x, self.y + other.y);
     }
 
-    pub fn -(&self, other: &Vec) Vec {
+    fn -(&self, other: &Vec) Vec {
         return Vec(self.x - other.x, self.y - other.y);
     }
 
-    pub fn *(&self, other: &Vec) Vec {
+    fn *(&self, other: &Vec) Vec {
         return Vec(self.x * other.x, self.y * other.y);
     }
 
-    pub fn /(&self, other: &Vec) Vec {
+    fn /(&self, other: &Vec) Vec {
         return Vec(self.x / other.x, self.y / other.y);
     }
 }

@@ -4,7 +4,7 @@
 
 import "std/traits";
 
-pub enum Kind : traits.ToString {
+public enum Kind : traits.ToString {
     Unknown, // unknown
     EOF, // end of file
     DocComment, // doc-comment
@@ -89,7 +89,7 @@ pub enum Kind : traits.ToString {
     KwNotIn, // !in
     KwNotIs, // !is
     KwOr, // or
-    KwPub, // pub
+    KwPublic, // publiclic
     KwReturn, // return
     KwSelf, // self
     KwSelfTy, // Self
@@ -104,7 +104,7 @@ pub enum Kind : traits.ToString {
 
     KeywordEnd;
 
-    pub fn single(self) Kind {
+    public fn single(self) Kind {
         return switch self {
             .PlusAssign => .Plus,
             .MinusAssign => .Minus,
@@ -118,27 +118,27 @@ pub enum Kind : traits.ToString {
         };
     }
 
-    pub fn is_start_of_type(self) bool {
+    public fn is_start_of_type(self) bool {
         return self in [
             .Bang, .Name, .Lparen, .Amp, .Mul, .Lbracket, .Question, .KwSelf, .KwSelfTy,
             .KwFn
         ];
     }
 
-    pub fn is_assign(self) bool {
+    public fn is_assign(self) bool {
         return self in [
             .Assign, .PlusAssign, .MinusAssign, .MulAssign, .DivAssign, .ModAssign,
             .AmpAssign, .PipeAssign, .XorAssign
         ];
     }
 
-    pub fn is_relational(self) bool {
+    public fn is_relational(self) bool {
         return self in [
             .Eq, .Ne, .Lt, .Gt, .Le, .Ge, .KwIs, .KwNotIs, .KwIn, .KwNotIn
         ];
     }
 
-    pub fn to_string(&self) string {
+    public fn to_string(&self) string {
         for km in Kind_Strings {
             if km.key == self.* {
                 return km.value;
@@ -148,12 +148,12 @@ pub enum Kind : traits.ToString {
     }
 }
 
-pub class KindMap {
-    pub key: Kind;
-    pub value: string;
+public class KindMap {
+    public key: Kind;
+    public value: string;
 }
 
-pub let Kind_Strings: []KindMap = [
+public let Kind_Strings: []KindMap = [
     KindMap(.Unknown, "unknown"),
     KindMap(.EOF, "end of file"),
     KindMap(.DocComment, "doc-comment"),
@@ -235,7 +235,7 @@ pub let Kind_Strings: []KindMap = [
     KindMap(.KwNotIn, "!in"),
     KindMap(.KwNotIs, "!is"),
     KindMap(.KwOr, "or"),
-    KindMap(.KwPub, "pub"),
+    KindMap(.KwPublic, "publiclic"),
     KindMap(.KwReturn, "return"),
     KindMap(.KwSelf, "self"),
     KindMap(.KwSelfTy, "Self"),
@@ -248,7 +248,7 @@ pub let Kind_Strings: []KindMap = [
     KindMap(.KwWhile, "while")
 ];
 
-pub fn lookup(str: string) Kind {
+public fn lookup(str: string) Kind {
     return switch str {
         "alias" => .KwAlias,
         "and" => .KwAnd,
@@ -279,7 +279,7 @@ pub fn lookup(str: string) Kind {
         "!in" => .KwNotIn,
         "!is" => .KwNotIs,
         "or" => .KwOr,
-        "pub" => .KwPub,
+        "publiclic" => .KwPublic,
         "return" => .KwReturn,
         "self" => .KwSelf,
         "Self" => .KwSelfTy,
@@ -294,15 +294,15 @@ pub fn lookup(str: string) Kind {
     };
 }
 
-pub fn is_keyword(lit: string) bool {
+public fn is_keyword(lit: string) bool {
     return lookup(lit) != .Name;
 }
 
-pub fn is_overloadable_operator(kind: Kind) bool {
+public fn is_overloadable_operator(kind: Kind) bool {
     return kind in [.Plus, .Minus, .Mul, .Div, .Mod, .Eq, .Ne, .Lt, .Gt, .Le, .Ge];
 }
 
-pub fn overloadable_operator_name(kind: Kind) string {
+public fn overloadable_operator_name(kind: Kind) string {
     return switch kind {
         .Plus => "_add_",
         .Minus => "_sub_",

@@ -15,7 +15,7 @@ const LF: u8 = 10;
 const CR: u8 = 13;
 const NUM_SEP: u8 = b'_';
 
-pub class Tokenizer {
+public class Tokenizer {
     table: ast.Table;
     prefs: prefs.Prefs;
     file: string = "<internal-memory>";
@@ -30,13 +30,13 @@ pub class Tokenizer {
     mut eofs: usize;
     mut conditional_stack: []Conditional;
 
-    pub fn new(text: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
+    public fn new(text: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
         let mut t = Tokenizer(table: table, prefs: prefs, text: text);
         t.init();
         return t;
     }
 
-    pub fn from_file(file: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
+    public fn from_file(file: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
         let mut t = Tokenizer(
             table: table, prefs: prefs, file: file,
             text: utils.read_file(file) catch |err| utils.error(err.to_string())
@@ -92,7 +92,7 @@ pub class Tokenizer {
     }
 
     #[inline]
-    pub fn next(mut self) token.Token {
+    public fn next(mut self) token.Token {
         return self.buffer_tok();
     }
 
@@ -183,7 +183,7 @@ pub class Tokenizer {
         return true;
     }
 
-    pub fn peek_token(self, n: usize) token.Token {
+    public fn peek_token(self, n: usize) token.Token {
         let idx = self.tidx + n;
         if idx >= self.all_tokens.len {
             return self.new_eof_token();

@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-pub trait ToString {
+public trait ToString {
     fn to_string(&self) string;
 }
 
-pub trait Hasher {
+public trait Hasher {
     fn hash(&self) usize;
 }

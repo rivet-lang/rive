@@ -4,15 +4,15 @@
 
 import "../token";
 
-pub struct ImportedSymbols {
+public struct ImportedSymbols {
     mut syms: [](string, Sym);
 
     #[inline]
-    pub fn add(mut self, name: string, sym: Sym) {
+    public fn add(mut self, name: string, sym: Sym) {
         self.syms.push((name, sym));
     }
 
-    pub fn get(&self, name: string) ?Sym {
+    public fn get(&self, name: string) ?Sym {
         for pair in self.syms {
             if name == pair.0 {
                 return pair.1;
@@ -22,13 +22,13 @@ pub struct ImportedSymbols {
     }
 }
 
-pub class Node {
-    pub pos: token.Pos;
+public class Node {
+    public pos: token.Pos;
 }
 
-pub class SourceFile {
-    pub file: string;
-    pub mod_sym: Sym;
-    pub decls: []Decl;
-    pub mut imported_symbols: ImportedSymbols;
+public class SourceFile {
+    public file: string;
+    public mod_sym: Sym;
+    public decls: []Decl;
+    public mut imported_symbols: ImportedSymbols;
 }

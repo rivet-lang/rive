@@ -14,12 +14,12 @@ fn new_sym_id() usize {
     return res;
 }
 
-pub enum ABI as u8 {
+public enum ABI as u8 {
     Rivet,
     C;
 
     #[inline]
-    pub fn from_string(abi: string) ?ABI {
+    public fn from_string(abi: string) ?ABI {
         return switch abi {
             "C" => .C,
             "Rivet" => .Rivet,
@@ -28,59 +28,59 @@ pub enum ABI as u8 {
     }
 }
 
-pub class Sym {
-    pub id: usize = new_sym_id();
-    pub abi: ABI;
-    pub mut is_public: bool;
-    pub parent: ?Sym;
-    pub name: string;
-    pub mut scope: Scope;
-    pub mut mangled_name: string;
-    pub mut qualified_name: string;
-    pub is_universe: bool;
-    pub is_root: bool;
+public class Sym {
+    public id: usize = new_sym_id();
+    public abi: ABI;
+    public mut is_publiclic: bool;
+    public parent: ?Sym;
+    public name: string;
+    public mut scope: Scope;
+    public mut mangled_name: string;
+    public mut qualified_name: string;
+    public is_universe: bool;
+    public is_root: bool;
 
     #[inline]
-    pub fn ==(self, other: Self) bool {
+    public fn ==(self, other: Self) bool {
         return self.id == other.id;
     }
 }
 
-pub class Mod : Sym { }
+public class Mod : Sym { }
 
-pub class Const : Sym {
-    pub expr: Expr;
-    pub evaled_expr: ?Expr;
-    pub typ: Type;
+public class Const : Sym {
+    public expr: Expr;
+    public evaled_expr: ?Expr;
+    public typ: Type;
 }
 
-pub enum VarLevel as u8 {
+public enum VarLevel as u8 {
     Mod, // module-level
     Rec, // receiver: `self`
     Arg, // argument-level
     Local // inside function
 }
 
-pub class Var : Sym {
-    pub is_extern: bool;
-    pub ir_name: string; // used for duplicate objects in IR
-    pub is_mut: bool;
-    pub is_used: bool;
-    pub is_changed: bool;
-    pub is_hidden_ref: bool;
-    pub level: VarLevel;
-    pub typ: Type;
+public class Var : Sym {
+    public is_extern: bool;
+    public ir_name: string; // used for duplicate objects in IR
+    public is_mut: bool;
+    public is_used: bool;
+    public is_changed: bool;
+    public is_hidden_ref: bool;
+    public level: VarLevel;
+    public typ: Type;
 }
 
-pub class Field {
-    pub is_public: bool;
-    pub name: string;
-    pub is_mut: bool;
-    pub def_expr: ?Expr;
-    pub typ: Type;
+public class Field {
+    public is_publiclic: bool;
+    public name: string;
+    public is_mut: bool;
+    public def_expr: ?Expr;
+    public typ: Type;
 }
 
-pub enum TypeKind : traits.ToString {
+public enum TypeKind : traits.ToString {
     Placeholder,
     Never,
     Void,
@@ -112,7 +112,7 @@ pub enum TypeKind : traits.ToString {
     Struct;
 
     #[inline]
-    pub fn is_primitive(self) bool {
+    public fn is_primitive(self) bool {
         return self in [
             .Void, .Nil, .Bool, .Rune, .Int8, .Int16, .Int32, .Int64, .Isize, .Uint8,
             .Uint16, .Uint32, .Uint64, .Usize, .ComptimeInt, .ComptimeFloat, .Float32,
@@ -121,7 +121,7 @@ pub enum TypeKind : traits.ToString {
     }
 
     #[inline]
-    pub fn to_string(&self) string {
+    public fn to_string(&self) string {
         return switch self.* {
             .Nil => "nil",
             .Bool => "bool",
@@ -155,45 +155,45 @@ pub enum TypeKind : traits.ToString {
     }
 }
 
-pub class TypeInfo { }
+public class TypeInfo { }
 
-pub class AliasInfo : TypeInfo {
-    pub parent: Type;
+public class AliasInfo : TypeInfo {
+    public parent: Type;
 }
 
-pub class ArrayInfo : TypeInfo {
-    pub elem_typ: Type;
-    pub size: isize;
-    pub has_contains_method: bool;
+public class ArrayInfo : TypeInfo {
+    public elem_typ: Type;
+    public size: isize;
+    public has_contains_method: bool;
 }
 
-pub class VectorInfo : TypeInfo {
-    pub elem_typ: Type;
-    pub has_contains_method: bool;
+public class VectorInfo : TypeInfo {
+    public elem_typ: Type;
+    public has_contains_method: bool;
 }
 
-pub class TupleInfo : TypeInfo {
-    pub types: []Type;
+public class TupleInfo : TypeInfo {
+    public types: []Type;
 }
 
-pub class EnumVariant {
-    pub name: string;
-    pub value: isize;
-    pub has_typ: bool;
-    pub typ: Type;
+public class EnumVariant {
+    public name: string;
+    public value: isize;
+    public has_typ: bool;
+    public typ: Type;
 }
 
-pub class EnumInfo : TypeInfo {
-    pub underlying_typ: Type;
-    pub mut variants: []EnumVariant;
-    pub is_advanced_enum: bool;
+public class EnumInfo : TypeInfo {
+    public underlying_typ: Type;
+    public mut variants: []EnumVariant;
+    public is_advanced_enum: bool;
 
     #[inline]
-    pub fn add_value(mut self, name: string, variant: isize) {
+    public fn add_value(mut self, name: string, variant: isize) {
         self.variants.push(EnumVariant(name, variant));
     }
 
-    pub fn get_value(self, name: string) ?EnumVariant {
+    public fn get_value(self, name: string) ?EnumVariant {
         for v in self.variants {
             if v.name == name {
                 return v;
@@ -202,7 +202,7 @@ pub class EnumInfo : TypeInfo {
         return nil;
     }
 
-    pub fn get_variant_by_type(self, typ: Type) ?EnumVariant {
+    public fn get_variant_by_type(self, typ: Type) ?EnumVariant {
         for v in self.variants {
             if v.has_typ and v.typ == typ {
                 return v;
@@ -211,7 +211,7 @@ pub class EnumInfo : TypeInfo {
         return nil;
     }
 
-    pub fn has_value(self, name: string) bool {
+    public fn has_value(self, name: string) bool {
         return if let _ = self.get_value(name) {
             true
         } else {
@@ -220,12 +220,12 @@ pub class EnumInfo : TypeInfo {
     }
 }
 
-pub class TraitInfo : TypeInfo {
-    pub bases: []mut TypeSym;
-    pub mut implements: []TypeSym;
-    pub mut has_objects: bool;
+public class TraitInfo : TypeInfo {
+    public bases: []mut TypeSym;
+    public mut implements: []TypeSym;
+    public mut has_objects: bool;
 
-    pub fn index_of(self, type_sym: TypeSym) ?usize {
+    public fn index_of(self, type_sym: TypeSym) ?usize {
         for i, ts in self.implements {
             if ts.id == type_sym.id {
                 return i;
@@ -234,14 +234,14 @@ pub class TraitInfo : TypeInfo {
         return nil;
     }
 
-    pub fn implement(mut self, type_sym: TypeSym) {
+    public fn implement(mut self, type_sym: TypeSym) {
         self.implements.push(type_sym);
         for mut b in self.bases {
             @as(TraitInfo, b.info).implement(type_sym);
         }
     }
 
-    pub fn mark_has_objects(mut self) {
+    public fn mark_has_objects(mut self) {
         self.has_objects = true;
         for mut b in self.bases {
             @as(TraitInfo, b.info).has_objects = true;
@@ -249,30 +249,30 @@ pub class TraitInfo : TypeInfo {
     }
 }
 
-pub class ClassInfo : TypeInfo {
-    pub mut base_sym: TypeSym;
-    pub is_base: bool;
-    pub use_base: bool;
-    pub traits: []TypeSym;
-    pub is_child: bool;
-    pub childrens: []TypeSym;
+public class ClassInfo : TypeInfo {
+    public mut base_sym: TypeSym;
+    public is_base: bool;
+    public use_base: bool;
+    public traits: []TypeSym;
+    public is_child: bool;
+    public childrens: []TypeSym;
 }
 
-pub class StructInfo : TypeInfo {
-    pub is_opaque: bool;
-    pub bases: []mut TypeSym;
-    pub traits: []TypeSym;
+public class StructInfo : TypeInfo {
+    public is_opaque: bool;
+    public bases: []mut TypeSym;
+    public traits: []TypeSym;
 }
 
-pub class TypeSym : Sym {
-    pub mut fields: []Field;
-    pub mut full_fields_: []Field;
-    pub mut kind: TypeKind;
-    pub mut info: TypeInfo;
-    pub mut size: isize = -1;
-    pub mut align: isize = -1;
+public class TypeSym : Sym {
+    public mut fields: []Field;
+    public mut full_fields_: []Field;
+    public mut kind: TypeKind;
+    public mut info: TypeInfo;
+    public mut size: isize = -1;
+    public mut align: isize = -1;
 
-    pub fn lookup_field(self, name: string) ?Field {
+    public fn lookup_field(self, name: string) ?Field {
         for f in self.fields {
             if f.name == name {
                 return f;
@@ -293,11 +293,11 @@ pub class TypeSym : Sym {
     }
 
     #[inline]
-    pub fn has_field(self, name: string) bool {
+    public fn has_field(self, name: string) bool {
         return if let _ = self.lookup_field(name) { true } else { false };
     }
 
-    pub fn lookup_in_base(self, name: string) ?Sym {
+    public fn lookup_in_base(self, name: string) ?Sym {
         if self.info is ClassInfo as class_info {
             if let s = class_info.base_sym.lookup(name) {
                 return s;
@@ -317,7 +317,7 @@ pub class TypeSym : Sym {
         return nil;
     }
 
-    pub fn lookup(self, name: string) ?Sym {
+    public fn lookup(self, name: string) ?Sym {
         if let s = base.scope.lookup(name) {
             return s;
         } else if let s = self.lookup_in_base(name) {
@@ -326,7 +326,7 @@ pub class TypeSym : Sym {
         return nil;
     }
 
-    pub fn full_fields(mut self) []Field {
+    public fn full_fields(mut self) []Field {
         if !self.full_fields_.is_empty() {
             return self.full_fields_;
         }
@@ -349,10 +349,10 @@ pub class TypeSym : Sym {
         return fields;
     }
 
-    pub fn update(mut self, other: TypeSym) ! {
+    public fn update(mut self, other: TypeSym) ! {
         if self.kind is .Placeholder {
             // update placeholder
-            self.is_public = other.is_public;
+            self.is_publiclic = other.is_publiclic;
             self.kind = other.kind;
             self.fields = other.fields;
             for s in other.scope.syms {
@@ -362,7 +362,7 @@ pub class TypeSym : Sym {
         }
     }
 
-    pub fn is_subtype_of(self, other: TypeSym) bool {
+    public fn is_subtype_of(self, other: TypeSym) bool {
         if self == other {
             return true;
         }
@@ -381,7 +381,7 @@ pub class TypeSym : Sym {
         return false;
     }
 
-    pub fn is_boxed(self) bool {
+    public fn is_boxed(self) bool {
         if self.info is EnumInfo as enum_info {
             return enum_info.is_advanced_enum;
         }
@@ -391,35 +391,35 @@ pub class TypeSym : Sym {
 
     // TODO(StunxFS): fix inheritance of overloaded operators
     #[inline; override]
-    pub fn ==(self, rhs: Self) bool {
+    public fn ==(self, rhs: Self) bool {
         return self.id == rhs.id;
     }
 }
 
-pub class Arg {
-    pub name: string;
-    pub is_mut: bool;
-    pub is_self: bool;
-    pub def_expr: ?Expr;
-    pub pos: token.Pos;
-    pub typ: Type;
+public class Arg {
+    public name: string;
+    public is_mut: bool;
+    public is_self: bool;
+    public def_expr: ?Expr;
+    public pos: token.Pos;
+    public typ: Type;
 }
 
-pub class FnSym : Sym {
-    pub is_extern: bool;
-    pub is_unsafe: bool;
-    pub is_main: bool;
-    pub is_method: bool;
-    pub is_variadic: bool;
-    pub self_typ: Type;
-    pub self_is_mut: bool;
-    pub self_is_ref: bool;
-    pub args: []Arg;
-    pub has_named_args: bool;
-    pub has_body: bool;
-    pub ret_typ: Type;
+public class FnSym : Sym {
+    public is_extern: bool;
+    public is_unsafe: bool;
+    public is_main: bool;
+    public is_method: bool;
+    public is_variadic: bool;
+    public self_typ: Type;
+    public self_is_mut: bool;
+    public self_is_ref: bool;
+    public args: []Arg;
+    public has_named_args: bool;
+    public has_body: bool;
+    public ret_typ: Type;
 
-    pub fn get_arg(self, idx: usize) Arg {
+    public fn get_arg(self, idx: usize) Arg {
         let arg = self.args[idx];
         if arg.is_self {
             return self.args[idx + 1];
@@ -427,7 +427,7 @@ pub class FnSym : Sym {
         return arg;
     }
 
-    pub fn args_len(self) usize {
+    public fn args_len(self) usize {
         let mut len: usize = 0;
         for arg in self.args {
             if !(arg.is_self or arg.typ is Variadic) {
@@ -438,19 +438,19 @@ pub class FnSym : Sym {
     }
 
     #[inline]
-    pub fn kind(self) string {
+    public fn kind(self) string {
         return if self.is_method { "method" } else { "function" };
     }
 }
 
-pub class Scope {
-    pub start: usize;
-    pub mut end: usize;
-    pub mut parent: ?Scope;
-    pub mut detached_from_parent: bool;
-    pub mut syms: []Sym;
+public class Scope {
+    public start: usize;
+    public mut end: usize;
+    public mut parent: ?Scope;
+    public mut detached_from_parent: bool;
+    public mut syms: []Sym;
 
-    pub fn add(mut self, sym: Sym) ! {
+    public fn add(mut self, sym: Sym) ! {
         if sym.name == "_" and sym is Var {
             return; // ignore blank var
         } else if self.exists(sym.name) {
@@ -460,11 +460,11 @@ pub class Scope {
     }
 
     #[inline]
-    pub fn exists(self, name: string) bool {
+    public fn exists(self, name: string) bool {
         return if let _ = self.lookup(name) { true } else { false };
     }
 
-    pub fn lookup(self, name: string) ?Sym {
+    public fn lookup(self, name: string) ?Sym {
         let mut sc_: ?Scope = self;
         while let sc = sc_ {
             for sym in self.syms {
@@ -492,33 +492,33 @@ pub class Scope {
     }
 }
 
-pub fn universe() Mod {
+public fn universe() Mod {
     return Mod(
-        is_public: false,
+        is_publiclic: false,
         name: "universe",
         scope: Scope(
             syms: [
-                TypeSym(is_public: true, name: "void", kind: .Void),
-                TypeSym(is_public: true, name: "never", kind: .Never),
-                TypeSym(is_public: true, name: "nil", kind: .Nil),
-                TypeSym(is_public: true, name: "bool", kind: .Bool),
-                TypeSym(is_public: true, name: "rune", kind: .Rune),
-                TypeSym(is_public: true, name: "i8", kind: .Int8),
-                TypeSym(is_public: true, name: "i16", kind: .Int16),
-                TypeSym(is_public: true, name: "i32", kind: .Int32),
-                TypeSym(is_public: true, name: "i64", kind: .Int64),
-                TypeSym(is_public: true, name: "isize", kind: .Isize),
-                TypeSym(is_public: true, name: "u8", kind: .Uint8),
-                TypeSym(is_public: true, name: "u16", kind: .Uint16),
-                TypeSym(is_public: true, name: "u32", kind: .Uint32),
-                TypeSym(is_public: true, name: "u64", kind: .Uint64),
-                TypeSym(is_public: true, name: "usize", kind: .Usize),
-                TypeSym(is_public: true, name: "comptime_int", kind: .ComptimeInt),
-                TypeSym(is_public: true, name: "comptime_float", kind: .ComptimeFloat),
-                TypeSym(is_public: true, name: "f32", kind: .Float32),
-                TypeSym(is_public: true, name: "f64", kind: .Float64),
-                TypeSym(is_public: true, name: "string", kind: .String),
-                TypeSym(is_public: true, name: "Error", kind: .Class, info: ClassInfo())
+                TypeSym(is_publiclic: true, name: "void", kind: .Void),
+                TypeSym(is_publiclic: true, name: "never", kind: .Never),
+                TypeSym(is_publiclic: true, name: "nil", kind: .Nil),
+                TypeSym(is_publiclic: true, name: "bool", kind: .Bool),
+                TypeSym(is_publiclic: true, name: "rune", kind: .Rune),
+                TypeSym(is_publiclic: true, name: "i8", kind: .Int8),
+                TypeSym(is_publiclic: true, name: "i16", kind: .Int16),
+                TypeSym(is_publiclic: true, name: "i32", kind: .Int32),
+                TypeSym(is_publiclic: true, name: "i64", kind: .Int64),
+                TypeSym(is_publiclic: true, name: "isize", kind: .Isize),
+                TypeSym(is_publiclic: true, name: "u8", kind: .Uint8),
+                TypeSym(is_publiclic: true, name: "u16", kind: .Uint16),
+                TypeSym(is_publiclic: true, name: "u32", kind: .Uint32),
+                TypeSym(is_publiclic: true, name: "u64", kind: .Uint64),
+                TypeSym(is_publiclic: true, name: "usize", kind: .Usize),
+                TypeSym(is_publiclic: true, name: "comptime_int", kind: .ComptimeInt),
+                TypeSym(is_publiclic: true, name: "comptime_float", kind: .ComptimeFloat),
+                TypeSym(is_publiclic: true, name: "f32", kind: .Float32),
+                TypeSym(is_publiclic: true, name: "f64", kind: .Float64),
+                TypeSym(is_publiclic: true, name: "string", kind: .String),
+                TypeSym(is_publiclic: true, name: "Error", kind: .Class, info: ClassInfo())
             ]
         )
     );

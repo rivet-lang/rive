@@ -4,37 +4,37 @@
 
 import "std/traits";
 
-pub let NO_POS: Pos = Pos();
+public let NO_POS: Pos = Pos();
 
-pub struct Pos : traits.ToString {
-    pub file: string;
-    pub line: usize;
-    pub col: usize;
-    pub mut len: usize;
-    pub pos: usize;
+public struct Pos : traits.ToString {
+    public file: string;
+    public line: usize;
+    public col: usize;
+    public mut len: usize;
+    public pos: usize;
 
-    pub fn +(&self, other: &Pos) Pos {
+    public fn +(&self, other: &Pos) Pos {
 		return Pos(len: other.pos - self.pos + other.len, ...self.*);
     }
 
-    pub fn to_string(&self) string {
+    public fn to_string(&self) string {
         return "{}:{}:{}".fmt(self.file, self.line + 1, self.col);
     }
 }
 
-pub struct Token : traits.ToString {
-    pub lit: string;
-    pub kind: Kind;
-    pub len: usize;
-    pub pos: Pos;
+public struct Token : traits.ToString {
+    public lit: string;
+    public kind: Kind;
+    public len: usize;
+    public pos: Pos;
 
-    pub fn to_debug_string(&self) string {
+    public fn to_debug_string(&self) string {
         return "rivet.token.Token(kind: '{}', lit: '{}', pos: {})".fmt(
             self.kind, self.lit, self.pos
         );
     }
 
-    pub fn to_string(&self) string {
+    public fn to_string(&self) string {
         let mut str = self.kind.to_string();
         if !str[0].is_alnum() {
             return "token `{}`".fmt(str);

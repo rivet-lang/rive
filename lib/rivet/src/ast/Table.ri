@@ -10,17 +10,17 @@ import "../prefs";
 import "../report";
 import "../utils";
 
-pub class Table {
-    pub mut universe: Mod;
-    pub mut prefs: prefs.Prefs;
-    pub mut source_files: []SourceFile;
+public class Table {
+    public mut universe: Mod;
+    public mut prefs: prefs.Prefs;
+    public mut source_files: []SourceFile;
 
-    pub pointer_size: usize;
+    public pointer_size: usize;
 
-    pub mut runtime_mod: Mod;
+    public mut runtime_mod: Mod;
 
     #[inline]
-    pub fn new(prefs: prefs.Prefs) Table {
+    public fn new(prefs: prefs.Prefs) Table {
         return Table(universe(), prefs, pointer_size: if prefs.target_is_64bit {
             8
         } else {
@@ -28,7 +28,7 @@ pub class Table {
         });
     }
 
-    pub fn evalue_pp_symbol(self, name: string, pos: token.Pos) bool {
+    public fn evalue_pp_symbol(self, name: string, pos: token.Pos) bool {
         switch name {
             // operating systems
             "_LINUX_", "_WINDOWS_" => {
@@ -80,7 +80,7 @@ pub class Table {
         }
     }
 
-    pub fn filter_files(self, inputs: []string) []string {
+    public fn filter_files(self, inputs: []string) []string {
         let mut new_inputs = @vec(string);
         for input in inputs {
             let basename_input = path.basename(input);

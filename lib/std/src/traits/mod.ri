@@ -4,5 +4,5 @@
 
 import "runtime";
 
-pub alias ToString = runtime.ToString;
-pub alias Hasher = runtime.Hasher;
+public alias ToString = runtime.ToString;
+public alias Hasher = runtime.Hasher;

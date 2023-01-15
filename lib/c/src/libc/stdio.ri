@@ -4,64 +4,64 @@
 
 import { * } from "c";
 
-pub const MAX_PATH_LEN: usize = 4096;
-pub const MAX_NAME_LEN: usize = 255;
+public const MAX_PATH_LEN: usize = 4096;
+public const MAX_NAME_LEN: usize = 255;
 
-pub const STDIN_FILENO: i32 = 0;
-pub const STDOUT_FILENO: i32 = 1;
-pub const STDERR_FILENO: i32 = 2;
+public const STDIN_FILENO: i32 = 0;
+public const STDOUT_FILENO: i32 = 1;
+public const STDERR_FILENO: i32 = 2;
 
-pub const F_OK: i32 = 0;
-pub const X_OK: i32 = 1;
-pub const W_OK: i32 = 2;
-pub const R_OK: i32 = 4;
+public const F_OK: i32 = 0;
+public const X_OK: i32 = 1;
+public const W_OK: i32 = 2;
+public const R_OK: i32 = 4;
 
-pub const S_IFMT: i32  = 0xF000; // file
-pub const S_IFDIR: i32 = 0x4000; // directory
-pub const S_IFLNK: i32 = 0xA000; // link
+public const S_IFMT: i32  = 0xF000; // file
+public const S_IFDIR: i32 = 0x4000; // directory
+public const S_IFLNK: i32 = 0xA000; // link
 
-pub const O_RDONLY: i32 = 0x00000;
-pub const O_WRONLY: i32 = 0x00001;
-pub const O_RDWR: i32 = 0x00002;
-pub const O_CREATE: i32 = 0x00040;
-pub const O_EXCL: i32 = 0x00080;
-pub const O_NOCTTY: i32 = 0x00100;
-pub const O_TRUNC: i32 = 0x00200;
-pub const O_NONBLOCK: i32 = 0x00800;
-pub const O_APPEND: i32 = 0x00400;
-pub const O_SYNC: i32 = 0x01000;
-pub const O_ASYNC: i32 = 0x02000;
-pub const O_CLOEXEC: i32 = 0x80000;
+public const O_RDONLY: i32 = 0x00000;
+public const O_WRONLY: i32 = 0x00001;
+public const O_RDWR: i32 = 0x00002;
+public const O_CREATE: i32 = 0x00040;
+public const O_EXCL: i32 = 0x00080;
+public const O_NOCTTY: i32 = 0x00100;
+public const O_TRUNC: i32 = 0x00200;
+public const O_NONBLOCK: i32 = 0x00800;
+public const O_APPEND: i32 = 0x00400;
+public const O_SYNC: i32 = 0x01000;
+public const O_ASYNC: i32 = 0x02000;
+public const O_CLOEXEC: i32 = 0x80000;
 
-pub struct FILE;
+public struct FILE;
 
 #if _LINUX_
     extern (C) {
-        pub let stdin: *mut FILE;
-        pub let stdout: *mut FILE;
-        pub let stderr: *mut FILE;
+        public let stdin: *mut FILE;
+        public let stdout: *mut FILE;
+        public let stderr: *mut FILE;
     }
 
-    pub struct fpos_t {
+    public struct fpos_t {
         f1: [16]char;
         f2: longlong;
         f3: double;
     }
 
-    pub const _IOFBF: i32 = 0;
-	pub const _IOLBF: i32 = 1;
-	pub const _IONBF: i32 = 2;
+    public const _IOFBF: i32 = 0;
+	public const _IOLBF: i32 = 1;
+	public const _IONBF: i32 = 2;
 
-	pub const BUFSIZ: i32 = 1024;
-	pub const EOF: i32 = -1;
-	pub const FOPEN_MAX: i32 = 1000;
-	pub const FILENAME_MAX: i32 = 4096;
-	pub const L_tmpnam: i32 = 20;
-	pub const SEEK_SET: i32 = 0;
-	pub const SEEK_CUR: i32 = 1;
-	pub const SEEK_END: i32 = 2;
+	public const BUFSIZ: i32 = 1024;
+	public const EOF: i32 = -1;
+	public const FOPEN_MAX: i32 = 1000;
+	public const FILENAME_MAX: i32 = 4096;
+	public const L_tmpnam: i32 = 20;
+	public const SEEK_SET: i32 = 0;
+	public const SEEK_CUR: i32 = 1;
+	public const SEEK_END: i32 = 2;
 
-	pub const TMP_MAX: i32 = 308915776;
+	public const TMP_MAX: i32 = 308915776;
 #endif
 
 #if _WINDOWS_
@@ -69,48 +69,48 @@ pub struct FILE;
         fn __acrt_iob_fn(index: u32) *mut FILE;
     }
 
-    pub type fpos_t = i64;
+    public type fpos_t = i64;
 
-	pub const _IOFBF: i32 = 0x0000;
-	pub const _IOLBF: i32 = 0x0004;
-	pub const _IONBF: i32 = 0x0040;
+	public const _IOFBF: i32 = 0x0000;
+	public const _IOLBF: i32 = 0x0004;
+	public const _IONBF: i32 = 0x0040;
 
-	pub const BUFSIZ: i32 = 512;
-	pub const EOF: i32 = -1;
-	pub const FOPEN_MAX: i32 = 20;
-	pub const FILENAME_MAX: i32 = 260;
-	pub const L_tmpnam: i32 = 15; // "\\" + 12 + NUL
-	pub const SEEK_SET: i32 = 0;
-	pub const SEEK_CUR: i32 = 1;
-	pub const SEEK_END: i32 = 2;
+	public const BUFSIZ: i32 = 512;
+	public const EOF: i32 = -1;
+	public const FOPEN_MAX: i32 = 20;
+	public const FILENAME_MAX: i32 = 260;
+	public const L_tmpnam: i32 = 15; // "\\" + 12 + NUL
+	public const SEEK_SET: i32 = 0;
+	public const SEEK_CUR: i32 = 1;
+	public const SEEK_END: i32 = 2;
 
-	pub const TMP_MAX: i32 = 32767; // SHRT_MAX
+	public const TMP_MAX: i32 = 32767; // SHRT_MAX
 
-    pub let stdin: *mut FILE = unsafe { __acrt_iob_fn(0) };
-    pub let stdout: *mut FILE = unsafe { __acrt_iob_fn(1) };
-    pub let stderr: *mut FILE = unsafe { __acrt_iob_fn(2) };
+    public let stdin: *mut FILE = unsafe { __acrt_iob_fn(0) };
+    public let stdout: *mut FILE = unsafe { __acrt_iob_fn(1) };
+    public let stderr: *mut FILE = unsafe { __acrt_iob_fn(2) };
 #endif
 
 extern (C) {
-    pub fn fopen(path: *u8, mode: *u8) ?*mut FILE;
-    pub fn feof(stream: *FILE) i32;
-    pub fn ferror(stream: *FILE) i32;
-    pub fn fseek(stream: *mut FILE, offset: u64, whence: i32) i32;
-    pub fn ftell(stream: *mut FILE) i64;
-    pub fn fread(ptr: mut_anyptr, size: usize, nitems: usize, stream: *mut FILE) usize;
-    pub fn fputs(s: *u8, stream: *mut FILE) i32;
-    pub fn fprintf(stream: *mut FILE, fmt: *u8, ...) i32;
-    pub fn fwrite(ptr: anyptr, size: usize, nobj: usize, stream: *mut FILE) usize;
-    pub fn fflush(stream: *mut FILE) i32;
-    pub fn fgets(s: *mut u8, n: usize, stream: *mut FILE) i32;
-    pub fn fclose(stream: *mut FILE) i32;
-    pub fn fileno(stream: *FILE) i32;
-    pub fn rewind(stream: *mut FILE);
+    public fn fopen(path: *u8, mode: *u8) ?*mut FILE;
+    public fn feof(stream: *FILE) i32;
+    public fn ferror(stream: *FILE) i32;
+    public fn fseek(stream: *mut FILE, offset: u64, whence: i32) i32;
+    public fn ftell(stream: *mut FILE) i64;
+    public fn fread(ptr: mut_anyptr, size: usize, nitems: usize, stream: *mut FILE) usize;
+    public fn fputs(s: *u8, stream: *mut FILE) i32;
+    public fn fprintf(stream: *mut FILE, fmt: *u8, ...) i32;
+    public fn fwrite(ptr: anyptr, size: usize, nobj: usize, stream: *mut FILE) usize;
+    public fn fflush(stream: *mut FILE) i32;
+    public fn fgets(s: *mut u8, n: usize, stream: *mut FILE) i32;
+    public fn fclose(stream: *mut FILE) i32;
+    public fn fileno(stream: *FILE) i32;
+    public fn rewind(stream: *mut FILE);
 
-    pub fn printf(fmt: *u8, ...) i32;
-    pub fn asprintf(strp: *?*u8, fmt: *u8, ...) i32;
-    pub fn putchar(s: i32) i32;
+    public fn printf(fmt: *u8, ...) i32;
+    public fn asprintf(strp: *?*u8, fmt: *u8, ...) i32;
+    public fn putchar(s: i32) i32;
 
-	pub fn popen(cmd: *u8, modes: *u8) ?*mut FILE;
-	pub fn pclose(stream: *mut FILE) i32;
+	public fn popen(cmd: *u8, modes: *u8) ?*mut FILE;
+	public fn pclose(stream: *mut FILE) i32;
 }

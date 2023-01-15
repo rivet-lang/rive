@@ -3,36 +3,36 @@
 // be found in the LICENSE file.
 
 #if _LINUX_
-    pub const RAND_MAX: i32 = 0x7fffffff;
+    public const RAND_MAX: i32 = 0x7fffffff;
 #else_if _WINDOWS_
-    pub const RAND_MAX: i32 = 0x7fff;
+    public const RAND_MAX: i32 = 0x7fff;
 #endif
 
 extern (C) {
-    pub fn rand() i32;
-    pub fn srand(seed: u32);
+    public fn rand() i32;
+    public fn srand(seed: u32);
 
-    pub fn atof(nptr: ?*u8) f64;
-    pub fn atoi(nptr: ?*u8) i32;
-    pub fn atol(nptr: ?*u8) i64;
-    pub fn atoll(nptr: ?*u8) i64;
+    public fn atof(nptr: ?*u8) f64;
+    public fn atoi(nptr: ?*u8) i32;
+    public fn atol(nptr: ?*u8) i64;
+    public fn atoll(nptr: ?*u8) i64;
 
-    pub fn strtod(nptr: [*]u8, endptr: ?*u8, base_: i32) f64;
-    pub fn strtof(nptr: [*]u8, endptr: ?*u8, base_: i32) f32;
-    pub fn strtol(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
-    pub fn strtoll(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
-    pub fn strtoul(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
-    pub fn strtoull(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
+    public fn strtod(nptr: [*]u8, endptr: ?*u8, base_: i32) f64;
+    public fn strtof(nptr: [*]u8, endptr: ?*u8, base_: i32) f32;
+    public fn strtol(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
+    public fn strtoll(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
+    public fn strtoul(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
+    public fn strtoull(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
 
-    pub fn malloc(size: usize) ?mut_anyptr;
-    pub fn calloc(nobj: usize, size: usize) ?mut_anyptr;
-    pub fn realloc(p: ?mut_anyptr, size: usize) ?mut_anyptr;
-    pub fn free(p: anyptr);
+    public fn malloc(size: usize) ?mut_anyptr;
+    public fn calloc(nobj: usize, size: usize) ?mut_anyptr;
+    public fn realloc(p: ?mut_anyptr, size: usize) ?mut_anyptr;
+    public fn free(p: anyptr);
 
-    pub fn getenv(name: *u8) ?*mut u8;
-    pub fn setenv(name: *u8, value: *u8, replace: bool) i32;
-    pub fn unsetenv(name: *u8) i32;
+    public fn getenv(name: *u8) ?*mut u8;
+    public fn setenv(name: *u8, value: *u8, replace: bool) i32;
+    public fn unsetenv(name: *u8) i32;
 
-    pub fn exit(status: i32) never;
-    pub fn abort() never;
+    public fn exit(status: i32) never;
+    public fn abort() never;
 }

@@ -2,16 +2,16 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-pub struct dirent {
-    pub d_ino: usize;
-    pub d_off: usize;
-    pub d_reclen: u16;
-    pub d_type: u8;
-    pub d_name: [256]u8;
+public struct dirent {
+    public d_ino: usize;
+    public d_off: usize;
+    public d_reclen: u16;
+    public d_type: u8;
+    public d_name: [256]u8;
 }
 
 extern (C) {
-	pub fn opendir(d: *u8) ?*dirent;
-	pub fn readdir(d: *dirent) ?*dirent;
-	pub fn closedir(d: *dirent) i32;
+	public fn opendir(d: *u8) ?*dirent;
+	public fn readdir(d: *dirent) ?*dirent;
+	public fn closedir(d: *dirent) i32;
 }

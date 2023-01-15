@@ -14,28 +14,28 @@ extern (Rivet) {
     let test_runner: TestRunner;
 }
 
-pub fn bold(msg: string) string {
+public fn bold(msg: string) string {
     if !SUPPORT_COLOR {
         return msg;
     }
     return "\x1b[1m{}\x1b[22m".fmt(msg);
 }
 
-pub fn green(msg: string) string {
+public fn green(msg: string) string {
     if !SUPPORT_COLOR {
         return msg;
     }
     return "\x1b[32m{}\x1b[39m".fmt(msg);
 }
 
-pub fn red(msg: string) string {
+public fn red(msg: string) string {
     if !SUPPORT_COLOR {
         return msg;
     }
     return "\x1b[31m{}\x1b[39m".fmt(msg);
 }
 
-pub fn yellow(msg: string) string {
+public fn yellow(msg: string) string {
     if !SUPPORT_COLOR {
         return msg;
     }
@@ -75,7 +75,7 @@ struct Test {
     mut err: Error;
 }
 
-pub struct TestRunner {
+public struct TestRunner {
     tests: []mut Test;
     mut ok_tests: u64;
     mut fail_tests: u64;

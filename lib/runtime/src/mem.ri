@@ -9,7 +9,7 @@ import "c/libc";
 ///
 /// NOTE: Unlike the `mem.zeroed` function, `mem.alloc` will
 /// not zero the memory block.
-pub fn mem_alloc(size: usize) !mut_anyptr {
+public fn mem_alloc(size: usize) !mut_anyptr {
     if let new = unsafe { libc.malloc(size) } {
         return new;
     }
@@ -18,7 +18,7 @@ pub fn mem_alloc(size: usize) !mut_anyptr {
 
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
-pub fn mem_zeroed(n: usize) !mut_anyptr {
+public fn mem_zeroed(n: usize) !mut_anyptr {
     let new = mem_alloc(n).!;
     mem_set(new, 0, n);
     return new;
@@ -28,7 +28,7 @@ pub fn mem_zeroed(n: usize) !mut_anyptr {
 ///
 /// NOTE: The `ptr` must be a pointer to an existing memory block previously
 /// allocated with `mem.alloc` or `mem.zeroed`.
-pub fn mem_resize(ptr: ?mut_anyptr, sz: usize) !mut_anyptr {
+public fn mem_resize(ptr: ?mut_anyptr, sz: usize) !mut_anyptr {
     if sz == 0 {
         if let safe_ptr = ptr {
             unsafe {
@@ -45,7 +45,7 @@ pub fn mem_resize(ptr: ?mut_anyptr, sz: usize) !mut_anyptr {
 
 /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
 /// byte `c`.
-pub fn mem_set(s: mut_anyptr, c: u8, n: usize) {
+public fn mem_set(s: mut_anyptr, c: u8, n: usize) {
     unsafe {
         let mut s_b = @as([*]mut u8, s);
         let mut i: usize = 0;
@@ -59,7 +59,7 @@ pub fn mem_set(s: mut_anyptr, c: u8, n: usize) {
 ///
 /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem.move`, if the memory
 /// areas do overlap.
-pub fn mem_copy(dest: mut_anyptr, src: anyptr, sz: usize) {
+public fn mem_copy(dest: mut_anyptr, src: anyptr, sz: usize) {
     unsafe {
         let src_b = @as([*]u8, src);
         let mut dest_b = @as([*]mut u8, dest);
@@ -76,7 +76,7 @@ pub fn mem_copy(dest: mut_anyptr, src: anyptr, sz: usize) {
 /// in `src` are first copied into a temporary array that does not overlap
 /// `src` or `dest`, and the bytes are then copied from the temporary array to
 /// `dest`.
-pub fn mem_move(dest: mut_anyptr, src: anyptr, sz: usize) {
+public fn mem_move(dest: mut_anyptr, src: anyptr, sz: usize) {
     unsafe {
         _ = libc.memmove(dest, src, sz);
     }
@@ -85,7 +85,7 @@ pub fn mem_move(dest: mut_anyptr, src: anyptr, sz: usize) {
 /// Allocates dynamically a `sz` bytes block of memory on the heap, then copies
 /// the contents of `src` into the allocated space and returns a pointer to
 /// the newly allocated space.
-pub fn mem_dup(src: anyptr, sz: usize) !mut_anyptr {
+public fn mem_dup(src: anyptr, sz: usize) !mut_anyptr {
     if sz == 0 {
         return mem_zeroed(1).!;
     }
@@ -110,13 +110,13 @@ pub fn mem_dup(src: anyptr, sz: usize) !mut_anyptr {
 /// number of equal bytes. You should use a function that performs comparisons
 /// in constant time for this.
 #[inline]
-pub fn mem_cmp(s1: anyptr, s2: anyptr, n: usize) i32 {
+public fn mem_cmp(s1: anyptr, s2: anyptr, n: usize) i32 {
     return unsafe { libc.memcmp(s1, s2, n) };
 }
 
 /// Deallocates manually the memory referenced by `ptr`.
 #[unsafe; inline]
-pub fn mem_dealloc(ptr: anyptr) {
+public fn mem_dealloc(ptr: anyptr) {
     unsafe {
         libc.free(ptr);
     }

@@ -12,63 +12,63 @@ import "../prefs";
 import "../token";
 import "../utils";
 
-pub let mut reports: ReportTable = ReportTable();
+public let mut reports: ReportTable = ReportTable();
 
 #[inline]
-pub fn total_errors() usize {
+public fn total_errors() usize {
     return reports.errors;
 }
 
 #[inline]
-pub fn total_warns() usize {
+public fn total_warns() usize {
     return reports.warns;
 }
 
-pub class ReportTable {
-    pub mut prefs: prefs.Prefs;
-    pub mut errors: usize;
-    pub mut warns: usize;
+public class ReportTable {
+    public mut prefs: prefs.Prefs;
+    public mut errors: usize;
+    public mut warns: usize;
 }
 
-pub enum ReportKind as u8 {
+public enum ReportKind as u8 {
     Error,
     Warn,
     Note,
     Help
 }
 
-pub class ReportExtra {
-    pub kind: ReportKind;
-    pub msg: string;
+public class ReportExtra {
+    public kind: ReportKind;
+    public msg: string;
 }
 
 #[inline]
-pub fn error(msg: string, pos: token.Pos) Report {
+public fn error(msg: string, pos: token.Pos) Report {
     return Report(.Error, pos, msg);
 }
 
 #[inline]
-pub fn warn(msg: string, pos: token.Pos) Report {
+public fn warn(msg: string, pos: token.Pos) Report {
     return Report(.Warn, pos, msg);
 }
 
-pub class Report {
-    pub kind: ReportKind;
-    pub pos: token.Pos;
-    pub msg: string;
-    pub mut extras: []ReportExtra;
+public class Report {
+    public kind: ReportKind;
+    public pos: token.Pos;
+    public msg: string;
+    public mut extras: []ReportExtra;
 
     #[inline]
-    pub fn add_note(mut self, msg: string) {
+    public fn add_note(mut self, msg: string) {
         self.extras.push(ReportExtra(.Note, msg));
     }
 
     #[inline]
-    pub fn add_help(mut self, msg: string) {
+    public fn add_help(mut self, msg: string) {
         self.extras.push(ReportExtra(.Help, msg));
     }
 
-    pub fn emit(self) {
+    public fn emit(self) {
         console.eprintln(
             utils.bold("{}:{}:{}: {} {}"), path_styled_for_error_messages(self.pos.file),
             self.pos.line, self.pos.col,
@@ -128,7 +128,7 @@ let ERROR_PATHS_ABSOLUTE: bool = (env.get("RIVET_ERROR_PATHS") ?? "relative") ==
 
 // NOTE: path_styled_for_error_messages will *always* use `/` in the error paths, no
 // matter the OS, to ensure stable compiler error output in the tests.
-pub fn path_styled_for_error_messages(path_: string) string {
+public fn path_styled_for_error_messages(path_: string) string {
     let rpath = (path.resolve(path_) catch path_).replace("\\", "/");
     return if ERROR_PATHS_ABSOLUTE {
         rpath

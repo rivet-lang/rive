@@ -9,39 +9,39 @@ let DIGIT_PAIRS: string = "00102030405060708090011121314151617181910212223242526
 extend comptime_int : ToString {
     /// Returns the value of `self` as a string.
     #[inline]
-    pub fn to_string(&self) string {
+    public fn to_string(&self) string {
         return @as(i64, self.*).to_string();
     }
 }
 
 extend i8 : ToString {
-    pub const MAX: i8 = 127;
-    pub const MIN: i8 = -128;
+    public const MAX: i8 = 127;
+    public const MIN: i8 = -128;
 
     /// Returns the value of `self` as a string.
     #[inline]
-    pub fn to_string(&self) string {
+    public fn to_string(&self) string {
         return @as(i32, self.*).str_l(5);
     }
 }
 
 extend i16 : ToString {
-    pub const MAX: i16 = 32767;
-    pub const MIN: i16 = -32768;
+    public const MAX: i16 = 32767;
+    public const MIN: i16 = -32768;
 
     /// Returns the value of `self` as a string.
     #[inline]
-    pub fn to_string(&self) string {
+    public fn to_string(&self) string {
         return @as(i32, self.*).str_l(7);
     }
 }
 
 extend i32 : ToString {
-    pub const MAX: i32 = 2147483647;
-    pub const MIN: i32 = -2147483648;
+    public const MAX: i32 = 2147483647;
+    public const MIN: i32 = -2147483648;
 
     /// Returns the string representation of `self` with `max` chars.
-    pub fn str_l(self, max: i32) string {
+    public fn str_l(self, max: i32) string {
         if self == 0 {
             return "0";
         }
@@ -89,17 +89,17 @@ extend i32 : ToString {
 
     /// Returns the value of `self` as a string.
     #[inline]
-    pub fn to_string(&self) string {
+    public fn to_string(&self) string {
         return self.*.str_l(12);
     }
 }
 
 extend i64 : ToString {
-    pub const MAX: i64 = 9223372036854775807;
-    pub const MIN: i64 = -9223372036854775808;
+    public const MAX: i64 = 9223372036854775807;
+    public const MIN: i64 = -9223372036854775808;
 
     /// Returns the value of `self` as a string.
-    pub fn to_string(&self) string {
+    public fn to_string(&self) string {
         if self.* == 0 {
             return "0";
         }
@@ -149,12 +149,12 @@ extend i64 : ToString {
 }
 
 extend isize : ToString {
-    pub const MIN: isize = #if _x64_ i64.MIN #else i32.MIN #endif;
-    pub const MAX: isize = #if _x64_ i64.MAX #else i32.MAX #endif;
+    public const MIN: isize = #if _x64_ i64.MIN #else i32.MIN #endif;
+    public const MAX: isize = #if _x64_ i64.MAX #else i32.MAX #endif;
 
     /// Returns the value of `self` as a string.
     #[inline]
-    pub fn to_string(&self) string {
+    public fn to_string(&self) string {
         return @as(i64, self.*).to_string();
     }
 }

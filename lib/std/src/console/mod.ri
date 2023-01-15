@@ -4,8 +4,8 @@
 
 import "runtime";
 
-pub alias print = runtime.console_print;
-pub alias println = runtime.console_println;
-pub alias eprint = runtime.console_eprint;
-pub alias eprintln = runtime.console_eprintln;
-pub alias is_atty = runtime.console_is_atty;
+public alias print = runtime.console_print;
+public alias println = runtime.console_println;
+public alias eprint = runtime.console_eprint;
+public alias eprintln = runtime.console_eprintln;
+public alias is_atty = runtime.console_is_atty;

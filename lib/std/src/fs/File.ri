@@ -7,11 +7,11 @@ import "c/libc";
 import "../mem";
 import { ToString } from "../traits";
 
-pub class File {
+public class File {
     f: *mut libc.FILE;
     mut is_opened: bool;
 
-    pub fn open(path: string, mode: string = "r") !File {
+    public fn open(path: string, mode: string = "r") !File {
         unsafe {
             if let f = libc.fopen(path.ptr, mode.ptr) {
                 return Self(f, true);
@@ -22,28 +22,28 @@ pub class File {
 
     /// Writes the string `s` into the file.
     #[inline]
-    pub fn write(mut self, s: string) {
+    public fn write(mut self, s: string) {
         _ = unsafe { libc.fputs(s.ptr, self.f) };
     }
 
     /// Writes the string `s` into the file and appends a '\n' character.
-    pub fn writeln(mut self, s: string) {
+    public fn writeln(mut self, s: string) {
         self.write(s);
         self.write("\n");
     }
 
     #[inline]
-    pub fn write_fmt(mut self, s: string, args: ...ToString) {
+    public fn write_fmt(mut self, s: string, args: ...ToString) {
         self.write(s.fmt(args));
     }
 
-    pub fn writeln_fmt(mut self, s: string, args: ...ToString) {
+    public fn writeln_fmt(mut self, s: string, args: ...ToString) {
         self.write(s.fmt(args));
         self.write("\n");
     }
 
     /// Returns the current file contents.
-    pub fn read_all(mut self) !string {
+    public fn read_all(mut self) !string {
         if !self.is_opened {
             return "";
         }
@@ -82,12 +82,12 @@ pub class File {
 
     /// Returns true if the file is at end.
     #[inline]
-    pub fn eof(self) bool {
+    public fn eof(self) bool {
         return unsafe { libc.feof(self.f) != 0 };
     }
 
     /// Closes the current file.
-    pub fn close(mut self) {
+    public fn close(mut self) {
         if !self.is_opened {
             return;
         }

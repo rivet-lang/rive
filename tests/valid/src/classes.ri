@@ -57,21 +57,21 @@ test "inheritance: typeswitch" {
 }
 
 class Animal {
-    pub fn speak(self) string {
+    public fn speak(self) string {
         return "~ Animal.speaks() ~";
     }
 }
 
 class Dog : Animal {
     #[override]
-    pub fn speak(self) string {
+    public fn speak(self) string {
         return "woof";
     }
 }
 
 class Cat : Animal {
     #[override]
-    pub fn speak(self) string {
+    public fn speak(self) string {
         return "meow";
     }
 }

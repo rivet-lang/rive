@@ -4,12 +4,12 @@
 
 import "runtime";
 
-pub alias alloc = runtime.mem_alloc;
-pub alias zeroed = runtime.mem_zeroed;
-pub alias resize = runtime.mem_resize;
-pub alias set = runtime.mem_set;
-pub alias copy = runtime.mem_copy;
-pub alias move = runtime.mem_move;
-pub alias dup = runtime.mem_dup;
-pub alias cmp = runtime.mem_cmp;
-pub alias dealloc = runtime.mem_dealloc;
+public alias alloc = runtime.mem_alloc;
+public alias zeroed = runtime.mem_zeroed;
+public alias resize = runtime.mem_resize;
+public alias set = runtime.mem_set;
+public alias copy = runtime.mem_copy;
+public alias move = runtime.mem_move;
+public alias dup = runtime.mem_dup;
+public alias cmp = runtime.mem_cmp;
+public alias dealloc = runtime.mem_dealloc;

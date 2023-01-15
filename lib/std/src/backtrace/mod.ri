@@ -4,4 +4,4 @@
 
 import "runtime";
 
-pub alias print = runtime.bt_print;
+public alias print = runtime.bt_print;

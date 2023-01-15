@@ -5,18 +5,18 @@
 import "c/libc";
 import "c";
 
-pub alias ErrnoError = c.ErrnoError;
-pub alias last_errno_error = c.last_errno_error;
+public alias ErrnoError = c.ErrnoError;
+public alias last_errno_error = c.last_errno_error;
 
 #[inline]
 fn error_panic(err: Error) {
     process_panic(err.to_string());
 }
 
-pub class Error : ToString {
-    pub msg: string;
+public class Error : ToString {
+    public msg: string;
 
-    pub fn to_string(self) string {
+    public fn to_string(self) string {
         let type_name = "Error";
         if self.msg == "" {
             return type_name;
@@ -25,8 +25,8 @@ pub class Error : ToString {
     }
 }
 
-pub class InvalidArgumentError : Error { }
+public class InvalidArgumentError : Error { }
 
-pub class OutOfMemoryError : Error { }
+public class OutOfMemoryError : Error { }
 
-pub class RuneFromU32Error : Error { }
+public class RuneFromU32Error : Error { }

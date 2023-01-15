@@ -148,7 +148,7 @@ class Parser:
         return attrs
 
     def is_public(self):
-        return self.accept(Kind.KwPub)
+        return self.accept(Kind.KwPublic)
 
     def parse_decls(self):
         decls = []

@@ -5,14 +5,14 @@
 import "c";
 import "runtime";
 
-pub alias ErrnoError = c.ErrnoError;
-pub alias OutOfMemoryError = runtime.OutOfMemoryError;
-pub alias RuneFromU32Error = runtime.RuneFromU32Error;
+public alias ErrnoError = c.ErrnoError;
+public alias OutOfMemoryError = runtime.OutOfMemoryError;
+public alias RuneFromU32Error = runtime.RuneFromU32Error;
 
-pub class InvalidSyntaxError : Error { }
+public class InvalidSyntaxError : Error { }
 
-pub class InvalidBaseError : Error { }
+public class InvalidBaseError : Error { }
 
-pub class InvalidBitSizeError : Error { }
+public class InvalidBitSizeError : Error { }
 
-pub class ValueOutOfRangeError : Error { }
+public class ValueOutOfRangeError : Error { }

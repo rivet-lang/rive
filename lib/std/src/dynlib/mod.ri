@@ -8,18 +8,18 @@
 
 import "c/libc";
 
-pub let SHARED_LIB_EXT: string = get_shared_library_extension();
+public let SHARED_LIB_EXT: string = get_shared_library_extension();
 
 class SymbolNotFoundError : Error {}
 
 /// Returns a library name with the operating system specific extension for shared
 /// libraries.
 #[inline]
-pub fn library_name(libname: string) string {
+public fn library_name(libname: string) string {
     return libname.concat(SHARED_LIB_EXT);
 }
 
-pub fn load(path: string, global_symbols: bool = false) !Library {
+public fn load(path: string, global_symbols: bool = false) !Library {
     let flags = if global_symbols { libc.RTLD_NOW | libc.RTLD_GLOBAL } else { libc.RTLD_NOW };
     if let ptr = unsafe { libc.dlopen(path.ptr, flags) } {
         return Library(path, ptr);
@@ -28,10 +28,10 @@ pub fn load(path: string, global_symbols: bool = false) !Library {
 }
 
 class Library {
-    pub path: string;
+    public path: string;
     ptr: mut_anyptr;
 
-    pub fn address_of(self, symbol: string) !anyptr {
+    public fn address_of(self, symbol: string) !anyptr {
         if let ptr = unsafe { libc.dlsym(self.ptr, symbol.ptr) } {
             return ptr;
         }
@@ -41,7 +41,7 @@ class Library {
     }
 
     #[inline]
-    pub fn exists(self, symbol: string) bool {
+    public fn exists(self, symbol: string) bool {
         return if let _ = self.address_of(symbol) { true } else { false };
     }
 

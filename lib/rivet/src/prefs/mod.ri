@@ -11,10 +11,10 @@ import "std/fs/path";
 import "../token";
 import "../utils";
 
-pub enum Backend as u8 {
+public enum Backend as u8 {
     C;
 
-    pub fn from_string(name: string) ?Self {
+    public fn from_string(name: string) ?Self {
         return switch name {
             "c" => .C,
             else => nil
@@ -22,16 +22,16 @@ pub enum Backend as u8 {
     }
 }
 
-pub enum OutputMode as u8 {
+public enum OutputMode as u8 {
     Bin
 }
 
-pub enum OptimizeMode as u8 {
+public enum OptimizeMode as u8 {
 	Debug,
 	Release
 }
 
-pub enum LinkMode as u8 {
+public enum LinkMode as u8 {
     Static,
     Dynamic
 }
@@ -41,41 +41,41 @@ fn print_help() void {
     process.exit(0);
 }
 
-pub class Prefs {
+public class Prefs {
     // Target info
-    pub mut target_os: sys.OS = sys.os();
-    pub mut target_arch: sys.Arch = sys.arch();
-    pub mut target_is_64bit: bool = sys.is_64bit();
-    pub mut target_is_little_endian: bool = sys.is_little_endian();
-    pub mut target_c_runtime: sys.CRuntime = sys.c_runtime();
-    pub mut target_backend: Backend;
-    pub mut target_backend_compiler: string = "gcc";
+    public mut target_os: sys.OS = sys.os();
+    public mut target_arch: sys.Arch = sys.arch();
+    public mut target_is_64bit: bool = sys.is_64bit();
+    public mut target_is_little_endian: bool = sys.is_little_endian();
+    public mut target_c_runtime: sys.CRuntime = sys.c_runtime();
+    public mut target_backend: Backend;
+    public mut target_backend_compiler: string = "gcc";
 
     // Module info
-    pub mut input: string;
-    pub mut mod_name: string;
-    pub mut mod_dir: string;
-    pub mut mod_output: string;
+    public mut input: string;
+    public mut mod_name: string;
+    public mut mod_dir: string;
+    public mut mod_output: string;
 
     // Output info
-    pub mut output_mode: OutputMode;
-    pub mut optimize_mode: OptimizeMode;
-    pub mut is_test: bool;
-    pub mut run_output: bool;
-    pub mut run_output_args: []string;
+    public mut output_mode: OutputMode;
+    public mut optimize_mode: OptimizeMode;
+    public mut is_test: bool;
+    public mut run_output: bool;
+    public mut run_output_args: []string;
 
-    pub mut library_path: []string;
-    pub mut libraries_to_link: []string;
-    pub mut objects_to_link: []string;
+    public mut library_path: []string;
+    public mut libraries_to_link: []string;
+    public mut objects_to_link: []string;
 
-    pub mut flags: []string;
-    pub mut check_syntax: bool;
-	pub mut check: bool;
-	pub mut emit_rir: bool;
-	pub mut keep_c: bool;
-	pub mut is_verbose: bool;
+    public mut flags: []string;
+    public mut check_syntax: bool;
+	public mut check: bool;
+	public mut emit_rir: bool;
+	public mut keep_c: bool;
+	public mut is_verbose: bool;
 
-    pub fn new(args: []string, is_test: bool, run_output: bool) !Self {
+    public fn new(args: []string, is_test: bool, run_output: bool) !Self {
         let mut prefs = Prefs(is_test: is_test, run_output: run_output);
         let mut options: []string = [];
         let mut i: usize = 0;

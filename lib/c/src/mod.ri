@@ -3,41 +3,41 @@
 // be found in the LICENSE file.
 
 extern (C) {
-    pub let environ: [*]*u8;
+    public let environ: [*]*u8;
 }
 
-pub alias char = u8;
-pub alias schar = i8;
-pub alias uchar = u8;
+public alias char = u8;
+public alias schar = i8;
+public alias uchar = u8;
 
-pub alias short = i16;
-pub alias ushort = u16;
+public alias short = i16;
+public alias ushort = u16;
 
-pub alias int = i32;
-pub alias uint = u32;
+public alias int = i32;
+public alias uint = u32;
 
-pub alias long = i64;
-pub alias longlong = i64;
+public alias long = i64;
+public alias longlong = i64;
 
-pub alias ulong = u64;
-pub alias ulonglong = u64;
+public alias ulong = u64;
+public alias ulonglong = u64;
 
-pub alias float = f32;
-pub alias double = f64;
+public alias float = f32;
+public alias double = f64;
 
-pub alias wchar_t = u32;
-pub alias intmax_t = i64;
-pub alias uintmax_t = u64;
+public alias wchar_t = u32;
+public alias intmax_t = i64;
+public alias uintmax_t = u64;
 
-pub alias size_t = usize;
-pub alias ptrdiff_t = isize;
-pub alias intptr_t = isize;
-pub alias uintptr_t = usize;
-pub alias ssize_t = isize;
+public alias size_t = usize;
+public alias ptrdiff_t = isize;
+public alias intptr_t = isize;
+public alias uintptr_t = usize;
+public alias ssize_t = isize;
 
-pub alias off_t = i64;
-pub alias ino_t = u64;
-pub alias dev_t = u64;
-pub alias uid_t = u32;
-pub alias gid_t = u32;
-pub alias mode_t = usize;
+public alias off_t = i64;
+public alias ino_t = u64;
+public alias dev_t = u64;
+public alias uid_t = u32;
+public alias gid_t = u32;
+public alias mode_t = usize;

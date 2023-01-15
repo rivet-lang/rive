@@ -2,4 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "runtime" { pub sum64, pub sum64_string };
+import "runtime";
+
+public alias sum64 = runtime.sum64;
+public alias sum64_string = runtime.sum64_string;

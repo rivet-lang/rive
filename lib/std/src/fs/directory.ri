@@ -7,7 +7,7 @@ import "c/libc";
 
 import "./path";
 
-pub fn make_directory(path_: string, mode: usize = 0o777) ! {
+public fn make_directory(path_: string, mode: usize = 0o777) ! {
     if path_ == "." {
         return;
     }
@@ -17,7 +17,7 @@ pub fn make_directory(path_: string, mode: usize = 0o777) ! {
     }
 }
 
-pub fn remove_directory(dir: string) ! {
+public fn remove_directory(dir: string) ! {
     let rpath = path.resolve(dir).!;
     if unsafe { libc.rmdir(rpath.ptr) == -1 } {
         return c.last_errno_error();
@@ -25,7 +25,7 @@ pub fn remove_directory(dir: string) ! {
     }
 }
 
-pub fn walk_directory(path_: string, ext: string = "") ![]string {
+public fn walk_directory(path_: string, ext: string = "") ![]string {
     let rpath = path.resolve(path_).!;
     unsafe {
         if let dir = libc.opendir(path_.ptr) {

@@ -3,38 +3,38 @@
 // be found in the LICENSE file.
 
 /// Represents the different types of version increments.
-pub enum Increment as u8 {
+public enum Increment as u8 {
 	Major,
 	Minor,
 	Patch
 }
 
-pub class EmptyInputError : Error {
+public class EmptyInputError : Error {
     #[override; inline]
-    pub fn to_string(self) string {
+    public fn to_string(self) string {
         return "empty input";
     }
 }
 
-pub class InvalidVersionFormatError : Error {
+public class InvalidVersionFormatError : Error {
     input: string;
 
     #[override; inline]
-    pub fn to_string(self) string {
+    public fn to_string(self) string {
         return "invalid version format for input '{}'".fmt(self.input);
     }
 }
 
 /// Represents a semantic version in semver format.
-pub class Version {
-    pub major: u64;
-    pub minor: u64;
-    pub patch: u64;
-    pub prerelease: string;
-    pub metadata: string;
+public class Version {
+    public major: u64;
+    public minor: u64;
+    public patch: u64;
+    public prerelease: string;
+    public metadata: string;
 
     /// Returns a `Version` structure parsed from `input` `string`.
-    pub fn from_string(input: string) !Self {
+    public fn from_string(input: string) !Self {
         if input.is_empty() {
             return EmptyInputError();
         }
@@ -47,14 +47,14 @@ pub class Version {
 
     /// Returns a `Version` structure with given `major`, `minor` and `patch` versions.
     #[inline]
-    pub fn build(major: u64, minor: u64, patch: u64) Self {
+    public fn build(major: u64, minor: u64, patch: u64) Self {
         // TODO: check if versions are greater than zero.
         return Version(major, minor, patch, "", "");
     }
 
     /// Returns a `Version` structure with incremented values.
     #[inline]
-    pub fn increment(self, typ: Increment) Self {
+    public fn increment(self, typ: Increment) Self {
         let mut major = self.major;
         let mut minor = self.minor;
         let mut patch = self.patch;
@@ -78,7 +78,7 @@ pub class Version {
     /// Satisfies returns `true` if the `input` expression can be validated to `true`
     /// when run against this `Version`.
     #[inline]
-    pub fn satisfies(self, input: string) bool {
+    public fn satisfies(self, input: string) bool {
         return if let range = Range.parse(input) {
             range.satisfies(self)
         } else {
@@ -87,17 +87,17 @@ pub class Version {
     }
 
     #[inline]
-    pub fn ==(self, v2: Self) bool {
+    public fn ==(self, v2: Self) bool {
         return self.major == v2.major and self.minor == v2.minor and self.patch == v2.patch
             and self.prerelease == v2.prerelease;
     }
 
     #[inline]
-    pub fn !=(self, v2: Self) bool {
+    public fn !=(self, v2: Self) bool {
         return !(self == v2);
     }
 
-    pub fn >(self, v2: Self) bool {
+    public fn >(self, v2: Self) bool {
         if self.major < v2.major {
             return false;
         } else if self.major > v2.major {
@@ -110,7 +110,7 @@ pub class Version {
         return self.patch > v2.patch;
     }
 
-    pub fn <(self, v2: Self) bool {
+    public fn <(self, v2: Self) bool {
         if self.major > v2.major {
             return false;
         } else if self.major < v2.major {
@@ -124,16 +124,16 @@ pub class Version {
     }
 
     #[inline]
-    pub fn >=(self, v2: Self) bool {
+    public fn >=(self, v2: Self) bool {
         return self == v2 or self > v2;
     }
 
     #[inline]
-    pub fn <=(self, v2: Self) bool {
+    public fn <=(self, v2: Self) bool {
         return self == v2 or self < v2;
     }
 
-    pub fn to_string(self) string {
+    public fn to_string(self) string {
         let common_string = "{}.{}.{}".fmt(self.major, self.minor, self.patch);
         let prerelease_string = if self.prerelease.is_empty() { "" } else {
             "-".concat(self.prerelease)
@@ -148,7 +148,7 @@ pub class Version {
 /// Converts the `input` version to a `Version` struct.
 /// coerce will strip any contents *after* the parsed version string.
 #[inline]
-pub fn coerce(input: string) !Version {
+public fn coerce(input: string) !Version {
     if let version = RawVersion.parse(input).coerce() {
         return version;
     }
@@ -158,6 +158,6 @@ pub fn coerce(input: string) !Version {
 /// Returns `true` if the `input` `string` can be converted to a semantic `Version`
 /// struct.
 #[inline]
-pub fn is_valid(input: string) bool {
+public fn is_valid(input: string) bool {
 	return RawVersion.parse(input).is_valid();
 }

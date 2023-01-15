@@ -4,10 +4,10 @@
 
 import "std/errors";
 
-pub alias InvalidSyntaxError = errors.InvalidSyntaxError;
-pub alias InvalidBaseError = errors.InvalidBaseError;
-pub alias InvalidBitSizeError = errors.InvalidBitSizeError;
-pub alias ValueOutOfRangeError = errors.ValueOutOfRangeError;
+public alias InvalidSyntaxError = errors.InvalidSyntaxError;
+public alias InvalidBaseError = errors.InvalidBaseError;
+public alias InvalidBitSizeError = errors.InvalidBitSizeError;
+public alias ValueOutOfRangeError = errors.ValueOutOfRangeError;
 
 const INT_SIZE: u32 = #if _x64_ 64 #else 32 #endif;
 
@@ -18,7 +18,7 @@ fn lower(c: u8) u8 {
 
 /// This is like `string_to_int` but for unsigned numbers.
 /// A sign prefix is not permitted.
-pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
+public fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
     if s_ == "" {
         return InvalidSyntaxError("empty string");
     }
@@ -139,7 +139,7 @@ pub fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 /// The `bit_size` argument specifies the integer type that the result must
 /// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to i8, i16, i32, and
 /// i64. If `bit_size` is below 0 or above 64, an error is returned.
-pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
+public fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
     if s == "" {
         return InvalidSyntaxError("invalid syntax");
     }
@@ -174,7 +174,7 @@ pub fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
 
 /// Equivalent to parse_int(s, 10, 0), converted to type i64.
 #[inline]
-pub fn atoi(s: string) !i64 {
+public fn atoi(s: string) !i64 {
     return string_to_int(s, 10, 0).!;
 }
 

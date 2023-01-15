@@ -133,7 +133,7 @@ class Vec {
     }
 
     /// Returns an independent copy of `self`.
-    pub fn clone(self) Self {
+    public fn clone(self) Self {
         let mut size = self.cap * self.elem_size;
         if size == 0 {
             size = 1;

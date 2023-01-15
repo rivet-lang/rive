@@ -4,7 +4,7 @@
 
 extend nil : ToString {
     #[inline]
-    pub fn to_string(&self) string {
+    public fn to_string(&self) string {
         return "nil";
     }
 }

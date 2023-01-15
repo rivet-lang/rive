@@ -9,14 +9,14 @@ import "runtime";
 import "../../mem";
 import "../../strings";
 
-pub alias MAX_PATH_LEN = libc.MAX_PATH_LEN;
-pub const SEPARATOR: u8 = #if _WINDOWS_ b'\\' #else b'/' #endif;
-pub let SEPARATOR_STR: string = #if _WINDOWS_ "\\" #else "/" #endif;
-pub let DELIMITER: string = #if _WINDOWS_ ";" #else ":" #endif;
+public alias MAX_PATH_LEN = libc.MAX_PATH_LEN;
+public const SEPARATOR: u8 = #if _WINDOWS_ b'\\' #else b'/' #endif;
+public let SEPARATOR_STR: string = #if _WINDOWS_ "\\" #else "/" #endif;
+public let DELIMITER: string = #if _WINDOWS_ ";" #else ":" #endif;
 
 /// Returns `true` if the given byte is a valid path separator
 #[inline]
-pub fn is_separator(byte: u8) bool {
+public fn is_separator(byte: u8) bool {
 #if _WINDOWS_
     return byte == b'/' or byte == b'\\';
 #else
@@ -26,30 +26,30 @@ pub fn is_separator(byte: u8) bool {
 
 /// Returns `true` if `path` (file or directory) exists.
 #[inline]
-pub fn exists(path: string) bool {
+public fn exists(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.O_RDONLY) == 0 };
 }
 
 /// Returns `true` if `path` is executable.
 #[inline]
-pub fn is_executable(path: string) bool {
+public fn is_executable(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.X_OK) == 0 };
 }
 
 /// Returns `true` if `path` is writable.
 #[inline]
-pub fn is_writable(path: string) bool {
+public fn is_writable(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.W_OK) == 0 };
 }
 
 /// Returns `true` if `path` is readable.
 #[inline]
-pub fn is_readable(path: string) bool {
+public fn is_readable(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.R_OK) == 0 };
 }
 
 /// Returns `true` if `path` is a directory.
-pub fn is_directory(path: string) bool {
+public fn is_directory(path: string) bool {
     let mut statbuf = libc.Stat();
     if unsafe { libc.stat(path.ptr, &mut statbuf) != 0 } {
         return false;
@@ -59,18 +59,18 @@ pub fn is_directory(path: string) bool {
 
 /// Returns `true` if `path` is a file.
 #[inline]
-pub fn is_file(path: string) bool {
+public fn is_file(path: string) bool {
     return exists(path) and !is_directory(path);
 }
 
 /// Returns `true` if path is absolute.
 #[inline]
-pub fn is_absolute(path: string) bool {
+public fn is_absolute(path: string) bool {
     return path.len > 0 and path[0] == SEPARATOR;
 }
 
 /// Returns a boolean indicating whether `path` is a link.
-pub fn is_link(path: string) bool {
+public fn is_link(path: string) bool {
     let mut statbuf = libc.Stat();
     if unsafe { libc.lstat(path.ptr, &mut statbuf) != 0 } {
         return false;
@@ -82,7 +82,7 @@ pub fn is_link(path: string) bool {
 /// If the path is a file in the current directory (no directory component)
 /// then returns nil.
 /// If the path is the root directory, returns nil.
-pub fn dirname(path: string) ?string {
+public fn dirname(path: string) ?string {
     if path.len == 0 {
         return nil;
     }
@@ -108,7 +108,7 @@ pub fn dirname(path: string) ?string {
     return path[0..end_index];
 }
 
-pub fn basename(path: string) string {
+public fn basename(path: string) string {
     if path.len == 0 {
         return "";
     }
@@ -137,7 +137,7 @@ pub fn basename(path: string) string {
 /// name, are considered to have no extension.
 /// The returned slice is guaranteed to have its pointer within the start and end
 /// pointer address range of `path`, even if it is length zero.
-pub fn extension(path: string) string {
+public fn extension(path: string) string {
     let filename = basename(path);
     let index = filename.last_index_of_byte(b'.') ?? return path[path.len..];
     return if index == 0 { path[path.len..] } else { filename[index..] };
@@ -148,7 +148,7 @@ pub fn extension(path: string) string {
 /// The result does not have a trailing path separator.
 /// If all paths are relative it uses the current working directory as a starting
 /// point.
-pub fn resolve(paths: ...string) !string {
+public fn resolve(paths: ...string) !string {
     if paths.len == 0 {
         return runtime.process_get_cwd().!;
     }
@@ -222,7 +222,7 @@ pub fn resolve(paths: ...string) !string {
 /// Returns the relative path from `from_` to `to`. If `from` and `to` each
 /// resolve to the same path (after calling `resolve` on each), a zero-length
 /// string is returned.
-pub fn relative(from_: string, to: string) !string {
+public fn relative(from_: string, to: string) !string {
     let resolved_from = resolve(from_).!;
     let resolved_to = resolve(to).!;
     let mut from_it = from_.tokenize(SEPARATOR);
@@ -272,7 +272,7 @@ pub fn relative(from_: string, to: string) !string {
     return "";
 }
 
-pub fn join(paths: ...string) !string {
+public fn join(paths: ...string) !string {
     if paths.len == 0 {
         return "";
     }
@@ -353,7 +353,7 @@ pub fn join(paths: ...string) !string {
 
 /// Joins the current working directory with the given `path` (if the `path` is
 /// relative) and returns the absolute path representation.
-pub fn absolute(path: string) !string {
+public fn absolute(path: string) !string {
     let cwd = runtime.process_get_cwd().!;
     if path.is_empty() {
         return cwd;

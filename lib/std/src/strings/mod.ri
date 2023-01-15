@@ -4,4 +4,4 @@
 
 import "runtime";
 
-pub alias Builder = runtime.StringBuilder;
+public alias Builder = runtime.StringBuilder;

@@ -4,12 +4,12 @@
 
 import "../process";
 
-pub enum Arch as u8 {
+public enum Arch as u8 {
     X86,
     Amd64;
 
     #[inline]
-    pub fn from_string(arch: string) ?Arch {
+    public fn from_string(arch: string) ?Arch {
         return switch arch {
             "i386", "x86", "_X86_" => .X86,
             "amd64", "_AMD64_" => .Amd64,
@@ -20,7 +20,7 @@ pub enum Arch as u8 {
 
 /// Returns the current architecture.
 #[inline]
-pub fn arch() Arch {
+public fn arch() Arch {
 #if _X86_
     return .X86;
 #else_if _AMD64_
