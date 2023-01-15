@@ -11,7 +11,7 @@ public class File {
     f: *mut libc.FILE;
     mut is_opened: bool;
 
-    public fn open(path: string, mode: string = "r") !File {
+    public func open(path: string, mode: string = "r") !File {
         unsafe {
             if let f = libc.fopen(path.ptr, mode.ptr) {
                 return Self(f, true);
@@ -22,28 +22,28 @@ public class File {
 
     /// Writes the string `s` into the file.
     #[inline]
-    public fn write(mut self, s: string) {
+    public func write(mut self, s: string) {
         _ = unsafe { libc.fputs(s.ptr, self.f) };
     }
 
     /// Writes the string `s` into the file and appends a '\n' character.
-    public fn writeln(mut self, s: string) {
+    public func writeln(mut self, s: string) {
         self.write(s);
         self.write("\n");
     }
 
     #[inline]
-    public fn write_fmt(mut self, s: string, args: ...ToString) {
+    public func write_fmt(mut self, s: string, args: ...ToString) {
         self.write(s.fmt(args));
     }
 
-    public fn writeln_fmt(mut self, s: string, args: ...ToString) {
+    public func writeln_fmt(mut self, s: string, args: ...ToString) {
         self.write(s.fmt(args));
         self.write("\n");
     }
 
     /// Returns the current file contents.
-    public fn read_all(mut self) !string {
+    public func read_all(mut self) !string {
         if !self.is_opened {
             return "";
         }
@@ -82,12 +82,12 @@ public class File {
 
     /// Returns true if the file is at end.
     #[inline]
-    public fn eof(self) bool {
+    public func eof(self) bool {
         return unsafe { libc.feof(self.f) != 0 };
     }
 
     /// Closes the current file.
-    public fn close(mut self) {
+    public func close(mut self) {
         if !self.is_opened {
             return;
         }

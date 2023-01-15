@@ -225,7 +225,7 @@ class Codegen:
                 main_fn.store(
                     ir.Selector(
                         ir.Function(test_t, ir.VOID_T), test_value,
-                        ir.Name("func")
+                        ir.Name("fn")
                     ), ir.Name(gtest.func)
                 )
                 gtests_array.append(test_value)

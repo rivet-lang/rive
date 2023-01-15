@@ -30,13 +30,13 @@ public class Tokenizer {
     mut eofs: usize;
     mut conditional_stack: []Conditional;
 
-    public fn new(text: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
+    public func new(text: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
         let mut t = Tokenizer(table: table, prefs: prefs, text: text);
         t.init();
         return t;
     }
 
-    public fn from_file(file: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
+    public func from_file(file: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
         let mut t = Tokenizer(
             table: table, prefs: prefs, file: file,
             text: utils.read_file(file) catch |err| utils.error(err.to_string())
@@ -45,13 +45,13 @@ public class Tokenizer {
         return t;
     }
 
-    fn init(mut self) {
+    func init(mut self) {
         self.all_tokens = @vec(token.Token, self.text.len / 3);
         self.tokenize_remaining_text();
         self.tidx = 0;
     }
 
-    fn tokenize_remaining_text(mut self) {
+    func tokenize_remaining_text(mut self) {
         while {
             let t = self.internal_next();
             self.all_tokens.push(t);
@@ -62,7 +62,7 @@ public class Tokenizer {
     }
 
     #[inline]
-    fn new_token(mut self, kind: token.Kind, lit: string = "", len: usize = 1) token.Token {
+    func new_token(mut self, kind: token.Kind, lit: string = "", len: usize = 1) token.Token {
         self.tidx += 1;
         return token.Token(lit, kind, len, pos: token.Pos(
             file: self.file,
@@ -74,11 +74,11 @@ public class Tokenizer {
     }
 
     #[inline]
-    fn new_eof_token(self) token.Token {
+    func new_eof_token(self) token.Token {
         return token.Token(kind: .EOF, pos: self.current_pos());
     }
 
-    fn end_of_file(mut self) token.Token {
+    func end_of_file(mut self) token.Token {
         self.eofs += 1;
         if self.eofs > 50 {
             self.line -= 1;
@@ -92,11 +92,11 @@ public class Tokenizer {
     }
 
     #[inline]
-    public fn next(mut self) token.Token {
+    public func next(mut self) token.Token {
         return self.buffer_tok();
     }
 
-    fn buffer_tok(mut self) token.Token {
+    func buffer_tok(mut self) token.Token {
         while {
             let cidx = self.tidx;
             self.tidx += 1;
@@ -109,12 +109,12 @@ public class Tokenizer {
     }
 
     #[inline]
-    fn current_char(self) u8 {
+    func current_char(self) u8 {
         return self.text[self.pos];
     }
 
     #[inline]
-    fn current_pos(self) token.Pos {
+    func current_pos(self) token.Pos {
         return token.Pos(
             file: self.file,
             line: self.line,
@@ -125,21 +125,21 @@ public class Tokenizer {
     }
 
     #[inline]
-    fn current_column(self) usize {
+    func current_column(self) usize {
         return self.pos - self.last_nl_pos;
     }
 
-    fn ignore_line(mut self) {
+    func ignore_line(mut self) {
         self.eat_to_end_of_line();
         self.inc_line_number();
     }
 
     #[inline]
-    fn eat_to_end_of_line(mut self) {
+    func eat_to_end_of_line(mut self) {
         while self.pos < self.text.len and self.current_char() != LF : self.pos += 1 {}
     }
 
-    fn inc_line_number(mut self) {
+    func inc_line_number(mut self) {
         self.last_nl_pos = utils.min(self.text.len - 1, self.pos);
         if self.is_cr_lf {
             self.last_nl_pos += 1;
@@ -147,7 +147,7 @@ public class Tokenizer {
         self.line += 1;
     }
 
-    fn skip_whitespace(mut self) {
+    func skip_whitespace(mut self) {
         while self.pos < self.text.len : self.pos += 1 {
             let c = self.current_char();
             if c == 8 {
@@ -168,7 +168,7 @@ public class Tokenizer {
         }
     }
 
-    fn matches(self, want: string, start_pos: usize) bool {
+    func matches(self, want: string, start_pos: usize) bool {
         let end_pos = start_pos + want.len;
         if start_pos < 0 or end_pos < 0 or start_pos >= self.text.len
             or end_pos > self.text.len {
@@ -183,7 +183,7 @@ public class Tokenizer {
         return true;
     }
 
-    public fn peek_token(self, n: usize) token.Token {
+    public func peek_token(self, n: usize) token.Token {
         let idx = self.tidx + n;
         if idx >= self.all_tokens.len {
             return self.new_eof_token();
@@ -192,7 +192,7 @@ public class Tokenizer {
     }
 
     #[inline]
-    fn look_ahead(self, n: usize) u8 {
+    func look_ahead(self, n: usize) u8 {
         return if self.pos + n < self.text.len {
             self.text[self.pos + n]
         } else {
@@ -200,7 +200,7 @@ public class Tokenizer {
         };
     }
 
-    fn read_ident(mut self) string {
+    func read_ident(mut self) string {
         let start = self.pos;
         self.pos += 1;
         while self.pos < self.text.len {
@@ -216,7 +216,7 @@ public class Tokenizer {
         return lit;
     }
 
-    fn read_hex_number(mut self) string {
+    func read_hex_number(mut self) string {
         let start = self.pos;
         self.pos += 2; // skip '0x'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
@@ -254,7 +254,7 @@ public class Tokenizer {
         return lit;
     }
 
-    fn read_bin_number(mut self) string {
+    func read_bin_number(mut self) string {
         let start = self.pos;
         self.pos += 2; // skip '0b'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
@@ -295,7 +295,7 @@ public class Tokenizer {
         return lit;
     }
 
-    fn read_oct_number(mut self) string {
+    func read_oct_number(mut self) string {
         let start = self.pos;
         self.pos += 2; // skip '0b'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
@@ -336,7 +336,7 @@ public class Tokenizer {
         return lit;
     }
 
-    fn read_dec_number(mut self) string {
+    func read_dec_number(mut self) string {
         let start = self.pos;
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
             self.error("separator `_` is only valid between digits in a numeric literal").emit();
@@ -452,7 +452,7 @@ public class Tokenizer {
         return lit;
     }
 
-    fn read_number(mut self) string {
+    func read_number(mut self) string {
         switch {
             self.matches("0x", self.pos) => return self.read_hex_number(),
             self.matches("0b", self.pos) => return self.read_bin_number(),
@@ -461,7 +461,7 @@ public class Tokenizer {
         }
     }
 
-    fn read_char(mut self) string {
+    func read_char(mut self) string {
         let (mut len, start) = (0, self.pos);
         let backslash = b'\\';
 
@@ -496,7 +496,7 @@ public class Tokenizer {
         return ch;
     }
 
-    fn read_string(mut self) string {
+    func read_string(mut self) string {
         let (start, start_char) = (self.pos, self.current_char());
         let backslash = b'\\';
         let mut backslash_count = if start_char == backslash { 1 } else { 0 };
@@ -541,7 +541,7 @@ public class Tokenizer {
         return lit;
     }
 
-    fn trim_slash_line_break(self, s: string) string {
+    func trim_slash_line_break(self, s: string) string {
         let (mut start: usize, mut ret_str) = (0, s);
         while let idx = ret_str.index_after_of("\\\n", start) {
             ret_str = ret_str[..idx].concat(ret_str[idx + 2..].trim_left(" \n\t\v\f\r"));
@@ -550,7 +550,7 @@ public class Tokenizer {
         return ret_str;
     }
 
-    fn number_literal_without_separator(self, lit: string) string {
+    func number_literal_without_separator(self, lit: string) string {
         if !lit.contains("_") {
             return lit;
         }
@@ -563,7 +563,7 @@ public class Tokenizer {
         return sb.to_string();
     }
 
-    fn internal_next(mut self) token.Token {
+    func internal_next(mut self) token.Token {
         while {
             if self.is_started {
                 self.pos += 1;
@@ -772,7 +772,7 @@ public class Tokenizer {
         return self.new_eof_token();
     }
 
-    fn invalid_character(mut self) {
+    func invalid_character(mut self) {
         let len = self.text[self.pos].len_utf8();
         let end = utils.min(self.pos + len, self.text.len);
         self.error("invalid character: `{}`".fmt(self.text[self.pos..end])).emit();
@@ -780,12 +780,12 @@ public class Tokenizer {
     }
 
     #[inline]
-    fn error(mut self, msg: string, pos: token.Pos = self.current_pos()) report.Report {
+    func error(mut self, msg: string, pos: token.Pos = self.current_pos()) report.Report {
         return report.error(msg, pos);
     }
 
     #[inline]
-    fn warn(self, msg: string, pos: token.Pos = self.current_pos()) report.Report {
+    func warn(self, msg: string, pos: token.Pos = self.current_pos()) report.Report {
         return report.warn(msg, pos);
     }
 }

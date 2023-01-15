@@ -9,7 +9,7 @@ let DIGIT_PAIRS: string = "00102030405060708090011121314151617181910212223242526
 extend comptime_int : ToString {
     /// Returns the value of `self` as a string.
     #[inline]
-    public fn to_string(&self) string {
+    public func to_string(&self) string {
         return @as(i64, self.*).to_string();
     }
 }
@@ -20,7 +20,7 @@ extend i8 : ToString {
 
     /// Returns the value of `self` as a string.
     #[inline]
-    public fn to_string(&self) string {
+    public func to_string(&self) string {
         return @as(i32, self.*).str_l(5);
     }
 }
@@ -31,7 +31,7 @@ extend i16 : ToString {
 
     /// Returns the value of `self` as a string.
     #[inline]
-    public fn to_string(&self) string {
+    public func to_string(&self) string {
         return @as(i32, self.*).str_l(7);
     }
 }
@@ -41,7 +41,7 @@ extend i32 : ToString {
     public const MIN: i32 = -2147483648;
 
     /// Returns the string representation of `self` with `max` chars.
-    public fn str_l(self, max: i32) string {
+    public func str_l(self, max: i32) string {
         if self == 0 {
             return "0";
         }
@@ -89,7 +89,7 @@ extend i32 : ToString {
 
     /// Returns the value of `self` as a string.
     #[inline]
-    public fn to_string(&self) string {
+    public func to_string(&self) string {
         return self.*.str_l(12);
     }
 }
@@ -99,7 +99,7 @@ extend i64 : ToString {
     public const MIN: i64 = -9223372036854775808;
 
     /// Returns the value of `self` as a string.
-    public fn to_string(&self) string {
+    public func to_string(&self) string {
         if self.* == 0 {
             return "0";
         }
@@ -154,7 +154,7 @@ extend isize : ToString {
 
     /// Returns the value of `self` as a string.
     #[inline]
-    public fn to_string(&self) string {
+    public func to_string(&self) string {
         return @as(i64, self.*).to_string();
     }
 }

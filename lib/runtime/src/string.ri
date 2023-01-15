@@ -12,7 +12,7 @@ public class string : ToString, Hasher {
     is_ref: bool;
 
     #[unsafe]
-    public fn from_raw(ptr: ?[*]u8, is_ref: bool = false) Self {
+    public func from_raw(ptr: ?[*]u8, is_ref: bool = false) Self {
         if let safe_ptr = ptr {
             return unsafe {
                 Self.from_raw_with_len(safe_ptr, libc.strlen(ptr), is_ref)
@@ -22,7 +22,7 @@ public class string : ToString, Hasher {
     }
 
     #[unsafe]
-    public fn from_raw_with_len(ptr: ?[*]u8, len: usize, is_ref: bool = false) Self {
+    public func from_raw_with_len(ptr: ?[*]u8, len: usize, is_ref: bool = false) Self {
         if len == 0 {
             return empty_string;
         }
@@ -32,7 +32,7 @@ public class string : ToString, Hasher {
         return empty_string;
     }
 
-    public fn from_byte(byte: u8) Self {
+    public func from_byte(byte: u8) Self {
         let res = @as([*]mut u8, internal_alloc(2));
         unsafe {
             res[0] = byte;
@@ -43,7 +43,7 @@ public class string : ToString, Hasher {
 
     /// Returns a string with the bytes stored in `bytes`. If the length of
     /// `bytes` is 0, an empty string is returned instead.
-    public fn from_bytes(bytes: []u8) Self {
+    public func from_bytes(bytes: []u8) Self {
         if bytes.len == 0 {
             return empty_string;
         }
@@ -55,14 +55,14 @@ public class string : ToString, Hasher {
         return Self(res, bytes.len);
     }
 
-    fn at(self, idx: usize) u8 {
+    func at(self, idx: usize) u8 {
         if idx >= self.len {
             process_panic("string index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { self.ptr[idx] };
     }
 
-    public fn repeat(self, count: usize) string {
+    public func repeat(self, count: usize) string {
         if count == 0 {
             return empty_string;
         } else if count == 1 {
@@ -83,7 +83,7 @@ public class string : ToString, Hasher {
         return Self(res, len);
     }
 
-    public fn concat(self, others: ...Self) Self {
+    public func concat(self, others: ...Self) Self {
         let mut sb = StringBuilder.from_string(self);
         for other in others {
             sb.write_string(other);
@@ -108,7 +108,7 @@ public class string : ToString, Hasher {
     ///
     /// If the replacement positions exceed the number of passed arguments, a panic
     /// occurs.
-    public fn fmt(self, args: ...ToString) Self {
+    public func fmt(self, args: ...ToString) Self {
         if args.len == 0 {
             return self;
         }
@@ -117,7 +117,7 @@ public class string : ToString, Hasher {
 
     /// Returns the number of occurrences of `substr` in the string or -1 if no
     /// `substr` could be found.
-    public fn count(self, substr: string) usize {
+    public func count(self, substr: string) usize {
         if self.len == 0 or substr.len == 0 {
             return 0;
         }
@@ -144,7 +144,7 @@ public class string : ToString, Hasher {
 
     /// Returns the contents before `sub` in the string.
     /// If the substring is not found, it returns the full input string.
-    public fn all_before_of(self, sub: string) string {
+    public func all_before_of(self, sub: string) string {
         if let pos = self.index_of(sub) {
             return self[..pos];
         }
@@ -152,7 +152,7 @@ public class string : ToString, Hasher {
     }
 
     /// Returns the index of byte `b` if found in the string.
-    public fn index_of_byte(self, b: u8) ?usize {
+    public func index_of_byte(self, b: u8) ?usize {
         let mut i: usize = 0;
         while i < self.len : i += 1 {
             if unsafe { self.ptr[i] == b } {
@@ -164,7 +164,7 @@ public class string : ToString, Hasher {
 
     /// Returns the position of the first character of the input string.
     /// It will return `nil` if the input string can't be found.
-    public fn index_of(self, p: string) ?usize {
+    public func index_of(self, p: string) ?usize {
         if p.len > self.len or p.len == 0 {
             return nil;
         }
@@ -180,7 +180,7 @@ public class string : ToString, Hasher {
     }
 
     /// Returns the position of the input string, starting search from `start` position.
-    public fn index_after_of(self, p: string, start: usize) ?usize {
+    public func index_after_of(self, p: string, start: usize) ?usize {
         if p.len > self.len {
             return nil;
         }
@@ -204,7 +204,7 @@ public class string : ToString, Hasher {
     }
 
     /// Returns the position of any of the characters in the input string if found.
-    public fn index_of_any(self, chars: string) ?usize {
+    public func index_of_any(self, chars: string) ?usize {
         for i, b in self.as_bytes() {
             for c in chars.as_bytes() {
                 if b == c {
@@ -216,7 +216,7 @@ public class string : ToString, Hasher {
     }
 
     /// Linear search for the last index of `byte` inside a string.
-    public fn last_index_of_byte(self, byte: u8) ?usize {
+    public func last_index_of_byte(self, byte: u8) ?usize {
         let mut i: usize = self.len;
         while i != 0 {
             i -= 1;
@@ -228,7 +228,7 @@ public class string : ToString, Hasher {
     }
 
     /// Returns the position of the last occurence of the input string.
-    fn last_index_of(self, p: string) ?usize {
+    func last_index_of(self, p: string) ?usize {
         if p.len > self.len or p.len == 0 {
             return nil;
         }
@@ -244,7 +244,7 @@ public class string : ToString, Hasher {
     }
 
     /// Returns the string found between `start` string and `end` string.
-    public fn find_between(self, start: string, end: string) string {
+    public func find_between(self, start: string, end: string) string {
         let start_pos = self.index_of(start) ?? return empty_string;
         let val = self.slice(start_pos + start.len, self.len);
         let end_pos = val.index_of(end) ?? return val;
@@ -254,13 +254,13 @@ public class string : ToString, Hasher {
     /// Strips any of ` `, `\n`, `\t`, `\v`, `\f`, `\r` from the start and end of
     /// the string.
     #[inline]
-    public fn trim_space(self) string {
+    public func trim_space(self) string {
         return self.trim(" \n\t\v\f\r");
     }
 
     /// Strips any of the characters given in `cutset` from the start and end of
     /// the string.
-    public fn trim(self, cutset: string) string {
+    public func trim(self, cutset: string) string {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
@@ -291,7 +291,7 @@ public class string : ToString, Hasher {
 
     /// Strips any of the characters given in `cutset` from the left of the
     /// string.
-    public fn trim_left(self, cutset: string) string {
+    public func trim_left(self, cutset: string) string {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
@@ -313,7 +313,7 @@ public class string : ToString, Hasher {
 
     /// Strips any of the characters given in `cutset` from the right of the
     /// string.
-    public fn trim_right(self, cutset: string) string {
+    public func trim_right(self, cutset: string) string {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
@@ -336,7 +336,7 @@ public class string : ToString, Hasher {
     }
 
     /// Replaces all occurences of `rep` with the string passed in `with_`.
-    public fn replace(self, rep: string, with_: string) string {
+    public func replace(self, rep: string, with_: string) string {
         if self.len == 0 or rep.len == 0 or rep.len > self.len {
             return self;
         } else if !self.contains(rep) {
@@ -382,7 +382,7 @@ public class string : ToString, Hasher {
     }
 
     #[inline]
-    public fn as_bytes(self) []u8 {
+    public func as_bytes(self) []u8 {
         return unsafe {
             Vec.from_array_no_alloc(@as(*mut u8, self.ptr), @size_of(u8), self.len)
         };
@@ -393,7 +393,7 @@ public class string : ToString, Hasher {
     /// >> "first row\nsecond row".split_any(" \n") == ['first', 'row', 'second', 'row']
     /// Split a string using the chars in the delimiter string as delimiters chars.
     /// If the delimiter string is empty then `.split()` is used.
-    public fn split_any(self, delim: string) []string {
+    public func split_any(self, delim: string) []string {
         let (mut i: usize, mut res: []string) = (0, []);
         // check empty source string
         if self.len > 0 {
@@ -421,7 +421,7 @@ public class string : ToString, Hasher {
     /// first nth parts. When nth == 0, return all the splits.
     /// The last returned element has the remainder of the string, even if the
     /// remainder contains more `delim` substrings.
-    public fn split(self, delim: string, nth: usize = 0) []string {
+    public func split(self, delim: string, nth: usize = 0) []string {
         let (mut i: usize, mut res) = (0, @vec(string));
         switch delim.len {
             0 => {
@@ -480,7 +480,7 @@ public class string : ToString, Hasher {
     }
 
     /// Splits the string by newline characters.
-    public fn split_into_lines(self) []string {
+    public func split_into_lines(self) []string {
         let mut res: []string = [];
         if self.len == 0 {
             return res;
@@ -510,11 +510,11 @@ public class string : ToString, Hasher {
     /// If `delimiter_bytes` does not exist in self, the iterator will return `self`,
     /// nil, in that order.
     #[inline]
-    public fn tokenize(self, delimiter_bytes: ...u8) TokenIterator {
+    public func tokenize(self, delimiter_bytes: ...u8) TokenIterator {
         return TokenIterator(self, delimiter_bytes);
     }
 
-    public fn ==(self, rhs: Self) bool {
+    public func ==(self, rhs: Self) bool {
         if self.len != rhs.len {
             return false;
         }
@@ -530,11 +530,11 @@ public class string : ToString, Hasher {
     }
 
     #[inline]
-    public fn !=(self, rhs: Self) bool {
+    public func !=(self, rhs: Self) bool {
         return !(self == rhs);
     }
 
-    public fn <(self, rhs: Self) bool {
+    public func <(self, rhs: Self) bool {
         let mut i: usize = 0;
         while i < self.len : i += 1 {
             unsafe {
@@ -552,22 +552,22 @@ public class string : ToString, Hasher {
     }
 
     #[inline]
-    public fn >(self, rhs: Self) bool {
+    public func >(self, rhs: Self) bool {
         return !(self < rhs);
     }
 
     #[inline]
-    public fn <=(self, rhs: Self) bool {
+    public func <=(self, rhs: Self) bool {
         return self < rhs or self == rhs;
     }
 
     #[inline]
-    public fn >=(self, rhs: Self) bool {
+    public func >=(self, rhs: Self) bool {
         return self > rhs or self == rhs;
     }
 
     /// Returns `true` if the string contains `substr`.
-    public fn contains(self, substr: string) bool {
+    public func contains(self, substr: string) bool {
         if substr.len == 0 {
             return true;
         }
@@ -578,7 +578,7 @@ public class string : ToString, Hasher {
     }
 
     /// Returns `true` if the string starts with `p`.
-    public fn starts_with(self, p: string) bool {
+    public func starts_with(self, p: string) bool {
         if p.len > self.len {
             return false;
         }
@@ -592,7 +592,7 @@ public class string : ToString, Hasher {
     }
 
     /// Returns `true` if the string ends with `p`.
-    public fn ends_with(self, p: string) bool {
+    public func ends_with(self, p: string) bool {
         if p.len > self.len {
             return false;
         }
@@ -607,16 +607,16 @@ public class string : ToString, Hasher {
 
     /// Returns the number of runes contained in `self`.
     #[inline]
-    public fn runes_count(self) usize {
+    public func runes_count(self) usize {
         return cstr_runes_count(unsafe { self.ptr }, self.len);
     }
 
     #[inline]
-    public fn is_empty(self) bool {
+    public func is_empty(self) bool {
         return self.len == 0;
     }
 
-    fn slice(self, start: usize, end: usize) Self {
+    func slice(self, start: usize, end: usize) Self {
         unsafe {
             if start > end or start > self.len or end > self.len {
                 process_panic(
@@ -633,11 +633,11 @@ public class string : ToString, Hasher {
     }
 
     #[inline]
-    fn slice_from(self, start: usize) Self {
+    func slice_from(self, start: usize) Self {
         return self.slice(start, self.len);
     }
 
-    public fn clone(self) Self {
+    public func clone(self) Self {
         if self.len == 0 {
             return empty_string;
         }
@@ -650,12 +650,12 @@ public class string : ToString, Hasher {
     }
 
     #[inline]
-    public fn hash(self) usize {
+    public func hash(self) usize {
         return sum64_string(self);
     }
 
     #[inline]
-    public fn to_string(self) Self {
+    public func to_string(self) Self {
         return self;
     }
 
@@ -675,7 +675,7 @@ public struct TokenIterator {
 
     /// Returns a slice of the current token, or nil if tokenization is
     /// complete, and advances to the next token.
-    public fn next(mut self) ?string {
+    public func next(mut self) ?string {
         let result = self.peek() ?? return nil;
         self.index += result.len;
         return result;
@@ -683,7 +683,7 @@ public struct TokenIterator {
 
     /// Returns a slice of the current token, or nil if tokenization is
     /// complete. Does not advance to the next token.
-    public fn peek(mut self) ?string {
+    public func peek(mut self) ?string {
         // move to beginning of token
         while self.index < self.buffer.len and self.is_split_byte(self.buffer[self.index])
             : self.index += 1 {}
@@ -699,7 +699,7 @@ public struct TokenIterator {
     }
 
     /// Returns a slice of the remaining bytes. Does not affect iterator state.
-    public fn rest(&self) string {
+    public func rest(&self) string {
         // move to beginning of token
         let mut index: usize = self.index;
         while index < self.buffer.len and self.is_split_byte(self.buffer[index])
@@ -708,11 +708,11 @@ public struct TokenIterator {
     }
 
     /// Resets the iterator to the initial token.
-    public fn reset(mut self) {
+    public func reset(mut self) {
         self.index = 0;
     }
 
-    fn is_split_byte(&self, byte: u8) bool {
+    func is_split_byte(&self, byte: u8) bool {
         for delimiter_byte in self.delimiter_bytes {
             if byte == delimiter_byte {
                 return true;
@@ -727,7 +727,7 @@ public struct StringFormatter {
     mut i: usize;
     mut res: StringBuilder;
 
-    fn fwidth(mut self) (bool, isize) {
+    func fwidth(mut self) (bool, isize) {
         if unsafe { self.buf[self.i] != b':' } {
             return (false, @as(isize, 0));
         }
@@ -751,7 +751,7 @@ public struct StringFormatter {
         return (true, fwidth);
     }
 
-    fn fmt(mut self, args: ...ToString) string {
+    func fmt(mut self, args: ...ToString) string {
         self.res = StringBuilder.new(self.buf.len);
         let mut args_idx: usize = 0;
         while self.i < self.buf.len : self.i += 1 {

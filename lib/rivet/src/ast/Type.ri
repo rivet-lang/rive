@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 public class Type {
-    public fn ==(self, rh: Type) bool {
+    public func ==(self, rh: Type) bool {
         return true;
     }
 }

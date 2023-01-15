@@ -26,7 +26,7 @@ struct Result {
 
 /// Starts the specified command, waits for it to complete, and returns
 /// both its output and the exit code.
-public fn execute(cmd: string) Result {
+public func execute(cmd: string) Result {
     let pcmd = if cmd.contains("2>") { cmd } else { "{} 2>&1".fmt(cmd) };
     unsafe {
         if let f = libc.popen(pcmd.ptr, c"r") {

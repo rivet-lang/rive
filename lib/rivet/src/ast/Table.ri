@@ -20,7 +20,7 @@ public class Table {
     public mut runtime_mod: Mod;
 
     #[inline]
-    public fn new(prefs: prefs.Prefs) Table {
+    public func new(prefs: prefs.Prefs) Table {
         return Table(universe(), prefs, pointer_size: if prefs.target_is_64bit {
             8
         } else {
@@ -28,7 +28,7 @@ public class Table {
         });
     }
 
-    public fn evalue_pp_symbol(self, name: string, pos: token.Pos) bool {
+    public func evalue_pp_symbol(self, name: string, pos: token.Pos) bool {
         switch name {
             // operating systems
             "_LINUX_", "_WINDOWS_" => {
@@ -80,7 +80,7 @@ public class Table {
         }
     }
 
-    public fn filter_files(self, inputs: []string) []string {
+    public func filter_files(self, inputs: []string) []string {
         let mut new_inputs = @vec(string);
         for input in inputs {
             let basename_input = path.basename(input);

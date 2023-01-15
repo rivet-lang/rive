@@ -76,9 +76,9 @@ class Kind(Enum):
     KwExtend = auto_enum() # extend
     KwExtern = auto_enum() # extern
     KwFalse = auto_enum() # false
-    KwFn = auto_enum() # fn
+    KwFunc = auto_enum() # func
     KwFor = auto_enum() # for
-    KwFrom = auto_enum() # fn
+    KwFrom = auto_enum() # from
     KwIf = auto_enum() # if
     KwImport = auto_enum() # import
     KwIn = auto_enum() # in
@@ -126,7 +126,7 @@ class Kind(Enum):
     def is_start_of_type(self):
         return self in (
             Kind.Bang, Kind.Name, Kind.Lparen, Kind.Amp, Kind.Mul,
-            Kind.Lbracket, Kind.Question, Kind.KwSelf, Kind.KwSelfTy, Kind.KwFn
+            Kind.Lbracket, Kind.Question, Kind.KwSelf, Kind.KwSelfTy, Kind.KwFunc
         )
 
     def is_assign(self):
@@ -222,7 +222,7 @@ TOKEN_STRINGS = {
     Kind.KwExtend: "extend",
     Kind.KwExtern: "extern",
     Kind.KwFalse: "false",
-    Kind.KwFn: "fn",
+    Kind.KwFunc: "func",
     Kind.KwFor: "for",
     Kind.KwFrom: "from",
     Kind.KwIf: "if",

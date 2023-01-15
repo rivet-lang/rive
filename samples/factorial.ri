@@ -1,13 +1,13 @@
 import "std/console";
 
-fn factorial(n: u32) u32 {
+func factorial(n: u32) u32 {
 	if n <= 1 {
 		return 1;
 	}
 	return n * factorial(n - 1);
 }
 
-fn main() {
+func main() {
 	let res = factorial(5);
 	console.println("factorial(5): {}", res);
 	@assert(res == 120);

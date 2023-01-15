@@ -10,17 +10,17 @@ class Vec {
     is_ref: bool;
 
     #[unsafe; inline]
-    fn new(elem_size: usize, cap: usize) Self {
+    func new(elem_size: usize, cap: usize) Self {
         return Self(unsafe { internal_zeroed(cap * elem_size) }, elem_size, 0, cap);
     }
 
     #[unsafe; inline]
-    fn new_with_len(elem_size: usize, len: usize, cap: usize) Self {
+    func new_with_len(elem_size: usize, len: usize, cap: usize) Self {
         return Self(unsafe { internal_zeroed(cap * elem_size) }, elem_size, len, cap);
     }
 
     #[unsafe]
-    fn from_array(arr: mut_anyptr, elem_size: usize, len: usize) Self {
+    func from_array(arr: mut_anyptr, elem_size: usize, len: usize) Self {
         let mut vec = Self(unsafe { internal_zeroed(len * elem_size) }, elem_size, len, len);
         unsafe {
             mem_copy(vec.ptr, arr, elem_size * len);
@@ -29,23 +29,23 @@ class Vec {
     }
 
     #[unsafe; inline]
-    fn from_array_no_alloc(arr: mut_anyptr, elem_size: usize, len: usize) Self {
+    func from_array_no_alloc(arr: mut_anyptr, elem_size: usize, len: usize) Self {
         return Self(unsafe { arr }, elem_size, len, len, is_ref: true);
     }
 
     #[unsafe; inline]
-    fn raw_get(self, idx: usize) mut_anyptr {
+    func raw_get(self, idx: usize) mut_anyptr {
         return unsafe { @ptr_add(@as([*]mut u8, self.ptr), idx * self.elem_size) };
     }
 
-    fn get(self, idx: usize) mut_anyptr {
+    func get(self, idx: usize) mut_anyptr {
         if idx >= self.len {
             process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { @ptr_add(@as([*]mut u8, self.ptr), idx * self.elem_size) };
     }
 
-    fn set(self, idx: usize, val: anyptr) {
+    func set(self, idx: usize, val: anyptr) {
         if idx >= self.len {
             process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -56,7 +56,7 @@ class Vec {
         }
     }
 
-    fn push(mut self, val: anyptr) {
+    func push(mut self, val: anyptr) {
         if self.len >= self.cap {
             self.reserve(self.len + 1);
         }
@@ -68,7 +68,7 @@ class Vec {
 
     /// Returns the last element of the vector, and removes it. If the
     /// vector is empty, this will panic.
-    fn pop(mut self) anyptr {
+    func pop(mut self) anyptr {
         if self.len == 0 {
             process_panic("Vec.pop: vector is empty");
         }
@@ -78,11 +78,11 @@ class Vec {
     }
 
     #[inline]
-    fn is_empty(self) bool {
+    func is_empty(self) bool {
         return self.len == 0;
     }
 
-    fn ==(self, rhs: Self) bool {
+    func ==(self, rhs: Self) bool {
         if self.len != rhs.len {
             return false;
         }
@@ -90,11 +90,11 @@ class Vec {
     }
 
     #[inline]
-    fn !=(self, rhs: Self) bool {
+    func !=(self, rhs: Self) bool {
         return !(self == rhs);
     }
 
-    fn reserve(mut self, required: usize) {
+    func reserve(mut self, required: usize) {
         if required <= self.cap {
             return;
         }
@@ -111,7 +111,7 @@ class Vec {
         self.cap = cap;
     }
 
-    fn slice(self, start: usize, end: usize) Self {
+    func slice(self, start: usize, end: usize) Self {
         if start > end or end > self.len {
             process_panic(
                 "slice index out of range (range: {}..{}, len: {})", start, end, self.len
@@ -128,12 +128,12 @@ class Vec {
     }
 
     #[inline]
-    fn slice_from(self, start: usize) Self {
+    func slice_from(self, start: usize) Self {
         return self.slice(start, self.len);
     }
 
     /// Returns an independent copy of `self`.
-    public fn clone(self) Self {
+    public func clone(self) Self {
         let mut size = self.cap * self.elem_size;
         if size == 0 {
             size = 1;

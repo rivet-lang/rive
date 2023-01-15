@@ -3,12 +3,12 @@
 // be found in the LICENSE file.
 
 extern (C) {
-    public fn memchr(cx: anyptr, c: i32, n: usize) ?mut_anyptr;
-    public fn memcmp(cx: anyptr, ct: anyptr, n: usize) i32;
-    public fn memcpy(dest: mut_anyptr, src: anyptr, n: usize) ?mut_anyptr;
-    public fn memmove(dest: mut_anyptr, src: anyptr, n: usize) ?mut_anyptr;
-    public fn memset(dest: mut_anyptr, c: i32, n: usize) ?mut_anyptr;
+    public func memchr(cx: anyptr, c: i32, n: usize) ?mut_anyptr;
+    public func memcmp(cx: anyptr, ct: anyptr, n: usize) i32;
+    public func memcpy(dest: mut_anyptr, src: anyptr, n: usize) ?mut_anyptr;
+    public func memmove(dest: mut_anyptr, src: anyptr, n: usize) ?mut_anyptr;
+    public func memset(dest: mut_anyptr, c: i32, n: usize) ?mut_anyptr;
 
-    public fn strerror(code: i32) ?*mut u8;
-    public fn strlen(cs: ?[*]u8) usize;
+    public func strerror(code: i32) ?*mut u8;
+    public func strlen(cs: ?[*]u8) usize;
 }

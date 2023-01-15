@@ -12,13 +12,13 @@ public alias ValueOutOfRangeError = errors.ValueOutOfRangeError;
 const INT_SIZE: u32 = #if _x64_ 64 #else 32 #endif;
 
 #[inline]
-fn lower(c: u8) u8 {
+func lower(c: u8) u8 {
     return c | (b'x' - b'X');
 }
 
 /// This is like `string_to_int` but for unsigned numbers.
 /// A sign prefix is not permitted.
-public fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
+public func string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
     if s_ == "" {
         return InvalidSyntaxError("empty string");
     }
@@ -139,7 +139,7 @@ public fn string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 /// The `bit_size` argument specifies the integer type that the result must
 /// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to i8, i16, i32, and
 /// i64. If `bit_size` is below 0 or above 64, an error is returned.
-public fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
+public func string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
     if s == "" {
         return InvalidSyntaxError("invalid syntax");
     }
@@ -174,14 +174,14 @@ public fn string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
 
 /// Equivalent to parse_int(s, 10, 0), converted to type i64.
 #[inline]
-public fn atoi(s: string) !i64 {
+public func atoi(s: string) !i64 {
     return string_to_int(s, 10, 0).!;
 }
 
 /// Reports whether the underscores in `s_` are allowed.
 /// Checking them in this one function lets all the parsers skip over them simply.
 /// Underscore must appear only between digits or between a base prefix and a digit.
-fn underscore_ok(s_: string) bool {
+func underscore_ok(s_: string) bool {
     let mut s = s_;
     // saw tracks the last character (class) we saw:
     // ^ for beginning of number,

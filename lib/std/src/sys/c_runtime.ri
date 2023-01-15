@@ -11,6 +11,6 @@ public enum CRuntime as u8 {
 
 /// Returns the current C runtime.
 #[inline]
-public fn c_runtime() CRuntime {
+public func c_runtime() CRuntime {
     return .Glibc;
 }

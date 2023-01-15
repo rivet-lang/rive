@@ -8,12 +8,12 @@ extend comptime_float : ToString {
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     #[inline]
-    public fn bits(self) u64 {
+    public func bits(self) u64 {
         return @as(f64, self).bits();
     }
 
     #[inline]
-    public fn to_string(self) string {
+    public func to_string(self) string {
         return @as(f64, self).to_string();
     }
 }
@@ -23,18 +23,18 @@ extend f32 : ToString {
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.
     #[inline]
-    public fn from_bits(b: u32) f32 {
+    public func from_bits(b: u32) f32 {
         return unsafe { @as(*f32, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     #[inline]
-    public fn bits(&self) u32 {
+    public func bits(&self) u32 {
         return unsafe { @as(*u32, self).* };
     }
 
-    public fn to_string(self) string {
+    public func to_string(self) string {
         unsafe {
             let mut cstr: ?*u8 = nil;
             let len = libc.asprintf(&cstr, c"%g", self);
@@ -51,18 +51,18 @@ extend f64 : ToString {
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.
     #[inline]
-    public fn from_bits(b: u64) f64 {
+    public func from_bits(b: u64) f64 {
         return unsafe { @as(*f64, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     #[inline]
-    public fn bits(&self) u64 {
+    public func bits(&self) u64 {
         return unsafe { @as(*u64, self).* };
     }
 
-    public fn to_string(self) string {
+    public func to_string(self) string {
         unsafe {
             let mut cstr: ?*u8 = nil;
             let len = libc.asprintf(&cstr, c"%g", self);

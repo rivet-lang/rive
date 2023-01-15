@@ -1,4 +1,4 @@
-fn main() {
+func main() {
     _ = b'A'; // OK
     _ = c'B'; // FAIL
 

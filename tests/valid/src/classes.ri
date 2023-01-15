@@ -5,11 +5,11 @@ class A {
 class B : A {
     c: i32;
 
-    fn set_i(mut self, i: i32) {
+    func set_i(mut self, i: i32) {
         self.i = i;
     }
 
-    fn set_base_i(mut self, i: i32) {
+    func set_base_i(mut self, i: i32) {
         base.i = i;
     }
 }
@@ -57,21 +57,21 @@ test "inheritance: typeswitch" {
 }
 
 class Animal {
-    public fn speak(self) string {
+    public func speak(self) string {
         return "~ Animal.speaks() ~";
     }
 }
 
 class Dog : Animal {
     #[override]
-    public fn speak(self) string {
+    public func speak(self) string {
         return "woof";
     }
 }
 
 class Cat : Animal {
     #[override]
-    public fn speak(self) string {
+    public func speak(self) string {
         return "meow";
     }
 }

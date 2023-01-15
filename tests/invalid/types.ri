@@ -1,5 +1,5 @@
 extern (C) {
-    fn malloc(sz: usize) anyptr;
+    func malloc(sz: usize) anyptr;
 }
 
 struct St {
@@ -13,4 +13,4 @@ struct St {
     f5: =;
 }
 
-fn main() { }
+func main() { }

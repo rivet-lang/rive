@@ -4,12 +4,12 @@
 
 extend nil : ToString {
     #[inline]
-    public fn to_string(&self) string {
+    public func to_string(&self) string {
         return "nil";
     }
 }
 
-fn cstr_runes_count(s: [*]u8, size: usize) usize {
+func cstr_runes_count(s: [*]u8, size: usize) usize {
 	let (mut l: usize, mut i: usize) = (0, 0);
 	while i < size {
 		l += 1;

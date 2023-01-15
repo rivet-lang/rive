@@ -14,35 +14,35 @@ extern (Rivet) {
     let test_runner: TestRunner;
 }
 
-public fn bold(msg: string) string {
+public func bold(msg: string) string {
     if !SUPPORT_COLOR {
         return msg;
     }
     return "\x1b[1m{}\x1b[22m".fmt(msg);
 }
 
-public fn green(msg: string) string {
+public func green(msg: string) string {
     if !SUPPORT_COLOR {
         return msg;
     }
     return "\x1b[32m{}\x1b[39m".fmt(msg);
 }
 
-public fn red(msg: string) string {
+public func red(msg: string) string {
     if !SUPPORT_COLOR {
         return msg;
     }
     return "\x1b[31m{}\x1b[39m".fmt(msg);
 }
 
-public fn yellow(msg: string) string {
+public func yellow(msg: string) string {
     if !SUPPORT_COLOR {
         return msg;
     }
     return "\x1b[33m{}\x1b[39m".fmt(msg);
 }
 
-fn assert_test(cond: bool, msg: string, pos: string, mut test_: Test) {
+func assert_test(cond: bool, msg: string, pos: string, mut test_: Test) {
     if !cond {
         test_.result = .Failed;
         test_.err_msg = "assertion failed: {}".fmt(msg);
@@ -51,7 +51,7 @@ fn assert_test(cond: bool, msg: string, pos: string, mut test_: Test) {
     }
 }
 
-fn test_error_returned(err: Error, pos: string, mut test_: Test) {
+func test_error_returned(err: Error, pos: string, mut test_: Test) {
     test_.result = .ErrorReturned;
     test_.err = err;
     test_.err_pos = pos;
@@ -67,7 +67,7 @@ enum TestResult as u8 {
 
 struct Test {
     name: string;
-    func : fn (mut Test);
+    fn: func (mut Test);
     mut result: TestResult;
     mut early_return: bool;
     mut err_pos: string;
@@ -81,10 +81,10 @@ public struct TestRunner {
     mut fail_tests: u64;
     mut skip_tests: u64;
 
-    fn run(mut self) {
+    func run(mut self) {
         for i, mut test_ in self.tests {
             console_eprint(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
-            (test_.func)(test_);
+            (test_.fn)(test_);
             switch test_.result {
                 .Ok => self.print_ok(),
                 .Skipped => self.print_skip(),
@@ -96,7 +96,7 @@ public struct TestRunner {
         process_exit(@as(i32, self.fail_tests != 0));
     }
 
-    fn print_summary_tests(&self) {
+    func print_summary_tests(&self) {
         console_eprint(bold("Summary for all tests: "));
         if self.ok_tests > 0 {
             console_eprint("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
@@ -110,23 +110,23 @@ public struct TestRunner {
         console_eprintln(bold("{} total.".fmt(self.tests.len)));
     }
 
-    fn print_ok(mut self) {
+    func print_ok(mut self) {
         console_eprintln(OK_STATUS);
         self.ok_tests += 1;
     }
 
-    fn print_skip(mut self) {
+    func print_skip(mut self) {
         console_eprintln(SKIP_STATUS);
         self.skip_tests += 1;
     }
 
-    fn print_failed(mut self, pos: string, msg: string) {
+    func print_failed(mut self, pos: string, msg: string) {
         console_eprintln(FAILED_STATUS);
         console_eprintln("     at {}: {}", bold(pos), msg);
         self.fail_tests += 1;
     }
 
-    fn print_error_returned(mut self, pos: string, err: Error) {
+    func print_error_returned(mut self, pos: string, err: Error) {
         console_eprintln(FAILED_STATUS);
         console_eprintln("     at {}: error returned: {}", bold(pos), err);
         self.fail_tests += 1;

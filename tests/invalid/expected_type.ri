@@ -1,5 +1,5 @@
-fn my_fn() { }
+func my_fn() { }
 
-fn x(a: my_fn) {}
+func x(a: my_fn) {}
 
-fn main() { }
+func main() { }

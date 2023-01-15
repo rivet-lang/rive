@@ -6,7 +6,7 @@ import "c/libc";
 
 /// Prints a message to stdout. Unlike `println` stdout is not automatically
 /// flushed.
-public fn console_print(s: string, args: ...ToString) {
+public func console_print(s: string, args: ...ToString) {
     let sx = s.fmt(args);
     unsafe {
         write_buf_to_fd(1, sx.ptr, sx.len);
@@ -15,14 +15,14 @@ public fn console_print(s: string, args: ...ToString) {
 
 /// Prints a message with a line end to stdout. stdout is flushed.
 #[inline]
-public fn console_println(s: string = "", args: ...ToString) {
+public func console_println(s: string = "", args: ...ToString) {
     unsafe {
         writeln_to_fd(1, s.fmt(args));
     }
 }
 
 /// Prints a message to stderr. Both stderr and stdout are flushed.
-public fn console_eprint(s: string, args: ...ToString) {
+public func console_eprint(s: string, args: ...ToString) {
     let sx = s.fmt(args);
     unsafe {
         _ = libc.fflush(libc.stdout);
@@ -34,7 +34,7 @@ public fn console_eprint(s: string, args: ...ToString) {
 
 /// Prints a message with a line end to stderr. Both stderr and stdout are
 /// flushed.
-public fn console_eprintln(s: string = "", args: ...ToString) {
+public func console_eprintln(s: string = "", args: ...ToString) {
     unsafe {
         _ = libc.fflush(libc.stdout);
         _ = libc.fflush(libc.stderr);
@@ -46,12 +46,12 @@ public fn console_eprintln(s: string = "", args: ...ToString) {
 /// Returns `true` if the `fd` file descriptor is open and refers to a
 /// terminal.
 #[inline]
-public fn console_is_atty(fd: i32) bool {
+public func console_is_atty(fd: i32) bool {
     return unsafe { libc.isatty(fd) == 1 };
 }
 
 #[unsafe]
-fn write_buf_to_fd(fd: i32, buf_: [*]u8, len: usize) {
+func write_buf_to_fd(fd: i32, buf_: [*]u8, len: usize) {
     unsafe {
         let buf = buf_;
         let mut x: isize = 0;
@@ -64,7 +64,7 @@ fn write_buf_to_fd(fd: i32, buf_: [*]u8, len: usize) {
 }
 
 #[unsafe]
-fn writeln_to_fd(fd: i32, s: string) {
+func writeln_to_fd(fd: i32, s: string) {
     unsafe {
         write_buf_to_fd(fd, s.ptr, s.len);
         write_buf_to_fd(fd, c"\n", 1);

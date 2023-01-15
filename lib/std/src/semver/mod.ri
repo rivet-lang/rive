@@ -11,7 +11,7 @@ public enum Increment as u8 {
 
 public class EmptyInputError : Error {
     #[override; inline]
-    public fn to_string(self) string {
+    public func to_string(self) string {
         return "empty input";
     }
 }
@@ -20,7 +20,7 @@ public class InvalidVersionFormatError : Error {
     input: string;
 
     #[override; inline]
-    public fn to_string(self) string {
+    public func to_string(self) string {
         return "invalid version format for input '{}'".fmt(self.input);
     }
 }
@@ -34,7 +34,7 @@ public class Version {
     public metadata: string;
 
     /// Returns a `Version` structure parsed from `input` `string`.
-    public fn from_string(input: string) !Self {
+    public func from_string(input: string) !Self {
         if input.is_empty() {
             return EmptyInputError();
         }
@@ -47,14 +47,14 @@ public class Version {
 
     /// Returns a `Version` structure with given `major`, `minor` and `patch` versions.
     #[inline]
-    public fn build(major: u64, minor: u64, patch: u64) Self {
+    public func build(major: u64, minor: u64, patch: u64) Self {
         // TODO: check if versions are greater than zero.
         return Version(major, minor, patch, "", "");
     }
 
     /// Returns a `Version` structure with incremented values.
     #[inline]
-    public fn increment(self, typ: Increment) Self {
+    public func increment(self, typ: Increment) Self {
         let mut major = self.major;
         let mut minor = self.minor;
         let mut patch = self.patch;
@@ -78,7 +78,7 @@ public class Version {
     /// Satisfies returns `true` if the `input` expression can be validated to `true`
     /// when run against this `Version`.
     #[inline]
-    public fn satisfies(self, input: string) bool {
+    public func satisfies(self, input: string) bool {
         return if let range = Range.parse(input) {
             range.satisfies(self)
         } else {
@@ -87,17 +87,17 @@ public class Version {
     }
 
     #[inline]
-    public fn ==(self, v2: Self) bool {
+    public func ==(self, v2: Self) bool {
         return self.major == v2.major and self.minor == v2.minor and self.patch == v2.patch
             and self.prerelease == v2.prerelease;
     }
 
     #[inline]
-    public fn !=(self, v2: Self) bool {
+    public func !=(self, v2: Self) bool {
         return !(self == v2);
     }
 
-    public fn >(self, v2: Self) bool {
+    public func >(self, v2: Self) bool {
         if self.major < v2.major {
             return false;
         } else if self.major > v2.major {
@@ -110,7 +110,7 @@ public class Version {
         return self.patch > v2.patch;
     }
 
-    public fn <(self, v2: Self) bool {
+    public func <(self, v2: Self) bool {
         if self.major > v2.major {
             return false;
         } else if self.major < v2.major {
@@ -124,16 +124,16 @@ public class Version {
     }
 
     #[inline]
-    public fn >=(self, v2: Self) bool {
+    public func >=(self, v2: Self) bool {
         return self == v2 or self > v2;
     }
 
     #[inline]
-    public fn <=(self, v2: Self) bool {
+    public func <=(self, v2: Self) bool {
         return self == v2 or self < v2;
     }
 
-    public fn to_string(self) string {
+    public func to_string(self) string {
         let common_string = "{}.{}.{}".fmt(self.major, self.minor, self.patch);
         let prerelease_string = if self.prerelease.is_empty() { "" } else {
             "-".concat(self.prerelease)
@@ -148,7 +148,7 @@ public class Version {
 /// Converts the `input` version to a `Version` struct.
 /// coerce will strip any contents *after* the parsed version string.
 #[inline]
-public fn coerce(input: string) !Version {
+public func coerce(input: string) !Version {
     if let version = RawVersion.parse(input).coerce() {
         return version;
     }
@@ -158,6 +158,6 @@ public fn coerce(input: string) !Version {
 /// Returns `true` if the `input` `string` can be converted to a semantic `Version`
 /// struct.
 #[inline]
-public fn is_valid(input: string) bool {
+public func is_valid(input: string) bool {
 	return RawVersion.parse(input).is_valid();
 }

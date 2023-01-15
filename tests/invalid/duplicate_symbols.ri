@@ -1,4 +1,4 @@
-fn main() {
+func main() {
     let x = 1;
     let x = 1; // FAIL
 
@@ -8,11 +8,11 @@ fn main() {
     }
 }
 
-fn other(a: i32) {
+func other(a: i32) {
     let a = 1;
 }
 
-fn other(a: i32) { // FAIL
+func other(a: i32) { // FAIL
     let a = 1;
 }
 

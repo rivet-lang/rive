@@ -6,7 +6,7 @@ import "c";
 import "c/libc";
 
 /// Returns the path name of the executable that started the current process.
-public fn process_executable() !string {
+public func process_executable() !string {
     let mut res: [libc.MAX_PATH_LEN]u8 = []!;
     let count = unsafe {
         libc.readlink(c"/proc/self/exe", &res[0], libc.MAX_PATH_LEN)
@@ -20,14 +20,14 @@ public fn process_executable() !string {
 }
 
 /// Sets the current working directory to the new directory in `path`.
-public fn process_set_cwd(path: string) ! {
+public func process_set_cwd(path: string) ! {
     if unsafe { libc.chdir(path.ptr) == -1 } {
         return c.last_errno_error();
     }
 }
 
 /// Returns the absolute path of the current working directory.
-public fn process_get_cwd() !string {
+public func process_get_cwd() !string {
     unsafe {
         let mut buf: [libc.MAX_PATH_LEN]mut u8 = []!;
         if let res = libc.getcwd(&mut buf[0], libc.MAX_PATH_LEN) {
@@ -40,13 +40,13 @@ public fn process_get_cwd() !string {
 /// Returns the OS-assigned process identifier associated with this
 /// process.
 #[inline]
-public fn process_id() u32 {
+public func process_id() u32 {
     return unsafe { libc.getpid() };
 }
 
 /// Terminates current thread execution immediately after displaying a
 /// message, followed by a backtrace.
-public fn process_panic(s: string = "", args: ...ToString) never {
+public func process_panic(s: string = "", args: ...ToString) never {
     console_eprintln("panic: {}", s.fmt(args));
     bt_print(2);
     process_exit(101);
@@ -60,7 +60,7 @@ public fn process_panic(s: string = "", args: ...ToString) never {
 /// The process's termination will be similar to that from the C `abort()`
 /// function. On Unix, the process will terminate with signal `SIGABRT`,
 /// which typically means that the shell prints "Aborted".
-public fn process_abort() never {
+public func process_abort() never {
     unsafe {
         drop_globals();
         libc.abort();
@@ -72,7 +72,7 @@ public fn process_abort() never {
 /// This function will never return and will immediately terminate the
 /// current process. The exit code is passed through to the underlying
 /// OS and will be available for consumption by another process.
-public fn process_exit(code: i32 = 0) never {
+public func process_exit(code: i32 = 0) never {
     unsafe {
         drop_globals();
         libc.exit(code);

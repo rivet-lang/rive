@@ -5,11 +5,11 @@ class OuterClass {
 
     inner: InnerClass;
 
-    fn method(self) { }
+    func method(self) { }
 
-    fn associated_fn() { }
+    func associated_fn() { }
 
-    fn caller(self) {
+    func caller(self) {
         self.method();
         OuterClass.associated_fn();
     }

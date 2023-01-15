@@ -1,8 +1,8 @@
-fn ret_nil() ?i32 {
+func ret_nil() ?i32 {
     return 3;
 }
 
-fn ret_err() !i32 {
+func ret_err() !i32 {
     return 3;
 }
 

@@ -13,7 +13,7 @@ class Abc {
 
 class Def : Abc { }
 
-fn class_upcast(a: Abc) bool {
+func class_upcast(a: Abc) bool {
     return a is Def;
 }
 
@@ -25,7 +25,7 @@ test "operator `is` with classes" {
     @assert(class_upcast(d));
 }
 
-fn check_field(abc: Abc) bool {
+func check_field(abc: Abc) bool {
     return if abc is Def as def {
         def.field == 555
     } else {

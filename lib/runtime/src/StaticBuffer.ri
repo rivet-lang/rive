@@ -8,7 +8,7 @@ struct StaticBuffer {
     buf: [25]mut u8;
     mut len: usize;
 
-    public fn push(mut self, byte: u8) {
+    public func push(mut self, byte: u8) {
         if self.len > self.buf.len {
             process_panic("StaticBuffer.push: cannot push byte (len: {})", self.len);
         }
@@ -16,22 +16,22 @@ struct StaticBuffer {
         self.len += 1;
     }
 
-    public fn clear(mut self) {
+    public func clear(mut self) {
         while self.len > 0 {
             self.buf[self.len] = 0;
             self.len -= 1;
         }
     }
 
-    public fn as_u64(&self) u64 {
+    public func as_u64(&self) u64 {
         return unsafe { libc.strtoul(&self.buf[0], nil, 10) };
     }
 
-    public fn as_isize(&self) isize {
+    public func as_isize(&self) isize {
         return unsafe { @as(isize, libc.strtol(&self.buf[0], nil, 10))};
     }
 
-    public fn as_string(&self) string {
+    public func as_string(&self) string {
         return unsafe { string.from_raw_with_len(&self.buf[0], self.len).clone() };
     }
 }

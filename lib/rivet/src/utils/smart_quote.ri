@@ -11,7 +11,7 @@ const BACKSLASH_N: u8 = 10;
 const DOUBLE_QUOTE: u8 = 34;
 const DOUBLE_ESCAPE: string = "\\\\";
 
-public fn smart_quote(s: string, raw: bool = false) string {
+public func smart_quote(s: string, raw: bool = false) string {
     if s.len == 0 {
         return "";
     } else if s.len < 256 {

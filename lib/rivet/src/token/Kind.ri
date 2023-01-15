@@ -76,7 +76,7 @@ public enum Kind : traits.ToString {
     KwExtend, // extend
     KwExtern, // extern
     KwFalse, // false
-    KwFn, // fn
+    KwFunc, // func
     KwFor, // for
     KwFrom, // from
     KwIf, // if
@@ -104,7 +104,8 @@ public enum Kind : traits.ToString {
 
     KeywordEnd;
 
-    public fn single(self) Kind {
+    #[inline]
+    public func single(self) Kind {
         return switch self {
             .PlusAssign => .Plus,
             .MinusAssign => .Minus,
@@ -118,27 +119,30 @@ public enum Kind : traits.ToString {
         };
     }
 
-    public fn is_start_of_type(self) bool {
+    #[inline]
+    public func is_start_of_type(self) bool {
         return self in [
             .Bang, .Name, .Lparen, .Amp, .Mul, .Lbracket, .Question, .KwSelf, .KwSelfTy,
             .KwFn
         ];
     }
 
-    public fn is_assign(self) bool {
+    #[inline]
+    public func is_assign(self) bool {
         return self in [
             .Assign, .PlusAssign, .MinusAssign, .MulAssign, .DivAssign, .ModAssign,
             .AmpAssign, .PipeAssign, .XorAssign
         ];
     }
 
-    public fn is_relational(self) bool {
+    #[inline]
+    public func is_relational(self) bool {
         return self in [
             .Eq, .Ne, .Lt, .Gt, .Le, .Ge, .KwIs, .KwNotIs, .KwIn, .KwNotIn
         ];
     }
 
-    public fn to_string(&self) string {
+    public func to_string(&self) string {
         for km in Kind_Strings {
             if km.key == self.* {
                 return km.value;
@@ -222,7 +226,7 @@ public let Kind_Strings: []KindMap = [
     KindMap(.KwExtend, "extend"),
     KindMap(.KwExtern, "extern"),
     KindMap(.KwFalse, "false"),
-    KindMap(.KwFn, "fn"),
+    KindMap(.KwFunc, "func"),
     KindMap(.KwFor, "for"),
     KindMap(.KwFrom, "from"),
     KindMap(.KwIf, "if"),
@@ -248,7 +252,8 @@ public let Kind_Strings: []KindMap = [
     KindMap(.KwWhile, "while")
 ];
 
-public fn lookup(str: string) Kind {
+#[inline]
+public func lookup(str: string) Kind {
     return switch str {
         "alias" => .KwAlias,
         "and" => .KwAnd,
@@ -268,7 +273,7 @@ public fn lookup(str: string) Kind {
         "extern" => .KwExtern,
         "false" => .KwFalse,
         "for" => .KwFor,
-        "fn" => .KwFn,
+        "func" => .KwFunc,
         "if" => .KwIf,
         "import" => .KwImport,
         "in" => .KwIn,
@@ -294,15 +299,18 @@ public fn lookup(str: string) Kind {
     };
 }
 
-public fn is_keyword(lit: string) bool {
+#[inline]
+public func is_keyword(lit: string) bool {
     return lookup(lit) != .Name;
 }
 
-public fn is_overloadable_operator(kind: Kind) bool {
+#[inline]
+public func is_overloadable_operator(kind: Kind) bool {
     return kind in [.Plus, .Minus, .Mul, .Div, .Mod, .Eq, .Ne, .Lt, .Gt, .Le, .Ge];
 }
 
-public fn overloadable_operator_name(kind: Kind) string {
+#[inline]
+public func overloadable_operator_name(kind: Kind) string {
     return switch kind {
         .Plus => "_add_",
         .Minus => "_sub_",

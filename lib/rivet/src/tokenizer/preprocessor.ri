@@ -11,7 +11,7 @@ extend Tokenizer {
         mut skip_section: bool;
     }
 
-    fn pp_directive(mut self) {
+    func pp_directive(mut self) {
         let mut pos = self.current_pos();
         self.pos += 1; // skip '#'
         self.skip_whitespace();
@@ -47,7 +47,7 @@ extend Tokenizer {
         }
     }
 
-    fn pp_if(mut self) {
+    func pp_if(mut self) {
         self.pos += 1;
         self.skip_whitespace();
         let cond = self.pp_expression();
@@ -67,7 +67,7 @@ extend Tokenizer {
         }
     }
 
-    fn pp_else_if(mut self) {
+    func pp_else_if(mut self) {
         self.pos += 1;
         let pos = self.current_pos();
         self.skip_whitespace();
@@ -91,7 +91,7 @@ extend Tokenizer {
         }
     }
 
-    fn pp_else(mut self) {
+    func pp_else(mut self) {
         let pos = self.current_pos();
         self.skip_whitespace();
         if self.conditional_stack.is_empty() or
@@ -111,7 +111,7 @@ extend Tokenizer {
         }
     }
 
-    fn pp_endif(mut self) {
+    func pp_endif(mut self) {
         let pos = self.current_pos();
         if self.conditional_stack.is_empty() {
             self.error("unexpected `#endif`", pos).emit();
@@ -120,11 +120,11 @@ extend Tokenizer {
         }
     }
 
-    fn pp_expression(mut self) bool {
+    func pp_expression(mut self) bool {
         return self.pp_or_expression();
     }
 
-    fn pp_or_expression(mut self) bool {
+    func pp_or_expression(mut self) bool {
         let mut left = self.pp_and_expression();
         self.skip_whitespace();
         while self.pos < self.text.len and self.matches("or", self.pos) {
@@ -136,7 +136,7 @@ extend Tokenizer {
         return left;
     }
 
-    fn pp_and_expression(mut self) bool {
+    func pp_and_expression(mut self) bool {
         let mut left = self.pp_unary_expression();
         self.skip_whitespace();
         while self.pos < self.text.len and self.matches("and", self.pos) {
@@ -148,7 +148,7 @@ extend Tokenizer {
         return left;
     }
 
-    fn pp_unary_expression(mut self) bool {
+    func pp_unary_expression(mut self) bool {
         if self.pos < self.text.len and self.current_char() == b'!' {
             self.pos += 1;
             self.skip_whitespace();
@@ -157,7 +157,7 @@ extend Tokenizer {
         return self.pp_primary_expression();
     }
 
-    fn pp_primary_expression(mut self) bool {
+    func pp_primary_expression(mut self) bool {
         let pos = self.current_pos();
         let mut cc = self.current_char();
         if self.pos >= self.text.len {
@@ -180,7 +180,7 @@ extend Tokenizer {
         return false;
     }
 
-    fn pp_symbol(mut self) bool {
+    func pp_symbol(mut self) bool {
         let pos = self.current_pos();
         let name = self.read_ident();
         self.pos += 1;

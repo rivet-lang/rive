@@ -8,7 +8,7 @@ import "../token";
 
 let mut SYM_IDS: usize = 0;
 
-fn new_sym_id() usize {
+func new_sym_id() usize {
     let res = SYM_IDS;
     SYM_IDS += 1;
     return res;
@@ -19,7 +19,7 @@ public enum ABI as u8 {
     C;
 
     #[inline]
-    public fn from_string(abi: string) ?ABI {
+    public func from_string(abi: string) ?ABI {
         return switch abi {
             "C" => .C,
             "Rivet" => .Rivet,
@@ -41,7 +41,7 @@ public class Sym {
     public is_root: bool;
 
     #[inline]
-    public fn ==(self, other: Self) bool {
+    public func ==(self, other: Self) bool {
         return self.id == other.id;
     }
 }
@@ -112,7 +112,7 @@ public enum TypeKind : traits.ToString {
     Struct;
 
     #[inline]
-    public fn is_primitive(self) bool {
+    public func is_primitive(self) bool {
         return self in [
             .Void, .Nil, .Bool, .Rune, .Int8, .Int16, .Int32, .Int64, .Isize, .Uint8,
             .Uint16, .Uint32, .Uint64, .Usize, .ComptimeInt, .ComptimeFloat, .Float32,
@@ -121,7 +121,7 @@ public enum TypeKind : traits.ToString {
     }
 
     #[inline]
-    public fn to_string(&self) string {
+    public func to_string(&self) string {
         return switch self.* {
             .Nil => "nil",
             .Bool => "bool",
@@ -189,11 +189,11 @@ public class EnumInfo : TypeInfo {
     public is_advanced_enum: bool;
 
     #[inline]
-    public fn add_value(mut self, name: string, variant: isize) {
+    public func add_value(mut self, name: string, variant: isize) {
         self.variants.push(EnumVariant(name, variant));
     }
 
-    public fn get_value(self, name: string) ?EnumVariant {
+    public func get_value(self, name: string) ?EnumVariant {
         for v in self.variants {
             if v.name == name {
                 return v;
@@ -202,7 +202,7 @@ public class EnumInfo : TypeInfo {
         return nil;
     }
 
-    public fn get_variant_by_type(self, typ: Type) ?EnumVariant {
+    public func get_variant_by_type(self, typ: Type) ?EnumVariant {
         for v in self.variants {
             if v.has_typ and v.typ == typ {
                 return v;
@@ -211,7 +211,7 @@ public class EnumInfo : TypeInfo {
         return nil;
     }
 
-    public fn has_value(self, name: string) bool {
+    public func has_value(self, name: string) bool {
         return if let _ = self.get_value(name) {
             true
         } else {
@@ -225,7 +225,7 @@ public class TraitInfo : TypeInfo {
     public mut implements: []TypeSym;
     public mut has_objects: bool;
 
-    public fn index_of(self, type_sym: TypeSym) ?usize {
+    public func index_of(self, type_sym: TypeSym) ?usize {
         for i, ts in self.implements {
             if ts.id == type_sym.id {
                 return i;
@@ -234,14 +234,14 @@ public class TraitInfo : TypeInfo {
         return nil;
     }
 
-    public fn implement(mut self, type_sym: TypeSym) {
+    public func implement(mut self, type_sym: TypeSym) {
         self.implements.push(type_sym);
         for mut b in self.bases {
             @as(TraitInfo, b.info).implement(type_sym);
         }
     }
 
-    public fn mark_has_objects(mut self) {
+    public func mark_has_objects(mut self) {
         self.has_objects = true;
         for mut b in self.bases {
             @as(TraitInfo, b.info).has_objects = true;
@@ -272,7 +272,7 @@ public class TypeSym : Sym {
     public mut size: isize = -1;
     public mut align: isize = -1;
 
-    public fn lookup_field(self, name: string) ?Field {
+    public func lookup_field(self, name: string) ?Field {
         for f in self.fields {
             if f.name == name {
                 return f;
@@ -293,11 +293,11 @@ public class TypeSym : Sym {
     }
 
     #[inline]
-    public fn has_field(self, name: string) bool {
+    public func has_field(self, name: string) bool {
         return if let _ = self.lookup_field(name) { true } else { false };
     }
 
-    public fn lookup_in_base(self, name: string) ?Sym {
+    public func lookup_in_base(self, name: string) ?Sym {
         if self.info is ClassInfo as class_info {
             if let s = class_info.base_sym.lookup(name) {
                 return s;
@@ -317,7 +317,7 @@ public class TypeSym : Sym {
         return nil;
     }
 
-    public fn lookup(self, name: string) ?Sym {
+    public func lookup(self, name: string) ?Sym {
         if let s = base.scope.lookup(name) {
             return s;
         } else if let s = self.lookup_in_base(name) {
@@ -326,7 +326,7 @@ public class TypeSym : Sym {
         return nil;
     }
 
-    public fn full_fields(mut self) []Field {
+    public func full_fields(mut self) []Field {
         if !self.full_fields_.is_empty() {
             return self.full_fields_;
         }
@@ -349,7 +349,7 @@ public class TypeSym : Sym {
         return fields;
     }
 
-    public fn update(mut self, other: TypeSym) ! {
+    public func update(mut self, other: TypeSym) ! {
         if self.kind is .Placeholder {
             // update placeholder
             self.is_publiclic = other.is_publiclic;
@@ -362,7 +362,7 @@ public class TypeSym : Sym {
         }
     }
 
-    public fn is_subtype_of(self, other: TypeSym) bool {
+    public func is_subtype_of(self, other: TypeSym) bool {
         if self == other {
             return true;
         }
@@ -381,7 +381,7 @@ public class TypeSym : Sym {
         return false;
     }
 
-    public fn is_boxed(self) bool {
+    public func is_boxed(self) bool {
         if self.info is EnumInfo as enum_info {
             return enum_info.is_advanced_enum;
         }
@@ -391,7 +391,7 @@ public class TypeSym : Sym {
 
     // TODO(StunxFS): fix inheritance of overloaded operators
     #[inline; override]
-    public fn ==(self, rhs: Self) bool {
+    public func ==(self, rhs: Self) bool {
         return self.id == rhs.id;
     }
 }
@@ -419,7 +419,7 @@ public class FnSym : Sym {
     public has_body: bool;
     public ret_typ: Type;
 
-    public fn get_arg(self, idx: usize) Arg {
+    public func get_arg(self, idx: usize) Arg {
         let arg = self.args[idx];
         if arg.is_self {
             return self.args[idx + 1];
@@ -427,7 +427,7 @@ public class FnSym : Sym {
         return arg;
     }
 
-    public fn args_len(self) usize {
+    public func args_len(self) usize {
         let mut len: usize = 0;
         for arg in self.args {
             if !(arg.is_self or arg.typ is Variadic) {
@@ -438,7 +438,7 @@ public class FnSym : Sym {
     }
 
     #[inline]
-    public fn kind(self) string {
+    public func kind(self) string {
         return if self.is_method { "method" } else { "function" };
     }
 }
@@ -450,7 +450,7 @@ public class Scope {
     public mut detached_from_parent: bool;
     public mut syms: []Sym;
 
-    public fn add(mut self, sym: Sym) ! {
+    public func add(mut self, sym: Sym) ! {
         if sym.name == "_" and sym is Var {
             return; // ignore blank var
         } else if self.exists(sym.name) {
@@ -460,11 +460,11 @@ public class Scope {
     }
 
     #[inline]
-    public fn exists(self, name: string) bool {
+    public func exists(self, name: string) bool {
         return if let _ = self.lookup(name) { true } else { false };
     }
 
-    public fn lookup(self, name: string) ?Sym {
+    public func lookup(self, name: string) ?Sym {
         let mut sc_: ?Scope = self;
         while let sc = sc_ {
             for sym in self.syms {
@@ -480,7 +480,7 @@ public class Scope {
         return nil;
     }
 
-    fn dont_lookup_parent(self) bool {
+    func dont_lookup_parent(self) bool {
         if self.detached_from_parent or self.parent is nil {
             return true;
         }
@@ -492,7 +492,7 @@ public class Scope {
     }
 }
 
-public fn universe() Mod {
+public func universe() Mod {
     return Mod(
         is_publiclic: false,
         name: "universe",

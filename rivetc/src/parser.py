@@ -217,7 +217,7 @@ class Parser:
                     if self.tok.kind == Kind.Rbrace:
                         break
                 self.expect(Kind.Rbrace)
-            elif self.accept(Kind.KwFn):
+            elif self.accept(Kind.KwFunc):
                 protos.append(
                     self.parse_fn_decl(
                         doc_comment, attrs, is_public,
@@ -413,7 +413,7 @@ class Parser:
             while not self.accept(Kind.Rbrace):
                 decls.append(self.parse_decl())
             return ast.ExtendDecl(attrs, typ, bases, decls, pos)
-        elif self.accept(Kind.KwFn):
+        elif self.accept(Kind.KwFunc):
             return self.parse_fn_decl(
                 doc_comment, attrs, is_public,
                 attrs.has("unsafe")
@@ -1229,14 +1229,14 @@ class Parser:
         if self.accept(Kind.Question):
             # optional
             return type.Option(self.parse_type())
-        elif self.tok.kind in (Kind.KwExtern, Kind.KwFn):
+        elif self.tok.kind in (Kind.KwExtern, Kind.KwFunc):
             # function types
             is_extern = self.accept(Kind.KwExtern)
             abi = self.parse_abi() if is_extern else sym.ABI.Rivet
             if is_extern and not self.inside_extern: self.inside_extern = True
             args = []
             is_variadic = False
-            self.expect(Kind.KwFn)
+            self.expect(Kind.KwFunc)
             self.expect(Kind.Lparen)
             if self.tok.kind != Kind.Rparen:
                 while True:

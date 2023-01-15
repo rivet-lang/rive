@@ -8,19 +8,19 @@ extern (C) {
     // the default secret parameters
     public let _wyp: [4]u64;
 
-    fn _wyrot(x: u64) u64;
-    fn _wymum(a: *u64, b: *u64);
-    fn _wymix(a: u64, b: u64) u64;
-    fn _wyr8(p: *u8) u64;
-    fn _wyr4(p: *u8) u64;
-    fn _wyr3(p: *u8, k: usize) u64;
-    public fn wyhash(key: anyptr, len: usize, seed: u64, secret: *u64) u64;
-    public fn wyhash64(a: u64, b: u64) u64;
-    fn wyrand(seed: *u64) u64;
-    fn wy2u01(r: u64) f64;
-    fn wy2gau(r: u64) f64;
+    func _wyrot(x: u64) u64;
+    func _wymum(a: *u64, b: *u64);
+    func _wymix(a: u64, b: u64) u64;
+    func _wyr8(p: *u8) u64;
+    func _wyr4(p: *u8) u64;
+    func _wyr3(p: *u8, k: usize) u64;
+    public func wyhash(key: anyptr, len: usize, seed: u64, secret: *u64) u64;
+    public func wyhash64(a: u64, b: u64) u64;
+    func wyrand(seed: *u64) u64;
+    func wy2u01(r: u64) f64;
+    func wy2gau(r: u64) f64;
 
 #if !WYHASH_32BIT_MUM
-    fn wy2u0k(r: u64, k: u64) u64;
+    func wy2u0k(r: u64, k: u64) u64;
 #endif
 }

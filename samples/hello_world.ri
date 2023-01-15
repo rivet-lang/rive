@@ -1,5 +1,5 @@
 import "std/console";
 
-fn main() {
+func main() {
     console.println("Hello World!");
 }

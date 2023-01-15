@@ -9,7 +9,7 @@ public class ErrnoError : Error {
 }
 
 #[inline]
-public fn errno() i32 {
+public func errno() i32 {
     return unsafe {
 #if _LINUX_
         libc.__errno_location().?.*
@@ -19,7 +19,7 @@ public fn errno() i32 {
     };
 }
 
-public fn errno_msg(code: i32 = errno()) string {
+public func errno_msg(code: i32 = errno()) string {
     unsafe {
         let s = libc.strerror(code);
         return if s is nil { "" } else { string.from_raw(s) };
@@ -27,6 +27,6 @@ public fn errno_msg(code: i32 = errno()) string {
 }
 
 #[inline]
-public fn last_errno_error() ErrnoError {
+public func last_errno_error() ErrnoError {
     return ErrnoError(errno_msg(), errno());
 }

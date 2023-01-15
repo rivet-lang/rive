@@ -5,21 +5,21 @@
 import "c";
 
 #[unsafe; inline]
-fn wyhash(key: *u8, len: u64, seed: u64) u64 {
+func wyhash(key: *u8, len: u64, seed: u64) u64 {
     return unsafe { c.wyhash(key, len, seed, &c._wyp[0]) };
 }
 
 #[inline]
-fn wyhash64(a: u64, b: u64) u64 {
+func wyhash64(a: u64, b: u64) u64 {
     return unsafe { c.wyhash64(a, b) };
 }
 
 #[inline]
-public fn sum64(key: []u8, seed: u64 = 0) u64 {
+public func sum64(key: []u8, seed: u64 = 0) u64 {
     return unsafe { wyhash(&key[0], @as(u64, key.len), seed) };
 }
 
 #[inline]
-public fn sum64_string(key: string, seed: u64 = 0) u64 {
+public func sum64_string(key: string, seed: u64 = 0) u64 {
     return unsafe { wyhash(key.ptr, @as(u64, key.len), seed) };
 }

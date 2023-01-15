@@ -1,23 +1,23 @@
 trait Speaker {
-    fn speak(&self) string;
+    func speak(&self) string;
 }
 
 class Animal2 : Speaker {
-    fn speak(self) string {
+    func speak(self) string {
         return "~ Animal2.speak() ~";
     }
 }
 
 class Frog : Animal2 {
     #[override]
-    fn speak(self) string {
+    func speak(self) string {
         return "Croack";
     }
 }
 
 class Lion : Animal2 { }
 
-fn speaker(s: Speaker) string {
+func speaker(s: Speaker) string {
     return s.speak();
 }
 
@@ -34,39 +34,39 @@ test "traits: calling overrided method" {
 }
 
 trait Reader {
-    fn read(&self) u8;
+    func read(&self) u8;
 }
 
 trait Writer {
-    fn write(&self, b: u8) bool;
+    func write(&self, b: u8) bool;
 }
 
 trait ReaderWriter : Reader, Writer {
-    fn write_and_read(&self, b: u8) u8;
+    func write_and_read(&self, b: u8) u8;
 }
 
 struct SomeStream : ReaderWriter {
-    fn read(&self) u8 {
+    func read(&self) u8 {
         return b'A';
     }
 
-    fn write(&self, b: u8) bool { return true; }
+    func write(&self, b: u8) bool { return true; }
 
-    fn write_and_read(&self, b: u8) u8 {
+    func write_and_read(&self, b: u8) u8 {
         _ = self.write(b);
         return self.read();
     }
 }
 
-fn writer(w: Writer) bool {
+func writer(w: Writer) bool {
     return w.write(b'A');
 }
 
-fn reader(r: Reader) u8 {
+func reader(r: Reader) u8 {
     return r.read();
 }
 
-fn reader_writer(rw: ReaderWriter) u8 {
+func reader_writer(rw: ReaderWriter) u8 {
     return rw.write_and_read(b'A');
 }
 

@@ -8,7 +8,7 @@ test "using `alias` with symbols" {
 
 alias AnyptrOption = ?anyptr;
 
-fn anyptrOption() AnyptrOption {
+func anyptrOption() AnyptrOption {
     return nil;
 }
 

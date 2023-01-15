@@ -9,30 +9,30 @@
 #endif
 
 extern (C) {
-    public fn rand() i32;
-    public fn srand(seed: u32);
+    public func rand() i32;
+    public func srand(seed: u32);
 
-    public fn atof(nptr: ?*u8) f64;
-    public fn atoi(nptr: ?*u8) i32;
-    public fn atol(nptr: ?*u8) i64;
-    public fn atoll(nptr: ?*u8) i64;
+    public func atof(nptr: ?*u8) f64;
+    public func atoi(nptr: ?*u8) i32;
+    public func atol(nptr: ?*u8) i64;
+    public func atoll(nptr: ?*u8) i64;
 
-    public fn strtod(nptr: [*]u8, endptr: ?*u8, base_: i32) f64;
-    public fn strtof(nptr: [*]u8, endptr: ?*u8, base_: i32) f32;
-    public fn strtol(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
-    public fn strtoll(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
-    public fn strtoul(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
-    public fn strtoull(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
+    public func strtod(nptr: [*]u8, endptr: ?*u8, base_: i32) f64;
+    public func strtof(nptr: [*]u8, endptr: ?*u8, base_: i32) f32;
+    public func strtol(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
+    public func strtoll(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
+    public func strtoul(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
+    public func strtoull(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
 
-    public fn malloc(size: usize) ?mut_anyptr;
-    public fn calloc(nobj: usize, size: usize) ?mut_anyptr;
-    public fn realloc(p: ?mut_anyptr, size: usize) ?mut_anyptr;
-    public fn free(p: anyptr);
+    public func malloc(size: usize) ?mut_anyptr;
+    public func calloc(nobj: usize, size: usize) ?mut_anyptr;
+    public func realloc(p: ?mut_anyptr, size: usize) ?mut_anyptr;
+    public func free(p: anyptr);
 
-    public fn getenv(name: *u8) ?*mut u8;
-    public fn setenv(name: *u8, value: *u8, replace: bool) i32;
-    public fn unsetenv(name: *u8) i32;
+    public func getenv(name: *u8) ?*mut u8;
+    public func setenv(name: *u8, value: *u8, replace: bool) i32;
+    public func unsetenv(name: *u8) i32;
 
-    public fn exit(status: i32) never;
-    public fn abort() never;
+    public func exit(status: i32) never;
+    public func abort() never;
 }

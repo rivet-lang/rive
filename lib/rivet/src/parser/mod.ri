@@ -34,7 +34,7 @@ public class Parser {
     mut inside_switch_header: bool;
     mut inside_block: bool;
 
-    public fn parse_module(mut self, mod_sym: ast.Sym, files: []string) []ast.SourceFile {
+    public func parse_module(mut self, mod_sym: ast.Sym, files: []string) []ast.SourceFile {
         self.mod_sym = mod_sym;
         let mut source_files = @vec(mut ast.SourceFile);
         for file in files {
@@ -43,7 +43,7 @@ public class Parser {
         return source_files;
     }
 
-    public fn parse_file(mut self, file: string) ast.SourceFile {
+    public func parse_file(mut self, file: string) ast.SourceFile {
         self.file_path = file;
         self.file_dir = path.dirname(file) ?? file;
         self.tokenizer = tokenizer.Tokenizer.from_file(file, self.prefs, self.table);
@@ -55,24 +55,24 @@ public class Parser {
     }
 
     // ---- useful functions for working with tokens ----
-    fn next(mut self) {
+    func next(mut self) {
         self.prev_tok = self.tok;
         self.tok = self.peek_tok;
         self.peek_tok = self.tokenizer.next();
     }
 
     #[inline]
-    fn peek_token(self, n: usize) token.Token {
+    func peek_token(self, n: usize) token.Token {
         return self.tokenizer.peek_token(n - 2);
     }
 
-    fn advance(mut self, n: usize) {
+    func advance(mut self, n: usize) {
         let mut i: usize = 0;
         while i < n : i += 1 { self.next(); }
     }
 
     #[inline]
-    fn accept(mut self, kind: token.Kind) bool {
+    func accept(mut self, kind: token.Kind) bool {
         return if self.tok.kind == kind {
             self.next();
             true
@@ -81,7 +81,7 @@ public class Parser {
         };
     }
 
-    fn expect(mut self, kind: token.Kind) {
+    func expect(mut self, kind: token.Kind) {
         if self.accept(kind) {
             return;
         } else if self.last_err_pos.pos == self.tok.pos.pos {
@@ -97,24 +97,24 @@ public class Parser {
     }
 
     // ---- utilities ------------------
-    fn parse_name(mut self) string {
+    func parse_name(mut self) string {
         let lit = self.tok.lit;
         self.expect(.Name);
         return lit;
     }
 
     #[inline]
-    fn open_scope(mut self) {
+    func open_scope(mut self) {
         self.scope = ast.Scope(start: self.tok.pos.pos, parent: self.scope);
     }
 
-    fn close_scope(mut self) {
+    func close_scope(mut self) {
         self.scope.?.end = self.tok.pos.pos;
         self.scope = self.scope.?.parent;
     }
 
     // ---- declarations --------------
-    fn parse_decls(mut self) []ast.Decl {
+    func parse_decls(mut self) []ast.Decl {
         return [];
     }
 }

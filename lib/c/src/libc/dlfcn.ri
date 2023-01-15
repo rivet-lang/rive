@@ -8,8 +8,8 @@ public const RTLD_BINDING_MASK: i32 = 0x3;
 public const RTLD_GLOBAL: i32 = 0x100;
 
 extern (C) {
-    public fn dlopen(__file: *u8, __mode: i32) ?mut_anyptr;
-    public fn dlclose(__handle: anyptr) i32;
-    public fn dlsym(__handle: anyptr, __name: *u8) ?anyptr;
-    public fn dlerror() ?*u8;
+    public func dlopen(__file: *u8, __mode: i32) ?mut_anyptr;
+    public func dlclose(__handle: anyptr) i32;
+    public func dlsym(__handle: anyptr, __name: *u8) ?anyptr;
+    public func dlerror() ?*u8;
 }

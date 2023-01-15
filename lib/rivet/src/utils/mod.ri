@@ -11,16 +11,16 @@ import "std/console/styles";
 public let VERSION: string = "0.1.0b";
 
 #[inline]
-public fn is_name_char(ch: u8) bool {
+public func is_name_char(ch: u8) bool {
     return ch.is_letter() or ch == b'_';
 }
 
 #[inline]
-public fn is_new_line(ch: u8) bool {
+public func is_new_line(ch: u8) bool {
     return ch == 10 or ch == 13;
 }
 
-public fn skip_bom(file_content: string) string {
+public func skip_bom(file_content: string) string {
    // BOM check
    if file_content.len >= 3 {
       unsafe {
@@ -42,7 +42,7 @@ struct CachedFile {
 class SourceCache {
    mut sources: []CachedFile;
 
-   public fn find(self, path: string) ?string {
+   public func find(self, path: string) ?string {
       for source in self.sources {
          if source.path == path {
             return source.content;
@@ -51,14 +51,14 @@ class SourceCache {
       return nil;
    }
 
-   public fn find_line(mut self, path: string, line: usize) ?string {
+   public func find_line(mut self, path: string, line: usize) ?string {
       if let lines = self.find_lines(path) {
          return lines[line];
       }
       return nil;
    }
 
-   public fn find_lines(mut self, path: string) ?[]string {
+   public func find_lines(mut self, path: string) ?[]string {
       let mut i: usize = 0;
       while i < self.sources.len : i += 1 {
          let mut cached = self.sources[i];
@@ -75,7 +75,7 @@ class SourceCache {
 
 public let mut source_cache: SourceCache = SourceCache();
 
-public fn read_file(path: string) !string {
+public func read_file(path: string) !string {
    if let res = source_cache.find(path) {
       return res;
    }
@@ -87,16 +87,16 @@ public fn read_file(path: string) !string {
 }
 
 #[inline]
-public fn min(a: usize, b: usize) usize {
+public func min(a: usize, b: usize) usize {
    return if a < b { a } else { b };
 }
 
 #[inline]
-public fn max(a: usize, b: usize) usize {
+public func max(a: usize, b: usize) usize {
    return if a > b { a } else { b };
 }
 
-public fn option(args: []string, param: string) ?string {
+public func option(args: []string, param: string) ?string {
     for i, arg in args {
         if param == arg {
             if i + 1 < args.len {
@@ -108,7 +108,7 @@ public fn option(args: []string, param: string) ?string {
     return nil;
 }
 
-public fn error(msg: string, args: ...traits.ToString) never {
+public func error(msg: string, args: ...traits.ToString) never {
    console.eprintln(
       "{} {} {}", styles.bold("rivet:"),
       styles.bold(styles.red("error:")), msg.fmt(args)
@@ -119,31 +119,31 @@ public fn error(msg: string, args: ...traits.ToString) never {
 let StderrSupportStyles: bool = styles.stderr_support_styles();
 
 #[inline]
-public fn bold(msg: string) string {
+public func bold(msg: string) string {
     return if StderrSupportStyles { styles.bold(msg) } else { msg };
 }
 
 #[inline]
-public fn red(msg: string) string {
+public func red(msg: string) string {
     return if StderrSupportStyles { styles.red(msg) } else { msg };
 }
 
 #[inline]
-public fn yellow(msg: string) string {
+public func yellow(msg: string) string {
     return if StderrSupportStyles { styles.yellow(msg) } else { msg };
 }
 
 #[inline]
-public fn cyan(msg: string) string {
+public func cyan(msg: string) string {
     return if StderrSupportStyles { styles.cyan(msg) } else { msg };
 }
 
 #[inline]
-public fn blue(msg: string) string {
+public func blue(msg: string) string {
     return if StderrSupportStyles { styles.blue(msg) } else { msg };
 }
 
 #[inline]
-public fn green(msg: string) string {
+public func green(msg: string) string {
     return if StderrSupportStyles { styles.green(msg) } else { msg };
 }

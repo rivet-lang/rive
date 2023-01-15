@@ -1,4 +1,4 @@
-fn default_arg(x: i32 = 1) {
+func default_arg(x: i32 = 1) {
     @assert(x == 1 or x == 5 or x == 10);
 }
 
@@ -8,13 +8,13 @@ test "call expression with default arguments" {
     default_arg(x: 10);
 }
 
-fn foo(a: bool = false, b: bool = false) { }
+func foo(a: bool = false, b: bool = false) { }
 
-fn bar(a: bool, b: bool = true) { }
+func bar(a: bool, b: bool = true) { }
 
-fn baz(a: bool, b: bool) { }
+func baz(a: bool, b: bool) { }
 
-fn qux(a: bool) { }
+func qux(a: bool) { }
 
 test "call expression with named arguments" {
     foo(a: true, b: true);
@@ -25,7 +25,7 @@ test "call expression with named arguments" {
     qux(a);
 }
 
-fn args(values: ...i32) i32 {
+func args(values: ...i32) i32 {
     let mut res = 0;
     for v in values {
         res += v;

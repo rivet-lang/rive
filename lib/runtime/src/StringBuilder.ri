@@ -9,11 +9,11 @@ public class StringBuilder : ToString {
 
     /// Returns a string builder with capacity `cap`.
     #[inline]
-    public fn new(cap: usize = 0) Self {
+    public func new(cap: usize = 0) Self {
         return Self(unsafe { Vec.new(@size_of(u8), cap) });
     }
 
-    public fn from_string(s: string) Self {
+    public func from_string(s: string) Self {
         if s.len == 0 {
             return Self.new();
         }
@@ -23,19 +23,19 @@ public class StringBuilder : ToString {
     }
 
     #[inline]
-    public fn write_byte(mut self, val: u8) {
+    public func write_byte(mut self, val: u8) {
         self.inner.push(unsafe { &val });
     }
 
     #[unsafe; inline]
-    public fn write_raw(mut self, s: *u8) {
+    public func write_raw(mut self, s: *u8) {
         unsafe {
             self.write_raw_with_len(s, libc.strlen(s));
         }
     }
 
     #[unsafe]
-    public fn write_raw_with_len(mut self, s: [*]u8, len: usize) {
+    public func write_raw_with_len(mut self, s: [*]u8, len: usize) {
         let mut i: usize = 0;
         while i < len : i += 1 {
             self.write_byte(unsafe { s[i] });
@@ -43,20 +43,20 @@ public class StringBuilder : ToString {
     }
 
     #[inline]
-    public fn write_string(mut self, s: string) {
+    public func write_string(mut self, s: string) {
         unsafe {
             self.write_raw_with_len(s.ptr, s.len);
         }
     }
 
-    public fn writeln(mut self, s: string) {
+    public func writeln(mut self, s: string) {
         unsafe {
             self.write_raw_with_len(s.ptr, s.len);
         }
         self.write_byte(0x0A);
     }
 
-    public fn write_join(mut self, ss: []string, sep: string = "") {
+    public func write_join(mut self, ss: []string, sep: string = "") {
         if ss.len == 1 {
             self.write_string(ss[0]);
         } else {
@@ -70,43 +70,43 @@ public class StringBuilder : ToString {
     }
 
     #[inline]
-    public fn write_fmt(mut self, s: string, args: ...ToString) {
+    public func write_fmt(mut self, s: string, args: ...ToString) {
         self.write_string(s.fmt(args));
     }
 
-    public fn writeln_fmt(mut self, s: string, args: ...ToString) {
+    public func writeln_fmt(mut self, s: string, args: ...ToString) {
         self.write_string(s.fmt(args));
         self.write_string("\n");
     }
 
     /// Returns the number of runes contained in `self`.
     #[inline]
-    public fn runes_count(self) usize {
+    public func runes_count(self) usize {
         return cstr_runes_count(@as(*u8, self.inner.ptr), self.inner.len);
     }
 
     #[inline]
-    public fn clear(mut self) {
+    public func clear(mut self) {
         self.inner.len = 0;
     }
 
     #[inline]
-    public fn len(self) usize {
+    public func len(self) usize {
         return self.inner.len;
     }
 
     #[inline]
-    public fn cap(self) usize {
+    public func cap(self) usize {
         return self.inner.cap;
     }
 
     #[inline]
-    public fn is_empty(self) bool {
+    public func is_empty(self) bool {
         return self.inner.len == 0;
     }
 
     #[inline]
-    public fn to_string(self) string {
+    public func to_string(self) string {
         return string(@as(*u8, self.inner.ptr), self.inner.len);
     }
 }

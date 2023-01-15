@@ -28,8 +28,8 @@ public struct Stat {
 #endif
 
 extern (C) {
-    public fn stat(__file: *u8, __buf: *mut Stat) i32;
-    public fn lstat(file: *u8, buf: *mut Stat) i32;
+    public func stat(__file: *u8, __buf: *mut Stat) i32;
+    public func lstat(file: *u8, buf: *mut Stat) i32;
 
-    public fn mkdir(path: *u8, mode: usize) i32;
+    public func mkdir(path: *u8, mode: usize) i32;
 }

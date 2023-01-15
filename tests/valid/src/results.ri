@@ -1,12 +1,12 @@
-fn result() ! {
+func result() ! {
     return Error("simple error");
 }
 
-fn result2() ! {
+func result2() ! {
     return Error("simple error (returned: {}, idx: {})".fmt(true, 0));
 }
 
-fn result3() !i32 {
+func result3() !i32 {
     return 5;
 }
 

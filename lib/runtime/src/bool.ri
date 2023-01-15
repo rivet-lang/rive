@@ -4,7 +4,7 @@
 
 extend bool : ToString {
     #[inline]
-    public fn to_string(&self) string {
+    public func to_string(&self) string {
         return if self.* { "true" } else { "false" };
     }
 }

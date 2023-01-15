@@ -21,9 +21,9 @@
 	public const SIGTERM: i32 = 15;
 #endif
 
-public alias SignalHandler = fn (i32);
+public alias SignalHandler = func (i32);
 
 extern (C) {
-    public fn signal(sig: i32, handler: SignalHandler) ?SignalHandler;
-    public fn raise(sig: i32) i32;
+    public func signal(sig: i32, handler: SignalHandler) ?SignalHandler;
+    public func raise(sig: i32) i32;
 }

@@ -2,7 +2,7 @@ enum MyEnum {
     Musk
 }
 
-fn main() {
+func main() {
     unknown_fn();
     let x = UnknownStruct();
     let z = unknown_var;

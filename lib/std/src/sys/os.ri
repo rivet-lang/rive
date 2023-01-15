@@ -10,7 +10,7 @@ public enum OS as u8 {
     Macos;
 
     #[inline]
-    public fn from_string(name: string) ?OS {
+    public func from_string(name: string) ?OS {
         return switch name {
             "linux", "_LINUX_" => .Linux,
             "windows", "_WINDOWS_" => .Windows,
@@ -22,7 +22,7 @@ public enum OS as u8 {
 
 /// Returns the current operating system.
 #[inline]
-public fn os() OS {
+public func os() OS {
 #if _LINUX_
     return .Linux;
 #else_if _WINDOWS_
