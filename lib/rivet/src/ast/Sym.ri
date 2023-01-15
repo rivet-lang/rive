@@ -80,7 +80,7 @@ public class Field {
     public typ: Type;
 }
 
-public enum TypeKind : traits.ToString {
+public enum TypeKind : traits.Formattable {
     Placeholder,
     Never,
     Void,

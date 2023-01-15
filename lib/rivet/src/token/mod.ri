@@ -6,7 +6,7 @@ import "std/traits";
 
 public let NO_POS: Pos = Pos();
 
-public struct Pos : traits.ToString {
+public struct Pos : traits.Formattable {
     public file: string;
     public line: usize;
     public col: usize;
@@ -22,7 +22,7 @@ public struct Pos : traits.ToString {
     }
 }
 
-public struct Token : traits.ToString {
+public struct Token : traits.Formattable {
     public lit: string;
     public kind: Kind;
     public len: usize;

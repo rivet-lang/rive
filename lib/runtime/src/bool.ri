@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-extend bool : ToString {
+extend bool : Formattable {
     #[inline]
     public func to_string(&self) string {
         return if self.* { "true" } else { "false" };

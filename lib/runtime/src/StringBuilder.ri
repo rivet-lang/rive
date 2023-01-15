@@ -4,7 +4,7 @@
 
 import "c/libc";
 
-public class StringBuilder : ToString {
+public class StringBuilder : Formattable {
     mut inner: Vec;
 
     /// Returns a string builder with capacity `cap`.
@@ -53,7 +53,7 @@ public class StringBuilder : ToString {
         unsafe {
             self.write_raw_with_len(s.ptr, s.len);
         }
-        self.write_byte(0x0A);
+        self.write_byte(b'\n');
     }
 
     public func write_join(mut self, ss: []string, sep: string = "") {
@@ -70,13 +70,13 @@ public class StringBuilder : ToString {
     }
 
     #[inline]
-    public func write_fmt(mut self, s: string, args: ...ToString) {
+    public func write_fmt(mut self, s: string, args: ...Formattable) {
         self.write_string(s.fmt(args));
     }
 
-    public func writeln_fmt(mut self, s: string, args: ...ToString) {
+    public func writeln_fmt(mut self, s: string, args: ...Formattable) {
         self.write_string(s.fmt(args));
-        self.write_string("\n");
+        self.write_byte(b'\n');
     }
 
     /// Returns the number of runes contained in `self`.

@@ -4,7 +4,7 @@
 
 import "c/libc";
 
-extend comptime_float : ToString {
+extend comptime_float : Formattable {
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     #[inline]
@@ -18,7 +18,7 @@ extend comptime_float : ToString {
     }
 }
 
-extend float32 : ToString {
+extend float32 : Formattable {
     /// Returns the floating-point number corresponding to the IEEE 754 binary
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.
@@ -46,7 +46,7 @@ extend float32 : ToString {
     }
 }
 
-extend float64 : ToString {
+extend float64 : Formattable {
     /// Returns the floating-point number corresponding to the IEEE 754 binary
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.

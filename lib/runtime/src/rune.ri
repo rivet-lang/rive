@@ -6,7 +6,7 @@ const MAX_ONE_B: uint32 = 0x80;
 const MAX_TWO_B: uint32 = 0x800;
 const MAX_THREE_B: uint32 = 0x10000;
 
-extend rune : ToString {
+extend rune : Formattable {
     /// The highest valid codepoint a `rune` can have.
     public const MAX: rune = 0x10FFFF;
 

@@ -6,7 +6,7 @@ import "c/libc";
 
 let empty_string: string = string(c"", 0, true);
 
-public class string : ToString, Hasher {
+public class string : Formattable, Hashable {
     public ptr: [*]uint8;
     public len: usize;
     is_ref: bool;
@@ -108,7 +108,7 @@ public class string : ToString, Hasher {
     ///
     /// If the replacement positions exceed the number of passed arguments, a panic
     /// occurs.
-    public func fmt(self, args: ...ToString) Self {
+    public func fmt(self, args: ...Formattable) Self {
         if args.len == 0 {
             return self;
         }
@@ -751,7 +751,7 @@ public struct StringFormatter {
         return (true, fwidth);
     }
 
-    func fmt(mut self, args: ...ToString) string {
+    func fmt(mut self, args: ...Formattable) string {
         self.res = StringBuilder.new(self.buf.len);
         let mut args_idx: usize = 0;
         while self.i < self.buf.len : self.i += 1 {

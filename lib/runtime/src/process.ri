@@ -46,7 +46,7 @@ public func process_id() uint32 {
 
 /// Terminates current thread execution immediately after displaying a
 /// message, followed by a backtrace.
-public func process_panic(s: string = "", args: ...ToString) never {
+public func process_panic(s: string = "", args: ...Formattable) never {
     console_eprintln("panic: {}", s.fmt(args));
     bt_print(2);
     process_exit(101);

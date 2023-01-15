@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public trait ToString {
+public trait Formattable {
     func to_string(&self) string;
 }
 
-public trait Hasher {
+public trait Hashable {
     func hash(&self) usize;
 }
