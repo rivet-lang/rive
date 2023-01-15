@@ -4,15 +4,15 @@
 
 /// Reads the file in `path` and returns the contents.
 public func read_file(path: string) !string {
-	let mut f = File.open(path, "rb").!;
-	let res = f.read_all().!;
-	f.close();
-	return res;
+    let mut f = File.open(path, "rb").!;
+    let res = f.read_all().!;
+    f.close();
+    return res;
 }
 
 /// Writes `text` data to a file in `path`.
 public func write_file(path: string, text: string) ! {
-	let mut f = File.open(path, "wb").!;
-	f.write(text);
-	f.close();
+    let mut f = File.open(path, "wb").!;
+    f.write_string(text);
+    f.close();
 }

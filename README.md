@@ -51,7 +51,7 @@ Any help is welcome.
 
 ## Samples
 
-```rs
+```swift
 // A simple sample: the classic "Hello World"
 import "std/console";
 
@@ -63,6 +63,6 @@ More samples in the [`samples/`](samples/) folder.
 
 <div align="center">
 
-© 2022 **The Rivet Developers**
+© 2023 **The Rivet Developers**
 
 </div>

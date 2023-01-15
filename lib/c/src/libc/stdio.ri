@@ -98,6 +98,7 @@ extern (C) {
     public func fseek(stream: *mut FILE, offset: u64, whence: i32) i32;
     public func ftell(stream: *mut FILE) i64;
     public func fread(ptr: mut_anyptr, size: usize, nitems: usize, stream: *mut FILE) usize;
+    public func fputc(c: i32, stream: *mut FILE) i32;
     public func fputs(s: *u8, stream: *mut FILE) i32;
     public func fprintf(stream: *mut FILE, fmt: *u8, ...) i32;
     public func fwrite(ptr: anyptr, size: usize, nobj: usize, stream: *mut FILE) usize;

@@ -20,26 +20,32 @@ public class File {
         return Error("File.open: failed to open file '{}'".fmt(path));
     }
 
+    /// Writes the byte `b` into the file.
+    #[inline]
+    public func write_byte(mut self, b: u8) {
+        _ = unsafe { libc.fputc(@as(i32, b), self.f) };
+    }
+
     /// Writes the string `s` into the file.
     #[inline]
-    public func write(mut self, s: string) {
+    public func write_string(mut self, s: string) {
         _ = unsafe { libc.fputs(s.ptr, self.f) };
     }
 
     /// Writes the string `s` into the file and appends a '\n' character.
     public func writeln(mut self, s: string) {
-        self.write(s);
-        self.write("\n");
+        self.write_string(s);
+        self.write_byte(b'\n');
     }
 
     #[inline]
-    public func write_fmt(mut self, s: string, args: ...ToString) {
-        self.write(s.fmt(args));
+    public func write_string_fmt(mut self, s: string, args: ...ToString) {
+        self.write_string(s.fmt(args));
     }
 
     public func writeln_fmt(mut self, s: string, args: ...ToString) {
-        self.write(s.fmt(args));
-        self.write("\n");
+        self.write_string(s.fmt(args));
+        self.write_byte(b'\n');
     }
 
     /// Returns the current file contents.
