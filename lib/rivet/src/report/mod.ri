@@ -30,7 +30,7 @@ public class ReportTable {
     public mut warns: usize;
 }
 
-public enum ReportKind as u8 {
+public enum ReportKind as uint8 {
     Error,
     Warn,
     Note,

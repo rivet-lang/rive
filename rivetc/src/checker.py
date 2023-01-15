@@ -385,7 +385,7 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.CharLiteral):
             if expr.is_byte:
-                expr.typ = self.comp.u8_t
+                expr.typ = self.comp.uint8_t
             else:
                 expr.typ = self.comp.rune_t
             return expr.typ
@@ -399,14 +399,14 @@ class Checker:
             if expr.is_bytestr:
                 expr.typ = type.Type(
                     self.comp.universe.add_or_get_array(
-                        self.comp.u8_t,
+                        self.comp.uint8_t,
                         ast.IntegerLiteral(
                             str(utils.bytestr(expr.lit).len), expr.pos
                         )
                     )
                 )
             elif expr.is_cstr:
-                expr.typ = type.Ptr(self.comp.u8_t, False)
+                expr.typ = type.Ptr(self.comp.uint8_t, False)
             else:
                 expr.typ = self.comp.string_t
             return expr.typ
@@ -864,7 +864,7 @@ class Checker:
                     if isinstance(expr.index, ast.RangeExpr):
                         expr.typ = self.comp.string_t
                     else:
-                        expr.typ = self.comp.u8_t
+                        expr.typ = self.comp.uint8_t
                 elif hasattr(expr.left_typ, "typ"):
                     expr.typ = expr.left_typ.typ
                 else:
@@ -1195,7 +1195,7 @@ class Checker:
                             "invalid indirect for `anyptr`", expr.field_pos
                         )
                         report.help(
-                            "consider casting this to another pointer type, e.g. `*u8`"
+                            "consider casting this to another pointer type, e.g. `*uint8`"
                         )
                     else:
                         expr.field_is_mut = left_typ.is_mut

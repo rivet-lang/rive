@@ -3,27 +3,27 @@
 // be found in the LICENSE file.
 
 // TODO(StunxFS): replace the argument type of `SignalHandler` from
-// `i32` to an enum that enumerates all possible signals.
+// `int32` to an enum that enumerates all possible signals.
 
 #if _LINUX_
-	public const SIGABRT: i32 = 6;
-	public const SIGFPE: i32 = 8;
-	public const SIGILL: i32 = 4;
-	public const SIGINT: i32 = 2;
-	public const SIGSEGV: i32 = 11;
-	public const SIGTERM: i32 = 15;
+	public const SIGABRT: int32 = 6;
+	public const SIGFPE: int32 = 8;
+	public const SIGILL: int32 = 4;
+	public const SIGINT: int32 = 2;
+	public const SIGSEGV: int32 = 11;
+	public const SIGTERM: int32 = 15;
 #else_if _WINDOWS_
-	public const SIGABRT: i32 = 22;
-	public const SIGFPE: i32 = 8;
-	public const SIGILL: i32 = 4;
-	public const SIGINT: i32 = 2;
-	public const SIGSEGV: i32 = 11;
-	public const SIGTERM: i32 = 15;
+	public const SIGABRT: int32 = 22;
+	public const SIGFPE: int32 = 8;
+	public const SIGILL: int32 = 4;
+	public const SIGINT: int32 = 2;
+	public const SIGSEGV: int32 = 11;
+	public const SIGTERM: int32 = 15;
 #endif
 
-public alias SignalHandler = func (i32);
+public alias SignalHandler = func (int32);
 
 extern (C) {
-    public func signal(sig: i32, handler: SignalHandler) ?SignalHandler;
-    public func raise(sig: i32) i32;
+    public func signal(sig: int32, handler: SignalHandler) ?SignalHandler;
+    public func raise(sig: int32) int32;
 }

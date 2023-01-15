@@ -11,12 +11,12 @@ test "vector from array" {
 
 test "`@vec` builtin function" {
     {
-        let mut v = @vec(i32);
+        let mut v = @vec(int32);
         v.push(5);
         @assert(v[0] == 5);
     }
     {
-        let mut v = @vec(i32, 2);
+        let mut v = @vec(int32, 2);
         v.push(10);
         @assert(v.cap == 2);
         @assert(v[0] == 10);

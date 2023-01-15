@@ -11,7 +11,7 @@ import "std/fs/path";
 import "../token";
 import "../utils";
 
-public enum Backend as u8 {
+public enum Backend as uint8 {
     C;
 
     public func from_string(name: string) ?Self {
@@ -22,16 +22,16 @@ public enum Backend as u8 {
     }
 }
 
-public enum OutputMode as u8 {
+public enum OutputMode as uint8 {
     Bin
 }
 
-public enum OptimizeMode as u8 {
+public enum OptimizeMode as uint8 {
 	Debug,
 	Release
 }
 
-public enum LinkMode as u8 {
+public enum LinkMode as uint8 {
     Static,
     Dynamic
 }

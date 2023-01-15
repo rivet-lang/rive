@@ -45,9 +45,9 @@ public func mem_resize(ptr: ?mut_anyptr, sz: usize) !mut_anyptr {
 
 /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
 /// byte `c`.
-public func mem_set(s: mut_anyptr, c: u8, n: usize) {
+public func mem_set(s: mut_anyptr, c: uint8, n: usize) {
     unsafe {
-        let mut s_b = @as([*]mut u8, s);
+        let mut s_b = @as([*]mut uint8, s);
         let mut i: usize = 0;
         while i < n : i += 1 {
             s_b[i] = c;
@@ -61,8 +61,8 @@ public func mem_set(s: mut_anyptr, c: u8, n: usize) {
 /// areas do overlap.
 public func mem_copy(dest: mut_anyptr, src: anyptr, sz: usize) {
     unsafe {
-        let src_b = @as([*]u8, src);
-        let mut dest_b = @as([*]mut u8, dest);
+        let src_b = @as([*]uint8, src);
+        let mut dest_b = @as([*]mut uint8, dest);
         let mut i: usize = 0;
         while i < sz : i += 1 {
             dest_b[i] = src_b[i];
@@ -94,13 +94,13 @@ public func mem_dup(src: anyptr, sz: usize) !mut_anyptr {
     return new;
 }
 
-/// Compares the first `n` bytes (each interpreted as `u8`) of the memory areas
+/// Compares the first `n` bytes (each interpreted as `uint8`) of the memory areas
 /// `s1` and `s2`. It returns an integer less than, equal to, or greater than
 /// zero, if the first n bytes of `s1` is found, respectively, to be less than,
 /// to match, or be greater than the first n bytes of `s2`.
 ///
 /// For a nonzero return value, the sign is determined by the sign of the
-/// difference between the first pair of bytes (interpreted as `u8`) that
+/// difference between the first pair of bytes (interpreted as `uint8`) that
 /// differ in `s1` and `s2`.
 ///
 /// If n is zero, the return value is zero.
@@ -110,7 +110,7 @@ public func mem_dup(src: anyptr, sz: usize) !mut_anyptr {
 /// number of equal bytes. You should use a function that performs comparisons
 /// in constant time for this.
 #[inline]
-public func mem_cmp(s1: anyptr, s2: anyptr, n: usize) i32 {
+public func mem_cmp(s1: anyptr, s2: anyptr, n: usize) int32 {
     return unsafe { libc.memcmp(s1, s2, n) };
 }
 

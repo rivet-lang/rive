@@ -1,26 +1,26 @@
 struct Option {
-    a: ?i32;
+    a: ?int32;
 }
 
 test "`nil` literal" {
-    let x: ?i32 = nil;
+    let x: ?int32 = nil;
     @assert(x is nil);
 }
 
 test "operator `??`" {
-    let mut x: ?i32 = nil;
+    let mut x: ?int32 = nil;
     @assert((x ?? 5) == 5);
     x = 1;
     @assert((x ?? 5) == 1);
 }
 
 test "operator `.?`" {
-    let mut x: ?i32 = 5;
+    let mut x: ?int32 = 5;
     @assert(x.? == 5);
 }
 
 test "guard expr with options" {
-    let mut x: ?i32 = 100;
+    let mut x: ?int32 = 100;
     if let y = x {
         @assert(y == 100);
     } else {

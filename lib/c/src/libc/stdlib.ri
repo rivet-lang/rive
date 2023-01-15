@@ -3,36 +3,36 @@
 // be found in the LICENSE file.
 
 #if _LINUX_
-    public const RAND_MAX: i32 = 0x7fffffff;
+    public const RAND_MAX: int32 = 0x7fffffff;
 #else_if _WINDOWS_
-    public const RAND_MAX: i32 = 0x7fff;
+    public const RAND_MAX: int32 = 0x7fff;
 #endif
 
 extern (C) {
-    public func rand() i32;
-    public func srand(seed: u32);
+    public func rand() int32;
+    public func srand(seed: uint32);
 
-    public func atof(nptr: ?*u8) f64;
-    public func atoi(nptr: ?*u8) i32;
-    public func atol(nptr: ?*u8) i64;
-    public func atoll(nptr: ?*u8) i64;
+    public func atof(nptr: ?*uint8) f64;
+    public func atoi(nptr: ?*uint8) int32;
+    public func atol(nptr: ?*uint8) int64;
+    public func atoll(nptr: ?*uint8) int64;
 
-    public func strtod(nptr: [*]u8, endptr: ?*u8, base_: i32) f64;
-    public func strtof(nptr: [*]u8, endptr: ?*u8, base_: i32) f32;
-    public func strtol(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
-    public func strtoll(nptr: [*]u8, endptr: ?*u8, base_: i32) i64;
-    public func strtoul(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
-    public func strtoull(nptr: [*]u8, endptr: ?*u8, base_: i32) u64;
+    public func strtod(nptr: [*]uint8, endptr: ?*uint8, base_: int32) f64;
+    public func strtof(nptr: [*]uint8, endptr: ?*uint8, base_: int32) f32;
+    public func strtol(nptr: [*]uint8, endptr: ?*uint8, base_: int32) int64;
+    public func strtoll(nptr: [*]uint8, endptr: ?*uint8, base_: int32) int64;
+    public func strtoul(nptr: [*]uint8, endptr: ?*uint8, base_: int32) uint64;
+    public func strtoull(nptr: [*]uint8, endptr: ?*uint8, base_: int32) uint64;
 
     public func malloc(size: usize) ?mut_anyptr;
     public func calloc(nobj: usize, size: usize) ?mut_anyptr;
     public func realloc(p: ?mut_anyptr, size: usize) ?mut_anyptr;
     public func free(p: anyptr);
 
-    public func getenv(name: *u8) ?*mut u8;
-    public func setenv(name: *u8, value: *u8, replace: bool) i32;
-    public func unsetenv(name: *u8) i32;
+    public func getenv(name: *uint8) ?*mut uint8;
+    public func setenv(name: *uint8, value: *uint8, replace: bool) int32;
+    public func unsetenv(name: *uint8) int32;
 
-    public func exit(status: i32) never;
+    public func exit(status: int32) never;
     public func abort() never;
 }

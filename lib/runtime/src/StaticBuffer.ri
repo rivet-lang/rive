@@ -5,10 +5,10 @@
 import "c/libc";
 
 struct StaticBuffer {
-    buf: [25]mut u8;
+    buf: [25]mut uint8;
     mut len: usize;
 
-    public func push(mut self, byte: u8) {
+    public func push(mut self, byte: uint8) {
         if self.len > self.buf.len {
             process_panic("StaticBuffer.push: cannot push byte (len: {})", self.len);
         }
@@ -23,7 +23,7 @@ struct StaticBuffer {
         }
     }
 
-    public func as_u64(&self) u64 {
+    public func as_uint64(&self) uint64 {
         return unsafe { libc.strtoul(&self.buf[0], nil, 10) };
     }
 

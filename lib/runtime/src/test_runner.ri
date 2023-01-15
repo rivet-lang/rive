@@ -58,7 +58,7 @@ func test_error_returned(err: Error, pos: string, mut test_: Test) {
     test_.early_return = true;
 }
 
-enum TestResult as u8 {
+enum TestResult as uint8 {
     Ok,
     Skipped,
     Failed,
@@ -77,9 +77,9 @@ struct Test {
 
 public struct TestRunner {
     tests: []mut Test;
-    mut ok_tests: u64;
-    mut fail_tests: u64;
-    mut skip_tests: u64;
+    mut ok_tests: uint64;
+    mut fail_tests: uint64;
+    mut skip_tests: uint64;
 
     func run(mut self) {
         for i, mut test_ in self.tests {
@@ -93,7 +93,7 @@ public struct TestRunner {
             }
         }
         self.print_summary_tests();
-        process_exit(@as(i32, self.fail_tests != 0));
+        process_exit(@as(int32, self.fail_tests != 0));
     }
 
     func print_summary_tests(&self) {

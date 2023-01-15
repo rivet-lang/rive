@@ -1,8 +1,8 @@
 struct ErrDefer {
-    mut i: i32;
+    mut i: int32;
 }
 
-func test_defer() i32 {
+func test_defer() int32 {
     let mut a = 1;
     defer a = 5;
     return a;

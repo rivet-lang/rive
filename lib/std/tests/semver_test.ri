@@ -2,9 +2,9 @@ import "std/semver";
 
 struct TestVersion {
     raw: string;
-    major: u64;
-    minor: u64;
-    patch: u64;
+    major: uint64;
+    minor: uint64;
+    patch: uint64;
     prerelease: string;
     metadata: string;
 }

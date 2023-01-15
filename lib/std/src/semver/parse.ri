@@ -4,10 +4,10 @@
 
 import { atoi } from "std/strconv";
 
-const VER_MAJOR: u64 = 0;
-const VER_MINOR: u64 = 1;
-const VER_PATCH: u64 = 2;
-const VERSIONS: []u64 = [VER_MAJOR, VER_MINOR, VER_PATCH];
+const VER_MAJOR: uint64 = 0;
+const VER_MINOR: uint64 = 1;
+const VER_PATCH: uint64 = 2;
+const VERSIONS: []uint64 = [VER_MAJOR, VER_MINOR, VER_PATCH];
 
 struct RawVersion {
     prerelease: string;
@@ -42,7 +42,7 @@ struct RawVersion {
     }
 
     #[inline]
-    func is_missing(&self, typ: u64) bool {
+    func is_missing(&self, typ: uint64) bool {
         return typ >= self.raw_ints.len - 1;
     }
 
@@ -72,9 +72,9 @@ struct RawVersion {
     #[inline]
     func to_version(&self) Version {
         return Version(
-            @as(u64, atoi(self.raw_ints[VER_MAJOR]) catch 0),
-            @as(u64, atoi(self.raw_ints[VER_MINOR]) catch 0),
-            @as(u64, atoi(self.raw_ints[VER_PATCH]) catch 0),
+            @as(uint64, atoi(self.raw_ints[VER_MAJOR]) catch 0),
+            @as(uint64, atoi(self.raw_ints[VER_MINOR]) catch 0),
+            @as(uint64, atoi(self.raw_ints[VER_PATCH]) catch 0),
             self.prerelease, self.metadata
         );
     }

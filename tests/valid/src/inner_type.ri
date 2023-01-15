@@ -1,6 +1,6 @@
 class OuterClass {
     class InnerClass {
-        abc: i32;
+        abc: int32;
     }
 
     inner: InnerClass;

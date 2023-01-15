@@ -8,7 +8,7 @@ test "operator `is` with traits" {
 }
 
 class Abc {
-    field: i32;
+    field: int32;
 }
 
 class Def : Abc { }

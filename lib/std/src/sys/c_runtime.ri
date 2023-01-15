@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public enum CRuntime as u8 {
+public enum CRuntime as uint8 {
     Glibc,
     Bionic,
     Musl,

@@ -11,9 +11,9 @@ import "../prefs";
 import "../utils";
 import "../report";
 
-const LF: u8 = 10;
-const CR: u8 = 13;
-const NUM_SEP: u8 = b'_';
+const LF: uint8 = 10;
+const CR: uint8 = 13;
+const NUM_SEP: uint8 = b'_';
 
 public class Tokenizer {
     table: ast.Table;
@@ -109,7 +109,7 @@ public class Tokenizer {
     }
 
     #[inline]
-    func current_char(self) u8 {
+    func current_char(self) uint8 {
         return self.text[self.pos];
     }
 
@@ -192,7 +192,7 @@ public class Tokenizer {
     }
 
     #[inline]
-    func look_ahead(self, n: usize) u8 {
+    func look_ahead(self, n: usize) uint8 {
         return if self.pos + n < self.text.len {
             self.text[self.pos + n]
         } else {

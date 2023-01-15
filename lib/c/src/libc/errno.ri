@@ -4,21 +4,21 @@
 
 #if _LINUX_
 extern (C) {
-    public func __errno_location() ?*mut i32;
+    public func __errno_location() ?*mut int32;
 }
 
-public const EDOM: i32 = 33;
-public const EILSEQ: i32 = 84;
-public const ERANGE: i32 = 34;
+public const EDOM: int32 = 33;
+public const EILSEQ: int32 = 84;
+public const ERANGE: int32 = 34;
 #endif
 
 #if _WINDOWS_
 extern (C) {
     #[dllimport]
-    public func _errno() *mut i32;
+    public func _errno() *mut int32;
 }
 
-public const EDOM: i32 = 33;
-public const EILSEQ: i32 = 42;
-public const ERANGE: i32 = 34;
+public const EDOM: int32 = 33;
+public const EILSEQ: int32 = 42;
+public const ERANGE: int32 = 34;
 #endif

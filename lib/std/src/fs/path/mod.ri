@@ -10,13 +10,13 @@ import "../../mem";
 import "../../strings";
 
 public alias MAX_PATH_LEN = libc.MAX_PATH_LEN;
-public const SEPARATOR: u8 = #if _WINDOWS_ b'\\' #else b'/' #endif;
+public const SEPARATOR: uint8 = #if _WINDOWS_ b'\\' #else b'/' #endif;
 public let SEPARATOR_STR: string = #if _WINDOWS_ "\\" #else "/" #endif;
 public let DELIMITER: string = #if _WINDOWS_ ";" #else ":" #endif;
 
 /// Returns `true` if the given byte is a valid path separator
 #[inline]
-public func is_separator(byte: u8) bool {
+public func is_separator(byte: uint8) bool {
 #if _WINDOWS_
     return byte == b'/' or byte == b'\\';
 #else
@@ -54,7 +54,7 @@ public func is_directory(path: string) bool {
     if unsafe { libc.stat(path.ptr, &mut statbuf) != 0 } {
         return false;
     }
-    return @as(i32, statbuf.mode) & libc.S_IFMT == libc.S_IFDIR;
+    return @as(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFDIR;
 }
 
 /// Returns `true` if `path` is a file.
@@ -75,7 +75,7 @@ public func is_link(path: string) bool {
     if unsafe { libc.lstat(path.ptr, &mut statbuf) != 0 } {
         return false;
     }
-    return @as(i32, statbuf.mode) & libc.S_IFMT == libc.S_IFLNK;
+    return @as(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFLNK;
 }
 
 /// Strip the last component from a file path.
@@ -165,10 +165,10 @@ public func resolve(paths: ...string) !string {
     }
     let mut result_index: usize = 0;
     let result = if have_abs {
-        @as([*]mut u8, mem.alloc(max_size).!)
+        @as([*]mut uint8, mem.alloc(max_size).!)
     } else {
         let cwd = runtime.process_get_cwd().!;
-        let tmp = @as([*]mut u8, mem.alloc(max_size + cwd.len + 1).!);
+        let tmp = @as([*]mut uint8, mem.alloc(max_size + cwd.len + 1).!);
         mem.copy(tmp, cwd.ptr, cwd.len);
         result_index += cwd.len;
         tmp
@@ -214,7 +214,7 @@ public func resolve(paths: ...string) !string {
     }
     return unsafe {
         string.from_raw_with_len(
-            @as(*u8, mem.resize(result, result_index).!), result_index
+            @as(*uint8, mem.resize(result, result_index).!), result_index
         )
     };
 }
@@ -240,7 +240,7 @@ public func relative(from_: string, to: string) !string {
             up_count += 1;
         }
         let up_index_end = up_count * 3;
-        let result = @as([*]mut u8, mem.alloc(up_index_end + to_rest.len).!);
+        let result = @as([*]mut uint8, mem.alloc(up_index_end + to_rest.len).!);
         errdefer unsafe {
             mem.dealloc(result);
         }
@@ -259,7 +259,7 @@ public func relative(from_: string, to: string) !string {
             // shave off the trailing slash
             return unsafe {
                 string.from_raw_with_len(
-                    @as(*u8, mem.resize(result, result_index - 1).!),
+                    @as(*uint8, mem.resize(result, result_index - 1).!),
                     result_index - 1
                 )
             };
@@ -312,7 +312,7 @@ public func join(paths: ...string) !string {
         }
         sum + 1 // + 1 = NLL character
     };
-    let buf = @as([*]mut u8, mem.alloc(total_len).!);
+    let buf = @as([*]mut uint8, mem.alloc(total_len).!);
     unsafe {
         errdefer mem.dealloc(buf);
         buf[total_len] = 0;

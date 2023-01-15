@@ -5,13 +5,13 @@
 public struct dirent {
     public d_ino: usize;
     public d_off: usize;
-    public d_reclen: u16;
-    public d_type: u8;
-    public d_name: [256]u8;
+    public d_reclen: uint16;
+    public d_type: uint8;
+    public d_name: [256]uint8;
 }
 
 extern (C) {
-	public func opendir(d: *u8) ?*dirent;
+	public func opendir(d: *uint8) ?*dirent;
 	public func readdir(d: *dirent) ?*dirent;
-	public func closedir(d: *dirent) i32;
+	public func closedir(d: *dirent) int32;
 }

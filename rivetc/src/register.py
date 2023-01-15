@@ -186,7 +186,7 @@ class Register:
                         else:
                             self.sym = self.sym.add_and_return(
                                 sym.Type(
-                                    sym.Vis.Priv, decl.typ.expr.name,
+                                    False, decl.typ.expr.name,
                                     TypeKind.Placeholder
                                 )
                             )

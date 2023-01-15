@@ -12,9 +12,9 @@ test "enums: enum literal" {
 }
 
 test "enums: ordinal value" {
-    @assert(@as(i32, SimpleEnum.Abc) == 0);
-    @assert(@as(i32, SimpleEnum.Def) == 1);
-    @assert(@as(i32, SimpleEnum.Ghi) == 2);
+    @assert(@as(int32, SimpleEnum.Abc) == 0);
+    @assert(@as(int32, SimpleEnum.Def) == 1);
+    @assert(@as(int32, SimpleEnum.Ghi) == 2);
 }
 
 enum OverridedValue {
@@ -24,9 +24,9 @@ enum OverridedValue {
 }
 
 test "enums: overrided ordinal value" {
-    @assert(@as(i32, OverridedValue.Abc) == 0);
-    @assert(@as(i32, OverridedValue.Def) == 10);
-    @assert(@as(i32, OverridedValue.Ghi) == 11);
+    @assert(@as(int32, OverridedValue.Abc) == 0);
+    @assert(@as(int32, OverridedValue.Def) == 10);
+    @assert(@as(int32, OverridedValue.Ghi) == 11);
 }
 
 test "enums: enum variant switch" {
@@ -38,7 +38,7 @@ test "enums: enum variant switch" {
 }
 
 enum AdvancedEnum {
-    Abc(i32),
+    Abc(int32),
     Def,
     Ghi(rune)
 }
@@ -46,7 +46,7 @@ enum AdvancedEnum {
 test "enums: advanced enum" {
     let mut e = AdvancedEnum.Abc(6);
     if e is .Abc {
-        @assert(@as(i32, e) == 6);
+        @assert(@as(int32, e) == 6);
     }
     switch e is {
         .Abc as e_abc => @assert(e_abc == 6),

@@ -5,11 +5,11 @@
 import "c/libc";
 
 public class ErrnoError : Error {
-    public code: i32;
+    public code: int32;
 }
 
 #[inline]
-public func errno() i32 {
+public func errno() int32 {
     return unsafe {
 #if _LINUX_
         libc.__errno_location().?.*
@@ -19,7 +19,7 @@ public func errno() i32 {
     };
 }
 
-public func errno_msg(code: i32 = errno()) string {
+public func errno_msg(code: int32 = errno()) string {
     unsafe {
         let s = libc.strerror(code);
         return if s is nil { "" } else { string.from_raw(s) };

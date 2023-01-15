@@ -1,4 +1,4 @@
-func default_arg(x: i32 = 1) {
+func default_arg(x: int32 = 1) {
     @assert(x == 1 or x == 5 or x == 10);
 }
 
@@ -25,7 +25,7 @@ test "call expression with named arguments" {
     qux(a);
 }
 
-func args(values: ...i32) i32 {
+func args(values: ...int32) int32 {
     let mut res = 0;
     for v in values {
         res += v;

@@ -1,15 +1,15 @@
 class A {
-    mut i: i32 = 10;
+    mut i: int32 = 10;
 }
 
 class B : A {
-    c: i32;
+    c: int32;
 
-    func set_i(mut self, i: i32) {
+    func set_i(mut self, i: int32) {
         self.i = i;
     }
 
-    func set_base_i(mut self, i: i32) {
+    func set_base_i(mut self, i: int32) {
         base.i = i;
     }
 }

@@ -3,9 +3,9 @@ extern (C) {
 }
 
 struct St {
-    f1: &i32; // FAIL
+    f1: &int32; // FAIL
 
-    f2: (i32, i32, i32, i32, i32, i32, i32, i32, i32);
+    f2: (int32, int32, int32, int32, int32, int32, int32, int32, int32);
 
     f3: void;
 

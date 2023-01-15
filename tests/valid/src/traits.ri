@@ -34,25 +34,25 @@ test "traits: calling overrided method" {
 }
 
 trait Reader {
-    func read(&self) u8;
+    func read(&self) uint8;
 }
 
 trait Writer {
-    func write(&self, b: u8) bool;
+    func write(&self, b: uint8) bool;
 }
 
 trait ReaderWriter : Reader, Writer {
-    func write_and_read(&self, b: u8) u8;
+    func write_and_read(&self, b: uint8) uint8;
 }
 
 struct SomeStream : ReaderWriter {
-    func read(&self) u8 {
+    func read(&self) uint8 {
         return b'A';
     }
 
-    func write(&self, b: u8) bool { return true; }
+    func write(&self, b: uint8) bool { return true; }
 
-    func write_and_read(&self, b: u8) u8 {
+    func write_and_read(&self, b: uint8) uint8 {
         _ = self.write(b);
         return self.read();
     }
@@ -62,11 +62,11 @@ func writer(w: Writer) bool {
     return w.write(b'A');
 }
 
-func reader(r: Reader) u8 {
+func reader(r: Reader) uint8 {
     return r.read();
 }
 
-func reader_writer(rw: ReaderWriter) u8 {
+func reader_writer(rw: ReaderWriter) uint8 {
     return rw.write_and_read(b'A');
 }
 

@@ -24,15 +24,15 @@ class Compiler:
         self.nil_t = type.Type(self.universe[2])
         self.bool_t = type.Type(self.universe[3])
         self.rune_t = type.Type(self.universe[4])
-        self.i8_t = type.Type(self.universe[5])
-        self.i16_t = type.Type(self.universe[6])
-        self.i32_t = type.Type(self.universe[7])
-        self.i64_t = type.Type(self.universe[8])
+        self.int8_t = type.Type(self.universe[5])
+        self.int16_t = type.Type(self.universe[6])
+        self.int32_t = type.Type(self.universe[7])
+        self.int64_t = type.Type(self.universe[8])
         self.isize_t = type.Type(self.universe[9])
-        self.u8_t = type.Type(self.universe[10])
-        self.u16_t = type.Type(self.universe[11])
-        self.u32_t = type.Type(self.universe[12])
-        self.u64_t = type.Type(self.universe[13])
+        self.uint8_t = type.Type(self.universe[10])
+        self.uint16_t = type.Type(self.universe[11])
+        self.uint32_t = type.Type(self.universe[12])
+        self.uint64_t = type.Type(self.universe[13])
         self.usize_t = type.Type(self.universe[14])
         self.comptime_int_t = type.Type(self.universe[15])
         self.comptime_float_t = type.Type(self.universe[16])
@@ -295,13 +295,13 @@ class Compiler:
 
     def is_signed_int(self, typ):
         return typ in (
-            self.i8_t, self.i16_t, self.i32_t, self.i64_t, self.isize_t,
+            self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.isize_t,
             self.comptime_int_t
         )
 
     def is_unsigned_int(self, typ):
         return typ in (
-            self.u8_t, self.u16_t, self.u32_t, self.u64_t, self.usize_t
+            self.uint8_t, self.uint16_t, self.uint32_t, self.uint64_t, self.usize_t
         )
 
     def is_float(self, typ):
@@ -312,7 +312,7 @@ class Compiler:
 
     def comptime_number_to_type(self, typ):
         if typ == self.comptime_int_t:
-            return self.i32_t
+            return self.int32_t
         elif typ == self.comptime_float_t:
             return self.f64_t
         return typ

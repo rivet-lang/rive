@@ -5,20 +5,20 @@
 // This module implements a FNV-1a hash.
 // See: https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function
 
-const FNV32_PRIME: u32 = 16777619;
-const FNV32_OFFSET_BASIS: u32 = 2166136261;
+const FNV32_PRIME: uint32 = 16777619;
+const FNV32_OFFSET_BASIS: uint32 = 2166136261;
 
-const FNV64_PRIME: u64 = 1099511628211;
-const FNV64_OFFSET_BASIS: u64 = 14695981039346656037;
+const FNV64_PRIME: uint64 = 1099511628211;
+const FNV64_OFFSET_BASIS: uint64 = 14695981039346656037;
 
 /// Returns a fnv1a hash of the memory block, described by the dynamic
 /// byte array `data`.
 #[inline]
-public func sum32(data: []u8) u32 {
+public func sum32(data: []uint8) uint32 {
     let mut hash = FNV32_OFFSET_BASIS;
     let mut i: usize = 0;
     while i < data.len : i += 1 {
-        hash = (hash ^ @as(u32, data[i])) * FNV32_PRIME;
+        hash = (hash ^ @as(uint32, data[i])) * FNV32_PRIME;
     }
     return hash;
 }
@@ -26,22 +26,22 @@ public func sum32(data: []u8) u32 {
 /// Returns a fnv1a hash of `data_len` bytes starting at
 /// the address in the given &byte pointer `data`.
 #[inline; unsafe]
-public func sum32_bytes(data: [*]u8, data_len: usize) u32 {
+public func sum32_bytes(data: [*]uint8, data_len: usize) uint32 {
     let mut hash = FNV32_OFFSET_BASIS;
     let mut i: usize = 0;
     while i < data_len : i += 1 {
-        hash = unsafe { (hash ^ @as(u32, data[i])) * FNV32_PRIME };
+        hash = unsafe { (hash ^ @as(uint32, data[i])) * FNV32_PRIME };
     }
     return hash;
 }
 
 /// Returns a fnv1a hash of the string, described by `data`
 #[inline]
-public func sum32_string(data: string) u32 {
+public func sum32_string(data: string) uint32 {
     let mut hash = FNV32_OFFSET_BASIS;
     let mut i: usize = 0;
     while i < data.len : i += 1 {
-        hash = (hash ^ @as(u32, data[i])) * FNV32_PRIME;
+        hash = (hash ^ @as(uint32, data[i])) * FNV32_PRIME;
     }
     return hash;
 }
@@ -49,11 +49,11 @@ public func sum32_string(data: string) u32 {
 /// Returns a fnv1a hash of the memory block, described by the dynamic
 /// byte array `data`.
 #[inline]
-public func sum64(data: []u8) u64 {
+public func sum64(data: []uint8) uint64 {
     let mut hash = FNV64_OFFSET_BASIS;
     let mut i: usize = 0;
     while i < data.len : i += 1 {
-        hash = (hash ^ @as(u64, data[i])) * FNV64_PRIME;
+        hash = (hash ^ @as(uint64, data[i])) * FNV64_PRIME;
     }
     return hash;
 }
@@ -61,22 +61,22 @@ public func sum64(data: []u8) u64 {
 /// Returns a fnv1a hash of `data_len` bytes starting at
 /// the address in the given &byte pointer `data`.
 #[inline; unsafe]
-public func sum64_bytes(data: [*]u8, data_len: usize) u64 {
+public func sum64_bytes(data: [*]uint8, data_len: usize) uint64 {
     let mut hash = FNV64_OFFSET_BASIS;
     let mut i: usize = 0;
     while i < data_len : i += 1 {
-        hash = unsafe { (hash ^ @as(u64, data[i])) * FNV64_PRIME };
+        hash = unsafe { (hash ^ @as(uint64, data[i])) * FNV64_PRIME };
     }
     return hash;
 }
 
 /// Returns a fnv1a hash of the string, described by `data`
 #[inline]
-public func sum64_string(data: string) u64 {
+public func sum64_string(data: string) uint64 {
     let mut hash = FNV64_OFFSET_BASIS;
     let mut i: usize = 0;
     while i < data.len : i += 1 {
-        hash = (hash ^ @as(u32, data[i])) * FNV64_PRIME;
+        hash = (hash ^ @as(uint32, data[i])) * FNV64_PRIME;
     }
     return hash;
 }

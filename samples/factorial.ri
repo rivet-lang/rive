@@ -1,6 +1,6 @@
 import "std/console";
 
-func factorial(n: u32) u32 {
+func factorial(n: uint32) uint32 {
 	if n <= 1 {
 		return 1;
 	}

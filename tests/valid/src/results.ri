@@ -6,11 +6,11 @@ func result2() ! {
     return Error("simple error (returned: {}, idx: {})".fmt(true, 0));
 }
 
-func result3() !i32 {
+func result3() !int32 {
     return 5;
 }
 
-let RESULT_VALUE: i32 = result3().!;
+let RESULT_VALUE: int32 = result3().!;
 
 test "propagate result in `let` declaration" {
     @assert(RESULT_VALUE == 5);

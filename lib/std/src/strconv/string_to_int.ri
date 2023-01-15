@@ -9,16 +9,16 @@ public alias InvalidBaseError = errors.InvalidBaseError;
 public alias InvalidBitSizeError = errors.InvalidBitSizeError;
 public alias ValueOutOfRangeError = errors.ValueOutOfRangeError;
 
-const INT_SIZE: u32 = #if _x64_ 64 #else 32 #endif;
+const INT_SIZE: uint32 = #if _x64_ 64 #else 32 #endif;
 
 #[inline]
-func lower(c: u8) u8 {
+func lower(c: uint8) uint8 {
     return c | (b'x' - b'X');
 }
 
 /// This is like `string_to_int` but for unsigned numbers.
 /// A sign prefix is not permitted.
-public func string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
+public func string_to_uint(s_: string, base__: int32, bit_size_: uint32) !uint64 {
     if s_ == "" {
         return InvalidSyntaxError("empty string");
     }
@@ -70,26 +70,26 @@ public func string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 
     // Cutoff is the smallest number such that `cutoff * base > MAX_U64`.
     // Use compile-time constants for common cases.
-    let cutoff: u64 = switch base_ {
-        10 => u64.MAX / 10 + 1,
-        16 => u64.MAX / 16 + 1,
-        else => u64.MAX / @as(u64, base_) + @as(u64, 1)
+    let cutoff: uint64 = switch base_ {
+        10 => uint64.MAX / 10 + 1,
+        16 => uint64.MAX / 16 + 1,
+        else => uint64.MAX / @as(uint64, base_) + @as(uint64, 1)
     };
 
-    let max_val: u64 = if bit_size == 64 {
-        u64.MAX
+    let max_val: uint64 = if bit_size == 64 {
+        uint64.MAX
     } else {
-        (@as(u64, 1) << @as(u64, bit_size)) - @as(u64, 1)
+        (@as(uint64, 1) << @as(uint64, bit_size)) - @as(uint64, 1)
     };
     let mut underscores = false;
-    let mut n: u64 = 0;
+    let mut n: uint64 = 0;
 
     let mut i: usize = start_index;
     while i < s.len : i += 1 {
         let c = s[i];
         let cl = lower(c);
 
-        let mut d: u8 = 0;
+        let mut d: uint8 = 0;
         switch {
             (c == b'_' and base0) => {
                 underscores = true;
@@ -100,7 +100,7 @@ public func string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
             else => return InvalidSyntaxError("invalid syntax")
         }
 
-        if d >= @as(u8, base_) {
+        if d >= @as(uint8, base_) {
             return InvalidSyntaxError("invalid syntax");
         }
 
@@ -108,9 +108,9 @@ public func string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
             // `n * base_` overflows
             return ValueOutOfRangeError("value out of range");
         }
-        n *= @as(u64, base_);
+        n *= @as(uint64, base_);
 
-        let n1 = n + @as(u64, d);
+        let n1 = n + @as(uint64, d);
         if n1 < n or n1 > max_val {
             // `n + d` overflows
             return ValueOutOfRangeError("value out of range");
@@ -137,9 +137,9 @@ public func string_to_uint(s_: string, base__: i32, bit_size_: u32) !u64 {
 /// integer literals.
 ///
 /// The `bit_size` argument specifies the integer type that the result must
-/// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to i8, i16, i32, and
-/// i64. If `bit_size` is below 0 or above 64, an error is returned.
-public func string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
+/// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to int8, int16, int32, and
+/// int64. If `bit_size` is below 0 or above 64, an error is returned.
+public func string_to_int(s: string, base_: int32, bit_size_: uint32) !int64 {
     if s == "" {
         return InvalidSyntaxError("invalid syntax");
     }
@@ -161,7 +161,7 @@ public func string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
         bit_size = INT_SIZE;
     }
 
-    let cutoff = @as(u64, 1) << bit_size - 1;
+    let cutoff = @as(uint64, 1) << bit_size - 1;
     if !neg and un >= cutoff {
         return ValueOutOfRangeError("value out of range");
     }
@@ -169,12 +169,12 @@ public func string_to_int(s: string, base_: i32, bit_size_: u32) !i64 {
         return ValueOutOfRangeError("value out of range");
     }
 
-    return if neg { -@as(i64, un) } else { @as(i64, un) };
+    return if neg { -@as(int64, un) } else { @as(int64, un) };
 }
 
-/// Equivalent to parse_int(s, 10, 0), converted to type i64.
+/// Equivalent to parse_int(s, 10, 0), converted to type int64.
 #[inline]
-public func atoi(s: string) !i64 {
+public func atoi(s: string) !int64 {
     return string_to_int(s, 10, 0).!;
 }
 

@@ -186,16 +186,16 @@ class Codegen:
             main_fn.alloca(test_runner)
             tests_field = ir.Selector(ir.VEC_T, test_runner, ir.Name("tests"))
             main_fn.store(
-                ir.Selector(ir.U64_T, test_runner, ir.Name("ok_tests")),
-                ir.IntLit(ir.U64_T, "0")
+                ir.Selector(ir.UINT64_T, test_runner, ir.Name("ok_tests")),
+                ir.IntLit(ir.UINT64_T, "0")
             )
             main_fn.store(
-                ir.Selector(ir.U64_T, test_runner, ir.Name("fail_tests")),
-                ir.IntLit(ir.U64_T, "0")
+                ir.Selector(ir.UINT64_T, test_runner, ir.Name("fail_tests")),
+                ir.IntLit(ir.UINT64_T, "0")
             )
             main_fn.store(
-                ir.Selector(ir.U64_T, test_runner, ir.Name("skip_tests")),
-                ir.IntLit(ir.U64_T, "0")
+                ir.Selector(ir.UINT64_T, test_runner, ir.Name("skip_tests")),
+                ir.IntLit(ir.UINT64_T, "0")
             )
             tests_vec = ir.Selector(
                 ir.VEC_T.ptr(True), test_runner, ir.Name("tests")
@@ -206,8 +206,8 @@ class Codegen:
                 test_value = ir.Ident(ir.TEST_T, f"test_value_{i}")
                 main_fn.alloca(test_value)
                 main_fn.store(
-                    ir.Selector(ir.U8_T, test_value, ir.Name("result")),
-                    ir.IntLit(ir.U8_T, "0")
+                    ir.Selector(ir.UINT8_T, test_value, ir.Name("result")),
+                    ir.IntLit(ir.UINT8_T, "0")
                 )
                 main_fn.store(
                     ir.Selector(ir.STRING_T, test_value, ir.Name("err_pos")),
@@ -249,7 +249,7 @@ class Codegen:
             main_fn.add_call(
                 "_R7runtime4mainF", [
                     argc,
-                    ir.Inst(ir.InstKind.Cast, [argv, ir.U8_T.ptr().ptr()]),
+                    ir.Inst(ir.InstKind.Cast, [argv, ir.UINT8_T.ptr().ptr()]),
                     ir.Inst(ir.InstKind.GetRef, [test_runner])
                 ]
             )
@@ -257,7 +257,7 @@ class Codegen:
             main_fn.add_call(
                 "_R7runtime4mainF", [
                     argc,
-                    ir.Inst(ir.InstKind.Cast, [argv, ir.U8_T.ptr().ptr()]),
+                    ir.Inst(ir.InstKind.Cast, [argv, ir.UINT8_T.ptr().ptr()]),
                     ir.Name(
                         f"_R{len(self.comp.prefs.mod_name)}{self.comp.prefs.mod_name}4mainF"
                     )
@@ -735,7 +735,7 @@ class Codegen:
         elif isinstance(expr, ast.CharLiteral):
             if expr.is_byte:
                 return ir.IntLit(
-                    ir.U8_T,
+                    ir.UINT8_T,
                     str(utils.bytestr(self.decode_escape(expr.lit)).buf[0])
                 )
             return ir.RuneLit(ir.RUNE_T, expr.lit)
@@ -754,7 +754,7 @@ class Codegen:
             if expr.is_bytestr:
                 return ir.ArrayLit(
                     self.ir_type(expr.typ), [
-                        ir.IntLit(ir.U8_T, str(b))
+                        ir.IntLit(ir.UINT8_T, str(b))
                         for b in list(utils.bytestr(escaped_val).buf)
                     ]
                 )
@@ -2159,9 +2159,9 @@ class Codegen:
             if self.inside_test:
                 self.cur_fn.store(
                     ir.Selector(
-                        ir.U8_T, ir.Ident(ir.TEST_T.ptr(), "test"),
+                        ir.UINT8_T, ir.Ident(ir.TEST_T.ptr(), "test"),
                         ir.Name("result")
-                    ), ir.IntLit(ir.U8_T, "1")
+                    ), ir.IntLit(ir.UINT8_T, "1")
                 )
                 self.gen_defer_stmts()
                 self.cur_fn.add_ret_void()
@@ -2379,9 +2379,9 @@ class Codegen:
         if typ == self.comp.rune_t:
             return ir.RuneLit("\\0")
         elif typ in (
-            self.comp.bool_t, self.comp.i8_t, self.comp.i16_t, self.comp.i32_t,
-            self.comp.i64_t, self.comp.u8_t, self.comp.u16_t, self.comp.u32_t,
-            self.comp.u64_t, self.comp.isize_t, self.comp.usize_t
+            self.comp.bool_t, self.comp.int8_t, self.comp.int16_t, self.comp.int32_t,
+            self.comp.int64_t, self.comp.uint8_t, self.comp.uint16_t, self.comp.uint32_t,
+            self.comp.uint64_t, self.comp.isize_t, self.comp.usize_t
         ):
             return ir.IntLit(self.ir_type(typ), "0")
         elif typ in (self.comp.f32_t, self.comp.f64_t):
@@ -2471,7 +2471,7 @@ class Codegen:
             ir.GlobalVar(False, False, ir.STRING_T.ptr(True), tmp.name)
         )
         self.init_string_lits_fn.store(
-            ir.Selector(ir.U8_T.ptr(), tmp, ir.Name("ptr")),
+            ir.Selector(ir.UINT8_T.ptr(), tmp, ir.Name("ptr")),
             ir.StringLit(lit, size)
         )
         self.init_string_lits_fn.store(
@@ -2645,7 +2645,7 @@ class Codegen:
                         False, name, [
                             ir.Field(
                                 "value",
-                                ir.U8_T if is_void else self.ir_type(typ.typ)
+                                ir.UINT8_T if is_void else self.ir_type(typ.typ)
                             ),
                             ir.Field("is_err", ir.BOOL_T),
                             ir.Field("err", self.ir_type(self.comp.error_t))
@@ -2665,7 +2665,7 @@ class Codegen:
                         False, name, [
                             ir.Field(
                                 "value",
-                                ir.U8_T if is_void else self.ir_type(typ.typ)
+                                ir.UINT8_T if is_void else self.ir_type(typ.typ)
                             ),
                             ir.Field("is_nil", ir.BOOL_T)
                         ]

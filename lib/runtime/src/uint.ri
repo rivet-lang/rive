@@ -2,8 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-extend u8 : ToString {
-    public const MAX: u8 = 255;
+extend uint8 : ToString {
+    public const MAX: uint8 = 255;
 
     /// Returns `true` if the byte is a white space character. The following
     /// list is considered white space characters: ' ', '\t', '\n', '\v', '\f',
@@ -67,7 +67,7 @@ extend u8 : ToString {
     /// Calculates length to read from the first byte.
     #[inline]
     public func len_utf8(self) usize {
-        return @as(usize, (@as(u64, 0xE5000000) >> ((self >> 3) & 0x1E) & 3) + 1);
+        return @as(usize, (@as(uint64, 0xE5000000) >> ((self >> 3) & 0x1E) & 3) + 1);
     }
 
     /// Returns the value of `self` as a ASCII `string`.
@@ -79,22 +79,22 @@ extend u8 : ToString {
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) string {
-        return @as(i32, self.*).str_l(7);
+        return @as(int32, self.*).str_l(7);
     }
 }
 
-extend u16 : ToString {
-    public const MAX: u16 = 65535;
+extend uint16 : ToString {
+    public const MAX: uint16 = 65535;
 
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) string {
-        return @as(i32, self.*).str_l(7);
+        return @as(int32, self.*).str_l(7);
     }
 }
 
-extend u32 : ToString {
-    public const MAX: u32 = 4294967295;
+extend uint32 : ToString {
+    public const MAX: uint32 = 4294967295;
 
     /// Returns the value of `self` as a string.
     public func to_string(&self) string {
@@ -104,16 +104,16 @@ extend u32 : ToString {
             }
             let max: usize = 12;
             let mut n = self.*;
-            let mut d: u32 = 0;
+            let mut d: uint32 = 0;
 
             let mut index = max;
-            let buf = @as([*]mut u8, internal_alloc(max + 1));
+            let buf = @as([*]mut uint8, internal_alloc(max + 1));
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
                 let n1 = n / 100;
-                d = (n - (n1 * 100)) << @as(u32, 1);
+                d = (n - (n1 * 100)) << @as(uint32, 1);
                 n = n1;
                 buf[index] = DIGIT_PAIRS.ptr[d];
                 index -= 1;
@@ -135,8 +135,8 @@ extend u32 : ToString {
     }
 }
 
-extend u64 : ToString {
-    public const MAX: u64 = 18446744073709551615;
+extend uint64 : ToString {
+    public const MAX: uint64 = 18446744073709551615;
 
     /// Returns the value of `self` as a string.
     public func to_string(&self) string {
@@ -145,17 +145,17 @@ extend u64 : ToString {
                 return "0";
             }
             let mut n = self.*;
-            let mut d: u64 = 0;
+            let mut d: uint64 = 0;
 
             let max = 20;
             let mut index = @as(usize, max);
-            let buf = @as([*]mut u8, internal_alloc(@as(usize, max + 1)));
+            let buf = @as([*]mut uint8, internal_alloc(@as(usize, max + 1)));
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
                 let n1 = n / 100;
-                d = (n - (n1 * 100)) << @as(u32, 1);
+                d = (n - (n1 * 100)) << @as(uint32, 1);
                 n = n1;
                 buf[index] = DIGIT_PAIRS.ptr[d];
                 index -= 1;
@@ -178,11 +178,11 @@ extend u64 : ToString {
 }
 
 extend usize : ToString {
-    public const MAX: usize = #if _x64_ u64.MAX #else u32.MAX #endif;
+    public const MAX: usize = #if _x64_ uint64.MAX #else uint32.MAX #endif;
 
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) string {
-        return @as(u64, self.*).to_string();
+        return @as(uint64, self.*).to_string();
     }
 }

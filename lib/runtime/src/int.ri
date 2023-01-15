@@ -10,43 +10,43 @@ extend comptime_int : ToString {
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) string {
-        return @as(i64, self.*).to_string();
+        return @as(int64, self.*).to_string();
     }
 }
 
-extend i8 : ToString {
-    public const MAX: i8 = 127;
-    public const MIN: i8 = -128;
+extend int8 : ToString {
+    public const MAX: int8 = 127;
+    public const MIN: int8 = -128;
 
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) string {
-        return @as(i32, self.*).str_l(5);
+        return @as(int32, self.*).str_l(5);
     }
 }
 
-extend i16 : ToString {
-    public const MAX: i16 = 32767;
-    public const MIN: i16 = -32768;
+extend int16 : ToString {
+    public const MAX: int16 = 32767;
+    public const MIN: int16 = -32768;
 
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) string {
-        return @as(i32, self.*).str_l(7);
+        return @as(int32, self.*).str_l(7);
     }
 }
 
-extend i32 : ToString {
-    public const MAX: i32 = 2147483647;
-    public const MIN: i32 = -2147483648;
+extend int32 : ToString {
+    public const MAX: int32 = 2147483647;
+    public const MIN: int32 = -2147483648;
 
     /// Returns the string representation of `self` with `max` chars.
-    public func str_l(self, max: i32) string {
+    public func str_l(self, max: int32) string {
         if self == 0 {
             return "0";
         }
-        let mut n = @as(i64, self);
-        let mut d: u32 = 0;
+        let mut n = @as(int64, self);
+        let mut d: uint32 = 0;
         let mut is_neg = false;
         if n < 0 {
             n = -n;
@@ -54,13 +54,13 @@ extend i32 : ToString {
         }
         unsafe {
             let mut index = @as(usize, max);
-            let buf = @as([*]mut u8, internal_alloc(@as(usize, max + 1)));
+            let buf = @as([*]mut uint8, internal_alloc(@as(usize, max + 1)));
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
-                let n1 = @as(i32, n / 100);
-                d = @as(u32, @as(i32, n) - (n1 * 100)) << 1;
+                let n1 = @as(int32, n / 100);
+                d = @as(uint32, @as(int32, n) - (n1 * 100)) << 1;
                 n = n1;
                 buf[index] = DIGIT_PAIRS.ptr[d];
                 index -= 1;
@@ -94,9 +94,9 @@ extend i32 : ToString {
     }
 }
 
-extend i64 : ToString {
-    public const MAX: i64 = 9223372036854775807;
-    public const MIN: i64 = -9223372036854775808;
+extend int64 : ToString {
+    public const MAX: int64 = 9223372036854775807;
+    public const MIN: int64 = -9223372036854775808;
 
     /// Returns the value of `self` as a string.
     public func to_string(&self) string {
@@ -104,7 +104,7 @@ extend i64 : ToString {
             return "0";
         }
         let mut n = self.*;
-        let mut d: i64 = 0;
+        let mut d: int64 = 0;
 
         let mut is_neg = false;
         if n < 0 {
@@ -113,14 +113,14 @@ extend i64 : ToString {
         }
         unsafe {
             let max = 20;
-            let buf = @as([*]mut u8, internal_alloc(@as(usize, max + 1)));
+            let buf = @as([*]mut uint8, internal_alloc(@as(usize, max + 1)));
             let mut index = @as(usize, max);
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
                 let n1 = n / 100;
-                d = @as(i64, @as(u32, n - (n1 * 100))) << @as(i64, 1);
+                d = @as(int64, @as(uint32, n - (n1 * 100))) << @as(int64, 1);
                 n = n1;
                 buf[index] = DIGIT_PAIRS.ptr[@as(usize, d)];
                 index -= 1;
@@ -149,12 +149,12 @@ extend i64 : ToString {
 }
 
 extend isize : ToString {
-    public const MIN: isize = #if _x64_ i64.MIN #else i32.MIN #endif;
-    public const MAX: isize = #if _x64_ i64.MAX #else i32.MAX #endif;
+    public const MIN: isize = #if _x64_ int64.MIN #else int32.MIN #endif;
+    public const MAX: isize = #if _x64_ int64.MAX #else int32.MAX #endif;
 
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) string {
-        return @as(i64, self.*).to_string();
+        return @as(int64, self.*).to_string();
     }
 }

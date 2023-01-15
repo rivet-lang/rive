@@ -20,27 +20,27 @@ public func fmt(msg: string, open: string, close: string) string {
 }
 
 #[inline]
-public func fmt_rgb(r: i32, g: i32, b: i32, msg: string, open: string, close: string) string {
+public func fmt_rgb(r: int32, g: int32, b: int32, msg: string, open: string, close: string) string {
     return "\x1b[{};2;{};{};{}m{}\x1b[{}m".fmt(open, r, g, b, msg, close);
 }
 
 #[inline]
-public func from_hex(hex: i32, msg: string) string {
+public func from_hex(hex: int32, msg: string) string {
     return fmt_rgb(hex >> 16, hex >> 8 & 0xFF, hex & 0xFF, msg, "38", "39");
 }
 
 #[inline]
-public func bg_rgb(r: i32, g: i32, b: i32, msg: string) string {
+public func bg_rgb(r: int32, g: int32, b: int32, msg: string) string {
     return fmt_rgb(r, g, b, msg, "48", "49");
 }
 
 #[inline]
-public func bg_hex(hex: i32, msg: string) string {
+public func bg_hex(hex: int32, msg: string) string {
     return fmt_rgb(hex >> 16, hex >> 8 & 0xFF, hex & 0xFF, msg, "48", "49");
 }
 
 #[inline]
-public func rgb(r: i32, g: i32, b: i32, msg: string) string {
+public func rgb(r: int32, g: int32, b: int32, msg: string) string {
     return fmt_rgb(r, g, b, msg, "38", "39");
 }
 

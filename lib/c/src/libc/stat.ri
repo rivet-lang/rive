@@ -11,14 +11,14 @@ public struct Stat {
     public ino: ino_t;
     public nlink: usize;
 
-    public mode: u32;
+    public mode: uint32;
     public uid: uid_t;
     public gid: gid_t;
-    __pad0: u32;
+    __pad0: uint32;
     public rdev: dev_t;
     public size: off_t;
     public blksize: isize;
-    public blocks: i64;
+    public blocks: int64;
 
     public atim: timespec;
     public mtim: timespec;
@@ -28,8 +28,8 @@ public struct Stat {
 #endif
 
 extern (C) {
-    public func stat(__file: *u8, __buf: *mut Stat) i32;
-    public func lstat(file: *u8, buf: *mut Stat) i32;
+    public func stat(__file: *uint8, __buf: *mut Stat) int32;
+    public func lstat(file: *uint8, buf: *mut Stat) int32;
 
-    public func mkdir(path: *u8, mode: usize) i32;
+    public func mkdir(path: *uint8, mode: usize) int32;
 }

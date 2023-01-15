@@ -21,7 +21,7 @@ public let WD_AT_STARTUP: string = get_cwd() catch ".";
 
 struct Result {
 	public output: string;
-	public exit_code: i32;
+	public exit_code: int32;
 }
 
 /// Starts the specified command, waits for it to complete, and returns
@@ -31,8 +31,8 @@ public func execute(cmd: string) Result {
     unsafe {
         if let f = libc.popen(pcmd.ptr, c"r") {
             let fd = libc.fileno(f);
-            let mut buf: [4096]mut u8 = []!;
-            let pbuf: *mut u8 = &mut buf[0];
+            let mut buf: [4096]mut uint8 = []!;
+            let pbuf: *mut uint8 = &mut buf[0];
             let mut output = Builder.new(1024);
             while {
                 let len = libc.read(fd, pbuf, 4096);

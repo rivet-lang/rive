@@ -8,11 +8,11 @@ func main() {
     }
 }
 
-func other(a: i32) {
+func other(a: int32) {
     let a = 1;
 }
 
-func other(a: i32) { // FAIL
+func other(a: int32) { // FAIL
     let a = 1;
 }
 

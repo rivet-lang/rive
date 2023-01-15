@@ -1,9 +1,9 @@
 struct D {
-    m: u8 = 155;
+    m: uint8 = 155;
 }
 
 struct E : D {
-    m1: i32;
+    m1: int32;
 }
 
 test "embedded structs: using embedded fields" {

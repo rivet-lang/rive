@@ -369,7 +369,7 @@ class CGen:
             if expr.value() == MIN_INT64:
                 # NOTE: `-9223372036854775808` is wrong because C compilers
                 # parse literal values without sign first, and `9223372036854775808`
-                # overflows `i64`, hence the consecutive subtraction by `1`.
+                # overflows `int64`, hence the consecutive subtraction by `1`.
                 self.write("(-9223372036854775807L - 1)")
             else:
                 self.write(expr.lit)
@@ -385,7 +385,7 @@ class CGen:
         elif isinstance(expr, ir.RuneLit):
             self.write(f"L'{expr.lit}'")
         elif isinstance(expr, ir.StringLit):
-            self.write(f'(u8*)"{expr.lit}"')
+            self.write(f'(uint8*)"{expr.lit}"')
         elif isinstance(expr, ir.ArrayLit):
             self.write("(")
             self.write_type(expr.typ)

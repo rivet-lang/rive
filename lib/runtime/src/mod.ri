@@ -6,7 +6,7 @@ import "c/libc";
 
 let mut runtime_started: bool = false;
 
-func segfault_handler(_: i32) {
+func segfault_handler(_: int32) {
     console_eprintln(
         if runtime_started {
             "panic: segmentation fault detected"

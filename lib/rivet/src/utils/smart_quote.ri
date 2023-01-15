@@ -4,11 +4,11 @@
 
 import { Builder } from "std/strings";
 
-const INVALID_ESCAPES: []u8 = r"({`.".as_bytes();
-const BACKSLASH: u8 = 92;
-const BACKSLASH_R: u8 = 13;
-const BACKSLASH_N: u8 = 10;
-const DOUBLE_QUOTE: u8 = 34;
+const INVALID_ESCAPES: []uint8 = r"({`.".as_bytes();
+const BACKSLASH: uint8 = 92;
+const BACKSLASH_R: uint8 = 13;
+const BACKSLASH_N: uint8 = 10;
+const DOUBLE_QUOTE: uint8 = 34;
 const DOUBLE_ESCAPE: string = "\\\\";
 
 public func smart_quote(s: string, raw: bool = false) string {
@@ -36,9 +36,9 @@ public func smart_quote(s: string, raw: bool = false) string {
     }
     // ensure there is enough space for the potential expansion of several b'\\' or b'\n'
     let mut result = Builder.new(s.len + 10);
-    let mut pos: i64 = -1;
-    let mut current: u8 = 0;
-    let mut next: u8 = 0;
+    let mut pos: int64 = -1;
+    let mut current: uint8 = 0;
+    let mut next: uint8 = 0;
     let mut skip_next = false;
     while {
         pos += 1;
@@ -46,7 +46,7 @@ public func smart_quote(s: string, raw: bool = false) string {
             skip_next = false;
             pos += 1;
         }
-        if pos >= @as(i64, s.len) {
+        if pos >= @as(int64, s.len) {
             break;
         }
         let pos_1 = @as(usize, pos);

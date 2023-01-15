@@ -7,12 +7,12 @@ import "c/libc";
 let empty_string: string = string(c"", 0, true);
 
 public class string : ToString, Hasher {
-    public ptr: [*]u8;
+    public ptr: [*]uint8;
     public len: usize;
     is_ref: bool;
 
     #[unsafe]
-    public func from_raw(ptr: ?[*]u8, is_ref: bool = false) Self {
+    public func from_raw(ptr: ?[*]uint8, is_ref: bool = false) Self {
         if let safe_ptr = ptr {
             return unsafe {
                 Self.from_raw_with_len(safe_ptr, libc.strlen(ptr), is_ref)
@@ -22,7 +22,7 @@ public class string : ToString, Hasher {
     }
 
     #[unsafe]
-    public func from_raw_with_len(ptr: ?[*]u8, len: usize, is_ref: bool = false) Self {
+    public func from_raw_with_len(ptr: ?[*]uint8, len: usize, is_ref: bool = false) Self {
         if len == 0 {
             return empty_string;
         }
@@ -32,8 +32,8 @@ public class string : ToString, Hasher {
         return empty_string;
     }
 
-    public func from_byte(byte: u8) Self {
-        let res = @as([*]mut u8, internal_alloc(2));
+    public func from_byte(byte: uint8) Self {
+        let res = @as([*]mut uint8, internal_alloc(2));
         unsafe {
             res[0] = byte;
             res[1] = 0;
@@ -43,11 +43,11 @@ public class string : ToString, Hasher {
 
     /// Returns a string with the bytes stored in `bytes`. If the length of
     /// `bytes` is 0, an empty string is returned instead.
-    public func from_bytes(bytes: []u8) Self {
+    public func from_bytes(bytes: []uint8) Self {
         if bytes.len == 0 {
             return empty_string;
         }
-        let res = @as([*]mut u8, internal_alloc(bytes.len + 1));
+        let res = @as([*]mut uint8, internal_alloc(bytes.len + 1));
         unsafe {
             mem_copy(res, &bytes[0], bytes.len);
             res[bytes.len] = 0;
@@ -55,7 +55,7 @@ public class string : ToString, Hasher {
         return Self(res, bytes.len);
     }
 
-    func at(self, idx: usize) u8 {
+    func at(self, idx: usize) uint8 {
         if idx >= self.len {
             process_panic("string index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -69,7 +69,7 @@ public class string : ToString, Hasher {
             return self;
         }
         let len = self.len * count;
-        let res = @as([*]mut u8, internal_alloc(len));
+        let res = @as([*]mut uint8, internal_alloc(len));
         unsafe {
             let mut i: usize = 0;
             while i < count : i += 1 {
@@ -152,7 +152,7 @@ public class string : ToString, Hasher {
     }
 
     /// Returns the index of byte `b` if found in the string.
-    public func index_of_byte(self, b: u8) ?usize {
+    public func index_of_byte(self, b: uint8) ?usize {
         let mut i: usize = 0;
         while i < self.len : i += 1 {
             if unsafe { self.ptr[i] == b } {
@@ -216,7 +216,7 @@ public class string : ToString, Hasher {
     }
 
     /// Linear search for the last index of `byte` inside a string.
-    public func last_index_of_byte(self, byte: u8) ?usize {
+    public func last_index_of_byte(self, byte: uint8) ?usize {
         let mut i: usize = self.len;
         while i != 0 {
             i -= 1;
@@ -353,7 +353,7 @@ public class string : ToString, Hasher {
             return self;
         }
         let new_len = self.len + idxs.len * (with_.len - rep.len);
-        let mut b = @as([*]mut u8, internal_alloc(new_len));
+        let mut b = @as([*]mut uint8, internal_alloc(new_len));
         let (mut b_i: usize, mut s_idx: usize) = (0, 0);
         unsafe {
             for rep_pos in idxs {
@@ -382,9 +382,9 @@ public class string : ToString, Hasher {
     }
 
     #[inline]
-    public func as_bytes(self) []u8 {
+    public func as_bytes(self) []uint8 {
         return unsafe {
-            Vec.from_array_no_alloc(@as(*mut u8, self.ptr), @size_of(u8), self.len)
+            Vec.from_array_no_alloc(@as(*mut uint8, self.ptr), @size_of(uint8), self.len)
         };
     }
 
@@ -510,7 +510,7 @@ public class string : ToString, Hasher {
     /// If `delimiter_bytes` does not exist in self, the iterator will return `self`,
     /// nil, in that order.
     #[inline]
-    public func tokenize(self, delimiter_bytes: ...u8) TokenIterator {
+    public func tokenize(self, delimiter_bytes: ...uint8) TokenIterator {
         return TokenIterator(self, delimiter_bytes);
     }
 
@@ -641,7 +641,7 @@ public class string : ToString, Hasher {
         if self.len == 0 {
             return empty_string;
         }
-        let res = @as([*]mut u8, internal_alloc(self.len + 1));
+        let res = @as([*]mut uint8, internal_alloc(self.len + 1));
         unsafe {
             mem_copy(res, self.ptr, self.len);
             res[self.len] = 0;
@@ -670,7 +670,7 @@ public class string : ToString, Hasher {
 
 public struct TokenIterator {
     buffer: string;
-    delimiter_bytes: []u8;
+    delimiter_bytes: []uint8;
     mut index: usize;
 
     /// Returns a slice of the current token, or nil if tokenization is
@@ -712,7 +712,7 @@ public struct TokenIterator {
         self.index = 0;
     }
 
-    func is_split_byte(&self, byte: u8) bool {
+    func is_split_byte(&self, byte: uint8) bool {
         for delimiter_byte in self.delimiter_bytes {
             if byte == delimiter_byte {
                 return true;
@@ -809,7 +809,7 @@ public struct StringFormatter {
                                 );
                             }
                         }
-                        let index = buf.as_u64();
+                        let index = buf.as_uint64();
                         if index >= args.len {
                             process_panic(
                                 "string.fmt(): argument index out of range (index: {}, len: {})",

@@ -14,7 +14,7 @@ func new_sym_id() usize {
     return res;
 }
 
-public enum ABI as u8 {
+public enum ABI as uint8 {
     Rivet,
     C;
 
@@ -31,7 +31,7 @@ public enum ABI as u8 {
 public class Sym {
     public id: usize = new_sym_id();
     public abi: ABI;
-    public mut is_publiclic: bool;
+    public mut is_public: bool;
     public parent: ?Sym;
     public name: string;
     public mut scope: Scope;
@@ -54,7 +54,7 @@ public class Const : Sym {
     public typ: Type;
 }
 
-public enum VarLevel as u8 {
+public enum VarLevel as uint8 {
     Mod, // module-level
     Rec, // receiver: `self`
     Arg, // argument-level
@@ -73,7 +73,7 @@ public class Var : Sym {
 }
 
 public class Field {
-    public is_publiclic: bool;
+    public is_public: bool;
     public name: string;
     public is_mut: bool;
     public def_expr: ?Expr;
@@ -126,15 +126,15 @@ public enum TypeKind : traits.ToString {
             .Nil => "nil",
             .Bool => "bool",
             .Rune => "rune",
-            .Int8 => "i8",
-            .Int16 => "i16",
-            .Int32 => "i32",
-            .Int64 => "i64",
+            .Int8 => "int8",
+            .Int16 => "int16",
+            .Int32 => "int32",
+            .Int64 => "int64",
             .Isize => "isize",
-            .Uint8 => "u8",
-            .Uint16 => "u16",
-            .Uint32 => "u32",
-            .Uint64 => "u64",
+            .Uint8 => "uint8",
+            .Uint16 => "uint16",
+            .Uint32 => "uint32",
+            .Uint64 => "uint64",
             .Usize => "usize",
             .ComptimeInt => "comptime_int",
             .ComptimeFloat => "comptime_float",
@@ -352,7 +352,7 @@ public class TypeSym : Sym {
     public func update(mut self, other: TypeSym) ! {
         if self.kind is .Placeholder {
             // update placeholder
-            self.is_publiclic = other.is_publiclic;
+            self.is_public = other.is_public;
             self.kind = other.kind;
             self.fields = other.fields;
             for s in other.scope.syms {
@@ -494,31 +494,31 @@ public class Scope {
 
 public func universe() Mod {
     return Mod(
-        is_publiclic: false,
+        is_public: false,
         name: "universe",
         scope: Scope(
             syms: [
-                TypeSym(is_publiclic: true, name: "void", kind: .Void),
-                TypeSym(is_publiclic: true, name: "never", kind: .Never),
-                TypeSym(is_publiclic: true, name: "nil", kind: .Nil),
-                TypeSym(is_publiclic: true, name: "bool", kind: .Bool),
-                TypeSym(is_publiclic: true, name: "rune", kind: .Rune),
-                TypeSym(is_publiclic: true, name: "i8", kind: .Int8),
-                TypeSym(is_publiclic: true, name: "i16", kind: .Int16),
-                TypeSym(is_publiclic: true, name: "i32", kind: .Int32),
-                TypeSym(is_publiclic: true, name: "i64", kind: .Int64),
-                TypeSym(is_publiclic: true, name: "isize", kind: .Isize),
-                TypeSym(is_publiclic: true, name: "u8", kind: .Uint8),
-                TypeSym(is_publiclic: true, name: "u16", kind: .Uint16),
-                TypeSym(is_publiclic: true, name: "u32", kind: .Uint32),
-                TypeSym(is_publiclic: true, name: "u64", kind: .Uint64),
-                TypeSym(is_publiclic: true, name: "usize", kind: .Usize),
-                TypeSym(is_publiclic: true, name: "comptime_int", kind: .ComptimeInt),
-                TypeSym(is_publiclic: true, name: "comptime_float", kind: .ComptimeFloat),
-                TypeSym(is_publiclic: true, name: "f32", kind: .Float32),
-                TypeSym(is_publiclic: true, name: "f64", kind: .Float64),
-                TypeSym(is_publiclic: true, name: "string", kind: .String),
-                TypeSym(is_publiclic: true, name: "Error", kind: .Class, info: ClassInfo())
+                TypeSym(is_public: true, name: "void", kind: .Void),
+                TypeSym(is_public: true, name: "never", kind: .Never),
+                TypeSym(is_public: true, name: "nil", kind: .Nil),
+                TypeSym(is_public: true, name: "bool", kind: .Bool),
+                TypeSym(is_public: true, name: "rune", kind: .Rune),
+                TypeSym(is_public: true, name: "int8", kind: .Int8),
+                TypeSym(is_public: true, name: "int16", kind: .Int16),
+                TypeSym(is_public: true, name: "int32", kind: .Int32),
+                TypeSym(is_public: true, name: "int64", kind: .Int64),
+                TypeSym(is_public: true, name: "isize", kind: .Isize),
+                TypeSym(is_public: true, name: "uint8", kind: .Uint8),
+                TypeSym(is_public: true, name: "uint16", kind: .Uint16),
+                TypeSym(is_public: true, name: "uint32", kind: .Uint32),
+                TypeSym(is_public: true, name: "uint64", kind: .Uint64),
+                TypeSym(is_public: true, name: "usize", kind: .Usize),
+                TypeSym(is_public: true, name: "comptime_int", kind: .ComptimeInt),
+                TypeSym(is_public: true, name: "comptime_float", kind: .ComptimeFloat),
+                TypeSym(is_public: true, name: "f32", kind: .Float32),
+                TypeSym(is_public: true, name: "f64", kind: .Float64),
+                TypeSym(is_public: true, name: "string", kind: .String),
+                TypeSym(is_public: true, name: "Error", kind: .Class, info: ClassInfo())
             ]
         )
     );

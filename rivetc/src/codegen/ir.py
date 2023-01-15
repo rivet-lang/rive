@@ -81,8 +81,8 @@ BOOL_T = Type("bool")
 RUNE_T = Type("rune")
 INT_T = Type("int")
 CHAR_T = Type("char")
-U8_T = Type("u8")
-U64_T = Type("u64")
+UINT8_T = Type("uint8")
+UINT64_T = Type("uint64")
 F64_T = Type("f64")
 ISIZE_T = Type("isize")
 USIZE_T = Type("usize")
@@ -434,10 +434,10 @@ class StringLit:
     def __init__(self, lit, len_):
         self.lit = lit
         self.len = len_
-        self.typ = Type("u8").ptr()
+        self.typ = Type("uint8").ptr()
 
     def __repr__(self):
-        return f'u8* "{self.lit}"'
+        return f'uint8* "{self.lit}"'
 
     def __str__(self):
         return self.__repr__()

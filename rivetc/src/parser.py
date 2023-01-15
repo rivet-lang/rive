@@ -363,7 +363,7 @@ class Parser:
         elif self.accept(Kind.KwEnum):
             pos = self.tok.pos
             name = self.parse_name()
-            underlying_typ = self.comp.i32_t
+            underlying_typ = self.comp.int32_t
             if self.accept(Kind.KwAs):
                 underlying_typ = self.parse_type()
             bases = []
@@ -1334,24 +1334,24 @@ class Parser:
                 return self.comp.bool_t
             elif lit == "rune":
                 return self.comp.rune_t
-            elif lit == "i8":
-                return self.comp.i8_t
-            elif lit == "i16":
-                return self.comp.i16_t
-            elif lit == "i32":
-                return self.comp.i32_t
-            elif lit == "i64":
-                return self.comp.i64_t
+            elif lit == "int8":
+                return self.comp.int8_t
+            elif lit == "int16":
+                return self.comp.int16_t
+            elif lit == "int32":
+                return self.comp.int32_t
+            elif lit == "int64":
+                return self.comp.int64_t
             elif lit == "isize":
                 return self.comp.isize_t
-            elif lit == "u8":
-                return self.comp.u8_t
-            elif lit == "u16":
-                return self.comp.u16_t
-            elif lit == "u32":
-                return self.comp.u32_t
-            elif lit == "u64":
-                return self.comp.u64_t
+            elif lit == "uint8":
+                return self.comp.uint8_t
+            elif lit == "uint16":
+                return self.comp.uint16_t
+            elif lit == "uint32":
+                return self.comp.uint32_t
+            elif lit == "uint64":
+                return self.comp.uint64_t
             elif lit == "usize":
                 return self.comp.usize_t
             elif lit == "f32":

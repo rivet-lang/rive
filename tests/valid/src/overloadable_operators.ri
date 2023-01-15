@@ -1,6 +1,6 @@
 struct Vec {
-    x: i32;
-    y: i32;
+    x: int32;
+    y: int32;
 
     func +(&self, other: &Vec) Vec {
         return Vec(self.x + other.x, self.y + other.y);

@@ -14,19 +14,19 @@ struct BacktraceData {
     mut has_error: bool;
 }
 
-alias BacktraceErrorCB = func (mut_anyptr, ?*mut u8, i32);
-alias BacktraceFullCB = func (mut_anyptr, i32, ?*mut u8, i32, ?*mut u8) i32;
+alias BacktraceErrorCB = func (mut_anyptr, ?*mut uint8, int32);
+alias BacktraceFullCB = func (mut_anyptr, int32, ?*mut uint8, int32, ?*mut uint8) int32;
 
 extern (C) {
     func backtrace_create_state(
-        filename: *u8, threaded: bool, error_cb: BacktraceErrorCB,
+        filename: *uint8, threaded: bool, error_cb: BacktraceErrorCB,
         data: ?mut_anyptr
     ) ?*mut backtrace_state;
 
     func backtrace_full(
-        state: *backtrace_state, skip: i32, cb: BacktraceFullCB,
+        state: *backtrace_state, skip: int32, cb: BacktraceFullCB,
         error_cb: BacktraceErrorCB, data: mut_anyptr
-    ) i32;
+    ) int32;
 }
 
 let state: *mut backtrace_state = unsafe {
@@ -34,8 +34,8 @@ let state: *mut backtrace_state = unsafe {
 };
 
 func bt_print_callback(
-    data: mut_anyptr, pc: i32, filename_ptr: ?*mut u8, lineno: i32, fn_ptr: ?*mut u8
-) i32 {
+    data: mut_anyptr, pc: int32, filename_ptr: ?*mut uint8, lineno: int32, fn_ptr: ?*mut uint8
+) int32 {
     unsafe {
         if let safe_fn_ptr = fn_ptr {
             if mem_cmp(safe_fn_ptr, c"_R7runtime4mainF", 16) == 0 {
@@ -57,7 +57,7 @@ func bt_print_callback(
     return 0;
 }
 
-func bt_error_handler(data: mut_anyptr, msg_ptr: ?*mut u8, errnum: i32) {
+func bt_error_handler(data: mut_anyptr, msg_ptr: ?*mut uint8, errnum: int32) {
     unsafe {
         let bdata = @as(*mut BacktraceData, data);
         if !bdata.has_error {
@@ -96,7 +96,7 @@ func demangle_symbol(name: string) string {
             res.write_string(".");
         }
 
-        let buf_len = @as(usize, buf.as_u64());
+        let buf_len = @as(usize, buf.as_uint64());
         let mut i_: usize = 0;
         while i_ < buf_len : i_ += 1 {
             res.write_byte(unsafe { name_ptr[idx] });
@@ -117,7 +117,7 @@ func demangle_symbol(name: string) string {
 }
 #endif
 
-public func bt_print(frames_to_skip: i32 = 0) {
+public func bt_print(frames_to_skip: int32 = 0) {
 #if _RELEASE_
     _ = frames_to_skip;
 #else

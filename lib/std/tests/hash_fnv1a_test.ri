@@ -1,7 +1,7 @@
 import "std/hash/fnv1a";
 
 test "std.hash.fnv1a.sum32()" {
-	let a_hash: u32 = 0x10bc2abf;
+	let a_hash: uint32 = 0x10bc2abf;
 	let a = "apple";
 	let b = fnv1a.sum32_string(a);
 	let c = fnv1a.sum32(a.as_bytes());
@@ -13,7 +13,7 @@ test "std.hash.fnv1a.sum32()" {
 
 test "std.hash.fnv1a.sum64()" {
 	let a = "apple";
-	let a_hash: u64 = 0xf74a62a458befdbf;
+	let a_hash: uint64 = 0xf74a62a458befdbf;
 	let b = fnv1a.sum64_string(a);
 	let c = fnv1a.sum64(a.as_bytes());
 	let d = unsafe { fnv1a.sum64_bytes(a.ptr, a.len) };

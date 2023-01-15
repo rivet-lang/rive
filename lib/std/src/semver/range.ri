@@ -7,7 +7,7 @@ let COMPARATOR_SET_SEP: string = " || ";
 let HYPHEN_RANGE_SEP: string = " - ";
 let X_RANGE_SYMBOLS: string = "Xx*";
 
-enum Operator as u8 {
+enum Operator as uint8 {
     Gt,
     Lt,
     Ge,
