@@ -36,8 +36,8 @@ class Compiler:
         self.usize_t = type.Type(self.universe[14])
         self.comptime_int_t = type.Type(self.universe[15])
         self.comptime_float_t = type.Type(self.universe[16])
-        self.f32_t = type.Type(self.universe[17])
-        self.f64_t = type.Type(self.universe[18])
+        self.float32_t = type.Type(self.universe[17])
+        self.float64_t = type.Type(self.universe[18])
         self.string_t = type.Type(self.universe[19])
         self.error_t = type.Type(self.universe[20])
 
@@ -305,7 +305,7 @@ class Compiler:
         )
 
     def is_float(self, typ):
-        return typ in (self.f32_t, self.f64_t, self.comptime_float_t)
+        return typ in (self.float32_t, self.float64_t, self.comptime_float_t)
 
     def is_comptime_number(self, typ):
         return typ == self.comptime_int_t or typ == self.comptime_float_t
@@ -314,7 +314,7 @@ class Compiler:
         if typ == self.comptime_int_t:
             return self.int32_t
         elif typ == self.comptime_float_t:
-            return self.f64_t
+            return self.float64_t
         return typ
 
     def num_bits(self, typ):

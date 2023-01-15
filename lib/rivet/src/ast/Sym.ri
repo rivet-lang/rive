@@ -138,8 +138,8 @@ public enum TypeKind : traits.ToString {
             .Usize => "usize",
             .ComptimeInt => "comptime_int",
             .ComptimeFloat => "comptime_float",
-            .Float32 => "f32",
-            .Float64 => "f64",
+            .Float32 => "float32",
+            .Float64 => "float64",
             .String => "string",
             .Alias => "alias",
             .Array => "array",
@@ -515,8 +515,8 @@ public func universe() Mod {
                 TypeSym(is_public: true, name: "usize", kind: .Usize),
                 TypeSym(is_public: true, name: "comptime_int", kind: .ComptimeInt),
                 TypeSym(is_public: true, name: "comptime_float", kind: .ComptimeFloat),
-                TypeSym(is_public: true, name: "f32", kind: .Float32),
-                TypeSym(is_public: true, name: "f64", kind: .Float64),
+                TypeSym(is_public: true, name: "float32", kind: .Float32),
+                TypeSym(is_public: true, name: "float64", kind: .Float64),
                 TypeSym(is_public: true, name: "string", kind: .String),
                 TypeSym(is_public: true, name: "Error", kind: .Class, info: ClassInfo())
             ]

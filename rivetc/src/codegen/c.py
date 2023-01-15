@@ -380,7 +380,7 @@ class CGen:
                     self.write("L")
         elif isinstance(expr, ir.FloatLit):
             self.write(expr.lit)
-            if str(expr.typ) == "f32":
+            if str(expr.typ) == "float32":
                 self.write("f")
         elif isinstance(expr, ir.RuneLit):
             self.write(f"L'{expr.lit}'")

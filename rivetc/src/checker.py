@@ -773,7 +773,7 @@ class Checker:
                     "error values only support `is` and `!is`", expr.pos
                 )
             elif lsym.kind == TypeKind.Enum:
-                if lsym.info.is_advanced_enum:
+                if lsym.info.is_advanced_enum and expr.op not in (Kind.KwIs, Kind.KwNotIs):
                     report.error(
                         "advanced enum values only support `is` and `!is`",
                         expr.pos

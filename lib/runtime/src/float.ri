@@ -9,22 +9,22 @@ extend comptime_float : ToString {
     /// of `self` and the result in the same bit position.
     #[inline]
     public func bits(self) uint64 {
-        return @as(f64, self).bits();
+        return @as(float64, self).bits();
     }
 
     #[inline]
     public func to_string(self) string {
-        return @as(f64, self).to_string();
+        return @as(float64, self).to_string();
     }
 }
 
-extend f32 : ToString {
+extend float32 : ToString {
     /// Returns the floating-point number corresponding to the IEEE 754 binary
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.
     #[inline]
-    public func from_bits(b: uint32) f32 {
-        return unsafe { @as(*f32, &b).* };
+    public func from_bits(b: uint32) float32 {
+        return unsafe { @as(*float32, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
@@ -46,13 +46,13 @@ extend f32 : ToString {
     }
 }
 
-extend f64 : ToString {
+extend float64 : ToString {
     /// Returns the floating-point number corresponding to the IEEE 754 binary
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.
     #[inline]
-    public func from_bits(b: uint64) f64 {
-        return unsafe { @as(*f64, &b).* };
+    public func from_bits(b: uint64) float64 {
+        return unsafe { @as(*float64, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit

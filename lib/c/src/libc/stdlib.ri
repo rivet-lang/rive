@@ -12,13 +12,13 @@ extern (C) {
     public func rand() int32;
     public func srand(seed: uint32);
 
-    public func atof(nptr: ?*uint8) f64;
+    public func atof(nptr: ?*uint8) float64;
     public func atoi(nptr: ?*uint8) int32;
     public func atol(nptr: ?*uint8) int64;
     public func atoll(nptr: ?*uint8) int64;
 
-    public func strtod(nptr: [*]uint8, endptr: ?*uint8, base_: int32) f64;
-    public func strtof(nptr: [*]uint8, endptr: ?*uint8, base_: int32) f32;
+    public func strtod(nptr: [*]uint8, endptr: ?*uint8, base_: int32) float64;
+    public func strtof(nptr: [*]uint8, endptr: ?*uint8, base_: int32) float32;
     public func strtol(nptr: [*]uint8, endptr: ?*uint8, base_: int32) int64;
     public func strtoll(nptr: [*]uint8, endptr: ?*uint8, base_: int32) int64;
     public func strtoul(nptr: [*]uint8, endptr: ?*uint8, base_: int32) uint64;

@@ -747,7 +747,7 @@ class Codegen:
                 )
             return ir.IntLit(self.ir_type(expr.typ), expr.lit)
         elif isinstance(expr, ast.FloatLiteral):
-            return ir.FloatLit(ir.F64_T, expr.lit)
+            return ir.FloatLit(ir.Float64_T, expr.lit)
         elif isinstance(expr, ast.StringLiteral):
             escaped_val = utils.smart_quote(expr.lit, expr.is_raw)
             size = utils.bytestr(expr.lit).len
@@ -2384,7 +2384,7 @@ class Codegen:
             self.comp.uint64_t, self.comp.isize_t, self.comp.usize_t
         ):
             return ir.IntLit(self.ir_type(typ), "0")
-        elif typ in (self.comp.f32_t, self.comp.f64_t):
+        elif typ in (self.comp.float32_t, self.comp.float64_t):
             return ir.FloatLit(self.ir_type(typ), "0.0")
         elif typ == self.comp.string_t:
             return ir.Ident(ir.STRING_T, "_R7runtime12empty_string")

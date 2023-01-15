@@ -1354,10 +1354,10 @@ class Parser:
                 return self.comp.uint64_t
             elif lit == "usize":
                 return self.comp.usize_t
-            elif lit == "f32":
-                return self.comp.f32_t
-            elif lit == "f64":
-                return self.comp.f64_t
+            elif lit == "float32":
+                return self.comp.float32_t
+            elif lit == "float64":
+                return self.comp.float64_t
             elif lit == "string":
                 return self.comp.string_t
             # only available in `runtime`:

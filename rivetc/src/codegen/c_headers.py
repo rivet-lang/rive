@@ -69,9 +69,9 @@ typedef int64 comptime_int;
 typedef uint8 bool;
 typedef uint32 rune;
 
-typedef float f32;
-typedef double f64;
-typedef f64 comptime_float;
+typedef float float32;
+typedef double float64;
+typedef float64 comptime_float;
 
 """
 
