@@ -27,7 +27,7 @@ func main(
 #if _TESTS_
     mut tr: TestRunner
 #else
-    pkg_main: fn()
+    pkg_main: func()
 #endif
 ) {
     unsafe {
