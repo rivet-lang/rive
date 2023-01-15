@@ -1,5 +1,5 @@
 tests/invalid/duplicate_symbols.ri:15:6: error: module `duplicate_symbols` has duplicate symbol `other`
-   15 | func other(a: i32) { // FAIL
+   15 | func other(a: int32) { // FAIL
       |      ^
 tests/invalid/duplicate_symbols.ri:20:7: error: module `duplicate_symbols` has duplicate symbol `RuntimeError`
    20 | class RuntimeError : Error { } // FAIL
