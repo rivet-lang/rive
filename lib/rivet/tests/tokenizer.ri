@@ -23,10 +23,10 @@ func tokenize(text: string) []token.Token {
     return tokens;
 }
 
-test "tokenizer: simple `func main()`" {
+test "tokenizer: simple `func main() { }`" {
     let tokens = tokenize("func main() { }");
     @assert(tokens.len == 6);
-    @assert(tokens[0].kind == .KwFn);
+    @assert(tokens[0].kind == .KwFunc);
     @assert(tokens[1].kind == .Name and tokens[1].lit == "main");
     @assert(tokens[2].kind == .Lparen);
     @assert(tokens[3].kind == .Rparen);

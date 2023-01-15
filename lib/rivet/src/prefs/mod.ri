@@ -14,7 +14,7 @@ import "../utils";
 public enum Backend as u8 {
     C;
 
-    public fn from_string(name: string) ?Self {
+    public func from_string(name: string) ?Self {
         return switch name {
             "c" => .C,
             else => nil
@@ -36,7 +36,7 @@ public enum LinkMode as u8 {
     Dynamic
 }
 
-fn print_help() void {
+func print_help() void {
     console.eprintln(utils.HELP);
     process.exit(0);
 }
@@ -75,7 +75,7 @@ public class Prefs {
 	public mut keep_c: bool;
 	public mut is_verbose: bool;
 
-    public fn new(args: []string, is_test: bool, run_output: bool) !Self {
+    public func new(args: []string, is_test: bool, run_output: bool) !Self {
         let mut prefs = Prefs(is_test: is_test, run_output: run_output);
         let mut options: []string = [];
         let mut i: usize = 0;

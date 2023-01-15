@@ -34,7 +34,7 @@ language with a clear and simple syntax and a low learning curve.
 ## Features
 
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
-* **Easy error handling**: Via result types: `fn my_fn() !T { ... }`.
+* **Easy error handling**: Via result types: `func my_func() !T { ... }`.
 * **Not NULL values by default**: This is only possible with optional pointers.
 * **Named and optional arguments**: Very useful.
 * **Immutable values**: Variables and fields are immutable by default.
@@ -55,7 +55,7 @@ Any help is welcome.
 // A simple sample: the classic "Hello World"
 import "std/console";
 
-fn main() {
+func main() {
     console.println("Hello World!");
 }
 ```

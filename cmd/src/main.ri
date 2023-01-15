@@ -8,7 +8,7 @@ import "std/process";
 import "rivet";
 import "rivet/utils";
 
-fn main() {
+func main() {
     if process.ARGS.len == 1 {
         console.eprintln(HELP);
         utils.error("expected command argument");

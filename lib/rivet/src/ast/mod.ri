@@ -8,11 +8,11 @@ public struct ImportedSymbols {
     mut syms: [](string, Sym);
 
     #[inline]
-    public fn add(mut self, name: string, sym: Sym) {
+    public func add(mut self, name: string, sym: Sym) {
         self.syms.push((name, sym));
     }
 
-    public fn get(&self, name: string) ?Sym {
+    public func get(&self, name: string) ?Sym {
         for pair in self.syms {
             if name == pair.0 {
                 return pair.1;
