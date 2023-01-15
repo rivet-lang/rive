@@ -32,3 +32,7 @@ declared mutable (this should only work with reference types):
     arg(y); // `y` should not be modified, and the compiler should not require 
             // it to be a mutable variable.
     ```
+- [ ] `undefined` for uninitialized variables.
+- [ ] disallow empty array literal (`let x = []!; -> ERROR`).
+- [ ] check correct implementation of a trait.
+- [ ] disallow use of references outside of functions.
