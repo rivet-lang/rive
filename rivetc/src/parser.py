@@ -110,21 +110,21 @@ class Parser:
         report.error(f"unknown ABI: `{abi}`", abi_pos)
         return sym.ABI.Rivet
 
-    def parse_attrs(self, parse_mod_attrs = False):
-        if self.mod_sym.attrs == None:
-            self.mod_sym.attrs = ast.Attrs()
-        attrs = ast.Attrs()
+    def parse_annotations(self, parse_mod_annotations = False):
+        if parse_mod_annotations and self.mod_sym.annotations == None:
+            self.mod_sym.annotations = ast.Annotations()
+        annotations = ast.Annotations()
         while self.accept(Kind.Hash):
-            if parse_mod_attrs:
+            if parse_mod_annotations:
                 self.expect(Kind.Bang)
             self.expect(Kind.Lbracket)
             while True:
                 args = []
                 pos = self.tok.pos
                 if self.accept(Kind.KwUnsafe):
-                    attr_name = "unsafe"
+                    annotation_name = "unsafe"
                 else:
-                    attr_name = self.parse_name()
+                    annotation_name = self.parse_name()
                 if self.accept(Kind.Lparen):
                     while True:
                         if self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
@@ -133,19 +133,19 @@ class Parser:
                         else:
                             name = ""
                         expr = self.parse_expr()
-                        args.append(ast.AttrArg(name, expr))
+                        args.append(ast.AnnotationArg(name, expr))
                         if not self.accept(Kind.Comma):
                             break
                     self.expect(Kind.Rparen)
-                attr = ast.Attr(attr_name, args, pos)
-                if parse_mod_attrs:
-                    self.mod_sym.attrs.add(attr)
+                annotation = ast.Annotation(annotation_name, args, pos)
+                if parse_mod_annotations:
+                    self.mod_sym.annotations.add(annotation)
                 else:
-                    attrs.add(attr)
+                    annotations.add(annotation)
                 if not self.accept(Kind.Semicolon):
                     break
             self.expect(Kind.Rbracket)
-        return attrs
+        return annotations
 
     def is_public(self):
         return self.accept(Kind.KwPublic)
@@ -158,7 +158,7 @@ class Parser:
 
     def parse_decl(self):
         doc_comment = self.parse_doc_comment()
-        attrs = self.parse_attrs(
+        annotations = self.parse_annotations(
             self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
         )
         is_public = self.is_public()
@@ -199,7 +199,7 @@ class Parser:
                 alias = self.parse_name()
             self.expect(Kind.Semicolon)
             return ast.ImportDecl(
-                attrs, is_public, path, alias, glob, import_list, pos
+                annotations, is_public, path, alias, glob, import_list, pos
             )
         elif self.accept(Kind.KwExtern):
             self.inside_extern = True
@@ -220,13 +220,13 @@ class Parser:
             elif self.accept(Kind.KwFunc):
                 protos.append(
                     self.parse_fn_decl(
-                        doc_comment, attrs, is_public,
-                        attrs.has("unsafe") or abi != sym.ABI.Rivet, abi
+                        doc_comment, annotations, is_public,
+                        annotations.has("unsafe") or abi != sym.ABI.Rivet, abi
                     )
                 )
             else:
                 report.error("invalid external declaration", pos)
-            decl = ast.ExternDecl(attrs, abi, protos, pos)
+            decl = ast.ExternDecl(annotations, abi, protos, pos)
             self.inside_extern = False
             return decl
         elif self.accept(Kind.KwConst):
@@ -238,7 +238,7 @@ class Parser:
             expr = self.parse_expr()
             self.expect(Kind.Semicolon)
             return ast.ConstDecl(
-                doc_comment, attrs, is_public, name, typ, expr, pos
+                doc_comment, annotations, is_public, name, typ, expr, pos
             )
         elif self.accept(Kind.KwLet):
             # variable declarations
@@ -259,7 +259,7 @@ class Parser:
                 right = self.empty_expr()
             self.expect(Kind.Semicolon)
             return ast.LetDecl(
-                doc_comment, attrs, is_public, self.inside_extern,
+                doc_comment, annotations, is_public, self.inside_extern,
                 self.extern_abi, lefts, right, pos
             )
         elif self.accept(Kind.KwAlias):
@@ -278,7 +278,7 @@ class Parser:
                         parent = self.parse_selector_expr(parent)
             self.expect(Kind.Semicolon)
             return ast.AliasDecl(
-                doc_comment, attrs, is_public, name, parent, is_typealias, pos
+                doc_comment, annotations, is_public, name, parent, is_typealias, pos
             )
         elif self.accept(Kind.KwTrait):
             pos = self.tok.pos
@@ -297,7 +297,7 @@ class Parser:
                 decls.append(self.parse_decl())
             self.inside_trait = old_inside_trait
             return ast.TraitDecl(
-                doc_comment, attrs, is_public, name, bases, decls, pos
+                doc_comment, annotations, is_public, name, bases, decls, pos
             )
         elif self.accept(Kind.KwClass):
             old_inside_struct_or_class = self.inside_struct_or_class
@@ -318,7 +318,7 @@ class Parser:
             self.expect(Kind.Rbrace)
             self.inside_struct_or_class = old_inside_struct_or_class
             return ast.ClassDecl(
-                doc_comment, attrs, is_public, name, bases, decls, pos
+                doc_comment, annotations, is_public, name, bases, decls, pos
             )
         elif self.accept(Kind.KwStruct):
             old_inside_struct_or_class = self.inside_struct_or_class
@@ -341,7 +341,7 @@ class Parser:
                 self.expect(Kind.Rbrace)
             self.inside_struct_or_class = old_inside_struct_or_class
             return ast.StructDecl(
-                doc_comment, attrs, is_public, name, bases, decls, is_opaque,
+                doc_comment, annotations, is_public, name, bases, decls, is_opaque,
                 pos
             )
         elif (self.inside_struct_or_class or
@@ -357,7 +357,7 @@ class Parser:
                 def_expr = self.parse_expr()
             self.expect(Kind.Semicolon)
             return ast.FieldDecl(
-                attrs, doc_comment, is_public, is_mut, name, typ, def_expr,
+                annotations, doc_comment, is_public, is_mut, name, typ, def_expr,
                 has_def_expr, pos
             )
         elif self.accept(Kind.KwEnum):
@@ -396,7 +396,7 @@ class Parser:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
-                doc_comment, attrs, is_public, name, underlying_typ, bases,
+                doc_comment, annotations, is_public, name, underlying_typ, bases,
                 variants, is_advanced_enum, decls, pos
             )
         elif self.accept(Kind.KwExtend):
@@ -412,11 +412,11 @@ class Parser:
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
                 decls.append(self.parse_decl())
-            return ast.ExtendDecl(attrs, typ, bases, decls, pos)
+            return ast.ExtendDecl(annotations, typ, bases, decls, pos)
         elif self.accept(Kind.KwFunc):
             return self.parse_fn_decl(
-                doc_comment, attrs, is_public,
-                attrs.has("unsafe")
+                doc_comment, annotations, is_public,
+                annotations.has("unsafe")
                 or (self.inside_extern and self.extern_abi != sym.ABI.Rivet),
                 self.extern_abi if self.inside_extern else sym.ABI.Rivet
             )
@@ -453,7 +453,7 @@ class Parser:
             self.next()
         return ast.EmptyDecl()
 
-    def parse_fn_decl(self, doc_comment, attrs, is_public, is_unsafe, abi):
+    def parse_fn_decl(self, doc_comment, annotations, is_public, is_unsafe, abi):
         pos = self.tok.pos
         if self.tok.kind.is_overloadable_op():
             name = str(self.tok.kind)
@@ -528,7 +528,7 @@ class Parser:
                 stmts.append(self.parse_stmt())
         self.close_scope()
         return ast.FnDecl(
-            doc_comment, attrs, is_public, self.inside_extern, is_unsafe, name,
+            doc_comment, annotations, is_public, self.inside_extern, is_unsafe, name,
             pos, args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
             self_is_ref, has_named_args, self.mod_sym.is_root
             and name == "main", is_variadic, abi

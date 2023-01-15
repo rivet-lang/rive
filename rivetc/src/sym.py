@@ -99,7 +99,7 @@ class ABI(Enum):
 
 class Sym:
     def __init__(self, is_public, name, abi = ABI.Rivet):
-        self.attrs = None
+        self.annotations = None
         self.id = new_symbol_id()
         self.abi = abi
         self.is_public = is_public

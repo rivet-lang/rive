@@ -146,28 +146,28 @@ class Codegen:
         self.gen_types()
         # generate 'init_string_lits_fn' function
         self.init_string_lits_fn = ir.FnDecl(
-            False, ast.Attrs(), False, "_R7runtime16init_string_litsF", [],
+            False, ast.Annotations(), False, "_R7runtime16init_string_litsF", [],
             False, ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_string_lits_fn)
 
         # generate '_R7runtime12init_globalsF' function
         self.init_global_vars_fn = ir.FnDecl(
-            False, ast.Attrs(), False, "_R7runtime12init_globalsF", [], False,
+            False, ast.Annotations(), False, "_R7runtime12init_globalsF", [], False,
             ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_global_vars_fn)
 
         for mod in self.comp.universe.syms:
             if isinstance(mod, sym.Mod):
-                self.gen_mod_attrs(mod.name, mod.attrs)
+                self.gen_mod_annotations(mod.name, mod.annotations)
         for source_file in source_files:
             self.source_file = source_file
             self.gen_decls(source_file.decls)
 
         # generate '_R12drop_globalsZ' function
         g_fn = ir.FnDecl(
-            False, ast.Attrs(), False, "_R7runtime12drop_globalsF", [], False,
+            False, ast.Annotations(), False, "_R7runtime12drop_globalsF", [], False,
             ir.VOID_T, False
         )
         self.out_rir.decls.append(g_fn)
@@ -176,7 +176,7 @@ class Codegen:
         argc = ir.Ident(ir.INT_T, "_argc")
         argv = ir.Ident(ir.CHAR_T.ptr().ptr(), "_argv")
         main_fn = ir.FnDecl(
-            False, ast.Attrs(), False, "main", [argc, argv], False, ir.INT_T,
+            False, ast.Annotations(), False, "main", [argc, argv], False, ir.INT_T,
             False
         )
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
@@ -276,17 +276,17 @@ class Codegen:
                 if os.system(self.comp.prefs.mod_output) == 0:
                     os.remove(self.comp.prefs.mod_output)
 
-    def gen_mod_attrs(self, mod_name, attrs):
+    def gen_mod_annotations(self, mod_name, annotations):
         mod_folder = os.path.join(prefs.RIVET_DIR, "obj", mod_name)
-        if attrs == None:
+        if annotations == None:
             return
-        for attr in attrs.attrs:
-            if attr.name == "link_library":
-                self.comp.prefs.libraries_to_link.append(attr.args[0].expr.lit)
-            elif attr.name == "compile_c_source":
+        for annotation in annotations.annotations:
+            if annotation.name == "link_library":
+                self.comp.prefs.libraries_to_link.append(annotation.args[0].expr.lit)
+            elif annotation.name == "compile_c_source":
                 if not os.path.exists(mod_folder):
                     os.mkdir(mod_folder)
-                cfile = os.path.realpath(attr.args[0].expr.lit)
+                cfile = os.path.realpath(annotation.args[0].expr.lit)
                 objfile = os.path.join(
                     mod_folder,
                     f"{os.path.basename(cfile)}.{self.comp.prefs.get_obj_postfix()}.o"
@@ -391,7 +391,7 @@ class Codegen:
                         self.generated_array_returns.append(name)
                     ret_typ = ir.Type(name)
             fn_decl = ir.FnDecl(
-                False, decl.attrs, decl.is_extern and not decl.has_body,
+                False, decl.annotations, decl.is_extern and not decl.has_body,
                 decl.sym.name if decl.is_extern and not decl.has_body else
                 mangle_symbol(decl.sym), args, decl.is_variadic
                 and decl.is_extern, ret_typ, decl.ret_typ == self.comp.never_t
@@ -437,7 +437,7 @@ class Codegen:
                 self_typ = self_typ.ptr()
             self_arg = ir.Ident(self_typ, "self")
             dtor_fn = ir.FnDecl(
-                False, ast.Attrs(), False,
+                False, ast.Annotations(), False,
                 f"{mangle_type(decl.self_typ)}6_dtor_", [self_arg], False,
                 ir.VOID_T, False
             )
@@ -460,7 +460,7 @@ class Codegen:
                 test_func = f"__test{len(self.generated_tests)}__"
                 test_func = f"_R{len(test_func)}{test_func}"
                 test_fn = ir.FnDecl(
-                    False, ast.Attrs(), False, test_func,
+                    False, ast.Annotations(), False, test_func,
                     [ir.Ident(ir.TEST_T.ptr(), "test")], False, ir.VOID_T, False
                 )
                 self.cur_fn = test_fn
@@ -1768,7 +1768,7 @@ class Codegen:
                     self_id = ir.Ident(ir.VEC_T.ptr(True), "self")
                     elem_id = ir.Ident(self.ir_type(expr_left_typ), "_elem_")
                     contains_decl = ir.FnDecl(
-                        False, ast.Attrs(), False, full_name,
+                        False, ast.Annotations(), False, full_name,
                         [self_id, elem_id], False, ir.BOOL_T, False
                     )
                     inc_v = ir.Ident(ir.USIZE_T, contains_decl.local_name())
@@ -2840,7 +2840,7 @@ class Codegen:
                             )
                         )
                         index_of_vtbl_fn = ir.FnDecl(
-                            False, ast.Attrs(), False,
+                            False, ast.Annotations(), False,
                             mangle_symbol(ts) + "17__index_of_vtbl__",
                             [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T,
                             False

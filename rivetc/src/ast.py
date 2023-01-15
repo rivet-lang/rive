@@ -59,7 +59,7 @@ class ObjDecl:
 # ---- Declarations ----
 class EmptyDecl:
     def __init__(self):
-        self.attrs = Attrs()
+        self.annotations = Annotations()
 
 class DocComment:
     def __init__(self, lines, pos):
@@ -79,13 +79,13 @@ class DocComment:
                 res += " "
         return res
 
-class AttrArg:
+class AnnotationArg:
     def __init__(self, name, expr):
         self.name = name
         self.expr = expr
         self.is_named = name != ""
 
-class Attr:
+class Annotation:
     def __init__(self, name, args, pos):
         self.name = name
         self.args = args
@@ -97,15 +97,15 @@ class Attr:
                 return arg
         return None
 
-class Attrs:
+class Annotations:
     def __init__(self):
-        self.attrs = []
+        self.annotations = []
 
     def add(self, attr):
-        self.attrs.append(attr)
+        self.annotations.append(attr)
 
     def find(self, name):
-        for attr in self.attrs:
+        for attr in self.annotations:
             if attr.name == name:
                 return attr
         return None
@@ -115,12 +115,12 @@ class Attrs:
             return True
         return False
 
-    def has_attrs(self):
-        return len(self.attrs) > 0
+    def has_annotations(self):
+        return len(self.annotations) > 0
 
 class ImportDecl:
-    def __init__(self, attrs, is_public, path, alias, glob, import_list, pos):
-        self.attrs = attrs
+    def __init__(self, annotations, is_public, path, alias, glob, import_list, pos):
+        self.annotations = annotations
         self.is_public = is_public
         self.path = path
         self.alias = alias
@@ -144,16 +144,16 @@ class ImportedMod:
         self.files = files
 
 class ExternDecl:
-    def __init__(self, attrs, abi, decls, pos):
-        self.attrs = attrs
+    def __init__(self, annotations, abi, decls, pos):
+        self.annotations = annotations
         self.abi = abi
         self.decls = decls
         self.pos = pos
 
 class ConstDecl:
-    def __init__(self, docs, attrs, is_public, name, typ, expr, pos):
+    def __init__(self, docs, annotations, is_public, name, typ, expr, pos):
         self.docs = docs
-        self.attrs = attrs
+        self.annotations = annotations
         self.is_public = is_public
         self.name = name
         self.typ = typ
@@ -163,10 +163,10 @@ class ConstDecl:
 
 class LetDecl:
     def __init__(
-        self, docs, attrs, is_public, is_extern, abi, lefts, right, pos
+        self, docs, annotations, is_public, is_extern, abi, lefts, right, pos
     ):
         self.docs = docs
-        self.attrs = attrs
+        self.annotations = annotations
         self.is_public = is_public
         self.is_extern = is_extern
         self.abi = abi
@@ -175,9 +175,9 @@ class LetDecl:
         self.pos = pos
 
 class AliasDecl:
-    def __init__(self, docs, attrs, is_public, name, parent, is_typealias, pos):
+    def __init__(self, docs, annotations, is_public, name, parent, is_typealias, pos):
         self.docs = docs
-        self.attrs = attrs
+        self.annotations = annotations
         self.is_public = is_public
         self.name = name
         self.parent = parent
@@ -195,11 +195,11 @@ class EnumVariant:
 
 class EnumDecl:
     def __init__(
-        self, docs, attrs, is_public, name, underlying_typ, bases, variants,
+        self, docs, annotations, is_public, name, underlying_typ, bases, variants,
         is_advanced_enum, decls, pos
     ):
         self.docs = docs
-        self.attrs = attrs
+        self.annotations = annotations
         self.is_public = is_public
         self.name = name
         self.underlying_typ = underlying_typ
@@ -211,9 +211,9 @@ class EnumDecl:
         self.pos = pos
 
 class TraitDecl:
-    def __init__(self, docs, attrs, is_public, name, bases, decls, pos):
+    def __init__(self, docs, annotations, is_public, name, bases, decls, pos):
         self.docs = docs
-        self.attrs = attrs
+        self.annotations = annotations
         self.is_public = is_public
         self.name = name
         self.bases = bases
@@ -221,9 +221,9 @@ class TraitDecl:
         self.pos = pos
 
 class ClassDecl:
-    def __init__(self, docs, attrs, is_public, name, bases, decls, pos):
+    def __init__(self, docs, annotations, is_public, name, bases, decls, pos):
         self.docs = docs
-        self.attrs = attrs
+        self.annotations = annotations
         self.is_public = is_public
         self.name = name
         self.bases = bases
@@ -233,10 +233,10 @@ class ClassDecl:
 
 class StructDecl:
     def __init__(
-        self, docs, attrs, is_public, name, bases, decls, is_opaque, pos
+        self, docs, annotations, is_public, name, bases, decls, is_opaque, pos
     ):
         self.docs = docs
-        self.attrs = attrs
+        self.annotations = annotations
         self.is_public = is_public
         self.name = name
         self.bases = bases
@@ -247,11 +247,11 @@ class StructDecl:
 
 class FieldDecl:
     def __init__(
-        self, attrs, docs, is_public, is_mut, name, typ, def_expr, has_def_expr,
+        self, annotations, docs, is_public, is_mut, name, typ, def_expr, has_def_expr,
         pos
     ):
         self.docs = docs
-        self.attrs = attrs
+        self.annotations = annotations
         self.is_public = is_public
         self.is_mut = is_mut
         self.name = name
@@ -261,8 +261,8 @@ class FieldDecl:
         self.pos = pos
 
 class ExtendDecl:
-    def __init__(self, attrs, typ, bases, decls, pos):
-        self.attrs = attrs
+    def __init__(self, annotations, typ, bases, decls, pos):
+        self.annotations = annotations
         self.typ = typ
         self.bases = bases
         self.decls = decls
@@ -270,14 +270,14 @@ class ExtendDecl:
 
 class FnDecl:
     def __init__(
-        self, docs, attrs, is_public, is_extern, is_unsafe, name, name_pos,
+        self, docs, annotations, is_public, is_extern, is_unsafe, name, name_pos,
         args, ret_typ, stmts, scope, has_body = False, is_method = False,
         self_is_mut = False, self_is_ref = False, has_named_args = False,
         is_main = False, is_variadic = False, abi = None
     ):
         self.sym = None
         self.docs = docs
-        self.attrs = attrs
+        self.annotations = annotations
         self.is_public = is_public
         self.abi = abi
         self.name = name
