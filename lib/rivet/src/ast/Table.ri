@@ -65,9 +65,9 @@ public class Table {
             // optimize modes
             "_DEBUG_", "_RELEASE_" => {
                 return if name == "_DEBUG_" {
-                    self.prefs.optimize_mode is .Debug
+                    self.prefs.optimize_mode == .Debug
                 } else {
-                    self.prefs.optimize_mode is .Release
+                    self.prefs.optimize_mode == .Release
                 };
             },
             "_TESTS_" => return self.prefs.is_test,

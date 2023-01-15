@@ -119,7 +119,9 @@ class Annotations:
         return len(self.annotations) > 0
 
 class ImportDecl:
-    def __init__(self, annotations, is_public, path, alias, glob, import_list, pos):
+    def __init__(
+        self, annotations, is_public, path, alias, glob, import_list, pos
+    ):
         self.annotations = annotations
         self.is_public = is_public
         self.path = path
@@ -175,7 +177,9 @@ class LetDecl:
         self.pos = pos
 
 class AliasDecl:
-    def __init__(self, docs, annotations, is_public, name, parent, is_typealias, pos):
+    def __init__(
+        self, docs, annotations, is_public, name, parent, is_typealias, pos
+    ):
         self.docs = docs
         self.annotations = annotations
         self.is_public = is_public
@@ -195,8 +199,8 @@ class EnumVariant:
 
 class EnumDecl:
     def __init__(
-        self, docs, annotations, is_public, name, underlying_typ, bases, variants,
-        is_advanced_enum, decls, pos
+        self, docs, annotations, is_public, name, underlying_typ, bases,
+        variants, is_advanced_enum, decls, pos
     ):
         self.docs = docs
         self.annotations = annotations
@@ -247,8 +251,8 @@ class StructDecl:
 
 class FieldDecl:
     def __init__(
-        self, annotations, docs, is_public, is_mut, name, typ, def_expr, has_def_expr,
-        pos
+        self, annotations, docs, is_public, is_mut, name, typ, def_expr,
+        has_def_expr, pos
     ):
         self.docs = docs
         self.annotations = annotations
@@ -270,10 +274,10 @@ class ExtendDecl:
 
 class FnDecl:
     def __init__(
-        self, docs, annotations, is_public, is_extern, is_unsafe, name, name_pos,
-        args, ret_typ, stmts, scope, has_body = False, is_method = False,
-        self_is_mut = False, self_is_ref = False, has_named_args = False,
-        is_main = False, is_variadic = False, abi = None
+        self, docs, annotations, is_public, is_extern, is_unsafe, name,
+        name_pos, args, ret_typ, stmts, scope, has_body = False,
+        is_method = False, self_is_mut = False, self_is_ref = False,
+        has_named_args = False, is_main = False, is_variadic = False, abi = None
     ):
         self.sym = None
         self.docs = docs

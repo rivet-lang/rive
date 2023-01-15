@@ -301,7 +301,8 @@ class Compiler:
 
     def is_unsigned_int(self, typ):
         return typ in (
-            self.uint8_t, self.uint16_t, self.uint32_t, self.uint64_t, self.usize_t
+            self.uint8_t, self.uint16_t, self.uint32_t, self.uint64_t,
+            self.usize_t
         )
 
     def is_float(self, typ):

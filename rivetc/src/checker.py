@@ -546,7 +546,9 @@ class Checker:
                 if isinstance(self.expected_type, type.Ptr):
                     expected_pointer = True
                     indexable_pointer = self.expected_type.is_indexable
-                elif isinstance(self.expected_type, type.Option) and isinstance(self.expected_type.typ, type.Ptr):
+                elif isinstance(self.expected_type, type.Option) and isinstance(
+                    self.expected_type.typ, type.Ptr
+                ):
                     expected_pointer = True
                     indexable_pointer = self.expected_type.typ.is_indexable
                 else:
@@ -579,7 +581,9 @@ class Checker:
                             "cannot take the address of a value outside of an `unsafe` block",
                             expr.pos
                         )
-                    expr.typ = type.Ptr(expr.typ, expr.is_ref_mut, indexable_pointer)
+                    expr.typ = type.Ptr(
+                        expr.typ, expr.is_ref_mut, indexable_pointer
+                    )
                 else:
                     expr.typ = type.Ref(expr.typ, expr.is_ref_mut)
             return expr.typ
@@ -590,6 +594,7 @@ class Checker:
             rtyp = self.check_expr(expr.right)
             self.expected_type = old_expected_type
 
+            lsym = ltyp.symbol()
             if expr.op in (
                 Kind.Plus, Kind.Minus, Kind.Mul, Kind.Div, Kind.Mod, Kind.Xor,
                 Kind.Amp, Kind.Pipe
@@ -609,6 +614,32 @@ class Checker:
                         "cannot use arithmetic operations with references",
                         expr.pos
                     )
+            elif isinstance(
+                ltyp, type.Option
+            ) and expr.op not in (Kind.KwIs, Kind.KwNotIs, Kind.OrElse):
+                report.error(
+                    "option values only support `??`, `is` and `!is`", expr.pos
+                )
+            elif ltyp == self.comp.bool_t and rtyp == self.comp.bool_t and expr.op not in (
+                Kind.Eq, Kind.Ne, Kind.KwAnd, Kind.KwOr, Kind.Pipe, Kind.Amp
+            ):
+                report.error(
+                    "boolean values only support the following operators: `==`, `!=`, `and`, `or`, `&` and `|`",
+                    expr.pos
+                )
+            elif ltyp == self.comp.string_t and rtyp == self.comp.string_t and expr.op not in (
+                Kind.Eq, Kind.Ne, Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge
+            ):
+                report.error(
+                    "string values only support the following operators: `==`, `!=`, `<`, `>`, `<=` and `>=`",
+                    expr.pos
+                )
+            elif ltyp == self.comp.error_t and expr.op not in (
+                Kind.KwIs, Kind.KwNotIs
+            ):
+                report.error(
+                    "error values only support `is` and `!is`", expr.pos
+                )
 
             return_type = ltyp
             if expr.op in (
@@ -709,6 +740,18 @@ class Checker:
                         expr.var.typ = rtyp
                     if expr.var.is_mut:
                         expr.scope.update_is_hidden_ref(expr.var.name, True)
+                if lsym.kind == TypeKind.Enum:
+                    if lsym.info.is_advanced_enum and expr.op not in (
+                        Kind.KwIs, Kind.KwNotIs
+                    ):
+                        report.error(
+                            "advanced enum values only support `is` and `!is`",
+                            expr.pos
+                        )
+                    elif not lsym.info.is_advanced_enum and expr.op not in (Kind.Eq, Kind.Ne):
+                        report.error(
+                            "enum values only support `==` and `!=`", expr.pos
+                        )
                 expr.typ = self.comp.bool_t
                 return expr.typ
             elif expr.op in (Kind.KwAnd, Kind.KwOr):
@@ -750,43 +793,6 @@ class Checker:
                     )
                 expr.typ = ltyp
                 return expr.typ
-
-            lsym = ltyp.symbol()
-            if ltyp == self.comp.bool_t and rtyp == self.comp.bool_t and expr.op not in (
-                Kind.Eq, Kind.Ne, Kind.KwAnd, Kind.KwOr, Kind.Pipe, Kind.Amp
-            ):
-                report.error(
-                    "boolean values only support the following operators: `==`, `!=`, `and`, `or`, `&` and `|`",
-                    expr.pos
-                )
-            elif ltyp == self.comp.string_t and rtyp == self.comp.string_t and expr.op not in (
-                Kind.Eq, Kind.Ne, Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge
-            ):
-                report.error(
-                    "string values only support the following operators: `==`, `!=`, `<`, `>`, `<=` and `>=`",
-                    expr.pos
-                )
-            elif ltyp == self.comp.error_t and expr.op not in (
-                Kind.KwIs, Kind.KwNotIs
-            ):
-                report.error(
-                    "error values only support `is` and `!is`", expr.pos
-                )
-            elif lsym.kind == TypeKind.Enum:
-                if lsym.info.is_advanced_enum and expr.op not in (Kind.KwIs, Kind.KwNotIs):
-                    report.error(
-                        "advanced enum values only support `is` and `!is`",
-                        expr.pos
-                    )
-                elif expr.op not in (Kind.Eq, Kind.Ne):
-                    report.error(
-                        "enum values only support `==` and `!=`", expr.pos
-                    )
-            elif isinstance(ltyp, type.Option
-                            ) and expr.op not in (Kind.KwIs, Kind.KwNotIs):
-                report.error(
-                    "option values only support `is` and `!is`", expr.pos
-                )
 
             if not self.check_compatible_types(rtyp, ltyp):
                 if ltyp == self.comp.void_t or rtyp == self.comp.void_t or return_type == self.comp.void_t:
@@ -858,7 +864,9 @@ class Checker:
                     elif isinstance(expr.index, ast.RangeExpr):
                         report.error("cannot slice a pointer", expr.index.pos)
                     elif not expr.left_typ.is_indexable:
-                        report.error("cannot index a non-indexable pointer", expr.pos)
+                        report.error(
+                            "cannot index a non-indexable pointer", expr.pos
+                        )
 
                 if expr.left_typ == self.comp.string_t:
                     if isinstance(expr.index, ast.RangeExpr):
@@ -1106,7 +1114,10 @@ class Checker:
                         )
                         return expr.typ
                     elif not ptr_t.is_indexable:
-                        report.error(f"`{expr.name}` requires indexable pointers", expr.pos)
+                        report.error(
+                            f"`{expr.name}` requires indexable pointers",
+                            expr.pos
+                        )
                         return expr.typ
                     for arg in expr.args[1:]:
                         arg_t = self.check_expr(arg)
@@ -1186,7 +1197,9 @@ class Checker:
                     if not (
                         isinstance(left_typ, type.Ptr)
                         or isinstance(left_typ, type.Ref)
-                    ) or (isinstance(left_typ, type.Ptr) and left_typ.is_indexable):
+                    ) or (
+                        isinstance(left_typ, type.Ptr) and left_typ.is_indexable
+                    ):
                         report.error(
                             f"invalid indirect for `{left_typ}`", expr.field_pos
                         )

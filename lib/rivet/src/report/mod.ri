@@ -72,17 +72,17 @@ public class Report {
         console.eprintln(
             utils.bold("{}:{}:{}: {} {}"), path_styled_for_error_messages(self.pos.file),
             self.pos.line, self.pos.col,
-            if self.kind is .Error { utils.red("error:") } else { utils.yellow("warning:") },
+            if self.kind == .Error { utils.red("error:") } else { utils.yellow("warning:") },
             self.msg
         );
         formatted_line(self.pos);
-        if self.kind is .Error {
+        if self.kind == .Error {
             reports.errors += 1;
         } else {
             reports.warns += 1;
         }
         for extra in self.extras {
-            let start = utils.bold("      {} {}".fmt(utils.blue("="), if extra.kind is .Note {
+            let start = utils.bold("      {} {}".fmt(utils.blue("="), if extra.kind == .Note {
                 utils.cyan("note:")
             } else {
                 "help:"

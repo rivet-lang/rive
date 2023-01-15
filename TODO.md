@@ -36,3 +36,4 @@ declared mutable (this should only work with reference types):
 - [ ] disallow empty array literal (`let x = []!; -> ERROR`).
 - [ ] check correct implementation of a trait.
 - [ ] disallow use of references outside of functions.
+- [ ] add `@is_flag_defined()` builtin function.

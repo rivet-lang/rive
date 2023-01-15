@@ -350,7 +350,7 @@ public class TypeSym : Sym {
     }
 
     public func update(mut self, other: TypeSym) ! {
-        if self.kind is .Placeholder {
+        if self.kind == .Placeholder {
             // update placeholder
             self.is_public = other.is_public;
             self.kind = other.kind;
@@ -385,8 +385,8 @@ public class TypeSym : Sym {
         if self.info is EnumInfo as enum_info {
             return enum_info.is_advanced_enum;
         }
-        return self.kind is .Trait or self.kind is .Class or self.kind is .String
-            or self.kind is .Vector;
+        return self.kind == .Trait or self.kind == .Class or self.kind == .String
+            or self.kind == .Vector;
     }
 
     // TODO(StunxFS): fix inheritance of overloaded operators

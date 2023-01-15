@@ -278,7 +278,8 @@ class Parser:
                         parent = self.parse_selector_expr(parent)
             self.expect(Kind.Semicolon)
             return ast.AliasDecl(
-                doc_comment, annotations, is_public, name, parent, is_typealias, pos
+                doc_comment, annotations, is_public, name, parent, is_typealias,
+                pos
             )
         elif self.accept(Kind.KwTrait):
             pos = self.tok.pos
@@ -341,8 +342,8 @@ class Parser:
                 self.expect(Kind.Rbrace)
             self.inside_struct_or_class = old_inside_struct_or_class
             return ast.StructDecl(
-                doc_comment, annotations, is_public, name, bases, decls, is_opaque,
-                pos
+                doc_comment, annotations, is_public, name, bases, decls,
+                is_opaque, pos
             )
         elif (self.inside_struct_or_class or
               self.inside_trait) and self.tok.kind in (Kind.KwMut, Kind.Name):
@@ -357,8 +358,8 @@ class Parser:
                 def_expr = self.parse_expr()
             self.expect(Kind.Semicolon)
             return ast.FieldDecl(
-                annotations, doc_comment, is_public, is_mut, name, typ, def_expr,
-                has_def_expr, pos
+                annotations, doc_comment, is_public, is_mut, name, typ,
+                def_expr, has_def_expr, pos
             )
         elif self.accept(Kind.KwEnum):
             pos = self.tok.pos
@@ -396,8 +397,8 @@ class Parser:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
-                doc_comment, annotations, is_public, name, underlying_typ, bases,
-                variants, is_advanced_enum, decls, pos
+                doc_comment, annotations, is_public, name, underlying_typ,
+                bases, variants, is_advanced_enum, decls, pos
             )
         elif self.accept(Kind.KwExtend):
             pos = self.prev_tok.pos
@@ -453,7 +454,9 @@ class Parser:
             self.next()
         return ast.EmptyDecl()
 
-    def parse_fn_decl(self, doc_comment, annotations, is_public, is_unsafe, abi):
+    def parse_fn_decl(
+        self, doc_comment, annotations, is_public, is_unsafe, abi
+    ):
         pos = self.tok.pos
         if self.tok.kind.is_overloadable_op():
             name = str(self.tok.kind)
@@ -528,9 +531,9 @@ class Parser:
                 stmts.append(self.parse_stmt())
         self.close_scope()
         return ast.FnDecl(
-            doc_comment, annotations, is_public, self.inside_extern, is_unsafe, name,
-            pos, args, ret_typ, stmts, sc, has_body, is_method, self_is_mut,
-            self_is_ref, has_named_args, self.mod_sym.is_root
+            doc_comment, annotations, is_public, self.inside_extern, is_unsafe,
+            name, pos, args, ret_typ, stmts, sc, has_body, is_method,
+            self_is_mut, self_is_ref, has_named_args, self.mod_sym.is_root
             and name == "main", is_variadic, abi
         )
 

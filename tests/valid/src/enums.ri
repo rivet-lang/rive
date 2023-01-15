@@ -6,9 +6,9 @@ enum SimpleEnum {
 
 test "enums: enum literal" {
     let mut abc = SimpleEnum.Abc;
-    @assert(abc is .Abc);
+    @assert(abc == .Abc);
     abc = .Def;
-    @assert(abc is .Def);
+    @assert(abc == .Def);
 }
 
 test "enums: ordinal value" {

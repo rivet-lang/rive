@@ -211,7 +211,7 @@ public class Prefs {
             prefs.mod_output = prefs.mod_name;
         }
 
-        if prefs.target_os is .Windows and !prefs.mod_output.ends_with(".exe") {
+        if prefs.target_os == .Windows and !prefs.mod_output.ends_with(".exe") {
             prefs.mod_output = prefs.mod_output.concat(".exe");
         }
 

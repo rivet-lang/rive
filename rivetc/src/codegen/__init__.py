@@ -146,15 +146,15 @@ class Codegen:
         self.gen_types()
         # generate 'init_string_lits_fn' function
         self.init_string_lits_fn = ir.FnDecl(
-            False, ast.Annotations(), False, "_R7runtime16init_string_litsF", [],
-            False, ir.VOID_T, False
+            False, ast.Annotations(), False, "_R7runtime16init_string_litsF",
+            [], False, ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_string_lits_fn)
 
         # generate '_R7runtime12init_globalsF' function
         self.init_global_vars_fn = ir.FnDecl(
-            False, ast.Annotations(), False, "_R7runtime12init_globalsF", [], False,
-            ir.VOID_T, False
+            False, ast.Annotations(), False, "_R7runtime12init_globalsF", [],
+            False, ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_global_vars_fn)
 
@@ -167,8 +167,8 @@ class Codegen:
 
         # generate '_R12drop_globalsZ' function
         g_fn = ir.FnDecl(
-            False, ast.Annotations(), False, "_R7runtime12drop_globalsF", [], False,
-            ir.VOID_T, False
+            False, ast.Annotations(), False, "_R7runtime12drop_globalsF", [],
+            False, ir.VOID_T, False
         )
         self.out_rir.decls.append(g_fn)
 
@@ -176,8 +176,8 @@ class Codegen:
         argc = ir.Ident(ir.INT_T, "_argc")
         argv = ir.Ident(ir.CHAR_T.ptr().ptr(), "_argv")
         main_fn = ir.FnDecl(
-            False, ast.Annotations(), False, "main", [argc, argv], False, ir.INT_T,
-            False
+            False, ast.Annotations(), False, "main", [argc, argv], False,
+            ir.INT_T, False
         )
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
             self.cur_fn = main_fn
@@ -249,7 +249,8 @@ class Codegen:
             main_fn.add_call(
                 "_R7runtime4mainF", [
                     argc,
-                    ir.Inst(ir.InstKind.Cast, [argv, ir.UINT8_T.ptr().ptr()]),
+                    ir.Inst(ir.InstKind.Cast,
+                            [argv, ir.UINT8_T.ptr().ptr()]),
                     ir.Inst(ir.InstKind.GetRef, [test_runner])
                 ]
             )
@@ -257,7 +258,8 @@ class Codegen:
             main_fn.add_call(
                 "_R7runtime4mainF", [
                     argc,
-                    ir.Inst(ir.InstKind.Cast, [argv, ir.UINT8_T.ptr().ptr()]),
+                    ir.Inst(ir.InstKind.Cast,
+                            [argv, ir.UINT8_T.ptr().ptr()]),
                     ir.Name(
                         f"_R{len(self.comp.prefs.mod_name)}{self.comp.prefs.mod_name}4mainF"
                     )
@@ -282,7 +284,9 @@ class Codegen:
             return
         for annotation in annotations.annotations:
             if annotation.name == "link_library":
-                self.comp.prefs.libraries_to_link.append(annotation.args[0].expr.lit)
+                self.comp.prefs.libraries_to_link.append(
+                    annotation.args[0].expr.lit
+                )
             elif annotation.name == "compile_c_source":
                 if not os.path.exists(mod_folder):
                     os.mkdir(mod_folder)
@@ -2379,9 +2383,10 @@ class Codegen:
         if typ == self.comp.rune_t:
             return ir.RuneLit("\\0")
         elif typ in (
-            self.comp.bool_t, self.comp.int8_t, self.comp.int16_t, self.comp.int32_t,
-            self.comp.int64_t, self.comp.uint8_t, self.comp.uint16_t, self.comp.uint32_t,
-            self.comp.uint64_t, self.comp.isize_t, self.comp.usize_t
+            self.comp.bool_t, self.comp.int8_t, self.comp.int16_t,
+            self.comp.int32_t, self.comp.int64_t, self.comp.uint8_t,
+            self.comp.uint16_t, self.comp.uint32_t, self.comp.uint64_t,
+            self.comp.isize_t, self.comp.usize_t
         ):
             return ir.IntLit(self.ir_type(typ), "0")
         elif typ in (self.comp.float32_t, self.comp.float64_t):
@@ -2644,8 +2649,8 @@ class Codegen:
                     ir.Struct(
                         False, name, [
                             ir.Field(
-                                "value",
-                                ir.UINT8_T if is_void else self.ir_type(typ.typ)
+                                "value", ir.UINT8_T
+                                if is_void else self.ir_type(typ.typ)
                             ),
                             ir.Field("is_err", ir.BOOL_T),
                             ir.Field("err", self.ir_type(self.comp.error_t))
@@ -2664,8 +2669,8 @@ class Codegen:
                     ir.Struct(
                         False, name, [
                             ir.Field(
-                                "value",
-                                ir.UINT8_T if is_void else self.ir_type(typ.typ)
+                                "value", ir.UINT8_T
+                                if is_void else self.ir_type(typ.typ)
                             ),
                             ir.Field("is_nil", ir.BOOL_T)
                         ]
