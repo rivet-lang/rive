@@ -90,15 +90,15 @@ public class Compiler {
     }
 
     func abort(self) {
-        let mut msg = if report.reports.errors == 1 {
+        let mut msg = if report.total_errors() == 1 {
             "could not compile module `{}`, aborting due to previous error".fmt(self.prefs.mod_name)
         } else {
             "could not compile module `{}`, aborting due to {} previous errors".fmt(
-                self.prefs.mod_name, report.reports.errors
+                self.prefs.mod_name, report.total_errors()
             )
         };
-        if report.reports.warns > 0 {
-            msg = msg.fmt(", {} {} emitted", report.reports.warns, if report.reports.warns == 1 {
+        if report.total_warns() > 0 {
+            msg = msg.fmt(", {} {} emitted", report.total_warns(), if report.total_warns() == 1 {
                 "warning"
             } else {
                 "warnings"

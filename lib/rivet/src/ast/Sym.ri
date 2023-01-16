@@ -421,16 +421,17 @@ public class FnSym : Sym {
 
     public func get_arg(self, idx: usize) Arg {
         let arg = self.args[idx];
-        if arg.is_self {
-            return self.args[idx + 1];
-        }
-        return arg;
+        return if arg.is_self {
+            self.args[idx + 1]
+        } else {
+            arg
+        };
     }
 
     public func args_len(self) usize {
         let mut len: usize = 0;
         for arg in self.args {
-            if !(arg.is_self or arg.typ is Variadic) {
+            if !(arg.is_self or arg.typ is .Variadic) {
                 len += 1;
             }
         }

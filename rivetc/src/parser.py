@@ -379,12 +379,11 @@ class Parser:
             is_advanced_enum = False
             while True:
                 v_name = self.parse_name()
-                has_typ = self.accept(Kind.Lparen)
+                has_typ = self.accept(Kind.Colon)
                 variant = self.empty_expr()
                 if has_typ:
                     is_advanced_enum = True
                     typ = self.parse_type()
-                    self.expect(Kind.Rparen)
                 else:
                     typ = self.comp.void_t
                     if self.accept(Kind.Assign):

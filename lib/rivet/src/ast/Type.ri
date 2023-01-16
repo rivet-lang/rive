@@ -2,10 +2,19 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public class Type {
+public enum Type {
+    Unresolved: Expr,
+    Resolved: Sym,
+    Option: Type,
+    Result: Type,
+    // Reference: (inner: Type, is_mut: bool),
+    // Pointer: (inner: Type, is_mut: bool, is_indexable: bool),
+    Variadic: Type,
+    // Vector: (inner: Type, is_mut: bool),
+    // Array: (inner: Type, size: Expr, is_mut: bool),
+    Tuple: []Type;
+
     public func ==(self, rh: Type) bool {
         return true;
     }
 }
-
-public class Variadic : Type {}

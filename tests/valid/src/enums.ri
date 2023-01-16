@@ -38,9 +38,9 @@ test "enums: enum variant switch" {
 }
 
 enum AdvancedEnum {
-    Abc(int32),
+    Abc: int32,
     Def,
-    Ghi(rune)
+    Ghi: rune
 }
 
 test "enums: advanced enum" {
