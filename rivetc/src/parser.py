@@ -1234,18 +1234,11 @@ class Parser:
             return type.Option(self.parse_type())
         elif self.tok.kind in (Kind.KwExtern, Kind.KwFunc):
             # function types
-            is_extern = self.accept(Kind.KwExtern)
-            abi = self.parse_abi() if is_extern else sym.ABI.Rivet
-            if is_extern and not self.inside_extern: self.inside_extern = True
             args = []
-            is_variadic = False
             self.expect(Kind.KwFunc)
             self.expect(Kind.Lparen)
             if self.tok.kind != Kind.Rparen:
                 while True:
-                    if is_extern and self.accept(Kind.Ellipsis):
-                        is_variadic = True
-                        break
                     pos = self.tok.pos
                     is_mut = self.accept(Kind.KwMut)
                     arg_typ = self.parse_type()
@@ -1261,10 +1254,8 @@ class Parser:
                 ret_typ = self.parse_type()
             else:
                 ret_typ = self.comp.void_t
-            if is_extern and self.inside_extern:
-                self.inside_extern = False
             return type.Fn(
-                is_extern, abi, False, args, is_variadic, ret_typ, False, False
+                False, sym.ABI.Rivet, False, args, False, ret_typ, False, False
             )
         elif self.accept(Kind.Amp):
             # references

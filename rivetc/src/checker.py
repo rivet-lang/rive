@@ -362,6 +362,9 @@ class Checker:
             elif expr.is_obj:
                 expr.typ = expr.obj.typ
             elif isinstance(expr.sym, sym.Fn):
+                if expr.sym.abi != sym.ABI.Rivet:
+                    report.error("cannot use an extern function as value", expr.pos)
+                    report.help("you can wrap the extern function with a function")
                 expr.typ = expr.sym.typ()
             elif isinstance(expr.sym, sym.Const):
                 expr.typ = expr.sym.typ
