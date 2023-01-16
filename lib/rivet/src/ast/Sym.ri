@@ -402,10 +402,10 @@ public class Arg {
     public is_self: bool;
     public def_expr: ?Expr;
     public pos: token.Pos;
-    public typ: Type;
+    public mut typ: Type;
 }
 
-public class FnSym : Sym {
+public class Func : Sym {
     public is_extern: bool;
     public is_unsafe: bool;
     public is_main: bool;

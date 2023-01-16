@@ -275,6 +275,9 @@ class Resolver:
                     report.error("only classes can use `base`", expr.pos)
             else:
                 report.error("cannot resolve `base` expression", expr.pos)
+        elif isinstance(expr, ast.EnumLiteral):
+            if expr.has_value_arg:
+                self.resolve_expr(expr.value_arg)
         elif isinstance(expr, ast.TupleLiteral):
             for e in expr.exprs:
                 self.resolve_expr(e)

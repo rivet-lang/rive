@@ -2,19 +2,126 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+struct TupleData {
+    public inners: []Type;
+    public sym: TypeSym;
+}
+
+struct VectorData {
+    public inner: Type;
+    public is_mut: bool;
+    public sym: TypeSym;
+}
+
+struct ArrayData {
+    public inner: Type;
+    public is_mut: bool;
+    public size: Expr;
+    public sym: TypeSym;
+}
+
+struct ReferenceData {
+    public inner: Type;
+    public is_mut: bool;
+}
+
+struct PointerData {
+    public inner: Type;
+    public is_mut: bool;
+    public is_indexable: bool;
+}
+
+public struct FuncData {
+    public is_unsafe: bool;
+    public is_extern: bool;
+    public abi: ABI;
+    public is_method: bool;
+    public self_is_mut: bool;
+    public self_is_ref: bool;
+    public args: []Arg;
+    public is_variadic: bool;
+    public ret_typ: Type;
+}
+
 public enum Type {
     Unresolved: Expr,
-    Resolved: Sym,
     Option: Type,
     Result: Type,
-    // Reference: (inner: Type, is_mut: bool),
-    // Pointer: (inner: Type, is_mut: bool, is_indexable: bool),
-    Variadic: Type,
-    // Vector: (inner: Type, is_mut: bool),
-    // Array: (inner: Type, size: Expr, is_mut: bool),
-    Tuple: []Type;
+    Tuple: TupleData,
+    Variadic: VectorData,
+    Vector: VectorData, // TODO: Vector: (inner: Type, is_mut: bool),
+    Array: ArrayData, // TODO: Array: (inner: Type, is_mut: bool, size: Expr),
+    Reference: ReferenceData, // TODO: Reference: (inner: Type, is_mut: bool),
+    Pointer: PointerData, // TODO: Pointer: (inner: Type, is_mut: bool, is_indexable: bool),
+    Func: FuncData,
+    Resolved: TypeSym;
 
-    public func ==(self, rh: Type) bool {
+    public func unalias(self) ?Self {
+        // NOTE: `.unalias()` returns an option, so we use the same type without unaliasing
+        // instead.
+        switch self is {
+            .Result as result_inner => return .Result(result_inner.unalias() ?? result_inner),
+            .Option as option_inner => return .Option(option_inner.unalias() ?? option_inner),
+            .Tuple as tuple_data => {
+                let mut unaliased_types = @vec(mut Type, tuple_data.inners.len);
+                for i, tuple_type in tuple_data.inners {
+                    unaliased_types[i] = tuple_type.unalias() ?? tuple_type;
+                }
+                return .Tuple(TupleData(unaliased_types, tuple_data.sym));
+            },
+            .Vector as vector_data => return .Vector(
+                VectorData(vector_data.inner.unalias() ?? vector_data.inner, vector_data.is_mut)
+            ),
+            .Array as array_data => return .Array(
+                ArrayData(array_data.inner.unalias() ?? array_data.inner, ...array_data)
+            ),
+            .Reference as reference_data => return .Reference(
+                ReferenceData(reference_data.inner.unalias() ?? reference_data.inner, ...reference_data)
+            ),
+            .Pointer as pointer_data => return .Pointer(
+                PointerData(pointer_data.inner.unalias() ?? pointer_data.inner, ...pointer_data)
+            ),
+            .Func as func_data => {
+                let args = @vec(mut Arg, func_data.args.len);
+                for i, arg in args {
+                    args[i].typ = arg.typ.unalias() ?? arg.typ;
+                }
+                return .Func(
+                    FuncData(
+                        args: args, ret_typ: func_data.ret_typ.unalias() ?? func_data.ret_typ,
+                        ...func_data
+                    )
+                );
+            },
+            .Resolved as resolved_sym => return if resolved_sym.info is AliasInfo as alias_info {
+                .Resolved(
+                    (alias_info.parent.unalias() ?? alias_info.parent).symbol() ?? resolved_sym
+                )
+            } else {
+                .Resolved(resolved_sym)
+            },
+            else => return nil
+        }
+    }
+
+    #[inline]
+    public func symbol(self) ?TypeSym {
+        // NOTE: `Func` has no TypeSym, so it does not appear in this typeswitch.
+        return switch self is {
+            .Result as result_inner => result_inner.symbol(),
+            .Option as option_inner => option_inner.symbol(),
+            .Tuple as tuple_data => tuple_data.sym,
+            .Variadic as variadic_data => variadic_data.sym,
+            .Vector as vector_data => vector_data.sym,
+            .Array as array_data => array_data.sym,
+            .Reference as reference_data => reference_data.inner.symbol(),
+            .Pointer as pointer_data => pointer_data.inner.symbol(),
+            .Resolved as resolved => resolved,
+            else => nil
+        };
+    }
+
+    public func ==(self, rhs: Type) bool {
         return true;
     }
 }

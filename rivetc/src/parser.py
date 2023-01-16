@@ -1231,7 +1231,7 @@ class Parser:
         if self.accept(Kind.Question):
             # optional
             return type.Option(self.parse_type())
-        elif self.tok.kind in (Kind.KwExtern, Kind.KwFunc):
+        elif self.tok.kind == Kind.KwFunc:
             # function types
             args = []
             self.expect(Kind.KwFunc)

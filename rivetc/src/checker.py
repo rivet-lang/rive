@@ -339,7 +339,7 @@ class Checker:
                                 )
                                 self.expected_type = old_expected_type
                             except utils.CompilerError as e:
-                                report.error(e.args[0], expr.pos)
+                                report.error(e.args[0], expr.value_arg.pos)
                         else:
                             report.error(
                                 f"`.{v.name}` not expects a value", expr.pos
@@ -1404,7 +1404,7 @@ class Checker:
                             self.check_expr_is_mut(expr.expr)
                         if len(b.pats) != 1:
                             report.error(
-                                "multiple patterns cannot have var", b.var_pos
+                                "multiple patterns cannot have variable", b.var_pos
                             )
                         elif expr_sym.is_boxed():
                             var_t = self.comp.void_t
