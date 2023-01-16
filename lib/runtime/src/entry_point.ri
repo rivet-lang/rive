@@ -12,7 +12,7 @@ extern (Rivet) {
     func drop_globals();
 }
 
-extern (C) func init_args(_argc: usize, _argv: [*]*uint8) {
+extern (C) func init_args(_argc: usize, _argv: [*][*]uint8) {
     unsafe {
         ARGS = @vec(string, _argc);
         let mut i: usize = 0;
@@ -23,9 +23,9 @@ extern (C) func init_args(_argc: usize, _argv: [*]*uint8) {
 }
 
 func main(
-    _argc: int32, _argv: [*]*uint8,
+    _argc: int32, _argv: [*][*]uint8,
 #if _TESTS_
-    mut tr: TestRunner
+    mut test_runner: TestRunner
 #else
     pkg_main: func()
 #endif
@@ -39,9 +39,9 @@ func main(
         init_globals();
         runtime_started = true;
 #if _TESTS_
-        if tr.tests.len > 0 {
-            tr.run();
-            tr.print_summary_tests();
+        if test_runner.tests.len > 0 {
+            test_runner.run();
+            test_runner.print_summary_tests();
         }
 #else
         pkg_main();

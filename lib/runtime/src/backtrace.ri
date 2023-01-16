@@ -14,12 +14,12 @@ struct BacktraceData {
     mut has_error: bool;
 }
 
-alias BacktraceErrorCB = func (mut_anyptr, ?*mut uint8, int32);
-alias BacktraceFullCB = func (mut_anyptr, int32, ?*mut uint8, int32, ?*mut uint8) int32;
+alias BacktraceErrorCB = func (mut_anyptr, ?[*]mut uint8, int32);
+alias BacktraceFullCB = func (mut_anyptr, int32, ?[*]mut uint8, int32, ?[*]mut uint8) int32;
 
 extern (C) {
     func backtrace_create_state(
-        filename: *uint8, threaded: bool, error_cb: BacktraceErrorCB,
+        filename: [*]uint8, threaded: bool, error_cb: BacktraceErrorCB,
         data: ?mut_anyptr
     ) ?*mut backtrace_state;
 
@@ -34,7 +34,8 @@ let state: *mut backtrace_state = unsafe {
 };
 
 func bt_print_callback(
-    data: mut_anyptr, pc: int32, filename_ptr: ?*mut uint8, lineno: int32, fn_ptr: ?*mut uint8
+    data: mut_anyptr, pc: int32, filename_ptr: ?[*]mut uint8, lineno: int32,
+    fn_ptr: ?[*]mut uint8
 ) int32 {
     unsafe {
         if let safe_fn_ptr = fn_ptr {
@@ -57,7 +58,7 @@ func bt_print_callback(
     return 0;
 }
 
-func bt_error_handler(data: mut_anyptr, msg_ptr: ?*mut uint8, errnum: int32) {
+func bt_error_handler(data: mut_anyptr, msg_ptr: ?[*]mut uint8, errnum: int32) {
     unsafe {
         let bdata = @as(*mut BacktraceData, data);
         if !bdata.has_error {

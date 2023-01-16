@@ -214,7 +214,7 @@ public func resolve(paths: ...string) !string {
     }
     return unsafe {
         string.from_raw_with_len(
-            @as(*uint8, mem.resize(result, result_index).!), result_index
+            @as([*]uint8, mem.resize(result, result_index).!), result_index
         )
     };
 }
@@ -259,7 +259,7 @@ public func relative(from_: string, to: string) !string {
             // shave off the trailing slash
             return unsafe {
                 string.from_raw_with_len(
-                    @as(*uint8, mem.resize(result, result_index - 1).!),
+                    @as([*]uint8, mem.resize(result, result_index - 1).!),
                     result_index - 1
                 )
             };

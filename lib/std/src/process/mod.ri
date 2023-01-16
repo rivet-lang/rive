@@ -32,7 +32,7 @@ public func execute(cmd: string) Result {
         if let f = libc.popen(pcmd.ptr, c"r") {
             let fd = libc.fileno(f);
             let mut buf: [4096]mut uint8 = []!;
-            let pbuf: *mut uint8 = &mut buf[0];
+            let pbuf: [*]mut uint8 = &mut buf[0];
             let mut output = Builder.new(1024);
             while {
                 let len = libc.read(fd, pbuf, 4096);

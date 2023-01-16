@@ -36,7 +36,7 @@ extend float32 : Formattable {
 
     public func to_string(self) string {
         unsafe {
-            let mut cstr: ?*uint8 = nil;
+            let mut cstr: ?[*]uint8 = nil;
             let len = libc.asprintf(&cstr, c"%g", self);
             if len == -1 {
                 return empty_string; // fail
@@ -64,7 +64,7 @@ extend float64 : Formattable {
 
     public func to_string(self) string {
         unsafe {
-            let mut cstr: ?*uint8 = nil;
+            let mut cstr: ?[*]uint8 = nil;
             let len = libc.asprintf(&cstr, c"%g", self);
             if len == -1 {
                 return empty_string; // fail

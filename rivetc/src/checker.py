@@ -406,7 +406,7 @@ class Checker:
                     )
                 )
             elif expr.is_cstr:
-                expr.typ = type.Ptr(self.comp.uint8_t, False)
+                expr.typ = type.Ptr(self.comp.uint8_t, False, True)
             else:
                 expr.typ = self.comp.string_t
             return expr.typ
@@ -1774,6 +1774,8 @@ class Checker:
         elif expected.typ == self.comp.void_t:
             # anyptr == *T, is valid
             return True
+        elif expected.is_indexable and not got.is_indexable:
+            return False
         return expected.typ == got.typ
 
     def promote(self, left_typ, right_typ):

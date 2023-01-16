@@ -29,9 +29,9 @@ extern (C) {
     public func realloc(p: ?mut_anyptr, size: usize) ?mut_anyptr;
     public func free(p: anyptr);
 
-    public func getenv(name: *uint8) ?*mut uint8;
-    public func setenv(name: *uint8, value: *uint8, replace: bool) int32;
-    public func unsetenv(name: *uint8) int32;
+    public func getenv(name: [*]uint8) ?[*]mut uint8;
+    public func setenv(name: [*]uint8, value: [*]uint8, replace: bool) int32;
+    public func unsetenv(name: [*]uint8) int32;
 
     public func exit(status: int32) never;
     public func abort() never;

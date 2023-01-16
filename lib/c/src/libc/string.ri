@@ -9,6 +9,6 @@ extern (C) {
     public func memmove(dest: mut_anyptr, src: anyptr, n: usize) ?mut_anyptr;
     public func memset(dest: mut_anyptr, c: int32, n: usize) ?mut_anyptr;
 
-    public func strerror(code: int32) ?*mut uint8;
+    public func strerror(code: int32) ?[*]mut uint8;
     public func strlen(cs: ?[*]uint8) usize;
 }

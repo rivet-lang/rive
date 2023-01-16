@@ -108,10 +108,10 @@ extern (C) {
     public func fileno(stream: *FILE) int32;
     public func rewind(stream: *mut FILE);
 
-    public func printf(fmt: *uint8, ...) int32;
-    public func asprintf(strp: *?*uint8, fmt: *uint8, ...) int32;
+    public func printf(fmt: [*]uint8, ...) int32;
+    public func asprintf(strp: *?[*]uint8, fmt: [*]uint8, ...) int32;
     public func putchar(s: int32) int32;
 
-	public func popen(cmd: *uint8, modes: *uint8) ?*mut FILE;
+	public func popen(cmd: [*]uint8, modes: [*]uint8) ?*mut FILE;
 	public func pclose(stream: *mut FILE) int32;
 }
