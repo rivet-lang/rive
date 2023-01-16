@@ -27,7 +27,7 @@ func main(
 #if _TESTS_
     mut test_runner: TestRunner
 #else
-    pkg_main: func()
+    mod_main: func()
 #endif
 ) {
     unsafe {
@@ -44,7 +44,7 @@ func main(
             test_runner.print_summary_tests();
         }
 #else
-        pkg_main();
+        mod_main();
 #endif
         drop_globals();
     }
