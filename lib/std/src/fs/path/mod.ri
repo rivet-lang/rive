@@ -315,7 +315,7 @@ public func join(paths: ...string) !string {
     let buf = @as([*]mut uint8, mem.alloc(total_len).!);
     unsafe {
         errdefer mem.dealloc(buf);
-        buf[total_len] = 0;
+        buf[total_len - 1] = 0;
     }
     let paths_first_path_index_value = paths[first_path_index];
     mem.copy(buf, paths_first_path_index_value.ptr, paths_first_path_index_value.len);
