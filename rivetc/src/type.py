@@ -291,6 +291,9 @@ class Fn(TBase):
     def qualstr(self):
         return str(self)
 
+    def __str__(self):
+        return self.stringify(False)
+
     def __eq__(self, got):
         if not isinstance(got, Fn): return False
         if self.is_unsafe != got.is_unsafe:
@@ -303,6 +306,8 @@ class Fn(TBase):
             return False
         elif self.self_is_mut != got.self_is_mut:
             return False
+        elif self.self_is_ref != got.self_is_ref:
+            return False
         elif len(self.args) != len(got.args):
             return False
         for i, arg in enumerate(self.args):
@@ -311,9 +316,6 @@ class Fn(TBase):
             if arg.typ != got.args[i].typ:
                 return False
         return self.ret_typ == got.ret_typ
-
-    def __str__(self):
-        return self.stringify(False)
 
 class Option(TBase):
     def __init__(self, typ):

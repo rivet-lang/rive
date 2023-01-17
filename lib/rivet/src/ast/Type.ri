@@ -5,6 +5,15 @@
 struct TupleData {
     public inners: []Type;
     public sym: TypeSym;
+
+    public func ==(&self, other: &TupleData) bool {
+        for i, inner in self.inners {
+            if inner != other.inners[i] {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 struct VectorData {
@@ -121,7 +130,94 @@ public enum Type {
         };
     }
 
+    #[inline]
     public func ==(self, rhs: Type) bool {
-        return true;
+        return switch self is {
+            .Result as result_lhs => if rhs is .Result as result_rhs {
+                result_lhs == result_rhs
+            } else {
+                false
+            },
+            .Option as option_lhs => if rhs is .Option as option_rhs {
+                option_lhs == option_rhs
+            } else {
+                false
+            },
+            .Tuple as tuple_lhs => if rhs is .Tuple as tuple_rhs {
+                tuple_lhs == tuple_rhs
+            } else {
+                false
+            },
+            .Variadic as variadic_lhs => if rhs is .Variadic as variadic_rhs {
+                variadic_lhs.inner == variadic_rhs.inner
+            } else {
+                false
+            },
+            .Vector as vector_lhs => if rhs is .Vector as vector_rhs {
+                vector_lhs.inner == vector_rhs.inner and vector_lhs.is_mut == vector_rhs.is_mut
+            } else {
+                false
+            },
+            .Array as array_lhs => if rhs is .Array as array_rhs {
+                array_lhs.inner == array_rhs.inner
+                    /* and array_lhs.size == array_rhs.size */
+                    and array_lhs.is_mut == array_rhs.is_mut
+            } else {
+                false
+            },
+            .Reference as ref_lhs => if rhs is .Reference as ref_rhs {
+                if ref_lhs.is_mut and !ref_rhs.is_mut {
+                    false
+                } else {
+                    ref_lhs.inner == ref_rhs.inner
+                }
+            } else {
+                false
+            },
+            .Pointer as ptr_lhs => if rhs is .Pointer as ptr_rhs {
+                if ptr_lhs.is_mut and !ptr_rhs.is_mut {
+                    false
+                } else if ptr_lhs.is_indexable and !ptr_rhs.is_indexable {
+                    false
+                } else {
+                    ptr_lhs.inner == ptr_rhs.inner
+                }
+            } else {
+                false
+            },
+            .Func as func_lhs => if rhs is .Func as func_rhs {
+                switch {
+                    func_lhs.is_unsafe != func_rhs.is_unsafe,
+                    func_lhs.is_extern != func_rhs.is_extern,
+                    func_lhs.abi != func_rhs.abi,
+                    func_lhs.is_method != func_rhs.is_method,
+                    func_lhs.self_is_mut != func_rhs.self_is_mut,
+                    func_lhs.self_is_ref != func_rhs.self_is_ref,
+                    func_lhs.args.len != func_rhs.args.len => false,
+                    else => {
+                        let mut final_res = func_lhs.ret_typ == func_rhs.ret_typ;
+                        for i, arg in func_lhs.args {
+                            if arg.is_mut != func_rhs.args[i].is_mut {
+                                final_res = false;
+                                break;
+                            }
+                            if arg.typ != func_rhs.args[i].typ {
+                                final_res = false;
+                                break;
+                            }
+                        }
+                        final_res
+                    }
+                }
+            } else {
+                false
+            },
+            .Resolved as resolved_lhs => if rhs is .Resolved as resolved_rhs {
+                resolved_lhs == resolved_rhs
+            } else {
+                false
+            },
+            else => false
+        };
     }
 }
