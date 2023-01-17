@@ -4,7 +4,7 @@
 
 import "c/libc";
 
-public class StringBuilder : Formattable {
+public class StringBuilder : Stringable {
     mut inner: Vec;
 
     /// Returns a string builder with capacity `cap`.
@@ -70,11 +70,11 @@ public class StringBuilder : Formattable {
     }
 
     #[inline]
-    public func write_fmt(mut self, s: string, args: ...Formattable) {
+    public func write_fmt(mut self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
     }
 
-    public func writeln_fmt(mut self, s: string, args: ...Formattable) {
+    public func writeln_fmt(mut self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
         self.write_byte(b'\n');
     }

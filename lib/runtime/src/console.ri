@@ -6,7 +6,7 @@ import "c/libc";
 
 /// Prints a message to stdout. Unlike `println` stdout is not automatically
 /// flushed.
-public func console_print(s: string, args: ...Formattable) {
+public func console_print(s: string, args: ...Stringable) {
     let sx = s.fmt(args);
     unsafe {
         write_buf_to_fd(1, sx.ptr, sx.len);
@@ -15,14 +15,14 @@ public func console_print(s: string, args: ...Formattable) {
 
 /// Prints a message with a line end to stdout. stdout is flushed.
 #[inline]
-public func console_println(s: string = "", args: ...Formattable) {
+public func console_println(s: string = "", args: ...Stringable) {
     unsafe {
         writeln_to_fd(1, s.fmt(args));
     }
 }
 
 /// Prints a message to stderr. Both stderr and stdout are flushed.
-public func console_eprint(s: string, args: ...Formattable) {
+public func console_eprint(s: string, args: ...Stringable) {
     let sx = s.fmt(args);
     unsafe {
         _ = libc.fflush(libc.stdout);
@@ -34,7 +34,7 @@ public func console_eprint(s: string, args: ...Formattable) {
 
 /// Prints a message with a line end to stderr. Both stderr and stdout are
 /// flushed.
-public func console_eprintln(s: string = "", args: ...Formattable) {
+public func console_eprintln(s: string = "", args: ...Stringable) {
     unsafe {
         _ = libc.fflush(libc.stdout);
         _ = libc.fflush(libc.stderr);

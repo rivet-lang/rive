@@ -83,7 +83,7 @@ public class Compiler {
         }
     }
 
-    func vlog(self, msg: string, args: ...traits.Formattable) {
+    func vlog(self, msg: string, args: ...traits.Stringable) {
         if self.prefs.is_verbose {
             console.println(">> ".concat(msg), args);
         }

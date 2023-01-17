@@ -108,7 +108,7 @@ public func option(args: []string, param: string) ?string {
     return nil;
 }
 
-public func error(msg: string, args: ...traits.Formattable) never {
+public func error(msg: string, args: ...traits.Stringable) never {
    console.eprintln(
       "{} {} {}", styles.bold("rivet:"),
       styles.bold(styles.red("error:")), msg.fmt(args)

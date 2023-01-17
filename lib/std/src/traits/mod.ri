@@ -4,5 +4,5 @@
 
 import "runtime";
 
-public alias Formattable = runtime.Formattable;
+public alias Stringable = runtime.Stringable;
 public alias Hashable = runtime.Hashable;

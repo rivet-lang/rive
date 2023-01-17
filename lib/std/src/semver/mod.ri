@@ -28,7 +28,7 @@ public class InvalidVersionFormatError : Error {
 }
 
 /// Represents a semantic version in semver format.
-public class Version : traits.Formattable {
+public class Version : traits.Stringable {
     public major: uint64;
     public minor: uint64;
     public patch: uint64;

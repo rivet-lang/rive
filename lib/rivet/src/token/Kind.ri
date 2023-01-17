@@ -4,7 +4,7 @@
 
 import "std/traits";
 
-public enum Kind : traits.Formattable {
+public enum Kind : traits.Stringable {
     Unknown, // unknown
     EOF, // end of file
     DocComment, // doc-comment

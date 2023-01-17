@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-extend uint8 : Formattable {
+extend uint8 : Stringable {
     public const MAX: uint8 = 255;
 
     /// Returns `true` if the byte is a white space character. The following
@@ -83,7 +83,7 @@ extend uint8 : Formattable {
     }
 }
 
-extend uint16 : Formattable {
+extend uint16 : Stringable {
     public const MAX: uint16 = 65535;
 
     /// Returns the value of `self` as a string.
@@ -93,7 +93,7 @@ extend uint16 : Formattable {
     }
 }
 
-extend uint32 : Formattable {
+extend uint32 : Stringable {
     public const MAX: uint32 = 4294967295;
 
     /// Returns the value of `self` as a string.
@@ -135,7 +135,7 @@ extend uint32 : Formattable {
     }
 }
 
-extend uint64 : Formattable {
+extend uint64 : Stringable {
     public const MAX: uint64 = 18446744073709551615;
 
     /// Returns the value of `self` as a string.
@@ -177,7 +177,7 @@ extend uint64 : Formattable {
     }
 }
 
-extend usize : Formattable {
+extend usize : Stringable {
     public const MAX: usize = #if _x64_ uint64.MAX #else uint32.MAX #endif;
 
     /// Returns the value of `self` as a string.

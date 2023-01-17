@@ -5,7 +5,7 @@
 import "c/libc";
 
 import "../mem";
-import { Formattable } from "../traits";
+import { Stringable } from "../traits";
 
 public class File {
     f: *mut libc.FILE;
@@ -39,11 +39,11 @@ public class File {
     }
 
     #[inline]
-    public func write_string_fmt(mut self, s: string, args: ...Formattable) {
+    public func write_string_fmt(mut self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
     }
 
-    public func writeln_fmt(mut self, s: string, args: ...Formattable) {
+    public func writeln_fmt(mut self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
         self.write_byte(b'\n');
     }

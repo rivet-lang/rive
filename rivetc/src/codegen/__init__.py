@@ -2356,7 +2356,7 @@ class Codegen:
         self.cur_fn.add_call(
             "_R7runtime13process_panicF", [
                 self.gen_string_lit(utils.smart_quote(msg, False)),
-                self.empty_vec(self.comp.universe["[]runtime.Formattable"])
+                self.empty_vec(self.comp.universe["[]runtime.Stringable"])
             ]
         )
 
