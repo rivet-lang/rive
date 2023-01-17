@@ -259,7 +259,7 @@ class Fn(TBase):
         res = ""
         if self.is_extern:
             res += f'extern ({self.abi}) '
-        res += "fn("
+        res += "func("
         if self.is_method:
             if self.self_is_mut:
                 res += "mut "
@@ -278,7 +278,9 @@ class Fn(TBase):
             if i < len(self.args) - 1:
                 res += ", "
         if self.is_extern and self.is_variadic:
-            res += ", ..."
+            if len(self.args) > 0:
+                res += ", "
+            res += "..."
         res += ")"
         if str(self.ret_typ) != "void":
             res += " "

@@ -2,11 +2,14 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import "std/traits";
+import { Builder } from "std/strings";
+
 struct TupleData {
     public inners: []Type;
     public sym: TypeSym;
 
-    public func ==(&self, other: &TupleData) bool {
+    func ==(&self, other: &TupleData) bool {
         for i, inner in self.inners {
             if inner != other.inners[i] {
                 return false;
@@ -40,7 +43,7 @@ struct PointerData {
     public is_indexable: bool;
 }
 
-public struct FuncData {
+struct FuncData {
     public is_unsafe: bool;
     public is_extern: bool;
     public abi: ABI;
@@ -52,7 +55,7 @@ public struct FuncData {
     public ret_typ: Type;
 }
 
-public enum Type {
+public enum Type : traits.Stringable {
     Unresolved: Expr,
     Option: Type,
     Result: Type,
@@ -115,7 +118,7 @@ public enum Type {
 
     #[inline]
     public func symbol(self) ?TypeSym {
-        // NOTE: `Func` has no TypeSym, so it does not appear in this typeswitch.
+        // NOTE: `.Func` has no TypeSym, so it does not appear in this typeswitch.
         return switch self is {
             .Result as result_inner => result_inner.symbol(),
             .Option as option_inner => option_inner.symbol(),
@@ -218,6 +221,99 @@ public enum Type {
                 false
             },
             else => false
+        };
+    }
+
+    public func to_string(self) string {
+        return switch self is {
+            .Result as result_inner => "!".concat(result_inner.to_string()),
+            .Option as option_inner => "?".concat(option_inner.to_string()),
+            .Tuple as tuple_data => {
+                let mut sb = Builder.new(100);
+                sb.write_byte(b'(');
+                for i, inner in tuple_data.inners {
+                    sb.write_string(inner.to_string());
+                    if i < tuple_data.inners.len - 1 {
+                        sb.write_string(", ");
+                    }
+                }
+                sb.write_byte(b')');
+                sb.to_string()
+            },
+            .Variadic as variadic_data => "...".concat(variadic_data.inner.to_string()),
+            .Vector as vector_data => if vector_data.is_mut {
+                "[]mut"
+            } else {
+                "[]"
+            }.concat(vector_data.inner.to_string()),
+            .Array as array_data => "[".concat(
+                /* array_data.expr.to_string(), */ "]", if array_data.is_mut {
+                    "mut "
+                } else {
+                    ""
+                }, array_data.inner.to_string()
+            ),
+            .Reference as reference_data => if reference_data.is_mut {
+                "&mut ".concat(reference_data.inner.to_string())
+            } else {
+                "&".concat(reference_data.inner.to_string())
+            },
+            .Pointer as pointer_data => {
+                let symbol = pointer_data.inner.symbol();
+                // TODO: improve anyptr type
+                if symbol !is nil and symbol.?.kind == .Void {
+                    if pointer_data.is_mut {
+                        "mut_anyptr"
+                    } else {
+                        "anyptr"
+                    }
+                } else if pointer_data.is_mut {
+                    if pointer_data.is_indexable {
+                        "[*]mut ".concat(pointer_data.inner.to_string())
+                    } else {
+                        "*mut ".concat(pointer_data.inner.to_string())
+                    }
+                } else {
+                    if pointer_data.is_indexable {
+                        "[*]".concat(pointer_data.inner.to_string())
+                    } else {
+                        "*".concat(pointer_data.inner.to_string())
+                    }
+                }
+            },
+            .Func as func_data => {
+                let mut sb = Builder.new(150);
+                if func_data.is_extern {
+                    sb.write_fmt("extern ({}) ", func_data.abi);
+                }
+                sb.write_string("func(");
+                if func_data.is_method {
+                    if func_data.self_is_mut {
+                        sb.write_string("mut ");
+                    } else if func_data.self_is_ref {
+                        sb.write_string("&");
+                    }
+                    sb.write_string("self");
+                    if func_data.args.len > 0 {
+                        sb.write_string(", ");
+                    }
+                }
+                if func_data.is_extern and func_data.is_variadic {
+                    if func_data.args.len > 0 {
+                        sb.write_string(", ");
+                    }
+                    sb.write_string("...");
+                }
+                sb.write_string(")");
+                let ret_typ = func_data.ret_typ.to_string();
+                if ret_typ != "void" {
+                    sb.write_string(" ");
+                    sb.write_string(ret_typ);
+                }
+                sb.to_string()
+            },
+            .Resolved as resolved_sym => resolved_sym.qualname(),
+            else => "" // TODO: handle `.Unresolved`
         };
     }
 }
