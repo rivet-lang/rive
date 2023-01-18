@@ -24,9 +24,9 @@ public class Compiler {
     public mut source_files: []string;
 
     public func new(args: []string, is_test: bool, run_output: bool) ! {
-        let prefs_ = prefs.Prefs.new(args, is_test, run_output).!;
+        prefs_ := prefs.Prefs.new(args, is_test, run_output).!;
         report.reports.prefs = prefs_;
-        let mut compiler = Self(table: ast.Table.new(prefs_), prefs: prefs_);
+        mut compiler := Self(table: ast.Table.new(prefs_), prefs: prefs_);
         compiler.make_rivet_directory().!;
         compiler.run().!;
     }
@@ -45,11 +45,11 @@ public class Compiler {
     }
 
     func load_root_module(mut self) ! {
-        let files = if path.is_directory(self.prefs.input) {
-            let mut filtered_files = self.table.filter_files(
+        files := if path.is_directory(self.prefs.input) {
+            mut filtered_files := self.table.filter_files(
                 fs.walk_directory(self.prefs.input, ".ri").!
             );
-            let src_dir = path.join(self.prefs.input, "src").!;
+            src_dir := path.join(self.prefs.input, "src").!;
             if path.is_directory(src_dir) { // support `src/` directory
                 for file in self.table.filter_files(fs.walk_directory(src_dir, ".ri").!) {
                     filtered_files.push(file);
@@ -67,7 +67,7 @@ public class Compiler {
                 self.vlog("  {}", file);
             }
         }
-        let root_sym = ast.Mod(name: self.prefs.mod_name, is_root: true);
+        root_sym := ast.Mod(name: self.prefs.mod_name, is_root: true);
         self.table.universe.scope.add(root_sym) catch |err| utils.error(
             "Compiler.load_root_module(): {}", err
         );
@@ -90,7 +90,7 @@ public class Compiler {
     }
 
     func abort(self) {
-        let mut msg = if report.total_errors() == 1 {
+        mut msg := if report.total_errors() == 1 {
             "could not compile module `{}`, aborting due to previous error".fmt(self.prefs.mod_name)
         } else {
             "could not compile module `{}`, aborting due to {} previous errors".fmt(

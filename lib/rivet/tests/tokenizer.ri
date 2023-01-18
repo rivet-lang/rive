@@ -10,9 +10,9 @@ import { Table } from "rivet/ast";
 let prefs_: prefs.Prefs = prefs.Prefs();
 
 func tokenize(text: string) []token.Token {
-    let mut tokenizer_ = tokenizer.Tokenizer.new(text, prefs_, Table.new(prefs_));
-    let mut tokens = @vec(token.Token);
-    let mut token = tokenizer_.next();
+    mut tokenizer_ = tokenizer.Tokenizer.new(text, prefs_, Table.new(prefs_));
+    mut tokens := @vec(token.Token);
+    mut token := tokenizer_.next();
     while {
         tokens.push(token);
         token = tokenizer_.next();
@@ -24,7 +24,7 @@ func tokenize(text: string) []token.Token {
 }
 
 test "tokenizer: simple `func main() { }`" {
-    let tokens = tokenize("func main() { }");
+    tokens := tokenize("func main() { }");
     @assert(tokens.len == 6);
     @assert(tokens[0].kind == .KwFunc);
     @assert(tokens[1].kind == .Name and tokens[1].lit == "main");
@@ -35,7 +35,7 @@ test "tokenizer: simple `func main() { }`" {
 }
 
 test "tokenizer: number constant input format" {
-	let mut c = 0xa0;
+	mut c := 0xa0;
 	@assert(c == 0xa0);
 	c = 0b1001;
 	@assert(c == 9);
@@ -44,12 +44,12 @@ test "tokenizer: number constant input format" {
 }
 
 test "tokenizer: float conversion and reading" {
-	let d = 23000000e-3;
+	d := 23000000e-3;
 	@assert(@as(int32, d) == 23000);
-	let mut e = 1.2E3 * -1e-1;
+	mut e := 1.2E3 * -1e-1;
 	@assert(e == -120.0);
 	e = 1.2E3 * 1e-1;
-	let x = 55.0;
+	x := 55.0;
 	@assert(e == 120.0);
 	@assert(1.23e+10 == 1.23e10);
 	@assert(1.23e+10 == 1.23e0010);

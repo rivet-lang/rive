@@ -59,9 +59,9 @@ class SourceCache {
    }
 
    public func find_lines(mut self, path: string) ?[]string {
-      let mut i: usize = 0;
+      mut i: usize := 0;
       while i < self.sources.len : i += 1 {
-         let mut cached = self.sources[i];
+         mut cached := self.sources[i];
          if cached.path == path {
             if cached.lines.is_empty() {
                cached.lines = cached.content.split_into_lines();
@@ -79,7 +79,7 @@ public func read_file(path: string) !string {
    if let res = source_cache.find(path) {
       return res;
    }
-   let content = skip_bom(fs.read_file(path).!);
+   content := skip_bom(fs.read_file(path).!);
    unsafe {
       source_cache.sources.push(CachedFile(path, content));
    }

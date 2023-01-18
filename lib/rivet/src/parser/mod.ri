@@ -36,7 +36,7 @@ public class Parser {
 
     public func parse_module(mut self, mod_sym: ast.Sym, files: []string) []ast.SourceFile {
         self.mod_sym = mod_sym;
-        let mut source_files = @vec(mut ast.SourceFile);
+        mut source_files := @vec(mut ast.SourceFile);
         for file in files {
             source_files.push(self.parse_file(file));
         }
@@ -67,7 +67,7 @@ public class Parser {
     }
 
     func advance(mut self, n: usize) {
-        let mut i: usize = 0;
+        mut i: usize := 0;
         while i < n : i += 1 { self.next(); }
     }
 
@@ -89,7 +89,7 @@ public class Parser {
             return;
         }
         self.last_err_pos = self.tok.pos;
-        let mut kstr = kind.to_string();
+        mut kstr := kind.to_string();
         if token.is_keyword(kstr) or (kstr.len > 0 and !kstr[0].is_letter()) {
             kstr = "`{}`".fmt(kstr);
         }
@@ -98,7 +98,7 @@ public class Parser {
 
     // ---- utilities ------------------
     func parse_name(mut self) string {
-        let lit = self.tok.lit;
+        lit := self.tok.lit;
         self.expect(.Name);
         return lit;
     }

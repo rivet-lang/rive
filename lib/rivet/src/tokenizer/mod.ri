@@ -31,13 +31,13 @@ public class Tokenizer {
     mut conditional_stack: []Conditional;
 
     public func new(text: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
-        let mut t = Tokenizer(table: table, prefs: prefs, text: text);
+        mut t := Tokenizer(table: table, prefs: prefs, text: text);
         t.init();
         return t;
     }
 
     public func from_file(file: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
-        let mut t = Tokenizer(
+        mut t := Tokenizer(
             table: table, prefs: prefs, file: file,
             text: utils.read_file(file) catch |err| utils.error(err.to_string())
         );
@@ -53,7 +53,7 @@ public class Tokenizer {
 
     func tokenize_remaining_text(mut self) {
         while {
-            let t = self.internal_next();
+            t := self.internal_next();
             self.all_tokens.push(t);
             if t.kind == .EOF {
                 break;
@@ -98,7 +98,7 @@ public class Tokenizer {
 
     func buffer_tok(mut self) token.Token {
         while {
-            let cidx = self.tidx;
+            cidx := self.tidx;
             self.tidx += 1;
             if cidx >= self.all_tokens.len {
                 return self.end_of_file();
@@ -149,7 +149,7 @@ public class Tokenizer {
 
     func skip_whitespace(mut self) {
         while self.pos < self.text.len : self.pos += 1 {
-            let c = self.current_char();
+            c := self.current_char();
             if c == 8 {
                 self.pos += 1;
                 continue;
@@ -169,12 +169,12 @@ public class Tokenizer {
     }
 
     func matches(self, want: string, start_pos: usize) bool {
-        let end_pos = start_pos + want.len;
+        end_pos := start_pos + want.len;
         if start_pos < 0 or end_pos < 0 or start_pos >= self.text.len
             or end_pos > self.text.len {
             return false;
         }
-        let mut pos: usize = start_pos;
+        mut pos: usize := start_pos;
         while pos < end_pos : pos += 1 {
             if self.text[pos] != want[pos - start_pos] {
                 return false;
@@ -184,7 +184,7 @@ public class Tokenizer {
     }
 
     public func peek_token(self, n: usize) token.Token {
-        let idx = self.tidx + n;
+        idx := self.tidx + n;
         if idx >= self.all_tokens.len {
             return self.new_eof_token();
         }
@@ -201,30 +201,30 @@ public class Tokenizer {
     }
 
     func read_ident(mut self) string {
-        let start = self.pos;
+        start := self.pos;
         self.pos += 1;
         while self.pos < self.text.len {
-            let c = self.current_char();
+            c := self.current_char();
             if utils.is_name_char(c) or c.is_digit() {
                 self.pos += 1;
                 continue;
             }
             break;
         }
-        let lit = self.text[start..self.pos];
+        lit := self.text[start..self.pos];
         self.pos -= 1; // fix pos
         return lit;
     }
 
     func read_hex_number(mut self) string {
-        let start = self.pos;
+        start := self.pos;
         self.pos += 2; // skip '0x'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
             self.error("separator `_` is only valid between digits in a numeric literal").emit();
         }
 
         while self.pos < self.text.len : self.pos += 1 {
-            let ch = self.current_char();
+            ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
                 self.error("cannot use `_` consecutively in a numeric literal").emit();
             }
@@ -249,20 +249,20 @@ public class Tokenizer {
             self.pos += 1;
         }
 
-        let lit = self.text[start..self.pos];
+        lit := self.text[start..self.pos];
         self.pos -= 1; // fix pos
         return lit;
     }
 
     func read_bin_number(mut self) string {
-        let start = self.pos;
+        start := self.pos;
         self.pos += 2; // skip '0b'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
             self.error("separator `_` is only valid between digits in a numeric literal").emit();
         }
 
         while self.pos < self.text.len : self.pos += 1 {
-            let ch = self.current_char();
+            ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
                 self.error("cannot use `_` consecutively in a numeric literal").emit();
             }
@@ -290,20 +290,20 @@ public class Tokenizer {
             self.pos += 1;
         }
 
-        let lit = self.text[start..self.pos];
+        lit := self.text[start..self.pos];
         self.pos -= 1; // fix pos
         return lit;
     }
 
     func read_oct_number(mut self) string {
-        let start = self.pos;
+        start := self.pos;
         self.pos += 2; // skip '0b'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
             self.error("separator `_` is only valid between digits in a numeric literal").emit();
         }
 
         while self.pos < self.text.len : self.pos += 1 {
-            let ch = self.current_char();
+            ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
                 self.error("cannot use `_` consecutively in a numeric literal").emit();
             }
@@ -331,19 +331,19 @@ public class Tokenizer {
             self.pos += 1;
         }
 
-        let lit = self.text[start..self.pos];
+        lit := self.text[start..self.pos];
         self.pos -= 1; // fix pos
         return lit;
     }
 
     func read_dec_number(mut self) string {
-        let start = self.pos;
+        start := self.pos;
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
             self.error("separator `_` is only valid between digits in a numeric literal").emit();
         }
 
         while self.pos < self.text.len : self.pos += 1 {
-            let ch = self.current_char();
+            ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
                 self.error("cannot use `_` consecutively in a numeric literal").emit();
             }
@@ -364,8 +364,8 @@ public class Tokenizer {
             self.error("cannot use `_` at the end of a numeric literal").emit();
         }
 
-        let mut call_method = false; // true for, e.g., 5.method(), 5.5.method(), 5e5.method()
-        let mut is_range = false; // true for, e.g., 5..10
+        mut call_method := false; // true for, e.g., 5.method(), 5.5.method(), 5e5.method()
+        mut is_range := false; // true for, e.g., 5..10
         // fractional part
         if self.pos < self.text.len and self.text[self.pos] == b'.' {
             self.pos += 1;
@@ -373,7 +373,7 @@ public class Tokenizer {
                 // 16.6, 16.6.to_string()
                 if self.text[self.pos].is_digit() {
                     while self.pos < self.text.len : self.pos += 1 {
-                        let c = self.current_char();
+                        c := self.current_char();
                         if !c.is_digit() {
                             if !c.is_letter() or c in [b'e', b'E'] {
                                 // 16.6.to_string()
@@ -403,8 +403,8 @@ public class Tokenizer {
                 } else {
                     // 6.
                     self.pos -= 1;
-                    let mut err = self.error("float literals should have a digit after the decimal point");
-                    let fl = self.text[start..self.pos];
+                    mut err := self.error("float literals should have a digit after the decimal point");
+                    fl := self.text[start..self.pos];
                     err.add_help("use `{0}.0` instead of `{0}`".fmt(fl));
                     err.emit();
                     self.pos += 1;
@@ -412,7 +412,7 @@ public class Tokenizer {
             }
         }
         // exponential part
-        let mut has_exp = false;
+        mut has_exp := false;
         if self.pos < self.text.len and self.current_char() in [b'e', b'E'] {
             has_exp = true;
             self.pos += 1;
@@ -420,7 +420,7 @@ public class Tokenizer {
                 self.pos += 1;
             }
             while self.pos < self.text.len : self.pos += 1 {
-                let c2 = self.current_char();
+                c2 := self.current_char();
                 if !c2.is_digit() {
                     if !c2.is_letter() {
                         // 6e6.to_string()
@@ -447,7 +447,7 @@ public class Tokenizer {
             }
             self.pos += 1;
         }
-        let lit = self.text[start..self.pos];
+        lit := self.text[start..self.pos];
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -462,8 +462,8 @@ public class Tokenizer {
     }
 
     func read_char(mut self) string {
-        let (mut len, start) = (0, self.pos);
-        let backslash = b'\\';
+        (mut len, start) := (0, self.pos);
+        backslash := b'\\';
 
         while {
             self.pos += 1;
@@ -473,7 +473,7 @@ public class Tokenizer {
             if self.current_char() != backslash {
                 len += 1;
             }
-            let double_slash = self.matches("\\\\", self.pos - 2);
+            double_slash := self.matches("\\\\", self.pos - 2);
             if self.current_char() == b'\'' and (self.text[self.pos-1] != backslash or double_slash) {
                 if double_slash {
                     len += 1;
@@ -483,10 +483,10 @@ public class Tokenizer {
         }
         len -= 1;
 
-        let ch = self.text[start + 1..self.pos];
+        ch := self.text[start + 1..self.pos];
         if len != 1 {
             if len > 1 and ch.runes_count() > 1 {
-                let mut err = self.error("character literal may only contain one codepoint");
+                mut err := self.error("character literal may only contain one codepoint");
                 err.add_help("if you meant to write a string literal, use double quotes");
                 err.emit();
             } else if len == 0 {
@@ -497,11 +497,11 @@ public class Tokenizer {
     }
 
     func read_string(mut self) string {
-        let (start, start_char) = (self.pos, self.current_char());
-        let backslash = b'\\';
-        let mut backslash_count = if start_char == backslash { 1 } else { 0 };
-        let is_raw = self.pos > 0 and self.text[self.pos - 1] == b'r';
-        let mut n_cr_chars = 0;
+        (start, start_char) := (self.pos, self.current_char());
+        backslash := b'\\';
+        mut backslash_count := if start_char == backslash { 1 } else { 0 };
+        is_raw := self.pos > 0 and self.text[self.pos - 1] == b'r';
+        mut n_cr_chars := 0;
 
         while {
             self.pos += 1;
@@ -509,7 +509,7 @@ public class Tokenizer {
                 self.error("unfinished string literal").emit();
                 return "";
             }
-            let c = self.current_char();
+            c := self.current_char();
             if c == backslash {
                 backslash_count += 1;
             }
@@ -528,7 +528,7 @@ public class Tokenizer {
             }
         }
 
-        let mut lit = "";
+        mut lit := "";
         if start <= self.pos {
             lit = self.text[start + 1..self.pos];
             if n_cr_chars > 0 {
@@ -542,7 +542,7 @@ public class Tokenizer {
     }
 
     func trim_slash_line_break(self, s: string) string {
-        let (mut start: usize, mut ret_str) = (0, s);
+        (mut start: usize, mut ret_str) := (0, s);
         while let idx = ret_str.index_after_of("\\\n", start) {
             ret_str = ret_str[..idx].concat(ret_str[idx + 2..].trim_left(" \n\t\v\f\r"));
             start = idx;
@@ -554,7 +554,7 @@ public class Tokenizer {
         if !lit.contains("_") {
             return lit;
         }
-        let mut sb = strings.Builder.new(lit.len - lit.count("_"));
+        mut sb := strings.Builder.new(lit.len - lit.count("_"));
         for ch in lit.as_bytes() {
             if ch != b'_' {
                 sb.write_byte(ch);
@@ -574,20 +574,20 @@ public class Tokenizer {
             if self.pos >= self.text.len {
                 return self.new_eof_token();
             }
-            let (ch, nextc) = (self.current_char(), self.look_ahead(1));
+            (ch, nextc) := (self.current_char(), self.look_ahead(1));
             if utils.is_name_char(ch) {
-                let lit = self.read_ident();
+                lit := self.read_ident();
                 return self.new_token(token.lookup(lit), lit, lit.len);
             } else if ch.is_digit() or (ch == b'.' and nextc.is_digit()) {
                 // decimals with 0 prefix = error
                 if ch == b'0' and nextc.is_digit() {
-                    let mut err = self.error(
+                    mut err := self.error(
                         "leading zeros in decimal integer literals are not permitted"
                     );
                     err.add_help("use an `0o` prefix for octal integers");
                     err.emit();
                 }
-                let lit = self.read_number();
+                lit := self.read_number();
                 return self.new_token(.Number, self.number_literal_without_separator(lit), lit.len);
             }
             // delimiters and operators
@@ -625,9 +625,9 @@ public class Tokenizer {
                         }
                         continue;
                     } else if nextc == b'*' {
-                        let start_pos = self.pos;
+                        start_pos := self.pos;
                         self.pos += 1;
-                        let mut nest_count = 1;
+                        mut nest_count := 1;
                         while nest_count > 0 and self.pos < self.text.len - 1 {
                             self.pos += 1;
                             if self.current_char() == LF {
@@ -725,10 +725,10 @@ public class Tokenizer {
                     return self.new_token(.Amp);
                 },
                 b'!' => {
-                    let is_s_or_n = self.look_ahead(2) in [b's', b'n'];
+                    is_s_or_n := self.look_ahead(2) in [b's', b'n'];
                     if nextc == b'i' and is_s_or_n and self.look_ahead(3).is_space() {
                         self.pos += 2;
-                        let ch2 = self.current_char();
+                        ch2 := self.current_char();
                         if ch2 == b's' {
                             return self.new_token(.KwNotIs, len: 2);
                         } else if ch2 == b'n' {
@@ -762,11 +762,11 @@ public class Tokenizer {
                 b'(' => return self.new_token(.Lparen),
                 b')' => return self.new_token(.Rparen),
                 b'\'' => { // '
-                    let lit = self.read_char();
+                    lit := self.read_char();
                     return self.new_token(.Char, lit, lit.len + 2);
                 },
                 b'"' => {
-                    let lit = self.read_string();
+                    lit := self.read_string();
                     return self.new_token(.String, lit, lit.len + 2);
                 },
                 else => {
@@ -779,8 +779,8 @@ public class Tokenizer {
     }
 
     func invalid_character(mut self) {
-        let len = self.text[self.pos].len_utf8();
-        let end = utils.min(self.pos + len, self.text.len);
+        len := self.text[self.pos].len_utf8();
+        end := utils.min(self.pos + len, self.text.len);
         self.error("invalid character: `{}`".fmt(self.text[self.pos..end])).emit();
         self.pos += len;
     }

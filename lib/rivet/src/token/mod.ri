@@ -35,7 +35,7 @@ public struct Token : traits.Stringable {
     }
 
     public func to_string(&self) string {
-        let mut str = self.kind.to_string();
+        mut str := self.kind.to_string();
         if !str[0].is_alnum() {
             return "token `{}`".fmt(str);
         }

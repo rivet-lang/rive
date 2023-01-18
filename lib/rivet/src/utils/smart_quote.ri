@@ -15,10 +15,10 @@ public func smart_quote(s: string, raw: bool = false) string {
     if s.len == 0 {
         return "";
     } else if s.len < 256 {
-        let mut is_pure = true;
-        let mut i: usize = 0;
+        mut is_pure := true;
+        mut i: usize := 0;
         while i < s.len : i += 1 {
-            let ch = s[i];
+            ch := s[i];
             if (ch >= 37 and ch <= 90) or (ch >= 95 and ch <= 126)
                 or (ch in [b' ', b'!', b'#', b'[', b']']) {
                 // safe punctuation + digits + big latin letters, small latin
@@ -35,11 +35,11 @@ public func smart_quote(s: string, raw: bool = false) string {
         }
     }
     // ensure there is enough space for the potential expansion of several b'\\' or b'\n'
-    let mut result = Builder.new(s.len + 10);
-    let mut pos: int64 = -1;
-    let mut current: uint8 = 0;
-    let mut next: uint8 = 0;
-    let mut skip_next = false;
+    mut result := Builder.new(s.len + 10);
+    mut pos: int64 := -1;
+    mut current: uint8 := 0;
+    mut next: uint8 := 0;
+    mut skip_next := false;
     while {
         pos += 1;
         if skip_next {
@@ -49,9 +49,9 @@ public func smart_quote(s: string, raw: bool = false) string {
         if pos >= @as(int64, s.len) {
             break;
         }
-        let pos_1 = @as(usize, pos);
+        pos_1 := @as(usize, pos);
         current = s[pos_1];
-        let pos_2 = pos_1 + 1;
+        pos_2 := pos_1 + 1;
         next = if pos_1 < s.len {
             s[pos_2]
         } else {

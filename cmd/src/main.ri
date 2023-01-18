@@ -13,10 +13,10 @@ func main() {
         console.eprintln(HELP);
         utils.error("expected command argument");
     }
-    let cmd = process.ARGS[1];
+    cmd := process.ARGS[1];
     switch cmd {
         "build", "run", "test" => {
-            let is_test = cmd == "test";
+            is_test := cmd == "test";
             rivet.Compiler.new(process.ARGS[2..], is_test, is_test or cmd == "run").!;
         },
         "version" => {

@@ -82,7 +82,7 @@ public class Report {
             reports.warns += 1;
         }
         for extra in self.extras {
-            let start = utils.bold("      {} {}".fmt(utils.blue("="), if extra.kind == .Note {
+            start := utils.bold("      {} {}".fmt(utils.blue("="), if extra.kind == .Note {
                 utils.cyan("note:")
             } else {
                 "help:"
@@ -98,17 +98,17 @@ func formatted_line(pos: token.Pos) {
             "{} {} {}", utils.bold(utils.blue("{:5}".fmt(pos.line + 1))),
             utils.bold(utils.blue("|")), line.replace("\t", " ")
         );
-        let start_column = utils.max(0, utils.min(pos.col - 1, line.len));
-        let end_column = utils.max(0, utils.min((pos.col - 1) + utils.max(0, pos.len), line.len));
-        let mut sb = strings.Builder.new(line.len);
-        let mut i: usize = 0;
+        start_column := utils.max(0, utils.min(pos.col - 1, line.len));
+        end_column := utils.max(0, utils.min((pos.col - 1) + utils.max(0, pos.len), line.len));
+        mut sb := strings.Builder.new(line.len);
+        mut i: usize := 0;
         while i < start_column {
-            let b = line[i];
+            b := line[i];
             if b.is_space() {
                 sb.write_byte(b);
                 i += 1;
             } else {
-                let char_len = b.len_utf8();
+                char_len := b.len_utf8();
                 sb.write_string(" ".repeat(line[i..i + char_len].runes_count()));
                 i += char_len;
             }
@@ -129,7 +129,7 @@ let ERROR_PATHS_ABSOLUTE: bool = (env.get("RIVET_ERROR_PATHS") ?? "relative") ==
 // NOTE: path_styled_for_error_messages will *always* use `/` in the error paths, no
 // matter the OS, to ensure stable compiler error output in the tests.
 public func path_styled_for_error_messages(path_: string) string {
-    let rpath = (path.resolve(path_) catch path_).replace("\\", "/");
+    rpath := (path.resolve(path_) catch path_).replace("\\", "/");
     return if ERROR_PATHS_ABSOLUTE {
         rpath
     } else {

@@ -81,16 +81,16 @@ public class Table {
     }
 
     public func filter_files(self, inputs: []string) []string {
-        let mut new_inputs = @vec(string);
+        mut new_inputs := @vec(string);
         for input in inputs {
-            let basename_input = path.basename(input);
+            basename_input := path.basename(input);
             if basename_input.count(".") == 1 {
                 new_inputs.push(input);
                 continue;
             }
-            let exts = basename_input[..basename_input.len - 3].split(".")[1..];
-            let mut already_exts = @vec(string);
-            let mut should_compile = false;
+            exts := basename_input[..basename_input.len - 3].split(".")[1..];
+            mut already_exts := @vec(string);
+            mut should_compile := false;
             for ext in exts {
                 if ext in already_exts {
                     utils.error("{}: duplicate special extension `{}`", input, ext);

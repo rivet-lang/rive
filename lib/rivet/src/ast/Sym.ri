@@ -9,7 +9,7 @@ import "../token";
 let mut SYM_IDS: usize = 0;
 
 func new_sym_id() usize {
-    let res = SYM_IDS;
+    res := SYM_IDS;
     SYM_IDS += 1;
     return res;
 }
@@ -319,7 +319,7 @@ public class TypeSym : Sym {
                 return s;
             }
         } else if self.info is StructInfo or self.info is TraitInfo {
-            let bases = if self.info is StructInfo {
+            bases := if self.info is StructInfo {
                 @as(StructInfo, self.info).bases
             } else {
                 @as(TraitInfo, self.info).bases
@@ -346,7 +346,7 @@ public class TypeSym : Sym {
         if !self.full_fields_.is_empty() {
             return self.full_fields_;
         }
-        let mut fields = @vec(Field);
+        mut fields := @vec(Field);
         if self.info is ClassInfo as class_info {
             for bf in class_info.base_sym.full_fields() {
                 fields.push(bf);
@@ -436,7 +436,7 @@ public class Func : Sym {
     public ret_typ: Type;
 
     public func get_arg(self, idx: usize) Arg {
-        let arg = self.args[idx];
+        arg := self.args[idx];
         return if arg.is_self {
             self.args[idx + 1]
         } else {
@@ -445,7 +445,7 @@ public class Func : Sym {
     }
 
     public func args_len(self) usize {
-        let mut len: usize = 0;
+        mut len: usize := 0;
         for arg in self.args {
             if !(arg.is_self or arg.typ is .Variadic) {
                 len += 1;
@@ -482,7 +482,7 @@ public class Scope {
     }
 
     public func lookup(self, name: string) ?Sym {
-        let mut sc_: ?Scope = self;
+        mut sc_: ?Scope := self;
         while let sc = sc_ {
             for sym in self.syms {
                 if sym.name == name {

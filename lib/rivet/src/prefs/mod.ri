@@ -76,11 +76,11 @@ public class Prefs {
 	public mut is_verbose: bool;
 
     public func new(args: []string, is_test: bool, run_output: bool) !Self {
-        let mut prefs = Prefs(is_test: is_test, run_output: run_output);
-        let mut options: []string = [];
-        let mut i: usize = 0;
+        mut prefs := Prefs(is_test: is_test, run_output: run_output);
+        mut options: []string := [];
+        mut i: usize := 0;
         while i < args.len : i += 1 {
-            let arg = args[i];
+            arg := args[i];
             if arg.len > 1 and arg[0] == b'-' and arg !in ["-L", "-d", "--define"] and
                 arg in options
             {
@@ -88,7 +88,7 @@ public class Prefs {
             } else {
                 options.push(arg);
             }
-            let current_args = args[i..];
+            current_args := args[i..];
             switch arg {
                 // informative options
                 "-h", "--help" => print_help(),

@@ -84,7 +84,7 @@ public enum Type : traits.Stringable {
             .Result as result_inner => return .Result(result_inner.unalias() ?? result_inner),
             .Option as option_inner => return .Option(option_inner.unalias() ?? option_inner),
             .Tuple as tuple_data => {
-                let mut unaliased_types = @vec(mut Type, tuple_data.inners.len);
+                mut unaliased_types := @vec(mut Type, tuple_data.inners.len);
                 for i, tuple_type in tuple_data.inners {
                     unaliased_types[i] = tuple_type.unalias() ?? tuple_type;
                 }
@@ -104,7 +104,7 @@ public enum Type : traits.Stringable {
             ),
             .Anyptr => return self,
             .Func as func_data => {
-                let args = @vec(mut Arg, func_data.args.len);
+                args := @vec(mut Arg, func_data.args.len);
                 for i, arg in args {
                     args[i].typ = arg.typ.unalias() ?? arg.typ;
                 }
@@ -215,7 +215,7 @@ public enum Type : traits.Stringable {
                     func_lhs.self_is_ref != func_rhs.self_is_ref,
                     func_lhs.args.len != func_rhs.args.len => false,
                     else => {
-                        let mut final_res = func_lhs.ret_typ == func_rhs.ret_typ;
+                        mut final_res := func_lhs.ret_typ == func_rhs.ret_typ;
                         for i, arg in func_lhs.args {
                             if arg.is_mut != func_rhs.args[i].is_mut {
                                 final_res = false;
@@ -246,7 +246,7 @@ public enum Type : traits.Stringable {
             .Result as result_inner => "!".concat(result_inner.to_string()),
             .Option as option_inner => "?".concat(option_inner.to_string()),
             .Tuple as tuple_data => {
-                let mut sb = Builder.new(100);
+                mut sb := Builder.new(100);
                 sb.write_byte(b'(');
                 for i, inner in tuple_data.inners {
                     sb.write_string(inner.to_string());
@@ -298,7 +298,7 @@ public enum Type : traits.Stringable {
                 }
             },
             .Func as func_data => {
-                let mut sb = Builder.new(150);
+                mut sb := Builder.new(150);
                 if func_data.is_extern {
                     sb.write_fmt("extern ({}) ", func_data.abi);
                 }
@@ -321,7 +321,7 @@ public enum Type : traits.Stringable {
                     sb.write_string("...");
                 }
                 sb.write_string(")");
-                let ret_typ = func_data.ret_typ.to_string();
+                ret_typ := func_data.ret_typ.to_string();
                 if ret_typ != "void" {
                     sb.write_string(" ");
                     sb.write_string(ret_typ);
