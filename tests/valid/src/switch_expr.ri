@@ -11,7 +11,7 @@ test "`switch` expression as statement" {
         else => @assert(false)
     }
 
-    let x = 1;
+    x := 1;
     switch x {
         1 => @assert(true),
         else => @assert(false)
@@ -19,8 +19,8 @@ test "`switch` expression as statement" {
 }
 
 test "`switch` branch condition" {
-    let v = 1;
-    let x = 5;
+    v := 1;
+    x := 5;
     @assert(switch v {
         1 if x == 5 => true,
         else => false
@@ -33,8 +33,8 @@ class SwitchSon : SwitchBase {
 }
 
 test "`switch` branch variable" {
-    let ss = SwitchSon(name: "Rivet");
-    let sb = @as(SwitchBase, ss);
+    ss := SwitchSon(name: "Rivet");
+    sb := @as(SwitchBase, ss);
     @assert(switch sb is {
         SwitchSon as sb_ss => sb_ss.name == "Rivet",
         else => false
@@ -42,7 +42,7 @@ test "`switch` branch variable" {
 }
 
 test "`switch` branch with range condition" {
-    let x = 5;
+    x := 5;
     @assert(switch x {
         1...10 => true,
         else => false

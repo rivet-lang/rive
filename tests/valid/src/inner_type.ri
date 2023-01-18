@@ -16,6 +16,6 @@ class OuterClass {
 }
 
 test "inner type" {
-    let o = OuterClass(inner: OuterClass.InnerClass(5));
+    o := OuterClass(inner: OuterClass.InnerClass(5));
     @assert(o.inner.abc == 5);
 }

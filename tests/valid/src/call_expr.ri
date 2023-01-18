@@ -21,12 +21,12 @@ test "call expression with named arguments" {
     bar(true, b: true);
     baz(true, true);
 
-    let a = true;
+    a := true;
     qux(a);
 }
 
 func args(values: ...int32) int32 {
-    let mut res = 0;
+    mut res := 0;
     for v in values {
         res += v;
     }

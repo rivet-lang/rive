@@ -71,7 +71,7 @@ func reader_writer(rw: ReaderWriter) uint8 {
 }
 
 test "traits: inheritance" {
-    let ss = SomeStream();
+    ss := SomeStream();
     @assert(writer(ss));
     @assert(reader(ss) == b'A');
     @assert(reader_writer(ss) == b'A');

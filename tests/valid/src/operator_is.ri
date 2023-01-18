@@ -3,7 +3,7 @@ trait Any { }
 struct MyStruct : Any { }
 
 test "operator `is` with traits" {
-    let a = Any(MyStruct());
+    a := Any(MyStruct());
     @assert(a is MyStruct);
 }
 
@@ -18,10 +18,10 @@ func class_upcast(a: Abc) bool {
 }
 
 test "operator `is` with classes" {
-    let a = Abc();
+    a := Abc();
     @assert(a is Abc);
 
-    let d = Def();
+    d := Def();
     @assert(class_upcast(d));
 }
 
@@ -34,6 +34,6 @@ func check_field(abc: Abc) bool {
 }
 
 test "operator `is` with variable" {
-    let def = Def(555);
+    def := Def(555);
     @assert(check_field(def));
 }

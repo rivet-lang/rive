@@ -606,7 +606,9 @@ class Parser:
             if expr.__class__ not in (ast.IfExpr, ast.SwitchExpr, ast.Block):
                 self.expect(Kind.Semicolon)
             return ast.DeferStmt(expr, is_errdefer, pos)
-        elif self.accept(Kind.KwLet) or self.tok.kind == Kind.Lparen or self.look_if_decl_operator_is_used():
+        elif self.accept(Kind.KwLet) or (
+            self.tok.kind == Kind.Lparen and self.look_if_decl_operator_is_used()
+        ) or self.look_if_decl_operator_is_used():
             if self.prev_tok.kind==Kind.KwLet:report.warn("deprecated", self.prev_tok.pos)
             # variable declarations
             pos = self.prev_tok.pos

@@ -1,5 +1,5 @@
 test "string.concat()" {
-    let x = "Hello ".concat("World!");
+    x := "Hello ".concat("World!");
     @assert(x == "Hello World!");
 }
 
@@ -55,8 +55,8 @@ test "string.runes_count()" {
 }
 
 test "string.tokenize()" {
-    let mut iterator = "   abc def    ghi  ".tokenize(b' ');
-    let mut res = @vec(string, 3);
+    mut iterator := "   abc def    ghi  ".tokenize(b' ');
+    mut res := @vec(string, 3);
     while let w = iterator.next() {
         res.push(w);
     }

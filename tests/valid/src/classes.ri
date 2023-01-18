@@ -15,19 +15,19 @@ class B : A {
 }
 
 test "inheritance: using inherited fields" {
-    let b = B(i: 99);
+    b := B(i: 99);
     @assert(b.i == 99);
 
-    let b2 = B();
+    b2 := B();
     @assert(b2.i == 10);
 
-    let b3 = B(1, 2);
+    b3 := B(1, 2);
     @assert(b3.i == 1);
     @assert(b3.c == 2);
 }
 
 test "inheritance: using `base`" {
-    let mut b2 = B();
+    mut b2 := B();
     @assert(b2.i == 10);
 
     b2.set_i(5);
@@ -38,18 +38,18 @@ test "inheritance: using `base`" {
 }
 
 test "inheritance: downcast" {
-    let b = B(c: 5);
+    b := B(c: 5);
 
-    let a = @as(A, b);
+    a := @as(A, b);
     @assert(a.i == 10);
 
-    let b2 = @as(B, a);
+    b2 := @as(B, a);
     @assert(b2.c == 5);
 }
 
 test "inheritance: typeswitch" {
-    let b = B(c: 5);
-    let a = @as(A, b);
+    b := B(c: 5);
+    a := @as(A, b);
     @assert(switch a is {
         B => true,
         else => false
@@ -79,12 +79,12 @@ class Cat : Animal {
 class NonAnimal : Animal { }
 
 test "inheritance: virtual methods and `#[override]`" {
-    let non_animal = NonAnimal();
+    non_animal := NonAnimal();
     @assert(non_animal.speak() == "~ Animal.speaks() ~");
 
-    let dog = Dog();
+    dog := Dog();
     @assert(dog.speak() == "woof");
 
-    let cat = Cat();
+    cat := Cat();
     @assert(cat.speak() == "meow");
 }

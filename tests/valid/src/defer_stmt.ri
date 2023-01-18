@@ -3,7 +3,7 @@ struct ErrDefer {
 }
 
 func test_defer() int32 {
-    let mut a = 1;
+    mut a := 1;
     defer a = 5;
     return a;
 }
@@ -22,7 +22,7 @@ func test_errdefer(mut err_defer: ErrDefer, err: bool) ! {
 }
 
 test "`errdefer` statement" {
-    let mut err_defer = ErrDefer(i: 0);
+    mut err_defer := ErrDefer(i: 0);
     test_errdefer(err_defer, false) catch { };
     @assert(err_defer.i == 1);
 

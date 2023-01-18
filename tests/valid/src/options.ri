@@ -3,24 +3,24 @@ struct Option {
 }
 
 test "`nil` literal" {
-    let x: ?int32 = nil;
+    x: ?int32 := nil;
     @assert(x is nil);
 }
 
 test "operator `??`" {
-    let mut x: ?int32 = nil;
+    mut x: ?int32 := nil;
     @assert((x ?? 5) == 5);
     x = 1;
     @assert((x ?? 5) == 1);
 }
 
 test "operator `.?`" {
-    let mut x: ?int32 = 5;
+    mut x: ?int32 := 5;
     @assert(x.? == 5);
 }
 
 test "guard expr with options" {
-    let mut x: ?int32 = 100;
+    mut x: ?int32 := 100;
     if let y = x {
         @assert(y == 100);
     } else {
@@ -29,10 +29,10 @@ test "guard expr with options" {
 }
 
 test "options field" {
-    let opt = Option();
+    opt := Option();
     @assert(opt.a is nil);
 
-    let opt2 = Option(a: 5);
+    opt2 := Option(a: 5);
     @assert(opt2.a !is nil);
     @assert(opt2.a.? == 5);
 }

@@ -1,19 +1,19 @@
 import "c/libc";
 
 test "string index" {
-    let x = "String Literal";
+    x := "String Literal";
     @assert(x[0] == b'S');
 
-    let ch = "String Literal"[0];
+    ch := "String Literal"[0];
     @assert(ch == b'S');
 }
 
 test "byte string literal" {
-    let x = b"Abcdef";
+    x := b"Abcdef";
     @assert(x.len == 6);
 }
 
 test "C string literal" {
-    let pstr = c"Hello World!";
+    pstr := c"Hello World!";
     @assert(unsafe { libc.strlen(pstr) == 12 });
 }

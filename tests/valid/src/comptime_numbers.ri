@@ -1,11 +1,11 @@
 test "comptime_int" {
-    let y = 5;
+    y := 5;
     @assert(5 == y);
     @assert(y == 5);
 }
 
 test "comptime_float" {
-    let y = 5.0;
+    y := 5.0;
     @assert(5.0 == y);
     @assert(y == 5.0);
 }
