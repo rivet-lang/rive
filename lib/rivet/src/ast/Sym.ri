@@ -48,6 +48,7 @@ public class Sym {
     public is_universe: bool;
     public is_root: bool;
 
+    #[inline]
     public func qualname(self) string {
         return if self.parent is nil or self.parent.?.is_universe {
             self.name
@@ -99,7 +100,6 @@ public class Field {
 public enum TypeKind : traits.Stringable {
     Placeholder,
     Never,
-    Void,
     Nil,
     Bool,
     Rune,
@@ -130,7 +130,7 @@ public enum TypeKind : traits.Stringable {
     #[inline]
     public func is_primitive(self) bool {
         return self in [
-            .Void, .Nil, .Bool, .Rune, .Int8, .Int16, .Int32, .Int64, .Isize, .Uint8,
+            .Nil, .Bool, .Rune, .Int8, .Int16, .Int32, .Int64, .Isize, .Uint8,
             .Uint16, .Uint32, .Uint64, .Usize, .ComptimeInt, .ComptimeFloat, .Float32,
             .Float64, .Never
         ];
@@ -515,7 +515,6 @@ public func universe() Mod {
         name: "universe",
         scope: Scope(
             syms: [
-                TypeSym(is_public: true, name: "void", kind: .Void),
                 TypeSym(is_public: true, name: "never", kind: .Never),
                 TypeSym(is_public: true, name: "nil", kind: .Nil),
                 TypeSym(is_public: true, name: "bool", kind: .Bool),

@@ -5,6 +5,13 @@
 import "std/traits";
 import { Builder } from "std/strings";
 
+import "../token";
+
+struct AnyptrData {
+    public is_mut: bool;
+    public pos: token.Pos;
+}
+
 struct TupleData {
     public inners: []Type;
     public sym: TypeSym;
@@ -57,6 +64,7 @@ struct FuncData {
 
 public enum Type : traits.Stringable {
     Unresolved: Expr,
+    Void,
     Option: Type,
     Result: Type,
     Tuple: TupleData,
@@ -65,6 +73,7 @@ public enum Type : traits.Stringable {
     Array: ArrayData, // TODO: Array: (inner: Type, is_mut: bool, size: Expr),
     Reference: ReferenceData, // TODO: Reference: (inner: Type, is_mut: bool),
     Pointer: PointerData, // TODO: Pointer: (inner: Type, is_mut: bool, is_indexable: bool),
+    Anyptr: AnyptrData,
     Func: FuncData,
     Resolved: TypeSym;
 
@@ -93,6 +102,7 @@ public enum Type : traits.Stringable {
             .Pointer as pointer_data => return .Pointer(
                 PointerData(pointer_data.inner.unalias() ?? pointer_data.inner, ...pointer_data)
             ),
+            .Anyptr => return self,
             .Func as func_data => {
                 let args = @vec(mut Arg, func_data.args.len);
                 for i, arg in args {
@@ -112,13 +122,15 @@ public enum Type : traits.Stringable {
             } else {
                 .Resolved(resolved_sym)
             },
+            // for `.Void` or `.Unresolved`
             else => return nil
         }
     }
 
     #[inline]
     public func symbol(self) ?TypeSym {
-        // NOTE: `.Func` has no TypeSym, so it does not appear in this typeswitch.
+        // NOTE: `.Func` has no TypeSym, so it does not appear in this typeswitch,
+        // the same is for `.Void` and `.Anyptr`.
         return switch self is {
             .Result as result_inner => result_inner.symbol(),
             .Option as option_inner => option_inner.symbol(),
@@ -185,6 +197,11 @@ public enum Type : traits.Stringable {
                 } else {
                     ptr_lhs.inner == ptr_rhs.inner
                 }
+            } else {
+                false
+            },
+            .Anyptr as anyptr_lhs => if rhs is .Anyptr as anyptr_rhs {
+                anyptr_lhs.is_mut == anyptr_rhs.is_mut
             } else {
                 false
             },
@@ -259,15 +276,7 @@ public enum Type : traits.Stringable {
                 "&".concat(reference_data.inner.to_string())
             },
             .Pointer as pointer_data => {
-                let symbol = pointer_data.inner.symbol();
-                // TODO: improve anyptr type
-                if symbol !is nil and symbol.?.kind == .Void {
-                    if pointer_data.is_mut {
-                        "mut_anyptr"
-                    } else {
-                        "anyptr"
-                    }
-                } else if pointer_data.is_mut {
+                if pointer_data.is_mut {
                     if pointer_data.is_indexable {
                         "[*]mut ".concat(pointer_data.inner.to_string())
                     } else {
@@ -279,6 +288,13 @@ public enum Type : traits.Stringable {
                     } else {
                         "*".concat(pointer_data.inner.to_string())
                     }
+                }
+            },
+            .Anyptr as anyptr_data => {
+                if anyptr_data.is_mut {
+                    "mut_anyptr"
+                } else {
+                    "anyptr"
                 }
             },
             .Func as func_data => {
