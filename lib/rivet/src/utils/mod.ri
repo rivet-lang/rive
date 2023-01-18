@@ -52,7 +52,7 @@ class SourceCache {
    }
 
    public func find_line(mut self, path: string, line: usize) ?string {
-      if let lines = self.find_lines(path) {
+      if lines := self.find_lines(path) {
          return lines[line];
       }
       return nil;
@@ -76,7 +76,7 @@ class SourceCache {
 public let mut source_cache: SourceCache = SourceCache();
 
 public func read_file(path: string) !string {
-   if let res = source_cache.find(path) {
+   if res := source_cache.find(path) {
       return res;
    }
    content := skip_bom(fs.read_file(path).!);

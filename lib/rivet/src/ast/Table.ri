@@ -32,7 +32,7 @@ public class Table {
         switch name {
             // operating systems
             "_LINUX_", "_WINDOWS_" => {
-                return if let os = sys.OS.from_string(name) {
+                return if os := sys.OS.from_string(name) {
                     os == self.prefs.target_os
                 } else {
                     false
@@ -40,7 +40,7 @@ public class Table {
             },
             // architectures
             "_X86_", "_AMD64_" => {
-                return if let os = sys.Arch.from_string(name) {
+                return if os := sys.Arch.from_string(name) {
                     os == self.prefs.target_arch
                 } else {
                     false
@@ -103,9 +103,9 @@ public class Table {
                     } else {
                         ext[2..] !in self.prefs.flags
                     };
-                } else if let os = sys.OS.from_string(ext) {
+                } else if os := sys.OS.from_string(ext) {
                     should_compile = should_compile and self.prefs.target_os == os;
-                } else if let arch = sys.Arch.from_string(ext) {
+                } else if arch := sys.Arch.from_string(ext) {
                     should_compile = should_compile and self.prefs.target_arch == arch;
                 } else if ext in ["x32", "x64"] {
                     should_compile = should_compile and if ext == "x32" {
@@ -119,7 +119,7 @@ public class Table {
                     } else {
                         !self.prefs.target_is_little_endian
                     };
-                } else if let backend = prefs.Backend.from_string(ext) {
+                } else if backend := prefs.Backend.from_string(ext) {
                     should_compile = should_compile and backend == self.prefs.target_backend;
                 } else {
                     utils.error("{}: unknown special extension `{}`", input, ext);

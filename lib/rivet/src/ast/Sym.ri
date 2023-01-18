@@ -228,7 +228,7 @@ public class EnumInfo : TypeInfo {
     }
 
     public func has_value(self, name: string) bool {
-        return if let _ = self.get_value(name) {
+        return if _ := self.get_value(name) {
             true
         } else {
             false
@@ -295,12 +295,12 @@ public class TypeSym : Sym {
             }
         }
         if self.info is ClassInfo as class_info {
-            if let f = class_info.base_sym.lookup_field(name) {
+            if f := class_info.base_sym.lookup_field(name) {
                 return f;
             }
         } else if self.info is StructInfo as struct_info {
             for b in struct_info.bases {
-                if let f = b.lookup_field(name) {
+                if f := b.lookup_field(name) {
                     return f;
                 }
             }
@@ -310,12 +310,12 @@ public class TypeSym : Sym {
 
     #[inline]
     public func has_field(self, name: string) bool {
-        return if let _ = self.lookup_field(name) { true } else { false };
+        return if _ := self.lookup_field(name) { true } else { false };
     }
 
     public func lookup_in_base(self, name: string) ?Sym {
         if self.info is ClassInfo as class_info {
-            if let s = class_info.base_sym.lookup(name) {
+            if s := class_info.base_sym.lookup(name) {
                 return s;
             }
         } else if self.info is StructInfo or self.info is TraitInfo {
@@ -325,7 +325,7 @@ public class TypeSym : Sym {
                 @as(TraitInfo, self.info).bases
             };
             for b in bases {
-                if let s = b.lookup(name) {
+                if s := b.lookup(name) {
                     return s;
                 }
             }
@@ -334,9 +334,9 @@ public class TypeSym : Sym {
     }
 
     public func lookup(self, name: string) ?Sym {
-        if let s = base.scope.lookup(name) {
+        if s := base.scope.lookup(name) {
             return s;
-        } else if let s = self.lookup_in_base(name) {
+        } else if s := self.lookup_in_base(name) {
             return s;
         }
         return nil;
@@ -478,12 +478,12 @@ public class Scope {
 
     #[inline]
     public func exists(self, name: string) bool {
-        return if let _ = self.lookup(name) { true } else { false };
+        return if _ := self.lookup(name) { true } else { false };
     }
 
     public func lookup(self, name: string) ?Sym {
         mut sc_: ?Scope := self;
-        while let sc = sc_ {
+        while sc := sc_ {
             for sym in self.syms {
                 if sym.name == name {
                     return sym;
@@ -501,7 +501,7 @@ public class Scope {
         if self.detached_from_parent or self.parent is nil {
             return true;
         }
-        return if let parent = self.parent {
+        return if parent := self.parent {
             parent is Mod
         } else {
             false

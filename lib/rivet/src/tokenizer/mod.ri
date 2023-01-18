@@ -543,7 +543,7 @@ public class Tokenizer {
 
     func trim_slash_line_break(self, s: string) string {
         (mut start: usize, mut ret_str) := (0, s);
-        while let idx = ret_str.index_after_of("\\\n", start) {
+        while idx := ret_str.index_after_of("\\\n", start) {
             ret_str = ret_str[..idx].concat(ret_str[idx + 2..].trim_left(" \n\t\v\f\r"));
             start = idx;
         }

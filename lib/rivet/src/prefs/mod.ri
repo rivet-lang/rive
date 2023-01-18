@@ -99,7 +99,7 @@ public class Prefs {
 
                 // compiler options
                 "--mod-name" => {
-                    if let mod_name = utils.option(current_args, arg) {
+                    if mod_name := utils.option(current_args, arg) {
                         prefs.mod_name = mod_name;
                         prefs.mod_output = mod_name;
                     } else {
@@ -109,7 +109,7 @@ public class Prefs {
                 },
                 "-r", "--release" => prefs.optimize_mode = .Release,
                 "-o", "--output" => {
-                    if let out = utils.option(current_args, arg) {
+                    if out := utils.option(current_args, arg) {
                         prefs.mod_output = out;
                     } else {
                         utils.error("`{}` requires a filename as argument", arg);
@@ -117,8 +117,8 @@ public class Prefs {
                     i += 1;
                 },
                 "-b", "--backend" => {
-                    if let b = utils.option(current_args, arg) {
-                        if let backend = Backend.from_string(b) {
+                    if b := utils.option(current_args, arg) {
+                        if backend := Backend.from_string(b) {
                             prefs.target_backend = backend;
                         } else {
                             utils.error("unknown backend: `{}`", b);
@@ -129,7 +129,7 @@ public class Prefs {
                     i += 1;
                 },
                 "--backend-compiler" => {
-                    if let bc = utils.option(current_args, arg) {
+                    if bc := utils.option(current_args, arg) {
                         prefs.target_backend_compiler = bc;
                     } else {
                         utils.error("`--backend-compiler` requires a name as argument");
@@ -137,7 +137,7 @@ public class Prefs {
                     i += 1;
                 },
                 "-d", "--define" => {
-                    if let flag = utils.option(current_args, arg) {
+                    if flag := utils.option(current_args, arg) {
                         if flag.starts_with("_") and flag.ends_with("_") {
                             utils.error("flag `{}` should have a upper case name", flag);
                         } else if flag in prefs.flags {
@@ -151,8 +151,8 @@ public class Prefs {
                     i += 1;
                 },
                 "-os", "--target-os" => {
-                    if let os_name = utils.option(current_args, arg) {
-                        if let os_flag = sys.OS.from_string(os_name) {
+                    if os_name := utils.option(current_args, arg) {
+                        if os_flag := sys.OS.from_string(os_name) {
                             prefs.target_os = os_flag;
                         } else {
                             utils.error("unknown target operating system: `{}`", os_name);
@@ -163,8 +163,8 @@ public class Prefs {
                     i += 1;
                 },
                 "-arch", "--target-arch" => {
-                    if let arch_name = utils.option(current_args, arg) {
-                        if let arch_flag = sys.Arch.from_string(arch_name) {
+                    if arch_name := utils.option(current_args, arg) {
+                        if arch_flag := sys.Arch.from_string(arch_name) {
                             prefs.target_arch = arch_flag;
                         } else {
                             utils.error("unknown target architecture: `{}`", arch_name);
