@@ -98,21 +98,21 @@ extend uint32 : Stringable {
 
     /// Returns the value of `self` as a string.
     public func to_string(&self) string {
+        if self.* == 0 {
+            return "0";
+        }
         unsafe {
-            if self.* == 0 {
-                return "0";
-            }
-            let max: usize = 12;
-            let mut n = self.*;
-            let mut d: uint32 = 0;
+            max: usize := 12;
+            mut n := self.*;
+            mut d: uint32 := 0;
 
-            let mut index = max;
-            let buf = @as([*]mut uint8, internal_alloc(max + 1));
+            mut index := max;
+            buf := @as([*]mut uint8, internal_alloc(max + 1));
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
-                let n1 = n / 100;
+                n1 := n / 100;
                 d = (n - (n1 * 100)) << @as(uint32, 1);
                 n = n1;
                 buf[index] = DIGIT_PAIRS.ptr[d];
@@ -128,7 +128,7 @@ extend uint32 : Stringable {
                 index += 1;
             }
 
-            let diff = max - index;
+            diff := max - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
@@ -140,21 +140,21 @@ extend uint64 : Stringable {
 
     /// Returns the value of `self` as a string.
     public func to_string(&self) string {
+        if self.* == 0 {
+            return "0";
+        }
         unsafe {
-            if self.* == 0 {
-                return "0";
-            }
-            let mut n = self.*;
-            let mut d: uint64 = 0;
+            mut n := self.*;
+            mut d: uint64 := 0;
 
-            let max = 20;
-            let mut index = @as(usize, max);
-            let buf = @as([*]mut uint8, internal_alloc(@as(usize, max + 1)));
+            max := 20;
+            mut index := @as(usize, max);
+            buf := @as([*]mut uint8, internal_alloc(@as(usize, max + 1)));
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
-                let n1 = n / 100;
+                n1 := n / 100;
                 d = (n - (n1 * 100)) << @as(uint32, 1);
                 n = n1;
                 buf[index] = DIGIT_PAIRS.ptr[d];
@@ -170,7 +170,7 @@ extend uint64 : Stringable {
                 index += 1;
             }
 
-            let diff = @as(usize, max) - index;
+            diff := @as(usize, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }

@@ -7,8 +7,8 @@ import "c/libc";
 
 /// Returns the path name of the executable that started the current process.
 public func process_executable() !string {
-    let mut res: [libc.MAX_PATH_LEN]uint8 = []!;
-    let count = unsafe {
+    mut res: [libc.MAX_PATH_LEN]uint8 := []!;
+    count := unsafe {
         libc.readlink(c"/proc/self/exe", &res[0], libc.MAX_PATH_LEN)
     };
     if count < 0 {
@@ -29,7 +29,7 @@ public func process_set_cwd(path: string) ! {
 /// Returns the absolute path of the current working directory.
 public func process_get_cwd() !string {
     unsafe {
-        let mut buf: [libc.MAX_PATH_LEN]mut uint8 = []!;
+        mut buf: [libc.MAX_PATH_LEN]mut uint8 := []!;
         if let res = libc.getcwd(&mut buf[0], libc.MAX_PATH_LEN) {
             return string.from_raw(&buf[0]).clone();
         }

@@ -15,7 +15,7 @@ extern (Rivet) {
 extern (C) func init_args(_argc: usize, _argv: [*][*]uint8) {
     unsafe {
         ARGS = @vec(string, _argc);
-        let mut i: usize = 0;
+        mut i: usize := 0;
         while i < _argc : i += 1 {
             ARGS.push(string.from_raw(_argv[i]));
         }

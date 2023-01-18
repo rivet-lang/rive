@@ -700,7 +700,7 @@ public class Tokenizer {
                         self.pos += 1;
                         return self.new_token(.DeclAssign, len: 2);
                     }
-                    return self.new_token(.Colon)
+                    return self.new_token(.Colon);
                 },
                 b';' => return self.new_token(.Semicolon),
                 b'?' => {

@@ -19,7 +19,7 @@ public func mem_alloc(size: usize) !mut_anyptr {
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
 public func mem_zeroed(n: usize) !mut_anyptr {
-    let new = mem_alloc(n).!;
+    new := mem_alloc(n).!;
     mem_set(new, 0, n);
     return new;
 }
@@ -47,8 +47,8 @@ public func mem_resize(ptr: ?mut_anyptr, sz: usize) !mut_anyptr {
 /// byte `c`.
 public func mem_set(s: mut_anyptr, c: uint8, n: usize) {
     unsafe {
-        let mut s_b = @as([*]mut uint8, s);
-        let mut i: usize = 0;
+        mut s_b := @as([*]mut uint8, s);
+        mut i: usize := 0;
         while i < n : i += 1 {
             s_b[i] = c;
         }
@@ -61,9 +61,9 @@ public func mem_set(s: mut_anyptr, c: uint8, n: usize) {
 /// areas do overlap.
 public func mem_copy(dest: mut_anyptr, src: anyptr, sz: usize) {
     unsafe {
-        let src_b = @as([*]uint8, src);
-        let mut dest_b = @as([*]mut uint8, dest);
-        let mut i: usize = 0;
+        src_b := @as([*]uint8, src);
+        mut dest_b := @as([*]mut uint8, dest);
+        mut i: usize := 0;
         while i < sz : i += 1 {
             dest_b[i] = src_b[i];
         }
@@ -89,7 +89,7 @@ public func mem_dup(src: anyptr, sz: usize) !mut_anyptr {
     if sz == 0 {
         return mem_zeroed(1).!;
     }
-    let new = mem_alloc(sz).!;
+    new := mem_alloc(sz).!;
     mem_copy(new, src, sz);
     return new;
 }

@@ -538,36 +538,21 @@ class Parser:
 
     # ---- statements --------------------------
     def look_if_decl_operator_is_used(self):
-        i = 0
+        line_nr = self.tok.pos.line
+        i = 1
         while i < len(self.lexer.all_tokens):
             tok = self.peek_token(i)
             if tok.kind == Kind.DeclAssign:
                 return True
             elif tok.kind == Kind.Semicolon:
-                return False
+                break
+            elif tok.pos.line != line_nr:
+                break
             i += 1
         return False
 
     def parse_stmt(self):
-        if self.accept(Kind.KwLet) or self.look_if_decl_operator_is_used():
-            # variable declarations
-            pos = self.prev_tok.pos
-            lefts = []
-            if self.accept(Kind.Lparen):
-                # multiple variables
-                while True:
-                    lefts.append(self.parse_var_decl(False))
-                    if not self.accept(Kind.Comma):
-                        break
-                self.expect(Kind.Rparen)
-            else:
-                lefts.append(self.parse_var_decl(False))
-            if self.tok.kind!=Kind.DeclAssign: self.expect(Kind.Assign)
-            else: self.expect(Kind.DeclAssign)
-            right = self.parse_expr()
-            self.expect(Kind.Semicolon)
-            return ast.LetStmt(self.scope, lefts, right, pos)
-        elif self.accept(Kind.KwWhile):
+        if self.accept(Kind.KwWhile):
             pos = self.prev_tok.pos
             is_inf = False
             continue_expr = self.empty_expr()
@@ -621,6 +606,25 @@ class Parser:
             if expr.__class__ not in (ast.IfExpr, ast.SwitchExpr, ast.Block):
                 self.expect(Kind.Semicolon)
             return ast.DeferStmt(expr, is_errdefer, pos)
+        elif self.accept(Kind.KwLet) or self.tok.kind == Kind.Lparen or self.look_if_decl_operator_is_used():
+            if self.prev_tok.kind==Kind.KwLet:report.warn("deprecated", self.prev_tok.pos)
+            # variable declarations
+            pos = self.prev_tok.pos
+            lefts = []
+            if self.accept(Kind.Lparen):
+                # multiple variables
+                while True:
+                    lefts.append(self.parse_var_decl(False))
+                    if not self.accept(Kind.Comma):
+                        break
+                self.expect(Kind.Rparen)
+            else:
+                lefts.append(self.parse_var_decl(False))
+            if self.tok.kind!=Kind.DeclAssign: self.expect(Kind.Assign)
+            else: self.expect(Kind.DeclAssign)
+            right = self.parse_expr()
+            self.expect(Kind.Semicolon)
+            return ast.LetStmt(self.scope, lefts, right, pos)
         expr = self.parse_expr()
         if not ((self.inside_block and self.tok.kind == Kind.Rbrace)
                 or expr.__class__ in (ast.IfExpr, ast.SwitchExpr, ast.Block)):
@@ -840,8 +844,9 @@ class Parser:
             expr = self.parse_if_expr()
         elif self.accept(Kind.KwSwitch):
             expr = self.parse_switch_expr()
-        elif self.accept(Kind.Lparen):
-            pos = self.prev_tok.pos
+        elif self.tok.kind == Kind.Lparen:
+            pos = self.tok.pos
+            self.next()
             if self.accept(Kind.Rparen):
                 expr = self.empty_expr()
             else:
@@ -925,7 +930,8 @@ class Parser:
                 op = self.tok.kind
                 self.next()
                 return ast.AssignExpr(expr, op, self.parse_expr(), expr.pos)
-            elif self.accept(Kind.Lparen):
+            elif self.tok.kind == Kind.Lparen and not self.look_if_decl_operator_is_used():
+                self.next()
                 args = []
                 has_spread_expr = False
                 spread_expr = self.empty_expr()

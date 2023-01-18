@@ -86,7 +86,7 @@ struct EnumInfo {
 }
 
 func enum_cast(ptr: anyptr, expected_id: usize) anyptr {
-    let enum_info = @as(*EnumInfo, ptr);
+    enum_info := @as(*EnumInfo, ptr);
     if enum_info._id != expected_id {
         // TODO: replace indexes with names
         console_eprintln("panic: cannot cast {} to {}", enum_info._id, expected_id);

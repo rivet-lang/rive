@@ -37,7 +37,7 @@ extend rune : Stringable {
             process_panic("rune.from_digit: radix is too high (maximum 36)");
         }
         if num < radix {
-            let num_ = @as(uint8, num);
+            num_ := @as(uint8, num);
             if num_ < 10 {
                 return @as(rune, b'0' + num_);
             } else {
@@ -53,15 +53,15 @@ extend rune : Stringable {
     }
 
     func to_string(&self) string {
-        let len = self.len_utf8();
-        let res = @as([*]mut uint8, internal_alloc(len + 1));
+        len := self.len_utf8();
+        res := @as([*]mut uint8, internal_alloc(len + 1));
         _ = unsafe { utf32_decode_to_buffer(@as(uint32, self.*), res) };
         return string(unsafe { res }, len);
     }
 }
 
 func utf32_decode_to_buffer(code: uint32, buffer: [*]mut uint8) int32 {
-    let icode = @as(int32, code);
+    icode := @as(int32, code);
     unsafe {
         switch {
             (icode <= 127) => { // 0x7F

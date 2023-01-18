@@ -33,7 +33,7 @@ public class string : Stringable, Hashable {
     }
 
     public func from_byte(byte: uint8) Self {
-        let res = @as([*]mut uint8, internal_alloc(2));
+        res := @as([*]mut uint8, internal_alloc(2));
         unsafe {
             res[0] = byte;
             res[1] = 0;
@@ -47,7 +47,7 @@ public class string : Stringable, Hashable {
         if bytes.len == 0 {
             return empty_string;
         }
-        let res = @as([*]mut uint8, internal_alloc(bytes.len + 1));
+        res := @as([*]mut uint8, internal_alloc(bytes.len + 1));
         unsafe {
             mem_copy(res, &bytes[0], bytes.len);
             res[bytes.len] = 0;
@@ -68,12 +68,12 @@ public class string : Stringable, Hashable {
         } else if count == 1 {
             return self;
         }
-        let len = self.len * count;
-        let res = @as([*]mut uint8, internal_alloc(len));
+        len := self.len * count;
+        res := @as([*]mut uint8, internal_alloc(len));
         unsafe {
-            let mut i: usize = 0;
+            mut i: usize := 0;
             while i < count : i += 1 {
-                let mut j: usize = 0;
+                mut j: usize := 0;
                 while j < self.len : j += 1 {
                     res[i * self.len + j] = self.ptr[j];
                 }
@@ -84,7 +84,7 @@ public class string : Stringable, Hashable {
     }
 
     public func concat(self, others: ...Self) Self {
-        let mut sb = StringBuilder.from_string(self);
+        mut sb := StringBuilder.from_string(self);
         for other in others {
             sb.write_string(other);
         }
@@ -124,7 +124,7 @@ public class string : Stringable, Hashable {
         if substr.len > self.len {
             return 0;
         }
-        let mut n: usize = 0;
+        mut n: usize := 0;
         if substr.len == 1 {
             for l in self.as_bytes() {
                 if l == substr[0] {
@@ -133,7 +133,7 @@ public class string : Stringable, Hashable {
             }
             return n;
         }
-        let mut i: usize = 0;
+        mut i: usize := 0;
         while {
             i = self.index_after_of(substr, i) ?? return n;
             i += substr.len;
@@ -153,7 +153,7 @@ public class string : Stringable, Hashable {
 
     /// Returns the index of byte `b` if found in the string.
     public func index_of_byte(self, b: uint8) ?usize {
-        let mut i: usize = 0;
+        mut i: usize := 0;
         while i < self.len : i += 1 {
             if unsafe { self.ptr[i] == b } {
                 return i;
@@ -168,9 +168,9 @@ public class string : Stringable, Hashable {
         if p.len > self.len or p.len == 0 {
             return nil;
         }
-        let mut i: usize = 0;
+        mut i: usize := 0;
         while i < self.len : i += 1 {
-            let mut j: usize = 0;
+            mut j: usize := 0;
             while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
             if j == p.len {
                 return i;
@@ -184,14 +184,14 @@ public class string : Stringable, Hashable {
         if p.len > self.len {
             return nil;
         }
-        let mut strt = start;
+        mut strt := start;
         if start >= self.len {
             return nil;
         }
-        let mut i = strt;
+        mut i := strt;
         while i < self.len : i += 1 {
-            let mut j: usize = 0;
-            let mut ii = i;
+            mut j: usize := 0;
+            mut ii := i;
             while j < p.len and unsafe { self.ptr[ii] == p.ptr[j] } {
                 j += 1;
                 ii += 1;
@@ -217,7 +217,7 @@ public class string : Stringable, Hashable {
 
     /// Linear search for the last index of `byte` inside a string.
     public func last_index_of_byte(self, byte: uint8) ?usize {
-        let mut i: usize = self.len;
+        mut i: usize := self.len;
         while i != 0 {
             i -= 1;
             if unsafe { self.ptr[i] == byte } {
@@ -232,9 +232,9 @@ public class string : Stringable, Hashable {
         if p.len > self.len or p.len == 0 {
             return nil;
         }
-        let mut i: usize = self.len - p.len;
+        mut i: usize := self.len - p.len;
         while i >= 0 : i -= 1 {
-            let mut j: usize = 0;
+            mut j: usize := 0;
             while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
             if j == p.len {
                 return i;
@@ -245,9 +245,9 @@ public class string : Stringable, Hashable {
 
     /// Returns the string found between `start` string and `end` string.
     public func find_between(self, start: string, end: string) string {
-        let start_pos = self.index_of(start) ?? return empty_string;
-        let val = self.slice(start_pos + start.len, self.len);
-        let end_pos = val.index_of(end) ?? return val;
+        start_pos := self.index_of(start) ?? return empty_string;
+        val := self.slice(start_pos + start.len, self.len);
+        end_pos := val.index_of(end) ?? return val;
         return val.slice(0, end_pos);
     }
 
@@ -264,8 +264,8 @@ public class string : Stringable, Hashable {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
-        let (mut pos_left: usize, mut pos_right: usize) = (0, self.len - 1);
-        let mut cs_match = true;
+        (mut pos_left: usize, mut pos_right: usize) := (0, self.len - 1);
+        mut cs_match := true;
         while pos_left <= self.len and pos_right >= -1 and cs_match {
             cs_match = false;
             for cs in cutset.as_bytes() {
@@ -295,9 +295,9 @@ public class string : Stringable, Hashable {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
-        let mut pos: usize = 0;
+        mut pos: usize := 0;
         while pos < self.len : pos += 1 {
-            let mut found = false;
+            mut found := false;
             for cs in cutset.as_bytes() {
                 if unsafe { self.ptr[pos] == cs } {
                     found = true;
@@ -317,9 +317,9 @@ public class string : Stringable, Hashable {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
-        let mut pos = self.len - 1;
+        mut pos := self.len - 1;
         while pos >= 0 : pos -= 1 {
-            let mut found = false;
+            mut found := false;
             for cs in cutset.as_bytes() {
                 if unsafe { self.ptr[pos] == cs } {
                     found = true;
@@ -342,8 +342,8 @@ public class string : Stringable, Hashable {
         } else if !self.contains(rep) {
             return self;
         }
-        let mut idx: usize = 0;
-        let mut idxs = @vec(usize);
+        mut idx: usize := 0;
+        mut idxs := @vec(usize);
         while {
             idx = self.index_after_of(rep, idx) ?? break;
             idxs.push(idx);
@@ -352,12 +352,12 @@ public class string : Stringable, Hashable {
         if idxs.len == 0 {
             return self;
         }
-        let new_len = self.len + idxs.len * (with_.len - rep.len);
-        let mut b = @as([*]mut uint8, internal_alloc(new_len));
-        let (mut b_i: usize, mut s_idx: usize) = (0, 0);
+        new_len := self.len + idxs.len * (with_.len - rep.len);
+        mut b := @as([*]mut uint8, internal_alloc(new_len));
+        (mut b_i: usize, mut s_idx: usize) := (0, 0);
         unsafe {
             for rep_pos in idxs {
-                let mut i: usize = s_idx;
+                mut i: usize := s_idx;
                 while i < rep_pos : i += 1 {
                     b[b_i] = self.ptr[i];
                     b_i += 1;
@@ -370,7 +370,7 @@ public class string : Stringable, Hashable {
                 }
             }
             if s_idx < self.len {
-                let mut i: usize = s_idx;
+                mut i: usize := s_idx;
                 while i < self.len : i += 1 {
                     b[b_i] = self.ptr[i];
                     b_i += 1;
@@ -389,12 +389,12 @@ public class string : Stringable, Hashable {
     }
 
     /// Splits the string to an array by any of the `delim` chars.
-    /// Example:
-    /// >> "first row\nsecond row".split_any(" \n") == ['first', 'row', 'second', 'row']
     /// Split a string using the chars in the delimiter string as delimiters chars.
     /// If the delimiter string is empty then `.split()` is used.
+    /// Example:
+    /// >> "first row\nsecond row".split_any(" \n") == ['first', 'row', 'second', 'row']
     public func split_any(self, delim: string) []string {
-        let (mut i: usize, mut res: []string) = (0, []);
+        (mut i: usize, mut res: []string) := (0, []);
         // check empty source string
         if self.len > 0 {
             // if empty delimiter string using default split
@@ -422,7 +422,7 @@ public class string : Stringable, Hashable {
     /// The last returned element has the remainder of the string, even if the
     /// remainder contains more `delim` substrings.
     public func split(self, delim: string, nth: usize = 0) []string {
-        let (mut i: usize, mut res) = (0, @vec(string));
+        (mut i: usize, mut res) := (0, @vec(string));
         switch delim.len {
             0 => {
                 i = 1;
@@ -437,8 +437,8 @@ public class string : Stringable, Hashable {
                 return res;
             },
             1 => {
-                let mut start: usize = 0;
-                let delim_byte = delim[0];
+                mut start: usize := 0;
+                delim_byte := delim[0];
                 while i < self.len {
                     if unsafe { self.ptr[i] == delim_byte } {
                         if nth > 0 and res.len == nth - 1 {
@@ -457,9 +457,9 @@ public class string : Stringable, Hashable {
                 return res;
             },
             else => {
-                let mut start: usize = 0;
+                mut start: usize := 0;
                 while i <= self.len {
-                    let is_delim = i + delim.len <= self.len and self[i..i + delim.len] == delim;
+                    is_delim := i + delim.len <= self.len and self[i..i + delim.len] == delim;
                     if is_delim {
                         if nth > 0 and res.len == nth - 1 {
                             break;
@@ -481,12 +481,12 @@ public class string : Stringable, Hashable {
 
     /// Splits the string by newline characters.
     public func split_into_lines(self) []string {
-        let mut res: []string = [];
+        mut res: []string := [];
         if self.len == 0 {
             return res;
         }
-        let (mut start: usize, mut end: usize) = (0, 0);
-        let mut i: usize = 0;
+        (mut start: usize, mut end: usize) := (0, 0);
+        mut i: usize := 0;
         while i < self.len : i += 1 {
             if unsafe { self.ptr[i] == 10 } {
                 end = if i > 0 and unsafe { self.ptr[i - 1] == 13 } { i - 1 } else { i };
@@ -520,7 +520,7 @@ public class string : Stringable, Hashable {
         }
         unsafe {
             if self.len > 0 {
-                let last_idx = self.len - 1;
+                last_idx := self.len - 1;
                 if self.ptr[last_idx] != rhs.ptr[last_idx] {
                     return false;
                 }
@@ -535,7 +535,7 @@ public class string : Stringable, Hashable {
     }
 
     public func <(self, rhs: Self) bool {
-        let mut i: usize = 0;
+        mut i: usize := 0;
         while i < self.len : i += 1 {
             unsafe {
                 if i >= rhs.len or self.ptr[i] > rhs.ptr[i] {
@@ -582,7 +582,7 @@ public class string : Stringable, Hashable {
         if p.len > self.len {
             return false;
         }
-        let mut i: usize = 0;
+        mut i: usize := 0;
         while i < p.len : i += 1 {
             if unsafe { self.ptr[i] != p[i] } {
                 return false;
@@ -596,7 +596,7 @@ public class string : Stringable, Hashable {
         if p.len > self.len {
             return false;
         }
-        let mut i: usize = 0;
+        mut i: usize := 0;
         while i < p.len : i += 1 {
             if unsafe { p[i] != self.ptr[self.len - p.len + i] } {
                 return false;
@@ -624,7 +624,7 @@ public class string : Stringable, Hashable {
                     end, self.len
                 );
             }
-            let len = end - start;
+            len := end - start;
             if len == self.len {
                 return self;
             }
@@ -641,7 +641,7 @@ public class string : Stringable, Hashable {
         if self.len == 0 {
             return empty_string;
         }
-        let res = @as([*]mut uint8, internal_alloc(self.len + 1));
+        res := @as([*]mut uint8, internal_alloc(self.len + 1));
         unsafe {
             mem_copy(res, self.ptr, self.len);
             res[self.len] = 0;
@@ -676,7 +676,7 @@ public struct TokenIterator {
     /// Returns a slice of the current token, or nil if tokenization is
     /// complete, and advances to the next token.
     public func next(mut self) ?string {
-        let result = self.peek() ?? return nil;
+        result := self.peek() ?? return nil;
         self.index += result.len;
         return result;
     }
@@ -687,12 +687,12 @@ public struct TokenIterator {
         // move to beginning of token
         while self.index < self.buffer.len and self.is_split_byte(self.buffer[self.index])
             : self.index += 1 {}
-        let start = self.index;
+        start := self.index;
         if start == self.buffer.len {
             return nil;
         }
         // move to end of token
-        let mut end = start;
+        mut end := start;
         while end < self.buffer.len and !self.is_split_byte(self.buffer[end])
             : end += 1 {}
         return self.buffer[start..end];
@@ -701,7 +701,7 @@ public struct TokenIterator {
     /// Returns a slice of the remaining bytes. Does not affect iterator state.
     public func rest(&self) string {
         // move to beginning of token
-        let mut index: usize = self.index;
+        mut index: usize := self.index;
         while index < self.buffer.len and self.is_split_byte(self.buffer[index])
             : index += 1 {}
         return self.buffer[index..];
@@ -732,8 +732,8 @@ public struct StringFormatter {
             return (false, @as(isize, 0));
         }
         self.i += 1;
-        let start = self.i;
-        let mut buf = StaticBuffer();
+        start := self.i;
+        mut buf := StaticBuffer();
         while unsafe { self.buf.ptr[self.i] != b'}' } {
             buf.push(unsafe { self.buf.ptr[self.i] });
             self.i += 1;
@@ -741,7 +741,7 @@ public struct StringFormatter {
                 process_panic("string.fmt(): incomplete format string (index: {})", start);
             }
         }
-        let fwidth = buf.as_isize();
+        fwidth := buf.as_isize();
         if fwidth == 0 {
             process_panic(
                 "string.fmt(): invalid width value (cannot be 0 and cannot be omitted) (index: {})",
@@ -753,10 +753,10 @@ public struct StringFormatter {
 
     func fmt(mut self, args: ...Stringable) string {
         self.res = StringBuilder.new(self.buf.len);
-        let mut args_idx: usize = 0;
+        mut args_idx: usize := 0;
         while self.i < self.buf.len : self.i += 1 {
-            let b = unsafe { self.buf.ptr[self.i] };
-            let b2 = if self.i + 1 < self.buf.len unsafe { self.buf.ptr[self.i + 1] } else { 0 };
+            b := unsafe { self.buf.ptr[self.i] };
+            b2 := if self.i + 1 < self.buf.len unsafe { self.buf.ptr[self.i + 1] } else { 0 };
             switch b {
                 b'{' => {
                     if b2 == b'{' { // escaping '{'
@@ -766,8 +766,8 @@ public struct StringFormatter {
                         if b2 == b':' {
                             self.i += 1;
                         }
-                        let (has_fwidth, mut fwidth) = self.fwidth();
-                        let arg_idx = args_idx;
+                        (has_fwidth, mut fwidth) := self.fwidth();
+                        arg_idx := args_idx;
                         args_idx += 1;
                         if arg_idx >= args.len {
                             process_panic(
@@ -775,9 +775,9 @@ public struct StringFormatter {
                                 arg_idx, args.len, self.i
                             );
                         }
-                        let value = args[arg_idx].to_string();
+                        value := args[arg_idx].to_string();
                         if has_fwidth and fwidth > 0 {
-                            let value_len = @as(isize, value.len);
+                            value_len := @as(isize, value.len);
                             if value_len <= fwidth {
                                 self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }
@@ -785,7 +785,7 @@ public struct StringFormatter {
                         self.res.write_string(value);
                         if has_fwidth and fwidth < 0 {
                             fwidth = -fwidth;
-                            let value_len = @as(isize, value.len);
+                            value_len := @as(isize, value.len);
                             if value_len <= fwidth {
                                 self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }
@@ -794,9 +794,9 @@ public struct StringFormatter {
                             self.i += 1;
                         }
                     } else if b2.is_digit() {
-                        let start = self.i;
+                        start := self.i;
                         self.i += 1;
-                        let mut buf = StaticBuffer();
+                        mut buf := StaticBuffer();
                         while unsafe {
                             self.buf.ptr[self.i] != b'}' and self.buf.ptr[self.i] != b':'
                         } {
@@ -809,17 +809,17 @@ public struct StringFormatter {
                                 );
                             }
                         }
-                        let index = buf.as_uint64();
+                        index := buf.as_uint64();
                         if index >= args.len {
                             process_panic(
                                 "string.fmt(): argument index out of range (index: {}, len: {})",
                                 index, args.len
                             );
                         }
-                        let (has_fwidth, mut fwidth) = self.fwidth();
-                        let value = args[index].to_string();
+                        (has_fwidth, mut fwidth) := self.fwidth();
+                        value := args[index].to_string();
                         if has_fwidth and fwidth > 0 {
-                            let value_len = @as(isize, value.len);
+                            value_len := @as(isize, value.len);
                             if value_len <= fwidth {
                                 self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }
@@ -827,7 +827,7 @@ public struct StringFormatter {
                         self.res.write_string(value);
                         if has_fwidth and fwidth < 0 {
                             fwidth = -fwidth;
-                            let value_len = @as(isize, value.len);
+                            value_len := @as(isize, value.len);
                             if value_len <= fwidth {
                                 self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }

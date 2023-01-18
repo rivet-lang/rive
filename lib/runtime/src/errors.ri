@@ -17,7 +17,7 @@ public class Error : Stringable {
     public msg: string;
 
     public func to_string(self) string {
-        let type_name = "Error";
+        type_name := "Error";
         return if self.msg.is_empty() {
             type_name
         } else {

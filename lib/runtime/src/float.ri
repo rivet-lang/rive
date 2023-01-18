@@ -36,8 +36,8 @@ extend float32 : Stringable {
 
     public func to_string(self) string {
         unsafe {
-            let mut cstr: ?[*]uint8 = nil;
-            let len = libc.asprintf(&cstr, c"%g", self);
+            mut cstr: ?[*]uint8 := nil;
+            len := libc.asprintf(&cstr, c"%g", self);
             if len == -1 {
                 return empty_string; // fail
             }
@@ -64,8 +64,8 @@ extend float64 : Stringable {
 
     public func to_string(self) string {
         unsafe {
-            let mut cstr: ?[*]uint8 = nil;
-            let len = libc.asprintf(&cstr, c"%g", self);
+            mut cstr: ?[*]uint8 := nil;
+            len := libc.asprintf(&cstr, c"%g", self);
             if len == -1 {
                 return empty_string; // fail
             }

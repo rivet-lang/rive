@@ -21,7 +21,7 @@ class Vec {
 
     #[unsafe]
     func from_array(arr: mut_anyptr, elem_size: usize, len: usize) Self {
-        let mut vec = Self(unsafe { internal_zeroed(len * elem_size) }, elem_size, len, len);
+        mut vec := Self(unsafe { internal_zeroed(len * elem_size) }, elem_size, len, len);
         unsafe {
             mem_copy(vec.ptr, arr, elem_size * len);
         }
@@ -72,7 +72,7 @@ class Vec {
         if self.len == 0 {
             process_panic("Vec.pop: vector is empty");
         }
-        let new_len = self.len - 1;
+        new_len := self.len - 1;
         self.len = new_len;
         return unsafe { @ptr_add(self.ptr, new_len * self.elem_size) };
     }
@@ -98,13 +98,13 @@ class Vec {
         if required <= self.cap {
             return;
         }
-        let mut cap = if self.cap > 0 { self.cap } else { 2 };
+        mut cap := if self.cap > 0 { self.cap } else { 2 };
         while required > cap {
             cap *= 2;
         }
-        let new_size = cap * self.elem_size;
+        new_size := cap * self.elem_size;
         unsafe {
-            let new_ptr = internal_alloc(new_size);
+            new_ptr := internal_alloc(new_size);
             mem_copy(new_ptr, self.ptr, self.len * self.elem_size);
             self.ptr = new_ptr;
         }
@@ -117,7 +117,7 @@ class Vec {
                 "slice index out of range (range: {}..{}, len: {})", start, end, self.len
             );
         }
-        let len = end - start;
+        len := end - start;
         if len == self.len {
             return self;
         }
@@ -134,11 +134,11 @@ class Vec {
 
     /// Returns an independent copy of `self`.
     public func clone(self) Self {
-        let mut size = self.cap * self.elem_size;
+        mut size := self.cap * self.elem_size;
         if size == 0 {
             size = 1;
         }
-        let mut vec = Self(internal_zeroed(size), self.elem_size, self.len, self.cap);
+        mut vec := Self(internal_zeroed(size), self.elem_size, self.len, self.cap);
         unsafe {
             mem_copy(vec.ptr, self.ptr, size);
         }
