@@ -537,7 +537,7 @@ class Parser:
         )
 
     # ---- statements --------------------------
-    def look_if_decl_operator_is_used(self):
+    def decl_operator_is_used(self):
         line_nr = self.tok.pos.line
         i = 1
         while i < len(self.lexer.all_tokens):
@@ -560,7 +560,7 @@ class Parser:
                 cond = ast.BoolLiteral(True, self.tok.pos)
                 is_inf = True
             else:
-                if self.tok.kind == Kind.KwLet or self.look_if_decl_operator_is_used():
+                if self.decl_operator_is_used():
                     self.open_scope()
                     cond = self.parse_guard_expr()
                 else:
@@ -608,7 +608,7 @@ class Parser:
             return ast.DeferStmt(expr, is_errdefer, pos)
         elif (
             self.tok.kind in (Kind.Lparen, Kind.Name, Kind.KwMut
-        ) and self.look_if_decl_operator_is_used()):
+        ) and self.decl_operator_is_used()):
             # variable declarations
             pos = self.prev_tok.pos
             lefts = []
@@ -930,7 +930,7 @@ class Parser:
                 op = self.tok.kind
                 self.next()
                 return ast.AssignExpr(expr, op, self.parse_expr(), expr.pos)
-            elif self.tok.kind == Kind.Lparen and not self.look_if_decl_operator_is_used():
+            elif self.tok.kind == Kind.Lparen and not self.decl_operator_is_used():
                 self.next()
                 args = []
                 has_spread_expr = False
@@ -1052,7 +1052,7 @@ class Parser:
                 has_else = True
                 break
             self.next()
-            if self.tok.kind == Kind.KwLet or self.look_if_decl_operator_is_used():
+            if self.decl_operator_is_used():
                 self.open_scope()
                 cond = self.parse_guard_expr()
             else:
@@ -1075,7 +1075,7 @@ class Parser:
         if self.tok.kind == Kind.Lbrace:
             expr = ast.BoolLiteral(True, pos)
         else:
-            if self.tok.kind == Kind.KwLet or self.look_if_decl_operator_is_used():
+            if self.decl_operator_is_used():
                 self.open_scope()
                 expr = self.parse_guard_expr()
             else:
