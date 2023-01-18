@@ -6,6 +6,7 @@ import "c";
 import "c/libc";
 import "runtime";
 
+import "../fs/path";
 import { Builder } from "../strings";
 
 public alias id = runtime.process_id;
@@ -18,6 +19,7 @@ public alias get_cwd = runtime.process_get_cwd;
 
 public let ARGS: []string = unsafe { runtime.ARGS };
 public let WD_AT_STARTUP: string = get_cwd() catch ".";
+public let EXECUTABLE_DIR: string = path.dirname(executable() catch WD_AT_STARTUP);
 
 struct Result {
 	public output: string;
