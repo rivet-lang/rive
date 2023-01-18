@@ -29,15 +29,15 @@ struct Result {
 /// Starts the specified command, waits for it to complete, and returns
 /// both its output and the exit code.
 public func execute(cmd: string) Result {
-    let pcmd = if cmd.contains("2>") { cmd } else { "{} 2>&1".fmt(cmd) };
+    pcmd := if cmd.contains("2>") { cmd } else { "{} 2>&1".fmt(cmd) };
     unsafe {
         if let f = libc.popen(pcmd.ptr, c"r") {
-            let fd = libc.fileno(f);
-            let mut buf: [4096]mut uint8 = []!;
-            let pbuf: [*]mut uint8 = &mut buf[0];
-            let mut output = Builder.new(1024);
+            fd := libc.fileno(f);
+            mut buf: [4096]mut uint8 := []!;
+            pbuf: [*]mut uint8 := &mut buf[0];
+            mut output := Builder.new(1024);
             while {
-                let len = libc.read(fd, pbuf, 4096);
+                len := libc.read(fd, pbuf, 4096);
                 if len == 0 or len == -1 {
                     break;
                 }

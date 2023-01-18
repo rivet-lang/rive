@@ -23,8 +23,8 @@ public func count_digits(number: int64) int32 {
 	if number == 0 {
 		return 1;
 	}
-	let mut n = number;
-	let mut c = 0;
+	mut n := number;
+	mut c := 0;
 	while n != 0 {
 		n = n / 10;
 		c += 1;

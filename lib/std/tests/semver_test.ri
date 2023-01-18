@@ -79,7 +79,7 @@ let INVALID_RANGES_TO_TEST: []string = [
 
 test "std.semver.Version.from_string()" {
     for item in VERSION_TO_TEST {
-        let ver = semver.Version.from_string(item.raw) catch @assert(false);
+        ver := semver.Version.from_string(item.raw) catch @assert(false);
         @assert(ver.major == item.major);
         @assert(ver.minor == item.minor);
         @assert(ver.patch == item.patch);
@@ -97,21 +97,21 @@ test "std.semver.Version.from_string()" {
 }
 
 test "std.semver.Version.increment()" {
-    let version1 = semver.Version.build(1, 2, 3);
+    version1 := semver.Version.build(1, 2, 3);
     {
-        let version1_inc = version1.increment(.Major);
+        version1_inc := version1.increment(.Major);
         @assert(version1_inc.major == 2);
         @assert(version1_inc.minor == 0);
         @assert(version1_inc.patch == 0);
     }
     {
-        let version1_inc = version1.increment(.Minor);
+        version1_inc := version1.increment(.Minor);
         @assert(version1_inc.major == 1);
         @assert(version1_inc.minor == 3);
         @assert(version1_inc.patch == 0);
     }
     {
-        let version1_inc = version1.increment(.Patch);
+        version1_inc := version1.increment(.Patch);
         @assert(version1_inc.major == 1);
         @assert(version1_inc.minor == 2);
         @assert(version1_inc.patch == 4);
@@ -120,10 +120,10 @@ test "std.semver.Version.increment()" {
 
 
 test "std.semver.Version comparing" {
-    let first = semver.Version.build(1, 0, 0);
-    let patch = semver.Version.build(1, 0, 1);
-    let minor = semver.Version.build(1, 2, 3);
-    let major = semver.Version.build(2, 0, 0);
+    first := semver.Version.build(1, 0, 0);
+    patch := semver.Version.build(1, 0, 1);
+    minor := semver.Version.build(1, 2, 3);
+    major := semver.Version.build(2, 0, 0);
     @assert(first <= first);
     @assert(first >= first);
     @assert(!(first < first));
@@ -148,7 +148,7 @@ test "std.semver.Version comparing" {
 
 test "std.semver.Version.satisfies()" {
     for item in RANGES_TO_TEST {
-        let ver = semver.Version.from_string(item.raw_version) catch {
+        ver := semver.Version.from_string(item.raw_version) catch {
             @assert(false);
             return;
         };
@@ -158,7 +158,7 @@ test "std.semver.Version.satisfies()" {
 }
 
 test "std.semver.Version.satisfies() invalid" {
-    let ver = semver.Version.from_string("1.0.0") catch {
+    ver := semver.Version.from_string("1.0.0") catch {
         @assert(false);
         return;
     };
@@ -169,11 +169,11 @@ test "std.semver.Version.satisfies() invalid" {
 
 test "std.semver.coerce()" {
     for item in COERCE_TO_TEST {
-        let valid = semver.Version.from_string(item.valid) catch {
+        valid := semver.Version.from_string(item.valid) catch {
             @assert(false);
             return;
         };
-        let fixed = semver.coerce(item.invalid) catch {
+        fixed := semver.coerce(item.invalid) catch {
             @assert(false);
             return;
         };
@@ -182,7 +182,7 @@ test "std.semver.coerce()" {
 }
 
 test "std.semver.coerce() invalid" {
-    let mut res = false;
+    mut res := false;
     _ = semver.coerce("a") catch {
         res = true;
         semver.Version()

@@ -50,7 +50,7 @@ public func is_readable(path: string) bool {
 
 /// Returns `true` if `path` is a directory.
 public func is_directory(path: string) bool {
-    let mut statbuf = libc.Stat();
+    mut statbuf := libc.Stat();
     if unsafe { libc.stat(path.ptr, &mut statbuf) != 0 } {
         return false;
     }
@@ -71,7 +71,7 @@ public func is_absolute(path: string) bool {
 
 /// Returns a boolean indicating whether `path` is a link.
 public func is_link(path: string) bool {
-    let mut statbuf = libc.Stat();
+    mut statbuf := libc.Stat();
     if unsafe { libc.lstat(path.ptr, &mut statbuf) != 0 } {
         return false;
     }
@@ -86,7 +86,7 @@ public func dirname(path: string) ?string {
     if path.len == 0 {
         return nil;
     }
-    let mut end_index: usize = path.len - 1;
+    mut end_index: usize := path.len - 1;
     while path[end_index] == b'/' {
         if end_index == 0 {
             return nil;
@@ -112,14 +112,14 @@ public func basename(path: string) string {
     if path.len == 0 {
         return "";
     }
-    let mut end_index: usize = path.len - 1;
+    mut end_index: usize := path.len - 1;
     while path[end_index] == b'/' {
         if end_index == 0 {
             return "";
         }
         end_index -= 1;
     }
-    let mut start_index: usize = end_index;
+    mut start_index: usize := end_index;
     end_index += 1;
     while path[start_index] != b'/' {
         if start_index == 0 {
@@ -138,8 +138,8 @@ public func basename(path: string) string {
 /// The returned slice is guaranteed to have its pointer within the start and end
 /// pointer address range of `path`, even if it is length zero.
 public func extension(path: string) string {
-    let filename = basename(path);
-    let index = filename.last_index_of_byte(b'.') ?? return path[path.len..];
+    filename := basename(path);
+    index := filename.last_index_of_byte(b'.') ?? return path[path.len..];
     return if index == 0 { path[path.len..] } else { filename[index..] };
 }
 
@@ -152,9 +152,9 @@ public func resolve(paths: ...string) !string {
     if paths.len == 0 {
         return runtime.process_get_cwd().!;
     }
-    let mut first_index: usize = 0;
-    let mut have_abs = false;
-    let mut max_size: usize = 0;
+    mut first_index: usize := 0;
+    mut have_abs := false;
+    mut max_size: usize := 0;
     for i, p in paths {
         if is_absolute(p) {
             first_index = i;
@@ -163,12 +163,12 @@ public func resolve(paths: ...string) !string {
         }
         max_size += p.len + 1;
     }
-    let mut result_index: usize = 0;
-    let result = if have_abs {
+    mut result_index: usize := 0;
+    result := if have_abs {
         @as([*]mut uint8, mem.alloc(max_size).!)
     } else {
-        let cwd = runtime.process_get_cwd().!;
-        let tmp = @as([*]mut uint8, mem.alloc(max_size + cwd.len + 1).!);
+        cwd := runtime.process_get_cwd().!;
+        tmp := @as([*]mut uint8, mem.alloc(max_size + cwd.len + 1).!);
         mem.copy(tmp, cwd.ptr, cwd.len);
         result_index += cwd.len;
         tmp
@@ -177,7 +177,7 @@ public func resolve(paths: ...string) !string {
         mem.dealloc(result)
     }
     for p in paths[first_index..] {
-        let mut components = p.tokenize(SEPARATOR);
+        mut components := p.tokenize(SEPARATOR);
         while let component = components.next() {
             if component == "." {
                 continue;
@@ -223,28 +223,28 @@ public func resolve(paths: ...string) !string {
 /// resolve to the same path (after calling `resolve` on each), a zero-length
 /// string is returned.
 public func relative(from_: string, to: string) !string {
-    let resolved_from = resolve(from_).!;
-    let resolved_to = resolve(to).!;
-    let mut from_it = from_.tokenize(SEPARATOR);
-    let mut to_it = to.tokenize(SEPARATOR);
+    resolved_from := resolve(from_).!;
+    resolved_to := resolve(to).!;
+    mut from_it := from_.tokenize(SEPARATOR);
+    mut to_it := to.tokenize(SEPARATOR);
     while {
-        let from_component = from_it.next() ?? return to_it.rest();
-        let to_rest = to_it.rest();
+        from_component := from_it.next() ?? return to_it.rest();
+        to_rest := to_it.rest();
         if let to_component = to_it.next() {
             if from_component == to_component {
                 continue;
             }
         }
-        let mut up_count: usize = 1;
+        mut up_count: usize := 1;
         while let _ = from_it.next() {
             up_count += 1;
         }
-        let up_index_end = up_count * 3;
-        let result = @as([*]mut uint8, mem.alloc(up_index_end + to_rest.len).!);
+        up_index_end := up_count * 3;
+        result := @as([*]mut uint8, mem.alloc(up_index_end + to_rest.len).!);
         errdefer unsafe {
             mem.dealloc(result);
         }
-        let mut result_index: usize = 0;
+        mut result_index: usize := 0;
         while result_index < up_index_end {
             unsafe {
                 result[result_index] = b'.';
@@ -277,8 +277,8 @@ public func join(paths: ...string) !string {
         return "";
     }
     // find first non-empty path index.
-    let mut all_paths_provided_were_empty = false;
-    let mut first_path_index: usize = 0;
+    mut all_paths_provided_were_empty := false;
+    mut first_path_index: usize := 0;
     for index, path in paths {
         if path.len > 0 {
             first_path_index = index;
@@ -294,49 +294,49 @@ public func join(paths: ...string) !string {
         return "";
     }
     // calculate length needed for resulting joined path buffer.
-    let total_len = {
-        let mut sum: usize = paths[first_path_index].len;
-        let mut prev_path = paths[first_path_index];
+    total_len := {
+        mut sum: usize := paths[first_path_index].len;
+        mut prev_path := paths[first_path_index];
         @assert(prev_path.len > 0);
-        let mut i: usize = first_path_index + 1;
+        mut i: usize := first_path_index + 1;
         while i < paths.len : i += 1 {
-            let this_path = paths[i];
+            this_path := paths[i];
             if this_path.len == 0 {
                 continue;
             }
-            let prev_sep = is_separator(prev_path[prev_path.len - 1]);
-            let this_sep = is_separator(this_path[0]);
+            prev_sep := is_separator(prev_path[prev_path.len - 1]);
+            this_sep := is_separator(this_path[0]);
             sum += @as(usize, !prev_sep and !this_sep);
             sum += if prev_sep and this_sep { this_path.len - 1 } else { this_path.len };
             prev_path = this_path;
         }
         sum + 1 // + 1 = NLL character
     };
-    let buf = @as([*]mut uint8, mem.alloc(total_len).!);
+    buf := @as([*]mut uint8, mem.alloc(total_len).!);
     unsafe {
-        errdefer mem.dealloc(buf);
         buf[total_len - 1] = 0;
+        errdefer mem.dealloc(buf);
     }
-    let paths_first_path_index_value = paths[first_path_index];
+    paths_first_path_index_value := paths[first_path_index];
     mem.copy(buf, paths_first_path_index_value.ptr, paths_first_path_index_value.len);
-    let mut buf_index: usize = paths_first_path_index_value.len;
-    let mut prev_path = paths_first_path_index_value;
+    mut buf_index: usize := paths_first_path_index_value.len;
+    mut prev_path := paths_first_path_index_value;
     @assert(prev_path.len > 0);
-    let mut i: usize = first_path_index + 1;
+    mut i: usize := first_path_index + 1;
     while i < paths.len : i += 1 {
-        let this_path = paths[i];
+        this_path := paths[i];
         if this_path.len == 0 {
             continue;
         }
-        let prev_sep = is_separator(prev_path[prev_path.len - 1]);
-        let this_sep = is_separator(this_path[0]);
+        prev_sep := is_separator(prev_path[prev_path.len - 1]);
+        this_sep := is_separator(this_path[0]);
         if !prev_sep and !this_sep {
             unsafe {
                 buf[buf_index] = SEPARATOR;
             }
             buf_index += 1;
         }
-        let adjusted_path = if prev_sep and this_sep {
+        adjusted_path := if prev_sep and this_sep {
             this_path[1..]
         } else {
             this_path
@@ -354,11 +354,11 @@ public func join(paths: ...string) !string {
 /// Joins the current working directory with the given `path` (if the `path` is
 /// relative) and returns the absolute path representation.
 public func absolute(path: string) !string {
-    let cwd = runtime.process_get_cwd().!;
+    cwd := runtime.process_get_cwd().!;
     if path.is_empty() {
         return cwd;
     }
-    let rpath = resolve(path).!;
+    rpath := resolve(path).!;
     if rpath == "." {
         return cwd;
     }

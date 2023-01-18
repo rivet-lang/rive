@@ -8,7 +8,7 @@ func factorial(n: uint32) uint32 {
 }
 
 func main() {
-	let res = factorial(5);
+	res := factorial(5);
 	console.println("factorial(5): {}", res);
 	@assert(res == 120);
 }

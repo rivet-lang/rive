@@ -40,7 +40,7 @@ public class Version : traits.Stringable {
         if input.is_empty() {
             return EmptyInputError();
         }
-        let raw_version = RawVersion.parse(input);
+        raw_version := RawVersion.parse(input);
         if let validated = raw_version.validate() {
             return validated;
         }
@@ -57,9 +57,9 @@ public class Version : traits.Stringable {
     /// Returns a `Version` structure with incremented values.
     #[inline]
     public func increment(self, typ: Increment) Self {
-        let mut major = self.major;
-        let mut minor = self.minor;
-        let mut patch = self.patch;
+        mut major := self.major;
+        mut minor := self.minor;
+        mut patch := self.patch;
         switch typ {
             .Major => {
                 major += 1;
@@ -136,11 +136,11 @@ public class Version : traits.Stringable {
     }
 
     public func to_string(self) string {
-        let common_string = "{}.{}.{}".fmt(self.major, self.minor, self.patch);
-        let prerelease_string = if self.prerelease.is_empty() { "" } else {
+        common_string := "{}.{}.{}".fmt(self.major, self.minor, self.patch);
+        prerelease_string := if self.prerelease.is_empty() { "" } else {
             "-".concat(self.prerelease)
         };
-        let metadata_string = if self.metadata.is_empty() { "" } else {
+        metadata_string := if self.metadata.is_empty() { "" } else {
             "+".concat(self.metadata)
         };
         return common_string.concat(prerelease_string, metadata_string);

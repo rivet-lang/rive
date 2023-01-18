@@ -17,9 +17,9 @@ struct RawVersion {
     // // TODO: Rewrite using regex:
     // /(\d+)\.(\d+)\.(\d+)(?:\-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-]+))?/
     func parse(input: string) Self {
-        let mut raw_version = input;
-        let mut prerelease = "";
-        let mut metadata = "";
+        mut raw_version := input;
+        mut prerelease := "";
+        mut metadata := "";
         if let plus_idx = raw_version.last_index_of_byte(b'+') {
             metadata = raw_version[plus_idx + 1..];
             raw_version = raw_version[0..plus_idx];
@@ -47,7 +47,7 @@ struct RawVersion {
     }
 
     func coerce(&self) !Version {
-        let ver = self.complete();
+        ver := self.complete();
         if !is_valid_number(self.raw_ints[VER_MAJOR]) {
             return Error("invalid major version: {}".fmt(self.raw_ints[VER_MAJOR]));
         }
@@ -55,7 +55,7 @@ struct RawVersion {
     }
 
     func complete(&self) RawVersion {
-        let mut raw_ints = self.raw_ints.clone();
+        mut raw_ints := self.raw_ints.clone();
         while raw_ints.len < 3 {
             raw_ints.push("0");
         }

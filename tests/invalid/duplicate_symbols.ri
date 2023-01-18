@@ -1,19 +1,19 @@
 func main() {
-    let x = 1;
-    let x = 1; // FAIL
+    x := 1;
+    x := 1; // FAIL
 
-    let y = 2;
+    y := 2;
     {
-        let y = 5; // disallow variable shadowing
+        y := 5; // disallow variable shadowing
     }
 }
 
 func other(a: int32) {
-    let a = 1;
+    a := 1;
 }
 
 func other(a: int32) { // FAIL
-    let a = 1;
+    a := 1;
 }
 
 class RuntimeError : Error { }

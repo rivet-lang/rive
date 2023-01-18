@@ -20,7 +20,7 @@ public func library_name(libname: string) string {
 }
 
 public func load(path: string, global_symbols: bool = false) !Library {
-    let flags = if global_symbols { libc.RTLD_NOW | libc.RTLD_GLOBAL } else { libc.RTLD_NOW };
+    flags := if global_symbols { libc.RTLD_NOW | libc.RTLD_GLOBAL } else { libc.RTLD_NOW };
     if let ptr = unsafe { libc.dlopen(path.ptr, flags) } {
         return Library(path, ptr);
     }

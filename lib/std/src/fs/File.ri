@@ -54,12 +54,12 @@ public class File {
             return "";
         }
         unsafe {
-            let seek = libc.fseek(self.f, 0, 2);
+            seek := libc.fseek(self.f, 0, 2);
             if seek != 0 {
                 return Error("fseek failed");
             }
 
-            let fsize = libc.ftell(self.f);
+            fsize := libc.ftell(self.f);
             if fsize < 0 {
                 return Error("ftell failed");
             }
@@ -68,13 +68,13 @@ public class File {
 
             // On some systems `ftell` can return values in the 64-bit range
             // that, when cast to `int32`, can result in values below 0.
-            let allocate = @as(int32, fsize);
+            allocate := @as(int32, fsize);
             if @as(int64, allocate) < fsize {
                 return Error("{} cast to `int32` results in {}".fmt(fsize, @as(int32, fsize)));
             }
 
-            let mut res = @as([*]mut uint8, mem.alloc(@as(usize, allocate) + 1).!);
-            let nelements = libc.fread(res, 1, @as(usize, allocate), self.f);
+            mut res := @as([*]mut uint8, mem.alloc(@as(usize, allocate) + 1).!);
+            nelements := libc.fread(res, 1, @as(usize, allocate), self.f);
 
             if self.eof() and libc.ferror(self.f) != 0 {
                 mem.dealloc(res);
