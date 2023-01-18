@@ -1,0 +1,7 @@
+{
+    "name": "@NAME",
+    "description": "@DESCRIPTION",
+    "version": "@VERSION",
+    "authors": [],
+    "dependencies": []
+}
