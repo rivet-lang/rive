@@ -23,7 +23,7 @@ test "string.fmt()" {
 }
 
 test "string.index_of_byte()" {
-    if let i = "aeiou".index_of_byte(b'e') {
+    if i := "aeiou".index_of_byte(b'e') {
         @assert(i == 1);
     } else {
         @assert(false);
@@ -31,7 +31,7 @@ test "string.index_of_byte()" {
 }
 
 test "string.index()" {
-    if let i = "aeiou".index_of("io") {
+    if i := "aeiou".index_of("io") {
         @assert(i == 2);
     } else {
         @assert(false);
@@ -57,7 +57,7 @@ test "string.runes_count()" {
 test "string.tokenize()" {
     mut iterator := "   abc def    ghi  ".tokenize(b' ');
     mut res := @vec(string, 3);
-    while let w = iterator.next() {
+    while w := iterator.next() {
         res.push(w);
     }
     @assert(res.len == 3);

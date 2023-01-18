@@ -560,7 +560,7 @@ class Parser:
                 cond = ast.BoolLiteral(True, self.tok.pos)
                 is_inf = True
             else:
-                if self.tok.kind == Kind.KwLet:
+                if self.tok.kind == Kind.KwLet or self.look_if_decl_operator_is_used():
                     self.open_scope()
                     cond = self.parse_guard_expr()
                 else:
@@ -606,10 +606,9 @@ class Parser:
             if expr.__class__ not in (ast.IfExpr, ast.SwitchExpr, ast.Block):
                 self.expect(Kind.Semicolon)
             return ast.DeferStmt(expr, is_errdefer, pos)
-        elif self.accept(Kind.KwLet) or (
-            self.tok.kind == Kind.Lparen and self.look_if_decl_operator_is_used()
-        ) or self.look_if_decl_operator_is_used():
-            if self.prev_tok.kind==Kind.KwLet:report.warn("deprecated", self.prev_tok.pos)
+        elif (
+            self.tok.kind in (Kind.Lparen, Kind.Name, Kind.KwMut
+        ) and self.look_if_decl_operator_is_used()):
             # variable declarations
             pos = self.prev_tok.pos
             lefts = []
@@ -622,8 +621,7 @@ class Parser:
                 self.expect(Kind.Rparen)
             else:
                 lefts.append(self.parse_var_decl(False))
-            if self.tok.kind!=Kind.DeclAssign: self.expect(Kind.Assign)
-            else: self.expect(Kind.DeclAssign)
+            self.expect(Kind.DeclAssign)
             right = self.parse_expr()
             self.expect(Kind.Semicolon)
             return ast.LetStmt(self.scope, lefts, right, pos)
@@ -1054,7 +1052,7 @@ class Parser:
                 has_else = True
                 break
             self.next()
-            if self.tok.kind == Kind.KwLet:
+            if self.tok.kind == Kind.KwLet or self.look_if_decl_operator_is_used():
                 self.open_scope()
                 cond = self.parse_guard_expr()
             else:
@@ -1077,7 +1075,7 @@ class Parser:
         if self.tok.kind == Kind.Lbrace:
             expr = ast.BoolLiteral(True, pos)
         else:
-            if self.tok.kind == Kind.KwLet:
+            if self.tok.kind == Kind.KwLet or self.look_if_decl_operator_is_used():
                 self.open_scope()
                 expr = self.parse_guard_expr()
             else:
@@ -1147,14 +1145,18 @@ class Parser:
         return ast.SwitchExpr(expr, branches, is_typeswitch, self.scope, pos)
 
     def parse_guard_expr(self):
-        self.expect(Kind.KwLet)
+        t = self.tok.kind
+        if t==Kind.KwLet:
+            self.expect(Kind.KwLet)
+            report.warn("deprecated", self.prev_tok.pos)
         pos = self.prev_tok.pos
         vars = []
         while True:
             vars.append(self.parse_var_decl(support_typ = False))
             if not self.accept(Kind.Comma):
                 break
-        self.expect(Kind.Assign)
+        if t ==Kind.KwLet:self.expect(Kind.Assign)
+        else:self.expect(Kind.DeclAssign)
         e = self.parse_expr()
         if self.accept(Kind.Semicolon):
             has_cond = True

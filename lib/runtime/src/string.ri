@@ -13,7 +13,7 @@ public class string : Stringable, Hashable {
 
     #[unsafe]
     public func from_raw(ptr: ?[*]uint8, is_ref: bool = false) Self {
-        if let safe_ptr = ptr {
+        if safe_ptr := ptr {
             return unsafe {
                 Self.from_raw_with_len(safe_ptr, libc.strlen(ptr), is_ref)
             };
@@ -26,7 +26,7 @@ public class string : Stringable, Hashable {
         if len == 0 {
             return empty_string;
         }
-        if let safe_ptr = ptr {
+        if safe_ptr := ptr {
             return Self(safe_ptr, len, is_ref);
         }
         return empty_string;
@@ -145,7 +145,7 @@ public class string : Stringable, Hashable {
     /// Returns the contents before `sub` in the string.
     /// If the substring is not found, it returns the full input string.
     public func all_before_of(self, sub: string) string {
-        if let pos = self.index_of(sub) {
+        if pos := self.index_of(sub) {
             return self[..pos];
         }
         return self;
@@ -571,7 +571,7 @@ public class string : Stringable, Hashable {
         if substr.len == 0 {
             return true;
         }
-        if let _ = self.index_of(substr) {
+        if _ := self.index_of(substr) {
             return true;
         }
         return false;

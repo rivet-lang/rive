@@ -22,7 +22,7 @@ public func errno() int32 {
 #[inline]
 public func errno_msg(code: int32 = errno()) string {
     unsafe {
-        return if let s = libc.strerror(code) {
+        return if s := libc.strerror(code) {
             string.from_raw(s)
         } else {
             ""

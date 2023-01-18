@@ -21,7 +21,7 @@ test "operator `.?`" {
 
 test "guard expr with options" {
     mut x: ?int32 := 100;
-    if let y = x {
+    if y := x {
         @assert(y == 100);
     } else {
         @assert(false);

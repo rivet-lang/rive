@@ -10,7 +10,7 @@ import "c/libc";
 /// NOTE: Unlike the `mem.zeroed` function, `mem.alloc` will
 /// not zero the memory block.
 public func mem_alloc(size: usize) !mut_anyptr {
-    if let new = unsafe { libc.malloc(size) } {
+    if new := unsafe { libc.malloc(size) } {
         return new;
     }
     return OutOfMemoryError("insufficient memory is available");
@@ -30,14 +30,14 @@ public func mem_zeroed(n: usize) !mut_anyptr {
 /// allocated with `mem.alloc` or `mem.zeroed`.
 public func mem_resize(ptr: ?mut_anyptr, sz: usize) !mut_anyptr {
     if sz == 0 {
-        if let safe_ptr = ptr {
+        if safe_ptr := ptr {
             unsafe {
                 mem_dealloc(safe_ptr);
             }
         }
         return InvalidArgumentError("argument `sz` is 0");
     }
-    if let new = unsafe { libc.realloc(ptr, sz) } {
+    if new := unsafe { libc.realloc(ptr, sz) } {
         return new;
     }
     return OutOfMemoryError("insufficient memory is available");
