@@ -17,6 +17,7 @@ class Kind(Enum):
     Mul = auto_enum() # *
     Div = auto_enum() # /
     Mod = auto_enum() # %
+    DeclAssign = auto_enum() # :=
     Assign = auto_enum() # =
     PlusAssign = auto_enum() # +=
     MinusAssign = auto_enum() # -=
@@ -132,9 +133,9 @@ class Kind(Enum):
 
     def is_assign(self):
         return self in (
-            Kind.Assign, Kind.PlusAssign, Kind.MinusAssign, Kind.MulAssign,
-            Kind.DivAssign, Kind.ModAssign, Kind.AmpAssign, Kind.PipeAssign,
-            Kind.XorAssign,
+            Kind.DeclAssign, Kind.Assign, Kind.PlusAssign, Kind.MinusAssign,
+            Kind.MulAssign, Kind.DivAssign, Kind.ModAssign, Kind.AmpAssign,
+            Kind.PipeAssign, Kind.XorAssign,
         )
 
     def is_relational(self):
@@ -165,6 +166,7 @@ TOKEN_STRINGS = {
     Kind.Mul: "*",
     Kind.Div: "/",
     Kind.Mod: "%",
+    Kind.DeclAssign: ":=",
     Kind.Assign: "=",
     Kind.PlusAssign: "+=",
     Kind.MinusAssign: "-=",

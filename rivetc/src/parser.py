@@ -537,8 +537,19 @@ class Parser:
         )
 
     # ---- statements --------------------------
+    def look_if_decl_operator_is_used(self):
+        i = 0
+        while i < len(self.lexer.all_tokens):
+            tok = self.peek_token(i)
+            if tok.kind == Kind.DeclAssign:
+                return True
+            elif tok.kind == Kind.Semicolon:
+                return False
+            i += 1
+        return False
+
     def parse_stmt(self):
-        if self.accept(Kind.KwLet):
+        if self.accept(Kind.KwLet) or self.look_if_decl_operator_is_used():
             # variable declarations
             pos = self.prev_tok.pos
             lefts = []
@@ -551,7 +562,8 @@ class Parser:
                 self.expect(Kind.Rparen)
             else:
                 lefts.append(self.parse_var_decl(False))
-            self.expect(Kind.Assign)
+            if self.tok.kind!=Kind.DeclAssign: self.expect(Kind.Assign)
+            else: self.expect(Kind.DeclAssign)
             right = self.parse_expr()
             self.expect(Kind.Semicolon)
             return ast.LetStmt(self.scope, lefts, right, pos)

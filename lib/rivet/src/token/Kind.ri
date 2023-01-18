@@ -17,6 +17,7 @@ public enum Kind : traits.Stringable {
     Mul, // *
     Div, // /
     Mod, // %
+    DeclAssign, // :=
     Assign, // =
     PlusAssign, // +=
     MinusAssign, // -=
@@ -130,8 +131,8 @@ public enum Kind : traits.Stringable {
     #[inline]
     public func is_assign(self) bool {
         return self in [
-            .Assign, .PlusAssign, .MinusAssign, .MulAssign, .DivAssign, .ModAssign,
-            .AmpAssign, .PipeAssign, .XorAssign
+            .DeclAssign, .Assign, .PlusAssign, .MinusAssign, .MulAssign, .DivAssign,
+            .ModAssign, .AmpAssign, .PipeAssign, .XorAssign
         ];
     }
 
@@ -170,6 +171,7 @@ public let Kind_Strings: []KindMap = [
     KindMap(.Mul, "*"),
     KindMap(.Div, "/"),
     KindMap(.Mod, "%"),
+    KindMap(.DeclAssign, ":="),
     KindMap(.Assign, "="),
     KindMap(.PlusAssign, "+="),
     KindMap(.MinusAssign, "-="),
