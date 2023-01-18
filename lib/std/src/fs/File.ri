@@ -13,7 +13,7 @@ public class File {
 
     public func open(path: string, mode: string = "r") !File {
         unsafe {
-            if let f = libc.fopen(path.ptr, mode.ptr) {
+            if f := libc.fopen(path.ptr, mode.ptr) {
                 return Self(f, true);
             }
         }

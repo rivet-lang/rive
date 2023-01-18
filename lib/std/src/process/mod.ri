@@ -31,7 +31,7 @@ struct Result {
 public func execute(cmd: string) Result {
     pcmd := if cmd.contains("2>") { cmd } else { "{} 2>&1".fmt(cmd) };
     unsafe {
-        if let f = libc.popen(pcmd.ptr, c"r") {
+        if f := libc.popen(pcmd.ptr, c"r") {
             fd := libc.fileno(f);
             mut buf: [4096]mut uint8 := []!;
             pbuf: [*]mut uint8 := &mut buf[0];

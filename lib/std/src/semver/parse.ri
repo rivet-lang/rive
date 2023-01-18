@@ -20,11 +20,11 @@ struct RawVersion {
         mut raw_version := input;
         mut prerelease := "";
         mut metadata := "";
-        if let plus_idx = raw_version.last_index_of_byte(b'+') {
+        if plus_idx := raw_version.last_index_of_byte(b'+') {
             metadata = raw_version[plus_idx + 1..];
             raw_version = raw_version[0..plus_idx];
         }
-        if let hyphen_idx = raw_version.index_of_byte(b'-') {
+        if hyphen_idx := raw_version.index_of_byte(b'-') {
             prerelease = raw_version[hyphen_idx + 1..];
             raw_version = raw_version[0..hyphen_idx];
         }

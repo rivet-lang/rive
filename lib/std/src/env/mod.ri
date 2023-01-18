@@ -16,14 +16,14 @@ public let HOME_DIR: string =
 /// Returns `true` if the environment variable exists.
 #[inline]
 public func exists(name: string) bool {
-    return if let _ = get(name) { true } else { false };
+    return if _ := get(name) { true } else { false };
 }
 
 /// Returns the value of the environment variable named by the key.
 #[inline]
 public func get(name: string) ?string {
     return unsafe {
-        if let s = libc.getenv(name.ptr) {
+        if s := libc.getenv(name.ptr) {
             string.from_raw(s)
         } else {
             nil

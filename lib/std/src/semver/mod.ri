@@ -41,7 +41,7 @@ public class Version : traits.Stringable {
             return EmptyInputError();
         }
         raw_version := RawVersion.parse(input);
-        if let validated = raw_version.validate() {
+        if validated := raw_version.validate() {
             return validated;
         }
         return InvalidVersionFormatError(input: input);
@@ -81,7 +81,7 @@ public class Version : traits.Stringable {
     /// when run against this `Version`.
     #[inline]
     public func satisfies(self, input: string) bool {
-        return if let range = Range.parse(input) {
+        return if range := Range.parse(input) {
             range.satisfies(self)
         } else {
             false
@@ -151,7 +151,7 @@ public class Version : traits.Stringable {
 /// coerce will strip any contents *after* the parsed version string.
 #[inline]
 public func coerce(input: string) !Version {
-    if let version = RawVersion.parse(input).coerce() {
+    if version := RawVersion.parse(input).coerce() {
         return version;
     }
     return Error("invalid version for input '{}'".fmt(input));

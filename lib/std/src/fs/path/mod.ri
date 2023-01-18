@@ -178,7 +178,7 @@ public func resolve(paths: ...string) !string {
     }
     for p in paths[first_index..] {
         mut components := p.tokenize(SEPARATOR);
-        while let component = components.next() {
+        while component := components.next() {
             if component == "." {
                 continue;
             } else if component == ".." {
@@ -230,13 +230,13 @@ public func relative(from_: string, to: string) !string {
     while {
         from_component := from_it.next() ?? return to_it.rest();
         to_rest := to_it.rest();
-        if let to_component = to_it.next() {
+        if to_component := to_it.next() {
             if from_component == to_component {
                 continue;
             }
         }
         mut up_count: usize := 1;
-        while let _ = from_it.next() {
+        while _ := from_it.next() {
             up_count += 1;
         }
         up_index_end := up_count * 3;

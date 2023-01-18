@@ -31,17 +31,17 @@ test "std.fs.path.resolve()" {
 }
 
 test "std.fs.path.dirname()" {
-    if let d1 = path.dirname("/a/b/c") {
+    if d1 := path.dirname("/a/b/c") {
         @assert(d1 == "/a/b");
     } else {
         @assert(false);
     }
-    if let d2 = path.dirname("/a/b/c///") {
+    if d2 := path.dirname("/a/b/c///") {
         @assert(d2 == "/a/b");
     } else {
         @assert(false);
     }
-    if let d3 = path.dirname("/a") {
+    if d3 := path.dirname("/a") {
         @assert(d3 == "/");
     } else {
         @assert(false);

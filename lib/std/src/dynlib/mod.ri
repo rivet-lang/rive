@@ -21,7 +21,7 @@ public func library_name(libname: string) string {
 
 public func load(path: string, global_symbols: bool = false) !Library {
     flags := if global_symbols { libc.RTLD_NOW | libc.RTLD_GLOBAL } else { libc.RTLD_NOW };
-    if let ptr = unsafe { libc.dlopen(path.ptr, flags) } {
+    if ptr := unsafe { libc.dlopen(path.ptr, flags) } {
         return Library(path, ptr);
     }
     return Error("cannot load '{}': {}".fmt(path, dlerror()));
@@ -32,7 +32,7 @@ class Library {
     ptr: mut_anyptr;
 
     public func address_of(self, symbol: string) !anyptr {
-        if let ptr = unsafe { libc.dlsym(self.ptr, symbol.ptr) } {
+        if ptr := unsafe { libc.dlsym(self.ptr, symbol.ptr) } {
             return ptr;
         }
         return SymbolNotFoundError(
@@ -42,7 +42,7 @@ class Library {
 
     #[inline]
     public func exists(self, symbol: string) bool {
-        return if let _ = self.address_of(symbol) { true } else { false };
+        return if _ := self.address_of(symbol) { true } else { false };
     }
 
     ~Self(mut self) {
@@ -51,7 +51,7 @@ class Library {
 }
 
 func dlerror() string {
-    if let err = unsafe { libc.dlerror() } {
+    if err := unsafe { libc.dlerror() } {
         return unsafe { string.from_raw(err) }.clone();
     }
     return "";
