@@ -1375,12 +1375,10 @@ class Parser:
                 return self.comp.float64_t
             elif lit == "string":
                 return self.comp.string_t
-            # only available in `runtime`:
-            elif self.mod_sym.name == "runtime":
-                if lit == "comptime_int":
-                    return self.comp.comptime_int_t
-                elif lit == "comptime_float":
-                    return self.comp.comptime_float_t
+            elif lit == "comptime_int":
+                return self.comp.comptime_int_t
+            elif lit == "comptime_float":
+                return self.comp.comptime_float_t
             return type.Type.unresolved(expr)
         else:
             report.error(f"expected type, found {self.tok}", pos)

@@ -62,10 +62,8 @@ class Register:
                 self.abi = decl.abi
                 self.walk_decls(decl.decls)
             elif isinstance(decl, ast.ConstDecl):
-                self.add_sym(
-                    sym.Const(decl.is_public, decl.name, decl.typ, decl.expr),
-                    decl.pos
-                )
+                decl.sym = sym.Const(decl.is_public, decl.name, decl.typ, decl.expr)
+                self.add_sym(decl.sym, decl.pos)
             elif isinstance(decl, ast.VarDecl):
                 for v in decl.lefts:
                     try:
