@@ -258,7 +258,7 @@ class Parser:
             else:
                 right = self.empty_expr()
             self.expect(Kind.Semicolon)
-            return ast.LetDecl(
+            return ast.VarDecl(
                 doc_comment, annotations, is_public, self.inside_extern,
                 self.extern_abi, lefts, right, pos
             )
@@ -624,7 +624,7 @@ class Parser:
             self.expect(Kind.DeclAssign)
             right = self.parse_expr()
             self.expect(Kind.Semicolon)
-            return ast.LetStmt(self.scope, lefts, right, pos)
+            return ast.VarDeclStmt(self.scope, lefts, right, pos)
         expr = self.parse_expr()
         if not ((self.inside_block and self.tok.kind == Kind.Rbrace)
                 or expr.__class__ in (ast.IfExpr, ast.SwitchExpr, ast.Block)):

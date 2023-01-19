@@ -30,7 +30,7 @@ class SourceFile:
     def __str__(self):
         return self.__repr__()
 
-# Used in `let` decls/stmts and guard exprs
+# Used in variable decls/stmts and guard exprs
 class ObjDecl:
     def __init__(self, is_mut, is_ref, name, has_typ, typ, level, pos):
         self.is_mut = is_mut
@@ -163,7 +163,7 @@ class ConstDecl:
         self.sym = None
         self.pos = pos
 
-class LetDecl:
+class VarDecl:
     def __init__(
         self, docs, annotations, is_public, is_extern, abi, lefts, right, pos
     ):
@@ -319,7 +319,7 @@ class TestDecl:
         self.pos = pos
 
 # ------ Statements --------
-class LetStmt:
+class VarDeclStmt:
     def __init__(self, scope, lefts, right, pos):
         self.lefts = lefts
         self.right = right

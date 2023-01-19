@@ -44,7 +44,7 @@ class Checker:
                     self.check_compatible_types(field_typ, decl.typ)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
-            elif isinstance(decl, ast.LetDecl):
+            elif isinstance(decl, ast.VarDecl):
                 self.inside_let_decl = True
                 old_expected_type = self.expected_type
                 expr_t = self.check_expr(decl.right)
@@ -194,7 +194,7 @@ class Checker:
             self.check_stmt(stmt)
 
     def check_stmt(self, stmt):
-        if isinstance(stmt, ast.LetStmt):
+        if isinstance(stmt, ast.VarDeclStmt):
             if len(stmt.lefts) == 1:
                 if stmt.lefts[0].has_typ:
                     self.expected_type = stmt.lefts[0].typ
