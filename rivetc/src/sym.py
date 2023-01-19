@@ -590,7 +590,7 @@ class Type(Sym):
     def update(self, other):
         if self.kind == TypeKind.Placeholder:
             # update placeholder
-            self.vis = other.vis
+            self.is_public = other.is_public
             self.kind = other.kind
             self.fields = other.fields
             for ss in other.syms:
