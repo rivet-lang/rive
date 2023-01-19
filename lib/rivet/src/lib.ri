@@ -40,7 +40,7 @@ public class Compiler {
         }
     }
 
-    public func run(mut self) ! {
+    func run(mut self) ! {
         self.load_root_module().!;
     }
 
