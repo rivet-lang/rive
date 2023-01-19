@@ -8,7 +8,7 @@ import "std/console";
 import "std/process";
 import "std/console/styles";
 
-public let VERSION: string = "0.1.0b";
+public var VERSION: string = "0.1.0b";
 
 #[inline]
 public func is_name_char(ch: uint8) bool {
@@ -73,7 +73,7 @@ class SourceCache {
    }
 }
 
-public let mut source_cache: SourceCache = SourceCache();
+public var mut source_cache: SourceCache = SourceCache();
 
 public func read_file(path: string) !string {
    if res := source_cache.find(path) {
@@ -116,7 +116,7 @@ public func error(msg: string, args: ...traits.Stringable) never {
    process.exit(1);
 }
 
-let StderrSupportStyles: bool = styles.stderr_support_styles();
+var StderrSupportStyles: bool = styles.stderr_support_styles();
 
 #[inline]
 public func bold(msg: string) string {

@@ -15,8 +15,8 @@ import "./prefs";
 import "./report";
 import "./parser";
 
-let RIVET_DIR: string = path.join(env.HOME_DIR, ".rivet_lang").!;
-let RIVETC_DIR: string = path.dirname(process.executable().!).?;
+var RIVET_DIR: string = path.join(env.HOME_DIR, ".rivet_lang").!;
+var RIVETC_DIR: string = path.dirname(process.executable().!).?;
 
 public class Compiler {
     public mut table: ast.Table;

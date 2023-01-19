@@ -5,7 +5,7 @@
 import "c/libc";
 
 extern (Rivet) {
-    public let mut ARGS: []string;
+    public var mut ARGS: []string;
 
     func init_string_lits();
     func init_globals();

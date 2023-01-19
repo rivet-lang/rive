@@ -4,7 +4,7 @@
 
 import "c/libc";
 
-let empty_string: string = string(c"", 0, true);
+var empty_string: string = string(c"", 0, true);
 
 public class string : Stringable, Hashable {
     public ptr: [*]uint8;

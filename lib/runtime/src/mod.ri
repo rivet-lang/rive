@@ -4,7 +4,7 @@
 
 import "c/libc";
 
-let mut runtime_started: bool = false;
+var mut runtime_started: bool = false;
 
 func segfault_handler(_: int32) {
     console_eprintln(

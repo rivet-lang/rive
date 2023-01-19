@@ -158,7 +158,7 @@ public class KindMap {
     public value: string;
 }
 
-public let Kind_Strings: []KindMap = [
+public var Kind_Strings: []KindMap = [
     KindMap(.Unknown, "unknown"),
     KindMap(.EOF, "end of file"),
     KindMap(.DocComment, "doc-comment"),
@@ -235,7 +235,7 @@ public let Kind_Strings: []KindMap = [
     KindMap(.KwImport, "import"),
     KindMap(.KwIn, "in"),
     KindMap(.KwIs, "is"),
-    KindMap(.KwLet, "let"),
+    KindMap(.KwLet, "var"),
     KindMap(.KwMut, "mut"),
     KindMap(.KwNil, "nil"),
     KindMap(.KwNotIn, "!in"),
@@ -280,7 +280,7 @@ public func lookup(str: string) Kind {
         "import" => .KwImport,
         "in" => .KwIn,
         "is" => .KwIs,
-        "let" => .KwLet,
+        "var" => .KwLet,
         "mut" => .KwMut,
         "nil" => .KwNil,
         "!in" => .KwNotIn,

@@ -8,7 +8,7 @@
 
 import "c/libc";
 
-public let SHARED_LIB_EXT: string = get_shared_library_extension();
+public var SHARED_LIB_EXT: string = get_shared_library_extension();
 
 class SymbolNotFoundError : Error {}
 

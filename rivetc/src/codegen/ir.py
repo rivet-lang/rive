@@ -229,7 +229,7 @@ class GlobalVar:
             kw = "extern "
         else:
             kw = "local "
-        return f'{kw}let %{self.name}: {self.typ}'
+        return f'{kw}var %{self.name}: {self.typ}'
 
 class Local:
     def __init__(self, name, typ):

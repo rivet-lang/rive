@@ -17,9 +17,9 @@ public alias executable = runtime.process_executable;
 public alias set_cwd = runtime.process_set_cwd;
 public alias get_cwd = runtime.process_get_cwd;
 
-public let ARGS: []string = unsafe { runtime.ARGS };
-public let WD_AT_STARTUP: string = get_cwd() catch ".";
-public let EXECUTABLE_DIR: string = path.dirname(executable() catch WD_AT_STARTUP);
+public var ARGS: []string = unsafe { runtime.ARGS };
+public var WD_AT_STARTUP: string = get_cwd() catch ".";
+public var EXECUTABLE_DIR: string = path.dirname(executable() catch WD_AT_STARTUP);
 
 struct Result {
 	public output: string;

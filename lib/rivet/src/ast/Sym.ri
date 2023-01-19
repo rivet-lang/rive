@@ -6,7 +6,7 @@ import "std/traits";
 
 import "../token";
 
-let mut SYM_IDS: usize = 0;
+var mut SYM_IDS: usize = 0;
 
 func new_sym_id() usize {
     res := SYM_IDS;

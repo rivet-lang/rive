@@ -11,8 +11,8 @@ import "../../strings";
 
 public alias MAX_PATH_LEN = libc.MAX_PATH_LEN;
 public const SEPARATOR: uint8 = #if _WINDOWS_ b'\\' #else b'/' #endif;
-public let SEPARATOR_STR: string = #if _WINDOWS_ "\\" #else "/" #endif;
-public let DELIMITER: string = #if _WINDOWS_ ";" #else ":" #endif;
+public var SEPARATOR_STR: string = #if _WINDOWS_ "\\" #else "/" #endif;
+public var DELIMITER: string = #if _WINDOWS_ ";" #else ":" #endif;
 
 /// Returns `true` if the given byte is a valid path separator
 #[inline]

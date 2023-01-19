@@ -232,7 +232,7 @@ TOKEN_STRINGS = {
     Kind.KwImport: "import",
     Kind.KwIn: "in",
     Kind.KwIs: "is",
-    Kind.KwLet: "let",
+    Kind.KwLet: "var",
     Kind.KwMut: "mut",
     Kind.KwNil: "nil",
     Kind.KwNotIn: "!in",

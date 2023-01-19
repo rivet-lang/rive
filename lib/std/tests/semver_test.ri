@@ -20,7 +20,7 @@ struct TestCoerce {
     valid: string;
 }
 
-let VERSION_TO_TEST: []TestVersion = [
+var VERSION_TO_TEST: []TestVersion = [
     TestVersion("1.2.4", 1, 2, 4, "", ""),
     TestVersion("1.2.4-prerelease-1", 1, 2, 4, "prerelease-1", ""),
     TestVersion("1.2.4+20191231", 1, 2, 4, "", "20191231"),
@@ -28,7 +28,7 @@ let VERSION_TO_TEST: []TestVersion = [
     TestVersion("1.2.4+20191231-prerelease-1", 1, 2, 4, "", "20191231-prerelease-1")
 ];
 
-let RANGES_TO_TEST: []TestRange = [
+var RANGES_TO_TEST: []TestRange = [
     TestRange("1.1.0", "1.1.0", "1.1.1"),
     TestRange("1.1.0", "=1.1.0", "=1.1.1"),
     TestRange("1.1.0", ">=1.0.0", "<1.1.0"),
@@ -49,7 +49,7 @@ let RANGES_TO_TEST: []TestRange = [
     TestRange("2.3.4", "*", "3.x")
 ];
 
-let COERCE_TO_TEST: []TestCoerce = [
+var COERCE_TO_TEST: []TestCoerce = [
     TestCoerce("1.2.0.4", "1.2.0"),
     TestCoerce("1.2.0", "1.2.0"),
     TestCoerce("1.2", "1.2.0"),
@@ -59,7 +59,7 @@ let COERCE_TO_TEST: []TestCoerce = [
     TestCoerce("1-alpha+meta", "1.0.0-alpha+meta")
 ];
 
-let INVALID_VERSION_TO_TEST: []string = [
+var INVALID_VERSION_TO_TEST: []string = [
     "a.b.c",
     "1.2",
     "1.2.x",
@@ -68,7 +68,7 @@ let INVALID_VERSION_TO_TEST: []string = [
     "1.2.3+meta%"
 ];
 
-let INVALID_RANGES_TO_TEST: []string = [
+var INVALID_RANGES_TO_TEST: []string = [
     "^a",
     "~b",
     "a - c",

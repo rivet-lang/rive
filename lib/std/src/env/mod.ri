@@ -6,7 +6,7 @@ import "c";
 import "c/libc";
 
 /// User's home directory.
-public let HOME_DIR: string =
+public var HOME_DIR: string =
 #if _LINUX_
     get("HOME")
 #else

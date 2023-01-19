@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-let COMPARATOR_SEP: string = " ";
-let COMPARATOR_SET_SEP: string = " || ";
-let HYPHEN_RANGE_SEP: string = " - ";
-let X_RANGE_SYMBOLS: string = "Xx*";
+var COMPARATOR_SEP: string = " ";
+var COMPARATOR_SET_SEP: string = " || ";
+var HYPHEN_RANGE_SEP: string = " - ";
+var X_RANGE_SYMBOLS: string = "Xx*";
 
 enum Operator as uint8 {
     Gt,
