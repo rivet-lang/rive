@@ -8,7 +8,7 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 
 [Website](https://rivet-lang.github.io)
 •
-[Documentation](http://the-rivet-programming-language-documentation.rtfd.io/)
+[Documentation](https://rivet-lang.github.io/docs)
 •
 [Roadmap](ROADMAP.md)
 •
