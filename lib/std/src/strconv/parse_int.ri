@@ -16,9 +16,9 @@ func lower(c: uint8) uint8 {
     return c | (b'x' - b'X');
 }
 
-/// This is like `string_to_int` but for unsigned numbers.
+/// This is like `parse_int` but for unsigned numbers.
 /// A sign prefix is not permitted.
-public func string_to_uint(s_: string, base__: int32, bit_size_: uint32) !uint64 {
+public func parse_uint(s_: string, base__: int32, bit_size_: uint32) !uint64 {
     if s_ == "" {
         return InvalidSyntaxError("empty string");
     }
@@ -139,7 +139,7 @@ public func string_to_uint(s_: string, base__: int32, bit_size_: uint32) !uint64
 /// The `bit_size` argument specifies the integer type that the result must
 /// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to int8, int16, int32, and
 /// int64. If `bit_size` is below 0 or above 64, an error is returned.
-public func string_to_int(s: string, base_: int32, bit_size_: uint32) !int64 {
+public func parse_int(s: string, base_: int32, bit_size_: uint32) !int64 {
     if s == "" {
         return InvalidSyntaxError("invalid syntax");
     }
@@ -156,7 +156,7 @@ public func string_to_int(s: string, base_: int32, bit_size_: uint32) !int64 {
     }
 
     // convert unsigned and check range.
-    un := string_to_uint(s0, base_, bit_size).!;
+    un := parse_uint(s0, base_, bit_size).!;
     if bit_size == 0 {
         bit_size = INT_SIZE;
     }
@@ -175,7 +175,7 @@ public func string_to_int(s: string, base_: int32, bit_size_: uint32) !int64 {
 /// Equivalent to parse_int(s, 10, 0), converted to type int64.
 #[inline]
 public func atoi(s: string) !int64 {
-    return string_to_int(s, 10, 0).!;
+    return parse_int(s, 10, 0).!;
 }
 
 /// Reports whether the underscores in `s_` are allowed.
