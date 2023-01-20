@@ -129,7 +129,9 @@ class Register:
                     decl.sym = self.sym.add_and_return(
                         sym.Type(
                             decl.is_public, decl.name, TypeKind.Struct,
-                            info = sym.StructInfo(decl.is_opaque)
+                            info = sym.StructInfo(
+                                decl.is_opaque, is_boxed = decl.annotations.has("boxed")
+                            )
                         )
                     )
                     self.sym = decl.sym

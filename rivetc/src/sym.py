@@ -523,7 +523,8 @@ class ClassInfo:
         self.childrens = []
 
 class StructInfo:
-    def __init__(self, is_opaque):
+    def __init__(self, is_opaque, is_boxed = False):
+        self.is_boxed = is_boxed
         self.is_opaque = is_opaque
         self.bases = []
         self.traits = []
@@ -613,6 +614,8 @@ class Type(Sym):
     def is_boxed(self):
         if self.kind == TypeKind.Enum:
             return self.info.is_advanced_enum
+        elif isinstance(self.info, StructInfo):
+            return self.info.is_boxed
         return self.kind in (
             TypeKind.Trait, TypeKind.Class, TypeKind.String, TypeKind.Vec
         )
