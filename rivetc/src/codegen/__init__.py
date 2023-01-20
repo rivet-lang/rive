@@ -2433,6 +2433,8 @@ class Codegen:
         elif typ_sym.kind == TypeKind.Struct:
             if custom_tmp:
                 tmp = custom_tmp
+            elif typ_sym.info.is_boxed:
+                tmp = self.boxed_instance(mangle_symbol(typ_sym), typ_sym.id)
             else:
                 tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
                 self.cur_fn.alloca(tmp)
