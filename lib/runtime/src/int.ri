@@ -10,7 +10,7 @@ extend comptime_int : Stringable {
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) string {
-        return @as(int64, self.*).to_string();
+        return @cast(int64, self.*).to_string();
     }
 }
 
@@ -21,7 +21,7 @@ extend int8 : Stringable {
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) string {
-        return @as(int32, self.*).str_l(5);
+        return @cast(int32, self.*).str_l(5);
     }
 }
 
@@ -32,7 +32,7 @@ extend int16 : Stringable {
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) string {
-        return @as(int32, self.*).str_l(7);
+        return @cast(int32, self.*).str_l(7);
     }
 }
 
@@ -45,7 +45,7 @@ extend int32 : Stringable {
         if self == 0 {
             return "0";
         }
-        mut n := @as(int64, self);
+        mut n := @cast(int64, self);
         mut d: uint32 := 0;
         mut is_neg := false;
         if n < 0 {
@@ -53,14 +53,14 @@ extend int32 : Stringable {
             is_neg = true;
         }
         unsafe {
-            mut index := @as(usize, max);
-            buf := @as([*]mut uint8, internal_alloc(@as(usize, max + 1)));
+            mut index := @cast(usize, max);
+            buf := @cast([*]mut uint8, internal_alloc(@cast(usize, max + 1)));
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
-                n1 := @as(int32, n / 100);
-                d = @as(uint32, @as(int32, n) - (n1 * 100)) << 1;
+                n1 := @cast(int32, n / 100);
+                d = @cast(uint32, @cast(int32, n) - (n1 * 100)) << 1;
                 n = n1;
                 buf[index] = DIGIT_PAIRS.ptr[d];
                 index -= 1;
@@ -81,7 +81,7 @@ extend int32 : Stringable {
                 buf[index] = b'-';
             }
 
-            diff := @as(usize, max) - index;
+            diff := @cast(usize, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
@@ -113,19 +113,19 @@ extend int64 : Stringable {
         }
         unsafe {
             max := 20;
-            buf := @as([*]mut uint8, internal_alloc(@as(usize, max + 1)));
-            mut index := @as(usize, max);
+            buf := @cast([*]mut uint8, internal_alloc(@cast(usize, max + 1)));
+            mut index := @cast(usize, max);
             buf[index] = 0;
             index -= 1;
 
             while n > 0 {
                 n1 := n / 100;
-                d = @as(int64, @as(uint32, n - (n1 * 100))) << @as(int64, 1);
+                d = @cast(int64, @cast(uint32, n - (n1 * 100))) << @cast(int64, 1);
                 n = n1;
-                buf[index] = DIGIT_PAIRS.ptr[@as(usize, d)];
+                buf[index] = DIGIT_PAIRS.ptr[@cast(usize, d)];
                 index -= 1;
                 d += 1;
-                buf[index] = DIGIT_PAIRS.ptr[@as(usize, d)];
+                buf[index] = DIGIT_PAIRS.ptr[@cast(usize, d)];
                 index -= 1;
             }
             index += 1;
@@ -141,7 +141,7 @@ extend int64 : Stringable {
                 buf[index] = b'-';
             }
 
-            diff := @as(usize, max) - index;
+            diff := @cast(usize, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
@@ -155,6 +155,6 @@ extend isize : Stringable {
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) string {
-        return @as(int64, self.*).to_string();
+        return @cast(int64, self.*).to_string();
     }
 }

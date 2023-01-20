@@ -15,10 +15,10 @@ extend rune : Stringable {
     public const REPLACEMENT_CHARACTER: rune = 0xFFFD;
 
     public func from_uint32(i: uint32) !rune {
-        if (i > @as(uint32, Self.MAX)) or (i >= 0xD800 and i <= 0xDFFF) {
+        if (i > @cast(uint32, Self.MAX)) or (i >= 0xD800 and i <= 0xDFFF) {
             return RuneFromU32Error();
         }
-        return @as(rune, i);
+        return @cast(rune, i);
     }
 
     /// Converts a digit in the given radix to a `rune`.
@@ -37,11 +37,11 @@ extend rune : Stringable {
             process_panic("rune.from_digit: radix is too high (maximum 36)");
         }
         if num < radix {
-            num_ := @as(uint8, num);
+            num_ := @cast(uint8, num);
             if num_ < 10 {
-                return @as(rune, b'0' + num_);
+                return @cast(rune, b'0' + num_);
             } else {
-                return @as(rune, b'a' + num_ - 10);
+                return @cast(rune, b'a' + num_ - 10);
             }
         }
         return nil;
@@ -49,41 +49,41 @@ extend rune : Stringable {
 
     #[inline]
     func len_utf8(self) usize {
-        return len_utf8(@as(uint32, self));
+        return len_utf8(@cast(uint32, self));
     }
 
     func to_string(&self) string {
         len := self.len_utf8();
-        res := @as([*]mut uint8, internal_alloc(len + 1));
-        _ = unsafe { utf32_decode_to_buffer(@as(uint32, self.*), res) };
+        res := @cast([*]mut uint8, internal_alloc(len + 1));
+        _ = unsafe { utf32_decode_to_buffer(@cast(uint32, self.*), res) };
         return string(unsafe { res }, len);
     }
 }
 
 func utf32_decode_to_buffer(code: uint32, buffer: [*]mut uint8) int32 {
-    icode := @as(int32, code);
+    icode := @cast(int32, code);
     unsafe {
         switch {
             (icode <= 127) => { // 0x7F
-                buffer[0] = @as(uint8, icode);
+                buffer[0] = @cast(uint8, icode);
                 return 1;
             },
             (icode <= 2047) => { // 0x7FF
-                buffer[0] = @as(uint8, 192) | @as(uint8, icode >> 6); // 0xC0 - 110xxxxx
-                buffer[1] = @as(uint8, 128) | @as(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[0] = @cast(uint8, 192) | @cast(uint8, icode >> 6); // 0xC0 - 110xxxxx
+                buffer[1] = @cast(uint8, 128) | @cast(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
                 return 2;
             },
             (icode <= 65535) => { // 0xFFFF
-                buffer[0] = @as(uint8, 224) | @as(uint8, icode >> 12); // 0xE0 - 1110xxxx
-                buffer[1] = @as(uint8, 128) | (@as(uint8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
-                buffer[2] = @as(uint8, 128) | @as(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[0] = @cast(uint8, 224) | @cast(uint8, icode >> 12); // 0xE0 - 1110xxxx
+                buffer[1] = @cast(uint8, 128) | (@cast(uint8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[2] = @cast(uint8, 128) | @cast(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
                 return 3;
             },
             (icode <= 1114111) => { // 0x10FFFF
-                buffer[0] = @as(uint8, 240) | @as(uint8, icode >> 18); // 0xF0 - 11110xxx
-                buffer[1] = @as(uint8, 128) | (@as(uint8, icode >> 12) & 63); // 0x80 - 0x3F - 10xxxxxx
-                buffer[2] = @as(uint8, 128) | (@as(uint8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
-                buffer[3] = @as(uint8, 128) | @as(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[0] = @cast(uint8, 240) | @cast(uint8, icode >> 18); // 0xF0 - 11110xxx
+                buffer[1] = @cast(uint8, 128) | (@cast(uint8, icode >> 12) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[2] = @cast(uint8, 128) | (@cast(uint8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[3] = @cast(uint8, 128) | @cast(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
                 return 4;
             },
             else => return 0

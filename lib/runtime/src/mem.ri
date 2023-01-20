@@ -47,7 +47,7 @@ public func mem_resize(ptr: ?mut_anyptr, sz: usize) !mut_anyptr {
 /// byte `c`.
 public func mem_set(s: mut_anyptr, c: uint8, n: usize) {
     unsafe {
-        mut s_b := @as([*]mut uint8, s);
+        mut s_b := @cast([*]mut uint8, s);
         mut i: usize := 0;
         while i < n : i += 1 {
             s_b[i] = c;
@@ -61,8 +61,8 @@ public func mem_set(s: mut_anyptr, c: uint8, n: usize) {
 /// areas do overlap.
 public func mem_copy(dest: mut_anyptr, src: anyptr, sz: usize) {
     unsafe {
-        src_b := @as([*]uint8, src);
-        mut dest_b := @as([*]mut uint8, dest);
+        src_b := @cast([*]uint8, src);
+        mut dest_b := @cast([*]mut uint8, dest);
         mut i: usize := 0;
         while i < sz : i += 1 {
             dest_b[i] = src_b[i];

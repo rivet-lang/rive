@@ -781,10 +781,7 @@ class Parser:
         elif self.accept(Kind.At):
             pos = self.prev_tok.pos
             if self.peek_token(1).kind == Kind.Lparen: # builtin call
-                if self.accept(Kind.KwAs):
-                    name = "as"
-                else:
-                    name = self.parse_name()
+                name = self.parse_name()
                 self.expect(Kind.Lparen)
                 args = []
                 vec_is_mut = False
@@ -794,7 +791,7 @@ class Parser:
                     args.append(ast.TypeNode(self.parse_type(), pos))
                     if self.tok.kind != Kind.Rparen:
                         self.expect(Kind.Comma)
-                elif name in ("as", "size_of", "align_of"):
+                elif name in ("cast", "size_of", "align_of"):
                     pos = self.tok.pos
                     args.append(ast.TypeNode(self.parse_type(), pos))
                     if self.tok.kind != Kind.Rparen:
@@ -1145,7 +1142,6 @@ class Parser:
         return ast.SwitchExpr(expr, branches, is_typeswitch, self.scope, pos)
 
     def parse_guard_expr(self):
-        t = self.tok.kind
         pos = self.prev_tok.pos
         vars = []
         while True:

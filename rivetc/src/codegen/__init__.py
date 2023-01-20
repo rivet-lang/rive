@@ -814,7 +814,7 @@ class Codegen:
                 if len(expr.args) == 2:
                     return self.empty_vec(typ_sym, self.gen_expr(expr.args[1]))
                 return self.empty_vec(typ_sym)
-            elif expr.name == "as":
+            elif expr.name == "cast":
                 arg1 = expr.args[1]
                 arg1_is_voidptr = isinstance(
                     arg1.typ, type.Ptr

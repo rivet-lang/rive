@@ -28,7 +28,7 @@ struct StaticBuffer {
     }
 
     public func as_isize(&self) isize {
-        return unsafe { @as(isize, libc.strtol(&self.buf[0], nil, 10))};
+        return unsafe { @cast(isize, libc.strtol(&self.buf[0], nil, 10))};
     }
 
     public func as_string(&self) string {

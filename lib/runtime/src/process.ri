@@ -15,7 +15,7 @@ public func process_executable() !string {
         return Error("failed at reading /proc/self/exe to get exe path");
     }
     return unsafe {
-        string.from_raw_with_len(&res[0], @as(usize, count)).clone()
+        string.from_raw_with_len(&res[0], @cast(usize, count)).clone()
     };
 }
 

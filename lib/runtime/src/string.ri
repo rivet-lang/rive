@@ -33,7 +33,7 @@ public class string : Stringable, Hashable {
     }
 
     public func from_byte(byte: uint8) Self {
-        res := @as([*]mut uint8, internal_alloc(2));
+        res := @cast([*]mut uint8, internal_alloc(2));
         unsafe {
             res[0] = byte;
             res[1] = 0;
@@ -47,7 +47,7 @@ public class string : Stringable, Hashable {
         if bytes.len == 0 {
             return empty_string;
         }
-        res := @as([*]mut uint8, internal_alloc(bytes.len + 1));
+        res := @cast([*]mut uint8, internal_alloc(bytes.len + 1));
         unsafe {
             mem_copy(res, &bytes[0], bytes.len);
             res[bytes.len] = 0;
@@ -69,7 +69,7 @@ public class string : Stringable, Hashable {
             return self;
         }
         len := self.len * count;
-        res := @as([*]mut uint8, internal_alloc(len));
+        res := @cast([*]mut uint8, internal_alloc(len));
         unsafe {
             mut i: usize := 0;
             while i < count : i += 1 {
@@ -353,7 +353,7 @@ public class string : Stringable, Hashable {
             return self;
         }
         new_len := self.len + idxs.len * (with_.len - rep.len);
-        mut b := @as([*]mut uint8, internal_alloc(new_len));
+        mut b := @cast([*]mut uint8, internal_alloc(new_len));
         (mut b_i: usize, mut s_idx: usize) := (0, 0);
         unsafe {
             for rep_pos in idxs {
@@ -384,7 +384,7 @@ public class string : Stringable, Hashable {
     #[inline]
     public func as_bytes(self) []uint8 {
         return unsafe {
-            Vec.from_array_no_alloc(@as(*mut uint8, self.ptr), @size_of(uint8), self.len)
+            Vec.from_array_no_alloc(@cast(*mut uint8, self.ptr), @size_of(uint8), self.len)
         };
     }
 
@@ -641,7 +641,7 @@ public class string : Stringable, Hashable {
         if self.len == 0 {
             return empty_string;
         }
-        res := @as([*]mut uint8, internal_alloc(self.len + 1));
+        res := @cast([*]mut uint8, internal_alloc(self.len + 1));
         unsafe {
             mem_copy(res, self.ptr, self.len);
             res[self.len] = 0;
@@ -729,7 +729,7 @@ public struct StringFormatter {
 
     func fwidth(mut self) (bool, isize) {
         if unsafe { self.buf.ptr[self.i] != b':' } {
-            return (false, @as(isize, 0));
+            return (false, @cast(isize, 0));
         }
         self.i += 1;
         start := self.i;
@@ -777,17 +777,17 @@ public struct StringFormatter {
                         }
                         value := args[arg_idx].to_string();
                         if has_fwidth and fwidth > 0 {
-                            value_len := @as(isize, value.len);
+                            value_len := @cast(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
                             }
                         }
                         self.res.write_string(value);
                         if has_fwidth and fwidth < 0 {
                             fwidth = -fwidth;
-                            value_len := @as(isize, value.len);
+                            value_len := @cast(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
                             }
                         }
                         if !has_fwidth {
@@ -819,17 +819,17 @@ public struct StringFormatter {
                         (has_fwidth, mut fwidth) := self.fwidth();
                         value := args[index].to_string();
                         if has_fwidth and fwidth > 0 {
-                            value_len := @as(isize, value.len);
+                            value_len := @cast(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
                             }
                         }
                         self.res.write_string(value);
                         if has_fwidth and fwidth < 0 {
                             fwidth = -fwidth;
-                            value_len := @as(isize, value.len);
+                            value_len := @cast(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
                             }
                         }
                     } else {

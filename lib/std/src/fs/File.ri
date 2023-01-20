@@ -23,7 +23,7 @@ public class File {
     /// Writes the byte `b` into the file.
     #[inline]
     public func write_byte(mut self, b: uint8) {
-        _ = unsafe { libc.fputc(@as(int32, b), self.f) };
+        _ = unsafe { libc.fputc(@cast(int32, b), self.f) };
     }
 
     /// Writes the string `s` into the file.
@@ -68,13 +68,13 @@ public class File {
 
             // On some systems `ftell` can return values in the 64-bit range
             // that, when cast to `int32`, can result in values below 0.
-            allocate := @as(int32, fsize);
-            if @as(int64, allocate) < fsize {
-                return Error("{} cast to `int32` results in {}".fmt(fsize, @as(int32, fsize)));
+            allocate := @cast(int32, fsize);
+            if @cast(int64, allocate) < fsize {
+                return Error("{} cast to `int32` results in {}".fmt(fsize, @cast(int32, fsize)));
             }
 
-            mut res := @as([*]mut uint8, mem.alloc(@as(usize, allocate) + 1).!);
-            nelements := libc.fread(res, 1, @as(usize, allocate), self.f);
+            mut res := @cast([*]mut uint8, mem.alloc(@cast(usize, allocate) + 1).!);
+            nelements := libc.fread(res, 1, @cast(usize, allocate), self.f);
 
             if self.eof() and libc.ferror(self.f) != 0 {
                 mem.dealloc(res);

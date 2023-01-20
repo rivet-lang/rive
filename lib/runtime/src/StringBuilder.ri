@@ -18,7 +18,7 @@ public class StringBuilder : Stringable {
             return Self.new();
         }
         return Self(unsafe {
-            Vec.from_array(@as(*mut uint8, s.ptr), @size_of(uint8), s.len)
+            Vec.from_array(@cast(*mut uint8, s.ptr), @size_of(uint8), s.len)
         });
     }
 
@@ -82,7 +82,7 @@ public class StringBuilder : Stringable {
     /// Returns the number of runes contained in `self`.
     #[inline]
     public func runes_count(self) usize {
-        return cstr_runes_count(@as([*]uint8, self.inner.ptr), self.inner.len);
+        return cstr_runes_count(@cast([*]uint8, self.inner.ptr), self.inner.len);
     }
 
     #[inline]
@@ -107,6 +107,6 @@ public class StringBuilder : Stringable {
 
     #[inline]
     public func to_string(self) string {
-        return string(@as([*]uint8, self.inner.ptr), self.inner.len);
+        return string(@cast([*]uint8, self.inner.ptr), self.inner.len);
     }
 }

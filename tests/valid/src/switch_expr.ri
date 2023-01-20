@@ -34,7 +34,7 @@ class SwitchSon : SwitchBase {
 
 test "`switch` branch variable" {
     ss := SwitchSon(name: "Rivet");
-    sb := @as(SwitchBase, ss);
+    sb := @cast(SwitchBase, ss);
     @assert(switch sb is {
         SwitchSon as sb_ss => sb_ss.name == "Rivet",
         else => false

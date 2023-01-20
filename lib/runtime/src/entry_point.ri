@@ -32,7 +32,7 @@ func main(
 ) {
     unsafe {
         _ = libc.signal(11, segfault_handler);
-        init_args(@as(usize, _argc), _argv);
+        init_args(@cast(usize, _argc), _argv);
 #if !_TESTS_ // `init_string_lits` is called after
         init_string_lits();
 #endif

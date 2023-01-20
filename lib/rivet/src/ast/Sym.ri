@@ -253,14 +253,14 @@ public class TraitInfo : TypeInfo {
     public func implement(mut self, type_sym: TypeSym) {
         self.implements.push(type_sym);
         for mut b in self.bases {
-            @as(TraitInfo, b.info).implement(type_sym);
+            @cast(TraitInfo, b.info).implement(type_sym);
         }
     }
 
     public func mark_has_objects(mut self) {
         self.has_objects = true;
         for mut b in self.bases {
-            @as(TraitInfo, b.info).has_objects = true;
+            @cast(TraitInfo, b.info).has_objects = true;
         }
     }
 }
@@ -320,9 +320,9 @@ public class TypeSym : Sym {
             }
         } else if self.info is StructInfo or self.info is TraitInfo {
             bases := if self.info is StructInfo {
-                @as(StructInfo, self.info).bases
+                @cast(StructInfo, self.info).bases
             } else {
-                @as(TraitInfo, self.info).bases
+                @cast(TraitInfo, self.info).bases
             };
             for b in bases {
                 if s := b.lookup(name) {

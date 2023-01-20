@@ -54,7 +54,7 @@ public func is_directory(path: string) bool {
     if unsafe { libc.stat(path.ptr, &mut statbuf) != 0 } {
         return false;
     }
-    return @as(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFDIR;
+    return @cast(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFDIR;
 }
 
 /// Returns `true` if `path` is a file.
@@ -75,7 +75,7 @@ public func is_link(path: string) bool {
     if unsafe { libc.lstat(path.ptr, &mut statbuf) != 0 } {
         return false;
     }
-    return @as(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFLNK;
+    return @cast(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFLNK;
 }
 
 /// Strip the last component from a file path.
@@ -165,10 +165,10 @@ public func resolve(paths: ...string) !string {
     }
     mut result_index: usize := 0;
     result := if have_abs {
-        @as([*]mut uint8, mem.alloc(max_size).!)
+        @cast([*]mut uint8, mem.alloc(max_size).!)
     } else {
         cwd := runtime.process_get_cwd().!;
-        tmp := @as([*]mut uint8, mem.alloc(max_size + cwd.len + 1).!);
+        tmp := @cast([*]mut uint8, mem.alloc(max_size + cwd.len + 1).!);
         mem.copy(tmp, cwd.ptr, cwd.len);
         result_index += cwd.len;
         tmp
@@ -214,7 +214,7 @@ public func resolve(paths: ...string) !string {
     }
     return unsafe {
         string.from_raw_with_len(
-            @as([*]uint8, mem.resize(result, result_index).!), result_index
+            @cast([*]uint8, mem.resize(result, result_index).!), result_index
         )
     };
 }
@@ -240,7 +240,7 @@ public func relative(from_: string, to: string) !string {
             up_count += 1;
         }
         up_index_end := up_count * 3;
-        result := @as([*]mut uint8, mem.alloc(up_index_end + to_rest.len).!);
+        result := @cast([*]mut uint8, mem.alloc(up_index_end + to_rest.len).!);
         errdefer unsafe {
             mem.dealloc(result);
         }
@@ -259,7 +259,7 @@ public func relative(from_: string, to: string) !string {
             // shave off the trailing slash
             return unsafe {
                 string.from_raw_with_len(
-                    @as([*]uint8, mem.resize(result, result_index - 1).!),
+                    @cast([*]uint8, mem.resize(result, result_index - 1).!),
                     result_index - 1
                 )
             };
@@ -306,13 +306,13 @@ public func join(paths: ...string) !string {
             }
             prev_sep := is_separator(prev_path[prev_path.len - 1]);
             this_sep := is_separator(this_path[0]);
-            sum += @as(usize, !prev_sep and !this_sep);
+            sum += @cast(usize, !prev_sep and !this_sep);
             sum += if prev_sep and this_sep { this_path.len - 1 } else { this_path.len };
             prev_path = this_path;
         }
         sum + 1 // + 1 = NLL character
     };
-    buf := @as([*]mut uint8, mem.alloc(total_len).!);
+    buf := @cast([*]mut uint8, mem.alloc(total_len).!);
     unsafe {
         buf[total_len - 1] = 0;
         errdefer mem.dealloc(buf);

@@ -40,16 +40,16 @@ test "inheritance: using `base`" {
 test "inheritance: downcast" {
     b := B(c: 5);
 
-    a := @as(A, b);
+    a := @cast(A, b);
     @assert(a.i == 10);
 
-    b2 := @as(B, a);
+    b2 := @cast(B, a);
     @assert(b2.c == 5);
 }
 
 test "inheritance: typeswitch" {
     b := B(c: 5);
-    a := @as(A, b);
+    a := @cast(A, b);
     @assert(switch a is {
         B => true,
         else => false

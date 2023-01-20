@@ -60,7 +60,7 @@ func bt_print_callback(
 
 func bt_error_handler(data: mut_anyptr, msg_ptr: ?[*]mut uint8, errnum: int32) {
     unsafe {
-        bdata := @as(*mut BacktraceData, data);
+        bdata := @cast(*mut BacktraceData, data);
         if !bdata.has_error {
             console_eprint("   libbacktrace error: ");
             console_eprint(string.from_raw(msg_ptr));
@@ -96,7 +96,7 @@ func demangle_symbol(name: string) string {
             res.write_string(".");
         }
 
-        buf_len := @as(usize, buf.as_uint64());
+        buf_len := @cast(usize, buf.as_uint64());
         mut i_: usize := 0;
         while i_ < buf_len : i_ += 1 {
             res.write_byte(unsafe { name_ptr[idx] });
