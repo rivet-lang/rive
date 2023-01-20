@@ -84,7 +84,6 @@ public enum Kind : traits.Stringable {
     KwImport, // import
     KwIn, // in
     KwIs, // is
-    KwLet, // let
     KwMut, // mut
     KwNil, // nil
     KwNotIn, // !in
@@ -100,6 +99,7 @@ public enum Kind : traits.Stringable {
     KwTrait, // trait
     KwTrue, // true
     KwUnsafe, // unsafe
+    KwVar, // var
     KwWhile, // while
     // ==============================
 
@@ -235,7 +235,6 @@ public var Kind_Strings: []KindMap = [
     KindMap(.KwImport, "import"),
     KindMap(.KwIn, "in"),
     KindMap(.KwIs, "is"),
-    KindMap(.KwLet, "var"),
     KindMap(.KwMut, "mut"),
     KindMap(.KwNil, "nil"),
     KindMap(.KwNotIn, "!in"),
@@ -251,6 +250,7 @@ public var Kind_Strings: []KindMap = [
     KindMap(.KwTrait, "trait"),
     KindMap(.KwTrue, "true"),
     KindMap(.KwUnsafe, "unsafe"),
+    KindMap(.KwVar, "var"),
     KindMap(.KwWhile, "while")
 ];
 
@@ -280,7 +280,6 @@ public func lookup(str: string) Kind {
         "import" => .KwImport,
         "in" => .KwIn,
         "is" => .KwIs,
-        "var" => .KwLet,
         "mut" => .KwMut,
         "nil" => .KwNil,
         "!in" => .KwNotIn,
@@ -296,6 +295,7 @@ public func lookup(str: string) Kind {
         "trait" => .KwTrait,
         "true" => .KwTrue,
         "unsafe" => .KwUnsafe,
+        "var" => .KwVar,
         "while" => .KwWhile,
         else => .Name
     };

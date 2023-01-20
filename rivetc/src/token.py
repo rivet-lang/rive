@@ -84,7 +84,6 @@ class Kind(Enum):
     KwImport = auto_enum() # import
     KwIn = auto_enum() # in
     KwIs = auto_enum() # is
-    KwLet = auto_enum() # let
     KwMut = auto_enum() # mut
     KwNil = auto_enum() # nil
     KwNotIn = auto_enum() # !in
@@ -100,6 +99,7 @@ class Kind(Enum):
     KwTrait = auto_enum() # trait
     KwTrue = auto_enum() # true
     KwUnsafe = auto_enum() # unsafe
+    KwVar = auto_enum() # var
     KwWhile = auto_enum() # while
     # ==============================
 
@@ -232,7 +232,6 @@ TOKEN_STRINGS = {
     Kind.KwImport: "import",
     Kind.KwIn: "in",
     Kind.KwIs: "is",
-    Kind.KwLet: "var",
     Kind.KwMut: "mut",
     Kind.KwNil: "nil",
     Kind.KwNotIn: "!in",
@@ -248,6 +247,7 @@ TOKEN_STRINGS = {
     Kind.KwTrait: "trait",
     Kind.KwTrue: "true",
     Kind.KwUnsafe: "unsafe",
+    Kind.KwVar: "var",
     Kind.KwWhile: "while",
     # ==============================
 }

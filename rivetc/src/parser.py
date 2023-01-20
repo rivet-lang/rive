@@ -240,7 +240,7 @@ class Parser:
             return ast.ConstDecl(
                 doc_comment, annotations, is_public, name, typ, expr, pos
             )
-        elif self.accept(Kind.KwLet):
+        elif self.accept(Kind.KwVar):
             # variable declarations
             pos = self.prev_tok.pos
             lefts = []
@@ -1146,17 +1146,13 @@ class Parser:
 
     def parse_guard_expr(self):
         t = self.tok.kind
-        if t==Kind.KwLet:
-            self.expect(Kind.KwLet)
-            report.warn("deprecated", self.prev_tok.pos)
         pos = self.prev_tok.pos
         vars = []
         while True:
             vars.append(self.parse_var_decl(support_typ = False))
             if not self.accept(Kind.Comma):
                 break
-        if t ==Kind.KwLet:self.expect(Kind.Assign)
-        else:self.expect(Kind.DeclAssign)
+        self.expect(Kind.DeclAssign)
         e = self.parse_expr()
         if self.accept(Kind.Semicolon):
             has_cond = True
