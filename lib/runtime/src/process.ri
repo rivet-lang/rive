@@ -12,7 +12,7 @@ public func process_executable() !string {
         libc.readlink(c"/proc/self/exe", &res[0], libc.MAX_PATH_LEN)
     };
     if count < 0 {
-        return Error("failed at reading /proc/self/exe to get exe path");
+        return ReadFailedError("failed at reading /proc/self/exe to get exe path");
     }
     return unsafe {
         string.from_raw_with_len(&res[0], @cast(usize, count)).clone()

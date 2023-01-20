@@ -506,12 +506,10 @@ class TraitInfo:
     def implement(self, implementor):
         self.implements.append(implementor)
         for b in self.bases:
-            b.info.implement(implementor)
+            b.info.implements.append(implementor)
 
     def mark_has_objects(self):
         self.has_objects = True
-        for b in self.bases:
-            b.info.has_objects = True
 
 class ClassInfo:
     def __init__(self):
@@ -597,6 +595,9 @@ class Type(Sym):
             for ss in other.syms:
                 self.add(ss)
             self.info = other.info
+
+    def implement_trait(self, trait_sym):
+        return self in trait_sym.info.implements
 
     def is_subtype_of(self, t):
         if self == t:
@@ -702,6 +703,5 @@ def universe():
     uni.add(Type(True, "float32", TypeKind.Float32))
     uni.add(Type(True, "float64", TypeKind.Float64))
     uni.add(Type(True, "string", TypeKind.String, info = StructInfo(False, is_boxed = True)))
-    uni.add(Type(True, "Error", TypeKind.Class, info = ClassInfo()))
 
     return uni

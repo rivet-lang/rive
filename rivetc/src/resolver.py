@@ -21,7 +21,7 @@ class Resolver:
             self.resolve_decls(self.source_file.decls)
 
     def load_preludes(self):
-        self.preludes["Error"] = self.comp.error_t.sym
+        self.preludes["Error"] = self.comp.error_sym
 
     def resolve_decls(self, decls):
         for decl in decls:
@@ -570,6 +570,7 @@ class Resolver:
             return False
         elif isinstance(typ, type.Result):
             if self.resolve_type(typ.typ):
+                self.comp.error_sym.info.has_objects = True
                 return True
             return False
         elif isinstance(typ, type.Type):

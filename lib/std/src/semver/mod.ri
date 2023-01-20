@@ -11,14 +11,16 @@ public enum Increment as uint8 {
 	Patch
 }
 
-public class EmptyInputError : Error {
+#[boxed]
+public struct EmptyInputError : Error {
     #[override; inline]
     public func to_string(self) string {
         return "empty input";
     }
 }
 
-public class InvalidVersionFormatError : Error {
+#[boxed]
+public struct InvalidVersionFormatError : Error {
     input: string;
 
     #[override; inline]
@@ -27,8 +29,19 @@ public class InvalidVersionFormatError : Error {
     }
 }
 
+#[boxed]
+public struct InvalidVersionError : Error {
+    input: string;
+
+    #[override; inline]
+    public func to_string(self) string {
+        return self.input;
+    }
+}
+
 /// Represents a semantic version in semver format.
-public class Version : traits.Stringable {
+#[boxed]
+public struct Version : traits.Stringable {
     public major: uint64;
     public minor: uint64;
     public patch: uint64;
@@ -154,7 +167,7 @@ public func coerce(input: string) !Version {
     if version := RawVersion.parse(input).coerce() {
         return version;
     }
-    return Error("invalid version for input '{}'".fmt(input));
+    return InvalidVersionError("invalid version for input '{}'".fmt(input));
 }
 
 /// Returns `true` if the `input` `string` can be converted to a semantic `Version`

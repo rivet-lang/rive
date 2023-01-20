@@ -1,9 +1,18 @@
+#[boxed]
+struct MyError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
 func result() ! {
-    return Error("simple error");
+    return MyError("simple error");
 }
 
 func result2() ! {
-    return Error("simple error (returned: {}, idx: {})".fmt(true, 0));
+    return MyError("simple error (returned: {}, idx: {})".fmt(true, 0));
 }
 
 func result3() !int32 {
@@ -18,12 +27,12 @@ test "propagate result in `let` declaration" {
 
 test "catch result error" {
     result() catch |err| {
-        @assert(err is Error);
-        @assert(err.msg == "simple error");
+        @assert(err is MyError);
+        @assert(err.to_string() == "simple error");
     };
 
     result2() catch |err2| {
-        @assert(err2 is Error);
-        @assert(err2.msg == "simple error (returned: true, idx: 0)");
+        @assert(err2 is MyError);
+        @assert(err2.to_string() == "simple error (returned: true, idx: 0)");
     };
 }

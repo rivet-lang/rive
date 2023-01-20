@@ -49,7 +49,7 @@ struct RawVersion {
     func coerce(&self) !Version {
         ver := self.complete();
         if !is_valid_number(self.raw_ints[VER_MAJOR]) {
-            return Error("invalid major version: {}".fmt(self.raw_ints[VER_MAJOR]));
+            return InvalidVersionError("invalid major version: {}".fmt(self.raw_ints[VER_MAJOR]));
         }
         return ver.to_version();
     }

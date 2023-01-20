@@ -39,16 +39,16 @@ class Compiler:
         self.float32_t = type.Type(self.universe[17])
         self.float64_t = type.Type(self.universe[18])
         self.string_t = type.Type(self.universe[19])
-        self.error_t = type.Type(self.universe[20])
-
         self.anyptr_t = type.Ptr(self.void_t)
         self.mut_anyptr_t = type.Ptr(self.void_t, True)
+        self.error_t = None # updated in register
 
         self.prefs = prefs.Prefs(args)
         self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
 
         self.runtime_mod = None
         self.vec_sym = None # from `runtime` module
+        self.error_sym = None # from `runtime` module
 
         self.parsed_files = []
         self.source_files = []

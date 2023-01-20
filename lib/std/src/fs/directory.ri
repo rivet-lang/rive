@@ -7,21 +7,49 @@ import "c/libc";
 
 import "./path";
 
+#[boxed]
+public struct CannotMakeDirectoryError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
+#[boxed]
+public struct CannotMakeFileError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
+#[boxed]
+public struct CouldNotOpenDirectoryError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
 public func make_directory(path_: string, mode: usize = 0o777) ! {
     if path_ == "." {
         return;
     }
     rpath := path.resolve(path_).!;
     if unsafe { libc.mkdir(rpath.ptr, mode) } == -1 {
-        return Error("cannot make directory `{}`: {}".fmt(path_, c.errno_msg()));
+        return CannotMakeDirectoryError(
+            "cannot make directory `{}`: {}".fmt(path_, c.errno_msg())
+        );
     }
 }
 
 public func remove_directory(dir: string) ! {
     rpath := path.resolve(dir).!;
     if unsafe { libc.rmdir(rpath.ptr) == -1 } {
-        return c.last_errno_error();
-        return Error("cannot remove directory `{}`: {}".fmt(dir, c.errno_msg()));
+        return CannotMakeFileError("cannot remove directory `{}`: {}".fmt(dir, c.errno_msg()));
     }
 }
 
@@ -46,5 +74,5 @@ public func walk_directory(path_: string, ext: string = "") ![]string {
             return res;
         }
     }
-    return Error("walk_directory: couldn't open '{}'".fmt(path_));
+    return CouldNotOpenDirectoryError("walk_directory: couldn't open '{}'".fmt(path_));
 }

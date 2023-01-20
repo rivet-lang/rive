@@ -13,21 +13,45 @@ func error_panic(err: Error) {
     process_panic(err.to_string());
 }
 
-public class Error : Stringable {
-    public msg: string;
+/// This trait is used for errors returned with result types (!T).
+public trait Error : Stringable { }
 
+#[boxed]
+public struct RuneFromU32Error : Error {
+    msg: string;
+
+    #[inline]
     public func to_string(self) string {
-        type_name := "Error";
-        return if self.msg.is_empty() {
-            type_name
-        } else {
-            "{}: {}".fmt(type_name, self.msg)
-        };
+        return self.msg;
     }
 }
 
-public class InvalidArgumentError : Error { }
+#[boxed]
+public struct InvalidArgumentError : Error {
+    msg: string;
 
-public class OutOfMemoryError : Error { }
+    #[inline]
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
 
-public class RuneFromU32Error : Error { }
+#[boxed]
+public struct OutOfMemoryError : Error {
+    msg: string;
+
+    #[inline]
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
+#[boxed]
+public struct ReadFailedError : Error {
+    msg: string;
+
+    #[inline]
+    public func to_string(self) string {
+        return self.msg;
+    }
+}

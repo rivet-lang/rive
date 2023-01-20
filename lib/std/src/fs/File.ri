@@ -7,6 +7,15 @@ import "c/libc";
 import "../mem";
 import { Stringable } from "../traits";
 
+#[boxed]
+public struct OperationFailedError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
 public class File {
     f: *mut libc.FILE;
     mut is_opened: bool;
@@ -17,7 +26,7 @@ public class File {
                 return Self(f, true);
             }
         }
-        return Error("File.open: failed to open file '{}'".fmt(path));
+        return OperationFailedError("File.open: failed to open file '{}'".fmt(path));
     }
 
     /// Writes the byte `b` into the file.
@@ -56,12 +65,12 @@ public class File {
         unsafe {
             seek := libc.fseek(self.f, 0, 2);
             if seek != 0 {
-                return Error("fseek failed");
+                return OperationFailedError("fseek failed");
             }
 
             fsize := libc.ftell(self.f);
             if fsize < 0 {
-                return Error("ftell failed");
+                return OperationFailedError("ftell failed");
             }
 
             libc.rewind(self.f);
@@ -70,7 +79,9 @@ public class File {
             // that, when cast to `int32`, can result in values below 0.
             allocate := @cast(int32, fsize);
             if @cast(int64, allocate) < fsize {
-                return Error("{} cast to `int32` results in {}".fmt(fsize, @cast(int32, fsize)));
+                return OperationFailedError(
+                    "{} cast to `int32` results in {}".fmt(fsize, @cast(int32, fsize))
+                );
             }
 
             mut res := @cast([*]mut uint8, mem.alloc(@cast(usize, allocate) + 1).!);
@@ -78,7 +89,7 @@ public class File {
 
             if self.eof() and libc.ferror(self.f) != 0 {
                 mem.dealloc(res);
-                return Error("fread failed");
+                return OperationFailedError("fread failed");
             }
 
             res[nelements] = 0;

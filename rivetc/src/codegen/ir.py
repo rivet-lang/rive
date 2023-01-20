@@ -120,7 +120,7 @@ class Function:
         return str(self)
 
     def __str__(self):
-        return f"*fn({', '.join([str(arg) for arg in self.args])}) {self.ret_typ}"
+        return f"*func({', '.join([str(arg) for arg in self.args])}) {self.ret_typ}"
 
     def __eq__(self, other):
         return str(self) == str(other)
@@ -228,7 +228,7 @@ class GlobalVar:
         elif self.is_extern:
             kw = "extern "
         else:
-            kw = "local "
+            kw = ""
         return f'{kw}var %{self.name}: {self.typ}'
 
 class Local:
@@ -349,9 +349,7 @@ class FnDecl:
             sb.write("extern ")
         elif self.is_pub:
             sb.write("export ")
-        else:
-            sb.write("local ")
-        sb.write(f'fn {self.name}(')
+        sb.write(f'func {self.name}(')
         for i, arg in enumerate(self.args):
             sb.write(f'%{arg.name}: {arg.typ}')
             if i < len(self.args) - 1:

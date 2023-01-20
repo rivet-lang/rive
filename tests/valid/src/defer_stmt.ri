@@ -17,7 +17,7 @@ func test_errdefer(mut err_defer: ErrDefer, err: bool) ! {
     errdefer err_defer.i += 2;
 
     if err {
-        return Error();
+        return MyError();
     }
 }
 

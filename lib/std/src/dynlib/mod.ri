@@ -10,8 +10,6 @@ import "c/libc";
 
 public var SHARED_LIB_EXT: string = get_shared_library_extension();
 
-class SymbolNotFoundError : Error {}
-
 /// Returns a library name with the operating system specific extension for shared
 /// libraries.
 #[inline]
@@ -19,12 +17,30 @@ public func library_name(libname: string) string {
     return libname.concat(SHARED_LIB_EXT);
 }
 
+#[boxed]
+public struct SymbolNotFoundError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
+#[boxed]
+public struct CannotLoadLibraryError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
 public func load(path: string, global_symbols: bool = false) !Library {
     flags := if global_symbols { libc.RTLD_NOW | libc.RTLD_GLOBAL } else { libc.RTLD_NOW };
     if ptr := unsafe { libc.dlopen(path.ptr, flags) } {
         return Library(path, ptr);
     }
-    return Error("cannot load '{}': {}".fmt(path, dlerror()));
+    return CannotLoadLibraryError("cannot load '{}': {}".fmt(path, dlerror()));
 }
 
 class Library {

@@ -722,10 +722,10 @@ class Codegen:
         if isinstance(expected_typ_,
                       type.Option) and not expected_typ_.is_ref_or_ptr():
             if isinstance(res_expr, ir.NilLit):
-                res_expr = self.optional_nil(expected_typ_)
+                res_expr = self.option_nil(expected_typ_)
             elif not isinstance(res_expr, ir.Skip
                                 ) and not isinstance(expr_typ, type.Option):
-                res_expr = self.optional_value(expected_typ_, res_expr)
+                res_expr = self.option_value(expected_typ_, res_expr)
 
         return res_expr
 
@@ -1111,9 +1111,22 @@ class Codegen:
                                 ir.InstKind.LoadPtr, [self_expr]
                             )
                         if left_sym.kind == TypeKind.Trait:
-                            id_value = ir.Selector(
-                                ir.USIZE_T, self_expr, ir.Name("_id")
-                            )
+                            left2_sym = expr.left.left.typ.symbol()
+                            if left2_sym.kind == TypeKind.Trait and left_sym != left2_sym:
+                                id_value = ir.Inst(
+                                    ir.InstKind.Call, [
+                                        ir.Name(
+                                            f"{mangle_symbol(left_sym)}17__index_of_vtbl__"
+                                        ),
+                                        ir.Selector(
+                                            ir.USIZE_T, self_expr, ir.Name("_real_id")
+                                        )
+                                    ]
+                                )
+                            else:
+                                id_value = ir.Selector(
+                                    ir.USIZE_T, self_expr, ir.Name("_id")
+                                )
                         else:
                             id_value = ir.Inst(
                                 ir.InstKind.Call, [
@@ -2189,10 +2202,8 @@ class Codegen:
                     )
                     expr_ = tmp
                 if wrap_result:
-                    if expr.expr.typ.symbol().is_subtype_of(
-                        self.comp.error_t.sym
-                    ):
-                        expr_ = self.result_error(self.cur_fn_ret_typ, expr_)
+                    if expr.expr.typ.symbol().implement_trait(self.comp.error_sym):
+                        expr_ = self.result_error(self.cur_fn_ret_typ, expr.expr.typ, expr_)
                     else:
                         expr_ = self.result_value(self.cur_fn_ret_typ, expr_)
                 self.gen_defer_stmts(
@@ -2314,24 +2325,20 @@ class Codegen:
         )
         return tmp
 
-    def result_error(self, typ, expr):
+    def result_error(self, typ, expr_t, expr):
         tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
         self.cur_fn.alloca(tmp)
         self.cur_fn.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_err")),
             ir.IntLit(ir.BOOL_T, "1")
         )
-        if str(expr.typ) != "+_R5Error":
-            expr = ir.Inst(
-                ir.InstKind.Cast, [expr, self.ir_type(self.comp.error_t)]
-            )
         self.cur_fn.store(
             ir.Selector(self.ir_type(self.comp.error_t), tmp, ir.Name("err")),
-            expr
+            self.trait_value(expr, expr_t, self.comp.error_t)
         )
         return tmp
 
-    def optional_value(self, typ, value):
+    def option_value(self, typ, value):
         tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
         self.cur_fn.alloca(tmp)
         self.cur_fn.store(
@@ -2343,7 +2350,7 @@ class Codegen:
         )
         return tmp
 
-    def optional_nil(self, typ):
+    def option_nil(self, typ):
         tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
         self.cur_fn.alloca(tmp)
         self.cur_fn.store(
@@ -2379,7 +2386,7 @@ class Codegen:
         if isinstance(typ, type.Option):
             if typ.is_ref_or_ptr():
                 return ir.NilLit(ir.VOID_PTR_T)
-            return self.optional_nil(typ)
+            return self.option_nil(typ)
         if typ == self.comp.rune_t:
             return ir.RuneLit("\\0")
         elif typ in (
@@ -2535,22 +2542,33 @@ class Codegen:
                 ]
             )
         )
-        vtbl_idx = trait_sym.info.indexof(value_sym)
-        if value_sym.kind == TypeKind.Class and value_sym.info.is_base:
+        if value_sym.kind == TypeKind.Trait:
             index = ir.Inst(
                 ir.InstKind.Call, [
                     ir.Name(f"{mangle_symbol(value_sym)}17__index_of_vtbl__"),
                     ir.Selector(ir.USIZE_T, value, ir.Name("_id"))
                 ], ir.USIZE_T
             )
-            if vtbl_idx > 0:
-                index = ir.Inst(
-                    ir.InstKind.Add,
-                    [ir.IntLit(ir.USIZE_T, str(vtbl_idx)), index], ir.USIZE_T
-                )
         else:
-            index = ir.IntLit(ir.USIZE_T, str(vtbl_idx))
+            vtbl_idx = trait_sym.info.indexof(value_sym)
+            if value_sym.kind == TypeKind.Class and value_sym.info.is_base:
+                index = ir.Inst(
+                    ir.InstKind.Call, [
+                        ir.Name(f"{mangle_symbol(value_sym)}17__index_of_vtbl__"),
+                        ir.Selector(ir.USIZE_T, value, ir.Name("_id"))
+                    ], ir.USIZE_T
+                )
+                if vtbl_idx > 0:
+                    index = ir.Inst(
+                        ir.InstKind.Add,
+                        [ir.IntLit(ir.USIZE_T, str(vtbl_idx)), index], ir.USIZE_T
+                    )
+            else:
+                index = ir.IntLit(ir.USIZE_T, str(vtbl_idx))
         self.cur_fn.store(ir.Selector(ir.USIZE_T, tmp, ir.Name("_id")), index)
+        self.cur_fn.store(
+            ir.Selector(ir.USIZE_T, tmp, ir.Name("_real_id")), ir.IntLit(ir.USIZE_T, str(value_sym.id))
+        )
         return tmp
 
     def advanced_enum_value(
@@ -2664,7 +2682,7 @@ class Codegen:
         elif isinstance(typ, type.Option):
             if typ.is_ref_or_ptr():
                 return self.ir_type(typ.typ)
-            name = f"_R9Optional_{mangle_type(typ.typ)}"
+            name = f"_R6Option_{mangle_type(typ.typ)}"
             if name not in self.generated_opt_res_types:
                 is_void = typ.typ in self.void_types
                 self.out_rir.structs.append(
@@ -2748,55 +2766,80 @@ class Codegen:
                             ]
                         )
                     )
-            elif ts.kind == TypeKind.Trait:
-                if ts.info.has_objects:
-                    ts_name = mangle_symbol(ts)
-                    self.out_rir.structs.append(
-                        ir.Struct(
-                            False, ts_name, [
-                                ir.Field("_id", ir.USIZE_T),
-                                ir.Field("_rc", ir.USIZE_T),
-                                ir.Field("obj", ir.VOID_PTR_T)
-                            ]
-                        )
+            elif ts.kind == TypeKind.Trait and ts.info.has_objects:
+                ts_name = mangle_symbol(ts)
+                self.out_rir.structs.append(
+                    ir.Struct(
+                        False, ts_name, [
+                            ir.Field("_id", ir.USIZE_T),
+                            ir.Field("_rc", ir.USIZE_T),
+                            ir.Field("obj", ir.VOID_PTR_T),
+                            ir.Field("_real_id", ir.USIZE_T),
+                        ]
                     )
-                    # Virtual table
-                    vtbl_name = f"{ts_name}4Vtbl"
-                    static_vtbl_name = f"{ts_name}4VTBL"
-                    fields = []
+                )
+                # Virtual table
+                vtbl_name = f"{ts_name}4Vtbl"
+                static_vtbl_name = f"{ts_name}4VTBL"
+                fields = []
+                for m in ts.syms:
+                    if isinstance(m, sym.Fn):
+                        proto = m.typ()
+                        proto.args.insert(
+                            0,
+                            sym.Arg(
+                                "self", m.self_is_mut,
+                                type.Ptr(self.comp.void_t), None, False,
+                                NO_POS
+                            )
+                        )
+                        fields.append(ir.Field(m.name, self.ir_type(proto)))
+                funcs = []
+                index_of_vtbl = []
+                for idx, its in enumerate(ts.info.implements):
+                    map = {}
                     for m in ts.syms:
                         if isinstance(m, sym.Fn):
-                            proto = m.typ()
-                            proto.args.insert(
-                                0,
-                                sym.Arg(
-                                    "self", m.self_is_mut,
-                                    type.Ptr(self.comp.void_t), None, False,
-                                    NO_POS
-                                )
-                            )
-                            fields.append(ir.Field(m.name, self.ir_type(proto)))
-                    funcs = []
-                    for its in ts.info.implements:
-                        map = {}
-                        for m in ts.syms:
-                            if isinstance(m, sym.Fn):
-                                if ts_method := its.find(m.name):
-                                    map[m.name] = mangle_symbol(ts_method)
-                                else:
-                                    map[m.name] = mangle_symbol(m)
-                        funcs.append(map)
-                    if len(funcs) > 0:
-                        self.out_rir.structs.append(
-                            ir.Struct(False, vtbl_name, fields)
+                            if ts_method := its.find(m.name):
+                                map[m.name] = mangle_symbol(ts_method)
+                            else:
+                                map[m.name] = mangle_symbol(m)
+                    funcs.append(map)
+                    index_of_vtbl.append((its.id, idx))
+                if len(funcs) > 0:
+                    self.out_rir.structs.append(
+                        ir.Struct(False, vtbl_name, fields)
+                    )
+                    self.out_rir.decls.append(
+                        ir.VTable(
+                            vtbl_name, static_vtbl_name, ts_name,
+                            len(ts.info.implements), funcs
                         )
-                        self.out_rir.decls.append(
-                            ir.VTable(
-                                vtbl_name, static_vtbl_name, ts_name,
-                                len(ts.info.implements), funcs
-                            )
+                    )
+                    index_of_vtbl_fn = ir.FnDecl(
+                        False, ast.Annotations(), False,
+                        mangle_symbol(ts) + "17__index_of_vtbl__",
+                        [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T,
+                        False
+                    )
+                    for child_id, child_idx in index_of_vtbl:
+                        l1 = index_of_vtbl_fn.local_name()
+                        l2 = index_of_vtbl_fn.local_name()
+                        index_of_vtbl_fn.add_cond_br(
+                            ir.Inst(
+                                ir.InstKind.Cmp, [
+                                    "==",
+                                    ir.Ident(ir.USIZE_T, "self"),
+                                    ir.IntLit(ir.USIZE_T, str(child_id))
+                                ]
+                            ), l1, l2
                         )
-            elif ts.kind in (TypeKind.Class, TypeKind.String, TypeKind.Vec):
+                        index_of_vtbl_fn.add_label(l1)
+                        index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, str(child_idx)))
+                        index_of_vtbl_fn.add_label(l2)
+                    index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, "0"))
+                    self.out_rir.decls.append(index_of_vtbl_fn)
+            elif ts.kind == TypeKind.Class:
                 fields = [
                     ir.Field("_rc", ir.USIZE_T),
                     ir.Field("_id", ir.USIZE_T)
@@ -2805,73 +2848,70 @@ class Codegen:
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 ts_name = mangle_symbol(ts)
                 self.out_rir.structs.append(ir.Struct(False, ts_name, fields))
-                if ts.kind == TypeKind.Class:
-                    if not ts.info.is_base:
-                        continue
-                    # Virtual table
-                    vtbl_name = f"{ts_name}4Vtbl"
-                    static_vtbl_name = f"{ts_name}4VTBL"
-                    fields = []
+                if not ts.info.is_base:
+                    continue
+                # Virtual table
+                vtbl_name = f"{ts_name}4Vtbl"
+                static_vtbl_name = f"{ts_name}4VTBL"
+                fields = []
+                for m in ts.syms:
+                    if isinstance(m, sym.Fn):
+                        fields.append(
+                            ir.Field(
+                                token.real_name(m.name),
+                                self.ir_type(m.typ(), True)
+                            )
+                        )
+                index_of_vtbl = [(ts.id, 0)]
+                childrens = [ts] + ts.info.childrens
+                funcs = []
+                for idx, child in enumerate(childrens):
+                    map_fns = {}
                     for m in ts.syms:
                         if isinstance(m, sym.Fn):
-                            fields.append(
-                                ir.Field(
-                                    token.real_name(m.name),
-                                    self.ir_type(m.typ(), True)
+                            real_name = token.real_name(m.name)
+                            if ts_method := child.find(m.name):
+                                map_fns[real_name] = mangle_symbol(
+                                    ts_method
                                 )
-                            )
-                    index_of_vtbl = [(ts.id, 0)]
-                    childrens = [ts] + ts.info.childrens
-                    funcs = []
-                    for idx, child in enumerate(childrens):
-                        map_fns = {}
-                        for m in ts.syms:
-                            if isinstance(m, sym.Fn):
-                                real_name = token.real_name(m.name)
-                                if ts_method := child.find(m.name):
-                                    map_fns[real_name] = mangle_symbol(
-                                        ts_method
-                                    )
-                                else:
-                                    map_fns[real_name] = mangle_symbol(m)
-                        index_of_vtbl.append((child.id, idx))
-                        funcs.append(map_fns)
-                    if len(funcs) > 0:
-                        self.out_rir.structs.append(
-                            ir.Struct(False, vtbl_name, fields)
+                            else:
+                                map_fns[real_name] = mangle_symbol(m)
+                    index_of_vtbl.append((child.id, idx))
+                    funcs.append(map_fns)
+                if len(funcs) > 0:
+                    self.out_rir.structs.append(
+                        ir.Struct(False, vtbl_name, fields)
+                    )
+                    self.out_rir.decls.append(
+                        ir.VTable(
+                            vtbl_name, static_vtbl_name, ts_name,
+                            len(childrens), funcs
                         )
-                        self.out_rir.decls.append(
-                            ir.VTable(
-                                vtbl_name, static_vtbl_name, ts_name,
-                                len(childrens), funcs
-                            )
+                    )
+                    index_of_vtbl_fn = ir.FnDecl(
+                        False, ast.Annotations(), False,
+                        mangle_symbol(ts) + "17__index_of_vtbl__",
+                        [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T,
+                        False
+                    )
+                    for child_id, child_idx in index_of_vtbl:
+                        l1 = index_of_vtbl_fn.local_name()
+                        l2 = index_of_vtbl_fn.local_name()
+                        index_of_vtbl_fn.add_cond_br(
+                            ir.Inst(
+                                ir.InstKind.Cmp, [
+                                    "==",
+                                    ir.Ident(ir.USIZE_T, "self"),
+                                    ir.IntLit(ir.USIZE_T, str(child_id))
+                                ]
+                            ), l1, l2
                         )
-                        index_of_vtbl_fn = ir.FnDecl(
-                            False, ast.Annotations(), False,
-                            mangle_symbol(ts) + "17__index_of_vtbl__",
-                            [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T,
-                            False
-                        )
-                        for (child_id, child_idx) in index_of_vtbl:
-                            l1 = index_of_vtbl_fn.local_name()
-                            l2 = index_of_vtbl_fn.local_name()
-                            index_of_vtbl_fn.add_cond_br(
-                                ir.Inst(
-                                    ir.InstKind.Cmp, [
-                                        "==",
-                                        ir.Ident(ir.USIZE_T, "self"),
-                                        ir.IntLit(ir.USIZE_T, str(child_id))
-                                    ]
-                                ), l1, l2
-                            )
-                            index_of_vtbl_fn.add_label(l1)
-                            index_of_vtbl_fn.add_ret(
-                                ir.IntLit(ir.USIZE_T, str(child_idx))
-                            )
-                            index_of_vtbl_fn.add_label(l2)
-                        index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, "0"))
-                        self.out_rir.decls.append(index_of_vtbl_fn)
-            elif ts.kind == TypeKind.Struct:
+                        index_of_vtbl_fn.add_label(l1)
+                        index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, str(child_idx)))
+                        index_of_vtbl_fn.add_label(l2)
+                    index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, "0"))
+                    self.out_rir.decls.append(index_of_vtbl_fn)
+            elif ts.kind in (TypeKind.Struct, TypeKind.String, TypeKind.Vec):
                 fields = [
                     ir.Field("_rc", ir.USIZE_T), ir.Field("_id", ir.USIZE_T)
                 ] if ts.info.is_boxed else []

@@ -14,6 +14,15 @@ func new_sym_id() usize {
     return res;
 }
 
+#[boxed]
+public struct DuplicateSymbolError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
 public enum ABI as uint8 : traits.Stringable {
     Rivet,
     C;
@@ -476,7 +485,7 @@ public class Scope {
         if sym.name == "_" and sym is Var {
             return; // ignore blank var
         } else if self.exists(sym.name) {
-            return Error("duplicate symbol `{}`".fmt(sym.name));
+            return DuplicateSymbolError("duplicate symbol `{}`".fmt(sym.name));
         }
         self.syms.push(sym);
     }
@@ -502,11 +511,11 @@ public class Scope {
         return nil;
     }
 
+    #[inline]
     func dont_lookup_parent(self) bool {
-        if self.detached_from_parent or self.parent is nil {
-            return true;
-        }
-        return if parent := self.parent {
+        return if self.detached_from_parent or self.parent is nil {
+            true
+        } else if parent := self.parent {
             parent is Mod
         } else {
             false
@@ -538,8 +547,7 @@ public func universe() Mod {
                 TypeSym(is_public: true, name: "comptime_float", kind: .ComptimeFloat),
                 TypeSym(is_public: true, name: "float32", kind: .Float32),
                 TypeSym(is_public: true, name: "float64", kind: .Float64),
-                TypeSym(is_public: true, name: "string", kind: .String),
-                TypeSym(is_public: true, name: "Error", kind: .Class, info: ClassInfo())
+                TypeSym(is_public: true, name: "string", kind: .String)
             ]
         )
     );

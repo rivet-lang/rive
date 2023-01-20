@@ -15,7 +15,14 @@ enum Operator as uint8 {
     Eq
 }
 
-class InvalidComparatorFormatError : Error { }
+#[boxed]
+public struct InvalidComparatorFormatError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
 
 struct Comparator {
     ver: Version;

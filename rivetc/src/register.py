@@ -21,6 +21,7 @@ class Register:
             self.sym = sf.sym
             self.source_file = sf
             self.walk_decls(self.source_file.decls)
+        self.comp.error_t = type.Type(self.comp.error_sym)
 
     def walk_decls(self, decls):
         for decl in decls:
@@ -102,21 +103,20 @@ class Register:
                             info = sym.TraitInfo()
                         )
                     )
+                    if self.is_runtime_mod and decl.name == "Error" and not self.comp.error_sym:
+                        self.comp.error_sym = decl.sym
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.ClassDecl):
                 try:
-                    if self.is_runtime_mod and decl.name == "Error":
-                        decl.sym = self.comp.error_t.sym
-                    else:
-                        decl.sym = self.sym.add_and_return(
-                            sym.Type(
-                                decl.is_public, decl.name, TypeKind.Class,
-                                info = sym.ClassInfo()
-                            )
+                    decl.sym = self.sym.add_and_return(
+                        sym.Type(
+                            decl.is_public, decl.name, TypeKind.Class,
+                            info = sym.ClassInfo()
                         )
+                    )
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)
                 except utils.CompilerError as e:

@@ -9,10 +9,38 @@ public alias ErrnoError = c.ErrnoError;
 public alias OutOfMemoryError = runtime.OutOfMemoryError;
 public alias RuneFromU32Error = runtime.RuneFromU32Error;
 
-public class InvalidSyntaxError : Error { }
+#[boxed]
+public struct InvalidSyntaxError : Error {
+    msg: string;
 
-public class InvalidBaseError : Error { }
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
 
-public class InvalidBitSizeError : Error { }
+#[boxed]
+public struct InvalidBaseError : Error {
+    msg: string;
 
-public class ValueOutOfRangeError : Error { }
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
+#[boxed]
+public struct InvalidBitSizeError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
+#[boxed]
+public struct ValueOutOfRangeError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}

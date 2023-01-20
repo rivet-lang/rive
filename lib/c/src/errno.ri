@@ -4,8 +4,15 @@
 
 import "c/libc";
 
-public class ErrnoError : Error {
+#[boxed]
+public struct ErrnoError : Error {
+    public msg: string;
     public code: int32;
+
+    #[inline]
+    public func to_string(self) string {
+        return "errno: {} ({})".fmt(self.msg, self.code);
+    }
 }
 
 #[inline]

@@ -572,10 +572,6 @@ class Checker:
                     report.error(
                         "cannot take the address of other reference", expr.pos
                     )
-                elif expr.typ == self.comp.error_t:
-                    report.error(
-                        "cannot take the address of a error value", expr.pos
-                    )
                 elif expr.is_ref_mut:
                     self.check_expr_is_mut(right)
                 if expected_pointer:
@@ -636,12 +632,6 @@ class Checker:
                 report.error(
                     "string values only support the following operators: `==`, `!=`, `<`, `>`, `<=` and `>=`",
                     expr.pos
-                )
-            elif ltyp == self.comp.error_t and expr.op not in (
-                Kind.KwIs, Kind.KwNotIs
-            ):
-                report.error(
-                    "error values only support `is` and `!is`", expr.pos
                 )
 
             return_type = ltyp
@@ -1314,9 +1304,7 @@ class Checker:
                     except utils.CompilerError as e:
                         if not (
                             isinstance(self.cur_fn.ret_typ, type.Result)
-                            and expr_typ.symbol().is_subtype_of(
-                                self.comp.error_t.sym
-                            )
+                            and expr_typ.symbol().implement_trait(self.comp.error_sym)
                         ):
                             report.error(e.args[0], expr.expr.pos)
                             report.note(
@@ -1721,6 +1709,9 @@ class Checker:
         if isinstance(expected, type.Variadic):
             if isinstance(got, type.Variadic):
                 return exp_sym.info.elem_typ == got.typ
+            elem_sym = exp_sym.info.elem_typ.symbol()
+            if got_sym.kind == TypeKind.Trait and elem_sym in got_sym.info.bases:
+                return True
             return self.check_compatible_types(got, exp_sym.info.elem_typ)
 
         if isinstance(expected, type.Fn) and isinstance(got, type.Fn):
