@@ -4,13 +4,14 @@
 
 import "c/libc";
 
-public class StringBuilder : Stringable {
-    mut inner: Vec;
+#[boxed]
+public struct StringBuilder : Stringable {
+    mut inner: Vector;
 
     /// Returns a string builder with capacity `cap`.
     #[inline]
     public func new(cap: usize = 0) Self {
-        return Self(unsafe { Vec.new(@size_of(uint8), cap) });
+        return Self(unsafe { Vector.new(@size_of(uint8), cap) });
     }
 
     public func from_string(s: string) Self {
@@ -18,7 +19,7 @@ public class StringBuilder : Stringable {
             return Self.new();
         }
         return Self(unsafe {
-            Vec.from_array(@cast(*mut uint8, s.ptr), @size_of(uint8), s.len)
+            Vector.from_array(@cast(*mut uint8, s.ptr), @size_of(uint8), s.len)
         });
     }
 

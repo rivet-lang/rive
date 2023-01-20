@@ -73,8 +73,8 @@ def mangle_symbol(s):
                 res.insert(0, name)
                 s.mangled_name = name
             elif s.kind == TypeKind.Vec:
-                res.insert(0, "7runtime3Vec")
-                s.mangled_name = "_R7runtime3Vec"
+                res.insert(0, "7runtime6Vector")
+                s.mangled_name = "_R7runtime6Vector"
             elif s.kind == TypeKind.Array:
                 name = f"Array_{mangle_type(s.info.elem_typ)}_{s.info.size}"
                 name = f"{len(name)}{name}"
@@ -236,7 +236,7 @@ class Codegen:
                 tests_field,
                 ir.Inst(
                     ir.InstKind.Call, [
-                        ir.Name("_R7runtime3Vec19from_array_no_allocF"),
+                        ir.Name("_R7runtime6Vector19from_array_no_allocF"),
                         ir.ArrayLit(
                             ir.Array(ir.TEST_T, str(len(self.generated_tests))),
                             gtests_array
@@ -437,7 +437,7 @@ class Codegen:
                 self.out_rir.decls.append(fn_decl)
         elif isinstance(decl, ast.DestructorDecl):
             self_typ = self.ir_type(decl.self_typ)
-            if decl.self_is_mut and decl.self_typ.sym.kind != TypeKind.Class:
+            if decl.self_is_mut and not decl.self_typ.sym.is_boxed():
                 self_typ = self_typ.ptr()
             self_arg = ir.Ident(self_typ, "self")
             dtor_fn = ir.FnDecl(
@@ -1468,7 +1468,7 @@ class Codegen:
                 tmp,
                 ir.Inst(
                     ir.InstKind.Call, [
-                        ir.Name("_R7runtime3Vec10from_arrayF"), arr_lit,
+                        ir.Name("_R7runtime6Vector10from_arrayF"), arr_lit,
                         ir.IntLit(ir.USIZE_T, str(size)),
                         ir.IntLit(ir.USIZE_T, str(len(elems)))
                     ]
@@ -1512,14 +1512,14 @@ class Codegen:
                     if end == None:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R7runtime3Vec10slice_fromM"), left,
+                                ir.Name("_R7runtime6Vector10slice_fromM"), left,
                                 start
                             ]
                         )
                     else:
                         inst = Inst(
                             InstKind.Call, [
-                                ir.Name("_R7runtime3Vec5sliceM"), left, start,
+                                ir.Name("_R7runtime6Vector5sliceM"), left, start,
                                 end
                             ]
                         )
@@ -1573,7 +1573,7 @@ class Codegen:
                     ir.InstKind.Cast, [
                         ir.Inst(
                             ir.InstKind.Call,
-                            [ir.Name("_R7runtime3Vec3getM"), left, idx]
+                            [ir.Name("_R7runtime6Vector3getM"), left, idx]
                         ), expr_typ_ir2
                     ], expr_typ_ir2
                 )
@@ -1766,7 +1766,7 @@ class Codegen:
                 left_sym = expr_left_typ.symbol()
                 right_sym = expr.right.typ.symbol()
                 contains_method = f"contains_{right_sym.id}"
-                full_name = f"_R7runtime3Vec{len(contains_method)}{contains_method}"
+                full_name = f"_R7runtime6Vector{len(contains_method)}{contains_method}"
                 if not right_sym.info.has_contains_method:
                     right_sym.info.has_contains_method = True
                     self_id = ir.Ident(ir.VEC_T.ptr(True), "self")
@@ -1801,7 +1801,7 @@ class Codegen:
                                 ir.InstKind.Cast, [
                                     ir.Inst(
                                         ir.InstKind.Call, [
-                                            ir.Name("_R7runtime3Vec7raw_getM"),
+                                            ir.Name("_R7runtime6Vector7raw_getM"),
                                             self_id, inc_v
                                         ]
                                     ),
@@ -2240,7 +2240,7 @@ class Codegen:
                 expr_right = self.gen_expr_with_cast(right.typ, right)
                 val_sym = right.typ.symbol()
                 self.cur_fn.add_call(
-                    "_R7runtime3Vec3setM", [
+                    "_R7runtime6Vector3setM", [
                         rec,
                         self.gen_expr(expr.index),
                         ir.Inst(ir.InstKind.GetRef, [expr_right])
@@ -2366,7 +2366,7 @@ class Codegen:
         elem_size, _ = self.comp.type_size(var_arg_typ_)
         return ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R7runtime3Vec19from_array_no_allocF"),
+                ir.Name("_R7runtime6Vector19from_array_no_allocF"),
                 ir.ArrayLit(self.ir_type(var_arg_typ_), vargs),
                 ir.IntLit(ir.USIZE_T, str(elem_size)),
                 ir.IntLit(ir.USIZE_T, str(len(vargs)))
@@ -2453,7 +2453,7 @@ class Codegen:
         size, _ = self.comp.type_size(elem_typ)
         return ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R7runtime3Vec3newF"),
+                ir.Name("_R7runtime6Vector3newF"),
                 ir.IntLit(ir.USIZE_T, str(size)), cap
                 or ir.IntLit(ir.USIZE_T, "0")
             ]
@@ -2870,7 +2870,9 @@ class Codegen:
                         index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, "0"))
                         self.out_rir.decls.append(index_of_vtbl_fn)
             elif ts.kind == TypeKind.Struct:
-                fields = []
+                fields = [
+                    ir.Field("_rc", ir.USIZE_T), ir.Field("_id", ir.USIZE_T)
+                ] if ts.info.is_boxed else []
                 for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 self.out_rir.structs.append(

@@ -2,7 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-class Vec {
+#[boxed]
+struct Vector {
     mut ptr: mut_anyptr;
     elem_size: usize;
     mut len: usize;

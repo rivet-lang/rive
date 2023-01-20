@@ -275,6 +275,7 @@ public class ClassInfo : TypeInfo {
 }
 
 public class StructInfo : TypeInfo {
+    public is_boxed: bool;
     public is_opaque: bool;
     public bases: []mut TypeSym;
     public traits: []TypeSym;
@@ -397,12 +398,16 @@ public class TypeSym : Sym {
         return false;
     }
 
+    #[inline]
     public func is_boxed(self) bool {
-        if self.info is EnumInfo as enum_info {
-            return enum_info.is_advanced_enum;
-        }
-        return self.kind == .Trait or self.kind == .Class or self.kind == .String
-            or self.kind == .Vector;
+        return if self.info is EnumInfo as enum_info {
+            enum_info.is_advanced_enum
+        } else if self.info is StructInfo as struct_info {
+            struct_info.is_boxed
+        } else {
+            self.kind == .Trait or self.kind == .Class or self.kind == .String
+            or self.kind == .Vector
+        };
     }
 
     // TODO(StunxFS): fix inheritance of overloaded operators

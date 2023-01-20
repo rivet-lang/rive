@@ -11,10 +11,12 @@ class Register:
         self.source_file = None
         self.abi = sym.ABI.Rivet
         self.sym = None
+        self.is_runtime_mod = False
 
     def walk_files(self, source_files):
         for i, sf in enumerate(source_files):
-            if self.comp.runtime_mod == None and sf.sym.is_runtime_mod():
+            self.is_runtime_mod = sf.sym.is_runtime_mod()
+            if self.comp.runtime_mod == None and self.is_runtime_mod:
                 self.comp.runtime_mod = sf.sym
             self.sym = sf.sym
             self.source_file = sf
@@ -106,10 +108,7 @@ class Register:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.ClassDecl):
                 try:
-                    is_runtime_mod = self.source_file.sym.is_runtime_mod()
-                    if is_runtime_mod and decl.name == "string":
-                        decl.sym = self.comp.string_t.sym
-                    elif is_runtime_mod and decl.name == "Error":
+                    if self.is_runtime_mod and decl.name == "Error":
                         decl.sym = self.comp.error_t.sym
                     else:
                         decl.sym = self.sym.add_and_return(
@@ -118,22 +117,25 @@ class Register:
                                 info = sym.ClassInfo()
                             )
                         )
-                        if is_runtime_mod and decl.name == "Vec":
-                            self.comp.vec_sym = decl.sym
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.StructDecl):
                 try:
-                    decl.sym = self.sym.add_and_return(
-                        sym.Type(
-                            decl.is_public, decl.name, TypeKind.Struct,
-                            info = sym.StructInfo(
-                                decl.is_opaque, is_boxed = decl.annotations.has("boxed")
+                    if self.is_runtime_mod and decl.name == "string":
+                        decl.sym = self.comp.string_t.sym
+                    else:
+                        decl.sym = self.sym.add_and_return(
+                            sym.Type(
+                                decl.is_public, decl.name, TypeKind.Struct,
+                                info = sym.StructInfo(
+                                    decl.is_opaque, is_boxed = decl.annotations.has("boxed")
+                                )
                             )
                         )
-                    )
+                        if self.is_runtime_mod and decl.name == "Vector":
+                            self.comp.vec_sym = decl.sym
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)
                 except utils.CompilerError as e:
