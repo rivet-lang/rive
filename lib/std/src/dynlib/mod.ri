@@ -43,7 +43,8 @@ public func load(path: string, global_symbols: bool = false) !Library {
     return CannotLoadLibraryError("cannot load '{}': {}".fmt(path, dlerror()));
 }
 
-class Library {
+#[boxed]
+struct Library {
     public path: string;
     ptr: mut_anyptr;
 

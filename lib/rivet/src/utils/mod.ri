@@ -39,7 +39,8 @@ struct CachedFile {
    mut lines: []string;
 }
 
-class SourceCache {
+#[boxed]
+struct SourceCache {
    mut sources: []CachedFile;
 
    public func find(self, path: string) ?string {

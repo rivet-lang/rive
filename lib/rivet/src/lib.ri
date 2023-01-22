@@ -18,7 +18,8 @@ import "./parser";
 var RIVET_DIR: string = path.join(env.HOME_DIR, ".rivet_lang").!;
 var RIVETC_DIR: string = path.dirname(process.executable().!).?;
 
-public class Compiler {
+#[boxed]
+public struct Compiler {
     public mut table: ast.Table;
     public mut prefs: prefs.Prefs;
     public mut source_files: []string;

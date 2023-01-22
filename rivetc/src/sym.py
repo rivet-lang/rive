@@ -606,10 +606,6 @@ class Type(Sym):
             if self.info.base == t:
                 return True
             return self.info.base.is_subtype_of(t)
-        elif self.kind == TypeKind.Struct:
-            for base in self.info.bases:
-                if base.is_subtype_of(t):
-                    return True
         return False
 
     def is_boxed(self):

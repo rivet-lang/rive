@@ -180,35 +180,50 @@ public enum TypeKind : traits.Stringable {
     }
 }
 
-public class TypeInfo { }
+public enum TypeInfo {
+    Alias(AliasInfo),
+    Array(ArrayInfo),
+    Vector(VectorInfo),
+    Tuple(TupleInfo),
+    Enum(EnumInfo),
+    Trait(TraitInfo),
+    Class(ClassInfo),
+    Struct(StructInfo)
+}
 
-public class AliasInfo : TypeInfo {
+#[boxed]
+public struct AliasInfo {
     public parent: Type;
 }
 
-public class ArrayInfo : TypeInfo {
+#[boxed]
+public struct ArrayInfo {
     public elem_typ: Type;
     public size: isize;
     public has_contains_method: bool;
 }
 
-public class VectorInfo : TypeInfo {
+#[boxed]
+public struct VectorInfo {
     public elem_typ: Type;
     public has_contains_method: bool;
 }
 
-public class TupleInfo : TypeInfo {
+#[boxed]
+public struct TupleInfo {
     public types: []Type;
 }
 
-public class EnumVariant {
+#[boxed]
+public struct EnumVariant {
     public name: string;
     public value: isize;
     public has_typ: bool;
     public typ: Type;
 }
 
-public class EnumInfo : TypeInfo {
+#[boxed]
+public struct EnumInfo {
     public underlying_typ: Type;
     public mut variants: []EnumVariant;
     public is_advanced_enum: bool;
@@ -245,7 +260,8 @@ public class EnumInfo : TypeInfo {
     }
 }
 
-public class TraitInfo : TypeInfo {
+#[boxed]
+public struct TraitInfo {
     public bases: []mut TypeSym;
     public mut implements: []TypeSym;
     public mut has_objects: bool;
@@ -268,13 +284,11 @@ public class TraitInfo : TypeInfo {
 
     public func mark_has_objects(mut self) {
         self.has_objects = true;
-        for mut b in self.bases {
-            @cast(TraitInfo, b.info).has_objects = true;
-        }
     }
 }
 
-public class ClassInfo : TypeInfo {
+#[boxed]
+public struct ClassInfo {
     public mut base_sym: TypeSym;
     public is_base: bool;
     public use_base: bool;
@@ -283,7 +297,8 @@ public class ClassInfo : TypeInfo {
     public childrens: []TypeSym;
 }
 
-public class StructInfo : TypeInfo {
+#[boxed]
+public struct StructInfo {
     public is_boxed: bool;
     public is_opaque: bool;
     public bases: []mut TypeSym;
@@ -397,12 +412,6 @@ public class TypeSym : Sym {
                 return true;
             }
             return class_info.base_sym.is_subtype_of(other);
-        } else if self.info is StructInfo as struct_info {
-            for b in struct_info.bases {
-                if b.is_subtype_of(other) {
-                    return true;
-                }
-            }
         }
         return false;
     }
@@ -426,7 +435,8 @@ public class TypeSym : Sym {
     }
 }
 
-public class Arg {
+#[boxed]
+public struct Arg {
     public name: string;
     public is_mut: bool;
     public is_self: bool;
@@ -474,7 +484,8 @@ public class Func : Sym {
     }
 }
 
-public class Scope {
+#[boxed]
+public struct Scope {
     public start: usize;
     public mut end: usize;
     public mut parent: ?Scope;

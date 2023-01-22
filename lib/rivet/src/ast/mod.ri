@@ -22,11 +22,13 @@ public struct ImportedSymbols {
     }
 }
 
-public class Node {
+#[boxed]
+public struct Node {
     public pos: token.Pos;
 }
 
-public class SourceFile {
+#[boxed]
+public struct SourceFile {
     public file: string;
     public mod_sym: Sym;
     public decls: []Decl;

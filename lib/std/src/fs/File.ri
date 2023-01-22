@@ -16,7 +16,8 @@ public struct OperationFailedError : Error {
     }
 }
 
-public class File {
+#[boxed]
+public struct File {
     f: *mut libc.FILE;
     mut is_opened: bool;
 

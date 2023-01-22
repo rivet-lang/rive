@@ -10,7 +10,8 @@ import "../prefs";
 import "../report";
 import "../utils";
 
-public class Table {
+#[boxed]
+public struct Table {
     public mut universe: Mod;
     public mut prefs: prefs.Prefs;
     public mut source_files: []SourceFile;
