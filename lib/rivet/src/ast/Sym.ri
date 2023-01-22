@@ -181,14 +181,14 @@ public enum TypeKind : traits.Stringable {
 }
 
 public enum TypeInfo {
-    Alias(AliasInfo),
-    Array(ArrayInfo),
-    Vector(VectorInfo),
-    Tuple(TupleInfo),
-    Enum(EnumInfo),
-    Trait(TraitInfo),
-    Class(ClassInfo),
-    Struct(StructInfo)
+    Alias: AliasInfo,
+    Array: ArrayInfo,
+    Vector: VectorInfo,
+    Tuple: TupleInfo,
+    Enum: EnumInfo,
+    Trait: TraitInfo,
+    Class: ClassInfo,
+    Struct: StructInfo
 }
 
 #[boxed]
@@ -319,11 +319,11 @@ public class TypeSym : Sym {
                 return f;
             }
         }
-        if self.info is ClassInfo as class_info {
+        if self.info is .Class as class_info {
             if f := class_info.base_sym.lookup_field(name) {
                 return f;
             }
-        } else if self.info is StructInfo as struct_info {
+        } else if self.info is .Struct as struct_info {
             for b in struct_info.bases {
                 if f := b.lookup_field(name) {
                     return f;
@@ -339,17 +339,12 @@ public class TypeSym : Sym {
     }
 
     public func lookup_in_base(self, name: string) ?Sym {
-        if self.info is ClassInfo as class_info {
+        if self.info is .Class as class_info {
             if s := class_info.base_sym.lookup(name) {
                 return s;
             }
-        } else if self.info is StructInfo or self.info is TraitInfo {
-            bases := if self.info is StructInfo {
-                @cast(StructInfo, self.info).bases
-            } else {
-                @cast(TraitInfo, self.info).bases
-            };
-            for b in bases {
+        } else if self.info is .Struct as struct_info {
+            for b in struct_info.bases {
                 if s := b.lookup(name) {
                     return s;
                 }
@@ -372,11 +367,11 @@ public class TypeSym : Sym {
             return self.full_fields_;
         }
         mut fields := @vec(Field);
-        if self.info is ClassInfo as class_info {
+        if self.info is .Class as class_info {
             for bf in class_info.base_sym.full_fields() {
                 fields.push(bf);
             }
-        } else if self.info is StructInfo as struct_info {
+        } else if self.info is .Struct as struct_info {
             for mut b in struct_info.bases {
                 for bf in b.full_fields() {
                     fields.push(bf);
@@ -407,7 +402,7 @@ public class TypeSym : Sym {
         if self == other {
             return true;
         }
-        if self.info is ClassInfo as class_info {
+        if self.info is .Class as class_info {
             if class_info.base_sym == other {
                 return true;
             }
@@ -418,9 +413,9 @@ public class TypeSym : Sym {
 
     #[inline]
     public func is_boxed(self) bool {
-        return if self.info is EnumInfo as enum_info {
+        return if self.info is .Enum as enum_info {
             enum_info.is_advanced_enum
-        } else if self.info is StructInfo as struct_info {
+        } else if self.info is .Struct as struct_info {
             struct_info.is_boxed
         } else {
             self.kind == .Trait or self.kind == .Class or self.kind == .String
@@ -524,13 +519,7 @@ public struct Scope {
 
     #[inline]
     func dont_lookup_parent(self) bool {
-        return if self.detached_from_parent or self.parent is nil {
-            true
-        } else if parent := self.parent {
-            parent is Mod
-        } else {
-            false
-        };
+        return self.detached_from_parent or self.parent is nil;
     }
 }
 

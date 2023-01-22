@@ -115,7 +115,7 @@ public enum Type : traits.Stringable {
                     )
                 );
             },
-            .Resolved as resolved_sym => return if resolved_sym.info is AliasInfo as alias_info {
+            .Resolved as resolved_sym => return if resolved_sym.info is .Alias as alias_info {
                 .Resolved(
                     (alias_info.parent.unalias() ?? alias_info.parent).symbol() ?? resolved_sym
                 )
