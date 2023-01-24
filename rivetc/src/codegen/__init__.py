@@ -2554,15 +2554,20 @@ class Codegen:
         is_ptr = isinstance(value.typ, ir.Pointer)
         if not is_ptr:
             value = ir.Inst(ir.InstKind.GetRef, [value])
-        self.cur_fn.store(
-            ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")),
-            value if is_ptr else ir.Inst(
-                ir.InstKind.Call, [
-                    ir.Name("_R7runtime12internal_dupF"), value,
-                    ir.IntLit(ir.Name("usize"), str(size))
-                ]
-            )
+        value = value if is_ptr else ir.Inst(
+            ir.InstKind.Call, [
+                ir.Name("_R7runtime12internal_dupF"), value,
+                ir.IntLit(ir.Name("usize"), str(size))
+            ]
         )
+        self.cur_fn.store(ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")), value)
+        for f in trait_sym.fields:
+            f_typ = self.ir_type(f.typ)
+            value_f = ir.Selector(f_typ, value, ir.Name(f.name))
+            if not isinstance(f_typ, ir.Pointer):
+                f_typ = f_typ.ptr(True)
+                value_f = ir.Inst(ir.InstKind.GetRef, [value_f], f_typ)
+            self.cur_fn.store(ir.Selector(f_typ, tmp, ir.Name(f.name)), value_f)
         if value_sym.kind == TypeKind.Trait:
             index = ir.Inst(
                 ir.InstKind.Call, [
@@ -2789,16 +2794,18 @@ class Codegen:
                     )
             elif ts.kind == TypeKind.Trait and ts.info.has_objects:
                 ts_name = mangle_symbol(ts)
-                self.out_rir.structs.append(
-                    ir.Struct(
-                        False, ts_name, [
-                            ir.Field("_id", ir.USIZE_T),
-                            ir.Field("_rc", ir.USIZE_T),
-                            ir.Field("obj", ir.VOID_PTR_T),
-                            ir.Field("_real_id", ir.USIZE_T),
-                        ]
-                    )
-                )
+                fields = [
+                    ir.Field("_id", ir.USIZE_T),
+                    ir.Field("_rc", ir.USIZE_T),
+                    ir.Field("_real_id", ir.USIZE_T),
+                    ir.Field("obj", ir.VOID_PTR_T),
+                ]
+                for f in ts.fields:
+                    f_typ = self.ir_type(f.typ)
+                    if not isinstance(f_typ, ir.Pointer):
+                        f_typ = f_typ.ptr(True)
+                    fields.append(ir.Field(f.name, f_typ))
+                self.out_rir.structs.append(ir.Struct(False, ts_name, fields))
                 # Virtual table
                 vtbl_name = f"{ts_name}4Vtbl"
                 static_vtbl_name = f"{ts_name}4VTBL"

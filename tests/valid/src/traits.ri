@@ -78,6 +78,8 @@ test "traits: inheritance" {
 }
 
 trait Eq {
+    x: string;
+
     func equal(self, x: Self) bool;
 
     func nequal(self, x: Self) bool {
@@ -86,11 +88,9 @@ trait Eq {
 }
 
 #[boxed]
-struct Girl : Eq {
-    x: string;
-
+struct Poketrait : Eq {
     func equal(self, x: Eq) bool {
-        return self.x == @cast(Girl, x).x;
+        return self.x == @cast(Poketrait, x).x;
     }
 }
 
@@ -99,5 +99,5 @@ func ship(a: Eq, b: Eq) bool {
 }
 
 test "traits: default method" {
-    @assert(ship( Girl("Shell"), Girl("Shell") ));
+    @assert(ship( Poketrait("Shell"), Poketrait("Shell") ));
 }

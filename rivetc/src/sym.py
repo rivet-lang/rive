@@ -545,6 +545,9 @@ class Type(Sym):
             if f := self.info.base.find_field(name):
                 return f
         elif self.kind == TypeKind.Struct:
+            for base_t in self.info.traits:
+                if f := base_t.find_field(name):
+                    return f
             for base in self.info.bases:
                 if f := base.find_field(name):
                     return f
@@ -579,6 +582,8 @@ class Type(Sym):
         if self.kind == TypeKind.Class and self.info.base:
             fields += self.info.base.full_fields()
         elif self.kind == TypeKind.Struct:
+            for base_t in self.info.traits:
+                fields += base_t.full_fields()
             for base in self.info.bases:
                 fields += base.full_fields()
         for f in self.fields:
