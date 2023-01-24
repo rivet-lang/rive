@@ -65,7 +65,9 @@ class Register:
                 self.abi = decl.abi
                 self.walk_decls(decl.decls)
             elif isinstance(decl, ast.ConstDecl):
-                decl.sym = sym.Const(decl.is_public, decl.name, decl.typ, decl.expr)
+                decl.sym = sym.Const(
+                    decl.is_public, decl.name, decl.typ, decl.expr
+                )
                 self.add_sym(decl.sym, decl.pos)
             elif isinstance(decl, ast.VarDecl):
                 for v in decl.lefts:
@@ -130,7 +132,8 @@ class Register:
                             sym.Type(
                                 decl.is_public, decl.name, TypeKind.Struct,
                                 info = sym.StructInfo(
-                                    decl.is_opaque, is_boxed = decl.annotations.has("boxed")
+                                    decl.is_opaque,
+                                    is_boxed = decl.annotations.has("boxed")
                                 )
                             )
                         )

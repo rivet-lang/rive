@@ -858,14 +858,19 @@ class Codegen:
                             ir.InstKind.Cast, [
                                 ir.Inst(
                                     ir.InstKind.Call, [
-                                        ir
-                                        .Name("_R7runtime10trait_castF"),
-                                        ir.Selector(ir.VOID_PTR_T, res, ir.Name("obj")),
-                                        ir.Selector(ir.USIZE_T, res, ir.Name("_real_id")),
-                                        ir.IntLit(ir.USIZE_T, str(expr_typ_sym.id))
+                                        ir.Name("_R7runtime10trait_castF"),
+                                        ir.Selector(
+                                            ir.VOID_PTR_T, res, ir.Name("obj")
+                                        ),
+                                        ir.Selector(
+                                            ir.USIZE_T, res,
+                                            ir.Name("_real_id")
+                                        ),
+                                        ir.IntLit(
+                                            ir.USIZE_T, str(expr_typ_sym.id)
+                                        )
                                     ]
-                                ),
-                                ir_typ
+                                ), ir_typ
                             ]
                         )
                     )
@@ -1140,7 +1145,8 @@ class Codegen:
                                             f"{mangle_symbol(left_sym)}17__index_of_vtbl__"
                                         ),
                                         ir.Selector(
-                                            ir.USIZE_T, self_expr, ir.Name("_real_id")
+                                            ir.USIZE_T, self_expr,
+                                            ir.Name("_real_id")
                                         )
                                     ]
                                 )
@@ -1553,8 +1559,8 @@ class Codegen:
                     else:
                         inst = Inst(
                             InstKind.Call, [
-                                ir.Name("_R7runtime6Vector5sliceM"), left, start,
-                                end
+                                ir.Name("_R7runtime6Vector5sliceM"), left,
+                                start, end
                             ]
                         )
                 else:
@@ -1835,7 +1841,8 @@ class Codegen:
                                 ir.InstKind.Cast, [
                                     ir.Inst(
                                         ir.InstKind.Call, [
-                                            ir.Name("_R7runtime6Vector7raw_getM"),
+                                            ir
+                                            .Name("_R7runtime6Vector7raw_getM"),
                                             self_id, inc_v
                                         ]
                                     ),
@@ -2223,8 +2230,12 @@ class Codegen:
                     )
                     expr_ = tmp
                 if wrap_result:
-                    if expr.expr.typ.symbol().implement_trait(self.comp.error_sym):
-                        expr_ = self.result_error(self.cur_fn_ret_typ, expr.expr.typ, expr_)
+                    if expr.expr.typ.symbol().implement_trait(
+                        self.comp.error_sym
+                    ):
+                        expr_ = self.result_error(
+                            self.cur_fn_ret_typ, expr.expr.typ, expr_
+                        )
                     else:
                         expr_ = self.result_value(self.cur_fn_ret_typ, expr_)
                 self.gen_defer_stmts(
@@ -2560,7 +2571,9 @@ class Codegen:
                 ir.IntLit(ir.Name("usize"), str(size))
             ]
         )
-        self.cur_fn.store(ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")), value)
+        self.cur_fn.store(
+            ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")), value
+        )
         for f in trait_sym.fields:
             f_typ = self.ir_type(f.typ)
             value_f = ir.Selector(f_typ, value, ir.Name(f.name))
@@ -2580,20 +2593,23 @@ class Codegen:
             if value_sym.kind == TypeKind.Class and value_sym.info.is_base:
                 index = ir.Inst(
                     ir.InstKind.Call, [
-                        ir.Name(f"{mangle_symbol(value_sym)}17__index_of_vtbl__"),
+                        ir
+                        .Name(f"{mangle_symbol(value_sym)}17__index_of_vtbl__"),
                         ir.Selector(ir.USIZE_T, value, ir.Name("_id"))
                     ], ir.USIZE_T
                 )
                 if vtbl_idx > 0:
                     index = ir.Inst(
                         ir.InstKind.Add,
-                        [ir.IntLit(ir.USIZE_T, str(vtbl_idx)), index], ir.USIZE_T
+                        [ir.IntLit(ir.USIZE_T, str(vtbl_idx)), index],
+                        ir.USIZE_T
                     )
             else:
                 index = ir.IntLit(ir.USIZE_T, str(vtbl_idx))
         self.cur_fn.store(ir.Selector(ir.USIZE_T, tmp, ir.Name("_id")), index)
         self.cur_fn.store(
-            ir.Selector(ir.USIZE_T, tmp, ir.Name("_real_id")), ir.IntLit(ir.USIZE_T, str(value_sym.id))
+            ir.Selector(ir.USIZE_T, tmp, ir.Name("_real_id")),
+            ir.IntLit(ir.USIZE_T, str(value_sym.id))
         )
         return tmp
 
@@ -2817,8 +2833,7 @@ class Codegen:
                             0,
                             sym.Arg(
                                 "self", m.self_is_mut,
-                                type.Ptr(self.comp.void_t), None, False,
-                                NO_POS
+                                type.Ptr(self.comp.void_t), None, False, NO_POS
                             )
                         )
                         fields.append(ir.Field(m.name, self.ir_type(proto)))
@@ -2847,8 +2862,7 @@ class Codegen:
                     index_of_vtbl_fn = ir.FnDecl(
                         False, ast.Annotations(), False,
                         mangle_symbol(ts) + "17__index_of_vtbl__",
-                        [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T,
-                        False
+                        [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T, False
                     )
                     for child_id, child_idx in index_of_vtbl:
                         l1 = index_of_vtbl_fn.local_name()
@@ -2863,7 +2877,9 @@ class Codegen:
                             ), l1, l2
                         )
                         index_of_vtbl_fn.add_label(l1)
-                        index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, str(child_idx)))
+                        index_of_vtbl_fn.add_ret(
+                            ir.IntLit(ir.USIZE_T, str(child_idx))
+                        )
                         index_of_vtbl_fn.add_label(l2)
                     index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, "0"))
                     self.out_rir.decls.append(index_of_vtbl_fn)
@@ -2899,9 +2915,7 @@ class Codegen:
                         if isinstance(m, sym.Fn):
                             real_name = token.real_name(m.name)
                             if ts_method := child.find(m.name):
-                                map_fns[real_name] = mangle_symbol(
-                                    ts_method
-                                )
+                                map_fns[real_name] = mangle_symbol(ts_method)
                             else:
                                 map_fns[real_name] = mangle_symbol(m)
                     index_of_vtbl.append((child.id, idx))
@@ -2919,8 +2933,7 @@ class Codegen:
                     index_of_vtbl_fn = ir.FnDecl(
                         False, ast.Annotations(), False,
                         mangle_symbol(ts) + "17__index_of_vtbl__",
-                        [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T,
-                        False
+                        [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T, False
                     )
                     for child_id, child_idx in index_of_vtbl:
                         l1 = index_of_vtbl_fn.local_name()
@@ -2935,13 +2948,16 @@ class Codegen:
                             ), l1, l2
                         )
                         index_of_vtbl_fn.add_label(l1)
-                        index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, str(child_idx)))
+                        index_of_vtbl_fn.add_ret(
+                            ir.IntLit(ir.USIZE_T, str(child_idx))
+                        )
                         index_of_vtbl_fn.add_label(l2)
                     index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, "0"))
                     self.out_rir.decls.append(index_of_vtbl_fn)
             elif ts.kind in (TypeKind.Struct, TypeKind.String, TypeKind.Vec):
                 fields = [
-                    ir.Field("_rc", ir.USIZE_T), ir.Field("_id", ir.USIZE_T)
+                    ir.Field("_rc", ir.USIZE_T),
+                    ir.Field("_id", ir.USIZE_T)
                 ] if ts.info.is_boxed else []
                 for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))

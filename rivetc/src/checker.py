@@ -363,8 +363,12 @@ class Checker:
                 expr.typ = expr.obj.typ
             elif isinstance(expr.sym, sym.Fn):
                 if expr.sym.abi != sym.ABI.Rivet:
-                    report.error("cannot use an extern function as value", expr.pos)
-                    report.help("you can wrap the extern function with a function")
+                    report.error(
+                        "cannot use an extern function as value", expr.pos
+                    )
+                    report.help(
+                        "you can wrap the extern function with a function"
+                    )
                 expr.typ = expr.sym.typ()
             elif isinstance(expr.sym, sym.Const):
                 expr.typ = expr.sym.typ
@@ -741,7 +745,9 @@ class Checker:
                             "advanced enum values only support `is` and `!is`",
                             expr.pos
                         )
-                    elif not lsym.info.is_advanced_enum and expr.op not in (Kind.Eq, Kind.Ne):
+                    elif not lsym.info.is_advanced_enum and expr.op not in (
+                        Kind.Eq, Kind.Ne
+                    ):
                         report.error(
                             "enum values only support `==` and `!=`", expr.pos
                         )
@@ -1304,7 +1310,9 @@ class Checker:
                     except utils.CompilerError as e:
                         if not (
                             isinstance(self.cur_fn.ret_typ, type.Result)
-                            and expr_typ.symbol().implement_trait(self.comp.error_sym)
+                            and expr_typ.symbol().implement_trait(
+                                self.comp.error_sym
+                            )
                         ):
                             report.error(e.args[0], expr.expr.pos)
                             report.note(
@@ -1392,7 +1400,8 @@ class Checker:
                             self.check_expr_is_mut(expr.expr)
                         if len(b.pats) != 1:
                             report.error(
-                                "multiple patterns cannot have variable", b.var_pos
+                                "multiple patterns cannot have variable",
+                                b.var_pos
                             )
                         elif expr_sym.is_boxed():
                             var_t = self.comp.void_t

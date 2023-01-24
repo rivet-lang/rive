@@ -90,7 +90,7 @@ trait Eq {
 #[boxed]
 struct Poketrait : Eq {
     func equal(self, x: Eq) bool {
-        return self.x == @cast(Poketrait, x).x;
+        return self.x == x.x;
     }
 }
 

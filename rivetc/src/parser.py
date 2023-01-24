@@ -607,8 +607,9 @@ class Parser:
                 self.expect(Kind.Semicolon)
             return ast.DeferStmt(expr, is_errdefer, pos)
         elif (
-            self.tok.kind in (Kind.Lparen, Kind.Name, Kind.KwMut
-        ) and self.decl_operator_is_used()):
+            self.tok.kind in (Kind.Lparen, Kind.Name, Kind.KwMut)
+            and self.decl_operator_is_used()
+        ):
             # variable declarations
             pos = self.prev_tok.pos
             lefts = []
@@ -927,7 +928,8 @@ class Parser:
                 op = self.tok.kind
                 self.next()
                 return ast.AssignExpr(expr, op, self.parse_expr(), expr.pos)
-            elif self.tok.kind == Kind.Lparen and not self.decl_operator_is_used():
+            elif self.tok.kind == Kind.Lparen and not self.decl_operator_is_used(
+            ):
                 self.next()
                 args = []
                 has_spread_expr = False
