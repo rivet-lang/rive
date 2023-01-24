@@ -712,7 +712,7 @@ class Codegen:
             expr_typ = expr.typ
         expr_sym = expr.typ.symbol()
         expected_sym = expected_typ_.symbol()
-        if expected_sym.kind == TypeKind.Trait and expr_sym != expected_sym:
+        if expected_sym.kind == TypeKind.Trait and expr_sym != expected_sym and expr.typ != self.comp.nil_t:
             res_expr = self.trait_value(res_expr, expr_typ, expected_typ_)
         elif expected_sym.kind == TypeKind.Class and expr_sym.is_subtype_of(
             expected_sym
@@ -1179,7 +1179,7 @@ class Codegen:
                                             ]
                                         )
                                     ]
-                                ), ir.Name(expr.sym.name)
+                                ), ir.Name(OVERLOADABLE_OPERATORS_STR[expr.sym.name] if expr.sym.name in OVERLOADABLE_OPERATORS_STR else expr.sym.name)
                             )
                         )
                         if left_sym.kind == TypeKind.Trait and not expr.sym.has_body:
@@ -2836,17 +2836,19 @@ class Codegen:
                                 type.Ptr(self.comp.void_t), None, False, NO_POS
                             )
                         )
-                        fields.append(ir.Field(m.name, self.ir_type(proto)))
+                        method_name = OVERLOADABLE_OPERATORS_STR[m.name] if m.name in OVERLOADABLE_OPERATORS_STR else m.name
+                        fields.append(ir.Field(method_name, self.ir_type(proto)))
                 funcs = []
                 index_of_vtbl = []
                 for idx, its in enumerate(ts.info.implements):
                     map = {}
                     for m in ts.syms:
                         if isinstance(m, sym.Fn):
+                            method_name = OVERLOADABLE_OPERATORS_STR[m.name] if m.name in OVERLOADABLE_OPERATORS_STR else m.name
                             if ts_method := its.find(m.name):
-                                map[m.name] = mangle_symbol(ts_method)
+                                map[method_name] = mangle_symbol(ts_method)
                             else:
-                                map[m.name] = mangle_symbol(m)
+                                map[method_name] = mangle_symbol(m)
                     funcs.append(map)
                     index_of_vtbl.append((its.id, idx))
                 if len(funcs) > 0:

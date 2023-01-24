@@ -143,16 +143,6 @@ class Resolver:
                     )
                     decl.self_typ = self_typ
                     decl.sym.self_typ = self_typ
-                if self.self_sym:
-                    if virtual_m := self.self_sym.find_in_base(decl.name):
-                        if not decl.annotations.has("override"):
-                            report.error(
-                                f"`{decl.sym.qualname()}` hides inherited method `{virtual_m.qualname()}`",
-                                decl.name_pos
-                            )
-                            report.help(
-                                "use the `override` annotationibute if hiding was intentional"
-                            )
                 for arg in decl.args:
                     self.resolve_type(arg.typ)
                     try:

@@ -562,7 +562,14 @@ class Type(Sym):
         if self.kind == TypeKind.Class and self.info.base:
             if s := Sym.find(self.info.base, name):
                 return s
-        elif self.kind in (TypeKind.Struct, TypeKind.Trait):
+        elif self.kind == TypeKind.Trait:
+            for base in self.info.bases:
+                if s := Sym.find(base, name):
+                    return s
+        elif self.kind == TypeKind.Struct:
+            for base_t in self.info.traits:
+                if s := base_t.find(name):
+                    return s
             for base in self.info.bases:
                 if s := Sym.find(base, name):
                     return s
