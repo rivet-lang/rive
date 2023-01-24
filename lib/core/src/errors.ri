@@ -1,0 +1,57 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "c";
+import "c/libc";
+
+public alias ErrnoError = c.ErrnoError;
+public alias last_errno_error = c.last_errno_error;
+
+#[inline]
+func error_panic(err: Error) {
+    process_panic(err.to_string());
+}
+
+/// This trait is used for errors returned with result types (!T).
+public trait Error : Stringable { }
+
+#[boxed]
+public struct RuneFromU32Error : Error {
+    msg: string;
+
+    #[inline]
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
+#[boxed]
+public struct InvalidArgumentError : Error {
+    msg: string;
+
+    #[inline]
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
+#[boxed]
+public struct OutOfMemoryError : Error {
+    msg: string;
+
+    #[inline]
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
+#[boxed]
+public struct ReadFailedError : Error {
+    msg: string;
+
+    #[inline]
+    public func to_string(self) string {
+        return self.msg;
+    }
+}

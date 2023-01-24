@@ -1,0 +1,10 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+extend bool : Stringable {
+    #[inline]
+    public func to_string(&self) string {
+        return if self.* { "true" } else { "false" };
+    }
+}

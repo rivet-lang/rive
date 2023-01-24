@@ -1,0 +1,880 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "c/libc";
+
+var empty_string: string = string(c"", 0, true);
+
+#[boxed]
+public struct string : Stringable, Hashable {
+    public ptr: [*]uint8;
+    public len: usize;
+    is_ref: bool;
+
+    #[unsafe]
+    public func from_raw(ptr: ?[*]uint8, is_ref: bool = false) Self {
+        if safe_ptr := ptr {
+            return unsafe {
+                Self.from_raw_with_len(safe_ptr, libc.strlen(ptr), is_ref)
+            };
+        }
+        return empty_string;
+    }
+
+    #[unsafe]
+    public func from_raw_with_len(ptr: ?[*]uint8, len: usize, is_ref: bool = false) Self {
+        if len == 0 {
+            return empty_string;
+        }
+        if safe_ptr := ptr {
+            return Self(safe_ptr, len, is_ref);
+        }
+        return empty_string;
+    }
+
+    public func from_byte(byte: uint8) Self {
+        res := @cast([*]mut uint8, internal_alloc(2));
+        unsafe {
+            res[0] = byte;
+            res[1] = 0;
+        }
+        return Self(res, 1);
+    }
+
+    /// Returns a string with the bytes stored in `bytes`. If the length of
+    /// `bytes` is 0, an empty string is returned instead.
+    public func from_bytes(bytes: []uint8) Self {
+        if bytes.len == 0 {
+            return empty_string;
+        }
+        res := @cast([*]mut uint8, internal_alloc(bytes.len + 1));
+        unsafe {
+            mem_copy(res, &bytes[0], bytes.len);
+            res[bytes.len] = 0;
+        }
+        return Self(res, bytes.len);
+    }
+
+    func at(self, idx: usize) uint8 {
+        if idx >= self.len {
+            process_panic("string index out of range (index: {}, len: {})", idx, self.len);
+        }
+        return unsafe { self.ptr[idx] };
+    }
+
+    public func repeat(self, count: usize) string {
+        if count == 0 {
+            return empty_string;
+        } else if count == 1 {
+            return self;
+        }
+        len := self.len * count;
+        res := @cast([*]mut uint8, internal_alloc(len));
+        unsafe {
+            mut i: usize := 0;
+            while i < count : i += 1 {
+                mut j: usize := 0;
+                while j < self.len : j += 1 {
+                    res[i * self.len + j] = self.ptr[j];
+                }
+            }
+            res[len] = 0;
+        }
+        return Self(res, len);
+    }
+
+    public func concat(self, others: ...Self) Self {
+        mut sb := StringBuilder.from_string(self);
+        for other in others {
+            sb.write_string(other);
+        }
+        return sb.to_string();
+    }
+
+    /// Returns a string formatted with all the values passed.
+    ///
+    /// Each replacement position is marked with `{}`:
+    ///
+    /// `"x: {}".fmt(1) == "x: 1"`
+    ///
+    /// It is also possible to use a specific position within the replace position:
+    ///
+    /// `"x: {1} | {0}".fmt(1, 2) == "x: 2 | 1"`
+    ///
+    /// If no argument is passed, the string is returned unchanged.
+    ///
+    /// To escape `{` and `}`, `{{` and `}}` can be used, this does not apply if no
+    /// argument is passed.
+    ///
+    /// If the replacement positions exceed the number of passed arguments, a panic
+    /// occurs.
+    public func fmt(self, args: ...Stringable) Self {
+        if args.len == 0 {
+            return self;
+        }
+        return StringFormatter(self).fmt(args);
+    }
+
+    /// Returns the number of occurrences of `substr` in the string or -1 if no
+    /// `substr` could be found.
+    public func count(self, substr: string) usize {
+        if self.len == 0 or substr.len == 0 {
+            return 0;
+        }
+        if substr.len > self.len {
+            return 0;
+        }
+        mut n: usize := 0;
+        if substr.len == 1 {
+            for l in self.as_bytes() {
+                if l == substr[0] {
+                    n += 1;
+                }
+            }
+            return n;
+        }
+        mut i: usize := 0;
+        while {
+            i = self.index_after_of(substr, i) ?? return n;
+            i += substr.len;
+            n += 1;
+        }
+        return 0;
+    }
+
+    /// Returns the contents before `sub` in the string.
+    /// If the substring is not found, it returns the full input string.
+    public func all_before_of(self, sub: string) string {
+        if pos := self.index_of(sub) {
+            return self[..pos];
+        }
+        return self;
+    }
+
+    /// Returns the index of byte `b` if found in the string.
+    public func index_of_byte(self, b: uint8) ?usize {
+        mut i: usize := 0;
+        while i < self.len : i += 1 {
+            if unsafe { self.ptr[i] == b } {
+                return i;
+            }
+        }
+        return nil;
+    }
+
+    /// Returns the position of the first character of the input string.
+    /// It will return `nil` if the input string can't be found.
+    public func index_of(self, p: string) ?usize {
+        if p.len > self.len or p.len == 0 {
+            return nil;
+        }
+        mut i: usize := 0;
+        while i < self.len : i += 1 {
+            mut j: usize := 0;
+            while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
+            if j == p.len {
+                return i;
+            }
+        }
+        return nil;
+    }
+
+    /// Returns the position of the input string, starting search from `start` position.
+    public func index_after_of(self, p: string, start: usize) ?usize {
+        if p.len > self.len {
+            return nil;
+        }
+        mut strt := start;
+        if start >= self.len {
+            return nil;
+        }
+        mut i := strt;
+        while i < self.len : i += 1 {
+            mut j: usize := 0;
+            mut ii := i;
+            while j < p.len and unsafe { self.ptr[ii] == p.ptr[j] } {
+                j += 1;
+                ii += 1;
+            }
+            if j == p.len {
+                return i;
+            }
+        }
+        return nil;
+    }
+
+    /// Returns the position of any of the characters in the input string if found.
+    public func index_of_any(self, chars: string) ?usize {
+        for i, b in self.as_bytes() {
+            for c in chars.as_bytes() {
+                if b == c {
+                    return i;
+                }
+            }
+        }
+        return nil;
+    }
+
+    /// Linear search for the last index of `byte` inside a string.
+    public func last_index_of_byte(self, byte: uint8) ?usize {
+        mut i: usize := self.len;
+        while i != 0 {
+            i -= 1;
+            if unsafe { self.ptr[i] == byte } {
+                return i;
+            }
+        }
+        return nil;
+    }
+
+    /// Returns the position of the last occurence of the input string.
+    func last_index_of(self, p: string) ?usize {
+        if p.len > self.len or p.len == 0 {
+            return nil;
+        }
+        mut i: usize := self.len - p.len;
+        while i >= 0 : i -= 1 {
+            mut j: usize := 0;
+            while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
+            if j == p.len {
+                return i;
+            }
+        }
+        return nil;
+    }
+
+    /// Returns the string found between `start` string and `end` string.
+    public func find_between(self, start: string, end: string) string {
+        start_pos := self.index_of(start) ?? return empty_string;
+        val := self.slice(start_pos + start.len, self.len);
+        end_pos := val.index_of(end) ?? return val;
+        return val.slice(0, end_pos);
+    }
+
+    /// Strips any of ` `, `\n`, `\t`, `\v`, `\f`, `\r` from the start and end of
+    /// the string.
+    #[inline]
+    public func trim_space(self) string {
+        return self.trim(" \n\t\v\f\r");
+    }
+
+    /// Strips any of the characters given in `cutset` from the start and end of
+    /// the string.
+    public func trim(self, cutset: string) string {
+        if self.len < 1 or cutset.len < 1 {
+            return self;
+        }
+        (mut pos_left: usize, mut pos_right: usize) := (0, self.len - 1);
+        mut cs_match := true;
+        while pos_left <= self.len and pos_right >= -1 and cs_match {
+            cs_match = false;
+            for cs in cutset.as_bytes() {
+                if unsafe { self.ptr[pos_left] == cs } {
+                    pos_left += 1;
+                    cs_match = true;
+                    break;
+                }
+            }
+            for cs2 in cutset.as_bytes() {
+                if unsafe { self.ptr[pos_right] == cs2 } {
+                    pos_right -= 1;
+                    cs_match = true;
+                    break;
+                }
+            }
+            if pos_left > pos_right {
+                return empty_string;
+            }
+        }
+        return self.slice(pos_left, pos_right + 1);
+    }
+
+    /// Strips any of the characters given in `cutset` from the left of the
+    /// string.
+    public func trim_left(self, cutset: string) string {
+        if self.len < 1 or cutset.len < 1 {
+            return self;
+        }
+        mut pos: usize := 0;
+        while pos < self.len : pos += 1 {
+            mut found := false;
+            for cs in cutset.as_bytes() {
+                if unsafe { self.ptr[pos] == cs } {
+                    found = true;
+                    break;
+                }
+            }
+            if !found {
+                break;
+            }
+        }
+        return self.slice(pos, self.len);
+    }
+
+    /// Strips any of the characters given in `cutset` from the right of the
+    /// string.
+    public func trim_right(self, cutset: string) string {
+        if self.len < 1 or cutset.len < 1 {
+            return self;
+        }
+        mut pos := self.len - 1;
+        while pos >= 0 : pos -= 1 {
+            mut found := false;
+            for cs in cutset.as_bytes() {
+                if unsafe { self.ptr[pos] == cs } {
+                    found = true;
+                }
+            }
+            if !found {
+                break;
+            }
+        }
+        if pos < 0 {
+            return empty_string;
+        }
+        return self.slice(pos + 1, self.len);
+    }
+
+    /// Replaces all occurences of `rep` with the string passed in `with_`.
+    public func replace(self, rep: string, with_: string) string {
+        if self.len == 0 or rep.len == 0 or rep.len > self.len {
+            return self;
+        } else if !self.contains(rep) {
+            return self;
+        }
+        mut idx: usize := 0;
+        mut idxs := @vec(usize);
+        while {
+            idx = self.index_after_of(rep, idx) ?? break;
+            idxs.push(idx);
+            idx += rep.len;
+        }
+        if idxs.len == 0 {
+            return self;
+        }
+        new_len := self.len + idxs.len * (with_.len - rep.len);
+        mut b := @cast([*]mut uint8, internal_alloc(new_len));
+        (mut b_i: usize, mut s_idx: usize) := (0, 0);
+        unsafe {
+            for rep_pos in idxs {
+                mut i: usize := s_idx;
+                while i < rep_pos : i += 1 {
+                    b[b_i] = self.ptr[i];
+                    b_i += 1;
+                }
+                s_idx = rep_pos + rep.len;
+                i = 0;
+                while i < with_.len : i += 1 {
+                    b[b_i] = with_.ptr[i];
+                    b_i += 1;
+                }
+            }
+            if s_idx < self.len {
+                mut i: usize := s_idx;
+                while i < self.len : i += 1 {
+                    b[b_i] = self.ptr[i];
+                    b_i += 1;
+                }
+            }
+            b[new_len] = 0;
+        }
+        return unsafe { string.from_raw_with_len(b, new_len) };
+    }
+
+    #[inline]
+    public func as_bytes(self) []uint8 {
+        return unsafe {
+            Vector.from_array_no_alloc(@cast(*mut uint8, self.ptr), @size_of(uint8), self.len)
+        };
+    }
+
+    /// Splits the string to an array by any of the `delim` chars.
+    /// Split a string using the chars in the delimiter string as delimiters chars.
+    /// If the delimiter string is empty then `.split()` is used.
+    /// Example:
+    /// >> "first row\nsecond row".split_any(" \n") == ['first', 'row', 'second', 'row']
+    public func split_any(self, delim: string) []string {
+        (mut i: usize, mut res: []string) := (0, []);
+        // check empty source string
+        if self.len > 0 {
+            // if empty delimiter string using default split
+            if delim.len <= 0 {
+                return self.split("");
+            }
+            for index, ch in self.as_bytes() {
+                for delim_ch in delim.as_bytes() {
+                    if ch == delim_ch {
+                        res.push(self[i..index]);
+                        i = index + 1;
+                        break;
+                    }
+                }
+            }
+            if i < self.len {
+                res.push(self[i..]);
+            }
+        }
+        return res;
+    }
+
+    /// Splits the string based on the passed `delim` substring. It returns the
+    /// first nth parts. When nth == 0, return all the splits.
+    /// The last returned element has the remainder of the string, even if the
+    /// remainder contains more `delim` substrings.
+    public func split(self, delim: string, nth: usize = 0) []string {
+        (mut i: usize, mut res) := (0, @vec(string));
+        switch delim.len {
+            0 => {
+                i = 1;
+                for ch in self.as_bytes() {
+                    if nth > 0 and i >= nth {
+                        res.push(self[i..]);
+                        break;
+                    }
+                    res.push(ch.to_ascii());
+                    i += 1;
+                }
+                return res;
+            },
+            1 => {
+                mut start: usize := 0;
+                delim_byte := delim[0];
+                while i < self.len {
+                    if unsafe { self.ptr[i] == delim_byte } {
+                        if nth > 0 and res.len == nth - 1 {
+                            break;
+                        }
+                        res.push(self[start..i]);
+                        start = i + delim.len;
+                        i = start;
+                    } else {
+                        i += 1;
+                    }
+                }
+                if nth < 1 or res.len < nth {
+                    res.push(self[start..]);
+                }
+                return res;
+            },
+            else => {
+                mut start: usize := 0;
+                while i <= self.len {
+                    is_delim := i + delim.len <= self.len and self[i..i + delim.len] == delim;
+                    if is_delim {
+                        if nth > 0 and res.len == nth - 1 {
+                            break;
+                        }
+                        res.push(self[start..i]);
+                        start = i + delim.len;
+                        i = start;
+                    } else {
+                        i += 1;
+                    }
+                }
+                if nth < 1 or res.len < nth {
+                    res.push(self[start..]);
+                }
+                return res;
+            }
+        }
+    }
+
+    /// Splits the string by newline characters. `\r` (MacOS), `\n` (POSIX),
+    /// and `\r\n` (Windows) line endings are all supported (including mixed line endings).
+    /// NOTE: algorithm is "greedy", consuming '\r\n' as a single line ending with higher
+    /// priority than '\r' and '\n' as multiple endings
+    public func split_into_lines(self) []string {
+        mut res := @vec(string);
+        if self.len == 0 {
+            return res;
+        }
+        cr := b'\r';
+        lf := b'\n';
+        mut line_start: usize := 0;
+        mut i: usize := 0;
+        while i < self.len : i += 1 {
+            if line_start <= i {
+                if unsafe { self.ptr[i] == lf } {
+                    res.push(if line_start == i {
+                        empty_string
+                    } else {
+                        self[line_start..i]
+                    });
+                    line_start = i + 1;
+                } else if unsafe { self.ptr[i] == cr } {
+                    res.push(if line_start == i {
+                        empty_string
+                    } else {
+                        self[line_start..i]
+                    });
+                    if i + 1 < self.len and unsafe { self.ptr[i + 1] == lf } {
+                        line_start = i + 2;
+                    } else {
+                        line_start = i + 1;
+                    }
+                }
+            }
+        }
+        if line_start < self.len {
+            res.push(self[line_start..]);
+        }
+        return res;
+    }
+
+    /// Returns an iterator that iterates over the slices of `self` that are not
+    /// any of the bytes in `delimiter_bytes`.
+    ///
+    /// `"   abc def    ghi  ".tokenize(b' ')` will return slices for "abc", "def",
+    /// "ghi", nil, in that order.
+    ///
+    /// If `self` is empty, the iterator will return nil.
+    /// If `delimiter_bytes` does not exist in self, the iterator will return `self`,
+    /// nil, in that order.
+    #[inline]
+    public func tokenize(self, delimiter_bytes: ...uint8) TokenIterator {
+        return TokenIterator(self, delimiter_bytes);
+    }
+
+    public func ==(self, rhs: Self) bool {
+        if self.len != rhs.len {
+            return false;
+        }
+        unsafe {
+            if self.len > 0 {
+                last_idx := self.len - 1;
+                if self.ptr[last_idx] != rhs.ptr[last_idx] {
+                    return false;
+                }
+            }
+        }
+        return mem_cmp(self.ptr, rhs.ptr, rhs.len) == 0;
+    }
+
+    #[inline]
+    public func !=(self, rhs: Self) bool {
+        return !(self == rhs);
+    }
+
+    public func <(self, rhs: Self) bool {
+        mut i: usize := 0;
+        while i < self.len : i += 1 {
+            unsafe {
+                if i >= rhs.len or self.ptr[i] > rhs.ptr[i] {
+                    return false;
+                } else if self.ptr[i] < rhs.ptr[i] {
+                    return true;
+                }
+            }
+        }
+        if self.len < rhs.len {
+            return true;
+        }
+        return false;
+    }
+
+    #[inline]
+    public func >(self, rhs: Self) bool {
+        return !(self < rhs);
+    }
+
+    #[inline]
+    public func <=(self, rhs: Self) bool {
+        return self < rhs or self == rhs;
+    }
+
+    #[inline]
+    public func >=(self, rhs: Self) bool {
+        return self > rhs or self == rhs;
+    }
+
+    /// Returns `true` if the string contains `substr`.
+    public func contains(self, substr: string) bool {
+        if substr.len == 0 {
+            return true;
+        }
+        if _ := self.index_of(substr) {
+            return true;
+        }
+        return false;
+    }
+
+    /// Returns `true` if the string starts with `p`.
+    public func starts_with(self, p: string) bool {
+        if p.len > self.len {
+            return false;
+        }
+        mut i: usize := 0;
+        while i < p.len : i += 1 {
+            if unsafe { self.ptr[i] != p[i] } {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns `true` if the string ends with `p`.
+    public func ends_with(self, p: string) bool {
+        if p.len > self.len {
+            return false;
+        }
+        mut i: usize := 0;
+        while i < p.len : i += 1 {
+            if unsafe { p[i] != self.ptr[self.len - p.len + i] } {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns the number of runes contained in `self`.
+    #[inline]
+    public func runes_count(self) usize {
+        return cstr_runes_count(unsafe { self.ptr }, self.len);
+    }
+
+    #[inline]
+    public func is_empty(self) bool {
+        return self.len == 0;
+    }
+
+    func slice(self, start: usize, end: usize) Self {
+        unsafe {
+            if start > end or start > self.len or end > self.len {
+                process_panic(
+                    "string slice index out of range (range: {}..{}, len: {})", start,
+                    end, self.len
+                );
+            }
+            len := end - start;
+            if len == self.len {
+                return self;
+            }
+            return Self(@ptr_add(self.ptr, start), len, is_ref: true);
+        }
+    }
+
+    #[inline]
+    func slice_from(self, start: usize) Self {
+        return self.slice(start, self.len);
+    }
+
+    public func clone(self) Self {
+        if self.len == 0 {
+            return empty_string;
+        }
+        res := @cast([*]mut uint8, internal_alloc(self.len + 1));
+        unsafe {
+            mem_copy(res, self.ptr, self.len);
+            res[self.len] = 0;
+        }
+        return Self(res, self.len);
+    }
+
+    #[inline]
+    public func hash(self) usize {
+        return sum64_string(self);
+    }
+
+    #[inline]
+    public func to_string(self) Self {
+        return self;
+    }
+
+    ~Self(self) {
+        if !self.is_ref {
+            unsafe {
+                mem_dealloc(self.ptr);
+            }
+        }
+    }
+}
+
+public struct TokenIterator {
+    buffer: string;
+    delimiter_bytes: []uint8;
+    mut index: usize;
+
+    /// Returns a slice of the current token, or nil if tokenization is
+    /// complete, and advances to the next token.
+    public func next(mut self) ?string {
+        result := self.peek() ?? return nil;
+        self.index += result.len;
+        return result;
+    }
+
+    /// Returns a slice of the current token, or nil if tokenization is
+    /// complete. Does not advance to the next token.
+    public func peek(mut self) ?string {
+        // move to beginning of token
+        while self.index < self.buffer.len and self.is_split_byte(self.buffer[self.index])
+            : self.index += 1 {}
+        start := self.index;
+        if start == self.buffer.len {
+            return nil;
+        }
+        // move to end of token
+        mut end := start;
+        while end < self.buffer.len and !self.is_split_byte(self.buffer[end])
+            : end += 1 {}
+        return self.buffer[start..end];
+    }
+
+    /// Returns a slice of the remaining bytes. Does not affect iterator state.
+    public func rest(&self) string {
+        // move to beginning of token
+        mut index: usize := self.index;
+        while index < self.buffer.len and self.is_split_byte(self.buffer[index])
+            : index += 1 {}
+        return self.buffer[index..];
+    }
+
+    /// Resets the iterator to the initial token.
+    public func reset(mut self) {
+        self.index = 0;
+    }
+
+    func is_split_byte(&self, byte: uint8) bool {
+        for delimiter_byte in self.delimiter_bytes {
+            if byte == delimiter_byte {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+public struct StringFormatter {
+    buf: string;
+    mut i: usize;
+    mut res: StringBuilder;
+
+    func fwidth(mut self) (bool, isize) {
+        if unsafe { self.buf.ptr[self.i] != b':' } {
+            return (false, @cast(isize, 0));
+        }
+        self.i += 1;
+        start := self.i;
+        mut buf := StaticBuffer();
+        while unsafe { self.buf.ptr[self.i] != b'}' } {
+            buf.push(unsafe { self.buf.ptr[self.i] });
+            self.i += 1;
+            if self.i >= self.buf.len {
+                process_panic("string.fmt(): incomplete format string (index: {})", start);
+            }
+        }
+        fwidth := buf.as_isize();
+        if fwidth == 0 {
+            process_panic(
+                "string.fmt(): invalid width value (cannot be 0 and cannot be omitted) (index: {})",
+                start
+            );
+        }
+        return (true, fwidth);
+    }
+
+    func fmt(mut self, args: ...Stringable) string {
+        self.res = StringBuilder.new(self.buf.len);
+        mut args_idx: usize := 0;
+        while self.i < self.buf.len : self.i += 1 {
+            b := unsafe { self.buf.ptr[self.i] };
+            b2 := if self.i + 1 < self.buf.len unsafe { self.buf.ptr[self.i + 1] } else { 0 };
+            switch b {
+                b'{' => {
+                    if b2 == b'{' { // escaping '{'
+                        self.res.write_byte(b'{');
+                        self.i += 1;
+                    } else if b2 == b':' or b2 == b'}' {
+                        if b2 == b':' {
+                            self.i += 1;
+                        }
+                        (has_fwidth, mut fwidth) := self.fwidth();
+                        arg_idx := args_idx;
+                        args_idx += 1;
+                        if arg_idx >= args.len {
+                            process_panic(
+                                "string.fmt(): argument index out of range (argument index: {}, len: {}, index: {})",
+                                arg_idx, args.len, self.i
+                            );
+                        }
+                        value := args[arg_idx].to_string();
+                        if has_fwidth and fwidth > 0 {
+                            value_len := @cast(isize, value.len);
+                            if value_len <= fwidth {
+                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
+                            }
+                        }
+                        self.res.write_string(value);
+                        if has_fwidth and fwidth < 0 {
+                            fwidth = -fwidth;
+                            value_len := @cast(isize, value.len);
+                            if value_len <= fwidth {
+                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
+                            }
+                        }
+                        if !has_fwidth {
+                            self.i += 1;
+                        }
+                    } else if b2.is_digit() {
+                        start := self.i;
+                        self.i += 1;
+                        mut buf := StaticBuffer();
+                        while unsafe {
+                            self.buf.ptr[self.i] != b'}' and self.buf.ptr[self.i] != b':'
+                        } {
+                            buf.push(unsafe { self.buf.ptr[self.i] });
+                            self.i += 1;
+                            if self.i >= self.buf.len {
+                                process_panic(
+                                    "string.fmt(): incomplete format string (index: {})",
+                                    start
+                                );
+                            }
+                        }
+                        index := buf.as_uint64();
+                        if index >= args.len {
+                            process_panic(
+                                "string.fmt(): argument index out of range (index: {}, len: {})",
+                                index, args.len
+                            );
+                        }
+                        (has_fwidth, mut fwidth) := self.fwidth();
+                        value := args[index].to_string();
+                        if has_fwidth and fwidth > 0 {
+                            value_len := @cast(isize, value.len);
+                            if value_len <= fwidth {
+                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
+                            }
+                        }
+                        self.res.write_string(value);
+                        if has_fwidth and fwidth < 0 {
+                            fwidth = -fwidth;
+                            value_len := @cast(isize, value.len);
+                            if value_len <= fwidth {
+                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
+                            }
+                        }
+                    } else {
+                        process_panic(
+                            "string.fmt(): expecting closing `}}` in format string (index: {})",
+                            self.i
+                        );
+                    }
+                },
+                b'}' => {
+                    if b2 == b'}' { // escaping '}'
+                        self.res.write_byte(b'}');
+                        self.i += 1;
+                    } else {
+                        process_panic(
+                            "string.fmt(): single `}}` encountered in format string (index: {})",
+                            self.i
+                        );
+                    }
+                },
+                else => self.res.write_byte(b)
+            }
+        }
+        return self.res.to_string();
+    }
+}

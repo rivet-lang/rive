@@ -1,0 +1,160 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+var DIGIT_PAIRS: string = "0010203040506070809001112131415161718191021222324252627"
+    "28292031323334353637383930414243444546474849405152535455565758595061626364656667"
+    "68696071727374757677787970818283848586878889809192939495969798999";
+
+extend comptime_int : Stringable {
+    /// Returns the value of `self` as a string.
+    #[inline]
+    public func to_string(&self) string {
+        return @cast(int64, self.*).to_string();
+    }
+}
+
+extend int8 : Stringable {
+    public const MAX: int8 = 127;
+    public const MIN: int8 = -128;
+
+    /// Returns the value of `self` as a string.
+    #[inline]
+    public func to_string(&self) string {
+        return @cast(int32, self.*).str_l(5);
+    }
+}
+
+extend int16 : Stringable {
+    public const MAX: int16 = 32767;
+    public const MIN: int16 = -32768;
+
+    /// Returns the value of `self` as a string.
+    #[inline]
+    public func to_string(&self) string {
+        return @cast(int32, self.*).str_l(7);
+    }
+}
+
+extend int32 : Stringable {
+    public const MAX: int32 = 2147483647;
+    public const MIN: int32 = -2147483648;
+
+    /// Returns the string representation of `self` with `max` chars.
+    public func str_l(self, max: int32) string {
+        if self == 0 {
+            return "0";
+        }
+        mut n := @cast(int64, self);
+        mut d: uint32 := 0;
+        mut is_neg := false;
+        if n < 0 {
+            n = -n;
+            is_neg = true;
+        }
+        unsafe {
+            mut index := @cast(usize, max);
+            buf := @cast([*]mut uint8, internal_alloc(@cast(usize, max + 1)));
+            buf[index] = 0;
+            index -= 1;
+
+            while n > 0 {
+                n1 := @cast(int32, n / 100);
+                d = @cast(uint32, @cast(int32, n) - (n1 * 100)) << 1;
+                n = n1;
+                buf[index] = DIGIT_PAIRS.ptr[d];
+                index -= 1;
+                d += 1;
+                buf[index] = DIGIT_PAIRS.ptr[d];
+                index -= 1;
+            }
+            index += 1;
+
+            if d < 20 {
+                // remove head zero
+                index += 1;
+            }
+
+            if is_neg {
+                // prepend `-` if it's negative
+                index -= 1;
+                buf[index] = b'-';
+            }
+
+            diff := @cast(usize, max) - index;
+            mem_move(buf, @ptr_add(buf, index), diff + 1);
+            return string.from_raw_with_len(buf, diff);
+        }
+    }
+
+    /// Returns the value of `self` as a string.
+    #[inline]
+    public func to_string(&self) string {
+        return self.*.str_l(12);
+    }
+}
+
+extend int64 : Stringable {
+    public const MAX: int64 = 9223372036854775807;
+    public const MIN: int64 = -9223372036854775808;
+
+    /// Returns the value of `self` as a string.
+    public func to_string(&self) string {
+        if self.* == 0 {
+            return "0";
+        }
+        mut n := self.*;
+        mut d: int64 := 0;
+
+        mut is_neg := false;
+        if n < 0 {
+            n = -n;
+            is_neg = true;
+        }
+        unsafe {
+            max := 20;
+            buf := @cast([*]mut uint8, internal_alloc(@cast(usize, max + 1)));
+            mut index := @cast(usize, max);
+            buf[index] = 0;
+            index -= 1;
+
+            while n > 0 {
+                n1 := n / 100;
+                d = @cast(int64, @cast(uint32, n - (n1 * 100))) << @cast(int64, 1);
+                n = n1;
+                buf[index] = DIGIT_PAIRS.ptr[@cast(usize, d)];
+                index -= 1;
+                d += 1;
+                buf[index] = DIGIT_PAIRS.ptr[@cast(usize, d)];
+                index -= 1;
+            }
+            index += 1;
+
+            if d < 20 {
+                // remove head zero
+                index += 1;
+            }
+
+            if is_neg {
+                // prepend `-` if it's negative
+                index -= 1;
+                buf[index] = b'-';
+            }
+
+            diff := @cast(usize, max) - index;
+            mem_move(buf, @ptr_add(buf, index), diff + 1);
+            return string.from_raw_with_len(buf, diff);
+        }
+    }
+}
+
+extend isize : Stringable {
+    public const MIN: isize = #if _x64_ int64.MIN #else int32.MIN #endif;
+    public const MAX: isize = #if _x64_ int64.MAX #else int32.MAX #endif;
+
+    /// Returns the value of `self` as a string.
+    #[inline]
+    public func to_string(&self) string {
+        return @cast(int64, self.*).to_string();
+    }
+}

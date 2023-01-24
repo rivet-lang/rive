@@ -1,0 +1,75 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "c/libc";
+
+extend comptime_float : Stringable {
+    /// Returns the IEEE 754 binary representation of `self`, with the sign bit
+    /// of `self` and the result in the same bit position.
+    #[inline]
+    public func bits(self) uint64 {
+        return @cast(float64, self).bits();
+    }
+
+    #[inline]
+    public func to_string(self) string {
+        return @cast(float64, self).to_string();
+    }
+}
+
+extend float32 : Stringable {
+    /// Returns the floating-point number corresponding to the IEEE 754 binary
+    /// representation `b`, with the sign bit of b and the result in the same
+    /// bit position.
+    #[inline]
+    public func from_bits(b: uint32) float32 {
+        return unsafe { @cast(*float32, &b).* };
+    }
+
+    /// Returns the IEEE 754 binary representation of `self`, with the sign bit
+    /// of `self` and the result in the same bit position.
+    #[inline]
+    public func bits(&self) uint32 {
+        return unsafe { @cast(*uint32, self).* };
+    }
+
+    public func to_string(self) string {
+        unsafe {
+            mut cstr: ?[*]uint8 := nil;
+            len := libc.asprintf(&cstr, c"%g", self);
+            if len == -1 {
+                return empty_string; // fail
+            }
+            return string.from_raw_with_len(cstr, @cast(usize, len));
+        }
+    }
+}
+
+extend float64 : Stringable {
+    /// Returns the floating-point number corresponding to the IEEE 754 binary
+    /// representation `b`, with the sign bit of b and the result in the same
+    /// bit position.
+    #[inline]
+    public func from_bits(b: uint64) float64 {
+        return unsafe { @cast(*float64, &b).* };
+    }
+
+    /// Returns the IEEE 754 binary representation of `self`, with the sign bit
+    /// of `self` and the result in the same bit position.
+    #[inline]
+    public func bits(&self) uint64 {
+        return unsafe { @cast(*uint64, self).* };
+    }
+
+    public func to_string(self) string {
+        unsafe {
+            mut cstr: ?[*]uint8 := nil;
+            len := libc.asprintf(&cstr, c"%g", self);
+            if len == -1 {
+                return empty_string; // fail
+            }
+            return string.from_raw_with_len(cstr, @cast(usize, len));
+        }
+    }
+}
