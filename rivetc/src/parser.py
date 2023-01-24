@@ -161,7 +161,7 @@ class Parser:
         annotations = self.parse_annotations(
             self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
         )
-        is_public = self.is_public()
+        is_public = self.is_public() or self.inside_trait
         pos = self.tok.pos
         if self.accept(Kind.KwImport):
             import_list = []

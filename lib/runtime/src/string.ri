@@ -480,23 +480,44 @@ public struct string : Stringable, Hashable {
         }
     }
 
-    /// Splits the string by newline characters.
+    /// Splits the string by newline characters. `\r` (MacOS), `\n` (POSIX),
+    /// and `\r\n` (Windows) line endings are all supported (including mixed line endings).
+    /// NOTE: algorithm is "greedy", consuming '\r\n' as a single line ending with higher
+    /// priority than '\r' and '\n' as multiple endings
     public func split_into_lines(self) []string {
-        mut res: []string := [];
+        mut res := @vec(string);
         if self.len == 0 {
             return res;
         }
-        (mut start: usize, mut end: usize) := (0, 0);
+        cr := b'\r';
+        lf := b'\n';
+        mut line_start: usize := 0;
         mut i: usize := 0;
         while i < self.len : i += 1 {
-            if unsafe { self.ptr[i] == 10 } {
-                end = if i > 0 and unsafe { self.ptr[i - 1] == 13 } { i - 1 } else { i };
-                res.push(if start == end { "" } else { self[start..end] });
-                start = i + 1;
+            if line_start <= i {
+                if unsafe { self.ptr[i] == lf } {
+                    res.push(if line_start == i {
+                        empty_string
+                    } else {
+                        self[line_start..i]
+                    });
+                    line_start = i + 1;
+                } else if unsafe { self.ptr[i] == cr } {
+                    res.push(if line_start == i {
+                        empty_string
+                    } else {
+                        self[line_start..i]
+                    });
+                    if i + 1 < self.len and unsafe { self.ptr[i + 1] == lf } {
+                        line_start = i + 2;
+                    } else {
+                        line_start = i + 1;
+                    }
+                }
             }
         }
-        if start < self.len {
-            res.push(self[start..]);
+        if line_start < self.len {
+            res.push(self[line_start..]);
         }
         return res;
     }
