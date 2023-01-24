@@ -16,9 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run runtime tests
+      - name: Run core library tests
         run: |
-          python3 rivetc --backend-compiler clang -t lib/runtime/tests/
+          python3 rivetc --backend-compiler clang -t lib/core/tests/
 
       - name: Run standard library tests
         run: |
@@ -35,9 +35,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run runtime tests
+      - name: Run core library tests
         run: |
-          python3 rivetc -t lib/runtime/tests/
+          python3 rivetc -t lib/core/tests/
 
       - name: Run standard library tests
         run: |
