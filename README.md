@@ -38,7 +38,7 @@ language with a clear and simple syntax and a low learning curve.
 * **Not NULL values by default**: This is only possible with optional pointers.
 * **Named and optional arguments**: Very useful.
 * **Immutable values**: Variables and fields are immutable by default.
-* **Polymorphism**: Classes, Traits and Embedded Structs are supported.
+* **Polymorphism**: Traits and Embedded Structs are supported.
 * **Generics**: Specialize and reuse the same code for different types (**coming soon**).
 
 ## Important note
