@@ -371,7 +371,8 @@ class Codegen:
                 if decl.self_is_mut and not decl.self_typ.symbol().is_boxed():
                     self_typ = self_typ.ptr()
                 args.append(ir.Ident(self_typ, "self"))
-            for arg in decl.args:
+            for i, arg in enumerate(decl.args):
+                if self.inside_trait and i == 0: continue
                 arg_typ = self.ir_type(arg.typ)
                 if arg.is_mut and not (
                     arg.typ.symbol().is_boxed()
@@ -849,6 +850,26 @@ class Codegen:
                     tmp = self.cur_fn.local_name()
                     self.cur_fn.inline_alloca(ir_typ, tmp, value)
                     return ir.Ident(ir_typ, tmp)
+                elif typ_sym.kind == TypeKind.Trait:
+                    tmp = self.cur_fn.local_name()
+                    self.cur_fn.inline_alloca(
+                        ir_typ, tmp,
+                        ir.Inst(
+                            ir.InstKind.Cast, [
+                                ir.Inst(
+                                    ir.InstKind.Call, [
+                                        ir
+                                        .Name("_R7runtime10trait_castF"),
+                                        ir.Selector(ir.VOID_PTR_T, res, ir.Name("obj")),
+                                        ir.Selector(ir.USIZE_T, res, ir.Name("_real_id")),
+                                        ir.IntLit(ir.USIZE_T, str(expr_typ_sym.id))
+                                    ]
+                                ),
+                                ir_typ
+                            ]
+                        )
+                    )
+                    return ir.Ident(ir_typ, tmp)
                 elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_advanced_enum:
                     tmp = self.cur_fn.local_name()
                     self.cur_fn.inline_alloca(
@@ -1095,6 +1116,7 @@ class Codegen:
                 raise Exception(f"expr.sym is None [ {expr} ] at {expr.pos}")
             if expr.sym.is_method:
                 left_sym = expr.sym.self_typ.symbol()
+                left2_sym = expr.left.left.typ.symbol()
                 if left_sym.kind == TypeKind.Trait or (
                     left_sym.kind == TypeKind.Class and left_sym.info.is_base
                 ):
@@ -1111,7 +1133,6 @@ class Codegen:
                                 ir.InstKind.LoadPtr, [self_expr]
                             )
                         if left_sym.kind == TypeKind.Trait:
-                            left2_sym = expr.left.left.typ.symbol()
                             if left2_sym.kind == TypeKind.Trait and left_sym != left2_sym:
                                 id_value = ir.Inst(
                                     ir.InstKind.Call, [
@@ -1155,7 +1176,7 @@ class Codegen:
                                 ), ir.Name(expr.sym.name)
                             )
                         )
-                        if left_sym.kind == TypeKind.Trait:
+                        if left_sym.kind == TypeKind.Trait and not expr.sym.has_body:
                             args.append(
                                 ir.Selector(
                                     ir.VOID_PTR_T, self_expr, ir.Name("obj")

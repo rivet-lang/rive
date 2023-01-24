@@ -95,3 +95,13 @@ func enum_cast(ptr: anyptr, expected_id: usize) anyptr {
     }
     return enum_info.obj;
 }
+
+func trait_cast(got_obj: anyptr, got_id: usize, expected_id: usize) anyptr {
+    if got_id != expected_id {
+        // TODO: replace indexes with names
+        console_eprintln("panic: cannot cast {} to {}", got_id, expected_id);
+        bt_print(3);
+        process_exit(1);
+    }
+    return got_obj;
+}

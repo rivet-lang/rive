@@ -76,3 +76,28 @@ test "traits: inheritance" {
     @assert(reader(ss) == b'A');
     @assert(reader_writer(ss) == b'A');
 }
+
+trait Eq {
+    func equal(self, x: Self) bool;
+
+    func nequal(self, x: Self) bool {
+        return !self.equal(x);
+    }
+}
+
+#[boxed]
+struct Girl : Eq {
+    x: string;
+
+    func equal(self, x: Eq) bool {
+        return self.x == @cast(Girl, x).x;
+    }
+}
+
+func ship(a: Eq, b: Eq) bool {
+    return !a.nequal(b);
+}
+
+test "traits: default method" {
+    @assert(ship( Girl("Shell"), Girl("Shell") ));
+}
