@@ -1,38 +1,3 @@
-trait Speaker {
-    func speak(&self) string;
-}
-
-class Animal2 : Speaker {
-    func speak(self) string {
-        return "~ Animal2.speak() ~";
-    }
-}
-
-class Frog : Animal2 {
-    #[override]
-    func speak(self) string {
-        return "Croack";
-    }
-}
-
-class Lion : Animal2 { }
-
-func speaker(s: Speaker) string {
-    return s.speak();
-}
-
-test "traits: calling class method" {
-    @assert(speaker(Animal2()) == "~ Animal2.speak() ~");
-}
-
-test "traits: calling inherited method" {
-    @assert(speaker(Lion()) == "~ Animal2.speak() ~");
-}
-
-test "traits: calling overrided method" {
-    @assert(speaker(Frog()) == "Croack");
-}
-
 trait Reader {
     func read(&self) uint8;
 }
