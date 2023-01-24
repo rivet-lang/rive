@@ -4,7 +4,7 @@
 
 import "c";
 import "c/libc";
-import "runtime";
+import "core";
 
 import "../../mem";
 import "../../strings";
@@ -150,7 +150,7 @@ public func extension(path: string) string {
 /// point.
 public func resolve(paths: ...string) !string {
     if paths.len == 0 {
-        return runtime.process_get_cwd().!;
+        return core.process_get_cwd().!;
     }
     mut first_index: usize := 0;
     mut have_abs := false;
@@ -167,7 +167,7 @@ public func resolve(paths: ...string) !string {
     result := if have_abs {
         @cast([*]mut uint8, mem.alloc(max_size).!)
     } else {
-        cwd := runtime.process_get_cwd().!;
+        cwd := core.process_get_cwd().!;
         tmp := @cast([*]mut uint8, mem.alloc(max_size + cwd.len + 1).!);
         mem.copy(tmp, cwd.ptr, cwd.len);
         result_index += cwd.len;
@@ -354,7 +354,7 @@ public func join(paths: ...string) !string {
 /// Joins the current working directory with the given `path` (if the `path` is
 /// relative) and returns the absolute path representation.
 public func absolute(path: string) !string {
-    cwd := runtime.process_get_cwd().!;
+    cwd := core.process_get_cwd().!;
     if path.is_empty() {
         return cwd;
     }

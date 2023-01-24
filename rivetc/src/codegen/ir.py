@@ -86,10 +86,10 @@ UINT64_T = Type("uint64")
 Float64_T = Type("float64")
 ISIZE_T = Type("isize")
 USIZE_T = Type("usize")
-VEC_T = Type("_R7runtime6Vector")
-STRING_T = Type("_R7runtime6string")
-TEST_T = Type("_R7runtime4Test")
-TEST_RUNNER_T = Type("_R7runtime10TestRunner")
+VEC_T = Type("_R4core6Vector")
+STRING_T = Type("_R4core6string")
+TEST_T = Type("_R4core4Test")
+TEST_RUNNER_T = Type("_R4core10TestRunner")
 
 class Array:
     def __init__(self, typ, size):

@@ -3,11 +3,11 @@
 // be found in the LICENSE file.
 
 import "c";
-import "runtime";
+import "core";
 
 public alias ErrnoError = c.ErrnoError;
-public alias OutOfMemoryError = runtime.OutOfMemoryError;
-public alias RuneFromU32Error = runtime.RuneFromU32Error;
+public alias OutOfMemoryError = core.OutOfMemoryError;
+public alias RuneFromU32Error = core.RuneFromU32Error;
 
 #[boxed]
 public struct InvalidSyntaxError : Error {

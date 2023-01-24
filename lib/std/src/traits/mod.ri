@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "runtime";
+import "core";
 
-public alias Stringable = runtime.Stringable;
-public alias Hashable = runtime.Hashable;
+public alias Stringable = core.Stringable;
+public alias Hashable = core.Hashable;

@@ -11,13 +11,13 @@ class Register:
         self.source_file = None
         self.abi = sym.ABI.Rivet
         self.sym = None
-        self.is_runtime_mod = False
+        self.is_core_mod = False
 
     def walk_files(self, source_files):
         for i, sf in enumerate(source_files):
-            self.is_runtime_mod = sf.sym.is_runtime_mod()
-            if self.comp.runtime_mod == None and self.is_runtime_mod:
-                self.comp.runtime_mod = sf.sym
+            self.is_core_mod = sf.sym.is_core_mod()
+            if self.comp.core_mod == None and self.is_core_mod:
+                self.comp.core_mod = sf.sym
             self.sym = sf.sym
             self.source_file = sf
             self.walk_decls(self.source_file.decls)
@@ -105,7 +105,7 @@ class Register:
                             info = sym.TraitInfo()
                         )
                     )
-                    if self.is_runtime_mod and decl.name == "Error" and not self.comp.error_sym:
+                    if self.is_core_mod and decl.name == "Error" and not self.comp.error_sym:
                         self.comp.error_sym = decl.sym
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)
@@ -113,7 +113,7 @@ class Register:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.StructDecl):
                 try:
-                    if self.is_runtime_mod and decl.name == "string":
+                    if self.is_core_mod and decl.name == "string":
                         decl.sym = self.comp.string_t.sym
                     else:
                         decl.sym = self.sym.add_and_return(
@@ -125,7 +125,7 @@ class Register:
                                 )
                             )
                         )
-                        if self.is_runtime_mod and decl.name == "Vector":
+                        if self.is_core_mod and decl.name == "Vector":
                             self.comp.vec_sym = decl.sym
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)

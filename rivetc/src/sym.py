@@ -203,8 +203,8 @@ class Sym:
         self.qualified_name = f"{self.parent.qualname()}.{self.name}"
         return self.qualified_name
 
-    def is_runtime_mod(self):
-        return isinstance(self, Mod) and self.name == "runtime"
+    def is_core_mod(self):
+        return isinstance(self, Mod) and self.name == "core"
 
     def __getitem__(self, idx):
         if isinstance(idx, str):
@@ -227,8 +227,8 @@ class SymRef(Sym):
     def typeof(self):
         return self.ref.typeof()
 
-    def is_runtime_mod(self):
-        return self.ref.is_runtime_mod()
+    def is_core_mod(self):
+        return self.ref.is_core_mod()
 
 class Mod(Sym):
     def add_or_get_array(self, elem_typ, size, is_mut = False):

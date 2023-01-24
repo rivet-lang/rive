@@ -1720,7 +1720,7 @@ class Checker:
                     return False
             return True
 
-        if self.sym.is_runtime_mod():
+        if self.sym.is_core_mod():
             if exp_sym.kind == TypeKind.Vec and got_sym == self.comp.vec_sym:
                 return True
 

@@ -46,9 +46,9 @@ class Compiler:
         self.prefs = prefs.Prefs(args)
         self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
 
-        self.runtime_mod = None
-        self.vec_sym = None # from `runtime` module
-        self.error_sym = None # from `runtime` module
+        self.core_mod = None
+        self.vec_sym = None # from `core` module
+        self.error_sym = None # from `core` module
 
         self.parsed_files = []
         self.source_files = []
@@ -111,8 +111,8 @@ class Compiler:
             if not fp.sym:
                 continue
             deps = []
-            if fp.sym.name not in ["c.libc", "c", "runtime"]:
-                deps.append("runtime")
+            if fp.sym.name not in ["c.libc", "c", "core"]:
+                deps.append("core")
             for d in fp.decls:
                 if isinstance(d, ast.ImportDecl):
                     if not d.mod_sym:
@@ -128,7 +128,7 @@ class Compiler:
 
     def run(self):
         self.parsed_files += self.load_mod_and_parse(
-            "runtime", "runtime", "", token.NO_POS
+            "core", "core", "", token.NO_POS
         )
         self.load_root_mod()
         self.import_modules()

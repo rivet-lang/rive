@@ -18,7 +18,7 @@ public struct Table {
 
     public pointer_size: usize;
 
-    public mut runtime_mod: Mod;
+    public mut core_mod: Mod;
 
     #[inline]
     public func new(prefs: prefs.Prefs) Table {

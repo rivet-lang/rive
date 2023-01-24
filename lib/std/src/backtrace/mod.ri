@@ -2,6 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "runtime";
+import "core";
 
-public alias print = runtime.bt_print;
+public alias print = core.bt_print;

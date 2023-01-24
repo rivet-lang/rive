@@ -2,14 +2,14 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "runtime";
+import "core";
 
-public alias alloc = runtime.mem_alloc;
-public alias zeroed = runtime.mem_zeroed;
-public alias resize = runtime.mem_resize;
-public alias set = runtime.mem_set;
-public alias copy = runtime.mem_copy;
-public alias move = runtime.mem_move;
-public alias dup = runtime.mem_dup;
-public alias cmp = runtime.mem_cmp;
-public alias dealloc = runtime.mem_dealloc;
+public alias alloc = core.mem_alloc;
+public alias zeroed = core.mem_zeroed;
+public alias resize = core.mem_resize;
+public alias set = core.mem_set;
+public alias copy = core.mem_copy;
+public alias move = core.mem_move;
+public alias dup = core.mem_dup;
+public alias cmp = core.mem_cmp;
+public alias dealloc = core.mem_dealloc;

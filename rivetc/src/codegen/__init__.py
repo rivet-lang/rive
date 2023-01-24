@@ -73,16 +73,16 @@ def mangle_symbol(s):
                 res.insert(0, name)
                 s.mangled_name = name
             elif s.kind == TypeKind.Vec:
-                res.insert(0, "7runtime6Vector")
-                s.mangled_name = "_R7runtime6Vector"
+                res.insert(0, "4core6Vector")
+                s.mangled_name = "_R4core6Vector"
             elif s.kind == TypeKind.Array:
                 name = f"Array_{mangle_type(s.info.elem_typ)}_{s.info.size}"
                 name = f"{len(name)}{name}"
                 res.insert(0, name)
                 s.mangled_name = name
             elif s.kind == TypeKind.String:
-                res.insert(0, "7runtime6string")
-                s.mangled_name = "_R7runtime6string"
+                res.insert(0, "4core6string")
+                s.mangled_name = "_R4core6string"
             else:
                 res.insert(0, f"{len(s.name)}{s.name}")
         elif s.name in OVERLOADABLE_OPERATORS_STR:
@@ -146,14 +146,14 @@ class Codegen:
         self.gen_types()
         # generate 'init_string_lits_fn' function
         self.init_string_lits_fn = ir.FnDecl(
-            False, ast.Annotations(), False, "_R7runtime16init_string_litsF",
+            False, ast.Annotations(), False, "_R4core16init_string_litsF",
             [], False, ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_string_lits_fn)
 
-        # generate '_R7runtime12init_globalsF' function
+        # generate '_R4core12init_globalsF' function
         self.init_global_vars_fn = ir.FnDecl(
-            False, ast.Annotations(), False, "_R7runtime12init_globalsF", [],
+            False, ast.Annotations(), False, "_R4core12init_globalsF", [],
             False, ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_global_vars_fn)
@@ -167,7 +167,7 @@ class Codegen:
 
         # generate '_R12drop_globalsZ' function
         g_fn = ir.FnDecl(
-            False, ast.Annotations(), False, "_R7runtime12drop_globalsF", [],
+            False, ast.Annotations(), False, "_R4core12drop_globalsF", [],
             False, ir.VOID_T, False
         )
         self.out_rir.decls.append(g_fn)
@@ -181,7 +181,7 @@ class Codegen:
         )
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
             self.cur_fn = main_fn
-            self.cur_fn.add_call("_R7runtime16init_string_litsF")
+            self.cur_fn.add_call("_R4core16init_string_litsF")
             test_runner = ir.Ident(ir.TEST_RUNNER_T, "_test_runner")
             main_fn.alloca(test_runner)
             tests_field = ir.Selector(ir.VEC_T, test_runner, ir.Name("tests"))
@@ -211,11 +211,11 @@ class Codegen:
                 )
                 main_fn.store(
                     ir.Selector(ir.STRING_T, test_value, ir.Name("err_pos")),
-                    ir.Ident(ir.STRING_T, "_R7runtime12empty_string")
+                    ir.Ident(ir.STRING_T, "_R4core12empty_string")
                 )
                 main_fn.store(
                     ir.Selector(ir.STRING_T, test_value, ir.Name("err_msg")),
-                    ir.Ident(ir.STRING_T, "_R7runtime12empty_string")
+                    ir.Ident(ir.STRING_T, "_R4core12empty_string")
                 )
                 main_fn.store(
                     ir.Selector(
@@ -230,13 +230,13 @@ class Codegen:
                 )
                 gtests_array.append(test_value)
             test_t_size, _ = self.comp.type_size(
-                type.Type(self.comp.universe["runtime"]["Test"])
+                type.Type(self.comp.universe["core"]["Test"])
             )
             main_fn.store(
                 tests_field,
                 ir.Inst(
                     ir.InstKind.Call, [
-                        ir.Name("_R7runtime6Vector19from_array_no_allocF"),
+                        ir.Name("_R4core6Vector19from_array_no_allocF"),
                         ir.ArrayLit(
                             ir.Array(ir.TEST_T, str(len(self.generated_tests))),
                             gtests_array
@@ -247,7 +247,7 @@ class Codegen:
                 )
             )
             main_fn.add_call(
-                "_R7runtime4mainF", [
+                "_R4core4mainF", [
                     argc,
                     ir.Inst(ir.InstKind.Cast,
                             [argv, ir.UINT8_T.ptr().ptr()]),
@@ -256,7 +256,7 @@ class Codegen:
             )
         else:
             main_fn.add_call(
-                "_R7runtime4mainF", [
+                "_R4core4mainF", [
                     argc,
                     ir.Inst(ir.InstKind.Cast,
                             [argv, ir.UINT8_T.ptr().ptr()]),
@@ -614,7 +614,7 @@ class Codegen:
                         size, _ = self.comp.type_size(left.typ)
                         self.cur_fn.alloca(ident)
                         self.cur_fn.add_call(
-                            "_R7runtime8mem_copyF", [
+                            "_R4core8mem_copyF", [
                                 ident,
                                 ir.Selector(
                                     left_ir_typ, right, ir.Name(f"f{i}")
@@ -826,7 +826,7 @@ class Codegen:
                             ir.InstKind.Cast, [
                                 ir.Inst(
                                     ir.InstKind.Call, [
-                                        ir.Name("_R7runtime10trait_castF"),
+                                        ir.Name("_R4core10trait_castF"),
                                         ir.Selector(
                                             ir.VOID_PTR_T, res, ir.Name("obj")
                                         ),
@@ -854,7 +854,7 @@ class Codegen:
                                         ir.Inst(
                                             ir.InstKind.Call, [
                                                 ir
-                                                .Name("_R7runtime9enum_castF"),
+                                                .Name("_R4core9enum_castF"),
                                                 res,
                                                 typ_sym.info
                                                 .get_variant_by_type(expr.typ
@@ -886,7 +886,7 @@ class Codegen:
                     tmp_id = ir.Ident(ir.TEST_T.ptr(), "test")
                     pos = utils.smart_quote(str(expr.pos), False)
                     self.cur_fn.add_call(
-                        "_R7runtime11assert_testF", [
+                        "_R4core11assert_testF", [
                             self.gen_expr(expr.args[0]),
                             self.gen_string_lit(msg,
                                                 utils.bytestr(msg_).len),
@@ -907,7 +907,7 @@ class Codegen:
                     self.cur_fn.add_label(l2)
                 else:
                     self.cur_fn.add_call(
-                        "_R7runtime6assertF", [
+                        "_R4core6assertF", [
                             self.gen_expr(expr.args[0]),
                             self.gen_string_lit(msg,
                                                 utils.bytestr(msg_).len)
@@ -1238,7 +1238,7 @@ class Codegen:
                         id = ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
                         self.cur_fn.alloca(id)
                     self.cur_fn.add_call(
-                        "_R7runtime8mem_copyF", [
+                        "_R4core8mem_copyF", [
                             id,
                             ir.Selector(
                                 self.ir_type(expr.sym.ret_typ), inst,
@@ -1283,7 +1283,7 @@ class Codegen:
                     if expr.err_handler.is_propagate:
                         if self.cur_fn_is_main or self.inside_let_decl:
                             self.cur_fn.add_call(
-                                "_R7runtime11error_panicF", [
+                                "_R4core11error_panicF", [
                                     ir.Selector(
                                         self.ir_type(self.comp.error_t),
                                         res_value, ir.Name("err")
@@ -1294,7 +1294,7 @@ class Codegen:
                             if self.inside_test:
                                 pos = utils.smart_quote(str(expr.pos), False)
                                 self.cur_fn.add_call(
-                                    "_R7runtime19test_error_returnedF", [
+                                    "_R4core19test_error_returnedF", [
                                         ir.Selector(
                                             self.ir_type(self.comp.error_t),
                                             res_value, ir.Name("err")
@@ -1458,7 +1458,7 @@ class Codegen:
                 if custom_tmp:
                     size, _ = self.comp.type_size(expr.typ)
                     self.cur_fn.add_call(
-                        "_R7runtime8mem_copyF",
+                        "_R4core8mem_copyF",
                         [custom_tmp, arr_lit,
                          ir.IntLit(ir.USIZE_T, str(size))]
                     )
@@ -1469,7 +1469,7 @@ class Codegen:
                 tmp,
                 ir.Inst(
                     ir.InstKind.Call, [
-                        ir.Name("_R7runtime6Vector10from_arrayF"), arr_lit,
+                        ir.Name("_R4core6Vector10from_arrayF"), arr_lit,
                         ir.IntLit(ir.USIZE_T, str(size)),
                         ir.IntLit(ir.USIZE_T, str(len(elems)))
                     ]
@@ -1498,14 +1498,14 @@ class Codegen:
                     if end == None:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R7runtime6string10slice_fromM"), left,
+                                ir.Name("_R4core6string10slice_fromM"), left,
                                 start
                             ]
                         )
                     else:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R7runtime6string5sliceM"), left,
+                                ir.Name("_R4core6string5sliceM"), left,
                                 start, end
                             ]
                         )
@@ -1513,14 +1513,14 @@ class Codegen:
                     if end == None:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R7runtime6Vector10slice_fromM"), left,
+                                ir.Name("_R4core6Vector10slice_fromM"), left,
                                 start
                             ]
                         )
                     else:
                         inst = Inst(
                             InstKind.Call, [
-                                ir.Name("_R7runtime6Vector5sliceM"), left,
+                                ir.Name("_R4core6Vector5sliceM"), left,
                                 start, end
                             ]
                         )
@@ -1529,7 +1529,7 @@ class Codegen:
                     if end == None:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R7runtime16array_slice_fromF"),
+                                ir.Name("_R4core16array_slice_fromF"),
                                 ir.Inst(ir.InstKind.GetRef, [left]),
                                 ir.IntLit(ir.USIZE_T, str(size)),
                                 ir.IntLit(ir.USIZE_T, s.info.size.lit), start
@@ -1538,7 +1538,7 @@ class Codegen:
                     else:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R7runtime11array_sliceF"),
+                                ir.Name("_R4core11array_sliceF"),
                                 ir.Inst(ir.InstKind.GetRef, [left]),
                                 ir.IntLit(ir.USIZE_T, str(size)),
                                 ir.IntLit(ir.USIZE_T, s.info.size.lit), start,
@@ -1550,7 +1550,7 @@ class Codegen:
             idx = self.gen_expr(expr.index)
             if isinstance(s.info, sym.ArrayInfo):
                 self.cur_fn.add_call(
-                    "_R7runtime11array_indexF",
+                    "_R4core11array_indexF",
                     [ir.IntLit(ir.USIZE_T, s.info.size.lit), idx]
                 )
             tmp = self.cur_fn.local_name()
@@ -1566,7 +1566,7 @@ class Codegen:
             elif s.kind == TypeKind.String:
                 value = ir.Inst(
                     ir.InstKind.Call,
-                    [ir.Name("_R7runtime6string2atM"), left, idx], expr_typ_ir
+                    [ir.Name("_R4core6string2atM"), left, idx], expr_typ_ir
                 )
             elif s.kind == TypeKind.Vec:
                 expr_typ_ir2 = expr_typ_ir.ptr()
@@ -1574,7 +1574,7 @@ class Codegen:
                     ir.InstKind.Cast, [
                         ir.Inst(
                             ir.InstKind.Call,
-                            [ir.Name("_R7runtime6Vector3getM"), left, idx]
+                            [ir.Name("_R4core6Vector3getM"), left, idx]
                         ), expr_typ_ir2
                     ], expr_typ_ir2
                 )
@@ -1764,7 +1764,7 @@ class Codegen:
                 left_sym = expr_left_typ.symbol()
                 right_sym = expr.right.typ.symbol()
                 contains_method = f"contains_{right_sym.id}"
-                full_name = f"_R7runtime6Vector{len(contains_method)}{contains_method}"
+                full_name = f"_R4core6Vector{len(contains_method)}{contains_method}"
                 if not right_sym.info.has_contains_method:
                     right_sym.info.has_contains_method = True
                     self_id = ir.Ident(ir.VEC_T.ptr(True), "self")
@@ -1800,7 +1800,7 @@ class Codegen:
                                     ir.Inst(
                                         ir.InstKind.Call, [
                                             ir
-                                            .Name("_R7runtime6Vector7raw_getM"),
+                                            .Name("_R4core6Vector7raw_getM"),
                                             self_id, inc_v
                                         ]
                                     ),
@@ -1849,9 +1849,9 @@ class Codegen:
             ) and not isinstance(expr_left_typ, type.Ptr):
                 if typ_sym.kind == TypeKind.Array:
                     if expr.op == Kind.Eq:
-                        name = "_R7runtime8array_eqF"
+                        name = "_R4core8array_eqF"
                     elif expr.op == Kind.Ne:
-                        name = "_R7runtime8array_neF"
+                        name = "_R4core8array_neF"
                     size, _ = self.comp.type_size(expr_left_typ)
                     self.cur_fn.inline_alloca(
                         self.ir_type(expr.typ), tmp,
@@ -2178,7 +2178,7 @@ class Codegen:
                     )
                     self.cur_fn.alloca(tmp)
                     self.cur_fn.add_call(
-                        "_R7runtime8mem_copyF", [
+                        "_R4core8mem_copyF", [
                             ir.Selector(
                                 self.ir_type(ret_typ), tmp, ir.Name("arr")
                             ), expr_,
@@ -2240,7 +2240,7 @@ class Codegen:
                 expr_right = self.gen_expr_with_cast(right.typ, right)
                 val_sym = right.typ.symbol()
                 self.cur_fn.add_call(
-                    "_R7runtime6Vector3setM", [
+                    "_R4core6Vector3setM", [
                         rec,
                         self.gen_expr(expr.index),
                         ir.Inst(ir.InstKind.GetRef, [expr_right])
@@ -2350,9 +2350,9 @@ class Codegen:
 
     def panic(self, msg):
         self.cur_fn.add_call(
-            "_R7runtime13process_panicF", [
+            "_R4core13process_panicF", [
                 self.gen_string_lit(utils.smart_quote(msg, False)),
-                self.empty_vec(self.comp.universe["[]runtime.Stringable"])
+                self.empty_vec(self.comp.universe["[]core.Stringable"])
             ]
         )
 
@@ -2362,7 +2362,7 @@ class Codegen:
         elem_size, _ = self.comp.type_size(var_arg_typ_)
         return ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R7runtime6Vector19from_array_no_allocF"),
+                ir.Name("_R4core6Vector19from_array_no_allocF"),
                 ir.ArrayLit(self.ir_type(var_arg_typ_), vargs),
                 ir.IntLit(ir.USIZE_T, str(elem_size)),
                 ir.IntLit(ir.USIZE_T, str(len(vargs)))
@@ -2388,7 +2388,7 @@ class Codegen:
         elif typ in (self.comp.float32_t, self.comp.float64_t):
             return ir.FloatLit(self.ir_type(typ), "0.0")
         elif typ == self.comp.string_t:
-            return ir.Ident(ir.STRING_T, "_R7runtime12empty_string")
+            return ir.Ident(ir.STRING_T, "_R4core12empty_string")
         elif isinstance(typ, type.Result):
             if typ.typ == self.comp.void_t:
                 return self.result_void(typ)
@@ -2436,7 +2436,7 @@ class Codegen:
         size, _ = self.comp.type_size(elem_typ)
         return ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R7runtime6Vector3newF"),
+                ir.Name("_R4core6Vector3newF"),
                 ir.IntLit(ir.USIZE_T, str(size)), cap
                 or ir.IntLit(ir.USIZE_T, "0")
             ]
@@ -2445,14 +2445,14 @@ class Codegen:
     def gen_string_lit(self, lit, size = None):
         size = size or utils.bytestr(lit).len
         if size == 0:
-            return ir.Ident(ir.STRING_T.ptr(True), "_R7runtime12empty_string")
+            return ir.Ident(ir.STRING_T.ptr(True), "_R4core12empty_string")
         lit_hash = hash(lit)
         if lit_hash in self.generated_string_literals:
             return ir.Ident(
                 ir.STRING_T.ptr(True), self.generated_string_literals[lit_hash]
             )
         tmp = self.boxed_instance(
-            "_R7runtime6string", 19,
+            "_R4core6string", 19,
             custom_name = f"STR_LIT{len(self.generated_string_literals)}"
         )
         self.out_rir.globals.append(
@@ -2480,7 +2480,7 @@ class Codegen:
         to_fn = self.init_string_lits_fn if custom_name else self.cur_fn
         inst = ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R7runtime14internal_allocF"),
+                ir.Name("_R4core14internal_allocF"),
                 ir.Name(f"sizeof({name})")
             ]
         )
@@ -2509,7 +2509,7 @@ class Codegen:
             value = ir.Inst(ir.InstKind.GetRef, [value])
         value = value if is_ptr else ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R7runtime12internal_dupF"), value,
+                ir.Name("_R4core12internal_dupF"), value,
                 ir.IntLit(ir.Name("usize"), str(size))
             ]
         )
@@ -2563,7 +2563,7 @@ class Codegen:
             else:
                 value = ir.Inst(
                     ir.InstKind.Call, [
-                        ir.Name("_R7runtime12internal_dupF"),
+                        ir.Name("_R4core12internal_dupF"),
                         ir.Inst(ir.InstKind.GetRef, [arg0]),
                         ir.IntLit(usize_t, str(size))
                     ]
@@ -2584,7 +2584,7 @@ class Codegen:
         class_sym = class_typ.symbol()
         class_typ_ir = self.ir_type(class_typ)
         self.cur_fn.add_call(
-            "_R7runtime14class_downcastF", [
+            "_R4core14class_downcastF", [
                 ir.Selector(ir.USIZE_T, value, ir.Name("_id")),
                 ir.IntLit(ir.USIZE_T, str(class_sym.id))
             ]

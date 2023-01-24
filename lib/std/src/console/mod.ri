@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "runtime";
+import "core";
 
-public alias print = runtime.console_print;
-public alias println = runtime.console_println;
-public alias eprint = runtime.console_eprint;
-public alias eprintln = runtime.console_eprintln;
-public alias is_atty = runtime.console_is_atty;
+public alias print = core.console_print;
+public alias println = core.console_println;
+public alias eprint = core.console_eprint;
+public alias eprintln = core.console_eprintln;
+public alias is_atty = core.console_is_atty;

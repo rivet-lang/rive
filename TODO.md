@@ -22,11 +22,11 @@
 - [ ] do not modify the values of primitive types passed as an argument that is 
 declared mutable (this should only work with reference types):
     ```ri
-    fn arg(mut x: i32) {
+    func arg(mut x: i32) {
         x += 1;
     }
 
-    let y = 1;
+    y := 1;
     arg(y); // `y` should not be modified, and the compiler should not require 
             // it to be a mutable variable.
     ```
