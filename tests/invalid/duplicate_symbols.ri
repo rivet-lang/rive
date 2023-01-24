@@ -16,9 +16,6 @@ func other(a: int32) { // FAIL
     a := 1;
 }
 
-class RuntimeError : Error { }
-class RuntimeError : Error { } // FAIL
-
 struct Gota { }
 struct Gota { } // FAIL
 
