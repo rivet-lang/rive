@@ -351,8 +351,6 @@ class Codegen:
             self.inside_trait = True
             self.gen_decls(decl.decls)
             self.inside_trait = False
-        elif isinstance(decl, ast.ClassDecl):
-            self.gen_decls(decl.decls)
         elif isinstance(decl, ast.StructDecl):
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.ExtendDecl):
@@ -405,17 +403,6 @@ class Codegen:
             self.cur_fn.arr_ret_struct = arr_ret_struct
             self.cur_fn_is_main = decl.is_main
             self.cur_fn_ret_typ = decl.ret_typ
-            if decl.is_method:
-                self_sym = decl.self_typ.symbol()
-                if self_sym.kind == TypeKind.Class and self_sym.info.is_child and self_sym.info.use_base:
-                    base_typ = self.ir_type(type.Type(self_sym.info.base))
-                    self.cur_fn.alloca(
-                        ir.Ident(base_typ, "base"),
-                        ir.Inst(
-                            ir.InstKind.Cast, [ir.Name("self"), base_typ],
-                            base_typ
-                        )
-                    )
             for defer_stmt in decl.defer_stmts:
                 defer_stmt.flag_var = self.cur_fn.local_name()
                 self.cur_fn.alloca(
@@ -714,10 +701,6 @@ class Codegen:
         expected_sym = expected_typ_.symbol()
         if expected_sym.kind == TypeKind.Trait and expr_sym != expected_sym and expr.typ != self.comp.nil_t:
             res_expr = self.trait_value(res_expr, expr_typ, expected_typ_)
-        elif expected_sym.kind == TypeKind.Class and expr_sym.is_subtype_of(
-            expected_sym
-        ) and expr_sym != expected_sym:
-            res_expr = self.class_upcast(res_expr, expr_typ, expected_typ_)
 
         # wrap optional value
         if isinstance(expected_typ_,
@@ -778,11 +761,6 @@ class Codegen:
             return ir.IntLit(
                 self.ir_type(enum_sym.info.underlying_typ), str(expr.sym.value)
             )
-        elif isinstance(expr, ast.BaseExpr):
-            base_typ = self.ir_type(expr.typ)
-            if expr.is_mut and not isinstance(base_typ, ir.Pointer):
-                base_typ = base_typ.ptr()
-            return ir.Ident(base_typ, "base")
         elif isinstance(expr, ast.SelfExpr):
             self_typ = self.ir_type(expr.typ)
             if expr.is_mut and not isinstance(self_typ, ir.Pointer):
@@ -840,17 +818,7 @@ class Codegen:
                         return res
                 typ_sym = arg1.typ.symbol()
                 expr_typ_sym = expr.typ.symbol()
-                if typ_sym.kind == TypeKind.Class and typ_sym.kind == expr_typ_sym.kind:
-                    if typ_sym == expr_typ_sym:
-                        value = res
-                    elif typ_sym.is_subtype_of(expr_typ_sym): # up-casting
-                        value = self.class_upcast(res, arg1.typ, expr.typ)
-                    elif expr_typ_sym.is_subtype_of(typ_sym): # down-casting
-                        value = self.class_downcast(res, arg1.typ, expr.typ)
-                    tmp = self.cur_fn.local_name()
-                    self.cur_fn.inline_alloca(ir_typ, tmp, value)
-                    return ir.Ident(ir_typ, tmp)
-                elif typ_sym.kind == TypeKind.Trait:
+                if typ_sym.kind == TypeKind.Trait:
                     tmp = self.cur_fn.local_name()
                     self.cur_fn.inline_alloca(
                         ir_typ, tmp,
@@ -1014,8 +982,7 @@ class Codegen:
             else:
                 single_op = expr.op.single()
                 right = self.gen_expr_with_cast(expr.left.typ, expr.right)
-                if expr_left_sym.kind in (TypeKind.Class, TypeKind.Struct
-                                          ) and expr_left_sym.exists(
+                if expr_left_sym.kind == TypeKind.Struct and expr_left_sym.exists(
                                               str(single_op)
                                           ):
                     ov_m = OVERLOADABLE_OPERATORS_STR[str(single_op)]
@@ -1122,74 +1089,68 @@ class Codegen:
             if expr.sym.is_method:
                 left_sym = expr.sym.self_typ.symbol()
                 left2_sym = expr.left.left.typ.symbol()
-                if left_sym.kind == TypeKind.Trait or (
-                    left_sym.kind == TypeKind.Class and left_sym.info.is_base
-                ):
+                if left_sym.kind == TypeKind.Trait:
                     self_expr = self.gen_expr_with_cast(
                         expr.left.left.typ, expr.left.left
                     )
-                    if not (
-                        isinstance(self_expr, ir.Ident)
-                        and self_expr.name == "base"
-                    ):
-                        is_vtable_call = True
-                        if not isinstance(self_expr.typ, ir.Pointer):
-                            self_expr = ir.Inst(
-                                ir.InstKind.LoadPtr, [self_expr]
-                            )
-                        if left_sym.kind == TypeKind.Trait:
-                            if left2_sym.kind == TypeKind.Trait and left_sym != left2_sym:
-                                id_value = ir.Inst(
-                                    ir.InstKind.Call, [
-                                        ir.Name(
-                                            f"{mangle_symbol(left_sym)}17__index_of_vtbl__"
-                                        ),
-                                        ir.Selector(
-                                            ir.USIZE_T, self_expr,
-                                            ir.Name("_real_id")
-                                        )
-                                    ]
-                                )
-                            else:
-                                id_value = ir.Selector(
-                                    ir.USIZE_T, self_expr, ir.Name("_id")
-                                )
-                        else:
+                    is_vtable_call = True
+                    if not isinstance(self_expr.typ, ir.Pointer):
+                        self_expr = ir.Inst(
+                            ir.InstKind.LoadPtr, [self_expr]
+                        )
+                    if left_sym.kind == TypeKind.Trait:
+                        if left2_sym.kind == TypeKind.Trait and left_sym != left2_sym:
                             id_value = ir.Inst(
                                 ir.InstKind.Call, [
                                     ir.Name(
                                         f"{mangle_symbol(left_sym)}17__index_of_vtbl__"
                                     ),
                                     ir.Selector(
-                                        ir.USIZE_T, self_expr, ir.Name("_id")
+                                        ir.USIZE_T, self_expr,
+                                        ir.Name("_real_id")
                                     )
                                 ]
                             )
+                        else:
+                            id_value = ir.Selector(
+                                ir.USIZE_T, self_expr, ir.Name("_id")
+                            )
+                    else:
+                        id_value = ir.Inst(
+                            ir.InstKind.Call, [
+                                ir.Name(
+                                    f"{mangle_symbol(left_sym)}17__index_of_vtbl__"
+                                ),
+                                ir.Selector(
+                                    ir.USIZE_T, self_expr, ir.Name("_id")
+                                )
+                            ]
+                        )
+                    args.append(
+                        ir.Selector(
+                            ir.VOID_PTR_T,
+                            ir.Inst(
+                                ir.InstKind.LoadPtr, [
+                                    ir.Inst(
+                                        ir.InstKind.Add, [
+                                            ir.Name(
+                                                mangle_symbol(left_sym) +
+                                                "4VTBL"
+                                            ), id_value
+                                        ]
+                                    )
+                                ]
+                            ), ir.Name(OVERLOADABLE_OPERATORS_STR[expr.sym.name] if expr.sym.name in OVERLOADABLE_OPERATORS_STR else expr.sym.name)
+                        )
+                    )
+                    if left_sym.kind == TypeKind.Trait and not expr.sym.has_body:
                         args.append(
                             ir.Selector(
-                                ir.VOID_PTR_T,
-                                ir.Inst(
-                                    ir.InstKind.LoadPtr, [
-                                        ir.Inst(
-                                            ir.InstKind.Add, [
-                                                ir.Name(
-                                                    mangle_symbol(left_sym) +
-                                                    "4VTBL"
-                                                ), id_value
-                                            ]
-                                        )
-                                    ]
-                                ), ir.Name(OVERLOADABLE_OPERATORS_STR[expr.sym.name] if expr.sym.name in OVERLOADABLE_OPERATORS_STR else expr.sym.name)
+                                ir.VOID_PTR_T, self_expr, ir.Name("obj")
                             )
                         )
-                        if left_sym.kind == TypeKind.Trait and not expr.sym.has_body:
-                            args.append(
-                                ir.Selector(
-                                    ir.VOID_PTR_T, self_expr, ir.Name("obj")
-                                )
-                            )
-                        else:
-                            args.append(self_expr)
+                    else:
+                        args.append(self_expr)
             if not is_vtable_call:
                 if expr.is_closure:
                     name = self.gen_expr_with_cast(expr.left.typ, expr.left)
@@ -1773,27 +1734,24 @@ class Codegen:
                     var_t2 = var_t.ptr() if expr.var.is_mut or not isinstance(
                         var_t, ir.Pointer
                     ) else var_t
-                    if left_sym.kind == TypeKind.Class:
-                        val = ir.Inst(ir.InstKind.Cast, [left, var_t])
-                    else:
-                        val = ir.Inst(
-                            ir.InstKind.Cast, [
-                                ir.Selector(
-                                    ir.VOID_PTR_T, left, ir.Name("obj")
-                                ), var_t2
-                            ]
+                    val = ir.Inst(
+                        ir.InstKind.Cast, [
+                            ir.Selector(
+                                ir.VOID_PTR_T, left, ir.Name("obj")
+                            ), var_t2
+                        ]
+                    )
+                    if not (
+                        expr.var.is_mut or (
+                            isinstance(var_t, ir.Pointer)
+                            and var_t.is_managed
                         )
-                        if not (
-                            expr.var.is_mut or (
-                                isinstance(var_t, ir.Pointer)
-                                and var_t.is_managed
-                            )
-                        ):
-                            val = ir.Inst(ir.InstKind.LoadPtr, [val])
-                        if expr.var.is_mut and not isinstance(
-                            var_t, ir.Pointer
-                        ):
-                            var_t = var_t.ptr(True)
+                    ):
+                        val = ir.Inst(ir.InstKind.LoadPtr, [val])
+                    if expr.var.is_mut and not isinstance(
+                        var_t, ir.Pointer
+                    ):
+                        var_t = var_t.ptr(True)
                     unique_name = self.cur_fn.unique_name(expr.var.name)
                     expr.scope.update_ir_name(expr.var.name, unique_name)
                     self.cur_fn.inline_alloca(var_t, unique_name, val)
@@ -1887,8 +1845,7 @@ class Codegen:
             tmp = self.cur_fn.local_name()
             typ_sym = expr_left_typ.symbol()
             if expr.op.is_overloadable_op() and typ_sym.kind in (
-                TypeKind.Array, TypeKind.Vec, TypeKind.String, TypeKind.Struct,
-                TypeKind.Class
+                TypeKind.Array, TypeKind.Vec, TypeKind.String, TypeKind.Struct
             ) and not isinstance(expr_left_typ, type.Ptr):
                 if typ_sym.kind == TypeKind.Array:
                     if expr.op == Kind.Eq:
@@ -2454,21 +2411,6 @@ class Codegen:
                     self.default_value(typ)
                 )
             return tmp
-        elif typ_sym.kind == TypeKind.Class:
-            if custom_tmp:
-                tmp = custom_tmp
-            else:
-                tmp = self.boxed_instance(mangle_symbol(typ_sym), typ_sym.id)
-            for f in typ_sym.full_fields():
-                if f.typ.symbol().kind == TypeKind.Array:
-                    continue
-                sltor = ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name))
-                if f.has_def_expr:
-                    val = self.gen_expr_with_cast(f.typ, f.def_expr, sltor)
-                else:
-                    val = self.default_value(f.typ)
-                    self.cur_fn.store(sltor, val)
-            return tmp
         elif typ_sym.kind == TypeKind.Struct:
             if custom_tmp:
                 tmp = custom_tmp
@@ -2590,22 +2532,7 @@ class Codegen:
             )
         else:
             vtbl_idx = trait_sym.info.indexof(value_sym)
-            if value_sym.kind == TypeKind.Class and value_sym.info.is_base:
-                index = ir.Inst(
-                    ir.InstKind.Call, [
-                        ir
-                        .Name(f"{mangle_symbol(value_sym)}17__index_of_vtbl__"),
-                        ir.Selector(ir.USIZE_T, value, ir.Name("_id"))
-                    ], ir.USIZE_T
-                )
-                if vtbl_idx > 0:
-                    index = ir.Inst(
-                        ir.InstKind.Add,
-                        [ir.IntLit(ir.USIZE_T, str(vtbl_idx)), index],
-                        ir.USIZE_T
-                    )
-            else:
-                index = ir.IntLit(ir.USIZE_T, str(vtbl_idx))
+            index = ir.IntLit(ir.USIZE_T, str(vtbl_idx))
         self.cur_fn.store(ir.Selector(ir.USIZE_T, tmp, ir.Name("_id")), index)
         self.cur_fn.store(
             ir.Selector(ir.USIZE_T, tmp, ir.Name("_real_id")),
@@ -2885,77 +2812,6 @@ class Codegen:
                         index_of_vtbl_fn.add_label(l2)
                     index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, "0"))
                     self.out_rir.decls.append(index_of_vtbl_fn)
-            elif ts.kind == TypeKind.Class:
-                fields = [
-                    ir.Field("_rc", ir.USIZE_T),
-                    ir.Field("_id", ir.USIZE_T)
-                ]
-                for f in ts.full_fields():
-                    fields.append(ir.Field(f.name, self.ir_type(f.typ)))
-                ts_name = mangle_symbol(ts)
-                self.out_rir.structs.append(ir.Struct(False, ts_name, fields))
-                if not ts.info.is_base:
-                    continue
-                # Virtual table
-                vtbl_name = f"{ts_name}4Vtbl"
-                static_vtbl_name = f"{ts_name}4VTBL"
-                fields = []
-                for m in ts.syms:
-                    if isinstance(m, sym.Fn):
-                        fields.append(
-                            ir.Field(
-                                token.real_name(m.name),
-                                self.ir_type(m.typ(), True)
-                            )
-                        )
-                index_of_vtbl = [(ts.id, 0)]
-                childrens = [ts] + ts.info.childrens
-                funcs = []
-                for idx, child in enumerate(childrens):
-                    map_fns = {}
-                    for m in ts.syms:
-                        if isinstance(m, sym.Fn):
-                            real_name = token.real_name(m.name)
-                            if ts_method := child.find(m.name):
-                                map_fns[real_name] = mangle_symbol(ts_method)
-                            else:
-                                map_fns[real_name] = mangle_symbol(m)
-                    index_of_vtbl.append((child.id, idx))
-                    funcs.append(map_fns)
-                if len(funcs) > 0:
-                    self.out_rir.structs.append(
-                        ir.Struct(False, vtbl_name, fields)
-                    )
-                    self.out_rir.decls.append(
-                        ir.VTable(
-                            vtbl_name, static_vtbl_name, ts_name,
-                            len(childrens), funcs
-                        )
-                    )
-                    index_of_vtbl_fn = ir.FnDecl(
-                        False, ast.Annotations(), False,
-                        mangle_symbol(ts) + "17__index_of_vtbl__",
-                        [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T, False
-                    )
-                    for child_id, child_idx in index_of_vtbl:
-                        l1 = index_of_vtbl_fn.local_name()
-                        l2 = index_of_vtbl_fn.local_name()
-                        index_of_vtbl_fn.add_cond_br(
-                            ir.Inst(
-                                ir.InstKind.Cmp, [
-                                    "==",
-                                    ir.Ident(ir.USIZE_T, "self"),
-                                    ir.IntLit(ir.USIZE_T, str(child_id))
-                                ]
-                            ), l1, l2
-                        )
-                        index_of_vtbl_fn.add_label(l1)
-                        index_of_vtbl_fn.add_ret(
-                            ir.IntLit(ir.USIZE_T, str(child_idx))
-                        )
-                        index_of_vtbl_fn.add_label(l2)
-                    index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, "0"))
-                    self.out_rir.decls.append(index_of_vtbl_fn)
             elif ts.kind in (TypeKind.Struct, TypeKind.String, TypeKind.Vec):
                 fields = [
                     ir.Field("_rc", ir.USIZE_T),
@@ -3008,19 +2864,6 @@ class Codegen:
                 for base in ts.info.bases:
                     dep = mangle_symbol(base)
                     if dep not in typ_names or dep in field_deps:
-                        continue
-                    field_deps.append(dep)
-            elif ts.kind == TypeKind.Class:
-                if ts.info.base:
-                    dep = mangle_symbol(ts.info.base)
-                    if dep not in typ_names or dep in field_deps:
-                        continue
-                    field_deps.append(dep)
-                for f in ts.fields:
-                    dep = mangle_symbol(f.typ.symbol())
-                    if dep not in typ_names or dep in field_deps or isinstance(
-                        f.typ, type.Option
-                    ):
                         continue
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Struct:

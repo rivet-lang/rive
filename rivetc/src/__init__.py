@@ -400,18 +400,21 @@ class Compiler:
         elif sy.is_boxed():
             size, align = self.pointer_size, self.pointer_size
         elif sy.kind in (sym.TypeKind.Struct, sym.TypeKind.Tuple):
-            total_size = 0
-            max_alignment = 0
-            types = sy.info.types if sy.kind == sym.TypeKind.Tuple else list(
-                map(lambda it: it.typ, sy.full_fields())
-            )
-            for ftyp in types:
-                field_size, alignment = self.type_size(ftyp)
-                if alignment > max_alignment:
-                    max_alignment = alignment
-                total_size = utils.round_up(total_size, alignment) + field_size
-            size = utils.round_up(total_size, max_alignment)
-            align = max_alignment
+            if sy.kind == sym.TypeKind.Struct and sy.info.is_boxed:
+                size, align = self.pointer_size, self.pointer_size
+            else:
+                total_size = 0
+                max_alignment = 0
+                types = sy.info.types if sy.kind == sym.TypeKind.Tuple else list(
+                    map(lambda it: it.typ, sy.full_fields())
+                )
+                for ftyp in types:
+                    field_size, alignment = self.type_size(ftyp)
+                    if alignment > max_alignment:
+                        max_alignment = alignment
+                    total_size = utils.round_up(total_size, alignment) + field_size
+                size = utils.round_up(total_size, max_alignment)
+                align = max_alignment
         else:
             raise Exception(
                 f"Compiler.type_size(): unsupported type `{sy.qualname()}`"

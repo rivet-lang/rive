@@ -111,18 +111,6 @@ class Register:
                     self.walk_decls(decl.decls)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
-            elif isinstance(decl, ast.ClassDecl):
-                try:
-                    decl.sym = self.sym.add_and_return(
-                        sym.Type(
-                            decl.is_public, decl.name, TypeKind.Class,
-                            info = sym.ClassInfo()
-                        )
-                    )
-                    self.sym = decl.sym
-                    self.walk_decls(decl.decls)
-                except utils.CompilerError as e:
-                    report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.StructDecl):
                 try:
                     if self.is_runtime_mod and decl.name == "string":

@@ -6,34 +6,3 @@ test "operator `is` with traits" {
     a := Any(MyStruct());
     @assert(a is MyStruct);
 }
-
-class Abc {
-    field: int32;
-}
-
-class Def : Abc { }
-
-func class_upcast(a: Abc) bool {
-    return a is Def;
-}
-
-test "operator `is` with classes" {
-    a := Abc();
-    @assert(a is Abc);
-
-    d := Def();
-    @assert(class_upcast(d));
-}
-
-func check_field(abc: Abc) bool {
-    return if abc is Def as def {
-        def.field == 555
-    } else {
-        false
-    };
-}
-
-test "operator `is` with variable" {
-    def := Def(555);
-    @assert(check_field(def));
-}

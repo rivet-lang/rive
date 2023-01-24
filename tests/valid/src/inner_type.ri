@@ -1,9 +1,9 @@
-class OuterClass {
-    class InnerClass {
+struct OuterStruct {
+    struct InnerStruct {
         abc: int32;
     }
 
-    inner: InnerClass;
+    inner: InnerStruct;
 
     func method(self) { }
 
@@ -11,11 +11,11 @@ class OuterClass {
 
     func caller(self) {
         self.method();
-        OuterClass.associated_fn();
+        OuterStruct.associated_fn();
     }
 }
 
 test "inner type" {
-    o := OuterClass(inner: OuterClass.InnerClass(5));
+    o := OuterStruct(inner: OuterStruct.InnerStruct(5));
     @assert(o.inner.abc == 5);
 }

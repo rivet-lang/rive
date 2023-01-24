@@ -63,10 +63,8 @@ public enum Kind : traits.Stringable {
     KwAlias, // alias
     KwAnd, // and
     KwAs, // as
-    KwBase, // base
     KwBreak, // break
     KwCatch, // catch
-    KwClass, // class
     KwComptime, // comptime
     KwConst, // const
     KwContinue, // continue
@@ -153,7 +151,8 @@ public enum Kind : traits.Stringable {
     }
 }
 
-public class KindMap {
+#[boxed]
+public struct KindMap {
     public key: Kind;
     public value: string;
 }
@@ -214,10 +213,8 @@ public var Kind_Strings: []KindMap = [
     KindMap(.KwAlias, "alias"),
     KindMap(.KwAnd, "and"),
     KindMap(.KwAs, "as"),
-    KindMap(.KwBase, "base"),
     KindMap(.KwBreak, "break"),
     KindMap(.KwCatch, "catch"),
-    KindMap(.KwClass, "class"),
     KindMap(.KwComptime, "comptime"),
     KindMap(.KwConst, "const"),
     KindMap(.KwContinue, "continue"),
@@ -260,10 +257,8 @@ public func lookup(str: string) Kind {
         "alias" => .KwAlias,
         "and" => .KwAnd,
         "as" => .KwAs,
-        "base" => .KwBase,
         "break" => .KwBreak,
         "catch" => .KwCatch,
-        "class" => .KwClass,
         "comptime" => .KwComptime,
         "const" => .KwConst,
         "continue" => .KwContinue,

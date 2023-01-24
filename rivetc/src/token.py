@@ -63,10 +63,8 @@ class Kind(Enum):
     KwAlias = auto_enum() # alias
     KwAnd = auto_enum() # and
     KwAs = auto_enum() # as
-    KwBase = auto_enum() # base
     KwBreak = auto_enum() # break
     KwCatch = auto_enum() # catch
-    KwClass = auto_enum() # class
     KwComptime = auto_enum() # comptime
     KwConst = auto_enum() # const
     KwContinue = auto_enum() # continue
@@ -211,10 +209,8 @@ TOKEN_STRINGS = {
     Kind.KwAlias: "alias",
     Kind.KwAnd: "and",
     Kind.KwAs: "as",
-    Kind.KwBase: "base",
     Kind.KwBreak: "break",
     Kind.KwCatch: "catch",
-    Kind.KwClass: "class",
     Kind.KwComptime: "comptime",
     Kind.KwConst: "const",
     Kind.KwContinue: "continue",

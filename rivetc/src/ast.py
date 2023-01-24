@@ -224,17 +224,6 @@ class TraitDecl:
         self.decls = decls
         self.pos = pos
 
-class ClassDecl:
-    def __init__(self, docs, annotations, is_public, name, bases, decls, pos):
-        self.docs = docs
-        self.annotations = annotations
-        self.is_public = is_public
-        self.name = name
-        self.bases = bases
-        self.decls = decls
-        self.sym = None
-        self.pos = pos
-
 class StructDecl:
     def __init__(
         self, docs, annotations, is_public, name, bases, decls, is_opaque, pos
@@ -430,19 +419,6 @@ class SelfExpr:
 
     def __repr__(self):
         return "self"
-
-    def __str__(self):
-        return self.__repr__()
-
-class BaseExpr:
-    def __init__(self, scope, pos):
-        self.scope = scope
-        self.is_mut = False
-        self.pos = pos
-        self.typ = None
-
-    def __repr__(self):
-        return "base"
 
     def __str__(self):
         return self.__repr__()

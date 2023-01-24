@@ -27,16 +27,19 @@ test "`switch` branch condition" {
     });
 }
 
-class SwitchBase { }
-class SwitchSon : SwitchBase {
+enum SwitchBase {
+    SwitchSon: SwitchSon
+}
+
+struct SwitchSon {
     name: string;
 }
 
 test "`switch` branch variable" {
     ss := SwitchSon(name: "Rivet");
-    sb := @cast(SwitchBase, ss);
+    sb := SwitchBase.SwitchSon(ss);
     @assert(switch sb is {
-        SwitchSon as sb_ss => sb_ss.name == "Rivet",
+        .SwitchSon as sb_ss => sb_ss.name == "Rivet",
         else => false
     });
 }

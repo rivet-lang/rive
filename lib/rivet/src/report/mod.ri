@@ -24,7 +24,8 @@ public func total_warns() usize {
     return reports.warns;
 }
 
-public class ReportTable {
+#[boxed]
+public struct ReportTable {
     public mut prefs: prefs.Prefs;
     public mut errors: usize;
     public mut warns: usize;
@@ -37,7 +38,8 @@ public enum ReportKind as uint8 {
     Help
 }
 
-public class ReportExtra {
+#[boxed]
+public struct ReportExtra {
     public kind: ReportKind;
     public msg: string;
 }
@@ -52,7 +54,8 @@ public func warn(msg: string, pos: token.Pos) Report {
     return Report(.Warn, pos, msg);
 }
 
-public class Report {
+#[boxed]
+public struct Report {
     public kind: ReportKind;
     public pos: token.Pos;
     public msg: string;

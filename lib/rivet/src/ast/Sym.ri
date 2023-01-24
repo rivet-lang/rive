@@ -141,7 +141,6 @@ public enum TypeKind : traits.Stringable {
     Tuple,
     Enum,
     Trait,
-    Class,
     Struct;
 
     #[inline]
@@ -179,7 +178,6 @@ public enum TypeKind : traits.Stringable {
             .Vector => "vector",
             .Tuple => "tuple",
             .Trait => "trait",
-            .Class => "class",
             .Struct => "struct",
             .Enum => "enum",
             .Never => "never",
@@ -195,7 +193,6 @@ public enum TypeInfo {
     Tuple: TupleInfo,
     Enum: EnumInfo,
     Trait: TraitInfo,
-    Class: ClassInfo,
     Struct: StructInfo
 }
 
@@ -296,16 +293,6 @@ public struct TraitInfo {
 }
 
 #[boxed]
-public struct ClassInfo {
-    public mut base_sym: TypeSym;
-    public is_base: bool;
-    public use_base: bool;
-    public traits: []TypeSym;
-    public is_child: bool;
-    public childrens: []TypeSym;
-}
-
-#[boxed]
 public struct StructInfo {
     public is_boxed: bool;
     public is_opaque: bool;
@@ -328,11 +315,7 @@ public struct TypeSym : Sym {
                 return f;
             }
         }
-        if self.info is .Class as class_info {
-            if f := class_info.base_sym.lookup_field(name) {
-                return f;
-            }
-        } else if self.info is .Struct as struct_info {
+        if self.info is .Struct as struct_info {
             for b in struct_info.bases {
                 if f := b.lookup_field(name) {
                     return f;
@@ -348,11 +331,7 @@ public struct TypeSym : Sym {
     }
 
     public func lookup_in_base(self, name: string) ?Sym {
-        if self.info is .Class as class_info {
-            if s := class_info.base_sym.lookup(name) {
-                return s;
-            }
-        } else if self.info is .Struct as struct_info {
+        if self.info is .Struct as struct_info {
             for b in struct_info.bases {
                 if s := b.lookup(name) {
                     return s;
@@ -376,11 +355,7 @@ public struct TypeSym : Sym {
             return self.full_fields_;
         }
         mut fields := @vec(Field);
-        if self.info is .Class as class_info {
-            for bf in class_info.base_sym.full_fields() {
-                fields.push(bf);
-            }
-        } else if self.info is .Struct as struct_info {
+        if self.info is .Struct as struct_info {
             for mut b in struct_info.bases {
                 for bf in b.full_fields() {
                     fields.push(bf);
@@ -407,19 +382,6 @@ public struct TypeSym : Sym {
         }
     }
 
-    public func is_subtype_of(self, other: TypeSym) bool {
-        if self == other {
-            return true;
-        }
-        if self.info is .Class as class_info {
-            if class_info.base_sym == other {
-                return true;
-            }
-            return class_info.base_sym.is_subtype_of(other);
-        }
-        return false;
-    }
-
     #[inline]
     public func is_boxed(self) bool {
         return if self.info is .Enum as enum_info {
@@ -427,8 +389,7 @@ public struct TypeSym : Sym {
         } else if self.info is .Struct as struct_info {
             struct_info.is_boxed
         } else {
-            self.kind == .Trait or self.kind == .Class or self.kind == .String
-            or self.kind == .Vector
+            self.kind == .Trait or self.kind == .String or self.kind == .Vector
         };
     }
 

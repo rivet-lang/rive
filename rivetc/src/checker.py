@@ -71,26 +71,6 @@ class Checker:
                             f"traits can only inherit traits", decl.pos
                         )
                 self.check_decls(decl.decls)
-            elif isinstance(decl, ast.ClassDecl):
-                has_base = False
-                for base in decl.bases:
-                    base_sym = base.symbol()
-                    if base_sym.kind == TypeKind.Class:
-                        if has_base:
-                            report.error(
-                                "classes cannot have multiple base classes",
-                                decl.pos
-                            )
-                        else:
-                            has_base = True
-                    elif base_sym.kind == TypeKind.Trait:
-                        pass
-                    else:
-                        report.error(
-                            f"base type `{base}` of class `{decl.name}` is not a class",
-                            decl.pos
-                        )
-                self.check_decls(decl.decls)
             elif isinstance(decl, ast.StructDecl):
                 for base in decl.bases:
                     base_sym = base.symbol()
@@ -116,25 +96,10 @@ class Checker:
                         report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.ExtendDecl):
                 self_sym = decl.typ.symbol()
-                has_base_class = False
                 for base in decl.bases:
                     base_sym = base.symbol()
                     base_kind = str(base_sym.kind)
-                    if base_sym.kind == TypeKind.Class:
-                        if self_sym.kind != TypeKind.Class:
-                            report.error(
-                                "only classes can inherit from other classes",
-                                decl.pos
-                            )
-                            return
-                        if has_base_class:
-                            report.error(
-                                "classes cannot have multiple base classes",
-                                decl.pos
-                            )
-                            return
-                        has_base_class = True
-                    elif base_sym.kind == TypeKind.Struct:
+                    if base_sym.kind == TypeKind.Struct:
                         if self_sym.kind != TypeKind.Struct:
                             report.error(
                                 "only structs can inherit from other structs",
@@ -381,8 +346,6 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.SelfTyExpr):
             expr.typ = type.Type(expr.sym)
-            return expr.typ
-        elif isinstance(expr, ast.BaseExpr):
             return expr.typ
         elif isinstance(expr, ast.NilLiteral):
             expr.typ = self.comp.nil_t
@@ -645,7 +608,7 @@ class Checker:
             ):
                 promoted_type = self.comp.void_t
                 lsym = ltyp.symbol()
-                if lsym.kind in (TypeKind.Struct, TypeKind.Class):
+                if lsym.kind == TypeKind.Struct:
                     if op_method := lsym.find(str(expr.op)):
                         promoted_type = op_method.ret_typ
                     else:
@@ -712,12 +675,10 @@ class Checker:
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
                 lsym = ltyp.symbol()
                 if not (
-                    lsym.kind
-                    in (TypeKind.Class, TypeKind.Trait, TypeKind.Enum)
-                    or isinstance(ltyp, type.Option)
+                    lsym.kind in (TypeKind.Trait, TypeKind.Enum) or isinstance(ltyp, type.Option)
                 ):
                     report.error(
-                        f"`{expr.op}` can only be used with classes, trait, enums and options",
+                        f"`{expr.op}` can only be used with traits, enums and options",
                         expr.left.pos
                     )
                 if expr.has_var:
@@ -903,7 +864,7 @@ class Checker:
                 elif isinstance(expr_left.sym,
                                 sym.Type) and expr_left.sym.kind in (
                                     TypeKind.Trait, TypeKind.Struct,
-                                    TypeKind.Class, TypeKind.String
+                                    TypeKind.String
                                 ):
                     expr.sym = expr_left.sym
                     self.check_ctor(expr_left.sym, expr)
@@ -924,8 +885,7 @@ class Checker:
                         self.check_call(expr.sym, expr)
                     elif isinstance(expr_left.field_sym,
                                     sym.Type) and expr_left.field_sym.kind in (
-                                        TypeKind.Trait, TypeKind.Class,
-                                        TypeKind.Struct
+                                        TypeKind.Trait, TypeKind.Struct
                                     ):
                         self.check_ctor(expr_left.field_sym, expr)
                     elif isinstance(
@@ -1365,11 +1325,9 @@ class Checker:
             expr.typ = self.comp.void_t
             expr_typ = self.check_expr(expr.expr)
             expr_sym = expr_typ.symbol()
-            if expr.is_typeswitch and expr_sym.kind not in (
-                TypeKind.Class, TypeKind.Enum
-            ):
+            if expr.is_typeswitch and expr_sym.kind != TypeKind.Enum:
                 report.error("invalid value for typeswitch", expr.expr.pos)
-                report.note(f"expected class or enum value, found `{expr_typ}`")
+                report.note(f"expected enum value, found `{expr_typ}`")
             elif expr_sym.kind == TypeKind.Enum:
                 if expr_sym.info.is_advanced_enum and not expr.is_typeswitch:
                     report.error(
@@ -1746,9 +1704,6 @@ class Checker:
             ) in exp_sym.info.implements:
                 exp_sym.info.mark_has_objects()
                 return True
-        elif exp_sym.kind == TypeKind.Class and got_sym.kind == TypeKind.Class:
-            if got_sym.is_subtype_of(exp_sym):
-                return True
         elif exp_sym.kind == TypeKind.Array and got_sym.kind == TypeKind.Array:
             if exp_sym.info.is_mut and not got_sym.info.is_mut:
                 return False
@@ -1849,10 +1804,9 @@ class Checker:
                     )
             elif expr.sym:
                 self.check_sym_is_mut(expr.sym, expr.pos)
-        elif isinstance(expr, (ast.SelfExpr, ast.BaseExpr)):
+        elif isinstance(expr, ast.SelfExpr):
             if not expr.is_mut:
-                kw = "self" if isinstance(expr, ast.SelfExpr) else "base"
-                report.error(f"cannot use `{kw}` as mutable value", expr.pos)
+                report.error("cannot use `self` as mutable value", expr.pos)
                 report.help("consider making `self` as mutable: `mut self`")
         elif isinstance(expr, ast.SelectorExpr):
             if expr.is_symbol_access:
@@ -1869,13 +1823,10 @@ class Checker:
                     report.help(
                         f"consider making this argument mutable: `mut {expr.left.name}`"
                     )
-            elif isinstance(expr.left, (ast.SelfExpr, ast.BaseExpr)):
+            elif isinstance(expr.left, ast.SelfExpr):
                 if not expr.left.is_mut:
-                    kw = "self" if isinstance(
-                        expr.left, ast.SelfExpr
-                    ) else "base"
                     report.error(
-                        f"cannot use `{kw}` as mutable receiver", expr.pos
+                        "cannot use `self` as mutable receiver", expr.pos
                     )
                     report.help("consider making `self` as mutable: `mut self`")
             if expr.is_indirect and isinstance(

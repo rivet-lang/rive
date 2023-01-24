@@ -356,7 +356,6 @@ class TypeKind(Enum):
     Tuple = auto_enum()
     Enum = auto_enum()
     Trait = auto_enum()
-    Class = auto_enum()
     Struct = auto_enum()
 
     def is_primitive(self):
@@ -420,8 +419,6 @@ class TypeKind(Enum):
             return "tuple"
         elif self == TypeKind.Trait:
             return "trait"
-        elif self == TypeKind.Class:
-            return "class"
         elif self == TypeKind.Struct:
             return "struct"
         elif self == TypeKind.Enum:
@@ -511,15 +508,6 @@ class TraitInfo:
     def mark_has_objects(self):
         self.has_objects = True
 
-class ClassInfo:
-    def __init__(self):
-        self.base = None
-        self.is_base = False
-        self.use_base = False
-        self.traits = []
-        self.is_child = False
-        self.childrens = []
-
 class StructInfo:
     def __init__(self, is_opaque, is_boxed = False):
         self.is_boxed = is_boxed
@@ -541,10 +529,7 @@ class Type(Sym):
         for f in self.fields:
             if f.name == name:
                 return f
-        if self.kind == TypeKind.Class and self.info.base:
-            if f := self.info.base.find_field(name):
-                return f
-        elif self.kind == TypeKind.Struct:
+        if self.kind == TypeKind.Struct:
             for base_t in self.info.traits:
                 if f := base_t.find_field(name):
                     return f
@@ -559,10 +544,7 @@ class Type(Sym):
         return False
 
     def find_in_base(self, name):
-        if self.kind == TypeKind.Class and self.info.base:
-            if s := Sym.find(self.info.base, name):
-                return s
-        elif self.kind == TypeKind.Trait:
+        if self.kind == TypeKind.Trait:
             for base in self.info.bases:
                 if s := Sym.find(base, name):
                     return s
@@ -586,9 +568,7 @@ class Type(Sym):
         if len(self.full_fields_) > 0:
             return self.full_fields_
         fields = []
-        if self.kind == TypeKind.Class and self.info.base:
-            fields += self.info.base.full_fields()
-        elif self.kind == TypeKind.Struct:
+        if self.kind == TypeKind.Struct:
             for base_t in self.info.traits:
                 fields += base_t.full_fields()
             for base in self.info.bases:
@@ -611,23 +591,12 @@ class Type(Sym):
     def implement_trait(self, trait_sym):
         return self in trait_sym.info.implements
 
-    def is_subtype_of(self, t):
-        if self == t:
-            return True
-        if self.kind == TypeKind.Class and self.info.base:
-            if self.info.base == t:
-                return True
-            return self.info.base.is_subtype_of(t)
-        return False
-
     def is_boxed(self):
         if self.kind == TypeKind.Enum:
             return self.info.is_advanced_enum
         elif isinstance(self.info, StructInfo):
             return self.info.is_boxed
-        return self.kind in (
-            TypeKind.Trait, TypeKind.Class, TypeKind.String, TypeKind.Vec
-        )
+        return self.kind in (TypeKind.Trait, TypeKind.String, TypeKind.Vec)
 
 class Arg:
     def __init__(self, name, is_mut, typ, def_expr, has_def_expr, pos):

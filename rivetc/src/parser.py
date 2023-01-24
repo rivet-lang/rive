@@ -27,7 +27,7 @@ class Parser:
         self.inside_extern = False
         self.extern_abi = sym.ABI.Rivet
         self.inside_pkg = False
-        self.inside_struct_or_class = False
+        self.inside_struct = False
         self.inside_trait = False
         self.inside_switch_header = False
         self.inside_block = False
@@ -300,30 +300,9 @@ class Parser:
             return ast.TraitDecl(
                 doc_comment, annotations, is_public, name, bases, decls, pos
             )
-        elif self.accept(Kind.KwClass):
-            old_inside_struct_or_class = self.inside_struct_or_class
-            self.inside_struct_or_class = True
-            pos = self.tok.pos
-            name = self.parse_name()
-            bases = []
-            if self.accept(Kind.Colon):
-                while True:
-                    bases.append(self.parse_type())
-                    if not self.accept(Kind.Comma):
-                        break
-            decls = []
-            self.expect(Kind.Lbrace)
-            if self.tok.kind != Kind.Rbrace:
-                while self.tok.kind != Kind.Rbrace:
-                    decls.append(self.parse_decl())
-            self.expect(Kind.Rbrace)
-            self.inside_struct_or_class = old_inside_struct_or_class
-            return ast.ClassDecl(
-                doc_comment, annotations, is_public, name, bases, decls, pos
-            )
         elif self.accept(Kind.KwStruct):
-            old_inside_struct_or_class = self.inside_struct_or_class
-            self.inside_struct_or_class = True
+            old_inside_struct = self.inside_struct
+            self.inside_struct = True
             pos = self.tok.pos
             name = self.parse_name()
             is_opaque = self.accept(Kind.Semicolon)
@@ -340,12 +319,12 @@ class Parser:
                     while self.tok.kind != Kind.Rbrace:
                         decls.append(self.parse_decl())
                 self.expect(Kind.Rbrace)
-            self.inside_struct_or_class = old_inside_struct_or_class
+            self.inside_struct = old_inside_struct
             return ast.StructDecl(
                 doc_comment, annotations, is_public, name, bases, decls,
                 is_opaque, pos
             )
-        elif (self.inside_struct_or_class or
+        elif (self.inside_struct or
               self.inside_trait) and self.tok.kind in (Kind.KwMut, Kind.Name):
             # fields
             is_mut = self.accept(Kind.KwMut)
@@ -420,7 +399,7 @@ class Parser:
                 or (self.inside_extern and self.extern_abi != sym.ABI.Rivet),
                 self.extern_abi if self.inside_extern else sym.ABI.Rivet
             )
-        elif self.inside_struct_or_class and self.accept(Kind.BitNot):
+        elif self.inside_struct and self.accept(Kind.BitNot):
             # destructor
             pos = self.prev_tok.pos
             self.expect(Kind.KwSelfTy)
@@ -776,7 +755,7 @@ class Parser:
         expr = self.empty_expr()
         if self.tok.kind in [
             Kind.KwTrue, Kind.KwFalse, Kind.Char, Kind.Number, Kind.String,
-            Kind.KwNil, Kind.KwSelf, Kind.KwBase, Kind.KwSelfTy
+            Kind.KwNil, Kind.KwSelf, Kind.KwSelfTy
         ]:
             expr = self.parse_literal()
         elif self.accept(Kind.At):
@@ -1187,8 +1166,6 @@ class Parser:
             return ast.SelfExpr(self.scope, self.prev_tok.pos)
         elif self.accept(Kind.KwSelfTy):
             return ast.SelfTyExpr(self.scope, self.prev_tok.pos)
-        elif self.accept(Kind.KwBase):
-            return ast.BaseExpr(self.scope, self.prev_tok.pos)
         else:
             report.error(f"expected literal, found {self.tok}", self.tok.pos)
         return self.empty_expr()
