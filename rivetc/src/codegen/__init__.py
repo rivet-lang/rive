@@ -2504,6 +2504,13 @@ class Codegen:
         size, _ = self.comp.type_size(value_typ)
         tmp = self.boxed_instance(mangle_symbol(trait_sym), 0)
         is_ptr = isinstance(value.typ, ir.Pointer)
+        for f in trait_sym.fields:
+            f_typ = self.ir_type(f.typ)
+            value_f = ir.Selector(f_typ, value, ir.Name(f.name))
+            if not isinstance(f_typ, ir.Pointer):
+                f_typ = f_typ.ptr(True)
+                value_f = ir.Inst(ir.InstKind.GetRef, [value_f], f_typ)
+            self.cur_fn.store(ir.Selector(f_typ, tmp, ir.Name(f.name)), value_f)
         if not is_ptr:
             value = ir.Inst(ir.InstKind.GetRef, [value])
         value = value if is_ptr else ir.Inst(
@@ -2515,13 +2522,6 @@ class Codegen:
         self.cur_fn.store(
             ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")), value
         )
-        for f in trait_sym.fields:
-            f_typ = self.ir_type(f.typ)
-            value_f = ir.Selector(f_typ, value, ir.Name(f.name))
-            if not isinstance(f_typ, ir.Pointer):
-                f_typ = f_typ.ptr(True)
-                value_f = ir.Inst(ir.InstKind.GetRef, [value_f], f_typ)
-            self.cur_fn.store(ir.Selector(f_typ, tmp, ir.Name(f.name)), value_f)
         if value_sym.kind == TypeKind.Trait:
             index = ir.Inst(
                 ir.InstKind.Call, [
@@ -2732,7 +2732,7 @@ class Codegen:
                             ]
                         )
                     )
-            elif ts.kind == TypeKind.Trait and ts.info.has_objects:
+            elif ts.kind == TypeKind.Trait:
                 ts_name = mangle_symbol(ts)
                 fields = [
                     ir.Field("_idx_", ir.USIZE_T),
@@ -2775,7 +2775,7 @@ class Codegen:
                                 map[method_name] = mangle_symbol(m)
                     funcs.append(map)
                     index_of_vtbl.append((its.id, idx))
-                if len(funcs) > 0:
+                if len(funcs) > 0 and ts.info.has_objects:
                     self.out_rir.structs.append(
                         ir.Struct(False, vtbl_name, fields)
                     )
