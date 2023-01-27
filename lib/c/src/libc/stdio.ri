@@ -69,7 +69,7 @@ public struct FILE;
         func __acrt_iob_fn(index: uint32) *mut FILE;
     }
 
-    public type fpos_t = int64;
+    public alias fpos_t = int64;
 
 	public const _IOFBF: int32 = 0x0000;
 	public const _IOLBF: int32 = 0x0004;
