@@ -48,11 +48,11 @@ extend rune : Stringable {
     }
 
     #[inline]
-    func len_utf8(self) usize {
+    public func len_utf8(self) usize {
         return len_utf8(@cast(uint32, self));
     }
 
-    func to_string(&self) string {
+    public func to_string(&self) string {
         len := self.len_utf8();
         res := @cast([*]mut uint8, internal_alloc(len + 1));
         _ = unsafe { utf32_decode_to_buffer(@cast(uint32, self.*), res) };

@@ -85,6 +85,9 @@ public struct string : Stringable, Hashable {
     }
 
     public func concat(self, others: ...Self) Self {
+        if others.len == 0 {
+            return self;
+        }
         mut sb := StringBuilder.from_string(self);
         for other in others {
             sb.write_string(other);
@@ -116,7 +119,7 @@ public struct string : Stringable, Hashable {
         return StringFormatter(self).fmt(args);
     }
 
-    /// Returns the number of occurrences of `substr` in the string or -1 if no
+    /// Returns the number of occurrences of `substr` in the string or 0 if no
     /// `substr` could be found.
     public func count(self, substr: string) usize {
         if self.len == 0 or substr.len == 0 {
@@ -185,11 +188,10 @@ public struct string : Stringable, Hashable {
         if p.len > self.len {
             return nil;
         }
-        mut strt := start;
         if start >= self.len {
             return nil;
         }
-        mut i := strt;
+        mut i := start;
         while i < self.len : i += 1 {
             mut j: usize := 0;
             mut ii := i;
@@ -229,7 +231,7 @@ public struct string : Stringable, Hashable {
     }
 
     /// Returns the position of the last occurence of the input string.
-    func last_index_of(self, p: string) ?usize {
+    public func last_index_of(self, p: string) ?usize {
         if p.len > self.len or p.len == 0 {
             return nil;
         }
