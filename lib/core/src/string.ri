@@ -394,8 +394,6 @@ public struct string : Stringable, Hashable {
     /// Splits the string to an array by any of the `delim` chars.
     /// Split a string using the chars in the delimiter string as delimiters chars.
     /// If the delimiter string is empty then `.split()` is used.
-    /// Example:
-    /// >> "first row\nsecond row".split_any(" \n") == ['first', 'row', 'second', 'row']
     public func split_any(self, delim: string) []string {
         (mut i: usize, mut res: []string) := (0, []);
         // check empty source string
@@ -542,12 +540,10 @@ public struct string : Stringable, Hashable {
         if self.len != rhs.len {
             return false;
         }
-        unsafe {
-            if self.len > 0 {
-                last_idx := self.len - 1;
-                if self.ptr[last_idx] != rhs.ptr[last_idx] {
-                    return false;
-                }
+        if self.len > 0 {
+            last_idx := self.len - 1;
+            if unsafe { self.ptr[last_idx] != rhs.ptr[last_idx] } {
+                return false;
             }
         }
         return mem_cmp(self.ptr, rhs.ptr, rhs.len) == 0;
@@ -591,14 +587,15 @@ public struct string : Stringable, Hashable {
     }
 
     /// Returns `true` if the string contains `substr`.
+    #[inline]
     public func contains(self, substr: string) bool {
-        if substr.len == 0 {
-            return true;
-        }
-        if _ := self.index_of(substr) {
-            return true;
-        }
-        return false;
+        return if substr.len == 0 {
+            true
+        } else if _ := self.index_of(substr) {
+            true
+        } else {
+            false
+        };
     }
 
     /// Returns `true` if the string starts with `p`.
