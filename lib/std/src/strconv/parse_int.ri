@@ -18,48 +18,46 @@ func lower(c: uint8) uint8 {
 
 /// This is like `parse_int` but for unsigned numbers.
 /// A sign prefix is not permitted.
-public func parse_uint(s_: string, base__: int32, bit_size_: uint32) !uint64 {
+public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) !uint64 {
     if s_ == "" {
         return InvalidSyntaxError("empty string");
     }
     s := s_;
-    base0 := base__ == 0;
-    mut base_ := base__;
-    mut bit_size := bit_size_;
+    base0 := base == 0;
 
     mut start_index: usize := 0;
     switch {
-        (base_ >= 2 and base_ <= 36) => { /* valid base; nothing to do */ },
-        (base_ == 0) => {
+        (base >= 2 and base <= 36) => { /* valid base; nothing to do */ },
+        (base == 0) => {
             // look for octal, hex prefix.
-            base_ = 10;
+            base = 10;
             if s[0] == b'0' {
                 switch {
                     (s.len >= 3 and lower(s[1]) == b'b') => {
-                        base_ = 2;
+                        base = 2;
                         start_index = 2;
                     },
                     (s.len >= 3 and lower(s[1]) == b'o') => {
-                        base_ = 8;
+                        base = 8;
                         start_index = 2;
                     },
                     (s.len >= 3 and lower(s[1]) == b'x') => {
-                        base_ = 16;
+                        base = 16;
                         start_index = 2;
                     },
                     // manage leading zeros in decimal base's numbers
                     s.len >= 2 and (s[1] >= b'0' and s[1] <= b'9') => {
-                        base_ = 10;
+                        base = 10;
                         start_index = 1;
                     },
                     else => {
-                        base_ = 8;
+                        base = 8;
                         start_index = 1;
                     }
                 }
             }
         },
-        else => return InvalidBaseError("invalid base {}".fmt(base_))
+        else => return InvalidBaseError("invalid base {}".fmt(base))
     }
 
     if bit_size == 0 {
@@ -70,10 +68,10 @@ public func parse_uint(s_: string, base__: int32, bit_size_: uint32) !uint64 {
 
     // Cutoff is the smallest number such that `cutoff * base > MAX_U64`.
     // Use compile-time constants for common cases.
-    cutoff: uint64 := switch base_ {
+    cutoff: uint64 := switch base {
         10 => uint64.MAX / 10 + 1,
         16 => uint64.MAX / 16 + 1,
-        else => uint64.MAX / @cast(uint64, base_) + @cast(uint64, 1)
+        else => uint64.MAX / @cast(uint64, base) + @cast(uint64, 1)
     };
 
     max_val: uint64 := if bit_size == 64 {
@@ -100,15 +98,15 @@ public func parse_uint(s_: string, base__: int32, bit_size_: uint32) !uint64 {
             else => return InvalidSyntaxError("invalid syntax")
         }
 
-        if d >= @cast(uint8, base_) {
+        if d >= @cast(uint8, base) {
             return InvalidSyntaxError("invalid syntax");
         }
 
         if n >= cutoff {
-            // `n * base_` overflows
+            // `n * base` overflows
             return ValueOutOfRangeError("value out of range");
         }
-        n *= @cast(uint64, base_);
+        n *= @cast(uint64, base);
 
         n1 := n + @cast(uint64, d);
         if n1 < n or n1 > max_val {
@@ -125,7 +123,7 @@ public func parse_uint(s_: string, base__: int32, bit_size_: uint32) !uint64 {
     return n;
 }
 
-/// Interprets a string `s` in the given `base_` (0, 2 to 36) and bit size
+/// Interprets a string `s` in the given `base` (0, 2 to 36) and bit size
 /// (0 to 64) and returns the corresponding value i.
 ///
 /// The string may begin with a leading sign: "+" or "-".
@@ -139,13 +137,12 @@ public func parse_uint(s_: string, base__: int32, bit_size_: uint32) !uint64 {
 /// The `bit_size` argument specifies the integer type that the result must
 /// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to int8, int16, int32, and
 /// int64. If `bit_size` is below 0 or above 64, an error is returned.
-public func parse_int(s: string, base_: int32, bit_size_: uint32) !int64 {
+public func parse_int(s: string, base: int32, mut bit_size: uint32) !int64 {
     if s == "" {
         return InvalidSyntaxError("invalid syntax");
     }
 
     // pick off leading sign.
-    mut bit_size := bit_size_;
     mut s0 := s;
     mut neg := false;
     if s[0] == b'+' {
@@ -156,7 +153,7 @@ public func parse_int(s: string, base_: int32, bit_size_: uint32) !int64 {
     }
 
     // convert unsigned and check range.
-    un := parse_uint(s0, base_, bit_size).!;
+    un := parse_uint(s0, base, bit_size).!;
     if bit_size == 0 {
         bit_size = INT_SIZE;
     }
@@ -182,7 +179,6 @@ public func atoi(s: string) !int64 {
 /// Checking them in this one function lets all the parsers skip over them simply.
 /// Underscore must appear only between digits or between a base prefix and a digit.
 func underscore_ok(s_: string) bool {
-    mut s := s_;
     // saw tracks the last character (class) we saw:
     // ^ for beginning of number,
     // 0 for a digit or base prefix,
@@ -190,6 +186,7 @@ func underscore_ok(s_: string) bool {
     // ! for none of the above.
     mut saw := b'^';
     mut i: usize := 0;
+    mut s := s_;
 
     // optional sign.
     if s.len >= 1 and (s[0] == b'-' or s[0] == b'+') {

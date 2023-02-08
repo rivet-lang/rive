@@ -372,8 +372,9 @@ class Codegen:
             for i, arg in enumerate(decl.args):
                 if self.inside_trait and i == 0: continue
                 arg_typ = self.ir_type(arg.typ)
+                arg_typ_sym = arg.typ.symbol()
                 if arg.is_mut and not (
-                    arg.typ.symbol().is_boxed()
+                    arg_typ_sym.is_boxed() or arg_typ_sym.is_primitive()
                     or isinstance(arg.typ, (type.Ptr, type.Ref))
                 ):
                     arg_typ = arg_typ.ptr()
@@ -1187,7 +1188,8 @@ class Codegen:
                     break
                 fn_arg = expr.sym.get_arg(i)
                 fn_arg_typ = fn_arg.typ
-                if fn_arg.is_mut and not fn_arg_typ.symbol().is_boxed():
+                fn_arg_typ_sym = fn_arg_typ.symbol()
+                if fn_arg.is_mut and not (fn_arg_typ_sym.is_boxed() or fn_arg_typ_sym.is_primitive()):
                     fn_arg_typ = type.Ptr(fn_arg_typ)
                 arg_value = self.gen_expr_with_cast(fn_arg_typ, arg.expr)
                 if expr.sym.is_method:
