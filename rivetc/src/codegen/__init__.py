@@ -782,7 +782,10 @@ class Codegen:
                 return ir.Ident(self.ir_type(expr.typ), mangle_symbol(expr.sym))
             # runtime object
             i_typ = self.ir_type(expr.typ)
-            if (expr.obj.level == sym.ObjLevel.Arg and expr.obj.is_mut) or (
+            if (
+                expr.obj.level == sym.ObjLevel.Arg and expr.obj.is_mut
+                and not expr.typ.symbol().is_primitive()
+            ) or (
                 expr.obj.is_hidden_ref and not isinstance(i_typ, ir.Pointer)
             ):
                 i_typ = i_typ.ptr()

@@ -393,6 +393,15 @@ public struct TypeSym : Sym {
         };
     }
 
+    #[inline]
+    public func is_primitive(self) bool {
+        return if self.info is .Enum as enum_info {
+            !enum_info.is_advanced_enum
+        } else {
+            self.kind.is_primitive()
+        };
+    }
+
     // TODO(StunxFS): fix inheritance of overloaded operators
     #[inline; override]
     public func ==(self, rhs: Self) bool {

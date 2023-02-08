@@ -598,6 +598,11 @@ class Type(Sym):
             return self.info.is_boxed
         return self.kind in (TypeKind.Trait, TypeKind.String, TypeKind.Vec)
 
+    def is_primitive(self):
+        if self.kind == TypeKind.Enum:
+            return not self.info.is_advanced_enum
+        return self.kind.is_primitive()
+
 class Arg:
     def __init__(self, name, is_mut, typ, def_expr, has_def_expr, pos):
         self.name = name

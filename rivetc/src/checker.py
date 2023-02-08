@@ -1562,7 +1562,7 @@ class Checker:
             arg.typ = self.check_expr(arg.expr)
             self.expected_type = oet
 
-            if arg_fn.is_mut:
+            if arg_fn.is_mut and not arg_fn.typ.symbol().is_primitive():
                 self.check_expr_is_mut(arg.expr)
 
             if not (
