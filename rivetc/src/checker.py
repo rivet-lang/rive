@@ -650,6 +650,7 @@ class Checker:
                 expr.typ = self.comp.bool_t
                 lsym = ltyp.symbol()
                 rsym = rtyp.symbol()
+                assert rsym != None, (expr.pos)
                 if rsym.kind not in (TypeKind.Vec, TypeKind.Array):
                     report.error(
                         f"operator `{expr.op}` can only be used with arrays and vectors",

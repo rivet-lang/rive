@@ -39,7 +39,7 @@ func bt_print_callback(
 ) int32 {
     unsafe {
         if safe_fn_ptr := fn_ptr {
-            if mem_cmp(safe_fn_ptr, c"_R7core.mainF", 16) == 0 {
+            if mem_cmp(safe_fn_ptr, c"_R4core4mainF", 13) == 0 {
                 return -1; // stop backtracing
             }
         }

@@ -6,18 +6,6 @@ import "c/libc";
 
 var mut libcore_started: bool = false;
 
-func segfault_handler(_: int32) {
-    console_eprintln(
-        if libcore_started {
-            "panic: segmentation fault detected"
-        } else {
-            "panic: segmentation fault detected while starting the core"
-        }
-    );
-    bt_print(3);
-    process_exit(1);
-}
-
 func panic_if(cond: bool, msg: string) {
     if cond {
         console_eprintln("panic: {}", msg);

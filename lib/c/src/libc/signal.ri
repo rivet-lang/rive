@@ -5,25 +5,94 @@
 // TODO(StunxFS): replace the argument type of `SignalHandler` from
 // `int32` to an enum that enumerates all possible signals.
 
+import { pid_t, uid_t } from "c";
+
+public alias SignalHandler = func (int32, *mut siginfo_t, mut_anyptr);
+
 #if _LINUX_
-	public const SIGABRT: comptime_int = 6;
-	public const SIGFPE: comptime_int = 8;
-	public const SIGILL: comptime_int = 4;
-	public const SIGINT: comptime_int = 2;
-	public const SIGSEGV: comptime_int = 11;
-	public const SIGTERM: comptime_int = 15;
+    public const SA_ONSTACK: int32 = 0x08000000;
+    public const SA_SIGINFO: int32 = 0x00000004;
+    public const SA_NOCLDWAIT: int32 = 0x00000002;
+
+    public const SIGHUP: comptime_int = 0x1;
+    public const SIGINT: comptime_int = 0x2;
+    public const SIGQUIT: comptime_int = 0x3;
+    public const SIGILL: comptime_int = 0x4;
+    public const SIGTRAP: comptime_int = 0x5;
+    public const SIGABRT: comptime_int = 0x6;
+    public const SIGEMT: comptime_int = 0x7;
+    public const SIGFPE: comptime_int = 0x8;
+    public const SIGKILL: comptime_int = 0x9;
+    public const SIGBUS: comptime_int = 0xA;
+    public const SIGSEGV: comptime_int = 0xB;
+    public const SIGSYS: comptime_int = 0xc;
+    public const SIGPIPE: comptime_int = 0xd;
+    public const SIGALRM: comptime_int = 0xe;
+    public const SIGTERM: comptime_int = 0xF;
+    public const SIGURG: comptime_int = 0x10;
+    public const SIGSTOP: comptime_int = 0x11;
+    public const SIGTSTP: comptime_int = 0x12;
+    public const SIGCONT: comptime_int = 0x13;
+    public const SIGCHLD: comptime_int = 0x14;
+    public const SIGTTIN: comptime_int = 0x15;
+    public const SIGTTOU: comptime_int = 0x16;
+    public const SIGIO: comptime_int = 0x17;
+    public const SIGXCPU: comptime_int = 0x18;
+    public const SIGXFSZ: comptime_int = 0x19;
+    public const SIGVTALRM: comptime_int = 0x1a;
+    public const SIGPROF: comptime_int = 0x1b;
+    public const SIGWINCH: comptime_int = 0x1c;
+    public const SIGINFO: comptime_int = 0x1d;
+    public const SIGUSR1: comptime_int = 0x1e;
+    public const SIGUSR2: comptime_int = 0x1f;
+
+    public const SEGV_MAPERR: comptime_int = 0x1;
+    public const SEGV_ACCERR: comptime_int = 0x2;
+
+    public struct sigset_t {
+#if _X86_
+        public __val: [32]uint32;
+#else
+        public __val: [16]uint64;
+#endif
+    }
+
+    public struct sigval {
+        public sival_ptr: mut_anyptr;
+    }
+
+    public struct siginfo_t {
+        public si_signo: int32; // signal number
+        public si_errno: int32; // errno association
+        public si_code: int32; // signal code
+        public si_pid: pid_t; // sending process
+        public si_uid: uid_t; // sender's ruid
+        public si_status: int32; // exit value
+        public si_addr: mut_anyptr; // faulting instruction
+        public si_value: sigval; // signal value
+        public si_band: int64; // band event for SIGPOLL
+        public __pad: [7]uint64; // reserved for future use
+    }
+
+    public struct sigaction_t {
+        public sa_sigaction: SignalHandler;
+        public sa_mask: sigset_t;
+        public sa_flags: int32;
+        public sa_restorer: func();
+    }
 #else_if _WINDOWS_
-	public const SIGABRT: comptime_int = 22;
-	public const SIGFPE: comptime_int = 8;
-	public const SIGILL: comptime_int = 4;
-	public const SIGINT: comptime_int = 2;
-	public const SIGSEGV: comptime_int = 11;
-	public const SIGTERM: comptime_int = 15;
+    public const SIGABRT: comptime_int = 22;
+    public const SIGFPE: comptime_int = 8;
+    public const SIGILL: comptime_int = 4;
+    public const SIGINT: comptime_int = 2;
+    public const SIGSEGV: comptime_int = 11;
+    public const SIGTERM: comptime_int = 15;
 #endif
 
-public alias SignalHandler = func (int32);
-
 extern (C) {
+#if _LINUX_
+    public func sigaction(signum: int32, act: *sigaction_t, oldact: *mut sigaction_t) int32;
+#endif
     public func signal(sig: int32, handler: SignalHandler) ?SignalHandler;
     public func raise(sig: int32) int32;
 }

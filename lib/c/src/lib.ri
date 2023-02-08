@@ -35,6 +35,7 @@ public alias intptr_t = isize;
 public alias uintptr_t = usize;
 public alias ssize_t = isize;
 
+public alias pid_t = int32;
 public alias off_t = int64;
 public alias ino_t = uint64;
 public alias dev_t = uint64;

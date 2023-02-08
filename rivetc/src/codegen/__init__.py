@@ -2374,7 +2374,7 @@ class Codegen:
         )
 
     def default_value(self, typ, custom_tmp = None):
-        if isinstance(typ, (type.Ptr, type.Ref)):
+        if isinstance(typ, (type.Ptr, type.Ref, type.Fn)):
             return ir.NilLit(ir.VOID_PTR_T)
         if isinstance(typ, type.Option):
             if typ.is_ref_or_ptr():
