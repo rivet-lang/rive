@@ -6,19 +6,19 @@
 // `int32` to an enum that enumerates all possible signals.
 
 #if _LINUX_
-	public const SIGABRT: int32 = 6;
-	public const SIGFPE: int32 = 8;
-	public const SIGILL: int32 = 4;
-	public const SIGINT: int32 = 2;
-	public const SIGSEGV: int32 = 11;
-	public const SIGTERM: int32 = 15;
+	public const SIGABRT: comptime_int = 6;
+	public const SIGFPE: comptime_int = 8;
+	public const SIGILL: comptime_int = 4;
+	public const SIGINT: comptime_int = 2;
+	public const SIGSEGV: comptime_int = 11;
+	public const SIGTERM: comptime_int = 15;
 #else_if _WINDOWS_
-	public const SIGABRT: int32 = 22;
-	public const SIGFPE: int32 = 8;
-	public const SIGILL: int32 = 4;
-	public const SIGINT: int32 = 2;
-	public const SIGSEGV: int32 = 11;
-	public const SIGTERM: int32 = 15;
+	public const SIGABRT: comptime_int = 22;
+	public const SIGFPE: comptime_int = 8;
+	public const SIGILL: comptime_int = 4;
+	public const SIGINT: comptime_int = 2;
+	public const SIGSEGV: comptime_int = 11;
+	public const SIGTERM: comptime_int = 15;
 #endif
 
 public alias SignalHandler = func (int32);

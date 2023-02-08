@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public const RTLD_LAZY: int32 = 0x001;
-public const RTLD_NOW: int32 = 0x002;
-public const RTLD_BINDING_MASK: int32 = 0x3;
-public const RTLD_GLOBAL: int32 = 0x100;
+public const RTLD_LAZY: comptime_int = 0x001;
+public const RTLD_NOW: comptime_int = 0x002;
+public const RTLD_BINDING_MASK: comptime_int = 0x3;
+public const RTLD_GLOBAL: comptime_int = 0x100;
 
 extern (C) {
     public func dlopen(__file: [*]uint8, __mode: int32) ?mut_anyptr;

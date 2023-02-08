@@ -7,9 +7,9 @@ extern (C) {
     public func __errno_location() ?*mut int32;
 }
 
-public const EDOM: int32 = 33;
-public const EILSEQ: int32 = 84;
-public const ERANGE: int32 = 34;
+public const EDOM: comptime_int = 33;
+public const EILSEQ: comptime_int = 84;
+public const ERANGE: comptime_int = 34;
 #endif
 
 #if _WINDOWS_
@@ -18,7 +18,7 @@ extern (C) {
     public func _errno() *mut int32;
 }
 
-public const EDOM: int32 = 33;
-public const EILSEQ: int32 = 42;
-public const ERANGE: int32 = 34;
+public const EDOM: comptime_int = 33;
+public const EILSEQ: comptime_int = 42;
+public const ERANGE: comptime_int = 34;
 #endif
