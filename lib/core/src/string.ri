@@ -356,7 +356,7 @@ public struct string : Stringable, Hashable {
             return self;
         }
         new_len := self.len + idxs.len * (with_.len - rep.len);
-        mut b := @cast([*]mut uint8, internal_alloc(new_len));
+        b := @cast([*]mut uint8, internal_alloc(new_len));
         (mut b_i: usize, mut s_idx: usize) := (0, 0);
         unsafe {
             for rep_pos in idxs {

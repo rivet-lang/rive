@@ -141,10 +141,12 @@ class Checker:
                 self.expected_type = old_expected_type
                 decl.defer_stmts = self.defer_stmts
                 self.defer_stmts = []
+                self.check_mut_vars(decl.scope)
             elif isinstance(decl, ast.DestructorDecl):
                 self.check_stmts(decl.stmts)
                 decl.defer_stmts = self.defer_stmts
                 self.defer_stmts = []
+                self.check_mut_vars(decl.scope)
             elif isinstance(decl, ast.TestDecl):
                 old_cur_fn = self.cur_fn
                 self.cur_fn = None
@@ -152,6 +154,7 @@ class Checker:
                 self.check_stmts(decl.stmts)
                 self.inside_test = False
                 self.cur_fn = old_cur_fn
+                self.check_mut_vars(decl.scope)
             self.sym = old_sym
 
     def check_stmts(self, stmts):
@@ -1805,42 +1808,50 @@ class Checker:
                 )
             elif expr.name == "_":
                 return
-            elif expr.is_obj and not expr.obj.is_mut:
-                kind = "argument" if expr.obj.level == sym.ObjLevel.Arg else "object"
-                report.error(
-                    f"cannot use `{expr.obj.name}` as mutable {kind}", expr.pos
-                )
-                if expr.obj.level != sym.ObjLevel.Arg:
-                    report.help(
-                        f"consider making this {kind} mutable: `mut {expr.name}`"
+            elif expr.is_obj:
+                if not expr.obj.is_mut:
+                    kind = "argument" if expr.obj.level == sym.ObjLevel.Arg else "object"
+                    report.error(
+                        f"cannot use `{expr.obj.name}` as mutable {kind}", expr.pos
                     )
+                    if expr.obj.level != sym.ObjLevel.Arg:
+                        report.help(
+                            f"consider making this {kind} mutable: `mut {expr.name}`"
+                        )
+                expr.obj.is_changed = True
             elif expr.sym:
                 self.check_sym_is_mut(expr.sym, expr.pos)
         elif isinstance(expr, ast.SelfExpr):
-            if not expr.is_mut:
+            if not expr.obj.is_mut:
                 report.error("cannot use `self` as mutable value", expr.pos)
                 report.help("consider making `self` as mutable: `mut self`")
+            expr.obj.is_changed = True
         elif isinstance(expr, ast.SelectorExpr):
             if expr.is_symbol_access:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
                 return
             elif isinstance(expr.left, ast.SelfExpr):
-                if not expr.left.is_mut:
+                if not expr.left.obj.is_mut:
                     report.error(
                         "cannot use `self` as mutable receiver", expr.pos
                     )
                     report.help("consider making `self` as mutable: `mut self`")
+                expr.left.obj.is_changed = True
             elif isinstance(expr.left, ast.Ident):
                 if expr.left.sym:
                     self.check_sym_is_mut(expr.left.sym, expr.pos)
-                elif expr.left.obj.level == sym.ObjLevel.Arg and not expr.left.obj.is_mut:
-                    report.error(
-                        f"cannot use `{expr.left.name}` as mutable argument",
-                        expr.pos
-                    )
-                    report.help(
-                        f"consider making this argument mutable: `mut {expr.left.name}`"
-                    )
+                elif expr.left.obj.level == sym.ObjLevel.Arg:
+                    if not expr.left.obj.is_mut:
+                        report.error(
+                            f"cannot use `{expr.left.name}` as mutable argument",
+                            expr.pos
+                        )
+                        report.help(
+                            f"consider making this argument mutable: `mut {expr.left.name}`"
+                        )
+                    expr.left.obj.is_changed = True
+            elif isinstance(expr.left, ast.SelectorExpr):
+                self.check_expr_is_mut(expr.left)
             if expr.is_indirect and isinstance(
                 expr.left_typ, (type.Ptr, type.Ref)
             ):
@@ -1901,5 +1912,14 @@ class Checker:
             report.error(
                 f"cannot use constant `{sy.name}` as mutable value", pos
             )
-        elif isinstance(sy, sym.Var) and not sy.is_mut:
-            report.error(f"cannot use object `{sy.name}` as mutable value", pos)
+        elif isinstance(sy, sym.Var):
+            if not sy.is_mut:
+                report.error(f"cannot use object `{sy.name}` as mutable value", pos)
+            sy.is_changed = True
+
+    def check_mut_vars(self, sc):
+        for obj in sc.objects:
+            if obj.is_mut and not obj.is_changed:
+                report.warn("object declared as mutable but never mutated", obj.pos)
+        for ch in sc.childrens:
+            self.check_mut_vars(ch)

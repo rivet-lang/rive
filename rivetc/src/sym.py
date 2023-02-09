@@ -21,7 +21,7 @@ class ObjLevel(Enum):
     Local = auto_enum()
 
 class Obj:
-    def __init__(self, is_mut, name, typ, level):
+    def __init__(self, is_mut, name, typ, level, pos):
         self.name = name
         self.ir_name = name
         self.is_mut = is_mut
@@ -29,6 +29,7 @@ class Obj:
         self.is_changed = False
         self.is_hidden_ref = False
         self.level = level
+        self.pos = pos
         self.typ = typ
 
 class Scope:
@@ -36,6 +37,7 @@ class Scope:
         self.parent = parent
         self.detached_from_parent = False
         self.objects = []
+        self.childrens = []
         self.start = start
         self.end = 0
 
@@ -314,6 +316,7 @@ class Var(Sym):
         Sym.__init__(self, is_public, name, abi)
         self.is_extern = is_extern
         self.is_mut = is_mut
+        self.is_changed= False
         self.typ = typ
 
 class Field:

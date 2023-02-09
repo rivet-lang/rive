@@ -22,7 +22,7 @@ struct Vector {
 
     #[unsafe]
     func from_array(arr: mut_anyptr, elem_size: usize, len: usize) Self {
-        mut vec := Self(unsafe { internal_zeroed(len * elem_size) }, elem_size, len, len);
+        vec := Self(unsafe { internal_zeroed(len * elem_size) }, elem_size, len, len);
         unsafe {
             mem_copy(vec.ptr, arr, elem_size * len);
         }
@@ -139,14 +139,14 @@ struct Vector {
         if size == 0 {
             size = 1;
         }
-        mut vec := Self(internal_zeroed(size), self.elem_size, self.len, self.cap);
+        vec := Self(internal_zeroed(size), self.elem_size, self.len, self.cap);
         unsafe {
             mem_copy(vec.ptr, self.ptr, size);
         }
         return vec;
     }
 
-    ~Self(mut self) {
+    ~Self(self) {
         unsafe {
             if !self.is_ref {
                 mem_dealloc(self.ptr);

@@ -33,7 +33,7 @@ public func execute(cmd: string) Result {
     unsafe {
         if f := libc.popen(pcmd.ptr, c"r") {
             fd := libc.fileno(f);
-            mut buf: [4096]mut uint8 := []!;
+            buf: [4096]mut uint8 := []!;
             pbuf: [*]mut uint8 := &mut buf[0];
             mut output := Builder.new(1024);
             while {

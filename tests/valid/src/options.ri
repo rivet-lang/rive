@@ -15,12 +15,12 @@ test "operator `??`" {
 }
 
 test "operator `.?`" {
-    mut x: ?int32 := 5;
+    x: ?int32 := 5;
     @assert(x.? == 5);
 }
 
 test "guard expr with options" {
-    mut x: ?int32 := 100;
+    x: ?int32 := 100;
     if y := x {
         @assert(y == 100);
     } else {

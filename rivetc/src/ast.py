@@ -413,7 +413,7 @@ class Ident:
 class SelfExpr:
     def __init__(self, scope, pos):
         self.scope = scope
-        self.is_mut = False
+        self.obj = None
         self.typ = None
         self.pos = pos
 

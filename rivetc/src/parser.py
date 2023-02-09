@@ -90,6 +90,8 @@ class Parser:
 
     def close_scope(self):
         self.scope.end = self.tok.pos.pos
+        if self.scope.parent:
+            self.scope.parent.childrens.append(self.scope)
         self.scope = self.scope.parent
 
     # ---- declarations --------------

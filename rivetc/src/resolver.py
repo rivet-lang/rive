@@ -115,7 +115,7 @@ class Resolver:
                         self_typ = type.Ref(self_typ)
                     decl.scope.add(
                         sym.Obj(
-                            decl.self_is_mut, "self", self_typ, sym.ObjLevel.Rec
+                            decl.self_is_mut, "self", self_typ, sym.ObjLevel.Rec, decl.name_pos
                         )
                     )
                     decl.self_typ = self_typ
@@ -125,7 +125,7 @@ class Resolver:
                     try:
                         decl.scope.add(
                             sym.Obj(
-                                arg.is_mut, arg.name, arg.typ, sym.ObjLevel.Arg
+                                arg.is_mut, arg.name, arg.typ, sym.ObjLevel.Arg, arg.pos
                             )
                         )
                     except utils.CompilerError as e:
@@ -139,7 +139,7 @@ class Resolver:
                 self_typ = type.Type(self.self_sym)
                 decl.scope.add(
                     sym.Obj(
-                        decl.self_is_mut, "self", self_typ, sym.ObjLevel.Rec
+                        decl.self_is_mut, "self", self_typ, sym.ObjLevel.Rec, decl.pos
                     )
                 )
                 decl.self_typ = self_typ
@@ -158,7 +158,7 @@ class Resolver:
                     self.resolve_type(v.typ)
                 try:
                     stmt.scope.add(
-                        sym.Obj(v.is_mut, v.name, v.typ, sym.ObjLevel.Local)
+                        sym.Obj(v.is_mut, v.name, v.typ, sym.ObjLevel.Local, v.pos)
                     )
                 except utils.CompilerError as e:
                     report.error(e.args[0], v.pos)
@@ -176,7 +176,7 @@ class Resolver:
                     stmt.scope.add(
                         sym.Obj(
                             stmt.index.is_mut, stmt.index.name,
-                            self.comp.void_t, sym.ObjLevel.Local
+                            self.comp.void_t, sym.ObjLevel.Local, stmt.index.pos
                         )
                     )
                 except utils.CompilerError as e:
@@ -185,11 +185,11 @@ class Resolver:
                 stmt.scope.add(
                     sym.Obj(
                         stmt.value.is_mut, stmt.value.name, self.comp.void_t,
-                        sym.ObjLevel.Local
+                        sym.ObjLevel.Local, stmt.value.pos
                     )
                 )
             except utils.CompilerError as e:
-                report.error(e.args[0], v.pos)
+                report.error(e.args[0], stmt.value.pos)
             self.resolve_expr(stmt.iterable)
             self.resolve_stmt(stmt.stmt)
         elif isinstance(stmt, ast.DeferStmt):
@@ -210,7 +210,7 @@ class Resolver:
             self.resolve_ident(expr)
         elif isinstance(expr, ast.SelfExpr):
             if self_ := expr.scope.lookup("self"):
-                expr.is_mut = self_.is_mut
+                expr.obj = self_
                 expr.typ = self_.typ
             else:
                 report.error("cannot resolve `self` expression", expr.pos)
@@ -232,10 +232,10 @@ class Resolver:
             for v in expr.vars:
                 try:
                     expr.scope.add(
-                        sym.Obj(v.is_mut, v.name, self.comp.void_t, False)
+                        sym.Obj(v.is_mut, v.name, self.comp.void_t, False, v.pos)
                     )
                 except utils.CompilerError as e:
-                    report.error(e.args[0], expr.pos)
+                    report.error(e.args[0], v.pos)
             self.resolve_expr(expr.expr)
             if expr.has_cond:
                 self.resolve_expr(expr.cond)
@@ -249,7 +249,7 @@ class Resolver:
                     expr.scope.add(
                         sym.Obj(
                             False, expr.var.name, self.comp.void_t,
-                            sym.ObjLevel.Local
+                            sym.ObjLevel.Local, expr.var.pos
                         )
                     )
                 except utils.CompilerError as e:
@@ -272,7 +272,8 @@ class Resolver:
                         expr.err_handler.scope.add(
                             sym.Obj(
                                 False, expr.err_handler.varname,
-                                self.comp.error_t, sym.ObjLevel.Local
+                                self.comp.error_t, sym.ObjLevel.Local,
+                                expr.err_handler.varname_pos
                             )
                         )
                     except utils.CompilerError as e:
@@ -312,11 +313,11 @@ class Resolver:
                             expr.scope.add(
                                 sym.Obj(
                                     b.var_is_mut, b.var_name, self.comp.void_t,
-                                    sym.ObjLevel.Local
+                                    sym.ObjLevel.Local, b.var_pos
                                 )
                             )
                         except utils.CompilerError as e:
-                            report.error(e.args[0], expr.var_pos)
+                            report.error(e.args[0], b.var_pos)
                     if b.has_cond:
                         self.resolve_expr(b.cond)
                 self.resolve_expr(b.expr)

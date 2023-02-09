@@ -1,5 +1,5 @@
 test "vector from array" {
-    mut arr := [1, 2, 3]!;
+    arr := [1, 2, 3]!;
     mut vec := arr[..];
     vec.push(2);
     @assert(vec.len == 4);

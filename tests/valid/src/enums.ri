@@ -53,7 +53,10 @@ test "enums: advanced enum" {
         else => @assert(false)
     }
     switch e is {
-        .Abc as mut e_abc2 => @assert(e_abc2 == 6),
+        .Abc as mut e_abc2 => {
+            e_abc2 += 2;
+            @assert(e_abc2 == 8);
+        },
         else => @assert(false)
     }
     e = .Def();

@@ -764,7 +764,7 @@ class Codegen:
             )
         elif isinstance(expr, ast.SelfExpr):
             self_typ = self.ir_type(expr.typ)
-            if expr.is_mut and not isinstance(self_typ, ir.Pointer):
+            if expr.obj.is_mut and not isinstance(self_typ, ir.Pointer):
                 self_typ = self_typ.ptr()
             return ir.Ident(self_typ, "self")
         elif isinstance(expr, ast.Ident):
