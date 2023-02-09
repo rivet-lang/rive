@@ -1452,11 +1452,13 @@ class Checker:
 
             for i, arg in enumerate(expr.args):
                 field_typ = self.comp.void_t
+                field_is_mut = False
                 if arg.is_named:
                     found = False
                     for field in type_fields:
                         if field.name == arg.name:
                             field_typ = field.typ
+                            field_is_mut = field.is_mut
                             found = True
                             break
                     if not found:
@@ -1466,8 +1468,12 @@ class Checker:
                         )
                         continue
                 else:
-                    field_typ = type_fields[i].typ
+                    field = type_fields[i]
+                    field_typ = field.typ
+                    field_is_mut = field.is_mut
                 arg.typ = field_typ
+                if field_is_mut and not isinstance(field_typ, (type.Ptr, type.Ref)) and field_typ.symbol().is_boxed():
+                    self.check_expr_is_mut(arg.expr)
                 old_expected_type = self.expected_type
                 self.expected_type = field_typ
                 arg_t = self.check_expr(arg.expr)
@@ -1562,7 +1568,7 @@ class Checker:
             arg.typ = self.check_expr(arg.expr)
             self.expected_type = oet
 
-            if arg_fn.is_mut and not arg_fn.typ.symbol().is_primitive():
+            if arg_fn.is_mut and not isinstance(arg_fn.typ, (type.Ptr, type.Ref)) and not arg_fn.typ.symbol().is_primitive():
                 self.check_expr_is_mut(arg.expr)
 
             if not (

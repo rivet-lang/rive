@@ -1189,7 +1189,7 @@ class Codegen:
                 fn_arg = expr.sym.get_arg(i)
                 fn_arg_typ = fn_arg.typ
                 fn_arg_typ_sym = fn_arg_typ.symbol()
-                if fn_arg.is_mut and not (fn_arg_typ_sym.is_boxed() or fn_arg_typ_sym.is_primitive()):
+                if fn_arg.is_mut and not isinstance(fn_arg.typ, (type.Ptr, type.Ref)) and not (fn_arg_typ_sym.is_boxed() or fn_arg_typ_sym.is_primitive()):
                     fn_arg_typ = type.Ptr(fn_arg_typ)
                 arg_value = self.gen_expr_with_cast(fn_arg_typ, arg.expr)
                 if expr.sym.is_method:
