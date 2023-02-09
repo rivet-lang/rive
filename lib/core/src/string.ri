@@ -589,13 +589,7 @@ public struct string : Stringable, Hashable {
     /// Returns `true` if the string contains `substr`.
     #[inline]
     public func contains(self, substr: string) bool {
-        return if substr.len == 0 {
-            true
-        } else if _ := self.index_of(substr) {
-            true
-        } else {
-            false
-        };
+        return substr.len == 0 or self.index_of(substr) !is nil;
     }
 
     /// Returns `true` if the string starts with `p`.

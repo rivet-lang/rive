@@ -543,7 +543,7 @@ class Resolver:
                     )
             elif isinstance(typ.expr, ast.SelectorExpr):
                 self.resolve_selector_expr(typ.expr)
-                if not typ.expr.not_found and typ.expr.field_sym:
+                if (not typ.expr.not_found) and typ.expr.field_sym:
                     if typ.expr.field_sym.kind == sym.TypeKind.Placeholder:
                         report.error(
                             f"cannot find type `{typ.expr.field_sym.name}`",

@@ -478,7 +478,7 @@ public struct Scope {
 
     #[inline]
     public func exists(self, name: string) bool {
-        return if _ := self.lookup(name) { true } else { false };
+        return self.lookup(name) !is nil;
     }
 
     public func lookup(self, name: string) ?Sym {
@@ -504,33 +504,28 @@ public struct Scope {
 }
 
 public func universe() Mod {
-    return Mod(
-        is_public: false,
-        name: "universe",
-        scope: Scope(
-            syms: [
-                TypeSym(is_public: true, name: "never", kind: .Never),
-                TypeSym(is_public: true, name: "nil", kind: .Nil),
-                TypeSym(is_public: true, name: "bool", kind: .Bool),
-                TypeSym(is_public: true, name: "rune", kind: .Rune),
-                TypeSym(is_public: true, name: "int8", kind: .Int8),
-                TypeSym(is_public: true, name: "int16", kind: .Int16),
-                TypeSym(is_public: true, name: "int32", kind: .Int32),
-                TypeSym(is_public: true, name: "int64", kind: .Int64),
-                TypeSym(is_public: true, name: "isize", kind: .Isize),
-                TypeSym(is_public: true, name: "uint8", kind: .Uint8),
-                TypeSym(is_public: true, name: "uint16", kind: .Uint16),
-                TypeSym(is_public: true, name: "uint32", kind: .Uint32),
-                TypeSym(is_public: true, name: "uint64", kind: .Uint64),
-                TypeSym(is_public: true, name: "usize", kind: .Usize),
-                TypeSym(is_public: true, name: "comptime_int", kind: .ComptimeInt),
-                TypeSym(is_public: true, name: "comptime_float", kind: .ComptimeFloat),
-                TypeSym(is_public: true, name: "float32", kind: .Float32),
-                TypeSym(is_public: true, name: "float64", kind: .Float64),
-                TypeSym(is_public: true, name: "string", kind: .String, info: .Struct(
-                    StructInfo(is_boxed: true)
-                ))
-            ]
-        )
-    );
+    mut syms: []Sym := [
+        TypeSym(is_public: true, name: "never", kind: .Never),
+        TypeSym(is_public: true, name: "nil", kind: .Nil),
+        TypeSym(is_public: true, name: "bool", kind: .Bool),
+        TypeSym(is_public: true, name: "rune", kind: .Rune),
+        TypeSym(is_public: true, name: "int8", kind: .Int8),
+        TypeSym(is_public: true, name: "int16", kind: .Int16),
+        TypeSym(is_public: true, name: "int32", kind: .Int32),
+        TypeSym(is_public: true, name: "int64", kind: .Int64),
+        TypeSym(is_public: true, name: "isize", kind: .Isize),
+        TypeSym(is_public: true, name: "uint8", kind: .Uint8),
+        TypeSym(is_public: true, name: "uint16", kind: .Uint16),
+        TypeSym(is_public: true, name: "uint32", kind: .Uint32),
+        TypeSym(is_public: true, name: "uint64", kind: .Uint64),
+        TypeSym(is_public: true, name: "usize", kind: .Usize),
+        TypeSym(is_public: true, name: "comptime_int", kind: .ComptimeInt),
+        TypeSym(is_public: true, name: "comptime_float", kind: .ComptimeFloat),
+        TypeSym(is_public: true, name: "float32", kind: .Float32),
+        TypeSym(is_public: true, name: "float64", kind: .Float64),
+        TypeSym(is_public: true, name: "string", kind: .String, info: .Struct(
+            StructInfo(is_boxed: true)
+        ))
+    ];
+    return Mod(is_public: false, name: "universe", scope: Scope(syms: syms));
 }

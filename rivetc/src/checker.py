@@ -1472,8 +1472,6 @@ class Checker:
                     field_typ = field.typ
                     field_is_mut = field.is_mut
                 arg.typ = field_typ
-                if field_is_mut and not isinstance(field_typ, (type.Ptr, type.Ref)) and field_typ.symbol().is_boxed():
-                    self.check_expr_is_mut(arg.expr)
                 old_expected_type = self.expected_type
                 self.expected_type = field_typ
                 arg_t = self.check_expr(arg.expr)
@@ -1482,6 +1480,8 @@ class Checker:
                     self.check_types(arg_t, field_typ)
                 except utils.CompilerError as e:
                     report.error(e.args[0], arg.pos)
+                if field_is_mut and not isinstance(field_typ, (type.Ptr, type.Ref)) and field_typ.symbol().is_boxed():
+                    self.check_expr_is_mut(arg.expr)
             if expr.has_spread_expr:
                 spread_expr_t = self.check_expr(expr.spread_expr)
                 if spread_expr_t != expr.typ:
@@ -1819,6 +1819,12 @@ class Checker:
             if expr.is_symbol_access:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
                 return
+            elif isinstance(expr.left, ast.SelfExpr):
+                if not expr.left.is_mut:
+                    report.error(
+                        "cannot use `self` as mutable receiver", expr.pos
+                    )
+                    report.help("consider making `self` as mutable: `mut self`")
             elif isinstance(expr.left, ast.Ident):
                 if expr.left.sym:
                     self.check_sym_is_mut(expr.left.sym, expr.pos)
@@ -1830,12 +1836,6 @@ class Checker:
                     report.help(
                         f"consider making this argument mutable: `mut {expr.left.name}`"
                     )
-            elif isinstance(expr.left, ast.SelfExpr):
-                if not expr.left.is_mut:
-                    report.error(
-                        "cannot use `self` as mutable receiver", expr.pos
-                    )
-                    report.help("consider making `self` as mutable: `mut self`")
             if expr.is_indirect and isinstance(
                 expr.left_typ, (type.Ptr, type.Ref)
             ):
@@ -1864,7 +1864,7 @@ class Checker:
                     self.check_expr_is_mut(e)
             else:
                 report.error("tuple literals cannot be modified", expr.pos)
-        elif isinstance(expr, ast.EnumLiteral) and expr.is_instance:
+        elif isinstance(expr, ast.EnumLiteral) and not expr.is_instance:
             report.error("enum literals cannot be modified", expr.pos)
         elif isinstance(expr, ast.BuiltinCallExpr):
             for arg in expr.args:
