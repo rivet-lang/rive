@@ -16,7 +16,7 @@ public var HOME_DIR: string =
 /// Returns `true` if the environment variable exists.
 #[inline]
 public func exists(name: string) bool {
-    return if _ := get(name) { true } else { false };
+    return get(name) !is nil;
 }
 
 /// Returns the value of the environment variable named by the key.

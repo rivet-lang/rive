@@ -236,7 +236,7 @@ public func relative(from_: string, to: string) !string {
             }
         }
         mut up_count: usize := 1;
-        while _ := from_it.next() {
+        while from_it.next() !is nil {
             up_count += 1;
         }
         up_index_end := up_count * 3;
