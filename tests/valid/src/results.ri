@@ -21,7 +21,7 @@ func result3() !int32 {
 
 var RESULT_VALUE: int32 = result3().!;
 
-test "propagate result in `let` declaration" {
+test "propagate result in `var` declaration" {
     @assert(RESULT_VALUE == 5);
 }
 
