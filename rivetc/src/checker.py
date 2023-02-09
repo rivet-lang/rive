@@ -1025,7 +1025,9 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.BuiltinCallExpr):
             expr.typ = self.comp.void_t
-            if expr.name == "vec":
+            if expr.name == "ignore_not_mutated_warn":
+                self.check_expr_is_mut(expr.args[0])
+            elif expr.name == "vec":
                 if len(expr.args) in (1, 2):
                     elem_t = expr.args[0].typ
                     expr.typ = type.Type(
@@ -1863,7 +1865,7 @@ class Checker:
                         f"cannot use a immutable {kind} as mutable value",
                         expr.pos
                     )
-            elif not expr.field_is_mut:
+            elif not expr.field_is_mut and not expr.is_nilcheck:
                 report.error(
                     f"field `{expr.field_name}` of type `{expr.left.typ.symbol().name}` is immutable",
                     expr.pos

@@ -267,7 +267,7 @@ public struct EnumInfo {
 
 #[boxed]
 public struct TraitInfo {
-    public bases: []mut TypeSym;
+    public bases: []mut TraitInfo;
     public mut implements: []TypeSym;
     public mut has_objects: bool;
 
@@ -283,7 +283,7 @@ public struct TraitInfo {
     public func implement(mut self, type_sym: TypeSym) {
         self.implements.push(type_sym);
         for mut b in self.bases {
-            @cast(TraitInfo, b.info).implement(type_sym);
+            b.implement(type_sym);
         }
     }
 

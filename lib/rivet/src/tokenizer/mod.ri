@@ -787,7 +787,7 @@ public struct Tokenizer {
     }
 
     #[inline]
-    func error(mut self, msg: string, pos: token.Pos = self.current_pos()) report.Report {
+    func error(self, msg: string, pos: token.Pos = self.current_pos()) report.Report {
         return report.error(msg, pos);
     }
 

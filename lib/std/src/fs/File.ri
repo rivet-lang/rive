@@ -33,13 +33,19 @@ public struct File {
     /// Writes the byte `b` into the file.
     #[inline]
     public func write_byte(mut self, b: uint8) {
-        _ = unsafe { libc.fputc(@cast(int32, b), self.f) };
+        @ignore_not_mutated_warn(self);
+        unsafe {
+            _ = libc.fputc(@cast(int32, b), self.f);
+        }
     }
 
     /// Writes the string `s` into the file.
     #[inline]
     public func write_string(mut self, s: string) {
-        _ = unsafe { libc.fputs(s.ptr, self.f) };
+        @ignore_not_mutated_warn(self);
+        unsafe {
+            _ = libc.fputs(s.ptr, self.f);
+        }
     }
 
     /// Writes the string `s` into the file and appends a '\n' character.
@@ -59,7 +65,7 @@ public struct File {
     }
 
     /// Returns the current file contents.
-    public func read_all(mut self) !string {
+    public func read_all(self) !string {
         if !self.is_opened {
             return "";
         }
@@ -85,7 +91,7 @@ public struct File {
                 );
             }
 
-            mut res := @cast([*]mut uint8, mem.alloc(@cast(usize, allocate) + 1).!);
+            res := @cast([*]mut uint8, mem.alloc(@cast(usize, allocate) + 1).!);
             nelements := libc.fread(res, 1, @cast(usize, allocate), self.f);
 
             if self.eof() and libc.ferror(self.f) != 0 {

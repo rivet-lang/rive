@@ -12,7 +12,7 @@ extend Tokenizer {
     }
 
     func pp_directive(mut self) {
-        mut pos := self.current_pos();
+        pos := self.current_pos();
         self.pos += 1; // skip '#'
         self.skip_whitespace();
         pp_dir := self.read_ident();

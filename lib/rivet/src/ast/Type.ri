@@ -84,7 +84,7 @@ public enum Type : traits.Stringable {
             .Result as result_inner => return .Result(result_inner.unalias() ?? result_inner),
             .Option as option_inner => return .Option(option_inner.unalias() ?? option_inner),
             .Tuple as tuple_data => {
-                mut unaliased_types := @vec(mut Type, tuple_data.inners.len);
+                unaliased_types := @vec(mut Type, tuple_data.inners.len);
                 for i, tuple_type in tuple_data.inners {
                     unaliased_types[i] = tuple_type.unalias() ?? tuple_type;
                 }

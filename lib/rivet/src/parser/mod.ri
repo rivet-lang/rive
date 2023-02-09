@@ -115,7 +115,7 @@ public struct Parser {
     }
 
     // ---- declarations --------------
-    func parse_decls(mut self) []ast.Decl {
+    func parse_decls(self) []ast.Decl {
         return [];
     }
 }

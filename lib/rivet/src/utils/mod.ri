@@ -52,17 +52,18 @@ struct SourceCache {
       return nil;
    }
 
-   public func find_line(mut self, path: string, line: usize) ?string {
-      if lines := self.find_lines(path) {
-         return lines[line];
-      }
-      return nil;
+   public func find_line(self, path: string, line: usize) ?string {
+      return if lines := self.find_lines(path) {
+         lines[line]
+      } else {
+        nil
+      };
    }
 
-   public func find_lines(mut self, path: string) ?[]string {
+   public func find_lines(self, path: string) ?[]string {
       mut i: usize := 0;
       while i < self.sources.len : i += 1 {
-         mut cached := self.sources[i];
+         cached := self.sources[i];
          if cached.path == path {
             if cached.lines.is_empty() {
                cached.lines = cached.content.split_into_lines();
