@@ -412,7 +412,9 @@ class Compiler:
                     field_size, alignment = self.type_size(ftyp)
                     if alignment > max_alignment:
                         max_alignment = alignment
-                    total_size = utils.round_up(total_size, alignment) + field_size
+                    total_size = utils.round_up(
+                        total_size, alignment
+                    ) + field_size
                 size = utils.round_up(total_size, max_alignment)
                 align = max_alignment
         else:

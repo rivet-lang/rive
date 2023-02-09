@@ -676,7 +676,8 @@ class Checker:
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
                 lsym = ltyp.symbol()
                 if not (
-                    lsym.kind in (TypeKind.Trait, TypeKind.Enum) or isinstance(ltyp, type.Option)
+                    lsym.kind in (TypeKind.Trait, TypeKind.Enum)
+                    or isinstance(ltyp, type.Option)
                 ):
                     report.error(
                         f"`{expr.op}` can only be used with traits, enums and options",
@@ -1480,7 +1481,9 @@ class Checker:
                     self.check_types(arg_t, field_typ)
                 except utils.CompilerError as e:
                     report.error(e.args[0], arg.pos)
-                if field_is_mut and not isinstance(field_typ, (type.Ptr, type.Ref)) and field_typ.symbol().is_boxed():
+                if field_is_mut and not isinstance(
+                    field_typ, (type.Ptr, type.Ref)
+                ) and field_typ.symbol().is_boxed():
                     self.check_expr_is_mut(arg.expr)
             if expr.has_spread_expr:
                 spread_expr_t = self.check_expr(expr.spread_expr)
@@ -1568,7 +1571,9 @@ class Checker:
             arg.typ = self.check_expr(arg.expr)
             self.expected_type = oet
 
-            if arg_fn.is_mut and not isinstance(arg_fn.typ, (type.Ptr, type.Ref)) and not arg_fn.typ.symbol().is_primitive():
+            if arg_fn.is_mut and not isinstance(
+                arg_fn.typ, (type.Ptr, type.Ref)
+            ) and not arg_fn.typ.symbol().is_primitive():
                 self.check_expr_is_mut(arg.expr)
 
             if not (
