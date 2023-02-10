@@ -234,13 +234,16 @@ class Parser:
         elif self.accept(Kind.KwConst):
             pos = self.tok.pos
             name = self.parse_name()
-            self.expect(Kind.Colon)
-            typ = self.parse_type()
+            has_typ = self.accept(Kind.Colon)
+            if has_typ:
+                typ = self.parse_type()
+            else:
+                typ = self.comp.void_t
             self.expect(Kind.Assign)
             expr = self.parse_expr()
             self.expect(Kind.Semicolon)
             return ast.ConstDecl(
-                doc_comment, annotations, is_public, name, typ, expr, pos
+                doc_comment, annotations, is_public, name, has_typ, typ, expr, pos
             )
         elif self.accept(Kind.KwVar):
             # variable declarations

@@ -33,129 +33,141 @@ class Checker:
 
     def check_decls(self, decls):
         for decl in decls:
-            old_sym = self.sym
-            if isinstance(decl, ast.ExternDecl):
-                self.check_decls(decl.decls)
-            elif isinstance(decl, ast.ConstDecl):
+            if isinstance(decl, (ast.ConstDecl, ast.VarDecl)):
+                self.check_decl(decl)
+        for decl in decls:
+            if not isinstance(decl, (ast.ConstDecl, ast.VarDecl)):
+                self.check_decl(decl)
+
+    def check_decl(self, decl):
+        old_sym = self.sym
+        if isinstance(decl, ast.ExternDecl):
+            self.check_decls(decl.decls)
+        elif isinstance(decl, ast.ConstDecl):
+            if decl.has_typ:
                 old_expected_type = self.expected_type
+                self.expected_typ = decl.typ
                 field_typ = self.check_expr(decl.expr)
                 self.expected_type = old_expected_type
                 try:
                     self.check_compatible_types(field_typ, decl.typ)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
-            elif isinstance(decl, ast.VarDecl):
-                self.inside_let_decl = True
+            else:
+                decl.typ = self.check_expr(decl.expr)
+                decl.sym.typ = decl.typ
+        elif isinstance(decl, ast.VarDecl):
+            self.inside_let_decl = True
+            old_expected_type = self.expected_type
+            expr_t = self.check_expr(decl.right)
+            try:
+                self.check_compatible_types(decl.lefts[0].typ, expr_t)
+            except utils.CompilerError as e:
+                report.error(e.args[0], decl.pos)
+            self.expected_type = old_expected_type
+            self.inside_let_decl = False
+        elif isinstance(decl, ast.EnumDecl):
+            for base in decl.bases:
+                base_sym = base.symbol()
+                if base_sym.kind != TypeKind.Trait:
+                    report.error(
+                        f"base type `{base}` of enum `{decl.name}` is not a trait",
+                        decl.pos
+                    )
+            self.check_decls(decl.decls)
+        elif isinstance(decl, ast.TraitDecl):
+            for base in decl.bases:
+                base_sym = base.symbol()
+                if base_sym.kind != TypeKind.Trait:
+                    report.error(
+                        f"traits can only inherit traits", decl.pos
+                    )
+            self.check_decls(decl.decls)
+        elif isinstance(decl, ast.StructDecl):
+            for base in decl.bases:
+                base_sym = base.symbol()
+                if base_sym.kind == TypeKind.Struct:
+                    pass
+                elif base_sym.kind == TypeKind.Trait:
+                    pass
+                else:
+                    report.error(
+                        f"structs can only inherit traits and embed other structs",
+                        decl.pos
+                    )
+            self.check_decls(decl.decls)
+        elif isinstance(decl, ast.FieldDecl):
+            if decl.has_def_expr:
                 old_expected_type = self.expected_type
-                expr_t = self.check_expr(decl.right)
+                self.expected_type = decl.typ
+                field_typ = self.check_expr(decl.def_expr)
+                self.expected_type = old_expected_type
                 try:
-                    self.check_compatible_types(decl.lefts[0].typ, expr_t)
+                    self.check_compatible_types(field_typ, decl.typ)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
-                self.expected_type = old_expected_type
-                self.inside_let_decl = False
-            elif isinstance(decl, ast.EnumDecl):
-                for base in decl.bases:
-                    base_sym = base.symbol()
-                    if base_sym.kind != TypeKind.Trait:
+        elif isinstance(decl, ast.ExtendDecl):
+            self_sym = decl.typ.symbol()
+            for base in decl.bases:
+                base_sym = base.symbol()
+                base_kind = str(base_sym.kind)
+                if base_sym.kind == TypeKind.Struct:
+                    if self_sym.kind != TypeKind.Struct:
                         report.error(
-                            f"base type `{base}` of enum `{decl.name}` is not a trait",
+                            "only structs can inherit from other structs",
                             decl.pos
                         )
-                self.check_decls(decl.decls)
-            elif isinstance(decl, ast.TraitDecl):
-                for base in decl.bases:
-                    base_sym = base.symbol()
-                    if base_sym.kind != TypeKind.Trait:
-                        report.error(
-                            f"traits can only inherit traits", decl.pos
-                        )
-                self.check_decls(decl.decls)
-            elif isinstance(decl, ast.StructDecl):
-                for base in decl.bases:
-                    base_sym = base.symbol()
-                    if base_sym.kind == TypeKind.Struct:
-                        pass
-                    elif base_sym.kind == TypeKind.Trait:
-                        pass
-                    else:
-                        report.error(
-                            f"structs can only inherit traits and embed other structs",
-                            decl.pos
-                        )
-                self.check_decls(decl.decls)
-            elif isinstance(decl, ast.FieldDecl):
-                if decl.has_def_expr:
-                    old_expected_type = self.expected_type
-                    self.expected_type = decl.typ
-                    field_typ = self.check_expr(decl.def_expr)
+                        return
+                elif base_sym.kind == TypeKind.Trait:
+                    pass
+                else:
+                    report.error(
+                        f"base type `{base}` of {base_kind} `{self_sym.name}` is not a {base_kind}",
+                        decl.pos
+                    )
+            self.check_decls(decl.decls)
+        elif isinstance(decl, ast.FnDecl):
+            old_expected_type = self.expected_type
+            for arg in decl.args:
+                if arg.has_def_expr:
+                    self.expected_type = arg.typ
+                    def_expr_t = self.check_expr(arg.def_expr)
                     self.expected_type = old_expected_type
                     try:
-                        self.check_compatible_types(field_typ, decl.typ)
+                        self.check_compatible_types(def_expr_t, arg.typ)
                     except utils.CompilerError as e:
-                        report.error(e.args[0], decl.pos)
-            elif isinstance(decl, ast.ExtendDecl):
-                self_sym = decl.typ.symbol()
-                for base in decl.bases:
-                    base_sym = base.symbol()
-                    base_kind = str(base_sym.kind)
-                    if base_sym.kind == TypeKind.Struct:
-                        if self_sym.kind != TypeKind.Struct:
-                            report.error(
-                                "only structs can inherit from other structs",
-                                decl.pos
-                            )
-                            return
-                    elif base_sym.kind == TypeKind.Trait:
-                        pass
-                    else:
-                        report.error(
-                            f"base type `{base}` of {base_kind} `{self_sym.name}` is not a {base_kind}",
-                            decl.pos
-                        )
-                self.check_decls(decl.decls)
-            elif isinstance(decl, ast.FnDecl):
-                old_expected_type = self.expected_type
-                for arg in decl.args:
-                    if arg.has_def_expr:
-                        self.expected_type = arg.typ
-                        def_expr_t = self.check_expr(arg.def_expr)
-                        self.expected_type = old_expected_type
-                        try:
-                            self.check_compatible_types(def_expr_t, arg.typ)
-                        except utils.CompilerError as e:
-                            report.error(e.args[0], arg.pos)
-                if isinstance(
-                    decl.ret_typ, type.Ptr
-                ) and decl.abi != sym.ABI.Rivet:
-                    report.error(
-                        f"`{decl.name}` should return an optional pointer",
-                        decl.name_pos
-                    )
-                    report.note(
-                        "this is because Rivet cannot ensure that the function does not always return `nil`"
-                    )
-                self.cur_fn = decl.sym
-                self.expected_type = decl.ret_typ
-                self.check_stmts(decl.stmts)
-                self.expected_type = old_expected_type
-                decl.defer_stmts = self.defer_stmts
-                self.defer_stmts = []
-                self.check_mut_vars(decl.scope)
-            elif isinstance(decl, ast.DestructorDecl):
-                self.check_stmts(decl.stmts)
-                decl.defer_stmts = self.defer_stmts
-                self.defer_stmts = []
-                self.check_mut_vars(decl.scope)
-            elif isinstance(decl, ast.TestDecl):
-                old_cur_fn = self.cur_fn
-                self.cur_fn = None
-                self.inside_test = True
-                self.check_stmts(decl.stmts)
-                self.inside_test = False
-                self.cur_fn = old_cur_fn
-                self.check_mut_vars(decl.scope)
-            self.sym = old_sym
+                        report.error(e.args[0], arg.pos)
+            if isinstance(
+                decl.ret_typ, type.Ptr
+            ) and decl.abi != sym.ABI.Rivet:
+                report.error(
+                    f"`{decl.name}` should return an optional pointer",
+                    decl.name_pos
+                )
+                report.note(
+                    "this is because Rivet cannot ensure that the function does not always return `nil`"
+                )
+            self.cur_fn = decl.sym
+            self.expected_type = decl.ret_typ
+            self.check_stmts(decl.stmts)
+            self.expected_type = old_expected_type
+            decl.defer_stmts = self.defer_stmts
+            self.defer_stmts = []
+            self.check_mut_vars(decl.scope)
+        elif isinstance(decl, ast.DestructorDecl):
+            self.check_stmts(decl.stmts)
+            decl.defer_stmts = self.defer_stmts
+            self.defer_stmts = []
+            self.check_mut_vars(decl.scope)
+        elif isinstance(decl, ast.TestDecl):
+            old_cur_fn = self.cur_fn
+            self.cur_fn = None
+            self.inside_test = True
+            self.check_stmts(decl.stmts)
+            self.inside_test = False
+            self.cur_fn = old_cur_fn
+            self.check_mut_vars(decl.scope)
+        self.sym = old_sym
 
     def check_stmts(self, stmts):
         for stmt in stmts:

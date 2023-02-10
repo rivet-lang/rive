@@ -3,9 +3,9 @@
 // be found in the LICENSE file.
 
 #if _LINUX_
-    public const RAND_MAX: comptime_int = 0x7fffffff;
+    public const RAND_MAX = 0x7fffffff;
 #else_if _WINDOWS_
-    public const RAND_MAX: comptime_int = 0x7fff;
+    public const RAND_MAX = 0x7fff;
 #endif
 
 extern (C) {
