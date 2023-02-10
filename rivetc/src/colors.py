@@ -2,9 +2,11 @@
 # Use of this source code is governed by an MIT license that can
 # be found in the LICENSE file.
 
-import os
+import os, sys
 
 def supports_escape_sequences(fd):
+    if sys.platform == "nt":
+        return False
     if os.getenv("TERM") == "dumb":
         return False
     return os.isatty(fd) > 0
