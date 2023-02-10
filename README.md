@@ -19,11 +19,12 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 ![issues](https://img.shields.io/github/issues/rivet-lang/rivet?style=flat-square)
 ![status](https://img.shields.io/badge/status-alpha-blue?style=flat-square)
 ![license](https://img.shields.io/github/license/rivet-lang/rivet?style=flat-square)
+[![](https://dcbadge.vercel.app/api/server/thCA4VsWgs)](https://discord.gg/thCA4VsWgs)
 
 </div>
 
 Rivet's goal is to be a very powerful programming language and at the same time easy
-to use, with a syntax that is the result of mixing Go + Zig + C#, and by other languages 
+to use, with a syntax that is the result of mixing Go + Zig + C#, and by other languages
 such as Python, Lua, TypeScript, D, etc.
 
 It is true that there are many programming languages and each of them specialized in
