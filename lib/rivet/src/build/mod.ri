@@ -1,0 +1,20 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "std/semver";
+
+public alias Version = semver.Version;
+
+public struct Project {
+    public name: string;
+    public description: string;
+    public version: Version;
+    public authors: []string;
+    public dependencies: []Dependency;
+}
+
+public struct Dependency {
+    public name: string;
+    public version: string;
+}

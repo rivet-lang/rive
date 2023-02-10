@@ -1,7 +1,0 @@
-{
-    "name": "cmd",
-    "description": "The Rivet compiler CLI",
-    "version": "0.1.0",
-    "authors": ["The Rivet Developers"],
-    "dependencies": ["rivet"]
-}
