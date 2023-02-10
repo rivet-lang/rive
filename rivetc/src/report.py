@@ -5,7 +5,7 @@
 import os
 import textwrap
 
-from . import utils, colors
+from . import utils
 
 WARNS_ARE_ERRORS = False
 ERRORS = 0
@@ -16,9 +16,9 @@ WARNS = 0
 # again.
 FILE_LINES = {}
 
-SEP = colors.bold(colors.blue("|"))
-MARK = colors.bold(colors.green("^"))
-FOOT = colors.bold(colors.blue("="))
+SEP = utils.bold(utils.blue("|"))
+MARK = utils.bold(utils.green("^"))
+FOOT = utils.bold(utils.blue("="))
 
 def format_number(num):
     num = str(num)
@@ -27,7 +27,7 @@ def format_number(num):
     return " " * (5 - len(num)) + num
 
 def color(kind, msg):
-    return colors.red(msg) if kind == "error:" else colors.yellow(msg)
+    return utils.red(msg) if kind == "error:" else utils.yellow(msg)
 
 def _readline(file, line_nr):
     global FILE_LINES
@@ -42,7 +42,7 @@ def _readline(file, line_nr):
 
 def readline(pos, kind):
     line = _readline(pos.file, pos.line)
-    line_str = f"{colors.bold(colors.blue(format_number(pos.line + 1)))}"
+    line_str = f"{utils.bold(utils.blue(format_number(pos.line + 1)))}"
     # TODO(StunxFS): it would be better if the marker was the width of
     # the token.
     marker = (" " * (pos.col - 1)) + MARK
@@ -50,7 +50,7 @@ def readline(pos, kind):
 
 def fmt_msg(pos, kind, msg):
     file = os.path.relpath(pos.file)
-    return colors.bold(
+    return utils.bold(
         f'{file}:{pos.line + 1}:{pos.col}: {color(kind,kind)} {msg}'
     )
 
@@ -74,8 +74,8 @@ def wrap_text(msg):
 
 def note(msg):
     utils.eprint(
-        f"      {FOOT} {colors.bold(colors.blue('note:'))} {wrap_text(msg)}"
+        f"      {FOOT} {utils.bold(utils.blue('note:'))} {wrap_text(msg)}"
     )
 
 def help(msg):
-    utils.eprint(f"      {FOOT} {colors.bold('help:')} {wrap_text(msg)}")
+    utils.eprint(f"      {FOOT} {utils.bold('help:')} {wrap_text(msg)}")

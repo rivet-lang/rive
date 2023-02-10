@@ -5,8 +5,8 @@
 import os
 
 from ..sym import TypeKind
+from .. import ast, sym, type, token, prefs, report, utils
 from ..token import Kind, OVERLOADABLE_OPERATORS_STR, NO_POS
-from .. import ast, sym, type, token, prefs, colors, report, utils
 
 from . import ir
 from .c import CGen

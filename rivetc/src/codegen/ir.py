@@ -4,8 +4,8 @@
 
 from enum import IntEnum as Enum, auto as auto_enum
 
-from ..token import Kind
 from .. import utils
+from ..token import Kind
 
 def get_ir_op(op):
     if op == Kind.Plus:
