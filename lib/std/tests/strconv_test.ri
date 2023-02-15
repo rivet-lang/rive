@@ -6,21 +6,9 @@ test "std.strconv.atoi()" {
     @assert(strconv.atoi("-16").! == -16);
 
     // invalid strings
-    @assert(if _ := strconv.atoi("") {
-        false
-    } else {
-        true
-    });
-    @assert(if _ := strconv.atoi("str") {
-        false
-    } else {
-        true
-    });
-    @assert(if _ := strconv.atoi("string_longer_than_10_chars") {
-        false
-    } else {
-        true
-    });
+    @assert(strconv.atoi("") is nil);
+    @assert(strconv.atoi("str") is nil);
+    @assert(strconv.atoi("string_longer_than_10_chars") is nil);
 }
 
 test "std.strconv.parse_int()" {
@@ -37,14 +25,6 @@ test "std.strconv.parse_int()" {
     @assert(strconv.parse_int("baobab", 36, 64).! == 123314438);
 
     // invalid bit sizes
-    @assert(if _ := strconv.parse_int("123", 10, -1) {
-        false
-    } else {
-        true
-    });
-    @assert(if _ := strconv.parse_int("123", 10, 65) {
-        false
-    } else {
-        true
-    });
+    @assert(strconv.parse_int("123", 10, -1) is nil);
+    @assert(strconv.parse_int("123", 10, 65) is nil);
 }

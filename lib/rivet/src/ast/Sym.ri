@@ -257,11 +257,7 @@ public struct EnumInfo {
     }
 
     public func has_value(self, name: string) bool {
-        return if _ := self.get_value(name) {
-            true
-        } else {
-            false
-        };
+        return self.get_value(name) !is nil;
     }
 }
 
@@ -327,7 +323,7 @@ public struct TypeSym : Sym {
 
     #[inline]
     public func has_field(self, name: string) bool {
-        return if _ := self.lookup_field(name) { true } else { false };
+        return self.lookup_field(name) !is nil;
     }
 
     public func lookup_in_base(self, name: string) ?Sym {

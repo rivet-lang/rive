@@ -59,7 +59,7 @@ struct Library {
 
     #[inline]
     public func exists(self, symbol: string) bool {
-        return if _ := self.address_of(symbol) { true } else { false };
+        return self.address_of(symbol) !is nil;
     }
 
     ~Self(mut self) {
