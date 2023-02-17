@@ -19,6 +19,7 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 ![issues](https://img.shields.io/github/issues/rivet-lang/rivet?style=flat-square)
 ![status](https://img.shields.io/badge/status-alpha-blue?style=flat-square)
 ![license](https://img.shields.io/github/license/rivet-lang/rivet?style=flat-square)
+
 [![](https://dcbadge.vercel.app/api/server/thCA4VsWgs)](https://discord.gg/thCA4VsWgs)
 
 </div>
