@@ -547,7 +547,7 @@ class TupleLiteral:
     def __str__(self):
         return self.__repr__()
 
-class VecLiteral:
+class VectorLiteral:
     def __init__(self, elems, is_arr, pos):
         self.elems = elems
         self.pos = pos

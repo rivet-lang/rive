@@ -225,7 +225,7 @@ class Resolver:
         elif isinstance(expr, ast.TupleLiteral):
             for e in expr.exprs:
                 self.resolve_expr(e)
-        elif isinstance(expr, ast.VecLiteral):
+        elif isinstance(expr, ast.VectorLiteral):
             for e in expr.elems:
                 self.resolve_expr(e)
         elif isinstance(expr, ast.GuardExpr):
