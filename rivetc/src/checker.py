@@ -1886,8 +1886,6 @@ class Checker:
             report.error("`nil` cannot be modified", expr.pos)
         elif isinstance(expr, ast.StringLiteral):
             report.error("string literals cannot be modified", expr.pos)
-        elif isinstance(expr, ast.VecLiteral):
-            report.error("array literals cannot be modified", expr.pos)
         elif isinstance(expr, ast.TupleLiteral):
             if from_assign:
                 for e in expr.exprs:

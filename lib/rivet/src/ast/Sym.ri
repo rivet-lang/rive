@@ -337,13 +337,15 @@ public struct TypeSym : Sym {
         return nil;
     }
 
+    #[inline]
     public func lookup(self, name: string) ?Sym {
-        if s := self.scope.lookup(name) {
-            return s;
+        return if s := self.scope.lookup(name) {
+            s
         } else if s := self.lookup_in_base(name) {
-            return s;
-        }
-        return nil;
+            s
+        } else {
+            nil
+        };
     }
 
     public func full_fields(mut self) []Field {
@@ -398,8 +400,7 @@ public struct TypeSym : Sym {
         };
     }
 
-    // TODO(StunxFS): fix inheritance of overloaded operators
-    #[inline; override]
+    #[inline]
     public func ==(self, rhs: Self) bool {
         return self.id == rhs.id;
     }
@@ -499,8 +500,9 @@ public struct Scope {
     }
 }
 
+#[inline]
 public func universe() Mod {
-    mut syms: []Sym := [
+    return Mod(is_public: false, name: "universe", scope: Scope(syms: [
         TypeSym(is_public: true, name: "never", kind: .Never),
         TypeSym(is_public: true, name: "nil", kind: .Nil),
         TypeSym(is_public: true, name: "bool", kind: .Bool),
@@ -522,6 +524,5 @@ public func universe() Mod {
         TypeSym(is_public: true, name: "string", kind: .String, info: .Struct(
             StructInfo(is_boxed: true)
         ))
-    ];
-    return Mod(is_public: false, name: "universe", scope: Scope(syms: syms));
+    ]));
 }
