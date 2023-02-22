@@ -1,10 +1,10 @@
 var MyVar = 1;
 const MY_CONST = "Speak";
 
-test "explicitly typed variable" {
+test "implicitly typed variable" {
     @assert(MyVar == 1);
 }
 
-test "explicitly typed constant" {
+test "implicitly typed constant" {
     @assert(MY_CONST == "Speak");
 }
