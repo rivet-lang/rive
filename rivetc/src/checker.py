@@ -20,7 +20,7 @@ class Checker:
         self.void_types = (self.comp.void_t, self.comp.never_t)
 
         self.inside_guard_expr = False
-        self.inside_let_decl = False
+        self.inside_var_decl = False
 
         self.defer_stmts = []
 
@@ -57,15 +57,21 @@ class Checker:
                 decl.typ = self.check_expr(decl.expr)
                 decl.sym.typ = decl.typ
         elif isinstance(decl, ast.VarDecl):
-            self.inside_let_decl = True
-            old_expected_type = self.expected_type
-            expr_t = self.check_expr(decl.right)
-            try:
-                self.check_compatible_types(decl.lefts[0].typ, expr_t)
-            except utils.CompilerError as e:
-                report.error(e.args[0], decl.pos)
-            self.expected_type = old_expected_type
-            self.inside_let_decl = False
+            self.inside_var_decl = True
+            left0 = decl.lefts[0]
+            if left0.has_typ:
+                old_expected_type = self.expected_type
+                expr_t = self.check_expr(decl.right)
+                self.expected_type = old_expected_type
+                try:
+                    self.check_compatible_types(decl.lefts[0].typ, expr_t)
+                except utils.CompilerError as e:
+                    report.error(e.args[0], decl.pos)
+            else:
+                expr_t = self.check_expr(decl.right)
+                left0.typ = expr_t
+                left0.sym.typ = self.check_expr(decl.right)
+            self.inside_var_decl = False
         elif isinstance(decl, ast.EnumDecl):
             for base in decl.bases:
                 base_sym = base.symbol()
@@ -1009,7 +1015,7 @@ class Checker:
                     if expr.err_handler.is_propagate:
                         if self.cur_fn and not (
                             self.cur_fn.is_main or self.inside_test
-                            or self.inside_let_decl
+                            or self.inside_var_decl
                             or isinstance(self.cur_fn.ret_typ, type.Result)
                         ):
                             report.error(
