@@ -316,8 +316,9 @@ class Var(Sym):
         Sym.__init__(self, is_public, name, abi)
         self.is_extern = is_extern
         self.is_mut = is_mut
-        self.is_changed= False
+        self.is_changed = False
         self.typ = typ
+        self.pos = None
 
 class Field:
     def __init__(

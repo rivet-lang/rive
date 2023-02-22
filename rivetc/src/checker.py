@@ -30,6 +30,13 @@ class Checker:
             self.source_file = sf
             self.expected_type = self.comp.void_t
             self.check_decls(self.source_file.decls)
+        for m in self.comp.universe:
+            if isinstance(m, sym.Mod):
+                for mod_var in m.syms:
+                    if isinstance(mod_var, sym.Var):
+                        if not mod_var.is_public:
+                            if mod_var.is_mut and not mod_var.is_changed:
+                                report.warn("variable does not need to be mutable", mod_var.pos)
 
     def check_decls(self, decls):
         for decl in decls:
@@ -1938,6 +1945,6 @@ class Checker:
     def check_mut_vars(self, sc):
         for obj in sc.objects:
             if obj.is_mut and not obj.is_changed:
-                report.warn("object declared as mutable but never mutated", obj.pos)
+                report.warn("variable does not need to be mutable", obj.pos)
         for ch in sc.childrens:
             self.check_mut_vars(ch)

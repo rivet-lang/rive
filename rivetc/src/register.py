@@ -76,6 +76,7 @@ class Register:
                             decl.is_public, v.is_mut, decl.is_extern, self.abi,
                             v.name, v.typ
                         )
+                        v_sym.pos = decl.pos
                         self.source_file.sym.add(v_sym)
                         v.sym = v_sym
                     except utils.CompilerError as e:
