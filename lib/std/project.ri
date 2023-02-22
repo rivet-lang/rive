@@ -1,6 +1,6 @@
 import { Project, Version, Dependency } from "rivet/build";
 
-var project: Project = Project(
+var project = Project(
     name: "std",
     description: "The Rivet standard library",
     version: Version.build(0, 1, 0),
