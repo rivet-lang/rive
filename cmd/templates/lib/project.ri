@@ -1,0 +1,8 @@
+import { Project, Version } from "rivet/build";
+
+var project: Project = Project(
+    name: @NAME,
+    description: @DESCRIPTION,
+    version: @VERSION,
+    authors: []
+);
