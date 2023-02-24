@@ -4,11 +4,11 @@
 
 #if _TESTS_
 
-var SUPPORT_COLOR: bool = console_is_atty(1);
+var SUPPORT_COLOR = console_is_atty(1);
 
-var OK_STATUS: string = bold(green("-> OK"));
-var FAILED_STATUS: string = bold(red("-> FAIL"));
-var SKIP_STATUS: string = bold(yellow("-> SKIP"));
+var OK_STATUS = bold(green("-> OK"));
+var FAILED_STATUS = bold(red("-> FAIL"));
+var SKIP_STATUS = bold(yellow("-> SKIP"));
 
 extern (Rivet) {
     var test_runner: TestRunner;

@@ -63,31 +63,31 @@ extend rune : Stringable {
 func utf32_decode_to_buffer(code: uint32, buffer: [*]mut uint8) int32 {
     icode := @cast(int32, code);
     unsafe {
-        switch {
+        return switch {
             (icode <= 127) => { // 0x7F
                 buffer[0] = @cast(uint8, icode);
-                return 1;
+                1
             },
             (icode <= 2047) => { // 0x7FF
                 buffer[0] = @cast(uint8, 192) | @cast(uint8, icode >> 6); // 0xC0 - 110xxxxx
                 buffer[1] = @cast(uint8, 128) | @cast(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
-                return 2;
+                2
             },
             (icode <= 65535) => { // 0xFFFF
                 buffer[0] = @cast(uint8, 224) | @cast(uint8, icode >> 12); // 0xE0 - 1110xxxx
                 buffer[1] = @cast(uint8, 128) | (@cast(uint8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
                 buffer[2] = @cast(uint8, 128) | @cast(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
-                return 3;
+                3
             },
             (icode <= 1114111) => { // 0x10FFFF
                 buffer[0] = @cast(uint8, 240) | @cast(uint8, icode >> 18); // 0xF0 - 11110xxx
                 buffer[1] = @cast(uint8, 128) | (@cast(uint8, icode >> 12) & 63); // 0x80 - 0x3F - 10xxxxxx
                 buffer[2] = @cast(uint8, 128) | (@cast(uint8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
                 buffer[3] = @cast(uint8, 128) | @cast(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
-                return 4;
+                4
             },
-            else => return 0
-        }
+            else => 0
+        };
     }
 }
 

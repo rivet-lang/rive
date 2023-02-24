@@ -15,8 +15,8 @@ import "./prefs";
 import "./report";
 import "./parser";
 
-var RIVET_DIR: string = path.join(env.HOME_DIR, ".rivet_lang").!;
-var RIVETC_DIR: string = path.dirname(process.executable().!).?;
+var RIVET_DIR = path.join(env.HOME_DIR, ".rivet_lang").!;
+var RIVETC_DIR = path.dirname(process.executable().!).?;
 
 #[boxed]
 public struct Compiler {

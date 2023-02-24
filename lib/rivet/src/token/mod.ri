@@ -4,7 +4,7 @@
 
 import "std/traits";
 
-public var NO_POS: Pos = Pos();
+public var NO_POS = Pos();
 
 public struct Pos : traits.Stringable {
     public file: string;

@@ -26,7 +26,7 @@ test "std.strconv.atoi()" {
 test "std.strconv.parse_int()" {
     // different bases
     @assert(strconv.parse_int("16", 16, 0).! == 0x16);
-    // TODO: @assert(strconv.parse_int("16", 8, 0).! == 0o16);
+    @assert(strconv.parse_int("16", 8, 0).! == 0o16);
     @assert(strconv.parse_int("11", 2, 0).! == 3);
 
     // different bit sizes

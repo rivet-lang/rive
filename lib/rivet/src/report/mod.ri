@@ -12,7 +12,7 @@ import "../prefs";
 import "../token";
 import "../utils";
 
-public var mut reports: ReportTable = ReportTable();
+public var mut reports = ReportTable();
 
 #[inline]
 public func total_errors() usize {
@@ -126,8 +126,8 @@ func formatted_line(pos: token.Pos) {
     }
 }
 
-var NORMALIZED_WORKDIR: string = process.WD_AT_STARTUP.replace("\\", "/").concat("/");
-var ERROR_PATHS_ABSOLUTE: bool = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";
+var NORMALIZED_WORKDIR = process.WD_AT_STARTUP.replace("\\", "/").concat("/");
+var ERROR_PATHS_ABSOLUTE = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";
 
 // NOTE: path_styled_for_error_messages will *always* use `/` in the error paths, no
 // matter the OS, to ensure stable compiler error output in the tests.

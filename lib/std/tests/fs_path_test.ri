@@ -1,7 +1,7 @@
 import "std/fs/path";
 import "std/process";
 
-var CWD: string = process.get_cwd() catch ".";
+var CWD = process.get_cwd() catch ".";
 
 test "std.fs.path.is_absolute()" {
     @assert(path.is_absolute("") == false);

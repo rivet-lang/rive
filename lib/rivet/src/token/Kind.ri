@@ -157,7 +157,7 @@ public struct KindMap {
     public value: string;
 }
 
-public var Kind_Strings: []KindMap = [
+public var Kind_Strings = [
     KindMap(.Unknown, "unknown"),
     KindMap(.EOF, "end of file"),
     KindMap(.DocComment, "doc-comment"),

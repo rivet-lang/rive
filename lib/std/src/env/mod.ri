@@ -6,12 +6,7 @@ import "c";
 import "c/libc";
 
 /// User's home directory.
-public var HOME_DIR: string =
-#if _LINUX_
-    get("HOME")
-#else
-    get("USERPROFILE")
-#endif ?? "";
+public var HOME_DIR = #if _LINUX_ get("HOME") #else get("USERPROFILE") #endif ?? "";
 
 /// Returns `true` if the environment variable exists.
 #[inline]

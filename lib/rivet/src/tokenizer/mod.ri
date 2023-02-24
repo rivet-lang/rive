@@ -13,7 +13,7 @@ import "../report";
 
 const LF: uint8 = 10;
 const CR: uint8 = 13;
-const NUM_SEP: uint8 = b'_';
+const NUM_SEP = b'_';
 
 #[boxed]
 public struct Tokenizer {

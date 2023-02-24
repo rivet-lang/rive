@@ -13,9 +13,6 @@ func error_panic(err: Error) {
     process_panic(err.to_string());
 }
 
-/// This trait is used for errors returned with result types (!T).
-public trait Error : Stringable { }
-
 #[boxed]
 public struct RuneFromU32Error : Error {
     msg: string;

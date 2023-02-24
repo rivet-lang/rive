@@ -729,6 +729,7 @@ class Codegen:
                 )
             return ir.RuneLit(ir.RUNE_T, expr.lit)
         elif isinstance(expr, ast.IntegerLiteral):
+            assert expr.typ, expr.pos
             if expr.lit.startswith("0o") or expr.lit.startswith("0b"):
                 # use hex variants
                 return ir.IntLit(

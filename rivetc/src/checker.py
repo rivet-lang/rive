@@ -24,24 +24,37 @@ class Checker:
 
         self.defer_stmts = []
 
+    def check_global_vars(self, decls):
+        for decl in decls:
+            old_sym = self.sym
+            if isinstance(decl, (ast.ConstDecl, ast.VarDecl)):
+                self.check_decl(decl)
+            elif hasattr(decl, "decls"):
+                self.check_global_vars(decl.decls)
+            self.sym = old_sym
+
     def check_files(self, source_files):
+        # check global vars
+        for sf in source_files:
+            self.sym = sf.sym
+            self.source_file = sf
+            self.expected_type = self.comp.void_t
+            self.check_global_vars(self.source_file.decls)
+
         for sf in source_files:
             self.sym = sf.sym
             self.source_file = sf
             self.expected_type = self.comp.void_t
             self.check_decls(self.source_file.decls)
+
         for m in self.comp.universe:
             if isinstance(m, sym.Mod):
                 for mod_var in m.syms:
                     if isinstance(mod_var, sym.Var):
-                        if not mod_var.is_public:
-                            if mod_var.is_mut and not mod_var.is_changed:
-                                report.warn("variable does not need to be mutable", mod_var.pos)
+                        if not mod_var.is_public and mod_var.is_mut and not mod_var.is_changed:
+                            report.warn("variable does not need to be mutable", mod_var.pos)
 
     def check_decls(self, decls):
-        for decl in decls:
-            if isinstance(decl, (ast.ConstDecl, ast.VarDecl)):
-                self.check_decl(decl)
         for decl in decls:
             if not isinstance(decl, (ast.ConstDecl, ast.VarDecl)):
                 self.check_decl(decl)
@@ -71,13 +84,12 @@ class Checker:
                 expr_t = self.check_expr(decl.right)
                 self.expected_type = old_expected_type
                 try:
-                    self.check_compatible_types(decl.lefts[0].typ, expr_t)
+                    self.check_compatible_types(left0.typ, expr_t)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             else:
-                expr_t = self.check_expr(decl.right)
-                left0.typ = expr_t
-                left0.sym.typ = self.check_expr(decl.right)
+                left0.typ = self.check_expr(decl.right)
+                left0.sym.typ = left0.typ
             self.inside_var_decl = False
         elif isinstance(decl, ast.EnumDecl):
             for base in decl.bases:

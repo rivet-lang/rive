@@ -7,7 +7,7 @@ import { atoi } from "std/strconv";
 const VER_MAJOR: uint64 = 0;
 const VER_MINOR: uint64 = 1;
 const VER_PATCH: uint64 = 2;
-const VERSIONS: []uint64 = [VER_MAJOR, VER_MINOR, VER_PATCH];
+const VERSIONS = [VER_MAJOR, VER_MINOR, VER_PATCH];
 
 struct RawVersion {
     prerelease: string;

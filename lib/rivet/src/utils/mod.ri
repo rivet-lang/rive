@@ -8,7 +8,7 @@ import "std/console";
 import "std/process";
 import "std/console/styles";
 
-public var VERSION: string = "0.1.0b";
+public var VERSION = "0.1.0b";
 
 #[inline]
 public func is_name_char(ch: uint8) bool {

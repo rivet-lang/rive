@@ -8,7 +8,7 @@
 
 import "c/libc";
 
-public var SHARED_LIB_EXT: string = get_shared_library_extension();
+public var SHARED_LIB_EXT = get_shared_library_extension();
 
 /// Returns a library name with the operating system specific extension for shared
 /// libraries.
