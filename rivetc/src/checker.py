@@ -52,7 +52,10 @@ class Checker:
                 for mod_var in m.syms:
                     if isinstance(mod_var, sym.Var):
                         if not mod_var.is_public and mod_var.is_mut and not mod_var.is_changed:
-                            report.warn("variable does not need to be mutable", mod_var.pos)
+                            report.warn(
+                                "variable does not need to be mutable",
+                                mod_var.pos
+                            )
 
     def check_decls(self, decls):
         for decl in decls:
@@ -104,9 +107,7 @@ class Checker:
             for base in decl.bases:
                 base_sym = base.symbol()
                 if base_sym.kind != TypeKind.Trait:
-                    report.error(
-                        f"traits can only inherit traits", decl.pos
-                    )
+                    report.error(f"traits can only inherit traits", decl.pos)
             self.check_decls(decl.decls)
         elif isinstance(decl, ast.StructDecl):
             for base in decl.bases:
@@ -162,9 +163,7 @@ class Checker:
                         self.check_compatible_types(def_expr_t, arg.typ)
                     except utils.CompilerError as e:
                         report.error(e.args[0], arg.pos)
-            if isinstance(
-                decl.ret_typ, type.Ptr
-            ) and decl.abi != sym.ABI.Rivet:
+            if isinstance(decl.ret_typ, type.Ptr) and decl.abi != sym.ABI.Rivet:
                 report.error(
                     f"`{decl.name}` should return an optional pointer",
                     decl.name_pos
@@ -1851,7 +1850,8 @@ class Checker:
                 if not expr.obj.is_mut:
                     kind = "argument" if expr.obj.level == sym.ObjLevel.Arg else "object"
                     report.error(
-                        f"cannot use `{expr.obj.name}` as mutable {kind}", expr.pos
+                        f"cannot use `{expr.obj.name}` as mutable {kind}",
+                        expr.pos
                     )
                     if expr.obj.level != sym.ObjLevel.Arg:
                         report.help(
@@ -1951,7 +1951,9 @@ class Checker:
             )
         elif isinstance(sy, sym.Var):
             if not sy.is_mut:
-                report.error(f"cannot use object `{sy.name}` as mutable value", pos)
+                report.error(
+                    f"cannot use object `{sy.name}` as mutable value", pos
+                )
             sy.is_changed = True
 
     def check_mut_vars(self, sc):

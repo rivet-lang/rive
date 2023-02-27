@@ -153,7 +153,9 @@ class ExternDecl:
         self.pos = pos
 
 class ConstDecl:
-    def __init__(self, docs, annotations, is_public, name, has_typ, typ, expr, pos):
+    def __init__(
+        self, docs, annotations, is_public, name, has_typ, typ, expr, pos
+    ):
         self.docs = docs
         self.annotations = annotations
         self.is_public = is_public

@@ -115,7 +115,8 @@ class Resolver:
                         self_typ = type.Ref(self_typ)
                     decl.scope.add(
                         sym.Obj(
-                            decl.self_is_mut, "self", self_typ, sym.ObjLevel.Rec, decl.name_pos
+                            decl.self_is_mut, "self", self_typ,
+                            sym.ObjLevel.Rec, decl.name_pos
                         )
                     )
                     decl.self_typ = self_typ
@@ -125,7 +126,8 @@ class Resolver:
                     try:
                         decl.scope.add(
                             sym.Obj(
-                                arg.is_mut, arg.name, arg.typ, sym.ObjLevel.Arg, arg.pos
+                                arg.is_mut, arg.name, arg.typ, sym.ObjLevel.Arg,
+                                arg.pos
                             )
                         )
                     except utils.CompilerError as e:
@@ -139,7 +141,8 @@ class Resolver:
                 self_typ = type.Type(self.self_sym)
                 decl.scope.add(
                     sym.Obj(
-                        decl.self_is_mut, "self", self_typ, sym.ObjLevel.Rec, decl.pos
+                        decl.self_is_mut, "self", self_typ, sym.ObjLevel.Rec,
+                        decl.pos
                     )
                 )
                 decl.self_typ = self_typ
@@ -158,7 +161,9 @@ class Resolver:
                     self.resolve_type(v.typ)
                 try:
                     stmt.scope.add(
-                        sym.Obj(v.is_mut, v.name, v.typ, sym.ObjLevel.Local, v.pos)
+                        sym.Obj(
+                            v.is_mut, v.name, v.typ, sym.ObjLevel.Local, v.pos
+                        )
                     )
                 except utils.CompilerError as e:
                     report.error(e.args[0], v.pos)
@@ -232,7 +237,9 @@ class Resolver:
             for v in expr.vars:
                 try:
                     expr.scope.add(
-                        sym.Obj(v.is_mut, v.name, self.comp.void_t, False, v.pos)
+                        sym.Obj(
+                            v.is_mut, v.name, self.comp.void_t, False, v.pos
+                        )
                     )
                 except utils.CompilerError as e:
                     report.error(e.args[0], v.pos)
