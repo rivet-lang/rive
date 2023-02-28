@@ -30,6 +30,8 @@ Rivet's goal is to be a very powerful programming language and at the same time 
 to use, with a syntax that is the result of mixing Go + Zig + C# and other languages
 such as Python, Lua, TypeScript, D, etc.
 
+## Why?
+
 It is true that there are many programming languages and each of them specialized in
 a field; some with strange syntax in my opinion (like Lisp) and others with a high
 learning curve, but Rivet tries to be an exception by trying to become a unique
