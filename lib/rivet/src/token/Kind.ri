@@ -4,6 +4,106 @@
 
 import "std/traits";
 
+#[boxed]
+public struct KindMap {
+    public key: Kind;
+    public value: string;
+}
+
+public var KindStrings = [
+    KindMap(.Unknown, "unknown"),
+    KindMap(.EOF, "end of file"),
+    KindMap(.DocComment, "doc-comment"),
+    KindMap(.Name, "name"),
+    KindMap(.Number, "number"),
+    KindMap(.Char, "character"),
+    KindMap(.String, "string"),
+    KindMap(.Plus, "+"),
+    KindMap(.Minus, "-"),
+    KindMap(.Mul, "*"),
+    KindMap(.Div, "/"),
+    KindMap(.Mod, "%"),
+    KindMap(.DeclAssign, ":="),
+    KindMap(.Assign, "="),
+    KindMap(.PlusAssign, "+="),
+    KindMap(.MinusAssign, "-="),
+    KindMap(.MulAssign, "*="),
+    KindMap(.DivAssign, "/="),
+    KindMap(.ModAssign, "%="),
+    KindMap(.AmpAssign, "&="),
+    KindMap(.PipeAssign, "|="),
+    KindMap(.XorAssign, "^="),
+    KindMap(.Eq, "=="),
+    KindMap(.Ne, "!="),
+    KindMap(.Lt, "<"),
+    KindMap(.Gt, ">"),
+    KindMap(.Le, "<="),
+    KindMap(.Ge, ">="),
+    KindMap(.Lshift, "<<"),
+    KindMap(.Rshift, ">>"),
+    KindMap(.Dot, "."),
+    KindMap(.DotDot, ".."),
+    KindMap(.Ellipsis, "..."),
+    KindMap(.At, "@"),
+    KindMap(.Arrow, "=>"),
+    KindMap(.Comma, ","),
+    KindMap(.Colon, ":"),
+    KindMap(.Semicolon, ";"),
+    KindMap(.Question, "?"),
+    KindMap(.OrElse, "??"),
+    KindMap(.Bang, "!"),
+    KindMap(.Amp, "&"),
+    KindMap(.Pipe, "|"),
+    KindMap(.Xor, "^"),
+    KindMap(.BitNot, "~"),
+    KindMap(.Lbrace, "{"),
+    KindMap(.Rbrace, "}"),
+    KindMap(.Lbracket, "["),
+    KindMap(.Rbracket, "]"),
+    KindMap(.Lparen, "("),
+    KindMap(.Rparen, ")"),
+
+    KindMap(.KwAlias, "alias"),
+    KindMap(.KwAnd, "and"),
+    KindMap(.KwAs, "as"),
+    KindMap(.KwBreak, "break"),
+    KindMap(.KwCatch, "catch"),
+    KindMap(.KwComptime, "comptime"),
+    KindMap(.KwConst, "const"),
+    KindMap(.KwContinue, "continue"),
+    KindMap(.KwDefer, "defer"),
+    KindMap(.KwElse, "else"),
+    KindMap(.KwEnum, "enum"),
+    KindMap(.KwErrDefer, "errdefer"),
+    KindMap(.KwExtend, "extend"),
+    KindMap(.KwExtern, "extern"),
+    KindMap(.KwFalse, "false"),
+    KindMap(.KwFunc, "func"),
+    KindMap(.KwFor, "for"),
+    KindMap(.KwFrom, "from"),
+    KindMap(.KwIf, "if"),
+    KindMap(.KwImport, "import"),
+    KindMap(.KwIn, "in"),
+    KindMap(.KwIs, "is"),
+    KindMap(.KwMut, "mut"),
+    KindMap(.KwNil, "nil"),
+    KindMap(.KwNotIn, "!in"),
+    KindMap(.KwNotIs, "!is"),
+    KindMap(.KwOr, "or"),
+    KindMap(.KwPublic, "public"),
+    KindMap(.KwReturn, "return"),
+    KindMap(.KwSelf, "self"),
+    KindMap(.KwSelfTy, "Self"),
+    KindMap(.KwStruct, "struct"),
+    KindMap(.KwSwitch, "switch"),
+    KindMap(.KwTest, "test"),
+    KindMap(.KwTrait, "trait"),
+    KindMap(.KwTrue, "true"),
+    KindMap(.KwUnsafe, "unsafe"),
+    KindMap(.KwVar, "var"),
+    KindMap(.KwWhile, "while")
+];
+
 public enum Kind : traits.Stringable {
     Unknown, // unknown
     EOF, // end of file
@@ -87,7 +187,7 @@ public enum Kind : traits.Stringable {
     KwNotIn, // !in
     KwNotIs, // !is
     KwOr, // or
-    KwPublic, // publiclic
+    KwPublic, // public
     KwReturn, // return
     KwSelf, // self
     KwSelfTy, // Self
@@ -142,7 +242,7 @@ public enum Kind : traits.Stringable {
     }
 
     public func to_string(&self) string {
-        for km in Kind_Strings {
+        for km in KindStrings {
             if km.key == self.* {
                 return km.value;
             }
@@ -150,106 +250,6 @@ public enum Kind : traits.Stringable {
         return "unknown-kind";
     }
 }
-
-#[boxed]
-public struct KindMap {
-    public key: Kind;
-    public value: string;
-}
-
-public var Kind_Strings = [
-    KindMap(.Unknown, "unknown"),
-    KindMap(.EOF, "end of file"),
-    KindMap(.DocComment, "doc-comment"),
-    KindMap(.Name, "name"),
-    KindMap(.Number, "number"),
-    KindMap(.Char, "character"),
-    KindMap(.String, "string"),
-    KindMap(.Plus, "+"),
-    KindMap(.Minus, "-"),
-    KindMap(.Mul, "*"),
-    KindMap(.Div, "/"),
-    KindMap(.Mod, "%"),
-    KindMap(.DeclAssign, ":="),
-    KindMap(.Assign, "="),
-    KindMap(.PlusAssign, "+="),
-    KindMap(.MinusAssign, "-="),
-    KindMap(.MulAssign, "*="),
-    KindMap(.DivAssign, "/="),
-    KindMap(.ModAssign, "%="),
-    KindMap(.AmpAssign, "&="),
-    KindMap(.PipeAssign, "|="),
-    KindMap(.XorAssign, "^="),
-    KindMap(.Eq, "=="),
-    KindMap(.Ne, "!="),
-    KindMap(.Lt, "<"),
-    KindMap(.Gt, ">"),
-    KindMap(.Le, "<="),
-    KindMap(.Ge, ">="),
-    KindMap(.Lshift, "<<"),
-    KindMap(.Rshift, ">>"),
-    KindMap(.Dot, "."),
-    KindMap(.DotDot, ".."),
-    KindMap(.Ellipsis, "..."),
-    KindMap(.At, "@"),
-    KindMap(.Arrow, "=>"),
-    KindMap(.Comma, ","),
-    KindMap(.Colon, ":"),
-    KindMap(.Semicolon, ";"),
-    KindMap(.Question, "?"),
-    KindMap(.OrElse, "??"),
-    KindMap(.Bang, "!"),
-    KindMap(.Amp, "&"),
-    KindMap(.Pipe, "|"),
-    KindMap(.Xor, "^"),
-    KindMap(.BitNot, "~"),
-    KindMap(.Lbrace, "{"),
-    KindMap(.Rbrace, "}"),
-    KindMap(.Lbracket, "["),
-    KindMap(.Rbracket, "]"),
-    KindMap(.Lparen, "("),
-    KindMap(.Rparen, ")"),
-
-    KindMap(.KwAlias, "alias"),
-    KindMap(.KwAnd, "and"),
-    KindMap(.KwAs, "as"),
-    KindMap(.KwBreak, "break"),
-    KindMap(.KwCatch, "catch"),
-    KindMap(.KwComptime, "comptime"),
-    KindMap(.KwConst, "const"),
-    KindMap(.KwContinue, "continue"),
-    KindMap(.KwDefer, "defer"),
-    KindMap(.KwElse, "else"),
-    KindMap(.KwEnum, "enum"),
-    KindMap(.KwErrDefer, "errdefer"),
-    KindMap(.KwExtend, "extend"),
-    KindMap(.KwExtern, "extern"),
-    KindMap(.KwFalse, "false"),
-    KindMap(.KwFunc, "func"),
-    KindMap(.KwFor, "for"),
-    KindMap(.KwFrom, "from"),
-    KindMap(.KwIf, "if"),
-    KindMap(.KwImport, "import"),
-    KindMap(.KwIn, "in"),
-    KindMap(.KwIs, "is"),
-    KindMap(.KwMut, "mut"),
-    KindMap(.KwNil, "nil"),
-    KindMap(.KwNotIn, "!in"),
-    KindMap(.KwNotIs, "!is"),
-    KindMap(.KwOr, "or"),
-    KindMap(.KwPublic, "publiclic"),
-    KindMap(.KwReturn, "return"),
-    KindMap(.KwSelf, "self"),
-    KindMap(.KwSelfTy, "Self"),
-    KindMap(.KwStruct, "struct"),
-    KindMap(.KwSwitch, "switch"),
-    KindMap(.KwTest, "test"),
-    KindMap(.KwTrait, "trait"),
-    KindMap(.KwTrue, "true"),
-    KindMap(.KwUnsafe, "unsafe"),
-    KindMap(.KwVar, "var"),
-    KindMap(.KwWhile, "while")
-];
 
 #[inline]
 public func lookup(str: string) Kind {
@@ -280,7 +280,7 @@ public func lookup(str: string) Kind {
         "!in" => .KwNotIn,
         "!is" => .KwNotIs,
         "or" => .KwOr,
-        "publiclic" => .KwPublic,
+        "public" => .KwPublic,
         "return" => .KwReturn,
         "self" => .KwSelf,
         "Self" => .KwSelfTy,
