@@ -11,8 +11,8 @@ import "../prefs";
 import "../utils";
 import "../report";
 
-const LF: uint8 = 10;
-const CR: uint8 = 13;
+import { LF, CR } from "../utils";
+
 const NUM_SEP = b'_';
 
 #[boxed]
@@ -56,7 +56,7 @@ public struct Tokenizer {
         while {
             t := self.internal_next();
             self.all_tokens.push(t);
-            if t.kind == .EOF {
+            if t.kind == .EndOfFile {
                 break;
             }
         }
@@ -76,7 +76,7 @@ public struct Tokenizer {
 
     #[inline]
     func new_eof_token(self) token.Token {
-        return token.Token(kind: .EOF, pos: self.current_pos());
+        return token.Token(kind: .EndOfFile, pos: self.current_pos());
     }
 
     func end_of_file(mut self) token.Token {

@@ -12,7 +12,7 @@ public struct KindMap {
 
 public var KindStrings = [
     KindMap(.Unknown, "unknown"),
-    KindMap(.EOF, "end of file"),
+    KindMap(.EndOfFile, "end of file"),
     KindMap(.DocComment, "doc-comment"),
     KindMap(.Name, "name"),
     KindMap(.Number, "number"),
@@ -106,7 +106,7 @@ public var KindStrings = [
 
 public enum Kind : traits.Stringable {
     Unknown, // unknown
-    EOF, // end of file
+    EndOfFile, // end of file
     DocComment, // doc-comment
     Name, // name
     Number, // number

@@ -78,7 +78,7 @@ public struct Prefs {
 
     public func new(args: []string, is_test: bool, run_output: bool) !Self {
         prefs := Prefs(is_test: is_test, run_output: run_output);
-        mut options: []string := [];
+        mut options := @vec(string);
         mut i: usize := 0;
         while i < args.len : i += 1 {
             arg := args[i];

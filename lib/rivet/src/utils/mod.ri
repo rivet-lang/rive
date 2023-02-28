@@ -8,6 +8,8 @@ import "std/console";
 import "std/process";
 import "std/console/styles";
 
+public const LF: uint8 = 10;
+public const CR: uint8 = 13;
 public var VERSION = "0.1.0b";
 
 #[inline]
@@ -17,7 +19,7 @@ public func is_name_char(ch: uint8) bool {
 
 #[inline]
 public func is_new_line(ch: uint8) bool {
-    return ch == 10 or ch == 13;
+    return ch == LF or ch == CR;
 }
 
 public func skip_bom(file_content: string) string {
@@ -56,7 +58,7 @@ struct SourceCache {
       return if lines := self.find_lines(path) {
          lines[line]
       } else {
-        nil
+         nil
       };
    }
 
@@ -82,9 +84,7 @@ public func read_file(path: string) !string {
       return res;
    }
    content := skip_bom(fs.read_file(path).!);
-   unsafe {
-      source_cache.sources.push(CachedFile(path, content));
-   }
+   source_cache.sources.push(CachedFile(path, content));
    return content;
 }
 
@@ -118,7 +118,7 @@ public func error(msg: string, args: ...traits.Stringable) never {
    process.exit(1);
 }
 
-var StderrSupportStyles: bool = styles.stderr_support_styles();
+var StderrSupportStyles = styles.stderr_support_styles();
 
 #[inline]
 public func bold(msg: string) string {
