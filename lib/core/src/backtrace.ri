@@ -30,7 +30,7 @@ extern (C) {
 }
 
 var state = unsafe {
-    backtrace_create_state(ARGS[0].ptr, true, bt_error_handler, nil).?
+    backtrace_create_state(ARGS[0].ptr, true, bt_error_handler, none).?
 };
 
 func bt_print_callback(
@@ -43,12 +43,12 @@ func bt_print_callback(
                 return -1; // stop backtracing
             }
         }
-        fn_name := if fn_ptr is nil {
+        fn_name := if fn_ptr is none {
             "???"
         } else {
             demangle_symbol(string.from_raw(fn_ptr))
         };
-        file_name := if filename_ptr is nil {
+        file_name := if filename_ptr is none {
             "???"
         } else {
             string.from_raw(filename_ptr)

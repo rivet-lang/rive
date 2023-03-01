@@ -21,7 +21,7 @@ class Compiler:
         #  Primitive types.
         self.void_t = type.Type(self.universe[0])
         self.never_t = type.Type(self.universe[1])
-        self.nil_t = type.Type(self.universe[2])
+        self.none_t = type.Type(self.universe[2])
         self.bool_t = type.Type(self.universe[3])
         self.rune_t = type.Type(self.universe[4])
         self.int8_t = type.Type(self.universe[5])
@@ -365,7 +365,7 @@ class Compiler:
             return sy.size, sy.align
         size, align = 0, 0
         if sy.kind in (
-            sym.TypeKind.Placeholder, sym.TypeKind.Void, sym.TypeKind.Nil,
+            sym.TypeKind.Placeholder, sym.TypeKind.Void, sym.TypeKind.None_,
             sym.TypeKind.Never
         ):
             pass

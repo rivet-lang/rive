@@ -169,7 +169,7 @@ class Checker:
                     decl.name_pos
                 )
                 report.note(
-                    "this is because Rivet cannot ensure that the function does not always return `nil`"
+                    "this is because Rivet cannot ensure that the function does not always return `none`"
                 )
             self.cur_fn = decl.sym
             self.expected_type = decl.ret_typ
@@ -386,8 +386,8 @@ class Checker:
         elif isinstance(expr, ast.SelfTyExpr):
             expr.typ = type.Type(expr.sym)
             return expr.typ
-        elif isinstance(expr, ast.NilLiteral):
-            expr.typ = self.comp.nil_t
+        elif isinstance(expr, ast.NoneLiteral):
+            expr.typ = self.comp.none_t
             return expr.typ
         elif isinstance(expr, ast.BoolLiteral):
             expr.typ = self.comp.bool_t
@@ -972,7 +972,7 @@ class Checker:
                                         expr_left.field_pos
                                     )
                                     report.help(
-                                        "use the nil-check syntax: `foo.?.method()`"
+                                        "use the none-check syntax: `foo.?.method()`"
                                     )
                                     report.help(
                                         "or use `orelse`: `(foo orelse 5).method()`"
@@ -1671,7 +1671,7 @@ class Checker:
 
     def check_types(self, got, expected):
         if not self.check_compatible_types(got, expected):
-            if got == self.comp.nil_t:
+            if got == self.comp.none_t:
                 if isinstance(expected, type.Option):
                     got_str = str(expected)
                 else:
@@ -1704,10 +1704,10 @@ class Checker:
             return expected.typ == got.typ.typ
         elif isinstance(expected,
                         type.Option) and not isinstance(got, type.Option):
-            if got == self.comp.nil_t:
+            if got == self.comp.none_t:
                 return True
             return self.check_compatible_types(got, expected.typ)
-        elif expected == self.comp.nil_t and isinstance(got, type.Option):
+        elif expected == self.comp.none_t and isinstance(got, type.Option):
             return True
 
         if (isinstance(expected, type.Ref)
@@ -1907,8 +1907,8 @@ class Checker:
                     f"field `{expr.field_name}` of type `{expr.left.typ.symbol().name}` is immutable",
                     expr.pos
                 )
-        elif isinstance(expr, ast.NilLiteral):
-            report.error("`nil` cannot be modified", expr.pos)
+        elif isinstance(expr, ast.NoneLiteral):
+            report.error("`none` cannot be modified", expr.pos)
         elif isinstance(expr, ast.StringLiteral):
             report.error("string literals cannot be modified", expr.pos)
         elif isinstance(expr, ast.TupleLiteral):

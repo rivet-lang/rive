@@ -336,7 +336,7 @@ class TypeKind(Enum):
     Placeholder = auto_enum()
     Never = auto_enum()
     Void = auto_enum()
-    Nil = auto_enum()
+    None_ = auto_enum()
     Bool = auto_enum()
     Rune = auto_enum()
     Int8 = auto_enum()
@@ -364,7 +364,7 @@ class TypeKind(Enum):
 
     def is_primitive(self):
         if self in (
-            TypeKind.Void, TypeKind.Nil, TypeKind.Bool, TypeKind.Rune,
+            TypeKind.Void, TypeKind.None_, TypeKind.Bool, TypeKind.Rune,
             TypeKind.Int8, TypeKind.Int16, TypeKind.Int32, TypeKind.Int64,
             TypeKind.Isize, TypeKind.Uint8, TypeKind.Uint16, TypeKind.Uint32,
             TypeKind.Uint64, TypeKind.Usize, TypeKind.ComptimeInt,
@@ -377,8 +377,8 @@ class TypeKind(Enum):
     def __repr__(self):
         if self == TypeKind.Void:
             return "void"
-        elif self == TypeKind.Nil:
-            return "nil"
+        elif self == TypeKind.None_:
+            return "none"
         elif self == TypeKind.Bool:
             return "bool"
         elif self == TypeKind.Rune:
@@ -671,7 +671,7 @@ def universe():
     uni = Mod(False, "universe")
     uni.add(Type(True, "void", TypeKind.Void))
     uni.add(Type(True, "never", TypeKind.Never))
-    uni.add(Type(True, "nil", TypeKind.Nil))
+    uni.add(Type(True, "none", TypeKind.None_))
     uni.add(Type(True, "bool", TypeKind.Bool))
     uni.add(Type(True, "rune", TypeKind.Rune))
     uni.add(Type(True, "int8", TypeKind.Int8))

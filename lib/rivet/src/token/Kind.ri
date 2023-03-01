@@ -86,7 +86,7 @@ public var KindStrings = [
     KindMap(.KwIn, "in"),
     KindMap(.KwIs, "is"),
     KindMap(.KwMut, "mut"),
-    KindMap(.KwNil, "nil"),
+    KindMap(.KwNone, "none"),
     KindMap(.KwNotIn, "!in"),
     KindMap(.KwNotIs, "!is"),
     KindMap(.KwOr, "or"),
@@ -183,7 +183,7 @@ public enum Kind : traits.Stringable {
     KwIn, // in
     KwIs, // is
     KwMut, // mut
-    KwNil, // nil
+    KwNone, // none
     KwNotIn, // !in
     KwNotIs, // !is
     KwOr, // or
@@ -276,7 +276,7 @@ public func lookup(str: string) Kind {
         "in" => .KwIn,
         "is" => .KwIs,
         "mut" => .KwMut,
-        "nil" => .KwNil,
+        "none" => .KwNone,
         "!in" => .KwNotIn,
         "!is" => .KwNotIs,
         "or" => .KwOr,

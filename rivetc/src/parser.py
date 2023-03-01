@@ -761,7 +761,7 @@ class Parser:
         expr = self.empty_expr()
         if self.tok.kind in [
             Kind.KwTrue, Kind.KwFalse, Kind.Char, Kind.Number, Kind.String,
-            Kind.KwNil, Kind.KwSelf, Kind.KwSelfTy
+            Kind.KwNone, Kind.KwSelf, Kind.KwSelfTy
         ]:
             expr = self.parse_literal()
         elif self.accept(Kind.At):
@@ -1011,7 +1011,7 @@ class Parser:
                         is_indirect = True
                     )
                 elif self.accept(Kind.Question):
-                    # check optional value, if nil panic
+                    # check optional value, if none panic
                     expr = ast.SelectorExpr(
                         expr, "", expr.pos, self.prev_tok.pos,
                         is_option_check = True
@@ -1166,8 +1166,8 @@ class Parser:
             return self.parse_integer_literal()
         elif self.tok.kind == Kind.String:
             return self.parse_string_literal()
-        elif self.accept(Kind.KwNil):
-            return ast.NilLiteral(self.prev_tok.pos)
+        elif self.accept(Kind.KwNone):
+            return ast.NoneLiteral(self.prev_tok.pos)
         elif self.accept(Kind.KwSelf):
             return ast.SelfExpr(self.scope, self.prev_tok.pos)
         elif self.accept(Kind.KwSelfTy):
@@ -1302,8 +1302,8 @@ class Parser:
             return type.Type.unresolved(
                 ast.SelfTyExpr(self.scope, self.prev_tok.pos)
             )
-        elif self.accept(Kind.KwNil):
-            return self.comp.nil_t
+        elif self.accept(Kind.KwNone):
+            return self.comp.none_t
         elif self.tok.kind == Kind.Name:
             prev_tok_kind = self.prev_tok.kind
             expr = self.parse_ident()

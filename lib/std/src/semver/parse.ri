@@ -64,7 +64,7 @@ struct RawVersion {
 
     func validate(&self) ?Version {
         if !self.is_valid() {
-            return nil;
+            return none;
         }
         return self.to_version();
     }

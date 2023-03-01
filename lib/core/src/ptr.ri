@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-extend nil : Stringable {
+extend none : Stringable {
     #[inline]
     public func to_string(&self) string {
-        return "nil";
+        return "none";
     }
 }
 

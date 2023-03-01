@@ -25,9 +25,9 @@ func signals_handler(sig: int32, info: *mut libc.siginfo_t, context: mut_anyptr)
 func segfault_handler() {
     console_eprintln(
         if libcore_started {
-            "panic: invalid memory address or nil pointer dereference"
+            "panic: invalid memory address or null pointer dereference"
         } else {
-            "panic: invalid memory address or nil pointer dereference while starting the core"
+            "panic: invalid memory address or null pointer dereference while starting the core"
         }
     );
     bt_print(4);

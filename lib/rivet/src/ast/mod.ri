@@ -18,7 +18,7 @@ public struct ImportedSymbols {
                 return pair.1;
             }
         }
-        return nil;
+        return none;
     }
 }
 

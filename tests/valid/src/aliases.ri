@@ -9,9 +9,9 @@ test "using `alias` with symbols" {
 alias AnyptrOption = ?anyptr;
 
 func anyptrOption() AnyptrOption {
-    return nil;
+    return none;
 }
 
 test "using `alias` with types" {
-    @assert(anyptrOption() is nil);
+    @assert(anyptrOption() is none);
 }

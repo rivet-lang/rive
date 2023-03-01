@@ -50,7 +50,7 @@ struct Comparator {
             input.starts_with("=") => input[1..],
             else => input
         };
-        return Comparator(coerce(raw_version) catch return nil, op);
+        return Comparator(coerce(raw_version) catch return none, op);
     }
 
     #[inline]
@@ -120,9 +120,9 @@ struct Range {
         mut comparator_sets := @vec(ComparatorSet);
         for raw_comp_set in raw_comparator_sets {
             if can_expand(raw_comp_set) {
-                comparator_sets.push(ComparatorSet.expand(raw_comp_set) ?? return nil);
+                comparator_sets.push(ComparatorSet.expand(raw_comp_set) ?? return none);
             } else {
-                comparator_sets.push(ComparatorSet.parse(raw_comp_set) catch return nil);
+                comparator_sets.push(ComparatorSet.parse(raw_comp_set) catch return none);
             }
         }
         return Range(comparator_sets);
@@ -131,7 +131,7 @@ struct Range {
     func parse_x(input: string) ?Version {
         raw_ver := RawVersion.parse(input).complete();
         for typ in VERSIONS {
-            if raw_ver.raw_ints[typ].index_of_any(X_RANGE_SYMBOLS) is nil {
+            if raw_ver.raw_ints[typ].index_of_any(X_RANGE_SYMBOLS) is none {
                 continue;
             }
             switch typ {
@@ -151,11 +151,11 @@ struct Range {
         if raw_ver.is_valid() {
             return raw_ver.to_version();
         }
-        return nil;
+        return none;
     }
 
     func expand_x(raw_range: string) ?ComparatorSet {
-        min_ver := Range.parse_x(raw_range) ?? return nil;
+        min_ver := Range.parse_x(raw_range) ?? return none;
         if min_ver.major == 0 {
             return ComparatorSet([Comparator(min_ver, .Ge)]);
         }
@@ -180,11 +180,11 @@ struct Range {
 func can_expand(input: string) bool {
     input0 := input[0];
     return input0 == b'~' or input0 == b'^' or input.contains(HYPHEN_RANGE_SEP)
-        or input.index_of_any(X_RANGE_SYMBOLS) !is nil;
+        or input.index_of_any(X_RANGE_SYMBOLS) !is none;
 }
 
 func expand_tilda(raw_version: string) ?ComparatorSet {
-    min_ver := coerce(raw_version) catch return nil;
+    min_ver := coerce(raw_version) catch return none;
     mut max_ver := min_ver;
     max_ver = if min_ver.minor == 0 and min_ver.patch == 0 {
         min_ver.increment(.Major)
@@ -195,7 +195,7 @@ func expand_tilda(raw_version: string) ?ComparatorSet {
 }
 
 func expand_caret(raw_version: string) ?ComparatorSet {
-    min_ver := coerce(raw_version) catch return nil;
+    min_ver := coerce(raw_version) catch return none;
     mut max_ver := min_ver;
     max_ver = if min_ver.major == 0 {
         min_ver.increment(.Minor)
@@ -208,14 +208,14 @@ func expand_caret(raw_version: string) ?ComparatorSet {
 func expand_hyphen(raw_range: string) ?ComparatorSet {
     raw_versions := raw_range.split(HYPHEN_RANGE_SEP);
     if raw_versions.len != 2 {
-        return nil;
+        return none;
     }
-    min_ver := coerce(raw_versions[0]) catch return nil;
+    min_ver := coerce(raw_versions[0]) catch return none;
     raw_max_ver := RawVersion.parse(raw_versions[1]);
     if raw_max_ver.is_missing(VER_MAJOR) {
-        return nil;
+        return none;
     }
-    mut max_ver := raw_max_ver.coerce() catch return nil;
+    mut max_ver := raw_max_ver.coerce() catch return none;
     if raw_max_ver.is_missing(VER_MINOR) {
         max_ver = max_ver.increment(.Minor);
         return make_comparator_set_ge_lt(min_ver, max_ver);

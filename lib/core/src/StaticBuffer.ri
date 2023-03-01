@@ -24,11 +24,11 @@ struct StaticBuffer {
     }
 
     public func as_uint64(&self) uint64 {
-        return unsafe { libc.strtoul(&self.buf[0], nil, 10) };
+        return unsafe { libc.strtoul(&self.buf[0], none, 10) };
     }
 
     public func as_isize(&self) isize {
-        return unsafe { @cast(isize, libc.strtol(&self.buf[0], nil, 10))};
+        return unsafe { @cast(isize, libc.strtol(&self.buf[0], none, 10))};
     }
 
     public func as_string(&self) string {

@@ -46,14 +46,14 @@ test "std.fs.path.dirname()" {
     } else {
         @assert(false);
     }
-    @assert(path.dirname("/") is nil);
-    @assert(path.dirname("//") is nil);
-    @assert(path.dirname("///") is nil);
-    @assert(path.dirname("////") is nil);
-    @assert(path.dirname("") is nil);
-    @assert(path.dirname("a") is nil);
-    @assert(path.dirname("a/") is nil);
-    @assert(path.dirname("a//") is nil);
+    @assert(path.dirname("/") is none);
+    @assert(path.dirname("//") is none);
+    @assert(path.dirname("///") is none);
+    @assert(path.dirname("////") is none);
+    @assert(path.dirname("") is none);
+    @assert(path.dirname("a") is none);
+    @assert(path.dirname("a/") is none);
+    @assert(path.dirname("a//") is none);
 }
 
 test "std.fs.path.basename()" {

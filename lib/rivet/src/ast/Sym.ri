@@ -32,7 +32,7 @@ public enum ABI as uint8 : traits.Stringable {
         return switch abi {
             "C" => .C,
             "Rivet" => .Rivet,
-            else => nil
+            else => none
         };
     }
 
@@ -117,7 +117,7 @@ public struct Field {
 public enum TypeKind : traits.Stringable {
     Placeholder,
     Never,
-    Nil,
+    None,
     Bool,
     Rune,
     Int8,
@@ -146,7 +146,7 @@ public enum TypeKind : traits.Stringable {
     #[inline]
     public func is_primitive(self) bool {
         return self in [
-            .Nil, .Bool, .Rune, .Int8, .Int16, .Int32, .Int64, .Isize, .Uint8,
+            .None, .Bool, .Rune, .Int8, .Int16, .Int32, .Int64, .Isize, .Uint8,
             .Uint16, .Uint32, .Uint64, .Usize, .ComptimeInt, .ComptimeFloat, .Float32,
             .Float64, .Never
         ];
@@ -155,7 +155,7 @@ public enum TypeKind : traits.Stringable {
     #[inline]
     public func to_string(&self) string {
         return switch self.* {
-            .Nil => "nil",
+            .None => "none",
             .Bool => "bool",
             .Rune => "rune",
             .Int8 => "int8",
@@ -244,7 +244,7 @@ public struct EnumInfo {
                 return v;
             }
         }
-        return nil;
+        return none;
     }
 
     public func get_variant_by_type(self, typ: Type) ?EnumVariant {
@@ -253,11 +253,11 @@ public struct EnumInfo {
                 return v;
             }
         }
-        return nil;
+        return none;
     }
 
     public func has_value(self, name: string) bool {
-        return self.get_value(name) !is nil;
+        return self.get_value(name) !is none;
     }
 }
 
@@ -273,7 +273,7 @@ public struct TraitInfo {
                 return i;
             }
         }
-        return nil;
+        return none;
     }
 
     public func implement(mut self, type_sym: TypeSym) {
@@ -318,12 +318,12 @@ public struct TypeSym : Sym {
                 }
             }
         }
-        return nil;
+        return none;
     }
 
     #[inline]
     public func has_field(self, name: string) bool {
-        return self.lookup_field(name) !is nil;
+        return self.lookup_field(name) !is none;
     }
 
     public func lookup_in_base(self, name: string) ?Sym {
@@ -334,7 +334,7 @@ public struct TypeSym : Sym {
                 }
             }
         }
-        return nil;
+        return none;
     }
 
     #[inline]
@@ -344,7 +344,7 @@ public struct TypeSym : Sym {
         } else if s := self.lookup_in_base(name) {
             s
         } else {
-            nil
+            none
         };
     }
 
@@ -475,7 +475,7 @@ public struct Scope {
 
     #[inline]
     public func exists(self, name: string) bool {
-        return self.lookup(name) !is nil;
+        return self.lookup(name) !is none;
     }
 
     public func lookup(self, name: string) ?Sym {
@@ -491,12 +491,12 @@ public struct Scope {
             }
             sc_ = sc.parent;
         }
-        return nil;
+        return none;
     }
 
     #[inline]
     func dont_lookup_parent(self) bool {
-        return self.detached_from_parent or self.parent is nil;
+        return self.detached_from_parent or self.parent is none;
     }
 }
 
@@ -504,7 +504,7 @@ public struct Scope {
 public func universe() Mod {
     return Mod(is_public: false, name: "universe", scope: Scope(syms: [
         TypeSym(is_public: true, name: "never", kind: .Never),
-        TypeSym(is_public: true, name: "nil", kind: .Nil),
+        TypeSym(is_public: true, name: "none", kind: .None),
         TypeSym(is_public: true, name: "bool", kind: .Bool),
         TypeSym(is_public: true, name: "rune", kind: .Rune),
         TypeSym(is_public: true, name: "int8", kind: .Int8),

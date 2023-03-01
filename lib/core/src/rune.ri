@@ -28,7 +28,7 @@ extend rune : Stringable {
     /// sixteen, hexadecimal, to give some common values. Arbitrary
     /// radices are supported.
     ///
-    /// `rune_from_digit()` will return `nil` if the input is not a digit
+    /// `rune_from_digit()` will return `none` if the input is not a digit
     /// in the given radix.
     ///
     /// Panics if given a radix larger than 36.
@@ -44,7 +44,7 @@ extend rune : Stringable {
                 return @cast(rune, b'a' + num_ - 10);
             }
         }
-        return nil;
+        return none;
     }
 
     #[inline]

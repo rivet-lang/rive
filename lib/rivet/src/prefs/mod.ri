@@ -17,7 +17,7 @@ public enum Backend as uint8 {
     public func from_string(name: string) ?Self {
         return switch name {
             "c" => .C,
-            else => nil
+            else => none
         };
     }
 }

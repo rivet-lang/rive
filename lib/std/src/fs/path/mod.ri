@@ -80,22 +80,22 @@ public func is_link(path: string) bool {
 
 /// Strip the last component from a file path.
 /// If the path is a file in the current directory (no directory component)
-/// then returns nil.
-/// If the path is the root directory, returns nil.
+/// then returns none.
+/// If the path is the root directory, returns none.
 public func dirname(path: string) ?string {
     if path.len == 0 {
-        return nil;
+        return none;
     }
     mut end_index: usize := path.len - 1;
     while path[end_index] == b'/' {
         if end_index == 0 {
-            return nil;
+            return none;
         }
         end_index -= 1;
     }
     while path[end_index] != b'/' {
         if end_index == 0 {
-            return nil;
+            return none;
         }
         end_index -= 1;
     }
@@ -103,7 +103,7 @@ public func dirname(path: string) ?string {
         return path[0..1];
     }
     if end_index == 0 {
-        return nil;
+        return none;
     }
     return path[0..end_index];
 }
@@ -236,7 +236,7 @@ public func relative(from_: string, to: string) !string {
             }
         }
         mut up_count: usize := 1;
-        while from_it.next() !is nil {
+        while from_it.next() !is none {
             up_count += 1;
         }
         up_index_end := up_count * 3;

@@ -363,7 +363,7 @@ class CGen:
             self.write("/* <skip> */")
         elif isinstance(expr, ir.Inst):
             self.gen_inst(expr)
-        elif isinstance(expr, ir.NilLit):
+        elif isinstance(expr, ir.NoneLit):
             self.write("NULL")
         elif isinstance(expr, ir.IntLit):
             if expr.value() == MIN_INT64:

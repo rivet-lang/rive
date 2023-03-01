@@ -438,13 +438,13 @@ class SelfTyExpr:
     def __str__(self):
         return self.__repr__()
 
-class NilLiteral:
+class NoneLiteral:
     def __init__(self, pos):
         self.pos = pos
         self.typ = None
 
     def __repr__(self):
-        return "nil"
+        return "none"
 
     def __str__(self):
         return self.__repr__()

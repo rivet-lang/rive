@@ -83,7 +83,7 @@ class Kind(Enum):
     KwIn = auto_enum() # in
     KwIs = auto_enum() # is
     KwMut = auto_enum() # mut
-    KwNil = auto_enum() # nil
+    KwNone = auto_enum() # none
     KwNotIn = auto_enum() # !in
     KwNotIs = auto_enum() # !is
     KwOr = auto_enum() # or
@@ -229,7 +229,7 @@ TOKEN_STRINGS = {
     Kind.KwIn: "in",
     Kind.KwIs: "is",
     Kind.KwMut: "mut",
-    Kind.KwNil: "nil",
+    Kind.KwNone: "none",
     Kind.KwNotIn: "!in",
     Kind.KwNotIs: "!is",
     Kind.KwOr: "or",

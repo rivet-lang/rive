@@ -382,12 +382,12 @@ class Comment:
     def __str__(self):
         return self.__repr__()
 
-class NilLit:
+class NoneLit:
     def __init__(self, typ):
         self.typ = typ
 
     def __repr__(self):
-        return "nil"
+        return "none"
 
     def __str__(self):
         return self.__repr__()

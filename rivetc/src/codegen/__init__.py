@@ -700,14 +700,14 @@ class Codegen:
             expr_typ = expr.typ
         expr_sym = expr.typ.symbol()
         expected_sym = expected_typ_.symbol()
-        if expected_sym.kind == TypeKind.Trait and expr_sym != expected_sym and expr.typ != self.comp.nil_t:
+        if expected_sym.kind == TypeKind.Trait and expr_sym != expected_sym and expr.typ != self.comp.none_t:
             res_expr = self.trait_value(res_expr, expr_typ, expected_typ_)
 
         # wrap optional value
         if isinstance(expected_typ_,
                       type.Option) and not expected_typ_.is_ref_or_ptr():
-            if isinstance(res_expr, ir.NilLit):
-                res_expr = self.option_nil(expected_typ_)
+            if isinstance(res_expr, ir.NoneLit):
+                res_expr = self.option_none(expected_typ_)
             elif not isinstance(res_expr, ir.Skip
                                 ) and not isinstance(expr_typ, type.Option):
                 res_expr = self.option_value(expected_typ_, res_expr)
@@ -717,8 +717,8 @@ class Codegen:
     def gen_expr(self, expr, custom_tmp = None):
         if isinstance(expr, ast.ParExpr):
             return self.gen_expr(expr.expr)
-        elif isinstance(expr, ast.NilLiteral):
-            return ir.NilLit(ir.VOID_PTR_T)
+        elif isinstance(expr, ast.NoneLiteral):
+            return ir.NoneLit(ir.VOID_PTR_T)
         elif isinstance(expr, ast.BoolLiteral):
             return ir.IntLit(ir.BOOL_T, str(int(expr.lit)))
         elif isinstance(expr, ast.CharLiteral):
@@ -1428,18 +1428,18 @@ class Codegen:
                         ir.Inst(
                             ir.InstKind.Cmp,
                             [ir.Name("=="), left,
-                             ir.NilLit(ir.VOID_PTR_T)]
+                             ir.NoneLit(ir.VOID_PTR_T)]
                         ), panic_l, exit_l
                     )
                     value = left
                 else:
                     self.cur_fn.add_cond_br(
-                        ir.Selector(ir.BOOL_T, left, ir.Name("is_nil")),
+                        ir.Selector(ir.BOOL_T, left, ir.Name("is_none")),
                         panic_l, exit_l
                     )
                     value = ir.Selector(ir_typ, left, ir.Name("value"))
                 self.cur_fn.add_label(panic_l)
-                self.panic(f"attempt to use nil value (`{expr.left}`)")
+                self.panic(f"attempt to use none value (`{expr.left}`)")
                 self.cur_fn.add_label(exit_l)
                 return value
             elif isinstance(left, ir.StringLit):
@@ -1632,9 +1632,9 @@ class Codegen:
                         op = "==" if expr.op == Kind.KwIs else "!="
                         return ir.Inst(
                             ir.InstKind.Cmp,
-                            [op, left, ir.NilLit(ir.VOID_PTR_T)], ir.BOOL_T
+                            [op, left, ir.NoneLit(ir.VOID_PTR_T)], ir.BOOL_T
                         )
-                    val = ir.Selector(ir.BOOL_T, left, ir.Name("is_nil"))
+                    val = ir.Selector(ir.BOOL_T, left, ir.Name("is_none"))
                     if expr.op == Kind.KwNotIs:
                         val = ir.Inst(ir.InstKind.BooleanNot, [val], ir.BOOL_T)
                     return val
@@ -1642,31 +1642,31 @@ class Codegen:
                     expr_typ = expr_left_typ
                     is_not_never = expr.right.typ != self.comp.never_t
                     left = self.gen_expr_with_cast(expr_typ, expr.left)
-                    is_nil_label = self.cur_fn.local_name()
-                    is_not_nil_label = self.cur_fn.local_name()
+                    is_none_label = self.cur_fn.local_name()
+                    is_not_none_label = self.cur_fn.local_name()
                     exit_label = self.cur_fn.local_name(
                     ) if is_not_never else ""
                     if expr_typ.is_ref_or_ptr():
                         cond = ir.Inst(
                             ir.InstKind.Cmp,
                             [ir.Name("=="), left,
-                             ir.NilLit(ir.VOID_PTR_T)]
+                             ir.NoneLit(ir.VOID_PTR_T)]
                         )
                     else:
-                        cond = ir.Selector(ir.BOOL_T, left, ir.Name("is_nil"))
+                        cond = ir.Selector(ir.BOOL_T, left, ir.Name("is_none"))
                     tmp = ir.Ident(
                         self.ir_type(expr_typ.typ), self.cur_fn.local_name()
                     )
                     self.cur_fn.alloca(tmp)
                     self.cur_fn.add_cond_br(
-                        cond, is_nil_label, is_not_nil_label
+                        cond, is_none_label, is_not_none_label
                     )
-                    self.cur_fn.add_label(is_nil_label)
+                    self.cur_fn.add_label(is_none_label)
                     right = self.gen_expr_with_cast(expr_typ.typ, expr.right)
                     if is_not_never:
                         self.cur_fn.store(tmp, right)
                         self.cur_fn.add_br(exit_label)
-                    self.cur_fn.add_label(is_not_nil_label)
+                    self.cur_fn.add_label(is_not_none_label)
                     if expr_typ.is_ref_or_ptr():
                         self.cur_fn.store(tmp, left)
                     else:
@@ -2347,7 +2347,7 @@ class Codegen:
         tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
         self.cur_fn.alloca(tmp)
         self.cur_fn.store(
-            ir.Selector(ir.BOOL_T, tmp, ir.Name("is_nil")),
+            ir.Selector(ir.BOOL_T, tmp, ir.Name("is_none")),
             ir.IntLit(ir.BOOL_T, "0")
         )
         self.cur_fn.store(
@@ -2355,11 +2355,11 @@ class Codegen:
         )
         return tmp
 
-    def option_nil(self, typ):
+    def option_none(self, typ):
         tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
         self.cur_fn.alloca(tmp)
         self.cur_fn.store(
-            ir.Selector(ir.BOOL_T, tmp, ir.Name("is_nil")),
+            ir.Selector(ir.BOOL_T, tmp, ir.Name("is_none")),
             ir.IntLit(ir.BOOL_T, "1")
         )
         return tmp
@@ -2387,11 +2387,11 @@ class Codegen:
 
     def default_value(self, typ, custom_tmp = None):
         if isinstance(typ, (type.Ptr, type.Ref, type.Fn)):
-            return ir.NilLit(ir.VOID_PTR_T)
+            return ir.NoneLit(ir.VOID_PTR_T)
         if isinstance(typ, type.Option):
             if typ.is_ref_or_ptr():
-                return ir.NilLit(ir.VOID_PTR_T)
-            return self.option_nil(typ)
+                return ir.NoneLit(ir.VOID_PTR_T)
+            return self.option_none(typ)
         if typ == self.comp.rune_t:
             return ir.RuneLit("\\0")
         elif typ in (
@@ -2577,7 +2577,7 @@ class Codegen:
                     ]
                 )
         else:
-            value = ir.NilLit(ir.VOID_PTR_T)
+            value = ir.NoneLit(ir.VOID_PTR_T)
         self.cur_fn.store(ir.Selector(usize_t, tmp, ir.Name("obj")), value)
         return tmp
 
@@ -2617,13 +2617,13 @@ class Codegen:
             cond = ir.Inst(
                 ir.InstKind.Cmp,
                 [ir.Name("!="), gexpr,
-                 ir.NilLit(ir.VOID_PTR_T)]
+                 ir.NoneLit(ir.VOID_PTR_T)]
             )
             self.cur_fn.inline_alloca(self.ir_type(expr.typ), var_name, gexpr)
         else:
             cond = ir.Inst(
                 ir.InstKind.BooleanNot,
-                [ir.Selector(ir.BOOL_T, gexpr, ir.Name("is_nil"))]
+                [ir.Selector(ir.BOOL_T, gexpr, ir.Name("is_none"))]
             )
             self.cur_fn.inline_alloca(
                 self.ir_type(expr.typ), var_name,
@@ -2669,7 +2669,7 @@ class Codegen:
                                 "value", ir.UINT8_T
                                 if is_void else self.ir_type(typ.typ)
                             ),
-                            ir.Field("is_nil", ir.BOOL_T)
+                            ir.Field("is_none", ir.BOOL_T)
                         ]
                     )
                 )
@@ -2705,7 +2705,7 @@ class Codegen:
             )
         elif typ_sym.kind == TypeKind.Never:
             return ir.VOID_T
-        elif typ_sym.kind == TypeKind.Nil:
+        elif typ_sym.kind == TypeKind.None_:
             return ir.VOID_PTR_T
         elif typ_sym.kind == TypeKind.Enum:
             if typ_sym.info.is_advanced_enum:

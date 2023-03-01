@@ -15,7 +15,7 @@ public enum OS as uint8 {
             "linux", "_LINUX_" => .Linux,
             "windows", "_WINDOWS_" => .Windows,
             "macos", "_MACOS_" => .Macos,
-            else => nil
+            else => none
         };
     }
 }

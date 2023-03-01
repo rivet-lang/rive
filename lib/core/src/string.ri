@@ -163,14 +163,14 @@ public struct string : Stringable, Hashable {
                 return i;
             }
         }
-        return nil;
+        return none;
     }
 
     /// Returns the position of the first character of the input string.
-    /// It will return `nil` if the input string can't be found.
+    /// It will return `none` if the input string can't be found.
     public func index_of(self, p: string) ?usize {
         if p.len > self.len or p.len == 0 {
-            return nil;
+            return none;
         }
         mut i: usize := 0;
         while i < self.len : i += 1 {
@@ -180,16 +180,16 @@ public struct string : Stringable, Hashable {
                 return i;
             }
         }
-        return nil;
+        return none;
     }
 
     /// Returns the position of the input string, starting search from `start` position.
     public func index_after_of(self, p: string, start: usize) ?usize {
         if p.len > self.len {
-            return nil;
+            return none;
         }
         if start >= self.len {
-            return nil;
+            return none;
         }
         mut i := start;
         while i < self.len : i += 1 {
@@ -203,7 +203,7 @@ public struct string : Stringable, Hashable {
                 return i;
             }
         }
-        return nil;
+        return none;
     }
 
     /// Returns the position of any of the characters in the input string if found.
@@ -215,7 +215,7 @@ public struct string : Stringable, Hashable {
                 }
             }
         }
-        return nil;
+        return none;
     }
 
     /// Linear search for the last index of `byte` inside a string.
@@ -227,13 +227,13 @@ public struct string : Stringable, Hashable {
                 return i;
             }
         }
-        return nil;
+        return none;
     }
 
     /// Returns the position of the last occurence of the input string.
     public func last_index_of(self, p: string) ?usize {
         if p.len > self.len or p.len == 0 {
-            return nil;
+            return none;
         }
         mut i: usize := self.len - p.len;
         while i >= 0 : i -= 1 {
@@ -243,7 +243,7 @@ public struct string : Stringable, Hashable {
                 return i;
             }
         }
-        return nil;
+        return none;
     }
 
     /// Returns the string found between `start` string and `end` string.
@@ -526,11 +526,11 @@ public struct string : Stringable, Hashable {
     /// any of the bytes in `delimiter_bytes`.
     ///
     /// `"   abc def    ghi  ".tokenize(b' ')` will return slices for "abc", "def",
-    /// "ghi", nil, in that order.
+    /// "ghi", none, in that order.
     ///
-    /// If `self` is empty, the iterator will return nil.
+    /// If `self` is empty, the iterator will return none.
     /// If `delimiter_bytes` does not exist in self, the iterator will return `self`,
-    /// nil, in that order.
+    /// none, in that order.
     #[inline]
     public func tokenize(self, delimiter_bytes: ...uint8) TokenIterator {
         return TokenIterator(self, delimiter_bytes);
@@ -589,7 +589,7 @@ public struct string : Stringable, Hashable {
     /// Returns `true` if the string contains `substr`.
     #[inline]
     public func contains(self, substr: string) bool {
-        return substr.len == 0 or self.index_of(substr) !is nil;
+        return substr.len == 0 or self.index_of(substr) !is none;
     }
 
     /// Returns `true` if the string starts with `p`.
@@ -688,15 +688,15 @@ public struct TokenIterator {
     delimiter_bytes: []uint8;
     mut index: usize;
 
-    /// Returns a slice of the current token, or nil if tokenization is
+    /// Returns a slice of the current token, or none if tokenization is
     /// complete, and advances to the next token.
     public func next(mut self) ?string {
-        result := self.peek() ?? return nil;
+        result := self.peek() ?? return none;
         self.index += result.len;
         return result;
     }
 
-    /// Returns a slice of the current token, or nil if tokenization is
+    /// Returns a slice of the current token, or none if tokenization is
     /// complete. Does not advance to the next token.
     public func peek(mut self) ?string {
         // move to beginning of token
@@ -704,7 +704,7 @@ public struct TokenIterator {
             : self.index += 1 {}
         start := self.index;
         if start == self.buffer.len {
-            return nil;
+            return none;
         }
         // move to end of token
         mut end := start;

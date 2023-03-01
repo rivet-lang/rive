@@ -51,14 +51,14 @@ struct SourceCache {
             return source.content;
          }
       }
-      return nil;
+      return none;
    }
 
    public func find_line(self, path: string, line: usize) ?string {
       return if lines := self.find_lines(path) {
          lines[line]
       } else {
-         nil
+         none
       };
    }
 
@@ -73,7 +73,7 @@ struct SourceCache {
             return cached.lines;
          }
       }
-      return nil;
+      return none;
    }
 }
 
@@ -107,7 +107,7 @@ public func option(args: []string, param: string) ?string {
             break;
         }
     }
-    return nil;
+    return none;
 }
 
 public func error(msg: string, args: ...traits.Stringable) never {

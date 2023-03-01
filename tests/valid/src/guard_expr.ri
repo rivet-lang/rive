@@ -1,4 +1,4 @@
-func ret_nil() ?int32 {
+func ret_none() ?int32 {
     return 3;
 }
 
@@ -7,7 +7,7 @@ func ret_err() !int32 {
 }
 
 test "guard expression with mutable variable" {
-    if mut val := ret_nil() {
+    if mut val := ret_none() {
         @assert(val == 3);
         val += 2;
         @assert(val == 5);
@@ -15,11 +15,11 @@ test "guard expression with mutable variable" {
 }
 
 test "`if` expression with guard expression" {
-    if val := ret_nil() {
+    if val := ret_none() {
         @assert(val == 3);
     }
 
-    if val := ret_nil(); val != 3 {
+    if val := ret_none(); val != 3 {
         @assert(false);
     }
 
@@ -29,24 +29,24 @@ test "`if` expression with guard expression" {
 }
 
 test "`while` expression with guard expression" {
-    while val := ret_nil() {
+    while val := ret_none() {
         @assert(val == 3);
         break;
     }
 
-    while val := ret_nil(); val == 3 {
+    while val := ret_none(); val == 3 {
         @assert(val == 3);
         break;
     }
 }
 
 test "`switch` expression with guard expression" {
-    switch val := ret_nil() {
+    switch val := ret_none() {
         3 => @assert(true),
         else => @assert(false)
     }
 
-    switch val := ret_nil(); val == 3 {
+    switch val := ret_none(); val == 3 {
         3 => @assert(true),
         else => @assert(false)
     }

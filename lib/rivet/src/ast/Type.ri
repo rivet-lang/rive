@@ -123,7 +123,7 @@ public enum Type : traits.Stringable {
                 .Resolved(resolved_sym)
             },
             // for `.Void` or `.Unresolved`
-            else => return nil
+            else => return none
         }
     }
 
@@ -141,7 +141,7 @@ public enum Type : traits.Stringable {
             .Reference as reference_data => reference_data.inner.symbol(),
             .Pointer as pointer_data => pointer_data.inner.symbol(),
             .Resolved as resolved => resolved,
-            else => nil
+            else => none
         };
     }
 

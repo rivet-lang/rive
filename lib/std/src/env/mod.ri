@@ -11,7 +11,7 @@ public var HOME_DIR = #if _LINUX_ get("HOME") #else get("USERPROFILE") #endif ??
 /// Returns `true` if the environment variable exists.
 #[inline]
 public func exists(name: string) bool {
-    return get(name) !is nil;
+    return get(name) !is none;
 }
 
 /// Returns the value of the environment variable named by the key.
@@ -21,7 +21,7 @@ public func get(name: string) ?string {
         if s := libc.getenv(name.ptr) {
             string.from_raw(s)
         } else {
-            nil
+            none
         }
     };
 }
