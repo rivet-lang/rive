@@ -99,6 +99,7 @@ public var KindStrings = [
     KindMap(.KwTest, "test"),
     KindMap(.KwTrait, "trait"),
     KindMap(.KwTrue, "true"),
+    KindMap(.KwUndefined, "undefined"),
     KindMap(.KwUnsafe, "unsafe"),
     KindMap(.KwVar, "var"),
     KindMap(.KwWhile, "while")
@@ -196,6 +197,7 @@ public enum Kind : traits.Stringable {
     KwTest, // test
     KwTrait, // trait
     KwTrue, // true
+    KwUndefined, // undefined
     KwUnsafe, // unsafe
     KwVar, // var
     KwWhile, // while
@@ -289,6 +291,7 @@ public func lookup(str: string) Kind {
         "test" => .KwTest,
         "trait" => .KwTrait,
         "true" => .KwTrue,
+        "undefined" => .KwUndefined,
         "unsafe" => .KwUnsafe,
         "var" => .KwVar,
         "while" => .KwWhile,

@@ -96,6 +96,7 @@ class Kind(Enum):
     KwTest = auto_enum() # test
     KwTrait = auto_enum() # trait
     KwTrue = auto_enum() # true
+    KwUndefined = auto_enum() # undefined
     KwUnsafe = auto_enum() # unsafe
     KwVar = auto_enum() # var
     KwWhile = auto_enum() # while
@@ -242,6 +243,7 @@ TOKEN_STRINGS = {
     Kind.KwTest: "test",
     Kind.KwTrait: "trait",
     Kind.KwTrue: "true",
+    Kind.KwUndefined: "undefined",
     Kind.KwUnsafe: "unsafe",
     Kind.KwVar: "var",
     Kind.KwWhile: "while",
