@@ -16,7 +16,7 @@ func tokenize(text: string) []token.Token {
     while {
         tokens.push(token);
         token = tokenizer_.next();
-        if token.kind == .EOF {
+        if token.kind == .EndOfFile {
             break;
         }
     }

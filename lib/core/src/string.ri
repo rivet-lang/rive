@@ -769,7 +769,6 @@ public struct StringFormatter {
     func fmt(mut self, args: ...Stringable) string {
         self.res = StringBuilder.new(self.buf.len);
         mut args_idx: usize := 0;
-        mut used_args: usize := 0;
         while self.i < self.buf.len : self.i += 1 {
             b := unsafe { self.buf.ptr[self.i] };
             b2 := if self.i + 1 < self.buf.len unsafe { self.buf.ptr[self.i + 1] } else { 0 };
@@ -854,7 +853,6 @@ public struct StringFormatter {
                             self.i
                         );
                     }
-                    used_args += 1;
                 },
                 b'}' => {
                     if b2 == b'}' { // escaping '}'
@@ -869,12 +867,6 @@ public struct StringFormatter {
                 },
                 else => self.res.write_byte(b)
             }
-        }
-        if used_args != args.len {
-            process_panic(
-                    "string.fmt(): {} arguments, {} used arguments, {} unnused arguments",
-                    args.len, used_args, args.len - used_args
-                );
         }
         return self.res.to_string();
     }
