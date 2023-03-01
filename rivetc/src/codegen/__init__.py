@@ -1420,7 +1420,7 @@ class Codegen:
             ir_typ = self.ir_type(expr.typ)
             if expr.is_indirect:
                 return ir.Inst(ir.InstKind.LoadPtr, [left])
-            elif expr.is_nilcheck:
+            elif expr.is_option_check:
                 panic_l = self.cur_fn.local_name()
                 exit_l = self.cur_fn.local_name()
                 if expr.left_typ.is_ref_or_ptr():

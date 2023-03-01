@@ -1014,7 +1014,7 @@ class Parser:
                     # check optional value, if nil panic
                     expr = ast.SelectorExpr(
                         expr, "", expr.pos, self.prev_tok.pos,
-                        is_nilcheck = True
+                        is_option_check = True
                     )
                 else:
                     expr = self.parse_selector_expr(expr)

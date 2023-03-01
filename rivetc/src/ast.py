@@ -792,7 +792,7 @@ class RangeExpr:
 class SelectorExpr:
     def __init__(
         self, left, field_name, pos, field_pos, is_indirect = False,
-        is_nilcheck = False
+        is_option_check = False
     ):
         self.left = left
         self.left_sym = None
@@ -802,7 +802,7 @@ class SelectorExpr:
         self.field_pos = field_pos
         self.field_sym = None
         self.is_indirect = is_indirect
-        self.is_nilcheck = is_nilcheck
+        self.is_option_check = is_option_check
         self.is_symbol_access = False
         self.not_found = False
         self.pos = pos
@@ -811,7 +811,7 @@ class SelectorExpr:
     def __repr__(self):
         if self.is_indirect:
             return f"{self.left}.*"
-        elif self.is_nilcheck:
+        elif self.is_option_check:
             return f"{self.left}.?"
         return f"{self.left}.{self.field_name}"
 

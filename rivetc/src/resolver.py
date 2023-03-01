@@ -435,7 +435,7 @@ class Resolver:
 
     def resolve_selector_expr(self, expr):
         self.resolve_expr(expr.left)
-        if not (expr.is_indirect or expr.is_nilcheck):
+        if not (expr.is_indirect or expr.is_option_check):
             if isinstance(expr.left, ast.SelfTyExpr):
                 expr.is_symbol_access = True
                 if expr.left.sym == None:

@@ -1188,7 +1188,7 @@ class Checker:
             else:
                 left_typ = self.check_expr(expr.left)
                 expr.left_typ = left_typ
-                if expr.is_nilcheck:
+                if expr.is_option_check:
                     if not isinstance(left_typ, type.Option):
                         report.error(
                             "cannot check a non-option value", expr.field_pos
@@ -1283,7 +1283,7 @@ class Checker:
                 report.help(f"use `{expr.left}.*.{expr.field_name}` instead")
             elif isinstance(
                 expr.left_typ, type.Option
-            ) and not expr.is_nilcheck:
+            ) and not expr.is_option_check:
                 report.error(
                     "fields of an option value cannot be accessed directly",
                     expr.pos
@@ -1902,7 +1902,7 @@ class Checker:
                         f"cannot use a immutable {kind} as mutable value",
                         expr.pos
                     )
-            elif not expr.field_is_mut and not expr.is_nilcheck:
+            elif not expr.field_is_mut and not expr.is_option_check:
                 report.error(
                     f"field `{expr.field_name}` of type `{expr.left.typ.symbol().name}` is immutable",
                     expr.pos
