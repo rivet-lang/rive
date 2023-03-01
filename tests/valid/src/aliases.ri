@@ -8,10 +8,10 @@ test "using `alias` with symbols" {
 
 alias AnyptrOption = ?anyptr;
 
-func anyptrOption() AnyptrOption {
+func anyptr_option() AnyptrOption {
     return none;
 }
 
 test "using `alias` with types" {
-    @assert(anyptrOption() is none);
+    @assert(anyptr_option() is none);
 }

@@ -12,7 +12,8 @@
 
 ## Self-hosted compiler
 
-- [ ] add `HashMap<K, V>`.
+- [ ] generic support: `Struct![T] { f: T; }` => `Struct![T](f: @default(T))`.
+- [ ] add `HashMap![K, V]`.
 - [ ] constant-folding.
 - [ ] optimize code.
 - [ ] function literals.

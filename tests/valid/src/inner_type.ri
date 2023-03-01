@@ -1,17 +1,21 @@
 struct OuterStruct {
     struct InnerStruct {
         abc: int32;
+
+        func method(self) { }
     }
 
     inner: InnerStruct;
 
-    func method(self) { }
+    func method(self) {
+        self.inner.method();
+    }
 
-    func associated_fn() { }
+    func associated_func() { }
 
     func caller(self) {
         self.method();
-        OuterStruct.associated_fn();
+        OuterStruct.associated_func();
     }
 }
 
