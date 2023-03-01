@@ -972,10 +972,10 @@ class Checker:
                                         expr_left.field_pos
                                     )
                                     report.help(
-                                        "use the none-check syntax: `foo.?.method()`"
+                                        "use the option-check syntax: `foo.?.method()`"
                                     )
                                     report.help(
-                                        "or use `orelse`: `(foo orelse 5).method()`"
+                                        "or use `??`: `(foo ?? 5).method()`"
                                     )
                                 elif isinstance(expr_left.left_typ, type.Ptr):
                                     report.error(
