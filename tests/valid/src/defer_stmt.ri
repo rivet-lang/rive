@@ -29,3 +29,20 @@ test "`errdefer` statement" {
     test_errdefer(err_defer, true) catch { };
     @assert(err_defer.i == 4);
 }
+
+func return_error() ! {
+    return MyError();
+}
+
+func return_and_errdefer(mut err_defer: ErrDefer) ! {
+    errdefer {
+        err_defer.i = 4;
+    }
+    return_error().!;
+}
+
+test "`errdefer` with error propagation" {
+    mut err_defer := ErrDefer(i: 0);
+    return_and_errdefer(err_defer) catch {};
+    @assert(err_defer.i == 4);
+}

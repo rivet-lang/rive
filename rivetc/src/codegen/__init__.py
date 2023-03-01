@@ -1289,12 +1289,14 @@ class Codegen:
                     )
                     exit_l = "" if expr.err_handler.is_propagate else self.cur_fn.local_name(
                     )
+                    res_value_is_err = ir.Selector(ir.BOOL_T, res_value, ir.Name("is_err"))
                     self.cur_fn.add_cond_br(
-                        ir.Selector(ir.BOOL_T, res_value, ir.Name("is_err")),
+                        res_value_is_err,
                         panic_l, exit_l if err_handler_is_void else else_value
                     )
                     self.cur_fn.add_label(panic_l)
                     if expr.err_handler.is_propagate:
+                        self.gen_defer_stmts(True, res_value_is_err)
                         if self.cur_fn_is_main or self.inside_let_decl:
                             self.cur_fn.add_call(
                                 "_R4core11error_panicF", [
@@ -1304,42 +1306,41 @@ class Codegen:
                                     )
                                 ]
                             )
-                        else:
-                            if self.inside_test:
-                                pos = utils.smart_quote(str(expr.pos), False)
-                                self.cur_fn.add_call(
-                                    "_R4core19test_error_returnedF", [
-                                        ir.Selector(
-                                            self.ir_type(self.comp.error_t),
-                                            res_value, ir.Name("err")
-                                        ),
-                                        self.gen_string_lit(pos),
-                                        ir.Ident(ir.TEST_T, "test")
-                                    ]
-                                )
-                                self.cur_fn.add_ret_void()
-                            else:
-                                tmp2 = ir.Ident(
-                                    self.ir_type(self.cur_fn_ret_typ),
-                                    self.cur_fn.local_name()
-                                )
-                                self.cur_fn.alloca(tmp2)
-                                self.cur_fn.store(
-                                    ir.Selector(
-                                        ir.BOOL_T, tmp2, ir.Name("is_err")
-                                    ), ir.IntLit(ir.BOOL_T, "1")
-                                )
-                                self.cur_fn.store(
-                                    ir.Selector(
-                                        self.ir_type(self.comp.error_t), tmp2,
-                                        ir.Name("err")
-                                    ),
+                        elif self.inside_test:
+                            pos = utils.smart_quote(str(expr.pos), False)
+                            self.cur_fn.add_call(
+                                "_R4core19test_error_returnedF", [
                                     ir.Selector(
                                         self.ir_type(self.comp.error_t),
                                         res_value, ir.Name("err")
-                                    )
+                                    ),
+                                    self.gen_string_lit(pos),
+                                    ir.Ident(ir.TEST_T, "test")
+                                ]
+                            )
+                            self.cur_fn.add_ret_void()
+                        else:
+                            tmp2 = ir.Ident(
+                                self.ir_type(self.cur_fn_ret_typ),
+                                self.cur_fn.local_name()
+                            )
+                            self.cur_fn.alloca(tmp2)
+                            self.cur_fn.store(
+                                ir.Selector(
+                                    ir.BOOL_T, tmp2, ir.Name("is_err")
+                                ), ir.IntLit(ir.BOOL_T, "1")
+                            )
+                            self.cur_fn.store(
+                                ir.Selector(
+                                    self.ir_type(self.comp.error_t), tmp2,
+                                    ir.Name("err")
+                                ),
+                                ir.Selector(
+                                    self.ir_type(self.comp.error_t),
+                                    res_value, ir.Name("err")
                                 )
-                                self.cur_fn.add_ret(tmp2)
+                            )
+                            self.cur_fn.add_ret(tmp2)
                         self.cur_fn.add_label(else_value)
                         if is_void_value:
                             return ir.Skip()
