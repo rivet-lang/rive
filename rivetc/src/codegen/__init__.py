@@ -749,10 +749,7 @@ class Codegen:
                     ]
                 )
             if expr.typ == self.comp.string_t:
-                return self.gen_string_lit(
-                    escaped_val,
-                    utils.bytestr(expr.lit).len
-                )
+                return self.gen_string_lit(escaped_val, size)
             return ir.StringLit(escaped_val, str(size))
         elif isinstance(expr, ast.EnumLiteral):
             enum_sym = expr.typ.symbol()
@@ -884,7 +881,7 @@ class Codegen:
                 return ir.IntLit(ir.USIZE_T, str(align))
             elif expr.name == "assert":
                 msg_ = f"`{expr.args[0]}`"
-                msg = utils.smart_quote(msg_, False)
+                msg = utils.smart_quote(msg_, True)
                 if self.inside_test:
                     tmp_idx_ = ir.Ident(ir.TEST_T.ptr(), "test")
                     pos = utils.smart_quote(str(expr.pos), False)

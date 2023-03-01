@@ -48,6 +48,9 @@ test "enums: advanced enum" {
     if e is .Abc {
         @assert(@cast(int32, e) == 6);
     }
+    if e is .Abc as e_int32 {
+        @assert(e_int32 == 6);
+    }
     switch e is {
         .Abc as e_abc => @assert(e_abc == 6),
         else => @assert(false)

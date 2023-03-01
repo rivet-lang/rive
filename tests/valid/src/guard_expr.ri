@@ -56,3 +56,12 @@ test "`switch` expression with guard expression" {
         else => @assert(false)
     }
 }
+
+test "guard expression with options" {
+    x: ?int32 := 100;
+    if y := x {
+        @assert(y == 100);
+    } else {
+        @assert(false);
+    }
+}

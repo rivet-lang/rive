@@ -1,7 +1,3 @@
-struct Option {
-    a: ?int32;
-}
-
 test "`none` literal" {
     x: ?int32 := none;
     @assert(x is none);
@@ -19,16 +15,11 @@ test "operator `.?`" {
     @assert(x.? == 5);
 }
 
-test "guard expr with options" {
-    x: ?int32 := 100;
-    if y := x {
-        @assert(y == 100);
-    } else {
-        @assert(false);
-    }
+struct Option {
+    a: ?int32;
 }
 
-test "options field" {
+test "option fields" {
     opt := Option();
     @assert(opt.a is none);
 
