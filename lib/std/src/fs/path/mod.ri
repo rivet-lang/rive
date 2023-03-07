@@ -15,7 +15,7 @@ public var SEPARATOR_STR = #if _WINDOWS_ "\\" #else "/" #endif;
 public var DELIMITER = #if _WINDOWS_ ";" #else ":" #endif;
 
 /// Returns `true` if the given byte is a valid path separator
-#[inline]
+[inline]
 public func is_separator(byte: uint8) bool {
 #if _WINDOWS_
     return byte == b'/' or byte == b'\\';
@@ -25,25 +25,25 @@ public func is_separator(byte: uint8) bool {
 }
 
 /// Returns `true` if `path` (file or directory) exists.
-#[inline]
+[inline]
 public func exists(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.O_RDONLY) == 0 };
 }
 
 /// Returns `true` if `path` is executable.
-#[inline]
+[inline]
 public func is_executable(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.X_OK) == 0 };
 }
 
 /// Returns `true` if `path` is writable.
-#[inline]
+[inline]
 public func is_writable(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.W_OK) == 0 };
 }
 
 /// Returns `true` if `path` is readable.
-#[inline]
+[inline]
 public func is_readable(path: string) bool {
     return unsafe { libc.access(path.ptr, libc.R_OK) == 0 };
 }
@@ -58,13 +58,13 @@ public func is_directory(path: string) bool {
 }
 
 /// Returns `true` if `path` is a file.
-#[inline]
+[inline]
 public func is_file(path: string) bool {
     return exists(path) and !is_directory(path);
 }
 
 /// Returns `true` if path is absolute.
-#[inline]
+[inline]
 public func is_absolute(path: string) bool {
     return path.len > 0 and path[0] == SEPARATOR;
 }

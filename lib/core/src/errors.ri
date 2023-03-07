@@ -8,46 +8,46 @@ import "c/libc";
 public alias ErrnoError = c.ErrnoError;
 public alias last_errno_error = c.last_errno_error;
 
-#[inline]
+[inline]
 func error_panic(err: Error) {
     process_panic(err.to_string());
 }
 
-#[boxed]
+[boxed]
 public struct RuneFromU32Error : Error {
     msg: string;
 
-    #[inline]
+    [inline]
     public func to_string(self) string {
         return self.msg;
     }
 }
 
-#[boxed]
+[boxed]
 public struct InvalidArgumentError : Error {
     msg: string;
 
-    #[inline]
+    [inline]
     public func to_string(self) string {
         return self.msg;
     }
 }
 
-#[boxed]
+[boxed]
 public struct OutOfMemoryError : Error {
     msg: string;
 
-    #[inline]
+    [inline]
     public func to_string(self) string {
         return self.msg;
     }
 }
 
-#[boxed]
+[boxed]
 public struct ReadFailedError : Error {
     msg: string;
 
-    #[inline]
+    [inline]
     public func to_string(self) string {
         return self.msg;
     }

@@ -14,7 +14,7 @@ func new_sym_id() usize {
     return res;
 }
 
-#[boxed]
+[boxed]
 public struct DuplicateSymbolError : Error {
     msg: string;
 
@@ -27,7 +27,7 @@ public enum ABI as uint8 : traits.Stringable {
     Rivet,
     C;
 
-    #[inline]
+    [inline]
     public func from_string(abi: string) ?ABI {
         return switch abi {
             "C" => .C,
@@ -36,7 +36,7 @@ public enum ABI as uint8 : traits.Stringable {
         };
     }
 
-    #[inline]
+    [inline]
     public func to_string(&self) string {
         return switch self.* {
             .C => "C",
@@ -57,7 +57,7 @@ public trait Sym {
     is_universe: bool;
     is_root: bool;
 
-    #[inline]
+    [inline]
     func qualname(self) string {
         return if parent := self.parent {
             if parent.is_universe {
@@ -70,16 +70,16 @@ public trait Sym {
         };
     }
 
-    #[inline]
+    [inline]
     func ==(self, other: Self) bool {
         return self.id == other.id;
     }
 }
 
-#[boxed]
+[boxed]
 public struct Mod : Sym { }
 
-#[boxed]
+[boxed]
 public struct Const : Sym {
     public expr: Expr;
     public evaled_expr: ?Expr;
@@ -93,7 +93,7 @@ public enum VarLevel as uint8 {
     Local // inside function
 }
 
-#[boxed]
+[boxed]
 public struct Var : Sym {
     public is_extern: bool;
     public ir_name: string; // used for duplicate objects in IR
@@ -105,7 +105,7 @@ public struct Var : Sym {
     public typ: Type;
 }
 
-#[boxed]
+[boxed]
 public struct Field {
     public is_public: bool;
     public name: string;
@@ -143,7 +143,7 @@ public enum TypeKind : traits.Stringable {
     Trait,
     Struct;
 
-    #[inline]
+    [inline]
     public func is_primitive(self) bool {
         return self in [
             .None, .Bool, .Rune, .Int8, .Int16, .Int32, .Int64, .Isize, .Uint8,
@@ -152,7 +152,7 @@ public enum TypeKind : traits.Stringable {
         ];
     }
 
-    #[inline]
+    [inline]
     public func to_string(&self) string {
         return switch self.* {
             .None => "none",
@@ -196,30 +196,30 @@ public enum TypeInfo {
     Struct: StructInfo
 }
 
-#[boxed]
+[boxed]
 public struct AliasInfo {
     public parent: Type;
 }
 
-#[boxed]
+[boxed]
 public struct ArrayInfo {
     public elem_typ: Type;
     public size: isize;
     public has_contains_method: bool;
 }
 
-#[boxed]
+[boxed]
 public struct VectorInfo {
     public elem_typ: Type;
     public has_contains_method: bool;
 }
 
-#[boxed]
+[boxed]
 public struct TupleInfo {
     public types: []Type;
 }
 
-#[boxed]
+[boxed]
 public struct EnumVariant {
     public name: string;
     public value: isize;
@@ -227,13 +227,13 @@ public struct EnumVariant {
     public typ: Type;
 }
 
-#[boxed]
+[boxed]
 public struct EnumInfo {
     public underlying_typ: Type;
     public mut variants: []EnumVariant;
     public is_advanced_enum: bool;
 
-    #[inline]
+    [inline]
     public func add_value(mut self, name: string, variant: isize) {
         self.variants.push(EnumVariant(name, variant));
     }
@@ -261,7 +261,7 @@ public struct EnumInfo {
     }
 }
 
-#[boxed]
+[boxed]
 public struct TraitInfo {
     public bases: []mut TraitInfo;
     public mut implements: []TypeSym;
@@ -288,7 +288,7 @@ public struct TraitInfo {
     }
 }
 
-#[boxed]
+[boxed]
 public struct StructInfo {
     public is_boxed: bool;
     public is_opaque: bool;
@@ -296,7 +296,7 @@ public struct StructInfo {
     public traits: []TypeSym;
 }
 
-#[boxed]
+[boxed]
 public struct TypeSym : Sym {
     public mut fields: []Field;
     public mut full_fields_: []Field;
@@ -321,7 +321,7 @@ public struct TypeSym : Sym {
         return none;
     }
 
-    #[inline]
+    [inline]
     public func has_field(self, name: string) bool {
         return self.lookup_field(name) !is none;
     }
@@ -337,7 +337,7 @@ public struct TypeSym : Sym {
         return none;
     }
 
-    #[inline]
+    [inline]
     public func lookup(self, name: string) ?Sym {
         return if s := self.scope.lookup(name) {
             s
@@ -380,7 +380,7 @@ public struct TypeSym : Sym {
         }
     }
 
-    #[inline]
+    [inline]
     public func is_boxed(self) bool {
         return if self.info is .Enum as enum_info {
             enum_info.is_advanced_enum
@@ -391,7 +391,7 @@ public struct TypeSym : Sym {
         };
     }
 
-    #[inline]
+    [inline]
     public func is_primitive(self) bool {
         return if self.info is .Enum as enum_info {
             !enum_info.is_advanced_enum
@@ -400,13 +400,13 @@ public struct TypeSym : Sym {
         };
     }
 
-    #[inline]
+    [inline]
     public func ==(self, rhs: Self) bool {
         return self.id == rhs.id;
     }
 }
 
-#[boxed]
+[boxed]
 public struct Arg {
     public name: string;
     public is_mut: bool;
@@ -416,7 +416,7 @@ public struct Arg {
     public mut typ: Type;
 }
 
-#[boxed]
+[boxed]
 public struct Func : Sym {
     public is_extern: bool;
     public is_unsafe: bool;
@@ -450,13 +450,13 @@ public struct Func : Sym {
         return len;
     }
 
-    #[inline]
+    [inline]
     public func kind(self) string {
         return if self.is_method { "method" } else { "function" };
     }
 }
 
-#[boxed]
+[boxed]
 public struct Scope {
     public start: usize;
     public mut end: usize;
@@ -473,7 +473,7 @@ public struct Scope {
         self.syms.push(sym);
     }
 
-    #[inline]
+    [inline]
     public func exists(self, name: string) bool {
         return self.lookup(name) !is none;
     }
@@ -494,13 +494,13 @@ public struct Scope {
         return none;
     }
 
-    #[inline]
+    [inline]
     func dont_lookup_parent(self) bool {
         return self.detached_from_parent or self.parent is none;
     }
 }
 
-#[inline]
+[inline]
 public func universe() Mod {
     return Mod(is_public: false, name: "universe", scope: Scope(syms: [
         TypeSym(is_public: true, name: "never", kind: .Never),

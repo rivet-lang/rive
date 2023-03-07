@@ -47,7 +47,7 @@ extend rune : Stringable {
         return none;
     }
 
-    #[inline]
+    [inline]
     public func len_utf8(self) usize {
         return len_utf8(@cast(uint32, self));
     }
@@ -91,7 +91,7 @@ func utf32_decode_to_buffer(code: uint32, buffer: [*]mut uint8) int32 {
     }
 }
 
-#[inline]
+[inline]
 func len_utf8(code: uint32) usize {
     return if code < MAX_ONE_B {
         1

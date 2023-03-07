@@ -14,7 +14,7 @@ public const ERANGE = 34;
 
 #if _WINDOWS_
 extern (C) {
-    #[dllimport]
+    [dllimport]
     public func _errno() *mut int32;
 }
 

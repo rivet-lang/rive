@@ -15,7 +15,7 @@ import { LF, CR } from "../utils";
 
 const NUM_SEP = b'_';
 
-#[boxed]
+[boxed]
 public struct Tokenizer {
     table: ast.Table;
     prefs: prefs.Prefs;
@@ -62,7 +62,7 @@ public struct Tokenizer {
         }
     }
 
-    #[inline]
+    [inline]
     func new_token(mut self, kind: token.Kind, lit: string = "", len: usize = 1) token.Token {
         self.tidx += 1;
         return token.Token(lit, kind, len, pos: token.Pos(
@@ -74,7 +74,7 @@ public struct Tokenizer {
         ));
     }
 
-    #[inline]
+    [inline]
     func new_eof_token(self) token.Token {
         return token.Token(kind: .EndOfFile, pos: self.current_pos());
     }
@@ -92,7 +92,7 @@ public struct Tokenizer {
         return self.new_eof_token();
     }
 
-    #[inline]
+    [inline]
     public func next(mut self) token.Token {
         return self.buffer_tok();
     }
@@ -109,12 +109,12 @@ public struct Tokenizer {
         return self.new_eof_token();
     }
 
-    #[inline]
+    [inline]
     func current_char(self) uint8 {
         return self.text[self.pos];
     }
 
-    #[inline]
+    [inline]
     func current_pos(self) token.Pos {
         return token.Pos(
             file: self.file,
@@ -125,7 +125,7 @@ public struct Tokenizer {
         );
     }
 
-    #[inline]
+    [inline]
     func current_column(self) usize {
         return self.pos - self.last_nl_pos;
     }
@@ -135,7 +135,7 @@ public struct Tokenizer {
         self.inc_line_number();
     }
 
-    #[inline]
+    [inline]
     func eat_to_end_of_line(mut self) {
         while self.pos < self.text.len and self.current_char() != LF : self.pos += 1 {}
     }
@@ -192,7 +192,7 @@ public struct Tokenizer {
         return self.all_tokens[idx];
     }
 
-    #[inline]
+    [inline]
     func look_ahead(self, n: usize) uint8 {
         return if self.pos + n < self.text.len {
             self.text[self.pos + n]
@@ -709,14 +709,11 @@ public struct Tokenizer {
                         self.pos += 2;
                         return self.new_token(.OrElse, len: 2);
                     }
-                    return self.new_token(.Question)
+                    return self.new_token(.Question);
                 },
                 b'#' => {
-                    if nextc !in [b'!', b'['] {
-                        self.pp_directive();
-                        continue;
-                    }
-                    return self.new_token(.Hash)
+                    self.pp_directive();
+                    continue;
                 },
                 b'&' => {
                     if nextc == b'=' {
@@ -786,12 +783,12 @@ public struct Tokenizer {
         self.pos += len;
     }
 
-    #[inline]
+    [inline]
     func error(self, msg: string, pos: token.Pos = self.current_pos()) report.Report {
         return report.error(msg, pos);
     }
 
-    #[inline]
+    [inline]
     func warn(self, msg: string, pos: token.Pos = self.current_pos()) report.Report {
         return report.warn(msg, pos);
     }

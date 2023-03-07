@@ -41,7 +41,7 @@ func print_help() void {
     process.exit(0);
 }
 
-#[boxed]
+[boxed]
 public struct Prefs {
     // Target info
     public mut target_os: sys.OS = sys.os();

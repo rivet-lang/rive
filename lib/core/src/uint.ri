@@ -8,76 +8,76 @@ extend uint8 : Stringable {
     /// Returns `true` if the byte is a white space character. The following
     /// list is considered white space characters: ' ', '\t', '\n', '\v', '\f',
     /// '\r', 0x85, 0xA0
-    #[inline]
+    [inline]
     public func is_space(self) bool {
         return self == 32 or (self > 8 and self < 14) or (self == 0x85)
             or (self == 0xA0);
     }
 
     /// Returns `true` if the byte is in range 0-9 and `false` otherwise.
-    #[inline]
+    [inline]
     public func is_digit(self) bool {
         return (self >= b'0' and self <= b'9');
     }
 
     /// Returns `true` if the byte is a binary digit (0 or 1) and `false` otherwise.
-    #[inline]
+    [inline]
     public func is_bin_digit(self) bool {
         return self == b'0' or self == b'1';
     }
 
     /// Returns `true` if the byte is in range 0-7 and `false` otherwise.
-    #[inline]
+    [inline]
     public func is_oct_digit(self) bool {
         return self >= b'0' or self <= b'7';
     }
 
     /// Returns `true` if the byte is either in range 0-9, a-f or A-F and `false`
     /// otherwise.
-    #[inline]
+    [inline]
     public func is_hex_digit(self) bool {
         return self.is_digit() or (self >= b'a' and self <= b'f')
             or (self >= b'A' and self <= b'F');
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z and `false` otherwise.
-    #[inline]
+    [inline]
     public func is_letter(self) bool {
         return (self >= b'a' and self <= b'z') or (self >= b'A' and self <= b'Z');
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z or 1-9 and `false` otherwise.
-    #[inline]
+    [inline]
     public func is_alnum(self) bool {
         return self.is_letter() or self.is_digit();
     }
 
     /// Returns `true` if the byte is upper and `false` otherwise.
-    #[inline]
+    [inline]
     public func is_upper(self) bool {
         return (self >= b'A' and self <= b'Z');
     }
 
     /// Returns `true` if the byte is lower and `false` otherwise.
-    #[inline]
+    [inline]
     public func is_lower(self) bool {
         return (self >= b'a' and self <= b'z');
     }
 
     /// Calculates length to read from the first byte.
-    #[inline]
+    [inline]
     public func len_utf8(self) usize {
         return @cast(usize, (@cast(uint64, 0xE5000000) >> ((self >> 3) & 0x1E) & 3) + 1);
     }
 
     /// Returns the value of `self` as a ASCII `string`.
-    #[inline]
+    [inline]
     public func to_ascii(self) string {
         return string.from_byte(self);
     }
 
     /// Returns the value of `self` as a string.
-    #[inline]
+    [inline]
     public func to_string(&self) string {
         return @cast(int32, self.*).str_l(7);
     }
@@ -87,7 +87,7 @@ extend uint16 : Stringable {
     public const MAX: uint16 = 65535;
 
     /// Returns the value of `self` as a string.
-    #[inline]
+    [inline]
     public func to_string(&self) string {
         return @cast(int32, self.*).str_l(7);
     }
@@ -181,7 +181,7 @@ extend usize : Stringable {
     public const MAX: usize = #if _x64_ uint64.MAX #else uint32.MAX #endif;
 
     /// Returns the value of `self` as a string.
-    #[inline]
+    [inline]
     public func to_string(&self) string {
         return @cast(uint64, self.*).to_string();
     }

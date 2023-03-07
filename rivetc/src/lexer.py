@@ -601,10 +601,8 @@ class Lexer:
                     return token.Token("", Kind.OrElse, pos)
                 return token.Token("", Kind.Question, pos)
             elif ch == "#":
-                if nextc not in ("!", "["):
-                    self.pp_directive()
-                    continue
-                return token.Token("", Kind.Hash, pos)
+                self.pp_directive()
+                continue
             elif ch == "&":
                 if nextc == "=":
                     self.pos += 1

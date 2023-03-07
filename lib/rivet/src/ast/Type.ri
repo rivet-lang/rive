@@ -127,7 +127,7 @@ public enum Type : traits.Stringable {
         }
     }
 
-    #[inline]
+    [inline]
     public func symbol(self) ?TypeSym {
         // NOTE: `.Func` has no TypeSym, so it does not appear in this typeswitch,
         // the same is for `.Void` and `.Anyptr`.
@@ -145,7 +145,7 @@ public enum Type : traits.Stringable {
         };
     }
 
-    #[inline]
+    [inline]
     public func ==(self, rhs: Type) bool {
         return switch self is {
             .Result as result_lhs => if rhs is .Result as result_rhs {

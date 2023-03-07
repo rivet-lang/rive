@@ -14,17 +14,17 @@ import "../utils";
 
 public var mut reports = ReportTable();
 
-#[inline]
+[inline]
 public func total_errors() usize {
     return reports.errors;
 }
 
-#[inline]
+[inline]
 public func total_warns() usize {
     return reports.warns;
 }
 
-#[boxed]
+[boxed]
 public struct ReportTable {
     public mut prefs: prefs.Prefs;
     public mut errors: usize;
@@ -38,35 +38,35 @@ public enum ReportKind as uint8 {
     Help
 }
 
-#[boxed]
+[boxed]
 public struct ReportExtra {
     public kind: ReportKind;
     public msg: string;
 }
 
-#[inline]
+[inline]
 public func error(msg: string, pos: token.Pos) Report {
     return Report(.Error, pos, msg);
 }
 
-#[inline]
+[inline]
 public func warn(msg: string, pos: token.Pos) Report {
     return Report(.Warn, pos, msg);
 }
 
-#[boxed]
+[boxed]
 public struct Report {
     public kind: ReportKind;
     public pos: token.Pos;
     public msg: string;
     public mut extras: []ReportExtra;
 
-    #[inline]
+    [inline]
     public func add_note(mut self, msg: string) {
         self.extras.push(ReportExtra(.Note, msg));
     }
 
-    #[inline]
+    [inline]
     public func add_help(mut self, msg: string) {
         self.extras.push(ReportExtra(.Help, msg));
     }

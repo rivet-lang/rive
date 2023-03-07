@@ -12,12 +12,12 @@ public const LF: uint8 = 10;
 public const CR: uint8 = 13;
 public var VERSION = "0.1.0b";
 
-#[inline]
+[inline]
 public func is_name_char(ch: uint8) bool {
     return ch.is_letter() or ch == b'_';
 }
 
-#[inline]
+[inline]
 public func is_new_line(ch: uint8) bool {
     return ch == LF or ch == CR;
 }
@@ -41,7 +41,7 @@ struct CachedFile {
    mut lines: []string;
 }
 
-#[boxed]
+[boxed]
 struct SourceCache {
    mut sources: []CachedFile;
 
@@ -88,12 +88,12 @@ public func read_file(path: string) !string {
    return content;
 }
 
-#[inline]
+[inline]
 public func min(a: usize, b: usize) usize {
    return if a < b { a } else { b };
 }
 
-#[inline]
+[inline]
 public func max(a: usize, b: usize) usize {
    return if a > b { a } else { b };
 }
@@ -120,32 +120,32 @@ public func error(msg: string, args: ...traits.Stringable) never {
 
 var StderrSupportStyles = styles.stderr_support_styles();
 
-#[inline]
+[inline]
 public func bold(msg: string) string {
     return if StderrSupportStyles { styles.bold(msg) } else { msg };
 }
 
-#[inline]
+[inline]
 public func red(msg: string) string {
     return if StderrSupportStyles { styles.red(msg) } else { msg };
 }
 
-#[inline]
+[inline]
 public func yellow(msg: string) string {
     return if StderrSupportStyles { styles.yellow(msg) } else { msg };
 }
 
-#[inline]
+[inline]
 public func cyan(msg: string) string {
     return if StderrSupportStyles { styles.cyan(msg) } else { msg };
 }
 
-#[inline]
+[inline]
 public func blue(msg: string) string {
     return if StderrSupportStyles { styles.blue(msg) } else { msg };
 }
 
-#[inline]
+[inline]
 public func green(msg: string) string {
     return if StderrSupportStyles { styles.green(msg) } else { msg };
 }

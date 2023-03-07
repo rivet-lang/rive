@@ -6,13 +6,13 @@ import "c/libc";
 
 var empty_string = string(c"", 0, true);
 
-#[boxed]
+[boxed]
 public struct string : Stringable, Hashable {
     public ptr: [*]uint8;
     public len: usize;
     is_ref: bool;
 
-    #[unsafe]
+    [unsafe]
     public func from_raw(ptr: ?[*]uint8, is_ref: bool = false) Self {
         if safe_ptr := ptr {
             return unsafe {
@@ -22,7 +22,7 @@ public struct string : Stringable, Hashable {
         return empty_string;
     }
 
-    #[unsafe]
+    [unsafe]
     public func from_raw_with_len(ptr: ?[*]uint8, len: usize, is_ref: bool = false) Self {
         if len == 0 {
             return empty_string;
@@ -256,7 +256,7 @@ public struct string : Stringable, Hashable {
 
     /// Strips any of ` `, `\n`, `\t`, `\v`, `\f`, `\r` from the start and end of
     /// the string.
-    #[inline]
+    [inline]
     public func trim_space(self) string {
         return self.trim(" \n\t\v\f\r");
     }
@@ -384,7 +384,7 @@ public struct string : Stringable, Hashable {
         return unsafe { string.from_raw_with_len(b, new_len) };
     }
 
-    #[inline]
+    [inline]
     public func as_bytes(self) []uint8 {
         return unsafe {
             Vector.from_array_no_alloc(@cast(*mut uint8, self.ptr), @size_of(uint8), self.len)
@@ -531,7 +531,7 @@ public struct string : Stringable, Hashable {
     /// If `self` is empty, the iterator will return none.
     /// If `delimiter_bytes` does not exist in self, the iterator will return `self`,
     /// none, in that order.
-    #[inline]
+    [inline]
     public func tokenize(self, delimiter_bytes: ...uint8) TokenIterator {
         return TokenIterator(self, delimiter_bytes);
     }
@@ -549,7 +549,7 @@ public struct string : Stringable, Hashable {
         return mem_cmp(self.ptr, rhs.ptr, rhs.len) == 0;
     }
 
-    #[inline]
+    [inline]
     public func !=(self, rhs: Self) bool {
         return !(self == rhs);
     }
@@ -571,23 +571,23 @@ public struct string : Stringable, Hashable {
         return false;
     }
 
-    #[inline]
+    [inline]
     public func >(self, rhs: Self) bool {
         return !(self < rhs);
     }
 
-    #[inline]
+    [inline]
     public func <=(self, rhs: Self) bool {
         return self < rhs or self == rhs;
     }
 
-    #[inline]
+    [inline]
     public func >=(self, rhs: Self) bool {
         return self > rhs or self == rhs;
     }
 
     /// Returns `true` if the string contains `substr`.
-    #[inline]
+    [inline]
     public func contains(self, substr: string) bool {
         return substr.len == 0 or self.index_of(substr) !is none;
     }
@@ -621,12 +621,12 @@ public struct string : Stringable, Hashable {
     }
 
     /// Returns the number of runes contained in `self`.
-    #[inline]
+    [inline]
     public func runes_count(self) usize {
         return cstr_runes_count(unsafe { self.ptr }, self.len);
     }
 
-    #[inline]
+    [inline]
     public func is_empty(self) bool {
         return self.len == 0;
     }
@@ -647,7 +647,7 @@ public struct string : Stringable, Hashable {
         }
     }
 
-    #[inline]
+    [inline]
     func slice_from(self, start: usize) Self {
         return self.slice(start, self.len);
     }
@@ -664,12 +664,12 @@ public struct string : Stringable, Hashable {
         return Self(res, self.len);
     }
 
-    #[inline]
+    [inline]
     public func hash(self) usize {
         return sum64_string(self);
     }
 
-    #[inline]
+    [inline]
     public func to_string(self) Self {
         return self;
     }

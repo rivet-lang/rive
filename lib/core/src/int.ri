@@ -8,7 +8,7 @@ var DIGIT_PAIRS = "0010203040506070809001112131415161718191021222324252627"
 
 extend comptime_int : Stringable {
     /// Returns the value of `self` as a string.
-    #[inline]
+    [inline]
     public func to_string(&self) string {
         return @cast(int64, self.*).to_string();
     }
@@ -19,7 +19,7 @@ extend int8 : Stringable {
     public const MIN: int8 = -128;
 
     /// Returns the value of `self` as a string.
-    #[inline]
+    [inline]
     public func to_string(&self) string {
         return @cast(int32, self.*).str_l(5);
     }
@@ -30,7 +30,7 @@ extend int16 : Stringable {
     public const MIN: int16 = -32768;
 
     /// Returns the value of `self` as a string.
-    #[inline]
+    [inline]
     public func to_string(&self) string {
         return @cast(int32, self.*).str_l(7);
     }
@@ -88,7 +88,7 @@ extend int32 : Stringable {
     }
 
     /// Returns the value of `self` as a string.
-    #[inline]
+    [inline]
     public func to_string(&self) string {
         return self.*.str_l(12);
     }
@@ -153,7 +153,7 @@ extend isize : Stringable {
     public const MAX: isize = #if _x64_ int64.MAX #else int32.MAX #endif;
 
     /// Returns the value of `self` as a string.
-    #[inline]
+    [inline]
     public func to_string(&self) string {
         return @cast(int64, self.*).to_string();
     }

@@ -11,7 +11,7 @@ public alias ValueOutOfRangeError = errors.ValueOutOfRangeError;
 
 const INT_SIZE: uint32 = #if _x64_ 64 #else 32 #endif;
 
-#[inline]
+[inline]
 func lower(c: uint8) uint8 {
     return c | (b'x' - b'X');
 }
@@ -170,7 +170,7 @@ public func parse_int(s: string, base: int32, mut bit_size: uint32) !int64 {
 }
 
 /// Equivalent to parse_int(s, 10, 0), converted to type int64.
-#[inline]
+[inline]
 public func atoi(s: string) !int64 {
     return parse_int(s, 10, 0).!;
 }

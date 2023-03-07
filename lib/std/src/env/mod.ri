@@ -9,13 +9,13 @@ import "c/libc";
 public var HOME_DIR = #if _LINUX_ get("HOME") #else get("USERPROFILE") #endif ?? "";
 
 /// Returns `true` if the environment variable exists.
-#[inline]
+[inline]
 public func exists(name: string) bool {
     return get(name) !is none;
 }
 
 /// Returns the value of the environment variable named by the key.
-#[inline]
+[inline]
 public func get(name: string) ?string {
     return unsafe {
         if s := libc.getenv(name.ptr) {

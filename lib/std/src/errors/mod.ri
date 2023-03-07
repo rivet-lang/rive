@@ -9,7 +9,7 @@ public alias ErrnoError = c.ErrnoError;
 public alias OutOfMemoryError = core.OutOfMemoryError;
 public alias RuneFromU32Error = core.RuneFromU32Error;
 
-#[boxed]
+[boxed]
 public struct InvalidSyntaxError : Error {
     msg: string;
 
@@ -18,7 +18,7 @@ public struct InvalidSyntaxError : Error {
     }
 }
 
-#[boxed]
+[boxed]
 public struct InvalidBaseError : Error {
     msg: string;
 
@@ -27,7 +27,7 @@ public struct InvalidBaseError : Error {
     }
 }
 
-#[boxed]
+[boxed]
 public struct InvalidBitSizeError : Error {
     msg: string;
 
@@ -36,7 +36,7 @@ public struct InvalidBitSizeError : Error {
     }
 }
 
-#[boxed]
+[boxed]
 public struct ValueOutOfRangeError : Error {
     msg: string;
 

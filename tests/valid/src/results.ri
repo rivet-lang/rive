@@ -1,4 +1,4 @@
-#[boxed]
+[boxed]
 struct MyError : Error {
     msg: string;
 

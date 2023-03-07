@@ -50,7 +50,6 @@ class Kind(Enum):
     Pipe = auto_enum() # |
     Xor = auto_enum() # ^
     BitNot = auto_enum() # ~
-    Hash = auto_enum() # #
     Lbrace = auto_enum() # {
     Rbrace = auto_enum() # }
     Lbracket = auto_enum() # [
@@ -198,7 +197,6 @@ TOKEN_STRINGS = {
     Kind.Pipe: "|",
     Kind.Xor: "^",
     Kind.BitNot: "~",
-    Kind.Hash: "#",
     Kind.Lbrace: "{",
     Kind.Rbrace: "}",
     Kind.Lbracket: "[",

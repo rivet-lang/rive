@@ -7,7 +7,7 @@ import "../token";
 public struct ImportedSymbols {
     mut syms: [](string, Sym);
 
-    #[inline]
+    [inline]
     public func add(mut self, name: string, sym: Sym) {
         self.syms.push((name, sym));
     }
@@ -22,12 +22,12 @@ public struct ImportedSymbols {
     }
 }
 
-#[boxed]
+[boxed]
 public struct Node {
     public pos: token.Pos;
 }
 
-#[boxed]
+[boxed]
 public struct SourceFile {
     public file: string;
     public mod_sym: Sym;
