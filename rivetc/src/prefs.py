@@ -154,7 +154,7 @@ class Prefs:
         self.target_bits = Bits.get()
         self.target_endian = Endian.get()
         self.target_backend = Backend.C
-        self.target_backend_compiler = "gcc"
+        self.target_backend_compiler = "cc"
 
         # module info
         self.input = ""

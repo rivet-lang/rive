@@ -786,7 +786,7 @@ public struct StringFormatter {
                         args_idx += 1;
                         if arg_idx >= args.len {
                             process_panic(
-                                "string.fmt(): argument index out of range (argument index: {}, len: {}, index: {})",
+                                "string.fmt(): argument index out of range (argument index: {}, len: {}) at index {}",
                                 arg_idx, args.len, self.i
                             );
                         }
@@ -819,7 +819,7 @@ public struct StringFormatter {
                             self.i += 1;
                             if self.i >= self.buf.len {
                                 process_panic(
-                                    "string.fmt(): incomplete format string (index: {})",
+                                    "string.fmt(): incomplete format string at index {}",
                                     start
                                 );
                             }
@@ -849,7 +849,7 @@ public struct StringFormatter {
                         }
                     } else {
                         process_panic(
-                            "string.fmt(): expecting closing `}}` in format string (index: {})",
+                            "string.fmt(): expecting closing `}}` in format string at index {}",
                             self.i
                         );
                     }
@@ -860,7 +860,7 @@ public struct StringFormatter {
                         self.i += 1;
                     } else {
                         process_panic(
-                            "string.fmt(): single `}}` encountered in format string (index: {})",
+                            "string.fmt(): single `}}` encountered in format string at index {}",
                             self.i
                         );
                     }

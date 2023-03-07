@@ -23,11 +23,6 @@ public struct ImportedSymbols {
 }
 
 [boxed]
-public struct Node {
-    public pos: token.Pos;
-}
-
-[boxed]
 public struct SourceFile {
     public file: string;
     public mod_sym: Sym;

@@ -68,7 +68,7 @@ public struct Tokenizer {
         return token.Token(lit, kind, len, pos: token.Pos(
             file: self.file,
             line: self.line,
-            col: utils.max(1, self.current_column() - len + 1),
+            col: utils.max(1, self.current_column() - len),
             len: len,
             pos: self.pos - len + 1
         ));

@@ -26,7 +26,7 @@ class Parser:
 
         self.inside_extern = False
         self.extern_abi = sym.ABI.Rivet
-        self.inside_pkg = False
+        self.inside_mod = False
         self.inside_struct = False
         self.inside_trait = False
         self.inside_switch_header = False
@@ -162,7 +162,7 @@ class Parser:
         annotations = self.parse_annotations(
             self.tok.kind == Kind.Bang and self.peek_tok.kind == Kind.Lbracket
         )
-        is_public = self.is_public() or self.inside_trait
+        is_public = self.inside_trait or self.is_public()
         pos = self.tok.pos
         if self.accept(Kind.KwImport):
             import_list = []

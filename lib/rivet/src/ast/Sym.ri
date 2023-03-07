@@ -462,6 +462,7 @@ public struct Scope {
     public mut end: usize;
     public mut parent: ?Scope;
     public mut detached_from_parent: bool;
+    public mut childrens: []Scope;
     public mut syms: []Sym;
 
     public func add(mut self, sym: Sym) ! {

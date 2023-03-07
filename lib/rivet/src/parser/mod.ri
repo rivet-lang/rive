@@ -29,15 +29,15 @@ public struct Parser {
 
     mut inside_extern: bool;
     mut extern_abi: ast.ABI;
-    mut inside_pkg: bool;
-    mut inside_struct_or_class: bool;
+    mut inside_mod: bool;
+    mut inside_struct: bool;
     mut inside_trait: bool;
     mut inside_switch_header: bool;
     mut inside_block: bool;
 
     public func parse_module(mut self, mod_sym: ast.Sym, files: []string) []ast.SourceFile {
         self.mod_sym = mod_sym;
-        mut source_files := @vec(mut ast.SourceFile);
+        mut source_files := @vec(ast.SourceFile);
         for file in files {
             source_files.push(self.parse_file(file));
         }
@@ -69,7 +69,9 @@ public struct Parser {
 
     func advance(mut self, n: usize) {
         mut i: usize := 0;
-        while i < n : i += 1 { self.next(); }
+        while i < n : i += 1 {
+            self.next();
+        }
     }
 
     [inline]
@@ -110,12 +112,65 @@ public struct Parser {
     }
 
     func close_scope(mut self) {
-        self.scope.?.end = self.tok.pos.pos;
-        self.scope = self.scope.?.parent;
+        if scope := self.scope {
+            scope.end = self.tok.pos.pos;
+            if parent := scope.parent {
+                parent.childrens.push(scope);
+            }
+            self.scope = scope.parent;
+        }
     }
 
     // ---- declarations --------------
-    func parse_decls(self) []ast.Decl {
-        return [];
+    func parse_doc_comment(mut self) ast.Decl {
+        pos := self.tok.pos;
+        mut lines := @vec(string);
+        while self.accept(.DocComment) {
+            lines.push(self.prev_tok.lit);
+        }
+        return .DocComment(ast.DocComment(lines: lines));
+    }
+
+    func parse_abi(mut self) ast.ABI {
+        self.expect(.Lparen);
+        abi_pos := self.tok.pos;
+        abi := self.parse_name();
+        self.expect(.Rparen);
+        if abi_value := ast.ABI.from_string(abi) {
+            return abi_value;
+        }
+        report.error("unknown ABI: `{}`".fmt(abi), abi_pos).emit();
+        return .Rivet;
+    }
+
+    [inline]
+    func is_public(mut self) bool {
+        return self.accept(.KwPublic);
+    }
+
+    func parse_decls(mut self) []ast.Decl {
+        mut decls := @vec(ast.Decl);
+        while self.tok.kind != .EndOfFile {
+            decls.push(self.parse_decl());
+        }
+        return decls;
+    }
+
+    func parse_decl(mut self) ast.Decl {
+        doc_comment := self.parse_doc_comment();
+        /*
+        annotations := self.parse_annotations(
+            self.tok.kind == .Bang and self.peek_tok.kind == .Lbracket
+        );
+        */
+        is_public := self.inside_trait or self.is_public();
+        pos := self.tok.pos;
+        switch {
+            self.tok.kind != .EndOfFile => {
+                report.error("expected declaration, found {}".fmt(self.tok), pos).emit();
+                self.next();
+            }
+        }
+        return .EmptyDecl();
     }
 }

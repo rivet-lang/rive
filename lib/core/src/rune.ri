@@ -38,11 +38,11 @@ extend rune : Stringable {
         }
         if num < radix {
             num_ := @cast(uint8, num);
-            if num_ < 10 {
-                return @cast(rune, b'0' + num_);
+            return if num_ < 10 {
+                @cast(rune, b'0' + num_)
             } else {
-                return @cast(rune, b'a' + num_ - 10);
-            }
+                @cast(rune, b'a' + num_ - 10)
+            };
         }
         return none;
     }
