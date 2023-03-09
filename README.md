@@ -30,6 +30,16 @@ Rivet's goal is to be a very powerful programming language and at the same time 
 to use, with a syntax that is the result of mixing Go + Zig + C# and other languages
 such as Python, Lua, TypeScript, D, etc.
 
+## Features
+
+* **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
+* **Named and optional arguments**: Very useful, `my_func(arg0: 5)`.
+* **Easy error handling**: With result types: `func my_func() !T { ... }`.
+* **Not NULL values by default**: This is only possible with optional types and `none`.
+* **Immutable values**: Variables and fields are immutable by default.
+* **Polymorphism**: Traits and Embedded Structs are supported.
+* **Generics**: Specialize and reuse the same code for different types (**coming soon**).
+
 ## Why?
 
 It is true that there are many programming languages and each of them specialized in
@@ -45,20 +55,10 @@ API is not stable, and may change in the long term. Not all features are impleme
 Only linux is supported. Windows is not well supported, and macOS is not supported yet.
 Any help is welcome.
 
-## Features
-
-* **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
-* **Easy error handling**: Via result types: `func my_func() !T { ... }`.
-* **Not NULL values by default**: This is only possible with optional pointers.
-* **Named and optional arguments**: Very useful.
-* **Immutable values**: Variables and fields are immutable by default.
-* **Polymorphism**: Traits and Embedded Structs are supported.
-* **Generics**: Specialize and reuse the same code for different types (**coming soon**).
-
-## Samples
+## Sample: The classic `Hello World!`
 
 ```swift
-// A simple sample: the classic "Hello World"
+// A simple sample: the classic "Hello World!"
 import "std/console";
 
 func main() {

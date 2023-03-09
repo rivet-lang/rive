@@ -458,7 +458,7 @@ class Compiler:
 
     def vlog(self, msg):
         if self.prefs.is_verbose:
-            utils.eprint(">>", msg)
+            utils.eprint(utils.bold(utils.green(">>")), msg)
 
     def abort(self):
         if report.ERRORS == 1:

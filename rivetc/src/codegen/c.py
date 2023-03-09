@@ -23,9 +23,7 @@ C_RESERVED = [
 ]
 
 def c_escape(kw):
-    if kw in C_RESERVED:
-        return f"_ri_{kw}"
-    return kw
+    return f"_ri_{kw}" if kw in C_RESERVED else kw
 
 class CGen:
     def __init__(self, comp):

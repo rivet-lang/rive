@@ -112,9 +112,6 @@ class TestInfo:
         self.name = name
         self.func = func
 
-    def __lt__(self, other):
-        return self.name < other.name
-
 class Codegen:
     def __init__(self, comp):
         self.comp = comp
@@ -304,15 +301,16 @@ class Codegen:
                         continue
                 self.comp.vlog(msg)
                 args = [
-                    self.comp.prefs.target_backend_compiler, "-o", objfile,
-                    cfile, "-m64" if self.comp.prefs.target_bits
+                    self.comp.prefs.target_backend_compiler, "-c", "-o",
+                    objfile, cfile, "-m64" if self.comp.prefs.target_bits
                     == prefs.Bits.X64 else "-m32",
                     "-O3" if self.comp.prefs.build_mode
                     == prefs.BuildMode.Release else "-g",
-                    f'-L{os.path.dirname(cfile)}', "-c",
+                    f'-L{os.path.dirname(cfile)}',
                 ]
                 for f in self.comp.prefs.flags:
                     args.append(f"-D{f}")
+                self.comp.vlog(f"  compile_c_source: Arguments: {args}")
                 res = utils.execute(*args)
                 if res.exit_code != 0:
                     utils.error(
@@ -1289,10 +1287,12 @@ class Codegen:
                     )
                     exit_l = "" if expr.err_handler.is_propagate else self.cur_fn.local_name(
                     )
-                    res_value_is_err = ir.Selector(ir.BOOL_T, res_value, ir.Name("is_err"))
+                    res_value_is_err = ir.Selector(
+                        ir.BOOL_T, res_value, ir.Name("is_err")
+                    )
                     self.cur_fn.add_cond_br(
-                        res_value_is_err,
-                        panic_l, exit_l if err_handler_is_void else else_value
+                        res_value_is_err, panic_l,
+                        exit_l if err_handler_is_void else else_value
                     )
                     self.cur_fn.add_label(panic_l)
                     if expr.err_handler.is_propagate:
@@ -1326,9 +1326,8 @@ class Codegen:
                             )
                             self.cur_fn.alloca(tmp2)
                             self.cur_fn.store(
-                                ir.Selector(
-                                    ir.BOOL_T, tmp2, ir.Name("is_err")
-                                ), ir.IntLit(ir.BOOL_T, "1")
+                                ir.Selector(ir.BOOL_T, tmp2, ir.Name("is_err")),
+                                ir.IntLit(ir.BOOL_T, "1")
                             )
                             self.cur_fn.store(
                                 ir.Selector(
@@ -1336,8 +1335,8 @@ class Codegen:
                                     ir.Name("err")
                                 ),
                                 ir.Selector(
-                                    self.ir_type(self.comp.error_t),
-                                    res_value, ir.Name("err")
+                                    self.ir_type(self.comp.error_t), res_value,
+                                    ir.Name("err")
                                 )
                             )
                             self.cur_fn.add_ret(tmp2)

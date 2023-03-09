@@ -354,7 +354,7 @@ class Prefs:
         postfix += str(self.target_endian).lower()
         postfix += "_"
         postfix += str(self.target_backend).lower()
-        postfix += f"_{self.target_backend_compiler}"
+        postfix += f"_{os.path.basename(self.target_backend_compiler)}"
         if self.build_mode == BuildMode.Release:
             postfix += "_release"
         else:
