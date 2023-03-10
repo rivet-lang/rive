@@ -131,6 +131,54 @@ public struct Parser {
         return .DocComment(ast.DocComment(lines: lines));
     }
 
+    public func parse_annotations(
+        mut self, parse_mod_annotations: bool = false
+    ) ast.Annotations {
+        mut annotations := ast.Annotations();
+        if parse_mod_annotations {
+            self.expect(.Bang);
+        }
+        if self.accept(.Lbracket) {
+            while {
+                mut args := @vec(ast.AnnotationArgument);
+                pos := self.tok.pos;
+                annotation_name := if self.accept(.KwUnsafe) {
+                    "unsafe"
+                } else {
+                    self.parse_name()
+                };
+                if self.accept(.Lparen) {
+                    while {
+                        name := if self.tok.kind == .Name and self.peek_tok.kind == .Colon {
+                            n := self.parse_name();
+                            self.expect(.Colon);
+                            n
+                        } else {
+                            ""
+                        };
+                        expr := ast.Expr.Empty; // TODO: parse expr
+                        args.push(ast.AnnotationArgument(name, expr));
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                }
+                annotations.add(ast.Annotation(annotation_name, args, pos)) catch |err| {
+                    report.error(err.to_string(), pos).emit();
+                };
+                if !self.accept(.Semicolon) {
+                    break;
+                }
+            }
+        }
+        return annotations;
+    }
+
+    [inline]
+    func is_public(mut self) bool {
+        return self.accept(.KwPublic);
+    }
+
     func parse_abi(mut self) ast.ABI {
         self.expect(.Lparen);
         abi_pos := self.tok.pos;
@@ -143,11 +191,6 @@ public struct Parser {
         return .Rivet;
     }
 
-    [inline]
-    func is_public(mut self) bool {
-        return self.accept(.KwPublic);
-    }
-
     func parse_decls(mut self) []ast.Decl {
         mut decls := @vec(ast.Decl);
         while self.tok.kind != .EndOfFile {
@@ -158,11 +201,9 @@ public struct Parser {
 
     func parse_decl(mut self) ast.Decl {
         doc_comment := self.parse_doc_comment();
-        /*
         annotations := self.parse_annotations(
             self.tok.kind == .Bang and self.peek_tok.kind == .Lbracket
         );
-        */
         is_public := self.inside_trait or self.is_public();
         pos := self.tok.pos;
         switch {

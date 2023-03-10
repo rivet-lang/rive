@@ -102,16 +102,6 @@ class Parser:
             lines.append(self.prev_tok.lit)
         return ast.DocComment(lines, pos)
 
-    def parse_abi(self):
-        self.expect(Kind.Lparen)
-        abi_pos = self.tok.pos
-        abi = self.parse_name()
-        self.expect(Kind.Rparen)
-        if abi_f := sym.ABI.from_string(abi):
-            return abi_f
-        report.error(f"unknown ABI: `{abi}`", abi_pos)
-        return sym.ABI.Rivet
-
     def parse_annotations(self, parse_mod_annotations = False):
         if parse_mod_annotations and self.mod_sym.annotations == None:
             self.mod_sym.annotations = ast.Annotations()
@@ -150,6 +140,16 @@ class Parser:
 
     def is_public(self):
         return self.accept(Kind.KwPublic)
+
+    def parse_abi(self):
+        self.expect(Kind.Lparen)
+        abi_pos = self.tok.pos
+        abi = self.parse_name()
+        self.expect(Kind.Rparen)
+        if abi_f := sym.ABI.from_string(abi):
+            return abi_f
+        report.error(f"unknown ABI: `{abi}`", abi_pos)
+        return sym.ABI.Rivet
 
     def parse_decls(self):
         decls = []

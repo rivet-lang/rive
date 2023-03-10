@@ -101,13 +101,13 @@ class Annotations:
     def __init__(self):
         self.annotations = []
 
-    def add(self, attr):
-        self.annotations.append(attr)
+    def add(self, annotation):
+        self.annotations.append(annotation)
 
     def find(self, name):
-        for attr in self.annotations:
-            if attr.name == name:
-                return attr
+        for annotation in self.annotations:
+            if annotation.name == name:
+                return annotation
         return None
 
     def has(self, name):

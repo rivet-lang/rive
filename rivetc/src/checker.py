@@ -921,10 +921,7 @@ class Checker:
                         )
             elif isinstance(expr_left, ast.SelectorExpr):
                 if expr_left.is_symbol_access:
-                    if isinstance(expr_left.field_sym, sym.Fn):
-                        expr.sym = expr_left.field_sym
-                        self.check_call(expr.sym, expr)
-                    elif isinstance(expr_left.field_sym,
+                    if isinstance(expr_left.field_sym,
                                     sym.Type) and expr_left.field_sym.kind in (
                                         TypeKind.Trait, TypeKind.Struct
                                     ):
@@ -954,6 +951,9 @@ class Checker:
                             except utils.CompilerError as e:
                                 report.error(e.args[0], expr.pos)
                         expr.typ = type.Type(expr_left.left_sym)
+                    elif isinstance(expr_left.field_sym, sym.Fn):
+                        expr.sym = expr_left.field_sym
+                        self.check_call(expr.sym, expr)
                     else:
                         report.error(
                             f"expected function, found {expr_left.field_sym.typeof()}",
