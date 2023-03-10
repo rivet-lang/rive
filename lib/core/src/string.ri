@@ -63,25 +63,27 @@ public struct string : Stringable, Hashable {
         return unsafe { self.ptr[idx] };
     }
 
+    [inline]
     public func repeat(self, count: usize) string {
-        if count == 0 {
-            return empty_string;
+        return if count == 0 {
+            empty_string
         } else if count == 1 {
-            return self;
-        }
-        len := self.len * count;
-        res := @cast([*]mut uint8, internal_alloc(len));
-        unsafe {
-            mut i: usize := 0;
-            while i < count : i += 1 {
-                mut j: usize := 0;
-                while j < self.len : j += 1 {
-                    res[i * self.len + j] = self.ptr[j];
+            self
+        } else {
+            len := self.len * count;
+            res := @cast([*]mut uint8, internal_alloc(len));
+            unsafe {
+                mut i: usize := 0;
+                while i < count : i += 1 {
+                    mut j: usize := 0;
+                    while j < self.len : j += 1 {
+                        res[i * self.len + j] = self.ptr[j];
+                    }
                 }
+                res[len] = 0;
             }
-            res[len] = 0;
-        }
-        return Self(res, len);
+            Self(res, len)
+        };
     }
 
     public func concat(self, others: ...Self) Self {

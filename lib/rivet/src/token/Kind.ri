@@ -67,6 +67,7 @@ public var KindStrings = [
     KindMap(.KwAnd, "and"),
     KindMap(.KwAs, "as"),
     KindMap(.KwBreak, "break"),
+    KindMap(.KwCImport, "c_import"),
     KindMap(.KwCatch, "catch"),
     KindMap(.KwComptime, "comptime"),
     KindMap(.KwConst, "const"),
@@ -164,6 +165,7 @@ public enum Kind : traits.Stringable {
     KwAnd, // and
     KwAs, // as
     KwBreak, // break
+    KwCImport, // c_import
     KwCatch, // catch
     KwComptime, // comptime
     KwConst, // const
@@ -259,6 +261,7 @@ public func lookup(str: string) Kind {
         "and" => .KwAnd,
         "as" => .KwAs,
         "break" => .KwBreak,
+        "c_import" => .KwCImport,
         "catch" => .KwCatch,
         "comptime" => .KwComptime,
         "const" => .KwConst,
