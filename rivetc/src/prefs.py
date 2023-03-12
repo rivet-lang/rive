@@ -144,7 +144,6 @@ class Prefs:
         # module info
         self.input = ""
         self.mod_name = ""
-        self.mod_type = ModType.Bin
         self.mod_dir = ""
         self.mod_output = ""
         self.build_mode = BuildMode.Debug
