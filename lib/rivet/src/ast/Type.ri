@@ -97,10 +97,14 @@ public enum Type : traits.Stringable {
                 ArrayData(array_data.inner.unalias() ?? array_data.inner, ...array_data)
             ),
             .Reference as reference_data => return .Reference(
-                ReferenceData(reference_data.inner.unalias() ?? reference_data.inner, ...reference_data)
+                ReferenceData(
+                    reference_data.inner.unalias() ?? reference_data.inner, ...reference_data
+                )
             ),
             .Pointer as pointer_data => return .Pointer(
-                PointerData(pointer_data.inner.unalias() ?? pointer_data.inner, ...pointer_data)
+                PointerData(
+                    pointer_data.inner.unalias() ?? pointer_data.inner, ...pointer_data
+                )
             ),
             .Anyptr => return self,
             .Func as func_data => {
@@ -122,8 +126,7 @@ public enum Type : traits.Stringable {
             } else {
                 .Resolved(resolved_sym)
             },
-            // for `.Void` or `.Unresolved`
-            else => return none
+            else => return none // for `.Void` or `.Unresolved`
         }
     }
 
@@ -216,12 +219,13 @@ public enum Type : traits.Stringable {
                     func_lhs.args.len != func_rhs.args.len => false,
                     else => {
                         mut final_res := func_lhs.ret_typ == func_rhs.ret_typ;
-                        for i, arg in func_lhs.args {
-                            if arg.is_mut != func_rhs.args[i].is_mut {
+                        for i, arg_lhs in func_lhs.args {
+                            arg_rhs := func_rhs.args[i];
+                            if arg_lhs.is_mut != arg_rhs.is_mut {
                                 final_res = false;
                                 break;
                             }
-                            if arg.typ != func_rhs.args[i].typ {
+                            if arg_lhs.typ != arg_rhs.typ {
                                 final_res = false;
                                 break;
                             }
@@ -271,24 +275,24 @@ public enum Type : traits.Stringable {
                 }, array_data.inner.to_string()
             ),
             .Reference as reference_data => if reference_data.is_mut {
-                "&mut ".concat(reference_data.inner.to_string())
+                "&mut "
             } else {
-                "&".concat(reference_data.inner.to_string())
-            },
+                "&"
+            }.concat(reference_data.inner.to_string()),
             .Pointer as pointer_data => {
                 if pointer_data.is_mut {
                     if pointer_data.is_indexable {
-                        "[*]mut ".concat(pointer_data.inner.to_string())
+                        "[*]mut "
                     } else {
-                        "*mut ".concat(pointer_data.inner.to_string())
+                        "*mut "
                     }
                 } else {
                     if pointer_data.is_indexable {
-                        "[*]".concat(pointer_data.inner.to_string())
+                        "[*]"
                     } else {
-                        "*".concat(pointer_data.inner.to_string())
+                        "*"
                     }
-                }
+                }.concat(pointer_data.inner.to_string())
             },
             .Anyptr as anyptr_data => {
                 if anyptr_data.is_mut {

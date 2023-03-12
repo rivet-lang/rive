@@ -57,7 +57,7 @@ public struct AnnotationDuplicatedError : Error {
     name: string;
 
     public func to_string(self) string {
-        return "duplicated annotation: `{}`".fmt(self.name);
+        return "duplicated annotation `{}`".fmt(self.name);
     }
 }
 

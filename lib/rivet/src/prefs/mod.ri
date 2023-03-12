@@ -36,7 +36,7 @@ public enum LinkMode as uint8 {
     Dynamic
 }
 
-func print_help() void {
+func print_help() {
     console.eprintln(utils.HELP);
     process.exit(0);
 }
@@ -50,7 +50,7 @@ public struct Prefs {
     public mut target_is_little_endian: bool = sys.is_little_endian();
     public mut target_c_runtime: sys.CRuntime = sys.c_runtime();
     public mut target_backend: Backend;
-    public mut target_backend_compiler: string = "gcc";
+    public mut target_backend_compiler: string = "cc";
 
     // Module info
     public mut input: string;
@@ -129,7 +129,7 @@ public struct Prefs {
                     }
                     i += 1;
                 },
-                "--backend-compiler" => {
+                "-bc", "--backend-compiler" => {
                     if bc := utils.option(current_args, arg) {
                         prefs.target_backend_compiler = bc;
                     } else {

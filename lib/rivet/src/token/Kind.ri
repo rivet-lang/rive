@@ -63,6 +63,7 @@ public var KindStrings = [
     KindMap(.Lparen, "("),
     KindMap(.Rparen, ")"),
 
+    // keywords
     KindMap(.KwAlias, "alias"),
     KindMap(.KwAnd, "and"),
     KindMap(.KwAs, "as"),

@@ -14,9 +14,6 @@ Options:
    --mod-name <name>
       Specify the name of the module being built. By default: main.
 
-   --mod-type bin|dylib|staticlib
-      Specify the type of the module being built. By default: bin.
-
    -r, --release
       Compile the executable in release mode, where most optimizations are enabled.
       Note that most Rivet warnings turn to errors, if you pass -r or --release, so
@@ -37,11 +34,11 @@ Options:
         `c` (default): Rivet outputs C source code which is passed to a C compiler
         to be compiled.
 
-   --backend-compiler <compiler>
+   -bc <compiler>, --backend-compiler <compiler>
       Change the backend compiler Rivet invokes to the specified compiler.
 
       Officially supported/tested backend compilers include:
-        C: `clang`, `gcc` and `mingw`
+        C: `clang`, `gcc` and `mingw`.
 
    -d <flag>, --define <flag>
       Define the provided flag.

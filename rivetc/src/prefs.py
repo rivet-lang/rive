@@ -119,21 +119,6 @@ class Backend(Enum):
     def __str__(self):
         return "C"
 
-class ModType(Enum):
-    Bin = auto_enum() # .exe
-    DyLib = auto_enum() # .so, .dll, .dylib
-    StaticLib = auto_enum() # .a, .lib
-
-    @staticmethod
-    def from_string(typ):
-        if typ == "bin":
-            return ModType.Bin
-        elif typ == "dylib":
-            return ModType.DyLib
-        elif typ == "static":
-            return ModType.StaticLib
-        return None
-
 class BuildMode(Enum):
     Debug = auto_enum()
     Release = auto_enum()
@@ -212,15 +197,6 @@ class Prefs:
                 else:
                     error("`--mod-name` requires a name as argument")
                 i += 1
-            elif arg == "--mod-type":
-                if typ := option(current_args, arg):
-                    if mod_typ := ModType.from_string(typ):
-                        self.mod_typ = mod_typ
-                    else:
-                        error(f"invalid module type: `{typ}`")
-                else:
-                    error("`--mod-type` requires a module type as argument")
-                i += 1
             elif arg in ("-r", "--release"):
                 self.build_mode = BuildMode.Release
                 report.WARNS_ARE_ERRORS = True
@@ -243,11 +219,11 @@ class Prefs:
                 else:
                     error(f"`{arg}` requires a name as argument")
                 i += 1
-            elif arg == "--backend-compiler":
+            elif arg in ("-bc", "--backend-compiler"):
                 if backend_compiler := option(current_args, arg):
                     self.target_backend_compiler = backend_compiler
                 else:
-                    error("`--backend-compiler` requires a name as argument")
+                    error("`{arg}` requires a name as argument")
                 i += 1
             elif arg in ("-d", "--define"):
                 if flag := option(current_args, arg):
