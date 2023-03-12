@@ -203,7 +203,7 @@ class EnumVariant:
 class EnumDecl:
     def __init__(
         self, docs, annotations, is_public, name, underlying_typ, bases,
-        variants, is_advanced_enum, decls, pos
+        variants, is_boxed_enum, decls, pos
     ):
         self.docs = docs
         self.annotations = annotations
@@ -212,7 +212,7 @@ class EnumDecl:
         self.underlying_typ = underlying_typ
         self.bases = bases
         self.variants = variants
-        self.is_advanced_enum = is_advanced_enum
+        self.is_boxed_enum = is_boxed_enum
         self.decls = decls
         self.sym = None
         self.pos = pos

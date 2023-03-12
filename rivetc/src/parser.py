@@ -360,13 +360,13 @@ class Parser:
             self.expect(Kind.Lbrace)
             variants = []
             decls = []
-            is_advanced_enum = False
+            is_boxed_enum = False
             while True:
                 v_name = self.parse_name()
                 has_typ = self.accept(Kind.Colon)
                 variant = self.empty_expr()
                 if has_typ:
-                    is_advanced_enum = True
+                    is_boxed_enum = True
                     typ = self.parse_type()
                 else:
                     typ = self.comp.void_t
@@ -381,7 +381,7 @@ class Parser:
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
                 doc_comment, annotations, is_public, name, underlying_typ,
-                bases, variants, is_advanced_enum, decls, pos
+                bases, variants, is_boxed_enum, decls, pos
             )
         elif self.accept(Kind.KwExtend):
             pos = self.prev_tok.pos
