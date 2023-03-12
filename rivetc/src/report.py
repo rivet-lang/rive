@@ -17,7 +17,7 @@ WARNS = 0
 FILE_LINES = {}
 
 SEP = utils.bold(utils.blue("|"))
-MARK = utils.bold(utils.green("^"))
+MARK = utils.bold(utils.blue("^"))
 FOOT = utils.bold(utils.blue("="))
 
 def format_number(num):
@@ -43,8 +43,6 @@ def _readline(file, line_nr):
 def readline(pos, kind):
     line = _readline(pos.file, pos.line)
     line_str = f"{utils.bold(utils.blue(format_number(pos.line + 1)))}"
-    # TODO(StunxFS): it would be better if the marker was the width of
-    # the token.
     marker = (" " * (pos.col - 1)) + MARK
     return f"{line_str} {SEP} {line}\n      {SEP} {marker}"
 
