@@ -1,0 +1,77 @@
+// Copyright (C) 2022 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "std/fs";
+import "std/traits";
+import "std/console";
+import "std/process";
+import "std/console/styles";
+
+public func skip_bom(file_content: string) string {
+   // BOM check
+   if file_content.len >= 3 {
+      unsafe {
+         if file_content[0] == 0xEF and file_content[1] == 0xBB and file_content[2] == 0xBF {
+            // skip three BOM bytes
+            return file_content[3..];
+         }
+      }
+   }
+   return file_content;
+}
+
+struct CachedFile {
+   path: string;
+   content: string;
+   mut lines: []string;
+}
+
+[boxed]
+struct SourceCache {
+   mut sources: []CachedFile;
+
+   public func find(self, path: string) ?string {
+      for source in self.sources {
+         if source.path == path {
+            return source.content;
+         }
+      }
+      return none;
+   }
+
+   public func find_line(self, path: string, line: usize) ?string {
+      return if lines := self.find_lines(path) {
+         lines[line]
+      } else {
+         none
+      };
+   }
+
+   public func find_lines(self, path: string) ?[]string {
+      mut i: usize := 0;
+      while i < self.sources.len : i += 1 {
+         cached := self.sources[i];
+         if cached.path == path {
+            if cached.lines.is_empty() {
+               cached.lines = cached.content.split_into_lines();
+            }
+            return cached.lines;
+         }
+      }
+      return none;
+   }
+}
+
+public var mut source_cache: SourceCache = SourceCache();
+
+[inline]
+public func read_file(path: string) !string {
+   return if res := source_cache.find(path) {
+      res
+   } else {
+      content := skip_bom(fs.read_file(path).!);
+      source_cache.sources.push(CachedFile(path, content));
+      content
+   };
+}

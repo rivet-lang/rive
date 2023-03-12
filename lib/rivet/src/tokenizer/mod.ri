@@ -110,7 +110,11 @@ public struct Tokenizer {
 
     [inline]
     func current_column(self) usize {
-        return self.pos - self.last_nl_pos;
+        return if self.line == 0 {
+            self.pos + 1
+        } else {
+            self.pos - self.last_nl_pos
+        };
     }
 
     func ignore_line(mut self) {
@@ -143,13 +147,11 @@ public struct Tokenizer {
             if !(c == 32 or (c > 8 and c < 14) or (c == 0x85) or (c == 0xA0)) {
                 return;
             }
-            if self.pos + 1 < self.text.len and c == CR and self.look_ahead(1) == LF {
+            if c == CR and self.look_ahead(1) == LF {
                 self.is_cr_lf = true;
             }
-            // count \r\n as one line
-            if utils.is_new_line(c) and !(
-                self.pos > 0 and self.text[self.pos - 1] == CR and c == LF
-            ) {
+            // count `\r\n` as one line
+            if utils.is_new_line(c) and !(self.text[self.pos - 1] == CR and c == LF) {
                 self.inc_line_number();
             }
         }
@@ -191,10 +193,6 @@ public struct Tokenizer {
 
     [inline]
     public func next(mut self) token.Token {
-        return self.buffer_tok();
-    }
-
-    func buffer_tok(mut self) token.Token {
         while {
             cidx := self.tidx;
             self.tidx += 1;
