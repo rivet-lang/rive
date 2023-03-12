@@ -9,7 +9,7 @@ public var NO_POS = Pos();
 public struct Pos : traits.Stringable {
     public file: string;
     public line: usize;
-    public col: usize;
+    public mut col: usize;
     public mut len: usize;
     public pos: usize;
 

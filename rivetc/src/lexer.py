@@ -682,10 +682,10 @@ class Lexer:
             # skip tokens until next preprocessing directive
             while self.pos < self.text_len:
                 cc = self.current_char()
-                if cc == '#' and self.look_ahead(1) not in ("!", "["):
+                if cc == '#':
                     self.pos -= 1
                     return
-                if cc == '\n':
+                elif cc == '\n':
                     self.inc_line_number()
                 self.pos += 1
             # if we get EOF, then no corresponding `#endif` has been written

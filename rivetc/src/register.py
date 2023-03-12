@@ -134,9 +134,7 @@ class Register:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.EnumDecl):
                 try:
-                    info = sym.EnumInfo(
-                        decl.underlying_typ, decl.is_boxed_enum
-                    )
+                    info = sym.EnumInfo(decl.underlying_typ, decl.is_boxed_enum)
                     for i, variant in enumerate(decl.variants):
                         if info.has_variant(variant.name):
                             report.error(

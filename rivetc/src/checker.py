@@ -922,9 +922,9 @@ class Checker:
             elif isinstance(expr_left, ast.SelectorExpr):
                 if expr_left.is_symbol_access:
                     if isinstance(expr_left.field_sym,
-                                    sym.Type) and expr_left.field_sym.kind in (
-                                        TypeKind.Trait, TypeKind.Struct
-                                    ):
+                                  sym.Type) and expr_left.field_sym.kind in (
+                                      TypeKind.Trait, TypeKind.Struct
+                                  ):
                         self.check_ctor(expr_left.field_sym, expr)
                     elif isinstance(
                         expr_left.left_sym, sym.Type
@@ -1374,8 +1374,7 @@ class Checker:
             elif expr_sym.kind == TypeKind.Enum:
                 if expr_sym.info.is_boxed_enum and not expr.is_typeswitch:
                     report.error(
-                        "cannot use `switch` with a boxed enum value",
-                        expr.pos
+                        "cannot use `switch` with a boxed enum value", expr.pos
                     )
                     report.note(f"use a typeswitch instead")
                 elif not expr_sym.info.is_boxed_enum and expr.is_typeswitch:

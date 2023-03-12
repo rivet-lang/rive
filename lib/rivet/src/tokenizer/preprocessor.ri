@@ -33,7 +33,7 @@ extend Tokenizer {
             // skip tokens until next preprocessing directive
             while self.pos < self.text.len : self.pos += 1 {
                 cc := self.current_char();
-                if cc == b'#' and self.look_ahead(1) !in [b'!', b'['] {
+                if cc == b'#' {
                     self.pos -= 1;
                     return;
                 } else if utils.is_new_line(cc) {
@@ -57,13 +57,11 @@ extend Tokenizer {
         if cond and (self.conditional_stack.len == 1
             or !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
             // condition true => process code within if
-            cond_s := &mut self.conditional_stack[self.conditional_stack.len - 1];
-            cond_s.matched = true;
-            cond_s.skip_section = false;
+            self.conditional_stack[self.conditional_stack.len - 1].matched = true;
+            self.conditional_stack[self.conditional_stack.len - 1].skip_section = false;
         } else {
             // skip lines until next preprocessing directive
-            cond_s := &mut self.conditional_stack[self.conditional_stack.len - 1];
-            cond_s.skip_section = true;
+            self.conditional_stack[self.conditional_stack.len - 1].skip_section = true;
         }
     }
 
@@ -81,13 +79,11 @@ extend Tokenizer {
             and (self.conditional_stack.len == 1 or
                 !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
             // condition true => process code within if
-            cond_s := &mut self.conditional_stack[self.conditional_stack.len - 1];
-            cond_s.matched = true;
-            cond_s.skip_section = false;
+            self.conditional_stack[self.conditional_stack.len - 1].matched = true;
+            self.conditional_stack[self.conditional_stack.len - 1].skip_section = false;
         } else {
             // skip lines until next preprocessing directive
-            cond_s := &mut self.conditional_stack[self.conditional_stack.len - 1];
-            cond_s.skip_section = true;
+            self.conditional_stack[self.conditional_stack.len - 1].skip_section = true;
         }
     }
 
@@ -101,20 +97,17 @@ extend Tokenizer {
             and (self.conditional_stack.len == 1 or
                 !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
             // condition true => process code within if
-            cond_s := &mut self.conditional_stack[self.conditional_stack.len - 1];
-            cond_s.matched = true;
-            cond_s.skip_section = false;
+            self.conditional_stack[self.conditional_stack.len - 1].matched = true;
+            self.conditional_stack[self.conditional_stack.len - 1].skip_section = false;
         } else {
             // skip lines until next preprocessing directive
-            cond_s := &mut self.conditional_stack[self.conditional_stack.len - 1];
-            cond_s.skip_section = true;
+            self.conditional_stack[self.conditional_stack.len - 1].skip_section = true;
         }
     }
 
     func pp_endif(mut self) {
-        pos := self.current_pos();
         if self.conditional_stack.is_empty() {
-            self.error("unexpected `#endif`", pos).emit();
+            self.error("unexpected `#endif`", self.current_pos()).emit();
         } else {
             _ = self.conditional_stack.pop();
         }
@@ -181,7 +174,9 @@ extend Tokenizer {
     }
 
     func pp_symbol(mut self) bool {
+        self.pos -= 1;
         pos := self.current_pos();
+        self.pos += 1;
         name := self.read_name();
         self.pos += 1;
         pos.len += name.len;

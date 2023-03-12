@@ -129,6 +129,8 @@ class Codegen:
         self.inside_trait = False
         self.inside_test = False
         self.inside_let_decl = False
+        self.inside_selector_expr = False
+        self.inside_lhs_assign = False
 
         self.generated_string_literals = {}
         self.generated_opt_res_types = []
@@ -1408,8 +1410,11 @@ class Codegen:
                 return ir.Ident(
                     self.ir_type(expr.typ), mangle_symbol(expr.field_sym)
                 )
+            old_inside_selector_expr = self.inside_selector_expr
+            self.inside_selector_expr = True
             left_sym = expr.left_typ.symbol()
             left = self.gen_expr_with_cast(expr.left_typ, expr.left)
+            self.inside_selector_expr = old_inside_selector_expr
             ir_left_typ = self.ir_type(expr.left_typ)
             ir_typ = self.ir_type(expr.typ)
             if expr.is_indirect:
@@ -1589,7 +1594,12 @@ class Codegen:
                         ), expr_typ_ir2
                     ], expr_typ_ir2
                 )
-                if not expr.is_ref or s.is_boxed():
+                load_ptr = True
+                if self.inside_lhs_assign and self.inside_selector_expr:
+                    if not s.info.elem_typ.symbol().is_boxed():
+                        load_ptr = False
+                        expr_typ_ir = expr_typ_ir2
+                if load_ptr and (not expr.is_ref or s.is_boxed()):
                     value = ir.Inst(ir.InstKind.LoadPtr, [value], expr_typ_ir)
             else:
                 assert False, (expr, expr.pos)
@@ -2222,6 +2232,8 @@ class Codegen:
         return ir.Skip()
 
     def gen_left_assign(self, expr, right, assign_op):
+        old_inside_lhs_assign = self.inside_lhs_assign
+        self.inside_lhs_assign = True
         left = None
         require_store_ptr = False
         if isinstance(expr, ast.Ident):
@@ -2231,6 +2243,7 @@ class Codegen:
                         ir.InstKind.Cast, [self.gen_expr(right), ir.VOID_T]
                     )
                 )
+                self.inside_lhs_assign = old_inside_lhs_assign
                 return None, require_store_ptr
             else:
                 left = self.gen_expr_with_cast(expr.typ, expr)
@@ -2256,12 +2269,14 @@ class Codegen:
                         ir.Inst(ir.InstKind.GetRef, [expr_right])
                     ]
                 )
+                self.inside_lhs_assign = old_inside_lhs_assign
                 return None, require_store_ptr
             if isinstance(left_ir_typ, (ir.Pointer, ir.Array)):
                 expr.is_ref = True
             left = self.gen_expr_with_cast(expr.typ, expr)
             if isinstance(left.typ, ir.Pointer):
                 require_store_ptr = left.typ.nr_level() > 1
+        self.inside_lhs_assign = old_inside_lhs_assign
         return left, require_store_ptr
 
     def gen_defer_stmts(self, gen_errdefer = False, last_ret_was_err = None):
