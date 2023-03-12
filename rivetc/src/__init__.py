@@ -450,7 +450,7 @@ class Compiler:
                 return self.prefs.build_mode == prefs.BuildMode.Release
             return self.prefs.build_mode == prefs.BuildMode.Test
         elif name.startswith("_") and name.endswith("_"):
-            report.error(f"unknown runtime flag: `{name}`", pos)
+            report.error(f"unknown builtin flag: `{name}`", pos)
             return False
         return name in self.prefs.flags
 
