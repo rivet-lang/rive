@@ -68,9 +68,9 @@ public struct Tokenizer {
         return token.Token(lit, kind, len, pos: token.Pos(
             file: self.file,
             line: self.line,
-            col: utils.max(1, self.current_column() - len),
-            len: len,
-            pos: self.pos - len + 1
+            col: utils.max(1, self.current_column() - len + 1) - 1,
+            pos: self.pos - len + 1,
+            len: len
         ));
     }
 
@@ -89,23 +89,6 @@ public struct Tokenizer {
             self.inc_line_number();
         }
         self.pos = self.text.len;
-        return self.new_eof_token();
-    }
-
-    [inline]
-    public func next(mut self) token.Token {
-        return self.buffer_tok();
-    }
-
-    func buffer_tok(mut self) token.Token {
-        while {
-            cidx := self.tidx;
-            self.tidx += 1;
-            if cidx >= self.all_tokens.len {
-                return self.end_of_file();
-            }
-            return self.all_tokens[cidx];
-        }
         return self.new_eof_token();
     }
 
@@ -148,10 +131,12 @@ public struct Tokenizer {
         self.line += 1;
     }
 
+    [inline]
     func skip_whitespace(mut self) {
         while self.pos < self.text.len : self.pos += 1 {
             c := self.current_char();
-            if c == 8 {
+            if c == 9 {
+                // tabs are most common
                 self.pos += 1;
                 continue;
             }
@@ -161,6 +146,7 @@ public struct Tokenizer {
             if self.pos + 1 < self.text.len and c == CR and self.look_ahead(1) == LF {
                 self.is_cr_lf = true;
             }
+            // count \r\n as one line
             if utils.is_new_line(c) and !(
                 self.pos > 0 and self.text[self.pos - 1] == CR and c == LF
             ) {
@@ -184,12 +170,14 @@ public struct Tokenizer {
         return true;
     }
 
+    [inline]
     public func peek_token(self, n: usize) token.Token {
         idx := self.tidx + n;
-        if idx >= self.all_tokens.len {
-            return self.new_eof_token();
-        }
-        return self.all_tokens[idx];
+        return if idx >= self.all_tokens.len {
+            self.new_eof_token()
+        } else {
+            self.all_tokens[idx]
+        };
     }
 
     [inline]
@@ -201,7 +189,24 @@ public struct Tokenizer {
         };
     }
 
-    func read_ident(mut self) string {
+    [inline]
+    public func next(mut self) token.Token {
+        return self.buffer_tok();
+    }
+
+    func buffer_tok(mut self) token.Token {
+        while {
+            cidx := self.tidx;
+            self.tidx += 1;
+            if cidx >= self.all_tokens.len {
+                return self.end_of_file();
+            }
+            return self.all_tokens[cidx];
+        }
+        return self.new_eof_token();
+    }
+
+    func read_name(mut self) string {
         start := self.pos;
         self.pos += 1;
         while self.pos < self.text.len {
@@ -577,8 +582,8 @@ public struct Tokenizer {
             }
             (ch, nextc) := (self.current_char(), self.look_ahead(1));
             if utils.is_name_char(ch) {
-                lit := self.read_ident();
-                return self.new_token(token.lookup(lit), lit, lit.len);
+                name := self.read_name();
+                return self.new_token(token.lookup(name), name, name.len);
             } else if ch.is_digit() or (ch == b'.' and nextc.is_digit()) {
                 // decimals with 0 prefix = error
                 if ch == b'0' and nextc.is_digit() {

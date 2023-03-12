@@ -15,7 +15,7 @@ extend Tokenizer {
         pos := self.current_pos();
         self.pos += 1; // skip '#'
         self.skip_whitespace();
-        pp_dir := self.read_ident();
+        pp_dir := self.read_name();
         pos.len += pp_dir.len;
         self.skip_whitespace();
         switch pp_dir {
@@ -182,7 +182,7 @@ extend Tokenizer {
 
     func pp_symbol(mut self) bool {
         pos := self.current_pos();
-        name := self.read_ident();
+        name := self.read_name();
         self.pos += 1;
         pos.len += name.len;
         return if name == "true" {

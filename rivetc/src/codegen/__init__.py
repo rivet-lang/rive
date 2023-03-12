@@ -752,7 +752,7 @@ class Codegen:
         elif isinstance(expr, ast.EnumLiteral):
             enum_sym = expr.typ.symbol()
             if expr.is_instance:
-                return self.advanced_enum_value(
+                return self.boxed_enum_value(
                     enum_sym, expr.sym.name, expr.value_arg
                 )
             return ir.IntLit(
@@ -842,7 +842,7 @@ class Codegen:
                         )
                     )
                     return ir.Ident(ir_typ, tmp)
-                elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_advanced_enum:
+                elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed_enum:
                     tmp = self.cur_fn.local_name()
                     self.cur_fn.inline_alloca(
                         ir_typ, tmp,
@@ -1027,7 +1027,7 @@ class Codegen:
                         expr.typ
                     )
                 elif typ_sym.kind == TypeKind.Enum:
-                    return self.advanced_enum_value(
+                    return self.boxed_enum_value(
                         typ_sym, expr.left.field_name, expr.args[0].expr,
                         custom_tmp = custom_tmp
                     )
@@ -1699,7 +1699,7 @@ class Codegen:
                 left_sym = expr_left_typ.symbol()
                 expr_right_sym = expr_right_typ.symbol()
                 if left_sym.kind == TypeKind.Enum:
-                    if left_sym.info.is_advanced_enum:
+                    if left_sym.info.is_boxed_enum:
                         cmp = ir.Inst(
                             ir.InstKind.Cmp, [
                                 ir.Name(kind),
@@ -2033,7 +2033,7 @@ class Codegen:
                             value_idx_x = ir.IntLit(
                                 ir.USIZE_T, str(p.typ.sym.id)
                             )
-                        if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.is_advanced_enum:
+                        if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.is_boxed_enum:
                             self.cur_fn.inline_alloca(
                                 ir.BOOL_T, tmp2,
                                 ir.Inst(
@@ -2547,7 +2547,7 @@ class Codegen:
         )
         return tmp
 
-    def advanced_enum_value(
+    def boxed_enum_value(
         self, enum_sym, variant_name, value, custom_tmp = None
     ):
         if custom_tmp:
@@ -2705,7 +2705,7 @@ class Codegen:
         elif typ_sym.kind == TypeKind.None_:
             return ir.VOID_PTR_T
         elif typ_sym.kind == TypeKind.Enum:
-            if typ_sym.info.is_advanced_enum:
+            if typ_sym.info.is_boxed_enum:
                 return ir.Type(mangle_symbol(typ_sym)).ptr(True)
             return ir.Type(str(typ_sym.info.underlying_typ))
         elif typ_sym.kind.is_primitive():
@@ -2730,7 +2730,7 @@ class Codegen:
             elif ts.kind == TypeKind.Enum:
                 # TODO: in the self-hosted compiler calculate the enum value here
                 # not in register nor resolver.
-                if ts.info.is_advanced_enum:
+                if ts.info.is_boxed_enum:
                     self.out_rir.structs.append(
                         ir.Struct(
                             False, mangle_symbol(ts), [

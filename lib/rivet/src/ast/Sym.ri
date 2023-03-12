@@ -231,7 +231,7 @@ public struct EnumVariant {
 public struct EnumInfo {
     public underlying_typ: Type;
     public mut variants: []EnumVariant;
-    public is_advanced_enum: bool;
+    public is_boxed_enum: bool;
 
     [inline]
     public func add_value(mut self, name: string, variant: isize) {
@@ -383,7 +383,7 @@ public struct TypeSym : Sym {
     [inline]
     public func is_boxed(self) bool {
         return if self.info is .Enum as enum_info {
-            enum_info.is_advanced_enum
+            enum_info.is_boxed_enum
         } else if self.info is .Struct as struct_info {
             struct_info.is_boxed
         } else {
@@ -394,7 +394,7 @@ public struct TypeSym : Sym {
     [inline]
     public func is_primitive(self) bool {
         return if self.info is .Enum as enum_info {
-            !enum_info.is_advanced_enum
+            !enum_info.is_boxed_enum
         } else {
             self.kind.is_primitive()
         };

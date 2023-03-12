@@ -325,9 +325,9 @@ class Checker:
                 if v := _sym.info.get_variant(expr.value):
                     expr.sym = v
                     expr.typ = type.Type(_sym)
-                    if expr.is_instance and not _sym.info.is_advanced_enum:
+                    if expr.is_instance and not _sym.info.is_boxed_enum:
                         report.error(f"`.{v.name}` not expects value", expr.pos)
-                    elif _sym.info.is_advanced_enum and not expr.from_is_cmp and not expr.is_instance:
+                    elif _sym.info.is_boxed_enum and not expr.from_is_cmp and not expr.is_instance:
                         report.error(
                             f"cannot use variant `{expr}` as a simple value",
                             expr.pos
@@ -723,7 +723,7 @@ class Checker:
                         expr.left.pos
                     )
                 if expr.has_var:
-                    if lsym.kind == TypeKind.Enum and lsym.info.is_advanced_enum:
+                    if lsym.kind == TypeKind.Enum and lsym.info.is_boxed_enum:
                         if expr.right.sym.has_typ:
                             expr.scope.update_type(
                                 expr.var.name, expr.right.sym.typ
@@ -740,14 +740,14 @@ class Checker:
                     if expr.var.is_mut:
                         expr.scope.update_is_hidden_ref(expr.var.name, True)
                 if lsym.kind == TypeKind.Enum:
-                    if lsym.info.is_advanced_enum and expr.op not in (
+                    if lsym.info.is_boxed_enum and expr.op not in (
                         Kind.KwIs, Kind.KwNotIs
                     ):
                         report.error(
-                            "advanced enum values only support `is` and `!is`",
+                            "boxed enum values only support `is` and `!is`",
                             expr.pos
                         )
-                    elif not lsym.info.is_advanced_enum and expr.op not in (
+                    elif not lsym.info.is_boxed_enum and expr.op not in (
                         Kind.Eq, Kind.Ne
                     ):
                         report.error(
@@ -928,7 +928,7 @@ class Checker:
                         self.check_ctor(expr_left.field_sym, expr)
                     elif isinstance(
                         expr_left.left_sym, sym.Type
-                    ) and expr_left.left_sym.kind == TypeKind.Enum and expr_left.left_sym.info.is_advanced_enum:
+                    ) and expr_left.left_sym.kind == TypeKind.Enum and expr_left.left_sym.info.is_boxed_enum:
                         expr.is_ctor = True
                         variant_info = expr_left.field_sym.info.get_variant(
                             expr_left.field_name
@@ -1372,13 +1372,13 @@ class Checker:
                 report.error("invalid value for typeswitch", expr.expr.pos)
                 report.note(f"expected enum value, found `{expr_typ}`")
             elif expr_sym.kind == TypeKind.Enum:
-                if expr_sym.info.is_advanced_enum and not expr.is_typeswitch:
+                if expr_sym.info.is_boxed_enum and not expr.is_typeswitch:
                     report.error(
-                        "cannot use `switch` with a advanced enum value",
+                        "cannot use `switch` with a boxed enum value",
                         expr.pos
                     )
                     report.note(f"use a typeswitch instead")
-                elif not expr_sym.info.is_advanced_enum and expr.is_typeswitch:
+                elif not expr_sym.info.is_boxed_enum and expr.is_typeswitch:
                     report.error(
                         "cannot use typeswitch with a enum value", expr.pos
                     )

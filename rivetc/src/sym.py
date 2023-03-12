@@ -466,9 +466,9 @@ class EnumVariant:
         self.value = "0"
 
 class EnumInfo:
-    def __init__(self, underlying_typ, is_advanced_enum):
+    def __init__(self, underlying_typ, is_boxed_enum):
         self.underlying_typ = underlying_typ
-        self.is_advanced_enum = is_advanced_enum
+        self.is_boxed_enum = is_boxed_enum
         self.variants = []
 
     def add_variant(self, name, has_typ, typ):
@@ -597,14 +597,14 @@ class Type(Sym):
 
     def is_boxed(self):
         if self.kind == TypeKind.Enum:
-            return self.info.is_advanced_enum
+            return self.info.is_boxed_enum
         elif isinstance(self.info, StructInfo):
             return self.info.is_boxed
         return self.kind in (TypeKind.Trait, TypeKind.String, TypeKind.Vec)
 
     def is_primitive(self):
         if self.kind == TypeKind.Enum:
-            return not self.info.is_advanced_enum
+            return not self.info.is_boxed_enum
         return self.kind.is_primitive()
 
 class Arg:
