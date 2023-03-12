@@ -49,7 +49,6 @@ public struct Tokenizer {
     func init(mut self) {
         self.all_tokens = @vec(token.Token, self.text.len / 3);
         self.tokenize_remaining_text();
-        self.tidx = 0;
     }
 
     func tokenize_remaining_text(mut self) {
@@ -63,9 +62,8 @@ public struct Tokenizer {
     }
 
     [inline]
-    func new_token(mut self, kind: token.Kind, lit: string = "", len: usize = 1) token.Token {
-        self.tidx += 1;
-        return token.Token(lit, kind, len, pos: token.Pos(
+    func new_token(self, kind: token.Kind, lit: string = "", len: usize = 1) token.Token {
+        return token.Token(lit, kind, len, token.Pos(
             file: self.file,
             line: self.line,
             col: utils.max(1, self.current_column() - len + 1) - 1,
