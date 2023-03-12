@@ -356,10 +356,7 @@ class Codegen:
         elif isinstance(decl, ast.FnDecl):
             if self.inside_trait and not decl.has_body:
                 return
-            if decl.is_main and (
-                self.comp.prefs.build_mode == prefs.BuildMode.Test
-                or self.comp.prefs.mod_type != prefs.ModType.Bin
-            ):
+            if decl.is_main and self.comp.prefs.build_mode == prefs.BuildMode.Test:
                 return
             args = []
             if decl.is_method:
