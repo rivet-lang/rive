@@ -5,5 +5,109 @@
 import "rivet/token";
 
 public enum Expr {
-    Empty: token.Pos
+    Empty: token.Pos,
+    Type: Type,
+    AssignExpr: AssignExpr,
+    Ident: Ident,
+    SelfExpr: SelfExpr,
+    SelfTyExpr: SelfTyExpr,
+    NoneLiteral: NoneLiteral,
+    BoolLiteral: BoolLiteral,
+    CharLiteral: CharLiteral,
+    IntegerLiteral: IntegerLiteral,
+    FloatLiteral: FloatLiteral,
+    StringLiteral: StringLiteral,
+    EnumLiteral: EnumLiteral,
+    TupleLiteral: TupleLiteral,
+    VectorLiteral: VectorLiteral,
+    ParExpr: ParExpr,
+    IndexExpr: IndexExpr
+}
+
+public struct AssignExpr {
+    public left: Expr;
+    public op: token.Kind;
+    public right: Expr;
+    public pos: token.Pos;
+}
+
+public struct Ident {
+    public name: string;
+    public scope: Scope;
+    public is_comptime: bool;
+    public pos: token.Pos;
+}
+
+public struct SelfExpr {
+    public scope: Scope;
+    public pos: token.Pos;
+}
+
+public struct SelfTyExpr {
+    public scope: Scope;
+    public pos: token.Pos;
+}
+
+public struct NoneLiteral {
+    public pos: token.Pos;
+}
+
+public struct BoolLiteral {
+    public value: bool;
+    public pos: token.Pos;
+}
+
+public struct CharLiteral {
+    public value: string;
+    public is_byte: bool;
+    public pos: token.Pos;
+}
+
+public struct IntegerLiteral {
+    public value: string;
+    public pos: token.Pos;
+}
+
+public struct FloatLiteral {
+    public value: string;
+    public pos: token.Pos;
+}
+
+public struct StringLiteral {
+    public value: string;
+    public is_raw: bool;
+    public is_bytestr: bool;
+    public is_cstr: bool;
+    public pos: token.Pos;
+}
+
+public struct EnumLiteral {
+    public value: Expr;
+    public value_arg: Expr;
+    public has_value_arg: bool;
+    public is_instance: bool;
+    public from_is_cmp: bool;
+    public pos: token.Pos;
+}
+
+public struct TupleLiteral {
+    public values: []Expr;
+    public pos: token.Pos;
+}
+
+public struct VectorLiteral {
+    public values: []Expr;
+    public is_arr: bool;
+    public pos: token.Pos;
+}
+
+public struct ParExpr {
+    public expr: Expr;
+    public pos: token.Pos;
+}
+
+public struct IndexExpr {
+    public left: Expr;
+    public index: Expr;
+    public pos: token.Pos;
 }

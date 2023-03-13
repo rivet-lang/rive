@@ -11,7 +11,7 @@ var mut prefs_ = prefs.Prefs();
 
 func tokenize(text: string) []token.Token {
     mut tokenizer_ := tokenizer.Tokenizer.new(text, prefs_, Table.new(prefs_));
-    mut tokens := @vec(token.Token);
+    mut tokens := @vec(token.Token, text.len / 3);
     mut token := tokenizer_.next();
     while {
         tokens.push(token);
@@ -55,4 +55,30 @@ test "tokenizer: float conversion and reading" {
 	@assert(1.23e+10 == 1.23e0010);
 	@assert((-1.23e+10) == (1.23e0010 * -1.0));
 	@assert(x == 55.0);
+}
+
+test "tokenizer: preprocessor" {
+    mut tokens := tokenize("#if true func main() { } #endif");
+    @assert(tokens.len == 6);
+    @assert(tokens[0].kind == .KwFunc);
+    @assert(tokens[1].kind == .Name and tokens[1].lit == "main");
+    @assert(tokens[2].kind == .Lparen);
+    @assert(tokens[3].kind == .Rparen);
+    @assert(tokens[4].kind == .Lbrace);
+    @assert(tokens[5].kind == .Rbrace);
+
+    tokens = tokenize("#if false func main() { } #endif");
+    @assert(tokens.len == 1); // EndOfFile
+
+    tokens = tokenize("#if !CUSTOM_FLAG func main() { } #endif");
+    @assert(tokens.len == 6);
+    @assert(tokens[0].kind == .KwFunc);
+    @assert(tokens[1].kind == .Name and tokens[1].lit == "main");
+    @assert(tokens[2].kind == .Lparen);
+    @assert(tokens[3].kind == .Rparen);
+    @assert(tokens[4].kind == .Lbrace);
+    @assert(tokens[5].kind == .Rbrace);
+
+    tokens = tokenize("#if CUSTOM_FLAG func main() { } #endif");
+    @assert(tokens.len == 1); // EndOfFile
 }

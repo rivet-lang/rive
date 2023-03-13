@@ -571,8 +571,8 @@ class VectorLiteral:
 
 class GuardExpr:
     # Examples:
-    # if (var x = optional_or_result_fn()) { ... }
-    # while (var byte = reader.read()) { ... }
+    # - if x := optional_or_result_fn() { ... }
+    # - while byte := reader.read() { ... }
     def __init__(self, vars, expr, has_cond, cond, scope, pos):
         self.vars = vars
         self.expr = expr
