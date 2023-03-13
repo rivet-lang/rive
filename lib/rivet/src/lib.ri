@@ -15,8 +15,11 @@ import "./prefs";
 import "./report";
 import "./parser";
 
-var RIVET_DIR = path.join(env.HOME_DIR, ".rivet_lang").!;
-var RIVETC_DIR = path.dirname(process.executable().!).?;
+public var RIVET_DIR = path.join(env.HOME_DIR, ".rivet_lang").!;
+public var RIVETC_DIR = path.dirname(process.executable().!).?;
+
+public var OBJ_DIR = path.join(RIVET_DIR, "obj").!;
+public var LIB_DIR = path.join(RIVET_DIR, "lib").!;
 
 [boxed]
 public struct Compiler {
@@ -27,22 +30,21 @@ public struct Compiler {
     public func new(args: []string, is_test: bool, run_output: bool) ! {
         mut prefs_ := prefs.Prefs.new(args, is_test, run_output).!;
         report.reports.prefs = prefs_;
-        mut compiler := Self(table: ast.Table.new(prefs_), prefs: prefs_);
-        compiler.make_rivet_directory().!;
-        compiler.run().!;
+        Self(table: ast.Table.new(prefs_), prefs: prefs_).run().!;
+    }
+
+    func run(mut self) ! {
+        self.make_rivet_directory().!;
+        self.load_root_module().!;
     }
 
     func make_rivet_directory(self) ! {
         if !path.exists(RIVET_DIR) {
             self.vlog("making Rivet directory");
             fs.make_directory(RIVET_DIR).!;
-            fs.make_directory(path.join(RIVET_DIR, "obj").!).!;
-            fs.make_directory(path.join(RIVET_DIR, "lib").!).!;
+            fs.make_directory(OBJ_DIR).!;
+            fs.make_directory(LIB_DIR).!;
         }
-    }
-
-    func run(mut self) ! {
-        self.load_root_module().!;
     }
 
     func load_root_module(mut self) ! {
@@ -68,7 +70,7 @@ public struct Compiler {
                 self.vlog("  {}", file);
             }
         }
-        root_sym := ast.Mod(name: self.prefs.mod_name, is_root: true);
+        root_sym := ast.Module(name: self.prefs.mod_name, is_root: true);
         self.table.universe.scope.add(root_sym) catch |err| utils.error(
             "Compiler.load_root_module(): {}", err
         );

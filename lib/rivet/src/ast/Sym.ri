@@ -77,7 +77,7 @@ public trait Sym {
 }
 
 [boxed]
-public struct Mod : Sym { }
+public struct Module : Sym { }
 
 [boxed]
 public struct Const : Sym {
@@ -502,28 +502,26 @@ public struct Scope {
 }
 
 [inline]
-public func universe() Mod {
-    return Mod(is_public: false, name: "universe", scope: Scope(syms: [
-        TypeSym(is_public: true, name: "never", kind: .Never),
-        TypeSym(is_public: true, name: "none", kind: .None),
-        TypeSym(is_public: true, name: "bool", kind: .Bool),
-        TypeSym(is_public: true, name: "rune", kind: .Rune),
-        TypeSym(is_public: true, name: "int8", kind: .Int8),
-        TypeSym(is_public: true, name: "int16", kind: .Int16),
-        TypeSym(is_public: true, name: "int32", kind: .Int32),
-        TypeSym(is_public: true, name: "int64", kind: .Int64),
-        TypeSym(is_public: true, name: "isize", kind: .Isize),
-        TypeSym(is_public: true, name: "uint8", kind: .Uint8),
-        TypeSym(is_public: true, name: "uint16", kind: .Uint16),
-        TypeSym(is_public: true, name: "uint32", kind: .Uint32),
-        TypeSym(is_public: true, name: "uint64", kind: .Uint64),
-        TypeSym(is_public: true, name: "usize", kind: .Usize),
-        TypeSym(is_public: true, name: "comptime_int", kind: .ComptimeInt),
-        TypeSym(is_public: true, name: "comptime_float", kind: .ComptimeFloat),
-        TypeSym(is_public: true, name: "float32", kind: .Float32),
-        TypeSym(is_public: true, name: "float64", kind: .Float64),
-        TypeSym(is_public: true, name: "string", kind: .String, info: .Struct(
-            StructInfo(is_boxed: true)
-        ))
+public func universe() Module {
+    return Module(is_public: false, name: "universe", scope: Scope(syms: [
+        TypeSym(name: "never", kind: .Never),
+        TypeSym(name: "none", kind: .None),
+        TypeSym(name: "bool", kind: .Bool),
+        TypeSym(name: "rune", kind: .Rune),
+        TypeSym(name: "int8", kind: .Int8),
+        TypeSym(name: "int16", kind: .Int16),
+        TypeSym(name: "int32", kind: .Int32),
+        TypeSym(name: "int64", kind: .Int64),
+        TypeSym(name: "isize", kind: .Isize),
+        TypeSym(name: "uint8", kind: .Uint8),
+        TypeSym(name: "uint16", kind: .Uint16),
+        TypeSym(name: "uint32", kind: .Uint32),
+        TypeSym(name: "uint64", kind: .Uint64),
+        TypeSym(name: "usize", kind: .Usize),
+        TypeSym(name: "comptime_int", kind: .ComptimeInt),
+        TypeSym(name: "comptime_float", kind: .ComptimeFloat),
+        TypeSym(name: "float32", kind: .Float32),
+        TypeSym(name: "float64", kind: .Float64),
+        TypeSym(name: "string", kind: .String, info: .Struct(StructInfo(is_boxed: true)))
     ]));
 }
