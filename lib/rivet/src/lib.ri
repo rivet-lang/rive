@@ -29,7 +29,7 @@ public struct Compiler {
 
     public func new(args: []string, is_test: bool, run_output: bool) ! {
         mut prefs_ := prefs.Prefs.new(args, is_test, run_output).!;
-        report.reports.prefs = prefs_;
+        report.Report_Table.prefs = prefs_;
         Self(table: ast.Table.new(prefs_), prefs: prefs_).run().!;
     }
 

@@ -128,7 +128,7 @@ public struct Table {
             },
             "_TESTS_" => return self.prefs.is_test,
             else => return if name.starts_with("_") and name.ends_with("_") {
-                report.error("unknown builtin flag: `{}`".fmt(name), pos).emit();
+                report.error("unknown builtin flag: `{}`".fmt(name), pos);
                 false
             } else {
                 name in self.prefs.flags

@@ -24,7 +24,7 @@ extend Tokenizer {
             "else" => self.pp_else(),
             "endif" => self.pp_endif(),
             else => {
-                self.error("invalid preprocessing directive: `{}`".fmt(pp_dir), pos).emit();
+                self.error("invalid preprocessing directive: `{}`".fmt(pp_dir), pos);
                 return;
             }
         }
@@ -42,7 +42,7 @@ extend Tokenizer {
             }
             // if we get EOF, then no corresponding `#endif` has been written
             if self.pos == self.text.len {
-                self.error("expected `#endif`, found end of file", pos).emit();
+                self.error("expected `#endif`, found end of file", pos);
             }
         }
     }
@@ -74,7 +74,7 @@ extend Tokenizer {
         self.pos -= 1;
         if self.conditional_stack.is_empty() or
             self.conditional_stack[self.conditional_stack.len - 1].else_found {
-            self.error("unexpected `#else_if`", pos).emit();
+            self.error("unexpected `#else_if`", pos);
         } else if cond and !self.conditional_stack[self.conditional_stack.len - 1].matched
             and (self.conditional_stack.len == 1 or
                 !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
@@ -92,7 +92,7 @@ extend Tokenizer {
         self.skip_whitespace();
         if self.conditional_stack.is_empty() or
             self.conditional_stack[self.conditional_stack.len - 1].else_found {
-            self.error("unexpected `#else`", pos).emit();
+            self.error("unexpected `#else`", pos);
         } else if !self.conditional_stack[self.conditional_stack.len - 1].matched
             and (self.conditional_stack.len == 1 or
                 !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
@@ -107,7 +107,7 @@ extend Tokenizer {
 
     func pp_endif(mut self) {
         if self.conditional_stack.is_empty() {
-            self.error("unexpected `#endif`", self.current_pos()).emit();
+            self.error("unexpected `#endif`", self.current_pos());
         } else {
             _ = self.conditional_stack.pop();
         }
@@ -154,7 +154,7 @@ extend Tokenizer {
         pos := self.current_pos();
         mut cc := self.current_char();
         if self.pos >= self.text.len {
-            self.error("expected name, found end of file", pos).emit();
+            self.error("expected name, found end of file", pos);
         } else if utils.is_name_char(cc) {
             return self.pp_symbol();
         } else if cc == b'(' {
@@ -166,7 +166,7 @@ extend Tokenizer {
             if self.pos < self.text.len and cc == b')' {
                 self.pos += 1;
             } else {
-                self.error("expected `)`, found `{}`".fmt(cc.to_ascii()), self.current_pos()).emit();
+                self.error("expected `)`, found `{}`".fmt(cc.to_ascii()), self.current_pos());
             }
             return result;
         }

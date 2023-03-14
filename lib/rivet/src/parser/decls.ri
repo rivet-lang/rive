@@ -52,7 +52,7 @@ extend Parser {
                     }
                 }
                 annotations.add(ast.Annotation(annotation_name, args, pos)) catch |err| {
-                    report.error(err.to_string(), pos).emit();
+                    report.error(err.to_string(), pos);
                 };
                 if !self.accept(.Semicolon) {
                     break;
@@ -75,7 +75,7 @@ extend Parser {
         if abi_value := ast.ABI.from_string(abi) {
             return abi_value;
         }
-        report.error("unknown ABI: `{}`".fmt(abi), abi_pos).emit();
+        report.error("unknown ABI: `{}`".fmt(abi), abi_pos);
         return .Rivet;
     }
 
@@ -96,7 +96,7 @@ extend Parser {
         pos := self.tok.pos;
         switch {
             self.tok.kind != .EndOfFile => {
-                report.error("expected declaration, found {}".fmt(self.tok), pos).emit();
+                report.error("expected declaration, found {}".fmt(self.tok), pos);
                 self.next();
             }
         }

@@ -12,16 +12,16 @@ import "../prefs";
 import "../token";
 import "../utils";
 
-public var mut reports = ReportTable();
+public var mut Report_Table = ReportTable();
 
 [inline]
 public func total_errors() usize {
-    return reports.errors;
+    return Report_Table.errors;
 }
 
 [inline]
 public func total_warns() usize {
-    return reports.warns;
+    return Report_Table.warns;
 }
 
 [boxed]
@@ -39,39 +39,55 @@ public enum ReportKind as uint8 {
 }
 
 [boxed]
-public struct ReportExtra {
+public struct Annotation {
     public kind: ReportKind;
     public msg: string;
 }
 
 [inline]
-public func error(msg: string, pos: token.Pos) Report {
-    return Report(.Error, pos, msg);
+public func error(msg: string, pos: token.Pos) {
+    ReportBuilder(.Error, pos, msg).emit();
 }
 
 [inline]
-public func warn(msg: string, pos: token.Pos) Report {
-    return Report(.Warn, pos, msg);
+public func warn(msg: string, pos: token.Pos) {
+    ReportBuilder(.Warn, pos, msg).emit();
 }
 
+[inline]
+public func error_builder(msg: string, pos: token.Pos) ReportBuilder {
+    return ReportBuilder(.Error, pos, msg);
+}
+
+[inline]
+public func warn_builder(msg: string, pos: token.Pos) ReportBuilder {
+    return ReportBuilder(.Warn, pos, msg);
+}
+
+// TODO: support JSON format for LSP, etc.
 [boxed]
-public struct Report {
+public struct ReportBuilder {
+    public msg: string;
     public kind: ReportKind;
     public pos: token.Pos;
-    public msg: string;
-    public mut extras: []ReportExtra;
+    public mut annotations: []Annotation;
 
     [inline]
     public func add_note(mut self, msg: string) {
-        self.extras.push(ReportExtra(.Note, msg));
+        self.annotations.push(Annotation(.Note, msg));
     }
 
     [inline]
     public func add_help(mut self, msg: string) {
-        self.extras.push(ReportExtra(.Help, msg));
+        self.annotations.push(Annotation(.Help, msg));
     }
 
     public func emit(self) {
+        if self.kind == .Error {
+            Report_Table.errors += 1;
+        } else {
+            Report_Table.warns += 1;
+        }
         console.eprintln(
             utils.bold("{}: {} {}"), self.pos.to_report_string(), if self.kind == .Error {
                 utils.red("error:")
@@ -84,36 +100,19 @@ public struct Report {
         } else {
             formatted_single_line(self.pos);
         }
-        if self.kind == .Error {
-            reports.errors += 1;
-        } else {
-            reports.warns += 1;
+        if !self.annotations.is_empty() {
+            console.eprintln(utils.bold(utils.blue("      | ")));
         }
-        for extra in self.extras {
-            start := utils.bold("      {} {}".fmt(utils.blue("="), if extra.kind == .Note {
-                utils.cyan("note:")
-            } else {
-                "help:"
-            }));
-            console.eprintln("{} {}", start, extra.msg);
-        }
-    }
-}
-
-func formatted_multi_line(pos: token.Pos) {
-    if lines := utils.source_cache.find_lines_between(pos.file, pos.line, pos.end_line + 1) {
-        mut ellipsis := false;
-        max := if lines.len % 2 == 0 { lines.len / 2 } else { 4 };
-        for line_nr, line in lines {
-            if line_nr <= max or line_nr > line_nr - max {
-                console.eprintln(
-                    "{} {} {}", utils.bold(utils.blue("{:5}".fmt(line_nr + pos.line + 1))),
-                    utils.bold(utils.blue("|")), line.replace("\t", "    ")
-                );
-            } else if !ellipsis {
-                ellipsis = true;
-                console.eprintln(utils.bold(utils.blue("  ... |")));
-            }
+        for annotation in self.annotations {
+            console.eprintln("{} {}", utils.bold(
+                "      {} {}".fmt(
+                    utils.blue("="), if annotation.kind == .Note {
+                        utils.cyan("note:")
+                    } else {
+                        "help:"
+                    }
+                )
+            ), annotation.msg);
         }
     }
 }
@@ -127,18 +126,7 @@ func formatted_single_line(pos: token.Pos) {
         start_column := utils.max(0, utils.min(pos.col, line.len));
         end_column := utils.max(0, utils.min(pos.col + utils.max(0, pos.len), line.len));
         mut sb := strings.Builder.new(line.len);
-        mut i: usize := 0;
-        while i < start_column {
-            b := line[i];
-            if b.is_space() {
-                sb.write_byte(b);
-                i += 1;
-            } else {
-                char_len := b.len_utf8();
-                sb.write_string(" ".repeat(line[i..i + char_len].runes_count()));
-                i += char_len;
-            }
-        }
+        write_spaces(sb, start_column, line);
         sb.write_string(utils.bold(utils.blue("^")));
         if pos.len > 1 {
             sb.write_string(
@@ -148,5 +136,60 @@ func formatted_single_line(pos: token.Pos) {
             );
         }
         console.eprintln("      {} {}", utils.bold(utils.blue("|")), sb.to_string());
+    }
+}
+
+func formatted_multi_line(pos: token.Pos) {
+    if lines := utils.source_cache.find_lines_between(pos.file, pos.line, pos.end_line + 1) {
+        mut ellipsis := false;
+        max: usize := if lines.len > 8 { 4 } else { 2 };
+        for line_nr, line in lines {
+            if line_nr + pos.line == pos.line {
+                start_column := utils.max(0, utils.min(pos.col, line.len));
+                end_column := utils.max(
+                    0, utils.min(pos.col + utils.max(0, pos.len), line.len)
+                );
+                mut sb := strings.Builder.new(line.len);
+                sb.write_string(utils.bold(utils.blue("      | ")));
+                write_spaces(sb, start_column, line);
+                sb.write_string(utils.bold(utils.blue("/-- from here")));
+                console.eprintln(sb.to_string());
+            }
+            if line_nr < max or line_nr >= lines.len - max {
+                console.eprintln(
+                    "{} {} {}", utils.bold(utils.blue("{:5}".fmt(line_nr + pos.line + 1))),
+                    utils.bold(utils.blue("|")), line.replace("\t", "    ")
+                );
+            } else if !ellipsis {
+                ellipsis = true;
+                console.eprintln(utils.bold(utils.blue("  ... |")).concat(" ..."));
+            }
+            if line_nr + pos.line == pos.end_line {
+                start_column := utils.max(0, utils.min(pos.end_col, line.len));
+                end_column := utils.max(
+                    0, utils.min(pos.end_col + utils.max(0, pos.len), line.len)
+                );
+                mut sb := strings.Builder.new(line.len);
+                sb.write_string(utils.bold(utils.blue("      | ")));
+                write_spaces(sb, start_column, line);
+                sb.write_string(utils.bold(utils.blue("^-- to here")));
+                console.eprintln(sb.to_string());
+            }
+        }
+    }
+}
+
+func write_spaces(mut sb: strings.Builder, start_column: usize, line: string) {
+    mut i: usize := 0;
+    while i < start_column {
+        b := line[i];
+        if b.is_space() {
+            sb.write_byte(b);
+            i += 1;
+        } else {
+            char_len := b.len_utf8();
+            sb.write_string(" ".repeat(line[i..i + char_len].runes_count()));
+            i += char_len;
+        }
     }
 }

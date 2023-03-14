@@ -82,7 +82,7 @@ public struct Tokenizer {
             line: start_line,
             end_line: end_line,
             col: start_col,
-            end_col: utils.max(1, self.current_column() + 1) - 1,
+            end_col: utils.max(1, self.current_column() + 1) - 2,
             pos: self.pos - len + 1,
             len: len,
             is_multiline: true
@@ -239,13 +239,13 @@ public struct Tokenizer {
         start := self.pos;
         self.pos += 2; // skip '0x'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
-            self.error("separator `_` is only valid between digits in a numeric literal").emit();
+            self.error("separator `_` is only valid between digits in a numeric literal");
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
-                self.error("cannot use `_` consecutively in a numeric literal").emit();
+                self.error("cannot use `_` consecutively in a numeric literal");
             }
             if !ch.is_hex_digit() and ch != NUM_SEP {
                 if !ch.is_letter() {
@@ -255,16 +255,16 @@ public struct Tokenizer {
                         "this hexadecimal number has unsuitable digit `{}`".fmt(
                             self.current_char().to_ascii()
                         )
-                    ).emit();
+                    );
                 }
             }
         }
 
         if self.text[self.pos - 1] == NUM_SEP {
-            self.error("cannot use `_` at the end of a numeric literal").emit();
+            self.error("cannot use `_` at the end of a numeric literal");
         } else if start + 2 == self.pos {
             self.pos -= 1;
-            self.error("number part of this hexadecimal is not provided").emit();
+            self.error("number part of this hexadecimal is not provided");
             self.pos += 1;
         }
 
@@ -277,13 +277,13 @@ public struct Tokenizer {
         start := self.pos;
         self.pos += 2; // skip '0b'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
-            self.error("separator `_` is only valid between digits in a numeric literal").emit();
+            self.error("separator `_` is only valid between digits in a numeric literal");
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
-                self.error("cannot use `_` consecutively in a numeric literal").emit();
+                self.error("cannot use `_` consecutively in a numeric literal");
             }
 
             if !ch.is_bin_digit() and ch != NUM_SEP {
@@ -294,18 +294,18 @@ public struct Tokenizer {
                         "this binary number has unsuitable digit `{}`".fmt(
                             self.current_char().to_ascii()
                         )
-                    ).emit();
+                    );
                 }
             }
         }
 
         if self.text[self.pos - 1] == NUM_SEP {
             self.pos -= 1;
-            self.error("cannot use `_` at the end of a numeric literal").emit();
+            self.error("cannot use `_` at the end of a numeric literal");
             self.pos += 1;
         } else if start + 2 == self.pos {
             self.pos -= 1;
-            self.error("number part of this binary is not provided").emit();
+            self.error("number part of this binary is not provided");
             self.pos += 1;
         }
 
@@ -318,13 +318,13 @@ public struct Tokenizer {
         start := self.pos;
         self.pos += 2; // skip '0b'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
-            self.error("separator `_` is only valid between digits in a numeric literal").emit();
+            self.error("separator `_` is only valid between digits in a numeric literal");
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
-                self.error("cannot use `_` consecutively in a numeric literal").emit();
+                self.error("cannot use `_` consecutively in a numeric literal");
             }
 
             if !ch.is_oct_digit() and ch != NUM_SEP {
@@ -335,18 +335,18 @@ public struct Tokenizer {
                         "this octal number has unsuitable digit `{}`".fmt(
                             self.current_char().to_ascii()
                         )
-                    ).emit();
+                    );
                 }
             }
         }
 
         if self.text[self.pos - 1] == NUM_SEP {
             self.pos -= 1;
-            self.error("cannot use `_` at the end of a numeric literal").emit();
+            self.error("cannot use `_` at the end of a numeric literal");
             self.pos += 1;
         } else if start + 2 == self.pos {
             self.pos -= 1;
-            self.error("number part of this octal is not provided").emit();
+            self.error("number part of this octal is not provided");
             self.pos += 1;
         }
 
@@ -358,13 +358,13 @@ public struct Tokenizer {
     func read_dec_number(mut self) string {
         start := self.pos;
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
-            self.error("separator `_` is only valid between digits in a numeric literal").emit();
+            self.error("separator `_` is only valid between digits in a numeric literal");
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
-                self.error("cannot use `_` consecutively in a numeric literal").emit();
+                self.error("cannot use `_` consecutively in a numeric literal");
             }
             if !ch.is_digit() and ch != NUM_SEP {
                 if !ch.is_letter() or ch in [b'e', b'E'] {
@@ -374,13 +374,13 @@ public struct Tokenizer {
                         "this number has unsuitable digit `{}`".fmt(
                             self.current_char().to_ascii()
                         )
-                    ).emit();
+                    );
                 }
             }
         }
 
         if self.text[self.pos - 1] == NUM_SEP {
-            self.error("cannot use `_` at the end of a numeric literal").emit();
+            self.error("cannot use `_` at the end of a numeric literal");
         }
 
         mut call_method := false; // true for, e.g., 5.method(), 5.5.method(), 5e5.method()
@@ -405,7 +405,7 @@ public struct Tokenizer {
                                     "this number has unsuitable digit `{}`".fmt(
                                         c.to_ascii()
                                     )
-                                ).emit();
+                                );
                             }
                         }
                     }
@@ -422,9 +422,12 @@ public struct Tokenizer {
                 } else {
                     // 6.
                     self.pos -= 1;
-                    mut err := self.error("float literals should have a digit after the decimal point");
-                    fl := self.text[start..self.pos];
-                    err.add_help("use `{0}.0` instead of `{0}`".fmt(fl));
+                    mut err := self.error_builder(
+                        "float literals should have a digit after the decimal point"
+                    );
+                    err.add_help(
+                        "use `{0}.0` instead of `{0}`".fmt(self.text[start..self.pos])
+                    );
                     err.emit();
                     self.pos += 1;
                 }
@@ -448,21 +451,21 @@ public struct Tokenizer {
                         }
                         break;
                     } else {
-                        self.error("this number has unsuitable digit `{}`".fmt(c2.to_ascii())).emit();
+                        self.error("this number has unsuitable digit `{}`".fmt(c2.to_ascii()));
                     }
                 }
             }
         }
         if self.text[self.pos - 1] in [b'e', b'E'] {
             self.pos -= 1;
-            self.error("exponent has no digits").emit();
+            self.error("exponent has no digits");
             self.pos += 1;
         } else if self.current_char() == b'.' and !is_range and !call_method {
             self.pos -= 1;
             if has_exp {
-                self.error("exponential part should be integer").emit();
+                self.error("exponential part should be integer");
             } else {
-                self.error("too many decimal points in number").emit();
+                self.error("too many decimal points in number");
             }
             self.pos += 1;
         }
@@ -505,11 +508,13 @@ public struct Tokenizer {
         ch := self.text[start + 1..self.pos];
         if len != 1 {
             if len > 1 and ch.runes_count() > 1 {
-                mut err := self.error("character literal may only contain one codepoint");
+                mut err := self.error_builder(
+                    "character literal may only contain one codepoint"
+                );
                 err.add_help("if you meant to write a string literal, use double quotes");
                 err.emit();
             } else if len == 0 {
-                self.error("empty character literal").emit();
+                self.error("empty character literal");
             }
         }
         return ch;
@@ -525,7 +530,7 @@ public struct Tokenizer {
         while {
             self.pos += 1;
             if self.pos >= self.text.len {
-                self.error("unfinished string literal").emit();
+                self.error("unfinished string literal");
                 return "";
             }
             c := self.current_char();
@@ -600,7 +605,7 @@ public struct Tokenizer {
             } else if ch.is_digit() or (ch == b'.' and nextc.is_digit()) {
                 // decimals with 0 prefix = error
                 if ch == b'0' and nextc.is_digit() {
-                    mut err := self.error(
+                    mut err := self.error_builder(
                         "leading zeros in decimal integer literals are not permitted"
                     );
                     err.add_help("use an `0o` prefix for octal integers");
@@ -664,7 +669,7 @@ public struct Tokenizer {
                         self.pos += 1;
                         if self.pos >= self.text.len {
                             self.pos = start_pos;
-                            self.error("comment not terminated").emit();
+                            self.error("comment not terminated");
                             break;
                         }
                         continue;
@@ -801,17 +806,27 @@ public struct Tokenizer {
     func invalid_character(mut self) {
         len := self.text[self.pos].len_utf8();
         end := utils.min(self.pos + len, self.text.len);
-        self.error("invalid character: `{}`".fmt(self.text[self.pos..end])).emit();
+        self.error("invalid character: `{}`".fmt(self.text[self.pos..end]));
         self.pos += len;
     }
 
     [inline]
-    func error(self, msg: string, pos: token.Pos = self.current_pos()) report.Report {
-        return report.error(msg, pos);
+    func error(self, msg: string, pos: token.Pos = self.current_pos()) {
+        report.error(msg, pos);
     }
 
     [inline]
-    func warn(self, msg: string, pos: token.Pos = self.current_pos()) report.Report {
-        return report.warn(msg, pos);
+    func warn(self, msg: string, pos: token.Pos = self.current_pos()) {
+        report.warn(msg, pos);
+    }
+
+    [inline]
+    func error_builder(self, msg: string, pos: token.Pos = self.current_pos()) report.ReportBuilder {
+        return report.error_builder(msg, pos);
+    }
+
+    [inline]
+    func warn_builder(self, msg: string, pos: token.Pos = self.current_pos()) report.ReportBuilder {
+        return report.warn_builder(msg, pos);
     }
 }

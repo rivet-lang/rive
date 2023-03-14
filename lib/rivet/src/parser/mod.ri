@@ -55,7 +55,6 @@ public struct Parser {
         return ast.SourceFile(file, self.mod_sym.?, self.parse_decls());
     }
 
-    // ---- useful functions for working with tokens ----
     func next(mut self) {
         self.prev_tok = self.tok;
         self.tok = self.peek_tok;
@@ -96,10 +95,9 @@ public struct Parser {
         if token.is_keyword(kstr) or (kstr.len > 0 and !kstr[0].is_letter()) {
             kstr = "`{}`".fmt(kstr);
         }
-        report.error("expected {}, found {}".fmt(kstr, self.tok), self.tok.pos).emit();
+        report.error("expected {}, found {}".fmt(kstr, self.tok), self.tok.pos);
     }
 
-    // ---- utilities ------------------
     func parse_name(mut self) string {
         lit := self.tok.lit;
         self.expect(.Name);
