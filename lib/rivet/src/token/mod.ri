@@ -4,6 +4,8 @@
 
 import "std/traits";
 
+import "../utils";
+
 public var NO_POS = Pos();
 
 public struct Pos : traits.Stringable {
@@ -13,12 +15,40 @@ public struct Pos : traits.Stringable {
     public mut len: usize;
     public pos: usize;
 
+    public end_line: usize;
+    public end_col: usize;
+    public is_multiline: bool;
+
+    [inline]
     public func +(&self, other: &Pos) Pos {
 		return Pos(len: other.pos - self.pos + other.len, ...self.*);
     }
 
+    [inline]
+    public func to_report_string(&self) string {
+        return if self.is_multiline {
+            "{}:{}:{}-{}:{}".fmt(
+                utils.path_styled_for_error_messages(self.file), self.line + 1,
+                utils.max(1, self.col + 1), self.end_line + 1,
+                utils.max(1, self.end_col + 1)
+            )
+        } else {
+            "{}:{}:{}".fmt(
+                utils.path_styled_for_error_messages(self.file), self.line + 1,
+                utils.max(1, self.col + 1)
+            )
+        };
+    }
+
+    [inline]
     public func to_string(&self) string {
-        return "{}:{}:{}".fmt(self.file, self.line + 1, self.col);
+        return if self.is_multiline {
+            "{}:{}:{}-{}:{}".fmt(
+                self.file, self.line + 1, self.col, self.end_line + 1, self.end_col
+            )
+        } else {
+            "{}:{}:{}".fmt(self.file, self.line + 1, self.col)
+        };
     }
 }
 
@@ -35,6 +65,9 @@ public struct Token : traits.Stringable {
     }
 
     public func to_string(&self) string {
+        if self.kind == .String {
+            return "string literal";
+        }
         mut str := self.kind.to_string();
         if !str[0].is_alnum() {
             return "token `{}`".fmt(str);

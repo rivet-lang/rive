@@ -3,20 +3,36 @@
 // be found in the LICENSE file.
 
 import "std/fs";
+import "std/env";
+import "std/fs/path";
 import "std/traits";
 import "std/console";
 import "std/process";
 import "std/console/styles";
 
+var NORMALIZED_WORKDIR = process.WD_AT_STARTUP.replace("\\", "/").concat("/");
+var ERROR_PATHS_ABSOLUTE = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";
+
+// NOTE: path_styled_for_error_messages will *always* use `/` in the error paths, no
+// matter the OS, to ensure stable compiler error output in the tests.
+public func path_styled_for_error_messages(path_: string) string {
+	rpath := (path.resolve(path_) catch path_).replace("\\", "/");
+	return if ERROR_PATHS_ABSOLUTE {
+		rpath
+	} else {
+		path.relative(NORMALIZED_WORKDIR, rpath) catch path_
+	};
+}
+
 public func skip_bom(file_content: string) string {
    // BOM check
    if file_content.len >= 3 {
-      unsafe {
-         if file_content[0] == 0xEF and file_content[1] == 0xBB and file_content[2] == 0xBF {
-            // skip three BOM bytes
-            return file_content[3..];
-         }
-      }
+	  unsafe {
+		 if file_content[0] == 0xEF and file_content[1] == 0xBB and file_content[2] == 0xBF {
+			// skip three BOM bytes
+			return file_content[3..];
+		 }
+	  }
    }
    return file_content;
 }
@@ -32,34 +48,46 @@ struct SourceCache {
    mut sources: []CachedFile;
 
    public func find(self, path: string) ?string {
-      for source in self.sources {
-         if source.path == path {
-            return source.content;
-         }
-      }
-      return none;
+	  for source in self.sources {
+		 if source.path == path {
+			return source.content;
+		 }
+	  }
+	  return none;
    }
 
    public func find_line(self, path: string, line: usize) ?string {
-      return if lines := self.find_lines(path) {
-         lines[line]
-      } else {
-         none
-      };
+	  return if lines := self.find_lines(path) {
+		 lines[line]
+	  } else {
+		 none
+	  };
+   }
+
+   public func find_lines_between(self, path: string, line: usize, end_line: usize) ?[]string {
+	  return if lines := self.find_lines(path) {
+		if lines.len > 0 and lines.len >= end_line {
+			lines[line..end_line]
+		} else {
+			none
+		}
+	  } else {
+		 none
+	  };
    }
 
    public func find_lines(self, path: string) ?[]string {
-      mut i: usize := 0;
-      while i < self.sources.len : i += 1 {
-         cached := self.sources[i];
-         if cached.path == path {
-            if cached.lines.is_empty() {
-               cached.lines = cached.content.split_into_lines();
-            }
-            return cached.lines;
-         }
-      }
-      return none;
+	  mut i: usize := 0;
+	  while i < self.sources.len : i += 1 {
+		 cached := self.sources[i];
+		 if cached.path == path {
+			if cached.lines.is_empty() {
+			   cached.lines = cached.content.split_into_lines();
+			}
+			return cached.lines;
+		 }
+	  }
+	  return none;
    }
 }
 
@@ -68,10 +96,10 @@ public var mut source_cache: SourceCache = SourceCache();
 [inline]
 public func read_file(path: string) !string {
    return if res := source_cache.find(path) {
-      res
+	  res
    } else {
-      content := skip_bom(fs.read_file(path).!);
-      source_cache.sources.push(CachedFile(path, content));
-      content
+	  content := skip_bom(fs.read_file(path).!);
+	  source_cache.sources.push(CachedFile(path, content));
+	  content
    };
 }

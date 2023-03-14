@@ -73,6 +73,23 @@ public struct Tokenizer {
     }
 
     [inline]
+    func new_multiline_token(
+        self, kind: token.Kind, lit: string = "", len: usize = 1,
+        start_line: usize = 0, end_line: usize = 0, start_col: usize = 0
+    ) token.Token {
+        return token.Token(lit, kind, len, token.Pos(
+            file: self.file,
+            line: start_line,
+            end_line: end_line,
+            col: start_col,
+            end_col: utils.max(1, self.current_column() + 1) - 1,
+            pos: self.pos - len + 1,
+            len: len,
+            is_multiline: true
+        ));
+    }
+
+    [inline]
     func new_eof_token(self) token.Token {
         return token.Token(kind: .EndOfFile, pos: self.current_pos());
     }
@@ -765,8 +782,12 @@ public struct Tokenizer {
                     return self.new_token(.Char, lit, lit.len + 2);
                 },
                 b'"' => {
+                    start_line := self.line;
+                    start_col := utils.max(1, self.current_column()) - 1;
                     lit := self.read_string();
-                    return self.new_token(.String, lit, lit.len + 2);
+                    return self.new_multiline_token(
+                        .String, lit, lit.len + 2, start_line, self.line, start_col
+                    );
                 },
                 else => {
                     self.invalid_character();

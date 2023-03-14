@@ -1534,8 +1534,8 @@ class Codegen:
                             ]
                         )
                     else:
-                        inst = Inst(
-                            InstKind.Call, [
+                        inst = ir.Inst(
+                            ir.InstKind.Call, [
                                 ir.Name("_R4core6Vector5sliceM"), left, start,
                                 end
                             ]
