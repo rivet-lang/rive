@@ -46,29 +46,29 @@ public struct Annotation {
 
 [inline]
 public func error(msg: string, pos: token.Pos) {
-    ReportBuilder(.Error, pos, msg).emit();
+    ReportBuilder(.Error, msg, pos).emit();
 }
 
 [inline]
 public func warn(msg: string, pos: token.Pos) {
-    ReportBuilder(.Warn, pos, msg).emit();
+    ReportBuilder(.Warn, msg, pos).emit();
 }
 
 [inline]
 public func error_builder(msg: string, pos: token.Pos) ReportBuilder {
-    return ReportBuilder(.Error, pos, msg);
+    return ReportBuilder(.Error, msg, pos);
 }
 
 [inline]
 public func warn_builder(msg: string, pos: token.Pos) ReportBuilder {
-    return ReportBuilder(.Warn, pos, msg);
+    return ReportBuilder(.Warn, msg, pos);
 }
 
 // TODO: support JSON format for LSP, etc.
 [boxed]
 public struct ReportBuilder {
-    public msg: string;
     public kind: ReportKind;
+    public msg: string;
     public pos: token.Pos;
     public mut annotations: []Annotation;
 
