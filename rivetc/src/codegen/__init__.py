@@ -160,10 +160,6 @@ class Codegen:
         for mod in self.comp.universe.syms:
             if isinstance(mod, sym.Mod):
                 self.gen_mod_annotations(mod.name, mod.annotations)
-                mangled_name = mangle_symbol(mod)
-                if mangled_name.startswith("_R"):
-                    mangled_name = mangled_name[2:]
-                self.generated_string_literals[mangled_name] = {}
         for source_file in source_files:
             self.source_file = source_file
             self.gen_decls(source_file.decls)
@@ -223,7 +219,7 @@ class Codegen:
                 main_fn.store(
                     ir.Selector(
                         ir.STRING_T.ptr(True), test_value, ir.Name("name")
-                    ), self.gen_string_literal(gtest.name)
+                    ), self.gen_string_lit(gtest.name)
                 )
                 main_fn.store(
                     ir.Selector(
@@ -750,7 +746,7 @@ class Codegen:
                     ]
                 )
             if expr.typ == self.comp.string_t:
-                return self.gen_string_literal(escaped_val, size)
+                return self.gen_string_lit(escaped_val, size)
             return ir.StringLit(escaped_val, str(size))
         elif isinstance(expr, ast.EnumLiteral):
             enum_sym = expr.typ.symbol()
@@ -889,9 +885,9 @@ class Codegen:
                     self.cur_fn.add_call(
                         "_R4core11assert_testF", [
                             self.gen_expr(expr.args[0]),
-                            self.gen_string_literal(msg,
+                            self.gen_string_lit(msg,
                                                 utils.bytestr(msg_).len),
-                            self.gen_string_literal(
+                            self.gen_string_lit(
                                 pos,
                                 utils.bytestr(str(expr.pos)).len
                             ), tmp_idx_
@@ -911,7 +907,7 @@ class Codegen:
                     self.cur_fn.add_call(
                         "_R4core6assertF", [
                             self.gen_expr(expr.args[0]),
-                            self.gen_string_literal(msg,
+                            self.gen_string_lit(msg,
                                                 utils.bytestr(msg_).len)
                         ]
                     )
@@ -1317,7 +1313,7 @@ class Codegen:
                                         self.ir_type(self.comp.error_t),
                                         res_value, ir.Name("err")
                                     ),
-                                    self.gen_string_literal(pos),
+                                    self.gen_string_lit(pos),
                                     ir.Ident(ir.TEST_T, "test")
                                 ]
                             )
@@ -2380,7 +2376,7 @@ class Codegen:
     def panic(self, msg):
         self.cur_fn.add_call(
             "_R4core13process_panicF", [
-                self.gen_string_literal(utils.smart_quote(msg, False)),
+                self.gen_string_lit(utils.smart_quote(msg, False)),
                 self.empty_vec(self.comp.universe["[]core.Stringable"])
             ]
         )
@@ -2471,21 +2467,18 @@ class Codegen:
             ]
         )
 
-    def gen_string_literal(self, lit, size = None):
+    def gen_string_lit(self, lit, size = None):
         size = size or utils.bytestr(lit).len
         if size == 0:
             return ir.Ident(ir.STRING_T.ptr(True), "_R4core12empty_string")
-        mangled_module_name = mangle_symbol(self.source_file.sym)
         lit_hash = hash(lit)
-        if lit_hash in self.generated_string_literals[mangled_module_name]:
+        if lit_hash in self.generated_string_literals:
             return ir.Ident(
-                ir.STRING_T.ptr(True),
-                self.generated_string_literals[mangled_module_name][lit_hash]
+                ir.STRING_T.ptr(True), self.generated_string_literals[lit_hash]
             )
-        inst_name = f"STRLIT{len(self.generated_string_literals[mangled_module_name])}"
         tmp = self.boxed_instance(
             "_R4core6string", 19,
-            custom_name = f"_R{mangled_module_name}{len(inst_name)}{inst_name}"
+            custom_name = f"STR_LIT{len(self.generated_string_literals)}"
         )
         self.out_rir.globals.append(
             ir.GlobalVar(False, False, ir.STRING_T.ptr(True), tmp.name)
@@ -2502,7 +2495,7 @@ class Codegen:
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_ref")),
             ir.IntLit(ir.BOOL_T, "1")
         )
-        self.generated_string_literals[mangled_module_name][lit_hash] = tmp.name
+        self.generated_string_literals[lit_hash] = tmp.name
         return tmp
 
     def boxed_instance(self, name, id, custom_name = None):
