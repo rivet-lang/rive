@@ -203,10 +203,6 @@ class Checker:
                 if stmt.lefts[0].has_typ:
                     self.expected_type = stmt.lefts[0].typ
                 right_typ = self.check_expr(stmt.right)
-                if right_typ == self.comp.void_t:
-                    report.error(
-                        "void expression used as value", stmt.right.pos
-                    )
                 if stmt.lefts[0].has_typ:
                     try:
                         self.check_types(right_typ, self.expected_type)
@@ -308,8 +304,6 @@ class Checker:
             old_expected_type = self.expected_type
             self.expected_type = left_t
             right_t = self.check_expr(expr.right)
-            if right_t == self.comp.void_t:
-                report.error("void expression used as value", expr.right.pos)
             self.expected_type = old_expected_type
             if isinstance(expr.left, ast.Ident) and (expr.left.name == "_"):
                 return expr.typ
@@ -433,8 +427,6 @@ class Checker:
                 if has_expected:
                     self.expected_type = expected_types[i]
                 tt = self.comp.comptime_number_to_type(self.check_expr(e))
-                if tt == self.comp.void_t:
-                    report.error("void expression used as value", e.pos)
                 if has_expected:
                     self.expected_type = old_expected_type
                     types.append(expected_types[i])
@@ -462,8 +454,6 @@ class Checker:
                 elem_typ = self.comp.void_t
             for i, e in enumerate(expr.elems):
                 typ = self.check_expr(e)
-                if typ == self.comp.void_t:
-                    report.error("void expression used as value", e.pos)
                 if i == 0 and not has_exp_typ:
                     elem_typ = typ
                     self.expected_type = elem_typ
@@ -1382,9 +1372,9 @@ class Checker:
                         "cannot use typeswitch with a enum value", expr.pos
                     )
                     report.note(f"use a simple `switch` instead")
-            expected_branch_typ = self.expected_type
+            old_expected_type = self.expected_type
+            expected_branch_typ = self.comp.void_t
             for i, b in enumerate(expr.branches):
-                old_expected_type = self.expected_type
                 self.expected_type = expr_typ
                 if not b.is_else:
                     for p in b.pats:
@@ -1432,7 +1422,6 @@ class Checker:
                                 "non-boolean expression use as `switch` branch condition",
                                 b.cond.pos
                             )
-                self.expected_type = old_expected_type
                 branch_t = self.check_expr(b.expr)
                 if i == 0:
                     if expected_branch_typ == self.comp.void_t:
@@ -1444,6 +1433,7 @@ class Checker:
                         self.check_types(branch_t, expected_branch_typ)
                     except utils.CompilerError as e:
                         report.error(e.args[0], b.expr.pos)
+                self.expected_type = old_expected_type
             return expr.typ
         elif isinstance(expr, ast.BranchExpr):
             expr.typ = self.comp.never_t
@@ -1677,7 +1667,13 @@ class Checker:
                     got_str = f"?{expected}"
             else:
                 got_str = str(got)
-            if got != self.comp.void_t and expected != self.comp.void_t:
+            if expected == self.comp.void_t:
+                raise utils.CompilerError(
+                    "no value expected, `{got_str}` value found instead"
+                )
+            elif got == self.comp.void_t:
+                raise utils.CompilerError("void expression used as value")
+            else:
                 raise utils.CompilerError(
                     f"expected type `{expected}`, found `{got_str}`"
                 )
