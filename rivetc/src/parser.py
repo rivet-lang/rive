@@ -859,19 +859,18 @@ class Parser:
             has_expr = False
             self.open_scope()
             sc = self.scope
+            expr = None
             while not self.accept(Kind.Rbrace):
                 stmt = self.parse_stmt()
                 has_expr = isinstance(
                     stmt, ast.ExprStmt
-                ) and self.prev_tok.kind != Kind.Semicolon
-                stmts.append(stmt)
+                ) and self.prev_tok.kind != Kind.Semicolon and self.tok.kind == Kind.Rbrace
+                if has_expr:
+                    expr = stmt.expr
+                else:
+                    stmts.append(stmt)
             self.close_scope()
-            if has_expr:
-                expr = ast.Block(
-                    sc, is_unsafe, stmts[:-1], stmts[-1].expr, True, pos
-                )
-            else:
-                expr = ast.Block(sc, is_unsafe, stmts, None, False, pos)
+            expr = ast.Block(sc, is_unsafe, stmts, expr, has_expr, pos)
             self.inside_block = old_inside_block
         elif self.tok.kind == Kind.Lbracket:
             elems = []

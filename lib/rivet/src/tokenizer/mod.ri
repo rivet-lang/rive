@@ -782,7 +782,7 @@ public struct Tokenizer {
                 b']' => return self.new_token(.Rbracket),
                 b'(' => return self.new_token(.Lparen),
                 b')' => return self.new_token(.Rparen),
-                b'\'' => { // '
+                b'\'' => {
                     lit := self.read_char();
                     return self.new_token(.Char, lit, lit.len + 2);
                 },

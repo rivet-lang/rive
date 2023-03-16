@@ -393,39 +393,13 @@ public struct string : Stringable, Hashable {
         };
     }
 
-    /// Splits the string to an array by any of the `delim` chars.
-    /// Split a string using the chars in the delimiter string as delimiters chars.
-    /// If the delimiter string is empty then `.split()` is used.
-    public func split_any(self, delim: string) []string {
-        (mut i: usize, mut res: []string) := (0, []);
-        // check empty source string
-        if self.len > 0 {
-            // if empty delimiter string using default split
-            if delim.len <= 0 {
-                return self.split("");
-            }
-            for index, ch in self.as_bytes() {
-                for delim_ch in delim.as_bytes() {
-                    if ch == delim_ch {
-                        res.push(self[i..index]);
-                        i = index + 1;
-                        break;
-                    }
-                }
-            }
-            if i < self.len {
-                res.push(self[i..]);
-            }
-        }
-        return res;
-    }
-
     /// Splits the string based on the passed `delim` substring. It returns the
-    /// first nth parts. When nth == 0, return all the splits.
+    /// first `nth` parts. When `nth` == 0, return all the splits.
     /// The last returned element has the remainder of the string, even if the
     /// remainder contains more `delim` substrings.
     public func split(self, delim: string, nth: usize = 0) []string {
-        (mut i: usize, mut res) := (0, @vec(string));
+        mut i: usize := 0;
+        mut res := @vec(string);
         switch delim.len {
             0 => {
                 i = 1;
@@ -480,6 +454,33 @@ public struct string : Stringable, Hashable {
                 return res;
             }
         }
+    }
+
+    /// Splits a string using the chars in the delimiter string as delimiters chars.
+    /// If the delimiter string is empty then `.split()` is used.
+    public func split_any(self, delim: string) []string {
+        mut i: usize := 0;
+        mut res := @vec(string);
+        // check empty source string
+        if self.len > 0 {
+            // if empty delimiter string using default split
+            if delim.len <= 0 {
+                return self.split("");
+            }
+            for index, ch in self.as_bytes() {
+                for delim_ch in delim.as_bytes() {
+                    if ch == delim_ch {
+                        res.push(self[i..index]);
+                        i = index + 1;
+                        break;
+                    }
+                }
+            }
+            if i < self.len {
+                res.push(self[i..]);
+            }
+        }
+        return res;
     }
 
     /// Splits the string by newline characters. `\r` (MacOS), `\n` (POSIX),

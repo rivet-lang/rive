@@ -14,11 +14,11 @@ class Checker:
         self.sym = None
         self.cur_fn = None
 
-        self.inside_unsafe = False
-        self.inside_test = False
         self.expected_type = self.comp.void_t
         self.void_types = (self.comp.void_t, self.comp.never_t)
 
+        self.inside_unsafe = False
+        self.inside_test = False
         self.inside_guard_expr = False
         self.inside_var_decl = False
 
@@ -153,9 +153,9 @@ class Checker:
                     )
             self.check_decls(decl.decls)
         elif isinstance(decl, ast.FnDecl):
-            old_expected_type = self.expected_type
             for arg in decl.args:
                 if arg.has_def_expr:
+                    old_expected_type = self.expected_type
                     self.expected_type = arg.typ
                     def_expr_t = self.check_expr(arg.def_expr)
                     self.expected_type = old_expected_type
@@ -172,9 +172,7 @@ class Checker:
                     "this is because Rivet cannot ensure that the function does not always return `none`"
                 )
             self.cur_fn = decl.sym
-            self.expected_type = decl.ret_typ
             self.check_stmts(decl.stmts)
-            self.expected_type = old_expected_type
             decl.defer_stmts = self.defer_stmts
             self.defer_stmts = []
             self.check_mut_vars(decl.scope)
@@ -199,6 +197,7 @@ class Checker:
 
     def check_stmt(self, stmt):
         if isinstance(stmt, ast.VarDeclStmt):
+            old_expected_type = self.expected_type
             if len(stmt.lefts) == 1:
                 if stmt.lefts[0].has_typ:
                     self.expected_type = stmt.lefts[0].typ
@@ -238,6 +237,7 @@ class Checker:
                             )
                             vd.typ = vtyp
                             stmt.scope.update_type(vd.name, vtyp)
+            self.expected_type = old_expected_type
         elif isinstance(stmt, ast.ExprStmt):
             expr_typ = self.check_expr(stmt.expr)
             if not ((
@@ -1330,8 +1330,11 @@ class Checker:
                 if self.inside_unsafe:
                     report.warn("unnecessary `unsafe` block", expr.pos)
                 self.inside_unsafe = True
+            old_expected_type = self.expected_type
+            self.expected_type = self.comp.void_t
             for stmt in expr.stmts:
                 self.check_stmt(stmt)
+            self.expected_type = old_expected_type
             if expr.is_expr:
                 expr.typ = self.check_expr(expr.expr)
             else:
@@ -1340,6 +1343,7 @@ class Checker:
                 self.inside_unsafe = False
             return expr.typ
         elif isinstance(expr, ast.IfExpr):
+            expected_type = self.expected_type
             for i, b in enumerate(expr.branches):
                 if not b.is_else:
                     bcond_t = self.check_expr(b.cond)
@@ -1350,9 +1354,24 @@ class Checker:
                             "non-boolean expression used as `if` condition",
                             b.cond.pos
                         )
-                expr_typ = self.check_expr(b.expr)
+                branch_t = self.comp.void_t
                 if i == 0:
-                    expr.typ = expr_typ
+                    branch_t = self.check_expr(b.expr)
+                    if expected_type == self.comp.void_t:
+                        expected_type = branch_t
+                    expr.typ = branch_t
+                else:
+                    old_expected_type = self.expected_type
+                    self.expected_type = expected_type
+                    branch_t = self.check_expr(b.expr)
+                    self.expected_type = old_expected_type
+                    try:
+                        self.check_types(branch_t, expected_type)
+                    except utils.CompilerError as e:
+                        report.error(e.args[0], b.expr.pos)
+                        report.note(
+                            f"{self.expected_type} | {expected_type} :=: {branch_t}"
+                        )
             return expr.typ
         elif isinstance(expr, ast.SwitchExpr):
             expr.typ = self.comp.void_t
@@ -1372,11 +1391,11 @@ class Checker:
                         "cannot use typeswitch with a enum value", expr.pos
                     )
                     report.note(f"use a simple `switch` instead")
-            old_expected_type = self.expected_type
-            expected_branch_typ = self.comp.void_t
+            expr.expected_typ = self.expected_type
             for i, b in enumerate(expr.branches):
-                self.expected_type = expr_typ
                 if not b.is_else:
+                    old_expected_type = self.expected_type
+                    self.expected_type = expr_typ
                     for p in b.pats:
                         pat_t = self.check_expr(p)
                         if expr.is_typeswitch:
@@ -1422,18 +1441,22 @@ class Checker:
                                 "non-boolean expression use as `switch` branch condition",
                                 b.cond.pos
                             )
-                branch_t = self.check_expr(b.expr)
+                    self.expected_type = old_expected_type
+                branch_t = self.comp.void_t
                 if i == 0:
-                    if expected_branch_typ == self.comp.void_t:
-                        expected_branch_typ = branch_t
-                    expr.expected_typ = expected_branch_typ
+                    branch_t = self.check_expr(b.expr)
+                    if expr.expected_typ == self.comp.void_t:
+                        expr.expected_typ = branch_t
                     expr.typ = branch_t
                 else:
+                    old_expected_type = self.expected_type
+                    self.expected_type = expr.expected_typ
+                    branch_t = self.check_expr(b.expr)
+                    self.expected_type = old_expected_type
                     try:
-                        self.check_types(branch_t, expected_branch_typ)
+                        self.check_types(branch_t, expr.expected_typ)
                     except utils.CompilerError as e:
                         report.error(e.args[0], b.expr.pos)
-                self.expected_type = old_expected_type
             return expr.typ
         elif isinstance(expr, ast.BranchExpr):
             expr.typ = self.comp.never_t
@@ -1662,20 +1685,22 @@ class Checker:
         if not self.check_compatible_types(got, expected):
             if got == self.comp.none_t:
                 if isinstance(expected, type.Option):
-                    got_str = str(expected)
+                    got_str = f"`{str(expected)}`"
+                elif expected == self.comp.void_t:
+                    got_str = f"option"
                 else:
-                    got_str = f"?{expected}"
+                    got_str = f"`?{expected}`"
             else:
-                got_str = str(got)
+                got_str = f"`{str(got)}`"
             if expected == self.comp.void_t:
                 raise utils.CompilerError(
-                    "no value expected, `{got_str}` value found instead"
+                    f"no value expected, found {got_str} value instead"
                 )
             elif got == self.comp.void_t:
                 raise utils.CompilerError("void expression used as value")
             else:
                 raise utils.CompilerError(
-                    f"expected type `{expected}`, found `{got_str}`"
+                    f"expected type `{expected}`, found {got_str}"
                 )
 
     def check_compatible_types(self, got, expected):
@@ -1683,6 +1708,10 @@ class Checker:
             return True
 
         if got == self.comp.never_t:
+            return True
+        elif expected == self.comp.never_t and got == self.comp.void_t:
+            return True
+        elif expected == self.comp.void_t and got == self.comp.never_t:
             return True
 
         if isinstance(expected, type.Result):
