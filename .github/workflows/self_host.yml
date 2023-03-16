@@ -18,7 +18,7 @@ jobs:
 
       - name: Compile self-hosted compiler
         run: |
-          python3 rivetc --backend-compiler clang -o rivet cmd/
+          python3 rivetc -bc clang -o rivet cmd/
           ./rivet version
           ./rivet build cmd/
 

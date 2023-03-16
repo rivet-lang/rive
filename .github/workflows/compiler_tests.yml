@@ -18,7 +18,7 @@ jobs:
 
       - name: Run passing tests
         run: |
-          python3 rivetc --backend-compiler clang -t tests/valid
+          python3 rivetc -bc clang -t tests/valid
 
       - name: Run failing tests
         run: |
