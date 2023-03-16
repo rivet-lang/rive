@@ -58,7 +58,6 @@ Any help is welcome.
 ## Sample: The classic `Hello World!`
 
 ```swift
-// A simple sample: the classic "Hello World!"
 import "std/console";
 
 func main() {
