@@ -58,15 +58,6 @@ func internal_resize(ptr: ?mut_anyptr, sz: usize) mut_anyptr {
     };
 }
 
-func class_downcast(current_id: usize, expected_id: usize) {
-    if current_id != expected_id {
-        // TODO: replace indexes with names
-        console_eprintln("panic: cannot cast {} to {}", current_id, expected_id);
-        bt_print(3);
-        process_exit(1);
-    }
-}
-
 struct EnumInfo {
     _rc: usize;
     _id: usize;
