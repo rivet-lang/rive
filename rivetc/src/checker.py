@@ -1439,7 +1439,7 @@ class Checker:
             expr.typ = self.comp.never_t
             return expr.typ
         elif isinstance(expr, ast.EmptyExpr):
-            report.error("unexpected empty expression")
+            report.error("unexpected empty expression", expr.pos)
             report.note("bug detected on parser")
         return self.comp.void_t
 
