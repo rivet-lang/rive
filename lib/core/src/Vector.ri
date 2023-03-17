@@ -78,6 +78,36 @@ struct Vector {
         return unsafe { @ptr_add(self.ptr, new_len * self.elem_size) };
     }
 
+    /// Deletes `size` elements beginning with index `i`.
+    /// NOTE: This function does NOT operate in-place. Internally, it creates a copy
+    /// of the vector, skipping over `size` elements starting at `i`, and then points
+    /// the original variable to the new memory location.
+    public func delete(mut self, i: usize, size: usize = 1) {
+        if i + size > self.len {
+            end_idx := if size == 1 { "..{}".fmt(i + size) } else { "" };
+            process_panic(
+                "Vector.delete(): index out of range (i: {}{}, self.len: {})",
+                i, end_idx, self.len
+            );
+        }
+        // Note: if `self` is [12, 34], `self.len` = 2
+        // `self.delete(0)` should move (2-0-1) elements = 1 element (the 34) forward
+        old_ptr := self.ptr;
+        new_size := self.len - size;
+        new_cap: usize := if new_size == 0 { 1 } else { new_size };
+        self.ptr = mem_zeroed(new_cap * self.elem_size) catch @unreachable();
+        mem_copy(self.ptr, old_ptr, i * self.elem_size);
+        unsafe {
+            mem_copy(
+                @ptr_add(self.ptr, i * self.elem_size),
+                @ptr_add(old_ptr, i + size * self.elem_size),
+                self.len - i - size * self.elem_size
+            );
+        }
+        self.len = new_size;
+        self.cap = new_cap;
+    }
+
     [inline]
     func is_empty(self) bool {
         return self.len == 0;

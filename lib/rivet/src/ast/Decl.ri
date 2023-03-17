@@ -7,8 +7,9 @@ import "std/strings";
 import "../token";
 
 public enum Decl {
-    EmptyDecl,
-    DocComment: DocComment
+    EmptyDecl: token.Pos,
+    DocComment: DocComment,
+    ImportDecl: ImportDecl
 }
 
 [boxed]
@@ -32,4 +33,29 @@ public struct DocComment {
         }
         return res.to_string();
     }
+}
+
+public struct ImportDecl {
+    public annotations: Annotations;
+    public is_public: bool;
+    public path: string;
+    public mut alias_name: string;
+    public glob: bool;
+    public import_list: []ImportListInfo;
+    public mut mod_sym: Module;
+    public pos: token.Pos;
+}
+
+public struct ImportListInfo {
+    public name: string;
+    public alias_name: string;
+    public pos: token.Pos;
+}
+
+public struct ImportedMod {
+    public name: string;
+    public full_name: string;
+    public alias_name: string;
+    public found: bool;
+    public files: []string;
 }

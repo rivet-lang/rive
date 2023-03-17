@@ -623,7 +623,7 @@ class Checker:
                     expr.pos
                 )
             elif ltyp == self.comp.string_t and rtyp == self.comp.string_t and expr.op not in (
-                Kind.Eq, Kind.Ne, Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge
+                Kind.Eq, Kind.Ne, Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge, Kind.KwIn, Kind.KwNotIn
             ):
                 report.error(
                     "string values only support the following operators: `==`, `!=`, `<`, `>`, `<=` and `>=`",
@@ -1343,7 +1343,7 @@ class Checker:
                 self.inside_unsafe = False
             return expr.typ
         elif isinstance(expr, ast.IfExpr):
-            expected_type = self.expected_type
+            expr.expected_typ = self.expected_type
             for i, b in enumerate(expr.branches):
                 if not b.is_else:
                     bcond_t = self.check_expr(b.cond)
@@ -1357,21 +1357,18 @@ class Checker:
                 branch_t = self.comp.void_t
                 if i == 0:
                     branch_t = self.check_expr(b.expr)
-                    if expected_type == self.comp.void_t:
-                        expected_type = branch_t
+                    if expr.expected_typ == self.comp.void_t:
+                        expr.expected_typ = branch_t
                     expr.typ = branch_t
                 else:
-                    old_expected_type = self.expected_type
-                    self.expected_type = expected_type
+                    old_expected_typ = self.expected_type
+                    self.expected_type = expr.expected_typ
                     branch_t = self.check_expr(b.expr)
-                    self.expected_type = old_expected_type
+                    self.expected_type = old_expected_typ
                     try:
-                        self.check_types(branch_t, expected_type)
+                        self.check_types(branch_t, expr.expected_typ)
                     except utils.CompilerError as e:
                         report.error(e.args[0], b.expr.pos)
-                        report.note(
-                            f"{self.expected_type} | {expected_type} :=: {branch_t}"
-                        )
             return expr.typ
         elif isinstance(expr, ast.SwitchExpr):
             expr.typ = self.comp.void_t
@@ -1506,13 +1503,11 @@ class Checker:
 
             for i, arg in enumerate(expr.args):
                 field_typ = self.comp.void_t
-                field_is_mut = False
                 if arg.is_named:
                     found = False
                     for field in type_fields:
                         if field.name == arg.name:
                             field_typ = field.typ
-                            field_is_mut = field.is_mut
                             found = True
                             break
                     if not found:
@@ -1524,7 +1519,6 @@ class Checker:
                 else:
                     field = type_fields[i]
                     field_typ = field.typ
-                    field_is_mut = field.is_mut
                 arg.typ = field_typ
                 old_expected_type = self.expected_type
                 self.expected_type = field_typ
@@ -1534,10 +1528,6 @@ class Checker:
                     self.check_types(arg_t, field_typ)
                 except utils.CompilerError as e:
                     report.error(e.args[0], arg.pos)
-                if field_is_mut and not isinstance(
-                    field_typ, (type.Ptr, type.Ref)
-                ) and field_typ.symbol().is_boxed():
-                    self.check_expr_is_mut(arg.expr)
             if expr.has_spread_expr:
                 spread_expr_t = self.check_expr(expr.spread_expr)
                 if spread_expr_t != expr.typ:
@@ -1620,7 +1610,10 @@ class Checker:
             else:
                 arg_fn = info.args[i]
 
-            self.expected_type = arg_fn.typ
+            if isinstance(arg_fn.typ, type.Variadic):
+                self.expected_type = arg_fn.typ.typ
+            else:
+                self.expected_type = arg_fn.typ
             arg.typ = self.check_expr(arg.expr)
             self.expected_type = oet
 

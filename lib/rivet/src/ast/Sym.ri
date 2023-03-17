@@ -479,6 +479,15 @@ public struct Scope {
         return self.lookup(name) !is none;
     }
 
+    public func find(self, name: string) ?Sym {
+        for sym in self.syms {
+            if sym.name == name {
+                return sym;
+            }
+        }
+        return none;
+    }
+
     public func lookup(self, name: string) ?Sym {
         mut sc_: ?Scope := self;
         while sc := sc_ {

@@ -697,7 +697,7 @@ class Codegen:
             expr_typ = expr.typ
         expr_sym = expr.typ.symbol()
         expected_sym = expected_typ_.symbol()
-        if expected_sym.kind == TypeKind.Trait and expr_sym != expected_sym and expr.typ != self.comp.none_t:
+        if expected_sym.kind == TypeKind.Trait and expr_typ != expected_typ_ and expr_sym != expected_sym and expr.typ != self.comp.none_t:
             res_expr = self.trait_value(res_expr, expr_typ, expected_typ_)
 
         # wrap optional value
@@ -1924,7 +1924,7 @@ class Codegen:
             else_label = self.cur_fn.local_name(
             ) if expr.has_else else exit_label
             tmp = ir.Ident(
-                self.ir_type(expr.typ),
+                self.ir_type(expr.expected_typ),
                 self.cur_fn.local_name() if not is_void_value else ""
             )
             if not is_void_value:
@@ -1965,11 +1965,11 @@ class Codegen:
                                 )
                 if is_void_value:
                     self.gen_expr_with_cast(
-                        expr.typ, b.expr
+                        expr.expected_typ, b.expr
                     ) # ignore void value
                 else:
                     self.cur_fn.store(
-                        tmp, self.gen_expr_with_cast(expr.typ, b.expr)
+                        tmp, self.gen_expr_with_cast(expr.expected_typ, b.expr)
                     )
                 if gen_branch:
                     self.cur_fn.add_comment(

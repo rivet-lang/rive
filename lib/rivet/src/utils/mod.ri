@@ -6,6 +6,7 @@ import "std/fs";
 import "std/traits";
 import "std/console";
 import "std/process";
+import "std/strings";
 import "std/console/styles";
 
 public var VERSION = "0.1.0b";
@@ -83,4 +84,19 @@ public func blue(msg: string) string {
 [inline]
 public func green(msg: string) string {
     return if StderrSupportStyles { styles.green(msg) } else { msg };
+}
+
+public func join(vec: []string, s: string) string {
+    return if vec.is_empty() {
+        ""
+    } else {
+        mut sb := strings.Builder();
+        for i, e in vec {
+            sb.write_string(e);
+            if i < vec.len - 1 {
+                sb.write_string(s);
+            }
+        }
+        sb.to_string()
+    };
 }

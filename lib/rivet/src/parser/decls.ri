@@ -95,11 +95,68 @@ extend Parser {
         is_public := self.inside_trait or self.is_public();
         pos := self.tok.pos;
         switch {
+            self.accept(.KwImport) => {
+                mut import_list := @vec(ast.ImportListInfo);
+                mut glob := false;
+                if self.accept(.Lbrace) {
+                    while {
+                        info_pos := self.tok.pos;
+                        switch {
+                            self.accept(.KwSelf) => {
+                                name := "self";
+                                info_alias := if self.accept(.KwAs) {
+                                    self.parse_name()
+                                } else {
+                                    name
+                                };
+                                import_list.push(
+                                    ast.ImportListInfo(name, info_alias, info_pos)
+                                );
+                            },
+                            self.accept(.Mul) => {
+                                glob = true;
+                                break;
+                            },
+                            else => {
+                                name := self.parse_name();
+                                info_alias := if self.accept(.KwAs) {
+                                    self.parse_name()
+                                } else {
+                                    name
+                                };
+                                import_list.push(
+                                    ast.ImportListInfo(name, info_alias, info_pos)
+                                );
+                            }
+                        }
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                }
+                mod_path := self.tok.lit;
+                self.expect(.String);
+                alias_name := if import_list.is_empty() and self.accept(.KwAs) {
+                    self.parse_name()
+                } else {
+                    ""
+                };
+                self.expect(.Semicolon);
+                return .ImportDecl(ast.ImportDecl(
+                    annotations: annotations,
+                    is_public: is_public,
+                    path: mod_path,
+                    alias_name: alias_name,
+                    glob: glob,
+                    import_list: import_list,
+                    pos: pos
+                ));
+            },
             self.tok.kind != .EndOfFile => {
-                report.error("expected declaration, found {}".fmt(self.tok), pos);
+                // report.error("expected declaration, found {}".fmt(self.tok), pos);
                 self.next();
             }
         }
-        return .EmptyDecl();
+        return .EmptyDecl(pos);
     }
 }

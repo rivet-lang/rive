@@ -909,8 +909,8 @@ class Parser:
             if self.tok.kind.is_assign():
                 # assignment
                 op = self.tok.kind
-                self.next()
-                return ast.AssignExpr(expr, op, self.parse_expr(), expr.pos)
+                self.expect(op)
+                expr = ast.AssignExpr(expr, op, self.parse_expr(), expr.pos)
             elif self.tok.kind == Kind.Lparen and not self.decl_operator_is_used(
             ):
                 self.next()

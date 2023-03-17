@@ -24,7 +24,7 @@ public struct Table {
     public mut source_files: []SourceFile;
 
     [inline]
-    public func new(mut prefs: prefs.Prefs) Table {
+    public func new(prefs: prefs.Prefs) Table {
         return Table(universe(), prefs, pointer_size: if prefs.target_is_64bit {
             8
         } else {

@@ -3,6 +3,7 @@
 // be found in the LICENSE file.
 
 import "std/fs";
+import "std/env";
 import "std/sys";
 import "std/console";
 import "std/process";
@@ -10,6 +11,13 @@ import "std/fs/path";
 
 import "../token";
 import "../utils";
+
+public var RIVET_DIR = path.join(env.HOME_DIR, ".rivet_lang").!;
+public var RIVETC_DIR = path.dirname(process.executable().!).?;
+
+public var OBJ_DIR = path.join(RIVET_DIR, "obj").!;
+public var LIB_DIR = path.join(RIVET_DIR, "lib").!;
+public var RIVETC_LIB_DIR = path.join(RIVETC_DIR, "lib").!;
 
 public enum Backend as uint8 {
     C;
@@ -65,7 +73,7 @@ public struct Prefs {
     public mut run_output: bool;
     public mut run_output_args: []string;
 
-    public mut library_path: []string;
+    public mut library_path: []string = [RIVETC_LIB_DIR, LIB_DIR];
     public mut libraries_to_link: []string;
     public mut objects_to_link: []string;
 

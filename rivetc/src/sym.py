@@ -279,18 +279,16 @@ class Mod(Sym):
         )
         vec_sym.add(
             Fn(
-                ABI.Rivet, True, False, False, True, False, "is_empty", [],
-                type_Type(self[3]), False, True, NO_POS, False, False,
-                type_Type(vec_sym)
-            )
-        )
-        vec_sym.add(
-            Fn(
                 ABI.Rivet, True, False, False, True, False, "clone", [],
                 type_Type(vec_sym), False, True, NO_POS, False, False,
                 type_Type(vec_sym)
             )
         )
+        if vector_sym := self.find("core").find("Vector"):
+            if is_empty_m := vector_sym.find("is_empty"):
+                vec_sym.add(is_empty_m)
+            if delete_m := vector_sym.find("delete"):
+                vec_sym.add(delete_m)
         return self.add_and_return(vec_sym)
 
     def add_or_get_tuple(self, types):

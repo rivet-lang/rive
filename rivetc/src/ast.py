@@ -888,6 +888,7 @@ class IfBranch:
 
 class IfExpr:
     def __init__(self, branches, has_else, pos):
+        self.expected_typ = None
         self.branches = branches
         self.has_else = has_else
         self.pos = pos
