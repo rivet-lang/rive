@@ -58,6 +58,8 @@ class Compiler:
         self.checker = checker.Checker(self)
         self.codegen = codegen.Codegen(self)
 
+        self.exit_code = 0
+
     def import_modules(self):
         for sf in self.parsed_files:
             for decl in sf.decls:
@@ -146,6 +148,8 @@ class Compiler:
                 self.codegen.gen_source_files(self.source_files)
                 if report.ERRORS > 0:
                     self.abort()
+            if self.exit_code != 0:
+                exit(self.exit_code)
 
     def load_root_mod(self):
         if path.isdir(self.prefs.input):

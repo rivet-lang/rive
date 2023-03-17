@@ -269,13 +269,13 @@ class Codegen:
 
         if report.ERRORS == 0:
             if self.comp.prefs.emit_rir:
-                with open(f"{self.comp.prefs.mod_name}.rir", "w+") as f:
+                with open(f"{self.comp.prefs.mod_name}.rir", "w") as f:
                     f.write(str(self.out_rir).strip())
             if self.comp.prefs.target_backend == prefs.Backend.C:
                 CGen(self.comp).gen(self.out_rir)
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
-                if os.system(self.comp.prefs.mod_output) == 0:
-                    os.remove(self.comp.prefs.mod_output)
+                self.comp.exit_code = os.system(self.comp.prefs.mod_output)
+                os.remove(self.comp.prefs.mod_output)
 
     def gen_mod_annotations(self, mod_name, annotations):
         mod_folder = os.path.join(prefs.RIVET_DIR, "obj", mod_name)
