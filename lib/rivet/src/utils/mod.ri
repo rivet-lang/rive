@@ -8,9 +8,12 @@ import "std/console";
 import "std/process";
 import "std/console/styles";
 
+public var VERSION = "0.1.0b";
+
 public const LF: uint8 = 10;
 public const CR: uint8 = 13;
-public var VERSION = "0.1.0b";
+
+var StderrSupportStyles = styles.stderr_support_styles();
 
 [inline]
 public func is_name_char(ch: uint8) bool {
@@ -51,8 +54,6 @@ public func error(msg: string, args: ...traits.Stringable) never {
    );
    process.exit(1);
 }
-
-var StderrSupportStyles = styles.stderr_support_styles();
 
 [inline]
 public func bold(msg: string) string {
