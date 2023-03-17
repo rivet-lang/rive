@@ -31,7 +31,7 @@ public struct Compiler {
 
     func run(mut self) ! {
         self.make_rivet_directory().!;
-        self.load_mod_and_parse("core", "core", "", token.NO_POS).!;
+        self.load_module_and_parse("core", "core", "", token.NO_POS).!;
         self.load_root_module().!;
         self.import_modules().!;
     }
@@ -84,10 +84,10 @@ public struct Compiler {
         }
     }
 
-    func load_mod_and_parse(
+    func load_module_and_parse(
         mut self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) ! {
-        mod := self.load_mod(pathx, alias_name, file_path, pos).!;
+        mod := self.load_module(pathx, alias_name, file_path, pos).!;
         if mod.found {
             mod_sym := ast.Module(name: mod.full_name);
             self.table.universe.scope.add(mod_sym) catch |err| {
@@ -97,10 +97,10 @@ public struct Compiler {
         }
     }
 
-    func load_mod(
+    func load_module(
         self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) !ast.ImportedMod {
-        self.vlog("Compiler.load_mod(): searching module `{}`".fmt(pathx));
+        self.vlog("Compiler.load_module(): searching module `{}`".fmt(pathx));
         mut found := false;
         mut name := "";
         mut full_name := "";
@@ -110,7 +110,7 @@ public struct Compiler {
         if pathx.starts_with("./") or is_super {
             self.vlog("    searching module in local path");
             pathx2 := pathx[if is_super { 3 } else { 2 }..];
-            name = pathx2[(pathx2.right_index_of_byte(b'/') ?? 0) + 1..];
+            name = pathx2[(pathx2.last_index_of_byte(b'/') ?? 0) + 1..];
             dirname := path.resolve(path.dirname(file_path) ?? file_path).!;
             old_wd := process.get_cwd().!;
             process.set_cwd(dirname).!;
@@ -122,10 +122,10 @@ public struct Compiler {
                     mod_basedir = mod_basedir[..mod_basedir.len - 4]; // skip `src/`
                 }
                 if mod_basedir.contains("/src") and !mod_basedir.ends_with("/src") {
-                    first_part := mod_basedir[..mod_basedir.right_index_of_byte(b'/') ?? 0];
-                    mod_basedir = mod_basedir[..first_part.right_index_of_byte(b'/') ?? 0];
+                    first_part := mod_basedir[..mod_basedir.last_index_of_byte(b'/') ?? 0];
+                    mod_basedir = mod_basedir[..first_part.last_index_of_byte(b'/') ?? 0];
                 }
-                names := abspath[(mod_basedir.right_index_of_byte(b'/') ?? 0) + 1..].split(
+                names := abspath[(mod_basedir.last_index_of_byte(b'/') ?? 0) + 1..].split(
                     "/"
                 );
                 if "src" in names {
@@ -144,7 +144,7 @@ public struct Compiler {
             }
         } else {
             self.vlog("    searching module in global path");
-            name = pathx[(pathx.right_index_of_byte(b'/') ?? 0) + 1..];
+            name = pathx[(pathx.last_index_of_byte(b'/') ?? 0) + 1..];
             full_name = pathx.replace("/", ".");
             for l in self.prefs.library_path {
                 self.vlog("        searching module in `{}`".fmt(l));
@@ -191,7 +191,7 @@ public struct Compiler {
         for sf in self.table.source_files {
             for d in sf.decls {
                 if d is .ImportDecl as mut import_decl {
-                    mod := self.load_mod(
+                    mod := self.load_module(
                         import_decl.path, import_decl.alias_name, sf.file, import_decl.pos
                     ).!;
                     if mod.found {

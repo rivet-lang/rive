@@ -168,16 +168,6 @@ public struct string : Stringable, Hashable {
         return none;
     }
 
-    public func right_index_of_byte(self, b: uint8) ?usize {
-        mut i: usize := self.len;
-        while i > 0 : i -= 1 {
-            if unsafe { self.ptr[i] == b } {
-                return i;
-            }
-        }
-        return none;
-    }
-
     /// Returns the position of the first character of the input string.
     /// It will return `none` if the input string can't be found.
     public func index_of(self, p: string) ?usize {
