@@ -623,7 +623,8 @@ class Checker:
                     expr.pos
                 )
             elif ltyp == self.comp.string_t and rtyp == self.comp.string_t and expr.op not in (
-                Kind.Eq, Kind.Ne, Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge, Kind.KwIn, Kind.KwNotIn
+                Kind.Eq, Kind.Ne, Kind.Lt, Kind.Gt, Kind.Le, Kind.Ge, Kind.KwIn,
+                Kind.KwNotIn
             ):
                 report.error(
                     "string values only support the following operators: `==`, `!=`, `<`, `>`, `<=` and `>=`",
