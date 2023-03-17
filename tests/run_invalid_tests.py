@@ -5,14 +5,10 @@
 from os import path
 import glob, sys, os, utils
 
-CC = os.getenv("RIVET_CC_TEST")
-CC = CC if CC else "gcc"
-
 def run_fail_tests():
 	ok, fail, skip = 0, 0, 0
 	exit_code = 0
 
-	IS_WINDOWS = sys.platform == "win32"
 	FAIL_FILES = glob.glob(os.path.join("tests", "invalid", "*.ri"))
 	FAIL_FILES.sort()
 	for i, file in enumerate(FAIL_FILES):
@@ -27,8 +23,6 @@ def run_fail_tests():
 				utils.eprint(start, file, utils.bold(utils.red("-> FAIL")))
 				fail += 1
 			out = outf.strip()
-			if IS_WINDOWS:
-				res.err = res.err.replace("\\", "/").replace("\r\n", "\n")
 			if out != res.err:
 				utils.eprint(utils.bold("Expected:"))
 				utils.eprint(out)

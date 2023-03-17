@@ -11,8 +11,6 @@ on:
 jobs:
   ubuntu-clang:
     runs-on: ubuntu-latest
-    env:
-      RIVET_CC_TEST: clang
     steps:
       - uses: actions/checkout@v3
 
@@ -24,13 +22,11 @@ jobs:
 
   ubuntu-gcc:
     runs-on: ubuntu-latest
-    env:
-      RIVET_CC_TEST: gcc
     steps:
       - uses: actions/checkout@v3
 
       - name: Compile self-hosted compiler
         run: |
-          python3 rivetc -o rivet cmd/
+          python3 rivetc -bc gcc -o rivet cmd/
           ./rivet version
           ./rivet build cmd/

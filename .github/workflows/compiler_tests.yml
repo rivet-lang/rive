@@ -11,8 +11,6 @@ on:
 jobs:
   ubuntu-clang:
     runs-on: ubuntu-latest
-    env:
-      RIVET_CC_TEST: clang
     steps:
       - uses: actions/checkout@v3
 
@@ -26,14 +24,12 @@ jobs:
 
   ubuntu-gcc:
     runs-on: ubuntu-latest
-    env:
-      RIVET_CC_TEST: gcc
     steps:
       - uses: actions/checkout@v3
 
       - name: Run passing tests
         run: |
-          python3 rivetc -t tests/valid
+          python3 rivetc -bc gcc -t tests/valid
 
       - name: Run failing tests
         run: |
@@ -41,8 +37,6 @@ jobs:
 
   # windows-gcc:
   #   runs-on: windows-2019
-  #   env:
-  #     RIVET_CC_TEST: gcc
   #   steps:
   #     - uses: actions/checkout@v3
 

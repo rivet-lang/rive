@@ -47,7 +47,7 @@ def readline(pos, kind):
     return f"{line_str} {SEP} {line}\n      {SEP} {marker}"
 
 def fmt_msg(pos, kind, msg):
-    file = os.path.relpath(pos.file)
+    file = os.path.relpath(pos.file).replace("\\", "/")
     return utils.bold(
         f'{file}:{pos.line + 1}:{pos.col}: {color(kind,kind)} {msg}'
     )
