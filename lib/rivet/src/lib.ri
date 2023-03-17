@@ -100,7 +100,7 @@ public struct Compiler {
     func load_mod(
         self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) !ast.ImportedMod {
-        self.vlog("searching module `{}`".fmt(pathx));
+        self.vlog("Compiler.load_mod(): searching module `{}`".fmt(pathx));
         mut found := false;
         mut name := "";
         mut full_name := "";
