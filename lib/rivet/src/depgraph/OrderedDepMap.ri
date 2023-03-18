@@ -1,0 +1,69 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "std/process";
+
+[boxed]
+public struct OrderedDepMap {
+    mut keys: []string;
+    mut data: MapStringArrayOfStrings; // TODO: replace with map type
+
+    public func new() Self {
+        return Self();
+    }
+
+    public func set(mut self, name: string, deps: []string) {
+        if !self.data.contains(name) {
+            self.keys.push(name);
+        }
+        self.data.set(name, deps);
+    }
+
+    public func add(mut self, name: string, deps: []string) {
+        mut d := self.get(name);
+        for dep in deps {
+            if dep !in d {
+                d.push(dep);
+            }
+        }
+        self.set(name, d);
+    }
+
+    [inline]
+    public func get(self, name: string) []string {
+        return if res := self.data.get(name) {
+            res
+        } else {
+            []
+        };
+    }
+
+    public func delete(mut self, name: string) {
+        if !self.data.contains(name) {
+            process.panic("OrderedDepMap.delete(): no such key: `{}`", name);
+        }
+        for i, _ in self.keys {
+            if self.keys[i] == name {
+                self.keys.delete(i);
+                break;
+            }
+        }
+        self.data.delete(name);
+    }
+
+    public func apply_diff(mut self, name: string, deps: []string) {
+        mut diff := @vec(string);
+        deps_of_name := self.get(name);
+        for dep in deps_of_name {
+            if dep !in deps {
+                diff.push(dep);
+            }
+        }
+        self.set(name, diff);
+    }
+
+    public func size(self) usize {
+        return self.data.len();
+    }
+}

@@ -1,0 +1,129 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+// TODO: remove file, use Map![K, V] instead
+
+struct StringArrayOfStrings {
+    key: string;
+    mut value: []string;
+}
+
+struct MapStringArrayOfStringsIterator {
+    ref: MapStringArrayOfStrings;
+    mut idx: usize;
+
+    [inline]
+    public func next(mut self) ?StringArrayOfStrings {
+        return if self.idx < self.ref.len() {
+            idx := self.idx;
+            self.idx += 1;
+            self.ref.pairs[idx]
+        } else {
+            none
+        };
+    }
+}
+
+[boxed]
+struct MapStringArrayOfStrings {
+    mut pairs: []mut StringArrayOfStrings;
+
+    public func iterator(self) MapStringArrayOfStringsIterator {
+        return MapStringArrayOfStringsIterator(self);
+    }
+
+    public func set(mut self, key: string, value: []string) {
+        for pair in self.pairs {
+            if pair.key == key {
+                pair.value = value;
+                return; // found
+            }
+        }
+        // new value
+        self.pairs.push(StringArrayOfStrings(key, value));
+    }
+
+    public func get(self, key: string) ?[]string {
+        for pair in self.pairs {
+            if pair.key == key {
+                return pair.value;
+            }
+        }
+        return none;
+    }
+
+    public func delete(mut self, key: string) {
+        for i, pair in self.pairs {
+            if pair.key == key {
+                self.pairs.delete(i);
+            }
+        }
+    }
+
+    public func contains(self, key: string) bool {
+        for pair in self.pairs {
+            if pair.key == key {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    [inline]
+    public func len(self) usize {
+        return self.pairs.len;
+    }
+}
+
+struct StringBool {
+    key: string;
+    mut value: bool;
+}
+
+[boxed]
+struct MapStringBool {
+    mut pairs: []mut StringBool;
+
+    public func set(mut self, key: string, value: bool) {
+        for pair in self.pairs {
+            if pair.key == key {
+                pair.value = value;
+                return; // found
+            }
+        }
+        // new value
+        self.pairs.push(StringBool(key, value));
+    }
+
+    public func get(self, key: string) ?bool {
+        for pair in self.pairs {
+            if pair.key == key {
+                return pair.value;
+            }
+        }
+        return none;
+    }
+
+    public func delete(mut self, key: string) {
+        for i, pair in self.pairs {
+            if pair.key == key {
+                self.pairs.delete(i);
+            }
+        }
+    }
+
+    public func contains(self, key: string) bool {
+        for pair in self.pairs {
+            if pair.key == key {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    [inline]
+    public func len(self) usize {
+        return self.pairs.len;
+    }
+}

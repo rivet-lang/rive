@@ -1,0 +1,136 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import "std/strings";
+
+import "../utils";
+
+struct DepGraphNode {
+    public mut name: string;
+    public mut deps: []string;
+}
+
+[boxed]
+public struct DepGraph {
+    public mut acyclic: bool;
+    public mut nodes: []DepGraphNode;
+
+    [inline]
+    public func new() Self {
+        return Self(true, @vec(DepGraphNode, 1024));
+    }
+
+    [inline]
+    public func add(mut self, mod: string, deps: []string) {
+        self.nodes.push(DepGraphNode(mod, deps));
+    }
+
+    public func resolve(self) Self {
+        mut node_names := OrderedDepMap.new();
+        mut node_deps := OrderedDepMap.new();
+        for node in self.nodes {
+            node_names.add(node.name, node.deps);
+            node_deps.add(node.name, node.deps);
+        }
+        mut iterations := 0;
+        mut resolved := Self.new();
+        while node_deps.size() != 0 {
+            iterations += 1;
+            mut ready_set := @vec(string);
+            for name in node_deps.keys {
+                deps := node_deps.get(name);
+                if deps.is_empty() {
+                    ready_set.push(name);
+                }
+            }
+            if ready_set.is_empty() {
+                mut g := DepGraph.new();
+                g.acyclic = false;
+                for name in node_deps.keys {
+                    g.add(name, node_names.get(name));
+                }
+                return g;
+            }
+            for name in ready_set {
+                node_deps.delete(name);
+                resolved.add(name, node_names.get(name));
+            }
+            for name in node_deps.keys {
+                node_deps.apply_diff(name, ready_set);
+            }
+        }
+        return resolved;
+    }
+
+    public func display(self) string {
+        mut out := strings.Builder();
+        for node in self.nodes {
+            for dep in node.deps {
+                out.writeln_fmt(" > {} -> {}", node.name, dep);
+            }
+        }
+        return out.to_string();
+    }
+
+    public func display_cycles(self) string {
+        mut out := strings.Builder();
+        mut seen := false;
+        mut nn := NodeNames();
+        for node in self.nodes {
+            nn.names.set(node.name, node.deps);
+        }
+        mut nn_names_it := nn.names.iterator();
+        while k := nn_names_it.next() {
+            mut cycle_names := @vec(string);
+            if nn.is_cycle.contains(k.key) {
+                continue;
+            }
+            // FIXME: error: expected name, found token `;`
+            // (seen, cycle_names) = nn.is_part_of_cycle(k, cycle_names);
+            tmp := nn.is_part_of_cycle(k.key, cycle_names);
+            seen = tmp.0;
+            cycle_names = tmp.1;
+            if seen {
+                out.writeln_fmt(" * {}", utils.join(cycle_names, " -> "));
+                nn.is_cycle = MapStringBool();
+            }
+        }
+        return out.to_string();
+    }
+}
+
+struct NodeNames {
+    mut is_cycle: MapStringBool;
+    mut names: MapStringArrayOfStrings;
+
+    func is_part_of_cycle(mut self, name: string, already_seen: []string) (bool, []string) {
+        mut seen := false;
+        mut new_already_seen := already_seen.clone();
+        if val := self.is_cycle.get(name) {
+            return (val, new_already_seen);
+        }
+        if name in already_seen {
+            new_already_seen.push(name);
+            self.is_cycle.set(name, true);
+            return (true, new_already_seen);
+        }
+        new_already_seen.push(name);
+        deps := self.names.get(name) ?? @vec(string);
+        if deps.is_empty() {
+            self.is_cycle.set(name, false);
+            return (false, new_already_seen);
+        }
+        for d in deps {
+            mut d_already_seen := new_already_seen.clone();
+            (seen, d_already_seen) = self.is_part_of_cycle(d, d_already_seen);
+            if seen {
+                new_already_seen = d_already_seen.clone();
+                self.is_cycle.set(name, true);
+                return (true, new_already_seen);
+            }
+        }
+        self.is_cycle.set(name, false);
+        return (false, new_already_seen);
+    }
+}
