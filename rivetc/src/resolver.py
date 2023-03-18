@@ -380,6 +380,14 @@ class Resolver:
         elif s := self.find_prelude(ident.name):
             ident.sym = s
             ident.is_sym = True
+        elif s := self.sym.find(ident.name):
+            if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
+                report.error(
+                    f"cannot find `{ident.name}` in this scope", ident.pos
+                )
+                ident.not_found = True
+            ident.sym = s
+            ident.is_sym = True
         elif s := self.comp.universe.find(ident.name):
             if isinstance(s, sym.Mod):
                 report.error(
@@ -388,14 +396,6 @@ class Resolver:
                 report.note(
                     "consider adding an `import` with the path to the module"
                 )
-            ident.sym = s
-            ident.is_sym = True
-        elif s := self.sym.find(ident.name):
-            if isinstance(s, sym.Type) and s.kind == sym.TypeKind.Placeholder:
-                report.error(
-                    f"cannot find `{ident.name}` in this scope", ident.pos
-                )
-                ident.not_found = True
             ident.sym = s
             ident.is_sym = True
         elif self.self_sym:
