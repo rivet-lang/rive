@@ -65,6 +65,7 @@ def run_samples():
             else:
                 eprint(start, file, bold(red("-> FAIL")))
                 fail += 1
+            os.remove(filename(file))
         else:
             eprint(start, file, bold(red("-> FAIL")))
             fail += 1
