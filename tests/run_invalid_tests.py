@@ -10,7 +10,6 @@ def run_fail_tests():
 	exit_code = 0
 
 	FAIL_FILES = glob.glob(os.path.join("tests", "invalid", "*.ri"))
-	FAIL_FILES.sort()
 	for i, file in enumerate(FAIL_FILES):
 		start = f" [{i+1}/{len(FAIL_FILES)}]"
 		res = utils.run_process(sys.executable, "rivetc", file)

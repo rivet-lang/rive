@@ -54,7 +54,6 @@ def run_samples():
     exit_code = 0
 
     SAMPLES = glob.glob(os.path.join("samples", "*.ri"))
-    SAMPLES.sort()
     for i, file in enumerate(SAMPLES):
         start = f" [{i+1}/{len(SAMPLES)}]"
         res = run_process(sys.executable, "rivetc", file)
