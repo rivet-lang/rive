@@ -5,7 +5,7 @@
 // TODO(StunxFS): replace the argument type of `SignalHandler` from
 // `int32` to an enum that enumerates all possible signals.
 
-import { pid_t, uid_t } from "c";
+import { pid_t, uid_t } from c;
 
 public alias SignalHandler = func (int32, *mut siginfo_t, mut_anyptr);
 

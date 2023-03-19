@@ -1,4 +1,4 @@
-import "std/strconv";
+import std/strconv;
 
 test "std.strconv.atoi()" {
     @assert(strconv.atoi("16").! == 16);

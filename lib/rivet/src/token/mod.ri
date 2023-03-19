@@ -2,9 +2,9 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "std/traits";
+import std/traits;
 
-import "../utils";
+import ../utils;
 
 public var NO_POS = Pos();
 

@@ -2,17 +2,17 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public import "std/backtrace";
-public import "std/console";
-public import "std/dynlib";
-public import "std/env";
-public import "std/errors";
-public import "std/fs";
-public import "std/math";
-public import "std/mem";
-public import "std/process";
-public import "std/semver";
-public import "std/strconv";
-public import "std/strings";
-public import "std/sys";
-public import "std/traits";
+public import std/backtrace;
+public import std/console;
+public import std/dynlib;
+public import std/env;
+public import std/errors;
+public import std/fs;
+public import std/math;
+public import std/mem;
+public import std/process;
+public import std/semver;
+public import std/strconv;
+public import std/strings;
+public import std/sys;
+public import std/traits;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "c";
-import "c/libc";
+import c;
+import c/libc;
 
 /// Returns the path name of the executable that started the current process.
 public func process_executable() !string {

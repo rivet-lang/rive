@@ -2,11 +2,11 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "std/console";
-import "std/process";
+import std/console;
+import std/process;
 
-import "rivet";
-import "rivet/utils";
+import rivet;
+import rivet/utils;
 
 func main() {
     if process.ARGS.len == 1 {

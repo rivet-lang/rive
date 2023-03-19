@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "c/libc";
+import c/libc;
 
-import "../mem";
-import { Stringable } from "../traits";
+import ../mem;
+import { Stringable } from ../traits;
 
 [boxed]
 public struct OperationFailedError : Error {

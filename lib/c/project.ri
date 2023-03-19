@@ -1,4 +1,4 @@
-import { Project, Version } from "rivet/build";
+import { Project, Version } from rivet/build;
 
 var project = Project(
     name: "libc",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "c";
+import c;
 
 [unsafe; inline]
 func wyhash(key: *uint8, len: uint64, seed: uint64) uint64 {

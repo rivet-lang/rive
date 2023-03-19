@@ -2,15 +2,15 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "std/env";
-import "std/strings";
-import "std/console";
-import "std/fs/path";
-import "std/process";
+import std/env;
+import std/strings;
+import std/console;
+import std/fs/path;
+import std/process;
 
-import "../prefs";
-import "../token";
-import "../utils";
+import ../prefs;
+import ../token;
+import ../utils;
 
 public var mut Report_Table = ReportTable();
 

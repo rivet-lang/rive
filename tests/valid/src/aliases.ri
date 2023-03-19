@@ -1,4 +1,4 @@
-import "./mod";
+import ./mod;
 
 alias sum = mod.add;
 

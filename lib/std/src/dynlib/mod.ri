@@ -6,7 +6,7 @@
 ![link_library("dl")]
 #endif
 
-import "c/libc";
+import c/libc;
 
 public var SHARED_LIB_EXT = get_shared_library_extension();
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "rivet/prefs";
-import "rivet/token";
-import "rivet/tokenizer";
-import { Table } from "rivet/ast";
+import rivet/prefs;
+import rivet/token;
+import rivet/tokenizer;
+import { Table } from rivet/ast;
 
 var mut prefs_ = prefs.Prefs();
 

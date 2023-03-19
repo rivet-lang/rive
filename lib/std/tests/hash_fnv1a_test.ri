@@ -1,4 +1,4 @@
-import "std/hash/fnv1a";
+import std/hash/fnv1a;
 
 test "std.hash.fnv1a.sum32()" {
 	a_hash: uint32 := 0x10bc2abf;

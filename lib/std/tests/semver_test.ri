@@ -1,4 +1,4 @@
-import "std/semver";
+import std/semver;
 
 struct TestVersion {
     raw: string;

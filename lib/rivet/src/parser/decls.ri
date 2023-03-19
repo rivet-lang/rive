@@ -2,12 +2,14 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "../ast";
-import "../utils";
-import "../prefs";
-import "../report";
-import "../token";
-import "../tokenizer";
+import std/strings;
+
+import ../ast;
+import ../utils;
+import ../prefs;
+import ../report;
+import ../token;
+import ../tokenizer;
 
 extend Parser {
     func parse_doc_comment(mut self) ast.Decl {
@@ -134,8 +136,7 @@ extend Parser {
                         }
                     }
                 }
-                mod_path := self.tok.lit;
-                self.expect(.String);
+                mod_path := self.parse_import_path();
                 alias_name := if import_list.is_empty() and self.accept(.KwAs) {
                     self.parse_name()
                 } else {
@@ -158,5 +159,23 @@ extend Parser {
             }
         }
         return .EmptyDecl(pos);
+    }
+
+    func parse_import_path(mut self) string {
+        mut sb := strings.Builder();
+        if self.accept(.Dot) {
+            sb.write_string("./");
+            self.expect(.Div);
+        } else {
+            while self.accept(.DotDot) {
+                sb.write_string("../");
+                self.expect(.Div);
+            }
+        }
+        sb.write_string(self.parse_name());
+        while self.accept(.Div) {
+            sb.write_join(["/", self.parse_name()]);
+        }
+        return sb.to_string();
     }
 }

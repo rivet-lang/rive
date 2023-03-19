@@ -1,4 +1,4 @@
-import "c/libc";
+import c/libc;
 
 test "string index" {
     x := "String Literal";

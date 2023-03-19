@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import { Builder } from "std/strings";
+import { Builder } from std/strings;
 
 const INVALID_ESCAPES = r"({`.".as_bytes();
 const BACKSLASH: uint8 = 92;

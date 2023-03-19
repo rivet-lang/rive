@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "std/traits";
-import { Builder } from "std/strings";
+import std/traits;
+import { Builder } from std/strings;
 
-import "../token";
+import ../token;
 
 struct AnyptrData {
     public is_mut: bool;

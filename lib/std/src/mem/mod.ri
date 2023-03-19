@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "core";
+import core;
 
 public alias alloc = core.mem_alloc;
 public alias zeroed = core.mem_zeroed;

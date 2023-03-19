@@ -1,5 +1,5 @@
-import "std/fs/path";
-import "std/process";
+import std/fs/path;
+import std/process;
 
 var CWD = process.get_cwd() catch ".";
 

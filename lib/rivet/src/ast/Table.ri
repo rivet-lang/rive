@@ -2,13 +2,13 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "std/sys";
-import "std/fs/path";
+import std/sys;
+import std/fs/path;
 
-import "../token";
-import "../prefs";
-import "../report";
-import "../utils";
+import ../token;
+import ../prefs;
+import ../report;
+import ../utils;
 
 [boxed]
 public struct Table {

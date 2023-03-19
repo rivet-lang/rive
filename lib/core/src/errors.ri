@@ -2,8 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "c";
-import "c/libc";
+import c;
+import c/libc;
 
 public alias ErrnoError = c.ErrnoError;
 public alias last_errno_error = c.last_errno_error;

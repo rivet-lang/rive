@@ -2,15 +2,15 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "std/fs";
-import "std/env";
-import "std/sys";
-import "std/console";
-import "std/process";
-import "std/fs/path";
+import std/fs;
+import std/env;
+import std/sys;
+import std/console;
+import std/process;
+import std/fs/path;
 
-import "../token";
-import "../utils";
+import ../token;
+import ../utils;
 
 public var RIVET_DIR = path.join(env.HOME_DIR, ".rivet_lang").!;
 public var RIVETC_DIR = path.dirname(process.executable().!).?;

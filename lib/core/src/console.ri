@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "c/libc";
+import c/libc;
 
 /// Prints a message to stdout. Unlike `println` stdout is not automatically
 /// flushed.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "std/traits";
+import std/traits;
 
 /// Represents the different types of version increments.
 public enum Increment as uint8 {
