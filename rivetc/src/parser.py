@@ -849,29 +849,7 @@ class Parser:
                     self.expect(Kind.Rparen)
                     expr = ast.ParExpr(e, e.pos)
         elif self.tok.kind in (Kind.KwUnsafe, Kind.Lbrace):
-            # block expression
-            pos = self.tok.pos
-            is_unsafe = self.accept(Kind.KwUnsafe)
-            self.expect(Kind.Lbrace)
-            old_inside_block = self.inside_block
-            self.inside_block = True
-            stmts = []
-            has_expr = False
-            self.open_scope()
-            sc = self.scope
-            expr = None
-            while not self.accept(Kind.Rbrace):
-                stmt = self.parse_stmt()
-                has_expr = isinstance(
-                    stmt, ast.ExprStmt
-                ) and self.prev_tok.kind != Kind.Semicolon and self.tok.kind == Kind.Rbrace
-                if has_expr:
-                    expr = stmt.expr
-                else:
-                    stmts.append(stmt)
-            self.close_scope()
-            expr = ast.Block(sc, is_unsafe, stmts, expr, has_expr, pos)
-            self.inside_block = old_inside_block
+            expr = self.parse_block_expr()
         elif self.tok.kind == Kind.Lbracket:
             elems = []
             pos = self.tok.pos
@@ -1020,6 +998,31 @@ class Parser:
                 break
         return expr
 
+    def parse_block_expr(self):
+        # block expression
+        pos = self.tok.pos
+        is_unsafe = self.accept(Kind.KwUnsafe)
+        self.expect(Kind.Lbrace)
+        old_inside_block = self.inside_block
+        self.inside_block = True
+        stmts = []
+        has_expr = False
+        self.open_scope()
+        sc = self.scope
+        expr = None
+        while not self.accept(Kind.Rbrace):
+            stmt = self.parse_stmt()
+            has_expr = isinstance(
+                stmt, ast.ExprStmt
+            ) and self.prev_tok.kind != Kind.Semicolon and self.tok.kind == Kind.Rbrace
+            if has_expr:
+                expr = stmt.expr
+            else:
+                stmts.append(stmt)
+        self.close_scope()
+        self.inside_block = old_inside_block
+        return ast.Block(sc, is_unsafe, stmts, expr, has_expr, pos)
+
     def parse_if_expr(self):
         branches = []
         has_else = False
@@ -1028,7 +1031,7 @@ class Parser:
             if self.accept(Kind.KwElse) and self.tok.kind != Kind.KwIf:
                 branches.append(
                     ast.IfBranch(
-                        self.empty_expr(), self.parse_expr(), True, Kind.KwElse
+                        self.empty_expr(), self.parse_block_expr(), True, Kind.KwElse
                     )
                 )
                 has_else = True
@@ -1040,7 +1043,7 @@ class Parser:
             else:
                 cond = self.parse_expr()
             branches.append(
-                ast.IfBranch(cond, self.parse_expr(), False, Kind.KwIf)
+                ast.IfBranch(cond, self.parse_block_expr(), False, Kind.KwIf)
             )
             if isinstance(cond, ast.GuardExpr):
                 self.close_scope()
