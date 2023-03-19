@@ -2,4 +2,4 @@
 
 * [x] Improve language design.
 * [X] Make standard library basically available.
-* [ ] Make a self-hosted compiler.
+* [X] Finish the self-hosted compiler.
