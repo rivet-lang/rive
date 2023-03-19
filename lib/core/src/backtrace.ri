@@ -6,7 +6,7 @@
 
 ![compile_c_source("lib/core/thirdparty/libbacktrace/backtrace.c")]
 
-import "c";
+import c;
 
 struct backtrace_state;
 

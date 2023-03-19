@@ -1,4 +1,4 @@
-import { Project, Version, Dependency } from "rivet/build";
+import { Project, Version, Dependency } from rivet/build;
 
 var project = Project(
     name: "core",

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 The Rivet Developers. All rights reserved.
+# Copyright (C) 2023 The Rivet Developers. All rights reserved.
 # Use of this source code is governed by an MIT license that can
 # be found in the LICENSE file.
 
@@ -193,8 +193,7 @@ class Parser:
                         break
                 self.expect(Kind.Rbrace)
                 self.expect(Kind.KwFrom)
-            path = self.tok.lit
-            self.expect(Kind.String)
+            path = self.parse_import_path()
             alias = ""
             if len(import_list) == 0 and self.accept(Kind.KwAs):
                 alias = self.parse_name()
@@ -436,6 +435,20 @@ class Parser:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()
         return ast.EmptyDecl()
+
+    def parse_import_path(self):
+        res = ""
+        if self.accept(Kind.Dot):
+            res += "./"
+            self.expect(Kind.Div)
+        else:
+            while self.accept(Kind.DotDot):
+                res += "../"
+                self.expect(Kind.Div)
+        res += self.parse_name()
+        while self.accept(Kind.Div):
+            res += "/" + self.parse_name()
+        return res
 
     def parse_fn_decl(
         self, doc_comment, annotations, is_public, is_unsafe, abi

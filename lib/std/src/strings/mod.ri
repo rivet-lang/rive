@@ -2,6 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "core";
+import core;
 
 public alias Builder = core.StringBuilder;

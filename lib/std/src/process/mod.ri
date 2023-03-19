@@ -2,12 +2,12 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "c";
-import "c/libc";
-import "core";
+import c;
+import c/libc;
+import core;
 
-import "../fs/path";
-import { Builder } from "../strings";
+import ../fs/path;
+import { Builder } from ../strings;
 
 public alias id = core.process_id;
 public alias panic = core.process_panic;

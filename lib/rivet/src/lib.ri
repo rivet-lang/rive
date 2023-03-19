@@ -2,20 +2,20 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "std/traits";
-import "std/env";
-import "std/fs";
-import "std/fs/path";
-import "std/console";
-import "std/process";
+import std/traits;
+import std/env;
+import std/fs;
+import std/fs/path;
+import std/console;
+import std/process;
 
-import "./ast";
-import "./utils";
-import "./prefs";
-import "./report";
-import "./parser";
-import "./token";
-import "./depgraph";
+import ./ast;
+import ./utils;
+import ./prefs;
+import ./report;
+import ./parser;
+import ./token;
+import ./depgraph;
 
 [boxed]
 public struct Compiler {

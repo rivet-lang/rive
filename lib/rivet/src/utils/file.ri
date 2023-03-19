@@ -2,13 +2,13 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import "std/fs";
-import "std/env";
-import "std/fs/path";
-import "std/traits";
-import "std/console";
-import "std/process";
-import "std/console/styles";
+import std/fs;
+import std/env;
+import std/fs/path;
+import std/traits;
+import std/console;
+import std/process;
+import std/console/styles;
 
 var NORMALIZED_WORKDIR = process.WD_AT_STARTUP.replace("\\", "/").concat("/");
 var ERROR_PATHS_ABSOLUTE = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";

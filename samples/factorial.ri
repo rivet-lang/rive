@@ -1,4 +1,4 @@
-import "std/console";
+import std/console;
 
 [inline]
 func factorial(n: uint32) uint32 {
