@@ -45,6 +45,15 @@ public struct Compiler {
         }
     }
 
+    func parse_files(mut self, mod_sym: ast.Sym, files: []string) {
+        for sf in parser.Parser(table: self.table, prefs: self.prefs).parse_module(mod_sym, files) {
+            self.table.source_files.push(sf);
+        }
+        if report.total_errors() > 0 {
+            self.abort();
+        }
+    }
+
     func load_root_module(mut self) ! {
         files := if path.is_directory(self.prefs.input) {
             mut filtered_files := self.table.filter_files(
@@ -73,15 +82,6 @@ public struct Compiler {
             "Compiler.load_root_module(): {}", err
         );
         self.parse_files(root_sym, files);
-    }
-
-    func parse_files(mut self, mod_sym: ast.Sym, files: []string) {
-        for sf in parser.Parser(table: self.table, prefs: self.prefs).parse_module(mod_sym, files) {
-            self.table.source_files.push(sf);
-        }
-        if report.total_errors() > 0 {
-            self.abort();
-        }
     }
 
     func load_module_and_parse(
