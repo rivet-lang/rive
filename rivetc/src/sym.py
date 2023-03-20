@@ -511,11 +511,12 @@ class TraitInfo:
         self.has_objects = True
 
 class StructInfo:
-    def __init__(self, is_opaque, is_boxed = False):
-        self.is_boxed = is_boxed
-        self.is_opaque = is_opaque
+    def __init__(self, is_opaque, is_boxed = False, is_enum_variant = False):
         self.bases = []
         self.traits = []
+        self.is_boxed = is_boxed
+        self.is_opaque = is_opaque
+        self.is_enum_variant = is_enum_variant
 
 class Type(Sym):
     def __init__(self, is_public, name, kind, fields = [], info = None):

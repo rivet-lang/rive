@@ -193,12 +193,13 @@ class AliasDecl:
         self.pos = pos
 
 class EnumVariant:
-    def __init__(self, name, typ, has_typ, value):
+    def __init__(self, name, typ, has_typ, value, fields):
         self.name = name
         self.typ = typ
         self.has_typ = has_typ
         self.has_value = not isinstance(value, EmptyExpr)
         self.value = value
+        self.fields = fields
 
 class EnumDecl:
     def __init__(
@@ -666,8 +667,10 @@ class CallExpr:
         self.has_spread_expr = has_spread_expr
         self.spread_expr = spread_expr
         self.err_handler = err_handler
-        self.is_ctor = False # Class_Struct_or_Trait(value)
         self.is_closure = False
+        self.is_ctor = False # Struct_or_Trait(value)
+        self.is_enum_variant = False
+        self.enum_variant_sym = None
         self.pos = pos
         self.typ = None
 

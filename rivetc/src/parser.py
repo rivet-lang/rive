@@ -330,24 +330,11 @@ class Parser:
             )
         elif (self.inside_struct or
               self.inside_trait) and self.tok.kind in (Kind.KwMut, Kind.Name):
-            # fields
-            is_mut = self.accept(Kind.KwMut)
-            name = self.parse_name()
-            self.expect(Kind.Colon)
-            typ = self.parse_type()
-            has_def_expr = self.accept(Kind.Assign)
-            def_expr = None
-            if has_def_expr:
-                def_expr = self.parse_expr()
-            self.expect(Kind.Semicolon)
-            return ast.FieldDecl(
-                annotations, doc_comment, is_public, is_mut, name, typ,
-                def_expr, has_def_expr, pos
-            )
+            return self.parse_field_decl(annotations, doc_comment, is_public)
         elif self.accept(Kind.KwEnum):
             pos = self.tok.pos
             name = self.parse_name()
-            underlying_typ = self.comp.int32_t
+            underlying_typ = self.comp.comptime_int_t
             if self.accept(Kind.KwAs):
                 underlying_typ = self.parse_type()
             bases = []
@@ -362,16 +349,24 @@ class Parser:
             is_boxed_enum = False
             while True:
                 v_name = self.parse_name()
-                has_typ = self.accept(Kind.Colon)
+                has_typ = False
+                typ = self.comp.void_t
                 variant = self.empty_expr()
-                if has_typ:
+                fields = []
+                if self.accept(Kind.Lbrace):
+                    has_typ = True
+                    is_boxed_enum = True
+                    while not self.accept(Kind.Rbrace):
+                        fields.append(
+                            self.parse_field_decl(ast.Annotations(), doc_comment, True)
+                        )
+                elif self.accept(Kind.Colon):
+                    has_typ = True
                     is_boxed_enum = True
                     typ = self.parse_type()
-                else:
-                    typ = self.comp.void_t
-                    if self.accept(Kind.Assign):
-                        variant = self.parse_expr()
-                variants.append(ast.EnumVariant(v_name, typ, has_typ, variant))
+                elif self.accept(Kind.Assign):
+                    variant = self.parse_expr()
+                variants.append(ast.EnumVariant(v_name, typ, has_typ, variant, fields))
                 if not self.accept(Kind.Comma):
                     break
             if self.accept(Kind.Semicolon):
@@ -449,6 +444,23 @@ class Parser:
         while self.accept(Kind.Div):
             res += "/" + self.parse_name()
         return res
+
+    def parse_field_decl(self, annotations, doc_comment, is_public):
+        # fields
+        is_mut = self.accept(Kind.KwMut)
+        pos = self.tok.pos
+        name = self.parse_name()
+        self.expect(Kind.Colon)
+        typ = self.parse_type()
+        has_def_expr = self.accept(Kind.Assign)
+        def_expr = None
+        if has_def_expr:
+            def_expr = self.parse_expr()
+        self.expect(Kind.Semicolon)
+        return ast.FieldDecl(
+            annotations, doc_comment, is_public, is_mut, name, typ,
+            def_expr, has_def_expr, pos
+        )
 
     def parse_fn_decl(
         self, doc_comment, annotations, is_public, is_unsafe, abi

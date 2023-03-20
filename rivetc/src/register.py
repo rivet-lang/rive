@@ -135,6 +135,9 @@ class Register:
             elif isinstance(decl, ast.EnumDecl):
                 try:
                     info = sym.EnumInfo(decl.underlying_typ, decl.is_boxed_enum)
+                    decl.sym = self.sym.add_and_return(
+                        sym.Type(decl.is_public, decl.name, TypeKind.Enum)
+                    )
                     for i, variant in enumerate(decl.variants):
                         if info.has_variant(variant.name):
                             report.error(
@@ -142,15 +145,22 @@ class Register:
                                 decl.pos
                             )
                             continue
+                        if len(variant.fields) > 0:
+                            variant_sym = decl.sym.add_and_return(
+                                sym.Type(
+                                    False, variant.name, TypeKind.Struct,
+                                    info = sym.StructInfo(False, True, True)
+                                )
+                            )
+                            old_v_sym = self.sym
+                            self.sym = variant_sym
+                            self.walk_decls(variant.fields)
+                            self.sym = old_v_sym
+                            variant.typ = type.Type(variant_sym)
                         info.add_variant(
                             variant.name, variant.has_typ, variant.typ
                         )
-                    decl.sym = self.sym.add_and_return(
-                        sym.Type(
-                            decl.is_public, decl.name, TypeKind.Enum,
-                            info = info
-                        )
-                    )
+                    decl.sym.info = info
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)
                 except utils.CompilerError as e:
