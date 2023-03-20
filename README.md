@@ -58,7 +58,7 @@ Any help is welcome.
 ## Sample: The classic `Hello World!`
 
 ```swift
-import "std/console";
+import std/console;
 
 func main() {
     console.println("Hello World!");
