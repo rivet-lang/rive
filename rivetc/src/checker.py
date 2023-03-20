@@ -1466,7 +1466,12 @@ class Checker:
 
     def check_ctor(self, info, expr):
         expr.is_ctor = True
-        expr.typ = type.Type(info)
+        if info.kind == TypeKind.Struct and info.info.is_enum_variant:
+            expr.is_enum_variant = True
+            expr.enum_variant_sym = info
+            expr.typ = type.Type(info.parent)
+        else:
+            expr.typ = type.Type(info)
         if info.kind == TypeKind.Trait:
             if expr.has_spread_expr:
                 report.error(
