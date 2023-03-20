@@ -46,8 +46,7 @@ extend Parser {
                         } else {
                             ""
                         };
-                        expr := ast.Expr.Empty(pos); // TODO: parse expr
-                        args.push(ast.AnnotationArgument(name, expr));
+                        args.push(ast.AnnotationArgument(name, self.parse_expr()));
                         if !self.accept(.Comma) {
                             break;
                         }
