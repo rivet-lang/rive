@@ -7,9 +7,9 @@ import std/strings;
 import ../token;
 
 public enum Decl {
-    EmptyDecl: token.Pos,
+    Empty: token.Pos,
     DocComment: DocComment,
-    ImportDecl {
+    Import {
         annotations: Annotations;
         is_public: bool;
         path: string;

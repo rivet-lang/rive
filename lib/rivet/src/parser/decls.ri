@@ -142,7 +142,7 @@ extend Parser {
                     ""
                 };
                 self.expect(.Semicolon);
-                return ast.Decl.ImportDecl(
+                return ast.Decl.Import(
                     annotations: annotations,
                     is_public: is_public,
                     path: mod_path,
@@ -157,7 +157,7 @@ extend Parser {
                 self.next();
             }
         }
-        return .EmptyDecl(pos);
+        return .Empty(pos);
     }
 
     func parse_import_path(mut self) string {
