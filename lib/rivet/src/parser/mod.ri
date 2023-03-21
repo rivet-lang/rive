@@ -118,4 +118,117 @@ public struct Parser {
             self.scope = scope.parent;
         }
     }
+
+    func parse_type(mut self) ast.Type {
+        pos := self.tok.pos;
+        switch {
+            self.accept(.Question) => return ast.Type.Option(self.parse_type()),
+            self.tok.kind == .KwFunc => {
+                //
+            },
+            self.accept(.Amp) => {
+                // references
+                is_mut := self.accept(.KwMut);
+                return ast.Type.Reference(self.parse_type(), is_mut);
+            },
+            self.accept(.Mul) => {
+                // pointers
+                is_mut := self.accept(.KwMut);
+                if self.tok.kind == .Mul {
+                    mut err := report.error_builder("cannot declare pointer to pointer", pos + self.tok.pos);
+                    err.add_help("use an indexable pointer instead (`[*]T`)");
+                    err.emit();
+                }
+                return ast.Type.Reference(self.parse_type(), is_mut);
+            },
+            self.accept(.Lbracket) => {
+                // arrays or vectors
+                if self.tok.kind != .Rbracket {
+                    // indexable pointers
+                    if self.accept(.Mul) {
+                        self.expect(.Rbracket);
+                        is_mut := self.accept(.KwMut);
+                        return ast.Type.Pointer(self.parse_type(), is_mut, true);
+                    }
+                    // array
+                    size := self.parse_expr();
+                    self.expect(.Rbracket);
+                    is_mut := self.accept(.KwMut);
+                    return ast.Type.Array(self.parse_type(), is_mut, size);
+                }
+                self.expect(.Rbracket);
+                is_mut := self.accept(.KwMut);
+                return ast.Type.Vector(self.parse_type(), is_mut);
+            },
+            self.accept(.Lparen) => {
+                // tuples
+                mut inners := @vec(ast.Type);
+                while {
+                    inners.push(self.parse_type());
+                    if !self.accept(.Comma) {
+                        break;
+                    }
+                }
+                if inners.len > 8 {
+                    mut err := report.error_builder("tuples can have a maximum of 8 types", pos + self.tok.pos);
+                    err.add_help("you can use a struct instead");
+                    err.emit();
+                }
+                self.expect(.Rparen);
+                return ast.Type.Tuple(inners);
+            },
+            self.accept(.Ellipsis) => return ast.Type.Variadic(self.parse_type()),
+            self.accept(.KwSelfTy) => return ast.Type.Unresolved(
+                ast.Expr.SelfTy(self.scope.?, self.prev_tok.pos)
+            ),
+            self.accept(.KwNone) => return self.table.none_t,
+            self.tok.kind == .Name => {
+                prev_tok_kind := self.prev_tok.kind;
+                mut expr := self.parse_ident();
+                if self.accept(.Dot) {
+                    expr = self.parse_selector_expr(expr);
+                    while self.accept(.Dot) {
+                        expr = self.parse_selector_expr(expr);
+                    }
+                    return ast.Type.Unresolved(expr);
+                }
+                // normal type
+                expr_name := @cast(ast.Expr.Ident, expr).name;
+                switch expr_name {
+                    "never" => {
+                        if prev_tok_kind != .Rparen and self.tok.kind != .Lbrace {
+                            report.error("invalid use of `never` type", pos);
+                        }
+                        return self.table.never_t;
+                    },
+                    "anyptr", "mut_anyptr" => return ast.Type.Anyptr(
+                        expr_name.starts_with("mut_")
+                    ),
+                    "bool" => return self.table.bool_t,
+                    "rune" => return self.table.rune_t,
+                    "int8" => return self.table.int8_t,
+                    "int16" => return self.table.int16_t,
+                    "int32" => return self.table.int32_t,
+                    "int64" => return self.table.int64_t,
+                    "isize" => return self.table.isize_t,
+                    "uint8" => return self.table.uint8_t,
+                    "uint16" => return self.table.uint16_t,
+                    "uint32" => return self.table.uint32_t,
+                    "uint64" => return self.table.uint64_t,
+                    "usize" => return self.table.usize_t,
+                    "float32" => return self.table.float32_t,
+                    "float64" => return self.table.float64_t,
+                    "string" => return self.table.string_t,
+                    "comptime_int" => return self.table.comptime_int_t,
+                    "comptime_float" => return self.table.comptime_float_t,
+                    else => return ast.Type.Unresolved(expr)
+                }
+            },
+            else => {
+                report.error("expected type, found {}".fmt(self.tok), pos);
+                self.next();
+                return ast.Type.Unresolved(ast.Expr.Empty(pos));
+            }
+        }
+    }
 }

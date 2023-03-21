@@ -80,9 +80,73 @@ public enum Expr {
         index: Expr;
         pos: token.Pos;
     },
-    Unary {
+    Selector {
+        left: Expr;
+        field_name: string;
+        field_pos: token.Pos;
+        is_indirect: bool;
+        is_option_check: bool;
+        pos: token.Pos;
+    },
+    Branch {
         op: token.Kind;
+        pos: token.Pos;
+    },
+    Call {
+        left: Expr;
+        args: []CallArg;
+        spread_expr: Expr;
+        has_spread_expr: bool;
+        err_handler: CallErrHandler;
+        pos: token.Pos;
+
+        func has_named_args(self) bool {
+            for arg in self.args {
+                if arg.is_named {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        func get_named_arg(self, name: string) ?CallArg {
+            for arg in self.args {
+                if arg.is_named and arg.name == name {
+                    return arg;
+                }
+            }
+            return none;
+        }
+
+        /// Returns the number of pure arguments, that is, not named, that
+        /// this call has.
+        func pure_args_count(self) usize {
+            mut l: usize := 0;
+            for arg in self.args {
+                if !arg.is_named {
+                    l += 1;
+                }
+            }
+            if self.has_spread_expr {
+                l += 1;
+            }
+            return l;
+        }
+
+        [inline]
+        func has_err_handler(self) bool {
+            return self.err_handler.has_expr or self.err_handler.is_propagate;
+        }
+    }
+    BuiltinCall {
+        name: string;
+        args: []Expr;
+        vec_is_mut: bool;
+        pos: token.Pos;
+    },
+    Unary {
         right: Expr;
+        op: token.Kind;
         is_ref_mut: bool;
         pos: token.Pos;
     },
@@ -103,4 +167,24 @@ public enum Expr {
             else => token.NO_POS
         };
     }
+}
+
+[boxed]
+struct CallArg {
+    public name: string;
+    public expr: Expr;
+    public is_named: bool;
+    public pos: token.Pos;
+}
+
+[boxed]
+struct CallErrHandler {
+    public varname: string;
+    public varname_pos: token.Pos;
+    public has_varname: bool;
+    public is_propagate: bool;
+    public expr: Expr;
+    public has_expr: bool;
+    public scope: Scope;
+    public pos: token.Pos;
 }

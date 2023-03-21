@@ -776,7 +776,7 @@ class Parser:
 
     def parse_unary_expr(self):
         expr = self.empty_expr()
-        if (self.tok.kind in [Kind.Amp, Kind.Bang, Kind.BitNot, Kind.Minus]):
+        if self.tok.kind in [Kind.Amp, Kind.Bang, Kind.BitNot, Kind.Minus]:
             op = self.tok.kind
             pos = self.tok.pos
             self.next()
@@ -801,14 +801,9 @@ class Parser:
                 self.expect(Kind.Lparen)
                 args = []
                 vec_is_mut = False
-                if name == "vec":
+                if name in ("vec", "cast", "size_of", "align_of"):
                     pos = self.tok.pos
-                    vec_is_mut = self.accept(Kind.KwMut)
-                    args.append(ast.TypeNode(self.parse_type(), pos))
-                    if self.tok.kind != Kind.Rparen:
-                        self.expect(Kind.Comma)
-                elif name in ("cast", "size_of", "align_of"):
-                    pos = self.tok.pos
+                    vec_is_mut = name == "vec" and self.accept(Kind.KwMut)
                     args.append(ast.TypeNode(self.parse_type(), pos))
                     if self.tok.kind != Kind.Rparen:
                         self.expect(Kind.Comma)
@@ -860,25 +855,22 @@ class Parser:
         elif self.tok.kind == Kind.Lparen:
             pos = self.tok.pos
             self.next()
-            if self.accept(Kind.Rparen):
-                expr = self.empty_expr()
+            e = self.parse_expr()
+            if self.accept(Kind.Comma): # tuple
+                exprs = [e]
+                while True:
+                    exprs.append(self.parse_expr())
+                    if not self.accept(Kind.Comma):
+                        break
+                self.expect(Kind.Rparen)
+                if len(exprs) > 8:
+                    report.error(
+                        "tuples can have a maximum of 8 expressions", pos
+                    )
+                expr = ast.TupleLiteral(exprs, pos)
             else:
-                e = self.parse_expr()
-                if self.accept(Kind.Comma): # tuple
-                    exprs = [e]
-                    while True:
-                        exprs.append(self.parse_expr())
-                        if not self.accept(Kind.Comma):
-                            break
-                    self.expect(Kind.Rparen)
-                    if len(exprs) > 8:
-                        report.error(
-                            "tuples can have a maximum of 8 expressions", pos
-                        )
-                    expr = ast.TupleLiteral(exprs, pos)
-                else:
-                    self.expect(Kind.Rparen)
-                    expr = ast.ParExpr(e, e.pos)
+                self.expect(Kind.Rparen)
+                expr = ast.ParExpr(e, e.pos)
         elif self.tok.kind in (Kind.KwUnsafe, Kind.Lbrace):
             expr = self.parse_block_expr()
         elif self.tok.kind == Kind.Lbracket:
@@ -1212,12 +1204,11 @@ class Parser:
     def parse_integer_literal(self):
         pos = self.tok.pos
         lit = self.tok.lit
-        node = ast.FloatLiteral(lit, pos) if lit[:2] not in [
+        self.next()
+        return ast.FloatLiteral(lit, pos) if lit[:2] not in [
             '0x', '0o', '0b'
         ] and utils.index_any(lit,
                               ".eE") >= 0 else ast.IntegerLiteral(lit, pos)
-        self.next()
-        return node
 
     def parse_character_literal(self):
         is_byte = False
@@ -1251,8 +1242,7 @@ class Parser:
         sc = self.scope
         if sc == None:
             sc = sym.Scope(sc)
-        id = ast.Ident(name, pos, sc, is_comptime)
-        return id
+        return ast.Ident(name, pos, sc, is_comptime)
 
     def empty_expr(self):
         return ast.EmptyExpr(self.tok.pos)
@@ -1261,7 +1251,7 @@ class Parser:
     def parse_type(self):
         pos = self.tok.pos
         if self.accept(Kind.Question):
-            # optional
+            # option
             return type.Option(self.parse_type())
         elif self.tok.kind == Kind.KwFunc:
             # function types
@@ -1297,9 +1287,8 @@ class Parser:
             is_mut = self.accept(Kind.KwMut)
             if self.tok.kind == Kind.Mul:
                 report.error("cannot declare pointer to pointer", pos)
-                report.help(f"use an indexable pointer instead (`[*]T`)")
-            typ = self.parse_type()
-            return type.Ptr(typ, is_mut)
+                report.help("use an indexable pointer instead (`[*]T`)")
+            return type.Ptr(self.parse_type(), is_mut)
         elif self.accept(Kind.Lbracket):
             # arrays or vectors
             if self.tok.kind != Kind.Rbracket:
@@ -1315,8 +1304,7 @@ class Parser:
                 return type.Array(self.parse_type(), size, is_mut)
             self.expect(Kind.Rbracket)
             is_mut = self.accept(Kind.KwMut)
-            typ = self.parse_type()
-            return type.Vec(typ, is_mut)
+            return type.Vec(self.parse_type(), is_mut)
         elif self.accept(Kind.Lparen):
             # tuples
             types = []

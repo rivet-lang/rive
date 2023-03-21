@@ -12,6 +12,8 @@ import ../utils;
 
 [boxed]
 public struct Table {
+    /// `.universe` is the mega-module where all the modules being
+    /// compiled reside.
     public mut universe: Module;
     public mut prefs: prefs.Prefs;
 
@@ -20,6 +22,28 @@ public struct Table {
     public mut core_mod: Module;
     public mut vector_sym: TypeSym; // from `core` module
     public mut error_sym: TypeSym; // from `core` module
+
+    // Primitive types.
+    public mut never_t: Type;
+    public mut none_t: Type;
+    public mut bool_t: Type;
+    public mut rune_t: Type;
+    public mut int8_t: Type;
+    public mut int16_t: Type;
+    public mut int32_t: Type;
+    public mut int64_t: Type;
+    public mut isize_t: Type;
+    public mut uint8_t: Type;
+    public mut uint16_t: Type;
+    public mut uint32_t: Type;
+    public mut uint64_t: Type;
+    public mut usize_t: Type;
+    public mut comptime_int_t: Type;
+    public mut comptime_float_t: Type;
+    public mut float32_t: Type;
+    public mut float64_t: Type;
+    public mut string_t: Type;
+    public mut error_t: Type;
 
     public mut source_files: []SourceFile;
 
