@@ -148,7 +148,7 @@ class Register:
                         if len(variant.fields) > 0:
                             variant_sym = decl.sym.add_and_return(
                                 sym.Type(
-                                    False, variant.name, TypeKind.Struct,
+                                    decl.is_public, variant.name, TypeKind.Struct,
                                     info = sym.StructInfo(False, True, True)
                                 )
                             )
@@ -158,7 +158,7 @@ class Register:
                             self.sym = old_v_sym
                             variant.typ = type.Type(variant_sym)
                         info.add_variant(
-                            variant.name, variant.has_typ, variant.typ
+                            variant.name, variant.has_typ, variant.typ, len(variant.fields)
                         )
                     decl.sym.info = info
                     self.sym = decl.sym

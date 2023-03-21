@@ -9,7 +9,16 @@ import ../token;
 public enum Decl {
     EmptyDecl: token.Pos,
     DocComment: DocComment,
-    ImportDecl: ImportDecl
+    ImportDecl {
+        annotations: Annotations;
+        is_public: bool;
+        path: string;
+        mut alias_name: string;
+        glob: bool;
+        import_list: []ImportListInfo;
+        mut mod_sym: Module;
+        pos: token.Pos;
+    }
 }
 
 [boxed]
@@ -33,17 +42,6 @@ public struct DocComment {
         }
         return res.to_string();
     }
-}
-
-public struct ImportDecl {
-    public annotations: Annotations;
-    public is_public: bool;
-    public path: string;
-    public mut alias_name: string;
-    public glob: bool;
-    public import_list: []ImportListInfo;
-    public mut mod_sym: Module;
-    public pos: token.Pos;
 }
 
 public struct ImportListInfo {

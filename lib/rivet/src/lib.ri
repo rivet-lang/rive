@@ -100,7 +100,7 @@ public struct Compiler {
     func load_module(
         self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) !ast.ImportedMod {
-        self.vlog("Compiler.load_module(): searching module `{}`".fmt(pathx));
+        self.vlog("Compiler.load_module(): searching module `{}`", pathx);
         mut found := false;
         mut name := "";
         mut full_name := "";
@@ -147,7 +147,7 @@ public struct Compiler {
             name = pathx[(pathx.last_index_of_byte(b'/') ?? 0) + 1..];
             full_name = pathx.replace("/", ".");
             for l in self.prefs.library_path {
-                self.vlog("        searching module in `{}`".fmt(l));
+                self.vlog("        searching module in `{}`", l);
                 mod_path := path.resolve(path.join(l, pathx).!).!;
                 if path.is_directory(mod_path) {
                     found = true;
@@ -177,7 +177,7 @@ public struct Compiler {
         } else if files.len == 0 {
             report.error("module `{}` contains no rivet files".fmt(pathx), pos);
         } else {
-            self.vlog("    module {} loaded".fmt(pathx));
+            self.vlog("    module {} loaded", pathx);
         }
         return ast.ImportedMod(
             found: found, name: name,
@@ -229,7 +229,7 @@ public struct Compiler {
         }
         self.vlog("----------= imported modules =-----------");
         for node in g_resolved.nodes {
-            self.vlog(" > {}".fmt(node.name));
+            self.vlog(" > {}", node.name);
         }
         self.vlog("-----------------------------------------");
         source_files := self.table.source_files.clone();
@@ -269,7 +269,7 @@ public struct Compiler {
 
     func vlog(self, msg: string, args: ...traits.Stringable) {
         if self.prefs.is_verbose {
-            console.println(">> ".concat(msg), args);
+            console.println(utils.bold(utils.green("[rivet-log] ")).concat(msg), args);
         }
     }
 
@@ -281,8 +281,9 @@ public struct Compiler {
                 self.prefs.mod_name, report.total_errors()
             )
         };
-        if report.total_warns() > 0 {
-            msg = msg.fmt(", {} {} emitted", report.total_warns(), if report.total_warns() == 1 {
+        total_warns := report.total_warns();
+        if total_warns > 0 {
+            msg = msg.fmt(", {} {} emitted", total_warns, if total_warns == 1 {
                 "warning"
             } else {
                 "warnings"

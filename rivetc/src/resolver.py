@@ -48,6 +48,9 @@ class Resolver:
                     for i, variant in enumerate(decl.sym.info.variants):
                         if not self.resolve_type(variant.typ):
                             continue
+                        if variant.has_fields:
+                            for f in variant.typ.symbol().fields:
+                                self.resolve_type(f.typ)
                         d_v = decl.variants[i]
                         if d_v.has_value:
                             variant.value = self.eval_size(d_v.value).lit

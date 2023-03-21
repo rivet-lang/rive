@@ -457,11 +457,12 @@ class TupleInfo:
         self.types = types
 
 class EnumVariant:
-    def __init__(self, name, has_typ, typ):
+    def __init__(self, name, has_typ, typ, has_fields):
         self.name = name
         self.has_typ = has_typ
         self.typ = typ
         self.value = "0"
+        self.has_fields = has_fields
 
 class EnumInfo:
     def __init__(self, underlying_typ, is_boxed_enum):
@@ -469,8 +470,8 @@ class EnumInfo:
         self.is_boxed_enum = is_boxed_enum
         self.variants = []
 
-    def add_variant(self, name, has_typ, typ):
-        self.variants.append(EnumVariant(name, has_typ, typ))
+    def add_variant(self, name, has_typ, typ, has_fields):
+        self.variants.append(EnumVariant(name, has_typ, typ, has_fields))
 
     def get_variant(self, name):
         for v in self.variants:
