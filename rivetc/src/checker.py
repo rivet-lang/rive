@@ -102,6 +102,8 @@ class Checker:
                         f"base type `{base}` of enum `{decl.name}` is not a trait",
                         decl.pos
                     )
+            for v in decl.variants:
+                self.check_decls(v.decls)
             self.check_decls(decl.decls)
         elif isinstance(decl, ast.TraitDecl):
             for base in decl.bases:
@@ -1534,6 +1536,7 @@ class Checker:
                     self.check_types(arg_t, field_typ)
                 except utils.CompilerError as e:
                     report.error(e.args[0], arg.pos)
+
             if expr.has_spread_expr:
                 spread_expr_t = self.check_expr(expr.spread_expr)
                 if spread_expr_t != expr.typ:

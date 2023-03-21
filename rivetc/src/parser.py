@@ -29,6 +29,7 @@ class Parser:
         self.inside_mod = False
         self.inside_struct = False
         self.inside_trait = False
+        self.inside_enum_variant_with_fields = False
         self.inside_switch_header = False
         self.inside_block = False
 
@@ -139,7 +140,7 @@ class Parser:
         return annotations
 
     def is_public(self):
-        return self.accept(Kind.KwPublic)
+        return self.inside_trait or self.inside_enum_variant_with_fields or self.accept(Kind.KwPublic)
 
     def parse_abi(self):
         self.expect(Kind.Lparen)
@@ -162,7 +163,7 @@ class Parser:
         annotations = self.parse_annotations(
             self.tok.kind == Kind.Bang and self.peek_tok.kind == Kind.Lbracket
         )
-        is_public = self.inside_trait or self.is_public()
+        is_public = self.is_public()
         pos = self.tok.pos
         if self.accept(Kind.KwImport):
             import_list = []
@@ -329,7 +330,7 @@ class Parser:
                 is_opaque, pos
             )
         elif (self.inside_struct or
-              self.inside_trait) and self.tok.kind in (Kind.KwMut, Kind.Name):
+              self.inside_trait or self.inside_enum_variant_with_fields) and self.tok.kind in (Kind.KwMut, Kind.Name):
             return self.parse_field_decl(annotations, doc_comment, is_public)
         elif self.accept(Kind.KwEnum):
             pos = self.tok.pos
@@ -352,16 +353,17 @@ class Parser:
                 has_typ = False
                 typ = self.comp.void_t
                 variant = self.empty_expr()
-                fields = []
+                variant_decls = []
                 if self.accept(Kind.Lbrace):
                     has_typ = True
                     is_boxed_enum = True
+                    old_inside_enum_variant_with_fields = self.inside_enum_variant_with_fields
+                    self.inside_enum_variant_with_fields = True
                     while not self.accept(Kind.Rbrace):
-                        fields.append(
-                            self.parse_field_decl(
-                                ast.Annotations(), doc_comment, True
-                            )
+                        variant_decls.append(
+                            self.parse_decl()
                         )
+                    self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields
                 elif self.accept(Kind.Colon):
                     has_typ = True
                     is_boxed_enum = True
@@ -369,7 +371,7 @@ class Parser:
                 elif self.accept(Kind.Assign):
                     variant = self.parse_expr()
                 variants.append(
-                    ast.EnumVariant(v_name, typ, has_typ, variant, fields)
+                    ast.EnumVariant(v_name, typ, has_typ, variant, variant_decls)
                 )
                 if not self.accept(Kind.Comma):
                     break

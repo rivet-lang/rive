@@ -346,6 +346,8 @@ class Codegen:
                     )
             self.inside_let_decl = False
         elif isinstance(decl, ast.EnumDecl):
+            for v in decl.variants:
+                self.gen_decls(v.decls)
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.TraitDecl):
             self.inside_trait = True

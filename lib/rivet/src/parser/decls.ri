@@ -18,7 +18,7 @@ extend Parser {
         while self.accept(.DocComment) {
             lines.push(self.prev_tok.lit);
         }
-        return .DocComment(ast.DocComment(lines: lines));
+        return ast.Decl.DocComment(lines: lines);
     }
 
     public func parse_annotations(
@@ -73,11 +73,12 @@ extend Parser {
         abi_pos := self.tok.pos;
         abi := self.parse_name();
         self.expect(.Rparen);
-        if abi_value := ast.ABI.from_string(abi) {
-            return abi_value;
-        }
-        report.error("unknown ABI: `{}`".fmt(abi), abi_pos);
-        return .Rivet;
+        return if abi_value := ast.ABI.from_string(abi) {
+            abi_value
+        } else {
+            report.error("unknown ABI: `{}`".fmt(abi), abi_pos);
+            .Rivet
+        };
     }
 
     func parse_decls(mut self) []ast.Decl {
@@ -153,7 +154,7 @@ extend Parser {
                 );
             },
             self.tok.kind != .EndOfFile => {
-                // report.error("expected declaration, found {}".fmt(self.tok), pos);
+                report.error("expected declaration, found {}".fmt(self.tok), pos);
                 self.next();
             }
         }

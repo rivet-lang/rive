@@ -145,7 +145,8 @@ class Register:
                                 decl.pos
                             )
                             continue
-                        if len(variant.fields) > 0:
+                        fields = list(filter(lambda d: isinstance(d, ast.FieldDecl), variant.decls))
+                        if len(variant.decls) > 0:
                             variant_sym = decl.sym.add_and_return(
                                 sym.Type(
                                     decl.is_public, variant.name,
@@ -155,12 +156,12 @@ class Register:
                             )
                             old_v_sym = self.sym
                             self.sym = variant_sym
-                            self.walk_decls(variant.fields)
+                            self.walk_decls(variant.decls)
                             self.sym = old_v_sym
                             variant.typ = type.Type(variant_sym)
                         info.add_variant(
                             variant.name, variant.has_typ, variant.typ,
-                            len(variant.fields)
+                            len(fields)
                         )
                     decl.sym.info = info
                     self.sym = decl.sym

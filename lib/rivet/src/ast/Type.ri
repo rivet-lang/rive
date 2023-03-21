@@ -7,74 +7,64 @@ import { Builder } from std/strings;
 
 import ../token;
 
-struct AnyptrData {
-    public is_mut: bool;
-    public pos: token.Pos;
-}
-
-struct TupleData {
-    public inners: []Type;
-    public sym: TypeSym;
-
-    func ==(&self, other: &TupleData) bool {
-        for i, inner in self.inners {
-            if inner != other.inners[i] {
-                return false;
-            }
-        }
-        return true;
-    }
-}
-
-struct VectorData {
-    public inner: Type;
-    public is_mut: bool;
-    public sym: TypeSym;
-}
-
-struct ArrayData {
-    public inner: Type;
-    public is_mut: bool;
-    public size: Expr;
-    public sym: TypeSym;
-}
-
-struct ReferenceData {
-    public inner: Type;
-    public is_mut: bool;
-}
-
-struct PointerData {
-    public inner: Type;
-    public is_mut: bool;
-    public is_indexable: bool;
-}
-
-struct FuncData {
-    public is_unsafe: bool;
-    public is_extern: bool;
-    public abi: ABI;
-    public is_method: bool;
-    public self_is_mut: bool;
-    public self_is_ref: bool;
-    public args: []Arg;
-    public is_variadic: bool;
-    public ret_typ: Type;
-}
-
 public enum Type : traits.Stringable {
     Unresolved: Expr,
     Void,
     Option: Type,
     Result: Type,
-    Tuple: TupleData,
-    Variadic: VectorData,
-    Vector: VectorData, // TODO: Vector { inner: Type, is_mut: bool },
-    Array: ArrayData, // TODO: Array { inner: Type, is_mut: bool, size: Expr },
-    Reference: ReferenceData, // TODO: Reference { inner: Type, is_mut: bool },
-    Pointer: PointerData, // TODO: Pointer { inner: Type, is_mut: bool, is_indexable: bool },
-    Anyptr: AnyptrData,
-    Func: FuncData,
+    Tuple {
+        inners: []Type;
+        sym: TypeSym;
+
+        func ==(self, other: Self) bool {
+            for i, inner in self.inners {
+                if inner != other.inners[i] {
+                    return false;
+                }
+            }
+            return true;
+        }
+    },
+    Variadic {
+        inner: Type;
+        is_mut: bool;
+        sym: TypeSym;
+    },
+    Vector {
+        inner: Type;
+        is_mut: bool;
+        sym: TypeSym;
+    },
+    Array {
+        inner: Type;
+        is_mut: bool;
+        size: Expr;
+        sym: TypeSym;
+    },
+    Reference {
+        inner: Type;
+        is_mut: bool;
+    },
+    Pointer {
+        inner: Type;
+        is_mut: bool;
+        is_indexable: bool;
+    },
+    Anyptr {
+        is_mut: bool;
+        pos: token.Pos;
+    },
+    Func {
+        is_unsafe: bool;
+        is_extern: bool;
+        abi: ABI;
+        is_method: bool;
+        self_is_mut: bool;
+        self_is_ref: bool;
+        args: []Arg;
+        is_variadic: bool;
+        ret_typ: Type;
+    },
     Resolved: TypeSym;
 
     public func unalias(self) ?Self {
@@ -88,23 +78,19 @@ public enum Type : traits.Stringable {
                 for i, tuple_type in tuple_data.inners {
                     unaliased_types[i] = tuple_type.unalias() ?? tuple_type;
                 }
-                return .Tuple(TupleData(unaliased_types, tuple_data.sym));
+                return Self.Tuple(unaliased_types, tuple_data.sym);
             },
-            .Vector as vector_data => return .Vector(
-                VectorData(vector_data.inner.unalias() ?? vector_data.inner, vector_data.is_mut)
+            .Vector as vector_data => return Self.Vector(
+                vector_data.inner.unalias() ?? vector_data.inner, vector_data.is_mut
             ),
-            .Array as array_data => return .Array(
-                ArrayData(array_data.inner.unalias() ?? array_data.inner, ...array_data)
+            .Array as array_data => return Self.Array(
+                array_data.inner.unalias() ?? array_data.inner, ...self
             ),
-            .Reference as reference_data => return .Reference(
-                ReferenceData(
-                    reference_data.inner.unalias() ?? reference_data.inner, ...reference_data
-                )
+            .Reference as reference_data => return Self.Reference(
+                reference_data.inner.unalias() ?? reference_data.inner, ...self
             ),
-            .Pointer as pointer_data => return .Pointer(
-                PointerData(
-                    pointer_data.inner.unalias() ?? pointer_data.inner, ...pointer_data
-                )
+            .Pointer as pointer_data => return Self.Pointer(
+                pointer_data.inner.unalias() ?? pointer_data.inner, ...self
             ),
             .Anyptr => return self,
             .Func as func_data => {
@@ -112,11 +98,9 @@ public enum Type : traits.Stringable {
                 for i, arg in args {
                     args[i].typ = arg.typ.unalias() ?? arg.typ;
                 }
-                return .Func(
-                    FuncData(
-                        args: args, ret_typ: func_data.ret_typ.unalias() ?? func_data.ret_typ,
-                        ...func_data
-                    )
+                return Self.Func(
+                    args: args, ret_typ: func_data.ret_typ.unalias() ?? func_data.ret_typ,
+                    ...self
                 );
             },
             .Resolved as resolved_sym => return if resolved_sym.info is .Alias as alias_info {

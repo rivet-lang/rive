@@ -193,13 +193,13 @@ class AliasDecl:
         self.pos = pos
 
 class EnumVariant:
-    def __init__(self, name, typ, has_typ, value, fields):
+    def __init__(self, name, typ, has_typ, value, decls):
         self.name = name
         self.typ = typ
         self.has_typ = has_typ
         self.has_value = not isinstance(value, EmptyExpr)
         self.value = value
-        self.fields = fields
+        self.decls = decls
 
 class EnumDecl:
     def __init__(

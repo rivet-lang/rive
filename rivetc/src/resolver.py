@@ -48,9 +48,6 @@ class Resolver:
                     for i, variant in enumerate(decl.sym.info.variants):
                         if not self.resolve_type(variant.typ):
                             continue
-                        if variant.has_fields:
-                            for f in variant.typ.symbol().fields:
-                                self.resolve_type(f.typ)
                         d_v = decl.variants[i]
                         if d_v.has_value:
                             variant.value = self.eval_size(d_v.value).lit
@@ -71,6 +68,10 @@ class Resolver:
                             base_sym = base.symbol()
                             if base_sym.kind == sym.TypeKind.Trait:
                                 base_sym.info.implements.append(decl.sym)
+                    for v in decl.variants:
+                        if len(v.decls) > 0:
+                            self.self_sym = v.typ.symbol()
+                            self.resolve_decls(v.decls)
                     self.self_sym = decl.sym
                     self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.TraitDecl):
@@ -116,12 +117,15 @@ class Resolver:
                     self_typ = type.Type(self.self_sym)
                     if decl.self_is_ref:
                         self_typ = type.Ref(self_typ)
-                    decl.scope.add(
-                        sym.Obj(
-                            decl.self_is_mut, "self", self_typ,
-                            sym.ObjLevel.Rec, decl.name_pos
+                    try:
+                        decl.scope.add(
+                            sym.Obj(
+                                decl.self_is_mut, "self", self_typ,
+                                sym.ObjLevel.Rec, decl.name_pos
+                            )
                         )
-                    )
+                    except utils.CompilerError as e:
+                        report.error(e.args[0], decl.name_pos)
                     decl.self_typ = self_typ
                     decl.sym.self_typ = self_typ
                 for arg in decl.args:
