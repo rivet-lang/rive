@@ -699,19 +699,21 @@ class Codegen:
         expected_sym = expected_typ_.symbol()
         if expected_sym.kind == TypeKind.Trait and expr_typ != expected_typ_ and expr_sym != expected_sym and expr.typ != self.comp.none_t:
             res_expr = self.trait_value(res_expr, expr_typ, expected_typ_)
-        elif expr_sym.kind == TypeKind.Enum and expr_sym.info.is_boxed_enum and expr_sym.info.has_variant(expected_sym.name):
+        elif expr_sym.kind == TypeKind.Enum and expr_sym.info.is_boxed_enum and expr_sym.info.has_variant(
+            expected_sym.name
+        ):
             tmp = self.cur_fn.local_name()
             self.cur_fn.inline_alloca(
-                expected_typ, tmp, ir.Inst(
+                expected_typ, tmp,
+                ir.Inst(
                     ir.InstKind.Cast, [
                         ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R4core9enum_castF"),
-                                res_expr,
-                                expr_sym.info.get_variant_by_type(expected_typ_).value
+                                ir.Name("_R4core9enum_castF"), res_expr,
+                                expr_sym.info
+                                .get_variant_by_type(expected_typ_).value
                             ]
-                        ),
-                        expected_typ
+                        ), expected_typ
                     ]
                 )
             )
@@ -1061,12 +1063,14 @@ class Codegen:
                             initted_fields.append(field.name)
                             self.cur_fn.store(
                                 ir.Selector(
-                                    self.ir_type(field.typ), tmp, ir.Name(field.name)
+                                    self.ir_type(field.typ), tmp,
+                                    ir.Name(field.name)
                                 ), self.gen_expr_with_cast(field.typ, f.expr)
                             )
                         if expr.has_spread_expr:
                             spread_val = self.gen_expr_with_cast(
-                                type.Type(expr.enum_variant_sym), expr.spread_expr
+                                type.Type(expr.enum_variant_sym),
+                                expr.spread_expr
                             )
                         else:
                             spread_val = None
@@ -1078,9 +1082,13 @@ class Codegen:
                             f_typ = self.ir_type(f.typ)
                             sltor = ir.Selector(f_typ, tmp, ir.Name(f.name))
                             if f.has_def_expr:
-                                value = self.gen_expr_with_cast(f.typ, f.def_expr)
+                                value = self.gen_expr_with_cast(
+                                    f.typ, f.def_expr
+                                )
                             elif expr.has_spread_expr:
-                                value = ir.Selector(f_typ, spread_val, ir.Name(f.name))
+                                value = ir.Selector(
+                                    f_typ, spread_val, ir.Name(f.name)
+                                )
                             else:
                                 value = self.default_value(f.typ)
                             self.cur_fn.store(
@@ -1812,8 +1820,9 @@ class Codegen:
                 if expr.has_var:
                     expr_var_exit_label = self.cur_fn.local_name()
                     self.cur_fn.add_cond_single_br(
-                        ir.Inst(ir.InstKind.BooleanNot, [ir.Ident(ir.BOOL_T, tmp)]),
-                        expr_var_exit_label
+                        ir.Inst(
+                            ir.InstKind.BooleanNot, [ir.Ident(ir.BOOL_T, tmp)]
+                        ), expr_var_exit_label
                     )
                     var_t = self.ir_type(expr.var.typ)
                     var_t2 = var_t if isinstance(
@@ -1826,8 +1835,8 @@ class Codegen:
                         ]
                     )
                     if not (
-                        (isinstance(var_t2, ir.Pointer) and var_t2.is_managed) or
-                        expr.var.is_mut
+                        (isinstance(var_t2, ir.Pointer) and var_t2.is_managed)
+                        or expr.var.is_mut
                     ):
                         val = ir.Inst(ir.InstKind.LoadPtr, [val], var_t2)
                     unique_name = self.cur_fn.unique_name(expr.var.name)
@@ -2651,7 +2660,6 @@ class Codegen:
             value = ir.NoneLit(ir.VOID_PTR_T)
         self.cur_fn.store(ir.Selector(usize_t, tmp, ir.Name("obj")), value)
         return tmp
-
 
     def boxed_enum_variant_with_fields_value(
         self, enum_sym, variant_name, value, custom_tmp = None

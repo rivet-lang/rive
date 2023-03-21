@@ -358,7 +358,9 @@ class Parser:
                     is_boxed_enum = True
                     while not self.accept(Kind.Rbrace):
                         fields.append(
-                            self.parse_field_decl(ast.Annotations(), doc_comment, True)
+                            self.parse_field_decl(
+                                ast.Annotations(), doc_comment, True
+                            )
                         )
                 elif self.accept(Kind.Colon):
                     has_typ = True
@@ -366,7 +368,9 @@ class Parser:
                     typ = self.parse_type()
                 elif self.accept(Kind.Assign):
                     variant = self.parse_expr()
-                variants.append(ast.EnumVariant(v_name, typ, has_typ, variant, fields))
+                variants.append(
+                    ast.EnumVariant(v_name, typ, has_typ, variant, fields)
+                )
                 if not self.accept(Kind.Comma):
                     break
             if self.accept(Kind.Semicolon):
@@ -458,8 +462,8 @@ class Parser:
             def_expr = self.parse_expr()
         self.expect(Kind.Semicolon)
         return ast.FieldDecl(
-            annotations, doc_comment, is_public, is_mut, name, typ,
-            def_expr, has_def_expr, pos
+            annotations, doc_comment, is_public, is_mut, name, typ, def_expr,
+            has_def_expr, pos
         )
 
     def parse_fn_decl(
@@ -1056,7 +1060,8 @@ class Parser:
             if self.accept(Kind.KwElse) and self.tok.kind != Kind.KwIf:
                 branches.append(
                     ast.IfBranch(
-                        self.empty_expr(), self.parse_block_expr(), True, Kind.KwElse
+                        self.empty_expr(), self.parse_block_expr(), True,
+                        Kind.KwElse
                     )
                 )
                 has_else = True
