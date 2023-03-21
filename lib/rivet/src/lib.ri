@@ -190,7 +190,7 @@ public struct Compiler {
     func import_modules(mut self) ! {
         for sf in self.table.source_files {
             for d in sf.decls {
-                if d is .ImportDecl as mut import_decl {
+                if d is .Import as mut import_decl {
                     mod := self.load_module(
                         import_decl.path, import_decl.alias_name, sf.file, import_decl.pos
                     ).!;
@@ -251,7 +251,7 @@ public struct Compiler {
                 deps.push("core");
             }
             for d in pf.decls {
-                if d is .ImportDecl as import_decl {
+                if d is .Import as import_decl {
                     if import_decl.mod_sym.name == pf.mod_sym.name {
                         report.error("import cycle detected", import_decl.pos);
                         continue;
