@@ -78,18 +78,18 @@ public enum Type : traits.Stringable {
                 for i, tuple_type in tuple_data.inners {
                     unaliased_types[i] = tuple_type.unalias() ?? tuple_type;
                 }
-                return Self.Tuple(unaliased_types, tuple_data.sym);
+                return .Tuple(unaliased_types, tuple_data.sym);
             },
-            .Vector as vector_data => return Self.Vector(
+            .Vector as vector_data => return .Vector(
                 vector_data.inner.unalias() ?? vector_data.inner, vector_data.is_mut
             ),
-            .Array as array_data => return Self.Array(
+            .Array as array_data => return .Array(
                 array_data.inner.unalias() ?? array_data.inner, ...self
             ),
-            .Reference as reference_data => return Self.Reference(
+            .Reference as reference_data => return .Reference(
                 reference_data.inner.unalias() ?? reference_data.inner, ...self
             ),
-            .Pointer as pointer_data => return Self.Pointer(
+            .Pointer as pointer_data => return .Pointer(
                 pointer_data.inner.unalias() ?? pointer_data.inner, ...self
             ),
             .Anyptr => return self,
@@ -98,7 +98,7 @@ public enum Type : traits.Stringable {
                 for i, arg in args {
                     args[i].typ = arg.typ.unalias() ?? arg.typ;
                 }
-                return Self.Func(
+                return .Func(
                     args: args, ret_typ: func_data.ret_typ.unalias() ?? func_data.ret_typ,
                     ...self
                 );

@@ -990,6 +990,12 @@ class Parser:
                             )
                 self.expect(Kind.Rbracket)
                 expr = ast.IndexExpr(expr, index, expr.pos)
+            elif (
+                self.prev_tok.pos.line != self.tok.pos.line and
+                self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Name
+                and self.peek_tok.lit[0].isupper()
+            ):
+                break
             elif self.accept(Kind.Dot):
                 if self.accept(Kind.Mul):
                     expr = ast.SelectorExpr(
@@ -997,7 +1003,7 @@ class Parser:
                         is_indirect = True
                     )
                 elif self.accept(Kind.Question):
-                    # check optional value, if none panic
+                    # check option value, if none panic
                     expr = ast.SelectorExpr(
                         expr, "", expr.pos, self.prev_tok.pos,
                         is_option_check = True

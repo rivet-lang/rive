@@ -18,7 +18,7 @@ extend Parser {
         while self.accept(.DocComment) {
             lines.push(self.prev_tok.lit);
         }
-        return ast.Decl.DocComment(lines: lines);
+        return .DocComment(lines: lines);
     }
 
     public func parse_annotations(
@@ -144,7 +144,7 @@ extend Parser {
                     ""
                 };
                 self.expect(.Semicolon);
-                return ast.Decl.Import(
+                return .Import(
                     annotations: annotations,
                     is_public: is_public,
                     path: mod_path,
