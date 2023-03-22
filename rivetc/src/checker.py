@@ -318,34 +318,16 @@ class Checker:
             expr.typ = self.comp.void_t
             _sym = self.expected_type.symbol()
             if _sym.kind == TypeKind.Enum:
+                expr.sym = _sym
                 if v := _sym.info.get_variant(expr.value):
-                    expr.sym = v
+                    expr.variant_info = v
                     expr.typ = type.Type(_sym)
-                    if expr.is_instance and not _sym.info.is_boxed_enum:
-                        report.error(f"`.{v.name}` not expects value", expr.pos)
-                    elif _sym.info.is_boxed_enum and not expr.from_is_cmp and not expr.is_instance:
+                    if _sym.info.is_boxed_enum and not expr.from_is_cmp and not expr.is_instance:
                         report.error(
                             f"cannot use variant `{expr}` as a simple value",
                             expr.pos
                         )
                         report.note(f"make an instance instead: `{expr}()`")
-                    elif expr.has_value_arg:
-                        if v.has_typ:
-                            try:
-                                old_expected_type = self.expected_type
-                                self.expected_type = v.typ
-                                self.check_types(
-                                    self.check_expr(expr.value_arg), v.typ
-                                )
-                                self.expected_type = old_expected_type
-                            except utils.CompilerError as e:
-                                report.error(e.args[0], expr.value_arg.pos)
-                        else:
-                            report.error(
-                                f"`.{v.name}` not expects a value", expr.pos
-                            )
-                    elif v.has_typ and not expr.has_value_arg and not expr.from_is_cmp:
-                        report.error(f"`.{v.name}` expects a value", expr.pos)
                 else:
                     report.error(
                         f"enum `{_sym.name}` has no value `{expr.value}`",
@@ -717,11 +699,11 @@ class Checker:
                     )
                 if expr.has_var:
                     if lsym.kind == TypeKind.Enum and lsym.info.is_boxed_enum:
-                        if expr.right.sym.has_typ:
+                        if expr.right.variant_info.has_typ:
                             expr.scope.update_type(
-                                expr.var.name, expr.right.sym.typ
+                                expr.var.name, expr.right.variant_info.typ
                             )
-                            expr.var.typ = expr.right.sym.typ
+                            expr.var.typ = expr.right.variant_info.typ
                         else:
                             report.error(
                                 "variant `{expr.right}` has no value",
@@ -898,7 +880,7 @@ class Checker:
                 elif isinstance(expr_left.sym,
                                 sym.Type) and expr_left.sym.kind in (
                                     TypeKind.Trait, TypeKind.Struct,
-                                    TypeKind.String
+                                    TypeKind.String, TypeKind.Enum
                                 ):
                     expr.sym = expr_left.sym
                     self.check_ctor(expr_left.sym, expr)
@@ -916,34 +898,9 @@ class Checker:
                 if expr_left.is_symbol_access:
                     if isinstance(expr_left.field_sym,
                                   sym.Type) and expr_left.field_sym.kind in (
-                                      TypeKind.Trait, TypeKind.Struct
+                                      TypeKind.Trait, TypeKind.Struct, TypeKind.Enum
                                   ):
                         self.check_ctor(expr_left.field_sym, expr)
-                    elif isinstance(
-                        expr_left.left_sym, sym.Type
-                    ) and expr_left.left_sym.kind == TypeKind.Enum and expr_left.left_sym.info.is_boxed_enum:
-                        expr.is_ctor = True
-                        variant_info = expr_left.field_sym.info.get_variant(
-                            expr_left.field_name
-                        )
-                        if not variant_info.has_typ:
-                            report.error(
-                                f"`{expr_left}` not expects an value", expr.pos
-                            )
-                        elif len(expr.args) != 1:
-                            report.error(
-                                f"expected 1 argument, found {len(expr.args)}",
-                                expr.pos
-                            )
-                        else:
-                            try:
-                                self.check_compatible_types(
-                                    self.check_expr(expr.args[0].expr),
-                                    variant_info.typ
-                                )
-                            except utils.CompilerError as e:
-                                report.error(e.args[0], expr.pos)
-                        expr.typ = type.Type(expr_left.left_sym)
                     elif isinstance(expr_left.field_sym, sym.Fn):
                         expr.sym = expr_left.field_sym
                         self.check_call(expr.sym, expr)
@@ -1016,6 +973,10 @@ class Checker:
                             f"type `{left_sym.name}` has no method `{expr_left.field_name}`",
                             expr_left.field_pos
                         )
+            elif isinstance(expr_left, ast.EnumLiteral):
+                expr_left.is_instance = True
+                self.check_expr(expr_left)
+                self.check_ctor(expr_left.sym, expr)
             else:
                 report.error(
                     "invalid expression used in call expression", expr.pos
@@ -1415,7 +1376,7 @@ class Checker:
                         elif expr_sym.is_boxed():
                             var_t = self.comp.void_t
                             if expr_sym.kind == TypeKind.Enum:
-                                pat0 = b.pats[0].sym
+                                pat0 = b.pats[0].variant_info
                                 if pat0.has_typ:
                                     var_t = pat0.typ
                                 else:
@@ -1474,7 +1435,39 @@ class Checker:
             expr.typ = type.Type(info.parent)
         else:
             expr.typ = type.Type(info)
-        if info.kind == TypeKind.Trait:
+        if info.kind == TypeKind.Enum:
+            if isinstance(expr.left, ast.SelectorExpr):
+                if v_ := expr.left.left_sym.info.get_variant(expr.left.field_name):
+                    v = v_
+                else:
+                    assert False
+            elif v_ := info.info.get_variant(expr.left.value):
+                v = v_
+            else:
+                assert False
+            has_args = len(expr.args) > 0
+            if not info.info.is_boxed_enum:
+                report.error(f"`{expr.left}` not expects value", expr.left.pos)
+            elif has_args:
+                if v.has_fields:
+                    self.check_ctor(v.typ.symbol(), expr)
+                elif v.has_typ:
+                    try:
+                        old_expected_type = self.expected_type
+                        self.expected_type = v.typ
+                        self.check_types(
+                            self.check_expr(expr.args[0].expr), v.typ
+                        )
+                        self.expected_type = old_expected_type
+                    except utils.CompilerError as e:
+                        report.error(e.args[0], expr.value_arg.pos)
+                else:
+                    report.error(
+                        f"`{expr.left}` not expects a value", expr.pos
+                    )
+            elif v.has_typ and not (v.has_fields or expr.left.from_is_cmp):
+                report.error(f"`{expr.left}` expects a value", expr.pos)
+        elif info.kind == TypeKind.Trait:
             if expr.has_spread_expr:
                 report.error(
                     "cannot use spread expression with trait constructor",

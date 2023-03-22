@@ -713,9 +713,7 @@ class Parser:
                 pos = self.tok.pos
                 if self.accept(Kind.Dot):
                     name = self.parse_name()
-                    right = ast.EnumLiteral(
-                        name, self.empty_expr(), False, False, pos, True
-                    )
+                    right = ast.EnumLiteral(name, pos, True)
                 else:
                     right = ast.TypeNode(self.parse_type(), pos)
                 if self.accept(Kind.KwAs):
@@ -821,18 +819,7 @@ class Parser:
             pos = self.tok.pos
             self.next()
             name = self.parse_name()
-            has_value_arg = False
-            value_arg = self.empty_expr()
-            is_instance = False
-            if self.accept(Kind.Lparen):
-                if not self.accept(Kind.Rparen):
-                    has_value_arg = True
-                    value_arg = self.parse_expr()
-                    self.expect(Kind.Rparen)
-                is_instance = True
-            expr = ast.EnumLiteral(
-                name, value_arg, has_value_arg, is_instance, pos
-            )
+            expr = ast.EnumLiteral(name, pos)
         elif self.tok.kind in (Kind.KwContinue, Kind.KwBreak):
             op = self.tok.kind
             pos = self.tok.pos
@@ -1107,10 +1094,7 @@ class Parser:
                         t_pos = self.tok.pos
                         if self.accept(Kind.Dot):
                             pats.append(
-                                ast.EnumLiteral(
-                                    self.parse_name(), self.empty_expr(), False,
-                                    False, t_pos, True
-                                )
+                                ast.EnumLiteral(self.parse_name(), t_pos, True)
                             )
                         else:
                             pats.append(ast.TypeNode(self.parse_type(), t_pos))

@@ -517,22 +517,15 @@ class StringLiteral:
         return self.__repr__()
 
 class EnumLiteral:
-    def __init__(
-        self, value, value_arg, has_value_arg, is_instance, pos,
-        from_is_cmp = False
-    ):
+    def __init__(self, value, pos, from_is_cmp = False):
         self.value = value
-        self.value_arg = value_arg
-        self.has_value_arg = has_value_arg
-        self.is_instance = is_instance
         self.from_is_cmp = from_is_cmp
         self.sym = None
+        self.variant_info = None
         self.pos = pos
         self.typ = None
 
     def __repr__(self):
-        if self.has_value_arg:
-            return f".{self.value}({self.value_arg})"
         return f".{self.value}"
 
     def __str__(self):

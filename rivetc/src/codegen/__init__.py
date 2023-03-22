@@ -771,12 +771,8 @@ class Codegen:
             return ir.StringLit(escaped_val, str(size))
         elif isinstance(expr, ast.EnumLiteral):
             enum_sym = expr.typ.symbol()
-            if expr.is_instance:
-                return self.boxed_enum_value(
-                    enum_sym, expr.sym.name, expr.value_arg
-                )
             return ir.IntLit(
-                self.ir_type(enum_sym.info.underlying_typ), str(expr.sym.value)
+                self.ir_type(enum_sym.info.underlying_typ), str(expr.variant_info.value)
             )
         elif isinstance(expr, ast.SelfExpr):
             self_typ = self.ir_type(expr.typ)
@@ -1096,8 +1092,22 @@ class Codegen:
                             self.cur_fn.store(
                                 ir.Selector(f_typ, tmp, ir.Name(f.name)), value
                             )
+                        if isinstance(expr.left, ast.EnumLiteral):
+                            return self.boxed_enum_variant_with_fields_value(
+                                typ_sym, expr.left.value, tmp,
+                                custom_tmp = custom_tmp
+                            )
                         return self.boxed_enum_variant_with_fields_value(
                             typ_sym, expr.left.field_name, tmp,
+                            custom_tmp = custom_tmp
+                        )
+                    if isinstance(expr.left, ast.EnumLiteral):
+                        if len(expr.args) > 0:
+                            x = expr.args[0].expr
+                        else:
+                            x = None
+                        return self.boxed_enum_value(
+                            typ_sym, expr.left.value, x,
                             custom_tmp = custom_tmp
                         )
                     return self.boxed_enum_value(
@@ -1791,7 +1801,7 @@ class Codegen:
                                 ir.Name(kind),
                                 ir.Selector(ir.USIZE_T, left, ir.Name("_idx_")),
                                 ir.IntLit(
-                                    ir.USIZE_T, str(expr.right.sym.value)
+                                    ir.USIZE_T, str(expr.right.variant_info.value)
                                 )
                             ]
                         )
@@ -1800,7 +1810,7 @@ class Codegen:
                             ir.InstKind.Cmp, [
                                 ir.Name(kind), left,
                                 ir.IntLit(
-                                    ir.USIZE_T, str(expr.right.sym.value)
+                                    ir.USIZE_T, str(expr.right.variant_info.value)
                                 )
                             ]
                         )
@@ -2112,7 +2122,7 @@ class Codegen:
                             )
                         elif p.typ.sym.kind == TypeKind.Enum:
                             value_idx_x = ir.IntLit(
-                                ir.USIZE_T, str(p.sym.value)
+                                ir.USIZE_T, str(p.variant_info.value)
                             )
                         else:
                             value_idx_x = ir.IntLit(

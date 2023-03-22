@@ -232,8 +232,7 @@ class Resolver:
             else:
                 report.error("cannot resolve `Self` expression", expr.pos)
         elif isinstance(expr, ast.EnumLiteral):
-            if expr.has_value_arg:
-                self.resolve_expr(expr.value_arg)
+            pass
         elif isinstance(expr, ast.TupleLiteral):
             for e in expr.exprs:
                 self.resolve_expr(e)
