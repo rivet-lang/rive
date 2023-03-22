@@ -105,7 +105,8 @@ public enum Type : traits.Stringable {
             },
             .Resolved as resolved_sym => return if resolved_sym.info is .Alias as alias_info {
                 .Resolved(
-                    (alias_info.parent.unalias() ?? alias_info.parent).symbol() ?? resolved_sym
+                    (alias_info.parent.unalias() ?? alias_info.parent)
+                        .symbol() ?? resolved_sym
                 )
             } else {
                 .Resolved(resolved_sym)
@@ -309,10 +310,9 @@ public enum Type : traits.Stringable {
                     sb.write_string("...");
                 }
                 sb.write_string(")");
-                ret_typ := func_data.ret_typ.to_string();
-                if ret_typ != "void" {
+                if func_data.ret_typ !is .Void {
                     sb.write_string(" ");
-                    sb.write_string(ret_typ);
+                    sb.write_string(func_data.ret_typ.to_string());
                 }
                 sb.to_string()
             },
