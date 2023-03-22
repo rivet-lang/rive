@@ -1460,7 +1460,7 @@ class Checker:
                         )
                         self.expected_type = old_expected_type
                     except utils.CompilerError as e:
-                        report.error(e.args[0], expr.value_arg.pos)
+                        report.error(e.args[0], expr.args[0].expr.pos)
                 else:
                     report.error(
                         f"`{expr.left}` not expects a value", expr.pos

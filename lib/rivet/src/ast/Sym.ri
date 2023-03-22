@@ -3,6 +3,7 @@
 // be found in the LICENSE file.
 
 import std/traits;
+import std/process;
 
 import ../token;
 
@@ -486,6 +487,19 @@ public struct Scope {
             }
         }
         return none;
+    }
+
+    public func find_or_panic(self, name: string) Sym {
+        x := self.find(name);
+        if x is none {
+            process.panic("cannot found symbol `{}`", name);
+        }
+        return x.?;
+    }
+
+    [inline]
+    public func find_type_symbol_or_panic(self, name: string) TypeSym {
+        return @cast(TypeSym, self.find_or_panic(name));
     }
 
     public func lookup(self, name: string) ?Sym {
