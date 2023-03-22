@@ -136,25 +136,28 @@ class CGen:
             if isinstance(decl, ir.FnDecl):
                 self.gen_fn_decl(decl)
             else:
-                self.globals.writeln(
-                    f"static {decl.structure} {decl.name}[{decl.implement_nr}] = {{"
-                )
-                for i, ft in enumerate(decl.funcs):
-                    self.globals.writeln('  {')
-                    items = ft.items()
-                    for i2, (f, impl) in enumerate(items):
-                        self.globals.write(f'    .{f} = (void*){impl}')
-                        if i2 < len(items) - 1:
-                            self.globals.writeln(", ")
-                        else:
-                            self.globals.writeln()
-                    self.globals.write("  }")
-                    if i < len(decl.funcs) - 1:
-                        self.globals.writeln(",")
+                self.gen_vtable(decl)
+            self.writeln()
+
+    def gen_vtable(self, decl):
+            self.globals.writeln(
+                f"static {decl.structure} {decl.name}[{decl.implement_nr}] = {{"
+            )
+            for i, ft in enumerate(decl.funcs):
+                self.globals.writeln('  {')
+                items = ft.items()
+                for i2, (f, impl) in enumerate(items):
+                    self.globals.write(f'    .{f} = (void*){impl}')
+                    if i2 < len(items) - 1:
+                        self.globals.writeln(", ")
                     else:
                         self.globals.writeln()
-                self.globals.writeln("};")
-            self.writeln()
+                self.globals.write("  }")
+                if i < len(decl.funcs) - 1:
+                    self.globals.writeln(",")
+                else:
+                    self.globals.writeln()
+            self.globals.writeln("};")
 
     def gen_fn_decl(self, decl):
         if decl.is_never:
