@@ -231,4 +231,34 @@ public struct Parser {
             }
         }
     }
+
+    func parse_var_decl(
+        mut self, inside_global: bool = false, support_typ: bool = true,
+        support_ref: bool = false, support_mut: bool = true
+    ) ast.ObjectData {
+        pos := self.tok.pos;
+        is_mut := support_mut and self.accept(.KwMut);
+        is_ref := support_ref and !is_mut and self.accept(.Amp);
+        name := self.parse_name();
+        (typ, has_typ) := if support_typ and self.accept(.Colon) {
+            (self.parse_type(), true)
+        } else {
+            (ast.Type.Void, false)
+        };
+        return ast.ObjectData(name, is_mut, is_ref, typ, .Local, pos);
+    }
+
+    func decl_operator_is_used(self) bool {
+        line_nr := self.tok.pos.line;
+        mut i: usize := 1;
+        while i < self.tokenizer.all_tokens.len : i += 1 {
+            tok := self.peek_token(i);
+            switch tok.kind {
+                .DeclAssign => return true,
+                .Semicolon => break,
+                else => if tok.pos.line != line_nr { break }
+            }
+        }
+        return false;
+    }
 }

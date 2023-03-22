@@ -6,6 +6,10 @@ import rivet/token;
 
 public enum Expr {
     Empty: token.Pos,
+    Paren {
+        expr: Expr;
+        pos: token.Pos;
+    },
     Type: Type,
     Assign {
         left: Expr;
@@ -71,10 +75,6 @@ public enum Expr {
         is_arr: bool;
         pos: token.Pos;
     },
-    Paren {
-        expr: Expr;
-        pos: token.Pos;
-    },
     Index {
         left: Expr;
         index: Expr;
@@ -90,6 +90,14 @@ public enum Expr {
     },
     Branch {
         op: token.Kind;
+        pos: token.Pos;
+    },
+    Range {
+        start: Expr;
+        end: Expr;
+        has_start: bool;
+        has_end: bool;
+        is_inclusive: bool;
         pos: token.Pos;
     },
     Call {
@@ -163,6 +171,37 @@ public enum Expr {
         expr: Expr;
         has_expr: bool;
         pos: token.Pos;
+    },
+    Block {
+        is_unsafe: bool;
+        stmts: []Stmt;
+        expr: Expr;
+        is_expr: bool;
+        scope: Scope;
+        pos: token.Pos;
+    },
+    If {
+        branches: []IfBranch;
+        has_else: bool;
+        pos: token.Pos;
+    },
+    Switch {
+        expr: Expr;
+        branches: []SwitchBranch;
+        is_typeswitch: bool;
+        scope: Scope;
+        pos: token.Pos;
+    },
+    // Examples:
+    // - if x := optional_or_result_fn() { ... }
+    // - while byte := reader.read() { ... }
+    Guard {
+        vars: []ObjectData;
+        expr: Expr;
+        has_cond: bool;
+        cond: Expr;
+        scope: Scope;
+        pos: token.Pos;
     };
 
     [inline]
@@ -191,5 +230,28 @@ public struct CallErrorHandler {
     public expr: Expr;
     public has_expr: bool;
     public scope: Scope;
+    public pos: token.Pos;
+}
+
+[boxed]
+public struct IfBranch {
+    public cond: Expr;
+    public expr: Expr;
+    public is_else: bool;
+    public is_else_if: bool;
+    public pos: token.Pos;
+}
+
+[boxed]
+public struct SwitchBranch {
+    public patterns: []Expr;
+    public has_var: bool;
+    public var_is_mut: bool;
+    public var_name: string;
+    public var_pos: token.Pos;
+    public has_cond: bool;
+    public cond: Expr;
+    public expr: Expr;
+    public is_else: bool;
     public pos: token.Pos;
 }

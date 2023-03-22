@@ -1468,6 +1468,11 @@ class Codegen:
                 elif isinstance(
                     expr.left_sym, sym.Type
                 ) and expr.left_sym.kind == TypeKind.Enum:
+                    if expr.left_sym.info.is_boxed_enum:
+                        return self.boxed_enum_value(
+                            expr.left_sym, expr.field_name, None,
+                            custom_tmp = custom_tmp
+                        )
                     if v := expr.left_sym.info.get_variant(expr.field_name):
                         return ir.IntLit(
                             self.ir_type(expr.left_sym.info.underlying_typ),

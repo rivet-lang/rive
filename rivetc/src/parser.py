@@ -1148,9 +1148,9 @@ class Parser:
             )
             if not self.accept(Kind.Comma):
                 break
-        self.expect(Kind.Rbrace)
         if isinstance(expr, ast.GuardExpr):
             self.close_scope()
+        self.expect(Kind.Rbrace)
         return ast.SwitchExpr(expr, branches, is_typeswitch, self.scope, pos)
 
     def parse_guard_expr(self):

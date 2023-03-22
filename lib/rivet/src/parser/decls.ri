@@ -59,13 +59,14 @@ extend Parser {
                     break;
                 }
             }
+            self.expect(.Rbracket);
         }
         return annotations;
     }
 
     [inline]
     func is_public(mut self) bool {
-        return self.accept(.KwPublic);
+        return self.inside_trait or self.accept(.KwPublic);
     }
 
     func parse_abi(mut self) ast.ABI {
@@ -94,7 +95,7 @@ extend Parser {
         annotations := self.parse_annotations(
             self.tok.kind == .Bang and self.peek_tok.kind == .Lbracket
         );
-        is_public := self.inside_trait or self.is_public();
+        is_public := self.is_public();
         pos := self.tok.pos;
         switch {
             self.accept(.KwImport) => {

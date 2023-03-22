@@ -223,6 +223,7 @@ extend Parser {
             },
             self.tok.kind == .Dot and self.peek_tok.kind == .Name => {
                 // TODO
+                ast.Expr.Empty(self.tok.pos)
             },
             self.tok.kind in [.KwContinue, .KwBreak] => {
                 op := self.tok.kind;
@@ -278,6 +279,7 @@ extend Parser {
                         }
                     }
                 }
+                pos += self.tok.pos;
                 self.expect(.Rbracket);
                 ast.Expr.VectorLiteral(elems, self.accept(.Bang), pos)
             },
@@ -393,6 +395,188 @@ extend Parser {
             }
         }
         return expr;
+    }
+
+    func parse_if_expr(mut self) ast.Expr {
+        mut branches := @vec(ast.IfBranch);
+        mut has_else := false;
+        mut pos := self.tok.pos;
+        while self.tok.kind in [.KwIf, .KwElse] {
+            branch_pos := self.tok.pos;
+            if self.accept(.KwElse) and self.tok.kind != .KwIf {
+                branches.push(
+                    ast.IfBranch(
+                        ast.Expr.Empty(self.tok.pos), self.parse_block_expr(),
+                        true, pos: branch_pos + self.prev_tok.pos
+                    )
+                );
+                has_else = true;
+                break;
+            }
+            is_else_if := self.prev_tok.kind == .KwElse;
+            self.next();
+            cond := if self.decl_operator_is_used() {
+                self.open_scope();
+                self.parse_guard_expr()
+            } else {
+                self.parse_expr()
+            };
+            branches.push(
+                ast.IfBranch(
+                    cond, self.parse_block_expr(), is_else_if: is_else_if,
+                    pos: branch_pos + self.prev_tok.pos
+                )
+            );
+            if cond is .Guard {
+                self.close_scope();
+            }
+            if self.tok.kind != .KwElse {
+                break;
+            }
+        }
+        pos += self.prev_tok.pos;
+        return ast.Expr.If(branches, has_else, pos);
+    }
+
+    func parse_switch_expr(mut self) ast.Expr {
+        mut branches := @vec(ast.SwitchBranch);
+        pos := self.prev_tok.pos;
+        old_inside_switch_header := self.inside_switch_header;
+        self.inside_switch_header = true;
+        expr := if self.tok.kind == .Lbrace {
+            ast.Expr.BoolLiteral(true, pos)
+        } else {
+            if self.decl_operator_is_used() {
+                self.open_scope();
+                self.parse_guard_expr()
+            } else {
+                self.parse_expr()
+            }
+        };
+        is_typeswitch := self.prev_tok.kind != .KwSwitch and self.accept(.KwIs);
+        self.expect(.Lbrace);
+        self.inside_switch_header = old_inside_switch_header;
+        while {
+            branch_pos := self.tok.pos;
+            mut patterns := @vec(ast.Expr);
+            mut has_var := false;
+            mut var_is_mut := false;
+            mut var_name := "";
+            mut var_pos := token.NO_POS;
+            mut has_cond := false;
+            mut cond := ast.Expr.Empty(self.tok.pos);
+            is_else := self.accept(.KwElse);
+            if !is_else {
+                while {
+                    if is_typeswitch {
+                        if self.accept(.Dot) {
+                            // TODO
+                        } else {
+                            patterns.push(ast.Expr.Type(self.parse_type()));
+                        }
+                    } else {
+                        mut branch_expr := self.parse_expr();
+                        if self.accept(.DotDot) or self.accept(.Ellipsis) {
+                            if self.prev_tok.kind == .DotDot {
+                                mut err := report.error_builder("switch only supports inclusive ranges, not exclusive", self.prev_tok.pos);
+                                err.add_help("use `...` instead of `..`");
+                                err.emit();
+                            }
+                            branch_expr = ast.Expr.Range(
+                                branch_expr, self.parse_expr(), true, true, true,
+                                branch_expr.position() + self.prev_tok.pos
+                            );
+                        }
+                        patterns.push(branch_expr);
+                    }
+                    if !self.accept(.Comma) {
+                        break;
+                    }
+                }
+                if self.accept(.KwAs) {
+                    has_var = true;
+                    var_pos = self.tok.pos;
+                    var_is_mut = self.accept(.KwMut);
+                    if var_is_mut {
+                        var_pos += self.tok.pos;
+                    }
+                    var_name = self.parse_name();
+                }
+                if self.accept(.KwIf) {
+                    has_cond = true;
+                    cond = self.parse_expr();
+                }
+            }
+            self.expect(.Arrow);
+            branches.push(ast.SwitchBranch(
+                patterns: patterns,
+                has_var: has_var,
+                var_is_mut: var_is_mut,
+                var_name: var_name,
+                var_pos: var_pos,
+                has_cond: has_cond,
+                cond: cond,
+                expr: self.parse_expr(),
+                is_else: is_else,
+                pos: branch_pos + self.prev_tok.pos
+            ));
+            if !self.accept(.Comma) {
+                break;
+            }
+        }
+        if expr is .Guard {
+            self.close_scope();
+        }
+        self.expect(.Rbrace);
+        return ast.Expr.Switch(expr, branches, is_typeswitch, self.scope.?, pos);
+    }
+
+    func parse_block_expr(mut self) ast.Expr {
+        // block expression
+        pos := self.tok.pos;
+        is_unsafe := self.accept(.KwUnsafe);
+        self.expect(.Lbrace);
+        old_inside_block := self.inside_block;
+        self.inside_block = true;
+        mut stmts := @vec(ast.Stmt);
+        mut has_expr := false;
+        self.open_scope();
+        sc := self.scope.?;
+        mut expr := ast.Expr.Empty(self.tok.pos);
+        while !self.accept(.Rbrace) {
+            stmt := self.parse_stmt();
+            if stmt is .Expr as stmt_expr and
+                self.prev_tok.kind != .Semicolon and self.tok.kind != .Rbrace {
+                expr = stmt_expr;
+                has_expr = true;
+            } else {
+                stmts.push(stmt);
+            }
+        }
+        self.close_scope();
+        self.inside_block = old_inside_block;
+        return ast.Expr.Block(is_unsafe, stmts, expr, has_expr, sc, pos);
+    }
+
+    func parse_guard_expr(mut self) ast.Expr {
+        pos := self.prev_tok.pos;
+        mut vars := @vec(ast.ObjectData);
+        while {
+            vars.push(self.parse_var_decl(support_typ: false));
+            if !self.accept(.Comma) {
+                break;
+            }
+        }
+        self.expect(.DeclAssign);
+        expr := self.parse_expr();
+        mut has_cond := false;
+        cond := if self.accept(.Semicolon) {
+            has_cond = true;
+            self.parse_expr()
+        } else {
+            ast.Expr.Empty(self.tok.pos)
+        };
+        return ast.Expr.Guard(vars, expr, has_cond, cond, self.scope.?, pos);
     }
 
     [inline]
