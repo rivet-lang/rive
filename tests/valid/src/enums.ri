@@ -85,7 +85,7 @@ test "enums: boxed enum with fields" {
         @assert(windows.version == 2023_10_04);
     }
 
-    user_os = OS.Linux(kernel_version: 5_16_0, distro_name: "CentOS");
+    user_os = .Linux(kernel_version: 5_16_0, distro_name: "CentOS");
     if user_os is .Linux as linux {
         @assert(linux.kernel_version == 5_16_0);
         @assert(linux.distro_name == "CentOS");
