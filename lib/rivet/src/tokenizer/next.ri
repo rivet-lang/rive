@@ -230,6 +230,9 @@ extend Tokenizer {
                     start_line := self.line;
                     start_col := utils.max(1, self.current_column()) - 1;
                     lit := self.read_string();
+                    if start_line != self.line {
+                        return self.new_token(.String, lit, lit.len + 2);
+                    }
                     return self.new_multiline_token(
                         .String, lit, lit.len + 2, start_line, self.line, start_col
                     );

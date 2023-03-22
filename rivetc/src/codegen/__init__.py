@@ -269,9 +269,11 @@ class Codegen:
 
         if report.ERRORS == 0:
             if self.comp.prefs.emit_rir:
+                self.comp.vlog("generating RIR output (with --emit-rir)...")
                 with open(f"{self.comp.prefs.mod_name}.rir", "w") as f:
                     f.write(str(self.out_rir).strip())
             if self.comp.prefs.target_backend == prefs.Backend.C:
+                self.comp.vlog("generating C output from RIR...")
                 CGen(self.comp).gen(self.out_rir)
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
                 self.comp.exit_code = os.system(self.comp.prefs.mod_output)

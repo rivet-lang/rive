@@ -135,16 +135,20 @@ class Compiler:
         self.load_root_mod()
         self.import_modules()
         if not self.prefs.check_syntax:
+            self.vlog("registering symbols...")
             self.register.walk_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
+            self.vlog("resolving symbols...")
             self.resolver.resolve_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
+            self.vlog("checking files...")
             self.checker.check_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
             if not self.prefs.check:
+                self.vlog("generating RIR...")
                 self.codegen.gen_source_files(self.source_files)
                 if report.ERRORS > 0:
                     self.abort()
@@ -166,6 +170,7 @@ class Compiler:
         root_sym = sym.Mod(False, self.prefs.mod_name)
         root_sym.is_root = True
         self.universe.add(root_sym)
+        self.vlog("parsing root module files...")
         self.parsed_files += parser.Parser(self).parse_mod(root_sym, files)
 
     def load_mod_and_parse(self, pathx, alias, file_path, pos):
@@ -173,6 +178,7 @@ class Compiler:
         if mod.found:
             mod_sym = sym.Mod(False, mod.full_name)
             self.universe.add(mod_sym)
+            self.vlog(f"parsing `{pathx}` module files...")
             return parser.Parser(self).parse_mod(mod_sym, mod.files)
         return []
 

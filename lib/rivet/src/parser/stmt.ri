@@ -14,5 +14,7 @@ import ../tokenizer;
 extend Parser {
     func parse_stmt(mut self) ast.Stmt {
         @ignore_not_mutated_warn(self);
+        self.next();
+        return .Empty(self.tok.pos);
     }
 }
