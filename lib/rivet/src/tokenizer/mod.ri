@@ -24,7 +24,7 @@ public struct Tokenizer {
     mut pos: usize;
     mut line: usize;
     mut last_nl_pos: usize;
-    mut all_tokens: []token.Token;
+    public mut all_tokens: []token.Token;
     mut tidx: usize;
     mut is_started: bool;
     mut is_cr_lf: bool;

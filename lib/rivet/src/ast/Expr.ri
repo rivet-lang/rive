@@ -97,7 +97,7 @@ public enum Expr {
         args: []CallArg;
         spread_expr: Expr;
         has_spread_expr: bool;
-        err_handler: CallErrHandler;
+        err_handler: CallErrorHandler;
         pos: token.Pos;
 
         func has_named_args(self) bool {
@@ -137,7 +137,7 @@ public enum Expr {
         func has_err_handler(self) bool {
             return self.err_handler.has_expr or self.err_handler.is_propagate;
         }
-    }
+    },
     BuiltinCall {
         name: string;
         args: []Expr;
@@ -158,6 +158,11 @@ public enum Expr {
         var_name: string;
         scope: Scope;
         pos: token.Pos;
+    },
+    Return {
+        expr: Expr;
+        has_expr: bool;
+        pos: token.Pos;
     };
 
     [inline]
@@ -170,7 +175,7 @@ public enum Expr {
 }
 
 [boxed]
-struct CallArg {
+public struct CallArg {
     public name: string;
     public expr: Expr;
     public is_named: bool;
@@ -178,7 +183,7 @@ struct CallArg {
 }
 
 [boxed]
-struct CallErrHandler {
+public struct CallErrorHandler {
     public varname: string;
     public varname_pos: token.Pos;
     public has_varname: bool;
