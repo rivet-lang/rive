@@ -898,7 +898,8 @@ class Checker:
                 if expr_left.is_symbol_access:
                     if isinstance(expr_left.field_sym,
                                   sym.Type) and expr_left.field_sym.kind in (
-                                      TypeKind.Trait, TypeKind.Struct, TypeKind.Enum
+                                      TypeKind.Trait, TypeKind.Struct,
+                                      TypeKind.Enum
                                   ):
                         self.check_ctor(expr_left.field_sym, expr)
                     elif isinstance(expr_left.field_sym, sym.Fn):
@@ -1437,7 +1438,9 @@ class Checker:
             expr.typ = type.Type(info)
         if info.kind == TypeKind.Enum:
             if isinstance(expr.left, ast.SelectorExpr):
-                if v_ := expr.left.left_sym.info.get_variant(expr.left.field_name):
+                if v_ := expr.left.left_sym.info.get_variant(
+                    expr.left.field_name
+                ):
                     v = v_
                 else:
                     assert False
@@ -1462,9 +1465,7 @@ class Checker:
                     except utils.CompilerError as e:
                         report.error(e.args[0], expr.args[0].expr.pos)
                 else:
-                    report.error(
-                        f"`{expr.left}` not expects a value", expr.pos
-                    )
+                    report.error(f"`{expr.left}` not expects a value", expr.pos)
             elif v.has_typ and not (v.has_fields or expr.left.from_is_cmp):
                 report.error(f"`{expr.left}` expects a value", expr.pos)
         elif info.kind == TypeKind.Trait:

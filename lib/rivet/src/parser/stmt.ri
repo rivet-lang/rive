@@ -12,5 +12,7 @@ import ../token;
 import ../tokenizer;
 
 extend Parser {
-    func parse_stmt(mut self) ast.Stmt { }
+    func parse_stmt(mut self) ast.Stmt {
+        @ignore_not_mutated_warn(self);
+    }
 }

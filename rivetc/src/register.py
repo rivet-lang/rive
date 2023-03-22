@@ -145,7 +145,12 @@ class Register:
                                 decl.pos
                             )
                             continue
-                        fields = list(filter(lambda d: isinstance(d, ast.FieldDecl), variant.decls))
+                        fields = list(
+                            filter(
+                                lambda d: isinstance(d, ast.FieldDecl),
+                                variant.decls
+                            )
+                        )
                         if len(variant.decls) > 0:
                             variant_sym = decl.sym.add_and_return(
                                 sym.Type(

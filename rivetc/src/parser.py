@@ -140,7 +140,9 @@ class Parser:
         return annotations
 
     def is_public(self):
-        return self.inside_trait or self.inside_enum_variant_with_fields or self.accept(Kind.KwPublic)
+        return self.inside_trait or self.inside_enum_variant_with_fields or self.accept(
+            Kind.KwPublic
+        )
 
     def parse_abi(self):
         self.expect(Kind.Lparen)
@@ -329,8 +331,10 @@ class Parser:
                 doc_comment, annotations, is_public, name, bases, decls,
                 is_opaque, pos
             )
-        elif (self.inside_struct or
-              self.inside_trait or self.inside_enum_variant_with_fields) and self.tok.kind in (Kind.KwMut, Kind.Name):
+        elif (
+            self.inside_struct or self.inside_trait
+            or self.inside_enum_variant_with_fields
+        ) and self.tok.kind in (Kind.KwMut, Kind.Name):
             return self.parse_field_decl(annotations, doc_comment, is_public)
         elif self.accept(Kind.KwEnum):
             pos = self.tok.pos
@@ -360,9 +364,7 @@ class Parser:
                     old_inside_enum_variant_with_fields = self.inside_enum_variant_with_fields
                     self.inside_enum_variant_with_fields = True
                     while not self.accept(Kind.Rbrace):
-                        variant_decls.append(
-                            self.parse_decl()
-                        )
+                        variant_decls.append(self.parse_decl())
                     self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields
                 elif self.accept(Kind.Colon):
                     has_typ = True
@@ -371,7 +373,9 @@ class Parser:
                 elif self.accept(Kind.Assign):
                     variant = self.parse_expr()
                 variants.append(
-                    ast.EnumVariant(v_name, typ, has_typ, variant, variant_decls)
+                    ast.EnumVariant(
+                        v_name, typ, has_typ, variant, variant_decls
+                    )
                 )
                 if not self.accept(Kind.Comma):
                     break
@@ -991,8 +995,9 @@ class Parser:
                 self.expect(Kind.Rbracket)
                 expr = ast.IndexExpr(expr, index, expr.pos)
             elif (
-                self.prev_tok.pos.line != self.tok.pos.line and
-                self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Name
+                self.prev_tok.pos.line != self.tok.pos.line
+                and self.tok.kind == Kind.Dot
+                and self.peek_tok.kind == Kind.Name
                 and self.peek_tok.lit[0].isupper()
             ):
                 break

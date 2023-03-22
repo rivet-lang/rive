@@ -772,7 +772,8 @@ class Codegen:
         elif isinstance(expr, ast.EnumLiteral):
             enum_sym = expr.typ.symbol()
             return ir.IntLit(
-                self.ir_type(enum_sym.info.underlying_typ), str(expr.variant_info.value)
+                self.ir_type(enum_sym.info.underlying_typ),
+                str(expr.variant_info.value)
             )
         elif isinstance(expr, ast.SelfExpr):
             self_typ = self.ir_type(expr.typ)
@@ -1107,8 +1108,7 @@ class Codegen:
                         else:
                             x = None
                         return self.boxed_enum_value(
-                            typ_sym, expr.left.value, x,
-                            custom_tmp = custom_tmp
+                            typ_sym, expr.left.value, x, custom_tmp = custom_tmp
                         )
                     return self.boxed_enum_value(
                         typ_sym, expr.left.field_name, expr.args[0].expr,
@@ -1801,7 +1801,8 @@ class Codegen:
                                 ir.Name(kind),
                                 ir.Selector(ir.USIZE_T, left, ir.Name("_idx_")),
                                 ir.IntLit(
-                                    ir.USIZE_T, str(expr.right.variant_info.value)
+                                    ir.USIZE_T,
+                                    str(expr.right.variant_info.value)
                                 )
                             ]
                         )
@@ -1810,7 +1811,8 @@ class Codegen:
                             ir.InstKind.Cmp, [
                                 ir.Name(kind), left,
                                 ir.IntLit(
-                                    ir.USIZE_T, str(expr.right.variant_info.value)
+                                    ir.USIZE_T,
+                                    str(expr.right.variant_info.value)
                                 )
                             ]
                         )

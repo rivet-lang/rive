@@ -50,32 +50,32 @@ def bold(msg):
 	return format(msg, "1", "22")
 
 def run_samples():
-    ok, fail = 0, 0
-    exit_code = 0
+	ok, fail = 0, 0
+	exit_code = 0
 
-    SAMPLES = glob.glob(os.path.join("samples", "*.ri"))
-    for i, file in enumerate(SAMPLES):
-        start = f" [{i+1}/{len(SAMPLES)}]"
-        res = run_process(sys.executable, "rivetc", file)
-        if res.exit_code == 0:
-            res = run_process("./" + filename(file))
-            if res.exit_code == 0:
-                eprint(start, file, bold(green("-> OK")))
-                ok += 1
-            else:
-                eprint(start, file, bold(red("-> FAIL")))
-                fail += 1
-            os.remove(filename(file))
-        else:
-            eprint(start, file, bold(red("-> FAIL")))
-            fail += 1
-    eprint(bold("Summary for all samples: "), end = "")
-    if ok > 0:
-        eprint(bold(green(f"{ok} passed")) + ", ", end = "")
-    if fail > 0:
-        eprint(bold(red(f"{fail} failed")) + ", ", end = "")
-    eprint(bold(f"{len(SAMPLES)} total."))
+	SAMPLES = glob.glob(os.path.join("samples", "*.ri"))
+	for i, file in enumerate(SAMPLES):
+		start = f" [{i+1}/{len(SAMPLES)}]"
+		res = run_process(sys.executable, "rivetc", file)
+		if res.exit_code == 0:
+			res = run_process("./" + filename(file))
+			if res.exit_code == 0:
+				eprint(start, file, bold(green("-> OK")))
+				ok += 1
+			else:
+				eprint(start, file, bold(red("-> FAIL")))
+				fail += 1
+			os.remove(filename(file))
+		else:
+			eprint(start, file, bold(red("-> FAIL")))
+			fail += 1
+	eprint(bold("Summary for all samples: "), end = "")
+	if ok > 0:
+		eprint(bold(green(f"{ok} passed")) + ", ", end = "")
+	if fail > 0:
+		eprint(bold(red(f"{fail} failed")) + ", ", end = "")
+	eprint(bold(f"{len(SAMPLES)} total."))
 
-    return exit_code
+	return exit_code
 
 exit(run_samples())
