@@ -1,0 +1,28 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/strings;
+
+import ../ast;
+import ../utils;
+import ../prefs;
+import ../report;
+import ../token;
+import ../tokenizer;
+
+extend Parser {
+    func decl_operator_is_used(self) bool {
+        line_nr := self.tok.pos.line;
+        mut i: usize := 1;
+        while i < self.tokenizer.all_tokens.len : i += 1 {
+            tok := self.peek_token(i);
+            switch tok.kind {
+                .DeclAssign => return true,
+                .Semicolon => break,
+                else => if tok.pos.line != line_nr { break }
+            }
+        }
+        return false;
+    }
+}

@@ -1,0 +1,499 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/strings;
+
+import ../ast;
+import ../utils;
+import ../prefs;
+import ../report;
+import ../token;
+import ../tokenizer;
+
+extend Parser {
+    [inline]
+    func parse_expr(mut self) ast.Expr {
+        return self.parse_or_expr();
+    }
+
+    func parse_or_expr(mut self) ast.Expr {
+        mut left := self.parse_and_expr();
+        while self.accept(.KwOr) {
+            right := self.parse_and_expr();
+            left = ast.Expr.Binary(
+                left: left,
+                right: right,
+                op: .KwOr,
+                pos: left.position() + right.position()
+            );
+        }
+        return left;
+    }
+
+    func parse_and_expr(mut self) ast.Expr {
+        mut left := self.parse_equality_expr();
+        while self.accept(.KwAnd) {
+            right := self.parse_equality_expr();
+            left = ast.Expr.Binary(
+                left: left,
+                right: right,
+                op: .KwAnd,
+                pos: left.position() + right.position()
+            );
+        }
+        return left;
+    }
+
+    func parse_equality_expr(mut self) ast.Expr {
+        mut left := self.parse_relational_expr();
+        while {
+            if self.tok.kind in [.Eq, .Ne] {
+                op := self.tok.kind;
+                self.next();
+                right := self.parse_relational_expr();
+                left = ast.Expr.Binary(
+                    left: left,
+                    right: right,
+                    op: op,
+                    pos: left.position() + right.position()
+                );
+            } else {
+                break;
+            }
+        }
+        return left;
+    }
+
+    func parse_relational_expr(mut self) ast.Expr {
+        mut left := self.parse_shift_expr();
+        while {
+            switch self.tok.kind {
+                .Gt, .Lt, .Ge, .Le, .OrElse, .KwIn, .KwNotIn => {
+                    op := self.tok.kind;
+                    self.next();
+                    right := self.parse_shift_expr();
+                    left = ast.Expr.Binary(
+                        left: left,
+                        right: right,
+                        op: op,
+                        pos: left.position() + right.position()
+                    );
+                },
+                .KwIs, .KwNotIs => {
+                    if self.inside_switch_header and self.peek_tok.kind == .Lbrace {
+                        break;
+                    }
+                    op := self.tok.kind;
+                    self.next();
+                    pos := self.tok.pos;
+                    if self.accept(.Dot) {
+                        name := self.parse_name();
+                    }
+                },
+                else => break
+            }
+        }
+        return left;
+    }
+
+    func parse_shift_expr(mut self) ast.Expr {
+        mut left := self.parse_additive_expr();
+        while {
+            switch self.tok.kind {
+                .Gt, .Lt => {
+                    op: token.Kind := if self.tok.kind == .Lt { .Lshift } else { .Rshift };
+                    self.expect(op);
+                    self.expect(op);
+                    right := self.parse_additive_expr();
+                    left = ast.Expr.Binary(
+                        left: left,
+                        right: right,
+                        op: op,
+                        pos: left.position() + right.position()
+                    );
+                },
+                .Amp, .Pipe, .Xor => {
+                    op := self.tok.kind;
+                    self.next();
+                    right := self.parse_additive_expr();
+                    left = ast.Expr.Binary(
+                        left: left,
+                        right: right,
+                        op: op,
+                        pos: left.position() + right.position()
+                    );
+                },
+                else => break
+            }
+        }
+        return left;
+    }
+
+    func parse_additive_expr(mut self) ast.Expr {
+        mut left := self.parse_multiplicative_expr();
+        while {
+            switch self.tok.kind {
+                .Plus, .Minus => {
+                    op := self.tok.kind;
+                    self.next();
+                    right := self.parse_multiplicative_expr();
+                    left = ast.Expr.Binary(
+                        left: left,
+                        right: right,
+                        op: op,
+                        pos: left.position() + right.position()
+                    );
+                },
+                else => break
+            }
+        }
+        return left;
+    }
+
+    func parse_multiplicative_expr(mut self) ast.Expr {
+        mut left := self.parse_unary_expr();
+        while {
+            switch self.tok.kind {
+                .Mul, .Div, .Mod => {
+                    op := self.tok.kind;
+                    self.next();
+                    right := self.parse_unary_expr();
+                    left = ast.Expr.Binary(
+                        left: left,
+                        right: right,
+                        op: op,
+                        pos: left.position() + right.position()
+                    );
+                },
+                else => break
+            }
+        }
+        return left;
+    }
+
+    [inline]
+    func parse_unary_expr(mut self) ast.Expr {
+        return switch self.tok.kind {
+            .Amp, .Bang, .BitNot, .Minus => {
+                op := self.tok.kind;
+                pos := self.tok.pos;
+                self.next();
+                is_ref_mut := op == .Amp and self.accept(.KwMut);
+                right := self.parse_unary_expr();
+                ast.Expr.Unary(right, op, is_ref_mut, pos)
+            },
+            else => self.parse_primary_expr()
+        };
+    }
+
+    func parse_primary_expr(mut self) ast.Expr {
+        mut expr := switch {
+            self.tok.kind in [
+                .KwTrue, .KwFalse, .Char, .Number, .String,
+                .KwNone, .KwSelf, .KwSelfTy
+            ] => self.parse_literal(),
+            self.accept(.At) => {
+                pos := self.prev_tok.pos;
+                if self.peek_token(1).kind == .Lparen { // builtin call
+                    name := self.parse_name();
+                    mut args := @vec(ast.Expr);
+                    self.expect(.Lparen);
+                    mut vec_is_mut := false;
+                    if name in ["vec", "cast", "size_of", "align_of"] {
+                        vec_is_mut = name == "vec" and self.accept(.KwMut);
+                        args.push(ast.Expr.Type(self.parse_type()));
+                        if self.tok.kind != .Rparen {
+                            self.expect(.Comma);
+                        }
+                    }
+                    if self.tok.kind != .Rparen {
+                        while {
+                            args.push(self.parse_expr());
+                            if !self.accept(.Comma) {
+                                break;
+                            }
+                        }
+                    }
+                    self.expect(.Rparen);
+                    ast.Expr.BuiltinCall(name, args, vec_is_mut, pos + self.prev_tok.pos)
+                } else {
+                    self.parse_ident(true) // builtin variable
+                }
+            },
+            self.tok.kind == .Dot and self.peek_tok.kind == .Name => {
+                // TODO
+            },
+            self.tok.kind in [.KwContinue, .KwBreak] => {
+                op := self.tok.kind;
+                pos := self.tok.pos;
+                self.next();
+                ast.Expr.Branch(op, pos)
+            },
+            self.accept(.KwReturn) => {
+                pos := self.prev_tok.pos;
+                has_expr := self.tok.kind in [.Comma, .Semicolon, .Rbrace];
+                return_expr := if has_expr {
+                    self.parse_expr()
+                } else {
+                    ast.Expr.Empty(self.tok.pos)
+                };
+                ast.Expr.Return(return_expr, has_expr, pos + return_expr.position())
+            },
+            self.tok.kind == .KwIf => self.parse_if_expr(),
+            self.tok.kind == .KwSwitch => self.parse_switch_expr(),
+            self.tok.kind == .Lparen => {
+                mut pos := self.tok.pos;
+                self.next();
+                e := self.parse_expr();
+                if self.accept(.Comma) { // tuple
+                    mut exprs := [e];
+                    while {
+                        exprs.push(self.parse_expr());
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                    pos += self.tok.pos;
+                    self.expect(.Rparen);
+                    if exprs.len > 8 {
+                        report.error("tuples can have a maximum of 8 expressions", pos);
+                    }
+                    ast.Expr.TupleLiteral(exprs, pos)
+                } else {
+                    self.expect(.Rparen);
+                    ast.Expr.Paren(e, pos + e.position() + self.prev_tok.pos)
+                }
+            },
+            self.tok.kind in [.KwUnsafe, .Lbrace] => self.parse_block_expr(),
+            self.tok.kind == .Lbracket => {
+                mut elems := @vec(ast.Expr);
+                mut pos := self.tok.pos;
+                self.next();
+                if self.tok.kind != .Rbracket {
+                    while {
+                        elems.push(self.parse_expr());
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                }
+                self.expect(.Rbracket);
+                ast.Expr.VectorLiteral(elems, self.accept(.Bang), pos)
+            },
+            self.tok.kind == .Name and self.peek_tok.kind == .Char => {
+                if self.tok.lit == "b" {
+                    self.parse_character_literal()
+                } else {
+                    report.error(
+                        "only `b` is recognized as a valid prefix for a character literal",
+                        self.tok.pos
+                    );
+                    self.next();
+                    ast.Expr.Empty(self.prev_tok.pos)
+                }
+            },
+            self.tok.kind == .Name and self.peek_tok.kind == .String => {
+                if self.tok.lit in ["c", "b", "r"] {
+                    self.parse_string_literal()
+                } else {
+                    report.error(
+                        "only `c`, `b` and `r` are recognized as valid prefixes for a string literal",
+                        self.tok.pos
+                    );
+                    self.next();
+                    ast.Expr.Empty(self.prev_tok.pos)
+                }
+            },
+            else => self.parse_ident()
+        };
+        while {
+            switch {
+                self.tok.kind.is_assign() => {
+                    // assignment
+                    op := self.tok.kind;
+                    pos := self.tok.pos;
+                    self.expect(op);
+                    right := self.parse_expr();
+                    expr = ast.Expr.Assign(expr, op, right, pos + right.position());
+                },
+                self.tok.kind == .Lparen and !self.decl_operator_is_used() => {
+                    self.next();
+                    mut args := @vec(ast.CallArg);
+                    mut spread_expr := ast.Expr.Empty(self.tok.pos);
+                    mut has_spread_expr := false;
+                    if self.tok.kind != .Rparen {
+                        mut expecting_named_arg := false;
+                        while {
+                            if self.tok.kind == .Name and self.peek_tok.kind == .Colon {
+                                // named argument
+                                name := self.parse_name();
+                                name_p := self.tok.pos;
+                                self.expect(.Colon);
+                                expr2 := self.parse_expr();
+                                args.push(ast.CallArg(name, expr2, !name.is_empty(), name_p));
+                                expecting_named_arg = true;
+                            } else if self.accept(.Ellipsis) {
+                                mut spread_pos := self.prev_tok.pos;
+                                spread_expr = self.parse_expr();
+                                spread_pos += spread_expr.position();
+                                has_spread_expr = true;
+                                if self.tok.kind == .Comma {
+                                    report.error("spread expression must be the final argument", spread_pos);
+                                }
+                            } else {
+                                if expecting_named_arg {
+                                    report.error("expected named argument, found single expression", self.tok.pos);
+                                }
+                                expr2 := self.parse_expr();
+                                args.push(ast.CallArg(expr: expr2, pos: expr2.position()));
+                            }
+                            if !self.accept(.Comma) {
+                                break;
+                            }
+                        }
+                    }
+                    self.expect(.Rparen);
+                    mut err_handler_pos := self.tok.pos;
+                    mut is_propagate := false;
+                    mut varname := "";
+                    mut varname_pos := self.tok.pos;
+                    mut err_expr := ast.Expr.Empty(self.tok.pos);
+                    mut has_err_expr := false;
+                    if self.tok.kind == .Dot and self.peek_tok.kind == .Bang {
+                        // check result value, if error propagate
+                        is_propagate = true;
+                        err_handler_pos = self.peek_tok.pos;
+                        self.advance(2);
+                    } else if self.accept(.KwCatch) {
+                        if self.accept(.Pipe) {
+                            varname_pos = self.tok.pos;
+                            varname = self.parse_name();
+                            self.expect(.Pipe);
+                        }
+                        err_expr = self.parse_expr();
+                        has_err_expr = true;
+                    }
+                    expr = ast.Expr.Call(
+                        left: expr,
+                        args: args,
+                        spread_expr: spread_expr,
+                        has_spread_expr: has_spread_expr,
+                        err_handler: ast.CallErrorHandler(
+                            varname: varname,
+                            varname_pos: varname_pos,
+                            expr: err_expr,
+                            has_expr: has_err_expr,
+                            scope: self.scope.?,
+                            pos: err_handler_pos
+                        ),
+                        pos: expr.position() + self.prev_tok.pos
+                    );
+                }
+            }
+        }
+        return expr;
+    }
+
+    [inline]
+    func parse_literal(mut self) ast.Expr {
+        return switch {
+            self.tok.kind in [.KwTrue, .KwFalse] => {
+                value := self.tok.kind == .KwTrue;
+                pos := self.tok.pos;
+                ast.Expr.BoolLiteral(value, pos)
+            },
+            self.tok.kind == .Char => self.parse_character_literal(),
+            self.tok.kind == .Number => self.parse_integer_literal(),
+            self.tok.kind == .String => self.parse_string_literal(),
+            self.accept(.KwNone) => ast.Expr.NoneLiteral(self.prev_tok.pos),
+            self.accept(.KwSelf) => ast.Expr.SelfLiteral(self.scope.?, self.prev_tok.pos),
+            self.accept(.KwSelfTy) => ast.Expr.SelfTy(self.scope.?, self.prev_tok.pos),
+            else => {
+                report.error("expected literal, found {}".fmt(self.tok), self.tok.pos);
+                ast.Expr.Empty(self.tok.pos)
+            }
+        };
+    }
+
+    func parse_integer_literal(mut self) ast.Expr {
+        value := self.tok.lit;
+        pos := self.tok.pos;
+        self.next();
+        return if value[..2] !in ["0x", "0o", "0b"] and value.index_of_any(".eE") !is none {
+            ast.Expr.FloatLiteral(value, pos)
+        } else {
+            ast.Expr.IntegerLiteral(value, pos)
+        };
+    }
+
+    func parse_character_literal(mut self) ast.Expr {
+        is_byte := if self.accept(.Name) {
+            self.prev_tok.lit == "b"
+        } else {
+            false
+        };
+        value := self.tok.lit;
+        pos := self.tok.pos;
+        self.expect(.Char);
+        return ast.Expr.CharLiteral(value, is_byte, pos);
+    }
+
+    func parse_string_literal(mut self) ast.Expr {
+        mut is_raw := false;
+        mut is_bytestr := false;
+        mut is_cstr := false;
+        if self.accept(.Name) {
+            is_raw = self.prev_tok.lit == "r";
+            is_bytestr = self.prev_tok.lit == "b";
+            is_cstr = self.prev_tok.lit == "c";
+        }
+        mut value := self.tok.lit;
+        mut pos := self.tok.pos;
+        self.expect(.String);
+        while self.accept(.String) {
+            value = value.concat(self.prev_tok.lit);
+            pos += self.tok.pos;
+        }
+        return ast.Expr.StringLiteral(
+            value: value,
+            is_raw: is_raw,
+            is_bytestr: is_bytestr,
+            is_cstr: is_cstr,
+            pos: pos
+        );
+    }
+
+    func parse_ident(mut self, is_comptime: bool = false) ast.Expr {
+        mut pos := self.tok.pos;
+        if is_comptime {
+            pos = self.prev_tok.pos + pos;
+        }
+        return ast.Expr.Ident(
+            name: self.parse_name(),
+            scope: if sc_ := self.scope {
+                sc_
+            } else {
+                ast.Scope()
+            },
+            pos: pos,
+            is_comptime: is_comptime
+        );
+    }
+
+    [inline]
+    func parse_selector_expr(mut self, left: ast.Expr) ast.Expr {
+        field_pos := self.tok.pos;
+        return ast.Expr.Selector(
+            left: left,
+            field_name: if self.tok.kind == .Number {
+                self.next();
+                self.prev_tok.lit
+            } else {
+                self.parse_name()
+            },
+            field_pos: field_pos,
+            pos: left.position() + self.tok.pos
+        );
+    }
+}
