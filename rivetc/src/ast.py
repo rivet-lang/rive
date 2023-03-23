@@ -911,6 +911,7 @@ class SwitchBranch:
         self.cond = cond
         self.expr = expr
         self.is_else = is_else
+        self.typ = None
 
     def __repr__(self):
         if self.is_else:

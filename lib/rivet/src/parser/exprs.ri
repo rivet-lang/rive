@@ -87,9 +87,30 @@ extend Parser {
                     op := self.tok.kind;
                     self.next();
                     pos := self.tok.pos;
-                    if self.accept(.Dot) {
+                    right := if self.accept(.Dot) {
                         name := self.parse_name();
-                    }
+                        ast.Expr.EnumLiteral(name, from_is_cmp: true, pos: pos)
+                    } else {
+                        .Type(self.parse_type())
+                    };
+                    left = if self.accept(.KwAs) {
+                        .Binary(
+                            left: left,
+                            right: right,
+                            op: op,
+                            has_var_obj: true,
+                            var_obj: self.parse_var_decl(support_ref: false),
+                            scope: self.scope.?,
+                            pos: left.position() + self.prev_tok.pos
+                        )
+                    } else {
+                        .Binary(
+                            left: left,
+                            right: right,
+                            op: op,
+                            pos: left.position() + self.prev_tok.pos
+                        )
+                    };
                 },
                 else => break
             }
@@ -222,8 +243,9 @@ extend Parser {
                 }
             },
             self.tok.kind == .Dot and self.peek_tok.kind == .Name => {
-                // TODO
-                .Empty(self.tok.pos)
+                pos := self.tok.pos;
+                self.next();
+                .EnumLiteral(self.parse_name(), pos: pos + self.prev_tok.pos)
             },
             self.tok.kind in [.KwContinue, .KwBreak] => {
                 op := self.tok.kind;
@@ -310,14 +332,14 @@ extend Parser {
             else => self.parse_ident()
         };
         while {
-            switch {
+            expr = switch {
                 self.tok.kind.is_assign() => {
                     // assignment
                     op := self.tok.kind;
                     pos := self.tok.pos;
                     self.expect(op);
                     right := self.parse_expr();
-                    expr = .Assign(expr, op, right, pos + right.position());
+                    .Assign(expr, op, right, pos + right.position())
                 },
                 self.tok.kind == .Lparen and !self.decl_operator_is_used() => {
                     self.next();
@@ -376,7 +398,7 @@ extend Parser {
                         err_expr = self.parse_expr();
                         has_err_expr = true;
                     }
-                    expr = .Call(
+                    .Call(
                         left: expr,
                         args: args,
                         spread_expr: spread_expr,
@@ -390,14 +412,13 @@ extend Parser {
                             pos: err_handler_pos
                         ),
                         pos: expr.position() + self.prev_tok.pos
-                    );
+                    )
                 },
                 // avoid `expr` + `.EnumLiteral` concatenation
                 self.prev_tok.pos.line != self.tok.pos.line
-                and self.tok.kind == .Dot
-                and self.peek_tok.kind == .Name
+                and self.tok.kind == .Dot and self.peek_tok.kind == .Name
                 and self.peek_tok.lit[0].is_upper() => break,
-                self.accept(.Dot) => expr = if self.accept(.Mul) {
+                self.accept(.Dot) => if self.accept(.Mul) {
                     ast.Expr.Selector(
                         left: expr, field_name: "",
                         pos: expr.position() + self.prev_tok.pos,
@@ -437,7 +458,7 @@ extend Parser {
                 break;
             }
             is_else_if := self.prev_tok.kind == .KwElse;
-            self.next();
+            self.expect(.KwIf);
             cond := if self.decl_operator_is_used() {
                 self.open_scope();
                 self.parse_guard_expr()

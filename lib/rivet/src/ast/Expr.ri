@@ -59,9 +59,7 @@ public enum Expr {
         pos: token.Pos;
     },
     EnumLiteral {
-        value: Expr;
-        value_arg: Expr;
-        has_value_arg: bool;
+        value: string;
         is_instance: bool;
         from_is_cmp: bool;
         pos: token.Pos;
@@ -162,8 +160,8 @@ public enum Expr {
         left: Expr;
         right: Expr;
         op: token.Kind;
-        has_var_name: bool;
-        var_name: string;
+        has_var_obj: bool;
+        var_obj: ObjectData;
         scope: Scope;
         pos: token.Pos;
     },

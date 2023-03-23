@@ -18,6 +18,13 @@ class Compiler:
         #  compiled reside.
         self.universe = sym.universe()
 
+        self.prefs = prefs.Prefs(args)
+        self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
+
+        self.core_mod = None
+        self.vec_sym = None # from `core` module
+        self.error_sym = None # from `core` module
+
         #  Primitive types.
         self.void_t = type.Type(self.universe[0])
         self.never_t = type.Type(self.universe[1])
@@ -42,13 +49,6 @@ class Compiler:
         self.anyptr_t = type.Ptr(self.void_t)
         self.mut_anyptr_t = type.Ptr(self.void_t, True)
         self.error_t = None # updated in register
-
-        self.prefs = prefs.Prefs(args)
-        self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
-
-        self.core_mod = None
-        self.vec_sym = None # from `core` module
-        self.error_sym = None # from `core` module
 
         self.parsed_files = []
         self.source_files = []

@@ -2104,6 +2104,7 @@ class Codegen:
             else:
                 switch_expr = self.gen_expr_with_cast(expr.expr.typ, expr.expr)
             for b in expr.branches:
+                is_branch_void_value = b.typ in self.void_types
                 b_label = "" if b.is_else else self.cur_fn.local_name()
                 b_exit = exit_switch if b.is_else else self.cur_fn.local_name()
                 if not b.is_else:
@@ -2240,7 +2241,7 @@ class Codegen:
                                 ]
                             ), b_exit
                         )
-                if is_void_value:
+                if is_branch_void_value:
                     self.gen_expr_with_cast(
                         expr.expected_typ, b.expr
                     ) # ignore void value
