@@ -68,17 +68,17 @@ extend Parser {
     func parse_relational_expr(mut self) ast.Expr {
         mut left := self.parse_shift_expr();
         while {
-            switch self.tok.kind {
+            left = switch self.tok.kind {
                 .Gt, .Lt, .Ge, .Le, .OrElse, .KwIn, .KwNotIn => {
                     op := self.tok.kind;
                     self.next();
                     right := self.parse_shift_expr();
-                    left = .Binary(
+                    .Binary(
                         left: left,
                         right: right,
                         op: op,
                         pos: left.position() + right.position()
-                    );
+                    )
                 },
                 .KwIs, .KwNotIs => {
                     if self.inside_switch_header and self.peek_tok.kind == .Lbrace {
@@ -93,7 +93,7 @@ extend Parser {
                     } else {
                         .Type(self.parse_type())
                     };
-                    left = if self.accept(.KwAs) {
+                    if self.accept(.KwAs) {
                         .Binary(
                             left: left,
                             right: right,
@@ -110,7 +110,7 @@ extend Parser {
                             op: op,
                             pos: left.position() + self.prev_tok.pos
                         )
-                    };
+                    }
                 },
                 else => break
             }
@@ -121,29 +121,29 @@ extend Parser {
     func parse_shift_expr(mut self) ast.Expr {
         mut left := self.parse_additive_expr();
         while {
-            switch self.tok.kind {
+            left = switch self.tok.kind {
                 .Gt, .Lt => {
                     op: token.Kind := if self.tok.kind == .Lt { .Lshift } else { .Rshift };
                     self.expect(op);
                     self.expect(op);
                     right := self.parse_additive_expr();
-                    left = .Binary(
+                    .Binary(
                         left: left,
                         right: right,
                         op: op,
                         pos: left.position() + right.position()
-                    );
+                    )
                 },
                 .Amp, .Pipe, .Xor => {
                     op := self.tok.kind;
                     self.next();
                     right := self.parse_additive_expr();
-                    left = .Binary(
+                    .Binary(
                         left: left,
                         right: right,
                         op: op,
                         pos: left.position() + right.position()
-                    );
+                    )
                 },
                 else => break
             }
@@ -414,6 +414,42 @@ extend Parser {
                         pos: expr.position() + self.prev_tok.pos
                     )
                 },
+                self.accept(.Lbracket) => {
+                    index: ast.Expr := if self.accept(.DotDot) {
+                        if self.tok.kind == .Rbracket {
+                            .Range(pos: expr.position() + self.tok.pos)
+                        } else {
+                            .Range(
+                                end: self.parse_expr(), has_end: true,
+                                pos: expr.position() + self.prev_tok.pos
+                            )
+                        }
+                    } else {
+                        start := self.parse_expr();
+                        if self.accept(.DotDot) {
+                            if self.tok.kind == .Rbracket {
+                                .Range(
+                                    start: start, has_start: true,
+                                    pos: expr.position() + self.tok.pos
+                                )
+                            } else {
+                                end := self.parse_expr();
+                                .Range(
+                                    start: start, end: end,
+                                    has_start: true, has_end: true,
+                                    pos: expr.position() + end.position()
+                                )
+                            }
+                        } else {
+                            start
+                        }
+                    };
+                    self.expect(.Rbracket);
+                    .Index(
+                        left: expr, index: index,
+                        pos: expr.position() + self.prev_tok.pos
+                    )
+                },
                 // avoid `expr` + `.EnumLiteral` concatenation
                 self.prev_tok.pos.line != self.tok.pos.line
                 and self.tok.kind == .Dot and self.peek_tok.kind == .Name
@@ -629,6 +665,7 @@ extend Parser {
             self.tok.kind in [.KwTrue, .KwFalse] => {
                 value := self.tok.kind == .KwTrue;
                 pos := self.tok.pos;
+                self.next();
                 .BoolLiteral(value, pos)
             },
             self.tok.kind == .Char => self.parse_character_literal(),
