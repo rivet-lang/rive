@@ -12,9 +12,121 @@ import ../token;
 import ../tokenizer;
 
 extend Parser {
+    [inline]
     func parse_stmt(mut self) ast.Stmt {
-        @ignore_not_mutated_warn(self);
-        self.next();
-        return .Empty(self.tok.pos);
+        return switch {
+            self.accept(.KwWhile) => {
+                pos := self.prev_tok.pos;
+                mut is_inf := false;
+                mut cond := ast.Expr.Empty(self.tok.pos);
+                mut has_continue_expr := false;
+                mut continue_expr := ast.Expr.Empty(self.tok.pos);
+                if self.tok.kind == .Lbrace {
+                    is_inf = true;
+                    cond = .BoolLiteral(true, self.prev_tok.pos);
+                } else {
+                    cond = if self.decl_operator_is_used() {
+                        self.open_scope();
+                        self.parse_guard_expr()
+                    } else {
+                        self.parse_expr()
+                    };
+                    if self.accept(.Colon) {
+                        has_continue_expr = true;
+                        continue_expr = self.parse_expr();
+                    }
+                }
+                stmt := self.parse_stmt();
+                if cond is .Guard {
+                    self.close_scope();
+                }
+                mut has_else_stmt := false;
+                else_stmt := if self.accept(.KwElse) {
+                    has_else_stmt = true;
+                    self.parse_stmt()
+                } else {
+                    .Empty(self.tok.pos)
+                };
+                .While(
+                    cond, continue_expr, has_continue_expr, stmt, else_stmt, has_else_stmt,
+                    is_inf, pos + self.prev_tok.pos
+                )
+            },
+            self.accept(.KwFor) => {
+                pos := self.prev_tok.pos;
+                self.open_scope();
+                sc := self.scope.?;
+                // single or 2 variables
+                mut has_index := false;
+                mut index := ast.ObjectData();
+                if self.peek_token(1).kind == .Comma {
+                    has_index = true;
+                    index = self.parse_var_decl(support_mut: false, support_typ: false);
+                    self.expect(.Comma);
+                }
+                mut values := @vec(ast.ObjectData);
+                if self.accept(.Lparen) {
+                    while {
+                        values.push(
+                            self.parse_var_decl(support_ref: true, support_typ: false)
+                        );
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                    self.expect(.Rparen);
+                } else {
+                    values.push(self.parse_var_decl(support_ref: true, support_typ: false));
+                }
+                self.expect(.KwIn);
+                iterable := self.parse_expr();
+                stmt := self.parse_stmt();
+                self.close_scope();
+                .For(
+                    index: index, has_index: has_index, values: values,
+                    iterable: iterable, stmt: stmt, pos: pos + self.prev_tok.pos
+                )
+            },
+            self.accept(.KwDefer) or self.accept(.KwErrDefer) => {
+                is_errdefer := self.prev_tok.kind == .KwErrDefer;
+                pos := self.prev_tok.pos;
+                expr := self.parse_expr();
+                if !(expr is .If or expr is .Switch or expr is .Block) {
+                    self.expect(.Semicolon);
+                }
+                .Defer(expr, is_errdefer, pos)
+            },
+            self.tok.kind in [.Lparen, .Name, .KwMut] and self.decl_operator_is_used() => {
+                // variable declarations
+                mut pos := self.prev_tok.pos;
+                mut lefts := @vec(ast.ObjectData);
+                if self.accept(.Lparen) {
+                    // multiple variables
+                    while {
+                        lefts.push(self.parse_var_decl(false));
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                } else {
+                    lefts.push(self.parse_var_decl(false));
+                }
+                self.expect(.DeclAssign);
+                right := self.parse_expr();
+                pos += self.prev_tok.pos;
+                self.expect(.Semicolon);
+                .VarDecl(lefts, right, self.scope.?, pos)
+            },
+            else => {
+                expr := self.parse_expr();
+                if !(
+                    (self.inside_block and self.tok.kind == .Rbrace)
+                    or (expr is .If or expr is .Switch or expr is .Block)
+                ) {
+                    self.expect(.Semicolon);
+                }
+                .Expr(expr)
+            }
+        };
     }
 }
