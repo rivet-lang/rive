@@ -2,6 +2,7 @@
 # Use of this source code is governed by an MIT license that can
 # be found in the LICENSE file.
 
+from io import StringIO
 import os, sys, subprocess
 
 VERSION = "0.1.0a"
@@ -156,37 +157,38 @@ def execute(*args):
 
 class Builder:
     def __init__(self):
-        self.buf = ""
+        self.buf = StringIO()
+        self.len_ = 0
 
     def write(self, txt):
-        self.buf += txt
+        self.len_ += self.buf.write(txt)
 
     def write_octal_escape(self, c):
-        self.buf += chr(92) # '\'
-        self.buf += chr(48 + (c >> 6)) # octal digit 2
-        self.buf += chr(48 + ((c >> 3) & 7)) # octal digit 1
-        self.buf += chr(48 + (c & 7)) # octal digit 0
+        self.write(chr(92)) # '\'
+        self.write(chr(48 + (c >> 6))) # octal digit 2
+        self.write(chr(48 + ((c >> 3) & 7))) # octal digit 1
+        self.write(chr(48 + (c & 7))) # octal digit 0
 
     def writeln(self, txt = ""):
         if len(txt) == 0:
-            self.buf += "\n"
+            self.write("\n")
         else:
-            self.buf += f"{txt}\n"
+            self.write(f"{txt}\n")
 
     def clear(self):
-        self.buf = ""
+        self.buf = StringIO()
 
     def len(self):
-        return len(self)
+        return self.len_
 
     def __len__(self):
         return len(self.buf)
 
     def __repr__(self):
-        return self.buf
+        return str(self.buf)
 
     def __str__(self):
-        return self.buf
+        return self.buf.getvalue()
 
 class CompilerError(Exception):
     pass
