@@ -45,7 +45,7 @@ public struct OrderedDepMap {
         }
         for i, _ in self.keys {
             if self.keys[i] == name {
-                self.keys.delete(i);
+                self.keys.delete(i, no_slices: true);
                 break;
             }
         }

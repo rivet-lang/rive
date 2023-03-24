@@ -84,6 +84,86 @@ public struct Compiler {
         self.parse_files(root_sym, files);
     }
 
+    func import_modules(mut self) ! {
+        for sf in self.table.source_files {
+            for d in sf.decls {
+                if d is .Import as mut import_decl {
+                    mod := self.load_module_files(
+                        import_decl.path, import_decl.alias_name, sf.file, import_decl.path_pos
+                    ).!;
+                    if mod.found {
+                        mod_sym := if mod_sym_ := self.table.universe.scope.find(mod.full_name) {
+                            @cast(ast.Module, mod_sym_) // module already imported
+                        } else {
+                            tmp := ast.Module(name: mod.full_name);
+                            self.table.universe.scope.add(tmp) catch |err| {
+                                report.error(err.to_string(), import_decl.path_pos)
+                            };
+                            self.parse_files(tmp, mod.files);
+                            tmp
+                        };
+                        import_decl.alias_name = mod.alias_name;
+                        import_decl.mod_sym = mod_sym;
+                    }
+                }
+            }
+        }
+        self.resolve_deps();
+        if report.total_errors() > 0 {
+            self.abort();
+        }
+    }
+
+    func resolve_deps(mut self) {
+        g := self.import_graph();
+        g_resolved := g.resolve();
+        self.vlog("-----= resolved dependencies graph =-----");
+        self.vlog(g_resolved.display());
+        self.vlog("-----------------------------------------");
+        cycles := g_resolved.display_cycles();
+        if cycles.len > 1 {
+            utils.error("import cycle detected between the following modules:\n{}", cycles);
+        }
+        self.vlog("----------= imported modules =-----------");
+        for node in g_resolved.nodes {
+            self.vlog(" > {}", node.name);
+        }
+        self.vlog("-----------------------------------------");
+        source_files := self.table.source_files.clone();
+        self.table.source_files = @vec(ast.SourceFile, self.source_files.len);
+        for node in g_resolved.nodes {
+            for pf in source_files {
+                if pf.mod_sym.name == node.name {
+                    self.table.source_files.push(pf);
+                }
+            }
+        }
+    }
+
+    func import_graph(self) depgraph.DepGraph {
+        mut g := depgraph.DepGraph.new();
+        for pf in self.table.source_files {
+            mut deps := @vec(string);
+            if pf.mod_sym.name !in ["c.libc", "c", "core"] {
+                deps.push("core");
+            }
+            for d in pf.decls {
+                if d is .Import as import_decl {
+                    if import_decl.mod_sym.name == pf.mod_sym.name {
+                        report.error("import cycle detected", import_decl.pos);
+                        continue;
+                    }
+                    if pf.mod_sym.name == "c" and import_decl.mod_sym.name == "c.libc" {
+                        continue;
+                    }
+                    deps.push(import_decl.mod_sym.name);
+                }
+            }
+            g.add(pf.mod_sym.name, deps);
+        }
+        return g;
+    }
+
     func load_module(
         mut self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) ! {
@@ -185,86 +265,6 @@ public struct Compiler {
             full_name: full_name,
             files: files
         );
-    }
-
-    func import_modules(mut self) ! {
-        for sf in self.table.source_files {
-            for d in sf.decls {
-                if d is .Import as mut import_decl {
-                    mod := self.load_module_files(
-                        import_decl.path, import_decl.alias_name, sf.file, import_decl.path_pos
-                    ).!;
-                    if mod.found {
-                        mod_sym := if mod_sym_ := self.table.universe.scope.find(mod.full_name) {
-                            @cast(ast.Module, mod_sym_) // module already imported
-                        } else {
-                            tmp := ast.Module(name: mod.full_name);
-                            self.table.universe.scope.add(tmp) catch |err| {
-                                report.error(err.to_string(), import_decl.path_pos)
-                            };
-                            self.parse_files(tmp, mod.files);
-                            tmp
-                        };
-                        import_decl.alias_name = mod.alias_name;
-                        import_decl.mod_sym = mod_sym;
-                    }
-                }
-            }
-        }
-        self.resolve_deps();
-        if report.total_errors() > 0 {
-            self.abort();
-        }
-    }
-
-    func resolve_deps(mut self) {
-        g := self.import_graph();
-        g_resolved := g.resolve();
-        self.vlog("-----= resolved dependencies graph =-----");
-        self.vlog(g_resolved.display());
-        self.vlog("-----------------------------------------");
-        cycles := g_resolved.display_cycles();
-        if cycles.len > 1 {
-            utils.error("import cycle detected between the following modules:\n{}", cycles);
-        }
-        self.vlog("----------= imported modules =-----------");
-        for node in g_resolved.nodes {
-            self.vlog(" > {}", node.name);
-        }
-        self.vlog("-----------------------------------------");
-        source_files := self.table.source_files.clone();
-        self.table.source_files = @vec(ast.SourceFile, self.source_files.len);
-        for node in g_resolved.nodes {
-            for pf in source_files {
-                if pf.mod_sym.name == node.name {
-                    self.table.source_files.push(pf);
-                }
-            }
-        }
-    }
-
-    func import_graph(self) depgraph.DepGraph {
-        mut g := depgraph.DepGraph.new();
-        for pf in self.table.source_files {
-            mut deps := @vec(string);
-            if pf.mod_sym.name !in ["c.libc", "c", "core"] {
-                deps.push("core");
-            }
-            for d in pf.decls {
-                if d is .Import as import_decl {
-                    if import_decl.mod_sym.name == pf.mod_sym.name {
-                        report.error("import cycle detected", import_decl.pos);
-                        continue;
-                    }
-                    if pf.mod_sym.name == "c" and import_decl.mod_sym.name == "c.libc" {
-                        continue;
-                    }
-                    deps.push(import_decl.mod_sym.name);
-                }
-            }
-            g.add(pf.mod_sym.name, deps);
-        }
-        return g;
     }
 
     func vlog(self, msg: string, args: ...traits.Stringable) {

@@ -64,7 +64,7 @@ public struct DepGraph {
     }
 
     public func display(self) string {
-        mut out := strings.Builder();
+        mut out := strings.Builder.new();
         for node in self.nodes {
             for dep in node.deps {
                 out.writeln_fmt(" > {} -> {}", node.name, dep);
@@ -74,7 +74,7 @@ public struct DepGraph {
     }
 
     public func display_cycles(self) string {
-        mut out := strings.Builder();
+        mut out := strings.Builder.new();
         mut seen := false;
         mut nn := NodeNames();
         for node in self.nodes {

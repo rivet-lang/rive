@@ -56,7 +56,7 @@ struct MapStringArrayOfStrings {
     public func delete(mut self, key: string) {
         for i, pair in self.pairs {
             if pair.key == key {
-                self.pairs.delete(i);
+                self.pairs.delete(i, no_slices: true);
             }
         }
     }
@@ -108,7 +108,7 @@ struct MapStringBool {
     public func delete(mut self, key: string) {
         for i, pair in self.pairs {
             if pair.key == key {
-                self.pairs.delete(i);
+                self.pairs.delete(i, no_slices: true);
             }
         }
     }
