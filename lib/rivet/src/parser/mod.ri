@@ -32,10 +32,12 @@ public struct Parser {
     mut inside_mod: bool;
     mut inside_struct: bool;
     mut inside_trait: bool;
+    mut inside_enum_variant_with_fields: bool;
     mut inside_switch_header: bool;
     mut inside_block: bool;
 
     public func parse_module(mut self, mod_sym: ast.Module, files: []string) []ast.SourceFile {
+        self.scope = mod_sym.scope;
         self.mod_sym = mod_sym;
         mut source_files := @vec(ast.SourceFile);
         for file in files {
@@ -124,7 +126,34 @@ public struct Parser {
         switch {
             self.accept(.Question) => return ast.Type.Option(self.parse_type()),
             self.tok.kind == .KwFunc => {
-                //
+                // function types
+                self.expect(.KwFunc);
+                self.expect(.Lparen);
+                mut args := @vec(ast.Arg);
+                if self.tok.kind != .Rparen {
+                    while {
+                        arg_pos := self.tok.pos;
+                        is_mut := self.accept(.KwMut);
+                        arg_type := self.parse_type();
+                        args.push(ast.Arg(
+                            name: "arg{}".fmt(args.len),
+                            is_mut: is_mut,
+                            type: arg_type,
+                            has_def_expr: false,
+                            pos: arg_pos + self.prev_tok.pos
+                        ));
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                }
+                self.expect(.Rparen);
+                ret_type := if self.tok.kind.is_start_of_type() {
+                    self.parse_type()
+                } else {
+                    .Void()
+                };
+                return .Func(args: args, ret_type: ret_type);
             },
             self.accept(.Amp) => {
                 // references

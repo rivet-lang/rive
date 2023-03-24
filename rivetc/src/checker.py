@@ -1334,6 +1334,7 @@ class Checker:
                         self.check_types(branch_t, expr.expected_typ)
                     except utils.CompilerError as e:
                         report.error(e.args[0], b.expr.pos)
+                b.typ = branch_t
             return expr.typ
         elif isinstance(expr, ast.SwitchExpr):
             expr.typ = self.comp.void_t

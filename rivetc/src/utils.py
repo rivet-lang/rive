@@ -163,17 +163,16 @@ class Builder:
     def write(self, txt):
         self.len_ += self.buf.write(txt)
 
+    def writeln(self, txt = ""):
+        if len(txt) > 0:
+            self.write(txt)
+        self.write("\n")
+
     def write_octal_escape(self, c):
         self.write(chr(92)) # '\'
         self.write(chr(48 + (c >> 6))) # octal digit 2
         self.write(chr(48 + ((c >> 3) & 7))) # octal digit 1
         self.write(chr(48 + (c & 7))) # octal digit 0
-
-    def writeln(self, txt = ""):
-        if len(txt) == 0:
-            self.write("\n")
-        else:
-            self.write(f"{txt}\n")
 
     def clear(self):
         self.buf = StringIO()

@@ -14,13 +14,15 @@ public struct StringBuilder : Stringable {
         return Self(unsafe { Vector.new(@size_of(uint8), cap) });
     }
 
+    [inline]
     public func from_string(s: string) Self {
-        if s.len == 0 {
-            return Self.new();
-        }
-        return Self(unsafe {
-            Vector.from_array(@cast(*mut uint8, s.ptr), @size_of(uint8), s.len)
-        });
+        return if s.len == 0 {
+            Self.new()
+        } else {
+            Self(unsafe {
+                Vector.from_array(@cast(*mut uint8, s.ptr), @size_of(uint8), s.len)
+            })
+        };
     }
 
     [inline]

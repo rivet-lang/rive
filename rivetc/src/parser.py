@@ -229,9 +229,8 @@ class Parser:
                 )
             else:
                 report.error("invalid external declaration", pos)
-            decl = ast.ExternDecl(annotations, abi, protos, pos)
             self.inside_extern = False
-            return decl
+            return ast.ExternDecl(annotations, abi, protos, pos)
         elif self.accept(Kind.KwConst):
             pos = self.tok.pos
             name = self.parse_name()
@@ -322,9 +321,8 @@ class Parser:
                         if not self.accept(Kind.Comma):
                             break
                 self.expect(Kind.Lbrace)
-                if self.tok.kind != Kind.Rbrace:
-                    while self.tok.kind != Kind.Rbrace:
-                        decls.append(self.parse_decl())
+                while self.tok.kind != Kind.Rbrace:
+                    decls.append(self.parse_decl())
                 self.expect(Kind.Rbrace)
             self.inside_struct = old_inside_struct
             return ast.StructDecl(
@@ -426,8 +424,7 @@ class Parser:
             return ast.DestructorDecl(self_is_mut, sc, stmts, pos)
         elif self.accept(Kind.KwTest):
             pos = self.prev_tok.pos
-            name = self.tok.lit
-            self.expect(Kind.String)
+            name = self.parse_string_literal()
             self.open_scope()
             sc = self.scope
             stmts = []
@@ -737,8 +734,7 @@ class Parser:
             if self.tok.kind in [Kind.Lt, Kind.Gt]:
                 op = Kind.Lshift if self.tok.kind == Kind.Lt else Kind.Rshift
                 if self.tok.pos.pos + 1 == self.peek_tok.pos.pos:
-                    self.next()
-                    self.next()
+                    self.advance(2)
                     right = self.parse_additive_expr()
                     left = ast.BinaryExpr(left, op, right, left.pos)
                 else:

@@ -89,8 +89,10 @@ extend Parser {
                     self.next();
                     pos := self.tok.pos;
                     right := if self.accept(.Dot) {
-                        name := self.parse_name();
-                        ast.Expr.EnumLiteral(name, from_is_cmp: true, pos: pos)
+                        ast.Expr.EnumLiteral(
+                            self.parse_name(), from_is_cmp: true,
+                            pos: pos + self.prev_tok.pos
+                        )
                     } else {
                         .Type(self.parse_type())
                     };
@@ -114,7 +116,7 @@ extend Parser {
                     }
                 },
                 else => break
-            }
+            };
         }
         return left;
     }
@@ -123,17 +125,20 @@ extend Parser {
         mut left := self.parse_additive_expr();
         while {
             left = switch self.tok.kind {
-                .Gt, .Lt => {
+                .Lt, .Gt => {
                     op: token.Kind := if self.tok.kind == .Lt { .Lshift } else { .Rshift };
-                    self.expect(op);
-                    self.expect(op);
-                    right := self.parse_additive_expr();
-                    .Binary(
-                        left: left,
-                        right: right,
-                        op: op,
-                        pos: left.position() + right.position()
-                    )
+                    if self.tok.pos.pos + 1 == self.peek_tok.pos.pos {
+                        self.advance(2);
+                        right := self.parse_additive_expr();
+                        .Binary(
+                            left: left,
+                            right: right,
+                            op: op,
+                            pos: left.position() + right.position()
+                        )
+                    } else {
+                        break
+                    }
                 },
                 .Amp, .Pipe, .Xor => {
                     op := self.tok.kind;
@@ -147,7 +152,7 @@ extend Parser {
                     )
                 },
                 else => break
-            }
+            };
         }
         return left;
     }
@@ -550,11 +555,14 @@ extend Parser {
             if !is_else {
                 while {
                     if is_typeswitch {
-                        if self.accept(.Dot) {
-                            // TODO
+                        name_pos := self.tok.pos;
+                        patterns.push(if self.accept(.Dot) {
+                            .EnumLiteral(
+                                self.parse_name(), pos: name_pos + self.prev_tok.pos
+                            )
                         } else {
-                            patterns.push(.Type(self.parse_type()));
-                        }
+                            .Type(self.parse_type())
+                        });
                     } else {
                         mut branch_expr := self.parse_expr();
                         if self.accept(.DotDot) or self.accept(.Ellipsis) {
@@ -734,10 +742,11 @@ extend Parser {
     }
 
     func parse_ident(mut self, is_comptime: bool = false) ast.Expr {
-        mut pos := self.tok.pos;
-        if is_comptime {
-            pos = self.prev_tok.pos + pos;
-        }
+        pos := if is_comptime {
+            self.prev_tok.pos + self.tok.pos
+        } else {
+            self.tok.pos
+        };
         return .Ident(
             name: self.parse_name(),
             scope: if sc_ := self.scope {

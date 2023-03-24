@@ -520,6 +520,7 @@ class EnumLiteral:
     def __init__(self, value, pos, from_is_cmp = False):
         self.value = value
         self.from_is_cmp = from_is_cmp
+        self.is_instance = False
         self.sym = None
         self.variant_info = None
         self.pos = pos
@@ -873,6 +874,7 @@ class IfBranch:
         self.expr = expr
         self.is_else = is_else
         self.op = op
+        self.typ = None
 
     def __repr__(self):
         if self.is_else:

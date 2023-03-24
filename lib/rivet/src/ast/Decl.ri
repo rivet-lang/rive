@@ -12,6 +12,7 @@ public enum Decl {
         annotations: Annotations;
         is_public: bool;
         path: string;
+        path_pos: token.Pos;
         mut alias_name: string;
         glob: bool;
         import_list: []ImportListInfo;
@@ -23,26 +24,6 @@ public enum Decl {
         annotations: Annotations;
         abi: ABI;
         decls: []Decl;
-        pos: token.Pos;
-    },
-    Const {
-        docs: DocComment;
-        annotations: Annotations;
-        is_public: bool;
-        name: string;
-        has_type: bool;
-        type: Type;
-        expr: Expr;
-        pos: token.Pos;
-    },
-    Var {
-        docs: DocComment;
-        annotations: Annotations;
-        is_public: bool;
-        is_extern: bool;
-        abi: ABI;
-        lefts: []ObjectData;
-        right: Expr;
         pos: token.Pos;
     },
     Alias {
@@ -60,7 +41,7 @@ public enum Decl {
         annotations: Annotations;
         is_public: bool;
         name: string;
-        underlying_typ: Type;
+        underlying_type: Type;
         bases: []Type;
         variants: []EnumVariantDecl;
         is_boxed_enum: bool;
@@ -104,6 +85,26 @@ public enum Decl {
         decls: []Decl;
         pos: token.Pos;
     },
+    Const {
+        docs: DocComment;
+        annotations: Annotations;
+        is_public: bool;
+        name: string;
+        has_type: bool;
+        type: Type;
+        expr: Expr;
+        pos: token.Pos;
+    },
+    Var {
+        docs: DocComment;
+        annotations: Annotations;
+        is_public: bool;
+        is_extern: bool;
+        abi: ABI;
+        lefts: []ObjectData;
+        right: Expr;
+        pos: token.Pos;
+    },
     Func {
         docs: DocComment;
         annotations: Annotations;
@@ -130,7 +131,6 @@ public enum Decl {
         docs: DocComment;
         annotations: Annotations;
         self_is_mut: bool;
-        self_type: Type;
         stmts: []Stmt;
         scope: Scope;
         pos: token.Pos;
@@ -148,8 +148,8 @@ public enum Decl {
 [boxed]
 public struct EnumVariantDecl {
     public name: string;
-    public typ: Type;
-    public has_typ: bool;
+    public type: Type;
+    public has_type: bool;
     public has_value: bool;
     public value: Expr;
     public decls: []Decl;

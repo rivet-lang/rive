@@ -108,6 +108,7 @@ extend Parser {
                             break;
                         }
                     }
+                    self.expect(.Rparen);
                 } else {
                     lefts.push(self.parse_var_decl(false));
                 }

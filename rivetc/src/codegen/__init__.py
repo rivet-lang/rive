@@ -709,7 +709,9 @@ class Codegen:
             tmp = self.cur_fn.local_name()
             tmp_t = expected_typ
             load_ptr = False
-            if not (isinstance(expected_typ, ir.Pointer) and expected_typ.is_managed):
+            if not (
+                isinstance(expected_typ, ir.Pointer) and expected_typ.is_managed
+            ):
                 load_ptr = True
                 expected_typ = expected_typ.ptr(True)
             value = ir.Inst(
@@ -717,8 +719,8 @@ class Codegen:
                     ir.Inst(
                         ir.InstKind.Call, [
                             ir.Name("_R4core9enum_castF"), res_expr,
-                            expr_sym.info
-                            .get_variant_by_type(expected_typ_).value
+                            expr_sym.info.get_variant_by_type(expected_typ_
+                                                              ).value
                         ]
                     ), expected_typ
                 ]
@@ -870,21 +872,20 @@ class Codegen:
                     tmp = self.cur_fn.local_name()
                     tmp_t = ir_typ
                     load_ptr = False
-                    if not (isinstance(ir_typ, ir.Pointer) and ir_typ.is_managed):
+                    if not (
+                        isinstance(ir_typ, ir.Pointer) and ir_typ.is_managed
+                    ):
                         load_ptr = True
                         ir_typ = ir_typ.ptr(True)
                     value = ir.Inst(
                         ir.InstKind.Cast, [
                             ir.Inst(
                                 ir.InstKind.Call, [
-                                    ir.Name("_R4core9enum_castF"),
-                                    res,
-                                    typ_sym.info
-                                    .get_variant_by_type(expr.typ
-                                                         ).value
+                                    ir.Name("_R4core9enum_castF"), res,
+                                    typ_sym.info.get_variant_by_type(expr.typ
+                                                                     ).value
                                 ]
-                            ),
-                            ir_typ
+                            ), ir_typ
                         ]
                     )
                     if load_ptr:
@@ -1922,8 +1923,8 @@ class Codegen:
                     )
                     right_elem_typ_sym = right_sym.info.elem_typ.symbol()
                     if right_elem_typ_sym.kind.is_primitive() or (
-                        right_elem_typ_sym.kind == TypeKind.Enum and
-                        not right_elem_typ_sym.info.is_boxed_enum
+                        right_elem_typ_sym.kind == TypeKind.Enum
+                        and not right_elem_typ_sym.info.is_boxed_enum
                     ):
                         cond = ir.Inst(
                             ir.InstKind.Cmp,
@@ -2035,6 +2036,7 @@ class Codegen:
             for i, b in enumerate(expr.branches):
                 if not gen_branch:
                     break
+                is_branch_void_value = b.typ in self.void_types
                 self.cur_fn.add_comment(f"if branch (is_else: {b.is_else})")
                 if b.is_else:
                     self.cur_fn.add_label(else_label)
@@ -2064,7 +2066,7 @@ class Codegen:
                                 self.cur_fn.add_cond_br(
                                     gcond, branch_label, next_branch
                                 )
-                if is_void_value:
+                if is_branch_void_value:
                     self.gen_expr_with_cast(
                         expr.expected_typ, b.expr
                     ) # ignore void value

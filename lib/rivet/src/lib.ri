@@ -192,7 +192,7 @@ public struct Compiler {
             for d in sf.decls {
                 if d is .Import as mut import_decl {
                     mod := self.load_module_files(
-                        import_decl.path, import_decl.alias_name, sf.file, import_decl.pos
+                        import_decl.path, import_decl.alias_name, sf.file, import_decl.path_pos
                     ).!;
                     if mod.found {
                         mod_sym := if mod_sym_ := self.table.universe.scope.find(mod.full_name) {
@@ -200,7 +200,7 @@ public struct Compiler {
                         } else {
                             tmp := ast.Module(name: mod.full_name);
                             self.table.universe.scope.add(tmp) catch |err| {
-                                report.error(err.to_string(), import_decl.pos)
+                                report.error(err.to_string(), import_decl.path_pos)
                             };
                             self.parse_files(tmp, mod.files);
                             tmp
