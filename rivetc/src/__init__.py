@@ -391,12 +391,12 @@ class Compiler:
             size, align = 2, 2
         elif sy.kind in (
             sym.TypeKind.Int32, sym.TypeKind.Uint32, sym.TypeKind.Rune,
-            sym.TypeKind.Float32, sym.TypeKind.ComptimeInt
+            sym.TypeKind.Float32
         ):
             size, align = 4, 4
         elif sy.kind in (
             sym.TypeKind.Int64, sym.TypeKind.Uint64, sym.TypeKind.Float64,
-            sym.TypeKind.ComptimeFloat
+            sym.TypeKind.ComptimeFloat, sym.TypeKind.ComptimeInt
         ):
             size, align = 8, 8
         elif sy.kind == sym.TypeKind.Enum:

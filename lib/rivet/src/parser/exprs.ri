@@ -266,10 +266,7 @@ extend Parser {
             },
             self.tok.kind == .KwIf => self.parse_if_expr(),
             self.accept(.KwSwitch) => self.parse_switch_expr(),
-            self.tok.kind in [.KwUnsafe, .Lbrace] => {
-                    console.println("BLOCK-EXPR");
-                self.parse_block_expr()
-            },
+            self.tok.kind in [.KwUnsafe, .Lbrace] => self.parse_block_expr(),
             self.tok.kind == .Lparen => {
                 mut pos := self.tok.pos;
                 self.next();
@@ -591,11 +588,8 @@ extend Parser {
                     cond = self.parse_expr();
                 }
             }
-            console.println("switch_expr: skip arrow");
             self.expect(.Arrow);
-            console.println("switch_expr: start Branch expr {}", self.tok.kind);
             branch_expr := self.parse_expr();
-            console.println("switch_expr: end Branch expr");
             branches.push(ast.SwitchBranch(
                 patterns: patterns,
                 has_var: has_var,

@@ -24,7 +24,7 @@ struct Vector {
     func from_array(arr: mut_anyptr, elem_size: usize, len: usize) Self {
         vec := Self(unsafe { internal_zeroed(len * elem_size) }, elem_size, len, len);
         unsafe {
-            mem_copy(vec.ptr, arr, elem_size * len);
+            mem_copy(vec.ptr, arr, len * elem_size);
         }
         return vec;
     }
@@ -52,7 +52,8 @@ struct Vector {
         }
         unsafe {
             mem_copy(
-                @ptr_add(@cast([*]mut uint8, self.ptr), self.elem_size * idx), val, self.elem_size
+                @ptr_add(@cast([*]mut uint8, self.ptr), self.elem_size * idx),
+                val, self.elem_size
             );
         }
     }

@@ -709,7 +709,7 @@ class Codegen:
             tmp = self.cur_fn.local_name()
             tmp_t = expected_typ
             load_ptr = False
-            if not (isinstance(expected_typ, ir.Pointer) and expected_typ.is_boxed):
+            if not (isinstance(expected_typ, ir.Pointer) and expected_typ.is_managed):
                 load_ptr = True
                 expected_typ = expected_typ.ptr(True)
             value = ir.Inst(
@@ -870,7 +870,7 @@ class Codegen:
                     tmp = self.cur_fn.local_name()
                     tmp_t = ir_typ
                     load_ptr = False
-                    if not (isinstance(ir_typ, ir.Pointer) and ir_typ.is_boxed):
+                    if not (isinstance(ir_typ, ir.Pointer) and ir_typ.is_managed):
                         load_ptr = True
                         ir_typ = ir_typ.ptr(True)
                     value = ir.Inst(
@@ -1564,8 +1564,7 @@ class Codegen:
             size, _ = self.comp.type_size(elem_typ)
             elems = []
             for i, elem in enumerate(expr.elems):
-                element = self.gen_expr_with_cast(elem_typ, elem)
-                elems.append(element)
+                elems.append(self.gen_expr_with_cast(elem_typ, elem))
             arr_lit = ir.ArrayLit(self.ir_type(elem_typ), elems)
             if expr.is_arr:
                 if custom_tmp:
@@ -1894,7 +1893,6 @@ class Codegen:
                     ret_l = contains_decl.local_name()
                     continue_l = contains_decl.local_name()
                     exit_l = contains_decl.local_name()
-                    contains_decl.add_br(cond_l)
                     contains_decl.add_label(cond_l)
                     contains_decl.add_cond_br(
                         ir.Inst(
@@ -1922,8 +1920,11 @@ class Codegen:
                             )
                         ]
                     )
-                    right_kind = right_sym.info.elem_typ.symbol().kind
-                    if right_kind.is_primitive() or right_kind == TypeKind.Enum:
+                    right_elem_typ_sym = right_sym.info.elem_typ.symbol()
+                    if right_elem_typ_sym.kind.is_primitive() or (
+                        right_elem_typ_sym.kind == TypeKind.Enum and
+                        not right_elem_typ_sym.info.is_boxed_enum
+                    ):
                         cond = ir.Inst(
                             ir.InstKind.Cmp,
                             [ir.Name("=="), cur_elem, elem_idx_]
@@ -1950,7 +1951,9 @@ class Codegen:
                 )
                 if expr.op == Kind.KwNotIn:
                     call = ir.Inst(ir.InstKind.BooleanNot, [call], ir.BOOL_T)
-                return call
+                tmp = self.cur_fn.local_name()
+                self.cur_fn.inline_alloca(ir.BOOL_T, tmp, call)
+                return ir.Ident(ir.BOOL_T, tmp)
 
             left = self.gen_expr_with_cast(expr_left_typ, expr.left)
             right = self.gen_expr_with_cast(expr_right_typ, expr.right)
