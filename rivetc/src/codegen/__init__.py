@@ -707,21 +707,26 @@ class Codegen:
             expected_sym.name
         ):
             tmp = self.cur_fn.local_name()
-            self.cur_fn.inline_alloca(
-                expected_typ, tmp,
-                ir.Inst(
-                    ir.InstKind.Cast, [
-                        ir.Inst(
-                            ir.InstKind.Call, [
-                                ir.Name("_R4core9enum_castF"), res_expr,
-                                expr_sym.info
-                                .get_variant_by_type(expected_typ_).value
-                            ]
-                        ), expected_typ
-                    ]
-                )
+            tmp_t = expected_typ
+            load_ptr = False
+            if not (isinstance(expected_typ, ir.Pointer) and expected_typ.is_boxed):
+                load_ptr = True
+                expected_typ = expected_typ.ptr(True)
+            value = ir.Inst(
+                ir.InstKind.Cast, [
+                    ir.Inst(
+                        ir.InstKind.Call, [
+                            ir.Name("_R4core9enum_castF"), res_expr,
+                            expr_sym.info
+                            .get_variant_by_type(expected_typ_).value
+                        ]
+                    ), expected_typ
+                ]
             )
-            res_expr = ir.Ident(expected_typ, tmp)
+            if load_ptr:
+                value = ir.Inst(ir.InstKind.LoadPtr, [value])
+            self.cur_fn.inline_alloca(tmp_t, tmp, value)
+            res_expr = ir.Ident(tmp_t, tmp)
 
         # wrap optional value
         if isinstance(expected_typ_,
@@ -863,23 +868,29 @@ class Codegen:
                     return ir.Ident(ir_typ, tmp)
                 elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed_enum:
                     tmp = self.cur_fn.local_name()
-                    self.cur_fn.inline_alloca(
-                        ir_typ, tmp, ir.Inst(
-                            ir.InstKind.Cast, [
-                                ir.Inst(
-                                    ir.InstKind.Call, [
-                                        ir.Name("_R4core9enum_castF"),
-                                        res,
-                                        typ_sym.info
-                                        .get_variant_by_type(expr.typ
-                                                             ).value
-                                    ]
-                                ),
-                                ir_typ
-                            ]
-                        )
+                    tmp_t = ir_typ
+                    load_ptr = False
+                    if not (isinstance(ir_typ, ir.Pointer) and ir_typ.is_boxed):
+                        load_ptr = True
+                        ir_typ = ir_typ.ptr(True)
+                    value = ir.Inst(
+                        ir.InstKind.Cast, [
+                            ir.Inst(
+                                ir.InstKind.Call, [
+                                    ir.Name("_R4core9enum_castF"),
+                                    res,
+                                    typ_sym.info
+                                    .get_variant_by_type(expr.typ
+                                                         ).value
+                                ]
+                            ),
+                            ir_typ
+                        ]
                     )
-                    return ir.Ident(ir_typ, tmp)
+                    if load_ptr:
+                        value = ir.Inst(ir.InstKind.LoadPtr, [value])
+                    self.cur_fn.inline_alloca(tmp_t, tmp, value)
+                    return ir.Ident(tmp_t, tmp)
                 tmp = self.cur_fn.local_name()
                 self.cur_fn.inline_alloca(
                     ir_typ, tmp,
