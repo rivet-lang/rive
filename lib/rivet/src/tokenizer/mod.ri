@@ -154,8 +154,7 @@ public struct Tokenizer {
     func skip_whitespace(mut self) {
         while self.pos < self.text.len : self.pos += 1 {
             c := self.current_char();
-            if c == 9 {
-                // tabs are most common
+            if c == 8 {
                 self.pos += 1;
                 continue;
             }

@@ -3,6 +3,7 @@
 // be found in the LICENSE file.
 
 import std/strings;
+import std/console;
 
 import ../ast;
 import ../utils;
@@ -255,7 +256,7 @@ extend Parser {
             },
             self.accept(.KwReturn) => {
                 pos := self.prev_tok.pos;
-                has_expr := self.tok.kind in [.Comma, .Semicolon, .Rbrace];
+                has_expr := self.tok.kind !in [.Comma, .Semicolon, .Rbrace];
                 return_expr := if has_expr {
                     self.parse_expr()
                 } else {
@@ -264,7 +265,11 @@ extend Parser {
                 .Return(return_expr, has_expr, pos + return_expr.position())
             },
             self.tok.kind == .KwIf => self.parse_if_expr(),
-            self.tok.kind == .KwSwitch => self.parse_switch_expr(),
+            self.accept(.KwSwitch) => self.parse_switch_expr(),
+            self.tok.kind in [.KwUnsafe, .Lbrace] => {
+                    console.println("BLOCK-EXPR");
+                self.parse_block_expr()
+            },
             self.tok.kind == .Lparen => {
                 mut pos := self.tok.pos;
                 self.next();
@@ -288,7 +293,6 @@ extend Parser {
                     .Paren(e, pos + e.position() + self.prev_tok.pos)
                 }
             },
-            self.tok.kind in [.KwUnsafe, .Lbrace] => self.parse_block_expr(),
             self.tok.kind == .Lbracket => {
                 mut elems := @vec(ast.Expr);
                 mut pos := self.tok.pos;
@@ -587,7 +591,11 @@ extend Parser {
                     cond = self.parse_expr();
                 }
             }
+            console.println("switch_expr: skip arrow");
             self.expect(.Arrow);
+            console.println("switch_expr: start Branch expr {}", self.tok.kind);
+            branch_expr := self.parse_expr();
+            console.println("switch_expr: end Branch expr");
             branches.push(ast.SwitchBranch(
                 patterns: patterns,
                 has_var: has_var,
@@ -596,7 +604,7 @@ extend Parser {
                 var_pos: var_pos,
                 has_cond: has_cond,
                 cond: cond,
-                expr: self.parse_expr(),
+                expr: branch_expr,
                 is_else: is_else,
                 pos: branch_pos + self.prev_tok.pos
             ));
@@ -685,7 +693,9 @@ extend Parser {
         value := self.tok.lit;
         pos := self.tok.pos;
         self.next();
-        return if value[..2] !in ["0x", "0o", "0b"] and value.index_of_any(".eE") !is none {
+        return if value.len > 2 and value[..2] !in ["0x", "0o", "0b"] and value.index_of_any(
+            ".eE"
+        ) !is none {
             .FloatLiteral(value, pos)
         } else {
             .IntegerLiteral(value, pos)

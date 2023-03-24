@@ -63,7 +63,7 @@ public enum Type : traits.Stringable {
         self_is_ref: bool;
         args: []Arg;
         is_variadic: bool;
-        ret_typ: Type;
+        ret_type: Type;
     },
     Resolved: TypeSym;
 
@@ -96,10 +96,10 @@ public enum Type : traits.Stringable {
             .Func as func_data => {
                 args := @vec(mut Arg, func_data.args.len);
                 for i, arg in args {
-                    args[i].typ = arg.typ.unalias() ?? arg.typ;
+                    args[i].type = arg.type.unalias() ?? arg.type;
                 }
                 return .Func(
-                    args: args, ret_typ: func_data.ret_typ.unalias() ?? func_data.ret_typ,
+                    args: args, ret_type: func_data.ret_type.unalias() ?? func_data.ret_type,
                     ...self
                 );
             },
@@ -203,14 +203,14 @@ public enum Type : traits.Stringable {
                     func_lhs.self_is_ref != func_rhs.self_is_ref,
                     func_lhs.args.len != func_rhs.args.len => false,
                     else => {
-                        mut final_res := func_lhs.ret_typ == func_rhs.ret_typ;
+                        mut final_res := func_lhs.ret_type == func_rhs.ret_type;
                         for i, arg_lhs in func_lhs.args {
                             arg_rhs := func_rhs.args[i];
                             if arg_lhs.is_mut != arg_rhs.is_mut {
                                 final_res = false;
                                 break;
                             }
-                            if arg_lhs.typ != arg_rhs.typ {
+                            if arg_lhs.type != arg_rhs.type {
                                 final_res = false;
                                 break;
                             }
@@ -310,9 +310,9 @@ public enum Type : traits.Stringable {
                     sb.write_string("...");
                 }
                 sb.write_string(")");
-                if func_data.ret_typ !is .Void {
+                if func_data.ret_type !is .Void {
                     sb.write_string(" ");
-                    sb.write_string(func_data.ret_typ.to_string());
+                    sb.write_string(func_data.ret_type.to_string());
                 }
                 sb.to_string()
             },

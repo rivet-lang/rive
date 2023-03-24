@@ -31,7 +31,7 @@ public struct Compiler {
 
     func run(mut self) ! {
         self.make_rivet_directory().!;
-        self.load_module_and_parse("core", "core", "", token.NO_POS).!;
+        self.load_module("core", "core", "", token.NO_POS).!;
         self.load_root_module().!;
         self.import_modules().!;
     }
@@ -45,7 +45,7 @@ public struct Compiler {
         }
     }
 
-    func parse_files(mut self, mod_sym: ast.Sym, files: []string) {
+    func parse_files(mut self, mod_sym: ast.Module, files: []string) {
         for sf in parser.Parser(table: self.table, prefs: self.prefs).parse_module(mod_sym, files) {
             self.table.source_files.push(sf);
         }
@@ -74,7 +74,7 @@ public struct Compiler {
         } else if self.prefs.is_verbose {
             self.vlog("loaded root module files:");
             for file in files {
-                self.vlog("  {}", file);
+                self.vlog("   {}", file);
             }
         }
         root_sym := ast.Module(name: self.prefs.mod_name, is_root: true);
@@ -84,10 +84,10 @@ public struct Compiler {
         self.parse_files(root_sym, files);
     }
 
-    func load_module_and_parse(
+    func load_module(
         mut self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) ! {
-        mod := self.load_module(pathx, alias_name, file_path, pos).!;
+        mod := self.load_module_files(pathx, alias_name, file_path, pos).!;
         if mod.found {
             mod_sym := ast.Module(name: mod.full_name);
             self.table.universe.scope.add(mod_sym) catch |err| {
@@ -97,10 +97,10 @@ public struct Compiler {
         }
     }
 
-    func load_module(
+    func load_module_files(
         self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) !ast.ImportedMod {
-        self.vlog("Compiler.load_module(): searching module `{}`", pathx);
+        self.vlog("Compiler.load_module_files(): searching module `{}`", pathx);
         mut found := false;
         mut name := "";
         mut full_name := "";
@@ -167,7 +167,7 @@ public struct Compiler {
                     files = self.table.filter_files(fs.walk_directory(src_dir, ".ri").!);
                 }
                 if found {
-                    self.vlog("            > found");
+                    self.vlog("        > found");
                     break;
                 }
             }
@@ -177,7 +177,7 @@ public struct Compiler {
         } else if files.len == 0 {
             report.error("module `{}` contains no rivet files".fmt(pathx), pos);
         } else {
-            self.vlog("    module {} loaded", pathx);
+            self.vlog("    module `{}` loaded", pathx);
         }
         return ast.ImportedMod(
             found: found, name: name,
@@ -191,7 +191,7 @@ public struct Compiler {
         for sf in self.table.source_files {
             for d in sf.decls {
                 if d is .Import as mut import_decl {
-                    mod := self.load_module(
+                    mod := self.load_module_files(
                         import_decl.path, import_decl.alias_name, sf.file, import_decl.pos
                     ).!;
                     if mod.found {

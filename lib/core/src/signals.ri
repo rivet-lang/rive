@@ -13,10 +13,10 @@ func setup_signals_handler() {
     }
 }
 
-// The default signal handler for signals. It is needed to process signals and give
-// understandable error messages along with the stacktrace.
+/// The default signal handler for signals. It is needed to process signals and give
+/// understandable error messages along with the backtrace.
 func signals_handler(sig: int32, info: *mut libc.siginfo_t, context: mut_anyptr) {
-	switch info.si_signo {
+    switch info.si_signo {
 		libc.SIGSEGV, libc.SIGBUS => segfault_handler(), // It panics on SIGSEGV and SIGBUS.
 		else => { }
 	}

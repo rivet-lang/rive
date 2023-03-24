@@ -22,7 +22,7 @@ public struct Parser {
     mut peek_tok: token.Token;
     mut last_err_pos: token.Pos;
 
-    mut mod_sym: ?ast.Sym;
+    mut mod_sym: ast.Module;
     mut file_path: string;
     mut file_dir: string;
     mut scope: ?ast.Scope;
@@ -35,7 +35,7 @@ public struct Parser {
     mut inside_switch_header: bool;
     mut inside_block: bool;
 
-    public func parse_module(mut self, mod_sym: ast.Sym, files: []string) []ast.SourceFile {
+    public func parse_module(mut self, mod_sym: ast.Module, files: []string) []ast.SourceFile {
         self.mod_sym = mod_sym;
         mut source_files := @vec(ast.SourceFile);
         for file in files {
@@ -49,10 +49,10 @@ public struct Parser {
         self.file_dir = path.dirname(file) ?? file;
         self.tokenizer = tokenizer.Tokenizer.from_file(file, self.prefs, self.table);
         if report.total_errors() > 0 {
-            return ast.SourceFile(file, self.mod_sym.?, []);
+            return ast.SourceFile(file, self.mod_sym, []);
         }
         self.advance(2);
-        return ast.SourceFile(file, self.mod_sym.?, self.parse_decls());
+        return ast.SourceFile(file, self.mod_sym, self.parse_decls());
     }
 
     func next(mut self) {

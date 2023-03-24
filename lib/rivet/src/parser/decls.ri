@@ -12,13 +12,14 @@ import ../token;
 import ../tokenizer;
 
 extend Parser {
-    func parse_doc_comment(mut self) ast.Decl {
-        pos := self.tok.pos;
+    func parse_doc_comment(mut self) ast.DocComment {
+        mut pos := self.tok.pos;
         mut lines := @vec(string);
         while self.accept(.DocComment) {
             lines.push(self.prev_tok.lit);
+            pos += self.prev_tok.pos;
         }
-        return .DocComment(lines: lines);
+        return ast.DocComment(lines, pos);
     }
 
     public func parse_annotations(
@@ -154,6 +155,11 @@ extend Parser {
                     pos: pos
                 );
             },
+            self.accept(.KwFunc) => return self.parse_func_decl(
+                doc_comment, annotations, is_public, annotations.has("unsafe") or (
+                    self.inside_extern and self.extern_abi != .Rivet
+                ), if self.inside_extern { self.extern_abi } else { .Rivet }
+            ),
             self.tok.kind != .EndOfFile => {
                 report.error("expected declaration, found {}".fmt(self.tok), pos);
                 self.next();
@@ -178,5 +184,115 @@ extend Parser {
             sb.write_join(["/", self.parse_name()]);
         }
         return sb.to_string();
+    }
+
+    func parse_func_decl(
+        mut self, docs: ast.DocComment, annotations: ast.Annotations,
+        is_public: bool, is_unsafe: bool, abi: ast.ABI
+    ) ast.Decl {
+        pos := self.tok.pos;
+        name := if token.is_overloadable_operator(self.tok.kind) {
+            self.next();
+            self.prev_tok.kind.to_string()
+        } else {
+            self.parse_name()
+        };
+
+        mut args := @vec(ast.Arg);
+        mut is_method := false;
+        mut is_variadic := false;
+        mut self_is_mut := false;
+        mut self_is_ref := false;
+        mut has_named_args := false;
+
+        self.open_scope();
+        sc := self.scope.?;
+        self.expect(.Lparen);
+        if self.tok.kind != .Rparen {
+            // receiver (`self`|`&self`|`mut self`)
+            if self.tok.kind == .KwSelf or (
+                self.tok.kind in [.Amp, .KwMut] and self.peek_tok.kind == .KwSelf
+            ) {
+                is_method = true;
+                self_is_ref = self.accept(.Amp);
+                self_is_mut = !self_is_ref and self.accept(.KwMut);
+                self.expect(.KwSelf);
+                if self.tok.kind != .Rparen {
+                    self.expect(.Comma);
+                }
+            }
+            // arguments
+            while self.tok.kind != .Rparen {
+                if self.inside_extern and self.accept(.Ellipsis) {
+                    is_variadic = true;
+                    break;
+                } else {
+                    arg_pos := self.tok.pos;
+                    arg_is_mut := self.accept(.KwMut);
+                    arg_name := self.parse_name();
+                    self.expect(.Colon);
+                    arg_type := self.parse_type();
+                    is_variadic = arg_type is .Variadic;
+                    arg_expr := if self.accept(.Assign) {
+                        has_named_args = true;
+                        self.parse_expr()
+                    } else {
+                        .Empty(self.tok.pos)
+                    };
+                    args.push(ast.Arg(
+                        name: name,
+                        is_mut: arg_is_mut,
+                        type: arg_type,
+                        def_expr: arg_expr,
+                        has_def_expr: arg_expr !is .Empty,
+                        pos: arg_pos + self.prev_tok.pos
+                    ));
+                }
+                if !self.accept(.Comma) {
+                    break;
+                }
+            }
+        }
+        self.expect(.Rparen);
+
+        is_result := self.accept(.Bang);
+        mut ret_type := if self.tok.kind in [.Lbrace, .Semicolon] {
+            ast.Type.Void // default: `void`
+        } else {
+            self.parse_type()
+        };
+        if is_result {
+            ret_type = .Result(ret_type);
+        }
+
+        mut stmts := @vec(ast.Stmt);
+        mut has_body := true;
+        if (self.inside_trait or self.inside_extern) and self.accept(.Semicolon) {
+            has_body = false;
+        } else {
+            self.expect(.Lbrace);
+            while !self.accept(.Rbrace) {
+                stmts.push(self.parse_stmt());
+            }
+        }
+        self.close_scope();
+        return .Func(
+            docs: docs,
+            annotations: annotations,
+            is_public: is_public,
+            is_extern: self.inside_extern,
+            is_unsafe: is_unsafe,
+            name: name,
+            args: args,
+            has_named_args: has_named_args,
+            ret_type: ret_type,
+            stmts: stmts,
+            has_body: has_body,
+            is_method: is_method,
+            self_is_mut: self_is_mut,
+            self_is_ref: self_is_ref,
+            scope: sc,
+            pos: pos + self.prev_tok.pos
+        );
     }
 }

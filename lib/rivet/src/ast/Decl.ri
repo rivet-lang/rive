@@ -8,27 +8,6 @@ import ../token;
 
 public enum Decl {
     Empty: token.Pos,
-    DocComment {
-        mut lines: []string;
-        pos: token.Pos;
-
-        [inline]
-        func is_empty(self) bool {
-            return self.lines.is_empty();
-        }
-
-        func merge(self) string {
-            mut res := strings.Builder.new();
-            for line in self.lines {
-                res.write_join([line, if line.is_empty() or line.ends_with(".") {
-                    "\n"
-                } else {
-                    " "
-                }]);
-            }
-            return res.to_string();
-        }
-    },
     Import {
         annotations: Annotations;
         is_public: bool;
@@ -38,6 +17,164 @@ public enum Decl {
         import_list: []ImportListInfo;
         mut mod_sym: Module;
         pos: token.Pos;
+    },
+    Extern {
+        docs: DocComment;
+        annotations: Annotations;
+        abi: ABI;
+        decls: []Decl;
+        pos: token.Pos;
+    },
+    Const {
+        docs: DocComment;
+        annotations: Annotations;
+        is_public: bool;
+        name: string;
+        has_type: bool;
+        type: Type;
+        expr: Expr;
+        pos: token.Pos;
+    },
+    Var {
+        docs: DocComment;
+        annotations: Annotations;
+        is_public: bool;
+        is_extern: bool;
+        abi: ABI;
+        lefts: []ObjectData;
+        right: Expr;
+        pos: token.Pos;
+    },
+    Alias {
+        docs: DocComment;
+        annotations: Annotations;
+        is_public: bool;
+        name: string;
+        parent: Expr;
+        is_typealias: bool;
+        parent_type: Type;
+        pos: token.Pos;
+    },
+    Enum {
+        docs: DocComment;
+        annotations: Annotations;
+        is_public: bool;
+        name: string;
+        underlying_typ: Type;
+        bases: []Type;
+        variants: []EnumVariantDecl;
+        is_boxed_enum: bool;
+        decls: []Decl;
+        pos: token.Pos;
+    },
+    Trait {
+        docs: DocComment;
+        annotations: Annotations;
+        is_public: bool;
+        name: string;
+        bases: []Type;
+        decls: []Decl;
+        pos: token.Pos;
+    },
+    Struct {
+        docs: DocComment;
+        annotations: Annotations;
+        is_public: bool;
+        name: string;
+        bases: []Type;
+        decls: []Decl;
+        is_opaque: bool;
+        pos: token.Pos;
+    },
+    Field {
+        docs: DocComment;
+        annotations: Annotations;
+        is_public: bool;
+        is_mut: bool;
+        name: string;
+        type: Type;
+        def_expr: Expr;
+        has_def_expr: bool;
+        pos: token.Pos;
+    },
+    Extend {
+        annotations: Annotations;
+        type: Type;
+        bases: []Type;
+        decls: []Decl;
+        pos: token.Pos;
+    },
+    Func {
+        docs: DocComment;
+        annotations: Annotations;
+        is_public: bool;
+        is_extern: bool;
+        is_unsafe: bool;
+        is_method: bool;
+        is_main: bool;
+        is_variadic: bool;
+        abi: ABI;
+        name: string;
+        name_pos: token.Pos;
+        args: []Arg;
+        has_named_args: bool;
+        ret_type: Type;
+        stmts: []Stmt;
+        scope: Scope;
+        has_body: bool;
+        self_is_mut: bool;
+        self_is_ref: bool;
+        pos: token.Pos;
+    },
+    Destructor {
+        docs: DocComment;
+        annotations: Annotations;
+        self_is_mut: bool;
+        self_type: Type;
+        stmts: []Stmt;
+        scope: Scope;
+        pos: token.Pos;
+    },
+    Test {
+        docs: DocComment;
+        annotations: Annotations;
+        name: string;
+        stmts: []Stmt;
+        scope: Scope;
+        pos: token.Pos;
+    }
+}
+
+[boxed]
+public struct EnumVariantDecl {
+    public name: string;
+    public typ: Type;
+    public has_typ: bool;
+    public has_value: bool;
+    public value: Expr;
+    public decls: []Decl;
+}
+
+[boxed]
+public struct DocComment {
+    mut lines: []string;
+    pos: token.Pos;
+
+    [inline]
+    func is_empty(self) bool {
+        return self.lines.is_empty();
+    }
+
+    func merge(self) string {
+        mut res := strings.Builder.new();
+        for line in self.lines {
+            res.write_join([line, if line.is_empty() or line.ends_with(".") {
+                "\n"
+            } else {
+                " "
+            }]);
+        }
+        return res.to_string();
     }
 }
 

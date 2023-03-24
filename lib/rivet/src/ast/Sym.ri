@@ -412,9 +412,10 @@ public struct Arg {
     public name: string;
     public is_mut: bool;
     public is_self: bool;
-    public def_expr: ?Expr;
+    public has_def_expr: bool;
+    public def_expr: Expr;
     public pos: token.Pos;
-    public mut typ: Type;
+    public mut type: Type;
 }
 
 [boxed]
@@ -444,7 +445,7 @@ public struct Func : Sym {
     public func args_len(self) usize {
         mut len: usize := 0;
         for arg in self.args {
-            if !(arg.is_self or arg.typ is .Variadic) {
+            if !(arg.is_self or arg.type is .Variadic) {
                 len += 1;
             }
         }

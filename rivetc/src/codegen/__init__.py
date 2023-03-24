@@ -864,23 +864,18 @@ class Codegen:
                 elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed_enum:
                     tmp = self.cur_fn.local_name()
                     self.cur_fn.inline_alloca(
-                        ir_typ, tmp,
-                        ir.Inst(
-                            ir.InstKind.LoadPtr, [
+                        ir_typ, tmp, ir.Inst(
+                            ir.InstKind.Cast, [
                                 ir.Inst(
-                                    ir.InstKind.Cast, [
-                                        ir.Inst(
-                                            ir.InstKind.Call, [
-                                                ir.Name("_R4core9enum_castF"),
-                                                res,
-                                                typ_sym.info
-                                                .get_variant_by_type(expr.typ
-                                                                     ).value
-                                            ]
-                                        ),
-                                        ir_typ.ptr(True)
+                                    ir.InstKind.Call, [
+                                        ir.Name("_R4core9enum_castF"),
+                                        res,
+                                        typ_sym.info
+                                        .get_variant_by_type(expr.typ
+                                                             ).value
                                     ]
-                                )
+                                ),
+                                ir_typ
                             ]
                         )
                     )

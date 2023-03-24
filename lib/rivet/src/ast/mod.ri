@@ -17,7 +17,7 @@ public func is_comptime_constant(name: string) bool {
 [boxed]
 public struct SourceFile {
     public file: string;
-    public mod_sym: Sym;
+    public mod_sym: Module;
     public decls: []Decl;
     public mut imported_symbols: ImportedSymbols;
 }
