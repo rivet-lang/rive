@@ -64,8 +64,9 @@ public func remove_directory(dir: string) ! {
 
 public func walk_directory(path_: string, ext: string = "") ![]string {
     if path_.is_empty() {
-        return EmptyStringError("walk_directory expects a folder, not an empty string");
+        return EmptyStringError("`walk_directory` expects a folder, not an empty string");
     }
+    rpath := path.resolve(path_).!;
     unsafe {
         if dir := libc.opendir(path_.ptr) {
             mut res := @vec(string, 15);
@@ -79,7 +80,7 @@ public func walk_directory(path_: string, ext: string = "") ![]string {
                 if !ext.is_empty() and path.extension(bptr_str) != ext {
                     continue;
                 }
-                full_path := path.join(path_, bptr_str).!;
+                full_path := path.join(rpath, bptr_str).!;
                 res.push(full_path);
             }
             _ = libc.closedir(dir);

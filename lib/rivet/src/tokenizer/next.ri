@@ -45,11 +45,13 @@ extend Tokenizer {
             } else if ch.is_digit() or (ch == b'.' and nextc.is_digit()) {
                 // decimals with 0 prefix = error
                 if ch == b'0' and nextc.is_digit() {
+                    self.pos -= 1;
                     mut err := self.error_builder(
                         "leading zeros in decimal integer literals are not permitted"
                     );
                     err.add_help("use an `0o` prefix for octal integers");
                     err.emit();
+                    self.pos += 1;
                 }
                 lit := self.read_number();
                 return self.new_token(.Number, self.number_literal_without_separator(lit), lit.len);
@@ -276,23 +278,29 @@ extend Tokenizer {
         start := self.pos;
         self.pos += 2; // skip '0x'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
+            self.pos -= 1;
             self.error("separator `_` is only valid between digits in a numeric literal");
+            self.pos += 1;
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
+                self.pos -= 1;
                 self.error("cannot use `_` consecutively in a numeric literal");
+                self.pos += 1;
             }
             if !ch.is_hex_digit() and ch != NUM_SEP {
                 if !ch.is_letter() {
                     break;
                 } else {
+                    self.pos -= 1;
                     self.error(
                         "this hexadecimal number has unsuitable digit `{}`".fmt(
                             ch.to_ascii()
                         )
                     );
+                    self.pos += 1;
                 }
             }
         }
@@ -314,24 +322,30 @@ extend Tokenizer {
         start := self.pos;
         self.pos += 2; // skip '0b'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
+            self.pos -= 1;
             self.error("separator `_` is only valid between digits in a numeric literal");
+            self.pos += 1;
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
+                self.pos -= 1;
                 self.error("cannot use `_` consecutively in a numeric literal");
+                self.pos += 1;
             }
 
             if !ch.is_bin_digit() and ch != NUM_SEP {
                 if !ch.is_digit() and !ch.is_letter() {
                     break;
                 } else {
+                    self.pos -= 1;
                     self.error(
                         "this binary number has unsuitable digit `{}`".fmt(
                             ch.to_ascii()
                         )
                     );
+                    self.pos += 1;
                 }
             }
         }
@@ -355,24 +369,30 @@ extend Tokenizer {
         start := self.pos;
         self.pos += 2; // skip '0o'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
+            self.pos -= 1;
             self.error("separator `_` is only valid between digits in a numeric literal");
+            self.pos += 1;
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
+                self.pos -= 1;
                 self.error("cannot use `_` consecutively in a numeric literal");
+                self.pos += 1;
             }
 
             if !ch.is_oct_digit() and ch != NUM_SEP {
                 if !ch.is_digit() and !ch.is_letter() {
                     break;
                 } else {
+                    self.pos -= 1;
                     self.error(
                         "this octal number has unsuitable digit `{}`".fmt(
                             ch.to_ascii()
                         )
                     );
+                    self.pos += 1;
                 }
             }
         }
@@ -395,29 +415,37 @@ extend Tokenizer {
     func read_dec_number(mut self) string {
         start := self.pos;
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
+            self.pos -= 1;
             self.error("separator `_` is only valid between digits in a numeric literal");
+            self.pos += 1;
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
+                self.pos -= 1;
                 self.error("cannot use `_` consecutively in a numeric literal");
+                self.pos += 1;
             }
             if !ch.is_digit() and ch != NUM_SEP {
                 if !ch.is_letter() or ch in [b'e', b'E'] {
                     break;
                 } else {
+                    self.pos -= 1;
                     self.error(
                         "this number has unsuitable digit `{}`".fmt(
                             ch.to_ascii()
                         )
                     );
+                    self.pos += 1;
                 }
             }
         }
 
         if self.text[self.pos - 1] == NUM_SEP {
+            self.pos -= 1;
             self.error("cannot use `_` at the end of a numeric literal");
+            self.pos += 1;
         }
 
         mut call_method := false; // true for, e.g., 5.method(), 5.5.method(), 5e5.method()

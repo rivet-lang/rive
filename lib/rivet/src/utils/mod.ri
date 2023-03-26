@@ -90,7 +90,7 @@ public func join(vec: []string, s: string) string {
     return if vec.is_empty() {
         ""
     } else {
-        mut sb := strings.Builder();
+        mut sb := strings.Builder.new();
         for i, e in vec {
             sb.write_string(e);
             if i < vec.len - 1 {

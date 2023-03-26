@@ -4,8 +4,6 @@
 
 import std/strings;
 
-import std/console;
-
 import ../ast;
 import ../utils;
 import ../prefs;
