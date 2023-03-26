@@ -109,7 +109,10 @@ public struct StringBuilder : Stringable {
     }
 
     [inline]
-    public func to_string(self) string {
-        return string(@cast([*]uint8, self.inner.ptr), self.inner.len);
+    public func to_string(mut self) string {
+        unsafe{
+            self.inner.push(&@cast(uint8, 0));
+        }
+        return string(@cast([*]uint8, self.inner.ptr), self.inner.len - 1);
     }
 }

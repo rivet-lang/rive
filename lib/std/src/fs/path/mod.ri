@@ -47,10 +47,10 @@ public func is_readable(path: string) bool {
 /// Returns `true` if `path` is a directory.
 public func is_directory(path: string) bool {
     mut statbuf := libc.Stat();
-    return if unsafe { libc.stat(path.ptr, &mut statbuf) != 0 } {
-        false
-    } else {
+    return if unsafe { libc.stat(path.ptr, &mut statbuf) == 0 } {
         @cast(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFDIR
+    } else {
+        false
     };
 }
 
@@ -60,7 +60,7 @@ public func is_file(path: string) bool {
     return exists(path) and !is_directory(path);
 }
 
-/// Returns `true` if path is absolute.
+/// Returns `true` if `path` is absolute.
 [inline]
 public func is_absolute(path: string) bool {
     return path.len > 0 and path[0] == SEPARATOR;

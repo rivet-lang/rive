@@ -64,7 +64,7 @@ class Compiler:
         for sf in self.parsed_files:
             for decl in sf.decls:
                 if isinstance(decl, ast.ImportDecl):
-                    mod = self.load_mod(
+                    mod = self.load_module_files(
                         decl.path, decl.alias, sf.file, decl.pos
                     )
                     if mod.found:
@@ -129,10 +129,10 @@ class Compiler:
         return g
 
     def run(self):
-        self.parsed_files += self.load_mod_and_parse(
+        self.parsed_files += self.load_module(
             "core", "core", "", token.NO_POS
         )
-        self.load_root_mod()
+        self.load_root_module()
         self.import_modules()
         if not self.prefs.check_syntax:
             self.vlog("registering symbols...")
@@ -155,7 +155,7 @@ class Compiler:
             if self.exit_code != 0:
                 exit(self.exit_code)
 
-    def load_root_mod(self):
+    def load_root_module(self):
         if path.isdir(self.prefs.input):
             files = self.filter_files(
                 glob.glob(path.join(self.prefs.input, "*.ri"))
@@ -173,8 +173,8 @@ class Compiler:
         self.vlog("parsing root module files...")
         self.parsed_files += parser.Parser(self).parse_mod(root_sym, files)
 
-    def load_mod_and_parse(self, pathx, alias, file_path, pos):
-        mod = self.load_mod(pathx, alias, file_path, pos)
+    def load_module(self, pathx, alias, file_path, pos):
+        mod = self.load_module_files(pathx, alias, file_path, pos)
         if mod.found:
             mod_sym = sym.Mod(False, mod.full_name)
             self.universe.add(mod_sym)
@@ -182,7 +182,7 @@ class Compiler:
             return parser.Parser(self).parse_mod(mod_sym, mod.files)
         return []
 
-    def load_mod(self, pathx, alias, file_path, pos):
+    def load_module_files(self, pathx, alias, file_path, pos):
         found = False
         name = ""
         full_name = ""

@@ -14,15 +14,15 @@ import ../report;
 import { LF, CR } from ../utils;
 
 extend Tokenizer {
-    [inline]
     public func next(mut self) token.Token {
         while {
             cidx := self.tidx;
             self.tidx += 1;
-            if cidx >= self.all_tokens.len {
-                return self.end_of_file();
-            }
-            return self.all_tokens[cidx];
+            return if cidx >= self.all_tokens.len {
+                self.end_of_file()
+            } else {
+                self.all_tokens[cidx]
+            };
         }
         return self.new_eof_token();
     }
@@ -262,13 +262,14 @@ extend Tokenizer {
         return lit;
     }
 
+    [inline]
     func read_number(mut self) string {
-        switch {
-            self.matches("0x", self.pos) => return self.read_hex_number(),
-            self.matches("0b", self.pos) => return self.read_bin_number(),
-            self.matches("0o", self.pos) => return self.read_oct_number(),
-            else => return self.read_dec_number()
-        }
+        return switch {
+            self.matches("0x", self.pos) => self.read_hex_number(),
+            self.matches("0b", self.pos) => self.read_bin_number(),
+            self.matches("0o", self.pos) => self.read_oct_number(),
+            else => self.read_dec_number()
+        };
     }
 
     func read_hex_number(mut self) string {
@@ -289,7 +290,7 @@ extend Tokenizer {
                 } else {
                     self.error(
                         "this hexadecimal number has unsuitable digit `{}`".fmt(
-                            self.current_char().to_ascii()
+                            ch.to_ascii()
                         )
                     );
                 }
@@ -328,7 +329,7 @@ extend Tokenizer {
                 } else {
                     self.error(
                         "this binary number has unsuitable digit `{}`".fmt(
-                            self.current_char().to_ascii()
+                            ch.to_ascii()
                         )
                     );
                 }
@@ -352,7 +353,7 @@ extend Tokenizer {
 
     func read_oct_number(mut self) string {
         start := self.pos;
-        self.pos += 2; // skip '0b'
+        self.pos += 2; // skip '0o'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
             self.error("separator `_` is only valid between digits in a numeric literal");
         }
@@ -369,7 +370,7 @@ extend Tokenizer {
                 } else {
                     self.error(
                         "this octal number has unsuitable digit `{}`".fmt(
-                            self.current_char().to_ascii()
+                            ch.to_ascii()
                         )
                     );
                 }
@@ -408,7 +409,7 @@ extend Tokenizer {
                 } else {
                     self.error(
                         "this number has unsuitable digit `{}`".fmt(
-                            self.current_char().to_ascii()
+                            ch.to_ascii()
                         )
                     );
                 }

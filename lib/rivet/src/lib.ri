@@ -108,6 +108,7 @@ public struct Compiler {
                 }
             }
         }
+        self.vlog("loaded modules...");
         self.resolve_deps();
         if report.total_errors() > 0 {
             self.abort();
@@ -117,8 +118,9 @@ public struct Compiler {
     func resolve_deps(mut self) {
         g := self.import_graph();
         g_resolved := g.resolve();
-        self.vlog("-----= resolved dependencies graph =-----");
-        self.vlog(g_resolved.display());
+        self.vlog(
+            "-----= resolved dependencies graph =-----\n".concat(g_resolved.display())
+        );
         self.vlog("-----------------------------------------");
         cycles := g_resolved.display_cycles();
         if cycles.len > 1 {
@@ -138,6 +140,7 @@ public struct Compiler {
                 }
             }
         }
+        self.vlog("resolved module dependencies...");
     }
 
     func import_graph(self) depgraph.DepGraph {
@@ -220,7 +223,7 @@ public struct Compiler {
             process.set_cwd(old_wd).!;
             if found {
                 self.vlog("      > found");
-                files = self.table.filter_files(fs.walk_directory(abspath, ".ri").!);
+                files = self.table.filter_files(fs.walk_directory(pathx, ".ri").!);
             }
         } else {
             self.vlog("    searching module in global path");

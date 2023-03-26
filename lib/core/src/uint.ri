@@ -17,7 +17,7 @@ extend uint8 : Stringable {
     /// Returns `true` if the byte is in range 0-9 and `false` otherwise.
     [inline]
     public func is_digit(self) bool {
-        return (self >= b'0' and self <= b'9');
+        return self >= b'0' and self <= b'9';
     }
 
     /// Returns `true` if the byte is a binary digit (0 or 1) and `false` otherwise.
@@ -36,7 +36,8 @@ extend uint8 : Stringable {
     /// otherwise.
     [inline]
     public func is_hex_digit(self) bool {
-        return self.is_digit() or (self >= b'a' and self <= b'f')
+        return (self >= b'0' and self <= b'9')
+            or (self >= b'a' and self <= b'f')
             or (self >= b'A' and self <= b'F');
     }
 

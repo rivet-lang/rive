@@ -231,7 +231,7 @@ public struct Parser {
                         return self.table.never_t;
                     },
                     "anyptr", "mut_anyptr" => return ast.Type.Anyptr(
-                        expr_name.starts_with("mut_")
+                        expr_name.starts_with("mut_"), self.prev_tok.pos
                     ),
                     "bool" => return self.table.bool_t,
                     "rune" => return self.table.rune_t,

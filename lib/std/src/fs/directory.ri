@@ -34,6 +34,15 @@ public struct CouldNotOpenDirectoryError : Error {
     }
 }
 
+[boxed]
+public struct EmptyStringError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
 public func make_directory(path_: string, mode: usize = 0o777) ! {
     if path_ == "." {
         return;
@@ -54,25 +63,30 @@ public func remove_directory(dir: string) ! {
 }
 
 public func walk_directory(path_: string, ext: string = "") ![]string {
-    rpath := path.resolve(path_).!;
+    if path_.is_empty() {
+        return EmptyStringError("walk_directory expects a folder, not an empty string");
+    }
     unsafe {
         if dir := libc.opendir(path_.ptr) {
-            mut res := @vec(string);
+            mut res := @vec(string, 15);
             while ent := libc.readdir(dir) {
                 bptr: [*]uint8 := &ent.*.d_name[0];
                 if (bptr[0] == 0 or (bptr[0] == b'.' and bptr[1] == 0)
                     or (bptr[0] == b'.' and bptr[1] == b'.' and bptr[2] == 0)) {
                     continue;
                 }
-                full_path := path.join(rpath, string.from_raw(bptr).clone()).!;
-                if !ext.is_empty() and path.extension(full_path) != ext {
+                bptr_str := string.from_raw(bptr);
+                if !ext.is_empty() and path.extension(bptr_str) != ext {
                     continue;
                 }
+                full_path := path.join(path_, bptr_str).!;
                 res.push(full_path);
             }
             _ = libc.closedir(dir);
             return res;
         }
     }
-    return CouldNotOpenDirectoryError("walk_directory: couldn't open '{}'".fmt(path_));
+    return CouldNotOpenDirectoryError(
+        "walk_directory: couldn't open `{}`: {}".fmt(path_, c.errno_msg())
+    );
 }
