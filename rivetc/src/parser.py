@@ -424,7 +424,8 @@ class Parser:
             return ast.DestructorDecl(self_is_mut, sc, stmts, pos)
         elif self.accept(Kind.KwTest):
             pos = self.prev_tok.pos
-            name = self.parse_string_literal()
+            name = self.tok.lit
+            self.expect(Kind.String)
             self.open_scope()
             sc = self.scope
             stmts = []

@@ -393,6 +393,36 @@ public struct string : Stringable, Hashable {
         };
     }
 
+    /// Returns an array of all the UTF8 runes in the string `self` which is useful
+    /// if you want random access to them.
+    public func as_runes(self) []rune {
+        mut runes := @vec(rune, self.runes_count());
+        mut i: usize := 0;
+        while i < self.len : i += 1 {
+            char_len := unsafe { self.ptr[i] }.len_utf8();
+            unsafe {
+                runes.push(if char_len > 1 {
+                    end := if self.len - 1 >= i + char_len {
+                        i + char_len
+                    } else {
+                        self.len
+                    };
+                    r := self[i..end];
+                    i += char_len - 1;
+                    r.utf32_code()
+                } else {
+                    @cast(rune, self.ptr[i])
+                });
+            }
+        }
+        return runes;
+    }
+
+    [inline]
+    public func utf32_code(self) rune {
+        return utf8_to_utf32(self.as_bytes()) catch 0;
+    }
+
     /// Splits the string based on the passed `delim` substring. It returns the
     /// first `nth` parts. When `nth` == 0, return all the splits.
     /// The last returned element has the remainder of the string, even if the

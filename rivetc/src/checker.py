@@ -1768,7 +1768,11 @@ class Checker:
         elif isinstance(expected, type.Ptr) and isinstance(got, type.Ptr):
             return self.check_pointer(expected, got)
 
-        if self.comp.is_number(expected) and self.comp.is_number(got):
+        if expected == self.comp.rune_t and got == self.comp.comptime_int_t:
+            return True
+        elif expected == self.comp.comptime_int_t and got == self.comp.rune_t:
+            return True
+        elif self.comp.is_number(expected) and self.comp.is_number(got):
             if self.comp.is_comptime_number(
                 expected
             ) or self.comp.is_comptime_number(got):

@@ -42,7 +42,7 @@ extend Tokenizer {
             if utils.is_name_char(ch) {
                 name := self.read_name();
                 return self.new_token(token.lookup(name), name, name.len);
-            } else if ch.is_digit() or (ch == b'.' and nextc.is_digit()) {
+            } else if ch.is_digit() {
                 // decimals with 0 prefix = error
                 if ch == b'0' and nextc.is_digit() {
                     self.pos -= 1;
@@ -540,8 +540,15 @@ extend Tokenizer {
     }
 
     func read_char(mut self) string {
-        (mut len, start) := (0, self.pos);
+        pos := self.current_pos();
+        (mut len: usize, start) := (0, self.pos);
         backslash := b'\\';
+        is_byte := self.pos > 0 and self.text[self.pos - 1] == b'b';
+
+        // set flags for advanced escapes first
+        escaped_hex := self.matches("\\x", start + 1);
+        escaped_unicode := self.matches("\\u", start + 1);
+        escaped_octal := !escaped_hex and !escaped_unicode and self.matches("\\", start + 1);
 
         while {
             self.pos += 1;
@@ -551,8 +558,10 @@ extend Tokenizer {
             if self.current_char() != backslash {
                 len += 1;
             }
-            double_slash := self.matches("\\\\", self.pos - 2);
-            if self.current_char() == b'\'' and (self.text[self.pos-1] != backslash or double_slash) {
+            double_slash := self.matches(r"\\", self.pos - 2);
+            if self.current_char() == b'\'' and (
+                self.text[self.pos - 1] != backslash or double_slash
+            ) {
                 if double_slash {
                     len += 1;
                 }
@@ -561,16 +570,53 @@ extend Tokenizer {
         }
         len -= 1;
 
-        ch := self.text[start + 1..self.pos];
+        mut ch := self.text[start + 1..self.pos];
         if len != 1 {
-            if len > 1 and ch.runes_count() > 1 {
-                mut err := self.error_builder(
-                    "character literal may only contain one codepoint"
-                );
-                err.add_help("if you meant to write a string literal, use double quotes");
-                err.emit();
-            } else if len == 0 {
-                self.error("empty character literal");
+            // the string inside the backticks is longer than one character
+            // but we might only have one rune... attempt to decode escapes
+            // if the content expresses an escape code, it will have an even
+            // number of characters e.g. (octal) \141 (hex) \x61 or (unicode)
+            // \u2605 we don't handle binary escape codes in rune literals.
+            orig := ch;
+            if ch.len % 2 == 0 and (escaped_hex or escaped_unicode or escaped_octal) {
+                if escaped_unicode {
+                    // there can only be one, so attempt to decode it now
+                    ch = decode_u_escapes(ch, 0, [0]);
+                } else {
+                    // find escape sequence start positions
+                    mut escapes_pos := @vec(usize);
+                    for i, v in ch.as_bytes() {
+                        if v == b'\\' {
+                            escapes_pos.push(i);
+                        }
+                    }
+                    ch = if escaped_hex {
+                        decode_h_escapes(ch, 0, escapes_pos)
+                    } else {
+                        decode_o_escapes(ch, 0, escapes_pos)
+                    };
+                }
+            }
+            u := ch.as_runes();
+            if u.len != 1 {
+                if escaped_hex or escaped_unicode {
+                    mut err := self.error_builder(
+                        "invalid character literal (`{}` -> `{}`)".fmt(orig, ch),
+                        pos
+                    );
+                    err.add_note("escape sequence did not refer to a singular rune");
+                    err.emit();
+                } else if u.len == 0 {
+                    mut err := self.error_builder("empty character literal", pos);
+                    err.add_help("if you meant to write a string literal, use double quotes");
+                    err.emit();
+                } else {
+                    mut err := self.error_builder(
+                        "character literal may only contain one codepoint", pos
+                    );
+                    err.add_help("if you meant to write a string literal, use double quotes");
+                    err.emit();
+                }
             }
         }
         return ch;

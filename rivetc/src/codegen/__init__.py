@@ -749,12 +749,10 @@ class Codegen:
         elif isinstance(expr, ast.BoolLiteral):
             return ir.IntLit(ir.BOOL_T, str(int(expr.lit)))
         elif isinstance(expr, ast.CharLiteral):
+            lit = str(utils.bytestr(self.decode_escape(expr.lit)).buf[0])
             if expr.is_byte:
-                return ir.IntLit(
-                    ir.UINT8_T,
-                    str(utils.bytestr(self.decode_escape(expr.lit)).buf[0])
-                )
-            return ir.RuneLit(ir.RUNE_T, expr.lit)
+                return ir.IntLit(ir.UINT8_T, lit)
+            return ir.RuneLit(ir.RUNE_T, lit)
         elif isinstance(expr, ast.IntegerLiteral):
             assert expr.typ, expr.pos
             if expr.lit.startswith("0o") or expr.lit.startswith("0b"):
@@ -3020,7 +3018,9 @@ class Codegen:
         if ch.startswith("\\"):
             code = ch[1:]
             code_b = utils.bytestr(code).buf[0]
-            if code in ("\\", "'", '"'):
+            if code == "\\":
+                return "\\\\"
+            elif code in ("\\", "'", '"'):
                 return chr(code_b)
             elif code in ("a", "b", "f"):
                 return chr(code_b - 90)
