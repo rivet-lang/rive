@@ -24,7 +24,6 @@ public struct Table {
     public mut error_sym: TypeSym; // from `core` module
 
     // Primitive types.
-    public mut never_t: Type;
     public mut none_t: Type;
     public mut bool_t: Type;
     public mut rune_t: Type;
@@ -53,25 +52,24 @@ public struct Table {
         return Table(
             universe: universe_,
             prefs: prefs,
-            never_t: .Resolved(universe_.scope.find_type_symbol_or_panic("never")),
-            none_t: .Resolved(universe_.scope.find_type_symbol_or_panic("none")),
-            bool_t: .Resolved(universe_.scope.find_type_symbol_or_panic("bool")),
-            rune_t: .Resolved(universe_.scope.find_type_symbol_or_panic("rune")),
-            int8_t: .Resolved(universe_.scope.find_type_symbol_or_panic("int8")),
-            int16_t: .Resolved(universe_.scope.find_type_symbol_or_panic("int16")),
-            int32_t: .Resolved(universe_.scope.find_type_symbol_or_panic("int32")),
-            int64_t: .Resolved(universe_.scope.find_type_symbol_or_panic("int64")),
-            isize_t: .Resolved(universe_.scope.find_type_symbol_or_panic("isize")),
-            uint8_t: .Resolved(universe_.scope.find_type_symbol_or_panic("uint8")),
-            uint16_t: .Resolved(universe_.scope.find_type_symbol_or_panic("uint16")),
-            uint32_t: .Resolved(universe_.scope.find_type_symbol_or_panic("uint32")),
-            uint64_t: .Resolved(universe_.scope.find_type_symbol_or_panic("uint64")),
-            usize_t: .Resolved(universe_.scope.find_type_symbol_or_panic("usize")),
-            comptime_int_t: .Resolved(universe_.scope.find_type_symbol_or_panic("comptime_int")),
-            comptime_float_t: .Resolved(universe_.scope.find_type_symbol_or_panic("comptime_float")),
-            float32_t: .Resolved(universe_.scope.find_type_symbol_or_panic("float32")),
-            float64_t: .Resolved(universe_.scope.find_type_symbol_or_panic("float64")),
-            string_t: .Resolved(universe_.scope.find_type_symbol_or_panic("string")),
+            none_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(0)),
+            bool_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(1)),
+            rune_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(2)),
+            int8_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(3)),
+            int16_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(4)),
+            int32_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(5)),
+            int64_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(6)),
+            isize_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(7)),
+            uint8_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(8)),
+            uint16_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(9)),
+            uint32_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(10)),
+            uint64_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(11)),
+            usize_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(12)),
+            comptime_int_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(13)),
+            comptime_float_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(14)),
+            float32_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(15)),
+            float64_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(16)),
+            string_t: .Resolved(universe_.scope.find_type_symbol_by_index_or_panic(17)),
             pointer_size: if prefs.target_is_64bit {
                 8
             } else {

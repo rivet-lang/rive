@@ -10,6 +10,7 @@ import ../token;
 public enum Type : traits.Stringable {
     Unresolved: Expr,
     Void,
+    Never: token.Pos,
     Option: Type,
     Result: Type,
     Tuple {
@@ -111,14 +112,14 @@ public enum Type : traits.Stringable {
             } else {
                 .Resolved(resolved_sym)
             },
-            else => return none // for `.Void` or `.Unresolved`
+            else => return none // for `.Void`, `.Never` or `.Unresolved`
         }
     }
 
     [inline]
     public func symbol(self) ?TypeSym {
         // NOTE: `.Func` has no TypeSym, so it does not appear in this typeswitch,
-        // the same is for `.Void` and `.Anyptr`.
+        // the same is for `.Void`, `.Never` and `.Anyptr`.
         return switch self is {
             .Result as result_inner => result_inner.symbol(),
             .Option as option_inner => option_inner.symbol(),
@@ -136,6 +137,8 @@ public enum Type : traits.Stringable {
     [inline]
     public func ==(self, rhs: Type) bool {
         return switch self is {
+            .Void => rhs is .Void,
+            .Never => rhs is .Never,
             .Result as result_lhs => if rhs is .Result as result_rhs {
                 result_lhs == result_rhs
             } else {
@@ -232,6 +235,7 @@ public enum Type : traits.Stringable {
 
     public func to_string(self) string {
         return switch self is {
+            .Never => "never",
             .Result as result_inner => "!".concat(result_inner.to_string()),
             .Option as option_inner => "?".concat(option_inner.to_string()),
             .Tuple as tuple_data => {

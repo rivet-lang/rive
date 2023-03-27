@@ -115,64 +115,124 @@ public struct Field {
     public typ: Type;
 }
 
-public enum TypeKind : traits.Stringable {
+public enum TypeInfo : traits.Stringable {
     Placeholder,
-    Never,
     None,
     Bool,
     Rune,
-    Int8,
-    Int16,
-    Int32,
-    Int64,
-    Uint8,
-    Uint16,
-    Uint32,
-    Uint64,
+    Int {
+        size: usize;
+    },
+    Uint {
+        size: usize;
+    },
     Isize,
     Usize,
     ComptimeInt,
     ComptimeFloat,
-    Float32,
-    Float64,
+    Float {
+        size: usize;
+    },
     String,
-    Alias,
-    Array,
-    Vector,
-    Tuple,
-    Enum,
-    Trait,
-    Struct;
+    Alias {
+        parent: Type;
+    },
+    Array {
+        elem_typ: Type;
+        size: isize;
+        has_contains_method: bool;
+    },
+    Vector{
+        elem_typ: Type;
+        has_contains_method: bool;
+    },
+    Tuple {
+        types: []Type;
+    },
+    Enum {
+        underlying_typ: Type;
+        mut variants: []EnumVariant;
+        is_boxed_enum: bool;
+
+        [inline]
+        func add_value(mut self, name: string, variant: isize) {
+            self.variants.push(EnumVariant(name, variant));
+        }
+
+        func get_value(self, name: string) ?EnumVariant {
+            for v in self.variants {
+                if v.name == name {
+                    return v;
+                }
+            }
+            return none;
+        }
+
+        func get_variant_by_type(self, typ: Type) ?EnumVariant {
+            for v in self.variants {
+                if v.has_typ and v.typ == typ {
+                    return v;
+                }
+            }
+            return none;
+        }
+
+        func has_value(self, name: string) bool {
+            return self.get_value(name) !is none;
+        }
+    },
+    Trait {
+        bases: []mut TypeSym;
+        mut implements: []TypeSym;
+        mut has_objects: bool;
+
+        func index_of(self, type_sym: TypeSym) ?usize {
+            for i, ts in self.implements {
+                if ts.id == type_sym.id {
+                    return i;
+                }
+            }
+            return none;
+        }
+
+        func implement(mut self, type_sym: TypeSym) {
+            self.implements.push(type_sym);
+            for mut b in self.bases {
+                @cast(TypeInfo.Trait, b).implement(type_sym);
+            }
+        }
+
+        func mark_has_objects(mut self) {
+            self.has_objects = true;
+        }
+    },
+    Struct {
+        is_boxed: bool;
+        is_opaque: bool;
+        bases: []mut TypeSym;
+        traits: []TypeSym;
+    };
 
     [inline]
     public func is_primitive(self) bool {
-        return self in [
-            .None, .Bool, .Rune, .Int8, .Int16, .Int32, .Int64, .Isize, .Uint8,
-            .Uint16, .Uint32, .Uint64, .Usize, .ComptimeInt, .ComptimeFloat, .Float32,
-            .Float64, .Never
-        ];
+        return self is .Bool or self is .Rune or self is .Int
+            or self is .Uint or self is .ComptimeInt or self is .ComptimeFloat
+            or self is .ComptimeFloat or self is .Float;
     }
 
     [inline]
-    public func to_string(&self) string {
-        return switch self.* {
+    public func to_string(self) string {
+        return switch self is {
             .None => "none",
             .Bool => "bool",
             .Rune => "rune",
-            .Int8 => "int8",
-            .Int16 => "int16",
-            .Int32 => "int32",
-            .Int64 => "int64",
+            .Int as int_info => "int{}".fmt(int_info.size),
             .Isize => "isize",
-            .Uint8 => "uint8",
-            .Uint16 => "uint16",
-            .Uint32 => "uint32",
-            .Uint64 => "uint64",
+            .Uint as uint_info => "uint{}".fmt(uint_info.size),
             .Usize => "usize",
             .ComptimeInt => "comptime_int",
             .ComptimeFloat => "comptime_float",
-            .Float32 => "float32",
-            .Float64 => "float64",
+            .Float as float_info => "float{}".fmt(float_info.size),
             .String => "string",
             .Alias => "alias",
             .Array => "array",
@@ -181,43 +241,9 @@ public enum TypeKind : traits.Stringable {
             .Trait => "trait",
             .Struct => "struct",
             .Enum => "enum",
-            .Never => "never",
             else => "placeholder"
         };
     }
-}
-
-public enum TypeInfo {
-    Alias: AliasInfo,
-    Array: ArrayInfo,
-    Vector: VectorInfo,
-    Tuple: TupleInfo,
-    Enum: EnumInfo,
-    Trait: TraitInfo,
-    Struct: StructInfo
-}
-
-[boxed]
-public struct AliasInfo {
-    public parent: Type;
-}
-
-[boxed]
-public struct ArrayInfo {
-    public elem_typ: Type;
-    public size: isize;
-    public has_contains_method: bool;
-}
-
-[boxed]
-public struct VectorInfo {
-    public elem_typ: Type;
-    public has_contains_method: bool;
-}
-
-[boxed]
-public struct TupleInfo {
-    public types: []Type;
 }
 
 [boxed]
@@ -229,79 +255,9 @@ public struct EnumVariant {
 }
 
 [boxed]
-public struct EnumInfo {
-    public underlying_typ: Type;
-    public mut variants: []EnumVariant;
-    public is_boxed_enum: bool;
-
-    [inline]
-    public func add_value(mut self, name: string, variant: isize) {
-        self.variants.push(EnumVariant(name, variant));
-    }
-
-    public func get_value(self, name: string) ?EnumVariant {
-        for v in self.variants {
-            if v.name == name {
-                return v;
-            }
-        }
-        return none;
-    }
-
-    public func get_variant_by_type(self, typ: Type) ?EnumVariant {
-        for v in self.variants {
-            if v.has_typ and v.typ == typ {
-                return v;
-            }
-        }
-        return none;
-    }
-
-    public func has_value(self, name: string) bool {
-        return self.get_value(name) !is none;
-    }
-}
-
-[boxed]
-public struct TraitInfo {
-    public bases: []mut TraitInfo;
-    public mut implements: []TypeSym;
-    public mut has_objects: bool;
-
-    public func index_of(self, type_sym: TypeSym) ?usize {
-        for i, ts in self.implements {
-            if ts.id == type_sym.id {
-                return i;
-            }
-        }
-        return none;
-    }
-
-    public func implement(mut self, type_sym: TypeSym) {
-        self.implements.push(type_sym);
-        for mut b in self.bases {
-            b.implement(type_sym);
-        }
-    }
-
-    public func mark_has_objects(mut self) {
-        self.has_objects = true;
-    }
-}
-
-[boxed]
-public struct StructInfo {
-    public is_boxed: bool;
-    public is_opaque: bool;
-    public bases: []mut TypeSym;
-    public traits: []TypeSym;
-}
-
-[boxed]
 public struct TypeSym : Sym {
     public mut fields: []Field;
     public mut full_fields_: []Field;
-    public mut kind: TypeKind;
     public mut info: TypeInfo;
     public mut size: isize = -1;
     public mut align: isize = -1;
@@ -369,15 +325,14 @@ public struct TypeSym : Sym {
     }
 
     public func update(mut self, other: TypeSym) ! {
-        if self.kind == .Placeholder {
+        if self.info is .Placeholder {
             // update placeholder
             self.is_public = other.is_public;
-            self.kind = other.kind;
+            self.info = other.info;
             self.fields = other.fields;
             for s in other.scope.syms {
                 self.scope.add(s).!;
             }
-            self.info = other.info;
         }
     }
 
@@ -388,7 +343,7 @@ public struct TypeSym : Sym {
         } else if self.info is .Struct as struct_info {
             struct_info.is_boxed
         } else {
-            self.kind == .Trait or self.kind == .String or self.kind == .Vector
+            self.info is .Trait or self.info is .String or self.info is .Vector
         };
     }
 
@@ -397,7 +352,7 @@ public struct TypeSym : Sym {
         return if self.info is .Enum as enum_info {
             !enum_info.is_boxed_enum
         } else {
-            self.kind.is_primitive()
+            self.info.is_primitive()
         };
     }
 
@@ -491,16 +446,28 @@ public struct Scope {
     }
 
     public func find_or_panic(self, name: string) Sym {
-        x := self.find(name);
-        if x is none {
-            process.panic("cannot found symbol `{}`", name);
+        if x := self.find(name) {
+            return x;
         }
-        return x.?;
+        process.panic("cannot found symbol `{}`", name);
+        return Sym(Module()); // TODO: remove this line
+    }
+
+    public func find_by_index_or_panic(self, idx: usize) Sym {
+        if idx >= self.syms.len {
+            process.panic("symbol index out of range `{}`", idx);
+        }
+        return self.syms[idx];
     }
 
     [inline]
     public func find_type_symbol_or_panic(self, name: string) TypeSym {
         return @cast(TypeSym, self.find_or_panic(name));
+    }
+
+    [inline]
+    public func find_type_symbol_by_index_or_panic(self, idx: usize) TypeSym {
+        return @cast(TypeSym, self.find_by_index_or_panic(idx));
     }
 
     public func lookup(self, name: string) ?Sym {
@@ -528,24 +495,23 @@ public struct Scope {
 [inline]
 public func universe() Module {
     return Module(is_public: false, name: "universe", scope: Scope(syms: [
-        TypeSym(name: "never", kind: .Never),
-        TypeSym(name: "none", kind: .None),
-        TypeSym(name: "bool", kind: .Bool),
-        TypeSym(name: "rune", kind: .Rune),
-        TypeSym(name: "int8", kind: .Int8),
-        TypeSym(name: "int16", kind: .Int16),
-        TypeSym(name: "int32", kind: .Int32),
-        TypeSym(name: "int64", kind: .Int64),
-        TypeSym(name: "isize", kind: .Isize),
-        TypeSym(name: "uint8", kind: .Uint8),
-        TypeSym(name: "uint16", kind: .Uint16),
-        TypeSym(name: "uint32", kind: .Uint32),
-        TypeSym(name: "uint64", kind: .Uint64),
-        TypeSym(name: "usize", kind: .Usize),
-        TypeSym(name: "comptime_int", kind: .ComptimeInt),
-        TypeSym(name: "comptime_float", kind: .ComptimeFloat),
-        TypeSym(name: "float32", kind: .Float32),
-        TypeSym(name: "float64", kind: .Float64),
-        TypeSym(name: "string", kind: .String, info: .Struct(StructInfo(is_boxed: true)))
+        TypeSym(name: "none", info: .None()),
+        TypeSym(name: "bool", info: .Bool()),
+        TypeSym(name: "rune", info: .Rune()),
+        TypeSym(name: "int8", info: .Int(8)),
+        TypeSym(name: "int16", info: .Int(16)),
+        TypeSym(name: "int32", info: .Int(32)),
+        TypeSym(name: "int64", info: .Int(64)),
+        TypeSym(name: "isize", info: .Isize()),
+        TypeSym(name: "uint8", info: .Uint(8)),
+        TypeSym(name: "uint16", info: .Uint(16)),
+        TypeSym(name: "uint32", info: .Uint(32)),
+        TypeSym(name: "uint64", info: .Uint(64)),
+        TypeSym(name: "usize", info: .Usize()),
+        TypeSym(name: "comptime_int", info: .ComptimeInt()),
+        TypeSym(name: "comptime_float", info: .ComptimeFloat()),
+        TypeSym(name: "float32", info: .Float(32)),
+        TypeSym(name: "float64", info: .Float(64)),
+        TypeSym(name: "string", info: .Struct(is_boxed: true))
     ]));
 }

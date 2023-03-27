@@ -228,7 +228,7 @@ public struct Parser {
                         if prev_tok_kind != .Rparen and self.tok.kind != .Lbrace {
                             report.error("invalid use of `never` type", pos);
                         }
-                        return self.table.never_t;
+                        return .Never(self.prev_tok.pos);
                     },
                     "anyptr", "mut_anyptr" => return ast.Type.Anyptr(
                         expr_name.starts_with("mut_"), self.prev_tok.pos
