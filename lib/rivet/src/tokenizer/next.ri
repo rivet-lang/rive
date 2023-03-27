@@ -13,6 +13,9 @@ import ../report;
 
 import { LF, CR } from ../utils;
 
+const SINGLE_QUOTE: uint8 = 0x27; // `'`
+const BACKSLASH: uint8 = 0x5C; // '\'
+
 extend Tokenizer {
     public func next(mut self) token.Token {
         while {
@@ -38,7 +41,8 @@ extend Tokenizer {
             if self.pos >= self.text.len {
                 return self.new_eof_token();
             }
-            (ch, nextc) := (self.current_char(), self.look_ahead(1));
+            ch := self.current_char();
+            nextc := self.look_ahead(1);
             if utils.is_name_char(ch) {
                 name := self.read_name();
                 return self.new_token(token.lookup(name), name, name.len);
@@ -224,7 +228,7 @@ extend Tokenizer {
                 b']' => return self.new_token(.Rbracket),
                 b'(' => return self.new_token(.Lparen),
                 b')' => return self.new_token(.Rparen),
-                b'\'' => {
+                SINGLE_QUOTE => {
                     lit := self.read_char();
                     return self.new_token(.Char, lit, lit.len + 2);
                 },
@@ -541,9 +545,8 @@ extend Tokenizer {
 
     func read_char(mut self) string {
         pos := self.current_pos();
-        (mut len: usize, start) := (0, self.pos);
-        backslash := b'\\';
-        is_byte := self.pos > 0 and self.text[self.pos - 1] == b'b';
+        mut len: usize := 0;
+        start := self.pos;
 
         // set flags for advanced escapes first
         escaped_hex := self.matches("\\x", start + 1);
@@ -552,15 +555,17 @@ extend Tokenizer {
 
         while {
             self.pos += 1;
+            ch := self.current_char();
             if self.pos >= self.text.len {
+                self.error("unfinished character literal", pos);
                 break;
             }
-            if self.current_char() != backslash {
+            if ch != BACKSLASH {
                 len += 1;
             }
             double_slash := self.matches(r"\\", self.pos - 2);
-            if self.current_char() == b'\'' and (
-                self.text[self.pos - 1] != backslash or double_slash
+            if ch == SINGLE_QUOTE and (
+                self.text[self.pos - 1] != BACKSLASH or double_slash
             ) {
                 if double_slash {
                     len += 1;
@@ -586,7 +591,7 @@ extend Tokenizer {
                     // find escape sequence start positions
                     mut escapes_pos := @vec(usize);
                     for i, v in ch.as_bytes() {
-                        if v == b'\\' {
+                        if v == BACKSLASH {
                             escapes_pos.push(i);
                         }
                     }
@@ -623,12 +628,18 @@ extend Tokenizer {
     }
 
     func read_string(mut self) string {
-        (start, start_char) := (self.pos, self.current_char());
-        backslash := b'\\';
-        mut backslash_count := if start_char == backslash { 1 } else { 0 };
+        pos := self.current_pos();
+        start := self.pos;
+        start_char := self.current_char();
+        mut backslash_count := if start_char == BACKSLASH { 1 } else { 0 };
         is_raw := self.pos > 0 and self.text[self.pos - 1] == b'r';
+        is_cstr := self.pos > 0 and self.text[self.pos - 1] == b'c';
         mut n_cr_chars := 0;
-
+        if start_char == LF {
+            self.inc_line_number();
+        }
+        mut u_escapes_pos := @vec(usize); // pos list of \uXXXX
+        mut h_escapes_pos := @vec(usize); // pos list of \xXX
         while {
             self.pos += 1;
             if self.pos >= self.text.len {
@@ -636,12 +647,12 @@ extend Tokenizer {
                 return "";
             }
             c := self.current_char();
-            if c == backslash {
+            if c == BACKSLASH {
                 backslash_count += 1;
             }
             // end of string
             if c == b'"' and (is_raw or backslash_count % 2 == 0) {
-                break; // handle "\\" at the end
+                break; // handle "\\" at the end: "123\\"
             }
             if c == CR {
                 n_cr_chars += 1;
@@ -649,7 +660,30 @@ extend Tokenizer {
             if c == LF {
                 self.inc_line_number();
             }
-            if c != backslash {
+            // escape `\x` or `\u`
+            if backslash_count % 2 == 1 and !(is_raw or is_cstr) {
+                // escape `\x`
+                if c == b'x' {
+                    if self.look_ahead(1) == b'"' or !(
+                        self.look_ahead(1).is_hex_digit() and
+                        self.look_ahead(2).is_hex_digit()
+                    ) {
+                        self.error(r"`\x` used without two following hex digits", pos);
+                    }
+                    h_escapes_pos.push(self.pos - 1);
+                } else if c == b'u' { // escape `\u`
+                    if self.look_ahead(1) == b'"' or self.look_ahead(2) == b'"'
+                        or self.look_ahead(3) == b'"' or self.look_ahead(4) == b'"'
+                        or !self.look_ahead(1).is_hex_digit()
+                        or !self.look_ahead(2).is_hex_digit()
+                        or !self.look_ahead(3).is_hex_digit()
+                        or !self.look_ahead(4).is_hex_digit() {
+                        self.error(r"`\u` incomplete unicode character value", pos);
+                    }
+                    u_escapes_pos.push(self.pos - 1);
+                }
+            }
+            if c != BACKSLASH {
                 backslash_count = 0;
             }
         }
@@ -657,6 +691,35 @@ extend Tokenizer {
         mut lit := "";
         if start <= self.pos {
             lit = self.text[start + 1..self.pos];
+            mut segment_idx: usize := 0;
+            mut str_segments := @vec(string);
+            if u_escapes_pos.len + h_escapes_pos.len > 0 {
+                mut all_pos := @vec(usize, u_escapes_pos.len + h_escapes_pos.len);
+                for pos1 in u_escapes_pos {
+                    all_pos.push(pos1);
+                }
+                for pos1 in h_escapes_pos {
+                    all_pos.push(pos1);
+                }
+                for pos1 in all_pos {
+                    str_segments.push(lit[segment_idx..(pos1 - start)]);
+                    segment_idx = pos1 - start;
+                    if pos1 in u_escapes_pos {
+                        (end_idx, segment) := decode_u_escape_single(lit, segment_idx);
+                        str_segments.push(segment);
+                        segment_idx = end_idx;
+                    }
+                    if pos1 in h_escapes_pos {
+                        (end_idx, segment) := decode_h_escape_single(lit, segment_idx);
+                        str_segments.push(segment);
+                        segment_idx = end_idx;
+                    }
+                }
+            }
+            if segment_idx < lit.len {
+                str_segments.push(lit[segment_idx..]);
+            }
+            lit = utils.join(str_segments, "");
             if n_cr_chars > 0 {
                 lit = lit.replace("\r", "");
             }
@@ -664,6 +727,7 @@ extend Tokenizer {
                 lit = self.trim_slash_line_break(lit);
             }
         }
+
         return lit;
     }
 }

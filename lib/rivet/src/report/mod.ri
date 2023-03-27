@@ -100,9 +100,6 @@ public struct ReportBuilder {
         } else {
             formatted_single_line(self.pos);
         }
-        if !self.annotations.is_empty() {
-            console.eprintln(utils.bold(utils.blue("      | ")));
-        }
         for annotation in self.annotations {
             console.eprintln("{} {}", utils.bold(
                 "      {} {}".fmt(
