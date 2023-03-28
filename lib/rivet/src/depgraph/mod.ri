@@ -67,7 +67,7 @@ public struct DepGraph {
         mut out := strings.Builder.new();
         for node in self.nodes {
             for dep in node.deps {
-                out.writeln_fmt(" > {} -> {}", node.name, dep);
+                out.writeln_fmt(" > `{}` -> `{}`", node.name, dep);
             }
         }
         return out.to_string();
@@ -86,13 +86,14 @@ public struct DepGraph {
             if nn.is_cycle.contains(k.key) {
                 continue;
             }
-            // FIXME: error: expected name, found token `;`
+            // ------ FIXME: error: expected name, found token `;` -------
             // (seen, cycle_names) = nn.is_part_of_cycle(k, cycle_names);
             tmp := nn.is_part_of_cycle(k.key, cycle_names);
             seen = tmp.0;
             cycle_names = tmp.1;
+            // -----------------------------------------------------------
             if seen {
-                out.writeln_fmt(" * {}", utils.join(cycle_names, " -> "));
+                out.writeln_fmt(" * `{}`", utils.join(cycle_names, "` -> `"));
                 nn.is_cycle = MapStringBool();
             }
         }

@@ -16,7 +16,7 @@ public enum Decl {
         mut alias_name: string;
         glob: bool;
         import_list: []ImportListInfo;
-        mut mod_sym: Module;
+        mut info: ImportedMod;
         pos: token.Pos;
     },
     Extern {

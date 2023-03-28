@@ -608,6 +608,7 @@ extend Parser {
         }
         self.expect(.Rparen);
 
+        ret_t_pos := self.tok.pos;
         is_result := self.accept(.Bang);
         mut ret_type := if self.tok.kind in [.Lbrace, .Semicolon] {
             ast.Type.Void // default: `void`
@@ -615,7 +616,7 @@ extend Parser {
             self.parse_type()
         };
         if is_result {
-            ret_type = .Result(ret_type);
+            ret_type = .Result(ret_type, ret_t_pos + self.prev_tok.pos);
         }
 
         mut stmts := @vec(ast.Stmt);

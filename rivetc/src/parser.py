@@ -557,9 +557,12 @@ class Parser:
     def decl_operator_is_used(self):
         line_nr = self.tok.pos.line
         i = 1
+        assign_was_used = False
         while i < len(self.lexer.all_tokens):
             tok = self.peek_token(i)
-            if tok.kind == Kind.DeclAssign:
+            if tok.kind == Kind.Assign:
+                assign_was_used = True
+            elif tok.kind == Kind.DeclAssign and not assign_was_used:
                 return True
             elif tok.kind == Kind.Semicolon:
                 break

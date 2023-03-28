@@ -13,27 +13,38 @@ import ./ast;
 import ./utils;
 import ./prefs;
 import ./report;
-import ./parser;
 import ./token;
+import ./parser;
+import ./resolver;
 import ./depgraph;
 
 [boxed]
 public struct Compiler {
-    public mut table: ast.Table;
-    public mut prefs: prefs.Prefs;
-    public mut source_files: []string;
+    mut table: ast.Table;
+    mut prefs: prefs.Prefs;
+    mut source_files: []string;
+
+    mut resolver: resolver.Resolver;
 
     public func new(args: []string, is_test: bool, run_output: bool) ! {
         prefs_ := prefs.Prefs.new(args, is_test, run_output).!;
         report.Report_Table.prefs = prefs_;
-        Self(table: ast.Table.new(prefs_), prefs: prefs_).run().!;
+        table_ := ast.Table.new(prefs_);
+        Self(
+            table: table_, prefs: prefs_,
+            resolver: resolver.Resolver(table_, prefs_)
+        ).run().!;
     }
 
     func run(mut self) ! {
         self.make_rivet_directory().!;
-        self.load_module("core", "core", "", token.NO_POS).!;
+
+        _ = self.load_module("core", "core", "", token.NO_POS).!;
         self.load_root_module().!;
         self.import_modules().!;
+
+        self.vlog("resolving files...");
+        self.resolver.resolve(self.table.source_files);
     }
 
     func make_rivet_directory(self) ! {
@@ -76,13 +87,20 @@ public struct Compiler {
     }
 
     func import_modules(mut self) ! {
+        mut done_imports := @vec(string);
         for sf in self.table.source_files {
             for d in sf.decls {
-                if d is .Import as mut import_decl {
-                    self.load_module(
+                if d is .Import as import_decl {
+                    if import_decl.path in done_imports {
+                        continue;
+                    }
+                    import_decl.info = self.load_module(
                         import_decl.path, import_decl.alias_name, sf.file,
                         import_decl.path_pos
                     ).!;
+                    if import_decl.info.found {
+                        done_imports.push(import_decl.path);
+                    }
                 }
             }
         }
@@ -95,7 +113,7 @@ public struct Compiler {
 
     func load_module(
         mut self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
-    ) ! {
+    ) !ast.ImportedMod {
         mod := self.load_module_files(pathx, alias_name, file_path, pos).!;
         if mod.found and !self.table.universe.scope.exists(mod.full_name) {
             mod_sym := ast.Module(name: mod.full_name);
@@ -104,6 +122,7 @@ public struct Compiler {
             };
             self.parse_files(mod_sym, mod.files);
         }
+        return mod;
     }
 
     func load_module_files(
@@ -119,7 +138,11 @@ public struct Compiler {
         if pathx.starts_with("./") or is_super {
             self.vlog("    searching module in local path");
             pathx2 := pathx[if is_super { 3 } else { 2 }..];
-            name = pathx2[(pathx2.last_index_of_byte(b'/') ?? 0) + 1..];
+            name = if last_idx := pathx2.last_index_of_byte(b'/') {
+                pathx2[last_idx + 1..]
+            } else {
+                pathx2
+            };
             dirname := path.resolve(path.dirname(file_path) ?? file_path).!;
             old_wd := process.get_cwd().!;
             process.set_cwd(dirname).!;
@@ -153,7 +176,11 @@ public struct Compiler {
             process.set_cwd(old_wd).!;
         } else {
             self.vlog("    searching module in global path");
-            name = pathx[(pathx.last_index_of_byte(b'/') ?? 0) + 1..];
+            name = if last_idx := pathx.last_index_of_byte(b'/') {
+                pathx[last_idx + 1..]
+            } else {
+                pathx
+            };
             full_name = pathx.replace("/", ".");
             for l in self.prefs.library_path {
                 self.vlog("        searching module in `{}`", l);
@@ -190,7 +217,7 @@ public struct Compiler {
         }
         return ast.ImportedMod(
             found: found, name: name,
-            alias_name: if alias_name.len == 0 { name} else { alias_name },
+            alias_name: if alias_name.is_empty() { name } else { alias_name },
             full_name: full_name,
             files: files
         );
@@ -220,14 +247,14 @@ public struct Compiler {
         }
         self.vlog("----------= imported modules =-----------");
         for node in g_resolved.nodes {
-            self.vlog(" > {}", node.name);
+            self.vlog("> {}", node.name);
         }
         self.vlog("-----------------------------------------");
         source_files := self.table.source_files.clone();
         self.table.source_files = @vec(ast.SourceFile, self.source_files.len);
         for node in g_resolved.nodes {
             for pf in source_files {
-                if pf.mod_sym.name == node.name {
+                if pf.mod.name == node.name {
                     self.table.source_files.push(pf);
                 }
             }
@@ -239,22 +266,22 @@ public struct Compiler {
         mut g := depgraph.DepGraph.new();
         for pf in self.table.source_files {
             mut deps := @vec(string);
-            if pf.mod_sym.name !in ["c.libc", "c", "core"] {
+            if pf.mod.name !in ["c.libc", "c", "c.ctypes", "core"] {
                 deps.push("core");
             }
             for d in pf.decls {
                 if d is .Import as import_decl {
-                    if import_decl.mod_sym.name == pf.mod_sym.name {
+                    if !import_decl.info.found {
+                        continue; // module not found
+                    }
+                    if import_decl.info.full_name == pf.mod.name {
                         report.error("import cycle detected", import_decl.pos);
                         continue;
                     }
-                    if pf.mod_sym.name == "c" and import_decl.mod_sym.name == "c.libc" {
-                        continue;
-                    }
-                    deps.push(import_decl.mod_sym.name);
+                    deps.push(import_decl.info.full_name);
                 }
             }
-            g.add(pf.mod_sym.name, deps);
+            g.add(pf.mod.name, deps);
         }
         return g;
     }

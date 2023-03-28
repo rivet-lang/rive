@@ -14,7 +14,7 @@ class Register:
         self.is_core_mod = False
 
     def walk_files(self, source_files):
-        for i, sf in enumerate(source_files):
+        for sf in source_files:
             self.is_core_mod = sf.sym.is_core_mod()
             if self.comp.core_mod == None and self.is_core_mod:
                 self.comp.core_mod = sf.sym

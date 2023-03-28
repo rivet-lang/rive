@@ -122,9 +122,11 @@ public struct Parser {
     }
 
     func parse_type(mut self) ast.Type {
-        pos := self.tok.pos;
+        mut pos := self.tok.pos;
         switch {
-            self.accept(.Question) => return ast.Type.Option(self.parse_type()),
+            self.accept(.Question) => return ast.Type.Option(
+                self.parse_type(), pos + self.prev_tok.pos
+            ),
             self.tok.kind == .KwFunc => {
                 // function types
                 self.expect(.KwFunc);
@@ -153,12 +155,12 @@ public struct Parser {
                 } else {
                     .Void()
                 };
-                return .Func(args: args, ret_type: ret_type);
+                return .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos);
             },
             self.accept(.Amp) => {
                 // references
                 is_mut := self.accept(.KwMut);
-                return ast.Type.Reference(self.parse_type(), is_mut);
+                return ast.Type.Reference(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos);
             },
             self.accept(.Mul) => {
                 // pointers
@@ -168,7 +170,7 @@ public struct Parser {
                     err.add_help("use an indexable pointer instead (`[*]T`)");
                     err.emit();
                 }
-                return ast.Type.Reference(self.parse_type(), is_mut);
+                return ast.Type.Reference(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos);
             },
             self.accept(.Lbracket) => {
                 // arrays or vectors
@@ -177,17 +179,19 @@ public struct Parser {
                     if self.accept(.Mul) {
                         self.expect(.Rbracket);
                         is_mut := self.accept(.KwMut);
-                        return ast.Type.Pointer(self.parse_type(), is_mut, true);
+                        return ast.Type.Pointer(
+                            self.parse_type(), is_mut, true, pos: pos + self.prev_tok.pos
+                        );
                     }
                     // array
                     size := self.parse_expr();
                     self.expect(.Rbracket);
                     is_mut := self.accept(.KwMut);
-                    return ast.Type.Array(self.parse_type(), is_mut, size);
+                    return ast.Type.Array(self.parse_type(), is_mut, size, pos: pos + self.prev_tok.pos);
                 }
                 self.expect(.Rbracket);
                 is_mut := self.accept(.KwMut);
-                return ast.Type.Vector(self.parse_type(), is_mut);
+                return ast.Type.Vector(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos);
             },
             self.accept(.Lparen) => {
                 // tuples
@@ -203,10 +207,13 @@ public struct Parser {
                     err.add_help("you can use a struct instead");
                     err.emit();
                 }
+                pos += self.tok.pos;
                 self.expect(.Rparen);
-                return ast.Type.Tuple(inners);
+                return ast.Type.Tuple(inners, pos: pos);
             },
-            self.accept(.Ellipsis) => return ast.Type.Variadic(self.parse_type()),
+            self.accept(.Ellipsis) => return ast.Type.Variadic(
+                self.parse_type(), pos: pos + self.prev_tok.pos
+            ),
             self.accept(.KwSelfTy) => return ast.Type.Unresolved(
                 ast.Expr.SelfTy(self.scope.?, self.prev_tok.pos)
             ),
@@ -279,11 +286,13 @@ public struct Parser {
 
     func decl_operator_is_used(self) bool {
         line_nr := self.tok.pos.line;
+        mut assign_was_used := false;
         mut i: usize := 1;
         while i < self.tokenizer.all_tokens.len : i += 1 {
             tok := self.peek_token(i);
             switch tok.kind {
-                .DeclAssign => return true,
+                .Assign => assign_was_used = true,
+                .DeclAssign if !assign_was_used => return true,
                 .Semicolon => break,
                 else => if tok.pos.line != line_nr { break }
             }

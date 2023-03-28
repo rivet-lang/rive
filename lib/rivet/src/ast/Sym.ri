@@ -58,6 +58,47 @@ public trait Sym {
     is_universe: bool;
     is_root: bool;
 
+    func mod(self) Module {
+        mut p := self;
+        while {
+            if p is Module {
+                break;
+            } else if p_ := p.parent {
+                p = p_;
+            } else {
+                break;
+            }
+        }
+        return @cast(Module, p);
+    }
+
+    func has_access_to(self, other: Sym) bool {
+        self_mod := self.mod();
+        other_mod := other.mod();
+        return (
+            other_mod.is_universe or self_mod.id == other.id
+            or self_mod.id == other_mod.id
+            or self_mod.id == other_mod.parent.?.id
+            or self_mod.parent.?.id == other.parent.?.id
+        );
+    }
+
+    [inline]
+    func type_of(self) string {
+        return switch self is {
+            Module => "module",
+            Const => "constant",
+            Var => "variable",
+            TypeSym => "type",
+            Func as func_info => if func_info.is_method {
+                "method"
+            } else {
+                "function"
+            },
+            else => "unknown symbol kind"
+        };
+    }
+
     [inline]
     func qualname(self) string {
         return if parent := self.parent {
@@ -78,7 +119,12 @@ public trait Sym {
 }
 
 [boxed]
-public struct Module : Sym { }
+public struct Module : Sym {
+    [inline]
+    public func is_core(self) bool {
+        return self.name == "core";
+    }
+}
 
 [boxed]
 public struct Const : Sym {

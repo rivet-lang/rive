@@ -1,0 +1,56 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../prefs;
+import ../token;
+import ../report;
+
+[boxed]
+public struct Register {
+    mut table: ast.Table;
+    mut prefs: prefs.Prefs;
+
+    mut core_is_set: bool;
+    mut is_core_mod: bool;
+
+    mut abi: ast.ABI;
+    mut sym: ast.Sym;
+    mut source_file: ast.SourceFile;
+
+    public func walk_files(mut self, source_files: []ast.SourceFile) {
+        for sf in source_files {
+            self.is_core_mod = sf.mod.is_core();
+            if !self.core_is_set and self.is_core_mod {
+                self.table.core_mod = sf.mod;
+                self.core_is_set = true;
+            }
+            self.sym = sf.mod;
+            self.source_file = sf;
+            self.walk_decls(self.source_file.decls);
+        }
+        self.table.error_t = .Resolved(self.table.error_sym);
+    }
+
+    func walk_decls(mut self, decls: []mut ast.Decl) {
+        for decl in decls {
+            old_abi := self.abi;
+            old_sym := self.sym;
+            self.abi = old_abi;
+            self.sym = old_sym;
+        }
+    }
+
+    func add_sym(mut self, sym: ast.Sym, pos: token.Pos) {
+        self.sym.scope.add(sym) catch |err| {
+            report.error(err.to_string(), pos);
+        };
+    }
+
+    func check_vis(self, sym: ast.Sym, pos: token.Pos) {
+        if !sym.is_public and !self.sym.has_access_to(sym) {
+            report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
+        }
+    }
+}

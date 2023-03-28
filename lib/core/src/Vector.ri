@@ -91,18 +91,6 @@ struct Vector {
                 i, end_idx, self.len
             );
         }
-        // TODO: fix it
-        if no_slices {
-            unsafe {
-                mem_move(
-                    @ptr_add(self.ptr, i * self.elem_size),
-                    @ptr_add(self.ptr, i * self.elem_size),
-                    (self.len - i - size) * self.elem_size
-                );
-            }
-            self.len -= size;
-            return;
-        }
         // Note: if `self` is [12, 34], `self.len` = 2
         // `self.delete(0)` should move (2-0-1) elements = 1 element (the 34) forward
         old_ptr := self.ptr;
@@ -113,9 +101,12 @@ struct Vector {
         unsafe {
             mem_copy(
                 @ptr_add(self.ptr, i * self.elem_size),
-                @ptr_add(old_ptr, i + size * self.elem_size),
-                self.len - i - size * self.elem_size
+                @ptr_add(old_ptr, (i + size) * self.elem_size),
+                (self.len - i - size) * self.elem_size
             );
+            if no_slices {
+                mem_dealloc(old_ptr);
+            }
         }
         self.len = new_size;
         self.cap = new_cap;

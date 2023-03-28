@@ -1340,9 +1340,9 @@ class Checker:
             expr.typ = self.comp.void_t
             expr_typ = self.check_expr(expr.expr)
             expr_sym = expr_typ.symbol()
-            if expr.is_typeswitch and expr_sym.kind != TypeKind.Enum:
+            if expr.is_typeswitch and expr_sym.kind not in (TypeKind.Enum, TypeKind.Trait):
                 report.error("invalid value for typeswitch", expr.expr.pos)
-                report.note(f"expected enum value, found `{expr_typ}`")
+                report.note(f"expected enum or trait value, found `{expr_typ}`")
             elif expr_sym.kind == TypeKind.Enum:
                 if expr_sym.info.is_boxed_enum and not expr.is_typeswitch:
                     report.error(

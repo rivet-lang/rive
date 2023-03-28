@@ -1543,6 +1543,8 @@ class Codegen:
                     return ir.IntLit(ir.USIZE_T, str(left.len))
             elif left_sym.kind == TypeKind.Array and expr.field_name == "len":
                 return ir.IntLit(ir.USIZE_T, str(left_sym.info.size))
+            elif left_sym.kind == TypeKind.Trait:
+                return ir.Selector(ir_typ.ptr(), left, ir.Name(expr.field_name))
             return ir.Selector(
                 ir_typ, left,
                 ir.Name(
@@ -2555,6 +2557,8 @@ class Codegen:
                     val = self.default_value(f.typ)
                     self.cur_fn.store(sltor, val)
             return tmp
+        elif typ_sym.kind == TypeKind.Trait:
+            return ir.NoneLit(ir.VOID_PTR_T)
         return None
 
     def empty_vec(self, typ_sym, cap = None):
@@ -2862,7 +2866,7 @@ class Codegen:
                 for f in ts.fields:
                     f_typ = self.ir_type(f.typ)
                     if not isinstance(f_typ, ir.Pointer):
-                        f_typ = f_typ.ptr(True)
+                        f_typ = f_typ.ptr()
                     fields.append(ir.Field(f.name, f_typ))
                 self.out_rir.structs.append(ir.Struct(False, ts_name, fields))
                 # Virtual table

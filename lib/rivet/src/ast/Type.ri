@@ -11,11 +11,18 @@ public enum Type : traits.Stringable {
     Unresolved: Expr,
     Void,
     Never: token.Pos,
-    Option: Type,
-    Result: Type,
+    Option {
+        inner: Type;
+        pos: token.Pos;
+    },
+    Result {
+        inner: Type;
+        pos: token.Pos;
+    },
     Tuple {
         inners: []Type;
         sym: TypeSym;
+        pos: token.Pos;
 
         func ==(self, other: Self) bool {
             for i, inner in self.inners {
@@ -30,26 +37,31 @@ public enum Type : traits.Stringable {
         inner: Type;
         is_mut: bool;
         sym: TypeSym;
+        pos: token.Pos;
     },
     Vector {
         inner: Type;
         is_mut: bool;
         sym: TypeSym;
+        pos: token.Pos;
     },
     Array {
         inner: Type;
         is_mut: bool;
         size: Expr;
         sym: TypeSym;
+        pos: token.Pos;
     },
     Reference {
         inner: Type;
         is_mut: bool;
+        pos: token.Pos;
     },
     Pointer {
         inner: Type;
         is_mut: bool;
         is_indexable: bool;
+        pos: token.Pos;
     },
     Anyptr {
         is_mut: bool;
@@ -65,15 +77,19 @@ public enum Type : traits.Stringable {
         args: []Arg;
         is_variadic: bool;
         ret_type: Type;
+        pos: token.Pos;
     },
-    Resolved: TypeSym;
+    Resolved {
+        sym: TypeSym;
+        pos: token.Pos = token.NO_POS;
+    };
 
     public func unalias(self) ?Self {
         // NOTE: `.unalias()` returns an option, so we use the same type without unaliasing
         // instead.
         switch self is {
-            .Result as result_inner => return .Result(result_inner.unalias() ?? result_inner),
-            .Option as option_inner => return .Option(option_inner.unalias() ?? option_inner),
+            .Result as result => return .Result(result.inner.unalias() ?? result.inner),
+            .Option as option => return .Option(option.inner.unalias() ?? option.inner),
             .Tuple as tuple_data => {
                 unaliased_types := @vec(mut Type, tuple_data.inners.len);
                 for i, tuple_type in tuple_data.inners {
@@ -104,13 +120,13 @@ public enum Type : traits.Stringable {
                     ...self
                 );
             },
-            .Resolved as resolved_sym => return if resolved_sym.info is .Alias as alias_info {
+            .Resolved as resolved => return if resolved.sym.info is .Alias as alias_info {
                 .Resolved(
                     (alias_info.parent.unalias() ?? alias_info.parent)
-                        .symbol() ?? resolved_sym
+                        .symbol() ?? resolved.sym
                 )
             } else {
-                .Resolved(resolved_sym)
+                .Resolved(resolved.sym)
             },
             else => return none // for `.Void`, `.Never` or `.Unresolved`
         }
@@ -121,15 +137,15 @@ public enum Type : traits.Stringable {
         // NOTE: `.Func` has no TypeSym, so it does not appear in this typeswitch,
         // the same is for `.Void`, `.Never` and `.Anyptr`.
         return switch self is {
-            .Result as result_inner => result_inner.symbol(),
-            .Option as option_inner => option_inner.symbol(),
+            .Result as result => result.inner.symbol(),
+            .Option as option => option.inner.symbol(),
             .Tuple as tuple_data => tuple_data.sym,
             .Variadic as variadic_data => variadic_data.sym,
             .Vector as vector_data => vector_data.sym,
             .Array as array_data => array_data.sym,
             .Reference as reference_data => reference_data.inner.symbol(),
             .Pointer as pointer_data => pointer_data.inner.symbol(),
-            .Resolved as resolved => resolved,
+            .Resolved as resolved => resolved.sym,
             else => none
         };
     }
@@ -140,12 +156,12 @@ public enum Type : traits.Stringable {
             .Void => rhs is .Void,
             .Never => rhs is .Never,
             .Result as result_lhs => if rhs is .Result as result_rhs {
-                result_lhs == result_rhs
+                result_lhs.inner == result_rhs.inner
             } else {
                 false
             },
             .Option as option_lhs => if rhs is .Option as option_rhs {
-                option_lhs == option_rhs
+                option_lhs.inner == option_rhs.inner
             } else {
                 false
             },
@@ -225,7 +241,7 @@ public enum Type : traits.Stringable {
                 false
             },
             .Resolved as resolved_lhs => if rhs is .Resolved as resolved_rhs {
-                resolved_lhs == resolved_rhs
+                resolved_lhs.sym == resolved_rhs.sym
             } else {
                 false
             },
@@ -233,11 +249,30 @@ public enum Type : traits.Stringable {
         };
     }
 
+    [inline]
+    public func position(self) token.Pos {
+        return switch self is {
+            .Unresolved as unresolved => unresolved.position(),
+            .Void => token.NO_POS,
+            .Never as never_pos => never_pos,
+            .Option as opt_t => opt_t.pos,
+            .Result as res_t => res_t.pos,
+            .Tuple as tuple_t => tuple_t.pos,
+            .Variadic as variadic_t => variadic_t.pos,
+            .Vector as vec_t => vec_t.pos,
+            .Array as arr_t => arr_t.pos,
+            .Reference as ref_t => ref_t.pos,
+            .Pointer as ptr_t => ptr_t.pos,
+            .Anyptr as anyptr_t => anyptr_t.pos,
+            .Func as func_t => func_t.pos,
+            .Resolved as resolved_t => resolved_t.pos
+        };
+    }
     public func to_string(self) string {
         return switch self is {
             .Never => "never",
-            .Result as result_inner => "!".concat(result_inner.to_string()),
-            .Option as option_inner => "?".concat(option_inner.to_string()),
+            .Result as result => "!".concat(result.inner.to_string()),
+            .Option as option => "?".concat(option.inner.to_string()),
             .Tuple as tuple_data => {
                 mut sb := Builder.new(100);
                 sb.write_byte(b'(');
@@ -320,7 +355,7 @@ public enum Type : traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Resolved as resolved_sym => resolved_sym.qualname(),
+            .Resolved as resolved => resolved.sym.qualname(),
             else => "" // TODO: handle `.Unresolved`
         };
     }
