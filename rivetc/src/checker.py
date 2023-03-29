@@ -651,11 +651,11 @@ class Checker:
                             f"expected type `{ltyp.typ}`, found `{rtyp}`",
                             expr.right.pos
                         )
-                        report.note("in right operand for operator `orelse`")
+                        report.note("in right operand for operator `??`")
                     expr.typ = ltyp.typ
                 else:
                     report.error(
-                        "expected option value in left operand for operator `orelse`",
+                        "expected option value in left operand for operator `??`",
                         expr.pos
                     )
                     expr.typ = ltyp
@@ -1243,7 +1243,7 @@ class Checker:
                     "fields of an option value cannot be accessed directly",
                     expr.pos
                 )
-                report.help("handle it with `.?` or `orelse`")
+                report.help("handle it with `.?` or `??`")
             return expr.typ
         elif isinstance(expr, ast.ReturnExpr):
             if self.inside_test and expr.has_expr:
