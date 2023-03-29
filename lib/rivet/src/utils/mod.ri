@@ -100,3 +100,12 @@ public func join(vec: []string, s: string) string {
         sb.to_string()
     };
 }
+
+public func index_of(vec: []string, value: string) usize {
+    for i, val in vec {
+        if val == value {
+            return i;
+        }
+    }
+    return 0;
+}

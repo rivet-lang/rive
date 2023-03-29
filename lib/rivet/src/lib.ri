@@ -161,9 +161,9 @@ public struct Compiler {
                     "/"
                 );
                 if "src" in names {
-                    src_idx := name.index_of("src") ?? 0;
+                    src_idx := utils.index_of(names, "src");
                     full_name = utils.join(names[..src_idx], ".").concat(
-                        utils.join(names[src_idx + 1..], ".")
+                        ".", utils.join(names[src_idx + 1..], ".")
                     );
                 } else {
                     full_name = utils.join(names, ".");
