@@ -17,7 +17,7 @@ public trait Error : Stringable {
 
 [inline]
 func error_panic(err: Error) {
-    console_eprintln("panic: {}", err.to_string());
+    console_eprintln("unhandled error: {}", err.to_string());
     return_trace.print();
     process_exit(1);
 }
@@ -85,5 +85,9 @@ struct ReturnTrace {
                 trace.line
             );
         }
+    }
+
+    func clear(mut self) {
+        self.traces.clear();
     }
 }

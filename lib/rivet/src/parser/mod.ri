@@ -51,10 +51,10 @@ public struct Parser {
         self.file_dir = path.dirname(file) ?? file;
         self.tokenizer = tokenizer.Tokenizer.from_file(file, self.prefs, self.table);
         if report.total_errors() > 0 {
-            return ast.SourceFile(file, self.mod_sym, []);
+            return ast.SourceFile(file, [], self.mod_sym);
         }
         self.advance(2);
-        return ast.SourceFile(file, self.mod_sym, self.parse_decls());
+        return ast.SourceFile(file, self.parse_decls(), self.mod_sym);
     }
 
     func next(mut self) {

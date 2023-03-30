@@ -1445,10 +1445,13 @@ class Codegen:
                             ir.Name("value")
                         )
                     else: # `catch`
+                        self.gen_return_trace_clear()
                         if expr.err_handler.has_varname():
+                            err_ir_name = self.cur_fn.unique_name(expr.err_handler.varname)
+                            expr.err_handler.scope.update_ir_name(expr.err_handler.varname, err_ir_name)
                             self.cur_fn.inline_alloca(
                                 self.ir_type(self.comp.error_t),
-                                expr.err_handler.varname,
+                                err_ir_name,
                                 ir.Selector(
                                     self.ir_type(self.comp.error_t), res_value,
                                     ir.Name("err")
@@ -2749,6 +2752,20 @@ class Codegen:
                         )
                     ]
                 ), tmp
+            ]
+        )
+
+    def gen_return_trace_clear(self):
+        self.cur_fn.add_call(
+            "_R4core11ReturnTrace5clearM", [
+                ir.Inst(
+                    ir.InstKind.GetRef, [
+                        ir.Ident(
+                            ir.Type("_R4core11ReturnTrace"),
+                            "_R4core12return_trace"
+                        )
+                    ]
+                )
             ]
         )
 

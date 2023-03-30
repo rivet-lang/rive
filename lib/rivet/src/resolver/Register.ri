@@ -37,20 +37,118 @@ public struct Register {
         for decl in decls {
             old_abi := self.abi;
             old_sym := self.sym;
+            switch decl is {
+                .Import as import_decl => {
+                    if import_decl.import_list.is_empty() {
+                        if import_decl.is_public {
+                            self.sym.scope.add(ast.SymRef(
+                                is_public: import_decl.is_public,
+                                name: import_decl.alias_name,
+                                ref: import_decl.info.mod
+                            )) catch |err| report.error(err.to_string(), import_decl.pos);
+                        } else {
+                            self.source_file.imported_symbols.add(
+                                import_decl.alias_name, import_decl.info.mod
+                            );
+                        }
+                    } else if import_decl.glob {
+                        for sym in import_decl.info.mod.scope.syms {
+                            if sym.is_public {
+                                continue;
+                            }
+                            self.check_imported_symbol(sym, import_decl.pos);
+                            self.source_file.imported_symbols.add(sym.name, sym);
+                        }
+                    }
+                    for import_info in import_decl.import_list {
+                        if import_info.name == "self" {
+                            self.source_file.imported_symbols.add(
+                                import_decl.alias_name, import_decl.info.mod
+                            );
+                        } else if sym := import_decl.info.mod.scope.find(import_info.name) {
+                            self.check_vis(sym, import_info.pos);
+                            self.check_imported_symbol(sym, import_info.pos);
+                            self.source_file.imported_symbols.add(
+                                import_info.alias_name, sym
+                            );
+                        } else {
+                            report.error(
+                                "could not find `{}` in module `{}`".fmt(
+                                    import_info.name, import_decl.info.mod.name
+                                ), import_info.pos
+                            );
+                        }
+                    }
+                },
+                .Extern as extern_decl => {
+                    self.abi = extern_decl.abi;
+                    self.walk_decls(extern_decl.decls);
+                },
+                .Alias as alias_decl => alias_decl.sym = if alias_decl.is_typealias {
+                    self.add_sym(ast.TypeSym(
+                        is_public: alias_decl.is_public,
+                        name: alias_decl.name,
+                        info: .Alias(alias_decl.parent_type)
+                    ), alias_decl.pos)
+                } else {
+                    // updated later
+                    self.add_sym(
+                        ast.SymRef(
+                            is_public: alias_decl.is_public,
+                            name: alias_decl.name,
+                            ref_expr: alias_decl.parent
+                        ), alias_decl.pos
+                    )
+                },
+                .Const as const_decl => const_decl.sym = self.add_sym(ast.Const(
+                    abi: self.abi,
+                    is_public: const_decl.is_public,
+                    name: const_decl.name,
+                    expr: const_decl.expr,
+                    type: const_decl.type
+                ), const_decl.pos),
+                .Var as var_decl => {
+                    for left in var_decl.lefts {
+                        left.sym = ast.Var(
+                            is_public: var_decl.is_public,
+                            is_mut: left.is_mut,
+                            is_extern: var_decl.is_extern,
+                            abi: self.abi,
+                            name: left.name
+                        );
+                        self.source_file.mod.scope.add(left.sym) catch |err| {
+                            report.error(err.to_string(), left.pos)
+                        };
+                    }
+                }
+            }
             self.abi = old_abi;
             self.sym = old_sym;
         }
     }
 
-    func add_sym(mut self, sym: ast.Sym, pos: token.Pos) {
+    func add_sym(mut self, sym: ast.Sym, pos: token.Pos) ast.Sym {
         self.sym.scope.add(sym) catch |err| {
             report.error(err.to_string(), pos);
         };
+        return sym;
     }
 
     func check_vis(self, sym: ast.Sym, pos: token.Pos) {
         if !sym.is_public and !self.sym.has_access_to(sym) {
             report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
+        }
+    }
+
+    func check_imported_symbol(self, sym: ast.Sym, pos: token.Pos) {
+        if self.source_file.imported_symbols.exists(sym.name) {
+            report.error("{} `{}` is already imported".fmt(sym.type_of(), sym.name), pos);
+        } else if self.source_file.mod.scope.exists(sym.name) {
+            mut err := report.error_builder(
+                "another symbol with the name `{}` already exists".fmt(sym.name), pos
+            );
+            err.add_help("you can use `as` to change the name of the import");
+            err.emit();
         }
     }
 }

@@ -45,6 +45,9 @@ public struct Compiler {
 
         self.vlog("resolving files...");
         self.resolver.resolve(self.table.source_files);
+        if report.total_errors() > 0 {
+            self.abort();
+        }
     }
 
     func make_rivet_directory(self) ! {
@@ -91,7 +94,7 @@ public struct Compiler {
         for sf in self.table.source_files {
             for d in sf.decls {
                 if d is .Import as import_decl {
-                    if import_decl.path in done_imports {
+                    if import_decl.info.full_name in done_imports {
                         continue;
                     }
                     import_decl.info = self.load_module(
@@ -99,7 +102,7 @@ public struct Compiler {
                         import_decl.path_pos
                     ).!;
                     if import_decl.info.found {
-                        done_imports.push(import_decl.path);
+                        done_imports.push(import_decl.info.full_name);
                     }
                 }
             }
@@ -115,12 +118,17 @@ public struct Compiler {
         mut self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) !ast.ImportedMod {
         mod := self.load_module_files(pathx, alias_name, file_path, pos).!;
-        if mod.found and !self.table.universe.scope.exists(mod.full_name) {
-            mod_sym := ast.Module(name: mod.full_name);
-            self.table.universe.scope.add(mod_sym) catch |err| {
-                report.error(err.to_string(), pos)
+        if mod.found {
+            mod.mod = if mod_mod_ := self.table.universe.scope.find(mod.full_name) {
+                @cast(ast.Module, mod_mod_)
+            } else {
+                mod_sym := ast.Module(name: mod.full_name);
+                self.table.universe.scope.add(mod_sym) catch |err| {
+                    report.error(err.to_string(), pos)
+                };
+                self.parse_files(mod_sym, mod.files);
+                mod_sym
             };
-            self.parse_files(mod_sym, mod.files);
         }
         return mod;
     }

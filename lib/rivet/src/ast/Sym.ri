@@ -86,6 +86,7 @@ public trait Sym {
     [inline]
     func type_of(self) string {
         return switch self is {
+            SymRef as ref => ref.type_of(),
             Module => "module",
             Const => "constant",
             Var => "variable",
@@ -119,6 +120,13 @@ public trait Sym {
 }
 
 [boxed]
+public struct SymRef : Sym {
+    public ref: Sym;
+    public ref_expr: Expr;
+    public ref_resolved: bool;
+}
+
+[boxed]
 public struct Module : Sym {
     [inline]
     public func is_core(self) bool {
@@ -129,8 +137,8 @@ public struct Module : Sym {
 [boxed]
 public struct Const : Sym {
     public expr: Expr;
-    public evaled_expr: ?Expr;
-    public typ: Type;
+    public evaled_expr: Expr;
+    public type: Type;
 }
 
 public enum VarLevel as uint8 {
@@ -149,7 +157,7 @@ public struct Var : Sym {
     public is_changed: bool;
     public is_hidden_ref: bool;
     public level: VarLevel;
-    public typ: Type;
+    public type: Type;
 }
 
 [boxed]
@@ -158,7 +166,7 @@ public struct Field {
     public name: string;
     public is_mut: bool;
     public def_expr: ?Expr;
-    public typ: Type;
+    public type: Type;
 }
 
 public enum TypeInfo : traits.Stringable {
@@ -184,19 +192,19 @@ public enum TypeInfo : traits.Stringable {
         parent: Type;
     },
     Array {
-        elem_typ: Type;
+        elem_type: Type;
         size: isize;
         has_contains_method: bool;
     },
     Vector{
-        elem_typ: Type;
+        elem_type: Type;
         has_contains_method: bool;
     },
     Tuple {
         types: []Type;
     },
     Enum {
-        underlying_typ: Type;
+        underlying_type: Type;
         mut variants: []EnumVariant;
         is_boxed_enum: bool;
 
@@ -214,9 +222,9 @@ public enum TypeInfo : traits.Stringable {
             return none;
         }
 
-        func get_variant_by_type(self, typ: Type) ?EnumVariant {
+        func get_variant_by_type(self, type: Type) ?EnumVariant {
             for v in self.variants {
-                if v.has_typ and v.typ == typ {
+                if v.has_type and v.type == type {
                     return v;
                 }
             }
@@ -296,8 +304,8 @@ public enum TypeInfo : traits.Stringable {
 public struct EnumVariant {
     public name: string;
     public value: isize;
-    public has_typ: bool;
-    public typ: Type;
+    public has_type: bool;
+    public type: Type;
 }
 
 [boxed]
@@ -426,13 +434,13 @@ public struct Func : Sym {
     public is_main: bool;
     public is_method: bool;
     public is_variadic: bool;
-    public self_typ: Type;
+    public self_type: Type;
     public self_is_mut: bool;
     public self_is_ref: bool;
     public args: []Arg;
     public has_named_args: bool;
     public has_body: bool;
-    public ret_typ: Type;
+    public ret_type: Type;
 
     public func get_arg(self, idx: usize) Arg {
         arg := self.args[idx];

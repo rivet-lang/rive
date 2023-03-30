@@ -112,6 +112,10 @@ struct Vector {
         self.cap = new_cap;
     }
 
+    public func clear(mut self) {
+        self.len = 0;
+    }
+
     [inline]
     func is_empty(self) bool {
         return self.len == 0;

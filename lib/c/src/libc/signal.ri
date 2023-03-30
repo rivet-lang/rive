@@ -5,7 +5,7 @@
 // TODO(StunxFS): replace the argument type of `SignalHandler` from
 // `int32` to an enum that enumerates all possible signals.
 
-import { pid_t, uid_t } from c/ctypes;
+import { pid_t, uid_t } from ../ctypes;
 
 public alias SignalHandler = func (int32, *mut siginfo_t, mut_anyptr);
 
@@ -50,11 +50,7 @@ public alias SignalHandler = func (int32, *mut siginfo_t, mut_anyptr);
     public const SEGV_ACCERR = 0x2;
 
     public struct sigset_t {
-#if _X86_
-        public __val: [32]uint32;
-#else
-        public __val: [16]uint64;
-#endif
+        public __val: [#if _X86_ 32 #else 16 #endif]uint32;
     }
 
     public struct sigval {
@@ -71,7 +67,7 @@ public alias SignalHandler = func (int32, *mut siginfo_t, mut_anyptr);
         public si_addr: mut_anyptr; // faulting instruction
         public si_value: sigval; // signal value
         public si_band: int64; // band event for SIGPOLL
-        public __pad: [7]uint64; // reserved for future use
+        public _: [7]uint64; // reserved for future use
     }
 
     public struct sigaction_t {
@@ -91,7 +87,7 @@ public alias SignalHandler = func (int32, *mut siginfo_t, mut_anyptr);
 
 extern (C) {
 #if _LINUX_
-    public func sigaction(signum: int32, act: *sigaction_t, oldact: *mut sigaction_t) int32;
+    public func sigaction(signum: int32, act: ?*sigaction_t, old_act: ?*mut sigaction_t) int32;
 #endif
     public func signal(sig: int32, handler: SignalHandler) ?SignalHandler;
     public func raise(sig: int32) int32;
