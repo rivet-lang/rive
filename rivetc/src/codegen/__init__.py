@@ -219,7 +219,7 @@ class Codegen:
                 main_fn.store(
                     ir.Selector(
                         ir.STRING_T.ptr(True), test_value, ir.Name("name")
-                    ), self.gen_string_lit(gtest.name)
+                    ), self.gen_string_literal(gtest.name)
                 )
                 main_fn.store(
                     ir.Selector(
@@ -750,7 +750,10 @@ class Codegen:
             return ir.IntLit(ir.BOOL_T, str(int(expr.lit)))
         elif isinstance(expr, ast.CharLiteral):
             if expr.is_byte:
-                return ir.IntLit(ir.UINT8_T, str(utils.bytestr(self.decode_escape(expr.lit)).buf[0]))
+                return ir.IntLit(
+                    ir.UINT8_T,
+                    str(utils.bytestr(self.decode_escape(expr.lit)).buf[0])
+                )
             return ir.RuneLit(ir.RUNE_T, expr.lit)
         elif isinstance(expr, ast.IntegerLiteral):
             assert expr.typ, expr.pos
@@ -773,7 +776,7 @@ class Codegen:
                     ]
                 )
             if expr.typ == self.comp.string_t:
-                return self.gen_string_lit(escaped_val, size)
+                return self.gen_string_literal(escaped_val, size)
             return ir.StringLit(escaped_val, str(size))
         elif isinstance(expr, ast.EnumLiteral):
             enum_sym = expr.typ.symbol()
@@ -909,9 +912,11 @@ class Codegen:
                     self.cur_fn.add_call(
                         "_R4core11assert_testF", [
                             self.gen_expr(expr.args[0]),
-                            self.gen_string_lit(msg,
-                                                utils.bytestr(msg_).len),
-                            self.gen_string_lit(
+                            self.gen_string_literal(
+                                msg,
+                                utils.bytestr(msg_).len
+                            ),
+                            self.gen_string_literal(
                                 pos,
                                 utils.bytestr(str(expr.pos)).len
                             ), tmp_idx_
@@ -931,8 +936,10 @@ class Codegen:
                     self.cur_fn.add_call(
                         "_R4core6assertF", [
                             self.gen_expr(expr.args[0]),
-                            self.gen_string_lit(msg,
-                                                utils.bytestr(msg_).len)
+                            self.gen_string_literal(
+                                msg,
+                                utils.bytestr(msg_).len
+                            )
                         ]
                     )
             elif expr.name in ("ptr_add", "ptr_diff"):
@@ -1385,6 +1392,7 @@ class Codegen:
                     )
                     self.cur_fn.add_label(panic_l)
                     if expr.err_handler.is_propagate:
+                        self.gen_return_trace_add(expr.pos)
                         self.gen_defer_stmts(True, res_value_is_err)
                         if self.cur_fn_is_main or self.inside_let_decl:
                             self.cur_fn.add_call(
@@ -1403,7 +1411,7 @@ class Codegen:
                                         self.ir_type(self.comp.error_t),
                                         res_value, ir.Name("err")
                                     ),
-                                    self.gen_string_lit(pos),
+                                    self.gen_string_literal(pos),
                                     ir.Ident(ir.TEST_T, "test")
                                 ]
                             )
@@ -2159,8 +2167,10 @@ class Codegen:
                                         ir.Name("=="),
                                         ir.Selector(
                                             self.ir_type(expr.expr.typ),
-                                            switch_expr, ir.Name(
-                                                "_id_" if p.typ.sym.kind == TypeKind.Trait else "_idx_"
+                                            switch_expr,
+                                            ir.Name(
+                                                "_id_" if p.typ.sym.kind ==
+                                                TypeKind.Trait else "_idx_"
                                             )
                                         ), value_idx_x
                                     ]
@@ -2315,6 +2325,7 @@ class Codegen:
                     if expr.expr.typ.symbol().implement_trait(
                         self.comp.error_sym
                     ):
+                        self.gen_return_trace_add(expr.pos)
                         expr_ = self.result_error(
                             self.cur_fn_ret_typ, expr.expr.typ, expr_
                         )
@@ -2481,7 +2492,7 @@ class Codegen:
     def panic(self, msg):
         self.cur_fn.add_call(
             "_R4core13process_panicF", [
-                self.gen_string_lit(utils.smart_quote(msg, False)),
+                self.gen_string_literal(utils.smart_quote(msg, False)),
                 self.empty_vec(self.comp.universe["[]core.Stringable"])
             ]
         )
@@ -2574,7 +2585,7 @@ class Codegen:
             ]
         )
 
-    def gen_string_lit(self, lit, size = None):
+    def gen_string_literal(self, lit, size = None):
         size = size or utils.bytestr(lit).len
         if size == 0:
             return ir.Ident(ir.STRING_T.ptr(True), "_R4core12empty_string")
@@ -2585,7 +2596,7 @@ class Codegen:
             )
         tmp = self.boxed_instance(
             "_R4core6string", 19,
-            custom_name = f"STR_LIT{len(self.generated_string_literals)}"
+            custom_name = f"STRLIT{len(self.generated_string_literals)}"
         )
         self.out_rir.globals.append(
             ir.GlobalVar(False, False, ir.STRING_T.ptr(True), tmp.name)
@@ -2704,17 +2715,44 @@ class Codegen:
             tmp = custom_tmp
         else:
             tmp = self.boxed_instance(mangle_symbol(enum_sym), enum_sym.id)
-        usize_t = ir.USIZE_T
         variant_info = enum_sym.info.get_variant(variant_name)
         self.cur_fn.store(
-            ir.Selector(usize_t, tmp, ir.Name("_idx_")),
-            ir.IntLit(usize_t, variant_info.value)
+            ir.Selector(ir.USIZE_T, tmp, ir.Name("_idx_")),
+            ir.IntLit(ir.USIZE_T, variant_info.value)
         )
-        self.cur_fn.store(ir.Selector(usize_t, tmp, ir.Name("obj")), value)
+        self.cur_fn.store(ir.Selector(ir.USIZE_T, tmp, ir.Name("obj")), value)
         return tmp
 
+    def gen_return_trace_add(self, pos):
+        tmp_name = self.cur_fn.local_name()
+        tmp = ir.Ident(ir.Type("_R4core9CallTrace"), tmp_name)
+        self.cur_fn.alloca(tmp)
+        self.cur_fn.store(
+            ir.Selector(ir.STRING_T, tmp, ir.Name("name")),
+            self.gen_string_literal(self.cur_fn.name)
+        )
+        self.cur_fn.store(
+            ir.Selector(ir.STRING_T, tmp, ir.Name("file")),
+            self.gen_string_literal(pos.file)
+        )
+        self.cur_fn.store(
+            ir.Selector(ir.USIZE_T, tmp, ir.Name("line")),
+            ir.IntLit(ir.USIZE_T, str(pos.line + 1))
+        )
+        self.cur_fn.add_call(
+            "_R4core11ReturnTrace3addM", [
+                ir.Inst(
+                    ir.InstKind.GetRef, [
+                        ir.Ident(
+                            ir.Type("_R4core11ReturnTrace"),
+                            "_R4core12return_trace"
+                        )
+                    ]
+                ), tmp
+            ]
+        )
+
     def gen_guard_expr(self, expr, entry_label, exit_label, gen_cond = True):
-        assert isinstance(expr, ast.GuardExpr)
         gexpr = self.gen_expr_with_cast(expr.typ, expr.expr)
         var_name = self.cur_fn.unique_name(expr.vars[0].name)
         expr.scope.update_ir_name(expr.vars[0].name, var_name)

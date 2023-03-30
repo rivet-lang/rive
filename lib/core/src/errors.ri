@@ -8,10 +8,17 @@ import c/libc;
 public alias ErrnoError = c.ErrnoError;
 public alias last_errno_error = c.last_errno_error;
 
+/// This trait is used for errors returned with result types (!T).
+public trait Error : Stringable {
+    func return_trace(self) ReturnTrace {
+        return return_trace;
+    }
+}
+
 [inline]
 func error_panic(err: Error) {
     console_eprintln("panic: {}", err.to_string());
-    bt_print(2);
+    return_trace.print();
     process_exit(1);
 }
 
@@ -52,5 +59,31 @@ public struct ReadFailedError : Error {
     [inline]
     public func to_string(self) string {
         return self.msg;
+    }
+}
+
+struct CallTrace {
+    name: string;
+    file: string;
+    line: usize;
+}
+
+var return_trace = ReturnTrace();
+
+struct ReturnTrace {
+    mut traces: []CallTrace = @vec(CallTrace, 5);
+
+    [inline]
+    func add(mut self, trace: CallTrace) {
+        self.traces.push(trace);
+    }
+
+    func print(self) {
+        for i, trace in self.traces {
+            console_eprintln(
+                "   at {} ({}:{})", demangle_symbol(trace.name), trace.file,
+                trace.line
+            );
+        }
     }
 }

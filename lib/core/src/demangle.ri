@@ -1,0 +1,44 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+func demangle_symbol(name: string) string {
+    @assert(name.len > 0);
+    if !name.starts_with("_R") {
+        return name;
+    }
+    name_ptr := unsafe { name.ptr };
+    mut idx: usize := 2;
+    mut buf := StaticBuffer();
+    mut res := StringBuilder.new(name.len);
+    while idx < name.len {
+        mut byte := unsafe { name_ptr[idx] };
+        if byte.is_digit() {
+            buf.push(byte);
+            idx += 1;
+            continue;
+        }
+
+        if !res.is_empty() {
+            res.write_string(".");
+        }
+
+        buf_len := @cast(usize, buf.as_uint64());
+        mut i_: usize := 0;
+        while i_ < buf_len : i_ += 1 {
+            res.write_byte(unsafe { name_ptr[idx] });
+            idx += 1;
+        }
+
+        buf.clear();
+
+        byte = unsafe { name_ptr[idx] };
+        if byte == b'F' or byte == b'M' {
+            res.write_string("()");
+            break;
+        } else if !byte.is_digit() {
+            break; // end
+        }
+    }
+    return res.to_string();
+}

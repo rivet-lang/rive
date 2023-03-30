@@ -127,9 +127,7 @@ class Compiler:
         return g
 
     def run(self):
-        self.parsed_files += self.load_module(
-            "core", "core", "", token.NO_POS
-        )
+        self.parsed_files += self.load_module("core", "core", "", token.NO_POS)
         self.load_root_module()
         self.import_modules()
         if not self.prefs.check_syntax:

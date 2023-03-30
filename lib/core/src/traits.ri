@@ -2,9 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-/// This trait is used for errors returned with result types (!T).
-public trait Error : Stringable { }
-
 public trait Stringable {
     func to_string(&self) string;
 }
