@@ -77,53 +77,39 @@ public func is_link(path: string) bool {
 }
 
 /// Strip the last component from a file path.
+/// If the path is empty, returns `none`.
 /// If the path is a file in the current directory (no directory component)
-/// then returns none.
-/// If the path is the root directory, returns none.
+/// then returns `.`.
+/// If the path is the root directory, returns `/`.
 public func dirname(path: string) ?string {
-    if path.len == 0 {
+    if path.is_empty() {
         return none;
     }
-    mut end_index: usize := path.len - 1;
-    while path[end_index] == b'/' {
-        if end_index == 0 {
-            return none;
+    if pos := path.last_index_of_byte(SEPARATOR) {
+        if pos == 0 and SEPARATOR == b'/' {
+            return "/";
         }
-        end_index -= 1;
+        return path[..pos];
     }
-    while path[end_index] != b'/' {
-        if end_index == 0 {
-            return none;
-        }
-        end_index -= 1;
-    }
-    if end_index == 0 and path[0] == b'/' {
-        return path[0..1];
-    }
-    if end_index == 0 {
-        return none;
-    }
-    return path[0..end_index];
+    return ".";
 }
 
 public func basename(path: string) string {
-    if path.len == 0 {
+    if path.is_empty() {
         return "";
     }
     mut end_index: usize := path.len - 1;
-    while path[end_index] == b'/' {
+    while path[end_index] == b'/' : end_index -= 1 {
         if end_index == 0 {
             return "";
         }
-        end_index -= 1;
     }
     mut start_index: usize := end_index;
     end_index += 1;
-    while path[start_index] != b'/' {
+    while path[start_index] != b'/' : start_index -= 1 {
         if start_index == 0 {
             return path[0..end_index];
         }
-        start_index -= 1;
     }
     return path[start_index + 1 .. end_index];
 }
@@ -299,7 +285,7 @@ public func join(paths: ...string) !string {
         mut i: usize := first_path_index + 1;
         while i < paths.len : i += 1 {
             this_path := paths[i];
-            if this_path.len == 0 {
+            if this_path.is_empty() {
                 continue;
             }
             prev_sep := is_separator(prev_path[prev_path.len - 1]);
@@ -323,7 +309,7 @@ public func join(paths: ...string) !string {
     mut i: usize := first_path_index + 1;
     while i < paths.len : i += 1 {
         this_path := paths[i];
-        if this_path.len == 0 {
+        if this_path.is_empty() {
             continue;
         }
         prev_sep := is_separator(prev_path[prev_path.len - 1]);

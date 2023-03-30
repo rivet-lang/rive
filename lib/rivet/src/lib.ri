@@ -168,8 +168,6 @@ public struct Compiler {
                 } else {
                     full_name = utils.join(names, ".");
                 }
-            } else {
-                report.error("`{}` is not a directory".fmt(pathx), pos);
             }
             if found {
                 self.vlog("      > found");
@@ -212,7 +210,7 @@ public struct Compiler {
         }
         if !found {
             report.error("module `{}` not found".fmt(pathx), pos);
-        } else if files.len == 0 {
+        } else if files.is_empty() {
             report.error("module `{}` contains no rivet files".fmt(pathx), pos);
         } else {
             self.vlog("    module `{}` loaded", pathx);

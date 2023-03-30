@@ -14,12 +14,27 @@ public alias panic = core.process_panic;
 public alias abort = core.process_abort;
 public alias exit = core.process_exit;
 public alias executable = core.process_executable;
-public alias set_cwd = core.process_set_cwd;
 public alias get_cwd = core.process_get_cwd;
 
 public var ARGS = unsafe { core.ARGS };
 public var WD_AT_STARTUP = get_cwd() catch ".";
 public var EXECUTABLE_DIR = path.dirname(executable() catch WD_AT_STARTUP);
+
+[boxed]
+public struct NotADirectoryError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
+public func set_cwd(p: string) ! {
+    if !path.is_directory(p) {
+        return NotADirectoryError("`{}` is not a directory".fmt(p));
+    }
+    core.process_set_cwd(p).!;
+}
 
 struct Result {
 	public output: string;
@@ -45,6 +60,6 @@ public func execute(cmd: string) Result {
             }
             return Result(output.to_string(), libc.pclose(f));
         }
-        return Result("execute( {} ) failed".fmt(cmd), -1);
+        return Result("execute('{}') failed".fmt(cmd), -1);
     }
 }
