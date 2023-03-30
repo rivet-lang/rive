@@ -854,7 +854,7 @@ class Codegen:
                                             ir.VOID_PTR_T, res, ir.Name("obj")
                                         ),
                                         ir.Selector(
-                                            ir.USIZE_T, res, ir.Name("_id_")
+                                            ir.USIZE_T, res, ir.Name("_idx_")
                                         ),
                                         ir.IntLit(
                                             ir.USIZE_T, str(expr_typ_sym.id)
@@ -1192,13 +1192,13 @@ class Codegen:
                                         f"{mangle_symbol(left_sym)}17__index_of_vtbl__"
                                     ),
                                     ir.Selector(
-                                        ir.USIZE_T, self_expr, ir.Name("_id_")
+                                        ir.USIZE_T, self_expr, ir.Name("_idx_")
                                     )
                                 ]
                             )
                         else:
                             id_value = ir.Selector(
-                                ir.USIZE_T, self_expr, ir.Name("_idx_")
+                                ir.USIZE_T, self_expr, ir.Name("_id_")
                             )
                     else:
                         id_value = ir.Inst(
@@ -1827,7 +1827,7 @@ class Codegen:
                     cmp = ir.Inst(
                         ir.InstKind.Cmp, [
                             ir.Name(kind),
-                            ir.Selector(ir.USIZE_T, left, ir.Name("_idx_")),
+                            ir.Selector(ir.USIZE_T, left, ir.Name("_id_")),
                             ir.IntLit(
                                 ir.USIZE_T,
                                 str(left_sym.info.indexof(expr_right_sym))
@@ -2159,7 +2159,9 @@ class Codegen:
                                         ir.Name("=="),
                                         ir.Selector(
                                             self.ir_type(expr.expr.typ),
-                                            switch_expr, ir.Name("_idx_")
+                                            switch_expr, ir.Name(
+                                                "_id_" if p.typ.sym.kind == TypeKind.Trait else "_idx_"
+                                            )
                                         ), value_idx_x
                                     ]
                                 )
@@ -2657,9 +2659,9 @@ class Codegen:
         else:
             vtbl_idx_x = trait_sym.info.indexof(value_sym)
             index = ir.IntLit(ir.USIZE_T, str(vtbl_idx_x))
-        self.cur_fn.store(ir.Selector(ir.USIZE_T, tmp, ir.Name("_idx_")), index)
+        self.cur_fn.store(ir.Selector(ir.USIZE_T, tmp, ir.Name("_id_")), index)
         self.cur_fn.store(
-            ir.Selector(ir.USIZE_T, tmp, ir.Name("_id_")),
+            ir.Selector(ir.USIZE_T, tmp, ir.Name("_idx_")),
             ir.IntLit(ir.USIZE_T, str(value_sym.id))
         )
         return tmp
@@ -2858,8 +2860,8 @@ class Codegen:
             elif ts.kind == TypeKind.Trait:
                 ts_name = mangle_symbol(ts)
                 fields = [
-                    ir.Field("_idx_", ir.USIZE_T),
                     ir.Field("_rc_", ir.USIZE_T),
+                    ir.Field("_idx_", ir.USIZE_T),
                     ir.Field("_id_", ir.USIZE_T),
                     ir.Field("obj", ir.VOID_PTR_T),
                 ]

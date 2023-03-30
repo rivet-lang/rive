@@ -10,7 +10,9 @@ public alias last_errno_error = c.last_errno_error;
 
 [inline]
 func error_panic(err: Error) {
-    process_panic(err.to_string());
+    console_eprintln("panic: {}", err.to_string());
+    bt_print(2);
+    process_exit(1);
 }
 
 [boxed]

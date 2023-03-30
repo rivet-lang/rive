@@ -168,6 +168,8 @@ public struct Compiler {
                 } else {
                     full_name = utils.join(names, ".");
                 }
+            } else {
+                report.error("`{}` is not a directory".fmt(pathx), pos);
             }
             if found {
                 self.vlog("      > found");
