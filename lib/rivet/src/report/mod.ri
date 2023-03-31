@@ -109,7 +109,7 @@ public struct ReportBuilder {
                         "help:"
                     }
                 )
-            ), annotation.msg);
+            ), annotation.msg.wrap(80, "\n        "));
         }
     }
 }

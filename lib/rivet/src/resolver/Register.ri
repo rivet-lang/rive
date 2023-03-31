@@ -37,6 +37,7 @@ public struct Register {
         for decl in decls {
             old_abi := self.abi;
             old_sym := self.sym;
+            self.sym.scope.owner = self.sym;
             switch decl is {
                 .Import as import_decl => {
                     if import_decl.import_list.is_empty() {
@@ -100,6 +101,108 @@ public struct Register {
                         ), alias_decl.pos
                     )
                 },
+                .Trait as trait_decl => {
+                    trait_decl.sym = self.add_sym(
+                        ast.TypeSym(
+                            is_public: trait_decl.is_public,
+                            name: trait_decl.name,
+                            info: .Trait()
+                        ), trait_decl.pos
+                    );
+                    if self.is_core_mod and trait_decl.name == "Error" and !self.table.error_sym_is_set {
+                        self.table.error_sym = @cast(ast.TypeSym, trait_decl.sym);
+                        self.table.error_sym_is_set = true;
+                    }
+                    self.sym = trait_decl.sym;
+                    self.walk_decls(trait_decl.decls);
+                },
+                .Struct as struct_decl => {
+                    struct_decl.sym = if self.is_core_mod and struct_decl.name == "string" {
+                        @cast(ast.Type.Resolved, self.table.string_t).sym
+                    } else {
+                        self.add_sym(ast.TypeSym(
+                            is_public: struct_decl.is_public,
+                            name: struct_decl.name,
+                            info: .Struct(
+                                is_opaque: struct_decl.is_opaque,
+                                is_boxed: struct_decl.annotations.has("boxed")
+                            )
+                        ), struct_decl.pos)
+                    };
+                    if self.is_core_mod and struct_decl.name == "Vector" {
+                        self.table.vector_sym = @cast(ast.TypeSym, struct_decl.sym);
+                    }
+                    self.sym = struct_decl.sym;
+                    self.walk_decls(struct_decl.decls);
+                },
+                .Enum as enum_decl => {
+                    info := ast.TypeInfo.Enum(
+                        underlying_type: enum_decl.underlying_type,
+                        is_boxed: enum_decl.is_boxed
+                    );
+                    enum_decl.sym = self.add_sym(
+                        ast.TypeSym(
+                            is_public: enum_decl.is_public,
+                            name: enum_decl.name,
+                            info: info
+                        ), enum_decl.pos
+                    );
+                    mut enum_info := @cast(ast.TypeInfo.Enum, info);
+                    for variant in enum_decl.variants {
+                        if enum_info.has_variant(variant.name) {
+                            report.error("enum `{}` has duplicate variant `{}`".fmt(
+                                enum_decl.name, variant.name
+                            ), variant.pos);
+                            continue;
+                        }
+                        fields := ast.filter_field_decl(variant.decls);
+                        if !variant.decls.is_empty() {
+                            variant_sym := ast.TypeSym(
+                                is_public: enum_decl.is_public,
+                                name: variant.name,
+                                info: .Struct(false, true, true)
+                            );
+                            enum_decl.sym.scope.add(variant_sym) catch |err| {
+                                report.error(err.to_string(), variant.pos)
+                            };
+                            old_v_sym := self.sym;
+                            self.sym = variant_sym;
+                            self.walk_decls(variant.decls);
+                            self.sym = old_v_sym;
+                            variant.type = .Resolved(variant_sym);
+                        }
+                        enum_info.add_variant(
+                            ast.EnumVariant(
+                                name: variant.name,
+                                has_type: variant.has_type,
+                                type: variant.type,
+                                has_fields: !fields.is_empty()
+                            )
+                        );
+                    }
+                    @cast(ast.TypeSym, enum_decl.sym).info = info;
+                    self.sym = enum_decl.sym;
+                    self.walk_decls(enum_decl.decls);
+                },
+                .Field as field_decl => {
+                    type_sym := @cast(ast.TypeSym, self.sym);
+                    if type_sym.has_field(field_decl.name) {
+                        report.error(
+                            "{} `{}` has duplicate field `{}`".fmt(
+                                type_sym.type_of(), type_sym.name, field_decl.name
+                            ), field_decl.pos
+                        );
+                        continue;
+                    }
+                    type_sym.fields.push(ast.Field(
+                        name: field_decl.name,
+                        is_mut: field_decl.is_mut,
+                        is_public: field_decl.is_public,
+                        type: field_decl.type,
+                        has_def_expr: field_decl.has_def_expr,
+                        def_expr: field_decl.def_expr
+                    ));
+                },
                 .Const as const_decl => const_decl.sym = self.add_sym(ast.Const(
                     abi: self.abi,
                     is_public: const_decl.is_public,
@@ -120,6 +223,42 @@ public struct Register {
                             report.error(err.to_string(), left.pos)
                         };
                     }
+                },
+                .Func as func_decl => {
+                    func_decl.sym = self.add_sym(ast.Func(
+                        abi: self.abi,
+                        is_public: func_decl.is_public,
+                        is_extern: func_decl.is_extern,
+                        is_unsafe: func_decl.is_unsafe,
+                        is_method: func_decl.is_method,
+                        is_variadic: func_decl.is_variadic,
+                        name: func_decl.name,
+                        args: func_decl.args,
+                        has_named_args: func_decl.has_named_args,
+                        ret_type: func_decl.ret_type,
+                        has_body: func_decl.has_body,
+                        self_is_mut: func_decl.self_is_mut,
+                        self_is_ref: func_decl.self_is_ref
+                    ), func_decl.pos);
+                },
+                .Destructor as dtor_decl => {
+                    dtor_decl.sym = self.add_sym(ast.Func(
+                        abi: self.abi,
+                        is_unsafe: true,
+                        is_method: true,
+                        name: "_dtor_",
+                        args: [
+                            ast.Arg(
+                                name: "self",
+                                is_mut: dtor_decl.self_is_mut,
+                                type: .Resolved(@cast(ast.TypeSym, self.sym)),
+                                pos: dtor_decl.pos
+                            )
+                        ],
+                        ret_type: .Void(),
+                        has_body: true,
+                        self_is_mut: dtor_decl.self_is_mut
+                    ), dtor_decl.pos);
                 }
             }
             self.abi = old_abi;

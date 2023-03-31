@@ -134,14 +134,11 @@ class Register:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.EnumDecl):
                 try:
-                    info = sym.EnumInfo(
-                        self.comp.comptime_number_to_type(decl.underlying_typ),
-                        decl.is_boxed_enum
-                    )
+                    info = sym.EnumInfo(decl.underlying_typ, decl.is_boxed_enum)
                     decl.sym = self.sym.add_and_return(
                         sym.Type(decl.is_public, decl.name, TypeKind.Enum)
                     )
-                    for i, variant in enumerate(decl.variants):
+                    for variant in decl.variants:
                         if info.has_variant(variant.name):
                             report.error(
                                 f"enum `{decl.name}` has duplicate variant `{variant.name}`",
@@ -230,7 +227,7 @@ class Register:
             elif isinstance(decl, ast.DestructorDecl):
                 self.add_sym(
                     sym.Fn(
-                        self.abi, False, False, True, True, False, "_dtor", [
+                        self.abi, False, False, True, True, False, "_dtor_", [
                             sym.Arg(
                                 "self", decl.self_is_mut, type.Type(self.sym),
                                 None, False, decl.pos

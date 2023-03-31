@@ -22,6 +22,7 @@ public struct Table {
     public mut core_mod: Module;
     public mut vector_sym: TypeSym; // from `core` module
     public mut error_sym: TypeSym; // from `core` module
+    public mut error_sym_is_set: bool;
 
     // Primitive types.
     public mut none_t: Type;

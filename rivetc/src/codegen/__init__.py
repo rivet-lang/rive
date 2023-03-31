@@ -2347,6 +2347,8 @@ class Codegen:
                 self.cur_fn.add_ret_void()
             return ir.Skip()
         else:
+            if expr is None:
+                raise Exception(expr)
             raise Exception(expr.__class__, expr.pos)
         return ir.Skip()
 
@@ -2693,7 +2695,7 @@ class Codegen:
             ir.Selector(usize_t, tmp, ir.Name("_idx_")),
             ir.IntLit(usize_t, variant_info.value)
         )
-        if variant_info.has_typ and not isinstance(value, ast.EmptyExpr):
+        if variant_info.has_typ and value and not isinstance(value, ast.EmptyExpr):
             arg0 = self.gen_expr_with_cast(variant_info.typ, value)
             size, _ = self.comp.type_size(variant_info.typ)
             if isinstance(arg0.typ, ir.Pointer):

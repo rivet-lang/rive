@@ -359,9 +359,10 @@ extend Parser {
                     }
                 }
                 self.expect(.Lbrace);
-                mut is_boxed_enum := false;
+                mut is_boxed := false;
                 mut variants := @vec(ast.EnumVariantDecl);
                 while {
+                    v_pos := self.tok.pos;
                     v_name := self.parse_name();
                     mut has_type := false;
                     mut has_value := false;
@@ -370,7 +371,7 @@ extend Parser {
                     mut variant_decls := @vec(ast.Decl);
                     if self.accept(.Lbrace) {
                         has_type = true;
-                        is_boxed_enum = true;
+                        is_boxed = true;
                         old_inside_enum_variant_with_fields := self.inside_enum_variant_with_fields;
                         self.inside_enum_variant_with_fields = true;
                         while !self.accept(.Rbrace) {
@@ -379,7 +380,7 @@ extend Parser {
                         self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields;
                     } else if self.accept(.Colon) {
                         has_type = true;
-                        is_boxed_enum = true;
+                        is_boxed = true;
                         v_type = self.parse_type();
                     } else if self.accept(.Assign) {
                         has_value = true;
@@ -391,7 +392,8 @@ extend Parser {
                         has_type,
                         has_value,
                         value,
-                        variant_decls
+                        variant_decls,
+                        v_pos + self.prev_tok.pos
                     ));
                     if !self.accept(.Comma) {
                         break;
@@ -407,7 +409,7 @@ extend Parser {
                 self.expect(.Rbrace);
                 return .Enum(
                     doc_comment, annotations, is_public, name, underlying_type,
-                    bases, variants, is_boxed_enum, decls, pos
+                    bases, variants, is_boxed, decls, pos
                 );
             },
             (self.inside_struct or self.inside_trait
@@ -543,7 +545,7 @@ extend Parser {
         mut self, docs: ast.DocComment, annotations: ast.Annotations,
         is_public: bool, is_unsafe: bool, abi: ast.ABI
     ) ast.Decl {
-        pos := self.tok.pos;
+        pos := self.prev_tok.pos;
         name := if token.is_overloadable_operator(self.tok.kind) {
             self.next();
             self.prev_tok.kind.to_string()

@@ -97,6 +97,62 @@ public struct string : Stringable, Hashable {
         return sb.to_string();
     }
 
+    /// Returns a string array of the string split by '\t' and ' '.
+    public func fields(self) []string {
+        mut res := @vec(string);
+        mut word_start: usize := 0;
+        mut word_len: usize := 0;
+        mut is_in_word := false;
+        mut is_space := false;
+        for i, c in self.as_bytes() {
+            is_space = c in [@cast(uint8, 32), 9, 10];
+            if !is_space {
+                word_len += 1;
+            }
+            if !is_in_word and !is_space {
+                word_start = i;
+                is_in_word = true;
+                continue;
+            }
+            if is_space and is_in_word {
+                res.push(self[word_start..word_start + word_len]);
+                is_in_word = false;
+                word_len = 0;
+                word_start = 0;
+                continue;
+            }
+        }
+        if is_in_word and word_len > 0 {
+            // collect the remainder word at the end
+            res.push(self[word_start..self.len]);
+        }
+        return res;
+    }
+
+    /// Wraps the given string within `width` in characters.
+    public func wrap(self, width: usize = 60, end: string = "\n") string {
+        words := self.fields();
+        if words.len == 0 {
+            return empty_string;
+        }
+        mut wrapped := StringBuilder.from_string(words[0]);
+        mut space_left := width - wrapped.len();
+        mut i: usize := 1;
+        while i < words.len : i += 1 {
+            word := words[i];
+            if word.len + 1 > space_left {
+                wrapped.write_string(end);
+                wrapped.write_string(word);
+                space_left = width - word.len;
+            } else {
+                wrapped.write_string(" ");
+                wrapped.write_string(word);
+                space_left -= 1 + word.len;
+            }
+        }
+        return wrapped.to_string();
+    }
+
     /// Returns a string formatted with all the values passed.
     ///
     /// Each replacement position is marked with `{}`:

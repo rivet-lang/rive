@@ -90,7 +90,11 @@ public trait Sym {
             Module => "module",
             Const => "constant",
             Var => "variable",
-            TypeSym => "type",
+            TypeSym as type_sym => if type_sym.info.is_compound() {
+                type_sym.info.to_string()
+            } else {
+                "type"
+            },
             Func as func_info => if func_info.is_method {
                 "method"
             } else {
@@ -165,7 +169,8 @@ public struct Field {
     public is_public: bool;
     public name: string;
     public is_mut: bool;
-    public def_expr: ?Expr;
+    public has_def_expr: bool;
+    public def_expr: Expr;
     public type: Type;
 }
 
@@ -206,14 +211,18 @@ public enum TypeInfo : traits.Stringable {
     Enum {
         underlying_type: Type;
         mut variants: []EnumVariant;
-        is_boxed_enum: bool;
+        is_boxed: bool;
 
         [inline]
-        func add_value(mut self, name: string, variant: isize) {
-            self.variants.push(EnumVariant(name, variant));
+        func add_variant(mut self, variant: EnumVariant) {
+            self.variants.push(variant);
         }
 
-        func get_value(self, name: string) ?EnumVariant {
+        func has_variant(self, name: string) bool {
+            return self.get_variant(name) !is none;
+        }
+
+        func get_variant(self, name: string) ?EnumVariant {
             for v in self.variants {
                 if v.name == name {
                     return v;
@@ -229,10 +238,6 @@ public enum TypeInfo : traits.Stringable {
                 }
             }
             return none;
-        }
-
-        func has_value(self, name: string) bool {
-            return self.get_value(name) !is none;
         }
     },
     Trait {
@@ -263,6 +268,7 @@ public enum TypeInfo : traits.Stringable {
     Struct {
         is_boxed: bool;
         is_opaque: bool;
+        is_enum_variant: bool;
         bases: []mut TypeSym;
         traits: []TypeSym;
     };
@@ -272,6 +278,11 @@ public enum TypeInfo : traits.Stringable {
         return self is .Bool or self is .Rune or self is .Int
             or self is .Uint or self is .ComptimeInt or self is .ComptimeFloat
             or self is .ComptimeFloat or self is .Float;
+    }
+
+    [inline]
+    public func is_compound(self) bool {
+        return self is .Struct or self is .Trait or self is .Enum or self is .Tuple;
     }
 
     [inline]
@@ -293,7 +304,11 @@ public enum TypeInfo : traits.Stringable {
             .Vector => "vector",
             .Tuple => "tuple",
             .Trait => "trait",
-            .Struct => "struct",
+            .Struct as struct_info => if struct_info.is_enum_variant {
+                "enum variant"
+            } else {
+                "struct"
+            },
             .Enum => "enum",
             else => "placeholder"
         };
@@ -306,6 +321,7 @@ public struct EnumVariant {
     public value: isize;
     public has_type: bool;
     public type: Type;
+    public has_fields: bool;
 }
 
 [boxed]
@@ -393,7 +409,7 @@ public struct TypeSym : Sym {
     [inline]
     public func is_boxed(self) bool {
         return if self.info is .Enum as enum_info {
-            enum_info.is_boxed_enum
+            enum_info.is_boxed
         } else if self.info is .Struct as struct_info {
             struct_info.is_boxed
         } else {
@@ -404,7 +420,7 @@ public struct TypeSym : Sym {
     [inline]
     public func is_primitive(self) bool {
         return if self.info is .Enum as enum_info {
-            !enum_info.is_boxed_enum
+            !enum_info.is_boxed
         } else {
             self.info.is_primitive()
         };
@@ -471,6 +487,7 @@ public struct Func : Sym {
 public struct Scope {
     public start: usize;
     public mut end: usize;
+    public mut owner: Sym;
     public mut parent: ?Scope;
     public mut detached_from_parent: bool;
     public mut childrens: []Scope;
@@ -480,7 +497,11 @@ public struct Scope {
         if sym.name == "_" and sym is Var {
             return; // ignore blank var
         } else if self.exists(sym.name) {
-            return DuplicateSymbolError("duplicate symbol `{}`".fmt(sym.name));
+            return DuplicateSymbolError(
+                "duplicate symbol `{}` in {} `{}`".fmt(
+                    sym.name, self.owner.type_of(), self.owner.qualname()
+                )
+            );
         }
         self.syms.push(sym);
     }
@@ -527,7 +548,7 @@ public struct Scope {
     public func lookup(self, name: string) ?Sym {
         mut sc_: ?Scope := self;
         while sc := sc_ {
-            for sym in self.syms {
+            for sym in sc.syms {
                 if sym.name == name {
                     return sym;
                 }
