@@ -18,7 +18,7 @@ public struct ErrnoError : Error {
 public func errno() int32 {
     return unsafe {
 #if _LINUX_
-        libc.__errno_location().?.*
+        libc.__errno_location()?.*
 #else
         libc._errno().*
 #endif

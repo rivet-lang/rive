@@ -55,7 +55,7 @@ extend Parser {
             self.accept(.KwFor) => {
                 pos := self.prev_tok.pos;
                 self.open_scope();
-                sc := self.scope.?;
+                sc := self.scope?;
                 // single or 2 variables
                 mut has_index := false;
                 mut index := ast.ObjectData();
@@ -116,7 +116,7 @@ extend Parser {
                 right := self.parse_expr();
                 pos += self.prev_tok.pos;
                 self.expect(.Semicolon);
-                .VarDecl(lefts, right, self.scope.?, pos)
+                .VarDecl(lefts, right, self.scope?, pos)
             },
             else => {
                 expr := self.parse_expr();

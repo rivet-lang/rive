@@ -949,10 +949,9 @@ class Parser:
                 varname_pos = self.tok.pos
                 err_expr = None
                 has_err_expr = False
-                if self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Bang:
+                if self.accept(Kind.Bang):
                     # check result value, if error propagate
-                    err_handler_pos = self.peek_tok.pos
-                    self.advance(2)
+                    err_handler_pos = self.prev_tok.pos
                     is_propagate = True
                 elif self.accept(Kind.KwCatch):
                     if self.accept(Kind.Pipe):
@@ -1007,14 +1006,14 @@ class Parser:
                         expr, "", expr.pos, self.prev_tok.pos,
                         is_indirect = True
                     )
-                elif self.accept(Kind.Question):
-                    # check option value, if none panic
-                    expr = ast.SelectorExpr(
-                        expr, "", expr.pos, self.prev_tok.pos,
-                        is_option_check = True
-                    )
                 else:
                     expr = self.parse_selector_expr(expr)
+            elif self.accept(Kind.Question):
+                # check option value, panic if is `none`: `x?`
+                expr = ast.SelectorExpr(
+                    expr, "", expr.pos, self.prev_tok.pos,
+                    is_option_check = True
+                )
             else:
                 break
         return expr

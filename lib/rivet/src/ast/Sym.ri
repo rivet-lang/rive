@@ -78,8 +78,8 @@ public trait Sym {
         return (
             other_mod.is_universe or self_mod.id == other.id
             or self_mod.id == other_mod.id
-            or self_mod.id == other_mod.parent.?.id
-            or self_mod.parent.?.id == other.parent.?.id
+            or self_mod.id == other_mod.parent?.id
+            or self_mod.parent?.id == other.parent?.id
         );
     }
 
@@ -401,7 +401,7 @@ public struct TypeSym : Sym {
             self.info = other.info;
             self.fields = other.fields;
             for s in other.scope.syms {
-                self.scope.add(s).!;
+                self.scope.add(s)!;
             }
         }
     }

@@ -12,12 +12,12 @@ import std/fs/path;
 import ../token;
 import ../utils;
 
-public var RIVET_DIR = path.join(env.HOME_DIR, ".rivet_lang").!;
-public var RIVETC_DIR = path.dirname(process.executable().!).?;
+public var RIVET_DIR = path.join(env.HOME_DIR, ".rivet_lang")!;
+public var RIVETC_DIR = path.dirname(process.executable()!)?;
 
-public var OBJ_DIR = path.join(RIVET_DIR, "obj").!;
-public var LIB_DIR = path.join(RIVET_DIR, "lib").!;
-public var RIVETC_LIB_DIR = path.join(RIVETC_DIR, "lib").!;
+public var OBJ_DIR = path.join(RIVET_DIR, "obj")!;
+public var LIB_DIR = path.join(RIVET_DIR, "lib")!;
+public var RIVETC_LIB_DIR = path.join(RIVETC_DIR, "lib")!;
 
 public enum Backend as uint8 {
     C;
@@ -227,11 +227,11 @@ public struct Prefs {
         }
 
         if !path.is_absolute(prefs.mod_output) {
-            prefs.mod_output = path.join(process.get_cwd().!, prefs.mod_output).!;
+            prefs.mod_output = path.join(process.get_cwd()!, prefs.mod_output)!;
         }
 
         prefs.mod_dir = if path.is_file(prefs.input) {
-            path.dirname(path.absolute(prefs.input).!) ?? prefs.input
+            path.dirname(path.absolute(prefs.input)!) ?? prefs.input
         } else {
             prefs.input
         };

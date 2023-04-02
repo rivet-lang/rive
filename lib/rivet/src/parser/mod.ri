@@ -215,7 +215,7 @@ public struct Parser {
                 self.parse_type(), pos: pos + self.prev_tok.pos
             ),
             self.accept(.KwSelfTy) => return ast.Type.Unresolved(
-                ast.Expr.SelfTy(self.scope.?, self.prev_tok.pos)
+                ast.Expr.SelfTy(self.scope?, self.prev_tok.pos)
             ),
             self.accept(.KwNone) => return self.table.none_t,
             self.tok.kind == .Name => {

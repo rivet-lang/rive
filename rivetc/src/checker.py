@@ -923,7 +923,7 @@ class Checker:
                                         expr_left.field_pos
                                     )
                                     report.help(
-                                        "use the option-check syntax: `foo.?.method()`"
+                                        "use the option-check syntax: `foo?.method()`"
                                     )
                                     report.help(
                                         "or use `??`: `(foo ?? 5).method()`"
@@ -1011,7 +1011,7 @@ class Checker:
                     expr.pos
                 )
                 report.note(
-                    "should handle this with `catch` or propagate with `.!`"
+                    "should handle this with `catch` or propagate with `!`"
                 )
             return expr.typ
         elif isinstance(expr, ast.BuiltinCallExpr):
@@ -1243,7 +1243,7 @@ class Checker:
                     "fields of an option value cannot be accessed directly",
                     expr.pos
                 )
-                report.help("handle it with `.?` or `??`")
+                report.help("handle it with `?` or `??`")
             return expr.typ
         elif isinstance(expr, ast.ReturnExpr):
             if self.inside_test and expr.has_expr:

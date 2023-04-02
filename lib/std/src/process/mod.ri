@@ -33,7 +33,7 @@ public func set_cwd(p: string) ! {
     if !path.is_directory(p) {
         return NotADirectoryError("`{}` is not a directory".fmt(p));
     }
-    core.process_set_cwd(p).!;
+    core.process_set_cwd(p)!;
 }
 
 struct Result {

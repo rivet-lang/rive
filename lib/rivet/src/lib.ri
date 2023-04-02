@@ -27,21 +27,21 @@ public struct Compiler {
     mut resolver: resolver.Resolver;
 
     public func new(args: []string, is_test: bool, run_output: bool) ! {
-        prefs_ := prefs.Prefs.new(args, is_test, run_output).!;
+        prefs_ := prefs.Prefs.new(args, is_test, run_output)!;
         report.Report_Table.prefs = prefs_;
         table_ := ast.Table.new(prefs_);
         Self(
             table: table_, prefs: prefs_,
             resolver: resolver.Resolver(table_, prefs_)
-        ).run().!;
+        ).run()!;
     }
 
     func run(mut self) ! {
-        self.make_rivet_directory().!;
+        self.make_rivet_directory()!;
 
-        _ = self.load_module("core", "core", "", token.NO_POS).!;
-        self.load_root_module().!;
-        self.import_modules().!;
+        _ = self.load_module("core", "core", "", token.NO_POS)!;
+        self.load_root_module()!;
+        self.import_modules()!;
 
         self.vlog("resolving files...");
         self.resolver.resolve(self.table.source_files);
@@ -53,20 +53,20 @@ public struct Compiler {
     func make_rivet_directory(self) ! {
         if !path.exists(prefs.RIVET_DIR) {
             self.vlog("making Rivet directory");
-            fs.make_directory(prefs.RIVET_DIR).!;
-            fs.make_directory(prefs.OBJ_DIR).!;
-            fs.make_directory(prefs.LIB_DIR).!;
+            fs.make_directory(prefs.RIVET_DIR)!;
+            fs.make_directory(prefs.OBJ_DIR)!;
+            fs.make_directory(prefs.LIB_DIR)!;
         }
     }
 
     func load_root_module(mut self) ! {
         files := if path.is_directory(self.prefs.input) {
             mut filtered_files := self.table.filter_files(
-                fs.walk_directory(self.prefs.input, ".ri").!
+                fs.walk_directory(self.prefs.input, ".ri")!
             );
-            src_dir := path.join(self.prefs.input, "src").!;
+            src_dir := path.join(self.prefs.input, "src")!;
             if path.is_directory(src_dir) { // support `src/` directory
-                for file in self.table.filter_files(fs.walk_directory(src_dir, ".ri").!) {
+                for file in self.table.filter_files(fs.walk_directory(src_dir, ".ri")!) {
                     filtered_files.push(file);
                 }
             }
@@ -100,7 +100,7 @@ public struct Compiler {
                     import_decl.info = self.load_module(
                         import_decl.path, import_decl.alias_name, sf.file,
                         import_decl.path_pos
-                    ).!;
+                    )!;
                     if import_decl.info.found {
                         done_imports.push(import_decl.info.full_name);
                     }
@@ -117,7 +117,7 @@ public struct Compiler {
     func load_module(
         mut self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) !ast.ImportedMod {
-        mod := self.load_module_files(pathx, alias_name, file_path, pos).!;
+        mod := self.load_module_files(pathx, alias_name, file_path, pos)!;
         if mod.found {
             mod.mod = if mod_mod_ := self.table.universe.scope.find(mod.full_name) {
                 @cast(ast.Module, mod_mod_)
@@ -151,12 +151,12 @@ public struct Compiler {
             } else {
                 pathx2
             };
-            dirname := path.resolve(path.dirname(file_path) ?? file_path).!;
-            old_wd := process.get_cwd().!;
-            process.set_cwd(dirname).!;
+            dirname := path.resolve(path.dirname(file_path) ?? file_path)!;
+            old_wd := process.get_cwd()!;
+            process.set_cwd(dirname)!;
             if path.is_directory(pathx) {
                 found = true;
-                abspath = path.resolve(pathx).!;
+                abspath = path.resolve(pathx)!;
                 mut mod_basedir := path.dirname(abspath) ?? abspath;
                 if mod_basedir.ends_with("/src") {
                     mod_basedir = mod_basedir[..mod_basedir.len - 4]; // skip `src/`
@@ -179,9 +179,9 @@ public struct Compiler {
             }
             if found {
                 self.vlog("      > found");
-                files = self.table.filter_files(fs.walk_directory(pathx, ".ri").!);
+                files = self.table.filter_files(fs.walk_directory(pathx, ".ri")!);
             }
-            process.set_cwd(old_wd).!;
+            process.set_cwd(old_wd)!;
         } else {
             self.vlog("    searching module in global path");
             name = if last_idx := pathx.last_index_of_byte(b'/') {
@@ -192,23 +192,23 @@ public struct Compiler {
             full_name = pathx.replace("/", ".");
             for l in self.prefs.library_path {
                 self.vlog("        searching module in `{}`", l);
-                mod_path := path.resolve(path.join(l, pathx).!).!;
+                mod_path := path.resolve(path.join(l, pathx)!)!;
                 if path.is_directory(mod_path) {
                     found = true;
-                    files = self.table.filter_files(fs.walk_directory(mod_path, ".ri").!);
+                    files = self.table.filter_files(fs.walk_directory(mod_path, ".ri")!);
                 }
                 // support `src/` directory
                 src_dir := if pathx.count("/") > 0 {
                     slash_idx := (pathx.index_of_byte(b'/') ?? 0) + 1;
-                    path.join(l, pathx[..slash_idx], "src", pathx[slash_idx..]).!
+                    path.join(l, pathx[..slash_idx], "src", pathx[slash_idx..])!
                 } else {
-                    path.join(mod_path, "src").!
+                    path.join(mod_path, "src")!
                 };
                 if path.is_directory(src_dir) {
                     if !found {
                         found = true;
                     }
-                    files = self.table.filter_files(fs.walk_directory(src_dir, ".ri").!);
+                    files = self.table.filter_files(fs.walk_directory(src_dir, ".ri")!);
                 }
                 if found {
                     self.vlog("        > found");

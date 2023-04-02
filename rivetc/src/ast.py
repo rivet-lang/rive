@@ -741,7 +741,7 @@ class CallErrorHandler:
 
     def __repr__(self):
         if self.is_propagate:
-            return ".!"
+            return "!"
         elif len(self.varname) == 0:
             return f" catch {self.expr}"
         return f" catch |{self.varname}| {self.expr}"
@@ -809,7 +809,7 @@ class SelectorExpr:
         if self.is_indirect:
             return f"{self.left}.*"
         elif self.is_option_check:
-            return f"{self.left}.?"
+            return f"{self.left}?"
         return f"{self.left}.{self.field_name}"
 
     def __str__(self):

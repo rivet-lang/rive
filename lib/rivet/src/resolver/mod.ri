@@ -21,6 +21,8 @@ public struct Resolver {
     mut self_sym: ast.Sym;
     mut preludes: []Prelude;
 
+    mut self_sym_is_set: bool;
+
     mut source_file: ast.SourceFile;
 
     public func resolve(mut self, source_files: []ast.SourceFile) {
@@ -70,7 +72,7 @@ public struct Resolver {
         }
     }
 
-    func check_vis(mut self, sym: ast.Sym, pos: token.Pos) {
+    func check_vis(self, sym: ast.Sym, pos: token.Pos) {
         if !sym.is_public and !self.source_file.mod.has_access_to(sym) {
             report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
         }

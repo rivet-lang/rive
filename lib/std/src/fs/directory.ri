@@ -47,7 +47,7 @@ public func make_directory(path_: string, mode: usize = 0o777) ! {
     if path_ == "." {
         return;
     }
-    rpath := path.resolve(path_).!;
+    rpath := path.resolve(path_)!;
     if unsafe { libc.mkdir(rpath.ptr, mode) } == -1 {
         return CannotMakeDirectoryError(
             "cannot make directory `{}`: {}".fmt(path_, c.errno_msg())
@@ -56,7 +56,7 @@ public func make_directory(path_: string, mode: usize = 0o777) ! {
 }
 
 public func remove_directory(dir: string) ! {
-    rpath := path.resolve(dir).!;
+    rpath := path.resolve(dir)!;
     if unsafe { libc.rmdir(rpath.ptr) == -1 } {
         return CannotMakeFileError("cannot remove directory `{}`: {}".fmt(dir, c.errno_msg()));
     }
@@ -66,7 +66,7 @@ public func walk_directory(path_: string, ext: string = "") ![]string {
     if path_.is_empty() {
         return EmptyStringError("`walk_directory` expects a folder, not an empty string");
     }
-    rpath := path.resolve(path_).!;
+    rpath := path.resolve(path_)!;
     unsafe {
         if dir := libc.opendir(path_.ptr) {
             mut res := @vec(string, 15);
@@ -80,7 +80,7 @@ public func walk_directory(path_: string, ext: string = "") ![]string {
                 if !ext.is_empty() and path.extension(bptr_str) != ext {
                     continue;
                 }
-                full_path := path.join(rpath, bptr_str).!;
+                full_path := path.join(rpath, bptr_str)!;
                 res.push(full_path);
             }
             _ = libc.closedir(dir);

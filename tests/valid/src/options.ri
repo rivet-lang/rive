@@ -10,9 +10,9 @@ test "operator `??`" {
     @assert((x ?? 5) == 1);
 }
 
-test "operator `.?`" {
+test "operator `?`" {
     x: ?int32 := 5;
-    @assert(x.? == 5);
+    @assert(x? == 5);
 }
 
 struct Option {
@@ -25,5 +25,5 @@ test "option fields" {
 
     opt2 := Option(a: 5);
     @assert(opt2.a !is none);
-    @assert(opt2.a.? == 5);
+    @assert(opt2.a? == 5);
 }

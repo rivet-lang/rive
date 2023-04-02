@@ -98,7 +98,7 @@ public func read_file(path: string) !string {
    return if res := source_cache.find(path) {
 	  res
    } else {
-	  content := skip_bom(fs.read_file(path).!);
+	  content := skip_bom(fs.read_file(path)!);
 	  source_cache.sources.push(CachedFile(path, content));
 	  content
    };
