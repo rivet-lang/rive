@@ -861,7 +861,7 @@ class Checker:
             expr_left = expr.left
             if isinstance(expr_left, ast.ParExpr) and isinstance(
                 expr_left.expr, ast.SelectorExpr
-            ) and not expr_left.expr.is_symbol_access:
+            ) and not expr_left.expr.is_path:
                 expr_left = expr_left.expr
                 inside_parens = True
 
@@ -895,7 +895,7 @@ class Checker:
                             expr_left.pos
                         )
             elif isinstance(expr_left, ast.SelectorExpr):
-                if expr_left.is_symbol_access:
+                if expr_left.is_path:
                     if isinstance(expr_left.field_sym,
                                   sym.Type) and expr_left.field_sym.kind in (
                                       TypeKind.Trait, TypeKind.Struct,
@@ -1119,7 +1119,7 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.SelectorExpr):
             expr.typ = self.comp.void_t
-            if expr.is_symbol_access:
+            if expr.is_path:
                 if isinstance(expr.field_sym, sym.Fn):
                     if expr.field_sym.is_method:
                         report.error(
@@ -1894,7 +1894,7 @@ class Checker:
                 report.help("consider making `self` as mutable: `mut self`")
             expr.obj.is_changed = True
         elif isinstance(expr, ast.SelectorExpr):
-            if expr.is_symbol_access:
+            if expr.is_path:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
                 return
             elif isinstance(expr.left, ast.SelfExpr):

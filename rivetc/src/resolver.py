@@ -437,7 +437,7 @@ class Resolver:
             self.resolve_expr(sym_ref.ref)
         if isinstance(
             sym_ref.ref, ast.SelectorExpr
-        ) and sym_ref.ref.is_symbol_access and not sym_ref.ref.not_found:
+        ) and sym_ref.ref.is_path and not sym_ref.ref.not_found:
             return sym_ref.ref.field_sym
         elif isinstance(sym_ref.ref, ast.Ident) and sym_ref.ref.sym:
             return sym_ref.ref.sym
@@ -447,7 +447,7 @@ class Resolver:
         self.resolve_expr(expr.left)
         if not (expr.is_indirect or expr.is_option_check):
             if isinstance(expr.left, ast.SelfTyExpr):
-                expr.is_symbol_access = True
+                expr.is_path = True
                 if expr.left.sym == None:
                     expr.not_found = True
                     return
@@ -455,22 +455,22 @@ class Resolver:
             elif isinstance(expr.left, ast.Ident) and expr.left.is_sym:
                 if isinstance(expr.left.sym, (sym.Var, sym.Const)):
                     return
-                expr.is_symbol_access = True
+                expr.is_path = True
                 if expr.left.not_found:
                     expr.not_found = True
                     return
                 expr.left_sym = expr.left.sym
             elif isinstance(
                 expr.left, ast.SelectorExpr
-            ) and expr.left.is_symbol_access:
+            ) and expr.left.is_path:
                 if isinstance(expr.left.field_sym, (sym.Var, sym.Const)):
                     return
-                expr.is_symbol_access = True
+                expr.is_path = True
                 if expr.left.not_found:
                     expr.not_found = True
                     return
                 expr.left_sym = expr.left.field_sym
-            if expr.is_symbol_access:
+            if expr.is_path:
                 if field_sym := self.find_symbol(
                     expr.left_sym, expr.field_name, expr.field_pos
                 ):

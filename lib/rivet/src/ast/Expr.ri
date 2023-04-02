@@ -22,6 +22,7 @@ public enum Expr {
         scope: Scope;
         is_comptime: bool;
         pos: token.Pos;
+        sym: Sym;
     },
     SelfTy {
         scope: Scope;
@@ -84,7 +85,9 @@ public enum Expr {
         field_pos: token.Pos;
         is_indirect: bool;
         is_option_check: bool;
+        is_path: bool;
         pos: token.Pos;
+        sym: Sym;
     },
     Branch {
         op: token.Kind;

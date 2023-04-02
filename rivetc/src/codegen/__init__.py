@@ -1489,7 +1489,7 @@ class Codegen:
                         return tmp2
                 return ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
         elif isinstance(expr, ast.SelectorExpr):
-            if expr.is_symbol_access:
+            if expr.is_path:
                 if isinstance(expr.field_sym, sym.Const):
                     return self.gen_const(expr.field_sym)
                 elif isinstance(

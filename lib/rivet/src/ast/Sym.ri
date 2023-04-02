@@ -125,9 +125,9 @@ public trait Sym {
 
 [boxed]
 public struct SymRef : Sym {
-    public ref: Sym;
+    public mut ref: Sym;
     public ref_expr: Expr;
-    public ref_resolved: bool;
+    public mut ref_resolved: bool;
 }
 
 [boxed]

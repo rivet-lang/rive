@@ -800,7 +800,7 @@ class SelectorExpr:
         self.field_sym = None
         self.is_indirect = is_indirect
         self.is_option_check = is_option_check
-        self.is_symbol_access = False
+        self.is_path = False
         self.not_found = False
         self.pos = pos
         self.typ = None
