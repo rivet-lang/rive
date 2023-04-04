@@ -312,42 +312,46 @@ public struct string : Stringable, Hashable {
         return val.slice(0, end_pos);
     }
 
-    /// Strips any of ` `, `\n`, `\t`, `\v`, `\f`, `\r` from the start and end of
-    /// the string.
-    [inline]
-    public func trim_space(self) string {
-        return self.trim(" \n\t\v\f\r");
-    }
-
     /// Strips any of the characters given in `cutset` from the start and end of
     /// the string.
     public func trim(self, cutset: string) string {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
-        (mut pos_left: usize, mut pos_right: usize) := (0, self.len - 1);
+        (pos_left, pos_right) := self.trim_indexes(cutset);
+        return self.slice(pos_left, pos_right);
+    }
+
+    /// Gets the new start and end indexes of a string when any of the characters
+    /// given in `cutset` were stripped from the start and end of the string. Should
+    /// be used as an input to `substr()`. If the string contains only the characters
+    /// in `cutset`, both values returned are zero.
+    public func trim_indexes(self, cutset: string) (usize, usize) {
+        mut pos_left: usize := 0;
+        mut pos_right: usize := if self.len == 0 { 0 } else { self.len - 1 };
         mut cs_match := true;
-        while pos_left <= self.len and pos_right >= -1 and cs_match {
+        cutset_bytes := cutset.as_bytes();
+        while pos_left <= self.len and pos_right >= 0 and cs_match {
             cs_match = false;
-            for cs in cutset.as_bytes() {
+            for cs in cutset_bytes {
                 if unsafe { self.ptr[pos_left] == cs } {
                     pos_left += 1;
                     cs_match = true;
                     break;
                 }
             }
-            for cs2 in cutset.as_bytes() {
-                if unsafe { self.ptr[pos_right] == cs2 } {
+            for cs in cutset_bytes {
+                if unsafe { self.ptr[pos_right] == cs } {
                     pos_right -= 1;
                     cs_match = true;
                     break;
                 }
             }
             if pos_left > pos_right {
-                return empty_string;
+                return (0, 0);
             }
         }
-        return self.slice(pos_left, pos_right + 1);
+        return (pos_left, pos_right + 1);
     }
 
     /// Strips any of the characters given in `cutset` from the left of the
@@ -357,9 +361,10 @@ public struct string : Stringable, Hashable {
             return self;
         }
         mut pos: usize := 0;
+        cutset_bytes := cutset.as_bytes();
         while pos < self.len : pos += 1 {
             mut found := false;
-            for cs in cutset.as_bytes() {
+            for cs in cutset_bytes {
                 if unsafe { self.ptr[pos] == cs } {
                     found = true;
                     break;
@@ -369,7 +374,7 @@ public struct string : Stringable, Hashable {
                 break;
             }
         }
-        return self.slice(pos, self.len);
+        return self.slice_from(pos);
     }
 
     /// Strips any of the characters given in `cutset` from the right of the
@@ -379,9 +384,10 @@ public struct string : Stringable, Hashable {
             return self;
         }
         mut pos := self.len - 1;
+        cutset_bytes := cutset.as_bytes();
         while pos >= 0 : pos -= 1 {
             mut found := false;
-            for cs in cutset.as_bytes() {
+            for cs in cutset_bytes {
                 if unsafe { self.ptr[pos] == cs } {
                     found = true;
                 }
@@ -390,10 +396,14 @@ public struct string : Stringable, Hashable {
                 break;
             }
         }
-        if pos < 0 {
-            return empty_string;
-        }
-        return self.slice(pos + 1, self.len);
+        return self.slice(0, pos + 1);
+    }
+
+    /// Strips any of ` `, `\n`, `\t`, `\v`, `\f`, `\r` from the start and end of
+    /// the string.
+    [inline]
+    public func trim_space(self) string {
+        return self.trim(" \n\t\v\f\r");
     }
 
     /// Replaces all occurences of `rep` with the string passed in `with_`.
