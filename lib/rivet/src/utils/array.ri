@@ -1,0 +1,24 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/strings;
+
+public func join(vec: []string, s: string) string {
+    return if vec.is_empty() {
+        ""
+    } else {
+        mut sb := strings.Builder.new();
+        sb.write_join(vec, s);
+        sb.to_string()
+    };
+}
+
+public func index_of(vec: []string, value: string) usize {
+    for i, val in vec {
+        if val == value {
+            return i;
+        }
+    }
+    return 0;
+}

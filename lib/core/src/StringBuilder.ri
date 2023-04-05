@@ -52,9 +52,11 @@ public struct StringBuilder : Stringable {
         }
     }
 
-    public func writeln(mut self, s: string) {
-        unsafe {
-            self.write_raw_with_len(s.ptr, s.len);
+    public func writeln(mut self, s: string = "") {
+        if s.len > 0 {
+            unsafe {
+                self.write_raw_with_len(s.ptr, s.len);
+            }
         }
         self.write_byte(b'\n');
     }

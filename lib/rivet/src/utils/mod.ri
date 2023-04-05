@@ -6,7 +6,6 @@ import std/fs;
 import std/traits;
 import std/console;
 import std/process;
-import std/strings;
 import std/console/styles;
 
 public var VERSION = "0.1.0b";
@@ -86,26 +85,22 @@ public func green(msg: string) string {
     return if StderrSupportStyles { styles.green(msg) } else { msg };
 }
 
-public func join(vec: []string, s: string) string {
-    return if vec.is_empty() {
-        ""
-    } else {
-        mut sb := strings.Builder.new();
-        for i, e in vec {
-            sb.write_string(e);
-            if i < vec.len - 1 {
-                sb.write_string(s);
-            }
+public func last_commit_hash() string {
+    if result := process.execute("git log -n 1 --pretty=format:%h") {
+        if result.exit_code == -1 {
+            return "<cannot-get-last-commit-hash>";
         }
-        sb.to_string()
-    };
+        return result.output;
+    }
+    return "<cannot-get-last-commit-hash>";
 }
 
-public func index_of(vec: []string, value: string) usize {
-    for i, val in vec {
-        if val == value {
-            return i;
+public func full_version() string {
+    if result := process.execute("git log -n 1 --pretty=format:'%h %as'") {
+        if result.exit_code == -1 {
+            return "<cannot-get-full-version>";
         }
+        return result.output;
     }
-    return 0;
+    return "<cannot-get-full-version>";
 }

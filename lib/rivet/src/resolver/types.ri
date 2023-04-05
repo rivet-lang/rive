@@ -1,0 +1,29 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../prefs;
+import ../report;
+
+extend Resolver {
+    [inline]
+    func resolve_type(self, type: ast.Type) bool {
+        return switch type is {
+            .Resolved => true,
+            .Pointer as ptr => self.resolve_type(ptr.inner),
+            .Reference as ref => self.resolve_type(ref.inner),
+            .Vector as vec=> self.resolve_type(vec.inner),
+            .Unresolved as unresolved => switch unresolved is {
+                .SelfTy as self_ty => if self.self_sym_is_set {
+                    //self_ty.
+                    true
+                } else { false },
+                else => {
+                    report.error("expected type, found expression", unresolved.position());
+                    false
+                }
+            }
+        };
+    }
+}

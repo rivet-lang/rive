@@ -767,7 +767,6 @@ class Codegen:
             return ir.FloatLit(ir.Float64_T, expr.lit)
         elif isinstance(expr, ast.StringLiteral):
             escaped_val = utils.smart_quote(expr.lit, expr.is_raw)
-            size = utils.bytestr(expr.lit).len
             if expr.is_bytestr:
                 return ir.ArrayLit(
                     self.ir_type(expr.typ), [
@@ -775,6 +774,7 @@ class Codegen:
                         for b in list(utils.bytestr(escaped_val).buf)
                     ]
                 )
+            size = len(expr.lit) - expr.lit.count("\\")
             if expr.typ == self.comp.string_t:
                 return self.gen_string_literal(escaped_val, size)
             return ir.StringLit(escaped_val, str(size))
@@ -3080,10 +3080,8 @@ class Codegen:
         if ch.startswith("\\"):
             code = ch[1:]
             code_b = utils.bytestr(code).buf[0]
-            if code == "\\":
-                return "\\\\"
-            elif code in ("\\", "'", '"'):
-                return chr(code_b)
+            if code in ("\\", "'", '"'):
+                return "\\" + code
             elif code in ("a", "b", "f"):
                 return chr(code_b - 90)
             elif code == "n":

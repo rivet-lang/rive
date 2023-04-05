@@ -7,11 +7,13 @@ import std/semver;
 public alias Version = semver.Version;
 
 public struct Project {
-    public name: string;
-    public description: string;
-    public version: Version;
-    public authors: []string;
-    public dependencies: []Dependency;
+    public mut name: string;
+    public mut description: string;
+    public mut version: Version;
+    public mut license: string;
+    public mut authors: []string;
+    public mut dependencies: []Dependency;
+    public mut repository_url: string;
 }
 
 public struct Dependency {

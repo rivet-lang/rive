@@ -1,0 +1,10 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../prefs;
+
+extend Resolver {
+    func resolve_expr(mut self, expr: ast.Expr) {}
+}

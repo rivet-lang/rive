@@ -27,10 +27,11 @@ public struct string : Stringable, Hashable {
         if len == 0 {
             return empty_string;
         }
-        if safe_ptr := ptr {
-            return Self(safe_ptr, len, is_ref);
-        }
-        return empty_string;
+        return if safe_ptr := ptr {
+            Self(safe_ptr, len, is_ref)
+        } else {
+            empty_string
+        };
     }
 
     public func from_byte(byte: uint8) Self {
@@ -331,7 +332,7 @@ public struct string : Stringable, Hashable {
         mut pos_right: usize := if self.len == 0 { 0 } else { self.len - 1 };
         mut cs_match := true;
         cutset_bytes := cutset.as_bytes();
-        while pos_left <= self.len and pos_right >= 0 and cs_match {
+        while pos_left <= self.len and pos_right > 0 and cs_match {
             cs_match = false;
             for cs in cutset_bytes {
                 if unsafe { self.ptr[pos_left] == cs } {

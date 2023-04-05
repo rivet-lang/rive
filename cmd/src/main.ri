@@ -8,6 +8,8 @@ import std/process;
 import rivet;
 import rivet/utils;
 
+import ./new;
+
 func main() {
     if process.ARGS.len == 1 {
         console.eprintln(HELP);
@@ -15,6 +17,7 @@ func main() {
     }
     cmd := process.ARGS[1];
     switch cmd {
+        "new" => new.new()!,
         "build", "run", "test" => {
             is_test := cmd == "test";
             rivet.Compiler.new(process.ARGS[2..], is_test, is_test or cmd == "run")!;

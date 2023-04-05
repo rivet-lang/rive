@@ -41,9 +41,18 @@ struct Result {
 	public exit_code: int32;
 }
 
+[boxed]
+struct ExecutionFailedError : Error {
+    cmd: string;
+
+    public func to_string(self) string {
+        return "execution failed for `{}`".fmt(self.cmd);
+    }
+}
+
 /// Starts the specified command, waits for it to complete, and returns
 /// both its output and the exit code.
-public func execute(cmd: string) Result {
+public func execute(cmd: string) !Result {
     pcmd := if cmd.contains("2>") { cmd } else { "{} 2>&1".fmt(cmd) };
     unsafe {
         if f := libc.popen(pcmd.ptr, c"r") {
@@ -60,6 +69,6 @@ public func execute(cmd: string) Result {
             }
             return Result(output.to_string(), libc.pclose(f));
         }
-        return Result("execute('{}') failed".fmt(cmd), -1);
+        return ExecutionFailedError(cmd);
     }
 }
