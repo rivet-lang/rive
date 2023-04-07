@@ -28,6 +28,9 @@ public struct string : Stringable, Hashable {
             return empty_string;
         }
         return if safe_ptr := ptr {
+            if unsafe { safe_ptr[len] != 0 } {
+                process_panic("`ptr` is not a valid string, doesn't ends with NLL byte");
+            }
             Self(safe_ptr, len, is_ref)
         } else {
             empty_string
@@ -171,11 +174,13 @@ public struct string : Stringable, Hashable {
     ///
     /// If the replacement positions exceed the number of passed arguments, a panic
     /// occurs.
+    [inline]
     public func fmt(self, args: ...Stringable) Self {
-        if args.len == 0 {
-            return self;
-        }
-        return StringFormatter(self).fmt(args);
+        return if args.len == 0 {
+            self
+        } else {
+            StringFormatter(self).fmt(args)
+        };
     }
 
     /// Returns the number of occurrences of `substr` in the string or 0 if no

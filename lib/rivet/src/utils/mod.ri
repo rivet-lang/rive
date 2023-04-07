@@ -16,16 +16,6 @@ public const CR: uint8 = 13;
 var StderrSupportStyles = styles.stderr_support_styles();
 
 [inline]
-public func is_name_char(ch: uint8) bool {
-    return ch.is_letter() or ch == b'_';
-}
-
-[inline]
-public func is_new_line(ch: uint8) bool {
-    return ch == LF or ch == CR;
-}
-
-[inline]
 public func min(a: usize, b: usize) usize {
    return if a < b { a } else { b };
 }
@@ -53,6 +43,26 @@ public func error(msg: string, args: ...traits.Stringable) never {
       styles.bold(styles.red("error:")), msg.fmt(args)
    );
    process.exit(1);
+}
+
+public func last_commit_hash() string {
+    if result := process.execute("git log -n 1 --pretty=format:%h") {
+        if result.exit_code == -1 {
+            return "<cannot-get-last-commit-hash>";
+        }
+        return result.output;
+    }
+    return "<cannot-get-last-commit-hash>";
+}
+
+public func full_version() string {
+    if result := process.execute("git log -n 1 --pretty=format:'%h %as'") {
+        if result.exit_code == -1 {
+            return "<cannot-get-full-version>";
+        }
+        return result.output;
+    }
+    return "<cannot-get-full-version>";
 }
 
 [inline]
@@ -83,24 +93,4 @@ public func blue(msg: string) string {
 [inline]
 public func green(msg: string) string {
     return if StderrSupportStyles { styles.green(msg) } else { msg };
-}
-
-public func last_commit_hash() string {
-    if result := process.execute("git log -n 1 --pretty=format:%h") {
-        if result.exit_code == -1 {
-            return "<cannot-get-last-commit-hash>";
-        }
-        return result.output;
-    }
-    return "<cannot-get-last-commit-hash>";
-}
-
-public func full_version() string {
-    if result := process.execute("git log -n 1 --pretty=format:'%h %as'") {
-        if result.exit_code == -1 {
-            return "<cannot-get-full-version>";
-        }
-        return result.output;
-    }
-    return "<cannot-get-full-version>";
 }

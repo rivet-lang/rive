@@ -196,6 +196,9 @@ public func resolve(paths: ...string) !string {
         }
         result_index += 1;
     }
+    unsafe {
+        result[result_index] = 0;
+    }
     return unsafe {
         string.from_raw_with_len(
             @cast([*]uint8, mem.resize(result, result_index)!), result_index
@@ -241,17 +244,17 @@ public func relative(from_: string, to: string) !string {
         }
         if to_rest.len == 0 {
             // shave off the trailing slash
-            return unsafe {
-                string.from_raw_with_len(
-                    @cast([*]uint8, mem.resize(result, result_index - 1)!),
-                    result_index - 1
-                )
-            };
+            buf := @cast([*]mut uint8, mem.resize(result, result_index - 1)!);
+            unsafe {
+                buf[result_index - 1] = 0;
+            }
+            return unsafe { string.from_raw_with_len(buf, result_index - 1) };
         }
-        unsafe {
+        return unsafe {
             mem.copy(@ptr_add(result, result_index), to_rest.ptr, to_rest.len);
-        }
-        return unsafe { string.from_raw(result) };
+            result[result_index + to_rest.len] = 0;
+            string.from_raw(result)
+        };
     }
     return "";
 }

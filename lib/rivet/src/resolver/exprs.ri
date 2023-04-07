@@ -6,5 +6,7 @@ import ../ast;
 import ../prefs;
 
 extend Resolver {
-    func resolve_expr(mut self, expr: ast.Expr) {}
+    func resolve_expr(mut self, expr: ast.Expr) {
+        @ignore_not_mutated_warn(self);
+    }
 }

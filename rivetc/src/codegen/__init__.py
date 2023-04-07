@@ -3081,7 +3081,7 @@ class Codegen:
             code = ch[1:]
             code_b = utils.bytestr(code).buf[0]
             if code in ("\\", "'", '"'):
-                return "\\" + code
+                return code_b
             elif code in ("a", "b", "f"):
                 return chr(code_b - 90)
             elif code == "n":

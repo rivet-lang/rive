@@ -2,9 +2,9 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/traits;
-import std/env;
 import std/fs;
+import std/env;
+import std/traits;
 import std/fs/path;
 import std/console;
 import std/process;
@@ -12,9 +12,9 @@ import std/process;
 import ./ast;
 import ./utils;
 import ./prefs;
-import ./report;
 import ./token;
 import ./parser;
+import ./report;
 import ./resolver;
 import ./depgraph;
 
@@ -168,14 +168,14 @@ public struct Compiler {
                 names := abspath[(mod_basedir.last_index_of_byte(b'/') ?? 0) + 1..].split(
                     "/"
                 );
-                if "src" in names {
+                full_name = if "src" in names {
                     src_idx := utils.index_of(names, "src");
-                    full_name = utils.join(names[..src_idx], ".").concat(
+                    utils.join(names[..src_idx], ".").concat(
                         ".", utils.join(names[src_idx + 1..], ".")
-                    );
+                    )
                 } else {
-                    full_name = utils.join(names, ".");
-                }
+                    utils.join(names, ".")
+                };
             }
             if found {
                 self.vlog("      > found");
@@ -310,7 +310,7 @@ public struct Compiler {
         };
         total_warns := report.total_warns();
         if total_warns > 0 {
-            msg = msg.fmt(", {} {} emitted", total_warns, if total_warns == 1 {
+            msg = msg.concat(", {} {} emitted").fmt(total_warns, if total_warns == 1 {
                 "warning"
             } else {
                 "warnings"

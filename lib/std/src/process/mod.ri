@@ -13,8 +13,8 @@ public alias id = core.process_id;
 public alias panic = core.process_panic;
 public alias abort = core.process_abort;
 public alias exit = core.process_exit;
-public alias executable = core.process_executable;
 public alias get_cwd = core.process_get_cwd;
+public alias executable = core.process_executable;
 
 public var ARGS = unsafe { core.ARGS };
 public var WD_AT_STARTUP = get_cwd() catch ".";
