@@ -341,11 +341,17 @@ class Codegen:
                     ir.GlobalVar(is_extern, is_extern, typ, name)
                 )
                 if not decl.is_extern:
+                    ident = ir.Ident(typ, name)
                     self.cur_fn = self.init_global_vars_fn
-                    self.cur_fn.store(
-                        ir.Ident(typ, name),
-                        self.gen_expr_with_cast(l.typ, decl.right)
-                    )
+                    value = self.gen_expr_with_cast(l.typ, decl.right)
+                    if isinstance(typ, ir.Array):
+                        size, _ = self.comp.type_size(l.typ)
+                        if isinstance(value, ir.ArrayLit) and len(value.elems) > 0:
+                            self.cur_fn.add_call("_R4core8mem_copyF", [
+                                ident, value, ir.IntLit(ir.USIZE_T, str(size))
+                            ])
+                    else:
+                        self.cur_fn.store(ident, value)
             self.inside_let_decl = False
         elif isinstance(decl, ast.EnumDecl):
             for v in decl.variants:
