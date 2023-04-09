@@ -776,7 +776,7 @@ class Codegen:
                 )
             size = len(expr.lit)
             if not expr.is_raw:
-                size -= expr.lit.count("\\")
+                size -= expr.lit.count("\\") - expr.lit.count("\\\\")
             if expr.typ == self.comp.string_t:
                 return self.gen_string_literal(escaped_val, size)
             return ir.StringLit(escaped_val, str(size))
