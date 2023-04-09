@@ -774,7 +774,9 @@ class Codegen:
                         for b in list(utils.bytestr(escaped_val).buf)
                     ]
                 )
-            size = len(expr.lit) - expr.lit.count("\\")
+            size = len(expr.lit)
+            if not expr.is_raw:
+                size -= expr.lit.count("\\")
             if expr.typ == self.comp.string_t:
                 return self.gen_string_literal(escaped_val, size)
             return ir.StringLit(escaped_val, str(size))
@@ -3081,7 +3083,7 @@ class Codegen:
             code = ch[1:]
             code_b = utils.bytestr(code).buf[0]
             if code in ("\\", "'", '"'):
-                return code_b
+                return chr(code_b)
             elif code in ("a", "b", "f"):
                 return chr(code_b - 90)
             elif code == "n":
