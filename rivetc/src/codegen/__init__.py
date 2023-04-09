@@ -596,8 +596,13 @@ class Codegen:
                 )
                 stmt.scope.update_ir_name(left.name, ident.name)
                 if isinstance(left_ir_typ, ir.Array):
+                    size, _ = self.comp.type_size(left.typ)
                     self.cur_fn.alloca(ident)
                     val = self.gen_expr_with_cast(left.typ, stmt.right, ident)
+                    if isinstance(val, ir.ArrayLit) and len(val.elems) > 0:
+                        self.cur_fn.add_call("_R4core8mem_copyF", [
+                            ident, val, ir.IntLit(ir.USIZE_T, str(size))
+                        ])
                 else:
                     self.cur_fn.alloca(
                         ident, self.gen_expr_with_cast(left.typ, stmt.right)
@@ -1680,7 +1685,7 @@ class Codegen:
                 )
             tmp = self.cur_fn.local_name()
             expr_typ_ir = self.ir_type(expr.typ)
-            if isinstance(expr.left_typ, (type.Ptr, type.Array)):
+            if isinstance(expr.left_typ, type.Ptr) or s.kind == TypeKind.Array:
                 if expr.is_ref:
                     expr_typ_ir = expr_typ_ir.ptr()
                 value = ir.Inst(
