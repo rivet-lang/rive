@@ -14,13 +14,15 @@ public struct StringBuilder : Stringable {
         return Self(unsafe { Vector.new(@size_of(uint8), cap) });
     }
 
+    [inline]
     public func from_string(s: string) Self {
-        if s.len == 0 {
-            return Self.new();
-        }
-        return Self(unsafe {
-            Vector.from_array(@cast(*mut uint8, s.ptr), @size_of(uint8), s.len)
-        });
+        return if s.len == 0 {
+            Self.new()
+        } else {
+            Self(unsafe {
+                Vector.from_array(@cast(*mut uint8, s.ptr), @size_of(uint8), s.len)
+            })
+        };
     }
 
     [inline]
@@ -50,9 +52,11 @@ public struct StringBuilder : Stringable {
         }
     }
 
-    public func writeln(mut self, s: string) {
-        unsafe {
-            self.write_raw_with_len(s.ptr, s.len);
+    public func writeln(mut self, s: string = "") {
+        if s.len > 0 {
+            unsafe {
+                self.write_raw_with_len(s.ptr, s.len);
+            }
         }
         self.write_byte(b'\n');
     }
@@ -107,7 +111,10 @@ public struct StringBuilder : Stringable {
     }
 
     [inline]
-    public func to_string(self) string {
-        return string(@cast([*]uint8, self.inner.ptr), self.inner.len);
+    public func to_string(mut self) string {
+        unsafe{
+            self.inner.push(&@cast(uint8, 0));
+        }
+        return string(@cast([*]uint8, self.inner.ptr), self.inner.len - 1);
     }
 }

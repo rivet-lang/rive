@@ -1,16 +1,18 @@
 import c/libc;
 
 test "string index" {
-    x := "String Literal";
-    @assert(x[0] == b'S');
+    str := "String Literal";
+    @assert(str[0] == b'S');
 
     ch := "String Literal"[0];
     @assert(ch == b'S');
 }
 
 test "byte string literal" {
-    x := b"Abcdef";
-    @assert(x.len == 6);
+    bstr := b"Abcdef";
+    @assert(bstr.len == 6);
+    @assert(bstr[0] == b'A');
+    @assert(bstr[5] == b'f');
 }
 
 test "C string literal" {
@@ -19,7 +21,8 @@ test "C string literal" {
 }
 
 test "raw string literal" {
-    x := r"Hello World\n";
-    @assert(x[11] == b'\\');
-    @assert(x[12] == b'n');
+    rstr := r"Hello World\n";
+    @assert(rstr.len == 13);
+    @assert(rstr[11] == b'\\');
+    @assert(rstr[12] == b'n');
 }

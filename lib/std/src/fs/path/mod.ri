@@ -47,10 +47,10 @@ public func is_readable(path: string) bool {
 /// Returns `true` if `path` is a directory.
 public func is_directory(path: string) bool {
     mut statbuf := libc.Stat();
-    return if unsafe { libc.stat(path.ptr, &mut statbuf) != 0 } {
-        false
-    } else {
+    return if unsafe { libc.stat(path.ptr, &mut statbuf) == 0 } {
         @cast(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFDIR
+    } else {
+        false
     };
 }
 
@@ -60,7 +60,7 @@ public func is_file(path: string) bool {
     return exists(path) and !is_directory(path);
 }
 
-/// Returns `true` if path is absolute.
+/// Returns `true` if `path` is absolute.
 [inline]
 public func is_absolute(path: string) bool {
     return path.len > 0 and path[0] == SEPARATOR;
@@ -77,53 +77,39 @@ public func is_link(path: string) bool {
 }
 
 /// Strip the last component from a file path.
+/// If the path is empty, returns `none`.
 /// If the path is a file in the current directory (no directory component)
-/// then returns none.
-/// If the path is the root directory, returns none.
+/// then returns `.`.
+/// If the path is the root directory, returns `/`.
 public func dirname(path: string) ?string {
-    if path.len == 0 {
+    if path.is_empty() {
         return none;
     }
-    mut end_index: usize := path.len - 1;
-    while path[end_index] == b'/' {
-        if end_index == 0 {
-            return none;
+    if pos := path.last_index_of_byte(SEPARATOR) {
+        if pos == 0 and SEPARATOR == b'/' {
+            return "/";
         }
-        end_index -= 1;
+        return path[..pos];
     }
-    while path[end_index] != b'/' {
-        if end_index == 0 {
-            return none;
-        }
-        end_index -= 1;
-    }
-    if end_index == 0 and path[0] == b'/' {
-        return path[0..1];
-    }
-    if end_index == 0 {
-        return none;
-    }
-    return path[0..end_index];
+    return ".";
 }
 
 public func basename(path: string) string {
-    if path.len == 0 {
+    if path.is_empty() {
         return "";
     }
     mut end_index: usize := path.len - 1;
-    while path[end_index] == b'/' {
+    while path[end_index] == b'/' : end_index -= 1 {
         if end_index == 0 {
             return "";
         }
-        end_index -= 1;
     }
     mut start_index: usize := end_index;
     end_index += 1;
-    while path[start_index] != b'/' {
+    while path[start_index] != b'/' : start_index -= 1 {
         if start_index == 0 {
             return path[0..end_index];
         }
-        start_index -= 1;
     }
     return path[start_index + 1 .. end_index];
 }
@@ -148,7 +134,7 @@ public func extension(path: string) string {
 /// point.
 public func resolve(paths: ...string) !string {
     if paths.len == 0 {
-        return core.process_get_cwd().!;
+        return core.process_get_cwd()!;
     }
     mut first_index: usize := 0;
     mut have_abs := false;
@@ -163,10 +149,10 @@ public func resolve(paths: ...string) !string {
     }
     mut result_index: usize := 0;
     result := if have_abs {
-        @cast([*]mut uint8, mem.alloc(max_size).!)
+        @cast([*]mut uint8, mem.alloc(max_size)!)
     } else {
-        cwd := core.process_get_cwd().!;
-        tmp := @cast([*]mut uint8, mem.alloc(max_size + cwd.len + 1).!);
+        cwd := core.process_get_cwd()!;
+        tmp := @cast([*]mut uint8, mem.alloc(max_size + cwd.len + 1)!);
         mem.copy(tmp, cwd.ptr, cwd.len);
         result_index += cwd.len;
         tmp
@@ -210,9 +196,12 @@ public func resolve(paths: ...string) !string {
         }
         result_index += 1;
     }
+    unsafe {
+        result[result_index] = 0;
+    }
     return unsafe {
         string.from_raw_with_len(
-            @cast([*]uint8, mem.resize(result, result_index).!), result_index
+            @cast([*]uint8, mem.resize(result, result_index)!), result_index
         )
     };
 }
@@ -221,8 +210,8 @@ public func resolve(paths: ...string) !string {
 /// resolve to the same path (after calling `resolve` on each), a zero-length
 /// string is returned.
 public func relative(from_: string, to: string) !string {
-    resolved_from := resolve(from_).!;
-    resolved_to := resolve(to).!;
+    resolved_from := resolve(from_)!;
+    resolved_to := resolve(to)!;
     mut from_it := from_.tokenize(SEPARATOR);
     mut to_it := to.tokenize(SEPARATOR);
     while {
@@ -238,7 +227,7 @@ public func relative(from_: string, to: string) !string {
             up_count += 1;
         }
         up_index_end := up_count * 3;
-        result := @cast([*]mut uint8, mem.alloc(up_index_end + to_rest.len).!);
+        result := @cast([*]mut uint8, mem.alloc(up_index_end + to_rest.len)!);
         errdefer unsafe {
             mem.dealloc(result);
         }
@@ -255,17 +244,17 @@ public func relative(from_: string, to: string) !string {
         }
         if to_rest.len == 0 {
             // shave off the trailing slash
-            return unsafe {
-                string.from_raw_with_len(
-                    @cast([*]uint8, mem.resize(result, result_index - 1).!),
-                    result_index - 1
-                )
-            };
+            buf := @cast([*]mut uint8, mem.resize(result, result_index - 1)!);
+            unsafe {
+                buf[result_index - 1] = 0;
+            }
+            return unsafe { string.from_raw_with_len(buf, result_index - 1) };
         }
-        unsafe {
+        return unsafe {
             mem.copy(@ptr_add(result, result_index), to_rest.ptr, to_rest.len);
-        }
-        return unsafe { string.from_raw(result) };
+            result[result_index + to_rest.len] = 0;
+            string.from_raw(result)
+        };
     }
     return "";
 }
@@ -299,7 +288,7 @@ public func join(paths: ...string) !string {
         mut i: usize := first_path_index + 1;
         while i < paths.len : i += 1 {
             this_path := paths[i];
-            if this_path.len == 0 {
+            if this_path.is_empty() {
                 continue;
             }
             prev_sep := is_separator(prev_path[prev_path.len - 1]);
@@ -310,7 +299,7 @@ public func join(paths: ...string) !string {
         }
         sum + 1 // + 1 = NLL character
     };
-    buf := @cast([*]mut uint8, mem.alloc(total_len).!);
+    buf := @cast([*]mut uint8, mem.alloc(total_len)!);
     unsafe {
         buf[total_len - 1] = 0;
         errdefer mem.dealloc(buf);
@@ -323,7 +312,7 @@ public func join(paths: ...string) !string {
     mut i: usize := first_path_index + 1;
     while i < paths.len : i += 1 {
         this_path := paths[i];
-        if this_path.len == 0 {
+        if this_path.is_empty() {
             continue;
         }
         prev_sep := is_separator(prev_path[prev_path.len - 1]);
@@ -352,16 +341,16 @@ public func join(paths: ...string) !string {
 /// Joins the current working directory with the given `path` (if the `path` is relative)
 /// and returns the absolute path representation.
 public func absolute(path: string) !string {
-    cwd := core.process_get_cwd().!;
+    cwd := core.process_get_cwd()!;
     if path.is_empty() {
         return cwd;
     }
-    rpath := resolve(path).!;
+    rpath := resolve(path)!;
     if rpath == "." {
         return cwd;
     }
     if is_absolute(rpath) {
         return rpath;
     }
-    return resolve(join(cwd, rpath).!).!;
+    return resolve(join(cwd, rpath)!)!;
 }

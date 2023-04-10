@@ -27,10 +27,14 @@ public struct string : Stringable, Hashable {
         if len == 0 {
             return empty_string;
         }
-        if safe_ptr := ptr {
-            return Self(safe_ptr, len, is_ref);
-        }
-        return empty_string;
+        return if safe_ptr := ptr {
+            if unsafe { safe_ptr[len] != 0 } {
+                process_panic("`ptr` is not a valid string, doesn't ends with NLL byte");
+            }
+            Self(safe_ptr, len, is_ref)
+        } else {
+            empty_string
+        };
     }
 
     public func from_byte(byte: uint8) Self {
@@ -97,6 +101,62 @@ public struct string : Stringable, Hashable {
         return sb.to_string();
     }
 
+    /// Returns a string array of the string split by '\t' and ' '.
+    public func fields(self) []string {
+        mut res := @vec(string);
+        mut word_start: usize := 0;
+        mut word_len: usize := 0;
+        mut is_in_word := false;
+        mut is_space := false;
+        for i, c in self.as_bytes() {
+            is_space = c in [@cast(uint8, 32), 9, 10];
+            if !is_space {
+                word_len += 1;
+            }
+            if !is_in_word and !is_space {
+                word_start = i;
+                is_in_word = true;
+                continue;
+            }
+            if is_space and is_in_word {
+                res.push(self[word_start..word_start + word_len]);
+                is_in_word = false;
+                word_len = 0;
+                word_start = 0;
+                continue;
+            }
+        }
+        if is_in_word and word_len > 0 {
+            // collect the remainder word at the end
+            res.push(self[word_start..self.len]);
+        }
+        return res;
+    }
+
+    /// Wraps the given string within `width` in characters.
+    public func wrap(self, width: usize = 60, end: string = "\n") string {
+        words := self.fields();
+        if words.len == 0 {
+            return empty_string;
+        }
+        mut wrapped := StringBuilder.from_string(words[0]);
+        mut space_left := width - wrapped.len();
+        mut i: usize := 1;
+        while i < words.len : i += 1 {
+            word := words[i];
+            if word.len + 1 > space_left {
+                wrapped.write_string(end);
+                wrapped.write_string(word);
+                space_left = width - word.len;
+            } else {
+                wrapped.write_string(" ");
+                wrapped.write_string(word);
+                space_left -= 1 + word.len;
+            }
+        }
+        return wrapped.to_string();
+    }
+
     /// Returns a string formatted with all the values passed.
     ///
     /// Each replacement position is marked with `{}`:
@@ -114,11 +174,13 @@ public struct string : Stringable, Hashable {
     ///
     /// If the replacement positions exceed the number of passed arguments, a panic
     /// occurs.
+    [inline]
     public func fmt(self, args: ...Stringable) Self {
-        if args.len == 0 {
-            return self;
-        }
-        return StringFormatter(self).fmt(args);
+        return if args.len == 0 {
+            self
+        } else {
+            StringFormatter(self).fmt(args)
+        };
     }
 
     /// Returns the number of occurrences of `substr` in the string or 0 if no
@@ -256,42 +318,46 @@ public struct string : Stringable, Hashable {
         return val.slice(0, end_pos);
     }
 
-    /// Strips any of ` `, `\n`, `\t`, `\v`, `\f`, `\r` from the start and end of
-    /// the string.
-    [inline]
-    public func trim_space(self) string {
-        return self.trim(" \n\t\v\f\r");
-    }
-
     /// Strips any of the characters given in `cutset` from the start and end of
     /// the string.
     public func trim(self, cutset: string) string {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
-        (mut pos_left: usize, mut pos_right: usize) := (0, self.len - 1);
+        (pos_left, pos_right) := self.trim_indexes(cutset);
+        return self.slice(pos_left, pos_right);
+    }
+
+    /// Gets the new start and end indexes of a string when any of the characters
+    /// given in `cutset` were stripped from the start and end of the string. Should
+    /// be used as an input to `substr()`. If the string contains only the characters
+    /// in `cutset`, both values returned are zero.
+    public func trim_indexes(self, cutset: string) (usize, usize) {
+        mut pos_left: usize := 0;
+        mut pos_right: usize := if self.len == 0 { 0 } else { self.len - 1 };
         mut cs_match := true;
-        while pos_left <= self.len and pos_right >= -1 and cs_match {
+        cutset_bytes := cutset.as_bytes();
+        while pos_left <= self.len and pos_right > 0 and cs_match {
             cs_match = false;
-            for cs in cutset.as_bytes() {
+            for cs in cutset_bytes {
                 if unsafe { self.ptr[pos_left] == cs } {
                     pos_left += 1;
                     cs_match = true;
                     break;
                 }
             }
-            for cs2 in cutset.as_bytes() {
-                if unsafe { self.ptr[pos_right] == cs2 } {
+            for cs in cutset_bytes {
+                if unsafe { self.ptr[pos_right] == cs } {
                     pos_right -= 1;
                     cs_match = true;
                     break;
                 }
             }
             if pos_left > pos_right {
-                return empty_string;
+                return (0, 0);
             }
         }
-        return self.slice(pos_left, pos_right + 1);
+        return (pos_left, pos_right + 1);
     }
 
     /// Strips any of the characters given in `cutset` from the left of the
@@ -301,9 +367,10 @@ public struct string : Stringable, Hashable {
             return self;
         }
         mut pos: usize := 0;
+        cutset_bytes := cutset.as_bytes();
         while pos < self.len : pos += 1 {
             mut found := false;
-            for cs in cutset.as_bytes() {
+            for cs in cutset_bytes {
                 if unsafe { self.ptr[pos] == cs } {
                     found = true;
                     break;
@@ -313,7 +380,7 @@ public struct string : Stringable, Hashable {
                 break;
             }
         }
-        return self.slice(pos, self.len);
+        return self.slice_from(pos);
     }
 
     /// Strips any of the characters given in `cutset` from the right of the
@@ -323,9 +390,10 @@ public struct string : Stringable, Hashable {
             return self;
         }
         mut pos := self.len - 1;
+        cutset_bytes := cutset.as_bytes();
         while pos >= 0 : pos -= 1 {
             mut found := false;
-            for cs in cutset.as_bytes() {
+            for cs in cutset_bytes {
                 if unsafe { self.ptr[pos] == cs } {
                     found = true;
                 }
@@ -334,10 +402,14 @@ public struct string : Stringable, Hashable {
                 break;
             }
         }
-        if pos < 0 {
-            return empty_string;
-        }
-        return self.slice(pos + 1, self.len);
+        return self.slice(0, pos + 1);
+    }
+
+    /// Strips any of ` `, `\n`, `\t`, `\v`, `\f`, `\r` from the start and end of
+    /// the string.
+    [inline]
+    public func trim_space(self) string {
+        return self.trim(" \n\t\v\f\r");
     }
 
     /// Replaces all occurences of `rep` with the string passed in `with_`.
@@ -391,6 +463,36 @@ public struct string : Stringable, Hashable {
         return unsafe {
             Vector.from_array_no_alloc(@cast(*mut uint8, self.ptr), @size_of(uint8), self.len)
         };
+    }
+
+    /// Returns an array of all the UTF8 runes in the string `self` which is useful
+    /// if you want random access to them.
+    public func as_runes(self) []rune {
+        mut runes := @vec(rune, self.runes_count());
+        mut i: usize := 0;
+        while i < self.len : i += 1 {
+            char_len := unsafe { self.ptr[i] }.len_utf8();
+            unsafe {
+                runes.push(if char_len > 1 {
+                    end := if self.len - 1 >= i + char_len {
+                        i + char_len
+                    } else {
+                        self.len
+                    };
+                    r := self[i..end];
+                    i += char_len - 1;
+                    r.utf32_code()
+                } else {
+                    @cast(rune, self.ptr[i])
+                });
+            }
+        }
+        return runes;
+    }
+
+    [inline]
+    public func utf32_code(self) rune {
+        return utf8_to_utf32(self.as_bytes()) catch 0;
     }
 
     /// Splits the string based on the passed `delim` substring. It returns the

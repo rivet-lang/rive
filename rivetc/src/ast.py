@@ -520,6 +520,7 @@ class EnumLiteral:
     def __init__(self, value, pos, from_is_cmp = False):
         self.value = value
         self.from_is_cmp = from_is_cmp
+        self.is_instance = False
         self.sym = None
         self.variant_info = None
         self.pos = pos
@@ -740,7 +741,7 @@ class CallErrorHandler:
 
     def __repr__(self):
         if self.is_propagate:
-            return ".!"
+            return "!"
         elif len(self.varname) == 0:
             return f" catch {self.expr}"
         return f" catch |{self.varname}| {self.expr}"
@@ -799,7 +800,7 @@ class SelectorExpr:
         self.field_sym = None
         self.is_indirect = is_indirect
         self.is_option_check = is_option_check
-        self.is_symbol_access = False
+        self.is_path = False
         self.not_found = False
         self.pos = pos
         self.typ = None
@@ -808,7 +809,7 @@ class SelectorExpr:
         if self.is_indirect:
             return f"{self.left}.*"
         elif self.is_option_check:
-            return f"{self.left}.?"
+            return f"{self.left}?"
         return f"{self.left}.{self.field_name}"
 
     def __str__(self):
@@ -873,6 +874,7 @@ class IfBranch:
         self.expr = expr
         self.is_else = is_else
         self.op = op
+        self.typ = None
 
     def __repr__(self):
         if self.is_else:
@@ -911,6 +913,7 @@ class SwitchBranch:
         self.cond = cond
         self.expr = expr
         self.is_else = is_else
+        self.typ = None
 
     def __repr__(self):
         if self.is_else:

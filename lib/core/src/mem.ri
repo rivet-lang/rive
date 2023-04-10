@@ -19,7 +19,7 @@ public func mem_alloc(size: usize) !mut_anyptr {
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
 public func mem_zeroed(n: usize) !mut_anyptr {
-    new := mem_alloc(n).!;
+    new := mem_alloc(n)!;
     mem_set(new, 0, n);
     return new;
 }
@@ -87,9 +87,9 @@ public func mem_move(dest: mut_anyptr, src: anyptr, sz: usize) {
 /// the newly allocated space.
 public func mem_dup(src: anyptr, sz: usize) !mut_anyptr {
     if sz == 0 {
-        return mem_zeroed(1).!;
+        return mem_zeroed(1)!;
     }
-    new := mem_alloc(sz).!;
+    new := mem_alloc(sz)!;
     mem_copy(new, src, sz);
     return new;
 }

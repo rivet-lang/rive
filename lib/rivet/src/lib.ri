@@ -2,9 +2,9 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/traits;
-import std/env;
 import std/fs;
+import std/env;
+import std/traits;
 import std/fs/path;
 import std/console;
 import std/process;
@@ -12,56 +12,61 @@ import std/process;
 import ./ast;
 import ./utils;
 import ./prefs;
-import ./report;
-import ./parser;
 import ./token;
+import ./parser;
+import ./report;
+import ./resolver;
 import ./depgraph;
 
 [boxed]
 public struct Compiler {
-    public mut table: ast.Table;
-    public mut prefs: prefs.Prefs;
-    public mut source_files: []string;
+    mut table: ast.Table;
+    mut prefs: prefs.Prefs;
+    mut source_files: []string;
+
+    mut resolver: resolver.Resolver;
 
     public func new(args: []string, is_test: bool, run_output: bool) ! {
-        prefs_ := prefs.Prefs.new(args, is_test, run_output).!;
+        prefs_ := prefs.Prefs.new(args, is_test, run_output)!;
         report.Report_Table.prefs = prefs_;
-        Self(table: ast.Table.new(prefs_), prefs: prefs_).run().!;
+        table_ := ast.Table.new(prefs_);
+        Self(
+            table: table_, prefs: prefs_,
+            resolver: resolver.Resolver(table_, prefs_)
+        ).run()!;
     }
 
     func run(mut self) ! {
-        self.make_rivet_directory().!;
-        self.load_module_and_parse("core", "core", "", token.NO_POS).!;
-        self.load_root_module().!;
-        self.import_modules().!;
+        self.make_rivet_directory()!;
+
+        _ = self.load_module("core", "core", "", token.NO_POS)!;
+        self.load_root_module()!;
+        self.import_modules()!;
+
+        self.vlog("resolving files...");
+        self.resolver.resolve(self.table.source_files);
+        if report.total_errors() > 0 {
+            self.abort();
+        }
     }
 
     func make_rivet_directory(self) ! {
         if !path.exists(prefs.RIVET_DIR) {
             self.vlog("making Rivet directory");
-            fs.make_directory(prefs.RIVET_DIR).!;
-            fs.make_directory(prefs.OBJ_DIR).!;
-            fs.make_directory(prefs.LIB_DIR).!;
-        }
-    }
-
-    func parse_files(mut self, mod_sym: ast.Sym, files: []string) {
-        for sf in parser.Parser(table: self.table, prefs: self.prefs).parse_module(mod_sym, files) {
-            self.table.source_files.push(sf);
-        }
-        if report.total_errors() > 0 {
-            self.abort();
+            fs.make_directory(prefs.RIVET_DIR)!;
+            fs.make_directory(prefs.OBJ_DIR)!;
+            fs.make_directory(prefs.LIB_DIR)!;
         }
     }
 
     func load_root_module(mut self) ! {
         files := if path.is_directory(self.prefs.input) {
             mut filtered_files := self.table.filter_files(
-                fs.walk_directory(self.prefs.input, ".ri").!
+                fs.walk_directory(self.prefs.input, ".ri")!
             );
-            src_dir := path.join(self.prefs.input, "src").!;
+            src_dir := path.join(self.prefs.input, "src")!;
             if path.is_directory(src_dir) { // support `src/` directory
-                for file in self.table.filter_files(fs.walk_directory(src_dir, ".ri").!) {
+                for file in self.table.filter_files(fs.walk_directory(src_dir, ".ri")!) {
                     filtered_files.push(file);
                 }
             }
@@ -72,9 +77,9 @@ public struct Compiler {
         if files.is_empty() {
             utils.error("no input received");
         } else if self.prefs.is_verbose {
-            self.vlog("loaded root module files:");
+            self.vlog("Compiler.load_root_module(): loaded root module files:");
             for file in files {
-                self.vlog("  {}", file);
+                self.vlog("   > {}", file);
             }
         }
         root_sym := ast.Module(name: self.prefs.mod_name, is_root: true);
@@ -84,23 +89,55 @@ public struct Compiler {
         self.parse_files(root_sym, files);
     }
 
-    func load_module_and_parse(
-        mut self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
-    ) ! {
-        mod := self.load_module(pathx, alias_name, file_path, pos).!;
-        if mod.found {
-            mod_sym := ast.Module(name: mod.full_name);
-            self.table.universe.scope.add(mod_sym) catch |err| {
-                report.error(err.to_string(), pos)
-            };
-            self.parse_files(mod_sym, mod.files);
+    func import_modules(mut self) ! {
+        mut done_imports := @vec(string);
+        for sf in self.table.source_files {
+            for d in sf.decls {
+                if d is .Import as import_decl {
+                    if import_decl.info.full_name in done_imports {
+                        continue;
+                    }
+                    import_decl.info = self.load_module(
+                        import_decl.path, import_decl.alias_name, sf.file,
+                        import_decl.path_pos
+                    )!;
+                    import_decl.alias_name = import_decl.info.alias_name;
+                    if import_decl.info.found {
+                        done_imports.push(import_decl.info.full_name);
+                    }
+                }
+            }
+        }
+        self.vlog("loaded modules...");
+        self.resolve_deps();
+        if report.total_errors() > 0 {
+            self.abort();
         }
     }
 
     func load_module(
+        mut self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
+    ) !ast.ImportedMod {
+        mod := self.load_module_files(pathx, alias_name, file_path, pos)!;
+        if mod.found {
+            mod.mod = if mod_mod_ := self.table.universe.scope.find(mod.full_name) {
+                @cast(ast.Module, mod_mod_)
+            } else {
+                mod_sym := ast.Module(name: mod.full_name);
+                self.table.universe.scope.add(mod_sym) catch |err| {
+                    report.error(err.to_string(), pos)
+                };
+                self.parse_files(mod_sym, mod.files);
+                mod_sym
+            };
+        }
+        return mod;
+    }
+
+    func load_module_files(
         self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) !ast.ImportedMod {
-        self.vlog("Compiler.load_module(): searching module `{}`", pathx);
+        self.vlog("Compiler.load_module_files(): searching module `{}`", pathx);
         mut found := false;
         mut name := "";
         mut full_name := "";
@@ -110,13 +147,17 @@ public struct Compiler {
         if pathx.starts_with("./") or is_super {
             self.vlog("    searching module in local path");
             pathx2 := pathx[if is_super { 3 } else { 2 }..];
-            name = pathx2[(pathx2.last_index_of_byte(b'/') ?? 0) + 1..];
-            dirname := path.resolve(path.dirname(file_path) ?? file_path).!;
-            old_wd := process.get_cwd().!;
-            process.set_cwd(dirname).!;
+            name = if last_idx := pathx2.last_index_of_byte(b'/') {
+                pathx2[last_idx + 1..]
+            } else {
+                pathx2
+            };
+            dirname := path.resolve(path.dirname(file_path) ?? file_path)!;
+            old_wd := process.get_cwd()!;
+            process.set_cwd(dirname)!;
             if path.is_directory(pathx) {
                 found = true;
-                abspath = path.resolve(pathx).!;
+                abspath = path.resolve(pathx)!;
                 mut mod_basedir := path.dirname(abspath) ?? abspath;
                 if mod_basedir.ends_with("/src") {
                     mod_basedir = mod_basedir[..mod_basedir.len - 4]; // skip `src/`
@@ -128,90 +169,75 @@ public struct Compiler {
                 names := abspath[(mod_basedir.last_index_of_byte(b'/') ?? 0) + 1..].split(
                     "/"
                 );
-                if "src" in names {
-                    src_idx := name.index_of("src") ?? 0;
-                    full_name = utils.join(names[..src_idx], ".").concat(
-                        utils.join(names[src_idx + 1..], ".")
-                    );
+                full_name = if "src" in names {
+                    src_idx := utils.index_of(names, "src");
+                    utils.join(names[..src_idx], ".").concat(
+                        ".", utils.join(names[src_idx + 1..], ".")
+                    )
                 } else {
-                    full_name = utils.join(names, ".");
-                }
+                    utils.join(names, ".")
+                };
             }
-            process.set_cwd(old_wd).!;
             if found {
                 self.vlog("      > found");
-                files = self.table.filter_files(fs.walk_directory(abspath, ".ri").!);
+                files = self.table.filter_files(fs.walk_directory(pathx, ".ri")!);
             }
+            process.set_cwd(old_wd)!;
         } else {
             self.vlog("    searching module in global path");
-            name = pathx[(pathx.last_index_of_byte(b'/') ?? 0) + 1..];
+            name = if last_idx := pathx.last_index_of_byte(b'/') {
+                pathx[last_idx + 1..]
+            } else {
+                pathx
+            };
             full_name = pathx.replace("/", ".");
             for l in self.prefs.library_path {
                 self.vlog("        searching module in `{}`", l);
-                mod_path := path.resolve(path.join(l, pathx).!).!;
+                mod_path := path.resolve(path.join(l, pathx)!)!;
                 if path.is_directory(mod_path) {
                     found = true;
-                    files = self.table.filter_files(fs.walk_directory(mod_path, ".ri").!);
+                    files = self.table.filter_files(fs.walk_directory(mod_path, ".ri")!);
                 }
                 // support `src/` directory
                 src_dir := if pathx.count("/") > 0 {
                     slash_idx := (pathx.index_of_byte(b'/') ?? 0) + 1;
-                    path.join(l, pathx[..slash_idx], "src", pathx[slash_idx..]).!
+                    path.join(l, pathx[..slash_idx], "src", pathx[slash_idx..])!
                 } else {
-                    path.join(mod_path, "src").!
+                    path.join(mod_path, "src")!
                 };
                 if path.is_directory(src_dir) {
                     if !found {
                         found = true;
                     }
-                    files = self.table.filter_files(fs.walk_directory(src_dir, ".ri").!);
+                    files = self.table.filter_files(fs.walk_directory(src_dir, ".ri")!);
                 }
                 if found {
-                    self.vlog("            > found");
+                    self.vlog("        > found");
                     break;
                 }
             }
         }
         if !found {
             report.error("module `{}` not found".fmt(pathx), pos);
-        } else if files.len == 0 {
+        } else if files.is_empty() {
             report.error("module `{}` contains no rivet files".fmt(pathx), pos);
         } else {
-            self.vlog("    module {} loaded", pathx);
+            self.vlog("    module `{}` loaded", pathx);
         }
         return ast.ImportedMod(
             found: found, name: name,
-            alias_name: if alias_name.len == 0 { name} else { alias_name },
+            alias_name: if alias_name.is_empty() { name } else { alias_name },
             full_name: full_name,
             files: files
         );
     }
 
-    func import_modules(mut self) ! {
-        for sf in self.table.source_files {
-            for d in sf.decls {
-                if d is .Import as mut import_decl {
-                    mod := self.load_module(
-                        import_decl.path, import_decl.alias_name, sf.file, import_decl.pos
-                    ).!;
-                    if mod.found {
-                        mod_sym := if mod_sym_ := self.table.universe.scope.find(mod.full_name) {
-                            @cast(ast.Module, mod_sym_) // module already imported
-                        } else {
-                            tmp := ast.Module(name: mod.full_name);
-                            self.table.universe.scope.add(tmp) catch |err| {
-                                report.error(err.to_string(), import_decl.pos)
-                            };
-                            self.parse_files(tmp, mod.files);
-                            tmp
-                        };
-                        import_decl.alias_name = mod.alias_name;
-                        import_decl.mod_sym = mod_sym;
-                    }
-                }
-            }
+    func parse_files(mut self, mod_sym: ast.Module, files: []string) {
+        for sf in parser.Parser(table: self.table, prefs: self.prefs).parse_module(
+            mod_sym, files
+        ) {
+            self.table.source_files.push(sf);
         }
-        self.resolve_deps();
         if report.total_errors() > 0 {
             self.abort();
         }
@@ -220,8 +246,9 @@ public struct Compiler {
     func resolve_deps(mut self) {
         g := self.import_graph();
         g_resolved := g.resolve();
-        self.vlog("-----= resolved dependencies graph =-----");
-        self.vlog(g_resolved.display());
+        self.vlog(
+            "-----= resolved dependencies graph =-----\n".concat(g_resolved.display())
+        );
         self.vlog("-----------------------------------------");
         cycles := g_resolved.display_cycles();
         if cycles.len > 1 {
@@ -229,40 +256,41 @@ public struct Compiler {
         }
         self.vlog("----------= imported modules =-----------");
         for node in g_resolved.nodes {
-            self.vlog(" > {}", node.name);
+            self.vlog("> {}", node.name);
         }
         self.vlog("-----------------------------------------");
         source_files := self.table.source_files.clone();
         self.table.source_files = @vec(ast.SourceFile, self.source_files.len);
         for node in g_resolved.nodes {
             for pf in source_files {
-                if pf.mod_sym.name == node.name {
+                if pf.mod.name == node.name {
                     self.table.source_files.push(pf);
                 }
             }
         }
+        self.vlog("module dependencies resolved...");
     }
 
     func import_graph(self) depgraph.DepGraph {
         mut g := depgraph.DepGraph.new();
         for pf in self.table.source_files {
             mut deps := @vec(string);
-            if pf.mod_sym.name !in ["c.libc", "c", "core"] {
+            if pf.mod.name !in ["c.libc", "c", "c.ctypes", "core"] {
                 deps.push("core");
             }
             for d in pf.decls {
                 if d is .Import as import_decl {
-                    if import_decl.mod_sym.name == pf.mod_sym.name {
+                    if !import_decl.info.found {
+                        continue; // module not found
+                    }
+                    if import_decl.info.full_name == pf.mod.name {
                         report.error("import cycle detected", import_decl.pos);
                         continue;
                     }
-                    if pf.mod_sym.name == "c" and import_decl.mod_sym.name == "c.libc" {
-                        continue;
-                    }
-                    deps.push(import_decl.mod_sym.name);
+                    deps.push(import_decl.info.full_name);
                 }
             }
-            g.add(pf.mod_sym.name, deps);
+            g.add(pf.mod.name, deps);
         }
         return g;
     }
@@ -283,7 +311,7 @@ public struct Compiler {
         };
         total_warns := report.total_warns();
         if total_warns > 0 {
-            msg = msg.fmt(", {} {} emitted", total_warns, if total_warns == 1 {
+            msg = msg.concat(", {} {} emitted").fmt(total_warns, if total_warns == 1 {
                 "warning"
             } else {
                 "warnings"

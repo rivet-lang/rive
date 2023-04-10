@@ -22,20 +22,22 @@ public struct Parser {
     mut peek_tok: token.Token;
     mut last_err_pos: token.Pos;
 
-    mut mod_sym: ?ast.Sym;
+    mut mod_sym: ast.Module;
     mut file_path: string;
     mut file_dir: string;
-    mut scope: ?ast.Scope;
+    mut scope: ast.Scope;
 
     mut inside_extern: bool;
     mut extern_abi: ast.ABI;
     mut inside_mod: bool;
     mut inside_struct: bool;
     mut inside_trait: bool;
+    mut inside_enum_variant_with_fields: bool;
     mut inside_switch_header: bool;
     mut inside_block: bool;
 
-    public func parse_module(mut self, mod_sym: ast.Sym, files: []string) []ast.SourceFile {
+    public func parse_module(mut self, mod_sym: ast.Module, files: []string) []ast.SourceFile {
+        self.scope = mod_sym.scope;
         self.mod_sym = mod_sym;
         mut source_files := @vec(ast.SourceFile);
         for file in files {
@@ -49,10 +51,10 @@ public struct Parser {
         self.file_dir = path.dirname(file) ?? file;
         self.tokenizer = tokenizer.Tokenizer.from_file(file, self.prefs, self.table);
         if report.total_errors() > 0 {
-            return ast.SourceFile(file, self.mod_sym.?, []);
+            return ast.SourceFile(file, [], self.mod_sym);
         }
         self.advance(2);
-        return ast.SourceFile(file, self.mod_sym.?, self.parse_decls());
+        return ast.SourceFile(file, self.parse_decls(), self.mod_sym);
     }
 
     func next(mut self) {
@@ -110,12 +112,190 @@ public struct Parser {
     }
 
     func close_scope(mut self) {
-        if scope := self.scope {
-            scope.end = self.tok.pos.pos;
-            if parent := scope.parent {
-                parent.childrens.push(scope);
-            }
-            self.scope = scope.parent;
+        self.scope.end = self.tok.pos.pos;
+        if parent := self.scope.parent {
+            parent.childrens.push(self.scope);
+            self.scope = parent;
         }
+    }
+
+    func parse_type(mut self) ast.Type {
+        mut pos := self.tok.pos;
+        switch {
+            self.accept(.Question) => return ast.Type.Option(
+                self.parse_type(), pos + self.prev_tok.pos
+            ),
+            self.tok.kind == .KwFunc => {
+                // function types
+                self.expect(.KwFunc);
+                self.expect(.Lparen);
+                mut args := @vec(ast.Arg);
+                if self.tok.kind != .Rparen {
+                    while {
+                        arg_pos := self.tok.pos;
+                        is_mut := self.accept(.KwMut);
+                        arg_type := self.parse_type();
+                        args.push(ast.Arg(
+                            name: "arg{}".fmt(args.len),
+                            is_mut: is_mut,
+                            type: arg_type,
+                            has_def_expr: false,
+                            pos: arg_pos + self.prev_tok.pos
+                        ));
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                }
+                self.expect(.Rparen);
+                ret_type := if self.tok.kind.is_start_of_type() {
+                    self.parse_type()
+                } else {
+                    .Void()
+                };
+                return .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos);
+            },
+            self.accept(.Amp) => {
+                // references
+                is_mut := self.accept(.KwMut);
+                return ast.Type.Reference(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos);
+            },
+            self.accept(.Mul) => {
+                // pointers
+                is_mut := self.accept(.KwMut);
+                if self.tok.kind == .Mul {
+                    mut err := report.error_builder("cannot declare pointer to pointer", pos + self.tok.pos);
+                    err.add_help("use an indexable pointer instead (`[*]T`)");
+                    err.emit();
+                }
+                return ast.Type.Reference(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos);
+            },
+            self.accept(.Lbracket) => {
+                // arrays or vectors
+                if self.tok.kind != .Rbracket {
+                    // indexable pointers
+                    if self.accept(.Mul) {
+                        self.expect(.Rbracket);
+                        is_mut := self.accept(.KwMut);
+                        return ast.Type.Pointer(
+                            self.parse_type(), is_mut, true, pos: pos + self.prev_tok.pos
+                        );
+                    }
+                    // array
+                    size := self.parse_expr();
+                    self.expect(.Rbracket);
+                    is_mut := self.accept(.KwMut);
+                    return ast.Type.Array(self.parse_type(), is_mut, size, pos: pos + self.prev_tok.pos);
+                }
+                self.expect(.Rbracket);
+                is_mut := self.accept(.KwMut);
+                return ast.Type.Vector(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos);
+            },
+            self.accept(.Lparen) => {
+                // tuples
+                mut inners := @vec(ast.Type);
+                while {
+                    inners.push(self.parse_type());
+                    if !self.accept(.Comma) {
+                        break;
+                    }
+                }
+                if inners.len > 8 {
+                    mut err := report.error_builder("tuples can have a maximum of 8 types", pos + self.tok.pos);
+                    err.add_help("you can use a struct instead");
+                    err.emit();
+                }
+                pos += self.tok.pos;
+                self.expect(.Rparen);
+                return ast.Type.Tuple(inners, pos: pos);
+            },
+            self.accept(.Ellipsis) => return ast.Type.Variadic(
+                self.parse_type(), pos: pos + self.prev_tok.pos
+            ),
+            self.accept(.KwSelfTy) => return ast.Type.Basic(
+                expr: ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
+                is_unresolved: true
+            ),
+            self.accept(.KwNone) => return self.table.none_t,
+            self.tok.kind == .Name => {
+                prev_tok_kind := self.prev_tok.kind;
+                mut expr := self.parse_ident();
+                if self.accept(.Dot) {
+                    expr = self.parse_selector_expr(expr);
+                    while self.accept(.Dot) {
+                        expr = self.parse_selector_expr(expr);
+                    }
+                    return ast.Type.Basic(expr: expr, is_unresolved: true);
+                }
+                // normal type
+                expr_name := @cast(ast.Expr.Ident, expr).name;
+                switch expr_name {
+                    "never" => {
+                        if prev_tok_kind != .Rparen and self.tok.kind != .Lbrace {
+                            report.error("invalid use of `never` type", pos);
+                        }
+                        return .Never(self.prev_tok.pos);
+                    },
+                    "anyptr", "mut_anyptr" => return ast.Type.Anyptr(
+                        expr_name.starts_with("mut_"), self.prev_tok.pos
+                    ),
+                    "bool" => return self.table.bool_t,
+                    "rune" => return self.table.rune_t,
+                    "int8" => return self.table.int8_t,
+                    "int16" => return self.table.int16_t,
+                    "int32" => return self.table.int32_t,
+                    "int64" => return self.table.int64_t,
+                    "isize" => return self.table.isize_t,
+                    "uint8" => return self.table.uint8_t,
+                    "uint16" => return self.table.uint16_t,
+                    "uint32" => return self.table.uint32_t,
+                    "uint64" => return self.table.uint64_t,
+                    "usize" => return self.table.usize_t,
+                    "float32" => return self.table.float32_t,
+                    "float64" => return self.table.float64_t,
+                    "string" => return self.table.string_t,
+                    "comptime_int" => return self.table.comptime_int_t,
+                    "comptime_float" => return self.table.comptime_float_t,
+                    else => return ast.Type.Basic(expr: expr, is_unresolved: true)
+                }
+            },
+            else => {
+                report.error("expected type, found {}".fmt(self.tok), pos);
+                self.next();
+                return ast.Type.Basic(expr: ast.Expr.Empty(pos), is_unresolved: true);
+            }
+        }
+    }
+
+    func parse_var_decl(
+        mut self, inside_global: bool = false, support_typ: bool = true,
+        support_ref: bool = false, support_mut: bool = true
+    ) ast.ObjectData {
+        pos := self.tok.pos;
+        is_mut := support_mut and self.accept(.KwMut);
+        is_ref := support_ref and !is_mut and self.accept(.Amp);
+        name := self.parse_name();
+        (typ, has_typ) := if support_typ and self.accept(.Colon) {
+            (self.parse_type(), true)
+        } else {
+            (ast.Type.Void, false)
+        };
+        return ast.ObjectData(name, is_mut, is_ref, typ, .Local, pos);
+    }
+
+    func decl_operator_is_used(self) bool {
+        line_nr := self.tok.pos.line;
+        mut assign_was_used := false;
+        mut i: usize := 1;
+        while i < self.tokenizer.all_tokens.len : i += 1 {
+            tok := self.peek_token(i);
+            switch tok.kind {
+                .Assign => assign_was_used = true,
+                .DeclAssign if !assign_was_used => return true,
+                .Semicolon => break,
+                else => if tok.pos.line != line_nr { break }
+            }
+        }
+        return false;
     }
 }

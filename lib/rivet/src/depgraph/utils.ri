@@ -34,7 +34,7 @@ struct MapStringArrayOfStrings {
     }
 
     public func set(mut self, key: string, value: []string) {
-        for pair in self.pairs {
+        for &pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
                 return; // found
@@ -45,7 +45,7 @@ struct MapStringArrayOfStrings {
     }
 
     public func get(self, key: string) ?[]string {
-        for pair in self.pairs {
+        for &pair in self.pairs {
             if pair.key == key {
                 return pair.value;
             }
@@ -54,15 +54,16 @@ struct MapStringArrayOfStrings {
     }
 
     public func delete(mut self, key: string) {
-        for i, pair in self.pairs {
+        for i, &pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
+                break;
             }
         }
     }
 
     public func contains(self, key: string) bool {
-        for pair in self.pairs {
+        for &pair in self.pairs {
             if pair.key == key {
                 return true;
             }
@@ -86,7 +87,7 @@ struct MapStringBool {
     mut pairs: []mut StringBool;
 
     public func set(mut self, key: string, value: bool) {
-        for pair in self.pairs {
+        for &pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
                 return; // found
@@ -97,7 +98,7 @@ struct MapStringBool {
     }
 
     public func get(self, key: string) ?bool {
-        for pair in self.pairs {
+        for &pair in self.pairs {
             if pair.key == key {
                 return pair.value;
             }
@@ -106,15 +107,16 @@ struct MapStringBool {
     }
 
     public func delete(mut self, key: string) {
-        for i, pair in self.pairs {
+        for i, &pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
+                break;
             }
         }
     }
 
     public func contains(self, key: string) bool {
-        for pair in self.pairs {
+        for &pair in self.pairs {
             if pair.key == key {
                 return true;
             }

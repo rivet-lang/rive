@@ -3,9 +3,32 @@
 // be found in the LICENSE file.
 
 import core;
+import c/libc;
 
 public alias print = core.console_print;
 public alias println = core.console_println;
 public alias eprint = core.console_eprint;
 public alias eprintln = core.console_eprintln;
 public alias is_atty = core.console_is_atty;
+
+/// Returns a one-line string from stdin, after printing a prompt. In
+/// the event of error (end of input) or a empty string, returns `none`.
+public func readln(prompt: string = "") ?string {
+    if prompt.len > 0 {
+        print(prompt);
+    }
+    _ = unsafe { libc.fflush(libc.stdout) };
+    max: usize := 0;
+    buf: ?[*]uint8 := none;
+    nr_chars := unsafe { libc.getline(&buf, &max, libc.stdin) };
+    res := unsafe {
+        string.from_raw_with_len(
+            buf, if nr_chars < 0 { 0 } else { @cast(usize, nr_chars) }
+        ).trim_right("\r\n")
+    };
+    return if res.len > 0 {
+        res
+    } else {
+        none
+    };
+}

@@ -2,6 +2,39 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import ../token;
+
 public enum Stmt {
-    Empty
+    Empty: token.Pos,
+    Expr: Expr,
+    VarDecl {
+        lefts: []ObjectData;
+        right: Expr;
+        scope: Scope;
+        pos: token.Pos;
+    },
+    While {
+        cond: Expr;
+        continue_expr: Expr;
+        has_continue_expr: bool;
+        stmt: Stmt;
+        else_stmt: Stmt;
+        has_else_stmt: bool;
+        is_inf: bool;
+        pos: token.Pos;
+    },
+    For {
+        index: ObjectData;
+        has_index: bool;
+        values: []ObjectData;
+        iterable: Expr;
+        stmt: Stmt;
+        scope: Scope;
+        pos: token.Pos;
+    },
+    Defer {
+        expr: Expr;
+        is_errdefer: bool;
+        pos: token.Pos;
+    }
 }

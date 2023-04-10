@@ -9,9 +9,8 @@ public struct ErrnoError : Error {
     public msg: string;
     public code: int32;
 
-    [inline]
     public func to_string(self) string {
-        return "errno: {} ({})".fmt(self.msg, self.code);
+        return "errno: {} (code: {})".fmt(self.msg, self.code);
     }
 }
 
@@ -19,7 +18,7 @@ public struct ErrnoError : Error {
 public func errno() int32 {
     return unsafe {
 #if _LINUX_
-        libc.__errno_location().?.*
+        libc.__errno_location()?.*
 #else
         libc._errno().*
 #endif

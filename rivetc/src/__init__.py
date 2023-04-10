@@ -18,6 +18,13 @@ class Compiler:
         #  compiled reside.
         self.universe = sym.universe()
 
+        self.prefs = prefs.Prefs(args)
+        self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
+
+        self.core_mod = None
+        self.vec_sym = None # from `core` module
+        self.error_sym = None # from `core` module
+
         #  Primitive types.
         self.void_t = type.Type(self.universe[0])
         self.never_t = type.Type(self.universe[1])
@@ -43,13 +50,6 @@ class Compiler:
         self.mut_anyptr_t = type.Ptr(self.void_t, True)
         self.error_t = None # updated in register
 
-        self.prefs = prefs.Prefs(args)
-        self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
-
-        self.core_mod = None
-        self.vec_sym = None # from `core` module
-        self.error_sym = None # from `core` module
-
         self.parsed_files = []
         self.source_files = []
 
@@ -64,7 +64,7 @@ class Compiler:
         for sf in self.parsed_files:
             for decl in sf.decls:
                 if isinstance(decl, ast.ImportDecl):
-                    mod = self.load_mod(
+                    mod = self.load_module_files(
                         decl.path, decl.alias, sf.file, decl.pos
                     )
                     if mod.found:
@@ -113,7 +113,7 @@ class Compiler:
             if not fp.sym:
                 continue
             deps = []
-            if fp.sym.name not in ["c.libc", "c", "core"]:
+            if fp.sym.name not in ["c.libc", "c", "c.ctypes", "core"]:
                 deps.append("core")
             for d in fp.decls:
                 if isinstance(d, ast.ImportDecl):
@@ -122,36 +122,36 @@ class Compiler:
                     if d.mod_sym.name == fp.sym.name:
                         report.error("import cycle detected", d.pos)
                         continue
-                    if fp.sym.name == "c" and d.mod_sym.name == "c.libc":
-                        continue
                     deps.append(d.mod_sym.name)
             g.add(fp.sym.name, deps)
         return g
 
     def run(self):
-        self.parsed_files += self.load_mod_and_parse(
-            "core", "core", "", token.NO_POS
-        )
-        self.load_root_mod()
+        self.parsed_files += self.load_module("core", "core", "", token.NO_POS)
+        self.load_root_module()
         self.import_modules()
         if not self.prefs.check_syntax:
+            self.vlog("registering symbols...")
             self.register.walk_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
+            self.vlog("resolving symbols...")
             self.resolver.resolve_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
+            self.vlog("checking files...")
             self.checker.check_files(self.source_files)
             if report.ERRORS > 0:
                 self.abort()
             if not self.prefs.check:
+                self.vlog("generating RIR...")
                 self.codegen.gen_source_files(self.source_files)
                 if report.ERRORS > 0:
                     self.abort()
             if self.exit_code != 0:
                 exit(self.exit_code)
 
-    def load_root_mod(self):
+    def load_root_module(self):
         if path.isdir(self.prefs.input):
             files = self.filter_files(
                 glob.glob(path.join(self.prefs.input, "*.ri"))
@@ -166,17 +166,19 @@ class Compiler:
         root_sym = sym.Mod(False, self.prefs.mod_name)
         root_sym.is_root = True
         self.universe.add(root_sym)
+        self.vlog("parsing root module files...")
         self.parsed_files += parser.Parser(self).parse_mod(root_sym, files)
 
-    def load_mod_and_parse(self, pathx, alias, file_path, pos):
-        mod = self.load_mod(pathx, alias, file_path, pos)
+    def load_module(self, pathx, alias, file_path, pos):
+        mod = self.load_module_files(pathx, alias, file_path, pos)
         if mod.found:
             mod_sym = sym.Mod(False, mod.full_name)
             self.universe.add(mod_sym)
+            self.vlog(f"parsing `{pathx}` module files...")
             return parser.Parser(self).parse_mod(mod_sym, mod.files)
         return []
 
-    def load_mod(self, pathx, alias, file_path, pos):
+    def load_module_files(self, pathx, alias, file_path, pos):
         found = False
         name = ""
         full_name = ""
@@ -385,12 +387,12 @@ class Compiler:
             size, align = 2, 2
         elif sy.kind in (
             sym.TypeKind.Int32, sym.TypeKind.Uint32, sym.TypeKind.Rune,
-            sym.TypeKind.Float32, sym.TypeKind.ComptimeInt
+            sym.TypeKind.Float32
         ):
             size, align = 4, 4
         elif sy.kind in (
             sym.TypeKind.Int64, sym.TypeKind.Uint64, sym.TypeKind.Float64,
-            sym.TypeKind.ComptimeFloat
+            sym.TypeKind.ComptimeFloat, sym.TypeKind.ComptimeInt
         ):
             size, align = 8, 8
         elif sy.kind == sym.TypeKind.Enum:

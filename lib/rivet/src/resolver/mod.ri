@@ -1,0 +1,80 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../prefs;
+import ../token;
+import ../report;
+
+struct Prelude {
+    name: string;
+    sym: ast.Sym;
+}
+
+[boxed]
+public struct Resolver {
+    mut table: ast.Table;
+    mut prefs: prefs.Prefs;
+
+    mut sym: ast.Sym;
+    mut self_sym: ast.TypeSym;
+    mut preludes: []Prelude;
+
+    mut self_sym_is_set: bool;
+
+    mut source_file: ast.SourceFile;
+
+    public func resolve(mut self, source_files: []ast.SourceFile) {
+        Register(self.table, self.prefs).walk_files(source_files);
+        self.preludes = [
+            Prelude("Error", self.table.error_sym)
+        ];
+        for sf in source_files {
+            self.sym = sf.mod;
+            self.source_file = sf;
+            self.resolve_decls(self.source_file.decls);
+        }
+    }
+
+    func resolve_decls(mut self, decls: []ast.Decl) {
+        for decl in decls {
+            old_sym := self.sym;
+            old_self_sym := self.self_sym;
+            switch decl is {
+                .Extern as extern_decl => self.resolve_decls(extern_decl.decls),
+                .Alias as alias_decl => if alias_decl.is_typealias {
+                    _ = self.resolve_type(alias_decl.parent_type);
+                } else {
+                    sym_ref := @cast(ast.SymRef, alias_decl.sym);
+                    sym_ref.ref_resolved = true;
+                    self.resolve_expr(sym_ref.ref_expr);
+                    sym_ref.ref = if sym_ref.ref_expr is .Ident as ident {
+                        ident.sym
+                    } else {
+                        @cast(ast.Expr.Selector, sym_ref.ref_expr).sym
+                    };
+                },
+                .Const as const_decl => if self.resolve_type(const_decl.type) {
+                    self.resolve_expr(const_decl.expr)
+                },
+                .Var as var_decl => {
+                    for left in var_decl.lefts {
+                        _ = self.resolve_type(left.type);
+                    }
+                    if !var_decl.is_extern {
+                        self.resolve_expr(var_decl.right);
+                    }
+                }
+            }
+            self.sym = old_sym;
+            self.self_sym = old_self_sym;
+        }
+    }
+
+    func check_vis(self, sym: ast.Sym, pos: token.Pos) {
+        if !sym.is_public and !self.source_file.mod.has_access_to(sym) {
+            report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
+        }
+    }
+}

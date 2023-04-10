@@ -163,17 +163,16 @@ class Builder:
     def write(self, txt):
         self.len_ += self.buf.write(txt)
 
+    def writeln(self, txt = ""):
+        if len(txt) > 0:
+            self.write(txt)
+        self.write("\n")
+
     def write_octal_escape(self, c):
         self.write(chr(92)) # '\'
         self.write(chr(48 + (c >> 6))) # octal digit 2
         self.write(chr(48 + ((c >> 3) & 7))) # octal digit 1
         self.write(chr(48 + (c & 7))) # octal digit 0
-
-    def writeln(self, txt = ""):
-        if len(txt) == 0:
-            self.write("\n")
-        else:
-            self.write(f"{txt}\n")
 
     def clear(self):
         self.buf = StringIO()
@@ -250,7 +249,7 @@ def decode_h_escapes(s_, start, escapes_pos):
             ss.append(s[end_idx:].decode())
     return "".join(ss)
 
-def smart_quote(str, raw: bool):
+def smart_quote(str, raw):
     len_ = len(str)
     if len_ == 0:
         return ""
@@ -270,7 +269,7 @@ def smart_quote(str, raw: bool):
             break
         if is_pure:
             return str
-    result = ""
+    result = Builder()
     pos = -1
     last = chr(0)
     current = chr(0)
@@ -291,49 +290,49 @@ def smart_quote(str, raw: bool):
             next = 0
         if current == DOUBLE_QUOTE:
             current = 0
-            result += BACKSLASH
-            result += DOUBLE_QUOTE
+            result.write(BACKSLASH)
+            result.write(DOUBLE_QUOTE)
             continue
         if current == BACKSLASH:
             if raw:
-                result += DOUBLE_ESCAPE
+                result.write(DOUBLE_ESCAPE)
                 continue
             if next == BACKSLASH:
                 # escaped backslash - keep as is
                 current = 0
                 skip_next = True
-                result += DOUBLE_ESCAPE
+                result.write(DOUBLE_ESCAPE)
                 continue
             if next != chr(0):
                 if raw:
                     skip_next = True
-                    result += DOUBLE_ESCAPE
+                    result.write(DOUBLE_ESCAPE)
                     continue
                 if next in INVALID_ESCAPES:
                     current = 0
                     skip_next = True
-                    result += next
+                    result.write(next)
                     continue
                 # keep all valid escape sequences
                 skip_next = True
-                result += current
-                result += next
+                result.write(current)
+                result.write(next)
                 current = 0
                 continue
         if current == BACKSLASH_N:
             # keep newlines in string
             current = chr(0)
-            result += BACKSLASH
-            result += "n"
+            result.write(BACKSLASH)
+            result.write("n")
             continue
         if current == BACKSLASH_R and next == BACKSLASH_N:
-            result += current
-            result += next
+            result.write(current)
+            result.write(next)
             current = chr(0)
             skip_next = True
             continue
-        result += current
-    return result
+        result.write(current)
+    return result.__str__()
 
 class OrderedDepMap:
     def __init__(self, keys = [], data = {}):

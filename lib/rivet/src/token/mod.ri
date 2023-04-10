@@ -21,7 +21,18 @@ public struct Pos : traits.Stringable {
 
     [inline]
     public func +(&self, other: &Pos) Pos {
-		return Pos(len: other.pos - self.pos + other.len, ...self.*);
+        return if other.line > self.line {
+            Pos(
+                line: self.line,
+                end_line: other.line,
+                end_col: other.col,
+                len: other.pos - self.pos + other.len,
+                is_multiline: true,
+                ...self.*
+            )
+        } else {
+            Pos(len: other.pos - self.pos + other.len, ...self.*)
+        };
     }
 
     [inline]

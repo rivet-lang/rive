@@ -12,20 +12,20 @@ test "std.fs.path.is_absolute()" {
 }
 
 test "std.fs.path.resolve()" {
-    @assert(path.resolve(".").! == CWD);
-    @assert(path.resolve("a/b/c/", "../../..").! == CWD);
+    @assert(path.resolve(".")! == CWD);
+    @assert(path.resolve("a/b/c/", "../../..")! == CWD);
 
-    @assert(path.resolve("/a/b", "c").! == "/a/b/c");
-    @assert(path.resolve("/a/b", "c", "//d", "e///").! == "/d/e");
-    @assert(path.resolve("/a/b/c", "..", "../").! == "/a");
-    @assert(path.resolve("/", "..", "..").! == "/");
-    @assert(path.resolve("/a/b/c/").! == "/a/b/c");
+    @assert(path.resolve("/a/b", "c")! == "/a/b/c");
+    @assert(path.resolve("/a/b", "c", "//d", "e///")! == "/d/e");
+    @assert(path.resolve("/a/b/c", "..", "../")! == "/a");
+    @assert(path.resolve("/", "..", "..")! == "/");
+    @assert(path.resolve("/a/b/c/")! == "/a/b/c");
 
-    @assert(path.resolve("/var/lib", "../", "file/").! == "/var/file");
-    @assert(path.resolve("/var/lib", "/../", "file/").! == "/file");
-    @assert(path.resolve("/some/dir", ".", "/absolute/").! == "/absolute");
+    @assert(path.resolve("/var/lib", "../", "file/")! == "/var/file");
+    @assert(path.resolve("/var/lib", "/../", "file/")! == "/file");
+    @assert(path.resolve("/some/dir", ".", "/absolute/")! == "/absolute");
     @assert(
-        path.resolve("/foo/tmp.3/", "../tmp.3/cycles/root.js").!
+        path.resolve("/foo/tmp.3/", "../tmp.3/cycles/root.js")!
             == "/foo/tmp.3/cycles/root.js"
     );
 }
@@ -121,35 +121,35 @@ test "std.fs.path.extension()" {
 }
 
 test "std.fs.path.relative()" {
-    @assert(path.relative("/var/lib", "/var").! == "..");
-    @assert(path.relative("/var/lib", "/bin").! == "../../bin");
-    @assert(path.relative("/var/lib", "/var/lib").! == "");
-    @assert(path.relative("/var/lib", "/var/apache").! == "../apache");
-    @assert(path.relative("/var/", "/var/lib").! == "lib");
-    @assert(path.relative("/", "/var/lib").! == "var/lib");
+    @assert(path.relative("/var/lib", "/var")! == "..");
+    @assert(path.relative("/var/lib", "/bin")! == "../../bin");
+    @assert(path.relative("/var/lib", "/var/lib")! == "");
+    @assert(path.relative("/var/lib", "/var/apache")! == "../apache");
+    @assert(path.relative("/var/", "/var/lib")! == "lib");
+    @assert(path.relative("/", "/var/lib")! == "var/lib");
     @assert(
-        path.relative("/foo/test", "/foo/test/bar/package.json").! == "bar/package.json"
+        path.relative("/foo/test", "/foo/test/bar/package.json")! == "bar/package.json"
     );
-    @assert(path.relative("/Users/a/web/b/test/mails", "/Users/a/web/b").! == "../..");
-    @assert(path.relative("/foo/bar/baz-quux", "/foo/bar/baz").! == "../baz");
-    @assert(path.relative("/foo/bar/baz", "/foo/bar/baz-quux").! == "../baz-quux");
-    @assert(path.relative("/baz-quux", "/baz").! == "../baz");
-    @assert(path.relative("/baz", "/baz-quux").! == "../baz-quux");
+    @assert(path.relative("/Users/a/web/b/test/mails", "/Users/a/web/b")! == "../..");
+    @assert(path.relative("/foo/bar/baz-quux", "/foo/bar/baz")! == "../baz");
+    @assert(path.relative("/foo/bar/baz", "/foo/bar/baz-quux")! == "../baz-quux");
+    @assert(path.relative("/baz-quux", "/baz")! == "../baz");
+    @assert(path.relative("/baz", "/baz-quux")! == "../baz-quux");
 }
 
 test "std.fs.path.join()" {
-    @assert(path.join().! == "");
-    @assert(path.join("/a/b", "c").! == "/a/b/c");
-    @assert(path.join("/a/b/", "c").! == "/a/b/c");
-    @assert(path.join("/", "a", "b/", "c").! == "/a/b/c");
-    @assert(path.join( "/a/", "b/", "c").! == "/a/b/c");
+    @assert(path.join()! == "");
+    @assert(path.join("/a/b", "c")! == "/a/b/c");
+    @assert(path.join("/a/b/", "c")! == "/a/b/c");
+    @assert(path.join("/", "a", "b/", "c")! == "/a/b/c");
+    @assert(path.join( "/a/", "b/", "c")! == "/a/b/c");
     @assert(
-        path.join("/home/stunxfs/dev/rivet/lib/std/src/fs/", "mod.ri").! ==
+        path.join("/home/stunxfs/dev/rivet/lib/std/src/fs/", "mod.ri")! ==
         "/home/stunxfs/dev/rivet/lib/std/src/fs/mod.ri"
     );
-    @assert(path.join("a", "/c").! == "a/c");
-    @assert(path.join("a/", "/c").! == "a/c");
-    @assert(path.join("", "/", "a", "", "b/", "c", "").! == "/a/b/c");
-    @assert(path.join("/a/", "", "", "b/", "c").! == "/a/b/c");
-    @assert(path.join("", "").! == "");
+    @assert(path.join("a", "/c")! == "a/c");
+    @assert(path.join("a/", "/c")! == "a/c");
+    @assert(path.join("", "/", "a", "", "b/", "c", "")! == "/a/b/c");
+    @assert(path.join("/a/", "", "", "b/", "c")! == "/a/b/c");
+    @assert(path.join("", "")! == "");
 }

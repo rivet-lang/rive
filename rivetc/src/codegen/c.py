@@ -35,12 +35,17 @@ class CGen:
         self.out = utils.Builder()
 
     def gen(self, out_rir):
+        self.comp.vlog("cgen: generating structs...")
         self.gen_structs(out_rir.structs)
+        self.comp.vlog("cgen: generating externs...")
         self.gen_externs(out_rir.externs)
+        self.comp.vlog("cgen: generating globals...")
         self.gen_globals(out_rir.globals)
+        self.comp.vlog("cgen: generating decls...")
         self.gen_decls(out_rir.decls)
 
-        c_file = f"{self.comp.prefs.mod_name}.ri.c"
+        self.comp.vlog("cgen: generating C file...")
+        c_file = f"module.{self.comp.prefs.mod_name}.c"
         with open(c_file, "w+") as out:
             out.write(c_headers.HEADER)
             if self.comp.prefs.build_mode != prefs.BuildMode.Release:
@@ -51,6 +56,7 @@ class CGen:
             out.write(str(self.globals).strip() + "\n\n")
             out.write(str(self.out).strip())
 
+        self.comp.vlog("cgen: generating C compiler arguments...")
         args = [
             self.comp.prefs.target_backend_compiler, "-o",
             self.comp.prefs.mod_output, "-Werror", "-fno-builtin",
@@ -74,6 +80,7 @@ class CGen:
             args.append(f"-l{l}")
         self.comp.vlog(f"C compiler arguments: {' '.join(args)}")
 
+        self.comp.vlog("cgen: compiling C file...")
         res = utils.execute(*args)
         if res.exit_code == 0:
             if not self.comp.prefs.keep_c:
@@ -129,25 +136,28 @@ class CGen:
             if isinstance(decl, ir.FnDecl):
                 self.gen_fn_decl(decl)
             else:
-                self.globals.writeln(
-                    f"static {decl.structure} {decl.name}[{decl.implement_nr}] = {{"
-                )
-                for i, ft in enumerate(decl.funcs):
-                    self.globals.writeln('  {')
-                    items = ft.items()
-                    for i2, (f, impl) in enumerate(items):
-                        self.globals.write(f'    .{f} = (void*){impl}')
-                        if i2 < len(items) - 1:
-                            self.globals.writeln(", ")
-                        else:
-                            self.globals.writeln()
-                    self.globals.write("  }")
-                    if i < len(decl.funcs) - 1:
-                        self.globals.writeln(",")
-                    else:
-                        self.globals.writeln()
-                self.globals.writeln("};")
+                self.gen_vtable(decl)
             self.writeln()
+
+    def gen_vtable(self, decl):
+        self.globals.writeln(
+            f"static {decl.structure} {decl.name}[{decl.implement_nr}] = {{"
+        )
+        for i, ft in enumerate(decl.funcs):
+            self.globals.writeln('  {')
+            items = ft.items()
+            for i2, (f, impl) in enumerate(items):
+                self.globals.write(f'    .{f} = (void*){impl}')
+                if i2 < len(items) - 1:
+                    self.globals.writeln(", ")
+                else:
+                    self.globals.writeln()
+            self.globals.write("  }")
+            if i < len(decl.funcs) - 1:
+                self.globals.writeln(",")
+            else:
+                self.globals.writeln()
+        self.globals.writeln("};")
 
     def gen_fn_decl(self, decl):
         if decl.is_never:

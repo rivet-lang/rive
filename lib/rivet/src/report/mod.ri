@@ -100,9 +100,6 @@ public struct ReportBuilder {
         } else {
             formatted_single_line(self.pos);
         }
-        if !self.annotations.is_empty() {
-            console.eprintln(utils.bold(utils.blue("      | ")));
-        }
         for annotation in self.annotations {
             console.eprintln("{} {}", utils.bold(
                 "      {} {}".fmt(
@@ -112,7 +109,7 @@ public struct ReportBuilder {
                         "help:"
                     }
                 )
-            ), annotation.msg);
+            ), annotation.msg.wrap(80, "\n        "));
         }
     }
 }
@@ -131,7 +128,7 @@ func formatted_single_line(pos: token.Pos) {
         if pos.len > 1 {
             sb.write_string(
                 utils.bold(
-                    utils.blue("-".repeat(line[start_column..end_column].runes_count() - 1))
+                    utils.blue("~".repeat(line[start_column..end_column].runes_count() - 1))
                 )
             );
         }
@@ -152,7 +149,7 @@ func formatted_multi_line(pos: token.Pos) {
                 mut sb := strings.Builder.new(line.len);
                 sb.write_string(utils.bold(utils.blue("      | ")));
                 write_spaces(sb, start_column, line);
-                sb.write_string(utils.bold(utils.blue("/-- from here")));
+                sb.write_string(utils.bold(utils.blue("/~~ from here")));
                 console.eprintln(sb.to_string());
             }
             if line_nr < max or line_nr >= lines.len - max {
@@ -172,7 +169,7 @@ func formatted_multi_line(pos: token.Pos) {
                 mut sb := strings.Builder.new(line.len);
                 sb.write_string(utils.bold(utils.blue("      | ")));
                 write_spaces(sb, start_column, line);
-                sb.write_string(utils.bold(utils.blue("^-- to here")));
+                sb.write_string(utils.bold(utils.blue("^~~ to here")));
                 console.eprintln(sb.to_string());
             }
         }

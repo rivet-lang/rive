@@ -651,11 +651,11 @@ class Checker:
                             f"expected type `{ltyp.typ}`, found `{rtyp}`",
                             expr.right.pos
                         )
-                        report.note("in right operand for operator `orelse`")
+                        report.note("in right operand for operator `??`")
                     expr.typ = ltyp.typ
                 else:
                     report.error(
-                        "expected option value in left operand for operator `orelse`",
+                        "expected option value in left operand for operator `??`",
                         expr.pos
                     )
                     expr.typ = ltyp
@@ -861,7 +861,7 @@ class Checker:
             expr_left = expr.left
             if isinstance(expr_left, ast.ParExpr) and isinstance(
                 expr_left.expr, ast.SelectorExpr
-            ) and not expr_left.expr.is_symbol_access:
+            ) and not expr_left.expr.is_path:
                 expr_left = expr_left.expr
                 inside_parens = True
 
@@ -895,10 +895,11 @@ class Checker:
                             expr_left.pos
                         )
             elif isinstance(expr_left, ast.SelectorExpr):
-                if expr_left.is_symbol_access:
+                if expr_left.is_path:
                     if isinstance(expr_left.field_sym,
                                   sym.Type) and expr_left.field_sym.kind in (
-                                      TypeKind.Trait, TypeKind.Struct, TypeKind.Enum
+                                      TypeKind.Trait, TypeKind.Struct,
+                                      TypeKind.Enum
                                   ):
                         self.check_ctor(expr_left.field_sym, expr)
                     elif isinstance(expr_left.field_sym, sym.Fn):
@@ -922,7 +923,7 @@ class Checker:
                                         expr_left.field_pos
                                     )
                                     report.help(
-                                        "use the option-check syntax: `foo.?.method()`"
+                                        "use the option-check syntax: `foo?.method()`"
                                     )
                                     report.help(
                                         "or use `??`: `(foo ?? 5).method()`"
@@ -1010,7 +1011,7 @@ class Checker:
                     expr.pos
                 )
                 report.note(
-                    "should handle this with `catch` or propagate with `.!`"
+                    "should handle this with `catch` or propagate with `!`"
                 )
             return expr.typ
         elif isinstance(expr, ast.BuiltinCallExpr):
@@ -1118,7 +1119,7 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.SelectorExpr):
             expr.typ = self.comp.void_t
-            if expr.is_symbol_access:
+            if expr.is_path:
                 if isinstance(expr.field_sym, sym.Fn):
                     if expr.field_sym.is_method:
                         report.error(
@@ -1242,7 +1243,7 @@ class Checker:
                     "fields of an option value cannot be accessed directly",
                     expr.pos
                 )
-                report.help("handle it with `.?` or `orelse`")
+                report.help("handle it with `?` or `??`")
             return expr.typ
         elif isinstance(expr, ast.ReturnExpr):
             if self.inside_test and expr.has_expr:
@@ -1333,14 +1334,17 @@ class Checker:
                         self.check_types(branch_t, expr.expected_typ)
                     except utils.CompilerError as e:
                         report.error(e.args[0], b.expr.pos)
+                b.typ = branch_t
             return expr.typ
         elif isinstance(expr, ast.SwitchExpr):
             expr.typ = self.comp.void_t
             expr_typ = self.check_expr(expr.expr)
             expr_sym = expr_typ.symbol()
-            if expr.is_typeswitch and expr_sym.kind != TypeKind.Enum:
+            if expr.is_typeswitch and expr_sym.kind not in (
+                TypeKind.Enum, TypeKind.Trait
+            ):
                 report.error("invalid value for typeswitch", expr.expr.pos)
-                report.note(f"expected enum value, found `{expr_typ}`")
+                report.note(f"expected enum or trait value, found `{expr_typ}`")
             elif expr_sym.kind == TypeKind.Enum:
                 if expr_sym.info.is_boxed_enum and not expr.is_typeswitch:
                     report.error(
@@ -1418,6 +1422,7 @@ class Checker:
                         self.check_types(branch_t, expr.expected_typ)
                     except utils.CompilerError as e:
                         report.error(e.args[0], b.expr.pos)
+                b.typ = branch_t
             return expr.typ
         elif isinstance(expr, ast.BranchExpr):
             expr.typ = self.comp.never_t
@@ -1437,7 +1442,9 @@ class Checker:
             expr.typ = type.Type(info)
         if info.kind == TypeKind.Enum:
             if isinstance(expr.left, ast.SelectorExpr):
-                if v_ := expr.left.left_sym.info.get_variant(expr.left.field_name):
+                if v_ := expr.left.left_sym.info.get_variant(
+                    expr.left.field_name
+                ):
                     v = v_
                 else:
                     assert False
@@ -1460,11 +1467,9 @@ class Checker:
                         )
                         self.expected_type = old_expected_type
                     except utils.CompilerError as e:
-                        report.error(e.args[0], expr.value_arg.pos)
+                        report.error(e.args[0], expr.args[0].expr.pos)
                 else:
-                    report.error(
-                        f"`{expr.left}` not expects a value", expr.pos
-                    )
+                    report.error(f"`{expr.left}` not expects a value", expr.pos)
             elif v.has_typ and not (v.has_fields or expr.left.from_is_cmp):
                 report.error(f"`{expr.left}` expects a value", expr.pos)
         elif info.kind == TypeKind.Trait:
@@ -1765,7 +1770,11 @@ class Checker:
         elif isinstance(expected, type.Ptr) and isinstance(got, type.Ptr):
             return self.check_pointer(expected, got)
 
-        if self.comp.is_number(expected) and self.comp.is_number(got):
+        if expected == self.comp.rune_t and got == self.comp.comptime_int_t:
+            return True
+        elif expected == self.comp.comptime_int_t and got == self.comp.rune_t:
+            return True
+        elif self.comp.is_number(expected) and self.comp.is_number(got):
             if self.comp.is_comptime_number(
                 expected
             ) or self.comp.is_comptime_number(got):
@@ -1885,7 +1894,7 @@ class Checker:
                 report.help("consider making `self` as mutable: `mut self`")
             expr.obj.is_changed = True
         elif isinstance(expr, ast.SelectorExpr):
-            if expr.is_symbol_access:
+            if expr.is_path:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
                 return
             elif isinstance(expr.left, ast.SelfExpr):

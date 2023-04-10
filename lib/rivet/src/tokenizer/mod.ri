@@ -2,6 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import std/strconv;
 import std/strings;
 import std/process;
 
@@ -24,7 +25,7 @@ public struct Tokenizer {
     mut pos: usize;
     mut line: usize;
     mut last_nl_pos: usize;
-    mut all_tokens: []token.Token;
+    public mut all_tokens: []token.Token;
     mut tidx: usize;
     mut is_started: bool;
     mut is_cr_lf: bool;
@@ -91,7 +92,16 @@ public struct Tokenizer {
 
     [inline]
     func new_eof_token(self) token.Token {
-        return token.Token(kind: .EndOfFile, pos: self.current_pos());
+        return token.Token(
+            kind: .EndOfFile,
+            pos: token.Pos(
+                file: self.file,
+                line: self.line - 1,
+                col: self.current_column() - 1,
+                pos: self.pos,
+                len: 1
+            )
+        );
     }
 
     func end_of_file(mut self) token.Token {
@@ -154,8 +164,7 @@ public struct Tokenizer {
     func skip_whitespace(mut self) {
         while self.pos < self.text.len : self.pos += 1 {
             c := self.current_char();
-            if c == 9 {
-                // tabs are most common
+            if c == 8 {
                 self.pos += 1;
                 continue;
             }
@@ -256,4 +265,85 @@ public struct Tokenizer {
     func warn_builder(self, msg: string, pos: token.Pos = self.current_pos()) report.ReportBuilder {
         return report.warn_builder(msg, pos);
     }
+}
+
+// NOTE: this function doesn't do any decoding... it just replaces '\xc0' with
+// the byte 0xc0
+func decode_h_escape_single(str: string, idx: usize) (usize, string) {
+    end_idx := idx + 4; // "\xXX".len == 4
+    return (
+        end_idx,
+        @cast(uint8, strconv.parse_uint(str[idx + 2..end_idx], 16, 8) catch 0).to_string()
+    );
+}
+
+// only handle single-byte inline escapes like '\xc0'
+func decode_h_escapes(s: string, start: usize, escapes_pos: []usize) string {
+    if escapes_pos.is_empty() {
+        return s;
+    }
+    mut ss := @vec(string, escapes_pos.len * 2 + 1);
+    ss.push(s[..escapes_pos[escapes_pos.len - 1] - start]);
+    for i, pos in escapes_pos {
+        idx := pos - start;
+        (end_idx, segment) := decode_h_escape_single(s, idx);
+        ss.push(segment);
+        ss.push(if i + 1 < escapes_pos.len {
+            s[end_idx..escapes_pos[i + 1] - start]
+        } else {
+            s[end_idx..]
+        });
+    }
+    return utils.join(ss, "");
+}
+
+// handle single-byte inline octal escapes like '\###'
+// NOTE: this function doesn't do any decoding... it just replaces '\141' with
+// the byte 0o141
+func decode_o_escapes(s: string, start: usize, escapes_pos: []usize) string {
+    if escapes_pos.is_empty() {
+        return s;
+    }
+    mut ss := @vec(string, escapes_pos.len);
+    // everything before the first escape code position
+    ss.push(s[..escapes_pos[escapes_pos.len - 1] - start]);
+    for i, pos in escapes_pos {
+        idx := pos - start;
+        end_idx := idx + 4; // "\XXX".len == 4
+        ss.push(
+            @cast(uint8, strconv.parse_uint(s[idx + 1..end_idx], 8, 8) catch 0).to_string()
+        );
+        ss.push(if i + 1 < escapes_pos.len {
+            s[end_idx..escapes_pos[i + 1] - start]
+        } else {
+            s[end_idx..]
+        });
+    }
+    return utils.join(ss, "");
+}
+
+func decode_u_escape_single(str: string, idx: usize) (usize, string) {
+    end_idx := idx + 6; // "\uXXXX".len == 6
+    escaped_code_point := strconv.parse_uint(str[idx + 2..end_idx], 16, 32) catch 0;
+    return (end_idx, @cast(uint32, escaped_code_point).to_string());
+}
+
+// decode the flagged unicode escape sequences into their utf-8 bytes
+func decode_u_escapes(str: string, start: usize, escapes_pos: []usize) string {
+    if escapes_pos.is_empty() {
+        return str;
+    }
+    mut ss := @vec(string, escapes_pos.len * 2 + 1);
+    ss.push(str[..escapes_pos[escapes_pos.len - 1] - start]);
+    for i, pos in escapes_pos {
+        idx := pos - start;
+        (end_idx, segment) := decode_u_escape_single(str, idx);
+        ss.push(segment);
+        ss.push(if i + 1 < escapes_pos.len {
+            str[end_idx..escapes_pos[i + 1] - start]
+        } else {
+            str[end_idx..]
+        });
+    }
+    return utils.join(ss, "");
 }

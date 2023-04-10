@@ -1,0 +1,293 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../prefs;
+import ../token;
+import ../report;
+
+[boxed]
+public struct Register {
+    mut table: ast.Table;
+    mut prefs: prefs.Prefs;
+
+    mut core_is_set: bool;
+    mut is_core_mod: bool;
+
+    mut abi: ast.ABI;
+    mut sym: ast.Sym;
+    mut source_file: ast.SourceFile;
+
+    public func walk_files(mut self, source_files: []ast.SourceFile) {
+        for sf in source_files {
+            self.is_core_mod = sf.mod.is_core();
+            if !self.core_is_set and self.is_core_mod {
+                self.table.core_mod = sf.mod;
+                self.core_is_set = true;
+            }
+            self.sym = sf.mod;
+            self.source_file = sf;
+            self.walk_decls(self.source_file.decls);
+        }
+        self.table.error_t = .Basic(self.table.error_sym);
+    }
+
+    func walk_decls(mut self, decls: []mut ast.Decl) {
+        for decl in decls {
+            old_abi := self.abi;
+            old_sym := self.sym;
+            self.sym.scope.owner = self.sym;
+            switch decl is {
+                .Import as import_decl => {
+                    if import_decl.import_list.is_empty() {
+                        if import_decl.is_public {
+                            self.sym.scope.add(ast.SymRef(
+                                is_public: import_decl.is_public,
+                                name: import_decl.alias_name,
+                                ref: import_decl.info.mod
+                            )) catch |err| report.error(err.to_string(), import_decl.pos);
+                        } else {
+                            self.source_file.imported_symbols.add(
+                                import_decl.alias_name, import_decl.info.mod
+                            );
+                        }
+                    } else if import_decl.glob {
+                        for sym in import_decl.info.mod.scope.syms {
+                            if sym.is_public {
+                                continue;
+                            }
+                            self.check_imported_symbol(sym, import_decl.pos);
+                            self.source_file.imported_symbols.add(sym.name, sym);
+                        }
+                    }
+                    for import_info in import_decl.import_list {
+                        if import_info.name == "self" {
+                            self.source_file.imported_symbols.add(
+                                import_decl.alias_name, import_decl.info.mod
+                            );
+                        } else if sym := import_decl.info.mod.scope.find(import_info.name) {
+                            self.check_vis(sym, import_info.pos);
+                            self.check_imported_symbol(sym, import_info.pos);
+                            self.source_file.imported_symbols.add(
+                                import_info.alias_name, sym
+                            );
+                        } else {
+                            report.error(
+                                "could not find `{}` in module `{}`".fmt(
+                                    import_info.name, import_decl.info.mod.name
+                                ), import_info.pos
+                            );
+                        }
+                    }
+                },
+                .Extern as extern_decl => {
+                    self.abi = extern_decl.abi;
+                    self.walk_decls(extern_decl.decls);
+                },
+                .Alias as alias_decl => alias_decl.sym = self.add_sym(
+                    if alias_decl.is_typealias {
+                        ast.TypeSym(
+                            is_public: alias_decl.is_public,
+                            name: alias_decl.name,
+                            info: .Alias(alias_decl.parent_type)
+                        )
+                    } else {
+                        // updated later
+                        ast.SymRef(
+                            is_public: alias_decl.is_public,
+                            name: alias_decl.name,
+                            ref_expr: alias_decl.parent
+                        )
+                    }, alias_decl.pos
+                ),
+                .Trait as trait_decl => {
+                    trait_decl.sym = self.add_sym(
+                        ast.TypeSym(
+                            is_public: trait_decl.is_public,
+                            name: trait_decl.name,
+                            info: .Trait()
+                        ), trait_decl.pos
+                    );
+                    if self.is_core_mod and trait_decl.name == "Error" and !self.table.error_sym_is_set {
+                        self.table.error_sym = @cast(ast.TypeSym, trait_decl.sym);
+                        self.table.error_sym_is_set = true;
+                    }
+                    self.sym = trait_decl.sym;
+                    self.walk_decls(trait_decl.decls);
+                },
+                .Struct as struct_decl => {
+                    struct_decl.sym = if self.is_core_mod and struct_decl.name == "string" {
+                        @cast(ast.Type.Basic, self.table.string_t).sym
+                    } else {
+                        self.add_sym(ast.TypeSym(
+                            is_public: struct_decl.is_public,
+                            name: struct_decl.name,
+                            info: .Struct(
+                                is_opaque: struct_decl.is_opaque,
+                                is_boxed: struct_decl.annotations.has("boxed")
+                            )
+                        ), struct_decl.pos)
+                    };
+                    if self.is_core_mod and struct_decl.name == "Vector" {
+                        self.table.vector_sym = @cast(ast.TypeSym, struct_decl.sym);
+                    }
+                    self.sym = struct_decl.sym;
+                    self.walk_decls(struct_decl.decls);
+                },
+                .Enum as enum_decl => {
+                    info := ast.TypeInfo.Enum(
+                        underlying_type: enum_decl.underlying_type,
+                        is_boxed: enum_decl.is_boxed
+                    );
+                    enum_decl.sym = self.add_sym(
+                        ast.TypeSym(
+                            is_public: enum_decl.is_public,
+                            name: enum_decl.name,
+                            info: info
+                        ), enum_decl.pos
+                    );
+                    mut enum_info := @cast(ast.TypeInfo.Enum, info);
+                    for variant in enum_decl.variants {
+                        if enum_info.has_variant(variant.name) {
+                            report.error("enum `{}` has duplicate variant `{}`".fmt(
+                                enum_decl.name, variant.name
+                            ), variant.pos);
+                            continue;
+                        }
+                        fields := ast.filter_field_decl(variant.decls);
+                        if !variant.decls.is_empty() {
+                            variant_sym := ast.TypeSym(
+                                is_public: enum_decl.is_public,
+                                name: variant.name,
+                                info: .Struct(false, true, true)
+                            );
+                            enum_decl.sym.scope.add(variant_sym) catch |err| {
+                                report.error(err.to_string(), variant.pos)
+                            };
+                            old_v_sym := self.sym;
+                            self.sym = variant_sym;
+                            self.walk_decls(variant.decls);
+                            self.sym = old_v_sym;
+                            variant.type = .Basic(variant_sym);
+                        }
+                        enum_info.add_variant(
+                            ast.EnumVariant(
+                                name: variant.name,
+                                has_type: variant.has_type,
+                                type: variant.type,
+                                has_fields: !fields.is_empty()
+                            )
+                        );
+                    }
+                    @cast(ast.TypeSym, enum_decl.sym).info = info;
+                    self.sym = enum_decl.sym;
+                    self.walk_decls(enum_decl.decls);
+                },
+                .Field as field_decl => {
+                    type_sym := @cast(ast.TypeSym, self.sym);
+                    if type_sym.has_field(field_decl.name) {
+                        report.error(
+                            "{} `{}` has duplicate field `{}`".fmt(
+                                type_sym.type_of(), type_sym.name, field_decl.name
+                            ), field_decl.pos
+                        );
+                        continue;
+                    }
+                    type_sym.fields.push(ast.Field(
+                        name: field_decl.name,
+                        is_mut: field_decl.is_mut,
+                        is_public: field_decl.is_public,
+                        type: field_decl.type,
+                        has_def_expr: field_decl.has_def_expr,
+                        def_expr: field_decl.def_expr
+                    ));
+                },
+                .Const as const_decl => const_decl.sym = self.add_sym(ast.Const(
+                    abi: self.abi,
+                    is_public: const_decl.is_public,
+                    name: const_decl.name,
+                    expr: const_decl.expr,
+                    type: const_decl.type
+                ), const_decl.pos),
+                .Var as var_decl => {
+                    for left in var_decl.lefts {
+                        left.sym = ast.Var(
+                            is_public: var_decl.is_public,
+                            is_mut: left.is_mut,
+                            is_extern: var_decl.is_extern,
+                            abi: self.abi,
+                            name: left.name
+                        );
+                        self.source_file.mod.scope.add(left.sym) catch |err| {
+                            report.error(err.to_string(), left.pos)
+                        };
+                    }
+                },
+                .Func as func_decl => {
+                    func_decl.sym = self.add_sym(ast.Func(
+                        abi: self.abi,
+                        is_public: func_decl.is_public,
+                        is_extern: func_decl.is_extern,
+                        is_unsafe: func_decl.is_unsafe,
+                        is_method: func_decl.is_method,
+                        is_variadic: func_decl.is_variadic,
+                        name: func_decl.name,
+                        args: func_decl.args,
+                        has_named_args: func_decl.has_named_args,
+                        ret_type: func_decl.ret_type,
+                        has_body: func_decl.has_body,
+                        self_is_mut: func_decl.self_is_mut,
+                        self_is_ref: func_decl.self_is_ref
+                    ), func_decl.pos);
+                },
+                .Destructor as dtor_decl => {
+                    dtor_decl.sym = self.add_sym(ast.Func(
+                        abi: self.abi,
+                        is_unsafe: true,
+                        is_method: true,
+                        name: "_dtor_",
+                        args: [
+                            ast.Arg(
+                                name: "self",
+                                is_mut: dtor_decl.self_is_mut,
+                                type: .Basic(@cast(ast.TypeSym, self.sym)),
+                                pos: dtor_decl.pos
+                            )
+                        ],
+                        ret_type: .Void(),
+                        has_body: true,
+                        self_is_mut: dtor_decl.self_is_mut
+                    ), dtor_decl.pos);
+                }
+            }
+            self.abi = old_abi;
+            self.sym = old_sym;
+        }
+    }
+
+    func add_sym(mut self, sym: ast.Sym, pos: token.Pos) ast.Sym {
+        self.sym.scope.add(sym) catch |err| {
+            report.error(err.to_string(), pos);
+        };
+        return sym;
+    }
+
+    func check_vis(self, sym: ast.Sym, pos: token.Pos) {
+        if !sym.is_public and !self.sym.has_access_to(sym) {
+            report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
+        }
+    }
+
+    func check_imported_symbol(self, sym: ast.Sym, pos: token.Pos) {
+        if self.source_file.imported_symbols.exists(sym.name) {
+            report.error("{} `{}` is already imported".fmt(sym.type_of(), sym.name), pos);
+        } else if self.source_file.mod.scope.exists(sym.name) {
+            mut err := report.error_builder(
+                "another symbol with the name `{}` already exists".fmt(sym.name), pos
+            );
+            err.add_help("you can use `as` to change the name of the import");
+            err.emit();
+        }
+    }
+}

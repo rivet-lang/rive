@@ -140,7 +140,9 @@ class Parser:
         return annotations
 
     def is_public(self):
-        return self.inside_trait or self.inside_enum_variant_with_fields or self.accept(Kind.KwPublic)
+        return self.inside_trait or self.inside_enum_variant_with_fields or self.accept(
+            Kind.KwPublic
+        )
 
     def parse_abi(self):
         self.expect(Kind.Lparen)
@@ -227,9 +229,8 @@ class Parser:
                 )
             else:
                 report.error("invalid external declaration", pos)
-            decl = ast.ExternDecl(annotations, abi, protos, pos)
             self.inside_extern = False
-            return decl
+            return ast.ExternDecl(annotations, abi, protos, pos)
         elif self.accept(Kind.KwConst):
             pos = self.tok.pos
             name = self.parse_name()
@@ -320,17 +321,18 @@ class Parser:
                         if not self.accept(Kind.Comma):
                             break
                 self.expect(Kind.Lbrace)
-                if self.tok.kind != Kind.Rbrace:
-                    while self.tok.kind != Kind.Rbrace:
-                        decls.append(self.parse_decl())
+                while self.tok.kind != Kind.Rbrace:
+                    decls.append(self.parse_decl())
                 self.expect(Kind.Rbrace)
             self.inside_struct = old_inside_struct
             return ast.StructDecl(
                 doc_comment, annotations, is_public, name, bases, decls,
                 is_opaque, pos
             )
-        elif (self.inside_struct or
-              self.inside_trait or self.inside_enum_variant_with_fields) and self.tok.kind in (Kind.KwMut, Kind.Name):
+        elif (
+            self.inside_struct or self.inside_trait
+            or self.inside_enum_variant_with_fields
+        ) and self.tok.kind in (Kind.KwMut, Kind.Name):
             return self.parse_field_decl(annotations, doc_comment, is_public)
         elif self.accept(Kind.KwEnum):
             pos = self.tok.pos
@@ -360,9 +362,7 @@ class Parser:
                     old_inside_enum_variant_with_fields = self.inside_enum_variant_with_fields
                     self.inside_enum_variant_with_fields = True
                     while not self.accept(Kind.Rbrace):
-                        variant_decls.append(
-                            self.parse_decl()
-                        )
+                        variant_decls.append(self.parse_decl())
                     self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields
                 elif self.accept(Kind.Colon):
                     has_typ = True
@@ -371,7 +371,9 @@ class Parser:
                 elif self.accept(Kind.Assign):
                     variant = self.parse_expr()
                 variants.append(
-                    ast.EnumVariant(v_name, typ, has_typ, variant, variant_decls)
+                    ast.EnumVariant(
+                        v_name, typ, has_typ, variant, variant_decls
+                    )
                 )
                 if not self.accept(Kind.Comma):
                     break
@@ -555,9 +557,12 @@ class Parser:
     def decl_operator_is_used(self):
         line_nr = self.tok.pos.line
         i = 1
+        assign_was_used = False
         while i < len(self.lexer.all_tokens):
             tok = self.peek_token(i)
-            if tok.kind == Kind.DeclAssign:
+            if tok.kind == Kind.Assign:
+                assign_was_used = True
+            elif tok.kind == Kind.DeclAssign and not assign_was_used:
                 return True
             elif tok.kind == Kind.Semicolon:
                 break
@@ -733,8 +738,7 @@ class Parser:
             if self.tok.kind in [Kind.Lt, Kind.Gt]:
                 op = Kind.Lshift if self.tok.kind == Kind.Lt else Kind.Rshift
                 if self.tok.pos.pos + 1 == self.peek_tok.pos.pos:
-                    self.next()
-                    self.next()
+                    self.advance(2)
                     right = self.parse_additive_expr()
                     left = ast.BinaryExpr(left, op, right, left.pos)
                 else:
@@ -774,7 +778,7 @@ class Parser:
 
     def parse_unary_expr(self):
         expr = self.empty_expr()
-        if (self.tok.kind in [Kind.Amp, Kind.Bang, Kind.BitNot, Kind.Minus]):
+        if self.tok.kind in [Kind.Amp, Kind.Bang, Kind.BitNot, Kind.Minus]:
             op = self.tok.kind
             pos = self.tok.pos
             self.next()
@@ -799,14 +803,9 @@ class Parser:
                 self.expect(Kind.Lparen)
                 args = []
                 vec_is_mut = False
-                if name == "vec":
+                if name in ("vec", "cast", "size_of", "align_of"):
                     pos = self.tok.pos
-                    vec_is_mut = self.accept(Kind.KwMut)
-                    args.append(ast.TypeNode(self.parse_type(), pos))
-                    if self.tok.kind != Kind.Rparen:
-                        self.expect(Kind.Comma)
-                elif name in ("cast", "size_of", "align_of"):
-                    pos = self.tok.pos
+                    vec_is_mut = name == "vec" and self.accept(Kind.KwMut)
                     args.append(ast.TypeNode(self.parse_type(), pos))
                     if self.tok.kind != Kind.Rparen:
                         self.expect(Kind.Comma)
@@ -847,25 +846,22 @@ class Parser:
         elif self.tok.kind == Kind.Lparen:
             pos = self.tok.pos
             self.next()
-            if self.accept(Kind.Rparen):
-                expr = self.empty_expr()
+            e = self.parse_expr()
+            if self.accept(Kind.Comma): # tuple
+                exprs = [e]
+                while True:
+                    exprs.append(self.parse_expr())
+                    if not self.accept(Kind.Comma):
+                        break
+                self.expect(Kind.Rparen)
+                if len(exprs) > 8:
+                    report.error(
+                        "tuples can have a maximum of 8 expressions", pos
+                    )
+                expr = ast.TupleLiteral(exprs, pos)
             else:
-                e = self.parse_expr()
-                if self.accept(Kind.Comma): # tuple
-                    exprs = [e]
-                    while True:
-                        exprs.append(self.parse_expr())
-                        if not self.accept(Kind.Comma):
-                            break
-                    self.expect(Kind.Rparen)
-                    if len(exprs) > 8:
-                        report.error(
-                            "tuples can have a maximum of 8 expressions", pos
-                        )
-                    expr = ast.TupleLiteral(exprs, pos)
-                else:
-                    self.expect(Kind.Rparen)
-                    expr = ast.ParExpr(e, e.pos)
+                self.expect(Kind.Rparen)
+                expr = ast.ParExpr(e, e.pos)
         elif self.tok.kind in (Kind.KwUnsafe, Kind.Lbrace):
             expr = self.parse_block_expr()
         elif self.tok.kind == Kind.Lbracket:
@@ -953,10 +949,9 @@ class Parser:
                 varname_pos = self.tok.pos
                 err_expr = None
                 has_err_expr = False
-                if self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Bang:
+                if self.accept(Kind.Bang):
                     # check result value, if error propagate
-                    err_handler_pos = self.peek_tok.pos
-                    self.advance(2)
+                    err_handler_pos = self.prev_tok.pos
                     is_propagate = True
                 elif self.accept(Kind.KwCatch):
                     if self.accept(Kind.Pipe):
@@ -998,20 +993,27 @@ class Parser:
                             )
                 self.expect(Kind.Rbracket)
                 expr = ast.IndexExpr(expr, index, expr.pos)
+            elif (
+                self.prev_tok.pos.line != self.tok.pos.line
+                and self.tok.kind == Kind.Dot
+                and self.peek_tok.kind == Kind.Name
+                and self.peek_tok.lit[0].isupper()
+            ):
+                break
             elif self.accept(Kind.Dot):
                 if self.accept(Kind.Mul):
                     expr = ast.SelectorExpr(
                         expr, "", expr.pos, self.prev_tok.pos,
                         is_indirect = True
                     )
-                elif self.accept(Kind.Question):
-                    # check optional value, if none panic
-                    expr = ast.SelectorExpr(
-                        expr, "", expr.pos, self.prev_tok.pos,
-                        is_option_check = True
-                    )
                 else:
                     expr = self.parse_selector_expr(expr)
+            elif self.accept(Kind.Question):
+                # check option value, panic if is `none`: `x?`
+                expr = ast.SelectorExpr(
+                    expr, "", expr.pos, self.prev_tok.pos,
+                    is_option_check = True
+                )
             else:
                 break
         return expr
@@ -1196,12 +1198,11 @@ class Parser:
     def parse_integer_literal(self):
         pos = self.tok.pos
         lit = self.tok.lit
-        node = ast.FloatLiteral(lit, pos) if lit[:2] not in [
+        self.next()
+        return ast.FloatLiteral(lit, pos) if lit[:2] not in [
             '0x', '0o', '0b'
         ] and utils.index_any(lit,
                               ".eE") >= 0 else ast.IntegerLiteral(lit, pos)
-        self.next()
-        return node
 
     def parse_character_literal(self):
         is_byte = False
@@ -1235,8 +1236,7 @@ class Parser:
         sc = self.scope
         if sc == None:
             sc = sym.Scope(sc)
-        id = ast.Ident(name, pos, sc, is_comptime)
-        return id
+        return ast.Ident(name, pos, sc, is_comptime)
 
     def empty_expr(self):
         return ast.EmptyExpr(self.tok.pos)
@@ -1245,7 +1245,7 @@ class Parser:
     def parse_type(self):
         pos = self.tok.pos
         if self.accept(Kind.Question):
-            # optional
+            # option
             return type.Option(self.parse_type())
         elif self.tok.kind == Kind.KwFunc:
             # function types
@@ -1281,9 +1281,8 @@ class Parser:
             is_mut = self.accept(Kind.KwMut)
             if self.tok.kind == Kind.Mul:
                 report.error("cannot declare pointer to pointer", pos)
-                report.help(f"use an indexable pointer instead (`[*]T`)")
-            typ = self.parse_type()
-            return type.Ptr(typ, is_mut)
+                report.help("use an indexable pointer instead (`[*]T`)")
+            return type.Ptr(self.parse_type(), is_mut)
         elif self.accept(Kind.Lbracket):
             # arrays or vectors
             if self.tok.kind != Kind.Rbracket:
@@ -1299,8 +1298,7 @@ class Parser:
                 return type.Array(self.parse_type(), size, is_mut)
             self.expect(Kind.Rbracket)
             is_mut = self.accept(Kind.KwMut)
-            typ = self.parse_type()
-            return type.Vec(typ, is_mut)
+            return type.Vec(self.parse_type(), is_mut)
         elif self.accept(Kind.Lparen):
             # tuples
             types = []

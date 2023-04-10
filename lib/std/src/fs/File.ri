@@ -91,7 +91,7 @@ public struct File {
                 );
             }
 
-            res := @cast([*]mut uint8, mem.alloc(@cast(usize, allocate) + 1).!);
+            res := @cast([*]mut uint8, mem.alloc(@cast(usize, allocate) + 1)!);
             nelements := libc.fread(res, 1, @cast(usize, allocate), self.f);
 
             if self.eof() and libc.ferror(self.f) != 0 {

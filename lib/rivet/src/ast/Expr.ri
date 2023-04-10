@@ -6,6 +6,10 @@ import rivet/token;
 
 public enum Expr {
     Empty: token.Pos,
+    Paren {
+        expr: Expr;
+        pos: token.Pos;
+    },
     Type: Type,
     Assign {
         left: Expr;
@@ -17,11 +21,17 @@ public enum Expr {
         name: string;
         scope: Scope;
         is_comptime: bool;
+        mut is_obj: bool;
+        mut is_sym: bool;
+        mut found: bool;
+        mut sym: Sym;
         pos: token.Pos;
     },
     SelfTy {
         scope: Scope;
         pos: token.Pos;
+        found: bool;
+        sym: TypeSym;
     },
     SelfLiteral {
         scope: Scope;
@@ -55,9 +65,7 @@ public enum Expr {
         pos: token.Pos;
     },
     EnumLiteral {
-        value: Expr;
-        value_arg: Expr;
-        has_value_arg: bool;
+        value: string;
         is_instance: bool;
         from_is_cmp: bool;
         pos: token.Pos;
@@ -71,8 +79,29 @@ public enum Expr {
         is_arr: bool;
         pos: token.Pos;
     },
-    Paren {
-        expr: Expr;
+    Selector {
+        mut left: Expr;
+        mut left_sym: Sym;
+        field_name: string;
+        field_pos: token.Pos;
+        mut field_sym: Sym;
+        is_indirect: bool;
+        is_option_check: bool;
+        mut is_path: bool;
+        mut found: bool;
+        mut sym: Sym;
+        pos: token.Pos;
+    },
+    Branch {
+        op: token.Kind;
+        pos: token.Pos;
+    },
+    Range {
+        start: Expr;
+        end: Expr;
+        has_start: bool;
+        has_end: bool;
+        is_inclusive: bool;
         pos: token.Pos;
     },
     Index {
@@ -80,9 +109,61 @@ public enum Expr {
         index: Expr;
         pos: token.Pos;
     },
+    Call {
+        left: Expr;
+        args: []CallArg;
+        spread_expr: Expr;
+        has_spread_expr: bool;
+        err_handler: CallErrorHandler;
+        pos: token.Pos;
+
+        func has_named_args(self) bool {
+            for arg in self.args {
+                if arg.is_named {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        func get_named_arg(self, name: string) ?CallArg {
+            for arg in self.args {
+                if arg.is_named and arg.name == name {
+                    return arg;
+                }
+            }
+            return none;
+        }
+
+        /// Returns the number of pure arguments, that is, not named, that
+        /// this call has.
+        func pure_args_count(self) usize {
+            mut l: usize := 0;
+            for arg in self.args {
+                if !arg.is_named {
+                    l += 1;
+                }
+            }
+            if self.has_spread_expr {
+                l += 1;
+            }
+            return l;
+        }
+
+        [inline]
+        func has_err_handler(self) bool {
+            return self.err_handler.has_expr or self.err_handler.is_propagate;
+        }
+    },
+    BuiltinCall {
+        name: string;
+        args: []Expr;
+        vec_is_mut: bool;
+        pos: token.Pos;
+    },
     Unary {
-        op: token.Kind;
         right: Expr;
+        op: token.Kind;
         is_ref_mut: bool;
         pos: token.Pos;
     },
@@ -90,8 +171,44 @@ public enum Expr {
         left: Expr;
         right: Expr;
         op: token.Kind;
-        has_var_name: bool;
-        var_name: string;
+        has_var_obj: bool;
+        var_obj: ObjectData;
+        scope: Scope;
+        pos: token.Pos;
+    },
+    Return {
+        expr: Expr;
+        has_expr: bool;
+        pos: token.Pos;
+    },
+    Block {
+        is_unsafe: bool;
+        stmts: []Stmt;
+        expr: Expr;
+        is_expr: bool;
+        scope: Scope;
+        pos: token.Pos;
+    },
+    If {
+        branches: []IfBranch;
+        has_else: bool;
+        pos: token.Pos;
+    },
+    Switch {
+        expr: Expr;
+        branches: []SwitchBranch;
+        is_typeswitch: bool;
+        scope: Scope;
+        pos: token.Pos;
+    },
+    // Examples:
+    // - if x := optional_or_result_fn() { ... }
+    // - while byte := reader.read() { ... }
+    Guard {
+        vars: []ObjectData;
+        expr: Expr;
+        has_cond: bool;
+        cond: Expr;
         scope: Scope;
         pos: token.Pos;
     };
@@ -100,7 +217,78 @@ public enum Expr {
     public func position(self) token.Pos {
         return switch self is {
             .Empty as empty_pos => empty_pos,
+            .Paren as paren => paren.pos,
+            .Type as type => type.position(),
+            .Assign as assign => assign.pos,
+            .Ident as ident => ident.pos,
+            .SelfTy as self_ty => self_ty.pos,
+            .SelfLiteral as self_lit => self_lit.pos,
+            .NoneLiteral as none_lit => none_lit.pos,
+            .BoolLiteral as bool_lit => bool_lit.pos,
+            .CharLiteral as char_lit => char_lit.pos,
+            .IntegerLiteral as int_lit => int_lit.pos,
+            .FloatLiteral as float_lit => float_lit.pos,
+            .StringLiteral as string_lit => string_lit.pos,
+            .EnumLiteral as enum_lit => enum_lit.pos,
+            .TupleLiteral as tuple_lit => tuple_lit.pos,
+            .VectorLiteral as vec_lit => vec_lit.pos,
+            .Index as index => index.pos,
+            .Selector as selector => selector.pos,
+            .Branch as branch => branch.pos,
+            .Range as range => range.pos,
+            .Call as call => call.pos,
+            .BuiltinCall as builtin_call => builtin_call.pos,
+            .Unary as unary => unary.pos,
+            .Binary as binary => binary.pos,
+            .Return as return_expr => return_expr.pos,
+            .Block as block => block.pos,
+            .If as if_expr => if_expr.pos,
+            .Switch as switch_expr => switch_expr.pos,
+            .Guard as guard => guard.pos,
             else => token.NO_POS
         };
     }
+}
+
+[boxed]
+public struct CallArg {
+    public name: string;
+    public expr: Expr;
+    public is_named: bool;
+    public pos: token.Pos;
+}
+
+[boxed]
+public struct CallErrorHandler {
+    public varname: string;
+    public varname_pos: token.Pos;
+    public has_varname: bool;
+    public is_propagate: bool;
+    public expr: Expr;
+    public has_expr: bool;
+    public scope: Scope;
+    public pos: token.Pos;
+}
+
+[boxed]
+public struct IfBranch {
+    public cond: Expr;
+    public expr: Expr;
+    public is_else: bool;
+    public is_else_if: bool;
+    public pos: token.Pos;
+}
+
+[boxed]
+public struct SwitchBranch {
+    public patterns: []Expr;
+    public has_var: bool;
+    public var_is_mut: bool;
+    public var_name: string;
+    public var_pos: token.Pos;
+    public has_cond: bool;
+    public cond: Expr;
+    public expr: Expr;
+    public is_else: bool;
+    public pos: token.Pos;
 }

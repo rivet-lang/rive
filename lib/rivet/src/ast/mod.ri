@@ -17,8 +17,8 @@ public func is_comptime_constant(name: string) bool {
 [boxed]
 public struct SourceFile {
     public file: string;
-    public mod_sym: Sym;
     public decls: []Decl;
+    public mut mod: Module;
     public mut imported_symbols: ImportedSymbols;
 }
 
@@ -30,13 +30,18 @@ public struct ImportedSymbols {
         self.syms.push((name, sym));
     }
 
-    public func get(&self, name: string) ?Sym {
+    public func find(&self, name: string) ?Sym {
         for pair in self.syms {
             if name == pair.0 {
                 return pair.1;
             }
         }
         return none;
+    }
+
+    [inline]
+    public func exists(&self, name: string) bool {
+        return self.find(name) !is none;
     }
 }
 
@@ -49,7 +54,7 @@ public struct ObjectData {
     public type: Type;
     public level: VarLevel;
     public pos: token.Pos;
-    public sym: Var;
+    public mut sym: Var;
 }
 
 [boxed]

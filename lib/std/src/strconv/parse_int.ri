@@ -153,7 +153,7 @@ public func parse_int(s: string, base: int32, mut bit_size: uint32) !int64 {
     }
 
     // convert unsigned and check range.
-    un := parse_uint(s0, base, bit_size).!;
+    un := parse_uint(s0, base, bit_size)!;
     if bit_size == 0 {
         bit_size = INT_SIZE;
     }
@@ -172,7 +172,7 @@ public func parse_int(s: string, base: int32, mut bit_size: uint32) !int64 {
 /// Equivalent to parse_int(s, 10, 0), converted to type int64.
 [inline]
 public func atoi(s: string) !int64 {
-    return parse_int(s, 10, 0).!;
+    return parse_int(s, 10, 0)!;
 }
 
 /// Reports whether the underscores in `s_` are allowed.

@@ -3,6 +3,7 @@
 // be found in the LICENSE file.
 
 import std/traits;
+import std/process;
 
 import ../token;
 
@@ -57,6 +58,52 @@ public trait Sym {
     is_universe: bool;
     is_root: bool;
 
+    func mod(self) Module {
+        mut p := self;
+        while {
+            if p is Module {
+                break;
+            } else if p_ := p.parent {
+                p = p_;
+            } else {
+                break;
+            }
+        }
+        return @cast(Module, p);
+    }
+
+    func has_access_to(self, other: Sym) bool {
+        self_mod := self.mod();
+        other_mod := other.mod();
+        return (
+            other_mod.is_universe or self_mod.id == other.id
+            or self_mod.id == other_mod.id
+            or self_mod.id == other_mod.parent?.id
+            or self_mod.parent?.id == other.parent?.id
+        );
+    }
+
+    [inline]
+    func type_of(self) string {
+        return switch self is {
+            SymRef as ref => ref.type_of(),
+            Module => "module",
+            Const => "constant",
+            Var => "variable",
+            TypeSym as type_sym => if type_sym.info.is_compound() {
+                type_sym.info.to_string()
+            } else {
+                "type"
+            },
+            Func as func_info => if func_info.is_method {
+                "method"
+            } else {
+                "function"
+            },
+            else => "unknown symbol kind"
+        };
+    }
+
     [inline]
     func qualname(self) string {
         return if parent := self.parent {
@@ -77,13 +124,25 @@ public trait Sym {
 }
 
 [boxed]
-public struct Module : Sym { }
+public struct SymRef : Sym {
+    public mut ref: Sym;
+    public mut ref_expr: Expr;
+    public mut ref_resolved: bool;
+}
+
+[boxed]
+public struct Module : Sym {
+    [inline]
+    public func is_core(self) bool {
+        return self.name == "core";
+    }
+}
 
 [boxed]
 public struct Const : Sym {
-    public expr: Expr;
-    public evaled_expr: ?Expr;
-    public typ: Type;
+    public mut expr: Expr;
+    public mut evaled_expr: Expr;
+    public type: Type;
 }
 
 public enum VarLevel as uint8 {
@@ -102,7 +161,7 @@ public struct Var : Sym {
     public is_changed: bool;
     public is_hidden_ref: bool;
     public level: VarLevel;
-    public typ: Type;
+    public type: Type;
 }
 
 [boxed]
@@ -110,197 +169,165 @@ public struct Field {
     public is_public: bool;
     public name: string;
     public is_mut: bool;
-    public def_expr: ?Expr;
-    public typ: Type;
+    public has_def_expr: bool;
+    public def_expr: Expr;
+    public type: Type;
 }
 
-public enum TypeKind : traits.Stringable {
+public enum TypeInfo : traits.Stringable {
     Placeholder,
-    Never,
     None,
     Bool,
     Rune,
-    Int8,
-    Int16,
-    Int32,
-    Int64,
-    Uint8,
-    Uint16,
-    Uint32,
-    Uint64,
+    Int {
+        size: usize;
+    },
+    Uint {
+        size: usize;
+    },
     Isize,
     Usize,
     ComptimeInt,
     ComptimeFloat,
-    Float32,
-    Float64,
+    Float {
+        size: usize;
+    },
     String,
-    Alias,
-    Array,
-    Vector,
-    Tuple,
-    Enum,
-    Trait,
-    Struct;
+    Alias {
+        parent: Type;
+    },
+    Array {
+        elem_type: Type;
+        size: isize;
+        has_contains_method: bool;
+    },
+    Vector{
+        elem_type: Type;
+        has_contains_method: bool;
+    },
+    Tuple {
+        types: []Type;
+    },
+    Enum {
+        underlying_type: Type;
+        mut variants: []EnumVariant;
+        is_boxed: bool;
+
+        [inline]
+        func add_variant(mut self, variant: EnumVariant) {
+            self.variants.push(variant);
+        }
+
+        func has_variant(self, name: string) bool {
+            return self.get_variant(name) !is none;
+        }
+
+        func get_variant(self, name: string) ?EnumVariant {
+            for v in self.variants {
+                if v.name == name {
+                    return v;
+                }
+            }
+            return none;
+        }
+
+        func get_variant_by_type(self, type: Type) ?EnumVariant {
+            for v in self.variants {
+                if v.has_type and v.type == type {
+                    return v;
+                }
+            }
+            return none;
+        }
+    },
+    Trait {
+        bases: []mut TypeSym;
+        mut implements: []TypeSym;
+        mut has_objects: bool;
+
+        func index_of(self, type_sym: TypeSym) ?usize {
+            for i, ts in self.implements {
+                if ts.id == type_sym.id {
+                    return i;
+                }
+            }
+            return none;
+        }
+
+        func implement(mut self, type_sym: TypeSym) {
+            self.implements.push(type_sym);
+            for mut b in self.bases {
+                @cast(TypeInfo.Trait, b).implement(type_sym);
+            }
+        }
+
+        func mark_has_objects(mut self) {
+            self.has_objects = true;
+        }
+    },
+    Struct {
+        is_boxed: bool;
+        is_opaque: bool;
+        is_enum_variant: bool;
+        bases: []mut TypeSym;
+        traits: []TypeSym;
+    };
 
     [inline]
     public func is_primitive(self) bool {
-        return self in [
-            .None, .Bool, .Rune, .Int8, .Int16, .Int32, .Int64, .Isize, .Uint8,
-            .Uint16, .Uint32, .Uint64, .Usize, .ComptimeInt, .ComptimeFloat, .Float32,
-            .Float64, .Never
-        ];
+        return self is .Bool or self is .Rune or self is .Int
+            or self is .Uint or self is .ComptimeInt or self is .ComptimeFloat
+            or self is .ComptimeFloat or self is .Float;
     }
 
     [inline]
-    public func to_string(&self) string {
-        return switch self.* {
+    public func is_compound(self) bool {
+        return self is .Struct or self is .Trait or self is .Enum or self is .Tuple;
+    }
+
+    [inline]
+    public func to_string(self) string {
+        return switch self is {
             .None => "none",
             .Bool => "bool",
             .Rune => "rune",
-            .Int8 => "int8",
-            .Int16 => "int16",
-            .Int32 => "int32",
-            .Int64 => "int64",
+            .Int as int_info => "int{}".fmt(int_info.size),
             .Isize => "isize",
-            .Uint8 => "uint8",
-            .Uint16 => "uint16",
-            .Uint32 => "uint32",
-            .Uint64 => "uint64",
+            .Uint as uint_info => "uint{}".fmt(uint_info.size),
             .Usize => "usize",
             .ComptimeInt => "comptime_int",
             .ComptimeFloat => "comptime_float",
-            .Float32 => "float32",
-            .Float64 => "float64",
+            .Float as float_info => "float{}".fmt(float_info.size),
             .String => "string",
             .Alias => "alias",
             .Array => "array",
             .Vector => "vector",
             .Tuple => "tuple",
             .Trait => "trait",
-            .Struct => "struct",
+            .Struct as struct_info => if struct_info.is_enum_variant {
+                "enum variant"
+            } else {
+                "struct"
+            },
             .Enum => "enum",
-            .Never => "never",
             else => "placeholder"
         };
     }
-}
-
-public enum TypeInfo {
-    Alias: AliasInfo,
-    Array: ArrayInfo,
-    Vector: VectorInfo,
-    Tuple: TupleInfo,
-    Enum: EnumInfo,
-    Trait: TraitInfo,
-    Struct: StructInfo
-}
-
-[boxed]
-public struct AliasInfo {
-    public parent: Type;
-}
-
-[boxed]
-public struct ArrayInfo {
-    public elem_typ: Type;
-    public size: isize;
-    public has_contains_method: bool;
-}
-
-[boxed]
-public struct VectorInfo {
-    public elem_typ: Type;
-    public has_contains_method: bool;
-}
-
-[boxed]
-public struct TupleInfo {
-    public types: []Type;
 }
 
 [boxed]
 public struct EnumVariant {
     public name: string;
     public value: isize;
-    public has_typ: bool;
-    public typ: Type;
-}
-
-[boxed]
-public struct EnumInfo {
-    public underlying_typ: Type;
-    public mut variants: []EnumVariant;
-    public is_boxed_enum: bool;
-
-    [inline]
-    public func add_value(mut self, name: string, variant: isize) {
-        self.variants.push(EnumVariant(name, variant));
-    }
-
-    public func get_value(self, name: string) ?EnumVariant {
-        for v in self.variants {
-            if v.name == name {
-                return v;
-            }
-        }
-        return none;
-    }
-
-    public func get_variant_by_type(self, typ: Type) ?EnumVariant {
-        for v in self.variants {
-            if v.has_typ and v.typ == typ {
-                return v;
-            }
-        }
-        return none;
-    }
-
-    public func has_value(self, name: string) bool {
-        return self.get_value(name) !is none;
-    }
-}
-
-[boxed]
-public struct TraitInfo {
-    public bases: []mut TraitInfo;
-    public mut implements: []TypeSym;
-    public mut has_objects: bool;
-
-    public func index_of(self, type_sym: TypeSym) ?usize {
-        for i, ts in self.implements {
-            if ts.id == type_sym.id {
-                return i;
-            }
-        }
-        return none;
-    }
-
-    public func implement(mut self, type_sym: TypeSym) {
-        self.implements.push(type_sym);
-        for mut b in self.bases {
-            b.implement(type_sym);
-        }
-    }
-
-    public func mark_has_objects(mut self) {
-        self.has_objects = true;
-    }
-}
-
-[boxed]
-public struct StructInfo {
-    public is_boxed: bool;
-    public is_opaque: bool;
-    public bases: []mut TypeSym;
-    public traits: []TypeSym;
+    public has_type: bool;
+    public type: Type;
+    public has_fields: bool;
 }
 
 [boxed]
 public struct TypeSym : Sym {
     public mut fields: []Field;
     public mut full_fields_: []Field;
-    public mut kind: TypeKind;
     public mut info: TypeInfo;
     public mut size: isize = -1;
     public mut align: isize = -1;
@@ -368,35 +395,34 @@ public struct TypeSym : Sym {
     }
 
     public func update(mut self, other: TypeSym) ! {
-        if self.kind == .Placeholder {
+        if self.info is .Placeholder {
             // update placeholder
             self.is_public = other.is_public;
-            self.kind = other.kind;
+            self.info = other.info;
             self.fields = other.fields;
             for s in other.scope.syms {
-                self.scope.add(s).!;
+                self.scope.add(s)!;
             }
-            self.info = other.info;
         }
     }
 
     [inline]
     public func is_boxed(self) bool {
         return if self.info is .Enum as enum_info {
-            enum_info.is_boxed_enum
+            enum_info.is_boxed
         } else if self.info is .Struct as struct_info {
             struct_info.is_boxed
         } else {
-            self.kind == .Trait or self.kind == .String or self.kind == .Vector
+            self.info is .Trait or self.info is .String or self.info is .Vector
         };
     }
 
     [inline]
     public func is_primitive(self) bool {
         return if self.info is .Enum as enum_info {
-            !enum_info.is_boxed_enum
+            !enum_info.is_boxed
         } else {
-            self.kind.is_primitive()
+            self.info.is_primitive()
         };
     }
 
@@ -411,9 +437,10 @@ public struct Arg {
     public name: string;
     public is_mut: bool;
     public is_self: bool;
-    public def_expr: ?Expr;
+    public has_def_expr: bool;
+    public def_expr: Expr;
     public pos: token.Pos;
-    public mut typ: Type;
+    public mut type: Type;
 }
 
 [boxed]
@@ -423,13 +450,13 @@ public struct Func : Sym {
     public is_main: bool;
     public is_method: bool;
     public is_variadic: bool;
-    public self_typ: Type;
+    public self_type: Type;
     public self_is_mut: bool;
     public self_is_ref: bool;
     public args: []Arg;
     public has_named_args: bool;
     public has_body: bool;
-    public ret_typ: Type;
+    public ret_type: Type;
 
     public func get_arg(self, idx: usize) Arg {
         arg := self.args[idx];
@@ -443,7 +470,7 @@ public struct Func : Sym {
     public func args_len(self) usize {
         mut len: usize := 0;
         for arg in self.args {
-            if !(arg.is_self or arg.typ is .Variadic) {
+            if !(arg.is_self or arg.type is .Variadic) {
                 len += 1;
             }
         }
@@ -460,6 +487,7 @@ public struct Func : Sym {
 public struct Scope {
     public start: usize;
     public mut end: usize;
+    public mut owner: Sym;
     public mut parent: ?Scope;
     public mut detached_from_parent: bool;
     public mut childrens: []Scope;
@@ -469,7 +497,11 @@ public struct Scope {
         if sym.name == "_" and sym is Var {
             return; // ignore blank var
         } else if self.exists(sym.name) {
-            return DuplicateSymbolError("duplicate symbol `{}`".fmt(sym.name));
+            return DuplicateSymbolError(
+                "duplicate symbol `{}` in {} `{}`".fmt(
+                    sym.name, self.owner.type_of(), self.owner.qualname()
+                )
+            );
         }
         self.syms.push(sym);
     }
@@ -488,10 +520,35 @@ public struct Scope {
         return none;
     }
 
+    public func find_or_panic(self, name: string) Sym {
+        if x := self.find(name) {
+            return x;
+        }
+        process.panic("cannot found symbol `{}`", name);
+        return Sym(Module()); // TODO: remove this line
+    }
+
+    public func find_by_index_or_panic(self, idx: usize) Sym {
+        if idx >= self.syms.len {
+            process.panic("symbol index out of range `{}`", idx);
+        }
+        return self.syms[idx];
+    }
+
+    [inline]
+    public func find_type_symbol_or_panic(self, name: string) TypeSym {
+        return @cast(TypeSym, self.find_or_panic(name));
+    }
+
+    [inline]
+    public func find_type_symbol_by_index_or_panic(self, idx: usize) TypeSym {
+        return @cast(TypeSym, self.find_by_index_or_panic(idx));
+    }
+
     public func lookup(self, name: string) ?Sym {
         mut sc_: ?Scope := self;
         while sc := sc_ {
-            for sym in self.syms {
+            for sym in sc.syms {
                 if sym.name == name {
                     return sym;
                 }
@@ -513,24 +570,23 @@ public struct Scope {
 [inline]
 public func universe() Module {
     return Module(is_public: false, name: "universe", scope: Scope(syms: [
-        TypeSym(name: "never", kind: .Never),
-        TypeSym(name: "none", kind: .None),
-        TypeSym(name: "bool", kind: .Bool),
-        TypeSym(name: "rune", kind: .Rune),
-        TypeSym(name: "int8", kind: .Int8),
-        TypeSym(name: "int16", kind: .Int16),
-        TypeSym(name: "int32", kind: .Int32),
-        TypeSym(name: "int64", kind: .Int64),
-        TypeSym(name: "isize", kind: .Isize),
-        TypeSym(name: "uint8", kind: .Uint8),
-        TypeSym(name: "uint16", kind: .Uint16),
-        TypeSym(name: "uint32", kind: .Uint32),
-        TypeSym(name: "uint64", kind: .Uint64),
-        TypeSym(name: "usize", kind: .Usize),
-        TypeSym(name: "comptime_int", kind: .ComptimeInt),
-        TypeSym(name: "comptime_float", kind: .ComptimeFloat),
-        TypeSym(name: "float32", kind: .Float32),
-        TypeSym(name: "float64", kind: .Float64),
-        TypeSym(name: "string", kind: .String, info: .Struct(StructInfo(is_boxed: true)))
+        TypeSym(name: "none", info: .None()),
+        TypeSym(name: "bool", info: .Bool()),
+        TypeSym(name: "rune", info: .Rune()),
+        TypeSym(name: "int8", info: .Int(8)),
+        TypeSym(name: "int16", info: .Int(16)),
+        TypeSym(name: "int32", info: .Int(32)),
+        TypeSym(name: "int64", info: .Int(64)),
+        TypeSym(name: "isize", info: .Isize()),
+        TypeSym(name: "uint8", info: .Uint(8)),
+        TypeSym(name: "uint16", info: .Uint(16)),
+        TypeSym(name: "uint32", info: .Uint(32)),
+        TypeSym(name: "uint64", info: .Uint(64)),
+        TypeSym(name: "usize", info: .Usize()),
+        TypeSym(name: "comptime_int", info: .ComptimeInt()),
+        TypeSym(name: "comptime_float", info: .ComptimeFloat()),
+        TypeSym(name: "float32", info: .Float(32)),
+        TypeSym(name: "float64", info: .Float(64)),
+        TypeSym(name: "string", info: .Struct(is_boxed: true))
     ]));
 }

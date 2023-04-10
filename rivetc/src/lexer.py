@@ -230,7 +230,7 @@ class Lexer:
     def read_oct_number(self):
         start = self.pos
         has_wrong_digit = False
-        self.pos += 2 # skip '0b'
+        self.pos += 2 # skip '0o'
         if self.pos < self.text_len and self.current_char() == NUM_SEP:
             report.error(
                 "separator `_` is only valid between digits in a numeric literal",

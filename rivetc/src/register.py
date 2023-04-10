@@ -14,7 +14,7 @@ class Register:
         self.is_core_mod = False
 
     def walk_files(self, source_files):
-        for i, sf in enumerate(source_files):
+        for sf in source_files:
             self.is_core_mod = sf.sym.is_core_mod()
             if self.comp.core_mod == None and self.is_core_mod:
                 self.comp.core_mod = sf.sym
@@ -138,14 +138,19 @@ class Register:
                     decl.sym = self.sym.add_and_return(
                         sym.Type(decl.is_public, decl.name, TypeKind.Enum)
                     )
-                    for i, variant in enumerate(decl.variants):
+                    for variant in decl.variants:
                         if info.has_variant(variant.name):
                             report.error(
                                 f"enum `{decl.name}` has duplicate variant `{variant.name}`",
                                 decl.pos
                             )
                             continue
-                        fields = list(filter(lambda d: isinstance(d, ast.FieldDecl), variant.decls))
+                        fields = list(
+                            filter(
+                                lambda d: isinstance(d, ast.FieldDecl),
+                                variant.decls
+                            )
+                        )
                         if len(variant.decls) > 0:
                             variant_sym = decl.sym.add_and_return(
                                 sym.Type(
@@ -222,7 +227,7 @@ class Register:
             elif isinstance(decl, ast.DestructorDecl):
                 self.add_sym(
                     sym.Fn(
-                        self.abi, False, False, True, True, False, "_dtor", [
+                        self.abi, False, False, True, True, False, "_dtor_", [
                             sym.Arg(
                                 "self", decl.self_is_mut, type.Type(self.sym),
                                 None, False, decl.pos

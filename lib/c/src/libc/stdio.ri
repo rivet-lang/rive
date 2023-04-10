@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import { * } from c;
+import { * } from c/ctypes;
 
 public const MAX_PATH_LEN: usize = 4096;
 public const MAX_NAME_LEN: usize = 255;
@@ -114,4 +114,6 @@ extern (C) {
 
 	public func popen(cmd: [*]uint8, modes: [*]uint8) ?*mut FILE;
 	public func pclose(stream: *mut FILE) int32;
+
+	public func getline(lineptr: *?[*]uint8, n: *usize, stream: *mut FILE) isize;
 }

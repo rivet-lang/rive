@@ -12,13 +12,14 @@ import ../token;
 import ../tokenizer;
 
 extend Parser {
-    func parse_doc_comment(mut self) ast.Decl {
-        pos := self.tok.pos;
+    func parse_doc_comment(mut self) ast.DocComment {
+        mut pos := self.tok.pos;
         mut lines := @vec(string);
         while self.accept(.DocComment) {
             lines.push(self.prev_tok.lit);
+            pos += self.prev_tok.pos;
         }
-        return ast.Decl.DocComment(lines: lines);
+        return ast.DocComment(lines, pos);
     }
 
     public func parse_annotations(
@@ -51,6 +52,7 @@ extend Parser {
                             break;
                         }
                     }
+                    self.expect(.Rparen);
                 }
                 annotations.add(ast.Annotation(annotation_name, args, pos)) catch |err| {
                     report.error(err.to_string(), pos);
@@ -59,13 +61,14 @@ extend Parser {
                     break;
                 }
             }
+            self.expect(.Rbracket);
         }
         return annotations;
     }
 
     [inline]
     func is_public(mut self) bool {
-        return self.accept(.KwPublic);
+        return self.inside_trait or self.accept(.KwPublic);
     }
 
     func parse_abi(mut self) ast.ABI {
@@ -94,8 +97,8 @@ extend Parser {
         annotations := self.parse_annotations(
             self.tok.kind == .Bang and self.peek_tok.kind == .Lbracket
         );
-        is_public := self.inside_trait or self.is_public();
-        pos := self.tok.pos;
+        is_public := self.is_public();
+        mut pos := self.tok.pos;
         switch {
             self.accept(.KwImport) => {
                 mut import_list := @vec(ast.ImportListInfo);
@@ -135,22 +138,380 @@ extend Parser {
                             break;
                         }
                     }
+                    self.expect(.Rbrace);
+                    self.expect(.KwFrom);
                 }
+                mut mod_path_pos := self.tok.pos;
                 mod_path := self.parse_import_path();
+                mod_path_pos += self.prev_tok.pos;
                 alias_name := if import_list.is_empty() and self.accept(.KwAs) {
                     self.parse_name()
                 } else {
                     ""
                 };
+                pos += self.prev_tok.pos;
                 self.expect(.Semicolon);
-                return ast.Decl.Import(
+                return .Import(
                     annotations: annotations,
                     is_public: is_public,
                     path: mod_path,
+                    path_pos: mod_path_pos,
                     alias_name: alias_name,
                     glob: glob,
                     import_list: import_list,
                     pos: pos
+                );
+            },
+            self.accept(.KwExtern) => {
+                self.inside_extern = true;
+                // extern function or var
+                abi := self.parse_abi();
+                mut decls := @vec(ast.Decl);
+                if self.accept(.Lbrace) {
+                    if is_public {
+                        report.error("`extern` blocks cannot be declared public", pos);
+                    }
+                    self.extern_abi = abi;
+                    while {
+                        decls.push(self.parse_decl());
+                        if self.tok.kind == .Rbrace {
+                            break;
+                        }
+                    }
+                    self.expect(.Rbrace);
+                } else if self.accept(.KwFunc) {
+                    decls.push(self.parse_func_decl(
+                        doc_comment, annotations, is_public,
+                        annotations.has("unsafe") or abi != .Rivet,
+                        abi
+                    ));
+                } else {
+                    report.error("invalid external declaration", pos);
+                }
+                pos += self.prev_tok.pos;
+                self.inside_extern = false;
+                return .Extern(doc_comment, annotations, abi, decls, pos)
+            },
+            self.accept(.KwAlias) => {
+                name := self.parse_name();
+                self.expect(.Assign);
+                mut parent := ast.Expr.Empty(self.tok.pos);
+                mut parent_type := ast.Type.Void;
+                mut is_typealias := false;
+                if self.tok.kind.is_start_of_type() and self.tok.kind != .Name {
+                    is_typealias = true;
+                    parent_type = self.parse_type();
+                } else {
+                    parent = self.parse_ident();
+                    if self.accept(.Dot) {
+                        parent = self.parse_selector_expr(parent);
+                        while self.accept(.Dot) {
+                            parent = self.parse_selector_expr(parent);
+                        }
+                    }
+                }
+                pos += self.prev_tok.pos;
+                self.expect(.Semicolon);
+                return .Alias(
+                    doc_comment,
+                    annotations,
+                    is_public,
+                    name,
+                    parent,
+                    is_typealias,
+                    parent_type,
+                    pos
+                );
+            },
+            self.accept(.KwConst) => {
+                name := self.parse_name();
+                has_type := self.accept(.Colon);
+                type := if has_type {
+                    self.parse_type()
+                } else {
+                    .Void()
+                };
+                self.expect(.Assign);
+                expr := self.parse_expr();
+                pos += self.prev_tok.pos;
+                self.expect(.Semicolon);
+                return .Const(
+                    doc_comment,
+                    annotations,
+                    is_public,
+                    name,
+                    has_type,
+                    type,
+                    expr,
+                    pos
+                );
+            },
+            self.accept(.KwVar) => {
+                // variable declarations
+                mut lefts := @vec(ast.ObjectData);
+                if self.accept(.Lparen) {
+                    // multiple variables
+                    while {
+                        lefts.push(self.parse_var_decl(true));
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                } else {
+                    lefts.push(self.parse_var_decl(true));
+                }
+                right := if !self.inside_extern and self.accept(.Assign) {
+                    self.parse_expr()
+                } else {
+                    .Empty(self.tok.pos)
+                };
+                pos += self.prev_tok.pos;
+                self.expect(.Semicolon);
+                return .Var(
+                    doc_comment,
+                    annotations,
+                    is_public,
+                    self.inside_extern,
+                    self.extern_abi,
+                    lefts,
+                    right,
+                    pos
+                );
+            },
+            self.accept(.KwTrait) => {
+                old_inside_trait := self.inside_trait;
+                self.inside_trait = true;
+                name := self.parse_name();
+                mut bases := @vec(ast.Type);
+                if self.accept(.Colon) {
+                    while {
+                        bases.push(self.parse_type());
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                }
+                mut decls := @vec(ast.Decl);
+                self.expect(.Lbrace);
+                while !self.accept(.Rbrace) {
+                    decls.push(self.parse_decl());
+                }
+                self.inside_trait = old_inside_trait;
+                pos += self.prev_tok.pos;
+                return .Trait(
+                    doc_comment,
+                    annotations,
+                    is_public,
+                    name,
+                    bases,
+                    decls,
+                    pos
+                );
+            },
+            self.accept(.KwStruct) => {
+                old_inside_struct := self.inside_struct;
+                self.inside_struct = true;
+                name := self.parse_name();
+                is_opaque := self.accept(.Semicolon);
+                mut bases := @vec(ast.Type);
+                mut decls := @vec(ast.Decl);
+                if !is_opaque {
+                    if self.accept(.Colon) {
+                        while {
+                            bases.push(self.parse_type());
+                            if !self.accept(.Comma) {
+                                break;
+                            }
+                        }
+                    }
+                    self.expect(.Lbrace);
+                    while !self.accept(.Rbrace) {
+                        decls.push(self.parse_decl());
+                    }
+                }
+                self.inside_struct = old_inside_struct;
+                pos += self.prev_tok.pos;
+                return .Struct(
+                    doc_comment,
+                    annotations,
+                    is_public,
+                    name,
+                    bases,
+                    decls,
+                    is_opaque,
+                    pos
+                );
+            },
+            self.accept(.KwEnum) => {
+                name := self.parse_name();
+                underlying_type := if self.accept(.KwAs) {
+                    self.parse_type()
+                } else {
+                    self.table.comptime_int_t
+                };
+                mut bases := @vec(ast.Type);
+                if self.accept(.Colon) {
+                    while {
+                        bases.push(self.parse_type());
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                }
+                self.expect(.Lbrace);
+                mut is_boxed := false;
+                mut variants := @vec(ast.EnumVariantDecl);
+                while {
+                    v_pos := self.tok.pos;
+                    v_name := self.parse_name();
+                    mut has_type := false;
+                    mut has_value := false;
+                    mut v_type := ast.Type.Void;
+                    mut value := ast.Expr.Empty(self.tok.pos);
+                    mut variant_decls := @vec(ast.Decl);
+                    if self.accept(.Lbrace) {
+                        has_type = true;
+                        is_boxed = true;
+                        old_inside_enum_variant_with_fields := self.inside_enum_variant_with_fields;
+                        self.inside_enum_variant_with_fields = true;
+                        while !self.accept(.Rbrace) {
+                            variant_decls.push(self.parse_decl());
+                        }
+                        self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields;
+                    } else if self.accept(.Colon) {
+                        has_type = true;
+                        is_boxed = true;
+                        v_type = self.parse_type();
+                    } else if self.accept(.Assign) {
+                        has_value = true;
+                        value = self.parse_expr();
+                    }
+                    variants.push(ast.EnumVariantDecl(
+                        v_name,
+                        v_type,
+                        has_type,
+                        has_value,
+                        value,
+                        variant_decls,
+                        v_pos + self.prev_tok.pos
+                    ));
+                    if !self.accept(.Comma) {
+                        break;
+                    }
+                }
+                mut decls := @vec(ast.Decl);
+                if self.accept(.Semicolon) {
+                    while self.tok.kind != .Rbrace {
+                        decls.push(self.parse_decl());
+                    }
+                }
+                pos += self.tok.pos;
+                self.expect(.Rbrace);
+                return .Enum(
+                    doc_comment, annotations, is_public, name, underlying_type,
+                    bases, variants, is_boxed, decls, pos
+                );
+            },
+            (self.inside_struct or self.inside_trait
+                or self.inside_enum_variant_with_fields)
+                and self.tok.kind in [.KwMut, .Name] => {
+                // fields
+                is_mut := self.accept(.KwMut);
+                name := self.parse_name();
+                self.expect(.Colon);
+                type := self.parse_type();
+                has_def_expr := self.accept(.Assign);
+                def_expr := if has_def_expr {
+                    self.parse_expr()
+                } else {
+                    .Empty(self.tok.pos)
+                };
+                pos += self.prev_tok.pos;
+                self.expect(.Semicolon);
+                return .Field(
+                    doc_comment,
+                    annotations,
+                    is_public,
+                    is_mut,
+                    name,
+                    type,
+                    def_expr,
+                    has_def_expr,
+                    pos
+                );
+            },
+            self.accept(.KwExtend) => {
+                type := self.parse_type();
+                mut bases := @vec(ast.Type);
+                if self.accept(.Colon) {
+                    while {
+                        bases.push(self.parse_type());
+                        if !self.accept(.Comma) {
+                            break;
+                        }
+                    }
+                }
+                self.expect(.Lbrace);
+                mut decls := @vec(ast.Decl);
+                while !self.accept(.Rbrace) {
+                    decls.push(self.parse_decl());
+                }
+                pos += self.prev_tok.pos;
+                return .Extend(
+                    annotations,
+                    type,
+                    bases,
+                    decls,
+                    pos
+                );
+            },
+            self.accept(.KwFunc) => return self.parse_func_decl(
+                doc_comment, annotations, is_public, annotations.has("unsafe") or (
+                    self.inside_extern and self.extern_abi != .Rivet
+                ), if self.inside_extern { self.extern_abi } else { .Rivet }
+            ),
+            self.inside_struct and self.accept(.BitNot) => {
+                // destructor
+                self.expect(.KwSelfTy);
+                self.expect(.Lparen);
+                self_is_mut := self.accept(.KwMut);
+                self.expect(.KwSelf);
+                self.expect(.Rparen);
+                self.open_scope();
+                sc := self.scope;
+                mut stmts := @vec(ast.Stmt);
+                self.expect(.Lbrace);
+                while !self.accept(.Rbrace) {
+                    stmts.push(self.parse_stmt());
+                }
+                self.close_scope();
+                return .Destructor(
+                    doc_comment,
+                    annotations,
+                    self_is_mut,
+                    stmts,
+                    sc,
+                    pos
+                );
+            },
+            self.accept(.KwTest) => {
+                name := self.tok.lit;
+                self.expect(.String);
+                self.open_scope();
+                sc := self.scope;
+                mut stmts := @vec(ast.Stmt);
+                self.expect(.Lbrace);
+                while !self.accept(.Rbrace) {
+                    stmts.push(self.parse_stmt());
+                }
+                self.close_scope();
+                return .Test(
+                    doc_comment,
+                    annotations,
+                    name,
+                    stmts,
+                    sc,
+                    pos
                 );
             },
             self.tok.kind != .EndOfFile => {
@@ -162,7 +523,7 @@ extend Parser {
     }
 
     func parse_import_path(mut self) string {
-        mut sb := strings.Builder();
+        mut sb := strings.Builder.new();
         if self.accept(.Dot) {
             sb.write_string("./");
             self.expect(.Div);
@@ -174,8 +535,121 @@ extend Parser {
         }
         sb.write_string(self.parse_name());
         while self.accept(.Div) {
-            sb.write_join(["/", self.parse_name()]);
+            sb.write_string("/");
+            sb.write_string(self.parse_name());
         }
         return sb.to_string();
+    }
+
+    func parse_func_decl(
+        mut self, docs: ast.DocComment, annotations: ast.Annotations,
+        is_public: bool, is_unsafe: bool, abi: ast.ABI
+    ) ast.Decl {
+        pos := self.prev_tok.pos;
+        name := if token.is_overloadable_operator(self.tok.kind) {
+            self.next();
+            self.prev_tok.kind.to_string()
+        } else {
+            self.parse_name()
+        };
+
+        mut is_method := false;
+        mut self_is_mut := false;
+        mut self_is_ref := false;
+        mut args := @vec(ast.Arg);
+        mut has_named_args := false;
+        mut is_variadic := false;
+
+        self.open_scope();
+        sc := self.scope;
+        sc.detached_from_parent = true;
+        self.expect(.Lparen);
+        if self.tok.kind != .Rparen {
+            // receiver (`self`|`&self`|`mut self`)
+            if self.tok.kind == .KwSelf or (
+                self.tok.kind in [.Amp, .KwMut] and self.peek_tok.kind == .KwSelf
+            ) {
+                is_method = true;
+                self_is_ref = self.accept(.Amp);
+                self_is_mut = !self_is_ref and self.accept(.KwMut);
+                self.expect(.KwSelf);
+                if self.tok.kind != .Rparen {
+                    self.expect(.Comma);
+                }
+            }
+            // arguments
+            while self.tok.kind != .Rparen {
+                if self.inside_extern and self.accept(.Ellipsis) {
+                    is_variadic = true;
+                    break;
+                } else {
+                    arg_pos := self.tok.pos;
+                    arg_is_mut := self.accept(.KwMut);
+                    arg_name := self.parse_name();
+                    self.expect(.Colon);
+                    arg_type := self.parse_type();
+                    is_variadic = arg_type is .Variadic;
+                    arg_expr := if self.accept(.Assign) {
+                        has_named_args = true;
+                        self.parse_expr()
+                    } else {
+                        .Empty(self.tok.pos)
+                    };
+                    args.push(ast.Arg(
+                        name: name,
+                        is_mut: arg_is_mut,
+                        type: arg_type,
+                        def_expr: arg_expr,
+                        has_def_expr: arg_expr !is .Empty,
+                        pos: arg_pos + self.prev_tok.pos
+                    ));
+                }
+                if !self.accept(.Comma) {
+                    break;
+                }
+            }
+        }
+        self.expect(.Rparen);
+
+        ret_t_pos := self.tok.pos;
+        is_result := self.accept(.Bang);
+        mut ret_type := if self.tok.kind in [.Lbrace, .Semicolon] {
+            ast.Type.Void // default: `void`
+        } else {
+            self.parse_type()
+        };
+        if is_result {
+            ret_type = .Result(ret_type, ret_t_pos + self.prev_tok.pos);
+        }
+
+        mut stmts := @vec(ast.Stmt);
+        mut has_body := true;
+        if (self.inside_trait or self.inside_extern) and self.accept(.Semicolon) {
+            has_body = false;
+        } else {
+            self.expect(.Lbrace);
+            while !self.accept(.Rbrace) {
+                stmts.push(self.parse_stmt());
+            }
+        }
+        self.close_scope();
+        return .Func(
+            docs: docs,
+            annotations: annotations,
+            is_public: is_public,
+            is_extern: self.inside_extern,
+            is_unsafe: is_unsafe,
+            name: name,
+            args: args,
+            has_named_args: has_named_args,
+            ret_type: ret_type,
+            stmts: stmts,
+            has_body: has_body,
+            is_method: is_method,
+            self_is_mut: self_is_mut,
+            self_is_ref: self_is_ref,
+            scope: sc,
+            pos: pos + self.prev_tok.pos
+        );
     }
 }

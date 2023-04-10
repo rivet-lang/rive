@@ -16,22 +16,23 @@ struct StaticBuffer {
         self.len += 1;
     }
 
-    public func clear(mut self) {
-        while self.len > 0 {
-            self.buf[self.len] = 0;
-            self.len -= 1;
-        }
-    }
-
     public func as_uint64(&self) uint64 {
+        self.buf[self.len] = 0;
         return unsafe { libc.strtoul(&self.buf[0], none, 10) };
     }
 
     public func as_isize(&self) isize {
+        self.buf[self.len] = 0;
         return unsafe { @cast(isize, libc.strtol(&self.buf[0], none, 10))};
     }
 
     public func as_string(&self) string {
+        self.buf[self.len] = 0;
         return unsafe { string.from_raw_with_len(&self.buf[0], self.len).clone() };
+    }
+
+    [inline]
+    public func clear(mut self) {
+        self.len = 0;
     }
 }

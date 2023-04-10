@@ -24,7 +24,7 @@ struct Vector {
     func from_array(arr: mut_anyptr, elem_size: usize, len: usize) Self {
         vec := Self(unsafe { internal_zeroed(len * elem_size) }, elem_size, len, len);
         unsafe {
-            mem_copy(vec.ptr, arr, elem_size * len);
+            mem_copy(vec.ptr, arr, len * elem_size);
         }
         return vec;
     }
@@ -52,7 +52,8 @@ struct Vector {
         }
         unsafe {
             mem_copy(
-                @ptr_add(@cast([*]mut uint8, self.ptr), self.elem_size * idx), val, self.elem_size
+                @ptr_add(@cast([*]mut uint8, self.ptr), self.elem_size * idx),
+                val, self.elem_size
             );
         }
     }
@@ -82,7 +83,7 @@ struct Vector {
     /// NOTE: This function does NOT operate in-place. Internally, it creates a copy
     /// of the vector, skipping over `size` elements starting at `i`, and then points
     /// the original variable to the new memory location.
-    public func delete(mut self, i: usize, size: usize = 1) {
+    public func delete(mut self, i: usize, size: usize = 1, no_slices: bool = false) {
         if i + size > self.len {
             end_idx := if size == 1 { "..{}".fmt(i + size) } else { "" };
             process_panic(
@@ -100,12 +101,19 @@ struct Vector {
         unsafe {
             mem_copy(
                 @ptr_add(self.ptr, i * self.elem_size),
-                @ptr_add(old_ptr, i + size * self.elem_size),
-                self.len - i - size * self.elem_size
+                @ptr_add(old_ptr, (i + size) * self.elem_size),
+                (self.len - i - size) * self.elem_size
             );
+            if no_slices {
+                mem_dealloc(old_ptr);
+            }
         }
         self.len = new_size;
         self.cap = new_cap;
+    }
+
+    public func clear(mut self) {
+        self.len = 0;
     }
 
     [inline]

@@ -8,3 +8,13 @@ test "implicitly typed variable" {
 test "implicitly typed constant" {
     @assert(MY_CONST == "Speak");
 }
+
+var MY_ARRAY = [1, 2, 3, 4]!;
+
+test "global static array" {
+    @assert(MY_ARRAY.len == 4);
+    @assert(MY_ARRAY[0] == 1);
+    @assert(MY_ARRAY[1] == 2);
+    @assert(MY_ARRAY[2] == 3);
+    @assert(MY_ARRAY[3] == 4);
+}

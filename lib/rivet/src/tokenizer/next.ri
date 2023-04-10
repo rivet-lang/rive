@@ -13,16 +13,19 @@ import ../report;
 
 import { LF, CR } from ../utils;
 
+const SINGLE_QUOTE: uint8 = 0x27; // `'`
+const BACKSLASH: uint8 = 0x5C; // '\'
+
 extend Tokenizer {
-    [inline]
     public func next(mut self) token.Token {
         while {
             cidx := self.tidx;
             self.tidx += 1;
-            if cidx >= self.all_tokens.len {
-                return self.end_of_file();
-            }
-            return self.all_tokens[cidx];
+            return if cidx >= self.all_tokens.len {
+                self.end_of_file()
+            } else {
+                self.all_tokens[cidx]
+            };
         }
         return self.new_eof_token();
     }
@@ -38,18 +41,21 @@ extend Tokenizer {
             if self.pos >= self.text.len {
                 return self.new_eof_token();
             }
-            (ch, nextc) := (self.current_char(), self.look_ahead(1));
+            ch := self.current_char();
+            nextc := self.look_ahead(1);
             if utils.is_name_char(ch) {
                 name := self.read_name();
                 return self.new_token(token.lookup(name), name, name.len);
-            } else if ch.is_digit() or (ch == b'.' and nextc.is_digit()) {
+            } else if ch.is_digit() {
                 // decimals with 0 prefix = error
                 if ch == b'0' and nextc.is_digit() {
+                    self.pos -= 1;
                     mut err := self.error_builder(
                         "leading zeros in decimal integer literals are not permitted"
                     );
                     err.add_help("use an `0o` prefix for octal integers");
                     err.emit();
+                    self.pos += 1;
                 }
                 lit := self.read_number();
                 return self.new_token(.Number, self.number_literal_without_separator(lit), lit.len);
@@ -222,7 +228,7 @@ extend Tokenizer {
                 b']' => return self.new_token(.Rbracket),
                 b'(' => return self.new_token(.Lparen),
                 b')' => return self.new_token(.Rparen),
-                b'\'' => {
+                SINGLE_QUOTE => {
                     lit := self.read_char();
                     return self.new_token(.Char, lit, lit.len + 2);
                 },
@@ -230,6 +236,9 @@ extend Tokenizer {
                     start_line := self.line;
                     start_col := utils.max(1, self.current_column()) - 1;
                     lit := self.read_string();
+                    if start_line != self.line {
+                        return self.new_token(.String, lit, lit.len + 2);
+                    }
                     return self.new_multiline_token(
                         .String, lit, lit.len + 2, start_line, self.line, start_col
                     );
@@ -259,36 +268,43 @@ extend Tokenizer {
         return lit;
     }
 
+    [inline]
     func read_number(mut self) string {
-        switch {
-            self.matches("0x", self.pos) => return self.read_hex_number(),
-            self.matches("0b", self.pos) => return self.read_bin_number(),
-            self.matches("0o", self.pos) => return self.read_oct_number(),
-            else => return self.read_dec_number()
-        }
+        return switch {
+            self.matches("0x", self.pos) => self.read_hex_number(),
+            self.matches("0b", self.pos) => self.read_bin_number(),
+            self.matches("0o", self.pos) => self.read_oct_number(),
+            else => self.read_dec_number()
+        };
     }
 
     func read_hex_number(mut self) string {
         start := self.pos;
         self.pos += 2; // skip '0x'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
+            self.pos -= 1;
             self.error("separator `_` is only valid between digits in a numeric literal");
+            self.pos += 1;
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
+                self.pos -= 1;
                 self.error("cannot use `_` consecutively in a numeric literal");
+                self.pos += 1;
             }
             if !ch.is_hex_digit() and ch != NUM_SEP {
                 if !ch.is_letter() {
                     break;
                 } else {
+                    self.pos -= 1;
                     self.error(
                         "this hexadecimal number has unsuitable digit `{}`".fmt(
-                            self.current_char().to_ascii()
+                            ch.to_ascii()
                         )
                     );
+                    self.pos += 1;
                 }
             }
         }
@@ -310,24 +326,30 @@ extend Tokenizer {
         start := self.pos;
         self.pos += 2; // skip '0b'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
+            self.pos -= 1;
             self.error("separator `_` is only valid between digits in a numeric literal");
+            self.pos += 1;
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
+                self.pos -= 1;
                 self.error("cannot use `_` consecutively in a numeric literal");
+                self.pos += 1;
             }
 
             if !ch.is_bin_digit() and ch != NUM_SEP {
                 if !ch.is_digit() and !ch.is_letter() {
                     break;
                 } else {
+                    self.pos -= 1;
                     self.error(
                         "this binary number has unsuitable digit `{}`".fmt(
-                            self.current_char().to_ascii()
+                            ch.to_ascii()
                         )
                     );
+                    self.pos += 1;
                 }
             }
         }
@@ -349,26 +371,32 @@ extend Tokenizer {
 
     func read_oct_number(mut self) string {
         start := self.pos;
-        self.pos += 2; // skip '0b'
+        self.pos += 2; // skip '0o'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
+            self.pos -= 1;
             self.error("separator `_` is only valid between digits in a numeric literal");
+            self.pos += 1;
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
+                self.pos -= 1;
                 self.error("cannot use `_` consecutively in a numeric literal");
+                self.pos += 1;
             }
 
             if !ch.is_oct_digit() and ch != NUM_SEP {
                 if !ch.is_digit() and !ch.is_letter() {
                     break;
                 } else {
+                    self.pos -= 1;
                     self.error(
                         "this octal number has unsuitable digit `{}`".fmt(
-                            self.current_char().to_ascii()
+                            ch.to_ascii()
                         )
                     );
+                    self.pos += 1;
                 }
             }
         }
@@ -391,29 +419,37 @@ extend Tokenizer {
     func read_dec_number(mut self) string {
         start := self.pos;
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
+            self.pos -= 1;
             self.error("separator `_` is only valid between digits in a numeric literal");
+            self.pos += 1;
         }
 
         while self.pos < self.text.len : self.pos += 1 {
             ch := self.current_char();
             if ch == NUM_SEP and self.text[self.pos - 1] == NUM_SEP {
+                self.pos -= 1;
                 self.error("cannot use `_` consecutively in a numeric literal");
+                self.pos += 1;
             }
             if !ch.is_digit() and ch != NUM_SEP {
                 if !ch.is_letter() or ch in [b'e', b'E'] {
                     break;
                 } else {
+                    self.pos -= 1;
                     self.error(
                         "this number has unsuitable digit `{}`".fmt(
-                            self.current_char().to_ascii()
+                            ch.to_ascii()
                         )
                     );
+                    self.pos += 1;
                 }
             }
         }
 
         if self.text[self.pos - 1] == NUM_SEP {
+            self.pos -= 1;
             self.error("cannot use `_` at the end of a numeric literal");
+            self.pos += 1;
         }
 
         mut call_method := false; // true for, e.g., 5.method(), 5.5.method(), 5e5.method()
@@ -508,19 +544,29 @@ extend Tokenizer {
     }
 
     func read_char(mut self) string {
-        (mut len, start) := (0, self.pos);
-        backslash := b'\\';
+        pos := self.current_pos();
+        mut len: usize := 0;
+        start := self.pos;
+
+        // set flags for advanced escapes first
+        escaped_hex := self.matches("\\x", start + 1);
+        escaped_unicode := self.matches("\\u", start + 1);
+        escaped_octal := !escaped_hex and !escaped_unicode and self.matches("\\", start + 1);
 
         while {
             self.pos += 1;
+            ch := self.current_char();
             if self.pos >= self.text.len {
+                self.error("unfinished character literal", pos);
                 break;
             }
-            if self.current_char() != backslash {
+            if ch != BACKSLASH {
                 len += 1;
             }
-            double_slash := self.matches("\\\\", self.pos - 2);
-            if self.current_char() == b'\'' and (self.text[self.pos-1] != backslash or double_slash) {
+            double_slash := self.matches(r"\\", self.pos - 2);
+            if ch == SINGLE_QUOTE and (
+                self.text[self.pos - 1] != BACKSLASH or double_slash
+            ) {
                 if double_slash {
                     len += 1;
                 }
@@ -529,28 +575,71 @@ extend Tokenizer {
         }
         len -= 1;
 
-        ch := self.text[start + 1..self.pos];
+        mut ch := self.text[start + 1..self.pos];
         if len != 1 {
-            if len > 1 and ch.runes_count() > 1 {
-                mut err := self.error_builder(
-                    "character literal may only contain one codepoint"
-                );
-                err.add_help("if you meant to write a string literal, use double quotes");
-                err.emit();
-            } else if len == 0 {
-                self.error("empty character literal");
+            // the string inside the backticks is longer than one character
+            // but we might only have one rune... attempt to decode escapes
+            // if the content expresses an escape code, it will have an even
+            // number of characters e.g. (octal) \141 (hex) \x61 or (unicode)
+            // \u2605 we don't handle binary escape codes in rune literals.
+            orig := ch;
+            if ch.len % 2 == 0 and (escaped_hex or escaped_unicode or escaped_octal) {
+                if escaped_unicode {
+                    // there can only be one, so attempt to decode it now
+                    ch = decode_u_escapes(ch, 0, [0]);
+                } else {
+                    // find escape sequence start positions
+                    mut escapes_pos := @vec(usize);
+                    for i, v in ch.as_bytes() {
+                        if v == BACKSLASH {
+                            escapes_pos.push(i);
+                        }
+                    }
+                    ch = if escaped_hex {
+                        decode_h_escapes(ch, 0, escapes_pos)
+                    } else {
+                        decode_o_escapes(ch, 0, escapes_pos)
+                    };
+                }
+            }
+            u := ch.as_runes();
+            if u.len != 1 {
+                if escaped_hex or escaped_unicode {
+                    mut err := self.error_builder(
+                        "invalid character literal (`{}` -> `{}`)".fmt(orig, ch),
+                        pos
+                    );
+                    err.add_note("escape sequence did not refer to a singular rune");
+                    err.emit();
+                } else if u.len == 0 {
+                    mut err := self.error_builder("empty character literal", pos);
+                    err.add_help("if you meant to write a string literal, use double quotes");
+                    err.emit();
+                } else {
+                    mut err := self.error_builder(
+                        "character literal may only contain one codepoint", pos
+                    );
+                    err.add_help("if you meant to write a string literal, use double quotes");
+                    err.emit();
+                }
             }
         }
         return ch;
     }
 
     func read_string(mut self) string {
-        (start, start_char) := (self.pos, self.current_char());
-        backslash := b'\\';
-        mut backslash_count := if start_char == backslash { 1 } else { 0 };
+        pos := self.current_pos();
+        start := self.pos;
+        start_char := self.current_char();
+        mut backslash_count := if start_char == BACKSLASH { 1 } else { 0 };
         is_raw := self.pos > 0 and self.text[self.pos - 1] == b'r';
+        is_cstr := self.pos > 0 and self.text[self.pos - 1] == b'c';
         mut n_cr_chars := 0;
-
+        if start_char == LF {
+            self.inc_line_number();
+        }
+        mut u_escapes_pos := @vec(usize); // pos list of \uXXXX
+        mut h_escapes_pos := @vec(usize); // pos list of \xXX
         while {
             self.pos += 1;
             if self.pos >= self.text.len {
@@ -558,12 +647,12 @@ extend Tokenizer {
                 return "";
             }
             c := self.current_char();
-            if c == backslash {
+            if c == BACKSLASH {
                 backslash_count += 1;
             }
             // end of string
             if c == b'"' and (is_raw or backslash_count % 2 == 0) {
-                break; // handle "\\" at the end
+                break; // handle "\\" at the end: "123\\"
             }
             if c == CR {
                 n_cr_chars += 1;
@@ -571,7 +660,30 @@ extend Tokenizer {
             if c == LF {
                 self.inc_line_number();
             }
-            if c != backslash {
+            // escape `\x` or `\u`
+            if backslash_count % 2 == 1 and !(is_raw or is_cstr) {
+                // escape `\x`
+                if c == b'x' {
+                    if self.look_ahead(1) == b'"' or !(
+                        self.look_ahead(1).is_hex_digit() and
+                        self.look_ahead(2).is_hex_digit()
+                    ) {
+                        self.error(r"`\x` used without two following hex digits", pos);
+                    }
+                    h_escapes_pos.push(self.pos - 1);
+                } else if c == b'u' { // escape `\u`
+                    if self.look_ahead(1) == b'"' or self.look_ahead(2) == b'"'
+                        or self.look_ahead(3) == b'"' or self.look_ahead(4) == b'"'
+                        or !self.look_ahead(1).is_hex_digit()
+                        or !self.look_ahead(2).is_hex_digit()
+                        or !self.look_ahead(3).is_hex_digit()
+                        or !self.look_ahead(4).is_hex_digit() {
+                        self.error(r"`\u` incomplete unicode character value", pos);
+                    }
+                    u_escapes_pos.push(self.pos - 1);
+                }
+            }
+            if c != BACKSLASH {
                 backslash_count = 0;
             }
         }
@@ -579,6 +691,35 @@ extend Tokenizer {
         mut lit := "";
         if start <= self.pos {
             lit = self.text[start + 1..self.pos];
+            mut segment_idx: usize := 0;
+            mut str_segments := @vec(string);
+            if u_escapes_pos.len + h_escapes_pos.len > 0 {
+                mut all_pos := @vec(usize, u_escapes_pos.len + h_escapes_pos.len);
+                for pos1 in u_escapes_pos {
+                    all_pos.push(pos1);
+                }
+                for pos1 in h_escapes_pos {
+                    all_pos.push(pos1);
+                }
+                for pos1 in all_pos {
+                    str_segments.push(lit[segment_idx..(pos1 - start)]);
+                    segment_idx = pos1 - start;
+                    if pos1 in u_escapes_pos {
+                        (end_idx, segment) := decode_u_escape_single(lit, segment_idx);
+                        str_segments.push(segment);
+                        segment_idx = end_idx;
+                    }
+                    if pos1 in h_escapes_pos {
+                        (end_idx, segment) := decode_h_escape_single(lit, segment_idx);
+                        str_segments.push(segment);
+                        segment_idx = end_idx;
+                    }
+                }
+            }
+            if segment_idx < lit.len {
+                str_segments.push(lit[segment_idx..]);
+            }
+            lit = utils.join(str_segments, "");
             if n_cr_chars > 0 {
                 lit = lit.replace("\r", "");
             }
@@ -586,6 +727,7 @@ extend Tokenizer {
                 lit = self.trim_slash_line_break(lit);
             }
         }
+
         return lit;
     }
 }
