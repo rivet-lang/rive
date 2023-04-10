@@ -21,6 +21,8 @@ public enum Expr {
         name: string;
         scope: Scope;
         is_comptime: bool;
+        mut is_obj: bool;
+        mut is_sym: bool;
         mut found: bool;
         mut sym: Sym;
         pos: token.Pos;
@@ -28,6 +30,8 @@ public enum Expr {
     SelfTy {
         scope: Scope;
         pos: token.Pos;
+        found: bool;
+        sym: TypeSym;
     },
     SelfLiteral {
         scope: Scope;
@@ -75,20 +79,17 @@ public enum Expr {
         is_arr: bool;
         pos: token.Pos;
     },
-    Index {
-        left: Expr;
-        index: Expr;
-        pos: token.Pos;
-    },
     Selector {
-        left: Expr;
+        mut left: Expr;
+        mut left_sym: Sym;
         field_name: string;
         field_pos: token.Pos;
+        mut field_sym: Sym;
         is_indirect: bool;
         is_option_check: bool;
-        is_path: bool;
-        found: bool;
-        sym: Sym;
+        mut is_path: bool;
+        mut found: bool;
+        mut sym: Sym;
         pos: token.Pos;
     },
     Branch {
@@ -101,6 +102,11 @@ public enum Expr {
         has_start: bool;
         has_end: bool;
         is_inclusive: bool;
+        pos: token.Pos;
+    },
+    Index {
+        left: Expr;
+        index: Expr;
         pos: token.Pos;
     },
     Call {

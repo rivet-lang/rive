@@ -30,7 +30,7 @@ public struct ImportedSymbols {
         self.syms.push((name, sym));
     }
 
-    public func get(&self, name: string) ?Sym {
+    public func find(&self, name: string) ?Sym {
         for pair in self.syms {
             if name == pair.0 {
                 return pair.1;
@@ -41,7 +41,7 @@ public struct ImportedSymbols {
 
     [inline]
     public func exists(&self, name: string) bool {
-        return self.get(name) !is none;
+        return self.find(name) !is none;
     }
 }
 

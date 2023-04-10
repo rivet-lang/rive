@@ -553,15 +553,16 @@ extend Parser {
             self.parse_name()
         };
 
-        mut args := @vec(ast.Arg);
         mut is_method := false;
-        mut is_variadic := false;
         mut self_is_mut := false;
         mut self_is_ref := false;
+        mut args := @vec(ast.Arg);
         mut has_named_args := false;
+        mut is_variadic := false;
 
         self.open_scope();
         sc := self.scope?;
+        sc.detached_from_parent = true;
         self.expect(.Lparen);
         if self.tok.kind != .Rparen {
             // receiver (`self`|`&self`|`mut self`)

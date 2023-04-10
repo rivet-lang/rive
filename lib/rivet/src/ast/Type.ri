@@ -9,9 +9,9 @@ import ../token;
 
 public enum Type : traits.Stringable {
     Basic {
-        sym: TypeSym;
+        mut sym: TypeSym;
         mut is_unresolved: bool;
-        expr: Expr;
+        mut expr: Expr;
     },
     Void,
     Never: token.Pos,

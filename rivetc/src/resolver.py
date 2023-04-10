@@ -403,9 +403,7 @@ class Resolver:
                 report.error(
                     f"use of non-imported module `{ident.name}`", ident.pos
                 )
-                report.note(
-                    "consider adding an `import` with the path to the module"
-                )
+                report.help("add an `import` with the path to the module")
             ident.sym = s
             ident.is_sym = True
         elif self.self_sym:

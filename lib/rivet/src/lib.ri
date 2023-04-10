@@ -101,6 +101,7 @@ public struct Compiler {
                         import_decl.path, import_decl.alias_name, sf.file,
                         import_decl.path_pos
                     )!;
+                    import_decl.alias_name = import_decl.info.alias_name;
                     if import_decl.info.found {
                         done_imports.push(import_decl.info.full_name);
                     }

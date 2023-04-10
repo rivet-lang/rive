@@ -18,7 +18,7 @@ public struct Resolver {
     mut prefs: prefs.Prefs;
 
     mut sym: ast.Sym;
-    mut self_sym: ast.Sym;
+    mut self_sym: ast.TypeSym;
     mut preludes: []Prelude;
 
     mut self_sym_is_set: bool;

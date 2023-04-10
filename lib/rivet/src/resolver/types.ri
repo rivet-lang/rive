@@ -8,7 +8,7 @@ import ../report;
 
 extend Resolver {
     [inline]
-    func resolve_type(self, type: ast.Type) bool {
+    func resolve_type(mut self, type: ast.Type) bool {
         return switch type is {
             .Void, .Never, .Anyptr => true,
             .Option as opt => self.resolve_type(opt.inner),
@@ -19,10 +19,65 @@ extend Resolver {
             .Basic as basic => if basic.is_unresolved {
                 switch basic.expr is {
                     .SelfTy as self_ty => if self.self_sym_is_set {
-                        //self_ty.
+                        basic.is_unresolved = false;
+                        basic.sym = self.self_sym;
                         true
                     } else {
                         false
+                    },
+                    .Ident as mut ident => {
+                        self.resolve_ident(ident);
+                        if ident.found {
+                            if ident.sym is ast.TypeSym as type_sym {
+                                basic.is_unresolved = false;
+                                basic.sym = type_sym;
+                                if type_sym.info is .Alias as alias_info {
+                                    if self.resolve_type(alias_info.parent) {
+                                        type.unalias();
+                                    }
+                                }
+                            } else {
+                                report.error(
+                                    "expected type, found {}".fmt(ident.sym.type_of()),
+                                    ident.pos
+                                );
+                            }
+                        }
+                        ident.found
+                    },
+                    .Selector as mut selector => {
+                        self.resolve_selector(selector);
+                        if selector.found {
+                            if selector.field_sym is ast.TypeSym as type_sym {
+                                if type_sym.info is .Placeholder {
+                                    report.error(
+                                        "cannot find type `{}` in {} `{}`".fmt(
+                                            type_sym.name, selector.left_sym.type_of(),
+                                            selector.left_sym.name
+                                        ),
+                                        selector.field_pos
+                                    );
+                                    return false;
+                                } else {
+                                    basic.is_unresolved = false;
+                                    basic.sym = type_sym;
+                                    if type_sym.info is .Alias as alias_info {
+                                        if self.resolve_type(alias_info.parent) {
+                                            type.unalias();
+                                        }
+                                    }
+                                    return true;
+                                }
+                            } else {
+                                report.error(
+                                    "expected type, found {}".fmt(
+                                        selector.field_sym.type_of()
+                                    ), selector.pos
+                                );
+                                return false;
+                            }
+                        }
+                        selector.found
                     },
                     else => {
                         report.error(

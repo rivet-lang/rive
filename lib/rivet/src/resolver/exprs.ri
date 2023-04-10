@@ -3,18 +3,22 @@
 // be found in the LICENSE file.
 
 import ../ast;
+import ../token;
 import ../prefs;
 import ../report;
 
 extend Resolver {
     func resolve_expr(mut self, mut expr: ast.Expr) {
         switch expr is {
-            .Ident as mut ident => self.resolve_ident(ident)
+            .Ident as mut ident => self.resolve_ident(ident),
+            .Selector as mut selector => self.resolve_selector(selector)
         }
     }
 
     func resolve_ident(mut self, mut ident: ast.Expr.Ident) {
         if ident.name == "_" {
+            ident.found = true;
+            ident.is_obj = true;
             return; // ignore special var
         } else if ident.is_comptime {
             if !ast.is_comptime_constant(ident.name) {
@@ -23,19 +27,56 @@ extend Resolver {
             return;
         } else if obj := ident.scope.lookup(ident.name) {
             ident.found = true;
+            ident.is_obj = true;
+            ident.sym = obj;
+        } else if sym := self.source_file.imported_symbols.find(ident.name) {
+            if sym is ast.TypeSym as type_sym and type_sym.info is .Placeholder {
+                report.error("cannot find `{}` in this scope".fmt(ident.name), ident.pos);
+                return;
+            }
+            ident.found = true;
+            ident.is_sym = true;
+            ident.sym = sym;
+        } else if sym := self.find_prelude(ident.name) {
+            ident.found = true;
+            ident.is_sym = true;
+            ident.sym = sym;
         } else if sym := self.sym.scope.find(ident.name) {
             if sym is ast.TypeSym as type_sym and type_sym.info is .Placeholder {
                 report.error("cannot find `{}` in this scope".fmt(ident.name), ident.pos);
                 return;
             }
+            ident.found = true;
+            ident.is_sym = true;
+            ident.sym = sym;
         } else if sym := self.table.universe.scope.find(ident.name) {
             if sym is ast.Module {
                 mut err := report.error_builder(
                     "use of non-imported module `{}`".fmt(ident.name), ident.pos
                 );
-                err.add_note("consider adding an `import` with the path to the module");
+                err.add_help("add an `import` with the path to the module");
                 err.emit();
                 return;
+            }
+            ident.found = true;
+            ident.is_sym = true;
+            ident.sym = sym;
+        } else if self.self_sym_is_set {
+            if sym := self.self_sym.scope.find(ident.name) {
+                if sym is ast.TypeSym as type_sym and type_sym.info is .Placeholder {
+                    report.error("cannot find `{}` in this scope".fmt(ident.name), ident.pos);
+                    return;
+                } else if sym is ast.Func {
+                    mut err := report.error_builder(
+                        "cannot find `{}` in this scope".fmt(ident.name), ident.pos
+                    );
+                    err.add_help("use `Self.{}()` instead".fmt(sym.name));
+                    err.emit();
+                    return;
+                }
+                ident.found = true;
+                ident.is_sym = true;
+                ident.sym = sym;
             }
         }
 
@@ -46,13 +87,89 @@ extend Resolver {
         }
     }
 
+    func resolve_selector(mut self, mut selector: ast.Expr.Selector) {
+        self.resolve_expr(selector.left);
+        if !(selector.is_indirect or selector.is_option_check) {
+            switch selector.left is {
+                .SelfTy as self_ty => {
+                    selector.is_path = true;
+                    if self_ty.found {
+                        selector.left_sym = self_ty.sym;
+                        selector.found = true;
+                    }
+                },
+                .Ident as ident if ident.is_sym => {
+                    if ident.sym is ast.Var or ident.sym is ast.Const {
+                        return;
+                    }
+                    selector.is_path = true;
+                    if ident.found {
+                        selector.found = true;
+                        selector.left_sym = ident.sym;
+                    }
+                },
+                .Selector as selector2 if selector2.is_path => {
+                    if selector2.field_sym is ast.Var or selector2.field_sym is ast.Const {
+                        return;
+                    }
+                    selector.is_path = true;
+                    if selector2.found {
+                        selector.found = true;
+                        selector.left_sym = selector2.field_sym;
+                    }
+                }
+            }
+            if selector.is_path {
+                if field_sym := self.find_symbol(selector.left_sym, selector.field_name, selector.field_pos) {
+                    selector.field_sym = field_sym;
+                    selector.found = true;
+                }
+            }
+        }
+    }
+
+    func find_symbol(mut self, sym: ast.Sym, name: string, pos: token.Pos) ?ast.Sym {
+        mut sym_ := sym;
+        if sym is ast.SymRef as sym_ref {
+            sym_ = sym_ref.ref;
+        }
+        if s := sym_.scope.find(name) {
+            self.check_vis(s, pos);
+            return if s is ast.SymRef as mut sym_ref2 {
+                self.clean_symbol_reference(sym_ref2)
+            } else {
+                s
+            };
+        } else if sym_ is ast.TypeSym as type_sym and type_sym.info is .Enum as enum_info {
+            if enum_info.has_variant(name) {
+                return sym_;
+            }
+            report.error("enum `{}` has no variant `{}`".fmt(sym_.name, name), pos);
+            return none;
+        }
+        report.error(
+            "could not find `{}` in {} `{}`".fmt(name, sym_.type_of(), sym_.name),
+            pos
+        );
+        return none;
+    }
+
+    func find_prelude(self, name: string) ?ast.Sym {
+        for &prelude in self.preludes {
+            if prelude.name == name {
+                return prelude.sym;
+            }
+        }
+        return none;
+    }
+
     func clean_symbol_reference(mut self, mut sym_ref: ast.SymRef) ast.Sym {
         if !sym_ref.ref_resolved {
             sym_ref.ref_resolved = true;
             self.resolve_expr(sym_ref.ref_expr);
         }
         if sym_ref.ref_expr is .Selector as selector and selector.is_path and selector.found {
-            sym_ref.ref = selector.field_sym;
+            sym_ref.ref = selector.sym;
         } else if sym_ref.ref_expr is .Ident as ident and ident.is_sym {
             sym_ref.ref = ident.sym;
         }
