@@ -102,7 +102,7 @@ extend Parser {
                             op: op,
                             has_var_obj: true,
                             var_obj: self.parse_var_decl(support_ref: false),
-                            scope: self.scope?,
+                            scope: self.scope,
                             pos: left.position() + self.prev_tok.pos
                         )
                     } else {
@@ -415,7 +415,7 @@ extend Parser {
                             has_varname: has_varname,
                             expr: err_expr,
                             has_expr: has_err_expr,
-                            scope: self.scope?,
+                            scope: self.scope,
                             pos: err_handler_pos
                         ),
                         pos: expr.position() + self.prev_tok.pos
@@ -620,7 +620,7 @@ extend Parser {
             self.close_scope();
         }
         self.expect(.Rbrace);
-        return .Switch(expr, branches, is_typeswitch, self.scope?, pos);
+        return .Switch(expr, branches, is_typeswitch, self.scope, pos);
     }
 
     func parse_block_expr(mut self) ast.Expr {
@@ -633,7 +633,7 @@ extend Parser {
         mut stmts := @vec(ast.Stmt);
         mut has_expr := false;
         self.open_scope();
-        sc := self.scope?;
+        sc := self.scope;
         mut expr := ast.Expr.Empty(self.tok.pos);
         while !self.accept(.Rbrace) {
             stmt := self.parse_stmt();
@@ -668,7 +668,7 @@ extend Parser {
         } else {
             .Empty(self.tok.pos)
         };
-        return .Guard(vars, expr, has_cond, cond, self.scope?, pos);
+        return .Guard(vars, expr, has_cond, cond, self.scope, pos);
     }
 
     [inline]
@@ -684,8 +684,8 @@ extend Parser {
             self.tok.kind == .Number => self.parse_integer_literal(),
             self.tok.kind == .String => self.parse_string_literal(),
             self.accept(.KwNone) => .NoneLiteral(self.prev_tok.pos),
-            self.accept(.KwSelf) => .SelfLiteral(self.scope?, self.prev_tok.pos),
-            self.accept(.KwSelfTy) => .SelfTy(self.scope?, self.prev_tok.pos),
+            self.accept(.KwSelf) => .SelfLiteral(self.scope, self.prev_tok.pos),
+            self.accept(.KwSelfTy) => .SelfTy(self.scope, self.prev_tok.pos),
             else => {
                 report.error("expected literal, found {}".fmt(self.tok), self.tok.pos);
                 .Empty(self.tok.pos)
@@ -751,11 +751,7 @@ extend Parser {
         };
         return .Ident(
             name: self.parse_name(),
-            scope: if sc_ := self.scope {
-                sc_
-            } else {
-                ast.Scope()
-            },
+            scope: self.scope,
             pos: pos,
             is_comptime: is_comptime
         );

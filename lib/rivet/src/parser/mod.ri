@@ -25,7 +25,7 @@ public struct Parser {
     mut mod_sym: ast.Module;
     mut file_path: string;
     mut file_dir: string;
-    mut scope: ?ast.Scope;
+    mut scope: ast.Scope;
 
     mut inside_extern: bool;
     mut extern_abi: ast.ABI;
@@ -112,12 +112,10 @@ public struct Parser {
     }
 
     func close_scope(mut self) {
-        if scope := self.scope {
-            scope.end = self.tok.pos.pos;
-            if parent := scope.parent {
-                parent.childrens.push(scope);
-            }
-            self.scope = scope.parent;
+        self.scope.end = self.tok.pos.pos;
+        if parent := self.scope.parent {
+            parent.childrens.push(self.scope);
+            self.scope = parent;
         }
     }
 
@@ -215,7 +213,7 @@ public struct Parser {
                 self.parse_type(), pos: pos + self.prev_tok.pos
             ),
             self.accept(.KwSelfTy) => return ast.Type.Basic(
-                expr: ast.Expr.SelfTy(self.scope?, self.prev_tok.pos),
+                expr: ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
                 is_unresolved: true
             ),
             self.accept(.KwNone) => return self.table.none_t,

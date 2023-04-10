@@ -478,7 +478,7 @@ extend Parser {
                 self.expect(.KwSelf);
                 self.expect(.Rparen);
                 self.open_scope();
-                sc := self.scope?;
+                sc := self.scope;
                 mut stmts := @vec(ast.Stmt);
                 self.expect(.Lbrace);
                 while !self.accept(.Rbrace) {
@@ -498,7 +498,7 @@ extend Parser {
                 name := self.tok.lit;
                 self.expect(.String);
                 self.open_scope();
-                sc := self.scope?;
+                sc := self.scope;
                 mut stmts := @vec(ast.Stmt);
                 self.expect(.Lbrace);
                 while !self.accept(.Rbrace) {
@@ -561,7 +561,7 @@ extend Parser {
         mut is_variadic := false;
 
         self.open_scope();
-        sc := self.scope?;
+        sc := self.scope;
         sc.detached_from_parent = true;
         self.expect(.Lparen);
         if self.tok.kind != .Rparen {
