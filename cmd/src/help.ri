@@ -5,6 +5,7 @@
 var HELP = "Usage: rivet [COMMAND] [OPTIONS]
 
 Commands:
+  new              Create a new project.
   build            Build project.
   run              Create executable and run immediately.
   test             Create and run a test build.
