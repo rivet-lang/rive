@@ -265,7 +265,7 @@ class Resolver:
                 try:
                     expr.scope.add(
                         sym.Obj(
-                            False, expr.var.name, self.comp.void_t,
+                            expr.var.is_mut, expr.var.name, self.comp.void_t,
                             sym.ObjLevel.Local, expr.var.pos
                         )
                     )

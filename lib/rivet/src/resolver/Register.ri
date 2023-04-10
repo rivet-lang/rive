@@ -30,7 +30,7 @@ public struct Register {
             self.source_file = sf;
             self.walk_decls(self.source_file.decls);
         }
-        self.table.error_t = .Resolved(self.table.error_sym);
+        self.table.error_t = .Basic(self.table.error_sym);
     }
 
     func walk_decls(mut self, decls: []mut ast.Decl) {
@@ -85,22 +85,22 @@ public struct Register {
                     self.abi = extern_decl.abi;
                     self.walk_decls(extern_decl.decls);
                 },
-                .Alias as alias_decl => alias_decl.sym = if alias_decl.is_typealias {
-                    self.add_sym(ast.TypeSym(
-                        is_public: alias_decl.is_public,
-                        name: alias_decl.name,
-                        info: .Alias(alias_decl.parent_type)
-                    ), alias_decl.pos)
-                } else {
-                    // updated later
-                    self.add_sym(
+                .Alias as alias_decl => alias_decl.sym = self.add_sym(
+                    if alias_decl.is_typealias {
+                        ast.TypeSym(
+                            is_public: alias_decl.is_public,
+                            name: alias_decl.name,
+                            info: .Alias(alias_decl.parent_type)
+                        )
+                    } else {
+                        // updated later
                         ast.SymRef(
                             is_public: alias_decl.is_public,
                             name: alias_decl.name,
                             ref_expr: alias_decl.parent
-                        ), alias_decl.pos
-                    )
-                },
+                        )
+                    }, alias_decl.pos
+                ),
                 .Trait as trait_decl => {
                     trait_decl.sym = self.add_sym(
                         ast.TypeSym(
@@ -118,7 +118,7 @@ public struct Register {
                 },
                 .Struct as struct_decl => {
                     struct_decl.sym = if self.is_core_mod and struct_decl.name == "string" {
-                        @cast(ast.Type.Resolved, self.table.string_t).sym
+                        @cast(ast.Type.Basic, self.table.string_t).sym
                     } else {
                         self.add_sym(ast.TypeSym(
                             is_public: struct_decl.is_public,
@@ -169,7 +169,7 @@ public struct Register {
                             self.sym = variant_sym;
                             self.walk_decls(variant.decls);
                             self.sym = old_v_sym;
-                            variant.type = .Resolved(variant_sym);
+                            variant.type = .Basic(variant_sym);
                         }
                         enum_info.add_variant(
                             ast.EnumVariant(
@@ -251,7 +251,7 @@ public struct Register {
                             ast.Arg(
                                 name: "self",
                                 is_mut: dtor_decl.self_is_mut,
-                                type: .Resolved(@cast(ast.TypeSym, self.sym)),
+                                type: .Basic(@cast(ast.TypeSym, self.sym)),
                                 pos: dtor_decl.pos
                             )
                         ],

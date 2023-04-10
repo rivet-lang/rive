@@ -30,7 +30,7 @@ test "string.index_of_byte()" {
     }
 }
 
-test "string.index()" {
+test "string.index_of()" {
     if i := "aeiou".index_of("io") {
         @assert(i == 2);
     } else {

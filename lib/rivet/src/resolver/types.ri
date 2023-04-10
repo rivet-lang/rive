@@ -10,19 +10,29 @@ extend Resolver {
     [inline]
     func resolve_type(self, type: ast.Type) bool {
         return switch type is {
-            .Resolved => true,
-            .Pointer as ptr => self.resolve_type(ptr.inner),
+            .Void, .Never, .Anyptr => true,
+            .Option as opt => self.resolve_type(opt.inner),
+            .Result as res => self.resolve_type(res.inner),
+            .Vector as vec => self.resolve_type(vec.inner),
             .Reference as ref => self.resolve_type(ref.inner),
-            .Vector as vec=> self.resolve_type(vec.inner),
-            .Unresolved as unresolved => switch unresolved is {
-                .SelfTy as self_ty => if self.self_sym_is_set {
-                    //self_ty.
-                    true
-                } else { false },
-                else => {
-                    report.error("expected type, found expression", unresolved.position());
-                    false
+            .Pointer as ptr => self.resolve_type(ptr.inner),
+            .Basic as basic => if basic.is_unresolved {
+                switch basic.expr is {
+                    .SelfTy as self_ty => if self.self_sym_is_set {
+                        //self_ty.
+                        true
+                    } else {
+                        false
+                    },
+                    else => {
+                        report.error(
+                            "expected type, found expression", basic.expr.position()
+                        );
+                        false
+                    }
                 }
+            } else {
+                true
             }
         };
     }

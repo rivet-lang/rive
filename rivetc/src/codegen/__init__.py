@@ -2195,7 +2195,7 @@ class Codegen:
                         if b.has_var and i == 0:
                             var_t = self.ir_type(b.var_typ)
                             var_t2 = var_t.ptr(
-                            ) if b.var_is_mut or not isinstance(
+                            ) if not isinstance(
                                 var_t, ir.Pointer
                             ) else var_t
                             if expr.expr.typ.sym.kind == TypeKind.Enum:

@@ -8,7 +8,11 @@ import { Builder } from std/strings;
 import ../token;
 
 public enum Type : traits.Stringable {
-    Unresolved: Expr,
+    Basic {
+        sym: TypeSym;
+        mut is_unresolved: bool;
+        expr: Expr;
+    },
     Void,
     Never: token.Pos,
     Option {
@@ -78,15 +82,11 @@ public enum Type : traits.Stringable {
         is_variadic: bool;
         ret_type: Type;
         pos: token.Pos;
-    },
-    Resolved {
-        sym: TypeSym;
-        pos: token.Pos = token.NO_POS;
     };
 
     public func unalias(self) ?Self {
-        // NOTE: `.unalias()` returns an option, so we use the same type without unaliasing
-        // instead.
+        // NOTE: `.unalias()` returns an option, so we use the same type without
+        // unaliasing instead.
         switch self is {
             .Result as result => return .Result(result.inner.unalias() ?? result.inner),
             .Option as option => return .Option(option.inner.unalias() ?? option.inner),
@@ -120,15 +120,19 @@ public enum Type : traits.Stringable {
                     ...self
                 );
             },
-            .Resolved as resolved => return if resolved.sym.info is .Alias as alias_info {
-                .Resolved(
-                    (alias_info.parent.unalias() ?? alias_info.parent)
-                        .symbol() ?? resolved.sym
-                )
+            .Basic as basic => return if basic.is_unresolved {
+                none
             } else {
-                .Resolved(resolved.sym)
+                if basic.sym.info is .Alias as alias_info {
+                    .Basic(
+                        (alias_info.parent.unalias() ?? alias_info.parent)
+                            .symbol() ?? basic.sym
+                    )
+                } else {
+                    .Basic(basic.sym)
+                }
             },
-            else => return none // for `.Void`, `.Never` or `.Unresolved`
+            else => return none // for `.Void` or `.Never`
         }
     }
 
@@ -145,7 +149,7 @@ public enum Type : traits.Stringable {
             .Array as array_data => array_data.sym,
             .Reference as reference_data => reference_data.inner.symbol(),
             .Pointer as pointer_data => pointer_data.inner.symbol(),
-            .Resolved as resolved => resolved.sym,
+            .Basic as basic if !basic.is_unresolved => basic.sym,
             else => none
         };
     }
@@ -240,8 +244,9 @@ public enum Type : traits.Stringable {
             } else {
                 false
             },
-            .Resolved as resolved_lhs => if rhs is .Resolved as resolved_rhs {
-                resolved_lhs.sym == resolved_rhs.sym
+            .Basic as basic_lhs => if rhs is .Basic as basic_rhs {
+                !basic_lhs.is_unresolved and !basic_rhs.is_unresolved and
+                basic_lhs.sym == basic_rhs.sym
             } else {
                 false
             },
@@ -252,7 +257,6 @@ public enum Type : traits.Stringable {
     [inline]
     public func position(self) token.Pos {
         return switch self is {
-            .Unresolved as unresolved => unresolved.position(),
             .Void => token.NO_POS,
             .Never as never_pos => never_pos,
             .Option as opt_t => opt_t.pos,
@@ -265,9 +269,10 @@ public enum Type : traits.Stringable {
             .Pointer as ptr_t => ptr_t.pos,
             .Anyptr as anyptr_t => anyptr_t.pos,
             .Func as func_t => func_t.pos,
-            .Resolved as resolved_t => resolved_t.pos
+            .Basic as basic_t => basic_t.expr.position()
         };
     }
+
     public func to_string(self) string {
         return switch self is {
             .Never => "never",
@@ -355,8 +360,8 @@ public enum Type : traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Resolved as resolved => resolved.sym.qualname(),
-            else => "" // TODO: handle `.Unresolved`
+            .Basic as basic if !basic.is_unresolved => basic.sym.qualname(),
+            else => "" // TODO: handle unresolved type
         };
     }
 }

@@ -4,9 +4,58 @@
 
 import ../ast;
 import ../prefs;
+import ../report;
 
 extend Resolver {
-    func resolve_expr(mut self, expr: ast.Expr) {
-        @ignore_not_mutated_warn(self);
+    func resolve_expr(mut self, mut expr: ast.Expr) {
+        switch expr is {
+            .Ident as mut ident => self.resolve_ident(ident)
+        }
+    }
+
+    func resolve_ident(mut self, mut ident: ast.Expr.Ident) {
+        if ident.name == "_" {
+            return; // ignore special var
+        } else if ident.is_comptime {
+            if !ast.is_comptime_constant(ident.name) {
+                report.error("unknown comptime constant `{}`".fmt(ident.name), ident.pos);
+            }
+            return;
+        } else if obj := ident.scope.lookup(ident.name) {
+            ident.found = true;
+        } else if sym := self.sym.scope.find(ident.name) {
+            if sym is ast.TypeSym as type_sym and type_sym.info is .Placeholder {
+                report.error("cannot find `{}` in this scope".fmt(ident.name), ident.pos);
+                return;
+            }
+        } else if sym := self.table.universe.scope.find(ident.name) {
+            if sym is ast.Module {
+                mut err := report.error_builder(
+                    "use of non-imported module `{}`".fmt(ident.name), ident.pos
+                );
+                err.add_note("consider adding an `import` with the path to the module");
+                err.emit();
+                return;
+            }
+        }
+
+        if !ident.found {
+            report.error("cannot find `{}` in this scope".fmt(ident.name), ident.pos);
+        } else if ident.sym is ast.SymRef as mut sym_ref {
+            ident.sym = self.clean_symbol_reference(sym_ref);
+        }
+    }
+
+    func clean_symbol_reference(mut self, mut sym_ref: ast.SymRef) ast.Sym {
+        if !sym_ref.ref_resolved {
+            sym_ref.ref_resolved = true;
+            self.resolve_expr(sym_ref.ref_expr);
+        }
+        if sym_ref.ref_expr is .Selector as selector and selector.is_path and selector.found {
+            sym_ref.ref = selector.field_sym;
+        } else if sym_ref.ref_expr is .Ident as ident and ident.is_sym {
+            sym_ref.ref = ident.sym;
+        }
+        return sym_ref.ref;
     }
 }

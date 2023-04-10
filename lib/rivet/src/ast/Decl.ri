@@ -96,7 +96,7 @@ public enum Decl {
         name: string;
         has_type: bool;
         type: Type;
-        expr: Expr;
+        mut expr: Expr;
         pos: token.Pos;
         mut sym: Sym;
     },
@@ -107,7 +107,7 @@ public enum Decl {
         is_extern: bool;
         abi: ABI;
         lefts: []ObjectData;
-        right: Expr;
+        mut right: Expr;
         pos: token.Pos;
         mut sym: Sym;
     },

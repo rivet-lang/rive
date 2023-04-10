@@ -45,7 +45,7 @@ class CGen:
         self.gen_decls(out_rir.decls)
 
         self.comp.vlog("cgen: generating C file...")
-        c_file = f"{self.comp.prefs.mod_name}.c"
+        c_file = f"module.{self.comp.prefs.mod_name}.c"
         with open(c_file, "w+") as out:
             out.write(c_headers.HEADER)
             if self.comp.prefs.build_mode != prefs.BuildMode.Release:

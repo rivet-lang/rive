@@ -214,8 +214,9 @@ public struct Parser {
             self.accept(.Ellipsis) => return ast.Type.Variadic(
                 self.parse_type(), pos: pos + self.prev_tok.pos
             ),
-            self.accept(.KwSelfTy) => return ast.Type.Unresolved(
-                ast.Expr.SelfTy(self.scope?, self.prev_tok.pos)
+            self.accept(.KwSelfTy) => return ast.Type.Basic(
+                expr: ast.Expr.SelfTy(self.scope?, self.prev_tok.pos),
+                is_unresolved: true
             ),
             self.accept(.KwNone) => return self.table.none_t,
             self.tok.kind == .Name => {
@@ -226,7 +227,7 @@ public struct Parser {
                     while self.accept(.Dot) {
                         expr = self.parse_selector_expr(expr);
                     }
-                    return ast.Type.Unresolved(expr);
+                    return ast.Type.Basic(expr: expr, is_unresolved: true);
                 }
                 // normal type
                 expr_name := @cast(ast.Expr.Ident, expr).name;
@@ -257,13 +258,13 @@ public struct Parser {
                     "string" => return self.table.string_t,
                     "comptime_int" => return self.table.comptime_int_t,
                     "comptime_float" => return self.table.comptime_float_t,
-                    else => return ast.Type.Unresolved(expr)
+                    else => return ast.Type.Basic(expr: expr, is_unresolved: true)
                 }
             },
             else => {
                 report.error("expected type, found {}".fmt(self.tok), pos);
                 self.next();
-                return ast.Type.Unresolved(ast.Expr.Empty(pos));
+                return ast.Type.Basic(expr: ast.Expr.Empty(pos), is_unresolved: true);
             }
         }
     }

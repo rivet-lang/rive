@@ -21,8 +21,9 @@ public enum Expr {
         name: string;
         scope: Scope;
         is_comptime: bool;
+        mut found: bool;
+        mut sym: Sym;
         pos: token.Pos;
-        sym: Sym;
     },
     SelfTy {
         scope: Scope;
@@ -86,8 +87,9 @@ public enum Expr {
         is_indirect: bool;
         is_option_check: bool;
         is_path: bool;
-        pos: token.Pos;
+        found: bool;
         sym: Sym;
+        pos: token.Pos;
     },
     Branch {
         op: token.Kind;

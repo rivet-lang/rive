@@ -126,7 +126,7 @@ public trait Sym {
 [boxed]
 public struct SymRef : Sym {
     public mut ref: Sym;
-    public ref_expr: Expr;
+    public mut ref_expr: Expr;
     public mut ref_resolved: bool;
 }
 
@@ -140,8 +140,8 @@ public struct Module : Sym {
 
 [boxed]
 public struct Const : Sym {
-    public expr: Expr;
-    public evaled_expr: Expr;
+    public mut expr: Expr;
+    public mut evaled_expr: Expr;
     public type: Type;
 }
 

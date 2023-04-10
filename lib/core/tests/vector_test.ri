@@ -4,6 +4,19 @@ test "vectors: push and pop" {
     vec.push("C");
     @assert(vec.len == 3);
     p := vec.pop();
-    @assert(vec.len == 2);
     @assert(p == "C");
+    @assert(vec.len == 2);
+}
+
+test "vectors: clear" {
+    mut vec := ["A", "B"];
+    @assert(vec.len == 2);
+    @assert(vec[0] == "A");
+    @assert(vec[1] == "B");
+    vec.clear();
+    @assert(vec.len == 0);
+    @assert(vec == []);
+    vec.push("C");
+    @assert(vec.len == 1);
+    @assert(vec[0] == "C");
 }
