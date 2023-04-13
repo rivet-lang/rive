@@ -6,5 +6,5 @@ func main() {
     unknown_fn();
     x := UnknownStruct();
     z := unknown_var;
-    _ = MyEnum.Mark;
+    _ = MyEnum::Mark;
 }
