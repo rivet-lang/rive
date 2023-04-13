@@ -5,16 +5,16 @@ enum SimpleEnum {
 }
 
 test "enums: enum literal" {
-    mut abc := SimpleEnum.Abc;
+    mut abc := SimpleEnum::Abc;
     @assert(abc == .Abc);
     abc = .Def;
     @assert(abc == .Def);
 }
 
 test "enums: ordinal value" {
-    @assert(@cast(int32, SimpleEnum.Abc) == 0);
-    @assert(@cast(int32, SimpleEnum.Def) == 1);
-    @assert(@cast(int32, SimpleEnum.Ghi) == 2);
+    @assert(@cast(int32, SimpleEnum::Abc) == 0);
+    @assert(@cast(int32, SimpleEnum::Def) == 1);
+    @assert(@cast(int32, SimpleEnum::Ghi) == 2);
 }
 
 enum OverridedValue {
@@ -24,13 +24,13 @@ enum OverridedValue {
 }
 
 test "enums: overrided ordinal value" {
-    @assert(@cast(int32, OverridedValue.Abc) == 0);
-    @assert(@cast(int32, OverridedValue.Def) == 10);
-    @assert(@cast(int32, OverridedValue.Ghi) == 11);
+    @assert(@cast(int32, OverridedValue::Abc) == 0);
+    @assert(@cast(int32, OverridedValue::Def) == 10);
+    @assert(@cast(int32, OverridedValue::Ghi) == 11);
 }
 
 test "enums: enum variant switch" {
-    abc := SimpleEnum.Abc;
+    abc := SimpleEnum::Abc;
     switch abc {
         .Abc => @assert(true),
         else => @assert(false)
@@ -44,7 +44,7 @@ enum AdvancedEnum {
 }
 
 test "enums: boxed enum" {
-    mut e := AdvancedEnum.Abc(6);
+    mut e := AdvancedEnum::Abc(6);
     if e is .Abc {
         @assert(@cast(int32, e) == 6);
     }
@@ -80,7 +80,7 @@ enum OS {
 }
 
 test "enums: boxed enum with fields" {
-    mut user_os := OS.Windows(version: 2023_10_04);
+    mut user_os := OS::Windows(version: 2023_10_04);
     if user_os is .Windows as windows {
         @assert(windows.version == 2023_10_04);
     }

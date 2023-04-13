@@ -17,7 +17,7 @@ test "byte string literal" {
 
 test "C string literal" {
     pstr := c"Hello World!";
-    @assert(unsafe { libc.strlen(pstr) } == 12);
+    @assert(unsafe { libc::strlen(pstr) } == 12);
 }
 
 test "raw string literal" {

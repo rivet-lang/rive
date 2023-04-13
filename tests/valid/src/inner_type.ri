@@ -15,11 +15,11 @@ struct OuterStruct {
 
     func caller(self) {
         self.method();
-        OuterStruct.associated_func();
+        Self::associated_func();
     }
 }
 
 test "inner type" {
-    o := OuterStruct(inner: OuterStruct.InnerStruct(5));
+    o := OuterStruct(inner: OuterStruct::InnerStruct(5));
     @assert(o.inner.abc == 5);
 }

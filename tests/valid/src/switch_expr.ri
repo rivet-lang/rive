@@ -37,7 +37,7 @@ struct SwitchSon {
 
 test "`switch` branch variable" {
     ss := SwitchSon(name: "Rivet");
-    sb := SwitchBase.SwitchSon(ss);
+    sb := SwitchBase::SwitchSon(ss);
     @assert(switch sb is {
         .SwitchSon as sb_ss => sb_ss.name == "Rivet",
         else => false
