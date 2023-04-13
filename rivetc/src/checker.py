@@ -1016,8 +1016,13 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.BuiltinCallExpr):
             expr.typ = self.comp.void_t
-            if expr.name == "ignore_not_mutated_warn":
+            if expr.name == "set_enum_ref_value":
                 self.check_expr_is_mut(expr.args[0])
+                _ = self.check_expr(expr.args[0])
+                _ = self.check_expr(expr.args[1])
+            elif expr.name == "ignore_not_mutated_warn":
+                self.check_expr_is_mut(expr.args[0])
+                _ = self.check_expr(expr.args[0])
             elif expr.name == "vec":
                 if len(expr.args) in (1, 2):
                     elem_t = expr.args[0].typ

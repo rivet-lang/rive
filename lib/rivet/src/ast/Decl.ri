@@ -33,7 +33,7 @@ public enum Decl {
         name: string;
         parent: Expr;
         is_typealias: bool;
-        parent_type: Type;
+        mut parent_type: Type;
         pos: token.Pos;
         mut sym: Sym;
     },
@@ -95,7 +95,7 @@ public enum Decl {
         is_public: bool;
         name: string;
         has_type: bool;
-        type: Type;
+        mut type: Type;
         mut expr: Expr;
         pos: token.Pos;
         mut sym: Sym;

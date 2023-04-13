@@ -483,7 +483,7 @@ class EnumInfo:
 
     def get_variant_by_type(self, typ):
         for v in self.variants:
-            if v.has_typ and v.typ == typ:
+            if v.has_typ and v.typ.symbol() == typ.symbol():
                 return v
         return None
 

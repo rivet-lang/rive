@@ -16,11 +16,11 @@ public enum Type : traits.Stringable {
     Void,
     Never: token.Pos,
     Option {
-        inner: Type;
+        mut inner: Type;
         pos: token.Pos;
     },
     Result {
-        inner: Type;
+        mut inner: Type;
         pos: token.Pos;
     },
     Tuple {
@@ -38,31 +38,31 @@ public enum Type : traits.Stringable {
         }
     },
     Variadic {
-        inner: Type;
+        mut inner: Type;
         is_mut: bool;
         sym: TypeSym;
         pos: token.Pos;
     },
     Vector {
-        inner: Type;
+        mut inner: Type;
         is_mut: bool;
         sym: TypeSym;
         pos: token.Pos;
     },
     Array {
-        inner: Type;
+        mut inner: Type;
         is_mut: bool;
         size: Expr;
         sym: TypeSym;
         pos: token.Pos;
     },
     Reference {
-        inner: Type;
+        mut inner: Type;
         is_mut: bool;
         pos: token.Pos;
     },
     Pointer {
-        inner: Type;
+        mut inner: Type;
         is_mut: bool;
         is_indexable: bool;
         pos: token.Pos;
@@ -87,52 +87,51 @@ public enum Type : traits.Stringable {
     public func unalias(self) ?Self {
         // NOTE: `.unalias()` returns an option, so we use the same type without
         // unaliasing instead.
-        switch self is {
-            .Result as result => return .Result(result.inner.unalias() ?? result.inner),
-            .Option as option => return .Option(option.inner.unalias() ?? option.inner),
+        return switch self is {
+            .Anyptr => self,
+            .Result as result => .Result(result.inner.unalias() ?? result.inner),
+            .Option as option => .Option(option.inner.unalias() ?? option.inner),
             .Tuple as tuple_data => {
                 unaliased_types := @vec(mut Type, tuple_data.inners.len);
                 for i, tuple_type in tuple_data.inners {
                     unaliased_types[i] = tuple_type.unalias() ?? tuple_type;
                 }
-                return .Tuple(unaliased_types, tuple_data.sym);
+                .Tuple(unaliased_types, tuple_data.sym)
             },
-            .Vector as vector_data => return .Vector(
+            .Vector as vector_data => .Vector(
                 vector_data.inner.unalias() ?? vector_data.inner, vector_data.is_mut
             ),
-            .Array as array_data => return .Array(
+            .Array as array_data => .Array(
                 array_data.inner.unalias() ?? array_data.inner, ...self
             ),
-            .Reference as reference_data => return .Reference(
+            .Reference as reference_data => .Reference(
                 reference_data.inner.unalias() ?? reference_data.inner, ...self
             ),
-            .Pointer as pointer_data => return .Pointer(
+            .Pointer as pointer_data => .Pointer(
                 pointer_data.inner.unalias() ?? pointer_data.inner, ...self
             ),
-            .Anyptr => return self,
             .Func as func_data => {
                 args := @vec(mut Arg, func_data.args.len);
                 for i, arg in args {
                     args[i].type = arg.type.unalias() ?? arg.type;
                 }
-                return .Func(
+                .Func(
                     args: args, ret_type: func_data.ret_type.unalias() ?? func_data.ret_type,
                     ...self
-                );
+                )
             },
-            .Basic as basic => return if basic.is_unresolved {
-                none
+            .Basic as basic if !basic.is_unresolved => if basic.sym.info is .Alias as alias_info {
+                alias_info.parent.unalias() ?? alias_info.parent
             } else {
-                if basic.sym.info is .Alias as alias_info {
-                    .Basic(
-                        (alias_info.parent.unalias() ?? alias_info.parent)
-                            .symbol() ?? basic.sym
-                    )
-                } else {
-                    .Basic(basic.sym)
-                }
+                .Basic(basic.sym)
             },
-            else => return none // for `.Void` or `.Never`
+            else => none // for `.Void` or `.Never`
+        };
+    }
+
+    public func unalias_in_place(mut self) {
+        if unaliased_type := self.unalias() {
+            @set_enum_ref_value(self, unaliased_type);
         }
     }
 

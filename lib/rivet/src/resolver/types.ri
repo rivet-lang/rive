@@ -8,7 +8,7 @@ import ../report;
 
 extend Resolver {
     [inline]
-    func resolve_type(mut self, type: ast.Type) bool {
+    func resolve_type(mut self, mut type: ast.Type) bool {
         return switch type is {
             .Void, .Never, .Anyptr => true,
             .Option as opt => self.resolve_type(opt.inner),
@@ -33,7 +33,7 @@ extend Resolver {
                                 basic.sym = type_sym;
                                 if type_sym.info is .Alias as alias_info {
                                     if self.resolve_type(alias_info.parent) {
-                                        type.unalias();
+                                        type.unalias_in_place();
                                     }
                                 }
                             } else {
@@ -63,7 +63,7 @@ extend Resolver {
                                     basic.sym = type_sym;
                                     if type_sym.info is .Alias as alias_info {
                                         if self.resolve_type(alias_info.parent) {
-                                            type.unalias();
+                                            type.unalias_in_place();
                                         }
                                     }
                                     return true;

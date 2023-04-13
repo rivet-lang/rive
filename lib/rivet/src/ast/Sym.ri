@@ -142,7 +142,7 @@ public struct Module : Sym {
 public struct Const : Sym {
     public mut expr: Expr;
     public mut evaled_expr: Expr;
-    public type: Type;
+    public mut type: Type;
 }
 
 public enum VarLevel as uint8 {
@@ -194,7 +194,7 @@ public enum TypeInfo : traits.Stringable {
     },
     String,
     Alias {
-        parent: Type;
+        mut parent: Type;
     },
     Array {
         elem_type: Type;

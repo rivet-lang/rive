@@ -827,7 +827,11 @@ class Codegen:
                 i_typ = i_typ.ptr()
             return ir.Ident(i_typ, expr.obj.ir_name)
         elif isinstance(expr, ast.BuiltinCallExpr):
-            if expr.name == "vec":
+            if expr.name == "set_enum_ref_value":
+                arg0 = self.gen_expr(expr.args[0])
+                arg1 = self.gen_expr(expr.args[1])
+                self.cur_fn.store_ptr(arg0, ir.Inst(ir.InstKind.LoadPtr, [arg1]))
+            elif expr.name == "vec":
                 typ_sym = expr.typ.symbol()
                 if len(expr.args) == 2:
                     return self.empty_vec(typ_sym, self.gen_expr(expr.args[1]))
