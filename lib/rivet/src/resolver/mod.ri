@@ -42,6 +42,7 @@ public struct Resolver {
             old_sym := self.sym;
             old_self_sym := self.self_sym;
             switch decl is {
+                .Empty as empty_pos => report.error("BUG: empty declaration found", empty_pos),
                 .Extern as extern_decl => self.resolve_decls(extern_decl.decls),
                 .Alias as alias_decl => if alias_decl.is_typealias {
                     _ = self.resolve_type(alias_decl.parent_type);
@@ -64,6 +65,24 @@ public struct Resolver {
                     }
                     if !var_decl.is_extern {
                         self.resolve_expr(var_decl.right);
+                    }
+                },
+                .Func as func_decl => {
+                    for arg in func_decl.args {
+                        if self.resolve_type(arg.type) {
+                            func_decl.scope.add(ast.Var(
+                                is_mut: arg.is_mut,
+                                name: arg.name,
+                                level: .Argument,
+                                pos: arg.pos,
+                                type: arg.type
+                            )) catch |err| report.error(
+                                err.to_string(), arg.pos
+                            );
+                        }
+                    }
+                    for mut stmt in func_decl.stmts {
+                        self.resolve_stmt(stmt);
                     }
                 }
             }

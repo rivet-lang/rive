@@ -33,6 +33,7 @@ public struct Parser {
     mut inside_struct: bool;
     mut inside_trait: bool;
     mut inside_enum_variant_with_fields: bool;
+    mut inside_func: bool;
     mut inside_switch_header: bool;
     mut inside_block: bool;
 
@@ -108,7 +109,11 @@ public struct Parser {
 
     [inline]
     func open_scope(mut self) {
-        self.scope = ast.Scope(start: self.tok.pos.pos, parent: self.scope);
+        self.scope = ast.Scope(
+            start: self.tok.pos.pos,
+            parent: self.scope,
+            is_local: self.inside_func
+        );
     }
 
     func close_scope(mut self) {

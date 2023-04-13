@@ -2196,13 +2196,13 @@ class Codegen:
                                     ]
                                 )
                             )
-                        if b.has_var and i == 0:
+                        if b.has_var:
                             var_t = self.ir_type(b.var_typ)
                             var_t2 = var_t.ptr(
                             ) if not isinstance(
                                 var_t, ir.Pointer
                             ) else var_t
-                            if expr.expr.typ.sym.kind == TypeKind.Enum:
+                            if expr.expr.typ.symbol().kind == TypeKind.Enum:
                                 val = ir.Inst(
                                     ir.InstKind.Cast, [
                                         ir.Selector(
@@ -2211,21 +2211,24 @@ class Codegen:
                                         ), var_t2
                                     ]
                                 )
-                                if not (
-                                    b.var_is_mut or (
-                                        isinstance(var_t, ir.Pointer)
-                                        and var_t.is_managed
-                                    )
-                                ):
-                                    val = ir.Inst(ir.InstKind.LoadPtr, [val])
-                                if b.var_is_mut and not isinstance(
-                                    var_t, ir.Pointer
-                                ):
-                                    var_t = var_t.ptr(True)
                             else:
                                 val = ir.Inst(
-                                    ir.InstKind.Cast, [switch_expr, var_t]
+                                    ir.InstKind.Cast, [ir.Selector(
+                                        ir.VOID_PTR_T, switch_expr,
+                                        ir.Name("obj")
+                                    ), var_t]
                                 )
+                            if not (
+                                b.var_is_mut or (
+                                    isinstance(var_t, ir.Pointer)
+                                    and var_t.is_managed
+                                )
+                            ):
+                                val = ir.Inst(ir.InstKind.LoadPtr, [val])
+                            if b.var_is_mut and not isinstance(
+                                var_t, ir.Pointer
+                            ):
+                                var_t = var_t.ptr(True)
                             self.cur_fn.inline_alloca(var_t, b.var_name, val)
                     else:
                         p_typ_sym = p.typ.symbol()

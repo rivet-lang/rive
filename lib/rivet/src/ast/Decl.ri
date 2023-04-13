@@ -125,8 +125,8 @@ public enum Decl {
         args: []Arg;
         has_named_args: bool;
         ret_type: Type;
-        stmts: []Stmt;
-        scope: Scope;
+        stmts: []mut Stmt;
+        mut scope: Scope;
         has_body: bool;
         self_is_mut: bool;
         self_is_ref: bool;
@@ -137,7 +137,7 @@ public enum Decl {
         docs: DocComment;
         annotations: Annotations;
         self_is_mut: bool;
-        stmts: []Stmt;
+        stmts: []mut Stmt;
         scope: Scope;
         pos: token.Pos;
         mut sym: Sym;
@@ -146,7 +146,7 @@ public enum Decl {
         docs: DocComment;
         annotations: Annotations;
         name: string;
-        stmts: []Stmt;
+        stmts: []mut Stmt;
         scope: Scope;
         pos: token.Pos;
     }

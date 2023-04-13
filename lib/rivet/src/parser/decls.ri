@@ -477,14 +477,16 @@ extend Parser {
                 self_is_mut := self.accept(.KwMut);
                 self.expect(.KwSelf);
                 self.expect(.Rparen);
+                self.inside_func = true;
                 self.open_scope();
                 sc := self.scope;
-                mut stmts := @vec(ast.Stmt);
+                mut stmts := @vec(mut ast.Stmt);
                 self.expect(.Lbrace);
                 while !self.accept(.Rbrace) {
                     stmts.push(self.parse_stmt());
                 }
                 self.close_scope();
+                self.inside_func = false;
                 return .Destructor(
                     doc_comment,
                     annotations,
@@ -497,14 +499,16 @@ extend Parser {
             self.accept(.KwTest) => {
                 name := self.tok.lit;
                 self.expect(.String);
+                self.inside_func = true;
                 self.open_scope();
                 sc := self.scope;
-                mut stmts := @vec(ast.Stmt);
+                mut stmts := @vec(mut ast.Stmt);
                 self.expect(.Lbrace);
                 while !self.accept(.Rbrace) {
                     stmts.push(self.parse_stmt());
                 }
                 self.close_scope();
+                self.inside_func = false;
                 return .Test(
                     doc_comment,
                     annotations,
@@ -560,6 +564,7 @@ extend Parser {
         mut has_named_args := false;
         mut is_variadic := false;
 
+        self.inside_func = true;
         self.open_scope();
         sc := self.scope;
         sc.detached_from_parent = true;
@@ -596,7 +601,7 @@ extend Parser {
                         .Empty(self.tok.pos)
                     };
                     args.push(ast.Arg(
-                        name: name,
+                        name: arg_name,
                         is_mut: arg_is_mut,
                         type: arg_type,
                         def_expr: arg_expr,
@@ -622,7 +627,7 @@ extend Parser {
             ret_type = .Result(ret_type, ret_t_pos + self.prev_tok.pos);
         }
 
-        mut stmts := @vec(ast.Stmt);
+        mut stmts := @vec(mut ast.Stmt);
         mut has_body := true;
         if (self.inside_trait or self.inside_extern) and self.accept(.Semicolon) {
             has_body = false;
@@ -633,6 +638,7 @@ extend Parser {
             }
         }
         self.close_scope();
+        self.inside_func = false;
         return .Func(
             docs: docs,
             annotations: annotations,

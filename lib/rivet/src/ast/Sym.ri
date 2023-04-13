@@ -4,6 +4,7 @@
 
 import std/traits;
 import std/process;
+import std/console;
 
 import ../token;
 
@@ -83,13 +84,15 @@ public trait Sym {
         );
     }
 
-    [inline]
     func type_of(self) string {
         return switch self is {
             SymRef as ref => ref.type_of(),
             Module => "module",
             Const => "constant",
-            Var => "variable",
+            Var as obj => switch obj.level {
+                .Receiver, .Argument => "argument",
+                else => "variable"
+            },
             TypeSym as type_sym => if type_sym.info.is_compound() {
                 type_sym.info.to_string()
             } else {
@@ -143,25 +146,27 @@ public struct Const : Sym {
     public mut expr: Expr;
     public mut evaled_expr: Expr;
     public mut type: Type;
+    public pos: token.Pos;
 }
 
 public enum VarLevel as uint8 {
-    Mod, // module-level
-    Rec, // receiver: `self`
-    Arg, // argument-level
+    Module, // module-level
+    Receiver, // receiver: `self`
+    Argument, // argument-level
     Local // inside function
 }
 
 [boxed]
 public struct Var : Sym {
     public is_extern: bool;
-    public ir_name: string; // used for duplicate objects in IR
     public is_mut: bool;
     public is_used: bool;
     public is_changed: bool;
     public is_hidden_ref: bool;
+    public ir_name: string; // used for duplicate objects in IR
     public level: VarLevel;
     public type: Type;
+    public pos: token.Pos;
 }
 
 [boxed]
@@ -492,11 +497,17 @@ public struct Scope {
     public mut detached_from_parent: bool;
     public mut childrens: []Scope;
     public mut syms: []Sym;
+    public mut is_local: bool;
 
     public func add(mut self, sym: Sym) ! {
-        if sym.name == "_" and sym is Var {
-            return; // ignore blank var
+        if sym is Var and sym.name == "_" {
+            return; // ignore blank variable
         } else if self.exists(sym.name) {
+            if self.is_local {
+                return DuplicateSymbolError(
+                    "duplicate {} `{}` in this scope".fmt(sym.type_of(), sym.name)
+                );
+            }
             return DuplicateSymbolError(
                 "duplicate symbol `{}` in {} `{}`".fmt(
                     sym.name, self.owner.type_of(), self.owner.qualname()

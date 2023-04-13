@@ -10,6 +10,7 @@ import ../report;
 extend Resolver {
     func resolve_expr(mut self, mut expr: ast.Expr) {
         switch expr is {
+            .Empty as empty_pos => report.error("BUG: empty expression found", empty_pos),
             .Ident as mut ident => self.resolve_ident(ident),
             .Selector as mut selector => self.resolve_selector(selector)
         }
