@@ -278,10 +278,8 @@ class Parser:
             else:
                 is_typealias = False
                 parent = self.parse_ident()
-                if self.accept(Kind.Dot):
+                while self.accept(Kind.DoubleColon):
                     parent = self.parse_selector_expr(parent)
-                    while self.accept(Kind.Dot):
-                        parent = self.parse_selector_expr(parent)
             self.expect(Kind.Semicolon)
             return ast.AliasDecl(
                 doc_comment, annotations, is_public, name, parent, is_typealias,
@@ -993,6 +991,8 @@ class Parser:
                             )
                 self.expect(Kind.Rbracket)
                 expr = ast.IndexExpr(expr, index, expr.pos)
+            elif self.accept(Kind.DoubleColon):
+                expr = self.parse_selector_expr(expr)
             elif (
                 self.prev_tok.pos.line != self.tok.pos.line
                 and self.tok.kind == Kind.Dot
@@ -1165,13 +1165,14 @@ class Parser:
         return ast.GuardExpr(vars, e, has_cond, cond, self.scope, pos)
 
     def parse_selector_expr(self, left):
+        is_path = self.prev_tok.kind == Kind.DoubleColon
         field_pos = self.tok.pos
-        if self.tok.kind == Kind.Number:
+        if self.tok.kind == Kind.Number and not is_path:
             name = self.tok.lit
             self.next()
         else:
             name = self.parse_name()
-        return ast.SelectorExpr(left, name, left.pos, field_pos)
+        return ast.SelectorExpr(left, name, left.pos, field_pos, is_path = is_path)
 
     def parse_literal(self):
         if self.tok.kind in [Kind.KwTrue, Kind.KwFalse]:
@@ -1322,9 +1323,9 @@ class Parser:
         elif self.tok.kind == Kind.Name:
             prev_tok_kind = self.prev_tok.kind
             expr = self.parse_ident()
-            if self.accept(Kind.Dot):
+            if self.accept(Kind.DoubleColon):
                 res = self.parse_selector_expr(expr)
-                while self.accept(Kind.Dot):
+                while self.accept(Kind.DoubleColon):
                     res = self.parse_selector_expr(res)
                 return type.Type.unresolved(res)
             # normal type

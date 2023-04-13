@@ -10,7 +10,7 @@ func demangle_symbol(name: string) string {
     name_ptr := unsafe { name.ptr };
     mut idx: usize := 2;
     mut buf := StaticBuffer();
-    mut res := StringBuilder.new(name.len);
+    mut res := StringBuilder::new(name.len);
     while idx < name.len {
         mut byte := unsafe { name_ptr[idx] };
         if byte.is_digit() {
@@ -20,7 +20,7 @@ func demangle_symbol(name: string) string {
         }
 
         if !res.is_empty() {
-            res.write_string(".");
+            res.write_string("::");
         }
 
         buf_len := @cast(usize, buf.as_uint64());

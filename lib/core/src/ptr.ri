@@ -10,7 +10,8 @@ extend none : Stringable {
 }
 
 func cstr_runes_count(s: [*]uint8, size: usize) usize {
-	(mut l: usize, mut i: usize) := (0, 0);
+	mut i: usize := 0;
+	mut l: usize := 0;
 	while i < size {
 		l += 1;
 		i += unsafe { s[i] }.len_utf8();

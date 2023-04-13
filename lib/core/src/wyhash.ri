@@ -6,12 +6,12 @@ import c;
 
 [unsafe; inline]
 func wyhash(key: *uint8, len: uint64, seed: uint64) uint64 {
-    return unsafe { c.wyhash(key, len, seed, &c._wyp[0]) };
+    return unsafe { c::wyhash(key, len, seed, &c::_wyp[0]) };
 }
 
 [inline]
 func wyhash64(a: uint64, b: uint64) uint64 {
-    return unsafe { c.wyhash64(a, b) };
+    return unsafe { c::wyhash64(a, b) };
 }
 
 [inline]

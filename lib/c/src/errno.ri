@@ -18,9 +18,9 @@ public struct ErrnoError : Error {
 public func errno() int32 {
     return unsafe {
 #if _LINUX_
-        libc.__errno_location()?.*
+        libc::__errno_location()?.*
 #else
-        libc._errno().*
+        libc::_errno().*
 #endif
     };
 }
@@ -28,8 +28,8 @@ public func errno() int32 {
 [inline]
 public func errno_msg(code: int32 = errno()) string {
     unsafe {
-        return if s := libc.strerror(code) {
-            string.from_raw(s)
+        return if s := libc::strerror(code) {
+            string::from_raw(s)
         } else {
             ""
         };

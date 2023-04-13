@@ -46,12 +46,12 @@ func bt_print_callback(
         fn_name := if fn_ptr is none {
             "???"
         } else {
-            demangle_symbol(string.from_raw(fn_ptr))
+            demangle_symbol(string::from_raw(fn_ptr))
         };
         file_name := if filename_ptr is none {
             "???"
         } else {
-            string.from_raw(filename_ptr)
+            string::from_raw(filename_ptr)
         };
         console_eprintln("   at {} ({}:{})", fn_name, file_name, lineno);
     }
@@ -63,10 +63,10 @@ func bt_error_handler(data: mut_anyptr, msg_ptr: ?[*]mut uint8, errnum: int32) {
         bdata := @cast(*mut BacktraceData, data);
         if !bdata.has_error {
             console_eprint("   libbacktrace error: ");
-            console_eprint(string.from_raw(msg_ptr));
+            console_eprint(string::from_raw(msg_ptr));
             if errnum > 0 {
                 console_eprint(" (");
-                console_eprint(c.errno_msg(errnum));
+                console_eprint(c::errno_msg(errnum));
                 console_eprint(")");
             }
             console_eprintln();

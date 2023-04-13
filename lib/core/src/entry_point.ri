@@ -2,8 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import c/libc;
-
 extern (Rivet) {
     public var mut ARGS: []string;
 
@@ -17,7 +15,7 @@ extern (C) func init_args(_argc: usize, _argv: [*][*]uint8) {
         ARGS = @vec(string, _argc);
         mut i: usize := 0;
         while i < _argc : i += 1 {
-            ARGS.push(string.from_raw(_argv[i]));
+            ARGS.push(string::from_raw(_argv[i]));
         }
     }
 }

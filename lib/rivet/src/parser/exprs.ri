@@ -457,6 +457,7 @@ extend Parser {
                         pos: expr.position() + self.prev_tok.pos
                     )
                 },
+                self.accept(.DoubleColon) => self.parse_selector_expr(expr),
                 // avoid `expr` + `.EnumLiteral` concatenation
                 self.prev_tok.pos.line != self.tok.pos.line
                 and self.tok.kind == .Dot and self.peek_tok.kind == .Name

@@ -10,7 +10,7 @@ import c/libc;
 /// NOTE: Unlike the `mem.zeroed` function, `mem.alloc` will
 /// not zero the memory block.
 public func mem_alloc(size: usize) !mut_anyptr {
-    if new := unsafe { libc.malloc(size) } {
+    if new := unsafe { libc::malloc(size) } {
         return new;
     }
     return OutOfMemoryError("insufficient memory is available");
@@ -37,7 +37,7 @@ public func mem_resize(ptr: ?mut_anyptr, sz: usize) !mut_anyptr {
         }
         return InvalidArgumentError("argument `sz` is 0");
     }
-    if new := unsafe { libc.realloc(ptr, sz) } {
+    if new := unsafe { libc::realloc(ptr, sz) } {
         return new;
     }
     return OutOfMemoryError("insufficient memory is available");
@@ -78,7 +78,7 @@ public func mem_copy(dest: mut_anyptr, src: anyptr, sz: usize) {
 /// `dest`.
 public func mem_move(dest: mut_anyptr, src: anyptr, sz: usize) {
     unsafe {
-        _ = libc.memmove(dest, src, sz);
+        _ = libc::memmove(dest, src, sz);
     }
 }
 
@@ -111,13 +111,13 @@ public func mem_dup(src: anyptr, sz: usize) !mut_anyptr {
 /// in constant time for this.
 [inline]
 public func mem_cmp(s1: anyptr, s2: anyptr, n: usize) int32 {
-    return unsafe { libc.memcmp(s1, s2, n) };
+    return unsafe { libc::memcmp(s1, s2, n) };
 }
 
 /// Deallocates manually the memory referenced by `ptr`.
 [unsafe; inline]
 public func mem_dealloc(ptr: anyptr) {
     unsafe {
-        libc.free(ptr);
+        libc::free(ptr);
     }
 }

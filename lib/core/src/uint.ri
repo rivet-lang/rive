@@ -74,7 +74,7 @@ extend uint8 : Stringable {
     /// Returns the value of `self` as a ASCII `string`.
     [inline]
     public func to_ascii(self) string {
-        return string.from_byte(self);
+        return string::from_byte(self);
     }
 
     /// Returns the value of `self` as a string.
@@ -131,7 +131,7 @@ extend uint32 : Stringable {
 
             diff := max - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
-            return string.from_raw_with_len(buf, diff);
+            return string::from_raw_with_len(buf, diff);
         }
     }
 }
@@ -173,13 +173,13 @@ extend uint64 : Stringable {
 
             diff := @cast(usize, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
-            return string.from_raw_with_len(buf, diff);
+            return string::from_raw_with_len(buf, diff);
         }
     }
 }
 
 extend usize : Stringable {
-    public const MAX: usize = #if _x64_ uint64.MAX #else uint32.MAX #endif;
+    public const MAX: usize = #if _x64_ uint64::MAX #else uint32::MAX #endif;
 
     /// Returns the value of `self` as a string.
     [inline]

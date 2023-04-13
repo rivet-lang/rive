@@ -3,10 +3,9 @@
 // be found in the LICENSE file.
 
 import c;
-import c/libc;
 
-public alias ErrnoError = c.ErrnoError;
-public alias last_errno_error = c.last_errno_error;
+public alias ErrnoError = c::ErrnoError;
+public alias last_errno_error = c::last_errno_error;
 
 /// This trait is used for errors returned with result types (!T).
 public trait Error : Stringable {

@@ -83,7 +83,7 @@ extend int32 : Stringable {
 
             diff := @cast(usize, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
-            return string.from_raw_with_len(buf, diff);
+            return string::from_raw_with_len(buf, diff);
         }
     }
 
@@ -143,14 +143,14 @@ extend int64 : Stringable {
 
             diff := @cast(usize, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
-            return string.from_raw_with_len(buf, diff);
+            return string::from_raw_with_len(buf, diff);
         }
     }
 }
 
 extend isize : Stringable {
-    public const MIN: isize = #if _x64_ int64.MIN #else int32.MIN #endif;
-    public const MAX: isize = #if _x64_ int64.MAX #else int32.MAX #endif;
+    public const MIN: isize = #if _x64_ int64::MIN #else int32::MIN #endif;
+    public const MAX: isize = #if _x64_ int64::MAX #else int32::MAX #endif;
 
     /// Returns the value of `self` as a string.
     [inline]

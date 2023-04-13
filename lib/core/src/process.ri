@@ -7,41 +7,41 @@ import c/libc;
 
 /// Returns the path name of the executable that started the current process.
 public func process_executable() !string {
-    res: [libc.MAX_PATH_LEN]uint8 := []!;
+    res: [libc::MAX_PATH_LEN]uint8 := []!;
     count := unsafe {
-        libc.readlink(c"/proc/self/exe", &res[0], libc.MAX_PATH_LEN)
+        libc::readlink(c"/proc/self/exe", &res[0], libc::MAX_PATH_LEN)
     };
     if count < 0 {
         return ReadFailedError("failed at reading /proc/self/exe to get exe path");
     }
     return unsafe {
-        string.from_raw_with_len(&res[0], @cast(usize, count)).clone()
+        string::from_raw_with_len(&res[0], @cast(usize, count)).clone()
     };
 }
 
 /// Sets the current working directory to the new directory in `path`.
 public func process_set_cwd(path: string) ! {
-    if unsafe { libc.chdir(path.ptr) == -1 } {
-        return c.last_errno_error();
+    if unsafe { libc::chdir(path.ptr) == -1 } {
+        return c::last_errno_error();
     }
 }
 
 /// Returns the absolute path of the current working directory.
 public func process_get_cwd() !string {
     unsafe {
-        buf: [libc.MAX_PATH_LEN]mut uint8 := []!;
-        if res := libc.getcwd(&mut buf[0], libc.MAX_PATH_LEN) {
-            return string.from_raw(&buf[0]).clone();
+        buf: [libc::MAX_PATH_LEN]mut uint8 := []!;
+        if res := libc::getcwd(&mut buf[0], libc::MAX_PATH_LEN) {
+            return string::from_raw(&buf[0]).clone();
         }
     }
-    return c.last_errno_error();
+    return c::last_errno_error();
 }
 
 /// Returns the OS-assigned process identifier associated with this
 /// process.
 [inline]
 public func process_id() uint32 {
-    return unsafe { libc.getpid() };
+    return unsafe { libc::getpid() };
 }
 
 /// Terminates current thread execution immediately after displaying a
@@ -63,7 +63,7 @@ public func process_panic(s: string = "", args: ...Stringable) never {
 public func process_abort() never {
     unsafe {
         drop_globals();
-        libc.abort();
+        libc::abort();
     }
 }
 
@@ -75,6 +75,6 @@ public func process_abort() never {
 public func process_exit(code: int32 = 0) never {
     unsafe {
         drop_globals();
-        libc.exit(code);
+        libc::exit(code);
     }
 }

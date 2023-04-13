@@ -12,7 +12,7 @@ func array_index(len: usize, idx: usize) {
 
 [inline]
 func array_eq(arr: anyptr, other_arr: anyptr, len: usize) bool {
-    return unsafe { libc.memcmp(arr, other_arr, len) == 0 };
+    return unsafe { libc::memcmp(arr, other_arr, len) == 0 };
 }
 
 [inline]
@@ -26,7 +26,7 @@ func array_slice(arr: mut_anyptr, elem_size: usize, size: usize, start: usize, e
     }
     len := end - start;
     return unsafe {
-        Vector.from_array(
+        Vector::from_array(
             if len == size { arr } else { @ptr_add(arr, start) }, elem_size, len
         )
     };

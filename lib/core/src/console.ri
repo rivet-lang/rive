@@ -25,10 +25,10 @@ public func console_println(s: string = "", args: ...Stringable) {
 public func console_eprint(s: string, args: ...Stringable) {
     sx := s.fmt(args);
     unsafe {
-        _ = libc.fflush(libc.stdout);
-        _ = libc.fflush(libc.stderr);
+        _ = libc::fflush(libc::stdout);
+        _ = libc::fflush(libc::stderr);
         write_buf_to_fd(2, sx.ptr, sx.len);
-        _ = libc.fflush(libc.stderr);
+        _ = libc::fflush(libc::stderr);
     }
 }
 
@@ -36,10 +36,10 @@ public func console_eprint(s: string, args: ...Stringable) {
 /// flushed.
 public func console_eprintln(s: string = "", args: ...Stringable) {
     unsafe {
-        _ = libc.fflush(libc.stdout);
-        _ = libc.fflush(libc.stderr);
+        _ = libc::fflush(libc::stdout);
+        _ = libc::fflush(libc::stderr);
         writeln_to_fd(2, s.fmt(args));
-        _ = libc.fflush(libc.stderr);
+        _ = libc::fflush(libc::stderr);
     }
 }
 
@@ -47,7 +47,7 @@ public func console_eprintln(s: string = "", args: ...Stringable) {
 /// terminal.
 [inline]
 public func console_is_atty(fd: int32) bool {
-    return unsafe { libc.isatty(fd) == 1 };
+    return unsafe { libc::isatty(fd) == 1 };
 }
 
 [unsafe]
@@ -57,7 +57,7 @@ func write_buf_to_fd(fd: int32, buf_: [*]uint8, len: usize) {
         mut x: isize := 0;
         mut remaining_bytes := @cast(isize, len);
         while remaining_bytes > 0 {
-            x = libc.write(fd, @ptr_add(buf, x), @cast(usize, remaining_bytes));
+            x = libc::write(fd, @ptr_add(buf, x), @cast(usize, remaining_bytes));
             remaining_bytes -= x;
         }
     }

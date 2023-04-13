@@ -11,16 +11,16 @@ public struct StringBuilder : Stringable {
     /// Returns a string builder with capacity `cap`.
     [inline]
     public func new(cap: usize = 0) Self {
-        return Self(unsafe { Vector.new(@size_of(uint8), cap) });
+        return Self(unsafe { Vector::new(@size_of(uint8), cap) });
     }
 
     [inline]
     public func from_string(s: string) Self {
         return if s.len == 0 {
-            Self.new()
+            Self::new()
         } else {
             Self(unsafe {
-                Vector.from_array(@cast(*mut uint8, s.ptr), @size_of(uint8), s.len)
+                Vector::from_array(@cast(*mut uint8, s.ptr), @size_of(uint8), s.len)
             })
         };
     }
@@ -33,7 +33,7 @@ public struct StringBuilder : Stringable {
     [unsafe; inline]
     public func write_raw(mut self, s: [*]uint8) {
         unsafe {
-            self.write_raw_with_len(s, libc.strlen(s));
+            self.write_raw_with_len(s, libc::strlen(s));
         }
     }
 

@@ -443,9 +443,8 @@ class Resolver:
 
     def resolve_selector_expr(self, expr):
         self.resolve_expr(expr.left)
-        if not (expr.is_indirect or expr.is_option_check):
+        if expr.is_path:
             if isinstance(expr.left, ast.SelfTyExpr):
-                expr.is_path = True
                 if expr.left.sym == None:
                     expr.not_found = True
                     return
@@ -453,7 +452,6 @@ class Resolver:
             elif isinstance(expr.left, ast.Ident) and expr.left.is_sym:
                 if isinstance(expr.left.sym, (sym.Var, sym.Const)):
                     return
-                expr.is_path = True
                 if expr.left.not_found:
                     expr.not_found = True
                     return
@@ -463,12 +461,11 @@ class Resolver:
             ) and expr.left.is_path:
                 if isinstance(expr.left.field_sym, (sym.Var, sym.Const)):
                     return
-                expr.is_path = True
                 if expr.left.not_found:
                     expr.not_found = True
                     return
                 expr.left_sym = expr.left.field_sym
-            if expr.is_path:
+            if not expr.not_found:
                 if field_sym := self.find_symbol(
                     expr.left_sym, expr.field_name, expr.field_pos
                 ):

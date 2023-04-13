@@ -16,7 +16,7 @@ public struct string : Stringable, Hashable {
     public func from_raw(ptr: ?[*]uint8, is_ref: bool = false) Self {
         if safe_ptr := ptr {
             return unsafe {
-                Self.from_raw_with_len(safe_ptr, libc.strlen(ptr), is_ref)
+                Self::from_raw_with_len(safe_ptr, libc::strlen(ptr), is_ref)
             };
         }
         return empty_string;
@@ -94,7 +94,7 @@ public struct string : Stringable, Hashable {
         if others.len == 0 {
             return self;
         }
-        mut sb := StringBuilder.from_string(self);
+        mut sb := StringBuilder::from_string(self);
         for other in others {
             sb.write_string(other);
         }
@@ -139,7 +139,7 @@ public struct string : Stringable, Hashable {
         if words.len == 0 {
             return empty_string;
         }
-        mut wrapped := StringBuilder.from_string(words[0]);
+        mut wrapped := StringBuilder::from_string(words[0]);
         mut space_left := width - wrapped.len();
         mut i: usize := 1;
         while i < words.len : i += 1 {
@@ -455,13 +455,13 @@ public struct string : Stringable, Hashable {
             }
             b[new_len] = 0;
         }
-        return unsafe { string.from_raw_with_len(b, new_len) };
+        return unsafe { Self::from_raw_with_len(b, new_len) };
     }
 
     [inline]
     public func as_bytes(self) []uint8 {
         return unsafe {
-            Vector.from_array_no_alloc(@cast(*mut uint8, self.ptr), @size_of(uint8), self.len)
+            Vector::from_array_no_alloc(@cast(*mut uint8, self.ptr), @size_of(uint8), self.len)
         };
     }
 
@@ -872,7 +872,7 @@ public struct StringFormatter {
     }
 
     func fmt(mut self, args: ...Stringable) string {
-        self.res = StringBuilder.new(self.buf.len);
+        self.res = StringBuilder::new(self.buf.len);
         mut args_idx: usize := 0;
         while self.i < self.buf.len : self.i += 1 {
             b := unsafe { self.buf.ptr[self.i] };
