@@ -455,7 +455,7 @@ public struct string : Stringable, Hashable {
             }
             b[new_len] = 0;
         }
-        return unsafe { string.from_raw_with_len(b, new_len) };
+        return unsafe { Self.from_raw_with_len(b, new_len) };
     }
 
     [inline]
