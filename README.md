@@ -61,7 +61,7 @@ Any help is welcome.
 import std/console;
 
 func main() {
-    console.println("Hello World!");
+    console::println("Hello World!");
 }
 ```
 More samples in the [`samples/`](samples/) folder.

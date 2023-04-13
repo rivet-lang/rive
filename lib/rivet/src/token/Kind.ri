@@ -48,6 +48,7 @@ public var KindStrings = [
     KindMap(.Arrow, "=>"),
     KindMap(.Comma, ","),
     KindMap(.Colon, ":"),
+    KindMap(.DoubleColon, "::"),
     KindMap(.Semicolon, ";"),
     KindMap(.Question, "?"),
     KindMap(.OrElse, "??"),
@@ -145,6 +146,7 @@ public enum Kind : traits.Stringable {
     Arrow, // =>
     Comma, // ,
     Colon, // :
+    DoubleColon, // ::
     Semicolon, // ;
     Question, // ?
     OrElse, // ??

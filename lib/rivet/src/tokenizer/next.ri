@@ -166,7 +166,10 @@ extend Tokenizer {
                 },
                 b',' => return self.new_token(.Comma),
                 b':' => {
-                    if nextc == b'=' {
+                    if nextc == b':' {
+                        self.pos += 1;
+                        return self.new_token(.DoubleColon, len: 2);
+                    } else if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.DeclAssign, len: 2);
                     }

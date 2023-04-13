@@ -42,6 +42,7 @@ class Kind(Enum):
     Arrow = auto_enum() # =>
     Comma = auto_enum() # ,
     Colon = auto_enum() # :
+    DoubleColon = auto_enum() # ::
     Semicolon = auto_enum() # ;
     Question = auto_enum() # ?
     OrElse = auto_enum() # ??
@@ -190,6 +191,7 @@ TOKEN_STRINGS = {
     Kind.Arrow: "=>",
     Kind.Comma: ",",
     Kind.Colon: ":",
+    Kind.DoubleColon: "::",
     Kind.Semicolon: ";",
     Kind.Question: "?",
     Kind.OrElse: "??",
