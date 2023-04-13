@@ -7,7 +7,6 @@ import ../prefs;
 import ../report;
 
 extend Resolver {
-    [inline]
     func resolve_type(mut self, mut type: ast.Type) bool {
         return switch type is {
             .Void, .Never, .Anyptr => true,
@@ -80,15 +79,14 @@ extend Resolver {
                         selector.found
                     },
                     else => {
-                        report.error(
-                            "expected type, found expression", basic.expr.position()
-                        );
+                        report.error("expected type, found expression", basic.expr.position());
                         false
                     }
                 }
             } else {
                 true
-            }
+            },
+            else => false
         };
     }
 }

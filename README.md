@@ -34,8 +34,8 @@ such as Python, Lua, TypeScript, D, etc.
 
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
 * **Named and optional arguments**: Very useful, `my_func(arg0: 5)`.
-* **Easy error handling**: With result types: `func my_func() !T { ... }`.
-* **Not NULL values by default**: This is only possible with optional types and `none`.
+* **Easy error handling**: With result types, `func my_func() !T { ... }`.
+* **Not NULL values by default**: This is only possible with option types (`?T`) and `none`.
 * **Immutable values**: Variables and fields are immutable by default.
 * **Polymorphism**: Traits and Embedded Structs are supported.
 * **Generics**: Specialize and reuse the same code for different types (**coming soon**).
