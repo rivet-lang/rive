@@ -1,0 +1,70 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../prefs;
+import ../token;
+import ../report;
+
+extend Resolver {
+    func resolve_stmt(mut self, mut stmt: ast.Stmt) {
+        switch stmt is {
+            .Empty as empty_pos => report.error("BUG: empty statement found", empty_pos),
+            .Expr as mut expr => self.resolve_expr(expr),
+            .VarDecl as var_stmt => {
+                for left in var_stmt.lefts {
+                    var_stmt.scope.add(ast.Var(
+                        is_mut: left.is_mut,
+                        name: left.name,
+                        level: .Local,
+                        pos: left.pos,
+                        type: left.type
+                    )) catch |err| report.error(
+                        err.to_string(), left.pos
+                    );
+                }
+                self.resolve_expr(var_stmt.right);
+            },
+            .While as while_stmt => {
+                if !while_stmt.is_inf {
+                    self.resolve_expr(while_stmt.cond);
+                }
+                if while_stmt.has_continue_expr {
+                    self.resolve_expr(while_stmt.continue_expr);
+                }
+                self.resolve_stmt(while_stmt.stmt);
+                if while_stmt.has_else_stmt {
+                    self.resolve_stmt(while_stmt.else_stmt);
+                }
+            },
+            .For as for_stmt => {
+                if for_stmt.has_index {
+                    for_stmt.scope.add(ast.Var(
+                        is_mut: for_stmt.index.is_mut,
+                        name: for_stmt.index.name,
+                        level: .Local,
+                        pos: for_stmt.index.pos,
+                        type: .Void() // updated later
+                    )) catch |err| report.error(
+                        err.to_string(), for_stmt.index.pos
+                    );
+                }
+                for value in for_stmt.values {
+                    for_stmt.scope.add(ast.Var(
+                        is_mut: value.is_mut,
+                        name: value.name,
+                        level: .Local,
+                        pos: value.pos,
+                        type: .Void() // updated later
+                    )) catch |err| report.error(
+                        err.to_string(), value.pos
+                    );
+                }
+                self.resolve_expr(for_stmt.iterable);
+                self.resolve_stmt(for_stmt.stmt);
+            },
+            .Defer as defer_stmt => self.resolve_expr(defer_stmt.expr)
+        }
+    }
+}
