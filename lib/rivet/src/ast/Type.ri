@@ -52,7 +52,7 @@ public enum Type : traits.Stringable {
     Array {
         mut inner: Type;
         is_mut: bool;
-        size: Expr;
+        mut size: Expr;
         sym: TypeSym;
         pos: token.Pos;
     },

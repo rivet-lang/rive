@@ -12,7 +12,34 @@ extend Resolver {
             .Void, .Never, .Anyptr => true,
             .Option as opt => self.resolve_type(opt.inner),
             .Result as res => self.resolve_type(res.inner),
-            .Vector as vec => self.resolve_type(vec.inner),
+            .Variadic as variadic => if self.resolve_type(variadic.inner) {
+                true
+            } else {
+                false
+            },
+            .Vector as vec => if self.resolve_type(vec.inner) {
+                true
+            } else {
+                false
+            },
+            .Array as arr => if self.resolve_type(arr.inner) {
+                if arr_size := self.eval_size(arr.size) {
+                    if arr_size <= 0 {
+                        mut err := report.error_builder(
+                            "array size cannot be zero or negative", arr.size.position()
+                        );
+                        err.add_note("array size is {}", arr_size);
+                        err.emit();
+                    }
+                } else {
+                    report.error(
+                        "array size cannot use non-constant value", arr.size.position()
+                    );
+                }
+                true
+            } else {
+                false
+            },
             .Reference as ref => self.resolve_type(ref.inner),
             .Pointer as ptr => self.resolve_type(ptr.inner),
             .Basic as basic => if basic.is_unresolved {

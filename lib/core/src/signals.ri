@@ -9,6 +9,7 @@ func setup_signals_handler() {
     unsafe {
         _ = libc.sigaction(libc.SIGSEGV, &sa, none);
         _ = libc.sigaction(libc.SIGBUS, &sa, none);
+        _ = libc.sigaction(libc.SIGFPE, &sa, none);
     }
 }
 
@@ -17,6 +18,7 @@ func setup_signals_handler() {
 func signals_handler(sig: int32, info: *mut libc.siginfo_t, context: mut_anyptr) {
     switch info.si_signo {
 		libc.SIGSEGV, libc.SIGBUS => segfault_handler(), // It panics on SIGSEGV and SIGBUS.
+		libc.SIGFPE => fpe_handler(),
 		else => { }
 	}
 }
@@ -27,6 +29,18 @@ func segfault_handler() {
             "panic: invalid memory address or null pointer dereference"
         } else {
             "panic: invalid memory address or null pointer dereference while starting the core"
+        }
+    );
+    bt_print(4);
+    process_exit(1);
+}
+
+func fpe_handler() {
+    console_eprintln(
+        if libcore_started {
+            "panic: floating point exception"
+        } else {
+            "panic: floating point exception while starting the core"
         }
     );
     bt_print(4);

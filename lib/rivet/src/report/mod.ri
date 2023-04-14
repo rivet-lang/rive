@@ -3,6 +3,7 @@
 // be found in the LICENSE file.
 
 import std/env;
+import std/traits;
 import std/strings;
 import std/console;
 import std/fs/path;
@@ -73,13 +74,13 @@ public struct ReportBuilder {
     public mut annotations: []Annotation;
 
     [inline]
-    public func add_note(mut self, msg: string) {
-        self.annotations.push(Annotation(.Note, msg));
+    public func add_note(mut self, msg: string, args: ...traits.Stringable) {
+        self.annotations.push(Annotation(.Note, msg.fmt(args)));
     }
 
     [inline]
-    public func add_help(mut self, msg: string) {
-        self.annotations.push(Annotation(.Help, msg));
+    public func add_help(mut self, msg: string, args: ...traits.Stringable) {
+        self.annotations.push(Annotation(.Help, msg.fmt(args)));
     }
 
     public func emit(self) {

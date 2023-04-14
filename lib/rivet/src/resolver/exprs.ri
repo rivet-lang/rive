@@ -96,7 +96,6 @@ extend Resolver {
                     selector.is_path = true;
                     if self_ty.found {
                         selector.left_sym = self_ty.sym;
-                        selector.found = true;
                     }
                 },
                 .Ident as ident if ident.is_sym => {
@@ -105,7 +104,6 @@ extend Resolver {
                     }
                     selector.is_path = true;
                     if ident.found {
-                        selector.found = true;
                         selector.left_sym = ident.sym;
                     }
                 },
@@ -115,7 +113,6 @@ extend Resolver {
                     }
                     selector.is_path = true;
                     if selector2.found {
-                        selector.found = true;
                         selector.left_sym = selector2.field_sym;
                     }
                 }

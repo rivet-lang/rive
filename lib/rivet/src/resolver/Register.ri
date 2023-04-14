@@ -224,6 +224,36 @@ public struct Register {
                         };
                     }
                 },
+                .Extend as extend_decl => if extend_decl.type is .Basic as basic_type {
+                    if basic_type.is_unresolved {
+                        if basic_type.expr is .Ident as ident {
+                            self.sym = if type_sym := self.sym.scope.find(ident.name) {
+                                type_sym
+                            } else {
+                                self.add_sym(ast.TypeSym(
+                                    name: ident.name,
+                                    info: .Placeholder()
+                                ), ident.pos)
+                            };
+                            ident.found = true;
+                            ident.sym = self.sym;
+                        } else {
+                            report.error(
+                                "invalid type `{}` to extend".fmt(extend_decl.type),
+                                extend_decl.pos
+                            );
+                            continue;
+                        }
+                    } else {
+                        self.sym = basic_type.sym;
+                    }
+                    self.walk_decls(extend_decl.decls);
+                } else {
+                    report.error(
+                        "invalid type `{}` to extend".fmt(extend_decl.type),
+                        extend_decl.pos
+                    );
+                },
                 .Func as func_decl => {
                     func_decl.sym = self.add_sym(ast.Func(
                         abi: self.abi,
