@@ -346,10 +346,14 @@ class Codegen:
                     value = self.gen_expr_with_cast(l.typ, decl.right)
                     if isinstance(typ, ir.Array):
                         size, _ = self.comp.type_size(l.typ)
-                        if isinstance(value, ir.ArrayLit) and len(value.elems) > 0:
-                            self.cur_fn.add_call("_R4core8mem_copyF", [
-                                ident, value, ir.IntLit(ir.USIZE_T, str(size))
-                            ])
+                        if isinstance(value,
+                                      ir.ArrayLit) and len(value.elems) > 0:
+                            self.cur_fn.add_call(
+                                "_R4core8mem_copyF", [
+                                    ident, value,
+                                    ir.IntLit(ir.USIZE_T, str(size))
+                                ]
+                            )
                     else:
                         self.cur_fn.store(ident, value)
             self.inside_let_decl = False
@@ -606,9 +610,11 @@ class Codegen:
                     self.cur_fn.alloca(ident)
                     val = self.gen_expr_with_cast(left.typ, stmt.right, ident)
                     if isinstance(val, ir.ArrayLit) and len(val.elems) > 0:
-                        self.cur_fn.add_call("_R4core8mem_copyF", [
-                            ident, val, ir.IntLit(ir.USIZE_T, str(size))
-                        ])
+                        self.cur_fn.add_call(
+                            "_R4core8mem_copyF",
+                            [ident, val,
+                             ir.IntLit(ir.USIZE_T, str(size))]
+                        )
                 else:
                     self.cur_fn.alloca(
                         ident, self.gen_expr_with_cast(left.typ, stmt.right)
@@ -830,7 +836,9 @@ class Codegen:
             if expr.name == "set_enum_ref_value":
                 arg0 = self.gen_expr(expr.args[0])
                 arg1 = self.gen_expr(expr.args[1])
-                self.cur_fn.store_ptr(arg0, ir.Inst(ir.InstKind.LoadPtr, [arg1]))
+                self.cur_fn.store_ptr(
+                    arg0, ir.Inst(ir.InstKind.LoadPtr, [arg1])
+                )
             elif expr.name == "vec":
                 typ_sym = expr.typ.symbol()
                 if len(expr.args) == 2:
@@ -1464,11 +1472,14 @@ class Codegen:
                     else: # `catch`
                         self.gen_return_trace_clear()
                         if expr.err_handler.has_varname():
-                            err_ir_name = self.cur_fn.unique_name(expr.err_handler.varname)
-                            expr.err_handler.scope.update_ir_name(expr.err_handler.varname, err_ir_name)
+                            err_ir_name = self.cur_fn.unique_name(
+                                expr.err_handler.varname
+                            )
+                            expr.err_handler.scope.update_ir_name(
+                                expr.err_handler.varname, err_ir_name
+                            )
                             self.cur_fn.inline_alloca(
-                                self.ir_type(self.comp.error_t),
-                                err_ir_name,
+                                self.ir_type(self.comp.error_t), err_ir_name,
                                 ir.Selector(
                                     self.ir_type(self.comp.error_t), res_value,
                                     ir.Name("err")
@@ -2199,9 +2210,7 @@ class Codegen:
                         if b.has_var:
                             var_t = self.ir_type(b.var_typ)
                             var_t2 = var_t.ptr(
-                            ) if not isinstance(
-                                var_t, ir.Pointer
-                            ) else var_t
+                            ) if not isinstance(var_t, ir.Pointer) else var_t
                             if expr.expr.typ.symbol().kind == TypeKind.Enum:
                                 val = ir.Inst(
                                     ir.InstKind.Cast, [
@@ -2213,10 +2222,12 @@ class Codegen:
                                 )
                             else:
                                 val = ir.Inst(
-                                    ir.InstKind.Cast, [ir.Selector(
-                                        ir.VOID_PTR_T, switch_expr,
-                                        ir.Name("obj")
-                                    ), var_t]
+                                    ir.InstKind.Cast, [
+                                        ir.Selector(
+                                            ir.VOID_PTR_T, switch_expr,
+                                            ir.Name("obj")
+                                        ), var_t
+                                    ]
                                 )
                             if not (
                                 b.var_is_mut or (
@@ -2715,7 +2726,9 @@ class Codegen:
             ir.Selector(usize_t, tmp, ir.Name("_idx_")),
             ir.IntLit(usize_t, variant_info.value)
         )
-        if variant_info.has_typ and value and not isinstance(value, ast.EmptyExpr):
+        if variant_info.has_typ and value and not isinstance(
+            value, ast.EmptyExpr
+        ):
             arg0 = self.gen_expr_with_cast(variant_info.typ, value)
             size, _ = self.comp.type_size(variant_info.typ)
             if isinstance(arg0.typ, ir.Pointer):

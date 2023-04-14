@@ -458,9 +458,7 @@ class Resolver:
                     expr.not_found = True
                     return
                 expr.left_sym = expr.left.sym
-            elif isinstance(
-                expr.left, ast.SelectorExpr
-            ) and expr.left.is_path:
+            elif isinstance(expr.left, ast.SelectorExpr) and expr.left.is_path:
                 if isinstance(expr.left.field_sym, (sym.Var, sym.Const)):
                     return
                 expr.is_path = True
