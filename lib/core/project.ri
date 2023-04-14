@@ -4,7 +4,7 @@ var project = Project(
     name: "core",
     description: "The Rivet core library",
     version: Version.build(0, 1, 0),
-    authors: ["The Rivet Developer"],
+    authors: ["The Rivet Developers"],
     dependencies: [
         Dependency(name: "libc")
     ]

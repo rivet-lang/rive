@@ -4,8 +4,8 @@ var project = Project(
     name: "std",
     description: "The Rivet standard library",
     version: Version.build(0, 1, 0),
-    authors: ["The Rivet Developer"],
+    authors: ["The Rivet Developers"],
     dependencies: [
-        Dependency(name: "runtime")
+        Dependency(name: "core")
     ]
 );

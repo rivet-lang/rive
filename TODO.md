@@ -1,6 +1,6 @@
 ## Python3 bootstrap-compiler
 
-- [X] support `import { self, File } from "std/fs"`.
+- [X] support `import { self, File } from std/fs`.
 - [X] fix `if x := result_fn() { ... }`.
 - [X] fix `+=` operators with overloaded operators.
 - [X] implement `switch 1 { 2 if abc => { ... } }`.
@@ -8,7 +8,7 @@
 - [X] check boxed enums casts.
 - [X] `@vec` builtin function.
 - [X] mutable arrays/vectors: `[]mut T`/`[SIZE]mut T`.
-- [X] `for &v in iterable {` and `for mut v in iterable`.
+- [X] `for &v in iterable` and `for mut v in iterable`.
 
 ## Self-hosted compiler
 
