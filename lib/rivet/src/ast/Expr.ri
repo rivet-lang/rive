@@ -7,7 +7,7 @@ import rivet/token;
 public enum Expr {
     Empty: token.Pos,
     Paren {
-        expr: Expr;
+        mut expr: Expr;
         pos: token.Pos;
     },
     Type: Type,
@@ -162,14 +162,14 @@ public enum Expr {
         pos: token.Pos;
     },
     Unary {
-        right: Expr;
+        mut right: Expr;
         op: token.Kind;
         is_ref_mut: bool;
         pos: token.Pos;
     },
     Binary {
-        left: Expr;
-        right: Expr;
+        mut left: Expr;
+        mut right: Expr;
         op: token.Kind;
         has_var_obj: bool;
         var_obj: ObjectData;

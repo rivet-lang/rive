@@ -921,7 +921,7 @@ class SwitchBranch:
         res = f"{', '.join([str(p) for p in self.pats])}"
         if self.has_cond:
             res += " if {self.cond}"
-        res += " => {self.expr}"
+        res += f" => {self.expr}"
         return res
 
     def __str__(self):

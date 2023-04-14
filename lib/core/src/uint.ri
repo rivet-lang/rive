@@ -181,6 +181,11 @@ extend uint64 : Stringable {
 extend usize : Stringable {
     public const MAX: usize = #if _x64_ uint64.MAX #else uint32.MAX #endif;
 
+    [inline]
+    public func bits() uint32 {
+        return #if _x64_ 64 #else 32 #endif;
+    }
+
     /// Returns the value of `self` as a string.
     [inline]
     public func to_string(&self) string {

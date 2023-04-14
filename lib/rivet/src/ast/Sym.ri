@@ -145,6 +145,8 @@ public struct Module : Sym {
 public struct Const : Sym {
     public mut expr: Expr;
     public mut evaled_expr: Expr;
+    public mut has_evaled_size: bool;
+    public mut evaled_size: isize;
     public mut type: Type;
     public pos: token.Pos;
 }

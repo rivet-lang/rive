@@ -712,10 +712,8 @@ class Codegen:
                 )
                 nr_level += 1
 
-        if hasattr(expr, "expected_typ"):
-            expr_typ = expr.expected_typ
-        else:
-            expr_typ = expr.typ
+        expr_typ = expr.expected_typ if hasattr(expr, "expected_typ") else expr.typ
+
         expr_sym = expr.typ.symbol()
         expected_sym = expected_typ_.symbol()
         if expected_sym.kind == TypeKind.Trait and expr_typ != expected_typ_ and expr_sym != expected_sym and expr.typ != self.comp.none_t:
@@ -747,13 +745,11 @@ class Codegen:
             self.cur_fn.inline_alloca(tmp_t, tmp, value)
             res_expr = ir.Ident(tmp_t, tmp)
 
-        # wrap optional value
-        if isinstance(expected_typ_,
-                      type.Option) and not expected_typ_.is_ref_or_ptr():
+        # wrap option value
+        if isinstance(expected_typ_, type.Option) and (not expected_typ_.is_ref_or_ptr()):
             if isinstance(res_expr, ir.NoneLit):
                 res_expr = self.option_none(expected_typ_)
-            elif not isinstance(res_expr, ir.Skip
-                                ) and not isinstance(expr_typ, type.Option):
+            elif not (isinstance(res_expr, ir.Skip) or isinstance(expr_typ, type.Option)):
                 res_expr = self.option_value(expected_typ_, res_expr)
 
         return res_expr
@@ -1070,7 +1066,7 @@ class Codegen:
         elif isinstance(expr, ast.Block):
             self.gen_stmts(expr.stmts)
             if expr.is_expr:
-                return self.gen_expr(expr.expr)
+                return self.gen_expr_with_cast(expr.typ, expr.expr)
             return ir.Skip()
         elif isinstance(expr, ast.CallExpr):
             if expr.is_ctor:
@@ -2096,14 +2092,13 @@ class Codegen:
                     else:
                         self.cur_fn.add_cond_br(cond, branch_label, next_branch)
                         self.cur_fn.add_label(branch_label)
-                        if isinstance(b.cond, ast.GuardExpr):
-                            if b.cond.has_cond:
-                                gcond = self.gen_expr_with_cast(
-                                    self.comp.bool_t, b.cond.cond
-                                )
-                                self.cur_fn.add_cond_br(
-                                    gcond, branch_label, next_branch
-                                )
+                        if isinstance(b.cond, ast.GuardExpr) and b.cond.has_cond:
+                            gcond = self.gen_expr_with_cast(
+                                self.comp.bool_t, b.cond.cond
+                            )
+                            self.cur_fn.add_cond_br(
+                                gcond, branch_label, next_branch
+                            )
                 if is_branch_void_value:
                     self.gen_expr_with_cast(
                         expr.expected_typ, b.expr
@@ -2133,8 +2128,7 @@ class Codegen:
             )
             if not is_void_value:
                 self.cur_fn.alloca(tmp)
-            is_guard_expr = isinstance(expr.expr, ast.GuardExpr)
-            if is_guard_expr:
+            if isinstance(expr.expr, ast.GuardExpr):
                 cond = self.gen_guard_expr(expr.expr, "", "", False)
                 self.cur_fn.add_cond_single_br(cond, exit_switch)
                 if expr.expr.has_cond:

@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import std/strconv;
+
 import ../ast;
 import ../prefs;
 import ../token;
@@ -95,5 +97,63 @@ public struct Resolver {
         if !sym.is_public and !self.source_file.mod.has_access_to(sym) {
             report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
         }
+    }
+
+    func eval_size(mut self, mut expr: ast.Expr) ?isize {
+        return switch expr is {
+            .Paren as paren => self.eval_size(paren.expr),
+            .IntegerLiteral as int_lit => @cast(isize, strconv.parse_int(
+                int_lit.value, 0, isize.bits()
+            ) catch return none),
+            .Ident as mut ident => {
+                self.resolve_ident(ident);
+                if ident.found {
+                    self.eval_sym(ident.sym, ident.pos)
+                } else {
+                    none
+                }
+            },
+            .Selector as mut selector => {
+                self.resolve_selector(selector);
+                if selector.found {
+                    self.eval_sym(selector.field_sym, selector.pos)
+                } else {
+                    none
+                }
+            },
+            .Binary as binary => if left := self.eval_size(binary.left) {
+                if right := self.eval_size(binary.right) {
+                    switch binary.op {
+                        .Plus => left + right,
+                        .Minus => left - right,
+                        .Mul => left * right,
+                        .Div => left / right,
+                        .Mod => left % right,
+                        .Amp => left & right,
+                        .Pipe => left | right,
+                        .Xor => left ^ right,
+                        .Lshift => @cast(isize, @cast(usize, left) << right),
+                        .Rshift => left >> right,
+                        else => none
+                    }
+                } else {
+                    none
+                }
+            } else {
+                none
+            },
+            else => none
+        };
+    }
+
+    func eval_sym(mut self, sym: ast.Sym, pos: token.Pos) ?isize {
+        if sym is ast.Const as const_ {
+            if !const_.has_evaled_size {
+                const_.evaled_size = self.eval_size(const_.expr)?;
+            }
+            return const_.evaled_size;
+        }
+        report.error("`{}` is not a constant value".fmt(sym.name), pos);
+        return none;
     }
 }

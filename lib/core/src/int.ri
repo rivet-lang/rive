@@ -152,6 +152,11 @@ extend isize : Stringable {
     public const MIN: isize = #if _x64_ int64.MIN #else int32.MIN #endif;
     public const MAX: isize = #if _x64_ int64.MAX #else int32.MAX #endif;
 
+    [inline]
+    public func bits() uint32 {
+        return #if _x64_ 64 #else 32 #endif;
+    }
+
     /// Returns the value of `self` as a string.
     [inline]
     public func to_string(&self) string {

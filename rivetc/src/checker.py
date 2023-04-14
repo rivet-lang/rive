@@ -1340,7 +1340,7 @@ class Checker:
                     except utils.CompilerError as e:
                         report.error(e.args[0], b.expr.pos)
                 b.typ = branch_t
-            return expr.typ
+            return expr.expected_typ
         elif isinstance(expr, ast.SwitchExpr):
             expr.typ = self.comp.void_t
             expr_typ = self.check_expr(expr.expr)
@@ -1428,7 +1428,7 @@ class Checker:
                     except utils.CompilerError as e:
                         report.error(e.args[0], b.expr.pos)
                 b.typ = branch_t
-            return expr.typ
+            return expr.expected_typ
         elif isinstance(expr, ast.BranchExpr):
             expr.typ = self.comp.never_t
             return expr.typ
