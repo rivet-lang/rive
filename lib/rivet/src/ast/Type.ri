@@ -40,20 +40,20 @@ public enum Type : traits.Stringable {
     Variadic {
         mut inner: Type;
         is_mut: bool;
-        sym: TypeSym;
+        mut sym: TypeSym;
         pos: token.Pos;
     },
     Vector {
         mut inner: Type;
         is_mut: bool;
-        sym: TypeSym;
+        mut sym: TypeSym;
         pos: token.Pos;
     },
     Array {
         mut inner: Type;
         is_mut: bool;
         mut size: Expr;
-        sym: TypeSym;
+        mut sym: TypeSym;
         pos: token.Pos;
     },
     Reference {
@@ -271,6 +271,8 @@ public enum Type : traits.Stringable {
             .Basic as basic_t => basic_t.expr.position()
         };
     }
+
+    public func to_qualstring(self) string {}
 
     public func to_string(self) string {
         return switch self is {

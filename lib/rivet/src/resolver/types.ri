@@ -31,12 +31,16 @@ extend Resolver {
                         err.add_note("array size is {}", arr_size);
                         err.emit();
                     }
+                    arr.sym = self.table.universe.add_or_get_array(
+                        arr.inner, @cast(usize, arr_size), arr.is_mut
+                    );
+                    true
                 } else {
                     report.error(
                         "array size cannot use non-constant value", arr.size.position()
                     );
+                    false
                 }
-                true
             } else {
                 false
             },

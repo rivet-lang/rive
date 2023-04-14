@@ -240,7 +240,7 @@ class Mod(Sym):
             unique_name = f"[{size}]{elem_typ.qualstr()}"
         if sym := self.find(unique_name):
             return sym
-        from .type import Ptr, Type as type_Type
+        from .type import Type as type_Type
         return self.add_and_return(
             Type(
                 True, unique_name, TypeKind.Array,
@@ -255,7 +255,7 @@ class Mod(Sym):
             unique_name = f"[]{elem_typ.qualstr()}"
         if sym := self.find(unique_name):
             return sym
-        from .type import Ptr, Type as type_Type
+        from .type import Type as type_Type
         vec_sym = Type(
             True, unique_name, TypeKind.Vec, info = VecInfo(elem_typ, is_mut),
             fields = [
