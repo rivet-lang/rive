@@ -585,17 +585,19 @@ public struct Scope {
     }
 
     public func lookup(self, name: string) ?Sym {
-        mut sc_: ?Scope := self;
-        while sc := sc_ {
-            for sym in sc.syms {
-                if sym.name == name {
-                    return sym;
+        if self.is_local {
+            mut sc_: ?Scope := self;
+            while sc := sc_ {
+                for sym in sc.syms {
+                    if sym.name == name {
+                        return sym;
+                    }
                 }
+                if sc.dont_lookup_parent() {
+                    break;
+                }
+                sc_ = sc.parent;
             }
-            if sc.dont_lookup_parent() {
-                break;
-            }
-            sc_ = sc.parent;
         }
         return none;
     }

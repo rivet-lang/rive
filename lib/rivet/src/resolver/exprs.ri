@@ -71,7 +71,7 @@ extend Resolver {
                     mut err := report.error_builder(
                         "cannot find `{}` in this scope".fmt(ident.name), ident.pos
                     );
-                    err.add_help("use `Self.{}()` instead".fmt(sym.name));
+                    err.add_help("use `Self.{}()` instead", sym.name);
                     err.emit();
                     return;
                 }
@@ -165,11 +165,12 @@ extend Resolver {
         if !sym_ref.ref_resolved {
             sym_ref.ref_resolved = true;
             self.resolve_expr(sym_ref.ref_expr);
-        }
-        if sym_ref.ref_expr is .Selector as selector and selector.is_path and selector.found {
-            sym_ref.ref = selector.sym;
-        } else if sym_ref.ref_expr is .Ident as ident and ident.is_sym {
-            sym_ref.ref = ident.sym;
+            if sym_ref.ref_expr is .Selector as selector and selector.is_path and
+                selector.found {
+                sym_ref.ref = selector.sym;
+            } else if sym_ref.ref_expr is .Ident as ident and ident.is_sym {
+                sym_ref.ref = ident.sym;
+            }
         }
         return sym_ref.ref;
     }
