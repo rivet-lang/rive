@@ -72,7 +72,7 @@ public struct Resolver {
                 .Func as func_decl => {
                     for arg in func_decl.args {
                         if self.resolve_type(arg.type) {
-                            func_decl.scope.add(ast.Var(
+                            func_decl.scope.add_local(ast.Var(
                                 is_mut: arg.is_mut,
                                 name: arg.name,
                                 level: .Argument,
