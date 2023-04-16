@@ -276,7 +276,7 @@ extend Parser {
                 self.next();
                 e := self.parse_expr();
                 if self.accept(.Comma) { // tuple
-                    mut exprs := [e];
+                    mut exprs: []mut ast.Expr := [e];
                     while {
                         exprs.push(self.parse_expr());
                         if !self.accept(.Comma) {
@@ -295,7 +295,7 @@ extend Parser {
                 }
             },
             self.tok.kind == .Lbracket => {
-                mut elems := @vec(ast.Expr);
+                mut elems := @vec(mut ast.Expr);
                 mut pos := self.tok.pos;
                 self.next();
                 if self.tok.kind != .Rbracket {
@@ -546,7 +546,7 @@ extend Parser {
         self.inside_switch_header = old_inside_switch_header;
         while {
             branch_pos := self.tok.pos;
-            mut patterns := @vec(ast.Expr);
+            mut patterns := @vec(mut ast.Expr);
             mut has_var := false;
             mut var_is_mut := false;
             mut var_name := "";
@@ -630,7 +630,7 @@ extend Parser {
         self.expect(.Lbrace);
         old_inside_block := self.inside_block;
         self.inside_block = true;
-        mut stmts := @vec(ast.Stmt);
+        mut stmts := @vec(mut ast.Stmt);
         mut has_expr := false;
         self.open_scope();
         sc := self.scope;

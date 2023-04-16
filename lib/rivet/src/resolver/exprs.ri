@@ -11,8 +11,125 @@ extend Resolver {
     func resolve_expr(mut self, mut expr: ast.Expr) {
         switch expr is {
             .Empty as empty_pos => report.error("BUG: empty expression found", empty_pos),
+            .Paren as paren => self.resolve_expr(paren.expr),
+            .Type as mut type => _ = self.resolve_type(type),
             .Ident as mut ident => self.resolve_ident(ident),
-            .Selector as mut selector => self.resolve_selector(selector)
+            .Selector as mut selector => self.resolve_selector(selector),
+            .SelfTy as self_ty => if self.self_sym_is_set {
+                self_ty.sym = self.self_sym;
+                self_ty.found = true;
+            } else {
+                report.error("cannot resolve `self` expression", self_ty.pos);
+            },
+            .SelfLiteral as self_lit => if self.self_sym_is_set {
+                self_lit.sym = self.self_sym;
+                self_lit.found = true;
+            } else {
+                report.error("cannot resolve `Self` expression", self_ty.pos);
+            },
+            .TupleLiteral as tuple_lit => {
+                for mut value in tuple_lit.values {
+                    self.resolve_expr(value);
+                }
+            },
+            .VectorLiteral as vector_lit => {
+                for mut value in vector_lit.values {
+                    self.resolve_expr(value);
+                }
+            },
+            .Call as call => {
+                self.resolve_expr(call.left);
+                for arg in call.args {
+                    self.resolve_expr(arg.expr);
+                }
+                if call.has_spread_expr {
+                    self.resolve_expr(call.spread_expr);
+                }
+                if call.err_handler.has_expr {
+                    if call.err_handler.has_varname {
+                        call.err_handler.scope.add_local(ast.Var(
+                            name: call.err_handler.varname,
+                            type: self.table.error_t,
+                            level: .Local,
+                            pos: call.err_handler.varname_pos
+                        )) catch |err| report.error(
+                            err.to_string(),
+                            call.err_handler.varname_pos
+                        );
+                    }
+                    self.resolve_expr(call.err_handler.expr);
+                }
+            },
+            .Unary as unary => self.resolve_expr(unary.right),
+            .Binary as binary => {
+                self.resolve_expr(binary.left);
+                self.resolve_expr(binary.right);
+                if binary.has_var_obj {
+                    binary.scope.add_local(ast.Var(
+                        is_mut: binary.var_obj.is_mut,
+                        name: binary.var_obj.name,
+                        type: .Void(),
+                        level: .Local,
+                        pos: binary.var_obj.pos
+                    )) catch |err| report.error(
+                        err.to_string(), binary.var_obj.pos
+                    );
+                }
+            },
+            .Index as index => {
+                self.resolve_expr(index.left);
+                self.resolve_expr(index.index);
+            },
+            .Block as block => {
+                for mut stmt in block.stmts {
+                    self.resolve_stmt(stmt);
+                }
+                if block.is_expr {
+                    self.resolve_expr(block.expr);
+                }
+            },
+            .Return as return_expr => if return_expr.has_expr {
+                self.resolve_expr(return_expr.expr);
+            },
+            .Guard as guard => {
+                for var_ in guard.vars {
+                    guard.scope.add_local(ast.Var(
+                        is_mut: var_.is_mut,
+                        name: var_.name,
+                        level: .Local,
+                        type: .Void(),
+                        pos: var_.pos
+                    )) catch |err| report.error(
+                        err.to_string(), var_.pos
+                    );
+                }
+                self.resolve_expr(guard.expr);
+                if guard.has_cond {
+                    self.resolve_expr(guard.cond);
+                }
+            },
+            .If as if_expr => {
+                for branch in if_expr.branches {
+                    if !branch.is_else {
+                        self.resolve_expr(branch.cond);
+                    }
+                    self.resolve_expr(branch.expr);
+                }
+            },
+            .Switch as switch_expr => {
+                self.resolve_expr(switch_expr.expr);
+                for branch in switch_expr.branches {
+                    if !branch.is_else {
+                        for mut pattern in branch.patterns {
+                            self.resolve_expr(pattern);
+                        }
+                        if branch.has_cond {
+                            self.resolve_expr(branch.cond);
+                        }
+                    }
+                    self.resolve_expr(branch.expr);
+                }
+            }
         }
     }
 

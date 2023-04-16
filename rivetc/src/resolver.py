@@ -235,8 +235,6 @@ class Resolver:
                 expr.sym = self.self_sym
             else:
                 report.error("cannot resolve `Self` expression", expr.pos)
-        elif isinstance(expr, ast.EnumLiteral):
-            pass
         elif isinstance(expr, ast.TupleLiteral):
             for e in expr.exprs:
                 self.resolve_expr(e)

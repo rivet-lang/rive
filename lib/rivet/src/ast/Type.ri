@@ -80,7 +80,7 @@ public enum Type : traits.Stringable {
         self_is_ref: bool;
         args: []Arg;
         is_variadic: bool;
-        ret_type: Type;
+        mut ret_type: Type;
         pos: token.Pos;
     };
 

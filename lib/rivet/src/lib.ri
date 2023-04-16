@@ -9,6 +9,7 @@ import std/fs/path;
 import std/console;
 import std/process;
 
+import ./mir;
 import ./ast;
 import ./utils;
 import ./prefs;
@@ -275,7 +276,7 @@ public struct Compiler {
         mut g := depgraph.DepGraph.new();
         for pf in self.table.source_files {
             mut deps := @vec(string);
-            if pf.mod.name !in ["c.libc", "c", "c.ctypes", "core"] {
+            if pf.mod.name !in ["c.ctypes", "c.libc", "c", "core"] {
                 deps.push("core");
             }
             for d in pf.decls {

@@ -46,6 +46,14 @@ extend Resolver {
             },
             .Reference as ref => self.resolve_type(ref.inner),
             .Pointer as ptr => self.resolve_type(ptr.inner),
+            .Func as func_t => {
+                mut res1 := false;
+                for arg in func_t.args {
+                    res1 = self.resolve_type(arg.type);
+                }
+                res1 = self.resolve_type(func_t.ret_type);
+                res1
+            },
             .Basic as basic => if basic.is_unresolved {
                 switch basic.expr is {
                     .SelfTy as self_ty => if self.self_sym_is_set {

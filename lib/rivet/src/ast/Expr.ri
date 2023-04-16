@@ -30,12 +30,14 @@ public enum Expr {
     SelfTy {
         scope: Scope;
         pos: token.Pos;
-        found: bool;
-        sym: TypeSym;
+        mut found: bool;
+        mut sym: TypeSym;
     },
     SelfLiteral {
-        scope: Scope;
+        mut scope: Scope;
         pos: token.Pos;
+        mut found: bool;
+        mut sym: TypeSym;
     },
     NoneLiteral {
         pos: token.Pos;
@@ -71,11 +73,11 @@ public enum Expr {
         pos: token.Pos;
     },
     TupleLiteral {
-        values: []Expr;
+        values: []mut Expr;
         pos: token.Pos;
     },
     VectorLiteral {
-        values: []Expr;
+        values: []mut Expr;
         is_arr: bool;
         pos: token.Pos;
     },
@@ -105,16 +107,16 @@ public enum Expr {
         pos: token.Pos;
     },
     Index {
-        left: Expr;
-        index: Expr;
+        mut left: Expr;
+        mut index: Expr;
         pos: token.Pos;
     },
     Call {
-        left: Expr;
+        mut left: Expr;
         args: []CallArg;
-        spread_expr: Expr;
+        mut spread_expr: Expr;
         has_spread_expr: bool;
-        err_handler: CallErrorHandler;
+        mut err_handler: CallErrorHandler;
         pos: token.Pos;
 
         func has_named_args(self) bool {
@@ -173,18 +175,18 @@ public enum Expr {
         op: token.Kind;
         has_var_obj: bool;
         var_obj: ObjectData;
-        scope: Scope;
+        mut scope: Scope;
         pos: token.Pos;
     },
     Return {
-        expr: Expr;
+        mut expr: Expr;
         has_expr: bool;
         pos: token.Pos;
     },
     Block {
         is_unsafe: bool;
-        stmts: []Stmt;
-        expr: Expr;
+        stmts: []mut Stmt;
+        mut expr: Expr;
         is_expr: bool;
         scope: Scope;
         pos: token.Pos;
@@ -195,7 +197,7 @@ public enum Expr {
         pos: token.Pos;
     },
     Switch {
-        expr: Expr;
+        mut expr: Expr;
         branches: []SwitchBranch;
         is_typeswitch: bool;
         scope: Scope;
@@ -206,10 +208,10 @@ public enum Expr {
     // - while byte := reader.read() { ... }
     Guard {
         vars: []ObjectData;
-        expr: Expr;
+        mut expr: Expr;
         has_cond: bool;
-        cond: Expr;
-        scope: Scope;
+        mut cond: Expr;
+        mut scope: Scope;
         pos: token.Pos;
     };
 
@@ -253,7 +255,7 @@ public enum Expr {
 [boxed]
 public struct CallArg {
     public name: string;
-    public expr: Expr;
+    public mut expr: Expr;
     public is_named: bool;
     public pos: token.Pos;
 }
@@ -264,16 +266,16 @@ public struct CallErrorHandler {
     public varname_pos: token.Pos;
     public has_varname: bool;
     public is_propagate: bool;
-    public expr: Expr;
+    public mut expr: Expr;
     public has_expr: bool;
-    public scope: Scope;
+    public mut scope: Scope;
     public pos: token.Pos;
 }
 
 [boxed]
 public struct IfBranch {
-    public cond: Expr;
-    public expr: Expr;
+    public mut cond: Expr;
+    public mut expr: Expr;
     public is_else: bool;
     public is_else_if: bool;
     public pos: token.Pos;
@@ -281,14 +283,14 @@ public struct IfBranch {
 
 [boxed]
 public struct SwitchBranch {
-    public patterns: []Expr;
+    public patterns: []mut Expr;
     public has_var: bool;
     public var_is_mut: bool;
     public var_name: string;
     public var_pos: token.Pos;
     public has_cond: bool;
-    public cond: Expr;
-    public expr: Expr;
+    public mut cond: Expr;
+    public mut expr: Expr;
     public is_else: bool;
     public pos: token.Pos;
 }

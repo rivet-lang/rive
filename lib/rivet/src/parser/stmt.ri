@@ -84,7 +84,8 @@ extend Parser {
                 self.close_scope();
                 .For(
                     index: index, has_index: has_index, values: values,
-                    iterable: iterable, stmt: stmt, pos: pos + self.prev_tok.pos
+                    iterable: iterable, stmt: stmt, pos: pos + self.prev_tok.pos,
+                    scope: sc
                 )
             },
             self.accept(.KwDefer) or self.accept(.KwErrDefer) => {

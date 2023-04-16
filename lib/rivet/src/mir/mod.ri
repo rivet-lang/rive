@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public struc:: ModuleIR {
+public struct ModuleIR {
     public name: string;
-    // public mut struc::s: []Struc::;
+    // public mut structs: []Struct;
     // public mut globals: []Global;
     // public mut vtables: []VTable;
-    // public mut func : []Func::
+    // public mut funcs: []Func;
 }

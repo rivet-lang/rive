@@ -51,7 +51,7 @@ public trait Sym {
     id: usize = new_sym_id();
     abi: ABI;
     mut is_public: bool;
-    parent: ?Sym;
+    mut parent: ?Sym;
     name: string;
     mut scope: Scope;
     mut mangled_name: string;
@@ -59,23 +59,21 @@ public trait Sym {
     is_universe: bool;
     is_root: bool;
 
-    func mod(self) Module {
+    func mod(self) ?Module {
         mut p := self;
         while {
-            if p is Module {
-                break;
+            if p is Module as mod {
+                return mod;
             } else if p_ := p.parent {
                 p = p_;
-            } else {
-                break;
             }
         }
-        return @cast(Module, p);
+        return none;
     }
 
     func has_access_to(self, other: Sym) bool {
-        self_mod := self.mod();
-        other_mod := other.mod();
+        self_mod := self.mod() ?? return false;
+        other_mod := other.mod() ?? return false;
         return (
             other_mod.is_universe or self_mod.id == other.id
             or self_mod.id == other_mod.id
@@ -531,18 +529,22 @@ public struct Scope {
                 )
             );
         }
+        tmp := sym;
+        tmp.parent = self.owner;
         self.syms.push(sym);
     }
 
     public func add_local(mut self, sym: Sym) ! {
-        if sym is Var and sym.name == "_" {
-            return; // ignore blank variable
-        } else if _ := self.lookup(sym.name) {
-            return DuplicateSymbolError(
-                "duplicate {} `{}` in this scope".fmt(sym.type_of(), sym.name)
-            );
+        if self.is_local {
+            if sym is Var and sym.name == "_" {
+                return; // ignore blank variable
+            } else if _ := self.lookup(sym.name) {
+                return DuplicateSymbolError(
+                    "duplicate {} `{}` in this scope".fmt(sym.type_of(), sym.name)
+                );
+            }
+            self.syms.push(sym);
         }
-        self.syms.push(sym);
     }
 
     [inline]
