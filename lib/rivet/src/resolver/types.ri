@@ -45,6 +45,16 @@ extend Resolver {
             },
             .Reference as ref => self.resolve_type(ref.inner),
             .Pointer as ptr => self.resolve_type(ptr.inner),
+            .Tuple as tuple => {
+                mut resolved := false;
+                for mut inner in tuple.inners {
+                    resolved = self.resolve_type(inner);
+                }
+                if resolved {
+                    tuple.sym = self.table.universe.add_or_get_tuple(tuple.inners);
+                }
+                resolved
+            },
             .Func as func_t => {
                 mut res1 := false;
                 for arg in func_t.args {

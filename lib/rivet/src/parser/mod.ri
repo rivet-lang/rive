@@ -196,7 +196,7 @@ public struct Parser {
             },
             self.accept(.Lparen) => {
                 // tuples
-                mut inners := @vec(ast.Type);
+                mut inners := @vec(mut ast.Type);
                 while {
                     inners.push(self.parse_type());
                     if !self.accept(.Comma) {

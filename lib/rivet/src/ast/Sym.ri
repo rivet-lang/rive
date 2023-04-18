@@ -4,6 +4,7 @@
 
 import std/traits;
 import std/process;
+import std/strings;
 
 import ../token;
 
@@ -152,6 +153,26 @@ public struct Module : Sym {
             name: unique_name,
             info: .Array(elem_typ, size, is_mut)
         );
+        self.scope.add(type_sym) catch {};
+        return type_sym;
+    }
+
+    public func add_or_get_tuple(mut self, types: []Type) TypeSym {
+        unique_name := {
+            mut sb := strings.Builder.from_string("(");
+            for i, type in types {
+                sb.write_string(type.to_qualstring());
+                if i < types.len - 1 {
+                    sb.write_string(", ");
+                }
+            }
+            sb.write_byte(b')');
+            sb.to_string()
+        };
+        if type_sym := self.scope.find(unique_name) {
+            return @cast(TypeSym, type_sym);
+        }
+        type_sym := TypeSym(is_public: true, name: unique_name, info: .Tuple(types));
         self.scope.add(type_sym) catch {};
         return type_sym;
     }
