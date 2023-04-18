@@ -632,7 +632,7 @@ extend Parser {
         while !self.accept(.Rbrace) {
             stmt := self.parse_stmt();
             if stmt is .Expr as stmt_expr and self.prev_tok.kind != .Semicolon
-                and self.tok.kind != .Rbrace {
+                and self.peek_tok.kind == .Rbrace {
                 expr = stmt_expr;
                 has_expr = true;
             } else {
