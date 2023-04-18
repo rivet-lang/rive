@@ -272,18 +272,24 @@ public enum Type : traits.Stringable {
         };
     }
 
-    public func to_qualstring(self) string {}
-
     public func to_string(self) string {
+        return self.to_string_(false);
+    }
+
+    public func to_qualstring(self) string {
+        return self.to_string_(true);
+    }
+
+    public func to_string_(self, qualstr: bool) string {
         return switch self is {
             .Never => "never",
-            .Result as result => "!".concat(result.inner.to_string()),
-            .Option as option => "?".concat(option.inner.to_string()),
+            .Result as result => "!".concat(result.inner.to_string_(qualstr)),
+            .Option as option => "?".concat(option.inner.to_string_(qualstr)),
             .Tuple as tuple_data => {
                 mut sb := Builder.new(100);
                 sb.write_byte(b'(');
                 for i, inner in tuple_data.inners {
-                    sb.write_string(inner.to_string());
+                    sb.write_string(inner.to_string_(qualstr));
                     if i < tuple_data.inners.len - 1 {
                         sb.write_string(", ");
                     }
@@ -291,24 +297,24 @@ public enum Type : traits.Stringable {
                 sb.write_byte(b')');
                 sb.to_string()
             },
-            .Variadic as variadic_data => "...".concat(variadic_data.inner.to_string()),
+            .Variadic as variadic_data => "...".concat(variadic_data.inner.to_string_(qualstr)),
             .Vector as vector_data => if vector_data.is_mut {
                 "[]mut"
             } else {
                 "[]"
-            }.concat(vector_data.inner.to_string()),
+            }.concat(vector_data.inner.to_string_(qualstr)),
             .Array as array_data => "[".concat(
                 /* array_data.expr.to_string(), */ "]", if array_data.is_mut {
                     "mut "
                 } else {
                     ""
-                }, array_data.inner.to_string()
+                }, array_data.inner.to_string_(qualstr)
             ),
             .Reference as reference_data => if reference_data.is_mut {
                 "&mut "
             } else {
                 "&"
-            }.concat(reference_data.inner.to_string()),
+            }.concat(reference_data.inner.to_string_(qualstr)),
             .Pointer as pointer_data => {
                 if pointer_data.is_mut {
                     if pointer_data.is_indexable {
@@ -322,7 +328,7 @@ public enum Type : traits.Stringable {
                     } else {
                         "*"
                     }
-                }.concat(pointer_data.inner.to_string())
+                }.concat(pointer_data.inner.to_string_(qualstr))
             },
             .Anyptr as anyptr_data => {
                 if anyptr_data.is_mut {
@@ -348,6 +354,12 @@ public enum Type : traits.Stringable {
                         sb.write_string(", ");
                     }
                 }
+                for i, arg in func_data.args {
+                    sb.write_string(arg.type.to_string_(qualstr));
+                    if i < func_data.args.len - 1 {
+                        sb.write_string(", ");
+                    }
+                }
                 if func_data.is_extern and func_data.is_variadic {
                     if func_data.args.len > 0 {
                         sb.write_string(", ");
@@ -357,11 +369,15 @@ public enum Type : traits.Stringable {
                 sb.write_string(")");
                 if func_data.ret_type !is .Void {
                     sb.write_string(" ");
-                    sb.write_string(func_data.ret_type.to_string());
+                    sb.write_string(func_data.ret_type.to_string_(qualstr));
                 }
                 sb.to_string()
             },
-            .Basic as basic if !basic.is_unresolved => basic.sym.qualname(),
+            .Basic as basic if !basic.is_unresolved => if qualstr {
+                basic.sym.qualname()
+            } else {
+                basic.sym.name
+            },
             else => "" // TODO: handle unresolved type
         };
     }
