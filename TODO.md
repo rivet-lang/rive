@@ -22,6 +22,6 @@
 - [ ] disallow use of references outside of functions.
 - [ ] add `@is_flag_defined()` builtin function.
 - [ ] generic support: `Struct![T] { f: T; }` => `Struct![T](f: @default(T))`.
-- [ ] add `HashMap![K, V]`.
+- [ ] add `std.collections.HashMap![K, V]`.
 - [ ] function literals: `sum := func(a: int32, b: in32) int32 { return a + b; };`.
 - [ ] anonymous structs: `my_obj := struct(my_field: 1, other_field: true, pwd: "abc");`.
