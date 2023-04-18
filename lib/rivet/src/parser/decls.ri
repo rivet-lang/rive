@@ -282,7 +282,7 @@ extend Parser {
                 old_inside_trait := self.inside_trait;
                 self.inside_trait = true;
                 name := self.parse_name();
-                mut bases := @vec(ast.Type);
+                mut bases := @vec(mut ast.Type);
                 if self.accept(.Colon) {
                     while {
                         bases.push(self.parse_type());
@@ -349,7 +349,7 @@ extend Parser {
                 } else {
                     self.table.comptime_int_t
                 };
-                mut bases := @vec(ast.Type);
+                mut bases := @vec(mut ast.Type);
                 if self.accept(.Colon) {
                     while {
                         bases.push(self.parse_type());

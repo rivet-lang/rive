@@ -43,7 +43,7 @@ public enum Decl {
         is_public: bool;
         name: string;
         underlying_type: Type;
-        bases: []Type;
+        bases: []mut Type;
         variants: []EnumVariantDecl;
         is_boxed: bool;
         decls: []Decl;
@@ -55,7 +55,7 @@ public enum Decl {
         annotations: Annotations;
         is_public: bool;
         name: string;
-        bases: []Type;
+        bases: []mut Type;
         decls: []Decl;
         pos: token.Pos;
         mut sym: Sym;
