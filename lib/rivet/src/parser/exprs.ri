@@ -769,7 +769,7 @@ extend Parser {
                 self.parse_name()
             },
             field_pos: field_pos,
-            pos: left.position() + self.tok.pos
+            pos: left.position() + self.prev_tok.pos
         );
     }
 }

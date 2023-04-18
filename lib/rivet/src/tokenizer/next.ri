@@ -263,7 +263,7 @@ extend Tokenizer {
             }
             break;
         }
-        lit := self.text[start..self.pos];
+        lit := self.text[start..self.pos].clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -317,7 +317,7 @@ extend Tokenizer {
             self.pos += 1;
         }
 
-        lit := self.text[start..self.pos];
+        lit := self.text[start..self.pos].clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -364,7 +364,7 @@ extend Tokenizer {
             self.pos += 1;
         }
 
-        lit := self.text[start..self.pos];
+        lit := self.text[start..self.pos].clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -411,7 +411,7 @@ extend Tokenizer {
             self.pos += 1;
         }
 
-        lit := self.text[start..self.pos];
+        lit := self.text[start..self.pos].clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -538,7 +538,7 @@ extend Tokenizer {
             }
             self.pos += 1;
         }
-        lit := self.text[start..self.pos];
+        lit := self.text[start..self.pos].clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -575,7 +575,7 @@ extend Tokenizer {
         }
         len -= 1;
 
-        mut ch := self.text[start + 1..self.pos];
+        mut ch := self.text[start + 1..self.pos].clone();
         if len != 1 {
             // the string inside the backticks is longer than one character
             // but we might only have one rune... attempt to decode escapes
@@ -690,7 +690,7 @@ extend Tokenizer {
 
         mut lit := "";
         if start <= self.pos {
-            lit = self.text[start + 1..self.pos];
+            lit = self.text[start + 1..self.pos].clone();
             mut segment_idx: usize := 0;
             mut str_segments := @vec(string);
             if u_escapes_pos.len + h_escapes_pos.len > 0 {

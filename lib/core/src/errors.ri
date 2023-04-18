@@ -3,7 +3,6 @@
 // be found in the LICENSE file.
 
 import c;
-import c/libc;
 
 public alias ErrnoError = c.ErrnoError;
 public alias last_errno_error = c.last_errno_error;

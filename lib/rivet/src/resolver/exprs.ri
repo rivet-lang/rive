@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import std/console;
+
 import ../ast;
 import ../token;
 import ../prefs;
@@ -19,13 +21,13 @@ extend Resolver {
                 self_ty.sym = self.self_sym;
                 self_ty.found = true;
             } else {
-                report.error("cannot resolve `self` expression", self_ty.pos);
+                report.error("cannot resolve `Self` expression", self_ty.pos);
             },
             .SelfLiteral as self_lit => if self.self_sym_is_set {
                 self_lit.sym = self.self_sym;
                 self_lit.found = true;
             } else {
-                report.error("cannot resolve `Self` expression", self_ty.pos);
+                report.error("cannot resolve `self` expression", self_ty.pos);
             },
             .TupleLiteral as tuple_lit => {
                 for mut value in tuple_lit.values {
@@ -147,26 +149,23 @@ extend Resolver {
             ident.found = true;
             ident.is_obj = true;
             ident.sym = obj;
-        } else if sym := self.source_file.imported_symbols.find(ident.name) {
-            if sym is ast.TypeSym as type_sym and type_sym.info is .Placeholder {
-                report.error("cannot find `{}` in this scope".fmt(ident.name), ident.pos);
-                return;
+        } else if imported := self.source_file.imported_symbols.find(ident.name) {
+            if !(imported.sym is ast.TypeSym as type_sym and type_sym.info is .Placeholder) {
+                imported.is_used = true;
+                ident.found = true;
+                ident.is_sym = true;
+                ident.sym = imported.sym;
             }
-            ident.found = true;
-            ident.is_sym = true;
-            ident.sym = sym;
         } else if sym := self.find_prelude(ident.name) {
             ident.found = true;
             ident.is_sym = true;
             ident.sym = sym;
         } else if sym := self.sym.scope.find(ident.name) {
-            if sym is ast.TypeSym as type_sym and type_sym.info is .Placeholder {
-                report.error("cannot find `{}` in this scope".fmt(ident.name), ident.pos);
-                return;
+            if !(sym is ast.TypeSym as type_sym and type_sym.info is .Placeholder) {
+                ident.found = true;
+                ident.is_sym = true;
+                ident.sym = sym;
             }
-            ident.found = true;
-            ident.is_sym = true;
-            ident.sym = sym;
         } else if sym := self.table.universe.scope.find(ident.name) {
             if sym is ast.Module {
                 mut err := report.error_builder(
@@ -181,27 +180,28 @@ extend Resolver {
             ident.sym = sym;
         } else if self.self_sym_is_set {
             if sym := self.self_sym.scope.find(ident.name) {
-                if sym is ast.TypeSym as type_sym and type_sym.info is .Placeholder {
-                    report.error("cannot find `{}` in this scope".fmt(ident.name), ident.pos);
-                    return;
-                } else if sym is ast.Func {
-                    mut err := report.error_builder(
-                        "cannot find `{}` in this scope".fmt(ident.name), ident.pos
-                    );
-                    err.add_help("use `Self.{}()` instead", sym.name);
-                    err.emit();
-                    return;
+                if !(sym is ast.TypeSym as type_sym and type_sym.info is .Placeholder) {
+                    if sym is ast.Func {
+                        mut err := report.error_builder(
+                            "cannot find `{}` in this scope".fmt(ident.name), ident.pos
+                        );
+                        err.add_help("use `Self.{}()` instead", sym.name);
+                        err.emit();
+                        return;
+                    }
+                    ident.found = true;
+                    ident.is_sym = true;
+                    ident.sym = sym;
                 }
-                ident.found = true;
-                ident.is_sym = true;
-                ident.sym = sym;
             }
         }
 
-        if !ident.found {
+        if ident.found {
+            if ident.is_sym and ident.sym is ast.SymRef as mut sym_ref {
+                ident.sym = self.clean_symbol_reference(sym_ref);
+            }
+        } else {
             report.error("cannot find `{}` in this scope".fmt(ident.name), ident.pos);
-        } else if ident.sym is ast.SymRef as mut sym_ref {
-            ident.sym = self.clean_symbol_reference(sym_ref);
         }
     }
 
@@ -209,35 +209,31 @@ extend Resolver {
         self.resolve_expr(selector.left);
         if !(selector.is_indirect or selector.is_option_check) {
             switch selector.left is {
-                .SelfTy as self_ty => {
+                .SelfTy as self_ty if self_ty.found => {
                     selector.is_path = true;
-                    if self_ty.found {
-                        selector.left_sym = self_ty.sym;
-                    }
+                    selector.left_sym = self_ty.sym;
                 },
-                .Ident as ident if ident.is_sym => {
+                .Ident as ident if ident.found and ident.is_sym => {
                     if ident.sym is ast.Var or ident.sym is ast.Const {
                         return;
                     }
                     selector.is_path = true;
-                    if ident.found {
-                        selector.left_sym = ident.sym;
-                    }
+                    selector.left_sym = ident.sym;
                 },
-                .Selector as selector2 if selector2.is_path => {
+                .Selector as selector2 if selector2.found and selector2.is_path => {
                     if selector2.field_sym is ast.Var or selector2.field_sym is ast.Const {
                         return;
                     }
                     selector.is_path = true;
-                    if selector2.found {
-                        selector.left_sym = selector2.field_sym;
-                    }
+                    selector.left_sym = selector2.field_sym;
                 }
             }
             if selector.is_path {
-                if field_sym := self.find_symbol(selector.left_sym, selector.field_name, selector.field_pos) {
-                    selector.field_sym = field_sym;
+                if field_sym := self.find_symbol(
+                    selector.left_sym, selector.field_name, selector.field_pos
+                ) {
                     selector.found = true;
+                    selector.field_sym = field_sym;
                 }
             }
         }
@@ -245,8 +241,8 @@ extend Resolver {
 
     func find_symbol(mut self, sym: ast.Sym, name: string, pos: token.Pos) ?ast.Sym {
         mut sym_ := sym;
-        if sym is ast.SymRef as sym_ref {
-            sym_ = sym_ref.ref;
+        if sym is ast.SymRef as mut sym_ref {
+            sym_ = self.clean_symbol_reference(sym_ref);
         }
         if s := sym_.scope.find(name) {
             self.check_vis(s, pos);
@@ -280,13 +276,17 @@ extend Resolver {
 
     func clean_symbol_reference(mut self, mut sym_ref: ast.SymRef) ast.Sym {
         if !sym_ref.ref_resolved {
-            sym_ref.ref_resolved = true;
             self.resolve_expr(sym_ref.ref_expr);
-            if sym_ref.ref_expr is .Selector as selector and selector.is_path and
-                selector.found {
-                sym_ref.ref = selector.sym;
-            } else if sym_ref.ref_expr is .Ident as ident and ident.is_sym {
+            if sym_ref.ref_expr is .Ident as ident and ident.found and ident.is_sym {
                 sym_ref.ref = ident.sym;
+                sym_ref.ref_resolved = true;
+            } else if sym_ref.ref_expr is .Selector as selector and selector.found and
+                selector.is_path {
+                sym_ref.ref = selector.sym;
+                sym_ref.ref_resolved = true;
+            }
+            if sym_ref.ref is ast.SymRef as mut sym_ref2 {
+                sym_ref.ref = self.clean_symbol_reference(sym_ref2);
             }
         }
         return sym_ref.ref;

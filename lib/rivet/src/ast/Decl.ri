@@ -65,7 +65,7 @@ public enum Decl {
         annotations: Annotations;
         is_public: bool;
         name: string;
-        bases: []Type;
+        bases: []mut Type;
         decls: []Decl;
         is_opaque: bool;
         pos: token.Pos;
@@ -77,14 +77,14 @@ public enum Decl {
         is_public: bool;
         is_mut: bool;
         name: string;
-        type: Type;
-        def_expr: Expr;
+        mut type: Type;
+        mut def_expr: Expr;
         has_def_expr: bool;
         pos: token.Pos;
     },
     Extend {
         annotations: Annotations;
-        type: Type;
+        mut type: Type;
         bases: []Type;
         decls: []Decl;
         pos: token.Pos;
@@ -124,12 +124,13 @@ public enum Decl {
         name: string;
         args: []Arg;
         has_named_args: bool;
-        ret_type: Type;
+        mut ret_type: Type;
         stmts: []mut Stmt;
         mut scope: Scope;
         has_body: bool;
         self_is_mut: bool;
         self_is_ref: bool;
+        mut self_type: Type;
         pos: token.Pos;
         mut sym: Sym;
     },

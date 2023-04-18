@@ -22,18 +22,26 @@ public struct SourceFile {
     public mut imported_symbols: ImportedSymbols;
 }
 
+[boxed]
+public struct ImportedSymbol {
+    public name: string;
+    public sym: Sym;
+    public pos: token.Pos;
+    public mut is_used: bool;
+}
+
 public struct ImportedSymbols {
-    mut syms: [](string, Sym);
+    public mut syms: []ImportedSymbol;
 
     [inline]
-    public func add(mut self, name: string, sym: Sym) {
-        self.syms.push((name, sym));
+    public func add(mut self, name: string, sym: Sym, pos: token.Pos, is_used: bool = false) {
+        self.syms.push(ImportedSymbol(name, sym, pos, is_used));
     }
 
-    public func find(&self, name: string) ?Sym {
-        for pair in self.syms {
-            if name == pair.0 {
-                return pair.1;
+    public func find(&self, name: string) ?ImportedSymbol {
+        for imported_sym in self.syms {
+            if name == imported_sym.name {
+                return imported_sym;
             }
         }
         return none;

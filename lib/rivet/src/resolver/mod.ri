@@ -29,6 +29,9 @@ public struct Resolver {
 
     public func resolve(mut self, source_files: []ast.SourceFile) {
         Register(self.table, self.prefs).walk_files(source_files);
+        if report.total_errors() > 0 {
+            return;
+        }
         self.preludes = [
             Prelude("Error", self.table.error_sym)
         ];
@@ -36,6 +39,16 @@ public struct Resolver {
             self.sym = sf.mod;
             self.source_file = sf;
             self.resolve_decls(self.source_file.decls);
+            // check unused imports
+            for imported_sym in sf.imported_symbols.syms {
+                if !imported_sym.is_used and imported_sym.name != "_" {
+                    report.warn(
+                        "{} `{}` is imported but never used".fmt(
+                            imported_sym.sym.type_of(), imported_sym.sym.name
+                        ), imported_sym.pos
+                    );
+                }
+            }
         }
     }
 
@@ -43,6 +56,7 @@ public struct Resolver {
         for decl in decls {
             old_sym := self.sym;
             old_self_sym := self.self_sym;
+            old_self_sym_is_set := self.self_sym_is_set;
             switch decl is {
                 .Empty as empty_pos => report.error("BUG: empty declaration found", empty_pos),
                 .Extern as extern_decl => self.resolve_decls(extern_decl.decls),
@@ -50,13 +64,14 @@ public struct Resolver {
                     _ = self.resolve_type(alias_decl.parent_type);
                 } else {
                     sym_ref := @cast(ast.SymRef, alias_decl.sym);
-                    sym_ref.ref_resolved = true;
                     self.resolve_expr(sym_ref.ref_expr);
-                    sym_ref.ref = if sym_ref.ref_expr is .Ident as ident {
-                        ident.sym
-                    } else {
-                        @cast(ast.Expr.Selector, sym_ref.ref_expr).sym
-                    };
+                    if sym_ref.ref_expr is .Ident as ident and ident.found and ident.is_sym {
+                        sym_ref.ref = ident.sym;
+                        sym_ref.ref_resolved = true;
+                    } else if sym_ref.ref_expr is .Selector as selector and selector.found {
+                        sym_ref.ref = selector.sym;
+                        sym_ref.ref_resolved = true;
+                    }
                 },
                 .Const as const_decl => if self.resolve_type(const_decl.type) {
                     self.resolve_expr(const_decl.expr)
@@ -69,7 +84,47 @@ public struct Resolver {
                         self.resolve_expr(var_decl.right);
                     }
                 },
+                .Struct as struct_decl => {
+                    self.self_sym = @cast(ast.TypeSym, struct_decl.sym);
+                    self.self_sym_is_set = true;
+                    for mut base in struct_decl.bases {
+                        if self.resolve_type(base) {
+                            //
+                        }
+                    }
+                    self.resolve_decls(struct_decl.decls);
+                },
+                .Field as field_decl => {
+                    _ = self.resolve_type(field_decl.type);
+                    if field_decl.has_def_expr {
+                        self.resolve_expr(field_decl.def_expr);
+                    }
+                },
+                .Extend as extend_decl => if self.resolve_type(extend_decl.type) {
+                    if self_sym := extend_decl.type.symbol() {
+                        self.self_sym = self_sym;
+                        self.self_sym_is_set = true;
+                        self.resolve_decls(extend_decl.decls);
+                    }
+                },
                 .Func as func_decl => {
+                    if func_decl.is_method {
+                        mut self_type := ast.Type.Basic(self.self_sym);
+                        if func_decl.self_is_ref {
+                            self_type = .Reference(self_type);
+                        }
+                        func_decl.scope.add_local(ast.Var(
+                            name: "self",
+                            is_mut: func_decl.self_is_mut,
+                            level: .Receiver,
+                            type: self_type,
+                            pos: func_decl.pos
+                        )) catch |err| report.error(
+                            err.to_string(), func_decl.pos
+                        );
+                        func_decl.self_type = self_type;
+                        @cast(ast.Func, func_decl.sym).self_type = self_type;
+                    }
                     for arg in func_decl.args {
                         if self.resolve_type(arg.type) {
                             func_decl.scope.add_local(ast.Var(
@@ -83,13 +138,20 @@ public struct Resolver {
                             );
                         }
                     }
+                    _ = self.resolve_type(func_decl.ret_type);
                     for mut stmt in func_decl.stmts {
+                        self.resolve_stmt(stmt);
+                    }
+                },
+                .Test as test_decl => {
+                    for mut stmt in test_decl.stmts {
                         self.resolve_stmt(stmt);
                     }
                 }
             }
             self.sym = old_sym;
             self.self_sym = old_self_sym;
+            self.self_sym_is_set = old_self_sym_is_set;
         }
     }
 

@@ -313,7 +313,7 @@ extend Parser {
                 self.inside_struct = true;
                 name := self.parse_name();
                 is_opaque := self.accept(.Semicolon);
-                mut bases := @vec(ast.Type);
+                mut bases := @vec(mut ast.Type);
                 mut decls := @vec(ast.Decl);
                 if !is_opaque {
                     if self.accept(.Colon) {

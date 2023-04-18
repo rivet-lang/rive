@@ -1,6 +1,7 @@
 // Copyright (C) 2023 The Rivet Developers. All rights reserved.
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
+import std/console;
 
 import ../ast;
 import ../prefs;
@@ -40,44 +41,78 @@ public struct Register {
             self.sym.scope.owner = self.sym;
             switch decl is {
                 .Import as import_decl => {
-                    if import_decl.import_list.is_empty() {
+                     if import_decl.glob {
+                        // `import { * } from module/path`
+                        for sym in import_decl.info.mod.scope.syms {
+                            if !sym.is_public {
+                                continue;
+                            }
+                            if self.check_imported_symbol(sym, import_decl.pos) {
+                                self.source_file.imported_symbols.add(
+                                    sym.name, sym, import_decl.pos, true
+                                );
+                            }
+                        }
+                    } else if import_decl.import_list.is_empty() {
+                        // `import module/path`
                         if import_decl.is_public {
                             self.sym.scope.add(ast.SymRef(
-                                is_public: import_decl.is_public,
+                                is_public: true,
                                 name: import_decl.alias_name,
-                                ref: import_decl.info.mod
+                                ref: import_decl.info.mod,
+                                ref_resolved: true
                             )) catch |err| report.error(err.to_string(), import_decl.pos);
                         } else {
                             self.source_file.imported_symbols.add(
-                                import_decl.alias_name, import_decl.info.mod
+                                import_decl.alias_name, import_decl.info.mod,
+                                import_decl.pos
                             );
                         }
-                    } else if import_decl.glob {
-                        for sym in import_decl.info.mod.scope.syms {
-                            if sym.is_public {
-                                continue;
+                    } else {
+                        // `import { A, B } from module/path`
+                        for import_info in import_decl.import_list {
+                            if import_info.name == "self" {
+                                if import_decl.is_public {
+                                    self.sym.scope.add(ast.SymRef(
+                                        is_public: true,
+                                        name: import_info.alias_name,
+                                        ref: import_decl.info.mod,
+                                        ref_resolved: true
+                                    )) catch |err| report.error(
+                                        err.to_string(), import_info.pos
+                                    );
+                                } else {
+                                    self.source_file.imported_symbols.add(
+                                        import_decl.alias_name, import_decl.info.mod,
+                                        import_decl.pos
+                                    );
+                                }
+                            } else if sym := import_decl.info.mod.scope.find(import_info.name) {
+                                self.check_vis(sym, import_info.pos);
+                                if self.check_imported_symbol(sym, import_info.pos) {
+                                    if import_decl.is_public {
+                                        console.println(">>> {}", sym.name);
+                                        self.sym.scope.add(ast.SymRef(
+                                            is_public: true,
+                                            name: import_info.alias_name,
+                                            ref: sym,
+                                            ref_resolved: true
+                                        )) catch |err| report.error(
+                                            err.to_string(), import_info.pos
+                                        );
+                                    } else {
+                                        self.source_file.imported_symbols.add(
+                                            import_info.alias_name, sym, import_info.pos
+                                        );
+                                    }
+                                }
+                            } else {
+                                report.error(
+                                    "could not find `{}` in module `{}`".fmt(
+                                        import_info.name, import_decl.info.mod.name
+                                    ), import_info.pos
+                                );
                             }
-                            self.check_imported_symbol(sym, import_decl.pos);
-                            self.source_file.imported_symbols.add(sym.name, sym);
-                        }
-                    }
-                    for import_info in import_decl.import_list {
-                        if import_info.name == "self" {
-                            self.source_file.imported_symbols.add(
-                                import_decl.alias_name, import_decl.info.mod
-                            );
-                        } else if sym := import_decl.info.mod.scope.find(import_info.name) {
-                            self.check_vis(sym, import_info.pos);
-                            self.check_imported_symbol(sym, import_info.pos);
-                            self.source_file.imported_symbols.add(
-                                import_info.alias_name, sym
-                            );
-                        } else {
-                            report.error(
-                                "could not find `{}` in module `{}`".fmt(
-                                    import_info.name, import_decl.info.mod.name
-                                ), import_info.pos
-                            );
                         }
                     }
                 },
@@ -309,15 +344,22 @@ public struct Register {
         }
     }
 
-    func check_imported_symbol(self, sym: ast.Sym, pos: token.Pos) {
+    func check_imported_symbol(self, sym: ast.Sym, pos: token.Pos) bool {
         if self.source_file.imported_symbols.exists(sym.name) {
-            report.error("{} `{}` is already imported".fmt(sym.type_of(), sym.name), pos);
+            mut err := report.error_builder(
+                "another symbol with the name `{}` is already imported".fmt(sym.name), pos
+            );
+            err.add_help("you can use `as` to change the name of the import");
+            err.emit();
+            return false;
         } else if self.source_file.mod.scope.exists(sym.name) {
             mut err := report.error_builder(
                 "another symbol with the name `{}` already exists".fmt(sym.name), pos
             );
             err.add_help("you can use `as` to change the name of the import");
             err.emit();
+            return false;
         }
+        return true;
     }
 }
