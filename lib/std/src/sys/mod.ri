@@ -4,7 +4,9 @@
 
 import c/libc;
 
+#if !_LINUX_
 import ../process;
+#endif
 
 /// Returns the number of virtual CPU cores found on the system.
 [inline]

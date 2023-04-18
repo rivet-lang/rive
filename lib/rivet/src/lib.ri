@@ -3,13 +3,12 @@
 // be found in the LICENSE file.
 
 import std/fs;
-import std/env;
 import std/traits;
 import std/fs/path;
 import std/console;
 import std/process;
 
-import ./mir;
+import ./mir as _; // will be used
 import ./ast;
 import ./utils;
 import ./prefs;
@@ -312,7 +311,7 @@ public struct Compiler {
         };
         total_warns := report.total_warns();
         if total_warns > 0 {
-            msg = msg.concat(", {} {} emitted").fmt(total_warns, if total_warns == 1 {
+            msg = msg.concat("; {} {} emitted").fmt(total_warns, if total_warns == 1 {
                 "warning"
             } else {
                 "warnings"

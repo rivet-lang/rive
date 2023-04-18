@@ -2,14 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/strings;
-import std/process;
-
-import ../ast;
 import ../token;
-import ../prefs;
 import ../utils;
-import ../report;
 
 import { LF, CR } from ../utils;
 

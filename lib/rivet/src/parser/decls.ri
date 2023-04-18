@@ -5,11 +5,8 @@
 import std/strings;
 
 import ../ast;
-import ../utils;
-import ../prefs;
 import ../report;
 import ../token;
-import ../tokenizer;
 
 extend Parser {
     func parse_doc_comment(mut self) ast.DocComment {

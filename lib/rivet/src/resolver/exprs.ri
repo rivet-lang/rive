@@ -2,11 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/console;
-
 import ../ast;
 import ../token;
-import ../prefs;
 import ../report;
 
 extend Resolver {
@@ -37,6 +34,11 @@ extend Resolver {
             .VectorLiteral as vector_lit => {
                 for mut value in vector_lit.values {
                     self.resolve_expr(value);
+                }
+            },
+            .BuiltinCall as builtin_call => {
+                for mut arg in builtin_call.args {
+                    self.resolve_expr(arg);
                 }
             },
             .Call as call => {
@@ -125,12 +127,27 @@ extend Resolver {
                         for mut pattern in branch.patterns {
                             self.resolve_expr(pattern);
                         }
+                        if branch.has_var {
+                            switch_expr.scope.add_local(ast.Var(
+                                is_mut: branch.var_is_mut,
+                                name: branch.var_name,
+                                level: .Local,
+                                type: .Void(),
+                                pos: branch.var_pos
+                            )) catch |err| report.error(
+                                err.to_string(), branch.var_pos
+                            );
+                        }
                         if branch.has_cond {
                             self.resolve_expr(branch.cond);
                         }
                     }
                     self.resolve_expr(branch.expr);
                 }
+            },
+            .Assign as assign_expr => {
+                self.resolve_expr(assign_expr.left);
+                self.resolve_expr(assign_expr.right);
             }
         }
     }
@@ -221,19 +238,19 @@ extend Resolver {
                     selector.left_sym = ident.sym;
                 },
                 .Selector as selector2 if selector2.found and selector2.is_path => {
-                    if selector2.field_sym is ast.Var or selector2.field_sym is ast.Const {
+                    if selector2.sym is ast.Var or selector2.sym is ast.Const {
                         return;
                     }
                     selector.is_path = true;
-                    selector.left_sym = selector2.field_sym;
+                    selector.left_sym = selector2.sym;
                 }
             }
             if selector.is_path {
-                if field_sym := self.find_symbol(
+                if sym := self.find_symbol(
                     selector.left_sym, selector.field_name, selector.field_pos
                 ) {
                     selector.found = true;
-                    selector.field_sym = field_sym;
+                    selector.sym = sym;
                 }
             }
         }

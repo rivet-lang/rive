@@ -3,7 +3,6 @@
 // be found in the LICENSE file.
 
 import ../ast;
-import ../prefs;
 import ../report;
 
 extend Resolver {
@@ -86,7 +85,7 @@ extend Resolver {
                     .Selector as mut selector => {
                         self.resolve_selector(selector);
                         if selector.found {
-                            if selector.field_sym is ast.TypeSym as type_sym {
+                            if selector.sym is ast.TypeSym as type_sym {
                                 if type_sym.info is .Placeholder {
                                     report.error(
                                         "cannot find type `{}` in {} `{}`".fmt(
@@ -109,7 +108,7 @@ extend Resolver {
                             } else {
                                 report.error(
                                     "expected type, found {}".fmt(
-                                        selector.field_sym.type_of()
+                                        selector.sym.type_of()
                                     ), selector.pos
                                 );
                                 return false;

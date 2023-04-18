@@ -2,7 +2,9 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+#if !(_X86_ or _AMD64_)
 import ../process;
+#endif
 
 public enum OS as uint8 {
     Linux,

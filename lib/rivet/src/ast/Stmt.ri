@@ -36,5 +36,17 @@ public enum Stmt {
         mut expr: Expr;
         is_errdefer: bool;
         pos: token.Pos;
+    };
+
+    public func position(self) token.Pos {
+        return switch self is {
+            .Empty as empty_pos => empty_pos,
+            .Expr as expr => expr.position(),
+            .VarDecl as var_decl => var_decl.pos,
+            .While as while_stmt => while_stmt.pos,
+            .For as for_stmt => for_stmt.pos,
+            .Defer as defer_stmt => defer_stmt.pos,
+            else => token.NO_POS
+        };
     }
 }

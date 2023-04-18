@@ -4,7 +4,6 @@
 
 import std/traits;
 import std/process;
-import std/console;
 
 import ../token;
 
@@ -349,7 +348,7 @@ public struct EnumVariant {
     public name: string;
     public value: isize;
     public has_type: bool;
-    public type: Type;
+    public mut type: Type;
     public has_fields: bool;
 }
 
@@ -596,10 +595,8 @@ public struct Scope {
         if self.is_local {
             mut sc_: ?Scope := self;
             while sc := sc_ {
-                for sym in sc.syms {
-                    if sym.name == name {
-                        return sym;
-                    }
+                if sym := sc.find(name) {
+                    return sym;
                 }
                 if sc.dont_lookup_parent() {
                     break;
@@ -612,7 +609,7 @@ public struct Scope {
 
     [inline]
     func dont_lookup_parent(self) bool {
-        return self.detached_from_parent or self.parent is none;
+        return self.parent is none or self.detached_from_parent;
     }
 }
 

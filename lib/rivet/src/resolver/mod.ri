@@ -95,14 +95,28 @@ public struct Resolver {
                     self.resolve_decls(trait_decl.decls);
                 },
                 .Enum as enum_decl => {
-                    self.self_sym = @cast(ast.TypeSym, enum_decl.sym);
-                    self.self_sym_is_set = true;
-                    for mut base in enum_decl.bases {
-                        if self.resolve_type(base) {
-                            //
+                    if self.resolve_type(enum_decl.underlying_type) {
+                        self.self_sym = @cast(ast.TypeSym, enum_decl.sym);
+                        self.self_sym_is_set = true;
+                        enum_info := @cast(ast.TypeInfo.Enum, self.self_sym.info);
+                        for variant in enum_info.variants {
+                            if !self.resolve_type(variant.type) {
+                                continue;
+                            }
                         }
+                        for mut base in enum_decl.bases {
+                            if self.resolve_type(base) {
+                                //
+                            }
+                        }
+                        for variant in enum_decl.variants {
+                            if !variant.decls.is_empty() {
+                                self.self_sym = variant.type.symbol() ?? self.self_sym;
+                                self.resolve_decls(variant.decls);
+                            }
+                        }
+                        self.resolve_decls(enum_decl.decls);
                     }
-                    self.resolve_decls(enum_decl.decls);
                 },
                 .Struct as struct_decl => {
                     self.self_sym = @cast(ast.TypeSym, struct_decl.sym);
@@ -198,7 +212,7 @@ public struct Resolver {
             .Selector as mut selector => {
                 self.resolve_selector(selector);
                 if selector.found {
-                    self.eval_sym(selector.field_sym, selector.pos)
+                    self.eval_sym(selector.sym, selector.pos)
                 } else {
                     none
                 }

@@ -2,14 +2,9 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/strings;
-
 import ../ast;
-import ../utils;
-import ../prefs;
 import ../report;
 import ../token;
-import ../tokenizer;
 
 extend Parser {
     [inline]
@@ -223,7 +218,7 @@ extend Parser {
                 pos := self.prev_tok.pos;
                 if self.peek_token(1).kind == .Lparen { // builtin call
                     name := self.parse_name();
-                    mut args := @vec(ast.Expr);
+                    mut args := @vec(mut ast.Expr);
                     self.expect(.Lparen);
                     mut vec_is_mut := false;
                     if name in ["vec", "cast", "size_of", "align_of"] {
@@ -599,7 +594,6 @@ extend Parser {
                 }
             }
             self.expect(.Arrow);
-            branch_expr := self.parse_expr();
             branches.push(ast.SwitchBranch(
                 patterns: patterns,
                 has_var: has_var,
@@ -608,7 +602,7 @@ extend Parser {
                 var_pos: var_pos,
                 has_cond: has_cond,
                 cond: cond,
-                expr: branch_expr,
+                expr: self.parse_expr(),
                 is_else: is_else,
                 pos: branch_pos + self.prev_tok.pos
             ));
@@ -625,20 +619,20 @@ extend Parser {
 
     func parse_block_expr(mut self) ast.Expr {
         // block expression
+        self.open_scope();
+        sc := self.scope;
+        old_inside_block := self.inside_block;
+        self.inside_block = true;
         pos := self.tok.pos;
         is_unsafe := self.accept(.KwUnsafe);
         self.expect(.Lbrace);
-        old_inside_block := self.inside_block;
-        self.inside_block = true;
         mut stmts := @vec(mut ast.Stmt);
         mut has_expr := false;
-        self.open_scope();
-        sc := self.scope;
         mut expr := ast.Expr.Empty(self.tok.pos);
         while !self.accept(.Rbrace) {
             stmt := self.parse_stmt();
-            if stmt is .Expr as stmt_expr and
-                self.prev_tok.kind != .Semicolon and self.tok.kind != .Rbrace {
+            if stmt is .Expr as stmt_expr and self.prev_tok.kind != .Semicolon
+                and self.tok.kind != .Rbrace {
                 expr = stmt_expr;
                 has_expr = true;
             } else {

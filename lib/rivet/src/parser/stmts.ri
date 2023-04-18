@@ -2,14 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/strings;
-
 import ../ast;
-import ../utils;
-import ../prefs;
-import ../report;
-import ../token;
-import ../tokenizer;
 
 extend Parser {
     [inline]
@@ -121,10 +114,8 @@ extend Parser {
             },
             else => {
                 expr := self.parse_expr();
-                if !(
-                    (self.inside_block and self.tok.kind == .Rbrace)
-                    or (expr is .If or expr is .Switch or expr is .Block)
-                ) {
+                if !((self.inside_block and self.tok.kind == .Rbrace)
+                    or (expr is .If or expr is .Switch or expr is .Block)) {
                     self.expect(.Semicolon);
                 }
                 .Expr(expr)

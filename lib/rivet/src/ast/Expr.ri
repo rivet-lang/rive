@@ -12,9 +12,9 @@ public enum Expr {
     },
     Type: Type,
     Assign {
-        left: Expr;
+        mut left: Expr;
         op: token.Kind;
-        right: Expr;
+        mut right: Expr;
         pos: token.Pos;
     },
     Ident {
@@ -86,7 +86,6 @@ public enum Expr {
         mut left_sym: Sym;
         field_name: string;
         field_pos: token.Pos;
-        mut field_sym: Sym;
         is_indirect: bool;
         is_option_check: bool;
         mut is_path: bool;
@@ -159,7 +158,7 @@ public enum Expr {
     },
     BuiltinCall {
         name: string;
-        args: []Expr;
+        args: []mut Expr;
         vec_is_mut: bool;
         pos: token.Pos;
     },
@@ -200,7 +199,7 @@ public enum Expr {
         mut expr: Expr;
         branches: []SwitchBranch;
         is_typeswitch: bool;
-        scope: Scope;
+        mut scope: Scope;
         pos: token.Pos;
     },
     // Examples:

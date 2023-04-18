@@ -14,6 +14,12 @@ public func is_comptime_constant(name: string) bool {
     return name in COMPTIME_CONSTANTS;
 }
 
+public enum Node {
+    Decl: Decl,
+    Stmt: Stmt,
+    Expr: Expr
+}
+
 [boxed]
 public struct SourceFile {
     public file: string;

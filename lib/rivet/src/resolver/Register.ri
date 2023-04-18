@@ -1,7 +1,6 @@
 // Copyright (C) 2023 The Rivet Developers. All rights reserved.
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
-import std/console;
 
 import ../ast;
 import ../prefs;
@@ -55,18 +54,22 @@ public struct Register {
                         }
                     } else if import_decl.import_list.is_empty() {
                         // `import module/path`
-                        if import_decl.is_public {
-                            self.sym.scope.add(ast.SymRef(
-                                is_public: true,
-                                name: import_decl.alias_name,
-                                ref: import_decl.info.mod,
-                                ref_resolved: true
-                            )) catch |err| report.error(err.to_string(), import_decl.pos);
-                        } else {
-                            self.source_file.imported_symbols.add(
-                                import_decl.alias_name, import_decl.info.mod,
-                                import_decl.pos
-                            );
+                        if self.check_imported_symbol(import_decl.info.mod, import_decl.pos) {
+                            if import_decl.is_public {
+                                self.sym.scope.add(ast.SymRef(
+                                    is_public: true,
+                                    name: import_decl.alias_name,
+                                    ref: import_decl.info.mod,
+                                    ref_resolved: true
+                                )) catch |err| report.error(
+                                    err.to_string(), import_decl.pos
+                                );
+                            } else {
+                                self.source_file.imported_symbols.add(
+                                    import_decl.alias_name, import_decl.info.mod,
+                                    import_decl.pos
+                                );
+                            }
                         }
                     } else {
                         // `import { A, B } from module/path`
@@ -91,7 +94,6 @@ public struct Register {
                                 self.check_vis(sym, import_info.pos);
                                 if self.check_imported_symbol(sym, import_info.pos) {
                                     if import_decl.is_public {
-                                        console.println(">>> {}", sym.name);
                                         self.sym.scope.add(ast.SymRef(
                                             is_public: true,
                                             name: import_info.alias_name,
