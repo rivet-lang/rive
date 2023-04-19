@@ -439,7 +439,7 @@ extend Parser {
             },
             self.accept(.KwExtend) => {
                 type := self.parse_type();
-                mut bases := @vec(ast.Type);
+                mut bases := @vec(mut ast.Type);
                 if self.accept(.Colon) {
                     while {
                         bases.push(self.parse_type());

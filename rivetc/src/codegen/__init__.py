@@ -1132,14 +1132,9 @@ class Codegen:
                             self.cur_fn.store(
                                 ir.Selector(f_typ, tmp, ir.Name(f.name)), value
                             )
-                        if isinstance(expr.left, ast.EnumLiteral):
-                            return self.boxed_enum_variant_with_fields_value(
-                                typ_sym, expr.left.value, tmp,
-                                custom_tmp = custom_tmp
-                            )
                         return self.boxed_enum_variant_with_fields_value(
-                            typ_sym, expr.left.field_name, tmp,
-                            custom_tmp = custom_tmp
+                            typ_sym, expr.left.value if isinstance(expr.left, ast.EnumLiteral) else expr.left.field_name,
+                            tmp, custom_tmp = custom_tmp
                         )
                     if isinstance(expr.left, ast.EnumLiteral):
                         if len(expr.args) > 0:

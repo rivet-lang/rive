@@ -1477,6 +1477,8 @@ class Checker:
                     report.error(f"`{expr.left}` not expects a value", expr.pos)
             elif v.has_typ and not (v.has_fields or expr.left.from_is_cmp):
                 report.error(f"`{expr.left}` expects a value", expr.pos)
+            elif v.has_fields:
+                self.check_ctor(v.typ.symbol(), expr)
         elif info.kind == TypeKind.Trait:
             if expr.has_spread_expr:
                 report.error(

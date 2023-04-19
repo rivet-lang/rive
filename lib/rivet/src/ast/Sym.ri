@@ -3,7 +3,6 @@
 // be found in the LICENSE file.
 
 import std/traits;
-import std/process;
 import std/strings;
 
 import ../token;
@@ -111,7 +110,6 @@ public trait Sym {
         };
     }
 
-    [inline]
     func qualname(self) string {
         return if parent := self.parent {
             if parent.is_universe {
@@ -124,9 +122,12 @@ public trait Sym {
         };
     }
 
-    [inline]
     func ==(self, other: Self) bool {
         return self.id == other.id;
+    }
+
+    func !=(self, other: Self) bool {
+        return !(self.id == other.id);
     }
 }
 
@@ -221,156 +222,6 @@ public struct Field {
     public has_def_expr: bool;
     public def_expr: Expr;
     public type: Type;
-}
-
-public enum TypeInfo : traits.Stringable {
-    Placeholder,
-    None,
-    Bool,
-    Rune,
-    Int {
-        size: usize;
-    },
-    Uint {
-        size: usize;
-    },
-    Isize,
-    Usize,
-    ComptimeInt,
-    ComptimeFloat,
-    Float {
-        size: usize;
-    },
-    String,
-    Alias {
-        mut parent: Type;
-    },
-    Array {
-        elem_type: Type;
-        size: usize;
-        has_contains_method: bool;
-    },
-    Vector{
-        elem_type: Type;
-        has_contains_method: bool;
-    },
-    Tuple {
-        types: []Type;
-    },
-    Enum {
-        underlying_type: Type;
-        mut variants: []EnumVariant;
-        is_boxed: bool;
-
-        [inline]
-        func add_variant(mut self, variant: EnumVariant) {
-            self.variants.push(variant);
-        }
-
-        func has_variant(self, name: string) bool {
-            return self.get_variant(name) !is none;
-        }
-
-        func get_variant(self, name: string) ?EnumVariant {
-            for v in self.variants {
-                if v.name == name {
-                    return v;
-                }
-            }
-            return none;
-        }
-
-        func get_variant_by_type(self, type: Type) ?EnumVariant {
-            for v in self.variants {
-                if v.has_type and v.type == type {
-                    return v;
-                }
-            }
-            return none;
-        }
-    },
-    Trait {
-        bases: []mut TypeSym;
-        mut implements: []TypeSym;
-        mut has_objects: bool;
-
-        func index_of(self, type_sym: TypeSym) ?usize {
-            for i, ts in self.implements {
-                if ts.id == type_sym.id {
-                    return i;
-                }
-            }
-            return none;
-        }
-
-        func implement(mut self, type_sym: TypeSym) {
-            self.implements.push(type_sym);
-            for mut b in self.bases {
-                @cast(TypeInfo.Trait, b).implement(type_sym);
-            }
-        }
-
-        func mark_has_objects(mut self) {
-            self.has_objects = true;
-        }
-    },
-    Struct {
-        is_boxed: bool;
-        is_opaque: bool;
-        is_enum_variant: bool;
-        bases: []mut TypeSym;
-        traits: []TypeSym;
-    };
-
-    [inline]
-    public func is_primitive(self) bool {
-        return self is .Bool or self is .Rune or self is .Int
-            or self is .Uint or self is .ComptimeInt or self is .ComptimeFloat
-            or self is .ComptimeFloat or self is .Float;
-    }
-
-    [inline]
-    public func is_compound(self) bool {
-        return self is .Struct or self is .Trait or self is .Enum or self is .Tuple;
-    }
-
-    [inline]
-    public func to_string(self) string {
-        return switch self is {
-            .None => "none",
-            .Bool => "bool",
-            .Rune => "rune",
-            .Int as int_info => "int{}".fmt(int_info.size),
-            .Isize => "isize",
-            .Uint as uint_info => "uint{}".fmt(uint_info.size),
-            .Usize => "usize",
-            .ComptimeInt => "comptime_int",
-            .ComptimeFloat => "comptime_float",
-            .Float as float_info => "float{}".fmt(float_info.size),
-            .String => "string",
-            .Alias => "alias",
-            .Array => "array",
-            .Vector => "vector",
-            .Tuple => "tuple",
-            .Trait => "trait",
-            .Struct as struct_info => if struct_info.is_enum_variant {
-                "enum variant"
-            } else {
-                "struct"
-            },
-            .Enum => "enum",
-            else => "placeholder"
-        };
-    }
-}
-
-[boxed]
-public struct EnumVariant {
-    public name: string;
-    public value: isize;
-    public has_type: bool;
-    public mut type: Type;
-    public has_fields: bool;
 }
 
 [boxed]
@@ -532,109 +383,6 @@ public struct Func : Sym {
     }
 }
 
-[boxed]
-public struct Scope {
-    public start: usize;
-    public mut end: usize;
-    public mut owner: Sym;
-    public mut parent: ?Scope;
-    public mut detached_from_parent: bool;
-    public mut childrens: []Scope;
-    public mut syms: []Sym;
-    public mut is_local: bool;
-
-    public func add(mut self, sym: Sym) ! {
-        if old_sym := self.find(sym.name) {
-            if sym is TypeSym as type_sym and old_sym is TypeSym as mut old_type_sym {
-                old_type_sym.update(type_sym)!;
-                return;
-            }
-            return DuplicateSymbolError(
-                "duplicate symbol `{}` in {} `{}`".fmt(
-                    sym.name, self.owner.type_of(), self.owner.qualname()
-                )
-            );
-        }
-        tmp := sym;
-        tmp.parent = self.owner;
-        self.syms.push(sym);
-    }
-
-    public func add_local(mut self, sym: Sym) ! {
-        if self.is_local {
-            if sym is Var and sym.name == "_" {
-                return; // ignore blank variable
-            } else if _ := self.lookup(sym.name) {
-                return DuplicateSymbolError(
-                    "duplicate {} `{}` in this scope".fmt(sym.type_of(), sym.name)
-                );
-            }
-            self.syms.push(sym);
-        }
-    }
-
-    [inline]
-    public func exists(self, name: string) bool {
-        return self.find(name) !is none;
-    }
-
-    public func find(self, name: string) ?Sym {
-        for sym in self.syms {
-            if sym.name == name {
-                return sym;
-            }
-        }
-        return none;
-    }
-
-    public func find_or_panic(self, name: string) Sym {
-        if x := self.find(name) {
-            return x;
-        }
-        process.panic("cannot found symbol `{}`", name);
-        return Sym(Module()); // TODO: remove this line
-    }
-
-    public func find_by_index_or_panic(self, idx: usize) Sym {
-        if idx >= self.syms.len {
-            process.panic("symbol index out of range `{}`", idx);
-        }
-        return self.syms[idx];
-    }
-
-    [inline]
-    public func find_type_symbol_or_panic(self, name: string) TypeSym {
-        return @cast(TypeSym, self.find_or_panic(name));
-    }
-
-    [inline]
-    public func find_type_symbol_by_index_or_panic(self, idx: usize) TypeSym {
-        return @cast(TypeSym, self.find_by_index_or_panic(idx));
-    }
-
-    public func lookup(self, name: string) ?Sym {
-        if self.is_local {
-            mut sc_: ?Scope := self;
-            while sc := sc_ {
-                if sym := sc.find(name) {
-                    return sym;
-                }
-                if sc.dont_lookup_parent() {
-                    break;
-                }
-                sc_ = sc.parent;
-            }
-        }
-        return none;
-    }
-
-    [inline]
-    func dont_lookup_parent(self) bool {
-        return self.parent is none or self.detached_from_parent;
-    }
-}
-
-[inline]
 public func universe() Module {
     return Module(is_public: false, name: "universe", scope: Scope(syms: [
         TypeSym(name: "none", info: .None()),

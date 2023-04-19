@@ -25,6 +25,7 @@ public enum Expr {
         mut is_sym: bool;
         mut found: bool;
         mut sym: Sym;
+        mut builtin: Builtin;
         pos: token.Pos;
     },
     SelfTy {
@@ -161,6 +162,7 @@ public enum Expr {
         args: []mut Expr;
         vec_is_mut: bool;
         pos: token.Pos;
+        mut builtin: Builtin;
     },
     Unary {
         mut right: Expr;

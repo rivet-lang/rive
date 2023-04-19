@@ -1,0 +1,107 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/process;
+
+[boxed]
+public struct Scope {
+    public start: usize;
+    public mut end: usize;
+    public mut owner: Sym;
+    public mut parent: ?Scope;
+    public mut detached_from_parent: bool;
+    public mut childrens: []Scope;
+    public mut syms: []Sym;
+    public mut is_local: bool;
+
+    public func add(mut self, sym: Sym) ! {
+        if old_sym := self.find(sym.name) {
+            if sym is TypeSym as type_sym and old_sym is TypeSym as mut old_type_sym {
+                old_type_sym.update(type_sym)!;
+                return;
+            }
+            return DuplicateSymbolError(
+                "duplicate symbol `{}` in {} `{}`".fmt(
+                    sym.name, self.owner.type_of(), self.owner.qualname()
+                )
+            );
+        }
+        tmp := sym;
+        tmp.parent = self.owner;
+        self.syms.push(sym);
+    }
+
+    public func add_local(mut self, sym: Sym) ! {
+        if self.is_local {
+            if sym is Var and sym.name == "_" {
+                return; // ignore blank variable
+            } else if _ := self.lookup(sym.name) {
+                return DuplicateSymbolError(
+                    "duplicate {} `{}` in this scope".fmt(sym.type_of(), sym.name)
+                );
+            }
+            self.syms.push(sym);
+        }
+    }
+
+    [inline]
+    public func exists(self, name: string) bool {
+        return self.find(name) !is none;
+    }
+
+    public func find(self, name: string) ?Sym {
+        for sym in self.syms {
+            if sym.name == name {
+                return sym;
+            }
+        }
+        return none;
+    }
+
+    public func find_or_panic(self, name: string) Sym {
+        if x := self.find(name) {
+            return x;
+        }
+        process.panic("cannot found symbol `{}`", name);
+        return Sym(Module()); // TODO: remove this line
+    }
+
+    public func find_by_index_or_panic(self, idx: usize) Sym {
+        if idx >= self.syms.len {
+            process.panic("symbol index out of range `{}`", idx);
+        }
+        return self.syms[idx];
+    }
+
+    [inline]
+    public func find_type_symbol_or_panic(self, name: string) TypeSym {
+        return @cast(TypeSym, self.find_or_panic(name));
+    }
+
+    [inline]
+    public func find_type_symbol_by_index_or_panic(self, idx: usize) TypeSym {
+        return @cast(TypeSym, self.find_by_index_or_panic(idx));
+    }
+
+    public func lookup(self, name: string) ?Sym {
+        if self.is_local {
+            mut sc_: ?Scope := self;
+            while sc := sc_ {
+                if sym := sc.find(name) {
+                    return sym;
+                }
+                if sc.dont_lookup_parent() {
+                    break;
+                }
+                sc_ = sc.parent;
+            }
+        }
+        return none;
+    }
+
+    [inline]
+    func dont_lookup_parent(self) bool {
+        return self.parent is none or self.detached_from_parent;
+    }
+}

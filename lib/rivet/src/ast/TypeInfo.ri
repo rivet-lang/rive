@@ -1,0 +1,166 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/traits;
+
+public enum TypeInfo : traits.Stringable {
+    Placeholder,
+    None,
+    Bool,
+    Rune,
+    Int {
+        size: usize;
+    },
+    Uint {
+        size: usize;
+    },
+    Isize,
+    Usize,
+    ComptimeInt,
+    ComptimeFloat,
+    Float {
+        size: usize;
+    },
+    String,
+    Alias {
+        mut parent: Type;
+    },
+    Array {
+        elem_type: Type;
+        size: usize;
+        has_contains_method: bool;
+    },
+    Vector{
+        elem_type: Type;
+        has_contains_method: bool;
+    },
+    Tuple {
+        types: []Type;
+    },
+    Enum {
+        underlying_type: Type;
+        mut variants: []EnumVariant;
+        is_boxed: bool;
+
+        [inline]
+        func add_variant(mut self, variant: EnumVariant) {
+            self.variants.push(variant);
+        }
+
+        func has_variant(self, name: string) bool {
+            return self.get_variant(name) !is none;
+        }
+
+        func get_variant(self, name: string) ?EnumVariant {
+            for v in self.variants {
+                if v.name == name {
+                    return v;
+                }
+            }
+            return none;
+        }
+
+        func get_variant_by_type(self, type: Type) ?EnumVariant {
+            for v in self.variants {
+                if v.has_type and v.type == type {
+                    return v;
+                }
+            }
+            return none;
+        }
+    },
+    Trait {
+        mut bases: []mut TypeSym;
+        mut implements: []TypeSym;
+        mut has_objects: bool;
+
+        func index_of(self, type_sym: TypeSym) ?usize {
+            for i, ts in self.implements {
+                if ts.id == type_sym.id {
+                    return i;
+                }
+            }
+            return none;
+        }
+
+        func implement(mut self, type_sym: TypeSym) {
+            if type_sym !in self.implements {
+                self.implements.push(type_sym);
+                for b in self.bases {
+                    @cast(TypeInfo.Trait, b.info).implement(type_sym);
+                }
+            }
+        }
+
+        func mark_has_objects(mut self) {
+            self.has_objects = true;
+        }
+    },
+    Struct {
+        is_boxed: bool;
+        is_opaque: bool;
+        is_enum_variant: bool;
+        mut bases: []mut TypeSym;
+        mut traits: []TypeSym;
+
+        func contains_trait(self, type_sym: TypeSym) bool {
+            for trait_ in self.traits {
+                if trait_.id == type_sym.id {
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
+
+    [inline]
+    public func is_primitive(self) bool {
+        return self is .Bool or self is .Rune or self is .Int
+            or self is .Uint or self is .ComptimeInt or self is .ComptimeFloat
+            or self is .ComptimeFloat or self is .Float;
+    }
+
+    [inline]
+    public func is_compound(self) bool {
+        return self is .Struct or self is .Trait or self is .Enum or self is .Tuple;
+    }
+
+    [inline]
+    public func to_string(self) string {
+        return switch self is {
+            .None => "none",
+            .Bool => "bool",
+            .Rune => "rune",
+            .Int as int_info => "int{}".fmt(int_info.size),
+            .Isize => "isize",
+            .Uint as uint_info => "uint{}".fmt(uint_info.size),
+            .Usize => "usize",
+            .ComptimeInt => "comptime_int",
+            .ComptimeFloat => "comptime_float",
+            .Float as float_info => "float{}".fmt(float_info.size),
+            .String => "string",
+            .Alias => "alias",
+            .Array => "array",
+            .Vector => "vector",
+            .Tuple => "tuple",
+            .Trait => "trait",
+            .Struct as struct_info => if struct_info.is_enum_variant {
+                "enum variant"
+            } else {
+                "struct"
+            },
+            .Enum => "enum",
+            else => "placeholder"
+        };
+    }
+}
+
+[boxed]
+public struct EnumVariant {
+    public name: string;
+    public value: isize;
+    public has_type: bool;
+    public mut type: Type;
+    public has_fields: bool;
+}

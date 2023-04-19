@@ -111,8 +111,6 @@ class Resolver:
                             base_sym = base.symbol()
                             if base_sym.kind == sym.TypeKind.Trait:
                                 base_sym.info.implements.append(self.self_sym)
-                            elif self.self_sym.kind == sym.TypeKind.Class and self.self_sym.kind == base_sym.kind:
-                                self.self_sym.info.base = base_sym
                             elif self.self_sym.kind == sym.TypeKind.Struct and self.self_sym.kind == base_sym.kind:
                                 self.self_sym.info.bases.append(base_sym)
                     self.resolve_decls(decl.decls)

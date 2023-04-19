@@ -85,7 +85,7 @@ public enum Decl {
     Extend {
         annotations: Annotations;
         mut type: Type;
-        bases: []Type;
+        bases: []mut Type;
         decls: []Decl;
         pos: token.Pos;
     },

@@ -38,14 +38,16 @@ extend Resolver {
             },
             .BuiltinCall as builtin_call => {
                 if builtin := self.table.find_builtin(builtin_call.name) {
-                    if builtin !is .Func {
+                    if builtin is .Func {
+                        builtin_call.builtin = builtin;
+                        for mut arg in builtin_call.args {
+                            self.resolve_expr(arg);
+                        }
+                    } else {
                         report.error(
                             "`{}` is not a builtin function".fmt(builtin_call.name),
                             builtin_call.pos
                         );
-                    }
-                    for mut arg in builtin_call.args {
-                        self.resolve_expr(arg);
                     }
                 } else {
                     report.error(
@@ -180,7 +182,9 @@ extend Resolver {
             return; // ignore special var
         } else if ident.is_comptime {
             if builtin := self.table.find_builtin(ident.name) {
-                if builtin !is .Const {
+                if builtin is .Const {
+                    ident.builtin = builtin;
+                } else {
                     report.error(
                         "builtin `{}` is not a constant".fmt(ident.name), ident.pos
                     );
