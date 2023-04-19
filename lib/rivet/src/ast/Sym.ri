@@ -174,14 +174,52 @@ public struct Module : Sym {
             fields: [
                 Field(
                     name: "len", is_public: true,
-                    type: .Basic(self.parent?.scope.find_type_symbol_by_index_or_panic(12))
+                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(12))
                 ),
                 Field(
                     name: "cap", is_public: true,
-                    type: .Basic(self.parent?.scope.find_type_symbol_by_index_or_panic(12))
+                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(12))
                 )
             ]
         );
+        type_sym.scope.add(Func(
+            name: "push",
+            is_public: true,
+            is_method: true,
+            self_type: .Basic(type_sym),
+            self_is_mut: true,
+            args: [Arg("value", type: elem_type, pos: token.NO_POS)],
+            ret_type: .Void(),
+            has_body: true
+        )) catch {};
+        type_sym.scope.add(Func(
+            name: "pop",
+            is_public: true,
+            is_method: true,
+            self_type: .Basic(type_sym),
+            self_is_mut: true,
+            ret_type: elem_type,
+            has_body: true
+        )) catch {};
+        type_sym.scope.add(Func(
+            name: "clone",
+            is_public: true,
+            is_method: true,
+            self_type: .Basic(type_sym),
+            ret_type: .Basic(type_sym),
+            has_body: true
+        )) catch {};
+        if vector_sym := self.scope.find("core")?.scope.find("Vector") {
+            if is_empty_m := vector_sym.scope.find("is_empty") {
+                type_sym.scope.add(is_empty_m) catch {};
+            }
+            if delete_m := vector_sym.scope.find("delete") {
+                type_sym.scope.add(delete_m) catch {};
+            }
+            if clear_m := vector_sym.scope.find("clear") {
+                type_sym.scope.add(clear_m) catch {};
+            }
+        }
         self.scope.add(type_sym) catch {};
         return type_sym;
     }
