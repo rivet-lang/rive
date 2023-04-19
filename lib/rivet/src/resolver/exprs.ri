@@ -37,8 +37,21 @@ extend Resolver {
                 }
             },
             .BuiltinCall as builtin_call => {
-                for mut arg in builtin_call.args {
-                    self.resolve_expr(arg);
+                if builtin := self.table.find_builtin(builtin_call.name) {
+                    if builtin !is .Func {
+                        report.error(
+                            "`{}` is not a builtin function".fmt(builtin_call.name),
+                            builtin_call.pos
+                        );
+                    }
+                    for mut arg in builtin_call.args {
+                        self.resolve_expr(arg);
+                    }
+                } else {
+                    report.error(
+                        "unknown builtin function `{}`".fmt(builtin_call.name),
+                        builtin_call.pos
+                    );
                 }
             },
             .Call as call => {
@@ -78,6 +91,14 @@ extend Resolver {
                     )) catch |err| report.error(
                         err.to_string(), binary.var_obj.pos
                     );
+                }
+            },
+            .Range as range => {
+                if range.has_start {
+                    self.resolve_expr(range.start);
+                }
+                if range.has_end {
+                    self.resolve_expr(range.end);
                 }
             },
             .Index as index => {
@@ -158,8 +179,14 @@ extend Resolver {
             ident.is_obj = true;
             return; // ignore special var
         } else if ident.is_comptime {
-            if !ast.is_comptime_constant(ident.name) {
-                report.error("unknown comptime constant `{}`".fmt(ident.name), ident.pos);
+            if builtin := self.table.find_builtin(ident.name) {
+                if builtin !is .Const {
+                    report.error(
+                        "builtin `{}` is not a constant".fmt(ident.name), ident.pos
+                    );
+                }
+            } else {
+                report.error("unknown builtin constant `{}`".fmt(ident.name), ident.pos);
             }
             return;
         } else if obj := ident.scope.lookup(ident.name) {

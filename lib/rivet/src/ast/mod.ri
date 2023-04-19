@@ -4,16 +4,6 @@
 
 import ../token;
 
-public var COMPTIME_CONSTANTS = [
-    "_FILE_", "_LINE_", "_COLUMN_", "_FUNCTION_", "_RIVET_VERSION_",
-    "_RIVET_COMMIT_"
-];
-
-[inline]
-public func is_comptime_constant(name: string) bool {
-    return name in COMPTIME_CONSTANTS;
-}
-
 public enum Node {
     Decl: Decl,
     Stmt: Stmt,

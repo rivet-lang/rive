@@ -98,8 +98,8 @@ public enum Expr {
         pos: token.Pos;
     },
     Range {
-        start: Expr;
-        end: Expr;
+        mut start: Expr;
+        mut end: Expr;
         has_start: bool;
         has_end: bool;
         is_inclusive: bool;

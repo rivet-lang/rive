@@ -24,6 +24,8 @@ public struct Table {
     public mut error_sym: TypeSym; // from `core` module
     public mut error_sym_is_set: bool;
 
+    public mut builtins: []Builtin;
+
     // Primitive types.
     public mut none_t: Type;
     public mut bool_t: Type;
@@ -50,7 +52,7 @@ public struct Table {
     [inline]
     public func new(prefs: prefs.Prefs) Table {
         universe_ := universe();
-        return Table(
+        mut table := Table(
             universe: universe_,
             prefs: prefs,
             none_t: .Basic(universe_.scope.find_type_symbol_by_index_or_panic(0)),
@@ -77,6 +79,73 @@ public struct Table {
                 4
             }
         );
+        table.setup_builtins();
+        return table;
+    }
+
+    func setup_builtins(mut self) {
+        self.builtins = [
+            // variables
+            .Const("_FILE_", self.string_t),
+            .Const("_LINE_", self.usize_t),
+            .Const("_COLUMN_", self.usize_t),
+            .Const("_FUNCTION_", self.string_t),
+            .Const("_RIVET_VERSION_", self.string_t),
+            .Const("_RIVET_COMMIT_", self.string_t),
+
+            // functions
+            .Func("size_of", [BuiltinArg("value", is_any: true)], self.usize_t),
+            .Func("align_of", [BuiltinArg("value", is_any: true)], self.usize_t),
+            .Func("ptr_add", [
+                BuiltinArg("pointer", type: .Anyptr()),
+                BuiltinArg("value", type: self.usize_t)
+            ], .Anyptr()),
+            .Func("ptr_diff", [
+                BuiltinArg("pointer", type: .Anyptr()),
+                BuiltinArg("pointer2", type: .Anyptr())
+            ], .Anyptr()),
+            .Func("cast", [
+                BuiltinArg("type", is_any: true),
+                BuiltinArg("value", is_any: true)
+            ], return_is_any: true),
+            .Func("type_name", [], self.string_t),
+            .Func("unreachable", []),
+            .Func("breakpoint", []),
+            .Func("assert", [
+                BuiltinArg("cond", type: self.bool_t),
+                BuiltinArg("msg", type: self.string_t, is_optional: true)
+            ]),
+            .Func("vec", [
+                BuiltinArg("type", is_any: true),
+                BuiltinArg("cap", type: self.usize_t, is_optional: true)
+            ], return_is_any: true),
+            .Func("set_enum_ref_value", [
+                BuiltinArg("enum_value", is_any: true, is_mut: true),
+                BuiltinArg("new_value", is_any: true)
+            ], return_is_any: true, is_unsafe: true),
+            // TODO: rename to `ignore_warn`: `@ignore_warn(not_mutated, expr)`.
+            .Func("ignore_not_mutated_warn", [
+                BuiltinArg("expr", is_any: true, is_mut: true)
+            ])
+        ];
+    }
+
+    public func find_builtin(self, name: string) ?Builtin {
+        for builtin in self.builtins {
+            is_same := switch builtin is {
+                .Const as b_var => b_var.name == name,
+                .Func as b_func => b_func.name == name,
+                else => false
+            };
+            if is_same {
+                return builtin;
+            }
+        }
+        return none;
+    }
+
+    public func exist_builtin(self, name: string) bool {
+        return self.find_builtin(name) !is none;
     }
 
     public func filter_files(self, inputs: []string) []string {
@@ -185,4 +254,26 @@ public struct Table {
             }
         }
     }
+}
+
+public enum Builtin {
+    Const {
+        name: string;
+        type: Type;
+    },
+    Func {
+        name: string;
+        args: []BuiltinArg;
+        type: Type;
+        return_is_any: bool;
+        is_unsafe: bool;
+    }
+}
+
+struct BuiltinArg {
+    public name: string;
+    public is_mut: bool;
+    public is_any: bool; // any type
+    public type: Type;
+    public is_optional: bool;
 }
