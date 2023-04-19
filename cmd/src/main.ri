@@ -23,7 +23,7 @@ func main() {
             rivet.Compiler.new(process.ARGS[2..], is_test, is_test or cmd == "run")!;
         },
         "version" => {
-            console.eprintln("rivet {}", utils.VERSION);
+            console.eprintln(utils.full_version());
             process.exit(0);
         },
         "-h", "--help", "help" => {

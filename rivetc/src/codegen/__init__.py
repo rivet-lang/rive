@@ -818,6 +818,11 @@ class Codegen:
                 return ir.Ident(ir_typ, mangle_symbol(expr.sym))
             elif isinstance(expr.sym, sym.Fn):
                 return ir.Ident(self.ir_type(expr.typ), mangle_symbol(expr.sym))
+            elif expr.is_comptime:
+                if expr.name == "_RIVET_COMMIT_":
+                    return self.gen_string_literal(utils.commit_hash())
+                elif expr.name == "_RIVET_VERSION_":
+                    return self.gen_string_literal(utils.full_version())
             # runtime object
             i_typ = self.ir_type(expr.typ)
             if (
