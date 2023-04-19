@@ -188,7 +188,7 @@ public struct Resolver {
                                         struct_info.bases.push(base_sym);
                                     } else {
                                         report.error(
-                                            "type `{}` is not a trait or struct".fmt(
+                                            "type `{}` is not a trait or a struct".fmt(
                                                 base_sym.name
                                             ), base.position()
                                         );

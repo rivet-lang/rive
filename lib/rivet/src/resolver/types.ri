@@ -12,11 +12,18 @@ extend Resolver {
             .Option as opt => self.resolve_type(opt.inner),
             .Result as res => self.resolve_type(res.inner),
             .Variadic as variadic => if self.resolve_type(variadic.inner) {
+                if elem_sym := variadic.inner.symbol() {
+                    if elem_sym.info is .Trait as trait_info {
+                        trait_info.has_objects = true;
+                    }
+                }
+                variadic.sym = self.table.universe.add_or_get_vec(variadic.inner, false);
                 true
             } else {
                 false
             },
             .Vector as vec => if self.resolve_type(vec.inner) {
+                vec.sym = self.table.universe.add_or_get_vec(vec.inner, vec.is_mut);
                 true
             } else {
                 false

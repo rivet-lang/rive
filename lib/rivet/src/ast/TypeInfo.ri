@@ -29,10 +29,12 @@ public enum TypeInfo : traits.Stringable {
     Array {
         elem_type: Type;
         size: usize;
+        is_mut: bool;
         has_contains_method: bool;
     },
     Vector{
         elem_type: Type;
+        is_mut: bool;
         has_contains_method: bool;
     },
     Tuple {

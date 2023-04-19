@@ -158,6 +158,34 @@ public struct Module : Sym {
         return type_sym;
     }
 
+    public func add_or_get_vec(mut self, elem_type: Type, is_mut: bool) TypeSym {
+        unique_name := if is_mut {
+            "[]mut "
+        } else {
+            "[]"
+        }.concat(elem_type.to_qualstring());
+        if type_sym := self.scope.find(unique_name) {
+            return @cast(TypeSym, type_sym);
+        }
+        type_sym := TypeSym(
+            is_public: true,
+            name: unique_name,
+            info: .Vector(elem_type, is_mut),
+            fields: [
+                Field(
+                    name: "len", is_public: true,
+                    type: .Basic(self.parent?.scope.find_type_symbol_by_index_or_panic(12))
+                ),
+                Field(
+                    name: "cap", is_public: true,
+                    type: .Basic(self.parent?.scope.find_type_symbol_by_index_or_panic(12))
+                )
+            ]
+        );
+        self.scope.add(type_sym) catch {};
+        return type_sym;
+    }
+
     public func add_or_get_tuple(mut self, types: []Type) TypeSym {
         unique_name := {
             mut sb := strings.Builder.from_string("(");
