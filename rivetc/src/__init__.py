@@ -319,7 +319,7 @@ class Compiler:
 
     def comptime_number_to_type(self, typ):
         if typ == self.comptime_int_t:
-            return self.int64_t
+            return self.int32_t
         elif typ == self.comptime_float_t:
             return self.float64_t
         return typ
