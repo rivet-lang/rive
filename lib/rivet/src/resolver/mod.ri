@@ -78,6 +78,7 @@ public struct Resolver {
                 },
                 .Var as var_decl => {
                     for left in var_decl.lefts {
+                        self.check_variable_shadowing(left.name, left.pos);
                         _ = self.resolve_type(left.type);
                     }
                     if !var_decl.is_extern {
@@ -225,6 +226,7 @@ public struct Resolver {
                     }
                     for arg in func_decl.args {
                         if self.resolve_type(arg.type) {
+                            self.check_variable_shadowing(arg.name, arg.pos);
                             func_decl.scope.add_local(ast.Var(
                                 is_mut: arg.is_mut,
                                 name: arg.name,
@@ -315,5 +317,13 @@ public struct Resolver {
         }
         report.error("`{}` is not a constant value".fmt(sym.name), pos);
         return none;
+    }
+
+    func check_variable_shadowing(self, name: string, pos: token.Pos) {
+        if self.source_file.imported_symbols.exists(name) {
+            report.error(
+                "name `{}` hide an imported symbol".fmt(name), pos
+            );
+        }
     }
 }

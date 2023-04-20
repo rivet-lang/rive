@@ -32,15 +32,15 @@ public struct Tokenizer {
     mut eofs: usize;
     mut conditional_stack: []Conditional;
 
-    public func new(text: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
-        mut t := Tokenizer(table: table, prefs: prefs, text: text);
+    public func new(text: string, prefs_: prefs.Prefs, table: ast.Table) Tokenizer {
+        mut t := Tokenizer(table: table, prefs: prefs_, text: text);
         t.init();
         return t;
     }
 
-    public func from_file(file: string, prefs: prefs.Prefs, table: ast.Table) Tokenizer {
+    public func from_file(file: string, prefs_: prefs.Prefs, table: ast.Table) Tokenizer {
         mut t := Tokenizer(
-            table: table, prefs: prefs, file: file,
+            table: table, prefs: prefs_, file: file,
             text: utils.read_file(file) catch |err| utils.error(err.to_string())
         );
         t.init();

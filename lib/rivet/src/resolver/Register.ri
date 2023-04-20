@@ -46,7 +46,7 @@ public struct Register {
                             if !sym.is_public {
                                 continue;
                             }
-                            if self.check_imported_symbol(sym, import_decl.pos) {
+                            if self.check_imported_symbol(sym, import_decl.pos, true) {
                                 self.source_file.imported_symbols.add(
                                     sym.name, sym, import_decl.pos, true
                                 );
@@ -54,7 +54,7 @@ public struct Register {
                         }
                     } else if import_decl.import_list.is_empty() {
                         // `import module/path`
-                        if self.check_imported_symbol(import_decl.info.mod, import_decl.pos) {
+                        if self.check_imported_symbol(import_decl.info.mod, import_decl.pos, true) {
                             if import_decl.is_public {
                                 self.sym.scope.add(ast.SymRef(
                                     is_public: true,
@@ -92,7 +92,7 @@ public struct Register {
                                 }
                             } else if sym := import_decl.info.mod.scope.find(import_info.name) {
                                 self.check_vis(sym, import_info.pos);
-                                if self.check_imported_symbol(sym, import_info.pos) {
+                                if self.check_imported_symbol(sym, import_info.pos, true) {
                                     if import_decl.is_public {
                                         self.sym.scope.add(ast.SymRef(
                                             is_public: true,
@@ -291,42 +291,39 @@ public struct Register {
                         extend_decl.pos
                     );
                 },
-                .Func as func_decl => {
-                    func_decl.sym = self.add_sym(ast.Func(
-                        abi: self.abi,
-                        is_public: func_decl.is_public,
-                        is_extern: func_decl.is_extern,
-                        is_unsafe: func_decl.is_unsafe,
-                        is_method: func_decl.is_method,
-                        is_variadic: func_decl.is_variadic,
-                        name: func_decl.name,
-                        args: func_decl.args,
-                        has_named_args: func_decl.has_named_args,
-                        ret_type: func_decl.ret_type,
-                        has_body: func_decl.has_body,
-                        self_is_mut: func_decl.self_is_mut,
-                        self_is_ref: func_decl.self_is_ref
-                    ), func_decl.pos);
-                },
-                .Destructor as dtor_decl => {
-                    dtor_decl.sym = self.add_sym(ast.Func(
-                        abi: self.abi,
-                        is_unsafe: true,
-                        is_method: true,
-                        name: "_dtor_",
-                        args: [
-                            ast.Arg(
-                                name: "self",
-                                is_mut: dtor_decl.self_is_mut,
-                                type: .Basic(@cast(ast.TypeSym, self.sym)),
-                                pos: dtor_decl.pos
-                            )
-                        ],
-                        ret_type: .Void(),
-                        has_body: true,
-                        self_is_mut: dtor_decl.self_is_mut
-                    ), dtor_decl.pos);
-                }
+                .Func as func_decl => func_decl.sym = self.add_sym(ast.Func(
+                    abi: self.abi,
+                    is_public: func_decl.is_public,
+                    is_extern: func_decl.is_extern,
+                    is_unsafe: func_decl.is_unsafe,
+                    is_method: func_decl.is_method,
+                    is_variadic: func_decl.is_variadic,
+                    name: func_decl.name,
+                    args: func_decl.args,
+                    has_named_args: func_decl.has_named_args,
+                    ret_type: func_decl.ret_type,
+                    has_body: func_decl.has_body,
+                    self_is_mut: func_decl.self_is_mut,
+                    self_is_ref: func_decl.self_is_ref
+                ), func_decl.pos),
+                .Destructor as dtor_decl => dtor_decl.sym = self.add_sym(ast.Func(
+                    abi: self.abi,
+                    is_unsafe: true,
+                    is_method: true,
+                    name: "_dtor_",
+                    args: [
+                        ast.Arg(
+                            name: "self",
+                            is_mut: dtor_decl.self_is_mut,
+                            type: .Basic(@cast(ast.TypeSym, self.sym)),
+                            pos: dtor_decl.pos
+                        )
+                    ],
+                    ret_type: .Void(),
+                    has_body: true,
+                    self_is_mut: dtor_decl.self_is_mut
+                ), dtor_decl.pos),
+                else => {}
             }
             self.abi = old_abi;
             self.sym = old_sym;
@@ -334,27 +331,33 @@ public struct Register {
     }
 
     func add_sym(mut self, sym: ast.Sym, pos: token.Pos) ast.Sym {
-        self.sym.scope.add(sym) catch |err| {
-            report.error(err.to_string(), pos);
-        };
+        if self.check_imported_symbol(sym, pos, false) {
+            self.sym.scope.add(sym) catch |err| {
+                report.error(err.to_string(), pos);
+            };
+        }
         return sym;
     }
 
-    func check_vis(self, sym: ast.Sym, pos: token.Pos) {
-        if !sym.is_public and !self.sym.has_access_to(sym) {
-            report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
-        }
-    }
-
-    func check_imported_symbol(self, sym: ast.Sym, pos: token.Pos) bool {
+    func check_imported_symbol(self, sym: ast.Sym, pos: token.Pos, is_import: bool) bool {
         if self.source_file.imported_symbols.exists(sym.name) {
-            mut err := report.error_builder(
-                "another symbol with the name `{}` is already imported".fmt(sym.name), pos
-            );
-            err.add_help("you can use `as` to change the name of the import");
-            err.emit();
+            if is_import {
+                mut err := report.error_builder(
+                    "another symbol with the name `{}` is already imported".fmt(sym.name), pos
+                );
+                err.add_help("you can use `as` to change the name of the import");
+                err.emit();
+            } else {
+                mut err := report.error_builder(
+                    "duplicate symbol `{}` in {} `{}`".fmt(
+                        sym.name, self.sym.type_of(), self.sym.name
+                    ), pos
+                );
+                err.add_note("a imported symbol with that name exists", sym.name);
+                err.emit();
+            }
             return false;
-        } else if self.source_file.mod.scope.exists(sym.name) {
+        } else if is_import and self.source_file.mod.scope.exists(sym.name) {
             mut err := report.error_builder(
                 "another symbol with the name `{}` already exists".fmt(sym.name), pos
             );
@@ -363,5 +366,11 @@ public struct Register {
             return false;
         }
         return true;
+    }
+
+    func check_vis(self, sym: ast.Sym, pos: token.Pos) {
+        if !sym.is_public and !self.sym.has_access_to(sym) {
+            report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
+        }
     }
 }

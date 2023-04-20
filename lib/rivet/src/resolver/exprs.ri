@@ -66,6 +66,9 @@ extend Resolver {
                 }
                 if call.err_handler.has_expr {
                     if call.err_handler.has_varname {
+                        self.check_variable_shadowing(
+                            call.err_handler.varname, call.err_handler.varname_pos
+                        );
                         call.err_handler.scope.add_local(ast.Var(
                             name: call.err_handler.varname,
                             type: self.table.error_t,
@@ -84,6 +87,7 @@ extend Resolver {
                 self.resolve_expr(binary.left);
                 self.resolve_expr(binary.right);
                 if binary.has_var_obj {
+                    self.check_variable_shadowing(binary.var_obj.name, binary.var_obj.pos);
                     binary.scope.add_local(ast.Var(
                         is_mut: binary.var_obj.is_mut,
                         name: binary.var_obj.name,
@@ -120,6 +124,7 @@ extend Resolver {
             },
             .Guard as guard => {
                 for var_ in guard.vars {
+                    self.check_variable_shadowing(var_.name, var_.pos);
                     guard.scope.add_local(ast.Var(
                         is_mut: var_.is_mut,
                         name: var_.name,
@@ -151,6 +156,7 @@ extend Resolver {
                             self.resolve_expr(pattern);
                         }
                         if branch.has_var {
+                            self.check_variable_shadowing(branch.var_name, branch.var_pos);
                             switch_expr.scope.add_local(ast.Var(
                                 is_mut: branch.var_is_mut,
                                 name: branch.var_name,

@@ -44,25 +44,25 @@ struct CachedFile {
 struct SourceCache {
    mut sources: []CachedFile;
 
-   public func find(self, path: string) ?string {
+   public func find(self, path_: string) ?string {
 	  for source in self.sources {
-		 if source.path == path {
+		 if source.path == path_ {
 			return source.content;
 		 }
 	  }
 	  return none;
    }
 
-   public func find_line(self, path: string, line: usize) ?string {
-	  return if lines := self.find_lines(path) {
+   public func find_line(self, path_: string, line: usize) ?string {
+	  return if lines := self.find_lines(path_) {
 		 lines[line]
 	  } else {
 		 none
 	  };
    }
 
-   public func find_lines_between(self, path: string, line: usize, end_line: usize) ?[]string {
-	  return if lines := self.find_lines(path) {
+   public func find_lines_between(self, path_: string, line: usize, end_line: usize) ?[]string {
+	  return if lines := self.find_lines(path_) {
 		if lines.len > 0 and lines.len >= end_line {
 			lines[line..end_line]
 		} else {
@@ -73,11 +73,11 @@ struct SourceCache {
 	  };
    }
 
-   public func find_lines(self, path: string) ?[]string {
+   public func find_lines(self, path_: string) ?[]string {
 	  mut i: usize := 0;
 	  while i < self.sources.len : i += 1 {
 		 cached := self.sources[i];
-		 if cached.path == path {
+		 if cached.path == path_ {
 			if cached.lines.is_empty() {
 			   cached.lines = cached.content.split_into_lines();
 			}
@@ -91,12 +91,12 @@ struct SourceCache {
 public var mut source_cache: SourceCache = SourceCache();
 
 [inline]
-public func read_file(path: string) !string {
-   return if res := source_cache.find(path) {
+public func read_file(path_: string) !string {
+   return if res := source_cache.find(path_) {
 	  res
    } else {
-	  content := skip_bom(fs.read_file(path)!);
-	  source_cache.sources.push(CachedFile(path, content));
+	  content := skip_bom(fs.read_file(path_)!);
+	  source_cache.sources.push(CachedFile(path_, content));
 	  content
    };
 }

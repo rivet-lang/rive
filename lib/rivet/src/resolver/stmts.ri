@@ -12,6 +12,7 @@ extend Resolver {
             .Expr as mut expr => self.resolve_expr(expr),
             .VarDecl as var_stmt => {
                 for left in var_stmt.lefts {
+                    self.check_variable_shadowing(left.name, left.pos);
                     var_stmt.scope.add_local(ast.Var(
                         is_mut: left.is_mut,
                         name: left.name,
@@ -38,6 +39,7 @@ extend Resolver {
             },
             .For as for_stmt => {
                 if for_stmt.has_index {
+                    self.check_variable_shadowing(for_stmt.index.name, for_stmt.index.pos);
                     for_stmt.scope.add_local(ast.Var(
                         is_mut: for_stmt.index.is_mut,
                         name: for_stmt.index.name,
@@ -49,6 +51,7 @@ extend Resolver {
                     );
                 }
                 for value in for_stmt.values {
+                    self.check_variable_shadowing(value.name, value.pos);
                     for_stmt.scope.add_local(ast.Var(
                         is_mut: value.is_mut,
                         name: value.name,
