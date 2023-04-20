@@ -1,0 +1,140 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../token;
+import ../report;
+
+extend Checker {
+    func check_expr_is_mut(self, expr: ast.Expr, from_assign: bool = false) {
+        switch expr is {
+            .Paren as paren => self.check_expr_is_mut(paren.expr),
+            .Ident as ident => {
+                if ident.is_comptime {
+                    report.error(
+                        "cannot use constant `@{}` as mutable value".fmt(ident.name),
+                        ident.pos
+                    );
+                } else if ident.name == "_" {
+                    return;
+                } else if ident.found and ident.is_sym {
+                    self.check_sym_is_mut(ident.sym, ident.pos);
+                }
+            },
+            .SelfLiteral as self_lit => {
+                if !self_lit.obj.is_mut {
+                    mut err := report.error_builder(
+                        "cannot use `self` as mutable value", self_lit.pos
+                    );
+                    err.add_help("consider making `self` as mutable: `mut self`");
+                    err.emit();
+                }
+                self_lit.obj.is_changed = true;
+            },
+            .Selector as selector => {
+                if selector.is_path {
+                    self.check_sym_is_mut(selector.sym, selector.pos);
+                } else {
+                    self.check_expr_is_mut(selector.left);
+                    if selector.is_indirect and selector.left_type.is_ptr_or_ref() {
+                        if !selector.left_type.is_mut_ptr_or_ref() {
+                            kind := if selector.left_type is .Reference {
+                                "reference"
+                            } else {
+                                "pointer"
+                            };
+                            report.error(
+                                "cannot use a immutable {} as mutable value".fmt(kind),
+                                selector.pos
+                            );
+                        }
+                    } else if selector.found and !selector.field_is_mut
+                        and !selector.is_option_check {
+                        report.error(
+                            "field `{}` of type `{}` is immutable".fmt(
+                                selector.field_name, selector.left_type.symbol()?.name
+                            ), selector.pos
+                        );
+                    }
+                }
+            },
+            .NoneLiteral => report.error("`none` cannot be modified", expr.position()),
+            .StringLiteral => report.error(
+                "string literals cannot be modified", expr.position()
+            ),
+            .TupleLiteral as tuple_lit => if from_assign {
+                for value in tuple_lit.values {
+                    self.check_expr_is_mut(value);
+                }
+            } else {
+                report.error("tuple literals cannot be modified", tuple_lit.pos);
+            },
+            .EnumLiteral as enum_lit if !enum_lit.is_instance => report.error(
+                "enum literals cannot be modified", enum_lit.pos
+            ),
+            .BuiltinCall as builtin_call => {
+                for arg in builtin_call.args {
+                    self.check_expr_is_mut(arg);
+                }
+            },
+            .Block as block if block.is_expr => self.check_expr_is_mut(block.expr),
+            .Index as index => {
+                if index.left_type is .Pointer as ptr {
+                    if !ptr.is_mut {
+                        report.error(
+                            "cannot modify elements of an immutable pointer", index.pos
+                        );
+                    }
+                    return;
+                }
+                expr_sym := index.left_type.symbol()?;
+                if !expr_sym.info.is_mut_arr_or_vec() {
+                    report.error(
+                        "cannot modify elements of an immutable {}".fmt(expr_sym.info),
+                        index.pos
+                    );
+                }
+            },
+            .Unary as unary => self.check_expr_is_mut(unary.right),
+            .Binary as binary => {
+                self.check_expr_is_mut(binary.left);
+                self.check_expr_is_mut(binary.right);
+            },
+            else => {}
+        }
+    }
+
+    func check_sym_is_mut(self, sym: ast.Sym, pos: token.Pos) {
+        switch sym is {
+            ast.Const as const_info => report.error(
+                "cannot use constant `{}` as mutable value".fmt(sym.name), pos
+            ),
+            ast.Var as var_info => {
+                if !var_info.is_mut {
+                    err := if var_info.level == .Argument {
+                        mut err_b := report.error_builder(
+                            "cannot use variable `{}` as mutable argument".fmt(sym.name), pos
+                        );
+                        err_b.add_help(
+                            "consider making this argument mutable: `mut {}`", var_info.name
+                        );
+                        err_b
+                    } else {
+                        mut err_b := report.error_builder(
+                            "cannot use variable `{}` as mutable value".fmt(sym.name), pos
+                        );
+                        err_b.add_help(
+                            "consider making this {} mutable: `mut {}`", var_info.type_of(),
+                            var_info.name
+                        );
+                        err_b
+                    };
+                    err.emit();
+                }
+                var_info.is_changed = true;
+            },
+            else => {}
+        }
+    }
+}

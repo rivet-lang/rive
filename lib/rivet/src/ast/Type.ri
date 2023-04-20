@@ -7,6 +7,8 @@ import { Builder } from std/strings;
 
 import ../token;
 
+public const VOID_TYPES: []Type = [Type.Void(), .Never(token.NO_POS)];
+
 public enum Type : traits.Stringable {
     Basic {
         mut sym: TypeSym;
@@ -83,6 +85,26 @@ public enum Type : traits.Stringable {
         mut ret_type: Type;
         pos: token.Pos;
     };
+
+    [inline]
+    public func is_pointer(self) bool {
+        return self is .Pointer or self is .Anyptr;
+    }
+
+    [inline]
+    public func is_ptr_or_ref(self) bool {
+        return self.is_pointer() or self is .Reference;
+    }
+
+    [inline]
+    public func is_mut_ptr_or_ref(self) bool {
+        return switch self is {
+            .Pointer as ptr => ptr.is_mut,
+            .Reference as ref => ref.is_mut,
+            .Anyptr as anyptr_ => anyptr_.is_mut,
+            else => false
+        };
+    }
 
     public func unalias(self) ?Self {
         // NOTE: `.unalias()` returns an option, so we use the same type without

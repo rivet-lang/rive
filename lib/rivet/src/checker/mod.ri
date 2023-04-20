@@ -1,0 +1,91 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../prefs;
+import ../report;
+
+[boxed]
+public struct Checker {
+    mut table: ast.Table;
+    mut prefs: prefs.Prefs;
+
+    mut source_file: ast.SourceFile;
+    mut sym: ast.Sym;
+    mut cur_fn: ast.Func;
+
+    mut expected_type: ast.Type = .Void();
+
+    mut inside_unsafe: bool;
+    mut inside_test: bool;
+    mut inside_guard_expr: bool;
+    mut inside_var_decl: bool;
+
+    mut defer_stmts: []ast.Stmt;
+
+    public func check_files(mut self, source_files: []ast.SourceFile) {
+        for source_file in source_files {
+            self.sym = source_file.mod;
+            self.source_file = source_file;
+            self.expected_type = .Void();
+            self.check_decls(source_file.decls);
+        }
+        // check global variables
+        for sym in self.table.universe.scope.syms {
+            if sym is ast.Module as module {
+                for mod_sym in module.scope.syms {
+                    if mod_sym is ast.Var as mod_var {
+                        if !mod_var.is_public and mod_var.is_mut and !mod_var.is_changed {
+                            report.warn(
+                                "variable `{}` does not need to be mutable".fmt(mod_var.name),
+                                mod_var.pos
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    func check_decls(mut self, decls: []ast.Decl) {
+        for decl in decls {
+            if decl !is .Const and decl !is .Var {
+                self.check_decl(decl);
+            }
+        }
+    }
+
+    func check_decl(mut self, decl: ast.Decl) {
+        old_sym := self.sym;
+        defer {
+            self.sym = old_sym;
+        }
+        switch decl is {
+            .Extern as extern_decl => self.check_decls(extern_decl.decls),
+            .Const as const_decl => {},
+            else => {}
+        }
+    }
+
+    func check_mut_vars(self, scope: ast.Scope) {
+        for sym in scope.syms {
+            if sym is ast.Var as var_info {
+                if !var_info.is_used {
+                    report.warn(
+                        "variable `{}` declared but never used".fmt(var_info.name),
+                        var_info.pos
+                    );
+                } else if var_info.is_mut and !var_info.is_changed {
+                    report.warn(
+                        "variable `{}` does not need to be mutable".fmt(var_info.name),
+                        var_info.pos
+                    );
+                }
+            }
+        }
+        for ch in scope.childrens {
+            self.check_mut_vars(ch);
+        }
+    }
+}

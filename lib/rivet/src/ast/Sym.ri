@@ -271,12 +271,12 @@ public enum VarLevel as uint8 {
 public struct Var : Sym {
     public is_extern: bool;
     public is_mut: bool;
-    public is_used: bool;
-    public is_changed: bool;
-    public is_hidden_ref: bool;
-    public ir_name: string; // used for duplicate objects in IR
+    public mut is_used: bool;
+    public mut is_changed: bool;
+    public mut is_hidden_ref: bool;
+    public mut ir_name: string; // used for duplicate objects in IR
     public level: VarLevel;
-    public type: Type;
+    public mut type: Type;
     public pos: token.Pos;
 }
 

@@ -14,6 +14,7 @@ import ./prefs;
 import ./token;
 import ./parser;
 import ./report;
+import ./checker;
 import ./resolver;
 import ./depgraph;
 
@@ -24,6 +25,7 @@ public struct Compiler {
     mut source_files: []string;
 
     mut resolver: resolver.Resolver;
+    mut checker: checker.Checker;
 
     public func new(args: []string, is_test: bool, run_output: bool) ! {
         prefs_ := prefs.Prefs.new(args, is_test, run_output)!;
@@ -31,7 +33,8 @@ public struct Compiler {
         table_ := ast.Table.new(prefs_);
         Self(
             table: table_, prefs: prefs_,
-            resolver: resolver.Resolver(table_, prefs_)
+            resolver: resolver.Resolver(table_, prefs_),
+            checker: checker.Checker(table_, prefs_)
         ).run()!;
     }
 
@@ -43,7 +46,13 @@ public struct Compiler {
         self.import_modules()!;
 
         self.vlog("resolving files...");
-        self.resolver.resolve(self.table.source_files);
+        self.resolver.resolve_files(self.table.source_files);
+        if report.total_errors() > 0 {
+            self.abort();
+        }
+
+        self.vlog("checking files...");
+        self.checker.check_files(self.table.source_files);
         if report.total_errors() > 0 {
             self.abort();
         }

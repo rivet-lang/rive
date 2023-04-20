@@ -117,6 +117,15 @@ public enum TypeInfo : traits.Stringable {
     };
 
     [inline]
+    public func is_mut_arr_or_vec(self) bool {
+        return switch self is {
+            .Array as arr => arr.is_mut,
+            .Vector as vec => vec.is_mut,
+            else => false
+        };
+    }
+
+    [inline]
     public func is_primitive(self) bool {
         return self is .Bool or self is .Rune or self is .Int
             or self is .Uint or self is .ComptimeInt or self is .ComptimeFloat

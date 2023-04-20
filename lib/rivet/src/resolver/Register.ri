@@ -254,7 +254,8 @@ public struct Register {
                             is_mut: left.is_mut,
                             is_extern: var_decl.is_extern,
                             abi: self.abi,
-                            name: left.name
+                            name: left.name,
+                            pos: left.pos
                         );
                         self.source_file.mod.scope.add(left.sym) catch |err| {
                             report.error(err.to_string(), left.pos)

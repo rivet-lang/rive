@@ -1694,7 +1694,7 @@ class Checker:
                 if isinstance(expected, type.Option):
                     got_str = f"`{str(expected)}`"
                 elif expected == self.comp.void_t:
-                    got_str = f"option"
+                    got_str = "option"
                 else:
                     got_str = f"`?{expected}`"
             else:
@@ -1732,7 +1732,7 @@ class Checker:
             if isinstance(expected.typ,
                           type.Ptr) and isinstance(got.typ, type.Ptr):
                 return self.check_pointer(expected.typ, got.typ)
-            return expected.typ == got.typ.typ
+            return expected.typ == got.typ
         elif isinstance(expected,
                         type.Option) and not isinstance(got, type.Option):
             if got == self.comp.none_t:
@@ -1876,7 +1876,7 @@ class Checker:
         elif isinstance(expr, ast.Ident):
             if expr.is_comptime:
                 report.error(
-                    f"cannot use constant `${expr.name}` as mutable value",
+                    f"cannot use constant `@{expr.name}` as mutable value",
                     expr.pos
                 )
             elif expr.name == "_":
@@ -1939,7 +1939,7 @@ class Checker:
                     )
             elif not expr.field_is_mut and not expr.is_option_check:
                 report.error(
-                    f"field `{expr.field_name}` of type `{expr.left.typ.symbol().name}` is immutable",
+                    f"field `{expr.field_name}` of type `{expr.left_typ.symbol().name}` is immutable",
                     expr.pos
                 )
         elif isinstance(expr, ast.NoneLiteral):
@@ -1987,7 +1987,7 @@ class Checker:
         elif isinstance(sy, sym.Var):
             if not sy.is_mut:
                 report.error(
-                    f"cannot use object `{sy.name}` as mutable value", pos
+                    f"cannot use variable `{sy.name}` as mutable value", pos
                 )
             sy.is_changed = True
 

@@ -2243,7 +2243,9 @@ class Codegen:
                                 var_t, ir.Pointer
                             ):
                                 var_t = var_t.ptr(True)
-                            self.cur_fn.inline_alloca(var_t, b.var_name, val)
+                            unique_name = self.cur_fn.unique_name(b.var_name)
+                            expr.scope.update_ir_name(b.var_name, unique_name)
+                            self.cur_fn.inline_alloca(var_t, unique_name, val)
                     else:
                         p_typ_sym = p.typ.symbol()
                         tmp2_i = ir.Ident(ir.BOOL_T, tmp2)
