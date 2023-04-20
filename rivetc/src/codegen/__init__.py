@@ -712,7 +712,9 @@ class Codegen:
                 )
                 nr_level += 1
 
-        expr_typ = expr.expected_typ if hasattr(expr, "expected_typ") else expr.typ
+        expr_typ = expr.expected_typ if hasattr(
+            expr, "expected_typ"
+        ) else expr.typ
 
         expr_sym = expr.typ.symbol()
         expected_sym = expected_typ_.symbol()
@@ -746,10 +748,14 @@ class Codegen:
             res_expr = ir.Ident(tmp_t, tmp)
 
         # wrap option value
-        if isinstance(expected_typ_, type.Option) and (not expected_typ_.is_ref_or_ptr()):
+        if isinstance(expected_typ_,
+                      type.Option) and (not expected_typ_.is_ref_or_ptr()):
             if isinstance(res_expr, ir.NoneLit):
                 res_expr = self.option_none(expected_typ_)
-            elif not (isinstance(res_expr, ir.Skip) or isinstance(expr_typ, type.Option)):
+            elif not (
+                isinstance(res_expr, ir.Skip)
+                or isinstance(expr_typ, type.Option)
+            ):
                 res_expr = self.option_value(expected_typ_, res_expr)
 
         return res_expr
@@ -1133,8 +1139,9 @@ class Codegen:
                                 ir.Selector(f_typ, tmp, ir.Name(f.name)), value
                             )
                         return self.boxed_enum_variant_with_fields_value(
-                            typ_sym, expr.left.value if isinstance(expr.left, ast.EnumLiteral) else expr.left.field_name,
-                            tmp, custom_tmp = custom_tmp
+                            typ_sym, expr.left.value
+                            if isinstance(expr.left, ast.EnumLiteral) else
+                            expr.left.field_name, tmp, custom_tmp = custom_tmp
                         )
                     if isinstance(expr.left, ast.EnumLiteral):
                         if len(expr.args) > 0:
@@ -2092,7 +2099,9 @@ class Codegen:
                     else:
                         self.cur_fn.add_cond_br(cond, branch_label, next_branch)
                         self.cur_fn.add_label(branch_label)
-                        if isinstance(b.cond, ast.GuardExpr) and b.cond.has_cond:
+                        if isinstance(
+                            b.cond, ast.GuardExpr
+                        ) and b.cond.has_cond:
                             gcond = self.gen_expr_with_cast(
                                 self.comp.bool_t, b.cond.cond
                             )

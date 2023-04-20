@@ -8,7 +8,6 @@ import std/fs/path;
 import std/console;
 import std/process;
 
-import ./mir as _; // will be used
 import ./ast;
 import ./utils;
 import ./prefs;
