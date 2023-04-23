@@ -139,24 +139,7 @@ extend Checker {
                 }
             } else {
                 left_sym := left_type.symbol()?;
-                if left_sym.info is .Array and selector.field_name == "len" {
-                    selector.found = true;
-                    self.table.usize_t
-                } else if left_sym.info is .Tuple as tuple_info
-                    and selector.field_name.is_digit() {
-                    idx := strconv.parse_uint(selector.field_name, 0, usize.bits()) catch 0;
-                    if idx < tuple_info.types.len {
-                        selector.found = true;
-                        tuple_info.types[idx]
-                    } else {
-                        report.error(
-                            "type `{}` has no field `{}`".fmt(
-                                left_sym.name, selector.field_name
-                            ), selector.pos
-                        );
-                        .Void()
-                    }
-                } else if field := left_sym.lookup_field(selector.field_name) {
+                if field := left_sym.lookup_field(selector.field_name) {
                     selector.found = true;
                     selector.field_is_mut = field.is_mut;
                     field.type
@@ -201,9 +184,8 @@ extend Checker {
                     if selector.field_name.is_digit()
                         and (left_sym.info is .Vector or left_sym.info is .Array ) {
                         err.add_note(
-                            "instead of using tuple indexing, use array indexing: `expr[{}]`".fmt(
-                                selector.field_name
-                            )
+                            "instead of using tuple indexing, use array indexing: `{}[{}]`"
+                                .fmt(selector.left, selector.field_name)
                         );
                     }
                     err.emit();
@@ -233,7 +215,10 @@ extend Checker {
                 err.emit();
             } else if !(self.table.is_signed_int(unary.type)
                 or self.table.is_float(unary.type)) {
-                report.error("operator `-` can only be used with signed values", unary.pos);
+                report.error(
+                    "operator `-` can only be used with signed integer or float values",
+                    unary.pos
+                );
             },
             .Amp => {
                 mut expected_pointer := false;
@@ -277,6 +262,16 @@ extend Checker {
     func check_expr_is_mut(self, expr: ast.Expr, from_assign: bool = false) {
         switch expr is {
             .Paren as paren => self.check_expr_is_mut(paren.expr),
+            .SelfLiteral as self_lit => {
+                if !self_lit.obj.is_mut {
+                    mut err := report.error_builder(
+                        "cannot use `self` as mutable value", self_lit.pos
+                    );
+                    err.add_help("consider making `self` as mutable: `mut self`");
+                    err.emit();
+                }
+                self_lit.obj.is_changed = true;
+            },
             .Ident as ident => {
                 if ident.is_comptime {
                     report.error(
@@ -288,16 +283,6 @@ extend Checker {
                 } else if ident.found and ident.is_sym {
                     self.check_sym_is_mut(ident.sym, ident.pos);
                 }
-            },
-            .SelfLiteral as self_lit => {
-                if !self_lit.obj.is_mut {
-                    mut err := report.error_builder(
-                        "cannot use `self` as mutable value", self_lit.pos
-                    );
-                    err.add_help("consider making `self` as mutable: `mut self`");
-                    err.emit();
-                }
-                self_lit.obj.is_changed = true;
             },
             .Selector as selector => {
                 if selector.is_path {

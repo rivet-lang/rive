@@ -152,7 +152,13 @@ public struct Module : Sym {
         type_sym := TypeSym(
             is_public: true,
             name: unique_name,
-            info: .Array(elem_typ, size, is_mut)
+            info: .Array(elem_typ, size, is_mut),
+            fields: [
+                Field(
+                    name: "len", is_public: true,
+                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(12))
+                )
+            ]
         );
         self.scope.add(type_sym) catch {};
         return type_sym;
@@ -239,7 +245,13 @@ public struct Module : Sym {
         if type_sym := self.scope.find(unique_name) {
             return @cast(TypeSym, type_sym);
         }
-        type_sym := TypeSym(is_public: true, name: unique_name, info: .Tuple(types));
+        mut fields := @vec(Field);
+        for i, type in types {
+            fields.push(Field(name: i.to_string(), is_public: true, type: type));
+        }
+        type_sym := TypeSym(
+            is_public: true, name: unique_name, info: .Tuple(types), fields: fields
+        );
         self.scope.add(type_sym) catch {};
         return type_sym;
     }
