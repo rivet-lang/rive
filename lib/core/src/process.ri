@@ -30,7 +30,7 @@ public func process_set_cwd(path: string) ! {
 public func process_get_cwd() !string {
     unsafe {
         buf: [libc.MAX_PATH_LEN]mut uint8 := []!;
-        if res := libc.getcwd(&mut buf[0], libc.MAX_PATH_LEN) {
+        if _ := libc.getcwd(&mut buf[0], libc.MAX_PATH_LEN) {
             return string.from_raw(&buf[0]).clone();
         }
     }

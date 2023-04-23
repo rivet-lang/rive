@@ -2,11 +2,278 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import std/strconv;
+
 import ../ast;
 import ../token;
 import ../report;
 
 extend Checker {
+    func check_expr(mut self, mut expr: ast.Expr) ast.Type {
+        return switch expr is {
+            .Empty, .Type => .Void(),
+            .Paren as paren => self.check_expr(paren.expr),
+            .NoneLiteral as none_lit => self.table.none_t,
+            .BoolLiteral as bool_lit => self.table.bool_t,
+            .CharLiteral as char_lit => {
+                char_lit.type = if char_lit.is_byte {
+                    self.table.uint8_t
+                } else {
+                    self.table.rune_t
+                };
+                char_lit.type
+            },
+            .IntegerLiteral as int_lit => {
+                int_lit.type = self.table.comptime_int_t;
+                int_lit.type
+            },
+            .FloatLiteral as float_lit => {
+                float_lit.type = self.table.comptime_float_t;
+                float_lit.type
+            },
+            .StringLiteral as string_lit => {
+                string_lit.type = if string_lit.is_bytestr {
+                    .Basic(self.table.universe.add_or_get_array(
+                        self.table.uint8_t, string_lit.value.len, false
+                    ))
+                } else if string_lit.is_cstr {
+                    .Pointer(self.table.uint8_t, is_indexable: true)
+                } else {
+                    self.table.string_t
+                };
+                string_lit.type
+            },
+            .SelfLiteral as self_lit => {
+                self_lit.type = .Basic(self_lit.sym);
+                self_lit.type
+            },
+            .SelfTy as self_ty => .Void(),
+            .Ident as ident => {
+                ident.type = if ident.name == "_" {
+                    .Void()
+                } else if ident.is_comptime {
+                    ident.builtin.type()
+                } else if ident.is_sym or ident.is_obj {
+                    switch ident.sym is {
+                        ast.Func as func_sym => {
+                            if func_sym.abi != .Rivet {
+                                mut err := report.error_builder(
+                                    "cannot use an extern function as a value", ident.pos
+                                );
+                                err.add_help("wrap the extern function with a function");
+                                err.emit();
+                            }
+                            func_sym.type()
+                        },
+                        ast.Const as const_sym => const_sym.type,
+                        ast.Var as var_sym => var_sym.type,
+                        else => .Void()
+                    }
+                } else {
+                    .Void()
+                };
+                ident.type
+            },
+            .Selector as mut selector => self.check_selector(selector),
+            .Unary as mut unary => self.check_unary(unary),
+            else => .Void()
+        };
+    }
+
+    func check_selector(mut self, mut selector: ast.Expr.Selector) ast.Type {
+        selector.type = if selector.is_path {
+            if selector.left_sym is ast.TypeSym as type_sym {
+                .Basic(type_sym)
+            } else {
+                switch selector.sym is {
+                    ast.Func as func_sym => {
+                        if func_sym.is_method {
+                            report.error(
+                                "cannot take value of method `{}`".fmt(
+                                    selector.field_name
+                                ), selector.field_pos
+                            );
+                        }
+                        func_sym.type()
+                    },
+                    ast.TypeSym as type_sym_ => .Basic(type_sym_),
+                    ast.Const as const_sym => const_sym.type,
+                    ast.Var as var_sym => var_sym.type,
+                    else => {
+                        mut err := report.error_builder(
+                            "unexpected bug for selector expression", selector.pos
+                        );
+                        err.add_note("please report this bug, thanks =D");
+                        err.emit();
+                        .Void()
+                    }
+                }
+            }
+        } else {
+            left_type := self.check_expr(selector.left);
+            selector.left_type = left_type;
+            if selector.is_option_check {
+                if left_type is .Option as opt {
+                    opt.inner
+                } else {
+                    report.error("cannot check a non-option value", selector.field_pos);
+                    .Void()
+                }
+            } else if selector.is_indirect {
+                if !left_type.is_ptr_or_ref()
+                    or left_type is .Anyptr
+                    or (left_type is .Pointer as ptr and ptr.is_indexable) {
+                    mut err := report.error_builder(
+                        "invalid indirect for `{}`".fmt(left_type), selector.pos
+                    );
+                    if left_type is .Anyptr {
+                        err.add_help(
+                            "consider casting this to another pointer type, e.g. `*uint8`"
+                        );
+                    }
+                    err.emit();
+                    .Void()
+                } else {
+                    selector.field_is_mut = left_type.is_mut_ptr_or_ref();
+                    left_type.ptr_or_ref_inner()
+                }
+            } else {
+                left_sym := left_type.symbol()?;
+                if left_sym.info is .Array and selector.field_name == "len" {
+                    selector.found = true;
+                    self.table.usize_t
+                } else if left_sym.info is .Tuple as tuple_info
+                    and selector.field_name.is_digit() {
+                    idx := strconv.parse_uint(selector.field_name, 0, usize.bits()) catch 0;
+                    if idx < tuple_info.types.len {
+                        selector.found = true;
+                        tuple_info.types[idx]
+                    } else {
+                        report.error(
+                            "type `{}` has no field `{}`".fmt(
+                                left_sym.name, selector.field_name
+                            ), selector.pos
+                        );
+                        .Void()
+                    }
+                } else if field := left_sym.lookup_field(selector.field_name) {
+                    selector.found = true;
+                    selector.field_is_mut = field.is_mut;
+                    field.type
+                } else if sym := left_sym.scope.find(selector.field_name) {
+                    if sym is ast.Func as func_sym {
+                        if func_sym.is_method {
+                            mut err := report.error_builder(
+                                "cannot take value of method `{}`".fmt(
+                                    selector.field_name
+                                ), selector.field_pos
+                            );
+                            err.add_help("use parentheses to call the method");
+                            err.emit();
+                            .Void()
+                        } else {
+                            mut err := report.error_builder(
+                                "cannot take value of associated function `{}`".fmt(
+                                    selector.field_name
+                                ), selector.field_pos
+                            );
+                            err.add_help(
+                                "use `{}.{}` instead", left_sym.name,
+                                selector.field_name
+                            );
+                            err.emit();
+                            func_sym.type()
+                        }
+                    } else {
+                        report.error(
+                            "cannot take value of {} `{}.{}`".fmt(
+                                sym.type_of(), left_sym.name, selector.field_name
+                            ), selector.pos
+                        );
+                        .Void()
+                    }
+                } else {
+                    mut err := report.error_builder(
+                        "type `{}` has no field `{}`".fmt(
+                            left_sym.name, selector.field_name
+                        ), selector.field_pos
+                    );
+                    if selector.field_name.is_digit()
+                        and (left_sym.info is .Vector or left_sym.info is .Array ) {
+                        err.add_note(
+                            "instead of using tuple indexing, use array indexing: `expr[{}]`".fmt(
+                                selector.field_name
+                            )
+                        );
+                    }
+                    err.emit();
+                    .Void()
+                }
+            }
+        };
+        return selector.type;
+    }
+
+    func check_unary(mut self, mut unary: ast.Expr.Unary) ast.Type {
+        unary.type = self.check_expr(unary.right);
+        switch unary.op {
+            .Bang if unary.type != self.table.bool_t => report.error(
+                "operator `!` can only be used with boolean values", unary.pos
+            ),
+            .BitNot if !self.table.is_int(unary.type) => report.error(
+                "operator `~` can only be used with numeric values", unary.pos
+            ),
+            .Minus => if self.table.is_unsigned_int(unary.type) {
+                mut err := report.error_builder(
+                    "cannot apply unary operator `-` to type `{expr.typ}`".fmt(
+                        unary.type
+                    ), unary.pos
+                );
+                err.add_note("unsigned values cannot be negated");
+                err.emit();
+            } else if !(self.table.is_signed_int(unary.type)
+                or self.table.is_float(unary.type)) {
+                report.error("operator `-` can only be used with signed values", unary.pos);
+            },
+            .Amp => {
+                mut expected_pointer := false;
+                mut indexable_pointer := false;
+                if self.expected_type is .Pointer as ptr {
+                    expected_pointer = true;
+                    indexable_pointer = ptr.is_indexable;
+                } else if self.expected_type is .Option as opt
+                    and opt.inner is .Pointer as opt_ptr {
+                    expected_pointer = true;
+                    indexable_pointer = opt_ptr.is_indexable;
+                }
+                right := unary.right.clean_paren();
+                if right is .Index as index {
+                    if index.left_type is .Pointer and !expected_pointer {
+                        report.error("cannot reference a pointer indexing", unary.pos);
+                    }
+                    index.is_ref = true;
+                } else if unary.type is .Reference {
+                    report.error("cannot take the address of other reference", unary.pos);
+                } else if unary.is_ref_mut {
+                    self.check_expr_is_mut(right);
+                }
+                unary.type = if expected_pointer {
+                    if !self.inside_unsafe {
+                        report.error(
+                            "cannot take the address of a value outside of an `unsafe` block",
+                            unary.pos
+                        );
+                    }
+                    .Pointer(unary.type, unary.is_ref_mut, indexable_pointer)
+                } else {
+                    .Reference(unary.type, unary.is_ref_mut)
+                };
+            },
+            else => {}
+        }
+        return unary.type;
+    }
+
     func check_expr_is_mut(self, expr: ast.Expr, from_assign: bool = false) {
         switch expr is {
             .Paren as paren => self.check_expr_is_mut(paren.expr),

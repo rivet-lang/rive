@@ -1151,9 +1151,12 @@ class Codegen:
                         return self.boxed_enum_value(
                             typ_sym, expr.left.value, x, custom_tmp = custom_tmp
                         )
+                    if len(expr.args) > 0:
+                        x = expr.args[0].expr
+                    else:
+                        x = None
                     return self.boxed_enum_value(
-                        typ_sym, expr.left.field_name, expr.args[0].expr,
-                        custom_tmp = custom_tmp
+                        typ_sym, expr.left.field_name, x, custom_tmp = custom_tmp
                     )
                 if custom_tmp:
                     tmp = custom_tmp

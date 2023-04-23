@@ -12,8 +12,6 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 •
 [Roadmap](ROADMAP.md)
 •
-[TODO](TODO.md)
-•
 [Changelog](CHANGELOG.md)
 •
 [Samples](samples/)

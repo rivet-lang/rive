@@ -33,7 +33,7 @@ class TBase:
         elif isinstance(self, Tuple):
             for t in self.types:
                 t.unalias()
-        elif isinstance(self, (Array, Vec, Ptr, Ref)):
+        elif isinstance(self, (Array, Vec, Ptr, Ref, Variadic)):
             self.typ.unalias()
         elif isinstance(self, Type):
             if self.is_resolved() and self.sym.kind == TypeKind.Alias:

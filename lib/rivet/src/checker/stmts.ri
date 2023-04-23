@@ -1,0 +1,32 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../report;
+
+extend Checker {
+    func check_stmts(mut self, stmts: []mut ast.Stmt) {
+        for mut stmt in stmts {
+            self.check_stmt(stmt);
+        }
+    }
+
+    func check_stmt(mut self, mut stmt: ast.Stmt) {
+        switch stmt is {
+            .Expr as mut expr => {
+                expr_type := self.check_expr(expr);
+                if !((expr_type is .Result as res and res.inner in ast.VOID_TYPES)
+                    or (expr_type is .Option as opt and opt.inner in ast.VOID_TYPES)
+                    or expr_type in ast.VOID_TYPES) {
+                    report.warn("expression evaluated but not used", expr.position());
+                }
+            },
+            .Defer as defer_stmt => {
+                _ = self.check_expr(defer_stmt.expr);
+                self.defer_stmts.push(defer_stmt);
+            },
+            else => {}
+        }
+    }
+}

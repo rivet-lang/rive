@@ -736,6 +736,15 @@ public struct string : Stringable, Hashable {
         return self.len == 0;
     }
 
+    public func is_digit(self) bool {
+        for ch in self.as_bytes() {
+            if !ch.is_digit() {
+                return false;
+            }
+        }
+        return true;
+    }
+
     func slice(self, start: usize, end: usize) Self {
         unsafe {
             if start > end or start > self.len or end > self.len {

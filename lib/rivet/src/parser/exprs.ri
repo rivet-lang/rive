@@ -202,7 +202,7 @@ extend Parser {
                 self.next();
                 is_ref_mut := op == .Amp and self.accept(.KwMut);
                 right := self.parse_unary_expr();
-                .Unary(right, op, is_ref_mut, pos)
+                .Unary(right, op, is_ref_mut, pos + right.position())
             },
             else => self.parse_primary_expr()
         };
@@ -647,11 +647,16 @@ extend Parser {
     func parse_guard_expr(mut self) ast.Expr {
         pos := self.prev_tok.pos;
         mut vars := @vec(ast.ObjectData);
-        while {
-            vars.push(self.parse_var_decl(support_typ: false));
-            if !self.accept(.Comma) {
-                break;
+        if self.accept(.Lparen) {
+            while {
+                vars.push(self.parse_var_decl(support_typ: false));
+                if !self.accept(.Comma) {
+                    break;
+                }
             }
+            self.expect(.Rparen);
+        } else {
+            vars.push(self.parse_var_decl(support_typ: false));
         }
         self.expect(.DeclAssign);
         expr := self.parse_expr();
@@ -716,17 +721,24 @@ extend Parser {
         mut is_raw := false;
         mut is_bytestr := false;
         mut is_cstr := false;
-        if self.accept(.Name) {
+        mut has_prefix := false;
+        mut pos := if self.accept(.Name) {
+            has_prefix = true;
             is_raw = self.prev_tok.lit == "r";
             is_bytestr = self.prev_tok.lit == "b";
             is_cstr = self.prev_tok.lit == "c";
-        }
+            self.prev_tok.pos
+        } else {
+            self.tok.pos
+        };
         mut value := self.tok.lit;
-        mut pos := self.tok.pos;
+        if has_prefix {
+            pos += self.tok.pos;
+        }
         self.expect(.String);
         while self.accept(.String) {
             value = value.concat(self.prev_tok.lit);
-            pos += self.tok.pos;
+            pos += self.prev_tok.pos;
         }
         return .StringLiteral(
             value: value,

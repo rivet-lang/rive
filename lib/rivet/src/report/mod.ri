@@ -27,6 +27,8 @@ public struct ReportTable {
     public mut prefs: prefs.Prefs;
     public mut errors: usize;
     public mut warns: usize;
+
+    mut last_pos: token.Pos;
 }
 
 public enum ReportKind as uint8 {
@@ -81,6 +83,10 @@ public struct ReportBuilder {
     }
 
     public func emit(self) {
+        if Report_Table.last_pos.line == self.pos.line {
+            return;
+        }
+        Report_Table.last_pos = self.pos;
         if self.kind == .Error {
             Report_Table.errors += 1;
         } else {

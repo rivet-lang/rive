@@ -1210,7 +1210,7 @@ class Checker:
                                 )
                             else:
                                 report.error(
-                                    f"cannot take value of associated function `{expr.field_name}` from value",
+                                    f" `{expr.field_name}` cannot take value of associated functionfrom value",
                                     expr.field_pos
                                 )
                                 report.help(

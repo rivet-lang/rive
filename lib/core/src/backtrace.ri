@@ -34,7 +34,7 @@ var state = unsafe {
 };
 
 func bt_print_callback(
-    data: mut_anyptr, pc: int32, filename_ptr: ?[*]mut uint8, lineno: int32,
+    data_: mut_anyptr, pc_: int32, filename_ptr: ?[*]mut uint8, lineno: int32,
     fn_ptr: ?[*]mut uint8
 ) int32 {
     unsafe {

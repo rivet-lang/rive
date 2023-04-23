@@ -342,6 +342,13 @@ public enum Builtin {
         type: Type;
         return_is_any: bool;
         is_unsafe: bool;
+    };
+
+    public func type(self) Type {
+        return switch self is {
+            .Const as b_const => b_const.type,
+            .Func as b_func => b_func.type
+        };
     }
 }
 
