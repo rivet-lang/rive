@@ -205,8 +205,9 @@ public struct Table {
         type_sym := type.symbol()?;
         return if type_sym.info is .Int as int_info {
             int_info.size
-        } else if type_sym.info is .ComptimeInt {
-            64
+        } else if type_sym.info is .ComptimeInt or type_sym.info is .Isize
+            or type_sym.info is .Usize {
+            isize.bits()
         } else {
             666
         };

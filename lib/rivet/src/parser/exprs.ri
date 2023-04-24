@@ -649,14 +649,14 @@ extend Parser {
         mut vars := @vec(ast.ObjectData);
         if self.accept(.Lparen) {
             while {
-                vars.push(self.parse_var_decl(support_typ: false));
+                vars.push(self.parse_var_decl(support_type: false));
                 if !self.accept(.Comma) {
                     break;
                 }
             }
             self.expect(.Rparen);
         } else {
-            vars.push(self.parse_var_decl(support_typ: false));
+            vars.push(self.parse_var_decl(support_type: false));
         }
         self.expect(.DeclAssign);
         expr := self.parse_expr();

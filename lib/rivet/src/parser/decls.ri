@@ -228,9 +228,9 @@ extend Parser {
                 } else {
                     .Void()
                 };
+                pos += self.prev_tok.pos;
                 self.expect(.Assign);
                 expr := self.parse_expr();
-                pos += self.prev_tok.pos;
                 self.expect(.Semicolon);
                 return .Const(
                     doc_comment,
@@ -257,12 +257,12 @@ extend Parser {
                 } else {
                     lefts.push(self.parse_var_decl(true));
                 }
+                pos += self.prev_tok.pos;
                 right := if !self.inside_extern and self.accept(.Assign) {
                     self.parse_expr()
                 } else {
                     .Empty(self.tok.pos)
                 };
-                pos += self.prev_tok.pos;
                 self.expect(.Semicolon);
                 return .Var(
                     doc_comment,
@@ -272,7 +272,8 @@ extend Parser {
                     self.extern_abi,
                     lefts,
                     right,
-                    pos
+                    pos,
+                    scope: self.scope
                 );
             },
             self.accept(.KwTrait) => {

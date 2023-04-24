@@ -55,8 +55,11 @@ public struct ObjectData {
     public name: string;
     public is_mut: bool;
     public is_ref: bool;
+    public has_type: bool;
     public mut type: Type;
     public level: VarLevel;
     public pos: token.Pos;
     public mut sym: Var;
+    public is_extern: bool;
+    public is_global: bool;
 }

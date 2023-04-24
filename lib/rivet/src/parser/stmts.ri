@@ -54,14 +54,14 @@ extend Parser {
                 mut index := ast.ObjectData();
                 if self.peek_token(1).kind == .Comma {
                     has_index = true;
-                    index = self.parse_var_decl(support_mut: false, support_typ: false);
+                    index = self.parse_var_decl(support_mut: false, support_type: false);
                     self.expect(.Comma);
                 }
                 mut values := @vec(ast.ObjectData);
                 if self.accept(.Lparen) {
                     while {
                         values.push(
-                            self.parse_var_decl(support_ref: true, support_typ: false)
+                            self.parse_var_decl(support_ref: true, support_type: false)
                         );
                         if !self.accept(.Comma) {
                             break;
@@ -69,7 +69,7 @@ extend Parser {
                     }
                     self.expect(.Rparen);
                 } else {
-                    values.push(self.parse_var_decl(support_ref: true, support_typ: false));
+                    values.push(self.parse_var_decl(support_ref: true, support_type: false));
                 }
                 self.expect(.KwIn);
                 iterable := self.parse_expr();

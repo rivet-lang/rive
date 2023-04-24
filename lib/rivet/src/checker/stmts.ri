@@ -14,19 +14,84 @@ extend Checker {
 
     func check_stmt(mut self, mut stmt: ast.Stmt) {
         switch stmt is {
-            .Expr as mut expr => {
-                expr_type := self.check_expr(expr);
-                if !((expr_type is .Result as res and res.inner in ast.VOID_TYPES)
-                    or (expr_type is .Option as opt and opt.inner in ast.VOID_TYPES)
-                    or expr_type in ast.VOID_TYPES) {
-                    report.warn("expression evaluated but not used", expr.position());
+            .VarDecl as var_decl => self.check_var_decl(
+                var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
+            ),
+            .For as mut for_stmt => self.check_for(for_stmt),
+            .While as while_stmt => {
+                if !while_stmt.is_inf and self.check_expr(
+                    while_stmt.cond
+                ) != self.table.bool_t {
+                    if while_stmt.cond is .Guard {
+                        report.error(
+                            "non-boolean expression used as `while` condition",
+                            while_stmt.cond.position()
+                        );
+                    }
+                }
+                self.check_stmt(while_stmt.stmt);
+                if while_stmt.has_continue_expr {
+                    _ = self.check_expr(while_stmt.continue_expr);
+                }
+                if while_stmt.has_else_stmt {
+                    self.check_stmt(while_stmt.else_stmt);
                 }
             },
             .Defer as defer_stmt => {
-                _ = self.check_expr(defer_stmt.expr);
+                self.inside_defer = true;
+                self.check_expr_evaluated_but_not_used(
+                    self.check_expr(defer_stmt.expr), defer_stmt.expr.position()
+                );
                 self.defer_stmts.push(defer_stmt);
+                self.inside_defer = false;
             },
+            .Expr as mut expr => self.check_expr_evaluated_but_not_used(
+                self.check_expr(expr), expr.position()
+            ),
             else => {}
+        }
+    }
+
+    func check_for(mut self, mut for_stmt: ast.Stmt.For) {
+        iterable_t := self.check_expr(for_stmt.iterable);
+        iterable_sym := iterable_t.symbol()?;
+        if iterable_sym.info is .Array or iterable_sym.info is .Vector {
+            mut elem_type := self.table.comptime_number_to_type(
+                iterable_sym.info.elem_type()?
+            );
+            if for_stmt.values.len == 1 {
+                value0 := for_stmt.values[0];
+                if value0.is_mut and !iterable_sym.info.is_mut_arr_or_vec() {
+                    report.error(
+                        "cannot modify immutable {}".fmt(iterable_sym.info),
+                        for_stmt.iterable.position()
+                    );
+                } else if value0.is_ref {
+                    elem_type = .Reference(elem_type);
+                }
+            }
+            if for_stmt.has_index {
+                for_stmt.scope.update_type(for_stmt.index.name, self.table.usize_t);
+            }
+            if for_stmt.values.len == 1 {
+                value0 := for_stmt.values[0];
+                for_stmt.scope.update_type(value0.name, elem_type);
+                for_stmt.scope.update_is_hidden_ref(value0.name, value0.is_mut);
+            } else {
+                types := @cast(ast.TypeInfo.Tuple, elem_type.symbol()?.info).types;
+                for i, value in for_stmt.values {
+                    for_stmt.scope.update_type(value.name, types[i]);
+                    for_stmt.scope.update_is_hidden_ref(value.name, value.is_mut);
+                }
+            }
+            self.check_stmt(for_stmt.stmt);
+        } else {
+            mut err := report.error_builder(
+                "`{}` is not an iterable type".fmt(iterable_t),
+                for_stmt.iterable.position()
+            );
+            err.add_note("expected array or vector value");
+            err.emit();
         }
     }
 }

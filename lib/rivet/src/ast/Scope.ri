@@ -104,4 +104,20 @@ public struct Scope {
     func dont_lookup_parent(self) bool {
         return self.parent is none or self.detached_from_parent;
     }
+
+    public func update_type(self, name: string, type: Type) {
+        if sym := self.lookup(name) {
+            if sym is Var as var_info {
+                var_info.type = type;
+            }
+        }
+    }
+
+    public func update_is_hidden_ref(self, name: string, is_hidden_ref: bool) {
+        if sym := self.lookup(name) {
+            if sym is Var as var_info {
+                var_info.is_hidden_ref = is_hidden_ref;
+            }
+        }
+    }
 }

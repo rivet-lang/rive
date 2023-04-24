@@ -110,6 +110,7 @@ public enum Decl {
         mut right: Expr;
         pos: token.Pos;
         mut sym: Sym;
+        mut scope: Scope;
     },
     Func {
         docs: DocComment;
@@ -150,6 +151,17 @@ public enum Decl {
         stmts: []mut Stmt;
         scope: Scope;
         pos: token.Pos;
+    };
+
+    public func decls(self) ?[]Self {
+        return switch self is {
+            .Extern as extern_decl => extern_decl.decls,
+            .Trait as trait_decl => trait_decl.decls,
+            .Enum as enum_decl => enum_decl.decls,
+            .Struct as struct_decl => struct_decl.decls,
+            .Extend as extend_decl => extend_decl.decls,
+            else => none
+        };
     }
 }
 

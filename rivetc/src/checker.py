@@ -209,7 +209,6 @@ class Checker:
                         self.check_types(right_typ, self.expected_type)
                     except utils.CompilerError as e:
                         report.error(e.args[0], stmt.pos)
-                    self.expected_type = self.comp.void_t
                 else:
                     right_typ = self.comp.comptime_number_to_type(right_typ)
                     stmt.lefts[0].typ = right_typ
@@ -229,7 +228,7 @@ class Checker:
                     )
                 else:
                     for i, vd in enumerate(stmt.lefts):
-                        if vd.name == "_" and stmt.op != Kind.Assign:
+                        if vd.name == "_":
                             report.error(
                                 "cannot modify blank identifier (`_`)", vd.pos
                             )
@@ -289,7 +288,7 @@ class Checker:
                 report.error(
                     f"`{iterable_t}` is not an iterable type", stmt.iterable.pos
                 )
-                report.note("expected array or slice value")
+                report.note("expected array or vector value")
         elif isinstance(stmt, ast.DeferStmt):
             self.check_expr(stmt.expr)
             self.defer_stmts.append(stmt)
@@ -1258,7 +1257,7 @@ class Checker:
             elif expr.has_expr:
                 if self.cur_fn.ret_typ == self.comp.void_t:
                     report.error(
-                        f"void {self.cur_fn.typeof()} `{self.cur_fn.name}` should not return a value",
+                        f"{self.cur_fn.typeof()} `{self.cur_fn.name}` should not return a value",
                         expr.expr.pos
                     )
                 else:

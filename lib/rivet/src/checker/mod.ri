@@ -3,6 +3,7 @@
 // be found in the LICENSE file.
 
 import ../ast;
+import ../token;
 import ../prefs;
 import ../report;
 
@@ -19,20 +20,29 @@ public struct Checker {
 
     mut inside_extern: bool;
     mut inside_test: bool;
+    mut inside_var_decl: bool;
+    mut inside_defer: bool;
     mut inside_unsafe: bool;
     mut inside_guard_expr: bool;
-    mut inside_var_decl: bool;
 
     mut defer_stmts: []ast.Stmt.Defer;
 
     public func check_files(mut self, source_files: []ast.SourceFile) {
+        // check global variables
+        for source_file in source_files {
+            self.sym = source_file.mod;
+            self.source_file = source_file;
+            self.expected_type = .Void();
+            self.check_global_vars(source_file.decls);
+        }
+        // check the source code
         for source_file in source_files {
             self.sym = source_file.mod;
             self.source_file = source_file;
             self.expected_type = .Void();
             self.check_decls(source_file.decls);
         }
-        // check global variables
+        // check global mutable variables
         for sym in self.table.universe.scope.syms {
             if sym is ast.Module as module {
                 for mod_sym in module.scope.syms {
@@ -49,6 +59,18 @@ public struct Checker {
         }
     }
 
+    func check_global_vars(mut self, decls: []ast.Decl) {
+        for decl in decls {
+            old_sym := self.sym;
+            if decl is .Const or decl is .Var {
+                self.check_decl(decl);
+            } else if decl_decls := decl.decls() {
+                self.check_global_vars(decl_decls);
+            }
+            self.sym = old_sym;
+        }
+    }
+
     func check_decls(mut self, decls: []ast.Decl) {
         for decl in decls {
             if decl !is .Const and decl !is .Var {
@@ -59,21 +81,93 @@ public struct Checker {
 
     func check_decl(mut self, decl: ast.Decl) {
         old_sym := self.sym;
-        defer {
-            self.sym = old_sym;
-        }
+        defer self.sym = old_sym;
         switch decl is {
             .Extern as extern_decl => {
                 self.inside_extern = true;
                 self.check_decls(extern_decl.decls);
                 self.inside_extern = false;
             },
-            .Const as const_decl => {},
+            .Var as var_decl => {
+                self.inside_var_decl = true;
+                self.check_var_decl(
+                    var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
+                );
+                self.inside_var_decl = false;
+            },
+            .Const as const_decl => if const_decl.has_type {
+                old_expected_type := self.expected_type;
+                self.expected_type = const_decl.type;
+                const_type := self.check_expr(const_decl.expr);
+                self.expected_type = old_expected_type;
+                self.check_types(const_type, const_decl.type) catch |err| {
+                    report.error(err.to_string(), const_decl.pos);
+                };
+            } else {
+                const_decl.type = self.check_expr(const_decl.expr);
+                @cast(ast.Const, const_decl.sym).type = const_decl.type;
+            },
             .Func as func_decl => {
+                self.cur_fn = @cast(ast.Func, func_decl.sym);
                 self.check_stmts(func_decl.stmts);
                 self.check_scope_vars(func_decl.scope);
             },
             else => {}
+        }
+    }
+
+    func check_var_decl(
+        mut self, lefts: []ast.ObjectData, mut right: ast.Expr, scope: ast.Scope,
+        pos: token.Pos
+    ) {
+        if lefts.len == 1 {
+            old_expected_type := self.expected_type;
+            left0 := lefts[0];
+            if !left0.is_extern {
+                if left0.has_type {
+                    self.expected_type = left0.type;
+                }
+                mut right_type := self.check_expr(right);
+                if left0.has_type {
+                    self.check_types(right_type, left0.type) catch |err| {
+                        report.error(err.to_string(), pos);
+                    };
+                } else {
+                    right_type = self.table.comptime_number_to_type(right_type);
+                    left0.type = right_type;
+                    scope.update_type(left0.name, right_type);
+                }
+                self.expected_type = old_expected_type;
+            }
+        } else {
+            right_type := self.check_expr(right);
+            right_sym := right_type.symbol()?;
+            if right_sym.info is .Tuple as tuple_info {
+                if tuple_info.types.len == lefts.len {
+                    for i, vd in lefts {
+                        if vd.name == "_" {
+                            report.error("cannot modify blank identifier (`_`)", vd.pos);
+                            continue;
+                        }
+                        if !vd.has_type {
+                            v_type := self.table.comptime_number_to_type(tuple_info.types[i]);
+                            vd.type = v_type;
+                            scope.update_type(vd.name, v_type);
+                        }
+                    }
+                } else {
+                    report.error(
+                        "expected {} values, found {}".fmt(
+                            lefts.len, tuple_info.types.len
+                        ), right.position()
+                    );
+                }
+            } else {
+                report.error(
+                    "expected tuple value, found `{}`".fmt(right_type),
+                    right.position()
+                );
+            }
         }
     }
 

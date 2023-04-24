@@ -2,8 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/strconv;
-
 import ../ast;
 import ../token;
 import ../report;
@@ -75,7 +73,31 @@ extend Checker {
                 ident.type
             },
             .Selector as mut selector => self.check_selector(selector),
+            .Block as block => {
+                if block.is_unsafe {
+                    if self.inside_unsafe {
+                        report.warn("unnecessary `unsafe` block", block.pos);
+                    }
+                    self.inside_unsafe = true;
+                }
+                old_expected_type := self.expected_type;
+                self.expected_type = .Void();
+                for mut stmt in block.stmts {
+                    self.check_stmt(stmt);
+                }
+                self.expected_type = old_expected_type;
+                block.type = if block.is_expr {
+                    self.check_expr(block.expr)
+                } else {
+                    .Void()
+                };
+                if block.is_unsafe {
+                    self.inside_unsafe = false;
+                }
+                block.type
+            },
             .Unary as mut unary => self.check_unary(unary),
+            .Return as mut return_expr => self.check_return(return_expr),
             else => .Void()
         };
     }
@@ -241,6 +263,11 @@ extend Checker {
                     report.error("cannot take the address of other reference", unary.pos);
                 } else if unary.is_ref_mut {
                     self.check_expr_is_mut(right);
+                } else {
+                    right_sym := unary.type.symbol()?;
+                    if right_sym.is_boxed() {
+                        report.error("cannot reference a boxed value", unary.pos);
+                    }
                 }
                 unary.type = if expected_pointer {
                     if !self.inside_unsafe {
@@ -257,6 +284,58 @@ extend Checker {
             else => {}
         }
         return unary.type;
+    }
+
+    func check_return(mut self, mut return_expr: ast.Expr.Return) ast.Type {
+        if self.inside_defer {
+            report.error("`return` is not allowed inside `defer` statement", return_expr.pos);
+        } else if self.inside_test and return_expr.has_expr {
+            report.error("cannot return values inside `test` declaration", return_expr.pos);
+        } else if return_expr.has_expr {
+            if self.cur_fn.ret_type is .Void {
+                report.error(
+                    "{} `{}` should not return a value".fmt(
+                        self.cur_fn.type_of(), self.cur_fn.name
+                    ), return_expr.expr.position()
+                );
+            } else {
+                old_expected_type := self.expected_type;
+                self.expected_type = if self.cur_fn.ret_type is .Result as res_t {
+                    res_t.inner
+                } else {
+                    self.cur_fn.ret_type
+                };
+                expr_type := self.check_expr(return_expr.expr);
+                self.expected_type = old_expected_type;
+                self.check_types(expr_type, self.cur_fn.ret_type) catch |err| {
+                    expr_sym := expr_type.symbol()?;
+                    if !(
+                        self.cur_fn.ret_type is .Result
+                        and expr_sym.implement_trait(self.table.error_sym)
+                    ) {
+                        mut err_b := report.error_builder(
+                            err.to_string(), return_expr.expr.position()
+                        );
+                        err_b.add_note(
+                            "in return of {} `{}`", self.cur_fn.type_of(),
+                            self.cur_fn.name
+                        );
+                        err_b.emit();
+                    }
+                };
+            }
+        } else if !(
+            self.cur_fn.ret_type is .Void
+            or (self.cur_fn.ret_type is .Result as res_t and res_t.inner is .Void)
+        ) {
+            mut err := report.error_builder(
+                "expected `{}` value in return argument".fmt(self.cur_fn.ret_type),
+                return_expr.pos
+            );
+            err.add_note("in return of {} `{}`", self.cur_fn.type_of(), self.cur_fn.name);
+            err.emit();
+        }
+        return .Never(return_expr.pos);
     }
 
     func check_expr_is_mut(self, expr: ast.Expr, from_assign: bool = false) {
@@ -387,6 +466,14 @@ extend Checker {
                 var_info.is_changed = true;
             },
             else => {}
+        }
+    }
+
+    func check_expr_evaluated_but_not_used(self, expr_type: ast.Type, pos: token.Pos) {
+        if !((expr_type is .Result as res and res.inner in ast.VOID_TYPES)
+            or (expr_type is .Option as opt and opt.inner in ast.VOID_TYPES)
+            or expr_type in ast.VOID_TYPES) {
+            report.warn("expression evaluated but not used", pos);
         }
     }
 }

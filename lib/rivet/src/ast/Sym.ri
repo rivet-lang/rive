@@ -372,6 +372,15 @@ public struct TypeSym : Sym {
         return fields;
     }
 
+    [inline]
+    public func implement_trait(self, trait_sym: TypeSym) bool {
+        return if trait_sym.info is .Trait as trait_info {
+            self in trait_info.implements
+        } else {
+            false
+        };
+    }
+
     public func update(mut self, other: TypeSym) ! {
         if self.info is .Placeholder {
             // update placeholder
@@ -397,11 +406,7 @@ public struct TypeSym : Sym {
 
     [inline]
     public func is_primitive(self) bool {
-        return if self.info is .Enum as enum_info {
-            !enum_info.is_boxed
-        } else {
-            self.info.is_primitive()
-        };
+        return self.info.is_primitive();
     }
 
     [inline]
