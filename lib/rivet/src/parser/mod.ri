@@ -298,7 +298,7 @@ public struct Parser {
             switch tok.kind {
                 .Assign => assign_was_used = true,
                 .DeclAssign if !assign_was_used => return true,
-                .Semicolon => break,
+                .KwIf, .KwSwitch, .KwWhile, .Semicolon => break,
                 else => if tok.pos.line != line_nr { break }
             }
         }

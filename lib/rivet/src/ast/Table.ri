@@ -132,12 +132,12 @@ public struct Table {
 
     public func find_builtin(self, name: string) ?Builtin {
         for builtin in self.builtins {
-            is_same := switch builtin is {
+            is_equal := switch builtin is {
                 .Const as b_var => b_var.name == name,
                 .Func as b_func => b_func.name == name,
                 else => false
             };
-            if is_same {
+            if is_equal {
                 return builtin;
             }
         }
@@ -196,8 +196,10 @@ public struct Table {
     public func num_bits(self, type: Type) usize {
         return if self.is_int(type) {
             self.int_bits(type)
-        } else {
+        } else if self.is_float(type) {
             self.float_bits(type)
+        } else {
+            0
         };
     }
 
@@ -205,11 +207,10 @@ public struct Table {
         type_sym := type.symbol()?;
         return if type_sym.info is .Int as int_info {
             int_info.size
-        } else if type_sym.info is .ComptimeInt or type_sym.info is .Isize
-            or type_sym.info is .Usize {
-            isize.bits()
+        } else if type_sym.info is .Isize or type_sym.info is .Usize {
+            if self.prefs.target_is_64bit { 64 } else { 32 }
         } else {
-            666
+            75
         };
     }
 
@@ -217,10 +218,8 @@ public struct Table {
         type_sym := type.symbol()?;
         return if type_sym.info is .Float as float_info {
             float_info.size
-        } else if type_sym.info is .ComptimeFloat {
-            64
         } else {
-            666
+            75
         };
     }
 
@@ -330,6 +329,29 @@ public struct Table {
             }
         }
     }
+}
+
+public func universe() Module {
+    return Module(is_public: false, name: "universe", scope: Scope(syms: [
+        TypeSym(name: "none", info: .None()),
+        TypeSym(name: "bool", info: .Bool()),
+        TypeSym(name: "rune", info: .Rune()),
+        TypeSym(name: "int8", info: .Int(8)),
+        TypeSym(name: "int16", info: .Int(16)),
+        TypeSym(name: "int32", info: .Int(32)),
+        TypeSym(name: "int64", info: .Int(64)),
+        TypeSym(name: "isize", info: .Isize()),
+        TypeSym(name: "uint8", info: .Uint(8)),
+        TypeSym(name: "uint16", info: .Uint(16)),
+        TypeSym(name: "uint32", info: .Uint(32)),
+        TypeSym(name: "uint64", info: .Uint(64)),
+        TypeSym(name: "usize", info: .Usize()),
+        TypeSym(name: "comptime_int", info: .ComptimeInt()),
+        TypeSym(name: "comptime_float", info: .ComptimeFloat()),
+        TypeSym(name: "float32", info: .Float(32)),
+        TypeSym(name: "float64", info: .Float(64)),
+        TypeSym(name: "string", info: .Struct(is_boxed: true))
+    ]));
 }
 
 public enum Builtin {

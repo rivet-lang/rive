@@ -19,6 +19,12 @@ test "`if` expression with guard expression" {
         @assert(val == 3);
     }
 
+    @assert(if val := ret_none() {
+        val == 3
+    } else {
+        false
+    });
+
     if val := ret_none(); val != 3 {
         @assert(false);
     }

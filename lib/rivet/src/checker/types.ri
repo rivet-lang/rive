@@ -6,6 +6,7 @@ import ../ast;
 import ../token;
 import ../report;
 
+[boxed]
 struct IncompatibleTypesError : Error {
     msg: string;
 
@@ -239,36 +240,39 @@ extend Checker {
             bits_hi = bits_lo;
             bits_lo = old_bhi;
         }
-        if self.table.is_float(type_hi) {
+
+        return if self.table.is_float(type_hi) {
             if self.table.is_float(type_lo) {
                 // float -> float (good)
-                return type_hi;
+                type_hi
+            } else {
+                // float -> int (bad)
+                .Void()
             }
-            // float -> int (bad)
-            return .Void();
-        }
+        } else {
+            is_signed_lo := self.table.is_signed_int(type_lo);
+            is_unsigned_lo := !is_signed_lo;
 
-        is_signed_lo := self.table.is_signed_int(type_lo);
-        is_unsigned_lo := !is_signed_lo;
+            is_signed_hi := self.table.is_signed_int(type_hi);
+            is_unsigned_hi := !is_signed_hi;
 
-        is_signed_hi := self.table.is_signed_int(type_hi);
-        is_unsigned_hi := !is_signed_hi;
-
-        if is_unsigned_lo and is_unsigned_hi {
-            // unsigned number -> unsigned number (good)
-            return type_hi;
-        } else if is_signed_lo and is_signed_hi {
-            // signed number -> signed number (good)
-            return if bits_lo == 64 and is_signed_lo {
+            if is_unsigned_lo and is_unsigned_hi {
+                // unsigned number -> unsigned number (good)
+                type_hi
+            } else if is_signed_lo and is_signed_hi {
+                // signed number -> signed number (good)
+                if bits_lo == 64 and bits_hi != 64 {
+                    type_lo
+                } else {
+                    type_hi
+                }
+            } else if is_unsigned_lo and is_signed_hi and bits_hi > bits_lo {
+                // unsigned number -> signed number (good, if signed type is larger)
                 type_lo
             } else {
-                type_hi
-            };
-        } else if is_unsigned_lo and is_signed_hi and bits_lo < bits_hi {
-            // unsigned number -> signed number (good, if signed type is larger)
-            return type_lo;
-        }
-        // signed number -> unsigned number (bad)
-        return .Void();
+                // signed number -> unsigned number (bad)
+                .Void()
+            }
+        };
     }
 }

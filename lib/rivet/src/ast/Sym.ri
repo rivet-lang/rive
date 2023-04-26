@@ -101,11 +101,7 @@ public trait Sym {
             } else {
                 "type"
             },
-            Func as func_info => if func_info.is_method {
-                "method"
-            } else {
-                "function"
-            },
+            Func as func_info => func_info.kind(),
             else => "unknown symbol kind"
         };
     }
@@ -142,10 +138,10 @@ public struct SymRef : Sym {
 public struct Module : Sym {
     public func add_or_get_array(mut self, elem_typ: Type, size: usize, is_mut: bool) TypeSym {
         unique_name := if is_mut {
-            "[{}]mut {}".fmt(size, elem_typ.to_qualstring())
+            "[{}]mut {}"
         } else {
-            "[{}]{}".fmt(size, elem_typ.to_qualstring())
-        };
+            "[{}]{}"
+        }.fmt(size, elem_typ.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
             return @cast(TypeSym, type_sym);
         }
@@ -165,11 +161,7 @@ public struct Module : Sym {
     }
 
     public func add_or_get_vec(mut self, elem_type: Type, is_mut: bool) TypeSym {
-        unique_name := if is_mut {
-            "[]mut "
-        } else {
-            "[]"
-        }.concat(elem_type.to_qualstring());
+        unique_name := if is_mut { "[]mut " } else { "[]" }.concat(elem_type.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
             return @cast(TypeSym, type_sym);
         }
@@ -475,27 +467,4 @@ public struct Func : Sym {
             pos: token.NO_POS
         );
     }
-}
-
-public func universe() Module {
-    return Module(is_public: false, name: "universe", scope: Scope(syms: [
-        TypeSym(name: "none", info: .None()),
-        TypeSym(name: "bool", info: .Bool()),
-        TypeSym(name: "rune", info: .Rune()),
-        TypeSym(name: "int8", info: .Int(8)),
-        TypeSym(name: "int16", info: .Int(16)),
-        TypeSym(name: "int32", info: .Int(32)),
-        TypeSym(name: "int64", info: .Int(64)),
-        TypeSym(name: "isize", info: .Isize()),
-        TypeSym(name: "uint8", info: .Uint(8)),
-        TypeSym(name: "uint16", info: .Uint(16)),
-        TypeSym(name: "uint32", info: .Uint(32)),
-        TypeSym(name: "uint64", info: .Uint(64)),
-        TypeSym(name: "usize", info: .Usize()),
-        TypeSym(name: "comptime_int", info: .ComptimeInt()),
-        TypeSym(name: "comptime_float", info: .ComptimeFloat()),
-        TypeSym(name: "float32", info: .Float(32)),
-        TypeSym(name: "float64", info: .Float(64)),
-        TypeSym(name: "string", info: .Struct(is_boxed: true))
-    ]));
 }

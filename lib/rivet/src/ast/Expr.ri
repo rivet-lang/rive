@@ -84,6 +84,7 @@ public enum Expr : traits.Stringable {
         from_is_cmp: bool;
         pos: token.Pos;
         mut type: Type;
+        mut sym: TypeSym;
     },
     TupleLiteral {
         values: []mut Expr;
@@ -135,12 +136,13 @@ public enum Expr : traits.Stringable {
     },
     Call {
         mut left: Expr;
-        args: []CallArg;
+        mut args: []CallArg;
         mut spread_expr: Expr;
         has_spread_expr: bool;
         mut err_handler: CallErrorHandler;
         pos: token.Pos;
         mut type: Type;
+        mut func_: Func;
 
         func has_named_args(self) bool {
             for arg in self.args {
@@ -523,6 +525,7 @@ public struct CallArg {
     public mut expr: Expr;
     public is_named: bool;
     public pos: token.Pos;
+    public mut type: Type;
 }
 
 [boxed]

@@ -79,7 +79,9 @@ public struct Resolver {
                 .Var as var_decl => {
                     for left in var_decl.lefts {
                         self.check_variable_shadowing(left.name, left.pos);
-                        _ = self.resolve_type(left.type);
+                        if self.resolve_type(left.type) {
+                            left.sym.type = left.type;
+                        }
                     }
                     if !var_decl.is_extern {
                         self.resolve_expr(var_decl.right);

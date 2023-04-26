@@ -73,6 +73,8 @@ extend Checker {
                 ident.type
             },
             .Selector as mut selector => self.check_selector(selector),
+            .Index as mut index => self.check_index(index),
+            .Call as mut call_expr => self.check_call(call_expr),
             .Block as block => {
                 if block.is_unsafe {
                     if self.inside_unsafe {
@@ -98,6 +100,19 @@ extend Checker {
             },
             .Unary as mut unary => self.check_unary(unary),
             .Return as mut return_expr => self.check_return(return_expr),
+            .Guard as guard => {
+                old_inside_guard_expr := self.inside_guard_expr;
+                self.inside_guard_expr = true;
+                self.check_var_decl(guard.vars, guard.expr, guard.scope, guard.pos);
+                if guard.has_cond and self.check_expr(guard.cond) != self.table.bool_t {
+                    report.error(
+                        "non-boolean expression used as guard condition",
+                        guard.cond.position()
+                    );
+                }
+                self.inside_guard_expr = old_inside_guard_expr;
+                .Void()
+            },
             else => .Void()
         };
     }
@@ -218,6 +233,177 @@ extend Checker {
         return selector.type;
     }
 
+    func check_index(mut self, mut index: ast.Expr.Index) ast.Type {
+        index.left_type = self.check_expr(index.left);
+        left_sym := index.left_type.symbol()?;
+        index_t := self.check_expr(index.index);
+        if index_t != self.table.comptime_int_t and !self.table.is_unsigned_int(index_t) {
+            report.error(
+                "expected unsigned integer value, found `{}`".fmt(index_t),
+                index.index.position()
+            );
+        }
+        switch left_sym.info is {
+            .Array, .Vector => {
+                elem_type := left_sym.info.elem_type()?;
+                if index.index is .Range as range {
+                    is_mut := left_sym.info.is_mut_arr_or_vec();
+                    index.type = if left_sym.info is .Vector {
+                        index.left_type
+                    } else {
+                        .Vector(
+                            elem_type, is_mut,
+                            self.table.universe.add_or_get_vec(elem_type, is_mut)
+                        )
+                    };
+                } else {
+                    index.type = elem_type;
+                }
+            },
+            else => {
+                if !(index.left_type is .Pointer or index.left_type == self.table.string_t) {
+                    mut err := report.error_builder(
+                        "type `{}` does not support indexing".fmt(index.left_type),
+                        index.pos
+                    );
+                    err.add_note("only pointers, arrays, slices and string supports indexing");
+                    err.emit();
+                } else if index.left_type is .Pointer as pointer {
+                    if !self.inside_unsafe {
+                        report.error(
+                            "pointer indexing is only allowed inside `unsafe` blocks",
+                            index.pos
+                        );
+                    } else if index.index is .Range {
+                        report.error("cannot slice a pointer", index.index.position());
+                    } else if !pointer.is_indexable {
+                        report.error("cannot index a non-indexable pointer", index.pos);
+                    }
+                }
+
+                index.type = if index.left_type == self.table.string_t {
+                    if index.index is .Range {
+                        self.table.string_t
+                    } else {
+                        self.table.uint8_t
+                    }
+                } else {
+                    .Void()
+                };
+            }
+        }
+        return index.type;
+    }
+
+    func check_call(mut self, mut call_expr: ast.Expr.Call) ast.Type {
+        call_expr.type = .Void();
+
+        mut left := call_expr.left;
+        inside_parens := if left is .Paren as paren
+            and paren.expr is .Selector as paren_selector and !paren_selector.is_path {
+            left = paren.expr;
+            true
+        } else {
+            false
+        };
+
+        switch left is {
+            .SelfTy as self_ty => self.check_ctor_call(self_ty.sym, call_expr),
+            .Ident as ident => switch ident.sym is {
+                ast.TypeSym as type_sym => self.check_ctor_call(type_sym, call_expr),
+                ast.Func as func_ => {
+                    call_expr.func_ = func_;
+                    if func_.is_main {
+                        report.error("cannot call to `main` function", ident.pos);
+                    } else {
+                        self.check_func_call(func_, call_expr);
+                    }
+                },
+                else => report.error(
+                    "expected function or method to call, found {}".fmt(
+                        ident.sym.type_of()
+                    ), ident.pos
+                )
+            },
+            .Selector as selector => if selector.is_path {
+                switch selector.sym is {
+                    ast.TypeSym as s_type_sym => self.check_ctor_call(s_type_sym, call_expr),
+                    ast.Func as s_func_ => {
+                        call_expr.func_ = s_func_;
+                        self.check_func_call(s_func_, call_expr);
+                    },
+                    else => report.error(
+                        "expected function or method to call, found {}".fmt(
+                            selector.sym.type_of()
+                        ), selector.pos
+                    )
+                }
+            } else {
+                // call methods
+                selector.left_type = self.check_expr(selector.left);
+                left_sym := selector.left_type.symbol()?;
+                if method := left_sym.scope.find(selector.field_name) {
+                    if method is ast.Func as s_func {
+                        //
+                    } else {
+                        report.error(
+                            "expected method, found {}".fmt(s_func.kind()),
+                            selector.pos
+                        );
+                    }
+                }
+            },
+            .EnumLiteral as enum_lit => {
+                enum_lit.is_instance = true;
+                _ = self.check_expr(left);
+                self.check_ctor_call(enum_lit.sym, call_expr);
+            },
+            else => report.error("invalid expression used in call expression", left.position())
+        }
+
+        // result checking
+        if call_expr.has_err_handler() {
+            if call_expr.type is .Result as result_t {
+                if call_expr.err_handler.is_propagate {
+                    if !(self.cur_fn.is_main or self.inside_test or self.inside_var_decl
+                        or self.cur_fn.ret_type is .Result) {
+                        mut err := report.error_builder(
+                            "cannot propagate the result value", call_expr.err_handler.pos
+                        );
+                        err.add_note(
+                            "to propagate the result, `{}` must return an result type",
+                            self.cur_fn.name
+                        );
+                        err.emit();
+                    }
+                } else {
+                    self.check_types(
+                        self.check_expr(call_expr.err_handler.expr), result_t.inner
+                    ) catch |err| {
+                        report.error(err.to_string(), call_expr.err_handler.expr.position());
+                    };
+                }
+                call_expr.type = result_t.inner;
+            } else {
+                report.error(
+                    "{} `{}` does not returns a result value".fmt(
+                        call_expr.func_.type_of(), call_expr.func_.name
+                    ), call_expr.err_handler.pos
+                );
+            }
+        } else if call_expr.type is .Result and !self.inside_guard_expr {
+            mut err := report.error_builder(
+                "{} `{}` returns a result".fmt(
+                    call_expr.func_.type_of(), call_expr.func_.name
+                ), call_expr.pos
+            );
+            err.add_note("should handle this with `catch` or propagate with `!`");
+            err.emit();
+        }
+
+        return call_expr.type;
+    }
+
     func check_unary(mut self, mut unary: ast.Expr.Unary) ast.Type {
         unary.type = self.check_expr(unary.right);
         switch unary.op {
@@ -295,7 +481,7 @@ extend Checker {
             if self.cur_fn.ret_type is .Void {
                 report.error(
                     "{} `{}` should not return a value".fmt(
-                        self.cur_fn.type_of(), self.cur_fn.name
+                        self.cur_fn.kind(), self.cur_fn.name
                     ), return_expr.expr.position()
                 );
             } else {
@@ -317,7 +503,7 @@ extend Checker {
                             err.to_string(), return_expr.expr.position()
                         );
                         err_b.add_note(
-                            "in return of {} `{}`", self.cur_fn.type_of(),
+                            "in return of {} `{}`", self.cur_fn.kind(),
                             self.cur_fn.name
                         );
                         err_b.emit();
@@ -332,7 +518,7 @@ extend Checker {
                 "expected `{}` value in return argument".fmt(self.cur_fn.ret_type),
                 return_expr.pos
             );
-            err.add_note("in return of {} `{}`", self.cur_fn.type_of(), self.cur_fn.name);
+            err.add_note("in return of {} `{}`", self.cur_fn.kind(), self.cur_fn.name);
             err.emit();
         }
         return .Never(return_expr.pos);

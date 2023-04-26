@@ -49,7 +49,7 @@ public struct ImportedSymbols {
     }
 }
 
-// Used in variable decls/stmts and guard exprs
+// Used in variable declarations/statements and guard expressions.
 [boxed]
 public struct ObjectData {
     public name: string;

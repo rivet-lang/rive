@@ -90,7 +90,9 @@ extend Parser {
                 }
                 .Defer(expr, is_errdefer, pos)
             },
-            self.tok.kind in [.Lparen, .KwMut, .Name] and self.decl_operator_is_used() => {
+            self.tok.kind in [.Lparen, .KwMut, .Name]
+                and self.peek_tok.kind !in [.Dot, .Lbracket, .Lparen]
+                and self.decl_operator_is_used() => {
                 // variable declarations
                 mut pos := self.prev_tok.pos;
                 mut lefts := @vec(ast.ObjectData);

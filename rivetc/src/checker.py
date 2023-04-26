@@ -486,12 +486,11 @@ class Checker:
             else:
                 report.error("expected result or option value", expr.expr.pos)
                 expr.typ = self.comp.void_t
-            if expr.has_cond:
-                if self.check_expr(expr.cond) != self.comp.bool_t:
-                    report.error(
-                        "non-boolean expression used as guard condition",
-                        expr.cond.pos
-                    )
+            if expr.has_cond and self.check_expr(expr.cond) != self.comp.bool_t:
+                report.error(
+                    "non-boolean expression used as guard condition",
+                    expr.cond.pos
+                )
             self.inside_guard_expr = old_inside_guard_expr
             return expr.typ
         elif isinstance(expr, ast.UnaryExpr):
@@ -789,14 +788,12 @@ class Checker:
             expr.left_typ = self.check_expr(expr.left)
             left_sym = expr.left_typ.symbol()
             idx_t = self.check_expr(expr.index)
+            if idx_t != self.comp.comptime_int_t and not self.comp.is_unsigned_int(idx_t):
+                report.error(
+                    f"expected unsigned integer value, found `{idx_t}`",
+                    expr.index.pos
+                )
             if left_sym.kind in (TypeKind.Array, TypeKind.Vec):
-                if idx_t != self.comp.comptime_int_t and not self.comp.is_unsigned_int(
-                    idx_t
-                ):
-                    report.error(
-                        f"expected unsigned integer value, found `{idx_t}`",
-                        expr.index.pos
-                    )
                 if isinstance(expr.index, ast.RangeExpr):
                     if left_sym.kind == TypeKind.Vec:
                         expr.typ = expr.left_typ
@@ -823,13 +820,6 @@ class Checker:
                     report.note(
                         "only pointers, arrays, slices and string supports indexing"
                     )
-                elif idx_t != self.comp.comptime_int_t and not self.comp.is_unsigned_int(
-                    idx_t
-                ):
-                    report.error(
-                        f"expected unsigned integer value, found `{idx_t}`",
-                        expr.index.pos
-                    )
                 elif isinstance(expr.left_typ, type.Ptr):
                     if not self.inside_unsafe:
                         report.error(
@@ -854,9 +844,9 @@ class Checker:
                     expr.typ = self.comp.void_t
             return expr.typ
         elif isinstance(expr, ast.CallExpr):
-            inside_parens = False
             expr.typ = self.comp.void_t
 
+            inside_parens = False
             expr_left = expr.left
             if isinstance(expr_left, ast.ParExpr) and isinstance(
                 expr_left.expr, ast.SelectorExpr
@@ -1571,22 +1561,23 @@ class Checker:
         # named arguments
         err = False
         for arg in expr.args:
-            if arg.is_named:
-                found = False
-                for arg_fn in info.args:
-                    if arg_fn.name == arg.name:
-                        found = True
-                        if not arg_fn.has_def_expr:
-                            report.error(
-                                f"argument `{arg.name}` is not optional",
-                                arg.pos
-                            )
-                if not found:
-                    err = True
-                    report.error(
-                        f"{kind} `{info.name}` does not have an argument called `{arg.name}`",
-                        arg.pos
-                    )
+            if not arg.is_named:
+                continue
+            found = False
+            for arg_fn in info.args:
+                if arg_fn.name == arg.name:
+                    found = True
+                    if not arg_fn.has_def_expr:
+                        report.error(
+                            f"argument `{arg.name}` is not optional",
+                            arg.pos
+                        )
+            if not found:
+                err = True
+                report.error(
+                    f"{kind} `{info.name}` does not have an argument called `{arg.name}`",
+                    arg.pos
+                )
         if err:
             return expr.typ
 
@@ -1861,8 +1852,8 @@ class Checker:
             return type_hi
         elif is_signed_lo and is_signed_hi:
             # signed number -> signed number (good)
-            return type_lo if (bits_lo == 64 and is_signed_lo) else type_hi
-        elif is_unsigned_lo and is_signed_hi and (bits_lo < bits_hi):
+            return type_lo if bits_lo == 64 and is_signed_lo else type_hi
+        elif is_unsigned_lo and is_signed_hi and bits_lo < bits_hi:
             # unsigned number -> signed number (good, if signed type is larger)
             return type_lo
         else:

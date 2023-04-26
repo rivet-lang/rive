@@ -108,7 +108,8 @@ public struct Scope {
     public func update_type(self, name: string, type: Type) {
         if sym := self.lookup(name) {
             if sym is Var as var_info {
-                var_info.type = type;
+                mut tt := var_info.type;
+                @set_enum_ref_value(tt, type);
             }
         }
     }

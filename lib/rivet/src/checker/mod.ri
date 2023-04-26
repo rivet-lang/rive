@@ -101,7 +101,7 @@ public struct Checker {
                 const_type := self.check_expr(const_decl.expr);
                 self.expected_type = old_expected_type;
                 self.check_types(const_type, const_decl.type) catch |err| {
-                    report.error(err.to_string(), const_decl.pos);
+                    report.error(err.to_string(), const_decl.expr.position());
                 };
             } else {
                 const_decl.type = self.check_expr(const_decl.expr);
@@ -169,6 +169,142 @@ public struct Checker {
                 );
             }
         }
+    }
+
+    func check_ctor_call(mut self, type_sym: ast.TypeSym, mut call_expr: ast.Expr.Call) {
+        //
+    }
+
+    func check_func_call(mut self, func_: ast.Func, mut call_expr: ast.Expr.Call) {
+        kind := func_.kind();
+        call_expr.type = func_.ret_type;
+
+        if func_.is_unsafe and !self.inside_unsafe {
+            report.warn(
+                "{} `{}` should be called inside `unsafe` block".fmt(kind, func_.name),
+                call_expr.pos
+            );
+        } else if func_.is_method and func_.self_is_mut {
+            self.check_expr_is_mut(@cast(ast.Expr.Selector, call_expr.left).left);
+        }
+
+        mut func_args_len := func_.args.len;
+        if func_.is_variadic and !func_.is_extern {
+            func_args_len -= 1;
+        }
+
+        // check named arguments
+        mut error := false;
+        for arg in call_expr.args {
+            if !arg.is_named {
+                continue;
+            }
+            mut found := false;
+            for arg_func in func_.args {
+                if arg_func.name == arg.name {
+                    found = true;
+                    if !arg_func.has_def_expr {
+                        report.error("argument `{}` is not optional".fmt(arg.name), arg.pos);
+                    }
+                }
+            }
+            if !found {
+                error = true;
+                report.error(
+                    "{} `{}` does not have an argument called `{}`".fmt(
+                        kind, func_.name, arg.name
+                    ), arg.pos
+                );
+            }
+        }
+        if error {
+            return;
+        }
+
+        // check default expressions
+        if func_.has_named_args {
+            args_len := call_expr.pure_args_count();
+            mut args := call_expr.args[..args_len];
+            mut i: usize := args_len;
+            while i < func_args_len : i += 1 {
+                arg := func_.args[i];
+                if arg.has_def_expr {
+                    args.push(if carg := call_expr.get_named_arg(arg.name) {
+                        ast.CallArg(
+                            expr: carg.expr,
+                            pos: carg.expr.position()
+                        )
+                    } else {
+                        ast.CallArg(
+                            expr: arg.def_expr,
+                            pos: arg.def_expr.position()
+                        )
+                    });
+                }
+            }
+            call_expr.args = args;
+        }
+
+        expr_args_len := call_expr.pure_args_count();
+        expr_msg := "expected {} argument(s), found {}".fmt(func_args_len, expr_args_len);
+        if expr_args_len < func_args_len {
+            mut err := report.error_builder(
+                "too few arguments to {} `{}`".fmt(kind, func_.name), call_expr.pos
+            );
+            err.add_note(expr_msg);
+            err.emit();
+        } else if !func_.is_variadic and expr_args_len > func_args_len {
+            mut err := report.error_builder(
+                "too many arguments to {} `{}`".fmt(kind, func_.name), call_expr.pos
+            );
+            err.add_note(expr_msg);
+            err.emit();
+        }
+
+        old_expected_type := self.expected_type;
+        for i, arg in call_expr.args {
+            arg_fn := if func_.is_variadic and i >= func_.args.len - 1 {
+                func_.args[func_.args.len - 1]
+            } else {
+                func_.args[i]
+            };
+
+            self.expected_type = if arg_fn.type is .Variadic as variadic {
+                variadic.inner
+            } else {
+                arg_fn.type
+            };
+            arg.type = self.check_expr(arg.expr);
+            self.expected_type = old_expected_type;
+
+            if arg_fn.is_mut and !(arg_fn.type is .Pointer or arg_fn.type is .Reference)
+                and !arg_fn.type.symbol()?.is_primitive() {
+                self.check_expr_is_mut(arg.expr);
+
+                if !(func_.is_variadic and func_.is_extern and i >= func_.args.len - 1) {
+                    self.check_argument_type(
+                        arg.type, arg_fn.type, arg.pos, arg_fn.name, kind, func_.name
+                    );
+                }
+            }
+        }
+        if call_expr.has_spread_expr {
+            spread_expr_t := self.check_expr(call_expr.spread_expr);
+            spread_expr_sym := spread_expr_t.symbol()?;
+            if spread_expr_sym.info is .Vector {
+                report.error(
+                    "spread operator can only be used with vectors",
+                    call_expr.spread_expr.position()
+                );
+            } else {
+                last_arg_type := func_.args[func_.args.len - 1].type;
+                vec_t := ast.Type.Vector(last_arg_type, sym: last_arg_type.symbol()?);
+                self.check_types(spread_expr_t, vec_t) catch |err| {
+                    report.error(err.to_string(), call_expr.spread_expr.position());
+                };
+            }
+        }
+        self.expected_type = old_expected_type;
     }
 
     func check_scope_vars(self, scope: ast.Scope) {

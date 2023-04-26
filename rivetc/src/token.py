@@ -321,7 +321,7 @@ class Token:
         string = str(self.kind)
         if not string[0].isalpha():
             return f"token `{string}`"
-        if self.kind == Kind.Name and is_keyword(self.lit):
+        if is_keyword(self.lit):
             string = "keyword"
         if self.lit != "" and self.kind != Kind.DocComment:
             string += f" `{self.lit}`"

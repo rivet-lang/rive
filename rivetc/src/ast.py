@@ -579,7 +579,7 @@ class GuardExpr:
 
     def __repr__(self):
         vars_str = f"{', '.join([str(v) for v in self.vars])}"
-        res = f"var {vars_str} = {self.expr}"
+        res = f"{vars_str} := {self.expr}"
         if self.has_cond:
             res += f"; {self.cond}"
         return res

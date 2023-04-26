@@ -564,7 +564,7 @@ class Parser:
                 assign_was_used = True
             elif tok.kind == Kind.DeclAssign and not assign_was_used:
                 return True
-            elif tok.kind == Kind.Semicolon:
+            elif tok.kind in (Kind.KwIf, Kind.KwSwitch, Kind.KwWhile, Kind.Semicolon):
                 break
             elif tok.pos.line != line_nr:
                 break
@@ -627,7 +627,8 @@ class Parser:
                 self.expect(Kind.Semicolon)
             return ast.DeferStmt(expr, is_errdefer, pos)
         elif (
-            self.tok.kind in (Kind.Lparen, Kind.Name, Kind.KwMut)
+            self.tok.kind in (Kind.Lparen, Kind.KwMut, Kind.Name)
+            and self.peek_tok.kind not in (Kind.Dot, Kind.Lbracket, Kind.Lparen)
             and self.decl_operator_is_used()
         ):
             # variable declarations
@@ -876,26 +877,29 @@ class Parser:
             self.expect(Kind.Rbracket)
             is_arr = self.accept(Kind.Bang)
             expr = ast.VectorLiteral(elems, is_arr, pos)
-        elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Char:
-            if self.tok.lit == "b":
-                expr = self.parse_character_literal()
+        elif self.tok.kind == Kind.Name:
+            if self.peek_tok.kind == Kind.Char:
+                if self.tok.lit == "b":
+                    expr = self.parse_character_literal()
+                else:
+                    report.error(
+                        "only `b` is recognized as a valid prefix for a character literal",
+                        self.tok.pos,
+                    )
+                    self.next()
+            elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.String:
+                if self.tok.lit in ("c", "b", "r"):
+                    expr = self.parse_string_literal()
+                else:
+                    report.error(
+                        "only `c`, `b` and `r` are recognized as valid prefixes for a string literal",
+                        self.tok.pos,
+                    )
+                    self.next()
             else:
-                report.error(
-                    "only `b` is recognized as a valid prefix for a character literal",
-                    self.tok.pos,
-                )
-                self.next()
-        elif self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.String:
-            if self.tok.lit in ("c", "b", "r"):
-                expr = self.parse_string_literal()
-            else:
-                report.error(
-                    "only `c`, `b` and `r` are recognized as valid prefixes for a string literal",
-                    self.tok.pos,
-                )
-                self.next()
+                expr = self.parse_ident()
         else:
-            expr = self.parse_ident()
+            expr = self.empty_expr()
 
         while True:
             if self.tok.kind.is_assign():
@@ -903,8 +907,7 @@ class Parser:
                 op = self.tok.kind
                 self.expect(op)
                 expr = ast.AssignExpr(expr, op, self.parse_expr(), expr.pos)
-            elif self.tok.kind == Kind.Lparen and not self.decl_operator_is_used(
-            ):
+            elif self.tok.kind == Kind.Lparen and not self.decl_operator_is_used():
                 self.next()
                 args = []
                 has_spread_expr = False
@@ -993,11 +996,9 @@ class Parser:
                             )
                 self.expect(Kind.Rbracket)
                 expr = ast.IndexExpr(expr, index, expr.pos)
-            elif (
-                self.prev_tok.pos.line != self.tok.pos.line
-                and self.tok.kind == Kind.Dot
-                and self.peek_tok.kind == Kind.Name
-                and self.peek_tok.lit[0].isupper()
+            elif ( # avoid `expr` + `.EnumLiteral` concatenation
+                self.prev_tok.pos.line != self.tok.pos.line and self.tok.kind == Kind.Dot
+                and self.peek_tok.kind == Kind.Name and self.peek_tok.lit[0].isupper()
             ):
                 break
             elif self.accept(Kind.Dot):
@@ -1057,7 +1058,7 @@ class Parser:
                 )
                 has_else = True
                 break
-            self.next()
+            self.expect(Kind.KwIf)
             if self.decl_operator_is_used():
                 self.open_scope()
                 cond = self.parse_guard_expr()
@@ -1150,10 +1151,13 @@ class Parser:
     def parse_guard_expr(self):
         pos = self.prev_tok.pos
         vars = []
-        while True:
+        if self.accept(Kind.Lparen):
+            while True:
+                vars.append(self.parse_var_decl(support_typ = False))
+                if not self.accept(Kind.Comma):
+                    break
+        else:
             vars.append(self.parse_var_decl(support_typ = False))
-            if not self.accept(Kind.Comma):
-                break
         self.expect(Kind.DeclAssign)
         e = self.parse_expr()
         if self.accept(Kind.Semicolon):

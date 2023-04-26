@@ -305,7 +305,7 @@ extend Parser {
                 self.expect(.Rbracket);
                 .VectorLiteral(elems, self.accept(.Bang), pos)
             },
-            self.tok.kind == .Name and self.peek_tok.kind == .Char => {
+            self.tok.kind == .Name => if self.peek_tok.kind == .Char {
                 if self.tok.lit == "b" {
                     self.parse_character_literal()
                 } else {
@@ -316,8 +316,7 @@ extend Parser {
                     self.next();
                     .Empty(self.prev_tok.pos)
                 }
-            },
-            self.tok.kind == .Name and self.peek_tok.kind == .String => {
+            } else if self.peek_tok.kind == .String {
                 if self.tok.lit in ["c", "b", "r"] {
                     self.parse_string_literal()
                 } else {
@@ -328,8 +327,10 @@ extend Parser {
                     self.next();
                     .Empty(self.prev_tok.pos)
                 }
+            } else {
+                self.parse_ident()
             },
-            else => self.parse_ident()
+            else => .Empty(self.tok.pos)
         };
         while {
             expr = switch {
@@ -453,9 +454,8 @@ extend Parser {
                     )
                 },
                 // avoid `expr` + `.EnumLiteral` concatenation
-                self.prev_tok.pos.line != self.tok.pos.line
-                and self.tok.kind == .Dot and self.peek_tok.kind == .Name
-                and self.peek_tok.lit[0].is_upper() => break,
+                self.prev_tok.pos.line != self.tok.pos.line and self.tok.kind == .Dot
+                and self.peek_tok.kind == .Name and self.peek_tok.lit[0].is_upper() => break,
                 self.accept(.Dot) => if self.accept(.Mul) {
                     ast.Expr.Selector(
                         left: expr, field_name: "",
@@ -632,7 +632,7 @@ extend Parser {
         while !self.accept(.Rbrace) {
             stmt := self.parse_stmt();
             if stmt is .Expr as stmt_expr and self.prev_tok.kind != .Semicolon
-                and self.peek_tok.kind == .Rbrace {
+                and self.tok.kind == .Rbrace {
                 expr = stmt_expr;
                 has_expr = true;
             } else {
