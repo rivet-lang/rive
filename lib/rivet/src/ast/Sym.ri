@@ -123,7 +123,7 @@ public trait Sym {
     }
 
     func !=(self, other: Self) bool {
-        return !(self.id == other.id);
+        return self.id != other.id;
     }
 }
 

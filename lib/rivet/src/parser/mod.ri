@@ -124,8 +124,8 @@ public struct Parser {
 
     func parse_type(mut self) ast.Type {
         mut pos := self.tok.pos;
-        switch {
-            self.accept(.Question) => return ast.Type.Option(
+        return switch {
+            self.accept(.Question) => .Option(
                 self.parse_type(), pos + self.prev_tok.pos
             ),
             self.tok.kind == .KwFunc => {
@@ -156,12 +156,12 @@ public struct Parser {
                 } else {
                     .Void()
                 };
-                return .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos);
+                .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos)
             },
             self.accept(.Amp) => {
                 // references
                 is_mut := self.accept(.KwMut);
-                return ast.Type.Reference(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos);
+                .Reference(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
             },
             self.accept(.Mul) => {
                 // pointers
@@ -171,7 +171,7 @@ public struct Parser {
                     err.add_help("use an indexable pointer instead (`[*]T`)");
                     err.emit();
                 }
-                return ast.Type.Reference(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos);
+                .Reference(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
             },
             self.accept(.Lbracket) => {
                 // arrays or vectors
@@ -180,19 +180,21 @@ public struct Parser {
                     if self.accept(.Mul) {
                         self.expect(.Rbracket);
                         is_mut := self.accept(.KwMut);
-                        return ast.Type.Pointer(
+                        .Pointer(
                             self.parse_type(), is_mut, true, pos: pos + self.prev_tok.pos
-                        );
+                        )
+                    } else {
+                        // array
+                        size := self.parse_expr();
+                        self.expect(.Rbracket);
+                        is_mut := self.accept(.KwMut);
+                        .Array(self.parse_type(), is_mut, size, pos: pos + self.prev_tok.pos)
                     }
-                    // array
-                    size := self.parse_expr();
+                } else {
                     self.expect(.Rbracket);
                     is_mut := self.accept(.KwMut);
-                    return ast.Type.Array(self.parse_type(), is_mut, size, pos: pos + self.prev_tok.pos);
+                    .Vector(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
                 }
-                self.expect(.Rbracket);
-                is_mut := self.accept(.KwMut);
-                return ast.Type.Vector(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos);
             },
             self.accept(.Lparen) => {
                 // tuples
@@ -210,16 +212,16 @@ public struct Parser {
                 }
                 pos += self.tok.pos;
                 self.expect(.Rparen);
-                return ast.Type.Tuple(inners, pos: pos);
+                .Tuple(inners, pos: pos)
             },
-            self.accept(.Ellipsis) => return ast.Type.Variadic(
+            self.accept(.Ellipsis) => .Variadic(
                 self.parse_type(), pos: pos + self.prev_tok.pos
             ),
-            self.accept(.KwSelfTy) => return ast.Type.Basic(
+            self.accept(.KwSelfTy) => .Basic(
                 expr: ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
                 is_unresolved: true
             ),
-            self.accept(.KwNone) => return self.table.none_t,
+            self.accept(.KwNone) => self.table.none_t,
             self.tok.kind == .Name => {
                 prev_tok_kind := self.prev_tok.kind;
                 mut expr := self.parse_ident();
@@ -228,46 +230,48 @@ public struct Parser {
                     while self.accept(.Dot) {
                         expr = self.parse_selector_expr(expr);
                     }
-                    return ast.Type.Basic(expr: expr, is_unresolved: true);
-                }
-                // normal type
-                expr_name := @cast(ast.Expr.Ident, expr).name;
-                switch expr_name {
-                    "never" => {
-                        if prev_tok_kind != .Rparen and self.tok.kind != .Lbrace {
-                            report.error("invalid use of `never` type", pos);
-                        }
-                        return .Never(self.prev_tok.pos);
-                    },
-                    "anyptr", "mut_anyptr" => return ast.Type.Anyptr(
-                        expr_name.starts_with("mut_"), self.prev_tok.pos
-                    ),
-                    "bool" => return self.table.bool_t,
-                    "rune" => return self.table.rune_t,
-                    "int8" => return self.table.int8_t,
-                    "int16" => return self.table.int16_t,
-                    "int32" => return self.table.int32_t,
-                    "int64" => return self.table.int64_t,
-                    "isize" => return self.table.isize_t,
-                    "uint8" => return self.table.uint8_t,
-                    "uint16" => return self.table.uint16_t,
-                    "uint32" => return self.table.uint32_t,
-                    "uint64" => return self.table.uint64_t,
-                    "usize" => return self.table.usize_t,
-                    "float32" => return self.table.float32_t,
-                    "float64" => return self.table.float64_t,
-                    "string" => return self.table.string_t,
-                    "comptime_int" => return self.table.comptime_int_t,
-                    "comptime_float" => return self.table.comptime_float_t,
-                    else => return ast.Type.Basic(expr: expr, is_unresolved: true)
+                    .Basic(expr: expr, is_unresolved: true)
+                } else {
+                    // normal type
+                    expr_name := @cast(ast.Expr.Ident, expr).name;
+                    expr_pos := expr.position();
+                    switch expr_name {
+                        "never" => {
+                            if prev_tok_kind != .Rparen and self.tok.kind != .Lbrace {
+                                report.error("invalid use of `never` type", pos);
+                            }
+                            .Never(self.prev_tok.pos)
+                        },
+                        "anyptr", "mut_anyptr" => .Anyptr(
+                            expr_name.starts_with("mut_"), self.prev_tok.pos
+                        ),
+                        "bool" => self.table.bool_t.with_position(expr_pos),
+                        "rune" => self.table.rune_t.with_position(expr_pos),
+                        "int8" => self.table.int8_t.with_position(expr_pos),
+                        "int16" => self.table.int16_t.with_position(expr_pos),
+                        "int32" => self.table.int32_t.with_position(expr_pos),
+                        "int64" => self.table.int64_t.with_position(expr_pos),
+                        "isize" => self.table.isize_t.with_position(expr_pos),
+                        "uint8" => self.table.uint8_t.with_position(expr_pos),
+                        "uint16" => self.table.uint16_t.with_position(expr_pos),
+                        "uint32" => self.table.uint32_t.with_position(expr_pos),
+                        "uint64" => self.table.uint64_t.with_position(expr_pos),
+                        "usize" => self.table.usize_t.with_position(expr_pos),
+                        "float32" => self.table.float32_t.with_position(expr_pos),
+                        "float64" => self.table.float64_t.with_position(expr_pos),
+                        "string" => self.table.string_t.with_position(expr_pos),
+                        "comptime_int" => self.table.comptime_int_t.with_position(expr_pos),
+                        "comptime_float" => self.table.comptime_float_t.with_position(expr_pos),
+                        else => .Basic(expr: expr, is_unresolved: true)
+                    }
                 }
             },
             else => {
                 report.error("expected type, found {}".fmt(self.tok), pos);
                 self.next();
-                return ast.Type.Basic(expr: ast.Expr.Empty(pos), is_unresolved: true);
+                .Basic(expr: .Empty(pos), is_unresolved: true)
             }
-        }
+        };
     }
 
     func parse_var_decl(

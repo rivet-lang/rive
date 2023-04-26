@@ -128,6 +128,16 @@ public struct Checker {
                     self.expected_type = left0.type;
                 }
                 mut right_type := self.check_expr(right);
+                if self.inside_guard_expr {
+                    right_type = if right_type is .Result as result_t {
+                        result_t.inner
+                    } else if right_type is .Option as option_t {
+                        option_t.inner
+                    } else {
+                        report.error("expected result or option value", right.position());
+                        right_type
+                    };
+                }
                 if left0.has_type {
                     self.check_types(right_type, left0.type) catch |err| {
                         report.error(err.to_string(), pos);
@@ -140,7 +150,17 @@ public struct Checker {
                 self.expected_type = old_expected_type;
             }
         } else {
-            right_type := self.check_expr(right);
+            mut right_type := self.check_expr(right);
+            if self.inside_guard_expr {
+                right_type = if right_type is .Result as result_t {
+                    result_t.inner
+                } else if right_type is .Option as option_t {
+                    option_t.inner
+                } else {
+                    report.error("expected result or option value", right.position());
+                    right_type
+                };
+            }
             right_sym := right_type.symbol()?;
             if right_sym.info is .Tuple as tuple_info {
                 if tuple_info.types.len == lefts.len {

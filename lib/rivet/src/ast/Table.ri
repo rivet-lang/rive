@@ -26,7 +26,7 @@ public struct Table {
 
     public mut builtins: []Builtin;
 
-    // Primitive types.
+    /// Primitive types.
     public mut none_t: Type;
     public mut bool_t: Type;
     public mut rune_t: Type;
@@ -207,6 +207,8 @@ public struct Table {
         type_sym := type.symbol()?;
         return if type_sym.info is .Int as int_info {
             int_info.size
+        } else if type_sym.info is .Uint as uint_info {
+            uint_info.size
         } else if type_sym.info is .Isize or type_sym.info is .Usize {
             if self.prefs.target_is_64bit { 64 } else { 32 }
         } else {
