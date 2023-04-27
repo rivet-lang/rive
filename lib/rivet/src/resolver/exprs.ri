@@ -14,6 +14,7 @@ extend Resolver {
             .Type as mut type => _ = self.resolve_type(type),
             .Ident as mut ident => self.resolve_ident(ident),
             .Selector as mut selector => self.resolve_selector(selector),
+            .OptionCheck as option_check => self.resolve_expr(option_check.left),
             .SelfTy as self_ty => if self.self_sym_is_set {
                 self_ty.sym = self.self_sym;
                 self_ty.found = true;
@@ -263,7 +264,7 @@ extend Resolver {
 
     func resolve_selector(mut self, mut selector: ast.Expr.Selector) {
         self.resolve_expr(selector.left);
-        if !(selector.is_indirect or selector.is_option_check) {
+        if !selector.is_indirect {
             switch selector.left is {
                 .SelfTy as self_ty if self_ty.found => {
                     selector.is_path = true;

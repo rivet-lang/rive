@@ -105,12 +105,17 @@ public enum Expr : traits.Stringable {
         field_pos: token.Pos;
         mut field_is_mut: bool;
         is_indirect: bool;
-        is_option_check: bool;
         mut is_path: bool;
         mut found: bool;
         mut sym: Sym;
         pos: token.Pos;
         mut type: Type;
+    },
+    OptionCheck {
+    	mut left: Expr;
+    	mut pos: token.Pos;
+    	mut left_type: Type;
+    	mut type: Type;
     },
     Branch {
         op: token.Kind;
@@ -278,6 +283,7 @@ public enum Expr : traits.Stringable {
             .VectorLiteral as vec_lit => vec_lit.pos,
             .Index as index => index.pos,
             .Selector as selector => selector.pos,
+            .OptionCheck as option_check => option_check.pos,
             .Branch as branch => branch.pos,
             .Range as range => range.pos,
             .Call as call => call.pos,
@@ -353,11 +359,10 @@ public enum Expr : traits.Stringable {
             },
             .Selector as selector => if selector.is_indirect {
                 "{}.*".fmt(selector.left)
-            } else if selector.is_option_check {
-                "{}?".fmt(selector.left)
             } else {
                 "{}.{}".fmt(selector.left, selector.field_name)
             },
+            .OptionCheck as option_check => "{}?".fmt(option_check.left),
             .Branch as branch_expr => branch_expr.op.to_string(),
             .Range as range => {
                 mut sb := strings.Builder.new();

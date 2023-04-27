@@ -73,6 +73,16 @@ extend Checker {
                 ident.type
             },
             .Selector as mut selector => self.check_selector(selector),
+            .OptionCheck as option_check => {
+            	option_check.left_type = self.check_expr(option_check.left);
+                option_check.type = if option_check.left_type is .Option as opt {
+                    opt.inner
+                } else {
+                    report.error("cannot check a non-option value", option_check.left.position());
+                    .Void()
+                };
+                option_check.type
+            },
             .Index as mut index => self.check_index(index),
             .Call as mut call_expr => self.check_call(call_expr),
             .Block as block => {
@@ -149,14 +159,7 @@ extend Checker {
         } else {
             left_type := self.check_expr(selector.left);
             selector.left_type = left_type;
-            if selector.is_option_check {
-                if left_type is .Option as opt {
-                    opt.inner
-                } else {
-                    report.error("cannot check a non-option value", selector.field_pos);
-                    .Void()
-                }
-            } else if selector.is_indirect {
+            if selector.is_indirect {
                 if !left_type.is_ptr_or_ref()
                     or left_type is .Anyptr
                     or (left_type is .Pointer as ptr and ptr.is_indexable) {
@@ -566,8 +569,7 @@ extend Checker {
                                 selector.pos
                             );
                         }
-                    } else if selector.found and !selector.field_is_mut
-                        and !selector.is_option_check {
+                    } else if selector.found and !selector.field_is_mut {
                         report.error(
                             "field `{}` of type `{}` is immutable".fmt(
                                 selector.field_name, selector.left_type.symbol()?.name

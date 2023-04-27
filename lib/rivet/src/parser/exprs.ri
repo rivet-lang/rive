@@ -467,11 +467,9 @@ extend Parser {
                 },
                 self.accept(.Question) => {
                     // check option value, panic if is `none`: `x?`
-                    .Selector(
+                    .OptionCheck(
                         left: expr,
-                        field_name: "",
-                        pos: expr.position() + self.prev_tok.pos,
-                        is_option_check: true
+                        pos: expr.position() + self.prev_tok.pos
                     )
                 },
                 else => break
