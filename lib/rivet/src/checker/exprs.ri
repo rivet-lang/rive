@@ -46,6 +46,34 @@ extend Checker {
                 self_lit.type
             },
             .SelfTy as self_ty => .Void(),
+            .EnumLiteral as enum_lit => {
+                enum_lit.type = .Void();
+                sym := self.expected_type.symbol()?;
+                if sym.info is .Enum as enum_info {
+                    if variant := enum_info.get_variant(enum_lit.value) {
+                        enum_lit.variant = variant;
+                        enum_lit.type = .Basic(sym, pos: enum_lit.pos);
+                        if enum_info.is_boxed and !enum_lit.from_is_cmp and !enum_lit.is_instance {
+                            mut err := report.error_builder(
+                                "cannot use variant `.{}` as a simple value".fmt(enum_lit.value),
+                                enum_lit.pos
+                            );
+                            err.add_note(
+                                "make an instance instead: `.{}()`", enum_lit.value
+                            );
+                            err.emit();
+                        }
+                    } else {
+                        report.error(
+                            "enum `{}` has no variant `{}`".fmt(sym.name, enum_lit.value),
+                            enum_lit.pos
+                        );
+                    }
+                } else {
+                    report.error("`{}` is not a enum".fmt(self.expected_type), enum_lit.pos);
+                }
+                enum_lit.type
+            },
             .Ident as ident => {
                 ident.type = if ident.name == "_" {
                     .Void()
@@ -151,7 +179,7 @@ extend Checker {
     func check_selector(mut self, mut selector: ast.Expr.Selector) ast.Type {
         selector.type = if selector.is_path {
             if selector.left_sym is ast.TypeSym as type_sym {
-                .Basic(type_sym)
+                .Basic(type_sym, pos: selector.pos)
             } else {
                 switch selector.sym is {
                     ast.Func as func_sym => {
@@ -164,7 +192,7 @@ extend Checker {
                         }
                         func_sym.type()
                     },
-                    ast.TypeSym as type_sym_ => .Basic(type_sym_),
+                    ast.TypeSym as type_sym_ => .Basic(type_sym_, pos: selector.pos),
                     ast.Const as const_sym => const_sym.type,
                     ast.Var as var_sym => var_sym.type,
                     else => {
@@ -188,7 +216,7 @@ extend Checker {
                 if sym is ast.Func as func_sym {
                     if func_sym.is_method {
                         mut err := report.error_builder(
-                            "cannot take value of method `{}`".fmt(selector.field_name), 
+                            "cannot take value of method `{}`".fmt(selector.field_name),
                             selector.field_pos
                         );
                         err.add_help("use parentheses to call the method");
@@ -196,7 +224,7 @@ extend Checker {
                         .Void()
                     } else {
                         mut err := report.error_builder(
-                            "cannot take value of associated function `{}`".fmt(selector.field_name), 
+                            "cannot take value of associated function `{}`".fmt(selector.field_name),
                             selector.field_pos
                         );
                         err.add_help("use `{}.{}` instead", left_sym.name, selector.field_name);
@@ -278,7 +306,6 @@ extend Checker {
                         report.error("cannot index a non-indexable pointer", index.pos);
                     }
                 }
-
                 index.type = if index.left_type == self.table.string_t {
                     if index.index is .Range {
                         self.table.string_t
@@ -308,7 +335,9 @@ extend Checker {
         switch left is {
             .SelfTy as self_ty => self.check_ctor_call(self_ty.sym, call_expr),
             .Ident as ident => switch ident.sym is {
-                ast.TypeSym as type_sym => self.check_ctor_call(type_sym, call_expr),
+                ast.TypeSym as mut type_sym if type_sym.info is .Trait
+                    or type_sym.info is .Struct or type_sym.info is .String
+                    or type_sym.info is .Enum => self.check_ctor_call(type_sym, call_expr),
                 ast.Func as func_ => {
                     call_expr.func_ = func_;
                     if func_.is_main {
@@ -317,38 +346,108 @@ extend Checker {
                         self.check_func_call(func_, call_expr);
                     }
                 },
-                else => report.error(
-                    "expected function or method to call, found {}".fmt(
-                        ident.sym.type_of()
-                    ), ident.pos
-                )
+                else => if ident.type is .Func as i_func {
+                    call_expr.is_closure = true;
+                    self.check_func_call(i_func.symbol(), call_expr);
+                } else {
+                    report.error(
+                        "expected function or method to call, found {}".fmt(
+                            ident.sym.type_of()
+                        ), ident.pos
+                    );
+                }
             },
             .Selector as selector => if selector.is_path {
                 switch selector.sym is {
-                    ast.TypeSym as s_type_sym => self.check_ctor_call(s_type_sym, call_expr),
+                    ast.TypeSym as mut s_type_sym if s_type_sym.info is .Trait
+                        or s_type_sym.info is .Struct or s_type_sym.info is .String
+                        or s_type_sym.info is .Enum => self.check_ctor_call(
+                        s_type_sym, call_expr
+                    ),
                     ast.Func as s_func_ => {
                         call_expr.func_ = s_func_;
                         self.check_func_call(s_func_, call_expr);
                     },
-                    else => report.error(
-                        "expected function or method to call, found {}".fmt(
-                            selector.sym.type_of()
-                        ), selector.pos
-                    )
+                    else => if selector.type is .Func as s_func {
+                        call_expr.is_closure = true;
+                        self.check_func_call(s_func.symbol(), call_expr);
+                    } else {
+                        report.error(
+                            "expected function or method to call, found {}".fmt(
+                                selector.sym.type_of()
+                            ), selector.pos
+                        );
+                    }
                 }
             } else {
                 // call methods
                 selector.left_type = self.check_expr(selector.left);
+                if selector.left_type is .Option {
+                    mut err := report.error_builder(
+                        "option value cannot be called directly",
+                        selector.left.position()
+                    );
+                    err.add_help("use the option-check syntax: `foo?.method()`");
+                    err.add_help("or use `??`: `(foo ?? 5).method()`");
+                    err.emit();
+                    return .Void();
+                } else if selector.left_type is .Pointer {
+                    mut err := report.error_builder(
+                        "cannot use a pointer value as receiver", selector.left.position()
+                    );
+                    err.add_help("consider dereferencing this pointer");
+                    err.emit();
+                    return .Void();
+                }
                 left_sym := selector.left_type.symbol()?;
                 if method := left_sym.scope.find(selector.field_name) {
                     if method is ast.Func as s_func {
-                        //
+                        if s_func.is_method {
+                            self.check_func_call(s_func, call_expr);
+                        } else {
+                            report.error(
+                                "`{}` is not a method".fmt(selector.field_name),
+                                selector.field_pos
+                            );
+                        }
                     } else {
                         report.error(
                             "expected method, found {}".fmt(s_func.kind()),
                             selector.pos
                         );
                     }
+                } else if field := left_sym.lookup_field(selector.field_name) {
+                    if field.type is .Func as f_func {
+                        if inside_parens {
+                            call_expr.is_closure = true;
+                            selector.field_type = field.type;
+                            self.check_func_call(f_func.symbol(), call_expr);
+                        } else {
+                            mut err := report.error_builder(
+                                "type `{}` has no method `{}`".fmt(
+                                    left_sym.name, selector.field_name
+                                ), selector.field_pos
+                            );
+                            err.add_help(
+                                "to call the function stored in `{}`, "
+                                "surround the field access with parentheses"
+                                    .fmt(selector.field_name)
+                            );
+                            err.emit();
+                        }
+                    } else {
+                        report.error(
+                            "field `{}` of type `{}` is not function type".fmt(
+                                selector.field_name, left_sym.name
+                            ), selector.field_pos
+                        );
+                    }
+                } else {
+                    report.error(
+                        "type `{}` has no method `{}`".fmt(
+                            left_sym.name, selector.field_name
+                        ), selector.field_pos
+                    );
                 }
             },
             .EnumLiteral as enum_lit => {

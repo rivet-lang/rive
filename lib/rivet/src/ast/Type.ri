@@ -82,6 +82,17 @@ public enum Type : traits.Stringable {
         args: []Arg;
         mut ret_type: Type;
         pos: token.Pos;
+
+        [inline]
+        func symbol(self) Func {
+            return Func(
+                is_method: self.is_method,
+                self_is_mut: self.self_is_mut,
+                self_is_ref: self.self_is_ref,
+                args: self.args,
+                ret_type: self.ret_type
+            );
+        }
     };
 
     [inline]
@@ -266,7 +277,7 @@ public enum Type : traits.Stringable {
             else => false
         };
     }
-    
+
     public func !=(self, rhs: Self) bool {
     	return !(self == rhs);
     }

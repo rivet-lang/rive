@@ -85,6 +85,7 @@ public enum Expr : traits.Stringable {
         pos: token.Pos;
         mut type: Type;
         mut sym: TypeSym;
+        mut variant: EnumVariant;
     },
     TupleLiteral {
         values: []mut Expr;
@@ -104,7 +105,7 @@ public enum Expr : traits.Stringable {
         field_name: string;
         field_pos: token.Pos;
         mut field_is_mut: bool;
-        is_indirect: bool;
+        mut field_type: Type;
         mut is_path: bool;
         mut found: bool;
         mut sym: Sym;
@@ -155,6 +156,12 @@ public enum Expr : traits.Stringable {
         pos: token.Pos;
         mut type: Type;
         mut func_: Func;
+
+        mut is_closure: bool;
+        mut is_constructor: bool;
+
+        mut is_enum_variant: bool;
+        mut enum_variant_sym: TypeSym;
 
         func has_named_args(self) bool {
             for arg in self.args {
@@ -365,11 +372,7 @@ public enum Expr : traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Selector as selector => if selector.is_indirect {
-                "{}.*".fmt(selector.left)
-            } else {
-                "{}.{}".fmt(selector.left, selector.field_name)
-            },
+            .Selector as selector => "{}.{}".fmt(selector.left, selector.field_name),
             .Indirect as indirect => "{}.*".fmt(indirect.left),
             .OptionCheck as option_check => "{}?".fmt(option_check.left),
             .Branch as branch_expr => branch_expr.op.to_string(),

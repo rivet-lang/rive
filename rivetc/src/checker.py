@@ -329,7 +329,7 @@ class Checker:
                         report.note(f"make an instance instead: `{expr}()`")
                 else:
                     report.error(
-                        f"enum `{_sym.name}` has no value `{expr.value}`",
+                        f"enum `{_sym.name}` has no variant `{expr.value}`",
                         expr.pos
                     )
             else:
@@ -919,7 +919,7 @@ class Checker:
                                     )
                                 elif isinstance(expr_left.left_typ, type.Ptr):
                                     report.error(
-                                        "unexpected pointer type as receiver",
+                                        "cannot use a pointer value as receiver",
                                         expr.pos
                                     )
                                     report.help(
@@ -942,7 +942,6 @@ class Checker:
                             if inside_parens:
                                 expr.sym = f.typ.info()
                                 expr.is_closure = True
-                                expr.left.typ = f.typ
                                 expr_left.typ = f.typ
                                 self.check_call(expr.sym, expr)
                             else:
@@ -1453,15 +1452,15 @@ class Checker:
                 if v.has_fields:
                     self.check_ctor(v.typ.symbol(), expr)
                 elif v.has_typ:
+                    old_expected_type = self.expected_type
+                    self.expected_type = v.typ
                     try:
-                        old_expected_type = self.expected_type
-                        self.expected_type = v.typ
                         self.check_types(
                             self.check_expr(expr.args[0].expr), v.typ
                         )
-                        self.expected_type = old_expected_type
                     except utils.CompilerError as e:
                         report.error(e.args[0], expr.args[0].expr.pos)
+                    self.expected_type = old_expected_type
                 else:
                     report.error(f"`{expr.left}` not expects a value", expr.pos)
             elif v.has_typ and not (v.has_fields or expr.left.from_is_cmp):
@@ -1508,10 +1507,11 @@ class Checker:
                 if arg.is_named:
                     found = False
                     for field in type_fields:
-                        if field.name == arg.name:
-                            field_typ = field.typ
-                            found = True
-                            break
+                        if field.name != arg.name:
+                            continue
+                        field_typ = field.typ
+                        found = True
+                        break
                     if not found:
                         report.error(
                             f"type `{info.name}` has no field `{arg.name}`",

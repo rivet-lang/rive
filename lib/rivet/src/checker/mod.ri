@@ -191,8 +191,144 @@ public struct Checker {
         }
     }
 
-    func check_ctor_call(mut self, type_sym: ast.TypeSym, mut call_expr: ast.Expr.Call) {
-        //
+    func check_ctor_call(mut self, mut type_sym: ast.TypeSym, mut call_expr: ast.Expr.Call) {
+        call_expr.is_constructor = true;
+        call_expr.type = if type_sym.info is .Struct as struct_info and struct_info.is_enum_variant {
+            call_expr.is_enum_variant = true;
+            call_expr.enum_variant_sym = type_sym;
+            .Basic(struct_info.parent)
+        } else {
+            .Basic(type_sym, pos: call_expr.pos)
+        };
+        switch type_sym.info is {
+            .Enum as enum_info => {
+                variant := if call_expr.left is .Selector as selector {
+                    @cast(ast.TypeInfo.Enum, @cast(ast.TypeSym, selector.left_sym).info)
+                        .get_variant(selector.field_name)?
+                } else {
+                    enum_info.get_variant(@cast(ast.Expr.EnumLiteral, call_expr.left).value)?
+                };
+                has_args := !call_expr.args.is_empty();
+                if !enum_info.is_boxed {
+                    report.error(
+                        "`{}` not expects value".fmt(call_expr.left),
+                        call_expr.left.position()
+                    );
+                } else if has_args {
+                    if variant.has_fields {
+                        self.check_ctor_call(variant.type.symbol()?, call_expr);
+                    } else if variant.has_type {
+                        old_expected_type := self.expected_type;
+                        self.expected_type = variant.type;
+                        arg0 := call_expr.args[0];
+                        self.check_types(
+                            self.check_expr(arg0.expr), variant.type
+                        ) catch |err| {
+                            report.error(err.to_string(), arg0.expr.position());
+                        };
+                        self.expected_type = old_expected_type;
+                    } else {
+                        report.error(
+                            "`{}` expects a value".fmt(call_expr.left), call_expr.pos
+                        );
+                    }
+                } else if variant.has_type and !(
+                    variant.has_fields or (
+                        call_expr.left is .EnumLiteral as enum_lit and enum_lit.from_is_cmp
+                    )
+                ) {
+                    report.error("`{}` expects a value".fmt(call_expr.left), call_expr.pos);
+                } else if variant.has_fields {
+                    self.check_ctor_call(variant.type.symbol()?, call_expr);
+                }
+            },
+            .Trait as mut trait_info => {
+                if call_expr.has_spread_expr {
+                    report.error(
+                        "cannot use spread expression with trait constructor", call_expr.pos
+                    );
+                } else if call_expr.args.len == 1 {
+                    arg0 := call_expr.args[0];
+                    value_t := self.table.comptime_number_to_type(self.check_expr(arg0.expr));
+                    if value_t.symbol()? in trait_info.implements {
+                        trait_info.mark_has_objects();
+                    } else {
+                        report.error(
+                            "type `{}` does not implement trait `{}`".fmt(
+                                value_t, type_sym.name
+                            ), arg0.pos
+                        );
+                    }
+                } else {
+                    report.error(
+                        "expected 1 argument, found {}".fmt(call_expr.args.len),
+                        call_expr.pos
+                    );
+                }
+            },
+            else => {
+                type_fields := type_sym.full_fields();
+                if !call_expr.has_named_args() {
+                    expr_args_len := call_expr.args.len;
+                    if expr_args_len > type_fields.len {
+                        mut err := report.error_builder(
+                            "too many arguments to {} `{}`".fmt(
+                                type_sym.type_of(), type_sym.name
+                            ), call_expr.pos
+                        );
+                        err.add_note(
+                            "expected {} argument(s), found {}", type_fields.len,
+                            expr_args_len
+                        );
+                        err.emit();
+                        return;
+                    }
+                }
+                for i, arg in call_expr.args {
+                    mut field := ast.Field();
+                    if arg.is_named {
+                        mut found := false;
+                        for t_field in type_fields {
+                            if t_field.name != arg.name {
+                                continue;
+                            }
+                            field = t_field;
+                            found = true;
+                            break;
+                        }
+                        if !found {
+                            report.error(
+                                "type `{}` has no field `{}`".fmt(type_sym.name, arg.name),
+                                arg.pos
+                            );
+                            continue;
+                        }
+                    } else {
+                        field = type_fields[i];
+                    }
+                    arg.type = field.type;
+                    old_expected_type := self.expected_type;
+                    self.expected_type = field.type;
+                    arg_t := self.check_expr(arg.expr);
+                    self.expected_type = old_expected_type;
+                    self.check_types(arg_t, field.type) catch |err| {
+                        report.error(err.to_string(), arg.pos);
+                    };
+                }
+                if call_expr.has_spread_expr {
+                    spread_expr_t := self.check_expr(call_expr.spread_expr);
+                    if spread_expr_t != call_expr.type {
+                        mut err := report.error_builder(
+                            "expected type `{}`, found `{}`".fmt(
+                                call_expr.type, spread_expr_t
+                            ), call_expr.spread_expr.position()
+                        );
+                        err.add_note("in spread expression of constructor");
+                        err.emit();
+                    }
+                }
+            }
+        }
     }
 
     func check_func_call(mut self, func_: ast.Func, mut call_expr: ast.Expr.Call) {
