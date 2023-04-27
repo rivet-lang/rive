@@ -10,6 +10,7 @@ extend Checker {
     func check_expr(mut self, mut expr: ast.Expr) ast.Type {
         return switch expr is {
             .Empty, .Type => .Void(),
+            .Branch as branch => .Never(branch.pos),
             .Paren as paren => self.check_expr(paren.expr),
             .NoneLiteral as none_lit => self.table.none_t,
             .BoolLiteral as bool_lit => self.table.bool_t,
@@ -74,6 +75,8 @@ extend Checker {
                 }
                 enum_lit.type
             },
+            .TupleLiteral as mut tuple_lit => self.check_tuple_literal(tuple_lit),
+            .VectorLiteral as mut vec_lit => self.check_vector_literal(vec_lit),
             .Ident as ident => {
                 ident.type = if ident.name == "_" {
                     .Void()
@@ -132,6 +135,22 @@ extend Checker {
                 };
                 option_check.type
             },
+            .Range as range => {
+                range.type = if range.has_start {
+                    self.check_expr(range.start)
+                } else {
+                    self.table.usize_t
+                };
+                end_type := if range.has_end {
+                    self.check_expr(range.end)
+                } else {
+                    self.table.usize_t
+                };
+                if !(self.table.is_int(range.type) or self.table.is_int(end_type)) {
+                    report.error("non-integer value used as range", range.pos);
+                }
+                range.type
+            },
             .Index as mut index => self.check_index(index),
             .Call as mut call_expr => self.check_call(call_expr),
             .Block as block => {
@@ -174,6 +193,90 @@ extend Checker {
             },
             else => .Void()
         };
+    }
+
+    func check_tuple_literal(mut self, mut tuple_lit: ast.Expr.TupleLiteral) ast.Type {
+        old_expected_type := self.expected_type;
+        expected_type_sym := self.expected_type.symbol()?;
+        mut has_expected_types := false;
+        mut expected_types := @vec(ast.Type);
+        if expected_type_sym.info is .Tuple as tuple_info {
+            has_expected_types = tuple_lit.values.len == tuple_info.types.len;
+            expected_types = tuple_info.types;
+        }
+        mut types := @vec(ast.Type);
+        for i, mut value in tuple_lit.values {
+            if has_expected_types {
+                self.expected_type = expected_types[i];
+            }
+            tt := self.table.comptime_number_to_type(self.check_expr(value));
+            types.push(if has_expected_types {
+                self.expected_type = old_expected_type;
+                expected_types[i]
+            } else {
+                tt
+            });
+        }
+        tuple_lit.type = .Basic(
+            self.table.universe.add_or_get_tuple(types), pos: tuple_lit.pos
+        );
+        return tuple_lit.type;
+    }
+
+    func check_vector_literal(mut self, mut vec_lit: ast.Expr.VectorLiteral) ast.Type {
+        old_expected_type := self.expected_type;
+        mut size: usize := 0;
+        mut is_mut := false;
+        mut has_expected_type := false;
+        mut value_type := ast.Type.Void();
+        if self.expected_type !is .Func {
+            value_sym := self.expected_type.symbol()?;
+            if value_sym.info is .Array or value_sym.info is .Vector {
+                has_expected_type = true;
+                value_type = value_sym.info.elem_type()?;
+                self.expected_type = value_type;
+                if value_sym.info is .Array as array_info {
+                    size = array_info.size;
+                }
+                is_mut = value_sym.info.is_mut_arr_or_vec();
+            }
+        }
+        value_type = self.table.comptime_number_to_type(value_type);
+        for i, mut value in vec_lit.values {
+            type := self.check_expr(value);
+            if i == 0 and !has_expected_type {
+                value_type = type;
+                self.expected_type = value_type;
+            } else {
+                self.check_types(type, value_type) catch |err| {
+                    mut err_b := report.error_builder(err.to_string(), value.position());
+                    err_b.add_note(if vec_lit.is_arr {
+                        "in element {} of array literal"
+                    } else {
+                        "in element {} of vector literal"
+                    }.fmt(i + 1));
+                    err_b.emit();
+                };
+            }
+        }
+        self.expected_type = old_expected_type;
+        vec_lit.type = if vec_lit.is_arr {
+            arr_len := if vec_lit.values.len > 0 {
+                vec_lit.values.len
+            } else {
+                if !has_expected_type {
+                    report.error("could not infer type and size of array", vec_lit.pos);
+                }
+                size
+            };
+            .Basic(
+                self.table.universe.add_or_get_array(value_type, size, is_mut),
+                pos: vec_lit.pos
+            )
+        } else {
+            .Basic(self.table.universe.add_or_get_vec(value_type, is_mut), pos: vec_lit.pos)
+        };
+        return vec_lit.type;
     }
 
     func check_selector(mut self, mut selector: ast.Expr.Selector) ast.Type {

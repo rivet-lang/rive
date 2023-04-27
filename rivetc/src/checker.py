@@ -1105,9 +1105,7 @@ class Checker:
                 end_t = self.check_expr(expr.end)
             else:
                 end_t = self.comp.usize_t
-            if expr.typ in (
-                self.comp.comptime_int_t, self.comp.comptime_float_t
-            ):
+            if expr.typ == self.comp.comptime_int_t:
                 expr.typ = end_t
             return expr.typ
         elif isinstance(expr, ast.SelectorExpr):
