@@ -77,6 +77,7 @@ extend Checker {
         if expected == got {
             return true;
         }
+        
         if got is .Never {
             return true;
         } else if (expected is .Never and got is .Void)
@@ -144,9 +145,9 @@ extend Checker {
             return self.check_pointer(expected, got);
         }
 
-        if expected_sym.info is .Rune and got_sym.info is .ComptimeInt {
+        if expected == self.table.rune_t and got == self.table.comptime_int_t {
             return true;
-        } else if expected_sym.info is .ComptimeInt and got_sym.info is .Rune {
+        } else if expected == self.table.comptime_int_t and got == self.table.rune_t {
             return true;
         }
 

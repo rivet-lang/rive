@@ -56,6 +56,7 @@ public enum Type : traits.Stringable {
         mut inner: Type;
         is_mut: bool;
         mut size: Expr;
+        mut size_value: usize;
         mut sym: TypeSym;
         pos: token.Pos;
     },
@@ -220,7 +221,7 @@ public enum Type : traits.Stringable {
             .Vector as vector_lhs if rhs is .Vector as vector_rhs =>
                 vector_lhs.inner == vector_rhs.inner and vector_lhs.is_mut == vector_rhs.is_mut,
             .Array as array_lhs if rhs is .Array as array_rhs =>
-                array_lhs.inner == array_rhs.inner and array_lhs.size == array_rhs.size
+                array_lhs.inner == array_rhs.inner and array_lhs.size_value == array_rhs.size_value
                 and array_lhs.is_mut == array_rhs.is_mut,
             .Reference as ref_lhs if rhs is .Reference as ref_rhs => if ref_lhs.is_mut
                 and !ref_rhs.is_mut {
@@ -280,6 +281,7 @@ public enum Type : traits.Stringable {
 
     public func to_string_(self, qualstr: bool) string {
         return switch self is {
+        	.Void => "<void>",
             .Never => "never",
             .Result as result => "!".concat(result.inner.to_string_(qualstr)),
             .Option as option => "?".concat(option.inner.to_string_(qualstr)),
@@ -367,7 +369,7 @@ public enum Type : traits.Stringable {
             } else {
                 basic.sym.name
             },
-            else => ""
+            else => "<unhandled-type-string>"
         };
     }
 }

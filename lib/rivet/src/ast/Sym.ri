@@ -457,6 +457,7 @@ public struct Func : Sym {
         return if self.is_method { "method" } else { "function" };
     }
 
+	[inline]
     public func type(self) Type {
         return .Func(
             is_method: self.is_method,

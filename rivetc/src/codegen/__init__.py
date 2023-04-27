@@ -2006,8 +2006,9 @@ class Codegen:
             # runtime calculation
             tmp = self.cur_fn.local_name()
             typ_sym = expr_left_typ.symbol()
-            if expr.op.is_overloadable_op() and typ_sym.kind in (
-                TypeKind.Array, TypeKind.Vec, TypeKind.String, TypeKind.Struct
+            if expr.op.is_overloadable_op() and (
+                typ_sym.kind in (TypeKind.Array, TypeKind.Vec, TypeKind.String, TypeKind.Struct)
+                or (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed_enum)
             ) and not isinstance(expr_left_typ, type.Ptr):
                 if typ_sym.kind == TypeKind.Array:
                     if expr.op == Kind.Eq:
@@ -2026,7 +2027,7 @@ class Codegen:
                     )
                 else:
                     op_method = OVERLOADABLE_OPERATORS_STR[str(expr.op)]
-                    sym_is_class = typ_sym.is_boxed()
+                    sym_is_boxed = typ_sym.is_boxed()
                     self.cur_fn.inline_alloca(
                         self.ir_type(expr.typ), tmp,
                         ir.Inst(
@@ -2034,9 +2035,9 @@ class Codegen:
                                 ir.Name(
                                     mangle_symbol(typ_sym) +
                                     f"{len(op_method)}{op_method}M"
-                                ), left if sym_is_class else
+                                ), left if sym_is_boxed else
                                 ir.Inst(ir.InstKind.GetRef, [left]),
-                                right if sym_is_class else
+                                right if sym_is_boxed else
                                 ir.Inst(ir.InstKind.GetRef, [right])
                             ]
                         )
@@ -2415,7 +2416,7 @@ class Codegen:
         elif isinstance(expr, ast.IndexExpr):
             left_ir_typ = self.ir_type(expr.left_typ)
             left_sym = expr.left_typ.symbol()
-            sym_is_class = left_sym.is_boxed()
+            sym_is_boxed = left_sym.is_boxed()
             if left_sym.kind == TypeKind.Vec and assign_op == Kind.Assign:
                 rec = self.gen_expr_with_cast(expr.left_typ, expr.left)
                 if not isinstance(left_ir_typ, ir.Pointer):

@@ -37,8 +37,9 @@ extend Resolver {
                         err.emit();
                         false
                     } else {
+                    	arr.size_value = @cast(usize, arr_size);
                         arr.sym = self.table.universe.add_or_get_array(
-                            arr.inner, @cast(usize, arr_size), arr.is_mut
+                            arr.inner, arr.size_value, arr.is_mut
                         );
                         true
                     }
