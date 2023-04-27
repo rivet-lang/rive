@@ -111,6 +111,13 @@ public enum Expr : traits.Stringable {
         pos: token.Pos;
         mut type: Type;
     },
+    Indirect {
+    	mut left: Expr;
+    	mut pos: token.Pos;
+    	mut left_type: Type;
+    	mut type: Type;
+    	mut is_mut: bool;
+    },
     OptionCheck {
     	mut left: Expr;
     	mut pos: token.Pos;
@@ -283,6 +290,7 @@ public enum Expr : traits.Stringable {
             .VectorLiteral as vec_lit => vec_lit.pos,
             .Index as index => index.pos,
             .Selector as selector => selector.pos,
+            .Indirect as indirect => indirect.pos,
             .OptionCheck as option_check => option_check.pos,
             .Branch as branch => branch.pos,
             .Range as range => range.pos,
@@ -362,6 +370,7 @@ public enum Expr : traits.Stringable {
             } else {
                 "{}.{}".fmt(selector.left, selector.field_name)
             },
+            .Indirect as indirect => "{}.*".fmt(indirect.left),
             .OptionCheck as option_check => "{}?".fmt(option_check.left),
             .Branch as branch_expr => branch_expr.op.to_string(),
             .Range as range => {

@@ -73,6 +73,27 @@ extend Checker {
                 ident.type
             },
             .Selector as mut selector => self.check_selector(selector),
+            .Indirect as indirect => {
+              	indirect.left_type = self.check_expr(indirect.left);
+                indirect.type = if indirect.left_type.is_ptr_or_ref()
+                    or (indirect.left_type is .Pointer as ptr and ptr.is_indexable)
+                    or indirect.left_type is .Anyptr  {
+                	indirect.is_mut = indirect.left_type.is_mut_ptr_or_ref();
+                    indirect.left_type.ptr_or_ref_inner()
+                } else {
+                    mut err := report.error_builder(
+                        "invalid indirect for `{}`".fmt(indirect.left_type), indirect.pos
+                    );
+                    if indirect.left_type is .Anyptr {
+                        err.add_help(
+                            "consider casting this to another pointer type, e.g. `*uint8`"
+                        );
+                    }
+                    err.emit();
+                    .Void()
+                };
+                indirect.type
+            },
             .OptionCheck as option_check => {
             	option_check.left_type = self.check_expr(option_check.left);
                 option_check.type = if option_check.left_type is .Option as opt {
@@ -157,80 +178,54 @@ extend Checker {
                 }
             }
         } else {
-            left_type := self.check_expr(selector.left);
-            selector.left_type = left_type;
-            if selector.is_indirect {
-                if !left_type.is_ptr_or_ref()
-                    or left_type is .Anyptr
-                    or (left_type is .Pointer as ptr and ptr.is_indexable) {
-                    mut err := report.error_builder(
-                        "invalid indirect for `{}`".fmt(left_type), selector.pos
-                    );
-                    if left_type is .Anyptr {
-                        err.add_help(
-                            "consider casting this to another pointer type, e.g. `*uint8`"
+            selector.left_type = self.check_expr(selector.left);
+            left_sym := selector.left_type.symbol()?;
+            if field := left_sym.lookup_field(selector.field_name) {
+                selector.found = true;
+                selector.field_is_mut = field.is_mut;
+                field.type
+            } else if sym := left_sym.scope.find(selector.field_name) {
+                if sym is ast.Func as func_sym {
+                    if func_sym.is_method {
+                        mut err := report.error_builder(
+                            "cannot take value of method `{}`".fmt(selector.field_name), 
+                            selector.field_pos
                         );
+                        err.add_help("use parentheses to call the method");
+                        err.emit();
+                        .Void()
+                    } else {
+                        mut err := report.error_builder(
+                            "cannot take value of associated function `{}`".fmt(selector.field_name), 
+                            selector.field_pos
+                        );
+                        err.add_help("use `{}.{}` instead", left_sym.name, selector.field_name);
+                        err.emit();
+                        func_sym.type()
                     }
-                    err.emit();
-                    .Void()
                 } else {
-                    selector.field_is_mut = left_type.is_mut_ptr_or_ref();
-                    left_type.ptr_or_ref_inner()
+                    report.error(
+                        "cannot take value of {} `{}.{}`".fmt(
+                            sym.type_of(), left_sym.name, selector.field_name
+                        ), selector.pos
+                    );
+                    .Void()
                 }
             } else {
-                left_sym := left_type.symbol()?;
-                if field := left_sym.lookup_field(selector.field_name) {
-                    selector.found = true;
-                    selector.field_is_mut = field.is_mut;
-                    field.type
-                } else if sym := left_sym.scope.find(selector.field_name) {
-                    if sym is ast.Func as func_sym {
-                        if func_sym.is_method {
-                            mut err := report.error_builder(
-                                "cannot take value of method `{}`".fmt(
-                                    selector.field_name
-                                ), selector.field_pos
-                            );
-                            err.add_help("use parentheses to call the method");
-                            err.emit();
-                            .Void()
-                        } else {
-                            mut err := report.error_builder(
-                                "cannot take value of associated function `{}`".fmt(
-                                    selector.field_name
-                                ), selector.field_pos
-                            );
-                            err.add_help(
-                                "use `{}.{}` instead", left_sym.name,
-                                selector.field_name
-                            );
-                            err.emit();
-                            func_sym.type()
-                        }
-                    } else {
-                        report.error(
-                            "cannot take value of {} `{}.{}`".fmt(
-                                sym.type_of(), left_sym.name, selector.field_name
-                            ), selector.pos
-                        );
-                        .Void()
-                    }
-                } else {
-                    mut err := report.error_builder(
-                        "type `{}` has no field `{}`".fmt(
-                            left_sym.name, selector.field_name
-                        ), selector.field_pos
+                mut err := report.error_builder(
+                    "type `{}` has no field `{}`".fmt(
+                        left_sym.name, selector.field_name
+                    ), selector.field_pos
+                );
+                if selector.field_name.is_digit()
+                    and (left_sym.info is .Vector or left_sym.info is .Array ) {
+                    err.add_note(
+                        "instead of using tuple indexing, use array indexing: `{}[{}]`"
+                            .fmt(selector.left, selector.field_name)
                     );
-                    if selector.field_name.is_digit()
-                        and (left_sym.info is .Vector or left_sym.info is .Array ) {
-                        err.add_note(
-                            "instead of using tuple indexing, use array indexing: `{}[{}]`"
-                                .fmt(selector.left, selector.field_name)
-                        );
-                    }
-                    err.emit();
-                    .Void()
                 }
+                err.emit();
+                .Void()
             }
         };
         return selector.type;
@@ -540,44 +535,40 @@ extend Checker {
                 }
                 self_lit.obj.is_changed = true;
             },
-            .Ident as ident => {
-                if ident.is_comptime {
+            .Ident as ident => if ident.is_comptime {
+                report.error(
+                    "cannot use constant `@{}` as mutable value".fmt(ident.name),
+                    ident.pos
+                );
+            } else if ident.name == "_" {
+                return;
+            } else if ident.found and ident.is_sym {
+                self.check_sym_is_mut(ident.sym, ident.pos);
+            },
+            .Selector as selector => if selector.is_path {
+                self.check_sym_is_mut(selector.sym, selector.pos);
+            } else {
+                self.check_expr_is_mut(selector.left);
+                if selector.found and !selector.field_is_mut {
                     report.error(
-                        "cannot use constant `@{}` as mutable value".fmt(ident.name),
-                        ident.pos
+                        "field `{}` of type `{}` is immutable".fmt(
+                            selector.field_name, selector.left_type.symbol()?.name
+                        ), selector.pos
                     );
-                } else if ident.name == "_" {
-                    return;
-                } else if ident.found and ident.is_sym {
-                    self.check_sym_is_mut(ident.sym, ident.pos);
                 }
             },
-            .Selector as selector => {
-                if selector.is_path {
-                    self.check_sym_is_mut(selector.sym, selector.pos);
+            .Indirect as indirect => if !indirect.is_mut {
+                kind := if selector.left_type is .Reference {
+                    "reference"
                 } else {
-                    self.check_expr_is_mut(selector.left);
-                    if selector.is_indirect and selector.left_type.is_ptr_or_ref() {
-                        if !selector.left_type.is_mut_ptr_or_ref() {
-                            kind := if selector.left_type is .Reference {
-                                "reference"
-                            } else {
-                                "pointer"
-                            };
-                            report.error(
-                                "cannot use a immutable {} as mutable value".fmt(kind),
-                                selector.pos
-                            );
-                        }
-                    } else if selector.found and !selector.field_is_mut {
-                        report.error(
-                            "field `{}` of type `{}` is immutable".fmt(
-                                selector.field_name, selector.left_type.symbol()?.name
-                            ), selector.pos
-                        );
-                    }
-                }
+                    "pointer"
+                };
+                report.error(
+                    "cannot use a immutable {} as mutable value".fmt(kind),
+                    selector.pos
+                );
             },
+            .OptionCheck as option_check => self.check_expr_is_mut(option_check.left),
             .NoneLiteral => report.error("`none` cannot be modified", expr.position()),
             .StringLiteral => report.error(
                 "string literals cannot be modified", expr.position()

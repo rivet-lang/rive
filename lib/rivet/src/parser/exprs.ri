@@ -457,10 +457,9 @@ extend Parser {
                 self.prev_tok.pos.line != self.tok.pos.line and self.tok.kind == .Dot
                 and self.peek_tok.kind == .Name and self.peek_tok.lit[0].is_upper() => break,
                 self.accept(.Dot) => if self.accept(.Mul) {
-                    ast.Expr.Selector(
-                        left: expr, field_name: "",
-                        pos: expr.position() + self.prev_tok.pos,
-                        is_indirect: true
+                    .Indirect(
+                        left: expr,
+                        pos: expr.position() + self.prev_tok.pos
                     )
                 } else {
                     self.parse_selector_expr(expr)
