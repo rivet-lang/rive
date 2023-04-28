@@ -1,0 +1,58 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+// TODO: remove file, use Map![K, V] instead
+
+struct StringUsize {
+    key: string;
+    mut value: usize;
+}
+
+[boxed]
+struct MapStringUsize {
+    mut pairs: []mut StringUsize;
+
+    public func set(mut self, key: string, value: usize) {
+        for &pair in self.pairs {
+            if pair.key == key {
+                pair.value = value;
+                return; // found
+            }
+        }
+        // new value
+        self.pairs.push(StringUsize(key, value));
+    }
+
+    public func get(self, key: string) ?usize {
+        for &pair in self.pairs {
+            if pair.key == key {
+                return pair.value;
+            }
+        }
+        return none;
+    }
+
+    public func delete(mut self, key: string) {
+        for i, &pair in self.pairs {
+            if pair.key == key {
+                self.pairs.delete(i);
+                break;
+            }
+        }
+    }
+
+    public func contains(self, key: string) bool {
+        for &pair in self.pairs {
+            if pair.key == key {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    [inline]
+    public func len(self) usize {
+        return self.pairs.len;
+    }
+}

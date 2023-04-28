@@ -1342,12 +1342,12 @@ class Checker:
                     report.error(
                         "cannot use `switch` with a boxed enum value", expr.pos
                     )
-                    report.note(f"use a typeswitch instead")
+                    report.note("use a typeswitch instead")
                 elif not expr_sym.info.is_boxed_enum and expr.is_typeswitch:
                     report.error(
                         "cannot use typeswitch with a enum value", expr.pos
                     )
-                    report.note(f"use a simple `switch` instead")
+                    report.note("use a simple `switch` instead")
             expr.expected_typ = self.expected_type
             for i, b in enumerate(expr.branches):
                 if not b.is_else:
@@ -1391,13 +1391,11 @@ class Checker:
                             report.error(
                                 "only boxed types can have vars", b.var_pos
                             )
-                    if b.has_cond:
-                        cond_t = self.check_expr(b.cond)
-                        if cond_t != self.comp.bool_t:
-                            report.error(
-                                "non-boolean expression use as `switch` branch condition",
-                                b.cond.pos
-                            )
+                    if b.has_cond and self.check_expr(b.cond) != self.comp.bool_t:
+                        report.error(
+                            "non-boolean expression use as `switch` branch condition",
+                            b.cond.pos
+                        )
                     self.expected_type = old_expected_type
                 branch_t = self.comp.void_t
                 if i == 0:

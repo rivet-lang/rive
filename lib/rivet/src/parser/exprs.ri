@@ -611,7 +611,7 @@ extend Parser {
             self.close_scope();
         }
         self.expect(.Rbrace);
-        return .Switch(expr, branches, is_typeswitch, self.scope, pos);
+        return .Switch(expr, branches, is_typeswitch, self.scope, pos + self.prev_tok.pos);
     }
 
     func parse_block_expr(mut self) ast.Expr {

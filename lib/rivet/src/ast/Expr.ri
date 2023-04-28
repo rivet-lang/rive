@@ -574,8 +574,10 @@ public struct SwitchBranch {
     public var_name: string;
     public var_pos: token.Pos;
     public has_cond: bool;
+    public mut var_type: Type;
     public mut cond: Expr;
     public mut expr: Expr;
     public is_else: bool;
     public pos: token.Pos;
+    public mut type: Type;
 }

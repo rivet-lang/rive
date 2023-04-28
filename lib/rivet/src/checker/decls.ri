@@ -1,0 +1,127 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../report;
+
+extend Checker {
+    func check_global_vars(mut self, decls: []ast.Decl) {
+        for decl in decls {
+            old_sym := self.sym;
+            if decl is .Const or decl is .Var {
+                self.check_decl(decl);
+            } else if decl_decls := decl.decls() {
+                self.check_global_vars(decl_decls);
+            }
+            self.sym = old_sym;
+        }
+    }
+
+    func check_decls(mut self, decls: []ast.Decl) {
+        for decl in decls {
+            if decl !is .Const and decl !is .Var {
+                self.check_decl(decl);
+            }
+        }
+    }
+
+    func check_decl(mut self, decl: ast.Decl) {
+        old_sym := self.sym;
+        defer self.sym = old_sym;
+        switch decl is {
+            .Extern as extern_decl => {
+                self.inside_extern = true;
+                self.check_decls(extern_decl.decls);
+                self.inside_extern = false;
+            },
+            .Var as var_decl => {
+                self.inside_var_decl = true;
+                self.check_var_decl(
+                    var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
+                );
+                self.inside_var_decl = false;
+            },
+            .Const as const_decl => if const_decl.has_type {
+                old_expected_type := self.expected_type;
+                self.expected_type = const_decl.type;
+                const_type := self.check_expr(const_decl.expr);
+                self.expected_type = old_expected_type;
+                self.check_types(const_type, const_decl.type) catch |err| {
+                    report.error(err.to_string(), const_decl.expr.position());
+                };
+            } else {
+                const_decl.type = self.check_expr(const_decl.expr);
+                @cast(ast.Const, const_decl.sym).type = const_decl.type;
+            },
+            .Enum as enum_decl => {
+                for variant in enum_decl.variants {
+                    self.check_decls(variant.decls);
+                }
+                self.check_decls(enum_decl.decls);
+            },
+            .Trait as trait_decl => {
+                self.check_decls(trait_decl.decls);
+            },
+            .Struct as struct_decl => {
+                self.check_decls(struct_decl.decls);
+            },
+            .Field as field_decl => if field_decl.has_def_expr {
+                old_expected_type := self.expected_type;
+                self.expected_type = field_decl.type;
+                field_type := self.check_expr(field_decl.def_expr);
+                self.expected_type = old_expected_type;
+                self.check_types(field_type, field_decl.type) catch |err| {
+                    report.error(err.to_string(), field_decl.def_expr.position());
+                };
+            },
+            .Extend as extend_decl => {
+                self.check_decls(extend_decl.decls);
+            },
+            .Func as func_decl => {
+                for arg in func_decl.args {
+                    if arg.has_def_expr {
+                        if func_decl.abi != .Rivet {
+                            report.error("extern functions cannot have default arguments", arg.pos);
+                        }
+                        old_expected_type := self.expected_type;
+                        self.expected_type = arg.type;
+                        def_expr_t := self.check_expr(arg.def_expr);
+                        self.expected_type = old_expected_type;
+                        self.check_types(def_expr_t, arg.type) catch |err| {
+                            report.error(err.to_string(), arg.def_expr.position());
+                        };
+                    }
+                }
+                if func_decl.ret_type is .Pointer and func_decl.abi != .Rivet {
+                    mut err := report.error_builder(
+                        "function `{}` should return an optional pointer".fmt(func_decl.name),
+                        func_decl.ret_type.position()
+                    );
+                    err.add_note("this is because Rivet cannot ensure that the function does not always return a null pointer");
+                    err.emit();
+                }
+                self.cur_fn = @cast(ast.Func, func_decl.sym);
+                self.check_stmts(func_decl.stmts);
+                func_decl.defer_stmts = self.defer_stmts;
+                self.defer_stmts = [];
+                self.check_scope_vars(func_decl.scope);
+            },
+            .Destructor as dtor_decl => {
+                self.check_stmts(dtor_decl.stmts);
+                dtor_decl.defer_stmts = self.defer_stmts;
+                self.defer_stmts = [];
+                self.check_scope_vars(dtor_decl.scope);
+            },
+            .Test as test_decl => {
+                old_cur_fn := self.cur_fn;
+                self.cur_fn = ast.Func(ret_type: .Void());
+                self.inside_test = true;
+                self.check_stmts(test_decl.stmts);
+                self.inside_test = false;
+                self.cur_fn = old_cur_fn;
+                self.check_scope_vars(test_decl.scope);
+            }
+        }
+    }
+}

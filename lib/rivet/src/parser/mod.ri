@@ -142,7 +142,6 @@ public struct Parser {
     }
 
     func decl_operator_is_used(self) bool {
-        line_nr := self.tok.pos.line;
         mut assign_was_used := false;
         mut i: usize := 1;
         while i < self.tokenizer.all_tokens.len : i += 1 {
@@ -150,8 +149,7 @@ public struct Parser {
             switch tok.kind {
                 .Assign => assign_was_used = true,
                 .DeclAssign if !assign_was_used => return true,
-                .KwIf, .KwSwitch, .KwWhile, .Semicolon => break,
-                else => if tok.pos.line != line_nr { break }
+                .KwIf, .KwSwitch, .KwWhile, .Lbrace, .Semicolon => break
             }
         }
         return false;

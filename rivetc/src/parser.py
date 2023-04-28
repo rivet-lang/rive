@@ -555,7 +555,6 @@ class Parser:
 
     # ---- statements --------------------------
     def decl_operator_is_used(self):
-        line_nr = self.tok.pos.line
         i = 1
         assign_was_used = False
         while i < len(self.lexer.all_tokens):
@@ -564,9 +563,9 @@ class Parser:
                 assign_was_used = True
             elif tok.kind == Kind.DeclAssign and not assign_was_used:
                 return True
-            elif tok.kind in (Kind.KwIf, Kind.KwSwitch, Kind.KwWhile, Kind.Semicolon):
-                break
-            elif tok.pos.line != line_nr:
+            elif tok.kind in (
+                Kind.KwIf, Kind.KwSwitch, Kind.KwWhile, Kind.Lbrace, Kind.Semicolon
+            ):
                 break
             i += 1
         return False
