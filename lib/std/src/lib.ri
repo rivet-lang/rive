@@ -7,6 +7,7 @@ public import std/console;
 public import std/dynlib;
 public import std/env;
 public import std/errors;
+public import std/flag;
 public import std/fs;
 public import std/math;
 public import std/mem;

@@ -3,14 +3,170 @@
 // be found in the LICENSE file.
 
 import std/fs;
+import std/flag;
 import std/semver;
-import std/console;
+import std/fs/path;
 import std/strings;
+import std/console;
+import std/process;
 
-import rivet/utils;
 import rivet/build;
+import rivet/utils;
 
-func generate_project_ri(project: build.Project) ! {
+import { readln } from ../utils;
+
+import ./templates;
+
+var NewDescription = "Sets up a new Rivet project and performs `git init` (if `git` is installed
+on the system).
+
+If [NAME] is given, the project will be setup in a new directory with that
+name, and that name will be added to the `project.ri` file. If no name is
+given, the user will be prompted for a name.";
+
+var InitDescription = "If no `project.ri` file exists, one will be created.
+If the current directory is not already controlled with `git`, will perform
+`git init` (if `git` is installed on the system).";
+
+var AvailableTemplates = "Available templates:
+   bin          A simple binary project (default).
+   lib          A simple library project.";
+
+public func new(args: []string, is_init: bool) ! {
+    mut template := "";
+    mut fp := flag.FlagParser.new(args);
+    if is_init {
+        fp.set_limit_free_args_to_exactly(0)!;
+    } else {
+        fp.set_limit_free_args(0, 1)!;
+    }
+    fp.set_application_name(if is_init { "rivet init" } else { "rivet new" });
+    fp.set_arguments_description("[NAME]");
+    if is_init {
+        fp.add_description(InitDescription);
+    } else {
+        fp.add_description(NewDescription);
+        fp.add_footer(AvailableTemplates);
+        fp.add_usage_example("-t lib");
+        fp.add_usage_example("my_project_name -t lib");
+        template = fp.string_flag(
+            "template", b't', "Template used by the project (default: bin)."
+        ) ?? "bin";
+    }
+    init_git := fp.bool_flag(
+        "init-git", 0, "Initialize a `git` repo (default: true)."
+    ) ?? true;
+    remaining := fp.finalize() catch |err_fp| {
+        console.eprintln(fp.usage());
+        utils.error(err_fp.to_string());
+    };
+
+    mut project := build.Project();
+    if is_init {
+        project.name = path.basename(process.get_cwd()!);
+    } else {
+        if remaining.len == 1 {
+            project.name = remaining[0];
+        } else if name := readln("Name:") {
+            project.name = name.trim_space().clone();
+        } else {
+            utils.error("project name cannot be empty");
+        }
+        if description := readln("Description (optional):") {
+            project.description = description;
+        }
+        if version := readln("Version (default: 0.1.0):") {
+            project.version = semver.Version.from_string(version) catch |err| {
+                utils.error(err.to_string());
+            };
+        } else {
+            project.version = semver.Version.build(0, 1, 0);
+        }
+        if license := readln("License (optional):") {
+            project.license = license;
+        }
+        if authors := readln("Authors (optional):") {
+            project.authors = authors.split(",");
+        }
+        if repo_url := readln("Repository URL (optional):") {
+            project.repository_url = repo_url;
+        }
+    }
+    check_project(project);
+
+    if is_init {
+        utils.info("initializing project `{}`...", project.name);
+        create_project_ri(project, true)!;
+        create_editorconfig_file(project.name, true)!;
+        if init_git {
+            create_gitattributes_file(project.name, true)!;
+            create_git_repo(".")!;
+        }
+        if !path.exists("src") {
+            fs.make_directory("src")!;
+            utils.info("creating `src/main.ri` file...");
+            fs.write_file(path.join("src", "main.ri")!, templates.MAIN_FILE)!;
+        }
+        utils.info("project `{}` initialized successfully!", project.name);
+    } else {
+        utils.info("creating project `{}`...", project.name);
+        switch template {
+            "bin", "lib" => {
+                utils.info("using the template `{}`...", template);
+                fs.make_directory(project.name)!;
+                create_project_ri(project, false)!;
+                create_editorconfig_file(project.name, false)!;
+                if init_git {
+                    create_gitattributes_file(project.name, false)!;
+                    create_git_repo(project.name)!;
+                }
+                src_dir := path.join(project.name, "src")!;
+                fs.make_directory(src_dir)!;
+                if template == "bin" {
+                    utils.info("creating `src/main.ri` file...");
+                    fs.write_file(path.join(src_dir, "main.ri")!, templates.MAIN_FILE)!;
+                } else {
+                    utils.info("creating `src/lib.ri` file...");
+                    fs.write_file(path.join(src_dir, "lib.ri")!, templates.LIB_FILE)!;
+                }
+            },
+            else => utils.error(
+                "unknown template `{}`, use `-h` for see the list of templates", template
+            )
+        }
+        utils.info("project `{}` created successfully!", project.name);
+    }
+}
+
+func check_project(mut project: build.Project) {
+    if project.name.is_empty() {
+        utils.error("project name cannot be empty");
+    }
+    if project.name.contains(" ") {
+        project.name = project.name.replace(" ", "_");
+        utils.warn(
+            "the project name cannot contain spaces, the name will be changed to `{}`",
+            project.name
+        );
+    }
+    if project.name.contains("-") {
+        utils.error("project name should not contain hyphens");
+    }
+    if path.exists(project.name) {
+        utils.error("`{}` already exists", project.name);
+    }
+}
+
+func create_project_ri(project: build.Project, is_init: bool) ! {
+    path_ := if is_init { "project.ri" } else { path.join(project.name, "project.ri")! };
+    if !path.exists(path_) {
+        utils.info("creating `project.ri` file...");
+        project_ri := generate_project_ri(project);
+        fs.write_file(path_, project_ri)!;
+    }
+}
+
+func generate_project_ri(project: build.Project) string {
     mut sb := strings.Builder.new();
     sb.writeln("// Auto-generated by the Rivet CLI's `new` command.
 
@@ -45,35 +201,40 @@ var project = Project(");
         sb.writeln(",");
         sb.write_fmt("    repository_url: \"{}\"", project.repository_url);
     }
-    sb.writeln("\n);\n");
-    fs.write_file("project.ri", sb.to_string())!;
+    sb.writeln("\n);");
+    return sb.to_string();
 }
 
-public func new() ! {
-    project := build.Project();
-    if name := console.readln("> Name: ") {
-        project.name = name;
-    } else {
-        utils.error("project name cannot be empty");
+func create_gitattributes_file(name: string, is_init: bool) ! {
+    path_ := if is_init { ".gitattributes" } else { path.join(name, ".gitattributes")! };
+    if path.exists(path_) {
+        return;
     }
-    if description := console.readln("> Description (optional): ") {
-        project.description = description;
+    fs.write_file(path_, templates.GITATTRIBUTES_FILE)!;
+}
+
+func create_editorconfig_file(name: string, is_init: bool) ! {
+    path_ := if is_init { ".editorconfig" } else { path.join(name, ".editorconfig")! };
+    if path.exists(path_) {
+        return;
     }
-    if version := console.readln("> Version (default: 0.1.0): ") {
-        project.version = semver.Version.from_string(version) catch |err| {
-            utils.error(err.to_string());
-        };
-    } else {
-        project.version = semver.Version.build(0, 1, 0);
+    fs.write_file(path_, templates.EDITOR_CONFIG_FILE)!;
+}
+
+func create_git_repo(dir: string) ! {
+    if !path.is_directory(path.join(dir, ".git")!) {
+        utils.info("initializing git repo...");
+        if res := process.execute("git init {}".fmt(dir)) {
+            if res.exit_code != 0 {
+                utils.error("unable to create git repo");
+            }
+        } else {
+            utils.error("unable to create git repo");
+        }
     }
-    if license := console.readln("> License (optional): ") {
-        project.license = license;
+    gitignore_path := "{}/.gitignore".fmt(dir);
+    if !path.exists(gitignore_path) {
+        utils.info("creating `.gitignore` file...");
+        fs.write_file(gitignore_path, templates.GITIGNORE_FILE.fmt(dir))!;
     }
-    if authors := console.readln("> Authors (optional): ") {
-        project.authors = authors.split(",");
-    }
-    if repo_url := console.readln("> Repository URL (optional): ") {
-        project.repository_url = repo_url;
-    }
-    generate_project_ri(project)!;
 }

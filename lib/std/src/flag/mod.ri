@@ -1,0 +1,483 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../errors;
+import ../traits;
+import ../strconv;
+import ../strings;
+import ../console;
+import ../process;
+
+public const MAX_ARGS_NUMBER = 4048;
+public var Space = "                            ";
+
+/// Data object storing information about a defined flag.
+public struct Flag : traits.Stringable {
+    /// Name as it appears on command line.
+    public name: string;
+
+    /// Shortcut.
+    public abbr: uint8;
+
+    /// Help message.
+    public usage: string;
+
+    /// Something like '<arg>' that appears in usage, and also the
+    /// default value, when the flag is not given.
+    public value_desc: string;
+
+    public func to_string(&self) string {
+        return "flag:
+    name: {}
+    abbr: {}
+    usage: {}
+    desc: {}".fmt(self.name, self.abbr.to_ascii(), self.usage, self.value_desc);
+    }
+}
+
+/// This structure is created with `mut parser := flag.new_flag_parser(args)`,
+/// The returned instance can be further customised by calling various methods,
+/// for specifying the accepted options and their values. The user should finally
+/// call `rest := parser.finalize()!` to get the rest of the non optional arguments
+/// (if there are any left).
+[boxed]
+public struct FlagParser {
+    /// The original arguments to be parsed.
+    public original_args: []string;
+    /// The index of a `--`, `none` if there is not any.
+    public idx_dashdash: ?usize;
+    /// All options after `--` are ignored, and will be passed to the application unmodified.
+    public all_after_dashdash: []string;
+    /// When set, `--help` will print:
+	/// Usage: <appname> <usage_examples[0]>
+	///    or: <appname> <usage_examples[1]>
+	/// etc.
+    public mut usage_examples: []string;
+    public mut default_help_label: string = "Display this help and exit.";
+    public mut default_version_label: string = "Show version information and exit.";
+    public mut flags: []Flag;
+    /// The current list of processed args.
+    public mut args: []string;
+    public mut max_free_args: usize;
+    public mut min_free_args: usize;
+    public mut application_name: string;
+    public mut application_version: string;
+    public mut application_description: string;
+    public mut args_description: string;
+    /// Whether passing undescribed arguments is allowed.
+    public mut allow_unknown_args: bool;
+    /// When set, --help will display all the collected footers at the bottom.
+    public mut footers: []string;
+
+    /// Create a new flag parser for the given args.
+    public func new(args: []string) FlagParser {
+        original_args := args.clone();
+        mut all_before_dashdash := args.clone();
+        mut all_after_dashdash := @vec(string);
+        idx_dashdash := index_of(args, "--");
+        if v := idx_dashdash {
+            all_before_dashdash.trim(v);
+            if v < original_args.len {
+                all_after_dashdash = original_args[v + 1..];
+            }
+        }
+        return FlagParser(
+            original_args: original_args,
+            idx_dashdash: idx_dashdash,
+            all_after_dashdash: all_after_dashdash,
+            args: all_before_dashdash,
+            max_free_args: MAX_ARGS_NUMBER
+        );
+    }
+
+    /// Set the application name to be used in 'usage' output.
+    [inline]
+    public func set_application_name(mut self, name: string) {
+        self.application_name = name;
+    }
+
+    /// Set the application version to be used in 'usage' output.
+    [inline]
+    public func set_version(mut self, version: string) {
+        self.application_version = version;
+    }
+
+    /// Sets the description field of the parser. This field is usually shown when the
+    /// `--help` option is given to the program.
+    [inline]
+    public func set_arguments_description(mut self, description: string) {
+        self.args_description = description;
+    }
+
+    /// Restricts the list of free arguments (non options) to be at least `n` in length.
+    /// If the user gives less free arguments to the program, the parser will return an
+    /// error.
+    public func set_limit_free_args_to_at_least(mut self, n: usize) ! {
+        if n > MAX_ARGS_NUMBER {
+            return errors.new("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
+        }
+        self.min_free_args = n;
+    }
+
+    /// Restricts the list of free arguments (non options) to be at exactly `n` in length.
+    /// If the user gives more or less free arguments to the program, the parser will return
+    /// an error.
+    public func set_limit_free_args_to_exactly(mut self, n: usize) ! {
+        if n > MAX_ARGS_NUMBER {
+            return errors.new("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
+        }
+        self.min_free_args = n;
+        self.max_free_args = n;
+    }
+
+    /// Restricts the list of free arguments (non options) to be between `min` and `max`
+    /// in length. If the user gives more or less free arguments to the program, the parser
+    /// will return an error.
+    public func set_limit_free_args(mut self, min: usize, max: usize) ! {
+        if min > max {
+            return errors.new("expects `min` < `max`, got {} >= {}", min, max);
+        }
+        self.min_free_args = min;
+        self.max_free_args = max;
+    }
+
+    /// Appends to the application description lines, shown in the help/usage screen.
+    [inline]
+    public func add_description(mut self, desc: string) {
+        self.application_description = if self.application_description.is_empty() {
+            desc
+        } else {
+            self.application_description.concat("\n", desc)
+        };
+    }
+
+    /// Add an usage example. All examples will be listed in the help screen. If you
+    /// do not give any examples, then a default usage will be shown, based on whether
+    /// the application takes options and expects additional parameters.
+    [inline]
+    public func add_usage_example(mut self, example: string) {
+        self.usage_examples.push(example);
+    }
+
+    /// Add a footnote, that will be shown at the bottom of the help screen.
+    [inline]
+    public func add_footer(mut self, footer: string) {
+        self.footers.push(footer);
+    }
+
+    /// In most cases you do not need the first argument for flag parsing.
+    [inline]
+    public func skip_executable(mut self) {
+        self.args.delete(0);
+    }
+
+    /// If your program has sub commands, that have their own arguments, you can call
+    /// `.allow_unknown_args()`, so that the subcommand arguments (which generally are
+    /// not known to your parent program), will not cause the validation in `.finalize()`
+    /// to fail.
+    [inline]
+    public func allow_unknown_args(mut self) {
+        self.allow_unknown_args = true;
+    }
+
+    /// Returns an option with the bool value of the given command line flag, named `name`.
+    /// When the flag is not given by the user, it returns `none`.
+    public func bool_flag(mut self, name: string, abbr: uint8, usage: string) ?bool {
+        self.add_flag(name, abbr, usage, "<bool>");
+        if parsed := self.parse_bool_value(name, abbr) {
+            return parsed == "true";
+        }
+        return none;
+    }
+
+    /// Returns an option with the integer value, associated with the flag in `name`.
+    /// When the flag is not given by the user, it returns `none`.
+    public func int_flag(mut self, name: string, abbr: uint8, usage: string) ?isize {
+        self.add_flag(name, abbr, usage, "<int>");
+        parsed := self.parse_value(name, abbr);
+        if parsed.is_empty() {
+            return none;
+        }
+        return @cast(isize, strconv.parse_int(parsed[0], 0, isize.bits()) catch 0);
+    }
+
+    /// Returns an option with the string value, associated with the flag in `name`.
+    /// When the flag is not given by the user, it returns `none`.
+    public func string_flag(mut self, name: string, abbr: uint8, usage: string) ?string {
+        self.add_flag(name, abbr, usage, "<string>");
+        parsed := self.parse_value(name, abbr);
+        if parsed.is_empty() {
+            return none;
+        }
+        return parsed[0];
+    }
+
+    /// Returns a nicely formatted usage screen, containing all the possible options, as
+    /// well as the description for the program. That screen is usually shown when the
+    /// `--help` option is given to the program.
+    public func usage(self) string {
+        positive_min_arg := self.min_free_args > 0;
+        positive_max_arg := self.max_free_args > 0 and self.max_free_args != MAX_ARGS_NUMBER;
+        no_arguments := self.min_free_args == 0 and self.max_free_args == 0;
+        adesc := if no_arguments {
+            ""
+        } else {
+            if self.args_description.len > 0 {
+                self.args_description
+            } else {
+                "[ARGS]"
+            }
+        };
+        mut sb := strings.Builder.new();
+        sb.writeln_fmt("Usage: {} [OPTIONS] {}", self.application_name, adesc);
+        sb.writeln();
+        if !self.application_description.is_empty() {
+            sb.writeln(self.application_description);
+            sb.writeln();
+        }
+        // show a message about the [ARGS]:
+        if positive_min_arg or positive_max_arg or no_arguments {
+            if no_arguments {
+                sb.writeln("This application does not expect any arguments.");
+            } else {
+                sb.write_string("The arguments should be ");
+                if positive_min_arg and positive_max_arg
+                    and self.min_free_args == self.max_free_args {
+                    sb.write_fmt("exactly {}", self.min_free_args);
+                } else {
+                    if positive_min_arg {
+                        sb.write_fmt("at least {}", self.min_free_args);
+                    }
+                    if positive_min_arg and positive_max_arg {
+                        sb.write_string(" and ");
+                    }
+                    if positive_max_arg {
+                        sb.write_fmt("at most {}", self.max_free_args);
+                    }
+                }
+                sb.writeln(" in number.");
+            }
+            sb.writeln();
+        }
+        if !self.flags.is_empty() {
+            sb.writeln("Options:");
+            for i, flag in self.flags {
+                mut len := sb.len();
+                sb.write_string("   ");
+                if flag.abbr != 0 {
+                    sb.write_fmt("-{}", flag.abbr.to_ascii());
+                    if !flag.name.is_empty() {
+                        sb.write_string(", ");
+                    }
+                }
+                if !flag.name.is_empty() {
+                    if !flag.value_desc.contains("<bool>") {
+                        sb.write_fmt("--{} {}", flag.name, flag.value_desc);
+                    } else {
+                        sb.write_fmt("--{}", flag.name);
+                    }
+                    if flag.abbr != 0 {
+                        sb.write_string("  ");
+                    }
+                }
+                len = sb.len() - len;
+                sb.write_fmt("{}{}", Space[len..], flag.usage);
+                if i < self.flags.len - 1 {
+                    sb.writeln();
+                }
+            }
+            sb.writeln();
+        }
+        if !self.footers.is_empty() {
+            sb.writeln();
+            for footer in self.footers {
+                sb.writeln(footer);
+            }
+        }
+        if !self.usage_examples.is_empty() {
+            sb.writeln();
+            sb.writeln("Examples:");
+            for i, example in self.usage_examples {
+                sb.writeln_fmt("   $ {} {}", self.application_name, example);
+            }
+        }
+        return sb.to_string();
+    }
+
+    /// Returns all remaining arguments (non options).
+    /// The remaining arguments are returned in the same order they are defined on the
+    /// command line. If additional flags are found, i.e. (things starting with `--` or
+    /// `-`), it returns an error.
+    /// Call .finalize() after all arguments are defined.
+    public func finalize(mut self) ![]string {
+        self.handle_builtin_options();
+        mut remaining := self.args.clone();
+        if !self.allow_unknown_args {
+            for arg in remaining {
+                if (arg.len >= 2 and arg[..2] == "--") or (arg.len == 2 and arg[0] == b'-') {
+                    return UnknownFlagError(arg);
+                }
+            }
+        }
+        if remaining.len < self.min_free_args and self.min_free_args > 0 {
+            return ArgsCountError(self.min_free_args, remaining.len);
+        }
+        if remaining.len > self.max_free_args and self.max_free_args > 0 {
+            return ArgsCountError(self.max_free_args, remaining.len);
+        }
+        if remaining.len > 0 and self.max_free_args == 0 and self.min_free_args == 0 {
+            return ArgsCountError(0, remaining.len);
+        }
+        for arg in self.all_after_dashdash {
+            remaining.push(arg);
+        }
+        return remaining;
+    }
+
+    /// Returns all remaining parameters.
+    /// Call `.remaining_parameters()` *AFTER* you have defined all options that your
+    /// program needs. `.remaining_parameters()` will also print any parsing errors and
+    /// stop the program. Use `.finalize()` instead, if you want more control over the
+    /// error handling.
+    public func remaining_parameters(mut self) []string {
+        return self.finalize() catch |err| {
+            console.println(self.usage());
+            console.eprintln(err.to_string());
+            process.exit(1);
+        };
+    }
+
+    /// Finds the given flag by name, and returns it, if it was found in the FlagParser.
+    /// If it was not, it returns `none`.
+    func find_flag(self, name: string) ?Flag {
+        for flag in self.flags {
+            if flag.name == name {
+                return flag;
+            }
+        }
+        return none;
+    }
+
+    /// Handles the default behaviour of the very frequently given options: `--help`
+    /// and `--version`.
+    /// You can change/customise that, by defining your own options with these names.
+    func handle_builtin_options(mut self) {
+        mut show_version := false;
+        mut show_help := false;
+        if self.find_flag("help") is none {
+            show_help = self.bool_flag("help", b'h', self.default_help_label) ?? false;
+        }
+        if !self.application_version.is_empty() and self.find_flag("version") is none {
+            show_version = self.bool_flag("version", 0, self.default_version_label) ?? false;
+        }
+        if show_help {
+            console.println(self.usage());
+            process.exit(0);
+        }
+        if show_version {
+            console.println("{} {}", self.application_name, self.application_version);
+            process.exit(0);
+        }
+    }
+
+    func add_flag(mut self, name: string, abbr: uint8, usage: string, desc: string) {
+        self.flags.push(Flag(name, abbr, usage, desc));
+    }
+
+    /// General parsing a single argument - search args for existence.
+    /// if true extract the defined value as string
+    /// else return an (dummy) error -> argument is not defined.
+    ///
+    /// - the name, usage are registered.
+    /// - found arguments and corresponding values are removed from args list.
+    func parse_value(mut self, long_hand: string, short_hand: uint8) []string {
+        full := "--".concat(long_hand);
+        mut found_entries := @vec(string);
+        mut to_delete := @vec(usize);
+        mut should_skip_one := false;
+        for i, arg in self.args {
+            if should_skip_one {
+                should_skip_one = false;
+                continue;
+            }
+            if arg.is_empty() or arg[0] != b'-' {
+                continue;
+            }
+            if (arg.len == 2 and arg[0] == b'-' and arg[1] == short_hand) or arg == full {
+                if i +  1 >= self.args.len {
+                    return [];
+                }
+                next_arg := self.args[i + 1];
+                if next_arg.len > 2 {
+                    next_arg_rest := next_arg[..2];
+                    if next_arg_rest == "--" {
+                        // It could be end of input (`--`) or another argument (`--abc`).
+                        // Both are invalid so die.
+                        return [];
+                    }
+                }
+                found_entries.push(self.args[i + 1]);
+                to_delete.push(i);
+                to_delete.push(i + 1);
+                should_skip_one = true;
+                continue;
+            }
+            if arg.len > full.len + 1 and arg[..full.len + 1] == full.concat("=") {
+                found_entries.push(arg[full.len + 1..]);
+                to_delete.push(i);
+                continue;
+            }
+        }
+        for i, del in to_delete {
+            // i entries are deleted so it's shifted left i times.
+            self.args.delete(del - i);
+        }
+        return found_entries;
+    }
+
+    /// Special parsing for bool values, see also `.parse_value()`.
+    ///
+    /// It is allowed to define bool flags without value:
+    /// > `--flag` is parsed as `true`
+    /// > `--flag` is equal to `--flag=true`
+    func parse_bool_value(mut self, long_hand: string, short_hand: uint8) ?string {
+        full := "--".concat(long_hand);
+        for i, arg in self.args {
+            if arg.is_empty() or arg[0] != b'-' {
+                continue;
+            }
+            if (arg.len == 2 and arg[0] == b'-' and arg[1] == short_hand) or arg == full {
+                if self.args.len > i + 1 and self.args[i + 1] in ["true", "false"] {
+                    val := self.args[i + 1];
+                    self.args.delete(i + 1);
+                    self.args.delete(i);
+                    return val;
+                } else {
+                    self.args.delete(i);
+                    return "true";
+                }
+            }
+            if arg.len > full.len + 1 and arg[..full.len + 1] == full.concat("=") {
+                // flag: `abc=true`
+                val := arg[full.len + 1..];
+                self.args.delete(i);
+                return val;
+            }
+            if arg.len > 1 and arg[0] == b'-' and arg[1] != b'-' and arg.index_of_byte(short_hand) !is none {
+                // `-abc` is equivalent to `-a -b -c`
+                return "true";
+            }
+        }
+        return none;
+    }
+}
+
+public func index_of(vec: []string, value: string) ?usize {
+    for i, val in vec {
+        if val == value {
+            return i;
+        }
+    }
+    return none;
+}

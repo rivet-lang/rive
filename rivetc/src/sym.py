@@ -289,6 +289,8 @@ class Mod(Sym):
                 vec_sym.add(is_empty_m)
             if delete_m := vector_sym.find("delete"):
                 vec_sym.add(delete_m)
+            if trim_m := vector_sym.find("trim"):
+                vec_sym.add(trim_m)
             if clear_m := vector_sym.find("clear"):
                 vec_sym.add(clear_m)
         return self.add_and_return(vec_sym)

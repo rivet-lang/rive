@@ -697,7 +697,10 @@ extend Checker {
                     expr_sym := expr_type.symbol()?;
                     if !(
                         self.cur_fn.ret_type is .Result
-                        and expr_sym.implement_trait(self.table.error_sym)
+                        and (
+                            expr_sym.implement_trait(self.table.error_sym)
+                            or expr_sym != self.table.error_sym
+                        )
                     ) {
                         mut err_b := report.error_builder(
                             err.to_string(), return_expr.expr.position()

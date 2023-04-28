@@ -214,6 +214,9 @@ public struct Module : Sym {
             if delete_m := vector_sym.scope.find("delete") {
                 type_sym.scope.add(delete_m) catch {};
             }
+            if trim_m := vector_sym.scope.find("trim") {
+                type_sym.scope.add(trim_m) catch {};
+            }
             if clear_m := vector_sym.scope.find("clear") {
                 type_sym.scope.add(clear_m) catch {};
             }
@@ -404,6 +407,11 @@ public struct TypeSym : Sym {
     [inline]
     public func ==(self, rhs: Self) bool {
         return self.id == rhs.id;
+    }
+
+    [inline]
+    public func !=(self, rhs: Self) bool {
+        return self.id != rhs.id;
     }
 }
 

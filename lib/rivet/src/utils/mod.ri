@@ -42,6 +42,20 @@ public func error(msg: string, args: ...traits.Stringable) never {
    process.exit(1);
 }
 
+public func warn(msg: string, args: ...traits.Stringable) {
+   console.eprintln(
+      "{} {} {}", styles.bold("rivet:"),
+      styles.bold(styles.yellow("warning:")), msg.fmt(args)
+   );
+}
+
+public func info(msg: string, args: ...traits.Stringable) {
+   console.eprintln(
+      "{} {} {}", styles.bold("rivet:"),
+      styles.bold(styles.blue("info:")), msg.fmt(args)
+   );
+}
+
 [inline]
 public func bold(msg: string) string {
     return if StderrSupportStyles { styles.bold(msg) } else { msg };

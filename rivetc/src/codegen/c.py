@@ -191,9 +191,9 @@ class CGen:
                 if not decl.is_extern:
                     self.write(arg_typ)
                 if not isinstance(arg.typ, (ir.Array, ir.Function)):
-                    self.protos.write(f" {arg.name}")
+                    self.protos.write(f" {c_escape(arg.name)}")
                     if not decl.is_extern:
-                        self.write(f" {arg.name}")
+                        self.write(f" {c_escape(arg.name)}")
                 if i < len(decl.args) - 1:
                     self.protos.write(", ")
                     if not decl.is_extern:

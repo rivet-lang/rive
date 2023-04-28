@@ -2365,9 +2365,10 @@ class Codegen:
                     )
                     expr_ = tmp
                 if wrap_result:
-                    if expr.expr.typ.symbol().implement_trait(
+                    t_sym = expr.expr.typ.symbol()
+                    if t_sym.implement_trait(
                         self.comp.error_sym
-                    ):
+                    ) or t_sym == self.comp.error_sym:
                         self.gen_return_trace_add(expr.pos)
                         expr_ = self.result_error(
                             self.cur_fn_ret_typ, expr.expr.typ, expr_

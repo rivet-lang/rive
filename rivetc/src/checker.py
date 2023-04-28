@@ -1257,11 +1257,12 @@ class Checker:
                     try:
                         self.check_types(expr_typ, self.cur_fn.ret_typ)
                     except utils.CompilerError as e:
+                        expr_typ_sym = expr_typ.symbol()
                         if not (
                             isinstance(self.cur_fn.ret_typ, type.Result)
-                            and expr_typ.symbol().implement_trait(
+                            and (expr_typ_sym.implement_trait(
                                 self.comp.error_sym
-                            )
+                            ) or expr_typ_sym == self.comp.error_sym)
                         ):
                             report.error(e.args[0], expr.expr.pos)
                             report.note(

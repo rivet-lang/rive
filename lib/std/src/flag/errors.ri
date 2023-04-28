@@ -1,0 +1,26 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+public struct UnknownFlagError : Error {
+    flag: string;
+
+    public func to_string(&self) string {
+        return "unknown flag `{}`".fmt(self.flag);
+    }
+}
+
+public struct ArgsCountError : Error {
+    got: usize;
+    want: usize;
+
+    public func to_string(&self) string {
+        return if self.want == 0 {
+            "expected no arguments, but got {}".fmt(self.got)
+        } else if self.got > self.want {
+            "expected at most {} arguments, but got {}".fmt(self.want, self.got)
+        } else {
+            "expected at least {} arguments, but got {}".fmt(self.want, self.got)
+        };
+    }
+}

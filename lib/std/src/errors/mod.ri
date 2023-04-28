@@ -5,6 +5,8 @@
 import c;
 import core;
 
+import ../traits;
+
 public alias ErrnoError = c.ErrnoError;
 public alias OutOfMemoryError = core.OutOfMemoryError;
 public alias RuneFromU32Error = core.RuneFromU32Error;
@@ -43,4 +45,18 @@ public struct ValueOutOfRangeError : Error {
     public func to_string(self) string {
         return self.msg;
     }
+}
+
+[boxed]
+public struct GenericError : Error {
+    msg: string;
+
+    public func to_string(self) string {
+        return self.msg;
+    }
+}
+
+/// Returns a generic error.
+public func new(msg: string, args: ...traits.Stringable) Error {
+    return GenericError(msg.fmt(args));
 }
