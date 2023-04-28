@@ -26,6 +26,7 @@ extend Resolver {
                 self_lit.sym = self.self_sym;
                 self_lit.found = true;
                 self_lit.obj = @cast(ast.Var, self_lit.scope.lookup("self")?);
+                self_lit.obj.is_used = true;
             } else {
                 report.error("cannot resolve `self` expression", self_ty.pos);
             },

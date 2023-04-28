@@ -45,7 +45,7 @@ public struct Table {
     public mut string_sym: TypeSym;
     public mut error_sym: TypeSym;
     public mut vector_sym: TypeSym; // from `core` module
-    
+
     /// Primitive types.
     public mut none_t: Type;
     public mut bool_t: Type;
@@ -85,7 +85,7 @@ public struct Table {
         table.setup_builtins();
         return table;
     }
-    
+
     func setup_primitives(mut self) {
         self.none_sym = self.universe.scope.find_type_symbol_by_index_or_panic(0);
         self.bool_sym = self.universe.scope.find_type_symbol_by_index_or_panic(1);
@@ -105,7 +105,7 @@ public struct Table {
         self.float32_sym = self.universe.scope.find_type_symbol_by_index_or_panic(15);
         self.float64_sym = self.universe.scope.find_type_symbol_by_index_or_panic(16);
         self.string_sym = self.universe.scope.find_type_symbol_by_index_or_panic(17);
-        
+
         self.none_t = .Basic(self.none_sym);
         self.bool_t = .Basic(self.bool_sym);
         self.rune_t = .Basic(self.rune_sym);
@@ -410,6 +410,17 @@ public enum Builtin {
         type: Type;
         return_is_any: bool;
         is_unsafe: bool;
+
+        func args_len(self) usize {
+            mut l: usize := 0;
+            for arg in self.args {
+                if arg.is_optional {
+                    break;
+                }
+                l += 1;
+            }
+            return l;
+        }
     };
 
     public func type(self) Type {

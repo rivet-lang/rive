@@ -153,6 +153,7 @@ extend Checker {
             },
             .Index as mut index => self.check_index(index),
             .Call as mut call_expr => self.check_call(call_expr),
+            .BuiltinCall as mut builtin_call => self.check_builtin_call(builtin_call),
             .Block as block => {
                 if block.is_unsafe {
                     if self.inside_unsafe {
@@ -437,7 +438,7 @@ extend Checker {
 
         switch left is {
             .SelfTy as self_ty => self.check_ctor_call(self_ty.sym, call_expr),
-            .Ident as ident => switch ident.sym is {
+            .Ident as ident if (ident.is_sym or ident.is_obj) => switch ident.sym is {
                 ast.TypeSym as mut type_sym if type_sym.info is .Trait
                     or type_sym.info is .Struct or type_sym.info is .String
                     or type_sym.info is .Enum => self.check_ctor_call(type_sym, call_expr),
@@ -602,6 +603,61 @@ extend Checker {
         }
 
         return call_expr.type;
+    }
+
+    func check_builtin_call(mut self, mut builtin_call: ast.Expr.BuiltinCall) ast.Type {
+        builtin_call.type = if builtin_call.builtin is .Func as b_func {
+            if b_func.is_unsafe and !self.inside_unsafe {
+                report.warn(
+                    "builtin function `{}` should be called inside `unsafe` block".fmt(
+                        b_func.name
+                    ), builtin_call.pos
+                );
+            }
+            b_func_args_len := b_func.args_len();
+            if builtin_call.args.len != b_func_args_len {
+                expr_msg := "expected {} argument(s), found {}".fmt(
+                    b_func_args_len, builtin_call.args.len
+                );
+                if builtin_call.args.len < b_func_args_len {
+                    mut err := report.error_builder(
+                        "too few arguments to builtin function `{}`".fmt(builtin_call.name),
+                        builtin_call.pos
+                    );
+                    err.add_note(expr_msg);
+                    err.emit();
+                } else {
+                    mut err := report.error_builder(
+                        "too many arguments to builtin function `{}`".fmt(builtin_call.name),
+                        builtin_call.pos
+                    );
+                    err.add_note(expr_msg);
+                    err.emit();
+                }
+            } else {
+                for i, mut arg in builtin_call.args {
+                    arg_info := b_func.args[i];
+                    if arg_info.is_mut {
+                        self.check_expr_is_mut(arg);
+                    }
+                    arg_t := self.check_expr(arg);
+                    if !arg_info.is_any {
+                        self.check_types(arg_t, arg_info.type) catch |err| {
+                            mut err2 := report.error_builder(err.to_string(), arg.position());
+                            err2.add_note(
+                                "in argument `{}` of builtin function `{}`", arg_info.name,
+                                b_func.name
+                            );
+                            err2.emit();
+                        };
+                    }
+                }
+            }
+            b_func.type
+        } else {
+            .Void()
+        };
+        return builtin_call.type;
     }
 
     func check_unary(mut self, mut unary: ast.Expr.Unary) ast.Type {

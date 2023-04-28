@@ -133,7 +133,9 @@ public enum Decl {
         self_is_ref: bool;
         mut self_type: Type;
         pos: token.Pos;
+        self_pos: token.Pos;
         mut sym: Sym;
+        mut defer_stmts: []Stmt.Defer;
     },
     Destructor {
         docs: DocComment;
@@ -143,6 +145,7 @@ public enum Decl {
         scope: Scope;
         pos: token.Pos;
         mut sym: Sym;
+        mut defer_stmts: []Stmt.Defer;
     },
     Test {
         docs: DocComment;
@@ -151,6 +154,7 @@ public enum Decl {
         stmts: []mut Stmt;
         scope: Scope;
         pos: token.Pos;
+        mut defer_stmts: []Stmt.Defer;
     };
 
     public func decls(self) ?[]Self {

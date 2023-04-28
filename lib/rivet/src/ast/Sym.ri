@@ -421,7 +421,7 @@ public struct Arg {
     public is_mut: bool;
     public is_self: bool;
     public has_def_expr: bool;
-    public def_expr: Expr;
+    public mut def_expr: Expr;
     public pos: token.Pos;
     public mut type: Type;
 }

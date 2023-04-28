@@ -560,6 +560,7 @@ extend Parser {
         mut is_method := false;
         mut self_is_mut := false;
         mut self_is_ref := false;
+        mut self_pos := token.NO_POS;
         mut args := @vec(ast.Arg);
         mut has_named_args := false;
         mut is_variadic := false;
@@ -575,8 +576,12 @@ extend Parser {
                 self.tok.kind in [.Amp, .KwMut] and self.peek_tok.kind == .KwSelf
             ) {
                 is_method = true;
+                self_pos = self.tok.pos;
                 self_is_ref = self.accept(.Amp);
                 self_is_mut = !self_is_ref and self.accept(.KwMut);
+                if self_is_mut or self_is_ref {
+                    self_pos += self.prev_tok.pos;
+                }
                 self.expect(.KwSelf);
                 if self.tok.kind != .Rparen {
                     self.expect(.Comma);
@@ -641,10 +646,12 @@ extend Parser {
         self.inside_func = false;
         return .Func(
             docs: docs,
+            abi: if self.inside_extern { self.extern_abi } else { .Rivet },
             annotations: annotations,
             is_public: is_public,
             is_extern: self.inside_extern,
             is_unsafe: is_unsafe,
+            is_variadic: is_variadic,
             name: name,
             args: args,
             has_named_args: has_named_args,
@@ -655,7 +662,8 @@ extend Parser {
             self_is_mut: self_is_mut,
             self_is_ref: self_is_ref,
             scope: sc,
-            pos: pos + self.prev_tok.pos
+            pos: pos + self.prev_tok.pos,
+            self_pos: self_pos
         );
     }
 }

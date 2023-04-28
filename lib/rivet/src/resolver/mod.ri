@@ -214,7 +214,7 @@ public struct Resolver {
                             is_mut: func_decl.self_is_mut,
                             level: .Receiver,
                             type: self_type,
-                            pos: func_decl.pos
+                            pos: func_decl.self_pos
                         )) catch |err| report.error(
                             err.to_string(), func_decl.pos
                         );
@@ -233,6 +233,9 @@ public struct Resolver {
                             )) catch |err| report.error(
                                 err.to_string(), arg.pos
                             );
+                        }
+                        if arg.has_def_expr {
+                            self.resolve_expr(arg.def_expr);
                         }
                     }
                     _ = self.resolve_type(func_decl.ret_type);

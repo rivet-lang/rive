@@ -41,8 +41,8 @@ extend Parser {
                     .Empty(self.tok.pos)
                 };
                 .While(
-                    cond, continue_expr, has_continue_expr, stmt, else_stmt, has_else_stmt,
-                    is_inf, pos + self.prev_tok.pos
+                    cond, continue_expr, has_continue_expr, stmt, else_stmt,
+                    has_else_stmt, is_inf, pos + self.prev_tok.pos
                 )
             },
             self.accept(.KwFor) => {

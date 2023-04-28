@@ -162,7 +162,7 @@ class Checker:
                     def_expr_t = self.check_expr(arg.def_expr)
                     self.expected_type = old_expected_type
                     try:
-                        self.check_compatible_types(def_expr_t, arg.typ)
+                        self.check_types(def_expr_t, arg.typ)
                     except utils.CompilerError as e:
                         report.error(e.args[0], arg.pos)
             if isinstance(decl.ret_typ, type.Ptr) and decl.abi != sym.ABI.Rivet:

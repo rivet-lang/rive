@@ -22,7 +22,7 @@ extend Checker {
                 if !while_stmt.is_inf and self.check_expr(
                     while_stmt.cond
                 ) != self.table.bool_t {
-                    if while_stmt.cond is .Guard {
+                    if while_stmt.cond !is .Guard {
                         report.error(
                             "non-boolean expression used as `while` condition",
                             while_stmt.cond.position()
@@ -47,8 +47,7 @@ extend Checker {
             },
             .Expr as mut expr => self.check_expr_evaluated_but_not_used(
                 self.check_expr(expr), expr.position()
-            ),
-            else => {}
+            )
         }
     }
 
