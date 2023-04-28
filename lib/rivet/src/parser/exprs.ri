@@ -519,6 +519,7 @@ extend Parser {
     }
 
     func parse_switch_expr(mut self) ast.Expr {
+        mut has_else := false;
         mut branches := @vec(ast.SwitchBranch);
         pos := self.prev_tok.pos;
         old_inside_switch_header := self.inside_switch_header;
@@ -546,7 +547,9 @@ extend Parser {
             mut has_cond := false;
             mut cond := ast.Expr.Empty(self.tok.pos);
             is_else := self.accept(.KwElse);
-            if !is_else {
+            if is_else {
+                has_else = true;
+            } else {
                 while {
                     if is_typeswitch {
                         name_pos := self.tok.pos;
@@ -611,7 +614,9 @@ extend Parser {
             self.close_scope();
         }
         self.expect(.Rbrace);
-        return .Switch(expr, branches, is_typeswitch, self.scope, pos + self.prev_tok.pos);
+        return .Switch(
+            expr, branches, is_typeswitch, has_else, self.scope, pos + self.prev_tok.pos
+        );
     }
 
     func parse_block_expr(mut self) ast.Expr {

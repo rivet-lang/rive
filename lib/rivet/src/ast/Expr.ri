@@ -251,6 +251,7 @@ public enum Expr : traits.Stringable {
         mut expr: Expr;
         branches: []SwitchBranch;
         is_typeswitch: bool;
+        has_else: bool;
         mut scope: Scope;
         pos: token.Pos;
         mut expected_type: Type;
@@ -564,6 +565,7 @@ public struct IfBranch {
     public is_else: bool;
     public is_else_if: bool;
     public pos: token.Pos;
+    public mut type: Type;
 }
 
 [boxed]

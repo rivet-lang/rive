@@ -7,6 +7,8 @@ import ../token;
 import ../utils;
 import ../report;
 
+const SWITCH_EXHAUSTIVE_CUTOFF_LIMIT = 12;
+
 extend Checker {
     func check_expr(mut self, mut expr: ast.Expr) ast.Type {
         return switch expr is {
@@ -193,6 +195,7 @@ extend Checker {
                 self.inside_guard_expr = old_inside_guard_expr;
                 .Void()
             },
+            .If as mut if_expr => self.check_if(if_expr),
             .Switch as mut switch_expr => self.check_switch(switch_expr),
             else => .Void()
         };
@@ -785,7 +788,41 @@ extend Checker {
         return .Never(return_expr.pos);
     }
 
-    const SWITCH_EXHAUSTIVE_CUTOFF_LIMIT = 12;
+    func check_if(mut self, mut if_expr: ast.Expr.If) ast.Type {
+        if_expr.expected_type = self.expected_type;
+        for i, branch in if_expr.branches {
+            if !branch.is_else {
+                bcond_t := self.check_expr(branch.cond);
+                if branch.cond !is .Guard and bcond_t != self.table.bool_t {
+                    report.error(
+                        "non-boolean expression used as `if` condition",
+                        branch.cond.position()
+                    );
+                }
+            }
+            mut branch_t := ast.Type.Void();
+            if i == 0 {
+                branch_t = self.check_expr(branch.expr);
+                if if_expr.expected_type is .Void {
+                    if_expr.expected_type = branch_t;
+                }
+                if_expr.type = branch_t;
+            } else {
+                old_expected_type := self.expected_type;
+                self.expected_type = if_expr.expected_type;
+                branch_t = self.check_expr(branch.expr);
+                self.expected_type = old_expected_type;
+                self.check_types(branch_t, if_expr.expected_type) catch |err| {
+                    report.error(err.to_string(), branch.expr.position());
+                };
+            }
+            branch.type = branch_t;
+        }
+        if if_expr.type !in ast.VOID_TYPES and !if_expr.has_else {
+            report.error("`if` expression needs an `else` branch", if_expr.pos);
+        }
+        return if_expr.expected_type;
+    }
 
     func check_switch(mut self, mut switch_expr: ast.Expr.Switch) ast.Type {
         mut branch_exprs := MapStringUsize();
@@ -916,7 +953,7 @@ extend Checker {
 		}
 
 		mut else_branch := switch_expr.branches[switch_expr.branches.len - 1];
-		mut has_else := else_branch.is_else;
+		mut has_else := switch_expr.has_else;
 		if !has_else {
             for i, branch in switch_expr.branches {
                 if branch.is_else and i != switch_expr.branches.len - 1 {
