@@ -1898,13 +1898,6 @@ class Checker:
             if expr.is_path:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
                 return
-            elif isinstance(expr.left, ast.SelfExpr):
-                if not expr.left.obj.is_mut:
-                    report.error(
-                        "cannot use `self` as mutable receiver", expr.pos
-                    )
-                    report.help("consider making `self` as mutable: `mut self`")
-                expr.left.obj.is_changed = True
             elif isinstance(expr.left, ast.Ident):
                 if expr.left.sym:
                     self.check_sym_is_mut(expr.left.sym, expr.pos)
@@ -1918,8 +1911,8 @@ class Checker:
                             f"consider making this argument mutable: `mut {expr.left.name}`"
                         )
                     expr.left.obj.is_changed = True
-            elif isinstance(expr.left, ast.SelectorExpr):
-                self.check_expr_is_mut(expr.left)
+            else:
+                self.check_expr_is_mut(expr.left, from_assign)
             if expr.is_indirect and isinstance(
                 expr.left_typ, (type.Ptr, type.Ref)
             ):

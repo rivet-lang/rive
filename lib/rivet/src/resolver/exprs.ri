@@ -206,7 +206,7 @@ extend Resolver {
                 report.error("unknown builtin constant `{}`".fmt(ident.name), ident.pos);
             }
             return;
-        } else if obj := ident.scope.lookup(ident.name) {
+        } else if mut obj := ident.scope.lookup(ident.name) {
             ident.found = true;
             ident.is_obj = true;
             ident.sym = obj;

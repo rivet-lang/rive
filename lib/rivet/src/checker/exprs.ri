@@ -1053,7 +1053,6 @@ extend Checker {
                 self.check_sym_is_mut(selector.sym, selector.pos, true);
             } else {
                 switch selector.left is {
-                    .SelfLiteral, .Selector => self.check_expr_is_mut(selector.left),
                     .Ident as ident2 if ident2.found => if ident2.is_sym {
                         self.check_sym_is_mut(ident2.sym, ident2.pos, true)
                     } else if ident2.sym is ast.Var as i_var and i_var.level == .Argument {
@@ -1071,7 +1070,7 @@ extend Checker {
                             err.emit();
                         }
                     },
-                    else => {}
+                    else => self.check_expr_is_mut(selector.left, from_assign, true)
                 }
                 if selector.found and !selector.field_is_mut {
                     report.error(
@@ -1134,6 +1133,16 @@ extend Checker {
             .Binary as binary => {
                 self.check_expr_is_mut(binary.left);
                 self.check_expr_is_mut(binary.right);
+            },
+            .If as if_expr => {
+                for branch in if_expr.branches {
+                    self.check_expr_is_mut(branch.expr);
+                }
+            },
+            .Switch as switch_expr => {
+                for branch in switch_expr.branches {
+                    self.check_expr_is_mut(branch.expr);
+                }
             },
             else => {}
         }
