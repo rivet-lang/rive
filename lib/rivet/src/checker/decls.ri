@@ -30,6 +30,8 @@ extend Checker {
         old_sym := self.sym;
         defer self.sym = old_sym;
         switch decl is {
+            .Import => {},
+            .Alias => {},
             .Extern as extern_decl => {
                 self.inside_extern = true;
                 self.check_decls(extern_decl.decls);
@@ -121,7 +123,8 @@ extend Checker {
                 self.inside_test = false;
                 self.cur_fn = old_cur_fn;
                 self.check_scope_vars(test_decl.scope);
-            }
+            },
+            else => {}
         }
     }
 }

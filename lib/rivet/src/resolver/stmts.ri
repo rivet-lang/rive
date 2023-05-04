@@ -13,13 +13,15 @@ extend Resolver {
             .VarDecl as var_stmt => {
                 for left in var_stmt.lefts {
                     self.check_variable_shadowing(left.name, left.pos);
-                    var_stmt.scope.add_local(ast.Var(
+                    _ = self.resolve_type(left.type);
+                    left.sym = ast.Var(
                         is_mut: left.is_mut,
                         name: left.name,
                         level: .Local,
                         pos: left.pos,
                         type: left.type
-                    )) catch |err| report.error(
+                    );
+                    var_stmt.scope.add_local(left.sym) catch |err| report.error(
                         err.to_string(), left.pos
                     );
                 }
@@ -40,25 +42,27 @@ extend Resolver {
             .For as for_stmt => {
                 if for_stmt.has_index {
                     self.check_variable_shadowing(for_stmt.index.name, for_stmt.index.pos);
-                    for_stmt.scope.add_local(ast.Var(
+                    for_stmt.index.sym = ast.Var(
                         is_mut: for_stmt.index.is_mut,
                         name: for_stmt.index.name,
                         level: .Local,
                         pos: for_stmt.index.pos,
                         type: .Void() // updated later
-                    )) catch |err| report.error(
+                    );
+                    for_stmt.scope.add_local(for_stmt.index.sym) catch |err| report.error(
                         err.to_string(), for_stmt.index.pos
                     );
                 }
                 for value in for_stmt.values {
                     self.check_variable_shadowing(value.name, value.pos);
-                    for_stmt.scope.add_local(ast.Var(
+                    value.sym = ast.Var(
                         is_mut: value.is_mut,
                         name: value.name,
                         level: .Local,
                         pos: value.pos,
                         type: .Void() // updated later
-                    )) catch |err| report.error(
+                    );
+                    for_stmt.scope.add_local(value.sym) catch |err| report.error(
                         err.to_string(), value.pos
                     );
                 }

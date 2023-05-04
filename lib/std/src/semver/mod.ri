@@ -13,8 +13,8 @@ public enum Increment as uint8 {
 
 [boxed]
 public struct EmptyInputError : Error {
-    [override; inline]
     public func to_string(self) string {
+        _ = self;
         return "empty input";
     }
 }
@@ -23,7 +23,6 @@ public struct EmptyInputError : Error {
 public struct InvalidVersionFormatError : Error {
     input: string;
 
-    [override; inline]
     public func to_string(self) string {
         return "invalid version format for input '{}'".fmt(self.input);
     }
@@ -33,7 +32,6 @@ public struct InvalidVersionFormatError : Error {
 public struct InvalidVersionError : Error {
     input: string;
 
-    [override; inline]
     public func to_string(self) string {
         return self.input;
     }

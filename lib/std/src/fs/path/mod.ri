@@ -208,8 +208,8 @@ public func resolve(paths: ...string) !string {
 /// resolve to the same path (after calling `resolve` on each), a zero-length
 /// string is returned.
 public func relative(from_: string, to: string) !string {
-    resolved_from := resolve(from_)!;
-    resolved_to := resolve(to)!;
+    _ = resolve(from_)!;
+    _ = resolve(to)!;
     mut from_it := from_.tokenize(SEPARATOR);
     mut to_it := to.tokenize(SEPARATOR);
     while {

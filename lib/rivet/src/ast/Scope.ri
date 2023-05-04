@@ -8,7 +8,7 @@ import std/process;
 public struct Scope {
     public start: usize;
     public mut end: usize;
-    public mut owner: Sym;
+    public mut owner: ?Sym;
     public mut parent: ?Scope;
     public mut detached_from_parent: bool;
     public mut childrens: []Scope;
@@ -16,20 +16,31 @@ public struct Scope {
     public mut is_local: bool;
 
     public func add(mut self, sym: Sym) ! {
-        if old_sym := self.find(sym.name) {
-            if sym is TypeSym as type_sym and old_sym is TypeSym as mut old_type_sym {
-                old_type_sym.update(type_sym)!;
-                return;
-            }
+        if _ := self.find(sym.name) {
             return DuplicateSymbolError(
                 "duplicate symbol `{}` in {} `{}`".fmt(
-                    sym.name, self.owner.type_of(), self.owner.qualname()
+                    sym.name, self.owner?.type_of(), self.owner?.qualname()
                 )
             );
         }
-        tmp := sym;
-        tmp.parent = self.owner;
         self.syms.push(sym);
+    }
+
+    public func add_or_get(mut self, sym: Sym) !Sym {
+        if old_sym := self.find(sym.name) {
+            if sym is TypeSym as type_sym and old_sym is TypeSym as mut old_type_sym {
+                if old_type_sym.update(type_sym)! {
+                    return old_sym;
+                }
+            }
+            return DuplicateSymbolError(
+                "duplicate symbol `{}` in {} `{}`".fmt(
+                    sym.name, self.owner?.type_of(), self.owner?.qualname()
+                )
+            );
+        }
+        self.syms.push(sym);
+        return sym;
     }
 
     public func add_local(mut self, sym: Sym) ! {

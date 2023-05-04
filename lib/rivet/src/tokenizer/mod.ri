@@ -30,7 +30,7 @@ public struct Tokenizer {
     mut is_started: bool;
     mut is_cr_lf: bool;
     mut eofs: usize;
-    mut conditional_stack: []Conditional;
+    mut conditional_stack: []mut Conditional;
 
     public func new(text: string, prefs_: prefs.Prefs, table: ast.Table) Tokenizer {
         mut t := Tokenizer(table: table, prefs: prefs_, text: text);
@@ -215,30 +215,6 @@ public struct Tokenizer {
         };
     }
 
-    func trim_slash_line_break(self, s: string) string {
-        (mut start: usize, mut ret_str) := (0, s);
-        while idx := ret_str.index_after_of("\\\n", start) {
-            ret_str = ret_str[..idx].concat(ret_str[idx + 2..].trim_left(" \n\t\v\f\r"));
-            start = idx;
-        }
-        return ret_str;
-    }
-
-    [inline]
-    func number_literal_without_separator(self, lit: string) string {
-        return if lit.contains("_") {
-            mut sb := strings.Builder.new(lit.len - lit.count("_"));
-            for ch in lit.as_bytes() {
-                if ch != b'_' {
-                    sb.write_byte(ch);
-                }
-            }
-            sb.to_string()
-        } else {
-            lit
-        };
-    }
-
     func invalid_character(mut self) {
         len := self.text[self.pos].len_utf8();
         end := utils.min(self.pos + len, self.text.len);
@@ -346,4 +322,28 @@ func decode_u_escapes(str: string, start: usize, escapes_pos: []usize) string {
         });
     }
     return utils.join(ss, "");
+}
+
+func trim_slash_line_break(s: string) string {
+    (mut start: usize, mut ret_str) := (0, s);
+    while idx := ret_str.index_after_of("\\\n", start) {
+        ret_str = ret_str[..idx].concat(ret_str[idx + 2..].trim_left(" \n\t\v\f\r"));
+        start = idx;
+    }
+    return ret_str;
+}
+
+[inline]
+func number_literal_without_separator(lit: string) string {
+    return if lit.contains("_") {
+        mut sb := strings.Builder.new(lit.len - lit.count("_"));
+        for ch in lit.as_bytes() {
+            if ch != b'_' {
+                sb.write_byte(ch);
+            }
+        }
+        sb.to_string()
+    } else {
+        lit
+    };
 }

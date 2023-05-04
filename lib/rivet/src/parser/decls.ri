@@ -195,7 +195,7 @@ extend Parser {
                 mut parent := ast.Expr.Empty(self.tok.pos);
                 mut parent_type := ast.Type.Void;
                 mut is_typealias := false;
-                if self.tok.kind.is_start_of_type() and self.tok.kind != .Name {
+                if self.tok.kind != .Name and self.tok.kind.is_start_of_type() {
                     is_typealias = true;
                     parent_type = self.parse_type();
                 } else {
@@ -521,7 +521,8 @@ extend Parser {
             self.tok.kind != .EndOfFile => {
                 report.error("expected declaration, found {}".fmt(self.tok), pos);
                 self.next();
-            }
+            },
+            else => {}
         }
         return .Empty(pos);
     }
@@ -579,10 +580,10 @@ extend Parser {
                 self_pos = self.tok.pos;
                 self_is_ref = self.accept(.Amp);
                 self_is_mut = !self_is_ref and self.accept(.KwMut);
+                self.expect(.KwSelf);
                 if self_is_mut or self_is_ref {
                     self_pos += self.prev_tok.pos;
                 }
-                self.expect(.KwSelf);
                 if self.tok.kind != .Rparen {
                     self.expect(.Comma);
                 }
@@ -646,19 +647,20 @@ extend Parser {
         self.inside_func = false;
         return .Func(
             docs: docs,
-            abi: if self.inside_extern { self.extern_abi } else { .Rivet },
+            abi: abi,
             annotations: annotations,
             is_public: is_public,
             is_extern: self.inside_extern,
             is_unsafe: is_unsafe,
             is_variadic: is_variadic,
+            is_method: is_method,
+            is_main: self.mod_sym.is_root and name == "main",
             name: name,
             args: args,
             has_named_args: has_named_args,
             ret_type: ret_type,
             stmts: stmts,
             has_body: has_body,
-            is_method: is_method,
             self_is_mut: self_is_mut,
             self_is_ref: self_is_ref,
             scope: sc,

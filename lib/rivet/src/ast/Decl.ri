@@ -142,8 +142,9 @@ public enum Decl {
         annotations: Annotations;
         self_is_mut: bool;
         stmts: []mut Stmt;
-        scope: Scope;
+        mut scope: Scope;
         pos: token.Pos;
+        mut self_type: Type;
         mut sym: Sym;
         mut defer_stmts: []Stmt.Defer;
     },

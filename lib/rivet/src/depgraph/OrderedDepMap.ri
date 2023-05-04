@@ -4,10 +4,12 @@
 
 import std/process;
 
+import ../utils/maps;
+
 [boxed]
 public struct OrderedDepMap {
     mut keys: []string;
-    mut data: MapStringArrayOfStrings; // TODO: replace with map type
+    mut data: maps.MapStringArrayOfStrings; // TODO: replace with map type
 
     public func new() Self {
         return Self();

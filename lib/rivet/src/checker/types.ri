@@ -20,24 +20,23 @@ extend Checker {
         self, got: ast.Type, expected: ast.Type, pos: token.Pos, arg_name: string,
         func_kind: string, func_name: string
     ) {
-        expected_sym := expected.symbol()?;
-        pos_msg := "in argument `{}` of {} `{}`".fmt(arg_name, func_kind, func_name);
-        if expected_sym.info is .Trait as mut trait_info {
-            if expected != got {
-                got_t := self.table.comptime_number_to_type(got);
-                if got_t.symbol()? in trait_info.implements {
-                    trait_info.mark_has_objects();
-                } else {
-                    mut err := report.error_builder(
-                        "type `{}` does not implement trait `{}`".fmt(
-                            got_t, expected_sym.name
-                        ), pos
-                    );
-                    err.add_note(pos_msg);
-                    err.emit();
-                }
+        if expected_sym := expected.symbol(); expected_sym.info is .Trait as mut trait_info
+            and expected != got {
+            pos_msg := "in argument `{}` of {} `{}`".fmt(arg_name, func_kind, func_name);
+            got_t := self.table.comptime_number_to_type(got);
+            if got_t.symbol()? in trait_info.implements {
+                trait_info.mark_has_objects();
+            } else {
+                mut err := report.error_builder(
+                    "type `{}` does not implement trait `{}`".fmt(
+                        got_t, expected_sym.name
+                    ), pos
+                );
+                err.add_note(pos_msg);
+                err.emit();
             }
         } else {
+            pos_msg := "in argument `{}` of {} `{}`".fmt(arg_name, func_kind, func_name);
             self.check_types(got, expected) catch |err| {
                 mut err2 := report.error_builder(err.to_string(), pos);
                 err2.add_note(pos_msg);
@@ -48,7 +47,7 @@ extend Checker {
 
     func check_types(self, got: ast.Type, expected: ast.Type) ! {
         if !self.check_compatible_types(got, expected) {
-            got_str := if got == self.table.none_t {
+            got_str := if got is .None {
                 if expected is .Option {
                     "`".concat(expected.to_string(), "`")
                 } else if expected is .Void {
@@ -77,7 +76,7 @@ extend Checker {
         if expected == got {
             return true;
         }
-        
+
         if got is .Never {
             return true;
         } else if (expected is .Never and got is .Void)
@@ -99,24 +98,34 @@ extend Checker {
             }
             return option_.inner == option2.inner;
         } else if expected is .Option as option_2 and got !is .Option {
-            if got == self.table.none_t {
+            if got is .None {
                 return true;
             }
             return self.check_compatible_types(got, option_2.inner);
-        } else if expected == self.table.none_t and got is .Option {
+        } else if expected is .None and got is .Option {
             return true;
         }
 
-        if (expected is .Reference and got !is .Reference)
-            or (expected !is .Reference and got is .Reference) {
-            return false;
-        } else if (expected is .Pointer and got !is .Pointer)
-            or (expected !is .Pointer and got is .Pointer) {
+        expected_is_ptr := expected.is_pointer();
+        got_is_ptr := got.is_pointer();
+        if expected_is_ptr and got_is_ptr {
+            return self.check_pointer(expected, got);
+        } else if (expected_is_ptr and !got_is_ptr) or (got_is_ptr and !expected_is_ptr) {
             return false;
         }
 
-        expected_sym := expected.symbol()?;
-        got_sym := got.symbol()?;
+        if expected is .Reference as ref_info and got is .Reference as ref_info2 {
+            if ref_info.is_mut and !ref_info2.is_mut {
+                return false;
+            }
+            return ref_info.inner == ref_info2.inner;
+        } else if (expected is .Reference and got !is .Reference)
+            or (expected !is .Reference and got is .Reference) {
+            return false;
+        }
+
+        expected_sym := expected.symbol() ?? return false;
+        got_sym := got.symbol() ?? return false;
 
         if expected is .Variadic {
             vec_info := @cast(ast.TypeInfo.Vector, expected_sym.info);
@@ -134,15 +143,6 @@ extend Checker {
             return expected == got;
         } else if expected is .Vector as vector_info and got is .Vector as vector_info2 {
             return vector_info.inner == vector_info2.inner;
-        }
-
-        if expected is .Reference as ref_info and got is .Reference as ref_info2 {
-            if ref_info.is_mut and !ref_info2.is_mut {
-                return false;
-            }
-            return ref_info.inner == ref_info2.inner;
-        } else if expected.is_pointer() and got.is_pointer() {
-            return self.check_pointer(expected, got);
         }
 
         if expected == self.table.rune_t and got == self.table.comptime_int_t {
@@ -203,6 +203,7 @@ extend Checker {
     }
 
     func check_pointer(self, expected: ast.Type, got: ast.Type) bool {
+        _ = self;
         if expected is .Anyptr as anyptr_ {
             if got is .Pointer as ptr {
                 if anyptr_.is_mut and !ptr.is_mut {

@@ -60,8 +60,7 @@ struct Comparator {
             .Lt => ver < self.ver,
             .Ge => ver >= self.ver,
             .Le => ver <= self.ver,
-            .Eq => ver == self.ver,
-            else => false
+            .Eq => ver == self.ver
         };
     }
 }

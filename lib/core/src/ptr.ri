@@ -2,13 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-extend none : Stringable {
-    [inline]
-    public func to_string(&self) string {
-        return "none";
-    }
-}
-
 func cstr_runes_count(s: [*]uint8, size: usize) usize {
 	(mut l: usize, mut i: usize) := (0, 0);
 	while i < size {

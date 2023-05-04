@@ -4,7 +4,7 @@
 
 #if !_RELEASE_ // skip backtrace in release mode
 
-![compile_c_source("lib/core/thirdparty/libbacktrace/backtrace.c")]
+![compile_c_source("../thirdparty/libbacktrace/backtrace.c")]
 
 import c;
 
@@ -14,8 +14,8 @@ struct BacktraceData {
     mut has_error: bool;
 }
 
-alias BacktraceErrorCB = func (mut_anyptr, ?[*]mut uint8, int32);
-alias BacktraceFullCB = func (mut_anyptr, int32, ?[*]mut uint8, int32, ?[*]mut uint8) int32;
+alias BacktraceErrorCB = func(mut_anyptr, ?[*]mut uint8, int32);
+alias BacktraceFullCB = func(mut_anyptr, int32, ?[*]mut uint8, int32, ?[*]mut uint8) int32;
 
 extern (C) {
     func backtrace_create_state(
@@ -62,6 +62,7 @@ func bt_error_handler(data: mut_anyptr, msg_ptr: ?[*]mut uint8, errnum: int32) {
     unsafe {
         bdata := @cast(*mut BacktraceData, data);
         if !bdata.has_error {
+            bdata.has_error = true;
             console_eprint("   libbacktrace error: ");
             console_eprint(string.from_raw(msg_ptr));
             if errnum > 0 {
@@ -70,7 +71,6 @@ func bt_error_handler(data: mut_anyptr, msg_ptr: ?[*]mut uint8, errnum: int32) {
                 console_eprint(")");
             }
             console_eprintln();
-            bdata.has_error = true;
         }
     }
 }

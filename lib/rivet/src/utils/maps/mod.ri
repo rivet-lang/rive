@@ -4,12 +4,64 @@
 
 // TODO: remove file, use Map![K, V] instead
 
-struct StringArrayOfStrings {
-    key: string;
-    mut value: []string;
+[boxed]
+struct StringUsize {
+    public key: string;
+    public mut value: usize;
 }
 
-struct MapStringArrayOfStringsIterator {
+[boxed]
+public struct MapStringUsize {
+    mut pairs: []mut StringUsize;
+
+    public func set(mut self, key: string, value: usize) {
+        for pair in self.pairs {
+            if pair.key == key {
+                pair.value = value;
+                return; // found
+            }
+        }
+        // new value
+        self.pairs.push(StringUsize(key, value));
+    }
+
+    public func get(self, key: string) ?usize {
+        for pair in self.pairs {
+            if pair.key == key {
+                return pair.value;
+            }
+        }
+        return none;
+    }
+
+    public func delete(mut self, key: string) {
+        for i, pair in self.pairs {
+            if pair.key == key {
+                self.pairs.delete(i);
+                break;
+            }
+        }
+    }
+
+    [inline]
+    public func contains(self, key: string) bool {
+        return self.get(key) !is none;
+    }
+
+    [inline]
+    public func len(self) usize {
+        return self.pairs.len;
+    }
+}
+
+
+[boxed]
+struct StringArrayOfStrings {
+    public key: string;
+    public mut value: []string;
+}
+
+public struct MapStringArrayOfStringsIterator {
     ref: MapStringArrayOfStrings;
     mut idx: usize;
 
@@ -26,7 +78,7 @@ struct MapStringArrayOfStringsIterator {
 }
 
 [boxed]
-struct MapStringArrayOfStrings {
+public struct MapStringArrayOfStrings {
     mut pairs: []mut StringArrayOfStrings;
 
     public func iterator(self) MapStringArrayOfStringsIterator {
@@ -34,7 +86,7 @@ struct MapStringArrayOfStrings {
     }
 
     public func set(mut self, key: string, value: []string) {
-        for &pair in self.pairs {
+        for pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
                 return; // found
@@ -45,7 +97,7 @@ struct MapStringArrayOfStrings {
     }
 
     public func get(self, key: string) ?[]string {
-        for &pair in self.pairs {
+        for pair in self.pairs {
             if pair.key == key {
                 return pair.value;
             }
@@ -54,7 +106,7 @@ struct MapStringArrayOfStrings {
     }
 
     public func delete(mut self, key: string) {
-        for i, &pair in self.pairs {
+        for i, pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
                 break;
@@ -62,13 +114,9 @@ struct MapStringArrayOfStrings {
         }
     }
 
+    [inline]
     public func contains(self, key: string) bool {
-        for &pair in self.pairs {
-            if pair.key == key {
-                return true;
-            }
-        }
-        return false;
+        return self.get(key) !is none;
     }
 
     [inline]
@@ -77,17 +125,18 @@ struct MapStringArrayOfStrings {
     }
 }
 
+[boxed]
 struct StringBool {
-    key: string;
-    mut value: bool;
+    public key: string;
+    public mut value: bool;
 }
 
 [boxed]
-struct MapStringBool {
+public struct MapStringBool {
     mut pairs: []mut StringBool;
 
     public func set(mut self, key: string, value: bool) {
-        for &pair in self.pairs {
+        for pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
                 return; // found
@@ -98,7 +147,7 @@ struct MapStringBool {
     }
 
     public func get(self, key: string) ?bool {
-        for &pair in self.pairs {
+        for pair in self.pairs {
             if pair.key == key {
                 return pair.value;
             }
@@ -107,7 +156,7 @@ struct MapStringBool {
     }
 
     public func delete(mut self, key: string) {
-        for i, &pair in self.pairs {
+        for i, pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
                 break;
@@ -115,13 +164,9 @@ struct MapStringBool {
         }
     }
 
+    [inline]
     public func contains(self, key: string) bool {
-        for &pair in self.pairs {
-            if pair.key == key {
-                return true;
-            }
-        }
-        return false;
+        return self.get(key) !is none;
     }
 
     [inline]

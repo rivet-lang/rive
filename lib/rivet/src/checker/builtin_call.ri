@@ -1,0 +1,112 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../report;
+
+extend Checker {
+    func check_builtin_call(mut self, mut builtin_call: ast.Expr.BuiltinCall) ast.Type {
+        builtin_call.type = if builtin_call.builtin is .Func as b_func {
+            if b_func.is_unsafe and !self.inside_unsafe {
+                report.warn(
+                    "builtin function `{}` should be called inside `unsafe` block".fmt(
+                        b_func.name
+                    ), builtin_call.pos
+                );
+            }
+            b_func_args_len := b_func.args_len();
+            if builtin_call.args.len != b_func_args_len {
+                expr_msg := "expected {} argument(s), found {}".fmt(
+                    b_func_args_len, builtin_call.args.len
+                );
+                if builtin_call.args.len < b_func_args_len {
+                    mut err := report.error_builder(
+                        "too few arguments to builtin function `{}`".fmt(builtin_call.name),
+                        builtin_call.pos
+                    );
+                    err.add_note(expr_msg);
+                    err.emit();
+                } else if builtin_call.args.len > b_func.args.len {
+                    mut err := report.error_builder(
+                        "too many arguments to builtin function `{}`".fmt(builtin_call.name),
+                        builtin_call.pos
+                    );
+                    err.add_note(expr_msg);
+                    err.emit();
+                }
+            } else {
+                for i, &arg in builtin_call.args {
+                    arg_info := b_func.args[i];
+                    arg.type = self.check_expr(arg.expr);
+                    if arg_info.is_mut {
+                        self.check_expr_is_mut(arg.expr);
+                    }
+                    if !arg_info.is_any {
+                        self.check_types(arg.type, arg_info.type) catch |err| {
+                            mut err2 := report.error_builder(err.to_string(), arg.pos);
+                            err2.add_note(
+                                "in argument `{}` of builtin function `{}`", arg_info.name,
+                                b_func.name
+                            );
+                            err2.emit();
+                        };
+                    }
+                }
+            }
+            mut return_type := b_func.type;
+            for check in b_func.checks {
+                switch check is {
+                    .ArgumentTypeEqualToArgumentType as at => {
+                        arg1 := builtin_call.args[at.arg1_idx];
+                        arg2 := builtin_call.args[at.arg2_idx];
+                        if arg2.type != arg1.type {
+                            mut err2 := report.error_builder(
+                                "expected type `{}`, found `{}`".fmt(arg2.type, arg1.type),
+                                arg1.pos
+                            );
+                            err2.add_note(
+                                "in argument `{}` of builtin function `{}`", arg2.name,
+                                b_func.name
+                            );
+                            err2.emit();
+                        }
+                    },
+                    .ArgumentTypeShouldBe as ats => {
+                        arg := builtin_call.args[ats.arg_idx];
+                        switch ats.type {
+                            .Enum => if ts := arg.type.symbol(); ts.info !is .Enum {
+                                report.error(
+                                    "expected `enum` type, found `{}`".fmt(ts.info),
+                                    arg.pos
+                                );
+                            },
+                            .Pointer if !arg.type.is_pointer() => report.error(
+                                "expected pointer type, found {}".fmt(arg.type), arg.pos
+                            ),
+                            .Reference if arg.type !is .Reference => report.error(
+                                "expected reference type, found {}".fmt(arg.type), arg.pos
+                            ),
+                            .Integer if !self.table.is_number(arg.type) => report.error(
+                                "expected integer type, found {}".fmt(arg.type), arg.pos
+                            )
+                        }
+                    },
+                    .ReturnTypeEqualToArgumentType as arg_idx =>
+                        return_type = builtin_call.args[arg_idx].type
+                }
+            }
+            switch b_func.name {
+                "vec" if builtin_call.args[0].expr is .Type as vec_t =>
+                    return_type = .Basic(self.table.universe.add_or_get_vec(
+                        vec_t, builtin_call.vec_is_mut
+                    )),
+                else => {}
+            }
+            return_type
+        } else {
+            .Void()
+        };
+        return builtin_call.type;
+    }
+}

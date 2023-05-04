@@ -1,0 +1,464 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../report;
+
+extend Checker {
+    func check_call(mut self, mut call_expr: ast.Expr.Call) ast.Type {
+        call_expr.type = .Void();
+        old_inside_call_expr := self.inside_call_expr;
+        self.inside_call_expr = true;
+        defer self.inside_call_expr = old_inside_call_expr;
+
+        mut left := call_expr.left;
+        inside_parens := if left is .Paren as paren
+            and paren.expr is .Selector as paren_selector and !paren_selector.is_path {
+            left = paren.expr;
+            true
+        } else {
+            false
+        };
+
+        switch left is {
+            .SelfTy as self_ty => self.check_ctor_call(self_ty.sym, call_expr),
+            .Ident as ident if (ident.is_sym or ident.is_obj) => switch ident.sym is {
+                ast.TypeSym as mut type_sym if type_sym.info is .Trait
+                    or type_sym.info is .Struct or type_sym.info is .String
+                    or type_sym.info is .Enum => self.check_ctor_call(type_sym, call_expr),
+                ast.Func as func_ => {
+                    call_expr.func_ = func_;
+                    if func_.is_main {
+                        report.error("cannot call to `main` function", ident.pos);
+                    } else {
+                        self.check_func_call(func_, call_expr);
+                    }
+                },
+                else => {
+                    ident_type := self.check_expr(left);
+                    if ident_type is .Func as i_func {
+                        call_expr.is_closure = true;
+                        self.check_func_call(i_func.symbol(), call_expr);
+                    } else {
+                        report.error(
+                            "expected function or method to call, found {}".fmt(
+                                ident.sym.type_of()
+                            ), ident.pos
+                        );
+                    }
+                }
+            },
+            .Selector as selector => if selector.is_path {
+                switch selector.sym is {
+                    ast.TypeSym as mut s_type_sym if s_type_sym.info is .Trait
+                        or s_type_sym.info is .Struct or s_type_sym.info is .String
+                        or s_type_sym.info is .Enum => self.check_ctor_call(
+                        s_type_sym, call_expr
+                    ),
+                    ast.Func as s_func_ => {
+                        call_expr.func_ = s_func_;
+                        self.check_func_call(s_func_, call_expr);
+                    },
+                    else => {
+                        selector_type := self.check_expr(left);
+                        if selector_type is .Func as s_func {
+                            call_expr.is_closure = true;
+                            self.check_func_call(s_func.symbol(), call_expr);
+                        } else {
+                            report.error(
+                                "expected function or method to call, found {}".fmt(
+                                    selector.sym.type_of()
+                                ), selector.pos
+                            );
+                        }
+                    }
+                }
+            } else {
+                // call methods
+                selector.left_type = self.check_expr(selector.left);
+                if selector.left_type is .Option {
+                    mut err := report.error_builder(
+                        "option value cannot be called directly",
+                        selector.left.position()
+                    );
+                    err.add_help("use the option-check syntax: `foo?.method()`");
+                    err.add_help("or use `??`: `(foo ?? 5).method()`");
+                    err.emit();
+                    return .Void();
+                } else if selector.left_type is .Pointer {
+                    mut err := report.error_builder(
+                        "cannot use a pointer value as receiver", selector.left.position()
+                    );
+                    err.add_help("consider dereferencing this pointer");
+                    err.emit();
+                    return .Void();
+                }
+                if left_sym := selector.left_type.symbol() {
+                    if method := left_sym.find_method(selector.field_name) {
+                        self.check_func_call(method, call_expr);
+                    } else if field := left_sym.lookup_field(selector.field_name) {
+                        if field.type is .Func as f_func {
+                            if inside_parens {
+                                call_expr.is_closure = true;
+                                selector.field_type = field.type;
+                                self.check_func_call(f_func.symbol(), call_expr);
+                            } else {
+                                mut err := report.error_builder(
+                                    "type `{}` has no method `{}`".fmt(
+                                        left_sym.name, selector.field_name
+                                    ), selector.field_pos
+                                );
+                                err.add_help(
+                                    "to call the function stored in `{}`, "
+                                    "surround the field access with parentheses"
+                                        .fmt(selector.field_name)
+                                );
+                                err.emit();
+                            }
+                        } else {
+                            report.error(
+                                "field `{}` of type `{}` is not a function value".fmt(
+                                    selector.field_name, left_sym.name
+                                ), selector.field_pos
+                            );
+                        }
+                    } else {
+                        report.error(
+                            "type `{}` has no method `{}`".fmt(
+                                left_sym.name, selector.field_name
+                            ), selector.field_pos
+                        );
+                    }
+                } else {
+                    report.error(
+                        "type `{}` has no method `{}`".fmt(
+                            selector.left_type, selector.field_name
+                        ), selector.field_pos
+                    );
+                }
+            },
+            .EnumLiteral as enum_lit => {
+                enum_lit.is_instance = true;
+                _ = self.check_expr(left);
+                self.check_ctor_call(enum_lit.sym, call_expr);
+            },
+            else => report.error("invalid expression used in call expression", left.position())
+        }
+
+        // result checking
+        if call_expr.has_err_handler() {
+            if call_expr.type is .Result as result_t {
+                if call_expr.err_handler.is_propagate {
+                    if !(self.cur_fn.is_main or self.inside_test or self.inside_var_decl
+                        or self.cur_fn.ret_type is .Result) {
+                        mut err := report.error_builder(
+                            "cannot propagate the result value", call_expr.err_handler.pos
+                        );
+                        err.add_note(
+                            "to propagate the result, `{}` must return an result type",
+                            self.cur_fn.name
+                        );
+                        err.emit();
+                    }
+                } else {
+                    self.check_types(
+                        self.check_expr(call_expr.err_handler.expr), result_t.inner
+                    ) catch |err| {
+                        report.error(err.to_string(), call_expr.err_handler.expr.position());
+                    };
+                }
+                call_expr.type = result_t.inner;
+            } else {
+                report.error(
+                    "{} `{}` does not returns a result value".fmt(
+                        call_expr.func_.type_of(), call_expr.func_.name
+                    ), call_expr.err_handler.pos
+                );
+            }
+        } else if call_expr.type is .Result and !self.inside_guard_expr {
+            mut err := report.error_builder(
+                "{} `{}` returns a result".fmt(
+                    call_expr.func_.type_of(), call_expr.func_.name
+                ), call_expr.pos
+            );
+            err.add_note("should handle this with `catch` or propagate with `!`");
+            err.emit();
+        }
+
+        return call_expr.type;
+    }
+
+    func check_ctor_call(mut self, mut type_sym: ast.TypeSym, mut call_expr: ast.Expr.Call) {
+        call_expr.is_constructor = true;
+        call_expr.type = if type_sym.info is .Struct as struct_info and struct_info.is_enum_variant {
+            call_expr.is_enum_variant = true;
+            call_expr.enum_variant_sym = type_sym;
+            .Basic(struct_info.parent)
+        } else {
+            .Basic(type_sym, pos: call_expr.pos)
+        };
+        switch type_sym.info is {
+            .Enum as enum_info => {
+                variant := if call_expr.left is .Selector as selector {
+                    @cast(ast.TypeInfo.Enum, @cast(ast.TypeSym, selector.left_sym).info)
+                        .get_variant(selector.field_name)?
+                } else {
+                    enum_info.get_variant(@cast(ast.Expr.EnumLiteral, call_expr.left).value)?
+                };
+                has_args := !call_expr.args.is_empty();
+                if !enum_info.is_boxed {
+                    report.error(
+                        "`{}` not expects value".fmt(call_expr.left),
+                        call_expr.left.position()
+                    );
+                } else if has_args {
+                    if variant.has_fields {
+                        self.check_ctor_call(variant.type.symbol()?, call_expr);
+                    } else if variant.has_type {
+                        old_expected_type := self.expected_type;
+                        self.expected_type = variant.type;
+                        arg0 := call_expr.args[0];
+                        self.check_types(
+                            self.check_expr(arg0.expr), variant.type
+                        ) catch |err| {
+                            report.error(err.to_string(), arg0.expr.position());
+                        };
+                        self.expected_type = old_expected_type;
+                    } else {
+                        report.error(
+                            "`{}` expects a value".fmt(call_expr.left), call_expr.pos
+                        );
+                    }
+                } else if variant.has_type and !(
+                    variant.has_fields or (
+                        call_expr.left is .EnumLiteral as enum_lit and enum_lit.from_is_cmp
+                    )
+                ) {
+                    report.error("`{}` expects a value".fmt(call_expr.left), call_expr.pos);
+                } else if variant.has_fields {
+                    self.check_ctor_call(variant.type.symbol()?, call_expr);
+                }
+                if call_expr.has_spread_expr and !variant.has_fields {
+                    report.error(
+                        "cannot use spread expression with enum constructor", call_expr.pos
+                    );
+                }
+            },
+            .Trait as mut trait_info => {
+                if call_expr.has_spread_expr {
+                    report.error(
+                        "cannot use spread expression with trait constructor", call_expr.pos
+                    );
+                } else if call_expr.args.len == 1 {
+                    arg0 := call_expr.args[0];
+                    value_t := self.table.comptime_number_to_type(self.check_expr(arg0.expr));
+                    if value_t.symbol()? in trait_info.implements {
+                        trait_info.mark_has_objects();
+                    } else {
+                        report.error(
+                            "type `{}` does not implement trait `{}`".fmt(
+                                value_t, type_sym.name
+                            ), arg0.pos
+                        );
+                    }
+                } else {
+                    report.error(
+                        "expected 1 argument, found {}".fmt(call_expr.args.len),
+                        call_expr.pos
+                    );
+                }
+            },
+            else => {
+                type_fields := type_sym.full_fields();
+                if !call_expr.has_named_args() {
+                    expr_args_len := call_expr.args.len;
+                    if expr_args_len > type_fields.len {
+                        mut err := report.error_builder(
+                            "too many arguments to {} `{}`".fmt(
+                                type_sym.type_of(), type_sym.name
+                            ), call_expr.pos
+                        );
+                        err.add_note(
+                            "expected {} argument(s), found {}", type_fields.len,
+                            expr_args_len
+                        );
+                        err.emit();
+                        return;
+                    }
+                }
+                for i, &arg in call_expr.args {
+                    mut field := ast.Field();
+                    if arg.is_named {
+                        if t_field := type_sym.lookup_field(arg.name) {
+                            field = t_field;
+                        } else {
+                            report.error(
+                                "type `{}` has no field `{}`".fmt(type_sym.name, arg.name),
+                                arg.pos
+                            );
+                            continue;
+                        }
+                    } else {
+                        field = type_fields[i];
+                    }
+                    arg.type = field.type;
+                    old_expected_type := self.expected_type;
+                    self.expected_type = field.type;
+                    arg_t := self.check_expr(arg.expr);
+                    self.expected_type = old_expected_type;
+                    self.check_types(arg_t, field.type) catch |err| {
+                        report.error(err.to_string(), arg.pos);
+                    };
+                }
+                if call_expr.has_spread_expr {
+                    spread_expr_t := self.check_expr(call_expr.spread_expr);
+                    if spread_expr_t != call_expr.type {
+                        mut err := report.error_builder(
+                            "expected type `{}`, found `{}`".fmt(
+                                call_expr.type, spread_expr_t
+                            ), call_expr.spread_expr.position()
+                        );
+                        err.add_note("in spread expression of constructor");
+                        err.emit();
+                    }
+                }
+            }
+        }
+    }
+
+    func check_func_call(mut self, func_: ast.Func, mut call_expr: ast.Expr.Call) {
+        call_expr.type = func_.ret_type;
+        kind := func_.kind();
+
+        if func_.is_unsafe and !self.inside_unsafe {
+            report.warn(
+                "{} `{}` should be called inside `unsafe` block".fmt(kind, func_.name),
+                call_expr.pos
+            );
+        }
+
+        if func_.is_method and func_.self_is_mut {
+            self.check_expr_is_mut(@cast(ast.Expr.Selector, call_expr.left).left);
+        }
+
+        mut func_args_len := func_.args.len;
+        if func_.is_variadic and !func_.is_extern {
+            func_args_len -= 1;
+        }
+
+        // check named arguments
+        mut error := false;
+        for arg in call_expr.args {
+            if !arg.is_named {
+                continue;
+            }
+            mut found := false;
+            for arg_func in func_.args {
+                if arg_func.name == arg.name {
+                    found = true;
+                    if !arg_func.has_def_expr {
+                        report.error("argument `{}` is not optional".fmt(arg.name), arg.pos);
+                    }
+                }
+            }
+            if !found {
+                error = true;
+                report.error(
+                    "{} `{}` does not have an argument called `{}`".fmt(
+                        kind, func_.name, arg.name
+                    ), arg.pos
+                );
+            }
+        }
+        if error {
+            return;
+        }
+
+        // check default expressions
+        if func_.has_named_args {
+            args_len := call_expr.pure_args_count();
+            mut args := call_expr.args[..args_len];
+            mut i: usize := args_len;
+            while i < func_args_len : i += 1 {
+                arg := func_.args[i];
+                if arg.has_def_expr {
+                    args.push(if carg := call_expr.get_named_arg(arg.name) {
+                        ast.CallArg(
+                            expr: carg.expr,
+                            pos: carg.expr.position()
+                        )
+                    } else {
+                        ast.CallArg(
+                            expr: arg.def_expr,
+                            pos: arg.def_expr.position()
+                        )
+                    });
+                }
+            }
+            call_expr.args = args;
+        }
+
+        expr_args_len := call_expr.pure_args_count();
+        if expr_args_len != func_args_len {
+            expr_msg := "expected {} argument(s), found {}".fmt(func_args_len, expr_args_len);
+            if expr_args_len < func_args_len {
+                mut err := report.error_builder(
+                    "too few arguments to {} `{}`".fmt(kind, func_.name), call_expr.pos
+                );
+                err.add_note(expr_msg);
+                err.emit();
+            } else if !func_.is_variadic {
+                mut err := report.error_builder(
+                    "too many arguments to {} `{}`".fmt(kind, func_.name), call_expr.pos
+                );
+                err.add_note(expr_msg);
+                err.emit();
+            }
+        }
+
+        old_expected_type := self.expected_type;
+        for i, &arg in call_expr.args {
+            arg_fn := if func_.is_variadic and i >= func_.args.len - 1 {
+                func_.args[func_.args.len - 1]
+            } else {
+                func_.args[i]
+            };
+
+            self.expected_type = if arg_fn.type is .Variadic as variadic {
+                variadic.inner
+            } else {
+                arg_fn.type
+            };
+            arg.type = self.check_expr(arg.expr);
+            self.expected_type = old_expected_type;
+
+            if arg_fn.is_mut and !(arg_fn.type.is_pointer() or arg_fn.type is .Reference)
+                and !arg_fn.type.symbol()?.is_primitive() {
+                self.check_expr_is_mut(arg.expr);
+            }
+
+            if !(func_.is_extern and func_.is_variadic and i >= func_.args.len) {
+                self.check_argument_type(
+                    arg.type, arg_fn.type, arg.pos, arg_fn.name, kind, func_.name
+                );
+            }
+        }
+        if call_expr.has_spread_expr {
+            spread_expr_t := self.check_expr(call_expr.spread_expr);
+            spread_expr_sym := spread_expr_t.symbol()?;
+            if spread_expr_sym.info is .Vector {
+                report.error(
+                    "spread operator can only be used with vectors",
+                    call_expr.spread_expr.position()
+                );
+            } else {
+                last_arg_type := func_.args[func_.args.len - 1].type;
+                vec_t := ast.Type.Vector(last_arg_type, sym: last_arg_type.symbol()?);
+                self.check_types(spread_expr_t, vec_t) catch |err| {
+                    report.error(err.to_string(), call_expr.spread_expr.position());
+                };
+            }
+        }
+    }
+}

@@ -39,85 +39,7 @@ public struct Register {
             old_sym := self.sym;
             self.sym.scope.owner = self.sym;
             switch decl is {
-                .Import as import_decl => {
-                     if import_decl.glob {
-                        // `import { * } from module/path`
-                        for sym in import_decl.info.mod.scope.syms {
-                            if !sym.is_public {
-                                continue;
-                            }
-                            if self.check_imported_symbol(sym, import_decl.pos, true) {
-                                self.source_file.imported_symbols.add(
-                                    sym.name, sym, import_decl.pos, true
-                                );
-                            }
-                        }
-                    } else if import_decl.import_list.is_empty() {
-                        // `import module/path`
-                        if self.check_imported_symbol(import_decl.info.mod, import_decl.pos, true) {
-                            if import_decl.is_public {
-                                self.sym.scope.add(ast.SymRef(
-                                    is_public: true,
-                                    name: import_decl.alias_name,
-                                    ref: import_decl.info.mod,
-                                    ref_resolved: true
-                                )) catch |err| report.error(
-                                    err.to_string(), import_decl.pos
-                                );
-                            } else {
-                                self.source_file.imported_symbols.add(
-                                    import_decl.alias_name, import_decl.info.mod,
-                                    import_decl.pos
-                                );
-                            }
-                        }
-                    } else {
-                        // `import { A, B } from module/path`
-                        for import_info in import_decl.import_list {
-                            if import_info.name == "self" {
-                                if import_decl.is_public {
-                                    self.sym.scope.add(ast.SymRef(
-                                        is_public: true,
-                                        name: import_info.alias_name,
-                                        ref: import_decl.info.mod,
-                                        ref_resolved: true
-                                    )) catch |err| report.error(
-                                        err.to_string(), import_info.pos
-                                    );
-                                } else {
-                                    self.source_file.imported_symbols.add(
-                                        import_decl.alias_name, import_decl.info.mod,
-                                        import_decl.pos
-                                    );
-                                }
-                            } else if sym := import_decl.info.mod.scope.find(import_info.name) {
-                                self.check_vis(sym, import_info.pos);
-                                if self.check_imported_symbol(sym, import_info.pos, true) {
-                                    if import_decl.is_public {
-                                        self.sym.scope.add(ast.SymRef(
-                                            is_public: true,
-                                            name: import_info.alias_name,
-                                            ref: sym,
-                                            ref_resolved: true
-                                        )) catch |err| report.error(
-                                            err.to_string(), import_info.pos
-                                        );
-                                    } else {
-                                        self.source_file.imported_symbols.add(
-                                            import_info.alias_name, sym, import_info.pos
-                                        );
-                                    }
-                                }
-                            } else {
-                                report.error(
-                                    "could not find `{}` in module `{}`".fmt(
-                                        import_info.name, import_decl.info.mod.name
-                                    ), import_info.pos
-                                );
-                            }
-                        }
-                    }
-                },
+                .Import as import_decl => self.import_decl(import_decl),
                 .Extern as extern_decl => {
                     self.abi = extern_decl.abi;
                     self.walk_decls(extern_decl.decls);
@@ -125,6 +47,7 @@ public struct Register {
                 .Alias as alias_decl => alias_decl.sym = self.add_sym(
                     if alias_decl.is_typealias {
                         ast.TypeSym(
+                            parent: self.sym,
                             is_public: alias_decl.is_public,
                             name: alias_decl.name,
                             info: .Alias(alias_decl.parent_type)
@@ -132,6 +55,7 @@ public struct Register {
                     } else {
                         // updated later
                         ast.SymRef(
+                            parent: self.sym,
                             is_public: alias_decl.is_public,
                             name: alias_decl.name,
                             ref_expr: alias_decl.parent
@@ -141,14 +65,15 @@ public struct Register {
                 .Trait as trait_decl => {
                     trait_decl.sym = self.add_sym(
                         ast.TypeSym(
+                            parent: self.sym,
                             is_public: trait_decl.is_public,
                             name: trait_decl.name,
                             info: .Trait()
                         ), trait_decl.pos
                     );
                     if self.is_core_mod and trait_decl.name == "Error" and !self.table.error_sym_is_set {
-                        self.table.error_sym = @cast(ast.TypeSym, trait_decl.sym);
                         self.table.error_sym_is_set = true;
+                        self.table.error_sym = @cast(ast.TypeSym, trait_decl.sym);
                     }
                     self.sym = trait_decl.sym;
                     self.walk_decls(trait_decl.decls);
@@ -158,6 +83,7 @@ public struct Register {
                         @cast(ast.Type.Basic, self.table.string_t).sym
                     } else {
                         self.add_sym(ast.TypeSym(
+                            parent: self.sym,
                             is_public: struct_decl.is_public,
                             name: struct_decl.name,
                             info: .Struct(
@@ -179,6 +105,7 @@ public struct Register {
                     );
                     enum_decl.sym = self.add_sym(
                         ast.TypeSym(
+                            parent: self.sym,
                             is_public: enum_decl.is_public,
                             name: enum_decl.name,
                             info: info
@@ -195,9 +122,13 @@ public struct Register {
                         fields := ast.filter_field_decl(variant.decls);
                         if !variant.decls.is_empty() {
                             variant_sym := ast.TypeSym(
+                                parent: enum_decl.sym,
                                 is_public: enum_decl.is_public,
                                 name: variant.name,
-                                info: .Struct(false, true, true)
+                                info: .Struct(
+                                    false, true, true,
+                                    parent: @cast(ast.TypeSym, enum_decl.sym)
+                                )
                             );
                             enum_decl.sym.scope.add(variant_sym) catch |err| {
                                 report.error(err.to_string(), variant.pos)
@@ -241,8 +172,9 @@ public struct Register {
                     ));
                 },
                 .Const as const_decl => const_decl.sym = self.add_sym(ast.Const(
-                    abi: self.abi,
+                    parent: self.sym,
                     is_public: const_decl.is_public,
+                    abi: self.abi,
                     name: const_decl.name,
                     expr: const_decl.expr,
                     type: const_decl.type
@@ -250,11 +182,13 @@ public struct Register {
                 .Var as var_decl => {
                     for left in var_decl.lefts {
                         left.sym = ast.Var(
+                            parent: self.sym,
                             is_public: var_decl.is_public,
-                            is_mut: left.is_mut,
                             is_extern: var_decl.is_extern,
+                            is_mut: left.is_mut,
                             abi: self.abi,
                             name: left.name,
+                            type: left.type,
                             pos: left.pos
                         );
                         self.source_file.mod.scope.add(left.sym) catch |err| {
@@ -269,12 +203,15 @@ public struct Register {
                                 type_sym
                             } else {
                                 self.add_sym(ast.TypeSym(
+                                    parent: self.sym,
                                     name: ident.name,
                                     info: .Placeholder()
                                 ), ident.pos)
                             };
                             ident.found = true;
                             ident.sym = self.sym;
+                            basic_type.is_unresolved = false;
+                            basic_type.sym = @cast(ast.TypeSym, self.sym);
                         } else {
                             report.error(
                                 "invalid type `{}` to extend".fmt(extend_decl.type),
@@ -293,12 +230,14 @@ public struct Register {
                     );
                 },
                 .Func as func_decl => func_decl.sym = self.add_sym(ast.Func(
+                    parent: self.sym,
                     abi: self.abi,
                     is_public: func_decl.is_public,
                     is_extern: func_decl.is_extern,
                     is_unsafe: func_decl.is_unsafe,
                     is_method: func_decl.is_method,
                     is_variadic: func_decl.is_variadic,
+                    is_main: func_decl.is_main,
                     name: func_decl.name,
                     args: func_decl.args,
                     has_named_args: func_decl.has_named_args,
@@ -307,23 +246,27 @@ public struct Register {
                     self_is_mut: func_decl.self_is_mut,
                     self_is_ref: func_decl.self_is_ref
                 ), func_decl.pos),
-                .Destructor as dtor_decl => dtor_decl.sym = self.add_sym(ast.Func(
-                    abi: self.abi,
-                    is_unsafe: true,
-                    is_method: true,
-                    name: "_dtor_",
-                    args: [
-                        ast.Arg(
-                            name: "self",
-                            is_mut: dtor_decl.self_is_mut,
-                            type: .Basic(@cast(ast.TypeSym, self.sym)),
-                            pos: dtor_decl.pos
-                        )
-                    ],
-                    ret_type: .Void(),
-                    has_body: true,
-                    self_is_mut: dtor_decl.self_is_mut
-                ), dtor_decl.pos),
+                .Destructor as dtor_decl => {
+                    dtor_decl.self_type = .Basic(@cast(ast.TypeSym, self.sym));
+                    dtor_decl.sym = self.add_sym(ast.Func(
+                        parent: self.sym,
+                        abi: self.abi,
+                        is_unsafe: true,
+                        is_method: true,
+                        name: "_dtor_",
+                        args: [
+                            ast.Arg(
+                                name: "self",
+                                is_mut: dtor_decl.self_is_mut,
+                                type: dtor_decl.self_type,
+                                pos: dtor_decl.pos
+                            )
+                        ],
+                        ret_type: .Void(),
+                        has_body: true,
+                        self_is_mut: dtor_decl.self_is_mut
+                    ), dtor_decl.pos);
+                },
                 else => {}
             }
             self.abi = old_abi;
@@ -331,38 +274,113 @@ public struct Register {
         }
     }
 
+    func import_decl(mut self, import_decl: ast.Decl.Import) {
+        if import_decl.glob {
+            // `import { * } from module/path`
+            for sym in import_decl.info.mod.scope.syms {
+                if !sym.is_public {
+                    continue;
+                }
+                if self.check_imported_symbol(sym.name, import_decl.pos, true) {
+                    self.source_file.imported_symbols.add(
+                        sym.name, sym, import_decl.pos, true
+                    );
+                }
+            }
+        } else if import_decl.import_list.is_empty() {
+            // `import module/path`
+            if self.check_imported_symbol(import_decl.alias_name, import_decl.pos, true) {
+                if import_decl.is_public {
+                    self.sym.scope.add(ast.SymRef(
+                        is_public: true,
+                        name: import_decl.alias_name,
+                        ref: import_decl.info.mod,
+                        ref_resolved: true
+                    )) catch |err| report.error(err.to_string(), import_decl.pos);
+                } else {
+                    self.source_file.imported_symbols.add(
+                        import_decl.alias_name, import_decl.info.mod,
+                        import_decl.pos
+                    );
+                }
+            }
+        } else {
+            // `import { A, B } from module/path`
+            for import_info in import_decl.import_list {
+                if import_info.name == "self" {
+                    if import_decl.is_public {
+                        self.sym.scope.add(ast.SymRef(
+                            is_public: true,
+                            name: import_info.alias_name,
+                            ref: import_decl.info.mod,
+                            ref_resolved: true
+                        )) catch |err| report.error(err.to_string(), import_info.pos);
+                    } else {
+                        self.source_file.imported_symbols.add(
+                            import_decl.alias_name, import_decl.info.mod,
+                            import_decl.pos
+                        );
+                    }
+                } else if sym := import_decl.info.mod.scope.find(import_info.name) {
+                    self.check_vis(sym, import_info.pos);
+                    if self.check_imported_symbol(sym.name, import_info.pos, true) {
+                        if import_decl.is_public {
+                            self.sym.scope.add(ast.SymRef(
+                                is_public: true,
+                                name: import_info.alias_name,
+                                ref: sym,
+                                ref_resolved: true
+                            )) catch |err| report.error(err.to_string(), import_info.pos);
+                        } else {
+                            self.source_file.imported_symbols.add(
+                                import_info.alias_name, sym, import_info.pos
+                            );
+                        }
+                    }
+                } else {
+                    report.error(
+                        "could not find `{}` in module `{}`".fmt(
+                            import_info.name, import_decl.info.mod.name
+                        ), import_info.pos
+                    );
+                }
+            }
+        }
+    }
+
     func add_sym(mut self, sym: ast.Sym, pos: token.Pos) ast.Sym {
-        if self.check_imported_symbol(sym, pos, false) {
-            self.sym.scope.add(sym) catch |err| {
+        if self.check_imported_symbol(sym.name, pos, false) {
+            return self.sym.scope.add_or_get(sym) catch |err| {
                 report.error(err.to_string(), pos);
+                sym
             };
         }
         return sym;
     }
 
-    func check_imported_symbol(self, sym: ast.Sym, pos: token.Pos, is_import: bool) bool {
-        if self.source_file.imported_symbols.exists(sym.name) {
+    func check_imported_symbol(self, name: string, pos: token.Pos, is_import: bool) bool {
+        if self.source_file.imported_symbols.exists(name) {
             if is_import {
                 mut err := report.error_builder(
-                    "another symbol with the name `{}` is already imported".fmt(sym.name), pos
+                    "another symbol with the name `{}` is already imported".fmt(name), pos
                 );
-                err.add_help("you can use `as` to change the name of the import");
+                err.add_help("change the name of the import with `as` (`x as y`)");
                 err.emit();
             } else {
                 mut err := report.error_builder(
                     "duplicate symbol `{}` in {} `{}`".fmt(
-                        sym.name, self.sym.type_of(), self.sym.name
+                        name, self.sym.type_of(), self.sym.name
                     ), pos
                 );
-                err.add_note("a imported symbol with that name exists", sym.name);
+                err.add_note("a imported symbol with that name exists", name);
                 err.emit();
             }
             return false;
-        } else if is_import and self.source_file.mod.scope.exists(sym.name) {
+        } else if is_import and self.source_file.mod.scope.exists(name) {
             mut err := report.error_builder(
-                "another symbol with the name `{}` already exists".fmt(sym.name), pos
+                "another symbol with the name `{}` already exists".fmt(name), pos
             );
-            err.add_help("you can use `as` to change the name of the import");
+            err.add_help("change the name of the import with `as` (`x as y`)");
             err.emit();
             return false;
         }

@@ -70,11 +70,13 @@ extend Resolver {
                     res1 = self.resolve_type(arg.type);
                 }
                 res1 = self.resolve_type(func_t.ret_type);
+                func_t.sym = self.table.universe.add_or_get_func(func_t.symbol());
+                func_t.has_sym = true;
                 res1
             },
             .Basic as basic => if basic.is_unresolved {
                 switch basic.expr is {
-                    .SelfTy as self_ty => if self.self_sym_is_set {
+                    .SelfTy => if self.self_sym_is_set {
                         basic.is_unresolved = false;
                         basic.sym = self.self_sym;
                         true

@@ -502,9 +502,8 @@ class TraitInfo:
 
     def indexof(self, sym):
         for idx, s in enumerate(self.implements):
-            if sym == s:
+            if s.id == sym.id:
                 return idx
-        assert False, (sym.name, sym.id) # unreachable
         return 0
 
     def implement(self, implementor):

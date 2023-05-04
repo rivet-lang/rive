@@ -47,7 +47,8 @@ extend Checker {
             },
             .Expr as mut expr => self.check_expr_evaluated_but_not_used(
                 self.check_expr(expr), expr.position()
-            )
+            ),
+            else => {}
         }
     }
 
@@ -70,17 +71,17 @@ extend Checker {
                 }
             }
             if for_stmt.has_index {
-                for_stmt.scope.update_type(for_stmt.index.name, self.table.usize_t);
+                for_stmt.index.sym.type = self.table.usize_t;
             }
             if for_stmt.values.len == 1 {
                 value0 := for_stmt.values[0];
-                for_stmt.scope.update_type(value0.name, elem_type);
-                for_stmt.scope.update_is_hidden_ref(value0.name, value0.is_mut);
+                value0.sym.type = elem_type;
+                value0.sym.is_hidden_ref = value0.is_mut;
             } else {
                 types := @cast(ast.TypeInfo.Tuple, elem_type.symbol()?.info).types;
                 for i, value in for_stmt.values {
-                    for_stmt.scope.update_type(value.name, types[i]);
-                    for_stmt.scope.update_is_hidden_ref(value.name, value.is_mut);
+                    value.sym.type = types[i];
+                    value.sym.is_hidden_ref = value.is_mut;
                 }
             }
             self.check_stmt(for_stmt.stmt);

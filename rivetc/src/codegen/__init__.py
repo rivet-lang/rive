@@ -291,7 +291,10 @@ class Codegen:
             elif annotation.name == "compile_c_source":
                 if not os.path.exists(mod_folder):
                     os.mkdir(mod_folder)
+                old_wd = os.getcwd()
+                os.chdir(os.path.dirname(os.path.realpath(annotation.pos.file)))
                 cfile = os.path.realpath(annotation.args[0].expr.lit)
+                os.chdir(old_wd)
                 objfile = os.path.join(
                     mod_folder,
                     f"{os.path.basename(cfile)}.{self.comp.prefs.get_obj_postfix()}.o"
@@ -1073,7 +1076,7 @@ class Codegen:
                     else:
                         self.cur_fn.store(left, value)
                 else:
-                    assert False
+                    assert False, expr
         elif isinstance(expr, ast.Block):
             self.gen_stmts(expr.stmts)
             if expr.is_expr:
@@ -1156,7 +1159,8 @@ class Codegen:
                     else:
                         x = None
                     return self.boxed_enum_value(
-                        typ_sym, expr.left.field_name, x, custom_tmp = custom_tmp
+                        typ_sym, expr.left.field_name, x,
+                        custom_tmp = custom_tmp
                     )
                 if custom_tmp:
                     tmp = custom_tmp
@@ -2007,8 +2011,11 @@ class Codegen:
             tmp = self.cur_fn.local_name()
             typ_sym = expr_left_typ.symbol()
             if expr.op.is_overloadable_op() and (
-                typ_sym.kind in (TypeKind.Array, TypeKind.Vec, TypeKind.String, TypeKind.Struct)
-                or (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed_enum)
+                typ_sym.kind in (
+                    TypeKind.Array, TypeKind.Vec, TypeKind.String,
+                    TypeKind.Struct
+                ) or
+                (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed_enum)
             ) and not isinstance(expr_left_typ, type.Ptr):
                 if typ_sym.kind == TypeKind.Array:
                     if expr.op == Kind.Eq:
@@ -2098,20 +2105,26 @@ class Codegen:
                         next_branch = else_label
                     else:
                         next_branch = self.cur_fn.local_name()
-                    if isinstance(cond, ir.IntLit) and cond.lit == "1":
+                    if isinstance(cond, ir.IntLit) and cond.lit == "0":
                         gen_branch = False
                     else:
-                        self.cur_fn.add_cond_br(cond, branch_label, next_branch)
-                        self.cur_fn.add_label(branch_label)
-                        if isinstance(
-                            b.cond, ast.GuardExpr
-                        ) and b.cond.has_cond:
-                            gcond = self.gen_expr_with_cast(
-                                self.comp.bool_t, b.cond.cond
+                        if isinstance(b.cond, ast.GuardExpr):
+                            self.cur_fn.add_cond_single_br(
+                                ir.Inst(ir.InstKind.BooleanNot, [cond]),
+                                next_branch
                             )
+                            if b.cond.has_cond:
+                                self.cur_fn.add_cond_single_br(
+                                    ir.Inst(
+                                        ir.InstKind.BooleanNot,
+                                        [self.gen_expr(b.cond.cond)]
+                                    ), next_branch
+                                )
+                        else:
                             self.cur_fn.add_cond_br(
-                                gcond, branch_label, next_branch
+                                cond, branch_label, next_branch
                             )
+                        self.cur_fn.add_label(branch_label)
                 if is_branch_void_value:
                     self.gen_expr_with_cast(
                         expr.expected_typ, b.expr
@@ -2147,11 +2160,8 @@ class Codegen:
                 if expr.expr.has_cond:
                     self.cur_fn.add_cond_single_br(
                         ir.Inst(
-                            ir.InstKind.BooleanNot, [
-                                self.gen_expr_with_cast(
-                                    self.comp.bool_t, expr.expr.cond
-                                )
-                            ]
+                            ir.InstKind.BooleanNot,
+                            [self.gen_expr(expr.expr.cond)]
                         ), exit_switch
                     )
                 switch_expr = ir.Ident(
@@ -2346,6 +2356,24 @@ class Codegen:
                 self.gen_defer_stmts()
                 self.cur_fn.add_ret_void()
             elif expr.has_expr:
+                if wrap_result:
+                    t_sym = expr.expr.typ.symbol()
+                    if t_sym.implement_trait(
+                        self.comp.error_sym
+                    ) or t_sym == self.comp.error_sym:
+                        self.gen_return_trace_add(expr.pos)
+                        expr_ = self.result_error(
+                            self.cur_fn_ret_typ, expr.expr.typ,
+                            self.gen_expr_with_cast(
+                                self.comp.error_t, expr.expr
+                            )
+                        )
+                        self.gen_defer_stmts(
+                            wrap_result,
+                            ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err"))
+                        )
+                        self.cur_fn.add_ret(expr_)
+                        return ir.Skip()
                 is_array = self.cur_fn_ret_typ.symbol().kind == TypeKind.Array
                 expr_ = self.gen_expr_with_cast(ret_typ, expr.expr)
                 if is_array and self.comp.prefs.target_backend == prefs.Backend.C:
@@ -2365,16 +2393,7 @@ class Codegen:
                     )
                     expr_ = tmp
                 if wrap_result:
-                    t_sym = expr.expr.typ.symbol()
-                    if t_sym.implement_trait(
-                        self.comp.error_sym
-                    ) or t_sym == self.comp.error_sym:
-                        self.gen_return_trace_add(expr.pos)
-                        expr_ = self.result_error(
-                            self.cur_fn_ret_typ, expr.expr.typ, expr_
-                        )
-                    else:
-                        expr_ = self.result_value(self.cur_fn_ret_typ, expr_)
+                    expr_ = self.result_value(self.cur_fn_ret_typ, expr_)
                 self.gen_defer_stmts(
                     wrap_result,
                     ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err"))

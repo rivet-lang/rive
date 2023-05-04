@@ -149,7 +149,8 @@ public struct Parser {
             switch tok.kind {
                 .Assign => assign_was_used = true,
                 .DeclAssign if !assign_was_used => return true,
-                .KwIf, .KwSwitch, .KwWhile, .Lbrace, .Semicolon => break
+                .KwIf, .KwSwitch, .KwWhile, .Lbrace, .Semicolon => break,
+                else => {}
             }
         }
         return false;

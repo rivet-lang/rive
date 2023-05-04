@@ -58,7 +58,7 @@ public trait Sym {
     is_universe: bool;
     is_root: bool;
 
-    func mod(self) ?Module {
+    func module(self) ?Module {
         mut p := self;
         while {
             if p is Module as mod {
@@ -73,8 +73,8 @@ public trait Sym {
     }
 
     func has_access_to(self, other: Sym) bool {
-        self_mod := self.mod() ?? return false;
-        other_mod := other.mod() ?? return false;
+        self_mod := self.module() ?? return false;
+        other_mod := other.module() ?? return false;
         return (
             other_mod.is_universe or self_mod.id == other.id
             or self_mod.id == other_mod.id
@@ -152,7 +152,7 @@ public struct Module : Sym {
             fields: [
                 Field(
                     name: "len", is_public: true,
-                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(12))
+                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(11))
                 )
             ]
         );
@@ -172,11 +172,11 @@ public struct Module : Sym {
             fields: [
                 Field(
                     name: "len", is_public: true,
-                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(12))
+                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(11))
                 ),
                 Field(
                     name: "cap", is_public: true,
-                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(12))
+                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(11))
                 )
             ]
         );
@@ -208,18 +208,10 @@ public struct Module : Sym {
             has_body: true
         )) catch {};
         if vector_sym := self.scope.find("core")?.scope.find("Vector") {
-            if is_empty_m := vector_sym.scope.find("is_empty") {
-                type_sym.scope.add(is_empty_m) catch {};
-            }
-            if delete_m := vector_sym.scope.find("delete") {
-                type_sym.scope.add(delete_m) catch {};
-            }
-            if trim_m := vector_sym.scope.find("trim") {
-                type_sym.scope.add(trim_m) catch {};
-            }
-            if clear_m := vector_sym.scope.find("clear") {
-                type_sym.scope.add(clear_m) catch {};
-            }
+            type_sym.scope.add(vector_sym.scope.find("is_empty")?) catch {};
+            type_sym.scope.add(vector_sym.scope.find("delete")?) catch {};
+            type_sym.scope.add(vector_sym.scope.find("trim")?) catch {};
+            type_sym.scope.add(vector_sym.scope.find("clear")?) catch {};
         }
         self.scope.add(type_sym) catch {};
         return type_sym;
@@ -247,6 +239,37 @@ public struct Module : Sym {
         type_sym := TypeSym(
             is_public: true, name: unique_name, info: .Tuple(types), fields: fields
         );
+        self.scope.add(type_sym) catch {};
+        return type_sym;
+    }
+
+    public func add_or_get_func(mut self, func_sym: Func) TypeSym {
+        unique_name := {
+            mut sb := strings.Builder.from_string("func(");
+            if func_sym.is_method {
+                if func_sym.self_is_mut {
+                    sb.write_string("mut ");
+                } else if func_sym.self_is_ref {
+                    sb.write_string("&");
+                }
+                sb.write_string("self");
+            }
+            for i, arg in func_sym.args {
+                sb.write_string(arg.type.to_qualstring());
+                if i < func_sym.args.len - 1 {
+                    sb.write_string(", ");
+                }
+            }
+            sb.write_byte(b')');
+            if func_sym.ret_type !is .Void {
+                sb.write_fmt(" {}", func_sym.ret_type.to_qualstring());
+            }
+            sb.to_string()
+        };
+        if type_sym := self.scope.find(unique_name) {
+            return @cast(TypeSym, type_sym);
+        }
+        type_sym := TypeSym(is_public: true, name: unique_name, info: .Func(func_sym));
         self.scope.add(type_sym) catch {};
         return type_sym;
     }
@@ -285,134 +308,6 @@ public struct Var : Sym {
     public level: VarLevel;
     public mut type: Type;
     public pos: token.Pos;
-}
-
-[boxed]
-public struct Field {
-    public is_public: bool;
-    public name: string;
-    public is_mut: bool;
-    public has_def_expr: bool;
-    public def_expr: Expr;
-    public type: Type;
-}
-
-[boxed]
-public struct TypeSym : Sym {
-    public mut fields: []Field;
-    public mut full_fields_: []Field;
-    public mut info: TypeInfo;
-    public mut size: isize = -1;
-    public mut align: isize = -1;
-
-    public func lookup_field(self, name: string) ?Field {
-        for f in self.fields {
-            if f.name == name {
-                return f;
-            }
-        }
-        if self.info is .Struct as struct_info {
-            for b in struct_info.bases {
-                if f := b.lookup_field(name) {
-                    return f;
-                }
-            }
-        }
-        return none;
-    }
-
-    [inline]
-    public func has_field(self, name: string) bool {
-        return self.lookup_field(name) !is none;
-    }
-
-    public func lookup_in_base(self, name: string) ?Sym {
-        if self.info is .Struct as struct_info {
-            for b in struct_info.bases {
-                if s := b.lookup(name) {
-                    return s;
-                }
-            }
-        }
-        return none;
-    }
-
-    [inline]
-    public func lookup(self, name: string) ?Sym {
-        return if s := self.scope.lookup(name) {
-            s
-        } else if s := self.lookup_in_base(name) {
-            s
-        } else {
-            none
-        };
-    }
-
-    public func full_fields(mut self) []Field {
-        if !self.full_fields_.is_empty() {
-            return self.full_fields_;
-        }
-        mut fields := @vec(Field);
-        if self.info is .Struct as struct_info {
-            for mut b in struct_info.bases {
-                for bf in b.full_fields() {
-                    fields.push(bf);
-                }
-            }
-        }
-        for f in self.fields {
-            fields.push(f);
-        }
-        self.full_fields_ = fields;
-        return fields;
-    }
-
-    [inline]
-    public func implement_trait(self, trait_sym: TypeSym) bool {
-        return if trait_sym.info is .Trait as trait_info {
-            self in trait_info.implements
-        } else {
-            false
-        };
-    }
-
-    public func update(mut self, other: TypeSym) ! {
-        if self.info is .Placeholder {
-            // update placeholder
-            self.is_public = other.is_public;
-            self.info = other.info;
-            self.fields = other.fields;
-            for s in other.scope.syms {
-                self.scope.add(s)!;
-            }
-        }
-    }
-
-    [inline]
-    public func is_boxed(self) bool {
-        return if self.info is .Enum as enum_info {
-            enum_info.is_boxed
-        } else if self.info is .Struct as struct_info {
-            struct_info.is_boxed
-        } else {
-            self.info is .Trait or self.info is .String or self.info is .Vector
-        };
-    }
-
-    [inline]
-    public func is_primitive(self) bool {
-        return self.info.is_primitive();
-    }
-
-    [inline]
-    public func ==(self, rhs: Self) bool {
-        return self.id == rhs.id;
-    }
-
-    [inline]
-    public func !=(self, rhs: Self) bool {
-        return self.id != rhs.id;
-    }
 }
 
 [boxed]
@@ -466,13 +361,15 @@ public struct Func : Sym {
     }
 
 	[inline]
-    public func type(self) Type {
+    public func type(self, mut universe: Module) Type {
         return .Func(
             is_method: self.is_method,
             self_is_mut: self.self_is_mut,
             self_is_ref: self.self_is_ref,
             args: self.args,
             ret_type: self.ret_type,
+            sym: universe.add_or_get_func(self),
+            has_sym: true,
             pos: token.NO_POS
         );
     }

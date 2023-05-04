@@ -5,6 +5,7 @@
 import std/strings;
 
 import ../utils;
+import ../utils/maps;
 
 struct DepGraphNode {
     public mut name: string;
@@ -94,7 +95,7 @@ public struct DepGraph {
             // -----------------------------------------------------------
             if seen {
                 out.writeln_fmt(" * `{}`", utils.join(cycle_names, "` -> `"));
-                nn.is_cycle = MapStringBool();
+                nn.is_cycle = maps.MapStringBool();
             }
         }
         return out.to_string();
@@ -102,8 +103,8 @@ public struct DepGraph {
 }
 
 struct NodeNames {
-    mut is_cycle: MapStringBool;
-    mut names: MapStringArrayOfStrings;
+    mut is_cycle: maps.MapStringBool;
+    mut names: maps.MapStringArrayOfStrings;
 
     func is_part_of_cycle(mut self, name: string, already_seen: []string) (bool, []string) {
         mut seen := false;

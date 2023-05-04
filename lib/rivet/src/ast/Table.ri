@@ -25,7 +25,6 @@ public struct Table {
     public mut builtins: []Builtin;
 
     /// Primitive type, Error and Vector symbols.
-    public mut none_sym: TypeSym;
     public mut bool_sym: TypeSym;
     public mut rune_sym: TypeSym;
     public mut int8_sym: TypeSym;
@@ -47,7 +46,6 @@ public struct Table {
     public mut vector_sym: TypeSym; // from `core` module
 
     /// Primitive types.
-    public mut none_t: Type;
     public mut bool_t: Type;
     public mut rune_t: Type;
     public mut int8_t: Type;
@@ -87,26 +85,24 @@ public struct Table {
     }
 
     func setup_primitives(mut self) {
-        self.none_sym = self.universe.scope.find_type_symbol_by_index_or_panic(0);
-        self.bool_sym = self.universe.scope.find_type_symbol_by_index_or_panic(1);
-        self.rune_sym = self.universe.scope.find_type_symbol_by_index_or_panic(2);
-        self.int8_sym = self.universe.scope.find_type_symbol_by_index_or_panic(3);
-        self.int16_sym = self.universe.scope.find_type_symbol_by_index_or_panic(4);
-        self.int32_sym = self.universe.scope.find_type_symbol_by_index_or_panic(5);
-        self.int64_sym = self.universe.scope.find_type_symbol_by_index_or_panic(6);
-        self.isize_sym = self.universe.scope.find_type_symbol_by_index_or_panic(7);
-        self.uint8_sym = self.universe.scope.find_type_symbol_by_index_or_panic(8);
-        self.uint16_sym = self.universe.scope.find_type_symbol_by_index_or_panic(9);
-        self.uint32_sym = self.universe.scope.find_type_symbol_by_index_or_panic(10);
-        self.uint64_sym = self.universe.scope.find_type_symbol_by_index_or_panic(11);
-        self.usize_sym = self.universe.scope.find_type_symbol_by_index_or_panic(12);
-        self.comptime_int_sym = self.universe.scope.find_type_symbol_by_index_or_panic(13);
-        self.comptime_float_sym = self.universe.scope.find_type_symbol_by_index_or_panic(14);
-        self.float32_sym = self.universe.scope.find_type_symbol_by_index_or_panic(15);
-        self.float64_sym = self.universe.scope.find_type_symbol_by_index_or_panic(16);
-        self.string_sym = self.universe.scope.find_type_symbol_by_index_or_panic(17);
+        self.bool_sym = self.universe.scope.find_type_symbol_by_index_or_panic(0);
+        self.rune_sym = self.universe.scope.find_type_symbol_by_index_or_panic(1);
+        self.int8_sym = self.universe.scope.find_type_symbol_by_index_or_panic(2);
+        self.int16_sym = self.universe.scope.find_type_symbol_by_index_or_panic(3);
+        self.int32_sym = self.universe.scope.find_type_symbol_by_index_or_panic(4);
+        self.int64_sym = self.universe.scope.find_type_symbol_by_index_or_panic(5);
+        self.isize_sym = self.universe.scope.find_type_symbol_by_index_or_panic(6);
+        self.uint8_sym = self.universe.scope.find_type_symbol_by_index_or_panic(7);
+        self.uint16_sym = self.universe.scope.find_type_symbol_by_index_or_panic(8);
+        self.uint32_sym = self.universe.scope.find_type_symbol_by_index_or_panic(9);
+        self.uint64_sym = self.universe.scope.find_type_symbol_by_index_or_panic(10);
+        self.usize_sym = self.universe.scope.find_type_symbol_by_index_or_panic(11);
+        self.comptime_int_sym = self.universe.scope.find_type_symbol_by_index_or_panic(12);
+        self.comptime_float_sym = self.universe.scope.find_type_symbol_by_index_or_panic(13);
+        self.float32_sym = self.universe.scope.find_type_symbol_by_index_or_panic(14);
+        self.float64_sym = self.universe.scope.find_type_symbol_by_index_or_panic(15);
+        self.string_sym = self.universe.scope.find_type_symbol_by_index_or_panic(16);
 
-        self.none_t = .Basic(self.none_sym);
         self.bool_t = .Basic(self.bool_sym);
         self.rune_t = .Basic(self.rune_sym);
         self.int8_t = .Basic(self.int8_sym);
@@ -139,34 +135,53 @@ public struct Table {
             // functions
             .Func("size_of", [BuiltinArg("value", is_any: true)], self.usize_t),
             .Func("align_of", [BuiltinArg("value", is_any: true)], self.usize_t),
+
             .Func("ptr_add", [
-                BuiltinArg("pointer", type: .Anyptr()),
-                BuiltinArg("value", type: self.usize_t)
-            ], .Anyptr()),
+                BuiltinArg("pointer", is_any: true),
+                BuiltinArg("value", is_any: true)
+            ], checks: [
+                .ArgumentTypeShouldBe(0, .Pointer),
+                .ArgumentTypeShouldBe(1, .Integer),
+                .ReturnTypeEqualToArgumentType(0)
+            ]),
             .Func("ptr_diff", [
-                BuiltinArg("pointer", type: .Anyptr()),
-                BuiltinArg("pointer2", type: .Anyptr())
-            ], .Anyptr()),
+                BuiltinArg("pointer", is_any: true),
+                BuiltinArg("pointer2", is_any: true)
+            ], self.usize_t, checks: [
+                .ArgumentTypeShouldBe(0, .Pointer),
+                .ArgumentTypeEqualToArgumentType(1, 0)
+            ]),
+
             .Func("cast", [
                 BuiltinArg("type", is_any: true),
                 BuiltinArg("value", is_any: true)
-            ], return_is_any: true),
-            .Func("type_name", [], self.string_t),
-            .Func("unreachable", []),
+            ], checks: [
+                .ReturnTypeEqualToArgumentType(0)
+            ]),
+
+            .Func("unreachable", [], .Never(token.NO_POS)),
             .Func("breakpoint", []),
             .Func("assert", [
                 BuiltinArg("cond", type: self.bool_t),
                 BuiltinArg("msg", type: self.string_t, is_optional: true)
             ]),
+
             .Func("vec", [
                 BuiltinArg("type", is_any: true),
                 BuiltinArg("cap", type: self.usize_t, is_optional: true)
-            ], return_is_any: true),
+            ], checks: [
+                .ReturnTypeEqualToArgumentType(0)
+            ]),
+
             .Func("set_enum_ref_value", [
                 BuiltinArg("enum_value", is_any: true, is_mut: true),
                 BuiltinArg("new_value", is_any: true)
-            ], return_is_any: true, is_unsafe: true),
-            // TODO: rename to `ignore_warn`: `@ignore_warn(not_mutated, expr)`.
+            ], is_unsafe: true, checks: [
+                .ArgumentTypeShouldBe(0, .Enum),
+                .ArgumentTypeEqualToArgumentType(1, 0)
+            ]),
+
+            // TODO: rename to `ignore_warn`: `@ignore_warn("not_mutated", expr)`.
             .Func("ignore_not_mutated_warn", [
                 BuiltinArg("expr", is_any: true, is_mut: true)
             ])
@@ -177,8 +192,7 @@ public struct Table {
         for builtin in self.builtins {
             is_equal := switch builtin is {
                 .Const as b_var => b_var.name == name,
-                .Func as b_func => b_func.name == name,
-                else => false
+                .Func as b_func => b_func.name == name
             };
             if is_equal {
                 return builtin;
@@ -260,6 +274,7 @@ public struct Table {
     }
 
     public func float_bits(self, type: Type) usize {
+        _ = self;
         type_sym := type.symbol()?;
         return if type_sym.info is .Float as float_info {
             float_info.size
@@ -377,26 +392,28 @@ public struct Table {
 }
 
 public func universe() Module {
-    return Module(is_public: false, name: "universe", scope: Scope(syms: [
-        TypeSym(name: "none", info: .None()),
-        TypeSym(name: "bool", info: .Bool()),
-        TypeSym(name: "rune", info: .Rune()),
-        TypeSym(name: "int8", info: .Int(8)),
-        TypeSym(name: "int16", info: .Int(16)),
-        TypeSym(name: "int32", info: .Int(32)),
-        TypeSym(name: "int64", info: .Int(64)),
-        TypeSym(name: "isize", info: .Isize()),
-        TypeSym(name: "uint8", info: .Uint(8)),
-        TypeSym(name: "uint16", info: .Uint(16)),
-        TypeSym(name: "uint32", info: .Uint(32)),
-        TypeSym(name: "uint64", info: .Uint(64)),
-        TypeSym(name: "usize", info: .Usize()),
-        TypeSym(name: "comptime_int", info: .ComptimeInt()),
-        TypeSym(name: "comptime_float", info: .ComptimeFloat()),
-        TypeSym(name: "float32", info: .Float(32)),
-        TypeSym(name: "float64", info: .Float(64)),
-        TypeSym(name: "string", info: .Struct(is_boxed: true))
-    ]));
+    return Module(
+        name: "universe",
+        scope: Scope(syms: [
+            TypeSym(name: "bool", info: .Bool()),
+            TypeSym(name: "rune", info: .Rune()),
+            TypeSym(name: "int8", info: .Int(8)),
+            TypeSym(name: "int16", info: .Int(16)),
+            TypeSym(name: "int32", info: .Int(32)),
+            TypeSym(name: "int64", info: .Int(64)),
+            TypeSym(name: "isize", info: .Isize()),
+            TypeSym(name: "uint8", info: .Uint(8)),
+            TypeSym(name: "uint16", info: .Uint(16)),
+            TypeSym(name: "uint32", info: .Uint(32)),
+            TypeSym(name: "uint64", info: .Uint(64)),
+            TypeSym(name: "usize", info: .Usize()),
+            TypeSym(name: "comptime_int", info: .ComptimeInt()),
+            TypeSym(name: "comptime_float", info: .ComptimeFloat()),
+            TypeSym(name: "float32", info: .Float(32)),
+            TypeSym(name: "float64", info: .Float(64)),
+            TypeSym(name: "string", info: .Struct(is_boxed: true))
+        ])
+    );
 }
 
 public enum Builtin {
@@ -407,9 +424,9 @@ public enum Builtin {
     Func {
         name: string;
         args: []BuiltinArg;
-        type: Type;
-        return_is_any: bool;
+        type: Type = .Void();
         is_unsafe: bool;
+        checks: []BuiltinFuncCheck;
 
         func args_len(self) usize {
             mut l: usize := 0;
@@ -437,4 +454,23 @@ struct BuiltinArg {
     public is_any: bool; // any type
     public type: Type;
     public is_optional: bool;
+}
+
+enum BuiltinFuncType {
+    Pointer,
+    Reference,
+    Enum,
+    Integer
+}
+
+enum BuiltinFuncCheck {
+    ReturnTypeEqualToArgumentType: usize,
+    ArgumentTypeEqualToArgumentType {
+        arg1_idx: usize;
+        arg2_idx: usize;
+    },
+    ArgumentTypeShouldBe {
+        arg_idx: usize;
+        type: BuiltinFuncType;
+    }
 }

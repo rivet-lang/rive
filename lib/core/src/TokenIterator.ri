@@ -1,0 +1,57 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+public struct TokenIterator {
+    buffer: string;
+    delimiter_bytes: []uint8;
+    mut index: usize;
+
+    /// Returns a slice of the current token, or none if tokenization is
+    /// complete, and advances to the next token.
+    public func next(mut self) ?string {
+        result := self.peek() ?? return none;
+        self.index += result.len;
+        return result;
+    }
+
+    /// Returns a slice of the current token, or none if tokenization is
+    /// complete. Does not advance to the next token.
+    public func peek(mut self) ?string {
+        // move to beginning of token
+        while self.index < self.buffer.len and self.is_split_byte(self.buffer[self.index])
+            : self.index += 1 {}
+        start := self.index;
+        if start == self.buffer.len {
+            return none;
+        }
+        // move to end of token
+        mut end := start;
+        while end < self.buffer.len and !self.is_split_byte(self.buffer[end])
+            : end += 1 {}
+        return self.buffer[start..end];
+    }
+
+    /// Returns a slice of the remaining bytes. Does not affect iterator state.
+    public func rest(&self) string {
+        // move to beginning of token
+        mut index: usize := self.index;
+        while index < self.buffer.len and self.is_split_byte(self.buffer[index])
+            : index += 1 {}
+        return self.buffer[index..];
+    }
+
+    /// Resets the iterator to the initial token.
+    public func reset(mut self) {
+        self.index = 0;
+    }
+
+    func is_split_byte(&self, byte: uint8) bool {
+        for delimiter_byte in self.delimiter_bytes {
+            if byte == delimiter_byte {
+                return true;
+            }
+        }
+        return false;
+    }
+}

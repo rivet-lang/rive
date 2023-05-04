@@ -23,6 +23,7 @@ public enum TypeInfo : traits.Stringable {
         size: usize;
     },
     String,
+    Func: Func,
     Alias {
         mut parent: Type;
     },
@@ -40,10 +41,39 @@ public enum TypeInfo : traits.Stringable {
     Tuple {
         types: []Type;
     },
+    Trait {
+        mut bases: []mut TypeSym;
+        mut implements: []TypeSym;
+        mut has_objects: bool;
+
+        func index_of(self, type_sym: TypeSym) ?usize {
+            for i, ts in self.implements {
+                if ts.id == type_sym.id {
+                    return i;
+                }
+            }
+            return none;
+        }
+
+        func implement(mut self, type_sym: TypeSym) {
+            if type_sym !in self.implements {
+                self.implements.push(type_sym);
+                for b in self.bases {
+                    @cast(TypeInfo.Trait, b.info).implement(type_sym);
+                }
+            }
+        }
+
+        [inline]
+        func mark_has_objects(mut self) {
+            self.has_objects = true;
+        }
+    },
     Enum {
         underlying_type: Type;
         mut variants: []EnumVariant;
         is_boxed: bool;
+        mut traits: []mut TypeSym;
 
         [inline]
         func add_variant(mut self, variant: EnumVariant) {
@@ -71,32 +101,14 @@ public enum TypeInfo : traits.Stringable {
             }
             return none;
         }
-    },
-    Trait {
-        mut bases: []mut TypeSym;
-        mut implements: []TypeSym;
-        mut has_objects: bool;
 
-        func index_of(self, type_sym: TypeSym) ?usize {
-            for i, ts in self.implements {
-                if ts.id == type_sym.id {
-                    return i;
+        func contains_trait(self, type_sym: TypeSym) bool {
+            for trait_ in self.traits {
+                if trait_.id == type_sym.id {
+                    return true;
                 }
             }
-            return none;
-        }
-
-        func implement(mut self, type_sym: TypeSym) {
-            if type_sym !in self.implements {
-                self.implements.push(type_sym);
-                for b in self.bases {
-                    @cast(TypeInfo.Trait, b.info).implement(type_sym);
-                }
-            }
-        }
-
-        func mark_has_objects(mut self) {
-            self.has_objects = true;
+            return false;
         }
     },
     Struct {
@@ -105,7 +117,7 @@ public enum TypeInfo : traits.Stringable {
         is_enum_variant: bool;
         mut parent: TypeSym; // enum type symbol if this is a enum variant
         mut bases: []mut TypeSym;
-        mut traits: []TypeSym;
+        mut traits: []mut TypeSym;
 
         func contains_trait(self, type_sym: TypeSym) bool {
             for trait_ in self.traits {
@@ -151,6 +163,7 @@ public enum TypeInfo : traits.Stringable {
     [inline]
     public func to_string(self) string {
         return switch self is {
+            .Placeholder => "placeholder",
             .None => "none",
             .Bool => "bool",
             .Rune => "rune",
@@ -162,6 +175,7 @@ public enum TypeInfo : traits.Stringable {
             .ComptimeFloat => "comptime_float",
             .Float as float_info => "float{}".fmt(float_info.size),
             .String => "string",
+            .Func => "func",
             .Alias => "alias",
             .Array => "array",
             .Vector => "vector",
@@ -172,8 +186,7 @@ public enum TypeInfo : traits.Stringable {
             } else {
                 "struct"
             },
-            .Enum => "enum",
-            else => "placeholder"
+            .Enum => "enum"
         };
     }
 }

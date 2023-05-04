@@ -52,7 +52,7 @@ extend Tokenizer {
                     self.pos += 1;
                 }
                 lit := self.read_number();
-                return self.new_token(.Number, self.number_literal_without_separator(lit), lit.len);
+                return self.new_token(.Number, number_literal_without_separator(lit), lit.len);
             }
             // delimiters and operators
             switch ch {
@@ -719,7 +719,7 @@ extend Tokenizer {
                 lit = lit.replace("\r", "");
             }
             if lit.contains("\\\n") {
-                lit = self.trim_slash_line_break(lit);
+                lit = trim_slash_line_break(lit);
             }
         }
 

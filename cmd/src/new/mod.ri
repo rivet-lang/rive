@@ -58,7 +58,7 @@ public func new(args: []string, is_init: bool) ! {
     ) ?? true;
     remaining := fp.finalize() catch |err_fp| {
         console.eprintln(fp.usage());
-        utils.error(err_fp.to_string());
+        utils.error(err_fp.to_string())
     };
 
     mut project := build.Project();
@@ -77,7 +77,7 @@ public func new(args: []string, is_init: bool) ! {
         }
         if version := readln("Version (default: 0.1.0):") {
             project.version = semver.Version.from_string(version) catch |err| {
-                utils.error(err.to_string());
+                utils.error(err.to_string())
             };
         } else {
             project.version = semver.Version.build(0, 1, 0);

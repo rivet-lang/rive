@@ -44,8 +44,8 @@ extend Resolver {
                 if builtin := self.table.find_builtin(builtin_call.name) {
                     if builtin is .Func {
                         builtin_call.builtin = builtin;
-                        for mut arg in builtin_call.args {
-                            self.resolve_expr(arg);
+                        for arg in builtin_call.args {
+                            self.resolve_expr(arg.expr);
                         }
                     } else {
                         report.error(
@@ -92,13 +92,14 @@ extend Resolver {
                 self.resolve_expr(binary.right);
                 if binary.has_var_obj {
                     self.check_variable_shadowing(binary.var_obj.name, binary.var_obj.pos);
-                    binary.scope.add_local(ast.Var(
+                    binary.var_obj.sym = ast.Var(
                         is_mut: binary.var_obj.is_mut,
                         name: binary.var_obj.name,
                         type: .Void(),
                         level: .Local,
                         pos: binary.var_obj.pos
-                    )) catch |err| report.error(
+                    );
+                    binary.scope.add_local(binary.var_obj.sym) catch |err| report.error(
                         err.to_string(), binary.var_obj.pos
                     );
                 }
@@ -129,13 +130,14 @@ extend Resolver {
             .Guard as guard => {
                 for var_ in guard.vars {
                     self.check_variable_shadowing(var_.name, var_.pos);
-                    guard.scope.add_local(ast.Var(
+                    var_.sym = ast.Var(
                         is_mut: var_.is_mut,
                         name: var_.name,
                         level: .Local,
                         type: .Void(),
                         pos: var_.pos
-                    )) catch |err| report.error(
+                    );
+                    guard.scope.add_local(var_.sym) catch |err| report.error(
                         err.to_string(), var_.pos
                     );
                 }
@@ -156,8 +158,8 @@ extend Resolver {
                 self.resolve_expr(switch_expr.expr);
                 for branch in switch_expr.branches {
                     if !branch.is_else {
-                        for mut pattern in branch.patterns {
-                            self.resolve_expr(pattern);
+                        for mut case in branch.cases {
+                            self.resolve_expr(case);
                         }
                         if branch.has_var {
                             self.check_variable_shadowing(branch.var_name, branch.var_pos);
@@ -181,7 +183,8 @@ extend Resolver {
             .Assign as assign_expr => {
                 self.resolve_expr(assign_expr.left);
                 self.resolve_expr(assign_expr.right);
-            }
+            },
+            else => {}
         }
     }
 
@@ -284,7 +287,8 @@ extend Resolver {
                 }
                 selector.is_path = true;
                 selector.left_sym = selector2.sym;
-            }
+            },
+            else => return
         }
         if selector.is_path {
             if sym := self.find_symbol(

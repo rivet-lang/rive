@@ -87,6 +87,8 @@ extend Parser {
                             self.parse_name(), from_is_cmp: true,
                             pos: pos + self.prev_tok.pos
                         )
+                    } else if self.accept(.KwNone) {
+                        .Type(.None())
                     } else {
                         .Type(self.parse_type())
                     };
@@ -218,19 +220,26 @@ extend Parser {
                 pos := self.prev_tok.pos;
                 if self.peek_token(1).kind == .Lparen { // builtin call
                     name := self.parse_name();
-                    mut args := @vec(mut ast.Expr);
+                    mut args := @vec(ast.CallArg);
                     self.expect(.Lparen);
                     mut vec_is_mut := false;
                     if name in ["vec", "cast", "size_of", "align_of"] {
                         vec_is_mut = name == "vec" and self.accept(.KwMut);
-                        args.push(.Type(self.parse_type()));
+                        arg_pos := self.tok.pos;
+                        args.push(
+                            ast.CallArg(
+                                expr: .Type(self.parse_type()),
+                                pos: arg_pos + self.prev_tok.pos
+                            )
+                        );
                         if self.tok.kind != .Rparen {
                             self.expect(.Comma);
                         }
                     }
                     if self.tok.kind != .Rparen {
                         while {
-                            args.push(self.parse_expr());
+                            arg := self.parse_expr();
+                            args.push(ast.CallArg(expr: arg, pos: arg.position()));
                             if !self.accept(.Comma) {
                                 break;
                             }
@@ -411,6 +420,7 @@ extend Parser {
                             has_varname: has_varname,
                             expr: err_expr,
                             has_expr: has_err_expr,
+                            is_propagate: is_propagate,
                             scope: self.scope,
                             pos: err_handler_pos
                         ),
@@ -539,7 +549,7 @@ extend Parser {
         self.inside_switch_header = old_inside_switch_header;
         while {
             branch_pos := self.tok.pos;
-            mut patterns := @vec(mut ast.Expr);
+            mut cases := @vec(mut ast.Expr);
             mut has_var := false;
             mut var_is_mut := false;
             mut var_name := "";
@@ -553,27 +563,31 @@ extend Parser {
                 while {
                     if is_typeswitch {
                         name_pos := self.tok.pos;
-                        patterns.push(if self.accept(.Dot) {
+                        cases.push(if self.accept(.Dot) {
                             .EnumLiteral(
-                                self.parse_name(), pos: name_pos + self.prev_tok.pos
+                                self.parse_name(), pos: name_pos + self.prev_tok.pos,
+                                from_is_cmp: true
                             )
                         } else {
                             .Type(self.parse_type())
                         });
                     } else {
-                        mut branch_expr := self.parse_expr();
+                        mut case_expr := self.parse_expr();
                         if self.accept(.DotDot) or self.accept(.Ellipsis) {
                             if self.prev_tok.kind == .DotDot {
-                                mut err := report.error_builder("switch only supports inclusive ranges, not exclusive", self.prev_tok.pos);
+                                mut err := report.error_builder(
+                                    "`switch` only supports inclusive ranges, not exclusive",
+                                    self.prev_tok.pos
+                                );
                                 err.add_help("use `...` instead of `..`");
                                 err.emit();
                             }
-                            branch_expr = .Range(
-                                branch_expr, self.parse_expr(), true, true, true,
-                                branch_expr.position() + self.prev_tok.pos
+                            case_expr = .Range(
+                                case_expr, self.parse_expr(), true, true, true,
+                                case_expr.position() + self.prev_tok.pos
                             );
                         }
-                        patterns.push(branch_expr);
+                        cases.push(case_expr);
                     }
                     if !self.accept(.Comma) {
                         break;
@@ -595,7 +609,7 @@ extend Parser {
             }
             self.expect(.Arrow);
             branches.push(ast.SwitchBranch(
-                patterns: patterns,
+                cases: cases,
                 has_var: has_var,
                 var_is_mut: var_is_mut,
                 var_name: var_name,
@@ -643,7 +657,7 @@ extend Parser {
         }
         self.close_scope();
         self.inside_block = old_inside_block;
-        return .Block(is_unsafe, stmts, expr, has_expr, sc, pos);
+        return .Block(is_unsafe, stmts, expr, has_expr, sc, pos + self.prev_tok.pos);
     }
 
     func parse_guard_expr(mut self) ast.Expr {

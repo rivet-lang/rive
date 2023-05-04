@@ -619,7 +619,6 @@ class Checker:
                 Kind.Amp, Kind.Pipe
             ):
                 promoted_type = self.comp.void_t
-                lsym = ltyp.symbol()
                 if lsym.kind == TypeKind.Struct:
                     if op_method := lsym.find(str(expr.op)):
                         promoted_type = op_method.ret_typ
@@ -660,7 +659,6 @@ class Checker:
                 return expr.typ
             elif expr.op in (Kind.KwIn, Kind.KwNotIn):
                 expr.typ = self.comp.bool_t
-                lsym = ltyp.symbol()
                 rsym = rtyp.symbol()
                 assert rsym != None, (expr.pos)
                 if rsym.kind not in (TypeKind.Vec, TypeKind.Array):
@@ -673,8 +671,12 @@ class Checker:
                 op_m = "==" if expr.op == Kind.KwIn else "!="
                 try:
                     self.check_types(ltyp, elem_typ)
-                    if not lsym.kind.is_primitive(
-                    ) and lsym.kind != TypeKind.Enum and not lsym.exists(op_m):
+                    if not (
+                        lsym.kind.is_primitive() or (
+                            lsym.kind == TypeKind.Enum
+                            and not lsym.info.is_boxed_enum
+                        )
+                    ) and not lsym.exists(op_m):
                         report.error(
                             f"cannot use operator `{expr.op}` with type `{lsym.name}`",
                             expr.pos
@@ -686,7 +688,6 @@ class Checker:
                     report.error(e.args[0], expr.pos)
                 return expr.typ
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
-                lsym = ltyp.symbol()
                 if not (
                     lsym.kind in (TypeKind.Trait, TypeKind.Enum)
                     or isinstance(ltyp, type.Option)
@@ -717,7 +718,7 @@ class Checker:
                         Kind.KwIs, Kind.KwNotIs
                     ):
                         report.error(
-                            "boxed enum values only support `is` and `!is`",
+                            "boxed enum types only support `is` and `!is`",
                             expr.pos
                         )
                     elif not lsym.info.is_boxed_enum and expr.op not in (
@@ -788,7 +789,9 @@ class Checker:
             expr.left_typ = self.check_expr(expr.left)
             left_sym = expr.left_typ.symbol()
             idx_t = self.check_expr(expr.index)
-            if idx_t != self.comp.comptime_int_t and not self.comp.is_unsigned_int(idx_t):
+            if idx_t != self.comp.comptime_int_t and not self.comp.is_unsigned_int(
+                idx_t
+            ):
                 report.error(
                     f"expected unsigned integer value, found `{idx_t}`",
                     expr.index.pos
@@ -874,6 +877,7 @@ class Checker:
                     expr.sym = expr_left.sym
                     self.check_ctor(expr_left.sym, expr)
                 elif expr_left.is_obj:
+                    _ = self.check_expr(expr_left)
                     if isinstance(expr_left.typ, type.Fn):
                         expr.sym = expr_left.typ.info()
                         expr.is_closure = True
@@ -884,6 +888,7 @@ class Checker:
                             expr_left.pos
                         )
             elif isinstance(expr_left, ast.SelectorExpr):
+                expr_left.left_typ = self.check_expr(expr_left.left)
                 if expr_left.is_path:
                     if isinstance(expr_left.field_sym,
                                   sym.Type) and expr_left.field_sym.kind in (
@@ -900,7 +905,6 @@ class Checker:
                             expr.pos
                         )
                 else:
-                    expr_left.left_typ = self.check_expr(expr_left.left)
                     left_sym = expr_left.left_typ.symbol()
                     if m := left_sym.find(expr_left.field_name):
                         if isinstance(m, sym.Fn):
@@ -942,6 +946,7 @@ class Checker:
                             if inside_parens:
                                 expr.sym = f.typ.info()
                                 expr.is_closure = True
+                                expr.left.typ = f.typ
                                 expr_left.typ = f.typ
                                 self.check_call(expr.sym, expr)
                             else:
@@ -1005,12 +1010,12 @@ class Checker:
         elif isinstance(expr, ast.BuiltinCallExpr):
             expr.typ = self.comp.void_t
             if expr.name == "set_enum_ref_value":
-                self.check_expr_is_mut(expr.args[0])
                 _ = self.check_expr(expr.args[0])
+                self.check_expr_is_mut(expr.args[0])
                 _ = self.check_expr(expr.args[1])
             elif expr.name == "ignore_not_mutated_warn":
-                self.check_expr_is_mut(expr.args[0])
                 _ = self.check_expr(expr.args[0])
+                self.check_expr_is_mut(expr.args[0])
             elif expr.name == "vec":
                 if len(expr.args) in (1, 2):
                     elem_t = expr.args[0].typ
@@ -1259,10 +1264,11 @@ class Checker:
                     except utils.CompilerError as e:
                         expr_typ_sym = expr_typ.symbol()
                         if not (
-                            isinstance(self.cur_fn.ret_typ, type.Result)
-                            and (expr_typ_sym.implement_trait(
-                                self.comp.error_sym
-                            ) or expr_typ_sym == self.comp.error_sym)
+                            isinstance(self.cur_fn.ret_typ, type.Result) and (
+                                expr_typ_sym.implement_trait(
+                                    self.comp.error_sym
+                                ) or expr_typ_sym == self.comp.error_sym
+                            )
                         ):
                             report.error(e.args[0], expr.expr.pos)
                             report.note(
@@ -1391,7 +1397,9 @@ class Checker:
                             report.error(
                                 "only boxed types can have vars", b.var_pos
                             )
-                    if b.has_cond and self.check_expr(b.cond) != self.comp.bool_t:
+                    if b.has_cond and self.check_expr(
+                        b.cond
+                    ) != self.comp.bool_t:
                         report.error(
                             "non-boolean expression use as `switch` branch condition",
                             b.cond.pos
@@ -1566,8 +1574,7 @@ class Checker:
                     found = True
                     if not arg_fn.has_def_expr:
                         report.error(
-                            f"argument `{arg.name}` is not optional",
-                            arg.pos
+                            f"argument `{arg.name}` is not optional", arg.pos
                         )
             if not found:
                 err = True
@@ -1624,7 +1631,7 @@ class Checker:
                 self.check_expr_is_mut(arg.expr)
 
             if not (
-                info.is_variadic and info.is_extern and i >= len(info.args) - 1
+                info.is_variadic and info.is_extern and i >= len(info.args)
             ):
                 self.check_argument_type(
                     arg.typ, arg_fn.typ, arg.pos, arg_fn.name, kind, info.name
@@ -1728,16 +1735,23 @@ class Checker:
         elif expected == self.comp.none_t and isinstance(got, type.Option):
             return True
 
-        if (isinstance(expected, type.Ref)
-            and not isinstance(got, type.Ref)) or (
-                not isinstance(expected, type.Ref)
-                and isinstance(got, type.Ref)
-            ):
-            return False
+        if isinstance(expected, type.Ptr) and isinstance(got, type.Ptr):
+            return self.check_pointer(expected, got)
         elif (isinstance(expected, type.Ptr)
               and not isinstance(got, type.Ptr)) or (
                   not isinstance(expected, type.Ptr)
                   and isinstance(got, type.Ptr)
+              ):
+            return False
+
+        if isinstance(expected, type.Ref) and isinstance(got, type.Ref):
+            if expected.is_mut and not got.is_mut:
+                return False
+            return expected.typ == got.typ
+        elif (isinstance(expected, type.Ref)
+              and not isinstance(got, type.Ref)) or (
+                  not isinstance(expected, type.Ref)
+                  and isinstance(got, type.Ref)
               ):
             return False
 
@@ -1756,13 +1770,6 @@ class Checker:
             return expected == got
         elif isinstance(expected, type.Vec) and isinstance(got, type.Vec):
             return expected.typ == got.typ
-
-        if isinstance(expected, type.Ref) and isinstance(got, type.Ref):
-            if expected.is_mut and not got.is_mut:
-                return False
-            return expected.typ == got.typ
-        elif isinstance(expected, type.Ptr) and isinstance(got, type.Ptr):
-            return self.check_pointer(expected, got)
 
         if expected == self.comp.rune_t and got == self.comp.comptime_int_t:
             return True

@@ -203,7 +203,7 @@ public enum Expr : traits.Stringable {
     },
     BuiltinCall {
         name: string;
-        args: []mut Expr;
+        args: []CallArg;
         vec_is_mut: bool;
         pos: token.Pos;
         mut builtin: Builtin;
@@ -221,7 +221,7 @@ public enum Expr : traits.Stringable {
         mut right: Expr;
         op: token.Kind;
         has_var_obj: bool;
-        var_obj: ObjectData;
+        mut var_obj: ObjectData;
         mut scope: Scope;
         pos: token.Pos;
         mut type: Type;
@@ -310,8 +310,7 @@ public enum Expr : traits.Stringable {
             .Block as block => block.pos,
             .If as if_expr => if_expr.pos,
             .Switch as switch_expr => switch_expr.pos,
-            .Guard as guard => guard.pos,
-            else => token.NO_POS
+            .Guard as guard => guard.pos
         };
     }
 
@@ -332,20 +331,20 @@ public enum Expr : traits.Stringable {
             .NoneLiteral => "none",
             .BoolLiteral as bool_lit => bool_lit.value.to_string(),
             .CharLiteral as char_lit => if char_lit.is_byte {
-                "b".concat(char_lit.value)
+                "b'{}'".fmt(char_lit.value)
             } else {
-                char_lit.value
+                "'{}'".fmt(char_lit.value)
             },
             .IntegerLiteral as int_lit => int_lit.value,
             .FloatLiteral as float_lit => float_lit.value,
             .StringLiteral as string_lit => if string_lit.is_bytestr {
-                "b".concat(string_lit.value)
+                "b\"{}\"".fmt(string_lit.value)
             } else if string_lit.is_raw {
-                "r".concat(string_lit.value)
+                "r\"{}\"".fmt(string_lit.value)
             } else if string_lit.is_cstr {
-                "c".concat(string_lit.value)
+                "c\"{}\"".fmt(string_lit.value)
             } else {
-                string_lit.value
+                "\"{}\"".fmt(string_lit.value)
             },
             .EnumLiteral as enum_lit => ".".concat(enum_lit.value),
             .TupleLiteral as tuple_lit => {
@@ -431,6 +430,7 @@ public enum Expr : traits.Stringable {
                 sb.write_string(builtin_call.name);
                 sb.write_byte(b'(');
                 for i, arg in builtin_call.args {
+                    sb.write_string(arg.expr.to_string());
                     if i < builtin_call.args.len - 1 {
                         sb.write_string(", ");
                     }
@@ -453,6 +453,7 @@ public enum Expr : traits.Stringable {
                 sb.write_string("{ ");
                 sb.write_fmt(" {} statements", block.stmts.len);
                 if block.is_expr {
+                    sb.write_string("; ");
                     sb.write_string(block.expr.to_string());
                 }
                 sb.write_string(" }");
@@ -485,9 +486,9 @@ public enum Expr : traits.Stringable {
                     if branch.is_else {
                         sb.write_string("else ");
                     } else {
-                        for ip, pattern in branch.patterns {
-                            sb.write_string(pattern.to_string());
-                            if ip < branch.patterns.len - 1 {
+                        for ip, case in branch.cases {
+                            sb.write_string(case.to_string());
+                            if ip < branch.cases.len - 1 {
                                 sb.write_string(", ");
                             }
                         }
@@ -531,8 +532,7 @@ public enum Expr : traits.Stringable {
                     sb.write_fmt("; {}", guard.cond);
                 }
                 sb.to_string()
-            },
-            else => ""
+            }
         };
     }
 }
@@ -570,7 +570,7 @@ public struct IfBranch {
 
 [boxed]
 public struct SwitchBranch {
-    public patterns: []mut Expr;
+    public cases: []mut Expr;
     public has_var: bool;
     public var_is_mut: bool;
     public var_name: string;

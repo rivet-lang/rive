@@ -36,7 +36,7 @@ public struct Flag : traits.Stringable {
     }
 }
 
-/// This structure is created with `mut parser := flag.new_flag_parser(args)`,
+/// This structure is created with `mut parser := flag.FlagParser.new(args)`,
 /// The returned instance can be further customised by calling various methods,
 /// for specifying the accepted options and their values. The user should finally
 /// call `rest := parser.finalize()!` to get the rest of the non optional arguments
@@ -50,9 +50,10 @@ public struct FlagParser {
     /// All options after `--` are ignored, and will be passed to the application unmodified.
     public all_after_dashdash: []string;
     /// When set, `--help` will print:
-	/// Usage: <appname> <usage_examples[0]>
-	///    or: <appname> <usage_examples[1]>
-	/// etc.
+    /// Examples:
+	///    $ <appname> <usage_examples[0]>
+	///    $ <appname> <usage_examples[1]>
+	///    $ ...
     public mut usage_examples: []string;
     public mut default_help_label: string = "Display this help and exit.";
     public mut default_version_label: string = "Show version information and exit.";
@@ -298,7 +299,7 @@ public struct FlagParser {
         if !self.usage_examples.is_empty() {
             sb.writeln();
             sb.writeln("Examples:");
-            for i, example in self.usage_examples {
+            for example in self.usage_examples {
                 sb.writeln_fmt("   $ {} {}", self.application_name, example);
             }
         }
@@ -344,7 +345,7 @@ public struct FlagParser {
         return self.finalize() catch |err| {
             console.println(self.usage());
             console.eprintln(err.to_string());
-            process.exit(1);
+            process.exit(1)
         };
     }
 

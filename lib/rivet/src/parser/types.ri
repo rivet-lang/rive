@@ -105,7 +105,6 @@ extend Parser {
                 expr: ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
                 is_unresolved: true
             ),
-            self.accept(.KwNone) => self.table.none_t,
             self.tok.kind == .Name => {
                 prev_tok_kind := self.prev_tok.kind;
                 mut expr := self.parse_ident();

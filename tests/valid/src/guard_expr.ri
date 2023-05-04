@@ -29,6 +29,12 @@ test "`if` expression with guard expression" {
         @assert(false);
     }
 
+    @assert(if val := ret_none(); val == 3 {
+        true
+    } else {
+        false
+    });
+
     if val := ret_err() {
         @assert(val == 3);
     }
@@ -58,6 +64,11 @@ test "`switch` expression with guard expression" {
     }
 
     switch val := ret_err() {
+        3 => @assert(true),
+        else => @assert(false)
+    }
+
+    switch val := ret_none(); val == 3 {
         3 => @assert(true),
         else => @assert(false)
     }

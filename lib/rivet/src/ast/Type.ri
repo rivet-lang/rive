@@ -7,8 +7,6 @@ import { Builder } from std/strings;
 
 import ../token;
 
-public var VOID_TYPES: []Type = [Type.Void(), .Never(token.NO_POS)];
-
 public enum Type : traits.Stringable {
     Basic {
         mut sym: TypeSym;
@@ -16,8 +14,9 @@ public enum Type : traits.Stringable {
         mut expr: Expr;
         pos: token.Pos;
     },
-    Void,
     Never: token.Pos,
+    Void,
+    None,
     Option {
         mut inner: Type;
         pos: token.Pos;
@@ -82,16 +81,22 @@ public enum Type : traits.Stringable {
         args: []Arg;
         mut ret_type: Type;
         pos: token.Pos;
+        mut sym: TypeSym;
+        mut has_sym: bool;
 
         [inline]
         func symbol(self) Func {
-            return Func(
-                is_method: self.is_method,
-                self_is_mut: self.self_is_mut,
-                self_is_ref: self.self_is_ref,
-                args: self.args,
-                ret_type: self.ret_type
-            );
+            return if self.has_sym and self.sym.info is .Func as func_sym {
+                func_sym
+            } else {
+                Func(
+                    is_method: self.is_method,
+                    self_is_mut: self.self_is_mut,
+                    self_is_ref: self.self_is_ref,
+                    args: self.args,
+                    ret_type: self.ret_type
+                )
+            };
         }
     };
 
@@ -132,12 +137,11 @@ public enum Type : traits.Stringable {
                 pointer_data.inner.unalias() ?? pointer_data.inner, ...self
             ),
             .Func as func_data => {
-                args := @vec(mut Arg, func_data.args.len);
-                for i, arg in args {
-                    args[i].type = arg.type.unalias() ?? arg.type;
+                for arg in func_data.args {
+                    arg.type = arg.type.unalias() ?? arg.type;
                 }
                 .Func(
-                    args: args, ret_type: func_data.ret_type.unalias() ?? func_data.ret_type,
+                    ret_type: func_data.ret_type.unalias() ?? func_data.ret_type,
                     ...self
                 )
             },
@@ -146,20 +150,21 @@ public enum Type : traits.Stringable {
             } else {
                 .Basic(basic.sym)
             },
-            else => none // for `.Void` or `.Never`
+            else => none // for `.Void`, `.None` or `.Never`
         };
     }
 
     public func unalias_in_place(mut self) {
         if unaliased_type := self.unalias() {
-            @set_enum_ref_value(self, unaliased_type);
+            unsafe {
+                @set_enum_ref_value(self, unaliased_type);
+            }
         }
     }
 
     [inline]
     public func symbol(self) ?TypeSym {
-        // NOTE: `.Func` has no TypeSym, so it does not appear in this typeswitch,
-        // the same is for `.Void`, `.Never` and `.Anyptr`.
+        // NOTE: `.Void`, `.None`, `.Never` and `.Anyptr` has no `TypeSym` value.
         return switch self is {
             .Result as result => result.inner.symbol(),
             .Option as option => option.inner.symbol(),
@@ -169,9 +174,15 @@ public enum Type : traits.Stringable {
             .Array as array_data => array_data.sym,
             .Reference as reference_data => reference_data.inner.symbol(),
             .Pointer as pointer_data => pointer_data.inner.symbol(),
+            .Func as func_data => func_data.sym,
             .Basic as basic if !basic.is_unresolved => basic.sym,
             else => none
         };
+    }
+
+    [inline]
+    public func is_void(self) bool {
+        return self is .Void or self is .Never;
     }
 
     [inline]
@@ -197,7 +208,7 @@ public enum Type : traits.Stringable {
     [inline]
     public func position(self) token.Pos {
         return switch self is {
-            .Void => token.NO_POS,
+            .Void, .None => token.NO_POS,
             .Never as never_pos => never_pos,
             .Option as opt_t => opt_t.pos,
             .Result as res_t => res_t.pos,
@@ -220,6 +231,7 @@ public enum Type : traits.Stringable {
     [inline]
     public func ==(self, rhs: Self) bool {
         return switch self is {
+            .None if rhs is .None => true,
             .Void if rhs is .Void => true,
             .Never if rhs is .Never => true,
             .Result as result_lhs if rhs is .Result as result_rhs =>
@@ -273,8 +285,7 @@ public enum Type : traits.Stringable {
             },
             .Basic as basic_lhs if rhs is .Basic as basic_rhs =>
                 !(basic_lhs.is_unresolved and basic_rhs.is_unresolved)
-                and basic_lhs.sym == basic_rhs.sym,
-            else => false
+                and basic_lhs.sym == basic_rhs.sym
         };
     }
 
@@ -292,6 +303,7 @@ public enum Type : traits.Stringable {
 
     public func to_string_(self, qualstr: bool) string {
         return switch self is {
+            .None => "<none>",
         	.Void => "<void>",
             .Never => "never",
             .Result as result => "!".concat(result.inner.to_string_(qualstr)),
@@ -375,12 +387,13 @@ public enum Type : traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Basic as basic if !basic.is_unresolved => if qualstr {
+            .Basic as basic => if basic.is_unresolved {
+                basic.expr.to_string()
+            } else if qualstr {
                 basic.sym.qualname()
             } else {
                 basic.sym.name
-            },
-            else => "<unhandled-type-string>"
+            }
         };
     }
 }
