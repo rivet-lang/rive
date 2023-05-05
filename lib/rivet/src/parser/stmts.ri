@@ -94,7 +94,7 @@ extend Parser {
                 and self.peek_tok.kind !in [.Dot, .Lbracket, .Lparen]
                 and self.decl_operator_is_used() => {
                 // variable declarations
-                mut pos := self.prev_tok.pos;
+                mut pos := self.tok.pos;
                 mut lefts := @vec(ast.ObjectData);
                 if self.accept(.Lparen) {
                     // multiple variables

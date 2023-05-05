@@ -181,8 +181,12 @@ extend Resolver {
                     for arg in func_decl.args {
                         if self.resolve_type(arg.type) {
                             self.check_variable_shadowing(arg.name, arg.pos);
+                            is_used := self.self_sym_is_set and self.self_sym.info is .Trait
+                                and !func_decl.has_body;
                             func_decl.scope.add_local(ast.Var(
                                 is_mut: arg.is_mut,
+                                is_used: is_used,
+                                is_changed: is_used,
                                 name: arg.name,
                                 level: .Argument,
                                 pos: arg.pos,
@@ -201,9 +205,12 @@ extend Resolver {
                     }
                 },
                 .Destructor as dtor_decl => {
+                    is_used := self.self_sym.info is .Trait and !func_decl.has_body;
                     dtor_decl.scope.add_local(ast.Var(
                         name: "self",
                         is_mut: dtor_decl.self_is_mut,
+                        is_used: is_used,
+                        is_changed: is_used,
                         level: .Receiver,
                         type: dtor_decl.self_type,
                         pos: dtor_decl.pos

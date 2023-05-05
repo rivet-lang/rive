@@ -28,7 +28,8 @@ test "`switch` branch condition" {
 }
 
 enum SwitchBase {
-    SwitchSon: SwitchSon
+    SwitchSon: SwitchSon,
+    Other: bool
 }
 
 struct SwitchSon {

@@ -131,4 +131,12 @@ public struct Scope {
             }
         }
     }
+
+    public func update_is_used(self, name: string, is_used: bool) {
+        if sym := self.lookup(name) {
+            if sym is Var as var_info {
+                var_info.is_used = is_used;
+            }
+        }
+    }
 }

@@ -242,7 +242,7 @@ public struct Table {
 
     public func comptime_number_to_type(self, type: Type) Type {
         return if type == self.comptime_int_t {
-            self.int64_t
+            self.int32_t
         } else if type == self.comptime_float_t {
             self.float64_t
         } else {
@@ -250,7 +250,7 @@ public struct Table {
         };
     }
 
-    public func num_bits(self, type: Type) usize {
+    public func number_bits(self, type: Type) usize {
         return if self.is_int(type) {
             self.int_bits(type)
         } else if self.is_float(type) {

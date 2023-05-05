@@ -2,7 +2,7 @@ struct OuterStruct {
     struct InnerStruct {
         abc: int32;
 
-        func method(self) { }
+        func method(self) { _ = self; }
     }
 
     inner: InnerStruct;

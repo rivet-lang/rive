@@ -2364,9 +2364,7 @@ class Codegen:
                         self.gen_return_trace_add(expr.pos)
                         expr_ = self.result_error(
                             self.cur_fn_ret_typ, expr.expr.typ,
-                            self.gen_expr_with_cast(
-                                self.comp.error_t, expr.expr
-                            )
+                            self.gen_expr(expr.expr)
                         )
                         self.gen_defer_stmts(
                             wrap_result,
@@ -2702,6 +2700,8 @@ class Codegen:
         return tmp
 
     def trait_value(self, value, value_typ, trait_typ):
+        if value_typ == trait_typ:
+            return value
         value_sym = self.comp.comptime_number_to_type(value_typ).symbol()
         trait_sym = trait_typ.symbol()
         size, _ = self.comp.type_size(value_typ)

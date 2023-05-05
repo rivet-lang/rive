@@ -12,10 +12,14 @@ trait ReaderWriter : Reader, Writer {
 
 struct SomeStream : ReaderWriter {
     func read(&self) uint8 {
+        _ = self;
         return b'A';
     }
 
-    func write(&self, b: uint8) bool { return true; }
+    func write(&self, b_: uint8) bool {
+        _ = self;
+        return true;
+    }
 
     func write_and_read(&self, b: uint8) uint8 {
         _ = self.write(b);

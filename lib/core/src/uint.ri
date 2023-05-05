@@ -150,7 +150,7 @@ extend uint64 : Stringable {
 
             max := 20;
             mut index := @cast(usize, max);
-            buf := @cast([*]mut uint8, internal_alloc(@cast(usize, max + 1)));
+            buf := @cast([*]mut uint8, internal_alloc(index + 1));
             buf[index] = 0;
             index -= 1;
 

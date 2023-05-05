@@ -372,7 +372,7 @@ class CGen:
         elif isinstance(expr, ir.Inst):
             self.gen_inst(expr)
         elif isinstance(expr, ir.NoneLit):
-            self.write("NULL")
+            self.write("((void*)0)")
         elif isinstance(expr, ir.IntLit):
             if expr.value() == MIN_INT64:
                 # NOTE: `-9223372036854775808` is wrong because C compilers

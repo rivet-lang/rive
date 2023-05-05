@@ -54,7 +54,7 @@ extend int32 : Stringable {
         }
         unsafe {
             mut index := @cast(usize, max);
-            buf := @cast([*]mut uint8, internal_alloc(@cast(usize, max + 1)));
+            buf := @cast([*]mut uint8, internal_alloc(index + 1));
             buf[index] = 0;
             index -= 1;
 
@@ -113,8 +113,8 @@ extend int64 : Stringable {
         }
         unsafe {
             max := 20;
-            buf := @cast([*]mut uint8, internal_alloc(@cast(usize, max + 1)));
             mut index := @cast(usize, max);
+            buf := @cast([*]mut uint8, internal_alloc(index + 1));
             buf[index] = 0;
             index -= 1;
 

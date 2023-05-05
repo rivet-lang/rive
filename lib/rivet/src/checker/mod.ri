@@ -24,7 +24,7 @@ public struct Checker {
     mut inside_defer: bool;
     mut inside_unsafe: bool;
     mut inside_guard_expr: bool;
-    mut inside_call_expr: bool;
+    mut inside_switch_cond_expr: bool;
 
     mut defer_stmts: []ast.Stmt.Defer;
 
@@ -68,6 +68,13 @@ public struct Checker {
             old_expected_type := self.expected_type;
             left0 := lefts[0];
             if !left0.is_extern {
+                if self.inside_switch_cond_expr {
+                    if left0.sym.name.is_empty() {
+                        scope.update_is_used(left0.name, true);
+                    } else {
+                        left0.sym.is_used = true;
+                    }
+                }
                 if left0.has_type {
                     self.expected_type = left0.type;
                 }
@@ -86,6 +93,7 @@ public struct Checker {
                     self.check_types(right_type, left0.type) catch |err| {
                         report.error(err.to_string(), pos);
                     };
+                    self.expected_type = old_expected_type;
                 } else {
                     right_type = self.table.comptime_number_to_type(right_type);
                     left0.type = right_type;
@@ -95,7 +103,6 @@ public struct Checker {
                         left0.sym.type = right_type;
                     }
                 }
-                self.expected_type = old_expected_type;
             }
         } else {
             mut right_type := self.check_expr(right);
@@ -117,8 +124,24 @@ public struct Checker {
                             report.error("cannot modify blank identifier (`_`)", vd.pos);
                             continue;
                         }
-                        if !vd.has_type {
-                            v_type := self.table.comptime_number_to_type(tuple_info.types[i]);
+                        if self.inside_switch_cond_expr {
+                            if vd.sym.name.is_empty() {
+                                scope.update_is_used(vd.name, true);
+                            } else {
+                                vd.sym.is_used = true;
+                            }
+                        }
+                        value_type := tuple_info.types[i];
+                        if vd.has_type {
+                            self.check_types(value_type, vd.type) catch |err| {
+                                mut errb := report.error_builder(
+                                    err.to_string(), right.position()
+                                );
+                                errb.add_note("in element {} of tuple value", i);
+                                errb.emit();
+                            };
+                        } else {
+                            v_type := self.table.comptime_number_to_type(value_type);
                             vd.type = v_type;
                             if vd.sym.name.is_empty() {
                                 scope.update_type(vd.name, right_type);
@@ -179,6 +202,173 @@ public struct Checker {
             for ch in scope.childrens {
                 self.check_scope_vars(ch);
             }
+        }
+    }
+
+    func check_expr_is_mut(
+        self, expr: ast.Expr, from_assign: bool = false, from_selector: bool = false
+    ) {
+        switch expr is {
+            .Paren as paren => self.check_expr_is_mut(paren.expr),
+            .SelfLiteral as self_lit => if self_lit.obj.is_mut {
+                self_lit.obj.is_changed = true;
+            } else {
+                mut err := report.error_builder(
+                    "cannot use `self` as mutable value", self_lit.pos
+                );
+                err.add_help("consider making `self` as mutable: `mut self`");
+                err.emit();
+            },
+            .Ident as ident => if ident.is_comptime {
+                report.error(
+                    "cannot use constant `@{}` as mutable value".fmt(ident.name),
+                    ident.pos
+                );
+            } else if ident.name == "_" {
+                return;
+            } else if ident.found and (ident.is_sym or ident.is_obj) {
+                self.check_sym_is_mut(ident.sym, ident.pos, from_selector);
+            },
+            .Selector as selector => if selector.is_path {
+                self.check_sym_is_mut(selector.sym, selector.pos, true);
+            } else {
+                switch selector.left is {
+                    .Ident as ident2 if ident2.found => if ident2.is_sym {
+                        self.check_sym_is_mut(ident2.sym, ident2.pos, true)
+                    } else if ident2.sym is ast.Var as i_var and i_var.level == .Argument {
+                        if i_var.is_mut {
+                           i_var.is_changed = true;
+                        } else {
+                            mut err := report.error_builder(
+                                "cannot use `{}` as mutable argument".fmt(ident2.name),
+                                ident.pos
+                            );
+                            err.add_help(
+                                "consider making this argument mutable: `mut {}`",
+                                ident2.name
+                            );
+                            err.emit();
+                        }
+                    },
+                    else => self.check_expr_is_mut(selector.left, from_assign, true)
+                }
+                if selector.found and !selector.field_is_mut {
+                    report.error(
+                        "field `{}` of type `{}` is immutable".fmt(
+                            selector.field_name, selector.left_type
+                        ), selector.pos
+                    );
+                }
+            },
+            .Indirect as indirect => if !indirect.is_mut {
+                kind := if selector.left_type is .Reference {
+                    "reference"
+                } else {
+                    "pointer"
+                };
+                report.error(
+                    "cannot use a immutable {} as mutable value".fmt(kind),
+                    selector.pos
+                );
+            },
+            .OptionCheck as option_check => self.check_expr_is_mut(option_check.left),
+            .NoneLiteral => report.error("`none` cannot be modified", expr.position()),
+            .StringLiteral => report.error(
+                "string literals cannot be modified", expr.position()
+            ),
+            .TupleLiteral as tuple_lit => if from_assign {
+                for value in tuple_lit.values {
+                    self.check_expr_is_mut(value);
+                }
+            } else {
+                report.error("tuple literals cannot be modified", tuple_lit.pos);
+            },
+            .EnumLiteral as enum_lit if !enum_lit.is_instance => report.error(
+                "enum literals cannot be modified", enum_lit.pos
+            ),
+            .BuiltinCall as builtin_call => {
+                for arg in builtin_call.args {
+                    self.check_expr_is_mut(arg.expr);
+                }
+            },
+            .Block as block if block.is_expr => self.check_expr_is_mut(block.expr),
+            .Index as index => {
+                if index.left_type is .Pointer as ptr {
+                    if !ptr.is_mut {
+                        report.error(
+                            "cannot modify elements of an immutable pointer", index.pos
+                        );
+                    }
+                    return;
+                }
+                expr_sym := index.left_type.symbol()?;
+                if !expr_sym.info.is_mut_arr_or_vec() {
+                    report.error(
+                        "cannot modify elements of an immutable {}".fmt(expr_sym.info),
+                        index.pos
+                    );
+                }
+            },
+            .Unary as unary => self.check_expr_is_mut(unary.right),
+            .Binary as binary => {
+                self.check_expr_is_mut(binary.left);
+                self.check_expr_is_mut(binary.right);
+            },
+            .If as if_expr => {
+                for branch in if_expr.branches {
+                    self.check_expr_is_mut(branch.expr);
+                }
+            },
+            .Switch as switch_expr => {
+                for branch in switch_expr.branches {
+                    self.check_expr_is_mut(branch.expr);
+                }
+            },
+            else => {}
+        }
+    }
+
+    func check_sym_is_mut(self, sym: ast.Sym, pos: token.Pos, from_selector: bool) {
+        _ = self;
+        switch sym is {
+            ast.Const => report.error(
+                "cannot use constant `{}` as mutable value".fmt(sym.name), pos
+            ),
+            ast.Var as var_info if !(from_selector and var_info.level == .Local) => {
+                if var_info.is_mut {
+                    var_info.is_changed = true;
+                } else {
+                    err := if var_info.level == .Argument {
+                        mut err_b := report.error_builder(
+                            "cannot use variable `{}` as mutable argument".fmt(sym.name), pos
+                        );
+                        err_b.add_help(
+                            "consider making this argument mutable: `mut {}`", var_info.name
+                        );
+                        err_b
+                    } else {
+                        mut err_b := report.error_builder(
+                            "cannot use variable `{}` as mutable value".fmt(sym.name), pos
+                        );
+                        err_b.add_help(
+                            "consider making this {} mutable: `mut {}`", var_info.type_of(),
+                            var_info.name
+                        );
+                        err_b
+                    };
+                    err.emit();
+                }
+            },
+            else => {}
+        }
+    }
+
+    func check_expr_evaluated_but_not_used(self, expr_type: ast.Type, pos: token.Pos) {
+        _ = self;
+        if !((expr_type is .Result as res and !res.inner.is_void())
+            or (expr_type is .Option as opt and !opt.inner.is_void())
+            or expr_type.is_void()) {
+            report.warn("expression evaluated but not used", pos);
         }
     }
 }

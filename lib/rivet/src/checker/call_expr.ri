@@ -8,9 +8,6 @@ import ../report;
 extend Checker {
     func check_call(mut self, mut call_expr: ast.Expr.Call) ast.Type {
         call_expr.type = .Void();
-        old_inside_call_expr := self.inside_call_expr;
-        self.inside_call_expr = true;
-        defer self.inside_call_expr = old_inside_call_expr;
 
         mut left := call_expr.left;
         inside_parens := if left is .Paren as paren
@@ -448,16 +445,16 @@ extend Checker {
             spread_expr_t := self.check_expr(call_expr.spread_expr);
             spread_expr_sym := spread_expr_t.symbol()?;
             if spread_expr_sym.info is .Vector {
+                last_arg_type := func_.args[func_.args.len - 1].type;
+                vec_t := ast.Type.Basic(last_arg_type.symbol()?);
+                self.check_types(spread_expr_t, vec_t) catch |err| {
+                    report.error(err.to_string(), call_expr.spread_expr.position());
+                };
+            } else {
                 report.error(
                     "spread operator can only be used with vectors",
                     call_expr.spread_expr.position()
                 );
-            } else {
-                last_arg_type := func_.args[func_.args.len - 1].type;
-                vec_t := ast.Type.Vector(last_arg_type, sym: last_arg_type.symbol()?);
-                self.check_types(spread_expr_t, vec_t) catch |err| {
-                    report.error(err.to_string(), call_expr.spread_expr.position());
-                };
             }
         }
     }

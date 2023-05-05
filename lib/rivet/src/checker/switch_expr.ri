@@ -1,0 +1,216 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../utils;
+import ../report;
+import ../utils/maps;
+
+extend Checker {
+    const SWITCH_EXHAUSTIVE_CUTOFF_LIMIT = 12;
+
+    func check_switch(mut self, mut switch_expr: ast.Expr.Switch) ast.Type {
+        old_expected_type := self.expected_type;
+        switch_expr.type = .Void();
+        if switch_expr.branches.len == 1 and switch_expr.has_else {
+            report.error(
+                "`switch` must have at least one non `else` branch",
+                switch_expr.branches[0].pos
+            );
+            return switch_expr.type;
+        }
+
+        is_guard := switch_expr.expr is .Guard;
+        old_inside_switch_cond_expr := self.inside_switch_cond_expr;
+        self.inside_switch_cond_expr = true;
+        mut expr_type := self.check_expr(switch_expr.expr);
+        self.inside_switch_cond_expr = old_inside_switch_cond_expr;
+        expr_sym := expr_type.symbol() ?? {
+            if !is_guard {
+                report.error(
+                    "invalid type `{}` used as `switch` condition".fmt(expr_type),
+                    switch_expr.expr.position()
+                );
+                return .Void();
+            }
+            ast.TypeSym()
+        };
+        if is_guard {
+            expr_type = @cast(ast.Expr.Guard, switch_expr.expr).vars[0].type;
+        } else {
+            if switch_expr.is_typeswitch and !(expr_sym.info is .Enum
+                or expr_sym.info is .Trait) {
+                mut err := report.error_builder(
+                    "invalid type for type-switch", switch_expr.expr.position()
+                );
+                err.add_note("expected enum or trait type, found `{}`", expr_type);
+                err.emit();
+            } else if expr_sym.info is .Enum as enum_info {
+                if enum_info.is_boxed and !switch_expr.is_typeswitch {
+                    mut err := report.error_builder(
+                        "cannot use `switch` with a non-boxed enum type", switch_expr.pos
+                    );
+                    err.add_note("use a type-switch instead");
+                    err.emit();
+                } else if !enum_info.is_boxed and switch_expr.is_typeswitch {
+                    mut err := report.error_builder(
+                        "cannot use a type-switch with a non-boxed enum type",
+                        switch_expr.pos
+                    );
+                    err.add_note("use a simple `switch` instead");
+                    err.emit();
+                }
+            }
+        }
+
+        mut branch_exprs := maps.MapStringUsize();
+        switch_expr.expected_type = self.expected_type;
+        for ib, branch in switch_expr.branches {
+            if !branch.is_else {
+                self.expected_type = expr_type;
+                for i, mut case in branch.cases {
+                    mut case_t := self.check_expr(case);
+                    if switch_expr.is_typeswitch {
+                        case_t = self.table.comptime_number_to_type(case_t);
+                    }
+                    if i == 0 {
+                        branch.var_type = case_t;
+                    }
+                    self.check_types(case_t, expr_type) catch |err| {
+                        report.error(err.to_string(), case.position());
+                    };
+                    key := case.to_string();
+                    if val := branch_exprs.get(key) {
+                        if val == 1 {
+                            report.error(
+                                "switch case is handled more than once", case.position()
+                            );
+                        } else {
+                            branch_exprs.set(key, val + 1);
+                        }
+                    } else {
+                        branch_exprs.set(key, 1);
+                    }
+                }
+                if branch.has_var {
+                    if branch.var_is_mut {
+                        self.check_expr_is_mut(switch_expr.expr);
+                    }
+                    if branch.cases.len != 1 {
+                        report.error("multiple cases cannot have variable", branch.var_pos);
+                    } else if !is_guard and expr_sym.is_boxed() {
+                        if expr_sym.info is .Enum {
+                            case0 := @cast(
+                                ast.Expr.EnumLiteral, branch.cases[0]
+                            ).variant;
+                            if case0.has_type {
+                                branch.var_type = case0.type;
+                                switch_expr.scope.update_is_hidden_ref(
+                                    branch.var_name, branch.var_is_mut
+                                );
+                            } else {
+                                report.error(
+                                    "cannot use void expression as value",
+                                    branch.cases[0].position()
+                                );
+                            }
+                        }
+                        switch_expr.scope.update_type(branch.var_name, branch.var_type);
+                    } else {
+                        report.error("only boxed types can have vars", branch.var_pos);
+                    }
+                }
+                if branch.has_cond and self.check_expr(branch.cond) != self.table.bool_t {
+                    report.error(
+                        "non-boolean expression use as `switch` branch condition",
+                        branch.cond.position()
+                    );
+                }
+                self.expected_type = old_expected_type;
+            }
+            mut branch_t := ast.Type.Void();
+            if ib == 0 {
+                branch_t = self.check_expr(branch.expr);
+                if switch_expr.expected_type is .Void {
+                    switch_expr.expected_type = branch_t;
+                }
+                switch_expr.type = branch_t;
+            } else {
+                old_expected_type2 := self.expected_type;
+                self.expected_type = switch_expr.expected_type;
+                branch_t = self.check_expr(branch.expr);
+                self.expected_type = old_expected_type2;
+                self.check_types(branch_t, switch_expr.expected_type) catch |err| {
+                    report.error(err.to_string(), branch.expr.position());
+                };
+            }
+            branch.type = branch_t;
+        }
+
+        // check that expressions are exhaustive, this is achieved either by putting
+		// an `else` or when the `switch` is on an enum by listing all variants.
+		mut is_exhaustive := true;
+		mut unhandled := @vec(string);
+		if expr_type == self.table.bool_t and switch_expr.branches.len == 1 {
+            for v in ["true", "false"]! {
+                if !branch_exprs.contains(v) {
+                    is_exhaustive = false;
+                    unhandled.push("`{}`".fmt(v));
+                }
+            }
+		} else if !is_guard and expr_sym.info is .Enum as enum_info2 {
+            for variant in enum_info2.variants {
+                e := ".".concat(variant.name);
+                if !branch_exprs.contains(e) {
+                    is_exhaustive = false;
+                    unhandled.push("`{}`".fmt(e));
+                }
+            }
+		} else {
+            is_exhaustive = false;
+		}
+
+		mut has_else := switch_expr.has_else;
+		mut else_branch := switch_expr.branches[switch_expr.branches.len - 1];
+		if !has_else {
+            for i, branch in switch_expr.branches {
+                if branch.is_else and i != switch_expr.branches.len - 1 {
+                    report.error("`else` must be the last branch of `switch`", branch.pos);
+                    else_branch = branch;
+                    has_else = true;
+                }
+            }
+		}
+		if is_exhaustive {
+            if has_else {
+                report.warn("`switch` is exhaustive, `else` is unnecessary", else_branch.pos);
+            }
+            return switch_expr.expected_type;
+		}
+		if has_else {
+            return switch_expr.expected_type;
+		}
+
+		mut err := report.error_builder("`switch` must be exhaustive", switch_expr.pos);
+		if unhandled.len > 0 {
+            mut err_details := "add `switch` branches for: ";
+            if unhandled.len < SWITCH_EXHAUSTIVE_CUTOFF_LIMIT {
+                err_details = err_details.concat(utils.join(unhandled, ", "));
+            } else {
+                err_details = err_details.concat(
+                    utils.join(unhandled[..SWITCH_EXHAUSTIVE_CUTOFF_LIMIT], ", ")
+                );
+                remaining := unhandled.len - SWITCH_EXHAUSTIVE_CUTOFF_LIMIT;
+                if remaining > 0 {
+                    err_details = err_details.concat(", and {} others...".fmt(remaining));
+                }
+            }
+            err.add_help(err_details);
+		} else {
+            err.add_help("add `else` branch at the end");
+		}
+		err.emit();
+        return switch_expr.expected_type;
+    }
+}

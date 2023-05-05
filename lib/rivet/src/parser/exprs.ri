@@ -544,7 +544,8 @@ extend Parser {
                 self.parse_expr()
             }
         };
-        is_typeswitch := self.prev_tok.kind != .KwSwitch and self.accept(.KwIs);
+        is_typeswitch := expr !is .Guard and self.prev_tok.kind != .KwSwitch
+            and self.accept(.KwIs);
         self.expect(.Lbrace);
         self.inside_switch_header = old_inside_switch_header;
         while {
@@ -661,7 +662,7 @@ extend Parser {
     }
 
     func parse_guard_expr(mut self) ast.Expr {
-        pos := self.prev_tok.pos;
+        pos := self.tok.pos;
         mut vars := @vec(ast.ObjectData);
         if self.accept(.Lparen) {
             while {
@@ -683,7 +684,7 @@ extend Parser {
         } else {
             .Empty(self.tok.pos)
         };
-        return .Guard(vars, expr, has_cond, cond, self.scope, pos);
+        return .Guard(vars, expr, has_cond, cond, self.scope, pos + self.prev_tok.pos);
     }
 
     [inline]
