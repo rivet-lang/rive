@@ -8,7 +8,7 @@
 
 import c;
 
-struct backtrace_state;
+struct BacktraceState;
 
 struct BacktraceData {
     mut has_error: bool;
@@ -21,10 +21,10 @@ extern (C) {
     func backtrace_create_state(
         filename: [*]uint8, threaded: bool, error_cb: BacktraceErrorCB,
         data: ?mut_anyptr
-    ) ?*mut backtrace_state;
+    ) ?*mut BacktraceState;
 
     func backtrace_full(
-        state: *backtrace_state, skip: int32, cb: BacktraceFullCB,
+        state: *BacktraceState, skip: int32, cb: BacktraceFullCB,
         error_cb: BacktraceErrorCB, data: mut_anyptr
     ) int32;
 }
@@ -34,7 +34,7 @@ var state = unsafe {
 };
 
 func bt_print_callback(
-    data_: mut_anyptr, pc_: int32, filename_ptr: ?[*]mut uint8, lineno: int32,
+    _data: mut_anyptr, _pc: int32, filename_ptr: ?[*]mut uint8, lineno: int32,
     fn_ptr: ?[*]mut uint8
 ) int32 {
     unsafe {

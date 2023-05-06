@@ -5,12 +5,12 @@
 import std/traits;
 
 [boxed]
-public struct KindMap {
-    public key: Kind;
-    public value: string;
+struct KindMap {
+    key: Kind;
+    value: string;
 }
 
-public var KindStrings = [
+var kind_strings = [
     KindMap(.Unknown, "unknown"),
     KindMap(.EndOfFile, "end of file"),
     KindMap(.DocComment, "doc-comment"),
@@ -246,7 +246,7 @@ public enum Kind : traits.Stringable {
     }
 
     public func to_string(&self) string {
-        for km in KindStrings {
+        for km in kind_strings {
             if km.key == self.* {
                 return km.value;
             }

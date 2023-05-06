@@ -10,7 +10,7 @@ import std/console/styles;
 public const LF: uint8 = 10;
 public const CR: uint8 = 13;
 
-var StderrSupportStyles = styles.stderr_support_styles();
+var stderr_support_styles = styles.stderr_support_styles();
 
 [inline]
 public func min(a: usize, b: usize) usize {
@@ -58,30 +58,30 @@ public func info(msg: string, args: ...traits.Stringable) {
 
 [inline]
 public func bold(msg: string) string {
-    return if StderrSupportStyles { styles.bold(msg) } else { msg };
+    return if stderr_support_styles { styles.bold(msg) } else { msg };
 }
 
 [inline]
 public func red(msg: string) string {
-    return if StderrSupportStyles { styles.red(msg) } else { msg };
+    return if stderr_support_styles { styles.red(msg) } else { msg };
 }
 
 [inline]
 public func yellow(msg: string) string {
-    return if StderrSupportStyles { styles.yellow(msg) } else { msg };
+    return if stderr_support_styles { styles.yellow(msg) } else { msg };
 }
 
 [inline]
 public func cyan(msg: string) string {
-    return if StderrSupportStyles { styles.cyan(msg) } else { msg };
+    return if stderr_support_styles { styles.cyan(msg) } else { msg };
 }
 
 [inline]
 public func blue(msg: string) string {
-    return if StderrSupportStyles { styles.blue(msg) } else { msg };
+    return if stderr_support_styles { styles.blue(msg) } else { msg };
 }
 
 [inline]
 public func green(msg: string) string {
-    return if StderrSupportStyles { styles.green(msg) } else { msg };
+    return if stderr_support_styles { styles.green(msg) } else { msg };
 }

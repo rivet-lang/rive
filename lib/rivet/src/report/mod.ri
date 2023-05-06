@@ -10,16 +10,16 @@ import ../prefs;
 import ../token;
 import ../utils;
 
-public var mut Report_Table = ReportTable();
+public var mut report_table = ReportTable();
 
 [inline]
 public func total_errors() usize {
-    return Report_Table.errors;
+    return report_table.errors;
 }
 
 [inline]
 public func total_warns() usize {
-    return Report_Table.warns;
+    return report_table.warns;
 }
 
 [boxed]
@@ -83,14 +83,14 @@ public struct ReportBuilder {
     }
 
     public func emit(self) {
-        if Report_Table.last_pos.line == self.pos.line {
+        if report_table.last_pos.line == self.pos.line {
             return;
         }
-        Report_Table.last_pos = self.pos;
+        report_table.last_pos = self.pos;
         if self.kind == .Error {
-            Report_Table.errors += 1;
+            report_table.errors += 1;
         } else {
-            Report_Table.warns += 1;
+            report_table.warns += 1;
         }
         console.eprintln(
             utils.bold("{}: {} {}"), self.pos.to_report_string(), if self.kind == .Error {

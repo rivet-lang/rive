@@ -10,7 +10,7 @@ import ../console;
 import ../process;
 
 public const MAX_ARGS_NUMBER = 4048;
-public var Space = "                            ";
+public var space = "                            ";
 
 /// Data object storing information about a defined flag.
 public struct Flag : traits.Stringable {
@@ -283,7 +283,7 @@ public struct FlagParser {
                     }
                 }
                 len = sb.len() - len;
-                sb.write_fmt("{}{}", Space[len..], flag.usage);
+                sb.write_fmt("{}{}", space[len..], flag.usage);
                 if i < self.flags.len - 1 {
                     sb.writeln();
                 }

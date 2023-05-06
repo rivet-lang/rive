@@ -16,7 +16,7 @@ struct SomeStream : ReaderWriter {
         return b'A';
     }
 
-    func write(&self, b_: uint8) bool {
+    func write(&self, _b: uint8) bool {
         _ = self;
         return true;
     }

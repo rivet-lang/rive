@@ -7,10 +7,10 @@ import core;
 
 import ../../mem;
 
-public alias MAX_PATH_LEN = libc.MAX_PATH_LEN;
+public alias max_path_len = libc.MAX_PATH_LEN;
 public const SEPARATOR = #if _WINDOWS_ b'\\' #else b'/' #endif;
-public var SEPARATOR_STR = #if _WINDOWS_ "\\" #else "/" #endif;
-public var DELIMITER = #if _WINDOWS_ ";" #else ":" #endif;
+public var separator_str = #if _WINDOWS_ "\\" #else "/" #endif;
+public var delimiter = #if _WINDOWS_ ";" #else ":" #endif;
 
 /// Returns `true` if the given byte is a valid path separator
 [inline]

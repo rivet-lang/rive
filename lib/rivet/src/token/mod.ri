@@ -6,7 +6,7 @@ import std/traits;
 
 import ../utils;
 
-public var NO_POS = Pos();
+public var no_pos = Pos();
 
 public struct Pos : traits.Stringable {
     public file: string;

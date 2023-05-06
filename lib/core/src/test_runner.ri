@@ -4,39 +4,39 @@
 
 #if _TESTS_
 
-var SUPPORT_COLOR = console_is_atty(1);
+var support_color = console_is_atty(1);
 
-var OK_STATUS = bold(green("-> OK"));
-var FAILED_STATUS = bold(red("-> FAIL"));
-var SKIP_STATUS = bold(yellow("-> SKIP"));
+var ok_status = bold(green("-> OK"));
+var failed_status = bold(red("-> FAIL"));
+var skip_status = bold(yellow("-> SKIP"));
 
 extern (Rivet) {
     var test_runner: TestRunner;
 }
 
 public func bold(msg: string) string {
-    if !SUPPORT_COLOR {
+    if !support_color {
         return msg;
     }
     return "\x1b[1m{}\x1b[22m".fmt(msg);
 }
 
 public func green(msg: string) string {
-    if !SUPPORT_COLOR {
+    if !support_color {
         return msg;
     }
     return "\x1b[32m{}\x1b[39m".fmt(msg);
 }
 
 public func red(msg: string) string {
-    if !SUPPORT_COLOR {
+    if !support_color {
         return msg;
     }
     return "\x1b[31m{}\x1b[39m".fmt(msg);
 }
 
 public func yellow(msg: string) string {
-    if !SUPPORT_COLOR {
+    if !support_color {
         return msg;
     }
     return "\x1b[33m{}\x1b[39m".fmt(msg);
@@ -111,23 +111,23 @@ public struct TestRunner {
     }
 
     func print_ok(mut self) {
-        console_eprintln(OK_STATUS);
+        console_eprintln(ok_status);
         self.ok_tests += 1;
     }
 
     func print_skip(mut self) {
-        console_eprintln(SKIP_STATUS);
+        console_eprintln(skip_status);
         self.skip_tests += 1;
     }
 
     func print_failed(mut self, pos: string, msg: string) {
-        console_eprintln(FAILED_STATUS);
+        console_eprintln(failed_status);
         console_eprintln("     at {}: {}", bold(pos), msg);
         self.fail_tests += 1;
     }
 
     func print_error_returned(mut self, pos: string, err: Error) {
-        console_eprintln(FAILED_STATUS);
+        console_eprintln(failed_status);
         console_eprintln("     at {}: error returned: {}", bold(pos), err);
         self.fail_tests += 1;
     }

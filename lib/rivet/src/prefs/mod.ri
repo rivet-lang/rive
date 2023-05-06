@@ -10,12 +10,12 @@ import std/fs/path;
 
 import ../utils;
 
-public var RIVET_DIR = path.join(env.HOME_DIR, ".rivet_lang")!;
-public var RIVETC_DIR = path.dirname(process.executable()!)?;
+public var rivet_dir = path.join(env.home_dir, ".rivet_lang")!;
+public var rivetc_dir = path.dirname(process.executable()!)?;
 
-public var OBJ_DIR = path.join(RIVET_DIR, "obj")!;
-public var LIB_DIR = path.join(RIVET_DIR, "lib")!;
-public var RIVETC_LIB_DIR = path.join(RIVETC_DIR, "lib")!;
+public var obj_dir = path.join(rivet_dir, "obj")!;
+public var lib_dir = path.join(rivet_dir, "lib")!;
+public var rivetc_lib_dir = path.join(rivetc_dir, "lib")!;
 
 public enum Backend as uint8 {
     C;
@@ -43,7 +43,7 @@ public enum LinkMode as uint8 {
 }
 
 func print_help() {
-    console.eprintln(utils.HELP);
+    console.eprintln(utils.help);
     process.exit(0);
 }
 
@@ -71,7 +71,7 @@ public struct Prefs {
     public mut run_output: bool;
     public mut run_output_args: []string;
 
-    public mut library_path: []string = [RIVETC_LIB_DIR, LIB_DIR];
+    public mut library_path: []string = [rivetc_lib_dir, lib_dir];
     public mut libraries_to_link: []string;
     public mut objects_to_link: []string;
 
@@ -100,7 +100,7 @@ public struct Prefs {
                 // informative options
                 "-h", "--help" => print_help(),
                 "-V", "--version" => {
-                    console.eprintln(utils.VERSION);
+                    console.eprintln(utils.version);
                     process.exit(0);
                 },
 

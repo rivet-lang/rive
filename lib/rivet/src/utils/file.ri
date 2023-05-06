@@ -7,17 +7,17 @@ import std/env;
 import std/fs/path;
 import std/process;
 
-var NORMALIZED_WORKDIR = process.WD_AT_STARTUP.replace("\\", "/").concat("/");
-var ERROR_PATHS_ABSOLUTE = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";
+var normalized_workdir = process.wd_at_startup.replace("\\", "/").concat("/");
+var error_paths_absolute = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";
 
 // NOTE: path_styled_for_error_messages will *always* use `/` in the error paths, no
 // matter the OS, to ensure stable compiler error output in the tests.
 public func path_styled_for_error_messages(path_: string) string {
 	rpath := (path.resolve(path_) catch path_).replace("\\", "/");
-	return if ERROR_PATHS_ABSOLUTE {
+	return if error_paths_absolute {
 		rpath
 	} else {
-		path.relative(NORMALIZED_WORKDIR, rpath) catch path_
+		path.relative(normalized_workdir, rpath) catch path_
 	};
 }
 

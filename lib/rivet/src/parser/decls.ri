@@ -561,7 +561,7 @@ extend Parser {
         mut is_method := false;
         mut self_is_mut := false;
         mut self_is_ref := false;
-        mut self_pos := token.NO_POS;
+        mut self_pos := token.no_pos;
         mut args := @vec(ast.Arg);
         mut has_named_args := false;
         mut is_variadic := false;

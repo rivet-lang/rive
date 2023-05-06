@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-var COMPARATOR_SEP = " ";
-var COMPARATOR_SET_SEP = " || ";
-var HYPHEN_RANGE_SEP = " - ";
-var X_RANGE_SYMBOLS = "Xx*";
+var comparator_sep = " ";
+var comparator_set_sep = " || ";
+var hyphen_range_sep = " - ";
+var x_range_symbols = "Xx*";
 
 enum Operator as uint8 {
     Gt,
@@ -69,7 +69,7 @@ struct ComparatorSet {
     comparators: []Comparator;
 
     func parse(input: string) !ComparatorSet {
-        raw_comparators := input.split(COMPARATOR_SEP);
+        raw_comparators := input.split(comparator_sep);
         if raw_comparators.len > 2 {
             return InvalidComparatorFormatError(
                 "invalid format of comparator set for input '{}'".fmt(input)
@@ -92,7 +92,7 @@ struct ComparatorSet {
             b'~' => expand_tilda(input[1..]),
             b'^' => expand_tilda(input[1..]),
             else => {
-                if input.contains(HYPHEN_RANGE_SEP) {
+                if input.contains(hyphen_range_sep) {
                     expand_hyphen(input)
                 } else {
                     Range.expand_x(input)
@@ -115,7 +115,7 @@ struct Range {
     comparator_sets: []ComparatorSet;
 
     func parse(input: string) ?Range {
-        raw_comparator_sets := input.split(COMPARATOR_SET_SEP);
+        raw_comparator_sets := input.split(comparator_set_sep);
         mut comparator_sets := @vec(ComparatorSet);
         for raw_comp_set in raw_comparator_sets {
             if can_expand(raw_comp_set) {
@@ -130,7 +130,7 @@ struct Range {
     func parse_x(input: string) ?Version {
         raw_ver := RawVersion.parse(input).complete();
         for typ in VERSIONS {
-            if raw_ver.raw_ints[typ].index_of_any(X_RANGE_SYMBOLS) is none {
+            if raw_ver.raw_ints[typ].index_of_any(x_range_symbols) is none {
                 continue;
             }
             switch typ {
@@ -178,8 +178,8 @@ struct Range {
 
 func can_expand(input: string) bool {
     input0 := input[0];
-    return input0 == b'~' or input0 == b'^' or input.contains(HYPHEN_RANGE_SEP)
-        or input.index_of_any(X_RANGE_SYMBOLS) !is none;
+    return input0 == b'~' or input0 == b'^' or input.contains(hyphen_range_sep)
+        or input.index_of_any(x_range_symbols) !is none;
 }
 
 func expand_tilda(raw_version: string) ?ComparatorSet {
@@ -205,7 +205,7 @@ func expand_caret(raw_version: string) ?ComparatorSet {
 }
 
 func expand_hyphen(raw_range: string) ?ComparatorSet {
-    raw_versions := raw_range.split(HYPHEN_RANGE_SEP);
+    raw_versions := raw_range.split(hyphen_range_sep);
     if raw_versions.len != 2 {
         return none;
     }

@@ -7,11 +7,11 @@ import std/strings;
 
 import ../token;
 
-var mut SYM_IDS: usize = 0;
+var mut sym_ids: usize = 0;
 
 func new_sym_id() usize {
-    res := SYM_IDS;
-    SYM_IDS += 1;
+    res := sym_ids;
+    sym_ids += 1;
     return res;
 }
 
@@ -186,7 +186,7 @@ public struct Module : Sym {
             is_method: true,
             self_type: .Basic(type_sym),
             self_is_mut: true,
-            args: [Arg("value", type: elem_type, pos: token.NO_POS)],
+            args: [Arg("value", type: elem_type, pos: token.no_pos)],
             ret_type: .Void(),
             has_body: true
         )) catch {};
@@ -370,7 +370,7 @@ public struct Func : Sym {
             ret_type: self.ret_type,
             sym: universe.add_or_get_func(self),
             has_sym: true,
-            pos: token.NO_POS
+            pos: token.no_pos
         );
     }
 }

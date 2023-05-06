@@ -8,13 +8,13 @@
 
 import c/libc;
 
-public var SHARED_LIB_EXT = get_shared_library_extension();
+public var shared_lib_extension = get_shared_library_extension();
 
 /// Returns a library name with the operating system specific extension for shared
 /// libraries.
 [inline]
 public func library_name(libname: string) string {
-    return libname.concat(SHARED_LIB_EXT);
+    return libname.concat(shared_lib_extension);
 }
 
 [boxed]
@@ -59,10 +59,11 @@ struct Library {
 
     [inline]
     public func exists(self, symbol: string) bool {
-        return self.address_of(symbol) !is none;
+        return if _ := self.address_of(symbol) { true } else { false };
     }
 
     ~Self(mut self) {
+        @ignore_not_mutated_warn(self);
         _ = unsafe { libc.dlclose(self.ptr) };
     }
 }

@@ -159,7 +159,7 @@ public struct Table {
                 .ReturnTypeEqualToArgumentType(0)
             ]),
 
-            .Func("unreachable", [], .Never(token.NO_POS)),
+            .Func("unreachable", [], .Never(token.no_pos)),
             .Func("breakpoint", []),
             .Func("assert", [
                 BuiltinArg("cond", type: self.bool_t),

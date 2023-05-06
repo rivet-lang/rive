@@ -208,7 +208,7 @@ public enum Type : traits.Stringable {
     [inline]
     public func position(self) token.Pos {
         return switch self is {
-            .Void, .None => token.NO_POS,
+            .Void, .None => token.no_pos,
             .Never as never_pos => never_pos,
             .Option as opt_t => opt_t.pos,
             .Result as res_t => res_t.pos,

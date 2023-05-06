@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public var HELP = "Usage: rivet build [OPTIONS] INPUT
+public var help = "Usage: rivet build [OPTIONS] INPUT
        rivet run   [OPTIONS] INPUT [-- [args]]
        rivet test  [OPTIONS] INPUT
 

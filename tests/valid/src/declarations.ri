@@ -1,20 +1,20 @@
-var MyVar = 1;
+var my_var = 1;
 const MY_CONST = "Speak";
 
 test "implicitly typed variable" {
-    @assert(MyVar == 1);
+    @assert(my_var == 1);
 }
 
 test "implicitly typed constant" {
     @assert(MY_CONST == "Speak");
 }
 
-var MY_ARRAY = [1, 2, 3, 4]!;
+var my_array = [1, 2, 3, 4]!;
 
 test "global static array" {
-    @assert(MY_ARRAY.len == 4);
-    @assert(MY_ARRAY[0] == 1);
-    @assert(MY_ARRAY[1] == 2);
-    @assert(MY_ARRAY[2] == 3);
-    @assert(MY_ARRAY[3] == 4);
+    @assert(my_array.len == 4);
+    @assert(my_array[0] == 1);
+    @assert(my_array[1] == 2);
+    @assert(my_array[2] == 3);
+    @assert(my_array[3] == 4);
 }

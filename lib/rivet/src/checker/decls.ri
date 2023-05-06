@@ -44,44 +44,56 @@ extend Checker {
                 );
                 self.inside_var_decl = false;
             },
-            .Const as const_decl => if const_decl.has_type {
-                old_expected_type := self.expected_type;
-                self.expected_type = const_decl.type;
-                const_type := self.check_expr(const_decl.expr);
-                self.expected_type = old_expected_type;
-                self.check_types(const_type, const_decl.type) catch |err| {
-                    report.error(err.to_string(), const_decl.expr.position());
-                };
-            } else {
-                const_decl.type = self.check_expr(const_decl.expr);
-                @cast(ast.Const, const_decl.sym).type = const_decl.type;
+            .Const as const_decl => {
+                self.checkNameCase(.Upper, "constant", const_decl.name, const_decl.pos);
+                if const_decl.has_type {
+                    old_expected_type := self.expected_type;
+                    self.expected_type = const_decl.type;
+                    const_type := self.check_expr(const_decl.expr);
+                    self.expected_type = old_expected_type;
+                    self.check_types(const_type, const_decl.type) catch |err| {
+                        report.error(err.to_string(), const_decl.expr.position());
+                    };
+                } else {
+                    const_decl.type = self.check_expr(const_decl.expr);
+                    @cast(ast.Const, const_decl.sym).type = const_decl.type;
+                }
             },
             .Enum as enum_decl => {
+                self.checkNameCase(.Pascal, "enum", enum_decl.name, enum_decl.pos);
                 for variant in enum_decl.variants {
+                    self.checkNameCase(.Pascal, "enum variant", variant.name, variant.pos);
                     self.check_decls(variant.decls);
                 }
                 self.check_decls(enum_decl.decls);
             },
             .Trait as trait_decl => {
+                self.checkNameCase(.Pascal, "trait", trait_decl.name, trait_decl.pos);
                 self.check_decls(trait_decl.decls);
             },
             .Struct as struct_decl => {
+                self.checkNameCase(.Pascal, "struct", struct_decl.name, struct_decl.pos);
                 self.check_decls(struct_decl.decls);
             },
-            .Field as field_decl => if field_decl.has_def_expr {
-                old_expected_type := self.expected_type;
-                self.expected_type = field_decl.type;
-                field_type := self.check_expr(field_decl.def_expr);
-                self.expected_type = old_expected_type;
-                self.check_types(field_type, field_decl.type) catch |err| {
-                    report.error(err.to_string(), field_decl.def_expr.position());
-                };
+            .Field as field_decl => {
+                self.checkNameCase(.Snake, "field", field_decl.name, field_decl.pos);
+                if field_decl.has_def_expr {
+                    old_expected_type := self.expected_type;
+                    self.expected_type = field_decl.type;
+                    field_type := self.check_expr(field_decl.def_expr);
+                    self.expected_type = old_expected_type;
+                    self.check_types(field_type, field_decl.type) catch |err| {
+                        report.error(err.to_string(), field_decl.def_expr.position());
+                    };
+                }
             },
             .Extend as extend_decl => {
                 self.check_decls(extend_decl.decls);
             },
             .Func as func_decl => {
+                // self.checkNameCase(.Camel, "function", func_decl.name, func_decl.pos);
                 for arg in func_decl.args {
+                    self.checkNameCase(.Snake, "argument", arg.name, arg.pos);
                     if arg.has_def_expr {
                         if func_decl.abi != .Rivet {
                             report.error("extern functions cannot have default arguments", arg.pos);

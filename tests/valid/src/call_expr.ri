@@ -8,17 +8,17 @@ test "call expression with default arguments" {
     default_arg(x: 10);
 }
 
-func foo(a_: bool = false, b_: bool = false) { }
+func foo(_a: bool = false, _b: bool = false) { }
 
-func bar(a_: bool, b_: bool = true) { }
+func bar(_a: bool, _b: bool = true) { }
 
-func baz(a_: bool, b_: bool) { }
+func baz(_a: bool, _b: bool) { }
 
-func qux(a_: bool) { }
+func qux(_a: bool) { }
 
 test "call expression with named arguments" {
-    foo(a_: true, b_: true);
-    bar(true, b_: true);
+    foo(_a: true, _b: true);
+    bar(true, _b: true);
     baz(true, true);
 
     a := true;

@@ -4,7 +4,7 @@
 
 import std/process;
 
-public var VERSION = "0.1.0b";
+public var version = "0.1.0b";
 
 public func last_commit_hash() string {
     if result := process.execute("git log -n 1 --pretty=format:%h") {
@@ -19,11 +19,11 @@ public func last_commit_hash() string {
 public func full_version() string {
     return if result := process.execute("git log -n 1 --pretty=format:'%h %as'") {
         if result.exit_code == -1 {
-            "Rivet ".concat(VERSION)
+            "Rivet ".concat(version)
         } else {
-            "Rivet {} ({})".fmt(VERSION, result.output)
+            "Rivet {} ({})".fmt(version, result.output)
         }
     } else {
-        "Rivet ".concat(VERSION)
+        "Rivet ".concat(version)
     };
 }

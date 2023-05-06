@@ -68,6 +68,9 @@ public struct Checker {
             old_expected_type := self.expected_type;
             left0 := lefts[0];
             if !left0.is_extern {
+                if left0.name != "_" {
+                    self.checkNameCase(.Snake, "variable", left0.name, left0.pos);
+                }
                 if self.inside_switch_cond_expr {
                     if left0.sym.name.is_empty() {
                         scope.update_is_used(left0.name, true);
@@ -123,6 +126,8 @@ public struct Checker {
                         if vd.name == "_" {
                             report.error("cannot modify blank identifier (`_`)", vd.pos);
                             continue;
+                        } else {
+                            self.checkNameCase(.Snake, "variable", vd.name, vd.pos);
                         }
                         if self.inside_switch_cond_expr {
                             if vd.sym.name.is_empty() {
@@ -170,8 +175,8 @@ public struct Checker {
         if !self.inside_extern {
             for sym in scope.syms {
                 if sym is ast.Var as var_info {
-                    if !var_info.is_used and !var_info.name.ends_with("_") {
-                        report.warn(
+                    if !var_info.is_used and !var_info.name.starts_with("_") {
+                        mut warn_b := report.warn_builder(
                             if var_info.level == .Receiver {
                                 "receiver `self` is not used"
                             } else {
@@ -183,8 +188,13 @@ public struct Checker {
                             },
                             var_info.pos
                         );
+                        warn_b.add_help(
+                            "if this is intentional, prefix it with an underscore: `_{}`", var_info.name
+                        );
+                        warn_b.add_help("or use the blank identifier (`_`)");
+                        warn_b.emit();
                     } else if var_info.is_mut and !var_info.is_changed {
-                        report.warn(
+                        mut warn_b := report.warn_builder(
                             if var_info.level == .Receiver {
                                 "receiver `self` does not need to be mutable"
                             } else {
@@ -196,6 +206,14 @@ public struct Checker {
                             },
                             var_info.pos
                         );
+                        warn_b.add_help(if var_info.level == .Local {
+                            "remove `mut` from the assignment"
+                        } else if var_info.level == .Receiver {
+                            "remove `mut` from receiver definition"
+                        } else {
+                            "remove `mut` from the declaration"
+                        });
+                        warn_b.emit();
                     }
                 }
             }
