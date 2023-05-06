@@ -1,0 +1,51 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+public func is_snake_case(name: string) bool {
+    for c in name.as_bytes() {
+        if c == b'_' {
+            continue;
+        }
+        if c.is_upper() {
+            return false;
+        }
+    }
+    return true;
+}
+
+public func is_camel_case(name: string) bool {
+    if !name[0].is_lower() {
+        return false;
+    }
+    for c in name.as_bytes() {
+        if c == b'_' {
+            return false;
+        }
+    }
+    return true;
+}
+
+public func is_pascal_case(name: string) bool {
+    if !name[0].is_upper() {
+        return false;
+    }
+    for c in name.as_bytes() {
+        if c == b'_' {
+            return false;
+        }
+    }
+    return true;
+}
+
+public func is_upper_case(name: string) bool {
+    for c in name.as_bytes() {
+        if c == b'_' {
+            continue;
+        }
+        if c.is_lower() {
+            return false;
+        }
+    }
+    return true;
+}

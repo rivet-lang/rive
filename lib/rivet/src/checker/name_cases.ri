@@ -1,0 +1,42 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/traits;
+
+import ../token;
+import ../utils;
+import ../report;
+
+extend Checker {
+    enum NameCase as uint8 : traits.Stringable {
+        Snake,
+        Camel,
+        Pascal,
+        Upper;
+
+        public func to_string(&self) string {
+            return switch self.* {
+                .Snake => "snake",
+                .Camel => "camel",
+                .Pascal => "pascal",
+                .Upper => "upper"
+            };
+        }
+    }
+
+    [inline]
+    func checkNameCase(self, case: NameCase, kind: string, name: string, pos: token.Pos) {
+        if !(self.inside_extern or name == "string" or self.sym.module()?.name == "c.libc") {
+            is_valid := switch case {
+                .Snake => utils.is_snake_case(name),
+                .Camel => utils.is_camel_case(name),
+                .Pascal => utils.is_pascal_case(name),
+                .Upper => utils.is_upper_case(name)
+            };
+            if !is_valid {
+                report.warn("{} `{}` should have a {} case name".fmt(kind, name, case), pos);
+            }
+        }
+	}
+}
