@@ -8,13 +8,13 @@
 
 import c/libc;
 
-public var shared_lib_extension = get_shared_library_extension();
+public var sharedLibExtension = get_shared_library_extension();
 
 /// Returns a library name with the operating system specific extension for shared
 /// libraries.
 [inline]
 public func library_name(libname: string) string {
-    return libname.concat(shared_lib_extension);
+    return libname.concat(sharedLibExtension);
 }
 
 [boxed]

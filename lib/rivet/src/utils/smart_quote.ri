@@ -9,8 +9,8 @@ const BACKSLASH_R: uint8 = 13;
 const BACKSLASH_N: uint8 = 10;
 const DOUBLE_QUOTE: uint8 = 34;
 
-var double_escape = "\\\\";
-var invalid_escapes = b"({`.";
+var doubleEscape = "\\\\";
+var invalidEscapes = b"({`.";
 
 public func smart_quote(s: string, raw: bool = false) string {
     if s.len == 0 {
@@ -66,19 +66,19 @@ public func smart_quote(s: string, raw: bool = false) string {
             },
             BACKSLASH => {
                 if raw {
-                    result.write_string(double_escape);
+                    result.write_string(doubleEscape);
                 } else if next == BACKSLASH {
                     // escaped backslash - keep as is
                     current = 0;
                     skip_next = true;
-                    result.write_string(double_escape);
+                    result.write_string(doubleEscape);
                 } else if next != 0 {
                     if raw {
                         skip_next = true;
-                        result.write_string(double_escape);
+                        result.write_string(doubleEscape);
                         continue;
                     }
-                    if arr_4_uint8_contains(invalid_escapes, next) {
+                    if arr_4_uint8_contains(invalidEscapes, next) {
                         current = 0;
                         skip_next = true;
                         result.write_byte(next);

@@ -25,7 +25,7 @@ func signals_handler(_sig: int32, info: *mut libc.siginfo_t, _context: mut_anypt
 
 func segfault_handler() {
     console_eprintln(
-        if libcore_started {
+        if libcoreIsStarted {
             "panic: invalid memory address or null pointer dereference"
         } else {
             "panic: invalid memory address or null pointer dereference while starting the core"
@@ -37,7 +37,7 @@ func segfault_handler() {
 
 func fpe_handler() {
     console_eprintln(
-        if libcore_started {
+        if libcoreIsStarted {
             "panic: floating point exception"
         } else {
             "panic: floating point exception while starting the core"

@@ -68,7 +68,13 @@ public struct Checker {
             old_expected_type := self.expected_type;
             left0 := lefts[0];
             if !left0.is_extern {
-                self.checkNameCase(.Snake, "variable", left0.name, left0.pos);
+                self.check_name_case(
+                    if left0.is_global {
+                        .Camel
+                    } else {
+                        .Snake
+                    }, "variable", left0.name, left0.pos
+                );
                 if self.inside_switch_cond_expr {
                     if left0.sym.name.is_empty() {
                         scope.update_is_used(left0.name, true);
@@ -125,7 +131,11 @@ public struct Checker {
                             report.error("cannot modify blank identifier (`_`)", vd.pos);
                             continue;
                         } else {
-                            self.checkNameCase(.Snake, "variable", vd.name, vd.pos);
+                            self.check_name_case(if vd.is_global {
+                                .Camel
+                            } else {
+                                .Snake
+                            }, "variable", vd.name, vd.pos);
                         }
                         if self.inside_switch_cond_expr {
                             if vd.sym.name.is_empty() {

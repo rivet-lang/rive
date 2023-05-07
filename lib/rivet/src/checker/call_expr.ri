@@ -159,7 +159,7 @@ extend Checker {
                         err.emit();
                     }
                 } else {
-                    self.checkNameCase(
+                    self.check_name_case(
                         .Snake, "error-handling variable", call_expr.err_handler.varname,
                         call_expr.err_handler.varname_pos
                     );

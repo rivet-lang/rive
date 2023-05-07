@@ -640,7 +640,7 @@ extend Checker {
                         );
                     }
                     if binary.has_var_obj {
-                        self.checkNameCase(
+                        self.check_name_case(
                             .Snake, "variable", binary.var_obj.name, binary.var_obj.pos
                         );
                         if left_sym.info is .Enum as enum_info and enum_info.is_boxed {

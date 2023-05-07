@@ -16,8 +16,8 @@ public alias get_cwd = core.process_get_cwd;
 public alias executable = core.process_executable;
 
 public var args = unsafe { core.ARGS };
-public var wd_at_startup = get_cwd() catch ".";
-public var executable_dir = path.dirname(executable() catch wd_at_startup);
+public var wdAtStartup = get_cwd() catch ".";
+public var executableDir = path.dirname(executable() catch wdAtStartup);
 
 [boxed]
 public struct NotADirectoryError : Error {

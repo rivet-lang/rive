@@ -10,16 +10,16 @@ import ../prefs;
 import ../token;
 import ../utils;
 
-public var mut report_table = ReportTable();
+public var mut reportTable = ReportTable();
 
 [inline]
 public func total_errors() usize {
-    return report_table.errors;
+    return reportTable.errors;
 }
 
 [inline]
 public func total_warns() usize {
-    return report_table.warns;
+    return reportTable.warns;
 }
 
 [boxed]
@@ -83,14 +83,14 @@ public struct ReportBuilder {
     }
 
     public func emit(self) {
-        if report_table.last_pos.line == self.pos.line {
+        if reportTable.last_pos.line == self.pos.line {
             return;
         }
-        report_table.last_pos = self.pos;
+        reportTable.last_pos = self.pos;
         if self.kind == .Error {
-            report_table.errors += 1;
+            reportTable.errors += 1;
         } else {
-            report_table.warns += 1;
+            reportTable.warns += 1;
         }
         console.eprintln(
             utils.bold("{}: {} {}"), self.pos.to_report_string(), if self.kind == .Error {
@@ -119,7 +119,7 @@ public struct ReportBuilder {
 }
 
 func formatted_single_line(pos: token.Pos) {
-    if line := utils.source_cache.find_line(pos.file, pos.line) {
+    if line := utils.sourceCache.find_line(pos.file, pos.line) {
         console.eprintln(
             "{} {} {}", utils.bold(utils.blue("{:5}".fmt(pos.line + 1))),
             utils.bold(utils.blue("|")), line.replace("\t", "    ")
@@ -141,7 +141,7 @@ func formatted_single_line(pos: token.Pos) {
 }
 
 func formatted_multi_line(pos: token.Pos) {
-    if lines := utils.source_cache.find_lines_between(pos.file, pos.line, pos.end_line + 1) {
+    if lines := utils.sourceCache.find_lines_between(pos.file, pos.line, pos.end_line + 1) {
         mut ellipsis := false;
         max: usize := if lines.len > 8 { 4 } else { 2 };
         for line_nr, line in lines {

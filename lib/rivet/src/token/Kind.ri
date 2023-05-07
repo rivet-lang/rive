@@ -10,7 +10,7 @@ struct KindMap {
     value: string;
 }
 
-var kind_strings = [
+var kindStrings = [
     KindMap(.Unknown, "unknown"),
     KindMap(.EndOfFile, "end of file"),
     KindMap(.DocComment, "doc-comment"),
@@ -246,7 +246,7 @@ public enum Kind : traits.Stringable {
     }
 
     public func to_string(&self) string {
-        for km in kind_strings {
+        for km in kindStrings {
             if km.key == self.* {
                 return km.value;
             }

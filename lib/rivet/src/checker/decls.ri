@@ -32,7 +32,7 @@ extend Checker {
         switch decl is {
             .Import as import_decl => if import_decl.import_list.is_empty() and !import_decl.glob {
                 if import_decl.has_custom_alias {
-                    self.checkNameCase(
+                    self.check_name_case(
                         .Snake, "import alias", import_decl.alias_name, import_decl.pos
                     );
                 }
@@ -41,19 +41,22 @@ extend Checker {
                     if !import_info.has_custom_alias {
                         continue;
                     }
-                    self.checkNameCase(
+                    self.check_name_case(
                         .Snake, "import alias", import_info.alias_name, import_info.pos
                     );
                 }
             },
-            .Alias as alias_decl => self.checkNameCase(
-                if alias_decl.is_typealias or alias_decl.sym is ast.TypeSym
-                    or (alias_decl.sym is ast.SymRef as sym_ref and sym_ref.ref is ast.TypeSym) {
-                    .Pascal
-                } else {
-                    .Snake // TODO: .Camel
-                }, "alias", alias_decl.name, alias_decl.pos
-            ),
+            .Alias as alias_decl => {
+                self.check_name_case(
+                    if alias_decl.is_typealias or alias_decl.sym is ast.TypeSym
+                        or (alias_decl.sym is ast.SymRef as sym_ref
+                            and sym_ref.ref is ast.TypeSym) {
+                        .Pascal
+                    } else {
+                        .Snake
+                    }, "alias", alias_decl.name, alias_decl.pos
+                )
+            },
             .Extern as extern_decl => {
                 self.inside_extern = true;
                 self.check_decls(extern_decl.decls);
@@ -67,7 +70,7 @@ extend Checker {
                 self.inside_var_decl = false;
             },
             .Const as const_decl => {
-                self.checkNameCase(.Upper, "constant", const_decl.name, const_decl.pos);
+                self.check_name_case(.Upper, "constant", const_decl.name, const_decl.pos);
                 if const_decl.has_type {
                     old_expected_type := self.expected_type;
                     self.expected_type = const_decl.type;
@@ -82,23 +85,23 @@ extend Checker {
                 }
             },
             .Enum as enum_decl => {
-                self.checkNameCase(.Pascal, "enum", enum_decl.name, enum_decl.pos);
+                self.check_name_case(.Pascal, "enum", enum_decl.name, enum_decl.pos);
                 for variant in enum_decl.variants {
-                    self.checkNameCase(.Pascal, "enum variant", variant.name, variant.pos);
+                    self.check_name_case(.Pascal, "enum variant", variant.name, variant.pos);
                     self.check_decls(variant.decls);
                 }
                 self.check_decls(enum_decl.decls);
             },
             .Trait as trait_decl => {
-                self.checkNameCase(.Pascal, "trait", trait_decl.name, trait_decl.pos);
+                self.check_name_case(.Pascal, "trait", trait_decl.name, trait_decl.pos);
                 self.check_decls(trait_decl.decls);
             },
             .Struct as struct_decl => {
-                self.checkNameCase(.Pascal, "struct", struct_decl.name, struct_decl.pos);
+                self.check_name_case(.Pascal, "struct", struct_decl.name, struct_decl.pos);
                 self.check_decls(struct_decl.decls);
             },
             .Field as field_decl => {
-                self.checkNameCase(.Snake, "field", field_decl.name, field_decl.pos);
+                self.check_name_case(.Snake, "field", field_decl.name, field_decl.pos);
                 if field_decl.has_def_expr {
                     old_expected_type := self.expected_type;
                     self.expected_type = field_decl.type;
@@ -113,9 +116,9 @@ extend Checker {
                 self.check_decls(extend_decl.decls);
             },
             .Func as func_decl => {
-                // self.checkNameCase(.Camel, "function", func_decl.name, func_decl.pos);
+                // self.check_name_case(.Camel, "function", func_decl.name, func_decl.pos);
                 for arg in func_decl.args {
-                    self.checkNameCase(.Snake, "argument", arg.name, arg.pos);
+                    self.check_name_case(.Snake, "argument", arg.name, arg.pos);
                     if arg.has_def_expr {
                         if func_decl.abi != .Rivet {
                             report.error("extern functions cannot have default arguments", arg.pos);

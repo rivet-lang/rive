@@ -10,12 +10,12 @@ import std/fs/path;
 
 import ../utils;
 
-public var rivet_dir = path.join(env.home_dir, ".rivet_lang")!;
-public var rivetc_dir = path.dirname(process.executable()!)?;
+public var rivetDir = path.join(env.homeDir, ".rivet_lang")!;
+public var rivetcDir = path.dirname(process.executable()!)?;
 
-public var obj_dir = path.join(rivet_dir, "obj")!;
-public var lib_dir = path.join(rivet_dir, "lib")!;
-public var rivetc_lib_dir = path.join(rivetc_dir, "lib")!;
+public var objDir = path.join(rivetDir, "obj")!;
+public var libDir = path.join(rivetDir, "lib")!;
+public var rivetcLibDir = path.join(rivetcDir, "lib")!;
 
 public enum Backend as uint8 {
     C;
@@ -71,7 +71,7 @@ public struct Prefs {
     public mut run_output: bool;
     public mut run_output_args: []string;
 
-    public mut library_path: []string = [rivetc_lib_dir, lib_dir];
+    public mut library_path: []string = [rivetcLibDir, libDir];
     public mut libraries_to_link: []string;
     public mut objects_to_link: []string;
 

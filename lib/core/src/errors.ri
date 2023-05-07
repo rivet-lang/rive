@@ -11,14 +11,14 @@ public alias last_errno_error = c.last_errno_error;
 public trait Error : Stringable {
     func return_trace(self) ReturnTrace {
         _ = self;
-        return return_trace;
+        return returnTrace;
     }
 }
 
 [inline]
 func error_panic(err: Error) {
     console_eprintln("unhandled error: {}", err.to_string());
-    return_trace.print();
+    returnTrace.print();
     process_exit(1);
 }
 
@@ -68,7 +68,7 @@ struct CallTrace {
     line: usize;
 }
 
-var return_trace = ReturnTrace();
+var returnTrace = ReturnTrace();
 
 struct ReturnTrace {
     mut traces: []CallTrace = @vec(CallTrace, 5);

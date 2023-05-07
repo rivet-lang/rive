@@ -4,7 +4,7 @@
 
 import c/libc;
 
-var empty_string = string(c"", 0, true);
+var emptyString = string(c"", 0, true);
 
 [boxed]
 public struct string : Stringable, Hashable {
@@ -19,13 +19,13 @@ public struct string : Stringable, Hashable {
                 Self.from_raw_with_len(safe_ptr, libc.strlen(ptr), is_ref)
             };
         }
-        return empty_string;
+        return emptyString;
     }
 
     [unsafe]
     public func from_raw_with_len(ptr: ?[*]uint8, len: usize, is_ref: bool = false) Self {
         if len == 0 {
-            return empty_string;
+            return emptyString;
         }
         return if safe_ptr := ptr {
             if unsafe { safe_ptr[len] != 0 } {
@@ -33,7 +33,7 @@ public struct string : Stringable, Hashable {
             }
             Self(safe_ptr, len, is_ref)
         } else {
-            empty_string
+            emptyString
         };
     }
 
@@ -50,7 +50,7 @@ public struct string : Stringable, Hashable {
     /// `bytes` is 0, an empty string is returned instead.
     public func from_bytes(bytes: []uint8) Self {
         if bytes.len == 0 {
-            return empty_string;
+            return emptyString;
         }
         res := @cast([*]mut uint8, internal_alloc(bytes.len + 1));
         unsafe {
@@ -70,7 +70,7 @@ public struct string : Stringable, Hashable {
     [inline]
     public func repeat(self, count: usize) string {
         return if count == 0 {
-            empty_string
+            emptyString
         } else if count == 1 {
             self
         } else {
@@ -137,7 +137,7 @@ public struct string : Stringable, Hashable {
     public func wrap(self, width: usize = 60, end: string = "\n") string {
         words := self.fields();
         if words.len == 0 {
-            return empty_string;
+            return emptyString;
         }
         mut wrapped := StringBuilder.from_string(words[0]);
         mut space_left := width - wrapped.len();
@@ -312,7 +312,7 @@ public struct string : Stringable, Hashable {
 
     /// Returns the string found between `start` string and `end` string.
     public func find_between(self, start: string, end: string) string {
-        start_pos := self.index_of(start) ?? return empty_string;
+        start_pos := self.index_of(start) ?? return emptyString;
         val := self.slice(start_pos + start.len, self.len);
         end_pos := val.index_of(end) ?? return val;
         return val.slice(0, end_pos);
@@ -602,14 +602,14 @@ public struct string : Stringable, Hashable {
             if line_start <= i {
                 if unsafe { self.ptr[i] == lf } {
                     res.push(if line_start == i {
-                        empty_string
+                        emptyString
                     } else {
                         self[line_start..i]
                     });
                     line_start = i + 1;
                 } else if unsafe { self.ptr[i] == cr } {
                     res.push(if line_start == i {
-                        empty_string
+                        emptyString
                     } else {
                         self[line_start..i]
                     });
@@ -768,7 +768,7 @@ public struct string : Stringable, Hashable {
 
     public func clone(self) Self {
         if self.len == 0 {
-            return empty_string;
+            return emptyString;
         }
         res := @cast([*]mut uint8, internal_alloc(self.len + 1));
         unsafe {

@@ -29,7 +29,7 @@ public struct Compiler {
 
     public func new(args: []string, is_test: bool, run_output: bool) ! {
         prefs_ := prefs.Prefs.new(args, is_test, run_output)!;
-        report.report_table.prefs = prefs_;
+        report.reportTable.prefs = prefs_;
         table_ := ast.Table.new(prefs_);
         Self(
             table: table_, prefs: prefs_,
@@ -39,9 +39,9 @@ public struct Compiler {
     }
 
     func run(mut self) ! {
-        self.make_rivet_directory()!;
+        self.make_rivetDirectory()!;
 
-        _ = self.load_module("core", "core", "", token.no_pos)!;
+        _ = self.load_module("core", "core", "", token.noPos)!;
         self.load_root_module()!;
         self.import_modules()!;
 
@@ -58,12 +58,12 @@ public struct Compiler {
         }
     }
 
-    func make_rivet_directory(self) ! {
-        if !path.exists(prefs.rivet_dir) {
+    func make_rivetDirectory(self) ! {
+        if !path.exists(prefs.rivetDir) {
             self.vlog("making Rivet directory");
-            fs.make_directory(prefs.rivet_dir)!;
-            fs.make_directory(prefs.obj_dir)!;
-            fs.make_directory(prefs.lib_dir)!;
+            fs.make_directory(prefs.rivetDir)!;
+            fs.make_directory(prefs.objDir)!;
+            fs.make_directory(prefs.libDir)!;
         }
     }
 

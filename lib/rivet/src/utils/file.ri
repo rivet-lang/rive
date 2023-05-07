@@ -7,17 +7,17 @@ import std/env;
 import std/fs/path;
 import std/process;
 
-var normalized_workdir = process.wd_at_startup.replace("\\", "/").concat("/");
-var error_paths_absolute = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";
+var normalizedWorkdir = process.wdAtStartup.replace("\\", "/").concat("/");
+var errorPathsAbsolute = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";
 
 // NOTE: path_styled_for_error_messages will *always* use `/` in the error paths, no
 // matter the OS, to ensure stable compiler error output in the tests.
 public func path_styled_for_error_messages(path_: string) string {
 	rpath := (path.resolve(path_) catch path_).replace("\\", "/");
-	return if error_paths_absolute {
+	return if errorPathsAbsolute {
 		rpath
 	} else {
-		path.relative(normalized_workdir, rpath) catch path_
+		path.relative(normalizedWorkdir, rpath) catch path_
 	};
 }
 
@@ -88,15 +88,15 @@ struct SourceCache {
    }
 }
 
-public var mut source_cache: SourceCache = SourceCache();
+public var mut sourceCache: SourceCache = SourceCache();
 
 [inline]
 public func read_file(path_: string) !string {
-   return if res := source_cache.find(path_) {
+   return if res := sourceCache.find(path_) {
 	  res
    } else {
 	  content := skip_bom(fs.read_file(path_)!);
-	  source_cache.sources.push(CachedFile(path_, content));
+	  sourceCache.sources.push(CachedFile(path_, content));
 	  content
    };
 }

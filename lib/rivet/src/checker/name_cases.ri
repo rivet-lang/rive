@@ -26,7 +26,7 @@ extend Checker {
     }
 
     [inline]
-    func checkNameCase(self, case: NameCase, kind: string, name: string, pos: token.Pos) {
+    func check_name_case(self, case: NameCase, kind: string, name: string, pos: token.Pos) {
         if !(self.inside_extern or name == "_" or name == "string"
             or self.sym.module()?.name in ["c.libc", "c.ctypes"]) {
             is_valid := switch case {

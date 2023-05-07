@@ -35,7 +35,7 @@ func main(
         init_string_lits();
 #endif
         init_globals();
-        libcore_started = true;
+        libcoreIsStarted = true;
 #if _TESTS_
         if test_runner.tests.len > 0 {
             test_runner.run();
