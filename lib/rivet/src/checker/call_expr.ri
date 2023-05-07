@@ -159,6 +159,10 @@ extend Checker {
                         err.emit();
                     }
                 } else {
+                    self.checkNameCase(
+                        .Snake, "error-handling variable", call_expr.err_handler.varname,
+                        call_expr.err_handler.varname_pos
+                    );
                     self.check_types(
                         self.check_expr(call_expr.err_handler.expr), result_t.inner
                     ) catch |err| {

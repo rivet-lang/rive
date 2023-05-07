@@ -30,8 +30,30 @@ extend Checker {
         old_sym := self.sym;
         defer self.sym = old_sym;
         switch decl is {
-            .Import => {},
-            .Alias => {},
+            .Import as import_decl => if import_decl.import_list.is_empty() and !import_decl.glob {
+                if import_decl.has_custom_alias {
+                    self.checkNameCase(
+                        .Snake, "import alias", import_decl.alias_name, import_decl.pos
+                    );
+                }
+            } else {
+                for import_info in import_decl.import_list {
+                    if !import_info.has_custom_alias {
+                        continue;
+                    }
+                    self.checkNameCase(
+                        .Snake, "import alias", import_info.alias_name, import_info.pos
+                    );
+                }
+            },
+            .Alias as alias_decl => self.checkNameCase(
+                if alias_decl.is_typealias or alias_decl.sym is ast.TypeSym
+                    or (alias_decl.sym is ast.SymRef as sym_ref and sym_ref.ref is ast.TypeSym) {
+                    .Pascal
+                } else {
+                    .Snake // TODO: .Camel
+                }, "alias", alias_decl.name, alias_decl.pos
+            ),
             .Extern as extern_decl => {
                 self.inside_extern = true;
                 self.check_decls(extern_decl.decls);

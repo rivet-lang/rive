@@ -68,9 +68,7 @@ public struct Checker {
             old_expected_type := self.expected_type;
             left0 := lefts[0];
             if !left0.is_extern {
-                if left0.name != "_" {
-                    self.checkNameCase(.Snake, "variable", left0.name, left0.pos);
-                }
+                self.checkNameCase(.Snake, "variable", left0.name, left0.pos);
                 if self.inside_switch_cond_expr {
                     if left0.sym.name.is_empty() {
                         scope.update_is_used(left0.name, true);

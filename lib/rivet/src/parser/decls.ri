@@ -103,16 +103,20 @@ extend Parser {
                 if self.accept(.Lbrace) {
                     while {
                         info_pos := self.tok.pos;
+                        mut info_has_custom_alias := false;
                         switch {
                             self.accept(.KwSelf) => {
                                 name := "self";
                                 info_alias := if self.accept(.KwAs) {
+                                    info_has_custom_alias = true;
                                     self.parse_name()
                                 } else {
                                     name
                                 };
                                 import_list.push(
-                                    ast.ImportListInfo(name, info_alias, info_pos)
+                                    ast.ImportListInfo(
+                                        name, info_alias, info_has_custom_alias, info_pos
+                                    )
                                 );
                             },
                             self.accept(.Mul) => {
@@ -122,12 +126,15 @@ extend Parser {
                             else => {
                                 name := self.parse_name();
                                 info_alias := if self.accept(.KwAs) {
+                                    info_has_custom_alias = true;
                                     self.parse_name()
                                 } else {
                                     name
                                 };
                                 import_list.push(
-                                    ast.ImportListInfo(name, info_alias, info_pos)
+                                    ast.ImportListInfo(
+                                        name, info_alias, info_has_custom_alias, info_pos
+                                    )
                                 );
                             }
                         }
@@ -138,10 +145,12 @@ extend Parser {
                     self.expect(.Rbrace);
                     self.expect(.KwFrom);
                 }
+                mut has_custom_alias := false;
                 mut mod_path_pos := self.tok.pos;
                 mod_path := self.parse_import_path();
                 mod_path_pos += self.prev_tok.pos;
                 alias_name := if import_list.is_empty() and self.accept(.KwAs) {
+                    has_custom_alias = true;
                     self.parse_name()
                 } else {
                     ""
@@ -154,6 +163,7 @@ extend Parser {
                     path: mod_path,
                     path_pos: mod_path_pos,
                     alias_name: alias_name,
+                    has_custom_alias: has_custom_alias,
                     glob: glob,
                     import_list: import_list,
                     pos: pos

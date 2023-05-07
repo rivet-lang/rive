@@ -94,6 +94,9 @@ extend Checker {
                     }
                 }
                 if branch.has_var {
+                    self.checkNameCase(
+                        .Snake, "branch variable", branch.var_name, branch.var_pos
+                    );
                     if branch.var_is_mut {
                         self.check_expr_is_mut(switch_expr.expr);
                     }

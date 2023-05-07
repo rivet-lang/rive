@@ -14,6 +14,7 @@ public enum Decl {
         path: string;
         path_pos: token.Pos;
         mut alias_name: string;
+        mut has_custom_alias: bool;
         glob: bool;
         import_list: []ImportListInfo;
         mut info: ImportedMod;
@@ -207,6 +208,7 @@ public struct DocComment {
 public struct ImportListInfo {
     public name: string;
     public alias_name: string;
+    public mut has_custom_alias: bool;
     public pos: token.Pos;
 }
 
