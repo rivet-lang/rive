@@ -20,7 +20,7 @@ extend Checker {
 
     func check_decls(mut self, decls: []ast.Decl) {
         for decl in decls {
-            if decl !is .Const and decl !is .Var {
+            if !(decl is .Const or decl is .Var) {
                 self.check_decl(decl);
             }
         }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/strconv;
+import std/conv;
 
 import ../ast;
 import ../prefs;
@@ -61,9 +61,7 @@ public struct Resolver {
     func eval_size(mut self, mut expr: ast.Expr) ?isize {
         return switch expr is {
             .Paren as paren => self.eval_size(paren.expr),
-            .IntegerLiteral as int_lit => @cast(
-                isize, strconv.parse_int(int_lit.value, 0, isize.bits()) catch return none
-            ),
+            .IntegerLiteral as int_lit => conv.string_to_isize(int_lit.value) catch return none,
             .Ident as mut ident => {
                 self.resolve_ident(ident);
                 if ident.found {

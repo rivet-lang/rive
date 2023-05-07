@@ -18,7 +18,7 @@ func lower(c: uint8) uint8 {
 
 /// This is like `parse_int` but for unsigned numbers.
 /// A sign prefix is not permitted.
-public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) !uint64 {
+public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) !usize {
     if s_ == "" {
         return InvalidSyntaxError("empty string");
     }
@@ -68,19 +68,19 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) !uint6
 
     // Cutoff is the smallest number such that `cutoff * base > MAX_U64`.
     // Use compile-time constants for common cases.
-    cutoff: uint64 := switch base {
-        10 => uint64.MAX / 10 + 1,
-        16 => uint64.MAX / 16 + 1,
-        else => uint64.MAX / @cast(uint64, base) + @cast(uint64, 1)
+    cutoff: usize := switch base {
+        10 => usize.MAX / 10 + 1,
+        16 => usize.MAX / 16 + 1,
+        else => usize.MAX / @cast(usize, base) + @cast(usize, 1)
     };
 
-    max_val: uint64 := if bit_size == 64 {
-        uint64.MAX
+    max_val: usize := if bit_size == 64 {
+        usize.MAX
     } else {
-        (@cast(uint64, 1) << @cast(uint64, bit_size)) - @cast(uint64, 1)
+        (@cast(usize, 1) << @cast(usize, bit_size)) - @cast(usize, 1)
     };
     mut underscores := false;
-    mut n: uint64 := 0;
+    mut n: usize := 0;
 
     mut i: usize := start_index;
     while i < s.len : i += 1 {
@@ -106,9 +106,9 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) !uint6
             // `n * base` overflows
             return ValueOutOfRangeError("value out of range");
         }
-        n *= @cast(uint64, base);
+        n *= @cast(usize, base);
 
-        n1 := n + @cast(uint64, d);
+        n1 := n + @cast(usize, d);
         if n1 < n or n1 > max_val {
             // `n + d` overflows
             return ValueOutOfRangeError("value out of range");
@@ -136,8 +136,8 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) !uint6
 ///
 /// The `bit_size` argument specifies the integer type that the result must
 /// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to int8, int16, int32, and
-/// int64. If `bit_size` is below 0 or above 64, an error is returned.
-public func parse_int(s: string, base: int32, mut bit_size: uint32) !int64 {
+/// isize. If `bit_size` is below 0 or above 64, an error is returned.
+public func parse_int(s: string, base: int32, mut bit_size: uint32) !isize {
     if s == "" {
         return InvalidSyntaxError("invalid syntax");
     }
@@ -158,7 +158,7 @@ public func parse_int(s: string, base: int32, mut bit_size: uint32) !int64 {
         bit_size = INT_SIZE;
     }
 
-    cutoff := @cast(uint64, 1) << bit_size - 1;
+    cutoff := @cast(usize, 1) << bit_size - 1;
     if !neg and un >= cutoff {
         return ValueOutOfRangeError("value out of range");
     }
@@ -166,13 +166,7 @@ public func parse_int(s: string, base: int32, mut bit_size: uint32) !int64 {
         return ValueOutOfRangeError("value out of range");
     }
 
-    return if neg { -@cast(int64, un) } else { @cast(int64, un) };
-}
-
-/// Equivalent to parse_int(s, 10, 0), converted to type int64.
-[inline]
-public func atoi(s: string) !int64 {
-    return parse_int(s, 10, 0)!;
+    return if neg { -@cast(isize, un) } else { @cast(isize, un) };
 }
 
 /// Reports whether the underscores in `s_` are allowed.

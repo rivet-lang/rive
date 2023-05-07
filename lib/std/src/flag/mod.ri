@@ -4,7 +4,7 @@
 
 import ../errors;
 import ../traits;
-import ../strconv;
+import ../conv;
 import ../strings;
 import ../console;
 import ../process;
@@ -200,7 +200,7 @@ public struct FlagParser {
         if parsed.is_empty() {
             return none;
         }
-        return @cast(isize, strconv.parse_int(parsed[0], 0, isize.bits()) catch 0);
+        return conv.string_to_isize(parsed[0]) catch 0;
     }
 
     /// Returns an option with the string value, associated with the flag in `name`.
