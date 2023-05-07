@@ -560,8 +560,10 @@ extend Parser {
         mut self, docs: ast.DocComment, annotations: ast.Annotations,
         is_public: bool, is_unsafe: bool, abi: ast.ABI
     ) ast.Decl {
+        mut is_operator := false;
         pos := self.prev_tok.pos;
         name := if token.is_overloadable_operator(self.tok.kind) {
+            is_operator = true;
             self.next();
             self.prev_tok.kind.to_string()
         } else {
@@ -665,6 +667,7 @@ extend Parser {
             is_variadic: is_variadic,
             is_method: is_method,
             is_main: self.mod_sym.is_root and name == "main",
+            is_operator: is_operator,
             name: name,
             args: args,
             has_named_args: has_named_args,

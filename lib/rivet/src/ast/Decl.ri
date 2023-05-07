@@ -122,6 +122,7 @@ public enum Decl {
         is_method: bool;
         is_main: bool;
         is_variadic: bool;
+        is_operator: bool;
         abi: ABI;
         name: string;
         args: []Arg;

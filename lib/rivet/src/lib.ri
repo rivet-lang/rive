@@ -39,7 +39,7 @@ public struct Compiler {
     }
 
     func run(mut self) ! {
-        self.make_rivetDirectory()!;
+        self.make_rivet_directory()!;
 
         _ = self.load_module("core", "core", "", token.noPos)!;
         self.load_root_module()!;
@@ -58,7 +58,7 @@ public struct Compiler {
         }
     }
 
-    func make_rivetDirectory(self) ! {
+    func make_rivet_directory(self) ! {
         if !path.exists(prefs.rivetDir) {
             self.vlog("making Rivet directory");
             fs.make_directory(prefs.rivetDir)!;
