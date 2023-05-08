@@ -3,13 +3,22 @@
 // be found in the LICENSE file.
 
 import ../ast;
+import ../token;
 import ../report;
 
 extend Checker {
     func check_stmts(mut self, stmts: []mut ast.Stmt) {
+        mut unreachable_pos := token.noPos;
         for mut stmt in stmts {
+            if self.scope_returns and unreachable_pos.pos == 0 {
+                unreachable_pos = stmt.position();
+            }
             self.check_stmt(stmt);
         }
+        if unreachable_pos.pos > 0 {
+            report.warn("unreachable code detected", unreachable_pos);
+        }
+        self.scope_returns = false;
     }
 
     func check_stmt(mut self, mut stmt: ast.Stmt) {

@@ -168,9 +168,7 @@ extend Checker {
                 }
                 old_expected_type := self.expected_type;
                 self.expected_type = .Void();
-                for mut stmt in block.stmts {
-                    self.check_stmt(stmt);
-                }
+                self.check_stmts(block.stmts);
                 self.expected_type = old_expected_type;
                 block.type = if block.is_expr {
                     self.check_expr(block.expr)
@@ -599,6 +597,9 @@ extend Checker {
                             binary.pos
                         );
                     }
+                    if self.scope_returns {
+                        self.scope_returns = false;
+                    }
                     return binary.type;
                 },
                 .KwIn, .KwNotIn => {
@@ -781,7 +782,9 @@ extend Checker {
     }
 
     func check_return(mut self, mut return_expr: ast.Expr.Return) ast.Type {
-        if self.inside_defer {
+        if self.cur_fn.ret_type is .Never {
+            report.error("never functions cannot use `return` statements", return_expr.pos);
+        } else if self.inside_defer {
             report.error("`return` is not allowed inside `defer` statement", return_expr.pos);
         } else if self.inside_test and return_expr.has_expr {
             report.error("cannot return values inside `test` declaration", return_expr.pos);
@@ -832,6 +835,7 @@ extend Checker {
             err.add_note("in return of {} `{}`", self.cur_fn.kind(), self.cur_fn.name);
             err.emit();
         }
+        self.scope_returns = true;
         return .Never(return_expr.pos);
     }
 

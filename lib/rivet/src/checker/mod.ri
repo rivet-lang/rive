@@ -26,6 +26,8 @@ public struct Checker {
     mut inside_guard_expr: bool;
     mut inside_switch_cond_expr: bool;
 
+    mut scope_returns: bool;
+
     mut defer_stmts: []ast.Stmt.Defer;
 
     public func check_files(mut self, source_files: []ast.SourceFile) {
