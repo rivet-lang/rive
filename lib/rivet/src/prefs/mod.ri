@@ -4,6 +4,7 @@
 
 import std/env;
 import std/sys;
+import std/flag;
 import std/console;
 import std/process;
 import std/fs/path;
@@ -84,128 +85,178 @@ public struct Prefs {
 
     public func new(args: []string, is_test: bool, run_output: bool) !Self {
         prefs := Prefs(is_test: is_test, run_output: run_output);
-        mut options := @vec(string);
-        mut i: usize := 0;
-        while i < args.len : i += 1 {
-            arg := args[i];
-            if arg.len > 1 and arg[0] == b'-' and arg !in ["-L", "-d", "--define"] and
-                arg in options
-            {
-                utils.error("duplicate option: `{}`", arg);
-            } else {
-                options.push(arg);
-            }
-            current_args := args[i..];
-            switch arg {
-                // informative options
-                "-h", "--help" => print_help(),
-                "-V", "--version" => {
-                    console.eprintln(utils.version);
-                    process.exit(0);
-                },
+        mut fp := flag.FlagParser.new(args);
+        fp.set_application_name(if is_test {
+            "rivet test"
+        } else if run_output {
+            "rivet run"
+        } else {
+            "rivet build"
+        });
+        fp.set_arguments_description("[INPUT]");
 
-                // compiler options
-                "--mod-name" => {
-                    if mod_name := utils.option(current_args, arg) {
-                        prefs.mod_name = mod_name;
-                        prefs.mod_output = mod_name;
+        if is_test {
+            fp.add_description("Runs `test` declarations in the given [INPUT].\n");
+        } else if run_output {
+            fp.add_description("Equivalent to running `rivet build` and running the compiled executable.\n");
+            fp.add_description("The exit status of `run` will be:");
+            fp.add_description("   - `1` if the compilation failed.");
+            fp.add_description("   - The exit code of the compiled executable otherwise.\n");
+        }
+        fp.add_description("The compiler can receive a file or a directory as [INPUT].");
+
+        // options
+        if !(is_test or run_output) {
+            if mod_name := fp.string_flag(
+                "mod-name", 0, "Specify the name of the module being built."
+            ) {
+                prefs.mod_name = mod_name;
+                prefs.mod_output = mod_name;
+            }
+            if mod_output := fp.string_flag(
+                "output", b'o', "Force Rivet to output the module in a specific location
+                                     (relative to the current working directory if not absolute)."
+            ) {
+                prefs.mod_output = mod_output;
+            }
+            if release := fp.bool_flag(
+                "release", b'r',
+                "Compile the executable in release mode, where most
+                                     optimizations are enabled."
+            ); release {
+                prefs.optimize_mode = .Release;
+            }
+        }
+        if define := fp.string_flag("define", b'd', "Define the provided flag.") {
+            if define.starts_with("_") and define.ends_with("_") {
+                utils.error("flag `{}` should have a upper case name", define);
+            } else if define in prefs.flags {
+                utils.error("duplicate flag: `{}`", define);
+            } else {
+                prefs.flags.push(define);
+            }
+        }
+        if libpath := fp.string_flag("", b'L', "Add a directory to the library search path.") {
+            if path.is_directory(libpath) {
+                if libpath in prefs.library_path {
+                    utils.error("duplicate library path: `{}`", libpath);
+                }
+                prefs.library_path.push(libpath);
+            } else {
+                utils.error("`{}` is not a directory", libpath);
+            }
+        }
+        if os_name := fp.string_flag("os", 0, "Change the target OS that Rivet tries to compile for.") {
+            if os_flag := sys.OS.from_string(os_name) {
+                prefs.target_os = os_flag;
+            } else {
+                utils.error("unknown target operating system: `{}`", os_name);
+            }
+        }
+        if arch_name := fp.string_flag("arch", 0, "Change the target architecture that Rivet tries to compile for.") {
+            if arch_flag := sys.Arch.from_string(arch_name) {
+                prefs.target_arch = arch_flag;
+            } else {
+                utils.error("unknown target architecture: `{}`", arch_name);
+            }
+        }
+        if target_backend := fp.string_flag(
+            "backend", b'b', "Specify the backend to use while building the module."
+        ) {
+            if backend := Backend.from_string(target_backend) {
+                prefs.target_backend = backend;
+            } else {
+                utils.error("unknown backend: `{}`", target_backend);
+            }
+        }
+        if target_backend_compiler := fp.string_flag(
+            "backend-compiler", b'C',
+            "Change the backend compiler Rivet invokes to the
+                                     specified compiler."
+        ) {
+            prefs.target_backend_compiler = target_backend_compiler;
+        }
+        if target_is_32bit := fp.bool_flag(
+            "x32", 0, "32-bit machine code will be generated."
+        ); target_is_32bit {
+            prefs.target_is_64bit = false;
+        }
+        if target_is_64bit := fp.bool_flag(
+            "x64", 0, "64-bit machine code will be generated."
+        ); target_is_64bit {
+            prefs.target_is_64bit = true;
+        }
+
+        if !(is_test or run_output) {
+            if check_syntax := fp.bool_flag("check-syntax", 0, "Only scan and parse the module, but then stop."); check_syntax {
+                prefs.check_syntax = true;
+            }
+            if check := fp.bool_flag("check", 0, "Scans, parses, and checks the files without compiling the module."); check {
+                prefs.check = true;
+            }
+            if emit_rir := fp.bool_flag("emit-rir", 0, "Emit Rivet Intermediate Representation to a file."); emit_rir {
+                prefs.emit_rir = true;
+            }
+            if keep_c := fp.bool_flag("keep-c", 0, "Don't remove the output C source file."); keep_c {
+                prefs.keep_c = true;
+            }
+            if verbose := fp.bool_flag("verbose", b'v', "Print additional messages to the console."); verbose {
+                prefs.is_verbose = true;
+            }
+        }
+
+        // footers
+        fp.add_footer("By default, the target OS and the target architecture is the host OS and architecture.\n");
+
+        if !is_test {
+            fp.add_footer("Note that most Rivet warnings turn to errors, if you pass `-r` or `--release`, so you will");
+            fp.add_footer("have to fix them first.\n");
+        }
+
+        fp.add_footer("Current list of supported backends:");
+        fp.add_footer("   - `c` (default): Rivet outputs C source code which is passed to a C compiler\n     to be compiled.");
+
+        fp.add_footer("\nCurrent list of supported backend compilers:");
+        fp.add_footer("   - `C`: `clang`, `gcc` and `mingw`.");
+
+        fp.add_footer("\nCurrent list of supported operating systems:");
+        fp.add_footer("   - `linux`");
+
+        fp.add_footer("\nCurrent list of supported architectures:");
+        fp.add_footer("   - `amd64`, `i386`");
+
+        fp.add_usage_example(".");
+        if is_test {
+            fp.add_usage_example("lib/std/");
+        } else if run_output {
+            fp.add_usage_example("sum/ -- 2 2");
+            fp.add_usage_example("install_git.ri");
+        } else {
+            fp.add_usage_example("my_module/");
+            fp.add_usage_example("-o my_bin my_module/");
+            fp.add_usage_example("-o my_bin my_module/ -C clang-12");
+            fp.add_usage_example("-o my_bin my_module/ --os windows");
+            fp.add_usage_example("my_file.ri --arch i386");
+        }
+
+        remaining_args := fp.finalize() catch |err| {
+            utils.error(err.to_string())
+        };
+        for arg in remaining_args {
+            if !prefs.input.is_empty() {
+                utils.error("the compiler can only receive one module");
+            } else if !path.exists(arg) {
+                utils.error("`{}` does not exist", arg);
+            } else if !(path.is_directory(arg) or path.is_file(arg)) {
+                utils.error("`{}` is not a directory or file");
+            } else {
+                prefs.input = arg;
+                if prefs.mod_name.is_empty() {
+                    prefs.mod_name = if path.is_file(arg) {
+                        path.basename(arg).all_before_of(".ri")
                     } else {
-                        utils.error("`--mod-name` requires a name as argument");
-                    }
-                    i += 1;
-                },
-                "-r", "--release" => prefs.optimize_mode = .Release,
-                "-o", "--output" => {
-                    if out := utils.option(current_args, arg) {
-                        prefs.mod_output = out;
-                    } else {
-                        utils.error("`{}` requires a filename as argument", arg);
-                    }
-                    i += 1;
-                },
-                "-b", "--backend" => {
-                    if b := utils.option(current_args, arg) {
-                        if backend := Backend.from_string(b) {
-                            prefs.target_backend = backend;
-                        } else {
-                            utils.error("unknown backend: `{}`", b);
-                        }
-                    } else {
-                        utils.error("`{}` requires a name as argument", arg);
-                    }
-                    i += 1;
-                },
-                "-bc", "--backend-compiler" => {
-                    if bc := utils.option(current_args, arg) {
-                        prefs.target_backend_compiler = bc;
-                    } else {
-                        utils.error("`--backend-compiler` requires a name as argument");
-                    }
-                    i += 1;
-                },
-                "-d", "--define" => {
-                    if flag := utils.option(current_args, arg) {
-                        if flag.starts_with("_") and flag.ends_with("_") {
-                            utils.error("flag `{}` should have a upper case name", flag);
-                        } else if flag in prefs.flags {
-                            utils.error("duplicate flag: `{}`", flag);
-                        } else {
-                            prefs.flags.push(flag);
-                        }
-                    } else {
-                        utils.error("`{}` requires a name as argument", arg);
-                    }
-                    i += 1;
-                },
-                "-os", "--target-os" => {
-                    if os_name := utils.option(current_args, arg) {
-                        if os_flag := sys.OS.from_string(os_name) {
-                            prefs.target_os = os_flag;
-                        } else {
-                            utils.error("unknown target operating system: `{}`", os_name);
-                        }
-                    } else {
-                        utils.error("`{}` requires a name as argument", arg);
-                    }
-                    i += 1;
-                },
-                "-arch", "--target-arch" => {
-                    if arch_name := utils.option(current_args, arg) {
-                        if arch_flag := sys.Arch.from_string(arch_name) {
-                            prefs.target_arch = arch_flag;
-                        } else {
-                            utils.error("unknown target architecture: `{}`", arch_name);
-                        }
-                    } else {
-                        utils.error("`{}` requires a name as argument", arg);
-                    }
-                    i += 1;
-                },
-                "-x32", "-x64" => prefs.target_is_64bit = arg == "-x64",
-                "--check-syntax" => prefs.check_syntax = true,
-                "--check" => prefs.check = true,
-                "--emit-rir" => prefs.emit_rir = true,
-                "--keep-c" => prefs.keep_c = true,
-                "-v", "--verbose" => prefs.is_verbose = true,
-                else => {
-                    if arg.starts_with("-") {
-                        utils.error("unknown option `{}`", arg);
-                    } else if !prefs.input.is_empty() {
-                        utils.error("the compiler can only receive one module");
-                    } else if !path.exists(arg) {
-                        utils.error("`{}` does not exist", arg);
-                    } else if !(path.is_directory(arg) or path.is_file(arg)) {
-                        utils.error("`{}` is not a directory or file");
-                    } else {
-                        prefs.input = arg;
-                        if prefs.mod_name.is_empty() {
-                            prefs.mod_name = if path.is_file(arg) {
-                                path.basename(arg).all_before_of(".ri")
-                            } else {
-                                path.basename(path.resolve(arg) catch arg)
-                            };
-                        }
-                    }
+                        path.basename(path.resolve(arg) catch arg)
+                    };
                 }
             }
         }

@@ -1,22 +1,22 @@
 import std/strconv;
 
-test "std.strconv.atoi()" {
-    @assert(strconv.atoi("16")! == 16);
-    @assert(strconv.atoi("+16")! == 16);
-    @assert(strconv.atoi("-16")! == -16);
+test "std.strconv.string_to_int32()" {
+    @assert(strconv.string_to_int32("16")! == 16);
+    @assert(strconv.string_to_int32("+16")! == 16);
+    @assert(strconv.string_to_int32("-16")! == -16);
 
     // invalid strings
-    @assert(if _ := strconv.atoi("") {
+    @assert(if _ := strconv.string_to_int32("") {
         false
     } else {
         true
     });
-    @assert(if _ := strconv.atoi("str") {
+    @assert(if _ := strconv.string_to_int32("str") {
         false
     } else {
         true
     });
-    @assert(if _ := strconv.atoi("string_longer_than_10_chars") {
+    @assert(if _ := strconv.string_to_int32("string_longer_than_10_chars") {
         false
     } else {
         true

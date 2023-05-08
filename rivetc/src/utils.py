@@ -35,7 +35,7 @@ Options:
         `c` (default): Rivet outputs C source code which is passed to a C compiler
         to be compiled.
 
-   -bc <compiler>, --backend-compiler <compiler>
+   -C <compiler>, --backend-compiler <compiler>
       Change the backend compiler Rivet invokes to the specified compiler.
 
       Officially supported/tested backend compilers include:
@@ -47,21 +47,21 @@ Options:
    -L <path>
       Add a directory to the library search path.
 
-   -os <name>, --target-os <name>
+   --os <name>
       Change the target OS that Rivet tries to compile for. By default, the
       target OS is the host system.
 
       Current list of supported operating systems:
         `linux`
 
-   -arch <arch>, --target-arch <arch>
+   --arch <arch>
       Change the target architecture that Rivet tries to compile for. By
       default, the target architecture is the host arch.
 
       Current list of supported architectures:
         `amd64`, `i386`
 
-   -x32, -x64
+   --x32, --x64
       Whether 32-bit or 64-bit machine code will be generated.
 
    --check-syntax

@@ -16,15 +16,15 @@ jobs:
 
       - name: Run core library tests
         run: |
-          python3 rivetc -bc clang -t lib/core/tests/
+          python3 rivetc -C clang -t lib/core/tests/
 
       - name: Run standard library tests
         run: |
-          python3 rivetc -bc clang -t lib/std/tests/
+          python3 rivetc -C clang -t lib/std/tests/
 
       - name: Run Rivet self-hosted tests
         run: |
-          python3 rivetc -bc clang -t lib/rivet/tests/
+          python3 rivetc -C clang -t lib/rivet/tests/
 
   ubuntu-gcc:
     runs-on: ubuntu-latest
@@ -33,12 +33,12 @@ jobs:
 
       - name: Run core library tests
         run: |
-          python3 rivetc -bc gcc -t lib/core/tests/
+          python3 rivetc -C gcc -t lib/core/tests/
 
       - name: Run standard library tests
         run: |
-          python3 rivetc -bc gcc -t lib/std/tests/
+          python3 rivetc -C gcc -t lib/std/tests/
 
       - name: Run Rivet self-hosted tests
         run: |
-          python3 rivetc -bc gcc -t lib/rivet/tests/
+          python3 rivetc -C gcc -t lib/rivet/tests/

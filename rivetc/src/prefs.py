@@ -218,7 +218,7 @@ class Prefs:
                 else:
                     error(f"`{arg}` requires a name as argument")
                 i += 1
-            elif arg in ("-bc", "--backend-compiler"):
+            elif arg in ("-C", "--backend-compiler"):
                 if backend_compiler := option(current_args, arg):
                     self.target_backend_compiler = backend_compiler
                 else:
@@ -249,7 +249,7 @@ class Prefs:
                 else:
                     error("`-L` requires a directory as argument")
                 i += 1
-            elif arg in ("-os", "--target-os"):
+            elif arg == "--os":
                 if os_name := option(current_args, arg):
                     if os_flag := OS.from_string(os_name):
                         self.target_os = os_flag
@@ -258,7 +258,7 @@ class Prefs:
                 else:
                     error(f"`{arg}` requires a name as argument")
                 i += 1
-            elif arg in ("-arch", "--target-arch"):
+            elif arg == "--arch":
                 if arch_name := option(current_args, arg):
                     if arch_flag := Arch.from_string(arch_name):
                         self.target_arch = arch_flag
@@ -267,7 +267,7 @@ class Prefs:
                 else:
                     error(f"`{arg}` requires a name as argument")
                 i += 1
-            elif arg in ("-x32", "-x64"):
+            elif arg in ("--x32", "--x64"):
                 self.target_bits = Bits.X32 if arg == "-x32" else Bits.X64
             elif arg == "--check-syntax":
                 self.check_syntax = True

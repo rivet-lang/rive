@@ -20,7 +20,7 @@ jobs:
 
       - name: Run passing tests
         run: |
-          python3 rivetc -bc clang -t tests/valid
+          python3 rivetc -C clang -t tests/valid
 
       - name: Run failing tests
         run: |
@@ -37,7 +37,7 @@ jobs:
 
       - name: Run passing tests
         run: |
-          python3 rivetc -bc gcc -t tests/valid
+          python3 rivetc -C gcc -t tests/valid
 
       - name: Run failing tests
         run: |
