@@ -59,6 +59,7 @@ extend Checker {
             mut elem_type := self.table.comptime_number_to_type(
                 iterable_sym.info.elem_type()?
             );
+            elem_sym := elem_type.symbol()?;
             if for_stmt.values.len == 1 {
                 value0 := for_stmt.values[0];
                 if value0.is_mut and !iterable_sym.info.is_mut_arr_or_vec() {
@@ -67,6 +68,9 @@ extend Checker {
                         for_stmt.iterable.position()
                     );
                 } else if value0.is_ref {
+                    if elem_sym.is_boxed() {
+                        report.error("cannot reference a boxed value", value0.pos);
+                    }
                     elem_type = .Reference(elem_type);
                 }
             }
@@ -85,6 +89,9 @@ extend Checker {
                 types := @cast(ast.TypeInfo.Tuple, elem_type.symbol()?.info).types;
                 for i, value in for_stmt.values {
                     self.check_name_case(.Snake, "variable", value.name, value.pos);
+                    if value.is_ref and elem_sym.is_boxed() {
+                        report.error("cannot reference a boxed value", value.pos);
+                    }
                     value.sym.type = types[i];
                     value.sym.is_hidden_ref = value.is_mut;
                 }

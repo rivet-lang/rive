@@ -36,7 +36,7 @@ extend Checker {
                     err.emit();
                 }
             } else {
-                for i, &arg in builtin_call.args {
+                for i, arg in builtin_call.args {
                     arg_info := b_func.args[i];
                     arg.type = self.check_expr(arg.expr);
                     if arg_info.is_mut {

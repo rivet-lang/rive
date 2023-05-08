@@ -493,9 +493,10 @@ extend Checker {
                     index.is_ref = true;
                 } else if unary.type is .Reference {
                     report.error("cannot take the address of other reference", unary.pos);
-                } else if unary.is_ref_mut {
-                    self.check_expr_is_mut(right);
                 } else {
+                    if unary.is_ref_mut {
+                        self.check_expr_is_mut(right);
+                    }
                     right_sym := unary.type.symbol()?;
                     if right_sym.is_boxed() {
                         report.error("cannot reference a boxed value", unary.pos);
