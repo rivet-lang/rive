@@ -31,6 +31,9 @@ public enum Type : traits.Stringable {
         pos: token.Pos;
 
         func ==(self, other: Self) bool {
+            if self.inners.len != other.inners.len {
+                return false;
+            }
             for i, inner in self.inners {
                 if inner != other.inners[i] {
                     return false;

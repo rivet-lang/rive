@@ -26,7 +26,7 @@ extend Checker {
         self.inside_switch_cond_expr = true;
         mut expr_type := self.check_expr(switch_expr.expr);
         self.inside_switch_cond_expr = old_inside_switch_cond_expr;
-        expr_sym := expr_type.symbol() ?? {
+        mut expr_sym := expr_type.symbol() ?? {
             if !is_guard {
                 report.error(
                     "invalid type `{}` used as `switch` condition".fmt(expr_type),
@@ -36,8 +36,18 @@ extend Checker {
             }
             ast.TypeSym()
         };
-        if is_guard {
-            expr_type = @cast(ast.Expr.Guard, switch_expr.expr).vars[0].type;
+        if switch_expr.expr is .Guard as guard_expr {
+            if guard_expr.vars.len == 1 {
+                expr_type = guard_expr.vars[0].type;
+                expr_sym = expr_type.symbol()?;
+            } else {
+                mut types := @vec(mut ast.Type);
+                for var_ in guard_expr.vars {
+                    types.push(var_.type);
+                }
+                expr_sym = self.table.universe.add_or_get_tuple(types);
+                expr_type = .Tuple(types, expr_sym);
+            }
         } else {
             if switch_expr.is_typeswitch and !(expr_sym.info is .Enum
                 or expr_sym.info is .Trait) {
@@ -70,10 +80,7 @@ extend Checker {
             if !branch.is_else {
                 self.expected_type = expr_type;
                 for i, mut case in branch.cases {
-                    mut case_t := self.check_expr(case);
-                    if switch_expr.is_typeswitch {
-                        case_t = self.table.comptime_number_to_type(case_t);
-                    }
+                    case_t := self.check_expr(case);
                     if i == 0 {
                         branch.var_type = case_t;
                     }
@@ -102,7 +109,7 @@ extend Checker {
                     }
                     if branch.cases.len != 1 {
                         report.error("multiple cases cannot have variable", branch.var_pos);
-                    } else if !is_guard and expr_sym.is_boxed() {
+                    } else if expr_sym.is_boxed() {
                         if expr_sym.info is .Enum {
                             case0 := @cast(
                                 ast.Expr.EnumLiteral, branch.cases[0]
@@ -162,7 +169,7 @@ extend Checker {
                     unhandled.push("`{}`".fmt(v));
                 }
             }
-		} else if !is_guard and expr_sym.info is .Enum as enum_info2 {
+		} else if expr_sym.info is .Enum as enum_info2 {
             for variant in enum_info2.variants {
                 e := ".".concat(variant.name);
                 if !branch_exprs.contains(e) {

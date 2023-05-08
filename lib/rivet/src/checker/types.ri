@@ -75,14 +75,12 @@ extend Checker {
     }
 
     func check_compatible_types(self, got: ast.Type, expected: ast.Type) bool {
-        if expected == got {
-            return true;
-        }
-
         if got is .Never {
             return true;
         } else if (expected is .Never and got is .Void)
             or (expected is .Void and got is .Never) {
+            return true;
+        } else if expected is .Void and got is .Void {
             return true;
         }
 
@@ -185,8 +183,8 @@ extend Checker {
                 if tuple_lhs.types.len != tuple_rhs.types.len {
                     return false;
                 }
-                for i, t in tuple_lhs.types {
-                    if t != tuple_rhs.types[i] {
+                for i, type in tuple_lhs.types {
+                    if type != tuple_rhs.types[i] {
                         return false;
                     }
                 }
@@ -195,13 +193,14 @@ extend Checker {
             else => {}
         }
 
-        if self.sym is ast.Module as mod and mod.is_core() {
+        mod_sym := self.sym.module()?;
+        if mod_sym.is_core() {
             if expected_sym.info is .Vector and got_sym == self.table.vector_sym {
                 return true;
             }
         }
 
-        return false;
+        return expected == got;
     }
 
     func check_pointer(self, expected: ast.Type, got: ast.Type) bool {
@@ -211,14 +210,18 @@ extend Checker {
                 if anyptr_.is_mut and !ptr.is_mut {
                     return false;
                 }
+                // anyptr == *T, is valid
+                return true;
             }
-            // anyptr == *T, is valid
-            return true;
+            return got is .Anyptr;
         } else if expected is .Pointer as ptr and got is .Pointer as ptr2 {
             if ptr.is_mut and !ptr2.is_mut {
                 return false;
             }
-            return ptr.is_indexable == ptr2.is_indexable;
+            if ptr.is_indexable and !ptr2.is_indexable {
+                return false;
+            }
+            return ptr.inner == ptr2.inner;
         }
         return false;
     }

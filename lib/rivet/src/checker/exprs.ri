@@ -217,10 +217,14 @@ extend Checker {
             if has_expected_types {
                 self.expected_type = expected_types[i];
             }
+            value_t := self.check_expr(value);
             types.push(if has_expected_types {
+                self.check_types(value_t, expected_types[i]) catch |err| {
+                    report.error(err.to_string(), value.position());
+                };
                 expected_types[i]
             } else {
-                self.check_expr(value)
+                value_t
             });
         }
         self.expected_type = old_expected_type;
