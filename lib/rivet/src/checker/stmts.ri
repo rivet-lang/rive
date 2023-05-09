@@ -47,6 +47,9 @@ extend Checker {
                 }
             },
             .Defer as defer_stmt => {
+                if self.cur_fn.ret_type is .Never {
+                    report.error("`never` functions cannot use `defer` statements", defer_stmt.pos);
+                }
                 self.inside_defer = true;
                 self.check_expr_evaluated_but_not_used(
                     self.check_expr(defer_stmt.expr), defer_stmt.expr.position()

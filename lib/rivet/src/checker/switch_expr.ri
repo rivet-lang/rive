@@ -87,17 +87,19 @@ extend Checker {
                     self.check_types(case_t, expr_type) catch |err| {
                         report.error(err.to_string(), case.position());
                     };
-                    key := case.to_string();
-                    if val := branch_exprs.get(key) {
-                        if val == 1 {
-                            report.error(
-                                "switch case is handled more than once", case.position()
-                            );
+                    if !branch.has_cond {
+                        key := case.to_string();
+                        if val := branch_exprs.get(key) {
+                            if val == 1 {
+                                report.error(
+                                    "switch case is handled more than once", case.position()
+                                );
+                            } else {
+                                branch_exprs.set(key, val + 1);
+                            }
                         } else {
-                            branch_exprs.set(key, val + 1);
+                            branch_exprs.set(key, 1);
                         }
-                    } else {
-                        branch_exprs.set(key, 1);
                     }
                 }
                 if branch.has_var {
@@ -156,6 +158,9 @@ extend Checker {
                 };
             }
             branch.type = branch_t;
+            if self.scope_returns {
+                self.scope_returns = false;
+            }
         }
 
         // check that expressions are exhaustive, this is achieved either by putting

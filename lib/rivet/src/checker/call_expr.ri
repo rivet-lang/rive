@@ -168,6 +168,9 @@ extend Checker {
                     ) catch |err| {
                         report.error(err.to_string(), call_expr.err_handler.expr.position());
                     };
+                    if self.scope_returns {
+                        self.scope_returns = false;
+                    }
                 }
                 call_expr.type = result_t.inner;
             } else {
@@ -185,6 +188,10 @@ extend Checker {
             );
             err.add_note("should handle this with `catch` or propagate with `!`");
             err.emit();
+        }
+
+        if call_expr.type is .Never {
+            self.scope_returns = true;
         }
 
         return call_expr.type;

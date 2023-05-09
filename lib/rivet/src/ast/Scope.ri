@@ -75,7 +75,6 @@ public struct Scope {
             return x;
         }
         process.panic("cannot found symbol `{}`", name);
-        return Sym(Module()); // TODO: remove this line
     }
 
     public func find_by_index_or_panic(self, idx: usize) Sym {

@@ -288,7 +288,8 @@ public enum Type : traits.Stringable {
             },
             .Basic as basic_lhs if rhs is .Basic as basic_rhs =>
                 !(basic_lhs.is_unresolved and basic_rhs.is_unresolved)
-                and basic_lhs.sym == basic_rhs.sym
+                and basic_lhs.sym == basic_rhs.sym,
+            else => false
         };
     }
 

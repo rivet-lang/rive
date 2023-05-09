@@ -56,6 +56,18 @@ public struct Compiler {
         if report.total_errors() > 0 {
             self.abort();
         }
+
+        total_warns := report.total_warns();
+        if total_warns > 0 {
+            utils.warn(
+                "module `{}` generated {} {}", self.prefs.mod_name, total_warns,
+                if total_warns == 1 {
+                    "warning"
+                } else {
+                    "warnings"
+                }
+            );
+        }
     }
 
     func make_rivet_directory(self) ! {
@@ -326,6 +338,5 @@ public struct Compiler {
             });
         }
         utils.error(msg);
-        process.exit(1);
     }
 }

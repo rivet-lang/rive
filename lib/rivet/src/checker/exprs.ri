@@ -10,7 +10,10 @@ extend Checker {
         return switch expr is {
             .Empty => .Void(),
             .Type as type => type,
-            .Branch as branch => .Never(branch.pos),
+            .Branch as branch => {
+                self.scope_returns = true;
+                .Never(branch.pos)
+            },
             .Paren as paren => self.check_expr(paren.expr),
             .NoneLiteral => .None(),
             .BoolLiteral => self.table.bool_t,
@@ -783,7 +786,7 @@ extend Checker {
 
     func check_return(mut self, mut return_expr: ast.Expr.Return) ast.Type {
         if self.cur_fn.ret_type is .Never {
-            report.error("never functions cannot use `return` statements", return_expr.pos);
+            report.error("`never` functions cannot use `return` statements", return_expr.pos);
         } else if self.inside_defer {
             report.error("`return` is not allowed inside `defer` statement", return_expr.pos);
         } else if self.inside_test and return_expr.has_expr {

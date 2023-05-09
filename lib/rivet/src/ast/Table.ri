@@ -299,7 +299,6 @@ public struct Table {
             for ext in exts {
                 if ext in already_exts {
                     utils.error("{}: duplicate special extension `{}`", input, ext);
-                    continue;
                 }
                 already_exts.push(ext);
                 if ext.starts_with("d_") or ext.starts_with("notd_") {
@@ -328,7 +327,6 @@ public struct Table {
                     should_compile = should_compile and backend == self.prefs.target_backend;
                 } else {
                     utils.error("{}: unknown special extension `{}`", input, ext);
-                    break;
                 }
             }
             if should_compile {

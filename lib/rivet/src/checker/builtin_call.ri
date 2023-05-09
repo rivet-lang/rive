@@ -89,7 +89,8 @@ extend Checker {
                             ),
                             .Integer if !self.table.is_number(arg.type) => report.error(
                                 "expected integer type, found {}".fmt(arg.type), arg.pos
-                            )
+                            ),
+                            else => {}
                         }
                     },
                     .ReturnTypeEqualToArgumentType as arg_idx =>
