@@ -28,6 +28,9 @@ public struct ModuleIR : traits.Stringable {
         sb.writeln("// WARNING: This output format is intended for human consumers only");
         sb.writeln("// and is subject to change without notice. Knock yourself out.");
         sb.writeln();
+        for func_ in self.funcs {
+            sb.writeln(func_.to_string());
+        }
         return sb.to_string();
     }
 }
@@ -35,7 +38,7 @@ public struct ModuleIR : traits.Stringable {
 [boxed]
 public struct Struct {
     public name: string;
-    public fields: []Ident;
+    public fields: [](string, Type);
     public is_opaque: bool;
 }
 
@@ -51,52 +54,42 @@ public struct VTable {
 }
 
 [boxed]
-public struct Func {
+public struct Func : traits.Stringable {
     public name: string;
-    public args: []Ident;
+    public args_len: usize;
     public ret_type: Type;
     public is_variadic: bool;
-}
-
-public enum Type : traits.Stringable {
-    Void,
-    Never,
-    Basic {
-        name: string;
-        size: usize;
-    },
-    Pointer {
-        inner: Type;
-    },
-    Array {
-        elem_type: Type;
-        count: usize;
-        size: usize;
-    },
-    Func {
-        args: []Type;
-        ret_type: Type;
-        size: usize;
-    };
+    public locals: []Var;
+    public blocks: []Block;
 
     public func to_string(self) string {
-        return switch self is {
-            .Void => "void",
-            .Never => "never",
-            .Basic as basic => basic.name,
-            .Pointer as ptr => "*".concat(ptr.inner.to_string()),
-            .Array as arr => "[{}]{}".fmt(arr.count, arr.elem_type),
-            .Func as fn => {
-                mut sb := strings.Builder.from_string("*func(");
-                for i, arg in fn.args {
-                    sb.write_string(arg.to_string());
-                    if i < fn.args.len - 1 {
-                        sb.write_string(", ");
-                    }
-                }
-                sb.write_fmt(") {}", fn.ret_type);
-                sb.to_string()
+        mut sb := strings.Builder.from_string("func {}(".fmt(self.name));
+        mut i: usize := 0;
+        while i < self.args_len : i += 1 {
+            arg := self.locals[i];
+            sb.write_fmt("{}: {}", arg.dbg_name, arg.type);
+            if i < self.args_len - 1 {
+                sb.write_string(", ");
             }
-        };
+        }
+        sb.write_fmt(") {} {{", self.ret_type);
+        for block in self.blocks {
+            sb.writeln_fmt("    {}", block);
+        }
+        sb.writeln("}");
+        return sb.to_string();
     }
+}
+
+public enum VarLevel {
+    Global,
+    Argument,
+    Local
+}
+
+public struct Var {
+    public name: string;
+    public dbg_name: string;
+    public level: VarLevel;
+    public type: Type;
 }

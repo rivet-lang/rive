@@ -1002,7 +1002,14 @@ class Codegen:
             return tmp
         elif isinstance(expr, ast.AssignExpr):
             if isinstance(expr.left, ast.TupleLiteral):
-                if isinstance(expr.right, ast.CallExpr):
+                if isinstance(expr.right, ast.TupleLiteral):
+                    for i, l in enumerate(expr.left.exprs):
+                        self.gen_expr(
+                            ast.AssignExpr(
+                                l, expr.op, expr.right.exprs[i], expr.pos
+                            )
+                        )
+                else:
                     right = self.gen_expr(expr.right)
                     for i, l in enumerate(expr.left.exprs):
                         left, require_store_ptr = self.gen_left_assign(
@@ -1017,13 +1024,6 @@ class Codegen:
                                     left,
                                     ir.Selector(l.typ, right, ir.Name(f"f{i}"))
                                 ]
-                            )
-                        )
-                else:
-                    for i, l in enumerate(expr.left.exprs):
-                        self.gen_expr(
-                            ast.AssignExpr(
-                                l, expr.op, expr.right.exprs[i], expr.pos
                             )
                         )
                 return ir.Skip()

@@ -4,6 +4,7 @@
 
 import std/sys;
 import std/fs/path;
+import std/process;
 
 import ../token;
 import ../prefs;
@@ -280,6 +281,93 @@ public struct Table {
             float_info.size
         } else {
             75
+        };
+    }
+
+    /// Returns the size and alignment (in bytes) of `typ`, similarly to
+    /// C's `sizeof(T)` and `_Alignof(T)`.
+    public func type_size(self, type: Type) (usize, usize) {
+        return switch type is {
+            .Result as result => self.type_size(result.inner),
+            .Func => (self.pointer_size, self.pointer_size),
+            else => if mut type_sym := type.symbol() {
+                self.type_symbol_size(type_sym)
+            } else {
+                (0, 0)
+            }
+        };
+    }
+
+    func type_symbol_size(self, mut type_sym: TypeSym) (usize, usize) {
+        return if type_sym.size != 0 {
+            (type_sym.size, type_sym.align)
+        } else {
+            (mut size: usize, mut align: usize) := (0, 0);
+            (size, align) = if type_sym.is_boxed() {
+                (self.pointer_size, self.pointer_size)
+            } else {
+                switch type_sym.info is {
+                    .Alias as alias_info => self.type_size(alias_info.parent),
+                    .Usize, .Isize => (self.pointer_size, self.pointer_size),
+                    .Int as int => switch int.size {
+                        8 => (1, 1),
+                        16 => (2, 2),
+                        32 => (4, 4),
+                        64 => (8, 8),
+                        else => (0, 0)
+                    },
+                    .Uint as uint => switch uint.size {
+                        8 => (1, 1),
+                        16 => (2, 2),
+                        32 => (4, 4),
+                        64 => (8, 8),
+                        else => (0, 0)
+                    },
+                    .Float as float => switch float.size {
+                        32 => (4, 4),
+                        64 => (8, 8),
+                        else => (0, 0)
+                    },
+                    .Rune => (4, 4),
+                    .ComptimeFloat, .ComptimeInt => (8, 8),
+                    .Enum as enum_info => if enum_info.is_boxed {
+                        (self.pointer_size, self.pointer_size)
+                    } else {
+                        self.type_size(enum_info.underlying_type)
+                    },
+                    .Array as array_info => {
+                        (elem_size, elem_align) := self.type_size(array_info.elem_type);
+                        (array_info.size * elem_size, elem_align)
+                    },
+                    .Struct, .Tuple => {
+                        mut total_size: usize := 0;
+                        mut max_alignment: usize := 0;
+                        types := if type_sym.info is .Tuple as tuple_lit {
+                            tuple_lit.types
+                        } else {
+                            mut tmp := @vec(Type);
+                            for field in type_sym.full_fields() {
+                                tmp.push(field.type);
+                            }
+                            tmp
+                        };
+                        for ftype in types {
+                            (field_size, alignment) := self.type_size(ftype);
+                            if alignment > max_alignment {
+                                max_alignment = alignment;
+                            }
+                            total_size = utils.round_up(total_size, alignment) + field_size;
+                        }
+                        (utils.round_up(total_size, max_alignment), max_alignment)
+                    },
+                    else => process.panic(
+                        "Table.type_size: unsupported type `{}`", type_sym.qualname()
+                    )
+                }
+            };
+            type_sym.size = size;
+            type_sym.align = align;
+            (size, align)
         };
     }
 

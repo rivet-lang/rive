@@ -1,0 +1,55 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/traits;
+import std/strings;
+
+public enum Expr : traits.Stringable {
+    NoneConst: Type,
+    IntConst {
+        value: isize;
+        type: Type;
+    },
+    FloatConst {
+        value: float64;
+        type: Type;
+    },
+    StringConst {
+        value: string;
+        type: Type;
+    },
+    ArrayConst {
+        elems: []Expr;
+        type: Type;
+    },
+    Ident: Var,
+    Selector {
+        left: Expr;
+        name: string;
+        type: Type;
+    };
+
+    public func to_string(self) string {
+        return switch self is {
+            .NoneConst => "none",
+            .IntConst as int_const => "const {} {}".fmt(int_const.type, int_const.value),
+            .FloatConst as float_const => "const {} {}".fmt(float_const.type, float_const.value),
+            .StringConst as string_const => "const {} \"{}\"".fmt(
+                string_const.type, string_const.value
+            ),
+            .ArrayConst as array_const => {
+                mut sb := strings.Builder.from_string("[");
+                for i, elem in array_const.elems {
+                    sb.write_string(elem.to_string());
+                    if i < array_const.elems.len - 1 {
+                        sb.write_string(", ");
+                    }
+                }
+                sb.to_string()
+            },
+            .Ident as ident => ident.name,
+            .Selector as selector => "{}.{}".fmt(selector.left, selector.name)
+        };
+    }
+}

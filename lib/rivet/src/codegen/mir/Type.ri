@@ -1,0 +1,49 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/traits;
+import std/strings;
+
+public enum Type : traits.Stringable {
+    Void,
+    Never,
+    Basic {
+        name: string;
+        size: usize;
+    },
+    Pointer {
+        inner: Type;
+    },
+    Array {
+        elem_type: Type;
+        count: usize;
+        size: usize;
+    },
+    Func {
+        args: []Type;
+        ret_type: Type;
+        size: usize;
+    };
+
+    public func to_string(self) string {
+        return switch self is {
+            .Void => "void",
+            .Never => "never",
+            .Basic as basic => basic.name,
+            .Pointer as ptr => "*".concat(ptr.inner.to_string()),
+            .Array as arr => "[{}]{}".fmt(arr.count, arr.elem_type),
+            .Func as fn => {
+                mut sb := strings.Builder.from_string("*func(");
+                for i, arg in fn.args {
+                    sb.write_string(arg.to_string());
+                    if i < fn.args.len - 1 {
+                        sb.write_string(", ");
+                    }
+                }
+                sb.write_fmt(") {}", fn.ret_type);
+                sb.to_string()
+            }
+        };
+    }
+}

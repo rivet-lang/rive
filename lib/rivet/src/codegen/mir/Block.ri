@@ -1,0 +1,37 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/traits;
+import std/strings;
+
+[boxed]
+public struct Block : traits.Stringable {
+    stmts: []Stmt;
+
+    public func to_string(self) string {
+        mut sb := strings.Builder.from_string("{");
+        for stmt in self.stmts {
+            sb.writeln_fmt("    {}", stmt);
+        }
+        sb.writeln("}");
+        return sb.to_string();
+    }
+}
+
+public enum Stmt : traits.Stringable {
+    Return {
+        has_expr: bool;
+        expr: Expr;
+    };
+
+    public func to_string(self) string {
+        return switch self is {
+            .Return as ret_expr => if ret_expr.has_expr {
+                "return {}".fmt(ret_expr.expr)
+            } else {
+                "return"
+            }
+        };
+    }
+}

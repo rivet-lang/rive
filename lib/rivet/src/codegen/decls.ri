@@ -1,0 +1,27 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ./mir;
+import ../ast;
+
+extend Codegen {
+    func gen_decls(mut self, decls: []ast.Decl) {
+        for decl in decls {
+            self.gen_decl(decl);
+        }
+    }
+
+    func gen_decl(mut self, decl: ast.Decl) {
+        switch decl is {
+            .Extend as extend_decl => self.gen_decls(extend_decl.decls),
+            .Func as func_decl => self.gen_func(func_decl),
+            else => {}
+        }
+    }
+
+    func gen_func(mut self, func_decl: ast.Decl.Func) {
+        self.cur_func = mir.Func(name: func_decl.sym.qualname());
+        self.mir.funcs.push(self.cur_func);
+    }
+}

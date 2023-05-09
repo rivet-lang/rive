@@ -351,7 +351,9 @@ extend Parser {
                     right := self.parse_expr();
                     .Assign(expr, op, right, pos + right.position())
                 },
-                self.tok.kind == .Lparen and !self.decl_operator_is_used() => {
+                self.tok.kind == .Lparen and !self.decl_operator_is_used()
+                    and (expr is .Ident or expr is .Selector or expr is .Paren
+                        or expr is .SelfTy or expr is .EnumLiteral) => {
                     self.next();
                     mut args := @vec(ast.CallArg);
                     mut spread_expr := ast.Expr.Empty(self.tok.pos);

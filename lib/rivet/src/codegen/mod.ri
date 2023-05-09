@@ -15,6 +15,8 @@ public struct Codegen {
     mut mir: mir.ModuleIR;
     mut mirs: []mir.ModuleIR;
 
+    mut cur_func: mir.Func;
+
     public func generate_mirs(mut self, source_files: []ast.SourceFile) {
         self.rivet_internal = self.get_or_create_mir("rivetc.compiler.internal");
         for source_file in source_files {
@@ -32,6 +34,7 @@ public struct Codegen {
 
     public func generate_mir(mut self, source_file: ast.SourceFile) {
         self.mir = self.get_or_create_mir(source_file.mod.name);
+        self.gen_decls(source_file.decls);
     }
 
     func get_or_create_mir(mut self, name: string) mir.ModuleIR {
