@@ -1,0 +1,47 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ./mir;
+import ../ast;
+import ../prefs;
+import ../utils;
+
+public struct Codegen {
+    table: ast.Table;
+    prefs: prefs.Prefs;
+
+    mut rivet_internal: mir.ModuleIR;
+    mut mir: mir.ModuleIR;
+    mut mirs: []mir.ModuleIR;
+
+    public func generate_mirs(mut self, source_files: []ast.SourceFile) {
+        self.rivet_internal = self.get_or_create_mir("rivetc.compiler.internal");
+        for source_file in source_files {
+            self.generate_mir(source_file);
+        }
+        if self.prefs.emit_mir {
+            for mir_ in self.mirs {
+                mir_.to_file() catch |err| utils.error(err.to_string());
+            }
+        }
+        switch self.prefs.target_backend {
+            .C => {}
+        }
+    }
+
+    public func generate_mir(mut self, source_file: ast.SourceFile) {
+        self.mir = self.get_or_create_mir(source_file.mod.name);
+    }
+
+    func get_or_create_mir(mut self, name: string) mir.ModuleIR {
+        for mir_ in self.mirs {
+            if mir_.name == name {
+                return mir_;
+            }
+        }
+        new_mir := mir.ModuleIR(name);
+        self.mirs.push(new_mir);
+        return new_mir;
+    }
+}

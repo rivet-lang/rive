@@ -145,6 +145,10 @@ extend Checker {
                 }, func_decl.name, func_decl.pos
             );
         }
+        if func_decl.is_method and func_decl.self_is_ref
+            and func_decl.self_type.symbol()?.is_boxed() {
+            report.error("cannot reference a boxed value as receiver", func_decl.self_pos);
+        }
         for arg in func_decl.args {
             self.check_name_case(.Snake, "argument", arg.name, arg.pos);
             if arg.has_def_expr {

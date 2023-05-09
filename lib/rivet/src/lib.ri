@@ -15,6 +15,7 @@ import ./token;
 import ./parser;
 import ./report;
 import ./checker;
+import ./codegen;
 import ./resolver;
 import ./depgraph;
 
@@ -26,6 +27,7 @@ public struct Compiler {
 
     mut resolver: resolver.Resolver;
     mut checker: checker.Checker;
+    mut codegen: codegen.Codegen;
 
     public func new(args: []string, is_test: bool, run_output: bool) ! {
         prefs_ := prefs.Prefs.new(args, is_test, run_output)!;
@@ -34,7 +36,8 @@ public struct Compiler {
         Self(
             table: table_, prefs: prefs_,
             resolver: resolver.Resolver(table_, prefs_),
-            checker: checker.Checker(table_, prefs_)
+            checker: checker.Checker(table_, prefs_),
+            codegen: codegen.Codegen(table_, prefs_)
         ).run()!;
     }
 
@@ -53,6 +56,12 @@ public struct Compiler {
 
         self.vlog("checking files...");
         self.checker.check_files(self.table.source_files);
+        if report.total_errors() > 0 {
+            self.abort();
+        }
+
+        self.vlog("generating MIR from AST...");
+        self.codegen.generate_mirs(self.table.source_files);
         if report.total_errors() > 0 {
             self.abort();
         }

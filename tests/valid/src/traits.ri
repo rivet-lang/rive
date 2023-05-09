@@ -1,13 +1,13 @@
 trait Reader {
-    func read(&self) uint8;
+    func read(self) uint8;
 }
 
 trait Writer {
-    func write(&self, b: uint8) bool;
+    func write(self, b: uint8) bool;
 }
 
 trait ReaderWriter : Reader, Writer {
-    func write_and_read(&self, b: uint8) uint8;
+    func write_and_read(self, b: uint8) uint8;
 }
 
 struct SomeStream : ReaderWriter {

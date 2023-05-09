@@ -73,7 +73,7 @@ public struct Prefs {
     public mut flags: []string;
     public mut check_syntax: bool;
 	public mut check: bool;
-	public mut emit_rir: bool;
+	public mut emit_mir: bool;
 	public mut keep_c: bool;
 	public mut is_verbose: bool;
 
@@ -188,8 +188,8 @@ public struct Prefs {
             if check := fp.bool_flag("check", 0, "Scans, parses, and checks the files without compiling the module."); check {
                 prefs.check = true;
             }
-            if emit_rir := fp.bool_flag("emit-rir", 0, "Emit Rivet Intermediate Representation to a file."); emit_rir {
-                prefs.emit_rir = true;
+            if emit_mir := fp.bool_flag("emit-mir", 0, "Emit Rivet's Module Intermediate Representation to a file."); emit_mir {
+                prefs.emit_mir = true;
             }
             if keep_c := fp.bool_flag("keep-c", 0, "Don't remove the output C source file."); keep_c {
                 prefs.keep_c = true;

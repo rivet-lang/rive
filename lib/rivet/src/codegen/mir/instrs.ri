@@ -2,10 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public trait Stringable {
-    func to_string(self) string;
-}
-
-public trait Hashable {
-    func hash(self) usize;
+public enum Instruction {
+    Nop
 }

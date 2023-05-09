@@ -1,0 +1,40 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+public struct Ident {
+    public name: string;
+    public type: Type;
+}
+
+public enum Expr {
+    Skip,
+    NoneConst: Type,
+    IntConst {
+        value: isize;
+        type: Type;
+    },
+    FloatConst {
+        value: float64;
+        type: Type;
+    },
+    RuneConst {
+        value: rune;
+    },
+    StringConst {
+        value: string;
+        type: Type;
+    },
+    ArrayConst {
+        elems: []Expr;
+        type: Type;
+    },
+    Ident: Ident,
+    Selector {
+        left: Expr;
+        name: string;
+        type: Type;
+    },
+    Name: string, // Simple identifiers
+    Label: string
+}
