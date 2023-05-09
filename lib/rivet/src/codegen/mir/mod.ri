@@ -84,7 +84,8 @@ public struct Func : traits.Stringable {
 public enum VarLevel {
     Global,
     Argument,
-    Local
+    Local,
+    Temporal
 }
 
 public struct Var {
@@ -92,4 +93,5 @@ public struct Var {
     public dbg_name: string;
     public level: VarLevel;
     public type: Type;
+    public fields: []Var;
 }

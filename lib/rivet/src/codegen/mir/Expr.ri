@@ -27,14 +27,90 @@ public enum Expr : traits.Stringable {
     Selector {
         left: Expr;
         name: string;
+        var_: Var;
+        type: Type;
+    },
+    Unary {
+        enum Op : traits.Stringable {
+            Copy,
+            Move,
+            BitNot,
+            Neg,
+            AddrOf,
+            Inc,
+            Dec;
+
+            func to_string(&self) string {
+                return switch self.* {
+                    .Copy => "copy ",
+                    .Move => "move ",
+                    .BitNot => "~",
+                    .Neg => "-",
+                    .AddrOf => "&",
+                    .Inc => "inc ",
+                    .Dec => "dec "
+                };
+            }
+        }
+
+        op: Op;
+        right: Expr;
+        type: Type;
+    },
+    Binary {
+        enum Op : traits.Stringable {
+            Add,
+            Sub,
+            Mul,
+            Div,
+            Mod,
+            BitAnd,
+            BitOr,
+            BitXor,
+            Lshift,
+            Rshift;
+
+            func to_string(&self) string {
+                return switch self.* {
+                    .Add => "+",
+                    .Sub => "-",
+                    .Mul => "*",
+                    .Div => "/",
+                    .Mod => "%",
+                    .BitAnd => "&",
+                    .BitOr => "|",
+                    .BitXor => "^",
+                    .Lshift => "<<",
+                    .Rshift => ">>"
+                };
+            }
+        }
+
+        left: Expr;
+        op: Op;
+        right: Expr;
+        type: Type;
+    },
+    Call {
+        name: string;
+        args: []Expr;
+        type: Type;
+    },
+    Index {
+        left: Expr;
+        index: Expr;
         type: Type;
     };
 
     public func to_string(self) string {
         return switch self is {
             .NoneConst => "none",
-            .IntConst as int_const => "const {} {}".fmt(int_const.type, int_const.value),
-            .FloatConst as float_const => "const {} {}".fmt(float_const.type, float_const.value),
+            .IntConst as int_const => "const {} {}".fmt(
+                int_const.type, int_const.value
+            ),
+            .FloatConst as float_const => "const {} {}".fmt(
+                float_const.type, float_const.value
+            ),
             .StringConst as string_const => "const {} \"{}\"".fmt(
                 string_const.type, string_const.value
             ),
@@ -49,7 +125,22 @@ public enum Expr : traits.Stringable {
                 sb.to_string()
             },
             .Ident as ident => ident.name,
-            .Selector as selector => "{}.{}".fmt(selector.left, selector.name)
+            .Selector as selector => "{}.{}".fmt(selector.left, selector.name),
+            .Unary as unary => "{}{}".fmt(unary.op, unary.right),
+            .Binary as binary => "{} {} {}".fmt(binary.left, binary.op, binary.right),
+            .Call as call => {
+                mut sb := strings.Builder.from_string(call.name);
+                sb.write_string("(");
+                for i, arg in call.args {
+                    sb.write_string(arg.to_string());
+                    if i < call.args.len - 1 {
+                        sb.write_string(", ");
+                    }
+                }
+                sb.write_string(")");
+                sb.to_string()
+            },
+            .Index as index => "{}[{}]".fmt(index.left, index.index)
         };
     }
 }
