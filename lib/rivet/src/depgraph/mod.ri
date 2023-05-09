@@ -87,12 +87,7 @@ public struct DepGraph {
             if nn.is_cycle.contains(k.key) {
                 continue;
             }
-            // ------ FIXME: error: expected name, found token `;` -------
-            // (seen, cycle_names) = nn.is_part_of_cycle(k, cycle_names);
-            tmp := nn.is_part_of_cycle(k.key, cycle_names);
-            seen = tmp.0;
-            cycle_names = tmp.1;
-            // -----------------------------------------------------------
+            (seen, cycle_names) = nn.is_part_of_cycle(k.key, cycle_names);
             if seen {
                 out.writeln_fmt(" * `{}`", utils.join(cycle_names, "` -> `"));
                 nn.is_cycle = maps.MapStringBool();
