@@ -231,6 +231,15 @@ extend Checker {
                 err.add_note("`never` functions should end with a call to another `never` function, or with a `while {}`");
                 err.emit();
             }
+        } else if func_decl.has_body and !func_decl.ret_type.is_void()
+            and !self.has_return(func_decl.stmts) {
+            report.error(
+                "missing `return` statement at end of {} `{}`".fmt(
+                    if func_decl.is_method { "method" } else { "function" },
+                    func_decl.name
+                ),
+                func_decl.pos
+            );
         }
     }
 }

@@ -164,31 +164,31 @@ extend Checker {
         }
 
         // check that expressions are exhaustive, this is achieved either by putting
-		// an `else` or when the `switch` is on an enum by listing all variants.
-		mut is_exhaustive := true;
-		mut unhandled := @vec(string);
-		if expr_type == self.table.bool_t and switch_expr.branches.len == 1 {
+        // an `else` or when the `switch` is on an enum by listing all variants.
+        switch_expr.is_exhaustive = true;
+        mut unhandled := @vec(string);
+        if expr_type == self.table.bool_t and switch_expr.branches.len == 1 {
             for v in ["true", "false"]! {
                 if !branch_exprs.contains(v) {
-                    is_exhaustive = false;
+                    switch_expr.is_exhaustive = false;
                     unhandled.push("`{}`".fmt(v));
                 }
             }
-		} else if expr_sym.info is .Enum as enum_info2 {
+        } else if expr_sym.info is .Enum as enum_info2 {
             for variant in enum_info2.variants {
                 e := ".".concat(variant.name);
                 if !branch_exprs.contains(e) {
-                    is_exhaustive = false;
+                    switch_expr.is_exhaustive = false;
                     unhandled.push("`{}`".fmt(e));
                 }
             }
-		} else {
-            is_exhaustive = false;
-		}
+        } else {
+            switch_expr.is_exhaustive = false;
+        }
 
-		mut has_else := switch_expr.has_else;
-		mut else_branch := switch_expr.branches[switch_expr.branches.len - 1];
-		if !has_else {
+        mut has_else := switch_expr.has_else;
+        mut else_branch := switch_expr.branches[switch_expr.branches.len - 1];
+        if !has_else {
             for i, branch in switch_expr.branches {
                 if branch.is_else and i != switch_expr.branches.len - 1 {
                     report.error("`else` must be the last branch of `switch`", branch.pos);
@@ -196,19 +196,19 @@ extend Checker {
                     has_else = true;
                 }
             }
-		}
-		if is_exhaustive {
+        }
+        if switch_expr.is_exhaustive {
             if has_else {
                 report.warn("`switch` is exhaustive, `else` is unnecessary", else_branch.pos);
             }
             return switch_expr.expected_type;
-		}
-		if has_else {
+        }
+        if has_else {
             return switch_expr.expected_type;
-		}
+        }
 
-		mut err := report.error_builder("`switch` must be exhaustive", switch_expr.pos);
-		if unhandled.len > 0 {
+        mut err := report.error_builder("`switch` must be exhaustive", switch_expr.pos);
+        if unhandled.len > 0 {
             mut err_details := "add `switch` branches for: ";
             if unhandled.len < SWITCH_EXHAUSTIVE_CUTOFF_LIMIT {
                 err_details = err_details.concat(utils.join(unhandled, ", "));
@@ -222,10 +222,10 @@ extend Checker {
                 }
             }
             err.add_help(err_details);
-		} else {
+        } else {
             err.add_help("add `else` branch at the end");
-		}
-		err.emit();
+        }
+        err.emit();
         return switch_expr.expected_type;
     }
 }

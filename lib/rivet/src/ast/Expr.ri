@@ -256,6 +256,7 @@ public enum Expr : traits.Stringable {
         pos: token.Pos;
         mut expected_type: Type;
         mut type: Type;
+        mut is_exhaustive: bool;
     },
     // Examples:
     // - if x := optional_or_result_fn() { ... }

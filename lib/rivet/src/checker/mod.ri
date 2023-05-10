@@ -399,4 +399,42 @@ public struct Checker {
             report.warn("expression evaluated but not used", pos);
         }
     }
+
+    func has_return(self, stmts: []ast.Stmt) bool {
+        for stmt in stmts {
+            if stmt is .Expr as expr and self.expr_has_return(expr) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    func expr_has_return(self, expr: ast.Expr) bool {
+        return switch expr is {
+            .Switch as switch_expr => {
+                for i, branch in switch_expr.branches {
+                    if switch_expr.is_exhaustive and i == switch_expr.branches.len {
+                        if self.expr_has_return(branch.expr) {
+                            return true;
+                        }
+                    } else if branch.is_else and self.expr_has_return(branch.expr) {
+                        return true;
+                    }
+                }
+                false
+            },
+            .If as if_expr => {
+                for branch in if_expr.branches {
+                    if branch.is_else and self.expr_has_return(branch.expr) {
+                        return true;
+                    }
+                }
+                false
+            },
+            .Call as call_expr => call_expr.type is .Never,
+            .Block as block => self.has_return(block.stmts),
+            .Return => return true,
+            else => false
+        };
+    }
 }

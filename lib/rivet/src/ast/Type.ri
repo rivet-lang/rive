@@ -185,7 +185,11 @@ public enum Type : traits.Stringable {
 
     [inline]
     public func is_void(self) bool {
-        return self is .Void or self is .Never;
+        return switch self is {
+            .Void, .Never => true,
+            .Result as result => result.inner.is_void(),
+            else => false
+        };
     }
 
     [inline]
