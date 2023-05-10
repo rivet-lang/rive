@@ -11,17 +11,17 @@ trait ReaderWriter : Reader, Writer {
 }
 
 struct SomeStream : ReaderWriter {
-    func read(&self) uint8 {
+    public func read(&self) uint8 {
         _ = self;
         return b'A';
     }
 
-    func write(&self, _b: uint8) bool {
+    public func write(&self, _b: uint8) bool {
         _ = self;
         return true;
     }
 
-    func write_and_read(&self, b: uint8) uint8 {
+    public func write_and_read(&self, b: uint8) uint8 {
         _ = self.write(b);
         return self.read();
     }
@@ -58,7 +58,7 @@ trait Eq {
 
 [boxed]
 struct Poketrait : Eq {
-    func equal(self, x: Eq) bool {
+    public func equal(self, x: Eq) bool {
         return self.x == x.x;
     }
 }
