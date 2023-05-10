@@ -45,13 +45,10 @@ public func mem_resize(ptr: ?mut_anyptr, sz: usize) !mut_anyptr {
 
 /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
 /// byte `c`.
+[inline]
 public func mem_set(s: mut_anyptr, c: uint8, n: usize) {
     unsafe {
-        s_b := @cast([*]mut uint8, s);
-        mut i: usize := 0;
-        while i < n : i += 1 {
-            s_b[i] = c;
-        }
+        _ = libc.memset(s, @cast(int32, c), n);
     }
 }
 
@@ -59,14 +56,10 @@ public func mem_set(s: mut_anyptr, c: uint8, n: usize) {
 ///
 /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem.move`, if the memory
 /// areas do overlap.
+[inline]
 public func mem_copy(dest: mut_anyptr, src: anyptr, sz: usize) {
     unsafe {
-        src_b := @cast([*]uint8, src);
-        dest_b := @cast([*]mut uint8, dest);
-        mut i: usize := 0;
-        while i < sz : i += 1 {
-            dest_b[i] = src_b[i];
-        }
+        _ = libc.memcpy(dest, src, sz);
     }
 }
 
@@ -76,6 +69,7 @@ public func mem_copy(dest: mut_anyptr, src: anyptr, sz: usize) {
 /// in `src` are first copied into a temporary array that does not overlap
 /// `src` or `dest`, and the bytes are then copied from the temporary array to
 /// `dest`.
+[inline]
 public func mem_move(dest: mut_anyptr, src: anyptr, sz: usize) {
     unsafe {
         _ = libc.memmove(dest, src, sz);
