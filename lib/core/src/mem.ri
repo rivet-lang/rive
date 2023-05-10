@@ -19,9 +19,10 @@ public func mem_alloc(size: usize) !mut_anyptr {
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
 public func mem_zeroed(n: usize) !mut_anyptr {
-    new := mem_alloc(n)!;
-    mem_set(new, 0, n);
-    return new;
+    if ptr := unsafe { libc.calloc(1, n) } {
+        return ptr;
+    }
+    return OutOfMemoryError("insufficient memory is available");
 }
 
 /// Resizes the memory block `ptr` with `sz` bytes.
