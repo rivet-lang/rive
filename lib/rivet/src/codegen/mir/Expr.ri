@@ -40,7 +40,7 @@ public enum Expr : traits.Stringable {
             Inc,
             Dec;
 
-            func to_string(&self) string {
+            public func to_string(&self) string {
                 return switch self.* {
                     .Copy => "copy ",
                     .Move => "move ",
@@ -70,7 +70,7 @@ public enum Expr : traits.Stringable {
             Lshift,
             Rshift;
 
-            func to_string(&self) string {
+            public func to_string(&self) string {
                 return switch self.* {
                     .Add => "+",
                     .Sub => "-",

@@ -244,7 +244,9 @@ public struct Register {
                     ret_type: func_decl.ret_type,
                     has_body: func_decl.has_body,
                     self_is_mut: func_decl.self_is_mut,
-                    self_is_ref: func_decl.self_is_ref
+                    self_is_ref: func_decl.self_is_ref,
+                    self_pos: func_decl.self_pos,
+                    pos: func_decl.pos
                 ), func_decl.pos),
                 .Destructor as dtor_decl => {
                     dtor_decl.self_type = .Basic(@cast(ast.TypeSym, self.sym));

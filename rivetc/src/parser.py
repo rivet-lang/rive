@@ -140,9 +140,8 @@ class Parser:
         return annotations
 
     def is_public(self):
-        return self.inside_trait or self.inside_enum_variant_with_fields or self.accept(
-            Kind.KwPublic
-        )
+        is_pub = self.accept(Kind.KwPublic)
+        return self.inside_trait or self.inside_enum_variant_with_fields or is_pub
 
     def parse_abi(self):
         self.expect(Kind.Lparen)

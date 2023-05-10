@@ -38,6 +38,16 @@ public enum Decl {
         pos: token.Pos;
         mut sym: Sym;
     },
+    Trait {
+        docs: DocComment;
+        annotations: Annotations;
+        is_public: bool;
+        name: string;
+        bases: []mut Type;
+        decls: []Decl;
+        pos: token.Pos;
+        mut sym: Sym;
+    },
     Enum {
         docs: DocComment;
         annotations: Annotations;
@@ -47,16 +57,6 @@ public enum Decl {
         bases: []mut Type;
         variants: []EnumVariantDecl;
         is_boxed: bool;
-        decls: []Decl;
-        pos: token.Pos;
-        mut sym: Sym;
-    },
-    Trait {
-        docs: DocComment;
-        annotations: Annotations;
-        is_public: bool;
-        name: string;
-        bases: []mut Type;
         decls: []Decl;
         pos: token.Pos;
         mut sym: Sym;

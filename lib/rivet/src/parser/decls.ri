@@ -65,7 +65,8 @@ extend Parser {
 
     [inline]
     func is_public(mut self) bool {
-        return self.inside_trait or self.accept(.KwPublic);
+        is_pub := self.accept(.KwPublic);
+        return self.inside_trait or self.inside_enum_variant_with_fields or is_pub;
     }
 
     func parse_abi(mut self) ast.ABI {

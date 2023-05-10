@@ -331,10 +331,12 @@ public struct Func : Sym {
     public mut self_type: Type;
     public self_is_mut: bool;
     public self_is_ref: bool;
+    public self_pos: token.Pos;
     public args: []Arg;
     public has_named_args: bool;
     public has_body: bool;
     public ret_type: Type;
+    public pos: token.Pos;
 
     public func get_arg(self, idx: usize) Arg {
         arg := self.args[idx];

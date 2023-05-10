@@ -97,20 +97,38 @@ extend Checker {
                     }
                 }
             },
+            .Trait as trait_decl => {
+                self.check_name_case(.Pascal, "trait", trait_decl.name, trait_decl.pos);
+                self.check_decls(trait_decl.decls);
+            },
             .Enum as enum_decl => {
                 self.check_name_case(.Pascal, "enum", enum_decl.name, enum_decl.pos);
+                for base in enum_decl.bases {
+                    if sym := base.symbol() {
+                        if sym.info is .Trait {
+                            self.check_trait_impl(
+                                @cast(ast.TypeSym, enum_decl.sym), sym, enum_decl.pos
+                            );
+                        }
+                    }
+                }
                 for variant in enum_decl.variants {
                     self.check_name_case(.Pascal, "enum variant", variant.name, variant.pos);
                     self.check_decls(variant.decls);
                 }
                 self.check_decls(enum_decl.decls);
             },
-            .Trait as trait_decl => {
-                self.check_name_case(.Pascal, "trait", trait_decl.name, trait_decl.pos);
-                self.check_decls(trait_decl.decls);
-            },
             .Struct as struct_decl => {
                 self.check_name_case(.Pascal, "struct", struct_decl.name, struct_decl.pos);
+                for base in struct_decl.bases {
+                    if sym := base.symbol() {
+                        if sym.info is .Trait {
+                            self.check_trait_impl(
+                                @cast(ast.TypeSym, struct_decl.sym), sym, struct_decl.pos
+                            );
+                        }
+                    }
+                }
                 self.check_decls(struct_decl.decls);
             },
             .Field as field_decl => {
@@ -126,6 +144,14 @@ extend Checker {
                 }
             },
             .Extend as extend_decl => {
+                type_sym := extend_decl.type.symbol()?;
+                for base in extend_decl.bases {
+                    if sym := base.symbol() {
+                        if sym.info is .Trait {
+                            self.check_trait_impl(type_sym, sym, extend_decl.type.position());
+                        }
+                    }
+                }
                 self.check_decls(extend_decl.decls);
             },
             .Func as mut func_decl => self.check_func(func_decl),

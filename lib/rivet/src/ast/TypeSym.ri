@@ -92,8 +92,14 @@ public struct TypeSym : Sym {
     [inline]
     public func find_func(self, name: string) ?Func {
         return if sym := self.scope.find(name); sym is Func as func_ {
+            if self.info !is .Trait and !func_.has_body {
+                return none;
+            }
             func_
         } else if sym := self.find_in_base(name); sym is Func as func_ {
+            if self.info !is .Trait and !func_.has_body {
+                return none;
+            }
             func_
         } else {
             none
