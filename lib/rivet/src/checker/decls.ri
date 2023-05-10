@@ -221,7 +221,7 @@ extend Checker {
                 switch func_decl.stmts[func_decl.stmts.len - 1] is {
                     .While as while_stmt if while_stmt.is_inf
                         and while_stmt.stmt is .Expr as expr and expr is .Block as block => {
-                        if block.stmts.is_empty() {
+                        if !block.stmts.is_empty() {
                             report.error("infinite loop should be empty", while_stmt.pos);
                         }
                     },

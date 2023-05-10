@@ -24,6 +24,7 @@ extend Parser {
                     } else {
                         self.parse_expr()
                     };
+                    is_inf = cond.clean_paren() is .BoolLiteral;
                     if self.accept(.Colon) {
                         has_continue_expr = true;
                         continue_expr = self.parse_expr();
