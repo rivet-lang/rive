@@ -1,12 +1,12 @@
 var myVar = 1;
-const MY_CONST = "Speak";
+const MY_CONST = 5;
 
 test "implicitly typed variable" {
     @assert(myVar == 1);
 }
 
 test "implicitly typed constant" {
-    @assert(MY_CONST == "Speak");
+    @assert(MY_CONST == 5);
 }
 
 var myArray = [1, 2, 3, 4]!;

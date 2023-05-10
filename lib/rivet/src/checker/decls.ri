@@ -83,6 +83,19 @@ extend Checker {
                     const_decl.type = self.check_expr(const_decl.expr);
                     @cast(ast.Const, const_decl.sym).type = const_decl.type;
                 }
+                if const_decl.type is .Option or const_decl.type is .None {
+                    report.error(
+                        "cannot assign option values to constants",
+                        const_decl.expr.position()
+                    );
+                } else if type_sym := const_decl.type.symbol() {
+                    if type_sym.is_boxed() {
+                        report.error(
+                            "cannot assign boxed values to constants",
+                            const_decl.expr.position()
+                        );
+                    }
+                }
             },
             .Enum as enum_decl => {
                 self.check_name_case(.Pascal, "enum", enum_decl.name, enum_decl.pos);
