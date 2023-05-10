@@ -99,6 +99,18 @@ public struct Resolver {
             } else {
                 none
             },
+            .BuiltinCall as builtin_call if builtin_call.name in ["size_of", "align_of"] => {
+                if builtin_call.args[0].expr is .Type as mut type and self.resolve_type(type) {
+                    (size, align) := self.table.type_size(type);
+                    if builtin_call.name == "size_of" {
+                        @cast(isize, size)
+                    } else {
+                        @cast(isize, align)
+                    }
+                } else {
+                    0
+                }
+            },
             else => none
         };
     }
