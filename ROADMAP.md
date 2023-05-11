@@ -50,3 +50,4 @@
         console.println("executed in compile-time");
     }
     ```
+- [ ] Replace `c/libc` definitions by `c_import` declarations.
