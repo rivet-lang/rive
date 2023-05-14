@@ -13,8 +13,12 @@ var errorPathsAbsolute = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolu
 // NOTE: path_styled_for_error_messages will *always* use `/` in the error paths, no
 // matter the OS, to ensure stable compiler error output in the tests.
 public func path_styled_for_error_messages(path_: string) string {
-	rpath := (path.resolve(path_) catch path_).replace("\\", "/");
-	return if errorPathsAbsolute {
+	rpath := (if path.is_absolute(path_) {
+        path_
+	} else {
+        path.resolve(path_) catch path_
+	}).replace("\\", "/");
+	return if errorPathsAbsolute or path.is_absolute(path_) {
 		rpath
 	} else {
 		path.relative(normalizedWorkdir, rpath) catch path_

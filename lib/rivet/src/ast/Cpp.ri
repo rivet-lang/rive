@@ -1,0 +1,203 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/strings;
+
+import ../token;
+import ../utils;
+import ../report;
+
+[boxed]
+public struct Cpp {
+    mut table: Table;
+
+    mut is_started: bool;
+    mut tokenizer: CTokenizer;
+    mut prev_tok: CToken;
+    mut tok: CToken;
+    mut peek_tok: CToken;
+
+    mut file: string;
+    mut line_nr: usize;
+    mut column: usize;
+
+    mut out_tokens: []CToken; // passed to Parser
+
+    public func from_file(table: Table, file: string) !Self {
+        return Self(
+            table: table, file: file,
+            tokenizer: CTokenizer(buffer: utils.read_file(file)!)
+        );
+    }
+
+    public func preprocess(mut self) []CToken {
+        self.read_first_tokens();
+        while self.tok.id !is .Eof {
+            self.eat_tokens();
+            if self.tok.id is .Hash {
+                hash_pos := self.tok.pos;
+                self.next();
+                switch self.tok.id is {
+                    .Keyword_include => {
+                        is_system := self.tok.id is .MacroString;
+                        path := if is_system {
+                            lit := self.literal(self.tok);
+                            self.next();
+                            lit
+                        } else {
+                            lit := self.literal(self.tok);
+                            if self.tok.id is .StringLiteral {
+                                self.next();
+                            } else {
+                               report.error(
+                                   "expected string literal, found".fmt(self.tok.id.symbol()),
+                                   self.tok.pos
+                               );
+                            }
+                            lit
+                        };
+                        if path.is_empty() {
+                            report.error("empty header file", self.prev_tok.pos);
+                        } else if header := self.table.search_c_header(!is_system, path) {
+                            new_tokens := self.table.include_c_header(header) catch |err| {
+                                report.error(err.to_string(), self.prev_tok.pos);
+                                []
+                            };
+                            for new in new_tokens {
+                                self.out_tokens.push(new);
+                            }
+                        } else {
+                            report.error(
+                                "header file `{}` not found".fmt(path), self.prev_tok.pos
+                            );
+                        }
+                    },
+                    .Keyword_define => {break;},
+                    .Keyword_ifdef => {break;},
+                    .Keyword_ifndef => {break;},
+                    .Keyword_pragma => {break;},
+                    else => {
+                        mut name_pos := hash_pos;
+                        name := self.literal(self.tok);
+                        self.next();
+                        switch name {
+                            "error", "warning" => {
+                                msg := if self.tok.id is .StringLiteral {
+                                    self.literal(self.tok)
+                                } else {
+                                    tokens := self.skip_line();
+                                    name_pos += self.prev_tok.pos;
+                                    self.join_ctokens(tokens, " ")
+                                };
+                                if name == "error" {
+                                    report.error(msg, name_pos);
+                                } else {
+                                    report.warn(msg, name_pos);
+                                }
+                            },
+                            else => report.error(
+                                "unknown directive `{}`".fmt(self.tok.id.symbol()),
+                                self.tok.pos
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        return self.out_tokens;
+    }
+
+    func read_first_tokens(mut self) {
+        self.next();
+        self.next();
+        self.is_started = true;
+        self.next();
+    }
+
+    func eat_tokens(mut self) {
+        while !(self.tok.id is .Hash or self.tok.id is .Eof) {
+            if !(self.tok.id is .Nl or self.tok.id is .LineComment
+                or self.tok.id is .MultiLineComment) {
+                self.out_tokens.push(self.tok);
+            }
+            self.next();
+        }
+    }
+
+    func next(mut self) {
+        self.prev_tok = self.tok;
+        self.tok = self.peek_tok;
+        self.peek_tok = self.tokenizer.next();
+        if self.is_started {
+            if self.tok.id is .Nl {
+                self.line_nr += 1;
+                self.column = 0;
+            } else {
+                self.column += self.tok.end - self.tok.start;
+            }
+            self.peek_tok.pos = self.make_pos(self.peek_tok);
+        }
+    }
+
+    func skip_line(mut self) []CToken {
+        mut ctokens := @vec(CToken);
+        while self.tok.id !is .Nl {
+            ctokens.push(self.tok);
+            self.next();
+        }
+        return ctokens;
+    }
+
+    [inline]
+    func accept(mut self, id: CToken.Id) bool {
+        return if self.tok.id.symbol() == id.symbol() {
+            self.next();
+            true
+        } else {
+            false
+        };
+    }
+
+    func expect(mut self, id: CToken.Id) {
+        if self.accept(id) {
+            return;
+        }
+        report.error(
+            "expected {}, found {}".fmt(id.symbol(), self.tok.id.symbol()),
+            self.tok.pos
+        );
+    }
+
+    [inline]
+    func make_pos(self, tok: CToken) token.Pos {
+        return token.Pos(
+            self.file, self.line_nr, self.column + 1, tok.end - tok.start,
+            tok.start
+        );
+    }
+
+    [inline]
+    func literal(self, tok: CToken) string {
+        return self.tokenizer.buffer[tok.start..tok.end];
+    }
+
+    func token_string(self, tok: CToken) string {
+        return if tok.id is .Identifier {
+            self.literal(tok)
+        } else {
+            tok.id.symbol()
+        };
+    }
+
+    func join_ctokens(self, ctokens: []CToken, sep: string = ", ") string {
+        mut sb := strings.Builder.new();
+        for i, ctoken in ctokens {
+            sb.write_string(self.token_string(ctoken));
+            if i < ctokens.len - 1 {
+                sb.write_string(sep);
+            }
+        }
+        return sb.to_string();
+    }
+}

@@ -455,6 +455,9 @@ class Compiler:
             elif name == "_RELEASE_":
                 return self.prefs.build_mode == prefs.BuildMode.Release
             return self.prefs.build_mode == prefs.BuildMode.Test
+        # special
+        elif name == "_BOOTSTRAP_":
+            return True
         elif name.startswith("_") and name.endswith("_"):
             report.error(f"unknown builtin flag: `{name}`", pos)
             return False

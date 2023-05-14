@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import std/fs/path;
+
 import ../ast;
 import ../prefs;
 import ../token;
@@ -40,6 +42,7 @@ public struct Register {
             self.sym.scope.owner = self.sym;
             switch decl is {
                 .Import as import_decl => self.import_decl(import_decl),
+                .CImport as cimport_decl => self.check_c_import_actions(cimport_decl.actions),
                 .Extern as extern_decl => {
                     self.abi = extern_decl.abi;
                     self.walk_decls(extern_decl.decls);
@@ -346,6 +349,61 @@ public struct Register {
                         ), import_info.pos
                     );
                 }
+            }
+        }
+    }
+
+    func check_c_import_actions(mut self, actions: []ast.CImportAction) {
+        for action in actions {
+            switch action is {
+                .Report as report_ => if report_.is_error {
+                    report.error(report_.msg, report_.pos);
+                } else {
+                    report.warn(report_.msg, report_.pos);
+                },
+                .IncludeDir as include_dir => {
+                    if include_dir.path.is_empty() {
+                        report.error(
+                            "empty include directory".fmt(include_dir.path),
+                            include_dir.pos
+                        );
+                    } else if include_dir.path in self.table.c_include_paths
+                        or include_dir.path in self.table.c_user_include_paths {
+                        report.error(
+                            "duplicate include directory `{}`".fmt(include_dir.path),
+                            include_dir.pos
+                        );
+                    } else if !path.is_directory(include_dir.path) {
+                        report.error(
+                            "include directory `{}` does not exists".fmt(include_dir.path),
+                            include_dir.pos
+                        );
+                    } else {
+                        self.table.c_user_include_paths.push(include_dir.path);
+                    }
+                },
+                .Include as include => {
+                    if include.path.is_empty() {
+                        report.error("empty header file", include.pos);
+                    } else if header := self.table.search_c_header(!include.is_system, include.path) {
+                        include.header = header;
+                        self.table.include_c_header(header) catch |err| {
+                            report.error(err.to_string(), include.pos);
+                        };
+                    } else {
+                        report.error(
+                            "header file `{}` not found".fmt(include.path), include.pos
+                        );
+                    }
+                },
+                .If as if_stmt => {
+                    for branch in if_stmt.branches {
+                        if branch.is_else or self.table.eval_cimport_expr(branch.cond).to_bool() {
+                            self.check_c_import_actions(branch.actions);
+                        }
+                    }
+                },
+                else => {}
             }
         }
     }

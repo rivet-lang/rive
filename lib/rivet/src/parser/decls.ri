@@ -170,6 +170,10 @@ extend Parser {
                     pos: pos
                 );
             },
+            self.accept(.KwCImport) => {
+                actions := self.parse_cimport_actions();
+                return .CImport(actions, pos + self.prev_tok.pos);
+            },
             self.accept(.KwExtern) => {
                 self.inside_extern = true;
                 // extern function or var
@@ -538,7 +542,7 @@ extend Parser {
         return .Empty(pos);
     }
 
-    func parse_import_path(mut self) string {
+    func parse_import_path(mut self, from_cimport: bool = false) string {
         mut sb := strings.Builder.new();
         if self.accept(.Dot) {
             sb.write_string("./");
@@ -551,8 +555,12 @@ extend Parser {
         }
         sb.write_string(self.parse_name());
         while self.accept(.Div) {
-            sb.write_string("/");
-            sb.write_string(self.parse_name());
+            sb.write_fmt("/{}", self.parse_name());
+            if from_cimport and self.accept(.Dot) { // .h
+                sb.write_fmt(".{}", self.parse_name());
+            }
+        } else if from_cimport and self.accept(.Dot) { // .h
+            sb.write_fmt(".{}", self.parse_name());
         }
         return sb.to_string();
     }
@@ -681,5 +689,65 @@ extend Parser {
             pos: pos + self.prev_tok.pos,
             self_pos: self_pos
         );
+    }
+
+    func parse_cimport_actions(mut self) []ast.CImportAction {
+        mut actions := @vec(ast.CImportAction);
+        self.expect(.Lbrace);
+        while self.tok.kind != .Rbrace {
+            action_pos := self.tok.pos;
+            if self.tok.kind == .KwIf {
+                mut branches := @vec(mut ast.CImportIfBranch);
+                while self.tok.kind in [.KwIf, .KwElse] {
+                    branch_pos := self.tok.pos;
+                    if self.accept(.KwElse) and self.tok.kind != .KwIf {
+                        branches.push(ast.CImportIfBranch(
+                            .Empty(self.tok.pos), true, self.parse_cimport_actions(),
+                            pos: branch_pos + self.prev_tok.pos
+                        ));
+                        break;
+                    }
+                    self.expect(.KwIf);
+                    cond := self.parse_expr();
+                    branches.push(ast.CImportIfBranch(
+                        cond, false, self.parse_cimport_actions(),
+                        pos: branch_pos + self.prev_tok.pos
+                    ));
+                }
+                actions.push(.If(branches, action_pos + self.prev_tok.pos));
+            } else {
+                action := self.parse_name();
+                switch action {
+                    "error", "warning" => {
+                        msg := self.tok.lit;
+                        self.expect(.String);
+                        actions.push(.Report(msg, action == "error", action_pos + self.prev_tok.pos));
+                    },
+                    "include_directory" => {
+                        path := self.tok.lit;
+                        self.expect(.String);
+                        actions.push(.IncludeDir(path, action_pos + self.prev_tok.pos));
+                    },
+                    "include" => {
+                        is_system := self.accept(.Lt);
+                        path := if is_system {
+                            import_path := self.parse_import_path(true);
+                            self.expect(.Gt);
+                            import_path
+                        } else {
+                            lit := self.tok.lit;
+                            self.expect(.String);
+                            lit
+                        };
+                        actions.push(
+                            .Include(path, is_system, action_pos + self.prev_tok.pos)
+                        );
+                    },
+                    else => report.error("unknown action `{}`".fmt(action), action_pos)
+                }
+            }
+        }
+        self.expect(.Rbrace);
+        return actions;
     }
 }

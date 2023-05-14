@@ -1,0 +1,243 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/conv;
+import std/traits;
+import std/process;
+import std/strings;
+import std/fs/path;
+
+import ../token;
+import ../report;
+
+public enum CImportAction {
+    Report {
+        msg: string;
+        is_error: bool;
+        pos: token.Pos;
+    },
+    IncludeDir {
+        path: string;
+        pos: token.Pos;
+    },
+    Include {
+        path: string;
+        is_system: bool; // <path>
+        pos: token.Pos;
+        mut header: string;
+    },
+    Define {
+        name: string;
+        value: Expr;
+        pos: token.Pos;
+    },
+    Undefine {
+        name: string;
+        pos: token.Pos;
+    },
+    If {
+        branches: []mut CImportIfBranch;
+        pos: token.Pos;
+    }
+}
+
+public struct CImportIfBranch {
+    public cond: Expr;
+    public is_else: bool;
+    public actions: []mut CImportAction;
+    public pos: token.Pos;
+}
+
+struct CDefine : traits.Stringable {
+    name: string;
+    args: []string;
+    value: string;
+    has_value: bool;
+    is_macro: bool;
+
+    mut cvalue: CImportValue;
+    mut has_cvalue: bool;
+
+    public func to_string(&self) string {
+        mut sb := strings.Builder.new();
+        sb.write_string(if self.is_macro { "macro " } else { "const " });
+        sb.write_string(self.name);
+        if self.is_macro and self.args.len > 0 {
+            sb.write_string("(");
+            for i, arg in self.args {
+                sb.write_string(arg);
+                if i < self.args.len - 1 {
+                    sb.write_string(", ");
+                }
+            }
+            sb.write_string(") =>");
+        } else {
+            sb.write_string(" =");
+        }
+        sb.write_string(" ");
+        sb.write_string(self.value);
+        return sb.to_string();
+    }
+}
+
+struct CDefines {
+    mut defines: []CDefine;
+
+    func get(self, name: string) ?CDefine {
+        for def in self.defines {
+            if def.name == name {
+                return def;
+            }
+        }
+        return none;
+    }
+}
+
+enum CImportValue {
+    Invalid,
+    Float: float64,
+    Int: isize,
+    Uint: usize;
+
+    [inline]
+    public func to_bool(self) bool {
+        return (self is .Int as int and int == 1)
+            or (self is .Uint as uint and uint == 1);
+    }
+}
+
+extend Table {
+    func setup_c_utils(mut self) {
+        self.c_include_paths = self.get_include_paths();
+        self.c_defines = self.get_global_defines();
+    }
+
+    func get_global_defines(self) CDefines {
+        if result := process.execute(
+            "{} -x c -E -dM /dev/null".fmt(self.prefs.target_backend_compiler)
+        ) {
+            defines_ := result.output.split_into_lines();
+            defines := CDefines();
+            for define in defines_ {
+                mut tokens := define.tokenize(b' ');
+                _ = tokens.next(); // skip '#define'
+                mut name := tokens.next()?;
+                define_value := tokens.rest();
+                has_value := define_value.len > 0;
+                mut args := @vec(string);
+                mut is_macro := true;
+                if has_value {
+                    if paren_idx := name.index_of_byte(b'(') {
+                        def_args := name[paren_idx + 1..].all_before_of(")");
+                        name = name[..paren_idx];
+                        if def_args.len > 0 {
+                            for arg_name in def_args.split(",") {
+                                args.push(arg_name.trim_space());
+                            }
+                        }
+                    } else {
+                        is_macro = false;
+                    }
+                } else {
+                    is_macro = false;
+                }
+                defines.defines.push(CDefine(name, args, define_value, has_value, is_macro));
+            }
+            return defines;
+        }
+        return CDefines();
+    }
+
+    func get_include_paths(self) []string {
+        if result := process.execute(
+            "{} -x c -E -v /dev/null".fmt(self.prefs.target_backend_compiler)
+        ) {
+            lines := result.output.find_between(
+                "#include <...> search starts here:", "End of search list."
+            ).split_into_lines();
+            mut paths := @vec(string);
+            for line in lines {
+                if line.is_empty() {
+                    continue;
+                }
+                paths.push(line.trim_space());
+            }
+            return paths;
+        }
+        return [];
+    }
+
+    func search_c_header(self, is_local: bool, header: string) ?string {
+        if is_local {
+            if path.is_file(header) {
+                return header;
+            }
+            for include_path in self.c_user_include_paths {
+                p_header := path.join(include_path, header) catch continue;
+                if path.is_file(p_header) {
+                    return p_header;
+                }
+            }
+        }
+        for include_path in self.c_include_paths {
+            p_header := path.join(include_path, header) catch continue;
+            if path.is_file(p_header) {
+                return p_header;
+            }
+        }
+        return none;
+    }
+
+    func include_c_header(self, header: string) ![]CToken {
+        mut tokens := Cpp.from_file(self, header)!.preprocess();
+        return tokens;
+    }
+
+    func eval_cimport_expr(self, cond: Expr) CImportValue {
+        return switch cond is {
+            .Ident as ident => if def := self.c_defines.get(ident.name); def.has_value {
+                self.eval_c_expr(def.value, ident.pos)
+            } else {
+                report.error("define `{}` has no value".fmt(ident.name), ident.pos);
+                .Invalid()
+            },
+            else => {
+                report.error("invalid `c_import` expression", cond.position());
+                .Invalid()
+            }
+        };
+    }
+
+    func eval_c_expr(self, expr: string, pos: token.Pos) CImportValue {
+        /*mut tknzr := tokenizer.Tokenizer(expr);
+        mut token_ := tknzr.next();
+        while token_.id !is .Eof : token_ = tknzr.next() {
+            lit := expr[token_.start..token_.end];
+            switch token_.id is {
+                .IntegerLiteral as num_suffix => return switch num_suffix {
+                    .None => .Int(conv.string_to_isize(lit) catch 0),
+                    .F => .Invalid(), // TODO
+                    .L, .LL => .Int(@cast(isize, conv.string_to_int64(lit) catch 0)),
+                    .U, .LU, .LLU => .Uint(@cast(usize, conv.string_to_uint64(lit) catch 0))
+                },
+                .Identifier => if def := self.c_defines.get(lit) {
+                    return if def.has_value {
+                        if !def.has_cvalue {
+                            def.cvalue = self.eval_c_expr(def.value, pos);
+                        }
+                        def.cvalue
+                    } else {
+                        .Int(1)
+                    };
+                } else {
+                    report.error("", pos);
+                },
+                .Invalid => report.error(
+                    "invalid token `{}` in `{}`".fmt(lit, expr), pos
+                )
+            }
+        }*/
+        return .Invalid();
+    }
+}

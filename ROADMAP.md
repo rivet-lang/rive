@@ -35,6 +35,8 @@
         include "../header.h"
         if MY_FLAG_FROM_C {
             include_dir "../my_c_dir/"
+        } else {
+            warning "cannot define `MY_FLAG_FROM_C`"
         }
     }
 

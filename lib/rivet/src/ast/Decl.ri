@@ -20,6 +20,10 @@ public enum Decl {
         mut info: ImportedMod;
         pos: token.Pos;
     },
+    CImport {
+        actions: []CImportAction;
+        pos: token.Pos;
+    },
     Extern {
         docs: DocComment;
         annotations: Annotations;

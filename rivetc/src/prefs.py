@@ -156,7 +156,7 @@ class Prefs:
         self.libraries_to_link = []
         self.objects_to_link = []
 
-        self.flags = ["_BOOTSTRAP_"]
+        self.flags = []
         self.check_syntax = False
         self.check = False
         self.emit_rir = False

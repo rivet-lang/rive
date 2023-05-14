@@ -19,6 +19,9 @@ public struct Table {
     public mut prefs: prefs.Prefs;
 
     public pointer_size: usize;
+    public mut c_include_paths: []string;
+    public mut c_user_include_paths: []string;
+    public mut c_defines: CDefines;
 
     public mut core_mod: Module;
     public mut error_sym_is_set: bool;
@@ -82,6 +85,7 @@ public struct Table {
         );
         table.setup_primitives();
         table.setup_builtins();
+        table.setup_c_utils();
         return table;
     }
 
@@ -467,6 +471,7 @@ public struct Table {
                 };
             },
             "_TESTS_" => return self.prefs.is_test,
+            "_BOOTSTRAP_" => return false, // TODO: remove soon
             else => return if name.starts_with("_") and name.ends_with("_") {
                 report.error("unknown builtin flag: `{}`".fmt(name), pos);
                 false

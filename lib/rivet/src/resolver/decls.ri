@@ -14,6 +14,7 @@ extend Resolver {
             switch decl is {
                 .Empty as empty_pos => report.error("BUG: empty declaration found", empty_pos),
                 .Import => {},
+                .CImport => {},
                 .Extern as extern_decl => self.resolve_decls(extern_decl.decls),
                 .Alias as alias_decl => if alias_decl.is_typealias {
                     _ = self.resolve_type(alias_decl.parent_type);
