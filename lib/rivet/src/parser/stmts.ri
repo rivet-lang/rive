@@ -5,7 +5,6 @@
 import ../ast;
 
 extend Parser {
-    [inline]
     func parse_stmt(mut self) ast.Stmt {
         return switch {
             self.accept(.KwWhile) => {

@@ -286,28 +286,29 @@ public struct Table {
 
     /// Returns the size and alignment (in bytes) of `typ`, similarly to
     /// C's `sizeof(T)` and `_Alignof(T)`.
-    public func type_size(self, type: Type) (usize, usize) {
+    public func type_size(mut self, type: Type, is_raw: bool = false) (usize, usize) {
         return switch type is {
             .Result as result => self.type_size(result.inner),
             .Func => (self.pointer_size, self.pointer_size),
             else => if mut type_sym := type.symbol() {
-                self.type_symbol_size(type_sym)
+                self.type_symbol_size(type_sym, is_raw)
             } else {
                 (0, 0)
             }
         };
     }
 
-    func type_symbol_size(self, mut type_sym: TypeSym) (usize, usize) {
+    func type_symbol_size(mut self, mut type_sym: TypeSym, is_raw: bool = false) (usize, usize) {
         return if type_sym.size != 0 {
             (type_sym.size, type_sym.align)
         } else {
             (mut size: usize, mut align: usize) := (0, 0);
-            (size, align) = if type_sym.is_boxed() {
+            (size, align) = if type_sym.is_boxed() and !is_raw {
                 (self.pointer_size, self.pointer_size)
             } else {
                 switch type_sym.info is {
                     .Alias as alias_info => self.type_size(alias_info.parent),
+                    .Bool => (1, 1),
                     .Usize, .Isize => (self.pointer_size, self.pointer_size),
                     .Int as int => switch int.size {
                         8 => (1, 1),
@@ -331,10 +332,11 @@ public struct Table {
                     .Rune => (4, 4),
                     .ComptimeFloat, .ComptimeInt => (8, 8),
                     .Enum as enum_info => if enum_info.is_boxed {
-                        (self.pointer_size, self.pointer_size)
+                        ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size)
                     } else {
                         self.type_size(enum_info.underlying_type)
                     },
+                    .Vector => self.type_symbol_size(self.vector_sym, is_raw),
                     .Array as array_info => {
                         (elem_size, elem_align) := self.type_size(array_info.elem_type);
                         (array_info.size * elem_size, elem_align)
@@ -359,6 +361,14 @@ public struct Table {
                             total_size = utils.round_up(total_size, alignment) + field_size;
                         }
                         (utils.round_up(total_size, max_alignment), max_alignment)
+                    },
+                    .Trait as trait_info => {
+                        (size, align) = ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size);
+                        for mut btype in trait_info.bases {
+                            (bsize, _balign) := self.type_symbol_size(btype, is_raw);
+                            size += bsize - 2 * self.pointer_size;
+                        }
+                        (size, align)
                     },
                     else => process.panic(
                         "Table.type_size: unsupported type `{}`", type_sym.qualname()

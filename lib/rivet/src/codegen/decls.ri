@@ -6,22 +6,25 @@ import ./mir;
 import ../ast;
 
 extend Codegen {
-    func gen_decls(mut self, decls: []ast.Decl) {
-        for decl in decls {
+    func gen_decls(mut self, decls: []mut ast.Decl) {
+        for mut decl in decls {
             self.gen_decl(decl);
         }
     }
 
-    func gen_decl(mut self, decl: ast.Decl) {
+    func gen_decl(mut self, mut decl: ast.Decl) {
         switch decl is {
             .Extend as extend_decl => self.gen_decls(extend_decl.decls),
-            .Func as func_decl => self.gen_func(func_decl),
+            .Func as mut func_decl => self.gen_func(func_decl),
             else => {}
         }
     }
 
-    func gen_func(mut self, func_decl: ast.Decl.Func) {
-        self.cur_func = mir.Func(name: func_decl.sym.qualname());
+    func gen_func(mut self, mut func_decl: ast.Decl.Func) {
+        self.cur_func = mir.Func(
+            name: self.mangle_symbol(func_decl.sym),
+            ret_type: self.gen_type(func_decl.ret_type)
+        );
         self.mir.funcs.push(self.cur_func);
     }
 }

@@ -12,8 +12,10 @@ public enum Type : traits.Stringable {
         name: string;
         size: usize;
     },
+    Anyptr,
     Pointer {
         inner: Type;
+        is_managed: bool;
     },
     Array {
         elem_type: Type;
@@ -31,7 +33,12 @@ public enum Type : traits.Stringable {
             .Void => "void",
             .Never => "never",
             .Basic as basic => basic.name,
-            .Pointer as ptr => "*".concat(ptr.inner.to_string()),
+            .Anyptr => "anyptr",
+            .Pointer as ptr => if ptr.is_managed {
+                "+"
+            } else {
+                "*"
+            }.concat(ptr.inner.to_string()),
             .Array as arr => "[{}]{}".fmt(arr.count, arr.elem_type),
             .Func as fn => {
                 mut sb := strings.Builder.from_string("*func(");

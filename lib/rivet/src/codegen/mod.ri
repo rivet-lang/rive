@@ -2,13 +2,16 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import std/strings;
+
 import ./mir;
 import ../ast;
 import ../prefs;
 import ../utils;
 
+[boxed]
 public struct Codegen {
-    table: ast.Table;
+    mut table: ast.Table;
     prefs: prefs.Prefs;
 
     mut rivet_internal: mir.ModuleIR;
@@ -17,8 +20,16 @@ public struct Codegen {
 
     mut cur_func: mir.Func;
 
+    mut vector_t: mir.Type;
+    mut error_t: mir.Type;
+
     public func generate_mirs(mut self, source_files: []ast.SourceFile) {
         self.rivet_internal = self.get_or_create_mir("rivetc.compiler.internal");
+        self.vector_t = .Pointer(.Basic(
+            self.mangle_symbol(self.table.vector_sym),
+            self.table.type_symbol_size(self.table.vector_sym, true).0
+        ), true);
+        self.error_t = self.gen_type(self.table.error_t);
         for source_file in source_files {
             self.generate_mir(source_file);
         }
@@ -46,5 +57,111 @@ public struct Codegen {
         new_mir := mir.ModuleIR(name);
         self.mirs.push(new_mir);
         return new_mir;
+    }
+
+    func prefix_type(self, type: ast.Type) string {
+        mut sb := strings.Builder.new();
+        switch type is {
+            .Pointer as ptr => {
+                mut inner := ptr.inner;
+                while (inner is .Pointer as inner_ptr) : inner = inner_ptr.inner {
+                    sb.write_string("ptr_");
+                    if inner_ptr.is_mut {
+                        sb.write_string("mut_");
+                    }
+                }
+                sb.write_string(self.prefix_type(ptr.inner));
+            },
+            .Reference as ref => {
+                sb.write_string("ref_");
+                if ref.is_mut {
+                    sb.write_string("mut_");
+                }
+                sb.write_string(self.prefix_type(ref.inner));
+            },
+            .Option as opt => sb.write_fmt("opt_{}", self.prefix_type(opt.inner)),
+            else => {}
+        }
+        return sb.to_string();
+    }
+
+    func mangle_type(self, type: ast.Type) string {
+        return switch type is {
+            .Func as func_t => {
+                mut sb := strings.Builder.from_string("func_");
+                if func_t.is_method {
+                    sb.write_string("m_");
+                    if func_t.self_is_ref {
+                        sb.write_string("sr_");
+                    } else if func_t.self_is_mut {
+                        sb.write_string("sm_");
+                    }
+                    sb.write_fmt("_args{}_", func_t.args.len);
+                    sb.write_string(self.mangle_type(func_t.ret_type));
+                }
+                sb.to_string()
+            },
+            else => {
+                prefix_type := self.prefix_type(type);
+                if mut type_sym := type.symbol() {
+                    if type_sym.is_primitive() {
+                        type_sym.name
+                    } else {
+                        "{}{}".fmt(prefix_type, self.mangle_symbol(type_sym))
+                    }
+                } else {
+                    prefix_type
+                }
+            }
+        };
+    }
+
+    func mangle_symbol(self, mut sym: ast.Sym) string {
+        if sym.mangled_name.len > 0 {
+            return sym.mangled_name;
+        }
+        mut sb := strings.Builder.new();
+        if mut parent := sym.parent; !parent.is_universe {
+            sb.write_string(self.mangle_symbol(parent));
+        } else {
+            sb.write_string("_R");
+        }
+        switch sym is {
+            ast.Module => {
+                for name in sym.name.split(".") {
+                    sb.write_fmt("{}{}", name.len, name);
+                }
+            },
+            ast.TypeSym as type => switch type.info is {
+                .Tuple as tuple_info => {
+                    mut sb2 := strings.Builder.new();
+                    sb2.write_string("Tuple_");
+                    for i, ttype in tuple_info.types {
+                        sb2.write_string(self.mangle_type(ttype));
+                        if i < tuple_info.types.len - 1 {
+                            sb2.write_string("_");
+                        }
+                    }
+                    sb.write_fmt("{}{}", sb2.len(), sb2.to_string());
+                },
+                .String => sb.write_string("4core6string"),
+                .Vector => sb.write_string("4core6Vector"),
+                .Array as array_info => {
+                    mut sb2 := strings.Builder.new();
+                    sb2.write_fmt(
+                        "Array_{}_{}", self.mangle_type(array_info.elem_type),
+                        array_info.size
+                    );
+                    sb.write_fmt("{}{}", sb2.len(), sb2.to_string());
+                },
+                else => sb.write_fmt("{}{}", sym.name.len, sym.name)
+            },
+            else => sb.write_fmt("{}{}", sym.name.len, sym.name)
+        }
+        if sym is ast.Func as sym_func {
+            sb.write_byte(if sym_func.is_method { b'M' } else { b'F' });
+        }
+        sym.mangled_name = sb.to_string();
+        return sym.mangled_name;
     }
 }

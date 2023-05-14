@@ -17,7 +17,7 @@ def prefix_type(tt):
         _t = tt
         while isinstance(_t, type.Ptr):
             prefix += "ptr_"
-            if tt.is_mut:
+            if _t.is_mut:
                 prefix += "mut_"
             _t = _t.typ
         prefix += prefix_type(tt.typ)
@@ -2918,8 +2918,6 @@ class Codegen:
                     arg_t = ir.Pointer(arg_t)
                 args.append(arg_t)
             return ir.Function(args, self.ir_type(typ.ret_typ))
-        elif isinstance(typ, type.Tuple):
-            return ir.Type(mangle_symbol(typ.symbol()))
         elif isinstance(typ, type.Array):
             return ir.Array(self.ir_type(typ.typ), typ.size)
         elif isinstance(typ, type.Vec):
