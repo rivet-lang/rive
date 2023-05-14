@@ -1,0 +1,45 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ./mir;
+import ../ast;
+
+extend Codegen {
+    func gen_type(mut self, type: ast.Type) mir.Type {
+        (size, _align) := self.table.type_size(type, true);
+        return switch type is {
+            .Void => .Void(),
+            .Never => .Never(),
+            .Array as array_t => .Array(
+                self.gen_type(array_t.inner), array_t.size_value, size
+            ),
+            .Vector => self.vector_t,
+            .Anyptr => .Anyptr(),
+            .Pointer as ptr_t => .Pointer(self.gen_type(ptr_t.inner)),
+            .Reference as ref_t => .Pointer(self.gen_type(ref_t.inner)),
+            else => {
+                if mut type_sym := type.symbol() {
+                    if type_sym.is_primitive() {
+                        return .Basic(type_sym.name, size);
+                    }
+                    switch type_sym.info is {
+                        .Enum as enum_info if !enum_info.is_boxed => self.gen_type(enum_info.underlying_type),
+                        .Array as array_info => .Array(
+                            self.gen_type(array_info.elem_type), array_info.size, size
+                        ),
+                        else => {
+                            mut res := mir.Type.Basic(self.mangle_symbol(type_sym), size);
+                            if type_sym.is_boxed() {
+                                res = .Pointer(res, true)
+                            }
+                            res
+                        }
+                    }
+                } else {
+                    .Void()
+                }
+            }
+        };
+    }
+}
