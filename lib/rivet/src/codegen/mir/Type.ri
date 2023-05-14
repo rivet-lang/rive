@@ -8,6 +8,7 @@ import std/strings;
 public enum Type : traits.Stringable {
     Void,
     Never,
+    None,
     Basic {
         name: string;
         size: usize;
@@ -32,6 +33,7 @@ public enum Type : traits.Stringable {
         return switch self is {
             .Void => "void",
             .Never => "never",
+            .None => "none",
             .Basic as basic => basic.name,
             .Anyptr => "anyptr",
             .Pointer as ptr => if ptr.is_managed {

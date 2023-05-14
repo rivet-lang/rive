@@ -307,6 +307,7 @@ public struct Table {
                 (self.pointer_size, self.pointer_size)
             } else {
                 switch type_sym.info is {
+                    .Func => (self.pointer_size, self.pointer_size),
                     .Alias as alias_info => self.type_size(alias_info.parent),
                     .Bool => (1, 1),
                     .Usize, .Isize => (self.pointer_size, self.pointer_size),

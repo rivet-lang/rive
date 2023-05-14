@@ -7,14 +7,16 @@ import std/strings;
 
 [boxed]
 public struct Block : traits.Stringable {
+    mut name: string;
     stmts: []Stmt;
 
     public func to_string(self) string {
-        mut sb := strings.Builder.from_string("{");
+        mut sb := strings.Builder.new();
+        sb.writeln_fmt("{} {{", self.name);
         for stmt in self.stmts {
-            sb.writeln_fmt("    {}", stmt);
+            sb.writeln_fmt("        {};", stmt);
         }
-        sb.writeln("}");
+        sb.writeln("    }");
         return sb.to_string();
     }
 }
