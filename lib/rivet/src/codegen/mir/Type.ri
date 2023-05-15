@@ -42,7 +42,7 @@ public enum Type : traits.Stringable {
             },
             .Anyptr => "anyptr",
             .Pointer as ptr => if ptr.is_managed {
-                "+"
+                "^"
             } else {
                 "*"
             }.concat(ptr.inner.to_string()),

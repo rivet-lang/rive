@@ -113,7 +113,7 @@ public struct ReportBuilder {
                         "help:"
                     }
                 )
-            ), annotation.msg.wrap(80, "\n        "));
+            ), annotation.msg.wrap(60, utils.bold(utils.blue("\n      = "))));
         }
     }
 }

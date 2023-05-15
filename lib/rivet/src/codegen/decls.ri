@@ -14,6 +14,15 @@ extend Codegen {
 
     func gen_decl(mut self, mut decl: ast.Decl) {
         switch decl is {
+            .Var as var_decl => {
+                for left in var_decl.lefts {
+                    self.mir.globals.push(mir.Global(
+                        name: left.name,
+                        type: self.gen_type(left.type),
+                        fields: self.get_fields(left.type)
+                    ));
+                }
+            },
             .Extern as extern_decl => self.gen_decls(extern_decl.decls),
             .Extend as extend_decl => self.gen_decls(extend_decl.decls),
             .Func as mut func_decl => self.gen_func(func_decl),
@@ -52,7 +61,11 @@ extend Codegen {
                 }
             ])
         );
-        self.mir.funcs.push(self.cur_func);
+        if self.cur_func.is_extern {
+            self.mir.externs.push(self.cur_func);
+        } else {
+            self.mir.funcs.push(self.cur_func);
+        }
     }
 
     func add_locals(mut self, scope: ast.Scope) {
@@ -61,7 +74,8 @@ extend Codegen {
                 mut var_ := mir.Var(
                     dbg_name: local.name,
                     level: .Local,
-                    type: self.gen_type(local.type)
+                    type: self.gen_type(local.type),
+                    fields: self.get_fields(local.type)
                 );
                 if var_.level == .Argument {
                     self.cur_func.add_arg(var_)
@@ -73,5 +87,21 @@ extend Codegen {
         for children in scope.childrens {
             self.add_locals(children);
         }
+    }
+
+    func get_fields(mut self, type: ast.Type) []mir.Var {
+        mut fields := @vec(mir.Var);
+        if type_sym := type.symbol() {
+            for i, field in type_sym.fields {
+                fields.push(mir.Var(
+                    id: i,
+                    dbg_name: field.name,
+                    level: .Local,
+                    type: self.gen_type(field.type),
+                    fields: self.get_fields(field.type)
+                ));
+            }
+        }
+        return fields;
     }
 }

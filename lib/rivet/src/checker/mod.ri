@@ -199,9 +199,9 @@ public struct Checker {
                             var_info.pos
                         );
                         warn_b.add_help(
-                            "if this is intentional, prefix it with an underscore: `_{}`", var_info.name
+                            "if this is intentional, prefix it with an underscore (`_{}`) or use the blank identifier (`_`)",
+                            var_info.name
                         );
-                        warn_b.add_help("or use the blank identifier (`_`)");
                         warn_b.emit();
                     } else if var_info.is_mut and !var_info.is_changed {
                         mut warn_b := report.warn_builder(
