@@ -184,6 +184,15 @@ public enum Type : traits.Stringable {
     }
 
     [inline]
+    public func is_boxed(self) bool {
+        return if type_sym := self.symbol() {
+            type_sym.is_boxed()
+        } else {
+            false
+        };
+    }
+
+    [inline]
     public func is_void(self) bool {
         return switch self is {
             .Void, .Never => true,

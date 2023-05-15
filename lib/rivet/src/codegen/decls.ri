@@ -22,6 +22,7 @@ extend Codegen {
     }
 
     func gen_func(mut self, mut func_decl: ast.Decl.Func) {
+        ret_type_is_void := func_decl.ret_type.is_void();
         self.cur_func = mir.Func(
             name: self.mangle_symbol(func_decl.sym),
             ret_type: self.gen_type(func_decl.ret_type),
@@ -35,15 +36,22 @@ extend Codegen {
             ));
         }
         self.add_locals(func_decl.scope);
-        if !func_decl.ret_type.is_void() {
-            mut ret_val := mir.Var(
+        if !ret_type_is_void {
+            self.cur_func.add_local(mir.Var(
                 dbg_name: "_return_value",
                 level: .Local,
                 type: self.gen_type(func_decl.ret_type)
-            );
-            self.cur_func.add_local(ret_val);
-            self.cur_func.add_block(mir.Block(stmts: [.Return(true, .Ident(ret_val))]));
+            ));
         }
+        self.cur_func.add_block(
+            mir.Block(stmts: [
+                if ret_type_is_void {
+                    .Return()
+                } else {
+                    .Return(true, .Ident(self.cur_func.locals[self.cur_func.locals.len - 1]))
+                }
+            ])
+        );
         self.mir.funcs.push(self.cur_func);
     }
 

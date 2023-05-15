@@ -105,8 +105,8 @@ public enum Expr : traits.Stringable {
                 sb.to_string()
             },
             .Const as const_ => "const({}, {})".fmt(const_.type, const_.expr),
-            .Name as name => "$".concat(name),
-            .Ident as ident => "%".concat(ident.name),
+            .Name as name => "@".concat(name),
+            .Ident as ident => "%_{}_".fmt(ident.id),
             .Selector as selector => "{}.{}".fmt(selector.left, selector.name),
             .Operator as operator => {
                 mut sb := strings.Builder.new();

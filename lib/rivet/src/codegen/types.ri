@@ -22,7 +22,7 @@ extend Codegen {
             else => {
                 if mut type_sym := type.symbol() {
                     if type_sym.is_primitive() {
-                        return .Basic(type_sym.name, size);
+                        return .Basic(type_sym.name, size, true);
                     }
                     switch type_sym.info is {
                         .Func as func_info => {

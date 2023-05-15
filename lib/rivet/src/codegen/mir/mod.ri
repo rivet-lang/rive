@@ -64,7 +64,7 @@ public struct Func : traits.Stringable {
     public mut blocks: []Block;
 
     public func make_tmp(mut self, type: Type) Var {
-        tmp := Var("_{}_".fmt(self.locals.len), level: .Temporal, type: type);
+        tmp := Var(self.locals.len, level: .Temporal, type: type);
         self.locals.push(tmp);
         return tmp;
     }
@@ -75,12 +75,12 @@ public struct Func : traits.Stringable {
     }
 
     public func add_local(mut self, mut local: Var) {
-        local.name = "_{}_".fmt(self.locals.len);
+        local.id = self.locals.len;
         self.locals.push(local);
     }
 
     public func add_block(mut self, mut block: Block) {
-        block.name = "b{}".fmt(self.blocks.len);
+        block.id = self.blocks.len;
         self.blocks.push(block);
     }
 
@@ -89,9 +89,9 @@ public struct Func : traits.Stringable {
         if self.is_extern {
             sb.write_string("extern ");
         }
-        sb.write_string("func {}(".fmt(self.name));
+        sb.write_string("func @{}(".fmt(self.name));
         for i, arg in self.locals[..self.args_len] {
-            sb.write_fmt("%{}: {}", arg.name, arg.type);
+            sb.write_fmt("%_{}_: {}", arg.id, arg.type);
             if i < self.args_len - 1 {
                 sb.write_string(", ");
             }
@@ -102,20 +102,26 @@ public struct Func : traits.Stringable {
         } else {
             sb.writeln(" {");
             if self.blocks.len > 0 {
-                for local in self.locals[self.args_len..] {
-                    sb.writeln_fmt("    var {}: {};", local.name, local.type);
+                locals := self.locals[self.args_len..];
+                for local in locals {
+                    sb.writeln_fmt("    var _{}_: {};", local.id, local.type);
                 }
                 if self.blocks.len > 0 {
-                    sb.writeln();
+                    if locals.len > 0 {
+                        sb.writeln();
+                    }
                     for block in self.blocks {
                         sb.writeln_fmt("    {}", block);
                     }
                 }
             }
             if self.locals.len > 0 {
+                if self.blocks.len > 0 {
+                    sb.writeln();
+                }
                 sb.writeln("    scope {");
                 for local in self.locals {
-                    sb.writeln_fmt("        {} => {};", local.name, local.dbg_name);
+                    sb.writeln_fmt("        _{}_ => {};", local.id, local.dbg_name);
                 }
                 sb.writeln("    }");
             }
@@ -133,7 +139,7 @@ public enum VarLevel {
 }
 
 public struct Var {
-    public mut name: string;
+    public mut id: usize;
     public dbg_name: string;
     public level: VarLevel;
     public type: Type;
