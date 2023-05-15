@@ -85,11 +85,6 @@ public struct Func : traits.Stringable {
         return tmp;
     }
 
-    public func add_arg(mut self, mut arg: Var) {
-        self.add_local(arg);
-        self.args_len = self.locals.len;
-    }
-
     public func add_local(mut self, mut local: Var) {
         local.id = self.locals.len;
         self.locals.push(local);

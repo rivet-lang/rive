@@ -34,11 +34,12 @@ extend Codegen {
         ret_type_is_void := func_decl.ret_type.is_void();
         self.cur_func = mir.Func(
             name: self.mangle_symbol(func_decl.sym),
+            args_len: func_decl.args.len + if func_decl.is_method { 1 } else { 0 },
             ret_type: self.gen_type(func_decl.ret_type),
             is_extern: func_decl.is_extern
         );
         if func_decl.is_method {
-            self.cur_func.add_arg(mir.Var(
+            self.cur_func.add_local(mir.Var(
                 dbg_name: "self",
                 level: .Argument,
                 type: self.gen_type(func_decl.self_type)
@@ -71,17 +72,12 @@ extend Codegen {
     func add_locals(mut self, scope: ast.Scope) {
         for sym in scope.syms {
             if sym is ast.Var as local {
-                mut var_ := mir.Var(
+                self.cur_func.add_local(mir.Var(
                     dbg_name: local.name,
-                    level: .Local,
+                    level: if local.level == .Argument { .Argument } else { .Local },
                     type: self.gen_type(local.type),
                     fields: self.get_fields(local.type)
-                );
-                if var_.level == .Argument {
-                    self.cur_func.add_arg(var_)
-                } else {
-                    self.cur_func.add_local(var_);
-                }
+                ))
             }
         }
         for children in scope.childrens {
