@@ -29,26 +29,64 @@ public struct ModuleIR : traits.Stringable {
         sb.writeln("// WARNING: This output format is intended for human consumers only");
         sb.writeln("// and is subject to change without notice. Knock yourself out.");
         sb.writeln();
-        for global in self.globals {
-            sb.writeln(global.to_string());
+        if self.structs.len > 0 {
+            for struct_ in self.structs {
+                sb.writeln(struct_.to_string());
+            }
+            sb.writeln();
         }
-        sb.writeln();
-        for extern_ in self.externs {
-            sb.writeln(extern_.to_string());
+        if self.globals.len > 0 {
+            for global in self.globals {
+                sb.writeln(global.to_string());
+            }
+            sb.writeln();
         }
-        sb.writeln();
-        for func_ in self.funcs {
-            sb.writeln(func_.to_string());
+        if self.externs.len > 0 {
+            for extern_ in self.externs {
+                sb.writeln(extern_.to_string());
+            }
+            sb.writeln();
         }
-        return sb.to_string().trim_space();
+        if self.funcs.len > 0 {
+            for func_ in self.funcs {
+                sb.writeln(func_.to_string());
+            }
+        }
+        return sb.to_string();
     }
 }
 
 [boxed]
-public struct Struct {
+public struct Field {
     public name: string;
-    public fields: [](string, Type);
+    public type: Type;
+}
+
+[boxed]
+public struct Struct : traits.Stringable {
+    public name: string;
+    public fields: []Field;
     public is_opaque: bool;
+
+    public func to_string(self) string {
+        mut sb := strings.Builder.new();
+        sb.write_fmt("struct @{}", self.name);
+        if self.is_opaque {
+            sb.write_string(";");
+        } else {
+            sb.writeln(" {");
+            for i, field in self.fields {
+                sb.write_fmt("    %{}: {}", field.name, field.type);
+                if i < self.fields.len - 1 {
+                    sb.writeln(",");
+                } else {
+                    sb.writeln();
+                }
+            }
+            sb.writeln("}");
+        }
+        return sb.to_string();
+    }
 }
 
 [boxed]

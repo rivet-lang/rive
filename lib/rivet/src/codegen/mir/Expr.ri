@@ -6,7 +6,6 @@ import std/traits;
 import std/strings;
 
 public enum Expr : traits.Stringable {
-    NoneConst: Type,
     IntConst {
         value: isize;
     },
@@ -88,7 +87,6 @@ public enum Expr : traits.Stringable {
 
     public func to_string(self) string {
         return switch self is {
-            .NoneConst => "none",
             .IntConst as int_const => "{}".fmt(int_const.value),
             .FloatConst as float_const => "{}".fmt(float_const.value),
             .StringConst as string_const => "\"{}\"".fmt(string_const.value),
@@ -107,7 +105,7 @@ public enum Expr : traits.Stringable {
             .Const as const_ => "const({}, {})".fmt(const_.type, const_.expr),
             .Name as name => "@".concat(name),
             .Ident as ident => "%_{}_".fmt(ident.id),
-            .Selector as selector => "{}.{}".fmt(selector.left, selector.name),
+            .Selector as selector => "{}.%{}".fmt(selector.left, selector.name),
             .Operator as operator => {
                 mut sb := strings.Builder.new();
                 sb.write_fmt("{}(", operator.op);

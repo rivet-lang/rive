@@ -8,23 +8,32 @@ import ./mir;
 import ../ast;
 import ../prefs;
 import ../utils;
+import ../utils/maps;
 
 [boxed]
 public struct Codegen {
     mut table: ast.Table;
     prefs: prefs.Prefs;
 
-    mut rivet_internal: mir.ModuleIR;
-    mut mir: mir.ModuleIR;
-    mut mirs: []mir.ModuleIR;
+    mut generated_opt_res_types: maps.MapStringBool;
+    mut generated_array_returns: maps.MapStringBool;
 
+    mut rivet_internal: mir.ModuleIR;
+    mut mirs: []mir.ModuleIR;
+    mut mir: mir.ModuleIR;
     mut cur_func: mir.Func;
 
+    mut bool_t: mir.Type;
     mut vector_t: mir.Type;
     mut error_t: mir.Type;
 
+    mut loop_entry_label: string;
+    mut loop_exit_label: string;
+    mut while_continue_expr: ?mir.Expr;
+
     public func generate_mirs(mut self, source_files: []ast.SourceFile) {
         self.rivet_internal = self.get_or_create_mir("rivetc.compiler.internal");
+        self.bool_t = self.gen_type(self.table.bool_t);
         self.vector_t = .Pointer(.Basic(
             self.mangle_symbol(self.table.vector_sym),
             self.table.type_symbol_size(self.table.vector_sym, true).0
@@ -87,6 +96,9 @@ public struct Codegen {
 
     func mangle_type(self, type: ast.Type) string {
         return switch type is {
+            .Void => "4void",
+            .Anyptr => "6anyptr",
+            .Never => "5never",
             .Func as func_t => {
                 mut sb := strings.Builder.from_string("func_");
                 if func_t.is_method {
@@ -99,31 +111,36 @@ public struct Codegen {
                     sb.write_fmt("_args{}_", func_t.args.len);
                     sb.write_string(self.mangle_type(func_t.ret_type));
                 }
-                sb.to_string()
+                "{}{}".fmt(sb.len(), sb.to_string())
             },
             else => {
                 prefix_type := self.prefix_type(type);
                 if mut type_sym := type.symbol() {
                     if type_sym.is_primitive() {
-                        type_sym.name
+                        "{}{}".fmt(type_sym.name.len, type_sym.name)
                     } else {
-                        "{}{}".fmt(prefix_type, self.mangle_symbol(type_sym))
+                        mangled_name := self.mangle_symbol(type_sym, false);
+                        if prefix_type.len > 0 {
+                            "{}{}{}".fmt(prefix_type.len, prefix_type, mangled_name)
+                        } else {
+                            mangled_name
+                        }
                     }
                 } else {
-                    prefix_type
+                    "{}{}".fmt(prefix_type.len, prefix_type)
                 }
             }
         };
     }
 
-    func mangle_symbol(self, mut sym: ast.Sym) string {
+    func mangle_symbol(self, mut sym: ast.Sym, insert_r: bool = true) string {
         if sym.mangled_name.len > 0 {
             return sym.mangled_name;
         }
         mut sb := strings.Builder.new();
         if mut parent := sym.parent; !parent.is_universe {
             sb.write_string(self.mangle_symbol(parent));
-        } else {
+        } else if insert_r {
             sb.write_string("_R");
         }
         switch sym is {

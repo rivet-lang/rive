@@ -11,14 +11,50 @@ extend Codegen {
         return switch type is {
             .Void => .Void(),
             .Never => .Never(),
-            .None => .None(),
+            .Result as result => {
+                is_void := result.inner.is_void();
+                name := "_R6Result".concat(self.mangle_type(result.inner));
+                if !self.generated_opt_res_types.contains(name) {
+                    mut fields := @vec(mir.Field);
+                    if !is_void {
+                        fields.push(mir.Field("value", self.gen_type(result.inner)));
+                    }
+                    fields.push(mir.Field("is_err", self.bool_t));
+                    fields.push(mir.Field("err", self.error_t));
+                    self.rivet_internal.structs.push(mir.Struct(name, fields));
+                    self.generated_opt_res_types.set(name, true);
+                }
+                .Basic(name, self.error_t.size() + 4 + if is_void { 0 } else { size })
+            },
+            .Option as option => {
+                if option.inner.is_any_kind_of_pointer() {
+                    self.gen_type(option.inner)
+                } else {
+                    is_void := option.inner.is_void();
+                    name := "_R6Option".concat(self.mangle_type(result.inner));
+                    if !self.generated_opt_res_types.contains(name) {
+                        mut fields := @vec(mir.Field);
+                        if !is_void {
+                            fields.push(mir.Field("value", self.gen_type(option.inner)));
+                        }
+                        fields.push(mir.Field("is_none", self.bool_t));
+                        self.rivet_internal.structs.push(mir.Struct(name, fields));
+                        self.generated_opt_res_types.set(name, true);
+                    }
+                    .Basic(name, 4 + if is_void { 0 } else { size })
+                }
+            },
             .Array as array_t => .Array(
                 self.gen_type(array_t.inner), array_t.size_value, size
             ),
             .Vector => self.vector_t,
-            .Anyptr => .Anyptr(),
-            .Pointer as ptr_t => .Pointer(self.gen_type(ptr_t.inner)),
-            .Reference as ref_t => .Pointer(self.gen_type(ref_t.inner)),
+            .Anyptr => .Anyptr(self.table.pointer_size),
+            .Pointer as ptr_t => .Pointer(
+                self.gen_type(ptr_t.inner), size: self.table.pointer_size
+            ),
+            .Reference as ref_t => .Pointer(
+                self.gen_type(ref_t.inner), size: self.table.pointer_size
+            ),
             else => {
                 if mut type_sym := type.symbol() {
                     if type_sym.is_primitive() {
@@ -39,7 +75,7 @@ extend Codegen {
                         else => {
                             mut res := mir.Type.Basic(self.mangle_symbol(type_sym), size);
                             if type_sym.is_boxed() {
-                                res = .Pointer(res, true)
+                                res = .Pointer(res, true, self.table.pointer_size)
                             }
                             res
                         }

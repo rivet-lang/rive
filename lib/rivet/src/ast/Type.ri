@@ -222,6 +222,18 @@ public enum Type : traits.Stringable {
     }
 
     [inline]
+    public func is_any_kind_of_pointer(self) bool {
+        return switch self is {
+            .Pointer, .Reference, .Anyptr, .Func => true,
+            else => if type_sym := self.symbol() {
+                type_sym.is_boxed()
+            } else {
+                false
+            }
+        };
+    }
+
+    [inline]
     public func position(self) token.Pos {
         return switch self is {
             .Void, .None => token.noPos,
