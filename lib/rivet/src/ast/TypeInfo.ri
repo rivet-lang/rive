@@ -151,8 +151,7 @@ public enum TypeInfo : traits.Stringable {
     public func is_primitive(self) bool {
         return self is .Bool or self is .Rune or self is .Int or self is .Uint
             or self is .Usize or self is .Isize or self is .ComptimeInt
-            or self is .ComptimeFloat or self is .ComptimeFloat or self is .Float
-            or (self is .Enum as enum_info and !enum_info.is_boxed);
+            or self is .ComptimeFloat or self is .ComptimeFloat or self is .Float;
     }
 
     [inline]

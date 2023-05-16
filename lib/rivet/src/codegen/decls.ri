@@ -14,6 +14,7 @@ extend Codegen {
 
     func gen_decl(mut self, mut decl: ast.Decl) {
         switch decl is {
+            .Extern as extern_decl => self.gen_decls(extern_decl.decls),
             .Var as var_decl => {
                 for left in var_decl.lefts {
                     self.mir.globals.push(mir.Global(
@@ -23,7 +24,9 @@ extend Codegen {
                     ));
                 }
             },
-            .Extern as extern_decl => self.gen_decls(extern_decl.decls),
+            .Trait as trait_decl => self.gen_decls(trait_decl.decls),
+            .Enum as enum_decl => self.gen_decls(enum_decl.decls),
+            .Struct as struct_decl => self.gen_decls(struct_decl.decls),
             .Extend as extend_decl => self.gen_decls(extend_decl.decls),
             .Func as mut func_decl => self.gen_func(func_decl),
             else => {}
