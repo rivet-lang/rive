@@ -2,21 +2,24 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import ../token;
+
 [boxed]
 public struct Field {
     public is_public: bool;
     public name: string;
     public is_mut: bool;
     public has_def_expr: bool;
-    public def_expr: Expr;
-    public type: Type;
+    public def_expr: Expr = .Empty(token.noPos);
+    public type: Type = .Void();
+    public is_required: bool;
 }
 
 [boxed]
 public struct TypeSym : Sym {
     public mut fields: []Field;
     public mut full_fields_: []Field;
-    public mut info: TypeInfo;
+    public mut info: TypeInfo = .Invalid();
     public mut size: usize;
     public mut align: usize;
 

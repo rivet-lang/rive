@@ -51,7 +51,11 @@ public func error(msg: string, pos: token.Pos) {
 
 [inline]
 public func warn(msg: string, pos: token.Pos) {
-    ReportBuilder(.Warn, msg, pos).emit();
+    if reportTable.prefs.optimize_mode == .Debug {
+        ReportBuilder(.Warn, msg, pos).emit();
+    } else {
+        error(msg, pos);
+    }
 }
 
 [inline]

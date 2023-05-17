@@ -11,7 +11,7 @@ public enum Type : traits.Stringable {
     Basic {
         mut sym: TypeSym;
         mut is_unresolved: bool;
-        mut expr: Expr;
+        mut expr: Expr = .Empty(token.noPos);
         pos: token.Pos;
     },
     Never: token.Pos,
@@ -57,7 +57,7 @@ public enum Type : traits.Stringable {
     Array {
         mut inner: Type;
         is_mut: bool;
-        mut size: Expr;
+        mut size: Expr = .Empty(token.noPos);
         mut size_value: usize;
         mut sym: TypeSym;
         pos: token.Pos;
@@ -94,6 +94,7 @@ public enum Type : traits.Stringable {
             } else {
                 Func(
                     is_method: self.is_method,
+                    self_type: .Void(),
                     self_is_mut: self.self_is_mut,
                     self_is_ref: self.self_is_ref,
                     args: self.args,

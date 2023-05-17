@@ -1196,9 +1196,7 @@ class Codegen:
                 else:
                     spread_val = None
                 for f in typ_sym.full_fields():
-                    if f.name in initted_fields:
-                        continue
-                    if f.typ.symbol().kind == TypeKind.Array:
+                    if f.name in initted_fields or f.typ.symbol().kind == TypeKind.Array:
                         continue
                     f_typ = self.ir_type(f.typ)
                     sltor = ir.Selector(f_typ, tmp, ir.Name(f.name))
@@ -2628,10 +2626,10 @@ class Codegen:
                     continue
                 sltor = ir.Selector(self.ir_type(f.typ), tmp, ir.Name(f.name))
                 if f.has_def_expr:
-                    val = self.gen_expr_with_cast(f.typ, f.def_expr, sltor)
+                    val = self.gen_expr_with_cast(f.typ, f.def_expr)
                 else:
                     val = self.default_value(f.typ)
-                    self.cur_fn.store(sltor, val)
+                self.cur_fn.store(sltor, val)
             return tmp
         elif typ_sym.kind == TypeKind.Trait:
             return ir.NoneLit(ir.VOID_PTR_T)

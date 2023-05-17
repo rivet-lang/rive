@@ -16,7 +16,7 @@ public struct Register {
     mut is_core_mod: bool;
 
     mut abi: ast.ABI;
-    mut sym: ast.Sym;
+    mut sym: ast.Sym = ast.InvalidSym();
     mut source_file: ast.SourceFile;
 
     public func walk_files(mut self, source_files: []ast.SourceFile) {
@@ -168,7 +168,8 @@ public struct Register {
                         is_public: field_decl.is_public,
                         type: field_decl.type,
                         has_def_expr: field_decl.has_def_expr,
-                        def_expr: field_decl.def_expr
+                        def_expr: field_decl.def_expr,
+                        is_required: field_decl.annotations.has("required")
                     ));
                 },
                 .Const as const_decl => const_decl.sym = self.add_sym(ast.Const(

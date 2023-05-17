@@ -5,6 +5,7 @@
 import std/traits;
 
 public enum TypeInfo : traits.Stringable {
+    Invalid,
     Placeholder,
     None,
     Bool,
@@ -162,6 +163,7 @@ public enum TypeInfo : traits.Stringable {
     [inline]
     public func to_string(self) string {
         return switch self is {
+            .Invalid => "invalid",
             .Placeholder => "placeholder",
             .None => "none",
             .Bool => "bool",

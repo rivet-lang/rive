@@ -196,8 +196,7 @@ public struct Var {
     public mut is_moved: bool;
     public mut is_dropped: bool;
     public mut is_initialized: bool;
-    public mut has_value: bool;
-    public mut value: Expr; // comptime value
+    public mut value: ?Expr; // comptime value
     public fields: []Var;
 
     public func get_field(self, name: string) ?Var {

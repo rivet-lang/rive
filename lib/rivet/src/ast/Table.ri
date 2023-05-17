@@ -47,24 +47,24 @@ public struct Table {
     public mut vector_sym: TypeSym; // from `core` module
 
     /// Primitive types.
-    public mut bool_t: Type;
-    public mut rune_t: Type;
-    public mut int8_t: Type;
-    public mut int16_t: Type;
-    public mut int32_t: Type;
-    public mut int64_t: Type;
-    public mut isize_t: Type;
-    public mut uint8_t: Type;
-    public mut uint16_t: Type;
-    public mut uint32_t: Type;
-    public mut uint64_t: Type;
-    public mut usize_t: Type;
-    public mut comptime_int_t: Type;
-    public mut comptime_float_t: Type;
-    public mut float32_t: Type;
-    public mut float64_t: Type;
-    public mut string_t: Type;
-    public mut error_t: Type;
+    public mut bool_t: Type = .Void();
+    public mut rune_t: Type = .Void();
+    public mut int8_t: Type = .Void();
+    public mut int16_t: Type = .Void();
+    public mut int32_t: Type = .Void();
+    public mut int64_t: Type = .Void();
+    public mut isize_t: Type = .Void();
+    public mut uint8_t: Type = .Void();
+    public mut uint16_t: Type = .Void();
+    public mut uint32_t: Type = .Void();
+    public mut uint64_t: Type = .Void();
+    public mut usize_t: Type = .Void();
+    public mut comptime_int_t: Type = .Void();
+    public mut comptime_float_t: Type = .Void();
+    public mut float32_t: Type = .Void();
+    public mut float64_t: Type = .Void();
+    public mut string_t: Type = .Void();
+    public mut error_t: Type = .Void();
 
     public mut source_files: []SourceFile;
 
@@ -193,7 +193,8 @@ public struct Table {
         for builtin in self.builtins {
             is_equal := switch builtin is {
                 .Const as b_var => b_var.name == name,
-                .Func as b_func => b_func.name == name
+                .Func as b_func => b_func.name == name,
+                else => false
             };
             if is_equal {
                 return builtin;
@@ -515,6 +516,7 @@ public func universe() Module {
 }
 
 public enum Builtin {
+    Invalid,
     Const {
         name: string;
         type: Type;
@@ -541,7 +543,8 @@ public enum Builtin {
     public func type(self) Type {
         return switch self is {
             .Const as b_const => b_const.type,
-            .Func as b_func => b_func.type
+            .Func as b_func => b_func.type,
+            else => .Void()
         };
     }
 }
@@ -550,7 +553,7 @@ struct BuiltinArg {
     public name: string;
     public is_mut: bool;
     public is_any: bool; // any type
-    public type: Type;
+    public type: Type = .Void();
     public is_optional: bool;
 }
 

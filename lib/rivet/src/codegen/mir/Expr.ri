@@ -6,6 +6,7 @@ import std/traits;
 import std/strings;
 
 public enum Expr : traits.Stringable {
+    Empty,
     IntConst {
         value: isize;
     },
@@ -87,6 +88,7 @@ public enum Expr : traits.Stringable {
 
     public func to_string(self) string {
         return switch self is {
+            .Empty => "<empty-expression>",
             .IntConst as int_const => "{}".fmt(int_const.value),
             .FloatConst as float_const => "{}".fmt(float_const.value),
             .StringConst as string_const => "\"{}\"".fmt(string_const.value),

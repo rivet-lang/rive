@@ -4,6 +4,7 @@
 
 import ../ast;
 import ../report;
+import ../utils/maps;
 
 extend Checker {
     func check_call(mut self, mut call_expr: ast.Expr.Call) ast.Type {
@@ -278,6 +279,7 @@ extend Checker {
                 }
             },
             else => {
+                mut initted_fields := maps.MapStringBool();
                 type_fields := type_sym.full_fields();
                 if !call_expr.has_named_args() {
                     expr_args_len := call_expr.args.len;
@@ -310,6 +312,7 @@ extend Checker {
                     } else {
                         field = type_fields[i];
                     }
+                    initted_fields.set(field.name, true);
                     arg.type = field.type;
                     old_expected_type := self.expected_type;
                     self.expected_type = field.type;
@@ -329,6 +332,43 @@ extend Checker {
                         );
                         err.add_note("in spread expression of constructor");
                         err.emit();
+                    }
+                }
+                for field in type_fields {
+                    if field.type is .Option or field.has_def_expr {
+                        continue;
+                    }
+                    was_initted := initted_fields.contains(field.name);
+                    if field.is_required and !was_initted {
+                        report.warn(
+                            "field `{}` of type `{}` must be initialized".fmt(
+                                field.name, type_sym.name
+                            ), call_expr.pos
+                        );
+                        continue;
+                    }
+                    switch field.type is {
+                        .Pointer, .Anyptr if !was_initted => report.warn(
+                            "field `{}` of type `{}` must be initialized".fmt(
+                                field.name, type_sym.name
+                            ), call_expr.pos
+                        ),
+                        else => if f_type_sym := field.type.symbol() {
+                            switch f_type_sym.info is {
+                                .Trait if !was_initted => report.warn(
+                                    "field `{}` of type `{}` must be initialized".fmt(
+                                        field.name, type_sym.name
+                                    ), call_expr.pos
+                                ),
+                                .Enum as enum_info2 if enum_info2.is_boxed and !was_initted =>
+                                    report.warn(
+                                        "field `{}` of type `{}` must be initialized".fmt(
+                                            field.name, type_sym.name
+                                        ), call_expr.pos
+                                    ),
+                                else => {}
+                            }
+                        }
                     }
                 }
             }
