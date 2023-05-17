@@ -1,3 +1,8 @@
 __pycache__
 *.o
 *.exe
+rivet
+
+# Local files
+main
+main.ri
