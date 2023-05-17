@@ -1196,7 +1196,8 @@ class Codegen:
                 else:
                     spread_val = None
                 for f in typ_sym.full_fields():
-                    if f.name in initted_fields or f.typ.symbol().kind == TypeKind.Array:
+                    if f.name in initted_fields or f.typ.symbol(
+                    ).kind == TypeKind.Array:
                         continue
                     f_typ = self.ir_type(f.typ)
                     sltor = ir.Selector(f_typ, tmp, ir.Name(f.name))

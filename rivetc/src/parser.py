@@ -907,7 +907,12 @@ class Parser:
                 self.expect(op)
                 expr = ast.AssignExpr(expr, op, self.parse_expr(), expr.pos)
             elif self.tok.kind == Kind.Lparen and not self.decl_operator_is_used(
-            ) and isinstance(expr, (ast.Ident, ast.SelectorExpr, ast.ParExpr, ast.SelfTyExpr, ast.EnumLiteral)):
+            ) and isinstance(
+                expr, (
+                    ast.Ident, ast.SelectorExpr, ast.ParExpr, ast.SelfTyExpr,
+                    ast.EnumLiteral
+                )
+            ):
                 self.next()
                 args = []
                 has_spread_expr = False
