@@ -4,5 +4,6 @@ __pycache__
 rivet
 
 # Local files
+*.mir
 main
 main.ri
