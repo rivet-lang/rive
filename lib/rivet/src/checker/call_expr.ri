@@ -335,7 +335,7 @@ extend Checker {
                     }
                 }
                 for field in type_fields {
-                    if field.type is .Option or field.has_def_expr {
+                    if !field.is_required and (field.type is .Option or field.has_def_expr) {
                         continue;
                     }
                     was_initted := initted_fields.contains(field.name);

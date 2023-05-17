@@ -84,7 +84,7 @@ extend Codegen {
                     level: if local.level == .Argument { .Argument } else { .Local },
                     type: self.gen_type(local.type),
                     fields: self.get_fields(local.type)
-                ))
+                ));
             }
         }
         for children in scope.childrens {
@@ -94,8 +94,21 @@ extend Codegen {
 
     func get_fields(mut self, type: ast.Type) []mir.Var {
         mut fields := @vec(mir.Var);
-        if type_sym := type.symbol() {
+        if type is .Option as option_t {
+            if !option_t.inner.is_void() {
+                fields.push(mir.Var(
+                    id: fields.len, dbg_name: "value", level: .Local,
+                    type: self.gen_type(type), fields: self.get_fields(option_t.inner)
+                ));
+            }
+            fields.push(mir.Var(
+                id: fields.len, dbg_name: "is_none", level: .Local, type: self.bool_t
+            ));
+        } else if type_sym := type.symbol() {
             for i, field in type_sym.fields {
+                if field.type is .Option {
+                    continue;
+                }
                 fields.push(mir.Var(
                     id: i,
                     dbg_name: field.name,
