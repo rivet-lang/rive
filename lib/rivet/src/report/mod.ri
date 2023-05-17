@@ -51,11 +51,7 @@ public func error(msg: string, pos: token.Pos) {
 
 [inline]
 public func warn(msg: string, pos: token.Pos) {
-    if reportTable.prefs.optimize_mode == .Debug {
-        ReportBuilder(.Warn, msg, pos).emit();
-    } else {
-        error(msg, pos);
-    }
+    ReportBuilder(.Warn, msg, pos).emit();
 }
 
 [inline]
@@ -71,7 +67,7 @@ public func warn_builder(msg: string, pos: token.Pos) ReportBuilder {
 // TODO: support JSON format for LSP, etc.
 [boxed]
 public struct ReportBuilder {
-    kind: ReportKind;
+    mut kind: ReportKind;
     msg: string;
     pos: token.Pos;
     mut annotations: []Annotation;
@@ -86,7 +82,16 @@ public struct ReportBuilder {
         self.annotations.push(Annotation(.Help, msg.fmt(args)));
     }
 
-    public func emit(self) {
+    public func emit(mut self) {
+        if self.kind == .Warn {
+            if reportTable.prefs.hide_all_warns {
+                return;
+            }
+            if reportTable.prefs.all_warns_are_errors
+                or reportTable.prefs.optimize_mode != .Debug {
+                self.kind = .Error;
+            }
+        }
         if reportTable.last_pos.line == self.pos.line {
             return;
         }

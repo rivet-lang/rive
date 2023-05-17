@@ -75,6 +75,8 @@ public struct Prefs {
 	public mut check: bool;
 	public mut emit_mir: bool;
 	public mut keep_c: bool;
+	public mut all_warns_are_errors: bool;
+	public mut hide_all_warns: bool;
 	public mut is_verbose: bool;
 
     public func new(args: []string, is_test: bool, run_output: bool) !Self {
@@ -193,6 +195,14 @@ public struct Prefs {
             }
             if keep_c := fp.bool_flag("keep-c", 0, "Don't remove the output C source file."); keep_c {
                 prefs.keep_c = true;
+            }
+            if all_warns_are_errors := fp.bool_flag(
+                "", b'W', "Treat all Rivet warnings as errors, even in development builds."
+            ); all_warns_are_errors {
+                prefs.all_warns_are_errors = true;
+            }
+            if hide_all_warns := fp.bool_flag("", b'w', "Hide all warnings."); hide_all_warns {
+                prefs.hide_all_warns = true;
             }
             if verbose := fp.bool_flag("verbose", b'v', "Print additional messages to the console."); verbose {
                 prefs.is_verbose = true;

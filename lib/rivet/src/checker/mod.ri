@@ -366,7 +366,7 @@ public struct Checker {
                 if var_info.is_mut {
                     var_info.is_changed = true;
                 } else {
-                    err := if var_info.level == .Argument {
+                    mut err := if var_info.level == .Argument {
                         mut err_b := report.error_builder(
                             "cannot use variable `{}` as mutable argument".fmt(sym.name), pos
                         );
