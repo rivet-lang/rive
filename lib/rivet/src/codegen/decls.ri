@@ -18,9 +18,9 @@ extend Codegen {
             .Var as var_decl => {
                 for left in var_decl.lefts {
                     self.mir.globals.push(mir.Global(
+                        is_extern: left.is_extern,
                         name: left.name,
-                        type: self.gen_type(left.type),
-                        fields: self.get_fields(left.type)
+                        type: self.type_to_mir(left.type)
                     ));
                 }
             },
@@ -42,22 +42,15 @@ extend Codegen {
                 self.mangle_symbol(func_decl.sym)
             },
             args_len: func_decl.args.len + if func_decl.is_method { 1 } else { 0 },
-            ret_type: self.gen_type(func_decl.ret_type),
+            ret_type: self.type_to_mir(func_decl.ret_type),
             is_extern: func_decl.is_extern
         );
-        if func_decl.is_method {
-            self.cur_func.add_local(mir.Var(
-                dbg_name: "self",
-                level: .Argument,
-                type: self.gen_type(func_decl.self_type)
-            ));
-        }
         self.add_locals(func_decl.scope);
         if !ret_type_is_void {
             self.cur_func.add_local(mir.Var(
                 dbg_name: "_return_value",
                 level: .Local,
-                type: self.gen_type(func_decl.ret_type)
+                type: self.type_to_mir(func_decl.ret_type)
             ));
         }
         self.cur_func.add_block(
@@ -74,50 +67,5 @@ extend Codegen {
         } else {
             self.mir.funcs.push(self.cur_func);
         }
-    }
-
-    func add_locals(mut self, scope: ast.Scope) {
-        for sym in scope.syms {
-            if sym is ast.Var as local {
-                self.cur_func.add_local(mir.Var(
-                    dbg_name: local.name,
-                    level: if local.level == .Argument { .Argument } else { .Local },
-                    type: self.gen_type(local.type),
-                    fields: self.get_fields(local.type)
-                ));
-            }
-        }
-        for children in scope.childrens {
-            self.add_locals(children);
-        }
-    }
-
-    func get_fields(mut self, type: ast.Type) []mir.Var {
-        mut fields := @vec(mir.Var);
-        if type is .Option as option_t {
-            if !option_t.inner.is_void() {
-                fields.push(mir.Var(
-                    id: fields.len, dbg_name: "value", level: .Local,
-                    type: self.gen_type(type), fields: self.get_fields(option_t.inner)
-                ));
-            }
-            fields.push(mir.Var(
-                id: fields.len, dbg_name: "is_none", level: .Local, type: self.bool_t
-            ));
-        } else if type_sym := type.symbol() {
-            for i, field in type_sym.fields {
-                if field.type is .Option {
-                    continue;
-                }
-                fields.push(mir.Var(
-                    id: i,
-                    dbg_name: field.name,
-                    level: .Local,
-                    type: self.gen_type(field.type),
-                    fields: self.get_fields(field.type)
-                ));
-            }
-        }
-        return fields;
     }
 }

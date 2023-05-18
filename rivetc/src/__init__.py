@@ -360,9 +360,7 @@ class Compiler:
     def type_size(self, typ):
         if isinstance(typ, (type.Result, type.Option)):
             return self.type_size(typ.typ)
-        elif isinstance(typ, (type.Ptr, type.Ref)):
-            return self.pointer_size, self.pointer_size
-        elif isinstance(typ, type.Fn):
+        elif isinstance(typ, (type.Ptr, type.Ref, type.Fn)):
             return self.pointer_size, self.pointer_size
         return self.type_symbol_size(typ.symbol())
 

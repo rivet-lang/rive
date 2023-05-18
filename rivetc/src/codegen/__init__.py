@@ -3086,8 +3086,7 @@ class Codegen:
         for ts in tss:
             field_deps = []
             if ts.kind == TypeKind.Array:
-                dsym = ts.info.elem_typ.symbol()
-                dep = mangle_symbol(dsym)
+                dep = mangle_symbol(ts.info.elem_typ.symbol())
                 if dep in typ_names:
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Vec:
