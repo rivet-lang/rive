@@ -107,7 +107,7 @@ extend Codegen {
     }
 
     func type_to_mir(mut self, type: ast.Type) mir.Type {
-        (size, _align) := self.table.type_size(type, true);
+        (size, _) := self.table.type_size(type, true);
         return switch type is {
             .Void => .Void(),
             .Never => .Never(),

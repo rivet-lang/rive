@@ -228,10 +228,6 @@ class Checker:
                     )
                 else:
                     for i, vd in enumerate(stmt.lefts):
-                        if vd.name == "_":
-                            report.error(
-                                "cannot modify blank identifier (`_`)", vd.pos
-                            )
                         if not vd.has_typ:
                             vtyp = self.comp.comptime_number_to_type(
                                 symbol.info.types[i]
