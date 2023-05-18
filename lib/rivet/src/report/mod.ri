@@ -67,7 +67,7 @@ public func warn_builder(msg: string, pos: token.Pos) ReportBuilder {
 // TODO: support JSON format for LSP, etc.
 [boxed]
 public struct ReportBuilder {
-    kind: ReportKind;
+    mut kind: ReportKind;
     msg: string;
     pos: token.Pos;
     mut annotations: []Annotation;
@@ -82,7 +82,16 @@ public struct ReportBuilder {
         self.annotations.push(Annotation(.Help, msg.fmt(args)));
     }
 
-    public func emit(self) {
+    public func emit(mut self) {
+        if self.kind == .Warn {
+            if reportTable.prefs.hide_all_warns {
+                return;
+            }
+            if reportTable.prefs.all_warns_are_errors
+                or reportTable.prefs.optimize_mode != .Debug {
+                self.kind = .Error;
+            }
+        }
         if reportTable.last_pos.line == self.pos.line {
             return;
         }
@@ -113,7 +122,7 @@ public struct ReportBuilder {
                         "help:"
                     }
                 )
-            ), annotation.msg.wrap(80, "\n        "));
+            ), annotation.msg.wrap(60, utils.bold(utils.blue("\n      = "))));
         }
     }
 }

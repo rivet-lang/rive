@@ -4,6 +4,7 @@
 
 import std/traits;
 import std/strings;
+import std/process;
 
 public enum Type : traits.Stringable {
     Void,
@@ -11,9 +12,13 @@ public enum Type : traits.Stringable {
     Basic {
         name: string;
         size: usize;
+        is_primitive: bool;
     },
+    Anyptr: usize,
     Pointer {
         inner: Type;
+        is_managed: bool;
+        size: usize;
     },
     Array {
         elem_type: Type;
@@ -26,12 +31,32 @@ public enum Type : traits.Stringable {
         size: usize;
     };
 
+    public func size(self) usize {
+        return switch self is {
+            .Basic as basic => basic.size,
+            .Anyptr as size => size,
+            .Pointer as ptr => ptr.size,
+            .Array as arr => arr.size,
+            .Func as func_ => func_.size,
+            .Void, .Never => process.panic("codegen.mir.Type.size(): `void` or `never` type")
+        };
+    }
+
     public func to_string(self) string {
         return switch self is {
             .Void => "void",
             .Never => "never",
-            .Basic as basic => basic.name,
-            .Pointer as ptr => "*".concat(ptr.inner.to_string()),
+            .Basic as basic => if basic.is_primitive {
+                basic.name
+            } else {
+                "@".concat(basic.name)
+            },
+            .Anyptr => "anyptr",
+            .Pointer as ptr => if ptr.is_managed {
+                "^"
+            } else {
+                "*"
+            }.concat(ptr.inner.to_string()),
             .Array as arr => "[{}]{}".fmt(arr.count, arr.elem_type),
             .Func as fn => {
                 mut sb := strings.Builder.from_string("*func(");

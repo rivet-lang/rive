@@ -660,7 +660,7 @@ extend Parser {
             has_body = false;
         } else {
             self.expect(.Lbrace);
-            while !self.accept(.Rbrace) {
+            while !(self.accept(.Rbrace) or self.tok.kind == .EndOfFile) {
                 stmts.push(self.parse_stmt());
             }
         }

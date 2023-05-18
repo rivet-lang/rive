@@ -40,7 +40,7 @@ public enum Decl {
         is_typealias: bool;
         mut parent_type: Type;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: Sym = InvalidSym();
     },
     Trait {
         docs: DocComment;
@@ -50,7 +50,7 @@ public enum Decl {
         bases: []mut Type;
         decls: []Decl;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: Sym = InvalidSym();
     },
     Enum {
         docs: DocComment;
@@ -63,7 +63,7 @@ public enum Decl {
         is_boxed: bool;
         decls: []Decl;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: Sym = InvalidSym();
     },
     Struct {
         docs: DocComment;
@@ -74,7 +74,7 @@ public enum Decl {
         decls: []Decl;
         is_opaque: bool;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: Sym = InvalidSym();
     },
     Field {
         docs: DocComment;
@@ -103,7 +103,7 @@ public enum Decl {
         mut type: Type;
         mut expr: Expr;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: Sym = InvalidSym();
     },
     Var {
         docs: DocComment;
@@ -114,7 +114,7 @@ public enum Decl {
         lefts: []ObjectData;
         mut right: Expr;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: Sym = InvalidSym();
         mut scope: Scope;
     },
     Func {
@@ -137,10 +137,10 @@ public enum Decl {
         has_body: bool;
         self_is_mut: bool;
         self_is_ref: bool;
-        mut self_type: Type;
+        mut self_type: Type = .Void();
         pos: token.Pos;
         self_pos: token.Pos;
-        mut sym: Sym;
+        mut sym: Sym = InvalidSym();
         mut defer_stmts: []Stmt.Defer;
     },
     Destructor {
@@ -150,8 +150,8 @@ public enum Decl {
         stmts: []mut Stmt;
         mut scope: Scope;
         pos: token.Pos;
-        mut self_type: Type;
-        mut sym: Sym;
+        mut self_type: Type = .Void();
+        mut sym: Sym = InvalidSym();
         mut defer_stmts: []Stmt.Defer;
     },
     Test {

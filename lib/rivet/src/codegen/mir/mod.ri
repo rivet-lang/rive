@@ -14,6 +14,7 @@ public struct ModuleIR : traits.Stringable {
     public mut structs: []Struct;
     public mut globals: []Global;
     public mut vtables: []VTable;
+    public mut externs: []Func;
     public mut funcs: []Func;
 
     [inline]
@@ -28,24 +29,77 @@ public struct ModuleIR : traits.Stringable {
         sb.writeln("// WARNING: This output format is intended for human consumers only");
         sb.writeln("// and is subject to change without notice. Knock yourself out.");
         sb.writeln();
-        for func_ in self.funcs {
-            sb.writeln(func_.to_string());
+        if self.structs.len > 0 {
+            for struct_ in self.structs {
+                sb.writeln(struct_.to_string());
+            }
+            sb.writeln();
+        }
+        if self.globals.len > 0 {
+            for global in self.globals {
+                sb.writeln(global.to_string());
+            }
+            sb.writeln();
+        }
+        if self.externs.len > 0 {
+            for extern_ in self.externs {
+                sb.writeln(extern_.to_string());
+            }
+            sb.writeln();
+        }
+        if self.funcs.len > 0 {
+            for func_ in self.funcs {
+                sb.writeln(func_.to_string());
+            }
         }
         return sb.to_string();
     }
 }
 
 [boxed]
-public struct Struct {
+public struct Field {
     public name: string;
-    public fields: [](string, Type);
-    public is_opaque: bool;
+    public type: Type;
 }
 
 [boxed]
-public struct Global {
+public struct Struct : traits.Stringable {
+    public name: string;
+    public fields: []Field;
+    public is_opaque: bool;
+
+    public func to_string(self) string {
+        mut sb := strings.Builder.new();
+        sb.write_fmt("struct @{}", self.name);
+        if self.is_opaque {
+            sb.write_string(";");
+        } else {
+            sb.writeln(" {");
+            for i, field in self.fields {
+                sb.write_fmt("    %{}: {}", field.name, field.type);
+                if i < self.fields.len - 1 {
+                    sb.writeln(",");
+                } else {
+                    sb.writeln();
+                }
+            }
+            sb.writeln("}");
+        }
+        return sb.to_string();
+    }
+}
+
+[boxed]
+public struct Global : traits.Stringable {
     public name: string;
     public type: Type;
+    public fields: []Var;
+
+    public func to_string(self) string {
+        mut sb := strings.Builder.new();
+        sb.write_fmt("var @{}: {};", self.name, self.type);
+        return sb.to_string();
+    }
 }
 
 [boxed]
@@ -56,42 +110,110 @@ public struct VTable {
 [boxed]
 public struct Func : traits.Stringable {
     public name: string;
-    public args_len: usize;
+    public mut args_len: usize;
     public ret_type: Type;
     public is_variadic: bool;
-    public locals: []Var;
-    public blocks: []Block;
+    public is_extern: bool;
+    public mut locals: []Var;
+    public mut blocks: []Block;
+
+    public func make_tmp(mut self, type: Type) Var {
+        tmp := Var(self.locals.len, level: .Temporal, type: type);
+        self.locals.push(tmp);
+        return tmp;
+    }
+
+    public func add_local(mut self, mut local: Var) {
+        local.id = self.locals.len;
+        self.locals.push(local);
+    }
+
+    public func add_block(mut self, mut block: Block) {
+        block.id = self.blocks.len;
+        self.blocks.push(block);
+    }
 
     public func to_string(self) string {
-        mut sb := strings.Builder.from_string("func {}(".fmt(self.name));
-        mut i: usize := 0;
-        while i < self.args_len : i += 1 {
-            arg := self.locals[i];
-            sb.write_fmt("{}: {}", arg.dbg_name, arg.type);
+        mut sb := strings.Builder.new();
+        if self.is_extern {
+            sb.write_string("extern ");
+        }
+        sb.write_string("func @{}(".fmt(self.name));
+        for i, arg in self.locals[..self.args_len] {
+            sb.write_fmt("%_{}_: {}", arg.id, arg.type);
             if i < self.args_len - 1 {
                 sb.write_string(", ");
             }
         }
-        sb.write_fmt(") {} {{", self.ret_type);
-        for block in self.blocks {
-            sb.writeln_fmt("    {}", block);
+        sb.write_fmt(") {}", self.ret_type);
+        if self.is_extern {
+            sb.write_string(";");
+        } else {
+            sb.writeln(" {");
+            if self.blocks.len > 0 {
+                locals := self.locals[self.args_len..];
+                for local in locals {
+                    sb.writeln_fmt("    var %_{}_: {};", local.id, local.type);
+                }
+                if self.blocks.len > 0 {
+                    if locals.len > 0 {
+                        sb.writeln();
+                    }
+                    for block in self.blocks {
+                        sb.writeln_fmt("    {}", block);
+                    }
+                }
+            }
+            if self.locals.len > 0 {
+                if self.blocks.len > 0 {
+                    sb.writeln();
+                }
+                sb.writeln("    scope {");
+                for local in self.locals {
+                    sb.writeln_fmt("        %_{}_ => {};", local.id, local.dbg_name);
+                }
+                sb.writeln("    }");
+            }
+            sb.writeln("}");
         }
-        sb.writeln("}");
         return sb.to_string();
     }
 }
 
 public enum VarLevel {
-    Global,
     Argument,
     Local,
     Temporal
 }
 
+[boxed]
 public struct Var {
-    public name: string;
+    public mut id: usize;
     public dbg_name: string;
     public level: VarLevel;
     public type: Type;
+    public mut is_none: bool;
+    public mut is_moved: bool;
+    public mut is_dropped: bool;
+    public mut is_initialized: bool;
+    public mut value: ?Expr; // comptime value
     public fields: []Var;
+
+    public func get_field(self, name: string) ?Var {
+        for field in self.fields {
+            if field.dbg_name == name {
+                return field;
+            }
+        }
+        return none;
+    }
+
+    public func get_field_by_id(self, id: usize) ?Var {
+        for field in self.fields {
+            if field.id == id {
+                return field;
+            }
+        }
+        return none;
+    }
 }

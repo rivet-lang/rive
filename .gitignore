@@ -1,8 +1,9 @@
 __pycache__
 *.o
 *.exe
+rivet
 
 # Local files
+*.mir
 main
 main.ri
-rivet

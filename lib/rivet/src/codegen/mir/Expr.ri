@@ -6,14 +6,12 @@ import std/traits;
 import std/strings;
 
 public enum Expr : traits.Stringable {
-    NoneConst: Type,
+    Empty,
     IntConst {
         value: isize;
-        type: Type;
     },
     FloatConst {
         value: float64;
-        type: Type;
     },
     StringConst {
         value: string;
@@ -23,6 +21,11 @@ public enum Expr : traits.Stringable {
         elems: []Expr;
         type: Type;
     },
+    Const {
+        expr: Expr;
+        type: Type;
+    },
+    Name: string,
     Ident: Var,
     Selector {
         left: Expr;
@@ -30,117 +33,108 @@ public enum Expr : traits.Stringable {
         var_: Var;
         type: Type;
     },
-    Unary {
-        enum Op : traits.Stringable {
-            Copy,
-            Move,
-            BitNot,
-            Neg,
-            AddrOf,
-            Inc,
-            Dec;
-
-            public func to_string(&self) string {
-                return switch self.* {
-                    .Copy => "copy ",
-                    .Move => "move ",
-                    .BitNot => "~",
-                    .Neg => "-",
-                    .AddrOf => "&",
-                    .Inc => "inc ",
-                    .Dec => "dec "
-                };
-            }
-        }
-
-        op: Op;
-        right: Expr;
-        type: Type;
-    },
-    Binary {
+    Operator {
         enum Op : traits.Stringable {
             Add,
             Sub,
             Mul,
             Div,
             Mod,
+            BitNot,
             BitAnd,
             BitOr,
             BitXor,
             Lshift,
-            Rshift;
+            Rshift,
+            Move,
+            Neg,
+            Inc,
+            Dec,
+            Index,
+            AddrOf;
 
             public func to_string(&self) string {
                 return switch self.* {
-                    .Add => "+",
-                    .Sub => "-",
-                    .Mul => "*",
-                    .Div => "/",
-                    .Mod => "%",
-                    .BitAnd => "&",
-                    .BitOr => "|",
-                    .BitXor => "^",
-                    .Lshift => "<<",
-                    .Rshift => ">>"
+                    .Add => "add",
+                    .Sub => "sub",
+                    .Mul => "mul",
+                    .Div => "div",
+                    .Mod => "mod",
+                    .BitNot => "bit_not",
+                    .BitAnd => "bit_and",
+                    .BitOr => "bit_or",
+                    .BitXor => "bit_xor",
+                    .Lshift => "lshift",
+                    .Rshift => "rshift",
+                    .Move => "move",
+                    .Neg => "neg",
+                    .Inc => "inc",
+                    .Dec => "dec",
+                    .Index => "index",
+                    .AddrOf => "addr_of"
                 };
             }
         }
 
-        left: Expr;
         op: Op;
-        right: Expr;
-        type: Type;
-    },
-    Call {
-        name: string;
         args: []Expr;
         type: Type;
     },
-    Index {
-        left: Expr;
-        index: Expr;
+    Call {
+        func_: Expr;
+        args: []Expr;
         type: Type;
     };
 
     public func to_string(self) string {
         return switch self is {
-            .NoneConst => "none",
-            .IntConst as int_const => "const {} {}".fmt(
-                int_const.type, int_const.value
-            ),
-            .FloatConst as float_const => "const {} {}".fmt(
-                float_const.type, float_const.value
-            ),
-            .StringConst as string_const => "const {} \"{}\"".fmt(
-                string_const.type, string_const.value
-            ),
+            .Empty => "<empty-expression>",
+            .IntConst as int_const => "{}".fmt(int_const.value),
+            .FloatConst as float_const => "{}".fmt(float_const.value),
+            .StringConst as string_const => "\"{}\"".fmt(string_const.value),
             .ArrayConst as array_const => {
-                mut sb := strings.Builder.from_string("[");
+                mut sb := strings.Builder.from_string("array_const(");
+                sb.write_fmt("{}, ", array_const.type);
                 for i, elem in array_const.elems {
                     sb.write_string(elem.to_string());
                     if i < array_const.elems.len - 1 {
                         sb.write_string(", ");
                     }
                 }
+                sb.write_byte(b')');
                 sb.to_string()
             },
-            .Ident as ident => ident.name,
-            .Selector as selector => "{}.{}".fmt(selector.left, selector.name),
-            .Unary as unary => "{}{}".fmt(unary.op, unary.right),
-            .Binary as binary => "{} {} {}".fmt(binary.left, binary.op, binary.right),
-            .Call as call => {
-                mut sb := strings.Builder.from_string(call.name);
-                sb.write_string("(");
-                for i, arg in call.args {
+            .Const as const_ => "const({}, {})".fmt(const_.type, const_.expr),
+            .Name as name => "@".concat(name),
+            .Ident as ident => "%_{}_".fmt(ident.id),
+            .Selector as selector => "{}.%{}".fmt(selector.left, selector.name),
+            .Operator as operator => {
+                mut sb := strings.Builder.new();
+                sb.write_fmt("{}(", operator.op);
+                for i, arg in operator.args {
                     sb.write_string(arg.to_string());
-                    if i < call.args.len - 1 {
+                    if i < operator.args.len - 1 {
                         sb.write_string(", ");
                     }
                 }
-                sb.write_string(")");
+                sb.write_byte(b')');
                 sb.to_string()
             },
-            .Index as index => "{}[{}]".fmt(index.left, index.index)
+            .Call as call => {
+                mut sb := strings.Builder.from_string("call(");
+                sb.write_string(call.func_.to_string());
+                if call.args.len > 0 {
+                    sb.write_string(", ");
+                    for i, arg in call.args {
+                        sb.write_string(arg.to_string());
+                        if i < call.args.len - 1 {
+                            sb.write_string(", ");
+                        }
+                    }
+                }
+                sb.write_byte(b')');
+                sb.to_string()
+            }
         };
     }
 }

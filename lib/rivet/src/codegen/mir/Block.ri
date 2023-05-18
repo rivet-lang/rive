@@ -7,14 +7,16 @@ import std/strings;
 
 [boxed]
 public struct Block : traits.Stringable {
+    mut id: usize;
     stmts: []Stmt;
 
     public func to_string(self) string {
-        mut sb := strings.Builder.from_string("{");
+        mut sb := strings.Builder.new();
+        sb.writeln_fmt("b{} {{", self.id);
         for stmt in self.stmts {
-            sb.writeln_fmt("    {}", stmt);
+            sb.writeln_fmt("        {};", stmt);
         }
-        sb.writeln("}");
+        sb.write_string("    }");
         return sb.to_string();
     }
 }
@@ -25,6 +27,7 @@ public enum Stmt : traits.Stringable {
         left: Expr;
         right: Expr;
     },
+    Discard: Expr,
     Goto: string,
     GotoIf {
         label: string;
@@ -37,13 +40,14 @@ public enum Stmt : traits.Stringable {
     },
     Return {
         has_expr: bool;
-        expr: Expr;
+        expr: Expr = .Empty();
     };
 
     public func to_string(self) string {
         return switch self is {
             .Expr as expr => expr.to_string(),
             .Assign as assign => "{} = {}".fmt(assign.left, assign.right),
+            .Discard as discard => "discard {}".fmt(discard),
             .Goto as goto => "goto {}".concat(goto),
             .GotoIf as goto_if => "goto {} if {}".fmt(goto_if.label, goto_if.cond),
             .GotoIfElse as goto_if_else=> "goto {} if {} else {}".fmt(
