@@ -18,6 +18,7 @@ extend Codegen {
             .Var as var_decl => {
                 for left in var_decl.lefts {
                     self.mir.globals.push(mir.Global(
+                        is_extern: left.is_extern,
                         name: left.name,
                         type: self.type_to_mir(left.type)
                     ));
@@ -44,13 +45,6 @@ extend Codegen {
             ret_type: self.type_to_mir(func_decl.ret_type),
             is_extern: func_decl.is_extern
         );
-        if func_decl.is_method {
-            self.cur_func.add_local(mir.Var(
-                dbg_name: "self",
-                level: .Argument,
-                type: self.type_to_mir(func_decl.self_type)
-            ));
-        }
         self.add_locals(func_decl.scope);
         if !ret_type_is_void {
             self.cur_func.add_local(mir.Var(

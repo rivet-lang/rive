@@ -12,7 +12,7 @@ public struct Block : traits.Stringable {
 
     public func to_string(self) string {
         mut sb := strings.Builder.new();
-        sb.writeln_fmt("b{} {{", self.id);
+        sb.writeln_fmt("@b{} {{", self.id);
         for stmt in self.stmts {
             sb.writeln_fmt("        {};", stmt);
         }

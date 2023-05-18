@@ -308,7 +308,7 @@ public struct Var : Sym {
     public mut is_used: bool;
     public mut is_changed: bool;
     public mut is_hidden_ref: bool;
-    public mut ir_name: string; // used for duplicate objects in IR
+    public mut mir_name: string; // used for duplicate objects in MIR
     public level: VarLevel;
     public mut type: Type;
     public pos: token.Pos;

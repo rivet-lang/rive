@@ -203,8 +203,13 @@ public struct Codegen {
     func add_locals(mut self, scope: ast.Scope) {
         for sym in scope.syms {
             if sym is ast.Var as local {
+                local.mir_name = if self.cur_func.has_local(local.name) {
+                    "{}_{}".fmt(local.name, self.cur_func.locals.len)
+                } else {
+                    local.name
+                };
                 self.cur_func.add_local(mir.Var(
-                    dbg_name: local.name,
+                    dbg_name: local.mir_name,
                     level: if local.level == .Argument { .Argument } else { .Local },
                     type: self.type_to_mir(local.type)
                 ));

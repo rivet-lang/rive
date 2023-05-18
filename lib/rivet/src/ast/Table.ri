@@ -299,7 +299,7 @@ public struct Table {
         };
     }
 
-    func type_symbol_size(mut self, mut type_sym: TypeSym, is_raw: bool = false) (usize, usize) {
+    public func type_symbol_size(mut self, mut type_sym: TypeSym, is_raw: bool = false) (usize, usize) {
         return if type_sym.size != 0 {
             (type_sym.size, type_sym.align)
         } else {
