@@ -57,6 +57,7 @@ public trait Sym {
     mut qualified_name: string;
     is_universe: bool;
     is_root: bool;
+    mut is_generated: bool;
 
     func module(self) ?Module {
         mut p := self;

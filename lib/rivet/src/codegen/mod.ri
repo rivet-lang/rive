@@ -15,8 +15,9 @@ public struct Codegen {
     mut table: ast.Table;
     prefs: prefs.Prefs;
 
-    mut generated_opt_res_types: maps.MapStringBool;
-    mut generated_array_returns: maps.MapStringBool;
+    mut source_file: ast.SourceFile;
+
+    mut type_symbols: []ast.TypeSym;
 
     mut rivet_internal: mir.ModuleIR;
     mut mirs: []mir.ModuleIR;
@@ -26,6 +27,9 @@ public struct Codegen {
     mut bool_t: mir.Type = .Void();
     mut vector_t: mir.Type = .Void();
     mut error_t: mir.Type = .Void();
+
+    mut generated_opt_res_types: maps.MapStringBool;
+    mut generated_array_returns: maps.MapStringBool;
 
     mut loop_entry_label: string;
     mut loop_exit_label: string;
@@ -48,17 +52,27 @@ public struct Codegen {
     }
 
     public func generate_mir(mut self, source_file: ast.SourceFile) {
+        self.source_file = source_file;
         self.mir = self.get_or_create_mir(source_file.mod.name);
         self.gen_decls(source_file.decls);
+        if !self.source_file.mod.is_generated {
+            self.source_file.mod.is_generated = true;
+        }
     }
 
     func init_types(mut self) {
-        self.bool_t = self.gen_type(self.table.bool_t);
+        self.bool_t = self.type_to_mir(self.table.bool_t);
         self.vector_t = .Pointer(.Basic(
             self.mangle_symbol(self.table.vector_sym),
             self.table.type_symbol_size(self.table.vector_sym, true).0
         ), true);
-        self.error_t = self.gen_type(self.table.error_t);
+        self.error_t = self.type_to_mir(self.table.error_t);
+
+        for sym in self.table.universe.scope.syms {
+            if sym is ast.Module {
+                self.sort_type_symbols(self.get_type_symbols(sym));
+            }
+        }
     }
 
     func get_or_create_mir(mut self, name: string) mir.ModuleIR {
@@ -184,5 +198,20 @@ public struct Codegen {
         }
         sym.mangled_name = sb.to_string();
         return sym.mangled_name;
+    }
+
+    func add_locals(mut self, scope: ast.Scope) {
+        for sym in scope.syms {
+            if sym is ast.Var as local {
+                self.cur_func.add_local(mir.Var(
+                    dbg_name: local.name,
+                    level: if local.level == .Argument { .Argument } else { .Local },
+                    type: self.type_to_mir(local.type)
+                ));
+            }
+        }
+        for children in scope.childrens {
+            self.add_locals(children);
+        }
     }
 }

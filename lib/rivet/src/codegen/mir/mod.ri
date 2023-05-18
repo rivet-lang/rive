@@ -192,12 +192,20 @@ public struct Var {
     public dbg_name: string;
     public level: VarLevel;
     public type: Type;
-    public mut is_none: bool;
+    public mut value: ?Expr; // comptime value
     public mut is_moved: bool;
     public mut is_dropped: bool;
     public mut is_initialized: bool;
-    public mut value: ?Expr; // comptime value
     public fields: []Var;
+
+    public func set_field(self, name: string, value: Expr) {
+        for field in self.fields {
+            if field.dbg_name == name {
+                field.value = value;
+                break;
+            }
+        }
+    }
 
     public func get_field(self, name: string) ?Var {
         for field in self.fields {
