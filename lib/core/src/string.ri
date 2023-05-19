@@ -79,10 +79,7 @@ public struct string : Stringable, Hashable {
             unsafe {
                 mut i: usize := 0;
                 while i < count : i += 1 {
-                    mut j: usize := 0;
-                    while j < self.len : j += 1 {
-                        res[i * self.len + j] = self.ptr[j];
-                    }
+                    mem_copy(@ptr_add(res, i * self.len), self.ptr, self.len);
                 }
                 res[len] = 0;
             }

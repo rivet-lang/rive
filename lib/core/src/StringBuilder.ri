@@ -39,10 +39,12 @@ public struct StringBuilder : Stringable {
 
     [unsafe]
     public func write_raw_with_len(mut self, s: [*]uint8, len: usize) {
-        mut i: usize := 0;
-        while i < len : i += 1 {
-            self.write_byte(unsafe { s[i] });
-        }
+        self.inner.reserve(self.inner.len + len);
+        mem_copy(
+            unsafe { @ptr_add(self.inner.ptr, self.inner.elem_size * self.inner.len) },
+            s, len
+        );
+        self.inner.len += len;
     }
 
     [inline]
@@ -112,9 +114,7 @@ public struct StringBuilder : Stringable {
 
     [inline]
     public func to_string(mut self) string {
-        unsafe {
-            self.inner.push(&@cast(uint8, 0));
-        }
+        self.write_byte(0);
         return string(@cast([*]uint8, self.inner.ptr), self.inner.len - 1);
     }
 }
