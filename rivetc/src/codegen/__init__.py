@@ -2871,7 +2871,7 @@ class Codegen:
 
     def ir_type(self, typ, gen_self_arg = False):
         if isinstance(typ, type.Result):
-            name = f"_R7Result_{mangle_type(typ.typ)}"
+            name = f"_R6Result{mangle_type(typ.typ)}"
             if name not in self.generated_opt_res_types:
                 is_void = typ.typ in self.void_types
                 self.out_rir.structs.append(
@@ -2891,7 +2891,7 @@ class Codegen:
         elif isinstance(typ, type.Option):
             if typ.is_ref_or_ptr():
                 return self.ir_type(typ.typ)
-            name = f"_R6Option_{mangle_type(typ.typ)}"
+            name = f"_R6Option{mangle_type(typ.typ)}"
             if name not in self.generated_opt_res_types:
                 is_void = typ.typ in self.void_types
                 self.out_rir.structs.append(
@@ -3105,6 +3105,13 @@ class Codegen:
                 for base in ts.info.bases:
                     dep = mangle_symbol(base)
                     if dep not in typ_names or dep in field_deps:
+                        continue
+                    field_deps.append(dep)
+                for f in ts.fields:
+                    dep = mangle_symbol(f.typ.symbol())
+                    if dep not in typ_names or dep in field_deps or isinstance(
+                        f.typ, type.Option
+                    ):
                         continue
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Struct:
