@@ -545,7 +545,7 @@ class Parser:
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
         self.close_scope()
-        return ast.FnDecl(
+        return ast.FuncDecl(
             doc_comment, annotations, is_public, self.inside_extern, is_unsafe,
             name, pos, args, ret_typ, stmts, sc, has_body, is_method,
             self_is_mut, self_is_ref, has_named_args, self.mod_sym.is_root

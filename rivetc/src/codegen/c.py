@@ -133,7 +133,7 @@ class CGen:
 
     def gen_decls(self, decls):
         for decl in decls:
-            if isinstance(decl, ir.FnDecl):
+            if isinstance(decl, ir.FuncDecl):
                 self.gen_fn_decl(decl)
             else:
                 self.gen_vtable(decl)

@@ -210,7 +210,7 @@ class Register:
                     report.error(
                         f"invalid type `{decl.typ}` to extend", decl.pos
                     )
-            elif isinstance(decl, ast.FnDecl):
+            elif isinstance(decl, ast.FuncDecl):
                 try:
                     decl.sym = self.sym.add_and_return(
                         sym.Fn(

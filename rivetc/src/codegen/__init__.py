@@ -144,14 +144,14 @@ class Codegen:
     def gen_source_files(self, source_files):
         self.gen_types()
         # generate 'init_string_lits_fn' function
-        self.init_string_lits_fn = ir.FnDecl(
+        self.init_string_lits_fn = ir.FuncDecl(
             False, ast.Annotations(), False, "_R4core16init_string_litsF", [],
             False, ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_string_lits_fn)
 
         # generate '_R4core12init_globalsF' function
-        self.init_global_vars_fn = ir.FnDecl(
+        self.init_global_vars_fn = ir.FuncDecl(
             False, ast.Annotations(), False, "_R4core12init_globalsF", [],
             False, ir.VOID_T, False
         )
@@ -165,7 +165,7 @@ class Codegen:
             self.gen_decls(source_file.decls)
 
         # generate '_R12drop_globalsZ' function
-        g_fn = ir.FnDecl(
+        g_fn = ir.FuncDecl(
             False, ast.Annotations(), False, "_R4core12drop_globalsF", [],
             False, ir.VOID_T, False
         )
@@ -174,7 +174,7 @@ class Codegen:
         # generate 'main' fn
         argc = ir.Ident(ir.INT_T, "_argc")
         argv = ir.Ident(ir.CHAR_T.ptr().ptr(), "_argv")
-        main_fn = ir.FnDecl(
+        main_fn = ir.FuncDecl(
             False, ast.Annotations(), False, "main", [argc, argv], False,
             ir.INT_T, False
         )
@@ -372,7 +372,7 @@ class Codegen:
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.ExtendDecl):
             self.gen_decls(decl.decls)
-        elif isinstance(decl, ast.FnDecl):
+        elif isinstance(decl, ast.FuncDecl):
             if self.inside_trait and not decl.has_body:
                 return
             if decl.is_main and self.comp.prefs.build_mode == prefs.BuildMode.Test:
@@ -408,7 +408,7 @@ class Codegen:
                         )
                         self.generated_array_returns.append(name)
                     ret_typ = ir.Type(name)
-            fn_decl = ir.FnDecl(
+            fn_decl = ir.FuncDecl(
                 False, decl.annotations, decl.is_extern and not decl.has_body,
                 decl.sym.name if decl.is_extern and not decl.has_body else
                 mangle_symbol(decl.sym), args, decl.is_variadic
@@ -443,7 +443,7 @@ class Codegen:
             if decl.self_is_mut and not decl.self_typ.sym.is_boxed():
                 self_typ = self_typ.ptr()
             self_arg = ir.Ident(self_typ, "self")
-            dtor_fn = ir.FnDecl(
+            dtor_fn = ir.FuncDecl(
                 False, ast.Annotations(), False,
                 f"{mangle_type(decl.self_typ)}6_dtor_", [self_arg], False,
                 ir.VOID_T, False
@@ -466,7 +466,7 @@ class Codegen:
                 test_name = utils.smart_quote(decl.name, True)
                 test_func = f"__test{len(self.generated_tests)}__"
                 test_func = f"_R{len(test_func)}{test_func}"
-                test_fn = ir.FnDecl(
+                test_fn = ir.FuncDecl(
                     False, ast.Annotations(), False, test_func,
                     [ir.Ident(ir.TEST_T.ptr(), "test")], False, ir.VOID_T, False
                 )
@@ -1930,7 +1930,7 @@ class Codegen:
                     right_sym.info.has_contains_method = True
                     self_idx_ = ir.Ident(ir.VEC_T.ptr(True), "self")
                     elem_idx_ = ir.Ident(self.ir_type(expr_left_typ), "_elem_")
-                    contains_decl = ir.FnDecl(
+                    contains_decl = ir.FuncDecl(
                         False, ast.Annotations(), False, full_name,
                         [self_idx_, elem_idx_], False, ir.BOOL_T, False
                     )
@@ -2013,8 +2013,7 @@ class Codegen:
                 typ_sym.kind in (
                     TypeKind.Array, TypeKind.Vec, TypeKind.String,
                     TypeKind.Struct
-                ) or
-                (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed)
+                ) or (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed)
             ) and not isinstance(expr_left_typ, type.Ptr):
                 if typ_sym.kind == TypeKind.Array:
                     if expr.op == Kind.Eq:
@@ -3032,7 +3031,7 @@ class Codegen:
                             len(ts.info.implements), funcs
                         )
                     )
-                    index_of_vtbl_fn = ir.FnDecl(
+                    index_of_vtbl_fn = ir.FuncDecl(
                         False, ast.Annotations(), False,
                         mangle_symbol(ts) + "17__index_of_vtbl__",
                         [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T, False

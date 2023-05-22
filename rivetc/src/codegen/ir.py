@@ -236,7 +236,7 @@ class Local:
         self.name = name
         self.typ = typ
 
-class FnDecl:
+class FuncDecl:
     def __init__(
         self, is_pub, attrs, is_extern, name, args, is_variadic, ret_typ,
         is_never

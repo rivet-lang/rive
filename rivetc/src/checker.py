@@ -154,7 +154,7 @@ class Checker:
                         decl.pos
                     )
             self.check_decls(decl.decls)
-        elif isinstance(decl, ast.FnDecl):
+        elif isinstance(decl, ast.FuncDecl):
             for arg in decl.args:
                 if arg.has_def_expr:
                     old_expected_type = self.expected_type
@@ -668,10 +668,8 @@ class Checker:
                 try:
                     self.check_types(ltyp, elem_typ)
                     if not (
-                        lsym.kind.is_primitive() or (
-                            lsym.kind == TypeKind.Enum
-                            and not lsym.info.is_boxed
-                        )
+                        lsym.kind.is_primitive() or
+                        (lsym.kind == TypeKind.Enum and not lsym.info.is_boxed)
                     ) and not lsym.exists(op_m):
                         report.error(
                             f"cannot use operator `{expr.op}` with type `{lsym.name}`",

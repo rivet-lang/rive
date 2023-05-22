@@ -114,7 +114,7 @@ class Resolver:
                             elif self.self_sym.kind == sym.TypeKind.Struct and self.self_sym.kind == base_sym.kind:
                                 self.self_sym.info.bases.append(base_sym)
                     self.resolve_decls(decl.decls)
-            elif isinstance(decl, ast.FnDecl):
+            elif isinstance(decl, ast.FuncDecl):
                 if decl.is_method:
                     self_typ = type.Type(self.self_sym)
                     if decl.self_is_ref:
