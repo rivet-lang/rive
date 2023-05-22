@@ -317,7 +317,7 @@ class Checker:
                 if v := _sym.info.get_variant(expr.value):
                     expr.variant_info = v
                     expr.typ = type.Type(_sym)
-                    if _sym.info.is_boxed_enum and not expr.from_is_cmp and not expr.is_instance:
+                    if _sym.info.is_boxed and not expr.from_is_cmp and not expr.is_instance:
                         report.error(
                             f"cannot use variant `{expr}` as a simple value",
                             expr.pos
@@ -670,7 +670,7 @@ class Checker:
                     if not (
                         lsym.kind.is_primitive() or (
                             lsym.kind == TypeKind.Enum
-                            and not lsym.info.is_boxed_enum
+                            and not lsym.info.is_boxed
                         )
                     ) and not lsym.exists(op_m):
                         report.error(
@@ -693,7 +693,7 @@ class Checker:
                         expr.left.pos
                     )
                 if expr.has_var:
-                    if lsym.kind == TypeKind.Enum and lsym.info.is_boxed_enum:
+                    if lsym.kind == TypeKind.Enum and lsym.info.is_boxed:
                         if expr.right.variant_info.has_typ:
                             expr.scope.update_type(
                                 expr.var.name, expr.right.variant_info.typ
@@ -710,14 +710,14 @@ class Checker:
                     if expr.var.is_mut:
                         expr.scope.update_is_hidden_ref(expr.var.name, True)
                 if lsym.kind == TypeKind.Enum:
-                    if lsym.info.is_boxed_enum and expr.op not in (
+                    if lsym.info.is_boxed and expr.op not in (
                         Kind.KwIs, Kind.KwNotIs
                     ):
                         report.error(
                             "boxed enum types only support `is` and `!is`",
                             expr.pos
                         )
-                    elif not lsym.info.is_boxed_enum and expr.op not in (
+                    elif not lsym.info.is_boxed and expr.op not in (
                         Kind.Eq, Kind.Ne
                     ):
                         report.error(
@@ -1340,12 +1340,12 @@ class Checker:
                 report.error("invalid value for typeswitch", expr.expr.pos)
                 report.note(f"expected enum or trait value, found `{expr_typ}`")
             elif expr_sym.kind == TypeKind.Enum:
-                if expr_sym.info.is_boxed_enum and not expr.is_typeswitch:
+                if expr_sym.info.is_boxed and not expr.is_typeswitch:
                     report.error(
                         "cannot use `switch` with a boxed enum value", expr.pos
                     )
                     report.note("use a typeswitch instead")
-                elif not expr_sym.info.is_boxed_enum and expr.is_typeswitch:
+                elif not expr_sym.info.is_boxed and expr.is_typeswitch:
                     report.error(
                         "cannot use typeswitch with a enum value", expr.pos
                     )
@@ -1447,7 +1447,7 @@ class Checker:
             else:
                 assert False
             has_args = len(expr.args) > 0
-            if not info.info.is_boxed_enum:
+            if not info.info.is_boxed:
                 report.error(f"`{expr.left}` not expects value", expr.left.pos)
             elif has_args:
                 if v.has_fields:

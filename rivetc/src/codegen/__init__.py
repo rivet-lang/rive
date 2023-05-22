@@ -723,7 +723,7 @@ class Codegen:
         expected_sym = expected_typ_.symbol()
         if expected_sym.kind == TypeKind.Trait and expr_typ != expected_typ_ and expr_sym != expected_sym and expr.typ != self.comp.none_t:
             res_expr = self.trait_value(res_expr, expr_typ, expected_typ_)
-        elif expr_sym.kind == TypeKind.Enum and expr_sym.info.is_boxed_enum and expr_sym.info.has_variant(
+        elif expr_sym.kind == TypeKind.Enum and expr_sym.info.is_boxed and expr_sym.info.has_variant(
             expected_sym.name
         ):
             tmp = self.cur_fn.local_name()
@@ -903,7 +903,7 @@ class Codegen:
                         )
                     )
                     return ir.Ident(ir_typ, tmp)
-                elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed_enum:
+                elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed:
                     tmp = self.cur_fn.local_name()
                     tmp_t = ir_typ
                     load_ptr = False
@@ -1532,7 +1532,7 @@ class Codegen:
                 elif isinstance(
                     expr.left_sym, sym.Type
                 ) and expr.left_sym.kind == TypeKind.Enum:
-                    if expr.left_sym.info.is_boxed_enum:
+                    if expr.left_sym.info.is_boxed:
                         return self.boxed_enum_value(
                             expr.left_sym, expr.field_name, None,
                             custom_tmp = custom_tmp
@@ -1850,7 +1850,7 @@ class Codegen:
                 left_sym = expr_left_typ.symbol()
                 expr_right_sym = expr_right_typ.symbol()
                 if left_sym.kind == TypeKind.Enum:
-                    if left_sym.info.is_boxed_enum:
+                    if left_sym.info.is_boxed:
                         cmp = ir.Inst(
                             ir.InstKind.Cmp, [
                                 ir.Name(kind),
@@ -1971,7 +1971,7 @@ class Codegen:
                     right_elem_typ_sym = right_sym.info.elem_typ.symbol()
                     if right_elem_typ_sym.kind.is_primitive() or (
                         right_elem_typ_sym.kind == TypeKind.Enum
-                        and not right_elem_typ_sym.info.is_boxed_enum
+                        and not right_elem_typ_sym.info.is_boxed
                     ):
                         cond = ir.Inst(
                             ir.InstKind.Cmp,
@@ -2014,7 +2014,7 @@ class Codegen:
                     TypeKind.Array, TypeKind.Vec, TypeKind.String,
                     TypeKind.Struct
                 ) or
-                (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed_enum)
+                (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed)
             ) and not isinstance(expr_left_typ, type.Ptr):
                 if typ_sym.kind == TypeKind.Array:
                     if expr.op == Kind.Eq:
@@ -2198,7 +2198,7 @@ class Codegen:
                             value_idx_x = ir.IntLit(
                                 ir.USIZE_T, str(p.typ.sym.id)
                             )
-                        if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.is_boxed_enum:
+                        if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.is_boxed:
                             self.cur_fn.inline_alloca(
                                 ir.BOOL_T, tmp2,
                                 ir.Inst(
@@ -2938,7 +2938,7 @@ class Codegen:
         elif typ_sym.kind == TypeKind.None_:
             return ir.VOID_PTR_T
         elif typ_sym.kind == TypeKind.Enum:
-            if typ_sym.info.is_boxed_enum:
+            if typ_sym.info.is_boxed:
                 return ir.Type(mangle_symbol(typ_sym)).ptr(True)
             return ir.Type(str(typ_sym.info.underlying_typ))
         elif typ_sym.kind.is_primitive():
@@ -2963,7 +2963,7 @@ class Codegen:
             elif ts.kind == TypeKind.Enum:
                 # TODO: in the self-hosted compiler calculate the enum value here
                 # not in register nor resolver.
-                if ts.info.is_boxed_enum:
+                if ts.info.is_boxed:
                     self.out_rir.structs.append(
                         ir.Struct(
                             False, mangle_symbol(ts), [
