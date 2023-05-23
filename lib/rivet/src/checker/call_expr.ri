@@ -353,7 +353,8 @@ extend Checker {
                                 field.name, type_sym.name
                             ), call_expr.pos
                         ),
-                        else => if f_type_sym := field.type.symbol() {
+                        else => if f_type_sym := field.type.symbol();
+                            f_type_sym.default_value is none {
                             switch f_type_sym.info is {
                                 .Trait if !was_initted => report.warn(
                                     "field `{}` of type `{}` must be initialized".fmt(

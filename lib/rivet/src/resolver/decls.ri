@@ -65,6 +65,10 @@ extend Resolver {
                             }
                         }
                     }
+                    if default_value := trait_decl.annotations.find("default_value") {
+                        self.self_sym.default_value = default_value.args[0].expr;
+                        self.resolve_expr(self.self_sym.default_value?);
+                    }
                     self.resolve_decls(trait_decl.decls);
                 },
                 .Enum as enum_decl => {
@@ -100,6 +104,10 @@ extend Resolver {
                             self.resolve_decls(variant.decls);
                             self.self_sym = old_self_sym2;
                         }
+                    }
+                    if default_value := enum_decl.annotations.find("default_value") {
+                        self.self_sym.default_value = default_value.args[0].expr;
+                        self.resolve_expr(self.self_sym.default_value?);
                     }
                     self.resolve_decls(enum_decl.decls);
                 },

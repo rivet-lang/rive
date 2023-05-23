@@ -46,6 +46,7 @@ public enum ABI as uint8 : traits.Stringable {
     }
 }
 
+@[default_value(InvalidSym())]
 public trait Sym {
     id: usize = new_sym_id();
     abi: ABI;
@@ -133,8 +134,8 @@ public struct InvalidSym : Sym {}
 
 @[boxed]
 public struct SymRef : Sym {
-    public mut ref: Sym = InvalidSym();
-    public mut ref_expr: Expr = .Empty(token.noPos);
+    public mut ref: Sym;
+    public mut ref_expr: Expr;
     public mut ref_resolved: bool;
 }
 
@@ -286,8 +287,8 @@ public struct Module : Sym {
 
 @[boxed]
 public struct Const : Sym {
-    public mut expr: Expr = .Empty(token.noPos);
-    public mut evaled_expr: Expr = .Empty(token.noPos);
+    public mut expr: Expr;
+    public mut evaled_expr: Expr;
     public mut has_evaled_size: bool;
     public mut evaled_size: isize;
     public mut type: Type;
@@ -320,9 +321,9 @@ public struct Arg {
     public is_mut: bool;
     public is_self: bool;
     public has_def_expr: bool;
-    public mut def_expr: Expr = .Empty(token.noPos);
+    public mut def_expr: Expr;
     public pos: token.Pos;
-    public mut type: Type = .Void();
+    public mut type: Type;
 }
 
 @[boxed]
@@ -332,14 +333,14 @@ public struct Func : Sym {
     public is_main: bool;
     public is_method: bool;
     public is_variadic: bool;
-    public mut self_type: Type = .Void();
+    public mut self_type: Type;
     public self_is_mut: bool;
     public self_is_ref: bool;
     public self_pos: token.Pos;
     public args: []Arg;
     public has_named_args: bool;
     public has_body: bool;
-    public ret_type: Type = .Void();
+    public ret_type: Type;
     public pos: token.Pos;
 
     public func get_arg(self, idx: usize) Arg {

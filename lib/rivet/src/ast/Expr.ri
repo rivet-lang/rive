@@ -7,18 +7,19 @@ import std/strings;
 
 import ../token;
 
+@[default_value(.Empty(token.noPos))]
 public enum Expr : traits.Stringable {
     Empty: token.Pos,
     Paren {
-        mut expr: Expr = .Empty(token.noPos);
+        mut expr: Expr;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     Type: Type,
     Assign {
-        mut left: Expr = .Empty(token.noPos);
+        mut left: Expr;
         op: token.Kind;
-        mut right: Expr = .Empty(token.noPos);
+        mut right: Expr;
         pos: token.Pos;
     },
     Ident {
@@ -28,10 +29,10 @@ public enum Expr : traits.Stringable {
         mut is_obj: bool;
         mut is_sym: bool;
         mut found: bool;
-        mut sym: Sym = InvalidSym();
+        mut sym: Sym;
         mut builtin: Builtin = .Invalid();
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     SelfTy {
         scope: Scope;
@@ -45,7 +46,7 @@ public enum Expr : traits.Stringable {
         mut found: bool;
         mut sym: TypeSym;
         mut obj: Var;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     NoneLiteral {
         pos: token.Pos;
@@ -58,17 +59,17 @@ public enum Expr : traits.Stringable {
         value: string;
         is_byte: bool;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     IntegerLiteral {
         value: string;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     FloatLiteral {
         value: string;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     StringLiteral {
         value: string;
@@ -76,85 +77,85 @@ public enum Expr : traits.Stringable {
         is_bytestr: bool;
         is_cstr: bool;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     EnumLiteral {
         value: string;
         mut is_instance: bool;
         from_is_cmp: bool;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
         mut sym: TypeSym;
         mut variant: EnumVariant;
     },
     TupleLiteral {
         values: []mut Expr;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     VectorLiteral {
         values: []mut Expr;
         is_arr: bool;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     Selector {
-        mut left: Expr = .Empty(token.noPos);
-        mut left_type: Type = .Void();
-        mut left_sym: Sym = InvalidSym();
+        mut left: Expr;
+        mut left_type: Type;
+        mut left_sym: Sym;
         field_name: string;
         field_pos: token.Pos;
         mut field_is_mut: bool;
-        mut field_type: Type = .Void();
+        mut field_type: Type;
         mut is_path: bool;
         mut found: bool;
-        mut sym: Sym = InvalidSym();
+        mut sym: Sym;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     Indirect {
-    	mut left: Expr = .Empty(token.noPos);
+    	mut left: Expr;
     	mut pos: token.Pos;
-    	mut left_type: Type = .Void();
-    	mut type: Type = .Void();
+    	mut left_type: Type;
+    	mut type: Type;
     	mut is_mut: bool;
     },
     OptionCheck {
-    	mut left: Expr = .Empty(token.noPos);
+    	mut left: Expr;
     	mut pos: token.Pos;
-    	mut left_type: Type = .Void();
-    	mut type: Type = .Void();
+    	mut left_type: Type;
+    	mut type: Type;
     },
     Branch {
         op: token.Kind;
         pos: token.Pos;
     },
     Range {
-        mut start: Expr = .Empty(token.noPos);
-        mut end: Expr = .Empty(token.noPos);
+        mut start: Expr;
+        mut end: Expr;
         has_start: bool;
         has_end: bool;
         is_inclusive: bool;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     Index {
-        mut left: Expr = .Empty(token.noPos);
-        mut left_type: Type = .Void();
-        mut index: Expr = .Empty(token.noPos);
+        mut left: Expr;
+        mut left_type: Type;
+        mut index: Expr;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
         mut is_ref: bool;
         mut is_ref_mut: bool;
     },
     Call {
-        mut left: Expr = .Empty(token.noPos);
+        mut left: Expr;
         mut args: []CallArg;
-        mut spread_expr: Expr = .Empty(token.noPos);
+        mut spread_expr: Expr;
         has_spread_expr: bool;
         mut err_handler: CallErrorHandler;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
         mut func_: Func;
 
         mut is_closure: bool;
@@ -207,55 +208,55 @@ public enum Expr : traits.Stringable {
         vec_is_mut: bool;
         pos: token.Pos;
         mut builtin: Builtin = .Invalid();
-        mut type: Type = .Void();
+        mut type: Type;
     },
     Unary {
-        mut right: Expr = .Empty(token.noPos);
+        mut right: Expr;
         op: token.Kind;
         is_ref_mut: bool;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     Binary {
-        mut left: Expr = .Empty(token.noPos);
-        mut right: Expr = .Empty(token.noPos);
+        mut left: Expr;
+        mut right: Expr;
         op: token.Kind;
         has_var_obj: bool;
         mut var_obj: ObjectData;
         mut scope: Scope;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     Return {
-        mut expr: Expr = .Empty(token.noPos);
+        mut expr: Expr;
         has_expr: bool;
         pos: token.Pos;
     },
     Block {
         is_unsafe: bool;
         stmts: []mut Stmt;
-        mut expr: Expr = .Empty(token.noPos);
+        mut expr: Expr;
         is_expr: bool;
         scope: Scope;
         pos: token.Pos;
-        mut type: Type = .Void();
+        mut type: Type;
     },
     If {
         branches: []IfBranch;
         has_else: bool;
         pos: token.Pos;
-        mut expected_type: Type = .Void();
-        mut type: Type = .Void();
+        mut expected_type: Type;
+        mut type: Type;
     },
     Switch {
-        mut expr: Expr = .Empty(token.noPos);
+        mut expr: Expr;
         branches: []SwitchBranch;
         is_typeswitch: bool;
         has_else: bool;
         mut scope: Scope;
         pos: token.Pos;
-        mut expected_type: Type = .Void();
-        mut type: Type = .Void();
+        mut expected_type: Type;
+        mut type: Type;
         mut is_exhaustive: bool;
     },
     // Examples:
@@ -263,9 +264,9 @@ public enum Expr : traits.Stringable {
     // - while byte := reader.read() { ... }
     Guard {
         vars: []ObjectData;
-        mut expr: Expr = .Empty(token.noPos);
+        mut expr: Expr;
         has_cond: bool;
-        mut cond: Expr = .Empty(token.noPos);
+        mut cond: Expr;
         mut scope: Scope;
         pos: token.Pos;
     };
@@ -541,10 +542,10 @@ public enum Expr : traits.Stringable {
 @[boxed]
 public struct CallArg {
     public name: string;
-    public mut expr: Expr = .Empty(token.noPos);
+    public mut expr: Expr;
     public is_named: bool;
     public pos: token.Pos;
-    public mut type: Type = .Void();
+    public mut type: Type;
 }
 
 @[boxed]
@@ -553,7 +554,7 @@ public struct CallErrorHandler {
     public varname_pos: token.Pos;
     public has_varname: bool;
     public is_propagate: bool;
-    public mut expr: Expr = .Empty(token.noPos);
+    public mut expr: Expr;
     public has_expr: bool;
     public mut scope: Scope;
     public pos: token.Pos;
@@ -561,12 +562,12 @@ public struct CallErrorHandler {
 
 @[boxed]
 public struct IfBranch {
-    public mut cond: Expr = .Empty(token.noPos);
-    public mut expr: Expr = .Empty(token.noPos);
+    public mut cond: Expr;
+    public mut expr: Expr;
     public is_else: bool;
     public is_else_if: bool;
     public pos: token.Pos;
-    public mut type: Type = .Void();
+    public mut type: Type;
 }
 
 @[boxed]
@@ -577,10 +578,10 @@ public struct SwitchBranch {
     public var_name: string;
     public var_pos: token.Pos;
     public has_cond: bool;
-    public mut var_type: Type = .Void();
-    public mut cond: Expr = .Empty(token.noPos);
-    public mut expr: Expr = .Empty(token.noPos);
+    public mut var_type: Type;
+    public mut cond: Expr;
+    public mut expr: Expr;
     public is_else: bool;
     public pos: token.Pos;
-    public mut type: Type = .Void();
+    public mut type: Type;
 }

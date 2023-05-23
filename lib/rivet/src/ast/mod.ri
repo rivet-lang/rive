@@ -56,7 +56,7 @@ public struct ObjectData {
     public is_mut: bool;
     public is_ref: bool;
     public has_type: bool;
-    public mut type: Type = .Void();
+    public mut type: Type;
     public level: VarLevel;
     public pos: token.Pos;
     public mut sym: Var;

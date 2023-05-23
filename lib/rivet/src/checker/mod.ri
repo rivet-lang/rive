@@ -16,7 +16,7 @@ public struct Checker {
     mut sym: ast.Sym = ast.InvalidSym();
     mut cur_fn: ast.Func;
 
-    mut expected_type: ast.Type = .Void();
+    mut expected_type: ast.Type;
 
     mut inside_extern: bool;
     mut inside_test: bool;

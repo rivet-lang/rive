@@ -7,11 +7,12 @@ import { Builder } from std/strings;
 
 import ../token;
 
+@[default_value(.Void())]
 public enum Type : traits.Stringable {
     Basic {
         mut sym: TypeSym;
         mut is_unresolved: bool;
-        mut expr: Expr = .Empty(token.noPos);
+        mut expr: Expr;
         pos: token.Pos;
     },
     Never: token.Pos,
@@ -57,7 +58,7 @@ public enum Type : traits.Stringable {
     Array {
         mut inner: Type;
         is_mut: bool;
-        mut size: Expr = .Empty(token.noPos);
+        mut size: Expr;
         mut size_value: usize;
         mut sym: TypeSym;
         pos: token.Pos;

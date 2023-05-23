@@ -5,6 +5,7 @@
 import std/traits;
 import std/strings;
 
+@[default_value(.Empty())]
 public enum Expr : traits.Stringable {
     Empty,
     IntConst {

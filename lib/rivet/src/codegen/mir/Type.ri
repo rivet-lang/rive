@@ -6,6 +6,7 @@ import std/traits;
 import std/strings;
 import std/process;
 
+@[default_value(.Void())]
 public enum Type : traits.Stringable {
     Void,
     Never,

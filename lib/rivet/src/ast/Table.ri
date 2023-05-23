@@ -47,24 +47,24 @@ public struct Table {
     public mut vector_sym: TypeSym; // from `core` module
 
     /// Primitive types.
-    public mut bool_t: Type = .Void();
-    public mut rune_t: Type = .Void();
-    public mut int8_t: Type = .Void();
-    public mut int16_t: Type = .Void();
-    public mut int32_t: Type = .Void();
-    public mut int64_t: Type = .Void();
-    public mut isize_t: Type = .Void();
-    public mut uint8_t: Type = .Void();
-    public mut uint16_t: Type = .Void();
-    public mut uint32_t: Type = .Void();
-    public mut uint64_t: Type = .Void();
-    public mut usize_t: Type = .Void();
-    public mut comptime_int_t: Type = .Void();
-    public mut comptime_float_t: Type = .Void();
-    public mut float32_t: Type = .Void();
-    public mut float64_t: Type = .Void();
-    public mut string_t: Type = .Void();
-    public mut error_t: Type = .Void();
+    public mut bool_t: Type;
+    public mut rune_t: Type;
+    public mut int8_t: Type;
+    public mut int16_t: Type;
+    public mut int32_t: Type;
+    public mut int64_t: Type;
+    public mut isize_t: Type;
+    public mut uint8_t: Type;
+    public mut uint16_t: Type;
+    public mut uint32_t: Type;
+    public mut uint64_t: Type;
+    public mut usize_t: Type;
+    public mut comptime_int_t: Type;
+    public mut comptime_float_t: Type;
+    public mut float32_t: Type;
+    public mut float64_t: Type;
+    public mut string_t: Type;
+    public mut error_t: Type;
 
     public mut source_files: []SourceFile;
 
@@ -523,7 +523,7 @@ public enum Builtin {
     Func {
         name: string;
         args: []BuiltinArg;
-        type: Type = .Void();
+        type: Type;
         is_unsafe: bool;
         checks: []BuiltinFuncCheck;
 
@@ -552,7 +552,7 @@ struct BuiltinArg {
     public name: string;
     public is_mut: bool;
     public is_any: bool; // any type
-    public type: Type = .Void();
+    public type: Type;
     public is_optional: bool;
 }
 
