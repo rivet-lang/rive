@@ -70,3 +70,19 @@ func ship(a: Eq, b: Eq) bool {
 test "traits: default method" {
     @assert(ship( Poketrait("Shell"), Poketrait("Shell") ));
 }
+
+@[default_value(IntegerValue(5))]
+trait Integer {}
+
+struct IntegerValue {
+    int: int32;
+}
+
+struct IntegerStruct {
+    i: Integer;
+}
+
+test "traits with `default_value` annotation" {
+    is_ := IntegerStruct();
+    @assert(is_.i is IntegerValue as int_v and int_v.int == 5);
+}

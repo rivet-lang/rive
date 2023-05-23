@@ -2603,6 +2603,8 @@ class Codegen:
         elif typ_sym.kind == TypeKind.Vec:
             return self.empty_vec(typ_sym)
         elif typ_sym.kind == TypeKind.Enum:
+            if typ_sym.info.is_boxed and typ_sym.default_value:
+                return self.gen_expr_with_cast(typ, typ_sym.default_value)
             return ir.IntLit(self.ir_type(typ_sym.info.underlying_typ), "0")
         elif typ_sym.kind == TypeKind.Tuple:
             tmp = ir.Ident(typ, self.cur_fn.local_name())
@@ -2632,6 +2634,8 @@ class Codegen:
                 self.cur_fn.store(sltor, val)
             return tmp
         elif typ_sym.kind == TypeKind.Trait:
+            if typ_sym.default_value:
+                return self.gen_expr_with_cast(typ, typ_sym.default_value)
             return ir.NoneLit(ir.VOID_PTR_T)
         return None
 

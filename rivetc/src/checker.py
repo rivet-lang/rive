@@ -95,6 +95,11 @@ class Checker:
                 left0.sym.typ = left0.typ
             self.inside_var_decl = False
         elif isinstance(decl, ast.EnumDecl):
+            if decl.sym.default_value:
+                old_expected_type = self.expected_type
+                self.expected_type = type.Type(decl.sym)
+                _ = self.check_expr(decl.sym.default_value)
+                self.expected_type = old_expected_type
             for base in decl.bases:
                 base_sym = base.symbol()
                 if base_sym.kind != TypeKind.Trait:
@@ -106,6 +111,11 @@ class Checker:
                 self.check_decls(v.decls)
             self.check_decls(decl.decls)
         elif isinstance(decl, ast.TraitDecl):
+            if decl.sym.default_value:
+                old_expected_type = self.expected_type
+                self.expected_type = type.Type(decl.sym)
+                _ = self.check_expr(decl.sym.default_value)
+                self.expected_type = old_expected_type
             for base in decl.bases:
                 base_sym = base.symbol()
                 if base_sym.kind != TypeKind.Trait:
@@ -963,8 +973,9 @@ class Checker:
                         )
             elif isinstance(expr_left, ast.EnumLiteral):
                 expr_left.is_instance = True
-                self.check_expr(expr_left)
-                self.check_ctor(expr_left.sym, expr)
+                _ = self.check_expr(expr_left)
+                if expr_left.variant_info:
+                    self.check_ctor(expr_left.sym, expr)
             else:
                 report.error(
                     "invalid expression used in call expression", expr.pos

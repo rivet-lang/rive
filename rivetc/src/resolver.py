@@ -63,6 +63,11 @@ class Resolver:
                                     )
                                     continue
                             variant.value = str(i)
+                    self.self_sym = decl.sym
+                    for annotation in decl.annotations.annotations:
+                        if annotation.name == "default_value":
+                            decl.sym.default_value = annotation.args[0].expr
+                            self.resolve_expr(decl.sym.default_value)
                     for base in decl.bases:
                         if self.resolve_type(base):
                             base_sym = base.symbol()
@@ -72,10 +77,13 @@ class Resolver:
                         if len(v.decls) > 0:
                             self.self_sym = v.typ.symbol()
                             self.resolve_decls(v.decls)
-                    self.self_sym = decl.sym
                     self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.TraitDecl):
                 self.self_sym = decl.sym
+                for annotation in decl.annotations.annotations:
+                    if annotation.name == "default_value":
+                        decl.sym.default_value = annotation.args[0].expr
+                        self.resolve_expr(decl.sym.default_value)
                 for base in decl.bases:
                     if self.resolve_type(base):
                         base_sym = base.symbol()

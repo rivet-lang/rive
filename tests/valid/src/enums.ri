@@ -95,3 +95,17 @@ test "enums: boxed enum with fields" {
         @assert(linux.distro_name == "Ubuntu");
     }
 }
+
+@[default_value(.Abc(5))]
+enum DefaultValue {
+    Abc: int32
+}
+
+struct EnumStruct {
+    dv: DefaultValue;
+}
+
+test "boxed enums with `default_value` annotation" {
+    es := EnumStruct();
+    @assert(es.dv is .Abc as int and int == 5);
+}

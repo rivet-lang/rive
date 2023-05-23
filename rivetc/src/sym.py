@@ -531,6 +531,7 @@ class Type(Sym):
         self.info = info
         self.size = -1
         self.align = -1
+        self.default_value = None
 
     def find_field(self, name):
         for f in self.fields:
