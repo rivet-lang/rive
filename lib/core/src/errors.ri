@@ -15,48 +15,48 @@ public trait Error : Stringable {
     }
 }
 
-[inline]
+@[inline]
 func error_panic(err: Error) {
     console_eprintln("unhandled error: {}", err.to_string());
     returnTrace.print();
     process_exit(1);
 }
 
-[boxed]
+@[boxed]
 public struct RuneFromU32Error : Error {
     msg: string;
 
-    [inline]
+    @[inline]
     public func to_string(self) string {
         return self.msg;
     }
 }
 
-[boxed]
+@[boxed]
 public struct InvalidArgumentError : Error {
     msg: string;
 
-    [inline]
+    @[inline]
     public func to_string(self) string {
         return self.msg;
     }
 }
 
-[boxed]
+@[boxed]
 public struct OutOfMemoryError : Error {
     msg: string;
 
-    [inline]
+    @[inline]
     public func to_string(self) string {
         return self.msg;
     }
 }
 
-[boxed]
+@[boxed]
 public struct ReadFailedError : Error {
     msg: string;
 
-    [inline]
+    @[inline]
     public func to_string(self) string {
         return self.msg;
     }
@@ -73,7 +73,7 @@ var returnTrace = ReturnTrace();
 struct ReturnTrace {
     mut traces: []CallTrace = @vec(CallTrace, 5);
 
-    [inline]
+    @[inline]
     func add(mut self, trace: CallTrace) {
         self.traces.push(trace);
     }

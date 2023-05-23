@@ -10,7 +10,7 @@ public enum Node {
     Expr: Expr
 }
 
-[boxed]
+@[boxed]
 public struct SourceFile {
     public file: string;
     public decls: []Decl;
@@ -18,7 +18,7 @@ public struct SourceFile {
     public mut imported_symbols: ImportedSymbols;
 }
 
-[boxed]
+@[boxed]
 public struct ImportedSymbol {
     public name: string;
     public sym: Sym;
@@ -29,7 +29,7 @@ public struct ImportedSymbol {
 public struct ImportedSymbols {
     public mut syms: []ImportedSymbol;
 
-    [inline]
+    @[inline]
     public func add(mut self, name: string, sym: Sym, pos: token.Pos, is_used: bool = false) {
         self.syms.push(ImportedSymbol(name, sym, pos, is_used));
     }
@@ -43,14 +43,14 @@ public struct ImportedSymbols {
         return none;
     }
 
-    [inline]
+    @[inline]
     public func exists(&self, name: string) bool {
         return self.find(name) !is none;
     }
 }
 
 // Used in variable declarations/statements and guard expressions.
-[boxed]
+@[boxed]
 public struct ObjectData {
     public name: string;
     public is_mut: bool;

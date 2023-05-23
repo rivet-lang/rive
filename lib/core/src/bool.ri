@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 extend bool : Stringable {
-    [inline]
+    @[inline]
     public func to_string(&self) string {
         return if self.* { "true" } else { "false" };
     }

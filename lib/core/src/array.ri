@@ -10,12 +10,12 @@ func array_index(len: usize, idx: usize) {
     }
 }
 
-[inline]
+@[inline]
 func array_eq(arr: anyptr, other_arr: anyptr, len: usize) bool {
     return unsafe { libc.memcmp(arr, other_arr, len) == 0 };
 }
 
-[inline]
+@[inline]
 func array_ne(arr: anyptr, other_arr: anyptr, len: usize) bool {
     return unsafe { !array_eq(arr, other_arr, len) };
 }
@@ -32,7 +32,7 @@ func array_slice(arr: mut_anyptr, elem_size: usize, size: usize, start: usize, e
     };
 }
 
-[inline]
+@[inline]
 func array_slice_from(arr: mut_anyptr, elem_size: usize, size: usize, start: usize) Vector {
     return unsafe { array_slice(arr, elem_size, size, start, size) };
 }

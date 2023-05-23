@@ -263,7 +263,7 @@ extend Tokenizer {
         return lit;
     }
 
-    [inline]
+    @[inline]
     func read_number(mut self) string {
         return switch {
             self.matches("0x", self.pos) => self.read_hex_number(),

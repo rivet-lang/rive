@@ -2,12 +2,12 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-[inline]
+@[inline]
 public func is_name_char(ch: uint8) bool {
     return ch.is_letter() or ch == b'_';
 }
 
-[inline]
+@[inline]
 public func is_new_line(ch: uint8) bool {
     return ch == LF or ch == CR;
 }

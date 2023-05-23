@@ -39,7 +39,7 @@ public func process_get_cwd() !string {
 
 /// Returns the OS-assigned process identifier associated with this
 /// process.
-[inline]
+@[inline]
 public func process_id() uint32 {
     return unsafe { libc.getpid() };
 }

@@ -7,7 +7,7 @@ import ../report;
 import ../token;
 
 extend Parser {
-    [inline]
+    @[inline]
     func parse_expr(mut self) ast.Expr {
         return self.parse_or_expr();
     }
@@ -195,7 +195,7 @@ extend Parser {
         return left;
     }
 
-    [inline]
+    @[inline]
     func parse_unary_expr(mut self) ast.Expr {
         return switch self.tok.kind {
             .Amp, .Bang, .BitNot, .Minus => {
@@ -689,7 +689,7 @@ extend Parser {
         return .Guard(vars, expr, has_cond, cond, self.scope, pos + self.prev_tok.pos);
     }
 
-    [inline]
+    @[inline]
     func parse_literal(mut self) ast.Expr {
         return switch {
             self.tok.kind in [.KwTrue, .KwFalse] => {
@@ -782,7 +782,7 @@ extend Parser {
         );
     }
 
-    [inline]
+    @[inline]
     func parse_selector_expr(mut self, left: ast.Expr) ast.Expr {
         field_pos := self.tok.pos;
         return .Selector(

@@ -11,7 +11,7 @@ public enum Increment as uint8 {
 	Patch
 }
 
-[boxed]
+@[boxed]
 public struct EmptyInputError : Error {
     public func to_string(self) string {
         _ = self;
@@ -19,7 +19,7 @@ public struct EmptyInputError : Error {
     }
 }
 
-[boxed]
+@[boxed]
 public struct InvalidVersionFormatError : Error {
     input: string;
 
@@ -28,7 +28,7 @@ public struct InvalidVersionFormatError : Error {
     }
 }
 
-[boxed]
+@[boxed]
 public struct InvalidVersionError : Error {
     input: string;
 
@@ -38,7 +38,7 @@ public struct InvalidVersionError : Error {
 }
 
 /// Represents a semantic version in semver format.
-[boxed]
+@[boxed]
 public struct Version : traits.Stringable {
     public major: usize;
     public minor: usize;
@@ -59,14 +59,14 @@ public struct Version : traits.Stringable {
     }
 
     /// Returns a `Version` structure with given `major`, `minor` and `patch` versions.
-    [inline]
+    @[inline]
     public func build(major: usize, minor: usize, patch: usize) Self {
         // TODO: check if versions are greater than zero.
         return Version(major, minor, patch, "", "");
     }
 
     /// Returns a `Version` structure with incremented values.
-    [inline]
+    @[inline]
     public func increment(self, typ: Increment) Self {
         mut major := self.major;
         mut minor := self.minor;
@@ -90,7 +90,7 @@ public struct Version : traits.Stringable {
 
     /// Satisfies returns `true` if the `input` expression can be validated to `true`
     /// when run against this `Version`.
-    [inline]
+    @[inline]
     public func satisfies(self, input: string) bool {
         return if range := Range.parse(input) {
             range.satisfies(self)
@@ -99,13 +99,13 @@ public struct Version : traits.Stringable {
         };
     }
 
-    [inline]
+    @[inline]
     public func ==(self, v2: Self) bool {
         return self.major == v2.major and self.minor == v2.minor and self.patch == v2.patch
             and self.prerelease == v2.prerelease;
     }
 
-    [inline]
+    @[inline]
     public func !=(self, v2: Self) bool {
         return !(self == v2);
     }
@@ -136,12 +136,12 @@ public struct Version : traits.Stringable {
         return self.patch < v2.patch;
     }
 
-    [inline]
+    @[inline]
     public func >=(self, v2: Self) bool {
         return self == v2 or self > v2;
     }
 
-    [inline]
+    @[inline]
     public func <=(self, v2: Self) bool {
         return self == v2 or self < v2;
     }
@@ -160,7 +160,7 @@ public struct Version : traits.Stringable {
 
 /// Converts the `input` version to a `Version` struct.
 /// coerce will strip any contents *after* the parsed version string.
-[inline]
+@[inline]
 public func coerce(input: string) !Version {
     if version := RawVersion.parse(input).coerce() {
         return version;
@@ -170,7 +170,7 @@ public func coerce(input: string) !Version {
 
 /// Returns `true` if the `input` `string` can be converted to a semantic `Version`
 /// struct.
-[inline]
+@[inline]
 public func is_valid(input: string) bool {
 	return RawVersion.parse(input).is_valid();
 }

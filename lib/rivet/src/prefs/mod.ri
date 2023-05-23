@@ -42,7 +42,7 @@ public enum LinkMode as uint8 {
     Dynamic
 }
 
-[boxed]
+@[boxed]
 public struct Prefs {
     // Target info
     public mut target_os: sys.OS = sys.os();

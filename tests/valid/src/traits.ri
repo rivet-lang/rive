@@ -56,7 +56,7 @@ trait Eq {
     }
 }
 
-[boxed]
+@[boxed]
 struct Poketrait : Eq {
     public func equal(self, x: Eq) bool {
         return self.x == x.x;

@@ -15,7 +15,7 @@ enum Operator as uint8 {
     Eq
 }
 
-[boxed]
+@[boxed]
 public struct InvalidComparatorFormatError : Error {
     msg: string;
 
@@ -53,7 +53,7 @@ struct Comparator {
         return Comparator(coerce(raw_version) catch return none, op);
     }
 
-    [inline]
+    @[inline]
     func satisfies(&self, ver: Version) bool {
         return switch self.op {
             .Gt => ver > self.ver,
@@ -86,7 +86,7 @@ struct ComparatorSet {
         return ComparatorSet(comparators);
     }
 
-    [inline]
+    @[inline]
     func expand(input: string) ?ComparatorSet {
         return switch input[0] {
             b'~' => expand_tilda(input[1..]),
@@ -222,12 +222,12 @@ func expand_hyphen(raw_range: string) ?ComparatorSet {
     return make_comparator_set_ge_le(min_ver, max_ver);
 }
 
-[inline]
+@[inline]
 func make_comparator_set_ge_lt(min: Version, max: Version) ComparatorSet {
     return ComparatorSet([Comparator(min, .Ge), Comparator(max, .Lt)]);
 }
 
-[inline]
+@[inline]
 func make_comparator_set_ge_le(min: Version, max: Version) ComparatorSet {
     return ComparatorSet([Comparator(min, .Ge), Comparator(max, .Le)]);
 }

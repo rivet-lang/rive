@@ -10,7 +10,7 @@ import ../prefs;
 import ../utils;
 import ../utils/maps;
 
-[boxed]
+@[boxed]
 public struct Codegen {
     mut table: ast.Table;
     prefs: prefs.Prefs;

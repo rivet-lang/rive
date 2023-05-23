@@ -107,36 +107,37 @@ class Parser:
         if parse_mod_annotations and self.mod_sym.annotations == None:
             self.mod_sym.annotations = ast.Annotations()
         annotations = ast.Annotations()
-        if parse_mod_annotations:
-            self.expect(Kind.Bang)
-        if self.accept(Kind.Lbracket):
-            while True:
-                args = []
-                pos = self.tok.pos
-                if self.accept(Kind.KwUnsafe):
-                    annotation_name = "unsafe"
-                else:
-                    annotation_name = self.parse_name()
-                if self.accept(Kind.Lparen):
-                    while True:
-                        if self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
-                            name = self.parse_name()
-                            self.expect(Kind.Colon)
-                        else:
-                            name = ""
-                        expr = self.parse_expr()
-                        args.append(ast.AnnotationArg(name, expr))
-                        if not self.accept(Kind.Comma):
-                            break
-                    self.expect(Kind.Rparen)
-                annotation = ast.Annotation(annotation_name, args, pos)
-                if parse_mod_annotations:
-                    self.mod_sym.annotations.add(annotation)
-                else:
-                    annotations.add(annotation)
-                if not self.accept(Kind.Semicolon):
-                    break
-            self.expect(Kind.Rbracket)
+        while self.accept(Kind.At):
+            if parse_mod_annotations:
+                self.expect(Kind.Bang)
+            if self.accept(Kind.Lbracket):
+                while True:
+                    args = []
+                    pos = self.tok.pos
+                    if self.accept(Kind.KwUnsafe):
+                        annotation_name = "unsafe"
+                    else:
+                        annotation_name = self.parse_name()
+                    if self.accept(Kind.Lparen):
+                        while True:
+                            if self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
+                                name = self.parse_name()
+                                self.expect(Kind.Colon)
+                            else:
+                                name = ""
+                            expr = self.parse_expr()
+                            args.append(ast.AnnotationArg(name, expr))
+                            if not self.accept(Kind.Comma):
+                                break
+                        self.expect(Kind.Rparen)
+                    annotation = ast.Annotation(annotation_name, args, pos)
+                    if parse_mod_annotations:
+                        self.mod_sym.annotations.add(annotation)
+                    else:
+                        annotations.add(annotation)
+                    if not self.accept(Kind.Semicolon):
+                        break
+                self.expect(Kind.Rbracket)
         return annotations
 
     def is_public(self):
@@ -162,7 +163,7 @@ class Parser:
     def parse_decl(self):
         doc_comment = self.parse_doc_comment()
         annotations = self.parse_annotations(
-            self.tok.kind == Kind.Bang and self.peek_tok.kind == Kind.Lbracket
+            self.tok.kind == Kind.At and self.peek_tok.kind == Kind.Bang
         )
         is_public = self.is_public()
         pos = self.tok.pos

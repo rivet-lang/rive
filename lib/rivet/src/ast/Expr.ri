@@ -196,7 +196,7 @@ public enum Expr : traits.Stringable {
             return l;
         }
 
-        [inline]
+        @[inline]
         func has_err_handler(self) bool {
             return self.err_handler.has_expr or self.err_handler.is_propagate;
         }
@@ -278,7 +278,7 @@ public enum Expr : traits.Stringable {
         return res;
     }
 
-    [inline]
+    @[inline]
     public func position(self) token.Pos {
         return switch self is {
             .Empty as empty_pos => empty_pos,
@@ -315,7 +315,7 @@ public enum Expr : traits.Stringable {
         };
     }
 
-    [inline]
+    @[inline]
     public func to_string(self) string {
         return switch self is {
             .Empty => "<empty-expression>",
@@ -538,7 +538,7 @@ public enum Expr : traits.Stringable {
     }
 }
 
-[boxed]
+@[boxed]
 public struct CallArg {
     public name: string;
     public mut expr: Expr = .Empty(token.noPos);
@@ -547,7 +547,7 @@ public struct CallArg {
     public mut type: Type = .Void();
 }
 
-[boxed]
+@[boxed]
 public struct CallErrorHandler {
     public varname: string;
     public varname_pos: token.Pos;
@@ -559,7 +559,7 @@ public struct CallErrorHandler {
     public pos: token.Pos;
 }
 
-[boxed]
+@[boxed]
 public struct IfBranch {
     public mut cond: Expr = .Empty(token.noPos);
     public mut expr: Expr = .Empty(token.noPos);
@@ -569,7 +569,7 @@ public struct IfBranch {
     public mut type: Type = .Void();
 }
 
-[boxed]
+@[boxed]
 public struct SwitchBranch {
     public cases: []mut Expr;
     public has_var: bool;
