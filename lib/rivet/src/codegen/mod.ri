@@ -10,7 +10,7 @@ import ../prefs;
 import ../utils;
 import ../utils/maps;
 
-[boxed]
+@[boxed]
 public struct Codegen {
     mut table: ast.Table;
     prefs: prefs.Prefs;
@@ -24,9 +24,9 @@ public struct Codegen {
     mut mir: mir.ModuleIR;
     mut cur_func: mir.Func;
 
-    mut bool_t: mir.Type = .Void();
-    mut vector_t: mir.Type = .Void();
-    mut error_t: mir.Type = .Void();
+    mut bool_t: mir.Type;
+    mut vector_t: mir.Type;
+    mut error_t: mir.Type;
 
     mut generated_opt_res_types: maps.MapStringBool;
     mut generated_array_returns: maps.MapStringBool;

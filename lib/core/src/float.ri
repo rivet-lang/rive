@@ -7,12 +7,12 @@ import c/libc;
 extend comptime_float : Stringable {
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
-    [inline]
+    @[inline]
     public func bits(self) uint64 {
         return @cast(float64, self).bits();
     }
 
-    [inline]
+    @[inline]
     public func to_string(&self) string {
         return @cast(float64, self.*).to_string();
     }
@@ -22,14 +22,14 @@ extend float32 : Stringable {
     /// Returns the floating-point number corresponding to the IEEE 754 binary
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.
-    [inline]
+    @[inline]
     public func from_bits(b: uint32) float32 {
         return unsafe { @cast(*float32, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
-    [inline]
+    @[inline]
     public func bits(&self) uint32 {
         return unsafe { @cast(*uint32, self).* };
     }
@@ -51,14 +51,14 @@ extend float64 : Stringable {
     /// Returns the floating-point number corresponding to the IEEE 754 binary
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.
-    [inline]
+    @[inline]
     public func from_bits(b: uint64) float64 {
         return unsafe { @cast(*float64, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
-    [inline]
+    @[inline]
     public func bits(&self) uint64 {
         return unsafe { @cast(*uint64, self).* };
     }

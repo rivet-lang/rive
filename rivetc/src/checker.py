@@ -95,6 +95,11 @@ class Checker:
                 left0.sym.typ = left0.typ
             self.inside_var_decl = False
         elif isinstance(decl, ast.EnumDecl):
+            if decl.sym.default_value:
+                old_expected_type = self.expected_type
+                self.expected_type = type.Type(decl.sym)
+                _ = self.check_expr(decl.sym.default_value)
+                self.expected_type = old_expected_type
             for base in decl.bases:
                 base_sym = base.symbol()
                 if base_sym.kind != TypeKind.Trait:
@@ -106,6 +111,11 @@ class Checker:
                 self.check_decls(v.decls)
             self.check_decls(decl.decls)
         elif isinstance(decl, ast.TraitDecl):
+            if decl.sym.default_value:
+                old_expected_type = self.expected_type
+                self.expected_type = type.Type(decl.sym)
+                _ = self.check_expr(decl.sym.default_value)
+                self.expected_type = old_expected_type
             for base in decl.bases:
                 base_sym = base.symbol()
                 if base_sym.kind != TypeKind.Trait:
@@ -154,7 +164,7 @@ class Checker:
                         decl.pos
                     )
             self.check_decls(decl.decls)
-        elif isinstance(decl, ast.FnDecl):
+        elif isinstance(decl, ast.FuncDecl):
             for arg in decl.args:
                 if arg.has_def_expr:
                     old_expected_type = self.expected_type
@@ -228,10 +238,6 @@ class Checker:
                     )
                 else:
                     for i, vd in enumerate(stmt.lefts):
-                        if vd.name == "_":
-                            report.error(
-                                "cannot modify blank identifier (`_`)", vd.pos
-                            )
                         if not vd.has_typ:
                             vtyp = self.comp.comptime_number_to_type(
                                 symbol.info.types[i]
@@ -321,7 +327,7 @@ class Checker:
                 if v := _sym.info.get_variant(expr.value):
                     expr.variant_info = v
                     expr.typ = type.Type(_sym)
-                    if _sym.info.is_boxed_enum and not expr.from_is_cmp and not expr.is_instance:
+                    if _sym.info.is_boxed and not expr.from_is_cmp and not expr.is_instance:
                         report.error(
                             f"cannot use variant `{expr}` as a simple value",
                             expr.pos
@@ -672,10 +678,8 @@ class Checker:
                 try:
                     self.check_types(ltyp, elem_typ)
                     if not (
-                        lsym.kind.is_primitive() or (
-                            lsym.kind == TypeKind.Enum
-                            and not lsym.info.is_boxed_enum
-                        )
+                        lsym.kind.is_primitive() or
+                        (lsym.kind == TypeKind.Enum and not lsym.info.is_boxed)
                     ) and not lsym.exists(op_m):
                         report.error(
                             f"cannot use operator `{expr.op}` with type `{lsym.name}`",
@@ -697,7 +701,7 @@ class Checker:
                         expr.left.pos
                     )
                 if expr.has_var:
-                    if lsym.kind == TypeKind.Enum and lsym.info.is_boxed_enum:
+                    if lsym.kind == TypeKind.Enum and lsym.info.is_boxed:
                         if expr.right.variant_info.has_typ:
                             expr.scope.update_type(
                                 expr.var.name, expr.right.variant_info.typ
@@ -714,14 +718,14 @@ class Checker:
                     if expr.var.is_mut:
                         expr.scope.update_is_hidden_ref(expr.var.name, True)
                 if lsym.kind == TypeKind.Enum:
-                    if lsym.info.is_boxed_enum and expr.op not in (
+                    if lsym.info.is_boxed and expr.op not in (
                         Kind.KwIs, Kind.KwNotIs
                     ):
                         report.error(
                             "boxed enum types only support `is` and `!is`",
                             expr.pos
                         )
-                    elif not lsym.info.is_boxed_enum and expr.op not in (
+                    elif not lsym.info.is_boxed and expr.op not in (
                         Kind.Eq, Kind.Ne
                     ):
                         report.error(
@@ -969,8 +973,9 @@ class Checker:
                         )
             elif isinstance(expr_left, ast.EnumLiteral):
                 expr_left.is_instance = True
-                self.check_expr(expr_left)
-                self.check_ctor(expr_left.sym, expr)
+                _ = self.check_expr(expr_left)
+                if expr_left.variant_info:
+                    self.check_ctor(expr_left.sym, expr)
             else:
                 report.error(
                     "invalid expression used in call expression", expr.pos
@@ -1344,12 +1349,12 @@ class Checker:
                 report.error("invalid value for typeswitch", expr.expr.pos)
                 report.note(f"expected enum or trait value, found `{expr_typ}`")
             elif expr_sym.kind == TypeKind.Enum:
-                if expr_sym.info.is_boxed_enum and not expr.is_typeswitch:
+                if expr_sym.info.is_boxed and not expr.is_typeswitch:
                     report.error(
                         "cannot use `switch` with a boxed enum value", expr.pos
                     )
                     report.note("use a typeswitch instead")
-                elif not expr_sym.info.is_boxed_enum and expr.is_typeswitch:
+                elif not expr_sym.info.is_boxed and expr.is_typeswitch:
                     report.error(
                         "cannot use typeswitch with a enum value", expr.pos
                     )
@@ -1451,7 +1456,7 @@ class Checker:
             else:
                 assert False
             has_args = len(expr.args) > 0
-            if not info.info.is_boxed_enum:
+            if not info.info.is_boxed:
                 report.error(f"`{expr.left}` not expects value", expr.left.pos)
             elif has_args:
                 if v.has_fields:

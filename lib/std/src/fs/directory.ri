@@ -7,7 +7,7 @@ import c/libc;
 
 import ./path;
 
-[boxed]
+@[boxed]
 public struct CannotMakeDirectoryError : Error {
     msg: string;
 
@@ -16,7 +16,7 @@ public struct CannotMakeDirectoryError : Error {
     }
 }
 
-[boxed]
+@[boxed]
 public struct CannotMakeFileError : Error {
     msg: string;
 
@@ -25,7 +25,7 @@ public struct CannotMakeFileError : Error {
     }
 }
 
-[boxed]
+@[boxed]
 public struct CouldNotOpenDirectoryError : Error {
     msg: string;
 
@@ -34,7 +34,7 @@ public struct CouldNotOpenDirectoryError : Error {
     }
 }
 
-[boxed]
+@[boxed]
 public struct EmptyStringError : Error {
     msg: string;
 

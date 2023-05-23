@@ -204,7 +204,7 @@ class EnumVariant:
 class EnumDecl:
     def __init__(
         self, docs, annotations, is_public, name, underlying_typ, bases,
-        variants, is_boxed_enum, decls, pos
+        variants, is_boxed, decls, pos
     ):
         self.docs = docs
         self.annotations = annotations
@@ -213,7 +213,7 @@ class EnumDecl:
         self.underlying_typ = underlying_typ
         self.bases = bases
         self.variants = variants
-        self.is_boxed_enum = is_boxed_enum
+        self.is_boxed = is_boxed
         self.decls = decls
         self.sym = None
         self.pos = pos
@@ -265,7 +265,7 @@ class ExtendDecl:
         self.decls = decls
         self.pos = pos
 
-class FnDecl:
+class FuncDecl:
     def __init__(
         self, docs, annotations, is_public, is_extern, is_unsafe, name,
         name_pos, args, ret_typ, stmts, scope, has_body = False,

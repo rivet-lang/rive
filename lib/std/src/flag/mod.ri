@@ -41,7 +41,7 @@ public struct Flag : traits.Stringable {
 /// for specifying the accepted options and their values. The user should finally
 /// call `rest := parser.finalize()!` to get the rest of the non optional arguments
 /// (if there are any left).
-[boxed]
+@[boxed]
 public struct FlagParser {
     /// The original arguments to be parsed.
     public original_args: []string;
@@ -64,6 +64,7 @@ public struct FlagParser {
     public mut min_free_args: usize;
     public mut application_name: string;
     public mut application_version: string;
+    public mut application_short_description: string;
     public mut application_description: string;
     public mut args_description: string;
     /// Whether passing undescribed arguments is allowed.
@@ -93,20 +94,36 @@ public struct FlagParser {
     }
 
     /// Set the application name to be used in 'usage' output.
-    [inline]
+    @[inline]
     public func set_application_name(mut self, name: string) {
         self.application_name = name;
     }
 
+    /// Set the application short description to be used in 'usage' output.
+    @[inline]
+    public func set_application_short_description(mut self, desc: string) {
+        self.application_short_description = desc;
+    }
+
+    /// Appends to the application description lines, shown in the help/usage screen.
+    @[inline]
+    public func add_description(mut self, desc: string) {
+        self.application_description = if self.application_description.is_empty() {
+            desc
+        } else {
+            self.application_description.concat("\n", desc)
+        };
+    }
+
     /// Set the application version to be used in 'usage' output.
-    [inline]
+    @[inline]
     public func set_version(mut self, version: string) {
         self.application_version = version;
     }
 
     /// Sets the description field of the parser. This field is usually shown when the
     /// `--help` option is given to the program.
-    [inline]
+    @[inline]
     public func set_arguments_description(mut self, description: string) {
         self.args_description = description;
     }
@@ -143,32 +160,22 @@ public struct FlagParser {
         self.max_free_args = max;
     }
 
-    /// Appends to the application description lines, shown in the help/usage screen.
-    [inline]
-    public func add_description(mut self, desc: string) {
-        self.application_description = if self.application_description.is_empty() {
-            desc
-        } else {
-            self.application_description.concat("\n", desc)
-        };
-    }
-
     /// Add an usage example. All examples will be listed in the help screen. If you
     /// do not give any examples, then a default usage will be shown, based on whether
     /// the application takes options and expects additional parameters.
-    [inline]
+    @[inline]
     public func add_usage_example(mut self, example: string) {
         self.usage_examples.push(example);
     }
 
     /// Add a footnote, that will be shown at the bottom of the help screen.
-    [inline]
+    @[inline]
     public func add_footer(mut self, footer: string) {
         self.footers.push(footer);
     }
 
     /// In most cases you do not need the first argument for flag parsing.
-    [inline]
+    @[inline]
     public func skip_executable(mut self) {
         self.args.delete(0);
     }
@@ -177,7 +184,7 @@ public struct FlagParser {
     /// `.allow_unknown_args()`, so that the subcommand arguments (which generally are
     /// not known to your parent program), will not cause the validation in `.finalize()`
     /// to fail.
-    [inline]
+    @[inline]
     public func allow_unknown_args(mut self) {
         self.allow_unknown_args = true;
     }
@@ -231,6 +238,10 @@ public struct FlagParser {
             }
         };
         mut sb := strings.Builder.new();
+        if !self.application_short_description.is_empty() {
+            sb.writeln(self.application_short_description);
+            sb.writeln();
+        }
         sb.writeln_fmt("Usage: {} [OPTIONS] {}", self.application_name, adesc);
         sb.writeln();
         if !self.application_description.is_empty() {

@@ -1,0 +1,11 @@
+{
+    "name": "core",
+    "description": "The Rivet core library",
+    "version": "0.1.0",
+    "authors": ["The Rivet Developers"],
+    "dependencies": [
+        {
+            "name": "libc"
+        }
+    ]
+}

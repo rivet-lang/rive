@@ -4,82 +4,82 @@
 
 import std/console;
 
-[inline]
+@[inline]
 public func stdout_support_styles() bool {
     return console.is_atty(1);
 }
 
-[inline]
+@[inline]
 public func stderr_support_styles() bool {
     return console.is_atty(2);
 }
 
-[inline]
+@[inline]
 public func fmt(msg: string, open: string, close: string) string {
     return "\x1b[{}m{}\x1b[{}m".fmt(open, msg, close);
 }
 
-[inline]
+@[inline]
 public func fmt_rgb(r: int32, g: int32, b: int32, msg: string, open: string, close: string) string {
     return "\x1b[{};2;{};{};{}m{}\x1b[{}m".fmt(open, r, g, b, msg, close);
 }
 
-[inline]
+@[inline]
 public func from_hex(hex: int32, msg: string) string {
     return fmt_rgb(hex >> 16, hex >> 8 & 0xFF, hex & 0xFF, msg, "38", "39");
 }
 
-[inline]
+@[inline]
 public func bg_rgb(r: int32, g: int32, b: int32, msg: string) string {
     return fmt_rgb(r, g, b, msg, "48", "49");
 }
 
-[inline]
+@[inline]
 public func bg_hex(hex: int32, msg: string) string {
     return fmt_rgb(hex >> 16, hex >> 8 & 0xFF, hex & 0xFF, msg, "48", "49");
 }
 
-[inline]
+@[inline]
 public func rgb(r: int32, g: int32, b: int32, msg: string) string {
     return fmt_rgb(r, g, b, msg, "38", "39");
 }
 
-[inline]
+@[inline]
 public func reset(msg: string) string {
     return fmt(msg, "0", "0");
 }
 
-[inline]
+@[inline]
 public func bold(msg: string) string {
     return fmt(msg, "1", "22");
 }
 
-[inline]
+@[inline]
 public func dim(msg: string) string {
     return fmt(msg, "2", "22");
 }
 
-[inline]
+@[inline]
 public func hidden(msg: string) string {
     return fmt(msg, "8", "28");
 }
 
-[inline]
+@[inline]
 public func italic(msg: string) string {
     return fmt(msg, "3", "23");
 }
 
-[inline]
+@[inline]
 public func inverse(msg: string) string {
     return fmt(msg, "7", "27");
 }
 
-[inline]
+@[inline]
 public func strikethrough(msg: string) string {
     return fmt(msg, "9", "29");
 }
 
-[inline]
+@[inline]
 public func underline(msg: string) string {
     return fmt(msg, "4", "24");
 }

@@ -102,10 +102,11 @@ class CGen:
             if not s.is_opaque:
                 self.structs.writeln(f"struct {s.name} {{")
                 for i, f in enumerate(s.fields):
+                    f_name = c_escape(f.name)
                     self.structs.write("  ")
-                    self.structs.write(self.gen_type(f.typ, f.name))
+                    self.structs.write(self.gen_type(f.typ, f_name))
                     if not isinstance(f.typ, (ir.Array, ir.Function)):
-                        self.structs.write(f" {f.name}")
+                        self.structs.write(f" {f_name}")
                     if i < len(s.fields) - 1:
                         self.structs.writeln(";")
                     else:
@@ -133,7 +134,7 @@ class CGen:
 
     def gen_decls(self, decls):
         for decl in decls:
-            if isinstance(decl, ir.FnDecl):
+            if isinstance(decl, ir.FuncDecl):
                 self.gen_fn_decl(decl)
             else:
                 self.gen_vtable(decl)

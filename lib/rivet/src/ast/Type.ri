@@ -7,11 +7,12 @@ import { Builder } from std/strings;
 
 import ../token;
 
+@[default_value(.Void())]
 public enum Type : traits.Stringable {
     Basic {
         mut sym: TypeSym;
         mut is_unresolved: bool;
-        mut expr: Expr = .Empty(token.noPos);
+        mut expr: Expr;
         pos: token.Pos;
     },
     Never: token.Pos,
@@ -57,7 +58,7 @@ public enum Type : traits.Stringable {
     Array {
         mut inner: Type;
         is_mut: bool;
-        mut size: Expr = .Empty(token.noPos);
+        mut size: Expr;
         mut size_value: usize;
         mut sym: TypeSym;
         pos: token.Pos;
@@ -87,7 +88,7 @@ public enum Type : traits.Stringable {
         mut sym: TypeSym;
         mut has_sym: bool;
 
-        [inline]
+        @[inline]
         func symbol(self) Func {
             return if self.has_sym and self.sym.info is .Func as func_sym {
                 func_sym
@@ -104,7 +105,7 @@ public enum Type : traits.Stringable {
         }
     };
 
-    [inline]
+    @[inline]
     public func ptr_or_ref_inner(self) Self {
         return switch self is {
             .Pointer as ptr => ptr.inner,
@@ -166,7 +167,7 @@ public enum Type : traits.Stringable {
         }
     }
 
-    [inline]
+    @[inline]
     public func symbol(self) ?TypeSym {
         // NOTE: `.Void`, `.None`, `.Never` and `.Anyptr` has no `TypeSym` value.
         return switch self is {
@@ -184,7 +185,7 @@ public enum Type : traits.Stringable {
         };
     }
 
-    [inline]
+    @[inline]
     public func is_boxed(self) bool {
         return if type_sym := self.symbol() {
             type_sym.is_boxed()
@@ -193,7 +194,7 @@ public enum Type : traits.Stringable {
         };
     }
 
-    [inline]
+    @[inline]
     public func is_void(self) bool {
         return switch self is {
             .Void, .Never => true,
@@ -202,17 +203,17 @@ public enum Type : traits.Stringable {
         };
     }
 
-    [inline]
+    @[inline]
     public func is_pointer(self) bool {
         return self is .Pointer or self is .Anyptr;
     }
 
-    [inline]
+    @[inline]
     public func is_ptr_or_ref(self) bool {
         return self.is_pointer() or self is .Reference;
     }
 
-    [inline]
+    @[inline]
     public func is_mut_ptr_or_ref(self) bool {
         return switch self is {
             .Pointer as ptr => ptr.is_mut,
@@ -222,7 +223,7 @@ public enum Type : traits.Stringable {
         };
     }
 
-    [inline]
+    @[inline]
     public func is_any_kind_of_pointer(self) bool {
         return switch self is {
             .Pointer, .Reference, .Anyptr, .Func => true,
@@ -234,7 +235,7 @@ public enum Type : traits.Stringable {
         };
     }
 
-    [inline]
+    @[inline]
     public func position(self) token.Pos {
         return switch self is {
             .Void, .None => token.noPos,
@@ -257,7 +258,7 @@ public enum Type : traits.Stringable {
         };
     }
 
-    [inline]
+    @[inline]
     public func ==(self, rhs: Self) bool {
         return switch self is {
             .None if rhs is .None => true,

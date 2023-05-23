@@ -107,36 +107,37 @@ class Parser:
         if parse_mod_annotations and self.mod_sym.annotations == None:
             self.mod_sym.annotations = ast.Annotations()
         annotations = ast.Annotations()
-        if parse_mod_annotations:
-            self.expect(Kind.Bang)
-        if self.accept(Kind.Lbracket):
-            while True:
-                args = []
-                pos = self.tok.pos
-                if self.accept(Kind.KwUnsafe):
-                    annotation_name = "unsafe"
-                else:
-                    annotation_name = self.parse_name()
-                if self.accept(Kind.Lparen):
-                    while True:
-                        if self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
-                            name = self.parse_name()
-                            self.expect(Kind.Colon)
-                        else:
-                            name = ""
-                        expr = self.parse_expr()
-                        args.append(ast.AnnotationArg(name, expr))
-                        if not self.accept(Kind.Comma):
-                            break
-                    self.expect(Kind.Rparen)
-                annotation = ast.Annotation(annotation_name, args, pos)
-                if parse_mod_annotations:
-                    self.mod_sym.annotations.add(annotation)
-                else:
-                    annotations.add(annotation)
-                if not self.accept(Kind.Semicolon):
-                    break
-            self.expect(Kind.Rbracket)
+        while self.accept(Kind.At):
+            if parse_mod_annotations:
+                self.expect(Kind.Bang)
+            if self.accept(Kind.Lbracket):
+                while True:
+                    args = []
+                    pos = self.tok.pos
+                    if self.accept(Kind.KwUnsafe):
+                        annotation_name = "unsafe"
+                    else:
+                        annotation_name = self.parse_name()
+                    if self.accept(Kind.Lparen):
+                        while True:
+                            if self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
+                                name = self.parse_name()
+                                self.expect(Kind.Colon)
+                            else:
+                                name = ""
+                            expr = self.parse_expr()
+                            args.append(ast.AnnotationArg(name, expr))
+                            if not self.accept(Kind.Comma):
+                                break
+                        self.expect(Kind.Rparen)
+                    annotation = ast.Annotation(annotation_name, args, pos)
+                    if parse_mod_annotations:
+                        self.mod_sym.annotations.add(annotation)
+                    else:
+                        annotations.add(annotation)
+                    if not self.accept(Kind.Semicolon):
+                        break
+                self.expect(Kind.Rbracket)
         return annotations
 
     def is_public(self):
@@ -162,7 +163,7 @@ class Parser:
     def parse_decl(self):
         doc_comment = self.parse_doc_comment()
         annotations = self.parse_annotations(
-            self.tok.kind == Kind.Bang and self.peek_tok.kind == Kind.Lbracket
+            self.tok.kind == Kind.At and self.peek_tok.kind == Kind.Bang
         )
         is_public = self.is_public()
         pos = self.tok.pos
@@ -348,7 +349,7 @@ class Parser:
             self.expect(Kind.Lbrace)
             variants = []
             decls = []
-            is_boxed_enum = False
+            is_boxed = False
             while True:
                 v_name = self.parse_name()
                 has_typ = False
@@ -357,7 +358,7 @@ class Parser:
                 variant_decls = []
                 if self.accept(Kind.Lbrace):
                     has_typ = True
-                    is_boxed_enum = True
+                    is_boxed = True
                     old_inside_enum_variant_with_fields = self.inside_enum_variant_with_fields
                     self.inside_enum_variant_with_fields = True
                     while not self.accept(Kind.Rbrace):
@@ -365,7 +366,7 @@ class Parser:
                     self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields
                 elif self.accept(Kind.Colon):
                     has_typ = True
-                    is_boxed_enum = True
+                    is_boxed = True
                     typ = self.parse_type()
                 elif self.accept(Kind.Assign):
                     variant = self.parse_expr()
@@ -382,7 +383,7 @@ class Parser:
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
                 doc_comment, annotations, is_public, name, underlying_typ,
-                bases, variants, is_boxed_enum, decls, pos
+                bases, variants, is_boxed, decls, pos
             )
         elif self.accept(Kind.KwExtend):
             pos = self.prev_tok.pos
@@ -545,7 +546,7 @@ class Parser:
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
         self.close_scope()
-        return ast.FnDecl(
+        return ast.FuncDecl(
             doc_comment, annotations, is_public, self.inside_extern, is_unsafe,
             name, pos, args, ret_typ, stmts, sc, has_body, is_method,
             self_is_mut, self_is_ref, has_named_args, self.mod_sym.is_root

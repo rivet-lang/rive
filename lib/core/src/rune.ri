@@ -54,7 +54,7 @@ extend rune : Stringable {
         return res;
     }
 
-    [inline]
+    @[inline]
     public func len_utf8(self) usize {
         return len_utf8(@cast(uint32, self));
     }
@@ -100,7 +100,7 @@ func utf32_decode_to_buffer(code: rune, buffer: [*]mut uint8) usize {
     }
 }
 
-[inline]
+@[inline]
 func len_utf8(code: uint32) usize {
     return if code < MAX_ONE_B {
         1
@@ -113,7 +113,7 @@ func len_utf8(code: uint32) usize {
     };
 }
 
-[boxed]
+@[boxed]
 public struct TooManyBytesError : Error {
     msg: string;
 

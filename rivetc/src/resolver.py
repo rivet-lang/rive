@@ -63,6 +63,10 @@ class Resolver:
                                     )
                                     continue
                             variant.value = str(i)
+                    for annotation in decl.annotations.annotations:
+                        if annotation.name == "default_value":
+                            decl.sym.default_value = annotation.args[0].expr
+                            self.resolve_expr(decl.sym.default_value)
                     for base in decl.bases:
                         if self.resolve_type(base):
                             base_sym = base.symbol()
@@ -75,7 +79,10 @@ class Resolver:
                     self.self_sym = decl.sym
                     self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.TraitDecl):
-                self.self_sym = decl.sym
+                for annotation in decl.annotations.annotations:
+                    if annotation.name == "default_value":
+                        decl.sym.default_value = annotation.args[0].expr
+                        self.resolve_expr(decl.sym.default_value)
                 for base in decl.bases:
                     if self.resolve_type(base):
                         base_sym = base.symbol()
@@ -85,6 +92,7 @@ class Resolver:
                                 if base_sym not in impl.info.traits:
                                     base_sym.info.implement(impl)
                                     impl.info.traits.append(base_sym)
+                self.self_sym = decl.sym
                 self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.StructDecl):
                 self.self_sym = decl.sym
@@ -114,7 +122,7 @@ class Resolver:
                             elif self.self_sym.kind == sym.TypeKind.Struct and self.self_sym.kind == base_sym.kind:
                                 self.self_sym.info.bases.append(base_sym)
                     self.resolve_decls(decl.decls)
-            elif isinstance(decl, ast.FnDecl):
+            elif isinstance(decl, ast.FuncDecl):
                 if decl.is_method:
                     self_typ = type.Type(self.self_sym)
                     if decl.self_is_ref:

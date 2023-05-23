@@ -15,7 +15,7 @@ func new_sym_id() usize {
     return res;
 }
 
-[boxed]
+@[boxed]
 public struct DuplicateSymbolError : Error {
     msg: string;
 
@@ -28,7 +28,7 @@ public enum ABI as uint8 : traits.Stringable {
     Rivet,
     C;
 
-    [inline]
+    @[inline]
     public func from_string(abi: string) ?ABI {
         return switch abi {
             "C" => .C,
@@ -37,7 +37,7 @@ public enum ABI as uint8 : traits.Stringable {
         };
     }
 
-    [inline]
+    @[inline]
     public func to_string(&self) string {
         return switch self.* {
             .C => "C",
@@ -46,6 +46,7 @@ public enum ABI as uint8 : traits.Stringable {
     }
 }
 
+@[default_value(InvalidSym())]
 public trait Sym {
     id: usize = new_sym_id();
     abi: ABI;
@@ -128,17 +129,17 @@ public trait Sym {
     }
 }
 
-[boxed]
+@[boxed]
 public struct InvalidSym : Sym {}
 
-[boxed]
+@[boxed]
 public struct SymRef : Sym {
-    public mut ref: Sym = InvalidSym();
-    public mut ref_expr: Expr = .Empty(token.noPos);
+    public mut ref: Sym;
+    public mut ref_expr: Expr;
     public mut ref_resolved: bool;
 }
 
-[boxed]
+@[boxed]
 public struct Module : Sym {
     public func add_or_get_array(mut self, elem_typ: Type, size: usize, is_mut: bool) TypeSym {
         unique_name := if is_mut {
@@ -278,16 +279,16 @@ public struct Module : Sym {
         return type_sym;
     }
 
-    [inline]
+    @[inline]
     public func is_core(self) bool {
         return self.name == "core";
     }
 }
 
-[boxed]
+@[boxed]
 public struct Const : Sym {
-    public mut expr: Expr = .Empty(token.noPos);
-    public mut evaled_expr: Expr = .Empty(token.noPos);
+    public mut expr: Expr;
+    public mut evaled_expr: Expr;
     public mut has_evaled_size: bool;
     public mut evaled_size: isize;
     public mut type: Type;
@@ -301,7 +302,7 @@ public enum VarLevel as uint8 {
     Local // inside function
 }
 
-[boxed]
+@[boxed]
 public struct Var : Sym {
     public is_extern: bool;
     public is_mut: bool;
@@ -314,32 +315,32 @@ public struct Var : Sym {
     public pos: token.Pos;
 }
 
-[boxed]
+@[boxed]
 public struct Arg {
     public name: string;
     public is_mut: bool;
     public is_self: bool;
     public has_def_expr: bool;
-    public mut def_expr: Expr = .Empty(token.noPos);
+    public mut def_expr: Expr;
     public pos: token.Pos;
-    public mut type: Type = .Void();
+    public mut type: Type;
 }
 
-[boxed]
+@[boxed]
 public struct Func : Sym {
     public is_extern: bool;
     public is_unsafe: bool;
     public is_main: bool;
     public is_method: bool;
     public is_variadic: bool;
-    public mut self_type: Type = .Void();
+    public mut self_type: Type;
     public self_is_mut: bool;
     public self_is_ref: bool;
     public self_pos: token.Pos;
     public args: []Arg;
     public has_named_args: bool;
     public has_body: bool;
-    public ret_type: Type = .Void();
+    public ret_type: Type;
     public pos: token.Pos;
 
     public func get_arg(self, idx: usize) Arg {
@@ -361,12 +362,12 @@ public struct Func : Sym {
         return len;
     }
 
-    [inline]
+    @[inline]
     public func kind(self) string {
         return if self.is_method { "method" } else { "function" };
     }
 
-	[inline]
+	@[inline]
     public func type(self, mut universe: Module) Type {
         return .Func(
             is_method: self.is_method,

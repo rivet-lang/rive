@@ -1,8 +1,0 @@
-import { Project, Version } from rivet/build;
-
-var project = Project(
-    name: "rivet",
-    description: "The Rivet compiler",
-    version: Version.build(0, 1, 0),
-    authors: ["The Rivet Developers"]
-);

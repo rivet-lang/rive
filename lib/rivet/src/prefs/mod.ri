@@ -42,7 +42,7 @@ public enum LinkMode as uint8 {
     Dynamic
 }
 
-[boxed]
+@[boxed]
 public struct Prefs {
     // Target info
     public mut target_os: sys.OS = sys.os();
@@ -92,9 +92,9 @@ public struct Prefs {
         fp.set_arguments_description("[INPUT]");
 
         if is_test {
-            fp.add_description("Runs `test` declarations in the given [INPUT].\n");
+            fp.set_application_short_description("Runs `test` declarations in the given [INPUT].");
         } else if run_output {
-            fp.add_description("Equivalent to running `rivet build` and running the compiled executable.\n");
+            fp.set_application_short_description("Equivalent to running `rivet build` and running the compiled executable.");
             fp.add_description("The exit status of `run` will be:");
             fp.add_description("   - `1` if the compilation failed.");
             fp.add_description("   - The exit code of the compiled executable otherwise.\n");

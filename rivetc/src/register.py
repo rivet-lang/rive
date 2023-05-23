@@ -134,7 +134,7 @@ class Register:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.EnumDecl):
                 try:
-                    info = sym.EnumInfo(decl.underlying_typ, decl.is_boxed_enum)
+                    info = sym.EnumInfo(decl.underlying_typ, decl.is_boxed)
                     decl.sym = self.sym.add_and_return(
                         sym.Type(decl.is_public, decl.name, TypeKind.Enum)
                     )
@@ -210,7 +210,7 @@ class Register:
                     report.error(
                         f"invalid type `{decl.typ}` to extend", decl.pos
                     )
-            elif isinstance(decl, ast.FnDecl):
+            elif isinstance(decl, ast.FuncDecl):
                 try:
                     decl.sym = self.sym.add_and_return(
                         sym.Fn(

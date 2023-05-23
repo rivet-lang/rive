@@ -12,12 +12,12 @@ public const CR: uint8 = 13;
 
 var stderrSupportStyles = styles.stderr_support_styles();
 
-[inline]
+@[inline]
 public func min(a: usize, b: usize) usize {
    return if a < b { a } else { b };
 }
 
-[inline]
+@[inline]
 public func max(a: usize, b: usize) usize {
    return if a > b { a } else { b };
 }
@@ -56,38 +56,38 @@ public func info(msg: string, args: ...traits.Stringable) {
    );
 }
 
-[inline]
+@[inline]
 public func bold(msg: string) string {
     return if stderrSupportStyles { styles.bold(msg) } else { msg };
 }
 
-[inline]
+@[inline]
 public func red(msg: string) string {
     return if stderrSupportStyles { styles.red(msg) } else { msg };
 }
 
-[inline]
+@[inline]
 public func yellow(msg: string) string {
     return if stderrSupportStyles { styles.yellow(msg) } else { msg };
 }
 
-[inline]
+@[inline]
 public func cyan(msg: string) string {
     return if stderrSupportStyles { styles.cyan(msg) } else { msg };
 }
 
-[inline]
+@[inline]
 public func blue(msg: string) string {
     return if stderrSupportStyles { styles.blue(msg) } else { msg };
 }
 
-[inline]
+@[inline]
 public func green(msg: string) string {
     return if stderrSupportStyles { styles.green(msg) } else { msg };
 }
 
 /// Rounds the number `n` up to the next mult
-/// NOTE: `multiple` must be a power of 2.[inline]
+/// NOTE: `multiple` must be a power of 2.@[inline]
 public func round_up(n: usize, multiple: usize) usize {
     n_ := @cast(isize, n);
     multiple_ := @cast(isize, multiple);

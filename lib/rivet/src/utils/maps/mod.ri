@@ -4,13 +4,13 @@
 
 // TODO: remove file, use Map![K, V] instead
 
-[boxed]
+@[boxed]
 struct StringUsize {
     public key: string;
     public mut value: usize;
 }
 
-[boxed]
+@[boxed]
 public struct MapStringUsize {
     mut pairs: []mut StringUsize;
 
@@ -43,19 +43,19 @@ public struct MapStringUsize {
         }
     }
 
-    [inline]
+    @[inline]
     public func contains(self, key: string) bool {
         return self.get(key) !is none;
     }
 
-    [inline]
+    @[inline]
     public func len(self) usize {
         return self.pairs.len;
     }
 }
 
 
-[boxed]
+@[boxed]
 struct StringArrayOfStrings {
     public key: string;
     public mut value: []string;
@@ -65,7 +65,7 @@ public struct MapStringArrayOfStringsIterator {
     ref: MapStringArrayOfStrings;
     mut idx: usize;
 
-    [inline]
+    @[inline]
     public func next(mut self) ?StringArrayOfStrings {
         return if self.idx < self.ref.len() {
             idx := self.idx;
@@ -77,7 +77,7 @@ public struct MapStringArrayOfStringsIterator {
     }
 }
 
-[boxed]
+@[boxed]
 public struct MapStringArrayOfStrings {
     mut pairs: []mut StringArrayOfStrings;
 
@@ -114,24 +114,24 @@ public struct MapStringArrayOfStrings {
         }
     }
 
-    [inline]
+    @[inline]
     public func contains(self, key: string) bool {
         return self.get(key) !is none;
     }
 
-    [inline]
+    @[inline]
     public func len(self) usize {
         return self.pairs.len;
     }
 }
 
-[boxed]
+@[boxed]
 struct StringBool {
     public key: string;
     public mut value: bool;
 }
 
-[boxed]
+@[boxed]
 public struct MapStringBool {
     mut pairs: []mut StringBool;
 
@@ -164,12 +164,12 @@ public struct MapStringBool {
         }
     }
 
-    [inline]
+    @[inline]
     public func contains(self, key: string) bool {
         return self.get(key) !is none;
     }
 
-    [inline]
+    @[inline]
     public func len(self) usize {
         return self.pairs.len;
     }

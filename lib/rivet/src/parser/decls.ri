@@ -23,47 +23,49 @@ extend Parser {
         mut self, parse_mod_annotations: bool = false
     ) ast.Annotations {
         mut annotations := ast.Annotations();
-        if parse_mod_annotations {
-            self.expect(.Bang);
-        }
-        if self.accept(.Lbracket) {
-            while {
-                mut args := @vec(ast.AnnotationArgument);
-                pos := self.tok.pos;
-                annotation_name := if self.accept(.KwUnsafe) {
-                    "unsafe"
-                } else {
-                    self.parse_name()
-                };
-                if self.accept(.Lparen) {
-                    while {
-                        name := if self.tok.kind == .Name and self.peek_tok.kind == .Colon {
-                            n := self.parse_name();
-                            self.expect(.Colon);
-                            n
-                        } else {
-                            ""
-                        };
-                        args.push(ast.AnnotationArgument(name, self.parse_expr()));
-                        if !self.accept(.Comma) {
-                            break;
-                        }
-                    }
-                    self.expect(.Rparen);
-                }
-                annotations.add(ast.Annotation(annotation_name, args, pos)) catch |err| {
-                    report.error(err.to_string(), pos);
-                };
-                if !self.accept(.Semicolon) {
-                    break;
-                }
+        while self.accept(.At) {
+            if parse_mod_annotations {
+                self.expect(.Bang);
             }
-            self.expect(.Rbracket);
+            if self.accept(.Lbracket) {
+                while {
+                    mut args := @vec(ast.AnnotationArgument);
+                    pos := self.tok.pos;
+                    annotation_name := if self.accept(.KwUnsafe) {
+                        "unsafe"
+                    } else {
+                        self.parse_name()
+                    };
+                    if self.accept(.Lparen) {
+                        while {
+                            name := if self.tok.kind == .Name and self.peek_tok.kind == .Colon {
+                                n := self.parse_name();
+                                self.expect(.Colon);
+                                n
+                            } else {
+                                ""
+                            };
+                            args.push(ast.AnnotationArgument(name, self.parse_expr()));
+                            if !self.accept(.Comma) {
+                                break;
+                            }
+                        }
+                        self.expect(.Rparen);
+                    }
+                    annotations.add(ast.Annotation(annotation_name, args, pos)) catch |err| {
+                        report.error(err.to_string(), pos);
+                    };
+                    if !self.accept(.Semicolon) {
+                        break;
+                    }
+                }
+                self.expect(.Rbracket);
+            }
         }
         return annotations;
     }
 
-    [inline]
+    @[inline]
     func is_public(mut self) bool {
         is_pub := self.accept(.KwPublic);
         return self.inside_trait or self.inside_enum_variant_with_fields or is_pub;
@@ -93,7 +95,7 @@ extend Parser {
     func parse_decl(mut self) ast.Decl {
         doc_comment := self.parse_doc_comment();
         annotations := self.parse_annotations(
-            self.tok.kind == .Bang and self.peek_tok.kind == .Lbracket
+            self.tok.kind == .At and self.peek_tok.kind == .Bang
         );
         is_public := self.is_public();
         mut pos := self.tok.pos;
