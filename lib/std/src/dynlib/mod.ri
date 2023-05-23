@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 #if _LINUX_
-![link_library("dl")]
+@![link_library("dl")]
 #endif
 
 import c/libc;
@@ -14,7 +14,11 @@ public var sharedLibExtension = get_shared_library_extension();
 /// libraries.
 @[inline]
 public func library_name(libname: string) string {
-    return libname.concat(sharedLibExtension);
+    return if libname.ends_with(sharedLibExtension) {
+        libname
+    } else {
+        libname.concat(sharedLibExtension)
+    };
 }
 
 @[boxed]
