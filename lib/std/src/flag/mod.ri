@@ -64,6 +64,7 @@ public struct FlagParser {
     public mut min_free_args: usize;
     public mut application_name: string;
     public mut application_version: string;
+    public mut application_short_description: string;
     public mut application_description: string;
     public mut args_description: string;
     /// Whether passing undescribed arguments is allowed.
@@ -96,6 +97,22 @@ public struct FlagParser {
     [inline]
     public func set_application_name(mut self, name: string) {
         self.application_name = name;
+    }
+
+    /// Set the application short description to be used in 'usage' output.
+    [inline]
+    public func set_application_short_description(mut self, desc: string) {
+        self.application_short_description = desc;
+    }
+
+    /// Appends to the application description lines, shown in the help/usage screen.
+    [inline]
+    public func add_description(mut self, desc: string) {
+        self.application_description = if self.application_description.is_empty() {
+            desc
+        } else {
+            self.application_description.concat("\n", desc)
+        };
     }
 
     /// Set the application version to be used in 'usage' output.
@@ -141,16 +158,6 @@ public struct FlagParser {
         }
         self.min_free_args = min;
         self.max_free_args = max;
-    }
-
-    /// Appends to the application description lines, shown in the help/usage screen.
-    [inline]
-    public func add_description(mut self, desc: string) {
-        self.application_description = if self.application_description.is_empty() {
-            desc
-        } else {
-            self.application_description.concat("\n", desc)
-        };
     }
 
     /// Add an usage example. All examples will be listed in the help screen. If you
@@ -231,6 +238,10 @@ public struct FlagParser {
             }
         };
         mut sb := strings.Builder.new();
+        if !self.application_short_description.is_empty() {
+            sb.writeln(self.application_short_description);
+            sb.writeln();
+        }
         sb.writeln_fmt("Usage: {} [OPTIONS] {}", self.application_name, adesc);
         sb.writeln();
         if !self.application_description.is_empty() {

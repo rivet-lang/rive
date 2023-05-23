@@ -5,3 +5,47 @@
 import core;
 
 public alias Builder = core.StringBuilder;
+
+func fill_vector(len: usize) []mut int32 {
+    mut vec := @vec(mut int32, len);
+    mut i: usize := 0;
+    while i < len : i += 1 {
+        vec.push(@cast(int32, i));
+    }
+    return vec;
+}
+
+/// Uses levenshtein distance algorithm to calculate the distance between
+/// two strings (lower is closer).
+public func levenshtein_distance(a: string, b: string) int32 {
+    f := fill_vector(b.len + 1);
+    for ca in a.as_bytes() {
+        mut j: usize := 1;
+        mut fj1 := f[0];
+        f[0] += 1;
+        for cb in b.as_bytes() {
+            mut mn := if f[j] + 1 <= f[j - 1] + 1 {
+                f[j] + 1
+            } else {
+                f[j - 1] + 1
+            };
+            mn = if cb != ca {
+                if mn <= fj1 + 1 { mn } else { fj1 + 1 }
+            } else {
+                if mn <= fj1 { mn } else { fj1 }
+            };
+            fj1 = f[j];
+            f[j] = mn;
+            j += 1;
+        }
+    }
+    return f[f.len - 1];
+}
+
+/// Use levenshtein distance algorithm to calculate how similar two strings
+/// are as a percentage (higher is closer).
+public func levenshtein_distance_percentage(a: string, b: string) float32 {
+    d := levenshtein_distance(a, b);
+    l := if a.len >= b.len { a.len } else { b.len };
+    return (1.00 - @cast(float32, d) / @cast(float32, l)) * 100.00;
+}

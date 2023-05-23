@@ -2,7 +2,9 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-var help = "Usage: rivet [COMMAND] [OPTIONS]
+var help = "Rivet is a tool for managing Rivet source code.
+
+Usage: rivet [COMMAND] [OPTIONS]
 
 Commands:
    new              Sets up a new Rivet project.
