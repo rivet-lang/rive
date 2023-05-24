@@ -1,0 +1,8 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+@[inline]
+public func bool_to_usize(b: bool) usize {
+    return if b { 1 } else { 0 };
+}
