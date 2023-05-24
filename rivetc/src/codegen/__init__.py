@@ -181,23 +181,23 @@ class Codegen:
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
             self.cur_fn = main_fn
             self.cur_fn.add_call("_R4core16init_string_litsF")
-            test_runner = ir.Ident(ir.TEST_RUNNER_T, "_test_runner")
-            main_fn.alloca(test_runner)
-            tests_field = ir.Selector(ir.VEC_T, test_runner, ir.Name("tests"))
+            testRunner = ir.Ident(ir.TEST_RUNNER_T, "_testRunner")
+            main_fn.alloca(testRunner)
+            tests_field = ir.Selector(ir.VEC_T, testRunner, ir.Name("tests"))
             main_fn.store(
-                ir.Selector(ir.UINT64_T, test_runner, ir.Name("ok_tests")),
+                ir.Selector(ir.UINT64_T, testRunner, ir.Name("ok_tests")),
                 ir.IntLit(ir.UINT64_T, "0")
             )
             main_fn.store(
-                ir.Selector(ir.UINT64_T, test_runner, ir.Name("fail_tests")),
+                ir.Selector(ir.UINT64_T, testRunner, ir.Name("fail_tests")),
                 ir.IntLit(ir.UINT64_T, "0")
             )
             main_fn.store(
-                ir.Selector(ir.UINT64_T, test_runner, ir.Name("skip_tests")),
+                ir.Selector(ir.UINT64_T, testRunner, ir.Name("skip_tests")),
                 ir.IntLit(ir.UINT64_T, "0")
             )
             tests_vec = ir.Selector(
-                ir.VEC_T.ptr(True), test_runner, ir.Name("tests")
+                ir.VEC_T.ptr(True), testRunner, ir.Name("tests")
             )
             test_t = ir.TEST_T.ptr()
             gtests_array = []
@@ -250,7 +250,7 @@ class Codegen:
                     argc,
                     ir.Inst(ir.InstKind.Cast,
                             [argv, ir.UINT8_T.ptr().ptr()]),
-                    ir.Inst(ir.InstKind.GetRef, [test_runner])
+                    ir.Inst(ir.InstKind.GetRef, [testRunner])
                 ]
             )
         else:
