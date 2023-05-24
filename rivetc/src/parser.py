@@ -1282,10 +1282,6 @@ class Parser:
             return type.Fn(
                 False, sym.ABI.Rivet, False, args, False, ret_typ, False, False
             )
-        elif self.accept(Kind.Amp):
-            # references
-            is_mut = self.accept(Kind.KwMut)
-            return type.Ptr(self.parse_type(), is_mut)
         elif self.accept(Kind.Mul):
             # pointers
             is_mut = self.accept(Kind.KwMut)

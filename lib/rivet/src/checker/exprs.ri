@@ -489,7 +489,7 @@ extend Checker {
                 right := unary.right.clean_paren();
                 if right is .Index as index {
                     if index.left_type is .Pointer and !expected_pointer {
-                        report.error("cannot reference a pointer indexing", unary.pos);
+                        report.error("cannot take the address of a pointer indexing", unary.pos);
                     }
                     index.is_ref = true;
                 } else if unary.type is .Pointer {
@@ -500,7 +500,7 @@ extend Checker {
                     }
                     right_sym := unary.type.symbol()?;
                     if right_sym.is_boxed() {
-                        report.error("cannot reference a boxed value", unary.pos);
+                        report.error("cannot take the address of a boxed value", unary.pos);
                     }
                 }
                 unary.type = .Pointer(unary.type, unary.is_mut_ptr, indexable_pointer);
