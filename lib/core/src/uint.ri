@@ -5,6 +5,12 @@
 extend uint8 : Stringable {
     public const MAX: uint8 = 255;
 
+    /// Checks if the value is within the ASCII range.
+    @[inline]
+    public func is_ascii(self) bool {
+        return self < 0x80;
+    }
+
     /// Returns `true` if the byte is a white space character. The following
     /// list is considered white space characters: ' ', '\t', '\n', '\v', '\f',
     /// '\r', 0x85, 0xA0
@@ -71,6 +77,12 @@ extend uint8 : Stringable {
         return @cast(usize, (@cast(uint64, 0xE5000000) >> ((self >> 3) & 0x1E) & 3) + 1);
     }
 
+    /// Returns the value of `self` as a valid `rune`.
+    @[inline]
+    public func to_rune(self) !rune {
+        return rune.from_uint32(@cast(uint32, self))!;
+    }
+
     /// Returns the value of `self` as a ASCII `string`.
     @[inline]
     public func to_ascii(self) string {
@@ -96,6 +108,12 @@ extend uint16 : Stringable {
 
 extend uint32 : Stringable {
     public const MAX: uint32 = 4294967295;
+
+    /// Returns the value of `self` as a valid `rune`.
+    @[inline]
+    public func to_rune(self) !rune {
+        return rune.from_uint32(self)!;
+    }
 
     /// Returns the value of `self` as a string.
     public func to_string(&self) string {

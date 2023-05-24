@@ -8,7 +8,7 @@ import ../report;
 extend Checker {
     func check_builtin_call(mut self, mut builtin_call: ast.Expr.BuiltinCall) ast.Type {
         builtin_call.type = if builtin_call.builtin is .Func as b_func {
-            if b_func.is_unsafe and !self.inside_unsafe {
+            if b_func.is_unsafe and !self.inside_unsafe() {
                 report.warn(
                     "builtin function `{}` should be called inside `unsafe` block".fmt(
                         b_func.name
@@ -95,6 +95,7 @@ extend Checker {
                 }
             }
             switch b_func.name {
+                "cast" => self.check_builtin_cast(builtin_call),
                 "vec" if builtin_call.args[0].expr is .Type as vec_t =>
                     return_type = .Basic(self.table.universe.add_or_get_vec(
                         vec_t, builtin_call.vec_is_mut
@@ -106,5 +107,87 @@ extend Checker {
             .Void()
         };
         return builtin_call.type;
+    }
+
+    func check_builtin_cast(mut self, builtin_call: ast.Expr.BuiltinCall) {
+        to_type := builtin_call.args[0].type;
+        from_type := builtin_call.args[1].type;
+        if to_type == from_type {
+            report.warn(
+                "attempt to cast an expression that is already of type `{}`".fmt(to_type),
+                builtin_call.pos
+            );
+        } else if (from_type is .Pointer and to_type is .Anyptr)
+            or (from_type is .Anyptr and to_type is .Pointer)
+            or (from_type is .Pointer and to_type is .Pointer)
+            or (from_type is .Pointer and self.table.is_int(to_type)) {
+            if !self.inside_unsafe() {
+                report.error(
+                    "cast type `{}` to `{}` is unsafe and requires `unsafe` block".fmt(
+                        from_type, to_type
+                    ), builtin_call.pos
+                );
+            }
+        } else if from_ts := from_type.symbol() {
+            switch from_ts.info is {
+                .Trait as mut trait_info => if to_ts := to_type.symbol() {
+                    if to_ts in trait_info.implements {
+                        trait_info.mark_has_objects();
+                        return;
+                    }
+                },
+                .Enum as enum_info => {
+                    if enum_info.is_boxed and enum_info.get_variant_by_type(to_type) is none {
+                        report.error(
+                            "cannot cast type `{}` to `{}`".fmt(from_type, to_type),
+                            builtin_call.pos
+                        );
+                    }
+                },
+                else => if ((self.table.is_float(from_type) and self.table.is_int(to_type))
+                    or (self.table.is_int(from_type) and self.table.is_float(to_type))
+                    // ===============================================================
+                    or (self.table.is_int(from_type) and self.table.is_int(to_type))
+                    or (self.table.is_float(from_type) and self.table.is_float(to_type))
+                    // ===============================================================
+                    or (from_type == self.table.rune_t and to_type == self.table.uint32_t)
+                    or (from_type == self.table.rune_t and to_type == self.table.int32_t)
+                    or (from_type == self.table.uint32_t and to_type == self.table.rune_t
+                        and self.inside_unsafe())) {
+                    return; // TODO: advanced check
+                } else if to_ts := to_type.symbol() {
+                    mod_sym := self.sym.module()?;
+                    if mod_sym.is_core() {
+                        if (from_ts == self.table.vector_sym and to_ts.info is .Vector)
+                            or (to_ts == self.table.vector_sym and from_ts.info is .Vector) {
+                            return; // Valid inside `core` module
+                        }
+                    }
+                    switch to_ts.info is {
+                        .Enum as enum_info2 if !enum_info2.is_boxed => {
+                            if self.table.is_int(to_type) and !self.inside_unsafe() {
+                                report.warn(
+                                    "casting numbers to enums should be done inside `unsafe` blocks",
+                                    builtin_call.pos
+                                );
+                            }
+                        },
+                        else => report.error(
+                            "cannot cast type `{}` to `{}`".fmt(from_type, to_type),
+                            builtin_call.pos
+                        )
+                    }
+                } else {
+                    report.error(
+                        "cannot cast type `{}` to `{}`".fmt(from_type, to_type),
+                        builtin_call.pos
+                    );
+                }
+            }
+        } else {
+            report.error(
+                "cannot cast type `{}` to `{}`".fmt(from_type, to_type), builtin_call.pos
+            );
+        }
     }
 }

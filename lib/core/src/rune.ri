@@ -14,22 +14,26 @@ extend rune : Stringable {
     /// decoding error.
     public const REPLACEMENT_CHARACTER: rune = 0xFFFD;
 
+    /// Converts a `uint32` to a `rune`.
+    ///
+    /// Note that all runes are valid uint32s, and can be cast to one. However, the
+    /// reverse is not true: not all valid uint32s are valid runes. `from_uint32()`
+    /// will return `none` if the input is not a valid value for a rune.
     public func from_uint32(i: uint32) !rune {
         if (i > @cast(uint32, Self.MAX)) or (i >= 0xD800 and i <= 0xDFFF) {
             return RuneFromU32Error();
         }
-        return @cast(rune, i);
+        return unsafe { @cast(rune, i) };
     }
 
     /// Converts a digit in the given radix to a `rune`.
     ///
-    /// A 'radix' here is sometimes also called a 'base'. A radix of two
-    /// indicates a binary number, a radix of ten, decimal, and a radix of
-    /// sixteen, hexadecimal, to give some common values. Arbitrary
-    /// radices are supported.
+    /// A `radix` here is sometimes also called a `base`. A radix of two indicates
+    /// a binary number, a radix of ten, decimal, and a radix of sixteen, hexadecimal,
+    //// to give some common values. Arbitrary radices are supported.
     ///
-    /// `rune_from_digit()` will return `none` if the input is not a digit
-    /// in the given radix.
+    /// `rune_from_digit()` will return `none` if the input is not a digit in the given
+    /// radix.
     ///
     /// Panics if given a radix larger than 36.
     public func from_digit(num: uint32, radix: uint32) ?rune {
@@ -38,11 +42,9 @@ extend rune : Stringable {
         }
         if num < radix {
             num_ := @cast(uint8, num);
-            return if num_ < 10 {
-                @cast(rune, b'0' + num_)
-            } else {
-                @cast(rune, b'a' + num_ - 10)
-            };
+            if res := (if num_ < 10 { b'0' + num_ } else { b'a' + num_ - 10 }).to_rune() {
+                return res;
+            }
         }
         return none;
     }
@@ -50,7 +52,7 @@ extend rune : Stringable {
     public func as_bytes(self) []uint8 {
         res := @vec(uint8, 5);
         res_v := @cast(Vector, res);
-        res_v.len = utf32_decode_to_buffer(self, @cast([*]mut uint8, res_v.ptr));
+        res_v.len = utf32_decode_to_buffer(self, unsafe { @cast([*]mut uint8, res_v.ptr) });
         return res;
     }
 
@@ -61,7 +63,7 @@ extend rune : Stringable {
 
     public func to_string(&self) string {
         len := self.len_utf8();
-        res := @cast([*]mut uint8, internal_alloc(len + 1));
+        res := unsafe { @cast([*]mut uint8, internal_alloc(len + 1)) };
         unsafe {
             _ = utf32_decode_to_buffer(self.*, res);
             return string.from_raw_with_len(res, len);
@@ -130,19 +132,19 @@ func utf8_to_utf32(bytes: []uint8) !rune {
     }
     // return ASCII unchanged
     if bytes.len == 1 {
-        return @cast(rune, bytes[0]);
+        return bytes[0].to_rune()!;
     }
     if bytes.len > 4 {
         return TooManyBytesError(
             "attempted to decode too many bytes, utf-8 is limited to four bytes maximum"
         );
     }
-    mut res := @cast(rune, bytes[0] << bytes.len);
+    mut res := (bytes[0] << bytes.len).to_rune()!;
     mut shift := 6 - bytes.len;
     mut i: usize := 1;
     while i < bytes.len : i += 1 {
-        c := @cast(rune, bytes[i]);
-        res = @cast(rune, @cast(uint32, res) << shift);
+        c := bytes[i].to_rune()!;
+        res = unsafe { @cast(rune, @cast(uint32, res) << shift) };
         res |= c & 63; // 0x3F
         shift = 6;
     }

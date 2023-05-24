@@ -16,19 +16,18 @@ public struct Checker {
     mut sym: ast.Sym = ast.InvalidSym();
     mut cur_fn: ast.Func;
 
-    mut expected_type: ast.Type;
-
     mut inside_extern: bool;
     mut inside_test: bool;
     mut inside_var_decl: bool;
     mut inside_defer: bool;
-    mut inside_unsafe: bool;
+    mut inside_unsafe_block: bool;
     mut inside_guard_expr: bool;
     mut inside_switch_cond_expr: bool;
 
+    mut expected_type: ast.Type;
     mut scope_returns: bool;
-
     mut defer_stmts: []ast.Stmt.Defer;
+    mut unsafe_operations: usize;
 
     public func check_files(mut self, source_files: []ast.SourceFile) {
         // check global variables
@@ -429,5 +428,10 @@ public struct Checker {
             .Return => return true,
             else => false
         };
+    }
+
+    func inside_unsafe(mut self) bool {
+        self.unsafe_operations += 1;
+        return self.inside_unsafe_block;
     }
 }

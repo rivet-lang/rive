@@ -140,7 +140,7 @@ public struct Table {
             .Func("ptr_add", [
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("value", is_any: true)
-            ], checks: [
+            ], is_unsafe: true, checks: [
                 .ArgumentTypeShouldBe(0, .Pointer),
                 .ArgumentTypeShouldBe(1, .Integer),
                 .ReturnTypeEqualToArgumentType(0)
@@ -148,7 +148,7 @@ public struct Table {
             .Func("ptr_diff", [
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("pointer2", is_any: true)
-            ], self.usize_t, checks: [
+            ], self.usize_t, is_unsafe: true, checks: [
                 .ArgumentTypeShouldBe(0, .Pointer),
                 .ArgumentTypeEqualToArgumentType(1, 0)
             ]),
