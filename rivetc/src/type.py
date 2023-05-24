@@ -33,7 +33,7 @@ class TBase:
         elif isinstance(self, Tuple):
             for t in self.types:
                 t.unalias()
-        elif isinstance(self, (Array, Vec, Ptr, Ref, Variadic)):
+        elif isinstance(self, (Array, Vec, Ptr, Variadic)):
             self.typ.unalias()
         elif isinstance(self, Type):
             if self.is_resolved() and self.sym.kind == TypeKind.Alias:
@@ -80,28 +80,6 @@ class Type(TBase):
         else:
             res = str(self.sym.name)
         return res
-
-class Ref(TBase):
-    def __init__(self, typ, is_mut = False):
-        self.typ = typ
-        self.is_mut = is_mut
-
-    def qualstr(self):
-        if self.is_mut:
-            return f"&mut {self.typ.qualstr()}"
-        return f"&{self.typ.qualstr()}"
-
-    def __eq__(self, other):
-        if not isinstance(other, Ref):
-            return False
-        elif self.is_mut and not other.is_mut:
-            return False
-        return self.typ == other.typ
-
-    def __str__(self):
-        if self.is_mut:
-            return f"&mut {self.typ}"
-        return f"&{self.typ}"
 
 class Ptr(TBase):
     def __init__(self, typ, is_mut = False, is_indexable = False):
@@ -235,14 +213,14 @@ class Tuple(TBase):
 class Fn(TBase):
     def __init__(
         self, is_extern, abi, is_method, args, is_variadic, ret_typ,
-        self_is_mut, self_is_ref
+        self_is_mut, self_is_ptr
     ):
         self.is_unsafe = abi != ABI.Rivet
         self.is_extern = is_extern
         self.abi = abi
         self.is_method = is_method
         self.self_is_mut = self_is_mut
-        self.self_is_ref = self_is_ref
+        self.self_is_ptr = self_is_ptr
         self.args = args
         self.is_variadic = is_variadic
         self.ret_typ = ret_typ
@@ -252,7 +230,7 @@ class Fn(TBase):
             self.abi, True, self.is_extern, self.is_unsafe, self.is_method,
             self.is_variadic, self.stringify(False),
             self.args, self.ret_typ, False, not self.is_extern,
-            token.Pos("", 0, 0, 0), self.self_is_mut, self.self_is_ref
+            token.Pos("", 0, 0, 0), self.self_is_mut, self.self_is_ptr
         )
 
     def stringify(self, qual):
@@ -263,7 +241,7 @@ class Fn(TBase):
         if self.is_method:
             if self.self_is_mut:
                 res += "mut "
-            elif self.self_is_ref:
+            elif self.self_is_ptr:
                 res += "&"
             res += "self"
             if len(self.args) > 0:
@@ -308,7 +286,7 @@ class Fn(TBase):
             return False
         elif self.self_is_mut != got.self_is_mut:
             return False
-        elif self.self_is_ref != got.self_is_ref:
+        elif self.self_is_ptr != got.self_is_ptr:
             return False
         elif len(self.args) != len(got.args):
             return False
@@ -324,9 +302,8 @@ class Option(TBase):
         self.typ = typ
         self.sym = None
 
-    def is_ref_or_ptr(self):
-        return self.typ.__class__ in (Ref, Ptr,
-                                      Fn) or self.typ.symbol().is_boxed()
+    def is_pointer(self):
+        return self.typ.__class__ in (Ptr, Fn) or self.typ.symbol().is_boxed()
 
     def qualstr(self):
         return f"?{self.typ.qualstr()}"

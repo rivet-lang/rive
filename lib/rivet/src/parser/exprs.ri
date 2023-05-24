@@ -202,9 +202,9 @@ extend Parser {
                 op := self.tok.kind;
                 pos := self.tok.pos;
                 self.next();
-                is_ref_mut := op == .Amp and self.accept(.KwMut);
+                is_mut_ptr := op == .Amp and self.accept(.KwMut);
                 right := self.parse_unary_expr();
-                .Unary(right, op, is_ref_mut, pos + right.position())
+                .Unary(right, op, is_mut_ptr, pos + right.position())
             },
             else => self.parse_primary_expr()
         };

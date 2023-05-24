@@ -282,7 +282,7 @@ class Checker:
                         stmt.iterable.pos
                     )
                 elif stmt.value.is_ref:
-                    elem_typ = type.Ref(elem_typ)
+                    elem_typ = type.Ptr(elem_typ)
                 if stmt.index != None:
                     stmt.scope.update_type(stmt.index.name, self.comp.usize_t)
                 stmt.scope.update_type(stmt.value.name, elem_typ)
@@ -552,23 +552,15 @@ class Checker:
                             "cannot reference a pointer indexing", expr.pos
                         )
                     right.is_ref = True
-                elif isinstance(expr.typ, type.Ref):
+                elif isinstance(expr.typ, type.Ptr):
                     report.error(
-                        "cannot take the address of other reference", expr.pos
+                        "cannot take the address of other pointer", expr.pos
                     )
-                elif expr.is_ref_mut:
+                elif expr.is_mut_ptr:
                     self.check_expr_is_mut(right)
-                if expected_pointer:
-                    if not self.inside_unsafe:
-                        report.error(
-                            "cannot take the address of a value outside of an `unsafe` block",
-                            expr.pos
-                        )
-                    expr.typ = type.Ptr(
-                        expr.typ, expr.is_ref_mut, indexable_pointer
-                    )
-                else:
-                    expr.typ = type.Ref(expr.typ, expr.is_ref_mut)
+                expr.typ = type.Ptr(
+                    expr.typ, expr.is_mut_ptr, indexable_pointer
+                )
             return expr.typ
         elif isinstance(expr, ast.BinaryExpr):
             ltyp = self.check_expr(expr.left)
@@ -592,7 +584,7 @@ class Checker:
                         report.help(
                             "use the `ptr_diff` builtin function instead"
                         )
-                elif isinstance(ltyp, type.Ref):
+                elif isinstance(ltyp, type.Ptr):
                     report.error(
                         "cannot use arithmetic operations with references",
                         expr.pos
@@ -925,14 +917,6 @@ class Checker:
                                     report.help(
                                         "or use `??`: `(foo ?? 5).method()`"
                                     )
-                                elif isinstance(expr_left.left_typ, type.Ptr):
-                                    report.error(
-                                        "cannot use a pointer value as receiver",
-                                        expr.pos
-                                    )
-                                    report.help(
-                                        "consider dereferencing this pointer"
-                                    )
                                 else:
                                     self.check_call(m, expr)
                             else:
@@ -1154,7 +1138,7 @@ class Checker:
                 elif expr.is_indirect:
                     if not (
                         isinstance(left_typ, type.Ptr)
-                        or isinstance(left_typ, type.Ref)
+                        or isinstance(left_typ, type.Ptr)
                     ) or (
                         isinstance(left_typ, type.Ptr) and left_typ.is_indexable
                     ):
@@ -1631,7 +1615,7 @@ class Checker:
             self.expected_type = oet
 
             if arg_fn.is_mut and not isinstance(
-                arg_fn.typ, (type.Ptr, type.Ref)
+                arg_fn.typ, (type.Ptr)
             ) and not arg_fn.typ.symbol().is_primitive():
                 self.check_expr_is_mut(arg.expr)
 
@@ -1746,17 +1730,6 @@ class Checker:
               and not isinstance(got, type.Ptr)) or (
                   not isinstance(expected, type.Ptr)
                   and isinstance(got, type.Ptr)
-              ):
-            return False
-
-        if isinstance(expected, type.Ref) and isinstance(got, type.Ref):
-            if expected.is_mut and not got.is_mut:
-                return False
-            return expected.typ == got.typ
-        elif (isinstance(expected, type.Ref)
-              and not isinstance(got, type.Ref)) or (
-                  not isinstance(expected, type.Ref)
-                  and isinstance(got, type.Ref)
               ):
             return False
 
@@ -1919,7 +1892,7 @@ class Checker:
             else:
                 self.check_expr_is_mut(expr.left, from_assign)
             if expr.is_indirect and isinstance(
-                expr.left_typ, (type.Ptr, type.Ref)
+                expr.left_typ, (type.Ptr)
             ):
                 if not expr.left_typ.is_mut:
                     kind = "pointer" if isinstance(

@@ -114,16 +114,6 @@ extend Checker {
             return false;
         }
 
-        if expected is .Reference as ref_info and got is .Reference as ref_info2 {
-            if ref_info.is_mut and !ref_info2.is_mut {
-                return false;
-            }
-            return ref_info.inner == ref_info2.inner;
-        } else if (expected is .Reference and got !is .Reference)
-            or (expected !is .Reference and got is .Reference) {
-            return false;
-        }
-
         expected_sym := expected.symbol() ?? return false;
         got_sym := got.symbol() ?? return false;
 

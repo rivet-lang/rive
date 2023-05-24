@@ -625,7 +625,7 @@ class Fn(Sym):
     def __init__(
         self, abi, is_public, is_extern, is_unsafe, is_method, is_variadic,
         name, args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
-        self_is_ref, self_typ = None
+        self_is_ptr, self_typ = None
     ):
         Sym.__init__(self, is_public, name)
         self.is_main = False
@@ -636,7 +636,7 @@ class Fn(Sym):
         self.is_variadic = is_variadic
         self.self_typ = self_typ
         self.self_is_mut = self_is_mut
-        self.self_is_ref = self_is_ref
+        self.self_is_ptr = self_is_ptr
         self.args = args
         self.ret_typ = ret_typ
         self.has_named_args = has_named_args
@@ -666,7 +666,7 @@ class Fn(Sym):
         from .type import Fn
         return Fn(
             self.is_extern, self.abi, self.is_method, self.args,
-            self.is_variadic, self.ret_typ, self.self_is_mut, self.self_is_ref
+            self.is_variadic, self.ret_typ, self.self_is_mut, self.self_is_ptr
         )
 
 def universe():

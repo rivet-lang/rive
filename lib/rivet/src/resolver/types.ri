@@ -52,7 +52,6 @@ extend Resolver {
             } else {
                 false
             },
-            .Reference as ref => self.resolve_type(ref.inner),
             .Pointer as ptr => self.resolve_type(ptr.inner),
             .Tuple as tuple => {
                 mut resolved := false;

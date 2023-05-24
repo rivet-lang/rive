@@ -184,7 +184,7 @@ extend Checker {
                 }, func_decl.name, func_decl.pos
             );
         }
-        if func_decl.is_method and func_decl.self_is_ref and func_decl.self_type.is_boxed() {
+        if func_decl.is_method and func_decl.self_is_ptr and func_decl.self_type.is_boxed() {
             report.error("cannot reference a boxed value as receiver", func_decl.self_pos);
         }
         for arg in func_decl.args {

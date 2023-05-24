@@ -21,7 +21,7 @@ def prefix_type(tt):
                 prefix += "mut_"
             _t = _t.typ
         prefix += prefix_type(tt.typ)
-    elif isinstance(tt, type.Ref):
+    elif isinstance(tt, type.Ptr):
         prefix += "ref_"
         if tt.is_mut:
             prefix += "mut_"
@@ -41,7 +41,7 @@ def mangle_type(typ):
             s += "m_"
         if typ.self_is_mut:
             s += "_sm_"
-        elif typ.self_is_ref:
+        elif typ.self_is_ptr:
             s += "_sr_"
         if typ.is_variadic:
             s += "_v_"
@@ -389,7 +389,7 @@ class Codegen:
                 arg_typ_sym = arg.typ.symbol()
                 if arg.is_mut and not (
                     arg_typ_sym.is_boxed() or arg_typ_sym.is_primitive()
-                    or isinstance(arg.typ, (type.Ptr, type.Ref))
+                    or isinstance(arg.typ, (type.Ptr))
                 ):
                     arg_typ = arg_typ.ptr()
                 args.append(ir.Ident(arg_typ, arg.name))
@@ -752,7 +752,7 @@ class Codegen:
 
         # wrap option value
         if isinstance(expected_typ_,
-                      type.Option) and (not expected_typ_.is_ref_or_ptr()):
+                      type.Option) and (not expected_typ_.is_pointer()):
             if isinstance(res_expr, ir.NoneLit):
                 res_expr = self.option_none(expected_typ_)
             elif not (
@@ -1294,7 +1294,7 @@ class Codegen:
                     left_sym = expr.sym.self_typ.symbol()
                     if left_sym.kind == TypeKind.Vec:
                         expr.sym = self.comp.vec_sym[expr.sym.name]
-                    sym_rec_is_ref = expr.sym.self_is_mut or expr.sym.self_is_ref
+                    sym_rec_is_ref = expr.sym.self_is_mut or expr.sym.self_is_ptr
                     receiver = expr.left.left
                     if left_sym.kind == TypeKind.Trait and expr.sym.self_typ != receiver.typ:
                         self_expr = self.gen_expr_with_cast(
@@ -1307,7 +1307,7 @@ class Codegen:
                     ):
                         self_expr = ir.Inst(ir.InstKind.GetRef, [self_expr])
                     elif isinstance(
-                        receiver.typ, type.Ref
+                        receiver.typ, type.Ptr
                     ) and not sym_rec_is_ref:
                         self_expr = ir.Inst(ir.InstKind.LoadPtr, [self_expr])
                     args.append(self_expr)
@@ -1319,7 +1319,7 @@ class Codegen:
                 fn_arg_typ = fn_arg.typ
                 fn_arg_typ_sym = fn_arg_typ.symbol()
                 if fn_arg.is_mut and not isinstance(
-                    fn_arg.typ, (type.Ptr, type.Ref)
+                    fn_arg.typ, (type.Ptr)
                 ) and not (
                     fn_arg_typ_sym.is_boxed() or fn_arg_typ_sym.is_primitive()
                 ):
@@ -1565,7 +1565,7 @@ class Codegen:
             elif expr.is_option_check:
                 panic_l = self.cur_fn.local_name()
                 exit_l = self.cur_fn.local_name()
-                if expr.left_typ.is_ref_or_ptr():
+                if expr.left_typ.is_pointer():
                     self.cur_fn.add_cond_br(
                         ir.Inst(
                             ir.InstKind.Cmp,
@@ -1776,7 +1776,7 @@ class Codegen:
             if isinstance(expr_left_typ, type.Option):
                 if expr.op in (Kind.KwIs, Kind.KwNotIs):
                     left = self.gen_expr_with_cast(expr_left_typ, expr.left)
-                    if expr_left_typ.is_ref_or_ptr():
+                    if expr_left_typ.is_pointer():
                         op = "==" if expr.op == Kind.KwIs else "!="
                         return ir.Inst(
                             ir.InstKind.Cmp,
@@ -1794,7 +1794,7 @@ class Codegen:
                     is_not_none_label = self.cur_fn.local_name()
                     exit_label = self.cur_fn.local_name(
                     ) if is_not_never else ""
-                    if expr_typ.is_ref_or_ptr():
+                    if expr_typ.is_pointer():
                         cond = ir.Inst(
                             ir.InstKind.Cmp,
                             [ir.Name("=="), left,
@@ -1815,7 +1815,7 @@ class Codegen:
                         self.cur_fn.store(tmp, right)
                         self.cur_fn.add_br(exit_label)
                     self.cur_fn.add_label(is_not_none_label)
-                    if expr_typ.is_ref_or_ptr():
+                    if expr_typ.is_pointer():
                         self.cur_fn.store(tmp, left)
                     else:
                         self.cur_fn.store(
@@ -2572,10 +2572,10 @@ class Codegen:
         )
 
     def default_value(self, typ, custom_tmp = None):
-        if isinstance(typ, (type.Ptr, type.Ref, type.Fn)):
+        if isinstance(typ, (type.Ptr, type.Fn)):
             return ir.NoneLit(ir.VOID_PTR_T)
         if isinstance(typ, type.Option):
-            if typ.is_ref_or_ptr():
+            if typ.is_pointer():
                 return ir.NoneLit(ir.VOID_PTR_T)
             return self.option_none(typ)
         if typ == self.comp.rune_t:
@@ -2848,7 +2848,7 @@ class Codegen:
             self.cur_fn.inline_alloca(
                 var_t, var_name, ir.Selector(var_t, gexpr, ir.Name("value"))
             )
-        elif expr.expr.typ.is_ref_or_ptr():
+        elif expr.expr.typ.is_pointer():
             cond = ir.Inst(
                 ir.InstKind.Cmp,
                 [ir.Name("!="), gexpr,
@@ -2892,7 +2892,7 @@ class Codegen:
                 self.generated_opt_res_types.append(name)
             return ir.Type(name)
         elif isinstance(typ, type.Option):
-            if typ.is_ref_or_ptr():
+            if typ.is_pointer():
                 return self.ir_type(typ.typ)
             name = f"_R6Option{mangle_type(typ.typ)}"
             if name not in self.generated_opt_res_types:
@@ -2924,7 +2924,7 @@ class Codegen:
             return ir.Array(self.ir_type(typ.typ), typ.size)
         elif isinstance(typ, type.Vec):
             return ir.VEC_T.ptr(True)
-        elif isinstance(typ, (type.Ptr, type.Ref)):
+        elif isinstance(typ, (type.Ptr)):
             inner_t = self.ir_type(typ.typ)
             if isinstance(inner_t, ir.Pointer) and inner_t.is_managed:
                 return inner_t

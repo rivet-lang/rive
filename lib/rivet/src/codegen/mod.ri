@@ -99,13 +99,6 @@ public struct Codegen {
                 }
                 sb.write_string(self.prefix_type(ptr.inner));
             },
-            .Reference as ref => {
-                sb.write_string("ref_");
-                if ref.is_mut {
-                    sb.write_string("mut_");
-                }
-                sb.write_string(self.prefix_type(ref.inner));
-            },
             .Option as opt => sb.write_fmt("opt_{}", self.prefix_type(opt.inner)),
             else => {}
         }
@@ -121,7 +114,7 @@ public struct Codegen {
                 mut sb := strings.Builder.from_string("func_");
                 if func_t.is_method {
                     sb.write_string("m_");
-                    if func_t.self_is_ref {
+                    if func_t.self_is_ptr {
                         sb.write_string("sr_");
                     } else if func_t.self_is_mut {
                         sb.write_string("sm_");

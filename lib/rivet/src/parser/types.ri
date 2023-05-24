@@ -42,11 +42,6 @@ extend Parser {
                 };
                 .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos)
             },
-            self.accept(.Amp) => {
-                // references
-                is_mut := self.accept(.KwMut);
-                .Reference(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
-            },
             self.accept(.Mul) => {
                 // pointers
                 is_mut := self.accept(.KwMut);

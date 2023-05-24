@@ -83,7 +83,7 @@ extend Checker {
                     if elem_sym.is_boxed() {
                         report.error("cannot reference a boxed value", value0.pos);
                     }
-                    elem_type = .Reference(elem_type);
+                    elem_type = .Pointer(elem_type);
                 }
             }
             if for_stmt.has_index {

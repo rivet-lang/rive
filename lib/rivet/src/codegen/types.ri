@@ -152,9 +152,6 @@ extend Codegen {
             .Pointer as ptr_t => .Pointer(
                 self.type_to_mir(ptr_t.inner), size: self.table.pointer_size
             ),
-            .Reference as ref_t => .Pointer(
-                self.type_to_mir(ref_t.inner), size: self.table.pointer_size
-            ),
             else => {
                 if mut type_sym := type.symbol() {
                     if type_sym.is_primitive() {
