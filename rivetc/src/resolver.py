@@ -125,8 +125,8 @@ class Resolver:
             elif isinstance(decl, ast.FuncDecl):
                 if decl.is_method:
                     self_typ = type.Type(self.self_sym)
-                    if decl.self_is_ref:
-                        self_typ = type.Ref(self_typ)
+                    if decl.self_is_ptr:
+                        self_typ = type.Ptr(self_typ)
                     try:
                         decl.scope.add(
                             sym.Obj(
@@ -479,7 +479,7 @@ class Resolver:
                     expr.not_found = True
 
     def resolve_type(self, typ):
-        if isinstance(typ, type.Ref):
+        if isinstance(typ, type.Ptr):
             return self.resolve_type(typ.typ)
         elif isinstance(typ, type.Ptr):
             return self.resolve_type(typ.typ)

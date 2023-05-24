@@ -294,7 +294,7 @@ public struct Table {
     public func type_size(mut self, type: Type, is_raw: bool = false) (usize, usize) {
         return switch type is {
             .Result, .Option => self.type_symbol_size(self.error_sym, is_raw),
-            .Anyptr, .Pointer, .Reference, .Func => (self.pointer_size, self.pointer_size),
+            .Anyptr, .Pointer, .Func => (self.pointer_size, self.pointer_size),
             else => if mut type_sym := type.symbol() {
                 self.type_symbol_size(type_sym, is_raw)
             } else {
@@ -563,7 +563,6 @@ struct BuiltinArg {
 
 enum BuiltinFuncType {
     Pointer,
-    Reference,
     Enum,
     Integer
 }

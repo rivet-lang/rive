@@ -1,7 +1,7 @@
 import std/fs/path;
 import std/process;
 
-var CWD = process.get_cwd() catch ".";
+var cwd = process.get_cwd() catch ".";
 
 test "std.fs.path.is_absolute()" {
     @assert(path.is_absolute("") == false);
@@ -12,8 +12,8 @@ test "std.fs.path.is_absolute()" {
 }
 
 test "std.fs.path.resolve()" {
-    @assert(path.resolve(".")! == CWD);
-    @assert(path.resolve("a/b/c/", "../../..")! == CWD);
+    @assert(path.resolve(".")! == cwd);
+    @assert(path.resolve("a/b/c/", "../../..")! == cwd);
 
     @assert(path.resolve("/a/b", "c")! == "/a/b/c");
     @assert(path.resolve("/a/b", "c", "//d", "e///")! == "/d/e");

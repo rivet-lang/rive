@@ -254,7 +254,7 @@ public struct Module : Sym {
             if func_sym.is_method {
                 if func_sym.self_is_mut {
                     sb.write_string("mut ");
-                } else if func_sym.self_is_ref {
+                } else if func_sym.self_is_ptr {
                     sb.write_string("&");
                 }
                 sb.write_string("self");
@@ -335,7 +335,7 @@ public struct Func : Sym {
     public is_variadic: bool;
     public mut self_type: Type;
     public self_is_mut: bool;
-    public self_is_ref: bool;
+    public self_is_ptr: bool;
     public self_pos: token.Pos;
     public args: []Arg;
     public has_named_args: bool;
@@ -372,7 +372,7 @@ public struct Func : Sym {
         return .Func(
             is_method: self.is_method,
             self_is_mut: self.self_is_mut,
-            self_is_ref: self.self_is_ref,
+            self_is_ptr: self.self_is_ptr,
             args: self.args,
             ret_type: self.ret_type,
             sym: universe.add_or_get_func(self),

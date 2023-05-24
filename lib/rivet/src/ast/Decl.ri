@@ -136,7 +136,7 @@ public enum Decl {
         mut scope: Scope;
         has_body: bool;
         self_is_mut: bool;
-        self_is_ref: bool;
+        self_is_ptr: bool;
         mut self_type: Type;
         pos: token.Pos;
         self_pos: token.Pos;

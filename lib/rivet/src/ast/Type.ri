@@ -63,11 +63,6 @@ public enum Type : traits.Stringable {
         mut sym: TypeSym;
         pos: token.Pos;
     },
-    Reference {
-        mut inner: Type;
-        is_mut: bool;
-        pos: token.Pos;
-    },
     Pointer {
         mut inner: Type;
         is_mut: bool;
@@ -81,7 +76,7 @@ public enum Type : traits.Stringable {
     Func {
         is_method: bool;
         self_is_mut: bool;
-        self_is_ref: bool;
+        self_is_ptr: bool;
         args: []Arg;
         mut ret_type: Type;
         pos: token.Pos;
@@ -97,7 +92,7 @@ public enum Type : traits.Stringable {
                     is_method: self.is_method,
                     self_type: .Void(),
                     self_is_mut: self.self_is_mut,
-                    self_is_ref: self.self_is_ref,
+                    self_is_ptr: self.self_is_ptr,
                     args: self.args,
                     ret_type: self.ret_type
                 )
@@ -109,7 +104,6 @@ public enum Type : traits.Stringable {
     public func ptr_or_ref_inner(self) Self {
         return switch self is {
             .Pointer as ptr => ptr.inner,
-            .Reference as ref => ref.inner,
             .Anyptr => self,
             else => .Void()
         };
@@ -134,9 +128,6 @@ public enum Type : traits.Stringable {
             ),
             .Array as array_data => .Array(
                 array_data.inner.unalias() ?? array_data.inner, ...self
-            ),
-            .Reference as reference_data => .Reference(
-                reference_data.inner.unalias() ?? reference_data.inner, ...self
             ),
             .Pointer as pointer_data => .Pointer(
                 pointer_data.inner.unalias() ?? pointer_data.inner, ...self
@@ -177,11 +168,19 @@ public enum Type : traits.Stringable {
             .Variadic as variadic_data => variadic_data.sym,
             .Vector as vector_data => vector_data.sym,
             .Array as array_data => array_data.sym,
-            .Reference as reference_data => reference_data.inner.symbol(),
             .Pointer as pointer_data => pointer_data.inner.symbol(),
             .Func as func_data => func_data.sym,
             .Basic as basic if !basic.is_unresolved => basic.sym,
             else => none
+        };
+    }
+
+    @[inline]
+    public func is_primitive(self) bool {
+        return if type_sym := self.symbol() {
+            type_sym.is_primitive()
+        } else {
+            false
         };
     }
 
@@ -209,15 +208,9 @@ public enum Type : traits.Stringable {
     }
 
     @[inline]
-    public func is_ptr_or_ref(self) bool {
-        return self.is_pointer() or self is .Reference;
-    }
-
-    @[inline]
-    public func is_mut_ptr_or_ref(self) bool {
+    public func is_mut_pointer(self) bool {
         return switch self is {
             .Pointer as ptr => ptr.is_mut,
-            .Reference as ref => ref.is_mut,
             .Anyptr as anyptr_ => anyptr_.is_mut,
             else => false
         };
@@ -226,7 +219,7 @@ public enum Type : traits.Stringable {
     @[inline]
     public func is_any_kind_of_pointer(self) bool {
         return switch self is {
-            .Pointer, .Reference, .Anyptr, .Func => true,
+            .Pointer, .Anyptr, .Func => true,
             else => if type_sym := self.symbol() {
                 type_sym.is_boxed()
             } else {
@@ -246,7 +239,6 @@ public enum Type : traits.Stringable {
             .Variadic as variadic_t => variadic_t.pos,
             .Vector as vec_t => vec_t.pos,
             .Array as arr_t => arr_t.pos,
-            .Reference as ref_t => ref_t.pos,
             .Pointer as ptr_t => ptr_t.pos,
             .Anyptr as anyptr_t => anyptr_t.pos,
             .Func as func_t => func_t.pos,
@@ -276,12 +268,6 @@ public enum Type : traits.Stringable {
             .Array as array_lhs if rhs is .Array as array_rhs =>
                 array_lhs.inner == array_rhs.inner and array_lhs.size_value == array_rhs.size_value
                 and array_lhs.is_mut == array_rhs.is_mut,
-            .Reference as ref_lhs if rhs is .Reference as ref_rhs => if ref_lhs.is_mut
-                and !ref_rhs.is_mut {
-                false
-            } else {
-                ref_lhs.inner == ref_rhs.inner
-            },
             .Pointer as ptr_lhs if rhs is .Pointer as ptr_rhs => if ptr_lhs.is_mut
                 and !ptr_rhs.is_mut {
                 false
@@ -295,7 +281,7 @@ public enum Type : traits.Stringable {
             .Func as func_lhs if rhs is .Func as func_rhs => switch {
                 func_lhs.is_method != func_rhs.is_method,
                 func_lhs.self_is_mut != func_rhs.self_is_mut,
-                func_lhs.self_is_ref != func_rhs.self_is_ref,
+                func_lhs.self_is_ptr != func_rhs.self_is_ptr,
                 func_lhs.args.len != func_rhs.args.len => false,
                 else => {
                     mut final_res := func_lhs.ret_type == func_rhs.ret_type;
@@ -364,11 +350,6 @@ public enum Type : traits.Stringable {
                     ""
                 }, array_data.inner.to_string_(qualstr)
             ),
-            .Reference as reference_data => if reference_data.is_mut {
-                "&mut "
-            } else {
-                "&"
-            }.concat(reference_data.inner.to_string_(qualstr)),
             .Pointer as pointer_data => {
                 if pointer_data.is_mut {
                     if pointer_data.is_indexable {
@@ -397,7 +378,7 @@ public enum Type : traits.Stringable {
                 if func_data.is_method {
                     if func_data.self_is_mut {
                         sb.write_string("mut ");
-                    } else if func_data.self_is_ref {
+                    } else if func_data.self_is_ptr {
                         sb.write_string("&");
                     }
                     sb.write_string("self");

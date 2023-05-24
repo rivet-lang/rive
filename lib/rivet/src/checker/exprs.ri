@@ -111,10 +111,10 @@ extend Checker {
             .Selector as mut selector => self.check_selector(selector),
             .Indirect as indirect => {
               	indirect.left_type = self.check_expr(indirect.left);
-                indirect.type = if indirect.left_type.is_ptr_or_ref()
+                indirect.type = if indirect.left_type.is_pointer()
                     or (indirect.left_type is .Pointer as ptr and !ptr.is_indexable)
                     or indirect.left_type is .Anyptr  {
-                	indirect.is_mut = indirect.left_type.is_mut_ptr_or_ref();
+                	indirect.is_mut = indirect.left_type.is_pointer();
                     indirect.left_type.ptr_or_ref_inner()
                 } else {
                     mut err := report.error_builder(
@@ -492,10 +492,10 @@ extend Checker {
                         report.error("cannot reference a pointer indexing", unary.pos);
                     }
                     index.is_ref = true;
-                } else if unary.type is .Reference {
-                    report.error("cannot take the address of other reference", unary.pos);
+                } else if unary.type is .Pointer {
+                    report.error("cannot take the address of other pointer", unary.pos);
                 } else {
-                    if unary.is_ref_mut {
+                    if unary.is_mut_ptr {
                         self.check_expr_is_mut(right);
                     }
                     right_sym := unary.type.symbol()?;
@@ -503,17 +503,7 @@ extend Checker {
                         report.error("cannot reference a boxed value", unary.pos);
                     }
                 }
-                unary.type = if expected_pointer {
-                    if !self.inside_unsafe {
-                        report.error(
-                            "cannot take the address of a value outside of an `unsafe` block",
-                            unary.pos
-                        );
-                    }
-                    .Pointer(unary.type, unary.is_ref_mut, indexable_pointer)
-                } else {
-                    .Reference(unary.type, unary.is_ref_mut)
-                };
+                unary.type = .Pointer(unary.type, unary.is_mut_ptr, indexable_pointer);
             },
             else => {}
         }
@@ -538,10 +528,6 @@ extend Checker {
                     err.add_help("use the `ptr_diff` builtin function instead");
                 }
                 err.emit();
-            } else if left_type is .Reference {
-                report.error(
-                    "cannot use arithmetic operations with references", binary.pos
-                );
             }
         } else if left_type is .Option and binary.op !in [.KwIs, .KwNotIs, .OrElse] {
             report.error("option values only support `??`, `is` and `!is`", binary.pos);

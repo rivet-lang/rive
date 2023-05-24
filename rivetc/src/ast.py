@@ -269,7 +269,7 @@ class FuncDecl:
     def __init__(
         self, docs, annotations, is_public, is_extern, is_unsafe, name,
         name_pos, args, ret_typ, stmts, scope, has_body = False,
-        is_method = False, self_is_mut = False, self_is_ref = False,
+        is_method = False, self_is_mut = False, self_is_ptr = False,
         has_named_args = False, is_main = False, is_variadic = False, abi = None
     ):
         self.sym = None
@@ -282,7 +282,7 @@ class FuncDecl:
         self.args = args
         self.self_typ = None
         self.self_is_mut = self_is_mut
-        self.self_is_ref = self_is_ref
+        self.self_is_ptr = self_is_ptr
         self.is_main = is_main
         self.is_extern = is_extern
         self.is_unsafe = is_unsafe
@@ -588,16 +588,16 @@ class GuardExpr:
         return self.__repr__()
 
 class UnaryExpr:
-    def __init__(self, right, op, is_ref_mut, pos):
+    def __init__(self, right, op, is_mut_ptr, pos):
         self.op = op
         self.right = right
         self.right_typ = None
         self.pos = pos
-        self.is_ref_mut = is_ref_mut
+        self.is_mut_ptr = is_mut_ptr
         self.typ = None
 
     def __repr__(self):
-        if self.is_ref_mut:
+        if self.is_mut_ptr:
             return f"&mut {self.right}"
         return f"{self.op}{self.right}"
 

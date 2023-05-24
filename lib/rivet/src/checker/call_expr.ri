@@ -77,18 +77,9 @@ extend Checker {
                 selector.left_type = self.check_expr(selector.left);
                 if selector.left_type is .Option {
                     mut err := report.error_builder(
-                        "option value cannot be called directly",
-                        selector.left.position()
+                        "option value cannot be called directly", selector.left.position()
                     );
-                    err.add_help("use the option-check syntax: `foo?.method()`");
-                    err.add_help("or use `??`: `(foo ?? 5).method()`");
-                    err.emit();
-                    return .Void();
-                } else if selector.left_type is .Pointer {
-                    mut err := report.error_builder(
-                        "cannot use a pointer value as receiver", selector.left.position()
-                    );
-                    err.add_help("consider dereferencing this pointer");
+                    err.add_help("use the option-check syntax: `foo?.method()` or use `??`: `(foo ?? 5).method()`");
                     err.emit();
                     return .Void();
                 }
@@ -482,8 +473,7 @@ extend Checker {
             arg.type = self.check_expr(arg.expr);
             self.expected_type = old_expected_type;
 
-            if arg_fn.is_mut and !(arg_fn.type.is_pointer() or arg_fn.type is .Reference)
-                and !arg_fn.type.symbol()?.is_primitive() {
+            if arg_fn.is_mut and !arg_fn.type.is_pointer() and !arg_fn.type.is_primitive() {
                 self.check_expr_is_mut(arg.expr);
             }
 

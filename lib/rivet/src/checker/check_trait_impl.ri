@@ -16,7 +16,7 @@ extend Checker {
                     if !impl.is_public {
                         errors.push("method `{}` should be public.".fmt(impl.name));
                     }
-                    if !impl.self_is_ref and !impltor.is_boxed() {
+                    if !impl.self_is_ptr and !impltor.is_boxed() {
                         errors.push(
                             "receiver `self` should be a reference, or use the annotation `boxed`."
                         );

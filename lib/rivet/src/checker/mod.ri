@@ -290,15 +290,7 @@ public struct Checker {
                 }
             },
             .Indirect as indirect => if !indirect.is_mut {
-                kind := if selector.left_type is .Reference {
-                    "reference"
-                } else {
-                    "pointer"
-                };
-                report.error(
-                    "cannot use a immutable {} as mutable value".fmt(kind),
-                    selector.pos
-                );
+                report.error("cannot use a immutable pointer as mutable value", selector.pos);
             },
             .OptionCheck as option_check => self.check_expr_is_mut(option_check.left),
             .NoneLiteral => report.error("`none` cannot be modified", expr.position()),

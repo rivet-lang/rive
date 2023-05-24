@@ -484,7 +484,7 @@ class Parser:
         is_method = False
         is_variadic = False
         self_is_mut = False
-        self_is_ref = False
+        self_is_ptr = False
         has_named_args = False
 
         self.open_scope()
@@ -497,7 +497,7 @@ class Parser:
                 and self.peek_tok.kind == Kind.KwSelf
             ):
                 is_method = True
-                self_is_ref = self.accept(Kind.Amp)
+                self_is_ptr = self.accept(Kind.Amp)
                 self_is_mut = self.accept(Kind.KwMut)
                 self.expect(Kind.KwSelf)
                 if self.tok.kind != Kind.Rparen:
@@ -549,7 +549,7 @@ class Parser:
         return ast.FuncDecl(
             doc_comment, annotations, is_public, self.inside_extern, is_unsafe,
             name, pos, args, ret_typ, stmts, sc, has_body, is_method,
-            self_is_mut, self_is_ref, has_named_args, self.mod_sym.is_root
+            self_is_mut, self_is_ptr, has_named_args, self.mod_sym.is_root
             and name == "main", is_variadic, abi
         )
 
@@ -783,9 +783,9 @@ class Parser:
             op = self.tok.kind
             pos = self.tok.pos
             self.next()
-            is_ref_mut = op == Kind.Amp and self.accept(Kind.KwMut)
+            is_mut_ptr = op == Kind.Amp and self.accept(Kind.KwMut)
             right = self.parse_unary_expr()
-            expr = ast.UnaryExpr(right, op, is_ref_mut, pos)
+            expr = ast.UnaryExpr(right, op, is_mut_ptr, pos)
         else:
             expr = self.parse_primary_expr()
         return expr
@@ -1285,7 +1285,7 @@ class Parser:
         elif self.accept(Kind.Amp):
             # references
             is_mut = self.accept(Kind.KwMut)
-            return type.Ref(self.parse_type(), is_mut)
+            return type.Ptr(self.parse_type(), is_mut)
         elif self.accept(Kind.Mul):
             # pointers
             is_mut = self.accept(Kind.KwMut)

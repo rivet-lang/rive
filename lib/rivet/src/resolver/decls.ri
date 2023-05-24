@@ -169,8 +169,8 @@ extend Resolver {
                 .Func as func_decl => {
                     if func_decl.is_method {
                         mut self_type := ast.Type.Basic(self.self_sym);
-                        if func_decl.self_is_ref {
-                            self_type = .Reference(self_type);
+                        if func_decl.self_is_ptr {
+                            self_type = .Pointer(self_type);
                         }
                         is_used := self.self_sym.info is .Trait and !func_decl.has_body;
                         func_decl.scope.add_local(ast.Var(
