@@ -153,7 +153,14 @@ extend Codegen {
                 self.type_to_mir(ptr_t.inner), size: self.table.pointer_size
             ),
             else => {
-                if mut type_sym := type.symbol() {
+                if self.table.is_int(type) {
+                    bits := self.table.int_bits(type);
+                    if self.table.is_signed_int(type) {
+                        .Int(bits, size)
+                    } else {
+                        .Uint(bits, size)
+                    }
+                } else if mut type_sym := type.symbol() {
                     if type_sym.is_primitive() {
                         return .Basic(type_sym.name, size, true);
                     }

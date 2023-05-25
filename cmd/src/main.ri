@@ -18,9 +18,10 @@ func main() {
     cmd := process.args[1];
     switch cmd {
         "new", "init" => new.new(process.args[2..], cmd == "init")!,
-        "build", "run", "test" => {
+        "build", "run", "test", "check" => {
             is_test := cmd == "test";
-            rivet.Compiler.new(process.args[2..], is_test, is_test or cmd == "run")!;
+            is_check := cmd == "check";
+            rivet.Compiler.new(process.args[2..], is_test, is_test or cmd == "run", is_check)!;
         },
         "version" => {
             console.eprintln(utils.full_version());

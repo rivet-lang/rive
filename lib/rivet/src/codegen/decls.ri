@@ -53,6 +53,9 @@ extend Codegen {
                 type: self.type_to_mir(func_decl.ret_type)
             ));
         }
+        self.cur_func.cur_block = mir.Block();
+        self.cur_func.add_block(self.cur_func.cur_block);
+        self.gen_stmts(func_decl.stmts);
         self.cur_func.add_block(
             mir.Block(stmts: [
                 if ret_type_is_void {

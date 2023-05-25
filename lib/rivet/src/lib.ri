@@ -29,8 +29,8 @@ public struct Compiler {
     mut checker: checker.Checker;
     mut codegen: codegen.Codegen;
 
-    public func new(args: []string, is_test: bool, run_output: bool) ! {
-        prefs_ := prefs.Prefs.new(args, is_test, run_output)!;
+    public func new(args: []string, is_test: bool, run_output: bool, is_check: bool) ! {
+        prefs_ := prefs.Prefs.new(args, is_test, run_output, is_check)!;
         report.reportTable.prefs = prefs_;
         table_ := ast.Table.new(prefs_);
         Self(
@@ -48,22 +48,26 @@ public struct Compiler {
         self.load_root_module()!;
         self.import_modules()!;
 
-        self.vlog("resolving files...");
-        self.resolver.resolve_files(self.table.source_files);
-        if report.total_errors() > 0 {
-            self.abort();
-        }
+        if !self.prefs.check {
+            self.vlog("resolving files...");
+            self.resolver.resolve_files(self.table.source_files);
+            if report.total_errors() > 0 {
+                self.abort();
+            }
 
-        self.vlog("checking files...");
-        self.checker.check_files(self.table.source_files);
-        if report.total_errors() > 0 {
-            self.abort();
-        }
+            self.vlog("checking files...");
+            self.checker.check_files(self.table.source_files);
+            if report.total_errors() > 0 {
+                self.abort();
+            }
 
-        self.vlog("generating MIR from AST...");
-        self.codegen.generate_mirs(self.table.source_files);
-        if report.total_errors() > 0 {
-            self.abort();
+            if !self.prefs.check_syntax {
+                self.vlog("generating MIR from AST...");
+                self.codegen.generate_mirs(self.table.source_files);
+                if report.total_errors() > 0 {
+                    self.abort();
+                }
+            }
         }
 
         total_warns := report.total_warns();
