@@ -19,9 +19,9 @@ extend rune : Stringable {
     /// Note that all runes are valid uint32s, and can be cast to one. However, the
     /// reverse is not true: not all valid uint32s are valid runes. `from_uint32()`
     /// will return `none` if the input is not a valid value for a rune.
-    public func from_uint32(i: uint32) !rune {
-        if (i > @cast(uint32, Self.MAX)) or (i >= 0xD800 and i <= 0xDFFF) {
-            return RuneFromU32Error();
+    public func from_uint32(i: uint32) ?rune {
+        if i >= 0x110000 or (i >= 0xD800 and i < 0xE000) {
+            return none;
         }
         return unsafe { @cast(rune, i) };
     }
@@ -42,9 +42,8 @@ extend rune : Stringable {
         }
         if num < radix {
             num_ := @cast(uint8, num);
-            if res := (if num_ < 10 { b'0' + num_ } else { b'a' + num_ - 10 }).to_rune() {
-                return res;
-            }
+            byte := (if num_ < 10 { b'0' + num_ } else { b'a' + num_ - 10 });
+            return byte.to_rune();
         }
         return none;
     }
@@ -132,19 +131,19 @@ func utf8_to_utf32(bytes: []uint8) !rune {
     }
     // return ASCII unchanged
     if bytes.len == 1 {
-        return bytes[0].to_rune()!;
+        return bytes[0].to_rune() ?? @unreachable();
     }
     if bytes.len > 4 {
         return TooManyBytesError(
             "attempted to decode too many bytes, utf-8 is limited to four bytes maximum"
         );
     }
-    mut res := (bytes[0] << bytes.len).to_rune()!;
+    mut res := (bytes[0] << bytes.len).to_rune() ?? @unreachable();
     mut shift := 6 - bytes.len;
     mut i: usize := 1;
     while i < bytes.len : i += 1 {
-        c := bytes[i].to_rune()!;
-        res = unsafe { @cast(rune, @cast(uint32, res) << shift) };
+        c := bytes[i].to_rune() ?? @unreachable();
+        res = (@cast(uint32, res) << shift).to_rune() ?? @unreachable();
         res |= c & 63; // 0x3F
         shift = 6;
     }

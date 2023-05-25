@@ -480,7 +480,7 @@ public struct string : Stringable, Hashable {
                     i += char_len - 1;
                     r.utf32_code()
                 } else {
-                    self.ptr[i].to_rune() catch @unreachable()
+                    self.ptr[i].to_rune() ?? @unreachable()
                 });
             }
         }
