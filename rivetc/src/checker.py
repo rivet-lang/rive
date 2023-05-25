@@ -549,7 +549,7 @@ class Checker:
                         right.left_typ, type.Ptr
                     ) and not expected_pointer:
                         report.error(
-                            "cannot reference a pointer indexing", expr.pos
+                            "cannot take the address of a pointer indexing", expr.pos
                         )
                     right.is_ref = True
                 elif isinstance(expr.typ, type.Ptr):
@@ -584,11 +584,6 @@ class Checker:
                         report.help(
                             "use the `ptr_diff` builtin function instead"
                         )
-                elif isinstance(ltyp, type.Ptr):
-                    report.error(
-                        "cannot use arithmetic operations with references",
-                        expr.pos
-                    )
             elif isinstance(
                 ltyp, type.Option
             ) and expr.op not in (Kind.KwIs, Kind.KwNotIs, Kind.OrElse):
@@ -1891,15 +1886,10 @@ class Checker:
                     expr.left.obj.is_changed = True
             else:
                 self.check_expr_is_mut(expr.left, from_assign)
-            if expr.is_indirect and isinstance(
-                expr.left_typ, (type.Ptr)
-            ):
+            if expr.is_indirect and isinstance(expr.left_typ, (type.Ptr)):
                 if not expr.left_typ.is_mut:
-                    kind = "pointer" if isinstance(
-                        expr.left_typ, type.Ptr
-                    ) else "reference"
                     report.error(
-                        f"cannot use a immutable {kind} as mutable value",
+                        "cannot use a immutable pointer as mutable value",
                         expr.pos
                     )
             elif not expr.field_is_mut and not expr.is_option_check:

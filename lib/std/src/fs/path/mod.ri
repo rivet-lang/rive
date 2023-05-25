@@ -6,6 +6,7 @@ import c/libc;
 import core;
 
 import ../../mem;
+import ../../conv;
 
 public alias max_path_len = libc.MAX_PATH_LEN;
 public const SEPARATOR = #if _WINDOWS_ b'\\' #else b'/' #endif;
@@ -147,10 +148,10 @@ public func resolve(paths: ...string) !string {
     }
     mut result_index: usize := 0;
     result := if have_abs {
-        @cast([*]mut uint8, mem.alloc(max_size)!)
+        unsafe { @cast([*]mut uint8, mem.alloc(max_size)!) }
     } else {
         cwd := core.process_get_cwd()!;
-        tmp := @cast([*]mut uint8, mem.alloc(max_size + cwd.len + 1)!);
+        tmp := unsafe { @cast([*]mut uint8, mem.alloc(max_size + cwd.len + 1)!) };
         mem.copy(tmp, cwd.ptr, cwd.len);
         result_index += cwd.len;
         tmp
@@ -225,7 +226,7 @@ public func relative(from_: string, to: string) !string {
             up_count += 1;
         }
         up_index_end := up_count * 3;
-        result := @cast([*]mut uint8, mem.alloc(up_index_end + to_rest.len)!);
+        result := unsafe { @cast([*]mut uint8, mem.alloc(up_index_end + to_rest.len)!) };
         errdefer unsafe {
             mem.dealloc(result);
         }
@@ -242,7 +243,7 @@ public func relative(from_: string, to: string) !string {
         }
         if to_rest.len == 0 {
             // shave off the trailing slash
-            buf := @cast([*]mut uint8, mem.resize(result, result_index - 1)!);
+            buf := unsafe { @cast([*]mut uint8, mem.resize(result, result_index - 1)!) };
             unsafe {
                 buf[result_index - 1] = 0;
             }
@@ -291,13 +292,13 @@ public func join(paths: ...string) !string {
             }
             prev_sep := is_separator(prev_path[prev_path.len - 1]);
             this_sep := is_separator(this_path[0]);
-            sum += @cast(usize, !prev_sep and !this_sep);
+            sum += conv.bool_to_usize(!prev_sep and !this_sep);
             sum += if prev_sep and this_sep { this_path.len - 1 } else { this_path.len };
             prev_path = this_path;
         }
         sum + 1 // + 1 = NLL character
     };
-    buf := @cast([*]mut uint8, mem.alloc(total_len)!);
+    buf := unsafe { @cast([*]mut uint8, mem.alloc(total_len)!) };
     unsafe {
         buf[total_len - 1] = 0;
         errdefer mem.dealloc(buf);

@@ -27,7 +27,7 @@ public struct StringBuilder : Stringable {
 
     @[inline]
     public func write_byte(mut self, val: uint8) {
-        self.inner.push(unsafe { &val });
+        self.inner.push(&val);
     }
 
     @[unsafe; inline]
@@ -89,7 +89,7 @@ public struct StringBuilder : Stringable {
     /// Returns the number of runes contained in `self`.
     @[inline]
     public func runes_count(self) usize {
-        return cstr_runes_count(@cast([*]uint8, self.inner.ptr), self.inner.len);
+        return cstr_runes_count(unsafe { @cast([*]uint8, self.inner.ptr) }, self.inner.len);
     }
 
     @[inline]
@@ -115,6 +115,6 @@ public struct StringBuilder : Stringable {
     @[inline]
     public func to_string(mut self) string {
         self.write_byte(0);
-        return string(@cast([*]uint8, self.inner.ptr), self.inner.len - 1);
+        return string(unsafe { @cast([*]uint8, self.inner.ptr) }, self.inner.len - 1);
     }
 }

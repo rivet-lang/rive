@@ -371,7 +371,7 @@ extend Checker {
         call_expr.type = func_.ret_type;
         kind := func_.kind();
 
-        if func_.is_unsafe and !self.inside_unsafe {
+        if func_.is_unsafe and !self.inside_unsafe() {
             report.warn(
                 "{} `{}` should be called inside `unsafe` block".fmt(kind, func_.name),
                 call_expr.pos

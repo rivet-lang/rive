@@ -28,12 +28,10 @@ public func path_styled_for_error_messages(path_: string) string {
 public func skip_bom(file_content: string) string {
    // BOM check
    if file_content.len >= 3 {
-	  unsafe {
-		 if file_content[0] == 0xEF and file_content[1] == 0xBB and file_content[2] == 0xBF {
-			// skip three BOM bytes
-			return file_content[3..];
-		 }
-	  }
+     if file_content[0] == 0xEF and file_content[1] == 0xBB and file_content[2] == 0xBF {
+        // skip three BOM bytes
+        return file_content[3..];
+     }
    }
    return file_content;
 }

@@ -81,7 +81,7 @@ extend Checker {
                     );
                 } else if value0.is_ref {
                     if elem_sym.is_boxed() {
-                        report.error("cannot reference a boxed value", value0.pos);
+                        report.error("cannot take the address of a boxed value", value0.pos);
                     }
                     elem_type = .Pointer(elem_type);
                 }
@@ -102,7 +102,7 @@ extend Checker {
                 for i, value in for_stmt.values {
                     self.check_name_case(.Snake, "variable", value.name, value.pos);
                     if value.is_ref and elem_sym.is_boxed() {
-                        report.error("cannot reference a boxed value", value.pos);
+                        report.error("cannot take the address of a boxed value", value.pos);
                     }
                     value.sym.type = types[i];
                     value.sym.is_hidden_ref = value.is_mut;

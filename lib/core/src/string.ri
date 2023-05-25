@@ -38,7 +38,7 @@ public struct string : Stringable, Hashable {
     }
 
     public func from_byte(byte: uint8) Self {
-        res := @cast([*]mut uint8, internal_alloc(2));
+        res := unsafe { @cast([*]mut uint8, internal_alloc(2)) };
         unsafe {
             res[0] = byte;
             res[1] = 0;
@@ -52,7 +52,7 @@ public struct string : Stringable, Hashable {
         if bytes.len == 0 {
             return emptyString;
         }
-        res := @cast([*]mut uint8, internal_alloc(bytes.len + 1));
+        res := unsafe { @cast([*]mut uint8, internal_alloc(bytes.len + 1)) };
         unsafe {
             mem_copy(res, &bytes[0], bytes.len);
             res[bytes.len] = 0;
@@ -75,7 +75,7 @@ public struct string : Stringable, Hashable {
             self
         } else {
             len := self.len * count;
-            res := @cast([*]mut uint8, internal_alloc(len));
+            res := unsafe { @cast([*]mut uint8, internal_alloc(len)) };
             unsafe {
                 mut i: usize := 0;
                 while i < count : i += 1 {
@@ -427,7 +427,7 @@ public struct string : Stringable, Hashable {
             return self;
         }
         new_len := self.len + idxs.len * (with_.len - rep.len);
-        b := @cast([*]mut uint8, internal_alloc(new_len));
+        b := unsafe { @cast([*]mut uint8, internal_alloc(new_len)) };
         (mut b_i: usize, mut s_idx: usize) := (0, 0);
         unsafe {
             for rep_pos in idxs {
@@ -480,7 +480,7 @@ public struct string : Stringable, Hashable {
                     i += char_len - 1;
                     r.utf32_code()
                 } else {
-                    @cast(rune, self.ptr[i])
+                    self.ptr[i].to_rune() catch @unreachable()
                 });
             }
         }
@@ -725,7 +725,7 @@ public struct string : Stringable, Hashable {
     /// Returns the number of runes contained in `self`.
     @[inline]
     public func runes_count(self) usize {
-        return cstr_runes_count(unsafe { self.ptr }, self.len);
+        return cstr_runes_count(self.ptr, self.len);
     }
 
     @[inline]
@@ -767,7 +767,7 @@ public struct string : Stringable, Hashable {
         if self.len == 0 {
             return emptyString;
         }
-        res := @cast([*]mut uint8, internal_alloc(self.len + 1));
+        res := unsafe { @cast([*]mut uint8, internal_alloc(self.len + 1)) };
         unsafe {
             mem_copy(res, self.ptr, self.len);
             res[self.len] = 0;

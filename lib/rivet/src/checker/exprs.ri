@@ -110,7 +110,7 @@ extend Checker {
             },
             .Selector as mut selector => self.check_selector(selector),
             .Indirect as indirect => {
-              	indirect.left_type = self.check_expr(indirect.left);
+                indirect.left_type = self.check_expr(indirect.left);
                 indirect.type = if indirect.left_type.is_pointer()
                     or (indirect.left_type is .Pointer as ptr and !ptr.is_indexable)
                     or indirect.left_type is .Anyptr  {
@@ -163,10 +163,10 @@ extend Checker {
             .BuiltinCall as mut builtin_call => self.check_builtin_call(builtin_call),
             .Block as block => {
                 if block.is_unsafe {
-                    if self.inside_unsafe {
+                    if self.inside_unsafe_block {
                         report.warn("unnecessary `unsafe` block", block.pos);
                     } else {
-                        self.inside_unsafe = true;
+                        self.inside_unsafe_block = true;
                     }
                 }
                 old_expected_type := self.expected_type;
@@ -179,7 +179,12 @@ extend Checker {
                     .Void()
                 };
                 if block.is_unsafe {
-                    self.inside_unsafe = false;
+                    if self.unsafe_operations == 0 {
+                        report.warn("unnecessary `unsafe` block", block.pos);
+                    } else {
+                        self.unsafe_operations = 0;
+                    }
+                    self.inside_unsafe_block = false;
                 }
                 block.type
             },
@@ -424,7 +429,7 @@ extend Checker {
                     err.add_note("only pointers, arrays, vectors and string supports indexing");
                     err.emit();
                 } else if index.left_type is .Pointer as pointer {
-                    if !self.inside_unsafe {
+                    if !self.inside_unsafe() {
                         report.error(
                             "pointer indexing is only allowed inside `unsafe` blocks",
                             index.pos
@@ -489,7 +494,7 @@ extend Checker {
                 right := unary.right.clean_paren();
                 if right is .Index as index {
                     if index.left_type is .Pointer and !expected_pointer {
-                        report.error("cannot reference a pointer indexing", unary.pos);
+                        report.error("cannot take the address of a pointer indexing", unary.pos);
                     }
                     index.is_ref = true;
                 } else if unary.type is .Pointer {
@@ -500,7 +505,7 @@ extend Checker {
                     }
                     right_sym := unary.type.symbol()?;
                     if right_sym.is_boxed() {
-                        report.error("cannot reference a boxed value", unary.pos);
+                        report.error("cannot take the address of a boxed value", unary.pos);
                     }
                 }
                 unary.type = .Pointer(unary.type, unary.is_mut_ptr, indexable_pointer);
@@ -712,7 +717,7 @@ extend Checker {
                             ), binary.left.position()
                         );
                     } else if binary.op == .Lshift and self.table.is_signed_int(left_type)
-                        and !self.inside_unsafe {
+                        and !self.inside_unsafe() {
                         report.warn(
                             "shifting a value from a signed type `{}` can change the sign"
                                 .fmt(left_type),
