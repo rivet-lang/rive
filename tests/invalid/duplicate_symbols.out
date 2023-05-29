@@ -1,10 +1,13 @@
-tests/invalid/duplicate_symbols.ri:15:6: error: module `duplicate_symbols` has duplicate symbol `other`
+tests/invalid/duplicate_symbols.ri:15:1-17:1: error: duplicate symbol `other` in module `duplicate_symbols`
+      | /~~ from here
    15 | func other(a: int32) { // FAIL
-      |      ^
-tests/invalid/duplicate_symbols.ri:20:8: error: module `duplicate_symbols` has duplicate symbol `Gota`
+   16 |     a := 1;
+   17 | }
+      | ^~~ to here
+tests/invalid/duplicate_symbols.ri:20:1: error: duplicate symbol `Gota` in module `duplicate_symbols`
    20 | struct Gota { } // FAIL
-      |        ^
-tests/invalid/duplicate_symbols.ri:22:6: error: enum `State` has duplicate variant `Idle`
-   22 | enum State {
-      |      ^
-rivetc: error: could not compile module `duplicate_symbols`, aborting due to 3 previous errors
+      | ^~~~~~~~~~~~~~~
+tests/invalid/duplicate_symbols.ri:24:5: error: enum `State` has duplicate variant `Idle`
+   24 |     Idle // FAIL
+      |     ^~~~
+rivet: error: could not compile module `duplicate_symbols`, aborting due to 3 previous errors

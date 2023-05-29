@@ -1,13 +1,7 @@
 tests/invalid/literal_prefixes.ri:3:9: error: only `b` is recognized as a valid prefix for a character literal
     3 |     _ = c'B'; // FAIL
       |         ^
-tests/invalid/literal_prefixes.ri:3:10: error: expected `;`, found character `B` 
-    3 |     _ = c'B'; // FAIL
-      |          ^
 tests/invalid/literal_prefixes.ri:9:9: error: only `c`, `b` and `r` are recognized as valid prefixes for a string literal
     9 |     _ = v"V string"; // FAIL
       |         ^
-tests/invalid/literal_prefixes.ri:9:10: error: expected `;`, found string `V string` 
-    9 |     _ = v"V string"; // FAIL
-      |          ^
-rivetc: error: could not compile module `literal_prefixes`, aborting due to 4 previous errors
+rivet: error: could not compile module `literal_prefixes`, aborting due to 2 previous errors

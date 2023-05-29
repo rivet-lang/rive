@@ -1,0 +1,13 @@
+tests/b_invalid/unknown_symbol.ri:6:5: error: cannot find `unknown_fn` in this scope
+    6 |     unknown_fn();
+      |     ^
+tests/b_invalid/unknown_symbol.ri:7:10: error: cannot find `UnknownStruct` in this scope
+    7 |     x := UnknownStruct();
+      |          ^
+tests/b_invalid/unknown_symbol.ri:8:10: error: cannot find `unknown_var` in this scope
+    8 |     z := unknown_var;
+      |          ^
+tests/b_invalid/unknown_symbol.ri:9:16: error: enum `MyEnum` has no variant `Mark`
+    9 |     _ = MyEnum.Mark;
+      |                ^
+rivetc: error: could not compile module `unknown_symbol`, aborting due to 4 previous errors
