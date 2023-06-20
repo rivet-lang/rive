@@ -251,8 +251,10 @@ public struct Compiler {
             }
         }
         if !found {
+            self.vlog("        > module not found", pathx);
             report.error("module `{}` not found".fmt(pathx), pos);
         } else if files.is_empty() {
+            self.vlog("        > module contains no rivet files", pathx);
             report.error("module `{}` contains no rivet files".fmt(pathx), pos);
         } else {
             self.vlog("    module `{}` loaded", pathx);

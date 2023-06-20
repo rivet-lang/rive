@@ -35,6 +35,17 @@ public struct Pos : traits.Stringable {
         };
     }
 
+    public func ==(&self, other: *Pos) bool {
+        return self.file == other.file
+            and self.line == other.line
+            and self.col == other.col
+            and self.len == other.len
+            and self.pos == other.pos
+            and self.end_line == other.end_line
+            and self.end_col == other.end_col
+            and self.is_multiline == other.is_multiline;
+    }
+
     @[inline]
     public func to_report_string(&self) string {
         return if self.is_multiline {
