@@ -9,10 +9,10 @@ def run_fail_tests():
 	ok, fail, skip = 0, 0, 0
 	exit_code = 0
 
-	FAIL_FILES = glob.glob(os.path.join("tests", "b_invalid", "*.ri"))
+	FAIL_FILES = glob.glob(os.path.join("tests", "invalid", "*.ri"))
 	for i, file in enumerate(FAIL_FILES):
 		start = f" [{i+1}/{len(FAIL_FILES)}]"
-		res = utils.run_process(sys.executable, "rivetc", file)
+		res = utils.run_process("./rivet", "check", "--show-color=false", file)
 		try:
 			outf = open(file.replace(".ri", ".out"), encoding = 'UTF-8').read()
 			if outf.strip() == res.err:
@@ -41,7 +41,7 @@ def run_fail_tests():
 	if fail > 0:
 		utils.eprint(utils.bold(utils.red(f"{fail} failed")) + ", ", end = "")
 	if skip > 0:
-		utils.eprint(utils.bold(utils.yellow(f"{skip} skipped")), end = "")
+		utils.eprint(utils.bold(utils.yellow(f"{skip} skipped")) + ", ", end = "")
 	utils.eprint(utils.bold(f"{len(FAIL_FILES)} total."))
 
 	return exit_code
