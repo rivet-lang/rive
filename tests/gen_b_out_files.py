@@ -6,12 +6,12 @@
 
 import os, glob, sys, utils
 
-FAIL_FILES = glob.glob(f"tests/invalid/*.ri")
+FAIL_FILES = glob.glob(f"tests/b_invalid/*.ri")
 for file in FAIL_FILES:
 	out_name = file.replace(".ri", ".out")
 	if os.path.exists(out_name):
 		continue
-	res = utils.run_process("./rivet", "check", "--show-color=false", file)
+	res = utils.run_process(sys.executable, "rivetc", file)
 	if res.exit_code != 0:
 		utils.eprint(f"[OK] {file}")
 		with open(out_name, "w", encoding = 'UTF-8') as f:

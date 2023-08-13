@@ -9,11 +9,10 @@ def run_fail_tests():
 	ok, fail, skip = 0, 0, 0
 	exit_code = 0
 
-	FAIL_FILES = glob.glob(os.path.join("tests", "invalid", "*.ri"))
-	res = utils.run_process("python3", "rivetc", "-o", "rivet", "cmd")
+	FAIL_FILES = glob.glob(os.path.join("tests", "b_invalid", "*.ri"))
 	for i, file in enumerate(FAIL_FILES):
 		start = f" [{i+1}/{len(FAIL_FILES)}]"
-		res = utils.run_process("./rivet", "check", "--show-color=false", file)
+		res = utils.run_process(sys.executable, "rivetc", file)
 		try:
 			outf = open(file.replace(".ri", ".out"), encoding = 'UTF-8').read()
 			if outf.strip() == res.err:
@@ -33,7 +32,7 @@ def run_fail_tests():
 				utils.eprint("Exit code: 0")
 		except FileNotFoundError:
 			utils.eprint(
-			    start, file, utils.bold(utils.yellow("-> SKIP (.out file not found)"))
+			    utils.bold(utils.yellow("-> SKIP (.out file not found)")), file
 			)
 			skip += 1
 	utils.eprint(utils.bold("Summary for all tests: "), end = "")

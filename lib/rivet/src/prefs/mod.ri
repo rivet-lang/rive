@@ -212,6 +212,13 @@ public struct Prefs {
         }
 
         if !(is_test or run_output) {
+            if show_color := fp.bool_flag(
+                "show-color", 0,
+                "Force the use of ANSI colors for the error/warning messages,\n"
+                "                                     or disable them completely."
+            ) {
+                utils.stderrSupportStyles = show_color;
+            }
             if verbose := fp.bool_flag("verbose", b'v', "Print additional messages to the console."); verbose {
                 prefs.is_verbose = true;
             }

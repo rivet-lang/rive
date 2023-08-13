@@ -1,0 +1,20 @@
+0xABCDEF // OK
+0xABCGDEF // FAIL
+
+0b01010101 // OK
+0b01013010 // FAIL
+
+0__5
+0_1_
+
+0x_A
+0b_1
+
+1. // FAIL
+
+'A'
+'Á'
+'AA' // FAIL
+'' // FAIL
+
+"

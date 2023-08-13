@@ -1,0 +1,16 @@
+extern (C) {
+    func malloc(sz: usize) anyptr;
+}
+
+struct St {
+    f1: *int32;
+
+    f2: (int32, int32, int32, int32, int32, int32, int32, int32, int32);
+
+    f3: void;
+
+    f4: pkg;
+    f5: =;
+}
+
+func main() { }

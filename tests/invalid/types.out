@@ -1,8 +1,8 @@
 tests/invalid/types.ri:8:9: error: tuples can have a maximum of 8 types
     8 |     f2: (int32, int32, int32, int32, int32, int32, int32, int32, int32);
-      |         ^
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       = help: you can use a struct instead
 tests/invalid/types.ri:13:9: error: expected type, found token `=`
    13 |     f5: =;
       |         ^
-rivetc: error: could not compile module `types`, aborting due to 2 previous errors
+rivet: error: could not compile module `types`, aborting due to 2 previous errors

@@ -623,7 +623,9 @@ extend Tokenizer {
     }
 
     func read_string(mut self) string {
+        self.pos -= 1;
         pos := self.current_pos();
+        self.pos += 1;
         start := self.pos;
         start_char := self.current_char();
         mut backslash_count := if start_char == BACKSLASH { 1 } else { 0 };
@@ -638,7 +640,7 @@ extend Tokenizer {
         while {
             self.pos += 1;
             if self.pos >= self.text.len {
-                self.error("unfinished string literal");
+                self.error("unfinished string literal", pos);
                 return "";
             }
             c := self.current_char();
