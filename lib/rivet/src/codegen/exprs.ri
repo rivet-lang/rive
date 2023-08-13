@@ -1,0 +1,29 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/conv;
+
+import ./mir;
+import ../ast;
+
+extend Codegen {
+    func gen_expr(mut self, expr: ast.Expr) mir.Expr {
+        return switch expr is {
+            .Paren as paren => self.gen_expr(paren.expr),
+            //.Ident => {},
+            .BoolLiteral as bool_lit => .Const(
+                .IntConst(conv.bool_to_isize(bool_lit.value)), self.bool_t
+            ),
+            .IntegerLiteral as int_lit => .Const(
+                .IntConst(conv.string_to_isize(int_lit.value) catch @unreachable()),
+                self.usize_t
+            ),
+            .FloatLiteral as float_lit => .Const(
+                .IntConst(conv.string_to_isize(float_lit.value) catch @unreachable()),
+                self.usize_t
+            ),
+            else => .Empty()
+        };
+    }
+}

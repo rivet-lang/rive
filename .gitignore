@@ -2,7 +2,6 @@ __pycache__
 bindgen
 *.o
 *.exe
-rivet
 
 # Local files
 *.mir
