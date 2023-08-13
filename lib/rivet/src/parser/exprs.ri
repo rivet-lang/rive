@@ -322,7 +322,7 @@ extend Parser {
                         "only `b` is recognized as a valid prefix for a character literal",
                         self.tok.pos
                     );
-                    self.next();
+                    self.advance(2);
                     .Empty(self.prev_tok.pos)
                 }
             } else if self.peek_tok.kind == .String {
@@ -333,7 +333,7 @@ extend Parser {
                         "only `c`, `b` and `r` are recognized as valid prefixes for a string literal",
                         self.tok.pos
                     );
-                    self.next();
+                    self.advance(2);
                     .Empty(self.prev_tok.pos)
                 }
             } else {

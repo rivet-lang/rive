@@ -1,12 +1,9 @@
 tests/invalid/literals.ri:2:6: error: this hexadecimal number has unsuitable digit `G`
     2 | 0xABCGDEF // FAIL
       |      ^
-tests/invalid/literals.ri:4:3: error: this binary number has unsuitable digit `0`
-    4 | 0b01010101 // OK
-      |   ^
-tests/invalid/literals.ri:5:3: error: this binary number has unsuitable digit `0`
+tests/invalid/literals.ri:5:7: error: this binary number has unsuitable digit `3`
     5 | 0b01013010 // FAIL
-      |   ^
+      |       ^
 tests/invalid/literals.ri:7:3: error: cannot use `_` consecutively in a numeric literal
     7 | 0__5
       |   ^
@@ -31,6 +28,7 @@ tests/invalid/literals.ri:18:2: error: empty character literal
    18 | '' // FAIL
       |  ^
       = help: if you meant to write a string literal, use double quotes
-tests/invalid/literals.ri:21:2: error: unfinished string literal
-panic: vector index out of range (index: 20, len: 20)
-   libbacktrace error: no debug info in ELF executable
+tests/invalid/literals.ri:20:1: error: unfinished string literal
+   20 | "
+      | ^
+rivet: error: could not compile module `literals`, aborting due to 10 previous errors
