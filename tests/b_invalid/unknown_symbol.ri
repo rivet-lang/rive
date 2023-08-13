@@ -1,0 +1,10 @@
+enum MyEnum {
+    Musk
+}
+
+func main() {
+    unknown_fn();
+    x := UnknownStruct();
+    z := unknown_var;
+    _ = MyEnum.Mark;
+}

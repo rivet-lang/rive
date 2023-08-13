@@ -1,0 +1,33 @@
+tests/b_invalid/literals.ri:2:6: error: this hexadecimal number has unsuitable digit `G`
+    2 | 0xABCGDEF // FAIL
+      |      ^
+tests/b_invalid/literals.ri:5:7: error: this binary number has unsuitable digit `3`
+    5 | 0b01013010 // FAIL
+      |       ^
+tests/b_invalid/literals.ri:7:2: error: cannot use `_` consecutively in a numeric literal
+    7 | 0__5
+      |  ^
+tests/b_invalid/literals.ri:8:4: error: cannot use `_` at the end of a numeric literal
+    8 | 0_1_
+      |    ^
+tests/b_invalid/literals.ri:10:3: error: separator `_` is only valid between digits in a numeric literal
+   10 | 0x_A
+      |   ^
+tests/b_invalid/literals.ri:11:3: error: separator `_` is only valid between digits in a numeric literal
+   11 | 0b_1
+      |   ^
+tests/b_invalid/literals.ri:13:2: error: float literals should have a digit after the decimal point
+   13 | 1. // FAIL
+      |  ^
+      = help: use `1.0` instead of `1`
+tests/b_invalid/literals.ri:17:4: error: character literal may only contain one codepoint
+   17 | 'AA' // FAIL
+      |    ^
+      = help: if you meant to write a string literal, use double quotes
+tests/b_invalid/literals.ri:18:2: error: empty character literal
+   18 | '' // FAIL
+      |  ^
+tests/b_invalid/literals.ri:20:1: error: unfinished string literal
+   20 | "
+      | ^
+rivetc: error: could not compile module `literals`, aborting due to 10 previous errors

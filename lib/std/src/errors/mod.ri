@@ -9,7 +9,6 @@ import ../traits;
 
 public alias ErrnoError = c.ErrnoError;
 public alias OutOfMemoryError = core.OutOfMemoryError;
-public alias RuneFromU32Error = core.RuneFromU32Error;
 
 @[boxed]
 public struct InvalidSyntaxError : Error {

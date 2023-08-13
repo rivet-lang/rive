@@ -1,0 +1,25 @@
+func main() {
+    x := 1;
+    x := 1; // FAIL
+
+    y := 2;
+    {
+        y := 5; // disallow variable shadowing
+    }
+}
+
+func other(a: int32) {
+    a := 1;
+}
+
+func other(a: int32) { // FAIL
+    a := 1;
+}
+
+struct Gota { }
+struct Gota { } // FAIL
+
+enum State {
+    Idle,
+    Idle // FAIL
+}

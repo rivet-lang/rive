@@ -65,11 +65,10 @@ public func warn_builder(msg: string, pos: token.Pos) ReportBuilder {
 }
 
 // TODO: support JSON format for LSP, etc.
-@[boxed]
 public struct ReportBuilder {
     mut kind: ReportKind;
     msg: string;
-    pos: token.Pos;
+    pos: token.Pos = token.noPos;
     mut annotations: []Annotation;
 
     @[inline]
@@ -92,7 +91,7 @@ public struct ReportBuilder {
                 self.kind = .Error;
             }
         }
-        if reportTable.last_pos.line == self.pos.line {
+        if reportTable.last_pos == self.pos {
             return;
         }
         reportTable.last_pos = self.pos;

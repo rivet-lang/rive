@@ -26,6 +26,10 @@ jobs:
         run: |
           python3 tests/run_invalid_tests.py
 
+      - name: Run bootstrap failing tests
+        run: |
+          python3 tests/run_b_invalid_tests.py
+
   ubuntu-gcc:
     runs-on: ubuntu-latest
     steps:
@@ -42,6 +46,10 @@ jobs:
       - name: Run failing tests
         run: |
           python3 tests/run_invalid_tests.py
+
+      - name: Run bootstrap failing tests
+        run: |
+          python3 tests/run_b_invalid_tests.py
 
   # windows-gcc:
   #   runs-on: windows-2019

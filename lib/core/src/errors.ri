@@ -23,16 +23,6 @@ func error_panic(err: Error) {
 }
 
 @[boxed]
-public struct RuneFromU32Error : Error {
-    msg: string;
-
-    @[inline]
-    public func to_string(self) string {
-        return self.msg;
-    }
-}
-
-@[boxed]
 public struct InvalidArgumentError : Error {
     msg: string;
 

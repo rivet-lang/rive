@@ -71,21 +71,23 @@ public struct Prefs {
     public mut objects_to_link: []string;
 
     public mut flags: []string;
-    public mut check_syntax: bool;
 	public mut check: bool;
+    public mut check_syntax: bool;
 	public mut emit_mir: bool;
 	public mut keep_c: bool;
 	public mut all_warns_are_errors: bool;
 	public mut hide_all_warns: bool;
 	public mut is_verbose: bool;
 
-    public func new(args: []string, is_test: bool, run_output: bool) !Self {
-        prefs := Prefs(is_test: is_test, run_output: run_output);
+    public func new(args: []string, is_test: bool, run_output: bool, is_check: bool) !Self {
+        prefs := Prefs(is_test: is_test, run_output: run_output, check: is_check);
         mut fp := flag.FlagParser.new(args);
         fp.set_application_name(if is_test {
             "rivet test"
         } else if run_output {
             "rivet run"
+        } else if is_check {
+            "rivet check"
         } else {
             "rivet build"
         });
@@ -98,11 +100,18 @@ public struct Prefs {
             fp.add_description("The exit status of `run` will be:");
             fp.add_description("   - `1` if the compilation failed.");
             fp.add_description("   - The exit code of the compiled executable otherwise.\n");
+        } else if is_check {
+            fp.set_application_short_description("Scans, parses, and checks the files without compiling the module.");
         }
         fp.add_description("The compiler can receive a file or a directory as [INPUT].");
 
         // options
-        if !(is_test or run_output) {
+        if is_check {
+            if check_syntax := fp.bool_flag("syntax", 0, "Only scan and parse the module, but then stop."); check_syntax {
+                prefs.check_syntax = true;
+            }
+        }
+        if !(is_test or run_output or is_check) {
             if mod_name := fp.string_flag(
                 "mod-name", 0, "Specify the name of the module being built."
             ) {
@@ -132,64 +141,60 @@ public struct Prefs {
                 prefs.flags.push(define);
             }
         }
-        if libpath := fp.string_flag("", b'L', "Add a directory to the library search path.") {
-            if path.is_directory(libpath) {
-                if libpath in prefs.library_path {
-                    utils.error("duplicate library path: `{}`", libpath);
+        if !is_check {
+            if libpath := fp.string_flag("", b'L', "Add a directory to the library search path.") {
+                if path.is_directory(libpath) {
+                    if libpath in prefs.library_path {
+                        utils.error("duplicate library path: `{}`", libpath);
+                    }
+                    prefs.library_path.push(libpath);
+                } else {
+                    utils.error("`{}` is not a directory", libpath);
                 }
-                prefs.library_path.push(libpath);
-            } else {
-                utils.error("`{}` is not a directory", libpath);
             }
-        }
-        if os_name := fp.string_flag("os", 0, "Change the target OS that Rivet tries to compile for.") {
-            if os_flag := sys.OS.from_string(os_name) {
-                prefs.target_os = os_flag;
-            } else {
-                utils.error("unknown target operating system: `{}`", os_name);
+            if os_name := fp.string_flag("os", 0, "Change the target OS that Rivet tries to compile for.") {
+                if os_flag := sys.OS.from_string(os_name) {
+                    prefs.target_os = os_flag;
+                } else {
+                    utils.error("unknown target operating system: `{}`", os_name);
+                }
             }
-        }
-        if arch_name := fp.string_flag("arch", 0, "Change the target architecture that Rivet tries to compile for.") {
-            if arch_flag := sys.Arch.from_string(arch_name) {
-                prefs.target_arch = arch_flag;
-            } else {
-                utils.error("unknown target architecture: `{}`", arch_name);
+            if arch_name := fp.string_flag("arch", 0, "Change the target architecture that Rivet tries to compile for.") {
+                if arch_flag := sys.Arch.from_string(arch_name) {
+                    prefs.target_arch = arch_flag;
+                } else {
+                    utils.error("unknown target architecture: `{}`", arch_name);
+                }
             }
-        }
-        if target_backend := fp.string_flag(
-            "backend", b'b', "Specify the backend to use while building the module."
-        ) {
-            if backend := Backend.from_string(target_backend) {
-                prefs.target_backend = backend;
-            } else {
-                utils.error("unknown backend: `{}`", target_backend);
+            if target_backend := fp.string_flag(
+                "backend", b'b', "Specify the backend to use while building the module."
+            ) {
+                if backend := Backend.from_string(target_backend) {
+                    prefs.target_backend = backend;
+                } else {
+                    utils.error("unknown backend: `{}`", target_backend);
+                }
             }
-        }
-        if target_backend_compiler := fp.string_flag(
-            "backend-compiler", b'C',
-            "Change the backend compiler Rivet invokes to the
-                                     specified compiler."
-        ) {
-            prefs.target_backend_compiler = target_backend_compiler;
-        }
-        if target_is_32bit := fp.bool_flag(
-            "x32", 0, "32-bit machine code will be generated."
-        ); target_is_32bit {
-            prefs.target_is_64bit = false;
-        }
-        if target_is_64bit := fp.bool_flag(
-            "x64", 0, "64-bit machine code will be generated."
-        ); target_is_64bit {
-            prefs.target_is_64bit = true;
+            if target_backend_compiler := fp.string_flag(
+                "backend-compiler", b'C',
+                "Change the backend compiler Rivet invokes to the
+                                        specified compiler."
+            ) {
+                prefs.target_backend_compiler = target_backend_compiler;
+            }
+            if target_is_32bit := fp.bool_flag(
+                "x32", 0, "32-bit machine code will be generated."
+            ); target_is_32bit {
+                prefs.target_is_64bit = false;
+            }
+            if target_is_64bit := fp.bool_flag(
+                "x64", 0, "64-bit machine code will be generated."
+            ); target_is_64bit {
+                prefs.target_is_64bit = true;
+            }
         }
 
-        if !(is_test or run_output) {
-            if check_syntax := fp.bool_flag("check-syntax", 0, "Only scan and parse the module, but then stop."); check_syntax {
-                prefs.check_syntax = true;
-            }
-            if check := fp.bool_flag("check", 0, "Scans, parses, and checks the files without compiling the module."); check {
-                prefs.check = true;
-            }
+        if !(is_test or run_output or is_check) {
             if emit_mir := fp.bool_flag("emit-mir", 0, "Emit Rivet's Module Intermediate Representation to a file."); emit_mir {
                 prefs.emit_mir = true;
             }
@@ -204,30 +209,44 @@ public struct Prefs {
             if hide_all_warns := fp.bool_flag("", b'w', "Hide all warnings."); hide_all_warns {
                 prefs.hide_all_warns = true;
             }
+        }
+
+        if !(is_test or run_output) {
+            if show_color := fp.bool_flag(
+                "show-color", 0,
+                "Force the use of ANSI colors for the error/warning messages,\n"
+                "                                     or disable them completely."
+            ) {
+                utils.stderrSupportStyles = show_color;
+            }
             if verbose := fp.bool_flag("verbose", b'v', "Print additional messages to the console."); verbose {
                 prefs.is_verbose = true;
             }
         }
 
         // footers
-        fp.add_footer("By default, the target OS and the target architecture is the host OS and architecture.\n");
+        if !is_check {
+            fp.add_footer("By default, the target OS and the target architecture is the host OS and architecture.\n");
+        }
 
-        if !is_test {
+        if !(is_test or is_check) {
             fp.add_footer("Note that most Rivet warnings turn to errors, if you pass `-r` or `--release`, so you will");
             fp.add_footer("have to fix them first.\n");
         }
 
-        fp.add_footer("Current list of supported backends:");
-        fp.add_footer("   - `c` (default): Rivet outputs C source code which is passed to a C compiler\n     to be compiled.");
+        if !is_check {
+            fp.add_footer("Current list of supported backends:");
+            fp.add_footer("   - `c` (default): Rivet outputs C source code which is passed to a C compiler\n     to be compiled.");
 
-        fp.add_footer("\nCurrent list of supported backend compilers:");
-        fp.add_footer("   - `C`: `clang`, `gcc` and `mingw`.");
+            fp.add_footer("\nCurrent list of supported backend compilers:");
+            fp.add_footer("   - `C`: `clang`, `gcc` and `mingw`.");
 
-        fp.add_footer("\nCurrent list of supported operating systems:");
-        fp.add_footer("   - `linux`");
+            fp.add_footer("\nCurrent list of supported operating systems:");
+            fp.add_footer("   - `linux`");
 
-        fp.add_footer("\nCurrent list of supported architectures:");
-        fp.add_footer("   - `amd64`, `i386`");
+            fp.add_footer("\nCurrent list of supported architectures:");
+            fp.add_footer("   - `amd64`, `i386`");
+        }
 
         fp.add_usage_example(".");
         if is_test {
@@ -235,6 +254,8 @@ public struct Prefs {
         } else if run_output {
             fp.add_usage_example("sum/ -- 2 2");
             fp.add_usage_example("install_git.ri");
+        } else if is_check {
+            fp.add_usage_example("my_module/");
         } else {
             fp.add_usage_example("my_module/");
             fp.add_usage_example("-o my_bin my_module/");

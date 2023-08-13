@@ -9,10 +9,10 @@ Usage: rivet [COMMAND] [OPTIONS]
 Commands:
    new              Sets up a new Rivet project.
    init             Sets up a Rivet project within the current directory.
-   build            Build project.
+   build            Build a Rivet project.
    run              Create executable and run immediately.
    test             Create and run a test build.
-
+   check            Scans, parses, and checks the files without compiling the project.
    version          Print version number and exit.
    help             Print this help and exit.
 
