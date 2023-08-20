@@ -679,6 +679,16 @@ extend Tokenizer {
                     }
                     u_escapes_pos.push(self.pos - 1);
                 }
+                // unknown escape sequence
+                if c !in [b'x', b'u', b'e', b'n', b'r', b't', b'v', b'a', b'f', b'b',
+                    b'\\', b'@', b'?', b'{', b'}', b'\'', b'"'] and !c.is_digit() {
+                    self.pos -= 1;
+                    self.error(
+                        "unknown escape sequence `{}`".fmt(c.to_ascii()),
+                        self.current_pos()
+                    );
+                    self.pos += 1;
+                }
             }
             if c != BACKSLASH {
                 backslash_count = 0;
