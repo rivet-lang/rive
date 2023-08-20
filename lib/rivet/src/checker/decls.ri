@@ -155,12 +155,6 @@ extend Checker {
                 self.check_decls(extend_decl.decls);
             },
             .Func as mut func_decl => self.check_func(func_decl),
-            .Destructor as dtor_decl => {
-                self.check_stmts(dtor_decl.stmts);
-                dtor_decl.defer_stmts = self.defer_stmts;
-                self.defer_stmts = [];
-                self.check_scope_vars(dtor_decl.scope);
-            },
             .Test as test_decl => {
                 old_cur_fn := self.cur_fn;
                 self.cur_fn = ast.Func(ret_type: .Void());

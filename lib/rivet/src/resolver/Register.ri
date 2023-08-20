@@ -250,27 +250,6 @@ public struct Register {
                     self_pos: func_decl.self_pos,
                     pos: func_decl.pos
                 ), func_decl.pos),
-                .Destructor as dtor_decl => {
-                    dtor_decl.self_type = .Basic(@cast(ast.TypeSym, self.sym));
-                    dtor_decl.sym = self.add_sym(ast.Func(
-                        parent: self.sym,
-                        abi: self.abi,
-                        is_unsafe: true,
-                        is_method: true,
-                        name: "_dtor_",
-                        args: [
-                            ast.Arg(
-                                name: "self",
-                                is_mut: dtor_decl.self_is_mut,
-                                type: dtor_decl.self_type,
-                                pos: dtor_decl.pos
-                            )
-                        ],
-                        ret_type: .Void(),
-                        has_body: true,
-                        self_is_mut: dtor_decl.self_is_mut
-                    ), dtor_decl.pos);
-                },
                 else => {}
             }
             self.abi = old_abi;

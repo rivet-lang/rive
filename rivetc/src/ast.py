@@ -295,15 +295,6 @@ class FuncDecl:
         self.stmts = stmts
         self.defer_stmts = []
 
-class DestructorDecl:
-    def __init__(self, self_is_mut, scope, stmts, pos):
-        self.self_is_mut = self_is_mut
-        self.stmts = stmts
-        self.scope = scope
-        self.self_typ = None
-        self.pos = pos
-        self.defer_stmts = []
-
 class TestDecl:
     def __init__(self, scope, name, stmts, pos):
         self.name = name

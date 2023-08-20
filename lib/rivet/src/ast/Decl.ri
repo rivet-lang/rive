@@ -140,17 +140,6 @@ public enum Decl {
         mut sym: Sym;
         mut defer_stmts: []Stmt.Defer;
     },
-    Destructor {
-        docs: DocComment;
-        annotations: Annotations;
-        self_is_mut: bool;
-        stmts: []mut Stmt;
-        mut scope: Scope;
-        pos: token.Pos;
-        mut self_type: Type;
-        mut sym: Sym;
-        mut defer_stmts: []Stmt.Defer;
-    },
     Test {
         docs: DocComment;
         annotations: Annotations;

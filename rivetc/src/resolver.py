@@ -154,17 +154,6 @@ class Resolver:
                 self.resolve_type(decl.ret_typ)
                 for stmt in decl.stmts:
                     self.resolve_stmt(stmt)
-            elif isinstance(decl, ast.DestructorDecl):
-                self_typ = type.Type(self.self_sym)
-                decl.scope.add(
-                    sym.Obj(
-                        decl.self_is_mut, "self", self_typ, sym.ObjLevel.Rec,
-                        decl.pos
-                    )
-                )
-                decl.self_typ = self_typ
-                for stmt in decl.stmts:
-                    self.resolve_stmt(stmt)
             elif isinstance(decl, ast.TestDecl):
                 for stmt in decl.stmts:
                     self.resolve_stmt(stmt)
