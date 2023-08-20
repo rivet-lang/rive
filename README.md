@@ -12,7 +12,7 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 •
 [Roadmap](ROADMAP.md)
 •
-[Changelog](CHANGELOG.md)
+[Changelogs](changelogs/)
 •
 [Samples](samples/)
 
