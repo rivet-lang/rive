@@ -170,7 +170,7 @@ extend Checker {
 
     func check_func(mut self, mut func_decl: ast.Decl.Func) {
         if !func_decl.is_operator {
-            name := if func_decl.is_special_method {
+            name := if func_decl.is_method and func_decl.is_special_method {
                 func_decl.name[2..func_decl.name.len - 2] // skip `__`
             } else {
                 func_decl.name
@@ -188,12 +188,28 @@ extend Checker {
             );
         }
         if func_decl.is_special_method {
-            switch func_decl.name {
-                "__destructor__" => {},
-                else => report.error(
-                    "unknown special method `{}`".fmt(func_decl.name),
-                    func_decl.pos
-                )
+            if func_decl.is_method {
+                if func_decl.is_public {
+                    report.error(
+                        "special methods cannot be public", func_decl.pos
+                    );
+                }
+                if !func_decl.annotations.is_empty() {
+                    report.error(
+                        "special methods cannot have annotations", func_decl.pos
+                    );
+                }
+                switch func_decl.name {
+                    "__destructor__" => {},
+                    else => report.error(
+                        "unknown special method `{}`".fmt(func_decl.name),
+                        func_decl.pos
+                    )
+                }
+            } else {
+                report.error(
+                    "this special function should be a method", func_decl.pos
+                );
             }
         }
         if func_decl.is_method and func_decl.self_is_ptr and func_decl.self_type.is_boxed() {

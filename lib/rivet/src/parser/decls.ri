@@ -545,7 +545,7 @@ extend Parser {
         } else {
             self.parse_name()
         };
-        is_special_method := name.starts_with("__");
+        is_special_method := name.starts_with("__") and name.ends_with("__");
 
         mut is_method := false;
         mut self_is_mut := false;
@@ -643,7 +643,7 @@ extend Parser {
             is_unsafe: is_unsafe,
             is_variadic: is_variadic,
             is_method: is_method,
-            is_special_method: is_method and is_special_method,
+            is_special_method: is_special_method,
             is_main: self.mod_sym.is_root and name == "main",
             is_operator: is_operator,
             name: name,
