@@ -237,6 +237,7 @@ public struct Register {
                     is_extern: func_decl.is_extern,
                     is_unsafe: func_decl.is_unsafe,
                     is_method: func_decl.is_method,
+                    is_special_method: func_decl.is_special_method,
                     is_variadic: func_decl.is_variadic,
                     is_main: func_decl.is_main,
                     name: func_decl.name,

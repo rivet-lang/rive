@@ -176,13 +176,31 @@ extend Checker {
 
     func check_func(mut self, mut func_decl: ast.Decl.Func) {
         if !func_decl.is_operator {
+            name := if func_decl.is_special_method {
+                func_decl.name[2..func_decl.name.len - 2] // skip `__`
+            } else {
+                func_decl.name
+            };
             self.check_name_case(
                 .Snake, if func_decl.is_method {
-                    "method"
+                    if func_decl.is_special_method {
+                        "special method"
+                    } else {
+                        "method"
+                    }
                 } else {
                     "function"
-                }, func_decl.name, func_decl.pos
+                }, name, func_decl.pos
             );
+        }
+        if func_decl.is_special_method {
+            switch func_decl.name {
+                "__destructor__" => {},
+                else => report.error(
+                    "unknown special method `{}`".fmt(func_decl.name),
+                    func_decl.pos
+                )
+            }
         }
         if func_decl.is_method and func_decl.self_is_ptr and func_decl.self_type.is_boxed() {
             report.error("cannot take the address of a boxed value as receiver", func_decl.self_pos);
@@ -192,6 +210,7 @@ extend Checker {
             if arg.has_def_expr {
                 if func_decl.abi != .Rivet {
                     report.error("extern functions cannot have default arguments", arg.pos);
+                    break;
                 }
                 old_expected_type := self.expected_type;
                 self.expected_type = arg.type;

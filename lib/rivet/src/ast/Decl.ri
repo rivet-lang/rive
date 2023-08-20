@@ -120,6 +120,7 @@ public enum Decl {
         is_extern: bool;
         is_unsafe: bool;
         is_method: bool;
+        is_special_method: bool;
         is_main: bool;
         is_variadic: bool;
         is_operator: bool;

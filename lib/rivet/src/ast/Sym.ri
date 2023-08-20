@@ -332,6 +332,7 @@ public struct Func : Sym {
     public is_unsafe: bool;
     public is_main: bool;
     public is_method: bool;
+    public is_special_method: bool;
     public is_variadic: bool;
     public mut self_type: Type;
     public self_is_mut: bool;
@@ -364,7 +365,15 @@ public struct Func : Sym {
 
     @[inline]
     public func kind(self) string {
-        return if self.is_method { "method" } else { "function" };
+        return if self.is_method {
+            if self.is_special_method {
+                "special method"
+            } else {
+                "method"
+            }
+        } else {
+            "function"
+        };
     }
 
 	@[inline]
