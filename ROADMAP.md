@@ -14,14 +14,13 @@
 
 ## Self-hosted compiler
 
-- [ ] check correct implementation of a trait.
+- [X] check correct implementation of a trait.
 - [ ] constant-folding: `x := 2 * 2;` => `x := 4;`.
 - [ ] optimize code.
 - [ ] reference counting for traits, boxed enums, strings and vectors.
 - [ ] better support for embedded structs.
 - [ ] `undefined` for uninitialized variables: `x: [5]uint8 := undefined;`.
 - [ ] disallow empty array literal (`x := []!; -> ERROR`).
-- [ ] disallow use of references outside of functions.
 - [ ] add `@is_flag_defined()` builtin function.
 - [ ] generic support: `Struct![T] { f: T; }` => `Struct![T](f: @default(T))`.
 - [ ] add `std.collections.HashMap![K, V]`.
