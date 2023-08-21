@@ -172,7 +172,7 @@ class Prefs:
         while i < len(args):
             arg = args[i]
             if len(arg) > 1 and arg[0] == '-' and arg not in (
-                "-L", "-d", "--define"
+                "-L", "-D", "--define"
             ) and arg in flags:
                 error(f"duplicate flag `{arg}`")
             flags.append(arg)
@@ -224,7 +224,7 @@ class Prefs:
                 else:
                     error("`{arg}` requires a name as argument")
                 i += 1
-            elif arg in ("-d", "--define"):
+            elif arg in ("-D", "--define"):
                 if flag := option(current_args, arg):
                     if not flag.isupper():
                         error(f"flag `{flag}` should have a upper case name")

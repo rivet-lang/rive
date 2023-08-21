@@ -132,7 +132,7 @@ public struct Prefs {
                 prefs.optimize_mode = .Release;
             }
         }
-        if define := fp.string_flag("define", b'd', "Define the provided flag.") {
+        if define := fp.string_flag("define", b'D', "Define the provided flag.") {
             if define.starts_with("_") and define.ends_with("_") {
                 utils.error("flag `{}` should have a upper case name", define);
             } else if define in prefs.flags {
