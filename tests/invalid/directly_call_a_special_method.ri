@@ -1,0 +1,10 @@
+struct Destroy {
+    func __destructor__(self) {
+        _ = self;
+    }
+}
+
+func main() {
+    d := Destroy();
+    d.__destructor__();
+}
