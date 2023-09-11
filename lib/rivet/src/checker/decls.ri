@@ -200,7 +200,7 @@ extend Checker {
                     );
                 }
                 switch func_decl.name {
-                    "__destructor__" => {},
+                    "__drop__" => {},
                     else => report.error(
                         "unknown special method `{}`".fmt(func_decl.name),
                         func_decl.pos

@@ -1,5 +1,5 @@
 struct SpecialMethods {
-    func __destructor__(self) {
+    func __drop__(self) {
         _ = self;
     }
 }

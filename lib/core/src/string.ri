@@ -785,7 +785,7 @@ public struct string : Stringable, Hashable {
         return self;
     }
 
-    func __destructor__(self) {
+    func __drop__(self) {
         if !self.is_ref {
             unsafe {
                 mem_dealloc(self.ptr);

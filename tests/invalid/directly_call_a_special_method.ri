@@ -1,10 +1,10 @@
-struct Destroy {
-    func __destructor__(self) {
+struct Dropper {
+    func __drop__(self) {
         _ = self;
     }
 }
 
 func main() {
-    d := Destroy();
-    d.__destructor__();
+    d := Dropper();
+    d.__drop__();
 }
