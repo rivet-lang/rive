@@ -259,12 +259,34 @@ public struct Checker {
             },
             .Selector as selector => if selector.is_path {
                 self.check_sym_is_mut(selector.sym, selector.pos, true);
-            } else if selector.found and !selector.field_is_mut {
-                report.error(
-                    "field `{}` of type `{}` is immutable".fmt(
-                        selector.field_name, selector.left_type
-                    ), selector.pos
-                );
+            } else {
+                switch selector.left is {
+                    .Ident as ident2 if ident2.found => if ident2.is_sym {
+                        self.check_sym_is_mut(ident2.sym, ident2.pos, true)
+                    } else if ident2.sym is ast.Var as i_var and i_var.level == .Argument {
+                        if i_var.is_mut {
+                           i_var.is_changed = true;
+                        } else {
+                            mut err := report.error_builder(
+                                "cannot use `{}` as mutable argument".fmt(ident2.name),
+                                ident.pos
+                            );
+                            err.add_help(
+                                "consider making this argument mutable: `mut {}`",
+                                ident2.name
+                            );
+                            err.emit();
+                        }
+                    },
+                    else => self.check_expr_is_mut(selector.left, from_assign, true)
+                }
+                if selector.found and !selector.field_is_mut {
+                    report.error(
+                        "field `{}` of type `{}` is immutable".fmt(
+                            selector.field_name, selector.left_type
+                        ), selector.pos
+                    );
+                }
             },
             .Indirect as indirect => if !indirect.is_mut {
                 report.error("cannot use a immutable pointer as mutable value", selector.pos);

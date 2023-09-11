@@ -382,6 +382,10 @@ extend Checker {
             );
         }
 
+        if func_.is_method and func_.self_is_mut {
+            self.check_expr_is_mut(@cast(ast.Expr.Selector, call_expr.left).left);
+        }
+
         mut func_args_len := func_.args.len;
         if func_.is_variadic and !func_.is_extern {
             func_args_len -= 1;
