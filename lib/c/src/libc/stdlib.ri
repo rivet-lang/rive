@@ -6,6 +6,8 @@
     public const RAND_MAX = 0x7fffffff;
 #else_if _WINDOWS_
     public const RAND_MAX = 0x7fff;
+#else
+    #error cannot define RAND_MAX in this operating system, please report the issue
 #endif
 
 extern (C) {

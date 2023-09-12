@@ -83,6 +83,8 @@ public alias SignalHandler = func (int32, *mut siginfo_t, mut_anyptr);
     public const SIGINT = 2;
     public const SIGSEGV = 11;
     public const SIGTERM = 15;
+#else
+    #error cannot define values for signals in this operating system, please report the issue
 #endif
 
 extern (C) {
