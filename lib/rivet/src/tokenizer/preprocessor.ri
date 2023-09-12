@@ -23,6 +23,7 @@ extend Tokenizer {
             "else_if" => self.pp_else_if(),
             "else" => self.pp_else(),
             "endif" => self.pp_endif(),
+            "error", "warn" => self.pp_err_warn(pp_dir),
             else => {
                 self.error("invalid preprocessing directive: `{}`".fmt(pp_dir), pos);
                 return;
@@ -110,6 +111,22 @@ extend Tokenizer {
             self.error("unexpected `#endif`", self.current_pos());
         } else {
             _ = self.conditional_stack.pop();
+        }
+    }
+
+    func pp_err_warn(mut self, kw: string) {
+        self.pos += 1;
+        mut pos := self.current_pos();
+        self.skip_whitespace();
+        start := self.pos;
+        self.eat_to_end_of_line();
+        pos += self.current_pos();
+        self.inc_line_number();
+        msg := self.text[start..self.pos].trim_space();
+        if kw == "error" {
+            self.error("#error ".concat(msg), pos);
+        } else {
+            self.warn("#warn ".concat(msg), pos);
         }
     }
 
