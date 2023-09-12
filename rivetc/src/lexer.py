@@ -674,6 +674,8 @@ class Lexer:
             self.pp_else()
         elif kw == "endif":
             self.pp_endif()
+        elif kw in ("error", "warn"):
+            self.pp_err_warn(kw)
         else:
             report.error(f"invalid preprocessing directive: `{kw}`", pos)
             return
@@ -682,7 +684,7 @@ class Lexer:
             # skip tokens until next preprocessing directive
             while self.pos < self.text_len:
                 cc = self.current_char()
-                if cc == '#':
+                if cc == '#' and not (self.matches("#error", self.pos) or self.matches("#warn", self.pos)):
                     self.pos -= 1
                     return
                 elif cc == '\n':
@@ -754,6 +756,17 @@ class Lexer:
             report.error("unexpected `#endif`", pos)
             return
         self.conditional_stack.pop()
+
+    def pp_err_warn(self, kind):
+        pos = self.current_pos()
+        self.pos += 1
+        start = self.pos
+        self.ignore_line()
+        msg = self.text[start:self.pos].strip()
+        if kind == "error":
+            report.error(f"#error: {msg}", pos)
+        else:
+            report.warn(f"#warn: {msg}", pos)
 
     def pp_expression(self):
         return self.pp_or_expression()

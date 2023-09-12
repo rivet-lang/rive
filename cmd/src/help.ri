@@ -12,7 +12,7 @@ Commands:
    build            Build a Rivet project.
    run              Create executable and run immediately.
    test             Create and run a test build.
-   check            Scans, parses, and checks the files without compiling the project.
+   check            Scans, parses, and checks the files without compiling.
    version          Print version number and exit.
    help             Print this help and exit.
 

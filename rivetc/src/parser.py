@@ -406,22 +406,6 @@ class Parser:
                 or (self.inside_extern and self.extern_abi != sym.ABI.Rivet),
                 self.extern_abi if self.inside_extern else sym.ABI.Rivet
             )
-        elif self.inside_struct and self.accept(Kind.BitNot):
-            # destructor
-            pos = self.prev_tok.pos
-            self.expect(Kind.KwSelfTy)
-            self.expect(Kind.Lparen)
-            self_is_mut = self.accept(Kind.KwMut)
-            self.expect(Kind.KwSelf)
-            self.expect(Kind.Rparen)
-            self.expect(Kind.Lbrace)
-            self.open_scope()
-            sc = self.scope
-            stmts = []
-            while not self.accept(Kind.Rbrace):
-                stmts.append(self.parse_stmt())
-            self.close_scope()
-            return ast.DestructorDecl(self_is_mut, sc, stmts, pos)
         elif self.accept(Kind.KwTest):
             pos = self.prev_tok.pos
             name = self.tok.lit

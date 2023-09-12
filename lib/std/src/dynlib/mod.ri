@@ -66,7 +66,7 @@ struct Library {
         return if _ := self.address_of(symbol) { true } else { false };
     }
 
-    ~Self(mut self) {
+    func __drop__(mut self) {
         @ignore_not_mutated_warn(self);
         _ = unsafe { libc.dlclose(self.ptr) };
     }

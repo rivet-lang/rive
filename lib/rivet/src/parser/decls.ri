@@ -485,33 +485,6 @@ extend Parser {
                     self.inside_extern and self.extern_abi != .Rivet
                 ), if self.inside_extern { self.extern_abi } else { .Rivet }
             ),
-            self.inside_struct and self.accept(.BitNot) => {
-                // destructor
-                self.expect(.KwSelfTy);
-                self.expect(.Lparen);
-                self_is_mut := self.accept(.KwMut);
-                self.expect(.KwSelf);
-                self.expect(.Rparen);
-                self.inside_func = true;
-                self.open_scope();
-                sc := self.scope;
-                sc.detached_from_parent = true;
-                mut stmts := @vec(mut ast.Stmt);
-                self.expect(.Lbrace);
-                while !self.accept(.Rbrace) {
-                    stmts.push(self.parse_stmt());
-                }
-                self.close_scope();
-                self.inside_func = false;
-                return .Destructor(
-                    doc_comment,
-                    annotations,
-                    self_is_mut,
-                    stmts,
-                    sc,
-                    pos
-                );
-            },
             self.accept(.KwTest) => {
                 name := self.tok.lit;
                 self.expect(.String);
@@ -580,6 +553,7 @@ extend Parser {
         } else {
             self.parse_name()
         };
+        is_special_method := name.starts_with("__") and name.ends_with("__");
 
         mut is_method := false;
         mut self_is_mut := false;
@@ -677,6 +651,7 @@ extend Parser {
             is_unsafe: is_unsafe,
             is_variadic: is_variadic,
             is_method: is_method,
+            is_special_method: is_special_method,
             is_main: self.mod_sym.is_root and name == "main",
             is_operator: is_operator,
             name: name,

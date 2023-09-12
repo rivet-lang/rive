@@ -224,18 +224,6 @@ class Register:
                     decl.sym.is_main = decl.is_main
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.name_pos)
-            elif isinstance(decl, ast.DestructorDecl):
-                self.add_sym(
-                    sym.Fn(
-                        self.abi, False, False, True, True, False, "_dtor_", [
-                            sym.Arg(
-                                "self", decl.self_is_mut, type.Type(self.sym),
-                                None, False, decl.pos
-                            )
-                        ], self.comp.void_t, False, True, decl.pos,
-                        decl.self_is_mut, False
-                    ), decl.pos
-                )
             self.abi = old_abi
             self.sym = old_sym
 

@@ -438,26 +438,6 @@ class Codegen:
                 self.out_rir.externs.append(fn_decl)
             else:
                 self.out_rir.decls.append(fn_decl)
-        elif isinstance(decl, ast.DestructorDecl):
-            self_typ = self.ir_type(decl.self_typ)
-            if decl.self_is_mut and not decl.self_typ.sym.is_boxed():
-                self_typ = self_typ.ptr()
-            self_arg = ir.Ident(self_typ, "self")
-            dtor_fn = ir.FuncDecl(
-                False, ast.Annotations(), False,
-                f"{mangle_type(decl.self_typ)}6_dtor_", [self_arg], False,
-                ir.VOID_T, False
-            )
-            self.cur_fn = dtor_fn
-            for defer_stmt in decl.defer_stmts:
-                defer_stmt.flag_var = self.cur_fn.local_name()
-                self.cur_fn.alloca(
-                    ir.Ident(ir.BOOL_T, defer_stmt.flag_var),
-                    ir.IntLit(ir.BOOL_T, "0")
-                )
-            self.gen_stmts(decl.stmts)
-            self.gen_defer_stmts()
-            self.out_rir.decls.append(dtor_fn)
         elif isinstance(decl, ast.TestDecl):
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
                 if not self.source_file.sym.is_root:

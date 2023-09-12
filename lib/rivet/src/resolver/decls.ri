@@ -213,23 +213,6 @@ extend Resolver {
                         self.resolve_stmt(stmt);
                     }
                 },
-                .Destructor as dtor_decl => {
-                    is_used := self.self_sym.info is .Trait and !func_decl.has_body;
-                    dtor_decl.scope.add_local(ast.Var(
-                        name: "self",
-                        is_mut: dtor_decl.self_is_mut,
-                        is_used: is_used,
-                        is_changed: is_used,
-                        level: .Receiver,
-                        type: dtor_decl.self_type,
-                        pos: dtor_decl.pos
-                    )) catch |err| report.error(
-                        err.to_string(), dtor_decl.pos
-                    );
-                    for mut stmt in dtor_decl.stmts {
-                        self.resolve_stmt(stmt);
-                    }
-                },
                 .Test as test_decl => {
                     for mut stmt in test_decl.stmts {
                         self.resolve_stmt(stmt);

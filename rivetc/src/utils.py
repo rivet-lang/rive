@@ -41,7 +41,7 @@ Options:
       Officially supported/tested backend compilers include:
         C: `clang`, `gcc` and `mingw`.
 
-   -d <flag>, --define <flag>
+   -D <flag>, --define <flag>
       Define the provided flag.
 
    -L <path>

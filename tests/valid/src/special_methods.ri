@@ -1,0 +1,5 @@
+struct SpecialMethods {
+    func __drop__(self) {
+        _ = self;
+    }
+}

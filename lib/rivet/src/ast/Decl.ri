@@ -124,6 +124,7 @@ public enum Decl {
         is_extern: bool;
         is_unsafe: bool;
         is_method: bool;
+        is_special_method: bool;
         is_main: bool;
         is_variadic: bool;
         is_operator: bool;
@@ -140,17 +141,6 @@ public enum Decl {
         mut self_type: Type;
         pos: token.Pos;
         self_pos: token.Pos;
-        mut sym: Sym;
-        mut defer_stmts: []Stmt.Defer;
-    },
-    Destructor {
-        docs: DocComment;
-        annotations: Annotations;
-        self_is_mut: bool;
-        stmts: []mut Stmt;
-        mut scope: Scope;
-        pos: token.Pos;
-        mut self_type: Type;
         mut sym: Sym;
         mut defer_stmts: []Stmt.Defer;
     },

@@ -59,7 +59,7 @@ class CGen:
         self.comp.vlog("cgen: generating C compiler arguments...")
         args = [
             self.comp.prefs.target_backend_compiler, "-o",
-            self.comp.prefs.mod_output, "-Werror", "-fno-builtin",
+            self.comp.prefs.mod_output, "-Werror", "-fno-builtin", "-fwrapv",
             "-m64" if self.comp.prefs.target_bits == prefs.Bits.X64 else "-m32",
         ]
         if self.comp.prefs.build_mode == prefs.BuildMode.Release:

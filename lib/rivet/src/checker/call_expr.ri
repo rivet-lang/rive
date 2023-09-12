@@ -85,7 +85,11 @@ extend Checker {
                 }
                 if left_sym := selector.left_type.symbol() {
                     if method := left_sym.find_method(selector.field_name) {
-                        self.check_func_call(method, call_expr);
+                        if method.is_special_method {
+                            report.error("cannot call a special method directly", call_expr.pos);
+                        } else {
+                            self.check_func_call(method, call_expr);
+                        }
                     } else if field := left_sym.lookup_field(selector.field_name) {
                         if field.type is .Func as f_func {
                             if inside_parens {

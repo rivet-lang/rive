@@ -1,0 +1,10 @@
+struct Dropper {
+    func __drop__(self) {
+        _ = self;
+    }
+}
+
+func main() {
+    d := Dropper();
+    d.__drop__();
+}

@@ -188,11 +188,6 @@ class Checker:
             decl.defer_stmts = self.defer_stmts
             self.defer_stmts = []
             self.check_mut_vars(decl.scope)
-        elif isinstance(decl, ast.DestructorDecl):
-            self.check_stmts(decl.stmts)
-            decl.defer_stmts = self.defer_stmts
-            self.defer_stmts = []
-            self.check_mut_vars(decl.scope)
         elif isinstance(decl, ast.TestDecl):
             old_cur_fn = self.cur_fn
             self.cur_fn = None

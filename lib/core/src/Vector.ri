@@ -186,7 +186,7 @@ struct Vector {
         return vec;
     }
 
-    ~Self(self) {
+    func __drop__(self) {
         unsafe {
             if !self.is_ref {
                 mem_dealloc(self.ptr);

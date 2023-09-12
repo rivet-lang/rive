@@ -123,11 +123,10 @@ public struct Compiler {
     }
 
     func import_modules(mut self) ! {
-        mut done_imports := @vec(string);
         for sf in self.table.source_files {
             for d in sf.decls {
                 if d is .Import as import_decl {
-                    if import_decl.info.full_name in done_imports {
+                    if self.table.universe.scope.exists(import_decl.info.full_name) {
                         continue;
                     }
                     import_decl.info = self.load_module(
@@ -135,9 +134,6 @@ public struct Compiler {
                         import_decl.path_pos
                     )!;
                     import_decl.alias_name = import_decl.info.alias_name;
-                    if import_decl.info.found {
-                        done_imports.push(import_decl.info.full_name);
-                    }
                 }
             }
         }

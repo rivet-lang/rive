@@ -101,7 +101,7 @@ public struct Prefs {
             fp.add_description("   - `1` if the compilation failed.");
             fp.add_description("   - The exit code of the compiled executable otherwise.\n");
         } else if is_check {
-            fp.set_application_short_description("Scans, parses, and checks the files without compiling the module.");
+            fp.set_application_short_description("Scans, parses, and checks the files without compiling.");
         }
         fp.add_description("The compiler can receive a file or a directory as [INPUT].");
 
@@ -132,7 +132,7 @@ public struct Prefs {
                 prefs.optimize_mode = .Release;
             }
         }
-        if define := fp.string_flag("define", b'd', "Define the provided flag.") {
+        if define := fp.string_flag("define", b'D', "Define the provided flag.") {
             if define.starts_with("_") and define.ends_with("_") {
                 utils.error("flag `{}` should have a upper case name", define);
             } else if define in prefs.flags {
