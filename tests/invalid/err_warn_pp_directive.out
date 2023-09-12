@@ -1,7 +1,10 @@
-tests/invalid/err_warn_pp_directive.ri:1:8: error: #error a simple error
+tests/invalid/err_warn_pp_directive.ri:1:8: error: #error: a simple error
     1 | #error a simple error
       |        ^~~~~~~~~~~~~~
-tests/invalid/err_warn_pp_directive.ri:2:7: warning: #warn a simple warn
+tests/invalid/err_warn_pp_directive.ri:2:7: warning: #warn: a simple warn
     2 | #warn a simple warn
       |       ^~~~~~~~~~~~~
-rivet: error: could not compile module `err_warn_pp_directive`, aborting due to previous error; 1 warning emitted
+tests/invalid/err_warn_pp_directive.ri:5:11: warning: #warn: if true executed
+    5 |     #warn if true executed
+      |           ^~~~~~~~~~~~~~~~
+rivet: error: could not compile module `err_warn_pp_directive`, aborting due to previous error; 2 warnings emitted

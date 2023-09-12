@@ -34,7 +34,7 @@ extend Tokenizer {
             // skip tokens until next preprocessing directive
             while self.pos < self.text.len : self.pos += 1 {
                 cc := self.current_char();
-                if cc == b'#' {
+                if cc == b'#' and !(self.matches("#error", self.pos) or self.matches("#warn", self.pos)) {
                     self.pos -= 1;
                     return;
                 } else if utils.is_new_line(cc) {
@@ -124,9 +124,9 @@ extend Tokenizer {
         self.inc_line_number();
         msg := self.text[start..self.pos].trim_space();
         if kw == "error" {
-            self.error("#error ".concat(msg), pos);
+            self.error("#error: ".concat(msg), pos);
         } else {
-            self.warn("#warn ".concat(msg), pos);
+            self.warn("#warn: ".concat(msg), pos);
         }
     }
 

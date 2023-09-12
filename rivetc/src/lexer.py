@@ -684,7 +684,7 @@ class Lexer:
             # skip tokens until next preprocessing directive
             while self.pos < self.text_len:
                 cc = self.current_char()
-                if cc == '#':
+                if cc == '#' and not (self.matches("#error", self.pos) or self.matches("#warn", self.pos)):
                     self.pos -= 1
                     return
                 elif cc == '\n':
@@ -764,9 +764,9 @@ class Lexer:
         self.ignore_line()
         msg = self.text[start:self.pos].strip()
         if kind == "error":
-            report.error(f"#error {msg}", pos)
+            report.error(f"#error: {msg}", pos)
         else:
-            report.warn(f"#warn {msg}", pos)
+            report.warn(f"#warn: {msg}", pos)
 
     def pp_expression(self):
         return self.pp_or_expression()
