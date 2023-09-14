@@ -1849,6 +1849,8 @@ class Checker:
                 )
             elif expr.name == "_":
                 return
+            elif not from_assign:
+                return
             elif expr.is_obj:
                 if not expr.obj.is_mut:
                     kind = "argument" if expr.obj.level == sym.ObjLevel.Arg else "object"
@@ -1863,11 +1865,6 @@ class Checker:
                 expr.obj.is_changed = True
             elif expr.sym:
                 self.check_sym_is_mut(expr.sym, expr.pos)
-        elif isinstance(expr, ast.SelfExpr):
-            if not expr.obj.is_mut:
-                report.error("cannot use `self` as mutable value", expr.pos)
-                report.help("consider making `self` as mutable: `mut self`")
-            expr.obj.is_changed = True
         elif isinstance(expr, ast.SelectorExpr):
             if expr.is_path:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
