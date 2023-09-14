@@ -5,6 +5,7 @@
 import ../ast;
 import ../token;
 import ../prefs;
+import ../utils;
 import ../report;
 
 @[boxed]
@@ -56,6 +57,9 @@ public struct Checker {
                             );
                         }
                     }
+                }
+                if module.name == self.prefs.mod_name and !self.prefs.is_test and !module.scope.exists("main") {
+                    utils.error("function `main` was not defined on module `{}`".fmt(self.prefs.mod_name));
                 }
             }
         }

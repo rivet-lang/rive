@@ -4,7 +4,7 @@
 
 from .token import Kind
 from .sym import TypeKind
-from . import ast, sym, type, report, utils
+from . import ast, sym, type, report, utils, prefs
 
 class Checker:
     def __init__(self, comp):
@@ -56,6 +56,12 @@ class Checker:
                                 "variable does not need to be mutable",
                                 mod_var.pos
                             )
+                if self.comp.prefs.build_mode != prefs.BuildMode.Test and m.name == self.comp.prefs.mod_name and not m.exists(
+                    "main"
+                ):
+                    utils.error(
+                        f"function `main` was not defined on module `{self.comp.prefs.mod_name}`"
+                    )
 
     def check_decls(self, decls):
         for decl in decls:
@@ -544,7 +550,8 @@ class Checker:
                         right.left_typ, type.Ptr
                     ) and not expected_pointer:
                         report.error(
-                            "cannot take the address of a pointer indexing", expr.pos
+                            "cannot take the address of a pointer indexing",
+                            expr.pos
                         )
                     right.is_ref = True
                 elif isinstance(expr.typ, type.Ptr):
@@ -1203,9 +1210,8 @@ class Checker:
                                     f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                                 )
                 expr.left_typ = left_typ
-            if isinstance(
-                expr.left_typ, type.Ptr
-            ) and expr.left_typ.nr_level() > 1 and not expr.is_indirect:
+            if isinstance(expr.left_typ, type.Ptr) and expr.left_typ.nr_level(
+            ) > 1 and not expr.is_indirect:
                 report.error(
                     "fields of an multi-level pointer cannot be accessed directly",
                     expr.pos

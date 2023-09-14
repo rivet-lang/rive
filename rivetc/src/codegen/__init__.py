@@ -1328,11 +1328,11 @@ class Codegen:
                         args.append(self.gen_expr_with_cast(arg.typ, arg.expr))
                 else:
                     var_arg = expr.sym.args[-1]
-                    if variadic_count == 1 and len(expr.args
-                                                   ) > 0 and isinstance(
-                                                       expr.args[-1].expr.typ,
-                                                       type.Variadic
-                                                   ):
+                    if variadic_count == 1 and len(
+                        expr.args
+                    ) > 0 and isinstance(
+                        expr.args[-1].expr.typ, type.Variadic
+                    ):
                         arg = expr.args[-1]
                         args.append(self.gen_expr_with_cast(arg.typ, arg.expr))
                     elif variadic_count > 0:

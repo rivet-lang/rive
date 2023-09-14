@@ -684,7 +684,10 @@ class Lexer:
             # skip tokens until next preprocessing directive
             while self.pos < self.text_len:
                 cc = self.current_char()
-                if cc == '#' and not (self.matches("#error", self.pos) or self.matches("#warn", self.pos)):
+                if cc == '#' and not (
+                    self.matches("#error", self.pos)
+                    or self.matches("#warn", self.pos)
+                ):
                     self.pos -= 1
                     return
                 elif cc == '\n':
