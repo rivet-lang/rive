@@ -8,8 +8,8 @@ func demangle_symbol(name: string) string {
         return name;
     }
     mut idx: usize := 2;
-    mut buf := StaticBuffer();
-    mut res := StringBuilder.new(name.len);
+    buf := StaticBuffer();
+    res := StringBuilder.new(name.len);
     while idx < name.len {
         mut byte := unsafe { name.ptr[idx] };
         if byte.is_digit() {

@@ -64,11 +64,11 @@ struct ReturnTrace {
     mut traces: []CallTrace = @vec(CallTrace, 5);
 
     @[inline]
-    func add(mut self, trace: CallTrace) {
+    func add(&self, trace: CallTrace) {
         self.traces.push(trace);
     }
 
-    func print(self) {
+    func print(&self) {
         for trace in self.traces {
             console_eprintln(
                 "   at {} ({}:{})", demangle_symbol(trace.name), trace.file,
@@ -77,7 +77,7 @@ struct ReturnTrace {
         }
     }
 
-    func clear(mut self) {
+    func clear(&self) {
         self.traces.clear();
     }
 }

@@ -56,7 +56,7 @@ struct Vector {
         }
     }
 
-    func push(mut self, val: anyptr) {
+    func push(self, val: anyptr) {
         if self.len >= self.cap {
             self.reserve(self.len + 1);
         }
@@ -68,7 +68,7 @@ struct Vector {
 
     /// Returns the last element of the vector, and removes it. If the
     /// vector is empty, this will panic.
-    func pop(mut self) anyptr {
+    func pop(self) anyptr {
         if self.len == 0 {
             process_panic("Vec.pop: vector is empty");
         }
@@ -81,7 +81,7 @@ struct Vector {
     /// NOTE: This function does NOT operate in-place. Internally, it creates a copy
     /// of the vector, skipping over `size` elements starting at `i`, and then points
     /// the original variable to the new memory location.
-    public func delete(mut self, i: usize, size: usize = 1, no_slices: bool = false) {
+    public func delete(self, i: usize, size: usize = 1, no_slices: bool = false) {
         if i + size > self.len {
             end_idx := if size == 1 { "..{}".fmt(i + size) } else { "" };
             process_panic(
@@ -112,13 +112,14 @@ struct Vector {
 
     /// Trims the array length to `index` without modifying the allocated data.
     /// If `index` is greater than `len` nothing will be changed.
-    public func trim(mut self, index: usize) {
+    public func trim(self, index: usize) {
         if index < self.len {
             self.len = index;
         }
     }
 
-    public func clear(mut self) {
+    @[inline]
+    public func clear(self) {
         self.len = 0;
     }
 
@@ -139,7 +140,7 @@ struct Vector {
         return !(self == rhs);
     }
 
-    func reserve(mut self, required: usize) {
+    func reserve(self, required: usize) {
         if required <= self.cap {
             return;
         }

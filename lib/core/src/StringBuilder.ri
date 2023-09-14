@@ -26,19 +26,19 @@ public struct StringBuilder : Stringable {
     }
 
     @[inline]
-    public func write_byte(mut self, val: uint8) {
+    public func write_byte(self, val: uint8) {
         self.inner.push(&val);
     }
 
     @[unsafe; inline]
-    public func write_raw(mut self, s: [*]uint8) {
+    public func write_raw(self, s: [*]uint8) {
         unsafe {
             self.write_raw_with_len(s, libc.strlen(s));
         }
     }
 
     @[unsafe]
-    public func write_raw_with_len(mut self, s: [*]uint8, len: usize) {
+    public func write_raw_with_len(self, s: [*]uint8, len: usize) {
         self.inner.reserve(self.inner.len + len);
         mem_copy(
             unsafe { @ptr_add(self.inner.ptr, self.inner.elem_size * self.inner.len) },
@@ -48,13 +48,13 @@ public struct StringBuilder : Stringable {
     }
 
     @[inline]
-    public func write_string(mut self, s: string) {
+    public func write_string(self, s: string) {
         unsafe {
             self.write_raw_with_len(s.ptr, s.len);
         }
     }
 
-    public func writeln(mut self, s: string = "") {
+    public func writeln(self, s: string = "") {
         if s.len > 0 {
             unsafe {
                 self.write_raw_with_len(s.ptr, s.len);
@@ -63,7 +63,7 @@ public struct StringBuilder : Stringable {
         self.write_byte(b'\n');
     }
 
-    public func write_join(mut self, ss: []string, sep: string = "") {
+    public func write_join(self, ss: []string, sep: string = "") {
         if ss.len == 1 {
             self.write_string(ss[0]);
         } else {
@@ -77,11 +77,11 @@ public struct StringBuilder : Stringable {
     }
 
     @[inline]
-    public func write_fmt(mut self, s: string, args: ...Stringable) {
+    public func write_fmt(self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
     }
 
-    public func writeln_fmt(mut self, s: string, args: ...Stringable) {
+    public func writeln_fmt(self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
         self.write_byte(b'\n');
     }
@@ -93,7 +93,7 @@ public struct StringBuilder : Stringable {
     }
 
     @[inline]
-    public func clear(mut self) {
+    public func clear(self) {
         self.inner.clear();
     }
 
@@ -113,7 +113,7 @@ public struct StringBuilder : Stringable {
     }
 
     @[inline]
-    public func to_string(mut self) string {
+    public func to_string(self) string {
         self.write_byte(0);
         return string(unsafe { @cast([*]uint8, self.inner.ptr) }, self.inner.len - 1);
     }

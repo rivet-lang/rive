@@ -7,7 +7,7 @@ public struct StringFormatter {
     mut i: usize;
     mut res: StringBuilder;
 
-    func fmt(mut self, args: ...Stringable) string {
+    func fmt(self, args: ...Stringable) string {
         self.res = StringBuilder.new(self.buf.len);
         mut args_idx: usize := 0;
         while self.i < self.buf.len : self.i += 1 {
@@ -52,7 +52,7 @@ public struct StringFormatter {
                     } else if b2.is_digit() {
                         start := self.i;
                         self.i += 1;
-                        mut buf := StaticBuffer();
+                        buf := StaticBuffer();
                         while unsafe {
                             self.buf.ptr[self.i] != b'}' and self.buf.ptr[self.i] != b':'
                         } {
@@ -112,13 +112,13 @@ public struct StringFormatter {
         return self.res.to_string();
     }
 
-    func fwidth(mut self) (bool, isize) {
+    func fwidth(self) (bool, isize) {
         if unsafe { self.buf.ptr[self.i] != b':' } {
             return (false, @cast(isize, 0));
         }
         self.i += 1;
         start := self.i;
-        mut buf := StaticBuffer();
+        buf := StaticBuffer();
         while unsafe { self.buf.ptr[self.i] != b'}' } {
             buf.push(unsafe { self.buf.ptr[self.i] });
             self.i += 1;

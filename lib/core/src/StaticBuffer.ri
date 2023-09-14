@@ -8,7 +8,7 @@ struct StaticBuffer {
     buf: [25]mut uint8;
     mut len: usize;
 
-    public func push(mut self, byte: uint8) {
+    public func push(self, byte: uint8) {
         if self.len > self.buf.len {
             process_panic("StaticBuffer.push: cannot push byte (len: {})", self.len);
         }
@@ -32,7 +32,7 @@ struct StaticBuffer {
     }
 
     @[inline]
-    public func clear(mut self) {
+    public func clear(self) {
         self.len = 0;
     }
 }

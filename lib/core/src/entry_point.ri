@@ -23,7 +23,7 @@ extern (C) func init_args(_argc: usize, _argv: [*][*]uint8) {
 func main(
     _argc: int32, _argv: [*][*]uint8,
 #if _TESTS_
-    mut test_runner: TestRunner
+    test_runner: *TestRunner
 #else
     mod_main: func()
 #endif

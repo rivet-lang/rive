@@ -22,7 +22,7 @@ func test_errdefer(mut err_defer: ErrDefer, err: bool) ! {
 }
 
 test "`errdefer` statement" {
-    mut err_defer := ErrDefer(i: 0);
+    err_defer := ErrDefer(i: 0);
     test_errdefer(err_defer, false) catch { };
     @assert(err_defer.i == 1);
 
@@ -42,7 +42,7 @@ func return_and_errdefer(mut err_defer: ErrDefer) ! {
 }
 
 test "`errdefer` with error propagation" {
-    mut err_defer := ErrDefer(i: 0);
+    err_defer := ErrDefer(i: 0);
     return_and_errdefer(err_defer) catch {};
     @assert(err_defer.i == 4);
 }

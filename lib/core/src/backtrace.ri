@@ -82,7 +82,7 @@ public func bt_print(frames_to_skip: int32 = 0) {
 #else
     unsafe {
         if libcoreIsStarted {
-            mut data := BacktraceData();
+            data := BacktraceData();
             _ = backtrace_full(
                 state, frames_to_skip, bt_print_callback, bt_error_handler, &mut data
             );

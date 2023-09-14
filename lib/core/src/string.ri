@@ -91,7 +91,7 @@ public struct string : Stringable, Hashable {
         if others.len == 0 {
             return self;
         }
-        mut sb := StringBuilder.from_string(self);
+        sb := StringBuilder.from_string(self);
         for other in others {
             sb.write_string(other);
         }
@@ -100,7 +100,7 @@ public struct string : Stringable, Hashable {
 
     /// Returns a string array of the string split by '\t' and ' '.
     public func fields(self) []string {
-        mut res := @vec(string);
+        res := @vec(string);
         mut word_start: usize := 0;
         mut word_len: usize := 0;
         mut is_in_word := false;
@@ -136,7 +136,7 @@ public struct string : Stringable, Hashable {
         if words.len == 0 {
             return emptyString;
         }
-        mut wrapped := StringBuilder.from_string(words[0]);
+        wrapped := StringBuilder.from_string(words[0]);
         mut space_left := width - wrapped.len();
         mut i: usize := 1;
         while i < words.len : i += 1 {
@@ -417,7 +417,7 @@ public struct string : Stringable, Hashable {
             return self;
         }
         mut idx: usize := 0;
-        mut idxs := @vec(usize);
+        idxs := @vec(usize);
         while {
             idx = self.index_after_of(rep, idx) ?? break;
             idxs.push(idx);
@@ -465,7 +465,7 @@ public struct string : Stringable, Hashable {
     /// Returns an array of all the UTF8 runes in the string `self` which is useful
     /// if you want random access to them.
     public func as_runes(self) []rune {
-        mut runes := @vec(rune, self.runes_count());
+        runes := @vec(rune, self.runes_count());
         mut i: usize := 0;
         while i < self.len : i += 1 {
             char_len := unsafe { self.ptr[i] }.len_utf8();
@@ -498,7 +498,7 @@ public struct string : Stringable, Hashable {
     /// remainder contains more `delim` substrings.
     public func split(self, delim: string, nth: usize = 0) []string {
         mut i: usize := 0;
-        mut res := @vec(string);
+        res := @vec(string);
         switch delim.len {
             0 => {
                 i = 1;
@@ -559,7 +559,7 @@ public struct string : Stringable, Hashable {
     /// If the delimiter string is empty then `.split()` is used.
     public func split_any(self, delim: string) []string {
         mut i: usize := 0;
-        mut res := @vec(string);
+        res := @vec(string);
         // check empty source string
         if self.len > 0 {
             // if empty delimiter string using default split
@@ -587,7 +587,7 @@ public struct string : Stringable, Hashable {
     /// NOTE: algorithm is "greedy", consuming '\r\n' as a single line ending with higher
     /// priority than '\r' and '\n' as multiple endings
     public func split_into_lines(self) []string {
-        mut res := @vec(string);
+        res := @vec(string);
         if self.len == 0 {
             return res;
         }

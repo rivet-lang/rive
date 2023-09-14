@@ -81,8 +81,8 @@ public struct TestRunner {
     mut fail_tests: uint64;
     mut skip_tests: uint64;
 
-    func run(mut self) {
-        for i, mut test_ in self.tests {
+    func run(self) {
+        for i, test_ in self.tests {
             console_eprint(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
             (test_.fn)(test_);
             switch test_.result {
@@ -110,23 +110,23 @@ public struct TestRunner {
         console_eprintln(bold("{} total.".fmt(self.tests.len)));
     }
 
-    func print_ok(mut self) {
+    func print_ok(self) {
         console_eprintln(okStatus);
         self.ok_tests += 1;
     }
 
-    func print_skip(mut self) {
+    func print_skip(self) {
         console_eprintln(skipStatus);
         self.skip_tests += 1;
     }
 
-    func print_failed(mut self, pos: string, msg: string) {
+    func print_failed(self, pos: string, msg: string) {
         console_eprintln(failedStatus);
         console_eprintln("     at {}: {}", bold(pos), msg);
         self.fail_tests += 1;
     }
 
-    func print_error_returned(mut self, pos: string, err: Error) {
+    func print_error_returned(self, pos: string, err: Error) {
         console_eprintln(failedStatus);
         console_eprintln("     at {}: error returned: {}", bold(pos), err);
         self.fail_tests += 1;

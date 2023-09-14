@@ -1,6 +1,6 @@
 test "vector from array" {
     arr := [1, 2, 3]!;
-    mut vec := arr[..];
+    vec := arr[..];
     vec.push(2);
     @assert(vec.len == 4);
 
@@ -11,12 +11,12 @@ test "vector from array" {
 
 test "`@vec` builtin function" {
     {
-        mut v := @vec(int32);
+        v := @vec(int32);
         v.push(5);
         @assert(v[0] == 5);
     }
     {
-        mut v := @vec(int32, 2);
+        v := @vec(int32, 2);
         v.push(10);
         @assert(v.cap == 2);
         @assert(v[0] == 10);
