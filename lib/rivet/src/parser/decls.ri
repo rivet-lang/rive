@@ -548,9 +548,9 @@ extend Parser {
         is_special_method := name.starts_with("__") and name.ends_with("__");
 
         mut is_method := false;
-        &self_is_mut := false;
-        &self_is_ptr := false;
-        &self_pos := token.noPos;
+        self_is_mut := false;
+        self_is_ptr := false;
+        self_pos := token.noPos;
         mut args := @vec(ast.Arg);
         mut has_named_args := false;
         mut is_variadic := false;
