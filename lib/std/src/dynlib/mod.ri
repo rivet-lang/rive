@@ -44,7 +44,11 @@ public func load(path: string, global_symbols: bool = false) !Library {
     if ptr := unsafe { libc.dlopen(path.ptr, flags) } {
         return Library(path, ptr);
     }
-    return CannotLoadLibraryError("cannot load '{}': {}".fmt(path, dlerror()));
+    if dl_error := dlerror() {
+        return CannotLoadLibraryError("cannot load '{}': {}".fmt(path, dl_error));
+    } else {
+        return CannotLoadLibraryError("cannot load '{}'".fmt(path));
+    }
 }
 
 @[boxed]
@@ -56,9 +60,13 @@ struct Library {
         if ptr := unsafe { libc.dlsym(self.ptr, symbol.ptr) } {
             return ptr;
         }
-        return SymbolNotFoundError(
-            "cannot found symbol '{}' in library '{}': {}".fmt(symbol, self.path, dlerror())
-        );
+        if dl_error := dlerror() {
+            return SymbolNotFoundError(
+                "cannot found symbol '{}' in library '{}': {}".fmt(symbol, self.path, dl_error)
+            );
+        } else {
+            return SymbolNotFoundError("cannot found symbol '{}' in library '{}'".fmt(symbol, self.path));
+        }
     }
 
     @[inline]
@@ -72,20 +80,22 @@ struct Library {
     }
 }
 
-func dlerror() string {
+func dlerror() ?string {
     if err := unsafe { libc.dlerror() } {
         return unsafe { string.from_raw(err) }.clone();
     }
-    return "";
+    return none;
 }
 
 @[inline]
 func get_shared_library_extension() string {
+    return
 #if _LINUX_
-    return ".so";
+        ".so"
 #else_if _WINDOWS_
-    return ".dll";
+        ".dll"
 #else
-    return ".dylib";
+        ".dylib"
 #endif
+        ;
 }
