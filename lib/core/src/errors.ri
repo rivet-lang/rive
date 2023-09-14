@@ -64,7 +64,7 @@ struct ReturnTrace {
     mut traces: []CallTrace = @vec(CallTrace, 5);
 
     @[inline]
-    func add(&self, trace: CallTrace) {
+    func add(&mut self, trace: CallTrace) {
         self.traces.push(trace);
     }
 

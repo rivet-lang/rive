@@ -1866,7 +1866,7 @@ class Checker:
             elif expr.sym:
                 self.check_sym_is_mut(expr.sym, expr.pos)
         elif isinstance(expr, ast.SelectorExpr):
-            if expr.is_path:
+            if expr.is_path and from_assign:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
                 return
             elif isinstance(expr.left, ast.Ident):
@@ -1884,7 +1884,7 @@ class Checker:
                     expr.left.obj.is_changed = True
             else:
                 self.check_expr_is_mut(expr.left, from_assign)
-            if expr.is_indirect and isinstance(expr.left_typ, (type.Ptr)):
+            if isinstance(expr.left_typ, type.Ptr):
                 if not expr.left_typ.is_mut:
                     report.error(
                         "cannot use a immutable pointer as mutable value",
