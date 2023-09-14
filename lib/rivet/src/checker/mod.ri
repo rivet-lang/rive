@@ -242,15 +242,6 @@ public struct Checker {
     ) {
         switch expr is {
             .Paren as paren => self.check_expr_is_mut(paren.expr),
-            .SelfLiteral as self_lit => if self_lit.obj.is_mut {
-                self_lit.obj.is_changed = true;
-            } else {
-                mut err := report.error_builder(
-                    "cannot use `self` as mutable value", self_lit.pos
-                );
-                err.add_help("consider making `self` as mutable: `mut self`");
-                err.emit();
-            },
             .Ident as ident => if ident.is_comptime {
                 report.error(
                     "cannot use constant `@{}` as mutable value".fmt(ident.name),
@@ -258,7 +249,7 @@ public struct Checker {
                 );
             } else if ident.name == "_" {
                 return;
-            } else if ident.found and (ident.is_sym or ident.is_obj) {
+            } else if ident.found and from_assign and (ident.is_sym or ident.is_obj) {
                 self.check_sym_is_mut(ident.sym, ident.pos, from_selector);
             },
             .Selector as selector => if selector.is_path {
