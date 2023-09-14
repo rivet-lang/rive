@@ -10,3 +10,5 @@ struct SpecialMethod {
         _ = self;
     }
 }
+
+func main() {}
