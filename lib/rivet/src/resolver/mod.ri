@@ -20,10 +20,10 @@ public struct Resolver {
     mut prefs: prefs.Prefs;
 
     mut sym: ast.Sym = ast.InvalidSym();
-    selfsym: ast.TypeSym;
+    &self_sym: ast.TypeSym;
     mut preludes: []Prelude;
 
-    selfsym_is_set: bool;
+    &self_sym_is_set: bool;
 
     mut source_file: ast.SourceFile;
 
