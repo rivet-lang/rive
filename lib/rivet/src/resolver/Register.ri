@@ -19,7 +19,7 @@ public struct Register {
     mut sym: ast.Sym = ast.InvalidSym();
     mut source_file: ast.SourceFile;
 
-    public func walk_files(mut self, source_files: []ast.SourceFile) {
+    public func walk_files(&self, source_files: []ast.SourceFile) {
         for sf in source_files {
             self.is_core_mod = sf.mod.is_core();
             if !self.core_is_set and self.is_core_mod {
@@ -33,7 +33,7 @@ public struct Register {
         self.table.error_t = .Basic(self.table.error_sym);
     }
 
-    func walk_decls(mut self, decls: []mut ast.Decl) {
+    func walk_decls(&self, decls: []mut ast.Decl) {
         for decl in decls {
             old_abi := self.abi;
             old_sym := self.sym;
@@ -257,7 +257,7 @@ public struct Register {
         }
     }
 
-    func import_decl(mut self, import_decl: ast.Decl.Import) {
+    func import_decl(&self, import_decl: ast.Decl.Import) {
         if import_decl.glob {
             // `import { * } from module/path`
             for sym in import_decl.info.mod.scope.syms {
@@ -331,7 +331,7 @@ public struct Register {
         }
     }
 
-    func add_sym(mut self, sym: ast.Sym, pos: token.Pos) ast.Sym {
+    func add_sym(&self, sym: ast.Sym, pos: token.Pos) ast.Sym {
         if self.check_imported_symbol(sym.name, pos, false) {
             return self.sym.scope.add_or_get(sym) catch |err| {
                 report.error(err.to_string(), pos);

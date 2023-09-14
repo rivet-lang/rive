@@ -5,7 +5,7 @@
 import ../ast;
 
 extend Parser {
-    func parse_stmt(mut self) ast.Stmt {
+    func parse_stmt(&self) ast.Stmt {
         return switch {
             self.accept(.KwWhile) => {
                 pos := self.prev_tok.pos;

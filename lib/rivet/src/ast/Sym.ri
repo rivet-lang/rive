@@ -141,7 +141,7 @@ public struct SymRef : Sym {
 
 @[boxed]
 public struct Module : Sym {
-    public func add_or_get_array(mut self, elem_typ: Type, size: usize, is_mut: bool) TypeSym {
+    public func add_or_get_array(&self, elem_typ: Type, size: usize, is_mut: bool) TypeSym {
         unique_name := if is_mut {
             "[{}]mut {}"
         } else {
@@ -165,7 +165,7 @@ public struct Module : Sym {
         return type_sym;
     }
 
-    public func add_or_get_vec(mut self, elem_type: Type, is_mut: bool) TypeSym {
+    public func add_or_get_vec(&self, elem_type: Type, is_mut: bool) TypeSym {
         unique_name := if is_mut { "[]mut " } else { "[]" }.concat(elem_type.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
             return @cast(TypeSym, type_sym);
@@ -222,7 +222,7 @@ public struct Module : Sym {
         return type_sym;
     }
 
-    public func add_or_get_tuple(mut self, types: []Type) TypeSym {
+    public func add_or_get_tuple(&self, types: []Type) TypeSym {
         unique_name := {
             mut sb := strings.Builder.from_string("(");
             for i, type in types {
@@ -248,7 +248,7 @@ public struct Module : Sym {
         return type_sym;
     }
 
-    public func add_or_get_func(mut self, func_sym: Func) TypeSym {
+    public func add_or_get_func(&self, func_sym: Func) TypeSym {
         unique_name := {
             mut sb := strings.Builder.from_string("func(");
             if func_sym.is_method {
@@ -334,7 +334,7 @@ public struct Func : Sym {
     public is_method: bool;
     public is_special_method: bool;
     public is_variadic: bool;
-    public mut self_type: Type;
+    public &self_type: Type;
     public self_is_mut: bool;
     public self_is_ptr: bool;
     public self_pos: token.Pos;

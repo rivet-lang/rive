@@ -9,7 +9,7 @@ import ../report;
 import ../token;
 
 extend Parser {
-    func parse_doc_comment(mut self) ast.DocComment {
+    func parse_doc_comment(&self) ast.DocComment {
         mut pos := self.tok.pos;
         mut lines := @vec(string);
         while self.accept(.DocComment) {
@@ -20,7 +20,7 @@ extend Parser {
     }
 
     public func parse_annotations(
-        mut self, parse_mod_annotations: bool = false
+        &self, parse_mod_annotations: bool = false
     ) ast.Annotations {
         mut annotations := ast.Annotations();
         while self.accept(.At) {
@@ -66,12 +66,12 @@ extend Parser {
     }
 
     @[inline]
-    func is_public(mut self) bool {
+    func is_public(&self) bool {
         is_pub := self.accept(.KwPublic);
         return self.inside_trait or self.inside_enum_variant_with_fields or is_pub;
     }
 
-    func parse_abi(mut self) ast.ABI {
+    func parse_abi(&self) ast.ABI {
         self.expect(.Lparen);
         abi_pos := self.tok.pos;
         abi := self.parse_name();
@@ -84,7 +84,7 @@ extend Parser {
         };
     }
 
-    func parse_decls(mut self) []ast.Decl {
+    func parse_decls(&self) []ast.Decl {
         mut decls := @vec(ast.Decl);
         while self.tok.kind != .EndOfFile {
             decls.push(self.parse_decl());
@@ -92,7 +92,7 @@ extend Parser {
         return decls;
     }
 
-    func parse_decl(mut self) ast.Decl {
+    func parse_decl(&self) ast.Decl {
         doc_comment := self.parse_doc_comment();
         annotations := self.parse_annotations(
             self.tok.kind == .At and self.peek_tok.kind == .Bang
@@ -513,7 +513,7 @@ extend Parser {
         return .Empty(pos);
     }
 
-    func parse_import_path(mut self) string {
+    func parse_import_path(&self) string {
         mut sb := strings.Builder.new();
         if self.accept(.Dot) {
             sb.write_string("./");
@@ -533,7 +533,7 @@ extend Parser {
     }
 
     func parse_func_decl(
-        mut self, docs: ast.DocComment, annotations: ast.Annotations,
+        &self, docs: ast.DocComment, annotations: ast.Annotations,
         is_public: bool, is_unsafe: bool, abi: ast.ABI
     ) ast.Decl {
         mut is_operator := false;
@@ -548,9 +548,9 @@ extend Parser {
         is_special_method := name.starts_with("__") and name.ends_with("__");
 
         mut is_method := false;
-        mut self_is_mut := false;
-        mut self_is_ptr := false;
-        mut self_pos := token.noPos;
+        &self_is_mut := false;
+        &self_is_ptr := false;
+        &self_pos := token.noPos;
         mut args := @vec(ast.Arg);
         mut has_named_args := false;
         mut is_variadic := false;
@@ -561,7 +561,7 @@ extend Parser {
         sc.detached_from_parent = true;
         self.expect(.Lparen);
         if self.tok.kind != .Rparen {
-            // receiver (`self`|`&self`|`mut self`)
+            // receiver (`self`|`&self`|`&self`)
             if self.tok.kind == .KwSelf or (
                 self.tok.kind in [.Amp, .KwMut] and self.peek_tok.kind == .KwSelf
             ) {

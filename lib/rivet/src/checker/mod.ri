@@ -30,7 +30,7 @@ public struct Checker {
     mut defer_stmts: []ast.Stmt.Defer;
     mut unsafe_operations: usize;
 
-    public func check_files(mut self, source_files: []ast.SourceFile) {
+    public func check_files(&self, source_files: []ast.SourceFile) {
         // check global variables
         for source_file in source_files {
             self.sym = source_file.mod;
@@ -66,7 +66,7 @@ public struct Checker {
     }
 
     func check_var_decl(
-        mut self, lefts: []ast.ObjectData, mut right: ast.Expr, scope: ast.Scope,
+        &self, lefts: []ast.ObjectData, mut right: ast.Expr, scope: ast.Scope,
         pos: token.Pos
     ) {
         if lefts.len == 1 {
@@ -425,7 +425,7 @@ public struct Checker {
         };
     }
 
-    func inside_unsafe(mut self) bool {
+    func inside_unsafe(&self) bool {
         self.unsafe_operations += 1;
         return self.inside_unsafe_block;
     }

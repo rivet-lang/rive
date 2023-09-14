@@ -32,7 +32,7 @@ public struct File {
 
     /// Writes the byte `b` into the file.
     @[inline]
-    public func write_byte(mut self, b: uint8) {
+    public func write_byte(&self, b: uint8) {
         @ignore_not_mutated_warn(self);
         unsafe {
             _ = libc.fputc(@cast(int32, b), self.f);
@@ -41,7 +41,7 @@ public struct File {
 
     /// Writes the string `s` into the file.
     @[inline]
-    public func write_string(mut self, s: string) {
+    public func write_string(&self, s: string) {
         @ignore_not_mutated_warn(self);
         unsafe {
             _ = libc.fputs(s.ptr, self.f);
@@ -49,17 +49,17 @@ public struct File {
     }
 
     /// Writes the string `s` into the file and appends a '\n' character.
-    public func writeln(mut self, s: string) {
+    public func writeln(&self, s: string) {
         self.write_string(s);
         self.write_byte(b'\n');
     }
 
     @[inline]
-    public func write_string_fmt(mut self, s: string, args: ...Stringable) {
+    public func write_string_fmt(&self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
     }
 
-    public func writeln_fmt(mut self, s: string, args: ...Stringable) {
+    public func writeln_fmt(&self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
         self.write_byte(b'\n');
     }
@@ -111,7 +111,7 @@ public struct File {
     }
 
     /// Closes the current file.
-    public func close(mut self) {
+    public func close(&self) {
         if !self.is_opened {
             return;
         }

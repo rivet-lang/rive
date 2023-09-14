@@ -10,7 +10,7 @@ public struct Block : traits.Stringable {
     mut id: usize;
     mut stmts: []Stmt;
 
-    public func add_stmt(mut self, stmt: Stmt) {
+    public func add_stmt(&self, stmt: Stmt) {
         self.stmts.push(stmt);
     }
 

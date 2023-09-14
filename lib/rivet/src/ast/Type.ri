@@ -150,7 +150,7 @@ public enum Type : traits.Stringable {
         };
     }
 
-    public func unalias_in_place(mut self) {
+    public func unalias_in_place(&self) {
         if unaliased_type := self.unalias() {
             unsafe {
                 @set_enum_ref_value(self, unaliased_type);

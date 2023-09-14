@@ -41,7 +41,7 @@ public struct Compiler {
         ).run()!;
     }
 
-    func run(mut self) ! {
+    func run(&self) ! {
         self.make_rivet_directory()!;
 
         _ = self.load_module("core", "core", "", token.noPos)!;
@@ -92,7 +92,7 @@ public struct Compiler {
         }
     }
 
-    func load_root_module(mut self) ! {
+    func load_root_module(&self) ! {
         files := if path.is_directory(self.prefs.input) {
             mut filtered_files := self.table.filter_files(
                 fs.walk_directory(self.prefs.input, ".ri")!
@@ -122,7 +122,7 @@ public struct Compiler {
         self.parse_files(root_sym, files);
     }
 
-    func import_modules(mut self) ! {
+    func import_modules(&self) ! {
         for sf in self.table.source_files {
             for d in sf.decls {
                 if d is .Import as import_decl {
@@ -145,7 +145,7 @@ public struct Compiler {
     }
 
     func load_module(
-        mut self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
+        &self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) !ast.ImportedMod {
         mod := self.load_module_files(pathx, alias_name, file_path, pos)!;
         if mod.found {
@@ -263,7 +263,7 @@ public struct Compiler {
         );
     }
 
-    func parse_files(mut self, mod_sym: ast.Module, files: []string) {
+    func parse_files(&self, mod_sym: ast.Module, files: []string) {
         for sf in parser.Parser(table: self.table, prefs: self.prefs).parse_module(
             mod_sym, files
         ) {
@@ -274,7 +274,7 @@ public struct Compiler {
         }
     }
 
-    func resolve_deps(mut self) {
+    func resolve_deps(&self) {
         g := self.import_graph();
         g_resolved := g.resolve();
         self.vlog(

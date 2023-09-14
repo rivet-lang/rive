@@ -7,7 +7,7 @@ import core;
 public alias Builder = core.StringBuilder;
 
 func fill_vector(len: usize) []mut int32 {
-    mut vec := @vec(mut int32, len);
+    vec := @vec(mut int32, len);
     mut i: usize := 0;
     while i < len : i += 1 {
         vec.push(@cast(int32, i));

@@ -47,12 +47,12 @@ public struct Tokenizer {
         return t;
     }
 
-    func init(mut self) {
+    func init(&self) {
         self.all_tokens = @vec(token.Token, self.text.len / 3);
         self.tokenize_remaining_text();
     }
 
-    func tokenize_remaining_text(mut self) {
+    func tokenize_remaining_text(&self) {
         while {
             t := self.internal_next();
             self.all_tokens.push(t);
@@ -104,7 +104,7 @@ public struct Tokenizer {
         );
     }
 
-    func end_of_file(mut self) token.Token {
+    func end_of_file(&self) token.Token {
         self.eofs += 1;
         if self.eofs > 50 {
             self.line -= 1;
@@ -144,17 +144,17 @@ public struct Tokenizer {
         };
     }
 
-    func ignore_line(mut self) {
+    func ignore_line(&self) {
         self.eat_to_end_of_line();
         self.inc_line_number();
     }
 
     @[inline]
-    func eat_to_end_of_line(mut self) {
+    func eat_to_end_of_line(&self) {
         while self.pos < self.text.len and self.current_char() != LF : self.pos += 1 {}
     }
 
-    func inc_line_number(mut self) {
+    func inc_line_number(&self) {
         self.last_nl_pos = utils.min(self.text.len - 1, self.pos);
         if self.is_cr_lf {
             self.last_nl_pos += 1;
@@ -163,7 +163,7 @@ public struct Tokenizer {
     }
 
     @[inline]
-    func skip_whitespace(mut self) {
+    func skip_whitespace(&self) {
         while self.pos < self.text.len : self.pos += 1 {
             c := self.current_char();
             if c == 8 {
@@ -217,7 +217,7 @@ public struct Tokenizer {
         };
     }
 
-    func invalid_character(mut self) {
+    func invalid_character(&self) {
         len := self.text[self.pos].len_utf8();
         end := utils.min(self.pos + len, self.text.len);
         self.error("invalid character: `{}`".fmt(self.text[self.pos..end]));

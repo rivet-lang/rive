@@ -58,7 +58,7 @@ public func execute(cmd: string) !Result {
             fd := libc.fileno(f);
             buf: [4096]mut uint8 := []!;
             pbuf: [*]mut uint8 := &mut buf[0];
-            mut output := Builder.new(1024);
+            output := Builder.new(1024);
             while {
                 len := libc.read(fd, pbuf, 4096);
                 if len == 0 or len == -1 {

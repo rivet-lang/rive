@@ -127,7 +127,7 @@ public struct TypeSym : Sym {
         return self.find_method(name) !is none;
     }
 
-    public func full_fields(mut self) []Field {
+    public func full_fields(&self) []Field {
         if !self.full_fields_.is_empty() {
             return self.full_fields_;
         }
@@ -166,7 +166,7 @@ public struct TypeSym : Sym {
         };
     }
 
-    public func update(mut self, other: TypeSym) !bool {
+    public func update(&self, other: TypeSym) !bool {
         if self.info is .Placeholder {
             // update placeholder
             if other.info !is .Placeholder {

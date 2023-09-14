@@ -72,16 +72,16 @@ public struct ReportBuilder {
     mut annotations: []Annotation;
 
     @[inline]
-    public func add_note(mut self, msg: string, args: ...traits.Stringable) {
+    public func add_note(&self, msg: string, args: ...traits.Stringable) {
         self.annotations.push(Annotation(.Note, msg.fmt(args)));
     }
 
     @[inline]
-    public func add_help(mut self, msg: string, args: ...traits.Stringable) {
+    public func add_help(&self, msg: string, args: ...traits.Stringable) {
         self.annotations.push(Annotation(.Help, msg.fmt(args)));
     }
 
-    public func emit(mut self) {
+    public func emit(&self) {
         if self.kind == .Warn {
             if reportTable.prefs.hide_all_warns {
                 return;

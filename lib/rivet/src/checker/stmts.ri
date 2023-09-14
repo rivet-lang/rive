@@ -7,7 +7,7 @@ import ../token;
 import ../report;
 
 extend Checker {
-    func check_stmts(mut self, stmts: []mut ast.Stmt) {
+    func check_stmts(&self, stmts: []mut ast.Stmt) {
         mut unreachable_pos := token.noPos;
         for mut stmt in stmts {
             if self.scope_returns and unreachable_pos.pos == 0 {
@@ -21,7 +21,7 @@ extend Checker {
         self.scope_returns = false;
     }
 
-    func check_stmt(mut self, mut stmt: ast.Stmt) {
+    func check_stmt(&self, mut stmt: ast.Stmt) {
         switch stmt is {
             .VarDecl as var_decl => self.check_var_decl(
                 var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
@@ -64,7 +64,7 @@ extend Checker {
         }
     }
 
-    func check_for(mut self, mut for_stmt: ast.Stmt.For) {
+    func check_for(&self, mut for_stmt: ast.Stmt.For) {
         iterable_t := self.check_expr(for_stmt.iterable);
         iterable_sym := iterable_t.symbol()?;
         if iterable_sym.info is .Array or iterable_sym.info is .Vector {

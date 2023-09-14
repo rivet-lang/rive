@@ -36,7 +36,7 @@ public struct Parser {
     mut inside_switch_header: bool;
     mut inside_block: bool;
 
-    public func parse_module(mut self, mod_sym: ast.Module, files: []string) []ast.SourceFile {
+    public func parse_module(&self, mod_sym: ast.Module, files: []string) []ast.SourceFile {
         self.scope = mod_sym.scope;
         self.mod_sym = mod_sym;
         mut source_files := @vec(ast.SourceFile);
@@ -46,7 +46,7 @@ public struct Parser {
         return source_files;
     }
 
-    public func parse_file(mut self, file: string) ast.SourceFile {
+    public func parse_file(&self, file: string) ast.SourceFile {
         self.file_path = file;
         self.file_dir = path.dirname(file) ?? file;
         self.tokenizer = tokenizer.Tokenizer.from_file(file, self.prefs, self.table);
@@ -57,7 +57,7 @@ public struct Parser {
         return ast.SourceFile(file, self.parse_decls(), self.mod_sym);
     }
 
-    func next(mut self) {
+    func next(&self) {
         self.prev_tok = self.tok;
         self.tok = self.peek_tok;
         self.peek_tok = self.tokenizer.next();
@@ -68,7 +68,7 @@ public struct Parser {
         return self.tokenizer.peek_token(n - 2);
     }
 
-    func advance(mut self, n: usize) {
+    func advance(&self, n: usize) {
         mut i: usize := 0;
         while i < n : i += 1 {
             self.next();
@@ -76,7 +76,7 @@ public struct Parser {
     }
 
     @[inline]
-    func accept(mut self, kind: token.Kind) bool {
+    func accept(&self, kind: token.Kind) bool {
         return if self.tok.kind == kind {
             self.next();
             true
@@ -85,7 +85,7 @@ public struct Parser {
         };
     }
 
-    func expect(mut self, kind: token.Kind) {
+    func expect(&self, kind: token.Kind) {
         if self.accept(kind) {
             return;
         } else if self.last_err_pos.pos == self.tok.pos.pos {
@@ -100,13 +100,13 @@ public struct Parser {
         report.error("expected {}, found {}".fmt(kstr, self.tok), self.tok.pos);
     }
 
-    func parse_name(mut self) string {
+    func parse_name(&self) string {
         lit := self.tok.lit;
         self.expect(.Name);
         return lit;
     }
 
-    func open_scope(mut self) {
+    func open_scope(&self) {
         self.scope = ast.Scope(
             start: self.tok.pos.pos,
             parent: self.scope,
@@ -114,7 +114,7 @@ public struct Parser {
         );
     }
 
-    func close_scope(mut self) {
+    func close_scope(&self) {
         self.scope.end = self.tok.pos.pos;
         if parent := self.scope.parent {
             parent.childrens.push(self.scope);
@@ -123,7 +123,7 @@ public struct Parser {
     }
 
     func parse_var_decl(
-        mut self, inside_global: bool = false, support_type: bool = true,
+        &self, inside_global: bool = false, support_type: bool = true,
         support_ref: bool = false, support_mut: bool = true
     ) ast.ObjectData {
         pos := self.tok.pos;

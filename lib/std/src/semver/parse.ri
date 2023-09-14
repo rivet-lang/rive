@@ -55,7 +55,7 @@ struct RawVersion {
     }
 
     func complete(&self) RawVersion {
-        mut raw_ints := self.raw_ints.clone();
+        raw_ints := self.raw_ints.clone();
         while raw_ints.len < 3 {
             raw_ints.push("0");
         }

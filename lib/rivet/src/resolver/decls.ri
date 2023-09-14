@@ -6,7 +6,7 @@ import ../ast;
 import ../report;
 
 extend Resolver {
-    func resolve_decls(mut self, decls: []ast.Decl) {
+    func resolve_decls(&self, decls: []ast.Decl) {
         for decl in decls {
             old_sym := self.sym;
             old_self_sym := self.self_sym;
@@ -167,7 +167,7 @@ extend Resolver {
                 },
                 .Func as func_decl => {
                     if func_decl.is_method {
-                        mut self_type := ast.Type.Basic(self.self_sym);
+                        &self_type := ast.Type.Basic(self.self_sym);
                         if func_decl.self_is_ptr {
                             self_type = .Pointer(self_type);
                         }

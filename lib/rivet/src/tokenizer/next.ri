@@ -11,7 +11,7 @@ const SINGLE_QUOTE: uint8 = 0x27; // `'`
 const BACKSLASH: uint8 = 0x5C; // '\'
 
 extend Tokenizer {
-    public func next(mut self) token.Token {
+    public func next(&self) token.Token {
         while {
             cidx := self.tidx;
             self.tidx += 1;
@@ -24,7 +24,7 @@ extend Tokenizer {
         return self.new_eof_token();
     }
 
-    func internal_next(mut self) token.Token {
+    func internal_next(&self) token.Token {
         while {
             if self.is_started {
                 self.pos += 1;
@@ -247,7 +247,7 @@ extend Tokenizer {
         return self.new_eof_token();
     }
 
-    func read_name(mut self) string {
+    func read_name(&self) string {
         start := self.pos;
         self.pos += 1;
         while self.pos < self.text.len {
@@ -264,7 +264,7 @@ extend Tokenizer {
     }
 
     @[inline]
-    func read_number(mut self) string {
+    func read_number(&self) string {
         return switch {
             self.matches("0x", self.pos) => self.read_hex_number(),
             self.matches("0b", self.pos) => self.read_bin_number(),
@@ -273,7 +273,7 @@ extend Tokenizer {
         };
     }
 
-    func read_hex_number(mut self) string {
+    func read_hex_number(&self) string {
         start := self.pos;
         self.pos += 2; // skip '0x'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
@@ -317,7 +317,7 @@ extend Tokenizer {
         return lit;
     }
 
-    func read_bin_number(mut self) string {
+    func read_bin_number(&self) string {
         start := self.pos;
         self.pos += 2; // skip '0b'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
@@ -364,7 +364,7 @@ extend Tokenizer {
         return lit;
     }
 
-    func read_oct_number(mut self) string {
+    func read_oct_number(&self) string {
         start := self.pos;
         self.pos += 2; // skip '0o'
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
@@ -411,7 +411,7 @@ extend Tokenizer {
         return lit;
     }
 
-    func read_dec_number(mut self) string {
+    func read_dec_number(&self) string {
         start := self.pos;
         if self.pos < self.text.len and self.current_char() == NUM_SEP {
             self.pos -= 1;
@@ -538,7 +538,7 @@ extend Tokenizer {
         return lit;
     }
 
-    func read_char(mut self) string {
+    func read_char(&self) string {
         pos := self.current_pos();
         mut len: usize := 0;
         start := self.pos;
@@ -622,7 +622,7 @@ extend Tokenizer {
         return ch;
     }
 
-    func read_string(mut self) string {
+    func read_string(&self) string {
         self.pos -= 1;
         pos := self.current_pos();
         self.pos += 1;

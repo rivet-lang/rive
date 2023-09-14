@@ -15,7 +15,7 @@ public struct Scope {
     public mut syms: []Sym;
     public mut is_local: bool;
 
-    public func add(mut self, sym: Sym) ! {
+    public func add(&self, sym: Sym) ! {
         if _ := self.find(sym.name) {
             return DuplicateSymbolError(
                 "duplicate symbol `{}` in {} `{}`".fmt(
@@ -26,7 +26,7 @@ public struct Scope {
         self.syms.push(sym);
     }
 
-    public func add_or_get(mut self, sym: Sym) !Sym {
+    public func add_or_get(&self, sym: Sym) !Sym {
         if old_sym := self.find(sym.name) {
             if sym is TypeSym as type_sym and old_sym is TypeSym as mut old_type_sym {
                 if old_type_sym.update(type_sym)! {
@@ -43,7 +43,7 @@ public struct Scope {
         return sym;
     }
 
-    public func add_local(mut self, sym: Sym) ! {
+    public func add_local(&self, sym: Sym) ! {
         if self.is_local {
             if sym is Var and sym.name == "_" {
                 return; // ignore blank variable

@@ -123,13 +123,13 @@ public struct Func : traits.Stringable {
     public mut blocks: []Block;
     public mut cur_block: Block;
 
-    public func make_tmp(mut self, type: Type) Var {
+    public func make_tmp(&self, type: Type) Var {
         tmp := Var(self.locals.len, level: .Temporal, type: type);
         self.locals.push(tmp);
         return tmp;
     }
 
-    public func add_local(mut self, mut local: Var) {
+    public func add_local(&self, mut local: Var) {
         local.id = self.locals.len;
         self.locals.push(local);
     }
@@ -147,7 +147,7 @@ public struct Func : traits.Stringable {
         return self.get_local(name) !is none;
     }
 
-    public func add_block(mut self, mut block: Block) {
+    public func add_block(&self, mut block: Block) {
         block.id = self.blocks.len;
         self.blocks.push(block);
     }

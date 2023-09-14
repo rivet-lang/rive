@@ -9,7 +9,7 @@ public struct TokenIterator {
 
     /// Returns a slice of the current token, or none if tokenization is
     /// complete, and advances to the next token.
-    public func next(self) ?string {
+    public func next(&self) ?string {
         result := self.peek() ?? return none;
         self.index += result.len;
         return result;
@@ -17,7 +17,7 @@ public struct TokenIterator {
 
     /// Returns a slice of the current token, or none if tokenization is
     /// complete. Does not advance to the next token.
-    public func peek(self) ?string {
+    public func peek(&self) ?string {
         // move to beginning of token
         while self.index < self.buffer.len and self.is_split_byte(self.buffer[self.index])
             : self.index += 1 {}
@@ -42,7 +42,7 @@ public struct TokenIterator {
     }
 
     /// Resets the iterator to the initial token.
-    public func reset(self) {
+    public func reset(&self) {
         self.index = 0;
     }
 

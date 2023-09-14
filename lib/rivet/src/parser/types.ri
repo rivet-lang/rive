@@ -6,7 +6,7 @@ import ../ast;
 import ../report;
 
 extend Parser {
-    func parse_type(mut self) ast.Type {
+    func parse_type(&self) ast.Type {
         mut pos := self.tok.pos;
         return switch {
             self.accept(.Question) => .Option(

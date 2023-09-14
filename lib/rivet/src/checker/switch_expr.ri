@@ -10,7 +10,7 @@ import ../utils/maps;
 extend Checker {
     const SWITCH_EXHAUSTIVE_CUTOFF_LIMIT = 12;
 
-    func check_switch(mut self, mut switch_expr: ast.Expr.Switch) ast.Type {
+    func check_switch(&self, mut switch_expr: ast.Expr.Switch) ast.Type {
         old_expected_type := self.expected_type;
         switch_expr.type = .Void();
         if switch_expr.branches.len == 1 and switch_expr.has_else {

@@ -7,7 +7,7 @@ import ../report;
 import ../utils/maps;
 
 extend Checker {
-    func check_call(mut self, mut call_expr: ast.Expr.Call) ast.Type {
+    func check_call(&self, mut call_expr: ast.Expr.Call) ast.Type {
         call_expr.type = .Void();
 
         mut left := call_expr.left;
@@ -193,7 +193,7 @@ extend Checker {
         return call_expr.type;
     }
 
-    func check_ctor_call(mut self, mut type_sym: ast.TypeSym, mut call_expr: ast.Expr.Call) {
+    func check_ctor_call(&self, mut type_sym: ast.TypeSym, mut call_expr: ast.Expr.Call) {
         call_expr.is_constructor = true;
         call_expr.type = if type_sym.info is .Struct as struct_info and struct_info.is_enum_variant {
             call_expr.is_enum_variant = true;
@@ -371,7 +371,7 @@ extend Checker {
         }
     }
 
-    func check_func_call(mut self, func_: ast.Func, mut call_expr: ast.Expr.Call) {
+    func check_func_call(&self, func_: ast.Func, mut call_expr: ast.Expr.Call) {
         call_expr.type = func_.ret_type;
         kind := func_.kind();
 

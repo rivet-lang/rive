@@ -55,8 +55,8 @@ test "string.runes_count()" {
 }
 
 test "string.tokenize()" {
-    mut iterator := "   abc def    ghi  ".tokenize(b' ');
-    mut res := @vec(string, 3);
+    iterator := "   abc def    ghi  ".tokenize(b' ');
+    res := @vec(string, 3);
     while w := iterator.next() {
         res.push(w);
     }

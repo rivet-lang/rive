@@ -85,7 +85,7 @@ public struct Table {
         return table;
     }
 
-    func setup_primitives(mut self) {
+    func setup_primitives(&self) {
         self.bool_sym = self.universe.scope.find_type_symbol_by_index_or_panic(0);
         self.rune_sym = self.universe.scope.find_type_symbol_by_index_or_panic(1);
         self.int8_sym = self.universe.scope.find_type_symbol_by_index_or_panic(2);
@@ -123,7 +123,7 @@ public struct Table {
         self.string_t = .Basic(self.string_sym);
     }
 
-    func setup_builtins(mut self) {
+    func setup_builtins(&self) {
         self.builtins = [
             // variables
             .Const("_FILE_", self.string_t),
@@ -287,7 +287,7 @@ public struct Table {
 
     /// Returns the size and alignment (in bytes) of `typ`, similarly to
     /// C's `sizeof(T)` and `_Alignof(T)`.
-    public func type_size(mut self, type: Type, is_raw: bool = false) (usize, usize) {
+    public func type_size(&self, type: Type, is_raw: bool = false) (usize, usize) {
         return switch type is {
             .Result, .Option => self.type_symbol_size(self.error_sym, is_raw),
             .Anyptr, .Pointer, .Func => (self.pointer_size, self.pointer_size),
@@ -299,7 +299,7 @@ public struct Table {
         };
     }
 
-    public func type_symbol_size(mut self, mut type_sym: TypeSym, is_raw: bool = false) (usize, usize) {
+    public func type_symbol_size(&self, mut type_sym: TypeSym, is_raw: bool = false) (usize, usize) {
         return if type_sym.size != 0 {
             (type_sym.size, type_sym.align)
         } else {

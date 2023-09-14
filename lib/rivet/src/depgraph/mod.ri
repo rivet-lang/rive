@@ -23,7 +23,7 @@ public struct DepGraph {
     }
 
     @[inline]
-    public func add(mut self, mod: string, deps: []string) {
+    public func add(&self, mod: string, deps: []string) {
         self.nodes.push(DepGraphNode(mod, deps));
     }
 
@@ -101,7 +101,7 @@ struct NodeNames {
     mut is_cycle: maps.MapStringBool;
     mut names: maps.MapStringArrayOfStrings;
 
-    func is_part_of_cycle(mut self, name: string, already_seen: []string) (bool, []string) {
+    func is_part_of_cycle(&self, name: string, already_seen: []string) (bool, []string) {
         mut seen := false;
         mut new_already_seen := already_seen.clone();
         if val := self.is_cycle.get(name) {

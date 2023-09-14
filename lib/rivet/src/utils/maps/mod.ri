@@ -14,7 +14,7 @@ struct StringUsize {
 public struct MapStringUsize {
     mut pairs: []mut StringUsize;
 
-    public func set(mut self, key: string, value: usize) {
+    public func set(&self, key: string, value: usize) {
         for pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
@@ -34,7 +34,7 @@ public struct MapStringUsize {
         return none;
     }
 
-    public func delete(mut self, key: string) {
+    public func delete(&self, key: string) {
         for i, pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
@@ -66,7 +66,7 @@ public struct MapStringArrayOfStringsIterator {
     mut idx: usize;
 
     @[inline]
-    public func next(mut self) ?StringArrayOfStrings {
+    public func next(&self) ?StringArrayOfStrings {
         return if self.idx < self.ref.len() {
             idx := self.idx;
             self.idx += 1;
@@ -85,7 +85,7 @@ public struct MapStringArrayOfStrings {
         return MapStringArrayOfStringsIterator(self);
     }
 
-    public func set(mut self, key: string, value: []string) {
+    public func set(&self, key: string, value: []string) {
         for pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
@@ -105,7 +105,7 @@ public struct MapStringArrayOfStrings {
         return none;
     }
 
-    public func delete(mut self, key: string) {
+    public func delete(&self, key: string) {
         for i, pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
@@ -135,7 +135,7 @@ struct StringBool {
 public struct MapStringBool {
     mut pairs: []mut StringBool;
 
-    public func set(mut self, key: string, value: bool) {
+    public func set(&self, key: string, value: bool) {
         for pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
@@ -155,7 +155,7 @@ public struct MapStringBool {
         return none;
     }
 
-    public func delete(mut self, key: string) {
+    public func delete(&self, key: string) {
         for i, pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);

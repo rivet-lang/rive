@@ -6,7 +6,7 @@ import ../ast;
 import ../report;
 
 extend Resolver {
-    func resolve_type(mut self, mut type: ast.Type) bool {
+    func resolve_type(&self, mut type: ast.Type) bool {
         return switch type is {
             .Void, .Never, .Anyptr => true,
             .Option as opt => self.resolve_type(opt.inner),

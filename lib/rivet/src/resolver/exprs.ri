@@ -7,7 +7,7 @@ import ../token;
 import ../report;
 
 extend Resolver {
-    func resolve_expr(mut self, mut expr: ast.Expr) {
+    func resolve_expr(&self, mut expr: ast.Expr) {
         switch expr is {
             .Empty as empty_pos => report.error("BUG: empty expression found", empty_pos),
             .Paren as paren => self.resolve_expr(paren.expr),
@@ -188,7 +188,7 @@ extend Resolver {
         }
     }
 
-    func resolve_ident(mut self, mut ident: ast.Expr.Ident) {
+    func resolve_ident(&self, mut ident: ast.Expr.Ident) {
         if ident.name == "_" {
             ident.found = true;
             ident.is_obj = true;
@@ -267,7 +267,7 @@ extend Resolver {
         }
     }
 
-    func resolve_selector(mut self, mut selector: ast.Expr.Selector) {
+    func resolve_selector(&self, mut selector: ast.Expr.Selector) {
         self.resolve_expr(selector.left);
         switch selector.left is {
             .SelfTy as self_ty if self_ty.found => {
@@ -300,7 +300,7 @@ extend Resolver {
         }
     }
 
-    func find_symbol(mut self, sym: ast.Sym, name: string, pos: token.Pos) ?ast.Sym {
+    func find_symbol(&self, sym: ast.Sym, name: string, pos: token.Pos) ?ast.Sym {
         mut sym_ := sym;
         if sym is ast.SymRef as mut sym_ref {
             sym_ = self.clean_symbol_reference(sym_ref);
@@ -335,7 +335,7 @@ extend Resolver {
         return none;
     }
 
-    func clean_symbol_reference(mut self, mut sym_ref: ast.SymRef) ast.Sym {
+    func clean_symbol_reference(&self, mut sym_ref: ast.SymRef) ast.Sym {
         if !sym_ref.ref_resolved {
             self.resolve_expr(sym_ref.ref_expr);
             if sym_ref.ref_expr is .Ident as ident and ident.found and ident.is_sym {

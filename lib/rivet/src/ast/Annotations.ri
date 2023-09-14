@@ -40,7 +40,7 @@ public struct Annotation {
 public struct Annotations {
     public mut annotations: []Annotation;
 
-    public func add(mut self, annotation: Annotation) ! {
+    public func add(&self, annotation: Annotation) ! {
         if self.has(annotation.name) {
             return AnnotationDuplicatedError(annotation.name);
         }

@@ -6,13 +6,13 @@ import ./mir;
 import ../ast;
 
 extend Codegen {
-    func gen_decls(mut self, decls: []mut ast.Decl) {
+    func gen_decls(&self, decls: []mut ast.Decl) {
         for mut decl in decls {
             self.gen_decl(decl);
         }
     }
 
-    func gen_decl(mut self, mut decl: ast.Decl) {
+    func gen_decl(&self, mut decl: ast.Decl) {
         switch decl is {
             .Extern as extern_decl => self.gen_decls(extern_decl.decls),
             .Var as var_decl => {
@@ -33,7 +33,7 @@ extend Codegen {
         }
     }
 
-    func gen_func(mut self, mut func_decl: ast.Decl.Func) {
+    func gen_func(&self, mut func_decl: ast.Decl.Func) {
         ret_type_is_void := func_decl.ret_type.is_void();
         self.cur_func = mir.Func(
             name: if func_decl.is_extern and func_decl.abi != .Rivet {

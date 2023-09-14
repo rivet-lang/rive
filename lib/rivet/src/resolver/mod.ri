@@ -20,14 +20,14 @@ public struct Resolver {
     mut prefs: prefs.Prefs;
 
     mut sym: ast.Sym = ast.InvalidSym();
-    mut self_sym: ast.TypeSym;
+    &self_sym: ast.TypeSym;
     mut preludes: []Prelude;
 
-    mut self_sym_is_set: bool;
+    &self_sym_is_set: bool;
 
     mut source_file: ast.SourceFile;
 
-    public func resolve_files(mut self, source_files: []ast.SourceFile) {
+    public func resolve_files(&self, source_files: []ast.SourceFile) {
         Register(self.table, self.prefs).walk_files(source_files);
         if report.total_errors() > 0 {
             return;
@@ -58,7 +58,7 @@ public struct Resolver {
         }
     }
 
-    func eval_size(mut self, mut expr: ast.Expr) ?isize {
+    func eval_size(&self, mut expr: ast.Expr) ?isize {
         return switch expr is {
             .Paren as paren => self.eval_size(paren.expr),
             .IntegerLiteral as int_lit => conv.string_to_isize(int_lit.value) catch return none,
@@ -115,7 +115,7 @@ public struct Resolver {
         };
     }
 
-    func eval_sym(mut self, sym: ast.Sym, pos: token.Pos) ?isize {
+    func eval_sym(&self, sym: ast.Sym, pos: token.Pos) ?isize {
         if sym is ast.Const as const_ {
             if !const_.has_evaled_size {
                 const_.evaled_size = self.eval_size(const_.expr)?;
