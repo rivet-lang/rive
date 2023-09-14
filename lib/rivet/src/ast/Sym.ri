@@ -334,7 +334,7 @@ public struct Func : Sym {
     public is_method: bool;
     public is_special_method: bool;
     public is_variadic: bool;
-    public &self_type: Type;
+    public selftype: Type;
     public self_is_mut: bool;
     public self_is_ptr: bool;
     public self_pos: token.Pos;
