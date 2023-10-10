@@ -18,12 +18,12 @@ C_RESERVED = [
     'auto', 'bool', 'case', 'char', 'complex', 'default', 'delete', 'do',
     'double', 'export', 'float', 'goto', 'inline', 'int', 'long', 'namespace',
     'new', 'register', 'restrict', 'short', 'signed', 'sizeof', 'small',
-    'static', 'typedef', 'typename', 'union', 'unix', 'unsigned', 'void',
-    'volatile', 'template', 'far', 'near', 'huge', 'linux'
+    'static', 'typedef', 'typename', 'union', 'unsigned', 'void',
+    'volatile', 'template', 'far', 'near', 'huge'
 ]
 
 def c_escape(kw):
-    return f"_ri_{kw}" if kw in C_RESERVED else kw
+    return f"_{kw}_" if kw in C_RESERVED else kw
 
 class CGen:
     def __init__(self, comp):
