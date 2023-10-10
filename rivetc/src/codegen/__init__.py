@@ -947,7 +947,7 @@ class Codegen:
                     self.cur_fn.add_label(l1)
                     self.cur_fn.add_ret_void()
                     self.cur_fn.add_label(l2)
-                else:
+                elif self.comp.prefs.build_mode != prefs.BuildMode.Release:
                     self.cur_fn.add_call(
                         "_R4core6assertF", [
                             self.gen_expr(expr.args[0]),
@@ -966,9 +966,8 @@ class Codegen:
                 )
             elif expr.name == "unreachable":
                 self.panic("entered unreachable code")
-            elif expr.name == "breakpoint":
-                if self.comp.prefs.build_mode != prefs.BuildMode.Release:
-                    self.cur_fn.breakpoint()
+            elif expr.name == "breakpoint" and self.comp.prefs.build_mode != prefs.BuildMode.Release:
+                self.cur_fn.breakpoint()
         elif isinstance(expr, ast.TupleLiteral):
             expr_sym = expr.typ.symbol()
             tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
