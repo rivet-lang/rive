@@ -3,8 +3,8 @@
 // be found in the LICENSE file.
 
 import std/sys;
-import std/fs/path;
 import std/process;
+import { Path } from std/fs;
 
 import ../token;
 import ../prefs;
@@ -386,7 +386,7 @@ public struct Table {
     public func filter_files(self, inputs: []string) []string {
         mut new_inputs := @vec(string, inputs.len);
         for input in inputs {
-            basename_input := path.basename(input);
+            basename_input := Path.basename(input);
             if basename_input == "project.ri" {
                 continue; // Skip `project.ri` file, loaded after
             } else if basename_input.count(".") == 1 {

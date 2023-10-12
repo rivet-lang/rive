@@ -2,10 +2,9 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/fs;
 import std/env;
-import std/fs/path;
 import std/process;
+import { Path, self } from std/fs;
 
 var normalizedWorkdir = process.wdAtStartup.replace("\\", "/").concat("/");
 var errorPathsAbsolute = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";
@@ -13,11 +12,11 @@ var errorPathsAbsolute = (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolu
 // NOTE: path_styled_for_error_messages will *always* use `/` in the error paths, no
 // matter the OS, to ensure stable compiler error output in the tests.
 public func path_styled_for_error_messages(path_: string) string {
-	rpath := (path.resolve(path_) catch path_).replace("\\", "/");
+	rpath := (Path.resolve(path_) catch path_).replace("\\", "/");
 	return if errorPathsAbsolute {
 		rpath
 	} else {
-		path.relative(normalizedWorkdir, rpath) catch path_
+		Path.relative(normalizedWorkdir, rpath) catch path_
 	};
 }
 

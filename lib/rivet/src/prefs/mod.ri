@@ -6,16 +6,16 @@ import std/env;
 import std/sys;
 import std/flag;
 import std/process;
-import std/fs/path;
+import { Path } from std/fs;
 
 import ../utils;
 
-public var rivetDir = path.join(env.homeDir, ".rivet_lang")!;
-public var rivetcDir = path.dirname(process.executable()!)?;
+public var rivetDir = Path.join(env.homeDir, ".rivet_lang")!;
+public var rivetcDir = Path.dirname(process.executable()!)?;
 
-public var objDir = path.join(rivetDir, "obj")!;
-public var libDir = path.join(rivetDir, "lib")!;
-public var rivetcLibDir = path.join(rivetcDir, "lib")!;
+public var objDir = Path.join(rivetDir, "obj")!;
+public var libDir = Path.join(rivetDir, "lib")!;
+public var rivetcLibDir = Path.join(rivetcDir, "lib")!;
 
 public enum Backend as uint8 {
     C;
@@ -143,7 +143,7 @@ public struct Prefs {
         }
         if !is_check {
             if libpath := fp.string_flag("", b'L', "Add a directory to the library search path.") {
-                if path.is_directory(libpath) {
+                if Path.is_directory(libpath) {
                     if libpath in prefs.library_path {
                         utils.error("duplicate library path: `{}`", libpath);
                     }
@@ -270,17 +270,17 @@ public struct Prefs {
         for arg in remaining_args {
             if !prefs.input.is_empty() {
                 utils.error("the compiler can only receive one module");
-            } else if !path.exists(arg) {
+            } else if !Path.exists(arg) {
                 utils.error("`{}` does not exist", arg);
-            } else if !(path.is_directory(arg) or path.is_file(arg)) {
+            } else if !(Path.is_directory(arg) or Path.is_file(arg)) {
                 utils.error("`{}` is not a directory or file");
             } else {
                 prefs.input = arg;
                 if prefs.mod_name.is_empty() {
-                    prefs.mod_name = if path.is_file(arg) {
-                        path.basename(arg).all_before_of(".ri")
+                    prefs.mod_name = if Path.is_file(arg) {
+                        Path.basename(arg).all_before_of(".ri")
                     } else {
-                        path.basename(path.resolve(arg) catch arg)
+                        Path.basename(Path.resolve(arg) catch arg)
                     };
                 }
             }
@@ -300,12 +300,12 @@ public struct Prefs {
             prefs.mod_output = prefs.mod_output.concat(".exe");
         }
 
-        if !path.is_absolute(prefs.mod_output) {
-            prefs.mod_output = path.join(process.get_cwd()!, prefs.mod_output)!;
+        if !Path.is_absolute(prefs.mod_output) {
+            prefs.mod_output = Path.join(process.get_cwd()!, prefs.mod_output)!;
         }
 
-        prefs.mod_dir = if path.is_file(prefs.input) {
-            path.dirname(path.absolute(prefs.input)!) ?? prefs.input
+        prefs.mod_dir = if Path.is_file(prefs.input) {
+            Path.dirname(Path.absolute(prefs.input)!) ?? prefs.input
         } else {
             prefs.input
         };

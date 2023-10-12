@@ -94,7 +94,7 @@ public struct File {
             res := @cast([*]mut uint8, mem.alloc(@cast(usize, allocate) + 1)!);
             nelements := libc.fread(res, 1, @cast(usize, allocate), self.f);
 
-            if self.eof() and libc.ferror(self.f) != 0 {
+            if self.is_eof() and libc.ferror(self.f) != 0 {
                 mem.dealloc(res);
                 return OperationFailedError("fread failed");
             }
@@ -106,7 +106,7 @@ public struct File {
 
     /// Returns true if the file is at end.
     @[inline]
-    public func eof(self) bool {
+    public func is_eof(self) bool {
         return unsafe { libc.feof(self.f) != 0 };
     }
 

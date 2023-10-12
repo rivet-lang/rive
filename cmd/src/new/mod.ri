@@ -2,13 +2,12 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/fs;
 import std/flag;
 import std/semver;
-import std/fs/path;
 import std/strings;
 import std/console;
 import std/process;
+import { Path, Directory, self } from std/fs;
 
 import rivet/build;
 import rivet/utils;
@@ -64,7 +63,7 @@ public func new(args: []string, is_init: bool) ! {
 
     mut project := build.Project();
     if is_init {
-        project.name = path.basename(process.get_cwd()!);
+        project.name = Path.basename(process.get_cwd()!);
     } else {
         if remaining.len == 1 {
             project.name = remaining[0];
@@ -103,10 +102,10 @@ public func new(args: []string, is_init: bool) ! {
             create_gitattributes_file(project.name, true)!;
             create_git_repo(".")!;
         }
-        if !path.exists("src") {
-            fs.make_directory("src")!;
+        if !Path.exists("src") {
+            Directory.make("src")!;
             utils.info("creating `src/main.ri` file...");
-            fs.write_file(path.join("src", "main.ri")!, templates.mainFile)!;
+            fs.write_file(Path.join("src", "main.ri")!, templates.mainFile)!;
         }
         utils.info("project `{}` initialized successfully!", project.name);
     } else {
@@ -114,21 +113,21 @@ public func new(args: []string, is_init: bool) ! {
         switch template {
             "bin", "lib" => {
                 utils.info("using the template `{}`...", template);
-                fs.make_directory(project.name)!;
+                Directory.make(project.name)!;
                 create_project_json(project, false)!;
                 create_editorconfig_file(project.name, false)!;
                 if init_git {
                     create_gitattributes_file(project.name, false)!;
                     create_git_repo(project.name)!;
                 }
-                src_dir := path.join(project.name, "src")!;
-                fs.make_directory(src_dir)!;
+                src_dir := Path.join(project.name, "src")!;
+                Directory.make(src_dir)!;
                 if template == "bin" {
                     utils.info("creating `src/main.ri` file...");
-                    fs.write_file(path.join(src_dir, "main.ri")!, templates.mainFile)!;
+                    fs.write_file(Path.join(src_dir, "main.ri")!, templates.mainFile)!;
                 } else {
                     utils.info("creating `src/lib.ri` file...");
-                    fs.write_file(path.join(src_dir, "lib.ri")!, templates.libFile)!;
+                    fs.write_file(Path.join(src_dir, "lib.ri")!, templates.libFile)!;
                 }
             },
             else => utils.error(
@@ -153,14 +152,14 @@ func check_project(mut project: build.Project) {
     if project.name.contains("-") {
         utils.error("project name should not contain hyphens");
     }
-    if path.exists(project.name) {
+    if Path.exists(project.name) {
         utils.error("`{}` already exists", project.name);
     }
 }
 
 func create_project_json(project: build.Project, is_init: bool) ! {
-    path_ := if is_init { "project.json" } else { path.join(project.name, "project.json")! };
-    if !path.exists(path_) {
+    path_ := if is_init { "project.json" } else { Path.join(project.name, "project.json")! };
+    if !Path.exists(path_) {
         utils.info("creating `project.ri` file...");
         project_ri := generate_project_json(project);
         fs.write_file(path_, project_ri)!;
@@ -203,23 +202,23 @@ func generate_project_json(project: build.Project) string {
 }
 
 func create_gitattributes_file(name: string, is_init: bool) ! {
-    path_ := if is_init { ".gitattributes" } else { path.join(name, ".gitattributes")! };
-    if path.exists(path_) {
+    path_ := if is_init { ".gitattributes" } else { Path.join(name, ".gitattributes")! };
+    if Path.exists(path_) {
         return;
     }
     fs.write_file(path_, templates.gitattributesFile)!;
 }
 
 func create_editorconfig_file(name: string, is_init: bool) ! {
-    path_ := if is_init { ".editorconfig" } else { path.join(name, ".editorconfig")! };
-    if path.exists(path_) {
+    path_ := if is_init { ".editorconfig" } else { Path.join(name, ".editorconfig")! };
+    if Path.exists(path_) {
         return;
     }
     fs.write_file(path_, templates.editorConfigFile)!;
 }
 
 func create_git_repo(dir: string) ! {
-    if !path.is_directory(path.join(dir, ".git")!) {
+    if !Path.is_directory(Path.join(dir, ".git")!) {
         utils.info("initializing git repo...");
         if res := process.execute("git init {}".fmt(dir)) {
             if res.exit_code != 0 {
@@ -230,7 +229,7 @@ func create_git_repo(dir: string) ! {
         }
     }
     gitignore_path := "{}/.gitignore".fmt(dir);
-    if !path.exists(gitignore_path) {
+    if !Path.exists(gitignore_path) {
         utils.info("creating `.gitignore` file...");
         fs.write_file(gitignore_path, templates.gitignoreFile.fmt(dir))!;
     }

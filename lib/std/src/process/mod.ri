@@ -5,7 +5,7 @@
 import c/libc;
 import core;
 
-import ../fs/path;
+import { Path} from ../fs;
 import { Builder } from ../strings;
 
 public alias id = core.process_id;
@@ -17,7 +17,7 @@ public alias executable = core.process_executable;
 
 public var args = core.ARGS;
 public var wdAtStartup = get_cwd() catch ".";
-public var executableDir = path.dirname(executable() catch wdAtStartup);
+public var executableDir = Path.dirname(executable() catch wdAtStartup);
 
 @[boxed]
 public struct NotADirectoryError : Error {
@@ -29,7 +29,7 @@ public struct NotADirectoryError : Error {
 }
 
 public func set_cwd(p: string) ! {
-    if !path.is_directory(p) {
+    if !Path.is_directory(p) {
         return NotADirectoryError("`{}` is not a directory".fmt(p));
     }
     core.process_set_cwd(p)!;

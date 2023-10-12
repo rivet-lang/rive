@@ -2,11 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/fs;
 import std/traits;
-import std/fs/path;
 import std/console;
 import std/process;
+import { Path, Directory } from std/fs;
 
 import ./ast;
 import ./utils;
@@ -84,22 +83,22 @@ public struct Compiler {
     }
 
     func make_rivet_directory(self) ! {
-        if !path.exists(prefs.rivetDir) {
+        if !Path.exists(prefs.rivetDir) {
             self.vlog("making Rivet directory");
-            fs.make_directory(prefs.rivetDir)!;
-            fs.make_directory(prefs.objDir)!;
-            fs.make_directory(prefs.libDir)!;
+            Directory.make(prefs.rivetDir)!;
+            Directory.make(prefs.objDir)!;
+            Directory.make(prefs.libDir)!;
         }
     }
 
     func load_root_module(mut self) ! {
-        files := if path.is_directory(self.prefs.input) {
+        files := if Path.is_directory(self.prefs.input) {
             mut filtered_files := self.table.filter_files(
-                fs.walk_directory(self.prefs.input, ".ri")!
+                Directory.walk(self.prefs.input, ".ri")!
             );
-            src_dir := path.join(self.prefs.input, "src")!;
-            if path.is_directory(src_dir) { // support `src/` directory
-                for file in self.table.filter_files(fs.walk_directory(src_dir, ".ri")!) {
+            src_dir := Path.join(self.prefs.input, "src")!;
+            if Path.is_directory(src_dir) { // support `src/` directory
+                for file in self.table.filter_files(Directory.walk(src_dir, ".ri")!) {
                     filtered_files.push(file);
                 }
             }
@@ -181,13 +180,13 @@ public struct Compiler {
             } else {
                 pathx2
             };
-            dirname := path.resolve(path.dirname(file_path) ?? file_path)!;
+            dirname := Path.resolve(Path.dirname(file_path) ?? file_path)!;
             old_wd := process.get_cwd()!;
             process.set_cwd(dirname)!;
-            if path.is_directory(pathx) {
+            if Path.is_directory(pathx) {
                 found = true;
-                abspath = path.resolve(pathx)!;
-                mut mod_basedir := path.dirname(abspath) ?? abspath;
+                abspath = Path.resolve(pathx)!;
+                mut mod_basedir := Path.dirname(abspath) ?? abspath;
                 if mod_basedir.ends_with("/src") {
                     mod_basedir = mod_basedir[..mod_basedir.len - 4]; // skip `src/`
                 }
@@ -209,7 +208,7 @@ public struct Compiler {
             }
             if found {
                 self.vlog("      > found");
-                files = self.table.filter_files(fs.walk_directory(pathx, ".ri")!);
+                files = self.table.filter_files(Directory.walk(pathx, ".ri")!);
             }
             process.set_cwd(old_wd)!;
         } else {
@@ -222,23 +221,23 @@ public struct Compiler {
             full_name = pathx.replace("/", ".");
             for l in self.prefs.library_path {
                 self.vlog("        searching module in `{}`", l);
-                mod_path := path.resolve(path.join(l, pathx)!)!;
-                if path.is_directory(mod_path) {
+                mod_path := Path.resolve(Path.join(l, pathx)!)!;
+                if Path.is_directory(mod_path) {
                     found = true;
-                    files = self.table.filter_files(fs.walk_directory(mod_path, ".ri")!);
+                    files = self.table.filter_files(Directory.walk(mod_path, ".ri")!);
                 }
                 // support `src/` directory
                 src_dir := if pathx.count("/") > 0 {
                     slash_idx := (pathx.index_of_byte(b'/') ?? 0) + 1;
-                    path.join(l, pathx[..slash_idx], "src", pathx[slash_idx..])!
+                    Path.join(l, pathx[..slash_idx], "src", pathx[slash_idx..])!
                 } else {
-                    path.join(mod_path, "src")!
+                    Path.join(mod_path, "src")!
                 };
-                if path.is_directory(src_dir) {
+                if Path.is_directory(src_dir) {
                     if !found {
                         found = true;
                     }
-                    files = self.table.filter_files(fs.walk_directory(src_dir, ".ri")!);
+                    files = self.table.filter_files(Directory.walk(src_dir, ".ri")!);
                 }
                 if found {
                     self.vlog("        > found");

@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/fs/path;
+import { Path } from std/fs;
 
 import ../ast;
 import ../prefs;
@@ -48,7 +48,7 @@ public struct Parser {
 
     public func parse_file(mut self, file: string) ast.SourceFile {
         self.file_path = file;
-        self.file_dir = path.dirname(file) ?? file;
+        self.file_dir = Path.dirname(file) ?? file;
         self.tokenizer = tokenizer.Tokenizer.from_file(file, self.prefs, self.table);
         if report.total_errors() > 0 {
             return ast.SourceFile(file, [], self.mod_sym);
