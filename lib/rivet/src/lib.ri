@@ -28,7 +28,7 @@ public struct Compiler {
     mut checker: checker.Checker;
     mut codegen: codegen.Codegen;
 
-    public func new(args: []string, is_test: bool, run_output: bool, is_check: bool) ! {
+    public func new(args: []string, is_test: bool, run_output: bool, is_check: bool) -> ! {
         prefs_ := prefs.Prefs.new(args, is_test, run_output, is_check)!;
         report.reportTable.prefs = prefs_;
         table_ := ast.Table.new(prefs_);
@@ -40,7 +40,7 @@ public struct Compiler {
         ).run()!;
     }
 
-    func run(mut self) ! {
+    func run(mut self) -> ! {
         self.make_rivet_directory()!;
 
         _ = self.load_module("core", "core", "", token.noPos)!;
@@ -82,7 +82,7 @@ public struct Compiler {
         }
     }
 
-    func make_rivet_directory(self) ! {
+    func make_rivet_directory(self) -> ! {
         if !Path.exists(prefs.rivetDir) {
             self.vlog("making Rivet directory");
             Directory.make(prefs.rivetDir)!;
@@ -91,7 +91,7 @@ public struct Compiler {
         }
     }
 
-    func load_root_module(mut self) ! {
+    func load_root_module(mut self) -> ! {
         files := if Path.is_directory(self.prefs.input) {
             mut filtered_files := self.table.filter_files(
                 Directory.walk(self.prefs.input, ".ri")!
@@ -121,7 +121,7 @@ public struct Compiler {
         self.parse_files(root_sym, files);
     }
 
-    func import_modules(mut self) ! {
+    func import_modules(mut self) -> ! {
         for sf in self.table.source_files {
             for d in sf.decls {
                 if d is .Import as import_decl {
@@ -145,7 +145,7 @@ public struct Compiler {
 
     func load_module(
         mut self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
-    ) !ast.ImportedMod {
+    ) -> !ast.ImportedMod {
         mod := self.load_module_files(pathx, alias_name, file_path, pos)!;
         if mod.found {
             mod.mod = if mod_mod_ := self.table.universe.scope.find(mod.full_name) {
@@ -164,7 +164,7 @@ public struct Compiler {
 
     func load_module_files(
         self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
-    ) !ast.ImportedMod {
+    ) -> !ast.ImportedMod {
         self.vlog("Compiler.load_module_files(): searching module `{}`", pathx);
         mut found := false;
         mut name := "";
@@ -301,7 +301,7 @@ public struct Compiler {
         self.vlog("module dependencies resolved...");
     }
 
-    func import_graph(self) depgraph.DepGraph {
+    func import_graph(self) -> depgraph.DepGraph {
         mut g := depgraph.DepGraph.new();
         for pf in self.table.source_files {
             mut deps := @vec(string);

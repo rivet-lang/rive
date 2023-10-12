@@ -11,7 +11,7 @@ public struct OrderedDepMap {
     mut keys: []string;
     mut data: maps.MapStringArrayOfStrings; // TODO: replace with map type
 
-    public func new() Self {
+    public func new() -> Self {
         return Self();
     }
 
@@ -33,7 +33,7 @@ public struct OrderedDepMap {
     }
 
     @[inline]
-    public func get(self, name: string) []string {
+    public func get(self, name: string) -> []string {
         return if res := self.data.get(name) {
             res
         } else {
@@ -65,7 +65,7 @@ public struct OrderedDepMap {
         self.set(name, diff);
     }
 
-    public func size(self) usize {
+    public func size(self) -> usize {
         return self.data.len();
     }
 }

@@ -9,7 +9,7 @@ public alias last_errno_error = c.last_errno_error;
 
 /// This trait is used for errors returned with result types (!T).
 public trait Error : Stringable {
-    func return_trace(self) ReturnTrace {
+    func return_trace(self) -> ReturnTrace {
         _ = self;
         return returnTrace;
     }
@@ -27,7 +27,7 @@ public struct InvalidArgumentError : Error {
     msg: string;
 
     @[inline]
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -37,7 +37,7 @@ public struct OutOfMemoryError : Error {
     msg: string;
 
     @[inline]
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -47,7 +47,7 @@ public struct ReadFailedError : Error {
     msg: string;
 
     @[inline]
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }

@@ -18,7 +18,7 @@ public struct DepGraph {
     public mut nodes: []DepGraphNode;
 
     @[inline]
-    public func new() Self {
+    public func new() -> Self {
         return Self(true, @vec(DepGraphNode, 1024));
     }
 
@@ -27,7 +27,7 @@ public struct DepGraph {
         self.nodes.push(DepGraphNode(mod, deps));
     }
 
-    public func resolve(self) Self {
+    public func resolve(self) -> Self {
         mut node_names := OrderedDepMap.new();
         mut node_deps := OrderedDepMap.new();
         for node in self.nodes {
@@ -64,7 +64,7 @@ public struct DepGraph {
         return resolved;
     }
 
-    public func display(self) string {
+    public func display(self) -> string {
         mut out := strings.Builder.new();
         for node in self.nodes {
             for dep in node.deps {
@@ -74,7 +74,7 @@ public struct DepGraph {
         return out.to_string();
     }
 
-    public func display_cycles(self) string {
+    public func display_cycles(self) -> string {
         mut out := strings.Builder.new();
         mut seen := false;
         mut nn := NodeNames();
@@ -101,7 +101,7 @@ struct NodeNames {
     mut is_cycle: maps.MapStringBool;
     mut names: maps.MapStringArrayOfStrings;
 
-    func is_part_of_cycle(mut self, name: string, already_seen: []string) (bool, []string) {
+    func is_part_of_cycle(mut self, name: string, already_seen: []string) -> (bool, []string) {
         mut seen := false;
         mut new_already_seen := already_seen.clone();
         if val := self.is_cycle.get(name) {

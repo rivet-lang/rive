@@ -10,13 +10,13 @@ public var homeDir = get(#if _LINUX_ "HOME" #else "USERPROFILE" #endif) ?? "";
 
 /// Returns `true` if the environment variable exists.
 @[inline]
-public func exists(name: string) bool {
+public func exists(name: string) -> bool {
     return get(name) !is none;
 }
 
 /// Returns the value of the environment variable named by the key.
 @[inline]
-public func get(name: string) ?string {
+public func get(name: string) -> ?string {
     return unsafe {
         if s := libc.getenv(name.ptr) {
             string.from_raw(s)
@@ -27,14 +27,14 @@ public func get(name: string) ?string {
 }
 
 /// Sets the value of an environment variable with `name` to `value`.
-public func set(name: string, value: string, overwrite: bool = true) ! {
+public func set(name: string, value: string, overwrite: bool = true) -> ! {
     if unsafe { libc.setenv(name.ptr, value.ptr, overwrite) == -1 } {
         return c.last_errno_error();
     }
 }
 
 /// Removes an environment variable with `name`.
-public func remove(name: string) ! {
+public func remove(name: string) -> ! {
     if unsafe { libc.unsetenv(name.ptr) } == -1 {
         return c.last_errno_error();
     }

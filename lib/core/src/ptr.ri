@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-func cstr_runes_count(s: [*]uint8, size: usize) usize {
+func cstr_runes_count(s: [*]uint8, size: usize) -> usize {
     (mut l: usize, mut i: usize) := (0, 0);
     while i < size {
         l += 1;

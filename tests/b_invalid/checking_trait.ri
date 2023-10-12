@@ -1,5 +1,5 @@
 trait ToStr {
-    func to_str1(&self) string;
+    func to_str1(&self) -> string;
 }
 
 func my_print(v: ToStr) {
@@ -7,13 +7,13 @@ func my_print(v: ToStr) {
 }
 
 extend string : ToStr {
-    func to_str1(self) string {
+    func to_str1(self) -> string {
         return self;
     }
 }
 
 extend bool : ToStr {
-    func to_str1(&self) string {
+    func to_str1(&self) -> string {
         return if self.* { "true" } else { "false" };
     }
 }

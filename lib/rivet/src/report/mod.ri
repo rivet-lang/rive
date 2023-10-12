@@ -13,12 +13,12 @@ import ../utils;
 public var mut reportTable = ReportTable();
 
 @[inline]
-public func total_errors() usize {
+public func total_errors() -> usize {
     return reportTable.errors;
 }
 
 @[inline]
-public func total_warns() usize {
+public func total_warns() -> usize {
     return reportTable.warns;
 }
 
@@ -55,12 +55,12 @@ public func warn(msg: string, pos: token.Pos) {
 }
 
 @[inline]
-public func error_builder(msg: string, pos: token.Pos) ReportBuilder {
+public func error_builder(msg: string, pos: token.Pos) -> ReportBuilder {
     return ReportBuilder(.Error, msg, pos);
 }
 
 @[inline]
-public func warn_builder(msg: string, pos: token.Pos) ReportBuilder {
+public func warn_builder(msg: string, pos: token.Pos) -> ReportBuilder {
     return ReportBuilder(.Warn, msg, pos);
 }
 

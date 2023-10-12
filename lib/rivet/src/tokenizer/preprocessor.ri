@@ -130,11 +130,11 @@ extend Tokenizer {
         }
     }
 
-    func pp_expression(mut self) bool {
+    func pp_expression(mut self) -> bool {
         return self.pp_or_expression();
     }
 
-    func pp_or_expression(mut self) bool {
+    func pp_or_expression(mut self) -> bool {
         mut left := self.pp_and_expression();
         self.skip_whitespace();
         while self.pos < self.text.len and self.matches("or", self.pos) {
@@ -146,7 +146,7 @@ extend Tokenizer {
         return left;
     }
 
-    func pp_and_expression(mut self) bool {
+    func pp_and_expression(mut self) -> bool {
         mut left := self.pp_unary_expression();
         self.skip_whitespace();
         while self.pos < self.text.len and self.matches("and", self.pos) {
@@ -158,7 +158,7 @@ extend Tokenizer {
         return left;
     }
 
-    func pp_unary_expression(mut self) bool {
+    func pp_unary_expression(mut self) -> bool {
         if self.pos < self.text.len and self.current_char() == b'!' {
             self.pos += 1;
             self.skip_whitespace();
@@ -167,7 +167,7 @@ extend Tokenizer {
         return self.pp_primary_expression();
     }
 
-    func pp_primary_expression(mut self) bool {
+    func pp_primary_expression(mut self) -> bool {
         pos := self.current_pos();
         mut cc := self.current_char();
         if self.pos >= self.text.len {
@@ -190,7 +190,7 @@ extend Tokenizer {
         return false;
     }
 
-    func pp_symbol(mut self) bool {
+    func pp_symbol(mut self) -> bool {
         self.pos -= 1;
         pos := self.current_pos();
         self.pos += 1;

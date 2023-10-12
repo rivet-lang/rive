@@ -4,7 +4,7 @@
 
 import std/strings;
 
-public func join(vec: []string, s: string) string {
+public func join(vec: []string, s: string) -> string {
     return if vec.is_empty() {
         ""
     } else {
@@ -14,7 +14,7 @@ public func join(vec: []string, s: string) string {
     };
 }
 
-public func index_of(vec: []string, value: string) usize {
+public func index_of(vec: []string, value: string) -> usize {
     for i, val in vec {
         if val == value {
             return i;
@@ -24,7 +24,7 @@ public func index_of(vec: []string, value: string) usize {
 }
 
 // TODO: tmp-hack
-public func arr_4_uint8_contains(arr: [4]uint8, byte: uint8) bool {
+public func arr_4_uint8_contains(arr: [4]uint8, byte: uint8) -> bool {
     for b in arr {
         if b == byte {
             return true;

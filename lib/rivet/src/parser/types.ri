@@ -6,7 +6,7 @@ import ../ast;
 import ../report;
 
 extend Parser {
-    func parse_type(mut self) ast.Type {
+    func parse_type(mut self) -> ast.Type {
         mut pos := self.tok.pos;
         return switch {
             self.accept(.Question) => .Option(
@@ -35,7 +35,7 @@ extend Parser {
                     }
                 }
                 self.expect(.Rparen);
-                ret_type := if self.tok.kind.is_start_of_type() {
+                ret_type := if self.accept(.Arrow2) {
                     self.parse_type()
                 } else {
                     .Void()
@@ -115,7 +115,7 @@ extend Parser {
                     expr_pos := expr.position();
                     switch expr_name {
                         "never" => {
-                            if prev_tok_kind != .Rparen and self.tok.kind != .Lbrace {
+                            if prev_tok_kind != .Arrow2 {
                                 report.error("invalid use of `never` type", pos);
                             }
                             .Never(self.prev_tok.pos)

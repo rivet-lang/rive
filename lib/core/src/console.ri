@@ -46,7 +46,7 @@ public func console_eprintln(s: string = "", args: ...Stringable) {
 /// Returns `true` if the `fd` file descriptor is open and refers to a
 /// terminal.
 @[inline]
-public func console_is_atty(fd: int32) bool {
+public func console_is_atty(fd: int32) -> bool {
     return unsafe { libc.isatty(fd) == 1 };
 }
 

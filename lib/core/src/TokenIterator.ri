@@ -9,7 +9,7 @@ public struct TokenIterator {
 
     /// Returns a slice of the current token, or none if tokenization is
     /// complete, and advances to the next token.
-    public func next(mut self) ?string {
+    public func next(mut self) -> ?string {
         result := self.peek() ?? return none;
         self.index += result.len;
         return result;
@@ -17,7 +17,7 @@ public struct TokenIterator {
 
     /// Returns a slice of the current token, or none if tokenization is
     /// complete. Does not advance to the next token.
-    public func peek(mut self) ?string {
+    public func peek(mut self) -> ?string {
         // move to beginning of token
         while self.index < self.buffer.len and self.is_split_byte(self.buffer[self.index])
             : self.index += 1 {}
@@ -33,7 +33,7 @@ public struct TokenIterator {
     }
 
     /// Returns a slice of the remaining bytes. Does not affect iterator state.
-    public func rest(&self) string {
+    public func rest(&self) -> string {
         // move to beginning of token
         mut index: usize := self.index;
         while index < self.buffer.len and self.is_split_byte(self.buffer[index])
@@ -46,7 +46,7 @@ public struct TokenIterator {
         self.index = 0;
     }
 
-    func is_split_byte(&self, byte: uint8) bool {
+    func is_split_byte(&self, byte: uint8) -> bool {
         for delimiter_byte in self.delimiter_bytes {
             if byte == delimiter_byte {
                 return true;

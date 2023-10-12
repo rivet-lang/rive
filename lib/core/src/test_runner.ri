@@ -14,28 +14,28 @@ extern (Rivet) {
     var testRunner: TestRunner;
 }
 
-public func bold(msg: string) string {
+public func bold(msg: string) -> string {
     if !supportColor {
         return msg;
     }
     return "\x1b[1m{}\x1b[22m".fmt(msg);
 }
 
-public func green(msg: string) string {
+public func green(msg: string) -> string {
     if !supportColor {
         return msg;
     }
     return "\x1b[32m{}\x1b[39m".fmt(msg);
 }
 
-public func red(msg: string) string {
+public func red(msg: string) -> string {
     if !supportColor {
         return msg;
     }
     return "\x1b[31m{}\x1b[39m".fmt(msg);
 }
 
-public func yellow(msg: string) string {
+public func yellow(msg: string) -> string {
     if !supportColor {
         return msg;
     }

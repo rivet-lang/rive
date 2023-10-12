@@ -15,7 +15,7 @@ public struct Scope {
     public mut syms: []Sym;
     public mut is_local: bool;
 
-    public func add(mut self, sym: Sym) ! {
+    public func add(mut self, sym: Sym) -> ! {
         if _ := self.find(sym.name) {
             return DuplicateSymbolError(
                 "duplicate symbol `{}` in {} `{}`".fmt(
@@ -26,7 +26,7 @@ public struct Scope {
         self.syms.push(sym);
     }
 
-    public func add_or_get(mut self, sym: Sym) !Sym {
+    public func add_or_get(mut self, sym: Sym) -> !Sym {
         if old_sym := self.find(sym.name) {
             if sym is TypeSym as type_sym and old_sym is TypeSym as mut old_type_sym {
                 if old_type_sym.update(type_sym)! {
@@ -43,7 +43,7 @@ public struct Scope {
         return sym;
     }
 
-    public func add_local(mut self, sym: Sym) ! {
+    public func add_local(mut self, sym: Sym) -> ! {
         if self.is_local {
             if sym is Var and sym.name == "_" {
                 return; // ignore blank variable
@@ -57,11 +57,11 @@ public struct Scope {
     }
 
     @[inline]
-    public func exists(self, name: string) bool {
+    public func exists(self, name: string) -> bool {
         return self.find(name) !is none;
     }
 
-    public func find(self, name: string) ?Sym {
+    public func find(self, name: string) -> ?Sym {
         for sym in self.syms {
             if sym.name == name {
                 return sym;
@@ -70,14 +70,14 @@ public struct Scope {
         return none;
     }
 
-    public func find_or_panic(self, name: string) Sym {
+    public func find_or_panic(self, name: string) -> Sym {
         if x := self.find(name) {
             return x;
         }
         process.panic("cannot found symbol `{}`", name);
     }
 
-    public func find_by_index_or_panic(self, idx: usize) Sym {
+    public func find_by_index_or_panic(self, idx: usize) -> Sym {
         if idx >= self.syms.len {
             process.panic("symbol index out of range `{}`", idx);
         }
@@ -85,16 +85,16 @@ public struct Scope {
     }
 
     @[inline]
-    public func find_type_symbol_or_panic(self, name: string) TypeSym {
+    public func find_type_symbol_or_panic(self, name: string) -> TypeSym {
         return @cast(TypeSym, self.find_or_panic(name));
     }
 
     @[inline]
-    public func find_type_symbol_by_index_or_panic(self, idx: usize) TypeSym {
+    public func find_type_symbol_by_index_or_panic(self, idx: usize) -> TypeSym {
         return @cast(TypeSym, self.find_by_index_or_panic(idx));
     }
 
-    public func lookup(self, name: string) ?Sym {
+    public func lookup(self, name: string) -> ?Sym {
         if self.is_local {
             mut sc_: ?Scope := self;
             while sc := sc_ {
@@ -111,7 +111,7 @@ public struct Scope {
     }
 
     @[inline]
-    func dont_lookup_parent(self) bool {
+    func dont_lookup_parent(self) -> bool {
         return self.parent is none or self.detached_from_parent;
     }
 

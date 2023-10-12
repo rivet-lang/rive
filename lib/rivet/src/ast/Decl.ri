@@ -150,7 +150,7 @@ public enum Decl {
         mut defer_stmts: []Stmt.Defer;
     };
 
-    public func decls(self) ?[]Self {
+    public func decls(self) -> ?[]Self {
         return switch self is {
             .Extern as extern_decl => extern_decl.decls,
             .Trait as trait_decl => trait_decl.decls,
@@ -179,11 +179,11 @@ public struct DocComment {
     pos: token.Pos;
 
     @[inline]
-    func is_empty(self) bool {
+    func is_empty(self) -> bool {
         return self.lines.is_empty();
     }
 
-    func merge(self) string {
+    func merge(self) -> string {
         mut res := strings.Builder.new();
         for line in self.lines {
             res.write_join([line, if line.is_empty() or line.ends_with(".") {
@@ -212,7 +212,7 @@ public struct ImportedMod {
     public mut mod: Module;
 }
 
-public func filter_field_decl(decls: []Decl) []Decl {
+public func filter_field_decl(decls: []Decl) -> []Decl {
     mut fields := @vec(Decl);
     for decl in decls {
         if decl is .Field {

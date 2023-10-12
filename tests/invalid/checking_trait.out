@@ -1,9 +1,9 @@
 tests/invalid/checking_trait.ri:2:18: error: cannot take the address of a boxed value as receiver
-    2 |     func to_str1(&self) string;
+    2 |     func to_str1(&self) -> string;
       |                  ^~~~~
 tests/invalid/checking_trait.ri:10:5-12:5: error: type `string` incorrectly implements method `to_str1` of trait `checking_trait.ToStr`
       |     /~~ from here
-   10 |     func to_str1(self) string {
+   10 |     func to_str1(self) -> string {
    11 |         return self;
    12 |     }
       |     ^~~ to here
@@ -13,7 +13,7 @@ tests/invalid/checking_trait.ri:10:5-12:5: error: type `string` incorrectly impl
       = note: type `string` has `func(self) string`
 tests/invalid/checking_trait.ri:16:5-18:5: error: type `bool` incorrectly implements method `to_str1` of trait `checking_trait.ToStr`
       |     /~~ from here
-   16 |     func to_str1(&self) string {
+   16 |     func to_str1(&self) -> string {
    17 |         return if self.* { "true" } else { "false" };
    18 |     }
       |     ^~~ to here

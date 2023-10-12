@@ -9,7 +9,7 @@ import c/libc;
 ///
 /// NOTE: Unlike the `mem.zeroed` function, `mem.alloc` will
 /// not zero the memory block.
-public func mem_alloc(size: usize) !mut_anyptr {
+public func mem_alloc(size: usize) -> !mut_anyptr {
     if new := unsafe { libc.malloc(size) } {
         return new;
     }
@@ -18,7 +18,7 @@ public func mem_alloc(size: usize) !mut_anyptr {
 
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
-public func mem_zeroed(n: usize) !mut_anyptr {
+public func mem_zeroed(n: usize) -> !mut_anyptr {
     if ptr := unsafe { libc.calloc(1, n) } {
         return ptr;
     }
@@ -29,7 +29,7 @@ public func mem_zeroed(n: usize) !mut_anyptr {
 ///
 /// NOTE: The `ptr` must be a pointer to an existing memory block previously
 /// allocated with `mem.alloc` or `mem.zeroed`.
-public func mem_resize(ptr: ?mut_anyptr, sz: usize) !mut_anyptr {
+public func mem_resize(ptr: ?mut_anyptr, sz: usize) -> !mut_anyptr {
     if sz == 0 {
         if safe_ptr := ptr {
             unsafe {
@@ -80,7 +80,7 @@ public func mem_move(dest: mut_anyptr, src: anyptr, sz: usize) {
 /// Allocates dynamically a `sz` bytes block of memory on the heap, then copies
 /// the contents of `src` into the allocated space and returns a pointer to
 /// the newly allocated space.
-public func mem_dup(src: anyptr, sz: usize) !mut_anyptr {
+public func mem_dup(src: anyptr, sz: usize) -> !mut_anyptr {
     if sz == 0 {
         return mem_zeroed(1)!;
     }
@@ -105,7 +105,7 @@ public func mem_dup(src: anyptr, sz: usize) !mut_anyptr {
 /// number of equal bytes. You should use a function that performs comparisons
 /// in constant time for this.
 @[inline]
-public func mem_cmp(s1: anyptr, s2: anyptr, n: usize) int32 {
+public func mem_cmp(s1: anyptr, s2: anyptr, n: usize) -> int32 {
     return unsafe { libc.memcmp(s1, s2, n) };
 }
 

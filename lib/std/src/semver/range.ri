@@ -19,7 +19,7 @@ enum Operator as uint8 {
 public struct InvalidComparatorFormatError : Error {
     msg: string;
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -28,7 +28,7 @@ struct Comparator {
     ver: Version;
     op: Operator;
 
-    func parse(input: string) ?Comparator {
+    func parse(input: string) -> ?Comparator {
         mut op := Operator.Eq;
         raw_version: string := switch {
             input.starts_with(">=") => {
@@ -54,7 +54,7 @@ struct Comparator {
     }
 
     @[inline]
-    func satisfies(&self, ver: Version) bool {
+    func satisfies(&self, ver: Version) -> bool {
         return switch self.op {
             .Gt => ver > self.ver,
             .Lt => ver < self.ver,
@@ -68,7 +68,7 @@ struct Comparator {
 struct ComparatorSet {
     comparators: []Comparator;
 
-    func parse(input: string) !ComparatorSet {
+    func parse(input: string) -> !ComparatorSet {
         raw_comparators := input.split(comparatorSep);
         if raw_comparators.len > 2 {
             return InvalidComparatorFormatError(
@@ -87,7 +87,7 @@ struct ComparatorSet {
     }
 
     @[inline]
-    func expand(input: string) ?ComparatorSet {
+    func expand(input: string) -> ?ComparatorSet {
         return switch input[0] {
             b'~' => expand_tilda(input[1..]),
             b'^' => expand_tilda(input[1..]),
@@ -101,7 +101,7 @@ struct ComparatorSet {
         };
     }
 
-    func satisfies(&self, ver: Version) bool {
+    func satisfies(&self, ver: Version) -> bool {
         for comp in self.comparators {
             if !comp.satisfies(ver) {
                 return false;
@@ -114,7 +114,7 @@ struct ComparatorSet {
 struct Range {
     comparator_sets: []ComparatorSet;
 
-    func parse(input: string) ?Range {
+    func parse(input: string) -> ?Range {
         raw_comparator_sets := input.split(comparatorSetSep);
         mut comparator_sets := @vec(ComparatorSet);
         for raw_comp_set in raw_comparator_sets {
@@ -127,7 +127,7 @@ struct Range {
         return Range(comparator_sets);
     }
 
-    func parse_x(input: string) ?Version {
+    func parse_x(input: string) -> ?Version {
         raw_ver := RawVersion.parse(input).complete();
         for typ in versions {
             if raw_ver.raw_ints[typ].index_of_any(xRangeSymbols) is none {
@@ -153,7 +153,7 @@ struct Range {
         return none;
     }
 
-    func expand_x(raw_range: string) ?ComparatorSet {
+    func expand_x(raw_range: string) -> ?ComparatorSet {
         min_ver := Range.parse_x(raw_range) ?? return none;
         if min_ver.major == 0 {
             return ComparatorSet([Comparator(min_ver, .Ge)]);
@@ -167,7 +167,7 @@ struct Range {
         return make_comparator_set_ge_lt(min_ver, max_ver);
     }
 
-    func satisfies(&self, ver: Version) bool {
+    func satisfies(&self, ver: Version) -> bool {
         mut final_result := false;
         for set in self.comparator_sets {
             final_result = final_result or set.satisfies(ver);
@@ -176,13 +176,13 @@ struct Range {
     }
 }
 
-func can_expand(input: string) bool {
+func can_expand(input: string) -> bool {
     input0 := input[0];
     return input0 == b'~' or input0 == b'^' or input.contains(hyphenRangeSep)
         or input.index_of_any(xRangeSymbols) !is none;
 }
 
-func expand_tilda(raw_version: string) ?ComparatorSet {
+func expand_tilda(raw_version: string) -> ?ComparatorSet {
     min_ver := coerce(raw_version) catch return none;
     mut max_ver := min_ver;
     max_ver = if min_ver.minor == 0 and min_ver.patch == 0 {
@@ -193,7 +193,7 @@ func expand_tilda(raw_version: string) ?ComparatorSet {
     return make_comparator_set_ge_lt(min_ver, max_ver);
 }
 
-func expand_caret(raw_version: string) ?ComparatorSet {
+func expand_caret(raw_version: string) -> ?ComparatorSet {
     min_ver := coerce(raw_version) catch return none;
     mut max_ver := min_ver;
     max_ver = if min_ver.major == 0 {
@@ -204,7 +204,7 @@ func expand_caret(raw_version: string) ?ComparatorSet {
     return make_comparator_set_ge_lt(min_ver, max_ver);
 }
 
-func expand_hyphen(raw_range: string) ?ComparatorSet {
+func expand_hyphen(raw_range: string) -> ?ComparatorSet {
     raw_versions := raw_range.split(hyphenRangeSep);
     if raw_versions.len != 2 {
         return none;
@@ -223,11 +223,11 @@ func expand_hyphen(raw_range: string) ?ComparatorSet {
 }
 
 @[inline]
-func make_comparator_set_ge_lt(min: Version, max: Version) ComparatorSet {
+func make_comparator_set_ge_lt(min: Version, max: Version) -> ComparatorSet {
     return ComparatorSet([Comparator(min, .Ge), Comparator(max, .Lt)]);
 }
 
 @[inline]
-func make_comparator_set_ge_le(min: Version, max: Version) ComparatorSet {
+func make_comparator_set_ge_le(min: Version, max: Version) -> ComparatorSet {
     return ComparatorSet([Comparator(min, .Ge), Comparator(max, .Le)]);
 }

@@ -8,13 +8,13 @@ test "call expression with default arguments" {
     default_arg(x: 10);
 }
 
-func foo(_a: bool = false, _b: bool = false) { }
+func foo(_a: bool = false, _b: bool = false) -> { }
 
-func bar(_a: bool, _b: bool = true) { }
+func bar(_a: bool, _b: bool = true) -> { }
 
-func baz(_a: bool, _b: bool) { }
+func baz(_a: bool, _b: bool) -> { }
 
-func qux(_a: bool) { }
+func qux(_a: bool) -> { }
 
 test "call expression with named arguments" {
     foo(_a: true, _b: true);
@@ -25,7 +25,7 @@ test "call expression with named arguments" {
     qux(a);
 }
 
-func args(values: ...int32) int32 {
+func args(values: ...int32) -> int32 {
     mut res := 0;
     for v in values {
         res += v;

@@ -9,13 +9,13 @@ public struct ErrnoError : Error {
     public msg: string;
     public code: int32;
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return "errno: {} (code: {})".fmt(self.msg, self.code);
     }
 }
 
 @[inline]
-public func errno() int32 {
+public func errno() -> int32 {
     return unsafe {
 #if _LINUX_
         libc.__errno_location()?.*
@@ -26,7 +26,7 @@ public func errno() int32 {
 }
 
 @[inline]
-public func errno_msg(code: int32 = errno()) string {
+public func errno_msg(code: int32 = errno()) -> string {
     unsafe {
         return if s := libc.strerror(code) {
             string.from_raw(s)
@@ -37,6 +37,6 @@ public func errno_msg(code: int32 = errno()) string {
 }
 
 @[inline]
-public func last_errno_error() ErrnoError {
+public func last_errno_error() -> ErrnoError {
     return ErrnoError(errno_msg(), errno());
 }

@@ -3,11 +3,11 @@
 // be found in the LICENSE file.
 
 @[inline]
-public func bool_to_usize(b: bool) usize {
+public func bool_to_usize(b: bool) -> usize {
     return if b { 1 } else { 0 };
 }
 
 @[inline]
-public func bool_to_isize(b: bool) isize {
+public func bool_to_isize(b: bool) -> isize {
     return if b { 1 } else { 0 };
 }

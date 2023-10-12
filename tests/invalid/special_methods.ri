@@ -1,5 +1,5 @@
 struct SpecialMethod {
-    func __xxx__() {}
+    func __xxx__() -> {}
 
     public func __public__(self) {
         _ = self;
@@ -11,4 +11,4 @@ struct SpecialMethod {
     }
 }
 
-func main() {}
+func main() -> {}

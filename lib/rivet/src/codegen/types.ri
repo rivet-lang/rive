@@ -8,7 +8,7 @@ import ../utils;
 import ../depgraph;
 
 extend Codegen {
-    func get_type_symbols(mut self, root: ast.Sym) []ast.TypeSym {
+    func get_type_symbols(mut self, root: ast.Sym) -> []ast.TypeSym {
         mut ts := @vec(ast.TypeSym);
         for sym in root.scope.syms {
             if sym is ast.TypeSym as type_sym and !(
@@ -106,7 +106,7 @@ extend Codegen {
         }
     }
 
-    func type_to_mir(mut self, type: ast.Type) mir.Type {
+    func type_to_mir(mut self, type: ast.Type) -> mir.Type {
         (size, _) := self.table.type_size(type, true);
         return switch type is {
             .Void => .Void(),

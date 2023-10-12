@@ -331,7 +331,7 @@ public struct Register {
         }
     }
 
-    func add_sym(mut self, sym: ast.Sym, pos: token.Pos) ast.Sym {
+    func add_sym(mut self, sym: ast.Sym, pos: token.Pos) -> ast.Sym {
         if self.check_imported_symbol(sym.name, pos, false) {
             return self.sym.scope.add_or_get(sym) catch |err| {
                 report.error(err.to_string(), pos);
@@ -341,7 +341,7 @@ public struct Register {
         return sym;
     }
 
-    func check_imported_symbol(self, name: string, pos: token.Pos, is_import: bool) bool {
+    func check_imported_symbol(self, name: string, pos: token.Pos, is_import: bool) -> bool {
         if self.source_file.imported_symbols.exists(name) {
             if is_import {
                 mut err := report.error_builder(

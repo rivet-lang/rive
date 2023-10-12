@@ -31,7 +31,7 @@ public enum Type : traits.Stringable {
         mut sym: TypeSym;
         pos: token.Pos;
 
-        func ==(self, other: Self) bool {
+        func ==(self, other: Self) -> bool {
             if self.inners.len != other.inners.len {
                 return false;
             }
@@ -84,7 +84,7 @@ public enum Type : traits.Stringable {
         mut has_sym: bool;
 
         @[inline]
-        func symbol(self) Func {
+        func symbol(self) -> Func {
             return if self.has_sym and self.sym.info is .Func as func_sym {
                 func_sym
             } else {
@@ -101,7 +101,7 @@ public enum Type : traits.Stringable {
     };
 
     @[inline]
-    public func ptr_or_ref_inner(self) Self {
+    public func ptr_or_ref_inner(self) -> Self {
         return switch self is {
             .Pointer as ptr => ptr.inner,
             .Anyptr => self,
@@ -109,7 +109,7 @@ public enum Type : traits.Stringable {
         };
     }
 
-    public func unalias(self) ?Self {
+    public func unalias(self) -> ?Self {
         // NOTE: `.unalias()` returns an option, so we use the same type without
         // unaliasing instead.
         return switch self is {
@@ -159,7 +159,7 @@ public enum Type : traits.Stringable {
     }
 
     @[inline]
-    public func symbol(self) ?TypeSym {
+    public func symbol(self) -> ?TypeSym {
         // NOTE: `.Void`, `.None`, `.Never` and `.Anyptr` has no `TypeSym` value.
         return switch self is {
             .Result as result => result.inner.symbol(),
@@ -176,7 +176,7 @@ public enum Type : traits.Stringable {
     }
 
     @[inline]
-    public func is_primitive(self) bool {
+    public func is_primitive(self) -> bool {
         return if type_sym := self.symbol() {
             type_sym.is_primitive()
         } else {
@@ -185,7 +185,7 @@ public enum Type : traits.Stringable {
     }
 
     @[inline]
-    public func is_boxed(self) bool {
+    public func is_boxed(self) -> bool {
         return if type_sym := self.symbol() {
             type_sym.is_boxed()
         } else {
@@ -194,7 +194,7 @@ public enum Type : traits.Stringable {
     }
 
     @[inline]
-    public func is_void(self) bool {
+    public func is_void(self) -> bool {
         return switch self is {
             .Void, .Never => true,
             .Result as result => result.inner.is_void(),
@@ -203,12 +203,12 @@ public enum Type : traits.Stringable {
     }
 
     @[inline]
-    public func is_pointer(self) bool {
+    public func is_pointer(self) -> bool {
         return self is .Pointer or self is .Anyptr;
     }
 
     @[inline]
-    public func is_mut_pointer(self) bool {
+    public func is_mut_pointer(self) -> bool {
         return switch self is {
             .Pointer as ptr => ptr.is_mut,
             .Anyptr as anyptr_ => anyptr_.is_mut,
@@ -217,7 +217,7 @@ public enum Type : traits.Stringable {
     }
 
     @[inline]
-    public func is_any_kind_of_pointer(self) bool {
+    public func is_any_kind_of_pointer(self) -> bool {
         return switch self is {
             .Pointer, .Anyptr, .Func => true,
             else => if type_sym := self.symbol() {
@@ -229,7 +229,7 @@ public enum Type : traits.Stringable {
     }
 
     @[inline]
-    public func position(self) token.Pos {
+    public func position(self) -> token.Pos {
         return switch self is {
             .Void, .None => token.noPos,
             .Never as never_pos => never_pos,
@@ -251,7 +251,7 @@ public enum Type : traits.Stringable {
     }
 
     @[inline]
-    public func ==(self, rhs: Self) bool {
+    public func ==(self, rhs: Self) -> bool {
         return switch self is {
             .None if rhs is .None => true,
             .Void if rhs is .Void => true,
@@ -306,19 +306,19 @@ public enum Type : traits.Stringable {
         };
     }
 
-    public func !=(self, rhs: Self) bool {
+    public func !=(self, rhs: Self) -> bool {
     	return !(self == rhs);
     }
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.to_string_(false);
     }
 
-    public func to_qualstring(self) string {
+    public func to_qualstring(self) -> string {
         return self.to_string_(true);
     }
 
-    public func to_string_(self, qualstr: bool) string {
+    public func to_string_(self, qualstr: bool) -> string {
         return switch self is {
             .None => "<none>",
         	.Void => "<void>",

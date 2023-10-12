@@ -11,6 +11,6 @@ public enum CRuntime as uint8 {
 
 /// Returns the current C core.
 @[inline]
-public func c_runtime() CRuntime {
+public func c_runtime() -> CRuntime {
     return .Glibc;
 }

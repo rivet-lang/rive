@@ -31,7 +31,7 @@ var availableTemplates = "Available templates:
    bin          A simple binary project (default).
    lib          A simple library project.";
 
-public func new(args: []string, is_init: bool) ! {
+public func new(args: []string, is_init: bool) -> ! {
     mut template := "";
     mut fp := flag.FlagParser.new(args);
     if is_init {
@@ -157,7 +157,7 @@ func check_project(mut project: build.Project) {
     }
 }
 
-func create_project_json(project: build.Project, is_init: bool) ! {
+func create_project_json(project: build.Project, is_init: bool) -> ! {
     path_ := if is_init { "project.json" } else { Path.join(project.name, "project.json")! };
     if !Path.exists(path_) {
         utils.info("creating `project.ri` file...");
@@ -166,7 +166,7 @@ func create_project_json(project: build.Project, is_init: bool) ! {
     }
 }
 
-func generate_project_json(project: build.Project) string {
+func generate_project_json(project: build.Project) -> string {
     mut sb := strings.Builder.new();
     sb.writeln("{");
     sb.write_fmt("    \"name\": \"{}\"", project.name);
@@ -201,7 +201,7 @@ func generate_project_json(project: build.Project) string {
     return sb.to_string();
 }
 
-func create_gitattributes_file(name: string, is_init: bool) ! {
+func create_gitattributes_file(name: string, is_init: bool) -> ! {
     path_ := if is_init { ".gitattributes" } else { Path.join(name, ".gitattributes")! };
     if Path.exists(path_) {
         return;
@@ -209,7 +209,7 @@ func create_gitattributes_file(name: string, is_init: bool) ! {
     fs.write_file(path_, templates.gitattributesFile)!;
 }
 
-func create_editorconfig_file(name: string, is_init: bool) ! {
+func create_editorconfig_file(name: string, is_init: bool) -> ! {
     path_ := if is_init { ".editorconfig" } else { Path.join(name, ".editorconfig")! };
     if Path.exists(path_) {
         return;
@@ -217,7 +217,7 @@ func create_editorconfig_file(name: string, is_init: bool) ! {
     fs.write_file(path_, templates.editorConfigFile)!;
 }
 
-func create_git_repo(dir: string) ! {
+func create_git_repo(dir: string) -> ! {
     if !Path.is_directory(Path.join(dir, ".git")!) {
         utils.info("initializing git repo...");
         if res := process.execute("git init {}".fmt(dir)) {

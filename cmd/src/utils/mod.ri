@@ -6,7 +6,7 @@ import std/console;
 import std/console/styles;
 
 @[inline]
-public func readln(prompt: string) ?string {
+public func readln(prompt: string) -> ?string {
     prefix := styles.bold(styles.green("> "));
     return if prompt.is_empty() {
         console.readln(prefix)

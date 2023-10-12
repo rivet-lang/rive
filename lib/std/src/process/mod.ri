@@ -23,12 +23,12 @@ public var executableDir = Path.dirname(executable() catch wdAtStartup);
 public struct NotADirectoryError : Error {
     msg: string;
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }
 
-public func set_cwd(p: string) ! {
+public func set_cwd(p: string) -> ! {
     if !Path.is_directory(p) {
         return NotADirectoryError("`{}` is not a directory".fmt(p));
     }
@@ -44,14 +44,14 @@ struct Result {
 struct ExecutionFailedError : Error {
     cmd: string;
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return "execution failed for `{}`".fmt(self.cmd);
     }
 }
 
 /// Starts the specified command, waits for it to complete, and returns
 /// both its output and the exit code.
-public func execute(cmd: string) !Result {
+public func execute(cmd: string) -> !Result {
     pcmd := if cmd.contains("2>") { cmd } else { "{} 2>&1".fmt(cmd) };
     unsafe {
         if f := libc.popen(pcmd.ptr, c"r") {

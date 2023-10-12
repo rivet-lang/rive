@@ -87,7 +87,7 @@ public struct Codegen {
         }
     }
 
-    func get_or_create_mir(mut self, name: string) mir.ModuleIR {
+    func get_or_create_mir(mut self, name: string) -> mir.ModuleIR {
         for mir_ in self.mirs {
             if mir_.name == name {
                 return mir_;
@@ -98,7 +98,7 @@ public struct Codegen {
         return new_mir;
     }
 
-    func prefix_type(self, type: ast.Type) string {
+    func prefix_type(self, type: ast.Type) -> string {
         mut sb := strings.Builder.new();
         switch type is {
             .Pointer as ptr => {
@@ -117,7 +117,7 @@ public struct Codegen {
         return sb.to_string();
     }
 
-    func mangle_type(self, type: ast.Type) string {
+    func mangle_type(self, type: ast.Type) -> string {
         return switch type is {
             .Void => "4void",
             .Anyptr => "6anyptr",
@@ -156,7 +156,7 @@ public struct Codegen {
         };
     }
 
-    func mangle_symbol(self, mut sym: ast.Sym, insert_r: bool = true) string {
+    func mangle_symbol(self, mut sym: ast.Sym, insert_r: bool = true) -> string {
         if sym.mangled_name.len > 0 {
             return sym.mangled_name;
         }

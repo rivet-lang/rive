@@ -20,7 +20,7 @@ public struct Pos : traits.Stringable {
     public is_multiline: bool;
 
     @[inline]
-    public func +(&self, other: *Pos) Pos {
+    public func +(&self, other: *Pos) -> Pos {
         return if other.line > self.line {
             Pos(
                 line: self.line,
@@ -35,7 +35,7 @@ public struct Pos : traits.Stringable {
         };
     }
 
-    public func ==(&self, other: *Pos) bool {
+    public func ==(&self, other: *Pos) -> bool {
         return self.file == other.file
             and self.line == other.line
             and self.col == other.col
@@ -47,7 +47,7 @@ public struct Pos : traits.Stringable {
     }
 
     @[inline]
-    public func to_report_string(&self) string {
+    public func to_report_string(&self) -> string {
         return if self.is_multiline {
             "{}:{}:{}-{}:{}".fmt(
                 utils.path_styled_for_error_messages(self.file), self.line + 1,
@@ -63,7 +63,7 @@ public struct Pos : traits.Stringable {
     }
 
     @[inline]
-    public func to_string(&self) string {
+    public func to_string(&self) -> string {
         return if self.is_multiline {
             "{}:{}:{}-{}:{}".fmt(
                 self.file, self.line + 1, self.col, self.end_line + 1, self.end_col
@@ -80,13 +80,13 @@ public struct Token : traits.Stringable {
     public len: usize;
     public pos: Pos;
 
-    public func to_debug_string(&self) string {
+    public func to_debug_string(&self) -> string {
         return "rivet.token.Token(kind: '{}', lit: '{}', pos: {})".fmt(
             self.kind, self.lit, self.pos
         );
     }
 
-    public func to_string(&self) string {
+    public func to_string(&self) -> string {
         if self.kind == .String {
             return "string literal";
         }

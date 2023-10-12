@@ -10,7 +10,7 @@ import ../report;
 struct IncompatibleTypesError : Error {
     msg: string;
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -47,7 +47,7 @@ extend Checker {
         }
     }
 
-    func check_types(self, got: ast.Type, expected: ast.Type) ! {
+    func check_types(self, got: ast.Type, expected: ast.Type) -> ! {
         if !self.check_compatible_types(got, expected) {
             got_str := if got is .None {
                 if expected is .Option {
@@ -74,7 +74,7 @@ extend Checker {
         }
     }
 
-    func check_compatible_types(self, got: ast.Type, expected: ast.Type) bool {
+    func check_compatible_types(self, got: ast.Type, expected: ast.Type) -> bool {
         if got is .Never {
             return true;
         } else if (expected is .Never and got is .Void)
@@ -193,7 +193,7 @@ extend Checker {
         return expected == got;
     }
 
-    func check_pointer(self, expected: ast.Type, got: ast.Type) bool {
+    func check_pointer(self, expected: ast.Type, got: ast.Type) -> bool {
         _ = self;
         if expected is .Anyptr as anyptr_ {
             if got is .Pointer as ptr {
@@ -216,7 +216,7 @@ extend Checker {
         return false;
     }
 
-    func promote(self, left_type: ast.Type, right_type: ast.Type) ast.Type {
+    func promote(self, left_type: ast.Type, right_type: ast.Type) -> ast.Type {
         if left_type == right_type {
             return left_type;
         } else if self.table.is_number(left_type) and self.table.is_number(right_type) {
@@ -225,7 +225,7 @@ extend Checker {
         return left_type;
     }
 
-    func promote_number(self, expected: ast.Type, got: ast.Type) ast.Type {
+    func promote_number(self, expected: ast.Type, got: ast.Type) -> ast.Type {
         mut type_hi := expected;
         mut type_lo := got;
         mut bits_hi := self.table.number_bits(type_hi);

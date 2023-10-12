@@ -58,7 +58,7 @@ public struct Resolver {
         }
     }
 
-    func eval_size(mut self, mut expr: ast.Expr) ?isize {
+    func eval_size(mut self, mut expr: ast.Expr) -> ?isize {
         return switch expr is {
             .Paren as paren => self.eval_size(paren.expr),
             .IntegerLiteral as int_lit => conv.string_to_isize(int_lit.value) catch return none,
@@ -115,7 +115,7 @@ public struct Resolver {
         };
     }
 
-    func eval_sym(mut self, sym: ast.Sym, pos: token.Pos) ?isize {
+    func eval_sym(mut self, sym: ast.Sym, pos: token.Pos) -> ?isize {
         if sym is ast.Const as const_ {
             if !const_.has_evaled_size {
                 const_.evaled_size = self.eval_size(const_.expr)?;

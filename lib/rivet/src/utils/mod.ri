@@ -13,16 +13,16 @@ public const CR: uint8 = 13;
 public var mut stderrSupportStyles = styles.stderr_support_styles();
 
 @[inline]
-public func min(a: usize, b: usize) usize {
+public func min(a: usize, b: usize) -> usize {
    return if a < b { a } else { b };
 }
 
 @[inline]
-public func max(a: usize, b: usize) usize {
+public func max(a: usize, b: usize) -> usize {
    return if a > b { a } else { b };
 }
 
-public func option(args: []string, param: string) ?string {
+public func option(args: []string, param: string) -> ?string {
     for i, arg in args {
         if param == arg {
             if i + 1 < args.len {
@@ -34,7 +34,7 @@ public func option(args: []string, param: string) ?string {
     return none;
 }
 
-public func error(msg: string, args: ...traits.Stringable) never {
+public func error(msg: string, args: ...traits.Stringable) -> never {
    console.eprintln("{} {} {}", bold("rivet:"), bold(red("error:")), msg.fmt(args));
    process.exit(1);
 }
@@ -50,38 +50,38 @@ public func info(msg: string, args: ...traits.Stringable) {
 }
 
 @[inline]
-public func bold(msg: string) string {
+public func bold(msg: string) -> string {
     return if stderrSupportStyles { styles.bold(msg) } else { msg };
 }
 
 @[inline]
-public func red(msg: string) string {
+public func red(msg: string) -> string {
     return if stderrSupportStyles { styles.red(msg) } else { msg };
 }
 
 @[inline]
-public func yellow(msg: string) string {
+public func yellow(msg: string) -> string {
     return if stderrSupportStyles { styles.yellow(msg) } else { msg };
 }
 
 @[inline]
-public func cyan(msg: string) string {
+public func cyan(msg: string) -> string {
     return if stderrSupportStyles { styles.cyan(msg) } else { msg };
 }
 
 @[inline]
-public func blue(msg: string) string {
+public func blue(msg: string) -> string {
     return if stderrSupportStyles { styles.blue(msg) } else { msg };
 }
 
 @[inline]
-public func green(msg: string) string {
+public func green(msg: string) -> string {
     return if stderrSupportStyles { styles.green(msg) } else { msg };
 }
 
 /// Rounds the number `n` up to the next mult
 /// NOTE: `multiple` must be a power of 2.@[inline]
-public func round_up(n: usize, multiple: usize) usize {
+public func round_up(n: usize, multiple: usize) -> usize {
     n_ := @cast(isize, n);
     multiple_ := @cast(isize, multiple);
     return @cast(usize, (n_ + multiple_ - 1) & (-multiple_));

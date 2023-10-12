@@ -34,7 +34,7 @@ public struct ImportedSymbols {
         self.syms.push(ImportedSymbol(name, sym, pos, is_used));
     }
 
-    public func find(&self, name: string) ?ImportedSymbol {
+    public func find(&self, name: string) -> ?ImportedSymbol {
         for imported_sym in self.syms {
             if name == imported_sym.name {
                 return imported_sym;
@@ -44,7 +44,7 @@ public struct ImportedSymbols {
     }
 
     @[inline]
-    public func exists(&self, name: string) bool {
+    public func exists(&self, name: string) -> bool {
         return self.find(name) !is none;
     }
 }

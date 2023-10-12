@@ -20,7 +20,7 @@ public var rivetcLibDir = Path.join(rivetcDir, "lib")!;
 public enum Backend as uint8 {
     C;
 
-    public func from_string(name: string) ?Self {
+    public func from_string(name: string) -> ?Self {
         return switch name {
             "c" => .C,
             else => none
@@ -79,7 +79,7 @@ public struct Prefs {
 	public mut hide_all_warns: bool;
 	public mut is_verbose: bool;
 
-    public func new(args: []string, is_test: bool, run_output: bool, is_check: bool) !Self {
+    public func new(args: []string, is_test: bool, run_output: bool, is_check: bool) -> !Self {
         prefs := Prefs(is_test: is_test, run_output: run_output, check: is_check);
         mut fp := flag.FlagParser.new(args);
         fp.set_application_name(if is_test {

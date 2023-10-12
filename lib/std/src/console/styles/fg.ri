@@ -3,86 +3,86 @@
 // be found in the LICENSE file.
 
 @[inline]
-public func black(msg: string) string {
+public func black(msg: string) -> string {
     return fmt(msg, "30", "39");
 }
 
 @[inline]
-public func bright_black(msg: string) string {
+public func bright_black(msg: string) -> string {
     return fmt(msg, "90", "39");
 }
 
 @[inline]
-public func blue(msg: string) string {
+public func blue(msg: string) -> string {
     return fmt(msg, "34", "39");
 }
 
 @[inline]
-public func bright_blue(msg: string) string {
+public func bright_blue(msg: string) -> string {
     return fmt(msg, "94", "39");
 }
 
 @[inline]
-public func cyan(msg: string) string {
+public func cyan(msg: string) -> string {
     return fmt(msg, "36", "39");
 }
 
 @[inline]
-public func bright_cyan(msg: string) string {
+public func bright_cyan(msg: string) -> string {
     return fmt(msg, "96", "39");
 }
 
 @[inline]
-public func green(msg: string) string {
+public func green(msg: string) -> string {
     return fmt(msg, "32", "39");
 }
 
 @[inline]
-public func bright_green(msg: string) string {
+public func bright_green(msg: string) -> string {
     return fmt(msg, "92", "39");
 }
 
 @[inline]
-public func gray(msg: string) string {
+public func gray(msg: string) -> string {
     return bright_black(msg);
 }
 
 @[inline]
-public func magenta(msg: string) string {
+public func magenta(msg: string) -> string {
     return fmt(msg, "35", "39");
 }
 
 @[inline]
-public func bright_magenta(msg: string) string {
+public func bright_magenta(msg: string) -> string {
     return fmt(msg, "95", "39");
 }
 
 @[inline]
-public func red(msg: string) string {
+public func red(msg: string) -> string {
     return fmt(msg, "31", "39");
 }
 
 @[inline]
-public func bright_red(msg: string) string {
+public func bright_red(msg: string) -> string {
     return fmt(msg, "91", "39");
 }
 
 @[inline]
-public func white(msg: string) string {
+public func white(msg: string) -> string {
     return fmt(msg, "37", "39");
 }
 
 @[inline]
-public func bright_white(msg: string) string {
+public func bright_white(msg: string) -> string {
     return fmt(msg, "97", "39");
 }
 
 @[inline]
-public func yellow(msg: string) string {
+public func yellow(msg: string) -> string {
     return fmt(msg, "33", "39");
 }
 
 @[inline]
-public func bright_yellow(msg: string) string {
+public func bright_yellow(msg: string) -> string {
     return fmt(msg, "93", "39");
 }

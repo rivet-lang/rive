@@ -4,7 +4,7 @@ struct Xyz {
     c: [10][7]func ();
 }
 
-func new_array() [4]int32 {
+func new_array() -> [4]int32 {
     return [1, 2, 3, 4]!;
 }
 

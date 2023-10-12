@@ -6,7 +6,7 @@ import ../ast;
 import ../report;
 
 extend Checker {
-    func check_expr(mut self, mut expr: ast.Expr) ast.Type {
+    func check_expr(mut self, mut expr: ast.Expr) -> ast.Type {
         return switch expr is {
             .Empty => .Void(),
             .Type as type => type,
@@ -210,7 +210,7 @@ extend Checker {
         };
     }
 
-    func check_tuple_literal(mut self, mut tuple_lit: ast.Expr.TupleLiteral) ast.Type {
+    func check_tuple_literal(mut self, mut tuple_lit: ast.Expr.TupleLiteral) -> ast.Type {
         old_expected_type := self.expected_type;
         mut has_expected_types := false;
         mut expected_types := @vec(ast.Type);
@@ -240,7 +240,7 @@ extend Checker {
         return tuple_lit.type;
     }
 
-    func check_vector_literal(mut self, mut vec_lit: ast.Expr.VectorLiteral) ast.Type {
+    func check_vector_literal(mut self, mut vec_lit: ast.Expr.VectorLiteral) -> ast.Type {
         old_expected_type := self.expected_type;
         mut size: usize := 0;
         mut is_mut := false;
@@ -299,7 +299,7 @@ extend Checker {
         return vec_lit.type;
     }
 
-    func check_selector(mut self, mut selector: ast.Expr.Selector) ast.Type {
+    func check_selector(mut self, mut selector: ast.Expr.Selector) -> ast.Type {
         selector.type = if selector.is_path {
             if selector.left_sym is ast.TypeSym as type_sym {
                 .Basic(type_sym, pos: selector.pos)
@@ -393,7 +393,7 @@ extend Checker {
         return selector.type;
     }
 
-    func check_index(mut self, mut index: ast.Expr.Index) ast.Type {
+    func check_index(mut self, mut index: ast.Expr.Index) -> ast.Type {
         index.left_type = self.check_expr(index.left);
         left_sym := index.left_type.symbol()?;
         index_t := self.check_expr(index.index);
@@ -454,7 +454,7 @@ extend Checker {
         return index.type;
     }
 
-    func check_unary(mut self, mut unary: ast.Expr.Unary) ast.Type {
+    func check_unary(mut self, mut unary: ast.Expr.Unary) -> ast.Type {
         unary.type = self.check_expr(unary.right);
         switch unary.op {
             .Bang if unary.type != self.table.bool_t => report.error(
@@ -515,7 +515,7 @@ extend Checker {
         return unary.type;
     }
 
-    func check_binary(mut self, mut binary: ast.Expr.Binary) ast.Type {
+    func check_binary(mut self, mut binary: ast.Expr.Binary) -> ast.Type {
         left_type := self.check_expr(binary.left);
         old_expected_type := self.expected_type;
         self.expected_type = left_type;
@@ -695,7 +695,7 @@ extend Checker {
                                 "ambiguous boolean expression", binary.pos
                             );
                             err.add_help(
-                                "use `({}) {} {}` instead", binary.left, binary.op,
+                                "use `({}) -> {} {}` instead", binary.left, binary.op,
                                 binary.right
                             );
                             err.emit();
@@ -739,7 +739,7 @@ extend Checker {
         return binary.type;
     }
 
-    func check_if(mut self, mut if_expr: ast.Expr.If) ast.Type {
+    func check_if(mut self, mut if_expr: ast.Expr.If) -> ast.Type {
         if_expr.expected_type = self.expected_type;
         for i, branch in if_expr.branches {
             if !branch.is_else {
@@ -775,7 +775,7 @@ extend Checker {
         return if_expr.expected_type;
     }
 
-    func check_return(mut self, mut return_expr: ast.Expr.Return) ast.Type {
+    func check_return(mut self, mut return_expr: ast.Expr.Return) -> ast.Type {
         if self.cur_fn.ret_type is .Never {
             report.error("`never` functions cannot use `return` statements", return_expr.pos);
         } else if self.inside_defer {
@@ -833,7 +833,7 @@ extend Checker {
         return .Never(return_expr.pos);
     }
 
-    func check_assign(mut self, mut assign: ast.Expr.Assign) ast.Type {
+    func check_assign(mut self, mut assign: ast.Expr.Assign) -> ast.Type {
         left_type := self.check_expr(assign.left);
         self.check_expr_is_mut(assign.left, true);
         old_expected_type := self.expected_type;

@@ -1,4 +1,4 @@
-func make_tuple() (int32, bool) {
+func make_tuple() -> (int32, bool) {
     return (2004, true);
 }
 

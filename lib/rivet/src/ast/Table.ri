@@ -69,7 +69,7 @@ public struct Table {
     public mut source_files: []SourceFile;
 
     @[inline]
-    public func new(prefs_: prefs.Prefs) Table {
+    public func new(prefs_: prefs.Prefs) -> Table {
         universe_ := universe();
         mut table := Table(
             universe: universe_,
@@ -189,7 +189,7 @@ public struct Table {
         ];
     }
 
-    public func find_builtin(self, name: string) ?Builtin {
+    public func find_builtin(self, name: string) -> ?Builtin {
         for builtin in self.builtins {
             is_equal := switch builtin is {
                 .Const as b_var => b_var.name == name,
@@ -203,22 +203,22 @@ public struct Table {
         return none;
     }
 
-    public func exist_builtin(self, name: string) bool {
+    public func exist_builtin(self, name: string) -> bool {
         return self.find_builtin(name) !is none;
     }
 
     @[inline]
-    public func is_number(self, type: Type) bool {
+    public func is_number(self, type: Type) -> bool {
         return self.is_int(type) or self.is_float(type);
     }
 
     @[inline]
-    public func is_int(self, type: Type) bool {
+    public func is_int(self, type: Type) -> bool {
         return self.is_signed_int(type) or self.is_unsigned_int(type);
     }
 
     @[inline]
-    public func is_signed_int(self, type: Type) bool {
+    public func is_signed_int(self, type: Type) -> bool {
         return type in [
             self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.isize_t,
             self.comptime_int_t
@@ -226,23 +226,23 @@ public struct Table {
     }
 
     @[inline]
-    public func is_unsigned_int(self, type: Type) bool {
+    public func is_unsigned_int(self, type: Type) -> bool {
         return type in [
             self.uint8_t, self.uint16_t, self.uint32_t, self.uint64_t, self.usize_t
         ];
     }
 
     @[inline]
-    public func is_float(self, type: Type) bool {
+    public func is_float(self, type: Type) -> bool {
         return type in [self.float32_t, self.float64_t, self.comptime_float_t];
     }
 
     @[inline]
-    public func is_comptime_number(self, type: Type) bool {
+    public func is_comptime_number(self, type: Type) -> bool {
         return type == self.comptime_int_t or type == self.comptime_float_t;
     }
 
-    public func comptime_number_to_type(self, type: Type) Type {
+    public func comptime_number_to_type(self, type: Type) -> Type {
         return if type == self.comptime_int_t {
             self.int32_t
         } else if type == self.comptime_float_t {
@@ -252,7 +252,7 @@ public struct Table {
         };
     }
 
-    public func number_bits(self, type: Type) usize {
+    public func number_bits(self, type: Type) -> usize {
         return if self.is_int(type) {
             self.int_bits(type)
         } else if self.is_float(type) {
@@ -262,7 +262,7 @@ public struct Table {
         };
     }
 
-    public func int_bits(self, type: Type) usize {
+    public func int_bits(self, type: Type) -> usize {
         type_sym := type.symbol()?;
         return if type_sym.info is .Int as int_info {
             int_info.size
@@ -275,7 +275,7 @@ public struct Table {
         };
     }
 
-    public func float_bits(self, type: Type) usize {
+    public func float_bits(self, type: Type) -> usize {
         _ = self;
         type_sym := type.symbol()?;
         return if type_sym.info is .Float as float_info {
@@ -287,7 +287,7 @@ public struct Table {
 
     /// Returns the size and alignment (in bytes) of `typ`, similarly to
     /// C's `sizeof(T)` and `_Alignof(T)`.
-    public func type_size(mut self, type: Type, is_raw: bool = false) (usize, usize) {
+    public func type_size(mut self, type: Type, is_raw: bool = false) -> (usize, usize) {
         return switch type is {
             .Result, .Option => self.type_symbol_size(self.error_sym, is_raw),
             .Anyptr, .Pointer, .Func => (self.pointer_size, self.pointer_size),
@@ -299,7 +299,7 @@ public struct Table {
         };
     }
 
-    public func type_symbol_size(mut self, mut type_sym: TypeSym, is_raw: bool = false) (usize, usize) {
+    public func type_symbol_size(mut self, mut type_sym: TypeSym, is_raw: bool = false) -> (usize, usize) {
         return if type_sym.size != 0 {
             (type_sym.size, type_sym.align)
         } else {
@@ -383,7 +383,7 @@ public struct Table {
         };
     }
 
-    public func filter_files(self, inputs: []string) []string {
+    public func filter_files(self, inputs: []string) -> []string {
         mut new_inputs := @vec(string, inputs.len);
         for input in inputs {
             basename_input := Path.basename(input);
@@ -436,7 +436,7 @@ public struct Table {
         return new_inputs;
     }
 
-    public func evalue_pp_symbol(self, name: string, pos: token.Pos) bool {
+    public func evalue_pp_symbol(self, name: string, pos: token.Pos) -> bool {
         switch name {
             // operating systems
             "_LINUX_", "_WINDOWS_" => {
@@ -489,7 +489,7 @@ public struct Table {
     }
 }
 
-public func universe() Module {
+public func universe() -> Module {
     return Module(
         name: "universe",
         scope: Scope(syms: [
@@ -527,7 +527,7 @@ public enum Builtin {
         is_unsafe: bool;
         checks: []BuiltinFuncCheck;
 
-        func args_len(self) usize {
+        func args_len(self) -> usize {
             mut l: usize := 0;
             for arg in self.args {
                 if arg.is_optional {
@@ -539,7 +539,7 @@ public enum Builtin {
         }
     };
 
-    public func type(self) Type {
+    public func type(self) -> Type {
         return switch self is {
             .Const as b_const => b_const.type,
             .Func as b_func => b_func.type,

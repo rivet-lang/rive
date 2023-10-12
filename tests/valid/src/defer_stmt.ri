@@ -2,7 +2,7 @@ struct ErrDefer {
     mut i: int32;
 }
 
-func test_defer() int32 {
+func test_defer() -> int32 {
     mut a := 1;
     defer a = 5;
     return a;
@@ -12,7 +12,7 @@ test "`defer` statement" {
     @assert(test_defer() == 5);
 }
 
-func test_errdefer(mut err_defer: ErrDefer, err: bool) ! {
+func test_errdefer(mut err_defer: ErrDefer, err: bool) -> ! {
     defer err_defer.i += 1;
     errdefer err_defer.i += 2;
 
@@ -30,11 +30,11 @@ test "`errdefer` statement" {
     @assert(err_defer.i == 4);
 }
 
-func return_error() ! {
+func return_error() -> ! {
     return MyError();
 }
 
-func return_and_errdefer(mut err_defer: ErrDefer) ! {
+func return_and_errdefer(mut err_defer: ErrDefer) -> ! {
     errdefer {
         err_defer.i = 4;
     }

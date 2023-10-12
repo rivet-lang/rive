@@ -510,7 +510,10 @@ class Lexer:
                     return token.Token("", Kind.PlusAssign, pos)
                 return token.Token("", Kind.Plus, pos)
             elif ch == "-":
-                if nextc == "=":
+                if nextc == ">":
+                    self.pos += 1
+                    return token.Token("", Kind.Arrow2, pos)
+                elif nextc == "=":
                     self.pos += 1
                     return token.Token("", Kind.MinusAssign, pos)
                 return token.Token("", Kind.Minus, pos)

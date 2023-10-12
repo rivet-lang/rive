@@ -14,7 +14,7 @@ const FNV64_OFFSET_BASIS: uint64 = 14695981039346656037;
 /// Returns a fnv1a hash of the memory block, described by the dynamic
 /// byte array `data`.
 @[inline]
-public func sum32(data: []uint8) uint32 {
+public func sum32(data: []uint8) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data.len : i += 1 {
@@ -26,7 +26,7 @@ public func sum32(data: []uint8) uint32 {
 /// Returns a fnv1a hash of `data_len` bytes starting at
 /// the address in the given &byte pointer `data`.
 @[inline; unsafe]
-public func sum32_bytes(data: [*]uint8, data_len: usize) uint32 {
+public func sum32_bytes(data: [*]uint8, data_len: usize) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data_len : i += 1 {
@@ -37,7 +37,7 @@ public func sum32_bytes(data: [*]uint8, data_len: usize) uint32 {
 
 /// Returns a fnv1a hash of the string, described by `data`
 @[inline]
-public func sum32_string(data: string) uint32 {
+public func sum32_string(data: string) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data.len : i += 1 {
@@ -49,7 +49,7 @@ public func sum32_string(data: string) uint32 {
 /// Returns a fnv1a hash of the memory block, described by the dynamic
 /// byte array `data`.
 @[inline]
-public func sum64(data: []uint8) uint64 {
+public func sum64(data: []uint8) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data.len : i += 1 {
@@ -61,7 +61,7 @@ public func sum64(data: []uint8) uint64 {
 /// Returns a fnv1a hash of `data_len` bytes starting at
 /// the address in the given &byte pointer `data`.
 @[inline; unsafe]
-public func sum64_bytes(data: [*]uint8, data_len: usize) uint64 {
+public func sum64_bytes(data: [*]uint8, data_len: usize) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data_len : i += 1 {
@@ -72,7 +72,7 @@ public func sum64_bytes(data: [*]uint8, data_len: usize) uint64 {
 
 /// Returns a fnv1a hash of the string, described by `data`
 @[inline]
-public func sum64_string(data: string) uint64 {
+public func sum64_string(data: string) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data.len : i += 1 {

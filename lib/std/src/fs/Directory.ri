@@ -9,7 +9,7 @@ import c/libc;
 public struct CannotMakeDirectoryError : Error {
     msg: string;
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -18,7 +18,7 @@ public struct CannotMakeDirectoryError : Error {
 public struct CannotMakeFileError : Error {
     msg: string;
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -27,7 +27,7 @@ public struct CannotMakeFileError : Error {
 public struct CouldNotOpenDirectoryError : Error {
     msg: string;
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -36,13 +36,13 @@ public struct CouldNotOpenDirectoryError : Error {
 public struct EmptyStringError : Error {
     msg: string;
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }
 
 public struct Directory {
-    public func make(path_: string, mode: usize = 0o777) ! {
+    public func make(path_: string, mode: usize = 0o777) -> ! {
         if path_ == "." {
             return;
         }
@@ -54,14 +54,14 @@ public struct Directory {
         }
     }
 
-    public func remove(dir: string) ! {
+    public func remove(dir: string) -> ! {
         rpath := Path.resolve(dir)!;
         if unsafe { libc.rmdir(rpath.ptr) == -1 } {
             return CannotMakeFileError("cannot remove directory `{}`: {}".fmt(dir, c.errno_msg()));
         }
     }
 
-    public func walk(path_: string, ext: string = "") ![]string {
+    public func walk(path_: string, ext: string = "") -> ![]string {
         if path_.is_empty() {
             return EmptyStringError("`Directory.walk` expects a folder, not an empty string");
         }

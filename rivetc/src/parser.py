@@ -222,7 +222,7 @@ class Parser:
                 self.expect(Kind.Rbrace)
             elif self.accept(Kind.KwFunc):
                 protos.append(
-                    self.parse_fn_decl(
+                    self.parse_func_decl(
                         doc_comment, annotations, is_public,
                         annotations.has("unsafe") or abi != sym.ABI.Rivet, abi
                     )
@@ -400,7 +400,7 @@ class Parser:
                 decls.append(self.parse_decl())
             return ast.ExtendDecl(annotations, typ, bases, decls, pos)
         elif self.accept(Kind.KwFunc):
-            return self.parse_fn_decl(
+            return self.parse_func_decl(
                 doc_comment, annotations, is_public,
                 annotations.has("unsafe")
                 or (self.inside_extern and self.extern_abi != sym.ABI.Rivet),
@@ -454,7 +454,7 @@ class Parser:
             has_def_expr, pos
         )
 
-    def parse_fn_decl(
+    def parse_func_decl(
         self, doc_comment, annotations, is_public, is_unsafe, abi
     ):
         pos = self.tok.pos
@@ -512,13 +512,13 @@ class Parser:
                     break
         self.expect(Kind.Rparen)
 
-        is_result = self.accept(Kind.Bang)
-        if self.tok.kind in (Kind.Lbrace, Kind.Semicolon):
-            ret_typ = self.comp.void_t # default: `void`
-        else:
-            ret_typ = self.parse_type()
-        if is_result:
-            ret_typ = type.Result(ret_typ)
+        ret_typ = self.comp.void_t
+        if self.accept(Kind.Arrow2):
+            is_result = self.accept(Kind.Bang)
+            if self.tok.kind != Kind.Lbrace:
+                ret_typ = self.parse_type()
+            if is_result:
+                ret_typ = type.Result(ret_typ)
 
         stmts = []
         has_body = True
@@ -1259,7 +1259,7 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Rparen)
-            if self.tok.kind.is_start_of_type():
+            if self.accept(Kind.Arrow2):
                 ret_typ = self.parse_type()
             else:
                 ret_typ = self.comp.void_t
@@ -1320,7 +1320,7 @@ class Parser:
             # normal type
             lit = expr.name
             if lit == "never":
-                if prev_tok_kind != Kind.Rparen and self.tok.kind != Kind.Lbrace:
+                if prev_tok_kind != Kind.Arrow2:
                     report.error("invalid use of `never` type", pos)
                 return self.comp.never_t
             elif lit == "anyptr":

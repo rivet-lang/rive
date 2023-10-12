@@ -25,7 +25,7 @@ public struct MapStringUsize {
         self.pairs.push(StringUsize(key, value));
     }
 
-    public func get(self, key: string) ?usize {
+    public func get(self, key: string) -> ?usize {
         for pair in self.pairs {
             if pair.key == key {
                 return pair.value;
@@ -44,12 +44,12 @@ public struct MapStringUsize {
     }
 
     @[inline]
-    public func contains(self, key: string) bool {
+    public func contains(self, key: string) -> bool {
         return self.get(key) !is none;
     }
 
     @[inline]
-    public func len(self) usize {
+    public func len(self) -> usize {
         return self.pairs.len;
     }
 }
@@ -66,7 +66,7 @@ public struct MapStringArrayOfStringsIterator {
     mut idx: usize;
 
     @[inline]
-    public func next(mut self) ?StringArrayOfStrings {
+    public func next(mut self) -> ?StringArrayOfStrings {
         return if self.idx < self.ref.len() {
             idx := self.idx;
             self.idx += 1;
@@ -81,7 +81,7 @@ public struct MapStringArrayOfStringsIterator {
 public struct MapStringArrayOfStrings {
     mut pairs: []mut StringArrayOfStrings;
 
-    public func iterator(self) MapStringArrayOfStringsIterator {
+    public func iterator(self) -> MapStringArrayOfStringsIterator {
         return MapStringArrayOfStringsIterator(self);
     }
 
@@ -96,7 +96,7 @@ public struct MapStringArrayOfStrings {
         self.pairs.push(StringArrayOfStrings(key, value));
     }
 
-    public func get(self, key: string) ?[]string {
+    public func get(self, key: string) -> ?[]string {
         for pair in self.pairs {
             if pair.key == key {
                 return pair.value;
@@ -115,12 +115,12 @@ public struct MapStringArrayOfStrings {
     }
 
     @[inline]
-    public func contains(self, key: string) bool {
+    public func contains(self, key: string) -> bool {
         return self.get(key) !is none;
     }
 
     @[inline]
-    public func len(self) usize {
+    public func len(self) -> usize {
         return self.pairs.len;
     }
 }
@@ -146,7 +146,7 @@ public struct MapStringBool {
         self.pairs.push(StringBool(key, value));
     }
 
-    public func get(self, key: string) ?bool {
+    public func get(self, key: string) -> ?bool {
         for pair in self.pairs {
             if pair.key == key {
                 return pair.value;
@@ -165,12 +165,12 @@ public struct MapStringBool {
     }
 
     @[inline]
-    public func contains(self, key: string) bool {
+    public func contains(self, key: string) -> bool {
         return self.get(key) !is none;
     }
 
     @[inline]
-    public func len(self) usize {
+    public func len(self) -> usize {
         return self.pairs.len;
     }
 }

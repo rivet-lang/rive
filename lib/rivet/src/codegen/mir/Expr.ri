@@ -54,7 +54,7 @@ public enum Expr : traits.Stringable {
             Index,
             AddrOf;
 
-            public func to_string(&self) string {
+            public func to_string(&self) -> string {
                 return switch self.* {
                     .Add => "add",
                     .Sub => "sub",
@@ -87,7 +87,7 @@ public enum Expr : traits.Stringable {
         type: Type;
     };
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return switch self is {
             .Empty => "<empty-expression>",
             .IntConst as int_const => "{}".fmt(int_const.value),

@@ -5,7 +5,7 @@
 public struct UnknownFlagError : Error {
     flag: string;
 
-    public func to_string(&self) string {
+    public func to_string(&self) -> string {
         return "unknown flag `{}`".fmt(self.flag);
     }
 }
@@ -14,7 +14,7 @@ public struct ArgsCountError : Error {
     got: usize;
     want: usize;
 
-    public func to_string(&self) string {
+    public func to_string(&self) -> string {
         return if self.want == 0 {
             "expected no arguments, but got {}".fmt(self.got)
         } else if self.got > self.want {

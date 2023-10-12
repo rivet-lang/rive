@@ -7,7 +7,7 @@ public struct StringFormatter {
     mut i: usize;
     mut res: StringBuilder;
 
-    func fmt(mut self, args: ...Stringable) string {
+    func fmt(mut self, args: ...Stringable) -> string {
         self.res = StringBuilder.new(self.buf.len);
         mut args_idx: usize := 0;
         while self.i < self.buf.len : self.i += 1 {
@@ -112,7 +112,7 @@ public struct StringFormatter {
         return self.res.to_string();
     }
 
-    func fwidth(mut self) (bool, isize) {
+    func fwidth(mut self) -> (bool, isize) {
         if unsafe { self.buf.ptr[self.i] != b':' } {
             return (false, @cast(isize, 0));
         }
@@ -129,7 +129,7 @@ public struct StringFormatter {
         fwidth := buf.as_isize();
         if fwidth == 0 {
             process_panic(
-                "string.fmt(): invalid width value (cannot be 0 and cannot be omitted) (index: {})",
+                "string.fmt(): invalid width value (cannot be 0 and cannot be omitted) -> (index: {})",
                 start
             );
         }

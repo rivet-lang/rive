@@ -32,13 +32,13 @@ public struct Tokenizer {
     mut eofs: usize;
     mut conditional_stack: []mut Conditional;
 
-    public func new(text: string, prefs_: prefs.Prefs, table: ast.Table) Tokenizer {
+    public func new(text: string, prefs_: prefs.Prefs, table: ast.Table) -> Tokenizer {
         mut t := Tokenizer(table: table, prefs: prefs_, text: text);
         t.init();
         return t;
     }
 
-    public func from_file(file: string, prefs_: prefs.Prefs, table: ast.Table) Tokenizer {
+    public func from_file(file: string, prefs_: prefs.Prefs, table: ast.Table) -> Tokenizer {
         mut t := Tokenizer(
             table: table, prefs: prefs_, file: file,
             text: utils.read_file(file) catch |err| utils.error(err.to_string())
@@ -63,7 +63,7 @@ public struct Tokenizer {
     }
 
     @[inline]
-    func new_token(self, kind: token.Kind, lit: string = "", len: usize = 1) token.Token {
+    func new_token(self, kind: token.Kind, lit: string = "", len: usize = 1) -> token.Token {
         return token.Token(lit, kind, len, token.Pos(
             file: self.file,
             line: self.line,
@@ -77,7 +77,7 @@ public struct Tokenizer {
     func new_multiline_token(
         self, kind: token.Kind, lit: string = "", len: usize = 1,
         start_line: usize = 0, end_line: usize = 0, start_col: usize = 0
-    ) token.Token {
+    ) -> token.Token {
         return token.Token(lit, kind, len, token.Pos(
             file: self.file,
             line: start_line,
@@ -91,7 +91,7 @@ public struct Tokenizer {
     }
 
     @[inline]
-    func new_eof_token(self) token.Token {
+    func new_eof_token(self) -> token.Token {
         return token.Token(
             kind: .EndOfFile,
             pos: token.Pos(
@@ -104,7 +104,7 @@ public struct Tokenizer {
         );
     }
 
-    func end_of_file(mut self) token.Token {
+    func end_of_file(mut self) -> token.Token {
         self.eofs += 1;
         if self.eofs > 50 {
             self.line -= 1;
@@ -120,12 +120,12 @@ public struct Tokenizer {
     }
 
     @[inline]
-    func current_char(self) uint8 {
+    func current_char(self) -> uint8 {
         return self.text[self.pos];
     }
 
     @[inline]
-    func current_pos(self) token.Pos {
+    func current_pos(self) -> token.Pos {
         return token.Pos(
             file: self.file,
             line: self.line,
@@ -136,7 +136,7 @@ public struct Tokenizer {
     }
 
     @[inline]
-    func current_column(self) usize {
+    func current_column(self) -> usize {
         return if self.line == 0 {
             self.pos + 1
         } else {
@@ -183,7 +183,7 @@ public struct Tokenizer {
         }
     }
 
-    func matches(self, want: string, start_pos: usize) bool {
+    func matches(self, want: string, start_pos: usize) -> bool {
         end_pos := start_pos + want.len;
         if start_pos < 0 or end_pos < 0 or start_pos >= self.text.len
             or end_pos > self.text.len {
@@ -199,7 +199,7 @@ public struct Tokenizer {
     }
 
     @[inline]
-    public func peek_token(self, n: usize) token.Token {
+    public func peek_token(self, n: usize) -> token.Token {
         idx := self.tidx + n;
         return if idx >= self.all_tokens.len {
             self.new_eof_token()
@@ -209,7 +209,7 @@ public struct Tokenizer {
     }
 
     @[inline]
-    func look_ahead(self, n: usize) uint8 {
+    func look_ahead(self, n: usize) -> uint8 {
         return if self.pos + n < self.text.len {
             self.text[self.pos + n]
         } else {
@@ -235,19 +235,19 @@ public struct Tokenizer {
     }
 
     @[inline]
-    func error_builder(self, msg: string, pos: token.Pos = self.current_pos()) report.ReportBuilder {
+    func error_builder(self, msg: string, pos: token.Pos = self.current_pos()) -> report.ReportBuilder {
         return report.error_builder(msg, pos);
     }
 
     @[inline]
-    func warn_builder(self, msg: string, pos: token.Pos = self.current_pos()) report.ReportBuilder {
+    func warn_builder(self, msg: string, pos: token.Pos = self.current_pos()) -> report.ReportBuilder {
         return report.warn_builder(msg, pos);
     }
 }
 
 // NOTE: this function doesn't do any decoding... it just replaces '\xc0' with
 // the byte 0xc0
-func decode_h_escape_single(str: string, idx: usize) (usize, string) {
+func decode_h_escape_single(str: string, idx: usize) -> (usize, string) {
     end_idx := idx + 4; // "\xXX".len == 4
     return (
         end_idx,
@@ -256,7 +256,7 @@ func decode_h_escape_single(str: string, idx: usize) (usize, string) {
 }
 
 // only handle single-byte inline escapes like '\xc0'
-func decode_h_escapes(s: string, start: usize, escapes_pos: []usize) string {
+func decode_h_escapes(s: string, start: usize, escapes_pos: []usize) -> string {
     if escapes_pos.is_empty() {
         return s;
     }
@@ -278,7 +278,7 @@ func decode_h_escapes(s: string, start: usize, escapes_pos: []usize) string {
 // handle single-byte inline octal escapes like '\###'
 // NOTE: this function doesn't do any decoding... it just replaces '\141' with
 // the byte 0o141
-func decode_o_escapes(s: string, start: usize, escapes_pos: []usize) string {
+func decode_o_escapes(s: string, start: usize, escapes_pos: []usize) -> string {
     if escapes_pos.is_empty() {
         return s;
     }
@@ -300,14 +300,14 @@ func decode_o_escapes(s: string, start: usize, escapes_pos: []usize) string {
     return utils.join(ss, "");
 }
 
-func decode_u_escape_single(str: string, idx: usize) (usize, string) {
+func decode_u_escape_single(str: string, idx: usize) -> (usize, string) {
     end_idx := idx + 6; // "\uXXXX".len == 6
     escaped_code_point := conv.parse_uint(str[idx + 2..end_idx], 16, 32) catch 0;
     return (end_idx, @cast(uint32, escaped_code_point).to_string());
 }
 
 // decode the flagged unicode escape sequences into their utf-8 bytes
-func decode_u_escapes(str: string, start: usize, escapes_pos: []usize) string {
+func decode_u_escapes(str: string, start: usize, escapes_pos: []usize) -> string {
     if escapes_pos.is_empty() {
         return str;
     }
@@ -326,7 +326,7 @@ func decode_u_escapes(str: string, start: usize, escapes_pos: []usize) string {
     return utils.join(ss, "");
 }
 
-func trim_slash_line_break(s: string) string {
+func trim_slash_line_break(s: string) -> string {
     (mut start: usize, mut ret_str) := (0, s);
     while idx := ret_str.index_after_of("\\\n", start) {
         ret_str = ret_str[..idx].concat(ret_str[idx + 2..].trim_left(" \n\t\v\f\r"));
@@ -336,7 +336,7 @@ func trim_slash_line_break(s: string) string {
 }
 
 @[inline]
-func number_literal_without_separator(lit: string) string {
+func number_literal_without_separator(lit: string) -> string {
     return if lit.contains("_") {
         mut sb := strings.Builder.new(lit.len - lit.count("_"));
         for ch in lit.as_bytes() {

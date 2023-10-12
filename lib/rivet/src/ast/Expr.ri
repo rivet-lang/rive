@@ -164,7 +164,7 @@ public enum Expr : traits.Stringable {
         mut is_enum_variant: bool;
         mut enum_variant_sym: TypeSym;
 
-        func has_named_args(self) bool {
+        func has_named_args(self) -> bool {
             for arg in self.args {
                 if arg.is_named {
                     return true;
@@ -173,7 +173,7 @@ public enum Expr : traits.Stringable {
             return false;
         }
 
-        func get_named_arg(self, name: string) ?CallArg {
+        func get_named_arg(self, name: string) -> ?CallArg {
             for arg in self.args {
                 if arg.is_named and arg.name == name {
                     return arg;
@@ -184,7 +184,7 @@ public enum Expr : traits.Stringable {
 
         /// Returns the number of pure arguments, that is, not named, that
         /// this call has.
-        func pure_args_count(self) usize {
+        func pure_args_count(self) -> usize {
             mut l: usize := 0;
             for arg in self.args {
                 if !arg.is_named {
@@ -198,7 +198,7 @@ public enum Expr : traits.Stringable {
         }
 
         @[inline]
-        func has_err_handler(self) bool {
+        func has_err_handler(self) -> bool {
             return self.err_handler.has_expr or self.err_handler.is_propagate;
         }
     },
@@ -271,7 +271,7 @@ public enum Expr : traits.Stringable {
         pos: token.Pos;
     };
 
-    public func clean_paren(self) Self {
+    public func clean_paren(self) -> Self {
         mut res := self;
         while res is .Paren as paren {
             res = paren.expr;
@@ -280,7 +280,7 @@ public enum Expr : traits.Stringable {
     }
 
     @[inline]
-    public func position(self) token.Pos {
+    public func position(self) -> token.Pos {
         return switch self is {
             .Empty as empty_pos => empty_pos,
             .Paren as paren => paren.pos,
@@ -317,7 +317,7 @@ public enum Expr : traits.Stringable {
     }
 
     @[inline]
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return switch self is {
             .Empty => "<empty-expression>",
             .Paren as paren => "({})".fmt(paren.expr),

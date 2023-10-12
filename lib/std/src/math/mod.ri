@@ -19,7 +19,7 @@ public const LN10: float64 = 2.3025850929940456840179914546843642076011014886287
 public const LOG10_E: float64 = 1.0 / LN10;
 
 /// Returns the number of digits in the number passed.
-public func count_digits(number: int64) int32 {
+public func count_digits(number: int64) -> int32 {
 	if number == 0 {
 		return 1;
 	}

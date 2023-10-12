@@ -38,7 +38,7 @@ public enum Stmt {
         pos: token.Pos;
     };
 
-    public func position(self) token.Pos {
+    public func position(self) -> token.Pos {
         return switch self is {
             .Empty as empty_pos => empty_pos,
             .Expr as expr => expr.position(),

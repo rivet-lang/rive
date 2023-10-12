@@ -2,20 +2,20 @@
 struct MyError : Error {
     msg: string;
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }
 
-func result() ! {
+func result() -> ! {
     return MyError("simple error");
 }
 
-func result2() ! {
+func result2() -> ! {
     return MyError("simple error (returned: {}, idx: {})".fmt(true, 0));
 }
 
-func result3() !int32 {
+func result3() -> !int32 {
     return 5;
 }
 

@@ -10,12 +10,12 @@ public struct StringBuilder : Stringable {
 
     /// Returns a string builder with capacity `cap`.
     @[inline]
-    public func new(cap: usize = 0) Self {
+    public func new(cap: usize = 0) -> Self {
         return Self(unsafe { Vector.new(@size_of(uint8), cap) });
     }
 
     @[inline]
-    public func from_string(s: string) Self {
+    public func from_string(s: string) -> Self {
         return if s.len == 0 {
             Self.new()
         } else {
@@ -88,7 +88,7 @@ public struct StringBuilder : Stringable {
 
     /// Returns the number of runes contained in `self`.
     @[inline]
-    public func runes_count(self) usize {
+    public func runes_count(self) -> usize {
         return cstr_runes_count(unsafe { @cast([*]uint8, self.inner.ptr) }, self.inner.len);
     }
 
@@ -98,22 +98,22 @@ public struct StringBuilder : Stringable {
     }
 
     @[inline]
-    public func len(self) usize {
+    public func len(self) -> usize {
         return self.inner.len;
     }
 
     @[inline]
-    public func cap(self) usize {
+    public func cap(self) -> usize {
         return self.inner.cap;
     }
 
     @[inline]
-    public func is_empty(self) bool {
+    public func is_empty(self) -> bool {
         return self.inner.is_empty();
     }
 
     @[inline]
-    public func to_string(mut self) string {
+    public func to_string(mut self) -> string {
         self.write_byte(0);
         return string(unsafe { @cast([*]uint8, self.inner.ptr) }, self.inner.len - 1);
     }

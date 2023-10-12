@@ -46,6 +46,7 @@ var kindStrings = [
     KindMap(.Ellipsis, "..."),
     KindMap(.At, "@"),
     KindMap(.Arrow, "=>"),
+    KindMap(.Arrow2, "->"),
     KindMap(.Comma, ","),
     KindMap(.Colon, ":"),
     KindMap(.Semicolon, ";"),
@@ -143,6 +144,7 @@ public enum Kind : traits.Stringable {
     Ellipsis, // ...
     At, // @
     Arrow, // =>
+    Arrow2, // ->
     Comma, // ,
     Colon, // :
     Semicolon, // ;
@@ -208,7 +210,7 @@ public enum Kind : traits.Stringable {
     KeywordEnd;
 
     @[inline]
-    public func single(self) Kind {
+    public func single(self) -> Kind {
         return switch self {
             .PlusAssign => .Plus,
             .MinusAssign => .Minus,
@@ -223,7 +225,7 @@ public enum Kind : traits.Stringable {
     }
 
     @[inline]
-    public func is_start_of_type(self) bool {
+    public func is_start_of_type(self) -> bool {
         return self in [
             .Bang, .Name, .Lparen, .Amp, .Mul, .Lbracket, .Question, .KwSelfTy,
             .KwFunc
@@ -231,7 +233,7 @@ public enum Kind : traits.Stringable {
     }
 
     @[inline]
-    public func is_assign(self) bool {
+    public func is_assign(self) -> bool {
         return self in [
             .DeclAssign, .Assign, .PlusAssign, .MinusAssign, .MulAssign, .DivAssign,
             .ModAssign, .AmpAssign, .PipeAssign, .XorAssign
@@ -239,13 +241,13 @@ public enum Kind : traits.Stringable {
     }
 
     @[inline]
-    public func is_relational(self) bool {
+    public func is_relational(self) -> bool {
         return self in [
             .Eq, .Ne, .Lt, .Gt, .Le, .Ge, .KwIs, .KwNotIs, .KwIn, .KwNotIn
         ];
     }
 
-    public func to_string(&self) string {
+    public func to_string(&self) -> string {
         for km in kindStrings {
             if km.key == self.* {
                 return km.value;
@@ -256,7 +258,7 @@ public enum Kind : traits.Stringable {
 }
 
 @[inline]
-public func lookup(str: string) Kind {
+public func lookup(str: string) -> Kind {
     return switch str {
         "alias" => .KwAlias,
         "and" => .KwAnd,
@@ -304,17 +306,17 @@ public func lookup(str: string) Kind {
 }
 
 @[inline]
-public func is_keyword(lit: string) bool {
+public func is_keyword(lit: string) -> bool {
     return lookup(lit) != .Name;
 }
 
 @[inline]
-public func is_overloadable_operator(kind: Kind) bool {
+public func is_overloadable_operator(kind: Kind) -> bool {
     return kind in [.Plus, .Minus, .Mul, .Div, .Mod, .Eq, .Ne, .Lt, .Gt, .Le, .Ge];
 }
 
 @[inline]
-public func overloadable_operator_name(kind: Kind) string {
+public func overloadable_operator_name(kind: Kind) -> string {
     return switch kind {
         .Plus => "_add_",
         .Minus => "_sub_",

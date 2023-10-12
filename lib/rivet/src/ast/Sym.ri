@@ -9,7 +9,7 @@ import ../token;
 
 var mut symIds: usize = 0;
 
-func new_sym_id() usize {
+func new_sym_id() -> usize {
     res := symIds;
     symIds += 1;
     return res;
@@ -19,7 +19,7 @@ func new_sym_id() usize {
 public struct DuplicateSymbolError : Error {
     msg: string;
 
-    public func to_string(self) string {
+    public func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -29,7 +29,7 @@ public enum ABI as uint8 : traits.Stringable {
     C;
 
     @[inline]
-    public func from_string(abi: string) ?ABI {
+    public func from_string(abi: string) -> ?ABI {
         return switch abi {
             "C" => .C,
             "Rivet" => .Rivet,
@@ -38,7 +38,7 @@ public enum ABI as uint8 : traits.Stringable {
     }
 
     @[inline]
-    public func to_string(&self) string {
+    public func to_string(&self) -> string {
         return switch self.* {
             .C => "C",
             .Rivet => "Rivet"
@@ -60,7 +60,7 @@ public trait Sym {
     is_root: bool;
     mut is_generated: bool;
 
-    func module(self) ?Module {
+    func module(self) -> ?Module {
         mut p := self;
         while {
             if p is Module as mod {
@@ -74,7 +74,7 @@ public trait Sym {
         return none;
     }
 
-    func has_access_to(self, other: Sym) bool {
+    func has_access_to(self, other: Sym) -> bool {
         self_mod := self.module() ?? return false;
         other_mod := other.module() ?? return false;
         return (
@@ -85,7 +85,7 @@ public trait Sym {
         );
     }
 
-    func type_of(self) string {
+    func type_of(self) -> string {
         return switch self is {
             SymRef as sym_ref => if sym_ref.ref_resolved {
                 sym_ref.ref.type_of()
@@ -108,7 +108,7 @@ public trait Sym {
         };
     }
 
-    func qualname(self) string {
+    func qualname(self) -> string {
         return if parent := self.parent {
             if parent.is_universe {
                 self.name
@@ -120,11 +120,11 @@ public trait Sym {
         };
     }
 
-    func ==(self, other: Self) bool {
+    func ==(self, other: Self) -> bool {
         return self.id == other.id;
     }
 
-    func !=(self, other: Self) bool {
+    func !=(self, other: Self) -> bool {
         return self.id != other.id;
     }
 }
@@ -141,7 +141,7 @@ public struct SymRef : Sym {
 
 @[boxed]
 public struct Module : Sym {
-    public func add_or_get_array(mut self, elem_typ: Type, size: usize, is_mut: bool) TypeSym {
+    public func add_or_get_array(mut self, elem_typ: Type, size: usize, is_mut: bool) -> TypeSym {
         unique_name := if is_mut {
             "[{}]mut {}"
         } else {
@@ -165,7 +165,7 @@ public struct Module : Sym {
         return type_sym;
     }
 
-    public func add_or_get_vec(mut self, elem_type: Type, is_mut: bool) TypeSym {
+    public func add_or_get_vec(mut self, elem_type: Type, is_mut: bool) -> TypeSym {
         unique_name := if is_mut { "[]mut " } else { "[]" }.concat(elem_type.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
             return @cast(TypeSym, type_sym);
@@ -222,7 +222,7 @@ public struct Module : Sym {
         return type_sym;
     }
 
-    public func add_or_get_tuple(mut self, types: []Type) TypeSym {
+    public func add_or_get_tuple(mut self, types: []Type) -> TypeSym {
         unique_name := {
             mut sb := strings.Builder.from_string("(");
             for i, type in types {
@@ -248,7 +248,7 @@ public struct Module : Sym {
         return type_sym;
     }
 
-    public func add_or_get_func(mut self, func_sym: Func) TypeSym {
+    public func add_or_get_func(mut self, func_sym: Func) -> TypeSym {
         unique_name := {
             mut sb := strings.Builder.from_string("func(");
             if func_sym.is_method {
@@ -280,7 +280,7 @@ public struct Module : Sym {
     }
 
     @[inline]
-    public func is_core(self) bool {
+    public func is_core(self) -> bool {
         return self.name == "core";
     }
 }
@@ -344,7 +344,7 @@ public struct Func : Sym {
     public ret_type: Type;
     public pos: token.Pos;
 
-    public func get_arg(self, idx: usize) Arg {
+    public func get_arg(self, idx: usize) -> Arg {
         arg := self.args[idx];
         return if arg.is_self {
             self.args[idx + 1]
@@ -353,7 +353,7 @@ public struct Func : Sym {
         };
     }
 
-    public func args_len(self) usize {
+    public func args_len(self) -> usize {
         mut len: usize := 0;
         for arg in self.args {
             if !(arg.is_self or arg.type is .Variadic) {
@@ -364,7 +364,7 @@ public struct Func : Sym {
     }
 
     @[inline]
-    public func kind(self) string {
+    public func kind(self) -> string {
         return if self.is_method {
             if self.is_special_method {
                 "special method"
@@ -377,7 +377,7 @@ public struct Func : Sym {
     }
 
 	@[inline]
-    public func type(self, mut universe: Module) Type {
+    public func type(self, mut universe: Module) -> Type {
         return .Func(
             is_method: self.is_method,
             self_is_mut: self.self_is_mut,

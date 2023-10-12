@@ -16,36 +16,36 @@ public struct Path {
 
     /// Returns `true` if the given byte is a valid path separator
     @[inline]
-    public func is_separator(byte: uint8) bool {
+    public func is_separator(byte: uint8) -> bool {
         return byte == b'/' #if _WINDOWS_ or byte == b'\\' #endif;
     }
 
     /// Returns `true` if `path` (file or directory) exists.
     @[inline]
-    public func exists(path: string) bool {
+    public func exists(path: string) -> bool {
         return unsafe { libc.access(path.ptr, libc.O_RDONLY) == 0 };
     }
 
     /// Returns `true` if `path` is executable.
     @[inline]
-    public func is_executable(path: string) bool {
+    public func is_executable(path: string) -> bool {
         return unsafe { libc.access(path.ptr, libc.X_OK) == 0 };
     }
 
     /// Returns `true` if `path` is writable.
     @[inline]
-    public func is_writable(path: string) bool {
+    public func is_writable(path: string) -> bool {
         return unsafe { libc.access(path.ptr, libc.W_OK) == 0 };
     }
 
     /// Returns `true` if `path` is readable.
     @[inline]
-    public func is_readable(path: string) bool {
+    public func is_readable(path: string) -> bool {
         return unsafe { libc.access(path.ptr, libc.R_OK) == 0 };
     }
 
     /// Returns `true` if `path` is a directory.
-    public func is_directory(path: string) bool {
+    public func is_directory(path: string) -> bool {
         mut statbuf := libc.Stat();
         return if unsafe { libc.stat(path.ptr, &mut statbuf) == 0 } {
             @cast(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFDIR
@@ -56,18 +56,18 @@ public struct Path {
 
     /// Returns `true` if `path` is a file.
     @[inline]
-    public func is_file(path: string) bool {
+    public func is_file(path: string) -> bool {
         return Self.exists(path) and !Self.is_directory(path);
     }
 
     /// Returns `true` if `path` is absolute.
     @[inline]
-    public func is_absolute(path: string) bool {
+    public func is_absolute(path: string) -> bool {
         return path.len > 0 and path[0] == SEPARATOR;
     }
 
     /// Returns a boolean indicating whether `path` is a link.
-    public func is_link(path: string) bool {
+    public func is_link(path: string) -> bool {
         mut statbuf := libc.Stat();
         return if unsafe { libc.lstat(path.ptr, &mut statbuf) != 0 } {
             false
@@ -81,7 +81,7 @@ public struct Path {
     /// If the path is a file in the current directory (no directory component)
     /// then returns `.`.
     /// If the path is the root directory, returns `/`.
-    public func dirname(path: string) ?string {
+    public func dirname(path: string) -> ?string {
         if path.is_empty() {
             return none;
         }
@@ -94,7 +94,7 @@ public struct Path {
         return ".";
     }
 
-    public func basename(path: string) string {
+    public func basename(path: string) -> string {
         if path.is_empty() {
             return "";
         }
@@ -121,7 +121,7 @@ public struct Path {
     /// name, are considered to have no extension.
     /// The returned slice is guaranteed to have its pointer within the start and end
     /// pointer address range of `path`, even if it is length zero.
-    public func extension(path: string) string {
+    public func extension(path: string) -> string {
         filename := Self.basename(path);
         index := filename.last_index_of_byte(b'.') ?? return path[path.len..];
         return if index == 0 { path[path.len..] } else { filename[index..] };
@@ -132,7 +132,7 @@ public struct Path {
     /// The result does not have a trailing path separator.
     /// If all paths are relative it uses the current working directory as a starting
     /// point.
-    public func resolve(paths: ...string) !string {
+    public func resolve(paths: ...string) -> !string {
         if paths.len == 0 {
             return core.process_get_cwd()!;
         }
@@ -209,7 +209,7 @@ public struct Path {
     /// Returns the relative path from `from_` to `to`. If `from` and `to` each
     /// resolve to the same path (after calling `resolve` on each), a zero-length
     /// string is returned.
-    public func relative(from_: string, to: string) !string {
+    public func relative(from_: string, to: string) -> !string {
         _ = Self.resolve(from_)!;
         _ = Self.resolve(to)!;
         mut from_it := from_.tokenize(SEPARATOR);
@@ -259,7 +259,7 @@ public struct Path {
         return "";
     }
 
-    public func join(paths: ...string) !string {
+    public func join(paths: ...string) -> !string {
         if paths.len == 0 {
             return "";
         }
@@ -340,7 +340,7 @@ public struct Path {
 
     /// Joins the current working directory with the given `path` (if the `path` is relative)
     /// and returns the absolute path representation.
-    public func absolute(path: string) !string {
+    public func absolute(path: string) -> !string {
         cwd := core.process_get_cwd()!;
         if path.is_empty() {
             return cwd;
