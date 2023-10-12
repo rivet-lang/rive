@@ -9,8 +9,8 @@ tests/invalid/checking_trait.ri:10:5-12:5: error: type `string` incorrectly impl
       |     ^~~ to here
       = note: method `to_str1` should be public.
       = note: ====== method signature for `to_str1` ======
-      = note: trait `ToStr` has `func(&self) string`
-      = note: type `string` has `func(self) string`
+      = note: trait `ToStr` has `func(&self) -> string`
+      = note: type `string` has `func(self) -> string`
 tests/invalid/checking_trait.ri:16:5-18:5: error: type `bool` incorrectly implements method `to_str1` of trait `checking_trait.ToStr`
       |     /~~ from here
    16 |     func to_str1(&self) -> string {
@@ -19,8 +19,8 @@ tests/invalid/checking_trait.ri:16:5-18:5: error: type `bool` incorrectly implem
       |     ^~~ to here
       = note: method `to_str1` should be public.
       = note: ====== method signature for `to_str1` ======
-      = note: trait `ToStr` has `func(&self) string`
-      = note: type `bool` has `func(&self) string`
+      = note: trait `ToStr` has `func(&self) -> string`
+      = note: type `bool` has `func(&self) -> string`
 tests/invalid/checking_trait.ri:24:14: error: type `int32` does not implement trait `ToStr`
    24 |     my_print(1); // FAIL
       |              ^

@@ -394,7 +394,7 @@ public enum Type : traits.Stringable {
                 }
                 sb.write_string(")");
                 if func_data.ret_type !is .Void {
-                    sb.write_string(" ");
+                    sb.write_string(" -> ");
                     sb.write_string(func_data.ret_type.to_string_(qualstr));
                 }
                 sb.to_string()
