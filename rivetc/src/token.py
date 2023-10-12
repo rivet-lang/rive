@@ -92,6 +92,7 @@ class Kind(Enum):
     KwReturn = auto_enum() # return
     KwSelf = auto_enum() # self
     KwSelfTy = auto_enum() # Self
+    KwStatic = auto_enum() # static
     KwStruct = auto_enum() # struct
     KwSwitch = auto_enum() # switch
     KwTest = auto_enum() # test
@@ -99,7 +100,6 @@ class Kind(Enum):
     KwTrue = auto_enum() # true
     KwUndefined = auto_enum() # undefined
     KwUnsafe = auto_enum() # unsafe
-    KwVar = auto_enum() # var
     KwWhile = auto_enum() # while
     # ==============================
 
@@ -188,6 +188,7 @@ TOKEN_STRINGS = {
     Kind.Ellipsis: "...",
     Kind.At: "@",
     Kind.Arrow: "=>",
+    Kind.Arrow2: "->",
     Kind.Comma: ",",
     Kind.Colon: ":",
     Kind.Semicolon: ";",
@@ -238,6 +239,7 @@ TOKEN_STRINGS = {
     Kind.KwReturn: "return",
     Kind.KwSelf: "self",
     Kind.KwSelfTy: "Self",
+    Kind.KwStatic: "static",
     Kind.KwStruct: "struct",
     Kind.KwSwitch: "switch",
     Kind.KwTest: "test",
@@ -245,7 +247,6 @@ TOKEN_STRINGS = {
     Kind.KwTrue: "true",
     Kind.KwUndefined: "undefined",
     Kind.KwUnsafe: "unsafe",
-    Kind.KwVar: "var",
     Kind.KwWhile: "while",
     # ==============================
 }

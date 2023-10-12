@@ -4,14 +4,14 @@
 
 #if _TESTS_
 
-var supportColor = console_is_atty(1);
+static supportColor = console_is_atty(1);
 
-var okStatus = bold(green("-> OK"));
-var failedStatus = bold(red("-> FAIL"));
-var skipStatus = bold(yellow("-> SKIP"));
+static okStatus = bold(green("-> OK"));
+static failedStatus = bold(red("-> FAIL"));
+static skipStatus = bold(yellow("-> SKIP"));
 
 extern (Rivet) {
-    var testRunner: TestRunner;
+    static testRunner: TestRunner;
 }
 
 public func bold(msg: string) -> string {

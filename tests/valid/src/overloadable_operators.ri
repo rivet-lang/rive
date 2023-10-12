@@ -19,7 +19,7 @@ struct Vec {
     }
 }
 
-var vec: Vec = Vec(2, 2);
+static vec: Vec = Vec(2, 2);
 
 test "overloadable operators: +" {
     mut v1 := vec;

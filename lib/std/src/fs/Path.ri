@@ -11,8 +11,8 @@ import ../conv;
 public struct Path {
     public alias max_path_len = libc.MAX_PATH_LEN;
     public const SEPARATOR = #if _WINDOWS_ b'\\' #else b'/' #endif;
-    public var separatorStr = #if _WINDOWS_ "\\" #else "/" #endif;
-    public var delimiter = #if _WINDOWS_ ";" #else ":" #endif;
+    public static separatorStr = #if _WINDOWS_ "\\" #else "/" #endif;
+    public static delimiter = #if _WINDOWS_ ";" #else ":" #endif;
 
     /// Returns `true` if the given byte is a valid path separator
     @[inline]

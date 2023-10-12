@@ -6,7 +6,7 @@
 
 extern (C) {
     // the default secret parameters
-    public var _wyp: [4]uint64;
+    public static _wyp: [4]uint64;
 
     func _wyrot(x: uint64) -> uint64;
     func _wymum(a: *uint64, b: *uint64);

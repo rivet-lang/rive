@@ -1,4 +1,4 @@
-var myVar = 1;
+static myVar = 1;
 const MY_CONST = 5;
 
 test "implicitly typed variable" {
@@ -9,7 +9,7 @@ test "implicitly typed constant" {
     @assert(MY_CONST == 5);
 }
 
-var myArray = [1, 2, 3, 4]!;
+static myArray = [1, 2, 3, 4]!;
 
 test "global static array" {
     @assert(myArray.len == 4);

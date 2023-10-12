@@ -10,7 +10,7 @@ import std/console/styles;
 public const LF: uint8 = 10;
 public const CR: uint8 = 13;
 
-public var mut stderrSupportStyles = styles.stderr_support_styles();
+public static mut stderrSupportStyles = styles.stderr_support_styles();
 
 @[inline]
 public func min(a: usize, b: usize) -> usize {

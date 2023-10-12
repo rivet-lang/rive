@@ -246,7 +246,7 @@ class Parser:
                 doc_comment, annotations, is_public, name, has_typ, typ, expr,
                 pos
             )
-        elif self.accept(Kind.KwVar):
+        elif self.accept(Kind.KwStatic):
             # variable declarations
             pos = self.prev_tok.pos
             lefts = []

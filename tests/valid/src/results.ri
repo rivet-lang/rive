@@ -19,7 +19,7 @@ func result3() -> !int32 {
     return 5;
 }
 
-var resultValue: int32 = result3()!;
+static resultValue: int32 = result3()!;
 
 test "propagate result in `var` declaration" {
     @assert(resultValue == 5);

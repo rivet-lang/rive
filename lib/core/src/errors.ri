@@ -58,7 +58,7 @@ struct CallTrace {
     line: usize;
 }
 
-var returnTrace = ReturnTrace();
+static returnTrace = ReturnTrace();
 
 struct ReturnTrace {
     mut traces: []CallTrace = @vec(CallTrace, 5);

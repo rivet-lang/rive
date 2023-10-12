@@ -29,7 +29,7 @@ extern (C) {
     ) -> int32;
 }
 
-var state = unsafe {
+static state = unsafe {
     backtrace_create_state(ARGS[0].ptr, true, bt_error_handler, none)?
 };
 

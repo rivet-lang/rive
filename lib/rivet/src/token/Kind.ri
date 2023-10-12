@@ -10,7 +10,7 @@ struct KindMap {
     value: string;
 }
 
-var kindStrings = [
+static kindStrings = [
     KindMap(.Unknown, "unknown"),
     KindMap(.EndOfFile, "end of file"),
     KindMap(.DocComment, "doc-comment"),
@@ -97,6 +97,7 @@ var kindStrings = [
     KindMap(.KwReturn, "return"),
     KindMap(.KwSelf, "self"),
     KindMap(.KwSelfTy, "Self"),
+    KindMap(.KwStatic, "static"),
     KindMap(.KwStruct, "struct"),
     KindMap(.KwSwitch, "switch"),
     KindMap(.KwTest, "test"),
@@ -104,7 +105,6 @@ var kindStrings = [
     KindMap(.KwTrue, "true"),
     KindMap(.KwUndefined, "undefined"),
     KindMap(.KwUnsafe, "unsafe"),
-    KindMap(.KwVar, "var"),
     KindMap(.KwWhile, "while")
 ];
 
@@ -196,6 +196,7 @@ public enum Kind : traits.Stringable {
     KwReturn, // return
     KwSelf, // self
     KwSelfTy, // Self
+    KwStatic, // static
     KwStruct, // struct
     KwSwitch, // switch
     KwTest, // test
@@ -203,7 +204,6 @@ public enum Kind : traits.Stringable {
     KwTrue, // true
     KwUndefined, // undefined
     KwUnsafe, // unsafe
-    KwVar, // var
     KwWhile, // while
     // ==============================
 
@@ -292,6 +292,7 @@ public func lookup(str: string) -> Kind {
         "return" => .KwReturn,
         "self" => .KwSelf,
         "Self" => .KwSelfTy,
+        "static" => .KwStatic,
         "struct" => .KwStruct,
         "switch" => .KwSwitch,
         "test" => .KwTest,
@@ -299,7 +300,6 @@ public func lookup(str: string) -> Kind {
         "true" => .KwTrue,
         "undefined" => .KwUndefined,
         "unsafe" => .KwUnsafe,
-        "var" => .KwVar,
         "while" => .KwWhile,
         else => .Name
     };

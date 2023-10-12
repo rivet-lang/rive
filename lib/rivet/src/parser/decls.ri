@@ -256,7 +256,7 @@ extend Parser {
                     pos
                 );
             },
-            self.accept(.KwVar) => {
+            self.accept(.KwStatic) => {
                 // variable declarations
                 mut lefts := @vec(ast.ObjectData);
                 if self.accept(.Lparen) {

@@ -7,7 +7,7 @@ import { string_to_usize } from std/conv;
 const VER_MAJOR: uint64 = 0;
 const VER_MINOR: uint64 = 1;
 const VER_PATCH: uint64 = 2;
-var versions = [VER_MAJOR, VER_MINOR, VER_PATCH];
+static versions = [VER_MAJOR, VER_MINOR, VER_PATCH];
 
 struct RawVersion {
     prerelease: string;

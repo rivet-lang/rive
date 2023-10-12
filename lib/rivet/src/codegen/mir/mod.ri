@@ -102,7 +102,7 @@ public struct Global : traits.Stringable {
         if self.is_extern {
             sb.write_string("extern ");
         }
-        sb.write_fmt("var @{}: {};", self.name, self.type);
+        sb.write_fmt("static @{}: {};", self.name, self.type);
         return sb.to_string();
     }
 }
@@ -172,7 +172,7 @@ public struct Func : traits.Stringable {
             if self.blocks.len > 0 {
                 locals := self.locals[self.args_len..];
                 for local in locals {
-                    sb.writeln_fmt("    var %{}: {};", local.dbg_name, local.type);
+                    sb.writeln_fmt("    static %{}: {};", local.dbg_name, local.type);
                 }
                 if self.blocks.len > 0 {
                     if locals.len > 0 {

@@ -4,7 +4,7 @@
 
 import c/libc;
 
-var emptyString = string(c"", 0, true);
+static emptyString = string(c"", 0, true);
 
 @[boxed]
 public struct string : Stringable, Hashable {

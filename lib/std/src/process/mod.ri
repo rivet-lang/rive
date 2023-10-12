@@ -15,9 +15,9 @@ public alias exit = core.process_exit;
 public alias get_cwd = core.process_get_cwd;
 public alias executable = core.process_executable;
 
-public var args = core.ARGS;
-public var wdAtStartup = get_cwd() catch ".";
-public var executableDir = Path.dirname(executable() catch wdAtStartup);
+public static args = core.ARGS;
+public static wdAtStartup = get_cwd() catch ".";
+public static executableDir = Path.dirname(executable() catch wdAtStartup);
 
 @[boxed]
 public struct NotADirectoryError : Error {

@@ -10,12 +10,12 @@ import { Path } from std/fs;
 
 import ../utils;
 
-public var rivetDir = Path.join(env.homeDir, ".rivet_lang")!;
-public var rivetcDir = Path.dirname(process.executable()!)?;
+public static rivetDir = Path.join(env.homeDir, ".rivet_lang")!;
+public static rivetcDir = Path.dirname(process.executable()!)?;
 
-public var objDir = Path.join(rivetDir, "obj")!;
-public var libDir = Path.join(rivetDir, "lib")!;
-public var rivetcLibDir = Path.join(rivetcDir, "lib")!;
+public static objDir = Path.join(rivetDir, "obj")!;
+public static libDir = Path.join(rivetDir, "lib")!;
+public static rivetcLibDir = Path.join(rivetcDir, "lib")!;
 
 public enum Backend as uint8 {
     C;

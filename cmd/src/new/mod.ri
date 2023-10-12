@@ -16,18 +16,18 @@ import { readln } from ../utils;
 
 import ./templates;
 
-var newDescription = "Sets up a new Rivet project and performs `git init` (if `git` is installed
+static newDescription = "Sets up a new Rivet project and performs `git init` (if `git` is installed
 on the system).";
 
-var newDescription2 = "If [NAME] is given, the project will be setup in a new directory with that
+static newDescription2 = "If [NAME] is given, the project will be setup in a new directory with that
 name, and that name will be added to the `project.ri` file. If no name is
 given, the user will be prompted for a name.";
 
-var initDescription = "If no `project.ri` file exists, one will be created.
+static initDescription = "If no `project.ri` file exists, one will be created.
 If the current directory is not already controlled with `git`, will perform
 `git init` (if `git` is installed on the system).";
 
-var availableTemplates = "Available templates:
+static availableTemplates = "Available templates:
    bin          A simple binary project (default).
    lib          A simple library project.";
 
