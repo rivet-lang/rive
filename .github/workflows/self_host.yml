@@ -3,7 +3,6 @@ name: Self-hosted compiler
 on:
   push:
     paths: ['lib/**.ri', 'rivetc/**.py', 'cmd/**.ri']
-    branches: [main]
   pull_request:
     paths: ['lib/**.ri', 'rivetc/**.py', 'cmd/**.ri']
     types: [opened, synchronize]
@@ -12,7 +11,7 @@ jobs:
   ubuntu-clang:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Compile self-hosted compiler
         run: |
@@ -24,7 +23,7 @@ jobs:
   ubuntu-gcc:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Compile self-hosted compiler
         run: |
