@@ -3,7 +3,6 @@ name: Compiler Tests
 on:
   push:
     paths: ['lib/**.ri', 'rivetc/**.py', 'tests/**']
-    branches: [main]
   pull_request:
     paths: ['lib/**.ri', 'rivetc/**.py', 'tests/**']
     types: [opened, synchronize]
@@ -12,7 +11,7 @@ jobs:
   ubuntu-clang:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Run samples
         run: |
@@ -33,7 +32,7 @@ jobs:
   ubuntu-gcc:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Run samples
         run: |
@@ -54,7 +53,7 @@ jobs:
   # windows-gcc:
   #   runs-on: windows-2019
   #   steps:
-  #     - uses: actions/checkout@v3
+  #     - uses: actions/checkout@v4
 
   #     - name: Setup Python3
   #       uses: actions/setup-python@v4
