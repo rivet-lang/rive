@@ -8,12 +8,7 @@ public alias ErrnoError = c.ErrnoError;
 public alias last_errno_error = c.last_errno_error;
 
 /// This trait is used for errors returned with result types (!T).
-public trait Error : Stringable {
-    func return_trace(self) -> ReturnTrace {
-        _ = self;
-        return returnTrace;
-    }
-}
+public trait Error : Stringable { }
 
 @[inline]
 func error_panic(err: Error) {
