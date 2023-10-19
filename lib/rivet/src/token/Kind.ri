@@ -101,6 +101,7 @@ static kindStrings = [
     KindMap(.KwStruct, "struct"),
     KindMap(.KwSwitch, "switch"),
     KindMap(.KwTest, "test"),
+    KindMap(.KwThrow, "throw"),
     KindMap(.KwTrait, "trait"),
     KindMap(.KwTrue, "true"),
     KindMap(.KwUndefined, "undefined"),
@@ -200,6 +201,7 @@ public enum Kind < traits.Stringable {
     KwStruct, // struct
     KwSwitch, // switch
     KwTest, // test
+    KwThrow, // throw
     KwTrait, // trait
     KwTrue, // true
     KwUndefined, // undefined
@@ -296,6 +298,7 @@ public func lookup(str: string) -> Kind {
         "struct" => .KwStruct,
         "switch" => .KwSwitch,
         "test" => .KwTest,
+        "throw" => .KwThrow,
         "trait" => .KwTrait,
         "true" => .KwTrue,
         "undefined" => .KwUndefined,

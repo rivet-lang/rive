@@ -96,6 +96,7 @@ class Kind(Enum):
     KwStruct = auto_enum() # struct
     KwSwitch = auto_enum() # switch
     KwTest = auto_enum() # test
+    KwThrow = auto_enum() # throw
     KwTrait = auto_enum() # trait
     KwTrue = auto_enum() # true
     KwUndefined = auto_enum() # undefined
@@ -243,6 +244,7 @@ TOKEN_STRINGS = {
     Kind.KwStruct: "struct",
     Kind.KwSwitch: "switch",
     Kind.KwTest: "test",
+    Kind.KwThrow: "throw",
     Kind.KwTrait: "trait",
     Kind.KwTrue: "true",
     Kind.KwUndefined: "undefined",
