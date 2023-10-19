@@ -3,8 +3,6 @@
 ## Python3 bootstrap-compiler
 
 - [X] support `import { self, File } from std/fs`.
-- [X] fix `if x := result_fn() { ... }`.
-- [X] fix `+=` operators with overloaded operators.
 - [X] implement `switch 1 { 2 if abc => { ... } }`.
 - [X] implement `switch boxed_enum_obj is { .Value as val => { ... } }`.
 - [X] check boxed enums casts.
