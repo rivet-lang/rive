@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public struct UnknownFlagError : Error {
+public struct UnknownFlagError < Error {
     flag: string;
 
     public func to_string(&self) -> string {
@@ -10,7 +10,7 @@ public struct UnknownFlagError : Error {
     }
 }
 
-public struct ArgsCountError : Error {
+public struct ArgsCountError < Error {
     got: usize;
     want: usize;
 

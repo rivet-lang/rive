@@ -8,7 +8,7 @@ import { Builder } from std/strings;
 import ../token;
 
 @[default_value(.Void())]
-public enum Type : traits.Stringable {
+public enum Type < traits.Stringable {
     Basic {
         mut sym: TypeSym;
         mut is_unresolved: bool;

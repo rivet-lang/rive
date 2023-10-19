@@ -6,7 +6,7 @@ import std/traits;
 import std/strings;
 
 @[default_value(.Empty())]
-public enum Expr : traits.Stringable {
+public enum Expr < traits.Stringable {
     Empty,
     IntConst {
         value: isize;
@@ -35,7 +35,7 @@ public enum Expr : traits.Stringable {
         type: Type;
     },
     Operator {
-        enum Op : traits.Stringable {
+        enum Op < traits.Stringable {
             Add,
             Sub,
             Mul,

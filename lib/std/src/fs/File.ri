@@ -8,7 +8,7 @@ import ../mem;
 import { Stringable } from ../traits;
 
 @[boxed]
-public struct OperationFailedError : Error {
+public struct OperationFailedError < Error {
     msg: string;
 
     public func to_string(self) -> string {

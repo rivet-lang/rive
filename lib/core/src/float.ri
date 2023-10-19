@@ -4,7 +4,7 @@
 
 import c/libc;
 
-extend comptime_float : Stringable {
+extend comptime_float < Stringable {
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     @[inline]
@@ -18,7 +18,7 @@ extend comptime_float : Stringable {
     }
 }
 
-extend float32 : Stringable {
+extend float32 < Stringable {
     /// Returns the floating-point number corresponding to the IEEE 754 binary
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.
@@ -47,7 +47,7 @@ extend float32 : Stringable {
     }
 }
 
-extend float64 : Stringable {
+extend float64 < Stringable {
     /// Returns the floating-point number corresponding to the IEEE 754 binary
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.

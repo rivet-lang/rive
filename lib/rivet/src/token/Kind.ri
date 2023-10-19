@@ -108,7 +108,7 @@ static kindStrings = [
     KindMap(.KwWhile, "while")
 ];
 
-public enum Kind : traits.Stringable {
+public enum Kind < traits.Stringable {
     Unknown, // unknown
     EndOfFile, // end of file
     DocComment, // doc-comment

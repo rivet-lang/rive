@@ -20,7 +20,7 @@ public static wdAtStartup = get_cwd() catch ".";
 public static executableDir = Path.dirname(executable() catch wdAtStartup);
 
 @[boxed]
-public struct NotADirectoryError : Error {
+public struct NotADirectoryError < Error {
     msg: string;
 
     public func to_string(self) -> string {
@@ -41,7 +41,7 @@ struct Result {
 }
 
 @[boxed]
-struct ExecutionFailedError : Error {
+struct ExecutionFailedError < Error {
     cmd: string;
 
     public func to_string(self) -> string {

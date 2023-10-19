@@ -14,7 +14,7 @@ public struct Field {
 }
 
 @[boxed]
-public struct TypeSym : Sym {
+public struct TypeSym < Sym {
     public mut fields: []Field;
     public mut full_fields_: []Field;
     public mut info: TypeInfo = .Invalid();

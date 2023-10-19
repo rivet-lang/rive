@@ -16,7 +16,7 @@ func new_sym_id() -> usize {
 }
 
 @[boxed]
-public struct DuplicateSymbolError : Error {
+public struct DuplicateSymbolError < Error {
     msg: string;
 
     public func to_string(self) -> string {
@@ -24,7 +24,7 @@ public struct DuplicateSymbolError : Error {
     }
 }
 
-public enum ABI as uint8 : traits.Stringable {
+public enum ABI as uint8 < traits.Stringable {
     Rivet,
     C;
 
@@ -130,17 +130,17 @@ public trait Sym {
 }
 
 @[boxed]
-public struct InvalidSym : Sym {}
+public struct InvalidSym < Sym {}
 
 @[boxed]
-public struct SymRef : Sym {
+public struct SymRef < Sym {
     public mut ref: Sym;
     public mut ref_expr: Expr;
     public mut ref_resolved: bool;
 }
 
 @[boxed]
-public struct Module : Sym {
+public struct Module < Sym {
     public func add_or_get_array(mut self, elem_typ: Type, size: usize, is_mut: bool) -> TypeSym {
         unique_name := if is_mut {
             "[{}]mut {}"
@@ -286,7 +286,7 @@ public struct Module : Sym {
 }
 
 @[boxed]
-public struct Const : Sym {
+public struct Const < Sym {
     public mut expr: Expr;
     public mut evaled_expr: Expr;
     public mut has_evaled_size: bool;
@@ -303,7 +303,7 @@ public enum VarLevel as uint8 {
 }
 
 @[boxed]
-public struct Var : Sym {
+public struct Var < Sym {
     public is_extern: bool;
     public is_mut: bool;
     public mut is_used: bool;
@@ -327,7 +327,7 @@ public struct Arg {
 }
 
 @[boxed]
-public struct Func : Sym {
+public struct Func < Sym {
     public is_extern: bool;
     public is_unsafe: bool;
     public is_main: bool;

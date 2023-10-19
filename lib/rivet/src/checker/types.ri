@@ -7,7 +7,7 @@ import ../token;
 import ../report;
 
 @[boxed]
-struct IncompatibleTypesError : Error {
+struct IncompatibleTypesError < Error {
     msg: string;
 
     public func to_string(self) -> string {

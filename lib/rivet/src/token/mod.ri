@@ -8,7 +8,7 @@ import ../utils;
 
 public static noPos = Pos();
 
-public struct Pos : traits.Stringable {
+public struct Pos < traits.Stringable {
     public file: string;
     public line: usize;
     public mut col: usize;
@@ -74,7 +74,7 @@ public struct Pos : traits.Stringable {
     }
 }
 
-public struct Token : traits.Stringable {
+public struct Token < traits.Stringable {
     public lit: string;
     public kind: Kind;
     public len: usize;

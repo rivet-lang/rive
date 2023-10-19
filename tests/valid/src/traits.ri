@@ -6,11 +6,11 @@ trait Writer {
     func write(self, b: uint8) -> bool;
 }
 
-trait ReaderWriter : Reader, Writer {
+trait ReaderWriter < Reader, Writer {
     func write_and_read(self, b: uint8) -> uint8;
 }
 
-struct SomeStream : ReaderWriter {
+struct SomeStream < ReaderWriter {
     public func read(&self) -> uint8 {
         _ = self;
         return b'A';
@@ -57,7 +57,7 @@ trait Eq {
 }
 
 @[boxed]
-struct Poketrait : Eq {
+struct Poketrait < Eq {
     public func equal(self, x: Eq) -> bool {
         return self.x == x.x;
     }

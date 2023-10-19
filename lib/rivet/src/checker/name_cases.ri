@@ -9,7 +9,7 @@ import ../utils;
 import ../report;
 
 extend Checker {
-    enum NameCase as uint8 : traits.Stringable {
+    enum NameCase as uint8 < traits.Stringable {
         Snake,
         Camel,
         Pascal,

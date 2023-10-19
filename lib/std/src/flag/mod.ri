@@ -13,7 +13,7 @@ public const MAX_ARGS_NUMBER = 4048;
 public static space = "                                     ";
 
 /// Data object storing information about a defined flag.
-public struct Flag : traits.Stringable {
+public struct Flag < traits.Stringable {
     /// Name as it appears on command line.
     public name: string;
 

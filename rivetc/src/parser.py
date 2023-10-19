@@ -291,7 +291,7 @@ class Parser:
             pos = self.tok.pos
             name = self.parse_name()
             bases = []
-            if self.accept(Kind.Colon):
+            if self.accept(Kind.Lt):
                 while True:
                     bases.append(self.parse_type())
                     if not self.accept(Kind.Comma):
@@ -315,7 +315,7 @@ class Parser:
             bases = []
             decls = []
             if not is_opaque:
-                if self.accept(Kind.Colon):
+                if self.accept(Kind.Lt):
                     while True:
                         bases.append(self.parse_type())
                         if not self.accept(Kind.Comma):
@@ -341,7 +341,7 @@ class Parser:
             if self.accept(Kind.KwAs):
                 underlying_typ = self.parse_type()
             bases = []
-            if self.accept(Kind.Colon):
+            if self.accept(Kind.Lt):
                 while True:
                     bases.append(self.parse_type())
                     if not self.accept(Kind.Comma):
@@ -389,7 +389,7 @@ class Parser:
             pos = self.prev_tok.pos
             typ = self.parse_type()
             bases = []
-            if self.accept(Kind.Colon):
+            if self.accept(Kind.Lt):
                 while True:
                     bases.append(self.parse_type())
                     if not self.accept(Kind.Comma):

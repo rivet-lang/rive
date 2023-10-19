@@ -1,5 +1,5 @@
 @[boxed]
-struct MyError : Error {
+struct MyError < Error {
     msg: string;
 
     public func to_string(self) -> string {

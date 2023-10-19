@@ -5,7 +5,7 @@
 import ../token;
 
 @[boxed]
-public struct AnnotationDuplicatedError : Error {
+public struct AnnotationDuplicatedError < Error {
     name: string;
 
     public func to_string(self) -> string {

@@ -6,7 +6,7 @@ static digitPairs = "0010203040506070809001112131415161718191021222324252627"
     "28292031323334353637383930414243444546474849405152535455565758595061626364656667"
     "68696071727374757677787970818283848586878889809192939495969798999";
 
-extend comptime_int : Stringable {
+extend comptime_int < Stringable {
     /// Returns the value of `self` as a string.
     @[inline]
     public func to_string(&self) -> string {
@@ -14,7 +14,7 @@ extend comptime_int : Stringable {
     }
 }
 
-extend int8 : Stringable {
+extend int8 < Stringable {
     public const MAX: int8 = 127;
     public const MIN: int8 = -128;
 
@@ -25,7 +25,7 @@ extend int8 : Stringable {
     }
 }
 
-extend int16 : Stringable {
+extend int16 < Stringable {
     public const MAX: int16 = 32767;
     public const MIN: int16 = -32768;
 
@@ -36,7 +36,7 @@ extend int16 : Stringable {
     }
 }
 
-extend int32 : Stringable {
+extend int32 < Stringable {
     public const MAX: int32 = 2147483647;
     public const MIN: int32 = -2147483648;
 
@@ -94,7 +94,7 @@ extend int32 : Stringable {
     }
 }
 
-extend int64 : Stringable {
+extend int64 < Stringable {
     public const MAX: int64 = 9223372036854775807;
     public const MIN: int64 = -9223372036854775808;
 
@@ -148,7 +148,7 @@ extend int64 : Stringable {
     }
 }
 
-extend isize : Stringable {
+extend isize < Stringable {
     public const MIN: isize = #if _x64_ int64.MIN #else int32.MIN #endif;
     public const MAX: isize = #if _x64_ int64.MAX #else int32.MAX #endif;
 

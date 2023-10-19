@@ -22,7 +22,7 @@ public func library_name(libname: string) -> string {
 }
 
 @[boxed]
-public struct SymbolNotFoundError : Error {
+public struct SymbolNotFoundError < Error {
     msg: string;
 
     public func to_string(self) -> string {
@@ -31,7 +31,7 @@ public struct SymbolNotFoundError : Error {
 }
 
 @[boxed]
-public struct CannotLoadLibraryError : Error {
+public struct CannotLoadLibraryError < Error {
     msg: string;
 
     public func to_string(self) -> string {

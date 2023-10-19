@@ -12,7 +12,7 @@ public enum Increment as uint8 {
 }
 
 @[boxed]
-public struct EmptyInputError : Error {
+public struct EmptyInputError < Error {
     public func to_string(self) -> string {
         _ = self;
         return "empty input";
@@ -20,7 +20,7 @@ public struct EmptyInputError : Error {
 }
 
 @[boxed]
-public struct InvalidVersionFormatError : Error {
+public struct InvalidVersionFormatError < Error {
     input: string;
 
     public func to_string(self) -> string {
@@ -29,7 +29,7 @@ public struct InvalidVersionFormatError : Error {
 }
 
 @[boxed]
-public struct InvalidVersionError : Error {
+public struct InvalidVersionError < Error {
     input: string;
 
     public func to_string(self) -> string {
@@ -39,7 +39,7 @@ public struct InvalidVersionError : Error {
 
 /// Represents a semantic version in semver format.
 @[boxed]
-public struct Version : traits.Stringable {
+public struct Version < traits.Stringable {
     public major: usize;
     public minor: usize;
     public patch: usize;

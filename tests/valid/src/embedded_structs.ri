@@ -2,7 +2,7 @@ struct D {
     m: uint8 = 155;
 }
 
-struct E : D {
+struct E < D {
     m1: int32;
 }
 

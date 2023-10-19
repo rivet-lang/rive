@@ -5,7 +5,7 @@
 import c/libc;
 
 @[boxed]
-public struct StringBuilder : Stringable {
+public struct StringBuilder < Stringable {
     mut inner: Vector;
 
     /// Returns a string builder with capacity `cap`.

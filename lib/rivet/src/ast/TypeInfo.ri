@@ -4,7 +4,7 @@
 
 import std/traits;
 
-public enum TypeInfo : traits.Stringable {
+public enum TypeInfo < traits.Stringable {
     Invalid,
     Placeholder,
     None,

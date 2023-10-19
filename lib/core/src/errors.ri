@@ -8,7 +8,7 @@ public alias ErrnoError = c.ErrnoError;
 public alias last_errno_error = c.last_errno_error;
 
 /// This trait is used for errors returned with result types (!T).
-public trait Error : Stringable { }
+public trait Error < Stringable { }
 
 @[inline]
 func error_panic(err: Error) {
@@ -18,7 +18,7 @@ func error_panic(err: Error) {
 }
 
 @[boxed]
-public struct InvalidArgumentError : Error {
+public struct InvalidArgumentError < Error {
     msg: string;
 
     @[inline]
@@ -28,7 +28,7 @@ public struct InvalidArgumentError : Error {
 }
 
 @[boxed]
-public struct OutOfMemoryError : Error {
+public struct OutOfMemoryError < Error {
     msg: string;
 
     @[inline]
@@ -38,7 +38,7 @@ public struct OutOfMemoryError : Error {
 }
 
 @[boxed]
-public struct ReadFailedError : Error {
+public struct ReadFailedError < Error {
     msg: string;
 
     @[inline]

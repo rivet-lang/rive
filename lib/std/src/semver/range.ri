@@ -16,7 +16,7 @@ enum Operator as uint8 {
 }
 
 @[boxed]
-public struct InvalidComparatorFormatError : Error {
+public struct InvalidComparatorFormatError < Error {
     msg: string;
 
     public func to_string(self) -> string {

@@ -6,7 +6,7 @@ import std/traits;
 import std/strings;
 
 @[boxed]
-public struct Block : traits.Stringable {
+public struct Block < traits.Stringable {
     mut id: usize;
     mut stmts: []Stmt;
 
@@ -25,7 +25,7 @@ public struct Block : traits.Stringable {
     }
 }
 
-public enum Stmt : traits.Stringable {
+public enum Stmt < traits.Stringable {
     Expr: Expr,
     Assign {
         left: Expr;
