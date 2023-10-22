@@ -120,11 +120,11 @@ extend Codegen {
                         fields.push(mir.Field("value", self.type_to_mir(result.inner)));
                     }
                     fields.push(mir.Field("is_err", self.bool_t));
-                    fields.push(mir.Field("err", self.throw_t));
+                    fields.push(mir.Field("err", self.throwable_t));
                     self.rivet_internal.structs.push(mir.Struct(name, fields));
                     self.generated_opt_res_types.set(name, true);
                 }
-                .Basic(name, self.throw_t.size() + 4 + if is_void { 0 } else { size })
+                .Basic(name, self.throwable_t.size() + 4 + if is_void { 0 } else { size })
             },
             .Option as option => {
                 if option.inner.is_any_kind_of_pointer() {

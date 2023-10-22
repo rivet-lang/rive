@@ -282,7 +282,7 @@ class Resolver:
                         expr.err_handler.scope.add(
                             sym.Obj(
                                 False, expr.err_handler.varname,
-                                self.comp.throw_t, sym.ObjLevel.Local,
+                                self.comp.throwable_t, sym.ObjLevel.Local,
                                 expr.err_handler.varname_pos
                             )
                         )

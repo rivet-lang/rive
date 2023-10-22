@@ -75,7 +75,7 @@ extend Resolver {
                         );
                         call.err_handler.scope.add_local(ast.Var(
                             name: call.err_handler.varname,
-                            type: self.table.throw_t,
+                            type: self.table.throwable_t,
                             level: .Local,
                             pos: call.err_handler.varname_pos
                         )) catch |err| report.error(
