@@ -29,13 +29,13 @@ public func get(name: string) -> ?string {
 /// Sets the value of an environment variable with `name` to `value`.
 public func set(name: string, value: string, overwrite: bool = true) -> ! {
     if unsafe { libc.setenv(name.ptr, value.ptr, overwrite) == -1 } {
-        return c.last_errno_error();
+        throw c.last_errno_error();
     }
 }
 
 /// Removes an environment variable with `name`.
 public func remove(name: string) -> ! {
     if unsafe { libc.unsetenv(name.ptr) } == -1 {
-        return c.last_errno_error();
+        throw c.last_errno_error();
     }
 }

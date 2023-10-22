@@ -12,7 +12,7 @@ public func process_executable() -> !string {
         libc.readlink(c"/proc/self/exe", &res[0], libc.MAX_PATH_LEN)
     };
     if count < 0 {
-        return ReadFailedError("failed at reading /proc/self/exe to get exe path");
+        throw ReadFailedError("failed at reading /proc/self/exe to get exe path");
     }
     return unsafe {
         string.from_raw_with_len(&res[0], @cast(usize, count)).clone()
@@ -22,7 +22,7 @@ public func process_executable() -> !string {
 /// Sets the current working directory to the new directory in `path`.
 public func process_set_cwd(path: string) -> ! {
     if unsafe { libc.chdir(path.ptr) == -1 } {
-        return c.last_errno_error();
+        throw c.last_errno_error();
     }
 }
 
@@ -34,7 +34,7 @@ public func process_get_cwd() -> !string {
             return string.from_raw(&buf[0]).clone();
         }
     }
-    return c.last_errno_error();
+    throw c.last_errno_error();
 }
 
 /// Returns the OS-assigned process identifier associated with this

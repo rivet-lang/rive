@@ -27,7 +27,7 @@ public struct File {
                 return Self(f, true);
             }
         }
-        return OperationFailedError("File.open: failed to open file '{}'".fmt(path));
+        throw OperationFailedError("File.open: failed to open file '{}'".fmt(path));
     }
 
     /// Writes the byte `b` into the file.
@@ -72,12 +72,12 @@ public struct File {
         unsafe {
             seek := libc.fseek(self.f, 0, 2);
             if seek != 0 {
-                return OperationFailedError("fseek failed");
+                throw OperationFailedError("fseek failed");
             }
 
             fsize := libc.ftell(self.f);
             if fsize < 0 {
-                return OperationFailedError("ftell failed");
+                throw OperationFailedError("ftell failed");
             }
 
             libc.rewind(self.f);
@@ -86,7 +86,7 @@ public struct File {
             // that, when cast to `int32`, can result in values below 0.
             allocate := @cast(int32, fsize);
             if @cast(int64, allocate) < fsize {
-                return OperationFailedError(
+                throw OperationFailedError(
                     "{} cast to `int32` results in {}".fmt(fsize, @cast(int32, fsize))
                 );
             }
@@ -96,7 +96,7 @@ public struct File {
 
             if self.is_eof() and libc.ferror(self.f) != 0 {
                 mem.dealloc(res);
-                return OperationFailedError("fread failed");
+                throw OperationFailedError("fread failed");
             }
 
             res[nelements] = 0;

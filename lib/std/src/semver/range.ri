@@ -71,14 +71,14 @@ struct ComparatorSet {
     func parse(input: string) -> !ComparatorSet {
         raw_comparators := input.split(comparatorSep);
         if raw_comparators.len > 2 {
-            return InvalidComparatorFormatError(
+            throw InvalidComparatorFormatError(
                 "invalid format of comparator set for input '{}'".fmt(input)
             );
         }
         mut comparators := @vec(Comparator);
         for raw_comp in raw_comparators {
             comparators.push(
-                Comparator.parse(raw_comp) ?? return InvalidComparatorFormatError(
+                Comparator.parse(raw_comp) ?? throw InvalidComparatorFormatError(
                     "invalid comparator '{}' in input '{}'".fmt(raw_comp, input)
                 )
             );

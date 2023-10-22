@@ -45,9 +45,9 @@ public func load(path: string, global_symbols: bool = false) -> !Library {
         return Library(path, ptr);
     }
     if dl_error := dlerror() {
-        return CannotLoadLibraryError("cannot load '{}': {}".fmt(path, dl_error));
+        throw CannotLoadLibraryError("cannot load '{}': {}".fmt(path, dl_error));
     } else {
-        return CannotLoadLibraryError("cannot load '{}'".fmt(path));
+        throw CannotLoadLibraryError("cannot load '{}'".fmt(path));
     }
 }
 
@@ -61,11 +61,11 @@ struct Library {
             return ptr;
         }
         if dl_error := dlerror() {
-            return SymbolNotFoundError(
+            throw SymbolNotFoundError(
                 "cannot found symbol '{}' in library '{}': {}".fmt(symbol, self.path, dl_error)
             );
         } else {
-            return SymbolNotFoundError("cannot found symbol '{}' in library '{}'".fmt(symbol, self.path));
+            throw SymbolNotFoundError("cannot found symbol '{}' in library '{}'".fmt(symbol, self.path));
         }
     }
 

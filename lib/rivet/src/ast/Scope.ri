@@ -17,7 +17,7 @@ public struct Scope {
 
     public func add(mut self, sym: Sym) -> ! {
         if _ := self.find(sym.name) {
-            return DuplicateSymbolError(
+            throw DuplicateSymbolError(
                 "duplicate symbol `{}` in {} `{}`".fmt(
                     sym.name, self.owner?.type_of(), self.owner?.qualname()
                 )
@@ -33,7 +33,7 @@ public struct Scope {
                     return old_sym;
                 }
             }
-            return DuplicateSymbolError(
+            throw DuplicateSymbolError(
                 "duplicate symbol `{}` in {} `{}`".fmt(
                     sym.name, self.owner?.type_of(), self.owner?.qualname()
                 )
@@ -48,7 +48,7 @@ public struct Scope {
             if sym is Var and sym.name == "_" {
                 return; // ignore blank variable
             } else if _ := self.lookup(sym.name) {
-                return DuplicateSymbolError(
+                throw DuplicateSymbolError(
                     "duplicate {} `{}` in this scope".fmt(sym.type_of(), sym.name)
                 );
             }

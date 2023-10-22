@@ -134,7 +134,7 @@ func utf8_to_utf32(bytes: []uint8) -> !rune {
         return bytes[0].to_rune() ?? @unreachable();
     }
     if bytes.len > 4 {
-        return TooManyBytesError(
+        throw TooManyBytesError(
             "attempted to decode too many bytes, utf-8 is limited to four bytes maximum"
         );
     }

@@ -133,7 +133,7 @@ public struct FlagParser {
     /// error.
     public func set_limit_free_args_to_at_least(mut self, n: usize) -> ! {
         if n > MAX_ARGS_NUMBER {
-            return errors.new("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
+            throw errors.new("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
         }
         self.min_free_args = n;
     }
@@ -143,7 +143,7 @@ public struct FlagParser {
     /// an error.
     public func set_limit_free_args_to_exactly(mut self, n: usize) -> ! {
         if n > MAX_ARGS_NUMBER {
-            return errors.new("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
+            throw errors.new("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
         }
         self.min_free_args = n;
         self.max_free_args = n;
@@ -154,7 +154,7 @@ public struct FlagParser {
     /// will return an error.
     public func set_limit_free_args(mut self, min: usize, max: usize) -> ! {
         if min > max {
-            return errors.new("expects `min` < `max`, got {} >= {}", min, max);
+            throw errors.new("expects `min` < `max`, got {} >= {}", min, max);
         }
         self.min_free_args = min;
         self.max_free_args = max;
@@ -330,18 +330,18 @@ public struct FlagParser {
         if !self.allow_unknown_args {
             for arg in remaining {
                 if (arg.len >= 2 and arg[..2] == "--") or (arg.len == 2 and arg[0] == b'-') {
-                    return UnknownFlagError(arg);
+                    throw UnknownFlagError(arg);
                 }
             }
         }
         if remaining.len < self.min_free_args and self.min_free_args > 0 {
-            return ArgsCountError(self.min_free_args, remaining.len);
+            throw ArgsCountError(self.min_free_args, remaining.len);
         }
         if remaining.len > self.max_free_args and self.max_free_args > 0 {
-            return ArgsCountError(self.max_free_args, remaining.len);
+            throw ArgsCountError(self.max_free_args, remaining.len);
         }
         if remaining.len > 0 and self.max_free_args == 0 and self.min_free_args == 0 {
-            return ArgsCountError(0, remaining.len);
+            throw ArgsCountError(0, remaining.len);
         }
         for arg in self.all_after_dashdash {
             remaining.push(arg);

@@ -13,7 +13,7 @@ public func mem_alloc(size: usize) -> !mut_anyptr {
     if new := unsafe { libc.malloc(size) } {
         return new;
     }
-    return OutOfMemoryError("insufficient memory is available");
+    throw OutOfMemoryError("insufficient memory is available");
 }
 
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
@@ -22,7 +22,7 @@ public func mem_zeroed(n: usize) -> !mut_anyptr {
     if ptr := unsafe { libc.calloc(1, n) } {
         return ptr;
     }
-    return OutOfMemoryError("insufficient memory is available");
+    throw OutOfMemoryError("insufficient memory is available");
 }
 
 /// Resizes the memory block `ptr` with `sz` bytes.
@@ -36,12 +36,12 @@ public func mem_resize(ptr: ?mut_anyptr, sz: usize) -> !mut_anyptr {
                 mem_dealloc(safe_ptr);
             }
         }
-        return InvalidArgumentError("argument `sz` is 0");
+        throw InvalidArgumentError("argument `sz` is 0");
     }
     if new := unsafe { libc.realloc(ptr, sz) } {
         return new;
     }
-    return OutOfMemoryError("insufficient memory is available");
+    throw OutOfMemoryError("insufficient memory is available");
 }
 
 /// Fills the first `n` bytes of the memory area pointed to by `s`, with the

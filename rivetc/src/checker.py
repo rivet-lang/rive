@@ -1248,17 +1248,10 @@ class Checker:
                         self.check_types(expr_typ, self.cur_fn.ret_typ)
                     except utils.CompilerError as e:
                         expr_typ_sym = expr_typ.symbol()
-                        if not (
-                            isinstance(self.cur_fn.ret_typ, type.Result) and (
-                                expr_typ_sym.implement_trait(
-                                    self.comp.error_sym
-                                ) or expr_typ_sym == self.comp.error_sym
-                            )
-                        ):
-                            report.error(e.args[0], expr.expr.pos)
-                            report.note(
-                                f"in return argument of {self.cur_fn.typeof()} `{self.cur_fn.name}`"
-                            )
+                        report.error(e.args[0], expr.expr.pos)
+                        report.note(
+                            f"in return argument of {self.cur_fn.typeof()} `{self.cur_fn.name}`"
+                        )
             elif self.cur_fn and not (
                 (self.cur_fn.ret_typ == self.comp.void_t) or (
                     isinstance(self.cur_fn.ret_typ, type.Result)

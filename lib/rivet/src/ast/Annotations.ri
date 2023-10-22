@@ -42,7 +42,7 @@ public struct Annotations {
 
     public func add(mut self, annotation: Annotation) -> ! {
         if self.has(annotation.name) {
-            return AnnotationDuplicatedError(annotation.name);
+            throw AnnotationDuplicatedError(annotation.name);
         }
         self.annotations.push(annotation);
     }

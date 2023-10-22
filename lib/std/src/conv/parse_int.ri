@@ -20,7 +20,7 @@ func lower(c: uint8) -> uint8 {
 /// A sign prefix is not permitted.
 public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !usize {
     if s_ == "" {
-        return InvalidSyntaxError("empty string");
+        throw InvalidSyntaxError("empty string");
     }
     s := s_;
     base0 := base == 0;
@@ -57,13 +57,13 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
                 }
             }
         },
-        else => return InvalidBaseError("invalid base {}".fmt(base))
+        else => throw InvalidBaseError("invalid base {}".fmt(base))
     }
 
     if bit_size == 0 {
         bit_size = INT_SIZE;
     } else if bit_size < 0 or bit_size > 64 {
-        return InvalidBitSizeError("invalid bit size {}".fmt(bit_size));
+        throw InvalidBitSizeError("invalid bit size {}".fmt(bit_size));
     }
 
     // Cutoff is the smallest number such that `cutoff * base > MAX_U64`.
@@ -95,29 +95,29 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
             },
             (b'0' <= c and c <= b'9') => d = c - b'0',
             (b'a' <= cl and cl <= b'z') => d = cl - b'a' + 1,
-            else => return InvalidSyntaxError("invalid syntax")
+            else => throw InvalidSyntaxError("invalid syntax")
         }
 
         if d >= @cast(uint8, base) {
-            return InvalidSyntaxError("invalid syntax");
+            throw InvalidSyntaxError("invalid syntax");
         }
 
         if n >= cutoff {
             // `n * base` overflows
-            return ValueOutOfRangeError("value out of range");
+            throw ValueOutOfRangeError("value out of range");
         }
         n *= @cast(usize, base);
 
         n1 := n + @cast(usize, d);
         if n1 < n or n1 > max_val {
             // `n + d` overflows
-            return ValueOutOfRangeError("value out of range");
+            throw ValueOutOfRangeError("value out of range");
         }
         n = n1;
     }
 
     if underscores and !underscore_ok(s) {
-        return InvalidSyntaxError("invalid syntax");
+        throw InvalidSyntaxError("invalid syntax");
     }
 
     return n;
@@ -139,7 +139,7 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
 /// isize. If `bit_size` is below 0 or above 64, an error is returned.
 public func parse_int(s: string, base: int32, mut bit_size: uint32) -> !isize {
     if s == "" {
-        return InvalidSyntaxError("invalid syntax");
+        throw InvalidSyntaxError("invalid syntax");
     }
 
     // pick off leading sign.
@@ -160,10 +160,10 @@ public func parse_int(s: string, base: int32, mut bit_size: uint32) -> !isize {
 
     cutoff := @cast(usize, 1) << bit_size - 1;
     if !neg and un >= cutoff {
-        return ValueOutOfRangeError("value out of range");
+        throw ValueOutOfRangeError("value out of range");
     }
     if neg and un > cutoff {
-        return ValueOutOfRangeError("value out of range");
+        throw ValueOutOfRangeError("value out of range");
     }
 
     return if neg { -@cast(isize, un) } else { @cast(isize, un) };

@@ -48,7 +48,7 @@ public struct Directory {
         }
         rpath := Path.resolve(path_)!;
         if unsafe { libc.mkdir(rpath.ptr, mode) } == -1 {
-            return CannotMakeDirectoryError(
+            throw CannotMakeDirectoryError(
                 "cannot make directory `{}`: {}".fmt(path_, c.errno_msg())
             );
         }
@@ -57,13 +57,13 @@ public struct Directory {
     public func remove(dir: string) -> ! {
         rpath := Path.resolve(dir)!;
         if unsafe { libc.rmdir(rpath.ptr) == -1 } {
-            return CannotMakeFileError("cannot remove directory `{}`: {}".fmt(dir, c.errno_msg()));
+            throw CannotMakeFileError("cannot remove directory `{}`: {}".fmt(dir, c.errno_msg()));
         }
     }
 
     public func walk(path_: string, ext: string = "") -> ![]string {
         if path_.is_empty() {
-            return EmptyStringError("`Directory.walk` expects a folder, not an empty string");
+            throw EmptyStringError("`Directory.walk` expects a folder, not an empty string");
         }
         rpath := Path.resolve(path_)!;
         unsafe {
@@ -86,7 +86,7 @@ public struct Directory {
                 return res;
             }
         }
-        return CouldNotOpenDirectoryError(
+        throw CouldNotOpenDirectoryError(
             "Directory.walk: couldn't open `{}`: {}".fmt(path_, c.errno_msg())
         );
     }

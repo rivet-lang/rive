@@ -2333,22 +2333,6 @@ class Codegen:
                 self.gen_defer_stmts()
                 self.cur_fn.add_ret_void()
             elif expr.has_expr:
-                if wrap_result:
-                    t_sym = expr.expr.typ.symbol()
-                    if t_sym.implement_trait(
-                        self.comp.error_sym
-                    ) or t_sym == self.comp.error_sym:
-                        self.gen_return_trace_add(expr.pos)
-                        expr_ = self.result_error(
-                            self.cur_fn_ret_typ, expr.expr.typ,
-                            self.gen_expr(expr.expr)
-                        )
-                        self.gen_defer_stmts(
-                            wrap_result,
-                            ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err"))
-                        )
-                        self.cur_fn.add_ret(expr_)
-                        return ir.Skip()
                 is_array = self.cur_fn_ret_typ.symbol().kind == TypeKind.Array
                 expr_ = self.gen_expr_with_cast(ret_typ, expr.expr)
                 if is_array and self.comp.prefs.target_backend == prefs.Backend.C:

@@ -49,13 +49,13 @@ public struct Version < traits.Stringable {
     /// Returns a `Version` structure parsed from `input` `string`.
     public func from_string(input: string) -> !Self {
         if input.is_empty() {
-            return EmptyInputError();
+            throw EmptyInputError();
         }
         raw_version := RawVersion.parse(input);
         if validated := raw_version.validate() {
             return validated;
         }
-        return InvalidVersionFormatError(input: input);
+        throw InvalidVersionFormatError(input: input);
     }
 
     /// Returns a `Version` structure with given `major`, `minor` and `patch` versions.
@@ -165,7 +165,7 @@ public func coerce(input: string) -> !Version {
     if version := RawVersion.parse(input).coerce() {
         return version;
     }
-    return InvalidVersionError("invalid version for input '{}'".fmt(input));
+    throw InvalidVersionError("invalid version for input '{}'".fmt(input));
 }
 
 /// Returns `true` if the `input` `string` can be converted to a semantic `Version`
