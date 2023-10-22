@@ -61,13 +61,13 @@ extend Checker {
                 "`".concat(got.to_string(), "`")
             };
             if expected is .Void {
-                return IncompatibleTypesError(
+                throw IncompatibleTypesError(
                     "no value expected, found {} value instead".fmt(got_str)
                 );
             } else if got is .Void {
-                return IncompatibleTypesError("void expression used as value");
+                throw IncompatibleTypesError("void expression used as value");
             } else {
-                return IncompatibleTypesError(
+                throw IncompatibleTypesError(
                     "expected type `{}`, found {}".fmt(expected, got_str)
                 );
             }

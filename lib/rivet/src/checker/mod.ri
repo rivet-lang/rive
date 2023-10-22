@@ -410,10 +410,10 @@ public struct Checker {
             .Switch as switch_expr => {
                 for i, branch in switch_expr.branches {
                     if switch_expr.is_exhaustive and i == switch_expr.branches.len {
-                        if self.expr_has_return(branch.expr) {
+                        if self.expr_has_return(branch.expr, allow_throw) {
                             return true;
                         }
-                    } else if branch.is_else and self.expr_has_return(branch.expr) {
+                    } else if branch.is_else and self.expr_has_return(branch.expr, allow_throw) {
                         return true;
                     }
                 }
@@ -421,14 +421,14 @@ public struct Checker {
             },
             .If as if_expr => {
                 for branch in if_expr.branches {
-                    if branch.is_else and self.expr_has_return(branch.expr) {
+                    if branch.is_else and self.expr_has_return(branch.expr, allow_throw) {
                         return true;
                     }
                 }
                 false
             },
             .Call as call_expr => call_expr.type is .Never,
-            .Block as block => self.has_return(block.stmts),
+            .Block as block => self.has_return(block.stmts, allow_throw),
             .Return => true,
             .Throw if allow_throw => true,
             else => false

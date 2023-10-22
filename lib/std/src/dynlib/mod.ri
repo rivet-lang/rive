@@ -79,7 +79,6 @@ struct Library {
         _ = unsafe { libc.dlclose(self.ptr) };
     }
 
-    @[inline]
     func __drop__(self) {
         self.close();
     }
