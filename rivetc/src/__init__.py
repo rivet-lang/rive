@@ -48,7 +48,7 @@ class Compiler:
         self.string_t = type.Type(self.universe[19])
         self.anyptr_t = type.Ptr(self.void_t)
         self.mut_anyptr_t = type.Ptr(self.void_t, True)
-        self.error_t = None # updated in register
+        self.throw_t = None # updated in register
 
         self.parsed_files = []
         self.source_files = []

@@ -28,7 +28,7 @@ public struct Codegen {
     mut usize_t: mir.Type;
     mut bool_t: mir.Type;
     mut vector_t: mir.Type;
-    mut error_t: mir.Type;
+    mut throw_t: mir.Type;
 
     mut generated_opt_res_types: maps.MapStringBool;
     mut generated_array_returns: maps.MapStringBool;
@@ -78,7 +78,7 @@ public struct Codegen {
             self.mangle_symbol(self.table.vector_sym),
             self.table.type_symbol_size(self.table.vector_sym, true).0
         ), true);
-        self.error_t = self.type_to_mir(self.table.error_t);
+        self.throw_t = self.type_to_mir(self.table.throw_t);
 
         for sym in self.table.universe.scope.syms {
             if sym is ast.Module {

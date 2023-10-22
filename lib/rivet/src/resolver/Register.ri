@@ -30,7 +30,7 @@ public struct Register {
             self.source_file = sf;
             self.walk_decls(self.source_file.decls);
         }
-        self.table.error_t = .Basic(self.table.throwable_sym);
+        self.table.throw_t = .Basic(self.table.throwable_sym);
     }
 
     func walk_decls(mut self, decls: []mut ast.Decl) {

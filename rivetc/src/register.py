@@ -21,7 +21,7 @@ class Register:
             self.sym = sf.sym
             self.source_file = sf
             self.walk_decls(self.source_file.decls)
-        self.comp.error_t = type.Type(self.comp.throwable_sym)
+        self.comp.throw_t = type.Type(self.comp.throwable_sym)
 
     def walk_decls(self, decls):
         for decl in decls:

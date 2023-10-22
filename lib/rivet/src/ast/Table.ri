@@ -64,7 +64,7 @@ public struct Table {
     public mut float32_t: Type;
     public mut float64_t: Type;
     public mut string_t: Type;
-    public mut error_t: Type;
+    public mut throw_t: Type;
 
     public mut source_files: []SourceFile;
 

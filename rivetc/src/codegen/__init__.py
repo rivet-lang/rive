@@ -1411,7 +1411,7 @@ class Codegen:
                             self.cur_fn.add_call(
                                 "_R4core11error_panicF", [
                                     ir.Selector(
-                                        self.ir_type(self.comp.error_t),
+                                        self.ir_type(self.comp.throw_t),
                                         res_value, ir.Name("err")
                                     )
                                 ]
@@ -1421,7 +1421,7 @@ class Codegen:
                             self.cur_fn.add_call(
                                 "_R4core18test_error_throwedF", [
                                     ir.Selector(
-                                        self.ir_type(self.comp.error_t),
+                                        self.ir_type(self.comp.throw_t),
                                         res_value, ir.Name("err")
                                     ),
                                     self.gen_string_literal(pos),
@@ -1441,11 +1441,11 @@ class Codegen:
                             )
                             self.cur_fn.store(
                                 ir.Selector(
-                                    self.ir_type(self.comp.error_t), tmp2,
+                                    self.ir_type(self.comp.throw_t), tmp2,
                                     ir.Name("err")
                                 ),
                                 ir.Selector(
-                                    self.ir_type(self.comp.error_t), res_value,
+                                    self.ir_type(self.comp.throw_t), res_value,
                                     ir.Name("err")
                                 )
                             )
@@ -1467,9 +1467,9 @@ class Codegen:
                                 expr.err_handler.varname, err_ir_name
                             )
                             self.cur_fn.inline_alloca(
-                                self.ir_type(self.comp.error_t), err_ir_name,
+                                self.ir_type(self.comp.throw_t), err_ir_name,
                                 ir.Selector(
-                                    self.ir_type(self.comp.error_t), res_value,
+                                    self.ir_type(self.comp.throw_t), res_value,
                                     ir.Name("err")
                                 )
                             )
@@ -2503,8 +2503,8 @@ class Codegen:
             ir.IntLit(ir.BOOL_T, "1")
         )
         self.cur_fn.store(
-            ir.Selector(self.ir_type(self.comp.error_t), tmp, ir.Name("err")),
-            self.trait_value(expr, expr_t, self.comp.error_t)
+            ir.Selector(self.ir_type(self.comp.throw_t), tmp, ir.Name("err")),
+            self.trait_value(expr, expr_t, self.comp.throw_t)
         )
         return tmp
 
@@ -2864,7 +2864,7 @@ class Codegen:
                                 if is_void else self.ir_type(typ.typ)
                             ),
                             ir.Field("is_err", ir.BOOL_T),
-                            ir.Field("err", self.ir_type(self.comp.error_t))
+                            ir.Field("err", self.ir_type(self.comp.throw_t))
                         ]
                     )
                 )
