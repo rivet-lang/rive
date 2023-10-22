@@ -6,7 +6,7 @@ import c;
 import c/libc;
 
 @[boxed]
-public struct CannotMakeDirectoryError < Error {
+public struct CannotMakeDirectoryError < Throwable {
     msg: string;
 
     public func to_string(self) -> string {
@@ -15,7 +15,7 @@ public struct CannotMakeDirectoryError < Error {
 }
 
 @[boxed]
-public struct CannotMakeFileError < Error {
+public struct CannotMakeFileError < Throwable {
     msg: string;
 
     public func to_string(self) -> string {
@@ -24,7 +24,7 @@ public struct CannotMakeFileError < Error {
 }
 
 @[boxed]
-public struct CouldNotOpenDirectoryError < Error {
+public struct CouldNotOpenDirectoryError < Throwable {
     msg: string;
 
     public func to_string(self) -> string {
@@ -33,7 +33,7 @@ public struct CouldNotOpenDirectoryError < Error {
 }
 
 @[boxed]
-public struct EmptyStringError < Error {
+public struct EmptyStringError < Throwable {
     msg: string;
 
     public func to_string(self) -> string {

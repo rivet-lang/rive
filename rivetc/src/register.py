@@ -21,7 +21,7 @@ class Register:
             self.sym = sf.sym
             self.source_file = sf
             self.walk_decls(self.source_file.decls)
-        self.comp.error_t = type.Type(self.comp.error_sym)
+        self.comp.error_t = type.Type(self.comp.throwable_sym)
 
     def walk_decls(self, decls):
         for decl in decls:
@@ -106,8 +106,8 @@ class Register:
                             info = sym.TraitInfo()
                         )
                     )
-                    if self.is_core_mod and decl.name == "Error" and not self.comp.error_sym:
-                        self.comp.error_sym = decl.sym
+                    if self.is_core_mod and decl.name == "Throwable" and not self.comp.throwable_sym:
+                        self.comp.throwable_sym = decl.sym
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)
                 except utils.CompilerError as e:

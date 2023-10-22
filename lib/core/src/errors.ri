@@ -8,17 +8,17 @@ public alias ErrnoError = c.ErrnoError;
 public alias last_errno_error = c.last_errno_error;
 
 /// This trait is used for errors returned with result types (!T).
-public trait Error < Stringable { }
+public trait Throwable < Stringable { }
 
 @[inline]
-func error_panic(err: Error) {
+func error_panic(err: Throwable) {
     console_eprintln("unhandled error: {}", err.to_string());
     returnTrace.print();
     process_exit(1);
 }
 
 @[boxed]
-public struct InvalidArgumentError < Error {
+public struct InvalidArgumentError < Throwable {
     msg: string;
 
     @[inline]
@@ -28,7 +28,7 @@ public struct InvalidArgumentError < Error {
 }
 
 @[boxed]
-public struct OutOfMemoryError < Error {
+public struct OutOfMemoryError < Throwable {
     msg: string;
 
     @[inline]
@@ -38,7 +38,7 @@ public struct OutOfMemoryError < Error {
 }
 
 @[boxed]
-public struct ReadFailedError < Error {
+public struct ReadFailedError < Throwable {
     msg: string;
 
     @[inline]

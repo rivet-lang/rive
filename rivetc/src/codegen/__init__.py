@@ -1419,7 +1419,7 @@ class Codegen:
                         elif self.inside_test:
                             pos = utils.smart_quote(str(expr.pos), False)
                             self.cur_fn.add_call(
-                                "_R4core19test_error_returnedF", [
+                                "_R4core18test_error_throwedF", [
                                     ir.Selector(
                                         self.ir_type(self.comp.error_t),
                                         res_value, ir.Name("err")
@@ -2368,8 +2368,8 @@ class Codegen:
         elif isinstance(expr, ast.ThrowExpr):
             t_sym = expr.expr.typ.symbol()
             if t_sym.implement_trait(
-                self.comp.error_sym
-            ) or t_sym == self.comp.error_sym:
+                self.comp.throwable_sym
+            ) or t_sym == self.comp.throwable_sym:
                 self.gen_return_trace_add(expr.pos)
                 expr_ = self.result_error(
                     self.cur_fn_ret_typ, expr.expr.typ,

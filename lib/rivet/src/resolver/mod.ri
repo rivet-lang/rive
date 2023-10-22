@@ -33,7 +33,7 @@ public struct Resolver {
             return;
         }
         self.preludes = [
-            Prelude("Error", self.table.error_sym)
+            Prelude("Error", self.table.throwable_sym)
         ];
         for sf in source_files {
             self.sym = sf.mod;

@@ -21,11 +21,11 @@ public struct Table {
     public pointer_size: usize;
 
     public mut core_mod: Module;
-    public mut error_sym_is_set: bool;
+    public mut throwable_sym_is_set: bool;
 
     public mut builtins: []Builtin;
 
-    /// Primitive type, Error and Vector symbols.
+    /// Primitive type, Throwable and Vector symbols.
     public mut bool_sym: TypeSym;
     public mut rune_sym: TypeSym;
     public mut int8_sym: TypeSym;
@@ -43,7 +43,7 @@ public struct Table {
     public mut float32_sym: TypeSym;
     public mut float64_sym: TypeSym;
     public mut string_sym: TypeSym;
-    public mut error_sym: TypeSym;
+    public mut throwable_sym: TypeSym;
     public mut vector_sym: TypeSym; // from `core` module
 
     /// Primitive types.
@@ -289,7 +289,7 @@ public struct Table {
     /// C's `sizeof(T)` and `_Alignof(T)`.
     public func type_size(mut self, type: Type, is_raw: bool = false) -> (usize, usize) {
         return switch type is {
-            .Result, .Option => self.type_symbol_size(self.error_sym, is_raw),
+            .Result, .Option => self.type_symbol_size(self.throwable_sym, is_raw),
             .Anyptr, .Pointer, .Func => (self.pointer_size, self.pointer_size),
             else => if mut type_sym := type.symbol() {
                 self.type_symbol_size(type_sym, is_raw)

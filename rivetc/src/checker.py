@@ -1275,7 +1275,7 @@ class Checker:
                 expr_typ = self.check_expr(expr.expr)
                 expr_typ_sym = expr_typ.symbol()
                 if not (expr_typ_sym.implement_trait(
-                    self.comp.error_sym) or expr_typ_sym == self.comp.error_sym):
+                    self.comp.throwable_sym) or expr_typ_sym == self.comp.throwable_sym):
                     report.error("using an invalid value as an error to throw", expr.expr.pos)
                     report.note(f"in order to use that value, type `{expr_typ}` should implement the `Throwable` trait")
                     report.note(

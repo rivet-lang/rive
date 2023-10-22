@@ -115,7 +115,7 @@ func len_utf8(code: uint32) -> usize {
 }
 
 @[boxed]
-public struct TooManyBytesError < Error {
+public struct TooManyBytesError < Throwable {
     msg: string;
 
     public func to_string(self) -> string {

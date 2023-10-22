@@ -1,4 +1,4 @@
-struct ThrowError < Error {
+struct ThrowError < Throwable {
     public func to_string(&self) -> string {
         _ = self;
         return "ThrowError instance";

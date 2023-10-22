@@ -11,7 +11,7 @@ public alias ErrnoError = c.ErrnoError;
 public alias OutOfMemoryError = core.OutOfMemoryError;
 
 @[boxed]
-public struct InvalidSyntaxError < Error {
+public struct InvalidSyntaxError < Throwable {
     msg: string;
 
     public func to_string(self) -> string {
@@ -20,7 +20,7 @@ public struct InvalidSyntaxError < Error {
 }
 
 @[boxed]
-public struct InvalidBaseError < Error {
+public struct InvalidBaseError < Throwable {
     msg: string;
 
     public func to_string(self) -> string {
@@ -29,7 +29,7 @@ public struct InvalidBaseError < Error {
 }
 
 @[boxed]
-public struct InvalidBitSizeError < Error {
+public struct InvalidBitSizeError < Throwable {
     msg: string;
 
     public func to_string(self) -> string {
@@ -38,7 +38,7 @@ public struct InvalidBitSizeError < Error {
 }
 
 @[boxed]
-public struct ValueOutOfRangeError < Error {
+public struct ValueOutOfRangeError < Throwable {
     msg: string;
 
     public func to_string(self) -> string {
@@ -47,7 +47,7 @@ public struct ValueOutOfRangeError < Error {
 }
 
 @[boxed]
-public struct GenericError < Error {
+public struct GenericError < Throwable {
     msg: string;
 
     public func to_string(self) -> string {
@@ -56,6 +56,6 @@ public struct GenericError < Error {
 }
 
 /// Returns a generic error.
-public func new(msg: string, args: ...traits.Stringable) -> Error {
+public func new(msg: string, args: ...traits.Stringable) -> Throwable {
     return GenericError(msg.fmt(args));
 }

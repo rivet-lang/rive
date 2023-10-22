@@ -30,7 +30,7 @@ public struct Register {
             self.source_file = sf;
             self.walk_decls(self.source_file.decls);
         }
-        self.table.error_t = .Basic(self.table.error_sym);
+        self.table.error_t = .Basic(self.table.throwable_sym);
     }
 
     func walk_decls(mut self, decls: []mut ast.Decl) {
@@ -71,9 +71,9 @@ public struct Register {
                             info: .Trait()
                         ), trait_decl.pos
                     );
-                    if self.is_core_mod and trait_decl.name == "Error" and !self.table.error_sym_is_set {
-                        self.table.error_sym_is_set = true;
-                        self.table.error_sym = @cast(ast.TypeSym, trait_decl.sym);
+                    if self.is_core_mod and trait_decl.name == "Throwable" and !self.table.throwable_sym_is_set {
+                        self.table.throwable_sym_is_set = true;
+                        self.table.throwable_sym = @cast(ast.TypeSym, trait_decl.sym);
                     }
                     self.sym = trait_decl.sym;
                     self.walk_decls(trait_decl.decls);

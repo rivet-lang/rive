@@ -23,7 +23,7 @@ class Compiler:
 
         self.core_mod = None
         self.vec_sym = None # from `core` module
-        self.error_sym = None # from `core` module
+        self.throwable_sym = None # from `core` module
 
         #  Primitive types.
         self.void_t = type.Type(self.universe[0])

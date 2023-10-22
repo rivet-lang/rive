@@ -30,7 +30,7 @@ test "`errdefer` statement" {
     @assert(err_defer.i == 4);
 }
 
-func return_error() -> ! {
+func throw_error() -> ! {
     throw MyError();
 }
 
@@ -38,7 +38,7 @@ func return_and_errdefer(mut err_defer: ErrDefer) -> ! {
     errdefer {
         err_defer.i = 4;
     }
-    return_error()!;
+    throw_error()!;
 }
 
 test "`errdefer` with error propagation" {

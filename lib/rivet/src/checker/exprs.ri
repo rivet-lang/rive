@@ -836,8 +836,8 @@ extend Checker {
         } else if self.cur_fn.ret_type is .Result {
             expr_type := self.check_expr(throw_expr.expr);
             expr_sym := expr_type.symbol()?;
-            if !(expr_sym == self.table.error_sym
-                or expr_sym.implement_trait(self.table.error_sym)
+            if !(expr_sym == self.table.throwable_sym
+                or expr_sym.implement_trait(self.table.throwable_sym)
             ) {
                 mut err_b := report.error_builder(
                     "using an invalid value as an error to throw",

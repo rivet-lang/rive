@@ -51,8 +51,8 @@ func assert_test(cond: bool, msg: string, pos: string, mut test_: Test) {
     }
 }
 
-func test_error_returned(err: Error, pos: string, mut test_: Test) {
-    test_.result = .ErrorReturned;
+func test_error_throwed(err: Throwable, pos: string, mut test_: Test) {
+    test_.result = .ErrorThrowed;
     test_.err = err;
     test_.err_pos = pos;
     test_.early_return = true;
@@ -62,7 +62,7 @@ enum TestResult as uint8 {
     Ok,
     Skipped,
     Failed,
-    ErrorReturned
+    ErrorThrowed
 }
 
 struct Test {
@@ -72,7 +72,7 @@ struct Test {
     mut early_return: bool;
     mut err_pos: string;
     mut err_msg: string;
-    mut err: Error;
+    mut err: Throwable;
 }
 
 public struct TestRunner {
@@ -89,7 +89,7 @@ public struct TestRunner {
                 .Ok => self.print_ok(),
                 .Skipped => self.print_skip(),
                 .Failed => self.print_failed(test_.err_pos, test_.err_msg),
-                .ErrorReturned => self.print_error_returned(test_.err_pos, test_.err)
+                .ErrorThrowed => self.print_error_throwed(test_.err_pos, test_.err)
             }
         }
         self.print_summary_tests();
@@ -126,9 +126,9 @@ public struct TestRunner {
         self.fail_tests += 1;
     }
 
-    func print_error_returned(mut self, pos: string, err: Error) {
+    func print_error_throwed(mut self, pos: string, err: Throwable) {
         console_eprintln(failedStatus);
-        console_eprintln("     at {}: error returned: {}", bold(pos), err);
+        console_eprintln("     at {}: error throwed: {}", bold(pos), err);
         self.fail_tests += 1;
     }
 }
