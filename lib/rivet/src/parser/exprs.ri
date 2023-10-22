@@ -272,6 +272,11 @@ extend Parser {
                 };
                 .Return(return_expr, has_expr, pos + return_expr.position())
             },
+            self.accept(.KwThrow) => {
+                pos := self.prev_tok.pos;
+                throw_expr := self.parse_expr();
+                .Throw(throw_expr, pos + throw_expr.position())
+            },
             self.tok.kind == .KwIf => self.parse_if_expr(),
             self.accept(.KwSwitch) => self.parse_switch_expr(),
             self.tok.kind in [.KwUnsafe, .Lbrace] => self.parse_block_expr(),

@@ -396,16 +396,16 @@ public struct Checker {
         }
     }
 
-    func has_return(self, stmts: []ast.Stmt) -> bool {
+    func has_return(self, stmts: []ast.Stmt, allow_throw: bool = false) -> bool {
         for stmt in stmts {
-            if stmt is .Expr as expr and self.expr_has_return(expr) {
+            if stmt is .Expr as expr and self.expr_has_return(expr, allow_throw) {
                 return true;
             }
         }
         return false;
     }
 
-    func expr_has_return(self, expr: ast.Expr) -> bool {
+    func expr_has_return(self, expr: ast.Expr, allow_throw: bool = false) -> bool {
         return switch expr is {
             .Switch as switch_expr => {
                 for i, branch in switch_expr.branches {
@@ -429,7 +429,8 @@ public struct Checker {
             },
             .Call as call_expr => call_expr.type is .Never,
             .Block as block => self.has_return(block.stmts),
-            .Return => return true,
+            .Return => true,
+            .Throw if allow_throw => true,
             else => false
         };
     }

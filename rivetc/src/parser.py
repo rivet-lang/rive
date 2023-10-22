@@ -824,6 +824,9 @@ class Parser:
             else:
                 expr = self.empty_expr()
             expr = ast.ReturnExpr(expr, has_expr, pos)
+        elif self.accept(Kind.KwThrow):
+            pos = self.prev_tok.pos
+            expr = ast.ThrowExpr(self.parse_expr(), pos)
         elif self.tok.kind == Kind.KwIf:
             expr = self.parse_if_expr()
         elif self.accept(Kind.KwSwitch):

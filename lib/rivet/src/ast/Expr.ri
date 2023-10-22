@@ -232,6 +232,10 @@ public enum Expr < traits.Stringable {
         has_expr: bool;
         pos: token.Pos;
     },
+    Throw {
+        mut expr: Expr;
+        pos: token.Pos;
+    },
     Block {
         is_unsafe: bool;
         stmts: []mut Stmt;
@@ -309,6 +313,7 @@ public enum Expr < traits.Stringable {
             .Unary as unary => unary.pos,
             .Binary as binary => binary.pos,
             .Return as return_expr => return_expr.pos,
+            .Throw as throw_expr => throw_expr.pos,
             .Block as block => block.pos,
             .If as if_expr => if_expr.pos,
             .Switch as switch_expr => switch_expr.pos,
@@ -447,6 +452,7 @@ public enum Expr < traits.Stringable {
             } else {
                 "return"
             },
+            .Throw as throw_expr => "throw {}".fmt(throw_expr.expr),
             .Block as block => {
                 mut sb := strings.Builder.new();
                 if block.is_unsafe {

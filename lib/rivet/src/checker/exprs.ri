@@ -206,6 +206,7 @@ extend Checker {
                 .Void()
             },
             .Return as mut return_expr => self.check_return(return_expr),
+            .Throw as mut throw_expr => self.check_throw(throw_expr),
             .Assign as mut assign => self.check_assign(assign)
         };
     }
@@ -831,6 +832,45 @@ extend Checker {
         }
         self.scope_returns = true;
         return .Never(return_expr.pos);
+    }
+
+    func check_throw(mut self, mut throw_expr: ast.Expr.Throw) -> ast.Type {
+        if self.cur_fn.ret_type is .Never {
+            report.error("`never` functions cannot use `throw` statements", throw_expr.pos);
+        } else if self.inside_defer {
+            report.error("`throw` is not allowed inside `defer` statement", throw_expr.pos);
+        } else if self.inside_test {
+            report.error("cannot throw errors inside `test` declaration", throw_expr.pos);
+        } else if self.cur_fn.ret_type is .Result {
+            expr_type := self.check_expr(throw_expr.expr);
+            expr_sym := expr_type.symbol()?;
+            if !(expr_sym == self.table.error_sym
+                or expr_sym.implement_trait(self.table.error_sym)
+            ) {
+                mut err_b := report.error_builder(
+                    "using an invalid value as an error to throw",
+                    throw_expr.expr.position()
+                );
+                err_b.add_note(
+                    "in order to use that value, type `{}` should implement the `Throwable` trait".fmt(expr_type)
+                );
+                err_b.add_note(
+                    "in throw argument of {} `{}`", self.cur_fn.kind(),
+                    self.cur_fn.name
+                );
+                err_b.emit();
+            }
+        } else {
+            mut err_b := report.error_builder(
+                "{} `{}` cannot throws errors".fmt(
+                    self.cur_fn.kind(), self.cur_fn.name
+                ), throw_expr.expr.position()
+            );
+            err_b.add_note("if you want to throw errors, add `!` in front of the return type");
+            err_b.emit();
+        }
+        self.scope_returns = true;
+        return .Never(throw_expr.pos);
     }
 
     func check_assign(mut self, mut assign: ast.Expr.Assign) -> ast.Type {

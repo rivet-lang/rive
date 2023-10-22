@@ -833,6 +833,18 @@ class ReturnExpr:
     def __str__(self):
         return self.__repr__()
 
+class ThrowExpr:
+    def __init__(self, expr, pos):
+        self.expr = expr
+        self.pos = pos
+        self.typ = None
+
+    def __repr__(self):
+        return f"throw {self.expr}"
+
+    def __str__(self):
+        return self.__repr__()
+
 class Block:
     def __init__(self, scope, is_unsafe, stmts, expr, is_expr, pos):
         self.is_unsafe = is_unsafe

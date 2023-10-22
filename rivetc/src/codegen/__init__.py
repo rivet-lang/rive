@@ -2381,6 +2381,22 @@ class Codegen:
                 self.gen_defer_stmts()
                 self.cur_fn.add_ret_void()
             return ir.Skip()
+        elif isinstance(expr, ast.ThrowExpr):
+            t_sym = expr.expr.typ.symbol()
+            if t_sym.implement_trait(
+                self.comp.error_sym
+            ) or t_sym == self.comp.error_sym:
+                self.gen_return_trace_add(expr.pos)
+                expr_ = self.result_error(
+                    self.cur_fn_ret_typ, expr.expr.typ,
+                    self.gen_expr(expr.expr)
+                )
+                self.gen_defer_stmts(
+                    True,
+                    ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err"))
+                )
+                self.cur_fn.add_ret(expr_)
+                return ir.Skip()
         else:
             if expr is None:
                 raise Exception(expr)

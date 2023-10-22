@@ -299,7 +299,7 @@ extend Checker {
                 err.emit();
             }
         } else if func_decl.has_body and !func_decl.ret_type.is_void()
-            and !self.has_return(func_decl.stmts) {
+            and !self.has_return(func_decl.stmts, func_decl.ret_type is .Result) {
             report.error(
                 "missing `return` statement at end of {} `{}`".fmt(
                     if func_decl.is_method { "method" } else { "function" },

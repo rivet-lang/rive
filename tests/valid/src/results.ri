@@ -1,18 +1,17 @@
-@[boxed]
 struct MyError < Error {
     msg: string;
 
-    public func to_string(self) -> string {
+    public func to_string(&self) -> string {
         return self.msg;
     }
 }
 
 func result() -> ! {
-    return MyError("simple error");
+    throw MyError("simple error");
 }
 
 func result2() -> ! {
-    return MyError("simple error (returned: {}, idx: {})".fmt(true, 0));
+    throw MyError("simple error (throwed: {}, idx: {})".fmt(true, 0));
 }
 
 func result3() -> !int32 {
@@ -21,7 +20,7 @@ func result3() -> !int32 {
 
 static resultValue: int32 = result3()!;
 
-test "propagate result in `var` declaration" {
+test "propagate result in `static` declaration" {
     @assert(resultValue == 5);
 }
 
@@ -33,6 +32,6 @@ test "catch result error" {
 
     result2() catch |err2| {
         @assert(err2 is MyError);
-        @assert(err2.to_string() == "simple error (returned: true, idx: 0)");
+        @assert(err2.to_string() == "simple error (throwed: true, idx: 0)");
     };
 }

@@ -127,6 +127,7 @@ extend Resolver {
             .Return as return_expr => if return_expr.has_expr {
                 self.resolve_expr(return_expr.expr);
             },
+            .Throw as throw_expr => self.resolve_expr(throw_expr.expr),
             .Guard as guard => {
                 for var_ in guard.vars {
                     self.check_variable_shadowing(var_.name, var_.pos);
