@@ -1,0 +1,28 @@
+struct ThrowError < Error {
+    public func to_string(&self) -> string {
+        _ = self;
+        return "ThrowError instance";
+    }
+}
+
+func throw_with_never() -> never {
+    throw ThrowError();
+}
+
+func throw_inside_defer() -> ! {
+    defer {
+        throw ThrowError();
+    }
+}
+
+test "invalid `throw` inside `test` declaration" {
+    throw ThrowError();
+}
+
+func invalid_throwing_function() {
+    throw ThrowError();
+}
+
+func invalid_throwing_value() -> !int32 {
+    throw 5;
+}
