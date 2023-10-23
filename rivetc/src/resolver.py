@@ -71,7 +71,7 @@ class Resolver:
                         if self.resolve_type(base):
                             base_sym = base.symbol()
                             if base_sym.kind == sym.TypeKind.Trait:
-                                base_sym.info.implements.append(decl.sym)
+                                base_sym.info.implement(decl.sym)
                     for v in decl.variants:
                         if len(v.decls) > 0:
                             self.self_sym = v.typ.symbol()

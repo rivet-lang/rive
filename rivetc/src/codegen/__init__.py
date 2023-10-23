@@ -2704,19 +2704,23 @@ class Codegen:
                 ir.IntLit(ir.Name("usize"), str(size))
             ]
         )
-        self.cur_fn.store(
-            ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")), value
-        )
         if value_sym.kind == TypeKind.Trait:
             index = ir.Inst(
                 ir.InstKind.Call, [
-                    ir.Name(f"{mangle_symbol(value_sym)}17__index_of_vtbl__"),
+                    ir.Name(f"{mangle_symbol(trait_sym)}17__index_of_vtbl__"),
                     ir.Selector(ir.USIZE_T, value, ir.Name("_idx_"))
                 ], ir.USIZE_T
+            )
+            self.cur_fn.store(
+                ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")),
+                ir.Selector(ir.VOID_PTR_T, value, ir.Name("obj"))
             )
         else:
             vtbl_idx_x = trait_sym.info.indexof(value_sym)
             index = ir.IntLit(ir.USIZE_T, str(vtbl_idx_x))
+            self.cur_fn.store(
+                ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")), value
+            )
         self.cur_fn.store(ir.Selector(ir.USIZE_T, tmp, ir.Name("_id_")), index)
         self.cur_fn.store(
             ir.Selector(ir.USIZE_T, tmp, ir.Name("_idx_")),
@@ -3006,7 +3010,7 @@ class Codegen:
                             else:
                                 map[method_name] = mangle_symbol(m)
                     funcs.append(map)
-                    index_of_vtbl.append((its.id, idx))
+                    index_of_vtbl.append((its.qualname(), its.id, idx))
                 if len(funcs) > 0 and ts.info.has_objects:
                     self.out_rir.structs.append(
                         ir.Struct(False, vtbl_name, fields)
@@ -3022,9 +3026,10 @@ class Codegen:
                         mangle_symbol(ts) + "17__index_of_vtbl__",
                         [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T, False
                     )
-                    for child_idx_, child_idx_x in index_of_vtbl:
+                    for child_name, child_idx_, child_idx_x in index_of_vtbl:
                         l1 = index_of_vtbl_fn.local_name()
                         l2 = index_of_vtbl_fn.local_name()
+                        index_of_vtbl_fn.add_comment(f"for: '{child_name}'")
                         index_of_vtbl_fn.add_cond_br(
                             ir.Inst(
                                 ir.InstKind.Cmp, [

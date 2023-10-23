@@ -35,3 +35,37 @@ test "catch result error" {
         @assert(err2.to_string() == "simple error (throwed: true, idx: 0)");
     };
 }
+
+enum IOError < Throwable {
+    FileNotFound: string,
+    InvalidFileSize {
+        path: string;
+        size: usize;
+    };
+
+    public func to_string(self) -> string {
+        return switch self is {
+            .FileNotFound as path => "file not found: {}".fmt(path),
+            .InvalidFileSize as ifsz => "invalid file size for {} (size: {})".fmt(
+                ifsz.path, ifsz.size
+            )
+        };
+    }
+}
+
+test "using a Throwable enum with Stringable trait" {
+    throw_io_error("a.txt", false) catch |err| @assert(
+        err.to_string() == "file not found: a.txt"
+    );
+    throw_io_error("b.txt", true) catch |err2| @assert(
+        err2.to_string() == "invalid file size for b.txt (size: 2004)"
+    );
+}
+
+func throw_io_error(path: string, check_size: bool) -> ! {
+    throw if check_size {
+        IOError.InvalidFileSize(path, 2004)
+    } else {
+        IOError.FileNotFound(path)
+    };
+}
