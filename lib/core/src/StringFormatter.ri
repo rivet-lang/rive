@@ -33,17 +33,17 @@ public struct StringFormatter {
                         }
                         value := args[arg_idx].to_string();
                         if has_fwidth and fwidth > 0 {
-                            value_len := @cast(isize, value.len);
+                            value_len := @as(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }
                         }
                         self.res.write_string(value);
                         if has_fwidth and fwidth < 0 {
                             fwidth = -fwidth;
-                            value_len := @cast(isize, value.len);
+                            value_len := @as(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }
                         }
                         if !has_fwidth {
@@ -75,17 +75,17 @@ public struct StringFormatter {
                         (has_fwidth, mut fwidth) := self.fwidth();
                         value := args[index].to_string();
                         if has_fwidth and fwidth > 0 {
-                            value_len := @cast(isize, value.len);
+                            value_len := @as(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }
                         }
                         self.res.write_string(value);
                         if has_fwidth and fwidth < 0 {
                             fwidth = -fwidth;
-                            value_len := @cast(isize, value.len);
+                            value_len := @as(isize, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@cast(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
                             }
                         }
                     } else {
@@ -114,7 +114,7 @@ public struct StringFormatter {
 
     func fwidth(mut self) -> (bool, isize) {
         if unsafe { self.buf.ptr[self.i] != b':' } {
-            return (false, @cast(isize, 0));
+            return (false, @as(isize, 0));
         }
         self.i += 1;
         start := self.i;

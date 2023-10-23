@@ -93,7 +93,7 @@ public struct TestRunner {
             }
         }
         self.print_summary_tests();
-        process_exit(@cast(int32, self.fail_tests));
+        process_exit(@as(int32, self.fail_tests));
     }
 
     func print_summary_tests(&self) {

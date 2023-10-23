@@ -20,7 +20,7 @@ public struct StringBuilder < Stringable {
             Self.new()
         } else {
             Self(unsafe {
-                Vector.from_array(@cast(*mut uint8, s.ptr), @size_of(uint8), s.len)
+                Vector.from_array(@as(*mut uint8, s.ptr), @size_of(uint8), s.len)
             })
         };
     }
@@ -89,7 +89,7 @@ public struct StringBuilder < Stringable {
     /// Returns the number of runes contained in `self`.
     @[inline]
     public func runes_count(self) -> usize {
-        return cstr_runes_count(unsafe { @cast([*]uint8, self.inner.ptr) }, self.inner.len);
+        return cstr_runes_count(unsafe { @as([*]uint8, self.inner.ptr) }, self.inner.len);
     }
 
     @[inline]
@@ -115,6 +115,6 @@ public struct StringBuilder < Stringable {
     @[inline]
     public func to_string(mut self) -> string {
         self.write_byte(0);
-        return string(unsafe { @cast([*]uint8, self.inner.ptr) }, self.inner.len - 1);
+        return string(unsafe { @as([*]uint8, self.inner.ptr) }, self.inner.len - 1);
     }
 }

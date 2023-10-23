@@ -111,7 +111,7 @@ extend Parser {
                     .Basic(expr: expr, is_unresolved: true)
                 } else {
                     // normal type
-                    expr_name := @cast(ast.Expr.Ident, expr).name;
+                    expr_name := @as(ast.Expr.Ident, expr).name;
                     expr_pos := expr.position();
                     switch expr_name {
                         "never" => {

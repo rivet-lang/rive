@@ -10,7 +10,7 @@ func fill_vector(len: usize) -> []mut int32 {
     mut vec := @vec(mut int32, len);
     mut i: usize := 0;
     while i < len : i += 1 {
-        vec.push(@cast(int32, i));
+        vec.push(@as(int32, i));
     }
     return vec;
 }
@@ -47,5 +47,5 @@ public func levenshtein_distance(a: string, b: string) -> int32 {
 public func levenshtein_distance_percentage(a: string, b: string) -> float32 {
     d := levenshtein_distance(a, b);
     l := if a.len >= b.len { a.len } else { b.len };
-    return (1.00 - @cast(float32, d) / @cast(float32, l)) * 100.00;
+    return (1.00 - @as(float32, d) / @as(float32, l)) * 100.00;
 }

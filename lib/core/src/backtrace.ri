@@ -60,7 +60,7 @@ func bt_print_callback(
 
 func bt_error_handler(data: mut_anyptr, msg_ptr: ?[*]mut uint8, errnum: int32) {
     unsafe {
-        bdata := @cast(*mut BacktraceData, data);
+        bdata := @as(*mut BacktraceData, data);
         if !bdata.has_error {
             bdata.has_error = true;
             console_eprint("   libbacktrace error: ");

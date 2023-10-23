@@ -9,12 +9,12 @@ extend comptime_float < Stringable {
     /// of `self` and the result in the same bit position.
     @[inline]
     public func bits(self) -> uint64 {
-        return @cast(float64, self).bits();
+        return @as(float64, self).bits();
     }
 
     @[inline]
     public func to_string(&self) -> string {
-        return @cast(float64, self.*).to_string();
+        return @as(float64, self.*).to_string();
     }
 }
 
@@ -24,14 +24,14 @@ extend float32 < Stringable {
     /// bit position.
     @[inline]
     public func from_bits(b: uint32) -> float32 {
-        return unsafe { @cast(*float32, &b).* };
+        return unsafe { @as(*float32, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     @[inline]
     public func bits(&self) -> uint32 {
-        return unsafe { @cast(*uint32, self).* };
+        return unsafe { @as(*uint32, self).* };
     }
 
     public func to_string(&self) -> string {
@@ -41,7 +41,7 @@ extend float32 < Stringable {
             return if len == -1 {
                 emptyString // fail
             } else {
-                string.from_raw_with_len(cstr, @cast(usize, len))
+                string.from_raw_with_len(cstr, @as(usize, len))
             };
         }
     }
@@ -53,14 +53,14 @@ extend float64 < Stringable {
     /// bit position.
     @[inline]
     public func from_bits(b: uint64) -> float64 {
-        return unsafe { @cast(*float64, &b).* };
+        return unsafe { @as(*float64, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     @[inline]
     public func bits(&self) -> uint64 {
-        return unsafe { @cast(*uint64, self).* };
+        return unsafe { @as(*uint64, self).* };
     }
 
     public func to_string(&self) -> string {
@@ -70,7 +70,7 @@ extend float64 < Stringable {
             return if len == -1 {
                 emptyString // fail
             } else {
-                string.from_raw_with_len(cstr, @cast(usize, len))
+                string.from_raw_with_len(cstr, @as(usize, len))
             };
         }
     }

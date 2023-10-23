@@ -1024,7 +1024,7 @@ class Checker:
                         f"expected 1 or 2 arguments, found {len(expr.args)}",
                         expr.pos
                     )
-            elif expr.name == "cast":
+            elif expr.name == "as":
                 old_expected_type = self.expected_type
                 self.expected_type = expr.typ
                 expr_t = self.check_expr(expr.args[1])

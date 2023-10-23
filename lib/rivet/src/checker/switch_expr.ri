@@ -113,7 +113,7 @@ extend Checker {
                         report.error("multiple cases cannot have variable", branch.var_pos);
                     } else if expr_sym.is_boxed() {
                         if expr_sym.info is .Enum {
-                            case0 := @cast(
+                            case0 := @as(
                                 ast.Expr.EnumLiteral, branch.cases[0]
                             ).variant;
                             if case0.has_type {

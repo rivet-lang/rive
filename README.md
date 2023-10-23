@@ -33,7 +33,8 @@ such as Python, Lua, TypeScript, D, Swift, etc.
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
 * **Named and optional arguments**: Very useful, `my_func(arg0: 5)`.
 * **Not NULL values by default**: This is only possible with option types (`?T`) and `none`.
-* **Easy error handling**: With result types, `func my_func() -> !T { ... }` and `catch`.
+* **Easy error handling**: With result types, `func my_func() -> !T { ... }`, 
+    `throw` and `catch`.
 * **A basic preprocessor**: `if`, `else_if`, `else` and `endif` for optional code using 
     flags (`-D my_flag`).
 * **Immutable values**: Variables and fields are immutable by default.

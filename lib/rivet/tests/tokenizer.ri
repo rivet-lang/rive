@@ -46,7 +46,7 @@ test "tokenizer: number constant input format" {
 
 test "tokenizer: float conversion and reading" {
 	d := 23000000e-3;
-	@assert(@cast(int32, d) == 23000);
+	@assert(@as(int32, d) == 23000);
 	mut e := 1.2E3 * -1e-1;
 	@assert(e == -120.0);
 	e = 1.2E3 * 1e-1;

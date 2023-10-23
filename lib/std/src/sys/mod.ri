@@ -33,11 +33,11 @@ public func is_64bit() -> bool {
 /// Returns true if the current executable is running on a little-endian system.
 @[inline]
 public func is_little_endian() -> bool {
-    return unsafe { @cast(int32, @cast(*int8, &1).*) } == 1;
+    return unsafe { @as(int32, @as(*int8, &1).*) } == 1;
 }
 
 /// Returns true if the current executable is running on a big-endian system.
 @[inline]
 public func is_big_endian() -> bool {
-    return unsafe { @cast(int32, @cast(*int8, &1).*) } == 0;
+    return unsafe { @as(int32, @as(*int8, &1).*) } == 0;
 }

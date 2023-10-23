@@ -148,7 +148,7 @@ public struct Module < Sym {
             "[{}]{}"
         }.fmt(size, elem_typ.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
-            return @cast(TypeSym, type_sym);
+            return @as(TypeSym, type_sym);
         }
         type_sym := TypeSym(
             is_public: true,
@@ -168,7 +168,7 @@ public struct Module < Sym {
     public func add_or_get_vec(mut self, elem_type: Type, is_mut: bool) -> TypeSym {
         unique_name := if is_mut { "[]mut " } else { "[]" }.concat(elem_type.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
-            return @cast(TypeSym, type_sym);
+            return @as(TypeSym, type_sym);
         }
         type_sym := TypeSym(
             is_public: true,
@@ -235,7 +235,7 @@ public struct Module < Sym {
             sb.to_string()
         };
         if type_sym := self.scope.find(unique_name) {
-            return @cast(TypeSym, type_sym);
+            return @as(TypeSym, type_sym);
         }
         mut fields := @vec(Field);
         for i, type in types {
@@ -272,7 +272,7 @@ public struct Module < Sym {
             sb.to_string()
         };
         if type_sym := self.scope.find(unique_name) {
-            return @cast(TypeSym, type_sym);
+            return @as(TypeSym, type_sym);
         }
         type_sym := TypeSym(is_public: true, name: unique_name, info: .Func(func_sym));
         self.scope.add(type_sym) catch {};

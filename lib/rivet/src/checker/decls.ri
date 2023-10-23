@@ -81,7 +81,7 @@ extend Checker {
                     };
                 } else {
                     const_decl.type = self.check_expr(const_decl.expr);
-                    @cast(ast.Const, const_decl.sym).type = const_decl.type;
+                    @as(ast.Const, const_decl.sym).type = const_decl.type;
                 }
                 if const_decl.type is .Option or const_decl.type is .None {
                     report.error(
@@ -107,7 +107,7 @@ extend Checker {
                     if sym := base.symbol() {
                         if sym.info is .Trait {
                             self.check_trait_impl(
-                                @cast(ast.TypeSym, enum_decl.sym), sym, enum_decl.pos
+                                @as(ast.TypeSym, enum_decl.sym), sym, enum_decl.pos
                             );
                         }
                     }
@@ -124,7 +124,7 @@ extend Checker {
                     if sym := base.symbol() {
                         if sym.info is .Trait {
                             self.check_trait_impl(
-                                @cast(ast.TypeSym, struct_decl.sym), sym, struct_decl.pos
+                                @as(ast.TypeSym, struct_decl.sym), sym, struct_decl.pos
                             );
                         }
                     }
@@ -239,7 +239,7 @@ extend Checker {
             err.add_note("this is because Rivet cannot ensure that the function does not always return a null pointer");
             err.emit();
         }
-        self.cur_fn = @cast(ast.Func, func_decl.sym);
+        self.cur_fn = @as(ast.Func, func_decl.sym);
         self.check_stmts(func_decl.stmts);
         func_decl.defer_stmts = self.defer_stmts;
         self.defer_stmts = [];

@@ -554,7 +554,7 @@ class InstKind(Enum):
         elif self == InstKind.LoadPtr: return "load_ptr"
         elif self == InstKind.GetElementPtr: return "get_element_ptr"
         elif self == InstKind.GetRef: return "get_ref"
-        elif self == InstKind.Cast: return "cast"
+        elif self == InstKind.Cast: return "as"
         elif self == InstKind.Cmp: return "cmp"
         elif self == InstKind.DbgStmtLine: return "dbg_stmt_line"
         elif self == InstKind.Breakpoint: return "breakpoint"

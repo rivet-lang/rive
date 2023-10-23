@@ -49,7 +49,7 @@ public func mem_resize(ptr: ?mut_anyptr, sz: usize) -> !mut_anyptr {
 @[inline]
 public func mem_set(s: mut_anyptr, c: uint8, n: usize) {
     unsafe {
-        _ = libc.memset(s, @cast(int32, c), n);
+        _ = libc.memset(s, @as(int32, c), n);
     }
 }
 

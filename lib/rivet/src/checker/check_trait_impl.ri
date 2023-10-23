@@ -84,7 +84,7 @@ extend Checker {
             }
             err.emit();
         }
-        for base in @cast(ast.TypeInfo.Trait, trait_sym.info).bases {
+        for base in @as(ast.TypeInfo.Trait, trait_sym.info).bases {
             self.check_trait_impl(impltor, base, pos);
         }
     }

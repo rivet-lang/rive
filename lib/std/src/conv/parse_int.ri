@@ -71,13 +71,13 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
     cutoff: usize := switch base {
         10 => usize.MAX / 10 + 1,
         16 => usize.MAX / 16 + 1,
-        else => usize.MAX / @cast(usize, base) + @cast(usize, 1)
+        else => usize.MAX / @as(usize, base) + @as(usize, 1)
     };
 
     max_val: usize := if bit_size == 64 {
         usize.MAX
     } else {
-        (@cast(usize, 1) << @cast(usize, bit_size)) - @cast(usize, 1)
+        (@as(usize, 1) << @as(usize, bit_size)) - @as(usize, 1)
     };
     mut underscores := false;
     mut n: usize := 0;
@@ -98,7 +98,7 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
             else => throw InvalidSyntaxError("invalid syntax")
         }
 
-        if d >= @cast(uint8, base) {
+        if d >= @as(uint8, base) {
             throw InvalidSyntaxError("invalid syntax");
         }
 
@@ -106,9 +106,9 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
             // `n * base` overflows
             throw ValueOutOfRangeError("value out of range");
         }
-        n *= @cast(usize, base);
+        n *= @as(usize, base);
 
-        n1 := n + @cast(usize, d);
+        n1 := n + @as(usize, d);
         if n1 < n or n1 > max_val {
             // `n + d` overflows
             throw ValueOutOfRangeError("value out of range");
@@ -158,7 +158,7 @@ public func parse_int(s: string, base: int32, mut bit_size: uint32) -> !isize {
         bit_size = INT_SIZE;
     }
 
-    cutoff := @cast(usize, 1) << bit_size - 1;
+    cutoff := @as(usize, 1) << bit_size - 1;
     if !neg and un >= cutoff {
         throw ValueOutOfRangeError("value out of range");
     }
@@ -166,7 +166,7 @@ public func parse_int(s: string, base: int32, mut bit_size: uint32) -> !isize {
         throw ValueOutOfRangeError("value out of range");
     }
 
-    return if neg { -@cast(isize, un) } else { @cast(isize, un) };
+    return if neg { -@as(isize, un) } else { @as(isize, un) };
 }
 
 /// Reports whether the underscores in `s_` are allowed.

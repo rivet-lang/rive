@@ -73,14 +73,14 @@ public struct Register {
                     );
                     if self.is_core_mod and trait_decl.name == "Throwable" and !self.table.throwable_sym_is_set {
                         self.table.throwable_sym_is_set = true;
-                        self.table.throwable_sym = @cast(ast.TypeSym, trait_decl.sym);
+                        self.table.throwable_sym = @as(ast.TypeSym, trait_decl.sym);
                     }
                     self.sym = trait_decl.sym;
                     self.walk_decls(trait_decl.decls);
                 },
                 .Struct as struct_decl => {
                     struct_decl.sym = if self.is_core_mod and struct_decl.name == "string" {
-                        @cast(ast.Type.Basic, self.table.string_t).sym
+                        @as(ast.Type.Basic, self.table.string_t).sym
                     } else {
                         self.add_sym(ast.TypeSym(
                             parent: self.sym,
@@ -93,7 +93,7 @@ public struct Register {
                         ), struct_decl.pos)
                     };
                     if self.is_core_mod and struct_decl.name == "Vector" {
-                        self.table.vector_sym = @cast(ast.TypeSym, struct_decl.sym);
+                        self.table.vector_sym = @as(ast.TypeSym, struct_decl.sym);
                     }
                     self.sym = struct_decl.sym;
                     self.walk_decls(struct_decl.decls);
@@ -111,7 +111,7 @@ public struct Register {
                             info: info
                         ), enum_decl.pos
                     );
-                    mut enum_info := @cast(ast.TypeInfo.Enum, info);
+                    mut enum_info := @as(ast.TypeInfo.Enum, info);
                     for variant in enum_decl.variants {
                         if enum_info.has_variant(variant.name) {
                             report.error("enum `{}` has duplicate variant `{}`".fmt(
@@ -127,7 +127,7 @@ public struct Register {
                                 name: variant.name,
                                 info: .Struct(
                                     false, true, true,
-                                    parent: @cast(ast.TypeSym, enum_decl.sym)
+                                    parent: @as(ast.TypeSym, enum_decl.sym)
                                 )
                             );
                             enum_decl.sym.scope.add(variant_sym) catch |err| {
@@ -148,12 +148,12 @@ public struct Register {
                             )
                         );
                     }
-                    @cast(ast.TypeSym, enum_decl.sym).info = info;
+                    @as(ast.TypeSym, enum_decl.sym).info = info;
                     self.sym = enum_decl.sym;
                     self.walk_decls(enum_decl.decls);
                 },
                 .Field as field_decl => {
-                    type_sym := @cast(ast.TypeSym, self.sym);
+                    type_sym := @as(ast.TypeSym, self.sym);
                     if type_sym.has_field(field_decl.name) {
                         report.error(
                             "{} `{}` has duplicate field `{}`".fmt(
@@ -212,7 +212,7 @@ public struct Register {
                             ident.found = true;
                             ident.sym = self.sym;
                             basic_type.is_unresolved = false;
-                            basic_type.sym = @cast(ast.TypeSym, self.sym);
+                            basic_type.sym = @as(ast.TypeSym, self.sym);
                         } else {
                             report.error(
                                 "invalid type `{}` to extend".fmt(extend_decl.type),

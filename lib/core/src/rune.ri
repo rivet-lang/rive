@@ -23,7 +23,7 @@ extend rune < Stringable {
         if i >= 0x110000 or (i >= 0xD800 and i < 0xE000) {
             return none;
         }
-        return unsafe { @cast(rune, i) };
+        return unsafe { @as(rune, i) };
     }
 
     /// Converts a digit in the given radix to a `rune`.
@@ -41,7 +41,7 @@ extend rune < Stringable {
             process_panic("rune.from_digit: radix is too high (maximum 36)");
         }
         if num < radix {
-            num_ := @cast(uint8, num);
+            num_ := @as(uint8, num);
             byte := (if num_ < 10 { b'0' + num_ } else { b'a' + num_ - 10 });
             return byte.to_rune();
         }
@@ -50,19 +50,19 @@ extend rune < Stringable {
 
     public func as_bytes(self) -> []uint8 {
         res := @vec(uint8, 5);
-        res_v := @cast(Vector, res);
-        res_v.len = utf32_decode_to_buffer(self, unsafe { @cast([*]mut uint8, res_v.ptr) });
+        res_v := @as(Vector, res);
+        res_v.len = utf32_decode_to_buffer(self, unsafe { @as([*]mut uint8, res_v.ptr) });
         return res;
     }
 
     @[inline]
     public func len_utf8(self) -> usize {
-        return len_utf8(@cast(uint32, self));
+        return len_utf8(@as(uint32, self));
     }
 
     public func to_string(&self) -> string {
         len := self.len_utf8();
-        res := unsafe { @cast([*]mut uint8, internal_alloc(len + 1)) };
+        res := unsafe { @as([*]mut uint8, internal_alloc(len + 1)) };
         unsafe {
             _ = utf32_decode_to_buffer(self.*, res);
             return string.from_raw_with_len(res, len);
@@ -71,29 +71,29 @@ extend rune < Stringable {
 }
 
 func utf32_decode_to_buffer(code: rune, buffer: [*]mut uint8) -> usize {
-    icode := @cast(int32, code);
+    icode := @as(int32, code);
     unsafe {
         return switch {
             (icode <= 127) => { // 0x7F
-                buffer[0] = @cast(uint8, icode);
+                buffer[0] = @as(uint8, icode);
                 1
             },
             (icode <= 2047) => { // 0x7FF
-                buffer[0] = @cast(uint8, 192) | @cast(uint8, icode >> 6); // 0xC0 - 110xxxxx
-                buffer[1] = @cast(uint8, 128) | @cast(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[0] = @as(uint8, 192) | @as(uint8, icode >> 6); // 0xC0 - 110xxxxx
+                buffer[1] = @as(uint8, 128) | @as(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
                 2
             },
             (icode <= 65535) => { // 0xFFFF
-                buffer[0] = @cast(uint8, 224) | @cast(uint8, icode >> 12); // 0xE0 - 1110xxxx
-                buffer[1] = @cast(uint8, 128) | (@cast(uint8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
-                buffer[2] = @cast(uint8, 128) | @cast(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[0] = @as(uint8, 224) | @as(uint8, icode >> 12); // 0xE0 - 1110xxxx
+                buffer[1] = @as(uint8, 128) | (@as(uint8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[2] = @as(uint8, 128) | @as(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
                 3
             },
             (icode <= 1114111) => { // 0x10FFFF
-                buffer[0] = @cast(uint8, 240) | @cast(uint8, icode >> 18); // 0xF0 - 11110xxx
-                buffer[1] = @cast(uint8, 128) | (@cast(uint8, icode >> 12) & 63); // 0x80 - 0x3F - 10xxxxxx
-                buffer[2] = @cast(uint8, 128) | (@cast(uint8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
-                buffer[3] = @cast(uint8, 128) | @cast(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[0] = @as(uint8, 240) | @as(uint8, icode >> 18); // 0xF0 - 11110xxx
+                buffer[1] = @as(uint8, 128) | (@as(uint8, icode >> 12) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[2] = @as(uint8, 128) | (@as(uint8, icode >> 6) & 63); // 0x80 - 0x3F - 10xxxxxx
+                buffer[3] = @as(uint8, 128) | @as(uint8, icode & 63); // 0x80 - 0x3F - 10xxxxxx
                 4
             },
             else => 0
@@ -143,7 +143,7 @@ func utf8_to_utf32(bytes: []uint8) -> !rune {
     mut i: usize := 1;
     while i < bytes.len : i += 1 {
         c := bytes[i].to_rune() ?? @unreachable();
-        res = (@cast(uint32, res) << shift).to_rune() ?? @unreachable();
+        res = (@as(uint32, res) << shift).to_rune() ?? @unreachable();
         res |= c & 63; // 0x3F
         shift = 6;
     }

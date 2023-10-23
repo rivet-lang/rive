@@ -118,7 +118,7 @@ extend Checker {
         got_sym := got.symbol() ?? return false;
 
         if expected is .Variadic {
-            vec_info := @cast(ast.TypeInfo.Vector, expected_sym.info);
+            vec_info := @as(ast.TypeInfo.Vector, expected_sym.info);
             if got is .Variadic as variadic {
                 return vec_info.elem_type == variadic.inner;
             }

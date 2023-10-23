@@ -18,7 +18,7 @@ public func sum32(data: []uint8) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data.len : i += 1 {
-        hash = (hash ^ @cast(uint32, data[i])) * FNV32_PRIME;
+        hash = (hash ^ @as(uint32, data[i])) * FNV32_PRIME;
     }
     return hash;
 }
@@ -30,7 +30,7 @@ public func sum32_bytes(data: [*]uint8, data_len: usize) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data_len : i += 1 {
-        hash = unsafe { (hash ^ @cast(uint32, data[i])) * FNV32_PRIME };
+        hash = unsafe { (hash ^ @as(uint32, data[i])) * FNV32_PRIME };
     }
     return hash;
 }
@@ -41,7 +41,7 @@ public func sum32_string(data: string) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data.len : i += 1 {
-        hash = (hash ^ @cast(uint32, data[i])) * FNV32_PRIME;
+        hash = (hash ^ @as(uint32, data[i])) * FNV32_PRIME;
     }
     return hash;
 }
@@ -53,7 +53,7 @@ public func sum64(data: []uint8) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data.len : i += 1 {
-        hash = (hash ^ @cast(uint64, data[i])) * FNV64_PRIME;
+        hash = (hash ^ @as(uint64, data[i])) * FNV64_PRIME;
     }
     return hash;
 }
@@ -65,7 +65,7 @@ public func sum64_bytes(data: [*]uint8, data_len: usize) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data_len : i += 1 {
-        hash = unsafe { (hash ^ @cast(uint64, data[i])) * FNV64_PRIME };
+        hash = unsafe { (hash ^ @as(uint64, data[i])) * FNV64_PRIME };
     }
     return hash;
 }
@@ -76,7 +76,7 @@ public func sum64_string(data: string) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
     mut i: usize := 0;
     while i < data.len : i += 1 {
-        hash = (hash ^ @cast(uint32, data[i])) * FNV64_PRIME;
+        hash = (hash ^ @as(uint32, data[i])) * FNV64_PRIME;
     }
     return hash;
 }

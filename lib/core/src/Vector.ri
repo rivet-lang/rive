@@ -34,14 +34,14 @@ struct Vector {
 
     @[unsafe; inline]
     func raw_get(self, idx: usize) -> mut_anyptr {
-        return unsafe { @ptr_add(@cast([*]mut uint8, self.ptr), idx * self.elem_size) };
+        return unsafe { @ptr_add(@as([*]mut uint8, self.ptr), idx * self.elem_size) };
     }
 
     func get(self, idx: usize) -> mut_anyptr {
         if idx >= self.len {
             process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
         }
-        return unsafe { @ptr_add(@cast([*]mut uint8, self.ptr), idx * self.elem_size) };
+        return unsafe { @ptr_add(@as([*]mut uint8, self.ptr), idx * self.elem_size) };
     }
 
     func set(self, idx: usize, val: anyptr) {
@@ -50,7 +50,7 @@ struct Vector {
         }
         unsafe {
             mem_copy(
-                @ptr_add(@cast([*]mut uint8, self.ptr), self.elem_size * idx),
+                @ptr_add(@as([*]mut uint8, self.ptr), self.elem_size * idx),
                 val, self.elem_size
             );
         }
@@ -165,7 +165,7 @@ struct Vector {
             return self;
         }
         return Self(
-            unsafe { @ptr_add(@cast([*]mut uint8, self.ptr), start * self.elem_size) },
+            unsafe { @ptr_add(@as([*]mut uint8, self.ptr), start * self.elem_size) },
             self.elem_size, len, len, true
         );
     }

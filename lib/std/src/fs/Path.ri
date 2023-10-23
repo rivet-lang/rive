@@ -48,7 +48,7 @@ public struct Path {
     public func is_directory(path: string) -> bool {
         mut statbuf := libc.Stat();
         return if unsafe { libc.stat(path.ptr, &mut statbuf) == 0 } {
-            @cast(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFDIR
+            @as(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFDIR
         } else {
             false
         };
@@ -72,7 +72,7 @@ public struct Path {
         return if unsafe { libc.lstat(path.ptr, &mut statbuf) != 0 } {
             false
         } else {
-            @cast(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFLNK
+            @as(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFLNK
         };
     }
 
@@ -149,10 +149,10 @@ public struct Path {
         }
         mut result_index: usize := 0;
         result := if have_abs {
-            unsafe { @cast([*]mut uint8, mem.alloc(max_size)!) }
+            unsafe { @as([*]mut uint8, mem.alloc(max_size)!) }
         } else {
             cwd := core.process_get_cwd()!;
-            tmp := unsafe { @cast([*]mut uint8, mem.alloc(max_size + cwd.len + 1)!) };
+            tmp := unsafe { @as([*]mut uint8, mem.alloc(max_size + cwd.len + 1)!) };
             mem.copy(tmp, cwd.ptr, cwd.len);
             result_index += cwd.len;
             tmp
@@ -201,7 +201,7 @@ public struct Path {
         }
         return unsafe {
             string.from_raw_with_len(
-                @cast([*]uint8, mem.resize(result, result_index)!), result_index
+                @as([*]uint8, mem.resize(result, result_index)!), result_index
             )
         };
     }
@@ -227,7 +227,7 @@ public struct Path {
                 up_count += 1;
             }
             up_index_end := up_count * 3;
-            result := unsafe { @cast([*]mut uint8, mem.alloc(up_index_end + to_rest.len)!) };
+            result := unsafe { @as([*]mut uint8, mem.alloc(up_index_end + to_rest.len)!) };
             errdefer unsafe {
                 mem.dealloc(result);
             }
@@ -244,7 +244,7 @@ public struct Path {
             }
             if to_rest.len == 0 {
                 // shave off the trailing slash
-                buf := unsafe { @cast([*]mut uint8, mem.resize(result, result_index - 1)!) };
+                buf := unsafe { @as([*]mut uint8, mem.resize(result, result_index - 1)!) };
                 unsafe {
                     buf[result_index - 1] = 0;
                 }
@@ -299,7 +299,7 @@ public struct Path {
             }
             sum + 1 // + 1 = NLL character
         };
-        buf := unsafe { @cast([*]mut uint8, mem.alloc(total_len)!) };
+        buf := unsafe { @as([*]mut uint8, mem.alloc(total_len)!) };
         unsafe {
             buf[total_len - 1] = 0;
             errdefer mem.dealloc(buf);

@@ -89,7 +89,7 @@ public struct Resolver {
                         .Amp => left & right,
                         .Pipe => left | right,
                         .Xor => left ^ right,
-                        .Lshift => @cast(isize, @cast(usize, left) << right),
+                        .Lshift => @as(isize, @as(usize, left) << right),
                         .Rshift => left >> right,
                         else => none
                     }
@@ -103,9 +103,9 @@ public struct Resolver {
                 if builtin_call.args[0].expr is .Type as mut type and self.resolve_type(type) {
                     (size, align) := self.table.type_size(type);
                     if builtin_call.name == "size_of" {
-                        @cast(isize, size)
+                        @as(isize, size)
                     } else {
-                        @cast(isize, align)
+                        @as(isize, align)
                     }
                 } else {
                     0

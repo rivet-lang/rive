@@ -149,7 +149,7 @@ public struct Compiler {
         mod := self.load_module_files(pathx, alias_name, file_path, pos)!;
         if mod.found {
             mod.mod = if mod_mod_ := self.table.universe.scope.find(mod.full_name) {
-                @cast(ast.Module, mod_mod_)
+                @as(ast.Module, mod_mod_)
             } else {
                 mod_sym := ast.Module(name: mod.full_name);
                 self.table.universe.scope.add(mod_sym) catch |err| {

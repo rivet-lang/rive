@@ -35,7 +35,7 @@ public struct File {
     public func write_byte(mut self, b: uint8) {
         @ignore_not_mutated_warn(self);
         unsafe {
-            _ = libc.fputc(@cast(int32, b), self.f);
+            _ = libc.fputc(@as(int32, b), self.f);
         }
     }
 
@@ -84,15 +84,15 @@ public struct File {
 
             // On some systems `ftell` can return values in the 64-bit range
             // that, when cast to `int32`, can result in values below 0.
-            allocate := @cast(int32, fsize);
-            if @cast(int64, allocate) < fsize {
+            allocate := @as(int32, fsize);
+            if @as(int64, allocate) < fsize {
                 throw OperationFailedError(
-                    "{} cast to `int32` results in {}".fmt(fsize, @cast(int32, fsize))
+                    "{} cast to `int32` results in {}".fmt(fsize, @as(int32, fsize))
                 );
             }
 
-            res := @cast([*]mut uint8, mem.alloc(@cast(usize, allocate) + 1)!);
-            nelements := libc.fread(res, 1, @cast(usize, allocate), self.f);
+            res := @as([*]mut uint8, mem.alloc(@as(usize, allocate) + 1)!);
+            nelements := libc.fread(res, 1, @as(usize, allocate), self.f);
 
             if self.is_eof() and libc.ferror(self.f) != 0 {
                 mem.dealloc(res);

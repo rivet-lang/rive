@@ -23,7 +23,7 @@ public func readln(prompt: string = "") -> ?string {
     nr_chars := unsafe { libc.getline(&buf, &max, libc.stdin) };
     res := unsafe {
         string.from_raw_with_len(
-            buf, if nr_chars < 0 { 0 } else { @cast(usize, nr_chars) }
+            buf, if nr_chars < 0 { 0 } else { @as(usize, nr_chars) }
         ).trim_right("\r\n")
     };
     return if res.len > 0 {

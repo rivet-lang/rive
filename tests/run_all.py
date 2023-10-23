@@ -2,13 +2,15 @@
 # Use of this source code is governed by an MIT license that can
 # be found in the LICENSE file.
 
-import os
+import os, sys
 
-if os.system("python3 rivetc -t tests/valid/") != 0:
+py_exe = sys.orig_argv[0]
+
+if os.system(f"{py_exe} rivetc -t tests/valid/") != 0:
 	exit(1)
 print()
-if os.system("python3 tests/run_b_invalid_tests.py") != 0:
+if os.system(f"{py_exe} tests/run_b_invalid_tests.py") != 0:
 	exit(1)
 print()
-if os.system("python3 tests/run_invalid_tests.py") != 0:
+if os.system(f"{py_exe} tests/run_invalid_tests.py") != 0:
 	exit(1)

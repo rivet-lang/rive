@@ -25,7 +25,7 @@ extend Resolver {
             .SelfLiteral as self_lit => if self.self_sym_is_set {
                 self_lit.sym = self.self_sym;
                 self_lit.found = true;
-                self_lit.obj = @cast(ast.Var, self_lit.scope.lookup("self")?);
+                self_lit.obj = @as(ast.Var, self_lit.scope.lookup("self")?);
                 self_lit.obj.is_used = true;
             } else {
                 report.error("cannot resolve `self` expression", self_ty.pos);
@@ -211,7 +211,7 @@ extend Resolver {
             ident.found = true;
             ident.is_obj = true;
             ident.sym = obj;
-            @cast(ast.Var, obj).is_used = true;
+            @as(ast.Var, obj).is_used = true;
         } else if imported := self.source_file.imported_symbols.find(ident.name) {
             if !(imported.sym is ast.TypeSym as type_sym and type_sym.info is .Placeholder) {
                 imported.is_used = true;

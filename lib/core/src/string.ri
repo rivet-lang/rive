@@ -38,7 +38,7 @@ public struct string < Stringable, Hashable {
     }
 
     public func from_byte(byte: uint8) -> Self {
-        res := unsafe { @cast([*]mut uint8, internal_alloc(2)) };
+        res := unsafe { @as([*]mut uint8, internal_alloc(2)) };
         unsafe {
             res[0] = byte;
             res[1] = 0;
@@ -52,7 +52,7 @@ public struct string < Stringable, Hashable {
         if bytes.len == 0 {
             return emptyString;
         }
-        res := unsafe { @cast([*]mut uint8, internal_alloc(bytes.len + 1)) };
+        res := unsafe { @as([*]mut uint8, internal_alloc(bytes.len + 1)) };
         unsafe {
             mem_copy(res, &bytes[0], bytes.len);
             res[bytes.len] = 0;
@@ -75,7 +75,7 @@ public struct string < Stringable, Hashable {
             self
         } else {
             len := self.len * count;
-            res := unsafe { @cast([*]mut uint8, internal_alloc(len)) };
+            res := unsafe { @as([*]mut uint8, internal_alloc(len)) };
             unsafe {
                 mut i: usize := 0;
                 while i < count : i += 1 {
@@ -106,7 +106,7 @@ public struct string < Stringable, Hashable {
         mut is_in_word := false;
         mut is_space := false;
         for i, c in self.as_bytes() {
-            is_space = c in [@cast(uint8, 32), 9, 10];
+            is_space = c in [@as(uint8, 32), 9, 10];
             if !is_space {
                 word_len += 1;
             }
@@ -427,7 +427,7 @@ public struct string < Stringable, Hashable {
             return self;
         }
         new_len := self.len + idxs.len * (with_.len - rep.len);
-        b := unsafe { @cast([*]mut uint8, internal_alloc(new_len)) };
+        b := unsafe { @as([*]mut uint8, internal_alloc(new_len)) };
         (mut b_i: usize, mut s_idx: usize) := (0, 0);
         unsafe {
             for rep_pos in idxs {
@@ -458,7 +458,7 @@ public struct string < Stringable, Hashable {
     @[inline]
     public func as_bytes(self) -> []uint8 {
         return unsafe {
-            Vector.from_array_no_alloc(@cast(*mut uint8, self.ptr), @size_of(uint8), self.len)
+            Vector.from_array_no_alloc(@as(*mut uint8, self.ptr), @size_of(uint8), self.len)
         };
     }
 
@@ -767,7 +767,7 @@ public struct string < Stringable, Hashable {
         if self.len == 0 {
             return emptyString;
         }
-        res := unsafe { @cast([*]mut uint8, internal_alloc(self.len + 1)) };
+        res := unsafe { @as([*]mut uint8, internal_alloc(self.len + 1)) };
         unsafe {
             mem_copy(res, self.ptr, self.len);
             res[self.len] = 0;

@@ -82,7 +82,7 @@ public func green(msg: string) -> string {
 /// Rounds the number `n` up to the next mult
 /// NOTE: `multiple` must be a power of 2.@[inline]
 public func round_up(n: usize, multiple: usize) -> usize {
-    n_ := @cast(isize, n);
-    multiple_ := @cast(isize, multiple);
-    return @cast(usize, (n_ + multiple_ - 1) & (-multiple_));
+    n_ := @as(isize, n);
+    multiple_ := @as(isize, multiple);
+    return @as(usize, (n_ + multiple_ - 1) & (-multiple_));
 }

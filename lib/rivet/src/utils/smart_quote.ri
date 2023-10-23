@@ -47,10 +47,10 @@ public func smart_quote(s: string, raw: bool = false) -> string {
             skip_next = false;
             pos += 1;
         }
-        if pos >= @cast(int64, s.len) {
+        if pos >= @as(int64, s.len) {
             break;
         }
-        pos_1 := @cast(usize, pos);
+        pos_1 := @as(usize, pos);
         current = s[pos_1];
         pos_2 := pos_1 + 1;
         next = if pos_1 < s.len {

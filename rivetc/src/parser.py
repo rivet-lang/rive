@@ -784,11 +784,14 @@ class Parser:
         elif self.accept(Kind.At):
             pos = self.prev_tok.pos
             if self.peek_token(1).kind == Kind.Lparen: # builtin call
-                name = self.parse_name()
+                if self.accept(Kind.KwAs):
+                    name = "as"
+                else:
+                    name = self.parse_name()
                 self.expect(Kind.Lparen)
                 args = []
                 vec_is_mut = False
-                if name in ("vec", "cast", "size_of", "align_of"):
+                if name in ("vec", "as", "size_of", "align_of"):
                     pos = self.tok.pos
                     vec_is_mut = name == "vec" and self.accept(Kind.KwMut)
                     args.append(ast.TypeNode(self.parse_type(), pos))

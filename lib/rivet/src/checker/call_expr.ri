@@ -205,10 +205,10 @@ extend Checker {
         switch type_sym.info is {
             .Enum as enum_info => {
                 variant := if call_expr.left is .Selector as selector {
-                    @cast(ast.TypeInfo.Enum, @cast(ast.TypeSym, selector.left_sym).info)
+                    @as(ast.TypeInfo.Enum, @as(ast.TypeSym, selector.left_sym).info)
                         .get_variant(selector.field_name)?
                 } else {
-                    enum_info.get_variant(@cast(ast.Expr.EnumLiteral, call_expr.left).value)?
+                    enum_info.get_variant(@as(ast.Expr.EnumLiteral, call_expr.left).value)?
                 };
                 has_args := !call_expr.args.is_empty();
                 if !enum_info.is_boxed {
@@ -383,7 +383,7 @@ extend Checker {
         }
 
         if func_.is_method and func_.self_is_mut {
-            self.check_expr_is_mut(@cast(ast.Expr.Selector, call_expr.left).left);
+            self.check_expr_is_mut(@as(ast.Expr.Selector, call_expr.left).left);
         }
 
         mut func_args_len := func_.args.len;

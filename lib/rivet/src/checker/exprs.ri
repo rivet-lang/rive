@@ -448,7 +448,7 @@ extend Checker {
                         self.table.uint8_t
                     }
                 } else {
-                    @cast(ast.Type.Pointer, index.left_type).inner
+                    @as(ast.Type.Pointer, index.left_type).inner
                 }
             }
         };
@@ -645,7 +645,7 @@ extend Checker {
                             .Snake, "variable", binary.var_obj.name, binary.var_obj.pos
                         );
                         if left_sym.info is .Enum as enum_info and enum_info.is_boxed {
-                            variant := @cast(ast.Expr.EnumLiteral, binary.right).variant;
+                            variant := @as(ast.Expr.EnumLiteral, binary.right).variant;
                             if variant.has_type {
                                 binary.var_obj.type = variant.type;
                                 binary.var_obj.sym.type = variant.type;

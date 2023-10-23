@@ -219,11 +219,15 @@ extend Parser {
             self.accept(.At) => {
                 pos := self.prev_tok.pos;
                 if self.peek_token(1).kind == .Lparen { // builtin call
-                    name := self.parse_name();
+                    name := if self.accept(.KwAs) {
+                        "as"
+                    } else {
+                        self.parse_name()
+                    };
                     mut args := @vec(ast.CallArg);
                     self.expect(.Lparen);
                     mut vec_is_mut := false;
-                    if name in ["vec", "cast", "size_of", "align_of"] {
+                    if name in ["vec", "as", "size_of", "align_of"] {
                         vec_is_mut = name == "vec" and self.accept(.KwMut);
                         arg_pos := self.tok.pos;
                         args.push(

@@ -86,12 +86,12 @@ public struct Scope {
 
     @[inline]
     public func find_type_symbol_or_panic(self, name: string) -> TypeSym {
-        return @cast(TypeSym, self.find_or_panic(name));
+        return @as(TypeSym, self.find_or_panic(name));
     }
 
     @[inline]
     public func find_type_symbol_by_index_or_panic(self, idx: usize) -> TypeSym {
-        return @cast(TypeSym, self.find_by_index_or_panic(idx));
+        return @as(TypeSym, self.find_by_index_or_panic(idx));
     }
 
     public func lookup(self, name: string) -> ?Sym {

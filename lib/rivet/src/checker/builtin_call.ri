@@ -95,7 +95,7 @@ extend Checker {
                 }
             }
             switch b_func.name {
-                "cast" => self.check_builtin_cast(builtin_call),
+                "as" => self.check_builtin_as(builtin_call),
                 "vec" if builtin_call.args[0].expr is .Type as vec_t =>
                     return_type = .Basic(self.table.universe.add_or_get_vec(
                         vec_t, builtin_call.vec_is_mut
@@ -109,7 +109,7 @@ extend Checker {
         return builtin_call.type;
     }
 
-    func check_builtin_cast(mut self, builtin_call: ast.Expr.BuiltinCall) {
+    func check_builtin_as(mut self, builtin_call: ast.Expr.BuiltinCall) {
         to_type := builtin_call.args[0].type;
         from_type := builtin_call.args[1].type;
         if to_type == from_type {

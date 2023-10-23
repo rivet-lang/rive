@@ -18,7 +18,7 @@ extend Resolver {
                 .Alias as alias_decl => if alias_decl.is_typealias {
                     _ = self.resolve_type(alias_decl.parent_type);
                 } else {
-                    sym_ref := @cast(ast.SymRef, alias_decl.sym);
+                    sym_ref := @as(ast.SymRef, alias_decl.sym);
                     self.resolve_expr(sym_ref.ref_expr);
                     if sym_ref.ref_expr is .Ident as ident and ident.found and ident.is_sym {
                         sym_ref.ref = ident.sym;
@@ -41,9 +41,9 @@ extend Resolver {
                     }
                 },
                 .Trait as trait_decl => {
-                    self.self_sym = @cast(ast.TypeSym, trait_decl.sym);
+                    self.self_sym = @as(ast.TypeSym, trait_decl.sym);
                     self.self_sym_is_set = true;
-                    trait_info := @cast(ast.TypeInfo.Trait, self.self_sym.info);
+                    trait_info := @as(ast.TypeInfo.Trait, self.self_sym.info);
                     for mut base in trait_decl.bases {
                         if self.resolve_type(base) {
                             base_sym := base.symbol()?;
@@ -73,9 +73,9 @@ extend Resolver {
                 },
                 .Enum as enum_decl => {
                     if enum_decl.is_boxed or self.resolve_type(enum_decl.underlying_type) {
-                        self.self_sym = @cast(ast.TypeSym, enum_decl.sym);
+                        self.self_sym = @as(ast.TypeSym, enum_decl.sym);
                         self.self_sym_is_set = true;
-                        enum_info := @cast(ast.TypeInfo.Enum, self.self_sym.info);
+                        enum_info := @as(ast.TypeInfo.Enum, self.self_sym.info);
                         for variant in enum_info.variants {
                             if !self.resolve_type(variant.type) {
                                 continue;
@@ -112,11 +112,11 @@ extend Resolver {
                     self.resolve_decls(enum_decl.decls);
                 },
                 .Struct as struct_decl => {
-                    self.self_sym = @cast(ast.TypeSym, struct_decl.sym);
+                    self.self_sym = @as(ast.TypeSym, struct_decl.sym);
                     self.self_sym_is_set = true;
                     for mut base in struct_decl.bases {
                         if self.resolve_type(base) {
-                            struct_info := @cast(ast.TypeInfo.Struct, self.self_sym.info);
+                            struct_info := @as(ast.TypeInfo.Struct, self.self_sym.info);
                             base_sym := base.symbol()?;
                             if base_sym.info is .Trait as mut trait_info {
                                 struct_info.traits.push(base_sym);
@@ -124,7 +124,7 @@ extend Resolver {
                             } else if base_sym.info is .Struct as struct_info2 {
                                 struct_info.bases.push(base_sym);
                                 for b_trait in struct_info2.traits {
-                                    @cast(ast.TypeInfo.Trait, b_trait.info).implement(
+                                    @as(ast.TypeInfo.Trait, b_trait.info).implement(
                                         self.self_sym
                                     );
                                 }
@@ -184,7 +184,7 @@ extend Resolver {
                             err.to_string(), func_decl.pos
                         );
                         func_decl.self_type = self_type;
-                        @cast(ast.Func, func_decl.sym).self_type = self_type;
+                        @as(ast.Func, func_decl.sym).self_type = self_type;
                     }
                     for arg in func_decl.args {
                         if self.resolve_type(arg.type) {
