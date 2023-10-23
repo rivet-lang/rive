@@ -73,7 +73,7 @@ public struct FlagParser {
     public mut footers: []string;
 
     /// Create a new flag parser for the given args.
-    public func new(args: []string) -> FlagParser {
+    public func new(args: []string) -> Self {
         original_args := args.clone();
         mut all_before_dashdash := args.clone();
         mut all_after_dashdash := @vec(string);
@@ -84,7 +84,7 @@ public struct FlagParser {
                 all_after_dashdash = original_args[v + 1..];
             }
         }
-        return FlagParser(
+        return Self(
             original_args: original_args,
             idx_dashdash: idx_dashdash,
             all_after_dashdash: all_after_dashdash,
