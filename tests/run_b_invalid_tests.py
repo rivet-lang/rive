@@ -41,7 +41,9 @@ def run_fail_tests():
 	if fail > 0:
 		utils.eprint(utils.bold(utils.red(f"{fail} failed")) + ", ", end = "")
 	if skip > 0:
-		utils.eprint(utils.bold(utils.yellow(f"{skip} skipped")) + ", ", end = "")
+		utils.eprint(
+		    utils.bold(utils.yellow(f"{skip} skipped")) + ", ", end = ""
+		)
 	utils.eprint(utils.bold(f"{len(FAIL_FILES)} total."))
 
 	return exit_code

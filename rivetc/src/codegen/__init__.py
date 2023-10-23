@@ -1327,11 +1327,11 @@ class Codegen:
                         args.append(self.gen_expr_with_cast(arg.typ, arg.expr))
                 else:
                     var_arg = expr.sym.args[-1]
-                    if variadic_count == 1 and len(
-                        expr.args
-                    ) > 0 and isinstance(
-                        expr.args[-1].expr.typ, type.Variadic
-                    ):
+                    if variadic_count == 1 and len(expr.args
+                                                   ) > 0 and isinstance(
+                                                       expr.args[-1].expr.typ,
+                                                       type.Variadic
+                                                   ):
                         arg = expr.args[-1]
                         args.append(self.gen_expr_with_cast(arg.typ, arg.expr))
                     elif variadic_count > 0:
@@ -1445,8 +1445,8 @@ class Codegen:
                                     ir.Name("err")
                                 ),
                                 ir.Selector(
-                                    self.ir_type(self.comp.throwable_t), res_value,
-                                    ir.Name("err")
+                                    self.ir_type(self.comp.throwable_t),
+                                    res_value, ir.Name("err")
                                 )
                             )
                             self.cur_fn.add_ret(tmp2)
@@ -1467,10 +1467,11 @@ class Codegen:
                                 expr.err_handler.varname, err_ir_name
                             )
                             self.cur_fn.inline_alloca(
-                                self.ir_type(self.comp.throwable_t), err_ir_name,
+                                self.ir_type(self.comp.throwable_t),
+                                err_ir_name,
                                 ir.Selector(
-                                    self.ir_type(self.comp.throwable_t), res_value,
-                                    ir.Name("err")
+                                    self.ir_type(self.comp.throwable_t),
+                                    res_value, ir.Name("err")
                                 )
                             )
                         if err_handler_is_void:
@@ -2376,8 +2377,7 @@ class Codegen:
                     self.gen_expr(expr.expr)
                 )
                 self.gen_defer_stmts(
-                    True,
-                    ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err"))
+                    True, ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err"))
                 )
                 self.cur_fn.add_ret(expr_)
                 return ir.Skip()
@@ -2503,8 +2503,9 @@ class Codegen:
             ir.IntLit(ir.BOOL_T, "1")
         )
         self.cur_fn.store(
-            ir.Selector(self.ir_type(self.comp.throwable_t), tmp, ir.Name("err")),
-            self.trait_value(expr, expr_t, self.comp.throwable_t)
+            ir.Selector(
+                self.ir_type(self.comp.throwable_t), tmp, ir.Name("err")
+            ), self.trait_value(expr, expr_t, self.comp.throwable_t)
         )
         return tmp
 
@@ -2864,7 +2865,9 @@ class Codegen:
                                 if is_void else self.ir_type(typ.typ)
                             ),
                             ir.Field("is_err", ir.BOOL_T),
-                            ir.Field("err", self.ir_type(self.comp.throwable_t))
+                            ir.Field(
+                                "err", self.ir_type(self.comp.throwable_t)
+                            )
                         ]
                     )
                 )

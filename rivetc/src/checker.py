@@ -1210,8 +1210,9 @@ class Checker:
                                     f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                                 )
                 expr.left_typ = left_typ
-            if isinstance(expr.left_typ, type.Ptr) and expr.left_typ.nr_level(
-            ) > 1 and not expr.is_indirect:
+            if isinstance(
+                expr.left_typ, type.Ptr
+            ) and expr.left_typ.nr_level() > 1 and not expr.is_indirect:
                 report.error(
                     "fields of an multi-level pointer cannot be accessed directly",
                     expr.pos
@@ -1274,10 +1275,17 @@ class Checker:
             elif isinstance(self.cur_fn.ret_typ, type.Result):
                 expr_typ = self.check_expr(expr.expr)
                 expr_typ_sym = expr_typ.symbol()
-                if not (expr_typ_sym.implement_trait(
-                    self.comp.throwable_sym) or expr_typ_sym == self.comp.throwable_sym):
-                    report.error("using an invalid value as an error to throw", expr.expr.pos)
-                    report.note(f"in order to use that value, type `{expr_typ}` should implement the `Throwable` trait")
+                if not (
+                    expr_typ_sym.implement_trait(self.comp.throwable_sym)
+                    or expr_typ_sym == self.comp.throwable_sym
+                ):
+                    report.error(
+                        "using an invalid value as an error to throw",
+                        expr.expr.pos
+                    )
+                    report.note(
+                        f"in order to use that value, type `{expr_typ}` should implement the `Throwable` trait"
+                    )
                     report.note(
                         f"in throw argument of {self.cur_fn.typeof()} `{self.cur_fn.name}`"
                     )
@@ -1286,7 +1294,9 @@ class Checker:
                     f"{self.cur_fn.typeof()} `{self.cur_fn.name}` cannot throw errors",
                     expr.expr.pos
                 )
-                report.note("if you want to throw errors, add `!` in front of the return type")
+                report.note(
+                    "if you want to throw errors, add `!` in front of the return type"
+                )
             expr.typ = self.comp.never_t
             return expr.typ
         elif isinstance(expr, ast.Block):
