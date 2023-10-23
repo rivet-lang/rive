@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import c;
+import core;
 import c/libc;
 
 /// User's home directory.
@@ -29,13 +29,13 @@ public func get(name: string) -> ?string {
 /// Sets the value of an environment variable with `name` to `value`.
 public func set(name: string, value: string, overwrite: bool = true) -> ! {
     if unsafe { libc.setenv(name.ptr, value.ptr, overwrite) == -1 } {
-        throw c.last_errno_error();
+        throw core.last_errno_error();
     }
 }
 
 /// Removes an environment variable with `name`.
 public func remove(name: string) -> ! {
     if unsafe { libc.unsetenv(name.ptr) } == -1 {
-        throw c.last_errno_error();
+        throw core.last_errno_error();
     }
 }

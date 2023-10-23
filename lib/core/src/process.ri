@@ -2,7 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import c;
 import c/libc;
 
 /// Returns the path name of the executable that started the current process.
@@ -22,7 +21,7 @@ public func process_executable() -> !string {
 /// Sets the current working directory to the new directory in `path`.
 public func process_set_cwd(path: string) -> ! {
     if unsafe { libc.chdir(path.ptr) == -1 } {
-        throw c.last_errno_error();
+        throw last_errno_error();
     }
 }
 
@@ -34,7 +33,7 @@ public func process_get_cwd() -> !string {
             return string.from_raw(&buf[0]).clone();
         }
     }
-    throw c.last_errno_error();
+    throw last_errno_error();
 }
 
 /// Returns the OS-assigned process identifier associated with this
