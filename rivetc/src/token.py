@@ -64,7 +64,6 @@ class Kind(Enum):
     KwAnd = auto_enum() # and
     KwAs = auto_enum() # as
     KwBreak = auto_enum() # break
-    KwCImport = auto_enum() # c_import
     KwCatch = auto_enum() # catch
     KwComptime = auto_enum() # comptime
     KwConst = auto_enum() # const
@@ -212,7 +211,6 @@ TOKEN_STRINGS = {
     Kind.KwAnd: "and",
     Kind.KwAs: "as",
     Kind.KwBreak: "break",
-    Kind.KwCImport: "c_import",
     Kind.KwCatch: "catch",
     Kind.KwComptime: "comptime",
     Kind.KwConst: "const",
