@@ -14,26 +14,26 @@ extern (C) {
     public func rand() -> int32;
     public func srand(seed: uint32);
 
-    public func atof(nptr: ?*uint8) -> float64;
-    public func atoi(nptr: ?*uint8) -> int32;
-    public func atol(nptr: ?*uint8) -> int64;
-    public func atoll(nptr: ?*uint8) -> int64;
+    public func atof(nptr: ?&uint8) -> float64;
+    public func atoi(nptr: ?&uint8) -> int32;
+    public func atol(nptr: ?&uint8) -> int64;
+    public func atoll(nptr: ?&uint8) -> int64;
 
-    public func strtod(nptr: [*]uint8, endptr: ?*uint8, base_: int32) -> float64;
-    public func strtof(nptr: [*]uint8, endptr: ?*uint8, base_: int32) -> float32;
-    public func strtol(nptr: [*]uint8, endptr: ?*uint8, base_: int32) -> int64;
-    public func strtoll(nptr: [*]uint8, endptr: ?*uint8, base_: int32) -> int64;
-    public func strtoul(nptr: [*]uint8, endptr: ?*uint8, base_: int32) -> uint64;
-    public func strtoull(nptr: [*]uint8, endptr: ?*uint8, base_: int32) -> uint64;
+    public func strtod(nptr: [&]uint8, endptr: ?&uint8, base_: int32) -> float64;
+    public func strtof(nptr: [&]uint8, endptr: ?&uint8, base_: int32) -> float32;
+    public func strtol(nptr: [&]uint8, endptr: ?&uint8, base_: int32) -> int64;
+    public func strtoll(nptr: [&]uint8, endptr: ?&uint8, base_: int32) -> int64;
+    public func strtoul(nptr: [&]uint8, endptr: ?&uint8, base_: int32) -> uint64;
+    public func strtoull(nptr: [&]uint8, endptr: ?&uint8, base_: int32) -> uint64;
 
     public func malloc(size: usize) -> ?mut_anyptr;
     public func calloc(nobj: usize, size: usize) -> ?mut_anyptr;
     public func realloc(p: ?mut_anyptr, size: usize) -> ?mut_anyptr;
     public func free(p: anyptr);
 
-    public func getenv(name: [*]uint8) -> ?[*]mut uint8;
-    public func setenv(name: [*]uint8, value: [*]uint8, replace: bool) -> int32;
-    public func unsetenv(name: [*]uint8) -> int32;
+    public func getenv(name: [&]uint8) -> ?[&]mut uint8;
+    public func setenv(name: [&]uint8, value: [&]uint8, replace: bool) -> int32;
+    public func unsetenv(name: [&]uint8) -> int32;
 
     public func exit(status: int32) -> never;
     public func abort() -> never;

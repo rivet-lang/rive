@@ -20,7 +20,7 @@ public struct StringBuilder < Stringable {
             Self.new()
         } else {
             Self(unsafe {
-                Vector.from_array(@as(*mut uint8, s.ptr), @size_of(uint8), s.len)
+                Vector.from_array(@as(&mut uint8, s.ptr), @size_of(uint8), s.len)
             })
         };
     }
@@ -31,14 +31,14 @@ public struct StringBuilder < Stringable {
     }
 
     #[unsafe; inline]
-    public func write_raw(mut self, s: [*]uint8) {
+    public func write_raw(mut self, s: [&]uint8) {
         unsafe {
             self.write_raw_with_len(s, libc.strlen(s));
         }
     }
 
     #[unsafe]
-    public func write_raw_with_len(mut self, s: [*]uint8, len: usize) {
+    public func write_raw_with_len(mut self, s: [&]uint8, len: usize) {
         self.inner.reserve(self.inner.len + len);
         mem_copy(
             unsafe { @ptr_add(self.inner.ptr, self.inner.elem_size * self.inner.len) },
@@ -89,7 +89,7 @@ public struct StringBuilder < Stringable {
     /// Returns the number of runes contained in `self`.
     #[inline]
     public func runes_count(self) -> usize {
-        return cstr_runes_count(unsafe { @as([*]uint8, self.inner.ptr) }, self.inner.len);
+        return cstr_runes_count(unsafe { @as([&]uint8, self.inner.ptr) }, self.inner.len);
     }
 
     #[inline]
@@ -115,6 +115,6 @@ public struct StringBuilder < Stringable {
     #[inline]
     public func to_string(mut self) -> string {
         self.write_byte(0);
-        return string(unsafe { @as([*]uint8, self.inner.ptr) }, self.inner.len - 1);
+        return string(unsafe { @as([&]uint8, self.inner.ptr) }, self.inner.len - 1);
     }
 }

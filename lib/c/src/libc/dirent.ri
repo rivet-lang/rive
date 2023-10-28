@@ -11,7 +11,7 @@ public struct dirent {
 }
 
 extern (C) {
-	public func opendir(d: *uint8) -> ?*dirent;
-	public func readdir(d: *dirent) -> ?*dirent;
-	public func closedir(d: *dirent) -> int32;
+	public func opendir(d: &uint8) -> ?&dirent;
+	public func readdir(d: &dirent) -> ?&dirent;
+	public func closedir(d: &dirent) -> int32;
 }

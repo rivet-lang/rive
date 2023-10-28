@@ -19,7 +19,7 @@ public func readln(prompt: string = "") -> ?string {
     }
     _ = unsafe { libc.fflush(libc.stdout) };
     max: usize := 0;
-    buf: ?[*]uint8 := none;
+    buf: ?[&]uint8 := none;
     nr_chars := unsafe { libc.getline(&buf, &max, libc.stdin) };
     res := unsafe {
         string.from_raw_with_len(

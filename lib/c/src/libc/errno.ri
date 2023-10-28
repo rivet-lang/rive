@@ -4,7 +4,7 @@
 
 #if _LINUX_
 extern (C) {
-    public func __errno_location() -> ?*mut int32;
+    public func __errno_location() -> ?&mut int32;
 }
 
 public const EDOM = 33;
@@ -15,7 +15,7 @@ public const ERANGE = 34;
 #if _WINDOWS_
 extern (C) {
     [dllimport]
-    public func _errno() *mut int32;
+    public func _errno() &mut int32;
 }
 
 public const EDOM = 33;

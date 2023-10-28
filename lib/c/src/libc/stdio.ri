@@ -37,9 +37,9 @@ public struct FILE;
 
 #if _LINUX_
     extern (C) {
-        public static stdin: *mut FILE;
-        public static stdout: *mut FILE;
-        public static stderr: *mut FILE;
+        public static stdin: &mut FILE;
+        public static stdout: &mut FILE;
+        public static stderr: &mut FILE;
     }
 
     public struct fpos_t {
@@ -66,7 +66,7 @@ public struct FILE;
 
 #if _WINDOWS_
     extern (C) {
-        func __acrt_iob_fn(index: uint32) *mut FILE;
+        func __acrt_iob_fn(index: uint32) &mut FILE;
     }
 
     public alias fpos_t = int64;
@@ -86,34 +86,34 @@ public struct FILE;
 
 	public const TMP_MAX = 32767; // SHRT_MAX
 
-    public static stdin: *mut FILE = unsafe { __acrt_iob_fn(0) };
-    public static stdout: *mut FILE = unsafe { __acrt_iob_fn(1) };
-    public static stderr: *mut FILE = unsafe { __acrt_iob_fn(2) };
+    public static stdin: &mut FILE = unsafe { __acrt_iob_fn(0) };
+    public static stdout: &mut FILE = unsafe { __acrt_iob_fn(1) };
+    public static stderr: &mut FILE = unsafe { __acrt_iob_fn(2) };
 #endif
 
 extern (C) {
-    public func fopen(path: *uint8, mode: *uint8) -> ?*mut FILE;
-    public func feof(stream: *FILE) -> int32;
-    public func ferror(stream: *FILE) -> int32;
-    public func fseek(stream: *mut FILE, offset: uint64, whence: int32) -> int32;
-    public func ftell(stream: *mut FILE) -> int64;
-    public func fread(ptr: mut_anyptr, size: usize, nitems: usize, stream: *mut FILE) -> usize;
-    public func fputc(c: int32, stream: *mut FILE) -> int32;
-    public func fputs(s: *uint8, stream: *mut FILE) -> int32;
-    public func fprintf(stream: *mut FILE, fmt: *uint8, ...) -> int32;
-    public func fwrite(ptr: anyptr, size: usize, nobj: usize, stream: *mut FILE) -> usize;
-    public func fflush(stream: *mut FILE) -> int32;
-    public func fgets(s: *mut uint8, n: usize, stream: *mut FILE) -> int32;
-    public func fclose(stream: *mut FILE) -> int32;
-    public func fileno(stream: *FILE) -> int32;
-    public func rewind(stream: *mut FILE);
+    public func fopen(path: &uint8, mode: &uint8) -> ?&mut FILE;
+    public func feof(stream: &FILE) -> int32;
+    public func ferror(stream: &FILE) -> int32;
+    public func fseek(stream: &mut FILE, offset: uint64, whence: int32) -> int32;
+    public func ftell(stream: &mut FILE) -> int64;
+    public func fread(ptr: mut_anyptr, size: usize, nitems: usize, stream: &mut FILE) -> usize;
+    public func fputc(c: int32, stream: &mut FILE) -> int32;
+    public func fputs(s: &uint8, stream: &mut FILE) -> int32;
+    public func fprintf(stream: &mut FILE, fmt: &uint8, ...) -> int32;
+    public func fwrite(ptr: anyptr, size: usize, nobj: usize, stream: &mut FILE) -> usize;
+    public func fflush(stream: &mut FILE) -> int32;
+    public func fgets(s: &mut uint8, n: usize, stream: &mut FILE) -> int32;
+    public func fclose(stream: &mut FILE) -> int32;
+    public func fileno(stream: &FILE) -> int32;
+    public func rewind(stream: &mut FILE);
 
-    public func printf(fmt: [*]uint8, ...) -> int32;
-    public func asprintf(strp: *?[*]uint8, fmt: [*]uint8, ...) -> int32;
+    public func printf(fmt: [&]uint8, ...) -> int32;
+    public func asprintf(strp: &?[&]uint8, fmt: [&]uint8, ...) -> int32;
     public func putchar(s: int32) -> int32;
 
-	public func popen(cmd: [*]uint8, modes: [*]uint8) -> ?*mut FILE;
-	public func pclose(stream: *mut FILE) -> int32;
+	public func popen(cmd: [&]uint8, modes: [&]uint8) -> ?&mut FILE;
+	public func pclose(stream: &mut FILE) -> int32;
 
-	public func getline(lineptr: *?[*]uint8, n: *usize, stream: *mut FILE) -> isize;
+	public func getline(lineptr: &?[&]uint8, n: &usize, stream: &mut FILE) -> isize;
 }

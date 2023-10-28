@@ -5,7 +5,7 @@
 import c;
 
 #[unsafe; inline]
-func wyhash(key: *uint8, len: uint64, seed: uint64) -> uint64 {
+func wyhash(key: &uint8, len: uint64, seed: uint64) -> uint64 {
     return unsafe { c.wyhash(key, len, seed, &c._wyp[0]) };
 }
 

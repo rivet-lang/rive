@@ -63,7 +63,7 @@ struct EnumInfo {
 }
 
 func enum_cast(ptr: anyptr, expected_id: usize) -> anyptr {
-    enum_info := unsafe { @as(*EnumInfo, ptr) };
+    enum_info := unsafe { @as(&EnumInfo, ptr) };
     if enum_info._id_ != expected_id {
         // TODO: replace indexes with names
         console_eprintln(

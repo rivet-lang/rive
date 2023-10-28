@@ -20,7 +20,7 @@ public struct Pos < traits.Stringable {
     public is_multiline: bool;
 
     #[inline]
-    public func +(&self, other: *Pos) -> Pos {
+    public func +(&self, other: &Pos) -> Pos {
         return if other.line > self.line {
             Pos(
                 line: self.line,
@@ -35,7 +35,7 @@ public struct Pos < traits.Stringable {
         };
     }
 
-    public func ==(&self, other: *Pos) -> bool {
+    public func ==(&self, other: &Pos) -> bool {
         return self.file == other.file
             and self.line == other.line
             and self.col == other.col

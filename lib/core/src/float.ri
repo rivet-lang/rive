@@ -24,19 +24,19 @@ extend float32 < Stringable {
     /// bit position.
     #[inline]
     public func from_bits(b: uint32) -> float32 {
-        return unsafe { @as(*float32, &b).* };
+        return unsafe { @as(&float32, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     #[inline]
     public func bits(&self) -> uint32 {
-        return unsafe { @as(*uint32, self).* };
+        return unsafe { @as(&uint32, self).* };
     }
 
     public func to_string(&self) -> string {
         unsafe {
-            cstr: ?[*]uint8 := none;
+            cstr: ?[&]uint8 := none;
             len := libc.asprintf(&cstr, c"%g", self.*);
             return if len == -1 {
                 emptyString // fail
@@ -53,19 +53,19 @@ extend float64 < Stringable {
     /// bit position.
     #[inline]
     public func from_bits(b: uint64) -> float64 {
-        return unsafe { @as(*float64, &b).* };
+        return unsafe { @as(&float64, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     #[inline]
     public func bits(&self) -> uint64 {
-        return unsafe { @as(*uint64, self).* };
+        return unsafe { @as(&uint64, self).* };
     }
 
     public func to_string(&self) -> string {
         unsafe {
-            cstr: ?[*]uint8 := none;
+            cstr: ?[&]uint8 := none;
             len := libc.asprintf(&cstr, c"%g", self.*);
             return if len == -1 {
                 emptyString // fail

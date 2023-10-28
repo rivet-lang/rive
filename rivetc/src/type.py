@@ -102,11 +102,11 @@ class Ptr(TBase):
             return "mut_anyptr" if self.is_mut else "anyptr"
         elif self.is_mut:
             if self.is_indexable:
-                return f"[*]mut {self.typ.qualstr()}"
-            return f"*mut {self.typ.qualstr()}"
+                return f"[&]mut {self.typ.qualstr()}"
+            return f"&mut {self.typ.qualstr()}"
         if self.is_indexable:
-            return f"[*]{self.typ.qualstr()}"
-        return f"*{self.typ.qualstr()}"
+            return f"[&]{self.typ.qualstr()}"
+        return f"&{self.typ.qualstr()}"
 
     def __eq__(self, other):
         if not isinstance(other, Ptr):
@@ -122,11 +122,11 @@ class Ptr(TBase):
             return "mut_anyptr" if self.is_mut else "anyptr"
         elif self.is_mut:
             if self.is_indexable:
-                return f"[*]mut {self.typ}"
-            return f"*mut {self.typ}"
+                return f"[&]mut {self.typ}"
+            return f"&mut {self.typ}"
         if self.is_indexable:
-            return f"[*]{self.typ}"
-        return f"*{self.typ}"
+            return f"[&]{self.typ}"
+        return f"&{self.typ}"
 
 class Vec(TBase):
     def __init__(self, typ, is_mut):

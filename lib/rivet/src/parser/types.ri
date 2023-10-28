@@ -42,12 +42,12 @@ extend Parser {
                 };
                 .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos)
             },
-            self.accept(.Mul) => {
+            self.accept(.Amp) => {
                 // pointers
                 is_mut := self.accept(.KwMut);
                 if self.tok.kind == .Mul {
                     mut err := report.error_builder("cannot declare pointer to pointer", pos + self.tok.pos);
-                    err.add_help("use an indexable pointer instead (`[*]T`)");
+                    err.add_help("use an indexable pointer instead (`[&]T`)");
                     err.emit();
                 }
                 .Pointer(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
@@ -56,7 +56,7 @@ extend Parser {
                 // arrays or vectors
                 if self.tok.kind != .Rbracket {
                     // indexable pointers
-                    if self.accept(.Mul) {
+                    if self.accept(.Amp) {
                         self.expect(.Rbracket);
                         is_mut := self.accept(.KwMut);
                         .Pointer(

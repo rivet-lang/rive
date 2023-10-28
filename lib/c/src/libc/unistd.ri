@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 extern (C) {
-	public func access(a: *uint8, o: int32) -> int32;
+	public func access(a: &uint8, o: int32) -> int32;
 
     public func sysconf(name: int32) -> int64;
 
@@ -15,11 +15,11 @@ extern (C) {
     public func write(fd: int32, buf: anyptr, count: usize) -> isize;
     public func read(fildes: int32, buf: mut_anyptr, nbyte: usize) -> isize;
 
-    public func rmdir(path: *uint8) -> int32;
-    public func chdir(path: *uint8) -> int32;
-    public func getcwd(buf: *uint8, size: usize) -> ?*uint8;
+    public func rmdir(path: &uint8) -> int32;
+    public func chdir(path: &uint8) -> int32;
+    public func getcwd(buf: &uint8, size: usize) -> ?&uint8;
 
-    public func readlink(path: *uint8, buf: *uint8, size: usize) -> isize;
+    public func readlink(path: &uint8, buf: &uint8, size: usize) -> isize;
 
 #if _LINUX_
     public func get_nprocs() -> int32;

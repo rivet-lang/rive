@@ -7,7 +7,7 @@
 
 import { pid_t, uid_t } from ../ctypes;
 
-public alias SignalHandler = func (int32, *mut siginfo_t, mut_anyptr);
+public alias SignalHandler = func (int32, &mut siginfo_t, mut_anyptr);
 
 #if _LINUX_
     public const SA_ONSTACK = 0x08000000;
@@ -89,7 +89,7 @@ public alias SignalHandler = func (int32, *mut siginfo_t, mut_anyptr);
 
 extern (C) {
 #if _LINUX_
-    public func sigaction(signum: int32, act: ?*sigaction_t, old_act: ?*mut sigaction_t) -> int32;
+    public func sigaction(signum: int32, act: ?&sigaction_t, old_act: ?&mut sigaction_t) -> int32;
 #endif
     public func signal(sig: int32, handler: SignalHandler) -> ?SignalHandler;
     public func raise(sig: int32) -> int32;

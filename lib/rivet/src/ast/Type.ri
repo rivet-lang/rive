@@ -353,15 +353,15 @@ public enum Type < traits.Stringable {
             .Pointer as pointer_data => {
                 if pointer_data.is_mut {
                     if pointer_data.is_indexable {
-                        "[*]mut "
+                        "[&]mut "
                     } else {
-                        "*mut "
+                        "&mut "
                     }
                 } else {
                     if pointer_data.is_indexable {
-                        "[*]"
+                        "[&]"
                     } else {
-                        "*"
+                        "&"
                     }
                 }.concat(pointer_data.inner.to_string_(qualstr))
             },

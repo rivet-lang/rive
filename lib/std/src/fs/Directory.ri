@@ -70,7 +70,7 @@ public struct Directory {
             if dir := libc.opendir(path_.ptr) {
                 mut res := @vec(string, 15);
                 while ent := libc.readdir(dir) {
-                    bptr: [*]uint8 := &ent.*.d_name[0];
+                    bptr: [&]uint8 := &ent.*.d_name[0];
                     if (bptr[0] == 0 or (bptr[0] == b'.' and bptr[1] == 0)
                         or (bptr[0] == b'.' and bptr[1] == b'.' and bptr[2] == 0)) {
                         continue;

@@ -2,19 +2,19 @@ struct Vec {
     x: int32;
     y: int32;
 
-    func +(&self, other: *Vec) -> Vec {
+    func +(&self, other: &Vec) -> Vec {
         return Vec(self.x + other.x, self.y + other.y);
     }
 
-    func -(&self, other: *Vec) -> Vec {
+    func -(&self, other: &Vec) -> Vec {
         return Vec(self.x - other.x, self.y - other.y);
     }
 
-    func *(&self, other: *Vec) -> Vec {
+    func *(&self, other: &Vec) -> Vec {
         return Vec(self.x * other.x, self.y * other.y);
     }
 
-    func /(&self, other: *Vec) -> Vec {
+    func /(&self, other: &Vec) -> Vec {
         return Vec(self.x / other.x, self.y / other.y);
     }
 }
@@ -39,7 +39,7 @@ test "overloadable operators: -" {
     @assert(v1.x == 0 and v1.y == 0);
 }
 
-test "overloadable operators: *" {
+test "overloadable operators: &" {
     mut v1 := vec;
     v1 = v1 * vec;
     @assert(v1.x == 4 and v1.y == 4);

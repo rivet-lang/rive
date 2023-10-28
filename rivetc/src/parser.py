@@ -1272,18 +1272,18 @@ class Parser:
             return type.Fn(
                 False, sym.ABI.Rivet, False, args, False, ret_typ, False, False
             )
-        elif self.accept(Kind.Mul):
+        elif self.accept(Kind.Amp):
             # pointers
             is_mut = self.accept(Kind.KwMut)
-            if self.tok.kind == Kind.Mul:
+            if self.tok.kind == Kind.Amp:
                 report.error("cannot declare pointer to pointer", pos)
-                report.help("use an indexable pointer instead (`[*]T`)")
+                report.help("use an indexable pointer instead (`[&]T`)")
             return type.Ptr(self.parse_type(), is_mut)
         elif self.accept(Kind.Lbracket):
             # arrays or vectors
             if self.tok.kind != Kind.Rbracket:
                 # indexable pointers
-                if self.accept(Kind.Mul):
+                if self.accept(Kind.Amp):
                     self.expect(Kind.Rbracket)
                     is_mut = self.accept(Kind.KwMut)
                     return type.Ptr(self.parse_type(), is_mut, True)

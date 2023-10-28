@@ -18,7 +18,7 @@ public struct OperationFailedError < Throwable {
 
 #[boxed]
 public struct File {
-    f: *mut libc.FILE;
+    f: &mut libc.FILE;
     mut is_opened: bool;
 
     public func open(path: string, mode: string = "r") -> !File {
@@ -91,7 +91,7 @@ public struct File {
                 );
             }
 
-            res := @as([*]mut uint8, mem.alloc(@as(usize, allocate) + 1)!);
+            res := @as([&]mut uint8, mem.alloc(@as(usize, allocate) + 1)!);
             nelements := libc.fread(res, 1, @as(usize, allocate), self.f);
 
             if self.is_eof() and libc.ferror(self.f) != 0 {
