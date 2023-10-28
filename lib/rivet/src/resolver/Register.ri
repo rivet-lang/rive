@@ -7,7 +7,7 @@ import ../prefs;
 import ../token;
 import ../report;
 
-@[boxed]
+#[boxed]
 public struct Register {
     mut table: ast.Table;
     mut prefs: prefs.Prefs;

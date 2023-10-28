@@ -12,17 +12,17 @@ import ../utils;
 
 public static mut reportTable = ReportTable();
 
-@[inline]
+#[inline]
 public func total_errors() -> usize {
     return reportTable.errors;
 }
 
-@[inline]
+#[inline]
 public func total_warns() -> usize {
     return reportTable.warns;
 }
 
-@[boxed]
+#[boxed]
 struct ReportTable {
     public mut prefs: prefs.Prefs;
     public mut errors: usize;
@@ -38,28 +38,28 @@ public enum ReportKind as uint8 {
     Help
 }
 
-@[boxed]
+#[boxed]
 struct Annotation {
     kind: ReportKind;
     msg: string;
 }
 
-@[inline]
+#[inline]
 public func error(msg: string, pos: token.Pos) {
     ReportBuilder(.Error, msg, pos).emit();
 }
 
-@[inline]
+#[inline]
 public func warn(msg: string, pos: token.Pos) {
     ReportBuilder(.Warn, msg, pos).emit();
 }
 
-@[inline]
+#[inline]
 public func error_builder(msg: string, pos: token.Pos) -> ReportBuilder {
     return ReportBuilder(.Error, msg, pos);
 }
 
-@[inline]
+#[inline]
 public func warn_builder(msg: string, pos: token.Pos) -> ReportBuilder {
     return ReportBuilder(.Warn, msg, pos);
 }
@@ -71,12 +71,12 @@ public struct ReportBuilder {
     pos: token.Pos = token.noPos;
     mut annotations: []Annotation;
 
-    @[inline]
+    #[inline]
     public func add_note(mut self, msg: string, args: ...traits.Stringable) {
         self.annotations.push(Annotation(.Note, msg.fmt(args)));
     }
 
-    @[inline]
+    #[inline]
     public func add_help(mut self, msg: string, args: ...traits.Stringable) {
         self.annotations.push(Annotation(.Help, msg.fmt(args)));
     }

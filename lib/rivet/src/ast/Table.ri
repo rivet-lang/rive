@@ -11,7 +11,7 @@ import ../prefs;
 import ../report;
 import ../utils;
 
-@[boxed]
+#[boxed]
 public struct Table {
     /// `.universe` is the mega-module where all the modules being
     /// compiled reside.
@@ -68,7 +68,7 @@ public struct Table {
 
     public mut source_files: []SourceFile;
 
-    @[inline]
+    #[inline]
     public func new(prefs_: prefs.Prefs) -> Table {
         universe_ := universe();
         mut table := Table(
@@ -207,17 +207,17 @@ public struct Table {
         return self.find_builtin(name) !is none;
     }
 
-    @[inline]
+    #[inline]
     public func is_number(self, type: Type) -> bool {
         return self.is_int(type) or self.is_float(type);
     }
 
-    @[inline]
+    #[inline]
     public func is_int(self, type: Type) -> bool {
         return self.is_signed_int(type) or self.is_unsigned_int(type);
     }
 
-    @[inline]
+    #[inline]
     public func is_signed_int(self, type: Type) -> bool {
         return type in [
             self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.isize_t,
@@ -225,19 +225,19 @@ public struct Table {
         ];
     }
 
-    @[inline]
+    #[inline]
     public func is_unsigned_int(self, type: Type) -> bool {
         return type in [
             self.uint8_t, self.uint16_t, self.uint32_t, self.uint64_t, self.usize_t
         ];
     }
 
-    @[inline]
+    #[inline]
     public func is_float(self, type: Type) -> bool {
         return type in [self.float32_t, self.float64_t, self.comptime_float_t];
     }
 
-    @[inline]
+    #[inline]
     public func is_comptime_number(self, type: Type) -> bool {
         return type == self.comptime_int_t or type == self.comptime_float_t;
     }

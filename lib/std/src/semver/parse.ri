@@ -41,7 +41,7 @@ struct RawVersion {
             and is_valid_string(self.prerelease) and is_valid_string(self.metadata);
     }
 
-    @[inline]
+    #[inline]
     func is_missing(&self, typ: uint64) -> bool {
         return typ >= self.raw_ints.len - 1;
     }
@@ -69,7 +69,7 @@ struct RawVersion {
         return self.to_version();
     }
 
-    @[inline]
+    #[inline]
     func to_version(&self) -> Version {
         return Version(
             string_to_usize(self.raw_ints[VER_MAJOR]) catch 0,

@@ -38,6 +38,7 @@ class Kind(Enum):
     Dot = auto_enum() # .
     DotDot = auto_enum() # ..
     Ellipsis = auto_enum() # ...
+    Hash = auto_enum() # #
     At = auto_enum() # @
     Arrow = auto_enum() # =>
     Arrow2 = auto_enum() # ->
@@ -186,6 +187,7 @@ TOKEN_STRINGS = {
     Kind.Dot: ".",
     Kind.DotDot: "..",
     Kind.Ellipsis: "...",
+    Kind.Hash: "#",
     Kind.At: "@",
     Kind.Arrow: "=>",
     Kind.Arrow2: "->",

@@ -4,7 +4,7 @@
 
 import std/traits;
 
-@[boxed]
+#[boxed]
 struct KindMap {
     key: Kind;
     value: string;
@@ -44,6 +44,7 @@ static kindStrings = [
     KindMap(.Dot, "."),
     KindMap(.DotDot, ".."),
     KindMap(.Ellipsis, "..."),
+    KindMap(.Hash, "#"),
     KindMap(.At, "@"),
     KindMap(.Arrow, "=>"),
     KindMap(.Arrow2, "->"),
@@ -142,6 +143,7 @@ public enum Kind < traits.Stringable {
     Dot, // .
     DotDot, // ..
     Ellipsis, // ...
+    Hash, // #
     At, // @
     Arrow, // =>
     Arrow2, // ->
@@ -209,7 +211,7 @@ public enum Kind < traits.Stringable {
 
     KeywordEnd;
 
-    @[inline]
+    #[inline]
     public func single(self) -> Kind {
         return switch self {
             .PlusAssign => .Plus,
@@ -224,7 +226,7 @@ public enum Kind < traits.Stringable {
         };
     }
 
-    @[inline]
+    #[inline]
     public func is_start_of_type(self) -> bool {
         return self in [
             .Bang, .Name, .Lparen, .Amp, .Mul, .Lbracket, .Question, .KwSelfTy,
@@ -232,7 +234,7 @@ public enum Kind < traits.Stringable {
         ];
     }
 
-    @[inline]
+    #[inline]
     public func is_assign(self) -> bool {
         return self in [
             .DeclAssign, .Assign, .PlusAssign, .MinusAssign, .MulAssign, .DivAssign,
@@ -240,7 +242,7 @@ public enum Kind < traits.Stringable {
         ];
     }
 
-    @[inline]
+    #[inline]
     public func is_relational(self) -> bool {
         return self in [
             .Eq, .Ne, .Lt, .Gt, .Le, .Ge, .KwIs, .KwNotIs, .KwIn, .KwNotIn
@@ -257,7 +259,7 @@ public enum Kind < traits.Stringable {
     }
 }
 
-@[inline]
+#[inline]
 public func lookup(str: string) -> Kind {
     return switch str {
         "alias" => .KwAlias,
@@ -305,17 +307,17 @@ public func lookup(str: string) -> Kind {
     };
 }
 
-@[inline]
+#[inline]
 public func is_keyword(lit: string) -> bool {
     return lookup(lit) != .Name;
 }
 
-@[inline]
+#[inline]
 public func is_overloadable_operator(kind: Kind) -> bool {
     return kind in [.Plus, .Minus, .Mul, .Div, .Mod, .Eq, .Ne, .Lt, .Gt, .Le, .Ge];
 }
 
-@[inline]
+#[inline]
 public func overloadable_operator_name(kind: Kind) -> string {
     return switch kind {
         .Plus => "_add_",

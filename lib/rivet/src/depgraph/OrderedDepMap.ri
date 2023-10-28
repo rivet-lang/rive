@@ -6,7 +6,7 @@ import std/process;
 
 import ../utils/maps;
 
-@[boxed]
+#[boxed]
 public struct OrderedDepMap {
     mut keys: []string;
     mut data: maps.MapStringArrayOfStrings; // TODO: replace with map type
@@ -32,7 +32,7 @@ public struct OrderedDepMap {
         self.set(name, d);
     }
 
-    @[inline]
+    #[inline]
     public func get(self, name: string) -> []string {
         return if res := self.data.get(name) {
             res

@@ -31,7 +31,7 @@ struct StaticBuffer {
         return unsafe { string.from_raw_with_len(&self.buf[0], self.len).clone() };
     }
 
-    @[inline]
+    #[inline]
     public func clear(mut self) {
         self.len = 0;
     }

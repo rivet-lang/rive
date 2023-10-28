@@ -4,7 +4,7 @@
 
 import c/libc;
 
-@[boxed]
+#[boxed]
 public struct ErrnoError < Throwable {
     public msg: string;
     public code: int32;
@@ -14,7 +14,7 @@ public struct ErrnoError < Throwable {
     }
 }
 
-@[inline]
+#[inline]
 public func errno() -> int32 {
     return unsafe {
 #if _LINUX_
@@ -25,7 +25,7 @@ public func errno() -> int32 {
     };
 }
 
-@[inline]
+#[inline]
 public func errno_msg(code: int32 = errno()) -> string {
     unsafe {
         return if s := libc.strerror(code) {
@@ -36,7 +36,7 @@ public func errno_msg(code: int32 = errno()) -> string {
     }
 }
 
-@[inline]
+#[inline]
 public func last_errno_error() -> ErrnoError {
     return ErrnoError(errno_msg(), errno());
 }

@@ -56,7 +56,7 @@ trait Eq {
     }
 }
 
-@[boxed]
+#[boxed]
 struct Poketrait < Eq {
     public func equal(self, x: Eq) -> bool {
         return self.x == x.x;
@@ -71,7 +71,7 @@ test "traits: default method" {
     @assert(ship( Poketrait("Shell"), Poketrait("Shell") ));
 }
 
-@[default_value(IntegerValue(5))]
+#[default_value(IntegerValue(5))]
 trait Integer {}
 
 struct IntegerValue {

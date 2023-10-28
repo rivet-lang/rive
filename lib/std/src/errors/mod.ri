@@ -10,7 +10,7 @@ import ../traits;
 public alias ErrnoError = c.ErrnoError;
 public alias OutOfMemoryError = core.OutOfMemoryError;
 
-@[boxed]
+#[boxed]
 public struct InvalidSyntaxError < Throwable {
     msg: string;
 
@@ -19,7 +19,7 @@ public struct InvalidSyntaxError < Throwable {
     }
 }
 
-@[boxed]
+#[boxed]
 public struct InvalidBaseError < Throwable {
     msg: string;
 
@@ -28,7 +28,7 @@ public struct InvalidBaseError < Throwable {
     }
 }
 
-@[boxed]
+#[boxed]
 public struct InvalidBitSizeError < Throwable {
     msg: string;
 
@@ -37,7 +37,7 @@ public struct InvalidBitSizeError < Throwable {
     }
 }
 
-@[boxed]
+#[boxed]
 public struct ValueOutOfRangeError < Throwable {
     msg: string;
 
@@ -46,7 +46,7 @@ public struct ValueOutOfRangeError < Throwable {
     }
 }
 
-@[boxed]
+#[boxed]
 public struct GenericError < Throwable {
     msg: string;
 

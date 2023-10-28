@@ -12,17 +12,17 @@ struct DepGraphNode {
     public mut deps: []string;
 }
 
-@[boxed]
+#[boxed]
 public struct DepGraph {
     public mut acyclic: bool;
     public mut nodes: []DepGraphNode;
 
-    @[inline]
+    #[inline]
     public func new() -> Self {
         return Self(true, @vec(DepGraphNode, 1024));
     }
 
-    @[inline]
+    #[inline]
     public func add(mut self, mod: string, deps: []string) {
         self.nodes.push(DepGraphNode(mod, deps));
     }

@@ -5,7 +5,7 @@
 import std/traits;
 import std/strings;
 
-@[boxed]
+#[boxed]
 public struct Block < traits.Stringable {
     mut id: usize;
     mut stmts: []Stmt;

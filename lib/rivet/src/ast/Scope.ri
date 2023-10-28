@@ -4,7 +4,7 @@
 
 import std/process;
 
-@[boxed]
+#[boxed]
 public struct Scope {
     public start: usize;
     public mut end: usize;
@@ -56,7 +56,7 @@ public struct Scope {
         }
     }
 
-    @[inline]
+    #[inline]
     public func exists(self, name: string) -> bool {
         return self.find(name) !is none;
     }
@@ -84,12 +84,12 @@ public struct Scope {
         return self.syms[idx];
     }
 
-    @[inline]
+    #[inline]
     public func find_type_symbol_or_panic(self, name: string) -> TypeSym {
         return @as(TypeSym, self.find_or_panic(name));
     }
 
-    @[inline]
+    #[inline]
     public func find_type_symbol_by_index_or_panic(self, idx: usize) -> TypeSym {
         return @as(TypeSym, self.find_by_index_or_panic(idx));
     }
@@ -110,7 +110,7 @@ public struct Scope {
         return none;
     }
 
-    @[inline]
+    #[inline]
     func dont_lookup_parent(self) -> bool {
         return self.parent is none or self.detached_from_parent;
     }

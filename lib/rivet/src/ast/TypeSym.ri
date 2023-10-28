@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-@[boxed]
+#[boxed]
 public struct Field {
     public is_public: bool;
     public name: string;
@@ -13,7 +13,7 @@ public struct Field {
     public is_required: bool;
 }
 
-@[boxed]
+#[boxed]
 public struct TypeSym < Sym {
     public mut fields: []Field;
     public mut full_fields_: []Field;
@@ -49,12 +49,12 @@ public struct TypeSym < Sym {
         return none;
     }
 
-    @[inline]
+    #[inline]
     public func has_field(self, name: string) -> bool {
         return self.lookup_field(name) !is none;
     }
 
-    @[inline]
+    #[inline]
     public func lookup(self, name: string) -> ?Sym {
         return if s := self.scope.lookup(name) {
             s
@@ -91,7 +91,7 @@ public struct TypeSym < Sym {
         return none;
     }
 
-    @[inline]
+    #[inline]
     public func find_func(self, name: string) -> ?Func {
         return if sym := self.scope.find(name); sym is Func as func_ {
             if self.info !is .Trait and !func_.has_body {
@@ -108,7 +108,7 @@ public struct TypeSym < Sym {
         };
     }
 
-    @[inline]
+    #[inline]
     public func find_method(self, name: string) -> ?Func {
         return if func_ := self.find_func(name); func_.is_method {
             func_
@@ -117,12 +117,12 @@ public struct TypeSym < Sym {
         };
     }
 
-    @[inline]
+    #[inline]
     public func has_func(self, name: string) -> bool {
         return self.find_func(name) !is none;
     }
 
-    @[inline]
+    #[inline]
     public func has_method(self, name: string) -> bool {
         return self.find_method(name) !is none;
     }
@@ -157,7 +157,7 @@ public struct TypeSym < Sym {
         return fields;
     }
 
-    @[inline]
+    #[inline]
     public func implement_trait(self, trait_sym: TypeSym) -> bool {
         return if trait_sym.info is .Trait as trait_info {
             self in trait_info.implements
@@ -182,7 +182,7 @@ public struct TypeSym < Sym {
         return false;
     }
 
-    @[inline]
+    #[inline]
     public func is_boxed(self) -> bool {
         return if self.info is .Enum as enum_info {
             enum_info.is_boxed
@@ -193,17 +193,17 @@ public struct TypeSym < Sym {
         };
     }
 
-    @[inline]
+    #[inline]
     public func is_primitive(self) -> bool {
         return self.info.is_primitive();
     }
 
-    @[inline]
+    #[inline]
     public func ==(self, rhs: Self) -> bool {
         return self.id == rhs.id;
     }
 
-    @[inline]
+    #[inline]
     public func !=(self, rhs: Self) -> bool {
         return self.id != rhs.id;
     }

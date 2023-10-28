@@ -20,7 +20,7 @@ func assert(cond: bool, msg: string) {
     }
 }
 
-@[inline]
+#[inline]
 func internal_alloc(size: usize) -> mut_anyptr {
     return mem_alloc(size) catch {
         process_panic(
@@ -29,7 +29,7 @@ func internal_alloc(size: usize) -> mut_anyptr {
     };
 }
 
-@[inline]
+#[inline]
 func internal_zeroed(size: usize) -> mut_anyptr {
     return mem_zeroed(size) catch {
         process_panic(
@@ -38,7 +38,7 @@ func internal_zeroed(size: usize) -> mut_anyptr {
     };
 }
 
-@[inline]
+#[inline]
 func internal_dup(src: anyptr, sz: usize) -> mut_anyptr {
     return mem_dup(src, sz) catch {
         process_panic(
@@ -47,7 +47,7 @@ func internal_dup(src: anyptr, sz: usize) -> mut_anyptr {
     };
 }
 
-@[inline]
+#[inline]
 func internal_resize(ptr: ?mut_anyptr, sz: usize) -> mut_anyptr {
     return mem_resize(ptr, sz) catch {
         process_panic(

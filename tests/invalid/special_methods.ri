@@ -5,7 +5,7 @@ struct SpecialMethod {
         _ = self;
     }
 
-    @[inline]
+    #[inline]
     func __ann__(self) {
         _ = self;
     }

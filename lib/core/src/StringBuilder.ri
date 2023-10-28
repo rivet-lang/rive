@@ -4,17 +4,17 @@
 
 import c/libc;
 
-@[boxed]
+#[boxed]
 public struct StringBuilder < Stringable {
     mut inner: Vector;
 
     /// Returns a string builder with capacity `cap`.
-    @[inline]
+    #[inline]
     public func new(cap: usize = 0) -> Self {
         return Self(unsafe { Vector.new(@size_of(uint8), cap) });
     }
 
-    @[inline]
+    #[inline]
     public func from_string(s: string) -> Self {
         return if s.len == 0 {
             Self.new()
@@ -25,19 +25,19 @@ public struct StringBuilder < Stringable {
         };
     }
 
-    @[inline]
+    #[inline]
     public func write_byte(mut self, val: uint8) {
         self.inner.push(&val);
     }
 
-    @[unsafe; inline]
+    #[unsafe; inline]
     public func write_raw(mut self, s: [*]uint8) {
         unsafe {
             self.write_raw_with_len(s, libc.strlen(s));
         }
     }
 
-    @[unsafe]
+    #[unsafe]
     public func write_raw_with_len(mut self, s: [*]uint8, len: usize) {
         self.inner.reserve(self.inner.len + len);
         mem_copy(
@@ -47,7 +47,7 @@ public struct StringBuilder < Stringable {
         self.inner.len += len;
     }
 
-    @[inline]
+    #[inline]
     public func write_string(mut self, s: string) {
         unsafe {
             self.write_raw_with_len(s.ptr, s.len);
@@ -76,7 +76,7 @@ public struct StringBuilder < Stringable {
         }
     }
 
-    @[inline]
+    #[inline]
     public func write_fmt(mut self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
     }
@@ -87,32 +87,32 @@ public struct StringBuilder < Stringable {
     }
 
     /// Returns the number of runes contained in `self`.
-    @[inline]
+    #[inline]
     public func runes_count(self) -> usize {
         return cstr_runes_count(unsafe { @as([*]uint8, self.inner.ptr) }, self.inner.len);
     }
 
-    @[inline]
+    #[inline]
     public func clear(mut self) {
         self.inner.clear();
     }
 
-    @[inline]
+    #[inline]
     public func len(self) -> usize {
         return self.inner.len;
     }
 
-    @[inline]
+    #[inline]
     public func cap(self) -> usize {
         return self.inner.cap;
     }
 
-    @[inline]
+    #[inline]
     public func is_empty(self) -> bool {
         return self.inner.is_empty();
     }
 
-    @[inline]
+    #[inline]
     public func to_string(mut self) -> string {
         self.write_byte(0);
         return string(unsafe { @as([*]uint8, self.inner.ptr) }, self.inner.len - 1);

@@ -37,7 +37,7 @@ struct CachedFile {
    mut lines: []string;
 }
 
-@[boxed]
+#[boxed]
 struct SourceCache {
    mut sources: []CachedFile;
 
@@ -87,7 +87,7 @@ struct SourceCache {
 
 public static mut sourceCache: SourceCache = SourceCache();
 
-@[inline]
+#[inline]
 public func read_file(path_: string) -> !string {
    return if res := sourceCache.find(path_) {
 	  res

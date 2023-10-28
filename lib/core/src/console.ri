@@ -14,7 +14,7 @@ public func console_print(s: string, args: ...Stringable) {
 }
 
 /// Prints a message with a line end to stdout. stdout is flushed.
-@[inline]
+#[inline]
 public func console_println(s: string = "", args: ...Stringable) {
     unsafe {
         writeln_to_fd(1, s.fmt(args));
@@ -45,12 +45,12 @@ public func console_eprintln(s: string = "", args: ...Stringable) {
 
 /// Returns `true` if the `fd` file descriptor is open and refers to a
 /// terminal.
-@[inline]
+#[inline]
 public func console_is_atty(fd: int32) -> bool {
     return unsafe { libc.isatty(fd) == 1 };
 }
 
-@[unsafe]
+#[unsafe]
 func write_buf_to_fd(fd: int32, buf_: [*]uint8, len: usize) {
     unsafe {
         buf := buf_;
@@ -63,7 +63,7 @@ func write_buf_to_fd(fd: int32, buf_: [*]uint8, len: usize) {
     }
 }
 
-@[unsafe]
+#[unsafe]
 func writeln_to_fd(fd: int32, s: string) {
     unsafe {
         write_buf_to_fd(fd, s.ptr, s.len);

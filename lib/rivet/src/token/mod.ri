@@ -19,7 +19,7 @@ public struct Pos < traits.Stringable {
     public end_col: usize;
     public is_multiline: bool;
 
-    @[inline]
+    #[inline]
     public func +(&self, other: *Pos) -> Pos {
         return if other.line > self.line {
             Pos(
@@ -46,7 +46,7 @@ public struct Pos < traits.Stringable {
             and self.is_multiline == other.is_multiline;
     }
 
-    @[inline]
+    #[inline]
     public func to_report_string(&self) -> string {
         return if self.is_multiline {
             "{}:{}:{}-{}:{}".fmt(
@@ -62,7 +62,7 @@ public struct Pos < traits.Stringable {
         };
     }
 
-    @[inline]
+    #[inline]
     public func to_string(&self) -> string {
         return if self.is_multiline {
             "{}:{}:{}-{}:{}".fmt(

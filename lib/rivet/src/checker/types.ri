@@ -6,7 +6,7 @@ import ../ast;
 import ../token;
 import ../report;
 
-@[boxed]
+#[boxed]
 struct IncompatibleTypesError < Throwable {
     msg: string;
 

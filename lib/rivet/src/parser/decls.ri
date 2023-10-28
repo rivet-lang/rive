@@ -23,7 +23,7 @@ extend Parser {
         mut self, parse_mod_annotations: bool = false
     ) -> ast.Annotations {
         mut annotations := ast.Annotations();
-        while self.accept(.At) {
+        while self.accept(.Hash) {
             if parse_mod_annotations {
                 self.expect(.Bang);
             }
@@ -65,7 +65,7 @@ extend Parser {
         return annotations;
     }
 
-    @[inline]
+    #[inline]
     func is_public(mut self) -> bool {
         is_pub := self.accept(.KwPublic);
         return self.inside_trait or self.inside_enum_variant_with_fields or is_pub;
@@ -95,7 +95,7 @@ extend Parser {
     func parse_decl(mut self) -> ast.Decl {
         doc_comment := self.parse_doc_comment();
         annotations := self.parse_annotations(
-            self.tok.kind == .At and self.peek_tok.kind == .Bang
+            self.tok.kind == .Hash and self.peek_tok.kind == .Bang
         );
         is_public := self.is_public();
         mut pos := self.tok.pos;

@@ -1,6 +1,6 @@
 import std/console;
 
-@[inline]
+#[inline]
 func factorial(n: uint32) -> uint32 {
 	return if n <= 1 {
 		1

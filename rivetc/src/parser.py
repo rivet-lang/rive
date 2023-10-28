@@ -107,7 +107,7 @@ class Parser:
         if parse_mod_annotations and self.mod_sym.annotations == None:
             self.mod_sym.annotations = ast.Annotations()
         annotations = ast.Annotations()
-        while self.accept(Kind.At):
+        while self.accept(Kind.Hash):
             if parse_mod_annotations:
                 self.expect(Kind.Bang)
             if self.accept(Kind.Lbracket):
@@ -163,7 +163,7 @@ class Parser:
     def parse_decl(self):
         doc_comment = self.parse_doc_comment()
         annotations = self.parse_annotations(
-            self.tok.kind == Kind.At and self.peek_tok.kind == Kind.Bang
+            self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
         )
         is_public = self.is_public()
         pos = self.tok.pos

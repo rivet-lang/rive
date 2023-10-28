@@ -604,6 +604,8 @@ class Lexer:
                     return token.Token("", Kind.OrElse, pos)
                 return token.Token("", Kind.Question, pos)
             elif ch == "#":
+                if nextc == "[" or nextc == "!":
+                    return token.Token("", Kind.Hash, pos)
                 self.pp_directive()
                 continue
             elif ch == "&":

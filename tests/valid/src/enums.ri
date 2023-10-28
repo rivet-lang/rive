@@ -96,7 +96,7 @@ test "enums: boxed enum with fields" {
     }
 }
 
-@[default_value(.Abc(5))]
+#[default_value(.Abc(5))]
 enum DefaultValue {
     Abc: int32
 }

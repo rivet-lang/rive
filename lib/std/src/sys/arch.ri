@@ -10,7 +10,7 @@ public enum Arch as uint8 {
     X86,
     Amd64;
 
-    @[inline]
+    #[inline]
     public func from_string(arch: string) -> ?Arch {
         return switch arch {
             "i386", "x86", "_X86_" => .X86,
@@ -21,7 +21,7 @@ public enum Arch as uint8 {
 }
 
 /// Returns the current architecture.
-@[inline]
+#[inline]
 public func arch() -> Arch {
 #if _X86_
     return .X86;

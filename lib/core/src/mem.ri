@@ -46,7 +46,7 @@ public func mem_resize(ptr: ?mut_anyptr, sz: usize) -> !mut_anyptr {
 
 /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
 /// byte `c`.
-@[inline]
+#[inline]
 public func mem_set(s: mut_anyptr, c: uint8, n: usize) {
     unsafe {
         _ = libc.memset(s, @as(int32, c), n);
@@ -57,7 +57,7 @@ public func mem_set(s: mut_anyptr, c: uint8, n: usize) {
 ///
 /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem.move`, if the memory
 /// areas do overlap.
-@[inline]
+#[inline]
 public func mem_copy(dest: mut_anyptr, src: anyptr, sz: usize) {
     unsafe {
         _ = libc.memcpy(dest, src, sz);
@@ -70,7 +70,7 @@ public func mem_copy(dest: mut_anyptr, src: anyptr, sz: usize) {
 /// in `src` are first copied into a temporary array that does not overlap
 /// `src` or `dest`, and the bytes are then copied from the temporary array to
 /// `dest`.
-@[inline]
+#[inline]
 public func mem_move(dest: mut_anyptr, src: anyptr, sz: usize) {
     unsafe {
         _ = libc.memmove(dest, src, sz);
@@ -104,13 +104,13 @@ public func mem_dup(src: anyptr, sz: usize) -> !mut_anyptr {
 /// as cryptographic secrets, because the required CPU time depends on the
 /// number of equal bytes. You should use a function that performs comparisons
 /// in constant time for this.
-@[inline]
+#[inline]
 public func mem_cmp(s1: anyptr, s2: anyptr, n: usize) -> int32 {
     return unsafe { libc.memcmp(s1, s2, n) };
 }
 
 /// Deallocates manually the memory referenced by `ptr`.
-@[unsafe; inline]
+#[unsafe; inline]
 public func mem_dealloc(ptr: anyptr) {
     unsafe {
         libc.free(ptr);

@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 #if _LINUX_
-@![link_library("dl")]
+#![link_library("dl")]
 #endif
 
 import c/libc;
@@ -12,7 +12,7 @@ public static sharedLibExtension = get_shared_library_extension();
 
 /// Returns a library name with the operating system specific extension for shared
 /// libraries.
-@[inline]
+#[inline]
 public func library_name(libname: string) -> string {
     return if libname.ends_with(sharedLibExtension) {
         libname
@@ -21,7 +21,7 @@ public func library_name(libname: string) -> string {
     };
 }
 
-@[boxed]
+#[boxed]
 public struct SymbolNotFoundError < Throwable {
     msg: string;
 
@@ -30,7 +30,7 @@ public struct SymbolNotFoundError < Throwable {
     }
 }
 
-@[boxed]
+#[boxed]
 public struct CannotLoadLibraryError < Throwable {
     msg: string;
 
@@ -51,7 +51,7 @@ public func load(path: string, global_symbols: bool = false) -> !Library {
     }
 }
 
-@[boxed]
+#[boxed]
 struct Library {
     public path: string;
     ptr: mut_anyptr;
@@ -69,12 +69,12 @@ struct Library {
         }
     }
 
-    @[inline]
+    #[inline]
     public func exists(self, symbol: string) -> bool {
         return if _ := self.address_of(symbol) { true } else { false };
     }
 
-    @[inline]
+    #[inline]
     public func close(self) {
         _ = unsafe { libc.dlclose(self.ptr) };
     }
@@ -91,7 +91,7 @@ func dlerror() -> ?string {
     return none;
 }
 
-@[inline]
+#[inline]
 func get_shared_library_extension() -> string {
     return
 #if _LINUX_

@@ -4,7 +4,7 @@
 
 import core;
 
-@[inline]
+#[inline]
 public func print(frames_to_skip: int32 = 0) {
     core.bt_print(frames_to_skip);
 }

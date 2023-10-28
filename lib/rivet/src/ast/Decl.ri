@@ -162,7 +162,7 @@ public enum Decl {
     }
 }
 
-@[boxed]
+#[boxed]
 public struct EnumVariantDecl {
     public name: string;
     public mut type: Type;
@@ -173,12 +173,12 @@ public struct EnumVariantDecl {
     public pos: token.Pos;
 }
 
-@[boxed]
+#[boxed]
 public struct DocComment {
     mut lines: []string;
     pos: token.Pos;
 
-    @[inline]
+    #[inline]
     func is_empty(self) -> bool {
         return self.lines.is_empty();
     }

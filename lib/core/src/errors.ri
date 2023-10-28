@@ -14,38 +14,38 @@ public func last_errno_error() -> c.ErrnoError {
 /// This trait is used for errors returned with result types (!T).
 public trait Throwable < Stringable { }
 
-@[inline]
+#[inline]
 func error_panic(err: Throwable) {
     console_eprintln("unhandled error: {}", err.to_string());
     returnTrace.print();
     process_exit(1);
 }
 
-@[boxed]
+#[boxed]
 public struct InvalidArgumentError < Throwable {
     msg: string;
 
-    @[inline]
+    #[inline]
     public func to_string(self) -> string {
         return self.msg;
     }
 }
 
-@[boxed]
+#[boxed]
 public struct OutOfMemoryError < Throwable {
     msg: string;
 
-    @[inline]
+    #[inline]
     public func to_string(self) -> string {
         return self.msg;
     }
 }
 
-@[boxed]
+#[boxed]
 public struct ReadFailedError < Throwable {
     msg: string;
 
-    @[inline]
+    #[inline]
     public func to_string(self) -> string {
         return self.msg;
     }
@@ -62,7 +62,7 @@ static returnTrace = ReturnTrace();
 struct ReturnTrace {
     mut traces: []CallTrace = @vec(CallTrace, 5);
 
-    @[inline]
+    #[inline]
     func add(mut self, trace: CallTrace) {
         self.traces.push(trace);
     }

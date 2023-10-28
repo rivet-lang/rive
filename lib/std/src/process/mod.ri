@@ -19,7 +19,7 @@ public static args = core.ARGS;
 public static wdAtStartup = get_cwd() catch ".";
 public static executableDir = Path.dirname(executable() catch wdAtStartup);
 
-@[boxed]
+#[boxed]
 public struct NotADirectoryError < Throwable {
     msg: string;
 
@@ -40,7 +40,7 @@ struct Result {
 	public exit_code: int32;
 }
 
-@[boxed]
+#[boxed]
 struct ExecutionFailedError < Throwable {
     cmd: string;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-@[boxed]
+#[boxed]
 struct Vector {
     mut ptr: mut_anyptr;
     elem_size: usize;
@@ -10,29 +10,29 @@ struct Vector {
     mut cap: usize;
     is_ref: bool;
 
-    @[unsafe; inline]
+    #[unsafe; inline]
     func new(elem_size: usize, cap: usize) -> Self {
         return Self(internal_zeroed(cap * elem_size), elem_size, 0, cap);
     }
 
-    @[unsafe; inline]
+    #[unsafe; inline]
     func new_with_len(elem_size: usize, len: usize, cap: usize) -> Self {
         return Self(internal_zeroed(cap * elem_size), elem_size, len, cap);
     }
 
-    @[unsafe]
+    #[unsafe]
     func from_array(arr: mut_anyptr, elem_size: usize, len: usize) -> Self {
         vec := Self(internal_zeroed(len * elem_size), elem_size, len, len);
         mem_copy(vec.ptr, arr, len * elem_size);
         return vec;
     }
 
-    @[unsafe; inline]
+    #[unsafe; inline]
     func from_array_no_alloc(arr: mut_anyptr, elem_size: usize, len: usize) -> Self {
         return Self(arr, elem_size, len, len, is_ref: true);
     }
 
-    @[unsafe; inline]
+    #[unsafe; inline]
     func raw_get(self, idx: usize) -> mut_anyptr {
         return unsafe { @ptr_add(@as([*]mut uint8, self.ptr), idx * self.elem_size) };
     }
@@ -122,7 +122,7 @@ struct Vector {
         self.len = 0;
     }
 
-    @[inline]
+    #[inline]
     func is_empty(self) -> bool {
         return self.len == 0;
     }
@@ -134,7 +134,7 @@ struct Vector {
         return mem_cmp(self.ptr, rhs.ptr, self.len) == 0;
     }
 
-    @[inline]
+    #[inline]
     func !=(self, rhs: Self) -> bool {
         return !(self == rhs);
     }
@@ -170,7 +170,7 @@ struct Vector {
         );
     }
 
-    @[inline]
+    #[inline]
     func slice_from(self, start: usize) -> Self {
         return self.slice(start, self.len);
     }

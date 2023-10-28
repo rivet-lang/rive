@@ -5,7 +5,7 @@
 import c;
 import c/libc;
 
-@[boxed]
+#[boxed]
 public struct CannotMakeDirectoryError < Throwable {
     msg: string;
 
@@ -14,7 +14,7 @@ public struct CannotMakeDirectoryError < Throwable {
     }
 }
 
-@[boxed]
+#[boxed]
 public struct CannotMakeFileError < Throwable {
     msg: string;
 
@@ -23,7 +23,7 @@ public struct CannotMakeFileError < Throwable {
     }
 }
 
-@[boxed]
+#[boxed]
 public struct CouldNotOpenDirectoryError < Throwable {
     msg: string;
 
@@ -32,7 +32,7 @@ public struct CouldNotOpenDirectoryError < Throwable {
     }
 }
 
-@[boxed]
+#[boxed]
 public struct EmptyStringError < Throwable {
     msg: string;
 

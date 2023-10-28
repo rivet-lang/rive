@@ -7,7 +7,7 @@ import c/libc;
 import ../mem;
 import { Stringable } from ../traits;
 
-@[boxed]
+#[boxed]
 public struct OperationFailedError < Throwable {
     msg: string;
 
@@ -16,7 +16,7 @@ public struct OperationFailedError < Throwable {
     }
 }
 
-@[boxed]
+#[boxed]
 public struct File {
     f: *mut libc.FILE;
     mut is_opened: bool;
@@ -31,7 +31,7 @@ public struct File {
     }
 
     /// Writes the byte `b` into the file.
-    @[inline]
+    #[inline]
     public func write_byte(mut self, b: uint8) {
         @ignore_not_mutated_warn(self);
         unsafe {
@@ -40,7 +40,7 @@ public struct File {
     }
 
     /// Writes the string `s` into the file.
-    @[inline]
+    #[inline]
     public func write_string(mut self, s: string) {
         @ignore_not_mutated_warn(self);
         unsafe {
@@ -54,7 +54,7 @@ public struct File {
         self.write_byte(b'\n');
     }
 
-    @[inline]
+    #[inline]
     public func write_string_fmt(mut self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
     }
@@ -105,7 +105,7 @@ public struct File {
     }
 
     /// Returns true if the file is at end.
-    @[inline]
+    #[inline]
     public func is_eof(self) -> bool {
         return unsafe { libc.feof(self.f) != 0 };
     }
