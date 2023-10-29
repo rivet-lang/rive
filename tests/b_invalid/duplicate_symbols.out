@@ -1,5 +1,5 @@
 tests/b_invalid/duplicate_symbols.ri:15:6: error: module `duplicate_symbols` has duplicate symbol `other`
-   15 | func other(a: int32) -> { // FAIL
+   15 | func other(a: int32) { // FAIL
       |      ^
 tests/b_invalid/duplicate_symbols.ri:20:8: error: module `duplicate_symbols` has duplicate symbol `Gota`
    20 | struct Gota { } // FAIL

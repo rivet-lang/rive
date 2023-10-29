@@ -12,7 +12,7 @@ func other(a: int32) {
     a := 1;
 }
 
-func other(a: int32) -> { // FAIL
+func other(a: int32) { // FAIL
     a := 1;
 }
 

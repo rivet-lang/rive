@@ -23,16 +23,15 @@ func tokenize(text: string) -> []token.Token {
     return tokens;
 }
 
-test "tokenizer: simple `func main() -> { }`" {
-    tokens := tokenize("func main() -> { }");
-    @assert(tokens.len == 7);
+test "tokenizer: simple `func main() { }`" {
+    tokens := tokenize("func main() { }");
+    @assert(tokens.len == 6);
     @assert(tokens[0].kind == .KwFunc);
     @assert(tokens[1].kind == .Name and tokens[1].lit == "main");
     @assert(tokens[2].kind == .Lparen);
     @assert(tokens[3].kind == .Rparen);
-    @assert(tokens[4].kind == .Arrow2);
-    @assert(tokens[5].kind == .Lbrace);
-    @assert(tokens[6].kind == .Rbrace);
+    @assert(tokens[4].kind == .Lbrace);
+    @assert(tokens[5].kind == .Rbrace);
 }
 
 test "tokenizer: number constant input format" {
@@ -59,29 +58,27 @@ test "tokenizer: float conversion and reading" {
 }
 
 test "tokenizer: preprocessor" {
-    mut tokens := tokenize("#if true func main() -> { } #endif");
-    @assert(tokens.len == 7);
+    mut tokens := tokenize("#if true func main() { } #endif");
+    @assert(tokens.len == 6);
     @assert(tokens[0].kind == .KwFunc);
     @assert(tokens[1].kind == .Name and tokens[1].lit == "main");
     @assert(tokens[2].kind == .Lparen);
     @assert(tokens[3].kind == .Rparen);
-    @assert(tokens[4].kind == .Arrow2);
-    @assert(tokens[5].kind == .Lbrace);
-    @assert(tokens[6].kind == .Rbrace);
+    @assert(tokens[4].kind == .Lbrace);
+    @assert(tokens[5].kind == .Rbrace);
 
-    tokens = tokenize("#if false func main() -> { } #endif");
+    tokens = tokenize("#if false func main() { } #endif");
     @assert(tokens.len == 1); // EndOfFile
 
-    tokens = tokenize("#if !CUSTOM_FLAG func main() -> { } #endif");
-    @assert(tokens.len == 7);
+    tokens = tokenize("#if !CUSTOM_FLAG func main() { } #endif");
+    @assert(tokens.len == 6);
     @assert(tokens[0].kind == .KwFunc);
     @assert(tokens[1].kind == .Name and tokens[1].lit == "main");
     @assert(tokens[2].kind == .Lparen);
     @assert(tokens[3].kind == .Rparen);
-    @assert(tokens[4].kind == .Arrow2);
-    @assert(tokens[5].kind == .Lbrace);
-    @assert(tokens[6].kind == .Rbrace);
+    @assert(tokens[4].kind == .Lbrace);
+    @assert(tokens[5].kind == .Rbrace);
 
-    tokens = tokenize("#if CUSTOM_FLAG func main() -> { } #endif");
+    tokens = tokenize("#if CUSTOM_FLAG func main() { } #endif");
     @assert(tokens.len == 1); // EndOfFile
 }

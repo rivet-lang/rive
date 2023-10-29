@@ -13,4 +13,4 @@ struct St {
     f5: =;
 }
 
-func main() -> { }
+func main() { }

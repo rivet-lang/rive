@@ -515,7 +515,10 @@ class Parser:
         ret_typ = self.comp.void_t
         if self.accept(Kind.Arrow2):
             is_result = self.accept(Kind.Bang)
-            if self.tok.kind != Kind.Lbrace:
+            if self.tok.kind == Kind.Lbrace:
+                if not is_result:
+                    report.error("expected return type declaration", self.prev_tok.pos)
+            else:
                 ret_typ = self.parse_type()
             if is_result:
                 ret_typ = type.Result(ret_typ)

@@ -615,7 +615,11 @@ extend Parser {
         ret_t_pos := self.tok.pos;
         if self.accept(.Arrow2) {
             is_result := self.accept(.Bang);
-            if self.tok.kind != .Lbrace {
+            if self.tok.kind == .Lbrace {
+                if !is_result {
+                    report.error("expected return type declaration", self.prev_tok.pos);
+                }
+            } else {
                 ret_type = self.parse_type();
             }
             if is_result {
