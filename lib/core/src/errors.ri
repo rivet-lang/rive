@@ -11,14 +11,14 @@ public func last_errno_error() -> c.ErrnoError {
     return c.last_errno_error();
 }
 
-/// This trait is used for errors returned with result types (!T).
+/// This trait is used for errors throwed with result types (!T).
 public trait Throwable < Stringable { }
 
 #[inline]
 func error_panic(err: Throwable) {
     console_eprintln("unhandled error: {}", err.to_string());
     returnTrace.print();
-    process_exit(1);
+    process_exit(102);
 }
 
 #[boxed]
