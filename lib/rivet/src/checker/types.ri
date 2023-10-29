@@ -254,7 +254,6 @@ extend Checker {
 }
 
 func check_pointer(expected: ast.Type, got: ast.Type) -> bool {
-    _ = self;
     if expected is .Anyptr as anyptr_ {
         if got is .Pointer as ptr {
             if anyptr_.is_mut and !ptr.is_mut {
