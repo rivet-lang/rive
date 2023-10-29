@@ -24,9 +24,9 @@
 - [ ] add `std.collections.HashMap![K, V]`.
 - [ ] function literals: `sum := func(a: int32, b: in32) int32 { return a + b; };`.
 - [ ] anonymous structs: `my_obj := struct(my_field: 1, other_field: true, pwd: "abc");`.
-- [ ] `c_import` for C interop:
+- [ ] `extern (C) import` for C interop:
     ```swift
-    c_import {
+    extern (C) import {
         include <stdio.h>
         define MY_FLAG
         include "../header.h"
@@ -47,4 +47,4 @@
         console.println("executed in compile-time");
     }
     ```
-- [ ] Replace `c/libc` definitions by `c_import` declarations.
+- [ ] Replace `c/libc` definitions by `extern (C) import` declarations.
