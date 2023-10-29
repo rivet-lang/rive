@@ -11,4 +11,5 @@ extern (C) {
 
     public func strerror(code: int32) -> ?[&]mut uint8;
     public func strlen(cs: ?[&]uint8) -> usize;
+    public func strstr(needle: ?[&]uint8, haystack: ?[&]uint8) -> ?[&]uint8;
 }

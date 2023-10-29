@@ -647,10 +647,10 @@ class Codegen:
         elif isinstance(res_expr,
                         ir.FloatLit) and self.comp.is_float(expected_typ_):
             res_expr.typ = expected_typ
-        elif self.comp.is_comptime_number(
+        elif self.comp.is_number(
             expr.typ
-        ) and self.comp.is_number(expected_typ_):
-            res_expr.typ = expected_typ_
+        ) and self.comp.is_number(expected_typ_) and expr.typ != expected_typ_:
+            res_expr = ir.Inst(ir.InstKind.Cast, [res_expr, expected_typ])
 
         if isinstance(
             res_expr.typ, ir.Pointer

@@ -109,7 +109,7 @@ extend Checker {
         expected_is_ptr := expected.is_pointer();
         got_is_ptr := got.is_pointer();
         if expected_is_ptr and got_is_ptr {
-            return self.check_pointer(expected, got);
+            return check_pointer(expected, got);
         } else if (expected_is_ptr and !got_is_ptr) or (got_is_ptr and !expected_is_ptr) {
             return false;
         }
@@ -193,29 +193,6 @@ extend Checker {
         return expected == got;
     }
 
-    func check_pointer(self, expected: ast.Type, got: ast.Type) -> bool {
-        _ = self;
-        if expected is .Anyptr as anyptr_ {
-            if got is .Pointer as ptr {
-                if anyptr_.is_mut and !ptr.is_mut {
-                    return false;
-                }
-                // anyptr == *T, is valid
-                return true;
-            }
-            return got is .Anyptr;
-        } else if expected is .Pointer as ptr and got is .Pointer as ptr2 {
-            if ptr.is_mut and !ptr2.is_mut {
-                return false;
-            }
-            if ptr.is_indexable and !ptr2.is_indexable {
-                return false;
-            }
-            return ptr.inner == ptr2.inner;
-        }
-        return false;
-    }
-
     func promote(self, left_type: ast.Type, right_type: ast.Type) -> ast.Type {
         if left_type == right_type {
             return left_type;
@@ -274,4 +251,27 @@ extend Checker {
             }
         };
     }
+}
+
+func check_pointer(expected: ast.Type, got: ast.Type) -> bool {
+    _ = self;
+    if expected is .Anyptr as anyptr_ {
+        if got is .Pointer as ptr {
+            if anyptr_.is_mut and !ptr.is_mut {
+                return false;
+            }
+            // anyptr == &T, is valid
+            return true;
+        }
+        return got is .Anyptr;
+    } else if expected is .Pointer as ptr and got is .Pointer as ptr2 {
+        if ptr.is_mut and !ptr2.is_mut {
+            return false;
+        }
+        if ptr.is_indexable and !ptr2.is_indexable {
+            return false;
+        }
+        return ptr.inner == ptr2.inner;
+    }
+    return false;
 }

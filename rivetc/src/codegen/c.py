@@ -381,12 +381,17 @@ class CGen:
                 # overflows `int64`, hence the consecutive subtraction by `1`.
                 self.write("(-9223372036854775807L - 1)")
             else:
+                self.write("((")
+                self.write_type(expr.typ)
+                self.write(")")
+                self.write("(")
                 self.write(expr.lit)
                 if expr.typ.name.endswith("64"
                                           ) or expr.typ.name.endswith("size"):
                     if expr.typ.name.startswith("u"):
                         self.write("U")
                     self.write("L")
+                self.write("))")
         elif isinstance(expr, ir.FloatLit):
             self.write(expr.lit)
             if str(expr.typ) == "float32":
