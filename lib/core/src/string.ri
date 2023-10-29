@@ -68,7 +68,7 @@ public struct string < Stringable, Hashable {
     }
 
     #[inline]
-    public func repeat(self, count: usize) -> string {
+    public func repeat(self, count: usize) -> Self {
         return if count == 0 {
             emptyString
         } else if count == 1 {
@@ -99,8 +99,8 @@ public struct string < Stringable, Hashable {
     }
 
     /// Returns a string array of the string split by '\t' and ' '.
-    public func fields(self) -> []string {
-        mut res := @vec(string);
+    public func fields(self) -> []Self {
+        mut res := @vec(Self);
         mut word_start: usize := 0;
         mut word_len: usize := 0;
         mut is_in_word := false;
@@ -131,7 +131,7 @@ public struct string < Stringable, Hashable {
     }
 
     /// Wraps the given string within `width` in characters.
-    public func wrap(self, width: usize = 60, end: string = "\n") -> string {
+    public func wrap(self, width: usize = 60, end: Self = "\n") -> Self {
         words := self.fields();
         if words.len == 0 {
             return emptyString;
@@ -182,7 +182,7 @@ public struct string < Stringable, Hashable {
 
     /// Returns the number of occurrences of `substr` in the string or 0 if no
     /// `substr` could be found.
-    public func count(self, substr: string) -> usize {
+    public func count(self, substr: Self) -> usize {
         if self.len == 0 or substr.len == 0 {
             return 0;
         }
@@ -209,7 +209,7 @@ public struct string < Stringable, Hashable {
 
     /// Returns the contents before `sub` in the string.
     /// If the substring is not found, it returns the full input string.
-    public func all_before_of(self, sub: string) -> string {
+    public func all_before_of(self, sub: Self) -> Self {
         if pos := self.index_of(sub) {
             return self[..pos];
         }
@@ -229,7 +229,7 @@ public struct string < Stringable, Hashable {
 
     /// Returns the position of the first character of the input string.
     /// It will return `none` if the input string can't be found.
-    public func index_of(self, p: string) -> ?usize {
+    public func index_of(self, p: Self) -> ?usize {
         if p.len > self.len or p.len == 0 {
             return none;
         }
@@ -245,7 +245,7 @@ public struct string < Stringable, Hashable {
     }
 
     /// Returns the position of the input string, starting search from `start` position.
-    public func index_after_of(self, p: string, start: usize) -> ?usize {
+    public func index_after_of(self, p: Self, start: usize) -> ?usize {
         if p.len > self.len {
             return none;
         }
@@ -268,7 +268,7 @@ public struct string < Stringable, Hashable {
     }
 
     /// Returns the position of any of the characters in the input string if found.
-    public func index_of_any(self, chars: string) -> ?usize {
+    public func index_of_any(self, chars: Self) -> ?usize {
         for i, b in self.as_bytes() {
             for c in chars.as_bytes() {
                 if b == c {
@@ -292,7 +292,7 @@ public struct string < Stringable, Hashable {
     }
 
     /// Returns the position of the last occurence of the input string.
-    public func last_index_of(self, p: string) -> ?usize {
+    public func last_index_of(self, p: Self) -> ?usize {
         if p.len > self.len or p.len == 0 {
             return none;
         }
@@ -308,7 +308,7 @@ public struct string < Stringable, Hashable {
     }
 
     /// Returns the string found between `start` string and `end` string.
-    public func find_between(self, start: string, end: string) -> string {
+    public func find_between(self, start: Self, end: Self) -> Self {
         start_pos := self.index_of(start) ?? return emptyString;
         val := self.slice(start_pos + start.len, self.len);
         end_pos := val.index_of(end) ?? return val;
@@ -317,7 +317,7 @@ public struct string < Stringable, Hashable {
 
     /// Strips any of the characters given in `cutset` from the start and end of
     /// the string.
-    public func trim(self, cutset: string) -> string {
+    public func trim(self, cutset: Self) -> Self {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
@@ -329,7 +329,7 @@ public struct string < Stringable, Hashable {
     /// given in `cutset` were stripped from the start and end of the string. Should
     /// be used as an input to `substr()`. If the string contains only the characters
     /// in `cutset`, both values returned are zero.
-    public func trim_indexes(self, cutset: string) -> (usize, usize) {
+    public func trim_indexes(self, cutset: Self) -> (usize, usize) {
         mut pos_left: usize := 0;
         mut pos_right: usize := if self.len == 0 { 0 } else { self.len - 1 };
         mut cs_match := true;
@@ -359,7 +359,7 @@ public struct string < Stringable, Hashable {
 
     /// Strips any of the characters given in `cutset` from the left of the
     /// string.
-    public func trim_left(self, cutset: string) -> string {
+    public func trim_left(self, cutset: Self) -> Self {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
@@ -382,7 +382,7 @@ public struct string < Stringable, Hashable {
 
     /// Strips any of the characters given in `cutset` from the right of the
     /// string.
-    public func trim_right(self, cutset: string) -> string {
+    public func trim_right(self, cutset: Self) -> Self {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
@@ -405,12 +405,12 @@ public struct string < Stringable, Hashable {
     /// Strips any of ` `, `\n`, `\t`, `\v`, `\f`, `\r` from the start and end of
     /// the string.
     #[inline]
-    public func trim_space(self) -> string {
+    public func trim_space(self) -> Self {
         return self.trim(" \n\t\v\f\r");
     }
 
     /// Replaces all occurences of `rep` with the string passed in `with_`.
-    public func replace(self, rep: string, with_: string) -> string {
+    public func replace(self, rep: Self, with_: Self) -> Self {
         if self.len == 0 or rep.len == 0 or rep.len > self.len {
             return self;
         } else if !self.contains(rep) {
@@ -496,9 +496,9 @@ public struct string < Stringable, Hashable {
     /// first `nth` parts. When `nth` == 0, return all the splits.
     /// The last returned element has the remainder of the string, even if the
     /// remainder contains more `delim` substrings.
-    public func split(self, delim: string, nth: usize = 0) -> []string {
+    public func split(self, delim: Self, nth: usize = 0) -> []Self {
         mut i: usize := 0;
-        mut res := @vec(string);
+        mut res := @vec(Self);
         switch delim.len {
             0 => {
                 i = 1;
@@ -557,9 +557,9 @@ public struct string < Stringable, Hashable {
 
     /// Splits a string using the chars in the delimiter string as delimiters chars.
     /// If the delimiter string is empty then `.split()` is used.
-    public func split_any(self, delim: string) -> []string {
+    public func split_any(self, delim: Self) -> []Self {
         mut i: usize := 0;
-        mut res := @vec(string);
+        mut res := @vec(Self);
         // check empty source string
         if self.len > 0 {
             // if empty delimiter string using default split
@@ -586,8 +586,8 @@ public struct string < Stringable, Hashable {
     /// and `\r\n` (Windows) line endings are all supported (including mixed line endings).
     /// NOTE: algorithm is "greedy", consuming '\r\n' as a single line ending with higher
     /// priority than '\r' and '\n' as multiple endings
-    public func split_into_lines(self) -> []string {
-        mut res := @vec(string);
+    public func split_into_lines(self) -> []Self {
+        mut res := @vec(Self);
         if self.len == 0 {
             return res;
         }
@@ -690,12 +690,12 @@ public struct string < Stringable, Hashable {
 
     /// Returns `true` if the string contains `substr`.
     #[inline]
-    public func contains(self, substr: string) -> bool {
+    public func contains(self, substr: Self) -> bool {
         return substr.len == 0 or self.index_of(substr) !is none;
     }
 
     /// Returns `true` if the string starts with `p`.
-    public func starts_with(self, p: string) -> bool {
+    public func starts_with(self, p: Self) -> bool {
         if p.len > self.len {
             return false;
         }
@@ -709,7 +709,7 @@ public struct string < Stringable, Hashable {
     }
 
     /// Returns `true` if the string ends with `p`.
-    public func ends_with(self, p: string) -> bool {
+    public func ends_with(self, p: Self) -> bool {
         if p.len > self.len {
             return false;
         }
