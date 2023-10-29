@@ -89,12 +89,12 @@ extend Checker {
         }
 
         if got is .Option as option and expected is .Pointer {
-            return self.check_pointer(expected, option.inner);
+            return check_pointer(expected, option.inner);
         } else if got is .Option and expected !is .Option {
             return false;
         } else if expected is .Option as option_ and got is .Option as option2 {
             if option_.inner is .Pointer and option2.inner is .Pointer {
-                return self.check_pointer(option_.inner, option2.inner);
+                return check_pointer(option_.inner, option2.inner);
             }
             return option_.inner == option2.inner;
         } else if expected is .Option as option_2 and got !is .Option {
