@@ -20,10 +20,10 @@ static newDescription = "Sets up a new Rivet project and performs `git init` (if
 on the system).";
 
 static newDescription2 = "If [NAME] is given, the project will be setup in a new directory with that
-name, and that name will be added to the `project.ri` file. If no name is
+name, and that name will be added to the `project.json` file. If no name is
 given, the user will be prompted for a name.";
 
-static initDescription = "If no `project.ri` file exists, one will be created.
+static initDescription = "If no `project.json` file exists, one will be created.
 If the current directory is not already controlled with `git`, will perform
 `git init` (if `git` is installed on the system).";
 
@@ -160,7 +160,7 @@ func check_project(mut project: build.Project) {
 func create_project_json(project: build.Project, is_init: bool) -> ! {
     path_ := if is_init { "project.json" } else { Path.join(project.name, "project.json")! };
     if !Path.exists(path_) {
-        utils.info("creating `project.ri` file...");
+        utils.info("creating `project.json` file...");
         project_ri := generate_project_json(project);
         fs.write_file(path_, project_ri)!;
     }
