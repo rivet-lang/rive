@@ -263,29 +263,29 @@ class Compiler:
                 already_exts.append(ext)
                 if ext.startswith("d_") or ext.startswith("notd_"):
                     if ext.startswith("d_"):
-                        should_compile = should_compile and ext[
-                            2:] in self.prefs.flags
+                        should_compile = ext[2:] in self.prefs.flags
                     else:
-                        should_compile = should_compile and ext[
-                            5:] not in self.prefs.flags
+                        should_compile = ext[5:] not in self.prefs.flags
                 elif osf := prefs.OS.from_string(ext):
-                    should_compile = should_compile and self.prefs.target_os == osf
+                    should_compile = self.prefs.target_os == osf
                 elif arch := prefs.Arch.from_string(ext):
-                    should_compile = should_compile and self.prefs.target_arch == arch
+                    should_compile = self.prefs.target_arch == arch
                 elif ext in ("x32", "x64"):
                     if ext == "x32":
-                        should_compile = should_compile and self.prefs.target_bits == Bits.X32
+                        should_compile = self.prefs.target_bits == Bits.X32
                     else:
-                        should_compile = should_compile and self.prefs.target_bits == Bits.X64
+                        should_compile = self.prefs.target_bits == Bits.X64
                 elif ext in ("little_endian", "big_endian"):
                     if ext == "little_endian":
-                        should_compile = should_compile and self.prefs.target_endian == Endian.Little
+                        should_compile = self.prefs.target_endian == Endian.Little
                     else:
-                        should_compile = should_compile and self.prefs.target_endian == Endian.Big
-                elif b := Backend.from_string(ext): # backends
-                    should_compile = should_compile and self.prefs.target_backend == b
+                        should_compile = self.prefs.target_endian == Endian.Big
+                elif b := prefs.Backend.from_string(ext): # backends
+                    should_compile = self.prefs.target_backend == b
                 else:
                     error(f"{input}: unknown special extension `{ext}`")
+                    break
+                if not should_compile:
                     break
             if should_compile:
                 new_inputs.append(input)

@@ -387,9 +387,7 @@ public struct Table {
         mut new_inputs := @vec(string, inputs.len);
         for input in inputs {
             basename_input := Path.basename(input);
-            if basename_input == "project.ri" {
-                continue; // Skip `project.ri` file, loaded after
-            } else if basename_input.count(".") == 1 {
+            if basename_input.count(".") == 1 {
                 new_inputs.push(input);
                 continue;
             }
@@ -402,31 +400,34 @@ public struct Table {
                 }
                 already_exts.push(ext);
                 if ext.starts_with("d_") or ext.starts_with("notd_") {
-                    should_compile = should_compile and if ext.starts_with("d_") {
+                    should_compile = if ext.starts_with("d_") {
                         ext[2..] in self.prefs.flags
                     } else {
                         ext[2..] !in self.prefs.flags
                     };
                 } else if os := sys.OS.from_string(ext) {
-                    should_compile = should_compile and self.prefs.target_os == os;
+                    should_compile = self.prefs.target_os == os;
                 } else if arch := sys.Arch.from_string(ext) {
-                    should_compile = should_compile and self.prefs.target_arch == arch;
+                    should_compile = self.prefs.target_arch == arch;
                 } else if ext in ["x32", "x64"] {
-                    should_compile = should_compile and if ext == "x32" {
+                    should_compile = if ext == "x32" {
                         !self.prefs.target_is_64bit
                     } else {
                         self.prefs.target_is_64bit
                     };
                 } else if ext in ["little_endian", "big_endian"] {
-                    should_compile = should_compile and if ext == "little_endian" {
+                    should_compile = if ext == "little_endian" {
                         self.prefs.target_is_little_endian
                     } else {
                         !self.prefs.target_is_little_endian
                     };
                 } else if backend := prefs.Backend.from_string(ext) {
-                    should_compile = should_compile and backend == self.prefs.target_backend;
+                    should_compile = backend == self.prefs.target_backend;
                 } else {
                     utils.error("{}: unknown special extension `{}`", input, ext);
+                }
+                if !should_compile {
+                    break;
                 }
             }
             if should_compile {
