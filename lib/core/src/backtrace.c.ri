@@ -53,7 +53,7 @@ func bt_print_callback(
         } else {
             string.from_raw(filename_ptr)
         };
-        console_eprintln("   at {} ({}:{})", fn_name, file_name, lineno);
+        console_eprintln("   at {} from \"{}\":{}", fn_name, file_name, lineno);
     }
     return 0;
 }

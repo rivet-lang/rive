@@ -7,7 +7,7 @@ import c/libc;
 static emptyString = string(c"", 0, true);
 
 #[boxed]
-public struct string < Stringable, Hashable {
+public struct string < Stringable, Hashable, Throwable {
     public ptr: [&]uint8;
     public len: usize;
     is_ref: bool;

@@ -70,8 +70,8 @@ struct ReturnTrace {
     func print(self) {
         for trace in self.traces {
             console_eprintln(
-                "   at {} ({}:{})", demangle_symbol(trace.name), trace.file,
-                trace.line
+                "   at {} from \"{}\":{}", demangle_symbol(trace.name),
+                trace.file, trace.line
             );
         }
     }
