@@ -20,16 +20,26 @@ struct CallTrace {
     line: usize;
 }
 
+// NOTE: 50 should be fine for now.
+const RETURN_TRACE_MAX_SIZE = 50;
+
 struct ReturnTrace {
-    mut traces: []CallTrace = @vec(CallTrace, 5);
+    traces: [RETURN_TRACE_MAX_SIZE]mut CallTrace;
+    mut cur_idx: usize;
 
     #[inline]
     func add(mut self, trace: CallTrace) {
-        self.traces.push(trace);
+        if self.cur_idx == RETURN_TRACE_MAX_SIZE {
+            process_panic("maximum return trace size exceeded");
+        }
+        self.traces[self.cur_idx] = trace;
+        self.cur_idx += 1;
     }
 
     func print(self) {
-        for trace in self.traces {
+        mut i: usize := 0;
+        while i < self.cur_idx : i += 1 {
+            trace := self.traces[i];
             console_eprintln(
                 "   from {} in \"{}\":{}", demangle_symbol(trace.name),
                 trace.file, trace.line
@@ -38,7 +48,7 @@ struct ReturnTrace {
     }
 
     func clear(mut self) {
-        self.traces.clear();
+        self.cur_idx = 0;
     }
 }
 
