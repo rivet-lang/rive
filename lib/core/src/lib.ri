@@ -55,34 +55,3 @@ func internal_resize(ptr: ?mut_anyptr, sz: usize) -> mut_anyptr {
         )
     };
 }
-
-struct EnumInfo {
-    _rc_: usize;
-    _id_: usize;
-    obj: anyptr;
-}
-
-func enum_cast(ptr: anyptr, expected_id: usize) -> anyptr {
-    enum_info := unsafe { @as(&EnumInfo, ptr) };
-    if enum_info._id_ != expected_id {
-        // TODO: replace indexes with names
-        console_eprintln(
-            "panic: enum cast: cannot cast ID({}) to ID({})", enum_info._id_, expected_id
-        );
-        bt_print(2);
-        process_exit(1);
-    }
-    return enum_info.obj;
-}
-
-func trait_cast(got_obj: anyptr, got_id: usize, expected_id: usize) -> anyptr {
-    if got_id != expected_id {
-        // TODO: replace indexes with names
-        console_eprintln(
-            "panic: trait cast: cannot cast ID({}) to ID({})", got_id, expected_id
-        );
-        bt_print(2);
-        process_exit(1);
-    }
-    return got_obj;
-}

@@ -1409,7 +1409,7 @@ class Codegen:
                         self.gen_defer_stmts(True, res_value_is_err)
                         if self.cur_fn_is_main or self.inside_let_decl:
                             self.cur_fn.add_call(
-                                "_R4core11error_panicF", [
+                                "_R4core15uncatched_errorF", [
                                     ir.Selector(
                                         self.ir_type(self.comp.throwable_t),
                                         res_value, ir.Name("err")
