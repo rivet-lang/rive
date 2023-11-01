@@ -2,11 +2,12 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import ../traits;
 #if !(_X86_ or _AMD64_)
 import ../process;
 #endif
 
-public enum Arch as uint8 {
+public enum Arch as uint8 < traits.Stringable {
     X86,
     Amd64;
 
@@ -16,6 +17,14 @@ public enum Arch as uint8 {
             "i386", "x86", "_X86_" => .X86,
             "amd64", "_AMD64_" => .Amd64,
             else => none
+        };
+    }
+
+    public func to_string(&self) -> string {
+        return switch self.* {
+            .X86 => "x86",
+            .Amd64 => "amd64",
+            else => "unknown architecture"
         };
     }
 }

@@ -8,7 +8,7 @@ import std/process;
 import rivet;
 import rivet/utils;
 
-import ./new;
+import ./tools;
 
 func main() {
     if process.args.len == 1 {
@@ -17,7 +17,7 @@ func main() {
     }
     cmd := process.args[1];
     switch cmd {
-        "new", "init" => new.new(process.args[2..], cmd == "init")!,
+        "new", "init" => tools.new(process.args[2..], cmd == "init")!,
         "build", "run", "test", "check" => {
             is_test := cmd == "test";
             is_check := cmd == "check";

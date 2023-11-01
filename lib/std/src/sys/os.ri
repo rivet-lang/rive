@@ -2,11 +2,12 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import ../traits;
 #if !(_X86_ or _AMD64_)
 import ../process;
 #endif
 
-public enum OS as uint8 {
+public enum OS as uint8 < traits.Stringable {
     Linux,
     Windows,
     Macos;
@@ -18,6 +19,15 @@ public enum OS as uint8 {
             "windows", "_WINDOWS_" => .Windows,
             "macos", "_MACOS_" => .Macos,
             else => none
+        };
+    }
+
+    public func to_string(&self) -> string {
+        return switch self.* {
+            .Linux => "linux",
+            .Windows => "windows",
+            .Macos => "macos",
+            else => "unknown operating system"
         };
     }
 }
