@@ -26,8 +26,7 @@ public enum OS as uint8 < traits.Stringable {
         return switch self.* {
             .Linux => "linux",
             .Windows => "windows",
-            .Macos => "macos",
-            else => "unknown operating system"
+            .Macos => "macos"
         };
     }
 }

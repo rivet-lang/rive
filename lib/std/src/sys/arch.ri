@@ -23,8 +23,7 @@ public enum Arch as uint8 < traits.Stringable {
     public func to_string(&self) -> string {
         return switch self.* {
             .X86 => "x86",
-            .Amd64 => "amd64",
-            else => "unknown architecture"
+            .Amd64 => "amd64"
         };
     }
 }
