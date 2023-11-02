@@ -15,7 +15,8 @@
     }
     ```
 - [ ] Constant-folding: `x := 2 * 2;` => `x := 4;`.
-- [ ] Optimize code.
+- [ ] Optimize code, inline functions/methods annotated with `inline`, 
+    delete unused code, etc.
 - [ ] (Atomic) Reference-Counting for traits, boxed enums, strings and vectors.
 - [ ] Better support for embedded structs.
 - [ ] `undefined` for uninitialized variables: `x: [5]uint8 := undefined;`.
