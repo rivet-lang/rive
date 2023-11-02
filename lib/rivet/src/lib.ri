@@ -188,9 +188,8 @@ public struct Compiler {
                 abspath = Path.resolve(pathx)!;
                 mut mod_basedir := Path.dirname(abspath) ?? abspath;
                 if mod_basedir.ends_with("/src") {
-                    mod_basedir = mod_basedir[..mod_basedir.len - 4]; // skip `src/`
-                }
-                if mod_basedir.contains("/src") and !mod_basedir.ends_with("/src") {
+                    mod_basedir = mod_basedir[..mod_basedir.len - 4]; // skip `/src`
+                } else if mod_basedir.contains("/src") {
                     first_part := mod_basedir[..mod_basedir.last_index_of_byte(b'/') ?? 0];
                     mod_basedir = mod_basedir[..first_part.last_index_of_byte(b'/') ?? 0];
                 }
@@ -227,7 +226,7 @@ public struct Compiler {
                     files = self.table.filter_files(Directory.walk(mod_path, ".ri")!);
                 }
                 // support `src/` directory
-                src_dir := if pathx.count("/") > 0 {
+                src_dir := if pathx.contains("/") {
                     slash_idx := (pathx.index_of_byte(b'/') ?? 0) + 1;
                     Path.join(l, pathx[..slash_idx], "src", pathx[slash_idx..])!
                 } else {
