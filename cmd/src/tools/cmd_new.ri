@@ -143,12 +143,16 @@ func check_project(mut project: build.Project) {
     if project.name.contains(" ") {
         project.name = project.name.replace(" ", "_");
         utils.warn(
-            "the project name cannot contain spaces, the name will be changed to `{}`",
-            project.name
+            "project name cannot contain spaces, "
+            "the name will be changed to `{}`", project.name
         );
     }
     if project.name.contains("-") {
-        utils.error("project name should not contain hyphens");
+        project.name = project.name.replace("-", "_");
+        utils.warn(
+            "project name should not contain hyphens, "
+            "the name will be changed to `{}`", project.name
+        );
     }
     if Path.exists(project.name) {
         utils.error("`{}` already exists", project.name);
