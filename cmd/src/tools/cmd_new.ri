@@ -12,8 +12,6 @@ import { Path, Directory, self } from std/fs;
 import rivet/build;
 import rivet/utils;
 
-import { readln } from ../utils;
-
 import ./templates;
 
 static newDescription = "Sets up a new Rivet project and performs `git init` (if `git` is installed
