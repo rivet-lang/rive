@@ -22,7 +22,7 @@
 - [ ] Disallow empty array literal (`x := []!; -> ERROR`).
 - [ ] Add `@is_flag_defined()` builtin function.
 - [ ] Generic support: `Struct<T> { f: T; }` => `Struct:<T>(f: @default(T))`.
-- [ ] Function literals: `sum := func(a: int32, b: in32) int32 { return a + b; };`.
+- [ ] Lambdas + Closures: `sum := |a: int32, b: int32| a + b;`.
 - [ ] Anonymous structs: `my_obj := struct(my_field: 1, other_field: true, pwd: "abc");`.
 - [ ] `extern (C) import` for C interop:
     ```swift
