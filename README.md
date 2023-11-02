@@ -36,19 +36,6 @@ there will be an interpreter available.
 You can find information on how to build Rivet on your computer by going to the
 [documentation](https://rivet-lang.github.io/docs).
 
-## Sample: The classic `Hello World!`
-
-```swift
-import std/console;
-
-func main() {
-    console.println("Hello World!");
-}
-```
-More samples in the [`samples/`](samples/) folder.
-It is also possible to find valid code examples in the  [`tests/valid`](tests/valid)
-folder.
-
 ## Why?
 
 There are many programming languages today, each specialized in a specific field or in
@@ -71,8 +58,22 @@ quality.
 * **A basic preprocessor**: `if`, `else_if`, `else` and `endif` for optional code using
     flags (`-D my_flag`).
 * **Immutable values**: Variables and fields are immutable by default.
-* **Polymorphism**: Traits and Embedded Structs are supported.
+    structs have internal immutability.
+* **Polymorphism**: Traits, Embedded Structs and Tagged Enums are supported.
 * **Generics**: Specialize and reuse the same code for different types (**coming soon**).
+
+## Sample: The classic `Hello World!`
+
+```swift
+import std/console;
+
+func main() {
+    console.println("Hello World!");
+}
+```
+More samples in the [`samples/`](samples/) folder.
+It is also possible to find valid code examples in the  [`tests/valid`](tests/valid)
+folder.
 
 ## Important note
 
