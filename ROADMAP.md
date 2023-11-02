@@ -1,6 +1,7 @@
 ## Roadmap - Self-hosted compiler
 
 - [X] Check correct implementation of a trait.
+- [ ] Format command (`rivet fmt .`).
 - [ ] Explicit function/method overloading:
     ```swift
     func bool_to_string(b: bool) -> string {...}
@@ -16,7 +17,7 @@
 - [ ] Constant-folding: `x := 2 * 2;` => `x := 4;`.
 - [ ] Optimize code.
 - [ ] (Atomic) Reference-Counting for traits, boxed enums, strings and vectors.
-- [ ] Btter support for embedded structs.
+- [ ] Better support for embedded structs.
 - [ ] `undefined` for uninitialized variables: `x: [5]uint8 := undefined;`.
 - [ ] Disallow empty array literal (`x := []!; -> ERROR`).
 - [ ] Add `@is_flag_defined()` builtin function.
