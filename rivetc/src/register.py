@@ -218,7 +218,7 @@ class Register:
                             decl.is_unsafe, decl.is_method, decl.is_variadic,
                             decl.name, decl.args, decl.ret_typ,
                             decl.has_named_args, decl.has_body, decl.name_pos,
-                            decl.self_is_mut, decl.self_is_ptr
+                            decl.self_is_mut, decl.self_is_ptr, annotations=decl.annotations
                         )
                     )
                     decl.sym.is_main = decl.is_main

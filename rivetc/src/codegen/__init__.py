@@ -408,11 +408,20 @@ class Codegen:
                         )
                         self.generated_array_returns.append(name)
                     ret_typ = ir.Type(name)
+            if decl.is_extern and not decl.has_body:
+                name = decl.sym.name
+            elif (not decl.is_method) and decl.annotations.has("export"):
+                export_annotation = decl.annotations.find("export")
+                if isinstance(export_annotation.args[0].expr, ast.StringLiteral):
+                    name = export_annotation.args[0].expr.lit
+                else:
+                    assert False
+            else:
+                name = mangle_symbol(decl.sym)
             fn_decl = ir.FuncDecl(
                 False, decl.annotations, decl.is_extern and not decl.has_body,
-                decl.sym.name if decl.is_extern and not decl.has_body else
-                mangle_symbol(decl.sym), args, decl.is_variadic
-                and decl.is_extern, ret_typ, decl.ret_typ == self.comp.never_t
+                name, args, decl.is_variadic and decl.is_extern, ret_typ,
+                decl.ret_typ == self.comp.never_t
             )
             self.cur_fn = fn_decl
             self.cur_fn.arr_ret_struct = arr_ret_struct
@@ -1264,6 +1273,12 @@ class Codegen:
             if not is_vtable_call:
                 if expr.is_closure:
                     name = self.gen_expr_with_cast(expr.left.typ, expr.left)
+                elif (not expr.sym.is_method) and expr.sym.annotations.has("export"):
+                    export_annotation = expr.sym.annotations.find("export")
+                    if isinstance(export_annotation.args[0].expr, ast.StringLiteral):
+                        name = export_annotation.args[0].expr.lit
+                    else:
+                        assert False
                 elif expr.sym.is_extern and expr.sym.abi != sym.ABI.Rivet and not expr.sym.has_body:
                     name = ir.Name(expr.sym.name)
                 else:

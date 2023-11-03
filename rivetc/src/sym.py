@@ -625,7 +625,7 @@ class Fn(Sym):
     def __init__(
         self, abi, is_public, is_extern, is_unsafe, is_method, is_variadic,
         name, args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
-        self_is_ptr, self_typ = None
+        self_is_ptr, self_typ = None, annotations = None
     ):
         Sym.__init__(self, is_public, name)
         self.is_main = False
@@ -642,6 +642,7 @@ class Fn(Sym):
         self.has_named_args = has_named_args
         self.has_body = has_body
         self.name_pos = name_pos
+        self.annotations = annotations
 
     def get_arg(self, idx):
         arg = self.args[idx]
