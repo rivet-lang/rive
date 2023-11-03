@@ -10,7 +10,7 @@ extern (Rivet) {
     func drop_globals();
 }
 
-#[export("init_args")]
+#[export("init_args")] // TODO: `#[no_mangle]`
 func init_args(_argc: usize, _argv: [&][&]uint8) {
     unsafe {
         ARGS = @vec(string, _argc);
@@ -29,22 +29,20 @@ func main(
     mod_main: func()
 #endif
 ) {
-    unsafe {
-        setup_signals_handler();
-        init_args(@as(usize, _argc), _argv);
+    setup_signals_handler();
+    init_args(@as(usize, _argc), _argv);
 #if !_TESTS_ // `init_string_lits` is called after
-        init_string_lits();
+    init_string_lits();
 #endif
-        init_globals();
-        libcoreIsStarted = true;
+    init_globals();
+    libcoreIsStarted = true;
 #if _TESTS_
-        if test_runner.tests.len > 0 {
-            test_runner.run();
-            test_runner.print_summary_tests();
-        }
-#else
-        mod_main();
-#endif
-        drop_globals();
+    if test_runner.tests.len > 0 {
+        test_runner.run();
+        test_runner.print_summary_tests();
     }
+#else
+    mod_main();
+#endif
+    drop_globals();
 }
