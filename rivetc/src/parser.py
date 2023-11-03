@@ -517,7 +517,9 @@ class Parser:
             is_result = self.accept(Kind.Bang)
             if self.tok.kind == Kind.Lbrace:
                 if not is_result:
-                    report.error("expected return type declaration", self.prev_tok.pos)
+                    report.error(
+                        "expected return type declaration", self.prev_tok.pos
+                    )
             else:
                 ret_typ = self.parse_type()
             if is_result:
@@ -1272,7 +1274,7 @@ class Parser:
                 ret_typ = self.parse_type()
             else:
                 ret_typ = self.comp.void_t
-            return type.Fn(
+            return type.Func(
                 False, sym.ABI.Rivet, False, args, False, ret_typ, False, False
             )
         elif self.accept(Kind.Amp):

@@ -31,7 +31,7 @@ def prefix_type(tt):
     return prefix
 
 def mangle_type(typ):
-    if isinstance(typ, type.Fn):
+    if isinstance(typ, type.Func):
         s = "fn_"
         if typ.is_unsafe:
             s += "unsafe_"
@@ -98,7 +98,7 @@ def mangle_symbol(s):
             s = s.parent
     res.insert(0, "_R")
 
-    if isinstance(root, sym.Fn):
+    if isinstance(root, sym.Func):
         if root.is_method:
             res.append("M")
         else:
@@ -389,7 +389,7 @@ class Codegen:
                 arg_typ_sym = arg.typ.symbol()
                 if arg.is_mut and not (
                     arg_typ_sym.is_boxed() or arg_typ_sym.is_primitive()
-                    or isinstance(arg.typ, (type.Ptr))
+                    or isinstance(arg.typ, type.Ptr)
                 ):
                     arg_typ = arg_typ.ptr()
                 args.append(ir.Ident(arg_typ, arg.name))
@@ -412,7 +412,9 @@ class Codegen:
                 name = decl.sym.name
             elif (not decl.is_method) and decl.annotations.has("export"):
                 export_annotation = decl.annotations.find("export")
-                if isinstance(export_annotation.args[0].expr, ast.StringLiteral):
+                if isinstance(
+                    export_annotation.args[0].expr, ast.StringLiteral
+                ):
                     name = export_annotation.args[0].expr.lit
                 else:
                     assert False
@@ -814,7 +816,7 @@ class Codegen:
                         if expr.sym.abi == sym.ABI.Rivet else expr.sym.name
                     )
                 return ir.Ident(ir_typ, mangle_symbol(expr.sym))
-            elif isinstance(expr.sym, sym.Fn):
+            elif isinstance(expr.sym, sym.Func):
                 return ir.Ident(self.ir_type(expr.typ), mangle_symbol(expr.sym))
             elif expr.is_comptime:
                 if expr.name == "_RIVET_COMMIT_":
@@ -1273,9 +1275,12 @@ class Codegen:
             if not is_vtable_call:
                 if expr.is_closure:
                     name = self.gen_expr_with_cast(expr.left.typ, expr.left)
-                elif (not expr.sym.is_method) and expr.sym.annotations.has("export"):
+                elif (not expr.sym.is_method
+                      ) and expr.sym.annotations.has("export"):
                     export_annotation = expr.sym.annotations.find("export")
-                    if isinstance(export_annotation.args[0].expr, ast.StringLiteral):
+                    if isinstance(
+                        export_annotation.args[0].expr, ast.StringLiteral
+                    ):
                         name = export_annotation.args[0].expr.lit
                     else:
                         assert False
@@ -1313,7 +1318,7 @@ class Codegen:
                 fn_arg_typ = fn_arg.typ
                 fn_arg_typ_sym = fn_arg_typ.symbol()
                 if fn_arg.is_mut and not isinstance(
-                    fn_arg.typ, (type.Ptr)
+                    fn_arg.typ, type.Ptr
                 ) and not (
                     fn_arg_typ_sym.is_boxed() or fn_arg_typ_sym.is_primitive()
                 ):
@@ -1537,7 +1542,7 @@ class Codegen:
                             self.ir_type(expr.left_sym.info.underlying_typ),
                             str(v.value)
                         )
-                elif isinstance(expr.left_sym, sym.Fn):
+                elif isinstance(expr.left_sym, sym.Func):
                     return ir.Ident(
                         self.ir_type(expr.typ), mangle_symbol(expr.left_sym)
                     )
@@ -2567,7 +2572,7 @@ class Codegen:
         )
 
     def default_value(self, typ, custom_tmp = None):
-        if isinstance(typ, (type.Ptr, type.Fn)):
+        if isinstance(typ, (type.Ptr, type.Func)):
             return ir.NoneLit(ir.VOID_PTR_T)
         if isinstance(typ, type.Option):
             if typ.is_pointer():
@@ -2911,7 +2916,7 @@ class Codegen:
                 )
                 self.generated_opt_res_types.append(name)
             return ir.Type(name)
-        elif isinstance(typ, type.Fn):
+        elif isinstance(typ, type.Func):
             args = []
             if gen_self_arg:
                 args.append(ir.VOID_PTR_T)
@@ -2925,7 +2930,7 @@ class Codegen:
             return ir.Array(self.ir_type(typ.typ), typ.size)
         elif isinstance(typ, type.Vec):
             return ir.VEC_T.ptr(True)
-        elif isinstance(typ, (type.Ptr)):
+        elif isinstance(typ, type.Ptr):
             inner_t = self.ir_type(typ.typ)
             if isinstance(inner_t, ir.Pointer) and inner_t.is_managed:
                 return inner_t
@@ -2996,7 +3001,7 @@ class Codegen:
                 static_vtbl_name = f"{ts_name}4VTBL"
                 fields = []
                 for m in ts.syms:
-                    if isinstance(m, sym.Fn):
+                    if isinstance(m, sym.Func):
                         proto = m.typ()
                         proto.args.insert(
                             0,
@@ -3016,7 +3021,7 @@ class Codegen:
                 for idx, its in enumerate(ts.info.implements):
                     map = {}
                     for m in ts.syms:
-                        if isinstance(m, sym.Fn):
+                        if isinstance(m, sym.Func):
                             method_name = OVERLOADABLE_OPERATORS_STR[
                                 m.name
                             ] if m.name in OVERLOADABLE_OPERATORS_STR else m.name

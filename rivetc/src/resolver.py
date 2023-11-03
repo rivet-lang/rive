@@ -410,7 +410,7 @@ class Resolver:
                         f"cannot find `{ident.name}` in this scope", ident.pos
                     )
                     ident.not_found = True
-                elif isinstance(s, sym.Fn):
+                elif isinstance(s, sym.Func):
                     report.error(
                         f"cannot find `{ident.name}` in this scope", ident.pos
                     )
@@ -511,7 +511,7 @@ class Resolver:
                 res = self.resolve_type(t)
             typ.resolve(self.comp.universe.add_or_get_tuple(typ.types))
             return res
-        elif isinstance(typ, type.Fn):
+        elif isinstance(typ, type.Func):
             res = False
             for i in range(len(typ.args)):
                 res = self.resolve_type(typ.args[i].typ)

@@ -5,7 +5,7 @@
 import copy
 
 from . import token
-from .sym import TypeKind, Fn as sym_Fn, Arg, ABI
+from .sym import TypeKind, Func as sym_Func, Arg, ABI
 
 class _Ptr: # ugly hack =/
     def __init__(self, val):
@@ -19,14 +19,14 @@ class TBase:
     def symbol(self):
         if isinstance(self, (Vec, Array, Tuple, Variadic)):
             return self.sym
-        elif isinstance(self, Fn):
+        elif isinstance(self, Func):
             return self.info()
         return self.typ.symbol()
 
     def unalias(self):
         if isinstance(self, (Result, Option)):
             self.typ.unalias()
-        elif isinstance(self, Fn):
+        elif isinstance(self, Func):
             for i in range(len(self.args)):
                 self.args[i].typ.unalias()
             self.ret_typ.unalias()
@@ -210,7 +210,7 @@ class Tuple(TBase):
     def __str__(self):
         return f"({', '.join([str(t) for t in self.types])})"
 
-class Fn(TBase):
+class Func(TBase):
     def __init__(
         self, is_extern, abi, is_method, args, is_variadic, ret_typ,
         self_is_mut, self_is_ptr
@@ -226,7 +226,7 @@ class Fn(TBase):
         self.ret_typ = ret_typ
 
     def info(self):
-        return sym_Fn(
+        return sym_Func(
             self.abi, True, self.is_extern, self.is_unsafe, self.is_method,
             self.is_variadic, self.stringify(False),
             self.args, self.ret_typ, False, not self.is_extern,
@@ -275,7 +275,7 @@ class Fn(TBase):
         return self.stringify(False)
 
     def __eq__(self, got):
-        if not isinstance(got, Fn): return False
+        if not isinstance(got, Func): return False
         if self.is_unsafe != got.is_unsafe:
             return False
         elif self.is_extern != got.is_extern:
@@ -303,7 +303,7 @@ class Option(TBase):
         self.sym = None
 
     def is_pointer(self):
-        return self.typ.__class__ in (Ptr, Fn) or self.typ.symbol().is_boxed()
+        return self.typ.__class__ in (Ptr, Func) or self.typ.symbol().is_boxed()
 
     def qualstr(self):
         return f"?{self.typ.qualstr()}"

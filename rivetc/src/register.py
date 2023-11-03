@@ -213,12 +213,13 @@ class Register:
             elif isinstance(decl, ast.FuncDecl):
                 try:
                     decl.sym = self.sym.add_and_return(
-                        sym.Fn(
+                        sym.Func(
                             self.abi, decl.is_public, decl.is_extern,
                             decl.is_unsafe, decl.is_method, decl.is_variadic,
                             decl.name, decl.args, decl.ret_typ,
                             decl.has_named_args, decl.has_body, decl.name_pos,
-                            decl.self_is_mut, decl.self_is_ptr, annotations=decl.annotations
+                            decl.self_is_mut, decl.self_is_ptr,
+                            annotations = decl.annotations
                         )
                     )
                     decl.sym.is_main = decl.is_main

@@ -190,7 +190,7 @@ class Sym:
             return "variable"
         elif isinstance(self, Type):
             return "type"
-        elif isinstance(self, Fn):
+        elif isinstance(self, Func):
             if self.is_method:
                 return "method"
             return "function"
@@ -264,7 +264,7 @@ class Mod(Sym):
             ]
         )
         vec_sym.add(
-            Fn(
+            Func(
                 ABI.Rivet, True, False, False, True, False, "push",
                 [Arg("value", False, elem_typ, None, False, NO_POS)],
                 type_Type(self[0]), False, True, NO_POS, True, False,
@@ -272,13 +272,13 @@ class Mod(Sym):
             )
         )
         vec_sym.add(
-            Fn(
+            Func(
                 ABI.Rivet, True, False, False, True, False, "pop", [], elem_typ,
                 False, True, NO_POS, True, False, type_Type(vec_sym)
             )
         )
         vec_sym.add(
-            Fn(
+            Func(
                 ABI.Rivet, True, False, False, True, False, "clone", [],
                 type_Type(vec_sym), False, True, NO_POS, False, False,
                 type_Type(vec_sym)
@@ -621,7 +621,7 @@ class Arg:
         self.has_def_expr = has_def_expr
         self.pos = pos
 
-class Fn(Sym):
+class Func(Sym):
     def __init__(
         self, abi, is_public, is_extern, is_unsafe, is_method, is_variadic,
         name, args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
@@ -664,8 +664,8 @@ class Fn(Sym):
         return "function"
 
     def typ(self):
-        from .type import Fn
-        return Fn(
+        from .type import Func
+        return Func(
             self.is_extern, self.abi, self.is_method, self.args,
             self.is_variadic, self.ret_typ, self.self_is_mut, self.self_is_ptr
         )
