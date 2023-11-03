@@ -1,6 +1,7 @@
 ## Roadmap - Self-hosted compiler
 
 - [X] Check correct implementation of a trait.
+- [ ] `no_mangle` annotation.
 - [ ] Format command (`rivet fmt .`).
 - [ ] Explicit function/method overloading:
     ```swift

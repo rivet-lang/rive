@@ -10,7 +10,6 @@ extern (Rivet) {
     func drop_globals();
 }
 
-#[export("init_args")] // TODO: `#[no_mangle]`
 func init_args(_argc: usize, _argv: [&][&]uint8) {
     unsafe {
         ARGS = @vec(string, _argc);
