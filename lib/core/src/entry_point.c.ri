@@ -10,7 +10,8 @@ extern (Rivet) {
     func drop_globals();
 }
 
-extern (C) func init_args(_argc: usize, _argv: [&][&]uint8) {
+#[export("init_args")]
+func init_args(_argc: usize, _argv: [&][&]uint8) {
     unsafe {
         ARGS = @vec(string, _argc);
         mut i: usize := 0;
