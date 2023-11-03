@@ -220,13 +220,6 @@ class Parser:
                     if self.tok.kind == Kind.Rbrace:
                         break
                 self.expect(Kind.Rbrace)
-            elif self.accept(Kind.KwFunc):
-                protos.append(
-                    self.parse_func_decl(
-                        doc_comment, annotations, is_public,
-                        annotations.has("unsafe") or abi != sym.ABI.Rivet, abi
-                    )
-                )
             else:
                 report.error("invalid external declaration", pos)
             self.inside_extern = False
