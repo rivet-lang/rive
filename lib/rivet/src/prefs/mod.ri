@@ -134,7 +134,9 @@ public struct Prefs {
         }
         if define := fp.string_flag("define", b'D', "Define the provided flag.") {
             if define.starts_with("_") and define.ends_with("_") {
-                utils.error("flag `{}` should have a upper case name", define);
+                utils.error(
+                    "this form of declaration is reserved for the compiler: `{}`", define
+                );
             } else if define in prefs.flags {
                 utils.error("duplicate flag: `{}`", define);
             } else {
