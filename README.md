@@ -62,6 +62,8 @@ quality.
 * **Polymorphism**: Traits, Embedded Structs and Tagged Enums are supported.
 * **Generics**: Specialize and reuse the same code for different types (**coming soon**).
 
+More features that will be added in the self-hosted compiler can be seen in the [roadmap](ROADMAP.md).
+
 ## Sample: The classic `Hello World!`
 
 ```swift
@@ -85,6 +87,8 @@ successfully.
 
 Only linux is supported for now. Windows is not well supported, and macOS is not supported
 yet. Any help to provide full support for both Windows and macOS is welcome.
+
+Read [CONTRIBUTING](CONTRIBUTING.md) to learn more information.
 
 <div align="center">
 
