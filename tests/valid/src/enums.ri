@@ -105,7 +105,7 @@ struct EnumStruct {
     dv: DefaultValue;
 }
 
-test "boxed enums with `default_value` annotation" {
+test "boxed enums with `default_value` attribute" {
     es := EnumStruct();
     @assert(es.dv is .Abc as int and int == 5);
 }

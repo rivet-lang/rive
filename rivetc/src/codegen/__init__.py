@@ -159,7 +159,7 @@ class Codegen:
 
         for mod in self.comp.universe.syms:
             if isinstance(mod, sym.Mod):
-                self.gen_mod_annotations(mod.name, mod.annotations)
+                self.gen_mod_attributes(mod.name, mod.attributes)
         for source_file in source_files:
             self.source_file = source_file
             self.gen_decls(source_file.decls)
@@ -279,21 +279,21 @@ class Codegen:
                 self.comp.exit_code = os.system(self.comp.prefs.mod_output)
                 os.remove(self.comp.prefs.mod_output)
 
-    def gen_mod_annotations(self, mod_name, annotations):
+    def gen_mod_attributes(self, mod_name, attributes):
         mod_folder = os.path.join(prefs.RIVET_DIR, "obj", mod_name)
-        if annotations == None:
+        if attributes == None:
             return
-        for annotation in annotations.annotations:
-            if annotation.name == "link_library":
+        for attribute in attributes.attributes:
+            if attribute.name == "link_library":
                 self.comp.prefs.libraries_to_link.append(
-                    annotation.args[0].expr.lit
+                    attribute.args[0].expr.lit
                 )
-            elif annotation.name == "compile_c_source":
+            elif attribute.name == "compile_c_source":
                 if not os.path.exists(mod_folder):
                     os.mkdir(mod_folder)
                 old_wd = os.getcwd()
-                os.chdir(os.path.dirname(os.path.realpath(annotation.pos.file)))
-                cfile = os.path.realpath(annotation.args[0].expr.lit)
+                os.chdir(os.path.dirname(os.path.realpath(attribute.pos.file)))
+                cfile = os.path.realpath(attribute.args[0].expr.lit)
                 os.chdir(old_wd)
                 objfile = os.path.join(
                     mod_folder,
@@ -410,18 +410,18 @@ class Codegen:
                     ret_typ = ir.Type(name)
             if decl.is_extern and not decl.has_body:
                 name = decl.sym.name
-            elif (not decl.is_method) and decl.annotations.has("export"):
-                export_annotation = decl.annotations.find("export")
+            elif (not decl.is_method) and decl.attributes.has("export"):
+                export_attribute = decl.attributes.find("export")
                 if isinstance(
-                    export_annotation.args[0].expr, ast.StringLiteral
+                    export_attribute.args[0].expr, ast.StringLiteral
                 ):
-                    name = export_annotation.args[0].expr.lit
+                    name = export_attribute.args[0].expr.lit
                 else:
                     assert False
             else:
                 name = mangle_symbol(decl.sym)
             fn_decl = ir.FuncDecl(
-                False, decl.annotations, decl.is_extern and not decl.has_body,
+                False, decl.attributes, decl.is_extern and not decl.has_body,
                 name, args, decl.is_variadic and decl.is_extern, ret_typ,
                 decl.ret_typ == self.comp.never_t
             )
@@ -1276,12 +1276,12 @@ class Codegen:
                 if expr.is_closure:
                     name = self.gen_expr_with_cast(expr.left.typ, expr.left)
                 elif (not expr.sym.is_method
-                      ) and expr.sym.annotations.has("export"):
-                    export_annotation = expr.sym.annotations.find("export")
+                      ) and expr.sym.attributes.has("export"):
+                    export_attribute = expr.sym.attributes.find("export")
                     if isinstance(
-                        export_annotation.args[0].expr, ast.StringLiteral
+                        export_attribute.args[0].expr, ast.StringLiteral
                     ):
-                        name = export_annotation.args[0].expr.lit
+                        name = export_attribute.args[0].expr.lit
                     else:
                         assert False
                 elif expr.sym.is_extern and expr.sym.abi != sym.ABI.Rivet and not expr.sym.has_body:

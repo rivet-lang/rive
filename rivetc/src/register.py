@@ -122,7 +122,7 @@ class Register:
                                 decl.is_public, decl.name, TypeKind.Struct,
                                 info = sym.StructInfo(
                                     decl.is_opaque,
-                                    is_boxed = decl.annotations.has("boxed")
+                                    is_boxed = decl.attributes.has("boxed")
                                 )
                             )
                         )
@@ -219,7 +219,7 @@ class Register:
                             decl.name, decl.args, decl.ret_typ,
                             decl.has_named_args, decl.has_body, decl.name_pos,
                             decl.self_is_mut, decl.self_is_ptr,
-                            annotations = decl.annotations
+                            attributes = decl.attributes
                         )
                     )
                     decl.sym.is_main = decl.is_main

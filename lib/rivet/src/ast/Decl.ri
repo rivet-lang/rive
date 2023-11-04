@@ -9,7 +9,7 @@ import ../token;
 public enum Decl {
     Empty: token.Pos,
     Import {
-        annotations: Annotations;
+        attributes: Attributes;
         is_public: bool;
         path: string;
         path_pos: token.Pos;
@@ -22,14 +22,14 @@ public enum Decl {
     },
     Extern {
         docs: DocComment;
-        annotations: Annotations;
+        attributes: Attributes;
         abi: ABI;
         decls: []Decl;
         pos: token.Pos;
     },
     Alias {
         docs: DocComment;
-        annotations: Annotations;
+        attributes: Attributes;
         is_public: bool;
         name: string;
         parent: Expr;
@@ -40,7 +40,7 @@ public enum Decl {
     },
     Trait {
         docs: DocComment;
-        annotations: Annotations;
+        attributes: Attributes;
         is_public: bool;
         name: string;
         bases: []mut Type;
@@ -50,7 +50,7 @@ public enum Decl {
     },
     Enum {
         docs: DocComment;
-        annotations: Annotations;
+        attributes: Attributes;
         is_public: bool;
         name: string;
         mut underlying_type: Type;
@@ -63,7 +63,7 @@ public enum Decl {
     },
     Struct {
         docs: DocComment;
-        annotations: Annotations;
+        attributes: Attributes;
         is_public: bool;
         name: string;
         bases: []mut Type;
@@ -74,7 +74,7 @@ public enum Decl {
     },
     Field {
         docs: DocComment;
-        annotations: Annotations;
+        attributes: Attributes;
         is_public: bool;
         is_mut: bool;
         name: string;
@@ -84,7 +84,7 @@ public enum Decl {
         pos: token.Pos;
     },
     Extend {
-        annotations: Annotations;
+        attributes: Attributes;
         mut type: Type;
         bases: []mut Type;
         decls: []Decl;
@@ -92,7 +92,7 @@ public enum Decl {
     },
     Const {
         docs: DocComment;
-        annotations: Annotations;
+        attributes: Attributes;
         is_public: bool;
         name: string;
         has_type: bool;
@@ -103,7 +103,7 @@ public enum Decl {
     },
     Var {
         docs: DocComment;
-        annotations: Annotations;
+        attributes: Attributes;
         is_public: bool;
         is_extern: bool;
         abi: ABI;
@@ -115,7 +115,7 @@ public enum Decl {
     },
     Func {
         docs: DocComment;
-        annotations: Annotations;
+        attributes: Attributes;
         is_public: bool;
         is_extern: bool;
         is_unsafe: bool;
@@ -142,7 +142,7 @@ public enum Decl {
     },
     Test {
         docs: DocComment;
-        annotations: Annotations;
+        attributes: Attributes;
         name: string;
         stmts: []mut Stmt;
         scope: Scope;

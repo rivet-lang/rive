@@ -88,7 +88,7 @@ public struct Register {
                             name: struct_decl.name,
                             info: .Struct(
                                 is_opaque: struct_decl.is_opaque,
-                                is_boxed: struct_decl.annotations.has("boxed")
+                                is_boxed: struct_decl.attributes.has("boxed")
                             )
                         ), struct_decl.pos)
                     };
@@ -169,7 +169,7 @@ public struct Register {
                         type: field_decl.type,
                         has_def_expr: field_decl.has_def_expr,
                         def_expr: field_decl.def_expr,
-                        is_required: field_decl.annotations.has("required")
+                        is_required: field_decl.attributes.has("required")
                     ));
                 },
                 .Const as const_decl => const_decl.sym = self.add_sym(ast.Const(

@@ -82,7 +82,7 @@ struct IntegerStruct {
     i: Integer;
 }
 
-test "traits with `default_value` annotation" {
+test "traits with `default_value` attribute" {
     is_ := IntegerStruct();
     @assert(is_.i is IntegerValue as int_v and int_v.int == 5);
 }

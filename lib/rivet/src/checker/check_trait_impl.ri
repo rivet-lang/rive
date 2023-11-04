@@ -18,7 +18,7 @@ extend Checker {
                     }
                     if !impl.self_is_ptr and !impltor.is_boxed() {
                         errors.push(
-                            "receiver `self` should be a reference, or use the annotation `boxed`."
+                            "receiver `self` should be a reference, or use the attribute `boxed`."
                         );
                     }
                     if impl.args.len == trait_func.args.len {

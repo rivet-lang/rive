@@ -194,9 +194,9 @@ extend Checker {
                         "special methods cannot be public", func_decl.pos
                     );
                 }
-                if !func_decl.annotations.is_empty() {
+                if !func_decl.attributes.is_empty() {
                     report.error(
-                        "special methods cannot have annotations", func_decl.pos
+                        "special methods cannot have attributes", func_decl.pos
                     );
                 }
                 switch func_decl.name {

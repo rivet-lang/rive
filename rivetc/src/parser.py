@@ -103,21 +103,21 @@ class Parser:
             lines.append(self.prev_tok.lit)
         return ast.DocComment(lines, pos)
 
-    def parse_annotations(self, parse_mod_annotations = False):
-        if parse_mod_annotations and self.mod_sym.annotations == None:
-            self.mod_sym.annotations = ast.Annotations()
-        annotations = ast.Annotations()
+    def parse_attributes(self, parse_mod_attributes = False):
+        if parse_mod_attributes and self.mod_sym.attributes == None:
+            self.mod_sym.attributes = ast.Annotations()
+        attributes = ast.Annotations()
         while self.accept(Kind.Hash):
-            if parse_mod_annotations:
+            if parse_mod_attributes:
                 self.expect(Kind.Bang)
             if self.accept(Kind.Lbracket):
                 while True:
                     args = []
                     pos = self.tok.pos
                     if self.accept(Kind.KwUnsafe):
-                        annotation_name = "unsafe"
+                        attribute_name = "unsafe"
                     else:
-                        annotation_name = self.parse_name()
+                        attribute_name = self.parse_name()
                     if self.accept(Kind.Lparen):
                         while True:
                             if self.tok.kind == Kind.Name and self.peek_tok.kind == Kind.Colon:
@@ -130,15 +130,15 @@ class Parser:
                             if not self.accept(Kind.Comma):
                                 break
                         self.expect(Kind.Rparen)
-                    annotation = ast.Annotation(annotation_name, args, pos)
-                    if parse_mod_annotations:
-                        self.mod_sym.annotations.add(annotation)
+                    attribute = ast.Annotation(attribute_name, args, pos)
+                    if parse_mod_attributes:
+                        self.mod_sym.attributes.add(attribute)
                     else:
-                        annotations.add(annotation)
+                        attributes.add(attribute)
                     if not self.accept(Kind.Semicolon):
                         break
                 self.expect(Kind.Rbracket)
-        return annotations
+        return attributes
 
     def is_public(self):
         is_pub = self.accept(Kind.KwPublic)
@@ -162,7 +162,7 @@ class Parser:
 
     def parse_decl(self):
         doc_comment = self.parse_doc_comment()
-        annotations = self.parse_annotations(
+        attributes = self.parse_attributes(
             self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
         )
         is_public = self.is_public()
@@ -202,7 +202,7 @@ class Parser:
                 alias = self.parse_name()
             self.expect(Kind.Semicolon)
             return ast.ImportDecl(
-                annotations, is_public, path, alias, glob, import_list, pos
+                attributes, is_public, path, alias, glob, import_list, pos
             )
         elif self.accept(Kind.KwExtern):
             self.inside_extern = True
@@ -223,7 +223,7 @@ class Parser:
             else:
                 report.error("invalid external declaration", pos)
             self.inside_extern = False
-            return ast.ExternDecl(annotations, abi, protos, pos)
+            return ast.ExternDecl(attributes, abi, protos, pos)
         elif self.accept(Kind.KwConst):
             pos = self.tok.pos
             name = self.parse_name()
@@ -236,7 +236,7 @@ class Parser:
             expr = self.parse_expr()
             self.expect(Kind.Semicolon)
             return ast.ConstDecl(
-                doc_comment, annotations, is_public, name, has_typ, typ, expr,
+                doc_comment, attributes, is_public, name, has_typ, typ, expr,
                 pos
             )
         elif self.accept(Kind.KwStatic):
@@ -258,7 +258,7 @@ class Parser:
                 right = self.empty_expr()
             self.expect(Kind.Semicolon)
             return ast.VarDecl(
-                doc_comment, annotations, is_public, self.inside_extern,
+                doc_comment, attributes, is_public, self.inside_extern,
                 self.extern_abi, lefts, right, pos
             )
         elif self.accept(Kind.KwAlias):
@@ -277,7 +277,7 @@ class Parser:
                         parent = self.parse_selector_expr(parent)
             self.expect(Kind.Semicolon)
             return ast.AliasDecl(
-                doc_comment, annotations, is_public, name, parent, is_typealias,
+                doc_comment, attributes, is_public, name, parent, is_typealias,
                 pos
             )
         elif self.accept(Kind.KwTrait):
@@ -297,7 +297,7 @@ class Parser:
                 decls.append(self.parse_decl())
             self.inside_trait = old_inside_trait
             return ast.TraitDecl(
-                doc_comment, annotations, is_public, name, bases, decls, pos
+                doc_comment, attributes, is_public, name, bases, decls, pos
             )
         elif self.accept(Kind.KwStruct):
             old_inside_struct = self.inside_struct
@@ -319,14 +319,14 @@ class Parser:
                 self.expect(Kind.Rbrace)
             self.inside_struct = old_inside_struct
             return ast.StructDecl(
-                doc_comment, annotations, is_public, name, bases, decls,
+                doc_comment, attributes, is_public, name, bases, decls,
                 is_opaque, pos
             )
         elif (
             self.inside_struct or self.inside_trait
             or self.inside_enum_variant_with_fields
         ) and self.tok.kind in (Kind.KwMut, Kind.Name):
-            return self.parse_field_decl(annotations, doc_comment, is_public)
+            return self.parse_field_decl(attributes, doc_comment, is_public)
         elif self.accept(Kind.KwEnum):
             pos = self.tok.pos
             name = self.parse_name()
@@ -375,7 +375,7 @@ class Parser:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
-                doc_comment, annotations, is_public, name, underlying_typ,
+                doc_comment, attributes, is_public, name, underlying_typ,
                 bases, variants, is_boxed, decls, pos
             )
         elif self.accept(Kind.KwExtend):
@@ -391,11 +391,11 @@ class Parser:
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
                 decls.append(self.parse_decl())
-            return ast.ExtendDecl(annotations, typ, bases, decls, pos)
+            return ast.ExtendDecl(attributes, typ, bases, decls, pos)
         elif self.accept(Kind.KwFunc):
             return self.parse_func_decl(
-                doc_comment, annotations, is_public,
-                annotations.has("unsafe")
+                doc_comment, attributes, is_public,
+                attributes.has("unsafe")
                 or (self.inside_extern and self.extern_abi != sym.ABI.Rivet),
                 self.extern_abi if self.inside_extern else sym.ABI.Rivet
             )
@@ -430,7 +430,7 @@ class Parser:
             res += "/" + self.parse_name()
         return res
 
-    def parse_field_decl(self, annotations, doc_comment, is_public):
+    def parse_field_decl(self, attributes, doc_comment, is_public):
         # fields
         is_mut = self.accept(Kind.KwMut)
         pos = self.tok.pos
@@ -443,12 +443,12 @@ class Parser:
             def_expr = self.parse_expr()
         self.expect(Kind.Semicolon)
         return ast.FieldDecl(
-            annotations, doc_comment, is_public, is_mut, name, typ, def_expr,
+            attributes, doc_comment, is_public, is_mut, name, typ, def_expr,
             has_def_expr, pos
         )
 
     def parse_func_decl(
-        self, doc_comment, annotations, is_public, is_unsafe, abi
+        self, doc_comment, attributes, is_public, is_unsafe, abi
     ):
         pos = self.tok.pos
         if self.tok.kind.is_overloadable_op():
@@ -529,7 +529,7 @@ class Parser:
                 stmts.append(self.parse_stmt())
         self.close_scope()
         return ast.FuncDecl(
-            doc_comment, annotations, is_public, self.inside_extern, is_unsafe,
+            doc_comment, attributes, is_public, self.inside_extern, is_unsafe,
             name, pos, args, ret_typ, stmts, sc, has_body, is_method,
             self_is_mut, self_is_ptr, has_named_args, self.mod_sym.is_root
             and name == "main", is_variadic, abi
