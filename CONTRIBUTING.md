@@ -33,8 +33,7 @@ part of the compiler:
 * `sym.py`: This module defines the symbols that the compiler generates from the 
     information obtained from the AST, such as modules, functions, types, etc.
     It also defines primitive types, such as `int32`, `bool`, etc.
-* `type.py`: Everything related to the types are here. Pointers, References, Arrays, 
-    etc.
+* `type.py`: Everything related to the types are here. Pointers, Arrays, etc.
 * `prefs.py`: The parsing of the options passed to the compiler is executed in this 
     module, to then generate an object of type `Prefs`, which is used throughout 
     the compiler.
@@ -64,7 +63,7 @@ To check that the compiler works as it should, run the following commands:
 
 ### Self-hosted compiler
 
-TODO.
+**TODO:** Explain how the self-hosted compiler works.
 
 ### Modify the libraries
 
