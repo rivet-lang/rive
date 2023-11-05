@@ -2,7 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import ../errors;
 import ../traits;
 import ../conv;
 import ../strings;
@@ -133,7 +132,7 @@ public struct FlagParser {
     /// error.
     public func set_limit_free_args_to_at_least(mut self, n: usize) -> ! {
         if n > MAX_ARGS_NUMBER {
-            throw errors.new("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
+            throw error("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
         }
         self.min_free_args = n;
     }
@@ -143,7 +142,7 @@ public struct FlagParser {
     /// an error.
     public func set_limit_free_args_to_exactly(mut self, n: usize) -> ! {
         if n > MAX_ARGS_NUMBER {
-            throw errors.new("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
+            throw error("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
         }
         self.min_free_args = n;
         self.max_free_args = n;
@@ -154,7 +153,7 @@ public struct FlagParser {
     /// will return an error.
     public func set_limit_free_args(mut self, min: usize, max: usize) -> ! {
         if min > max {
-            throw errors.new("expects `min` < `max`, got {} >= {}", min, max);
+            throw error("expects `min` < `max`, got {} >= {}", min, max);
         }
         self.min_free_args = min;
         self.max_free_args = max;

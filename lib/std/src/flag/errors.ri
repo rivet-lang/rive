@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import ../traits;
+
 public struct UnknownFlagError < Throwable {
     flag: string;
 
@@ -23,4 +25,18 @@ public struct ArgsCountError < Throwable {
             "expected at least {} arguments, but got {}".fmt(self.want, self.got)
         };
     }
+}
+
+#[boxed]
+public struct GenericError < Throwable {
+    msg: string;
+
+    public func to_string(self) -> string {
+        return self.msg;
+    }
+}
+
+// TODO: Remove this function and use a more specific type.
+public func error(msg: string, args: ...traits.Stringable) -> Throwable {
+    return GenericError(msg.fmt(args));
 }

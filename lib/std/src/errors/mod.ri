@@ -45,17 +45,3 @@ public struct ValueOutOfRangeError < Throwable {
         return self.msg;
     }
 }
-
-#[boxed]
-public struct GenericError < Throwable {
-    msg: string;
-
-    public func to_string(self) -> string {
-        return self.msg;
-    }
-}
-
-/// Returns a generic error.
-public func new(msg: string, args: ...traits.Stringable) -> Throwable {
-    return GenericError(msg.fmt(args));
-}
