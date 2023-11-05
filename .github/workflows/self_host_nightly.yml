@@ -33,5 +33,9 @@ jobs:
           body: Nightly compilation of the compiler (created with each commit that is made).
           prerelease: true
           allowUpdates: true
-          replacesArtifacts: true
+          removeArtifacts: true
+          updateOnlyUnreleased: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
           artifacts: "rivet-nightly-linux-amd64.zip"
