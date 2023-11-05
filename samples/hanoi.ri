@@ -1,0 +1,23 @@
+// hanoi tower sample
+
+import std/console;
+
+const num := 7;
+
+func main() {
+	hanoi(num, "A", "B", "C");
+}
+
+func move(n: int32, a: string, b: string) {
+	console.println("Disc {} from {} to {}...", n, a, b);
+}
+
+func hanoi(n: int32, a: string, b: string, c: string) {
+	if n == 1 {
+		move(1, a, c);
+	} else {
+		hanoi(n - 1, a, c, b);
+		move(n, a, c);
+		hanoi(n - 1, b, a, c);
+	}
+}
