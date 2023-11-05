@@ -232,7 +232,7 @@ class Parser:
                 typ = self.parse_type()
             else:
                 typ = self.comp.void_t
-            self.expect(Kind.Assign)
+            self.expect(Kind.DeclAssign)
             expr = self.parse_expr()
             self.expect(Kind.Semicolon)
             return ast.ConstDecl(
@@ -252,7 +252,7 @@ class Parser:
                 self.expect(Kind.Rparen)
             else:
                 lefts.append(self.parse_var_decl(True))
-            if not self.inside_extern and self.accept(Kind.Assign):
+            if not self.inside_extern and self.accept(Kind.DeclAssign):
                 right = self.parse_expr()
             else:
                 right = self.empty_expr()

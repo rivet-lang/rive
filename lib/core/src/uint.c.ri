@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 extend uint8 < Stringable {
-    public const MAX: uint8 = 255;
+    public const MAX: uint8 := 255;
 
     /// Checks if the value is within the ASCII range.
     #[inline]
@@ -97,7 +97,7 @@ extend uint8 < Stringable {
 }
 
 extend uint16 < Stringable {
-    public const MAX: uint16 = 65535;
+    public const MAX: uint16 := 65535;
 
     /// Returns the value of `self` as a string.
     #[inline]
@@ -107,7 +107,7 @@ extend uint16 < Stringable {
 }
 
 extend uint32 < Stringable {
-    public const MAX: uint32 = 4294967295;
+    public const MAX: uint32 := 4294967295;
 
     /// Returns the value of `self` as a valid `rune`.
     #[inline]
@@ -155,7 +155,7 @@ extend uint32 < Stringable {
 }
 
 extend uint64 < Stringable {
-    public const MAX: uint64 = 18446744073709551615;
+    public const MAX: uint64 := 18446744073709551615;
 
     /// Returns the value of `self` as a string.
     public func to_string(&self) -> string {
@@ -197,7 +197,7 @@ extend uint64 < Stringable {
 }
 
 extend usize < Stringable {
-    public const MAX: usize = #if _x64_ uint64.MAX #else uint32.MAX #endif;
+    public const MAX: usize := #if _x64_ uint64.MAX #else uint32.MAX #endif;
 
     #[inline]
     public func bits() -> uint32 {

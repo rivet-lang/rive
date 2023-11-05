@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-static returnTrace = ReturnTrace();
+static returnTrace := ReturnTrace();
 
 /// This trait is used for errors throwed with result types (!T).
 public trait Throwable < Stringable { }
@@ -21,7 +21,7 @@ struct CallTrace {
 }
 
 // NOTE: 50 should be fine for now.
-const RETURN_TRACE_MAX_SIZE = 50;
+const RETURN_TRACE_MAX_SIZE := 50;
 
 struct ReturnTrace {
     traces: [RETURN_TRACE_MAX_SIZE]mut CallTrace;

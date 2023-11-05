@@ -174,7 +174,7 @@ extend Parser {
             },
             self.accept(.KwExtern) => {
                 self.inside_extern = true;
-                // extern function or var
+                // extern function or static
                 abi := self.parse_abi();
                 mut decls := @vec(ast.Decl);
                 if self.accept(.Lbrace) {
@@ -236,7 +236,7 @@ extend Parser {
                     .Void()
                 };
                 pos += self.prev_tok.pos;
-                self.expect(.Assign);
+                self.expect(.DeclAssign);
                 expr := self.parse_expr();
                 self.expect(.Semicolon);
                 return .Const(
@@ -265,7 +265,7 @@ extend Parser {
                     lefts.push(self.parse_var_decl(true));
                 }
                 pos += self.prev_tok.pos;
-                right := if !self.inside_extern and self.accept(.Assign) {
+                right := if !self.inside_extern and self.accept(.DeclAssign) {
                     self.parse_expr()
                 } else {
                     .Empty(self.tok.pos)

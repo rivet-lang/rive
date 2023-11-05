@@ -2,10 +2,10 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-static comparatorSep = " ";
-static comparatorSetSep = " || ";
-static hyphenRangeSep = " - ";
-static xRangeSymbols = "Xx*";
+static comparatorSep := " ";
+static comparatorSetSep := " || ";
+static hyphenRangeSep := " - ";
+static xRangeSymbols := "Xx*";
 
 enum Operator as uint8 {
     Gt,

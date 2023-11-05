@@ -5,11 +5,11 @@
 // This module implements a FNV-1a hash.
 // See: https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function
 
-const FNV32_PRIME: uint32 = 16777619;
-const FNV32_OFFSET_BASIS: uint32 = 2166136261;
+const FNV32_PRIME: uint32 := 16777619;
+const FNV32_OFFSET_BASIS: uint32 := 2166136261;
 
-const FNV64_PRIME: uint64 = 1099511628211;
-const FNV64_OFFSET_BASIS: uint64 = 14695981039346656037;
+const FNV64_PRIME: uint64 := 1099511628211;
+const FNV64_OFFSET_BASIS: uint64 := 14695981039346656037;
 
 /// Returns a fnv1a hash of the memory block, described by the dynamic
 /// byte array `data`.

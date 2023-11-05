@@ -8,7 +8,7 @@ import ../report;
 import ../utils/maps;
 
 extend Checker {
-    const SWITCH_EXHAUSTIVE_CUTOFF_LIMIT = 12;
+    const SWITCH_EXHAUSTIVE_CUTOFF_LIMIT := 12;
 
     func check_match(mut self, mut match_expr: ast.Expr.Match) -> ast.Type {
         old_expected_type := self.expected_type;

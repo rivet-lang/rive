@@ -6,7 +6,7 @@ import core;
 import c/libc;
 
 /// User's home directory.
-public static homeDir = get(#if _LINUX_ "HOME" #else "USERPROFILE" #endif) ?? "";
+public static homeDir := get(#if _LINUX_ "HOME" #else "USERPROFILE" #endif) ?? "";
 
 /// Returns `true` if the environment variable exists.
 #[inline]

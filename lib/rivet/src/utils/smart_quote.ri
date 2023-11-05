@@ -4,13 +4,13 @@
 
 import { Builder } from std/strings;
 
-const BACKSLASH: uint8 = 92;
-const BACKSLASH_R: uint8 = 13;
-const BACKSLASH_N: uint8 = 10;
-const DOUBLE_QUOTE: uint8 = 34;
+const BACKSLASH: uint8 := 92;
+const BACKSLASH_R: uint8 := 13;
+const BACKSLASH_N: uint8 := 10;
+const DOUBLE_QUOTE: uint8 := 34;
 
-static doubleEscape = "\\\\";
-static invalidEscapes = b"({`.";
+static doubleEscape := "\\\\";
+static invalidEscapes := b"({`.";
 
 public func smart_quote(s: string, raw: bool = false) -> string {
     if s.len == 0 {

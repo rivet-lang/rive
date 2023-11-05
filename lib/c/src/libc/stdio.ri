@@ -4,34 +4,34 @@
 
 import { * } from c/ctypes;
 
-public const MAX_PATH_LEN: usize = 4096;
-public const MAX_NAME_LEN: usize = 255;
+public const MAX_PATH_LEN: usize := 4096;
+public const MAX_NAME_LEN: usize := 255;
 
-public const STDIN_FILENO = 0;
-public const STDOUT_FILENO = 1;
-public const STDERR_FILENO = 2;
+public const STDIN_FILENO := 0;
+public const STDOUT_FILENO := 1;
+public const STDERR_FILENO := 2;
 
-public const F_OK = 0;
-public const X_OK = 1;
-public const W_OK = 2;
-public const R_OK = 4;
+public const F_OK := 0;
+public const X_OK := 1;
+public const W_OK := 2;
+public const R_OK := 4;
 
-public const S_IFMT = 0xF000; // file
-public const S_IFDIR = 0x4000; // directory
-public const S_IFLNK = 0xA000; // link
+public const S_IFMT := 0xF000; // file
+public const S_IFDIR := 0x4000; // directory
+public const S_IFLNK := 0xA000; // link
 
-public const O_RDONLY = 0x00000;
-public const O_WRONLY = 0x00001;
-public const O_RDWR = 0x00002;
-public const O_CREATE = 0x00040;
-public const O_EXCL = 0x00080;
-public const O_NOCTTY = 0x00100;
-public const O_TRUNC = 0x00200;
-public const O_NONBLOCK = 0x00800;
-public const O_APPEND = 0x00400;
-public const O_SYNC = 0x01000;
-public const O_ASYNC = 0x02000;
-public const O_CLOEXEC = 0x80000;
+public const O_RDONLY := 0x00000;
+public const O_WRONLY := 0x00001;
+public const O_RDWR := 0x00002;
+public const O_CREATE := 0x00040;
+public const O_EXCL := 0x00080;
+public const O_NOCTTY := 0x00100;
+public const O_TRUNC := 0x00200;
+public const O_NONBLOCK := 0x00800;
+public const O_APPEND := 0x00400;
+public const O_SYNC := 0x01000;
+public const O_ASYNC := 0x02000;
+public const O_CLOEXEC := 0x80000;
 
 public struct FILE;
 
@@ -48,20 +48,20 @@ public struct FILE;
         f3: double;
     }
 
-    public const _IOFBF = 0;
-	public const _IOLBF = 1;
-	public const _IONBF = 2;
+    public const _IOFBF := 0;
+	public const _IOLBF := 1;
+	public const _IONBF := 2;
 
-	public const BUFSIZ = 1024;
-	public const EOF = -1;
-	public const FOPEN_MAX = 1000;
-	public const FILENAME_MAX = 4096;
-	public const L_tmpnam = 20;
-	public const SEEK_SET = 0;
-	public const SEEK_CUR = 1;
-	public const SEEK_END = 2;
+	public const BUFSIZ := 1024;
+	public const EOF := -1;
+	public const FOPEN_MAX := 1000;
+	public const FILENAME_MAX := 4096;
+	public const L_tmpnam := 20;
+	public const SEEK_SET := 0;
+	public const SEEK_CUR := 1;
+	public const SEEK_END := 2;
 
-	public const TMP_MAX = 308915776;
+	public const TMP_MAX := 308915776;
 #endif
 
 #if _WINDOWS_
@@ -71,24 +71,24 @@ public struct FILE;
 
     public alias fpos_t = int64;
 
-	public const _IOFBF = 0x0000;
-	public const _IOLBF = 0x0004;
-	public const _IONBF = 0x0040;
+	public const _IOFBF := 0x0000;
+	public const _IOLBF := 0x0004;
+	public const _IONBF := 0x0040;
 
-	public const BUFSIZ = 512;
-	public const EOF = -1;
-	public const FOPEN_MAX = 20;
-	public const FILENAME_MAX = 260;
-	public const L_tmpnam = 15; // "\\" + 12 + NUL
-	public const SEEK_SET = 0;
-	public const SEEK_CUR = 1;
-	public const SEEK_END = 2;
+	public const BUFSIZ := 512;
+	public const EOF := -1;
+	public const FOPEN_MAX := 20;
+	public const FILENAME_MAX := 260;
+	public const L_tmpnam := 15; // "\\" + 12 + NUL
+	public const SEEK_SET := 0;
+	public const SEEK_CUR := 1;
+	public const SEEK_END := 2;
 
-	public const TMP_MAX = 32767; // SHRT_MAX
+	public const TMP_MAX := 32767; // SHRT_MAX
 
-    public static stdin: &mut FILE = unsafe { __acrt_iob_fn(0) };
-    public static stdout: &mut FILE = unsafe { __acrt_iob_fn(1) };
-    public static stderr: &mut FILE = unsafe { __acrt_iob_fn(2) };
+    public static stdin: &mut FILE := unsafe { __acrt_iob_fn(0) };
+    public static stdout: &mut FILE := unsafe { __acrt_iob_fn(1) };
+    public static stderr: &mut FILE := unsafe { __acrt_iob_fn(2) };
 #endif
 
 extern (C) {

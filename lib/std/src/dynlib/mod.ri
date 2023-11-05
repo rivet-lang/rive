@@ -8,7 +8,7 @@
 
 import c/libc;
 
-public static sharedLibExtension = get_shared_library_extension();
+public static sharedLibExtension := get_shared_library_extension();
 
 /// Returns a library name with the operating system specific extension for shared
 /// libraries.

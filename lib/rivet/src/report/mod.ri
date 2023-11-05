@@ -10,7 +10,7 @@ import ../prefs;
 import ../token;
 import ../utils;
 
-public static mut reportTable = ReportTable();
+public static mut reportTable := ReportTable();
 
 #[inline]
 public func total_errors() -> usize {

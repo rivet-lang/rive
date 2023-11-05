@@ -14,7 +14,7 @@ import ../report;
 
 import { LF, CR } from ../utils;
 
-const NUM_SEP = b'_';
+const NUM_SEP := b'_';
 
 #[boxed]
 public struct Tokenizer {

@@ -10,44 +10,44 @@ import { pid_t, uid_t } from ../ctypes;
 public alias SignalHandler = func (int32, &mut siginfo_t, mut_anyptr);
 
 #if _LINUX_
-    public const SA_ONSTACK = 0x08000000;
-    public const SA_SIGINFO = 0x00000004;
-    public const SA_NOCLDWAIT = 0x00000002;
+    public const SA_ONSTACK := 0x08000000;
+    public const SA_SIGINFO := 0x00000004;
+    public const SA_NOCLDWAIT := 0x00000002;
 
-    public const SIGHUP = 0x1;
-    public const SIGINT = 0x2;
-    public const SIGQUIT = 0x3;
-    public const SIGILL = 0x4;
-    public const SIGTRAP = 0x5;
-    public const SIGABRT = 0x6;
-    public const SIGEMT = 0x7;
-    public const SIGFPE = 0x8;
-    public const SIGKILL = 0x9;
-    public const SIGBUS = 0xA;
-    public const SIGSEGV = 0xB;
-    public const SIGSYS = 0xc;
-    public const SIGPIPE = 0xd;
-    public const SIGALRM = 0xe;
-    public const SIGTERM = 0xF;
-    public const SIGURG = 0x10;
-    public const SIGSTOP = 0x11;
-    public const SIGTSTP = 0x12;
-    public const SIGCONT = 0x13;
-    public const SIGCHLD = 0x14;
-    public const SIGTTIN = 0x15;
-    public const SIGTTOU = 0x16;
-    public const SIGIO = 0x17;
-    public const SIGXCPU = 0x18;
-    public const SIGXFSZ = 0x19;
-    public const SIGVTALRM = 0x1a;
-    public const SIGPROF = 0x1b;
-    public const SIGWINCH = 0x1c;
-    public const SIGINFO = 0x1d;
-    public const SIGUSR1 = 0x1e;
-    public const SIGUSR2 = 0x1f;
+    public const SIGHUP := 0x1;
+    public const SIGINT := 0x2;
+    public const SIGQUIT := 0x3;
+    public const SIGILL := 0x4;
+    public const SIGTRAP := 0x5;
+    public const SIGABRT := 0x6;
+    public const SIGEMT := 0x7;
+    public const SIGFPE := 0x8;
+    public const SIGKILL := 0x9;
+    public const SIGBUS := 0xA;
+    public const SIGSEGV := 0xB;
+    public const SIGSYS := 0xc;
+    public const SIGPIPE := 0xd;
+    public const SIGALRM := 0xe;
+    public const SIGTERM := 0xF;
+    public const SIGURG := 0x10;
+    public const SIGSTOP := 0x11;
+    public const SIGTSTP := 0x12;
+    public const SIGCONT := 0x13;
+    public const SIGCHLD := 0x14;
+    public const SIGTTIN := 0x15;
+    public const SIGTTOU := 0x16;
+    public const SIGIO := 0x17;
+    public const SIGXCPU := 0x18;
+    public const SIGXFSZ := 0x19;
+    public const SIGVTALRM := 0x1a;
+    public const SIGPROF := 0x1b;
+    public const SIGWINCH := 0x1c;
+    public const SIGINFO := 0x1d;
+    public const SIGUSR1 := 0x1e;
+    public const SIGUSR2 := 0x1f;
 
-    public const SEGV_MAPERR = 0x1;
-    public const SEGV_ACCERR = 0x2;
+    public const SEGV_MAPERR := 0x1;
+    public const SEGV_ACCERR := 0x2;
 
     public struct sigset_t {
         public __val: [#if _X86_ 32 #else 16 #endif]uint32;
@@ -77,12 +77,12 @@ public alias SignalHandler = func (int32, &mut siginfo_t, mut_anyptr);
         public sa_restorer: func();
     }
 #else_if _WINDOWS_
-    public const SIGABRT = 22;
-    public const SIGFPE = 8;
-    public const SIGILL = 4;
-    public const SIGINT = 2;
-    public const SIGSEGV = 11;
-    public const SIGTERM = 15;
+    public const SIGABRT := 22;
+    public const SIGFPE := 8;
+    public const SIGILL := 4;
+    public const SIGINT := 2;
+    public const SIGSEGV := 11;
+    public const SIGTERM := 15;
 #else
     #error cannot define values for signals in this operating system, please report the issue
 #endif

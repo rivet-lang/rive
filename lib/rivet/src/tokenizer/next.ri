@@ -7,8 +7,8 @@ import ../utils;
 
 import { LF, CR } from ../utils;
 
-const SINGLE_QUOTE: uint8 = 0x27; // `'`
-const BACKSLASH: uint8 = 0x5C; // '\'
+const SINGLE_QUOTE: uint8 := 0x27; // `'`
+const BACKSLASH: uint8 := 0x5C; // '\'
 
 extend Tokenizer {
     public func next(mut self) -> token.Token {

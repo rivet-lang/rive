@@ -4,11 +4,11 @@
 
 #if _TESTS_
 
-static supportColor = console_is_atty(1);
+static supportColor := console_is_atty(1);
 
-static okStatus = bold(green("-> OK"));
-static failedStatus = bold(red("-> FAIL"));
-static skipStatus = bold(yellow("-> SKIP"));
+static okStatus := bold(green("-> OK"));
+static failedStatus := bold(red("-> FAIL"));
+static skipStatus := bold(yellow("-> SKIP"));
 
 extern (Rivet) {
     static testRunner: TestRunner;

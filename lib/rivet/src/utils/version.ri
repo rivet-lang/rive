@@ -4,7 +4,7 @@
 
 import std/process;
 
-public static version = "0.1.0b";
+public static version := "0.1.0b";
 
 public func last_commit_hash() -> string {
     if result := process.execute("git log -n 1 --pretty=format:%h") {

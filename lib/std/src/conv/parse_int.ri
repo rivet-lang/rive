@@ -9,7 +9,7 @@ public alias InvalidBaseError = errors.InvalidBaseError;
 public alias InvalidBitSizeError = errors.InvalidBitSizeError;
 public alias ValueOutOfRangeError = errors.ValueOutOfRangeError;
 
-const INT_SIZE: uint32 = #if _x64_ 64 #else 32 #endif;
+const INT_SIZE: uint32 := #if _x64_ 64 #else 32 #endif;
 
 #[inline]
 func lower(c: uint8) -> uint8 {

@@ -7,7 +7,7 @@ import std/strings;
 
 import ../token;
 
-static mut symIds: usize = 0;
+static mut symIds: usize := 0;
 
 func new_sym_id() -> usize {
     res := symIds;

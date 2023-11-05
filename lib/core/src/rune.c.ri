@@ -2,17 +2,17 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-const MAX_ONE_B: uint32 = 0x80;
-const MAX_TWO_B: uint32 = 0x800;
-const MAX_THREE_B: uint32 = 0x10000;
+const MAX_ONE_B: uint32 := 0x80;
+const MAX_TWO_B: uint32 := 0x800;
+const MAX_THREE_B: uint32 := 0x10000;
 
 extend rune < Stringable {
     /// The highest valid codepoint a `rune` can have.
-    public const MAX: rune = 0x10FFFF;
+    public const MAX: rune := 0x10FFFF;
 
     /// `U+FFFD REPLACEMENT CHARACTER` (�) is used in Unicode to represent a
     /// decoding error.
-    public const REPLACEMENT_CHARACTER: rune = 0xFFFD;
+    public const REPLACEMENT_CHARACTER: rune := 0xFFFD;
 
     /// Converts a `uint32` to a `rune`.
     ///
