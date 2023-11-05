@@ -1,3 +1,3 @@
 # Code of Conduct
 
-Be nice and respectful.
+Everyone is welcome! Be nice and respectful.
