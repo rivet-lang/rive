@@ -13,10 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run samples
-        run: |
-          python3 samples/run_samples.py
-
       - name: Run passing tests
         run: |
           python3 rivetc -C clang -t tests/valid
@@ -33,10 +29,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Run samples
-        run: |
-          python3 samples/run_samples.py
 
       - name: Run passing tests
         run: |

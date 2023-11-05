@@ -1,0 +1,27 @@
+name: Sample Tests
+
+on:
+  push:
+    paths: ['lib/**.ri', 'rivetc/**.py', 'samples/**']
+  pull_request:
+    paths: ['lib/**.ri', 'rivetc/**.py', 'samples/**']
+    types: [opened, synchronize]
+
+jobs:
+  ubuntu-clang:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run samples
+        run: |
+          python3 samples/run_samples.py
+
+  ubuntu-gcc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run samples
+        run: |
+          python3 samples/run_samples.py
