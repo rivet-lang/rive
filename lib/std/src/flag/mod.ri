@@ -355,8 +355,8 @@ public struct FlagParser {
     /// error handling.
     public func remaining_parameters(mut self) -> []string {
         return self.finalize() catch |err| {
-            console.println(self.usage());
-            console.eprintln(err.to_string());
+            console.writeln(self.usage());
+            console.ewriteln(err.to_string());
             process.exit(1)
         };
     }
@@ -385,11 +385,11 @@ public struct FlagParser {
             show_version = self.bool_flag("version", 0, self.default_version_label) ?? false;
         }
         if show_help {
-            console.println(self.usage());
+            console.writeln(self.usage());
             process.exit(0);
         }
         if show_version {
-            console.println("{} {}", self.application_name, self.application_version);
+            console.writeln("{} {}", self.application_name, self.application_version);
             process.exit(0);
         }
     }

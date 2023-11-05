@@ -13,9 +13,9 @@ func main() {
 		}
 
 		if s == "" {
-			console.println("{}", n);
+			console.writeln("{}", n);
 		} else {
-			console.println(s);
+			console.writeln(s);
 		}
 
 		s = "";

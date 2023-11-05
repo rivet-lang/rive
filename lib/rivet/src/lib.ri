@@ -326,7 +326,7 @@ public struct Compiler {
 
     func vlog(self, msg: string, args: ...traits.Stringable) {
         if self.prefs.is_verbose {
-            console.println(utils.bold(utils.green("[rivet-log] ")).concat(msg), args);
+            console.writeln(utils.bold(utils.green("[rivet-log] ")).concat(msg), args);
         }
     }
 

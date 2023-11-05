@@ -55,7 +55,7 @@ public func new(args: []string, is_init: bool) -> ! {
         "init-git", 0, "Initialize a `git` repo (default: true)."
     ) ?? true;
     remaining := fp.finalize() catch |err_fp| {
-        console.eprintln(fp.usage());
+        console.ewriteln(fp.usage());
         utils.error(err_fp.to_string())
     };
 

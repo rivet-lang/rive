@@ -100,7 +100,7 @@ public struct ReportBuilder {
         } else {
             reportTable.warns += 1;
         }
-        console.eprintln(
+        console.ewriteln(
             utils.bold("{}: {} {}"), self.pos.to_report_string(), if self.kind == .Error {
                 utils.red("error:")
             } else {
@@ -113,7 +113,7 @@ public struct ReportBuilder {
             formatted_single_line(self.pos);
         }
         for attribute in self.attributes {
-            console.eprintln("{} {}", utils.bold(
+            console.ewriteln("{} {}", utils.bold(
                 "      {} {}".fmt(
                     utils.blue("="), if attribute.kind == .Note {
                         utils.cyan("note:")
@@ -128,7 +128,7 @@ public struct ReportBuilder {
 
 func formatted_single_line(pos: token.Pos) {
     if line := utils.sourceCache.find_line(pos.file, pos.line) {
-        console.eprintln(
+        console.ewriteln(
             "{} {} {}", utils.bold(utils.blue("{:5}".fmt(pos.line + 1))),
             utils.bold(utils.blue("|")), line.replace("\t", "    ")
         );
@@ -144,7 +144,7 @@ func formatted_single_line(pos: token.Pos) {
                 )
             );
         }
-        console.eprintln("      {} {}", utils.bold(utils.blue("|")), sb.to_string());
+        console.ewriteln("      {} {}", utils.bold(utils.blue("|")), sb.to_string());
     }
 }
 
@@ -158,23 +158,23 @@ func formatted_multi_line(pos: token.Pos) {
                 sb.write_string(utils.bold(utils.blue("      | ")));
                 write_spaces(sb, utils.max(0, utils.min(pos.col, line.len)), line);
                 sb.write_string(utils.bold(utils.blue("/~~ from here")));
-                console.eprintln(sb.to_string());
+                console.ewriteln(sb.to_string());
             }
             if line_nr < max or line_nr >= lines.len - max {
-                console.eprintln(
+                console.ewriteln(
                     "{} {} {}", utils.bold(utils.blue("{:5}".fmt(line_nr + pos.line + 1))),
                     utils.bold(utils.blue("|")), line.replace("\t", "    ")
                 );
             } else if !ellipsis {
                 ellipsis = true;
-                console.eprintln(utils.bold(utils.blue("  ... |")).concat(" ..."));
+                console.ewriteln(utils.bold(utils.blue("  ... |")).concat(" ..."));
             }
             if line_nr + pos.line == pos.end_line {
                 mut sb := strings.Builder.new(line.len);
                 sb.write_string(utils.bold(utils.blue("      | ")));
                 write_spaces(sb, utils.max(0, utils.min(pos.end_col, line.len)), line);
                 sb.write_string(utils.bold(utils.blue("^~~ to here")));
-                console.eprintln(sb.to_string());
+                console.ewriteln(sb.to_string());
             }
         }
     }

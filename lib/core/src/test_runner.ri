@@ -83,7 +83,7 @@ public struct TestRunner {
 
     func run(mut self) {
         for i, mut test_ in self.tests {
-            console_eprint(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
+            console_ewrite(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
             (test_.fn)(test_);
             match test_.result {
                 .Ok -> self.print_ok(),
@@ -97,38 +97,38 @@ public struct TestRunner {
     }
 
     func print_summary_tests(&self) {
-        console_eprint(bold("Summary for all tests: "));
+        console_ewrite(bold("Summary for all tests: "));
         if self.ok_tests > 0 {
-            console_eprint("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
+            console_ewrite("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
         }
         if self.fail_tests > 0 {
-            console_eprint("{}, ", bold(red("{} failed".fmt(self.fail_tests))));
+            console_ewrite("{}, ", bold(red("{} failed".fmt(self.fail_tests))));
         }
         if self.skip_tests > 0 {
-            console_eprint("{}, ", bold(yellow("{} skipped".fmt(self.skip_tests))));
+            console_ewrite("{}, ", bold(yellow("{} skipped".fmt(self.skip_tests))));
         }
-        console_eprintln(bold("{} total.".fmt(self.tests.len)));
+        console_ewriteln(bold("{} total.".fmt(self.tests.len)));
     }
 
     func print_ok(mut self) {
-        console_eprintln(okStatus);
+        console_ewriteln(okStatus);
         self.ok_tests += 1;
     }
 
     func print_skip(mut self) {
-        console_eprintln(skipStatus);
+        console_ewriteln(skipStatus);
         self.skip_tests += 1;
     }
 
     func print_failed(mut self, pos: string, msg: string) {
-        console_eprintln(failedStatus);
-        console_eprintln("     at {}: {}", bold(pos), msg);
+        console_ewriteln(failedStatus);
+        console_ewriteln("     at {}: {}", bold(pos), msg);
         self.fail_tests += 1;
     }
 
     func print_error_throwed(mut self, pos: string, err: Throwable) {
-        console_eprintln(failedStatus);
-        console_eprintln("     at {}: error throwed: {}", bold(pos), err);
+        console_ewriteln(failedStatus);
+        console_ewriteln("     at {}: error throwed: {}", bold(pos), err);
         self.fail_tests += 1;
     }
 }

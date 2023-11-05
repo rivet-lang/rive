@@ -55,7 +55,7 @@ func bt_print_callback(
         } else {
             string.from_raw(filename_ptr)
         };
-        console_eprintln("   from {} in \"{}\":{}", fn_name, file_name, lineno);
+        console_ewriteln("   from {} in \"{}\":{}", fn_name, file_name, lineno);
     }
     return 0;
 }
@@ -65,14 +65,14 @@ func bt_error_handler(data: mut_anyptr, msg_ptr: ?[&]mut uint8, errnum: int32) {
         bdata := @as(&mut BacktraceData, data);
         if !bdata.has_error {
             bdata.has_error = true;
-            console_eprint("   libbacktrace error: ");
-            console_eprint(string.from_raw(msg_ptr));
+            console_ewrite("   libbacktrace error: ");
+            console_ewrite(string.from_raw(msg_ptr));
             if errnum > 0 {
-                console_eprint(" (");
-                console_eprint(c.errno_msg(errnum));
-                console_eprint(")");
+                console_ewrite(" (");
+                console_ewrite(c.errno_msg(errnum));
+                console_ewrite(")");
             }
-            console_eprintln();
+            console_ewriteln();
         }
     }
 }

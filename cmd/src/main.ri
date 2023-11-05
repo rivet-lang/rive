@@ -30,7 +30,7 @@ General Options:
 
 func main() {
     if process.args.len == 1 {
-        console.eprintln(help);
+        console.ewriteln(help);
         utils.error("expected command argument");
     }
     cmd := process.args[1];
@@ -43,11 +43,11 @@ func main() {
         },
         "new", "init" -> tools.new(process.args[2..], cmd == "init")!,
         "version" -> {
-            console.eprintln(utils.full_version());
+            console.ewriteln(utils.full_version());
             process.exit(0);
         },
         "-h", "--help", "help" -> {
-            console.eprintln(help);
+            console.ewriteln(help);
             process.exit(0);
         },
         else -> utils.error("unknown command `{}`", cmd)

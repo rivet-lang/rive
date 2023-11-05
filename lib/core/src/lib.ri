@@ -6,7 +6,7 @@ static mut libcoreIsStarted := false;
 
 func panic_if(cond: bool, msg: string) {
     if cond {
-        console_eprintln("panic: {}", msg);
+        console_ewriteln("panic: {}", msg);
         bt_print(2);
         process_exit(1);
     }
@@ -14,7 +14,7 @@ func panic_if(cond: bool, msg: string) {
 
 func assert(cond: bool, msg: string) {
     if !cond {
-        console_eprintln("panic: assertion failed: {}", msg);
+        console_ewriteln("panic: assertion failed: {}", msg);
         bt_print(2);
         process_exit(1);
     }

@@ -9,7 +9,7 @@ public trait Throwable < Stringable { }
 
 #[inline]
 func uncatched_error(err: Throwable) {
-    console_eprintln("uncatched error: {}", err.to_string());
+    console_ewriteln("uncatched error: {}", err.to_string());
     returnTrace.print();
     process_exit(102);
 }
@@ -40,7 +40,7 @@ struct ReturnTrace {
         mut i: usize := 0;
         while i < self.cur_idx : i += 1 {
             trace := self.traces[i];
-            console_eprintln(
+            console_ewriteln(
                 "   from {} in \"{}\":{}", demangle_symbol(trace.name),
                 trace.file, trace.line
             );

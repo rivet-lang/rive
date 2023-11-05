@@ -9,7 +9,7 @@ func main() {
 }
 
 func move(n: int32, a: string, b: string) {
-	console.println("Disc {} from {} to {}...", n, a, b);
+	console.writeln("Disc {} from {} to {}...", n, a, b);
 }
 
 func hanoi(n: int32, a: string, b: string, c: string) {

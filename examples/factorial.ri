@@ -11,6 +11,6 @@ func factorial(n: uint32) -> uint32 {
 
 func main() {
 	res := factorial(5);
-	console.println("factorial(5): {}", res);
+	console.writeln("factorial(5): {}", res);
 	@assert(res == 120);
 }

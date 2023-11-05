@@ -35,18 +35,18 @@ public func option(args: []string, param: string) -> ?string {
 }
 
 public func error(msg: string, args: ...traits.Stringable) -> never {
-   console.eprintln("{} {} {}", bold("rivet:"), bold(red("error:")), msg.fmt(args));
+   console.ewriteln("{} {} {}", bold("rivet:"), bold(red("error:")), msg.fmt(args));
    process.exit(1);
 }
 
 #[inline]
 public func warn(msg: string, args: ...traits.Stringable) {
-   console.eprintln("{} {} {}", bold("rivet:"), bold(yellow("warning:")), msg.fmt(args));
+   console.ewriteln("{} {} {}", bold("rivet:"), bold(yellow("warning:")), msg.fmt(args));
 }
 
 #[inline]
 public func info(msg: string, args: ...traits.Stringable) {
-   console.eprintln("{} {} {}", bold("rivet:"), bold(blue("info:")), msg.fmt(args));
+   console.ewriteln("{} {} {}", bold("rivet:"), bold(blue("info:")), msg.fmt(args));
 }
 
 #[inline]

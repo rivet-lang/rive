@@ -12,7 +12,7 @@ func enum_cast(ptr: anyptr, expected_id: usize) -> anyptr {
     enum_info := unsafe { @as(&EnumInfo, ptr) };
     if enum_info._id_ != expected_id {
         // TODO: replace indexes with names
-        console_eprintln(
+        console_ewriteln(
             "panic: enum cast: cannot cast ID({}) to ID({})", enum_info._id_, expected_id
         );
         bt_print(2);
@@ -24,7 +24,7 @@ func enum_cast(ptr: anyptr, expected_id: usize) -> anyptr {
 func trait_cast(got_obj: anyptr, got_id: usize, expected_id: usize) -> anyptr {
     if got_id != expected_id {
         // TODO: replace indexes with names
-        console_eprintln(
+        console_ewriteln(
             "panic: trait cast: cannot cast ID({}) to ID({})", got_id, expected_id
         );
         bt_print(2);
