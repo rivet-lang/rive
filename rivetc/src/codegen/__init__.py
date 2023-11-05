@@ -412,9 +412,7 @@ class Codegen:
                 name = decl.sym.name
             elif (not decl.is_method) and decl.attributes.has("export"):
                 export_attribute = decl.attributes.find("export")
-                if isinstance(
-                    export_attribute.args[0].expr, ast.StringLiteral
-                ):
+                if isinstance(export_attribute.args[0].expr, ast.StringLiteral):
                     name = export_attribute.args[0].expr.lit
                 else:
                     assert False

@@ -375,8 +375,8 @@ class Parser:
                     decls.append(self.parse_decl())
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
-                doc_comment, attributes, is_public, name, underlying_typ,
-                bases, variants, is_boxed, decls, pos
+                doc_comment, attributes, is_public, name, underlying_typ, bases,
+                variants, is_boxed, decls, pos
             )
         elif self.accept(Kind.KwExtend):
             pos = self.prev_tok.pos

@@ -267,10 +267,10 @@ class ExtendDecl:
 
 class FuncDecl:
     def __init__(
-        self, docs, attributes, is_public, is_extern, is_unsafe, name,
-        name_pos, args, ret_typ, stmts, scope, has_body = False,
-        is_method = False, self_is_mut = False, self_is_ptr = False,
-        has_named_args = False, is_main = False, is_variadic = False, abi = None
+        self, docs, attributes, is_public, is_extern, is_unsafe, name, name_pos,
+        args, ret_typ, stmts, scope, has_body = False, is_method = False,
+        self_is_mut = False, self_is_ptr = False, has_named_args = False,
+        is_main = False, is_variadic = False, abi = None
     ):
         self.sym = None
         self.docs = docs
