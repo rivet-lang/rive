@@ -15,17 +15,17 @@ public static space := "                                     ";
 /// Data object storing information about a defined flag.
 public struct Flag < traits.Stringable {
     /// Name as it appears on command line.
-    public name: string;
+    name: string;
 
     /// Shortcut.
-    public abbr: uint8;
+    abbr: uint8;
 
     /// Help message.
-    public usage: string;
+    usage: string;
 
     /// Something like '<arg>' that appears in usage, and also the
     /// default value, when the flag is not given.
-    public value_desc: string;
+    value_desc: string;
 
     public func to_string(&self) -> string {
         return "flag:
@@ -44,33 +44,33 @@ public struct Flag < traits.Stringable {
 #[boxed]
 public struct FlagParser {
     /// The original arguments to be parsed.
-    public original_args: []string;
+    original_args: []string;
     /// The index of a `--`, `none` if there is not any.
-    public idx_dashdash: ?usize;
+    idx_dashdash: ?usize;
     /// All options after `--` are ignored, and will be passed to the application unmodified.
-    public all_after_dashdash: []string;
+    all_after_dashdash: []string;
     /// When set, `--help` will print:
     /// Examples:
 	///    $ <appname> <usage_examples[0]>
 	///    $ <appname> <usage_examples[1]>
 	///    $ ...
-    public mut usage_examples: []string;
-    public mut default_help_label: string := "Display this help and exit.";
-    public mut default_version_label: string := "Show version information and exit.";
-    public mut flags: []Flag;
+    mut usage_examples: []string;
+    mut default_help_label: string := "Display this help and exit.";
+    mut default_version_label: string := "Show version information and exit.";
+    mut flags: []Flag;
     /// The current list of processed args.
-    public mut args: []string;
-    public mut max_free_args: usize;
-    public mut min_free_args: usize;
-    public mut application_name: string;
-    public mut application_version: string;
-    public mut application_short_description: string;
-    public mut application_description: string;
-    public mut args_description: string;
+    mut args: []string;
+    mut max_free_args: usize;
+    mut min_free_args: usize;
+    mut application_name: string;
+    mut application_version: string;
+    mut application_short_description: string;
+    mut application_description: string;
+    mut args_description: string;
     /// Whether passing undescribed arguments is allowed.
-    public mut allow_unknown_args: bool;
+    mut allow_unknown_args: bool;
     /// When set, --help will display all the collected footers at the bottom.
-    public mut footers: []string;
+    mut footers: []string;
 
     /// Create a new flag parser for the given args.
     public func new(args: []string) -> Self {
