@@ -437,7 +437,7 @@ class Parser:
         name = self.parse_name()
         self.expect(Kind.Colon)
         typ = self.parse_type()
-        has_def_expr = self.accept(Kind.Assign)
+        has_def_expr = self.accept(Kind.DeclAssign)
         def_expr = None
         if has_def_expr:
             def_expr = self.parse_expr()

@@ -14,7 +14,7 @@ public struct Checker {
     mut prefs: prefs.Prefs;
 
     mut source_file: ast.SourceFile;
-    mut sym: ast.Sym = ast.InvalidSym();
+    mut sym: ast.Sym := ast.InvalidSym();
     mut cur_fn: ast.Func;
 
     mut inside_extern: bool;

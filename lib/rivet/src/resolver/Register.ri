@@ -16,7 +16,7 @@ public struct Register {
     mut is_core_mod: bool;
 
     mut abi: ast.ABI;
-    mut sym: ast.Sym = ast.InvalidSym();
+    mut sym: ast.Sym := ast.InvalidSym();
     mut source_file: ast.SourceFile;
 
     public func walk_files(mut self, source_files: []ast.SourceFile) {

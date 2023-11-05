@@ -20,7 +20,7 @@ const NUM_SEP := b'_';
 public struct Tokenizer {
     table: ast.Table;
     prefs: prefs.Prefs;
-    file: string = "<internal-memory>";
+    file: string := "<internal-memory>";
     text: string;
     mut pos: usize;
     mut line: usize;

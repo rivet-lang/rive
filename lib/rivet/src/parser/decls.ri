@@ -425,7 +425,7 @@ extend Parser {
                 name := self.parse_name();
                 self.expect(.Colon);
                 type := self.parse_type();
-                has_def_expr := self.accept(.Assign);
+                has_def_expr := self.accept(.DeclAssign);
                 def_expr := if has_def_expr {
                     self.parse_expr()
                 } else {

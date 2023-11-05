@@ -55,8 +55,8 @@ public struct FlagParser {
 	///    $ <appname> <usage_examples[1]>
 	///    $ ...
     public mut usage_examples: []string;
-    public mut default_help_label: string = "Display this help and exit.";
-    public mut default_version_label: string = "Show version information and exit.";
+    public mut default_help_label: string := "Display this help and exit.";
+    public mut default_version_label: string := "Show version information and exit.";
     public mut flags: []Flag;
     /// The current list of processed args.
     public mut args: []string;

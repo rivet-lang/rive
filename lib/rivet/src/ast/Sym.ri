@@ -48,7 +48,7 @@ public enum ABI as uint8 < traits.Stringable {
 
 #[default_value(InvalidSym())]
 public trait Sym {
-    id: usize = new_sym_id();
+    id: usize := new_sym_id();
     abi: ABI;
     mut is_public: bool;
     mut parent: ?Sym;

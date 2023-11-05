@@ -1,5 +1,5 @@
 struct D {
-    m: uint8 = 155;
+    m: uint8 := 155;
 }
 
 struct E < D {

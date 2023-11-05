@@ -68,7 +68,7 @@ public func warn_builder(msg: string, pos: token.Pos) -> ReportBuilder {
 public struct ReportBuilder {
     mut kind: ReportKind;
     msg: string;
-    pos: token.Pos = token.noPos;
+    pos: token.Pos := token.noPos;
     mut attributes: []Attribute;
 
     #[inline]
