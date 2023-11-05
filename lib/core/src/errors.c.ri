@@ -4,9 +4,9 @@
 
 import c;
 
-public alias ErrnoError = c.ErrnoError;
+public alias ErrnoError := c.ErrnoError;
 
-// FIXME: public alias last_errno_error = c.last_errno_error;
+// FIXME: public alias last_errno_error := c.last_errno_error;
 public func last_errno_error() -> c.ErrnoError {
     return c.last_errno_error();
 }

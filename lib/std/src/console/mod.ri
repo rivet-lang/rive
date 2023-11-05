@@ -5,11 +5,11 @@
 import core;
 import c/libc;
 
-public alias print = core.console_print;
-public alias println = core.console_println;
-public alias eprint = core.console_eprint;
-public alias eprintln = core.console_eprintln;
-public alias is_atty = core.console_is_atty;
+public alias print := core.console_print;
+public alias println := core.console_println;
+public alias eprint := core.console_eprint;
+public alias eprintln := core.console_eprintln;
+public alias is_atty := core.console_is_atty;
 
 /// Returns a one-line string from stdin, after printing a prompt. In
 /// the event of error (end of input) or a empty string, returns `none`.

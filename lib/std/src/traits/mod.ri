@@ -4,5 +4,5 @@
 
 import core;
 
-public alias Stringable = core.Stringable;
-public alias Hashable = core.Hashable;
+public alias Stringable := core.Stringable;
+public alias Hashable := core.Hashable;

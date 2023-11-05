@@ -1,12 +1,12 @@
 import ./mod;
 
-alias sum = mod.add;
+alias sum := mod.add;
 
 test "using `alias` with symbols" {
     @assert(sum(5, 5) == mod.add(5, 5));
 }
 
-alias AnyptrOption = ?anyptr;
+alias AnyptrOption := ?anyptr;
 
 func anyptr_option() -> AnyptrOption {
     return none;

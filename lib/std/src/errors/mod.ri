@@ -7,8 +7,8 @@ import core;
 
 import ../traits;
 
-public alias ErrnoError = c.ErrnoError;
-public alias OutOfMemoryError = core.OutOfMemoryError;
+public alias ErrnoError := c.ErrnoError;
+public alias OutOfMemoryError := core.OutOfMemoryError;
 
 #[boxed]
 public struct InvalidSyntaxError < Throwable {

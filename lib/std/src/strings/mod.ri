@@ -4,7 +4,7 @@
 
 import core;
 
-public alias Builder = core.StringBuilder;
+public alias Builder := core.StringBuilder;
 
 func fill_vector(len: usize) -> []mut int32 {
     mut vec := @vec(mut int32, len);

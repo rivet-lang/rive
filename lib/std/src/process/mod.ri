@@ -8,12 +8,12 @@ import core;
 import { Path} from ../fs;
 import { Builder } from ../strings;
 
-public alias id = core.process_id;
-public alias panic = core.process_panic;
-public alias abort = core.process_abort;
-public alias exit = core.process_exit;
-public alias get_cwd = core.process_get_cwd;
-public alias executable = core.process_executable;
+public alias id := core.process_id;
+public alias panic := core.process_panic;
+public alias abort := core.process_abort;
+public alias exit := core.process_exit;
+public alias get_cwd := core.process_get_cwd;
+public alias executable := core.process_executable;
 
 public static args := core.ARGS;
 public static wdAtStartup := get_cwd() catch ".";

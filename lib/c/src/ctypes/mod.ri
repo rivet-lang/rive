@@ -2,39 +2,39 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public alias char = uint8;
-public alias schar = int8;
-public alias uchar = uint8;
+public alias char := uint8;
+public alias schar := int8;
+public alias uchar := uint8;
 
-public alias short = int16;
-public alias ushort = uint16;
+public alias short := int16;
+public alias ushort := uint16;
 
-public alias int = int32;
-public alias uint = uint32;
+public alias int := int32;
+public alias uint := uint32;
 
-public alias long = int64;
-public alias longlong = int64;
+public alias long := int64;
+public alias longlong := int64;
 
-public alias ulong = uint64;
-public alias ulonglong = uint64;
+public alias ulong := uint64;
+public alias ulonglong := uint64;
 
-public alias float = float32;
-public alias double = float64;
+public alias float := float32;
+public alias double := float64;
 
-public alias wchar_t = uint32;
-public alias intmax_t = int64;
-public alias uintmax_t = uint64;
+public alias wchar_t := uint32;
+public alias intmax_t := int64;
+public alias uintmax_t := uint64;
 
-public alias size_t = usize;
-public alias ptrdiff_t = isize;
-public alias intptr_t = isize;
-public alias uintptr_t = usize;
-public alias ssize_t = isize;
+public alias size_t := usize;
+public alias ptrdiff_t := isize;
+public alias intptr_t := isize;
+public alias uintptr_t := usize;
+public alias ssize_t := isize;
 
-public alias pid_t = int32;
-public alias off_t = int64;
-public alias ino_t = uint64;
-public alias dev_t = uint64;
-public alias uid_t = uint32;
-public alias gid_t = uint32;
-public alias mode_t = usize;
+public alias pid_t := int32;
+public alias off_t := int64;
+public alias ino_t := uint64;
+public alias dev_t := uint64;
+public alias uid_t := uint32;
+public alias gid_t := uint32;
+public alias mode_t := usize;

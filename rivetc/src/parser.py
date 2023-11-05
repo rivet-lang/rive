@@ -264,7 +264,7 @@ class Parser:
         elif self.accept(Kind.KwAlias):
             pos = self.tok.pos
             name = self.parse_name()
-            self.expect(Kind.Assign)
+            self.expect(Kind.DeclAssign)
             if self.tok.kind.is_start_of_type() and self.tok.kind != Kind.Name:
                 is_typealias = True
                 parent = self.parse_type()

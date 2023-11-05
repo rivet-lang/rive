@@ -14,8 +14,10 @@ struct BacktraceData {
     mut has_error: bool;
 }
 
-alias BacktraceErrorCB = func(mut_anyptr, ?[&]mut uint8, int32);
-alias BacktraceFullCB = func(mut_anyptr, int32, ?[&]mut uint8, int32, ?[&]mut uint8) -> int32;
+alias BacktraceErrorCB := func(mut_anyptr, ?[&]mut uint8, int32);
+alias BacktraceFullCB := func(
+    mut_anyptr, int32, ?[&]mut uint8, int32, ?[&]mut uint8
+) -> int32;
 
 extern (C) {
     func backtrace_create_state(

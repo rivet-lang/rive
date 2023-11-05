@@ -4,7 +4,7 @@
 
 import std/semver;
 
-public alias Version = semver.Version;
+public alias Version := semver.Version;
 
 public struct Project {
     public mut name: string;

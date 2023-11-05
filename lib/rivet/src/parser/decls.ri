@@ -198,7 +198,7 @@ extend Parser {
             },
             self.accept(.KwAlias) -> {
                 name := self.parse_name();
-                self.expect(.Assign);
+                self.expect(.DeclAssign);
                 mut parent := ast.Expr.Empty(self.tok.pos);
                 mut parent_type := ast.Type.Void;
                 mut is_typealias := false;
