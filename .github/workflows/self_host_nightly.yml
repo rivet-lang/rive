@@ -1,0 +1,37 @@
+name: Self-hosted Compiler Nightly Build
+
+on:
+  push:
+    paths: ['lib/**.ri', 'rivetc/**.py', 'cmd/**.ri']
+  pull_request:
+    paths: ['lib/**.ri', 'rivetc/**.py', 'cmd/**.ri']
+    types: [opened, synchronize]
+
+jobs:
+  ubuntu-gcc:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile the self-hosted compiler
+        run: |
+          sudo apt install zip
+          python3 rivetc -o rivet cmd/
+          ./rivet version
+          mkdir rivet-nightly-linux-amd64
+          mv rivet rivet-nightly-linux-amd64/
+          cp -r lib/ rivet-nightly-linux-amd64/
+          zip -r rivet-nightly-linux-amd64.zip rivet-nightly-linux-amd64/
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: nightly
+          name: Self-hosted Compiler Nightly Build
+          body: Nightly compilation of the compiler (created with each commit that is made).
+          prerelease: true
+          allowUpdates: true
+          replacesArtifacts: true
+          artifacts: "rivet-nightly-linux-amd64.zip"
