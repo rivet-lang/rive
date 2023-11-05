@@ -133,18 +133,18 @@ public enum TypeInfo < traits.Stringable {
     #[inline]
     public func elem_type(self) -> ?Type {
         return match self is {
-            .Array as arr => arr.elem_type,
-            .Vector as vec => vec.elem_type,
-            else => none
+            .Array as arr -> arr.elem_type,
+            .Vector as vec -> vec.elem_type,
+            else -> none
         };
     }
 
     #[inline]
     public func is_mut_arr_or_vec(self) -> bool {
         return match self is {
-            .Array as arr => arr.is_mut,
-            .Vector as vec => vec.is_mut,
-            else => false
+            .Array as arr -> arr.is_mut,
+            .Vector as vec -> vec.is_mut,
+            else -> false
         };
     }
 
@@ -163,31 +163,31 @@ public enum TypeInfo < traits.Stringable {
     #[inline]
     public func to_string(self) -> string {
         return match self is {
-            .Invalid => "invalid",
-            .Placeholder => "placeholder",
-            .None => "none",
-            .Bool => "bool",
-            .Rune => "rune",
-            .Int as int_info => "int{}".fmt(int_info.size),
-            .Isize => "isize",
-            .Uint as uint_info => "uint{}".fmt(uint_info.size),
-            .Usize => "usize",
-            .ComptimeInt => "comptime_int",
-            .ComptimeFloat => "comptime_float",
-            .Float as float_info => "float{}".fmt(float_info.size),
-            .String => "string",
-            .Func => "func",
-            .Alias => "alias",
-            .Array => "array",
-            .Vector => "vector",
-            .Tuple => "tuple",
-            .Trait => "trait",
-            .Struct as struct_info => if struct_info.is_enum_variant {
+            .Invalid -> "invalid",
+            .Placeholder -> "placeholder",
+            .None -> "none",
+            .Bool -> "bool",
+            .Rune -> "rune",
+            .Int as int_info -> "int{}".fmt(int_info.size),
+            .Isize -> "isize",
+            .Uint as uint_info -> "uint{}".fmt(uint_info.size),
+            .Usize -> "usize",
+            .ComptimeInt -> "comptime_int",
+            .ComptimeFloat -> "comptime_float",
+            .Float as float_info -> "float{}".fmt(float_info.size),
+            .String -> "string",
+            .Func -> "func",
+            .Alias -> "alias",
+            .Array -> "array",
+            .Vector -> "vector",
+            .Tuple -> "tuple",
+            .Trait -> "trait",
+            .Struct as struct_info -> if struct_info.is_enum_variant {
                 "enum variant"
             } else {
                 "struct"
             },
-            .Enum => "enum"
+            .Enum -> "enum"
         };
     }
 }

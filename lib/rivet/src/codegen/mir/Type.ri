@@ -42,36 +42,36 @@ public enum Type < traits.Stringable {
 
     public func size(self) -> usize {
         return match self is {
-            .Int as int => int.size,
-            .Uint as uint => uint.size,
-            .Basic as basic => basic.size,
-            .Anyptr as size => size,
-            .Pointer as ptr => ptr.size,
-            .Array as arr => arr.size,
-            .Func as func_ => func_.size,
-            .Void, .Never => process.panic("codegen.mir.Type.size(): `void` or `never` type")
+            .Int as int -> int.size,
+            .Uint as uint -> uint.size,
+            .Basic as basic -> basic.size,
+            .Anyptr as size -> size,
+            .Pointer as ptr -> ptr.size,
+            .Array as arr -> arr.size,
+            .Func as func_ -> func_.size,
+            .Void, .Never -> process.panic("codegen.mir.Type.size(): `void` or `never` type")
         };
     }
 
     public func to_string(self) -> string {
         return match self is {
-            .Void => "void",
-            .Never => "never",
-            .Int as int => "int{}".fmt(int.bits),
-            .Uint as uint => "uint{}".fmt(uint.bits),
-            .Basic as basic => if basic.is_primitive {
+            .Void -> "void",
+            .Never -> "never",
+            .Int as int -> "int{}".fmt(int.bits),
+            .Uint as uint -> "uint{}".fmt(uint.bits),
+            .Basic as basic -> if basic.is_primitive {
                 basic.name
             } else {
                 "@".concat(basic.name)
             },
-            .Anyptr => "anyptr",
-            .Pointer as ptr => if ptr.is_managed {
+            .Anyptr -> "anyptr",
+            .Pointer as ptr -> if ptr.is_managed {
                 "^"
             } else {
                 "*"
             }.concat(ptr.inner.to_string()),
-            .Array as arr => "[{}]{}".fmt(arr.count, arr.elem_type),
-            .Func as fn => {
+            .Array as arr -> "[{}]{}".fmt(arr.count, arr.elem_type),
+            .Func as fn -> {
                 mut sb := strings.Builder.from_string("*func(");
                 for i, arg in fn.args {
                     sb.write_string(arg.to_string());

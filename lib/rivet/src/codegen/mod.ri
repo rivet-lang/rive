@@ -49,7 +49,7 @@ public struct Codegen {
             }
         }
         match self.prefs.target_backend {
-            .C => {}
+            .C -> {}
         }
     }
 
@@ -101,7 +101,7 @@ public struct Codegen {
     func prefix_type(self, type: ast.Type) -> string {
         mut sb := strings.Builder.new();
         match type is {
-            .Pointer as ptr => {
+            .Pointer as ptr -> {
                 mut inner := ptr.inner;
                 while (inner is .Pointer as inner_ptr) : inner = inner_ptr.inner {
                     sb.write_string("ptr_");
@@ -111,18 +111,18 @@ public struct Codegen {
                 }
                 sb.write_string(self.prefix_type(ptr.inner));
             },
-            .Option as opt => sb.write_fmt("opt_{}", self.prefix_type(opt.inner)),
-            else => {}
+            .Option as opt -> sb.write_fmt("opt_{}", self.prefix_type(opt.inner)),
+            else -> {}
         }
         return sb.to_string();
     }
 
     func mangle_type(self, type: ast.Type) -> string {
         return match type is {
-            .Void => "4void",
-            .Anyptr => "6anyptr",
-            .Never => "5never",
-            .Func as func_t => {
+            .Void -> "4void",
+            .Anyptr -> "6anyptr",
+            .Never -> "5never",
+            .Func as func_t -> {
                 mut sb := strings.Builder.from_string("func_");
                 if func_t.is_method {
                     sb.write_string("m_");
@@ -136,7 +136,7 @@ public struct Codegen {
                 }
                 "{}{}".fmt(sb.len(), sb.to_string())
             },
-            else => {
+            else -> {
                 prefix_type := self.prefix_type(type);
                 if mut type_sym := type.symbol() {
                     if type_sym.is_primitive() {
@@ -167,13 +167,13 @@ public struct Codegen {
             sb.write_string("_R");
         }
         match sym is {
-            ast.Module => {
+            ast.Module -> {
                 for name in sym.name.split(".") {
                     sb.write_fmt("{}{}", name.len, name);
                 }
             },
-            ast.TypeSym as type => match type.info is {
-                .Tuple as tuple_info => {
+            ast.TypeSym as type -> match type.info is {
+                .Tuple as tuple_info -> {
                     mut sb2 := strings.Builder.new();
                     sb2.write_string("Tuple_");
                     for i, ttype in tuple_info.types {
@@ -184,9 +184,9 @@ public struct Codegen {
                     }
                     sb.write_fmt("{}{}", sb2.len(), sb2.to_string());
                 },
-                .String => sb.write_string("4core6string"),
-                .Vector => sb.write_string("4core6Vector"),
-                .Array as array_info => {
+                .String -> sb.write_string("4core6string"),
+                .Vector -> sb.write_string("4core6Vector"),
+                .Array as array_info -> {
                     mut sb2 := strings.Builder.new();
                     sb2.write_fmt(
                         "Array_{}_{}", self.mangle_type(array_info.elem_type),
@@ -194,9 +194,9 @@ public struct Codegen {
                     );
                     sb.write_fmt("{}{}", sb2.len(), sb2.to_string());
                 },
-                else => sb.write_fmt("{}{}", sym.name.len, sym.name)
+                else -> sb.write_fmt("{}{}", sym.name.len, sym.name)
             },
-            else => sb.write_fmt("{}{}", sym.name.len, sym.name)
+            else -> sb.write_fmt("{}{}", sym.name.len, sym.name)
         }
         if sym is ast.Func as sym_func {
             sb.write_byte(if sym_func.is_method { b'M' } else { b'F' });

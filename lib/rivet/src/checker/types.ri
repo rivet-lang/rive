@@ -149,27 +149,27 @@ extend Checker {
         }
 
         match expected_sym.info is {
-            .Trait as mut trait_info => {
+            .Trait as mut trait_info -> {
                 got_sym2 := self.table.comptime_number_to_type(got).symbol()?;
                 if got_sym2 in trait_info.implements {
                     trait_info.mark_has_objects();
                     return true;
                 }
             },
-            .Array as array_info if got_sym.info is .Array as array_info2 => {
+            .Array as array_info if got_sym.info is .Array as array_info2 -> {
                 if array_info.is_mut and !array_info2.is_mut {
                     return false;
                 }
                 return array_info.elem_type == array_info2.elem_type
                     and array_info.size == array_info2.size;
             },
-            .Vector as vector_lhs if got_sym.info is .Vector as vector_rhs => {
+            .Vector as vector_lhs if got_sym.info is .Vector as vector_rhs -> {
                 if vector_lhs.is_mut and !vector_rhs.is_mut {
                     return false;
                 }
                 return vector_lhs.elem_type == vector_rhs.elem_type;
             },
-            .Tuple as tuple_lhs if got_sym.info is .Tuple as tuple_rhs => {
+            .Tuple as tuple_lhs if got_sym.info is .Tuple as tuple_rhs -> {
                 if tuple_lhs.types.len != tuple_rhs.types.len {
                     return false;
                 }
@@ -180,7 +180,7 @@ extend Checker {
                 }
                 return true;
             },
-            else => {}
+            else -> {}
         }
 
         mod_sym := self.sym.module()?;

@@ -49,15 +49,15 @@ public enum Stmt < traits.Stringable {
 
     public func to_string(self) -> string {
         return match self is {
-            .Expr as expr => expr.to_string(),
-            .Assign as assign => "{} = {}".fmt(assign.left, assign.right),
-            .Discard as discard => "discard {}".fmt(discard),
-            .Goto as goto => "goto {}".concat(goto),
-            .GotoIf as goto_if => "goto {} if {}".fmt(goto_if.label, goto_if.cond),
-            .GotoIfElse as goto_if_else=> "goto {} if {} else {}".fmt(
+            .Expr as expr -> expr.to_string(),
+            .Assign as assign -> "{} = {}".fmt(assign.left, assign.right),
+            .Discard as discard -> "discard {}".fmt(discard),
+            .Goto as goto -> "goto {}".concat(goto),
+            .GotoIf as goto_if -> "goto {} if {}".fmt(goto_if.label, goto_if.cond),
+            .GotoIfElse as goto_if_else-> "goto {} if {} else {}".fmt(
                 goto_if_else.label, goto_if_else.cond, goto_if_else.label2
             ),
-            .Return as ret_expr => if ret_expr.has_expr {
+            .Return as ret_expr -> if ret_expr.has_expr {
                 "return {}".fmt(ret_expr.expr)
             } else {
                 "return"

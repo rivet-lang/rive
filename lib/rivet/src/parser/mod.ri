@@ -147,10 +147,10 @@ public struct Parser {
         while i < self.tokenizer.all_tokens.len : i += 1 {
             tok := self.peek_token(i);
             match tok.kind {
-                .Assign => assign_was_used = true,
-                .DeclAssign if !assign_was_used => return true,
-                .KwIf, .KwMatch, .KwWhile, .Lbrace, .Semicolon => break,
-                else => {}
+                .Assign -> assign_was_used = true,
+                .DeclAssign if !assign_was_used -> return true,
+                .KwIf, .KwMatch, .KwWhile, .Lbrace, .Semicolon -> break,
+                else -> {}
             }
         }
         return false;

@@ -100,7 +100,7 @@ extend Parser {
         is_public := self.is_public();
         mut pos := self.tok.pos;
         match {
-            self.accept(.KwImport) => {
+            self.accept(.KwImport) -> {
                 mut import_list := @vec(ast.ImportListInfo);
                 mut glob := false;
                 if self.accept(.Lbrace) {
@@ -108,7 +108,7 @@ extend Parser {
                         info_pos := self.tok.pos;
                         mut info_has_custom_alias := false;
                         match {
-                            self.accept(.KwSelf) => {
+                            self.accept(.KwSelf) -> {
                                 name := "self";
                                 info_alias := if self.accept(.KwAs) {
                                     info_has_custom_alias = true;
@@ -122,11 +122,11 @@ extend Parser {
                                     )
                                 );
                             },
-                            self.accept(.Mul) => {
+                            self.accept(.Mul) -> {
                                 glob = true;
                                 break;
                             },
-                            else => {
+                            else -> {
                                 name := self.parse_name();
                                 info_alias := if self.accept(.KwAs) {
                                     info_has_custom_alias = true;
@@ -172,7 +172,7 @@ extend Parser {
                     pos: pos
                 );
             },
-            self.accept(.KwExtern) => {
+            self.accept(.KwExtern) -> {
                 self.inside_extern = true;
                 // extern function or static
                 abi := self.parse_abi();
@@ -196,7 +196,7 @@ extend Parser {
                 self.inside_extern = false;
                 return .Extern(doc_comment, attributes, abi, decls, pos)
             },
-            self.accept(.KwAlias) => {
+            self.accept(.KwAlias) -> {
                 name := self.parse_name();
                 self.expect(.Assign);
                 mut parent := ast.Expr.Empty(self.tok.pos);
@@ -227,7 +227,7 @@ extend Parser {
                     pos
                 );
             },
-            self.accept(.KwConst) => {
+            self.accept(.KwConst) -> {
                 name := self.parse_name();
                 has_type := self.accept(.Colon);
                 type := if has_type {
@@ -250,7 +250,7 @@ extend Parser {
                     pos
                 );
             },
-            self.accept(.KwStatic) => {
+            self.accept(.KwStatic) -> {
                 // variable declarations
                 mut lefts := @vec(ast.ObjectData);
                 if self.accept(.Lparen) {
@@ -283,7 +283,7 @@ extend Parser {
                     scope: self.scope
                 );
             },
-            self.accept(.KwTrait) => {
+            self.accept(.KwTrait) -> {
                 old_inside_trait := self.inside_trait;
                 self.inside_trait = true;
                 name := self.parse_name();
@@ -313,7 +313,7 @@ extend Parser {
                     pos
                 );
             },
-            self.accept(.KwStruct) => {
+            self.accept(.KwStruct) -> {
                 old_inside_struct := self.inside_struct;
                 self.inside_struct = true;
                 name := self.parse_name();
@@ -347,7 +347,7 @@ extend Parser {
                     pos
                 );
             },
-            self.accept(.KwEnum) => {
+            self.accept(.KwEnum) -> {
                 name := self.parse_name();
                 underlying_type := if self.accept(.KwAs) {
                     self.parse_type()
@@ -419,7 +419,7 @@ extend Parser {
             },
             (self.inside_struct or self.inside_trait
                 or self.inside_enum_variant_with_fields)
-                and self.tok.kind in [.KwMut, .Name] => {
+                and self.tok.kind in [.KwMut, .Name] -> {
                 // fields
                 is_mut := self.accept(.KwMut);
                 name := self.parse_name();
@@ -445,7 +445,7 @@ extend Parser {
                     pos
                 );
             },
-            self.accept(.KwExtend) => {
+            self.accept(.KwExtend) -> {
                 type := self.parse_type();
                 mut bases := @vec(mut ast.Type);
                 if self.accept(.Lt) {
@@ -470,12 +470,12 @@ extend Parser {
                     pos
                 );
             },
-            self.accept(.KwFunc) => return self.parse_func_decl(
+            self.accept(.KwFunc) -> return self.parse_func_decl(
                 doc_comment, attributes, is_public, attributes.has("unsafe") or (
                     self.inside_extern and self.extern_abi != .Rivet
                 ), if self.inside_extern { self.extern_abi } else { .Rivet }
             ),
-            self.accept(.KwTest) => {
+            self.accept(.KwTest) -> {
                 name := self.tok.lit;
                 self.expect(.String);
                 self.inside_func = true;
@@ -498,11 +498,11 @@ extend Parser {
                     pos
                 );
             },
-            self.tok.kind != .EndOfFile => {
+            self.tok.kind != .EndOfFile -> {
                 report.error("expected declaration, found {}".fmt(self.tok), pos);
                 self.next();
             },
-            else => {}
+            else -> {}
         }
         return .Empty(pos);
     }
@@ -607,7 +607,7 @@ extend Parser {
 
         mut ret_type := ast.Type.Void;
         ret_t_pos := self.tok.pos;
-        if self.accept(.Arrow2) {
+        if self.accept(.Arrow) {
             is_result := self.accept(.Bang);
             if self.tok.kind == .Lbrace {
                 if !is_result {

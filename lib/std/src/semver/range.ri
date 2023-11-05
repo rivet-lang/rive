@@ -31,24 +31,24 @@ struct Comparator {
     func parse(input: string) -> ?Comparator {
         mut op := Operator.Eq;
         raw_version: string := match {
-            input.starts_with(">=") => {
+            input.starts_with(">=") -> {
                 op = .Ge;
                 input[2..]
             },
-            input.starts_with("<=") => {
+            input.starts_with("<=") -> {
                 op = .Le;
                 input[2..]
             },
-            input.starts_with(">") => {
+            input.starts_with(">") -> {
                 op = .Gt;
                 input[1..]
             },
-            input.starts_with("<") => {
+            input.starts_with("<") -> {
                 op = .Lt;
                 input[1..]
             },
-            input.starts_with("=") => input[1..],
-            else => input
+            input.starts_with("=") -> input[1..],
+            else -> input
         };
         return Comparator(coerce(raw_version) catch return none, op);
     }
@@ -56,11 +56,11 @@ struct Comparator {
     #[inline]
     func satisfies(&self, ver: Version) -> bool {
         return match self.op {
-            .Gt => ver > self.ver,
-            .Lt => ver < self.ver,
-            .Ge => ver >= self.ver,
-            .Le => ver <= self.ver,
-            .Eq => ver == self.ver
+            .Gt -> ver > self.ver,
+            .Lt -> ver < self.ver,
+            .Ge -> ver >= self.ver,
+            .Le -> ver <= self.ver,
+            .Eq -> ver == self.ver
         };
     }
 }
@@ -89,9 +89,9 @@ struct ComparatorSet {
     #[inline]
     func expand(input: string) -> ?ComparatorSet {
         return match input[0] {
-            b'~' => expand_tilda(input[1..]),
-            b'^' => expand_tilda(input[1..]),
-            else => {
+            b'~' -> expand_tilda(input[1..]),
+            b'^' -> expand_tilda(input[1..]),
+            else -> {
                 if input.contains(hyphenRangeSep) {
                     expand_hyphen(input)
                 } else {
@@ -134,17 +134,17 @@ struct Range {
                 continue;
             }
             match typ {
-                VER_MAJOR => {
+                VER_MAJOR -> {
                     raw_ver.raw_ints[VER_MAJOR] = "0";
                     raw_ver.raw_ints[VER_MINOR] = "0";
                     raw_ver.raw_ints[VER_PATCH] = "0";
                 },
-                VER_MINOR => {
+                VER_MINOR -> {
                     raw_ver.raw_ints[VER_MINOR] = "0";
                     raw_ver.raw_ints[VER_PATCH] = "0";
                 },
-                VER_PATCH => raw_ver.raw_ints[VER_PATCH] = "0",
-                else => { }
+                VER_PATCH -> raw_ver.raw_ints[VER_PATCH] = "0",
+                else -> { }
             }
         }
         if raw_ver.is_valid() {

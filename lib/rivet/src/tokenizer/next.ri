@@ -56,31 +56,31 @@ extend Tokenizer {
             }
             // delimiters and operators
             match ch {
-                b'+' => {
+                b'+' -> {
                     if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.PlusAssign, len: 2);
                     }
                     return self.new_token(.Plus);
                 },
-                b'-' => {
+                b'-' -> {
                     if nextc == b'>' {
                         self.pos += 1;
-                        return self.new_token(.Arrow2, len: 2);
+                        return self.new_token(.Arrow, len: 2);
                     } else if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.MinusAssign, len: 2);
                     }
                     return self.new_token(.Minus);
                 },
-                b'*' => {
+                b'*' -> {
                     if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.MulAssign, len: 2);
                     }
                     return self.new_token(.Mul);
                 },
-                b'/' => {
+                b'/' -> {
                     if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.DivAssign, len: 2);
@@ -119,39 +119,36 @@ extend Tokenizer {
                     }
                     return self.new_token(.Div);
                 },
-                b'%' => {
+                b'%' -> {
                     if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.ModAssign, len: 2);
                     }
                     return self.new_token(.Mod);
                 },
-                b'@' => return self.new_token(.At),
-                b'=' => {
+                b'@' -> return self.new_token(.At),
+                b'=' -> {
                     if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.Eq, len: 2);
-                    } else if nextc == b'>' {
-                        self.pos += 1;
-                        return self.new_token(.Arrow, len: 2);
                     }
                     return self.new_token(.Assign);
                 },
-                b'<' => {
+                b'<' -> {
                     if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.Le, len: 2);
                     }
                     return self.new_token(.Lt);
                 },
-                b'>' => {
+                b'>' -> {
                     if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.Ge, len: 2);
                     }
                     return self.new_token(.Gt);
                 },
-                b'.' => {
+                b'.' -> {
                     if nextc == b'.' and self.look_ahead(2) == b'.' {
                         self.pos += 2;
                         return self.new_token(.Ellipsis, len: 3);
@@ -161,37 +158,37 @@ extend Tokenizer {
                     }
                     return self.new_token(.Dot);
                 },
-                b',' => return self.new_token(.Comma),
-                b':' => {
+                b',' -> return self.new_token(.Comma),
+                b':' -> {
                     if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.DeclAssign, len: 2);
                     }
                     return self.new_token(.Colon);
                 },
-                b';' => return self.new_token(.Semicolon),
-                b'?' => {
+                b';' -> return self.new_token(.Semicolon),
+                b'?' -> {
                     if nextc == b'?' {
                         self.pos += 2;
                         return self.new_token(.OrElse, len: 2);
                     }
                     return self.new_token(.Question);
                 },
-                b'#' => {
+                b'#' -> {
                     if nextc == b'[' or nextc == b'!' {
                         return self.new_token(.Hash);
                     }
                     self.pp_directive();
                     continue;
                 },
-                b'&' => {
+                b'&' -> {
                     if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.AmpAssign, len: 2);
                     }
                     return self.new_token(.Amp);
                 },
-                b'!' => {
+                b'!' -> {
                     is_s_or_n := self.look_ahead(2) in [b's', b'n'];
                     if nextc == b'i' and is_s_or_n and self.look_ahead(3).is_space() {
                         self.pos += 2;
@@ -207,32 +204,32 @@ extend Tokenizer {
                     }
                     return self.new_token(.Bang);
                 },
-                b'|' => {
+                b'|' -> {
                     if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.PipeAssign, len: 2);
                     }
                     return self.new_token(.Pipe);
                 },
-                b'~' => return self.new_token(.BitNot),
-                b'^' => {
+                b'~' -> return self.new_token(.BitNot),
+                b'^' -> {
                     if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.XorAssign, len: 2);
                     }
                     return self.new_token(.Xor);
                 },
-                b'{' => return self.new_token(.Lbrace),
-                b'}' => return self.new_token(.Rbrace),
-                b'[' => return self.new_token(.Lbracket),
-                b']' => return self.new_token(.Rbracket),
-                b'(' => return self.new_token(.Lparen),
-                b')' => return self.new_token(.Rparen),
-                SINGLE_QUOTE => {
+                b'{' -> return self.new_token(.Lbrace),
+                b'}' -> return self.new_token(.Rbrace),
+                b'[' -> return self.new_token(.Lbracket),
+                b']' -> return self.new_token(.Rbracket),
+                b'(' -> return self.new_token(.Lparen),
+                b')' -> return self.new_token(.Rparen),
+                SINGLE_QUOTE -> {
                     lit := self.read_char();
                     return self.new_token(.Char, lit, lit.len + 2);
                 },
-                b'"' => {
+                b'"' -> {
                     start_line := self.line;
                     start_col := utils.max(1, self.current_column()) - 1;
                     lit := self.read_string();
@@ -244,7 +241,7 @@ extend Tokenizer {
                         )
                     };
                 },
-                else => {
+                else -> {
                     self.invalid_character();
                     break;
                 }
@@ -272,10 +269,10 @@ extend Tokenizer {
     #[inline]
     func read_number(mut self) -> string {
         return match {
-            self.matches("0x", self.pos) => self.read_hex_number(),
-            self.matches("0b", self.pos) => self.read_bin_number(),
-            self.matches("0o", self.pos) => self.read_oct_number(),
-            else => self.read_dec_number()
+            self.matches("0x", self.pos) -> self.read_hex_number(),
+            self.matches("0b", self.pos) -> self.read_bin_number(),
+            self.matches("0o", self.pos) -> self.read_oct_number(),
+            else -> self.read_dec_number()
         };
     }
 

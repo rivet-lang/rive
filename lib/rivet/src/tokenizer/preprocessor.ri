@@ -19,12 +19,12 @@ extend Tokenizer {
         pos.len += pp_dir.len;
         self.skip_whitespace();
         match pp_dir {
-            "if" => self.pp_if(),
-            "else_if" => self.pp_else_if(),
-            "else" => self.pp_else(),
-            "endif" => self.pp_endif(),
-            "error", "warn" => self.pp_err_warn(pp_dir),
-            else => {
+            "if" -> self.pp_if(),
+            "else_if" -> self.pp_else_if(),
+            "else" -> self.pp_else(),
+            "endif" -> self.pp_endif(),
+            "error", "warn" -> self.pp_err_warn(pp_dir),
+            else -> {
                 self.error("invalid preprocessing directive: `{}`".fmt(pp_dir), pos);
                 return;
             }
@@ -57,7 +57,7 @@ extend Tokenizer {
         self.conditional_stack.push(Conditional());
         if cond and (self.conditional_stack.len == 1
             or !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
-            // condition true => process code within if
+            // condition true -> process code within if
             self.conditional_stack[self.conditional_stack.len - 1].matched = true;
             self.conditional_stack[self.conditional_stack.len - 1].skip_section = false;
         } else {
@@ -79,7 +79,7 @@ extend Tokenizer {
         } else if cond and !self.conditional_stack[self.conditional_stack.len - 1].matched
             and (self.conditional_stack.len == 1 or
                 !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
-            // condition true => process code within if
+            // condition true -> process code within if
             self.conditional_stack[self.conditional_stack.len - 1].matched = true;
             self.conditional_stack[self.conditional_stack.len - 1].skip_section = false;
         } else {
@@ -97,7 +97,7 @@ extend Tokenizer {
         } else if !self.conditional_stack[self.conditional_stack.len - 1].matched
             and (self.conditional_stack.len == 1 or
                 !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
-            // condition true => process code within if
+            // condition true -> process code within if
             self.conditional_stack[self.conditional_stack.len - 1].matched = true;
             self.conditional_stack[self.conditional_stack.len - 1].skip_section = false;
         } else {

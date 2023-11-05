@@ -72,16 +72,16 @@ public struct Version < traits.Stringable {
         mut minor := self.minor;
         mut patch := self.patch;
         match typ {
-            .Major => {
+            .Major -> {
                 major += 1;
                 minor = 0;
                 patch = 0;
             },
-            .Minor => {
+            .Minor -> {
                 minor += 1;
                 patch = 0;
             },
-            .Patch => {
+            .Patch -> {
                 patch += 1;
             }
         }

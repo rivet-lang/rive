@@ -7,7 +7,7 @@ import ../ast;
 extend Parser {
     func parse_stmt(mut self) -> ast.Stmt {
         return match {
-            self.accept(.KwWhile) => {
+            self.accept(.KwWhile) -> {
                 pos := self.prev_tok.pos;
                 mut is_inf := false;
                 mut cond := ast.Expr.Empty(self.tok.pos);
@@ -45,7 +45,7 @@ extend Parser {
                     has_else_stmt, is_inf, pos + self.prev_tok.pos
                 )
             },
-            self.accept(.KwFor) => {
+            self.accept(.KwFor) -> {
                 pos := self.prev_tok.pos;
                 self.open_scope();
                 sc := self.scope;
@@ -81,7 +81,7 @@ extend Parser {
                     scope: sc
                 )
             },
-            self.accept(.KwDefer) or self.accept(.KwErrDefer) => {
+            self.accept(.KwDefer) or self.accept(.KwErrDefer) -> {
                 is_errdefer := self.prev_tok.kind == .KwErrDefer;
                 pos := self.prev_tok.pos;
                 expr := self.parse_expr();
@@ -92,7 +92,7 @@ extend Parser {
             },
             self.tok.kind in [.Lparen, .KwMut, .Name]
                 and self.peek_tok.kind !in [.Dot, .Lbracket, .Lparen]
-                and self.decl_operator_is_used() => {
+                and self.decl_operator_is_used() -> {
                 // variable declarations
                 mut pos := self.tok.pos;
                 mut lefts := @vec(ast.ObjectData);
@@ -114,7 +114,7 @@ extend Parser {
                 self.expect(.Semicolon);
                 .VarDecl(lefts, right, self.scope, pos)
             },
-            else => {
+            else -> {
                 expr := self.parse_expr();
                 if !((self.inside_block and self.tok.kind == .Rbrace)
                     or (expr is .If or expr is .Match or expr is .Block)) {

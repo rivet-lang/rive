@@ -9,20 +9,20 @@ import ../report;
 extend Resolver {
     func resolve_expr(mut self, mut expr: ast.Expr) {
         match expr is {
-            .Empty as empty_pos => report.error("BUG: empty expression found", empty_pos),
-            .Paren as paren => self.resolve_expr(paren.expr),
-            .Type as mut type => _ = self.resolve_type(type),
-            .Ident as mut ident => self.resolve_ident(ident),
-            .Selector as mut selector => self.resolve_selector(selector),
-            .Indirect as indirect => self.resolve_expr(indirect.left),
-            .OptionCheck as option_check => self.resolve_expr(option_check.left),
-            .SelfTy as self_ty => if self.self_sym_is_set {
+            .Empty as empty_pos -> report.error("BUG: empty expression found", empty_pos),
+            .Paren as paren -> self.resolve_expr(paren.expr),
+            .Type as mut type -> _ = self.resolve_type(type),
+            .Ident as mut ident -> self.resolve_ident(ident),
+            .Selector as mut selector -> self.resolve_selector(selector),
+            .Indirect as indirect -> self.resolve_expr(indirect.left),
+            .OptionCheck as option_check -> self.resolve_expr(option_check.left),
+            .SelfTy as self_ty -> if self.self_sym_is_set {
                 self_ty.sym = self.self_sym;
                 self_ty.found = true;
             } else {
                 report.error("cannot resolve `Self` expression", self_ty.pos);
             },
-            .SelfLiteral as self_lit => if self.self_sym_is_set {
+            .SelfLiteral as self_lit -> if self.self_sym_is_set {
                 self_lit.sym = self.self_sym;
                 self_lit.found = true;
                 self_lit.obj = @as(ast.Var, self_lit.scope.lookup("self")?);
@@ -30,17 +30,17 @@ extend Resolver {
             } else {
                 report.error("cannot resolve `self` expression", self_ty.pos);
             },
-            .TupleLiteral as tuple_lit => {
+            .TupleLiteral as tuple_lit -> {
                 for mut value in tuple_lit.values {
                     self.resolve_expr(value);
                 }
             },
-            .VectorLiteral as vector_lit => {
+            .VectorLiteral as vector_lit -> {
                 for mut value in vector_lit.values {
                     self.resolve_expr(value);
                 }
             },
-            .BuiltinCall as builtin_call => {
+            .BuiltinCall as builtin_call -> {
                 if builtin := self.table.find_builtin(builtin_call.name) {
                     if builtin is .Func {
                         builtin_call.builtin = builtin;
@@ -60,7 +60,7 @@ extend Resolver {
                     );
                 }
             },
-            .Call as call => {
+            .Call as call -> {
                 self.resolve_expr(call.left);
                 for arg in call.args {
                     self.resolve_expr(arg.expr);
@@ -86,8 +86,8 @@ extend Resolver {
                     self.resolve_expr(call.err_handler.expr);
                 }
             },
-            .Unary as unary => self.resolve_expr(unary.right),
-            .Binary as binary => {
+            .Unary as unary -> self.resolve_expr(unary.right),
+            .Binary as binary -> {
                 self.resolve_expr(binary.left);
                 self.resolve_expr(binary.right);
                 if binary.has_var_obj {
@@ -104,7 +104,7 @@ extend Resolver {
                     );
                 }
             },
-            .Range as range => {
+            .Range as range -> {
                 if range.has_start {
                     self.resolve_expr(range.start);
                 }
@@ -112,11 +112,11 @@ extend Resolver {
                     self.resolve_expr(range.end);
                 }
             },
-            .Index as index => {
+            .Index as index -> {
                 self.resolve_expr(index.left);
                 self.resolve_expr(index.index);
             },
-            .Block as block => {
+            .Block as block -> {
                 for mut stmt in block.stmts {
                     self.resolve_stmt(stmt);
                 }
@@ -124,11 +124,11 @@ extend Resolver {
                     self.resolve_expr(block.expr);
                 }
             },
-            .Return as return_expr => if return_expr.has_expr {
+            .Return as return_expr -> if return_expr.has_expr {
                 self.resolve_expr(return_expr.expr);
             },
-            .Throw as throw_expr => self.resolve_expr(throw_expr.expr),
-            .Guard as guard => {
+            .Throw as throw_expr -> self.resolve_expr(throw_expr.expr),
+            .Guard as guard -> {
                 for var_ in guard.vars {
                     self.check_variable_shadowing(var_.name, var_.pos);
                     var_.sym = ast.Var(
@@ -147,7 +147,7 @@ extend Resolver {
                     self.resolve_expr(guard.cond);
                 }
             },
-            .If as if_expr => {
+            .If as if_expr -> {
                 for branch in if_expr.branches {
                     if !branch.is_else {
                         self.resolve_expr(branch.cond);
@@ -155,7 +155,7 @@ extend Resolver {
                     self.resolve_expr(branch.expr);
                 }
             },
-            .Match as match_expr => {
+            .Match as match_expr -> {
                 self.resolve_expr(match_expr.expr);
                 for branch in match_expr.branches {
                     if !branch.is_else {
@@ -181,11 +181,11 @@ extend Resolver {
                     self.resolve_expr(branch.expr);
                 }
             },
-            .Assign as assign_expr => {
+            .Assign as assign_expr -> {
                 self.resolve_expr(assign_expr.left);
                 self.resolve_expr(assign_expr.right);
             },
-            else => {}
+            else -> {}
         }
     }
 
@@ -271,25 +271,25 @@ extend Resolver {
     func resolve_selector(mut self, mut selector: ast.Expr.Selector) {
         self.resolve_expr(selector.left);
         match selector.left is {
-            .SelfTy as self_ty if self_ty.found => {
+            .SelfTy as self_ty if self_ty.found -> {
                 selector.is_path = true;
                 selector.left_sym = self_ty.sym;
             },
-            .Ident as ident if ident.found and ident.is_sym => {
+            .Ident as ident if ident.found and ident.is_sym -> {
                 if ident.sym is ast.Var or ident.sym is ast.Const {
                     return;
                 }
                 selector.is_path = true;
                 selector.left_sym = ident.sym;
             },
-            .Selector as selector2 if selector2.found and selector2.is_path => {
+            .Selector as selector2 if selector2.found and selector2.is_path -> {
                 if selector2.sym is ast.Var or selector2.sym is ast.Const {
                     return;
                 }
                 selector.is_path = true;
                 selector.left_sym = selector2.sym;
             },
-            else => return
+            else -> return
         }
         if selector.is_path {
             if sym := self.find_symbol(

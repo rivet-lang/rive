@@ -54,23 +54,23 @@ test "`while` expression with guard expression" {
 
 test "`match` expression with guard expression" {
     match val := ret_none() {
-        3 => @assert(true),
-        else => @assert(false)
+        3 -> @assert(true),
+        else -> @assert(false)
     }
 
     match val := ret_none(); val == 3 {
-        3 => @assert(true),
-        else => @assert(false)
+        3 -> @assert(true),
+        else -> @assert(false)
     }
 
     match val := ret_err() {
-        3 => @assert(true),
-        else => @assert(false)
+        3 -> @assert(true),
+        else -> @assert(false)
     }
 
     match val := ret_none(); val == 3 {
-        3 => @assert(true),
-        else => @assert(false)
+        3 -> @assert(true),
+        else -> @assert(false)
     }
 }
 

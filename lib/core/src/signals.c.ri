@@ -17,9 +17,9 @@ func setup_signals_handler() {
 /// understandable error messages along with the backtrace.
 func signals_handler(_sig: int32, info: &mut libc.siginfo_t, _context: mut_anyptr) {
     match info.si_signo {
-		libc.SIGSEGV, libc.SIGBUS => segfault_handler(), // It panics on SIGSEGV and SIGBUS.
-		libc.SIGFPE => fpe_handler(),
-		else => { }
+		libc.SIGSEGV, libc.SIGBUS -> segfault_handler(), // It panics on SIGSEGV and SIGBUS.
+		libc.SIGFPE -> fpe_handler(),
+		else -> { }
 	}
 }
 

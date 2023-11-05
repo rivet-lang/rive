@@ -8,9 +8,9 @@ import ../report;
 extend Resolver {
     func resolve_stmt(mut self, mut stmt: ast.Stmt) {
         match stmt is {
-            .Empty as empty_pos => report.error("BUG: empty statement found", empty_pos),
-            .Expr as mut expr => self.resolve_expr(expr),
-            .VarDecl as var_stmt => {
+            .Empty as empty_pos -> report.error("BUG: empty statement found", empty_pos),
+            .Expr as mut expr -> self.resolve_expr(expr),
+            .VarDecl as var_stmt -> {
                 for left in var_stmt.lefts {
                     self.check_variable_shadowing(left.name, left.pos);
                     _ = self.resolve_type(left.type);
@@ -27,7 +27,7 @@ extend Resolver {
                 }
                 self.resolve_expr(var_stmt.right);
             },
-            .While as while_stmt => {
+            .While as while_stmt -> {
                 if !while_stmt.is_inf {
                     self.resolve_expr(while_stmt.cond);
                 }
@@ -39,7 +39,7 @@ extend Resolver {
                     self.resolve_stmt(while_stmt.else_stmt);
                 }
             },
-            .For as for_stmt => {
+            .For as for_stmt -> {
                 if for_stmt.has_index {
                     self.check_variable_shadowing(for_stmt.index.name, for_stmt.index.pos);
                     for_stmt.index.sym = ast.Var(
@@ -69,7 +69,7 @@ extend Resolver {
                 self.resolve_expr(for_stmt.iterable);
                 self.resolve_stmt(for_stmt.stmt);
             },
-            .Defer as defer_stmt => self.resolve_expr(defer_stmt.expr)
+            .Defer as defer_stmt -> self.resolve_expr(defer_stmt.expr)
         }
     }
 }

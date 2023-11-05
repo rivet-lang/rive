@@ -22,8 +22,8 @@ public enum Backend as uint8 {
 
     public func from_string(name: string) -> ?Self {
         return match name {
-            "c" => .C,
-            else => none
+            "c" -> .C,
+            else -> none
         };
     }
 }

@@ -46,8 +46,7 @@ static kindStrings := [
     KindMap(.Ellipsis, "..."),
     KindMap(.Hash, "#"),
     KindMap(.At, "@"),
-    KindMap(.Arrow, "=>"),
-    KindMap(.Arrow2, "->"),
+    KindMap(.Arrow, "->"),
     KindMap(.Comma, ","),
     KindMap(.Colon, ":"),
     KindMap(.Semicolon, ";"),
@@ -145,8 +144,7 @@ public enum Kind < traits.Stringable {
     Ellipsis, // ...
     Hash, // #
     At, // @
-    Arrow, // =>
-    Arrow2, // ->
+    Arrow, // ->
     Comma, // ,
     Colon, // :
     Semicolon, // ;
@@ -214,15 +212,15 @@ public enum Kind < traits.Stringable {
     #[inline]
     public func single(self) -> Kind {
         return match self {
-            .PlusAssign => .Plus,
-            .MinusAssign => .Minus,
-            .MulAssign => .Mul,
-            .DivAssign => .Div,
-            .ModAssign => .Mod,
-            .AmpAssign => .Amp,
-            .PipeAssign => .Pipe,
-            .XorAssign => .Xor,
-            else => self
+            .PlusAssign -> .Plus,
+            .MinusAssign -> .Minus,
+            .MulAssign -> .Mul,
+            .DivAssign -> .Div,
+            .ModAssign -> .Mod,
+            .AmpAssign -> .Amp,
+            .PipeAssign -> .Pipe,
+            .XorAssign -> .Xor,
+            else -> self
         };
     }
 
@@ -262,48 +260,48 @@ public enum Kind < traits.Stringable {
 #[inline]
 public func lookup(str: string) -> Kind {
     return match str {
-        "alias" => .KwAlias,
-        "and" => .KwAnd,
-        "as" => .KwAs,
-        "break" => .KwBreak,
-        "catch" => .KwCatch,
-        "comptime" => .KwComptime,
-        "const" => .KwConst,
-        "continue" => .KwContinue,
-        "defer" => .KwDefer,
-        "else" => .KwElse,
-        "enum" => .KwEnum,
-        "errdefer" => .KwErrDefer,
-        "extend" => .KwExtend,
-        "extern" => .KwExtern,
-        "false" => .KwFalse,
-        "func" => .KwFunc,
-        "for" => .KwFor,
-        "from" => .KwFrom,
-        "if" => .KwIf,
-        "import" => .KwImport,
-        "in" => .KwIn,
-        "is" => .KwIs,
-        "mut" => .KwMut,
-        "none" => .KwNone,
-        "!in" => .KwNotIn,
-        "!is" => .KwNotIs,
-        "or" => .KwOr,
-        "public" => .KwPublic,
-        "return" => .KwReturn,
-        "self" => .KwSelf,
-        "Self" => .KwSelfTy,
-        "static" => .KwStatic,
-        "struct" => .KwStruct,
-        "match" => .KwMatch,
-        "test" => .KwTest,
-        "throw" => .KwThrow,
-        "trait" => .KwTrait,
-        "true" => .KwTrue,
-        "undefined" => .KwUndefined,
-        "unsafe" => .KwUnsafe,
-        "while" => .KwWhile,
-        else => .Name
+        "alias" -> .KwAlias,
+        "and" -> .KwAnd,
+        "as" -> .KwAs,
+        "break" -> .KwBreak,
+        "catch" -> .KwCatch,
+        "comptime" -> .KwComptime,
+        "const" -> .KwConst,
+        "continue" -> .KwContinue,
+        "defer" -> .KwDefer,
+        "else" -> .KwElse,
+        "enum" -> .KwEnum,
+        "errdefer" -> .KwErrDefer,
+        "extend" -> .KwExtend,
+        "extern" -> .KwExtern,
+        "false" -> .KwFalse,
+        "func" -> .KwFunc,
+        "for" -> .KwFor,
+        "from" -> .KwFrom,
+        "if" -> .KwIf,
+        "import" -> .KwImport,
+        "in" -> .KwIn,
+        "is" -> .KwIs,
+        "mut" -> .KwMut,
+        "none" -> .KwNone,
+        "!in" -> .KwNotIn,
+        "!is" -> .KwNotIs,
+        "or" -> .KwOr,
+        "public" -> .KwPublic,
+        "return" -> .KwReturn,
+        "self" -> .KwSelf,
+        "Self" -> .KwSelfTy,
+        "static" -> .KwStatic,
+        "struct" -> .KwStruct,
+        "match" -> .KwMatch,
+        "test" -> .KwTest,
+        "throw" -> .KwThrow,
+        "trait" -> .KwTrait,
+        "true" -> .KwTrue,
+        "undefined" -> .KwUndefined,
+        "unsafe" -> .KwUnsafe,
+        "while" -> .KwWhile,
+        else -> .Name
     };
 }
 
@@ -320,17 +318,17 @@ public func is_overloadable_operator(kind: Kind) -> bool {
 #[inline]
 public func overloadable_operator_name(kind: Kind) -> string {
     return match kind {
-        .Plus => "_add_",
-        .Minus => "_sub_",
-        .Mul => "_mul_",
-        .Div => "_div_",
-        .Mod => "_mod_",
-        .Eq => "_eq_",
-        .Ne => "_ne_",
-        .Lt => "_lt_",
-        .Gt => "_gt_",
-        .Le => "_le_",
-        .Ge => "_ge_",
-        else => "_unknown_operator_"
+        .Plus -> "_add_",
+        .Minus -> "_sub_",
+        .Mul -> "_mul_",
+        .Div -> "_div_",
+        .Mod -> "_mod_",
+        .Eq -> "_eq_",
+        .Ne -> "_ne_",
+        .Lt -> "_lt_",
+        .Gt -> "_gt_",
+        .Le -> "_le_",
+        .Ge -> "_ge_",
+        else -> "_unknown_operator_"
     };
 }

@@ -60,9 +60,9 @@ public struct Resolver {
 
     func eval_size(mut self, mut expr: ast.Expr) -> ?isize {
         return match expr is {
-            .Paren as paren => self.eval_size(paren.expr),
-            .IntegerLiteral as int_lit => conv.string_to_isize(int_lit.value) catch return none,
-            .Ident as mut ident => {
+            .Paren as paren -> self.eval_size(paren.expr),
+            .IntegerLiteral as int_lit -> conv.string_to_isize(int_lit.value) catch return none,
+            .Ident as mut ident -> {
                 self.resolve_ident(ident);
                 if ident.found {
                     self.eval_sym(ident.sym, ident.pos)
@@ -70,7 +70,7 @@ public struct Resolver {
                     none
                 }
             },
-            .Selector as mut selector => {
+            .Selector as mut selector -> {
                 self.resolve_selector(selector);
                 if selector.found {
                     self.eval_sym(selector.sym, selector.pos)
@@ -78,20 +78,20 @@ public struct Resolver {
                     none
                 }
             },
-            .Binary as binary => if left := self.eval_size(binary.left) {
+            .Binary as binary -> if left := self.eval_size(binary.left) {
                 if right := self.eval_size(binary.right) {
                     match binary.op {
-                        .Plus => left + right,
-                        .Minus => left - right,
-                        .Mul => left * right,
-                        .Div => left / right,
-                        .Mod => left % right,
-                        .Amp => left & right,
-                        .Pipe => left | right,
-                        .Xor => left ^ right,
-                        .Lshift => @as(isize, @as(usize, left) << right),
-                        .Rshift => left >> right,
-                        else => none
+                        .Plus -> left + right,
+                        .Minus -> left - right,
+                        .Mul -> left * right,
+                        .Div -> left / right,
+                        .Mod -> left % right,
+                        .Amp -> left & right,
+                        .Pipe -> left | right,
+                        .Xor -> left ^ right,
+                        .Lshift -> @as(isize, @as(usize, left) << right),
+                        .Rshift -> left >> right,
+                        else -> none
                     }
                 } else {
                     none
@@ -99,7 +99,7 @@ public struct Resolver {
             } else {
                 none
             },
-            .BuiltinCall as builtin_call if builtin_call.name in ["size_of", "align_of"] => {
+            .BuiltinCall as builtin_call if builtin_call.name in ["size_of", "align_of"] -> {
                 if builtin_call.args[0].expr is .Type as mut type and self.resolve_type(type) {
                     (size, align) := self.table.type_size(type);
                     if builtin_call.name == "size_of" {
@@ -111,7 +111,7 @@ public struct Resolver {
                     0
                 }
             },
-            else => none
+            else -> none
         };
     }
 

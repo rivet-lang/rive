@@ -103,9 +103,9 @@ public enum Type < traits.Stringable {
     #[inline]
     public func ptr_or_ref_inner(self) -> Self {
         return match self is {
-            .Pointer as ptr => ptr.inner,
-            .Anyptr => self,
-            else => .Void()
+            .Pointer as ptr -> ptr.inner,
+            .Anyptr -> self,
+            else -> .Void()
         };
     }
 
@@ -113,26 +113,26 @@ public enum Type < traits.Stringable {
         // NOTE: `.unalias()` returns an option, so we use the same type without
         // unaliasing instead.
         return match self is {
-            .Anyptr => self,
-            .Result as result => .Result(result.inner.unalias() ?? result.inner),
-            .Option as option => .Option(option.inner.unalias() ?? option.inner),
-            .Tuple as tuple_data => {
+            .Anyptr -> self,
+            .Result as result -> .Result(result.inner.unalias() ?? result.inner),
+            .Option as option -> .Option(option.inner.unalias() ?? option.inner),
+            .Tuple as tuple_data -> {
                 unaliased_types := @vec(mut Type, tuple_data.inners.len);
                 for i, tuple_type in tuple_data.inners {
                     unaliased_types[i] = tuple_type.unalias() ?? tuple_type;
                 }
                 .Tuple(unaliased_types, tuple_data.sym)
             },
-            .Vector as vector_data => .Vector(
+            .Vector as vector_data -> .Vector(
                 vector_data.inner.unalias() ?? vector_data.inner, vector_data.is_mut
             ),
-            .Array as array_data => .Array(
+            .Array as array_data -> .Array(
                 array_data.inner.unalias() ?? array_data.inner, ...self
             ),
-            .Pointer as pointer_data => .Pointer(
+            .Pointer as pointer_data -> .Pointer(
                 pointer_data.inner.unalias() ?? pointer_data.inner, ...self
             ),
-            .Func as func_data => {
+            .Func as func_data -> {
                 for arg in func_data.args {
                     arg.type = arg.type.unalias() ?? arg.type;
                 }
@@ -141,12 +141,12 @@ public enum Type < traits.Stringable {
                     ...self
                 )
             },
-            .Basic as basic if !basic.is_unresolved => if basic.sym.info is .Alias as alias_info {
+            .Basic as basic if !basic.is_unresolved -> if basic.sym.info is .Alias as alias_info {
                 alias_info.parent.unalias() ?? alias_info.parent
             } else {
                 .Basic(basic.sym)
             },
-            else => none // for `.Void`, `.None` or `.Never`
+            else -> none // for `.Void`, `.None` or `.Never`
         };
     }
 
@@ -162,16 +162,16 @@ public enum Type < traits.Stringable {
     public func symbol(self) -> ?TypeSym {
         // NOTE: `.Void`, `.None`, `.Never` and `.Anyptr` has no `TypeSym` value.
         return match self is {
-            .Result as result => result.inner.symbol(),
-            .Option as option => option.inner.symbol(),
-            .Tuple as tuple_data => tuple_data.sym,
-            .Variadic as variadic_data => variadic_data.sym,
-            .Vector as vector_data => vector_data.sym,
-            .Array as array_data => array_data.sym,
-            .Pointer as pointer_data => pointer_data.inner.symbol(),
-            .Func as func_data => func_data.sym,
-            .Basic as basic if !basic.is_unresolved => basic.sym,
-            else => none
+            .Result as result -> result.inner.symbol(),
+            .Option as option -> option.inner.symbol(),
+            .Tuple as tuple_data -> tuple_data.sym,
+            .Variadic as variadic_data -> variadic_data.sym,
+            .Vector as vector_data -> vector_data.sym,
+            .Array as array_data -> array_data.sym,
+            .Pointer as pointer_data -> pointer_data.inner.symbol(),
+            .Func as func_data -> func_data.sym,
+            .Basic as basic if !basic.is_unresolved -> basic.sym,
+            else -> none
         };
     }
 
@@ -196,9 +196,9 @@ public enum Type < traits.Stringable {
     #[inline]
     public func is_void(self) -> bool {
         return match self is {
-            .Void, .Never => true,
-            .Result as result => result.inner.is_void(),
-            else => false
+            .Void, .Never -> true,
+            .Result as result -> result.inner.is_void(),
+            else -> false
         };
     }
 
@@ -210,17 +210,17 @@ public enum Type < traits.Stringable {
     #[inline]
     public func is_mut_pointer(self) -> bool {
         return match self is {
-            .Pointer as ptr => ptr.is_mut,
-            .Anyptr as anyptr_ => anyptr_.is_mut,
-            else => false
+            .Pointer as ptr -> ptr.is_mut,
+            .Anyptr as anyptr_ -> anyptr_.is_mut,
+            else -> false
         };
     }
 
     #[inline]
     public func is_any_kind_of_pointer(self) -> bool {
         return match self is {
-            .Pointer, .Anyptr, .Func => true,
-            else => if type_sym := self.symbol() {
+            .Pointer, .Anyptr, .Func -> true,
+            else -> if type_sym := self.symbol() {
                 type_sym.is_boxed()
             } else {
                 false
@@ -231,18 +231,18 @@ public enum Type < traits.Stringable {
     #[inline]
     public func position(self) -> token.Pos {
         return match self is {
-            .Void, .None => token.noPos,
-            .Never as never_pos => never_pos,
-            .Option as opt_t => opt_t.pos,
-            .Result as res_t => res_t.pos,
-            .Tuple as tuple_t => tuple_t.pos,
-            .Variadic as variadic_t => variadic_t.pos,
-            .Vector as vec_t => vec_t.pos,
-            .Array as arr_t => arr_t.pos,
-            .Pointer as ptr_t => ptr_t.pos,
-            .Anyptr as anyptr_t => anyptr_t.pos,
-            .Func as func_t => func_t.pos,
-            .Basic as basic_t => if basic_t.is_unresolved {
+            .Void, .None -> token.noPos,
+            .Never as never_pos -> never_pos,
+            .Option as opt_t -> opt_t.pos,
+            .Result as res_t -> res_t.pos,
+            .Tuple as tuple_t -> tuple_t.pos,
+            .Variadic as variadic_t -> variadic_t.pos,
+            .Vector as vec_t -> vec_t.pos,
+            .Array as arr_t -> arr_t.pos,
+            .Pointer as ptr_t -> ptr_t.pos,
+            .Anyptr as anyptr_t -> anyptr_t.pos,
+            .Func as func_t -> func_t.pos,
+            .Basic as basic_t -> if basic_t.is_unresolved {
                 basic_t.expr.position()
             } else {
                 basic_t.pos
@@ -253,22 +253,22 @@ public enum Type < traits.Stringable {
     #[inline]
     public func ==(self, rhs: Self) -> bool {
         return match self is {
-            .None if rhs is .None => true,
-            .Void if rhs is .Void => true,
-            .Never if rhs is .Never => true,
-            .Result as result_lhs if rhs is .Result as result_rhs =>
+            .None if rhs is .None -> true,
+            .Void if rhs is .Void -> true,
+            .Never if rhs is .Never -> true,
+            .Result as result_lhs if rhs is .Result as result_rhs ->
                 result_lhs.inner == result_rhs.inner,
-            .Option as option_lhs if rhs is .Option as option_rhs =>
+            .Option as option_lhs if rhs is .Option as option_rhs ->
                 option_lhs.inner == option_rhs.inner,
-            .Tuple as tuple_lhs if rhs is .Tuple as tuple_rhs => tuple_lhs == tuple_rhs,
-            .Variadic as variadic_lhs if rhs is .Variadic as variadic_rhs =>
+            .Tuple as tuple_lhs if rhs is .Tuple as tuple_rhs -> tuple_lhs == tuple_rhs,
+            .Variadic as variadic_lhs if rhs is .Variadic as variadic_rhs ->
                 variadic_lhs.inner == variadic_rhs.inner,
-            .Vector as vector_lhs if rhs is .Vector as vector_rhs =>
+            .Vector as vector_lhs if rhs is .Vector as vector_rhs ->
                 vector_lhs.inner == vector_rhs.inner and vector_lhs.is_mut == vector_rhs.is_mut,
-            .Array as array_lhs if rhs is .Array as array_rhs =>
+            .Array as array_lhs if rhs is .Array as array_rhs ->
                 array_lhs.inner == array_rhs.inner and array_lhs.size_value == array_rhs.size_value
                 and array_lhs.is_mut == array_rhs.is_mut,
-            .Pointer as ptr_lhs if rhs is .Pointer as ptr_rhs => if ptr_lhs.is_mut
+            .Pointer as ptr_lhs if rhs is .Pointer as ptr_rhs -> if ptr_lhs.is_mut
                 and !ptr_rhs.is_mut {
                 false
             } else if ptr_lhs.is_indexable and !ptr_rhs.is_indexable {
@@ -276,14 +276,14 @@ public enum Type < traits.Stringable {
             } else {
                 ptr_lhs.inner == ptr_rhs.inner
             },
-            .Anyptr as anyptr_lhs if rhs is .Anyptr as anyptr_rhs =>
+            .Anyptr as anyptr_lhs if rhs is .Anyptr as anyptr_rhs ->
                 anyptr_lhs.is_mut == anyptr_rhs.is_mut,
-            .Func as func_lhs if rhs is .Func as func_rhs => match {
+            .Func as func_lhs if rhs is .Func as func_rhs -> match {
                 func_lhs.is_method != func_rhs.is_method,
                 func_lhs.self_is_mut != func_rhs.self_is_mut,
                 func_lhs.self_is_ptr != func_rhs.self_is_ptr,
-                func_lhs.args.len != func_rhs.args.len => false,
-                else => {
+                func_lhs.args.len != func_rhs.args.len -> false,
+                else -> {
                     mut final_res := func_lhs.ret_type == func_rhs.ret_type;
                     for i, arg_lhs in func_lhs.args {
                         arg_rhs := func_rhs.args[i];
@@ -299,10 +299,10 @@ public enum Type < traits.Stringable {
                     final_res
                 }
             },
-            .Basic as basic_lhs if rhs is .Basic as basic_rhs =>
+            .Basic as basic_lhs if rhs is .Basic as basic_rhs ->
                 !(basic_lhs.is_unresolved and basic_rhs.is_unresolved)
                 and basic_lhs.sym == basic_rhs.sym,
-            else => false
+            else -> false
         };
     }
 
@@ -320,12 +320,12 @@ public enum Type < traits.Stringable {
 
     public func to_string_(self, qualstr: bool) -> string {
         return match self is {
-            .None => "<none>",
-        	.Void => "<void>",
-            .Never => "never",
-            .Result as result => "!".concat(result.inner.to_string_(qualstr)),
-            .Option as option => "?".concat(option.inner.to_string_(qualstr)),
-            .Tuple as tuple_data => {
+            .None -> "<none>",
+        	.Void -> "<void>",
+            .Never -> "never",
+            .Result as result -> "!".concat(result.inner.to_string_(qualstr)),
+            .Option as option -> "?".concat(option.inner.to_string_(qualstr)),
+            .Tuple as tuple_data -> {
                 mut sb := Builder.new(100);
                 sb.write_byte(b'(');
                 for i, inner in tuple_data.inners {
@@ -337,20 +337,20 @@ public enum Type < traits.Stringable {
                 sb.write_byte(b')');
                 sb.to_string()
             },
-            .Variadic as variadic_data => "...".concat(variadic_data.inner.to_string_(qualstr)),
-            .Vector as vector_data => if vector_data.is_mut {
+            .Variadic as variadic_data -> "...".concat(variadic_data.inner.to_string_(qualstr)),
+            .Vector as vector_data -> if vector_data.is_mut {
                 "[]mut"
             } else {
                 "[]"
             }.concat(vector_data.inner.to_string_(qualstr)),
-            .Array as array_data => "[".concat(
+            .Array as array_data -> "[".concat(
                 array_data.size.to_string(), "]", if array_data.is_mut {
                     "mut "
                 } else {
                     ""
                 }, array_data.inner.to_string_(qualstr)
             ),
-            .Pointer as pointer_data => {
+            .Pointer as pointer_data -> {
                 if pointer_data.is_mut {
                     if pointer_data.is_indexable {
                         "[&]mut "
@@ -365,14 +365,14 @@ public enum Type < traits.Stringable {
                     }
                 }.concat(pointer_data.inner.to_string_(qualstr))
             },
-            .Anyptr as anyptr_data => {
+            .Anyptr as anyptr_data -> {
                 if anyptr_data.is_mut {
                     "mut_anyptr"
                 } else {
                     "anyptr"
                 }
             },
-            .Func as func_data => {
+            .Func as func_data -> {
                 mut sb := Builder.new(150);
                 sb.write_string("func(");
                 if func_data.is_method {
@@ -399,7 +399,7 @@ public enum Type < traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Basic as basic => if basic.is_unresolved {
+            .Basic as basic -> if basic.is_unresolved {
                 basic.expr.to_string()
             } else if qualstr {
                 basic.sym.qualname()

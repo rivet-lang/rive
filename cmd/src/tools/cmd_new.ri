@@ -109,7 +109,7 @@ public func new(args: []string, is_init: bool) -> ! {
     } else {
         utils.info("creating project `{}`...", project.name);
         match template {
-            "bin", "lib" => {
+            "bin", "lib" -> {
                 utils.info("using the template `{}`...", template);
                 Directory.make(project.name)!;
                 create_project_json(project, false)!;
@@ -128,7 +128,7 @@ public func new(args: []string, is_init: bool) -> ! {
                     fs.write_file(Path.join(src_dir, "lib.ri")!, templates.libFile)!;
                 }
             },
-            else => utils.error(
+            else -> utils.error(
                 "unknown template `{}`, use `-h` for see the list of templates", template
             )
         }

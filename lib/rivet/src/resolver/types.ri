@@ -8,10 +8,10 @@ import ../report;
 extend Resolver {
     func resolve_type(mut self, mut type: ast.Type) -> bool {
         return match type is {
-            .Void, .Never, .Anyptr => true,
-            .Option as opt => self.resolve_type(opt.inner),
-            .Result as res => self.resolve_type(res.inner),
-            .Variadic as variadic => if self.resolve_type(variadic.inner) {
+            .Void, .Never, .Anyptr -> true,
+            .Option as opt -> self.resolve_type(opt.inner),
+            .Result as res -> self.resolve_type(res.inner),
+            .Variadic as variadic -> if self.resolve_type(variadic.inner) {
                 elem_sym := variadic.inner.symbol()?;
                 if elem_sym.info is .Trait as trait_info {
                     trait_info.has_objects = true;
@@ -21,13 +21,13 @@ extend Resolver {
             } else {
                 false
             },
-            .Vector as vec => if self.resolve_type(vec.inner) {
+            .Vector as vec -> if self.resolve_type(vec.inner) {
                 vec.sym = self.table.universe.add_or_get_vec(vec.inner, vec.is_mut);
                 true
             } else {
                 false
             },
-            .Array as arr => if self.resolve_type(arr.inner) {
+            .Array as arr -> if self.resolve_type(arr.inner) {
                 if arr_size := self.eval_size(arr.size) {
                     if arr_size <= 0 {
                         mut err := report.error_builder(
@@ -52,8 +52,8 @@ extend Resolver {
             } else {
                 false
             },
-            .Pointer as ptr => self.resolve_type(ptr.inner),
-            .Tuple as tuple => {
+            .Pointer as ptr -> self.resolve_type(ptr.inner),
+            .Tuple as tuple -> {
                 mut resolved := false;
                 for mut inner in tuple.inners {
                     resolved = self.resolve_type(inner);
@@ -63,7 +63,7 @@ extend Resolver {
                 }
                 resolved
             },
-            .Func as func_t => {
+            .Func as func_t -> {
                 mut res1 := false;
                 for arg in func_t.args {
                     res1 = self.resolve_type(arg.type);
@@ -73,16 +73,16 @@ extend Resolver {
                 func_t.has_sym = true;
                 res1
             },
-            .Basic as basic => if basic.is_unresolved {
+            .Basic as basic -> if basic.is_unresolved {
                 match basic.expr is {
-                    .SelfTy => if self.self_sym_is_set {
+                    .SelfTy -> if self.self_sym_is_set {
                         basic.is_unresolved = false;
                         basic.sym = self.self_sym;
                         true
                     } else {
                         false
                     },
-                    .Ident as mut ident => {
+                    .Ident as mut ident -> {
                         self.resolve_ident(ident);
                         if ident.found {
                             if ident.sym is ast.TypeSym as type_sym {
@@ -102,7 +102,7 @@ extend Resolver {
                         }
                         ident.found
                     },
-                    .Selector as mut selector => {
+                    .Selector as mut selector -> {
                         self.resolve_selector(selector);
                         if selector.found {
                             if selector.sym is ast.TypeSym as type_sym {
@@ -135,7 +135,7 @@ extend Resolver {
                         }
                         selector.found
                     },
-                    else => {
+                    else -> {
                         report.error("expected type, found expression", basic.expr.position());
                         false
                     }
@@ -143,7 +143,7 @@ extend Resolver {
             } else {
                 true
             },
-            else => false
+            else -> false
         };
     }
 }

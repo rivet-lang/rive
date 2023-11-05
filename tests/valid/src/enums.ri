@@ -32,8 +32,8 @@ test "enums: overrided ordinal value" {
 test "enums: enum variant match" {
     abc := SimpleEnum.Abc;
     match abc {
-        .Abc => @assert(true),
-        else => @assert(false)
+        .Abc -> @assert(true),
+        else -> @assert(false)
     }
 }
 
@@ -52,20 +52,20 @@ test "enums: boxed enum" {
         @assert(e_int32 == 6);
     }
     match e is {
-        .Abc as e_abc => @assert(e_abc == 6),
-        else => @assert(false)
+        .Abc as e_abc -> @assert(e_abc == 6),
+        else -> @assert(false)
     }
     match e is {
-        .Abc as mut e_abc2 => {
+        .Abc as mut e_abc2 -> {
             e_abc2 += 2;
             @assert(e_abc2 == 8);
         },
-        else => @assert(false)
+        else -> @assert(false)
     }
     e = .Def();
     match e is {
-        .Def => @assert(true),
-        else => @assert(false)
+        .Def -> @assert(true),
+        else -> @assert(false)
     }
 }
 

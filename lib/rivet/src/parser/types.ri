@@ -9,10 +9,10 @@ extend Parser {
     func parse_type(mut self) -> ast.Type {
         mut pos := self.tok.pos;
         return match {
-            self.accept(.Question) => .Option(
+            self.accept(.Question) -> .Option(
                 self.parse_type(), pos + self.prev_tok.pos
             ),
-            self.tok.kind == .KwFunc => {
+            self.tok.kind == .KwFunc -> {
                 // function types
                 self.expect(.KwFunc);
                 self.expect(.Lparen);
@@ -35,14 +35,14 @@ extend Parser {
                     }
                 }
                 self.expect(.Rparen);
-                ret_type := if self.accept(.Arrow2) {
+                ret_type := if self.accept(.Arrow) {
                     self.parse_type()
                 } else {
                     .Void()
                 };
                 .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos)
             },
-            self.accept(.Amp) => {
+            self.accept(.Amp) -> {
                 // pointers
                 is_mut := self.accept(.KwMut);
                 if self.tok.kind == .Mul {
@@ -52,7 +52,7 @@ extend Parser {
                 }
                 .Pointer(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
             },
-            self.accept(.Lbracket) => {
+            self.accept(.Lbracket) -> {
                 // arrays or vectors
                 if self.tok.kind != .Rbracket {
                     // indexable pointers
@@ -75,7 +75,7 @@ extend Parser {
                     .Vector(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
                 }
             },
-            self.accept(.Lparen) => {
+            self.accept(.Lparen) -> {
                 // tuples
                 mut inners := @vec(mut ast.Type);
                 while {
@@ -93,14 +93,14 @@ extend Parser {
                 self.expect(.Rparen);
                 .Tuple(inners, pos: pos)
             },
-            self.accept(.Ellipsis) => .Variadic(
+            self.accept(.Ellipsis) -> .Variadic(
                 self.parse_type(), pos: pos + self.prev_tok.pos
             ),
-            self.accept(.KwSelfTy) => .Basic(
+            self.accept(.KwSelfTy) -> .Basic(
                 expr: ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
                 is_unresolved: true
             ),
-            self.tok.kind == .Name => {
+            self.tok.kind == .Name -> {
                 prev_tok_kind := self.prev_tok.kind;
                 mut expr := self.parse_ident();
                 if self.accept(.Dot) {
@@ -114,37 +114,37 @@ extend Parser {
                     expr_name := @as(ast.Expr.Ident, expr).name;
                     expr_pos := expr.position();
                     match expr_name {
-                        "never" => {
-                            if prev_tok_kind != .Arrow2 {
+                        "never" -> {
+                            if prev_tok_kind != .Arrow {
                                 report.error("invalid use of `never` type", pos);
                             }
                             .Never(self.prev_tok.pos)
                         },
-                        "anyptr", "mut_anyptr" => .Anyptr(
+                        "anyptr", "mut_anyptr" -> .Anyptr(
                             expr_name.starts_with("mut_"), self.prev_tok.pos
                         ),
-                        "bool" => .Basic(self.table.bool_sym, pos: expr_pos),
-                        "rune" => .Basic(self.table.rune_sym, pos: expr_pos),
-                        "int8" => .Basic(self.table.int8_sym, pos: expr_pos),
-                        "int16" => .Basic(self.table.int16_sym, pos: expr_pos),
-                        "int32" => .Basic(self.table.int32_sym, pos: expr_pos),
-                        "int64" => .Basic(self.table.int64_sym, pos: expr_pos),
-                        "isize" => .Basic(self.table.isize_sym, pos: expr_pos),
-                        "uint8" => .Basic(self.table.uint8_sym, pos: expr_pos),
-                        "uint16" => .Basic(self.table.uint16_sym, pos: expr_pos),
-                        "uint32" => .Basic(self.table.uint32_sym, pos: expr_pos),
-                        "uint64" => .Basic(self.table.uint64_sym, pos: expr_pos),
-                        "usize" => .Basic(self.table.usize_sym, pos: expr_pos),
-                        "float32" => .Basic(self.table.float32_sym, pos: expr_pos),
-                        "float64" => .Basic(self.table.float64_sym, pos: expr_pos),
-                        "string" => .Basic(self.table.string_sym, pos: expr_pos),
-                        "comptime_int" => .Basic(self.table.comptime_int_sym, pos: expr_pos),
-                        "comptime_float" => .Basic(self.table.comptime_float_sym, pos: expr_pos),
-                        else => .Basic(expr: expr, is_unresolved: true)
+                        "bool" -> .Basic(self.table.bool_sym, pos: expr_pos),
+                        "rune" -> .Basic(self.table.rune_sym, pos: expr_pos),
+                        "int8" -> .Basic(self.table.int8_sym, pos: expr_pos),
+                        "int16" -> .Basic(self.table.int16_sym, pos: expr_pos),
+                        "int32" -> .Basic(self.table.int32_sym, pos: expr_pos),
+                        "int64" -> .Basic(self.table.int64_sym, pos: expr_pos),
+                        "isize" -> .Basic(self.table.isize_sym, pos: expr_pos),
+                        "uint8" -> .Basic(self.table.uint8_sym, pos: expr_pos),
+                        "uint16" -> .Basic(self.table.uint16_sym, pos: expr_pos),
+                        "uint32" -> .Basic(self.table.uint32_sym, pos: expr_pos),
+                        "uint64" -> .Basic(self.table.uint64_sym, pos: expr_pos),
+                        "usize" -> .Basic(self.table.usize_sym, pos: expr_pos),
+                        "float32" -> .Basic(self.table.float32_sym, pos: expr_pos),
+                        "float64" -> .Basic(self.table.float64_sym, pos: expr_pos),
+                        "string" -> .Basic(self.table.string_sym, pos: expr_pos),
+                        "comptime_int" -> .Basic(self.table.comptime_int_sym, pos: expr_pos),
+                        "comptime_float" -> .Basic(self.table.comptime_float_sym, pos: expr_pos),
+                        else -> .Basic(expr: expr, is_unresolved: true)
                     }
                 }
             },
-            else => {
+            else -> {
                 report.error("expected type, found {}".fmt(self.tok), pos);
                 self.next();
                 .Basic(expr: .Empty(pos), is_unresolved: true)

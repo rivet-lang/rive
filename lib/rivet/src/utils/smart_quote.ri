@@ -59,12 +59,12 @@ public func smart_quote(s: string, raw: bool := false) -> string {
             0
         };
         match current {
-            DOUBLE_QUOTE => {
+            DOUBLE_QUOTE -> {
                 current = 0;
                 result.write_byte(BACKSLASH);
                 result.write_byte(DOUBLE_QUOTE);
             },
-            BACKSLASH => {
+            BACKSLASH -> {
                 if raw {
                     result.write_string(doubleEscape);
                 } else if next == BACKSLASH {
@@ -91,19 +91,19 @@ public func smart_quote(s: string, raw: bool := false) -> string {
                     current = 0;
                 }
             },
-            BACKSLASH_N => {
+            BACKSLASH_N -> {
                 // keep newlines in string
                 current = 0;
                 result.write_byte(BACKSLASH);
                 result.write_byte(b'n');
             },
-            BACKSLASH_R if next == BACKSLASH_N => {
+            BACKSLASH_R if next == BACKSLASH_N -> {
                 result.write_byte(current);
                 result.write_byte(next);
                 current = 0;
                 skip_next = true;
             },
-            else => result.write_byte(current)
+            else -> result.write_byte(current)
         }
     }
     return result.to_string();

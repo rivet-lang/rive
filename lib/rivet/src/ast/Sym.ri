@@ -31,17 +31,17 @@ public enum ABI as uint8 < traits.Stringable {
     #[inline]
     public func from_string(abi: string) -> ?ABI {
         return match abi {
-            "C" => .C,
-            "Rivet" => .Rivet,
-            else => none
+            "C" -> .C,
+            "Rivet" -> .Rivet,
+            else -> none
         };
     }
 
     #[inline]
     public func to_string(&self) -> string {
         return match self.* {
-            .C => "C",
-            .Rivet => "Rivet"
+            .C -> "C",
+            .Rivet -> "Rivet"
         };
     }
 }
@@ -87,24 +87,24 @@ public trait Sym {
 
     func type_of(self) -> string {
         return match self is {
-            SymRef as sym_ref => if sym_ref.ref_resolved {
+            SymRef as sym_ref -> if sym_ref.ref_resolved {
                 sym_ref.ref.type_of()
             } else {
                 "alias"
             },
-            Module => "module",
-            Const => "constant",
-            Var as obj => match obj.level {
-                .Receiver, .Argument => "argument",
-                else => "variable"
+            Module -> "module",
+            Const -> "constant",
+            Var as obj -> match obj.level {
+                .Receiver, .Argument -> "argument",
+                else -> "variable"
             },
-            TypeSym as type_sym => if type_sym.info.is_compound() {
+            TypeSym as type_sym -> if type_sym.info.is_compound() {
                 type_sym.info.to_string()
             } else {
                 "type"
             },
-            Func as func_info => func_info.kind(),
-            else => "unknown symbol kind"
+            Func as func_info -> func_info.kind(),
+            else -> "unknown symbol kind"
         };
     }
 

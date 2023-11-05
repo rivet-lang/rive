@@ -17,10 +17,10 @@ extend Checker {
 
         public func to_string(&self) -> string {
             return match self.* {
-                .Snake => "snake",
-                .Camel => "camel",
-                .Pascal => "pascal",
-                .Upper => "upper"
+                .Snake -> "snake",
+                .Camel -> "camel",
+                .Pascal -> "pascal",
+                .Upper -> "upper"
             };
         }
     }
@@ -30,10 +30,10 @@ extend Checker {
         if !(self.inside_extern or name == "_" or name == "string"
             or self.sym.module()?.name in ["c.libc", "c.ctypes"]) {
             is_valid := match case {
-                .Snake => utils.is_snake_case(name),
-                .Camel => utils.is_camel_case(name),
-                .Pascal => utils.is_pascal_case(name),
-                .Upper => utils.is_upper_case(name)
+                .Snake -> utils.is_snake_case(name),
+                .Camel -> utils.is_camel_case(name),
+                .Pascal -> utils.is_pascal_case(name),
+                .Upper -> utils.is_upper_case(name)
             };
             if !is_valid {
                 report.warn("{} `{}` should have a {} case name".fmt(kind, name, case), pos);

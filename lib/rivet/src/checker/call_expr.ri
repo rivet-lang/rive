@@ -20,12 +20,12 @@ extend Checker {
         };
 
         match left is {
-            .SelfTy as self_ty => self.check_ctor_call(self_ty.sym, call_expr),
-            .Ident as ident if (ident.is_sym or ident.is_obj) => match ident.sym is {
+            .SelfTy as self_ty -> self.check_ctor_call(self_ty.sym, call_expr),
+            .Ident as ident if (ident.is_sym or ident.is_obj) -> match ident.sym is {
                 ast.TypeSym as mut type_sym if type_sym.info is .Trait
                     or type_sym.info is .Struct or type_sym.info is .String
-                    or type_sym.info is .Enum => self.check_ctor_call(type_sym, call_expr),
-                ast.Func as func_ => {
+                    or type_sym.info is .Enum -> self.check_ctor_call(type_sym, call_expr),
+                ast.Func as func_ -> {
                     call_expr.func_ = func_;
                     if func_.is_main {
                         report.error("cannot call to `main` function", ident.pos);
@@ -33,7 +33,7 @@ extend Checker {
                         self.check_func_call(func_, call_expr);
                     }
                 },
-                else => {
+                else -> {
                     ident_type := self.check_expr(left);
                     if ident_type is .Func as i_func {
                         call_expr.is_closure = true;
@@ -47,18 +47,18 @@ extend Checker {
                     }
                 }
             },
-            .Selector as selector => if selector.is_path {
+            .Selector as selector -> if selector.is_path {
                 match selector.sym is {
                     ast.TypeSym as mut s_type_sym if s_type_sym.info is .Trait
                         or s_type_sym.info is .Struct or s_type_sym.info is .String
-                        or s_type_sym.info is .Enum => self.check_ctor_call(
+                        or s_type_sym.info is .Enum -> self.check_ctor_call(
                         s_type_sym, call_expr
                     ),
-                    ast.Func as s_func_ => {
+                    ast.Func as s_func_ -> {
                         call_expr.func_ = s_func_;
                         self.check_func_call(s_func_, call_expr);
                     },
-                    else => {
+                    else -> {
                         selector_type := self.check_expr(left);
                         if selector_type is .Func as s_func {
                             call_expr.is_closure = true;
@@ -131,12 +131,12 @@ extend Checker {
                     );
                 }
             },
-            .EnumLiteral as enum_lit => {
+            .EnumLiteral as enum_lit -> {
                 enum_lit.is_instance = true;
                 _ = self.check_expr(left);
                 self.check_ctor_call(enum_lit.sym, call_expr);
             },
-            else => report.error("invalid expression used in call expression", left.position())
+            else -> report.error("invalid expression used in call expression", left.position())
         }
 
         // result checking
@@ -203,7 +203,7 @@ extend Checker {
             .Basic(type_sym, pos: call_expr.pos)
         };
         match type_sym.info is {
-            .Enum as enum_info => {
+            .Enum as enum_info -> {
                 variant := if call_expr.left is .Selector as selector {
                     @as(ast.TypeInfo.Enum, @as(ast.TypeSym, selector.left_sym).info)
                         .get_variant(selector.field_name)?
@@ -249,7 +249,7 @@ extend Checker {
                     );
                 }
             },
-            .Trait as mut trait_info => {
+            .Trait as mut trait_info -> {
                 if call_expr.has_spread_expr {
                     report.error(
                         "cannot use spread expression with trait constructor", call_expr.pos
@@ -273,7 +273,7 @@ extend Checker {
                     );
                 }
             },
-            else => {
+            else -> {
                 mut initted_fields := maps.MapStringBool();
                 type_fields := type_sym.full_fields();
                 if !call_expr.has_named_args() {
@@ -343,26 +343,26 @@ extend Checker {
                         continue;
                     }
                     match field.type is {
-                        .Pointer, .Anyptr if !was_initted => report.warn(
+                        .Pointer, .Anyptr if !was_initted -> report.warn(
                             "field `{}` of type `{}` must be initialized".fmt(
                                 field.name, type_sym.name
                             ), call_expr.pos
                         ),
-                        else => if f_type_sym := field.type.symbol();
+                        else -> if f_type_sym := field.type.symbol();
                             f_type_sym.default_value is none {
                             match f_type_sym.info is {
-                                .Trait if !was_initted => report.warn(
+                                .Trait if !was_initted -> report.warn(
                                     "field `{}` of type `{}` must be initialized".fmt(
                                         field.name, type_sym.name
                                     ), call_expr.pos
                                 ),
-                                .Enum as enum_info2 if enum_info2.is_boxed and !was_initted =>
+                                .Enum as enum_info2 if enum_info2.is_boxed and !was_initted ->
                                     report.warn(
                                         "field `{}` of type `{}` must be initialized".fmt(
                                             field.name, type_sym.name
                                         ), call_expr.pos
                                     ),
-                                else => {}
+                                else -> {}
                             }
                         }
                     }

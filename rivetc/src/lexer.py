@@ -512,7 +512,7 @@ class Lexer:
             elif ch == "-":
                 if nextc == ">":
                     self.pos += 1
-                    return token.Token("", Kind.Arrow2, pos)
+                    return token.Token("", Kind.Arrow, pos)
                 elif nextc == "=":
                     self.pos += 1
                     return token.Token("", Kind.MinusAssign, pos)
@@ -565,9 +565,6 @@ class Lexer:
                 if nextc == "=":
                     self.pos += 1
                     return token.Token("", Kind.Eq, pos)
-                elif nextc == ">":
-                    self.pos += 1
-                    return token.Token("", Kind.Arrow, pos)
                 return token.Token("", Kind.Assign, pos)
             #
             elif ch == "<":

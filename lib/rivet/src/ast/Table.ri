@@ -192,9 +192,9 @@ public struct Table {
     public func find_builtin(self, name: string) -> ?Builtin {
         for builtin in self.builtins {
             is_equal := match builtin is {
-                .Const as b_var => b_var.name == name,
-                .Func as b_func => b_func.name == name,
-                else => false
+                .Const as b_var -> b_var.name == name,
+                .Func as b_func -> b_func.name == name,
+                else -> false
             };
             if is_equal {
                 return builtin;
@@ -289,9 +289,9 @@ public struct Table {
     /// C's `sizeof(T)` and `_Alignof(T)`.
     public func type_size(mut self, type: Type, is_raw: bool := false) -> (usize, usize) {
         return match type is {
-            .Result, .Option => self.type_symbol_size(self.throwable_sym, is_raw),
-            .Anyptr, .Pointer, .Func => (self.pointer_size, self.pointer_size),
-            else => if mut type_sym := type.symbol() {
+            .Result, .Option -> self.type_symbol_size(self.throwable_sym, is_raw),
+            .Anyptr, .Pointer, .Func -> (self.pointer_size, self.pointer_size),
+            else -> if mut type_sym := type.symbol() {
                 self.type_symbol_size(type_sym, is_raw)
             } else {
                 (0, 0)
@@ -308,42 +308,42 @@ public struct Table {
                 (self.pointer_size, self.pointer_size)
             } else {
                 match type_sym.info is {
-                    .Func => (self.pointer_size, self.pointer_size),
-                    .Alias as alias_info => self.type_size(alias_info.parent),
-                    .Bool => (1, 1),
-                    .Usize, .Isize => (self.pointer_size, self.pointer_size),
-                    .Int as int => match int.size {
-                        8 => (1, 1),
-                        16 => (2, 2),
-                        32 => (4, 4),
-                        64 => (8, 8),
-                        else => (0, 0)
+                    .Func -> (self.pointer_size, self.pointer_size),
+                    .Alias as alias_info -> self.type_size(alias_info.parent),
+                    .Bool -> (1, 1),
+                    .Usize, .Isize -> (self.pointer_size, self.pointer_size),
+                    .Int as int -> match int.size {
+                        8 -> (1, 1),
+                        16 -> (2, 2),
+                        32 -> (4, 4),
+                        64 -> (8, 8),
+                        else -> (0, 0)
                     },
-                    .Uint as uint => match uint.size {
-                        8 => (1, 1),
-                        16 => (2, 2),
-                        32 => (4, 4),
-                        64 => (8, 8),
-                        else => (0, 0)
+                    .Uint as uint -> match uint.size {
+                        8 -> (1, 1),
+                        16 -> (2, 2),
+                        32 -> (4, 4),
+                        64 -> (8, 8),
+                        else -> (0, 0)
                     },
-                    .Float as float => match float.size {
-                        32 => (4, 4),
-                        64 => (8, 8),
-                        else => (0, 0)
+                    .Float as float -> match float.size {
+                        32 -> (4, 4),
+                        64 -> (8, 8),
+                        else -> (0, 0)
                     },
-                    .Rune => (4, 4),
-                    .ComptimeFloat, .ComptimeInt => (8, 8),
-                    .Enum as enum_info => if enum_info.is_boxed {
+                    .Rune -> (4, 4),
+                    .ComptimeFloat, .ComptimeInt -> (8, 8),
+                    .Enum as enum_info -> if enum_info.is_boxed {
                         ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size)
                     } else {
                         self.type_size(enum_info.underlying_type)
                     },
-                    .Vector => self.type_symbol_size(self.vector_sym, is_raw),
-                    .Array as array_info => {
+                    .Vector -> self.type_symbol_size(self.vector_sym, is_raw),
+                    .Array as array_info -> {
                         (elem_size, elem_align) := self.type_size(array_info.elem_type);
                         (array_info.size * elem_size, elem_align)
                     },
-                    .Struct, .Tuple => {
+                    .Struct, .Tuple -> {
                         mut total_size: usize := 0;
                         mut max_alignment: usize := 0;
                         types := if type_sym.info is .Tuple as tuple_lit {
@@ -364,7 +364,7 @@ public struct Table {
                         }
                         (utils.round_up(total_size, max_alignment), max_alignment)
                     },
-                    .Trait as trait_info => {
+                    .Trait as trait_info -> {
                         (size, align) = ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size);
                         for mut btype in trait_info.bases {
                             (bsize, _balign) := self.type_symbol_size(btype, is_raw);
@@ -372,7 +372,7 @@ public struct Table {
                         }
                         (size, align)
                     },
-                    else => process.panic(
+                    else -> process.panic(
                         "Table.type_size: unsupported type `{}`", type_sym.qualname()
                     )
                 }
@@ -440,7 +440,7 @@ public struct Table {
     public func evalue_pp_symbol(self, name: string, pos: token.Pos) -> bool {
         match name {
             // operating systems
-            "_LINUX_", "_WINDOWS_" => {
+            "_LINUX_", "_WINDOWS_" -> {
                 return if os := sys.OS.from_string(name) {
                     os == self.prefs.target_os
                 } else {
@@ -448,7 +448,7 @@ public struct Table {
                 };
             },
             // architectures
-            "_X86_", "_AMD64_" => {
+            "_X86_", "_AMD64_" -> {
                 return if os := sys.Arch.from_string(name) {
                     os == self.prefs.target_arch
                 } else {
@@ -456,7 +456,7 @@ public struct Table {
                 };
             },
             // bits
-            "_x32_", "_x64_" => {
+            "_x32_", "_x64_" -> {
                 return if name == "_x32_" {
                     !self.prefs.target_is_64bit
                 } else {
@@ -464,7 +464,7 @@ public struct Table {
                 };
             },
             // endian
-            "_LITTLE_ENDIAN_", "_BIG_ENDIAN_" => {
+            "_LITTLE_ENDIAN_", "_BIG_ENDIAN_" -> {
                 return if name == "_LITTLE_ENDIAN_" {
                     self.prefs.target_is_little_endian
                 } else {
@@ -472,15 +472,15 @@ public struct Table {
                 };
             },
             // optimize modes
-            "_DEBUG_", "_RELEASE_" => {
+            "_DEBUG_", "_RELEASE_" -> {
                 return if name == "_DEBUG_" {
                     self.prefs.optimize_mode == .Debug
                 } else {
                     self.prefs.optimize_mode == .Release
                 };
             },
-            "_TESTS_" => return self.prefs.is_test,
-            else => return if name.starts_with("_") and name.ends_with("_") {
+            "_TESTS_" -> return self.prefs.is_test,
+            else -> return if name.starts_with("_") and name.ends_with("_") {
                 report.error("unknown builtin flag: `{}`".fmt(name), pos);
                 false
             } else {
@@ -542,9 +542,9 @@ public enum Builtin {
 
     public func type(self) -> Type {
         return match self is {
-            .Const as b_const => b_const.type,
-            .Func as b_func => b_func.type,
-            else => .Void()
+            .Const as b_const -> b_const.type,
+            .Func as b_func -> b_func.type,
+            else -> .Void()
         };
     }
 }

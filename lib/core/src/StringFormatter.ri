@@ -14,7 +14,7 @@ public struct StringFormatter {
             b := unsafe { self.buf.ptr[self.i] };
             b2 := if self.i + 1 < self.buf.len unsafe { self.buf.ptr[self.i + 1] } else { 0 };
             match b {
-                b'{' => {
+                b'{' -> {
                     if b2 == b'{' { // escaping '{'
                         self.res.write_byte(b'{');
                         self.i += 1;
@@ -95,7 +95,7 @@ public struct StringFormatter {
                         );
                     }
                 },
-                b'}' => {
+                b'}' -> {
                     if b2 == b'}' { // escaping '}'
                         self.res.write_byte(b'}');
                         self.i += 1;
@@ -106,7 +106,7 @@ public struct StringFormatter {
                         );
                     }
                 },
-                else => self.res.write_byte(b)
+                else -> self.res.write_byte(b)
             }
         }
         return self.res.to_string();

@@ -64,7 +64,7 @@ extend Parser {
         mut left := self.parse_shift_expr();
         while {
             left = match self.tok.kind {
-                .Gt, .Lt, .Ge, .Le, .OrElse, .KwIn, .KwNotIn => {
+                .Gt, .Lt, .Ge, .Le, .OrElse, .KwIn, .KwNotIn -> {
                     op := self.tok.kind;
                     self.next();
                     right := self.parse_shift_expr();
@@ -75,7 +75,7 @@ extend Parser {
                         pos: left.position() + right.position()
                     )
                 },
-                .KwIs, .KwNotIs => {
+                .KwIs, .KwNotIs -> {
                     if self.inside_match_header and self.peek_tok.kind == .Lbrace {
                         break;
                     }
@@ -111,7 +111,7 @@ extend Parser {
                         )
                     }
                 },
-                else => break
+                else -> break
             };
         }
         return left;
@@ -121,7 +121,7 @@ extend Parser {
         mut left := self.parse_additive_expr();
         while {
             left = match self.tok.kind {
-                .Lt, .Gt => {
+                .Lt, .Gt -> {
                     op: token.Kind := if self.tok.kind == .Lt { .Lshift } else { .Rshift };
                     if self.tok.pos.pos + 1 == self.peek_tok.pos.pos {
                         self.advance(2);
@@ -136,7 +136,7 @@ extend Parser {
                         break
                     }
                 },
-                .Amp, .Pipe, .Xor => {
+                .Amp, .Pipe, .Xor -> {
                     op := self.tok.kind;
                     self.next();
                     right := self.parse_additive_expr();
@@ -147,7 +147,7 @@ extend Parser {
                         pos: left.position() + right.position()
                     )
                 },
-                else => break
+                else -> break
             };
         }
         return left;
@@ -157,7 +157,7 @@ extend Parser {
         mut left := self.parse_multiplicative_expr();
         while {
             match self.tok.kind {
-                .Plus, .Minus => {
+                .Plus, .Minus -> {
                     op := self.tok.kind;
                     self.next();
                     right := self.parse_multiplicative_expr();
@@ -168,7 +168,7 @@ extend Parser {
                         pos: left.position() + right.position()
                     );
                 },
-                else => break
+                else -> break
             }
         }
         return left;
@@ -178,7 +178,7 @@ extend Parser {
         mut left := self.parse_unary_expr();
         while {
             match self.tok.kind {
-                .Mul, .Div, .Mod => {
+                .Mul, .Div, .Mod -> {
                     op := self.tok.kind;
                     self.next();
                     right := self.parse_unary_expr();
@@ -189,7 +189,7 @@ extend Parser {
                         pos: left.position() + right.position()
                     );
                 },
-                else => break
+                else -> break
             }
         }
         return left;
@@ -198,7 +198,7 @@ extend Parser {
     #[inline]
     func parse_unary_expr(mut self) -> ast.Expr {
         return match self.tok.kind {
-            .Amp, .Bang, .BitNot, .Minus => {
+            .Amp, .Bang, .BitNot, .Minus -> {
                 op := self.tok.kind;
                 pos := self.tok.pos;
                 self.next();
@@ -206,7 +206,7 @@ extend Parser {
                 right := self.parse_unary_expr();
                 .Unary(right, op, is_mut_ptr, pos + right.position())
             },
-            else => self.parse_primary_expr()
+            else -> self.parse_primary_expr()
         };
     }
 
@@ -215,8 +215,8 @@ extend Parser {
             self.tok.kind in [
                 .KwTrue, .KwFalse, .Char, .Number, .String,
                 .KwNone, .KwSelf, .KwSelfTy
-            ] => self.parse_literal(),
-            self.accept(.At) => {
+            ] -> self.parse_literal(),
+            self.accept(.At) -> {
                 pos := self.prev_tok.pos;
                 if self.peek_token(1).kind == .Lparen { // builtin call
                     name := if self.accept(.KwAs) {
@@ -255,18 +255,18 @@ extend Parser {
                     self.parse_ident(true) // builtin variable
                 }
             },
-            self.tok.kind == .Dot and self.peek_tok.kind == .Name => {
+            self.tok.kind == .Dot and self.peek_tok.kind == .Name -> {
                 pos := self.tok.pos;
                 self.next();
                 .EnumLiteral(self.parse_name(), pos: pos + self.prev_tok.pos)
             },
-            self.tok.kind in [.KwContinue, .KwBreak] => {
+            self.tok.kind in [.KwContinue, .KwBreak] -> {
                 op := self.tok.kind;
                 pos := self.tok.pos;
                 self.next();
                 .Branch(op, pos)
             },
-            self.accept(.KwReturn) => {
+            self.accept(.KwReturn) -> {
                 pos := self.prev_tok.pos;
                 has_expr := self.tok.kind !in [.Comma, .Semicolon, .Rbrace];
                 return_expr := if has_expr {
@@ -276,15 +276,15 @@ extend Parser {
                 };
                 .Return(return_expr, has_expr, pos + return_expr.position())
             },
-            self.accept(.KwThrow) => {
+            self.accept(.KwThrow) -> {
                 pos := self.prev_tok.pos;
                 throw_expr := self.parse_expr();
                 .Throw(throw_expr, pos + throw_expr.position())
             },
-            self.tok.kind == .KwIf => self.parse_if_expr(),
-            self.accept(.KwMatch) => self.parse_match_expr(),
-            self.tok.kind in [.KwUnsafe, .Lbrace] => self.parse_block_expr(),
-            self.tok.kind == .Lparen => {
+            self.tok.kind == .KwIf -> self.parse_if_expr(),
+            self.accept(.KwMatch) -> self.parse_match_expr(),
+            self.tok.kind in [.KwUnsafe, .Lbrace] -> self.parse_block_expr(),
+            self.tok.kind == .Lparen -> {
                 mut pos := self.tok.pos;
                 self.next();
                 e := self.parse_expr();
@@ -307,7 +307,7 @@ extend Parser {
                     .Paren(e, pos + e.position() + self.prev_tok.pos)
                 }
             },
-            self.tok.kind == .Lbracket => {
+            self.tok.kind == .Lbracket -> {
                 mut elems := @vec(mut ast.Expr);
                 mut pos := self.tok.pos;
                 self.next();
@@ -323,7 +323,7 @@ extend Parser {
                 self.expect(.Rbracket);
                 .VectorLiteral(elems, self.accept(.Bang), pos)
             },
-            self.tok.kind == .Name => if self.peek_tok.kind == .Char {
+            self.tok.kind == .Name -> if self.peek_tok.kind == .Char {
                 if self.tok.lit == "b" {
                     self.parse_character_literal()
                 } else {
@@ -348,11 +348,11 @@ extend Parser {
             } else {
                 self.parse_ident()
             },
-            else => .Empty(self.tok.pos)
+            else -> .Empty(self.tok.pos)
         };
         while {
             expr = match {
-                self.tok.kind.is_assign() => {
+                self.tok.kind.is_assign() -> {
                     // assignment
                     op := self.tok.kind;
                     pos := self.tok.pos;
@@ -362,7 +362,7 @@ extend Parser {
                 },
                 self.tok.kind == .Lparen and !self.decl_operator_is_used()
                     and (expr is .Ident or expr is .Selector or expr is .Paren
-                        or expr is .SelfTy or expr is .EnumLiteral) => {
+                        or expr is .SelfTy or expr is .EnumLiteral) -> {
                     self.next();
                     mut args := @vec(ast.CallArg);
                     mut spread_expr := ast.Expr.Empty(self.tok.pos);
@@ -438,7 +438,7 @@ extend Parser {
                         pos: expr.position() + self.prev_tok.pos
                     )
                 },
-                self.accept(.Lbracket) => {
+                self.accept(.Lbracket) -> {
                     index: ast.Expr := if self.accept(.DotDot) {
                         if self.tok.kind == .Rbracket {
                             .Range(pos: expr.position() + self.tok.pos)
@@ -476,8 +476,8 @@ extend Parser {
                 },
                 // avoid `expr` + `.EnumLiteral` concatenation
                 self.prev_tok.pos.line != self.tok.pos.line and self.tok.kind == .Dot
-                and self.peek_tok.kind == .Name and self.peek_tok.lit[0].is_upper() => break,
-                self.accept(.Dot) => if self.accept(.Mul) {
+                and self.peek_tok.kind == .Name and self.peek_tok.lit[0].is_upper() -> break,
+                self.accept(.Dot) -> if self.accept(.Mul) {
                     .Indirect(
                         left: expr,
                         pos: expr.position() + self.prev_tok.pos
@@ -485,14 +485,14 @@ extend Parser {
                 } else {
                     self.parse_selector_expr(expr)
                 },
-                self.accept(.Question) => {
+                self.accept(.Question) -> {
                     // check option value, panic if is `none`: `x?`
                     .OptionCheck(
                         left: expr,
                         pos: expr.position() + self.prev_tok.pos
                     )
                 },
-                else => break
+                else -> break
             }
         }
         return expr;
@@ -701,19 +701,19 @@ extend Parser {
     #[inline]
     func parse_literal(mut self) -> ast.Expr {
         return match {
-            self.tok.kind in [.KwTrue, .KwFalse] => {
+            self.tok.kind in [.KwTrue, .KwFalse] -> {
                 value := self.tok.kind == .KwTrue;
                 pos := self.tok.pos;
                 self.next();
                 .BoolLiteral(value, pos)
             },
-            self.tok.kind == .Char => self.parse_character_literal(),
-            self.tok.kind == .Number => self.parse_integer_literal(),
-            self.tok.kind == .String => self.parse_string_literal(),
-            self.accept(.KwNone) => .NoneLiteral(self.prev_tok.pos),
-            self.accept(.KwSelf) => .SelfLiteral(self.scope, self.prev_tok.pos),
-            self.accept(.KwSelfTy) => .SelfTy(self.scope, self.prev_tok.pos),
-            else => {
+            self.tok.kind == .Char -> self.parse_character_literal(),
+            self.tok.kind == .Number -> self.parse_integer_literal(),
+            self.tok.kind == .String -> self.parse_string_literal(),
+            self.accept(.KwNone) -> .NoneLiteral(self.prev_tok.pos),
+            self.accept(.KwSelf) -> .SelfLiteral(self.scope, self.prev_tok.pos),
+            self.accept(.KwSelfTy) -> .SelfTy(self.scope, self.prev_tok.pos),
+            else -> {
                 report.error("expected literal, found {}".fmt(self.tok), self.tok.pos);
                 .Empty(self.tok.pos)
             }

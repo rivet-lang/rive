@@ -242,8 +242,8 @@ public struct Checker {
         from_selector: bool := false
     ) {
         match expr is {
-            .Paren as paren => self.check_expr_is_mut(paren.expr),
-            .SelfLiteral as self_lit => if self_lit.obj.is_mut {
+            .Paren as paren -> self.check_expr_is_mut(paren.expr),
+            .SelfLiteral as self_lit -> if self_lit.obj.is_mut {
                 self_lit.obj.is_changed = true;
             } else {
                 mut err := report.error_builder(
@@ -252,7 +252,7 @@ public struct Checker {
                 err.add_help("consider making `self` as mutable: `mut self`");
                 err.emit();
             },
-            .Ident as ident => if ident.is_comptime {
+            .Ident as ident -> if ident.is_comptime {
                 report.error(
                     "cannot use constant `@{}` as mutable value".fmt(ident.name),
                     ident.pos
@@ -262,11 +262,11 @@ public struct Checker {
             } else if ident.found and (ident.is_sym or ident.is_obj) {
                 self.check_sym_is_mut(ident.sym, ident.pos, from_selector);
             },
-            .Selector as selector => if selector.is_path {
+            .Selector as selector -> if selector.is_path {
                 self.check_sym_is_mut(selector.sym, selector.pos, true);
             } else {
                 match selector.left is {
-                    .Ident as ident2 if ident2.found => if ident2.is_sym {
+                    .Ident as ident2 if ident2.found -> if ident2.is_sym {
                         self.check_sym_is_mut(ident2.sym, ident2.pos, true)
                     } else if ident2.sym is ast.Var as i_var and i_var.level == .Argument {
                         if i_var.is_mut {
@@ -283,7 +283,7 @@ public struct Checker {
                             err.emit();
                         }
                     },
-                    else => self.check_expr_is_mut(selector.left, from_assign, true)
+                    else -> self.check_expr_is_mut(selector.left, from_assign, true)
                 }
                 if selector.found and !selector.field_is_mut {
                     report.error(
@@ -293,31 +293,31 @@ public struct Checker {
                     );
                 }
             },
-            .Indirect as indirect => if !indirect.is_mut {
+            .Indirect as indirect -> if !indirect.is_mut {
                 report.error("cannot use a immutable pointer as mutable value", selector.pos);
             },
-            .OptionCheck as option_check => self.check_expr_is_mut(option_check.left),
-            .NoneLiteral => report.error("`none` cannot be modified", expr.position()),
-            .StringLiteral => report.error(
+            .OptionCheck as option_check -> self.check_expr_is_mut(option_check.left),
+            .NoneLiteral -> report.error("`none` cannot be modified", expr.position()),
+            .StringLiteral -> report.error(
                 "string literals cannot be modified", expr.position()
             ),
-            .TupleLiteral as tuple_lit => if from_assign {
+            .TupleLiteral as tuple_lit -> if from_assign {
                 for value in tuple_lit.values {
                     self.check_expr_is_mut(value);
                 }
             } else {
                 report.error("tuple literals cannot be modified", tuple_lit.pos);
             },
-            .EnumLiteral as enum_lit if !enum_lit.is_instance => report.error(
+            .EnumLiteral as enum_lit if !enum_lit.is_instance -> report.error(
                 "enum literals cannot be modified", enum_lit.pos
             ),
-            .BuiltinCall as builtin_call => {
+            .BuiltinCall as builtin_call -> {
                 for arg in builtin_call.args {
                     self.check_expr_is_mut(arg.expr);
                 }
             },
-            .Block as block if block.is_expr => self.check_expr_is_mut(block.expr),
-            .Index as index => {
+            .Block as block if block.is_expr -> self.check_expr_is_mut(block.expr),
+            .Index as index -> {
                 if index.left_type is .Pointer as ptr {
                     if !ptr.is_mut {
                         report.error(
@@ -334,32 +334,32 @@ public struct Checker {
                     );
                 }
             },
-            .Unary as unary => self.check_expr_is_mut(unary.right),
-            .Binary as binary => {
+            .Unary as unary -> self.check_expr_is_mut(unary.right),
+            .Binary as binary -> {
                 self.check_expr_is_mut(binary.left);
                 self.check_expr_is_mut(binary.right);
             },
-            .If as if_expr => {
+            .If as if_expr -> {
                 for branch in if_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
             },
-            .Match as match_expr => {
+            .Match as match_expr -> {
                 for branch in match_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
             },
-            else => {}
+            else -> {}
         }
     }
 
     func check_sym_is_mut(self, sym: ast.Sym, pos: token.Pos, from_selector: bool) {
         _ = self;
         match sym is {
-            ast.Const => report.error(
+            ast.Const -> report.error(
                 "cannot use constant `{}` as mutable value".fmt(sym.name), pos
             ),
-            ast.Var as var_info if !(from_selector and var_info.level == .Local) => {
+            ast.Var as var_info if !(from_selector and var_info.level == .Local) -> {
                 if var_info.is_mut {
                     var_info.is_changed = true;
                 } else {
@@ -384,7 +384,7 @@ public struct Checker {
                     err.emit();
                 }
             },
-            else => {}
+            else -> {}
         }
     }
 
@@ -408,7 +408,7 @@ public struct Checker {
 
     func expr_has_return(self, expr: ast.Expr, allow_throw: bool := false) -> bool {
         return match expr is {
-            .Match as match_expr => {
+            .Match as match_expr -> {
                 for i, branch in match_expr.branches {
                     if match_expr.is_exhaustive and i == match_expr.branches.len {
                         if self.expr_has_return(branch.expr, allow_throw) {
@@ -420,7 +420,7 @@ public struct Checker {
                 }
                 false
             },
-            .If as if_expr => {
+            .If as if_expr -> {
                 for branch in if_expr.branches {
                     if branch.is_else and self.expr_has_return(branch.expr, allow_throw) {
                         return true;
@@ -428,11 +428,11 @@ public struct Checker {
                 }
                 false
             },
-            .Call as call_expr => call_expr.type is .Never,
-            .Block as block => self.has_return(block.stmts, allow_throw),
-            .Return => true,
-            .Throw if allow_throw => true,
-            else => false
+            .Call as call_expr -> call_expr.type is .Never,
+            .Block as block -> self.has_return(block.stmts, allow_throw),
+            .Return -> true,
+            .Throw if allow_throw -> true,
+            else -> false
         };
     }
 

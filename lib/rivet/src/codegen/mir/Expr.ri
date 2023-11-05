@@ -56,23 +56,23 @@ public enum Expr < traits.Stringable {
 
             public func to_string(&self) -> string {
                 return match self.* {
-                    .Add => "add",
-                    .Sub => "sub",
-                    .Mul => "mul",
-                    .Div => "div",
-                    .Mod => "mod",
-                    .BitNot => "bit_not",
-                    .BitAnd => "bit_and",
-                    .BitOr => "bit_or",
-                    .BitXor => "bit_xor",
-                    .Lshift => "lshift",
-                    .Rshift => "rshift",
-                    .Move => "move",
-                    .Neg => "neg",
-                    .Inc => "inc",
-                    .Dec => "dec",
-                    .Index => "index",
-                    .AddrOf => "addr_of"
+                    .Add -> "add",
+                    .Sub -> "sub",
+                    .Mul -> "mul",
+                    .Div -> "div",
+                    .Mod -> "mod",
+                    .BitNot -> "bit_not",
+                    .BitAnd -> "bit_and",
+                    .BitOr -> "bit_or",
+                    .BitXor -> "bit_xor",
+                    .Lshift -> "lshift",
+                    .Rshift -> "rshift",
+                    .Move -> "move",
+                    .Neg -> "neg",
+                    .Inc -> "inc",
+                    .Dec -> "dec",
+                    .Index -> "index",
+                    .AddrOf -> "addr_of"
                 };
             }
         }
@@ -89,11 +89,11 @@ public enum Expr < traits.Stringable {
 
     public func to_string(self) -> string {
         return match self is {
-            .Empty => "<empty-expression>",
-            .IntConst as int_const => "{}".fmt(int_const.value),
-            .FloatConst as float_const => "{}".fmt(float_const.value),
-            .StringConst as string_const => "\"{}\"".fmt(string_const.value),
-            .ArrayConst as array_const => {
+            .Empty -> "<empty-expression>",
+            .IntConst as int_const -> "{}".fmt(int_const.value),
+            .FloatConst as float_const -> "{}".fmt(float_const.value),
+            .StringConst as string_const -> "\"{}\"".fmt(string_const.value),
+            .ArrayConst as array_const -> {
                 mut sb := strings.Builder.from_string("array_const(");
                 sb.write_fmt("{}, ", array_const.type);
                 for i, elem in array_const.elems {
@@ -105,11 +105,11 @@ public enum Expr < traits.Stringable {
                 sb.write_byte(b')');
                 sb.to_string()
             },
-            .Const as const_ => "const({}, {})".fmt(const_.type, const_.expr),
-            .Name as name => "@".concat(name),
-            .Ident as ident => "%{}".fmt(ident.dbg_name),
-            .Selector as selector => "{}.%{}".fmt(selector.left, selector.name),
-            .Operator as operator => {
+            .Const as const_ -> "const({}, {})".fmt(const_.type, const_.expr),
+            .Name as name -> "@".concat(name),
+            .Ident as ident -> "%{}".fmt(ident.dbg_name),
+            .Selector as selector -> "{}.%{}".fmt(selector.left, selector.name),
+            .Operator as operator -> {
                 mut sb := strings.Builder.new();
                 sb.write_fmt("{}(", operator.op);
                 for i, arg in operator.args {
@@ -121,7 +121,7 @@ public enum Expr < traits.Stringable {
                 sb.write_byte(b')');
                 sb.to_string()
             },
-            .Call as call => {
+            .Call as call -> {
                 mut sb := strings.Builder.from_string("call(");
                 sb.write_string(call.func_.to_string());
                 if call.args.len > 0 {

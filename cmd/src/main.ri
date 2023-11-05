@@ -17,21 +17,21 @@ func main() {
     }
     cmd := process.args[1];
     match cmd {
-        "new", "init" => tools.new(process.args[2..], cmd == "init")!,
-        "build", "run", "test", "check" => {
+        "new", "init" -> tools.new(process.args[2..], cmd == "init")!,
+        "build", "run", "test", "check" -> {
             // These commands are handled directly by the compiler.
             is_test := cmd == "test";
             is_check := cmd == "check";
             rivet.Compiler.new(process.args[2..], is_test, is_test or cmd == "run", is_check)!;
         },
-        "version" => {
+        "version" -> {
             console.eprintln(utils.full_version());
             process.exit(0);
         },
-        "-h", "--help", "help" => {
+        "-h", "--help", "help" -> {
             console.eprintln(help);
             process.exit(0);
         },
-        else => utils.error("unknown command `{}`", cmd)
+        else -> utils.error("unknown command `{}`", cmd)
     }
 }

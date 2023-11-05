@@ -506,7 +506,7 @@ class Parser:
         self.expect(Kind.Rparen)
 
         ret_typ = self.comp.void_t
-        if self.accept(Kind.Arrow2):
+        if self.accept(Kind.Arrow):
             is_result = self.accept(Kind.Bang)
             if self.tok.kind == Kind.Lbrace:
                 if not is_result:
@@ -1263,7 +1263,7 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Rparen)
-            if self.accept(Kind.Arrow2):
+            if self.accept(Kind.Arrow):
                 ret_typ = self.parse_type()
             else:
                 ret_typ = self.comp.void_t
@@ -1324,7 +1324,7 @@ class Parser:
             # normal type
             lit = expr.name
             if lit == "never":
-                if prev_tok_kind != Kind.Arrow2:
+                if prev_tok_kind != Kind.Arrow:
                     report.error("invalid use of `never` type", pos)
                 return self.comp.never_t
             elif lit == "anyptr":

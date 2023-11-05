@@ -40,8 +40,7 @@ class Kind(Enum):
     Ellipsis = auto_enum() # ...
     Hash = auto_enum() # #
     At = auto_enum() # @
-    Arrow = auto_enum() # =>
-    Arrow2 = auto_enum() # ->
+    Arrow = auto_enum() # ->
     Comma = auto_enum() # ,
     Colon = auto_enum() # :
     Semicolon = auto_enum() # ;
@@ -189,8 +188,7 @@ TOKEN_STRINGS = {
     Kind.Ellipsis: "...",
     Kind.Hash: "#",
     Kind.At: "@",
-    Kind.Arrow: "=>",
-    Kind.Arrow2: "->",
+    Kind.Arrow: "->",
     Kind.Comma: ",",
     Kind.Colon: ":",
     Kind.Semicolon: ";",
