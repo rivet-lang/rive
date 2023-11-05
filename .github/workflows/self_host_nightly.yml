@@ -28,6 +28,7 @@ jobs:
         with:
           tag_name: nightly
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          delete_release: false
 
       - name: Create release
         uses: ncipollo/release-action@v1
