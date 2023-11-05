@@ -222,6 +222,13 @@ public struct Register {
                         }
                     } else {
                         self.sym = basic_type.sym;
+                        if basic_type.sym.is_primitive()
+                            and !self.source_file.mod.is_core() {
+                            report.error(
+                                "cannot extend primitive types",
+                                extend_decl.pos
+                            );
+                        }
                     }
                     self.walk_decls(extend_decl.decls);
                 } else {

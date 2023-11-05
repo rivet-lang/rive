@@ -1,0 +1,7 @@
+extend bool {
+    func my_func(self) { _ = self; }
+}
+
+extend usize {
+    func my_func(self) { _ = self; }
+}

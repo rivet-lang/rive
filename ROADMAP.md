@@ -3,10 +3,11 @@
 - [X] Check correct implementation of a trait.
 - [ ] `no_mangle` attribute.
 - [ ] Format command (`rivet fmt .`).
+- [ ] Replace Python scripts with Rivet scripts.
 - [ ] Explicit function/method overloading:
     ```swift
-    func bool_to_string(b: bool) -> string {...}
-    func int_to_string(i: int32) -> string {...}
+    func bool_to_string(b: bool) -> string { ... }
+    func int_to_string(i: int32) -> string { ... }
 
     func to_string { bool_to_string, int_to_string }
 
