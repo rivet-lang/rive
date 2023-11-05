@@ -63,7 +63,7 @@ public struct Tokenizer {
     }
 
     #[inline]
-    func new_token(self, kind: token.Kind, lit: string = "", len: usize = 1) -> token.Token {
+    func new_token(self, kind: token.Kind, lit: string := "", len: usize := 1) -> token.Token {
         return token.Token(lit, kind, len, token.Pos(
             file: self.file,
             line: self.line,
@@ -75,8 +75,8 @@ public struct Tokenizer {
 
     #[inline]
     func new_multiline_token(
-        self, kind: token.Kind, lit: string = "", len: usize = 1,
-        start_line: usize = 0, end_line: usize = 0, start_col: usize = 0
+        self, kind: token.Kind, lit: string := "", len: usize := 1,
+        start_line: usize := 0, end_line: usize := 0, start_col: usize := 0
     ) -> token.Token {
         return token.Token(lit, kind, len, token.Pos(
             file: self.file,
@@ -225,22 +225,22 @@ public struct Tokenizer {
     }
 
     #[inline]
-    func error(self, msg: string, pos: token.Pos = self.current_pos()) {
+    func error(self, msg: string, pos: token.Pos := self.current_pos()) {
         report.error(msg, pos);
     }
 
     #[inline]
-    func warn(self, msg: string, pos: token.Pos = self.current_pos()) {
+    func warn(self, msg: string, pos: token.Pos := self.current_pos()) {
         report.warn(msg, pos);
     }
 
     #[inline]
-    func error_builder(self, msg: string, pos: token.Pos = self.current_pos()) -> report.ReportBuilder {
+    func error_builder(self, msg: string, pos: token.Pos := self.current_pos()) -> report.ReportBuilder {
         return report.error_builder(msg, pos);
     }
 
     #[inline]
-    func warn_builder(self, msg: string, pos: token.Pos = self.current_pos()) -> report.ReportBuilder {
+    func warn_builder(self, msg: string, pos: token.Pos := self.current_pos()) -> report.ReportBuilder {
         return report.warn_builder(msg, pos);
     }
 }

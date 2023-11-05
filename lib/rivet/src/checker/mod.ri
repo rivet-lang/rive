@@ -238,7 +238,8 @@ public struct Checker {
     }
 
     func check_expr_is_mut(
-        self, expr: ast.Expr, from_assign: bool = false, from_selector: bool = false
+        self, expr: ast.Expr, from_assign: bool := false,
+        from_selector: bool := false
     ) {
         match expr is {
             .Paren as paren => self.check_expr_is_mut(paren.expr),
@@ -396,7 +397,7 @@ public struct Checker {
         }
     }
 
-    func has_return(self, stmts: []ast.Stmt, allow_throw: bool = false) -> bool {
+    func has_return(self, stmts: []ast.Stmt, allow_throw: bool := false) -> bool {
         for stmt in stmts {
             if stmt is .Expr as expr and self.expr_has_return(expr, allow_throw) {
                 return true;
@@ -405,7 +406,7 @@ public struct Checker {
         return false;
     }
 
-    func expr_has_return(self, expr: ast.Expr, allow_throw: bool = false) -> bool {
+    func expr_has_return(self, expr: ast.Expr, allow_throw: bool := false) -> bool {
         return match expr is {
             .Match as match_expr => {
                 for i, branch in match_expr.branches {

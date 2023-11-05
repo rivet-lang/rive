@@ -15,11 +15,11 @@ func wyhash64(a: uint64, b: uint64) -> uint64 {
 }
 
 #[inline]
-public func sum64(key: []uint8, seed: uint64 = 0) -> uint64 {
+public func sum64(key: []uint8, seed: uint64 := 0) -> uint64 {
     return unsafe { wyhash(&key[0], @as(uint64, key.len), seed) };
 }
 
 #[inline]
-public func sum64_string(key: string, seed: uint64 = 0) -> uint64 {
+public func sum64_string(key: string, seed: uint64 := 0) -> uint64 {
     return unsafe { wyhash(key.ptr, @as(uint64, key.len), seed) };
 }

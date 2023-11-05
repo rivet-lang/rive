@@ -492,7 +492,7 @@ class Parser:
                     arg_typ = self.parse_type()
                     is_variadic = isinstance(arg_typ, type.Variadic)
                     arg_expr = self.empty_expr()
-                    if self.accept(Kind.Assign):
+                    if self.accept(Kind.DeclAssign):
                         has_named_args = True
                         arg_expr = self.parse_expr()
                     args.append(

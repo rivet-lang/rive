@@ -1,4 +1,4 @@
-func default_arg(x: int32 = 1) {
+func default_arg(x: int32 := 1) {
     @assert(x == 1 or x == 5 or x == 10);
 }
 
@@ -8,9 +8,9 @@ test "call expression with default arguments" {
     default_arg(x: 10);
 }
 
-func foo(_a: bool = false, _b: bool = false) { }
+func foo(_a: bool := false, _b: bool := false) { }
 
-func bar(_a: bool, _b: bool = true) { }
+func bar(_a: bool, _b: bool := true) { }
 
 func baz(_a: bool, _b: bool) { }
 

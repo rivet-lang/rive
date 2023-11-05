@@ -10,7 +10,7 @@ public struct StringBuilder < Stringable {
 
     /// Returns a string builder with capacity `cap`.
     #[inline]
-    public func new(cap: usize = 0) -> Self {
+    public func new(cap: usize := 0) -> Self {
         return Self(unsafe { Vector.new(@size_of(uint8), cap) });
     }
 
@@ -54,7 +54,7 @@ public struct StringBuilder < Stringable {
         }
     }
 
-    public func writeln(mut self, s: string = "") {
+    public func writeln(mut self, s: string := "") {
         if s.len > 0 {
             unsafe {
                 self.write_raw_with_len(s.ptr, s.len);
@@ -63,7 +63,7 @@ public struct StringBuilder < Stringable {
         self.write_byte(b'\n');
     }
 
-    public func write_join(mut self, ss: []string, sep: string = "") {
+    public func write_join(mut self, ss: []string, sep: string := "") {
         if ss.len == 1 {
             self.write_string(ss[0]);
         } else {

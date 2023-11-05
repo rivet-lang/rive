@@ -42,7 +42,7 @@ public struct EmptyStringError < Throwable {
 }
 
 public struct Directory {
-    public func make(path_: string, mode: usize = 0o777) -> ! {
+    public func make(path_: string, mode: usize := 0o777) -> ! {
         if path_ == "." {
             return;
         }
@@ -61,7 +61,7 @@ public struct Directory {
         }
     }
 
-    public func walk(path_: string, ext: string = "") -> ![]string {
+    public func walk(path_: string, ext: string := "") -> ![]string {
         if path_.is_empty() {
             throw EmptyStringError("`Directory.walk` expects a folder, not an empty string");
         }

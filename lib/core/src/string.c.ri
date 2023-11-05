@@ -13,7 +13,7 @@ public struct string < Stringable, Hashable, Throwable {
     is_ref: bool;
 
     #[unsafe]
-    public func from_raw(ptr: ?[&]uint8, is_ref: bool = false) -> Self {
+    public func from_raw(ptr: ?[&]uint8, is_ref: bool := false) -> Self {
         if safe_ptr := ptr {
             return unsafe {
                 Self.from_raw_with_len(safe_ptr, libc.strlen(ptr), is_ref)
@@ -23,7 +23,7 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     #[unsafe]
-    public func from_raw_with_len(ptr: ?[&]uint8, len: usize, is_ref: bool = false) -> Self {
+    public func from_raw_with_len(ptr: ?[&]uint8, len: usize, is_ref: bool := false) -> Self {
         if len == 0 {
             return emptyString;
         }
@@ -131,7 +131,7 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     /// Wraps the given string within `width` in characters.
-    public func wrap(self, width: usize = 60, end: Self = "\n") -> Self {
+    public func wrap(self, width: usize := 60, end: Self := "\n") -> Self {
         words := self.fields();
         if words.len == 0 {
             return emptyString;
@@ -410,7 +410,7 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     /// Replaces all occurences of `rep` with the string passed in `with_`.
-    public func replace(self, rep: Self, with_: Self) -> Self {
+    public func replace(self, rep: Self, with: Self) -> Self {
         if self.len == 0 or rep.len == 0 or rep.len > self.len {
             return self;
         } else if !self.contains(rep) {
@@ -426,7 +426,7 @@ public struct string < Stringable, Hashable, Throwable {
         if idxs.len == 0 {
             return self;
         }
-        new_len := self.len + idxs.len * (with_.len - rep.len);
+        new_len := self.len + idxs.len * (with.len - rep.len);
         b := unsafe { @as([&]mut uint8, internal_alloc(new_len)) };
         (mut b_i: usize, mut s_idx: usize) := (0, 0);
         unsafe {
@@ -438,8 +438,8 @@ public struct string < Stringable, Hashable, Throwable {
                 }
                 s_idx = rep_pos + rep.len;
                 i = 0;
-                while i < with_.len : i += 1 {
-                    b[b_i] = with_.ptr[i];
+                while i < with.len : i += 1 {
+                    b[b_i] = with.ptr[i];
                     b_i += 1;
                 }
             }
@@ -496,7 +496,7 @@ public struct string < Stringable, Hashable, Throwable {
     /// first `nth` parts. When `nth` == 0, return all the splits.
     /// The last returned element has the remainder of the string, even if the
     /// remainder contains more `delim` substrings.
-    public func split(self, delim: Self, nth: usize = 0) -> []Self {
+    public func split(self, delim: Self, nth: usize := 0) -> []Self {
         mut i: usize := 0;
         mut res := @vec(Self);
         match delim.len {

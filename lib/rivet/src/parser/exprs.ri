@@ -777,7 +777,7 @@ extend Parser {
         );
     }
 
-    func parse_ident(mut self, is_comptime: bool = false) -> ast.Expr {
+    func parse_ident(mut self, is_comptime: bool := false) -> ast.Expr {
         pos := if is_comptime {
             self.prev_tok.pos + self.tok.pos
         } else {

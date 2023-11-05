@@ -21,7 +21,7 @@ public struct File {
     f: &mut libc.FILE;
     mut is_opened: bool;
 
-    public func open(path: string, mode: string = "r") -> !File {
+    public func open(path: string, mode: string := "r") -> !File {
         unsafe {
             if f := libc.fopen(path.ptr, mode.ptr) {
                 return Self(f, true);

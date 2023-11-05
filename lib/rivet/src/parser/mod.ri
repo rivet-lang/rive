@@ -123,8 +123,8 @@ public struct Parser {
     }
 
     func parse_var_decl(
-        mut self, inside_global: bool = false, support_type: bool = true,
-        support_ref: bool = false, support_mut: bool = true
+        mut self, inside_global: bool := false, support_type: bool := true,
+        support_ref: bool := false, support_mut: bool := true
     ) -> ast.ObjectData {
         pos := self.tok.pos;
         is_mut := support_mut and self.accept(.KwMut);

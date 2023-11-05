@@ -27,7 +27,7 @@ public func get(name: string) -> ?string {
 }
 
 /// Sets the value of an environment variable with `name` to `value`.
-public func set(name: string, value: string, overwrite: bool = true) -> ! {
+public func set(name: string, value: string, overwrite: bool := true) -> ! {
     if unsafe { libc.setenv(name.ptr, value.ptr, overwrite) == -1 } {
         throw core.last_errno_error();
     }

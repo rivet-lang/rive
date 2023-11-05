@@ -81,7 +81,7 @@ struct Vector {
     /// NOTE: This function does NOT operate in-place. Internally, it creates a copy
     /// of the vector, skipping over `size` elements starting at `i`, and then points
     /// the original variable to the new memory location.
-    public func delete(mut self, i: usize, size: usize = 1, no_slices: bool = false) {
+    public func delete(mut self, i: usize, size: usize := 1, no_slices: bool := false) {
         if i + size > self.len {
             end_idx := if size == 1 { "..{}".fmt(i + size) } else { "" };
             process_panic(

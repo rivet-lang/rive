@@ -13,7 +13,7 @@ public alias is_atty = core.console_is_atty;
 
 /// Returns a one-line string from stdin, after printing a prompt. In
 /// the event of error (end of input) or a empty string, returns `none`.
-public func readln(prompt: string = "") -> ?string {
+public func readln(prompt: string := "") -> ?string {
     if prompt.len > 0 {
         print(prompt);
     }

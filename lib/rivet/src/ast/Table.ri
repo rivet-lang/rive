@@ -287,7 +287,7 @@ public struct Table {
 
     /// Returns the size and alignment (in bytes) of `typ`, similarly to
     /// C's `sizeof(T)` and `_Alignof(T)`.
-    public func type_size(mut self, type: Type, is_raw: bool = false) -> (usize, usize) {
+    public func type_size(mut self, type: Type, is_raw: bool := false) -> (usize, usize) {
         return match type is {
             .Result, .Option => self.type_symbol_size(self.throwable_sym, is_raw),
             .Anyptr, .Pointer, .Func => (self.pointer_size, self.pointer_size),
@@ -299,7 +299,7 @@ public struct Table {
         };
     }
 
-    public func type_symbol_size(mut self, mut type_sym: TypeSym, is_raw: bool = false) -> (usize, usize) {
+    public func type_symbol_size(mut self, mut type_sym: TypeSym, is_raw: bool := false) -> (usize, usize) {
         return if type_sym.size != 0 {
             (type_sym.size, type_sym.align)
         } else {

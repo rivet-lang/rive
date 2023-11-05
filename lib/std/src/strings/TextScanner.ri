@@ -29,7 +29,7 @@ public struct TextScanner {
     /// Skips ahead `n` characters, stopping at the end of the input; `skip` is
     /// slightly faster than `.next()`.
     #[inline]
-    public func skip(mut self, n: usize = 1) {
+    public func skip(mut self, n: usize := 1) {
         self.pos += n;
         if self.pos > self.len {
             self.pos = self.len;
@@ -40,7 +40,7 @@ public struct TextScanner {
     /// it can't peek `n` characters ahead.
     /// Unlike `.next()`, `.peek()` does not change the state of the scanner.
     #[inline]
-    public func peek(&self, n: usize = 0) -> ?uint8 {
+    public func peek(&self, n: usize := 0) -> ?uint8 {
         if self.pos + n < self.len {
             return self.input[self.pos + n];
         }
@@ -48,7 +48,7 @@ public struct TextScanner {
     }
 
     /// Goes back `n` characters from the current scanner position.
-    public func back(mut self, n: usize = 1) {
+    public func back(mut self, n: usize := 1) {
         self.pos -= n;
         if self.pos > self.len {
             self.pos = self.len;
@@ -59,7 +59,7 @@ public struct TextScanner {
     /// it can't peek `n` characters back.
     /// Unlike `.back()`, `.peek_back()` does not change the state of the scanner.
     #[inline]
-    public func peek_back(&self, n: usize = 1) -> ?uint8 {
+    public func peek_back(&self, n: usize := 1) -> ?uint8 {
         offset := n + 1;
         if self.pos >= offset {
             return self.input[self.pos - offset];

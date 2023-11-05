@@ -20,7 +20,7 @@ extend Parser {
     }
 
     public func parse_attributes(
-        mut self, parse_mod_attributes: bool = false
+        mut self, parse_mod_attributes: bool := false
     ) -> ast.Attributes {
         mut attributes := ast.Attributes();
         while self.accept(.Hash) {
@@ -583,7 +583,7 @@ extend Parser {
                     self.expect(.Colon);
                     arg_type := self.parse_type();
                     is_variadic = arg_type is .Variadic;
-                    arg_expr := if self.accept(.Assign) {
+                    arg_expr := if self.accept(.DeclAssign) {
                         has_named_args = true;
                         self.parse_expr()
                     } else {
