@@ -1,6 +1,7 @@
 import std/console;
 
 func main() {
+/* FIXME
 	// GRINNING FACE `😀` => f0 09 98 80
 	grinning_face: rune := 0xf09f9880;
 	console.println("{}", grinning_face);
@@ -8,4 +9,5 @@ func main() {
 	// COMMERCIAL AT `@` => 0x40
 	commercial_at: rune := 0x40000000;
 	console.println("{}", commercial_at);
+*/
 }
