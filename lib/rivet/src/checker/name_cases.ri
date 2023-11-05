@@ -36,7 +36,10 @@ extend Checker {
                 .Upper -> utils.is_upper_case(name)
             };
             if !is_valid {
-                report.warn("{} `{}` should have a {} case name".fmt(kind, name, case), pos);
+                report.warn(
+                    "{} `{}` should have a {} case name".fmt(kind, name, case),
+                    pos
+                );
             }
         }
 	}
