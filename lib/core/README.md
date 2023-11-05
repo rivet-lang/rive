@@ -1,4 +1,4 @@
-# The `core` module
+# The `core` library
 
-The `core` module contains all the functions and types necessary for
-the correct operation of the software developed with Rivet.
+This library contains all the functions and types necessary 
+for the correct operation of the software developed with Rivet.
