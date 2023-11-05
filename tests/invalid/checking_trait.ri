@@ -6,13 +6,13 @@ func my_print(v: ToStr) {
     _ = v.to_str1();
 }
 
-extend string < ToStr {
+struct MyStruct1 < ToStr {
     func to_str1(self) -> string {
         return self;
     }
 }
 
-extend bool < ToStr {
+struct MyStruct2 < ToStr {
     func to_str1(&self) -> string {
         return if self.* { "true" } else { "false" };
     }

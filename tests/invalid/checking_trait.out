@@ -1,17 +1,23 @@
 tests/invalid/checking_trait.ri:2:18: error: cannot take the address of a boxed value as receiver
     2 |     func to_str1(&self) -> string;
       |                  ^~~~~
-tests/invalid/checking_trait.ri:10:5-12:5: error: type `string` incorrectly implements method `to_str1` of trait `checking_trait.ToStr`
+tests/invalid/checking_trait.ri:10:5-12:5: error: type `checking_trait.MyStruct1` incorrectly implements method `to_str1` of trait `checking_trait.ToStr`
       |     /~~ from here
    10 |     func to_str1(self) -> string {
    11 |         return self;
    12 |     }
       |     ^~~ to here
       = note: method `to_str1` should be public.
+      = note: receiver `self` should be a reference, or use the attribute
+        `boxed`.
       = note: ====== method signature for `to_str1` ======
       = note: trait `ToStr` has `func(&self) -> string`
-      = note: type `string` has `func(self) -> string`
-tests/invalid/checking_trait.ri:16:5-18:5: error: type `bool` incorrectly implements method `to_str1` of trait `checking_trait.ToStr`
+      = note: type `MyStruct1` has `func(self) -> string`
+tests/invalid/checking_trait.ri:11:16: error: expected type `string`, found `MyStruct1`
+   11 |         return self;
+      |                ^~~~
+      = note: in return of method `to_str1`
+tests/invalid/checking_trait.ri:16:5-18:5: error: type `checking_trait.MyStruct2` incorrectly implements method `to_str1` of trait `checking_trait.ToStr`
       |     /~~ from here
    16 |     func to_str1(&self) -> string {
    17 |         return if self.* { "true" } else { "false" };
@@ -20,9 +26,20 @@ tests/invalid/checking_trait.ri:16:5-18:5: error: type `bool` incorrectly implem
       = note: method `to_str1` should be public.
       = note: ====== method signature for `to_str1` ======
       = note: trait `ToStr` has `func(&self) -> string`
-      = note: type `bool` has `func(&self) -> string`
+      = note: type `MyStruct2` has `func(&self) -> string`
+tests/invalid/checking_trait.ri:17:19: error: non-boolean expression used as `if` condition
+   17 |         return if self.* { "true" } else { "false" };
+      |                   ^~~~~~
+tests/invalid/checking_trait.ri:22:14: error: type `string` does not implement trait `ToStr`
+   22 |     my_print(""); // OK
+      |              ^~
+      = note: in argument `v` of function `my_print`
+tests/invalid/checking_trait.ri:23:14: error: type `bool` does not implement trait `ToStr`
+   23 |     my_print(true); // OK
+      |              ^~~~
+      = note: in argument `v` of function `my_print`
 tests/invalid/checking_trait.ri:24:14: error: type `int32` does not implement trait `ToStr`
    24 |     my_print(1); // FAIL
       |              ^
       = note: in argument `v` of function `my_print`
-rivet: error: could not compile module `checking_trait`, aborting due to 4 previous errors
+rivet: error: could not compile module `checking_trait`, aborting due to 8 previous errors
