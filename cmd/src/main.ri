@@ -19,6 +19,7 @@ func main() {
     match cmd {
         "new", "init" => tools.new(process.args[2..], cmd == "init")!,
         "build", "run", "test", "check" => {
+            // These commands are handled directly by the compiler.
             is_test := cmd == "test";
             is_check := cmd == "check";
             rivet.Compiler.new(process.args[2..], is_test, is_test or cmd == "run", is_check)!;
