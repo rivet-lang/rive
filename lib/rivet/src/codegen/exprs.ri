@@ -9,7 +9,7 @@ import ../ast;
 
 extend Codegen {
     func gen_expr(mut self, expr: ast.Expr) -> mir.Expr {
-        return switch expr is {
+        return match expr is {
             .Paren as paren => self.gen_expr(paren.expr),
             //.Ident => {},
             .BoolLiteral as bool_lit => .Const(

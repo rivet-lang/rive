@@ -11,7 +11,7 @@ extend Resolver {
             old_sym := self.sym;
             old_self_sym := self.self_sym;
             old_self_sym_is_set := self.self_sym_is_set;
-            switch decl is {
+            match decl is {
                 .Empty as empty_pos => report.error("BUG: empty declaration found", empty_pos),
                 .Import => {},
                 .Extern as extern_decl => self.resolve_decls(extern_decl.decls),

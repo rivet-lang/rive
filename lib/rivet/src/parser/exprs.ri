@@ -63,7 +63,7 @@ extend Parser {
     func parse_relational_expr(mut self) -> ast.Expr {
         mut left := self.parse_shift_expr();
         while {
-            left = switch self.tok.kind {
+            left = match self.tok.kind {
                 .Gt, .Lt, .Ge, .Le, .OrElse, .KwIn, .KwNotIn => {
                     op := self.tok.kind;
                     self.next();
@@ -76,7 +76,7 @@ extend Parser {
                     )
                 },
                 .KwIs, .KwNotIs => {
-                    if self.inside_switch_header and self.peek_tok.kind == .Lbrace {
+                    if self.inside_match_header and self.peek_tok.kind == .Lbrace {
                         break;
                     }
                     op := self.tok.kind;
@@ -120,7 +120,7 @@ extend Parser {
     func parse_shift_expr(mut self) -> ast.Expr {
         mut left := self.parse_additive_expr();
         while {
-            left = switch self.tok.kind {
+            left = match self.tok.kind {
                 .Lt, .Gt => {
                     op: token.Kind := if self.tok.kind == .Lt { .Lshift } else { .Rshift };
                     if self.tok.pos.pos + 1 == self.peek_tok.pos.pos {
@@ -156,7 +156,7 @@ extend Parser {
     func parse_additive_expr(mut self) -> ast.Expr {
         mut left := self.parse_multiplicative_expr();
         while {
-            switch self.tok.kind {
+            match self.tok.kind {
                 .Plus, .Minus => {
                     op := self.tok.kind;
                     self.next();
@@ -177,7 +177,7 @@ extend Parser {
     func parse_multiplicative_expr(mut self) -> ast.Expr {
         mut left := self.parse_unary_expr();
         while {
-            switch self.tok.kind {
+            match self.tok.kind {
                 .Mul, .Div, .Mod => {
                     op := self.tok.kind;
                     self.next();
@@ -197,7 +197,7 @@ extend Parser {
 
     #[inline]
     func parse_unary_expr(mut self) -> ast.Expr {
-        return switch self.tok.kind {
+        return match self.tok.kind {
             .Amp, .Bang, .BitNot, .Minus => {
                 op := self.tok.kind;
                 pos := self.tok.pos;
@@ -211,7 +211,7 @@ extend Parser {
     }
 
     func parse_primary_expr(mut self) -> ast.Expr {
-        mut expr: ast.Expr := switch {
+        mut expr: ast.Expr := match {
             self.tok.kind in [
                 .KwTrue, .KwFalse, .Char, .Number, .String,
                 .KwNone, .KwSelf, .KwSelfTy
@@ -282,7 +282,7 @@ extend Parser {
                 .Throw(throw_expr, pos + throw_expr.position())
             },
             self.tok.kind == .KwIf => self.parse_if_expr(),
-            self.accept(.KwSwitch) => self.parse_switch_expr(),
+            self.accept(.KwMatch) => self.parse_match_expr(),
             self.tok.kind in [.KwUnsafe, .Lbrace] => self.parse_block_expr(),
             self.tok.kind == .Lparen => {
                 mut pos := self.tok.pos;
@@ -351,7 +351,7 @@ extend Parser {
             else => .Empty(self.tok.pos)
         };
         while {
-            expr = switch {
+            expr = match {
                 self.tok.kind.is_assign() => {
                     // assignment
                     op := self.tok.kind;
@@ -539,12 +539,12 @@ extend Parser {
         return .If(branches, has_else, pos);
     }
 
-    func parse_switch_expr(mut self) -> ast.Expr {
+    func parse_match_expr(mut self) -> ast.Expr {
         mut has_else := false;
-        mut branches := @vec(ast.SwitchBranch);
+        mut branches := @vec(ast.MatchBranch);
         pos := self.prev_tok.pos;
-        old_inside_switch_header := self.inside_switch_header;
-        self.inside_switch_header = true;
+        old_inside_match_header := self.inside_match_header;
+        self.inside_match_header = true;
         expr := if self.tok.kind == .Lbrace {
             ast.Expr.BoolLiteral(true, pos)
         } else {
@@ -555,10 +555,10 @@ extend Parser {
                 self.parse_expr()
             }
         };
-        is_typeswitch := expr !is .Guard and self.prev_tok.kind != .KwSwitch
+        is_typematch := expr !is .Guard and self.prev_tok.kind != .KwMatch
             and self.accept(.KwIs);
         self.expect(.Lbrace);
-        self.inside_switch_header = old_inside_switch_header;
+        self.inside_match_header = old_inside_match_header;
         while {
             branch_pos := self.tok.pos;
             mut cases := @vec(mut ast.Expr);
@@ -573,7 +573,7 @@ extend Parser {
                 has_else = true;
             } else {
                 while {
-                    if is_typeswitch {
+                    if is_typematch {
                         name_pos := self.tok.pos;
                         cases.push(if self.accept(.Dot) {
                             .EnumLiteral(
@@ -588,7 +588,7 @@ extend Parser {
                         if self.accept(.DotDot) or self.accept(.Ellipsis) {
                             if self.prev_tok.kind == .DotDot {
                                 mut err := report.error_builder(
-                                    "`switch` only supports inclusive ranges, not exclusive",
+                                    "`match` only supports inclusive ranges, not exclusive",
                                     self.prev_tok.pos
                                 );
                                 err.add_help("use `...` instead of `..`");
@@ -620,7 +620,7 @@ extend Parser {
                 }
             }
             self.expect(.Arrow);
-            branches.push(ast.SwitchBranch(
+            branches.push(ast.MatchBranch(
                 cases: cases,
                 has_var: has_var,
                 var_is_mut: var_is_mut,
@@ -640,8 +640,8 @@ extend Parser {
             self.close_scope();
         }
         self.expect(.Rbrace);
-        return .Switch(
-            expr, branches, is_typeswitch, has_else, self.scope, pos + self.prev_tok.pos
+        return .Match(
+            expr, branches, is_typematch, has_else, self.scope, pos + self.prev_tok.pos
         );
     }
 
@@ -700,7 +700,7 @@ extend Parser {
 
     #[inline]
     func parse_literal(mut self) -> ast.Expr {
-        return switch {
+        return match {
             self.tok.kind in [.KwTrue, .KwFalse] => {
                 value := self.tok.kind == .KwTrue;
                 pos := self.tok.pos;

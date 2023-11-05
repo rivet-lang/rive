@@ -901,7 +901,7 @@ class IfExpr:
     def __str__(self):
         return self.__repr__()
 
-class SwitchBranch:
+class MatchBranch:
     def __init__(
         self, pats, has_var, var_is_mut, var_name, var_pos, has_cond, cond,
         expr, is_else
@@ -930,19 +930,19 @@ class SwitchBranch:
     def __str__(self):
         return self.__repr__()
 
-class SwitchExpr:
-    def __init__(self, expr, branches, is_typeswitch, scope, pos):
+class MatchExpr:
+    def __init__(self, expr, branches, is_typematch, scope, pos):
         self.expr = expr
         self.branches = branches
-        self.is_typeswitch = is_typeswitch
+        self.is_typematch = is_typematch
         self.scope = scope
         self.pos = pos
         self.typ = None
         self.expected_typ = None
 
     def __repr__(self):
-        kis = " is " if self.is_typeswitch else " "
-        return f"switch {self.expr}{kis}{{ " + ", ".join([
+        kis = " is " if self.is_typematch else " "
+        return f"match {self.expr}{kis}{{ " + ", ".join([
             str(b) for b in self.branches
         ]) + " }"
 

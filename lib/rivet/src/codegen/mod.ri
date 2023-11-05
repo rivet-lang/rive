@@ -48,7 +48,7 @@ public struct Codegen {
                 mir_.to_file() catch |err| utils.error(err.to_string());
             }
         }
-        switch self.prefs.target_backend {
+        match self.prefs.target_backend {
             .C => {}
         }
     }
@@ -100,7 +100,7 @@ public struct Codegen {
 
     func prefix_type(self, type: ast.Type) -> string {
         mut sb := strings.Builder.new();
-        switch type is {
+        match type is {
             .Pointer as ptr => {
                 mut inner := ptr.inner;
                 while (inner is .Pointer as inner_ptr) : inner = inner_ptr.inner {
@@ -118,7 +118,7 @@ public struct Codegen {
     }
 
     func mangle_type(self, type: ast.Type) -> string {
-        return switch type is {
+        return match type is {
             .Void => "4void",
             .Anyptr => "6anyptr",
             .Never => "5never",
@@ -166,13 +166,13 @@ public struct Codegen {
         } else if insert_r {
             sb.write_string("_R");
         }
-        switch sym is {
+        match sym is {
             ast.Module => {
                 for name in sym.name.split(".") {
                     sb.write_fmt("{}{}", name.len, name);
                 }
             },
-            ast.TypeSym as type => switch type.info is {
+            ast.TypeSym as type => match type.info is {
                 .Tuple as tuple_info => {
                     mut sb2 := strings.Builder.new();
                     sb2.write_string("Tuple_");

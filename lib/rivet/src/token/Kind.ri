@@ -99,7 +99,7 @@ static kindStrings = [
     KindMap(.KwSelfTy, "Self"),
     KindMap(.KwStatic, "static"),
     KindMap(.KwStruct, "struct"),
-    KindMap(.KwSwitch, "switch"),
+    KindMap(.KwMatch, "match"),
     KindMap(.KwTest, "test"),
     KindMap(.KwThrow, "throw"),
     KindMap(.KwTrait, "trait"),
@@ -199,7 +199,7 @@ public enum Kind < traits.Stringable {
     KwSelfTy, // Self
     KwStatic, // static
     KwStruct, // struct
-    KwSwitch, // switch
+    KwMatch, // match
     KwTest, // test
     KwThrow, // throw
     KwTrait, // trait
@@ -213,7 +213,7 @@ public enum Kind < traits.Stringable {
 
     #[inline]
     public func single(self) -> Kind {
-        return switch self {
+        return match self {
             .PlusAssign => .Plus,
             .MinusAssign => .Minus,
             .MulAssign => .Mul,
@@ -261,7 +261,7 @@ public enum Kind < traits.Stringable {
 
 #[inline]
 public func lookup(str: string) -> Kind {
-    return switch str {
+    return match str {
         "alias" => .KwAlias,
         "and" => .KwAnd,
         "as" => .KwAs,
@@ -295,7 +295,7 @@ public func lookup(str: string) -> Kind {
         "Self" => .KwSelfTy,
         "static" => .KwStatic,
         "struct" => .KwStruct,
-        "switch" => .KwSwitch,
+        "match" => .KwMatch,
         "test" => .KwTest,
         "throw" => .KwThrow,
         "trait" => .KwTrait,
@@ -319,7 +319,7 @@ public func is_overloadable_operator(kind: Kind) -> bool {
 
 #[inline]
 public func overloadable_operator_name(kind: Kind) -> string {
-    return switch kind {
+    return match kind {
         .Plus => "_add_",
         .Minus => "_sub_",
         .Mul => "_mul_",

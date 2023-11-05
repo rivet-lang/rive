@@ -6,7 +6,7 @@ import ../ast;
 
 extend Parser {
     func parse_stmt(mut self) -> ast.Stmt {
-        return switch {
+        return match {
             self.accept(.KwWhile) => {
                 pos := self.prev_tok.pos;
                 mut is_inf := false;
@@ -85,7 +85,7 @@ extend Parser {
                 is_errdefer := self.prev_tok.kind == .KwErrDefer;
                 pos := self.prev_tok.pos;
                 expr := self.parse_expr();
-                if !(expr is .If or expr is .Switch or expr is .Block) {
+                if !(expr is .If or expr is .Match or expr is .Block) {
                     self.expect(.Semicolon);
                 }
                 .Defer(expr, is_errdefer, pos)
@@ -117,7 +117,7 @@ extend Parser {
             else => {
                 expr := self.parse_expr();
                 if !((self.inside_block and self.tok.kind == .Rbrace)
-                    or (expr is .If or expr is .Switch or expr is .Block)) {
+                    or (expr is .If or expr is .Match or expr is .Block)) {
                     self.expect(.Semicolon);
                 }
                 .Expr(expr)

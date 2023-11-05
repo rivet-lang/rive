@@ -191,7 +191,7 @@ public struct Table {
 
     public func find_builtin(self, name: string) -> ?Builtin {
         for builtin in self.builtins {
-            is_equal := switch builtin is {
+            is_equal := match builtin is {
                 .Const as b_var => b_var.name == name,
                 .Func as b_func => b_func.name == name,
                 else => false
@@ -288,7 +288,7 @@ public struct Table {
     /// Returns the size and alignment (in bytes) of `typ`, similarly to
     /// C's `sizeof(T)` and `_Alignof(T)`.
     public func type_size(mut self, type: Type, is_raw: bool = false) -> (usize, usize) {
-        return switch type is {
+        return match type is {
             .Result, .Option => self.type_symbol_size(self.throwable_sym, is_raw),
             .Anyptr, .Pointer, .Func => (self.pointer_size, self.pointer_size),
             else => if mut type_sym := type.symbol() {
@@ -307,26 +307,26 @@ public struct Table {
             (size, align) = if type_sym.is_boxed() and !is_raw {
                 (self.pointer_size, self.pointer_size)
             } else {
-                switch type_sym.info is {
+                match type_sym.info is {
                     .Func => (self.pointer_size, self.pointer_size),
                     .Alias as alias_info => self.type_size(alias_info.parent),
                     .Bool => (1, 1),
                     .Usize, .Isize => (self.pointer_size, self.pointer_size),
-                    .Int as int => switch int.size {
+                    .Int as int => match int.size {
                         8 => (1, 1),
                         16 => (2, 2),
                         32 => (4, 4),
                         64 => (8, 8),
                         else => (0, 0)
                     },
-                    .Uint as uint => switch uint.size {
+                    .Uint as uint => match uint.size {
                         8 => (1, 1),
                         16 => (2, 2),
                         32 => (4, 4),
                         64 => (8, 8),
                         else => (0, 0)
                     },
-                    .Float as float => switch float.size {
+                    .Float as float => match float.size {
                         32 => (4, 4),
                         64 => (8, 8),
                         else => (0, 0)
@@ -438,7 +438,7 @@ public struct Table {
     }
 
     public func evalue_pp_symbol(self, name: string, pos: token.Pos) -> bool {
-        switch name {
+        match name {
             // operating systems
             "_LINUX_", "_WINDOWS_" => {
                 return if os := sys.OS.from_string(name) {
@@ -541,7 +541,7 @@ public enum Builtin {
     };
 
     public func type(self) -> Type {
-        return switch self is {
+        return match self is {
             .Const as b_const => b_const.type,
             .Func as b_func => b_func.type,
             else => .Void()

@@ -18,7 +18,7 @@ extend Tokenizer {
         pp_dir := self.read_name();
         pos.len += pp_dir.len;
         self.skip_whitespace();
-        switch pp_dir {
+        match pp_dir {
             "if" => self.pp_if(),
             "else_if" => self.pp_else_if(),
             "else" => self.pp_else(),

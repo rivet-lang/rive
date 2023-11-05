@@ -8,7 +8,7 @@ import ../report;
 extend Parser {
     func parse_type(mut self) -> ast.Type {
         mut pos := self.tok.pos;
-        return switch {
+        return match {
             self.accept(.Question) => .Option(
                 self.parse_type(), pos + self.prev_tok.pos
             ),
@@ -113,7 +113,7 @@ extend Parser {
                     // normal type
                     expr_name := @as(ast.Expr.Ident, expr).name;
                     expr_pos := expr.position();
-                    switch expr_name {
+                    match expr_name {
                         "never" => {
                             if prev_tok_kind != .Arrow2 {
                                 report.error("invalid use of `never` type", pos);

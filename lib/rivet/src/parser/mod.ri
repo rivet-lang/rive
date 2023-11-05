@@ -33,7 +33,7 @@ public struct Parser {
     mut inside_trait: bool;
     mut inside_enum_variant_with_fields: bool;
     mut inside_func: bool;
-    mut inside_switch_header: bool;
+    mut inside_match_header: bool;
     mut inside_block: bool;
 
     public func parse_module(mut self, mod_sym: ast.Module, files: []string) -> []ast.SourceFile {
@@ -146,10 +146,10 @@ public struct Parser {
         mut i: usize := 1;
         while i < self.tokenizer.all_tokens.len : i += 1 {
             tok := self.peek_token(i);
-            switch tok.kind {
+            match tok.kind {
                 .Assign => assign_was_used = true,
                 .DeclAssign if !assign_was_used => return true,
-                .KwIf, .KwSwitch, .KwWhile, .Lbrace, .Semicolon => break,
+                .KwIf, .KwMatch, .KwWhile, .Lbrace, .Semicolon => break,
                 else => {}
             }
         }

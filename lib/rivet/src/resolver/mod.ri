@@ -59,7 +59,7 @@ public struct Resolver {
     }
 
     func eval_size(mut self, mut expr: ast.Expr) -> ?isize {
-        return switch expr is {
+        return match expr is {
             .Paren as paren => self.eval_size(paren.expr),
             .IntegerLiteral as int_lit => conv.string_to_isize(int_lit.value) catch return none,
             .Ident as mut ident => {
@@ -80,7 +80,7 @@ public struct Resolver {
             },
             .Binary as binary => if left := self.eval_size(binary.left) {
                 if right := self.eval_size(binary.right) {
-                    switch binary.op {
+                    match binary.op {
                         .Plus => left + right,
                         .Minus => left - right,
                         .Mul => left * right,

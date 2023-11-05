@@ -314,7 +314,7 @@ class Resolver:
                 if not b.is_else:
                     self.resolve_expr(b.cond)
                 self.resolve_expr(b.expr)
-        elif isinstance(expr, ast.SwitchExpr):
+        elif isinstance(expr, ast.MatchExpr):
             self.resolve_expr(expr.expr)
             for b in expr.branches:
                 if not b.is_else:

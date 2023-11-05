@@ -252,10 +252,10 @@ public enum Expr < traits.Stringable {
         mut expected_type: Type;
         mut type: Type;
     },
-    Switch {
+    Match {
         mut expr: Expr;
-        branches: []SwitchBranch;
-        is_typeswitch: bool;
+        branches: []MatchBranch;
+        is_typematch: bool;
         has_else: bool;
         mut scope: Scope;
         pos: token.Pos;
@@ -285,7 +285,7 @@ public enum Expr < traits.Stringable {
 
     #[inline]
     public func position(self) -> token.Pos {
-        return switch self is {
+        return match self is {
             .Empty as empty_pos => empty_pos,
             .Paren as paren => paren.pos,
             .Type as type => type.position(),
@@ -316,14 +316,14 @@ public enum Expr < traits.Stringable {
             .Throw as throw_expr => throw_expr.pos,
             .Block as block => block.pos,
             .If as if_expr => if_expr.pos,
-            .Switch as switch_expr => switch_expr.pos,
+            .Match as match_expr => match_expr.pos,
             .Guard as guard => guard.pos
         };
     }
 
     #[inline]
     public func to_string(self) -> string {
-        return switch self is {
+        return match self is {
             .Empty => "<empty-expression>",
             .Paren as paren => "({})".fmt(paren.expr),
             .Type as type => type.to_string(),
@@ -483,14 +483,14 @@ public enum Expr < traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Switch as switch_expr => {
+            .Match as match_expr => {
                 mut sb := strings.Builder.new();
-                sb.write_fmt("switch {} ", switch_expr.expr);
-                if switch_expr.is_typeswitch {
+                sb.write_fmt("match {} ", match_expr.expr);
+                if match_expr.is_typematch {
                     sb.write_string("is ");
                 }
                 sb.write_string("{ ");
-                for i, branch in switch_expr.branches {
+                for i, branch in match_expr.branches {
                     if branch.is_else {
                         sb.write_string("else ");
                     } else {
@@ -511,7 +511,7 @@ public enum Expr < traits.Stringable {
                         sb.write_fmt(" if {} ", branch.cond);
                     }
                     sb.write_fmt("=> {}", branch.expr.to_string());
-                    if i < switch_expr.branches.len - 1 {
+                    if i < match_expr.branches.len - 1 {
                         sb.write_string(", ");
                     }
                 }
@@ -577,7 +577,7 @@ public struct IfBranch {
 }
 
 #[boxed]
-public struct SwitchBranch {
+public struct MatchBranch {
     public cases: []mut Expr;
     public has_var: bool;
     public var_is_mut: bool;

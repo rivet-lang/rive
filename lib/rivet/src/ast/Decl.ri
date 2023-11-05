@@ -151,7 +151,7 @@ public enum Decl {
     };
 
     public func decls(self) -> ?[]Self {
-        return switch self is {
+        return match self is {
             .Extern as extern_decl => extern_decl.decls,
             .Trait as trait_decl => trait_decl.decls,
             .Enum as enum_decl => enum_decl.decls,

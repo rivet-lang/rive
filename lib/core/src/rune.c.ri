@@ -73,7 +73,7 @@ extend rune < Stringable {
 func utf32_decode_to_buffer(code: rune, buffer: [&]mut uint8) -> usize {
     icode := @as(int32, code);
     unsafe {
-        return switch {
+        return match {
             (icode <= 127) => { // 0x7F
                 buffer[0] = @as(uint8, icode);
                 1

@@ -58,7 +58,7 @@ public func smart_quote(s: string, raw: bool = false) -> string {
         } else {
             0
         };
-        switch current {
+        match current {
             DOUBLE_QUOTE => {
                 current = 0;
                 result.write_byte(BACKSLASH);

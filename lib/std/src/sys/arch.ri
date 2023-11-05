@@ -13,7 +13,7 @@ public enum Arch as uint8 < traits.Stringable {
 
     #[inline]
     public func from_string(arch: string) -> ?Arch {
-        return switch arch {
+        return match arch {
             "i386", "x86", "_X86_" => .X86,
             "amd64", "_AMD64_" => .Amd64,
             else => none
@@ -21,7 +21,7 @@ public enum Arch as uint8 < traits.Stringable {
     }
 
     public func to_string(&self) -> string {
-        return switch self.* {
+        return match self.* {
             .X86 => "x86",
             .Amd64 => "amd64"
         };

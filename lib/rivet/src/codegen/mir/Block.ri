@@ -48,7 +48,7 @@ public enum Stmt < traits.Stringable {
     };
 
     public func to_string(self) -> string {
-        return switch self is {
+        return match self is {
             .Expr as expr => expr.to_string(),
             .Assign as assign => "{} = {}".fmt(assign.left, assign.right),
             .Discard as discard => "discard {}".fmt(discard),

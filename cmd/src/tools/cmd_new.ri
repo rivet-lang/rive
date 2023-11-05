@@ -108,7 +108,7 @@ public func new(args: []string, is_init: bool) -> ! {
         utils.info("project `{}` initialized successfully!", project.name);
     } else {
         utils.info("creating project `{}`...", project.name);
-        switch template {
+        match template {
             "bin", "lib" => {
                 utils.info("using the template `{}`...", template);
                 Directory.make(project.name)!;

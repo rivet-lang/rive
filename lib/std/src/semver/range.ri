@@ -30,7 +30,7 @@ struct Comparator {
 
     func parse(input: string) -> ?Comparator {
         mut op := Operator.Eq;
-        raw_version: string := switch {
+        raw_version: string := match {
             input.starts_with(">=") => {
                 op = .Ge;
                 input[2..]
@@ -55,7 +55,7 @@ struct Comparator {
 
     #[inline]
     func satisfies(&self, ver: Version) -> bool {
-        return switch self.op {
+        return match self.op {
             .Gt => ver > self.ver,
             .Lt => ver < self.ver,
             .Ge => ver >= self.ver,
@@ -88,7 +88,7 @@ struct ComparatorSet {
 
     #[inline]
     func expand(input: string) -> ?ComparatorSet {
-        return switch input[0] {
+        return match input[0] {
             b'~' => expand_tilda(input[1..]),
             b'^' => expand_tilda(input[1..]),
             else => {
@@ -133,7 +133,7 @@ struct Range {
             if raw_ver.raw_ints[typ].index_of_any(xRangeSymbols) is none {
                 continue;
             }
-            switch typ {
+            match typ {
                 VER_MAJOR => {
                     raw_ver.raw_ints[VER_MAJOR] = "0";
                     raw_ver.raw_ints[VER_MINOR] = "0";

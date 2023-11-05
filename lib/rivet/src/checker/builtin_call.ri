@@ -56,7 +56,7 @@ extend Checker {
             }
             mut return_type := b_func.type;
             for check in b_func.checks {
-                switch check is {
+                match check is {
                     .ArgumentTypeEqualToArgumentType as at => {
                         arg1 := builtin_call.args[at.arg1_idx];
                         arg2 := builtin_call.args[at.arg2_idx];
@@ -74,7 +74,7 @@ extend Checker {
                     },
                     .ArgumentTypeShouldBe as ats => {
                         arg := builtin_call.args[ats.arg_idx];
-                        switch ats.type {
+                        match ats.type {
                             .Enum => if ts := arg.type.symbol(); ts.info !is .Enum {
                                 report.error(
                                     "expected `enum` type, found `{}`".fmt(ts.info),
@@ -94,7 +94,7 @@ extend Checker {
                         return_type = builtin_call.args[arg_idx].type
                 }
             }
-            switch b_func.name {
+            match b_func.name {
                 "as" => self.check_builtin_as(builtin_call),
                 "vec" if builtin_call.args[0].expr is .Type as vec_t =>
                     return_type = .Basic(self.table.universe.add_or_get_vec(
@@ -129,7 +129,7 @@ extend Checker {
                 );
             }
         } else if from_ts := from_type.symbol() {
-            switch from_ts.info is {
+            match from_ts.info is {
                 .Trait as mut trait_info => if to_ts := to_type.symbol() {
                     if to_ts in trait_info.implements {
                         trait_info.mark_has_objects();
@@ -163,7 +163,7 @@ extend Checker {
                             return; // Valid inside `core` module
                         }
                     }
-                    switch to_ts.info is {
+                    match to_ts.info is {
                         .Enum as enum_info2 if !enum_info2.is_boxed => {
                             if self.table.is_int(to_type) and !self.inside_unsafe() {
                                 report.warn(

@@ -16,7 +16,7 @@ func main() {
         utils.error("expected command argument");
     }
     cmd := process.args[1];
-    switch cmd {
+    match cmd {
         "new", "init" => tools.new(process.args[2..], cmd == "init")!,
         "build", "run", "test", "check" => {
             is_test := cmd == "test";

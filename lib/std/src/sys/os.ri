@@ -14,7 +14,7 @@ public enum OS as uint8 < traits.Stringable {
 
     #[inline]
     public func from_string(name: string) -> ?OS {
-        return switch name {
+        return match name {
             "linux", "_LINUX_" => .Linux,
             "windows", "_WINDOWS_" => .Windows,
             "macos", "_MACOS_" => .Macos,
@@ -23,7 +23,7 @@ public enum OS as uint8 < traits.Stringable {
     }
 
     public func to_string(&self) -> string {
-        return switch self.* {
+        return match self.* {
             .Linux => "linux",
             .Windows => "windows",
             .Macos => "macos"

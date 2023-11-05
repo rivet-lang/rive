@@ -26,13 +26,13 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
     base0 := base == 0;
 
     mut start_index: usize := 0;
-    switch {
+    match {
         (base >= 2 and base <= 36) => { /* valid base; nothing to do */ },
         (base == 0) => {
             // look for octal, hex prefix.
             base = 10;
             if s[0] == b'0' {
-                switch {
+                match {
                     (s.len >= 3 and lower(s[1]) == b'b') => {
                         base = 2;
                         start_index = 2;
@@ -68,7 +68,7 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
 
     // Cutoff is the smallest number such that `cutoff * base > MAX_U64`.
     // Use compile-time constants for common cases.
-    cutoff: usize := switch base {
+    cutoff: usize := match base {
         10 => usize.MAX / 10 + 1,
         16 => usize.MAX / 16 + 1,
         else => usize.MAX / @as(usize, base) + @as(usize, 1)
@@ -88,7 +88,7 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
         cl := lower(c);
 
         mut d: uint8 := 0;
-        switch {
+        match {
             (c == b'_' and base0) => {
                 underscores = true;
                 continue;

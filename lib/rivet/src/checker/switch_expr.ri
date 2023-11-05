@@ -10,33 +10,33 @@ import ../utils/maps;
 extend Checker {
     const SWITCH_EXHAUSTIVE_CUTOFF_LIMIT = 12;
 
-    func check_switch(mut self, mut switch_expr: ast.Expr.Switch) -> ast.Type {
+    func check_match(mut self, mut match_expr: ast.Expr.Match) -> ast.Type {
         old_expected_type := self.expected_type;
-        switch_expr.type = .Void();
-        if switch_expr.branches.len == 1 and switch_expr.has_else {
+        match_expr.type = .Void();
+        if match_expr.branches.len == 1 and match_expr.has_else {
             report.error(
-                "`switch` must have at least one non `else` branch",
-                switch_expr.branches[0].pos
+                "`match` must have at least one non `else` branch",
+                match_expr.branches[0].pos
             );
-            return switch_expr.type;
+            return match_expr.type;
         }
 
-        is_guard := switch_expr.expr is .Guard;
-        old_inside_switch_cond_expr := self.inside_switch_cond_expr;
-        self.inside_switch_cond_expr = true;
-        mut expr_type := self.check_expr(switch_expr.expr);
-        self.inside_switch_cond_expr = old_inside_switch_cond_expr;
+        is_guard := match_expr.expr is .Guard;
+        old_inside_match_cond_expr := self.inside_match_cond_expr;
+        self.inside_match_cond_expr = true;
+        mut expr_type := self.check_expr(match_expr.expr);
+        self.inside_match_cond_expr = old_inside_match_cond_expr;
         mut expr_sym := expr_type.symbol() ?? {
             if !is_guard {
                 report.error(
-                    "invalid type `{}` used as `switch` condition".fmt(expr_type),
-                    switch_expr.expr.position()
+                    "invalid type `{}` used as `match` condition".fmt(expr_type),
+                    match_expr.expr.position()
                 );
                 return .Void();
             }
             ast.TypeSym()
         };
-        if switch_expr.expr is .Guard as guard_expr {
+        if match_expr.expr is .Guard as guard_expr {
             if guard_expr.vars.len == 1 {
                 expr_type = guard_expr.vars[0].type;
                 expr_sym = expr_type.symbol()?;
@@ -49,34 +49,34 @@ extend Checker {
                 expr_type = .Tuple(types, expr_sym);
             }
         } else {
-            if switch_expr.is_typeswitch and !(expr_sym.info is .Enum
+            if match_expr.is_typematch and !(expr_sym.info is .Enum
                 or expr_sym.info is .Trait) {
                 mut err := report.error_builder(
-                    "invalid type for type-switch", switch_expr.expr.position()
+                    "invalid type for type-match", match_expr.expr.position()
                 );
                 err.add_note("expected enum or trait type, found `{}`", expr_type);
                 err.emit();
             } else if expr_sym.info is .Enum as enum_info {
-                if enum_info.is_boxed and !switch_expr.is_typeswitch {
+                if enum_info.is_boxed and !match_expr.is_typematch {
                     mut err := report.error_builder(
-                        "cannot use `switch` with a non-boxed enum type", switch_expr.pos
+                        "cannot use `match` with a non-boxed enum type", match_expr.pos
                     );
-                    err.add_note("use a type-switch instead");
+                    err.add_note("use a type-match instead");
                     err.emit();
-                } else if !enum_info.is_boxed and switch_expr.is_typeswitch {
+                } else if !enum_info.is_boxed and match_expr.is_typematch {
                     mut err := report.error_builder(
-                        "cannot use a type-switch with a non-boxed enum type",
-                        switch_expr.pos
+                        "cannot use a type-match with a non-boxed enum type",
+                        match_expr.pos
                     );
-                    err.add_note("use a simple `switch` instead");
+                    err.add_note("use a simple `match` instead");
                     err.emit();
                 }
             }
         }
 
         mut branch_exprs := maps.MapStringUsize();
-        switch_expr.expected_type = self.expected_type;
-        for ib, branch in switch_expr.branches {
+        match_expr.expected_type = self.expected_type;
+        for ib, branch in match_expr.branches {
             if !branch.is_else {
                 self.expected_type = expr_type;
                 for i, mut case in branch.cases {
@@ -92,7 +92,7 @@ extend Checker {
                         if val := branch_exprs.get(key) {
                             if val == 1 {
                                 report.error(
-                                    "switch case is handled more than once", case.position()
+                                    "match case is handled more than once", case.position()
                                 );
                             } else {
                                 branch_exprs.set(key, val + 1);
@@ -107,7 +107,7 @@ extend Checker {
                         .Snake, "branch variable", branch.var_name, branch.var_pos
                     );
                     if branch.var_is_mut {
-                        self.check_expr_is_mut(switch_expr.expr);
+                        self.check_expr_is_mut(match_expr.expr);
                     }
                     if branch.cases.len != 1 {
                         report.error("multiple cases cannot have variable", branch.var_pos);
@@ -118,7 +118,7 @@ extend Checker {
                             ).variant;
                             if case0.has_type {
                                 branch.var_type = case0.type;
-                                switch_expr.scope.update_is_hidden_ref(
+                                match_expr.scope.update_is_hidden_ref(
                                     branch.var_name, branch.var_is_mut
                                 );
                             } else {
@@ -128,14 +128,14 @@ extend Checker {
                                 );
                             }
                         }
-                        switch_expr.scope.update_type(branch.var_name, branch.var_type);
+                        match_expr.scope.update_type(branch.var_name, branch.var_type);
                     } else {
                         report.error("only boxed types can have vars", branch.var_pos);
                     }
                 }
                 if branch.has_cond and self.check_expr(branch.cond) != self.table.bool_t {
                     report.error(
-                        "non-boolean expression use as `switch` branch condition",
+                        "non-boolean expression use as `match` branch condition",
                         branch.cond.position()
                     );
                 }
@@ -144,16 +144,16 @@ extend Checker {
             mut branch_t := ast.Type.Void();
             if ib == 0 {
                 branch_t = self.check_expr(branch.expr);
-                if switch_expr.expected_type is .Void {
-                    switch_expr.expected_type = branch_t;
+                if match_expr.expected_type is .Void {
+                    match_expr.expected_type = branch_t;
                 }
-                switch_expr.type = branch_t;
+                match_expr.type = branch_t;
             } else {
                 old_expected_type2 := self.expected_type;
-                self.expected_type = switch_expr.expected_type;
+                self.expected_type = match_expr.expected_type;
                 branch_t = self.check_expr(branch.expr);
                 self.expected_type = old_expected_type2;
-                self.check_types(branch_t, switch_expr.expected_type) catch |err| {
+                self.check_types(branch_t, match_expr.expected_type) catch |err| {
                     report.error(err.to_string(), branch.expr.position());
                 };
             }
@@ -164,13 +164,13 @@ extend Checker {
         }
 
         // check that expressions are exhaustive, this is achieved either by putting
-        // an `else` or when the `switch` is on an enum by listing all variants.
-        switch_expr.is_exhaustive = true;
+        // an `else` or when the `match` is on an enum by listing all variants.
+        match_expr.is_exhaustive = true;
         mut unhandled := @vec(string);
-        if expr_type == self.table.bool_t and switch_expr.branches.len == 1 {
+        if expr_type == self.table.bool_t and match_expr.branches.len == 1 {
             for v in ["true", "false"]! {
                 if !branch_exprs.contains(v) {
-                    switch_expr.is_exhaustive = false;
+                    match_expr.is_exhaustive = false;
                     unhandled.push("`{}`".fmt(v));
                 }
             }
@@ -178,38 +178,38 @@ extend Checker {
             for variant in enum_info2.variants {
                 e := ".".concat(variant.name);
                 if !branch_exprs.contains(e) {
-                    switch_expr.is_exhaustive = false;
+                    match_expr.is_exhaustive = false;
                     unhandled.push("`{}`".fmt(e));
                 }
             }
         } else {
-            switch_expr.is_exhaustive = false;
+            match_expr.is_exhaustive = false;
         }
 
-        mut has_else := switch_expr.has_else;
-        mut else_branch := switch_expr.branches[switch_expr.branches.len - 1];
+        mut has_else := match_expr.has_else;
+        mut else_branch := match_expr.branches[match_expr.branches.len - 1];
         if !has_else {
-            for i, branch in switch_expr.branches {
-                if branch.is_else and i != switch_expr.branches.len - 1 {
-                    report.error("`else` must be the last branch of `switch`", branch.pos);
+            for i, branch in match_expr.branches {
+                if branch.is_else and i != match_expr.branches.len - 1 {
+                    report.error("`else` must be the last branch of `match`", branch.pos);
                     else_branch = branch;
                     has_else = true;
                 }
             }
         }
-        if switch_expr.is_exhaustive {
+        if match_expr.is_exhaustive {
             if has_else {
-                report.warn("`switch` is exhaustive, `else` is unnecessary", else_branch.pos);
+                report.warn("`match` is exhaustive, `else` is unnecessary", else_branch.pos);
             }
-            return switch_expr.expected_type;
+            return match_expr.expected_type;
         }
         if has_else {
-            return switch_expr.expected_type;
+            return match_expr.expected_type;
         }
 
-        mut err := report.error_builder("`switch` must be exhaustive", switch_expr.pos);
+        mut err := report.error_builder("`match` must be exhaustive", match_expr.pos);
         if unhandled.len > 0 {
-            mut err_details := "add `switch` branches for: ";
+            mut err_details := "add `match` branches for: ";
             if unhandled.len < SWITCH_EXHAUSTIVE_CUTOFF_LIMIT {
                 err_details = err_details.concat(utils.join(unhandled, ", "));
             } else {
@@ -226,6 +226,6 @@ extend Checker {
             err.add_help("add `else` branch at the end");
         }
         err.emit();
-        return switch_expr.expected_type;
+        return match_expr.expected_type;
     }
 }

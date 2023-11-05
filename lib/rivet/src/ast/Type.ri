@@ -102,7 +102,7 @@ public enum Type < traits.Stringable {
 
     #[inline]
     public func ptr_or_ref_inner(self) -> Self {
-        return switch self is {
+        return match self is {
             .Pointer as ptr => ptr.inner,
             .Anyptr => self,
             else => .Void()
@@ -112,7 +112,7 @@ public enum Type < traits.Stringable {
     public func unalias(self) -> ?Self {
         // NOTE: `.unalias()` returns an option, so we use the same type without
         // unaliasing instead.
-        return switch self is {
+        return match self is {
             .Anyptr => self,
             .Result as result => .Result(result.inner.unalias() ?? result.inner),
             .Option as option => .Option(option.inner.unalias() ?? option.inner),
@@ -161,7 +161,7 @@ public enum Type < traits.Stringable {
     #[inline]
     public func symbol(self) -> ?TypeSym {
         // NOTE: `.Void`, `.None`, `.Never` and `.Anyptr` has no `TypeSym` value.
-        return switch self is {
+        return match self is {
             .Result as result => result.inner.symbol(),
             .Option as option => option.inner.symbol(),
             .Tuple as tuple_data => tuple_data.sym,
@@ -195,7 +195,7 @@ public enum Type < traits.Stringable {
 
     #[inline]
     public func is_void(self) -> bool {
-        return switch self is {
+        return match self is {
             .Void, .Never => true,
             .Result as result => result.inner.is_void(),
             else => false
@@ -209,7 +209,7 @@ public enum Type < traits.Stringable {
 
     #[inline]
     public func is_mut_pointer(self) -> bool {
-        return switch self is {
+        return match self is {
             .Pointer as ptr => ptr.is_mut,
             .Anyptr as anyptr_ => anyptr_.is_mut,
             else => false
@@ -218,7 +218,7 @@ public enum Type < traits.Stringable {
 
     #[inline]
     public func is_any_kind_of_pointer(self) -> bool {
-        return switch self is {
+        return match self is {
             .Pointer, .Anyptr, .Func => true,
             else => if type_sym := self.symbol() {
                 type_sym.is_boxed()
@@ -230,7 +230,7 @@ public enum Type < traits.Stringable {
 
     #[inline]
     public func position(self) -> token.Pos {
-        return switch self is {
+        return match self is {
             .Void, .None => token.noPos,
             .Never as never_pos => never_pos,
             .Option as opt_t => opt_t.pos,
@@ -252,7 +252,7 @@ public enum Type < traits.Stringable {
 
     #[inline]
     public func ==(self, rhs: Self) -> bool {
-        return switch self is {
+        return match self is {
             .None if rhs is .None => true,
             .Void if rhs is .Void => true,
             .Never if rhs is .Never => true,
@@ -278,7 +278,7 @@ public enum Type < traits.Stringable {
             },
             .Anyptr as anyptr_lhs if rhs is .Anyptr as anyptr_rhs =>
                 anyptr_lhs.is_mut == anyptr_rhs.is_mut,
-            .Func as func_lhs if rhs is .Func as func_rhs => switch {
+            .Func as func_lhs if rhs is .Func as func_rhs => match {
                 func_lhs.is_method != func_rhs.is_method,
                 func_lhs.self_is_mut != func_rhs.self_is_mut,
                 func_lhs.self_is_ptr != func_rhs.self_is_ptr,
@@ -319,7 +319,7 @@ public enum Type < traits.Stringable {
     }
 
     public func to_string_(self, qualstr: bool) -> string {
-        return switch self is {
+        return match self is {
             .None => "<none>",
         	.Void => "<void>",
             .Never => "never",

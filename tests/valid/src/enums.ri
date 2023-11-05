@@ -29,9 +29,9 @@ test "enums: overrided ordinal value" {
     @assert(@as(int32, OverridedValue.Ghi) == 11);
 }
 
-test "enums: enum variant switch" {
+test "enums: enum variant match" {
     abc := SimpleEnum.Abc;
-    switch abc {
+    match abc {
         .Abc => @assert(true),
         else => @assert(false)
     }
@@ -51,11 +51,11 @@ test "enums: boxed enum" {
     if e is .Abc as e_int32 {
         @assert(e_int32 == 6);
     }
-    switch e is {
+    match e is {
         .Abc as e_abc => @assert(e_abc == 6),
         else => @assert(false)
     }
-    switch e is {
+    match e is {
         .Abc as mut e_abc2 => {
             e_abc2 += 2;
             @assert(e_abc2 == 8);
@@ -63,7 +63,7 @@ test "enums: boxed enum" {
         else => @assert(false)
     }
     e = .Def();
-    switch e is {
+    match e is {
         .Def => @assert(true),
         else => @assert(false)
     }

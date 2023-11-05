@@ -94,7 +94,7 @@ class Kind(Enum):
     KwSelfTy = auto_enum() # Self
     KwStatic = auto_enum() # static
     KwStruct = auto_enum() # struct
-    KwSwitch = auto_enum() # switch
+    KwMatch = auto_enum() # match
     KwTest = auto_enum() # test
     KwThrow = auto_enum() # throw
     KwTrait = auto_enum() # trait
@@ -242,7 +242,7 @@ TOKEN_STRINGS = {
     Kind.KwSelfTy: "Self",
     Kind.KwStatic: "static",
     Kind.KwStruct: "struct",
-    Kind.KwSwitch: "switch",
+    Kind.KwMatch: "match",
     Kind.KwTest: "test",
     Kind.KwThrow: "throw",
     Kind.KwTrait: "trait",

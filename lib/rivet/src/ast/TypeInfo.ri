@@ -132,7 +132,7 @@ public enum TypeInfo < traits.Stringable {
 
     #[inline]
     public func elem_type(self) -> ?Type {
-        return switch self is {
+        return match self is {
             .Array as arr => arr.elem_type,
             .Vector as vec => vec.elem_type,
             else => none
@@ -141,7 +141,7 @@ public enum TypeInfo < traits.Stringable {
 
     #[inline]
     public func is_mut_arr_or_vec(self) -> bool {
-        return switch self is {
+        return match self is {
             .Array as arr => arr.is_mut,
             .Vector as vec => vec.is_mut,
             else => false
@@ -162,7 +162,7 @@ public enum TypeInfo < traits.Stringable {
 
     #[inline]
     public func to_string(self) -> string {
-        return switch self is {
+        return match self is {
             .Invalid => "invalid",
             .Placeholder => "placeholder",
             .None => "none",

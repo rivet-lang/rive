@@ -22,7 +22,7 @@ extend Checker {
     }
 
     func check_stmt(mut self, mut stmt: ast.Stmt) {
-        switch stmt is {
+        match stmt is {
             .VarDecl as var_decl => self.check_var_decl(
                 var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
             ),

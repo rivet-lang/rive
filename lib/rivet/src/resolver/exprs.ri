@@ -8,7 +8,7 @@ import ../report;
 
 extend Resolver {
     func resolve_expr(mut self, mut expr: ast.Expr) {
-        switch expr is {
+        match expr is {
             .Empty as empty_pos => report.error("BUG: empty expression found", empty_pos),
             .Paren as paren => self.resolve_expr(paren.expr),
             .Type as mut type => _ = self.resolve_type(type),
@@ -155,16 +155,16 @@ extend Resolver {
                     self.resolve_expr(branch.expr);
                 }
             },
-            .Switch as switch_expr => {
-                self.resolve_expr(switch_expr.expr);
-                for branch in switch_expr.branches {
+            .Match as match_expr => {
+                self.resolve_expr(match_expr.expr);
+                for branch in match_expr.branches {
                     if !branch.is_else {
                         for mut case in branch.cases {
                             self.resolve_expr(case);
                         }
                         if branch.has_var {
                             self.check_variable_shadowing(branch.var_name, branch.var_pos);
-                            switch_expr.scope.add_local(ast.Var(
+                            match_expr.scope.add_local(ast.Var(
                                 is_mut: branch.var_is_mut,
                                 name: branch.var_name,
                                 level: .Local,
@@ -270,7 +270,7 @@ extend Resolver {
 
     func resolve_selector(mut self, mut selector: ast.Expr.Selector) {
         self.resolve_expr(selector.left);
-        switch selector.left is {
+        match selector.left is {
             .SelfTy as self_ty if self_ty.found => {
                 selector.is_path = true;
                 selector.left_sym = self_ty.sym;

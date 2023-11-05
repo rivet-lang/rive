@@ -85,7 +85,7 @@ public struct TestRunner {
         for i, mut test_ in self.tests {
             console_eprint(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
             (test_.fn)(test_);
-            switch test_.result {
+            match test_.result {
                 .Ok => self.print_ok(),
                 .Skipped => self.print_skip(),
                 .Failed => self.print_failed(test_.err_pos, test_.err_msg),

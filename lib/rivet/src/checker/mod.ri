@@ -23,7 +23,7 @@ public struct Checker {
     mut inside_defer: bool;
     mut inside_unsafe_block: bool;
     mut inside_guard_expr: bool;
-    mut inside_switch_cond_expr: bool;
+    mut inside_match_cond_expr: bool;
 
     mut expected_type: ast.Type;
     mut scope_returns: bool;
@@ -83,7 +83,7 @@ public struct Checker {
                         .Snake
                     }, "variable", left0.name, left0.pos
                 );
-                if self.inside_switch_cond_expr {
+                if self.inside_match_cond_expr {
                     if left0.sym.name.is_empty() {
                         scope.update_is_used(left0.name, true);
                     } else {
@@ -143,7 +143,7 @@ public struct Checker {
                         } else {
                             .Snake
                         }, "variable", vd.name, vd.pos);
-                        if self.inside_switch_cond_expr {
+                        if self.inside_match_cond_expr {
                             if vd.sym.name.is_empty() {
                                 scope.update_is_used(vd.name, true);
                             } else {
@@ -240,7 +240,7 @@ public struct Checker {
     func check_expr_is_mut(
         self, expr: ast.Expr, from_assign: bool = false, from_selector: bool = false
     ) {
-        switch expr is {
+        match expr is {
             .Paren as paren => self.check_expr_is_mut(paren.expr),
             .SelfLiteral as self_lit => if self_lit.obj.is_mut {
                 self_lit.obj.is_changed = true;
@@ -264,7 +264,7 @@ public struct Checker {
             .Selector as selector => if selector.is_path {
                 self.check_sym_is_mut(selector.sym, selector.pos, true);
             } else {
-                switch selector.left is {
+                match selector.left is {
                     .Ident as ident2 if ident2.found => if ident2.is_sym {
                         self.check_sym_is_mut(ident2.sym, ident2.pos, true)
                     } else if ident2.sym is ast.Var as i_var and i_var.level == .Argument {
@@ -343,8 +343,8 @@ public struct Checker {
                     self.check_expr_is_mut(branch.expr);
                 }
             },
-            .Switch as switch_expr => {
-                for branch in switch_expr.branches {
+            .Match as match_expr => {
+                for branch in match_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
             },
@@ -354,7 +354,7 @@ public struct Checker {
 
     func check_sym_is_mut(self, sym: ast.Sym, pos: token.Pos, from_selector: bool) {
         _ = self;
-        switch sym is {
+        match sym is {
             ast.Const => report.error(
                 "cannot use constant `{}` as mutable value".fmt(sym.name), pos
             ),
@@ -406,10 +406,10 @@ public struct Checker {
     }
 
     func expr_has_return(self, expr: ast.Expr, allow_throw: bool = false) -> bool {
-        return switch expr is {
-            .Switch as switch_expr => {
-                for i, branch in switch_expr.branches {
-                    if switch_expr.is_exhaustive and i == switch_expr.branches.len {
+        return match expr is {
+            .Match as match_expr => {
+                for i, branch in match_expr.branches {
+                    if match_expr.is_exhaustive and i == match_expr.branches.len {
                         if self.expr_has_return(branch.expr, allow_throw) {
                             return true;
                         }

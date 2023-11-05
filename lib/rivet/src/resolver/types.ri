@@ -7,7 +7,7 @@ import ../report;
 
 extend Resolver {
     func resolve_type(mut self, mut type: ast.Type) -> bool {
-        return switch type is {
+        return match type is {
             .Void, .Never, .Anyptr => true,
             .Option as opt => self.resolve_type(opt.inner),
             .Result as res => self.resolve_type(res.inner),
@@ -74,7 +74,7 @@ extend Resolver {
                 res1
             },
             .Basic as basic => if basic.is_unresolved {
-                switch basic.expr is {
+                match basic.expr is {
                     .SelfTy => if self.self_sym_is_set {
                         basic.is_unresolved = false;
                         basic.sym = self.self_sym;

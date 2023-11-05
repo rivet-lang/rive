@@ -7,7 +7,7 @@ import ../report;
 
 extend Resolver {
     func resolve_stmt(mut self, mut stmt: ast.Stmt) {
-        switch stmt is {
+        match stmt is {
             .Empty as empty_pos => report.error("BUG: empty statement found", empty_pos),
             .Expr as mut expr => self.resolve_expr(expr),
             .VarDecl as var_stmt => {

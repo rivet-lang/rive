@@ -41,7 +41,7 @@ public enum Type < traits.Stringable {
     };
 
     public func size(self) -> usize {
-        return switch self is {
+        return match self is {
             .Int as int => int.size,
             .Uint as uint => uint.size,
             .Basic as basic => basic.size,
@@ -54,7 +54,7 @@ public enum Type < traits.Stringable {
     }
 
     public func to_string(self) -> string {
-        return switch self is {
+        return match self is {
             .Void => "void",
             .Never => "never",
             .Int as int => "int{}".fmt(int.bits),

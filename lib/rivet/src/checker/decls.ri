@@ -29,7 +29,7 @@ extend Checker {
     func check_decl(mut self, mut decl: ast.Decl) {
         old_sym := self.sym;
         defer self.sym = old_sym;
-        switch decl is {
+        match decl is {
             .Import as import_decl => if import_decl.import_list.is_empty() and !import_decl.glob {
                 if import_decl.has_custom_alias {
                     self.check_name_case(
@@ -199,7 +199,7 @@ extend Checker {
                         "special methods cannot have attributes", func_decl.pos
                     );
                 }
-                switch func_decl.name {
+                match func_decl.name {
                     "__drop__" => {},
                     else => report.error(
                         "unknown special method `{}`".fmt(func_decl.name),
@@ -246,7 +246,7 @@ extend Checker {
         self.check_scope_vars(func_decl.scope);
         if func_decl.ret_type is .Never and !self.inside_extern {
             if func_decl.stmts.len > 0 {
-                switch func_decl.stmts[func_decl.stmts.len - 1] is {
+                match func_decl.stmts[func_decl.stmts.len - 1] is {
                     .While as while_stmt if while_stmt.is_inf
                         and while_stmt.stmt is .Expr as expr and expr is .Block as block => {
                         if !block.stmts.is_empty() {

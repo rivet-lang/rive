@@ -30,7 +30,7 @@ public enum ABI as uint8 < traits.Stringable {
 
     #[inline]
     public func from_string(abi: string) -> ?ABI {
-        return switch abi {
+        return match abi {
             "C" => .C,
             "Rivet" => .Rivet,
             else => none
@@ -39,7 +39,7 @@ public enum ABI as uint8 < traits.Stringable {
 
     #[inline]
     public func to_string(&self) -> string {
-        return switch self.* {
+        return match self.* {
             .C => "C",
             .Rivet => "Rivet"
         };
@@ -86,7 +86,7 @@ public trait Sym {
     }
 
     func type_of(self) -> string {
-        return switch self is {
+        return match self is {
             SymRef as sym_ref => if sym_ref.ref_resolved {
                 sym_ref.ref.type_of()
             } else {
@@ -94,7 +94,7 @@ public trait Sym {
             },
             Module => "module",
             Const => "constant",
-            Var as obj => switch obj.level {
+            Var as obj => match obj.level {
                 .Receiver, .Argument => "argument",
                 else => "variable"
             },

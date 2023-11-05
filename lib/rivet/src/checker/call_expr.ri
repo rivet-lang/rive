@@ -19,9 +19,9 @@ extend Checker {
             false
         };
 
-        switch left is {
+        match left is {
             .SelfTy as self_ty => self.check_ctor_call(self_ty.sym, call_expr),
-            .Ident as ident if (ident.is_sym or ident.is_obj) => switch ident.sym is {
+            .Ident as ident if (ident.is_sym or ident.is_obj) => match ident.sym is {
                 ast.TypeSym as mut type_sym if type_sym.info is .Trait
                     or type_sym.info is .Struct or type_sym.info is .String
                     or type_sym.info is .Enum => self.check_ctor_call(type_sym, call_expr),
@@ -48,7 +48,7 @@ extend Checker {
                 }
             },
             .Selector as selector => if selector.is_path {
-                switch selector.sym is {
+                match selector.sym is {
                     ast.TypeSym as mut s_type_sym if s_type_sym.info is .Trait
                         or s_type_sym.info is .Struct or s_type_sym.info is .String
                         or s_type_sym.info is .Enum => self.check_ctor_call(
@@ -202,7 +202,7 @@ extend Checker {
         } else {
             .Basic(type_sym, pos: call_expr.pos)
         };
-        switch type_sym.info is {
+        match type_sym.info is {
             .Enum as enum_info => {
                 variant := if call_expr.left is .Selector as selector {
                     @as(ast.TypeInfo.Enum, @as(ast.TypeSym, selector.left_sym).info)
@@ -342,7 +342,7 @@ extend Checker {
                         );
                         continue;
                     }
-                    switch field.type is {
+                    match field.type is {
                         .Pointer, .Anyptr if !was_initted => report.warn(
                             "field `{}` of type `{}` must be initialized".fmt(
                                 field.name, type_sym.name
@@ -350,7 +350,7 @@ extend Checker {
                         ),
                         else => if f_type_sym := field.type.symbol();
                             f_type_sym.default_value is none {
-                            switch f_type_sym.info is {
+                            match f_type_sym.info is {
                                 .Trait if !was_initted => report.warn(
                                     "field `{}` of type `{}` must be initialized".fmt(
                                         field.name, type_sym.name

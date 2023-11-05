@@ -1345,26 +1345,26 @@ class Checker:
                         report.error(e.args[0], b.expr.pos)
                 b.typ = branch_t
             return expr.expected_typ
-        elif isinstance(expr, ast.SwitchExpr):
+        elif isinstance(expr, ast.MatchExpr):
             expr.typ = self.comp.void_t
             expr_typ = self.check_expr(expr.expr)
             expr_sym = expr_typ.symbol()
-            if expr.is_typeswitch and expr_sym.kind not in (
+            if expr.is_typematch and expr_sym.kind not in (
                 TypeKind.Enum, TypeKind.Trait
             ):
-                report.error("invalid value for typeswitch", expr.expr.pos)
+                report.error("invalid value for typematch", expr.expr.pos)
                 report.note(f"expected enum or trait value, found `{expr_typ}`")
             elif expr_sym.kind == TypeKind.Enum:
-                if expr_sym.info.is_boxed and not expr.is_typeswitch:
+                if expr_sym.info.is_boxed and not expr.is_typematch:
                     report.error(
-                        "cannot use `switch` with a boxed enum value", expr.pos
+                        "cannot use `match` with a boxed enum value", expr.pos
                     )
-                    report.note("use a typeswitch instead")
-                elif not expr_sym.info.is_boxed and expr.is_typeswitch:
+                    report.note("use a typematch instead")
+                elif not expr_sym.info.is_boxed and expr.is_typematch:
                     report.error(
-                        "cannot use typeswitch with a enum value", expr.pos
+                        "cannot use typematch with a enum value", expr.pos
                     )
-                    report.note("use a simple `switch` instead")
+                    report.note("use a simple `match` instead")
             expr.expected_typ = self.expected_type
             for i, b in enumerate(expr.branches):
                 if not b.is_else:
@@ -1372,7 +1372,7 @@ class Checker:
                     self.expected_type = expr_typ
                     for p in b.pats:
                         pat_t = self.check_expr(p)
-                        if expr.is_typeswitch:
+                        if expr.is_typematch:
                             pat_t = self.comp.comptime_number_to_type(pat_t)
                         try:
                             self.check_types(pat_t, expr_typ)
@@ -1412,7 +1412,7 @@ class Checker:
                         b.cond
                     ) != self.comp.bool_t:
                         report.error(
-                            "non-boolean expression use as `switch` branch condition",
+                            "non-boolean expression use as `match` branch condition",
                             b.cond.pos
                         )
                     self.expected_type = old_expected_type

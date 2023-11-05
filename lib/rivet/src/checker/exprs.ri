@@ -7,7 +7,7 @@ import ../report;
 
 extend Checker {
     func check_expr(mut self, mut expr: ast.Expr) -> ast.Type {
-        return switch expr is {
+        return match expr is {
             .Empty => .Void(),
             .Type as type => type,
             .Branch as branch => {
@@ -88,7 +88,7 @@ extend Checker {
                 } else if ident.is_comptime {
                     ident.builtin.type()
                 } else if ident.is_sym or ident.is_obj {
-                    switch ident.sym is {
+                    match ident.sym is {
                         ast.Const as const_sym => const_sym.type,
                         ast.Var as var_sym => var_sym.type,
                         ast.Func as func_sym => {
@@ -191,7 +191,7 @@ extend Checker {
             .Unary as mut unary => self.check_unary(unary),
             .Binary as mut binary => self.check_binary(binary),
             .If as mut if_expr => self.check_if(if_expr),
-            .Switch as mut switch_expr => self.check_switch(switch_expr),
+            .Match as mut match_expr => self.check_match(match_expr),
             .Guard as guard => {
                 old_inside_guard_expr := self.inside_guard_expr;
                 self.inside_guard_expr = true;
@@ -305,7 +305,7 @@ extend Checker {
             if selector.left_sym is ast.TypeSym as type_sym {
                 .Basic(type_sym, pos: selector.pos)
             } else {
-                switch selector.sym is {
+                match selector.sym is {
                     ast.Func as func_sym => {
                         if func_sym.is_method {
                             report.error(
@@ -404,7 +404,7 @@ extend Checker {
                 index.index.position()
             );
         }
-        index.type = switch left_sym.info is {
+        index.type = match left_sym.info is {
             .Array, .Vector => {
                 elem_type := left_sym.info.elem_type()?;
                 if index.index is .Range {
@@ -457,7 +457,7 @@ extend Checker {
 
     func check_unary(mut self, mut unary: ast.Expr.Unary) -> ast.Type {
         unary.type = self.check_expr(unary.right);
-        switch unary.op {
+        match unary.op {
             .Bang if unary.type != self.table.bool_t => report.error(
                 "operator `!` can only be used with boolean values", unary.pos
             ),
@@ -544,7 +544,7 @@ extend Checker {
 
         mut return_type := left_type;
         if left_sym := left_type.symbol() {
-            switch binary.op {
+            match binary.op {
                 .Plus, .Minus, .Mul, .Div, .Mod, .Xor, .Amp, .Pipe => {
                     mut promoted_type := ast.Type.Void();
                     if left_sym.info.is_compound() {

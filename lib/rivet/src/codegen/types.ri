@@ -32,7 +32,7 @@ extend Codegen {
         }
         for ts in tss {
             mut field_deps := @vec(string);
-            switch ts.info is {
+            match ts.info is {
                 .Array as array_info => {
                     dep := array_info.elem_type.to_qualstring();
                     if dep in type_names {
@@ -108,7 +108,7 @@ extend Codegen {
 
     func type_to_mir(mut self, type: ast.Type) -> mir.Type {
         (size, _) := self.table.type_size(type, true);
-        return switch type is {
+        return match type is {
             .Void => .Void(),
             .Never => .Never(),
             .Result as result => {
@@ -164,7 +164,7 @@ extend Codegen {
                     if type_sym.is_primitive() {
                         return .Basic(type_sym.name, size, true);
                     }
-                    switch type_sym.info is {
+                    match type_sym.info is {
                         .Func as func_info => {
                             mut args := @vec(mir.Type);
                             for arg in func_info.args {

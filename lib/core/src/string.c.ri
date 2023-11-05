@@ -499,7 +499,7 @@ public struct string < Stringable, Hashable, Throwable {
     public func split(self, delim: Self, nth: usize = 0) -> []Self {
         mut i: usize := 0;
         mut res := @vec(Self);
-        switch delim.len {
+        match delim.len {
             0 => {
                 i = 1;
                 for ch in self.as_bytes() {

@@ -99,7 +99,7 @@ extend Parser {
         );
         is_public := self.is_public();
         mut pos := self.tok.pos;
-        switch {
+        match {
             self.accept(.KwImport) => {
                 mut import_list := @vec(ast.ImportListInfo);
                 mut glob := false;
@@ -107,7 +107,7 @@ extend Parser {
                     while {
                         info_pos := self.tok.pos;
                         mut info_has_custom_alias := false;
-                        switch {
+                        match {
                             self.accept(.KwSelf) => {
                                 name := "self";
                                 info_alias := if self.accept(.KwAs) {

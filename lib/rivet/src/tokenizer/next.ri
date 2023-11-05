@@ -55,7 +55,7 @@ extend Tokenizer {
                 return self.new_token(.Number, number_literal_without_separator(lit), lit.len);
             }
             // delimiters and operators
-            switch ch {
+            match ch {
                 b'+' => {
                     if nextc == b'=' {
                         self.pos += 1;
@@ -271,7 +271,7 @@ extend Tokenizer {
 
     #[inline]
     func read_number(mut self) -> string {
-        return switch {
+        return match {
             self.matches("0x", self.pos) => self.read_hex_number(),
             self.matches("0b", self.pos) => self.read_bin_number(),
             self.matches("0o", self.pos) => self.read_oct_number(),

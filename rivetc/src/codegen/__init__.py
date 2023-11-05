@@ -2142,10 +2142,10 @@ class Codegen:
                 self.cur_fn.add_label(exit_label)
             if not is_void_value:
                 return tmp
-        elif isinstance(expr, ast.SwitchExpr):
+        elif isinstance(expr, ast.MatchExpr):
             is_void_value = expr.typ in self.void_types
-            exit_switch = self.cur_fn.local_name()
-            self.cur_fn.add_comment(f"switch expr (end: {exit_switch})")
+            exit_match = self.cur_fn.local_name()
+            self.cur_fn.add_comment(f"match expr (end: {exit_match})")
             tmp = ir.Ident(
                 self.ir_type(expr.expected_typ),
                 self.cur_fn.local_name() if not is_void_value else ""
@@ -2154,32 +2154,32 @@ class Codegen:
                 self.cur_fn.alloca(tmp)
             if isinstance(expr.expr, ast.GuardExpr):
                 cond = self.gen_guard_expr(expr.expr, "", "", False)
-                self.cur_fn.add_cond_single_br(cond, exit_switch)
+                self.cur_fn.add_cond_single_br(cond, exit_match)
                 if expr.expr.has_cond:
                     self.cur_fn.add_cond_single_br(
                         ir.Inst(
                             ir.InstKind.BooleanNot,
                             [self.gen_expr(expr.expr.cond)]
-                        ), exit_switch
+                        ), exit_match
                     )
-                switch_expr = ir.Ident(
+                match_expr = ir.Ident(
                     self.ir_type(expr.expr.typ), expr.expr.vars[0].name
                 )
             else:
-                switch_expr = self.gen_expr_with_cast(expr.expr.typ, expr.expr)
+                match_expr = self.gen_expr_with_cast(expr.expr.typ, expr.expr)
             for b in expr.branches:
                 is_branch_void_value = b.typ in self.void_types
                 b_label = "" if b.is_else else self.cur_fn.local_name()
-                b_exit = exit_switch if b.is_else else self.cur_fn.local_name()
+                b_exit = exit_match if b.is_else else self.cur_fn.local_name()
                 if not b.is_else:
                     self.cur_fn.add_comment(
-                        f"switch expr patterns (len: {len(b.pats)})"
+                        f"match expr patterns (len: {len(b.pats)})"
                     )
                 for i, p in enumerate(b.pats):
                     next_pat = self.cur_fn.local_name(
                     ) if i < len(b.pats) - 1 else b_exit
                     tmp2 = self.cur_fn.local_name()
-                    if expr.is_typeswitch:
+                    if expr.is_typematch:
                         if p.typ.sym.kind == TypeKind.Trait:
                             value_idx_x = ir.IntLit(
                                 ir.USIZE_T,
@@ -2202,7 +2202,7 @@ class Codegen:
                                 ir.BOOL_T, tmp2,
                                 ir.Inst(
                                     ir.InstKind.Cmp,
-                                    [ir.Name("=="), switch_expr, value_idx_x]
+                                    [ir.Name("=="), match_expr, value_idx_x]
                                 )
                             )
                         else:
@@ -2213,7 +2213,7 @@ class Codegen:
                                         ir.Name("=="),
                                         ir.Selector(
                                             self.ir_type(expr.expr.typ),
-                                            switch_expr,
+                                            match_expr,
                                             ir.Name(
                                                 "_id_" if p.typ.sym.kind ==
                                                 TypeKind.Trait else "_idx_"
@@ -2230,7 +2230,7 @@ class Codegen:
                                 val = ir.Inst(
                                     ir.InstKind.Cast, [
                                         ir.Selector(
-                                            ir.VOID_PTR_T, switch_expr,
+                                            ir.VOID_PTR_T, match_expr,
                                             ir.Name("obj")
                                         ), var_t2
                                     ]
@@ -2239,7 +2239,7 @@ class Codegen:
                                 val = ir.Inst(
                                     ir.InstKind.Cast, [
                                         ir.Selector(
-                                            ir.VOID_PTR_T, switch_expr,
+                                            ir.VOID_PTR_T, match_expr,
                                             ir.Name("obj")
                                         ), var_t
                                     ]
@@ -2269,7 +2269,7 @@ class Codegen:
                             self.cur_fn.add_cond_br(
                                 ir.Inst(
                                     ir.InstKind.Cmp,
-                                    [ir.Name(">="), switch_expr, start]
+                                    [ir.Name(">="), match_expr, start]
                                 ), rend_l, next_pat
                             )
                             self.cur_fn.add_label(rend_l)
@@ -2277,7 +2277,7 @@ class Codegen:
                                 tmp2_i,
                                 ir.Inst(
                                     ir.InstKind.Cmp,
-                                    [ir.Name("<="), switch_expr, end]
+                                    [ir.Name("<="), match_expr, end]
                                 )
                             )
                         else:
@@ -2286,14 +2286,14 @@ class Codegen:
                             ) or p_typ_sym.kind == TypeKind.Enum:
                                 inst = ir.Inst(
                                     ir.InstKind.Cmp,
-                                    [ir.Name("=="), switch_expr, p_conv]
+                                    [ir.Name("=="), match_expr, p_conv]
                                 )
                             else:
                                 inst = ir.Inst(
                                     ir.InstKind.Call, [
                                         ir.Name(
                                             f"{mangle_symbol(p_typ_sym)}4_eq_M"
-                                        ), switch_expr, p_conv,
+                                        ), match_expr, p_conv,
                                     ]
                                 )
                             self.cur_fn.inline_alloca(ir.BOOL_T, tmp2, inst)
@@ -2322,10 +2322,10 @@ class Codegen:
                     self.cur_fn.store(
                         tmp, self.gen_expr_with_cast(expr.expected_typ, b.expr)
                     )
-                self.cur_fn.add_br(exit_switch)
+                self.cur_fn.add_br(exit_match)
                 if not b.is_else:
                     self.cur_fn.add_label(b_exit)
-            self.cur_fn.add_label(exit_switch)
+            self.cur_fn.add_label(exit_match)
             if not is_void_value:
                 return tmp
         elif isinstance(expr, ast.BranchExpr):

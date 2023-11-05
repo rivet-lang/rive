@@ -52,23 +52,23 @@ test "`while` expression with guard expression" {
     }
 }
 
-test "`switch` expression with guard expression" {
-    switch val := ret_none() {
+test "`match` expression with guard expression" {
+    match val := ret_none() {
         3 => @assert(true),
         else => @assert(false)
     }
 
-    switch val := ret_none(); val == 3 {
+    match val := ret_none(); val == 3 {
         3 => @assert(true),
         else => @assert(false)
     }
 
-    switch val := ret_err() {
+    match val := ret_err() {
         3 => @assert(true),
         else => @assert(false)
     }
 
-    switch val := ret_none(); val == 3 {
+    match val := ret_none(); val == 3 {
         3 => @assert(true),
         else => @assert(false)
     }

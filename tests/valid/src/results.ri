@@ -44,7 +44,7 @@ enum IOError < Throwable {
     };
 
     public func to_string(self) -> string {
-        return switch self is {
+        return match self is {
             .FileNotFound as path => "file not found: {}".fmt(path),
             .InvalidFileSize as ifsz => "invalid file size for {} (size: {})".fmt(
                 ifsz.path, ifsz.size

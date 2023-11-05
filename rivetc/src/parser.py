@@ -30,7 +30,7 @@ class Parser:
         self.inside_struct = False
         self.inside_trait = False
         self.inside_enum_variant_with_fields = False
-        self.inside_switch_header = False
+        self.inside_match_header = False
         self.inside_block = False
 
     def parse_mod(self, mod_sym, files):
@@ -546,7 +546,7 @@ class Parser:
             elif tok.kind == Kind.DeclAssign and not assign_was_used:
                 return True
             elif tok.kind in (
-                Kind.KwIf, Kind.KwSwitch, Kind.KwWhile, Kind.Lbrace,
+                Kind.KwIf, Kind.KwMatch, Kind.KwWhile, Kind.Lbrace,
                 Kind.Semicolon
             ):
                 break
@@ -605,7 +605,7 @@ class Parser:
             is_errdefer = self.prev_tok.kind == Kind.KwErrDefer
             pos = self.prev_tok.pos
             expr = self.parse_expr()
-            if expr.__class__ not in (ast.IfExpr, ast.SwitchExpr, ast.Block):
+            if expr.__class__ not in (ast.IfExpr, ast.MatchExpr, ast.Block):
                 self.expect(Kind.Semicolon)
             return ast.DeferStmt(expr, is_errdefer, pos)
         elif (
@@ -631,7 +631,7 @@ class Parser:
             return ast.VarDeclStmt(self.scope, lefts, right, pos)
         expr = self.parse_expr()
         if not ((self.inside_block and self.tok.kind == Kind.Rbrace)
-                or expr.__class__ in (ast.IfExpr, ast.SwitchExpr, ast.Block)):
+                or expr.__class__ in (ast.IfExpr, ast.MatchExpr, ast.Block)):
             self.expect(Kind.Semicolon)
         return ast.ExprStmt(expr, expr.pos)
 
@@ -694,7 +694,7 @@ class Parser:
                 right = self.parse_shift_expr()
                 left = ast.BinaryExpr(left, op, right, left.pos)
             elif self.tok.kind in [Kind.KwIs, Kind.KwNotIs]:
-                if self.inside_switch_header and self.peek_tok.kind == Kind.Lbrace:
+                if self.inside_match_header and self.peek_tok.kind == Kind.Lbrace:
                     break
                 op = self.tok.kind
                 self.next()
@@ -830,8 +830,8 @@ class Parser:
             expr = ast.ThrowExpr(self.parse_expr(), pos)
         elif self.tok.kind == Kind.KwIf:
             expr = self.parse_if_expr()
-        elif self.accept(Kind.KwSwitch):
-            expr = self.parse_switch_expr()
+        elif self.accept(Kind.KwMatch):
+            expr = self.parse_match_expr()
         elif self.tok.kind == Kind.Lparen:
             pos = self.tok.pos
             self.next()
@@ -1067,12 +1067,12 @@ class Parser:
                 break
         return ast.IfExpr(branches, has_else, pos)
 
-    def parse_switch_expr(self):
+    def parse_match_expr(self):
         branches = []
         pos = self.prev_tok.pos
-        is_typeswitch = False
-        old_inside_switch_header = self.inside_switch_header
-        self.inside_switch_header = True
+        is_typematch = False
+        old_inside_match_header = self.inside_match_header
+        self.inside_match_header = True
         if self.tok.kind == Kind.Lbrace:
             expr = ast.BoolLiteral(True, pos)
         else:
@@ -1081,9 +1081,9 @@ class Parser:
                 expr = self.parse_guard_expr()
             else:
                 expr = self.parse_expr()
-            is_typeswitch = self.accept(Kind.KwIs)
+            is_typematch = self.accept(Kind.KwIs)
         self.expect(Kind.Lbrace)
-        self.inside_switch_header = old_inside_switch_header
+        self.inside_match_header = old_inside_match_header
         while True:
             pats = []
             has_var = False
@@ -1095,7 +1095,7 @@ class Parser:
             is_else = self.accept(Kind.KwElse)
             if not is_else:
                 while True:
-                    if is_typeswitch:
+                    if is_typematch:
                         t_pos = self.tok.pos
                         if self.accept(Kind.Dot):
                             pats.append(
@@ -1109,7 +1109,7 @@ class Parser:
                                        ) or self.accept(Kind.Ellipsis):
                             if self.prev_tok.kind == Kind.DotDot:
                                 report.error(
-                                    "switch only supports inclusive ranges, not exclusive",
+                                    "match only supports inclusive ranges, not exclusive",
                                     self.prev_tok.pos
                                 )
                                 report.help("use `...` instead of `..`")
@@ -1130,7 +1130,7 @@ class Parser:
                     cond = self.parse_expr()
             self.expect(Kind.Arrow)
             branches.append(
-                ast.SwitchBranch(
+                ast.MatchBranch(
                     pats, has_var, var_is_mut, var_name, var_pos, has_cond,
                     cond, self.parse_expr(), is_else
                 )
@@ -1140,7 +1140,7 @@ class Parser:
         if isinstance(expr, ast.GuardExpr):
             self.close_scope()
         self.expect(Kind.Rbrace)
-        return ast.SwitchExpr(expr, branches, is_typeswitch, self.scope, pos)
+        return ast.MatchExpr(expr, branches, is_typematch, self.scope, pos)
 
     def parse_guard_expr(self):
         pos = self.prev_tok.pos
