@@ -13,15 +13,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run samples
+      - name: Run examples
         run: |
-          python3 samples/run_samples.py
+          python3 examples/run_examples.py
 
   ubuntu-gcc:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run samples
+      - name: Run examples
         run: |
-          python3 samples/run_samples.py
+          python3 examples/run_examples.py
