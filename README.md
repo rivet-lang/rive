@@ -14,7 +14,7 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 •
 [Changelogs](changelogs/)
 •
-[Samples](samples/)
+[Examples](examples/)
 
 ![issues](https://img.shields.io/github/issues/rivet-lang/rivet?style=flat-square)
 ![status](https://img.shields.io/badge/status-alpha-blue?style=flat-square)
@@ -64,7 +64,7 @@ quality.
 
 More features that will be added in the self-hosted compiler can be seen in the [roadmap](ROADMAP.md).
 
-## Sample: The classic `Hello World!`
+## Example: The classic `Hello World!`
 
 ```swift
 import std/console;
@@ -73,7 +73,7 @@ func main() {
     console.println("Hello World!");
 }
 ```
-More samples in the [`samples/`](samples/) folder.
+More examples in the [`examples/`](examples/) folder.
 It is also possible to find valid code examples in the  [`tests/valid`](tests/valid)
 folder.
 
