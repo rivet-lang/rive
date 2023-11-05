@@ -24,11 +24,11 @@ jobs:
           cp -r lib/ rivet-nightly-linux-amd64/
           zip -r rivet-nightly-linux-amd64.zip rivet-nightly-linux-amd64/
 
-      - uses: dev-drprasad/delete-tag-and-release@v1.0
-        with:
-          tag_name: nightly
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          delete_release: false
+#      - uses: dev-drprasad/delete-tag-and-release@v1.0
+#        with:
+#          tag_name: nightly
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          delete_release: false
 
       - name: Create release
         uses: ncipollo/release-action@v1
