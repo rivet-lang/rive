@@ -166,7 +166,7 @@ class ConstDecl:
         self.sym = None
         self.pos = pos
 
-class VarDecl:
+class StaticDecl:
     def __init__(
         self, docs, attributes, is_public, is_extern, abi, lefts, right, pos
     ):
@@ -303,7 +303,7 @@ class TestDecl:
         self.pos = pos
 
 # ------ Statements --------
-class VarDeclStmt:
+class StaticDeclStmt:
     def __init__(self, scope, lefts, right, pos):
         self.lefts = lefts
         self.right = right

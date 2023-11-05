@@ -334,7 +334,7 @@ class Codegen:
         self.cur_fn_defer_stmts = []
         if isinstance(decl, ast.ExternDecl):
             self.gen_decls(decl.decls)
-        elif isinstance(decl, ast.VarDecl):
+        elif isinstance(decl, ast.StaticDecl):
             self.inside_let_decl = True
             for l in decl.lefts:
                 is_extern = decl.is_extern and decl.abi != sym.ABI.Rivet
@@ -587,7 +587,7 @@ class Codegen:
             self.loop_entry_label = old_entry_label
             self.loop_exit_label = old_exit_label
             self.while_continue_expr = old_while_continue_expr
-        elif isinstance(stmt, ast.VarDeclStmt):
+        elif isinstance(stmt, ast.StaticDeclStmt):
             if len(stmt.lefts) == 1:
                 left = stmt.lefts[0]
                 left_ir_typ = self.ir_type(left.typ)

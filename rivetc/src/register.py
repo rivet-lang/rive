@@ -69,7 +69,7 @@ class Register:
                     decl.is_public, decl.name, decl.typ, decl.expr
                 )
                 self.add_sym(decl.sym, decl.pos)
-            elif isinstance(decl, ast.VarDecl):
+            elif isinstance(decl, ast.StaticDecl):
                 for v in decl.lefts:
                     try:
                         v_sym = sym.Var(
