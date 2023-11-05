@@ -41,6 +41,7 @@ bin/
 
 public static gitattributesFile := "* text=auto eol=lf
 *.bat eol=crlf
+*.ri linguist-language=Rivet text=auto eol=lf
 ";
 
 public static editorConfigFile := "[*]
