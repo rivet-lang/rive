@@ -458,7 +458,9 @@ public struct string < Stringable, Hashable, Throwable {
     #[inline]
     public func as_bytes(self) -> []uint8 {
         return unsafe {
-            Vector.from_array_no_alloc(@as(&mut uint8, self.ptr), @size_of(uint8), self.len)
+            Vector.from_array_no_alloc(
+                @as(&mut uint8, self.ptr), @size_of(uint8), self.len
+            )
         };
     }
 

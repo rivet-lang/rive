@@ -92,18 +92,18 @@ public struct FILE;
 #endif
 
 extern (C) {
-    public func fopen(path: &uint8, mode: &uint8) -> ?&mut FILE;
+    public func fopen(path: [&]uint8, mode: [&]uint8) -> ?&mut FILE;
     public func feof(stream: &FILE) -> int32;
     public func ferror(stream: &FILE) -> int32;
     public func fseek(stream: &mut FILE, offset: uint64, whence: int32) -> int32;
     public func ftell(stream: &mut FILE) -> int64;
     public func fread(ptr: rawptr, size: usize, nitems: usize, stream: &mut FILE) -> usize;
     public func fputc(c: int32, stream: &mut FILE) -> int32;
-    public func fputs(s: &uint8, stream: &mut FILE) -> int32;
-    public func fprintf(stream: &mut FILE, fmt: &uint8, ...) -> int32;
+    public func fputs(s: [&]uint8, stream: &mut FILE) -> int32;
+    public func fprintf(stream: &mut FILE, fmt: [&]uint8, ...) -> int32;
     public func fwrite(ptr: rawptr, size: usize, nobj: usize, stream: &mut FILE) -> usize;
     public func fflush(stream: &mut FILE) -> int32;
-    public func fgets(s: &mut uint8, n: usize, stream: &mut FILE) -> int32;
+    public func fgets(s: [&]mut uint8, n: usize, stream: &mut FILE) -> int32;
     public func fclose(stream: &mut FILE) -> int32;
     public func fileno(stream: &FILE) -> int32;
     public func rewind(stream: &mut FILE);

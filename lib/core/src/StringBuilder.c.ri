@@ -20,7 +20,9 @@ public struct StringBuilder < Stringable {
             Self.new()
         } else {
             Self(unsafe {
-                Vector.from_array(@as(&mut uint8, s.ptr), @size_of(uint8), s.len)
+                Vector.from_array(
+                    @as(&mut uint8, s.ptr), @size_of(uint8), s.len
+                )
             })
         };
     }
