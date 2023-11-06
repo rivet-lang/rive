@@ -120,7 +120,7 @@ public struct Codegen {
     func mangle_type(self, type: ast.Type) -> string {
         return match type is {
             .Void -> "4void",
-            .Anyptr -> "6anyptr",
+            .Rawptr -> "6rawptr",
             .Never -> "5never",
             .Func as func_t -> {
                 mut sb := strings.Builder.from_string("func_");

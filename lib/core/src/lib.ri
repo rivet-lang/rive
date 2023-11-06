@@ -21,7 +21,7 @@ func assert(cond: bool, msg: string) {
 }
 
 #[inline]
-func internal_alloc(size: usize) -> mut_anyptr {
+func internal_alloc(size: usize) -> rawptr {
     return mem_alloc(size) catch {
         process_panic(
             "internal error: cannot allocate memory" #if _DEBUG_ " (size: {})", size #endif
@@ -30,7 +30,7 @@ func internal_alloc(size: usize) -> mut_anyptr {
 }
 
 #[inline]
-func internal_zeroed(size: usize) -> mut_anyptr {
+func internal_zeroed(size: usize) -> rawptr {
     return mem_zeroed(size) catch {
         process_panic(
             "internal error: cannot allocate zeroed memory" #if _DEBUG_ " (size: {})", size #endif
@@ -39,7 +39,7 @@ func internal_zeroed(size: usize) -> mut_anyptr {
 }
 
 #[inline]
-func internal_dup(src: anyptr, sz: usize) -> mut_anyptr {
+func internal_dup(src: rawptr, sz: usize) -> rawptr {
     return mem_dup(src, sz) catch {
         process_panic(
             "internal error: cannot duplicate memory" #if _DEBUG_ " (size: {})", sz #endif
@@ -48,7 +48,7 @@ func internal_dup(src: anyptr, sz: usize) -> mut_anyptr {
 }
 
 #[inline]
-func internal_resize(ptr: ?mut_anyptr, sz: usize) -> mut_anyptr {
+func internal_resize(ptr: ?rawptr, sz: usize) -> rawptr {
     return mem_resize(ptr, sz) catch {
         process_panic(
             "internal error: cannot resize memory" #if _DEBUG_ " (size: {})", sz #endif

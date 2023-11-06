@@ -46,8 +46,7 @@ class Compiler:
         self.float32_t = type.Type(self.universe[17])
         self.float64_t = type.Type(self.universe[18])
         self.string_t = type.Type(self.universe[19])
-        self.anyptr_t = type.Ptr(self.void_t)
-        self.mut_anyptr_t = type.Ptr(self.void_t, True)
+        self.rawptr_t = type.Ptr(self.void_t, True)
         self.throwable_t = None # updated in register
 
         self.parsed_files = []

@@ -7,7 +7,7 @@
 
 import { pid_t, uid_t } from ../ctypes;
 
-public alias SignalHandler := func(int32, &mut siginfo_t, mut_anyptr);
+public alias SignalHandler := func(int32, &mut siginfo_t, rawptr);
 
 #if _LINUX_
     public const SA_ONSTACK := 0x08000000;
@@ -54,7 +54,7 @@ public alias SignalHandler := func(int32, &mut siginfo_t, mut_anyptr);
     }
 
     public struct sigval {
-        public sival_ptr: mut_anyptr;
+        public sival_ptr: rawptr;
     }
 
     public struct siginfo_t {
@@ -64,7 +64,7 @@ public alias SignalHandler := func(int32, &mut siginfo_t, mut_anyptr);
         public si_pid: pid_t; // sending process
         public si_uid: uid_t; // sender's ruid
         public si_status: int32; // exit value
-        public si_addr: mut_anyptr; // faulting instruction
+        public si_addr: rawptr; // faulting instruction
         public si_value: sigval; // signal value
         public si_band: int64; // band event for SIGPOLL
         public _: [7]uint64; // reserved for future use

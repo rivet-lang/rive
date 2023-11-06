@@ -120,9 +120,7 @@ extend Parser {
                             }
                             .Never(self.prev_tok.pos)
                         },
-                        "anyptr", "mut_anyptr" -> .Anyptr(
-                            expr_name.starts_with("mut_"), self.prev_tok.pos
-                        ),
+                        "rawptr" -> .Rawptr(self.prev_tok.pos),
                         "bool" -> .Basic(self.table.bool_sym, pos: expr_pos),
                         "rune" -> .Basic(self.table.rune_sym, pos: expr_pos),
                         "int8" -> .Basic(self.table.int8_sym, pos: expr_pos),

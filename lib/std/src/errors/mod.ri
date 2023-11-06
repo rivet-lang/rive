@@ -5,8 +5,6 @@
 import c;
 import core;
 
-import ../traits;
-
 public alias ErrnoError := c.ErrnoError;
 public alias OutOfMemoryError := core.OutOfMemoryError;
 

@@ -12,8 +12,8 @@ extern (C) {
 
     public func isatty(fd: int32) -> int32;
 
-    public func write(fd: int32, buf: anyptr, count: usize) -> isize;
-    public func read(fildes: int32, buf: mut_anyptr, nbyte: usize) -> isize;
+    public func write(fd: int32, buf: rawptr, count: usize) -> isize;
+    public func read(fildes: int32, buf: rawptr, nbyte: usize) -> isize;
 
     public func rmdir(path: &uint8) -> int32;
     public func chdir(path: &uint8) -> int32;

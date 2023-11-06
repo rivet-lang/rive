@@ -148,7 +148,7 @@ extend Codegen {
                 self.type_to_mir(array_t.inner), array_t.size_value, size
             ),
             .Vector -> self.vector_t,
-            .Anyptr -> .Anyptr(self.table.pointer_size),
+            .Rawptr -> .Rawptr(self.table.pointer_size),
             .Pointer as ptr_t -> .Pointer(
                 self.type_to_mir(ptr_t.inner), size: self.table.pointer_size
             ),

@@ -6,12 +6,12 @@ test "using `alias` with symbols" {
     @assert(sum(5, 5) == mod.add(5, 5));
 }
 
-alias AnyptrOption := ?anyptr;
+alias RawptrOption := ?rawptr;
 
-func anyptr_option() -> AnyptrOption {
+func rawptr_option() -> RawptrOption {
     return none;
 }
 
 test "using `alias` with types" {
-    @assert(anyptr_option() is none);
+    @assert(rawptr_option() is none);
 }

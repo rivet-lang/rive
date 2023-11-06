@@ -14,20 +14,20 @@ struct BacktraceData {
     mut has_error: bool;
 }
 
-alias BacktraceErrorCB := func(mut_anyptr, ?[&]mut uint8, int32);
+alias BacktraceErrorCB := func(rawptr, ?[&]mut uint8, int32);
 alias BacktraceFullCB := func(
-    mut_anyptr, int32, ?[&]mut uint8, int32, ?[&]mut uint8
+    rawptr, int32, ?[&]mut uint8, int32, ?[&]mut uint8
 ) -> int32;
 
 extern (C) {
     func backtrace_create_state(
         filename: [&]uint8, threaded: bool, error_cb: BacktraceErrorCB,
-        data: ?mut_anyptr
+        data: ?rawptr
     ) -> ?&mut BacktraceState;
 
     func backtrace_full(
         state: &BacktraceState, skip: int32, cb: BacktraceFullCB,
-        error_cb: BacktraceErrorCB, data: mut_anyptr
+        error_cb: BacktraceErrorCB, data: rawptr
     ) -> int32;
 }
 
@@ -36,7 +36,7 @@ static state := unsafe {
 };
 
 func bt_print_callback(
-    _data: mut_anyptr, _pc: int32, filename_ptr: ?[&]mut uint8, lineno: int32,
+    _data: rawptr, _pc: int32, filename_ptr: ?[&]mut uint8, lineno: int32,
     fn_ptr: ?[&]mut uint8
 ) -> int32 {
     unsafe {
@@ -60,7 +60,7 @@ func bt_print_callback(
     return 0;
 }
 
-func bt_error_handler(data: mut_anyptr, msg_ptr: ?[&]mut uint8, errnum: int32) {
+func bt_error_handler(data: rawptr, msg_ptr: ?[&]mut uint8, errnum: int32) {
     unsafe {
         bdata := @as(&mut BacktraceData, data);
         if !bdata.has_error {

@@ -1144,7 +1144,7 @@ class Checker:
                         )
                     elif left_typ.typ == self.comp.void_t:
                         report.error(
-                            "invalid indirect for `anyptr`", expr.field_pos
+                            "invalid indirect for `rawptr`", expr.field_pos
                         )
                         report.help(
                             "consider casting this to another pointer type, e.g. `*uint8`"
@@ -1809,11 +1809,11 @@ class Checker:
         return False
 
     def check_pointer(self, expected, got):
-        if expected.is_mut and not got.is_mut:
-            return False
-        elif expected.typ == self.comp.void_t:
-            # anyptr == *T, is valid
+        if expected.typ == self.comp.void_t:
+            # rawptr == *T, is valid
             return True
+        elif expected.is_mut and not got.is_mut:
+            return False
         elif expected.is_indexable and not got.is_indexable:
             return False
         return expected.typ == got.typ

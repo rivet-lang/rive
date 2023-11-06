@@ -5,10 +5,10 @@
 struct EnumInfo {
     _rc_: usize;
     _id_: usize;
-    obj: anyptr;
+    obj: rawptr;
 }
 
-func enum_cast(ptr: anyptr, expected_id: usize) -> anyptr {
+func enum_cast(ptr: rawptr, expected_id: usize) -> rawptr {
     enum_info := unsafe { @as(&EnumInfo, ptr) };
     if enum_info._id_ != expected_id {
         // TODO: replace indexes with names
@@ -21,7 +21,7 @@ func enum_cast(ptr: anyptr, expected_id: usize) -> anyptr {
     return enum_info.obj;
 }
 
-func trait_cast(got_obj: anyptr, got_id: usize, expected_id: usize) -> anyptr {
+func trait_cast(got_obj: rawptr, got_id: usize, expected_id: usize) -> rawptr {
     if got_id != expected_id {
         // TODO: replace indexes with names
         console_ewriteln(

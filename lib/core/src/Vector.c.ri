@@ -4,7 +4,7 @@
 
 #[boxed]
 struct Vector {
-    mut ptr: mut_anyptr;
+    mut ptr: rawptr;
     elem_size: usize;
     mut len: usize;
     mut cap: usize;
@@ -21,30 +21,30 @@ struct Vector {
     }
 
     #[unsafe]
-    func from_array(arr: mut_anyptr, elem_size: usize, len: usize) -> Self {
+    func from_array(arr: rawptr, elem_size: usize, len: usize) -> Self {
         vec := Self(internal_zeroed(len * elem_size), elem_size, len, len);
         mem_copy(vec.ptr, arr, len * elem_size);
         return vec;
     }
 
     #[unsafe; inline]
-    func from_array_no_alloc(arr: mut_anyptr, elem_size: usize, len: usize) -> Self {
+    func from_array_no_alloc(arr: rawptr, elem_size: usize, len: usize) -> Self {
         return Self(arr, elem_size, len, len, is_ref: true);
     }
 
     #[unsafe; inline]
-    func raw_get(self, idx: usize) -> mut_anyptr {
+    func raw_get(self, idx: usize) -> rawptr {
         return unsafe { @ptr_add(@as([&]mut uint8, self.ptr), idx * self.elem_size) };
     }
 
-    func get(self, idx: usize) -> mut_anyptr {
+    func get(self, idx: usize) -> rawptr {
         if idx >= self.len {
             process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { @ptr_add(@as([&]mut uint8, self.ptr), idx * self.elem_size) };
     }
 
-    func set(self, idx: usize, val: anyptr) {
+    func set(self, idx: usize, val: rawptr) {
         if idx >= self.len {
             process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -56,7 +56,7 @@ struct Vector {
         }
     }
 
-    func push(mut self, val: anyptr) {
+    func push(mut self, val: rawptr) {
         if self.len >= self.cap {
             self.reserve(self.len + 1);
         }
@@ -68,7 +68,7 @@ struct Vector {
 
     /// Returns the last element of the vector, and removes it. If the
     /// vector is empty, this will panic.
-    func pop(mut self) -> anyptr {
+    func pop(mut self) -> rawptr {
         if self.len == 0 {
             process_panic("Vec.pop: vector is empty");
         }

@@ -69,8 +69,7 @@ public enum Type < traits.Stringable {
         is_indexable: bool;
         pos: token.Pos;
     },
-    Anyptr {
-        is_mut: bool;
+    Rawptr {
         pos: token.Pos;
     },
     Func {
@@ -104,7 +103,7 @@ public enum Type < traits.Stringable {
     public func ptr_or_ref_inner(self) -> Self {
         return match self is {
             .Pointer as ptr -> ptr.inner,
-            .Anyptr -> self,
+            .Rawptr -> self,
             else -> .Void()
         };
     }
@@ -113,7 +112,7 @@ public enum Type < traits.Stringable {
         // NOTE: `.unalias()` returns an option, so we use the same type without
         // unaliasing instead.
         return match self is {
-            .Anyptr -> self,
+            .Rawptr -> self,
             .Result as result -> .Result(result.inner.unalias() ?? result.inner),
             .Option as option -> .Option(option.inner.unalias() ?? option.inner),
             .Tuple as tuple_data -> {
@@ -160,7 +159,7 @@ public enum Type < traits.Stringable {
 
     #[inline]
     public func symbol(self) -> ?TypeSym {
-        // NOTE: `.Void`, `.None`, `.Never` and `.Anyptr` has no `TypeSym` value.
+        // NOTE: `.Void`, `.None`, `.Never` and `.Rawptr` has no `TypeSym` value.
         return match self is {
             .Result as result -> result.inner.symbol(),
             .Option as option -> option.inner.symbol(),
@@ -204,14 +203,14 @@ public enum Type < traits.Stringable {
 
     #[inline]
     public func is_pointer(self) -> bool {
-        return self is .Pointer or self is .Anyptr;
+        return self is .Pointer or self is .Rawptr;
     }
 
     #[inline]
     public func is_mut_pointer(self) -> bool {
         return match self is {
             .Pointer as ptr -> ptr.is_mut,
-            .Anyptr as anyptr_ -> anyptr_.is_mut,
+            .Rawptr -> true,
             else -> false
         };
     }
@@ -219,7 +218,7 @@ public enum Type < traits.Stringable {
     #[inline]
     public func is_any_kind_of_pointer(self) -> bool {
         return match self is {
-            .Pointer, .Anyptr, .Func -> true,
+            .Pointer, .Rawptr, .Func -> true,
             else -> if type_sym := self.symbol() {
                 type_sym.is_boxed()
             } else {
@@ -240,7 +239,7 @@ public enum Type < traits.Stringable {
             .Vector as vec_t -> vec_t.pos,
             .Array as arr_t -> arr_t.pos,
             .Pointer as ptr_t -> ptr_t.pos,
-            .Anyptr as anyptr_t -> anyptr_t.pos,
+            .Rawptr as rawptr_t -> rawptr_t.pos,
             .Func as func_t -> func_t.pos,
             .Basic as basic_t -> if basic_t.is_unresolved {
                 basic_t.expr.position()
@@ -276,8 +275,7 @@ public enum Type < traits.Stringable {
             } else {
                 ptr_lhs.inner == ptr_rhs.inner
             },
-            .Anyptr as anyptr_lhs if rhs is .Anyptr as anyptr_rhs ->
-                anyptr_lhs.is_mut == anyptr_rhs.is_mut,
+            .Rawptr if rhs is .Rawptr -> true,
             .Func as func_lhs if rhs is .Func as func_rhs -> match {
                 func_lhs.is_method != func_rhs.is_method,
                 func_lhs.self_is_mut != func_rhs.self_is_mut,
@@ -365,13 +363,7 @@ public enum Type < traits.Stringable {
                     }
                 }.concat(pointer_data.inner.to_string_(qualstr))
             },
-            .Anyptr as anyptr_data -> {
-                if anyptr_data.is_mut {
-                    "mut_anyptr"
-                } else {
-                    "anyptr"
-                }
-            },
+            .Rawptr -> "rawptr",
             .Func as func_data -> {
                 mut sb := Builder.new(150);
                 sb.write_string("func(");

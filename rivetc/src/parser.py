@@ -1327,10 +1327,8 @@ class Parser:
                 if prev_tok_kind != Kind.Arrow:
                     report.error("invalid use of `never` type", pos)
                 return self.comp.never_t
-            elif lit == "anyptr":
-                return self.comp.anyptr_t
-            elif lit == "mut_anyptr":
-                return self.comp.mut_anyptr_t
+            elif lit == "rawptr":
+                return self.comp.rawptr_t
             elif lit == "bool":
                 return self.comp.bool_t
             elif lit == "rune":

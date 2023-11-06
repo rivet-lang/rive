@@ -54,9 +54,9 @@ public func load(path: string, global_symbols: bool = false) -> !Library {
 #[boxed]
 struct Library {
     public path: string;
-    ptr: mut_anyptr;
+    ptr: rawptr;
 
-    public func address_of(self, symbol: string) -> !anyptr {
+    public func address_of(self, symbol: string) -> !rawptr {
         if ptr := unsafe { libc.dlsym(self.ptr, symbol.ptr) } {
             return ptr;
         }

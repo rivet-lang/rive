@@ -23,7 +23,7 @@ public enum Type < traits.Stringable {
         size: usize;
         is_primitive: bool;
     },
-    Anyptr: usize,
+    Rawptr: usize,
     Pointer {
         inner: Type;
         is_managed: bool;
@@ -45,7 +45,7 @@ public enum Type < traits.Stringable {
             .Int as int -> int.size,
             .Uint as uint -> uint.size,
             .Basic as basic -> basic.size,
-            .Anyptr as size -> size,
+            .Rawptr as size -> size,
             .Pointer as ptr -> ptr.size,
             .Array as arr -> arr.size,
             .Func as func_ -> func_.size,
@@ -64,7 +64,7 @@ public enum Type < traits.Stringable {
             } else {
                 "@".concat(basic.name)
             },
-            .Anyptr -> "anyptr",
+            .Rawptr -> "rawptr",
             .Pointer as ptr -> if ptr.is_managed {
                 "^"
             } else {

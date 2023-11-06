@@ -117,8 +117,8 @@ extend Checker {
                 "attempt to cast an expression that is already of type `{}`".fmt(to_type),
                 builtin_call.pos
             );
-        } else if (from_type is .Pointer and to_type is .Anyptr)
-            or (from_type is .Anyptr and to_type is .Pointer)
+        } else if (from_type is .Pointer and to_type is .Rawptr)
+            or (from_type is .Rawptr and to_type is .Pointer)
             or (from_type is .Pointer and to_type is .Pointer)
             or (from_type is .Pointer and self.table.is_int(to_type)) {
             if !self.inside_unsafe() {

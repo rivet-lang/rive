@@ -14,7 +14,7 @@ extern (C) {
     func _wyr8(p: &uint8) -> uint64;
     func _wyr4(p: &uint8) -> uint64;
     func _wyr3(p: &uint8, k: usize) -> uint64;
-    public func wyhash(key: anyptr, len: usize, seed: uint64, secret: &uint64) -> uint64;
+    public func wyhash(key: rawptr, len: usize, seed: uint64, secret: &uint64) -> uint64;
     public func wyhash64(a: uint64, b: uint64) -> uint64;
     func wyrand(seed: &uint64) -> uint64;
     func wy2u01(r: uint64) -> float64;

@@ -99,7 +99,7 @@ class Ptr(TBase):
 
     def qualstr(self):
         if str(self.typ) == "void":
-            return "mut_anyptr" if self.is_mut else "anyptr"
+            return "rawptr" if self.is_mut else "rawptr"
         elif self.is_mut:
             if self.is_indexable:
                 return f"[&]mut {self.typ.qualstr()}"
@@ -119,7 +119,7 @@ class Ptr(TBase):
 
     def __str__(self):
         if str(self.typ) == "void":
-            return "mut_anyptr" if self.is_mut else "anyptr"
+            return "rawptr" if self.is_mut else "rawptr"
         elif self.is_mut:
             if self.is_indexable:
                 return f"[&]mut {self.typ}"

@@ -26,10 +26,10 @@ extern (C) {
     public func strtoul(nptr: [&]uint8, endptr: ?&uint8, base_: int32) -> uint64;
     public func strtoull(nptr: [&]uint8, endptr: ?&uint8, base_: int32) -> uint64;
 
-    public func malloc(size: usize) -> ?mut_anyptr;
-    public func calloc(nobj: usize, size: usize) -> ?mut_anyptr;
-    public func realloc(p: ?mut_anyptr, size: usize) -> ?mut_anyptr;
-    public func free(p: anyptr);
+    public func malloc(size: usize) -> ?rawptr;
+    public func calloc(nobj: usize, size: usize) -> ?rawptr;
+    public func realloc(p: ?rawptr, size: usize) -> ?rawptr;
+    public func free(p: rawptr);
 
     public func getenv(name: [&]uint8) -> ?[&]mut uint8;
     public func setenv(name: [&]uint8, value: [&]uint8, replace: bool) -> int32;

@@ -113,14 +113,14 @@ extend Checker {
                 indirect.left_type = self.check_expr(indirect.left);
                 indirect.type = if indirect.left_type.is_pointer()
                     or (indirect.left_type is .Pointer as ptr and !ptr.is_indexable)
-                    or indirect.left_type is .Anyptr  {
+                    or indirect.left_type is .Rawptr  {
                 	indirect.is_mut = indirect.left_type.is_pointer();
                     indirect.left_type.ptr_or_ref_inner()
                 } else {
                     mut err := report.error_builder(
                         "invalid indirect for `{}`".fmt(indirect.left_type), indirect.pos
                     );
-                    if indirect.left_type is .Anyptr {
+                    if indirect.left_type is .Rawptr {
                         err.add_help(
                             "consider casting this to another pointer type, e.g. `*uint8`"
                         );
@@ -482,7 +482,7 @@ extend Checker {
             .Amp -> {
                 mut expected_pointer := false;
                 mut indexable_pointer := false;
-                if self.expected_type is .Anyptr {
+                if self.expected_type is .Rawptr {
                     expected_pointer = true;
                 } else if self.expected_type is .Pointer as ptr {
                     expected_pointer = true;
@@ -800,7 +800,6 @@ extend Checker {
                 expr_type := self.check_expr(return_expr.expr);
                 self.expected_type = old_expected_type;
                 self.check_types(expr_type, self.cur_fn.ret_type) catch |err| {
-                    expr_sym := expr_type.symbol()?;
                     mut err_b := report.error_builder(
                         err.to_string(), return_expr.expr.position()
                     );

@@ -343,7 +343,7 @@ extend Checker {
                         continue;
                     }
                     match field.type is {
-                        .Pointer, .Anyptr if !was_initted -> report.warn(
+                        .Pointer, .Rawptr if !was_initted -> report.warn(
                             "field `{}` of type `{}` must be initialized".fmt(
                                 field.name, type_sym.name
                             ), call_expr.pos
