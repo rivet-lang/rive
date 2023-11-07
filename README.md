@@ -70,7 +70,7 @@ More features that will be added in the self-hosted compiler can be seen in the 
 import std/console;
 
 func main() {
-    console.println("Hello World!");
+    console.writeln("Hello World!");
 }
 ```
 More examples in the [`examples/`](examples/) folder.
