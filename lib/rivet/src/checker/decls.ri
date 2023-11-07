@@ -1,4 +1,4 @@
-// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+ya// Copyright (C) 2023 The Rivet Developers. All rights reserved.
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
@@ -53,7 +53,7 @@ extend Checker {
                         alias_sym is ast.Const -> .Upper,
                         else -> .Snake
                     }, "alias", alias_decl.name, alias_decl.pos
-                )
+                );
             },
             .Extern as extern_decl -> {
                 self.inside_extern = true;
