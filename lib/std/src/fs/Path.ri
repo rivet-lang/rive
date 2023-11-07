@@ -9,7 +9,7 @@ import ../mem;
 import ../conv;
 
 public struct Path {
-    public alias max_path_len := libc.MAX_PATH_LEN;
+    public alias MAX_LEN := libc.MAX_PATH_LEN;
     public const SEPARATOR := #if _WINDOWS_ b'\\' #else b'/' #endif;
     public static separatorStr := #if _WINDOWS_ "\\" #else "/" #endif;
     public static delimiter := #if _WINDOWS_ ";" #else ":" #endif;
