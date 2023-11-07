@@ -47,13 +47,11 @@ extend Checker {
                 }
             },
             .Alias as alias_decl -> {
-                self.check_name_case(
-                    if alias_decl.is_typealias or alias_decl.sym is ast.TypeSym
-                        or (alias_decl.sym is ast.SymRef as sym_ref
-                            and sym_ref.ref is ast.TypeSym) {
-                        .Pascal
-                    } else {
-                        .Snake
+                alias_sym := if alias_decl.sym is ast.SymRef as sym_ref { sym_ref.ref } else { alias_decl.sym };
+                self.check_name_case(match {
+                        alias_decl.is_typealias or alias_sym is ast.TypeSym -> .Pascal,
+                        alias_sym is ast.Const -> .Upper,
+                        else -> .Snake
                     }, "alias", alias_decl.name, alias_decl.pos
                 )
             },
