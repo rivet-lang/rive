@@ -17,7 +17,7 @@ func uncatched_error(err: Throwable) {
 struct CallTrace {
     name: string;
     file: string;
-    line: usize;
+    line: uint;
 }
 
 // NOTE: 50 should be fine for now.
@@ -25,7 +25,7 @@ const RETURN_TRACE_MAX_SIZE := 50;
 
 struct ReturnTrace {
     traces: [RETURN_TRACE_MAX_SIZE]mut CallTrace;
-    mut cur_idx: usize;
+    mut cur_idx: uint;
 
     #[inline]
     func add(mut self, trace: CallTrace) {
@@ -37,7 +37,7 @@ struct ReturnTrace {
     }
 
     func print(self) {
-        mut i: usize := 0;
+        mut i: uint := 0;
         while i < self.cur_idx : i += 1 {
             trace := self.traces[i];
             console_ewriteln(

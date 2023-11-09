@@ -184,8 +184,8 @@ public enum Expr < traits.Stringable {
 
         /// Returns the number of pure arguments, that is, not named, that
         /// this call has.
-        func pure_args_count(self) -> usize {
-            mut l: usize := 0;
+        func pure_args_count(self) -> uint {
+            mut l: uint := 0;
             for arg in self.args {
                 if !arg.is_named {
                     l += 1;

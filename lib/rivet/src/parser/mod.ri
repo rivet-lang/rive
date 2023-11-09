@@ -64,12 +64,12 @@ public struct Parser {
     }
 
     #[inline]
-    func peek_token(self, n: usize) -> token.Token {
+    func peek_token(self, n: uint) -> token.Token {
         return self.tokenizer.peek_token(n - 2);
     }
 
-    func advance(mut self, n: usize) {
-        mut i: usize := 0;
+    func advance(mut self, n: uint) {
+        mut i: uint := 0;
         while i < n : i += 1 {
             self.next();
         }
@@ -143,7 +143,7 @@ public struct Parser {
 
     func decl_operator_is_used(self) -> bool {
         mut assign_was_used := false;
-        mut i: usize := 1;
+        mut i: uint := 1;
         while i < self.tokenizer.all_tokens.len : i += 1 {
             tok := self.peek_token(i);
             match tok.kind {

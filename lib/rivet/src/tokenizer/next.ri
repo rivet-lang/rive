@@ -543,7 +543,7 @@ extend Tokenizer {
 
     func read_char(mut self) -> string {
         pos := self.current_pos();
-        mut len: usize := 0;
+        mut len: uint := 0;
         start := self.pos;
 
         // set flags for advanced escapes first
@@ -587,7 +587,7 @@ extend Tokenizer {
                     ch = decode_u_escapes(ch, 0, [0]);
                 } else {
                     // find escape sequence start positions
-                    mut escapes_pos := @vec(usize);
+                    mut escapes_pos := @vec(uint);
                     for i, v in ch.as_bytes() {
                         if v == BACKSLASH {
                             escapes_pos.push(i);
@@ -638,8 +638,8 @@ extend Tokenizer {
         if start_char == LF {
             self.inc_line_number();
         }
-        mut u_escapes_pos := @vec(usize); // pos list of \uXXXX
-        mut h_escapes_pos := @vec(usize); // pos list of \xXX
+        mut u_escapes_pos := @vec(uint); // pos list of \uXXXX
+        mut h_escapes_pos := @vec(uint); // pos list of \xXX
         while {
             self.pos += 1;
             if self.pos >= self.text.len {
@@ -701,10 +701,10 @@ extend Tokenizer {
         mut lit := "";
         if start <= self.pos {
             lit = self.text[start + 1..self.pos].clone();
-            mut segment_idx: usize := 0;
+            mut segment_idx: uint := 0;
             mut str_segments := @vec(string);
             if u_escapes_pos.len + h_escapes_pos.len > 0 {
-                mut all_pos := @vec(usize, u_escapes_pos.len + h_escapes_pos.len);
+                mut all_pos := @vec(uint, u_escapes_pos.len + h_escapes_pos.len);
                 for pos1 in u_escapes_pos {
                     all_pos.push(pos1);
                 }

@@ -6,9 +6,9 @@ import core;
 
 public alias Builder := core.StringBuilder;
 
-func fill_vector(len: usize) -> []mut int32 {
+func fill_vector(len: uint) -> []mut int32 {
     mut vec := @vec(mut int32, len);
-    mut i: usize := 0;
+    mut i: uint := 0;
     while i < len : i += 1 {
         vec.push(@as(int32, i));
     }
@@ -20,7 +20,7 @@ func fill_vector(len: usize) -> []mut int32 {
 public func levenshtein_distance(a: string, b: string) -> int32 {
     f := fill_vector(b.len + 1);
     for ca in a.as_bytes() {
-        mut j: usize := 1;
+        mut j: uint := 1;
         mut fj1 := f[0];
         f[0] += 1;
         for cb in b.as_bytes() {

@@ -285,7 +285,7 @@ class Checker:
                 elif stmt.value.is_ref:
                     elem_typ = type.Ptr(elem_typ)
                 if stmt.index != None:
-                    stmt.scope.update_type(stmt.index.name, self.comp.usize_t)
+                    stmt.scope.update_type(stmt.index.name, self.comp.uint_t)
                 stmt.scope.update_type(stmt.value.name, elem_typ)
                 stmt.scope.update_is_hidden_ref(
                     stmt.value.name, stmt.value.is_mut
@@ -1013,7 +1013,7 @@ class Checker:
                     if len(expr.args) == 2:
                         arg1_t = self.check_expr(expr.args[1])
                         try:
-                            self.check_types(arg1_t, self.comp.usize_t)
+                            self.check_types(arg1_t, self.comp.uint_t)
                         except utils.CompilerError as e:
                             report.error(e.args[0], expr.args[1].pos)
                             report.note(
@@ -1068,9 +1068,9 @@ class Checker:
                                 expr.pos
                             )
                             return expr.typ
-                    expr.typ = self.comp.isize_t if expr.name == "ptr_diff" else ptr_t
+                    expr.typ = self.comp.int_t if expr.name == "ptr_diff" else ptr_t
             elif expr.name in ("size_of", "align_of"):
-                expr.typ = self.comp.usize_t
+                expr.typ = self.comp.uint_t
             elif expr.name == "type_name":
                 expr.typ = self.comp.string_t
             elif expr.name in ("unreachable", "breakpoint"):
@@ -1091,11 +1091,11 @@ class Checker:
             if expr.has_start:
                 expr.typ = self.check_expr(expr.start)
             else:
-                expr.typ = self.comp.usize_t
+                expr.typ = self.comp.uint_t
             if expr.has_end:
                 end_t = self.check_expr(expr.end)
             else:
-                end_t = self.comp.usize_t
+                end_t = self.comp.uint_t
             if expr.typ == self.comp.comptime_int_t:
                 expr.typ = end_t
             return expr.typ
@@ -1155,7 +1155,7 @@ class Checker:
                 else:
                     left_sym = left_typ.symbol()
                     if left_sym.kind == TypeKind.Array and expr.field_name == "len":
-                        expr.typ = self.comp.usize_t
+                        expr.typ = self.comp.uint_t
                     elif left_sym.kind == TypeKind.Tuple and expr.field_name.isdigit(
                     ):
                         idx = int(expr.field_name)

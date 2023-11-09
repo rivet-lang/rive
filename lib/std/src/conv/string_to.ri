@@ -31,10 +31,10 @@ public func string_to_int64(s: string) -> !int64 {
     return @as(int64, parse_int(s, 0, 64)!);
 }
 
-/// Equivalent to `parse_int(s, 0, isize.bits())`, converted to type `isize`.
+/// Equivalent to `parse_int(s, 0, int.bits())`, converted to type `int`.
 #[inline]
-public func string_to_isize(s: string) -> !isize {
-    return parse_int(s, 0, isize.bits())!;
+public func string_to_int(s: string) -> !int {
+    return parse_int(s, 0, int.bits())!;
 }
 
 /// Equivalent to `parse_uint(s, 0, 8)`, converted to type `uint8`.
@@ -61,8 +61,8 @@ public func string_to_uint64(s: string) -> !uint64 {
     return @as(uint64, parse_uint(s, 0, 64)!);
 }
 
-/// Equivalent to `parse_uint(s, 0, usize.bits())`, converted to type `usize`.
+/// Equivalent to `parse_uint(s, 0, uint.bits())`, converted to type `uint`.
 #[inline]
-public func string_to_usize(s: string) -> !usize {
-    return parse_uint(s, 0, usize.bits())!;
+public func string_to_uint(s: string) -> !uint {
+    return parse_uint(s, 0, uint.bits())!;
 }

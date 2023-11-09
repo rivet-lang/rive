@@ -62,9 +62,9 @@ typedef uint8_t uint8;
 typedef uint16_t uint16;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
-typedef ptrdiff_t isize;
-typedef size_t usize;
-typedef int64 comptime_int;
+typedef ptrdiff_t ri_int;
+typedef size_t ri_uint;
+typedef ri_int comptime_int; // TODO: remove
 
 typedef uint8 bool;
 typedef uint32 rune;

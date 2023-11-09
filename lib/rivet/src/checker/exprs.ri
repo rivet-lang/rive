@@ -146,12 +146,12 @@ extend Checker {
                 range.type = if range.has_start {
                     self.check_expr(range.start)
                 } else {
-                    self.table.usize_t
+                    self.table.uint_t
                 };
                 end_type := if range.has_end {
                     self.check_expr(range.end)
                 } else {
-                    self.table.usize_t
+                    self.table.uint_t
                 };
                 if !(self.table.is_int(range.type) or self.table.is_int(end_type)) {
                     report.error("non-integer value used as range", range.pos);
@@ -243,7 +243,7 @@ extend Checker {
 
     func check_vector_literal(mut self, mut vec_lit: ast.Expr.VectorLiteral) -> ast.Type {
         old_expected_type := self.expected_type;
-        mut size: usize := 0;
+        mut size: uint := 0;
         mut is_mut := false;
         mut has_expected_type := false;
         mut value_type := ast.Type.Void();

@@ -41,7 +41,7 @@ extend float32 < Stringable {
             return if len == -1 {
                 emptyString // fail
             } else {
-                string.from_raw_with_len(cstr, @as(usize, len))
+                string.from_raw_with_len(cstr, @as(uint, len))
             };
         }
     }
@@ -70,7 +70,7 @@ extend float64 < Stringable {
             return if len == -1 {
                 emptyString // fail
             } else {
-                string.from_raw_with_len(cstr, @as(usize, len))
+                string.from_raw_with_len(cstr, @as(uint, len))
             };
         }
     }

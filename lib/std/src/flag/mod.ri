@@ -45,7 +45,7 @@ public struct FlagParser {
     /// The original arguments to be parsed.
     original_args: []string;
     /// The index of a `--`, `none` if there is not any.
-    idx_dashdash: ?usize;
+    idx_dashdash: ?uint;
     /// All options after `--` are ignored, and will be passed to the application unmodified.
     all_after_dashdash: []string;
     /// When set, `--help` will print:
@@ -59,8 +59,8 @@ public struct FlagParser {
     mut flags: []Flag;
     /// The current list of processed args.
     mut args: []string;
-    mut max_free_args: usize;
-    mut min_free_args: usize;
+    mut max_free_args: uint;
+    mut min_free_args: uint;
     mut application_name: string;
     mut application_version: string;
     mut application_short_description: string;
@@ -130,7 +130,7 @@ public struct FlagParser {
     /// Restricts the list of free arguments (non options) to be at least `n` in length.
     /// If the user gives less free arguments to the program, the parser will return an
     /// error.
-    public func set_limit_free_args_to_at_least(mut self, n: usize) -> ! {
+    public func set_limit_free_args_to_at_least(mut self, n: uint) -> ! {
         if n > MAX_ARGS_NUMBER {
             throw error("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
         }
@@ -140,7 +140,7 @@ public struct FlagParser {
     /// Restricts the list of free arguments (non options) to be at exactly `n` in length.
     /// If the user gives more or less free arguments to the program, the parser will return
     /// an error.
-    public func set_limit_free_args_to_exactly(mut self, n: usize) -> ! {
+    public func set_limit_free_args_to_exactly(mut self, n: uint) -> ! {
         if n > MAX_ARGS_NUMBER {
             throw error("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
         }
@@ -151,7 +151,7 @@ public struct FlagParser {
     /// Restricts the list of free arguments (non options) to be between `min` and `max`
     /// in length. If the user gives more or less free arguments to the program, the parser
     /// will return an error.
-    public func set_limit_free_args(mut self, min: usize, max: usize) -> ! {
+    public func set_limit_free_args(mut self, min: uint, max: uint) -> ! {
         if min > max {
             throw error("expects `min` < `max`, got {} >= {}", min, max);
         }
@@ -200,13 +200,13 @@ public struct FlagParser {
 
     /// Returns an option with the integer value, associated with the flag in `name`.
     /// When the flag is not given by the user, it returns `none`.
-    public func int_flag(mut self, name: string, abbr: uint8, usage: string) -> ?isize {
+    public func int_flag(mut self, name: string, abbr: uint8, usage: string) -> ?int {
         self.add_flag(name, abbr, usage, "<int>");
         parsed := self.parse_value(name, abbr);
         if parsed.is_empty() {
             return none;
         }
-        return conv.string_to_isize(parsed[0]) catch 0;
+        return conv.string_to_int(parsed[0]) catch 0;
     }
 
     /// Returns an option with the string value, associated with the flag in `name`.
@@ -407,7 +407,7 @@ public struct FlagParser {
     func parse_value(mut self, long_hand: string, short_hand: uint8) -> []string {
         full := "--".concat(long_hand);
         mut found_entries := @vec(string);
-        mut to_delete := @vec(usize);
+        mut to_delete := @vec(uint);
         mut should_skip_one := false;
         for i, arg in self.args {
             if should_skip_one {
@@ -486,7 +486,7 @@ public struct FlagParser {
     }
 }
 
-public func index_of(vec: []string, value: string) -> ?usize {
+public func index_of(vec: []string, value: string) -> ?uint {
     for i, val in vec {
         if val == value {
             return i;

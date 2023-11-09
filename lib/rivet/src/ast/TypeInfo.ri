@@ -10,18 +10,18 @@ public enum TypeInfo < traits.Stringable {
     None,
     Bool,
     Rune,
-    Int {
-        size: usize;
+    SizedInt {
+        size: uint;
     },
-    Uint {
-        size: usize;
+    SizedUint {
+        size: uint;
     },
-    Isize,
-    Usize,
+    Int,
+    Uint,
     ComptimeInt,
     ComptimeFloat,
     Float {
-        size: usize;
+        size: uint;
     },
     String,
     Func: Func,
@@ -30,11 +30,11 @@ public enum TypeInfo < traits.Stringable {
     },
     Array {
         elem_type: Type;
-        size: usize;
+        size: uint;
         is_mut: bool;
         has_contains_method: bool;
     },
-    Vector{
+    Vector {
         elem_type: Type;
         is_mut: bool;
         has_contains_method: bool;
@@ -47,7 +47,7 @@ public enum TypeInfo < traits.Stringable {
         mut implements: []TypeSym;
         mut has_objects: bool;
 
-        func index_of(self, type_sym: TypeSym) -> ?usize {
+        func index_of(self, type_sym: TypeSym) -> ?uint {
             for i, ts in self.implements {
                 if ts.id == type_sym.id {
                     return i;
@@ -150,8 +150,8 @@ public enum TypeInfo < traits.Stringable {
 
     #[inline]
     public func is_primitive(self) -> bool {
-        return self is .Bool or self is .Rune or self is .Int or self is .Uint
-            or self is .Usize or self is .Isize or self is .ComptimeInt
+        return self is .Bool or self is .Rune or self is .SizedInt or self is .SizedUint
+            or self is .Uint or self is .Int or self is .ComptimeInt
             or self is .ComptimeFloat or self is .ComptimeFloat or self is .Float;
     }
 
@@ -168,10 +168,10 @@ public enum TypeInfo < traits.Stringable {
             .None -> "none",
             .Bool -> "bool",
             .Rune -> "rune",
-            .Int as int_info -> "int{}".fmt(int_info.size),
-            .Isize -> "isize",
-            .Uint as uint_info -> "uint{}".fmt(uint_info.size),
-            .Usize -> "usize",
+            .SizedInt as int_info -> "int{}".fmt(int_info.size),
+            .Int -> "int",
+            .SizedUint as uint_info -> "uint{}".fmt(uint_info.size),
+            .Uint -> "uint",
             .ComptimeInt -> "comptime_int",
             .ComptimeFloat -> "comptime_float",
             .Float as float_info -> "float{}".fmt(float_info.size),
@@ -195,7 +195,7 @@ public enum TypeInfo < traits.Stringable {
 #[boxed]
 public struct EnumVariant {
     public name: string;
-    public value: isize;
+    public value: int;
     public has_type: bool;
     public mut type: Type;
     public has_fields: bool;

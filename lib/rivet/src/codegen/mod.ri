@@ -24,8 +24,8 @@ public struct Codegen {
     mut mir: mir.ModuleIR;
     mut cur_func: mir.Func;
 
-    mut isize_t: mir.Type;
-    mut usize_t: mir.Type;
+    mut int_t: mir.Type;
+    mut uint_t: mir.Type;
     mut bool_t: mir.Type;
     mut vector_t: mir.Type;
     mut throwable_t: mir.Type;
@@ -63,12 +63,12 @@ public struct Codegen {
     }
 
     func init_types(mut self) {
-        self.isize_t = if self.table.prefs.target_is_64bit {
+        self.int_t = if self.table.prefs.target_is_64bit {
             self.type_to_mir(self.table.int64_t)
         } else {
             self.type_to_mir(self.table.int32_t)
         };
-        self.usize_t = if self.table.prefs.target_is_64bit {
+        self.uint_t = if self.table.prefs.target_is_64bit {
             self.type_to_mir(self.table.uint64_t)
         } else {
             self.type_to_mir(self.table.uint32_t)

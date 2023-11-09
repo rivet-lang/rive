@@ -7,5 +7,5 @@ public trait Stringable {
 }
 
 public trait Hashable {
-    func hash(self) -> usize;
+    func hash(self) -> uint;
 }

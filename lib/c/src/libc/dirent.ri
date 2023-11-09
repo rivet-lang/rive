@@ -3,8 +3,8 @@
 // be found in the LICENSE file.
 
 public struct dirent {
-    public d_ino: usize;
-    public d_off: usize;
+    public d_ino: uint;
+    public d_off: uint;
     public d_reclen: uint16;
     public d_type: uint8;
     public d_name: [256]uint8;

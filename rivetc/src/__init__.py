@@ -35,12 +35,12 @@ class Compiler:
         self.int16_t = type.Type(self.universe[6])
         self.int32_t = type.Type(self.universe[7])
         self.int64_t = type.Type(self.universe[8])
-        self.isize_t = type.Type(self.universe[9])
+        self.int_t = type.Type(self.universe[9])
         self.uint8_t = type.Type(self.universe[10])
         self.uint16_t = type.Type(self.universe[11])
         self.uint32_t = type.Type(self.universe[12])
         self.uint64_t = type.Type(self.universe[13])
-        self.usize_t = type.Type(self.universe[14])
+        self.uint_t = type.Type(self.universe[14])
         self.comptime_int_t = type.Type(self.universe[15])
         self.comptime_float_t = type.Type(self.universe[16])
         self.float32_t = type.Type(self.universe[17])
@@ -300,14 +300,14 @@ class Compiler:
 
     def is_signed_int(self, typ):
         return typ in (
-            self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.isize_t,
+            self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.int_t,
             self.comptime_int_t
         )
 
     def is_unsigned_int(self, typ):
         return typ in (
             self.uint8_t, self.uint16_t, self.uint32_t, self.uint64_t,
-            self.usize_t
+            self.uint_t
         )
 
     def is_float(self, typ):
@@ -340,7 +340,7 @@ class Compiler:
             return 32
         elif typ_sym.kind in (sym.TypeKind.Int64, sym.TypeKind.Uint64):
             return 64
-        elif typ_sym.kind in (sym.TypeKind.Isize, sym.TypeKind.Usize):
+        elif typ_sym.kind in (sym.TypeKind.Int, sym.TypeKind.Uint):
             return 32 if self.prefs.target_bits == prefs.Bits.X32 else 64
         else:
             return -1
@@ -374,7 +374,7 @@ class Compiler:
             pass
         elif sy.kind == sym.TypeKind.Alias:
             size, align = self.type_size(sy.info.parent)
-        elif sy.kind in (sym.TypeKind.Usize, sym.TypeKind.Isize):
+        elif sy.kind in (sym.TypeKind.Uint, sym.TypeKind.Int):
             size, align = self.pointer_size, self.pointer_size
         elif sy.kind in (
             sym.TypeKind.Int8, sym.TypeKind.Uint8, sym.TypeKind.Bool

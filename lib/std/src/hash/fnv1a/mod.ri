@@ -16,7 +16,7 @@ const FNV64_OFFSET_BASIS: uint64 := 14695981039346656037;
 #[inline]
 public func sum32(data: []uint8) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
-    mut i: usize := 0;
+    mut i: uint := 0;
     while i < data.len : i += 1 {
         hash = (hash ^ @as(uint32, data[i])) * FNV32_PRIME;
     }
@@ -26,9 +26,9 @@ public func sum32(data: []uint8) -> uint32 {
 /// Returns a fnv1a hash of `data_len` bytes starting at
 /// the address in the given &byte pointer `data`.
 #[inline; unsafe]
-public func sum32_bytes(data: [&]uint8, data_len: usize) -> uint32 {
+public func sum32_bytes(data: [&]uint8, data_len: uint) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
-    mut i: usize := 0;
+    mut i: uint := 0;
     while i < data_len : i += 1 {
         hash = unsafe { (hash ^ @as(uint32, data[i])) * FNV32_PRIME };
     }
@@ -39,7 +39,7 @@ public func sum32_bytes(data: [&]uint8, data_len: usize) -> uint32 {
 #[inline]
 public func sum32_string(data: string) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
-    mut i: usize := 0;
+    mut i: uint := 0;
     while i < data.len : i += 1 {
         hash = (hash ^ @as(uint32, data[i])) * FNV32_PRIME;
     }
@@ -51,7 +51,7 @@ public func sum32_string(data: string) -> uint32 {
 #[inline]
 public func sum64(data: []uint8) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
-    mut i: usize := 0;
+    mut i: uint := 0;
     while i < data.len : i += 1 {
         hash = (hash ^ @as(uint64, data[i])) * FNV64_PRIME;
     }
@@ -61,9 +61,9 @@ public func sum64(data: []uint8) -> uint64 {
 /// Returns a fnv1a hash of `data_len` bytes starting at
 /// the address in the given &byte pointer `data`.
 #[inline; unsafe]
-public func sum64_bytes(data: [&]uint8, data_len: usize) -> uint64 {
+public func sum64_bytes(data: [&]uint8, data_len: uint) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
-    mut i: usize := 0;
+    mut i: uint := 0;
     while i < data_len : i += 1 {
         hash = unsafe { (hash ^ @as(uint64, data[i])) * FNV64_PRIME };
     }
@@ -74,7 +74,7 @@ public func sum64_bytes(data: [&]uint8, data_len: usize) -> uint64 {
 #[inline]
 public func sum64_string(data: string) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
-    mut i: usize := 0;
+    mut i: uint := 0;
     while i < data.len : i += 1 {
         hash = (hash ^ @as(uint32, data[i])) * FNV64_PRIME;
     }

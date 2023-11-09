@@ -51,12 +51,12 @@ public func console_is_atty(fd: int32) -> bool {
 }
 
 #[unsafe]
-func write_buf_to_fd(fd: int32, buf: [&]uint8, len: usize) {
+func write_buf_to_fd(fd: int32, buf: [&]uint8, len: uint) {
     unsafe {
-        mut x: isize := 0;
-        mut remaining_bytes := @as(isize, len);
+        mut x: int := 0;
+        mut remaining_bytes := @as(int, len);
         while remaining_bytes > 0 {
-            x = libc.write(fd, @ptr_add(buf, x), @as(usize, remaining_bytes));
+            x = libc.write(fd, @ptr_add(buf, x), @as(uint, remaining_bytes));
             remaining_bytes -= x;
         }
     }

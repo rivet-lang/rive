@@ -10,40 +10,40 @@ import std/process;
 public enum Type < traits.Stringable {
     Void,
     Never,
-    Int {
-        bits: usize;
-        size: usize;
+    SizedInt {
+        bits: uint;
+        size: uint;
     },
-    Uint {
-        bits: usize;
-        size: usize;
+    SizedUint {
+        bits: uint;
+        size: uint;
     },
     Basic {
         name: string;
-        size: usize;
+        size: uint;
         is_primitive: bool;
     },
-    Rawptr: usize,
+    Rawptr: uint,
     Pointer {
         inner: Type;
         is_managed: bool;
-        size: usize;
+        size: uint;
     },
     Array {
         elem_type: Type;
-        count: usize;
-        size: usize;
+        count: uint;
+        size: uint;
     },
     Func {
         args: []Type;
         ret_type: Type;
-        size: usize;
+        size: uint;
     };
 
-    public func size(self) -> usize {
+    public func size(self) -> uint {
         return match self is {
-            .Int as int -> int.size,
-            .Uint as uint -> uint.size,
+            .SizedInt as int -> int.size,
+            .SizedUint as uint -> uint.size,
             .Basic as basic -> basic.size,
             .Rawptr as size -> size,
             .Pointer as ptr -> ptr.size,
@@ -57,8 +57,8 @@ public enum Type < traits.Stringable {
         return match self is {
             .Void -> "void",
             .Never -> "never",
-            .Int as int -> "int{}".fmt(int.bits),
-            .Uint as uint -> "uint{}".fmt(uint.bits),
+            .SizedInt as int -> "int{}".fmt(int.bits),
+            .SizedUint as uint -> "uint{}".fmt(uint.bits),
             .Basic as basic -> if basic.is_primitive {
                 basic.name
             } else {

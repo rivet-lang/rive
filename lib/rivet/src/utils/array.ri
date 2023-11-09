@@ -14,7 +14,7 @@ public func join(vec: []string, s: string) -> string {
     };
 }
 
-public func index_of(vec: []string, value: string) -> usize {
+public func index_of(vec: []string, value: string) -> uint {
     for i, val in vec {
         if val == value {
             return i;

@@ -91,8 +91,8 @@ public struct File {
                 );
             }
 
-            res := @as([&]mut uint8, mem.alloc(@as(usize, allocate) + 1)!);
-            nelements := libc.fread(res, 1, @as(usize, allocate), self.f);
+            res := @as([&]mut uint8, mem.alloc(@as(uint, allocate) + 1)!);
+            nelements := libc.fread(res, 1, @as(uint, allocate), self.f);
 
             if self.is_eof() and libc.ferror(self.f) != 0 {
                 mem.dealloc(res);

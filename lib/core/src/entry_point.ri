@@ -10,10 +10,10 @@ extern (Rivet) {
     func drop_globals();
 }
 
-func init_args(_argc: usize, _argv: [&][&]uint8) {
+func init_args(_argc: uint, _argv: [&][&]uint8) {
     unsafe {
         ARGS = @vec(string, _argc);
-        mut i: usize := 0;
+        mut i: uint := 0;
         while i < _argc : i += 1 {
             ARGS.push(string.from_raw(_argv[i]));
         }
@@ -29,7 +29,7 @@ func main(
 #endif
 ) {
     setup_signals_handler();
-    init_args(@as(usize, _argc), _argv);
+    init_args(@as(uint, _argc), _argv);
 #if !_TESTS_ // `init_string_lits` is called after
     init_string_lits();
 #endif

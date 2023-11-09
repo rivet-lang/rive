@@ -6,8 +6,8 @@
 /// texts character by character, peek for the next characters, go back, etc.
 public struct TextScanner {
     public input: string;
-    public len: usize;
-    mut pos: usize; // current position; pos is always kept in [0, .len]
+    public len: uint;
+    mut pos: uint; // current position; pos is always kept in [0, .len]
 
     /// Returns a stack allocated instance of TextScanner.
     public func new(input: string) -> Self {
@@ -29,7 +29,7 @@ public struct TextScanner {
     /// Skips ahead `n` characters, stopping at the end of the input; `skip` is
     /// slightly faster than `.next()`.
     #[inline]
-    public func skip(mut self, n: usize := 1) {
+    public func skip(mut self, n: uint := 1) {
         self.pos += n;
         if self.pos > self.len {
             self.pos = self.len;
@@ -40,7 +40,7 @@ public struct TextScanner {
     /// it can't peek `n` characters ahead.
     /// Unlike `.next()`, `.peek()` does not change the state of the scanner.
     #[inline]
-    public func peek(&self, n: usize := 0) -> ?uint8 {
+    public func peek(&self, n: uint := 0) -> ?uint8 {
         if self.pos + n < self.len {
             return self.input[self.pos + n];
         }
@@ -48,7 +48,7 @@ public struct TextScanner {
     }
 
     /// Goes back `n` characters from the current scanner position.
-    public func back(mut self, n: usize := 1) {
+    public func back(mut self, n: uint := 1) {
         self.pos -= n;
         if self.pos > self.len {
             self.pos = self.len;
@@ -59,7 +59,7 @@ public struct TextScanner {
     /// it can't peek `n` characters back.
     /// Unlike `.back()`, `.peek_back()` does not change the state of the scanner.
     #[inline]
-    public func peek_back(&self, n: usize := 1) -> ?uint8 {
+    public func peek_back(&self, n: uint := 1) -> ?uint8 {
         offset := n + 1;
         if self.pos >= offset {
             return self.input[self.pos - offset];
@@ -71,7 +71,7 @@ public struct TextScanner {
     /// of the input text.
     /// NOTE: after `c := ts.next()`, `ts.current()` will also return `c`.
     #[inline]
-    public func current(self) -> ?usize {
+    public func current(self) -> ?uint {
         if self.pos > 0 {
             return self.input[self.pos - 1];
         }
@@ -86,7 +86,7 @@ public struct TextScanner {
     }
 
     /// Returns how many characters remain from current position.
-    public func remaining(&self) -> usize {
+    public func remaining(&self) -> uint {
         return self.len - self.pos;
     }
 

@@ -5,16 +5,16 @@
 // TODO: remove file, use Map![K, V] instead
 
 #[boxed]
-struct StringUsize {
+struct StringUint {
     public key: string;
-    public mut value: usize;
+    public mut value: uint;
 }
 
 #[boxed]
-public struct MapStringUsize {
-    mut pairs: []mut StringUsize;
+public struct MapStringUint {
+    mut pairs: []mut StringUint;
 
-    public func set(mut self, key: string, value: usize) {
+    public func set(mut self, key: string, value: uint) {
         for pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
@@ -22,10 +22,10 @@ public struct MapStringUsize {
             }
         }
         // new value
-        self.pairs.push(StringUsize(key, value));
+        self.pairs.push(StringUint(key, value));
     }
 
-    public func get(self, key: string) -> ?usize {
+    public func get(self, key: string) -> ?uint {
         for pair in self.pairs {
             if pair.key == key {
                 return pair.value;
@@ -49,7 +49,7 @@ public struct MapStringUsize {
     }
 
     #[inline]
-    public func len(self) -> usize {
+    public func len(self) -> uint {
         return self.pairs.len;
     }
 }
@@ -63,7 +63,7 @@ struct StringArrayOfStrings {
 
 public struct MapStringArrayOfStringsIterator {
     ref: MapStringArrayOfStrings;
-    mut idx: usize;
+    mut idx: uint;
 
     #[inline]
     public func next(mut self) -> ?StringArrayOfStrings {
@@ -120,7 +120,7 @@ public struct MapStringArrayOfStrings {
     }
 
     #[inline]
-    public func len(self) -> usize {
+    public func len(self) -> uint {
         return self.pairs.len;
     }
 }
@@ -170,7 +170,7 @@ public struct MapStringBool {
     }
 
     #[inline]
-    public func len(self) -> usize {
+    public func len(self) -> uint {
         return self.pairs.len;
     }
 }

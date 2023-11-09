@@ -156,9 +156,9 @@ extend Codegen {
                 if self.table.is_int(type) {
                     bits := self.table.int_bits(type);
                     if self.table.is_signed_int(type) {
-                        .Int(bits, size)
+                        .SizedInt(bits, size)
                     } else {
-                        .Uint(bits, size)
+                        .SizedUint(bits, size)
                     }
                 } else if mut type_sym := type.symbol() {
                     if type_sym.is_primitive() {

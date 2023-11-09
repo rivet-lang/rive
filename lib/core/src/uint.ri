@@ -73,8 +73,8 @@ extend uint8 < Stringable {
 
     /// Calculates length to read from the first byte.
     #[inline]
-    public func len_utf8(self) -> usize {
-        return @as(usize, (@as(uint64, 0xE5000000) >> ((self >> 3) & 0x1E) & 3) + 1);
+    public func len_utf8(self) -> uint {
+        return @as(uint, (@as(uint64, 0xE5000000) >> ((self >> 3) & 0x1E) & 3) + 1);
     }
 
     /// Returns the value of `self` as a valid `rune`.
@@ -121,7 +121,7 @@ extend uint32 < Stringable {
             return "0";
         }
         unsafe {
-            max: usize := 12;
+            max: uint := 12;
             mut n := self.*;
             mut d: uint32 := 0;
 
@@ -167,7 +167,7 @@ extend uint64 < Stringable {
             mut d: uint64 := 0;
 
             max := 20;
-            mut index := @as(usize, max);
+            mut index := @as(uint, max);
             buf := @as([&]mut uint8, internal_alloc(index + 1));
             buf[index] = 0;
             index -= 1;
@@ -189,15 +189,15 @@ extend uint64 < Stringable {
                 index += 1;
             }
 
-            diff := @as(usize, max) - index;
+            diff := @as(uint, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
     }
 }
 
-extend usize < Stringable {
-    public const MAX: usize := @as(usize, #if _x64_ uint64.MAX #else uint32.MAX #endif);
+extend uint < Stringable {
+    public const MAX: uint := @as(uint, #if _x64_ uint64.MAX #else uint32.MAX #endif);
 
     #[inline]
     public func bits() -> uint32 {

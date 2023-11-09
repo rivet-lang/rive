@@ -13,20 +13,20 @@ import ../utils;
 public static mut reportTable := ReportTable();
 
 #[inline]
-public func total_errors() -> usize {
+public func total_errors() -> uint {
     return reportTable.errors;
 }
 
 #[inline]
-public func total_warns() -> usize {
+public func total_warns() -> uint {
     return reportTable.warns;
 }
 
 #[boxed]
 struct ReportTable {
     public mut prefs: prefs.Prefs;
-    public mut errors: usize;
-    public mut warns: usize;
+    public mut errors: uint;
+    public mut warns: uint;
 
     mut last_pos: token.Pos;
 }
@@ -151,7 +151,7 @@ func formatted_single_line(pos: token.Pos) {
 func formatted_multi_line(pos: token.Pos) {
     if lines := utils.sourceCache.find_lines_between(pos.file, pos.line, pos.end_line + 1) {
         mut ellipsis := false;
-        max: usize := if lines.len > 8 { 4 } else { 2 };
+        max: uint := if lines.len > 8 { 4 } else { 2 };
         for line_nr, line in lines {
             if line_nr + pos.line == pos.line {
                 mut sb := strings.Builder.new(line.len);
@@ -180,8 +180,8 @@ func formatted_multi_line(pos: token.Pos) {
     }
 }
 
-func write_spaces(mut sb: strings.Builder, start_column: usize, line: string) {
-    mut i: usize := 0;
+func write_spaces(mut sb: strings.Builder, start_column: uint, line: string) {
+    mut i: uint := 0;
     while i < start_column {
         b := line[i];
         if b.is_space() {

@@ -53,7 +53,7 @@ extend int32 < Stringable {
             is_neg = true;
         }
         unsafe {
-            mut index := @as(usize, max);
+            mut index := @as(uint, max);
             buf := @as([&]mut uint8, internal_alloc(index + 1));
             buf[index] = 0;
             index -= 1;
@@ -81,7 +81,7 @@ extend int32 < Stringable {
                 buf[index] = b'-';
             }
 
-            diff := @as(usize, max) - index;
+            diff := @as(uint, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
@@ -113,7 +113,7 @@ extend int64 < Stringable {
         }
         unsafe {
             max := 20;
-            mut index := @as(usize, max);
+            mut index := @as(uint, max);
             buf := @as([&]mut uint8, internal_alloc(index + 1));
             buf[index] = 0;
             index -= 1;
@@ -122,10 +122,10 @@ extend int64 < Stringable {
                 n1 := n / 100;
                 d = @as(int64, @as(uint32, n - (n1 * 100))) << @as(int64, 1);
                 n = n1;
-                buf[index] = digitPairs.ptr[@as(usize, d)];
+                buf[index] = digitPairs.ptr[@as(uint, d)];
                 index -= 1;
                 d += 1;
-                buf[index] = digitPairs.ptr[@as(usize, d)];
+                buf[index] = digitPairs.ptr[@as(uint, d)];
                 index -= 1;
             }
             index += 1;
@@ -141,16 +141,16 @@ extend int64 < Stringable {
                 buf[index] = b'-';
             }
 
-            diff := @as(usize, max) - index;
+            diff := @as(uint, max) - index;
             mem_move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
     }
 }
 
-extend isize < Stringable {
-    public const MIN: isize := @as(isize, #if _x64_ int64.MIN #else int32.MIN #endif);
-    public const MAX: isize := @as(isize, #if _x64_ int64.MAX #else int32.MAX #endif);
+extend int < Stringable {
+    public const MIN: int := @as(int, #if _x64_ int64.MIN #else int32.MIN #endif);
+    public const MAX: int := @as(int, #if _x64_ int64.MAX #else int32.MAX #endif);
 
     #[inline]
     public func bits() -> uint32 {

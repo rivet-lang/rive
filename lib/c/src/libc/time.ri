@@ -3,6 +3,6 @@
 // be found in the LICENSE file.
 
 public struct timespec {
-    tv_sec: isize;
-    tv_nsec: isize;
+    tv_sec: int;
+    tv_nsec: int;
 }

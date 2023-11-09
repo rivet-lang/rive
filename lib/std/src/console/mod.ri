@@ -18,12 +18,12 @@ public func readln(prompt: string := "") -> ?string {
         write(prompt);
     }
     _ = unsafe { libc.fflush(libc.stdout) };
-    max: usize := 0;
+    max: uint := 0;
     buf: ?[&]uint8 := none;
     nr_chars := unsafe { libc.getline(&buf, &max, libc.stdin) };
     res := unsafe {
         string.from_raw_with_len(
-            buf, if nr_chars < 0 { 0 } else { @as(usize, nr_chars) }
+            buf, if nr_chars < 0 { 0 } else { @as(uint, nr_chars) }
         ).trim_right("\r\n")
     };
     return if res.len > 0 {

@@ -115,7 +115,7 @@ public struct VTable {
 #[boxed]
 public struct Func < traits.Stringable {
     public name: string;
-    public mut args_len: usize;
+    public mut args_len: uint;
     public ret_type: Type;
     public is_variadic: bool;
     public is_extern: bool;
@@ -200,7 +200,7 @@ public enum VarLevel {
 
 #[boxed]
 public struct Var {
-    public mut id: usize;
+    public mut id: uint;
     public dbg_name: string;
     public level: VarLevel;
     public type: Type;
@@ -228,7 +228,7 @@ public struct Var {
         return none;
     }
 
-    public func get_field_by_id(self, id: usize) -> ?Var {
+    public func get_field_by_id(self, id: uint) -> ?Var {
         for field in self.fields {
             if field.id == id {
                 return field;

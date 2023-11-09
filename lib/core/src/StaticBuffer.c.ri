@@ -6,7 +6,7 @@ import c/libc;
 
 struct StaticBuffer {
     buf: [25]mut uint8;
-    mut len: usize;
+    mut len: uint;
 
     public func push(mut self, byte: uint8) {
         if self.len > self.buf.len {
@@ -21,9 +21,9 @@ struct StaticBuffer {
         return unsafe { libc.strtoul(&self.buf[0], none, 10) };
     }
 
-    public func as_isize(&self) -> isize {
+    public func as_int(&self) -> int {
         self.buf[self.len] = 0;
-        return unsafe { @as(isize, libc.strtol(&self.buf[0], none, 10))};
+        return unsafe { @as(int, libc.strtol(&self.buf[0], none, 10))};
     }
 
     public func as_string(&self) -> string {

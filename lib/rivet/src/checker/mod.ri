@@ -28,7 +28,7 @@ public struct Checker {
     mut expected_type: ast.Type;
     mut scope_returns: bool;
     mut defer_stmts: []ast.Stmt.Defer;
-    mut unsafe_operations: usize;
+    mut unsafe_operations: uint;
 
     public func check_files(mut self, source_files: []ast.SourceFile) {
         // check global variables

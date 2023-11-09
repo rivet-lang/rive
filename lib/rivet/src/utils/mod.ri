@@ -13,12 +13,12 @@ public const CR: uint8 := 13;
 public static mut stderrSupportStyles := styles.stderr_support_styles();
 
 #[inline]
-public func min(a: usize, b: usize) -> usize {
+public func min(a: uint, b: uint) -> uint {
    return if a < b { a } else { b };
 }
 
 #[inline]
-public func max(a: usize, b: usize) -> usize {
+public func max(a: uint, b: uint) -> uint {
    return if a > b { a } else { b };
 }
 
@@ -81,8 +81,8 @@ public func green(msg: string) -> string {
 
 /// Rounds the number `n` up to the next mult
 /// NOTE: `multiple` must be a power of 2.#[inline]
-public func round_up(n: usize, multiple: usize) -> usize {
-    n_ := @as(isize, n);
-    multiple_ := @as(isize, multiple);
-    return @as(usize, (n_ + multiple_ - 1) & (-multiple_));
+public func round_up(n: uint, multiple: uint) -> uint {
+    n_ := @as(int, n);
+    multiple_ := @as(int, multiple);
+    return @as(uint, (n_ + multiple_ - 1) & (-multiple_));
 }

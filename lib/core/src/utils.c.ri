@@ -3,12 +3,12 @@
 // be found in the LICENSE file.
 
 struct EnumInfo {
-    _rc_: usize;
-    _id_: usize;
+    _rc_: uint;
+    _id_: uint;
     obj: rawptr;
 }
 
-func enum_cast(ptr: rawptr, expected_id: usize) -> rawptr {
+func enum_cast(ptr: rawptr, expected_id: uint) -> rawptr {
     enum_info := unsafe { @as(&EnumInfo, ptr) };
     if enum_info._id_ != expected_id {
         // TODO: replace indexes with names
@@ -21,7 +21,7 @@ func enum_cast(ptr: rawptr, expected_id: usize) -> rawptr {
     return enum_info.obj;
 }
 
-func trait_cast(got_obj: rawptr, got_id: usize, expected_id: usize) -> rawptr {
+func trait_cast(got_obj: rawptr, got_id: uint, expected_id: uint) -> rawptr {
     if got_id != expected_id {
         // TODO: replace indexes with names
         console_ewriteln(

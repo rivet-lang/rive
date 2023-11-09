@@ -13,8 +13,8 @@ public struct UnknownFlagError < Throwable {
 }
 
 public struct ArgsCountError < Throwable {
-    got: usize;
-    want: usize;
+    got: uint;
+    want: uint;
 
     public func to_string(&self) -> string {
         return if self.want == 0 {

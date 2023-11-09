@@ -1,5 +1,5 @@
 extern (C) {
-    func malloc(sz: usize) -> rawptr;
+    func malloc(sz: uint) -> rawptr;
 }
 
 struct St {

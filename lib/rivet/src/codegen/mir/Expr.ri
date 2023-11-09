@@ -9,7 +9,7 @@ import std/strings;
 public enum Expr < traits.Stringable {
     Empty,
     IntConst {
-        value: isize;
+        value: int;
     },
     FloatConst {
         value: float64;
