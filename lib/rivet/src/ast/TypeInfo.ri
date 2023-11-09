@@ -34,7 +34,7 @@ public enum TypeInfo < traits.Stringable {
         is_mut: bool;
         has_contains_method: bool;
     },
-    Vector{
+    Vector {
         elem_type: Type;
         is_mut: bool;
         has_contains_method: bool;
