@@ -2719,7 +2719,7 @@ class Codegen:
         value = value if is_ptr else ir.Inst(
             ir.InstKind.Call, [
                 ir.Name("_R4core12internal_dupF"), value,
-                ir.IntLit(ir.Name("usize"), str(size))
+                ir.IntLit(ir.UINT_T, str(size))
             ]
         )
         if value_sym.kind == TypeKind.Trait:
@@ -2949,6 +2949,10 @@ class Codegen:
                 return ir.Type(mangle_symbol(typ_sym)).ptr(True)
             return ir.Type(str(typ_sym.info.underlying_typ))
         elif typ_sym.kind.is_primitive():
+            if typ_sym.name == "isize":
+                return ir.INT_T
+            if typ_sym.name == "usize":
+                return ir.UINT_T
             return ir.Type(typ_sym.name)
         res = ir.Type(mangle_symbol(typ_sym))
         if typ_sym.is_boxed():
