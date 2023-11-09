@@ -127,7 +127,7 @@ extend Parser {
                         "int16" -> .Basic(self.table.int16_sym, pos: expr_pos),
                         "int32" -> .Basic(self.table.int32_sym, pos: expr_pos),
                         "int64" -> .Basic(self.table.int64_sym, pos: expr_pos),
-                        "isize" -> .Basic(self.table.isize_sym, pos: expr_pos),
+                        "int" -> .Basic(self.table.int_sym, pos: expr_pos),
                         "uint8" -> .Basic(self.table.uint8_sym, pos: expr_pos),
                         "uint16" -> .Basic(self.table.uint16_sym, pos: expr_pos),
                         "uint32" -> .Basic(self.table.uint32_sym, pos: expr_pos),

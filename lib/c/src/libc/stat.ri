@@ -17,13 +17,13 @@ public struct Stat {
     __pad0: uint32;
     public rdev: dev_t;
     public size: off_t;
-    public blksize: isize;
+    public blksize: int;
     public blocks: int64;
 
     public atim: timespec;
     public mtim: timespec;
     public ctim: timespec;
-    __unused: [3]isize;
+    __unused: [3]int;
 }
 #endif
 

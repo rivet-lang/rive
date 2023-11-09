@@ -169,7 +169,7 @@ public enum TypeInfo < traits.Stringable {
             .Bool -> "bool",
             .Rune -> "rune",
             .Int as int_info -> "int{}".fmt(int_info.size),
-            .Isize -> "isize",
+            .Isize -> "int",
             .Uint as uint_info -> "uint{}".fmt(uint_info.size),
             .Usize -> "usize",
             .ComptimeInt -> "comptime_int",
@@ -195,7 +195,7 @@ public enum TypeInfo < traits.Stringable {
 #[boxed]
 public struct EnumVariant {
     public name: string;
-    public value: isize;
+    public value: int;
     public has_type: bool;
     public mut type: Type;
     public has_fields: bool;

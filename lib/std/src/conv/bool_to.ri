@@ -8,6 +8,6 @@ public func bool_to_usize(b: bool) -> usize {
 }
 
 #[inline]
-public func bool_to_isize(b: bool) -> isize {
+public func bool_to_int(b: bool) -> int {
     return if b { 1 } else { 0 };
 }

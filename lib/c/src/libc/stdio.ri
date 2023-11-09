@@ -115,5 +115,5 @@ extern (C) {
 	public func popen(cmd: [&]uint8, modes: [&]uint8) -> ?&mut FILE;
 	public func pclose(stream: &mut FILE) -> int32;
 
-	public func getline(lineptr: &?[&]uint8, n: &usize, stream: &mut FILE) -> isize;
+	public func getline(lineptr: &?[&]uint8, n: &usize, stream: &mut FILE) -> int;
 }

@@ -21,9 +21,9 @@ struct StaticBuffer {
         return unsafe { libc.strtoul(&self.buf[0], none, 10) };
     }
 
-    public func as_isize(&self) -> isize {
+    public func as_int(&self) -> int {
         self.buf[self.len] = 0;
-        return unsafe { @as(isize, libc.strtol(&self.buf[0], none, 10))};
+        return unsafe { @as(int, libc.strtol(&self.buf[0], none, 10))};
     }
 
     public func as_string(&self) -> string {

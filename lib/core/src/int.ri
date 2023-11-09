@@ -148,9 +148,9 @@ extend int64 < Stringable {
     }
 }
 
-extend isize < Stringable {
-    public const MIN: isize := @as(isize, #if _x64_ int64.MIN #else int32.MIN #endif);
-    public const MAX: isize := @as(isize, #if _x64_ int64.MAX #else int32.MAX #endif);
+extend int < Stringable {
+    public const MIN: int := @as(int, #if _x64_ int64.MIN #else int32.MIN #endif);
+    public const MAX: int := @as(int, #if _x64_ int64.MAX #else int32.MAX #endif);
 
     #[inline]
     public func bits() -> uint32 {

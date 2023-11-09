@@ -1068,7 +1068,7 @@ class Checker:
                                 expr.pos
                             )
                             return expr.typ
-                    expr.typ = self.comp.isize_t if expr.name == "ptr_diff" else ptr_t
+                    expr.typ = self.comp.int_t if expr.name == "ptr_diff" else ptr_t
             elif expr.name in ("size_of", "align_of"):
                 expr.typ = self.comp.usize_t
             elif expr.name == "type_name":

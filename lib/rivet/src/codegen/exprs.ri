@@ -13,14 +13,14 @@ extend Codegen {
             .Paren as paren -> self.gen_expr(paren.expr),
             //.Ident -> {},
             .BoolLiteral as bool_lit -> .Const(
-                .IntConst(conv.bool_to_isize(bool_lit.value)), self.bool_t
+                .IntConst(conv.bool_to_int(bool_lit.value)), self.bool_t
             ),
             .IntegerLiteral as int_lit -> .Const(
-                .IntConst(conv.string_to_isize(int_lit.value) catch @unreachable()),
+                .IntConst(conv.string_to_int(int_lit.value) catch @unreachable()),
                 self.usize_t
             ),
             .FloatLiteral as float_lit -> .Const(
-                .IntConst(conv.string_to_isize(float_lit.value) catch @unreachable()),
+                .IntConst(conv.string_to_int(float_lit.value) catch @unreachable()),
                 self.usize_t
             ),
             else -> .Empty()

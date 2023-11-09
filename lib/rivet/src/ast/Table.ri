@@ -32,7 +32,7 @@ public struct Table {
     public mut int16_sym: TypeSym;
     public mut int32_sym: TypeSym;
     public mut int64_sym: TypeSym;
-    public mut isize_sym: TypeSym;
+    public mut int_sym: TypeSym;
     public mut uint8_sym: TypeSym;
     public mut uint16_sym: TypeSym;
     public mut uint32_sym: TypeSym;
@@ -53,7 +53,7 @@ public struct Table {
     public mut int16_t: Type;
     public mut int32_t: Type;
     public mut int64_t: Type;
-    public mut isize_t: Type;
+    public mut int_t: Type;
     public mut uint8_t: Type;
     public mut uint16_t: Type;
     public mut uint32_t: Type;
@@ -92,7 +92,7 @@ public struct Table {
         self.int16_sym = self.universe.scope.find_type_symbol_by_index_or_panic(3);
         self.int32_sym = self.universe.scope.find_type_symbol_by_index_or_panic(4);
         self.int64_sym = self.universe.scope.find_type_symbol_by_index_or_panic(5);
-        self.isize_sym = self.universe.scope.find_type_symbol_by_index_or_panic(6);
+        self.int_sym = self.universe.scope.find_type_symbol_by_index_or_panic(6);
         self.uint8_sym = self.universe.scope.find_type_symbol_by_index_or_panic(7);
         self.uint16_sym = self.universe.scope.find_type_symbol_by_index_or_panic(8);
         self.uint32_sym = self.universe.scope.find_type_symbol_by_index_or_panic(9);
@@ -110,7 +110,7 @@ public struct Table {
         self.int16_t = .Basic(self.int16_sym);
         self.int32_t = .Basic(self.int32_sym);
         self.int64_t = .Basic(self.int64_sym);
-        self.isize_t = .Basic(self.isize_sym);
+        self.int_t = .Basic(self.int_sym);
         self.uint8_t = .Basic(self.uint8_sym);
         self.uint16_t = .Basic(self.uint16_sym);
         self.uint32_t = .Basic(self.uint32_sym);
@@ -220,7 +220,7 @@ public struct Table {
     #[inline]
     public func is_signed_int(self, type: Type) -> bool {
         return type in [
-            self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.isize_t,
+            self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.int_t,
             self.comptime_int_t
         ];
     }
@@ -500,7 +500,7 @@ public func universe() -> Module {
             TypeSym(name: "int16", info: .Int(16)),
             TypeSym(name: "int32", info: .Int(32)),
             TypeSym(name: "int64", info: .Int(64)),
-            TypeSym(name: "isize", info: .Isize()),
+            TypeSym(name: "int", info: .Isize()),
             TypeSym(name: "uint8", info: .Uint(8)),
             TypeSym(name: "uint16", info: .Uint(16)),
             TypeSym(name: "uint32", info: .Uint(32)),

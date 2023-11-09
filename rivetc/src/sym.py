@@ -394,7 +394,7 @@ class TypeKind(Enum):
         elif self == TypeKind.Int64:
             return "int64"
         elif self == TypeKind.Isize:
-            return "isize"
+            return "int"
         elif self == TypeKind.Uint8:
             return "uint8"
         elif self == TypeKind.Uint16:
@@ -683,7 +683,7 @@ def universe():
     uni.add(Type(True, "int16", TypeKind.Int16))
     uni.add(Type(True, "int32", TypeKind.Int32))
     uni.add(Type(True, "int64", TypeKind.Int64))
-    uni.add(Type(True, "isize", TypeKind.Isize))
+    uni.add(Type(True, "int", TypeKind.Isize))
     uni.add(Type(True, "uint8", TypeKind.Uint8))
     uni.add(Type(True, "uint16", TypeKind.Uint16))
     uni.add(Type(True, "uint32", TypeKind.Uint32))

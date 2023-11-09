@@ -35,7 +35,7 @@ class Compiler:
         self.int16_t = type.Type(self.universe[6])
         self.int32_t = type.Type(self.universe[7])
         self.int64_t = type.Type(self.universe[8])
-        self.isize_t = type.Type(self.universe[9])
+        self.int_t = type.Type(self.universe[9])
         self.uint8_t = type.Type(self.universe[10])
         self.uint16_t = type.Type(self.universe[11])
         self.uint32_t = type.Type(self.universe[12])
@@ -300,7 +300,7 @@ class Compiler:
 
     def is_signed_int(self, typ):
         return typ in (
-            self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.isize_t,
+            self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.int_t,
             self.comptime_int_t
         )
 

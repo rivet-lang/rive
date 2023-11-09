@@ -31,10 +31,10 @@ public func string_to_int64(s: string) -> !int64 {
     return @as(int64, parse_int(s, 0, 64)!);
 }
 
-/// Equivalent to `parse_int(s, 0, isize.bits())`, converted to type `isize`.
+/// Equivalent to `parse_int(s, 0, int.bits())`, converted to type `int`.
 #[inline]
-public func string_to_isize(s: string) -> !isize {
-    return parse_int(s, 0, isize.bits())!;
+public func string_to_int(s: string) -> !int {
+    return parse_int(s, 0, int.bits())!;
 }
 
 /// Equivalent to `parse_uint(s, 0, 8)`, converted to type `uint8`.

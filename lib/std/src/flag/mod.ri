@@ -200,13 +200,13 @@ public struct FlagParser {
 
     /// Returns an option with the integer value, associated with the flag in `name`.
     /// When the flag is not given by the user, it returns `none`.
-    public func int_flag(mut self, name: string, abbr: uint8, usage: string) -> ?isize {
+    public func int_flag(mut self, name: string, abbr: uint8, usage: string) -> ?int {
         self.add_flag(name, abbr, usage, "<int>");
         parsed := self.parse_value(name, abbr);
         if parsed.is_empty() {
             return none;
         }
-        return conv.string_to_isize(parsed[0]) catch 0;
+        return conv.string_to_int(parsed[0]) catch 0;
     }
 
     /// Returns an option with the string value, associated with the flag in `name`.

@@ -1341,8 +1341,8 @@ class Parser:
                 return self.comp.int32_t
             elif lit == "int64":
                 return self.comp.int64_t
-            elif lit == "isize":
-                return self.comp.isize_t
+            elif lit == "int":
+                return self.comp.int_t
             elif lit == "uint8":
                 return self.comp.uint8_t
             elif lit == "uint16":

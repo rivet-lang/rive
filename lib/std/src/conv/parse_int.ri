@@ -136,8 +136,8 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
 ///
 /// The `bit_size` argument specifies the integer type that the result must
 /// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to int8, int16, int32, and
-/// isize. If `bit_size` is below 0 or above 64, an error is returned.
-public func parse_int(s: string, base: int32, mut bit_size: uint32) -> !isize {
+/// int. If `bit_size` is below 0 or above 64, an error is returned.
+public func parse_int(s: string, base: int32, mut bit_size: uint32) -> !int {
     if s == "" {
         throw InvalidSyntaxError("invalid syntax");
     }
@@ -166,7 +166,7 @@ public func parse_int(s: string, base: int32, mut bit_size: uint32) -> !isize {
         throw ValueOutOfRangeError("value out of range");
     }
 
-    return if neg { -@as(isize, un) } else { @as(isize, un) };
+    return if neg { -@as(int, un) } else { @as(int, un) };
 }
 
 /// Reports whether the underscores in `s_` are allowed.

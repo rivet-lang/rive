@@ -58,10 +58,10 @@ public struct Resolver {
         }
     }
 
-    func eval_size(mut self, mut expr: ast.Expr) -> ?isize {
+    func eval_size(mut self, mut expr: ast.Expr) -> ?int {
         return match expr is {
             .Paren as paren -> self.eval_size(paren.expr),
-            .IntegerLiteral as int_lit -> conv.string_to_isize(int_lit.value) catch return none,
+            .IntegerLiteral as int_lit -> conv.string_to_int(int_lit.value) catch return none,
             .Ident as mut ident -> {
                 self.resolve_ident(ident);
                 if ident.found {
@@ -89,7 +89,7 @@ public struct Resolver {
                         .Amp -> left & right,
                         .Pipe -> left | right,
                         .Xor -> left ^ right,
-                        .Lshift -> @as(isize, @as(usize, left) << right),
+                        .Lshift -> @as(int, @as(usize, left) << right),
                         .Rshift -> left >> right,
                         else -> none
                     }
@@ -103,9 +103,9 @@ public struct Resolver {
                 if builtin_call.args[0].expr is .Type as mut type and self.resolve_type(type) {
                     (size, align) := self.table.type_size(type);
                     if builtin_call.name == "size_of" {
-                        @as(isize, size)
+                        @as(int, size)
                     } else {
-                        @as(isize, align)
+                        @as(int, align)
                     }
                 } else {
                     0
@@ -115,7 +115,7 @@ public struct Resolver {
         };
     }
 
-    func eval_sym(mut self, sym: ast.Sym, pos: token.Pos) -> ?isize {
+    func eval_sym(mut self, sym: ast.Sym, pos: token.Pos) -> ?int {
         if sym is ast.Const as const_ {
             if !const_.has_evaled_size {
                 const_.evaled_size = self.eval_size(const_.expr)?;

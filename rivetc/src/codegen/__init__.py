@@ -2582,7 +2582,7 @@ class Codegen:
             self.comp.bool_t, self.comp.int8_t, self.comp.int16_t,
             self.comp.int32_t, self.comp.int64_t, self.comp.uint8_t,
             self.comp.uint16_t, self.comp.uint32_t, self.comp.uint64_t,
-            self.comp.isize_t, self.comp.usize_t
+            self.comp.int_t, self.comp.usize_t
         ):
             return ir.IntLit(self.ir_type(typ), "0")
         elif typ in (self.comp.float32_t, self.comp.float64_t):
@@ -2949,7 +2949,7 @@ class Codegen:
                 return ir.Type(mangle_symbol(typ_sym)).ptr(True)
             return ir.Type(str(typ_sym.info.underlying_typ))
         elif typ_sym.kind.is_primitive():
-            if typ_sym.name == "isize":
+            if typ_sym.name == "int":
                 return ir.INT_T
             if typ_sym.name == "usize":
                 return ir.UINT_T

@@ -26,10 +26,10 @@ public alias intmax_t := int64;
 public alias uintmax_t := uint64;
 
 public alias size_t := usize;
-public alias ptrdiff_t := isize;
-public alias intptr_t := isize;
+public alias ptrdiff_t := int;
+public alias intptr_t := int;
 public alias uintptr_t := usize;
-public alias ssize_t := isize;
+public alias ssize_t := int;
 
 public alias pid_t := int32;
 public alias off_t := int64;
