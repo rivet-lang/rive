@@ -10,7 +10,7 @@ extend comptime_int < Stringable {
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) -> string {
-        return @as(int64, self.*).to_string();
+        return @as(isize, self.*).to_string();
     }
 }
 
@@ -149,8 +149,8 @@ extend int64 < Stringable {
 }
 
 extend isize < Stringable {
-    public const MIN: isize := #if _x64_ int64.MIN #else int32.MIN #endif;
-    public const MAX: isize := #if _x64_ int64.MAX #else int32.MAX #endif;
+    public const MIN: isize := @as(isize, #if _x64_ int64.MIN #else int32.MIN #endif);
+    public const MAX: isize := @as(isize, #if _x64_ int64.MAX #else int32.MAX #endif);
 
     #[inline]
     public func bits() -> uint32 {

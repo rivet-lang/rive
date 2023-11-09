@@ -197,7 +197,7 @@ extend uint64 < Stringable {
 }
 
 extend usize < Stringable {
-    public const MAX: usize := #if _x64_ uint64.MAX #else uint32.MAX #endif;
+    public const MAX: usize := @as(usize, #if _x64_ uint64.MAX #else uint32.MAX #endif);
 
     #[inline]
     public func bits() -> uint32 {
