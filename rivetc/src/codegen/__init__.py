@@ -240,8 +240,8 @@ class Codegen:
                             ir.Array(ir.TEST_T, str(len(self.generated_tests))),
                             gtests_array
                         ),
-                        ir.IntLit(ir.USIZE_T, str(test_t_size)),
-                        ir.IntLit(ir.USIZE_T, str(len(self.generated_tests)))
+                        ir.IntLit(ir.UINT_T, str(test_t_size)),
+                        ir.IntLit(ir.UINT_T, str(len(self.generated_tests)))
                     ]
                 )
             )
@@ -354,7 +354,7 @@ class Codegen:
                             self.cur_fn.add_call(
                                 "_R4core8mem_copyF", [
                                     ident, value,
-                                    ir.IntLit(ir.USIZE_T, str(size))
+                                    ir.IntLit(ir.UINT_T, str(size))
                                 ]
                             )
                     else:
@@ -486,14 +486,14 @@ class Codegen:
                 idx_name = self.cur_fn.local_name()
             iterable = self.gen_expr(stmt.iterable)
             self.cur_fn.inline_alloca(
-                ir.USIZE_T, idx_name, ir.IntLit(ir.USIZE_T, "0")
+                ir.UINT_T, idx_name, ir.IntLit(ir.UINT_T, "0")
             )
-            idx = ir.Ident(ir.USIZE_T, idx_name)
+            idx = ir.Ident(ir.UINT_T, idx_name)
             self.cur_fn.add_label(self.loop_entry_label)
             if iterable_sym.kind == TypeKind.Array:
-                len_ = ir.IntLit(ir.USIZE_T, iterable_sym.info.size.lit)
+                len_ = ir.IntLit(ir.UINT_T, iterable_sym.info.size.lit)
             else:
-                len_ = ir.Selector(ir.USIZE_T, iterable, ir.Name("len"))
+                len_ = ir.Selector(ir.UINT_T, iterable, ir.Name("len"))
             self.cur_fn.add_cond_br(
                 ir.Inst(ir.InstKind.Cmp, [ir.Name("<"), idx, len_]), body_label,
                 self.loop_exit_label
@@ -605,7 +605,7 @@ class Codegen:
                         self.cur_fn.add_call(
                             "_R4core8mem_copyF",
                             [ident, val,
-                             ir.IntLit(ir.USIZE_T, str(size))]
+                             ir.IntLit(ir.UINT_T, str(size))]
                         )
                 else:
                     self.cur_fn.alloca(
@@ -630,7 +630,7 @@ class Codegen:
                                 ir.Selector(
                                     left_ir_typ, right, ir.Name(f"f{i}")
                                 ),
-                                ir.IntLit(ir.USIZE_T, str(size))
+                                ir.IntLit(ir.UINT_T, str(size))
                             ]
                         )
                     else:
@@ -881,10 +881,10 @@ class Codegen:
                                             ir.VOID_PTR_T, res, ir.Name("obj")
                                         ),
                                         ir.Selector(
-                                            ir.USIZE_T, res, ir.Name("_idx_")
+                                            ir.UINT_T, res, ir.Name("_idx_")
                                         ),
                                         ir.IntLit(
-                                            ir.USIZE_T, str(expr_typ_sym.id)
+                                            ir.UINT_T, str(expr_typ_sym.id)
                                         )
                                     ]
                                 ), ir_typ
@@ -925,8 +925,8 @@ class Codegen:
             elif expr.name in ("size_of", "align_of"):
                 size, align = self.comp.type_size(expr.args[0].typ)
                 if expr.name == "size_of":
-                    return ir.IntLit(ir.USIZE_T, str(size))
-                return ir.IntLit(ir.USIZE_T, str(align))
+                    return ir.IntLit(ir.UINT_T, str(size))
+                return ir.IntLit(ir.UINT_T, str(align))
             elif expr.name == "assert":
                 msg_ = f"`{expr.args[0]}`"
                 msg = utils.smart_quote(msg_, True)
@@ -1221,13 +1221,13 @@ class Codegen:
                                         f"{mangle_symbol(left_sym)}17__index_of_vtbl__"
                                     ),
                                     ir.Selector(
-                                        ir.USIZE_T, self_expr, ir.Name("_idx_")
+                                        ir.UINT_T, self_expr, ir.Name("_idx_")
                                     )
                                 ]
                             )
                         else:
                             id_value = ir.Selector(
-                                ir.USIZE_T, self_expr, ir.Name("_id_")
+                                ir.UINT_T, self_expr, ir.Name("_id_")
                             )
                     else:
                         id_value = ir.Inst(
@@ -1236,7 +1236,7 @@ class Codegen:
                                     f"{mangle_symbol(left_sym)}17__index_of_vtbl__"
                                 ),
                                 ir.Selector(
-                                    ir.USIZE_T, self_expr, ir.Name("_idx_")
+                                    ir.UINT_T, self_expr, ir.Name("_idx_")
                                 )
                             ]
                         )
@@ -1383,7 +1383,7 @@ class Codegen:
                                 self.ir_type(expr.sym.ret_typ), inst,
                                 ir.Name("arr")
                             ),
-                            ir.IntLit(ir.USIZE_T, str(size))
+                            ir.IntLit(ir.UINT_T, str(size))
                         ]
                     )
                 elif expr.sym.is_method and expr.sym.name == "pop" and left_sym.kind == TypeKind.Vec:
@@ -1586,9 +1586,9 @@ class Codegen:
                 if expr.field_name == "ptr":
                     return ir.StringLit(left.lit, left.len)
                 elif expr.field_name == "len":
-                    return ir.IntLit(ir.USIZE_T, str(left.len))
+                    return ir.IntLit(ir.UINT_T, str(left.len))
             elif left_sym.kind == TypeKind.Array and expr.field_name == "len":
-                return ir.IntLit(ir.USIZE_T, str(left_sym.info.size))
+                return ir.IntLit(ir.UINT_T, str(left_sym.info.size))
             elif left_sym.kind == TypeKind.Trait:
                 return ir.Selector(ir_typ.ptr(), left, ir.Name(expr.field_name))
             return ir.Selector(
@@ -1618,7 +1618,7 @@ class Codegen:
                     self.cur_fn.add_call(
                         "_R4core8mem_copyF",
                         [custom_tmp, arr_lit,
-                         ir.IntLit(ir.USIZE_T, str(size))]
+                         ir.IntLit(ir.UINT_T, str(size))]
                     )
                     return ir.Skip()
                 return arr_lit
@@ -1628,8 +1628,8 @@ class Codegen:
                 ir.Inst(
                     ir.InstKind.Call, [
                         ir.Name("_R4core6Vector10from_arrayF"), arr_lit,
-                        ir.IntLit(ir.USIZE_T, str(size)),
-                        ir.IntLit(ir.USIZE_T, str(len(elems)))
+                        ir.IntLit(ir.UINT_T, str(size)),
+                        ir.IntLit(ir.UINT_T, str(len(elems)))
                     ]
                 )
             )
@@ -1641,14 +1641,14 @@ class Codegen:
                 if expr.index.has_start:
                     start = self.gen_expr(expr.index.start)
                 else:
-                    start = ir.IntLit(ir.USIZE_T, "0")
+                    start = ir.IntLit(ir.UINT_T, "0")
                 if expr.index.has_end:
                     end = self.gen_expr(expr.index.end)
                 else:
                     if s.kind == TypeKind.Array:
-                        end = ir.IntLit(ir.USIZE_T, s.info.size.lit)
+                        end = ir.IntLit(ir.UINT_T, s.info.size.lit)
                     elif isinstance(left, ir.StringLit):
-                        end = ir.IntLit(ir.USIZE_T, left.len)
+                        end = ir.IntLit(ir.UINT_T, left.len)
                     else:
                         end = None
                 tmp = self.cur_fn.local_name()
@@ -1689,8 +1689,8 @@ class Codegen:
                             ir.InstKind.Call, [
                                 ir.Name("_R4core16array_slice_fromF"),
                                 ir.Inst(ir.InstKind.GetRef, [left]),
-                                ir.IntLit(ir.USIZE_T, str(size)),
-                                ir.IntLit(ir.USIZE_T, s.info.size.lit), start
+                                ir.IntLit(ir.UINT_T, str(size)),
+                                ir.IntLit(ir.UINT_T, s.info.size.lit), start
                             ]
                         )
                     else:
@@ -1698,8 +1698,8 @@ class Codegen:
                             ir.InstKind.Call, [
                                 ir.Name("_R4core11array_sliceF"),
                                 ir.Inst(ir.InstKind.GetRef, [left]),
-                                ir.IntLit(ir.USIZE_T, str(size)),
-                                ir.IntLit(ir.USIZE_T, s.info.size.lit), start,
+                                ir.IntLit(ir.UINT_T, str(size)),
+                                ir.IntLit(ir.UINT_T, s.info.size.lit), start,
                                 end
                             ]
                         )
@@ -1709,7 +1709,7 @@ class Codegen:
             if isinstance(s.info, sym.ArrayInfo):
                 self.cur_fn.add_call(
                     "_R4core11array_indexF",
-                    [ir.IntLit(ir.USIZE_T, s.info.size.lit), idx]
+                    [ir.IntLit(ir.UINT_T, s.info.size.lit), idx]
                 )
             tmp = self.cur_fn.local_name()
             expr_typ_ir = self.ir_type(expr.typ)
@@ -1852,9 +1852,9 @@ class Codegen:
                         cmp = ir.Inst(
                             ir.InstKind.Cmp, [
                                 ir.Name(kind),
-                                ir.Selector(ir.USIZE_T, left, ir.Name("_idx_")),
+                                ir.Selector(ir.UINT_T, left, ir.Name("_idx_")),
                                 ir.IntLit(
-                                    ir.USIZE_T,
+                                    ir.UINT_T,
                                     str(expr.right.variant_info.value)
                                 )
                             ]
@@ -1864,7 +1864,7 @@ class Codegen:
                             ir.InstKind.Cmp, [
                                 ir.Name(kind), left,
                                 ir.IntLit(
-                                    ir.USIZE_T,
+                                    ir.UINT_T,
                                     str(expr.right.variant_info.value)
                                 )
                             ]
@@ -1873,9 +1873,9 @@ class Codegen:
                     cmp = ir.Inst(
                         ir.InstKind.Cmp, [
                             ir.Name(kind),
-                            ir.Selector(ir.USIZE_T, left, ir.Name("_id_")),
+                            ir.Selector(ir.UINT_T, left, ir.Name("_id_")),
                             ir.IntLit(
-                                ir.USIZE_T,
+                                ir.UINT_T,
                                 str(left_sym.info.indexof(expr_right_sym))
                             )
                         ]
@@ -1884,8 +1884,8 @@ class Codegen:
                     cmp = ir.Inst(
                         ir.InstKind.Cmp, [
                             ir.Name(kind),
-                            ir.Selector(ir.USIZE_T, left, ir.Name("_idx_")),
-                            ir.IntLit(ir.USIZE_T, str(expr_right_sym.id))
+                            ir.Selector(ir.UINT_T, left, ir.Name("_idx_")),
+                            ir.IntLit(ir.UINT_T, str(expr_right_sym.id))
                         ]
                     )
                 self.cur_fn.inline_alloca(ir.BOOL_T, tmp, cmp)
@@ -1932,8 +1932,8 @@ class Codegen:
                         False, ast.Annotations(), False, full_name,
                         [self_idx_, elem_idx_], False, ir.BOOL_T, False
                     )
-                    inc_v = ir.Ident(ir.USIZE_T, contains_decl.local_name())
-                    contains_decl.alloca(inc_v, ir.IntLit(ir.USIZE_T, "0"))
+                    inc_v = ir.Ident(ir.UINT_T, contains_decl.local_name())
+                    contains_decl.alloca(inc_v, ir.IntLit(ir.UINT_T, "0"))
                     cond_l = contains_decl.local_name()
                     body_l = contains_decl.local_name()
                     ret_l = contains_decl.local_name()
@@ -1945,7 +1945,7 @@ class Codegen:
                             ir.InstKind.Cmp, [
                                 ir.Name("<"), inc_v,
                                 ir.Selector(
-                                    ir.USIZE_T, self_idx_, ir.Name("len")
+                                    ir.UINT_T, self_idx_, ir.Name("len")
                                 )
                             ]
                         ), body_l, exit_l
@@ -2024,7 +2024,7 @@ class Codegen:
                         ir.Inst(
                             ir.InstKind.Call, [
                                 ir.Name(name), left, right,
-                                ir.IntLit(ir.USIZE_T, str(size))
+                                ir.IntLit(ir.UINT_T, str(size))
                             ]
                         )
                     )
@@ -2180,7 +2180,7 @@ class Codegen:
                     if expr.is_typematch:
                         if p.typ.sym.kind == TypeKind.Trait:
                             value_idx_x = ir.IntLit(
-                                ir.USIZE_T,
+                                ir.UINT_T,
                                 str(
                                     expr.expected_typ.symbol().indexof(
                                         p.typ.sym
@@ -2189,11 +2189,11 @@ class Codegen:
                             )
                         elif p.typ.sym.kind == TypeKind.Enum:
                             value_idx_x = ir.IntLit(
-                                ir.USIZE_T, str(p.variant_info.value)
+                                ir.UINT_T, str(p.variant_info.value)
                             )
                         else:
                             value_idx_x = ir.IntLit(
-                                ir.USIZE_T, str(p.typ.sym.id)
+                                ir.UINT_T, str(p.typ.sym.id)
                             )
                         if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.is_boxed:
                             self.cur_fn.inline_alloca(
@@ -2366,7 +2366,7 @@ class Codegen:
                             ir.Selector(
                                 self.ir_type(ret_typ), tmp, ir.Name("arr")
                             ), expr_,
-                            ir.IntLit(ir.USIZE_T, str(size))
+                            ir.IntLit(ir.UINT_T, str(size))
                         ]
                     )
                     expr_ = tmp
@@ -2564,8 +2564,8 @@ class Codegen:
             ir.InstKind.Call, [
                 ir.Name("_R4core6Vector19from_array_no_allocF"),
                 ir.ArrayLit(self.ir_type(var_arg_typ_), vargs),
-                ir.IntLit(ir.USIZE_T, str(elem_size)),
-                ir.IntLit(ir.USIZE_T, str(len(vargs)))
+                ir.IntLit(ir.UINT_T, str(elem_size)),
+                ir.IntLit(ir.UINT_T, str(len(vargs)))
             ]
         )
 
@@ -2643,8 +2643,8 @@ class Codegen:
         return ir.Inst(
             ir.InstKind.Call, [
                 ir.Name("_R4core6Vector3newF"),
-                ir.IntLit(ir.USIZE_T, str(size)), cap
-                or ir.IntLit(ir.USIZE_T, "0")
+                ir.IntLit(ir.UINT_T, str(size)), cap
+                or ir.IntLit(ir.UINT_T, "0")
             ]
         )
 
@@ -2669,8 +2669,8 @@ class Codegen:
             ir.StringLit(lit, size)
         )
         self.init_string_lits_fn.store(
-            ir.Selector(ir.USIZE_T, tmp, ir.Name("len")),
-            ir.IntLit(ir.USIZE_T, str(size))
+            ir.Selector(ir.UINT_T, tmp, ir.Name("len")),
+            ir.IntLit(ir.UINT_T, str(size))
         )
         self.init_string_lits_fn.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_ref")),
@@ -2694,8 +2694,8 @@ class Codegen:
         else:
             to_fn.alloca(tmp, inst)
         to_fn.store(
-            ir.Selector(ir.USIZE_T, tmp, ir.Name("_rc_")),
-            ir.IntLit(ir.USIZE_T, "1")
+            ir.Selector(ir.UINT_T, tmp, ir.Name("_rc_")),
+            ir.IntLit(ir.UINT_T, "1")
         )
         return tmp
 
@@ -2726,8 +2726,8 @@ class Codegen:
             index = ir.Inst(
                 ir.InstKind.Call, [
                     ir.Name(f"{mangle_symbol(trait_sym)}17__index_of_vtbl__"),
-                    ir.Selector(ir.USIZE_T, value, ir.Name("_idx_"))
-                ], ir.USIZE_T
+                    ir.Selector(ir.UINT_T, value, ir.Name("_idx_"))
+                ], ir.UINT_T
             )
             self.cur_fn.store(
                 ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")),
@@ -2735,14 +2735,14 @@ class Codegen:
             )
         else:
             vtbl_idx_x = trait_sym.info.indexof(value_sym)
-            index = ir.IntLit(ir.USIZE_T, str(vtbl_idx_x))
+            index = ir.IntLit(ir.UINT_T, str(vtbl_idx_x))
             self.cur_fn.store(
                 ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")), value
             )
-        self.cur_fn.store(ir.Selector(ir.USIZE_T, tmp, ir.Name("_id_")), index)
+        self.cur_fn.store(ir.Selector(ir.UINT_T, tmp, ir.Name("_id_")), index)
         self.cur_fn.store(
-            ir.Selector(ir.USIZE_T, tmp, ir.Name("_idx_")),
-            ir.IntLit(ir.USIZE_T, str(value_sym.id))
+            ir.Selector(ir.UINT_T, tmp, ir.Name("_idx_")),
+            ir.IntLit(ir.UINT_T, str(value_sym.id))
         )
         return tmp
 
@@ -2753,7 +2753,7 @@ class Codegen:
             tmp = custom_tmp
         else:
             tmp = self.boxed_instance(mangle_symbol(enum_sym), enum_sym.id)
-        usize_t = ir.USIZE_T
+        usize_t = ir.UINT_T
         variant_info = enum_sym.info.get_variant(variant_name)
         self.cur_fn.store(
             ir.Selector(usize_t, tmp, ir.Name("_idx_")),
@@ -2788,10 +2788,10 @@ class Codegen:
             tmp = self.boxed_instance(mangle_symbol(enum_sym), enum_sym.id)
         variant_info = enum_sym.info.get_variant(variant_name)
         self.cur_fn.store(
-            ir.Selector(ir.USIZE_T, tmp, ir.Name("_idx_")),
-            ir.IntLit(ir.USIZE_T, variant_info.value)
+            ir.Selector(ir.UINT_T, tmp, ir.Name("_idx_")),
+            ir.IntLit(ir.UINT_T, variant_info.value)
         )
-        self.cur_fn.store(ir.Selector(ir.USIZE_T, tmp, ir.Name("obj")), value)
+        self.cur_fn.store(ir.Selector(ir.UINT_T, tmp, ir.Name("obj")), value)
         return tmp
 
     def gen_return_trace_add(self, pos):
@@ -2807,8 +2807,8 @@ class Codegen:
             self.gen_string_literal(pos.file)
         )
         self.cur_fn.store(
-            ir.Selector(ir.USIZE_T, tmp, ir.Name("line")),
-            ir.IntLit(ir.USIZE_T, str(pos.line + 1))
+            ir.Selector(ir.UINT_T, tmp, ir.Name("line")),
+            ir.IntLit(ir.UINT_T, str(pos.line + 1))
         )
         self.cur_fn.add_call(
             "_R4core11ReturnTrace3addM", [
@@ -2974,8 +2974,8 @@ class Codegen:
                     self.out_rir.structs.append(
                         ir.Struct(
                             False, mangle_symbol(ts), [
-                                ir.Field("_rc_", ir.USIZE_T),
-                                ir.Field("_idx_", ir.USIZE_T),
+                                ir.Field("_rc_", ir.UINT_T),
+                                ir.Field("_idx_", ir.UINT_T),
                                 ir.Field("obj", ir.VOID_PTR_T)
                             ]
                         )
@@ -2983,9 +2983,9 @@ class Codegen:
             elif ts.kind == TypeKind.Trait:
                 ts_name = mangle_symbol(ts)
                 fields = [
-                    ir.Field("_rc_", ir.USIZE_T),
-                    ir.Field("_idx_", ir.USIZE_T),
-                    ir.Field("_id_", ir.USIZE_T),
+                    ir.Field("_rc_", ir.UINT_T),
+                    ir.Field("_idx_", ir.UINT_T),
+                    ir.Field("_id_", ir.UINT_T),
                     ir.Field("obj", ir.VOID_PTR_T),
                 ]
                 for f in ts.fields:
@@ -3042,7 +3042,7 @@ class Codegen:
                     index_of_vtbl_fn = ir.FuncDecl(
                         False, ast.Annotations(), False,
                         mangle_symbol(ts) + "17__index_of_vtbl__",
-                        [ir.Ident(ir.USIZE_T, "self")], False, ir.USIZE_T, False
+                        [ir.Ident(ir.UINT_T, "self")], False, ir.UINT_T, False
                     )
                     for child_name, child_idx_, child_idx_x in index_of_vtbl:
                         l1 = index_of_vtbl_fn.local_name()
@@ -3052,20 +3052,20 @@ class Codegen:
                             ir.Inst(
                                 ir.InstKind.Cmp, [
                                     "==",
-                                    ir.Ident(ir.USIZE_T, "self"),
-                                    ir.IntLit(ir.USIZE_T, str(child_idx_))
+                                    ir.Ident(ir.UINT_T, "self"),
+                                    ir.IntLit(ir.UINT_T, str(child_idx_))
                                 ]
                             ), l1, l2
                         )
                         index_of_vtbl_fn.add_label(l1)
                         index_of_vtbl_fn.add_ret(
-                            ir.IntLit(ir.USIZE_T, str(child_idx_x))
+                            ir.IntLit(ir.UINT_T, str(child_idx_x))
                         )
                         index_of_vtbl_fn.add_label(l2)
-                    index_of_vtbl_fn.add_ret(ir.IntLit(ir.USIZE_T, "0"))
+                    index_of_vtbl_fn.add_ret(ir.IntLit(ir.UINT_T, "0"))
                     self.out_rir.decls.append(index_of_vtbl_fn)
             elif ts.kind in (TypeKind.Struct, TypeKind.String, TypeKind.Vec):
-                fields = [ir.Field("_rc_", ir.USIZE_T)
+                fields = [ir.Field("_rc_", ir.UINT_T)
                           ] if ts.info.is_boxed else []
                 for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
