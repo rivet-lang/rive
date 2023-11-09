@@ -7,9 +7,9 @@ import std/strings;
 
 import ../token;
 
-static mut symIds: usize := 0;
+static mut symIds: uint := 0;
 
-func new_sym_id() -> usize {
+func new_sym_id() -> uint {
     res := symIds;
     symIds += 1;
     return res;
@@ -48,7 +48,7 @@ public enum ABI as uint8 < traits.Stringable {
 
 #[default_value(InvalidSym())]
 public trait Sym {
-    id: usize := new_sym_id();
+    id: uint := new_sym_id();
     abi: ABI;
     mut is_public: bool;
     mut parent: ?Sym;
@@ -141,7 +141,7 @@ public struct SymRef < Sym {
 
 #[boxed]
 public struct Module < Sym {
-    public func add_or_get_array(mut self, elem_typ: Type, size: usize, is_mut: bool) -> TypeSym {
+    public func add_or_get_array(mut self, elem_typ: Type, size: uint, is_mut: bool) -> TypeSym {
         unique_name := if is_mut {
             "[{}]mut {}"
         } else {
@@ -344,7 +344,7 @@ public struct Func < Sym {
     public ret_type: Type;
     public pos: token.Pos;
 
-    public func get_arg(self, idx: usize) -> Arg {
+    public func get_arg(self, idx: uint) -> Arg {
         arg := self.args[idx];
         return if arg.is_self {
             self.args[idx + 1]
@@ -353,8 +353,8 @@ public struct Func < Sym {
         };
     }
 
-    public func args_len(self) -> usize {
-        mut len: usize := 0;
+    public func args_len(self) -> uint {
+        mut len: uint := 0;
         for arg in self.args {
             if !(arg.is_self or arg.type is .Variadic) {
                 len += 1;

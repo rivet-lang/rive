@@ -18,14 +18,14 @@ func lower(c: uint8) -> uint8 {
 
 /// This is like `parse_int` but for unsigned numbers.
 /// A sign prefix is not permitted.
-public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !usize {
+public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !uint {
     if s_ == "" {
         throw InvalidSyntaxError("empty string");
     }
     s := s_;
     base0 := base == 0;
 
-    mut start_index: usize := 0;
+    mut start_index: uint := 0;
     match {
         (base >= 2 and base <= 36) -> { /* valid base; nothing to do */ },
         (base == 0) -> {
@@ -68,21 +68,21 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
 
     // Cutoff is the smallest number such that `cutoff * base > MAX_U64`.
     // Use compile-time constants for common cases.
-    cutoff: usize := match base {
-        10 -> usize.MAX / 10 + 1,
-        16 -> usize.MAX / 16 + 1,
-        else -> usize.MAX / @as(usize, base) + @as(usize, 1)
+    cutoff: uint := match base {
+        10 -> uint.MAX / 10 + 1,
+        16 -> uint.MAX / 16 + 1,
+        else -> uint.MAX / @as(uint, base) + @as(uint, 1)
     };
 
-    max_val: usize := if bit_size == 64 {
-        usize.MAX
+    max_val: uint := if bit_size == 64 {
+        uint.MAX
     } else {
-        (@as(usize, 1) << @as(usize, bit_size)) - @as(usize, 1)
+        (@as(uint, 1) << @as(uint, bit_size)) - @as(uint, 1)
     };
     mut underscores := false;
-    mut n: usize := 0;
+    mut n: uint := 0;
 
-    mut i: usize := start_index;
+    mut i: uint := start_index;
     while i < s.len : i += 1 {
         c := s[i];
         cl := lower(c);
@@ -106,9 +106,9 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !us
             // `n * base` overflows
             throw ValueOutOfRangeError("value out of range");
         }
-        n *= @as(usize, base);
+        n *= @as(uint, base);
 
-        n1 := n + @as(usize, d);
+        n1 := n + @as(uint, d);
         if n1 < n or n1 > max_val {
             // `n + d` overflows
             throw ValueOutOfRangeError("value out of range");
@@ -158,7 +158,7 @@ public func parse_int(s: string, base: int32, mut bit_size: uint32) -> !int {
         bit_size = INT_SIZE;
     }
 
-    cutoff := @as(usize, 1) << bit_size - 1;
+    cutoff := @as(uint, 1) << bit_size - 1;
     if !neg and un >= cutoff {
         throw ValueOutOfRangeError("value out of range");
     }
@@ -179,7 +179,7 @@ func underscore_ok(s_: string) -> bool {
     // _ for an underscore,
     // ! for none of the above.
     mut saw := b'^';
-    mut i: usize := 0;
+    mut i: uint := 0;
     mut s := s_;
 
     // optional sign.

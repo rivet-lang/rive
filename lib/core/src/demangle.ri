@@ -7,7 +7,7 @@ func demangle_symbol(name: string) -> string {
     if !name.starts_with("_R") {
         return name;
     }
-    mut idx: usize := 2;
+    mut idx: uint := 2;
     mut buf := StaticBuffer();
     mut res := StringBuilder.new(name.len);
     while idx < name.len {
@@ -22,8 +22,8 @@ func demangle_symbol(name: string) -> string {
             res.write_string(".");
         }
 
-        buf_len := @as(usize, buf.as_uint64());
-        mut i_: usize := 0;
+        buf_len := @as(uint, buf.as_uint64());
+        mut i_: uint := 0;
         while i_ < buf_len : i_ += 1 {
             res.write_byte(unsafe { name.ptr[idx] });
             idx += 1;

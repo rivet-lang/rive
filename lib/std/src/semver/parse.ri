@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import { string_to_usize } from std/conv;
+import { string_to_uint } from std/conv;
 
 const VER_MAJOR: uint64 := 0;
 const VER_MINOR: uint64 := 1;
@@ -72,9 +72,9 @@ struct RawVersion {
     #[inline]
     func to_version(&self) -> Version {
         return Version(
-            string_to_usize(self.raw_ints[VER_MAJOR]) catch 0,
-            string_to_usize(self.raw_ints[VER_MINOR]) catch 0,
-            string_to_usize(self.raw_ints[VER_PATCH]) catch 0,
+            string_to_uint(self.raw_ints[VER_MAJOR]) catch 0,
+            string_to_uint(self.raw_ints[VER_MINOR]) catch 0,
+            string_to_uint(self.raw_ints[VER_PATCH]) catch 0,
             self.prerelease, self.metadata
         );
     }

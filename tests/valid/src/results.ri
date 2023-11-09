@@ -40,7 +40,7 @@ enum IOError < Throwable {
     FileNotFound: string,
     InvalidFileSize {
         path: string;
-        size: usize;
+        size: uint;
     };
 
     public func to_string(self) -> string {

@@ -90,7 +90,7 @@ extend Checker {
                 self.check_name_case(
                     .Snake, "index variable", for_stmt.index.name, for_stmt.index.pos
                 );
-                for_stmt.index.sym.type = self.table.usize_t;
+                for_stmt.index.sym.type = self.table.uint_t;
             }
             if for_stmt.values.len == 1 {
                 value0 := for_stmt.values[0];

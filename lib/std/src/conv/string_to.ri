@@ -61,8 +61,8 @@ public func string_to_uint64(s: string) -> !uint64 {
     return @as(uint64, parse_uint(s, 0, 64)!);
 }
 
-/// Equivalent to `parse_uint(s, 0, usize.bits())`, converted to type `usize`.
+/// Equivalent to `parse_uint(s, 0, uint.bits())`, converted to type `uint`.
 #[inline]
-public func string_to_usize(s: string) -> !usize {
-    return parse_uint(s, 0, usize.bits())!;
+public func string_to_uint(s: string) -> !uint {
+    return parse_uint(s, 0, uint.bits())!;
 }

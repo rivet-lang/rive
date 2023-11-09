@@ -65,7 +65,7 @@ public struct OrderedDepMap {
         self.set(name, diff);
     }
 
-    public func size(self) -> usize {
+    public func size(self) -> uint {
         return self.data.len();
     }
 }

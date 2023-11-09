@@ -89,7 +89,7 @@ public struct Resolver {
                         .Amp -> left & right,
                         .Pipe -> left | right,
                         .Xor -> left ^ right,
-                        .Lshift -> @as(int, @as(usize, left) << right),
+                        .Lshift -> @as(int, @as(uint, left) << right),
                         .Rshift -> left >> right,
                         else -> none
                     }

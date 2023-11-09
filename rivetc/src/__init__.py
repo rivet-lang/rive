@@ -40,7 +40,7 @@ class Compiler:
         self.uint16_t = type.Type(self.universe[11])
         self.uint32_t = type.Type(self.universe[12])
         self.uint64_t = type.Type(self.universe[13])
-        self.usize_t = type.Type(self.universe[14])
+        self.uint_t = type.Type(self.universe[14])
         self.comptime_int_t = type.Type(self.universe[15])
         self.comptime_float_t = type.Type(self.universe[16])
         self.float32_t = type.Type(self.universe[17])
@@ -307,7 +307,7 @@ class Compiler:
     def is_unsigned_int(self, typ):
         return typ in (
             self.uint8_t, self.uint16_t, self.uint32_t, self.uint64_t,
-            self.usize_t
+            self.uint_t
         )
 
     def is_float(self, typ):

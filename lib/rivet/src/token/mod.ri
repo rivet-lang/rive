@@ -10,13 +10,13 @@ public static noPos := Pos();
 
 public struct Pos < traits.Stringable {
     public file: string;
-    public line: usize;
-    public mut col: usize;
-    public mut len: usize;
-    public pos: usize;
+    public line: uint;
+    public mut col: uint;
+    public mut len: uint;
+    public pos: uint;
 
-    public end_line: usize;
-    public end_col: usize;
+    public end_line: uint;
+    public end_col: uint;
     public is_multiline: bool;
 
     #[inline]
@@ -77,7 +77,7 @@ public struct Pos < traits.Stringable {
 public struct Token < traits.Stringable {
     public lit: string;
     public kind: Kind;
-    public len: usize;
+    public len: uint;
     public pos: Pos;
 
     public func to_debug_string(&self) -> string {

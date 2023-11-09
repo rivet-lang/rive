@@ -40,9 +40,9 @@ public struct InvalidVersionError < Throwable {
 /// Represents a semantic version in semver format.
 #[boxed]
 public struct Version < traits.Stringable {
-    public major: usize;
-    public minor: usize;
-    public patch: usize;
+    public major: uint;
+    public minor: uint;
+    public patch: uint;
     public prerelease: string;
     public metadata: string;
 
@@ -60,7 +60,7 @@ public struct Version < traits.Stringable {
 
     /// Returns a `Version` structure with given `major`, `minor` and `patch` versions.
     #[inline]
-    public func build(major: usize, minor: usize, patch: usize) -> Self {
+    public func build(major: uint, minor: uint, patch: uint) -> Self {
         // TODO: check if versions are greater than zero.
         return Version(major, minor, patch, "", "");
     }

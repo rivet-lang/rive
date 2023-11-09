@@ -9,7 +9,7 @@ import c/libc;
 ///
 /// NOTE: Unlike the `mem.zeroed` function, `mem.alloc` will
 /// not zero the memory block.
-public func mem_alloc(size: usize) -> !rawptr {
+public func mem_alloc(size: uint) -> !rawptr {
     if new := unsafe { libc.malloc(size) } {
         return new;
     }
@@ -18,7 +18,7 @@ public func mem_alloc(size: usize) -> !rawptr {
 
 /// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
-public func mem_zeroed(n: usize) -> !rawptr {
+public func mem_zeroed(n: uint) -> !rawptr {
     if ptr := unsafe { libc.calloc(1, n) } {
         return ptr;
     }
@@ -29,7 +29,7 @@ public func mem_zeroed(n: usize) -> !rawptr {
 ///
 /// NOTE: The `ptr` must be a pointer to an existing memory block previously
 /// allocated with `mem.alloc` or `mem.zeroed`.
-public func mem_resize(ptr: ?rawptr, sz: usize) -> !rawptr {
+public func mem_resize(ptr: ?rawptr, sz: uint) -> !rawptr {
     if sz == 0 {
         if safe_ptr := ptr {
             unsafe {
@@ -47,7 +47,7 @@ public func mem_resize(ptr: ?rawptr, sz: usize) -> !rawptr {
 /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
 /// byte `c`.
 #[inline]
-public func mem_set(s: rawptr, c: uint8, n: usize) {
+public func mem_set(s: rawptr, c: uint8, n: uint) {
     unsafe {
         _ = libc.memset(s, @as(int32, c), n);
     }
@@ -58,7 +58,7 @@ public func mem_set(s: rawptr, c: uint8, n: usize) {
 /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem.move`, if the memory
 /// areas do overlap.
 #[inline]
-public func mem_copy(dest: rawptr, src: rawptr, sz: usize) {
+public func mem_copy(dest: rawptr, src: rawptr, sz: uint) {
     unsafe {
         _ = libc.memcpy(dest, src, sz);
     }
@@ -71,7 +71,7 @@ public func mem_copy(dest: rawptr, src: rawptr, sz: usize) {
 /// `src` or `dest`, and the bytes are then copied from the temporary array to
 /// `dest`.
 #[inline]
-public func mem_move(dest: rawptr, src: rawptr, sz: usize) {
+public func mem_move(dest: rawptr, src: rawptr, sz: uint) {
     unsafe {
         _ = libc.memmove(dest, src, sz);
     }
@@ -80,7 +80,7 @@ public func mem_move(dest: rawptr, src: rawptr, sz: usize) {
 /// Allocates dynamically a `sz` bytes block of memory on the heap, then copies
 /// the contents of `src` into the allocated space and returns a pointer to
 /// the newly allocated space.
-public func mem_dup(src: rawptr, sz: usize) -> !rawptr {
+public func mem_dup(src: rawptr, sz: uint) -> !rawptr {
     if sz == 0 {
         return mem_zeroed(1)!;
     }
@@ -105,7 +105,7 @@ public func mem_dup(src: rawptr, sz: usize) -> !rawptr {
 /// number of equal bytes. You should use a function that performs comparisons
 /// in constant time for this.
 #[inline]
-public func mem_cmp(s1: rawptr, s2: rawptr, n: usize) -> int32 {
+public func mem_cmp(s1: rawptr, s2: rawptr, n: uint) -> int32 {
     return unsafe { libc.memcmp(s1, s2, n) };
 }
 

@@ -18,8 +18,8 @@ public struct TypeSym < Sym {
     public mut fields: []Field;
     public mut full_fields_: []Field;
     public mut info: TypeInfo := .Invalid();
-    public mut size: usize;
-    public mut align: usize;
+    public mut size: uint;
+    public mut align: uint;
     public mut default_value: ?Expr;
 
     public func lookup_field(self, name: string) -> ?Field {

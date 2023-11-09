@@ -6,8 +6,8 @@ import std/process;
 
 #[boxed]
 public struct Scope {
-    public start: usize;
-    public mut end: usize;
+    public start: uint;
+    public mut end: uint;
     public mut owner: ?Sym;
     public mut parent: ?Scope;
     public mut detached_from_parent: bool;
@@ -77,7 +77,7 @@ public struct Scope {
         process.panic("cannot found symbol `{}`", name);
     }
 
-    public func find_by_index_or_panic(self, idx: usize) -> Sym {
+    public func find_by_index_or_panic(self, idx: uint) -> Sym {
         if idx >= self.syms.len {
             process.panic("symbol index out of range `{}`", idx);
         }
@@ -90,7 +90,7 @@ public struct Scope {
     }
 
     #[inline]
-    public func find_type_symbol_by_index_or_panic(self, idx: usize) -> TypeSym {
+    public func find_type_symbol_by_index_or_panic(self, idx: uint) -> TypeSym {
         return @as(TypeSym, self.find_by_index_or_panic(idx));
     }
 

@@ -11,36 +11,36 @@ public enum Type < traits.Stringable {
     Void,
     Never,
     Int {
-        bits: usize;
-        size: usize;
+        bits: uint;
+        size: uint;
     },
     Uint {
-        bits: usize;
-        size: usize;
+        bits: uint;
+        size: uint;
     },
     Basic {
         name: string;
-        size: usize;
+        size: uint;
         is_primitive: bool;
     },
-    Rawptr: usize,
+    Rawptr: uint,
     Pointer {
         inner: Type;
         is_managed: bool;
-        size: usize;
+        size: uint;
     },
     Array {
         elem_type: Type;
-        count: usize;
-        size: usize;
+        count: uint;
+        size: uint;
     },
     Func {
         args: []Type;
         ret_type: Type;
-        size: usize;
+        size: uint;
     };
 
-    public func size(self) -> usize {
+    public func size(self) -> uint {
         return match self is {
             .Int as int -> int.size,
             .Uint as uint -> uint.size,

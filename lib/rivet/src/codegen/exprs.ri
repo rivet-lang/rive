@@ -17,11 +17,11 @@ extend Codegen {
             ),
             .IntegerLiteral as int_lit -> .Const(
                 .IntConst(conv.string_to_int(int_lit.value) catch @unreachable()),
-                self.usize_t
+                self.uint_t
             ),
             .FloatLiteral as float_lit -> .Const(
                 .IntConst(conv.string_to_int(float_lit.value) catch @unreachable()),
-                self.usize_t
+                self.uint_t
             ),
             else -> .Empty()
         };

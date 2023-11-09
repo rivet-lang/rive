@@ -4,12 +4,12 @@
 
 public struct StringFormatter {
     buf: string;
-    mut i: usize;
+    mut i: uint;
     mut res: StringBuilder;
 
     func fmt(mut self, args: ...Stringable) -> string {
         self.res = StringBuilder.new(self.buf.len);
-        mut args_idx: usize := 0;
+        mut args_idx: uint := 0;
         while self.i < self.buf.len : self.i += 1 {
             b := unsafe { self.buf.ptr[self.i] };
             b2 := if self.i + 1 < self.buf.len unsafe { self.buf.ptr[self.i + 1] } else { 0 };
@@ -35,7 +35,7 @@ public struct StringFormatter {
                         if has_fwidth and fwidth > 0 {
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@as(uint, fwidth - value_len)));
                             }
                         }
                         self.res.write_string(value);
@@ -43,7 +43,7 @@ public struct StringFormatter {
                             fwidth = -fwidth;
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@as(uint, fwidth - value_len)));
                             }
                         }
                         if !has_fwidth {
@@ -77,7 +77,7 @@ public struct StringFormatter {
                         if has_fwidth and fwidth > 0 {
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@as(uint, fwidth - value_len)));
                             }
                         }
                         self.res.write_string(value);
@@ -85,7 +85,7 @@ public struct StringFormatter {
                             fwidth = -fwidth;
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(usize, fwidth - value_len)));
+                                self.res.write_string(" ".repeat(@as(uint, fwidth - value_len)));
                             }
                         }
                     } else {

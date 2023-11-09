@@ -2582,7 +2582,7 @@ class Codegen:
             self.comp.bool_t, self.comp.int8_t, self.comp.int16_t,
             self.comp.int32_t, self.comp.int64_t, self.comp.uint8_t,
             self.comp.uint16_t, self.comp.uint32_t, self.comp.uint64_t,
-            self.comp.int_t, self.comp.usize_t
+            self.comp.int_t, self.comp.uint_t
         ):
             return ir.IntLit(self.ir_type(typ), "0")
         elif typ in (self.comp.float32_t, self.comp.float64_t):
@@ -2753,11 +2753,11 @@ class Codegen:
             tmp = custom_tmp
         else:
             tmp = self.boxed_instance(mangle_symbol(enum_sym), enum_sym.id)
-        usize_t = ir.UINT_T
+        uint_t = ir.UINT_T
         variant_info = enum_sym.info.get_variant(variant_name)
         self.cur_fn.store(
-            ir.Selector(usize_t, tmp, ir.Name("_idx_")),
-            ir.IntLit(usize_t, variant_info.value)
+            ir.Selector(uint_t, tmp, ir.Name("_idx_")),
+            ir.IntLit(uint_t, variant_info.value)
         )
         if variant_info.has_typ and value and not isinstance(
             value, ast.EmptyExpr
@@ -2771,12 +2771,12 @@ class Codegen:
                     ir.InstKind.Call, [
                         ir.Name("_R4core12internal_dupF"),
                         ir.Inst(ir.InstKind.GetRef, [arg0]),
-                        ir.IntLit(usize_t, str(size))
+                        ir.IntLit(uint_t, str(size))
                     ]
                 )
         else:
             value = ir.NoneLit(ir.VOID_PTR_T)
-        self.cur_fn.store(ir.Selector(usize_t, tmp, ir.Name("obj")), value)
+        self.cur_fn.store(ir.Selector(uint_t, tmp, ir.Name("obj")), value)
         return tmp
 
     def boxed_enum_variant_with_fields_value(
@@ -2951,7 +2951,7 @@ class Codegen:
         elif typ_sym.kind.is_primitive():
             if typ_sym.name == "int":
                 return ir.INT_T
-            if typ_sym.name == "usize":
+            if typ_sym.name == "uint":
                 return ir.UINT_T
             return ir.Type(typ_sym.name)
         res = ir.Type(mangle_symbol(typ_sym))

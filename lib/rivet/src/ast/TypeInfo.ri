@@ -11,17 +11,17 @@ public enum TypeInfo < traits.Stringable {
     Bool,
     Rune,
     Int {
-        size: usize;
+        size: uint;
     },
     Uint {
-        size: usize;
+        size: uint;
     },
     Isize,
     Usize,
     ComptimeInt,
     ComptimeFloat,
     Float {
-        size: usize;
+        size: uint;
     },
     String,
     Func: Func,
@@ -30,7 +30,7 @@ public enum TypeInfo < traits.Stringable {
     },
     Array {
         elem_type: Type;
-        size: usize;
+        size: uint;
         is_mut: bool;
         has_contains_method: bool;
     },
@@ -47,7 +47,7 @@ public enum TypeInfo < traits.Stringable {
         mut implements: []TypeSym;
         mut has_objects: bool;
 
-        func index_of(self, type_sym: TypeSym) -> ?usize {
+        func index_of(self, type_sym: TypeSym) -> ?uint {
             for i, ts in self.implements {
                 if ts.id == type_sym.id {
                     return i;
@@ -171,7 +171,7 @@ public enum TypeInfo < traits.Stringable {
             .Int as int_info -> "int{}".fmt(int_info.size),
             .Isize -> "int",
             .Uint as uint_info -> "uint{}".fmt(uint_info.size),
-            .Usize -> "usize",
+            .Usize -> "uint",
             .ComptimeInt -> "comptime_int",
             .ComptimeFloat -> "comptime_float",
             .Float as float_info -> "float{}".fmt(float_info.size),

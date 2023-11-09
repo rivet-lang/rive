@@ -9,7 +9,7 @@ import { * } from c/ctypes;
 public struct Stat {
     public dev: dev_t;
     public ino: ino_t;
-    public nlink: usize;
+    public nlink: uint;
 
     public mode: uint32;
     public uid: uid_t;
@@ -31,5 +31,5 @@ extern (C) {
     public func stat(__file: [&]uint8, __buf: &mut Stat) -> int32;
     public func lstat(file: [&]uint8, buf: &mut Stat) -> int32;
 
-    public func mkdir(path: [&]uint8, mode: usize) -> int32;
+    public func mkdir(path: [&]uint8, mode: uint) -> int32;
 }

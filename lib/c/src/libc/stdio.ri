@@ -4,8 +4,8 @@
 
 import { * } from c/ctypes;
 
-public const MAX_PATH_LEN: usize := 4096;
-public const MAX_NAME_LEN: usize := 255;
+public const MAX_PATH_LEN: uint := 4096;
+public const MAX_NAME_LEN: uint := 255;
 
 public const STDIN_FILENO := 0;
 public const STDOUT_FILENO := 1;
@@ -97,13 +97,13 @@ extern (C) {
     public func ferror(stream: &FILE) -> int32;
     public func fseek(stream: &mut FILE, offset: uint64, whence: int32) -> int32;
     public func ftell(stream: &mut FILE) -> int64;
-    public func fread(ptr: rawptr, size: usize, nitems: usize, stream: &mut FILE) -> usize;
+    public func fread(ptr: rawptr, size: uint, nitems: uint, stream: &mut FILE) -> uint;
     public func fputc(c: int32, stream: &mut FILE) -> int32;
     public func fputs(s: [&]uint8, stream: &mut FILE) -> int32;
     public func fprintf(stream: &mut FILE, fmt: [&]uint8, ...) -> int32;
-    public func fwrite(ptr: rawptr, size: usize, nobj: usize, stream: &mut FILE) -> usize;
+    public func fwrite(ptr: rawptr, size: uint, nobj: uint, stream: &mut FILE) -> uint;
     public func fflush(stream: &mut FILE) -> int32;
-    public func fgets(s: [&]mut uint8, n: usize, stream: &mut FILE) -> int32;
+    public func fgets(s: [&]mut uint8, n: uint, stream: &mut FILE) -> int32;
     public func fclose(stream: &mut FILE) -> int32;
     public func fileno(stream: &FILE) -> int32;
     public func rewind(stream: &mut FILE);
@@ -115,5 +115,5 @@ extern (C) {
 	public func popen(cmd: [&]uint8, modes: [&]uint8) -> ?&mut FILE;
 	public func pclose(stream: &mut FILE) -> int32;
 
-	public func getline(lineptr: &?[&]uint8, n: &usize, stream: &mut FILE) -> int;
+	public func getline(lineptr: &?[&]uint8, n: &uint, stream: &mut FILE) -> int;
 }

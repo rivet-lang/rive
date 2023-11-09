@@ -98,13 +98,13 @@ public struct Path {
         if path.is_empty() {
             return "";
         }
-        mut end_index: usize := path.len - 1;
+        mut end_index: uint := path.len - 1;
         while path[end_index] == b'/' : end_index -= 1 {
             if end_index == 0 {
                 return "";
             }
         }
-        mut start_index: usize := end_index;
+        mut start_index: uint := end_index;
         end_index += 1;
         while path[start_index] != b'/' : start_index -= 1 {
             if start_index == 0 {
@@ -136,9 +136,9 @@ public struct Path {
         if paths.len == 0 {
             return core.process_get_cwd()!;
         }
-        mut first_index: usize := 0;
+        mut first_index: uint := 0;
         mut have_abs := false;
-        mut max_size: usize := 0;
+        mut max_size: uint := 0;
         for i, p in paths {
             if Self.is_absolute(p) {
                 first_index = i;
@@ -147,7 +147,7 @@ public struct Path {
             }
             max_size += p.len + 1;
         }
-        mut result_index: usize := 0;
+        mut result_index: uint := 0;
         result := if have_abs {
             unsafe { @as([&]mut uint8, mem.alloc(max_size)!) }
         } else {
@@ -222,7 +222,7 @@ public struct Path {
                     continue;
                 }
             }
-            mut up_count: usize := 1;
+            mut up_count: uint := 1;
             while from_it.next() !is none {
                 up_count += 1;
             }
@@ -231,7 +231,7 @@ public struct Path {
             errdefer unsafe {
                 mem.dealloc(result);
             }
-            mut result_index: usize := 0;
+            mut result_index: uint := 0;
             while result_index < up_index_end {
                 unsafe {
                     result[result_index] = b'.';
@@ -265,7 +265,7 @@ public struct Path {
         }
         // find first non-empty path index.
         mut all_paths_provided_were_empty := false;
-        mut first_path_index: usize := 0;
+        mut first_path_index: uint := 0;
         for index, path in paths {
             if path.len > 0 {
                 first_path_index = index;
@@ -282,10 +282,10 @@ public struct Path {
         }
         // calculate length needed for resulting joined path buffer.
         total_len := {
-            mut sum: usize := paths[first_path_index].len;
+            mut sum: uint := paths[first_path_index].len;
             mut prev_path := paths[first_path_index];
             @assert(prev_path.len > 0);
-            mut i: usize := first_path_index + 1;
+            mut i: uint := first_path_index + 1;
             while i < paths.len : i += 1 {
                 this_path := paths[i];
                 if this_path.is_empty() {
@@ -293,7 +293,7 @@ public struct Path {
                 }
                 prev_sep := Self.is_separator(prev_path[prev_path.len - 1]);
                 this_sep := Self.is_separator(this_path[0]);
-                sum += conv.bool_to_usize(!prev_sep and !this_sep);
+                sum += conv.bool_to_uint(!prev_sep and !this_sep);
                 sum += if prev_sep and this_sep { this_path.len - 1 } else { this_path.len };
                 prev_path = this_path;
             }
@@ -306,10 +306,10 @@ public struct Path {
         }
         paths_first_path_index_value := paths[first_path_index];
         mem.copy(buf, paths_first_path_index_value.ptr, paths_first_path_index_value.len);
-        mut buf_index: usize := paths_first_path_index_value.len;
+        mut buf_index: uint := paths_first_path_index_value.len;
         mut prev_path := paths_first_path_index_value;
         @assert(prev_path.len > 0);
-        mut i: usize := first_path_index + 1;
+        mut i: uint := first_path_index + 1;
         while i < paths.len : i += 1 {
             this_path := paths[i];
             if this_path.is_empty() {

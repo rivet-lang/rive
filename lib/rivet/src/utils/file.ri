@@ -50,7 +50,7 @@ struct SourceCache {
 	  return none;
    }
 
-   public func find_line(self, path_: string, line: usize) -> ?string {
+   public func find_line(self, path_: string, line: uint) -> ?string {
 	  return if lines := self.find_lines(path_) {
 		 lines[line]
 	  } else {
@@ -58,7 +58,7 @@ struct SourceCache {
 	  };
    }
 
-   public func find_lines_between(self, path_: string, line: usize, end_line: usize) -> ?[]string {
+   public func find_lines_between(self, path_: string, line: uint, end_line: uint) -> ?[]string {
 	  return if lines := self.find_lines(path_) {
 		if lines.len > 0 and lines.len >= end_line {
 			lines[line..end_line]
@@ -71,7 +71,7 @@ struct SourceCache {
    }
 
    public func find_lines(self, path_: string) -> ?[]string {
-	  mut i: usize := 0;
+	  mut i: uint := 0;
 	  while i < self.sources.len : i += 1 {
 		 cached := self.sources[i];
 		 if cached.path == path_ {

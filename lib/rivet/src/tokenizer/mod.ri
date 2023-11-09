@@ -22,14 +22,14 @@ public struct Tokenizer {
     prefs: prefs.Prefs;
     file: string := "<internal-memory>";
     text: string;
-    mut pos: usize;
-    mut line: usize;
-    mut last_nl_pos: usize;
+    mut pos: uint;
+    mut line: uint;
+    mut last_nl_pos: uint;
     public mut all_tokens: []token.Token;
-    mut tidx: usize;
+    mut tidx: uint;
     mut is_started: bool;
     mut is_cr_lf: bool;
-    mut eofs: usize;
+    mut eofs: uint;
     mut conditional_stack: []mut Conditional;
 
     public func new(text: string, prefs_: prefs.Prefs, table: ast.Table) -> Tokenizer {
@@ -63,7 +63,7 @@ public struct Tokenizer {
     }
 
     #[inline]
-    func new_token(self, kind: token.Kind, lit: string := "", len: usize := 1) -> token.Token {
+    func new_token(self, kind: token.Kind, lit: string := "", len: uint := 1) -> token.Token {
         return token.Token(lit, kind, len, token.Pos(
             file: self.file,
             line: self.line,
@@ -75,8 +75,8 @@ public struct Tokenizer {
 
     #[inline]
     func new_multiline_token(
-        self, kind: token.Kind, lit: string := "", len: usize := 1,
-        start_line: usize := 0, end_line: usize := 0, start_col: usize := 0
+        self, kind: token.Kind, lit: string := "", len: uint := 1,
+        start_line: uint := 0, end_line: uint := 0, start_col: uint := 0
     ) -> token.Token {
         return token.Token(lit, kind, len, token.Pos(
             file: self.file,
@@ -136,7 +136,7 @@ public struct Tokenizer {
     }
 
     #[inline]
-    func current_column(self) -> usize {
+    func current_column(self) -> uint {
         return if self.line == 0 {
             self.pos + 1
         } else {
@@ -183,13 +183,13 @@ public struct Tokenizer {
         }
     }
 
-    func matches(self, want: string, start_pos: usize) -> bool {
+    func matches(self, want: string, start_pos: uint) -> bool {
         end_pos := start_pos + want.len;
         if start_pos < 0 or end_pos < 0 or start_pos >= self.text.len
             or end_pos > self.text.len {
             return false;
         }
-        mut pos: usize := start_pos;
+        mut pos: uint := start_pos;
         while pos < end_pos : pos += 1 {
             if self.text[pos] != want[pos - start_pos] {
                 return false;
@@ -199,7 +199,7 @@ public struct Tokenizer {
     }
 
     #[inline]
-    public func peek_token(self, n: usize) -> token.Token {
+    public func peek_token(self, n: uint) -> token.Token {
         idx := self.tidx + n;
         return if idx >= self.all_tokens.len {
             self.new_eof_token()
@@ -209,7 +209,7 @@ public struct Tokenizer {
     }
 
     #[inline]
-    func look_ahead(self, n: usize) -> uint8 {
+    func look_ahead(self, n: uint) -> uint8 {
         return if self.pos + n < self.text.len {
             self.text[self.pos + n]
         } else {
@@ -247,7 +247,7 @@ public struct Tokenizer {
 
 // NOTE: this function doesn't do any decoding... it just replaces '\xc0' with
 // the byte 0xc0
-func decode_h_escape_single(str: string, idx: usize) -> (usize, string) {
+func decode_h_escape_single(str: string, idx: uint) -> (uint, string) {
     end_idx := idx + 4; // "\xXX".len == 4
     return (
         end_idx,
@@ -256,7 +256,7 @@ func decode_h_escape_single(str: string, idx: usize) -> (usize, string) {
 }
 
 // only handle single-byte inline escapes like '\xc0'
-func decode_h_escapes(s: string, start: usize, escapes_pos: []usize) -> string {
+func decode_h_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
     if escapes_pos.is_empty() {
         return s;
     }
@@ -278,7 +278,7 @@ func decode_h_escapes(s: string, start: usize, escapes_pos: []usize) -> string {
 // handle single-byte inline octal escapes like '\###'
 // NOTE: this function doesn't do any decoding... it just replaces '\141' with
 // the byte 0o141
-func decode_o_escapes(s: string, start: usize, escapes_pos: []usize) -> string {
+func decode_o_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
     if escapes_pos.is_empty() {
         return s;
     }
@@ -300,14 +300,14 @@ func decode_o_escapes(s: string, start: usize, escapes_pos: []usize) -> string {
     return utils.join(ss, "");
 }
 
-func decode_u_escape_single(str: string, idx: usize) -> (usize, string) {
+func decode_u_escape_single(str: string, idx: uint) -> (uint, string) {
     end_idx := idx + 6; // "\uXXXX".len == 6
     escaped_code_point := conv.parse_uint(str[idx + 2..end_idx], 16, 32) catch 0;
     return (end_idx, @as(uint32, escaped_code_point).to_string());
 }
 
 // decode the flagged unicode escape sequences into their utf-8 bytes
-func decode_u_escapes(str: string, start: usize, escapes_pos: []usize) -> string {
+func decode_u_escapes(str: string, start: uint, escapes_pos: []uint) -> string {
     if escapes_pos.is_empty() {
         return str;
     }
@@ -327,7 +327,7 @@ func decode_u_escapes(str: string, start: usize, escapes_pos: []usize) -> string
 }
 
 func trim_slash_line_break(s: string) -> string {
-    (mut start: usize, mut ret_str) := (0, s);
+    (mut start: uint, mut ret_str) := (0, s);
     while idx := ret_str.index_after_of("\\\n", start) {
         ret_str = ret_str[..idx].concat(ret_str[idx + 2..].trim_left(" \n\t\v\f\r"));
         start = idx;

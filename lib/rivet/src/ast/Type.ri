@@ -59,7 +59,7 @@ public enum Type < traits.Stringable {
         mut inner: Type;
         is_mut: bool;
         mut size: Expr;
-        mut size_value: usize;
+        mut size_value: uint;
         mut sym: TypeSym;
         pos: token.Pos;
     },

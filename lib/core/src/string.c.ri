@@ -9,7 +9,7 @@ static emptyString := string(c"", 0, true);
 #[boxed]
 public struct string < Stringable, Hashable, Throwable {
     public ptr: [&]uint8;
-    public len: usize;
+    public len: uint;
     is_ref: bool;
 
     #[unsafe]
@@ -23,7 +23,7 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     #[unsafe]
-    public func from_raw_with_len(ptr: ?[&]uint8, len: usize, is_ref: bool := false) -> Self {
+    public func from_raw_with_len(ptr: ?[&]uint8, len: uint, is_ref: bool := false) -> Self {
         if len == 0 {
             return emptyString;
         }
@@ -60,7 +60,7 @@ public struct string < Stringable, Hashable, Throwable {
         return Self(res, bytes.len);
     }
 
-    func at(self, idx: usize) -> uint8 {
+    func at(self, idx: uint) -> uint8 {
         if idx >= self.len {
             process_panic("string index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -68,7 +68,7 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     #[inline]
-    public func repeat(self, count: usize) -> Self {
+    public func repeat(self, count: uint) -> Self {
         return if count == 0 {
             emptyString
         } else if count == 1 {
@@ -77,7 +77,7 @@ public struct string < Stringable, Hashable, Throwable {
             len := self.len * count;
             res := unsafe { @as([&]mut uint8, internal_alloc(len)) };
             unsafe {
-                mut i: usize := 0;
+                mut i: uint := 0;
                 while i < count : i += 1 {
                     mem_copy(@ptr_add(res, i * self.len), self.ptr, self.len);
                 }
@@ -101,8 +101,8 @@ public struct string < Stringable, Hashable, Throwable {
     /// Returns a string array of the string split by '\t' and ' '.
     public func fields(self) -> []Self {
         mut res := @vec(Self);
-        mut word_start: usize := 0;
-        mut word_len: usize := 0;
+        mut word_start: uint := 0;
+        mut word_len: uint := 0;
         mut is_in_word := false;
         mut is_space := false;
         for i, c in self.as_bytes() {
@@ -131,14 +131,14 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     /// Wraps the given string within `width` in characters.
-    public func wrap(self, width: usize := 60, end: Self := "\n") -> Self {
+    public func wrap(self, width: uint := 60, end: Self := "\n") -> Self {
         words := self.fields();
         if words.len == 0 {
             return emptyString;
         }
         mut wrapped := StringBuilder.from_string(words[0]);
         mut space_left := width - wrapped.len();
-        mut i: usize := 1;
+        mut i: uint := 1;
         while i < words.len : i += 1 {
             word := words[i];
             if word.len + 1 > space_left {
@@ -182,14 +182,14 @@ public struct string < Stringable, Hashable, Throwable {
 
     /// Returns the number of occurrences of `substr` in the string or 0 if no
     /// `substr` could be found.
-    public func count(self, substr: Self) -> usize {
+    public func count(self, substr: Self) -> uint {
         if self.len == 0 or substr.len == 0 {
             return 0;
         }
         if substr.len > self.len {
             return 0;
         }
-        mut n: usize := 0;
+        mut n: uint := 0;
         if substr.len == 1 {
             for l in self.as_bytes() {
                 if l == substr[0] {
@@ -198,7 +198,7 @@ public struct string < Stringable, Hashable, Throwable {
             }
             return n;
         }
-        mut i: usize := 0;
+        mut i: uint := 0;
         while {
             i = self.index_after_of(substr, i) ?? return n;
             i += substr.len;
@@ -217,8 +217,8 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     /// Returns the index of byte `b` if found in the string.
-    public func index_of_byte(self, b: uint8) -> ?usize {
-        mut i: usize := 0;
+    public func index_of_byte(self, b: uint8) -> ?uint {
+        mut i: uint := 0;
         while i < self.len : i += 1 {
             if unsafe { self.ptr[i] == b } {
                 return i;
@@ -229,13 +229,13 @@ public struct string < Stringable, Hashable, Throwable {
 
     /// Returns the position of the first character of the input string.
     /// It will return `none` if the input string can't be found.
-    public func index_of(self, p: Self) -> ?usize {
+    public func index_of(self, p: Self) -> ?uint {
         if p.len > self.len or p.len == 0 {
             return none;
         }
-        mut i: usize := 0;
+        mut i: uint := 0;
         while i < self.len : i += 1 {
-            mut j: usize := 0;
+            mut j: uint := 0;
             while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
             if j == p.len {
                 return i;
@@ -245,7 +245,7 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     /// Returns the position of the input string, starting search from `start` position.
-    public func index_after_of(self, p: Self, start: usize) -> ?usize {
+    public func index_after_of(self, p: Self, start: uint) -> ?uint {
         if p.len > self.len {
             return none;
         }
@@ -254,7 +254,7 @@ public struct string < Stringable, Hashable, Throwable {
         }
         mut i := start;
         while i < self.len : i += 1 {
-            mut j: usize := 0;
+            mut j: uint := 0;
             mut ii := i;
             while j < p.len and unsafe { self.ptr[ii] == p.ptr[j] } {
                 j += 1;
@@ -268,7 +268,7 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     /// Returns the position of any of the characters in the input string if found.
-    public func index_of_any(self, chars: Self) -> ?usize {
+    public func index_of_any(self, chars: Self) -> ?uint {
         for i, b in self.as_bytes() {
             for c in chars.as_bytes() {
                 if b == c {
@@ -280,8 +280,8 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     /// Linear search for the last index of `byte` inside a string.
-    public func last_index_of_byte(self, byte: uint8) -> ?usize {
-        mut i: usize := self.len;
+    public func last_index_of_byte(self, byte: uint8) -> ?uint {
+        mut i: uint := self.len;
         while i != 0 {
             i -= 1;
             if unsafe { self.ptr[i] == byte } {
@@ -292,13 +292,13 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     /// Returns the position of the last occurence of the input string.
-    public func last_index_of(self, p: Self) -> ?usize {
+    public func last_index_of(self, p: Self) -> ?uint {
         if p.len > self.len or p.len == 0 {
             return none;
         }
-        mut i: usize := self.len - p.len;
+        mut i: uint := self.len - p.len;
         while i >= 0 : i -= 1 {
-            mut j: usize := 0;
+            mut j: uint := 0;
             while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
             if j == p.len {
                 return i;
@@ -329,9 +329,9 @@ public struct string < Stringable, Hashable, Throwable {
     /// given in `cutset` were stripped from the start and end of the string. Should
     /// be used as an input to `substr()`. If the string contains only the characters
     /// in `cutset`, both values returned are zero.
-    public func trim_indexes(self, cutset: Self) -> (usize, usize) {
-        mut pos_left: usize := 0;
-        mut pos_right: usize := if self.len == 0 { 0 } else { self.len - 1 };
+    public func trim_indexes(self, cutset: Self) -> (uint, uint) {
+        mut pos_left: uint := 0;
+        mut pos_right: uint := if self.len == 0 { 0 } else { self.len - 1 };
         mut cs_match := true;
         cutset_bytes := cutset.as_bytes();
         while pos_left <= self.len and pos_right > 0 and cs_match {
@@ -363,7 +363,7 @@ public struct string < Stringable, Hashable, Throwable {
         if self.len < 1 or cutset.len < 1 {
             return self;
         }
-        mut pos: usize := 0;
+        mut pos: uint := 0;
         cutset_bytes := cutset.as_bytes();
         while pos < self.len : pos += 1 {
             mut found := false;
@@ -416,8 +416,8 @@ public struct string < Stringable, Hashable, Throwable {
         } else if !self.contains(rep) {
             return self;
         }
-        mut idx: usize := 0;
-        mut idxs := @vec(usize);
+        mut idx: uint := 0;
+        mut idxs := @vec(uint);
         while {
             idx = self.index_after_of(rep, idx) ?? break;
             idxs.push(idx);
@@ -428,10 +428,10 @@ public struct string < Stringable, Hashable, Throwable {
         }
         new_len := self.len + idxs.len * (with.len - rep.len);
         b := unsafe { @as([&]mut uint8, internal_alloc(new_len)) };
-        (mut b_i: usize, mut s_idx: usize) := (0, 0);
+        (mut b_i: uint, mut s_idx: uint) := (0, 0);
         unsafe {
             for rep_pos in idxs {
-                mut i: usize := s_idx;
+                mut i: uint := s_idx;
                 while i < rep_pos : i += 1 {
                     b[b_i] = self.ptr[i];
                     b_i += 1;
@@ -444,7 +444,7 @@ public struct string < Stringable, Hashable, Throwable {
                 }
             }
             if s_idx < self.len {
-                mut i: usize := s_idx;
+                mut i: uint := s_idx;
                 while i < self.len : i += 1 {
                     b[b_i] = self.ptr[i];
                     b_i += 1;
@@ -468,7 +468,7 @@ public struct string < Stringable, Hashable, Throwable {
     /// if you want random access to them.
     public func as_runes(self) -> []rune {
         mut runes := @vec(rune, self.runes_count());
-        mut i: usize := 0;
+        mut i: uint := 0;
         while i < self.len : i += 1 {
             char_len := unsafe { self.ptr[i] }.len_utf8();
             unsafe {
@@ -498,8 +498,8 @@ public struct string < Stringable, Hashable, Throwable {
     /// first `nth` parts. When `nth` == 0, return all the splits.
     /// The last returned element has the remainder of the string, even if the
     /// remainder contains more `delim` substrings.
-    public func split(self, delim: Self, nth: usize := 0) -> []Self {
-        mut i: usize := 0;
+    public func split(self, delim: Self, nth: uint := 0) -> []Self {
+        mut i: uint := 0;
         mut res := @vec(Self);
         match delim.len {
             0 -> {
@@ -515,7 +515,7 @@ public struct string < Stringable, Hashable, Throwable {
                 return res;
             },
             1 -> {
-                mut start: usize := 0;
+                mut start: uint := 0;
                 delim_byte := delim[0];
                 while i < self.len {
                     if unsafe { self.ptr[i] == delim_byte } {
@@ -535,7 +535,7 @@ public struct string < Stringable, Hashable, Throwable {
                 return res;
             },
             else -> {
-                mut start: usize := 0;
+                mut start: uint := 0;
                 while i <= self.len {
                     is_delim := i + delim.len <= self.len and self[i..i + delim.len] == delim;
                     if is_delim {
@@ -560,7 +560,7 @@ public struct string < Stringable, Hashable, Throwable {
     /// Splits a string using the chars in the delimiter string as delimiters chars.
     /// If the delimiter string is empty then `.split()` is used.
     public func split_any(self, delim: Self) -> []Self {
-        mut i: usize := 0;
+        mut i: uint := 0;
         mut res := @vec(Self);
         // check empty source string
         if self.len > 0 {
@@ -595,8 +595,8 @@ public struct string < Stringable, Hashable, Throwable {
         }
         cr := b'\r';
         lf := b'\n';
-        mut line_start: usize := 0;
-        mut i: usize := 0;
+        mut line_start: uint := 0;
+        mut i: uint := 0;
         while i < self.len : i += 1 {
             if line_start <= i {
                 if unsafe { self.ptr[i] == lf } {
@@ -659,7 +659,7 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     public func <(self, rhs: Self) -> bool {
-        mut i: usize := 0;
+        mut i: uint := 0;
         while i < self.len : i += 1 {
             unsafe {
                 if i >= rhs.len or self.ptr[i] > rhs.ptr[i] {
@@ -701,7 +701,7 @@ public struct string < Stringable, Hashable, Throwable {
         if p.len > self.len {
             return false;
         }
-        mut i: usize := 0;
+        mut i: uint := 0;
         while i < p.len : i += 1 {
             if unsafe { self.ptr[i] != p[i] } {
                 return false;
@@ -715,7 +715,7 @@ public struct string < Stringable, Hashable, Throwable {
         if p.len > self.len {
             return false;
         }
-        mut i: usize := 0;
+        mut i: uint := 0;
         while i < p.len : i += 1 {
             if unsafe { p[i] != self.ptr[self.len - p.len + i] } {
                 return false;
@@ -726,7 +726,7 @@ public struct string < Stringable, Hashable, Throwable {
 
     /// Returns the number of runes contained in `self`.
     #[inline]
-    public func runes_count(self) -> usize {
+    public func runes_count(self) -> uint {
         return cstr_runes_count(self.ptr, self.len);
     }
 
@@ -744,7 +744,7 @@ public struct string < Stringable, Hashable, Throwable {
         return true;
     }
 
-    func slice(self, start: usize, end: usize) -> Self {
+    func slice(self, start: uint, end: uint) -> Self {
         unsafe {
             if start > end or start > self.len or end > self.len {
                 process_panic(
@@ -761,7 +761,7 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     #[inline]
-    func slice_from(self, start: usize) -> Self {
+    func slice_from(self, start: uint) -> Self {
         return self.slice(start, self.len);
     }
 
@@ -778,7 +778,7 @@ public struct string < Stringable, Hashable, Throwable {
     }
 
     #[inline]
-    public func hash(self) -> usize {
+    public func hash(self) -> uint {
         return sum64_string(self);
     }
 

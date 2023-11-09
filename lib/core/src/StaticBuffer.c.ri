@@ -6,7 +6,7 @@ import c/libc;
 
 struct StaticBuffer {
     buf: [25]mut uint8;
-    mut len: usize;
+    mut len: uint;
 
     public func push(mut self, byte: uint8) {
         if self.len > self.buf.len {

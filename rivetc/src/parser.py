@@ -1351,8 +1351,8 @@ class Parser:
                 return self.comp.uint32_t
             elif lit == "uint64":
                 return self.comp.uint64_t
-            elif lit == "usize":
-                return self.comp.usize_t
+            elif lit == "uint":
+                return self.comp.uint_t
             elif lit == "float32":
                 return self.comp.float32_t
             elif lit == "float64":

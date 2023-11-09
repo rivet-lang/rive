@@ -404,7 +404,7 @@ class TypeKind(Enum):
         elif self == TypeKind.Uint64:
             return "uint64"
         elif self == TypeKind.Usize:
-            return "usize"
+            return "uint"
         elif self == TypeKind.ComptimeInt:
             return "comptime_int"
         elif self == TypeKind.ComptimeFloat:
@@ -688,7 +688,7 @@ def universe():
     uni.add(Type(True, "uint16", TypeKind.Uint16))
     uni.add(Type(True, "uint32", TypeKind.Uint32))
     uni.add(Type(True, "uint64", TypeKind.Uint64))
-    uni.add(Type(True, "usize", TypeKind.Usize))
+    uni.add(Type(True, "uint", TypeKind.Usize))
     uni.add(Type(True, "comptime_int", TypeKind.ComptimeInt))
     uni.add(Type(True, "comptime_float", TypeKind.ComptimeFloat))
     uni.add(Type(True, "float32", TypeKind.Float32))
