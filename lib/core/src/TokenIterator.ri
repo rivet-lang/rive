@@ -35,7 +35,7 @@ public struct TokenIterator {
     /// Returns a slice of the remaining bytes. Does not affect iterator state.
     public func rest(&self) -> string {
         // move to beginning of token
-        mut index: uint := self.index;
+        mut index := self.index;
         while index < self.buffer.len and self.is_split_byte(self.buffer[index])
             : index += 1 {}
         return self.buffer[index..];
