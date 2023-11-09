@@ -264,9 +264,9 @@ public struct Table {
 
     public func int_bits(self, type: Type) -> uint {
         type_sym := type.symbol()?;
-        return if type_sym.info is .Int as int_info {
+        return if type_sym.info is .SizedInt as int_info {
             int_info.size
-        } else if type_sym.info is .Uint as uint_info {
+        } else if type_sym.info is .SizedUint as uint_info {
             uint_info.size
         } else if type_sym.info is .Isize or type_sym.info is .Usize {
             if self.prefs.target_is_64bit { 64 } else { 32 }
@@ -312,14 +312,14 @@ public struct Table {
                     .Alias as alias_info -> self.type_size(alias_info.parent),
                     .Bool -> (1, 1),
                     .Usize, .Isize -> (self.pointer_size, self.pointer_size),
-                    .Int as int -> match int.size {
+                    .SizedInt as int -> match int.size {
                         8 -> (1, 1),
                         16 -> (2, 2),
                         32 -> (4, 4),
                         64 -> (8, 8),
                         else -> (0, 0)
                     },
-                    .Uint as uint -> match uint.size {
+                    .SizedUint as uint -> match uint.size {
                         8 -> (1, 1),
                         16 -> (2, 2),
                         32 -> (4, 4),

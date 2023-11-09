@@ -10,10 +10,10 @@ public enum TypeInfo < traits.Stringable {
     None,
     Bool,
     Rune,
-    Int {
+    SizedInt {
         size: uint;
     },
-    Uint {
+    SizedUint {
         size: uint;
     },
     Isize,
@@ -150,7 +150,7 @@ public enum TypeInfo < traits.Stringable {
 
     #[inline]
     public func is_primitive(self) -> bool {
-        return self is .Bool or self is .Rune or self is .Int or self is .Uint
+        return self is .Bool or self is .Rune or self is .SizedInt or self is .Uint
             or self is .Usize or self is .Isize or self is .ComptimeInt
             or self is .ComptimeFloat or self is .ComptimeFloat or self is .Float;
     }
@@ -168,9 +168,9 @@ public enum TypeInfo < traits.Stringable {
             .None -> "none",
             .Bool -> "bool",
             .Rune -> "rune",
-            .Int as int_info -> "int{}".fmt(int_info.size),
+            .SizedInt as int_info -> "int{}".fmt(int_info.size),
             .Isize -> "int",
-            .Uint as uint_info -> "uint{}".fmt(uint_info.size),
+            .SizedUint as uint_info -> "uint{}".fmt(uint_info.size),
             .Usize -> "uint",
             .ComptimeInt -> "comptime_int",
             .ComptimeFloat -> "comptime_float",
