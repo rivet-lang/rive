@@ -340,7 +340,7 @@ class Compiler:
             return 32
         elif typ_sym.kind in (sym.TypeKind.Int64, sym.TypeKind.Uint64):
             return 64
-        elif typ_sym.kind in (sym.TypeKind.Isize, sym.TypeKind.Usize):
+        elif typ_sym.kind in (sym.TypeKind.Int, sym.TypeKind.Uint):
             return 32 if self.prefs.target_bits == prefs.Bits.X32 else 64
         else:
             return -1
@@ -374,7 +374,7 @@ class Compiler:
             pass
         elif sy.kind == sym.TypeKind.Alias:
             size, align = self.type_size(sy.info.parent)
-        elif sy.kind in (sym.TypeKind.Usize, sym.TypeKind.Isize):
+        elif sy.kind in (sym.TypeKind.Uint, sym.TypeKind.Int):
             size, align = self.pointer_size, self.pointer_size
         elif sy.kind in (
             sym.TypeKind.Int8, sym.TypeKind.Uint8, sym.TypeKind.Bool

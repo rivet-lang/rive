@@ -349,8 +349,8 @@ class TypeKind(Enum):
     Uint16 = auto_enum()
     Uint32 = auto_enum()
     Uint64 = auto_enum()
-    Isize = auto_enum()
-    Usize = auto_enum()
+    Int = auto_enum()
+    Uint = auto_enum()
     ComptimeInt = auto_enum()
     ComptimeFloat = auto_enum()
     Float32 = auto_enum()
@@ -368,8 +368,8 @@ class TypeKind(Enum):
         if self in (
             TypeKind.Void, TypeKind.None_, TypeKind.Bool, TypeKind.Rune,
             TypeKind.Int8, TypeKind.Int16, TypeKind.Int32, TypeKind.Int64,
-            TypeKind.Isize, TypeKind.Uint8, TypeKind.Uint16, TypeKind.Uint32,
-            TypeKind.Uint64, TypeKind.Usize, TypeKind.ComptimeInt,
+            TypeKind.Int, TypeKind.Uint8, TypeKind.Uint16, TypeKind.Uint32,
+            TypeKind.Uint64, TypeKind.Uint, TypeKind.ComptimeInt,
             TypeKind.ComptimeFloat, TypeKind.Float32, TypeKind.Float64,
             TypeKind.Never
         ):
@@ -393,7 +393,7 @@ class TypeKind(Enum):
             return "int32"
         elif self == TypeKind.Int64:
             return "int64"
-        elif self == TypeKind.Isize:
+        elif self == TypeKind.Int:
             return "int"
         elif self == TypeKind.Uint8:
             return "uint8"
@@ -403,7 +403,7 @@ class TypeKind(Enum):
             return "uint32"
         elif self == TypeKind.Uint64:
             return "uint64"
-        elif self == TypeKind.Usize:
+        elif self == TypeKind.Uint:
             return "uint"
         elif self == TypeKind.ComptimeInt:
             return "comptime_int"
@@ -683,12 +683,12 @@ def universe():
     uni.add(Type(True, "int16", TypeKind.Int16))
     uni.add(Type(True, "int32", TypeKind.Int32))
     uni.add(Type(True, "int64", TypeKind.Int64))
-    uni.add(Type(True, "int", TypeKind.Isize))
+    uni.add(Type(True, "int", TypeKind.Int))
     uni.add(Type(True, "uint8", TypeKind.Uint8))
     uni.add(Type(True, "uint16", TypeKind.Uint16))
     uni.add(Type(True, "uint32", TypeKind.Uint32))
     uni.add(Type(True, "uint64", TypeKind.Uint64))
-    uni.add(Type(True, "uint", TypeKind.Usize))
+    uni.add(Type(True, "uint", TypeKind.Uint))
     uni.add(Type(True, "comptime_int", TypeKind.ComptimeInt))
     uni.add(Type(True, "comptime_float", TypeKind.ComptimeFloat))
     uni.add(Type(True, "float32", TypeKind.Float32))
