@@ -10,7 +10,7 @@ extend comptime_int < Stringable {
     /// Returns the value of `self` as a string.
     #[inline]
     public func to_string(&self) -> string {
-        return @as(isize, self.*).to_string();
+        return @as(int64, self.*).to_string();
     }
 }
 

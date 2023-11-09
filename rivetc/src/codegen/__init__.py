@@ -172,11 +172,11 @@ class Codegen:
         self.out_rir.decls.append(g_fn)
 
         # generate 'main' fn
-        argc = ir.Ident(ir.INT_T, "_argc")
+        argc = ir.Ident(ir.C_INT_T, "_argc")
         argv = ir.Ident(ir.CHAR_T.ptr().ptr(), "_argv")
         main_fn = ir.FuncDecl(
             False, ast.Annotations(), False, "main", [argc, argv], False,
-            ir.INT_T, False
+            ir.C_INT_T, False
         )
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
             self.cur_fn = main_fn
@@ -264,7 +264,7 @@ class Codegen:
                     )
                 ]
             )
-        main_fn.add_ret(ir.IntLit(ir.INT_T, "0"))
+        main_fn.add_ret(ir.IntLit(ir.C_INT_T, "0"))
         self.out_rir.decls.append(main_fn)
 
         if report.ERRORS == 0:
