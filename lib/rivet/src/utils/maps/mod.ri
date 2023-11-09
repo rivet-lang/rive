@@ -5,14 +5,14 @@
 // TODO: remove file, use Map![K, V] instead
 
 #[boxed]
-struct StringUsize {
+struct StringUint {
     public key: string;
     public mut value: uint;
 }
 
 #[boxed]
-public struct MapStringUsize {
-    mut pairs: []mut StringUsize;
+public struct MapStringUint {
+    mut pairs: []mut StringUint;
 
     public func set(mut self, key: string, value: uint) {
         for pair in self.pairs {
@@ -22,7 +22,7 @@ public struct MapStringUsize {
             }
         }
         // new value
-        self.pairs.push(StringUsize(key, value));
+        self.pairs.push(StringUint(key, value));
     }
 
     public func get(self, key: string) -> ?uint {
