@@ -5,6 +5,8 @@
 import c;
 import c/libc;
 
+import ../env;
+
 #[boxed]
 public struct CannotMakeDirectoryError < Throwable {
     msg: string;
@@ -59,6 +61,14 @@ public struct Directory {
         if unsafe { libc.rmdir(rpath.ptr) == -1 } {
             throw CannotMakeFileError("cannot remove directory `{}`: {}".fmt(dir, c.errno_msg()));
         }
+    }
+
+    public func tmp_dir() -> string {
+        return if path := env.get("TMPDIR") {
+            path
+        } else {
+            "/tmp"
+        };
     }
 
     public func walk(path_: string, ext: string := "") -> ![]string {

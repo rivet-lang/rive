@@ -1,7 +1,15 @@
-import { Path } from std/fs;
+import std/env;
 import std/process;
+import { Path, Directory } from std/fs;
 
 static cwd := process.get_cwd() catch ".";
+
+test "std.fs.Directory.tmp_dir()" {
+    @assert(Directory.tmp_dir() == "/tmp");
+    env.set("TMPDIR", "custom_tmp_dir")!;
+    @assert(Directory.tmp_dir() == "custom_tmp_dir");
+    env.remove("TMPDIR")!;
+}
 
 test "std.fs.Path.is_absolute()" {
     @assert(Path.is_absolute("") == false);
