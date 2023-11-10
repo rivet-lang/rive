@@ -14,17 +14,22 @@ test "`defer` basic" {
     @assert(a == 5);
 }
 
-func test_defer(add: bool) -> int32 {
+func test_defer(five: bool, early_return: bool := false) -> int32 {
     mut a := 1;
-    if add {
+    if five {
         defer a = 5;
+        if early_return {
+            defer a += 2;
+            return a;
+        }
     }
     return a;
 }
 
-test "`defer` from call" {
+test "`defer` from a call" {
     @assert(test_defer(false) == 1);
-    @assert(test_defer(true) == 1);
+    @assert(test_defer(true) == 5);
+    @assert(test_defer(true, true) == 7);
 }
 
 func test_errdefer(mut err_defer: ErrDefer, err: bool) -> ! {
