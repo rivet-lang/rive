@@ -162,6 +162,7 @@ extend Checker {
             .Call as mut call_expr -> self.check_call(call_expr),
             .BuiltinCall as mut builtin_call -> self.check_builtin_call(builtin_call),
             .Block as block -> {
+                self.defer_stmts_start = self.defer_stmts.len;
                 if block.is_unsafe {
                     if self.inside_unsafe_block {
                         report.warn("unnecessary `unsafe` block", block.pos);
@@ -186,6 +187,8 @@ extend Checker {
                     }
                     self.inside_unsafe_block = false;
                 }
+                block.defer_stmts = self.defer_stmts[self.defer_stmts_start..];
+                self.defer_stmts = self.defer_stmts[..self.defer_stmts_start];
                 block.type
             },
             .Unary as mut unary -> self.check_unary(unary),

@@ -848,6 +848,7 @@ class ThrowExpr:
 class Block:
     def __init__(self, scope, is_unsafe, stmts, expr, is_expr, pos):
         self.is_unsafe = is_unsafe
+        self.defer_stmts = []
         self.stmts = stmts
         self.expr = expr
         self.is_expr = is_expr

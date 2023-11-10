@@ -433,6 +433,7 @@ class Codegen:
                     ir.Ident(ir.BOOL_T, defer_stmt.flag_var),
                     ir.IntLit(ir.BOOL_T, "0")
                 )
+            self.gen_defer_stmt_vars(decl.defer_stmts)
             self.gen_stmts(decl.stmts)
             self.gen_defer_stmts()
             if str(fn_decl.ret_typ) == "_R7Result__R4void":
@@ -1066,7 +1067,9 @@ class Codegen:
                 else:
                     assert False, expr
         elif isinstance(expr, ast.Block):
+            self.gen_defer_stmt_vars(expr.defer_stmts)
             self.gen_stmts(expr.stmts)
+            self.gen_defer_stmts()
             if expr.is_expr:
                 return self.gen_expr_with_cast(expr.typ, expr.expr)
             return ir.Skip()
@@ -2452,6 +2455,14 @@ class Codegen:
                 require_store_ptr = left.typ.nr_level() > 1
         self.inside_lhs_assign = old_inside_lhs_assign
         return left, require_store_ptr
+
+    def gen_defer_stmt_vars(self, defer_stmts):
+        for defer_stmt in defer_stmts:
+            defer_stmt.flag_var = self.cur_fn.local_name()
+            self.cur_fn.alloca(
+                ir.Ident(ir.BOOL_T, defer_stmt.flag_var),
+                ir.IntLit(ir.BOOL_T, "0")
+            )
 
     def gen_defer_stmts(self, gen_errdefer = False, last_ret_was_err = None):
         for i in range(len(self.cur_fn_defer_stmts) - 1, -1, -1):

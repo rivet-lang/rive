@@ -23,6 +23,7 @@ class Checker:
         self.inside_var_decl = False
 
         self.defer_stmts = []
+        self.defer_stmts_start = 0
 
     def check_global_vars(self, decls):
         for decl in decls:
@@ -1300,14 +1301,14 @@ class Checker:
             expr.typ = self.comp.never_t
             return expr.typ
         elif isinstance(expr, ast.Block):
+            self.defer_stmts_start = len(self.defer_stmts)
             if expr.is_unsafe:
                 if self.inside_unsafe:
                     report.warn("unnecessary `unsafe` block", expr.pos)
                 self.inside_unsafe = True
             old_expected_type = self.expected_type
             self.expected_type = self.comp.void_t
-            for stmt in expr.stmts:
-                self.check_stmt(stmt)
+            self.check_stmts(expr.stmts)
             self.expected_type = old_expected_type
             if expr.is_expr:
                 expr.typ = self.check_expr(expr.expr)
@@ -1315,6 +1316,8 @@ class Checker:
                 expr.typ = self.comp.void_t
             if expr.is_unsafe:
                 self.inside_unsafe = False
+            expr.defer_stmts = self.defer_stmts[self.defer_stmts_start:]
+            self.defer_stmts = self.defer_stmts[:self.defer_stmts_start]
             return expr.typ
         elif isinstance(expr, ast.IfExpr):
             expr.expected_typ = self.expected_type

@@ -244,6 +244,7 @@ public enum Expr < traits.Stringable {
         scope: Scope;
         pos: token.Pos;
         mut type: Type;
+        mut defer_stmts: []Stmt.Defer;
     },
     If {
         branches: []IfBranch;

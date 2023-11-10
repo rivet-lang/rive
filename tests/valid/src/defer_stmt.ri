@@ -2,13 +2,25 @@ struct ErrDefer {
     mut i: int32;
 }
 
+test "`defer` basic" {
+    mut a := 1;
+    {
+        // `defer` must be executed at the end of each scope
+        defer a = 2;
+        a = 1;
+    }
+    @assert(a == 2);
+    a = 5;
+    @assert(a == 5);
+}
+
 func test_defer() -> int32 {
     mut a := 1;
     defer a = 5;
     return a;
 }
 
-test "`defer` statement" {
+test "`defer` from call" {
     @assert(test_defer() == 5);
 }
 
