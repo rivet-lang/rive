@@ -33,8 +33,8 @@ public enum OutputMode as uint8 {
 }
 
 public enum OptimizeMode as uint8 {
-	Debug,
-	Release
+    Debug,
+    Release
 }
 
 public enum LinkMode as uint8 {
@@ -59,25 +59,26 @@ public struct Prefs {
     public mut mod_dir: string;
     public mut mod_output: string;
 
+    public mut library_path: []string := [rivetcLibDir, libDir];
+    public mut libraries_to_link: []string;
+    public mut objects_to_link: []string;
+
+    public mut flags: []string;
+    public mut check: bool;
+    public mut check_syntax: bool;
+    public mut emit_mir: bool;
+    public mut keep_c: bool;
+    public mut all_warns_are_errors: bool;
+    public mut hide_all_warns: bool;
+    public mut is_verbose: bool;
+    public mut is_fmt: bool; 
+
     // Output info
     public mut output_mode: OutputMode;
     public mut optimize_mode: OptimizeMode;
     public mut is_test: bool;
     public mut run_output: bool;
     public mut run_output_args: []string;
-
-    public mut library_path: []string := [rivetcLibDir, libDir];
-    public mut libraries_to_link: []string;
-    public mut objects_to_link: []string;
-
-    public mut flags: []string;
-	public mut check: bool;
-    public mut check_syntax: bool;
-	public mut emit_mir: bool;
-	public mut keep_c: bool;
-	public mut all_warns_are_errors: bool;
-	public mut hide_all_warns: bool;
-	public mut is_verbose: bool;
 
     public func new(args: []string, is_test: bool, run_output: bool, is_check: bool) -> !Self {
         prefs := Prefs(is_test: is_test, run_output: run_output, check: is_check);
