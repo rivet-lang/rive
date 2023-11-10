@@ -13,7 +13,7 @@ test "`defer` basic" {
     a = 5;
     @assert(a == 5);
 }
-
+import std/console;
 func test_defer(five: bool, early_return: bool := false) -> int32 {
     mut a := 1;
     if five {
@@ -27,6 +27,7 @@ func test_defer(five: bool, early_return: bool := false) -> int32 {
 }
 
 test "`defer` from a call" {
+    console.writeln(test_defer(false));
     @assert(test_defer(false) == 1);
     @assert(test_defer(true) == 5);
     @assert(test_defer(true, true) == 7);
