@@ -25,12 +25,12 @@ test "`defer` basic 2" {
 
 import std/console;
 func test_defer(five: bool, early_return: bool := false) -> int {
-    mut a := 1;
+    mut a := 0;
     if five {
         console.writeln("if five");
-        defer a = 5;
+        defer a += 5;
         if early_return {
-            //defer a += 2;
+            defer a += 2;
             return a;
         }
     }
@@ -39,9 +39,9 @@ func test_defer(five: bool, early_return: bool := false) -> int {
 
 test "`defer` from a call" {
     console.writeln("{}", test_defer(false));
-    @assert(test_defer(false) == 1);
+    @assert(test_defer(false) == 0);
     @assert(test_defer(true) == 5);
-    @assert(test_defer(true, true) == 1);
+    @assert(test_defer(true, true) == 7);
 }
 
 func test_errdefer(mut err_defer: ErrDefer, err: bool) -> ! {
