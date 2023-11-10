@@ -1,4 +1,4 @@
-Ji# Copyright (C) 2023 The Rivet Developers. All rights reserved.
+# Copyright (C) 2023 The Rivet Developers. All rights reserved.
 # Use of this source code is governed by an MIT license that can
 # be found in the LICENSE file.
 
