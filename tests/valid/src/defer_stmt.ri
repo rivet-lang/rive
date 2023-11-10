@@ -13,6 +13,16 @@ test "`defer` basic" {
     a = 5;
     @assert(a == 5);
 }
+
+test "`defer` basic 2" {
+    i := 10;
+    j := 30;
+    muy sum := 0;
+    defer @assert(sum == 30);
+    defer sum = i + j;
+    @assert(sum == 0);
+}
+
 import std/console;
 func test_defer(five: bool, early_return: bool := false) -> int {
     mut a := 1;
