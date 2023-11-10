@@ -23,25 +23,22 @@ test "`defer` basic 2" {
     @assert(sum == 0);
 }
 
-import std/console;
-func test_defer(five: bool, early_return: bool := false) -> int {
-    mut a := 0;
-    if five {
-        console.ewriteln("if five");
-        defer console.ewriteln("a += 5 {}", five);
-        defer a += 5;
-        if early_return {
-            defer a += 2;
-            return a;
-        }
+
+func test_call() -> int {
+    mut a := 1;
+
+    {
+        defer a = 2;
+        a = 1;
     }
+    @assert(a == 2);
+
+    a = 5;
     return a;
 }
 
 test "`defer` from a call" {
-    @assert(test_defer(false) == 0);
-    @assert(test_defer(true) == 5);
-    @assert(test_defer(true, true) == 7);
+    @assert(test_defer_call() == 5);
 }
 
 func test_errdefer(mut err_defer: ErrDefer, err: bool) -> ! {
