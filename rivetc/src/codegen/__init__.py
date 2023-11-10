@@ -278,7 +278,7 @@ class Codegen:
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
                 exit_code = os.system(self.comp.prefs.mod_output)
                 os.remove(self.comp.prefs.mod_output)
-                print("exit code:", exit_code)
+                assert exit_code == 0
                 if exit_code != 0:
                     exit(exit_code)
 
