@@ -24,7 +24,7 @@ test "`defer` basic 2" {
 }
 
 
-func test_call() -> int {
+func test_defer_call() -> int {
     mut a := 1;
 
     {
