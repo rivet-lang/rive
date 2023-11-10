@@ -1,4 +1,4 @@
-// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+no// Copyright (C) 2023 The Rivet Developers. All rights reserved.
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
@@ -93,9 +93,10 @@ public struct TestRunner {
             }
         }
         self.print_summary_tests();
-        //if self.fail_tests > 0 {
-            process_exit(1);
-        //}
+        if self.fail_tests > 0 {
+            console_writeln("exit?");
+            process_panic("panic!");
+        }
     }
 
     func print_summary_tests(&self) {
