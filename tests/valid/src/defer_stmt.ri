@@ -16,7 +16,7 @@ test "`defer` basic" {
 
 test "`defer` basic 2" {
     i := 10;
-    j := 30;
+    j := 20;
     mut sum := 0;
     defer @assert(sum == 30);
     defer sum = i + j;
