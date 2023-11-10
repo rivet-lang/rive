@@ -278,9 +278,9 @@ class Codegen:
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
                 exit_code = os.system(self.comp.prefs.mod_output)
                 os.remove(self.comp.prefs.mod_output)
-                assert exit_code == 0
+                # assert exit_code == 0
                 if exit_code != 0:
-                    exit(exit_code)
+                    exit(1)
 
     def gen_mod_attributes(self, mod_name, attributes):
         mod_folder = os.path.join(prefs.RIVET_DIR, "obj", mod_name)
