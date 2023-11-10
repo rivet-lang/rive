@@ -23,6 +23,16 @@ test "`defer` basic 2" {
     @assert(sum == 0);
 }
 
+test "defer` basic 3" {
+    mut sum := 0;
+    defer @assert(sum == 3);
+    defer sum + = 1;
+    defer sum += 2;
+    if false {
+        // should not be executed
+        defer sum += 1;
+    }
+}
 
 func test_defer_call() -> int {
     mut a := 1;
