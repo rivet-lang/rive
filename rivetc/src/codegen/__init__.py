@@ -430,12 +430,6 @@ class Codegen:
             self.cur_fn.arr_ret_struct = arr_ret_struct
             self.cur_fn_is_main = decl.is_main
             self.cur_fn_ret_typ = decl.ret_typ
-            for defer_stmt in decl.defer_stmts:
-                defer_stmt.flag_var = self.cur_fn.local_name()
-                self.cur_fn.alloca(
-                    ir.Ident(ir.BOOL_T, defer_stmt.flag_var),
-                    ir.IntLit(ir.BOOL_T, "0")
-                )
             self.gen_defer_stmt_vars(decl.defer_stmts)
             self.gen_stmts(decl.stmts)
             self.gen_defer_stmts()
