@@ -27,7 +27,7 @@ func test_defer(five: bool, early_return: bool := false) -> int32 {
 }
 
 test "`defer` from a call" {
-    console.writeln(test_defer(false));
+    console.writeln("{}", test_defer(false));
     @assert(test_defer(false) == 1);
     @assert(test_defer(true) == 5);
     @assert(test_defer(true, true) == 7);
