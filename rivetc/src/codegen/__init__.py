@@ -2339,6 +2339,7 @@ class Codegen:
                         self.gen_expr(self.while_continue_expr)
                 self.cur_fn.add_br(self.loop_entry_label)
             else:
+                self.gen_defer_stmts()
                 self.cur_fn.add_br(self.loop_exit_label)
             return ir.Skip()
         elif isinstance(expr, ast.ReturnExpr):
@@ -2374,10 +2375,7 @@ class Codegen:
                     expr_ = tmp
                 if wrap_result:
                     expr_ = self.result_value(self.cur_fn_ret_typ, expr_)
-                self.gen_defer_stmts(
-                    wrap_result,
-                    ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err"))
-                )
+                self.gen_defer_stmts()
                 self.cur_fn.add_ret(expr_)
             elif wrap_result:
                 self.gen_defer_stmts()
