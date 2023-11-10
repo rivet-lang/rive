@@ -94,8 +94,7 @@ public struct TestRunner {
         }
         self.print_summary_tests();
         if self.fail_tests > 0 {
-            console_writeln("exit?");
-            process_panic("panic!");
+            process_exit(1);
         }
     }
 
