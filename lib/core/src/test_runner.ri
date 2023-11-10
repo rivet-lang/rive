@@ -93,9 +93,9 @@ public struct TestRunner {
             }
         }
         self.print_summary_tests();
-        if self.fail_tests > 0 {
+        //if self.fail_tests > 0 {
             process_exit(1);
-        }
+        //}
     }
 
     func print_summary_tests(&self) {
