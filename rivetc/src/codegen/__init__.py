@@ -276,8 +276,11 @@ class Codegen:
                 self.comp.vlog("generating C output from RIR...")
                 CGen(self.comp).gen(self.out_rir)
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
-                self.comp.exit_code = os.system(self.comp.prefs.mod_output)
+                exit_code = os.system(self.comp.prefs.mod_output)
                 os.remove(self.comp.prefs.mod_output)
+                # assert exit_code == 0
+                if exit_code != 0:
+                    exit(1)
 
     def gen_mod_attributes(self, mod_name, attributes):
         mod_folder = os.path.join(prefs.RIVET_DIR, "obj", mod_name)
