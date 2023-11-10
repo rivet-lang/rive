@@ -1,4 +1,4 @@
-# Copyright (C) 2023 The Rivet Developers. All rights reserved.
+Ji# Copyright (C) 2023 The Rivet Developers. All rights reserved.
 # Use of this source code is governed by an MIT license that can
 # be found in the LICENSE file.
 
@@ -238,7 +238,7 @@ class CGen:
             elif isinstance(inst, ir.Comment):
                 self.writeln(f"/* {inst.text} */")
             elif isinstance(inst, ir.Label):
-                self.writeln(f"{inst.label}: {{}}")
+                self.writeln(f"{inst.label}: ;")
             elif isinstance(inst, ir.Inst):
                 self.gen_inst(inst)
                 if inst.kind == InstKind.DbgStmtLine:
