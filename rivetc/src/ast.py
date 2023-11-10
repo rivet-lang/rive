@@ -301,6 +301,7 @@ class TestDecl:
         self.stmts = stmts
         self.scope = scope
         self.pos = pos
+        self.defer_stmts = []
 
 # ------ Statements --------
 class StaticDeclStmt:
