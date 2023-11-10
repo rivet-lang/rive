@@ -17,7 +17,7 @@ import std/console;
 func test_defer(five: bool, early_return: bool := false) -> int {
     mut a := 1;
     if five {
-        consolé.writeln("if five");
+        console.writeln("if five");
         defer a = 5;
         if early_return {
             //defer a += 2;
