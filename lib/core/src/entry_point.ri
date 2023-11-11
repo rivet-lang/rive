@@ -38,7 +38,6 @@ func main(
 #if _TESTS_
     if test_runner.tests.len > 0 {
         test_runner.run();
-        test_runner.print_summary_tests();
     }
 #else
     mod_main();
