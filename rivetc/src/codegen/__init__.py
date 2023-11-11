@@ -787,7 +787,7 @@ class Codegen:
                         for b in list(utils.bytestr(escaped_val).buf)
                     ]
                 )
-            size = utils.bytestr(escaped_val).len
+            size = utils.bytestr(expr.lit).len
             if not expr.is_raw:
                 size -= expr.lit.count("\\") - expr.lit.count("\\\\")
             if expr.typ == self.comp.string_t:
