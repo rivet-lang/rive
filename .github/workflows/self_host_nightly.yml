@@ -16,7 +16,6 @@ jobs:
 
       - name: Compile the self-hosted compiler
         run: |
-          sudo apt install zip
           python3 rivetc -o rivet cmd/
           ./rivet version
           mkdir rivet-nightly-linux-amd64
