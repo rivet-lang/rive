@@ -2352,7 +2352,7 @@ class Codegen:
                         ir.Name("result")
                     ), ir.IntLit(ir.UINT8_T, "1")
                 )
-                self.gen_defer_stmts()
+                #self.gen_defer_stmts()
                 self.cur_fn.add_ret_void()
             elif expr.has_expr:
                 is_array = self.cur_fn_ret_typ.symbol().kind == TypeKind.Array
@@ -2375,13 +2375,13 @@ class Codegen:
                     expr_ = tmp
                 if wrap_result:
                     expr_ = self.result_value(self.cur_fn_ret_typ, expr_)
-                self.gen_defer_stmts()
+                #self.gen_defer_stmts()
                 self.cur_fn.add_ret(expr_)
             elif wrap_result:
-                self.gen_defer_stmts()
+                #self.gen_defer_stmts()
                 self.cur_fn.add_ret(self.result_void(self.cur_fn_ret_typ))
             else:
-                self.gen_defer_stmts()
+                #self.gen_defer_stmts()
                 self.cur_fn.add_ret_void()
             return ir.Skip()
         elif isinstance(expr, ast.ThrowExpr):
