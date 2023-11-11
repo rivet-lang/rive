@@ -66,7 +66,7 @@ test "`errdefer` statement" {
     @assert(err_defer.i == 1);
 
     test_errdefer(err_defer, true) catch { };
-    @assert(err_defer.i == 4);
+    @assert(err_defer.i == 3);
 }
 
 func throw_error() -> ! {
