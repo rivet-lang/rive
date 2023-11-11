@@ -432,8 +432,9 @@ class Codegen:
             self.cur_fn_ret_typ = decl.ret_typ
             self.gen_defer_stmt_vars(decl.defer_stmts)
             self.gen_stmts(decl.stmts)
-            if str(fn_decl.ret_typ) == "_R7Result__R4void":
+            if str(fn_decl.ret_typ) == "void" or str(fn_decl.ret_typ) == "_R7Result__R4void":
                 self.gen_defer_stmts(scope=decl.scope)
+            if str(fn_decl.ret_typ) == "_R7Result__R4void":
                 self.cur_fn.add_ret(self.result_void(decl.ret_typ))
             elif str(fn_decl.ret_typ) != "void" and not (
                 len(fn_decl.instrs) > 0
