@@ -646,7 +646,7 @@ class IndexExpr:
 
 class CallExpr:
     def __init__(
-        self, left, args, has_spread_expr, spread_expr, err_handler, pos
+        self, left, args, has_spread_expr, spread_expr, err_handler, pos, scope=None
     ):
         self.sym = None
         self.left = left
@@ -660,6 +660,7 @@ class CallExpr:
         self.enum_variant_sym = None
         self.pos = pos
         self.typ = None
+        self.scope = scope
 
     def has_named_args(self):
         for arg in self.args:
