@@ -13,3 +13,11 @@ test "`if` expression as statement" {
         @assert(false);
     }
 }
+
+test "`if` expression with false condition" {
+    mut x := 0;
+    if false {
+        x = 1;
+    }
+    @assert(x == 0);
+}

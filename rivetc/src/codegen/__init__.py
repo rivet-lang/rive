@@ -2072,7 +2072,6 @@ class Codegen:
             return ir.Ident(self.ir_type(expr.typ), tmp)
         elif isinstance(expr, ast.IfExpr):
             is_void_value = expr.typ in self.void_types
-            gen_branch = True
             exit_label = self.cur_fn.local_name()
             else_label = self.cur_fn.local_name(
             ) if expr.has_else else exit_label
@@ -2085,8 +2084,6 @@ class Codegen:
             self.cur_fn.add_comment(f"if expr (end: {exit_label})")
             next_branch = ""
             for i, b in enumerate(expr.branches):
-                if not gen_branch:
-                    break
                 is_branch_void_value = b.typ in self.void_types
                 self.cur_fn.add_comment(f"if branch (is_else: {b.is_else})")
                 if b.is_else:
@@ -2104,26 +2101,23 @@ class Codegen:
                         next_branch = else_label
                     else:
                         next_branch = self.cur_fn.local_name()
-                    if isinstance(cond, ir.IntLit) and cond.lit == "0":
-                        gen_branch = False
-                    else:
-                        if isinstance(b.cond, ast.GuardExpr):
+                    if isinstance(b.cond, ast.GuardExpr):
+                        self.cur_fn.add_cond_single_br(
+                            ir.Inst(ir.InstKind.BooleanNot, [cond]),
+                            next_branch
+                        )
+                        if b.cond.has_cond:
                             self.cur_fn.add_cond_single_br(
-                                ir.Inst(ir.InstKind.BooleanNot, [cond]),
-                                next_branch
+                                ir.Inst(
+                                    ir.InstKind.BooleanNot,
+                                    [self.gen_expr(b.cond.cond)]
+                                ), next_branch
                             )
-                            if b.cond.has_cond:
-                                self.cur_fn.add_cond_single_br(
-                                    ir.Inst(
-                                        ir.InstKind.BooleanNot,
-                                        [self.gen_expr(b.cond.cond)]
-                                    ), next_branch
-                                )
-                        else:
-                            self.cur_fn.add_cond_br(
-                                cond, branch_label, next_branch
-                            )
-                        self.cur_fn.add_label(branch_label)
+                    else:
+                        self.cur_fn.add_cond_br(
+                            cond, branch_label, next_branch
+                        )
+                    self.cur_fn.add_label(branch_label)
                 if is_branch_void_value:
                     self.gen_expr_with_cast(
                         expr.expected_typ, b.expr
@@ -2132,15 +2126,13 @@ class Codegen:
                     self.cur_fn.store(
                         tmp, self.gen_expr_with_cast(expr.expected_typ, b.expr)
                     )
-                if gen_branch:
-                    self.cur_fn.add_comment(
-                        "if expr branch (goto to other branch)"
-                    )
-                    self.cur_fn.add_br(exit_label)
+                self.cur_fn.add_comment(
+                    "if expr branch (goto to other branch)"
+                )
+                self.cur_fn.add_br(exit_label)
                 if len(next_branch) > 0 and next_branch != else_label:
                     self.cur_fn.add_label(next_branch)
-            if gen_branch:
-                self.cur_fn.add_label(exit_label)
+            self.cur_fn.add_label(exit_label)
             if not is_void_value:
                 return tmp
         elif isinstance(expr, ast.MatchExpr):
