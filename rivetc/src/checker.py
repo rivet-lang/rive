@@ -200,6 +200,8 @@ class Checker:
             self.cur_fn = None
             self.inside_test = True
             self.check_stmts(decl.stmts)
+            decl.defer_stmts = self.defer_stmts
+            self.defer_stmts = []
             self.inside_test = False
             self.cur_fn = old_cur_fn
             self.check_mut_vars(decl.scope)

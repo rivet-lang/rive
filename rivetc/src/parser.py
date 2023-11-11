@@ -607,7 +607,7 @@ class Parser:
             expr = self.parse_expr()
             if expr.__class__ not in (ast.IfExpr, ast.MatchExpr, ast.Block):
                 self.expect(Kind.Semicolon)
-            return ast.DeferStmt(expr, is_errdefer, pos)
+            return ast.DeferStmt(expr, is_errdefer, pos, self.scope)
         elif (
             self.tok.kind in (Kind.Lparen, Kind.KwMut, Kind.Name) and
             self.peek_tok.kind not in (Kind.Dot, Kind.Lbracket, Kind.Lparen)
@@ -814,7 +814,7 @@ class Parser:
             op = self.tok.kind
             pos = self.tok.pos
             self.next()
-            expr = ast.BranchExpr(op, pos)
+            expr = ast.BranchExpr(op, pos, self.scope)
         elif self.accept(Kind.KwReturn):
             pos = self.prev_tok.pos
             has_expr = self.tok.kind not in (
@@ -824,10 +824,10 @@ class Parser:
                 expr = self.parse_expr()
             else:
                 expr = self.empty_expr()
-            expr = ast.ReturnExpr(expr, has_expr, pos)
+            expr = ast.ReturnExpr(expr, has_expr, pos, self.scope)
         elif self.accept(Kind.KwThrow):
             pos = self.prev_tok.pos
-            expr = ast.ThrowExpr(self.parse_expr(), pos)
+            expr = ast.ThrowExpr(self.parse_expr(), pos, self.scope)
         elif self.tok.kind == Kind.KwIf:
             expr = self.parse_if_expr()
         elif self.accept(Kind.KwMatch):
@@ -962,7 +962,7 @@ class Parser:
                     ast.CallErrorHandler(
                         is_propagate, varname, err_expr, has_err_expr,
                         varname_pos, self.scope, err_handler_pos
-                    ), expr.pos
+                    ), expr.pos, self.scope
                 )
             elif self.accept(Kind.Lbracket):
                 index = self.empty_expr()

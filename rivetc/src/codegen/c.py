@@ -238,7 +238,7 @@ class CGen:
             elif isinstance(inst, ir.Comment):
                 self.writeln(f"/* {inst.text} */")
             elif isinstance(inst, ir.Label):
-                self.writeln(f"{inst.label}: {{}}")
+                self.writeln(f"{inst.label}: ;")
             elif isinstance(inst, ir.Inst):
                 self.gen_inst(inst)
                 if inst.kind == InstKind.DbgStmtLine:

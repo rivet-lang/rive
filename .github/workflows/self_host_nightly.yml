@@ -1,4 +1,4 @@
-name: Self-hosted Compiler Nightly Build
+name: Self-hosted Compiler - Nightly Build
 
 on:
   push:

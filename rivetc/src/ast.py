@@ -301,6 +301,7 @@ class TestDecl:
         self.stmts = stmts
         self.scope = scope
         self.pos = pos
+        self.defer_stmts = []
 
 # ------ Statements --------
 class StaticDeclStmt:
@@ -331,11 +332,12 @@ class ForStmt:
         self.pos = pos
 
 class DeferStmt:
-    def __init__(self, expr, is_errdefer, pos):
+    def __init__(self, expr, is_errdefer, pos, scope = None):
         self.expr = expr
         self.is_errdefer = is_errdefer
         self.flag_var = ""
         self.pos = pos
+        self.scope = scope
 
 class ExprStmt:
     def __init__(self, expr, pos):
@@ -644,7 +646,7 @@ class IndexExpr:
 
 class CallExpr:
     def __init__(
-        self, left, args, has_spread_expr, spread_expr, err_handler, pos
+        self, left, args, has_spread_expr, spread_expr, err_handler, pos, scope=None
     ):
         self.sym = None
         self.left = left
@@ -658,6 +660,7 @@ class CallExpr:
         self.enum_variant_sym = None
         self.pos = pos
         self.typ = None
+        self.scope = scope
 
     def has_named_args(self):
         for arg in self.args:
@@ -807,10 +810,11 @@ class SelectorExpr:
         return self.__repr__()
 
 class BranchExpr:
-    def __init__(self, op, pos):
+    def __init__(self, op, pos, scope=None):
         self.op = op
         self.pos = pos
         self.typ = None
+        self.scope=scope
 
     def __repr__(self):
         return str(self.op)
@@ -819,25 +823,27 @@ class BranchExpr:
         return self.__repr__()
 
 class ReturnExpr:
-    def __init__(self, expr, has_expr, pos):
+    def __init__(self, expr, has_expr, pos, scope = None):
         self.expr = expr
         self.has_expr = has_expr
         self.pos = pos
         self.typ = None
+        self.scope = scope
 
     def __repr__(self):
-        if not self.has_expr:
-            return "return"
-        return f"return {self.expr}"
+        if self.has_expr:
+            return f"return {self.expr}"
+        return "return"
 
     def __str__(self):
         return self.__repr__()
 
 class ThrowExpr:
-    def __init__(self, expr, pos):
+    def __init__(self, expr, pos, scope = None):
         self.expr = expr
         self.pos = pos
         self.typ = None
+        self.scope = scope
 
     def __repr__(self):
         return f"throw {self.expr}"
