@@ -1066,12 +1066,9 @@ class Codegen:
                 else:
                     assert False, expr
         elif isinstance(expr, ast.Block):
-            old_cfd = self.cur_fn_defer_stmts
-            self.cur_fn_defer_stmts = []
             self.gen_defer_stmt_vars(expr.defer_stmts)
             self.gen_stmts(expr.stmts)
-            self.gen_defer_stmts()
-            self.cur_fn_defer_stmts = old_cfd
+            self.gen_defer_stmts(scope=expr.scope)
             if expr.is_expr:
                 return self.gen_expr_with_cast(expr.typ, expr.expr)
             return ir.Skip()
@@ -2355,7 +2352,7 @@ class Codegen:
                         ir.Name("result")
                     ), ir.IntLit(ir.UINT8_T, "1")
                 )
-                #self.gen_defer_stmts()
+                self.gen_defer_stmts(scope=expr.scope, is_ret=True)
                 self.cur_fn.add_ret_void()
             elif expr.has_expr:
                 is_array = self.cur_fn_ret_typ.symbol().kind == TypeKind.Array
@@ -2378,13 +2375,13 @@ class Codegen:
                     expr_ = tmp
                 if wrap_result:
                     expr_ = self.result_value(self.cur_fn_ret_typ, expr_)
-                #self.gen_defer_stmts()
+                self.gen_defer_stmts(scope=expr.scope, is_ret=True)
                 self.cur_fn.add_ret(expr_)
             elif wrap_result:
-                #self.gen_defer_stmts()
+                self.gen_defer_stmts(scope=expr.scope, is_ret=True)
                 self.cur_fn.add_ret(self.result_void(self.cur_fn_ret_typ))
             else:
-                #self.gen_defer_stmts()
+                self.gen_defer_stmts(scope=expr.scope, is_ret=True)
                 self.cur_fn.add_ret_void()
             return ir.Skip()
         elif isinstance(expr, ast.ThrowExpr):
@@ -2398,7 +2395,8 @@ class Codegen:
                     self.gen_expr(expr.expr)
                 )
                 self.gen_defer_stmts(
-                    True, ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err"))
+                    True, ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err")),
+                    scope=expr.scope, is_ret=True
                 )
                 self.cur_fn.add_ret(expr_)
                 return ir.Skip()
@@ -2464,9 +2462,14 @@ class Codegen:
                 ir.IntLit(ir.BOOL_T, "0")
             )
 
-    def gen_defer_stmts(self, gen_errdefer = False, last_ret_was_err = None):
+    def gen_defer_stmts(self, gen_errdefer = False, last_ret_was_err = None, scope=None, is_ret=False):
         for i in range(len(self.cur_fn_defer_stmts) - 1, -1, -1):
             defer_stmt = self.cur_fn_defer_stmts[i]
+            if sc := scope:
+                if is_ret and sc.start < defer_stmt.scope.start:
+                    continue
+                if sc.start != defer_stmt.scope.start:
+                    continue
             if defer_stmt.is_errdefer and not gen_errdefer:
                 continue
             defer_start = self.cur_fn.local_name()
