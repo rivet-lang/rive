@@ -59,13 +59,15 @@ func test_errdefer(mut err_defer: ErrDefer, err: bool) -> ! {
         throw MyError();
     }
 }
-
+import std/console;
 test "`errdefer` statement" {
     mut err_defer := ErrDefer(i: 0);
+
     test_errdefer(err_defer, false) catch { };
     @assert(err_defer.i == 1);
 
     test_errdefer(err_defer, true) catch { };
+console.writeln("i: {}",err_defer.i);
     @assert(err_defer.i == 3);
 }
 
