@@ -1066,9 +1066,12 @@ class Codegen:
                 else:
                     assert False, expr
         elif isinstance(expr, ast.Block):
+            old_cfd = self.cur_fn_defer_stmts
+            self.cur_fn_defer_stmts = []
             self.gen_defer_stmt_vars(expr.defer_stmts)
             self.gen_stmts(expr.stmts)
             self.gen_defer_stmts()
+            self.cur_fn_defer_stmts = old_cfd
             if expr.is_expr:
                 return self.gen_expr_with_cast(expr.typ, expr.expr)
             return ir.Skip()
