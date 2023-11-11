@@ -28,7 +28,7 @@ test "defer` basic 3" {
     defer @assert(sum == 3);
     defer sum += 1;
     defer sum += 2;
-    if true {
+    if false {
         // should not be executed
         defer sum += 1;
     }
