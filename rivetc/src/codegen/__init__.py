@@ -460,7 +460,7 @@ class Codegen:
                 self.cur_fn = test_fn
                 self.gen_defer_stmt_vars(decl.defer_stmts)
                 self.gen_stmts(decl.stmts)
-                self.gen_defer_stmts()
+                self.gen_defer_stmts(scope=decl.scope)
                 self.generated_tests.append(TestInfo(test_name, test_func))
                 self.out_rir.decls.append(test_fn)
                 self.inside_test = False
