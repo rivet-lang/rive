@@ -2394,6 +2394,8 @@ class Codegen:
                 )
                 self.cur_fn.add_ret(expr_)
                 return ir.Skip()
+            else:
+                assert False
         else:
             if expr is None:
                 raise Exception(expr)
@@ -2459,7 +2461,9 @@ class Codegen:
     def gen_defer_stmts(self, gen_errdefer = False, last_ret_was_err = None, scope=None, is_ret=False):
         for i in range(len(self.cur_fn_defer_stmts) - 1, -1, -1):
             defer_stmt = self.cur_fn_defer_stmts[i]
-            if (is_ret and not (scope.start >= defer_stmt.scope.start)) or (scope.start != defer_stmt.scope.start):
+            if not (
+                (is_ret and scope.start >= defer_stmt.scope.start) or (scope.start == defer_stmt.scope.start)
+            ):
                 continue
             if defer_stmt.is_errdefer and not gen_errdefer:
                 continue
