@@ -828,7 +828,7 @@ class ReturnExpr:
         self.has_expr = has_expr
         self.pos = pos
         self.typ = None
-        self.scope = None
+        self.scope = scope
 
     def __repr__(self):
         if self.has_expr:
@@ -843,7 +843,7 @@ class ThrowExpr:
         self.expr = expr
         self.pos = pos
         self.typ = None
-        self.scope = None
+        self.scope = scope
 
     def __repr__(self):
         return f"throw {self.expr}"
