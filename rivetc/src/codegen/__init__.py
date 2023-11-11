@@ -128,7 +128,7 @@ class Codegen:
 
         self.inside_trait = False
         self.inside_test = False
-        self.inside_let_decl = False
+        self.inside_var_decl = False
         self.inside_selector_expr = False
         self.inside_lhs_assign = False
 
@@ -338,7 +338,7 @@ class Codegen:
         if isinstance(decl, ast.ExternDecl):
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.StaticDecl):
-            self.inside_let_decl = True
+            self.inside_var_decl = True
             for l in decl.lefts:
                 is_extern = decl.is_extern and decl.abi != sym.ABI.Rivet
                 name = l.name if is_extern else mangle_symbol(l.sym)
@@ -362,7 +362,7 @@ class Codegen:
                             )
                     else:
                         self.cur_fn.store(ident, value)
-            self.inside_let_decl = False
+            self.inside_var_decl = False
         elif isinstance(decl, ast.EnumDecl):
             for v in decl.variants:
                 self.gen_decls(v.decls)
@@ -1427,8 +1427,8 @@ class Codegen:
                     self.cur_fn.add_label(panic_l)
                     if expr.err_handler.is_propagate:
                         self.gen_return_trace_add(expr.pos)
-                        self.gen_defer_stmts(True, res_value_is_err)
-                        if self.cur_fn_is_main or self.inside_let_decl:
+                        self.gen_defer_stmts(True, res_value_is_err, scope=expr.scope, is_ret=True)
+                        if self.cur_fn_is_main or self.inside_var_decl:
                             self.cur_fn.add_call(
                                 "_R4core15uncatched_errorF", [
                                     ir.Selector(
@@ -2340,7 +2340,7 @@ class Codegen:
                         self.gen_expr(self.while_continue_expr)
                 self.cur_fn.add_br(self.loop_entry_label)
             else:
-                self.gen_defer_stmts()
+                self.gen_defer_stmts(scope=expr.scope)
                 self.cur_fn.add_br(self.loop_exit_label)
             return ir.Skip()
         elif isinstance(expr, ast.ReturnExpr):
