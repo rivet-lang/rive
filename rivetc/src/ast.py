@@ -331,10 +331,15 @@ class ForStmt:
         self.stmt = stmt
         self.pos = pos
 
+class DeferMode(Enum):
+    NORMAL = auto_enum()
+    ERROR = auto_enum()
+    SUCCESS = auto_enum()
+
 class DeferStmt:
-    def __init__(self, expr, is_errdefer, pos, scope = None):
+    def __init__(self, expr, defer_mode, pos, scope = None):
         self.expr = expr
-        self.is_errdefer = is_errdefer
+        self.mode = defer_mode
         self.flag_var = ""
         self.pos = pos
         self.scope = scope
@@ -646,7 +651,8 @@ class IndexExpr:
 
 class CallExpr:
     def __init__(
-        self, left, args, has_spread_expr, spread_expr, err_handler, pos, scope=None
+        self, left, args, has_spread_expr, spread_expr, err_handler, pos,
+        scope = None
     ):
         self.sym = None
         self.left = left
@@ -810,11 +816,11 @@ class SelectorExpr:
         return self.__repr__()
 
 class BranchExpr:
-    def __init__(self, op, pos, scope=None):
+    def __init__(self, op, pos, scope = None):
         self.op = op
         self.pos = pos
         self.typ = None
-        self.scope=scope
+        self.scope = scope
 
     def __repr__(self):
         return str(self.op)

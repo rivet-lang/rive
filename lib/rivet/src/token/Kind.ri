@@ -76,7 +76,6 @@ static kindStrings := [
     KindMap(.KwDefer, "defer"),
     KindMap(.KwElse, "else"),
     KindMap(.KwEnum, "enum"),
-    KindMap(.KwErrDefer, "errdefer"),
     KindMap(.KwExtend, "extend"),
     KindMap(.KwExtern, "extern"),
     KindMap(.KwFalse, "false"),
@@ -175,7 +174,6 @@ public enum Kind < traits.Stringable {
     KwDefer, // defer
     KwElse, // else
     KwEnum, // enum
-    KwErrDefer, // errdefer
     KwExtend, // extend
     KwExtern, // extern
     KwFalse, // false
@@ -271,7 +269,6 @@ public func lookup(str: string) -> Kind {
         "defer" -> .KwDefer,
         "else" -> .KwElse,
         "enum" -> .KwEnum,
-        "errdefer" -> .KwErrDefer,
         "extend" -> .KwExtend,
         "extern" -> .KwExtern,
         "false" -> .KwFalse,

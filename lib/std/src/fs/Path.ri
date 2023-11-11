@@ -157,7 +157,7 @@ public struct Path {
             result_index += cwd.len;
             tmp
         };
-        errdefer unsafe {
+        defer(error) unsafe {
             mem.dealloc(result)
         }
         for p in paths[first_index..] {
@@ -228,7 +228,7 @@ public struct Path {
             }
             up_index_end := up_count * 3;
             result := unsafe { @as([&]mut uint8, mem.alloc(up_index_end + to_rest.len)!) };
-            errdefer unsafe {
+            defer(error) unsafe {
                 mem.dealloc(result);
             }
             mut result_index: uint := 0;
@@ -302,7 +302,7 @@ public struct Path {
         buf := unsafe { @as([&]mut uint8, mem.alloc(total_len)!) };
         unsafe {
             buf[total_len - 1] = 0;
-            errdefer mem.dealloc(buf);
+            defer(error) mem.dealloc(buf);
         }
         paths_first_path_index_value := paths[first_path_index];
         mem.copy(buf, paths_first_path_index_value.ptr, paths_first_path_index_value.len);

@@ -601,13 +601,26 @@ class Parser:
             stmt = self.parse_stmt()
             self.close_scope()
             return ast.ForStmt(sc, index, value, iterable, stmt, pos)
-        elif self.accept(Kind.KwDefer) or self.accept(Kind.KwErrDefer):
-            is_errdefer = self.prev_tok.kind == Kind.KwErrDefer
+        elif self.accept(Kind.KwDefer):
+            defer_mode = ast.DeferMode.NORMAL
+            if self.accept(Kind.Lparen):
+                defer_mode_name_pos = self.tok.pos
+                defer_mode_name = self.parse_name()
+                self.expect(Kind.Rparen)
+                if defer_mode_name == "error":
+                    defer_mode = ast.DeferMode.ERROR
+                elif defer_mode_name == "success":
+                    defer_mode = ast.DeferMode.SUCCESS
+                else:
+                    report.error(
+                        f"invalid `defer` mode: `{defer_mode_name}`",
+                        defer_mode_name_pos
+                    )
             pos = self.prev_tok.pos
             expr = self.parse_expr()
             if expr.__class__ not in (ast.IfExpr, ast.MatchExpr, ast.Block):
                 self.expect(Kind.Semicolon)
-            return ast.DeferStmt(expr, is_errdefer, pos, self.scope)
+            return ast.DeferStmt(expr, defer_mode, pos, self.scope)
         elif (
             self.tok.kind in (Kind.Lparen, Kind.KwMut, Kind.Name) and
             self.peek_tok.kind not in (Kind.Dot, Kind.Lbracket, Kind.Lparen)

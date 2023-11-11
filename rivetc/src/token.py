@@ -71,7 +71,6 @@ class Kind(Enum):
     KwDefer = auto_enum() # defer
     KwElse = auto_enum() # else
     KwEnum = auto_enum() # enum
-    KwErrDefer = auto_enum() # errdefer
     KwExtend = auto_enum() # extend
     KwExtern = auto_enum() # extern
     KwFalse = auto_enum() # false
@@ -218,7 +217,6 @@ TOKEN_STRINGS = {
     Kind.KwDefer: "defer",
     Kind.KwElse: "else",
     Kind.KwEnum: "enum",
-    Kind.KwErrDefer: "errdefer",
     Kind.KwExtend: "extend",
     Kind.KwExtern: "extern",
     Kind.KwFalse: "false",

@@ -355,10 +355,9 @@ class Codegen:
                         if isinstance(value,
                                       ir.ArrayLit) and len(value.elems) > 0:
                             self.cur_fn.add_call(
-                                "_R4core8mem_copyF", [
-                                    ident, value,
-                                    ir.IntLit(ir.UINT_T, str(size))
-                                ]
+                                "_R4core8mem_copyF",
+                                [ident, value,
+                                 ir.IntLit(ir.UINT_T, str(size))]
                             )
                     else:
                         self.cur_fn.store(ident, value)
@@ -434,7 +433,7 @@ class Codegen:
             self.gen_stmts(decl.stmts)
             fn_dec_ret_type_str = str(fn_decl.ret_typ)
             if fn_dec_ret_type_str == "void" or fn_dec_ret_type_str == "_R6Result_R4void":
-                self.gen_defer_stmts(scope=decl.scope)
+                self.gen_defer_stmts(scope = decl.scope)
             if fn_dec_ret_type_str == "_R6Result_R4void":
                 self.cur_fn.add_ret(self.result_void(decl.ret_typ))
             elif fn_dec_ret_type_str != "void" and not (
@@ -462,7 +461,7 @@ class Codegen:
                 self.cur_fn = test_fn
                 self.gen_defer_stmt_vars(decl.defer_stmts)
                 self.gen_stmts(decl.stmts)
-                self.gen_defer_stmts(scope=decl.scope)
+                self.gen_defer_stmts(scope = decl.scope)
                 self.generated_tests.append(TestInfo(test_name, test_func))
                 self.out_rir.decls.append(test_fn)
                 self.inside_test = False
@@ -1070,7 +1069,7 @@ class Codegen:
         elif isinstance(expr, ast.Block):
             self.gen_defer_stmt_vars(expr.defer_stmts)
             self.gen_stmts(expr.stmts)
-            self.gen_defer_stmts(scope=expr.scope)
+            self.gen_defer_stmts(scope = expr.scope)
             if expr.is_expr:
                 return self.gen_expr_with_cast(expr.typ, expr.expr)
             return ir.Skip()
@@ -1428,7 +1427,10 @@ class Codegen:
                     self.cur_fn.add_label(panic_l)
                     if expr.err_handler.is_propagate:
                         self.gen_return_trace_add(expr.pos)
-                        self.gen_defer_stmts(True, res_value_is_err, scope=expr.scope, is_ret=True)
+                        self.gen_defer_stmts(
+                            True, res_value_is_err, scope = expr.scope,
+                            is_ret = True
+                        )
                         if self.cur_fn_is_main or self.inside_var_decl:
                             self.cur_fn.add_call(
                                 "_R4core15uncatched_errorF", [
@@ -2104,8 +2106,7 @@ class Codegen:
                         next_branch = self.cur_fn.local_name()
                     if isinstance(b.cond, ast.GuardExpr):
                         self.cur_fn.add_cond_single_br(
-                            ir.Inst(ir.InstKind.BooleanNot, [cond]),
-                            next_branch
+                            ir.Inst(ir.InstKind.BooleanNot, [cond]), next_branch
                         )
                         if b.cond.has_cond:
                             self.cur_fn.add_cond_single_br(
@@ -2115,9 +2116,7 @@ class Codegen:
                                 ), next_branch
                             )
                     else:
-                        self.cur_fn.add_cond_br(
-                            cond, branch_label, next_branch
-                        )
+                        self.cur_fn.add_cond_br(cond, branch_label, next_branch)
                     self.cur_fn.add_label(branch_label)
                 if is_branch_void_value:
                     self.gen_expr_with_cast(
@@ -2127,9 +2126,7 @@ class Codegen:
                     self.cur_fn.store(
                         tmp, self.gen_expr_with_cast(expr.expected_typ, b.expr)
                     )
-                self.cur_fn.add_comment(
-                    "if expr branch (goto to other branch)"
-                )
+                self.cur_fn.add_comment("if expr branch (goto to other branch)")
                 self.cur_fn.add_br(exit_label)
                 if len(next_branch) > 0 and next_branch != else_label:
                     self.cur_fn.add_label(next_branch)
@@ -2333,7 +2330,7 @@ class Codegen:
                         self.gen_expr(self.while_continue_expr)
                 self.cur_fn.add_br(self.loop_entry_label)
             else:
-                self.gen_defer_stmts(scope=expr.scope)
+                self.gen_defer_stmts(scope = expr.scope)
                 self.cur_fn.add_br(self.loop_exit_label)
             return ir.Skip()
         elif isinstance(expr, ast.ReturnExpr):
@@ -2346,7 +2343,7 @@ class Codegen:
                         ir.Name("result")
                     ), ir.IntLit(ir.UINT8_T, "1")
                 )
-                self.gen_defer_stmts(scope=expr.scope, is_ret=True)
+                self.gen_defer_stmts(scope = expr.scope, is_ret = True)
                 self.cur_fn.add_ret_void()
             elif expr.has_expr:
                 is_array = self.cur_fn_ret_typ.symbol().kind == TypeKind.Array
@@ -2369,13 +2366,13 @@ class Codegen:
                     expr_ = tmp
                 if wrap_result:
                     expr_ = self.result_value(self.cur_fn_ret_typ, expr_)
-                self.gen_defer_stmts(scope=expr.scope, is_ret=True)
+                self.gen_defer_stmts(scope = expr.scope, is_ret = True)
                 self.cur_fn.add_ret(expr_)
             elif wrap_result:
-                self.gen_defer_stmts(scope=expr.scope, is_ret=True)
+                self.gen_defer_stmts(scope = expr.scope, is_ret = True)
                 self.cur_fn.add_ret(self.result_void(self.cur_fn_ret_typ))
             else:
-                self.gen_defer_stmts(scope=expr.scope, is_ret=True)
+                self.gen_defer_stmts(scope = expr.scope, is_ret = True)
                 self.cur_fn.add_ret_void()
             return ir.Skip()
         elif isinstance(expr, ast.ThrowExpr):
@@ -2390,7 +2387,7 @@ class Codegen:
                 )
                 self.gen_defer_stmts(
                     True, ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err")),
-                    scope=expr.scope, is_ret=True
+                    scope = expr.scope, is_ret = True
                 )
                 self.cur_fn.add_ret(expr_)
                 return ir.Skip()
@@ -2458,25 +2455,31 @@ class Codegen:
                 ir.IntLit(ir.BOOL_T, "0")
             )
 
-    def gen_defer_stmts(self, gen_errdefer = False, last_ret_was_err = None, scope=None, is_ret=False):
+    def gen_defer_stmts(
+        self, gen_errdefer = False, last_ret_was_err = None, scope = None,
+        is_ret = False
+    ):
         for i in range(len(self.cur_fn_defer_stmts) - 1, -1, -1):
             defer_stmt = self.cur_fn_defer_stmts[i]
-            if not (
-                (is_ret and scope.start >= defer_stmt.scope.start) or (scope.start == defer_stmt.scope.start)
-            ):
+            if not ((is_ret and scope.start >= defer_stmt.scope.start) or
+                    (scope.start == defer_stmt.scope.start)):
                 continue
-            if defer_stmt.is_errdefer and not gen_errdefer:
+            if defer_stmt.mode == ast.DeferMode.ERROR and not gen_errdefer:
+                # Should be run only when an error occurs
+                continue
+            if defer_stmt.mode == ast.DeferMode.SUCCESS and gen_errdefer:
+                # Should not be run in case an error occurs
                 continue
             defer_start = self.cur_fn.local_name()
             defer_end = self.cur_fn.local_name()
             self.cur_fn.add_comment(
-                f"defer_stmt (start: {defer_start}, end: {defer_end}, is_errdefer: {defer_stmt.is_errdefer})"
+                f"defer_stmt (start: {defer_start}, end: {defer_end}, mode: {defer_stmt.mode})"
             )
             self.cur_fn.add_cond_br(
                 ir.Ident(ir.BOOL_T, defer_stmt.flag_var), defer_start, defer_end
             )
             self.cur_fn.add_label(defer_start)
-            if defer_stmt.is_errdefer:
+            if defer_stmt.mode == ast.DeferMode.ERROR:
                 self.cur_fn.add_cond_single_br(
                     ir.Inst(ir.InstKind.BooleanNot, [last_ret_was_err]),
                     defer_end

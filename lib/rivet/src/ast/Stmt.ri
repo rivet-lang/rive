@@ -33,8 +33,13 @@ public enum Stmt {
         pos: token.Pos;
     },
     Defer {
+        public enum Mode {
+            Normal,
+            Error,
+            Success
+        }
         mut expr: Expr;
-        is_errdefer: bool;
+        mode: Mode;
         pos: token.Pos;
     };
 

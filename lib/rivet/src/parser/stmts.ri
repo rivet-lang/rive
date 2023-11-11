@@ -3,6 +3,7 @@
 // be found in the LICENSE file.
 
 import ../ast;
+import ../report;
 
 extend Parser {
     func parse_stmt(mut self) -> ast.Stmt {
@@ -81,14 +82,30 @@ extend Parser {
                     scope: sc
                 )
             },
-            self.accept(.KwDefer) or self.accept(.KwErrDefer) -> {
-                is_errdefer := self.prev_tok.kind == .KwErrDefer;
+            self.accept(.KwDefer) -> {
+                mut defer_mode := ast.Stmt.Defer.Mode.Normal;
+                if self.accept(.Lparen) {
+                    defer_mode_name_pos := self.tok.pos;
+                    defer_mode_name := self.parse_name();
+                    defer_mode = match defer_mode_name {
+                        "error" -> .Error,
+                        "success" -> .Success,
+                        else -> {
+                            report.error(
+                                "invalid `defer` mode: `{defer_mode_name}`".fmt(defer_mode_name),
+                                defer_mode_name_pos
+                            );
+                            .Normal
+                        }
+                    };
+                    self.expect(.Rparen);
+                }
                 pos := self.prev_tok.pos;
                 expr := self.parse_expr();
                 if !(expr is .If or expr is .Match or expr is .Block) {
                     self.expect(.Semicolon);
                 }
-                .Defer(expr, is_errdefer, pos)
+                .Defer(expr, defer_mode, pos)
             },
             self.tok.kind in [.Lparen, .KwMut, .Name]
                 and self.peek_tok.kind !in [.Dot, .Lbracket, .Lparen]

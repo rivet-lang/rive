@@ -51,23 +51,23 @@ test "`defer` from a call" {
     @assert(test_defer_call() == 5);
 }
 
-func test_errdefer(mut err_defer: ErrDefer, err: bool) -> ! {
+func test_defer_error(mut err_defer: ErrDefer, err: bool) -> ! {
     defer err_defer.i += 1;
-    errdefer err_defer.i += 2;
+    defer(error) err_defer.i += 2;
 
     if err {
         throw MyError();
     }
 }
 
-test "`errdefer` statement" {
+test "`defer(error)` statement" {
     mut err_defer := ErrDefer(i: 0);
 
-    test_errdefer(err_defer, false) catch { };
+    test_defer_error(err_defer, false) catch { };
     @assert(err_defer.i == 1);
 
     err_defer.i = 0;
-    test_errdefer(err_defer, true) catch { };
+    test_defer_error(err_defer, true) catch { };
     @assert(err_defer.i == 3);
 }
 
@@ -75,15 +75,39 @@ func throw_error() -> ! {
     throw MyError();
 }
 
-func return_and_errdefer(mut err_defer: ErrDefer) -> ! {
-    errdefer {
+func throw_and_defer_error(mut err_defer: ErrDefer) -> ! {
+    defer(error) err_defer.i = 4;
+    throw_error()!;
+}
+
+test "`defer(error)` with error propagation" {
+    mut err_defer := ErrDefer(i: 0);
+    throw_and_defer_error(err_defer) catch {};
+    @assert(err_defer.i == 4);
+}
+
+test "`defer(success)`" {
+    i := 10;
+    j := 20;
+    mut sum := 0;
+    defer @assert(sum == 30);
+    defer(success) sum = i + j;
+    @assert(sum == 0);
+}
+
+func throw_and_defer_success(mut err_defer: ErrDefer) -> ! {
+    defer(error) {
         err_defer.i = 4;
+    }
+    // should not run, an error is thrown
+    defer(success) {
+        err_defer.i += 2;
     }
     throw_error()!;
 }
 
-test "`errdefer` with error propagation" {
+test "`defer(success)` with throwed error" {
     mut err_defer := ErrDefer(i: 0);
-    return_and_errdefer(err_defer) catch {};
+    throw_and_defer_error(err_defer) catch {};
     @assert(err_defer.i == 4);
 }
