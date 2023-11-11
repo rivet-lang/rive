@@ -962,7 +962,7 @@ class Parser:
                     ast.CallErrorHandler(
                         is_propagate, varname, err_expr, has_err_expr,
                         varname_pos, self.scope, err_handler_pos
-                    ), expr.pos
+                    ), expr.pos, self.scope
                 )
             elif self.accept(Kind.Lbracket):
                 index = self.empty_expr()
