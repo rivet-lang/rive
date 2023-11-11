@@ -607,7 +607,7 @@ class Parser:
             expr = self.parse_expr()
             if expr.__class__ not in (ast.IfExpr, ast.MatchExpr, ast.Block):
                 self.expect(Kind.Semicolon)
-            return ast.DeferStmt(expr, is_errdefer, pos)
+            return ast.DeferStmt(expr, is_errdefer, pos, self.scope)
         elif (
             self.tok.kind in (Kind.Lparen, Kind.KwMut, Kind.Name) and
             self.peek_tok.kind not in (Kind.Dot, Kind.Lbracket, Kind.Lparen)
@@ -824,10 +824,10 @@ class Parser:
                 expr = self.parse_expr()
             else:
                 expr = self.empty_expr()
-            expr = ast.ReturnExpr(expr, has_expr, pos)
+            expr = ast.ReturnExpr(expr, has_expr, pos, self.scope)
         elif self.accept(Kind.KwThrow):
             pos = self.prev_tok.pos
-            expr = ast.ThrowExpr(self.parse_expr(), pos)
+            expr = ast.ThrowExpr(self.parse_expr(), pos, self.scope)
         elif self.tok.kind == Kind.KwIf:
             expr = self.parse_if_expr()
         elif self.accept(Kind.KwMatch):
