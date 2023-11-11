@@ -1,4 +1,4 @@
-name: Self-hosted compiler
+name: Self-hosted Compiler
 
 on:
   push:
