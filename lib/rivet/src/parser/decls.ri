@@ -9,14 +9,18 @@ import ../report;
 import ../token;
 
 extend Parser {
-    func parse_doc_comment(mut self) -> ast.DocComment {
-        mut pos := self.tok.pos;
-        mut lines := @vec(string);
-        while self.accept(.DocComment) {
-            lines.push(self.prev_tok.lit);
-            pos += self.prev_tok.pos;
+    func parse_doc_comment(mut self) -> []ast.Comment {
+        mut comments := @vec(ast.Comment);
+        while self.accept(.DocComment) or self.accept(.Comment) {
+            comments.push(
+                ast.Comment(
+                    self.prev_tok.kind == .DocComment,
+                    self.prev_tok.lit.split_into_lines(),
+                    self.prev_tok.pos
+                )
+            );
         }
-        return ast.DocComment(lines, pos);
+        return comments;
     }
 
     public func parse_attributes(
@@ -527,7 +531,7 @@ extend Parser {
     }
 
     func parse_func_decl(
-        mut self, docs: ast.DocComment, attributes: ast.Attributes,
+        mut self, docs: []ast.Comment, attributes: ast.Attributes,
         is_public: bool, is_unsafe: bool, abi: ast.ABI
     ) -> ast.Decl {
         mut is_operator := false;

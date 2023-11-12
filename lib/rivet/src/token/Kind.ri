@@ -14,6 +14,7 @@ static kindStrings := [
     KindMap(.Unknown, "unknown"),
     KindMap(.EndOfFile, "end of file"),
     KindMap(.DocComment, "doc-comment"),
+    KindMap(.Comment, "comment"),
     KindMap(.Name, "name"),
     KindMap(.Number, "number"),
     KindMap(.Char, "character"),
@@ -111,6 +112,7 @@ public enum Kind < traits.Stringable {
     Unknown, // unknown
     EndOfFile, // end of file
     DocComment, // doc-comment
+    Comment, // comment
     Name, // name
     Number, // number
     Char, // character

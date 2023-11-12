@@ -85,14 +85,23 @@ extend Tokenizer {
                         self.pos += 1;
                         return self.new_token(.DivAssign, len: 2);
                     } else if nextc == b'/' {
+                        is_doc_comment := self.look_ahead(2) == b'/';
+                        start := self.pos + if is_doc_comment { 3 } else { 0 };
                         self.ignore_line();
+                        end := self.pos;
                         if self.text[self.pos - 1] != CR {
                             self.pos -= 1;
                             self.line -= 1;
                         }
+                        if (is_doc_comment and self.prefs.is_docs) or self.prefs.is_fmt {
+                            line := self.text[start..end].trim_space();
+                            return self.new_token(.Comment, line, line.len);
+                        }
                         continue;
                     } else if nextc == b'*' {
                         start_pos := self.pos;
+                        start_line := self.line;
+                        start_col := utils.max(1, self.current_column()) - 1;
                         self.pos += 1;
                         mut nest_count := 1;
                         while nest_count > 0 and self.pos < self.text.len - 1 {
@@ -109,11 +118,18 @@ extend Tokenizer {
                                 nest_count -= 1;
                             }
                         }
+                        end_pos := self.pos;
                         self.pos += 1;
                         if self.pos >= self.text.len {
                             self.pos = start_pos;
                             self.error("comment not terminated");
                             break;
+                        }
+                        if self.prefs.is_fmt {
+                            line := self.text[start_pos..end_pos].trim_space();
+                            return self.new_multiline_token(
+                                .Comment, line, line.len, start_line, self.line, start_col
+                            );
                         }
                         continue;
                     }

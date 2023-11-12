@@ -59,6 +59,10 @@ public struct Prefs {
     public mut mod_dir: string;
     public mut mod_output: string;
 
+    public mut is_fmt: bool;
+    public mut is_docs: bool;
+    public mut is_test: bool;
+
     public mut library_path: []string := [rivetcLibDir, libDir];
     public mut libraries_to_link: []string;
     public mut objects_to_link: []string;
@@ -71,12 +75,10 @@ public struct Prefs {
     public mut all_warns_are_errors: bool;
     public mut hide_all_warns: bool;
     public mut is_verbose: bool;
-    public mut is_fmt: bool; 
 
     // Output info
     public mut output_mode: OutputMode;
     public mut optimize_mode: OptimizeMode;
-    public mut is_test: bool;
     public mut run_output: bool;
     public mut run_output_args: []string;
 
