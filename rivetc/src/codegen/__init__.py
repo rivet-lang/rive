@@ -139,6 +139,7 @@ class Codegen:
 
         self.loop_entry_label = ""
         self.loop_exit_label = ""
+        self.loop_scope = None
         self.while_continue_expr = None
 
     def gen_source_files(self, source_files):
@@ -472,6 +473,8 @@ class Codegen:
 
     def gen_stmt(self, stmt):
         if isinstance(stmt, ast.ForStmt):
+            old_loop_scope = self.loop_scope
+            self.loop_scope = stmt.scope
             old_while_continue_expr = self.while_continue_expr
             old_entry_label = self.loop_entry_label
             old_exit_label = self.loop_exit_label
@@ -537,8 +540,11 @@ class Codegen:
             self.cur_fn.add_label(self.loop_exit_label)
             self.loop_entry_label = old_entry_label
             self.loop_exit_label = old_exit_label
+            self.loop_scope = old_loop_scope
             self.while_continue_expr = old_while_continue_expr
         elif isinstance(stmt, ast.WhileStmt):
+            old_loop_scope = self.loop_scope
+            self.loop_scope = stmt.scope
             old_while_continue_expr = self.while_continue_expr
             old_entry_label = self.loop_entry_label
             old_exit_label = self.loop_exit_label
@@ -587,6 +593,7 @@ class Codegen:
             self.cur_fn.add_label(self.loop_exit_label)
             self.loop_entry_label = old_entry_label
             self.loop_exit_label = old_exit_label
+            self.loop_scope = old_loop_scope
             self.while_continue_expr = old_while_continue_expr
         elif isinstance(stmt, ast.StaticDeclStmt):
             if len(stmt.lefts) == 1:
@@ -2331,7 +2338,8 @@ class Codegen:
                 self.cur_fn.add_br(self.loop_entry_label)
             else:
                 self.gen_defer_stmts(
-                    scope = expr.scope, run_defer_previous = True
+                    scope = expr.scope, run_defer_previous = True,
+                    scope_limit = self.loop_scope
                 )
                 self.cur_fn.add_br(self.loop_exit_label)
             return ir.Skip()
@@ -2467,7 +2475,7 @@ class Codegen:
 
     def gen_defer_stmts(
         self, gen_errdefer = False, last_ret_was_err = None, scope = None,
-        run_defer_previous = False
+        run_defer_previous = False, scope_limit = None
     ):
         for i in range(len(self.cur_fn_defer_stmts) - 1, -1, -1):
             defer_stmt = self.cur_fn_defer_stmts[i]
@@ -2477,11 +2485,15 @@ class Codegen:
             ):
                 continue
             if defer_stmt.mode == ast.DeferMode.ERROR and not gen_errdefer:
-                # Should be run only when an error occurs
+                # should be run only when an error occurs
                 continue
             if defer_stmt.mode == ast.DeferMode.SUCCESS and gen_errdefer:
-                # Should not be run in case an error occurs
+                # should not be run in case an error occurs
                 continue
+            if scope_limit != None and defer_stmt.scope.start == scope_limit.start:
+                # do not generate `defer` that are in a scope greater than
+                # the established limit, this is used by `break`
+                break
             defer_start = self.cur_fn.local_name()
             defer_end = self.cur_fn.local_name()
             self.cur_fn.add_comment(

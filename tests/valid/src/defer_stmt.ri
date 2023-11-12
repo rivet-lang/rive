@@ -111,3 +111,16 @@ test "`defer(success)` with throwed error" {
     throw_and_defer_error(err_defer) catch {};
     @assert(err_defer.i == 4);
 }
+
+test "`defer` with `break`" {
+    mut a := 0;
+    mut i := 0;
+    defer @assert(a == 12);
+    defer a += 2;
+    while i < 20 : i += 1 {
+        defer a = 10;
+        if i == 10 {
+            break;
+        }
+    }
+}

@@ -576,7 +576,7 @@ class Parser:
             if self.accept(Kind.KwElse):
                 else_stmt = self.parse_stmt()
             return ast.WhileStmt(
-                cond, continue_expr, stmt, else_stmt, is_inf, pos
+                self.scope, cond, continue_expr, stmt, else_stmt, is_inf, pos
             )
         elif self.accept(Kind.KwFor):
             pos = self.prev_tok.pos

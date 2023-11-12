@@ -14,28 +14,28 @@ extern (Rivet) {
     static testRunner: TestRunner;
 }
 
-public func bold(msg: string) -> string {
+func bold(msg: string) -> string {
     if !supportColor {
         return msg;
     }
     return "\x1b[1m{}\x1b[22m".fmt(msg);
 }
 
-public func green(msg: string) -> string {
+func green(msg: string) -> string {
     if !supportColor {
         return msg;
     }
     return "\x1b[32m{}\x1b[39m".fmt(msg);
 }
 
-public func red(msg: string) -> string {
+func red(msg: string) -> string {
     if !supportColor {
         return msg;
     }
     return "\x1b[31m{}\x1b[39m".fmt(msg);
 }
 
-public func yellow(msg: string) -> string {
+func yellow(msg: string) -> string {
     if !supportColor {
         return msg;
     }
@@ -75,7 +75,7 @@ struct Test {
     mut err: Throwable;
 }
 
-public struct TestRunner {
+struct TestRunner {
     tests: []mut Test;
     mut ok_tests: uint64;
     mut fail_tests: uint64;
