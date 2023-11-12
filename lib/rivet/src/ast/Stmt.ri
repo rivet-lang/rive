@@ -33,7 +33,7 @@ public enum Stmt {
         pos: token.Pos;
     },
     Defer {
-        public enum Mode as uint8 {
+        public enum Mode {
             Normal,
             Error,
             Success
