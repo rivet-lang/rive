@@ -181,7 +181,7 @@ extend Checker {
                 };
                 if block.type is .Void and block.is_expr {
                     // if the expression has no value then it is another statement
-                    block.stmts.push(.ExprStmt(block.expr, block.pos));
+                    block.stmts.push(.Expr(block.expr, block.pos));
                     block.is_expr = false;
                 }
                 if block.is_unsafe {
