@@ -10,8 +10,9 @@ def run_fail_tests():
     exit_code = 0
 
     FAIL_FILES = glob.glob(os.path.join("tests", "invalid", "*.ri"))
-    if not os.path.exists("./rivet"):
+    if not os.path.exists("rivet"):
         res = utils.run_process("python3", "rivetc", "-o", "rivet", "cmd")
+    assert os.path.exists("rivet")
     for i, file in enumerate(FAIL_FILES):
         start = f" [{i+1}/{len(FAIL_FILES)}]"
         res = utils.run_process("./rivet", "check", "--show-color=false", file)
