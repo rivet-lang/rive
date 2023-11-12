@@ -238,7 +238,7 @@ public enum Expr < traits.Stringable {
     },
     Block {
         is_unsafe: bool;
-        stmts: []mut Stmt;
+        mut stmts: []mut Stmt;
         mut expr: Expr;
         mut is_expr: bool;
         scope: Scope;
