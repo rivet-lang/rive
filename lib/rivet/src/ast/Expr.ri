@@ -240,7 +240,7 @@ public enum Expr < traits.Stringable {
         is_unsafe: bool;
         stmts: []mut Stmt;
         mut expr: Expr;
-        is_expr: bool;
+        mut is_expr: bool;
         scope: Scope;
         pos: token.Pos;
         mut type: Type;

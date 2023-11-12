@@ -1314,6 +1314,11 @@ class Checker:
             self.expected_type = old_expected_type
             if expr.is_expr:
                 expr.typ = self.check_expr(expr.expr)
+                if expr.typ == self.comp.void_t:
+                    # if the expression has no value then it is another statement
+                    expr.stmts.append(ast.ExprStmt(expr.expr, expr.pos))
+                    expr.is_expr = False
+                    expr.expr = None
             else:
                 expr.typ = self.comp.void_t
             if expr.is_unsafe:

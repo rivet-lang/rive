@@ -179,6 +179,11 @@ extend Checker {
                 } else {
                     .Void()
                 };
+                if block.type is .Void and block.is_expr {
+                    // if the expression has no value then it is another statement
+                    block.stmts.push(.ExprStmt(block.expr, block.pos));
+                    block.is_expr = false;
+                }
                 if block.is_unsafe {
                     if self.unsafe_operations == 0 {
                         report.warn("unnecessary `unsafe` block", block.pos);
