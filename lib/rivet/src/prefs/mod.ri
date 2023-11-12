@@ -83,7 +83,7 @@ public struct Prefs {
     public mut run_output_args: []string;
 
     public func new(args: []string, is_test: bool, run_output: bool, is_check: bool) -> !Self {
-        prefs := Prefs(is_test: is_test, run_output: run_output, check: is_check);
+        mut prefs := Prefs(is_test: is_test, run_output: run_output, check: is_check);
         mut fp := flag.FlagParser.new(args);
         fp.set_application_name(if is_test {
             "rivet test"
@@ -273,49 +273,56 @@ public struct Prefs {
             utils.error(err.to_string())
         };
         for arg in remaining_args {
-            if !prefs.input.is_empty() {
-                utils.error("the compiler can only receive one module");
-            } else if !Path.exists(arg) {
-                utils.error("`{}` does not exist", arg);
-            } else if !(Path.is_directory(arg) or Path.is_file(arg)) {
-                utils.error("`{}` is not a directory or file");
+            if prefs.input.is_empty() {
+                prefs.check_input(arg);
             } else {
-                prefs.input = arg;
-                if prefs.mod_name.is_empty() {
-                    prefs.mod_name = if Path.is_file(arg) {
-                        Path.basename(arg).all_before_of(".ri")
-                    } else {
-                        Path.basename(Path.resolve(arg) catch arg)
-                    };
-                }
+                utils.error("the compiler can only receive one module");
             }
         }
-
         if prefs.input.is_empty() {
             utils.error("no input received");
         }
-
-        if prefs.is_test {
-            prefs.mod_output = "_rivet_tests_runner_";
-        } else if prefs.mod_output.is_empty() {
-            prefs.mod_output = prefs.mod_name;
-        }
-
-        if prefs.target_os == .Windows and !prefs.mod_output.ends_with(".exe") {
-            prefs.mod_output = prefs.mod_output.concat(".exe");
-        }
-
-        if !Path.is_absolute(prefs.mod_output) {
-            prefs.mod_output = Path.join(process.get_cwd()!, prefs.mod_output)!;
-        }
-
-        prefs.mod_dir = if Path.is_file(prefs.input) {
-            Path.dirname(Path.absolute(prefs.input)!) ?? prefs.input
-        } else {
-            prefs.input
-        };
-        prefs.library_path.push(prefs.mod_dir);
-
+        prefs.load_data()!;
         return prefs;
+    }
+
+    public func check_input(mut self, input: string) {
+        if !Path.exists(input) {
+            utils.error("`{}` does not exist", input);
+        } else if !(Path.is_directory(input) or Path.is_file(input)) {
+            utils.error("`{}` is not a directory or file");
+        } else {
+            self.input = input;
+            if self.mod_name.is_empty() {
+                self.mod_name = if Path.is_file(input) {
+                    Path.basename(input).all_before_of(".ri")
+                } else {
+                    Path.basename(Path.resolve(input) catch input)
+                };
+            }
+        }
+    }
+
+    public func load_data(mut self) -> ! {
+        if self.is_test {
+            self.mod_output = "_rivet_tests_runner_";
+        } else if self.mod_output.is_empty() {
+            self.mod_output = self.mod_name;
+        }
+
+        if self.target_os == .Windows and !self.mod_output.ends_with(".exe") {
+            self.mod_output = self.mod_output.concat(".exe");
+        }
+
+        if !Path.is_absolute(self.mod_output) {
+            self.mod_output = Path.join(process.get_cwd()!, self.mod_output)!;
+        }
+
+        self.mod_dir = if Path.is_file(self.input) {
+            Path.dirname(Path.absolute(self.input)!) ?? self.input
+        } else {
+            self.input
+        };
+        self.library_path.push(self.mod_dir);
     }
 }

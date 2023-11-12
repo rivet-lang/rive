@@ -1,0 +1,57 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import std/flag;
+import std/console;
+
+import rivet;
+import rivet/ast;
+import rivet/fmt;
+import rivet/prefs;
+import rivet/utils;
+import rivet/report;
+
+static fmtDescription := "Formats the given Rivet source files or recursively formats all files in the
+directory, then prints their formatted source to stdout.";
+
+public func cmd_fmt(args: []string) -> ! {
+    mut fp := flag.FlagParser.new(args);
+    fp.set_application_name("rivet fmt");
+    fp.set_arguments_description("[FILES|DIRECTORIES]");
+    fp.set_application_short_description(fmtDescription);
+    fp.add_usage_example("file.ri");
+    fp.add_usage_example("directory/");
+    fp.add_usage_example("-w file.ri");
+    write_to_file := fp.bool_flag(
+        "write-to-file", b'w', "Write result to source file(s) instead of to stdout.");
+    remaining := fp.finalize() catch |err_fp| {
+        console.ewriteln(fp.usage());
+        utils.error(err_fp.to_string())
+    };
+    if remaining.len == 0 {
+        console.ewriteln(fp.usage());
+        utils.error("no input received");
+    }
+    mut source_files := @vec(ast.SourceFile);
+    for input in remaining {
+        mut prefs_ := prefs.Prefs(
+            input: input,
+            hide_all_warns: true
+        );
+        prefs_.check_input(input);
+        prefs_.load_data()!;
+        report.reportTable.prefs = prefs_;
+        table_ := ast.Table.new(prefs_);
+        mut compiler := rivet.Compiler(table: table_, prefs: prefs_);
+        compiler.load_root_module()!;
+        for sf in table_.source_files {
+            source_files.push(sf);
+        }
+    }
+    for sf in source_files {
+        utils.info("sf: {}", sf.file);
+    }
+}
+
+//func format()

@@ -21,6 +21,7 @@ Commands:
    run              Create executable and run immediately.
    test             Create and run a test build.
    check            Scans, parses, and checks the files without compiling.
+   fmt              Format the Rivet code provided.
    version          Print version number and exit.
    help             Print this help and exit.
 
@@ -41,7 +42,8 @@ func main() {
             is_check := cmd == "check";
             rivet.Compiler.new(process.args[2..], is_test, is_test or cmd == "run", is_check)!;
         },
-        "new", "init" -> tools.new(process.args[2..], cmd == "init")!,
+        "new", "init" -> tools.cmd_new(process.args[2..], cmd == "init")!,
+        "fmt" -> tools.cmd_fmt(process.args[2..])!,
         "version" -> {
             console.ewriteln(utils.full_version());
             process.exit(0);

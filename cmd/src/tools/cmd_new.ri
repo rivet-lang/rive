@@ -29,7 +29,7 @@ static availableTemplates := "Available templates:
    bin          A simple binary project (default).
    lib          A simple library project.";
 
-public func new(args: []string, is_init: bool) -> ! {
+public func cmd_new(args: []string, is_init: bool) -> ! {
     mut template := "";
     mut fp := flag.FlagParser.new(args);
     if is_init {

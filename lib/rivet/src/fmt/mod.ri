@@ -1,0 +1,18 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+import ../prefs;
+
+public struct Formatter {
+    prefs: prefs.Prefs;
+    table: ast.Table;
+    mut source_files: []ast.SourceFile;
+
+    write_to_file: bool;
+
+    public func fmt(mut self, source_files: []ast.SourceFile) -> Self {
+        self.source_files = source_files;
+    }
+}
