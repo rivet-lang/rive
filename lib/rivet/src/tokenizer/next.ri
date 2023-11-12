@@ -94,7 +94,7 @@ extend Tokenizer {
                             self.line -= 1;
                         }
                         if (is_doc_comment and self.prefs.is_docs) or self.prefs.is_fmt {
-                            line := self.text[start..end].trim_space();
+                            line := self.text[start..end];
                             return self.new_token(.Comment, line, line.len);
                         }
                         continue;
@@ -126,7 +126,7 @@ extend Tokenizer {
                             break;
                         }
                         if self.prefs.is_fmt {
-                            line := self.text[start_pos..end_pos].trim_space();
+                            line := self.text[start_pos..end_pos];
                             return self.new_multiline_token(
                                 .Comment, line, line.len, start_line, self.line, start_col
                             );

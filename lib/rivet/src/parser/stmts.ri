@@ -6,8 +6,14 @@ import ../ast;
 import ../report;
 
 extend Parser {
+    #[inline]
+    func parse_comment_stmt(mut self) -> ast.Stmt {
+        return .Comment(self.parse_comment());
+    }
+
     func parse_stmt(mut self) -> ast.Stmt {
         return match {
+            self.tok.kind == .Comment -> self.parse_comment_stmt(),
             self.accept(.KwWhile) -> {
                 pos := self.prev_tok.pos;
                 mut is_inf := false;

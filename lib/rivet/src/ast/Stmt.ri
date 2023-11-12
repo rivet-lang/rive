@@ -6,6 +6,7 @@ import ../token;
 
 public enum Stmt {
     Empty: token.Pos,
+    Comment: Comment,
     Expr: Expr,
     VarDecl {
         lefts: []ObjectData;
@@ -46,6 +47,7 @@ public enum Stmt {
     public func position(self) -> token.Pos {
         return match self is {
             .Empty as empty_pos -> empty_pos,
+            .Comment as comment -> comment.pos,
             .Expr as expr -> expr.position(),
             .VarDecl as var_decl -> var_decl.pos,
             .While as while_stmt -> while_stmt.pos,

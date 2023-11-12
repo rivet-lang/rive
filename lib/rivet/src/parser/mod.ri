@@ -155,4 +155,35 @@ public struct Parser {
         }
         return false;
     }
+
+    func parse_comment(mut self, parse_doc_comment: bool := false) -> ast.Comment {
+        if !((parse_doc_comment and self.accept(.DocComment)) or self.accept(.Comment)) {
+            return ast.Comment();
+        }
+        return ast.Comment(
+            self.prev_tok.kind == .DocComment,
+            self.prev_tok.lit.split_into_lines(),
+            self.prev_tok.pos
+        );
+    }
+
+    // NOTE:
+    //   same_line: only eat comments on the same line as the previous token.
+    //   follow_up: comments directly below the previous token as long as there
+    //   is no empty line.
+    func eat_comments(mut self, same_line: bool := false, follow_up: bool := false) -> []ast.Comment {
+        mut comments := @vec(ast.Comment);
+        mut line := self.prev_tok.pos.line;
+        while {
+            if self.tok.kind != .Comment or (same_line and self.tok.pos.line > line)
+                or (follow_up and (self.tok.pos.line > line + 1 or self.tok.lit.contains("\n"))) {
+                break;
+            }
+            comments.push(self.parse_comment());
+            if follow_up {
+                line = self.prev_tok.pos.line;
+            }
+        }
+        return comments;
+    }
 }
