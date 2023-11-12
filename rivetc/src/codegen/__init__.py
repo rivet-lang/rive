@@ -2330,6 +2330,7 @@ class Codegen:
                         self.gen_expr(self.while_continue_expr)
                 self.cur_fn.add_br(self.loop_entry_label)
             else:
+                self.gen_defer_stmts(scope = expr.scope)
                 self.cur_fn.add_br(self.loop_exit_label)
             return ir.Skip()
         elif isinstance(expr, ast.ReturnExpr):

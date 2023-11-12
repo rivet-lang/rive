@@ -816,10 +816,11 @@ class SelectorExpr:
         return self.__repr__()
 
 class BranchExpr:
-    def __init__(self, op, pos):
+    def __init__(self, op, pos, scope = None):
         self.op = op
         self.pos = pos
         self.typ = None
+        self.scope = scope
 
     def __repr__(self):
         return str(self.op)
