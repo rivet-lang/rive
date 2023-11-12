@@ -312,7 +312,9 @@ class StaticDeclStmt:
         self.pos = pos
 
 class WhileStmt:
-    def __init__(self, scope, cond, continue_expr, stmt, else_stmt, is_inf, pos):
+    def __init__(
+        self, scope, cond, continue_expr, stmt, else_stmt, is_inf, pos
+    ):
         self.cond = cond
         self.is_inf = is_inf
         self.continue_expr = continue_expr

@@ -1936,15 +1936,35 @@ class Codegen:
                 left_sym = expr_left_typ.symbol()
                 right_sym = expr.right.typ.symbol()
                 contains_method = f"contains_{right_sym.id}"
-                full_name = f"_R4core6Vector{len(contains_method)}{contains_method}"
+                right_is_vector = right_sym.kind == sym.TypeKind.Vec
+                if right_is_vector:
+                    full_name = f"_R4core6Vector{len(contains_method)}{contains_method}"
+                else:
+                    full_name = f"_R4core5Array{len(contains_method)}{contains_method}"
                 if not right_sym.info.has_contains_method:
                     right_sym.info.has_contains_method = True
-                    self_idx_ = ir.Ident(ir.VEC_T.ptr(True), "self")
-                    elem_idx_ = ir.Ident(self.ir_type(expr_left_typ), "_elem_")
-                    contains_decl = ir.FuncDecl(
-                        False, ast.Annotations(), False, full_name,
-                        [self_idx_, elem_idx_], False, ir.BOOL_T, False
-                    )
+                    if right_is_vector:
+                        self_idx_ = ir.Ident(ir.VEC_T.ptr(True), "self")
+                        elem_idx_ = ir.Ident(
+                            self.ir_type(expr_left_typ), "_elem_"
+                        )
+                        contains_decl = ir.FuncDecl(
+                            False, ast.Annotations(), False, full_name,
+                            [self_idx_, elem_idx_], False, ir.BOOL_T, False
+                        )
+                    else:
+                        self_idx_ = ir.Ident(
+                            self.ir_type(expr_right_typ), "self"
+                        )
+                        elem_idx_ = ir.Ident(
+                            self.ir_type(expr_left_typ), "_elem_"
+                        )
+                        contains_decl = ir.FuncDecl(
+                            False, ast.Annotations(), False, full_name, [
+                                self_idx_,
+                                ir.Ident(ir.UINT_T, "_len_"), elem_idx_
+                            ], False, ir.BOOL_T, False
+                        )
                     inc_v = ir.Ident(ir.UINT_T, contains_decl.local_name())
                     contains_decl.alloca(inc_v, ir.IntLit(ir.UINT_T, "0"))
                     cond_l = contains_decl.local_name()
@@ -1959,26 +1979,39 @@ class Codegen:
                                 ir.Name("<"), inc_v,
                                 ir.Selector(
                                     ir.UINT_T, self_idx_, ir.Name("len")
-                                )
+                                ) if right_is_vector else
+                                ir.Ident(ir.UINT_T, "_len_")
                             ]
                         ), body_l, exit_l
                     )
                     contains_decl.add_label(body_l)
-                    cur_elem = ir.Inst(
-                        ir.InstKind.LoadPtr, [
-                            ir.Inst(
-                                ir.InstKind.Cast, [
-                                    ir.Inst(
-                                        ir.InstKind.Call, [
-                                            ir.Name("_R4core6Vector7raw_getM"),
-                                            self_idx_, inc_v
-                                        ]
-                                    ),
-                                    self.ir_type(expr_left_typ).ptr()
-                                ]
-                            )
-                        ]
-                    )
+                    if right_is_vector:
+                        cur_elem = ir.Inst(
+                            ir.InstKind.LoadPtr, [
+                                ir.Inst(
+                                    ir.InstKind.Cast, [
+                                        ir.Inst(
+                                            ir.InstKind.Call, [
+                                                ir.
+                                                Name("_R4core6Vector7raw_getM"),
+                                                self_idx_, inc_v
+                                            ]
+                                        ),
+                                        self.ir_type(expr_left_typ).ptr()
+                                    ]
+                                )
+                            ]
+                        )
+                    else:
+                        cur_elem = ir.Inst(
+                            ir.InstKind.LoadPtr, [
+                                ir.Inst(
+                                    ir.InstKind.GetElementPtr,
+                                    [self_idx_, inc_v],
+                                    self.ir_type(expr_left_typ)
+                                )
+                            ]
+                        )
                     right_elem_typ_sym = right_sym.info.elem_typ.symbol()
                     if right_elem_typ_sym.kind.is_primitive() or (
                         right_elem_typ_sym.kind == TypeKind.Enum
@@ -2004,10 +2037,11 @@ class Codegen:
                     contains_decl.add_label(exit_l)
                     contains_decl.add_ret(ir.IntLit(ir.BOOL_T, "0"))
                     self.out_rir.decls.append(contains_decl)
-                call = ir.Inst(
-                    ir.InstKind.Call, [ir.Name(full_name), right, left],
-                    ir.BOOL_T
-                )
+                args = [ir.Name(full_name), right]
+                if not right_is_vector:
+                    args.append(ir.IntLit(ir.UINT_T, str(right_sym.info.size)))
+                args.append(left)
+                call = ir.Inst(ir.InstKind.Call, args, ir.BOOL_T)
                 if expr.op == Kind.KwNotIn:
                     call = ir.Inst(ir.InstKind.BooleanNot, [call], ir.BOOL_T)
                 tmp = self.cur_fn.local_name()
