@@ -21,7 +21,12 @@ jobs:
           mkdir rivet-nightly-linux-amd64
           cp rivet rivet-nightly-linux-amd64/
           cp LICENSE.txt rivet-nightly-linux-amd64/
+          # Copy library
           cp -r lib/ rivet-nightly-linux-amd64/
+          # Download latest docs
+          git clone https://github.com/rivet-lang/docs -b gh-pages --depth=1
+          # Copy docs
+          cp -r docs/ rivet-nightly-linux-amd64/
           zip -r rivet-nightly-linux-amd64.zip rivet-nightly-linux-amd64/
 
       - uses: "marvinpinto/action-automatic-releases@latest"
