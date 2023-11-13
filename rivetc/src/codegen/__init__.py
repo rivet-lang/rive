@@ -1373,6 +1373,8 @@ class Codegen:
                         args.append(self.variadic_args(vargs, var_arg.typ.typ))
                     else:
                         args.append(self.empty_vec(var_arg.typ.symbol()))
+            if expr.sym.ret_typ == self.comp.never_t:
+                self.gen_defer_stmts(scope = expr.scope, run_defer_previous = True)
             inst = ir.Inst(ir.InstKind.Call, args)
             if expr.sym.ret_typ in self.void_types:
                 self.cur_fn.add_inst(inst)
