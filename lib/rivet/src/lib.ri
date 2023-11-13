@@ -287,7 +287,7 @@ public struct Compiler {
             self.vlog("> {}", node.name);
         }
         self.vlog("-----------------------------------------");
-        source_files := self.table.source_files.clone();
+        source_files := self.table.source_files;
         self.table.source_files = @vec(ast.SourceFile, source_files.len);
         for node in g_resolved.nodes {
             for pf in source_files {
