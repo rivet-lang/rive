@@ -288,7 +288,7 @@ public struct Compiler {
         }
         self.vlog("-----------------------------------------");
         source_files := self.table.source_files.clone();
-        self.table.source_files = @vec(ast.SourceFile, self.source_files.len);
+        self.table.source_files = @vec(ast.SourceFile, source_files.len);
         for node in g_resolved.nodes {
             for pf in source_files {
                 if pf.mod.name == node.name {
