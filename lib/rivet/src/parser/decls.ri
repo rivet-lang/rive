@@ -98,6 +98,7 @@ extend Parser {
         is_public := self.is_public();
         mut pos := self.tok.pos;
         match {
+            self.tok.kind == .Comment -> return .Comment(self.parse_comment()),
             self.accept(.KwImport) -> {
                 mut import_list := @vec(ast.ImportListInfo);
                 mut glob := false;

@@ -24,7 +24,7 @@ public func cmd_fmt(args: []string) -> ! {
     fp.add_usage_example("directory/");
     fp.add_usage_example("-w file.ri");
     write_to_file := fp.bool_flag(
-        "write-to-file", b'w', "Write result to source file(s) instead of to stdout.");
+        "write-to-file", b'w', "Write result to source file(s) instead of to stdout.") ?? false;
     remaining := fp.finalize() catch |err_fp| {
         console.ewriteln(fp.usage());
         utils.error(err_fp.to_string())
@@ -33,10 +33,10 @@ public func cmd_fmt(args: []string) -> ! {
         console.ewriteln(fp.usage());
         utils.error("no input received");
     }
-    mut source_files := @vec(ast.SourceFile);
     for input in remaining {
         mut prefs_ := prefs.Prefs(
             input: input,
+            is_fmt: true,
             hide_all_warns: true
         );
         prefs_.check_input(input);
@@ -45,13 +45,10 @@ public func cmd_fmt(args: []string) -> ! {
         table_ := ast.Table.new(prefs_);
         mut compiler := rivet.Compiler(table: table_, prefs: prefs_);
         compiler.load_root_module()!;
-        for sf in table_.source_files {
-            source_files.push(sf);
+        mut formatter := fmt.Formatter(prefs_, table_, write_to_file: write_to_file);
+        for source_file in table_.source_files {
+            output := formatter.fmt(source_file);
+            console.writeln(output);
         }
     }
-    for sf in source_files {
-        utils.info("sf: {}", sf.file);
-    }
 }
-
-//func format()

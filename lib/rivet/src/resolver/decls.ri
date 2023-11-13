@@ -13,7 +13,6 @@ extend Resolver {
             old_self_sym_is_set := self.self_sym_is_set;
             match decl is {
                 .Empty as empty_pos -> report.error("BUG: empty declaration found", empty_pos),
-                .Import -> {},
                 .Extern as extern_decl -> self.resolve_decls(extern_decl.decls),
                 .Alias as alias_decl -> if alias_decl.is_typealias {
                     _ = self.resolve_type(alias_decl.parent_type);
@@ -216,7 +215,8 @@ extend Resolver {
                     for mut stmt in test_decl.stmts {
                         self.resolve_stmt(stmt);
                     }
-                }
+                },
+                else -> {}
             }
             self.sym = old_sym;
             self.self_sym = old_self_sym;

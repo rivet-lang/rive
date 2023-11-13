@@ -88,15 +88,73 @@ public struct StringBuilder < Stringable {
         self.write_byte(b'\n');
     }
 
-    /// Returns the number of runes contained in `self`.
+    public func last_n(self, n: uint) -> string {
+        return if n > self.inner.len {
+            ""
+        } else {
+            self.spart(self.inner.len - n, n)
+        };
+    }
+
+    public func after(self, n: uint) -> string {
+        return if n >= self.inner.len {
+            ""
+        } else {
+            self.spart(n, self.inner.len - n)
+        };
+    }
     #[inline]
-    public func runes_count(self) -> uint {
-        return cstr_runes_count(unsafe { @as([&]uint8, self.inner.ptr) }, self.inner.len);
+    public func go_back(mut self, n: uint) {
+        self.inner.trim(self.inner.len - n);
+    }
+
+    public func cut_last(mut self, n: uint) -> string {
+        cut_pos := self.inner.len - n;
+        res := self.spart(cut_pos, n).clone();
+        self.inner.trim(cut_pos);
+        return res;
+    }
+
+    public func cut_to(mut self, pos: uint) -> string {
+        return if pos > self.inner.len {
+            ""
+        } else {
+            self.cut_last(self.inner.len - pos)
+        };
+    }
+
+    #[inline]
+    public func go_back_to(mut self, pos: uint) {
+        self.inner.trim(pos);
+    }
+
+    public func byte_at(self, idx: uint) -> ?uint8 {
+        return if self.inner.len > 0 {
+            unsafe { @as([&]uint8, self.inner.ptr)[idx] }
+        } else {
+            none
+        };
+    }
+
+    #[inline]
+    public func first_byte(self) -> ?uint8 {
+        return self.byte_at(0);
+    }
+
+    #[inline]
+    public func last_byte(self) -> ?uint8 {
+        return self.byte_at(self.inner.len - 1);
     }
 
     #[inline]
     public func clear(mut self) {
         self.inner.clear();
+    }
+
+    /// Returns the number of runes contained in `self`.
+    #[inline]
+    public func runes_count(self) -> uint {
+        return cstr_runes_count(unsafe { @as([&]uint8, self.inner.ptr) }, self.inner.len);
     }
 
     #[inline]
@@ -118,5 +176,13 @@ public struct StringBuilder < Stringable {
     public func to_string(mut self) -> string {
         self.write_byte(0);
         return string(unsafe { @as([&]uint8, self.inner.ptr) }, self.inner.len - 1);
+    }
+
+    func spart(self, start_pos: uint, n: uint) -> string {
+        return unsafe {
+            string.from_raw_with_len(
+                @as([&]uint8, @ptr_add(self.inner.ptr, start_pos)), n
+            ).clone()
+        };
     }
 }

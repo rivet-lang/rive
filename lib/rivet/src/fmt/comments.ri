@@ -1,0 +1,101 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+
+extend Formatter {
+    enum CommentsLevel as uint8 {
+        Keep,
+        Indent
+    }
+
+    // Optional arguments defines the way comments are going to be written
+    // - has_nl: adds an newline at the end of a list of comments
+    // - same_line: line comments will be on the same line as the last statement
+    // - level:  either .keep (don't indent), or .indent (increment indentation)
+    // - prev_line: the line number of the previous token to save linebreaks
+    func format_comment(
+        mut self, comment: ast.Comment, same_line: bool := false,
+        level: CommentsLevel := .Keep
+    ) {
+        if level == .Indent {
+            self.indent += 1;
+        }
+        if !comment.text.contains("\n") {
+            is_separate_line := !same_line or comment.text.starts_with("\x01");
+            s := comment.text.trim_left("\x01").trim_right(" ");
+            mut out_s := "//";
+            if s != "" {
+                if s[0].is_alnum() {
+                    out_s = out_s.concat(" ");
+                }
+                out_s = out_s.concat(s);
+            }
+            if !is_separate_line and self.indent > 0 {
+                _ = self.remove_new_line(); // delete the generated \n
+                self.write(" ");
+            }
+            if comment.is_doc {
+                self.write("/");
+            }
+            self.writeln(out_s);
+        } else {
+            lines := comment.text.trim_space().split_into_lines();
+            start_break := comment.text[0].is_alnum() or comment.text[0].is_space();
+            end_break := {
+                trimmed_bytes := comment.text.trim("\t").as_bytes();
+                trimmed_bytes[trimmed_bytes.len - 1].is_alnum()
+            } or {
+                bytes := comment.text.as_bytes();
+                bytes[bytes.len - 1].is_space()
+            };
+            self.write("/*");
+            if start_break {
+                self.writeln();
+            }
+            for line in lines {
+                self.writeln(line.trim_right(" "));
+                self.empty_line = false;
+            }
+            if end_break {
+                self.empty_line = true;
+            } else {
+                _ = self.remove_new_line();
+            }
+            self.write("*/");
+        }
+        if level == .Indent {
+            self.indent -= 1;
+        }
+    }
+
+    func format_comments(
+        mut self, comments: []ast.Comment, has_nl: bool := true,
+        same_line: bool := false, level: CommentsLevel := .Keep, prev_line_: ?uint := none
+    ) {
+        mut prev_line := prev_line_ ?? 0;
+        for i, comment in comments {
+            if prev_line_ !is none
+                and (
+                    (
+                        comment.pos.line > prev_line and self.output.len() > 1
+                        and self.output.last_n(1) != "\n"
+                    ) or (
+                        comment.pos.line > prev_line + 1 and self.output.len() > 2
+                        and self.output.last_n(2) != "\n\n"
+                    )
+                ) {
+                self.writeln();
+            }
+            if i == 0 and self.output.len() > 1 and self.output.last_n(1)[0].is_space() {
+                self.write(" ");
+            }
+            self.format_comment(comment, same_line, level);
+            if i < comments.len - 1 or has_nl {
+                self.writeln();
+            }
+            prev_line = comment.pos.end_line;
+        }
+    }
+}

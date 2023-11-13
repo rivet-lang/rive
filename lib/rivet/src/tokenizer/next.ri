@@ -86,16 +86,31 @@ extend Tokenizer {
                         return self.new_token(.DivAssign, len: 2);
                     } else if nextc == b'/' {
                         is_doc_comment := self.look_ahead(2) == b'/';
-                        start := self.pos + if is_doc_comment { 3 } else { 0 };
+                        bytes_to_skip: uint := if is_doc_comment { 3 } else { 2 };
+                        start_pos := self.pos + bytes_to_skip;
                         self.ignore_line();
-                        end := self.pos;
+                        end_pos := self.pos;
                         if self.text[self.pos - 1] != CR {
                             self.pos -= 1;
                             self.line -= 1;
                         }
                         if (is_doc_comment and self.prefs.is_docs) or self.prefs.is_fmt {
-                            line := self.text[start..end];
-                            return self.new_token(.Comment, line, line.len);
+                            mut comment := self.text[start_pos..end_pos];
+                            // find out if this comment is on its own line (for rivet format)
+                            mut is_separate_line_comment := false;
+                            mut j := start_pos - bytes_to_skip;
+                            while j >= 0 and self.text[j] != LF : j -= 1 {
+                                if self.text[j] !in [b'\t', b' '] {
+                                    is_separate_line_comment = false;
+                                    break;
+                                }
+                            }
+                            if is_separate_line_comment {
+                                // NOTE: ´\x01´ is used to preserve the initial whitespace in
+                                // comments that are on a separate line
+                                comment = "\x01".concat(comment);
+                            }
+                            return self.new_token(.Comment, comment, comment.len);
                         }
                         continue;
                     } else if nextc == b'*' {
@@ -126,7 +141,7 @@ extend Tokenizer {
                             break;
                         }
                         if self.prefs.is_fmt {
-                            line := self.text[start_pos..end_pos];
+                            line := self.text[start_pos + 2..end_pos];
                             return self.new_multiline_token(
                                 .Comment, line, line.len, start_line, self.line, start_col
                             );

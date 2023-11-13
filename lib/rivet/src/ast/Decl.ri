@@ -2,12 +2,11 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/strings;
-
 import ../token;
 
 public enum Decl {
     Empty: token.Pos,
+    Comment: Comment,
     Import {
         attributes: Attributes;
         is_public: bool;
@@ -171,35 +170,6 @@ public struct EnumVariantDecl {
     public value: Expr;
     public decls: []Decl;
     public pos: token.Pos;
-}
-
-#[boxed]
-public struct Comment {
-    mut is_doc: bool;
-    mut lines: []string;
-    pos: token.Pos;
-
-    #[inline]
-    func is_multiline(self) -> bool {
-        return self.lines.len > 1;
-    }
-
-    #[inline]
-    func is_empty(self) -> bool {
-        return self.lines.is_empty();
-    }
-
-    func merge(self) -> string {
-        mut res := strings.Builder.new();
-        for line in self.lines {
-            res.write_join([line, if line.is_empty() or line.ends_with(".") {
-                "\n"
-            } else {
-                " "
-            }]);
-        }
-        return res.to_string();
-    }
 }
 
 public struct ImportListInfo {
