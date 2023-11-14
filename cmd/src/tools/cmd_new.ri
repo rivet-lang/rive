@@ -61,7 +61,7 @@ public func new(args: []string, is_init: bool) -> ! {
 
     mut project := build.Project();
     if is_init {
-        project.name = Path.basename(process.get_cwd()!);
+        project.name = Path.base_name(process.get_cwd()!);
     } else {
         if remaining.len == 1 {
             project.name = remaining[0];

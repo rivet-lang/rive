@@ -81,7 +81,7 @@ public struct Path {
     /// If the path is a file in the current directory (no directory component)
     /// then returns `.`.
     /// If the path is the root directory, returns `/`.
-    public func dirname(path: string) -> ?string {
+    public func dir_name(path: string) -> ?string {
         if path.is_empty() {
             return none;
         }
@@ -94,7 +94,7 @@ public struct Path {
         return ".";
     }
 
-    public func basename(path: string) -> string {
+    public func base_name(path: string) -> string {
         if path.is_empty() {
             return "";
         }
@@ -115,7 +115,7 @@ public struct Path {
     }
 
     public func file_name(path: string) -> string {
-        return path.all_after_of_last("/");
+        return path.all_after_of_last(separatorStr);
     }
 
     /// Returns the extension of the file name (if any).
