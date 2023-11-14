@@ -115,7 +115,7 @@ public struct Path {
     }
 
     public func file_name(path: string) -> string {
-        return path.all_before_last_of(Self.separatorStr);
+        return path.all_before_last_of("/");
     }
 
     /// Returns the extension of the file name (if any).
