@@ -94,6 +94,9 @@ public struct Path {
         return ".";
     }
 
+    /// Returns the last element of path. Trailing path separators are removed before
+    /// extracting the last element. If the path is empty, base returns ".". If the
+    /// path consists entirely of separators, base returns a single separator.
     public func base_name(path: string) -> string {
         if path.is_empty() {
             return "";
