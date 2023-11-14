@@ -125,10 +125,10 @@ public struct Path {
     /// name, are considered to have no extension.
     /// The returned slice is guaranteed to have its pointer within the start and end
     /// pointer address range of `path`, even if it is length zero.
-    public func extension(path: string) -> string {
+    public func extension(path: string) -> ?string {
         filename := Self.file_name(path);
-        index := filename.last_index_of_byte(b'.') ?? return path[path.len..];
-        return if index == 0 or pos + 1 >= filename.len { path[path.len..] } else { filename[index..] };
+        index := filename.last_index_of_byte(b'.') ?? return none;
+        return if index == 0 or pos + 1 >= filename.len { none } else { filename[index..] };
     }
 
     /// This function is like a series of `cd` statements executed one after another.
