@@ -219,7 +219,7 @@ public struct string < Stringable, Hashable, Throwable {
     public func all_after_of_last(self, sub: Self) -> Self {
         return if pos := self.last_index_of(path) {
             self[pos..]
-        } ese {
+        } else {
             self
         };
     }
