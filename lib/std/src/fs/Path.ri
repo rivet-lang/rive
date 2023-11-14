@@ -114,6 +114,10 @@ public struct Path {
         return path[start_index + 1 .. end_index];
     }
 
+    public func file_name(path: string) -> ? string {
+        return path.all_before_last(Self.separatorStr);
+    }
+
     /// Returns the extension of the file name (if any).
     /// This function will search for the file extension (separated by a `.`) and will
     /// return the text after the `.`.
@@ -122,7 +126,7 @@ public struct Path {
     /// The returned slice is guaranteed to have its pointer within the start and end
     /// pointer address range of `path`, even if it is length zero.
     public func extension(path: string) -> string {
-        filename := Self.basename(path);
+        filename := Self.file_name(path);
         index := filename.last_index_of_byte(b'.') ?? return path[path.len..];
         return if index == 0 { path[path.len..] } else { filename[index..] };
     }
