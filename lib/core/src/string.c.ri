@@ -281,9 +281,8 @@ public struct string < Stringable, Hashable, Throwable {
 
     /// Linear search for the last index of `byte` inside a string.
     public func last_index_of_byte(self, byte: uint8) -> ?uint {
-        mut i: uint := self.len;
-        while i != 0 {
-            i -= 1;
+        mut i: uint := self.len - 1;
+        while i >= 0 : i -= 1 {
             if unsafe { self.ptr[i] == byte } {
                 return i;
             }
