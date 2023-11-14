@@ -128,7 +128,7 @@ public struct Path {
     public func extension(path: string) -> string {
         filename := Self.file_name(path);
         index := filename.last_index_of_byte(b'.') ?? return path[path.len..];
-        return if index == 0 { path[path.len..] } else { filename[index..] };
+        return if index == 0 or pos + 1 >= filename.len { path[path.len..] } else { filename[index..] };
     }
 
     /// This function is like a series of `cd` statements executed one after another.
