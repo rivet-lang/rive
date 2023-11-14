@@ -216,6 +216,14 @@ public struct string < Stringable, Hashable, Throwable {
         return self;
     }
 
+    public func all_after_of_last(self, sub: Self) -> Self {
+        return if pos := self.last_index_of(path) {
+            self[pos..]
+        } ese {
+            self
+        };
+    }
+
     /// Returns the index of byte `b` if found in the string.
     public func index_of_byte(self, b: uint8) -> ?uint {
         mut i: uint := 0;
