@@ -114,8 +114,8 @@ public struct Path {
         return path[start_index + 1 .. end_index];
     }
 
-    public func file_name(path: string) -> ? string {
-        return path.all_before_last(Self.separatorStr);
+    public func file_name(path: string) -> string {
+        return path.all_before_last_of(Self.separatorStr);
     }
 
     /// Returns the extension of the file name (if any).
