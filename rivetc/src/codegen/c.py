@@ -333,14 +333,14 @@ class CGen:
                 self.write("--")
         elif inst.kind in (InstKind.BitNot, InstKind.BooleanNot, InstKind.Neg):
             if inst.kind == InstKind.BooleanNot:
-                self.write("!(")
+                self.write("!")
             elif inst.kind == InstKind.Neg:
                 self.write("-")
             else:
                 self.write("~")
+            self.write("(")
             self.gen_expr(inst.args[0])
-            if inst.kind == InstKind.BooleanNot:
-                self.write(")")
+            self.write(")")
         elif inst.kind == InstKind.Br:
             if len(inst.args) == 1:
                 self.write(f"goto {inst.args[0].name}")
