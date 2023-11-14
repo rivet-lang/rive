@@ -81,7 +81,7 @@ public struct Path {
     /// If the path is a file in the current directory (no directory component)
     /// then returns `.`.
     /// If the path is the root directory, returns `/`.
-    public func dirname(path: string) -> ?string {
+    public func dir_name(path: string) -> ?string {
         if path.is_empty() {
             return none;
         }
