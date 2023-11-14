@@ -97,7 +97,6 @@ class Kind(Enum):
     KwThrow = auto_enum() # throw
     KwTrait = auto_enum() # trait
     KwTrue = auto_enum() # true
-    KwUndefined = auto_enum() # undefined
     KwUnsafe = auto_enum() # unsafe
     KwWhile = auto_enum() # while
     # ==============================
@@ -243,7 +242,6 @@ TOKEN_STRINGS = {
     Kind.KwThrow: "throw",
     Kind.KwTrait: "trait",
     Kind.KwTrue: "true",
-    Kind.KwUndefined: "undefined",
     Kind.KwUnsafe: "unsafe",
     Kind.KwWhile: "while",
     # ==============================

@@ -102,7 +102,6 @@ static kindStrings := [
     KindMap(.KwThrow, "throw"),
     KindMap(.KwTrait, "trait"),
     KindMap(.KwTrue, "true"),
-    KindMap(.KwUndefined, "undefined"),
     KindMap(.KwUnsafe, "unsafe"),
     KindMap(.KwWhile, "while")
 ];
@@ -200,7 +199,6 @@ public enum Kind < traits.Stringable {
     KwThrow, // throw
     KwTrait, // trait
     KwTrue, // true
-    KwUndefined, // undefined
     KwUnsafe, // unsafe
     KwWhile, // while
     // ==============================
@@ -295,7 +293,6 @@ public func lookup(str: string) -> Kind {
         "throw" -> .KwThrow,
         "trait" -> .KwTrait,
         "true" -> .KwTrue,
-        "undefined" -> .KwUndefined,
         "unsafe" -> .KwUnsafe,
         "while" -> .KwWhile,
         else -> .Name
