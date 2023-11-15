@@ -626,10 +626,10 @@ extend Tokenizer {
     }
 
     func read_string(mut self) -> string {
+        start := self.pos + 1;
         self.pos -= 1;
         pos := self.current_pos();
         self.pos += 1;
-        start := self.pos;
         start_char := self.current_char();
         mut backslash_count := if start_char == BACKSLASH { 1 } else { 0 };
         is_raw := self.pos > 0 and self.text[self.pos - 1] == b'r';
@@ -700,7 +700,7 @@ extend Tokenizer {
 
         mut lit := "";
         if start <= self.pos {
-            lit = self.text[start + 1..self.pos].clone();
+            lit = self.text[start..self.pos].clone();
             mut segment_idx: uint := 0;
             mut str_segments := @vec(string);
             if u_escapes_pos.len + h_escapes_pos.len > 0 {
