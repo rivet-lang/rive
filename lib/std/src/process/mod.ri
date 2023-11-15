@@ -17,7 +17,7 @@ public alias executable := core.process_executable;
 
 public static args := core.ARGS;
 public static wdAtStartup := get_cwd() catch ".";
-public static executableDir := Path.dirname(executable() catch wdAtStartup);
+public static executableDir := Path.dir_name(executable() catch wdAtStartup);
 
 #[boxed]
 public struct NotADirectoryError < Throwable {

@@ -386,12 +386,12 @@ public struct Table {
     public func filter_files(self, inputs: []string) -> []string {
         mut new_inputs := @vec(string, inputs.len);
         for input in inputs {
-            basename_input := Path.basename(input);
-            if basename_input.count(".") == 1 {
+            base_name_input := Path.base_name(input);
+            if base_name_input.count(".") == 1 {
                 new_inputs.push(input);
                 continue;
             }
-            exts := basename_input[..basename_input.len - 3].split(".")[1..];
+            exts := base_name_input[..base_name_input.len - 3].split(".")[1..];
             mut already_exts := @vec(string, exts.len);
             mut should_compile := false;
             for ext in exts {

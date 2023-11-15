@@ -38,52 +38,59 @@ test "std.fs.Path.resolve()" {
     );
 }
 
-test "std.fs.Path.dirname()" {
-    if d1 := Path.dirname("/a/b/c") {
+test "std.fs.Path.dir_name()" {
+    if d1 := Path.dir_name("/a/b/c") {
         @assert(d1 == "/a/b");
     } else {
         @assert(false);
     }
-    if d2 := Path.dirname("/a/b/c///") {
+    if d2 := Path.dir_name("/a/b/c///") {
         @assert(d2 == "/a/b");
     } else {
         @assert(false);
     }
-    if d3 := Path.dirname("/a") {
+    if d3 := Path.dir_name("/a") {
         @assert(d3 == "/");
     } else {
         @assert(false);
     }
-    @assert(Path.dirname("/") is none);
-    @assert(Path.dirname("//") is none);
-    @assert(Path.dirname("///") is none);
-    @assert(Path.dirname("////") is none);
-    @assert(Path.dirname("") is none);
-    @assert(Path.dirname("a") is none);
-    @assert(Path.dirname("a/") is none);
-    @assert(Path.dirname("a//") is none);
+    @assert(Path.dir_name("/") is none);
+    @assert(Path.dir_name("//") is none);
+    @assert(Path.dir_name("///") is none);
+    @assert(Path.dir_name("////") is none);
+    @assert(Path.dir_name("") is none);
+    @assert(Path.dir_name("a") is none);
+    @assert(Path.dir_name("a/") is none);
+    @assert(Path.dir_name("a//") is none);
 }
 
-test "std.fs.Path.basename()" {
-    @assert(Path.basename("") == "");
-    @assert(Path.basename("/") == "");
-    @assert(Path.basename("/dir/basename.ext") == "basename.ext");
-    @assert(Path.basename("/basename.ext") == "basename.ext");
-    @assert(Path.basename("basename.ext") == "basename.ext");
-    @assert(Path.basename("basename.ext/") == "basename.ext");
-    @assert(Path.basename("basename.ext//") == "basename.ext");
-    @assert(Path.basename("/aaa/bbb") == "bbb");
-    @assert(Path.basename("/aaa/") == "aaa");
-    @assert(Path.basename("/aaa/b") == "b");
-    @assert(Path.basename("/a/b") == "b");
-    @assert(Path.basename("//a") == "a");
+test "std.fs.Path.base_name()" {
+    @assert(Path.base_name("") == "");
+    @assert(Path.base_name("/") == "");
+    @assert(Path.base_name("/dir/base_name.ext") == "base_name.ext");
+    @assert(Path.base_name("/base_name.ext") == "base_name.ext");
+    @assert(Path.base_name("base_name.ext") == "base_name.ext");
+    @assert(Path.base_name("base_name.ext/") == "base_name.ext");
+    @assert(Path.base_name("base_name.ext//") == "base_name.ext");
+    @assert(Path.base_name("/aaa/bbb") == "bbb");
+    @assert(Path.base_name("/aaa/") == "aaa");
+    @assert(Path.base_name("/aaa/b") == "b");
+    @assert(Path.base_name("/a/b") == "b");
+    @assert(Path.base_name("//a") == "a");
 
-    @assert(Path.basename("\\dir\\basename.ext") == "\\dir\\basename.ext");
-    @assert(Path.basename("\\basename.ext") == "\\basename.ext");
-    @assert(Path.basename("basename.ext") == "basename.ext");
-    @assert(Path.basename("basename.ext\\") == "basename.ext\\");
-    @assert(Path.basename("basename.ext\\\\") == "basename.ext\\\\");
-    @assert(Path.basename("foo") == "foo");
+    @assert(Path.base_name("\\dir\\base_name.ext") == "\\dir\\base_name.ext");
+    @assert(Path.base_name("\\base_name.ext") == "\\base_name.ext");
+    @assert(Path.base_name("base_name.ext") == "base_name.ext");
+    @assert(Path.base_name("base_name.ext\\") == "base_name.ext\\");
+    @assert(Path.base_name("base_name.ext\\\\") == "base_name.ext\\\\");
+    @assert(Path.base_name("foo") == "foo");
+}
+
+test "std.fs.Path.file_name()" {
+    @assert(Path.file_name("rivet/lib/std/project.json") == "project.json");
+    @assert(Path.file_name("rivet/lib/std/") == "");
+    @assert(Path.file_name("rivet/lib/std") == "std");
+    @assert(Path.file_name("filename") == "filename");
 }
 
 test "std.fs.Path.extension()" {
