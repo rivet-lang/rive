@@ -2051,7 +2051,7 @@ class Codegen:
                 return ir.Ident(ir.BOOL_T, tmp)
 
             left = self.gen_expr_with_cast(expr_left_typ, expr.left)
-            right = self.gen_expr_with_cast(expr_right_typ, expr.right)
+            right = self.gen_expr_with_cast(expr_left_typ, expr.right)
 
             # runtime calculation
             tmp = self.cur_fn.local_name()
