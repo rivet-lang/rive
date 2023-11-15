@@ -224,6 +224,40 @@ public struct Tokenizer {
         self.pos += len;
     }
 
+    // NOTE: this function doesn't do any decoding... it just replaces '\xc0' with
+    // the byte 0xc0
+    func decode_h_escape_single(self, str: string, idx: uint) -> (uint, string) {
+        end_idx := idx + 4; // "\xXX".len == 4
+        if idx + 2 > str.len or end_idx > str.len {
+            self.error("unfinished single hex escape started at");
+            return (0, "");
+        }
+        return (
+            end_idx,
+            @as(uint8, conv.parse_uint(str[idx + 2..end_idx], 16, 8) catch 0).to_string()
+        );
+    }
+
+    // only handle single-byte inline escapes like '\xc0'
+    func decode_h_escapes(self, s: string, start: uint, escapes_pos: []uint) -> string {
+        if escapes_pos.is_empty() {
+            return s;
+        }
+        mut ss := @vec(string, escapes_pos.len * 2 + 1);
+        ss.push(s[..escapes_pos[escapes_pos.len - 1] - start]);
+        for i, pos in escapes_pos {
+            idx := pos - start;
+            (end_idx, segment) := self.decode_h_escape_single(s, idx);
+            ss.push(segment);
+            ss.push(if i + 1 < escapes_pos.len {
+                s[end_idx..escapes_pos[i + 1] - start]
+            } else {
+                s[end_idx..]
+            });
+        }
+        return utils.join(ss, "");
+    }
+
     #[inline]
     func error(self, msg: string, pos: token.Pos := self.current_pos()) {
         report.error(msg, pos);
@@ -243,36 +277,6 @@ public struct Tokenizer {
     func warn_builder(self, msg: string, pos: token.Pos := self.current_pos()) -> report.ReportBuilder {
         return report.warn_builder(msg, pos);
     }
-}
-
-// NOTE: this function doesn't do any decoding... it just replaces '\xc0' with
-// the byte 0xc0
-func decode_h_escape_single(str: string, idx: uint) -> (uint, string) {
-    end_idx := idx + 4; // "\xXX".len == 4
-    return (
-        end_idx,
-        @as(uint8, conv.parse_uint(str[idx + 2..end_idx], 16, 8) catch 0).to_string()
-    );
-}
-
-// only handle single-byte inline escapes like '\xc0'
-func decode_h_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
-    if escapes_pos.is_empty() {
-        return s;
-    }
-    mut ss := @vec(string, escapes_pos.len * 2 + 1);
-    ss.push(s[..escapes_pos[escapes_pos.len - 1] - start]);
-    for i, pos in escapes_pos {
-        idx := pos - start;
-        (end_idx, segment) := decode_h_escape_single(s, idx);
-        ss.push(segment);
-        ss.push(if i + 1 < escapes_pos.len {
-            s[end_idx..escapes_pos[i + 1] - start]
-        } else {
-            s[end_idx..]
-        });
-    }
-    return utils.join(ss, "");
 }
 
 // handle single-byte inline octal escapes like '\###'

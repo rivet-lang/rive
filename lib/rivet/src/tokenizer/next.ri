@@ -605,6 +605,9 @@ extend Tokenizer {
         len -= 1;
 
         mut ch := self.text[start + 1..self.pos].clone();
+        if self.prefs.is_fmt {
+            return ch;
+        }
         if len != 1 {
             // the string inside the backticks is longer than one character
             // but we might only have one rune... attempt to decode escapes
@@ -625,7 +628,7 @@ extend Tokenizer {
                         }
                     }
                     ch = if escaped_hex {
-                        decode_h_escapes(ch, 0, escapes_pos)
+                        self.decode_h_escapes(ch, 0, escapes_pos)
                     } else {
                         decode_o_escapes(ch, 0, escapes_pos)
                     };
@@ -712,10 +715,9 @@ extend Tokenizer {
                         self.error(r"`\u` incomplete unicode character value", pos);
                     }
                     u_escapes_pos.push(self.pos - 1);
-                }
-                // unknown escape sequence
-                if c !in [b'x', b'u', b'e', b'n', b'r', b't', b'v', b'a', b'f', b'b',
-                    b'\\', b'@', b'?', b'{', b'}', b'\'', b'"'] and !c.is_digit() {
+                } else if c !in [b'x', b'u', b'e', b'n', b'r', b't', b'v', b'a', b'f', b'b',
+                    b'\\', b'@', b'?', b'{', b'}', b'\'', b'"', b'$'] and !c.is_digit() {
+                    // unknown escape sequence
                     self.pos -= 1;
                     self.error(
                         "unknown escape sequence `{}`".fmt(c.to_ascii()),
@@ -732,35 +734,37 @@ extend Tokenizer {
         mut lit := "";
         if start <= self.pos {
             lit = self.text[start + 1..self.pos].clone();
-            mut segment_idx: uint := 0;
-            mut str_segments := @vec(string);
-            if u_escapes_pos.len + h_escapes_pos.len > 0 {
-                mut all_pos := @vec(uint, u_escapes_pos.len + h_escapes_pos.len);
-                for pos1 in u_escapes_pos {
-                    all_pos.push(pos1);
-                }
-                for pos1 in h_escapes_pos {
-                    all_pos.push(pos1);
-                }
-                for pos1 in all_pos {
-                    str_segments.push(lit[segment_idx..(pos1 - start)]);
-                    segment_idx = pos1 - start;
-                    if pos1 in u_escapes_pos {
-                        (end_idx, segment) := decode_u_escape_single(lit, segment_idx);
-                        str_segments.push(segment);
-                        segment_idx = end_idx;
+            if !self.prefs.is_fmt {
+                mut segment_idx: uint := 0;
+                mut str_segments := @vec(string);
+                if u_escapes_pos.len + h_escapes_pos.len > 0 {
+                    mut all_pos := @vec(uint, u_escapes_pos.len + h_escapes_pos.len);
+                    for pos1 in u_escapes_pos {
+                        all_pos.push(pos1);
                     }
-                    if pos1 in h_escapes_pos {
-                        (end_idx, segment) := decode_h_escape_single(lit, segment_idx);
-                        str_segments.push(segment);
-                        segment_idx = end_idx;
+                    for pos1 in h_escapes_pos {
+                        all_pos.push(pos1);
+                    }
+                    for pos1 in all_pos {
+                        str_segments.push(lit[segment_idx..(pos1 - start)]);
+                        segment_idx = pos1 - start;
+                        if pos1 in u_escapes_pos {
+                            (end_idx, segment) := decode_u_escape_single(lit, segment_idx);
+                            str_segments.push(segment);
+                            segment_idx = end_idx;
+                        }
+                        if pos1 in h_escapes_pos {
+                            (end_idx, segment) := self.decode_h_escape_single(lit, segment_idx);
+                            str_segments.push(segment);
+                            segment_idx = end_idx;
+                        }
                     }
                 }
+                if segment_idx < lit.len {
+                    str_segments.push(lit[segment_idx..]);
+                }
+                lit = utils.join(str_segments, "");
             }
-            if segment_idx < lit.len {
-                str_segments.push(lit[segment_idx..]);
-            }
-            lit = utils.join(str_segments, "");
             if n_cr_chars > 0 {
                 lit = lit.replace("\r", "");
             }
