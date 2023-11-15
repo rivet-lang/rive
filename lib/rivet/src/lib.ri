@@ -179,13 +179,13 @@ public struct Compiler {
             } else {
                 pathx2
             };
-            dirname := Path.resolve(Path.dirname(file_path) ?? file_path)!;
+            dir_name := Path.resolve(Path.dir_name(file_path) ?? file_path)!;
             old_wd := process.get_cwd()!;
-            process.set_cwd(dirname)!;
+            process.set_cwd(dir_name)!;
             if Path.is_directory(pathx) {
                 found = true;
                 abspath = Path.resolve(pathx)!;
-                mut mod_basedir := Path.dirname(abspath) ?? abspath;
+                mut mod_basedir := Path.dir_name(abspath) ?? abspath;
                 if mod_basedir.ends_with("/src") {
                     mod_basedir = mod_basedir[..mod_basedir.len - 4]; // skip `/src`
                 } else if mod_basedir.contains("/src") {

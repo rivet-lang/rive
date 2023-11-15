@@ -17,7 +17,7 @@ public struct Path {
     /// Returns `true` if the given byte is a valid path separator
     #[inline]
     public func is_separator(byte: uint8) -> bool {
-        return byte == b'/' #if _WINDOWS_ or byte == b'\\' #endif;
+        return byte == SEPARATOR;
     }
 
     /// Returns `true` if `path` (file or directory) exists.
@@ -81,32 +81,49 @@ public struct Path {
     /// If the path is a file in the current directory (no directory component)
     /// then returns `.`.
     /// If the path is the root directory, returns `/`.
-    public func dirname(path: string) -> ?string {
+    public func dir_name(path: string) -> ?string {
         if path.is_empty() {
             return none;
         }
-        if pos := path.last_index_of_byte(SEPARATOR) {
-            if pos == 0 and SEPARATOR == b'/' {
-                return "/";
+
+        mut end_index: uint := path.len - 1;
+        while path[end_index] == SEPARATOR : end_index -= 1 {
+            if end_index == 0 {
+                return none;
             }
-            return path[..pos];
         }
-        return ".";
+
+        while path[end_index] != SEPARATOR : end_index -= 1 {
+            if end_index == 0 {
+                return none;
+            }
+        }
+
+        if end_index == 0 and path[0] == SEPARATOR {
+            return separatorStr;
+        } else if end_index == 0 {
+            return none;
+        }
+
+        return path[..end_index];
     }
 
-    public func basename(path: string) -> string {
+    /// Returns the last element of path. Trailing path separators are removed before
+    /// extracting the last element. If the path is empty, base returns ".". If the
+    /// path consists entirely of separators, base returns a single separator.
+    public func base_name(path: string) -> string {
         if path.is_empty() {
             return "";
         }
         mut end_index: uint := path.len - 1;
-        while path[end_index] == b'/' : end_index -= 1 {
+        while path[end_index] == SEPARATOR : end_index -= 1 {
             if end_index == 0 {
                 return "";
             }
         }
         mut start_index: uint := end_index;
         end_index += 1;
-        while path[start_index] != b'/' : start_index -= 1 {
+        while path[start_index] != SEPARATOR : start_index -= 1 {
             if start_index == 0 {
                 return path[0..end_index];
             }
@@ -114,17 +131,25 @@ public struct Path {
         return path[start_index + 1 .. end_index];
     }
 
+    /// Return alls characters found after the last occurrence of `separatorStr`.
+    /// File extension is included.
+    public func file_name(path: string) -> string {
+        return path.all_after_of_last(separatorStr);
+    }
+
     /// Returns the extension of the file name (if any).
     /// This function will search for the file extension (separated by a `.`) and will
     /// return the text after the `.`.
     /// Files that end with `.`, or that start with `.` and have no other `.` in their
     /// name, are considered to have no extension.
-    /// The returned slice is guaranteed to have its pointer within the start and end
-    /// pointer address range of `path`, even if it is length zero.
     public func extension(path: string) -> string {
-        filename := Self.basename(path);
-        index := filename.last_index_of_byte(b'.') ?? return path[path.len..];
-        return if index == 0 { path[path.len..] } else { filename[index..] };
+        filename := Self.file_name(path);
+        index := filename.last_index_of_byte(b'.') ?? return "";
+        return if index == 0 or index + 1 >= filename.len {
+            ""
+        } else {
+            filename[index..]
+        };
     }
 
     /// This function is like a series of `cd` statements executed one after another.

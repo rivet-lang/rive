@@ -11,7 +11,7 @@ import { Path } from std/fs;
 import ../utils;
 
 public static rivetDir := Path.join(env.homeDir, ".rivet_lang")!;
-public static rivetcDir := Path.dirname(process.executable()!)?;
+public static rivetcDir := Path.dir_name(process.executable()!)?;
 
 public static objDir := Path.join(rivetDir, "obj")!;
 public static libDir := Path.join(rivetDir, "lib")!;

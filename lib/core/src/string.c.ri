@@ -210,10 +210,40 @@ public struct string < Stringable, Hashable, Throwable {
     /// Returns the contents before `sub` in the string.
     /// If the substring is not found, it returns the full input string.
     public func all_before_of(self, sub: Self) -> Self {
-        if pos := self.index_of(sub) {
-            return self[..pos];
-        }
-        return self;
+        return if pos := self.index_of(sub) {
+            self[..pos]
+        } else {
+            self
+        };
+    }
+
+    /// Returns the contents before the last occurrence of `sub` in the string.
+    public func all_before_of_last(self, sub: Self) -> Self {
+        return if pos := self.last_index_of(sub) {
+            self[..pos]
+        } else {
+            self
+        };
+    }
+
+    /// Returns the contents after `sub` in the string. If the substring is
+    /// not found, it returns the full input string.
+    public func all_after_of(self, sub: Self) -> Self {
+        return if pos := self.index_of(sub) {
+            self[pos + sub.len..]
+        } else {
+            self
+        };
+    }
+
+    /// Returns the contents after the last occurrence of `sub` in the string.
+    /// If the substring is not found, it returns the full input string.
+    public func all_after_of_last(self, sub: Self) -> Self {
+        return if pos := self.last_index_of(sub) {
+            self[pos + sub.len..]
+        } else {
+            self
+        };
     }
 
     /// Returns the index of byte `b` if found in the string.
@@ -281,11 +311,16 @@ public struct string < Stringable, Hashable, Throwable {
 
     /// Linear search for the last index of `byte` inside a string.
     public func last_index_of_byte(self, byte: uint8) -> ?uint {
-        mut i: uint := self.len;
-        while i != 0 {
-            i -= 1;
+        mut i: uint := self.len - 1;
+        while i >= 0 : i -= 1 {
             if unsafe { self.ptr[i] == byte } {
                 return i;
+            } else if i == 0 {
+                // avoid panic because the value of `i` will reach 0, then `1`
+                // will be subtracted from it, which will cause an integer
+                // overflow and cause `i` to be equal to `uint.MAX`.
+                // TODO: find a way to avoid this in code generation.
+                break;
             }
         }
         return none;
@@ -302,6 +337,9 @@ public struct string < Stringable, Hashable, Throwable {
             while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
             if j == p.len {
                 return i;
+            }
+            if i == 0 {
+                break;
             }
         }
         return none;
@@ -396,6 +434,9 @@ public struct string < Stringable, Hashable, Throwable {
                 }
             }
             if !found {
+                break;
+            }
+            if pos == 0 {
                 break;
             }
         }
