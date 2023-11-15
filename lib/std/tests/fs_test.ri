@@ -106,7 +106,7 @@ test "std.fs.Path.extension()" {
     @assert(Path.extension("file.ext.") == "");
     @assert(Path.extension("very-long-file.bruh") == ".bruh");
     @assert(Path.extension("a.b.c") == ".c");
-    @assert(Path.extension("a.b.c/") == ".c");
+    @assert(Path.extension("a.b.c/") == "");
 
     @assert(Path.extension("/") == "");
     @assert(Path.extension("/.") == "");
