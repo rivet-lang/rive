@@ -210,15 +210,37 @@ public struct string < Stringable, Hashable, Throwable {
     /// Returns the contents before `sub` in the string.
     /// If the substring is not found, it returns the full input string.
     public func all_before_of(self, sub: Self) -> Self {
-        if pos := self.index_of(sub) {
-            return self[..pos];
-        }
-        return self;
+        return if pos := self.index_of(sub) {
+            self[..pos]
+        } else {
+            self
+        };
     }
 
+    /// Returns the contents before the last occurrence of `sub` in the string.
+    public func all_before_of_last(self, sub: Self) -> Self {
+        return if pos := self.last_index_of(sub) {
+            self[..pos]
+        } else {
+            self
+        };
+    }
+
+    /// Returns the contents after `sub` in the string. If the substring is
+    /// not found, it returns the full input string.
+    public func all_after_of(self, sub: Self) -> Self {
+        return if pos := self.index_of(sub) {
+            self[pos + sub.len..]
+        } else {
+            self
+        };
+    }
+
+    /// Returns the contents after the last occurrence of `sub` in the string.
+    /// If the substring is not found, it returns the full input string.
     public func all_after_of_last(self, sub: Self) -> Self {
-        return if pos := self.last_index_of(self) {
-            self[pos..]
+        return if pos := self.last_index_of(sub) {
+            self[pos + sub.len..]
         } else {
             self
         };
@@ -315,6 +337,9 @@ public struct string < Stringable, Hashable, Throwable {
             while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
             if j == p.len {
                 return i;
+            }
+            if i == 0 {
+                break;
             }
         }
         return none;

@@ -85,13 +85,27 @@ public struct Path {
         if path.is_empty() {
             return none;
         }
-        if pos := path.last_index_of_byte(SEPARATOR) {
-            if pos == 0 and SEPARATOR == SEPARATOR {
-                return separatorStr;
+        
+        mut end_index: uint := path.len - 1;
+        while path[end_index] == SEPARATOR : end_index -= 1 {
+            if end_index == 0 {
+                return none;
             }
-            return path[..pos];
         }
-        return ".";
+
+        while path[end_index] != SEPARATOR : end_index -= 1 {
+            if end_index == 0 {
+                return none;
+            }
+        }
+
+        if end_index == 0 and path[0] == SEPARATOR {
+            return separatorStr;
+        } else if end_index == 0 {
+            return none;
+        }
+
+        return path[..end_index];
     }
 
     /// Returns the last element of path. Trailing path separators are removed before
