@@ -261,7 +261,7 @@ public enum Kind < traits.Stringable {
 public func lookup(str: string) -> Kind {
     for &km in keywordsTable {
         if km.value == str {
-            return km.value;
+            return km.key;
         }
     }
     return .Name;
