@@ -143,7 +143,7 @@ public struct Path {
     /// Files that end with `.`, or that start with `.` and have no other `.` in their
     /// name, are considered to have no extension.
     public func extension(path: string) -> string {
-        filename := Self.base_name(path);
+        filename := Self.file_name(path);
         index := filename.last_index_of_byte(b'.') ?? return "";
         return if index == 0 or index + 1 >= filename.len {
             ""
