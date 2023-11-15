@@ -96,43 +96,43 @@ test "std.fs.Path.file_name()" {
 test "std.fs.Path.extension()" {
     @assert(Path.extension("") == "");
     @assert(Path.extension(".") == "");
-    @assert(Path.extension("a.") == ".");
-    @assert(Path.extension("abc.") == ".");
+    @assert(Path.extension("a.") == "");
+    @assert(Path.extension("abc.") == "");
     @assert(Path.extension(".a") == "");
     @assert(Path.extension(".file") == "");
     @assert(Path.extension(".gitignore") == "");
     @assert(Path.extension(".image.png") == ".png");
     @assert(Path.extension("file.ext") == ".ext");
-    @assert(Path.extension("file.ext.") == ".");
+    @assert(Path.extension("file.ext.") == "");
     @assert(Path.extension("very-long-file.bruh") == ".bruh");
     @assert(Path.extension("a.b.c") == ".c");
     @assert(Path.extension("a.b.c/") == ".c");
 
     @assert(Path.extension("/") == "");
     @assert(Path.extension("/.") == "");
-    @assert(Path.extension("/a.") == ".");
-    @assert(Path.extension("/abc.") == ".");
+    @assert(Path.extension("/a.") == "");
+    @assert(Path.extension("/abc.") == "");
     @assert(Path.extension("/.a") == "");
     @assert(Path.extension("/.file") == "");
     @assert(Path.extension("/.gitignore") == "");
     @assert(Path.extension("/file.ext") == ".ext");
-    @assert(Path.extension("/file.ext.") == ".");
+    @assert(Path.extension("/file.ext.") == "");
     @assert(Path.extension("/very-long-file.bruh") == ".bruh");
-    @assert(Path.extension("/a.b.c") == ".c");
-    @assert(Path.extension("/a.b.c/") == ".c");
+    @assert(Path.extension("/a.b.c") == "");
+    @assert(Path.extension("/a.b.c/") == "");
 
     @assert(Path.extension("/foo/bar/bam/") == "");
     @assert(Path.extension("/foo/bar/bam/.") == "");
-    @assert(Path.extension("/foo/bar/bam/a.") == ".");
-    @assert(Path.extension("/foo/bar/bam/abc.") == ".");
+    @assert(Path.extension("/foo/bar/bam/a.") == "");
+    @assert(Path.extension("/foo/bar/bam/abc.") == "");
     @assert(Path.extension("/foo/bar/bam/.a") == "");
     @assert(Path.extension("/foo/bar/bam/.file") == "");
     @assert(Path.extension("/foo/bar/bam/.gitignore") == "");
     @assert(Path.extension("/foo/bar/bam/file.ext") == ".ext");
-    @assert(Path.extension("/foo/bar/bam/file.ext.") == ".");
+    @assert(Path.extension("/foo/bar/bam/file.ext.") == "");
     @assert(Path.extension("/foo/bar/bam/very-long-file.bruh") == ".bruh");
     @assert(Path.extension("/foo/bar/bam/a.b.c") == ".c");
-    @assert(Path.extension("/foo/bar/bam/a.b.c/") == ".c");
+    @assert(Path.extension("/foo/bar/bam/a.b.c/") == "");
 }
 
 test "std.fs.Path.relative()" {
