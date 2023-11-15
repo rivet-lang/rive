@@ -436,6 +436,9 @@ public struct string < Stringable, Hashable, Throwable {
             if !found {
                 break;
             }
+            if pos == 0 {
+                break;
+            }
         }
         return self.slice(0, pos + 1);
     }
