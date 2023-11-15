@@ -293,6 +293,12 @@ public struct string < Stringable, Hashable, Throwable {
         while i >= 0 : i -= 1 {
             if unsafe { self.ptr[i] == byte } {
                 return i;
+            } else if i == 0 {
+                // avoid panic because the value of `i` will reach 0, then `1`
+                // will be subtracted from it, which will cause an integer
+                // overflow and cause `i` to be equal to `uint.MAX`.
+                // TODO: find a way to avoid this in code generation.
+                break;
             }
         }
         return none;
