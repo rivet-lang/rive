@@ -295,9 +295,9 @@ public struct Prefs {
             self.input = input;
             if self.mod_name.is_empty() {
                 self.mod_name = if Path.is_file(input) {
-                    Path.basename(input).all_before_of(".ri")
+                    Path.base_name(input).all_before_of(".ri")
                 } else {
-                    Path.basename(Path.resolve(input) catch input)
+                    Path.base_name(Path.resolve(input) catch input)
                 };
             }
         }
@@ -319,7 +319,7 @@ public struct Prefs {
         }
 
         self.mod_dir = if Path.is_file(self.input) {
-            Path.dirname(Path.absolute(self.input)!) ?? self.input
+            Path.dir_name(Path.absolute(self.input)!) ?? self.input
         } else {
             self.input
         };
