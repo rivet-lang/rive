@@ -4,12 +4,14 @@
 
 import std/traits;
 
-#[boxed]
 struct KindMap {
     key: Kind;
     value: string;
 }
 
+// NOTE: When adding modify this table, don't 
+// forget to update keywordsTable to match 
+// the modified values.
 static kindStrings := [
     KindMap(.Unknown, "unknown"),
     KindMap(.EndOfFile, "end of file"),
@@ -106,6 +108,8 @@ static kindStrings := [
     KindMap(.KwUnsafe, "unsafe"),
     KindMap(.KwWhile, "while")
 ];
+
+static keywordsTable := kindStrings[51..];
 
 public enum Kind < traits.Stringable {
     Unknown, // unknown
@@ -246,7 +250,7 @@ public enum Kind < traits.Stringable {
     }
 
     public func to_string(&self) -> string {
-        for km in kindStrings {
+        for &km in kindStrings {
             if km.key == self.* {
                 return km.value;
             }
@@ -257,48 +261,12 @@ public enum Kind < traits.Stringable {
 
 #[inline]
 public func lookup(str: string) -> Kind {
-    return match str {
-        "alias" -> .KwAlias,
-        "and" -> .KwAnd,
-        "as" -> .KwAs,
-        "break" -> .KwBreak,
-        "catch" -> .KwCatch,
-        "comptime" -> .KwComptime,
-        "const" -> .KwConst,
-        "continue" -> .KwContinue,
-        "defer" -> .KwDefer,
-        "else" -> .KwElse,
-        "enum" -> .KwEnum,
-        "extend" -> .KwExtend,
-        "extern" -> .KwExtern,
-        "false" -> .KwFalse,
-        "func" -> .KwFunc,
-        "for" -> .KwFor,
-        "from" -> .KwFrom,
-        "if" -> .KwIf,
-        "import" -> .KwImport,
-        "in" -> .KwIn,
-        "is" -> .KwIs,
-        "mut" -> .KwMut,
-        "none" -> .KwNone,
-        "!in" -> .KwNotIn,
-        "!is" -> .KwNotIs,
-        "or" -> .KwOr,
-        "public" -> .KwPublic,
-        "return" -> .KwReturn,
-        "self" -> .KwSelf,
-        "Self" -> .KwSelfTy,
-        "static" -> .KwStatic,
-        "struct" -> .KwStruct,
-        "match" -> .KwMatch,
-        "test" -> .KwTest,
-        "throw" -> .KwThrow,
-        "trait" -> .KwTrait,
-        "true" -> .KwTrue,
-        "unsafe" -> .KwUnsafe,
-        "while" -> .KwWhile,
-        else -> .Name
-    };
+    for &km in keywordsTable {
+        if km.value == str {
+            return km.key;
+        }
+    }
+    return .Name;
 }
 
 #[inline]
