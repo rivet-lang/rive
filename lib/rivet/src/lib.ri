@@ -90,7 +90,7 @@ public struct Compiler {
         }
     }
 
-    func load_root_module(mut self, recursive: bool := false) -> ! {
+    func load_root_module(mut self) -> ! {
         files := if Path.is_directory(self.prefs.input) {
             mut filtered_files := self.table.filter_files(
                 Directory.walk(self.prefs.input, ".ri")!
@@ -260,7 +260,7 @@ public struct Compiler {
         );
     }
 
-    public func parse_files(mut self, mod_sym: ast.Module, files: []string) {
+    func parse_files(mut self, mod_sym: ast.Module, files: []string) {
         for sf in parser.Parser(table: self.table, prefs: self.prefs).parse_module(
             mod_sym, files
         ) {

@@ -273,11 +273,7 @@ public struct Prefs {
             utils.error(err.to_string())
         };
         for arg in remaining_args {
-            if prefs.input.is_empty() {
-                prefs.check_input(arg);
-            } else {
-                utils.error("the compiler can only receive one module");
-            }
+            prefs.check_input(arg);
         }
         if prefs.input.is_empty() {
             utils.error("no input received");
@@ -287,7 +283,9 @@ public struct Prefs {
     }
 
     public func check_input(mut self, input: string) {
-        if !Path.exists(input) {
+        if !self.input.is_empty() {
+            utils.error("the compiler can only receive one module");
+        } else if !Path.exists(input) {
             utils.error("`{}` does not exist", input);
         } else if !(Path.is_directory(input) or Path.is_file(input)) {
             utils.error("`{}` is not a directory or file");
