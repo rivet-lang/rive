@@ -85,7 +85,7 @@ public struct Path {
         if path.is_empty() {
             return none;
         }
-        
+
         mut end_index: uint := path.len - 1;
         while path[end_index] == SEPARATOR : end_index -= 1 {
             if end_index == 0 {
@@ -143,9 +143,13 @@ public struct Path {
     /// Files that end with `.`, or that start with `.` and have no other `.` in their
     /// name, are considered to have no extension.
     public func extension(path: string) -> string {
-        filename := Self.file_name(path);
+        filename := Self.base_name(path);
         index := filename.last_index_of_byte(b'.') ?? return "";
-        return if index == 0 or index + 1 >= filename.len { "" } else { filename[index..] };
+        return if index == 0 or index + 1 >= filename.len {
+            ""
+        } else {
+            filename[index..]
+        };
     }
 
     /// This function is like a series of `cd` statements executed one after another.

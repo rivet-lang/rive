@@ -86,6 +86,13 @@ test "std.fs.Path.base_name()" {
     @assert(Path.base_name("foo") == "foo");
 }
 
+test "std.fs.Path.file_name()" {
+    @assert(Path.file_name("rivet/lib/std/project.json") == "project.json");
+    @assert(Path.file_name("rivet/lib/std/") == "");
+    @assert(Path.file_name("rivet/lib/std") == "std");
+    @assert(Path.file_name("filename") == "filename");
+}
+
 test "std.fs.Path.extension()" {
     @assert(Path.extension("") == "");
     @assert(Path.extension(".") == "");
