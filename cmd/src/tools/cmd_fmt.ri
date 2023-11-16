@@ -35,19 +35,18 @@ public func cmd_fmt(args: []string) -> ! {
     }
     for input in remaining {
         mut prefs_ := prefs.Prefs(
-            input: input,
             is_fmt: true,
             hide_all_warns: true
         );
         prefs_.check_input(input);
-        prefs_.load_data()!;
+        prefs_.load_module_info()!;
         report.reportTable.prefs = prefs_;
         table_ := ast.Table.new(prefs_);
         mut compiler := rivet.Compiler(table: table_, prefs: prefs_);
         compiler.load_root_module()!;
         mut formatter := fmt.Formatter(prefs_, table_, write_to_file: write_to_file);
         for source_file in table_.source_files {
-            output := formatter.fmt(source_file);
+            output := formatter.format(source_file);
             console.writeln(output);
         }
     }

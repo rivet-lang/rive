@@ -278,7 +278,7 @@ public struct Prefs {
         if prefs.input.is_empty() {
             utils.error("no input received");
         }
-        prefs.load_data()!;
+        prefs.load_module_info()!;
         return prefs;
     }
 
@@ -301,7 +301,7 @@ public struct Prefs {
         }
     }
 
-    public func load_data(mut self) -> ! {
+    public func load_module_info(mut self) -> ! {
         if self.is_test {
             self.mod_output = "_rivet_tests_runner_";
         } else if self.mod_output.is_empty() {

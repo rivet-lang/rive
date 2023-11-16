@@ -22,7 +22,7 @@ public struct Formatter {
     mut line_len: uint;
     mut empty_line: bool;
 
-    public func fmt(mut self, source_file: ast.SourceFile) -> string {
+    public func format(mut self, source_file: ast.SourceFile) -> string {
         self.source_file = source_file;
         self.format_decls(source_file.decls);
         return self.output.to_string();
