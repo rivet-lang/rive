@@ -5,6 +5,7 @@
 import std/strings;
 
 import ../ast;
+import ../utils;
 import ../prefs;
 
 static maxLen: []uint := [0, 35, 60, 85, 93, 100];
@@ -47,7 +48,7 @@ public struct Formatter {
     }
 
     func write_indent(mut self) {
-        self.output.write_string("\t".repeat(self.indent));
+        self.output.write_string(utils.tabs(self.indent));
         self.line_len += self.indent * 4;
     }
 

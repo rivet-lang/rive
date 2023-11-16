@@ -12,7 +12,7 @@ extend Parser {
     func parse_doc_comments(mut self) -> []ast.Comment {
         mut comments := @vec(ast.Comment);
         while self.tok.kind == .DocComment {
-            comments.push(self.parse_comment(true));
+            comments.push(self.parse_comment());
         }
         return comments;
     }

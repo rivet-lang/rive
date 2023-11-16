@@ -97,7 +97,7 @@ extend Tokenizer {
                         if (is_doc_comment and self.prefs.is_docs) or self.prefs.is_fmt {
                             mut comment := self.text[start_pos..end_pos];
                             // find out if this comment is on its own line (for rivet format)
-                            mut is_separate_line_comment := false;
+                            mut is_separate_line_comment := true;
                             mut j := start_pos - bytes_to_skip;
                             while j >= 0 and self.text[j] != LF : j -= 1 {
                                 if self.text[j] !in [b'\t', b' '] {
@@ -110,7 +110,13 @@ extend Tokenizer {
                                 // comments that are on a separate line
                                 comment = "\x01".concat(comment);
                             }
-                            return self.new_token(.Comment, comment, comment.len);
+                            return self.new_token(
+                                if is_doc_comment {
+                                    .DocComment
+                                } else {
+                                    .Comment
+                                }, comment, comment.len
+                            );
                         }
                         continue;
                     } else if nextc == b'*' {

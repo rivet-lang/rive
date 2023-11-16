@@ -156,13 +156,15 @@ public struct Parser {
         return false;
     }
 
-    func parse_comment(mut self, parse_doc_comment: bool := false) -> ast.Comment {
-        if !((parse_doc_comment and self.accept(.DocComment)) or self.accept(.Comment)) {
-            return ast.Comment();
+    func parse_comment(mut self) -> ast.Comment {
+        if self.prefs.is_fmt or (self.prefs.is_docs and self.tok.kind == .DocComment) {
+            if self.accept(.Comment) or self.accept(.DocComment) {
+                return ast.Comment(
+                    self.prev_tok.kind == .DocComment, self.prev_tok.lit, self.prev_tok.pos
+                );
+            }
         }
-        return ast.Comment(
-            self.prev_tok.kind == .DocComment, self.prev_tok.lit, self.prev_tok.pos
-        );
+        return ast.Comment();
     }
 
     // NOTE:

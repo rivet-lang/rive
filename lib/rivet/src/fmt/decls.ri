@@ -13,8 +13,23 @@ extend Formatter {
 
     func format_decl(mut self, decl: ast.Decl) {
         match decl is {
-            .Comment as comment -> self.format_comment(comment),
+            .Comment as comment -> self.format_comment(comment, same_line: true),
+            .Func as func_decl -> self.format_func(func_decl),
             else -> {}
+        }
+    }
+
+    func format_func(mut self, func_decl: ast.Decl.Func) {
+        self.format_comments(func_decl.docs, same_line: true);
+        self.write(func_decl.stringify());
+        if func_decl.is_extern {
+            self.writeln(";");
+        } else {
+            self.writeln(" {");
+            //self.indent += 1;
+            self.format_stmts(func_decl.stmts);
+            //self.indent -= 1;
+            self.writeln("}");
         }
     }
 }

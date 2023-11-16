@@ -13,7 +13,7 @@ extend Formatter {
     // Optional arguments defines the way comments are going to be written
     // - has_nl: adds an newline at the end of a list of comments
     // - same_line: line comments will be on the same line as the last statement
-    // - level:  either .keep (don't indent), or .indent (increment indentation)
+    // - level:  either .Keep (don't indent), or .Indent (increment indentation)
     // - prev_line: the line number of the previous token to save linebreaks
     func format_comment(
         mut self, comment: ast.Comment, same_line: bool := false,
@@ -22,10 +22,13 @@ extend Formatter {
         if level == .Indent {
             self.indent += 1;
         }
-        if !comment.text.contains("\n") {
+        if !comment.is_multiline() {
             is_separate_line := !same_line or comment.text.starts_with("\x01");
             s := comment.text.trim_left("\x01").trim_right(" ");
             mut out_s := "//";
+            if comment.is_doc {
+                out_s = out_s.concat("/");
+            }
             if s != "" {
                 if s[0].is_alnum() {
                     out_s = out_s.concat(" ");
@@ -35,9 +38,6 @@ extend Formatter {
             if !is_separate_line and self.indent > 0 {
                 _ = self.remove_new_line(); // delete the generated \n
                 self.write(" ");
-            }
-            if comment.is_doc {
-                self.write("/");
             }
             self.writeln(out_s);
         } else {

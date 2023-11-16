@@ -2,6 +2,8 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import std/strings;
+
 import ../token;
 
 public enum Decl {
@@ -138,6 +140,43 @@ public enum Decl {
         self_pos: token.Pos;
         mut sym: Sym;
         mut defer_stmts: []Stmt.Defer;
+
+        public func stringify(self) -> string {
+            mut sb := strings.Builder.new(500);
+            if self.is_public {
+                sb.write_string("public ");
+            }
+            sb.write_fmt("func {}(", self.name);
+            if self.is_method {
+                if self.self_is_ptr {
+                    sb.write_string("&");
+                }
+                if self.self_is_mut {
+                    sb.write_string("mut ");
+                }
+                sb.write_string("self");
+                if self.args.len > 0 {
+                    sb.write_string(", ");
+                }
+            }
+            for i, arg in self.args {
+                if arg.is_mut {
+                    sb.write_string("mut ");
+                }
+                sb.write_fmt("{}: {}", arg.name, arg.type);
+                if arg.has_def_expr {
+                    sb.write_fmt(" := {}", arg.def_expr);
+                }
+                if i < self.args.len - 1 {
+                    sb.write_string(", ");
+                }
+            }
+            sb.write_byte(b')');
+            if self.ret_type !is .Void {
+                sb.write_fmt(" -> {}", self.ret_type);
+            }
+            return sb.to_string();
+        }
     },
     Test {
         docs: []Comment;

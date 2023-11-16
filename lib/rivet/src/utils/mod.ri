@@ -12,6 +12,28 @@ public const CR: uint8 := 13;
 
 public static mut stderrSupportStyles := styles.stderr_support_styles();
 
+public static tabsTable := [
+    "",
+    "\t",
+    "\t\t",
+    "\t\t\t",
+    "\t\t\t\t",
+    "\t\t\t\t\t",
+    "\t\t\t\t\t\t",
+    "\t\t\t\t\t\t\t",
+    "\t\t\t\t\t\t\t\t",
+    "\t\t\t\t\t\t\t\t\t",
+    "\t\t\t\t\t\t\t\t\t\t"
+];
+
+public func tabs(n: uint) -> string {
+    return if n < tabsTable.len {
+        tabsTable[n]
+    } else {
+        "\t".repeat(n)
+    };
+}
+
 #[inline]
 public func min(a: uint, b: uint) -> uint {
    return if a < b { a } else { b };
