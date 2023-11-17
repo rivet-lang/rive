@@ -2,14 +2,12 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/conv;
 import std/traits;
 import std/process;
 import std/strings;
 import { Path } from std/fs;
 
 import ../token;
-import ../report;
 
 // Useful functions to get system `#define`s.
 // Will soon be used to implement `extern (C) import`.

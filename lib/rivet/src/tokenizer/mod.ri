@@ -307,23 +307,16 @@ func decode_u_escape_single(str: string, idx: uint) -> (uint, string) {
 }
 
 // decode the flagged unicode escape sequences into their utf-8 bytes
-func decode_u_escapes(str: string, start: uint, escapes_pos: []uint) -> string {
-    if escapes_pos.is_empty() {
-        return str;
-    }
-    mut ss := @vec(string, escapes_pos.len * 2 + 1);
-    ss.push(str[..escapes_pos[escapes_pos.len - 1] - start]);
-    for i, pos in escapes_pos {
-        idx := pos - start;
-        (end_idx, segment) := decode_u_escape_single(str, idx);
+func decode_unicode_escaped_rune(str: string) -> string {
+    (end_idx, segment) := decode_u_escape_single(str, 0);
+    return if str.len == end_idx {
+        segment
+    } else {
+        mut ss := @vec(string, 2);
         ss.push(segment);
-        ss.push(if i + 1 < escapes_pos.len {
-            str[end_idx..escapes_pos[i + 1] - start]
-        } else {
-            str[end_idx..]
-        });
-    }
-    return utils.join(ss, "");
+        ss.push(str[end_idx..]);
+        utils.join(ss, "")
+    };
 }
 
 func trim_slash_line_break(s: string) -> string {
