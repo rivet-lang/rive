@@ -20,9 +20,10 @@ extend Formatter {
                     self.format_stmts(block.stmts);
                 }
                 if block.is_expr {
-                    self.writeln()
+                    self.writeln();
+                    self.format_expr(block.expr);
                 }
-                self.writeln("}");
+                self.write("}");
             },
             else -> {}
         }

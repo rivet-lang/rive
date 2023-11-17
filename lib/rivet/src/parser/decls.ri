@@ -11,7 +11,7 @@ import ../token;
 extend Parser {
     func parse_doc_comments(mut self) -> []ast.Comment {
         mut comments := @vec(ast.Comment);
-        while self.tok.kind == .DocComment {
+        while self.tok.kind == .DocComment or (self.tok.kind == .Comment and comments.len > 0) {
             comments.push(self.parse_comment());
         }
         return comments;

@@ -3,7 +3,6 @@
 // be found in the LICENSE file.
 
 import ../ast;
-import ../token;
 
 extend Formatter {
     func format_stmts(mut self, stmts: []ast.Stmt) {
@@ -16,7 +15,7 @@ extend Formatter {
 
     func format_stmt(mut self, stmt: ast.Stmt) {
         match stmt is {
-            .Comment as comment -> self.format_comment(comment),
+            .Comment as comment -> self.format_comment(comment, has_nl: true),
             .Expr as expr -> self.format_expr(expr),
             else -> {}
         }

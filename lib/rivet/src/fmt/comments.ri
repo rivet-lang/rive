@@ -17,7 +17,7 @@ extend Formatter {
     // - prev_line: the line number of the previous token to save linebreaks
     func format_comment(
         mut self, comment: ast.Comment, same_line: bool := false,
-        level: CommentsLevel := .Keep
+        level: CommentsLevel := .Keep, has_nl: bool := false
     ) {
         if level == .Indent {
             self.indent += 1;
@@ -25,10 +25,7 @@ extend Formatter {
         if !comment.is_multiline() {
             is_separate_line := !same_line or comment.text.starts_with("\x01");
             s := comment.text.trim_left("\x01").trim_right(" ");
-            mut out_s := "//";
-            if comment.is_doc {
-                out_s = out_s.concat("/");
-            }
+            mut out_s := if comment.is_doc { "///" } else { "//" };
             if s != "" {
                 if s[0].is_alnum() {
                     out_s = out_s.concat(" ");
@@ -39,7 +36,10 @@ extend Formatter {
                 _ = self.remove_new_line(); // delete the generated \n
                 self.write(" ");
             }
-            self.writeln(out_s);
+            self.write(out_s);
+            if has_nl {
+                self.writeln();
+            }
         } else {
             lines := comment.text.trim_space().split_into_lines();
             start_break := comment.text[0].is_alnum() or comment.text[0].is_space();
@@ -88,7 +88,7 @@ extend Formatter {
                 ) {
                 self.writeln();
             }
-            if i == 0 and self.output.len() > 1 and self.output.last_n(1)[0].is_space() {
+            if i == 0 and self.output.len() > 1 and !self.output.last_n(1)[0].is_space() {
                 self.write(" ");
             }
             self.format_comment(comment, same_line, level);
