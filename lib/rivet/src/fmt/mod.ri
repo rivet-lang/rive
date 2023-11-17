@@ -134,7 +134,7 @@ public struct Formatter {
                 // The only exception is inside a block of no body functions
                 .Func as func_decl if decl !is .Func or !func_decl.has_body -> return true,
                 .Struct -> return true, // Force a newline after struct declarations
-                .Alias -> return prev_decl !is .Alias,
+                .Alias -> return prev_decl is .Alias,
                 .Field as prev_field_d -> return if decl is .Field as field_d {
                     field_d.pos.line - prev_field_d.pos.line == 2
                 } else {

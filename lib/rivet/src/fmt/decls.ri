@@ -30,6 +30,25 @@ extend Formatter {
     func format_decl(mut self, decl: ast.Decl) {
         match decl is {
             .Comment as comment -> self.format_comment(comment, has_nl: true),
+            .Extern as extern_d -> {
+                self.write_fmt("extern ({}) {{", extern_d.abi);
+                self.format_decls(extern_d.decls);
+                self.writeln("}");
+            },
+            .Alias as alias_d -> {
+                self.format_comments(alias_d.docs);
+                self.format_attributes(alias_d.attributes);
+                if alias_d.is_public {
+                    self.write("public ");
+                }
+                self.write_fmt("alias {} := ", alias_d.name);
+                if alias_d.is_typealias {
+                    self.write_fmt("{}", alias_d.parent_type);
+                } else {
+                    self.format_expr(alias_d.parent);
+                }
+                self.writeln(";");
+            },
             .Struct as struct_decl -> self.format_struct(struct_decl),
             .Func as func_decl -> self.format_func(func_decl),
             .Field as field -> {
