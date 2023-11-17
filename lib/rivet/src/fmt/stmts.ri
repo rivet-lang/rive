@@ -3,17 +3,21 @@
 // be found in the LICENSE file.
 
 import ../ast;
+import ../token;
 
 extend Formatter {
     func format_stmts(mut self, stmts: []ast.Stmt) {
+        self.indent += 1;
         for stmt in stmts {
             self.format_stmt(stmt);
         }
+        self.indent -= 1;
     }
 
     func format_stmt(mut self, stmt: ast.Stmt) {
         match stmt is {
-            .Comment as comment -> self.format_comment(comment, same_line: true),
+            .Comment as comment -> self.format_comment(comment),
+            .Expr as expr -> self.format_expr(expr),
             else -> {}
         }
     }

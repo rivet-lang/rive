@@ -7,7 +7,15 @@ import ../token;
 public enum Node {
     Decl: Decl,
     Stmt: Stmt,
-    Expr: Expr
+    Expr: Expr;
+
+    public func position(self) -> token.Pos {
+        return match self is {
+            .Decl as decl -> decl.position(),
+            .Stmt as stmt -> stmt.position(),
+            .Expr as expr -> expr.position()
+        };
+    }
 }
 
 #[boxed]

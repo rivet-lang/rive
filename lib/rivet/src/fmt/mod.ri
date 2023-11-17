@@ -2,7 +2,9 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import std/traits;
 import std/strings;
+import std/console;
 
 import ../ast;
 import ../utils;
@@ -10,6 +12,7 @@ import ../prefs;
 
 static maxLen: []uint := [0, 35, 60, 85, 93, 100];
 
+#[boxed]
 public struct Formatter {
     prefs: prefs.Prefs;
     table: ast.Table;
@@ -38,6 +41,11 @@ public struct Formatter {
         self.empty_line = false;
     }
 
+    #[inline]
+    func write_fmt(mut self, s: string, args: ...traits.Stringable) {
+        self.write(s.fmt(args));
+    }
+
     func writeln(mut self, s: string := "") {
         if self.indent > 0 and self.empty_line and s.len > 0 {
             self.write_indent();
@@ -45,6 +53,11 @@ public struct Formatter {
         self.output.writeln(s);
         self.empty_line = true;
         self.line_len = 0;
+    }
+
+    #[inline]
+    func writeln_fmt(mut self, s: string, args: ...traits.Stringable) {
+        self.writeln(s.fmt(args));
     }
 
     func write_indent(mut self) {
@@ -56,7 +69,7 @@ public struct Formatter {
         if penalty_idx > 0 and self.line_len <= maxLen[penalty_idx] {
             return false;
         }
-        if self.output.last_byte()? == b' ' {
+        if self.output.last_byte() == b' ' {
             self.output.go_back(1);
         }
         self.write("\n");
@@ -79,35 +92,73 @@ public struct Formatter {
         } else {
             self.output
         };
-        mut i := buffer.len() - 1;
+        buffer_len := if buffer.len() > 0 { buffer.len() - 1 } else { 0 };
+        mut i := buffer_len;
         while i >= 0 : i -= 1 {
-            if !buffer.byte_at(i)?.is_space() {
+            if !buffer.byte_at(i).is_space() {
+                break;
+            }
+            if i == 0 {
                 break;
             }
         }
-        buffer.go_back(buffer.len() - i - 1);
+        if i == buffer_len {
+            return "";
+        }
+        buffer.go_back(if buffer.len() > 0 { buffer.len() - i - 1 } else { i - 1 });
         self.empty_line = false;
         mut line_len: uint := 0;
         mut last_line_str := @vec(uint8);
-        i = buffer.len() - 1;
+        i = if buffer.len() > 0 { buffer.len() - 1 } else { 0 };
         while i >= 0 : i -= 1 {
-            ch := buffer.byte_at(i)?;
+            ch := buffer.byte_at(i);
             if ch == b'\n' {
                 break;
             }
             line_len += if ch == b'\t' { 4 } else { 1 };
             last_line_str.push(ch);
+            if i == 0 {
+                break;
+            }
         }
         self.line_len = line_len;
         return string.from_bytes(reverse(last_line_str));
+    }
+
+    func should_insert_newline_before_node(self, node: ast.Node, prev_node: ast.Node) -> bool {
+        // no need to insert a newline if there is already one
+        if self.output.last_n(2) == "\n\n" {
+            return false;
+        }
+        prev_line_nr := prev_node.position().end_line;
+        // the nodes are declarations
+        if node is .Decl as decl and prev_node is .Decl as prev_decl {
+            match prev_decl is {
+                // Force a newline after function declarations
+                // The only exception is inside a block of no_body functions
+                .Func as func_decl if decl !is .Func or !func_decl.has_body -> return true,
+                .Struct -> return true, // // Force a newline after struct declarations
+                .Alias -> return prev_decl !is .Alias,
+                .Import -> return false,
+                else -> {}
+            }
+        }
+        return if node.position().line - prev_line_nr <= 1 {
+            false
+        } else {
+            true
+        };
     }
 }
 
 func reverse(buf: []uint8) -> []uint8 {
     mut reversed := @vec(uint8);
-    mut i := buf.len;
+    mut i := buf.len - 1;
     while i >= 0 : i -= 1 {
         reversed.push(buf[i]);
+        if i == 0 {
+            break;
+        }
     }
     return reversed;
 }

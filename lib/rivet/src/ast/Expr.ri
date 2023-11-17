@@ -10,10 +10,19 @@ import ../token;
 #[default_value(.Empty(token.noPos))]
 public enum Expr < traits.Stringable {
     Empty: token.Pos,
+    Comment: Comment,
     Paren {
         mut expr: Expr;
         pos: token.Pos;
         mut type: Type;
+
+        public func clean_paren(self) -> Expr {
+            mut res := self.expr;
+            while res is .Paren as paren {
+                res = paren.expr;
+            }
+            return res;
+        }
     },
     Type: Type,
     Assign {
@@ -276,18 +285,19 @@ public enum Expr < traits.Stringable {
         pos: token.Pos;
     };
 
+    #[inline]
     public func clean_paren(self) -> Self {
-        mut res := self;
-        while res is .Paren as paren {
-            res = paren.expr;
-        }
-        return res;
+        return if self is .Paren as paren {
+            paren.clean_paren()
+        } else {
+            self
+        };
     }
 
-    #[inline]
     public func position(self) -> token.Pos {
         return match self is {
             .Empty as empty_pos -> empty_pos,
+            .Comment as comment -> comment.pos,
             .Paren as paren -> paren.pos,
             .Type as type -> type.position(),
             .Assign as assign -> assign.pos,
@@ -326,6 +336,7 @@ public enum Expr < traits.Stringable {
     public func to_string(self) -> string {
         return match self is {
             .Empty -> "<empty-expression>",
+            .Comment -> "<comment>",
             .Paren as paren -> "({})".fmt(paren.expr),
             .Type as type -> type.to_string(),
             .Assign as assign -> "{} {} {}".fmt(assign.left, assign.op, assign.right),

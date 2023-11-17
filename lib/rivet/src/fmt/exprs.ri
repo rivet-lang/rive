@@ -1,0 +1,30 @@
+// Copyright (C) 2023 The Rivet Developers. All rights reserved.
+// Use of this source code is governed by an MIT license that can
+// be found in the LICENSE file.
+
+import ../ast;
+
+extend Formatter {
+    func format_expr(mut self, expr: ast.Expr) {
+        match expr is {
+            .Empty -> {},
+            .NoneLiteral -> self.write("none"),
+            .Paren as paren -> self.write_fmt("({})", paren.clean_paren()),
+            .Block as block -> {
+                if block.is_unsafe {
+                    self.write("unsafe ");
+                }
+                self.write("{");
+                if block.stmts.len > 0 {
+                    self.writeln();
+                    self.format_stmts(block.stmts);
+                }
+                if block.is_expr {
+                    self.writeln()
+                }
+                self.writeln("}");
+            },
+            else -> {}
+        }
+    }
+}

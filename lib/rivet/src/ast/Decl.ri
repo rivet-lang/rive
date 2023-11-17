@@ -188,6 +188,25 @@ public enum Decl {
         mut defer_stmts: []Stmt.Defer;
     };
 
+    public func position(self) -> token.Pos {
+        return match self is {
+            .Empty as empty_pos -> empty_pos,
+            .Comment as comment -> comment.pos,
+            .Import as import_d -> import_d.pos,
+            .Extern as extern_d -> extern_d.pos,
+            .Alias as alias_d -> alias_d.pos,
+            .Trait as trait_d -> trait_d.pos,
+            .Enum as enum_d -> enum_d.pos,
+            .Struct as struct_d -> struct_d.pos,
+            .Field as field_d -> field_d.pos,
+            .Extend as extend_d -> extend_d.pos,
+            .Const as const_d -> const_d.pos,
+            .Var as var_d -> var_d.pos,
+            .Func as func_d -> func_d.pos,
+            .Test as test_d -> test_d.pos
+        };
+    }
+
     public func decls(self) -> ?[]Self {
         return match self is {
             .Extern as extern_decl -> extern_decl.decls,

@@ -3,32 +3,73 @@
 // be found in the LICENSE file.
 
 import ../ast;
+import ../token;
 
 extend Formatter {
     func format_decls(mut self, decls: []ast.Decl) {
+        mut prev_decl := if decls.len > 0 {
+            decls[0]
+        } else {
+            .Empty(token.noPos)
+        };
+        self.indent += 1;
         for decl in decls {
+            if self.should_insert_newline_before_node(.Decl(decl), .Decl(prev_decl)) {
+                self.writeln();
+            }
             self.format_decl(decl);
+            prev_decl = decl;
         }
+        self.indent -= 1;
     }
 
     func format_decl(mut self, decl: ast.Decl) {
         match decl is {
             .Comment as comment -> self.format_comment(comment, same_line: true),
+            .Struct as struct_decl -> self.format_struct(struct_decl),
             .Func as func_decl -> self.format_func(func_decl),
+            .Field as field -> {
+                self.format_comments(field.docs);
+                if field.is_public {
+                    self.write("public ");
+                }
+                if field.is_mut {
+                    self.write("mut ");
+                }
+                self.write_fmt("{}: {}", field.name, field.type);
+                if field.has_def_expr {
+                    self.write(" := ");
+                    self.format_expr(field.def_expr);
+                }
+                self.writeln(";");
+            },
             else -> {}
         }
     }
 
-    func format_func(mut self, func_decl: ast.Decl.Func) {
-        self.format_comments(func_decl.docs, same_line: true);
-        self.write(func_decl.stringify());
-        if func_decl.is_extern {
+    func format_struct(mut self, struct_decl: ast.Decl.Struct) {
+        self.format_comments(struct_decl.docs);
+        if struct_decl.is_public {
+            self.write("public ");
+        }
+        self.write_fmt("struct {}", struct_decl.name);
+        if struct_decl.is_opaque {
             self.writeln(";");
         } else {
             self.writeln(" {");
-            //self.indent += 1;
+            self.format_decls(struct_decl.decls);
+            self.writeln("}");
+        }
+    }
+
+    func format_func(mut self, func_decl: ast.Decl.Func) {
+        self.format_comments(func_decl.docs);
+        self.write(func_decl.stringify());
+        if func_decl.is_extern or !func_decl.has_body {
+            self.writeln(";");
+        } else {
+            self.writeln(" {");
             self.format_stmts(func_decl.stmts);
-            //self.indent -= 1;
             self.writeln("}");
         }
     }

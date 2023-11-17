@@ -8,7 +8,7 @@ import ../report;
 extend Checker {
     func check_expr(mut self, mut expr: ast.Expr) -> ast.Type {
         return match expr is {
-            .Empty -> .Void(),
+            .Empty, .Comment -> .Void(),
             .Type as type -> type,
             .Branch as branch -> {
                 self.scope_returns = true;

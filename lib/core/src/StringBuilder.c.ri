@@ -105,7 +105,9 @@ public struct StringBuilder < Stringable {
     }
     #[inline]
     public func go_back(mut self, n: uint) {
-        self.inner.trim(self.inner.len - n);
+        if self.inner.len > 0 {
+            self.inner.trim(self.inner.len - n);
+        }
     }
 
     public func cut_last(mut self, n: uint) -> string {
@@ -128,22 +130,22 @@ public struct StringBuilder < Stringable {
         self.inner.trim(pos);
     }
 
-    public func byte_at(self, idx: uint) -> ?uint8 {
-        return if self.inner.len > 0 {
-            unsafe { @as([&]uint8, self.inner.ptr)[idx] }
-        } else {
-            none
-        };
+    public func byte_at(self, idx: uint) -> uint8 {
+        return unsafe { @as(&uint8, self.inner.get(idx)).* };
     }
 
     #[inline]
-    public func first_byte(self) -> ?uint8 {
+    public func first_byte(self) -> uint8 {
         return self.byte_at(0);
     }
 
     #[inline]
-    public func last_byte(self) -> ?uint8 {
-        return self.byte_at(self.inner.len - 1);
+    public func last_byte(self) -> uint8 {
+        return if self.inner.len > 0 {
+            self.byte_at(self.inner.len - 1)
+        } else {
+            self.byte_at(0)
+        };
     }
 
     #[inline]
