@@ -25,6 +25,10 @@ public struct Table {
 
     public mut builtins: []Builtin;
 
+    public mut c_defines: CDefines;
+    public mut c_include_paths: []string;
+    public mut c_user_include_paths: []string;
+
     /// Primitive type, Throwable and Vector symbols.
     public mut bool_sym: TypeSym;
     public mut rune_sym: TypeSym;

@@ -624,7 +624,7 @@ extend Tokenizer {
             if ch.len % 2 == 0 and (escaped_hex or escaped_unicode or escaped_octal) {
                 if escaped_unicode {
                     // there can only be one, so attempt to decode it now
-                    ch = decode_u_escapes(ch, 0, [0]);
+                    ch = decode_unicode_escaped_rune(ch);
                 } else {
                     // find escape sequence start positions
                     mut escapes_pos := @vec(uint);
