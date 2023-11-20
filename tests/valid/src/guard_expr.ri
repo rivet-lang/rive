@@ -11,12 +11,16 @@ test "guard expression with mutable variable" {
         @assert(val == 3);
         val += 2;
         @assert(val == 5);
+    } else {
+        @assert(false);
     }
 }
 
 test "`if` expression with guard expression" {
     if val := ret_none() {
         @assert(val == 3);
+    } else {
+        @assert(false);
     }
 
     @assert(if val := ret_none() {
@@ -37,6 +41,8 @@ test "`if` expression with guard expression" {
 
     if val := ret_err() {
         @assert(val == 3);
+    } else {
+        @assert(false);
     }
 }
 
@@ -44,11 +50,15 @@ test "`while` expression with guard expression" {
     while val := ret_none() {
         @assert(val == 3);
         break;
+    } else {
+        @assert(false);
     }
 
     while val := ret_none(); val == 3 {
         @assert(val == 3);
         break;
+    } else {
+        @assert(false);
     }
 }
 
