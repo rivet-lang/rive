@@ -60,7 +60,7 @@ public struct string < Stringable, Hashable, Throwable {
         return Self(res, bytes.len);
     }
 
-    func at(self, idx: uint) -> uint8 {
+    public func at(self, idx: uint) -> uint8 {
         if idx >= self.len {
             process_panic("string index out of range (index: {}, len: {})", idx, self.len);
         }
