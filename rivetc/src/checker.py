@@ -28,7 +28,7 @@ class Checker:
     def check_global_vars(self, decls):
         for decl in decls:
             old_sym = self.sym
-            if isinstance(decl, (ast.ConstDecl, ast.StaticDecl)):
+            if isinstance(decl, (ast.ConstDecl, ast.VarDecl)):
                 self.check_decl(decl)
             elif hasattr(decl, "decls"):
                 self.check_global_vars(decl.decls)
@@ -66,7 +66,7 @@ class Checker:
 
     def check_decls(self, decls):
         for decl in decls:
-            if not isinstance(decl, (ast.ConstDecl, ast.StaticDecl)):
+            if not isinstance(decl, (ast.ConstDecl, ast.VarDecl)):
                 self.check_decl(decl)
 
     def check_decl(self, decl):
@@ -86,7 +86,7 @@ class Checker:
             else:
                 decl.typ = self.check_expr(decl.expr)
                 decl.sym.typ = decl.typ
-        elif isinstance(decl, ast.StaticDecl):
+        elif isinstance(decl, ast.VarDecl):
             self.inside_var_decl = True
             left0 = decl.lefts[0]
             if left0.has_typ:
@@ -212,7 +212,7 @@ class Checker:
             self.check_stmt(stmt)
 
     def check_stmt(self, stmt):
-        if isinstance(stmt, ast.StaticDeclStmt):
+        if isinstance(stmt, ast.VarDeclStmt):
             old_expected_type = self.expected_type
             if len(stmt.lefts) == 1:
                 if stmt.lefts[0].has_typ:

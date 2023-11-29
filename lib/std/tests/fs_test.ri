@@ -2,7 +2,7 @@ import std/env;
 import std/process;
 import { Path, Directory } from std/fs;
 
-static cwd := process.get_cwd() catch ".";
+var cwd := process.get_cwd() catch ".";
 
 test "std.fs.Directory.tmp_dir()" {
     @assert(Directory.tmp_dir() == "/tmp");

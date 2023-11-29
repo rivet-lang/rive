@@ -9,7 +9,7 @@ struct KindMap {
     value: string;
 }
 
-static kindStrings := [
+var kindStrings := [
     KindMap(.Unknown, "unknown"),
     KindMap(.EndOfFile, "end of file"),
     KindMap(.DocComment, "doc-comment"),
@@ -94,7 +94,6 @@ static kindStrings := [
     KindMap(.KwReturn, "return"),
     KindMap(.KwSelf, "self"),
     KindMap(.KwSelfTy, "Self"),
-    KindMap(.KwStatic, "static"),
     KindMap(.KwStruct, "struct"),
     KindMap(.KwMatch, "match"),
     KindMap(.KwTest, "test"),
@@ -102,10 +101,11 @@ static kindStrings := [
     KindMap(.KwTrait, "trait"),
     KindMap(.KwTrue, "true"),
     KindMap(.KwUnsafe, "unsafe"),
+    KindMap(.KwVar, "var"),
     KindMap(.KwWhile, "while")
 ];
 
-static keywordsTable := kindStrings[@as(uint, Kind.KeywordBegin)..];
+var keywordsTable := kindStrings[@as(uint, Kind.KeywordBegin)..];
 
 public enum Kind < traits.Stringable {
     Unknown, // unknown
@@ -193,7 +193,6 @@ public enum Kind < traits.Stringable {
     KwReturn, // return
     KwSelf, // self
     KwSelfTy, // Self
-    KwStatic, // static
     KwStruct, // struct
     KwMatch, // match
     KwTest, // test
@@ -201,10 +200,21 @@ public enum Kind < traits.Stringable {
     KwTrait, // trait
     KwTrue, // true
     KwUnsafe, // unsafe
+    KwVar, // var
     KwWhile, // while
     // ==============================
 
     KeywordEnd;
+
+    #[inline]
+    public func lookup(str: string) -> Self {
+        for &km in keywordsTable {
+            if km.value == str {
+                return km.key;
+            }
+        }
+        return .Name;
+    }
 
     #[inline]
     public func single(self) -> Kind {
@@ -255,18 +265,8 @@ public enum Kind < traits.Stringable {
 }
 
 #[inline]
-public func lookup(str: string) -> Kind {
-    for &km in keywordsTable {
-        if km.value == str {
-            return km.key;
-        }
-    }
-    return .Name;
-}
-
-#[inline]
 public func is_keyword(lit: string) -> bool {
-    return lookup(lit) != .Name;
+    return Kind.lookup(lit) != .Name;
 }
 
 #[inline]

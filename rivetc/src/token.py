@@ -90,7 +90,6 @@ class Kind(Enum):
     KwReturn = auto_enum() # return
     KwSelf = auto_enum() # self
     KwSelfTy = auto_enum() # Self
-    KwStatic = auto_enum() # static
     KwStruct = auto_enum() # struct
     KwMatch = auto_enum() # match
     KwTest = auto_enum() # test
@@ -98,6 +97,7 @@ class Kind(Enum):
     KwTrait = auto_enum() # trait
     KwTrue = auto_enum() # true
     KwUnsafe = auto_enum() # unsafe
+    KwVar = auto_enum() # var
     KwWhile = auto_enum() # while
     # ==============================
 
@@ -235,7 +235,6 @@ TOKEN_STRINGS = {
     Kind.KwReturn: "return",
     Kind.KwSelf: "self",
     Kind.KwSelfTy: "Self",
-    Kind.KwStatic: "static",
     Kind.KwStruct: "struct",
     Kind.KwMatch: "match",
     Kind.KwTest: "test",
@@ -243,6 +242,7 @@ TOKEN_STRINGS = {
     Kind.KwTrait: "trait",
     Kind.KwTrue: "true",
     Kind.KwUnsafe: "unsafe",
+    Kind.KwVar: "var",
     Kind.KwWhile: "while",
     # ==============================
 }

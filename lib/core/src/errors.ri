@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-static returnTrace := ReturnTrace();
+var returnTrace := ReturnTrace();
 
 /// This trait is used for errors throwed with result types (!T).
 public trait Throwable < Stringable { }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-static mut libcoreIsStarted := false;
+var mut libcoreIsStarted := false;
 
 func panic_if(cond: bool, msg: string) {
     if cond {

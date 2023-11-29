@@ -39,7 +39,7 @@ extend Tokenizer {
             nextc := self.look_ahead(1);
             if utils.is_name_char(ch) {
                 name := self.read_name();
-                return self.new_token(token.lookup(name), name, name.len);
+                return self.new_token(token.Kind.lookup(name), name, name.len);
             } else if ch.is_digit() {
                 // decimals with 0 prefix = error
                 if ch == b'0' and nextc.is_digit() {

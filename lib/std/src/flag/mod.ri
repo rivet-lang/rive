@@ -9,7 +9,7 @@ import ../console;
 import ../process;
 
 public const MAX_ARGS_NUMBER := 4048;
-public static space := "                                     ";
+public var space := "                                     ";
 
 /// Data object storing information about a defined flag.
 public struct Flag < traits.Stringable {

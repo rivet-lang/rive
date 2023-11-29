@@ -20,7 +20,7 @@ struct TestCoerce {
     valid: string;
 }
 
-static versionToTest := [
+var versionToTest := [
     TestVersion("1.2.4", 1, 2, 4, "", ""),
     TestVersion("1.2.4-prerelease-1", 1, 2, 4, "prerelease-1", ""),
     TestVersion("1.2.4+20191231", 1, 2, 4, "", "20191231"),
@@ -28,7 +28,7 @@ static versionToTest := [
     TestVersion("1.2.4+20191231-prerelease-1", 1, 2, 4, "", "20191231-prerelease-1")
 ];
 
-static rangesToTest := [
+var rangesToTest := [
     TestRange("1.1.0", "1.1.0", "1.1.1"),
     TestRange("1.1.0", "=1.1.0", "=1.1.1"),
     TestRange("1.1.0", ">=1.0.0", "<1.1.0"),
@@ -49,7 +49,7 @@ static rangesToTest := [
     TestRange("2.3.4", "*", "3.x")
 ];
 
-static coerceToTest := [
+var coerceToTest := [
     TestCoerce("1.2.0.4", "1.2.0"),
     TestCoerce("1.2.0", "1.2.0"),
     TestCoerce("1.2", "1.2.0"),
@@ -59,7 +59,7 @@ static coerceToTest := [
     TestCoerce("1-alpha+meta", "1.0.0-alpha+meta")
 ];
 
-static invalidVersionToTest := [
+var invalidVersionToTest := [
     "a.b.c",
     "1.2",
     "1.2.x",
@@ -68,7 +68,7 @@ static invalidVersionToTest := [
     "1.2.3+meta%"
 ];
 
-static invalidRangesToTest := [
+var invalidRangesToTest := [
     "^a",
     "~b",
     "a - c",

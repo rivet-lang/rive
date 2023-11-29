@@ -7,7 +7,7 @@ import std/strings;
 
 import ../token;
 
-static mut symIds: uint := 0;
+var mut symIds: uint := 0;
 
 func new_sym_id() -> uint {
     res := symIds;
@@ -296,7 +296,7 @@ public struct Const < Sym {
 }
 
 public enum VarLevel as uint8 {
-    Module, // module-level, `static`
+    Module, // module-level, `var`
     Receiver, // receiver: `self`
     Argument, // argument-level
     Local // inside function

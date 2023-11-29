@@ -2,14 +2,14 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public static mainFile := "import std/console;
+public var mainFile := "import std/console;
 
 func main() {
     console.writeln(\"Hello World!\");
 }
 ";
 
-public static libFile := "public func add(a: int32, b: int32) -> int32 {
+public var libFile := "public func add(a: int32, b: int32) -> int32 {
     return a + b;
 }
 
@@ -18,7 +18,7 @@ test \"test `add` function\" {
 }
 ";
 
-public static gitignoreFile := "# Binaries for programs and plugins
+public var gitignoreFile := "# Binaries for programs and plugins
 {}
 *.exe
 *.exe~
@@ -39,12 +39,12 @@ bin/
 .env
 ";
 
-public static gitattributesFile := "* text=auto eol=lf
+public var gitattributesFile := "* text=auto eol=lf
 *.bat eol=crlf
 *.ri linguist-language=Rivet text=auto eol=lf
 ";
 
-public static editorConfigFile := "[*]
+public var editorConfigFile := "[*]
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true

@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 extern (Rivet) {
-    public static mut ARGS: []string;
+    public var mut ARGS: []string;
 
     func init_string_lits();
     func init_globals();
