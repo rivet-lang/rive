@@ -3,25 +3,25 @@
 // be found in the LICENSE file.
 
 extern (C) {
-	public func access(a: [&]uint8, o: int32) -> int32;
+	pub func access(a: [&]uint8, o: int32) -> int32;
 
-    public func sysconf(name: int32) -> int64;
+    pub func sysconf(name: int32) -> int64;
 
-    public func getpid() -> uint32;
-    public func getppid() -> uint32;
+    pub func getpid() -> uint32;
+    pub func getppid() -> uint32;
 
-    public func isatty(fd: int32) -> int32;
+    pub func isatty(fd: int32) -> int32;
 
-    public func write(fd: int32, buf: rawptr, count: uint) -> int;
-    public func read(fildes: int32, buf: rawptr, nbyte: uint) -> int;
+    pub func write(fd: int32, buf: rawptr, count: uint) -> int;
+    pub func read(fildes: int32, buf: rawptr, nbyte: uint) -> int;
 
-    public func rmdir(path: [&]uint8) -> int32;
-    public func chdir(path: [&]uint8) -> int32;
-    public func getcwd(buf: [&]uint8, size: uint) -> ?[&]uint8;
+    pub func rmdir(path: [&]uint8) -> int32;
+    pub func chdir(path: [&]uint8) -> int32;
+    pub func getcwd(buf: [&]uint8, size: uint) -> ?[&]uint8;
 
-    public func readlink(path: [&]uint8, buf: [&]uint8, size: uint) -> int;
+    pub func readlink(path: [&]uint8, buf: [&]uint8, size: uint) -> int;
 
 #if _LINUX_
-    public func get_nprocs() -> int32;
+    pub func get_nprocs() -> int32;
 #endif
 }

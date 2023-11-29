@@ -16,20 +16,20 @@ func new_sym_id() -> uint {
 }
 
 #[boxed]
-public struct DuplicateSymbolError < Throwable {
+pub struct DuplicateSymbolError < Throwable {
     msg: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
-public enum ABI as uint8 < traits.Stringable {
+pub enum ABI as uint8 < traits.Stringable {
     Rivet,
     C;
 
     #[inline]
-    public func from_string(abi: string) -> ?ABI {
+    pub func from_string(abi: string) -> ?ABI {
         return match abi {
             "C" -> .C,
             "Rivet" -> .Rivet,
@@ -38,7 +38,7 @@ public enum ABI as uint8 < traits.Stringable {
     }
 
     #[inline]
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return match self.* {
             .C -> "C",
             .Rivet -> "Rivet"
@@ -47,7 +47,7 @@ public enum ABI as uint8 < traits.Stringable {
 }
 
 #[default_value(InvalidSym())]
-public trait Sym {
+pub trait Sym {
     id: uint := new_sym_id();
     abi: ABI;
     mut is_public: bool;
@@ -130,18 +130,18 @@ public trait Sym {
 }
 
 #[boxed]
-public struct InvalidSym < Sym {}
+pub struct InvalidSym < Sym {}
 
 #[boxed]
-public struct SymRef < Sym {
-    public mut ref: Sym;
-    public mut ref_expr: Expr;
-    public mut ref_resolved: bool;
+pub struct SymRef < Sym {
+    pub mut ref: Sym;
+    pub mut ref_expr: Expr;
+    pub mut ref_resolved: bool;
 }
 
 #[boxed]
-public struct Module < Sym {
-    public func add_or_get_array(mut self, elem_typ: Type, size: uint, is_mut: bool) -> TypeSym {
+pub struct Module < Sym {
+    pub func add_or_get_array(mut self, elem_typ: Type, size: uint, is_mut: bool) -> TypeSym {
         unique_name := if is_mut {
             "[{}]mut {}"
         } else {
@@ -165,7 +165,7 @@ public struct Module < Sym {
         return type_sym;
     }
 
-    public func add_or_get_vec(mut self, elem_type: Type, is_mut: bool) -> TypeSym {
+    pub func add_or_get_vec(mut self, elem_type: Type, is_mut: bool) -> TypeSym {
         unique_name := if is_mut { "[]mut " } else { "[]" }.concat(elem_type.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
             return @as(TypeSym, type_sym);
@@ -222,7 +222,7 @@ public struct Module < Sym {
         return type_sym;
     }
 
-    public func add_or_get_tuple(mut self, types: []Type) -> TypeSym {
+    pub func add_or_get_tuple(mut self, types: []Type) -> TypeSym {
         unique_name := {
             mut sb := strings.Builder.from_string("(");
             for i, type in types {
@@ -248,7 +248,7 @@ public struct Module < Sym {
         return type_sym;
     }
 
-    public func add_or_get_func(mut self, func_sym: Func) -> TypeSym {
+    pub func add_or_get_func(mut self, func_sym: Func) -> TypeSym {
         unique_name := {
             mut sb := strings.Builder.from_string("func(");
             if func_sym.is_method {
@@ -280,22 +280,22 @@ public struct Module < Sym {
     }
 
     #[inline]
-    public func is_core(self) -> bool {
+    pub func is_core(self) -> bool {
         return self.name == "core";
     }
 }
 
 #[boxed]
-public struct Const < Sym {
-    public mut expr: Expr;
-    public mut evaled_expr: Expr;
-    public mut has_evaled_size: bool;
-    public mut evaled_size: int;
-    public mut type: Type;
-    public pos: token.Pos;
+pub struct Const < Sym {
+    pub mut expr: Expr;
+    pub mut evaled_expr: Expr;
+    pub mut has_evaled_size: bool;
+    pub mut evaled_size: int;
+    pub mut type: Type;
+    pub pos: token.Pos;
 }
 
-public enum VarLevel as uint8 {
+pub enum VarLevel as uint8 {
     Module, // module-level, `var`
     Receiver, // receiver: `self`
     Argument, // argument-level
@@ -303,48 +303,48 @@ public enum VarLevel as uint8 {
 }
 
 #[boxed]
-public struct Var < Sym {
-    public is_extern: bool;
-    public is_mut: bool;
-    public mut is_used: bool;
-    public mut is_changed: bool;
-    public mut is_hidden_ref: bool;
-    public mut mir_name: string; // used for duplicate objects in MIR
-    public level: VarLevel;
-    public mut type: Type;
-    public pos: token.Pos;
+pub struct Var < Sym {
+    pub is_extern: bool;
+    pub is_mut: bool;
+    pub mut is_used: bool;
+    pub mut is_changed: bool;
+    pub mut is_hidden_ref: bool;
+    pub mut mir_name: string; // used for duplicate objects in MIR
+    pub level: VarLevel;
+    pub mut type: Type;
+    pub pos: token.Pos;
 }
 
 #[boxed]
-public struct Arg {
-    public name: string;
-    public is_mut: bool;
-    public is_self: bool;
-    public has_def_expr: bool;
-    public mut def_expr: Expr;
-    public pos: token.Pos;
-    public mut type: Type;
+pub struct Arg {
+    pub name: string;
+    pub is_mut: bool;
+    pub is_self: bool;
+    pub has_def_expr: bool;
+    pub mut def_expr: Expr;
+    pub pos: token.Pos;
+    pub mut type: Type;
 }
 
 #[boxed]
-public struct Func < Sym {
-    public is_extern: bool;
-    public is_unsafe: bool;
-    public is_main: bool;
-    public is_method: bool;
-    public is_special_method: bool;
-    public is_variadic: bool;
-    public mut self_type: Type;
-    public self_is_mut: bool;
-    public self_is_ptr: bool;
-    public self_pos: token.Pos;
-    public args: []Arg;
-    public has_named_args: bool;
-    public has_body: bool;
-    public ret_type: Type;
-    public pos: token.Pos;
+pub struct Func < Sym {
+    pub is_extern: bool;
+    pub is_unsafe: bool;
+    pub is_main: bool;
+    pub is_method: bool;
+    pub is_special_method: bool;
+    pub is_variadic: bool;
+    pub mut self_type: Type;
+    pub self_is_mut: bool;
+    pub self_is_ptr: bool;
+    pub self_pos: token.Pos;
+    pub args: []Arg;
+    pub has_named_args: bool;
+    pub has_body: bool;
+    pub ret_type: Type;
+    pub pos: token.Pos;
 
-    public func get_arg(self, idx: uint) -> Arg {
+    pub func get_arg(self, idx: uint) -> Arg {
         arg := self.args[idx];
         return if arg.is_self {
             self.args[idx + 1]
@@ -353,7 +353,7 @@ public struct Func < Sym {
         };
     }
 
-    public func args_len(self) -> uint {
+    pub func args_len(self) -> uint {
         mut len: uint := 0;
         for arg in self.args {
             if !(arg.is_self or arg.type is .Variadic) {
@@ -364,7 +364,7 @@ public struct Func < Sym {
     }
 
     #[inline]
-    public func kind(self) -> string {
+    pub func kind(self) -> string {
         return if self.is_method {
             if self.is_special_method {
                 "special method"
@@ -377,7 +377,7 @@ public struct Func < Sym {
     }
 
 	#[inline]
-    public func type(self, mut universe: Module) -> Type {
+    pub func type(self, mut universe: Module) -> Type {
         return .Func(
             is_method: self.is_method,
             self_is_mut: self.self_is_mut,

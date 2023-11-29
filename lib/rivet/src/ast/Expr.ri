@@ -8,7 +8,7 @@ import std/strings;
 import ../token;
 
 #[default_value(.Empty(token.noPos))]
-public enum Expr < traits.Stringable {
+pub enum Expr < traits.Stringable {
     Empty: token.Pos,
     Paren {
         mut expr: Expr;
@@ -276,7 +276,7 @@ public enum Expr < traits.Stringable {
         pos: token.Pos;
     };
 
-    public func clean_paren(self) -> Self {
+    pub func clean_paren(self) -> Self {
         mut res := self;
         while res is .Paren as paren {
             res = paren.expr;
@@ -285,7 +285,7 @@ public enum Expr < traits.Stringable {
     }
 
     #[inline]
-    public func position(self) -> token.Pos {
+    pub func position(self) -> token.Pos {
         return match self is {
             .Empty as empty_pos -> empty_pos,
             .Paren as paren -> paren.pos,
@@ -323,7 +323,7 @@ public enum Expr < traits.Stringable {
     }
 
     #[inline]
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return match self is {
             .Empty -> "<empty-expression>",
             .Paren as paren -> "({})".fmt(paren.expr),
@@ -547,48 +547,48 @@ public enum Expr < traits.Stringable {
 }
 
 #[boxed]
-public struct CallArg {
-    public name: string;
-    public mut expr: Expr;
-    public is_named: bool;
-    public pos: token.Pos;
-    public mut type: Type;
+pub struct CallArg {
+    pub name: string;
+    pub mut expr: Expr;
+    pub is_named: bool;
+    pub pos: token.Pos;
+    pub mut type: Type;
 }
 
 #[boxed]
-public struct CallErrorHandler {
-    public varname: string;
-    public varname_pos: token.Pos;
-    public has_varname: bool;
-    public is_propagate: bool;
-    public mut expr: Expr;
-    public has_expr: bool;
-    public mut scope: Scope;
-    public pos: token.Pos;
+pub struct CallErrorHandler {
+    pub varname: string;
+    pub varname_pos: token.Pos;
+    pub has_varname: bool;
+    pub is_propagate: bool;
+    pub mut expr: Expr;
+    pub has_expr: bool;
+    pub mut scope: Scope;
+    pub pos: token.Pos;
 }
 
 #[boxed]
-public struct IfBranch {
-    public mut cond: Expr;
-    public mut expr: Expr;
-    public is_else: bool;
-    public is_else_if: bool;
-    public pos: token.Pos;
-    public mut type: Type;
+pub struct IfBranch {
+    pub mut cond: Expr;
+    pub mut expr: Expr;
+    pub is_else: bool;
+    pub is_else_if: bool;
+    pub pos: token.Pos;
+    pub mut type: Type;
 }
 
 #[boxed]
-public struct MatchBranch {
-    public cases: []mut Expr;
-    public has_var: bool;
-    public var_is_mut: bool;
-    public var_name: string;
-    public var_pos: token.Pos;
-    public has_cond: bool;
-    public mut var_type: Type;
-    public mut cond: Expr;
-    public mut expr: Expr;
-    public is_else: bool;
-    public pos: token.Pos;
-    public mut type: Type;
+pub struct MatchBranch {
+    pub cases: []mut Expr;
+    pub has_var: bool;
+    pub var_is_mut: bool;
+    pub var_name: string;
+    pub var_pos: token.Pos;
+    pub has_cond: bool;
+    pub mut var_type: Type;
+    pub mut cond: Expr;
+    pub mut expr: Expr;
+    pub is_else: bool;
+    pub pos: token.Pos;
+    pub mut type: Type;
 }

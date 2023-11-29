@@ -6,30 +6,30 @@ import { * } from c/ctypes;
 
 #if _AMD64_
 // The `stat` definition used by the Linux kernel.
-public struct Stat {
-    public dev: dev_t;
-    public ino: ino_t;
-    public nlink: uint;
+pub struct Stat {
+    pub dev: dev_t;
+    pub ino: ino_t;
+    pub nlink: uint;
 
-    public mode: uint32;
-    public uid: uid_t;
-    public gid: gid_t;
+    pub mode: uint32;
+    pub uid: uid_t;
+    pub gid: gid_t;
     __pad0: uint32;
-    public rdev: dev_t;
-    public size: off_t;
-    public blksize: int;
-    public blocks: int64;
+    pub rdev: dev_t;
+    pub size: off_t;
+    pub blksize: int;
+    pub blocks: int64;
 
-    public atim: timespec;
-    public mtim: timespec;
-    public ctim: timespec;
+    pub atim: timespec;
+    pub mtim: timespec;
+    pub ctim: timespec;
     __unused: [3]int;
 }
 #endif
 
 extern (C) {
-    public func stat(__file: [&]uint8, __buf: &mut Stat) -> int32;
-    public func lstat(file: [&]uint8, buf: &mut Stat) -> int32;
+    pub func stat(__file: [&]uint8, __buf: &mut Stat) -> int32;
+    pub func lstat(file: [&]uint8, buf: &mut Stat) -> int32;
 
-    public func mkdir(path: [&]uint8, mode: uint) -> int32;
+    pub func mkdir(path: [&]uint8, mode: uint) -> int32;
 }

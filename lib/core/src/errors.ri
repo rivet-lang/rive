@@ -5,7 +5,7 @@
 var returnTrace := ReturnTrace();
 
 /// This trait is used for errors throwed with result types (!T).
-public trait Throwable < Stringable { }
+pub trait Throwable < Stringable { }
 
 #[inline]
 func uncatched_error(err: Throwable) {
@@ -53,31 +53,31 @@ struct ReturnTrace {
 }
 
 #[boxed]
-public struct InvalidArgumentError < Throwable {
+pub struct InvalidArgumentError < Throwable {
     msg: string;
 
     #[inline]
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
 #[boxed]
-public struct OutOfMemoryError < Throwable {
+pub struct OutOfMemoryError < Throwable {
     msg: string;
 
     #[inline]
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
 #[boxed]
-public struct ReadFailedError < Throwable {
+pub struct ReadFailedError < Throwable {
     msg: string;
 
     #[inline]
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }

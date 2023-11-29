@@ -216,14 +216,14 @@ class Field:
         self.typ = typ
 
 class GlobalVar:
-    def __init__(self, is_pub, is_extern, typ, name):
-        self.is_pub = is_pub
+    def __init__(self, is_public, is_extern, typ, name):
+        self.is_public = is_public
         self.is_extern = is_extern
         self.typ = typ
         self.name = name
 
     def __str__(self):
-        if self.is_pub:
+        if self.is_public:
             kw = "export "
         elif self.is_extern:
             kw = "extern "
@@ -238,10 +238,10 @@ class Local:
 
 class FuncDecl:
     def __init__(
-        self, is_pub, attrs, is_extern, name, args, is_variadic, ret_typ,
+        self, is_public, attrs, is_extern, name, args, is_variadic, ret_typ,
         is_never
     ):
-        self.is_pub = is_pub
+        self.is_public = is_public
         self.attrs = attrs
         self.is_extern = is_extern
         self.name = name
@@ -347,7 +347,7 @@ class FuncDecl:
         sb = utils.Builder()
         if self.is_extern:
             sb.write("extern ")
-        elif self.is_pub:
+        elif self.is_public:
             sb.write("export ")
         sb.write(f'func {self.name}(')
         for i, arg in enumerate(self.args):

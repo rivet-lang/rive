@@ -4,7 +4,7 @@
 
 extend bool < Stringable {
     #[inline]
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return if self.* { "true" } else { "false" };
     }
 }

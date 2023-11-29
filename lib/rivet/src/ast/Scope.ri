@@ -5,17 +5,17 @@
 import std/process;
 
 #[boxed]
-public struct Scope {
-    public start: uint;
-    public mut end: uint;
-    public mut owner: ?Sym;
-    public mut parent: ?Scope;
-    public mut detached_from_parent: bool;
-    public mut childrens: []Scope;
-    public mut syms: []Sym;
-    public mut is_local: bool;
+pub struct Scope {
+    pub start: uint;
+    pub mut end: uint;
+    pub mut owner: ?Sym;
+    pub mut parent: ?Scope;
+    pub mut detached_from_parent: bool;
+    pub mut childrens: []Scope;
+    pub mut syms: []Sym;
+    pub mut is_local: bool;
 
-    public func add(mut self, sym: Sym) -> ! {
+    pub func add(mut self, sym: Sym) -> ! {
         if _ := self.find(sym.name) {
             throw DuplicateSymbolError(
                 "duplicate symbol `{}` in {} `{}`".fmt(
@@ -26,7 +26,7 @@ public struct Scope {
         self.syms.push(sym);
     }
 
-    public func add_or_get(mut self, sym: Sym) -> !Sym {
+    pub func add_or_get(mut self, sym: Sym) -> !Sym {
         if old_sym := self.find(sym.name) {
             if sym is TypeSym as type_sym and old_sym is TypeSym as mut old_type_sym {
                 if old_type_sym.update(type_sym)! {
@@ -43,7 +43,7 @@ public struct Scope {
         return sym;
     }
 
-    public func add_local(mut self, sym: Sym) -> ! {
+    pub func add_local(mut self, sym: Sym) -> ! {
         if self.is_local {
             if sym is Var and sym.name == "_" {
                 return; // ignore blank variable
@@ -57,11 +57,11 @@ public struct Scope {
     }
 
     #[inline]
-    public func exists(self, name: string) -> bool {
+    pub func exists(self, name: string) -> bool {
         return self.find(name) !is none;
     }
 
-    public func find(self, name: string) -> ?Sym {
+    pub func find(self, name: string) -> ?Sym {
         for sym in self.syms {
             if sym.name == name {
                 return sym;
@@ -70,14 +70,14 @@ public struct Scope {
         return none;
     }
 
-    public func find_or_panic(self, name: string) -> Sym {
+    pub func find_or_panic(self, name: string) -> Sym {
         if x := self.find(name) {
             return x;
         }
         process.panic("cannot found symbol `{}`", name);
     }
 
-    public func find_by_index_or_panic(self, idx: uint) -> Sym {
+    pub func find_by_index_or_panic(self, idx: uint) -> Sym {
         if idx >= self.syms.len {
             process.panic("symbol index out of range `{}`", idx);
         }
@@ -85,16 +85,16 @@ public struct Scope {
     }
 
     #[inline]
-    public func find_type_symbol_or_panic(self, name: string) -> TypeSym {
+    pub func find_type_symbol_or_panic(self, name: string) -> TypeSym {
         return @as(TypeSym, self.find_or_panic(name));
     }
 
     #[inline]
-    public func find_type_symbol_by_index_or_panic(self, idx: uint) -> TypeSym {
+    pub func find_type_symbol_by_index_or_panic(self, idx: uint) -> TypeSym {
         return @as(TypeSym, self.find_by_index_or_panic(idx));
     }
 
-    public func lookup(self, name: string) -> ?Sym {
+    pub func lookup(self, name: string) -> ?Sym {
         if self.is_local {
             mut sc_: ?Scope := self;
             while sc := sc_ {
@@ -115,7 +115,7 @@ public struct Scope {
         return self.parent is none or self.detached_from_parent;
     }
 
-    public func update_type(self, name: string, type: Type) {
+    pub func update_type(self, name: string, type: Type) {
         if sym := self.lookup(name) {
             if sym is Var as var_info {
                 var_info.type = type;
@@ -123,7 +123,7 @@ public struct Scope {
         }
     }
 
-    public func update_is_hidden_ref(self, name: string, is_hidden_ref: bool) {
+    pub func update_is_hidden_ref(self, name: string, is_hidden_ref: bool) {
         if sym := self.lookup(name) {
             if sym is Var as var_info {
                 var_info.is_hidden_ref = is_hidden_ref;
@@ -131,7 +131,7 @@ public struct Scope {
         }
     }
 
-    public func update_is_used(self, name: string, is_used: bool) {
+    pub func update_is_used(self, name: string, is_used: bool) {
         if sym := self.lookup(name) {
             if sym is Var as var_info {
                 var_info.is_used = is_used;

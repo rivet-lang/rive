@@ -5,81 +5,81 @@
 import std/console;
 
 #[inline]
-public func stdout_support_styles() -> bool {
+pub func stdout_support_styles() -> bool {
     return console.is_atty(1);
 }
 
 #[inline]
-public func stderr_support_styles() -> bool {
+pub func stderr_support_styles() -> bool {
     return console.is_atty(2);
 }
 
 #[inline]
-public func fmt(msg: string, open: string, close: string) -> string {
+pub func fmt(msg: string, open: string, close: string) -> string {
     return "\x1b[{}m{}\x1b[{}m".fmt(open, msg, close);
 }
 
 #[inline]
-public func fmt_rgb(r: int32, g: int32, b: int32, msg: string, open: string, close: string) -> string {
+pub func fmt_rgb(r: int32, g: int32, b: int32, msg: string, open: string, close: string) -> string {
     return "\x1b[{};2;{};{};{}m{}\x1b[{}m".fmt(open, r, g, b, msg, close);
 }
 
 #[inline]
-public func from_hex(hex: int32, msg: string) -> string {
+pub func from_hex(hex: int32, msg: string) -> string {
     return fmt_rgb(hex >> 16, hex >> 8 & 0xFF, hex & 0xFF, msg, "38", "39");
 }
 
 #[inline]
-public func bg_rgb(r: int32, g: int32, b: int32, msg: string) -> string {
+pub func bg_rgb(r: int32, g: int32, b: int32, msg: string) -> string {
     return fmt_rgb(r, g, b, msg, "48", "49");
 }
 
 #[inline]
-public func bg_hex(hex: int32, msg: string) -> string {
+pub func bg_hex(hex: int32, msg: string) -> string {
     return fmt_rgb(hex >> 16, hex >> 8 & 0xFF, hex & 0xFF, msg, "48", "49");
 }
 
 #[inline]
-public func rgb(r: int32, g: int32, b: int32, msg: string) -> string {
+pub func rgb(r: int32, g: int32, b: int32, msg: string) -> string {
     return fmt_rgb(r, g, b, msg, "38", "39");
 }
 
 #[inline]
-public func reset(msg: string) -> string {
+pub func reset(msg: string) -> string {
     return fmt(msg, "0", "0");
 }
 
 #[inline]
-public func bold(msg: string) -> string {
+pub func bold(msg: string) -> string {
     return fmt(msg, "1", "22");
 }
 
 #[inline]
-public func dim(msg: string) -> string {
+pub func dim(msg: string) -> string {
     return fmt(msg, "2", "22");
 }
 
 #[inline]
-public func hidden(msg: string) -> string {
+pub func hidden(msg: string) -> string {
     return fmt(msg, "8", "28");
 }
 
 #[inline]
-public func italic(msg: string) -> string {
+pub func italic(msg: string) -> string {
     return fmt(msg, "3", "23");
 }
 
 #[inline]
-public func inverse(msg: string) -> string {
+pub func inverse(msg: string) -> string {
     return fmt(msg, "7", "27");
 }
 
 #[inline]
-public func strikethrough(msg: string) -> string {
+pub func strikethrough(msg: string) -> string {
     return fmt(msg, "9", "29");
 }
 
 #[inline]
-public func underline(msg: string) -> string {
+pub func underline(msg: string) -> string {
     return fmt(msg, "4", "24");
 }

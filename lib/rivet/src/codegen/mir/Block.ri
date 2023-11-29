@@ -6,15 +6,15 @@ import std/traits;
 import std/strings;
 
 #[boxed]
-public struct Block < traits.Stringable {
+pub struct Block < traits.Stringable {
     mut id: uint;
     mut stmts: []Stmt;
 
-    public func add_stmt(mut self, stmt: Stmt) {
+    pub func add_stmt(mut self, stmt: Stmt) {
         self.stmts.push(stmt);
     }
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         mut sb := strings.Builder.new();
         sb.writeln_fmt("@b{} {{", self.id);
         for stmt in self.stmts {
@@ -25,7 +25,7 @@ public struct Block < traits.Stringable {
     }
 }
 
-public enum Stmt < traits.Stringable {
+pub enum Stmt < traits.Stringable {
     Expr: Expr,
     Assign {
         left: Expr;
@@ -47,7 +47,7 @@ public enum Stmt < traits.Stringable {
         expr: Expr := .Empty();
     };
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return match self is {
             .Expr as expr -> expr.to_string(),
             .Assign as assign -> "{} = {}".fmt(assign.left, assign.right),

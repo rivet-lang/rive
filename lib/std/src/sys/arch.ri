@@ -7,12 +7,12 @@ import ../traits;
 import ../process;
 #endif
 
-public enum Arch as uint8 < traits.Stringable {
+pub enum Arch as uint8 < traits.Stringable {
     X86,
     Amd64;
 
     #[inline]
-    public func from_string(arch: string) -> ?Arch {
+    pub func from_string(arch: string) -> ?Arch {
         return match arch {
             "i386", "x86", "_X86_" -> .X86,
             "amd64", "_AMD64_" -> .Amd64,
@@ -20,7 +20,7 @@ public enum Arch as uint8 < traits.Stringable {
         };
     }
 
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return match self.* {
             .X86 -> "x86",
             .Amd64 -> "amd64"
@@ -30,7 +30,7 @@ public enum Arch as uint8 < traits.Stringable {
 
 /// Returns the current architecture.
 #[inline]
-public func arch() -> Arch {
+pub func arch() -> Arch {
 #if _X86_
     return .X86;
 #else_if _AMD64_

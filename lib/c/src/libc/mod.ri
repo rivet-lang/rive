@@ -3,5 +3,5 @@
 // be found in the LICENSE file.
 
 extern (C) {
-    public var environ: [&][&]uint8;
+    pub var environ: [&][&]uint8;
 }

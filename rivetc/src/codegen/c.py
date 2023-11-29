@@ -120,7 +120,7 @@ class CGen:
 
     def gen_globals(self, globals):
         for g in globals:
-            if not g.is_pub:
+            if not g.is_public:
                 self.globals.write("RIVET_LOCAL ")
             if g.is_extern:
                 self.globals.write("extern ")
@@ -166,7 +166,7 @@ class CGen:
                 self.write("RIVET_NEVER ")
             self.protos.write("RIVET_NEVER ")
         if not decl.is_extern:
-            if decl.is_pub:
+            if decl.is_public:
                 self.write("RIVET_EXPORT ")
                 self.protos.write("RIVET_EXPORT ")
             else:

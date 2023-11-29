@@ -6,7 +6,7 @@
 
 extern (C) {
     // the default secret parameters
-    public var _wyp: [4]uint64;
+    pub var _wyp: [4]uint64;
 
     func _wyrot(x: uint64) -> uint64;
     func _wymum(a: &uint64, b: &uint64);
@@ -14,8 +14,8 @@ extern (C) {
     func _wyr8(p: &uint8) -> uint64;
     func _wyr4(p: &uint8) -> uint64;
     func _wyr3(p: &uint8, k: uint) -> uint64;
-    public func wyhash(key: rawptr, len: uint, seed: uint64, secret: &uint64) -> uint64;
-    public func wyhash64(a: uint64, b: uint64) -> uint64;
+    pub func wyhash(key: rawptr, len: uint, seed: uint64, secret: &uint64) -> uint64;
+    pub func wyhash64(a: uint64, b: uint64) -> uint64;
     func wyrand(seed: &uint64) -> uint64;
     func wy2u01(r: uint64) -> float64;
     func wy2gau(r: uint64) -> float64;

@@ -10,17 +10,17 @@ import { Path } from std/fs;
 
 import ../utils;
 
-public var rivetDir := Path.join(env.homeDir, ".rivet_lang")!;
-public var rivetcDir := Path.dir_name(process.executable()!)?;
+pub var rivetDir := Path.join(env.homeDir, ".rivet_lang")!;
+pub var rivetcDir := Path.dir_name(process.executable()!)?;
 
-public var objDir := Path.join(rivetDir, "obj")!;
-public var libDir := Path.join(rivetDir, "lib")!;
-public var rivetcLibDir := Path.join(rivetcDir, "lib")!;
+pub var objDir := Path.join(rivetDir, "obj")!;
+pub var libDir := Path.join(rivetDir, "lib")!;
+pub var rivetcLibDir := Path.join(rivetcDir, "lib")!;
 
-public enum Backend as uint8 {
+pub enum Backend as uint8 {
     C;
 
-    public func from_string(name: string) -> ?Self {
+    pub func from_string(name: string) -> ?Self {
         return match name {
             "c" -> .C,
             else -> none
@@ -28,59 +28,59 @@ public enum Backend as uint8 {
     }
 }
 
-public enum OutputMode as uint8 {
+pub enum OutputMode as uint8 {
     Bin
 }
 
-public enum OptimizeMode as uint8 {
+pub enum OptimizeMode as uint8 {
     Debug,
     Release
 }
 
-public enum LinkMode as uint8 {
+pub enum LinkMode as uint8 {
     Var,
     Dynamic
 }
 
 #[boxed]
-public struct Prefs {
+pub struct Prefs {
     // Target info
-    public mut target_os: sys.OS := sys.os();
-    public mut target_arch: sys.Arch := sys.arch();
-    public mut target_is_64bit: bool := sys.is_64bit();
-    public mut target_is_little_endian: bool := sys.is_little_endian();
-    public mut target_c_runtime: sys.CRuntime := sys.c_runtime();
-    public mut target_backend: Backend;
-    public mut target_backend_compiler: string := "cc";
+    pub mut target_os: sys.OS := sys.os();
+    pub mut target_arch: sys.Arch := sys.arch();
+    pub mut target_is_64bit: bool := sys.is_64bit();
+    pub mut target_is_little_endian: bool := sys.is_little_endian();
+    pub mut target_c_runtime: sys.CRuntime := sys.c_runtime();
+    pub mut target_backend: Backend;
+    pub mut target_backend_compiler: string := "cc";
 
     // Module info
-    public mut input: string;
-    public mut mod_name: string;
-    public mut mod_dir: string;
-    public mut mod_output: string;
+    pub mut input: string;
+    pub mut mod_name: string;
+    pub mut mod_dir: string;
+    pub mut mod_output: string;
 
-    public mut library_path: []string := [rivetcLibDir, libDir];
-    public mut libraries_to_link: []string;
-    public mut objects_to_link: []string;
+    pub mut library_path: []string := [rivetcLibDir, libDir];
+    pub mut libraries_to_link: []string;
+    pub mut objects_to_link: []string;
 
-    public mut flags: []string;
-    public mut check: bool;
-    public mut check_syntax: bool;
-    public mut emit_mir: bool;
-    public mut keep_c: bool;
-    public mut all_warns_are_errors: bool;
-    public mut hide_all_warns: bool;
-    public mut is_verbose: bool;
-    public mut is_fmt: bool; 
+    pub mut flags: []string;
+    pub mut check: bool;
+    pub mut check_syntax: bool;
+    pub mut emit_mir: bool;
+    pub mut keep_c: bool;
+    pub mut all_warns_are_errors: bool;
+    pub mut hide_all_warns: bool;
+    pub mut is_verbose: bool;
+    pub mut is_fmt: bool; 
 
     // Output info
-    public mut output_mode: OutputMode;
-    public mut optimize_mode: OptimizeMode;
-    public mut is_test: bool;
-    public mut run_output: bool;
-    public mut run_output_args: []string;
+    pub mut output_mode: OutputMode;
+    pub mut optimize_mode: OptimizeMode;
+    pub mut is_test: bool;
+    pub mut run_output: bool;
+    pub mut run_output_args: []string;
 
-    public func new(args: []string, is_test: bool, run_output: bool, is_check: bool) -> !Self {
+    pub func new(args: []string, is_test: bool, run_output: bool, is_check: bool) -> !Self {
         prefs := Prefs(is_test: is_test, run_output: run_output, check: is_check);
         mut fp := flag.FlagParser.new(args);
         fp.set_application_name(if is_test {

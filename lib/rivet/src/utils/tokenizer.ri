@@ -3,11 +3,11 @@
 // be found in the LICENSE file.
 
 #[inline]
-public func is_name_char(ch: uint8) -> bool {
+pub func is_name_char(ch: uint8) -> bool {
     return ch.is_letter() or ch == b'_';
 }
 
 #[inline]
-public func is_new_line(ch: uint8) -> bool {
+pub func is_new_line(ch: uint8) -> bool {
     return ch == LF or ch == CR;
 }

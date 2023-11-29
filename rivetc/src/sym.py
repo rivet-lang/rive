@@ -148,7 +148,7 @@ class Sym:
     def get_public_syms(self):
         syms = []
         for s in self.syms:
-            if s.vis.is_pub():
+            if s.vis.is_public():
                 syms.append(s)
         return syms
 

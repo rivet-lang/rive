@@ -8,27 +8,27 @@ import core;
 import { Path} from ../fs;
 import { Builder } from ../strings;
 
-public alias id := core.process_id;
-public alias panic := core.process_panic;
-public alias abort := core.process_abort;
-public alias exit := core.process_exit;
-public alias get_cwd := core.process_get_cwd;
-public alias executable := core.process_executable;
+pub alias id := core.process_id;
+pub alias panic := core.process_panic;
+pub alias abort := core.process_abort;
+pub alias exit := core.process_exit;
+pub alias get_cwd := core.process_get_cwd;
+pub alias executable := core.process_executable;
 
-public var args := core.ARGS;
-public var wdAtStartup := get_cwd() catch ".";
-public var executableDir := Path.dir_name(executable() catch wdAtStartup);
+pub var args := core.ARGS;
+pub var wdAtStartup := get_cwd() catch ".";
+pub var executableDir := Path.dir_name(executable() catch wdAtStartup);
 
 #[boxed]
-public struct NotADirectoryError < Throwable {
+pub struct NotADirectoryError < Throwable {
     msg: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
-public func set_cwd(p: string) -> ! {
+pub func set_cwd(p: string) -> ! {
     if !Path.is_directory(p) {
         throw NotADirectoryError("`{}` is not a directory".fmt(p));
     }
@@ -36,22 +36,22 @@ public func set_cwd(p: string) -> ! {
 }
 
 struct Result {
-	public output: string;
-	public exit_code: int32;
+	pub output: string;
+	pub exit_code: int32;
 }
 
 #[boxed]
 struct ExecutionFailedError < Throwable {
     cmd: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return "execution failed for `{}`".fmt(self.cmd);
     }
 }
 
 /// Starts the specified command, waits for it to complete, and returns
 /// both its output and the exit code.
-public func execute(cmd: string) -> !Result {
+pub func execute(cmd: string) -> !Result {
     pcmd := if cmd.contains("2>") { cmd } else { "{} 2>&1".fmt(cmd) };
     unsafe {
         if f := libc.popen(pcmd.ptr, c"r") {

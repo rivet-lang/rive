@@ -11,7 +11,11 @@ def run_fail_tests():
 
     FAIL_FILES = glob.glob(os.path.join("tests", "invalid", "*.ri"))
     if not os.path.exists("rivet"):
+        print("> building Rivet self-hosted compiler...")
         res = utils.run_process("python3", "rivetc", "-o", "rivet", "cmd")
+        if res.exit_code != 0:
+            print("    > fail:", res.err)
+            exit(1)
     for i, file in enumerate(FAIL_FILES):
         start = f" [{i+1}/{len(FAIL_FILES)}]"
         res = utils.run_process("./rivet", "check", "--show-color=false", file)

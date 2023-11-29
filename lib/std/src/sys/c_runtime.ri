@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public enum CRuntime as uint8 {
+pub enum CRuntime as uint8 {
     Glibc,
     Bionic,
     Musl,
@@ -11,6 +11,6 @@ public enum CRuntime as uint8 {
 
 /// Returns the current C core.
 #[inline]
-public func c_runtime() -> CRuntime {
+pub func c_runtime() -> CRuntime {
     return .Glibc;
 }

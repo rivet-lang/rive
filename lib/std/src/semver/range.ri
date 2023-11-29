@@ -16,10 +16,10 @@ enum Operator as uint8 {
 }
 
 #[boxed]
-public struct InvalidComparatorFormatError < Throwable {
+pub struct InvalidComparatorFormatError < Throwable {
     msg: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }

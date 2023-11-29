@@ -3,38 +3,38 @@
 // be found in the LICENSE file.
 
 #if _LINUX_
-    public const RAND_MAX := 0x7fffffff;
+    pub const RAND_MAX := 0x7fffffff;
 #else_if _WINDOWS_
-    public const RAND_MAX := 0x7fff;
+    pub const RAND_MAX := 0x7fff;
 #else
     #error cannot define RAND_MAX in this operating system, please report the issue
 #endif
 
 extern (C) {
-    public func rand() -> int32;
-    public func srand(seed: uint32);
+    pub func rand() -> int32;
+    pub func srand(seed: uint32);
 
-    public func atof(nptr: ?[&]uint8) -> float64;
-    public func atoi(nptr: ?[&]uint8) -> int32;
-    public func atol(nptr: ?[&]uint8) -> int64;
-    public func atoll(nptr: ?[&]uint8) -> int64;
+    pub func atof(nptr: ?[&]uint8) -> float64;
+    pub func atoi(nptr: ?[&]uint8) -> int32;
+    pub func atol(nptr: ?[&]uint8) -> int64;
+    pub func atoll(nptr: ?[&]uint8) -> int64;
 
-    public func strtod(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> float64;
-    public func strtof(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> float32;
-    public func strtol(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> int64;
-    public func strtoll(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> int64;
-    public func strtoul(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> uint64;
-    public func strtoull(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> uint64;
+    pub func strtod(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> float64;
+    pub func strtof(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> float32;
+    pub func strtol(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> int64;
+    pub func strtoll(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> int64;
+    pub func strtoul(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> uint64;
+    pub func strtoull(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> uint64;
 
-    public func malloc(size: uint) -> ?rawptr;
-    public func calloc(nobj: uint, size: uint) -> ?rawptr;
-    public func realloc(p: ?rawptr, size: uint) -> ?rawptr;
-    public func free(p: rawptr);
+    pub func malloc(size: uint) -> ?rawptr;
+    pub func calloc(nobj: uint, size: uint) -> ?rawptr;
+    pub func realloc(p: ?rawptr, size: uint) -> ?rawptr;
+    pub func free(p: rawptr);
 
-    public func getenv(name: [&]uint8) -> ?[&]mut uint8;
-    public func setenv(name: [&]uint8, value: [&]uint8, replace: bool) -> int32;
-    public func unsetenv(name: [&]uint8) -> int32;
+    pub func getenv(name: [&]uint8) -> ?[&]mut uint8;
+    pub func setenv(name: [&]uint8, value: [&]uint8, replace: bool) -> int32;
+    pub func unsetenv(name: [&]uint8) -> int32;
 
-    public func exit(status: int32) -> never;
-    public func abort() -> never;
+    pub func exit(status: int32) -> never;
+    pub func abort() -> never;
 }

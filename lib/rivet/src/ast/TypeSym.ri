@@ -3,26 +3,26 @@
 // be found in the LICENSE file.
 
 #[boxed]
-public struct Field {
-    public is_public: bool;
-    public name: string;
-    public is_mut: bool;
-    public has_def_expr: bool;
-    public def_expr: Expr;
-    public type: Type;
-    public is_required: bool;
+pub struct Field {
+    pub is_public: bool;
+    pub name: string;
+    pub is_mut: bool;
+    pub has_def_expr: bool;
+    pub def_expr: Expr;
+    pub type: Type;
+    pub is_required: bool;
 }
 
 #[boxed]
-public struct TypeSym < Sym {
-    public mut fields: []Field;
-    public mut full_fields_: []Field;
-    public mut info: TypeInfo := .Invalid();
-    public mut size: uint;
-    public mut align: uint;
-    public mut default_value: ?Expr;
+pub struct TypeSym < Sym {
+    pub mut fields: []Field;
+    pub mut full_fields_: []Field;
+    pub mut info: TypeInfo := .Invalid();
+    pub mut size: uint;
+    pub mut align: uint;
+    pub mut default_value: ?Expr;
 
-    public func lookup_field(self, name: string) -> ?Field {
+    pub func lookup_field(self, name: string) -> ?Field {
         for f in self.fields {
             if f.name == name {
                 return f;
@@ -50,12 +50,12 @@ public struct TypeSym < Sym {
     }
 
     #[inline]
-    public func has_field(self, name: string) -> bool {
+    pub func has_field(self, name: string) -> bool {
         return self.lookup_field(name) !is none;
     }
 
     #[inline]
-    public func lookup(self, name: string) -> ?Sym {
+    pub func lookup(self, name: string) -> ?Sym {
         return if s := self.scope.lookup(name) {
             s
         } else {
@@ -63,7 +63,7 @@ public struct TypeSym < Sym {
         };
     }
 
-    public func find_in_base(self, name: string) -> ?Sym {
+    pub func find_in_base(self, name: string) -> ?Sym {
          if self.info is .Trait as trait_info {
             for b in trait_info.bases {
                 if s := b.scope.find(name) {
@@ -92,7 +92,7 @@ public struct TypeSym < Sym {
     }
 
     #[inline]
-    public func find_func(self, name: string) -> ?Func {
+    pub func find_func(self, name: string) -> ?Func {
         return if sym := self.scope.find(name); sym is Func as func_ {
             if self.info !is .Trait and !func_.has_body {
                 return none;
@@ -109,7 +109,7 @@ public struct TypeSym < Sym {
     }
 
     #[inline]
-    public func find_method(self, name: string) -> ?Func {
+    pub func find_method(self, name: string) -> ?Func {
         return if func_ := self.find_func(name); func_.is_method {
             func_
         } else {
@@ -118,16 +118,16 @@ public struct TypeSym < Sym {
     }
 
     #[inline]
-    public func has_func(self, name: string) -> bool {
+    pub func has_func(self, name: string) -> bool {
         return self.find_func(name) !is none;
     }
 
     #[inline]
-    public func has_method(self, name: string) -> bool {
+    pub func has_method(self, name: string) -> bool {
         return self.find_method(name) !is none;
     }
 
-    public func full_fields(mut self) -> []Field {
+    pub func full_fields(mut self) -> []Field {
         if !self.full_fields_.is_empty() {
             return self.full_fields_;
         }
@@ -158,7 +158,7 @@ public struct TypeSym < Sym {
     }
 
     #[inline]
-    public func implement_trait(self, trait_sym: TypeSym) -> bool {
+    pub func implement_trait(self, trait_sym: TypeSym) -> bool {
         return if trait_sym.info is .Trait as trait_info {
             self in trait_info.implements
         } else {
@@ -166,7 +166,7 @@ public struct TypeSym < Sym {
         };
     }
 
-    public func update(mut self, other: TypeSym) -> !bool {
+    pub func update(mut self, other: TypeSym) -> !bool {
         if self.info is .Placeholder {
             // update placeholder
             if other.info !is .Placeholder {
@@ -183,7 +183,7 @@ public struct TypeSym < Sym {
     }
 
     #[inline]
-    public func is_boxed(self) -> bool {
+    pub func is_boxed(self) -> bool {
         return if self.info is .Enum as enum_info {
             enum_info.is_boxed
         } else if self.info is .Struct as struct_info {
@@ -194,17 +194,17 @@ public struct TypeSym < Sym {
     }
 
     #[inline]
-    public func is_primitive(self) -> bool {
+    pub func is_primitive(self) -> bool {
         return self.info.is_primitive();
     }
 
     #[inline]
-    public func ==(self, rhs: Self) -> bool {
+    pub func ==(self, rhs: Self) -> bool {
         return self.id == rhs.id;
     }
 
     #[inline]
-    public func !=(self, rhs: Self) -> bool {
+    pub func !=(self, rhs: Self) -> bool {
         return self.id != rhs.id;
     }
 }

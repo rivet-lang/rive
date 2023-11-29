@@ -9,39 +9,39 @@ var digitPairs := "0010203040506070809001112131415161718191021222324252627"
 extend comptime_int < Stringable {
     /// Returns the value of `self` as a string.
     #[inline]
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return @as(int64, self.*).to_string();
     }
 }
 
 extend int8 < Stringable {
-    public const MAX: int8 := 127;
-    public const MIN: int8 := -128;
+    pub const MAX: int8 := 127;
+    pub const MIN: int8 := -128;
 
     /// Returns the value of `self` as a string.
     #[inline]
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return @as(int32, self.*).str_l(5);
     }
 }
 
 extend int16 < Stringable {
-    public const MAX: int16 := 32767;
-    public const MIN: int16 := -32768;
+    pub const MAX: int16 := 32767;
+    pub const MIN: int16 := -32768;
 
     /// Returns the value of `self` as a string.
     #[inline]
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return @as(int32, self.*).str_l(7);
     }
 }
 
 extend int32 < Stringable {
-    public const MAX: int32 := 2147483647;
-    public const MIN: int32 := -2147483648;
+    pub const MAX: int32 := 2147483647;
+    pub const MIN: int32 := -2147483648;
 
     /// Returns the string representation of `self` with `max` chars.
-    public func str_l(self, max: int32) -> string {
+    pub func str_l(self, max: int32) -> string {
         if self == 0 {
             return "0";
         }
@@ -89,17 +89,17 @@ extend int32 < Stringable {
 
     /// Returns the value of `self` as a string.
     #[inline]
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return self.*.str_l(12);
     }
 }
 
 extend int64 < Stringable {
-    public const MAX: int64 := 9223372036854775807;
-    public const MIN: int64 := -9223372036854775808;
+    pub const MAX: int64 := 9223372036854775807;
+    pub const MIN: int64 := -9223372036854775808;
 
     /// Returns the value of `self` as a string.
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         if self.* == 0 {
             return "0";
         }
@@ -149,17 +149,17 @@ extend int64 < Stringable {
 }
 
 extend int < Stringable {
-    public const MIN := @as(int, #if _x64_ int64.MIN #else int32.MIN #endif);
-    public const MAX := @as(int, #if _x64_ int64.MAX #else int32.MAX #endif);
+    pub const MIN := @as(int, #if _x64_ int64.MIN #else int32.MIN #endif);
+    pub const MAX := @as(int, #if _x64_ int64.MAX #else int32.MAX #endif);
 
     #[inline]
-    public func bits() -> uint32 {
+    pub func bits() -> uint32 {
         return #if _x64_ 64 #else 32 #endif;
     }
 
     /// Returns the value of `self` as a string.
     #[inline]
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return @as(int64, self.*).to_string();
     }
 }

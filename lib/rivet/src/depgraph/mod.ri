@@ -8,26 +8,26 @@ import ../utils;
 import ../utils/maps;
 
 struct DepGraphNode {
-    public mut name: string;
-    public mut deps: []string;
+    pub mut name: string;
+    pub mut deps: []string;
 }
 
 #[boxed]
-public struct DepGraph {
-    public mut acyclic: bool;
-    public mut nodes: []DepGraphNode;
+pub struct DepGraph {
+    pub mut acyclic: bool;
+    pub mut nodes: []DepGraphNode;
 
     #[inline]
-    public func new() -> Self {
+    pub func new() -> Self {
         return Self(true, @vec(DepGraphNode, 1024));
     }
 
     #[inline]
-    public func add(mut self, mod: string, deps: []string) {
+    pub func add(mut self, mod: string, deps: []string) {
         self.nodes.push(DepGraphNode(mod, deps));
     }
 
-    public func resolve(self) -> Self {
+    pub func resolve(self) -> Self {
         mut node_names := OrderedDepMap.new();
         mut node_deps := OrderedDepMap.new();
         for node in self.nodes {
@@ -64,7 +64,7 @@ public struct DepGraph {
         return resolved;
     }
 
-    public func display(self) -> string {
+    pub func display(self) -> string {
         mut out := strings.Builder.new();
         for node in self.nodes {
             for dep in node.deps {
@@ -74,7 +74,7 @@ public struct DepGraph {
         return out.to_string();
     }
 
-    public func display_cycles(self) -> string {
+    pub func display_cycles(self) -> string {
         mut out := strings.Builder.new();
         mut seen := false;
         mut nn := NodeNames();

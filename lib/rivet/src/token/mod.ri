@@ -6,21 +6,21 @@ import std/traits;
 
 import ../utils;
 
-public var noPos := Pos();
+pub var noPos := Pos();
 
-public struct Pos < traits.Stringable {
-    public file: string;
-    public line: uint;
-    public mut col: uint;
-    public mut len: uint;
-    public pos: uint;
+pub struct Pos < traits.Stringable {
+    pub file: string;
+    pub line: uint;
+    pub mut col: uint;
+    pub mut len: uint;
+    pub pos: uint;
 
-    public end_line: uint;
-    public end_col: uint;
-    public is_multiline: bool;
+    pub end_line: uint;
+    pub end_col: uint;
+    pub is_multiline: bool;
 
     #[inline]
-    public func +(&self, other: &Pos) -> Pos {
+    pub func +(&self, other: &Pos) -> Pos {
         return if other.line > self.line {
             Pos(
                 line: self.line,
@@ -35,7 +35,7 @@ public struct Pos < traits.Stringable {
         };
     }
 
-    public func ==(&self, other: &Pos) -> bool {
+    pub func ==(&self, other: &Pos) -> bool {
         return self.file == other.file
             and self.line == other.line
             and self.col == other.col
@@ -47,7 +47,7 @@ public struct Pos < traits.Stringable {
     }
 
     #[inline]
-    public func to_report_string(&self) -> string {
+    pub func to_report_string(&self) -> string {
         return if self.is_multiline {
             "{}:{}:{}-{}:{}".fmt(
                 utils.path_styled_for_error_messages(self.file), self.line + 1,
@@ -63,7 +63,7 @@ public struct Pos < traits.Stringable {
     }
 
     #[inline]
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return if self.is_multiline {
             "{}:{}:{}-{}:{}".fmt(
                 self.file, self.line + 1, self.col, self.end_line + 1, self.end_col
@@ -74,19 +74,19 @@ public struct Pos < traits.Stringable {
     }
 }
 
-public struct Token < traits.Stringable {
-    public lit: string;
-    public kind: Kind;
-    public len: uint;
-    public pos: Pos;
+pub struct Token < traits.Stringable {
+    pub lit: string;
+    pub kind: Kind;
+    pub len: uint;
+    pub pos: Pos;
 
-    public func to_debug_string(&self) -> string {
+    pub func to_debug_string(&self) -> string {
         return "rivet.token.Token(kind: '{}', lit: '{}', pos: {})".fmt(
             self.kind, self.lit, self.pos
         );
     }
 
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         if self.kind == .String {
             return "string literal";
         }

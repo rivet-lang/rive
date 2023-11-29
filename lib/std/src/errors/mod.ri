@@ -5,41 +5,41 @@
 import c;
 import core;
 
-public alias ErrnoError := c.ErrnoError;
-public alias OutOfMemoryError := core.OutOfMemoryError;
+pub alias ErrnoError := c.ErrnoError;
+pub alias OutOfMemoryError := core.OutOfMemoryError;
 
 #[boxed]
-public struct InvalidSyntaxError < Throwable {
+pub struct InvalidSyntaxError < Throwable {
     msg: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
 #[boxed]
-public struct InvalidBaseError < Throwable {
+pub struct InvalidBaseError < Throwable {
     msg: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
 #[boxed]
-public struct InvalidBitSizeError < Throwable {
+pub struct InvalidBitSizeError < Throwable {
     msg: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
 #[boxed]
-public struct ValueOutOfRangeError < Throwable {
+pub struct ValueOutOfRangeError < Throwable {
     msg: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }

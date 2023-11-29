@@ -4,37 +4,37 @@
 
 import ../token;
 
-public enum Node {
+pub enum Node {
     Decl: Decl,
     Stmt: Stmt,
     Expr: Expr
 }
 
 #[boxed]
-public struct SourceFile {
-    public file: string;
-    public decls: []Decl;
-    public mut mod: Module;
-    public mut imported_symbols: ImportedSymbols;
+pub struct SourceFile {
+    pub file: string;
+    pub decls: []Decl;
+    pub mut mod: Module;
+    pub mut imported_symbols: ImportedSymbols;
 }
 
 #[boxed]
-public struct ImportedSymbol {
-    public name: string;
-    public sym: Sym;
-    public pos: token.Pos;
-    public mut is_used: bool;
+pub struct ImportedSymbol {
+    pub name: string;
+    pub sym: Sym;
+    pub pos: token.Pos;
+    pub mut is_used: bool;
 }
 
-public struct ImportedSymbols {
-    public mut syms: []ImportedSymbol;
+pub struct ImportedSymbols {
+    pub mut syms: []ImportedSymbol;
 
     #[inline]
-    public func add(mut self, name: string, sym: Sym, pos: token.Pos, is_used: bool := false) {
+    pub func add(mut self, name: string, sym: Sym, pos: token.Pos, is_used: bool := false) {
         self.syms.push(ImportedSymbol(name, sym, pos, is_used));
     }
 
-    public func find(&self, name: string) -> ?ImportedSymbol {
+    pub func find(&self, name: string) -> ?ImportedSymbol {
         for imported_sym in self.syms {
             if name == imported_sym.name {
                 return imported_sym;
@@ -44,22 +44,22 @@ public struct ImportedSymbols {
     }
 
     #[inline]
-    public func exists(&self, name: string) -> bool {
+    pub func exists(&self, name: string) -> bool {
         return self.find(name) !is none;
     }
 }
 
 // Used in variable declarations/statements and guard expressions.
 #[boxed]
-public struct ObjectData {
-    public name: string;
-    public is_mut: bool;
-    public is_ref: bool;
-    public has_type: bool;
-    public mut type: Type;
-    public level: VarLevel;
-    public pos: token.Pos;
-    public mut sym: Var;
-    public is_extern: bool;
-    public is_global: bool;
+pub struct ObjectData {
+    pub name: string;
+    pub is_mut: bool;
+    pub is_ref: bool;
+    pub has_type: bool;
+    pub mut type: Type;
+    pub level: VarLevel;
+    pub pos: token.Pos;
+    pub mut sym: Var;
+    pub is_extern: bool;
+    pub is_global: bool;
 }

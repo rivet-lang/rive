@@ -4,64 +4,64 @@
 
 import { * } from c/ctypes;
 
-public const MAX_PATH_LEN: uint := 4096;
-public const MAX_NAME_LEN: uint := 255;
+pub const MAX_PATH_LEN: uint := 4096;
+pub const MAX_NAME_LEN: uint := 255;
 
-public const STDIN_FILENO := 0;
-public const STDOUT_FILENO := 1;
-public const STDERR_FILENO := 2;
+pub const STDIN_FILENO := 0;
+pub const STDOUT_FILENO := 1;
+pub const STDERR_FILENO := 2;
 
-public const F_OK := 0;
-public const X_OK := 1;
-public const W_OK := 2;
-public const R_OK := 4;
+pub const F_OK := 0;
+pub const X_OK := 1;
+pub const W_OK := 2;
+pub const R_OK := 4;
 
-public const S_IFMT := 0xF000; // file
-public const S_IFDIR := 0x4000; // directory
-public const S_IFLNK := 0xA000; // link
+pub const S_IFMT := 0xF000; // file
+pub const S_IFDIR := 0x4000; // directory
+pub const S_IFLNK := 0xA000; // link
 
-public const O_RDONLY := 0x00000;
-public const O_WRONLY := 0x00001;
-public const O_RDWR := 0x00002;
-public const O_CREATE := 0x00040;
-public const O_EXCL := 0x00080;
-public const O_NOCTTY := 0x00100;
-public const O_TRUNC := 0x00200;
-public const O_NONBLOCK := 0x00800;
-public const O_APPEND := 0x00400;
-public const O_SYNC := 0x01000;
-public const O_ASYNC := 0x02000;
-public const O_CLOEXEC := 0x80000;
+pub const O_RDONLY := 0x00000;
+pub const O_WRONLY := 0x00001;
+pub const O_RDWR := 0x00002;
+pub const O_CREATE := 0x00040;
+pub const O_EXCL := 0x00080;
+pub const O_NOCTTY := 0x00100;
+pub const O_TRUNC := 0x00200;
+pub const O_NONBLOCK := 0x00800;
+pub const O_APPEND := 0x00400;
+pub const O_SYNC := 0x01000;
+pub const O_ASYNC := 0x02000;
+pub const O_CLOEXEC := 0x80000;
 
-public struct FILE;
+pub struct FILE;
 
 #if _LINUX_
     extern (C) {
-        public var stdin: &mut FILE;
-        public var stdout: &mut FILE;
-        public var stderr: &mut FILE;
+        pub var stdin: &mut FILE;
+        pub var stdout: &mut FILE;
+        pub var stderr: &mut FILE;
     }
 
-    public struct fpos_t {
+    pub struct fpos_t {
         f1: [16]char;
         f2: longlong;
         f3: double;
     }
 
-    public const _IOFBF := 0;
-	public const _IOLBF := 1;
-	public const _IONBF := 2;
+    pub const _IOFBF := 0;
+	pub const _IOLBF := 1;
+	pub const _IONBF := 2;
 
-	public const BUFSIZ := 1024;
-	public const EOF := -1;
-	public const FOPEN_MAX := 1000;
-	public const FILENAME_MAX := 4096;
-	public const L_tmpnam := 20;
-	public const SEEK_SET := 0;
-	public const SEEK_CUR := 1;
-	public const SEEK_END := 2;
+	pub const BUFSIZ := 1024;
+	pub const EOF := -1;
+	pub const FOPEN_MAX := 1000;
+	pub const FILENAME_MAX := 4096;
+	pub const L_tmpnam := 20;
+	pub const SEEK_SET := 0;
+	pub const SEEK_CUR := 1;
+	pub const SEEK_END := 2;
 
-	public const TMP_MAX := 308915776;
+	pub const TMP_MAX := 308915776;
 #endif
 
 #if _WINDOWS_
@@ -69,51 +69,51 @@ public struct FILE;
         func __acrt_iob_fn(index: uint32) &mut FILE;
     }
 
-    public alias fpos_t := int64;
+    pub alias fpos_t := int64;
 
-	public const _IOFBF := 0x0000;
-	public const _IOLBF := 0x0004;
-	public const _IONBF := 0x0040;
+	pub const _IOFBF := 0x0000;
+	pub const _IOLBF := 0x0004;
+	pub const _IONBF := 0x0040;
 
-	public const BUFSIZ := 512;
-	public const EOF := -1;
-	public const FOPEN_MAX := 20;
-	public const FILENAME_MAX := 260;
-	public const L_tmpnam := 15; // "\\" + 12 + NUL
-	public const SEEK_SET := 0;
-	public const SEEK_CUR := 1;
-	public const SEEK_END := 2;
+	pub const BUFSIZ := 512;
+	pub const EOF := -1;
+	pub const FOPEN_MAX := 20;
+	pub const FILENAME_MAX := 260;
+	pub const L_tmpnam := 15; // "\\" + 12 + NUL
+	pub const SEEK_SET := 0;
+	pub const SEEK_CUR := 1;
+	pub const SEEK_END := 2;
 
-	public const TMP_MAX := 32767; // SHRT_MAX
+	pub const TMP_MAX := 32767; // SHRT_MAX
 
-    public var stdin: &mut FILE := unsafe { __acrt_iob_fn(0) };
-    public var stdout: &mut FILE := unsafe { __acrt_iob_fn(1) };
-    public var stderr: &mut FILE := unsafe { __acrt_iob_fn(2) };
+    pub var stdin: &mut FILE := unsafe { __acrt_iob_fn(0) };
+    pub var stdout: &mut FILE := unsafe { __acrt_iob_fn(1) };
+    pub var stderr: &mut FILE := unsafe { __acrt_iob_fn(2) };
 #endif
 
 extern (C) {
-    public func fopen(path: [&]uint8, mode: [&]uint8) -> ?&mut FILE;
-    public func feof(stream: &FILE) -> int32;
-    public func ferror(stream: &FILE) -> int32;
-    public func fseek(stream: &mut FILE, offset: uint64, whence: int32) -> int32;
-    public func ftell(stream: &mut FILE) -> int64;
-    public func fread(ptr: rawptr, size: uint, nitems: uint, stream: &mut FILE) -> uint;
-    public func fputc(c: int32, stream: &mut FILE) -> int32;
-    public func fputs(s: [&]uint8, stream: &mut FILE) -> int32;
-    public func fprintf(stream: &mut FILE, fmt: [&]uint8, ...) -> int32;
-    public func fwrite(ptr: rawptr, size: uint, nobj: uint, stream: &mut FILE) -> uint;
-    public func fflush(stream: &mut FILE) -> int32;
-    public func fgets(s: [&]mut uint8, n: uint, stream: &mut FILE) -> int32;
-    public func fclose(stream: &mut FILE) -> int32;
-    public func fileno(stream: &FILE) -> int32;
-    public func rewind(stream: &mut FILE);
+    pub func fopen(path: [&]uint8, mode: [&]uint8) -> ?&mut FILE;
+    pub func feof(stream: &FILE) -> int32;
+    pub func ferror(stream: &FILE) -> int32;
+    pub func fseek(stream: &mut FILE, offset: uint64, whence: int32) -> int32;
+    pub func ftell(stream: &mut FILE) -> int64;
+    pub func fread(ptr: rawptr, size: uint, nitems: uint, stream: &mut FILE) -> uint;
+    pub func fputc(c: int32, stream: &mut FILE) -> int32;
+    pub func fputs(s: [&]uint8, stream: &mut FILE) -> int32;
+    pub func fprintf(stream: &mut FILE, fmt: [&]uint8, ...) -> int32;
+    pub func fwrite(ptr: rawptr, size: uint, nobj: uint, stream: &mut FILE) -> uint;
+    pub func fflush(stream: &mut FILE) -> int32;
+    pub func fgets(s: [&]mut uint8, n: uint, stream: &mut FILE) -> int32;
+    pub func fclose(stream: &mut FILE) -> int32;
+    pub func fileno(stream: &FILE) -> int32;
+    pub func rewind(stream: &mut FILE);
 
-    public func printf(fmt: [&]uint8, ...) -> int32;
-    public func asprintf(strp: &?[&]uint8, fmt: [&]uint8, ...) -> int32;
-    public func putchar(s: int32) -> int32;
+    pub func printf(fmt: [&]uint8, ...) -> int32;
+    pub func asprintf(strp: &?[&]uint8, fmt: [&]uint8, ...) -> int32;
+    pub func putchar(s: int32) -> int32;
 
-	public func popen(cmd: [&]uint8, modes: [&]uint8) -> ?&mut FILE;
-	public func pclose(stream: &mut FILE) -> int32;
+	pub func popen(cmd: [&]uint8, modes: [&]uint8) -> ?&mut FILE;
+	pub func pclose(stream: &mut FILE) -> int32;
 
-	public func getline(lineptr: &?[&]uint8, n: &uint, stream: &mut FILE) -> int;
+	pub func getline(lineptr: &?[&]uint8, n: &uint, stream: &mut FILE) -> int;
 }

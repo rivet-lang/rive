@@ -3,81 +3,81 @@
 // be found in the LICENSE file.
 
 #[inline]
-public func bg_black(msg: string) -> string {
+pub func bg_black(msg: string) -> string {
     return fmt(msg, "40", "49");
 }
 
 #[inline]
-public func bg_blue(msg: string) -> string {
+pub func bg_blue(msg: string) -> string {
     return fmt(msg, "44", "49");
 }
 
 #[inline]
-public func bg_cyan(msg: string) -> string {
+pub func bg_cyan(msg: string) -> string {
     return fmt(msg, "46", "49");
 }
 
 #[inline]
-public func bg_green(msg: string) -> string {
+pub func bg_green(msg: string) -> string {
     return fmt(msg, "42", "49");
 }
 
 #[inline]
-public func bg_magenta(msg: string) -> string {
+pub func bg_magenta(msg: string) -> string {
     return fmt(msg, "45", "49");
 }
 
 #[inline]
-public func bg_red(msg: string) -> string {
+pub func bg_red(msg: string) -> string {
     return fmt(msg, "41", "49");
 }
 
 #[inline]
-public func bg_white(msg: string) -> string {
+pub func bg_white(msg: string) -> string {
     return fmt(msg, "47", "49");
 }
 
 #[inline]
-public func bg_yellow(msg: string) -> string {
+pub func bg_yellow(msg: string) -> string {
     return fmt(msg, "43", "49");
 }
 
 #[inline]
-public func bg_bright_black(msg: string) -> string {
+pub func bg_bright_black(msg: string) -> string {
     return fmt(msg, "100", "49");
 }
 
 #[inline]
-public func bg_bright_blue(msg: string) -> string {
+pub func bg_bright_blue(msg: string) -> string {
     return fmt(msg, "104", "49");
 }
 
 #[inline]
-public func bg_bright_cyan(msg: string) -> string {
+pub func bg_bright_cyan(msg: string) -> string {
     return fmt(msg, "106", "49");
 }
 
 #[inline]
-public func bg_bright_green(msg: string) -> string {
+pub func bg_bright_green(msg: string) -> string {
     return fmt(msg, "102", "49");
 }
 
 #[inline]
-public func bg_bright_magenta(msg: string) -> string {
+pub func bg_bright_magenta(msg: string) -> string {
     return fmt(msg, "105", "49");
 }
 
 #[inline]
-public func bg_bright_red(msg: string) -> string {
+pub func bg_bright_red(msg: string) -> string {
     return fmt(msg, "101", "49");
 }
 
 #[inline]
-public func bg_bright_white(msg: string) -> string {
+pub func bg_bright_white(msg: string) -> string {
     return fmt(msg, "107", "49");
 }
 
 #[inline]
-public func bg_bright_yellow(msg: string) -> string {
+pub func bg_bright_yellow(msg: string) -> string {
     return fmt(msg, "103", "49");
 }

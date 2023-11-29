@@ -2,16 +2,16 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public struct dirent {
-    public d_ino: uint;
-    public d_off: uint;
-    public d_reclen: uint16;
-    public d_type: uint8;
-    public d_name: [256]uint8;
+pub struct dirent {
+    pub d_ino: uint;
+    pub d_off: uint;
+    pub d_reclen: uint16;
+    pub d_type: uint8;
+    pub d_name: [256]uint8;
 }
 
 extern (C) {
-	public func opendir(d: [&]uint8) -> ?&dirent;
-	public func readdir(d: &dirent) -> ?&dirent;
-	public func closedir(d: &dirent) -> int32;
+	pub func opendir(d: [&]uint8) -> ?&dirent;
+	pub func readdir(d: &dirent) -> ?&dirent;
+	pub func closedir(d: &dirent) -> int32;
 }

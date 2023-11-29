@@ -1,9 +1,9 @@
 tests/invalid/special_methods.ri:2:5: error: this special function should be a method
     2 |     func __xxx__() {}
       |     ^~~~~~~~~~~~~~~~~
-tests/invalid/special_methods.ri:4:12-6:5: error: special methods cannot be public
-      |            /~~ from here
-    4 |     public func __public__(self) {
+tests/invalid/special_methods.ri:4:9-6:5: error: special methods cannot be public
+      |         /~~ from here
+    4 |     pub func __public__(self) {
     5 |         _ = self;
     6 |     }
       |     ^~~ to here
