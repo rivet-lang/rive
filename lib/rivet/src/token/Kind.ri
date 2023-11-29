@@ -9,9 +9,6 @@ struct KindMap {
     value: string;
 }
 
-// NOTE: When adding modify this table, don't 
-// forget to update keywordsTable to match 
-// the modified values.
 static kindStrings := [
     KindMap(.Unknown, "unknown"),
     KindMap(.EndOfFile, "end of file"),
@@ -108,7 +105,7 @@ static kindStrings := [
     KindMap(.KwWhile, "while")
 ];
 
-static keywordsTable := kindStrings[51..];
+static keywordsTable := kindStrings[@as(uint, Kind.KeywordBegin)..];
 
 public enum Kind < traits.Stringable {
     Unknown, // unknown
