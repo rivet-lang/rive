@@ -12,7 +12,7 @@ public const CR: uint8 := 13;
 
 public var mut stderrSupportStyles := styles.stderr_support_styles();
 
-public static tabsTable := [
+public var tabsTable := [
     "",
     "\t",
     "\t\t",

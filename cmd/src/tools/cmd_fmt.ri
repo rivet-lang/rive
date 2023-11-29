@@ -12,7 +12,7 @@ import rivet/prefs;
 import rivet/utils;
 import rivet/report;
 
-static fmtDescription := "Formats the given Rivet source files or recursively formats all files in the
+var fmtDescription := "Formats the given Rivet source files or recursively formats all files in the
 directory, then prints their formatted source to stdout.";
 
 public func cmd_fmt(args: []string) -> ! {

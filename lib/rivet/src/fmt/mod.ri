@@ -10,7 +10,7 @@ import ../ast;
 import ../utils;
 import ../prefs;
 
-static maxLen: []uint := [0, 35, 60, 85, 93, 100];
+var maxLen: []uint := [0, 35, 60, 85, 93, 100];
 
 #[boxed]
 public struct Formatter {
