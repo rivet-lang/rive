@@ -173,7 +173,7 @@ extend Parser {
             },
             self.accept(.KwExtern) -> {
                 self.inside_extern = true;
-                // extern function or static
+                // extern function or var
                 abi := self.parse_abi();
                 mut decls := @vec(ast.Decl);
                 if self.accept(.Lbrace) {
@@ -249,7 +249,7 @@ extend Parser {
                     pos
                 );
             },
-            self.accept(.KwStatic) -> {
+            self.accept(.KwVar) -> {
                 // variable declarations
                 mut lefts := @vec(ast.ObjectData);
                 if self.accept(.Lparen) {

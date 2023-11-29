@@ -14,18 +14,18 @@ import rivet/utils;
 
 import ./templates;
 
-static newDescription := "Sets up a new Rivet project and performs `git init` (if `git` is installed
+var newDescription := "Sets up a new Rivet project and performs `git init` (if `git` is installed
 on the system).";
 
-static newDescription2 := "If [NAME] is given, the project will be setup in a new directory with that
+var newDescription2 := "If [NAME] is given, the project will be setup in a new directory with that
 name, and that name will be added to the `project.json` file. If no name is
 given, the user will be prompted for a name.";
 
-static initDescription := "If no `project.json` file exists, one will be created.
+var initDescription := "If no `project.json` file exists, one will be created.
 If the current directory is not already controlled with `git`, will perform
 `git init` (if `git` is installed on the system).";
 
-static availableTemplates := "Available templates:
+var availableTemplates := "Available templates:
    bin          A simple binary project (default).
    lib          A simple library project.";
 

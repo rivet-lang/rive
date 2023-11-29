@@ -32,7 +32,7 @@ class Resolver:
             elif isinstance(decl, ast.ConstDecl):
                 self.resolve_type(decl.typ)
                 self.resolve_expr(decl.expr)
-            elif isinstance(decl, ast.StaticDecl):
+            elif isinstance(decl, ast.VarDecl):
                 for v in decl.lefts:
                     self.resolve_type(v.typ)
                 if not decl.is_extern:
@@ -161,7 +161,7 @@ class Resolver:
             self.self_sym = old_self_sym
 
     def resolve_stmt(self, stmt):
-        if isinstance(stmt, ast.StaticDeclStmt):
+        if isinstance(stmt, ast.VarDeclStmt):
             for v in stmt.lefts:
                 if v.has_typ:
                     self.resolve_type(v.typ)

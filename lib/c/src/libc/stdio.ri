@@ -37,9 +37,9 @@ public struct FILE;
 
 #if _LINUX_
     extern (C) {
-        public static stdin: &mut FILE;
-        public static stdout: &mut FILE;
-        public static stderr: &mut FILE;
+        public var stdin: &mut FILE;
+        public var stdout: &mut FILE;
+        public var stderr: &mut FILE;
     }
 
     public struct fpos_t {
@@ -86,9 +86,9 @@ public struct FILE;
 
 	public const TMP_MAX := 32767; // SHRT_MAX
 
-    public static stdin: &mut FILE := unsafe { __acrt_iob_fn(0) };
-    public static stdout: &mut FILE := unsafe { __acrt_iob_fn(1) };
-    public static stderr: &mut FILE := unsafe { __acrt_iob_fn(2) };
+    public var stdin: &mut FILE := unsafe { __acrt_iob_fn(0) };
+    public var stdout: &mut FILE := unsafe { __acrt_iob_fn(1) };
+    public var stderr: &mut FILE := unsafe { __acrt_iob_fn(2) };
 #endif
 
 extern (C) {

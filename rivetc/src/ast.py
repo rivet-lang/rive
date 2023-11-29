@@ -166,7 +166,7 @@ class ConstDecl:
         self.sym = None
         self.pos = pos
 
-class StaticDecl:
+class VarDecl:
     def __init__(
         self, docs, attributes, is_public, is_extern, abi, lefts, right, pos
     ):
@@ -304,7 +304,7 @@ class TestDecl:
         self.defer_stmts = []
 
 # ------ Statements --------
-class StaticDeclStmt:
+class VarDeclStmt:
     def __init__(self, scope, lefts, right, pos):
         self.lefts = lefts
         self.right = right

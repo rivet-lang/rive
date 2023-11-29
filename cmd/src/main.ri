@@ -10,7 +10,7 @@ import rivet/utils;
 
 import ./tools;
 
-static help := "Rivet is a tool for managing Rivet source code.
+var help := "Rivet is a tool for managing Rivet source code.
 
 Usage: rivet [COMMAND] [OPTIONS]
 
