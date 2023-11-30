@@ -68,16 +68,12 @@ pub func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !uint 
 
     // Cutoff is the smallest number such that `cutoff * base > MAX_U64`.
     // Use compile-time constants for common cases.
-    cutoff: uint := match base {
-        10 -> uint.MAX / 10 + 1,
-        16 -> uint.MAX / 16 + 1,
-        else -> uint.MAX / @as(uint, base) + @as(uint, 1)
-    };
+    cutoff: uint := (uint.MAX / @as(uint, base)) + 1;
 
     max_val: uint := if bit_size == 64 {
         uint.MAX
     } else {
-        (@as(uint, 1) << @as(uint, bit_size)) - @as(uint, 1)
+        (@as(uint, 1) << @as(uint, bit_size)) - 1
     };
     mut underscores := false;
     mut n: uint := 0;
