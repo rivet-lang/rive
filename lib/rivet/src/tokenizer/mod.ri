@@ -17,7 +17,7 @@ import { LF, CR } from ../utils;
 const NUM_SEP := b'_';
 
 #[boxed]
-public struct Tokenizer {
+pub struct Tokenizer {
     table: ast.Table;
     prefs: prefs.Prefs;
     file: string := "<internal-memory>";
@@ -25,20 +25,20 @@ public struct Tokenizer {
     mut pos: uint;
     mut line: uint;
     mut last_nl_pos: uint;
-    public mut all_tokens: []token.Token;
+    pub mut all_tokens: []token.Token;
     mut tidx: uint;
     mut is_started: bool;
     mut is_cr_lf: bool;
     mut eofs: uint;
     mut conditional_stack: []mut Conditional;
 
-    public func new(text: string, prefs_: prefs.Prefs, table: ast.Table) -> Tokenizer {
+    pub func new(text: string, prefs_: prefs.Prefs, table: ast.Table) -> Tokenizer {
         mut t := Tokenizer(table: table, prefs: prefs_, text: text);
         t.init();
         return t;
     }
 
-    public func from_file(file: string, prefs_: prefs.Prefs, table: ast.Table) -> Tokenizer {
+    pub func from_file(file: string, prefs_: prefs.Prefs, table: ast.Table) -> Tokenizer {
         mut t := Tokenizer(
             table: table, prefs: prefs_, file: file,
             text: utils.read_file(file) catch |err| utils.error(err.to_string())
@@ -199,7 +199,7 @@ public struct Tokenizer {
     }
 
     #[inline]
-    public func peek_token(self, n: uint) -> token.Token {
+    pub func peek_token(self, n: uint) -> token.Token {
         idx := self.tidx + n;
         return if idx >= self.all_tokens.len {
             self.new_eof_token()

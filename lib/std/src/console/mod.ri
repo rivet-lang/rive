@@ -5,15 +5,15 @@
 import core;
 import c/libc;
 
-public alias write := core.console_write;
-public alias writeln := core.console_writeln;
-public alias ewrite := core.console_ewrite;
-public alias ewriteln := core.console_ewriteln;
-public alias is_atty := core.console_is_atty;
+pub alias write := core.console_write;
+pub alias writeln := core.console_writeln;
+pub alias ewrite := core.console_ewrite;
+pub alias ewriteln := core.console_ewriteln;
+pub alias is_atty := core.console_is_atty;
 
 /// Returns a one-line string from stdin, after printing a prompt. In
 /// the event of error (end of input) or a empty string, returns `none`.
-public func readln(prompt: string := "") -> ?string {
+pub func readln(prompt: string := "") -> ?string {
     if prompt.len > 0 {
         write(prompt);
     }

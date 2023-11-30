@@ -8,7 +8,7 @@ struct StaticBuffer {
     buf: [25]mut uint8;
     mut len: uint;
 
-    public func push(mut self, byte: uint8) {
+    pub func push(mut self, byte: uint8) {
         if self.len > self.buf.len {
             process_panic("StaticBuffer.push: cannot push byte (len: {})", self.len);
         }
@@ -16,23 +16,23 @@ struct StaticBuffer {
         self.len += 1;
     }
 
-    public func as_uint64(&self) -> uint64 {
+    pub func as_uint64(&self) -> uint64 {
         self.buf[self.len] = 0;
         return unsafe { libc.strtoul(&self.buf[0], none, 10) };
     }
 
-    public func as_int(&self) -> int {
+    pub func as_int(&self) -> int {
         self.buf[self.len] = 0;
         return unsafe { @as(int, libc.strtol(&self.buf[0], none, 10))};
     }
 
-    public func as_string(&self) -> string {
+    pub func as_string(&self) -> string {
         self.buf[self.len] = 0;
         return unsafe { string.from_raw_with_len(&self.buf[0], self.len).clone() };
     }
 
     #[inline]
-    public func clear(mut self) {
+    pub func clear(mut self) {
         self.len = 0;
     }
 }

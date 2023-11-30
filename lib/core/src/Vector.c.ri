@@ -39,14 +39,14 @@ struct Vector {
 
     func get(self, idx: uint) -> rawptr {
         if idx >= self.len {
-            process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
+            runtime_error("vector index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { @ptr_add(@as([&]mut uint8, self.ptr), idx * self.elem_size) };
     }
 
     func set(self, idx: uint, val: rawptr) {
         if idx >= self.len {
-            process_panic("vector index out of range (index: {}, len: {})", idx, self.len);
+            runtime_error("vector index out of range (index: {}, len: {})", idx, self.len);
         }
         unsafe {
             mem_copy(
@@ -70,7 +70,7 @@ struct Vector {
     /// vector is empty, this will panic.
     func pop(mut self) -> rawptr {
         if self.len == 0 {
-            process_panic("Vec.pop: vector is empty");
+            runtime_error("Vec.pop: vector is empty");
         }
         new_len := self.len - 1;
         self.len = new_len;
@@ -81,11 +81,11 @@ struct Vector {
     /// NOTE: This function does NOT operate in-place. Internally, it creates a copy
     /// of the vector, skipping over `size` elements starting at `i`, and then points
     /// the original variable to the new memory location.
-    public func delete(mut self, i: uint, size: uint := 1, no_slices: bool := false) {
+    pub func delete(mut self, i: uint, size: uint := 1, no_slices: bool := false) {
         if i + size > self.len {
             end_idx := if size == 1 { "..{}".fmt(i + size) } else { "" };
-            process_panic(
-                "Vector.delete(): index out of range (i: {}{}, self.len: {})",
+            runtime_error(
+                "Vector.delete(): index out of range (i: {}..{}, self.len: {})",
                 i, end_idx, self.len
             );
         }
@@ -112,13 +112,13 @@ struct Vector {
 
     /// Trims the array length to `index` without modifying the allocated data.
     /// If `index` is greater than `len` nothing will be changed.
-    public func trim(mut self, index: uint) {
+    pub func trim(mut self, index: uint) {
         if index < self.len {
             self.len = index;
         }
     }
 
-    public func clear(mut self) {
+    pub func clear(mut self) {
         self.len = 0;
     }
 
@@ -156,7 +156,7 @@ struct Vector {
 
     func slice(self, start: uint, end: uint) -> Self {
         if start > end or end > self.len {
-            process_panic(
+            runtime_error(
                 "slice index out of range (range: {}..{}, len: {})", start, end, self.len
             );
         }
@@ -176,7 +176,7 @@ struct Vector {
     }
 
     /// Returns an independent copy of `self`.
-    public func clone(self) -> Self {
+    pub func clone(self) -> Self {
         mut size := self.cap * self.elem_size;
         if size == 0 {
             size = 1;

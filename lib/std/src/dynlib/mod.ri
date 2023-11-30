@@ -8,12 +8,12 @@
 
 import c/libc;
 
-public var sharedLibExtension := get_shared_library_extension();
+pub var sharedLibExtension := get_shared_library_extension();
 
 /// Returns a library name with the operating system specific extension for shared
 /// libraries.
 #[inline]
-public func library_name(libname: string) -> string {
+pub func library_name(libname: string) -> string {
     return if libname.ends_with(sharedLibExtension) {
         libname
     } else {
@@ -22,24 +22,24 @@ public func library_name(libname: string) -> string {
 }
 
 #[boxed]
-public struct SymbolNotFoundError < Throwable {
+pub struct SymbolNotFoundError < Throwable {
     msg: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
 #[boxed]
-public struct CannotLoadLibraryError < Throwable {
+pub struct CannotLoadLibraryError < Throwable {
     msg: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
-public func load(path: string, global_symbols: bool = false) -> !Library {
+pub func load(path: string, global_symbols: bool = false) -> !Library {
     flags := if global_symbols { libc.RTLD_NOW | libc.RTLD_GLOBAL } else { libc.RTLD_NOW };
     if ptr := unsafe { libc.dlopen(path.ptr, flags) } {
         return Library(path, ptr);
@@ -53,10 +53,10 @@ public func load(path: string, global_symbols: bool = false) -> !Library {
 
 #[boxed]
 struct Library {
-    public path: string;
+    pub path: string;
     ptr: rawptr;
 
-    public func address_of(self, symbol: string) -> !rawptr {
+    pub func address_of(self, symbol: string) -> !rawptr {
         if ptr := unsafe { libc.dlsym(self.ptr, symbol.ptr) } {
             return ptr;
         }
@@ -70,12 +70,12 @@ struct Library {
     }
 
     #[inline]
-    public func exists(self, symbol: string) -> bool {
+    pub func exists(self, symbol: string) -> bool {
         return if _ := self.address_of(symbol) { true } else { false };
     }
 
     #[inline]
-    public func close(self) {
+    pub func close(self) {
         _ = unsafe { libc.dlclose(self.ptr) };
     }
 

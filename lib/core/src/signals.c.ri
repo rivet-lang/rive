@@ -26,23 +26,23 @@ func signals_handler(_sig: int32, info: &mut libc.siginfo_t, _context: rawptr) {
 func segfault_handler() {
     console_ewriteln(
         if libcoreIsStarted {
-            "panic: invalid memory address or null pointer dereference"
+            "runtime error: invalid memory address or null pointer dereference"
         } else {
-            "panic: invalid memory address or null pointer dereference while starting the core"
+            "runtime error: invalid memory address or null pointer dereference while starting the core"
         }
     );
     bt_print(4);
-    process_exit(1);
+    process_exit(100);
 }
 
 func fpe_handler() {
     console_ewriteln(
         if libcoreIsStarted {
-            "panic: floating point exception"
+            "runtime error: floating point exception"
         } else {
-            "panic: floating point exception while starting the core"
+            "runtime error: floating point exception while starting the core"
         }
     );
     bt_print(4);
-    process_exit(1);
+    process_exit(100);
 }

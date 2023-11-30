@@ -4,12 +4,12 @@
 
 import core;
 
-public alias alloc := core.mem_alloc;
-public alias zeroed := core.mem_zeroed;
-public alias resize := core.mem_resize;
-public alias set := core.mem_set;
-public alias copy := core.mem_copy;
-public alias move := core.mem_move;
-public alias dup := core.mem_dup;
-public alias cmp := core.mem_cmp;
-public alias dealloc := core.mem_dealloc;
+pub alias alloc := core.mem_alloc;
+pub alias zeroed := core.mem_zeroed;
+pub alias resize := core.mem_resize;
+pub alias set := core.mem_set;
+pub alias copy := core.mem_copy;
+pub alias move := core.mem_move;
+pub alias dup := core.mem_dup;
+pub alias cmp := core.mem_cmp;
+pub alias dealloc := core.mem_dealloc;

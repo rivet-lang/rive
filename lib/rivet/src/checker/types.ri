@@ -10,7 +10,7 @@ import ../report;
 struct IncompatibleTypesError < Throwable {
     msg: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }

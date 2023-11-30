@@ -7,22 +7,22 @@ import std/process;
 import ../utils/maps;
 
 #[boxed]
-public struct OrderedDepMap {
+pub struct OrderedDepMap {
     mut keys: []string;
     mut data: maps.MapStringArrayOfStrings; // TODO: replace with map type
 
-    public func new() -> Self {
+    pub func new() -> Self {
         return Self();
     }
 
-    public func set(mut self, name: string, deps: []string) {
+    pub func set(mut self, name: string, deps: []string) {
         if !self.data.contains(name) {
             self.keys.push(name);
         }
         self.data.set(name, deps);
     }
 
-    public func add(mut self, name: string, deps: []string) {
+    pub func add(mut self, name: string, deps: []string) {
         mut d := self.get(name);
         for dep in deps {
             if dep !in d {
@@ -33,7 +33,7 @@ public struct OrderedDepMap {
     }
 
     #[inline]
-    public func get(self, name: string) -> []string {
+    pub func get(self, name: string) -> []string {
         return if res := self.data.get(name) {
             res
         } else {
@@ -41,7 +41,7 @@ public struct OrderedDepMap {
         };
     }
 
-    public func delete(mut self, name: string) {
+    pub func delete(mut self, name: string) {
         if !self.data.contains(name) {
             process.panic("OrderedDepMap.delete(): no such key: `{}`", name);
         }
@@ -54,7 +54,7 @@ public struct OrderedDepMap {
         self.data.delete(name);
     }
 
-    public func apply_diff(mut self, name: string, deps: []string) {
+    pub func apply_diff(mut self, name: string, deps: []string) {
         mut diff := @vec(string);
         deps_of_name := self.get(name);
         for dep in deps_of_name {
@@ -65,7 +65,7 @@ public struct OrderedDepMap {
         self.set(name, diff);
     }
 
-    public func size(self) -> uint {
+    pub func size(self) -> uint {
         return self.data.len();
     }
 }

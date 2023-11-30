@@ -6,7 +6,7 @@ import std/traits;
 import std/strings;
 
 #[default_value(.Empty())]
-public enum Expr < traits.Stringable {
+pub enum Expr < traits.Stringable {
     Empty,
     IntConst {
         value: int;
@@ -54,7 +54,7 @@ public enum Expr < traits.Stringable {
             Index,
             AddrOf;
 
-            public func to_string(&self) -> string {
+            pub func to_string(&self) -> string {
                 return match self.* {
                     .Add -> "add",
                     .Sub -> "sub",
@@ -87,7 +87,7 @@ public enum Expr < traits.Stringable {
         type: Type;
     };
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return match self is {
             .Empty -> "<empty-expression>",
             .IntConst as int_const -> "{}".fmt(int_const.value),

@@ -11,7 +11,7 @@ const SINGLE_QUOTE: uint8 := 0x27; // `'`
 const BACKSLASH: uint8 := 0x5C; // '\'
 
 extend Tokenizer {
-    public func next(mut self) -> token.Token {
+    pub func next(mut self) -> token.Token {
         while {
             cidx := self.tidx;
             self.tidx += 1;

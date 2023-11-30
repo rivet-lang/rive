@@ -6,7 +6,7 @@ import std/strings;
 
 import ../token;
 
-public enum Decl {
+pub enum Decl {
     Empty: token.Pos,
     Comment: Comment,
     Import {
@@ -151,7 +151,7 @@ public enum Decl {
         mut defer_stmts: []Stmt.Defer;
     };
 
-    public func position(self) -> token.Pos {
+    pub func position(self) -> token.Pos {
         return match self is {
             .Empty as empty_pos -> empty_pos,
             .Comment as comment -> comment.pos,
@@ -170,7 +170,7 @@ public enum Decl {
         };
     }
 
-    public func decls(self) -> ?[]Self {
+    pub func decls(self) -> ?[]Self {
         return match self is {
             .Extern as extern_decl -> extern_decl.decls,
             .Trait as trait_decl -> trait_decl.decls,
@@ -183,33 +183,33 @@ public enum Decl {
 }
 
 #[boxed]
-public struct EnumVariantDecl {
-    public name: string;
-    public mut type: Type;
-    public has_type: bool;
-    public has_value: bool;
-    public value: Expr;
-    public decls: []Decl;
-    public pos: token.Pos;
+pub struct EnumVariantDecl {
+    pub name: string;
+    pub mut type: Type;
+    pub has_type: bool;
+    pub has_value: bool;
+    pub value: Expr;
+    pub decls: []Decl;
+    pub pos: token.Pos;
 }
 
-public struct ImportListInfo {
-    public name: string;
-    public alias_name: string;
-    public mut has_custom_alias: bool;
-    public pos: token.Pos;
+pub struct ImportListInfo {
+    pub name: string;
+    pub alias_name: string;
+    pub mut has_custom_alias: bool;
+    pub pos: token.Pos;
 }
 
-public struct ImportedMod {
-    public name: string;
-    public full_name: string;
-    public alias_name: string;
-    public found: bool;
-    public files: []string;
-    public mut mod: Module;
+pub struct ImportedMod {
+    pub name: string;
+    pub full_name: string;
+    pub alias_name: string;
+    pub found: bool;
+    pub files: []string;
+    pub mut mod: Module;
 }
 
-public func filter_field_decl(decls: []Decl) -> []Decl {
+pub func filter_field_decl(decls: []Decl) -> []Decl {
     mut fields := @vec(Decl);
     for decl in decls {
         if decl is .Field {

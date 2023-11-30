@@ -39,7 +39,7 @@ extend Formatter {
                 self.format_comments(alias_d.docs);
                 self.format_attributes(alias_d.attributes);
                 if alias_d.is_public {
-                    self.write("public ");
+                    self.write("pub ");
                 }
                 self.write_fmt("alias {} := ", alias_d.name);
                 if alias_d.is_typealias {
@@ -55,7 +55,7 @@ extend Formatter {
                 self.format_comments(field.docs);
                 self.format_attributes(field.attributes);
                 if field.is_public {
-                    self.write("public ");
+                    self.write("pub ");
                 }
                 if field.is_mut {
                     self.write("mut ");
@@ -75,7 +75,7 @@ extend Formatter {
         self.format_comments(struct_decl.docs);
         self.format_attributes(struct_decl.attributes);
         if struct_decl.is_public {
-            self.write("public ");
+            self.write("pub ");
         }
         self.write_fmt("struct {}", struct_decl.name);
         if struct_decl.is_opaque {
@@ -91,7 +91,7 @@ extend Formatter {
         self.format_comments(func_decl.docs);
         self.format_attributes(func_decl.attributes);
         if func_decl.is_public {
-            self.write("public ");
+            self.write("pub ");
         }
         self.write_fmt("func {}(", func_decl.name);
         if func_decl.is_method {

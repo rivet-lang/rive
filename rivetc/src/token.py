@@ -86,7 +86,7 @@ class Kind(Enum):
     KwNotIn = auto_enum() # !in
     KwNotIs = auto_enum() # !is
     KwOr = auto_enum() # or
-    KwPublic = auto_enum() # public
+    KwPub = auto_enum() # pub
     KwReturn = auto_enum() # return
     KwSelf = auto_enum() # self
     KwSelfTy = auto_enum() # Self
@@ -231,7 +231,7 @@ TOKEN_STRINGS = {
     Kind.KwNotIn: "!in",
     Kind.KwNotIs: "!is",
     Kind.KwOr: "or",
-    Kind.KwPublic: "public",
+    Kind.KwPub: "pub",
     Kind.KwReturn: "return",
     Kind.KwSelf: "self",
     Kind.KwSelfTy: "Self",

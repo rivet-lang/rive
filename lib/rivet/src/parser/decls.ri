@@ -17,9 +17,7 @@ extend Parser {
         return comments;
     }
 
-    func parse_attributes(
-        mut self, parse_mod_attributes: bool := false
-    ) -> ast.Attributes {
+    pub func parse_attributes(mut self, parse_mod_attributes: bool := false) -> ast.Attributes {
         mut attributes := ast.Attributes();
         while self.accept(.Hash) {
             if parse_mod_attributes {
@@ -65,8 +63,8 @@ extend Parser {
 
     #[inline]
     func is_public(mut self) -> bool {
-        is_pub := self.accept(.KwPublic);
-        return self.inside_trait or self.inside_enum_variant_with_fields or is_pub;
+        is_public := self.accept(.KwPub);
+        return self.inside_trait or self.inside_enum_variant_with_fields or is_public;
     }
 
     func parse_abi(mut self) -> ast.ABI {

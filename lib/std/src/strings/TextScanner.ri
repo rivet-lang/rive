@@ -4,20 +4,20 @@
 
 /// Simplifies writing small scanners/parsers by providing safe methods to scan
 /// texts character by character, peek for the next characters, go back, etc.
-public struct TextScanner {
-    public input: string;
-    public len: uint;
+pub struct TextScanner {
+    pub input: string;
+    pub len: uint;
     mut pos: uint; // current position; pos is always kept in [0, .len]
 
     /// Returns a stack allocated instance of TextScanner.
-    public func new(input: string) -> Self {
+    pub func new(input: string) -> Self {
         return Self(input, input.len);
     }
 
     /// Returns the next character code from the input text or `none` if it
     /// can't reach the next character. Advances the scanner position.
     #[inline]
-    public func next(mut self) -> ?uint8 {
+    pub func next(mut self) -> ?uint8 {
         if self.pos < self.len {
             opos := self.pos;
             self.pos += 1;
@@ -29,7 +29,7 @@ public struct TextScanner {
     /// Skips ahead `n` characters, stopping at the end of the input; `skip` is
     /// slightly faster than `.next()`.
     #[inline]
-    public func skip(mut self, n: uint := 1) {
+    pub func skip(mut self, n: uint := 1) {
         self.pos += n;
         if self.pos > self.len {
             self.pos = self.len;
@@ -40,7 +40,7 @@ public struct TextScanner {
     /// it can't peek `n` characters ahead.
     /// Unlike `.next()`, `.peek()` does not change the state of the scanner.
     #[inline]
-    public func peek(&self, n: uint := 0) -> ?uint8 {
+    pub func peek(&self, n: uint := 0) -> ?uint8 {
         if self.pos + n < self.len {
             return self.input[self.pos + n];
         }
@@ -48,7 +48,7 @@ public struct TextScanner {
     }
 
     /// Goes back `n` characters from the current scanner position.
-    public func back(mut self, n: uint := 1) {
+    pub func back(mut self, n: uint := 1) {
         self.pos -= n;
         if self.pos > self.len {
             self.pos = self.len;
@@ -59,7 +59,7 @@ public struct TextScanner {
     /// it can't peek `n` characters back.
     /// Unlike `.back()`, `.peek_back()` does not change the state of the scanner.
     #[inline]
-    public func peek_back(&self, n: uint := 1) -> ?uint8 {
+    pub func peek_back(&self, n: uint := 1) -> ?uint8 {
         offset := n + 1;
         if self.pos >= offset {
             return self.input[self.pos - offset];
@@ -71,7 +71,7 @@ public struct TextScanner {
     /// of the input text.
     /// NOTE: after `c := ts.next()`, `ts.current()` will also return `c`.
     #[inline]
-    public func current(self) -> ?uint {
+    pub func current(self) -> ?uint {
         if self.pos > 0 {
             return self.input[self.pos - 1];
         }
@@ -81,18 +81,18 @@ public struct TextScanner {
     /// Has the same effect as `while c := ts.next() -> {}` i.e. after calling `.goto_end()`,
     /// the scanner will be at the end of the input text.
     /// Further `.next()` calls will return `none`, unless you go back.
-    public func goto_end(mut self) {
+    pub func goto_end(mut self) {
         self.pos = self.len;
     }
 
     /// Returns how many characters remain from current position.
-    public func remaining(&self) -> uint {
+    pub func remaining(&self) -> uint {
         return self.len - self.pos;
     }
 
     /// Resets the internal state of the scanner. After calling `.reset()`, `.next()`
     /// will start reading again from the start of the input text.
-    public func reset(mut self) {
+    pub func reset(mut self) {
         self.pos = 0;
     }
 }

@@ -4,10 +4,10 @@
 
 import std/errors;
 
-public alias InvalidSyntaxError := errors.InvalidSyntaxError;
-public alias InvalidBaseError := errors.InvalidBaseError;
-public alias InvalidBitSizeError := errors.InvalidBitSizeError;
-public alias ValueOutOfRangeError := errors.ValueOutOfRangeError;
+pub alias InvalidSyntaxError := errors.InvalidSyntaxError;
+pub alias InvalidBaseError := errors.InvalidBaseError;
+pub alias InvalidBitSizeError := errors.InvalidBitSizeError;
+pub alias ValueOutOfRangeError := errors.ValueOutOfRangeError;
 
 const INT_SIZE: uint32 := #if _x64_ 64 #else 32 #endif;
 
@@ -18,7 +18,7 @@ func lower(c: uint8) -> uint8 {
 
 /// This is like `parse_int` but for unsigned numbers.
 /// A sign prefix is not permitted.
-public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !uint {
+pub func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !uint {
     if s_ == "" {
         throw InvalidSyntaxError("empty string");
     }
@@ -137,7 +137,7 @@ public func parse_uint(s_: string, mut base: int32, mut bit_size: uint32) -> !ui
 /// The `bit_size` argument specifies the integer type that the result must
 /// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to int8, int16, int32, and
 /// int. If `bit_size` is below 0 or above 64, an error is returned.
-public func parse_int(s: string, base: int32, mut bit_size: uint32) -> !int {
+pub func parse_int(s: string, base: int32, mut bit_size: uint32) -> !int {
     if s == "" {
         throw InvalidSyntaxError("invalid syntax");
     }

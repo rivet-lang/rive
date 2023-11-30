@@ -78,7 +78,7 @@ func bt_error_handler(data: rawptr, msg_ptr: ?[&]mut uint8, errnum: int32) {
 }
 #endif
 
-public func bt_print(frames_to_skip: int32 := 0) {
+pub func bt_print(frames_to_skip: int32 := 0) {
 #if _RELEASE_
     _ = frames_to_skip;
 #else

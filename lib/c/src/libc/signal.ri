@@ -7,90 +7,90 @@
 
 import { pid_t, uid_t } from ../ctypes;
 
-public alias SignalHandler := func(int32, &mut siginfo_t, rawptr);
+pub alias SignalHandler := func(int32, &mut siginfo_t, rawptr);
 
 #if _LINUX_
-    public const SA_ONSTACK := 0x08000000;
-    public const SA_SIGINFO := 0x00000004;
-    public const SA_NOCLDWAIT := 0x00000002;
+    pub const SA_ONSTACK := 0x08000000;
+    pub const SA_SIGINFO := 0x00000004;
+    pub const SA_NOCLDWAIT := 0x00000002;
 
-    public const SIGHUP := 0x1;
-    public const SIGINT := 0x2;
-    public const SIGQUIT := 0x3;
-    public const SIGILL := 0x4;
-    public const SIGTRAP := 0x5;
-    public const SIGABRT := 0x6;
-    public const SIGEMT := 0x7;
-    public const SIGFPE := 0x8;
-    public const SIGKILL := 0x9;
-    public const SIGBUS := 0xA;
-    public const SIGSEGV := 0xB;
-    public const SIGSYS := 0xc;
-    public const SIGPIPE := 0xd;
-    public const SIGALRM := 0xe;
-    public const SIGTERM := 0xF;
-    public const SIGURG := 0x10;
-    public const SIGSTOP := 0x11;
-    public const SIGTSTP := 0x12;
-    public const SIGCONT := 0x13;
-    public const SIGCHLD := 0x14;
-    public const SIGTTIN := 0x15;
-    public const SIGTTOU := 0x16;
-    public const SIGIO := 0x17;
-    public const SIGXCPU := 0x18;
-    public const SIGXFSZ := 0x19;
-    public const SIGVTALRM := 0x1a;
-    public const SIGPROF := 0x1b;
-    public const SIGWINCH := 0x1c;
-    public const SIGINFO := 0x1d;
-    public const SIGUSR1 := 0x1e;
-    public const SIGUSR2 := 0x1f;
+    pub const SIGHUP := 0x1;
+    pub const SIGINT := 0x2;
+    pub const SIGQUIT := 0x3;
+    pub const SIGILL := 0x4;
+    pub const SIGTRAP := 0x5;
+    pub const SIGABRT := 0x6;
+    pub const SIGEMT := 0x7;
+    pub const SIGFPE := 0x8;
+    pub const SIGKILL := 0x9;
+    pub const SIGBUS := 0xA;
+    pub const SIGSEGV := 0xB;
+    pub const SIGSYS := 0xc;
+    pub const SIGPIPE := 0xd;
+    pub const SIGALRM := 0xe;
+    pub const SIGTERM := 0xF;
+    pub const SIGURG := 0x10;
+    pub const SIGSTOP := 0x11;
+    pub const SIGTSTP := 0x12;
+    pub const SIGCONT := 0x13;
+    pub const SIGCHLD := 0x14;
+    pub const SIGTTIN := 0x15;
+    pub const SIGTTOU := 0x16;
+    pub const SIGIO := 0x17;
+    pub const SIGXCPU := 0x18;
+    pub const SIGXFSZ := 0x19;
+    pub const SIGVTALRM := 0x1a;
+    pub const SIGPROF := 0x1b;
+    pub const SIGWINCH := 0x1c;
+    pub const SIGINFO := 0x1d;
+    pub const SIGUSR1 := 0x1e;
+    pub const SIGUSR2 := 0x1f;
 
-    public const SEGV_MAPERR := 0x1;
-    public const SEGV_ACCERR := 0x2;
+    pub const SEGV_MAPERR := 0x1;
+    pub const SEGV_ACCERR := 0x2;
 
-    public struct sigset_t {
-        public __val: [#if _X86_ 32 #else 16 #endif]uint32;
+    pub struct sigset_t {
+        pub __val: [#if _X86_ 32 #else 16 #endif]uint32;
     }
 
-    public struct sigval {
-        public sival_ptr: rawptr;
+    pub struct sigval {
+        pub sival_ptr: rawptr;
     }
 
-    public struct siginfo_t {
-        public si_signo: int32; // signal number
-        public si_errno: int32; // errno association
-        public si_code: int32; // signal code
-        public si_pid: pid_t; // sending process
-        public si_uid: uid_t; // sender's ruid
-        public si_status: int32; // exit value
-        public si_addr: rawptr; // faulting instruction
-        public si_value: sigval; // signal value
-        public si_band: int64; // band event for SIGPOLL
-        public _: [7]uint64; // reserved for future use
+    pub struct siginfo_t {
+        pub si_signo: int32; // signal number
+        pub si_errno: int32; // errno association
+        pub si_code: int32; // signal code
+        pub si_pid: pid_t; // sending process
+        pub si_uid: uid_t; // sender's ruid
+        pub si_status: int32; // exit value
+        pub si_addr: rawptr; // faulting instruction
+        pub si_value: sigval; // signal value
+        pub si_band: int64; // band event for SIGPOLL
+        pub _: [7]uint64; // reserved for future use
     }
 
-    public struct sigaction_t {
-        public sa_sigaction: SignalHandler;
-        public sa_mask: sigset_t;
-        public sa_flags: int32;
-        public sa_restorer: func();
+    pub struct sigaction_t {
+        pub sa_sigaction: SignalHandler;
+        pub sa_mask: sigset_t;
+        pub sa_flags: int32;
+        pub sa_restorer: func();
     }
 #else_if _WINDOWS_
-    public const SIGABRT := 22;
-    public const SIGFPE := 8;
-    public const SIGILL := 4;
-    public const SIGINT := 2;
-    public const SIGSEGV := 11;
-    public const SIGTERM := 15;
+    pub const SIGABRT := 22;
+    pub const SIGFPE := 8;
+    pub const SIGILL := 4;
+    pub const SIGINT := 2;
+    pub const SIGSEGV := 11;
+    pub const SIGTERM := 15;
 #else
     #error cannot define values for signals in this operating system, please report the issue
 #endif
 
 extern (C) {
 #if _LINUX_
-    public func sigaction(signum: int32, act: ?&sigaction_t, old_act: ?&mut sigaction_t) -> int32;
+    pub func sigaction(signum: int32, act: ?&sigaction_t, old_act: ?&mut sigaction_t) -> int32;
 #endif
-    public func signal(sig: int32, handler: SignalHandler) -> ?SignalHandler;
-    public func raise(sig: int32) -> int32;
+    pub func signal(sig: int32, handler: SignalHandler) -> ?SignalHandler;
+    pub func raise(sig: int32) -> int32;
 }

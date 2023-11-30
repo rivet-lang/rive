@@ -4,14 +4,6 @@
 
 var mut libcoreIsStarted := false;
 
-func panic_if(cond: bool, msg: string) {
-    if cond {
-        console_ewriteln("panic: {}", msg);
-        bt_print(2);
-        process_exit(1);
-    }
-}
-
 func assert(cond: bool, msg: string) {
     if !cond {
         console_ewriteln("panic: assertion failed: {}", msg);
@@ -20,38 +12,36 @@ func assert(cond: bool, msg: string) {
     }
 }
 
+func runtime_error(s: string, args: ...Stringable) -> never {
+    console_ewriteln("runtime error: {}", s.fmt(args));
+    bt_print(2);
+    process_exit(100);
+}
+
 #[inline]
 func internal_alloc(size: uint) -> rawptr {
     return mem_alloc(size) catch {
-        process_panic(
-            "internal error: cannot allocate memory" #if _DEBUG_ " (size: {})", size #endif
-        )
+        runtime_error("cannot allocate memory" #if _DEBUG_ " (size: {})", size #endif)
     };
 }
 
 #[inline]
 func internal_zeroed(size: uint) -> rawptr {
     return mem_zeroed(size) catch {
-        process_panic(
-            "internal error: cannot allocate zeroed memory" #if _DEBUG_ " (size: {})", size #endif
-        )
+        runtime_error("cannot allocate zeroed memory" #if _DEBUG_ " (size: {})", size #endif)
     };
 }
 
 #[inline]
 func internal_dup(src: rawptr, sz: uint) -> rawptr {
     return mem_dup(src, sz) catch {
-        process_panic(
-            "internal error: cannot duplicate memory" #if _DEBUG_ " (size: {})", sz #endif
-        )
+        runtime_error("cannot duplicate memory" #if _DEBUG_ " (size: {})", sz #endif)
     };
 }
 
 #[inline]
 func internal_resize(ptr: ?rawptr, sz: uint) -> rawptr {
     return mem_resize(ptr, sz) catch {
-        process_panic(
-            "internal error: cannot resize memory" #if _DEBUG_ " (size: {})", sz #endif
-        )
+        runtime_error("cannot resize memory" #if _DEBUG_ " (size: {})", sz #endif)
     };
 }

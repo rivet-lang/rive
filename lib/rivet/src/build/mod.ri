@@ -4,19 +4,19 @@
 
 import std/semver;
 
-public alias Version := semver.Version;
+pub alias Version := semver.Version;
 
-public struct Project {
-    public mut name: string;
-    public mut description: string;
-    public mut version: Version;
-    public mut license: string;
-    public mut authors: []string;
-    public mut dependencies: []Dependency;
-    public mut repository_url: string;
+pub struct Project {
+    pub mut name: string;
+    pub mut description: string;
+    pub mut version: Version;
+    pub mut license: string;
+    pub mut authors: []string;
+    pub mut dependencies: []Dependency;
+    pub mut repository_url: string;
 }
 
-public struct Dependency {
-    public name: string;
-    public version: string;
+pub struct Dependency {
+    pub name: string;
+    pub version: string;
 }

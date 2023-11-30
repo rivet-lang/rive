@@ -4,9 +4,9 @@
 
 import std/process;
 
-public var version := "0.1.0a";
+pub var version := "0.1.0a";
 
-public func last_commit_hash() -> string {
+pub func last_commit_hash() -> string {
     if result := process.execute("git log -n 1 --pretty=format:%h") {
         if result.exit_code == -1 {
             return "<cannot-get-last-commit-hash>";
@@ -16,7 +16,7 @@ public func last_commit_hash() -> string {
     return "<cannot-get-last-commit-hash>";
 }
 
-public func full_version() -> string {
+pub func full_version() -> string {
     return if result := process.execute("git log -n 1 --pretty=format:'%h %as'") {
         if result.exit_code == -1 {
             "Rivet ".concat(version)

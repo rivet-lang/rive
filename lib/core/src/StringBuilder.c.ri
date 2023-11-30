@@ -5,17 +5,17 @@
 import c/libc;
 
 #[boxed]
-public struct StringBuilder < Stringable {
+pub struct StringBuilder < Stringable {
     mut inner: Vector;
 
     /// Returns a string builder with capacity `cap`.
     #[inline]
-    public func new(cap: uint := 0) -> Self {
+    pub func new(cap: uint := 0) -> Self {
         return Self(unsafe { Vector.new(@size_of(uint8), cap) });
     }
 
     #[inline]
-    public func from_string(s: string) -> Self {
+    pub func from_string(s: string) -> Self {
         return if s.len == 0 {
             Self.new()
         } else {
@@ -28,19 +28,19 @@ public struct StringBuilder < Stringable {
     }
 
     #[inline]
-    public func write_byte(mut self, val: uint8) {
+    pub func write_byte(mut self, val: uint8) {
         self.inner.push(&val);
     }
 
     #[unsafe; inline]
-    public func write_raw(mut self, s: [&]uint8) {
+    pub func write_raw(mut self, s: [&]uint8) {
         unsafe {
             self.write_raw_with_len(s, libc.strlen(s));
         }
     }
 
     #[unsafe]
-    public func write_raw_with_len(mut self, s: [&]uint8, len: uint) {
+    pub func write_raw_with_len(mut self, s: [&]uint8, len: uint) {
         self.inner.reserve(self.inner.len + len);
         mem_copy(
             unsafe { @ptr_add(self.inner.ptr, self.inner.elem_size * self.inner.len) },
@@ -50,13 +50,13 @@ public struct StringBuilder < Stringable {
     }
 
     #[inline]
-    public func write_string(mut self, s: string) {
+    pub func write_string(mut self, s: string) {
         unsafe {
             self.write_raw_with_len(s.ptr, s.len);
         }
     }
 
-    public func writeln(mut self, s: string := "") {
+    pub func writeln(mut self, s: string := "") {
         if s.len > 0 {
             unsafe {
                 self.write_raw_with_len(s.ptr, s.len);
@@ -65,7 +65,7 @@ public struct StringBuilder < Stringable {
         self.write_byte(b'\n');
     }
 
-    public func write_join(mut self, ss: []string, sep: string := "") {
+    pub func write_join(mut self, ss: []string, sep: string := "") {
         if ss.len == 1 {
             self.write_string(ss[0]);
         } else {
@@ -79,16 +79,16 @@ public struct StringBuilder < Stringable {
     }
 
     #[inline]
-    public func write_fmt(mut self, s: string, args: ...Stringable) {
+    pub func write_fmt(mut self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
     }
 
-    public func writeln_fmt(mut self, s: string, args: ...Stringable) {
+    pub func writeln_fmt(mut self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
         self.write_byte(b'\n');
     }
 
-    public func last_n(self, n: uint) -> string {
+    pub func last_n(self, n: uint) -> string {
         return if n > self.inner.len {
             ""
         } else {
@@ -96,7 +96,7 @@ public struct StringBuilder < Stringable {
         };
     }
 
-    public func after(self, n: uint) -> string {
+    pub func after(self, n: uint) -> string {
         return if n >= self.inner.len {
             ""
         } else {
@@ -104,20 +104,20 @@ public struct StringBuilder < Stringable {
         };
     }
     #[inline]
-    public func go_back(mut self, n: uint) {
+    pub func go_back(mut self, n: uint) {
         if self.inner.len > 0 {
             self.inner.trim(self.inner.len - n);
         }
     }
 
-    public func cut_last(mut self, n: uint) -> string {
+    pub func cut_last(mut self, n: uint) -> string {
         cut_pos := self.inner.len - n;
         res := self.spart(cut_pos, n).clone();
         self.inner.trim(cut_pos);
         return res;
     }
 
-    public func cut_to(mut self, pos: uint) -> string {
+    pub func cut_to(mut self, pos: uint) -> string {
         return if pos > self.inner.len {
             ""
         } else {
@@ -126,21 +126,21 @@ public struct StringBuilder < Stringable {
     }
 
     #[inline]
-    public func go_back_to(mut self, pos: uint) {
+    pub func go_back_to(mut self, pos: uint) {
         self.inner.trim(pos);
     }
 
-    public func byte_at(self, idx: uint) -> uint8 {
+    pub func byte_at(self, idx: uint) -> uint8 {
         return unsafe { @as(&uint8, self.inner.get(idx)).* };
     }
 
     #[inline]
-    public func first_byte(self) -> uint8 {
+    pub func first_byte(self) -> uint8 {
         return self.byte_at(0);
     }
 
     #[inline]
-    public func last_byte(self) -> uint8 {
+    pub func last_byte(self) -> uint8 {
         return if self.inner.len > 0 {
             self.byte_at(self.inner.len - 1)
         } else {
@@ -149,33 +149,33 @@ public struct StringBuilder < Stringable {
     }
 
     #[inline]
-    public func clear(mut self) {
+    pub func clear(mut self) {
         self.inner.clear();
     }
 
     /// Returns the number of runes contained in `self`.
     #[inline]
-    public func runes_count(self) -> uint {
+    pub func runes_count(self) -> uint {
         return cstr_runes_count(unsafe { @as([&]uint8, self.inner.ptr) }, self.inner.len);
     }
 
     #[inline]
-    public func len(self) -> uint {
+    pub func len(self) -> uint {
         return self.inner.len;
     }
 
     #[inline]
-    public func cap(self) -> uint {
+    pub func cap(self) -> uint {
         return self.inner.cap;
     }
 
     #[inline]
-    public func is_empty(self) -> bool {
+    pub func is_empty(self) -> bool {
         return self.inner.is_empty();
     }
 
     #[inline]
-    public func to_string(mut self) -> string {
+    pub func to_string(mut self) -> string {
         self.write_byte(0);
         return string(unsafe { @as([&]uint8, self.inner.ptr) }, self.inner.len - 1);
     }

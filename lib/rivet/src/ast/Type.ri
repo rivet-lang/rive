@@ -8,7 +8,7 @@ import { Builder } from std/strings;
 import ../token;
 
 #[default_value(.Void())]
-public enum Type < traits.Stringable {
+pub enum Type < traits.Stringable {
     Basic {
         mut sym: TypeSym;
         mut is_unresolved: bool;
@@ -100,7 +100,7 @@ public enum Type < traits.Stringable {
     };
 
     #[inline]
-    public func ptr_or_ref_inner(self) -> Self {
+    pub func ptr_or_ref_inner(self) -> Self {
         return match self is {
             .Pointer as ptr -> ptr.inner,
             .Rawptr -> self,
@@ -108,7 +108,7 @@ public enum Type < traits.Stringable {
         };
     }
 
-    public func unalias(self) -> ?Self {
+    pub func unalias(self) -> ?Self {
         // NOTE: `.unalias()` returns an option, so we use the same type without
         // unaliasing instead.
         return match self is {
@@ -149,7 +149,7 @@ public enum Type < traits.Stringable {
         };
     }
 
-    public func unalias_in_place(mut self) {
+    pub func unalias_in_place(mut self) {
         if unaliased_type := self.unalias() {
             unsafe {
                 @set_enum_ref_value(self, unaliased_type);
@@ -158,7 +158,7 @@ public enum Type < traits.Stringable {
     }
 
     #[inline]
-    public func symbol(self) -> ?TypeSym {
+    pub func symbol(self) -> ?TypeSym {
         // NOTE: `.Void`, `.None`, `.Never` and `.Rawptr` has no `TypeSym` value.
         return match self is {
             .Result as result -> result.inner.symbol(),
@@ -175,7 +175,7 @@ public enum Type < traits.Stringable {
     }
 
     #[inline]
-    public func is_primitive(self) -> bool {
+    pub func is_primitive(self) -> bool {
         return if type_sym := self.symbol() {
             type_sym.is_primitive()
         } else {
@@ -184,7 +184,7 @@ public enum Type < traits.Stringable {
     }
 
     #[inline]
-    public func is_boxed(self) -> bool {
+    pub func is_boxed(self) -> bool {
         return if type_sym := self.symbol() {
             type_sym.is_boxed()
         } else {
@@ -193,7 +193,7 @@ public enum Type < traits.Stringable {
     }
 
     #[inline]
-    public func is_void(self) -> bool {
+    pub func is_void(self) -> bool {
         return match self is {
             .Void, .Never -> true,
             .Result as result -> result.inner.is_void(),
@@ -202,12 +202,12 @@ public enum Type < traits.Stringable {
     }
 
     #[inline]
-    public func is_pointer(self) -> bool {
+    pub func is_pointer(self) -> bool {
         return self is .Pointer or self is .Rawptr;
     }
 
     #[inline]
-    public func is_mut_pointer(self) -> bool {
+    pub func is_mut_pointer(self) -> bool {
         return match self is {
             .Pointer as ptr -> ptr.is_mut,
             .Rawptr -> true,
@@ -216,7 +216,7 @@ public enum Type < traits.Stringable {
     }
 
     #[inline]
-    public func is_any_kind_of_pointer(self) -> bool {
+    pub func is_any_kind_of_pointer(self) -> bool {
         return match self is {
             .Pointer, .Rawptr, .Func -> true,
             else -> if type_sym := self.symbol() {
@@ -228,7 +228,7 @@ public enum Type < traits.Stringable {
     }
 
     #[inline]
-    public func position(self) -> token.Pos {
+    pub func position(self) -> token.Pos {
         return match self is {
             .Void, .None -> token.noPos,
             .Never as never_pos -> never_pos,
@@ -250,7 +250,7 @@ public enum Type < traits.Stringable {
     }
 
     #[inline]
-    public func ==(self, rhs: Self) -> bool {
+    pub func ==(self, rhs: Self) -> bool {
         return match self is {
             .None if rhs is .None -> true,
             .Void if rhs is .Void -> true,
@@ -304,19 +304,19 @@ public enum Type < traits.Stringable {
         };
     }
 
-    public func !=(self, rhs: Self) -> bool {
+    pub func !=(self, rhs: Self) -> bool {
     	return !(self == rhs);
     }
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.to_string_(false);
     }
 
-    public func to_qualstring(self) -> string {
+    pub func to_qualstring(self) -> string {
         return self.to_string_(true);
     }
 
-    public func to_string_(self, qualstr: bool) -> string {
+    pub func to_string_(self, qualstr: bool) -> string {
         return match self is {
             .None -> "<none>",
         	.Void -> "<void>",

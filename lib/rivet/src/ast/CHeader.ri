@@ -12,7 +12,7 @@ import ../token;
 // Useful functions to get system `#define`s.
 // Will soon be used to implement `extern (C) import`.
 
-public enum CImportAction {
+pub enum CImportAction {
     Report {
         msg: string;
         is_error: bool;
@@ -43,11 +43,11 @@ public enum CImportAction {
     }
 }
 
-public struct CImportIfBranch {
-    public cond: Expr;
-    public is_else: bool;
-    public actions: []mut CImportAction;
-    public pos: token.Pos;
+pub struct CImportIfBranch {
+    pub cond: Expr;
+    pub is_else: bool;
+    pub actions: []mut CImportAction;
+    pub pos: token.Pos;
 }
 
 struct CDefine < traits.Stringable {
@@ -60,7 +60,7 @@ struct CDefine < traits.Stringable {
     mut cvalue: CImportValue := .Invalid();
     mut has_cvalue: bool;
 
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         mut sb := strings.Builder.new();
         sb.write_string(if self.is_macro { "macro " } else { "const " });
         sb.write_string(self.name);
@@ -102,7 +102,7 @@ enum CImportValue {
     Uint: uint;
 
     #[inline]
-    public func to_bool(self) -> bool {
+    pub func to_bool(self) -> bool {
         return (self is .Int as int and int == 1)
             or (self is .Uint as uint and uint == 1);
     }

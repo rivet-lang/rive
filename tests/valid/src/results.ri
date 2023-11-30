@@ -1,7 +1,7 @@
 struct MyError < Throwable {
     msg: string;
 
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return self.msg;
     }
 }
@@ -43,7 +43,7 @@ enum IOError < Throwable {
         size: uint;
     };
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return match self is {
             .FileNotFound as path -> "file not found: {}".fmt(path),
             .InvalidFileSize as ifsz -> "invalid file size for {} (size: {})".fmt(

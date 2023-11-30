@@ -4,7 +4,7 @@
 
 import ../token;
 
-public enum Stmt {
+pub enum Stmt {
     Empty: token.Pos,
     Comment: Comment,
     Expr: Expr,
@@ -34,7 +34,7 @@ public enum Stmt {
         pos: token.Pos;
     },
     Defer {
-        public enum Mode {
+        pub enum Mode {
             Normal,
             Error,
             Success
@@ -44,7 +44,7 @@ public enum Stmt {
         pos: token.Pos;
     };
 
-    public func position(self) -> token.Pos {
+    pub func position(self) -> token.Pos {
         return match self is {
             .Empty as empty_pos -> empty_pos,
             .Comment as comment -> comment.pos,

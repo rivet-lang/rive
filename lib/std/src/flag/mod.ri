@@ -8,11 +8,11 @@ import ../strings;
 import ../console;
 import ../process;
 
-public const MAX_ARGS_NUMBER := 4048;
-public var space := "                                     ";
+pub const MAX_ARGS_NUMBER := 4048;
+pub var space := "                                     ";
 
 /// Data object storing information about a defined flag.
-public struct Flag < traits.Stringable {
+pub struct Flag < traits.Stringable {
     /// Name as it appears on command line.
     name: string;
 
@@ -26,7 +26,7 @@ public struct Flag < traits.Stringable {
     /// default value, when the flag is not given.
     value_desc: string;
 
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return "flag:
     name: {}
     abbr: {}
@@ -41,7 +41,7 @@ public struct Flag < traits.Stringable {
 /// call `rest := parser.finalize()!` to get the rest of the non optional arguments
 /// (if there are any left).
 #[boxed]
-public struct FlagParser {
+pub struct FlagParser {
     /// The original arguments to be parsed.
     original_args: []string;
     /// The index of a `--`, `none` if there is not any.
@@ -72,7 +72,7 @@ public struct FlagParser {
     mut footers: []string;
 
     /// Create a new flag parser for the given args.
-    public func new(args: []string) -> Self {
+    pub func new(args: []string) -> Self {
         original_args := args.clone();
         mut all_before_dashdash := args.clone();
         mut all_after_dashdash := @vec(string);
@@ -94,19 +94,19 @@ public struct FlagParser {
 
     /// Set the application name to be used in 'usage' output.
     #[inline]
-    public func set_application_name(mut self, name: string) {
+    pub func set_application_name(mut self, name: string) {
         self.application_name = name;
     }
 
     /// Set the application short description to be used in 'usage' output.
     #[inline]
-    public func set_application_short_description(mut self, desc: string) {
+    pub func set_application_short_description(mut self, desc: string) {
         self.application_short_description = desc;
     }
 
     /// Appends to the application description lines, shown in the help/usage screen.
     #[inline]
-    public func add_description(mut self, desc: string) {
+    pub func add_description(mut self, desc: string) {
         self.application_description = if self.application_description.is_empty() {
             desc
         } else {
@@ -116,21 +116,21 @@ public struct FlagParser {
 
     /// Set the application version to be used in 'usage' output.
     #[inline]
-    public func set_version(mut self, version: string) {
+    pub func set_version(mut self, version: string) {
         self.application_version = version;
     }
 
     /// Sets the description field of the parser. This field is usually shown when the
     /// `--help` option is given to the program.
     #[inline]
-    public func set_arguments_description(mut self, description: string) {
+    pub func set_arguments_description(mut self, description: string) {
         self.args_description = description;
     }
 
     /// Restricts the list of free arguments (non options) to be at least `n` in length.
     /// If the user gives less free arguments to the program, the parser will return an
     /// error.
-    public func set_limit_free_args_to_at_least(mut self, n: uint) -> ! {
+    pub func set_limit_free_args_to_at_least(mut self, n: uint) -> ! {
         if n > MAX_ARGS_NUMBER {
             throw error("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
         }
@@ -140,7 +140,7 @@ public struct FlagParser {
     /// Restricts the list of free arguments (non options) to be at exactly `n` in length.
     /// If the user gives more or less free arguments to the program, the parser will return
     /// an error.
-    public func set_limit_free_args_to_exactly(mut self, n: uint) -> ! {
+    pub func set_limit_free_args_to_exactly(mut self, n: uint) -> ! {
         if n > MAX_ARGS_NUMBER {
             throw error("expects `n` to be smaller than {}", MAX_ARGS_NUMBER);
         }
@@ -151,7 +151,7 @@ public struct FlagParser {
     /// Restricts the list of free arguments (non options) to be between `min` and `max`
     /// in length. If the user gives more or less free arguments to the program, the parser
     /// will return an error.
-    public func set_limit_free_args(mut self, min: uint, max: uint) -> ! {
+    pub func set_limit_free_args(mut self, min: uint, max: uint) -> ! {
         if min > max {
             throw error("expects `min` < `max`, got {} >= {}", min, max);
         }
@@ -163,19 +163,19 @@ public struct FlagParser {
     /// do not give any examples, then a default usage will be shown, based on whether
     /// the application takes options and expects additional parameters.
     #[inline]
-    public func add_usage_example(mut self, example: string) {
+    pub func add_usage_example(mut self, example: string) {
         self.usage_examples.push(example);
     }
 
     /// Add a footnote, that will be shown at the bottom of the help screen.
     #[inline]
-    public func add_footer(mut self, footer: string) {
+    pub func add_footer(mut self, footer: string) {
         self.footers.push(footer);
     }
 
     /// In most cases you do not need the first argument for flag parsing.
     #[inline]
-    public func skip_executable(mut self) {
+    pub func skip_executable(mut self) {
         self.args.delete(0);
     }
 
@@ -184,13 +184,13 @@ public struct FlagParser {
     /// not known to your parent program), will not cause the validation in `.finalize()`
     /// to fail.
     #[inline]
-    public func allow_unknown_args(mut self) {
+    pub func allow_unknown_args(mut self) {
         self.allow_unknown_args = true;
     }
 
     /// Returns an option with the bool value of the given command line flag, named `name`.
     /// When the flag is not given by the user, it returns `none`.
-    public func bool_flag(mut self, name: string, abbr: uint8, usage: string) -> ?bool {
+    pub func bool_flag(mut self, name: string, abbr: uint8, usage: string) -> ?bool {
         self.add_flag(name, abbr, usage, "<bool>");
         if parsed := self.parse_bool_value(name, abbr) {
             return parsed == "true";
@@ -200,7 +200,7 @@ public struct FlagParser {
 
     /// Returns an option with the integer value, associated with the flag in `name`.
     /// When the flag is not given by the user, it returns `none`.
-    public func int_flag(mut self, name: string, abbr: uint8, usage: string) -> ?int {
+    pub func int_flag(mut self, name: string, abbr: uint8, usage: string) -> ?int {
         self.add_flag(name, abbr, usage, "<int>");
         parsed := self.parse_value(name, abbr);
         if parsed.is_empty() {
@@ -211,7 +211,7 @@ public struct FlagParser {
 
     /// Returns an option with the string value, associated with the flag in `name`.
     /// When the flag is not given by the user, it returns `none`.
-    public func string_flag(mut self, name: string, abbr: uint8, usage: string) -> ?string {
+    pub func string_flag(mut self, name: string, abbr: uint8, usage: string) -> ?string {
         self.add_flag(name, abbr, usage, "<string>");
         parsed := self.parse_value(name, abbr);
         if parsed.is_empty() {
@@ -223,7 +223,7 @@ public struct FlagParser {
     /// Returns a nicely formatted usage screen, containing all the possible options, as
     /// well as the description for the program. That screen is usually shown when the
     /// `--help` option is given to the program.
-    public func usage(self) -> string {
+    pub func usage(self) -> string {
         positive_min_arg := self.min_free_args > 0;
         positive_max_arg := self.max_free_args > 0 and self.max_free_args != MAX_ARGS_NUMBER;
         no_arguments := self.min_free_args == 0 and self.max_free_args == 0;
@@ -323,7 +323,7 @@ public struct FlagParser {
     /// command line. If additional flags are found, i.e. (things starting with `--` or
     /// `-`), it returns an error.
     /// Call .finalize() after all arguments are defined.
-    public func finalize(mut self) -> ![]string {
+    pub func finalize(mut self) -> ![]string {
         self.handle_builtin_options();
         mut remaining := self.args.clone();
         if !self.allow_unknown_args {
@@ -353,7 +353,7 @@ public struct FlagParser {
     /// program needs. `.remaining_parameters()` will also print any parsing errors and
     /// stop the program. Use `.finalize()` instead, if you want more control over the
     /// error handling.
-    public func remaining_parameters(mut self) -> []string {
+    pub func remaining_parameters(mut self) -> []string {
         return self.finalize() catch |err| {
             console.writeln(self.usage());
             console.ewriteln(err.to_string());
@@ -486,7 +486,7 @@ public struct FlagParser {
     }
 }
 
-public func index_of(vec: []string, value: string) -> ?uint {
+pub func index_of(vec: []string, value: string) -> ?uint {
     for i, val in vec {
         if val == value {
             return i;

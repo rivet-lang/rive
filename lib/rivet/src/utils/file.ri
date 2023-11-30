@@ -11,7 +11,7 @@ var errorPathsAbsolute := (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absol
 
 // NOTE: path_styled_for_error_messages will *always* use `/` in the error paths, no
 // matter the OS, to ensure stable compiler error output in the tests.
-public func path_styled_for_error_messages(path_: string) -> string {
+pub func path_styled_for_error_messages(path_: string) -> string {
 	rpath := (Path.resolve(path_) catch path_).replace("\\", "/");
 	return if errorPathsAbsolute {
 		rpath
@@ -20,7 +20,7 @@ public func path_styled_for_error_messages(path_: string) -> string {
 	};
 }
 
-public func skip_bom(file_content: string) -> string {
+pub func skip_bom(file_content: string) -> string {
    // BOM check
    if file_content.len >= 3 {
      if file_content[0] == 0xEF and file_content[1] == 0xBB and file_content[2] == 0xBF {
@@ -41,7 +41,7 @@ struct CachedFile {
 struct SourceCache {
    mut sources: []CachedFile;
 
-   public func find(self, path_: string) -> ?string {
+   pub func find(self, path_: string) -> ?string {
 	  for source in self.sources {
 		 if source.path == path_ {
 			return source.content;
@@ -50,7 +50,7 @@ struct SourceCache {
 	  return none;
    }
 
-   public func find_line(self, path_: string, line: uint) -> ?string {
+   pub func find_line(self, path_: string, line: uint) -> ?string {
 	  return if lines := self.find_lines(path_) {
 		 lines[line]
 	  } else {
@@ -58,7 +58,7 @@ struct SourceCache {
 	  };
    }
 
-   public func find_lines_between(self, path_: string, line: uint, end_line: uint) -> ?[]string {
+   pub func find_lines_between(self, path_: string, line: uint, end_line: uint) -> ?[]string {
 	  return if lines := self.find_lines(path_) {
 		if lines.len > 0 and lines.len >= end_line {
 			lines[line..end_line]
@@ -70,7 +70,7 @@ struct SourceCache {
 	  };
    }
 
-   public func find_lines(self, path_: string) -> ?[]string {
+   pub func find_lines(self, path_: string) -> ?[]string {
 	  mut i: uint := 0;
 	  while i < self.sources.len : i += 1 {
 		 cached := self.sources[i];
@@ -85,10 +85,10 @@ struct SourceCache {
    }
 }
 
-public var mut sourceCache: SourceCache := SourceCache();
+pub var mut sourceCache: SourceCache := SourceCache();
 
 #[inline]
-public func read_file(path_: string) -> !string {
+pub func read_file(path_: string) -> !string {
    return if res := sourceCache.find(path_) {
 	  res
    } else {

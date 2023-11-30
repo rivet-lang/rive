@@ -4,5 +4,5 @@
 
 import core;
 
-public alias sum64 := core.sum64;
-public alias sum64_string := core.sum64_string;
+pub alias sum64 := core.sum64;
+pub alias sum64_string := core.sum64_string;

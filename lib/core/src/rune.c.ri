@@ -8,18 +8,18 @@ const MAX_THREE_B: uint32 := 0x10000;
 
 extend rune < Stringable {
     /// The highest valid codepoint a `rune` can have.
-    public const MAX: rune := 0x10FFFF;
+    pub const MAX: rune := 0x10FFFF;
 
     /// `U+FFFD REPLACEMENT CHARACTER` (�) is used in Unicode to represent a
     /// decoding error.
-    public const REPLACEMENT_CHARACTER: rune := 0xFFFD;
+    pub const REPLACEMENT_CHARACTER: rune := 0xFFFD;
 
     /// Converts a `uint32` to a `rune`.
     ///
     /// Note that all runes are valid uint32s, and can be cast to one. However, the
     /// reverse is not true: not all valid uint32s are valid runes. `from_uint32()`
     /// will return `none` if the input is not a valid value for a rune.
-    public func from_uint32(i: uint32) -> ?rune {
+    pub func from_uint32(i: uint32) -> ?rune {
         if i >= 0x110000 or (i >= 0xD800 and i < 0xE000) {
             return none;
         }
@@ -36,19 +36,19 @@ extend rune < Stringable {
     /// radix.
     ///
     /// Panics if given a radix larger than 36.
-    public func from_digit(num: uint32, radix: uint32) -> ?rune {
+    pub func from_digit(num: uint32, radix: uint32) -> ?rune {
         if radix > 36 {
-            process_panic("rune.from_digit: radix is too high (maximum 36)");
+            runtime_error("rune.from_digit: radix is too high (maximum 36)");
         }
         if num < radix {
             num_ := @as(uint8, num);
-            byte := (if num_ < 10 { b'0' + num_ } else { b'a' + num_ - 10 });
+            byte := if num_ < 10 { b'0' + num_ } else { b'a' + num_ - 10 };
             return byte.to_rune();
         }
         return none;
     }
 
-    public func as_bytes(self) -> []uint8 {
+    pub func as_bytes(self) -> []uint8 {
         res := @vec(uint8, 5);
         res_v := @as(Vector, res);
         res_v.len = utf32_decode_to_buffer(self, unsafe { @as([&]mut uint8, res_v.ptr) });
@@ -56,11 +56,11 @@ extend rune < Stringable {
     }
 
     #[inline]
-    public func len_utf8(self) -> uint {
+    pub func len_utf8(self) -> uint {
         return len_utf8(@as(uint32, self));
     }
 
-    public func to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         len := self.len_utf8();
         res := unsafe { @as([&]mut uint8, internal_alloc(len + 1)) };
         unsafe {
@@ -115,10 +115,10 @@ func len_utf8(code: uint32) -> uint {
 }
 
 #[boxed]
-public struct TooManyBytesError < Throwable {
+pub struct TooManyBytesError < Throwable {
     msg: string;
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }

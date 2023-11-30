@@ -10,28 +10,28 @@ import ../prefs;
 import ../token;
 import ../utils;
 
-public var mut reportTable := ReportTable();
+pub var mut reportTable := ReportTable();
 
 #[inline]
-public func total_errors() -> uint {
+pub func total_errors() -> uint {
     return reportTable.errors;
 }
 
 #[inline]
-public func total_warns() -> uint {
+pub func total_warns() -> uint {
     return reportTable.warns;
 }
 
 #[boxed]
 struct ReportTable {
-    public mut prefs: prefs.Prefs;
-    public mut errors: uint;
-    public mut warns: uint;
+    pub mut prefs: prefs.Prefs;
+    pub mut errors: uint;
+    pub mut warns: uint;
 
     mut last_pos: token.Pos;
 }
 
-public enum ReportKind as uint8 {
+pub enum ReportKind as uint8 {
     Error,
     Warn,
     Note,
@@ -45,43 +45,43 @@ struct Attribute {
 }
 
 #[inline]
-public func error(msg: string, pos: token.Pos) {
+pub func error(msg: string, pos: token.Pos) {
     ReportBuilder(.Error, msg, pos).emit();
 }
 
 #[inline]
-public func warn(msg: string, pos: token.Pos) {
+pub func warn(msg: string, pos: token.Pos) {
     ReportBuilder(.Warn, msg, pos).emit();
 }
 
 #[inline]
-public func error_builder(msg: string, pos: token.Pos) -> ReportBuilder {
+pub func error_builder(msg: string, pos: token.Pos) -> ReportBuilder {
     return ReportBuilder(.Error, msg, pos);
 }
 
 #[inline]
-public func warn_builder(msg: string, pos: token.Pos) -> ReportBuilder {
+pub func warn_builder(msg: string, pos: token.Pos) -> ReportBuilder {
     return ReportBuilder(.Warn, msg, pos);
 }
 
 // TODO: support JSON format for LSP, etc.
-public struct ReportBuilder {
+pub struct ReportBuilder {
     mut kind: ReportKind;
     msg: string;
     pos: token.Pos := token.noPos;
     mut attributes: []Attribute;
 
     #[inline]
-    public func add_note(mut self, msg: string, args: ...traits.Stringable) {
+    pub func add_note(mut self, msg: string, args: ...traits.Stringable) {
         self.attributes.push(Attribute(.Note, msg.fmt(args)));
     }
 
     #[inline]
-    public func add_help(mut self, msg: string, args: ...traits.Stringable) {
+    pub func add_help(mut self, msg: string, args: ...traits.Stringable) {
         self.attributes.push(Attribute(.Help, msg.fmt(args)));
     }
 
-    public func emit(mut self) {
+    pub func emit(mut self) {
         if self.kind == .Warn {
             if reportTable.prefs.hide_all_warns {
                 return;

@@ -11,7 +11,7 @@ import ../token;
 import ../tokenizer;
 
 #[boxed]
-public struct Parser {
+pub struct Parser {
     mut table: ast.Table;
     mut prefs: prefs.Prefs;
 
@@ -36,7 +36,7 @@ public struct Parser {
     mut inside_match_header: bool;
     mut inside_block: bool;
 
-    public func parse_module(mut self, mod_sym: ast.Module, files: []string) -> []ast.SourceFile {
+    pub func parse_module(mut self, mod_sym: ast.Module, files: []string) -> []ast.SourceFile {
         self.scope = mod_sym.scope;
         self.mod_sym = mod_sym;
         mut source_files := @vec(ast.SourceFile);
@@ -46,7 +46,7 @@ public struct Parser {
         return source_files;
     }
 
-    public func parse_file(mut self, file: string) -> ast.SourceFile {
+    pub func parse_file(mut self, file: string) -> ast.SourceFile {
         self.file_path = file;
         self.file_dir = Path.dir_name(file) ?? file;
         self.tokenizer = tokenizer.Tokenizer.from_file(file, self.prefs, self.table);

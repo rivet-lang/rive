@@ -13,7 +13,7 @@ import ../prefs;
 var maxLen: []uint := [0, 35, 60, 85, 93, 100];
 
 #[boxed]
-public struct Formatter {
+pub struct Formatter {
     prefs: prefs.Prefs;
     table: ast.Table;
 
@@ -26,7 +26,7 @@ public struct Formatter {
     mut line_len: uint;
     mut empty_line: bool;
 
-    public func format(mut self, source_file: ast.SourceFile) -> string {
+    pub func format(mut self, source_file: ast.SourceFile) -> string {
         self.source_file = source_file;
         self.format_decls(source_file.decls, is_root: true);
         return self.output.to_string();

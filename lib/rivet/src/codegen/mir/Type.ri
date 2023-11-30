@@ -7,7 +7,7 @@ import std/strings;
 import std/process;
 
 #[default_value(.Void())]
-public enum Type < traits.Stringable {
+pub enum Type < traits.Stringable {
     Void,
     Never,
     SizedInt {
@@ -40,7 +40,7 @@ public enum Type < traits.Stringable {
         size: uint;
     };
 
-    public func size(self) -> uint {
+    pub func size(self) -> uint {
         return match self is {
             .SizedInt as int -> int.size,
             .SizedUint as uint -> uint.size,
@@ -53,7 +53,7 @@ public enum Type < traits.Stringable {
         };
     }
 
-    public func to_string(self) -> string {
+    pub func to_string(self) -> string {
         return match self is {
             .Void -> "void",
             .Never -> "never",

@@ -3,13 +3,13 @@
 // be found in the LICENSE file.
 
 extern (C) {
-    public func memchr(cx: rawptr, c: int32, n: uint) -> ?rawptr;
-    public func memcmp(cx: rawptr, ct: rawptr, n: uint) -> int32;
-    public func memcpy(dest: rawptr, src: rawptr, n: uint) -> ?rawptr;
-    public func memmove(dest: rawptr, src: rawptr, n: uint) -> ?rawptr;
-    public func memset(dest: rawptr, c: int32, n: uint) -> ?rawptr;
+    pub func memchr(cx: rawptr, c: int32, n: uint) -> ?rawptr;
+    pub func memcmp(cx: rawptr, ct: rawptr, n: uint) -> int32;
+    pub func memcpy(dest: rawptr, src: rawptr, n: uint) -> ?rawptr;
+    pub func memmove(dest: rawptr, src: rawptr, n: uint) -> ?rawptr;
+    pub func memset(dest: rawptr, c: int32, n: uint) -> ?rawptr;
 
-    public func strerror(code: int32) -> ?[&]mut uint8;
-    public func strlen(cs: ?[&]uint8) -> uint;
-    public func strstr(needle: ?[&]uint8, haystack: ?[&]uint8) -> ?[&]uint8;
+    pub func strerror(code: int32) -> ?[&]mut uint8;
+    pub func strlen(cs: ?[&]uint8) -> uint;
+    pub func strstr(needle: ?[&]uint8, haystack: ?[&]uint8) -> ?[&]uint8;
 }

@@ -2,14 +2,14 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-public const RTLD_LAZY := 0x001;
-public const RTLD_NOW := 0x002;
-public const RTLD_BINDING_MASK := 0x3;
-public const RTLD_GLOBAL := 0x100;
+pub const RTLD_LAZY := 0x001;
+pub const RTLD_NOW := 0x002;
+pub const RTLD_BINDING_MASK := 0x3;
+pub const RTLD_GLOBAL := 0x100;
 
 extern (C) {
-    public func dlopen(__file: [&]uint8, __mode: int32) -> ?rawptr;
-    public func dlclose(__handle: rawptr) -> int32;
-    public func dlsym(__handle: rawptr, __name: [&]uint8) -> ?rawptr;
-    public func dlerror() -> ?[&]uint8;
+    pub func dlopen(__file: [&]uint8, __mode: int32) -> ?rawptr;
+    pub func dlclose(__handle: rawptr) -> int32;
+    pub func dlsym(__handle: rawptr, __name: [&]uint8) -> ?rawptr;
+    pub func dlerror() -> ?[&]uint8;
 }
