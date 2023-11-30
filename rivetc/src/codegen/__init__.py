@@ -1594,7 +1594,7 @@ class Codegen:
                     )
                     value = ir.Selector(ir_typ, left, ir.Name("value"))
                 self.cur_fn.add_label(panic_l)
-                self.panic(f"attempt to use none value (`{expr.left}`)")
+                self.runtime_error(f"attempt to use none value (`{expr.left}`)")
                 self.cur_fn.add_label(exit_l)
                 return value
             elif isinstance(left, ir.StringLit):
@@ -2623,14 +2623,6 @@ class Codegen:
     def runtime_error(self, msg):
         self.cur_fn.add_call(
             "_R4core13runtime_errorF", [
-                self.gen_string_literal(utils.smart_quote(msg, False)),
-                self.empty_vec(self.comp.universe["[]core.Stringable"])
-            ]
-        )
-
-    def panic(self, msg):
-        self.cur_fn.add_call(
-            "_R4core13process_panicF", [
                 self.gen_string_literal(utils.smart_quote(msg, False)),
                 self.empty_vec(self.comp.universe["[]core.Stringable"])
             ]
