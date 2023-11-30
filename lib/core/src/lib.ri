@@ -17,31 +17,3 @@ func runtime_error(s: string, args: ...Stringable) -> never {
     bt_print(2);
     process_exit(100);
 }
-
-#[inline]
-func internal_alloc(size: uint) -> rawptr {
-    return mem_alloc(size) catch {
-        runtime_error("cannot allocate memory" #if _DEBUG_ " (size: {})", size #endif)
-    };
-}
-
-#[inline]
-func internal_zeroed(size: uint) -> rawptr {
-    return mem_zeroed(size) catch {
-        runtime_error("cannot allocate zeroed memory" #if _DEBUG_ " (size: {})", size #endif)
-    };
-}
-
-#[inline]
-func internal_dup(src: rawptr, sz: uint) -> rawptr {
-    return mem_dup(src, sz) catch {
-        runtime_error("cannot duplicate memory" #if _DEBUG_ " (size: {})", sz #endif)
-    };
-}
-
-#[inline]
-func internal_resize(ptr: ?rawptr, sz: uint) -> rawptr {
-    return mem_resize(ptr, sz) catch {
-        runtime_error("cannot resize memory" #if _DEBUG_ " (size: {})", sz #endif)
-    };
-}

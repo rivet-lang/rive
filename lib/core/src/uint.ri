@@ -126,7 +126,7 @@ extend uint32 < Stringable {
             mut d: uint32 := 0;
 
             mut index := max;
-            buf := @as([&]mut uint8, internal_alloc(max + 1));
+            buf := @as([&]mut uint8, mem_alloc(max + 1));
             buf[index] = 0;
             index -= 1;
 
@@ -168,7 +168,7 @@ extend uint64 < Stringable {
 
             max := 20;
             mut index := @as(uint, max);
-            buf := @as([&]mut uint8, internal_alloc(index + 1));
+            buf := @as([&]mut uint8, mem_alloc(index + 1));
             buf[index] = 0;
             index -= 1;
 

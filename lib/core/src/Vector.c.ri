@@ -12,17 +12,17 @@ struct Vector {
 
     #[unsafe; inline]
     func new(elem_size: uint, cap: uint) -> Self {
-        return Self(internal_zeroed(cap * elem_size), elem_size, 0, cap);
+        return Self(mem_zeroed(cap * elem_size), elem_size, 0, cap);
     }
 
     #[unsafe; inline]
     func new_with_len(elem_size: uint, len: uint, cap: uint) -> Self {
-        return Self(internal_zeroed(cap * elem_size), elem_size, len, cap);
+        return Self(mem_zeroed(cap * elem_size), elem_size, len, cap);
     }
 
     #[unsafe]
     func from_array(arr: rawptr, elem_size: uint, len: uint) -> Self {
-        vec := Self(internal_zeroed(len * elem_size), elem_size, len, len);
+        vec := Self(mem_zeroed(len * elem_size), elem_size, len, len);
         mem_copy(vec.ptr, arr, len * elem_size);
         return vec;
     }
@@ -94,7 +94,7 @@ struct Vector {
         old_ptr := self.ptr;
         new_size := self.len - size;
         new_cap: uint := if new_size == 0 { 1 } else { new_size };
-        self.ptr = mem_zeroed(new_cap * self.elem_size) catch @unreachable();
+        self.ptr = mem_zeroed(new_cap * self.elem_size);
         mem_copy(self.ptr, old_ptr, i * self.elem_size);
         unsafe {
             mem_copy(
@@ -148,7 +148,7 @@ struct Vector {
             cap *= 2;
         }
         new_size := cap * self.elem_size;
-        new_ptr := internal_alloc(new_size);
+        new_ptr := mem_alloc(new_size);
         mem_copy(new_ptr, self.ptr, self.len * self.elem_size);
         self.ptr = new_ptr;
         self.cap = cap;
@@ -181,7 +181,7 @@ struct Vector {
         if size == 0 {
             size = 1;
         }
-        vec := Self(internal_zeroed(size), self.elem_size, self.len, self.cap);
+        vec := Self(mem_zeroed(size), self.elem_size, self.len, self.cap);
         mem_copy(vec.ptr, self.ptr, size);
         return vec;
     }

@@ -38,7 +38,7 @@ pub struct string < Stringable, Hashable, Throwable {
     }
 
     pub func from_byte(byte: uint8) -> Self {
-        res := unsafe { @as([&]mut uint8, internal_alloc(2)) };
+        res := unsafe { @as([&]mut uint8, mem_alloc(2)) };
         unsafe {
             res[0] = byte;
             res[1] = 0;
@@ -52,7 +52,7 @@ pub struct string < Stringable, Hashable, Throwable {
         if bytes.len == 0 {
             return emptyString;
         }
-        res := unsafe { @as([&]mut uint8, internal_alloc(bytes.len + 1)) };
+        res := unsafe { @as([&]mut uint8, mem_alloc(bytes.len + 1)) };
         unsafe {
             mem_copy(res, &bytes[0], bytes.len);
             res[bytes.len] = 0;
@@ -75,7 +75,7 @@ pub struct string < Stringable, Hashable, Throwable {
             self
         } else {
             len := self.len * count;
-            res := unsafe { @as([&]mut uint8, internal_alloc(len)) };
+            res := unsafe { @as([&]mut uint8, mem_alloc(len)) };
             unsafe {
                 mut i: uint := 0;
                 while i < count : i += 1 {
@@ -468,7 +468,7 @@ pub struct string < Stringable, Hashable, Throwable {
             return self;
         }
         new_len := self.len + idxs.len * (with.len - rep.len);
-        b := unsafe { @as([&]mut uint8, internal_alloc(new_len)) };
+        b := unsafe { @as([&]mut uint8, mem_alloc(new_len)) };
         (mut b_i: uint, mut s_idx: uint) := (0, 0);
         unsafe {
             for rep_pos in idxs {
@@ -810,7 +810,7 @@ pub struct string < Stringable, Hashable, Throwable {
         if self.len == 0 {
             return emptyString;
         }
-        res := unsafe { @as([&]mut uint8, internal_alloc(self.len + 1)) };
+        res := unsafe { @as([&]mut uint8, mem_alloc(self.len + 1)) };
         unsafe {
             mem_copy(res, self.ptr, self.len);
             res[self.len] = 0;

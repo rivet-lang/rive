@@ -2758,7 +2758,7 @@ class Codegen:
         to_fn = self.init_string_lits_fn if custom_name else self.cur_fn
         inst = ir.Inst(
             ir.InstKind.Call,
-            [ir.Name("_R4core14internal_allocF"),
+            [ir.Name("_R4core9mem_allocF"),
              ir.Name(f"sizeof({name})")]
         )
         if custom_name:
@@ -2790,7 +2790,7 @@ class Codegen:
             value = ir.Inst(ir.InstKind.GetRef, [value])
         value = value if is_ptr else ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R4core12internal_dupF"), value,
+                ir.Name("_R4core7mem_dupF"), value,
                 ir.IntLit(ir.UINT_T, str(size))
             ]
         )
@@ -2841,7 +2841,7 @@ class Codegen:
             else:
                 value = ir.Inst(
                     ir.InstKind.Call, [
-                        ir.Name("_R4core12internal_dupF"),
+                        ir.Name("_R4core7mem_dupF"),
                         ir.Inst(ir.InstKind.GetRef, [arg0]),
                         ir.IntLit(uint_t, str(size))
                     ]

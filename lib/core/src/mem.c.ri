@@ -9,39 +9,39 @@ import c/libc;
 ///
 /// NOTE: Unlike the `mem.zeroed` function, `mem.alloc` will
 /// not zero the memory block.
-pub func mem_alloc(size: uint) -> !rawptr {
+pub func mem_alloc(size: uint) -> rawptr {
     if new := unsafe { libc.malloc(size) } {
         return new;
     }
-    throw OutOfMemoryError("insufficient memory is available");
+    runtime_error("cannot allocate memory" #if _DEBUG_ " (size: {})", size #endif);
 }
 
-/// Allocates dynamically a zeroed `n` bytes block of memory on the heap.
+/// Allocates dynamically a zeroed `size` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
-pub func mem_zeroed(n: uint) -> !rawptr {
-    if ptr := unsafe { libc.calloc(1, n) } {
+pub func mem_zeroed(size: uint) -> rawptr {
+    if ptr := unsafe { libc.calloc(1, size) } {
         return ptr;
     }
-    throw OutOfMemoryError("insufficient memory is available");
+    runtime_error("cannot allocate zeroed memory" #if _DEBUG_ " (size: {})", size #endif);
 }
 
 /// Resizes the memory block `ptr` with `sz` bytes.
 ///
 /// NOTE: The `ptr` must be a pointer to an existing memory block previously
 /// allocated with `mem.alloc` or `mem.zeroed`.
-pub func mem_resize(ptr: ?rawptr, sz: uint) -> !rawptr {
+pub func mem_resize(ptr: ?rawptr, sz: uint) -> rawptr {
     if sz == 0 {
         if safe_ptr := ptr {
             unsafe {
                 mem_dealloc(safe_ptr);
             }
         }
-        throw InvalidArgumentError("argument `sz` is 0");
+        runtime_error("argument `sz` is 0");
     }
     if new := unsafe { libc.realloc(ptr, sz) } {
         return new;
     }
-    throw OutOfMemoryError("insufficient memory is available");
+    runtime_error("cannot resize memory" #if _DEBUG_ " (size: {})", sz #endif);
 }
 
 /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
@@ -80,11 +80,11 @@ pub func mem_move(dest: rawptr, src: rawptr, sz: uint) {
 /// Allocates dynamically a `sz` bytes block of memory on the heap, then copies
 /// the contents of `src` into the allocated space and returns a pointer to
 /// the newly allocated space.
-pub func mem_dup(src: rawptr, sz: uint) -> !rawptr {
+pub func mem_dup(src: rawptr, sz: uint) -> rawptr {
     if sz == 0 {
-        return mem_zeroed(1)!;
+        return mem_zeroed(1);
     }
-    new := mem_alloc(sz)!;
+    new := mem_alloc(sz);
     mem_copy(new, src, sz);
     return new;
 }
