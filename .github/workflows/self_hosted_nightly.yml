@@ -19,8 +19,10 @@ jobs:
           python3 rivetc -o rivet cmd/
           ./rivet version
           mkdir rivet-nightly-linux-amd64
+          # Copy binary
           cp rivet rivet-nightly-linux-amd64/
-          cp LICENSE.txt rivet-nightly-linux-amd64/
+          # Copy LICENSE
+          cp LICENSE rivet-nightly-linux-amd64/
           # Copy library
           cp -r lib/ rivet-nightly-linux-amd64/
           # Download latest docs
