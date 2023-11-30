@@ -982,7 +982,7 @@ class Codegen:
                      self.gen_expr(expr.args[1])]
                 )
             elif expr.name == "unreachable":
-                self.panic("entered unreachable code")
+                self.runtime_error("entered unreachable code")
             elif expr.name == "breakpoint" and self.comp.prefs.build_mode != prefs.BuildMode.Release:
                 self.cur_fn.breakpoint()
         elif isinstance(expr, ast.TupleLiteral):
@@ -2619,6 +2619,14 @@ class Codegen:
             ir.IntLit(ir.BOOL_T, "1")
         )
         return tmp
+
+    def runtime_error(self, msg):
+        self.cur_fn.add_call(
+            "_R4core13runtime_errorF", [
+                self.gen_string_literal(utils.smart_quote(msg, False)),
+                self.empty_vec(self.comp.universe["[]core.Stringable"])
+            ]
+        )
 
     def panic(self, msg):
         self.cur_fn.add_call(

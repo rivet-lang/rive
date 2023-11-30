@@ -38,11 +38,11 @@ extend rune < Stringable {
     /// Panics if given a radix larger than 36.
     pub func from_digit(num: uint32, radix: uint32) -> ?rune {
         if radix > 36 {
-            process_panic("rune.from_digit: radix is too high (maximum 36)");
+            runtime_error("rune.from_digit: radix is too high (maximum 36)");
         }
         if num < radix {
             num_ := @as(uint8, num);
-            byte := (if num_ < 10 { b'0' + num_ } else { b'a' + num_ - 10 });
+            byte := if num_ < 10 { b'0' + num_ } else { b'a' + num_ - 10 };
             return byte.to_rune();
         }
         return none;

@@ -30,7 +30,7 @@ struct ReturnTrace {
     #[inline]
     func add(mut self, trace: CallTrace) {
         if self.cur_idx == RETURN_TRACE_MAX_SIZE {
-            process_panic("maximum return trace size exceeded");
+            runtime_error("maximum return trace size exceeded");
         }
         self.traces[self.cur_idx] = trace;
         self.cur_idx += 1;

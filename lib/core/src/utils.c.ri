@@ -13,7 +13,7 @@ func enum_cast(ptr: rawptr, expected_id: uint) -> rawptr {
     if enum_info._id_ != expected_id {
         // TODO: replace indexes with names
         console_ewriteln(
-            "panic: enum cast: cannot cast ID({}) to ID({})", enum_info._id_, expected_id
+            "runtime error: enum cast: cannot cast ID({}) to ID({})", enum_info._id_, expected_id
         );
         bt_print(2);
         process_exit(1);
@@ -25,7 +25,7 @@ func trait_cast(got_obj: rawptr, got_id: uint, expected_id: uint) -> rawptr {
     if got_id != expected_id {
         // TODO: replace indexes with names
         console_ewriteln(
-            "panic: trait cast: cannot cast ID({}) to ID({})", got_id, expected_id
+            "runtime error: trait cast: cannot cast ID({}) to ID({})", got_id, expected_id
         );
         bt_print(2);
         process_exit(1);

@@ -29,7 +29,7 @@ pub struct string < Stringable, Hashable, Throwable {
         }
         return if safe_ptr := ptr {
             if unsafe { safe_ptr[len] != 0 } {
-                process_panic("`ptr` is not a valid string, doesn't ends with NLL byte");
+                runtime_error("`ptr` is not a valid string, doesn't ends with NLL byte");
             }
             Self(safe_ptr, len, is_ref)
         } else {
@@ -62,7 +62,7 @@ pub struct string < Stringable, Hashable, Throwable {
 
     pub func at(self, idx: uint) -> uint8 {
         if idx >= self.len {
-            process_panic("string index out of range (index: {}, len: {})", idx, self.len);
+            runtime_error("string index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { self.ptr[idx] };
     }
@@ -788,7 +788,7 @@ pub struct string < Stringable, Hashable, Throwable {
     func slice(self, start: uint, end: uint) -> Self {
         unsafe {
             if start > end or start > self.len or end > self.len {
-                process_panic(
+                runtime_error(
                     "string slice index out of range (range: {}..{}, len: {})", start,
                     end, self.len
                 );

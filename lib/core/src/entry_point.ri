@@ -30,11 +30,13 @@ func main(
 ) {
     setup_signals_handler();
     init_args(@as(uint, _argc), _argv);
+
 #if !_TESTS_ // `init_string_lits` is called after
     init_string_lits();
 #endif
     init_globals();
     libcoreIsStarted = true;
+
 #if _TESTS_
     if test_runner.tests.len > 0 {
         test_runner.run();
@@ -42,5 +44,6 @@ func main(
 #else
     mod_main();
 #endif
+
     drop_globals();
 }
