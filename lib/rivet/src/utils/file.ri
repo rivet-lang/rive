@@ -37,7 +37,6 @@ struct CachedFile {
    mut lines: []string;
 }
 
-#[boxed]
 struct SourceCache {
    mut sources: []CachedFile;
 
@@ -73,7 +72,7 @@ struct SourceCache {
    pub func find_lines(self, path_: string) -> ?[]string {
 	  mut i: uint := 0;
 	  while i < self.sources.len : i += 1 {
-		 cached := self.sources[i];
+		 cached := &mut self.sources[i];
 		 if cached.path == path_ {
 			if cached.lines.is_empty() {
 			   cached.lines = cached.content.split_into_lines();
