@@ -6,7 +6,6 @@ import c/libc;
 import core;
 
 import ../mem;
-import ../conv;
 
 pub struct Path {
     pub alias MAX_LEN := libc.MAX_PATH_LEN;
@@ -318,7 +317,7 @@ pub struct Path {
                 }
                 prev_sep := Self.is_separator(prev_path[prev_path.len - 1]);
                 this_sep := Self.is_separator(this_path[0]);
-                sum += conv.bool_to_uint(!prev_sep and !this_sep);
+                sum += (!prev_sep and !this_sep).to_uint();
                 sum += if prev_sep and this_sep { this_path.len - 1 } else { this_path.len };
                 prev_path = this_path;
             }

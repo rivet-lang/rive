@@ -4,6 +4,16 @@
 
 extend bool < Stringable {
     #[inline]
+    pub func to_int(self) -> int {
+        return if self { 1 } else { 0 };
+    }
+
+    #[inline]
+    pub func to_uint(self) -> uint {
+        return if self { 1 } else { 0 };
+    }
+
+    #[inline]
     pub func to_string(&self) -> string {
         return if self.* { "true" } else { "false" };
     }

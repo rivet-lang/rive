@@ -13,7 +13,7 @@ extend Codegen {
             .Paren as paren -> self.gen_expr(paren.expr),
             //.Ident -> {},
             .BoolLiteral as bool_lit -> .Const(
-                .IntConst(conv.bool_to_int(bool_lit.value)), self.bool_t
+                .IntConst(bool_lit.value.to_int()), self.bool_t
             ),
             .IntegerLiteral as int_lit -> .Const(
                 .IntConst(conv.string_to_int(int_lit.value) catch @unreachable()),

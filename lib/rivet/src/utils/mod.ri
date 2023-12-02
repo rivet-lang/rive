@@ -80,7 +80,8 @@ pub func green(msg: string) -> string {
 }
 
 /// Rounds the number `n` up to the next mult
-/// NOTE: `multiple` must be a power of 2.#[inline]
+/// NOTE: `multiple` must be a power of 2.
+#[inline]
 pub func round_up(n: uint, multiple: uint) -> uint {
     n_ := @as(int, n);
     multiple_ := @as(int, multiple);
