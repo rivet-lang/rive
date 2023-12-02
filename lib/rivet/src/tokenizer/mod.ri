@@ -233,7 +233,7 @@ pub struct Tokenizer {
         }
         return (
             end_idx,
-            @as(uint8, conv.parse_uint(str[idx + 2..end_idx], 16, 8) catch 0).to_string()
+            @as(uint8, str[idx + 2..end_idx].parse_uint(16, 8) catch 0).to_string()
         );
     }
 
