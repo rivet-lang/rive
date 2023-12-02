@@ -2,8 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/conv;
-
 import ./mir;
 import ../ast;
 
@@ -16,11 +14,11 @@ extend Codegen {
                 .IntConst(bool_lit.value.to_int()), self.bool_t
             ),
             .IntegerLiteral as int_lit -> .Const(
-                .IntConst(conv.string_to_int(int_lit.value) catch @unreachable()),
+                .IntConst(int_lit.value.to_int() catch @unreachable()),
                 self.uint_t
             ),
             .FloatLiteral as float_lit -> .Const(
-                .IntConst(conv.string_to_int(float_lit.value) catch @unreachable()),
+                .IntConst(float_lit.value.to_int() catch @unreachable()),
                 self.uint_t
             ),
             else -> .Empty()

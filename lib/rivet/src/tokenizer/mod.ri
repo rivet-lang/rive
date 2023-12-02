@@ -2,7 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/conv;
 import std/strings;
 import std/process;
 
@@ -293,7 +292,7 @@ func decode_o_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
         idx := pos - start;
         end_idx := idx + 4; // "\XXX".len == 4
         ss.push(
-            @as(uint8, conv.parse_uint(s[idx + 1..end_idx], 8, 8) catch 0).to_string()
+            @as(uint8, s[idx + 1..end_idx].parse_uint(8, 8) catch 0).to_string()
         );
         ss.push(if i + 1 < escapes_pos.len {
             s[end_idx..escapes_pos[i + 1] - start]
@@ -306,7 +305,7 @@ func decode_o_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
 
 func decode_u_escape_single(str: string, idx: uint) -> (uint, string) {
     end_idx := idx + 6; // "\uXXXX".len == 6
-    escaped_code_point := conv.parse_uint(str[idx + 2..end_idx], 16, 32) catch 0;
+    escaped_code_point := str[idx + 2..end_idx].parse_uint(16, 32) catch 0;
     return (end_idx, @as(uint32, escaped_code_point).to_string());
 }
 

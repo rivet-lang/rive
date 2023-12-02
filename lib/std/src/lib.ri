@@ -2,19 +2,18 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-pub import std/backtrace;
-pub import std/console;
-pub import std/conv;
-pub import std/dynlib;
-pub import std/env;
-pub import std/errors;
-pub import std/flag;
-pub import std/fs;
-pub import std/hash;
-pub import std/math;
-pub import std/mem;
-pub import std/process;
-pub import std/semver;
-pub import std/strings;
-pub import std/sys;
-pub import std/traits;
+pub import ./backtrace;
+pub import ./console;
+pub import ./dynlib;
+pub import ./env;
+pub import ./errors;
+pub import ./flag;
+pub import ./fs;
+pub import ./hash;
+pub import ./math;
+pub import ./mem;
+pub import ./process;
+pub import ./semver;
+pub import ./strings;
+pub import ./sys;
+pub import ./traits;
