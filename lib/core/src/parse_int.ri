@@ -10,7 +10,7 @@ func lower(c: uint8) -> uint8 {
 extend string {
     /// This is like `parse_int` but for unsigned numbers.
     /// A sign prefix is not permitted.
-    pub func parse_uint(self, mut base: int32, mut bit_size: uint) -> !uint {
+    pub func parse_uint(self, mut base: int32, mut bit_size: uint32) -> !uint {
         if self == "" {
             throw InvalidSyntaxError("empty string");
         }
@@ -125,7 +125,7 @@ extend string {
     /// The `bit_size` argument specifies the integer type that the result must
     /// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to int8, int16, int32, and
     /// int. If `bit_size` is below 0 or above 64, an error is returned.
-    pub func parse_int(self, base: int32, mut bit_size: uint) -> !int {
+    pub func parse_int(self, base: int32, mut bit_size: uint32) -> !int {
         if self == "" {
             throw InvalidSyntaxError("invalid syntax");
         }

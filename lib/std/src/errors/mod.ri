@@ -7,39 +7,3 @@ import core;
 
 pub alias ErrnoError := c.ErrnoError;
 pub alias OutOfMemoryError := core.OutOfMemoryError;
-
-#[boxed]
-pub struct InvalidSyntaxError < Throwable {
-    msg: string;
-
-    pub func to_string(self) -> string {
-        return self.msg;
-    }
-}
-
-#[boxed]
-pub struct InvalidBaseError < Throwable {
-    msg: string;
-
-    pub func to_string(self) -> string {
-        return self.msg;
-    }
-}
-
-#[boxed]
-pub struct InvalidBitSizeError < Throwable {
-    msg: string;
-
-    pub func to_string(self) -> string {
-        return self.msg;
-    }
-}
-
-#[boxed]
-pub struct ValueOutOfRangeError < Throwable {
-    msg: string;
-
-    pub func to_string(self) -> string {
-        return self.msg;
-    }
-}

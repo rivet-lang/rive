@@ -3,7 +3,6 @@
 // be found in the LICENSE file.
 
 import ../traits;
-import ../conv;
 import ../strings;
 import ../console;
 import ../process;
@@ -206,7 +205,7 @@ pub struct FlagParser {
         if parsed.is_empty() {
             return none;
         }
-        return conv.string_to_int(parsed[0]) catch 0;
+        return parsed[0].to_int() catch 0;
     }
 
     /// Returns an option with the string value, associated with the flag in `name`.

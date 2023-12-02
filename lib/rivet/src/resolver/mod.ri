@@ -2,8 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/conv;
-
 import ../ast;
 import ../prefs;
 import ../token;
@@ -61,7 +59,7 @@ pub struct Resolver {
     func eval_size(mut self, mut expr: ast.Expr) -> ?int {
         return match expr is {
             .Paren as paren -> self.eval_size(paren.expr),
-            .IntegerLiteral as int_lit -> conv.string_to_int(int_lit.value) catch return none,
+            .IntegerLiteral as int_lit -> int_lit.value.to_int() catch return none,
             .Ident as mut ident -> {
                 self.resolve_ident(ident);
                 if ident.found {
