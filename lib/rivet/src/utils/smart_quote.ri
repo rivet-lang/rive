@@ -78,7 +78,7 @@ pub func smart_quote(s: string, raw: bool := false) -> string {
                         result.write_string(doubleEscape);
                         continue;
                     }
-                    if arr_4_uint8_contains(invalidEscapes, next) {
+                    if next in invalidEscapes {
                         current = 0;
                         skip_next = true;
                         result.write_byte(next);
