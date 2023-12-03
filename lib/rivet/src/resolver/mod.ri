@@ -6,7 +6,7 @@ import ../ast;
 import ../prefs;
 import ../token;
 import ../report;
-import std/console;
+
 import { Path } from std/fs;
 
 struct Prelude {
