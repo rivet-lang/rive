@@ -2,6 +2,15 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
+import c;
+
+pub alias ErrnoError := c.ErrnoError;
+
+// FIXME: pub alias last_errno_error := c.last_errno_error;
+pub func last_errno_error() -> c.ErrnoError {
+    return c.last_errno_error();
+}
+
 var returnTrace := ReturnTrace();
 
 /// This trait is used for errors throwed with result types (!T).
@@ -117,4 +126,3 @@ pub struct ValueOutOfRangeError < Throwable {
         return self.msg;
     }
 }
-

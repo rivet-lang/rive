@@ -239,7 +239,7 @@ pub struct Register {
                 },
                 .Func as func_decl -> func_decl.sym = self.add_sym(ast.Func(
                     parent: self.sym,
-                    abi: self.abi,
+                    abi: func_decl.abi,
                     is_public: func_decl.is_public,
                     is_extern: func_decl.is_extern,
                     is_unsafe: func_decl.is_unsafe,

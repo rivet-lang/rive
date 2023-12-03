@@ -46,6 +46,16 @@ pub struct Checker {
             self.source_file = source_file;
             self.expected_type = .Void();
             self.check_decls(source_file.decls);
+            // check unused imports
+            for imported_sym in source_file.imported_symbols.syms {
+                if !imported_sym.is_used and imported_sym.name != "_" {
+                    report.warn(
+                        "{} `{}` is imported but never used".fmt(
+                            imported_sym.sym.type_of(), imported_sym.sym.name
+                        ), imported_sym.pos
+                    );
+                }
+            }
         }
         // check global mutable variables
         for sym in self.table.universe.scope.syms {

@@ -19,14 +19,6 @@ pub enum Node {
 }
 
 #[boxed]
-pub struct SourceFile {
-    pub file: string;
-    pub decls: []Decl;
-    pub mut mod: Module;
-    pub mut imported_symbols: ImportedSymbols;
-}
-
-#[boxed]
 pub struct Comment {
     pub mut is_doc: bool;
     pub mut text: string;
