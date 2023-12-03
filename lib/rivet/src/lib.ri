@@ -128,7 +128,7 @@ pub struct Compiler {
                         continue;
                     }
                     import_decl.info = self.load_module(
-                        import_decl.path, import_decl.alias_name, sf.file,
+                        import_decl.path, import_decl.alias_name, sf.path,
                         import_decl.path_pos
                     )!;
                     import_decl.alias_name = import_decl.info.alias_name;

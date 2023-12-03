@@ -71,7 +71,7 @@ pub struct Prefs {
     pub mut all_warns_are_errors: bool;
     pub mut hide_all_warns: bool;
     pub mut is_verbose: bool;
-    pub mut is_fmt: bool; 
+    pub mut is_fmt: bool;
 
     // Output info
     pub mut output_mode: OutputMode;

@@ -54,7 +54,8 @@ pub struct Parser {
             return ast.SourceFile(file, [], self.mod_sym);
         }
         self.advance(2);
-        return ast.SourceFile(file, self.parse_decls(), self.mod_sym);
+        pos := self.tok.pos;
+        return ast.SourceFile(file, self.parse_decls(), self.mod_sym, pos: pos + self.prev_tok.pos);
     }
 
     func next(mut self) {

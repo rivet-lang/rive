@@ -37,6 +37,15 @@ pub enum ABI as uint8 < traits.Stringable {
         };
     }
 
+    // TODO: remove, use `.to_lower()` instead
+    #[inline]
+    pub func lower(&self) -> string {
+        return match self.* {
+            .C -> "c",
+            .Rivet -> "rivet"
+        };
+    }
+
     #[inline]
     pub func to_string(&self) -> string {
         return match self.* {

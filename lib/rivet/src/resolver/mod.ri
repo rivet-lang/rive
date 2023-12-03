@@ -6,6 +6,8 @@ import ../ast;
 import ../prefs;
 import ../token;
 import ../report;
+import std/console;
+import { Path } from std/fs;
 
 struct Prelude {
     name: string;
@@ -24,6 +26,8 @@ pub struct Resolver {
     mut self_sym_is_set: bool;
 
     mut source_file: ast.SourceFile;
+    mut source_file_abi: ast.ABI := .Rivet;
+    mut different_abi_usage_count: uint;
 
     pub func resolve_files(mut self, source_files: []ast.SourceFile) {
         Register(self.table, self.prefs).walk_files(source_files);
@@ -34,19 +38,23 @@ pub struct Resolver {
             Prelude("Throwable", self.table.throwable_sym)
         ];
         for sf in source_files {
+            self.source_file_abi = .Rivet;
             self.sym = sf.mod;
             self.source_file = sf;
+            self.detect_source_file_abi();
             self.resolve_decls(self.source_file.decls);
-            // check unused imports
-            for imported_sym in sf.imported_symbols.syms {
-                if !imported_sym.is_used and imported_sym.name != "_" {
-                    report.warn(
-                        "{} `{}` is imported but never used".fmt(
-                            imported_sym.sym.type_of(), imported_sym.sym.name
-                        ), imported_sym.pos
-                    );
-                }
+            if self.source_file_abi == .Rivet and self.different_abi_usage_count > 0 {
+                report.warn("filename requires ABI specification", sf.pos);
+            } else if self.source_file_abi != .Rivet and self.different_abi_usage_count == 0 {
+                report.warn("filename does not require ABI specification", sf.pos);
             }
+        }
+    }
+
+    func detect_source_file_abi(mut self) {
+        filename := Path.file_name(self.source_file.path);
+        if filename.contains(".c.") {
+            self.source_file_abi = .C;
         }
     }
 
