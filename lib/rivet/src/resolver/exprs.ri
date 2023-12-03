@@ -358,17 +358,18 @@ extend Resolver {
 
     func check_symbol_abi(mut self, sym: ast.Sym, pos: token.Pos) {
         if sym.abi != .Rivet {
-            if self.source_file_abi != sym.abi {
+            if self.source_file_abi == sym.abi {
+                self.different_abi_usage_count += 1;
+            } else {
                 mut warn := report.warn_builder(
                     "using a symbol whose ABI is different from that of the current file", pos
                 );
                 warn.add_note("`{}` is declared as `extern ({})`", sym.name, sym.abi);
                 warn.add_help(
-                    "consider adding `.{}.` extension to current filename", sym.abi.lower()
+                    "consider adding `.{}.ri` extension to current filename", sym.abi.lower()
                 );
                 warn.emit();
             }
-            self.different_abi_usage_count += 1;
         }
     }
 }
