@@ -184,7 +184,7 @@ class Codegen:
             self.cur_fn.add_call("_R4core16init_string_litsF")
             testRunner = ir.Ident(ir.TEST_RUNNER_T, "_testRunner")
             main_fn.alloca(testRunner)
-            tests_field = ir.Selector(ir.VEC_T, testRunner, ir.Name("tests"))
+            tests_field = ir.Selector(ir.DYN_ARRAY_T, testRunner, ir.Name("tests"))
             main_fn.store(
                 ir.Selector(ir.UINT64_T, testRunner, ir.Name("ok_tests")),
                 ir.IntLit(ir.UINT64_T, "0")
@@ -198,7 +198,7 @@ class Codegen:
                 ir.IntLit(ir.UINT64_T, "0")
             )
             tests_vec = ir.Selector(
-                ir.VEC_T.ptr(True), testRunner, ir.Name("tests")
+                ir.DYN_ARRAY_T.ptr(True), testRunner, ir.Name("tests")
             )
             test_t = ir.TEST_T.ptr()
             gtests_array = []
@@ -1946,7 +1946,7 @@ class Codegen:
                 if not right_sym.info.has_contains_method:
                     right_sym.info.has_contains_method = True
                     if right_is_dyn_array:
-                        self_idx_ = ir.Ident(ir.VEC_T.ptr(True), "self")
+                        self_idx_ = ir.Ident(ir.DYN_ARRAY_T.ptr(True), "self")
                         elem_idx_ = ir.Ident(
                             self.ir_type(expr_left_typ), "_elem_"
                         )
@@ -2999,7 +2999,7 @@ class Codegen:
         elif isinstance(typ, type.Array):
             return ir.Array(self.ir_type(typ.typ), typ.size)
         elif isinstance(typ, type.DynArray):
-            return ir.VEC_T.ptr(True)
+            return ir.DYN_ARRAY_T.ptr(True)
         elif isinstance(typ, type.Ptr):
             inner_t = self.ir_type(typ.typ)
             if isinstance(inner_t, ir.Pointer) and inner_t.is_managed:
@@ -3007,7 +3007,7 @@ class Codegen:
             return ir.Pointer(inner_t)
         typ_sym = typ.symbol()
         if typ_sym.kind == TypeKind.DynArray:
-            return ir.VEC_T.ptr(True)
+            return ir.DYN_ARRAY_T.ptr(True)
         elif typ_sym.kind == TypeKind.Array:
             return ir.Array(
                 self.ir_type(typ_sym.info.elem_typ), typ_sym.info.size
