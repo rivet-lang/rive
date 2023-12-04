@@ -16,13 +16,13 @@ extend Resolver {
                 if elem_sym.info is .Trait as trait_info {
                     trait_info.has_objects = true;
                 }
-                variadic.sym = self.table.universe.add_or_get_vec(variadic.inner, false);
+                variadic.sym = self.table.universe.add_or_get_dyn_array(variadic.inner, false);
                 true
             } else {
                 false
             },
             .DynArray as vec -> if self.resolve_type(vec.inner) {
-                vec.sym = self.table.universe.add_or_get_vec(vec.inner, vec.is_mut);
+                vec.sym = self.table.universe.add_or_get_dyn_array(vec.inner, vec.is_mut);
                 true
             } else {
                 false

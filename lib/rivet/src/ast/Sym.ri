@@ -174,7 +174,7 @@ pub struct Module < Sym {
         return type_sym;
     }
 
-    pub func add_or_get_vec(mut self, elem_type: Type, is_mut: bool) -> TypeSym {
+    pub func add_or_get_dyn_array(mut self, elem_type: Type, is_mut: bool) -> TypeSym {
         unique_name := if is_mut { "[]mut " } else { "[]" }.concat(elem_type.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
             return @as(TypeSym, type_sym);

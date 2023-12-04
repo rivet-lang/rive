@@ -72,7 +72,7 @@ def mangle_symbol(s):
                 name = f"{len(name)}{name}"
                 res.insert(0, name)
                 s.mangled_name = name
-            elif s.kind == TypeKind.DynArray.
+            elif s.kind == TypeKind.DynArray:
                 res.insert(0, "4core8DynArray")
                 s.mangled_name = "_R4core8DynArray"
             elif s.kind == TypeKind.Array:
@@ -1299,8 +1299,8 @@ class Codegen:
                 args.append(name)
                 if expr.sym.is_method:
                     left_sym = expr.sym.self_typ.symbol()
-                    if left_sym.kind == TypeKind.DynArray.
-                        expr.sym = self.comp.vec_sym[expr.sym.name]
+                    if left_sym.kind == TypeKind.DynArray:
+                        expr.sym = self.comp.dyn_array_sym[expr.sym.name]
                     sym_rec_is_ref = expr.sym.self_is_mut or expr.sym.self_is_ptr
                     receiver = expr.left.left
                     if left_sym.kind == TypeKind.Trait and expr.sym.self_typ != receiver.typ:
@@ -1334,7 +1334,7 @@ class Codegen:
                 arg_value = self.gen_expr_with_cast(fn_arg_typ, arg.expr)
                 if expr.sym.is_method:
                     left_sym = expr.left.left_typ.symbol()
-                    if left_sym.kind == TypeKind.DynArray.and expr.sym.name == "push":
+                    if left_sym.kind == TypeKind.DynArray and expr.sym.name == "push":
                         if arg.typ.symbol().is_boxed():
                             arg_value = ir.Inst(
                                 ir.InstKind.GetRef, [arg_value],
@@ -1398,7 +1398,7 @@ class Codegen:
                             ir.IntLit(ir.UINT_T, str(size))
                         ]
                     )
-                elif expr.sym.is_method and expr.sym.name == "pop" and left_sym.kind == TypeKind.DynArray.
+                elif expr.sym.is_method and expr.sym.name == "pop" and left_sym.kind == TypeKind.DynArray:
                     ret_typ = self.ir_type(expr.sym.ret_typ)
                     value = ir.Inst(ir.InstKind.Cast, [inst, ret_typ.ptr()])
                     if custom_tmp:
@@ -1682,7 +1682,7 @@ class Codegen:
                                 end
                             ]
                         )
-                elif s.kind == TypeKind.DynArray.
+                elif s.kind == TypeKind.DynArray:
                     if end == None:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
@@ -1741,7 +1741,7 @@ class Codegen:
                     ir.InstKind.Call,
                     [ir.Name("_R4core6string2atM"), left, idx], expr_typ_ir
                 )
-            elif s.kind == TypeKind.DynArray.
+            elif s.kind == TypeKind.DynArray:
                 expr_typ_ir2 = expr_typ_ir.ptr()
                 value = ir.Inst(
                     ir.InstKind.Cast, [
@@ -2058,7 +2058,7 @@ class Codegen:
             typ_sym = expr_left_typ.symbol()
             if expr.op.is_overloadable_op() and (
                 typ_sym.kind in (
-                    TypeKind.Array, TypeKind.DynArray. TypeKind.String,
+                    TypeKind.Array, TypeKind.DynArray, TypeKind.String,
                     TypeKind.Struct
                 ) or (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed)
             ) and not isinstance(expr_left_typ, type.Ptr):
@@ -2478,7 +2478,7 @@ class Codegen:
             left_ir_typ = self.ir_type(expr.left_typ)
             left_sym = expr.left_typ.symbol()
             sym_is_boxed = left_sym.is_boxed()
-            if left_sym.kind == TypeKind.DynArray.and assign_op == Kind.Assign:
+            if left_sym.kind == TypeKind.DynArray and assign_op == Kind.Assign:
                 rec = self.gen_expr_with_cast(expr.left_typ, expr.left)
                 if not isinstance(left_ir_typ, ir.Pointer):
                     rec = ir.Inst(ir.InstKind.GetRef, [rec])
@@ -2670,7 +2670,7 @@ class Codegen:
             return ir.ArrayLit(
                 self.ir_type(typ), [self.default_value(typ_sym.info.elem_typ)]
             )
-        elif typ_sym.kind == TypeKind.DynArray.
+        elif typ_sym.kind == TypeKind.DynArray:
             return self.empty_vec(typ_sym)
         elif typ_sym.kind == TypeKind.Enum:
             if typ_sym.info.is_boxed and typ_sym.default_value:
@@ -2998,7 +2998,7 @@ class Codegen:
             return ir.Function(args, self.ir_type(typ.ret_typ))
         elif isinstance(typ, type.Array):
             return ir.Array(self.ir_type(typ.typ), typ.size)
-        elif isinstance(typ, type.DynArray.:
+        elif isinstance(typ, type.DynArray):
             return ir.VEC_T.ptr(True)
         elif isinstance(typ, type.Ptr):
             inner_t = self.ir_type(typ.typ)
@@ -3006,7 +3006,7 @@ class Codegen:
                 return inner_t
             return ir.Pointer(inner_t)
         typ_sym = typ.symbol()
-        if typ_sym.kind == TypeKind.DynArray.
+        if typ_sym.kind == TypeKind.DynArray:
             return ir.VEC_T.ptr(True)
         elif typ_sym.kind == TypeKind.Array:
             return ir.Array(
@@ -3140,7 +3140,7 @@ class Codegen:
                         index_of_vtbl_fn.add_label(l2)
                     index_of_vtbl_fn.add_ret(ir.IntLit(ir.UINT_T, "0"))
                     self.out_rir.decls.append(index_of_vtbl_fn)
-            elif ts.kind in (TypeKind.Struct, TypeKind.String, TypeKind.DynArray.:
+            elif ts.kind in (TypeKind.Struct, TypeKind.String, TypeKind.DynArray):
                 fields = [ir.Field("_rc_", ir.UINT_T)
                           ] if ts.info.is_boxed else []
                 for f in ts.full_fields():
@@ -3154,7 +3154,7 @@ class Codegen:
         for s in root.syms:
             if isinstance(s, sym.Type):
                 if not (
-                    s.kind in (TypeKind.DynArray. TypeKind.Alias, TypeKind.Never)
+                    s.kind in (TypeKind.DynArray, TypeKind.Alias, TypeKind.Never)
                     or s.kind.is_primitive()
                 ):
                     ts.append(s)
@@ -3173,7 +3173,7 @@ class Codegen:
                 dep = mangle_symbol(ts.info.elem_typ.symbol())
                 if dep in typ_names:
                     field_deps.append(dep)
-            elif ts.kind == TypeKind.DynArray.
+            elif ts.kind == TypeKind.DynArray:
                 dep = mangle_symbol(ts.info.elem_typ.symbol())
                 if dep in typ_names:
                     field_deps.append(dep)

@@ -1,25 +1,25 @@
-struct DynArray.{
+struct DynArray {
     x: int32;
     y: int32;
 
-    func +(&self, other: &DynArray. -> DynArray.{
-        return DynArray.self.x + other.x, self.y + other.y);
+    func +(&self, other: &DynArray) -> DynArray {
+        return DynArray(self.x + other.x, self.y + other.y);
     }
 
-    func -(&self, other: &DynArray. -> DynArray.{
-        return DynArray.self.x - other.x, self.y - other.y);
+    func -(&self, other: &DynArray) -> DynArray {
+        return DynArray(self.x - other.x, self.y - other.y);
     }
 
-    func *(&self, other: &DynArray. -> DynArray.{
-        return DynArray.self.x * other.x, self.y * other.y);
+    func *(&self, other: &DynArray) -> DynArray {
+        return DynArray(self.x * other.x, self.y * other.y);
     }
 
-    func /(&self, other: &DynArray. -> DynArray.{
-        return DynArray.self.x / other.x, self.y / other.y);
+    func /(&self, other: &DynArray) -> DynArray {
+        return DynArray(self.x / other.x, self.y / other.y);
     }
 }
 
-var vec := DynArray.2, 2);
+var vec := DynArray(2, 2);
 
 test "overloadable operators: +" {
     mut v1 := vec;

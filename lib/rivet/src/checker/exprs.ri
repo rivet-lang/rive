@@ -303,7 +303,7 @@ extend Checker {
                 pos: vec_lit.pos
             )
         } else {
-            .Basic(self.table.universe.add_or_get_vec(value_type, is_mut), pos: vec_lit.pos)
+            .Basic(self.table.universe.add_or_get_dyn_array(value_type, is_mut), pos: vec_lit.pos)
         };
         return vec_lit.type;
     }
@@ -422,7 +422,7 @@ extend Checker {
                     } else {
                         .DynArray(
                             elem_type, is_mut,
-                            self.table.universe.add_or_get_vec(elem_type, is_mut)
+                            self.table.universe.add_or_get_dyn_array(elem_type, is_mut)
                         )
                     }
                 } else {

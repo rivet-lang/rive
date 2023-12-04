@@ -276,7 +276,7 @@ class Checker:
         elif isinstance(stmt, ast.ForStmt):
             iterable_t = self.check_expr(stmt.iterable)
             iterable_sym = iterable_t.symbol()
-            if iterable_sym.kind in (TypeKind.Array, TypeKind.DynArray.:
+            if iterable_sym.kind in (TypeKind.Array, TypeKind.DynArray):
                 elem_typ = self.comp.comptime_number_to_type(
                     iterable_sym.info.elem_typ
                 )
@@ -434,7 +434,7 @@ class Checker:
             has_exp_typ = False
             if not isinstance(self.expected_type, type.Func):
                 elem_sym = self.expected_type.symbol()
-                if elem_sym.kind in (TypeKind.Array, TypeKind.DynArray.:
+                if elem_sym.kind in (TypeKind.Array, TypeKind.DynArray):
                     has_exp_typ = True
                     elem_typ = elem_sym.info.elem_typ
                     self.expected_type = elem_typ
@@ -476,7 +476,7 @@ class Checker:
                 )
             else:
                 expr.typ = type.Type(
-                    self.comp.universe.add_or_get_vec(
+                    self.comp.universe.add_or_get_dyn_array(
                         self.comp.comptime_number_to_type(elem_typ), is_mut
                     )
                 )
@@ -659,7 +659,7 @@ class Checker:
                 expr.typ = self.comp.bool_t
                 rsym = rtyp.symbol()
                 assert rsym != None, (expr.pos)
-                if rsym.kind not in (TypeKind.DynArray. TypeKind.Array):
+                if rsym.kind not in (TypeKind.DynArray, TypeKind.Array):
                     report.error(
                         f"operator `{expr.op}` can only be used with arrays and dynamic arrays",
                         expr.pos
@@ -792,18 +792,18 @@ class Checker:
                     f"expected unsigned integer value, found `{idx_t}`",
                     expr.index.pos
                 )
-            if left_sym.kind in (TypeKind.Array, TypeKind.DynArray.:
+            if left_sym.kind in (TypeKind.Array, TypeKind.DynArray):
                 if isinstance(expr.index, ast.RangeExpr):
-                    if left_sym.kind == TypeKind.DynArray.
+                    if left_sym.kind == TypeKind.DynArray:
                         expr.typ = expr.left_typ
                     else:
-                        expr.typ = type.DynArray.
+                        expr.typ = type.DynArray(
                             left_sym.info.elem_typ, left_sym.info.is_mut
                         )
-                        expr.typ.sym = self.comp.universe.add_or_get_vec(
+                        expr.typ.sym = self.comp.universe.add_or_get_dyn_array(
                             left_sym.info.elem_typ, left_sym.info.is_mut
                         )
-                elif left_sym.kind == TypeKind.DynArray.
+                elif left_sym.kind == TypeKind.DynArray:
                     expr.typ = left_sym.info.elem_typ
                 else:
                     expr.typ = left_sym.info.elem_typ
@@ -1009,7 +1009,7 @@ class Checker:
                 if len(expr.args) in (1, 2):
                     elem_t = expr.args[0].typ
                     expr.typ = type.Type(
-                        self.comp.universe.add_or_get_vec(
+                        self.comp.universe.add_or_get_dyn_array(
                             elem_t, expr.vec_is_mut
                         )
                     )
@@ -1208,7 +1208,7 @@ class Checker:
                             expr.field_pos
                         )
                         if expr.field_name.isdigit():
-                            if left_sym.kind in (TypeKind.Array, TypeKind.DynArray.:
+                            if left_sym.kind in (TypeKind.Array, TypeKind.DynArray):
                                 report.note(
                                     f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                                 )
@@ -1661,7 +1661,7 @@ class Checker:
         if expr.has_spread_expr:
             spread_expr_t = self.check_expr(expr.spread_expr)
             spread_expr_sym = spread_expr_t.symbol()
-            if spread_expr_sym.kind != TypeKind.DynArray.
+            if spread_expr_sym.kind != TypeKind.DynArray:
                 report.error(
                     "spread operator can only be used with dynamic arrays",
                     expr.spread_expr.pos
@@ -1672,7 +1672,7 @@ class Checker:
                 )
             else:
                 last_arg_typ = info.args[-1].typ
-                dyn_array_t = type.DynArray.last_arg_typ, False)
+                dyn_array_t = type.DynArray(last_arg_typ, False)
                 dyn_array_t.sym = last_arg_typ.sym
                 try:
                     self.check_types(spread_expr_t, dyn_array_t)
@@ -1778,7 +1778,7 @@ class Checker:
 
         if isinstance(expected, type.Func) and isinstance(got, type.Func):
             return expected == got
-        elif isinstance(expected, type.DynArray. and isinstance(got, type.DynArray.:
+        elif isinstance(expected, type.DynArray) and isinstance(got, type.DynArray):
             return expected.typ == got.typ
 
         if expected == self.comp.rune_t and got == self.comp.comptime_int_t:
@@ -1800,7 +1800,7 @@ class Checker:
             if exp_sym.info.is_mut and not got_sym.info.is_mut:
                 return False
             return exp_sym.info.elem_typ == got_sym.info.elem_typ and exp_sym.info.size == got_sym.info.size
-        elif exp_sym.kind == TypeKind.DynArray.and got_sym.kind == TypeKind.DynArray.
+        elif exp_sym.kind == TypeKind.DynArray and got_sym.kind == TypeKind.DynArray:
             if exp_sym.info.is_mut and not got_sym.info.is_mut:
                 return False
             return exp_sym.info.elem_typ == got_sym.info.elem_typ
@@ -1813,7 +1813,7 @@ class Checker:
             return True
 
         if self.sym.is_core_mod():
-            if exp_sym.kind == TypeKind.DynArray.and got_sym == self.comp.vec_sym:
+            if exp_sym.kind == TypeKind.DynArray and got_sym == self.comp.dyn_array_sym:
                 return True
 
         return False

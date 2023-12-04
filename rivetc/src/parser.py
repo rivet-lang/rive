@@ -1305,7 +1305,7 @@ class Parser:
                 return type.Array(self.parse_type(), size, is_mut)
             self.expect(Kind.Rbracket)
             is_mut = self.accept(Kind.KwMut)
-            return type.DynArray.self.parse_type(), is_mut)
+            return type.DynArray(self.parse_type(), is_mut)
         elif self.accept(Kind.Lparen):
             # tuples
             types = []
