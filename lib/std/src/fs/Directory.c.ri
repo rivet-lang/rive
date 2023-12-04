@@ -78,7 +78,7 @@ pub struct Directory {
         rpath := Path.resolve(path_)!;
         unsafe {
             if dir := libc.opendir(path_.ptr) {
-                mut res := @vec(string, 15);
+                mut res := @dyn_array(string, 15);
                 while ent := libc.readdir(dir) {
                     bptr: [&]uint8 := &ent.*.d_name[0];
                     if (bptr[0] == 0 or (bptr[0] == b'.' and bptr[1] == 0)

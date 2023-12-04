@@ -12,7 +12,7 @@ extern (Rivet) {
 
 func init_args(_argc: uint, _argv: [&][&]uint8) {
     unsafe {
-        ARGS = @vec(string, _argc);
+        ARGS = @dyn_array(string, _argc);
         mut i: uint := 0;
         while i < _argc : i += 1 {
             ARGS.push(string.from_raw(_argv[i]));

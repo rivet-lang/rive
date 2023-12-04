@@ -222,12 +222,12 @@ extend Checker {
     func check_tuple_literal(mut self, mut tuple_lit: ast.Expr.TupleLiteral) -> ast.Type {
         old_expected_type := self.expected_type;
         mut has_expected_types := false;
-        mut expected_types := @vec(ast.Type);
+        mut expected_types := @dyn_array(ast.Type);
         if expected_type_sym := self.expected_type.symbol(); expected_type_sym.info is .Tuple as tuple_info {
             has_expected_types = tuple_lit.values.len == tuple_info.types.len;
             expected_types = tuple_info.types;
         }
-        mut types := @vec(ast.Type);
+        mut types := @dyn_array(ast.Type);
         for i, mut value in tuple_lit.values {
             if has_expected_types {
                 self.expected_type = expected_types[i];

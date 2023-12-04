@@ -846,11 +846,11 @@ class Codegen:
                 self.cur_fn.store_ptr(
                     arg0, ir.Inst(ir.InstKind.LoadPtr, [arg1])
                 )
-            elif expr.name == "vec":
+            elif expr.name == "dyn_array":
                 typ_sym = expr.typ.symbol()
                 if len(expr.args) == 2:
-                    return self.empty_vec(typ_sym, self.gen_expr(expr.args[1]))
-                return self.empty_vec(typ_sym)
+                    return self.empty_dyn_array(typ_sym, self.gen_expr(expr.args[1]))
+                return self.empty_dyn_array(typ_sym)
             elif expr.name == "as":
                 arg1 = expr.args[1]
                 arg1_is_voidptr = isinstance(
@@ -1372,7 +1372,7 @@ class Codegen:
                             )
                         args.append(self.variadic_args(vargs, var_arg.typ.typ))
                     else:
-                        args.append(self.empty_vec(var_arg.typ.symbol()))
+                        args.append(self.empty_dyn_array(var_arg.typ.symbol()))
             if expr.sym.ret_typ == self.comp.never_t:
                 self.gen_defer_stmts(scope = expr.scope, run_defer_previous = True)
             inst = ir.Inst(ir.InstKind.Call, args)
@@ -1619,7 +1619,7 @@ class Codegen:
                 if expr.is_arr:
                     return self.default_value(expr.typ)
                 tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
-                self.cur_fn.alloca(tmp, self.empty_vec(typ_sym))
+                self.cur_fn.alloca(tmp, self.empty_dyn_array(typ_sym))
                 return tmp
             elem_typ = typ_sym.info.elem_typ
             size, _ = self.comp.type_size(elem_typ)
@@ -2624,13 +2624,13 @@ class Codegen:
         self.cur_fn.add_call(
             "_R4core13runtime_errorF", [
                 self.gen_string_literal(utils.smart_quote(msg, False)),
-                self.empty_vec(self.comp.universe["[]core.Stringable"])
+                self.empty_dyn_array(self.comp.universe["[]core.Stringable"])
             ]
         )
 
     def variadic_args(self, vargs, var_arg_typ_):
         if len(vargs) == 0:
-            return self.empty_vec(var_arg_typ_.typ.symbol())
+            return self.empty_dyn_array(var_arg_typ_.typ.symbol())
         elem_size, _ = self.comp.type_size(var_arg_typ_)
         return ir.Inst(
             ir.InstKind.Call, [
@@ -2671,7 +2671,7 @@ class Codegen:
                 self.ir_type(typ), [self.default_value(typ_sym.info.elem_typ)]
             )
         elif typ_sym.kind == TypeKind.DynArray:
-            return self.empty_vec(typ_sym)
+            return self.empty_dyn_array(typ_sym)
         elif typ_sym.kind == TypeKind.Enum:
             if typ_sym.info.is_boxed and typ_sym.default_value:
                 return self.gen_expr_with_cast(typ, typ_sym.default_value)
@@ -2709,7 +2709,7 @@ class Codegen:
             return ir.NoneLit(ir.VOID_PTR_T)
         return None
 
-    def empty_vec(self, typ_sym, cap = None):
+    def empty_dyn_array(self, typ_sym, cap = None):
         elem_typ = typ_sym.info.elem_typ
         size, _ = self.comp.type_size(elem_typ)
         return ir.Inst(

@@ -56,7 +56,7 @@ test "string.runes_count()" {
 
 test "string.tokenize()" {
     mut iterator := "   abc def    ghi  ".tokenize(b' ');
-    mut res := @vec(string, 3);
+    mut res := @dyn_array(string, 3);
     while w := iterator.next() {
         res.push(w);
     }

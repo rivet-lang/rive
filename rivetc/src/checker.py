@@ -1005,12 +1005,12 @@ class Checker:
             elif expr.name == "ignore_not_mutated_warn":
                 _ = self.check_expr(expr.args[0])
                 self.check_expr_is_mut(expr.args[0])
-            elif expr.name == "vec":
+            elif expr.name == "dyn_array":
                 if len(expr.args) in (1, 2):
                     elem_t = expr.args[0].typ
                     expr.typ = type.Type(
                         self.comp.universe.add_or_get_dyn_array(
-                            elem_t, expr.vec_is_mut
+                            elem_t, expr.dyn_array_is_mut
                         )
                     )
                     if len(expr.args) == 2:
@@ -1020,7 +1020,7 @@ class Checker:
                         except utils.CompilerError as e:
                             report.error(e.args[0], expr.args[1].pos)
                             report.note(
-                                "in second argument of builtin function `vec`"
+                                "in second argument of builtin function `dyn_array`"
                             )
                 else:
                     report.error(

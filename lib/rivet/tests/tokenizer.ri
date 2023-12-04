@@ -11,7 +11,7 @@ var prefs_ := prefs.Prefs();
 
 func tokenize(text: string) -> []token.Token {
     mut tokenizer_ := tokenizer.Tokenizer.new(text, prefs_, Table.new(prefs_));
-    mut tokens := @vec(token.Token, text.len / 3);
+    mut tokens := @dyn_array(token.Token, text.len / 3);
     mut token := tokenizer_.next();
     while {
         tokens.push(token);

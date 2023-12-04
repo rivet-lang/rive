@@ -7,7 +7,7 @@ import core;
 pub alias Builder := core.StringBuilder;
 
 func fill_dyn_array(len: uint) -> []mut int32 {
-    mut vec := @vec(mut int32, len);
+    mut vec := @dyn_array(mut int32, len);
     mut i: uint := 0;
     while i < len : i += 1 {
         vec.push(@as(int32, i));

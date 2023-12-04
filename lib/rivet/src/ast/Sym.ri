@@ -246,7 +246,7 @@ pub struct Module < Sym {
         if type_sym := self.scope.find(unique_name) {
             return @as(TypeSym, type_sym);
         }
-        mut fields := @vec(Field);
+        mut fields := @dyn_array(Field);
         for i, type in types {
             fields.push(Field(name: i.to_string(), is_public: true, type: type));
         }

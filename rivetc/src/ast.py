@@ -757,7 +757,7 @@ class BuiltinCallExpr:
         self.name = name
         self.args = args
         self.pos = pos
-        self.vec_is_mut = False
+        self.dyn_array_is_mut = False
         self.typ = None
 
     def __repr__(self):

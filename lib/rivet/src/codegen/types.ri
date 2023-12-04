@@ -9,7 +9,7 @@ import ../depgraph;
 
 extend Codegen {
     func get_type_symbols(mut self, root: ast.Sym) -> []ast.TypeSym {
-        mut ts := @vec(ast.TypeSym);
+        mut ts := @dyn_array(ast.TypeSym);
         for sym in root.scope.syms {
             if sym is ast.TypeSym as type_sym and !(
                 type_sym.info is .DynArray or type_sym.info is .Alias
@@ -26,12 +26,12 @@ extend Codegen {
 
     func sort_type_symbols(mut self, tss: []ast.TypeSym) {
         mut dg := depgraph.DepGraph.new();
-        mut type_names := @vec(string);
+        mut type_names := @dyn_array(string);
         for ts in tss {
             type_names.push(ts.qualname());
         }
         for ts in tss {
-            mut field_deps := @vec(string);
+            mut field_deps := @dyn_array(string);
             match ts.info is {
                 .Array as array_info -> {
                     dep := array_info.elem_type.to_qualstring();
@@ -115,7 +115,7 @@ extend Codegen {
                 is_void := result.inner.is_void();
                 name := "_R6Result".concat(self.mangle_type(result.inner));
                 if !self.generated_opt_res_types.contains(name) {
-                    mut fields := @vec(mir.Field);
+                    mut fields := @dyn_array(mir.Field);
                     if !is_void {
                         fields.push(mir.Field("value", self.type_to_mir(result.inner)));
                     }
@@ -133,7 +133,7 @@ extend Codegen {
                     is_void := option.inner.is_void();
                     name := "_R6Option".concat(self.mangle_type(result.inner));
                     if !self.generated_opt_res_types.contains(name) {
-                        mut fields := @vec(mir.Field);
+                        mut fields := @dyn_array(mir.Field);
                         if !is_void {
                             fields.push(mir.Field("value", self.type_to_mir(option.inner)));
                         }
@@ -166,7 +166,7 @@ extend Codegen {
                     }
                     match type_sym.info is {
                         .Func as func_info -> {
-                            mut args := @vec(mir.Type);
+                            mut args := @dyn_array(mir.Type);
                             for arg in func_info.args {
                                 args.push(self.type_to_mir(arg.type));
                             }
