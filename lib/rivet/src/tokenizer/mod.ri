@@ -47,7 +47,7 @@ pub struct Tokenizer {
     }
 
     func init(mut self) {
-        self.all_tokens = @vec(token.Token, self.text.len / 3);
+        self.all_tokens = @dyn_array(token.Token, self.text.len / 3);
         self.tokenize_remaining_text();
     }
 
@@ -259,7 +259,7 @@ func decode_h_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
     if escapes_pos.is_empty() {
         return s;
     }
-    mut ss := @vec(string, escapes_pos.len * 2 + 1);
+    mut ss := @dyn_array(string, escapes_pos.len * 2 + 1);
     ss.push(s[..escapes_pos[escapes_pos.len - 1] - start]);
     for i, pos in escapes_pos {
         idx := pos - start;
@@ -281,7 +281,7 @@ func decode_o_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
     if escapes_pos.is_empty() {
         return s;
     }
-    mut ss := @vec(string, escapes_pos.len);
+    mut ss := @dyn_array(string, escapes_pos.len);
     // everything before the first escape code position
     ss.push(s[..escapes_pos[escapes_pos.len - 1] - start]);
     for i, pos in escapes_pos {
@@ -311,7 +311,7 @@ func decode_unicode_escaped_rune(str: string) -> string {
     return if str.len == end_idx {
         segment
     } else {
-        mut ss := @vec(string, 2);
+        mut ss := @dyn_array(string, 2);
         ss.push(segment);
         ss.push(str[end_idx..]);
         utils.join(ss, "")

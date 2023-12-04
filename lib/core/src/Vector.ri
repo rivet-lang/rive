@@ -39,14 +39,14 @@ struct DynArray {
 
     func get(self, idx: uint) -> rawptr {
         if idx >= self.len {
-            runtime_error("vector index out of range (index: {}, len: {})", idx, self.len);
+            runtime_error("dynamic array index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { @ptr_add(@as([&]mut uint8, self.ptr), idx * self.elem_size) };
     }
 
     func set(self, idx: uint, val: rawptr) {
         if idx >= self.len {
-            runtime_error("vector index out of range (index: {}, len: {})", idx, self.len);
+            runtime_error("dynamic array index out of range (index: {}, len: {})", idx, self.len);
         }
         unsafe {
             mem_copy(
@@ -66,11 +66,11 @@ struct DynArray {
         self.len += 1;
     }
 
-    /// Returns the last element of the vector, and removes it. If the
-    /// vector is empty, this will panic.
+    /// Returns the last element of the dynamic array, and removes it. If the
+    /// dynamic array is empty, this will panic.
     func pop(mut self) -> rawptr {
         if self.len == 0 {
-            runtime_error("Vec.pop: vector is empty");
+            runtime_error("DynArray pop: dynamic array is empty");
         }
         new_len := self.len - 1;
         self.len = new_len;
@@ -79,13 +79,13 @@ struct DynArray {
 
     /// Deletes `size` elements beginning with index `i`.
     /// NOTE: This function does NOT operate in-place. Internally, it creates a copy
-    /// of the vector, skipping over `size` elements starting at `i`, and then points
-    /// the original variable to the new memory location.
+    /// of the dynamic array, skipping over `size` elements starting at `i`, and then
+    /// points the original variable to the new memory location.
     pub func delete(mut self, i: uint, size: uint := 1, no_slices: bool := false) {
         if i + size > self.len {
             end_idx := if size == 1 { "..{}".fmt(i + size) } else { "" };
             runtime_error(
-                "DynArray.delete(): index out of range (i: {}..{}, self.len: {})",
+                "DynArray delete(): index out of range (i: {}..{}, self.len: {})",
                 i, end_idx, self.len
             );
         }

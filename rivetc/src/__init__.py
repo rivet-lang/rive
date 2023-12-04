@@ -22,7 +22,7 @@ class Compiler:
         self.pointer_size = 8 if self.prefs.target_bits == prefs.Bits.X64 else 4
 
         self.core_mod = None
-        self.vec_sym = None # from `core` module
+        self.dyn_array_sym = None # from `core` module
         self.throwable_sym = None # from `core` module
 
         #  Primitive types.

@@ -479,7 +479,7 @@ class Resolver:
                 elem_sym = typ.typ.symbol()
                 if elem_sym.kind == type.TypeKind.Trait:
                     elem_sym.info.has_objects = True
-                typ.resolve(self.comp.universe.add_or_get_vec(typ.typ))
+                typ.resolve(self.comp.universe.add_or_get_dyn_array(typ.typ))
                 return True
         elif isinstance(typ, type.Array):
             if self.resolve_type(typ.typ):
@@ -499,10 +499,12 @@ class Resolver:
                 report.error(
                     "array size cannot use non-constant value", typ.size.pos
                 )
-        elif isinstance(typ, type.Vec):
+        elif isinstance(typ, type.DynArray):
             if self.resolve_type(typ.typ):
                 typ.resolve(
-                    self.comp.universe.add_or_get_vec(typ.typ, typ.is_mut)
+                    self.comp.universe.add_or_get_dyn_array(
+                        typ.typ, typ.is_mut
+                    )
                 )
                 return True
         elif isinstance(typ, type.Tuple):

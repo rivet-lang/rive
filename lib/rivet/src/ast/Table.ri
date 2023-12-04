@@ -48,7 +48,7 @@ pub struct Table {
     pub mut float64_sym: TypeSym;
     pub mut string_sym: TypeSym;
     pub mut throwable_sym: TypeSym;
-    pub mut vector_sym: TypeSym; // from `core` module
+    pub mut dyn_array_sym: TypeSym; // from `core` module
 
     /// Primitive types.
     pub mut bool_t: Type;
@@ -171,7 +171,7 @@ pub struct Table {
                 BuiltinArg("msg", type: self.string_t, is_optional: true)
             ]),
 
-            .Func("vec", [
+            .Func("dyn_array", [
                 BuiltinArg("type", is_any: true),
                 BuiltinArg("cap", type: self.uint_t, is_optional: true)
             ], checks: [
@@ -342,7 +342,7 @@ pub struct Table {
                     } else {
                         self.type_size(enum_info.underlying_type)
                     },
-                    .DynArray -> self.type_symbol_size(self.vector_sym, is_raw),
+                    .DynArray -> self.type_symbol_size(self.dyn_array_sym, is_raw),
                     .Array as array_info -> {
                         (elem_size, elem_align) := self.type_size(array_info.elem_type);
                         (array_info.size * elem_size, elem_align)
@@ -353,7 +353,7 @@ pub struct Table {
                         types := if type_sym.info is .Tuple as tuple_lit {
                             tuple_lit.types
                         } else {
-                            mut tmp := @vec(Type);
+                            mut tmp := @dyn_array(Type);
                             for field in type_sym.full_fields() {
                                 tmp.push(field.type);
                             }
@@ -388,7 +388,7 @@ pub struct Table {
     }
 
     pub func filter_files(self, inputs: []string) -> []string {
-        mut new_inputs := @vec(string, inputs.len);
+        mut new_inputs := @dyn_array(string, inputs.len);
         for input in inputs {
             base_name_input := Path.base_name(input);
             if base_name_input.count(".") == 1 {
@@ -396,7 +396,7 @@ pub struct Table {
                 continue;
             }
             exts := base_name_input[..base_name_input.len - 3].split(".")[1..];
-            mut already_exts := @vec(string, exts.len);
+            mut already_exts := @dyn_array(string, exts.len);
             mut should_compile := false;
             for ext in exts {
                 if ext in already_exts {

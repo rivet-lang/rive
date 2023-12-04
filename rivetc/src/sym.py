@@ -248,7 +248,7 @@ class Mod(Sym):
             )
         )
 
-    def add_or_get_vec(self, elem_typ, is_mut = False):
+    def add_or_get_dyn_array(self, elem_typ, is_mut = False):
         if is_mut:
             unique_name = f"[]mut {elem_typ.qualstr()}"
         else:
@@ -256,44 +256,44 @@ class Mod(Sym):
         if sym := self.find(unique_name):
             return sym
         from .type import Type as type_Type
-        vec_sym = Type(
-            True, unique_name, TypeKind.Vec, info = VecInfo(elem_typ, is_mut),
+        dyn_array_sym = Type(
+            True, unique_name, TypeKind.DynArray, info = info(elem_typ, is_mut),
             fields = [
                 Field("len", False, True, type_Type(self[14])),
                 Field("cap", False, True, type_Type(self[14]))
             ]
         )
-        vec_sym.add(
+        dyn_array_sym.add(
             Func(
                 ABI.Rivet, True, False, False, True, False, "push",
                 [Arg("value", False, elem_typ, None, False, NO_POS)],
                 type_Type(self[0]), False, True, NO_POS, True, False,
-                type_Type(vec_sym)
+                type_Type(dyn_array_sym)
             )
         )
-        vec_sym.add(
+        dyn_array_sym.add(
             Func(
                 ABI.Rivet, True, False, False, True, False, "pop", [], elem_typ,
-                False, True, NO_POS, True, False, type_Type(vec_sym)
+                False, True, NO_POS, True, False, type_Type(dyn_array_sym)
             )
         )
-        vec_sym.add(
+        dyn_array_sym.add(
             Func(
                 ABI.Rivet, True, False, False, True, False, "clone", [],
-                type_Type(vec_sym), False, True, NO_POS, False, False,
-                type_Type(vec_sym)
+                type_Type(dyn_array_sym), False, True, NO_POS, False, False,
+                type_Type(dyn_array_sym)
             )
         )
-        if vector_sym := self.find("core").find("DynArray"):
-            if is_empty_m := vector_sym.find("is_empty"):
-                vec_sym.add(is_empty_m)
-            if delete_m := vector_sym.find("delete"):
-                vec_sym.add(delete_m)
-            if trim_m := vector_sym.find("trim"):
-                vec_sym.add(trim_m)
-            if clear_m := vector_sym.find("clear"):
-                vec_sym.add(clear_m)
-        return self.add_and_return(vec_sym)
+        if core_dyn_array_sym := self.find("core").find("DynArray"):
+            if is_empty_m := core_dyn_array_sym.find("is_empty"):
+                dyn_array_sym.add(is_empty_m)
+            if delete_m := core_dyn_array_sym.find("delete"):
+                dyn_array_sym.add(delete_m)
+            if trim_m := core_dyn_array_sym.find("trim"):
+                dyn_array_sym.add(trim_m)
+            if clear_m := core_dyn_array_sym.find("clear"):
+                dyn_array_sym.add(clear_m)
+        return self.add_and_return(dyn_array_sym)
 
     def add_or_get_tuple(self, types):
         unique_name = f"({', '.join([t.qualstr() for t in types])})"
@@ -358,7 +358,7 @@ class TypeKind(Enum):
     String = auto_enum()
     Alias = auto_enum()
     Array = auto_enum()
-    Vec = auto_enum()
+    DynArray = auto_enum()
     Tuple = auto_enum()
     Enum = auto_enum()
     Trait = auto_enum()
@@ -419,8 +419,8 @@ class TypeKind(Enum):
             return "alias"
         elif self == TypeKind.Array:
             return "array"
-        elif self == TypeKind.Vec:
-            return "vector"
+        elif self == TypeKind.DynArray:
+            return "dynamic array"
         elif self == TypeKind.Tuple:
             return "tuple"
         elif self == TypeKind.Trait:
@@ -450,7 +450,7 @@ class ArrayInfo:
         self.is_mut = is_mut
         self.has_contains_method = False
 
-class VecInfo:
+class info:
     def __init__(self, elem_typ, is_mut):
         self.elem_typ = elem_typ
         self.is_mut = is_mut
@@ -604,7 +604,7 @@ class Type(Sym):
             return self.info.is_boxed
         elif isinstance(self.info, StructInfo):
             return self.info.is_boxed
-        return self.kind in (TypeKind.Trait, TypeKind.String, TypeKind.Vec)
+        return self.kind in (TypeKind.Trait, TypeKind.String, TypeKind.DynArray)
 
     def is_primitive(self):
         if self.kind == TypeKind.Enum:

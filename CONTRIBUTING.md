@@ -71,7 +71,7 @@ The compiler comes with a number of libraries that are located in `lib/`:
 
 * `c/`: Contains wrappers to the standard C library for both Linux and Windows.
 * `core/`: This is the heart of Rivet, it contains the code that gives life to 
-        the strings, vectors, the backtrace, etc.
+        the strings, dynamic arrays, the backtrace, etc.
 * `std/`: The standard Rivet library, this module contains several submodules 
         with functions and types useful for development.
 * `rivet/`: The self-hosted compiler code.

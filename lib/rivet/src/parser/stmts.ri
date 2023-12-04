@@ -58,7 +58,7 @@ extend Parser {
                     index = self.parse_var_decl(support_mut: false, support_type: false);
                     self.expect(.Comma);
                 }
-                mut values := @vec(ast.ObjectData);
+                mut values := @dyn_array(ast.ObjectData);
                 if self.accept(.Lparen) {
                     while {
                         values.push(
@@ -112,7 +112,7 @@ extend Parser {
                 and self.decl_operator_is_used() -> {
                 // variable declarations
                 mut pos := self.tok.pos;
-                mut lefts := @vec(ast.ObjectData);
+                mut lefts := @dyn_array(ast.ObjectData);
                 if self.accept(.Lparen) {
                     // multiple variables
                     while {

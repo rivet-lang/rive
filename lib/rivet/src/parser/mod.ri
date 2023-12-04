@@ -39,7 +39,7 @@ pub struct Parser {
     pub func parse_module(mut self, mod_sym: ast.Module, files: []string) -> []ast.SourceFile {
         self.scope = mod_sym.scope;
         self.mod_sym = mod_sym;
-        mut source_files := @vec(ast.SourceFile);
+        mut source_files := @dyn_array(ast.SourceFile);
         for file in files {
             source_files.push(self.parse_file(file));
         }

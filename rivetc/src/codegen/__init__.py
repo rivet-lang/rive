@@ -72,7 +72,7 @@ def mangle_symbol(s):
                 name = f"{len(name)}{name}"
                 res.insert(0, name)
                 s.mangled_name = name
-            elif s.kind == TypeKind.Vec:
+            elif s.kind == TypeKind.DynArray:
                 res.insert(0, "4core8DynArray")
                 s.mangled_name = "_R4core8DynArray"
             elif s.kind == TypeKind.Array:
@@ -184,7 +184,9 @@ class Codegen:
             self.cur_fn.add_call("_R4core16init_string_litsF")
             testRunner = ir.Ident(ir.TEST_RUNNER_T, "_testRunner")
             main_fn.alloca(testRunner)
-            tests_field = ir.Selector(ir.VEC_T, testRunner, ir.Name("tests"))
+            tests_field = ir.Selector(
+                ir.DYN_ARRAY_T, testRunner, ir.Name("tests")
+            )
             main_fn.store(
                 ir.Selector(ir.UINT64_T, testRunner, ir.Name("ok_tests")),
                 ir.IntLit(ir.UINT64_T, "0")
@@ -198,7 +200,7 @@ class Codegen:
                 ir.IntLit(ir.UINT64_T, "0")
             )
             tests_vec = ir.Selector(
-                ir.VEC_T.ptr(True), testRunner, ir.Name("tests")
+                ir.DYN_ARRAY_T.ptr(True), testRunner, ir.Name("tests")
             )
             test_t = ir.TEST_T.ptr()
             gtests_array = []
@@ -846,11 +848,13 @@ class Codegen:
                 self.cur_fn.store_ptr(
                     arg0, ir.Inst(ir.InstKind.LoadPtr, [arg1])
                 )
-            elif expr.name == "vec":
+            elif expr.name == "dyn_array":
                 typ_sym = expr.typ.symbol()
                 if len(expr.args) == 2:
-                    return self.empty_vec(typ_sym, self.gen_expr(expr.args[1]))
-                return self.empty_vec(typ_sym)
+                    return self.empty_dyn_array(
+                        typ_sym, self.gen_expr(expr.args[1])
+                    )
+                return self.empty_dyn_array(typ_sym)
             elif expr.name == "as":
                 arg1 = expr.args[1]
                 arg1_is_voidptr = isinstance(
@@ -1299,8 +1303,8 @@ class Codegen:
                 args.append(name)
                 if expr.sym.is_method:
                     left_sym = expr.sym.self_typ.symbol()
-                    if left_sym.kind == TypeKind.Vec:
-                        expr.sym = self.comp.vec_sym[expr.sym.name]
+                    if left_sym.kind == TypeKind.DynArray:
+                        expr.sym = self.comp.dyn_array_sym[expr.sym.name]
                     sym_rec_is_ref = expr.sym.self_is_mut or expr.sym.self_is_ptr
                     receiver = expr.left.left
                     if left_sym.kind == TypeKind.Trait and expr.sym.self_typ != receiver.typ:
@@ -1334,7 +1338,7 @@ class Codegen:
                 arg_value = self.gen_expr_with_cast(fn_arg_typ, arg.expr)
                 if expr.sym.is_method:
                     left_sym = expr.left.left_typ.symbol()
-                    if left_sym.kind == TypeKind.Vec and expr.sym.name == "push":
+                    if left_sym.kind == TypeKind.DynArray and expr.sym.name == "push":
                         if arg.typ.symbol().is_boxed():
                             arg_value = ir.Inst(
                                 ir.InstKind.GetRef, [arg_value],
@@ -1372,9 +1376,11 @@ class Codegen:
                             )
                         args.append(self.variadic_args(vargs, var_arg.typ.typ))
                     else:
-                        args.append(self.empty_vec(var_arg.typ.symbol()))
+                        args.append(self.empty_dyn_array(var_arg.typ.symbol()))
             if expr.sym.ret_typ == self.comp.never_t:
-                self.gen_defer_stmts(scope = expr.scope, run_defer_previous = True)
+                self.gen_defer_stmts(
+                    scope = expr.scope, run_defer_previous = True
+                )
             inst = ir.Inst(ir.InstKind.Call, args)
             if expr.sym.ret_typ in self.void_types:
                 self.cur_fn.add_inst(inst)
@@ -1398,7 +1404,7 @@ class Codegen:
                             ir.IntLit(ir.UINT_T, str(size))
                         ]
                     )
-                elif expr.sym.is_method and expr.sym.name == "pop" and left_sym.kind == TypeKind.Vec:
+                elif expr.sym.is_method and expr.sym.name == "pop" and left_sym.kind == TypeKind.DynArray:
                     ret_typ = self.ir_type(expr.sym.ret_typ)
                     value = ir.Inst(ir.InstKind.Cast, [inst, ret_typ.ptr()])
                     if custom_tmp:
@@ -1619,7 +1625,7 @@ class Codegen:
                 if expr.is_arr:
                     return self.default_value(expr.typ)
                 tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
-                self.cur_fn.alloca(tmp, self.empty_vec(typ_sym))
+                self.cur_fn.alloca(tmp, self.empty_dyn_array(typ_sym))
                 return tmp
             elem_typ = typ_sym.info.elem_typ
             size, _ = self.comp.type_size(elem_typ)
@@ -1682,7 +1688,7 @@ class Codegen:
                                 end
                             ]
                         )
-                elif s.kind == TypeKind.Vec:
+                elif s.kind == TypeKind.DynArray:
                     if end == None:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
@@ -1741,7 +1747,7 @@ class Codegen:
                     ir.InstKind.Call,
                     [ir.Name("_R4core6string2atM"), left, idx], expr_typ_ir
                 )
-            elif s.kind == TypeKind.Vec:
+            elif s.kind == TypeKind.DynArray:
                 expr_typ_ir2 = expr_typ_ir.ptr()
                 value = ir.Inst(
                     ir.InstKind.Cast, [
@@ -1938,15 +1944,15 @@ class Codegen:
                 left_sym = expr_left_typ.symbol()
                 right_sym = expr.right.typ.symbol()
                 contains_method = f"contains_{right_sym.id}"
-                right_is_vector = right_sym.kind == sym.TypeKind.Vec
-                if right_is_vector:
+                right_is_dyn_array = right_sym.kind == sym.TypeKind.DynArray
+                if right_is_dyn_array:
                     full_name = f"_R4core8DynArray{len(contains_method)}{contains_method}"
                 else:
                     full_name = f"_R4core5Array{len(contains_method)}{contains_method}"
                 if not right_sym.info.has_contains_method:
                     right_sym.info.has_contains_method = True
-                    if right_is_vector:
-                        self_idx_ = ir.Ident(ir.VEC_T.ptr(True), "self")
+                    if right_is_dyn_array:
+                        self_idx_ = ir.Ident(ir.DYN_ARRAY_T.ptr(True), "self")
                         elem_idx_ = ir.Ident(
                             self.ir_type(expr_left_typ), "_elem_"
                         )
@@ -1981,22 +1987,22 @@ class Codegen:
                                 ir.Name("<"), inc_v,
                                 ir.Selector(
                                     ir.UINT_T, self_idx_, ir.Name("len")
-                                ) if right_is_vector else
+                                ) if right_is_dyn_array else
                                 ir.Ident(ir.UINT_T, "_len_")
                             ]
                         ), body_l, exit_l
                     )
                     contains_decl.add_label(body_l)
-                    if right_is_vector:
+                    if right_is_dyn_array:
                         cur_elem = ir.Inst(
                             ir.InstKind.LoadPtr, [
                                 ir.Inst(
                                     ir.InstKind.Cast, [
                                         ir.Inst(
                                             ir.InstKind.Call, [
-                                                ir.
-                                                Name("_R4core8DynArray7raw_getM"),
-                                                self_idx_, inc_v
+                                                ir.Name(
+                                                    "_R4core8DynArray7raw_getM"
+                                                ), self_idx_, inc_v
                                             ]
                                         ),
                                         self.ir_type(expr_left_typ).ptr()
@@ -2040,7 +2046,7 @@ class Codegen:
                     contains_decl.add_ret(ir.IntLit(ir.BOOL_T, "0"))
                     self.out_rir.decls.append(contains_decl)
                 args = [ir.Name(full_name), right]
-                if not right_is_vector:
+                if not right_is_dyn_array:
                     args.append(ir.IntLit(ir.UINT_T, str(right_sym.info.size)))
                 args.append(left)
                 call = ir.Inst(ir.InstKind.Call, args, ir.BOOL_T)
@@ -2058,7 +2064,7 @@ class Codegen:
             typ_sym = expr_left_typ.symbol()
             if expr.op.is_overloadable_op() and (
                 typ_sym.kind in (
-                    TypeKind.Array, TypeKind.Vec, TypeKind.String,
+                    TypeKind.Array, TypeKind.DynArray, TypeKind.String,
                     TypeKind.Struct
                 ) or (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed)
             ) and not isinstance(expr_left_typ, type.Ptr):
@@ -2478,7 +2484,7 @@ class Codegen:
             left_ir_typ = self.ir_type(expr.left_typ)
             left_sym = expr.left_typ.symbol()
             sym_is_boxed = left_sym.is_boxed()
-            if left_sym.kind == TypeKind.Vec and assign_op == Kind.Assign:
+            if left_sym.kind == TypeKind.DynArray and assign_op == Kind.Assign:
                 rec = self.gen_expr_with_cast(expr.left_typ, expr.left)
                 if not isinstance(left_ir_typ, ir.Pointer):
                     rec = ir.Inst(ir.InstKind.GetRef, [rec])
@@ -2624,13 +2630,13 @@ class Codegen:
         self.cur_fn.add_call(
             "_R4core13runtime_errorF", [
                 self.gen_string_literal(utils.smart_quote(msg, False)),
-                self.empty_vec(self.comp.universe["[]core.Stringable"])
+                self.empty_dyn_array(self.comp.universe["[]core.Stringable"])
             ]
         )
 
     def variadic_args(self, vargs, var_arg_typ_):
         if len(vargs) == 0:
-            return self.empty_vec(var_arg_typ_.typ.symbol())
+            return self.empty_dyn_array(var_arg_typ_.typ.symbol())
         elem_size, _ = self.comp.type_size(var_arg_typ_)
         return ir.Inst(
             ir.InstKind.Call, [
@@ -2670,8 +2676,8 @@ class Codegen:
             return ir.ArrayLit(
                 self.ir_type(typ), [self.default_value(typ_sym.info.elem_typ)]
             )
-        elif typ_sym.kind == TypeKind.Vec:
-            return self.empty_vec(typ_sym)
+        elif typ_sym.kind == TypeKind.DynArray:
+            return self.empty_dyn_array(typ_sym)
         elif typ_sym.kind == TypeKind.Enum:
             if typ_sym.info.is_boxed and typ_sym.default_value:
                 return self.gen_expr_with_cast(typ, typ_sym.default_value)
@@ -2709,7 +2715,7 @@ class Codegen:
             return ir.NoneLit(ir.VOID_PTR_T)
         return None
 
-    def empty_vec(self, typ_sym, cap = None):
+    def empty_dyn_array(self, typ_sym, cap = None):
         elem_typ = typ_sym.info.elem_typ
         size, _ = self.comp.type_size(elem_typ)
         return ir.Inst(
@@ -2998,16 +3004,16 @@ class Codegen:
             return ir.Function(args, self.ir_type(typ.ret_typ))
         elif isinstance(typ, type.Array):
             return ir.Array(self.ir_type(typ.typ), typ.size)
-        elif isinstance(typ, type.Vec):
-            return ir.VEC_T.ptr(True)
+        elif isinstance(typ, type.DynArray):
+            return ir.DYN_ARRAY_T.ptr(True)
         elif isinstance(typ, type.Ptr):
             inner_t = self.ir_type(typ.typ)
             if isinstance(inner_t, ir.Pointer) and inner_t.is_managed:
                 return inner_t
             return ir.Pointer(inner_t)
         typ_sym = typ.symbol()
-        if typ_sym.kind == TypeKind.Vec:
-            return ir.VEC_T.ptr(True)
+        if typ_sym.kind == TypeKind.DynArray:
+            return ir.DYN_ARRAY_T.ptr(True)
         elif typ_sym.kind == TypeKind.Array:
             return ir.Array(
                 self.ir_type(typ_sym.info.elem_typ), typ_sym.info.size
@@ -3140,7 +3146,9 @@ class Codegen:
                         index_of_vtbl_fn.add_label(l2)
                     index_of_vtbl_fn.add_ret(ir.IntLit(ir.UINT_T, "0"))
                     self.out_rir.decls.append(index_of_vtbl_fn)
-            elif ts.kind in (TypeKind.Struct, TypeKind.String, TypeKind.Vec):
+            elif ts.kind in (
+                TypeKind.Struct, TypeKind.String, TypeKind.DynArray
+            ):
                 fields = [ir.Field("_rc_", ir.UINT_T)
                           ] if ts.info.is_boxed else []
                 for f in ts.full_fields():
@@ -3154,7 +3162,8 @@ class Codegen:
         for s in root.syms:
             if isinstance(s, sym.Type):
                 if not (
-                    s.kind in (TypeKind.Vec, TypeKind.Alias, TypeKind.Never)
+                    s.kind
+                    in (TypeKind.DynArray, TypeKind.Alias, TypeKind.Never)
                     or s.kind.is_primitive()
                 ):
                     ts.append(s)
@@ -3173,7 +3182,7 @@ class Codegen:
                 dep = mangle_symbol(ts.info.elem_typ.symbol())
                 if dep in typ_names:
                     field_deps.append(dep)
-            elif ts.kind == TypeKind.Vec:
+            elif ts.kind == TypeKind.DynArray:
                 dep = mangle_symbol(ts.info.elem_typ.symbol())
                 if dep in typ_names:
                     field_deps.append(dep)
