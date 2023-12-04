@@ -236,7 +236,7 @@ pub enum Type < traits.Stringable {
             .Result as res_t -> res_t.pos,
             .Tuple as tuple_t -> tuple_t.pos,
             .Variadic as variadic_t -> variadic_t.pos,
-            .DynArray as vec_t -> vec_t.pos,
+            .DynArray as dyn_array_t -> dyn_array_t.pos,
             .Array as arr_t -> arr_t.pos,
             .Pointer as ptr_t -> ptr_t.pos,
             .Rawptr as rawptr_t -> rawptr_t.pos,

@@ -96,9 +96,9 @@ extend Checker {
             }
             match b_func.name {
                 "as" -> self.check_builtin_as(builtin_call),
-                "vec" if builtin_call.args[0].expr is .Type as vec_t ->
+                "vec" if builtin_call.args[0].expr is .Type as dyn_array_t ->
                     return_type = .Basic(self.table.universe.add_or_get_vec(
-                        vec_t, builtin_call.vec_is_mut
+                        dyn_array_t, builtin_call.vec_is_mut
                     )),
                 else -> {}
             }

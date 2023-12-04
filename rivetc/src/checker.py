@@ -1672,10 +1672,10 @@ class Checker:
                 )
             else:
                 last_arg_typ = info.args[-1].typ
-                vec_t = type.Vec(last_arg_typ, False)
-                vec_t.sym = last_arg_typ.sym
+                dyn_array_t = type.Vec(last_arg_typ, False)
+                dyn_array_t.sym = last_arg_typ.sym
                 try:
-                    self.check_types(spread_expr_t, vec_t)
+                    self.check_types(spread_expr_t, dyn_array_t)
                 except utils.CompilerError as e:
                     report.error(e.args[0], expr.spread_expr.pos)
         return expr.typ
