@@ -8,104 +8,8 @@ from ..sym import TypeKind
 from .. import ast, sym, type, token, prefs, report, utils
 from ..token import Kind, OVERLOADABLE_OPERATORS_STR, NO_POS
 
-from . import ir
 from .c import CGen
-
-def prefix_type(tt):
-    prefix = ""
-    if isinstance(tt, type.Ptr):
-        _t = tt
-        while isinstance(_t, type.Ptr):
-            prefix += "ptr_"
-            if _t.is_mut:
-                prefix += "mut_"
-            _t = _t.typ
-        prefix += prefix_type(tt.typ)
-    elif isinstance(tt, type.Ptr):
-        prefix += "ref_"
-        if tt.is_mut:
-            prefix += "mut_"
-        prefix += prefix_type(tt.typ)
-    elif isinstance(tt, type.Option):
-        prefix += "opt_" + prefix_type(tt.typ)
-    return prefix
-
-def mangle_type(typ):
-    if isinstance(typ, type.Func):
-        s = "fn_"
-        if typ.is_unsafe:
-            s += "unsafe_"
-        if typ.is_extern:
-            s += f"extern_{typ.abi}_"
-        if typ.is_method:
-            s += "m_"
-        if typ.self_is_mut:
-            s += "_sm_"
-        elif typ.self_is_ptr:
-            s += "_sr_"
-        if typ.is_variadic:
-            s += "_v_"
-        s += f"_args{len(typ.args)}"
-        return s
-    return f"{prefix_type(typ)}{mangle_symbol(typ.symbol())}"
-
-def mangle_symbol(s):
-    if len(s.mangled_name) > 0:
-        return s.mangled_name
-    res = []
-    root = s
-    while True:
-        if s.is_universe:
-            break
-        if isinstance(s, sym.Mod):
-            s.mangled_name = "".join([
-                f"{len(n)}{n}" for n in s.name.split(".")
-            ])
-            res.insert(0, s.mangled_name)
-        elif isinstance(s, sym.Type):
-            if s.kind == TypeKind.Tuple:
-                name = "Tuple_"
-                for i, tt in enumerate(s.info.types):
-                    name += mangle_type(tt)
-                    if i < len(s.info.types) - 1:
-                        name += "_"
-                name = f"{len(name)}{name}"
-                res.insert(0, name)
-                s.mangled_name = name
-            elif s.kind == TypeKind.DynArray:
-                res.insert(0, "4core8DynArray")
-                s.mangled_name = "_R4core8DynArray"
-            elif s.kind == TypeKind.Array:
-                name = f"Array_{mangle_type(s.info.elem_typ)}_{s.info.size}"
-                name = f"{len(name)}{name}"
-                res.insert(0, name)
-                s.mangled_name = name
-            elif s.kind == TypeKind.String:
-                res.insert(0, "4core6string")
-                s.mangled_name = "_R4core6string"
-            else:
-                res.insert(0, f"{len(s.name)}{s.name}")
-        elif s.name in OVERLOADABLE_OPERATORS_STR:
-            name = OVERLOADABLE_OPERATORS_STR[s.name]
-            name = f"{len(name)}{name}"
-            res.insert(0, name)
-            s.mangled_name = name
-        else:
-            res.insert(0, f"{len(s.name)}{s.name}")
-        if s.parent == None:
-            break
-        else:
-            s = s.parent
-    res.insert(0, "_R")
-
-    if isinstance(root, sym.Func):
-        if root.is_method:
-            res.append("M")
-        else:
-            res.append("F")
-
-    root.mangled_name = "".join(res)
-    return root.mangled_name
+from . import ir, cg_utils
 
 class TestInfo:
     def __init__(self, name, func):
@@ -344,7 +248,7 @@ class Codegen:
             self.inside_var_decl = True
             for l in decl.lefts:
                 is_extern = decl.is_extern and decl.abi != sym.ABI.Rivet
-                name = l.name if is_extern else mangle_symbol(l.sym)
+                name = l.name if is_extern else cg_utils.mangle_symbol(l.sym)
                 typ = self.ir_type(l.typ)
                 self.out_rir.globals.append(
                     ir.GlobalVar(is_extern, is_extern, typ, name)
@@ -422,7 +326,7 @@ class Codegen:
                 else:
                     assert False
             else:
-                name = mangle_symbol(decl.sym)
+                name = cg_utils.mangle_symbol(decl.sym)
             fn_decl = ir.FuncDecl(
                 False, decl.attributes, decl.is_extern and not decl.has_body,
                 name, args, decl.is_variadic and decl.is_extern, ret_typ,
@@ -820,12 +724,12 @@ class Codegen:
                 if expr.sym.is_extern:
                     return ir.Ident(
                         ir_typ,
-                        mangle_symbol(expr.sym)
+                        cg_utils.mangle_symbol(expr.sym)
                         if expr.sym.abi == sym.ABI.Rivet else expr.sym.name
                     )
-                return ir.Ident(ir_typ, mangle_symbol(expr.sym))
+                return ir.Ident(ir_typ, cg_utils.mangle_symbol(expr.sym))
             elif isinstance(expr.sym, sym.Func):
-                return ir.Ident(self.ir_type(expr.typ), mangle_symbol(expr.sym))
+                return ir.Ident(self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.sym))
             elif expr.is_comptime:
                 if expr.name == "_RIVET_COMMIT_":
                     return self.gen_string_literal(utils.commit_hash())
@@ -1064,7 +968,7 @@ class Codegen:
                         ir.Inst(
                             ir.InstKind.Call, [
                                 ir.Name(
-                                    f"{mangle_symbol(expr_left_sym)}{len(ov_m)}{ov_m}M"
+                                    f"{cg_utils.mangle_symbol(expr_left_sym)}{len(ov_m)}{ov_m}M"
                                 ), left_operand, right_operand
                             ]
                         )
@@ -1096,7 +1000,7 @@ class Codegen:
                 elif typ_sym.kind == TypeKind.Enum:
                     if expr.is_enum_variant:
                         tmp = self.boxed_instance(
-                            mangle_symbol(expr.enum_variant_sym),
+                            cg_utils.mangle_symbol(expr.enum_variant_sym),
                             expr.enum_variant_sym.id
                         )
                         initted_fields = []
@@ -1168,7 +1072,7 @@ class Codegen:
                     tmp = custom_tmp
                 elif typ_sym.is_boxed():
                     tmp = self.boxed_instance(
-                        mangle_symbol(typ_sym), typ_sym.id
+                        cg_utils.mangle_symbol(typ_sym), typ_sym.id
                     )
                 else:
                     tmp = ir.Ident(
@@ -1232,7 +1136,7 @@ class Codegen:
                             id_value = ir.Inst(
                                 ir.InstKind.Call, [
                                     ir.Name(
-                                        f"{mangle_symbol(left_sym)}17__index_of_vtbl__"
+                                        f"{cg_utils.mangle_symbol(left_sym)}17__index_of_vtbl__"
                                     ),
                                     ir.Selector(
                                         ir.UINT_T, self_expr, ir.Name("_idx_")
@@ -1247,7 +1151,7 @@ class Codegen:
                         id_value = ir.Inst(
                             ir.InstKind.Call, [
                                 ir.Name(
-                                    f"{mangle_symbol(left_sym)}17__index_of_vtbl__"
+                                    f"{cg_utils.mangle_symbol(left_sym)}17__index_of_vtbl__"
                                 ),
                                 ir.Selector(
                                     ir.UINT_T, self_expr, ir.Name("_idx_")
@@ -1262,7 +1166,7 @@ class Codegen:
                                     ir.Inst(
                                         ir.InstKind.Add, [
                                             ir.Name(
-                                                mangle_symbol(left_sym) +
+                                                cg_utils.mangle_symbol(left_sym) +
                                                 "4VTBL"
                                             ), id_value
                                         ]
@@ -1299,7 +1203,7 @@ class Codegen:
                 elif expr.sym.is_extern and expr.sym.abi != sym.ABI.Rivet and not expr.sym.has_body:
                     name = ir.Name(expr.sym.name)
                 else:
-                    name = ir.Name(mangle_symbol(expr.sym))
+                    name = ir.Name(cg_utils.mangle_symbol(expr.sym))
                 args.append(name)
                 if expr.sym.is_method:
                     left_sym = expr.sym.self_typ.symbol()
@@ -1563,14 +1467,14 @@ class Codegen:
                         )
                 elif isinstance(expr.left_sym, sym.Func):
                     return ir.Ident(
-                        self.ir_type(expr.typ), mangle_symbol(expr.left_sym)
+                        self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.left_sym)
                     )
                 elif isinstance(
                     expr.field_sym, sym.Var
                 ) and expr.field_sym.is_extern and expr.field_sym.abi != sym.ABI.Rivet:
                     return ir.Ident(self.ir_type(expr.typ), expr.field_sym.name)
                 return ir.Ident(
-                    self.ir_type(expr.typ), mangle_symbol(expr.field_sym)
+                    self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.field_sym)
                 )
             old_inside_selector_expr = self.inside_selector_expr
             self.inside_selector_expr = True
@@ -2032,7 +1936,7 @@ class Codegen:
                     else:
                         cond = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name(f"{mangle_symbol(left_sym)}4_eq_M"),
+                                ir.Name(f"{cg_utils.mangle_symbol(left_sym)}4_eq_M"),
                                 cur_elem, elem_idx_
                             ]
                         )
@@ -2091,7 +1995,7 @@ class Codegen:
                         ir.Inst(
                             ir.InstKind.Call, [
                                 ir.Name(
-                                    mangle_symbol(typ_sym) +
+                                    cg_utils.mangle_symbol(typ_sym) +
                                     f"{len(op_method)}{op_method}M"
                                 ), left if sym_is_boxed else
                                 ir.Inst(ir.InstKind.GetRef, [left]),
@@ -2332,7 +2236,7 @@ class Codegen:
                                 inst = ir.Inst(
                                     ir.InstKind.Call, [
                                         ir.Name(
-                                            f"{mangle_symbol(p_typ_sym)}4_eq_M"
+                                            f"{cg_utils.mangle_symbol(p_typ_sym)}4_eq_M"
                                         ), match_expr, p_conv,
                                     ]
                                 )
@@ -2695,7 +2599,7 @@ class Codegen:
             if custom_tmp:
                 tmp = custom_tmp
             elif typ_sym.info.is_boxed:
-                tmp = self.boxed_instance(mangle_symbol(typ_sym), typ_sym.id)
+                tmp = self.boxed_instance(cg_utils.mangle_symbol(typ_sym), typ_sym.id)
             else:
                 tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
                 self.cur_fn.alloca(tmp)
@@ -2783,7 +2687,7 @@ class Codegen:
         value_sym = self.comp.comptime_number_to_type(value_typ).symbol()
         trait_sym = trait_typ.symbol()
         size, _ = self.comp.type_size(value_typ)
-        tmp = self.boxed_instance(mangle_symbol(trait_sym), 0)
+        tmp = self.boxed_instance(cg_utils.mangle_symbol(trait_sym), 0)
         is_ptr = isinstance(value.typ, ir.Pointer)
         for f in trait_sym.fields:
             f_typ = self.ir_type(f.typ)
@@ -2803,7 +2707,7 @@ class Codegen:
         if value_sym.kind == TypeKind.Trait:
             index = ir.Inst(
                 ir.InstKind.Call, [
-                    ir.Name(f"{mangle_symbol(trait_sym)}17__index_of_vtbl__"),
+                    ir.Name(f"{cg_utils.mangle_symbol(trait_sym)}17__index_of_vtbl__"),
                     ir.Selector(ir.UINT_T, value, ir.Name("_idx_"))
                 ], ir.UINT_T
             )
@@ -2830,7 +2734,7 @@ class Codegen:
         if custom_tmp:
             tmp = custom_tmp
         else:
-            tmp = self.boxed_instance(mangle_symbol(enum_sym), enum_sym.id)
+            tmp = self.boxed_instance(cg_utils.mangle_symbol(enum_sym), enum_sym.id)
         uint_t = ir.UINT_T
         variant_info = enum_sym.info.get_variant(variant_name)
         self.cur_fn.store(
@@ -2863,7 +2767,7 @@ class Codegen:
         if custom_tmp:
             tmp = custom_tmp
         else:
-            tmp = self.boxed_instance(mangle_symbol(enum_sym), enum_sym.id)
+            tmp = self.boxed_instance(cg_utils.mangle_symbol(enum_sym), enum_sym.id)
         variant_info = enum_sym.info.get_variant(variant_name)
         self.cur_fn.store(
             ir.Selector(ir.UINT_T, tmp, ir.Name("_idx_")),
@@ -2954,7 +2858,7 @@ class Codegen:
 
     def ir_type(self, typ, gen_self_arg = False):
         if isinstance(typ, type.Result):
-            name = f"_R6Result{mangle_type(typ.typ)}"
+            name = f"_R6Result{cg_utils.mangle_type(typ.typ)}"
             if name not in self.generated_opt_res_types:
                 is_void = typ.typ in self.void_types
                 self.out_rir.structs.append(
@@ -2976,7 +2880,7 @@ class Codegen:
         elif isinstance(typ, type.Option):
             if typ.is_pointer():
                 return self.ir_type(typ.typ)
-            name = f"_R6Option{mangle_type(typ.typ)}"
+            name = f"_R6Option{cg_utils.mangle_type(typ.typ)}"
             if name not in self.generated_opt_res_types:
                 is_void = typ.typ in self.void_types
                 self.out_rir.structs.append(
@@ -3024,7 +2928,7 @@ class Codegen:
             return ir.VOID_PTR_T
         elif typ_sym.kind == TypeKind.Enum:
             if typ_sym.info.is_boxed:
-                return ir.Type(mangle_symbol(typ_sym)).ptr(True)
+                return ir.Type(cg_utils.mangle_symbol(typ_sym)).ptr(True)
             return ir.Type(str(typ_sym.info.underlying_typ))
         elif typ_sym.kind.is_primitive():
             if typ_sym.name == "int":
@@ -3032,7 +2936,7 @@ class Codegen:
             if typ_sym.name == "uint":
                 return ir.UINT_T
             return ir.Type(typ_sym.name)
-        res = ir.Type(mangle_symbol(typ_sym))
+        res = ir.Type(cg_utils.mangle_symbol(typ_sym))
         if typ_sym.is_boxed():
             return res.ptr(True)
         return res
@@ -3047,7 +2951,7 @@ class Codegen:
                 for i, f in enumerate(ts.info.types):
                     fields.append(ir.Field(f"f{i}", self.ir_type(f)))
                 self.out_rir.structs.append(
-                    ir.Struct(False, mangle_symbol(ts), fields)
+                    ir.Struct(False, cg_utils.mangle_symbol(ts), fields)
                 )
             elif ts.kind == TypeKind.Enum:
                 # TODO: in the self-hosted compiler calculate the enum value here
@@ -3055,7 +2959,7 @@ class Codegen:
                 if ts.info.is_boxed:
                     self.out_rir.structs.append(
                         ir.Struct(
-                            False, mangle_symbol(ts), [
+                            False, cg_utils.mangle_symbol(ts), [
                                 ir.Field("_rc_", ir.UINT_T),
                                 ir.Field("_idx_", ir.UINT_T),
                                 ir.Field("obj", ir.VOID_PTR_T)
@@ -3063,7 +2967,7 @@ class Codegen:
                         )
                     )
             elif ts.kind == TypeKind.Trait:
-                ts_name = mangle_symbol(ts)
+                ts_name = cg_utils.mangle_symbol(ts)
                 fields = [
                     ir.Field("_rc_", ir.UINT_T),
                     ir.Field("_idx_", ir.UINT_T),
@@ -3106,9 +3010,9 @@ class Codegen:
                                 m.name
                             ] if m.name in OVERLOADABLE_OPERATORS_STR else m.name
                             if ts_method := its.find(m.name):
-                                map[method_name] = mangle_symbol(ts_method)
+                                map[method_name] = cg_utils.mangle_symbol(ts_method)
                             else:
-                                map[method_name] = mangle_symbol(m)
+                                map[method_name] = cg_utils.mangle_symbol(m)
                     funcs.append(map)
                     index_of_vtbl.append((its.qualname(), its.id, idx))
                 if len(funcs) > 0 and ts.info.has_objects:
@@ -3123,7 +3027,7 @@ class Codegen:
                     )
                     index_of_vtbl_fn = ir.FuncDecl(
                         False, ast.Annotations(), False,
-                        mangle_symbol(ts) + "17__index_of_vtbl__",
+                        cg_utils.mangle_symbol(ts) + "17__index_of_vtbl__",
                         [ir.Ident(ir.UINT_T, "self")], False, ir.UINT_T, False
                     )
                     for child_name, child_idx_, child_idx_x in index_of_vtbl:
@@ -3154,7 +3058,7 @@ class Codegen:
                 for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 self.out_rir.structs.append(
-                    ir.Struct(ts.info.is_opaque, mangle_symbol(ts), fields)
+                    ir.Struct(ts.info.is_opaque, cg_utils.mangle_symbol(ts), fields)
                 )
 
     def get_type_symbols(self, root):
@@ -3174,21 +3078,21 @@ class Codegen:
         dg = utils.DepGraph()
         typ_names = []
         for ts in tss:
-            ts.mangled_name = mangle_symbol(ts)
+            ts.mangled_name = cg_utils.mangle_symbol(ts)
             typ_names.append(ts.mangled_name)
         for ts in tss:
             field_deps = []
             if ts.kind == TypeKind.Array:
-                dep = mangle_symbol(ts.info.elem_typ.symbol())
+                dep = cg_utils.mangle_symbol(ts.info.elem_typ.symbol())
                 if dep in typ_names:
                     field_deps.append(dep)
             elif ts.kind == TypeKind.DynArray:
-                dep = mangle_symbol(ts.info.elem_typ.symbol())
+                dep = cg_utils.mangle_symbol(ts.info.elem_typ.symbol())
                 if dep in typ_names:
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Tuple:
                 for f in ts.info.types:
-                    dep = mangle_symbol(f.symbol())
+                    dep = cg_utils.mangle_symbol(f.symbol())
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f, type.Option
                     ):
@@ -3196,12 +3100,12 @@ class Codegen:
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Trait:
                 for base in ts.info.bases:
-                    dep = mangle_symbol(base)
+                    dep = cg_utils.mangle_symbol(base)
                     if dep not in typ_names or dep in field_deps:
                         continue
                     field_deps.append(dep)
                 for f in ts.fields:
-                    dep = mangle_symbol(f.typ.symbol())
+                    dep = cg_utils.mangle_symbol(f.typ.symbol())
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f.typ, type.Option
                     ):
@@ -3209,12 +3113,12 @@ class Codegen:
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Struct:
                 for base in ts.info.bases:
-                    dep = mangle_symbol(base)
+                    dep = cg_utils.mangle_symbol(base)
                     if dep not in typ_names or dep in field_deps:
                         continue
                     field_deps.append(dep)
                 for f in ts.fields:
-                    dep = mangle_symbol(f.typ.symbol())
+                    dep = cg_utils.mangle_symbol(f.typ.symbol())
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f.typ, type.Option
                     ):
