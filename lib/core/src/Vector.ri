@@ -70,7 +70,7 @@ struct DynArray {
     /// dynamic array is empty, this will panic.
     func pop(mut self) -> rawptr {
         if self.len == 0 {
-            runtime_error("DynArray pop: dynamic array is empty");
+            runtime_error("DynArray.pop: dynamic array is empty");
         }
         new_len := self.len - 1;
         self.len = new_len;

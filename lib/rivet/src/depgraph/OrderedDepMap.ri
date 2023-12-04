@@ -43,7 +43,7 @@ pub struct OrderedDepMap {
 
     pub func delete(mut self, name: string) {
         if !self.data.contains(name) {
-            process.panic("OrderedDepMap.delete(): no such key: `{}`", name);
+            process.panic("OrderedDepMap.delete: no such key: `{}`", name);
         }
         for i, _ in self.keys {
             if self.keys[i] == name {
