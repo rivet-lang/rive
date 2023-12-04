@@ -312,7 +312,7 @@ pub enum Expr < traits.Stringable {
             .StringLiteral as string_lit -> string_lit.pos,
             .EnumLiteral as enum_lit -> enum_lit.pos,
             .TupleLiteral as tuple_lit -> tuple_lit.pos,
-            .DynArrayLiteral as vec_lit -> vec_lit.pos,
+            .DynArrayLiteral as dyn_array_lit -> dyn_array_lit.pos,
             .Index as index -> index.pos,
             .Selector as selector -> selector.pos,
             .Indirect as indirect -> indirect.pos,

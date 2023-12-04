@@ -81,7 +81,7 @@ extend Checker {
                 enum_lit.type
             },
             .TupleLiteral as mut tuple_lit -> self.check_tuple_literal(tuple_lit),
-            .DynArrayLiteral as mut vec_lit -> self.check_dyn_array_literal(vec_lit),
+            .DynArrayLiteral as mut dyn_array_lit -> self.check_dyn_array_literal(dyn_array_lit),
             .Ident as ident -> {
                 ident.type = if ident.name == "_" {
                     .Void()
@@ -249,7 +249,7 @@ extend Checker {
         return tuple_lit.type;
     }
 
-    func check_dyn_array_literal(mut self, mut vec_lit: ast.Expr.DynArrayLiteral) -> ast.Type {
+    func check_dyn_array_literal(mut self, mut dyn_array_lit: ast.Expr.DynArrayLiteral) -> ast.Type {
         old_expected_type := self.expected_type;
         mut size: uint := 0;
         mut is_mut := false;
@@ -271,7 +271,7 @@ extend Checker {
         if has_expected_type {
             value_type = self.table.comptime_number_to_type(value_type);
         }
-        for i, mut value in vec_lit.values {
+        for i, mut value in dyn_array_lit.values {
             type := self.check_expr(value);
             if i == 0 and !has_expected_type {
                 value_type = self.table.comptime_number_to_type(type);
@@ -279,7 +279,7 @@ extend Checker {
             } else {
                 self.check_types(type, value_type) catch |err| {
                     mut err_b := report.error_builder(err.to_string(), value.position());
-                    err_b.add_note(if vec_lit.is_arr {
+                    err_b.add_note(if dyn_array_lit.is_arr {
                         "in element {} of array literal"
                     } else {
                         "in element {} of dynamic array literal"
@@ -289,23 +289,23 @@ extend Checker {
             }
         }
         self.expected_type = old_expected_type;
-        vec_lit.type = if vec_lit.is_arr {
-            arr_len := if vec_lit.values.len > 0 {
-                vec_lit.values.len
+        dyn_array_lit.type = if dyn_array_lit.is_arr {
+            arr_len := if dyn_array_lit.values.len > 0 {
+                dyn_array_lit.values.len
             } else {
                 if !has_expected_type {
-                    report.error("could not infer type and size of array", vec_lit.pos);
+                    report.error("could not infer type and size of array", dyn_array_lit.pos);
                 }
                 size
             };
             .Basic(
                 self.table.universe.add_or_get_array(value_type, arr_len, is_mut),
-                pos: vec_lit.pos
+                pos: dyn_array_lit.pos
             )
         } else {
-            .Basic(self.table.universe.add_or_get_dyn_array(value_type, is_mut), pos: vec_lit.pos)
+            .Basic(self.table.universe.add_or_get_dyn_array(value_type, is_mut), pos: dyn_array_lit.pos)
         };
-        return vec_lit.type;
+        return dyn_array_lit.type;
     }
 
     func check_selector(mut self, mut selector: ast.Expr.Selector) -> ast.Type {
