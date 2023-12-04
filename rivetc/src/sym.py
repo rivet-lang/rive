@@ -284,14 +284,14 @@ class Mod(Sym):
                 type_Type(dyn_array_sym)
             )
         )
-        if dyn_array_sym := self.find("core").find("DynArray"):
-            if is_empty_m := dyn_array_sym.find("is_empty"):
+        if core_dyn_array_sym := self.find("core").find("DynArray"):
+            if is_empty_m := core_dyn_array_sym.find("is_empty"):
                 dyn_array_sym.add(is_empty_m)
-            if delete_m := dyn_array_sym.find("delete"):
+            if delete_m := core_dyn_array_sym.find("delete"):
                 dyn_array_sym.add(delete_m)
-            if trim_m := dyn_array_sym.find("trim"):
+            if trim_m := core_dyn_array_sym.find("trim"):
                 dyn_array_sym.add(trim_m)
-            if clear_m := dyn_array_sym.find("clear"):
+            if clear_m := core_dyn_array_sym.find("clear"):
                 dyn_array_sym.add(clear_m)
         return self.add_and_return(dyn_array_sym)
 

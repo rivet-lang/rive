@@ -1938,7 +1938,7 @@ class Codegen:
                 left_sym = expr_left_typ.symbol()
                 right_sym = expr.right.typ.symbol()
                 contains_method = f"contains_{right_sym.id}"
-                right_is_dyn_array = right_sym.kind == sym.TypeKind.Vec
+                right_is_dyn_array = right_sym.kind == sym.TypeKind.DynArray
                 if right_is_dyn_array:
                     full_name = f"_R4core8DynArray{len(contains_method)}{contains_method}"
                 else:
