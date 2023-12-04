@@ -877,7 +877,7 @@ class Parser:
                         break
             self.expect(Kind.Rbracket)
             is_arr = self.accept(Kind.Bang)
-            expr = ast.VectorLiteral(elems, is_arr, pos)
+            expr = ast.DynArrayLiteral(elems, is_arr, pos)
         elif self.tok.kind == Kind.Name:
             if self.peek_tok.kind == Kind.Char:
                 if self.tok.lit == "b":

@@ -284,7 +284,7 @@ class Mod(Sym):
                 type_Type(vec_sym)
             )
         )
-        if vector_sym := self.find("core").find("Vector"):
+        if vector_sym := self.find("core").find("DynArray"):
             if is_empty_m := vector_sym.find("is_empty"):
                 vec_sym.add(is_empty_m)
             if delete_m := vector_sym.find("delete"):

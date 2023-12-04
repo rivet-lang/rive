@@ -72,7 +72,7 @@ extend Parser {
                 } else {
                     self.expect(.Rbracket);
                     is_mut := self.accept(.KwMut);
-                    .Vector(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
+                    .DynArray(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
                 }
             },
             self.accept(.Lparen) -> {

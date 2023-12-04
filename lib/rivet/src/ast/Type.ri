@@ -49,7 +49,7 @@ pub enum Type < traits.Stringable {
         mut sym: TypeSym;
         pos: token.Pos;
     },
-    Vector {
+    DynArray {
         mut inner: Type;
         is_mut: bool;
         mut sym: TypeSym;
@@ -122,7 +122,7 @@ pub enum Type < traits.Stringable {
                 }
                 .Tuple(unaliased_types, tuple_data.sym)
             },
-            .Vector as vector_data -> .Vector(
+            .DynArray as vector_data -> .DynArray(
                 vector_data.inner.unalias() ?? vector_data.inner, vector_data.is_mut
             ),
             .Array as array_data -> .Array(
@@ -165,7 +165,7 @@ pub enum Type < traits.Stringable {
             .Option as option -> option.inner.symbol(),
             .Tuple as tuple_data -> tuple_data.sym,
             .Variadic as variadic_data -> variadic_data.sym,
-            .Vector as vector_data -> vector_data.sym,
+            .DynArray as vector_data -> vector_data.sym,
             .Array as array_data -> array_data.sym,
             .Pointer as pointer_data -> pointer_data.inner.symbol(),
             .Func as func_data -> func_data.sym,
@@ -236,7 +236,7 @@ pub enum Type < traits.Stringable {
             .Result as res_t -> res_t.pos,
             .Tuple as tuple_t -> tuple_t.pos,
             .Variadic as variadic_t -> variadic_t.pos,
-            .Vector as vec_t -> vec_t.pos,
+            .DynArray as vec_t -> vec_t.pos,
             .Array as arr_t -> arr_t.pos,
             .Pointer as ptr_t -> ptr_t.pos,
             .Rawptr as rawptr_t -> rawptr_t.pos,
@@ -262,7 +262,7 @@ pub enum Type < traits.Stringable {
             .Tuple as tuple_lhs if rhs is .Tuple as tuple_rhs -> tuple_lhs == tuple_rhs,
             .Variadic as variadic_lhs if rhs is .Variadic as variadic_rhs ->
                 variadic_lhs.inner == variadic_rhs.inner,
-            .Vector as vector_lhs if rhs is .Vector as vector_rhs ->
+            .DynArray as vector_lhs if rhs is .DynArray as vector_rhs ->
                 vector_lhs.inner == vector_rhs.inner and vector_lhs.is_mut == vector_rhs.is_mut,
             .Array as array_lhs if rhs is .Array as array_rhs ->
                 array_lhs.inner == array_rhs.inner and array_lhs.size_value == array_rhs.size_value
@@ -336,7 +336,7 @@ pub enum Type < traits.Stringable {
                 sb.to_string()
             },
             .Variadic as variadic_data -> "...".concat(variadic_data.inner.to_string_(qualstr)),
-            .Vector as vector_data -> if vector_data.is_mut {
+            .DynArray as vector_data -> if vector_data.is_mut {
                 "[]mut"
             } else {
                 "[]"

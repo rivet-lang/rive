@@ -6,12 +6,12 @@ import c/libc;
 
 #[boxed]
 pub struct StringBuilder < Stringable {
-    mut inner: Vector;
+    mut inner: DynArray;
 
     /// Returns a string builder with capacity `cap`.
     #[inline]
     pub func new(cap: uint := 0) -> Self {
-        return Self(unsafe { Vector.new(@size_of(uint8), cap) });
+        return Self(unsafe { DynArray.new(@size_of(uint8), cap) });
     }
 
     #[inline]
@@ -20,7 +20,7 @@ pub struct StringBuilder < Stringable {
             Self.new()
         } else {
             Self(unsafe {
-                Vector.from_array(
+                DynArray.from_array(
                     @as(&mut uint8, s.ptr), @size_of(uint8), s.len
                 )
             })

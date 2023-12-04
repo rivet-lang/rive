@@ -81,7 +81,7 @@ extend Checker {
                 enum_lit.type
             },
             .TupleLiteral as mut tuple_lit -> self.check_tuple_literal(tuple_lit),
-            .VectorLiteral as mut vec_lit -> self.check_vector_literal(vec_lit),
+            .DynArrayLiteral as mut vec_lit -> self.check_vector_literal(vec_lit),
             .Ident as ident -> {
                 ident.type = if ident.name == "_" {
                     .Void()
@@ -249,14 +249,14 @@ extend Checker {
         return tuple_lit.type;
     }
 
-    func check_vector_literal(mut self, mut vec_lit: ast.Expr.VectorLiteral) -> ast.Type {
+    func check_vector_literal(mut self, mut vec_lit: ast.Expr.DynArrayLiteral) -> ast.Type {
         old_expected_type := self.expected_type;
         mut size: uint := 0;
         mut is_mut := false;
         mut has_expected_type := false;
         mut value_type := ast.Type.Void();
         if value_sym := self.expected_type.symbol(); value_sym.info is .Array
-            or value_sym.info is .Vector {
+            or value_sym.info is .DynArray {
             has_expected_type = true;
             value_type = value_sym.info.elem_type()?;
             self.expected_type = value_type;
@@ -381,7 +381,7 @@ extend Checker {
                         ), selector.field_pos
                     );
                     if selector.field_name.is_digit()
-                        and (left_sym.info is .Vector or left_sym.info is .Array ) {
+                        and (left_sym.info is .DynArray or left_sym.info is .Array ) {
                         err.add_note(
                             "instead of using tuple indexing, use array indexing: `{}[{}]`"
                                 .fmt(selector.left, selector.field_name)
@@ -413,14 +413,14 @@ extend Checker {
             );
         }
         index.type = match left_sym.info is {
-            .Array, .Vector -> {
+            .Array, .DynArray -> {
                 elem_type := left_sym.info.elem_type()?;
                 if index.index is .Range {
                     is_mut := left_sym.info.is_mut_arr_or_vec();
-                    if left_sym.info is .Vector {
+                    if left_sym.info is .DynArray {
                         index.left_type
                     } else {
-                        .Vector(
+                        .DynArray(
                             elem_type, is_mut,
                             self.table.universe.add_or_get_vec(elem_type, is_mut)
                         )
@@ -608,7 +608,7 @@ extend Checker {
                 .KwIn, .KwNotIn -> {
                     binary.type = self.table.bool_t;
                     if right_sym := right_type.symbol() {
-                        if right_sym.info is .Array or right_sym.info is .Vector {
+                        if right_sym.info is .Array or right_sym.info is .DynArray {
                             elem_type := right_sym.info.elem_type()?;
                             op_method := if binary.op == .KwIn { "==" } else { "!=" };
                             if !(left_sym.info.is_primitive()

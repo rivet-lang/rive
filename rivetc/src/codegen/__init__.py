@@ -73,8 +73,8 @@ def mangle_symbol(s):
                 res.insert(0, name)
                 s.mangled_name = name
             elif s.kind == TypeKind.Vec:
-                res.insert(0, "4core6Vector")
-                s.mangled_name = "_R4core6Vector"
+                res.insert(0, "4core8DynArray")
+                s.mangled_name = "_R4core8DynArray"
             elif s.kind == TypeKind.Array:
                 name = f"Array_{mangle_type(s.info.elem_typ)}_{s.info.size}"
                 name = f"{len(name)}{name}"
@@ -236,7 +236,7 @@ class Codegen:
                 tests_field,
                 ir.Inst(
                     ir.InstKind.Call, [
-                        ir.Name("_R4core6Vector19from_array_no_allocF"),
+                        ir.Name("_R4core8DynArray19from_array_no_allocF"),
                         ir.ArrayLit(
                             ir.Array(ir.TEST_T, str(len(self.generated_tests))),
                             gtests_array
@@ -1613,7 +1613,7 @@ class Codegen:
                     TypeKind.Tuple else expr.field_name
                 )
             )
-        elif isinstance(expr, ast.VectorLiteral):
+        elif isinstance(expr, ast.DynArrayLiteral):
             typ_sym = expr.typ.symbol()
             if len(expr.elems) == 0:
                 if expr.is_arr:
@@ -1642,7 +1642,7 @@ class Codegen:
                 tmp,
                 ir.Inst(
                     ir.InstKind.Call, [
-                        ir.Name("_R4core6Vector10from_arrayF"), arr_lit,
+                        ir.Name("_R4core8DynArray10from_arrayF"), arr_lit,
                         ir.IntLit(ir.UINT_T, str(size)),
                         ir.IntLit(ir.UINT_T, str(len(elems)))
                     ]
@@ -1686,14 +1686,14 @@ class Codegen:
                     if end == None:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R4core6Vector10slice_fromM"), left,
+                                ir.Name("_R4core8DynArray10slice_fromM"), left,
                                 start
                             ]
                         )
                     else:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R4core6Vector5sliceM"), left, start,
+                                ir.Name("_R4core8DynArray5sliceM"), left, start,
                                 end
                             ]
                         )
@@ -1747,7 +1747,7 @@ class Codegen:
                     ir.InstKind.Cast, [
                         ir.Inst(
                             ir.InstKind.Call,
-                            [ir.Name("_R4core6Vector3getM"), left, idx]
+                            [ir.Name("_R4core8DynArray3getM"), left, idx]
                         ), expr_typ_ir2
                     ], expr_typ_ir2
                 )
@@ -1940,7 +1940,7 @@ class Codegen:
                 contains_method = f"contains_{right_sym.id}"
                 right_is_vector = right_sym.kind == sym.TypeKind.Vec
                 if right_is_vector:
-                    full_name = f"_R4core6Vector{len(contains_method)}{contains_method}"
+                    full_name = f"_R4core8DynArray{len(contains_method)}{contains_method}"
                 else:
                     full_name = f"_R4core5Array{len(contains_method)}{contains_method}"
                 if not right_sym.info.has_contains_method:
@@ -1995,7 +1995,7 @@ class Codegen:
                                         ir.Inst(
                                             ir.InstKind.Call, [
                                                 ir.
-                                                Name("_R4core6Vector7raw_getM"),
+                                                Name("_R4core8DynArray7raw_getM"),
                                                 self_idx_, inc_v
                                             ]
                                         ),
@@ -2485,7 +2485,7 @@ class Codegen:
                 expr_right = self.gen_expr_with_cast(right.typ, right)
                 val_sym = right.typ.symbol()
                 self.cur_fn.add_call(
-                    "_R4core6Vector3setM", [
+                    "_R4core8DynArray3setM", [
                         rec,
                         self.gen_expr(expr.index),
                         ir.Inst(ir.InstKind.GetRef, [expr_right])
@@ -2634,7 +2634,7 @@ class Codegen:
         elem_size, _ = self.comp.type_size(var_arg_typ_)
         return ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R4core6Vector19from_array_no_allocF"),
+                ir.Name("_R4core8DynArray19from_array_no_allocF"),
                 ir.ArrayLit(self.ir_type(var_arg_typ_), vargs),
                 ir.IntLit(ir.UINT_T, str(elem_size)),
                 ir.IntLit(ir.UINT_T, str(len(vargs)))
@@ -2714,7 +2714,7 @@ class Codegen:
         size, _ = self.comp.type_size(elem_typ)
         return ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R4core6Vector3newF"),
+                ir.Name("_R4core8DynArray3newF"),
                 ir.IntLit(ir.UINT_T, str(size)), cap
                 or ir.IntLit(ir.UINT_T, "0")
             ]

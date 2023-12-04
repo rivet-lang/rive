@@ -118,7 +118,7 @@ extend Checker {
         got_sym := got.symbol() ?? return false;
 
         if expected is .Variadic {
-            vec_info := @as(ast.TypeInfo.Vector, expected_sym.info);
+            vec_info := @as(ast.TypeInfo.DynArray, expected_sym.info);
             if got is .Variadic as variadic {
                 return vec_info.elem_type == variadic.inner;
             }
@@ -131,7 +131,7 @@ extend Checker {
 
         if expected is .Func and got is .Func {
             return expected == got;
-        } else if expected is .Vector as vector_info and got is .Vector as vector_info2 {
+        } else if expected is .DynArray as vector_info and got is .DynArray as vector_info2 {
             return vector_info.inner == vector_info2.inner;
         }
 
@@ -163,7 +163,7 @@ extend Checker {
                 return array_info.elem_type == array_info2.elem_type
                     and array_info.size == array_info2.size;
             },
-            .Vector as vector_lhs if got_sym.info is .Vector as vector_rhs -> {
+            .DynArray as vector_lhs if got_sym.info is .DynArray as vector_rhs -> {
                 if vector_lhs.is_mut and !vector_rhs.is_mut {
                     return false;
                 }
@@ -185,7 +185,7 @@ extend Checker {
 
         mod_sym := self.sym.module()?;
         if mod_sym.is_core() {
-            if expected_sym.info is .Vector and got_sym == self.table.vector_sym {
+            if expected_sym.info is .DynArray and got_sym == self.table.vector_sym {
                 return true;
             }
         }
