@@ -499,7 +499,7 @@ pub struct string < Stringable, Hashable, Throwable {
     #[inline]
     pub func as_bytes(self) -> []uint8 {
         return unsafe {
-            Vector.from_array_no_alloc(
+            DynArray.from_array_no_alloc(
                 @as(&mut uint8, self.ptr), @size_of(uint8), self.len
             )
         };

@@ -50,7 +50,7 @@ extend rune < Stringable {
 
     pub func as_bytes(self) -> []uint8 {
         res := @vec(uint8, 5);
-        res_v := @as(Vector, res);
+        res_v := @as(DynArray, res);
         res_v.len = utf32_decode_to_buffer(self, unsafe { @as([&]mut uint8, res_v.ptr) });
         return res;
     }

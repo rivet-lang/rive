@@ -21,7 +21,7 @@ extend Resolver {
             } else {
                 false
             },
-            .Vector as vec -> if self.resolve_type(vec.inner) {
+            .DynArray as vec -> if self.resolve_type(vec.inner) {
                 vec.sym = self.table.universe.add_or_get_vec(vec.inner, vec.is_mut);
                 true
             } else {

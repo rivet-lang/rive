@@ -182,7 +182,7 @@ pub struct Module < Sym {
         type_sym := TypeSym(
             is_public: true,
             name: unique_name,
-            info: .Vector(elem_type, is_mut),
+            info: .DynArray(elem_type, is_mut),
             fields: [
                 Field(
                     name: "len", is_public: true,
@@ -221,7 +221,7 @@ pub struct Module < Sym {
             ret_type: .Basic(type_sym),
             has_body: true
         )) catch {};
-        if vector_sym := self.scope.find("core")?.scope.find("Vector") {
+        if vector_sym := self.scope.find("core")?.scope.find("DynArray") {
             type_sym.scope.add(vector_sym.scope.find("is_empty")?) catch {};
             type_sym.scope.add(vector_sym.scope.find("delete")?) catch {};
             type_sym.scope.add(vector_sym.scope.find("trim")?) catch {};

@@ -185,7 +185,7 @@ pub struct Codegen {
                     sb.write_fmt("{}{}", sb2.len(), sb2.to_string());
                 },
                 .String -> sb.write_string("4core6string"),
-                .Vector -> sb.write_string("4core6Vector"),
+                .DynArray -> sb.write_string("4core6DynArray"),
                 .Array as array_info -> {
                     mut sb2 := strings.Builder.new();
                     sb2.write_fmt(

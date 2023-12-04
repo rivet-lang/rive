@@ -490,7 +490,7 @@ extend Checker {
         if call_expr.has_spread_expr {
             spread_expr_t := self.check_expr(call_expr.spread_expr);
             spread_expr_sym := spread_expr_t.symbol()?;
-            if spread_expr_sym.info is .Vector {
+            if spread_expr_sym.info is .DynArray {
                 last_arg_type := func_.args[func_.args.len - 1].type;
                 vec_t := ast.Type.Basic(last_arg_type.symbol()?);
                 self.check_types(spread_expr_t, vec_t) catch |err| {

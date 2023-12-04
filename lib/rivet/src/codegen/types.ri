@@ -12,7 +12,7 @@ extend Codegen {
         mut ts := @vec(ast.TypeSym);
         for sym in root.scope.syms {
             if sym is ast.TypeSym as type_sym and !(
-                type_sym.info is .Vector or type_sym.info is .Alias
+                type_sym.info is .DynArray or type_sym.info is .Alias
                 or type_sym.info.is_primitive()
             ) {
                 ts.push(type_sym);
@@ -39,7 +39,7 @@ extend Codegen {
                         field_deps.push(dep);
                     }
                 },
-                .Vector as vector_info -> {
+                .DynArray as vector_info -> {
                     dep := vector_info.elem_type.to_qualstring();
                     if dep in type_names {
                         field_deps.push(dep);
@@ -147,7 +147,7 @@ extend Codegen {
             .Array as array_t -> .Array(
                 self.type_to_mir(array_t.inner), array_t.size_value, size
             ),
-            .Vector -> self.vector_t,
+            .DynArray -> self.vector_t,
             .Rawptr -> .Rawptr(self.table.pointer_size),
             .Pointer as ptr_t -> .Pointer(
                 self.type_to_mir(ptr_t.inner), size: self.table.pointer_size
