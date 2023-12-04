@@ -114,7 +114,7 @@ extend Checker {
                 "`{}` is not an iterable type".fmt(iterable_t),
                 for_stmt.iterable.position()
             );
-            err.add_note("expected array or vector value");
+            err.add_note("expected array value");
             err.emit();
         }
     }

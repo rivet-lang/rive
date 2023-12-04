@@ -210,7 +210,7 @@ pub struct ImportedMod {
 }
 
 pub func filter_field_decl(decls: []Decl) -> []Decl {
-    mut fields := @vec(Decl);
+    mut fields := @dyn_array(Decl);
     for decl in decls {
         if decl is .Field {
             fields.push(decl);

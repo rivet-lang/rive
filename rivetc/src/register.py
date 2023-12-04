@@ -127,7 +127,7 @@ class Register:
                             )
                         )
                         if self.is_core_mod and decl.name == "DynArray":
-                            self.comp.vec_sym = decl.sym
+                            self.comp.dyn_array_sym = decl.sym
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)
                 except utils.CompilerError as e:

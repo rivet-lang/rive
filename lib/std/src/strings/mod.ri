@@ -6,8 +6,8 @@ import core;
 
 pub alias Builder := core.StringBuilder;
 
-func fill_vector(len: uint) -> []mut int32 {
-    mut vec := @vec(mut int32, len);
+func fill_dyn_array(len: uint) -> []mut int32 {
+    mut vec := @dyn_array(mut int32, len);
     mut i: uint := 0;
     while i < len : i += 1 {
         vec.push(@as(int32, i));
@@ -18,7 +18,7 @@ func fill_vector(len: uint) -> []mut int32 {
 /// Uses levenshtein distance algorithm to calculate the distance between
 /// two strings (lower is closer).
 pub func levenshtein_distance(a: string, b: string) -> int32 {
-    f := fill_vector(b.len + 1);
+    f := fill_dyn_array(b.len + 1);
     for ca in a.as_bytes() {
         mut j: uint := 1;
         mut fj1 := f[0];

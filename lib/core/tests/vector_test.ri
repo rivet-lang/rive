@@ -1,4 +1,4 @@
-test "vectors: push and pop" {
+test "dynamic arrays: push and pop" {
     mut vec := ["A", "B"];
     @assert(vec.len == 2);
 
@@ -11,7 +11,7 @@ test "vectors: push and pop" {
     @assert(vec.len == 2);
 }
 
-test "vectors: clear" {
+test "dynamic arrays: clear" {
     mut vec := ["A", "B"];
     @assert(vec.len == 2);
     @assert(vec[0] == "A");

@@ -801,10 +801,12 @@ class Parser:
                     name = self.parse_name()
                 self.expect(Kind.Lparen)
                 args = []
-                vec_is_mut = False
-                if name in ("vec", "as", "size_of", "align_of"):
+                dyn_array_is_mut = False
+                if name in ("dyn_array", "as", "size_of", "align_of"):
                     pos = self.tok.pos
-                    vec_is_mut = name == "vec" and self.accept(Kind.KwMut)
+                    dyn_array_is_mut = name == "dyn_array" and self.accept(
+                        Kind.KwMut
+                    )
                     args.append(ast.TypeNode(self.parse_type(), pos))
                     if self.tok.kind != Kind.Rparen:
                         self.expect(Kind.Comma)
@@ -815,7 +817,7 @@ class Parser:
                             break
                 self.expect(Kind.Rparen)
                 expr = ast.BuiltinCallExpr(name, args, expr.pos)
-                expr.vec_is_mut = vec_is_mut
+                expr.dyn_array_is_mut = dyn_array_is_mut
             else: # builtin variable
                 expr = self.parse_ident(True)
         elif self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Name:
@@ -1291,7 +1293,7 @@ class Parser:
                 report.help("use an indexable pointer instead (`[&]T`)")
             return type.Ptr(self.parse_type(), is_mut)
         elif self.accept(Kind.Lbracket):
-            # arrays or vectors
+            # arrays or dynamic arrays
             if self.tok.kind != Kind.Rbracket:
                 # indexable pointers
                 if self.accept(Kind.Amp):
@@ -1305,7 +1307,7 @@ class Parser:
                 return type.Array(self.parse_type(), size, is_mut)
             self.expect(Kind.Rbracket)
             is_mut = self.accept(Kind.KwMut)
-            return type.Vec(self.parse_type(), is_mut)
+            return type.DynArray(self.parse_type(), is_mut)
         elif self.accept(Kind.Lparen):
             # tuples
             types = []

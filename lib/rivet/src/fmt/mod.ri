@@ -104,7 +104,7 @@ pub struct Formatter {
         buffer.go_back(if i > 0 { i - 1 } else { buffer.len() - i - 1 });
         self.empty_line = false;
         mut line_len: uint := 0;
-        mut last_line_str := @vec(uint8);
+        mut last_line_str := @dyn_array(uint8);
         i = if buffer.len() > 0 { buffer.len() - 1 } else { 0 };
         while i >= 0 : i -= 1 {
             ch := buffer.byte_at(i);
@@ -153,7 +153,7 @@ pub struct Formatter {
 }
 
 func reverse(buf: []uint8) -> []uint8 {
-    mut reversed := @vec(uint8);
+    mut reversed := @dyn_array(uint8);
     mut i := buf.len - 1;
     while i >= 0 : i -= 1 {
         reversed.push(buf[i]);

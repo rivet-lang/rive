@@ -27,7 +27,7 @@ pub struct Codegen {
     mut int_t: mir.Type;
     mut uint_t: mir.Type;
     mut bool_t: mir.Type;
-    mut vector_t: mir.Type;
+    mut dyn_array_t: mir.Type;
     mut throwable_t: mir.Type;
 
     mut generated_opt_res_types: maps.MapStringBool;
@@ -74,9 +74,9 @@ pub struct Codegen {
             self.type_to_mir(self.table.uint32_t)
         };
         self.bool_t = self.type_to_mir(self.table.uint8_t);
-        self.vector_t = .Pointer(.Basic(
-            self.mangle_symbol(self.table.vector_sym),
-            self.table.type_symbol_size(self.table.vector_sym, true).0
+        self.dyn_array_t = .Pointer(.Basic(
+            self.mangle_symbol(self.table.dyn_array_sym),
+            self.table.type_symbol_size(self.table.dyn_array_sym, true).0
         ), true);
         self.throwable_t = self.type_to_mir(self.table.throwable_t);
 

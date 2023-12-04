@@ -96,9 +96,9 @@ extend Checker {
             }
             match b_func.name {
                 "as" -> self.check_builtin_as(builtin_call),
-                "vec" if builtin_call.args[0].expr is .Type as vec_t ->
-                    return_type = .Basic(self.table.universe.add_or_get_vec(
-                        vec_t, builtin_call.vec_is_mut
+                "dyn_array" if builtin_call.args[0].expr is .Type as dyn_array_t ->
+                    return_type = .Basic(self.table.universe.add_or_get_dyn_array(
+                        dyn_array_t, builtin_call.dyn_array_is_mut
                     )),
                 else -> {}
             }
@@ -158,8 +158,8 @@ extend Checker {
                 } else if to_ts := to_type.symbol() {
                     mod_sym := self.sym.module()?;
                     if mod_sym.is_core() {
-                        if (from_ts == self.table.vector_sym and to_ts.info is .DynArray)
-                            or (to_ts == self.table.vector_sym and from_ts.info is .DynArray) {
+                        if (from_ts == self.table.dyn_array_sym and to_ts.info is .DynArray)
+                            or (to_ts == self.table.dyn_array_sym and from_ts.info is .DynArray) {
                             return; // Valid inside `core` module
                         }
                     }

@@ -131,8 +131,8 @@ extend Checker {
 
         if expected is .Func and got is .Func {
             return expected == got;
-        } else if expected is .DynArray as vector_info and got is .DynArray as vector_info2 {
-            return vector_info.inner == vector_info2.inner;
+        } else if expected is .DynArray as dyn_array_info and got is .DynArray as dyn_array_info2 {
+            return dyn_array_info.inner == dyn_array_info2.inner;
         }
 
         if expected == self.table.rune_t and got == self.table.comptime_int_t {
@@ -163,11 +163,11 @@ extend Checker {
                 return array_info.elem_type == array_info2.elem_type
                     and array_info.size == array_info2.size;
             },
-            .DynArray as vector_lhs if got_sym.info is .DynArray as vector_rhs -> {
-                if vector_lhs.is_mut and !vector_rhs.is_mut {
+            .DynArray as dyn_array_lhs if got_sym.info is .DynArray as dyn_array_rhs -> {
+                if dyn_array_lhs.is_mut and !dyn_array_rhs.is_mut {
                     return false;
                 }
-                return vector_lhs.elem_type == vector_rhs.elem_type;
+                return dyn_array_lhs.elem_type == dyn_array_rhs.elem_type;
             },
             .Tuple as tuple_lhs if got_sym.info is .Tuple as tuple_rhs -> {
                 if tuple_lhs.types.len != tuple_rhs.types.len {
@@ -185,7 +185,7 @@ extend Checker {
 
         mod_sym := self.sym.module()?;
         if mod_sym.is_core() {
-            if expected_sym.info is .DynArray and got_sym == self.table.vector_sym {
+            if expected_sym.info is .DynArray and got_sym == self.table.dyn_array_sym {
                 return true;
             }
         }

@@ -93,7 +93,7 @@ pub struct Register {
                         ), struct_decl.pos)
                     };
                     if self.is_core_mod and struct_decl.name == "DynArray" {
-                        self.table.vector_sym = @as(ast.TypeSym, struct_decl.sym);
+                        self.table.dyn_array_sym = @as(ast.TypeSym, struct_decl.sym);
                     }
                     self.sym = struct_decl.sym;
                     self.walk_decls(struct_decl.decls);

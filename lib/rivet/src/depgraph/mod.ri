@@ -19,7 +19,7 @@ pub struct DepGraph {
 
     #[inline]
     pub func new() -> Self {
-        return Self(true, @vec(DepGraphNode, 1024));
+        return Self(true, @dyn_array(DepGraphNode, 1024));
     }
 
     #[inline]
@@ -38,7 +38,7 @@ pub struct DepGraph {
         mut resolved := Self.new();
         while node_deps.size() != 0 {
             iterations += 1;
-            mut ready_set := @vec(string);
+            mut ready_set := @dyn_array(string);
             for name in node_deps.keys {
                 deps := node_deps.get(name);
                 if deps.is_empty() {
@@ -83,7 +83,7 @@ pub struct DepGraph {
         }
         mut nn_names_it := nn.names.iterator();
         while k := nn_names_it.next() {
-            mut cycle_names := @vec(string);
+            mut cycle_names := @dyn_array(string);
             if nn.is_cycle.contains(k.key) {
                 continue;
             }
@@ -113,7 +113,7 @@ struct NodeNames {
             return (true, new_already_seen);
         }
         new_already_seen.push(name);
-        deps := self.names.get(name) ?? @vec(string);
+        deps := self.names.get(name) ?? @dyn_array(string);
         if deps.is_empty() {
             self.is_cycle.set(name, false);
             return (false, new_already_seen);

@@ -27,7 +27,7 @@ pub struct StringFormatter {
                         args_idx += 1;
                         if arg_idx >= args.len {
                             runtime_error(
-                                "string.fmt(): argument index out of range (argument index: {}, len: {}) at index {}",
+                                "string.fmt: argument index out of range (argument index: {}, len: {}) at index {}",
                                 arg_idx, args.len, self.i
                             );
                         }
@@ -60,7 +60,7 @@ pub struct StringFormatter {
                             self.i += 1;
                             if self.i >= self.buf.len {
                                 runtime_error(
-                                    "string.fmt(): incomplete format string at index {}",
+                                    "string.fmt: incomplete format string at index {}",
                                     start
                                 );
                             }
@@ -68,7 +68,7 @@ pub struct StringFormatter {
                         index := buf.as_uint64();
                         if index >= args.len {
                             runtime_error(
-                                "string.fmt(): argument index out of range (index: {}, len: {})",
+                                "string.fmt: argument index out of range (index: {}, len: {})",
                                 index, args.len
                             );
                         }
@@ -90,7 +90,7 @@ pub struct StringFormatter {
                         }
                     } else {
                         runtime_error(
-                            "string.fmt(): expecting closing `}}` in format string at index {}",
+                            "string.fmt: expecting closing `}}` in format string at index {}",
                             self.i
                         );
                     }
@@ -101,7 +101,7 @@ pub struct StringFormatter {
                         self.i += 1;
                     } else {
                         runtime_error(
-                            "string.fmt(): single `}}` encountered in format string at index {}",
+                            "string.fmt: single `}}` encountered in format string at index {}",
                             self.i
                         );
                     }
@@ -123,13 +123,13 @@ pub struct StringFormatter {
             buf.push(unsafe { self.buf.ptr[self.i] });
             self.i += 1;
             if self.i >= self.buf.len {
-                runtime_error("string.fmt(): incomplete format string (index: {})", start);
+                runtime_error("string.fmt: incomplete format string (index: {})", start);
             }
         }
         fwidth := buf.as_int();
         if fwidth == 0 {
             runtime_error(
-                "string.fmt(): invalid width value (cannot be 0 and cannot be omitted) -> (index: {})",
+                "string.fmt: invalid width value (cannot be 0 and cannot be omitted) -> (index: {})",
                 start
             );
         }
