@@ -458,7 +458,9 @@ class Checker:
                         if expr.is_arr:
                             report.note(f"in element {i + 1} of array literal")
                         else:
-                            report.note(f"in element {i + 1} of dynamic array literal")
+                            report.note(
+                                f"in element {i + 1} of dynamic array literal"
+                            )
             if expr.is_arr:
                 if len(expr.elems) > 0:
                     arr_len = str(len(expr.elems))
@@ -1208,7 +1210,9 @@ class Checker:
                             expr.field_pos
                         )
                         if expr.field_name.isdigit():
-                            if left_sym.kind in (TypeKind.Array, TypeKind.DynArray):
+                            if left_sym.kind in (
+                                TypeKind.Array, TypeKind.DynArray
+                            ):
                                 report.note(
                                     f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                                 )
@@ -1778,7 +1782,8 @@ class Checker:
 
         if isinstance(expected, type.Func) and isinstance(got, type.Func):
             return expected == got
-        elif isinstance(expected, type.DynArray) and isinstance(got, type.DynArray):
+        elif isinstance(expected,
+                        type.DynArray) and isinstance(got, type.DynArray):
             return expected.typ == got.typ
 
         if expected == self.comp.rune_t and got == self.comp.comptime_int_t:

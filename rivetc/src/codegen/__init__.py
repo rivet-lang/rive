@@ -184,7 +184,9 @@ class Codegen:
             self.cur_fn.add_call("_R4core16init_string_litsF")
             testRunner = ir.Ident(ir.TEST_RUNNER_T, "_testRunner")
             main_fn.alloca(testRunner)
-            tests_field = ir.Selector(ir.DYN_ARRAY_T, testRunner, ir.Name("tests"))
+            tests_field = ir.Selector(
+                ir.DYN_ARRAY_T, testRunner, ir.Name("tests")
+            )
             main_fn.store(
                 ir.Selector(ir.UINT64_T, testRunner, ir.Name("ok_tests")),
                 ir.IntLit(ir.UINT64_T, "0")
@@ -849,7 +851,9 @@ class Codegen:
             elif expr.name == "dyn_array":
                 typ_sym = expr.typ.symbol()
                 if len(expr.args) == 2:
-                    return self.empty_dyn_array(typ_sym, self.gen_expr(expr.args[1]))
+                    return self.empty_dyn_array(
+                        typ_sym, self.gen_expr(expr.args[1])
+                    )
                 return self.empty_dyn_array(typ_sym)
             elif expr.name == "as":
                 arg1 = expr.args[1]
@@ -1374,7 +1378,9 @@ class Codegen:
                     else:
                         args.append(self.empty_dyn_array(var_arg.typ.symbol()))
             if expr.sym.ret_typ == self.comp.never_t:
-                self.gen_defer_stmts(scope = expr.scope, run_defer_previous = True)
+                self.gen_defer_stmts(
+                    scope = expr.scope, run_defer_previous = True
+                )
             inst = ir.Inst(ir.InstKind.Call, args)
             if expr.sym.ret_typ in self.void_types:
                 self.cur_fn.add_inst(inst)
@@ -1994,9 +2000,9 @@ class Codegen:
                                     ir.InstKind.Cast, [
                                         ir.Inst(
                                             ir.InstKind.Call, [
-                                                ir.
-                                                Name("_R4core8DynArray7raw_getM"),
-                                                self_idx_, inc_v
+                                                ir.Name(
+                                                    "_R4core8DynArray7raw_getM"
+                                                ), self_idx_, inc_v
                                             ]
                                         ),
                                         self.ir_type(expr_left_typ).ptr()
@@ -3140,7 +3146,9 @@ class Codegen:
                         index_of_vtbl_fn.add_label(l2)
                     index_of_vtbl_fn.add_ret(ir.IntLit(ir.UINT_T, "0"))
                     self.out_rir.decls.append(index_of_vtbl_fn)
-            elif ts.kind in (TypeKind.Struct, TypeKind.String, TypeKind.DynArray):
+            elif ts.kind in (
+                TypeKind.Struct, TypeKind.String, TypeKind.DynArray
+            ):
                 fields = [ir.Field("_rc_", ir.UINT_T)
                           ] if ts.info.is_boxed else []
                 for f in ts.full_fields():
@@ -3154,7 +3162,8 @@ class Codegen:
         for s in root.syms:
             if isinstance(s, sym.Type):
                 if not (
-                    s.kind in (TypeKind.DynArray, TypeKind.Alias, TypeKind.Never)
+                    s.kind
+                    in (TypeKind.DynArray, TypeKind.Alias, TypeKind.Never)
                     or s.kind.is_primitive()
                 ):
                     ts.append(s)

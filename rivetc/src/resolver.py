@@ -502,7 +502,9 @@ class Resolver:
         elif isinstance(typ, type.DynArray):
             if self.resolve_type(typ.typ):
                 typ.resolve(
-                    self.comp.universe.add_or_get_dyn_array(typ.typ, typ.is_mut)
+                    self.comp.universe.add_or_get_dyn_array(
+                        typ.typ, typ.is_mut
+                    )
                 )
                 return True
         elif isinstance(typ, type.Tuple):
