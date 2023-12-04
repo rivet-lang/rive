@@ -158,8 +158,8 @@ extend Checker {
                 } else if to_ts := to_type.symbol() {
                     mod_sym := self.sym.module()?;
                     if mod_sym.is_core() {
-                        if (from_ts == self.table.vector_sym and to_ts.info is .DynArray)
-                            or (to_ts == self.table.vector_sym and from_ts.info is .DynArray) {
+                        if (from_ts == self.table.dyn_array_sym and to_ts.info is .DynArray)
+                            or (to_ts == self.table.dyn_array_sym and from_ts.info is .DynArray) {
                             return; // Valid inside `core` module
                         }
                     }

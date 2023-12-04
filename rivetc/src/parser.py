@@ -1291,7 +1291,7 @@ class Parser:
                 report.help("use an indexable pointer instead (`[&]T`)")
             return type.Ptr(self.parse_type(), is_mut)
         elif self.accept(Kind.Lbracket):
-            # arrays or vectors
+            # arrays or dynamic arrays
             if self.tok.kind != Kind.Rbracket:
                 # indexable pointers
                 if self.accept(Kind.Amp):
@@ -1305,7 +1305,7 @@ class Parser:
                 return type.Array(self.parse_type(), size, is_mut)
             self.expect(Kind.Rbracket)
             is_mut = self.accept(Kind.KwMut)
-            return type.Vec(self.parse_type(), is_mut)
+            return type.DynArray.self.parse_type(), is_mut)
         elif self.accept(Kind.Lparen):
             # tuples
             types = []

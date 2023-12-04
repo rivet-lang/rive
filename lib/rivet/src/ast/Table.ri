@@ -48,7 +48,7 @@ pub struct Table {
     pub mut float64_sym: TypeSym;
     pub mut string_sym: TypeSym;
     pub mut throwable_sym: TypeSym;
-    pub mut vector_sym: TypeSym; // from `core` module
+    pub mut dyn_array_sym: TypeSym; // from `core` module
 
     /// Primitive types.
     pub mut bool_t: Type;
@@ -342,7 +342,7 @@ pub struct Table {
                     } else {
                         self.type_size(enum_info.underlying_type)
                     },
-                    .DynArray -> self.type_symbol_size(self.vector_sym, is_raw),
+                    .DynArray -> self.type_symbol_size(self.dyn_array_sym, is_raw),
                     .Array as array_info -> {
                         (elem_size, elem_align) := self.type_size(array_info.elem_type);
                         (array_info.size * elem_size, elem_align)

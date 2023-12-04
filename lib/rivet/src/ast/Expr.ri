@@ -366,16 +366,16 @@ pub enum Expr < traits.Stringable {
                 sb.write_byte(b')');
                 sb.to_string()
             },
-            .DynArrayLiteral as vector_lit -> {
+            .DynArrayLiteral as dyn_array_lit -> {
                 mut sb := strings.Builder.from_string("[");
-                for i, value in vector_lit.values {
+                for i, value in dyn_array_lit.values {
                     sb.write_string(value.to_string());
-                    if i < vector_lit.values.len - 1 {
+                    if i < dyn_array_lit.values.len - 1 {
                         sb.write_string(", ");
                     }
                 }
                 sb.write_byte(b']');
-                if vector_lit.is_arr {
+                if dyn_array_lit.is_arr {
                     sb.write_byte(b'!');
                 }
                 sb.to_string()

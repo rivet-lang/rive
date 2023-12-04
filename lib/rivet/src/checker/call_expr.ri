@@ -498,7 +498,7 @@ extend Checker {
                 };
             } else {
                 report.error(
-                    "spread operator can only be used with vectors",
+                    "spread operator can only be used with dynamic arrays",
                     call_expr.spread_expr.position()
                 );
             }

@@ -499,7 +499,7 @@ class Resolver:
                 report.error(
                     "array size cannot use non-constant value", typ.size.pos
                 )
-        elif isinstance(typ, type.Vec):
+        elif isinstance(typ, type.DynArray.:
             if self.resolve_type(typ.typ):
                 typ.resolve(
                     self.comp.universe.add_or_get_vec(typ.typ, typ.is_mut)

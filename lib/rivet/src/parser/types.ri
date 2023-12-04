@@ -53,7 +53,7 @@ extend Parser {
                 .Pointer(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
             },
             self.accept(.Lbracket) -> {
-                // arrays or vectors
+                // arrays or dynamic arrays
                 if self.tok.kind != .Rbracket {
                     // indexable pointers
                     if self.accept(.Amp) {

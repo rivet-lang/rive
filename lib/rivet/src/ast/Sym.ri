@@ -221,11 +221,11 @@ pub struct Module < Sym {
             ret_type: .Basic(type_sym),
             has_body: true
         )) catch {};
-        if vector_sym := self.scope.find("core")?.scope.find("DynArray") {
-            type_sym.scope.add(vector_sym.scope.find("is_empty")?) catch {};
-            type_sym.scope.add(vector_sym.scope.find("delete")?) catch {};
-            type_sym.scope.add(vector_sym.scope.find("trim")?) catch {};
-            type_sym.scope.add(vector_sym.scope.find("clear")?) catch {};
+        if dyn_array_sym := self.scope.find("core")?.scope.find("DynArray") {
+            type_sym.scope.add(dyn_array_sym.scope.find("is_empty")?) catch {};
+            type_sym.scope.add(dyn_array_sym.scope.find("delete")?) catch {};
+            type_sym.scope.add(dyn_array_sym.scope.find("trim")?) catch {};
+            type_sym.scope.add(dyn_array_sym.scope.find("clear")?) catch {};
         }
         self.scope.add(type_sym) catch {};
         return type_sym;

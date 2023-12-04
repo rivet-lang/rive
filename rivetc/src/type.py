@@ -17,7 +17,7 @@ class _Ptr: # ugly hack =/
 
 class TBase:
     def symbol(self):
-        if isinstance(self, (Vec, Array, Tuple, Variadic)):
+        if isinstance(self, (DynArray. Array, Tuple, Variadic)):
             return self.sym
         elif isinstance(self, Func):
             return self.info()
@@ -33,7 +33,7 @@ class TBase:
         elif isinstance(self, Tuple):
             for t in self.types:
                 t.unalias()
-        elif isinstance(self, (Array, Vec, Ptr, Variadic)):
+        elif isinstance(self, (Array, DynArray. Ptr, Variadic)):
             self.typ.unalias()
         elif isinstance(self, Type):
             if self.is_resolved() and self.sym.kind == TypeKind.Alias:
@@ -128,7 +128,7 @@ class Ptr(TBase):
             return f"[&]{self.typ}"
         return f"&{self.typ}"
 
-class Vec(TBase):
+class DynArray.TBase):
     def __init__(self, typ, is_mut):
         self.typ = typ
         self.is_mut = is_mut
@@ -143,7 +143,7 @@ class Vec(TBase):
         return f"[]{self.typ.qualstr()}"
 
     def __eq__(self, other):
-        if not isinstance(other, Vec):
+        if not isinstance(other, DynArray.:
             return False
         return self.typ == other.typ and self.is_mut == other.is_mut
 

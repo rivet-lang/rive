@@ -10,16 +10,16 @@ pub enum TypeInfo < traits.Stringable {
     None,
     Bool,
     Rune,
+    ComptimeInt,
+    ComptimeFloat,
+    Int,
     SizedInt {
         size: uint;
     },
+    Uint,
     SizedUint {
         size: uint;
     },
-    Int,
-    Uint,
-    ComptimeInt,
-    ComptimeFloat,
     Float {
         size: uint;
     },
@@ -168,10 +168,10 @@ pub enum TypeInfo < traits.Stringable {
             .None -> "none",
             .Bool -> "bool",
             .Rune -> "rune",
-            .SizedInt as int_info -> "int{}".fmt(int_info.size),
             .Int -> "int",
-            .SizedUint as uint_info -> "uint{}".fmt(uint_info.size),
+            .SizedInt as int_info -> "int{}".fmt(int_info.size),
             .Uint -> "uint",
+            .SizedUint as uint_info -> "uint{}".fmt(uint_info.size),
             .ComptimeInt -> "comptime_int",
             .ComptimeFloat -> "comptime_float",
             .Float as float_info -> "float{}".fmt(float_info.size),
@@ -179,7 +179,7 @@ pub enum TypeInfo < traits.Stringable {
             .Func -> "func",
             .Alias -> "alias",
             .Array -> "array",
-            .DynArray -> "vector",
+            .DynArray -> "dynamic array",
             .Tuple -> "tuple",
             .Trait -> "trait",
             .Struct as struct_info -> if struct_info.is_enum_variant {

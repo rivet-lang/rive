@@ -81,7 +81,7 @@ extend Checker {
                 enum_lit.type
             },
             .TupleLiteral as mut tuple_lit -> self.check_tuple_literal(tuple_lit),
-            .DynArrayLiteral as mut vec_lit -> self.check_vector_literal(vec_lit),
+            .DynArrayLiteral as mut vec_lit -> self.check_dyn_array_literal(vec_lit),
             .Ident as ident -> {
                 ident.type = if ident.name == "_" {
                     .Void()
@@ -249,7 +249,7 @@ extend Checker {
         return tuple_lit.type;
     }
 
-    func check_vector_literal(mut self, mut vec_lit: ast.Expr.DynArrayLiteral) -> ast.Type {
+    func check_dyn_array_literal(mut self, mut vec_lit: ast.Expr.DynArrayLiteral) -> ast.Type {
         old_expected_type := self.expected_type;
         mut size: uint := 0;
         mut is_mut := false;
@@ -282,7 +282,7 @@ extend Checker {
                     err_b.add_note(if vec_lit.is_arr {
                         "in element {} of array literal"
                     } else {
-                        "in element {} of vector literal"
+                        "in element {} of dynamic array literal"
                     }.fmt(i + 1));
                     err_b.emit();
                 };
@@ -435,7 +435,7 @@ extend Checker {
                         "type `{}` does not support indexing".fmt(index.left_type),
                         index.pos
                     );
-                    err.add_note("only pointers, arrays, vectors and string supports indexing");
+                    err.add_note("only pointers, arrays, dynamic arrays and string supports indexing");
                     err.emit();
                 } else if index.left_type is .Pointer as pointer {
                     if !self.inside_unsafe() {
@@ -631,7 +631,7 @@ extend Checker {
                             };
                         } else {
                             report.error(
-                                "operator `{}` can only be used with arrays and vectors".fmt(
+                                "operator `{}` can only be used with arrays and dynamic arrays".fmt(
                                     binary.op
                                 ), binary.pos
                             );
