@@ -41,29 +41,22 @@ extend Formatter {
                 self.writeln();
             }
         } else {
-            lines := comment.text.trim_space().split_into_lines();
-            start_break := comment.text[0].is_alnum() or comment.text[0].is_space();
-            end_break := {
-                trimmed_bytes := comment.text.trim("\t").as_bytes();
-                trimmed_bytes[trimmed_bytes.len - 1].is_alnum()
-            } or {
-                bytes := comment.text.as_bytes();
-                bytes[bytes.len - 1].is_space()
-            };
+            lines := comment.text.split_into_lines();
             self.write("/*");
-            if start_break {
-                self.writeln();
+            for i, line in lines {
+                if i == lines.len - 1 {
+                    self.empty_line = true;
+                    if comment.text[comment.text.len - 1] == b'\n' {
+                        self.writeln(line);
+                    } else {
+                        self.write(line);
+                    }
+                    self.write("*/");
+                } else {
+                    self.empty_line = false;
+                    self.writeln(line.trim_right(" "));
+                }
             }
-            for line in lines {
-                self.writeln(line.trim_right(" "));
-                self.empty_line = false;
-            }
-            if end_break {
-                self.empty_line = true;
-            } else {
-                _ = self.remove_new_line();
-            }
-            self.write("*/");
         }
         if level == .Indent {
             self.indent -= 1;
