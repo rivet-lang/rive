@@ -573,7 +573,7 @@ extend Tokenizer {
         }
         len -= 1;
 
-        mut ch := self.text[start + 1..self.pos].clone();
+        mut ch := self.text.substr(start + 1, self.pos).clone();
         if len != 1 {
             // the string inside the backticks is longer than one character
             // but we might only have one rune... attempt to decode escapes
@@ -700,7 +700,7 @@ extend Tokenizer {
 
         mut lit := "";
         if start <= self.pos {
-            lit = self.text[start..self.pos].clone();
+            lit = self.text.substr(start, self.pos).clone();
             mut segment_idx: uint := 0;
             mut str_segments := @dyn_array(string);
             if u_escapes_pos.len + h_escapes_pos.len > 0 {
@@ -712,7 +712,7 @@ extend Tokenizer {
                     all_pos.push(pos1);
                 }
                 for pos1 in all_pos {
-                    str_segments.push(lit[segment_idx..(pos1 - start)]);
+                    str_segments.push(lit.substr(segment_idx, pos1 - start));
                     segment_idx = pos1 - start;
                     if pos1 in u_escapes_pos {
                         (end_idx, segment) := decode_u_escape_single(lit, segment_idx);
@@ -727,7 +727,7 @@ extend Tokenizer {
                 }
             }
             if segment_idx < lit.len {
-                str_segments.push(lit[segment_idx..]);
+                str_segments.push(lit.substr(segment_idx));
             }
             lit = utils.join(str_segments, "");
             if n_cr_chars > 0 {
