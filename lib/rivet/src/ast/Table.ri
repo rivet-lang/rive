@@ -395,7 +395,7 @@ pub struct Table {
                 new_inputs.push(input);
                 continue;
             }
-            exts := base_name_input[..base_name_input.len - 3].split(".")[1..];
+            exts := base_name_input.substr(end: base_name_input.len - 3).split(".")[1..];
             mut already_exts := @dyn_array(string, exts.len);
             mut should_compile := false;
             for ext in exts {
@@ -405,9 +405,9 @@ pub struct Table {
                 already_exts.push(ext);
                 if ext.starts_with("d_") or ext.starts_with("notd_") {
                     should_compile = if ext.starts_with("d_") {
-                        ext[2..] in self.prefs.flags
+                        ext.substr(2) in self.prefs.flags
                     } else {
-                        ext[2..] !in self.prefs.flags
+                        ext.substr(4) !in self.prefs.flags
                     };
                 } else if os := sys.OS.from_string(ext) {
                     should_compile = self.prefs.target_os == os;

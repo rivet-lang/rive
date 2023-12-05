@@ -95,7 +95,7 @@ extend Tokenizer {
                             self.line -= 1;
                         }
                         if (is_doc_comment and self.prefs.is_docs) or self.prefs.is_fmt {
-                            mut comment := self.text[start_pos..end_pos];
+                            mut comment := self.text.substr(start_pos, end_pos);
                             // find out if this comment is on its own line (for rivet format)
                             mut is_separate_line_comment := true;
                             mut j := start_pos - bytes_to_skip;
@@ -147,7 +147,7 @@ extend Tokenizer {
                             break;
                         }
                         if self.prefs.is_fmt {
-                            line := self.text[start_pos + 2..end_pos];
+                            line := self.text.substr(start_pos + 2, end_pos);
                             return self.new_multiline_token(
                                 .Comment, line, line.len, start_line, self.line, start_col
                             );
@@ -298,7 +298,7 @@ extend Tokenizer {
             }
             break;
         }
-        lit := self.text[start..self.pos].clone();
+        lit := self.text.substr(start, self.pos).clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -352,7 +352,7 @@ extend Tokenizer {
             self.pos += 1;
         }
 
-        lit := self.text[start..self.pos].clone();
+        lit := self.text.substr(start, self.pos).clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -399,7 +399,7 @@ extend Tokenizer {
             self.pos += 1;
         }
 
-        lit := self.text[start..self.pos].clone();
+        lit := self.text.substr(start, self.pos).clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -446,7 +446,7 @@ extend Tokenizer {
             self.pos += 1;
         }
 
-        lit := self.text[start..self.pos].clone();
+        lit := self.text.substr(start, self.pos).clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -530,7 +530,7 @@ extend Tokenizer {
                         "float literals should have a digit after the decimal point"
                     );
                     err.add_help(
-                        "use `{0}.0` instead of `{0}`".fmt(self.text[start..self.pos])
+                        "use `{0}.0` instead of `{0}`".fmt(self.text.substr(start, self.pos))
                     );
                     err.emit();
                     self.pos += 1;
@@ -573,7 +573,7 @@ extend Tokenizer {
             }
             self.pos += 1;
         }
-        lit := self.text[start..self.pos].clone();
+        lit := self.text.substr(start, self.pos).clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -610,7 +610,7 @@ extend Tokenizer {
         }
         len -= 1;
 
-        mut ch := self.text[start + 1..self.pos].clone();
+        mut ch := self.text.substr(start + 1, self.pos).clone();
         if self.prefs.is_fmt {
             return ch;
         }
@@ -739,7 +739,7 @@ extend Tokenizer {
 
         mut lit := "";
         if start <= self.pos {
-            lit = self.text[start..self.pos].clone();
+            lit = self.text.substr(start, self.pos).clone();
             if !self.prefs.is_fmt {
                 mut segment_idx: uint := 0;
                 mut str_segments := @dyn_array(string);
@@ -752,7 +752,7 @@ extend Tokenizer {
                         all_pos.push(pos1);
                     }
                     for pos1 in all_pos {
-                        str_segments.push(lit[segment_idx..(pos1 - start)]);
+                        str_segments.push(lit.substr(segment_idx, pos1 - start));
                         segment_idx = pos1 - start;
                         if pos1 in u_escapes_pos {
                             (end_idx, segment) := decode_u_escape_single(lit, segment_idx);
@@ -767,7 +767,7 @@ extend Tokenizer {
                     }
                 }
                 if segment_idx < lit.len {
-                    str_segments.push(lit[segment_idx..]);
+                    str_segments.push(lit.substr(segment_idx));
                 }
                 lit = utils.join(str_segments, "");
             }

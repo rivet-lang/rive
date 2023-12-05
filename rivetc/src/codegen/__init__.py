@@ -1577,22 +1577,7 @@ class Codegen:
                     else:
                         end = None
                 tmp = self.cur_fn.local_name()
-                if s.kind == TypeKind.String:
-                    if end == None:
-                        inst = ir.Inst(
-                            ir.InstKind.Call, [
-                                ir.Name("_R4core6string10slice_fromM"), left,
-                                start
-                            ]
-                        )
-                    else:
-                        inst = ir.Inst(
-                            ir.InstKind.Call, [
-                                ir.Name("_R4core6string5sliceM"), left, start,
-                                end
-                            ]
-                        )
-                elif s.kind == TypeKind.DynArray:
+                if s.kind == TypeKind.DynArray:
                     if end == None:
                         inst = ir.Inst(
                             ir.InstKind.Call, [

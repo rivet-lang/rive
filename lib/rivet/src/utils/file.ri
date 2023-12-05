@@ -25,7 +25,7 @@ pub func skip_bom(file_content: string) -> string {
    if file_content.len >= 3 {
      if file_content[0] == 0xEF and file_content[1] == 0xBB and file_content[2] == 0xBF {
         // skip three BOM bytes
-        return file_content[3..];
+        return file_content.substr(3);
      }
    }
    return file_content;

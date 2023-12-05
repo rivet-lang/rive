@@ -4,7 +4,6 @@
 
 import std/traits;
 import std/strings;
-import std/console;
 
 import ../ast;
 import ../utils;

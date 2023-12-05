@@ -29,7 +29,7 @@ pub struct TokenIterator {
         mut end := start;
         while end < self.buffer.len and !self.is_split_byte(self.buffer[end])
             : end += 1 {}
-        return self.buffer[start..end];
+        return self.buffer.substr(start, end);
     }
 
     /// Returns a slice of the remaining bytes. Does not affect iterator state.
@@ -38,7 +38,7 @@ pub struct TokenIterator {
         mut index := self.index;
         while index < self.buffer.len and self.is_split_byte(self.buffer[index])
             : index += 1 {}
-        return self.buffer[index..];
+        return self.buffer.substr(index);
     }
 
     /// Resets the iterator to the initial token.

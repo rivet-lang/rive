@@ -140,7 +140,7 @@ func formatted_single_line(pos: token.Pos) {
         if pos.len > 1 {
             sb.write_string(
                 utils.bold(
-                    utils.blue("~".repeat(line[start_column..end_column].runes_count() - 1))
+                    utils.blue("~".repeat(line.substr(start_column, end_column).runes_count() - 1))
                 )
             );
         }
@@ -189,7 +189,7 @@ func write_spaces(mut sb: strings.Builder, start_column: uint, line: string) {
             i += 1;
         } else {
             char_len := b.len_utf8();
-            sb.write_string(" ".repeat(line[i..i + char_len].runes_count()));
+            sb.write_string(" ".repeat(line.substr(i, i + char_len).runes_count()));
             i += char_len;
         }
     }

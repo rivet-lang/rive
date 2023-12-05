@@ -219,7 +219,7 @@ pub struct Tokenizer {
     func invalid_character(mut self) {
         len := self.text[self.pos].len_utf8();
         end := utils.min(self.pos + len, self.text.len);
-        self.error("invalid character: `{}`".fmt(self.text[self.pos..end]));
+        self.error("invalid character: `{}`".fmt(self.text.substr(self.pos, end)));
         self.pos += len;
     }
 
@@ -233,7 +233,7 @@ pub struct Tokenizer {
         }
         return (
             end_idx,
-            @as(uint8, str[idx + 2..end_idx].parse_uint(16, 8) catch 0).to_string()
+            @as(uint8, str.substr(idx + 2, end_idx).parse_uint(16, 8) catch 0).to_string()
         );
     }
 
@@ -243,15 +243,15 @@ pub struct Tokenizer {
             return s;
         }
         mut ss := @dyn_array(string, escapes_pos.len * 2 + 1);
-        ss.push(s[..escapes_pos[escapes_pos.len - 1] - start]);
+        ss.push(s.substr(escapes_pos[escapes_pos.len - 1] - start));
         for i, pos in escapes_pos {
             idx := pos - start;
             (end_idx, segment) := self.decode_h_escape_single(s, idx);
             ss.push(segment);
             ss.push(if i + 1 < escapes_pos.len {
-                s[end_idx..escapes_pos[i + 1] - start]
+                s.substr(end_idx, escapes_pos[i + 1] - start)
             } else {
-                s[end_idx..]
+                s.substr(end_idx)
             });
         }
         return utils.join(ss, "");
@@ -287,17 +287,17 @@ func decode_o_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
     }
     mut ss := @dyn_array(string, escapes_pos.len);
     // everything before the first escape code position
-    ss.push(s[..escapes_pos[escapes_pos.len - 1] - start]);
+    ss.push(s.substr(escapes_pos[escapes_pos.len - 1] - start));
     for i, pos in escapes_pos {
         idx := pos - start;
         end_idx := idx + 4; // "\XXX".len == 4
         ss.push(
-            @as(uint8, s[idx + 1..end_idx].parse_uint(8, 8) catch 0).to_string()
+            @as(uint8, s.substr(idx + 1, end_idx).parse_uint(8, 8) catch 0).to_string()
         );
         ss.push(if i + 1 < escapes_pos.len {
-            s[end_idx..escapes_pos[i + 1] - start]
+            s.substr(end_idx, escapes_pos[i + 1] - start)
         } else {
-            s[end_idx..]
+            s.substr(end_idx)
         });
     }
     return utils.join(ss, "");
@@ -305,7 +305,7 @@ func decode_o_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
 
 func decode_u_escape_single(str: string, idx: uint) -> (uint, string) {
     end_idx := idx + 6; // "\uXXXX".len == 6
-    escaped_code_point := str[idx + 2..end_idx].parse_uint(16, 32) catch 0;
+    escaped_code_point := str.substr(idx + 2, end_idx).parse_uint(16, 32) catch 0;
     return (end_idx, @as(uint32, escaped_code_point).to_string());
 }
 
@@ -317,7 +317,7 @@ func decode_unicode_escaped_rune(str: string) -> string {
     } else {
         mut ss := @dyn_array(string, 2);
         ss.push(segment);
-        ss.push(str[end_idx..]);
+        ss.push(str.substr(end_idx));
         utils.join(ss, "")
     };
 }
@@ -325,7 +325,7 @@ func decode_unicode_escaped_rune(str: string) -> string {
 func trim_slash_line_break(s: string) -> string {
     (mut start: uint, mut ret_str) := (0, s);
     while idx := ret_str.index_after_of("\\\n", start) {
-        ret_str = ret_str[..idx].concat(ret_str[idx + 2..].trim_left(" \n\t\v\f\r"));
+        ret_str = ret_str.substr(end: idx).concat(ret_str.substr(idx + 2).trim_left(" \n\t\v\f\r"));
         start = idx;
     }
     return ret_str;

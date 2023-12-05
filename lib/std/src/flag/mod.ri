@@ -294,7 +294,7 @@ pub struct FlagParser {
                     }
                 }
                 len = sb.len() - len;
-                sb.write_fmt("{}{}", space[len..], flag.usage);
+                sb.write_fmt("{}{}", space.substr(len), flag.usage);
                 if i < self.flags.len - 1 {
                     sb.writeln();
                 }
@@ -327,7 +327,8 @@ pub struct FlagParser {
         mut remaining := self.args.clone();
         if !self.allow_unknown_args {
             for arg in remaining {
-                if (arg.len >= 2 and arg[..2] == "--") or (arg.len == 2 and arg[0] == b'-') {
+                if (arg.len >= 2 and arg.substr(end: 2) == "--")
+                    or (arg.len == 2 and arg[0] == b'-') {
                     throw UnknownFlagError(arg);
                 }
             }
@@ -422,7 +423,7 @@ pub struct FlagParser {
                 }
                 next_arg := self.args[i + 1];
                 if next_arg.len > 2 {
-                    next_arg_rest := next_arg[..2];
+                    next_arg_rest := next_arg.substr(end: 2);
                     if next_arg_rest == "--" {
                         // It could be end of input (`--`) or another argument (`--abc`).
                         // Both are invalid so die.
@@ -435,8 +436,8 @@ pub struct FlagParser {
                 should_skip_one = true;
                 continue;
             }
-            if arg.len > full.len + 1 and arg[..full.len + 1] == full.concat("=") {
-                found_entries.push(arg[full.len + 1..]);
+            if arg.len > full.len + 1 and arg.substr(end: full.len + 1) == full.concat("=") {
+                found_entries.push(arg.substr(full.len + 1));
                 to_delete.push(i);
                 continue;
             }
@@ -470,13 +471,14 @@ pub struct FlagParser {
                     return "true";
                 }
             }
-            if arg.len > full.len + 1 and arg[..full.len + 1] == full.concat("=") {
+            if arg.len > full.len + 1 and arg.substr(end: full.len + 1) == full.concat("=") {
                 // flag: `abc=true`
-                val := arg[full.len + 1..];
+                val := arg.substr(full.len + 1);
                 self.args.delete(i);
                 return val;
             }
-            if arg.len > 1 and arg[0] == b'-' and arg[1] != b'-' and arg.index_of_byte(short_hand) !is none {
+            if arg.len > 1 and arg[0] == b'-' and arg[1] != b'-'
+                and arg.index_of_byte(short_hand) !is none {
                 // `-abc` is equivalent to `-a -b -c`
                 return "true";
             }

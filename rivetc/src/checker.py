@@ -836,9 +836,9 @@ class Checker:
 
                 if expr.left_typ == self.comp.string_t:
                     if isinstance(expr.index, ast.RangeExpr):
-                        expr.typ = self.comp.string_t
-                    else:
-                        expr.typ = self.comp.uint8_t
+                        report.error("`string` does not support slicing syntax", expr.pos)
+                        report.help("use `.substr()` instead")
+                    expr.typ = self.comp.uint8_t
                 elif hasattr(expr.left_typ, "typ"):
                     expr.typ = expr.left_typ.typ
                 else:

@@ -724,7 +724,8 @@ extend Parser {
         value := self.tok.lit;
         pos := self.tok.pos;
         self.next();
-        return if value.len > 2 and value[..2] !in ["0x", "0o", "0b"] and value.index_of_any(
+        return if value.len > 2 and value.substr(end: 2) !in ["0x", "0o", "0b"]
+            and value.index_of_any(
             ".eE"
         ) !is none {
             .FloatLiteral(value, pos)

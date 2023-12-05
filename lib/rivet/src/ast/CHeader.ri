@@ -9,8 +9,8 @@ import { Path } from std/fs;
 
 import ../token;
 
-// Useful functions to get system `#define`s.
-// Will soon be used to implement `extern (C) import`.
+// Useful functions to get system `#define`s. Will soon be used to
+// implement `extern (C) import`.
 
 pub enum CImportAction {
     Report {
@@ -130,8 +130,8 @@ extend Table {
                 mut is_macro := true;
                 if has_value {
                     if paren_idx := name.index_of_byte(b'(') {
-                        def_args := name[paren_idx + 1..].all_before_of(")");
-                        name = name[..paren_idx];
+                        def_args := name.substr(paren_idx + 1).all_before_of(")");
+                        name = name.substr(end: paren_idx);
                         if def_args.len > 0 {
                             for arg_name in def_args.split(",") {
                                 args.push(arg_name.trim_space());

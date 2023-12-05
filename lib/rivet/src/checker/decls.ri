@@ -169,7 +169,7 @@ extend Checker {
     func check_func(mut self, mut func_decl: ast.Decl.Func) {
         if !func_decl.is_operator {
             name := if func_decl.is_method and func_decl.is_special_method {
-                func_decl.name[2..func_decl.name.len - 2] // skip `__`
+                func_decl.name.substr(2, func_decl.name.len - 2) // skip `__`
             } else {
                 func_decl.name
             };

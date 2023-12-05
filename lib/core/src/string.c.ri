@@ -60,7 +60,7 @@ pub struct string < Stringable, Hashable, Throwable {
         return Self(res, bytes.len);
     }
 
-    pub func at(self, idx: uint) -> uint8 {
+    func at(self, idx: uint) -> uint8 {
         if idx >= self.len {
             runtime_error("string index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -116,7 +116,7 @@ pub struct string < Stringable, Hashable, Throwable {
                 continue;
             }
             if is_space and is_in_word {
-                res.push(self[word_start..word_start + word_len]);
+                res.push(self.substr(word_start, word_start + word_len));
                 is_in_word = false;
                 word_len = 0;
                 word_start = 0;
@@ -125,7 +125,7 @@ pub struct string < Stringable, Hashable, Throwable {
         }
         if is_in_word and word_len > 0 {
             // collect the remainder word at the end
-            res.push(self[word_start..self.len]);
+            res.push(self.substr(word_start, self.len));
         }
         return res;
     }
@@ -211,7 +211,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// If the substring is not found, it returns the full input string.
     pub func all_before_of(self, sub: Self) -> Self {
         return if pos := self.index_of(sub) {
-            self[..pos]
+            self.substr(end: pos)
         } else {
             self
         };
@@ -220,7 +220,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// Returns the contents before the last occurrence of `sub` in the string.
     pub func all_before_of_last(self, sub: Self) -> Self {
         return if pos := self.last_index_of(sub) {
-            self[..pos]
+            self.substr(end: pos)
         } else {
             self
         };
@@ -230,7 +230,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// not found, it returns the full input string.
     pub func all_after_of(self, sub: Self) -> Self {
         return if pos := self.index_of(sub) {
-            self[pos + sub.len..]
+            self.substr(pos + sub.len)
         } else {
             self
         };
@@ -240,7 +240,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// If the substring is not found, it returns the full input string.
     pub func all_after_of_last(self, sub: Self) -> Self {
         return if pos := self.last_index_of(sub) {
-            self[pos + sub.len..]
+            self.substr(pos + sub.len)
         } else {
             self
         };
@@ -348,9 +348,9 @@ pub struct string < Stringable, Hashable, Throwable {
     /// Returns the string found between `start` string and `end` string.
     pub func find_between(self, start: Self, end: Self) -> Self {
         start_pos := self.index_of(start) ?? return emptyString;
-        val := self.slice(start_pos + start.len, self.len);
+        val := self.substr(start_pos + start.len, self.len);
         end_pos := val.index_of(end) ?? return val;
-        return val.slice(0, end_pos);
+        return val.substr(0, end_pos);
     }
 
     /// Strips any of the characters given in `cutset` from the start and end of
@@ -360,7 +360,7 @@ pub struct string < Stringable, Hashable, Throwable {
             return self;
         }
         (pos_left, pos_right) := self.trim_indexes(cutset);
-        return self.slice(pos_left, pos_right);
+        return self.substr(pos_left, pos_right);
     }
 
     /// Gets the new start and end indexes of a string when any of the characters
@@ -415,7 +415,7 @@ pub struct string < Stringable, Hashable, Throwable {
                 break;
             }
         }
-        return self.slice_from(pos);
+        return self.substr(pos);
     }
 
     /// Strips any of the characters given in `cutset` from the right of the
@@ -440,7 +440,7 @@ pub struct string < Stringable, Hashable, Throwable {
                 break;
             }
         }
-        return self.slice(0, pos + 1);
+        return self.substr(0, pos + 1);
     }
 
     /// Strips any of ` `, `\n`, `\t`, `\v`, `\f`, `\r` from the start and end of
@@ -519,7 +519,7 @@ pub struct string < Stringable, Hashable, Throwable {
                     } else {
                         self.len
                     };
-                    r := self[i..end];
+                    r := self.substr(i, end);
                     i += char_len - 1;
                     r.utf32_code()
                 } else {
@@ -547,7 +547,7 @@ pub struct string < Stringable, Hashable, Throwable {
                 i = 1;
                 for ch in self.as_bytes() {
                     if nth > 0 and i >= nth {
-                        res.push(self[i..]);
+                        res.push(self.substr(i));
                         break;
                     }
                     res.push(ch.to_ascii());
@@ -563,7 +563,7 @@ pub struct string < Stringable, Hashable, Throwable {
                         if nth > 0 and res.len == nth - 1 {
                             break;
                         }
-                        res.push(self[start..i]);
+                        res.push(self.substr(start, i));
                         start = i + delim.len;
                         i = start;
                     } else {
@@ -571,19 +571,18 @@ pub struct string < Stringable, Hashable, Throwable {
                     }
                 }
                 if nth < 1 or res.len < nth {
-                    res.push(self[start..]);
+                    res.push(self.substr(start));
                 }
                 return res;
             },
             else -> {
                 mut start: uint := 0;
                 while i <= self.len {
-                    is_delim := i + delim.len <= self.len and self[i..i + delim.len] == delim;
-                    if is_delim {
+                    if i + delim.len <= self.len and self.substr(i, i + delim.len) == delim {
                         if nth > 0 and res.len == nth - 1 {
                             break;
                         }
-                        res.push(self[start..i]);
+                        res.push(self.substr(start, i));
                         start = i + delim.len;
                         i = start;
                     } else {
@@ -591,7 +590,7 @@ pub struct string < Stringable, Hashable, Throwable {
                     }
                 }
                 if nth < 1 or res.len < nth {
-                    res.push(self[start..]);
+                    res.push(self.substr(start));
                 }
                 return res;
             }
@@ -612,14 +611,14 @@ pub struct string < Stringable, Hashable, Throwable {
             for index, ch in self.as_bytes() {
                 for delim_ch in delim.as_bytes() {
                     if ch == delim_ch {
-                        res.push(self[i..index]);
+                        res.push(self.substr(i, index));
                         i = index + 1;
                         break;
                     }
                 }
             }
             if i < self.len {
-                res.push(self[i..]);
+                res.push(self.substr(i));
             }
         }
         return res;
@@ -644,14 +643,14 @@ pub struct string < Stringable, Hashable, Throwable {
                     res.push(if line_start == i {
                         emptyString
                     } else {
-                        self[line_start..i]
+                        self.substr(line_start, i)
                     });
                     line_start = i + 1;
                 } else if unsafe { self.ptr[i] == cr } {
                     res.push(if line_start == i {
                         emptyString
                     } else {
-                        self[line_start..i]
+                        self.substr(line_start, i)
                     });
                     if i + 1 < self.len and unsafe { self.ptr[i + 1] == lf } {
                         line_start = i + 2;
@@ -662,7 +661,7 @@ pub struct string < Stringable, Hashable, Throwable {
             }
         }
         if line_start < self.len {
-            res.push(self[line_start..]);
+            res.push(self.substr(line_start));
         }
         return res;
     }
@@ -785,25 +784,24 @@ pub struct string < Stringable, Hashable, Throwable {
         return true;
     }
 
-    func slice(self, start: uint, end: uint) -> Self {
+    /// Returns a portion of the current string as a reference. This does not clone
+    /// the returned value.
+    pub func substr(self, start: ?uint := none, end: ?uint := none) -> Self {
         unsafe {
-            if start > end or start > self.len or end > self.len {
+            start_ := start ?? 0;
+            end_ := end ?? self.len;
+            if start_ > end_ or start_ > self.len or end_ > self.len {
                 runtime_error(
-                    "string slice index out of range (range: {}..{}, len: {})", start,
-                    end, self.len
+                    "substring index out of range (range: {}..{}, len: {})", start_,
+                    end_, self.len
                 );
             }
-            len := end - start;
+            len := end_ - start_;
             if len == self.len {
                 return self;
             }
-            return Self(@ptr_add(self.ptr, start), len, is_ref: true);
+            return Self(@ptr_add(self.ptr, start_), len, is_ref: true);
         }
-    }
-
-    #[inline]
-    func slice_from(self, start: uint) -> Self {
-        return self.slice(start, self.len);
     }
 
     pub func clone(self) -> Self {
