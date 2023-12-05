@@ -159,7 +159,7 @@ test "string.parse_int()" {
     });
 }
 
-test "string.slice()" {
+test "string.substr()" {
     str := "hello world!";
     @assert(str.substr() == str);
     @assert(str.substr(5) == "world!");
