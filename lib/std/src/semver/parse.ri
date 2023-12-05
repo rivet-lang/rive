@@ -19,12 +19,12 @@ struct RawVersion {
         mut prerelease := "";
         mut metadata := "";
         if plus_idx := raw_version.last_index_of_byte(b'+') {
-            metadata = raw_version[plus_idx + 1..];
-            raw_version = raw_version[0..plus_idx];
+            metadata = raw_version.substr(plus_idx + 1);
+            raw_version = raw_version.substr(0, plus_idx);
         }
         if hyphen_idx := raw_version.index_of_byte(b'-') {
-            prerelease = raw_version[hyphen_idx + 1..];
-            raw_version = raw_version[0..hyphen_idx];
+            prerelease = raw_version.substr(hyphen_idx + 1);
+            raw_version = raw_version.substr(0, hyphen_idx);
         }
         return RawVersion(prerelease, metadata, raw_version.split("."));
     }

@@ -104,7 +104,7 @@ pub struct Path {
             return none;
         }
 
-        return path[..end_index];
+        return path.substr(end: end_index);
     }
 
     /// Returns the last element of path. Trailing path separators are removed before
@@ -124,10 +124,10 @@ pub struct Path {
         end_index += 1;
         while path[start_index] != SEPARATOR : start_index -= 1 {
             if start_index == 0 {
-                return path[0..end_index];
+                return path.substr(0, end_index);
             }
         }
-        return path[start_index + 1 .. end_index];
+        return path.substr(start_index + 1, end_index);
     }
 
     /// Return alls characters found after the last occurrence of `separatorStr`.
@@ -147,7 +147,7 @@ pub struct Path {
         return if index == 0 or index + 1 >= filename.len {
             ""
         } else {
-            filename[index..]
+            filename.substr(index)
         };
     }
 
@@ -348,7 +348,7 @@ pub struct Path {
                 buf_index += 1;
             }
             adjusted_path := if prev_sep and this_sep {
-                this_path[1..]
+                this_path.substr(1)
             } else {
                 this_path
             };

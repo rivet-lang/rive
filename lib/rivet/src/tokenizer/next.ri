@@ -261,7 +261,7 @@ extend Tokenizer {
             }
             break;
         }
-        lit := self.text[start..self.pos].clone();
+        lit := self.text.substr(start, self.pos).clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -315,7 +315,7 @@ extend Tokenizer {
             self.pos += 1;
         }
 
-        lit := self.text[start..self.pos].clone();
+        lit := self.text.substr(start, self.pos).clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -362,7 +362,7 @@ extend Tokenizer {
             self.pos += 1;
         }
 
-        lit := self.text[start..self.pos].clone();
+        lit := self.text.substr(start, self.pos).clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -409,7 +409,7 @@ extend Tokenizer {
             self.pos += 1;
         }
 
-        lit := self.text[start..self.pos].clone();
+        lit := self.text.substr(start, self.pos).clone();
         self.pos -= 1; // fix pos
         return lit;
     }
@@ -493,7 +493,7 @@ extend Tokenizer {
                         "float literals should have a digit after the decimal point"
                     );
                     err.add_help(
-                        "use `{0}.0` instead of `{0}`".fmt(self.text[start..self.pos])
+                        "use `{0}.0` instead of `{0}`".fmt(self.text.substr(start, self.pos))
                     );
                     err.emit();
                     self.pos += 1;
@@ -536,7 +536,7 @@ extend Tokenizer {
             }
             self.pos += 1;
         }
-        lit := self.text[start..self.pos].clone();
+        lit := self.text.substr(start, self.pos).clone();
         self.pos -= 1; // fix pos
         return lit;
     }

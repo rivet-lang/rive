@@ -134,10 +134,10 @@ extend string {
         mut s0 := self;
         mut neg := false;
         if self[0] == b'+' {
-            s0 = self[1..];
+            s0 = self.substr(1);
         } else if self[0] == b'-' {
             neg = true;
-            s0 = self[1..];
+            s0 = self.substr(1);
         }
 
         // convert unsigned and check range.
@@ -173,7 +173,7 @@ func underscore_ok(s_: string) -> bool {
 
     // optional sign.
     if s.len >= 1 and (s[0] == b'-' or s[0] == b'+') {
-        s = s[1..];
+        s = s.substr(1);
     }
 
     // optional base prefix.

@@ -158,3 +158,11 @@ test "string.parse_int()" {
         true
     });
 }
+
+test "string.slice()" {
+    str := "hello world!";
+    @assert(str.substr() == str);
+    @assert(str.substr(5) == "world!");
+    @assert(str.substr(end: 4) == "hello");
+    @assert(str.substr(1, 8) == "llo wor");
+}

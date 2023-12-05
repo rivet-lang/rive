@@ -85,7 +85,7 @@ struct DynArray {
         if i + size > self.len {
             end_idx := if size == 1 { "..{}".fmt(i + size) } else { "" };
             runtime_error(
-                "DynArray.delete(): index out of range (i: {}..{}, self.len: {})",
+                "DynArray.delete: index out of range (i: {}..{}, self.len: {})",
                 i, end_idx, self.len
             );
         }

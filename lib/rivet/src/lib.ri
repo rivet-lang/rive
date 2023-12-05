@@ -173,9 +173,9 @@ pub struct Compiler {
         is_super := pathx.starts_with("../");
         if pathx.starts_with("./") or is_super {
             self.vlog("    searching module in local path");
-            pathx2 := pathx[if is_super { 3 } else { 2 }..];
+            pathx2 := pathx.substr(if is_super { 3 } else { 2 });
             name = if last_idx := pathx2.last_index_of_byte(b'/') {
-                pathx2[last_idx + 1..]
+                pathx2.substr(last_idx + 1)
             } else {
                 pathx2
             };
@@ -187,12 +187,12 @@ pub struct Compiler {
                 abspath = Path.resolve(pathx)!;
                 mut mod_basedir := Path.dir_name(abspath) ?? abspath;
                 if mod_basedir.ends_with("/src") {
-                    mod_basedir = mod_basedir[..mod_basedir.len - 4]; // skip `/src`
+                    mod_basedir = mod_basedir.substr(end: mod_basedir.len - 4); // skip `/src`
                 } else if mod_basedir.contains("/src") {
-                    first_part := mod_basedir[..mod_basedir.last_index_of_byte(b'/') ?? 0];
-                    mod_basedir = mod_basedir[..first_part.last_index_of_byte(b'/') ?? 0];
+                    first_part := mod_basedir.substr(end: mod_basedir.last_index_of_byte(b'/') ?? 0);
+                    mod_basedir = mod_basedir.substr(end: first_part.last_index_of_byte(b'/') ?? 0);
                 }
-                names := abspath[(mod_basedir.last_index_of_byte(b'/') ?? 0) + 1..].split(
+                names := abspath.substr((mod_basedir.last_index_of_byte(b'/') ?? 0) + 1).split(
                     "/"
                 );
                 full_name = if "src" in names {
@@ -212,7 +212,7 @@ pub struct Compiler {
         } else {
             self.vlog("    searching module in global path");
             name = if last_idx := pathx.last_index_of_byte(b'/') {
-                pathx[last_idx + 1..]
+                pathx.substr(last_idx + 1)
             } else {
                 pathx
             };
@@ -227,7 +227,7 @@ pub struct Compiler {
                 // support `src/` directory
                 src_dir := if pathx.contains("/") {
                     slash_idx := (pathx.index_of_byte(b'/') ?? 0) + 1;
-                    Path.join(l, pathx[..slash_idx], "src", pathx[slash_idx..])!
+                    Path.join(l, pathx.substr(end: slash_idx), "src", pathx.substr(slash_idx))!
                 } else {
                     Path.join(mod_path, "src")!
                 };

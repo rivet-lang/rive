@@ -451,10 +451,13 @@ extend Checker {
                 }
                 if index.left_type == self.table.string_t {
                     if index.index is .Range {
-                        self.table.string_t
-                    } else {
-                        self.table.uint8_t
+                        mut err := report.error_builder(
+                            "`string` does not support slicing syntax", index.pos
+                        );
+                        err.add_help("use `.substr()` instead");
+                        err.emit();
                     }
+                    self.table.uint8_t
                 } else {
                     @as(ast.Type.Pointer, index.left_type).inner
                 }
