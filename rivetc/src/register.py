@@ -36,7 +36,7 @@ class Register:
                                     decl.is_public, decl.alias, decl.mod_sym
                                 )
                             )
-                        except utils.CompilerError(e):
+                        except utils.CompilerError as e:
                             report.error(e.args[0], decl.pos)
                     else:
                         self.source_file.imported_symbols[decl.alias
@@ -79,7 +79,7 @@ class Register:
                         v_sym.pos = decl.pos
                         self.source_file.sym.add(v_sym)
                         v.sym = v_sym
-                    except utils.CompilerError(e):
+                    except utils.CompilerError as e:
                         report.error(e.args[0], v.pos)
             elif isinstance(decl, ast.AliasDecl):
                 try:
@@ -96,7 +96,7 @@ class Register:
                             decl.is_public, decl.name, decl.parent
                         )
                         self.sym.add(decl.sym)
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.TraitDecl):
                 try:
@@ -110,7 +110,7 @@ class Register:
                         self.comp.throwable_sym = decl.sym
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.StructDecl):
                 try:
@@ -130,7 +130,7 @@ class Register:
                             self.comp.dyn_array_sym = decl.sym
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.EnumDecl):
                 try:
@@ -171,7 +171,7 @@ class Register:
                     decl.sym.info = info
                     self.sym = decl.sym
                     self.walk_decls(decl.decls)
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             elif isinstance(decl, ast.FieldDecl):
                 if self.sym.has_field(decl.name):
@@ -222,16 +222,16 @@ class Register:
                             attributes = decl.attributes
                         )
                     )
-                except utils.CompilerError(e):
+                    decl.sym.is_main = decl.is_main
+                except utils.CompilerError as e:
                     report.error(e.args[0], decl.name_pos)
-                decl.sym.is_main = decl.is_main
             self.abi = old_abi
             self.sym = old_sym
 
     def add_sym(self, sy, pos):
         try:
             self.sym.add(sy)
-        except utils.CompilerError(e):
+        except utils.CompilerError as e:
             report.error(e.args[0], pos)
 
     def check_vis(self, sym_, pos):

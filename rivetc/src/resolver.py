@@ -134,7 +134,7 @@ class Resolver:
                                 sym.ObjLevel.Rec, decl.name_pos
                             )
                         )
-                    except utils.CompilerError(e):
+                    except utils.CompilerError as e:
                         report.error(e.args[0], decl.name_pos)
                     decl.self_typ = self_typ
                     decl.sym.self_typ = self_typ
@@ -147,7 +147,7 @@ class Resolver:
                                 arg.pos
                             )
                         )
-                    except utils.CompilerError(e):
+                    except utils.CompilerError as e:
                         report.error(e.args[0], arg.pos)
                     if arg.has_def_expr:
                         self.resolve_expr(arg.def_expr)
@@ -171,7 +171,7 @@ class Resolver:
                             v.is_mut, v.name, v.typ, sym.ObjLevel.Local, v.pos
                         )
                     )
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], v.pos)
             self.resolve_expr(stmt.right)
         elif isinstance(stmt, ast.WhileStmt):
@@ -190,7 +190,7 @@ class Resolver:
                             self.comp.void_t, sym.ObjLevel.Local, stmt.index.pos
                         )
                     )
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], stmt.index.pos)
             try:
                 stmt.scope.add(
@@ -199,7 +199,7 @@ class Resolver:
                         sym.ObjLevel.Local, stmt.value.pos
                     )
                 )
-            except utils.CompilerError(e):
+            except utils.CompilerError as e:
                 report.error(e.args[0], stmt.value.pos)
             self.resolve_expr(stmt.iterable)
             self.resolve_stmt(stmt.stmt)
@@ -244,7 +244,7 @@ class Resolver:
                             v.is_mut, v.name, self.comp.void_t, False, v.pos
                         )
                     )
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], v.pos)
             self.resolve_expr(expr.expr)
             if expr.has_cond:
@@ -262,7 +262,7 @@ class Resolver:
                             sym.ObjLevel.Local, expr.var.pos
                         )
                     )
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], expr.var.pos)
         elif isinstance(expr, ast.ParExpr):
             self.resolve_expr(expr.expr)
@@ -286,7 +286,7 @@ class Resolver:
                                 expr.err_handler.varname_pos
                             )
                         )
-                    except utils.CompilerError(e):
+                    except utils.CompilerError as e:
                         report.error(e.args[0], expr.err_handler.varname_pos)
                 self.resolve_expr(expr.err_handler.expr)
         elif isinstance(expr, ast.BuiltinCallExpr):
@@ -328,7 +328,7 @@ class Resolver:
                                     sym.ObjLevel.Local, b.var_pos
                                 )
                             )
-                        except utils.CompilerError(e):
+                        except utils.CompilerError as e:
                             report.error(e.args[0], b.var_pos)
                     if b.has_cond:
                         self.resolve_expr(b.cond)

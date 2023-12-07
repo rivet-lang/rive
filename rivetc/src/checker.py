@@ -81,7 +81,7 @@ class Checker:
                 self.expected_type = old_expected_type
                 try:
                     self.check_compatible_types(field_typ, decl.typ)
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             else:
                 decl.typ = self.check_expr(decl.expr)
@@ -95,7 +95,7 @@ class Checker:
                 self.expected_type = old_expected_type
                 try:
                     self.check_compatible_types(left0.typ, expr_t)
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             else:
                 left0.typ = self.check_expr(decl.right)
@@ -149,7 +149,7 @@ class Checker:
                 self.expected_type = old_expected_type
                 try:
                     self.check_compatible_types(field_typ, decl.typ)
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
         elif isinstance(decl, ast.ExtendDecl):
             self_sym = decl.typ.symbol()
@@ -180,7 +180,7 @@ class Checker:
                     self.expected_type = old_expected_type
                     try:
                         self.check_types(def_expr_t, arg.typ)
-                    except utils.CompilerError(e):
+                    except utils.CompilerError as e:
                         report.error(e.args[0], arg.pos)
             if isinstance(decl.ret_typ, type.Ptr) and decl.abi != sym.ABI.Rivet:
                 report.error(
@@ -221,7 +221,7 @@ class Checker:
                 if stmt.lefts[0].has_typ:
                     try:
                         self.check_types(right_typ, self.expected_type)
-                    except utils.CompilerError(e):
+                    except utils.CompilerError as e:
                         report.error(e.args[0], stmt.pos)
                 else:
                     right_typ = self.comp.comptime_number_to_type(right_typ)
@@ -320,7 +320,7 @@ class Checker:
                 return expr.typ
             try:
                 self.check_types(right_t, left_t)
-            except utils.CompilerError(e):
+            except utils.CompilerError as e:
                 report.error(e.args[0], expr.right.pos)
             return expr.typ
         elif isinstance(expr, ast.EnumLiteral):
@@ -453,7 +453,7 @@ class Checker:
                 else:
                     try:
                         self.check_types(typ, elem_typ)
-                    except utils.CompilerError(err):
+                    except utils.CompilerError as err:
                         report.error(err.args[0], e.pos)
                         if expr.is_arr:
                             report.note(f"in element {i + 1} of array literal")
@@ -682,7 +682,7 @@ class Checker:
                         report.help(
                             f"the type should define the operator `{op_m}`"
                         )
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], expr.pos)
                 return expr.typ
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
@@ -1019,7 +1019,7 @@ class Checker:
                         arg1_t = self.check_expr(expr.args[1])
                         try:
                             self.check_types(arg1_t, self.comp.uint_t)
-                        except utils.CompilerError(e):
+                        except utils.CompilerError as e:
                             report.error(e.args[0], expr.args[1].pos)
                             report.note(
                                 "in second argument of builtin function `dyn_array`"
@@ -1254,7 +1254,7 @@ class Checker:
                     self.expected_type = old_expected_type
                     try:
                         self.check_types(expr_typ, self.cur_fn.ret_typ)
-                    except utils.CompilerError(e):
+                    except utils.CompilerError as e:
                         expr_typ_sym = expr_typ.symbol()
                         report.error(e.args[0], expr.expr.pos)
                         report.note(
@@ -1355,7 +1355,7 @@ class Checker:
                     self.expected_type = old_expected_typ
                     try:
                         self.check_types(branch_t, expr.expected_typ)
-                    except utils.CompilerError(e):
+                    except utils.CompilerError as e:
                         report.error(e.args[0], b.expr.pos)
                 b.typ = branch_t
             return expr.expected_typ
@@ -1390,7 +1390,7 @@ class Checker:
                             pat_t = self.comp.comptime_number_to_type(pat_t)
                         try:
                             self.check_types(pat_t, expr_typ)
-                        except utils.CompilerError(e):
+                        except utils.CompilerError as e:
                             report.error(e.args[0], p.pos)
                     if b.has_var:
                         if b.var_is_mut:
@@ -1443,7 +1443,7 @@ class Checker:
                     self.expected_type = old_expected_type
                     try:
                         self.check_types(branch_t, expr.expected_typ)
-                    except utils.CompilerError(e):
+                    except utils.CompilerError as e:
                         report.error(e.args[0], b.expr.pos)
                 b.typ = branch_t
             return expr.expected_typ
@@ -1488,7 +1488,7 @@ class Checker:
                         self.check_types(
                             self.check_expr(expr.args[0].expr), v.typ
                         )
-                    except utils.CompilerError(e):
+                    except utils.CompilerError as e:
                         report.error(e.args[0], expr.args[0].expr.pos)
                     self.expected_type = old_expected_type
                 else:
@@ -1558,7 +1558,7 @@ class Checker:
                 self.expected_type = old_expected_type
                 try:
                     self.check_types(arg_t, field_typ)
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], arg.pos)
 
             if expr.has_spread_expr:
@@ -1680,7 +1680,7 @@ class Checker:
                 dyn_array_t.sym = last_arg_typ.sym
                 try:
                     self.check_types(spread_expr_t, dyn_array_t)
-                except utils.CompilerError(e):
+                except utils.CompilerError as e:
                     report.error(e.args[0], expr.spread_expr.pos)
         return expr.typ
 
@@ -1703,7 +1703,7 @@ class Checker:
         else:
             try:
                 self.check_types(got, expected)
-            except utils.CompilerError(e):
+            except utils.CompilerError as e:
                 report.error(e.args[0], pos)
                 report.note(pos_msg)
 
