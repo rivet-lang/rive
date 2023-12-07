@@ -1139,7 +1139,7 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
                 if self.accept(Kind.KwAs):
-                    #report.warn("deprecated", self.tok.pos)
+                    report.warn("deprecated", self.tok.pos)
                     has_var = True
                     var_is_mut = self.accept(Kind.KwMut)
                     var_pos = self.tok.pos

@@ -90,10 +90,10 @@ pub enum Expr < traits.Stringable {
     pub func to_string(self) -> string {
         return match self is {
             .Empty -> "<empty-expression>",
-            .IntConst as int_const -> "{}".fmt(int_const.value),
-            .FloatConst as float_const -> "{}".fmt(float_const.value),
-            .StringConst as string_const -> "\"{}\"".fmt(string_const.value),
-            .ArrayConst as array_const -> {
+            .IntConst(int_const) -> "{}".fmt(int_const.value),
+            .FloatConst(float_const) -> "{}".fmt(float_const.value),
+            .StringConst(string_const) -> "\"{}\"".fmt(string_const.value),
+            .ArrayConst(array_const) -> {
                 mut sb := strings.Builder.from_string("array_const(");
                 sb.write_fmt("{}, ", array_const.type);
                 for i, elem in array_const.elems {
@@ -105,11 +105,11 @@ pub enum Expr < traits.Stringable {
                 sb.write_byte(b')');
                 sb.to_string()
             },
-            .Const as const_ -> "const({}, {})".fmt(const_.type, const_.expr),
-            .Name as name -> "@".concat(name),
-            .Ident as ident -> "%{}".fmt(ident.dbg_name),
-            .Selector as selector -> "{}.%{}".fmt(selector.left, selector.name),
-            .Operator as operator -> {
+            .Const(const_) -> "const({}, {})".fmt(const_.type, const_.expr),
+            .Name(name) -> "@".concat(name),
+            .Ident(ident) -> "%{}".fmt(ident.dbg_name),
+            .Selector(selector) -> "{}.%{}".fmt(selector.left, selector.name),
+            .Operator(operator) -> {
                 mut sb := strings.Builder.new();
                 sb.write_fmt("{}(", operator.op);
                 for i, arg in operator.args {
@@ -121,7 +121,7 @@ pub enum Expr < traits.Stringable {
                 sb.write_byte(b')');
                 sb.to_string()
             },
-            .Call as call -> {
+            .Call(call) -> {
                 mut sb := strings.Builder.from_string("call(");
                 sb.write_string(call.func_.to_string());
                 if call.args.len > 0 {

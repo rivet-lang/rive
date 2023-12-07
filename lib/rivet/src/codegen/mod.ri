@@ -101,7 +101,7 @@ pub struct Codegen {
     func prefix_type(self, type: ast.Type) -> string {
         mut sb := strings.Builder.new();
         match type is {
-            .Pointer as ptr -> {
+            .Pointer(ptr) -> {
                 mut inner := ptr.inner;
                 while (inner is .Pointer as inner_ptr) : inner = inner_ptr.inner {
                     sb.write_string("ptr_");
@@ -111,7 +111,7 @@ pub struct Codegen {
                 }
                 sb.write_string(self.prefix_type(ptr.inner));
             },
-            .Option as opt -> sb.write_fmt("opt_{}", self.prefix_type(opt.inner)),
+            .Option(opt) -> sb.write_fmt("opt_{}", self.prefix_type(opt.inner)),
             else -> {}
         }
         return sb.to_string();
@@ -122,7 +122,7 @@ pub struct Codegen {
             .Void -> "4void",
             .Rawptr -> "6rawptr",
             .Never -> "5never",
-            .Func as func_t -> {
+            .Func(func_t) -> {
                 mut sb := strings.Builder.from_string("func_");
                 if func_t.is_method {
                     sb.write_string("m_");
@@ -172,7 +172,7 @@ pub struct Codegen {
                     sb.write_fmt("{}{}", name.len, name);
                 }
             },
-            ast.TypeSym as type -> match type.info is {
+            ast.TypeSym(type) -> match type.info is {
                 .Tuple as tuple_info -> {
                     mut sb2 := strings.Builder.new();
                     sb2.write_string("Tuple_");
@@ -186,7 +186,7 @@ pub struct Codegen {
                 },
                 .String -> sb.write_string("4core6string"),
                 .DynArray -> sb.write_string("4core6DynArray"),
-                .Array as array_info -> {
+                .Array(array_info) -> {
                     mut sb2 := strings.Builder.new();
                     sb2.write_fmt(
                         "Array_{}_{}", self.mangle_type(array_info.elem_type),
@@ -198,7 +198,7 @@ pub struct Codegen {
             },
             else -> sb.write_fmt("{}{}", sym.name.len, sym.name)
         }
-        if sym is ast.Func as sym_func {
+        if sym is ast.Func(sym_func) {
             sb.write_byte(if sym_func.is_method { b'M' } else { b'F' });
         }
         sym.mangled_name = sb.to_string();
@@ -207,7 +207,7 @@ pub struct Codegen {
 
     func add_locals(mut self, scope: ast.Scope) {
         for sym in scope.syms {
-            if sym is ast.Var as local {
+            if sym is ast.Var(local) {
                 local.mir_name = if self.cur_func.has_local(local.name) {
                     "{}_{}".fmt(local.name, self.cur_func.locals.len)
                 } else {
