@@ -719,6 +719,9 @@ class Parser:
                     right = ast.TypeNode(self.parse_type(), pos)
                 if self.accept(Kind.KwAs):
                     var = self.parse_var_decl(support_ref = False)
+                elif self.accept(Kind.Lparen):
+                    var = self.parse_var_decl(support_ref = False)
+                    self.expect(Kind.Rparen)
                 else:
                     var = None
                 left = ast.BinaryExpr(
@@ -1136,10 +1139,17 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
                 if self.accept(Kind.KwAs):
+                    #report.warn("deprecated", self.tok.pos)
                     has_var = True
                     var_is_mut = self.accept(Kind.KwMut)
                     var_pos = self.tok.pos
                     var_name = self.parse_name()
+                elif self.accept(Kind.Lparen):
+                    has_var = True
+                    var_is_mut = self.accept(Kind.KwMut)
+                    var_pos = self.tok.pos
+                    var_name = self.parse_name()
+                    self.expect(Kind.Rparen)
                 if self.accept(Kind.KwIf):
                     has_cond = True
                     cond = self.parse_expr()
