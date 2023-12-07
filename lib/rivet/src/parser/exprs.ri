@@ -92,8 +92,8 @@ extend Parser {
                     } else {
                         .Type(self.parse_type())
                     };
-                    if self.accept(.KwAs) {
-                        .Binary(
+                    if self.accept(.Lparen) {
+                        val := Expr.Binary(
                             left: left,
                             right: right,
                             op: op,
@@ -101,7 +101,9 @@ extend Parser {
                             var_obj: self.parse_var_decl(support_ref: false),
                             scope: self.scope,
                             pos: left.position() + self.prev_tok.pos
-                        )
+                        );
+                        self.expect(.Rparen);
+                        val
                     } else {
                         .Binary(
                             left: left,
@@ -605,7 +607,7 @@ extend Parser {
                         break;
                     }
                 }
-                if self.accept(.KwAs) {
+                if self.accept(.Lparen) {
                     has_var = true;
                     var_pos = self.tok.pos;
                     var_is_mut = self.accept(.KwMut);
@@ -613,6 +615,7 @@ extend Parser {
                         var_pos += self.tok.pos;
                     }
                     var_name = self.parse_name();
+                    self.expect(.Rparen);
                 }
                 if self.accept(.KwIf) {
                     has_cond = true;
