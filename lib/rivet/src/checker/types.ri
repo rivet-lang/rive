@@ -20,7 +20,7 @@ extend Checker {
         self, got: ast.Type, expected: ast.Type, pos: token.Pos, arg_name: string,
         func_kind: string, func_name: string
     ) {
-        if expected_sym := expected.symbol(); expected_sym.info is .Trait as mut trait_info
+        if expected_sym := expected.symbol(); expected_sym.info is .Trait(mut trait_info)
             and expected != got {
             got_t := self.table.comptime_number_to_type(got);
             if got_t.symbol()? in trait_info.implements {
@@ -84,20 +84,20 @@ extend Checker {
             return true;
         }
 
-        if expected is .Result as result {
+        if expected is .Result(result) {
             return self.check_compatible_types(got, result.inner);
         }
 
-        if got is .Option as option and expected is .Pointer {
+        if got is .Option(option) and expected is .Pointer {
             return check_pointer(expected, option.inner);
         } else if got is .Option and expected !is .Option {
             return false;
-        } else if expected is .Option as option_ and got is .Option as option2 {
+        } else if expected is .Option(option_) and got is .Option(option2) {
             if option_.inner is .Pointer and option2.inner is .Pointer {
                 return check_pointer(option_.inner, option2.inner);
             }
             return option_.inner == option2.inner;
-        } else if expected is .Option as option_2 and got !is .Option {
+        } else if expected is .Option(option_2) and got !is .Option {
             if got is .None {
                 return true;
             }
@@ -119,11 +119,11 @@ extend Checker {
 
         if expected is .Variadic {
             vec_info := @as(ast.TypeInfo.DynArray, expected_sym.info);
-            if got is .Variadic as variadic {
+            if got is .Variadic(variadic) {
                 return vec_info.elem_type == variadic.inner;
             }
             elem_sym := vec_info.elem_type.symbol()?;
-            if got_sym.info is .Trait as trait_info and elem_sym in trait_info.bases {
+            if got_sym.info is .Trait(trait_info) and elem_sym in trait_info.bases {
                 return true;
             }
             return self.check_compatible_types(got, vec_info.elem_type);
@@ -131,7 +131,7 @@ extend Checker {
 
         if expected is .Func and got is .Func {
             return expected == got;
-        } else if expected is .DynArray as dyn_array_info and got is .DynArray as dyn_array_info2 {
+        } else if expected is .DynArray(dyn_array_info) and got is .DynArray(dyn_array_info2) {
             return dyn_array_info.inner == dyn_array_info2.inner;
         }
 
@@ -149,27 +149,27 @@ extend Checker {
         }
 
         match expected_sym.info is {
-            .Trait as mut trait_info -> {
+            .Trait(mut trait_info) -> {
                 got_sym2 := self.table.comptime_number_to_type(got).symbol()?;
                 if got_sym2 in trait_info.implements {
                     trait_info.mark_has_objects();
                     return true;
                 }
             },
-            .Array as array_info if got_sym.info is .Array as array_info2 -> {
+            .Array(array_info) if got_sym.info is .Array(array_info2) -> {
                 if array_info.is_mut and !array_info2.is_mut {
                     return false;
                 }
                 return array_info.elem_type == array_info2.elem_type
                     and array_info.size == array_info2.size;
             },
-            .DynArray as dyn_array_lhs if got_sym.info is .DynArray as dyn_array_rhs -> {
+            .DynArray(dyn_array_lhs) if got_sym.info is .DynArray(dyn_array_rhs) -> {
                 if dyn_array_lhs.is_mut and !dyn_array_rhs.is_mut {
                     return false;
                 }
                 return dyn_array_lhs.elem_type == dyn_array_rhs.elem_type;
             },
-            .Tuple as tuple_lhs if got_sym.info is .Tuple as tuple_rhs -> {
+            .Tuple(tuple_lhs) if got_sym.info is .Tuple(tuple_rhs) -> {
                 if tuple_lhs.types.len != tuple_rhs.types.len {
                     return false;
                 }
@@ -257,7 +257,7 @@ func check_pointer(expected: ast.Type, got: ast.Type) -> bool {
     if expected is .Rawptr {
         // rawptr == &T, is valid
         return got is .Rawptr or got is .Pointer;
-    } else if expected is .Pointer as ptr and got is .Pointer as ptr2 {
+    } else if expected is .Pointer(ptr) and got is .Pointer(ptr2) {
         if ptr.is_mut and !ptr2.is_mut {
             return false;
         }

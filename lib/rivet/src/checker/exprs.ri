@@ -9,15 +9,15 @@ extend Checker {
     func check_expr(mut self, mut expr: ast.Expr) -> ast.Type {
         return match expr is {
             .Empty -> .Void(),
-            .Type as type -> type,
-            .Branch as branch -> {
+            .Type(type) -> type,
+            .Branch(branch) -> {
                 self.scope_returns = true;
                 .Never(branch.pos)
             },
-            .Paren as paren -> self.check_expr(paren.expr),
+            .Paren(paren) -> self.check_expr(paren.expr),
             .NoneLiteral -> .None(),
             .BoolLiteral -> self.table.bool_t,
-            .CharLiteral as char_lit -> {
+            .CharLiteral(char_lit) -> {
                 char_lit.type = if char_lit.is_byte {
                     self.table.uint8_t
                 } else {
@@ -25,15 +25,15 @@ extend Checker {
                 };
                 char_lit.type
             },
-            .IntegerLiteral as int_lit -> {
+            .IntegerLiteral(int_lit) -> {
                 int_lit.type = self.table.comptime_int_t;
                 int_lit.type
             },
-            .FloatLiteral as float_lit -> {
+            .FloatLiteral(float_lit) -> {
                 float_lit.type = self.table.comptime_float_t;
                 float_lit.type
             },
-            .StringLiteral as string_lit -> {
+            .StringLiteral(string_lit) -> {
                 string_lit.type = if string_lit.is_bytestr {
                     .Basic(self.table.universe.add_or_get_array(
                         self.table.uint8_t, string_lit.value.len, false
@@ -45,14 +45,14 @@ extend Checker {
                 };
                 string_lit.type
             },
-            .SelfLiteral as self_lit -> {
+            .SelfLiteral(self_lit) -> {
                 self_lit.type = self_lit.obj.type;
                 self_lit.type
             },
             .SelfTy -> .Void(),
-            .EnumLiteral as enum_lit -> {
+            .EnumLiteral(enum_lit) -> {
                 enum_lit.type = .Void();
-                if sym := self.expected_type.symbol(); sym.info is .Enum as enum_info {
+                if sym := self.expected_type.symbol(); sym.info is .Enum(enum_info) {
                     if variant := enum_info.get_variant(enum_lit.value) {
                         enum_lit.sym = sym;
                         enum_lit.variant = variant;
@@ -80,18 +80,18 @@ extend Checker {
                 }
                 enum_lit.type
             },
-            .TupleLiteral as mut tuple_lit -> self.check_tuple_literal(tuple_lit),
-            .DynArrayLiteral as mut dyn_array_lit -> self.check_dyn_array_literal(dyn_array_lit),
-            .Ident as ident -> {
+            .TupleLiteral(mut tuple_lit) -> self.check_tuple_literal(tuple_lit),
+            .DynArrayLiteral(mut dyn_array_lit) -> self.check_dyn_array_literal(dyn_array_lit),
+            .Ident(ident) -> {
                 ident.type = if ident.name == "_" {
                     .Void()
                 } else if ident.is_comptime {
                     ident.builtin.type()
                 } else if ident.is_sym or ident.is_obj {
                     match ident.sym is {
-                        ast.Const as const_sym -> const_sym.type,
-                        ast.Var as var_sym -> var_sym.type,
-                        ast.Func as func_sym -> {
+                        ast.Const(const_sym) -> const_sym.type,
+                        ast.Var(var_sym) -> var_sym.type,
+                        ast.Func(func_sym) -> {
                             if func_sym.abi != .Rivet {
                                 mut err := report.error_builder(
                                     "cannot use an extern function as a value", ident.pos
@@ -108,11 +108,11 @@ extend Checker {
                 };
                 ident.type
             },
-            .Selector as mut selector -> self.check_selector(selector),
-            .Indirect as indirect -> {
+            .Selector(mut selector) -> self.check_selector(selector),
+            .Indirect(indirect) -> {
                 indirect.left_type = self.check_expr(indirect.left);
                 indirect.type = if indirect.left_type.is_pointer()
-                    or (indirect.left_type is .Pointer as ptr and !ptr.is_indexable)
+                    or (indirect.left_type is .Pointer(ptr) and !ptr.is_indexable)
                     or indirect.left_type is .Rawptr  {
                 	indirect.is_mut = indirect.left_type.is_pointer();
                     indirect.left_type.ptr_or_ref_inner()
@@ -124,7 +124,7 @@ extend Checker {
                         err.add_help(
                             "consider casting this to another pointer type, e.g. `*uint8`"
                         );
-                    } else if indirect.left_type is .Pointer as ptr2 and ptr2.is_indexable {
+                    } else if indirect.left_type is .Pointer(ptr2) and ptr2.is_indexable {
                         err.add_help("use index access to element 0 instead");
                     }
                     err.emit();
@@ -132,9 +132,9 @@ extend Checker {
                 };
                 indirect.type
             },
-            .OptionCheck as option_check -> {
+            .OptionCheck(option_check) -> {
             	option_check.left_type = self.check_expr(option_check.left);
-                option_check.type = if option_check.left_type is .Option as opt {
+                option_check.type = if option_check.left_type is .Option(opt) {
                     opt.inner
                 } else {
                     report.error("cannot check a non-option value", option_check.left.position());
@@ -142,7 +142,7 @@ extend Checker {
                 };
                 option_check.type
             },
-            .Range as range -> {
+            .Range(range) -> {
                 range.type = if range.has_start {
                     self.check_expr(range.start)
                 } else {
@@ -158,10 +158,10 @@ extend Checker {
                 }
                 range.type
             },
-            .Index as mut index -> self.check_index(index),
-            .Call as mut call_expr -> self.check_call(call_expr),
-            .BuiltinCall as mut builtin_call -> self.check_builtin_call(builtin_call),
-            .Block as block -> {
+            .Index(mut index) -> self.check_index(index),
+            .Call(mut call_expr) -> self.check_call(call_expr),
+            .BuiltinCall(mut builtin_call) -> self.check_builtin_call(builtin_call),
+            .Block(block) -> {
                 self.defer_stmts_start = self.defer_stmts.len;
                 if block.is_unsafe {
                     if self.inside_unsafe_block {
@@ -196,11 +196,11 @@ extend Checker {
                 self.defer_stmts = self.defer_stmts[..self.defer_stmts_start];
                 block.type
             },
-            .Unary as mut unary -> self.check_unary(unary),
-            .Binary as mut binary -> self.check_binary(binary),
-            .If as mut if_expr -> self.check_if(if_expr),
-            .Match as mut match_expr -> self.check_match(match_expr),
-            .Guard as guard -> {
+            .Unary(mut unary) -> self.check_unary(unary),
+            .Binary(mut binary) -> self.check_binary(binary),
+            .If(mut if_expr) -> self.check_if(if_expr),
+            .Match(mut match_expr) -> self.check_match(match_expr),
+            .Guard(guard) -> {
                 old_inside_guard_expr := self.inside_guard_expr;
                 self.inside_guard_expr = true;
                 self.check_var_decl(guard.vars, guard.expr, guard.scope, guard.pos);
@@ -213,9 +213,9 @@ extend Checker {
                 self.inside_guard_expr = old_inside_guard_expr;
                 .Void()
             },
-            .Return as mut return_expr -> self.check_return(return_expr),
-            .Throw as mut throw_expr -> self.check_throw(throw_expr),
-            .Assign as mut assign -> self.check_assign(assign)
+            .Return(mut return_expr) -> self.check_return(return_expr),
+            .Throw(mut throw_expr) -> self.check_throw(throw_expr),
+            .Assign(mut assign) -> self.check_assign(assign)
         };
     }
 
@@ -223,7 +223,7 @@ extend Checker {
         old_expected_type := self.expected_type;
         mut has_expected_types := false;
         mut expected_types := @dyn_array(ast.Type);
-        if expected_type_sym := self.expected_type.symbol(); expected_type_sym.info is .Tuple as tuple_info {
+        if expected_type_sym := self.expected_type.symbol(); expected_type_sym.info is .Tuple(tuple_info) {
             has_expected_types = tuple_lit.values.len == tuple_info.types.len;
             expected_types = tuple_info.types;
         }
@@ -260,7 +260,7 @@ extend Checker {
             has_expected_type = true;
             value_type = value_sym.info.elem_type()?;
             self.expected_type = value_type;
-            if value_sym.info is .Array as array_info {
+            if value_sym.info is .Array(array_info) {
                 size = array_info.size;
             }
             is_mut = value_sym.info.is_mut_arr_or_vec();
@@ -310,11 +310,11 @@ extend Checker {
 
     func check_selector(mut self, mut selector: ast.Expr.Selector) -> ast.Type {
         selector.type = if selector.is_path {
-            if selector.left_sym is ast.TypeSym as type_sym {
+            if selector.left_sym is ast.TypeSym(type_sym) {
                 .Basic(type_sym, pos: selector.pos)
             } else {
                 match selector.sym is {
-                    ast.Func as func_sym -> {
+                    ast.Func(func_sym) -> {
                         if func_sym.is_method {
                             report.error(
                                 "cannot take value of method `{}`".fmt(
@@ -324,9 +324,9 @@ extend Checker {
                         }
                         func_sym.type(self.table.universe)
                     },
-                    ast.TypeSym as type_sym_ -> .Basic(type_sym_, pos: selector.pos),
-                    ast.Const as const_sym -> const_sym.type,
-                    ast.Var as var_sym -> var_sym.type,
+                    ast.TypeSym(type_sym_) -> .Basic(type_sym_, pos: selector.pos),
+                    ast.Const(const_sym) -> const_sym.type,
+                    ast.Var(var_sym) -> var_sym.type,
                     else -> {
                         mut err := report.error_builder(
                             "unexpected bug for selector expression", selector.pos
@@ -345,7 +345,7 @@ extend Checker {
                     selector.field_is_mut = field.is_mut;
                     field.type
                 } else if sym := left_sym.scope.find(selector.field_name) {
-                    if sym is ast.Func as func_sym {
+                    if sym is ast.Func(func_sym) {
                         if func_sym.is_method {
                             mut err := report.error_builder(
                                 "cannot take value of method `{}`".fmt(selector.field_name),
@@ -437,7 +437,7 @@ extend Checker {
                     );
                     err.add_note("only pointers, arrays, dynamic arrays and string supports indexing");
                     err.emit();
-                } else if index.left_type is .Pointer as pointer {
+                } else if index.left_type is .Pointer(pointer) {
                     if !self.inside_unsafe() {
                         report.error(
                             "pointer indexing is only allowed inside `unsafe` blocks",
@@ -495,16 +495,16 @@ extend Checker {
                 mut indexable_pointer := false;
                 if self.expected_type is .Rawptr {
                     expected_pointer = true;
-                } else if self.expected_type is .Pointer as ptr {
+                } else if self.expected_type is .Pointer(ptr) {
                     expected_pointer = true;
                     indexable_pointer = ptr.is_indexable;
-                } else if self.expected_type is .Option as opt
-                    and opt.inner is .Pointer as opt_ptr {
+                } else if self.expected_type is .Option(opt)
+                    and opt.inner is .Pointer(opt_ptr) {
                     expected_pointer = true;
                     indexable_pointer = opt_ptr.is_indexable;
                 }
                 right := unary.right.clean_paren();
-                if right is .Index as index {
+                if right is .Index(index) {
                     if index.left_type is .Pointer and !expected_pointer {
                         report.error("cannot take the address of a pointer indexing", unary.pos);
                     }
@@ -586,7 +586,7 @@ extend Checker {
                     return_type = promoted_type;
                 },
                 .OrElse -> {
-                    if left_type is .Option as opt {
+                    if left_type is .Option(opt) {
                         if !self.check_compatible_types(right_type, opt.inner)
                             and right_type !is .Never {
                             mut err := report.error_builder(
@@ -615,7 +615,7 @@ extend Checker {
                             elem_type := right_sym.info.elem_type()?;
                             op_method := if binary.op == .KwIn { "==" } else { "!=" };
                             if !(left_sym.info.is_primitive()
-                                or !(left_sym.info is .Enum as enum_info
+                                or !(left_sym.info is .Enum(enum_info)
                                 and enum_info.is_boxed))
                                 and !left_sym.has_method(op_method) {
                                 mut err := report.error_builder(
@@ -655,7 +655,7 @@ extend Checker {
                         self.check_name_case(
                             .Snake, "variable", binary.var_obj.name, binary.var_obj.pos
                         );
-                        if left_sym.info is .Enum as enum_info and enum_info.is_boxed {
+                        if left_sym.info is .Enum(enum_info) and enum_info.is_boxed {
                             variant := @as(ast.Expr.EnumLiteral, binary.right).variant;
                             if variant.has_type {
                                 binary.var_obj.type = variant.type;
@@ -675,7 +675,7 @@ extend Checker {
                             binary.var_obj.sym.is_hidden_ref = true;
                         }
                     }
-                    if left_sym.info is .Enum as enum_info {
+                    if left_sym.info is .Enum(enum_info) {
                         if enum_info.is_boxed and binary.op !in [.KwIs, .KwNotIs] {
                             report.error(
                                 "boxed enum types only support `is` and `!is`", binary.pos
@@ -700,7 +700,7 @@ extend Checker {
                             "non-boolean expression in right operand for `{}`".fmt(binary.op),
                             binary.left.position()
                         );
-                    } else if binary.left is .Binary as bin_left {
+                    } else if binary.left is .Binary(bin_left) {
                         if bin_left.op != binary.op and bin_left.op in [.KwAnd, .KwOr] {
                             // use `(a and b) or c` instead of `a and b or c`
                             mut err := report.error_builder(
@@ -803,7 +803,7 @@ extend Checker {
                 );
             } else {
                 old_expected_type := self.expected_type;
-                self.expected_type = if self.cur_fn.ret_type is .Result as res_t {
+                self.expected_type = if self.cur_fn.ret_type is .Result(res_t) {
                     res_t.inner
                 } else {
                     self.cur_fn.ret_type
@@ -823,7 +823,7 @@ extend Checker {
             }
         } else if !(
             self.cur_fn.ret_type is .Void
-            or (self.cur_fn.ret_type is .Result as res_t and res_t.inner is .Void)
+            or (self.cur_fn.ret_type is .Result(res_t) and res_t.inner is .Void)
         ) {
             mut err := report.error_builder(
                 "expected `{}` value in return argument".fmt(self.cur_fn.ret_type),
@@ -882,7 +882,7 @@ extend Checker {
         self.expected_type = left_type;
         right_type := self.check_expr(assign.right);
         self.expected_type = old_expected_type;
-        if assign.left is .Ident as ident and ident.name == "_" {
+        if assign.left is .Ident(ident) and ident.name == "_" {
             return .Void();
         }
         self.check_types(right_type, left_type) catch |err| {

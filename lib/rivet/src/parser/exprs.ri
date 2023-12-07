@@ -92,8 +92,8 @@ extend Parser {
                     } else {
                         .Type(self.parse_type())
                     };
-                    if self.accept(.KwAs) {
-                        .Binary(
+                    if self.accept(.Lparen) {
+                        val := ast.Expr.Binary(
                             left: left,
                             right: right,
                             op: op,
@@ -101,7 +101,9 @@ extend Parser {
                             var_obj: self.parse_var_decl(support_ref: false),
                             scope: self.scope,
                             pos: left.position() + self.prev_tok.pos
-                        )
+                        );
+                        self.expect(.Rparen);
+                        val
                     } else {
                         .Binary(
                             left: left,
@@ -605,7 +607,7 @@ extend Parser {
                         break;
                     }
                 }
-                if self.accept(.KwAs) {
+                if self.accept(.Lparen) {
                     has_var = true;
                     var_pos = self.tok.pos;
                     var_is_mut = self.accept(.KwMut);
@@ -613,6 +615,7 @@ extend Parser {
                         var_pos += self.tok.pos;
                     }
                     var_name = self.parse_name();
+                    self.expect(.Rparen);
                 }
                 if self.accept(.KwIf) {
                     has_cond = true;
@@ -659,7 +662,7 @@ extend Parser {
         mut expr := ast.Expr.Empty(self.tok.pos);
         while !self.accept(.Rbrace) {
             stmt := self.parse_stmt();
-            if stmt is .Expr as stmt_expr and self.prev_tok.kind != .Semicolon
+            if stmt is .Expr(stmt_expr) and self.prev_tok.kind != .Semicolon
                 and self.tok.kind == .Rbrace {
                 expr = stmt_expr;
                 has_expr = true;

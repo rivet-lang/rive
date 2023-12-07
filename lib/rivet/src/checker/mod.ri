@@ -59,9 +59,9 @@ pub struct Checker {
         }
         // check global mutable variables
         for sym in self.table.universe.scope.syms {
-            if sym is ast.Module as module {
+            if sym is ast.Module(module) {
                 for mod_sym in module.scope.syms {
-                    if mod_sym is ast.Var as mod_var {
+                    if mod_sym is ast.Var(mod_var) {
                         if !mod_var.is_public and mod_var.is_mut and !mod_var.is_changed {
                             report.warn(
                                 "variable `{}` does not need to be mutable".fmt(mod_var.name),
@@ -107,9 +107,9 @@ pub struct Checker {
                 }
                 mut right_type := self.check_expr(right);
                 if self.inside_guard_expr {
-                    right_type = if right_type is .Result as result_t {
+                    right_type = if right_type is .Result(result_t) {
                         result_t.inner
-                    } else if right_type is .Option as option_t {
+                    } else if right_type is .Option(option_t) {
                         option_t.inner
                     } else {
                         report.error("expected result or option value", right.position());
@@ -134,9 +134,9 @@ pub struct Checker {
         } else {
             mut right_type := self.check_expr(right);
             if self.inside_guard_expr {
-                right_type = if right_type is .Result as result_t {
+                right_type = if right_type is .Result(result_t) {
                     result_t.inner
-                } else if right_type is .Option as option_t {
+                } else if right_type is .Option(option_t) {
                     option_t.inner
                 } else {
                     report.error("expected result or option value", right.position());
@@ -144,7 +144,7 @@ pub struct Checker {
                 };
             }
             right_sym := right_type.symbol()?;
-            if right_sym.info is .Tuple as tuple_info {
+            if right_sym.info is .Tuple(tuple_info) {
                 if tuple_info.types.len == lefts.len {
                     for i, vd in lefts {
                         if vd.name == "_" and vd.is_mut {
@@ -200,7 +200,7 @@ pub struct Checker {
     func check_scope_vars(self, scope: ast.Scope) {
         if !self.inside_extern {
             for sym in scope.syms {
-                if sym is ast.Var as var_info {
+                if sym is ast.Var(var_info) {
                     if !var_info.is_used and !var_info.name.starts_with("_") {
                         mut warn_b := report.warn_builder(
                             if var_info.level == .Receiver {
@@ -254,8 +254,8 @@ pub struct Checker {
         from_selector: bool := false
     ) {
         match expr is {
-            .Paren as paren -> self.check_expr_is_mut(paren.expr),
-            .SelfLiteral as self_lit -> if self_lit.obj.is_mut {
+            .Paren(paren) -> self.check_expr_is_mut(paren.expr),
+            .SelfLiteral(self_lit) -> if self_lit.obj.is_mut {
                 self_lit.obj.is_changed = true;
             } else {
                 mut err := report.error_builder(
@@ -264,7 +264,7 @@ pub struct Checker {
                 err.add_help("consider making `self` as mutable: `mut self`");
                 err.emit();
             },
-            .Ident as ident -> if ident.is_comptime {
+            .Ident(ident) -> if ident.is_comptime {
                 report.error(
                     "cannot use constant `@{}` as mutable value".fmt(ident.name),
                     ident.pos
@@ -274,13 +274,13 @@ pub struct Checker {
             } else if ident.found and (ident.is_sym or ident.is_obj) {
                 self.check_sym_is_mut(ident.sym, ident.pos, from_selector);
             },
-            .Selector as selector -> if selector.is_path {
+            .Selector(selector) -> if selector.is_path {
                 self.check_sym_is_mut(selector.sym, selector.pos, true);
             } else {
                 match selector.left is {
-                    .Ident as ident2 if ident2.found -> if ident2.is_sym {
+                    .Ident(ident2) if ident2.found -> if ident2.is_sym {
                         self.check_sym_is_mut(ident2.sym, ident2.pos, true)
-                    } else if ident2.sym is ast.Var as i_var and i_var.level == .Argument {
+                    } else if ident2.sym is ast.Var(i_var) and i_var.level == .Argument {
                         if i_var.is_mut {
                            i_var.is_changed = true;
                         } else {
@@ -305,32 +305,32 @@ pub struct Checker {
                     );
                 }
             },
-            .Indirect as indirect -> if !indirect.is_mut {
+            .Indirect(indirect) -> if !indirect.is_mut {
                 report.error("cannot use a immutable pointer as mutable value", selector.pos);
             },
-            .OptionCheck as option_check -> self.check_expr_is_mut(option_check.left),
+            .OptionCheck(option_check) -> self.check_expr_is_mut(option_check.left),
             .NoneLiteral -> report.error("`none` cannot be modified", expr.position()),
             .StringLiteral -> report.error(
                 "string literals cannot be modified", expr.position()
             ),
-            .TupleLiteral as tuple_lit -> if from_assign {
+            .TupleLiteral(tuple_lit) -> if from_assign {
                 for value in tuple_lit.values {
                     self.check_expr_is_mut(value);
                 }
             } else {
                 report.error("tuple literals cannot be modified", tuple_lit.pos);
             },
-            .EnumLiteral as enum_lit if !enum_lit.is_instance -> report.error(
+            .EnumLiteral(enum_lit) if !enum_lit.is_instance -> report.error(
                 "enum literals cannot be modified", enum_lit.pos
             ),
-            .BuiltinCall as builtin_call -> {
+            .BuiltinCall(builtin_call) -> {
                 for arg in builtin_call.args {
                     self.check_expr_is_mut(arg.expr);
                 }
             },
-            .Block as block if block.is_expr -> self.check_expr_is_mut(block.expr),
-            .Index as index -> {
-                if index.left_type is .Pointer as ptr {
+            .Block(block) if block.is_expr -> self.check_expr_is_mut(block.expr),
+            .Index(index) -> {
+                if index.left_type is .Pointer(ptr) {
                     if !ptr.is_mut {
                         report.error(
                             "cannot modify elements of an immutable pointer", index.pos
@@ -346,17 +346,17 @@ pub struct Checker {
                     );
                 }
             },
-            .Unary as unary -> self.check_expr_is_mut(unary.right),
-            .Binary as binary -> {
+            .Unary(unary) -> self.check_expr_is_mut(unary.right),
+            .Binary(binary) -> {
                 self.check_expr_is_mut(binary.left);
                 self.check_expr_is_mut(binary.right);
             },
-            .If as if_expr -> {
+            .If(if_expr) -> {
                 for branch in if_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
             },
-            .Match as match_expr -> {
+            .Match(match_expr) -> {
                 for branch in match_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
@@ -371,7 +371,7 @@ pub struct Checker {
             ast.Const -> report.error(
                 "cannot use constant `{}` as mutable value".fmt(sym.name), pos
             ),
-            ast.Var as var_info if !(from_selector and var_info.level == .Local) -> {
+            ast.Var(var_info) if !(from_selector and var_info.level == .Local) -> {
                 if var_info.is_mut {
                     var_info.is_changed = true;
                 } else {
@@ -402,8 +402,8 @@ pub struct Checker {
 
     func check_expr_evaluated_but_not_used(self, expr_type: ast.Type, pos: token.Pos) {
         _ = self;
-        if !((expr_type is .Result as res and !res.inner.is_void())
-            or (expr_type is .Option as opt and !opt.inner.is_void())
+        if !((expr_type is .Result(res) and !res.inner.is_void())
+            or (expr_type is .Option(opt) and !opt.inner.is_void())
             or expr_type.is_void()) {
             report.warn("expression evaluated but not used", pos);
         }
@@ -411,7 +411,7 @@ pub struct Checker {
 
     func has_return(self, stmts: []ast.Stmt, allow_throw: bool := false) -> bool {
         for stmt in stmts {
-            if stmt is .Expr as expr and self.expr_has_return(expr, allow_throw) {
+            if stmt is .Expr(expr) and self.expr_has_return(expr, allow_throw) {
                 return true;
             }
         }
@@ -420,7 +420,7 @@ pub struct Checker {
 
     func expr_has_return(self, expr: ast.Expr, allow_throw: bool := false) -> bool {
         return match expr is {
-            .Match as match_expr -> {
+            .Match(match_expr) -> {
                 for i, branch in match_expr.branches {
                     if match_expr.is_exhaustive and i == match_expr.branches.len {
                         if self.expr_has_return(branch.expr, allow_throw) {
@@ -432,7 +432,7 @@ pub struct Checker {
                 }
                 false
             },
-            .If as if_expr -> {
+            .If(if_expr) -> {
                 for branch in if_expr.branches {
                     if branch.is_else and self.expr_has_return(branch.expr, allow_throw) {
                         return true;
@@ -440,8 +440,8 @@ pub struct Checker {
                 }
                 false
             },
-            .Call as call_expr -> call_expr.type is .Never,
-            .Block as block -> self.has_return(block.stmts, allow_throw),
+            .Call(call_expr) -> call_expr.type is .Never,
+            .Block(block) -> self.has_return(block.stmts, allow_throw),
             .Return -> true,
             .Throw if allow_throw -> true,
             else -> false

@@ -8,16 +8,16 @@ import ../ast;
 extend Codegen {
     func gen_expr(mut self, expr: ast.Expr) -> mir.Expr {
         return match expr is {
-            .Paren as paren -> self.gen_expr(paren.expr),
+            .Paren(paren) -> self.gen_expr(paren.expr),
             //.Ident -> {},
-            .BoolLiteral as bool_lit -> .Const(
+            .BoolLiteral(bool_lit) -> .Const(
                 .IntConst(bool_lit.value.to_int()), self.bool_t
             ),
-            .IntegerLiteral as int_lit -> .Const(
+            .IntegerLiteral(int_lit) -> .Const(
                 .IntConst(int_lit.value.to_int() catch @unreachable()),
                 self.uint_t
             ),
-            .FloatLiteral as float_lit -> .Const(
+            .FloatLiteral(float_lit) -> .Const(
                 .IntConst(float_lit.value.to_int() catch @unreachable()),
                 self.uint_t
             ),

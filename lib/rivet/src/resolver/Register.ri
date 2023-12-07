@@ -39,12 +39,12 @@ pub struct Register {
             old_sym := self.sym;
             self.sym.scope.owner = self.sym;
             match decl is {
-                .Import as import_decl -> self.import_decl(import_decl),
-                .Extern as extern_decl -> {
+                .Import(import_decl) -> self.import_decl(import_decl),
+                .Extern(extern_decl) -> {
                     self.abi = extern_decl.abi;
                     self.walk_decls(extern_decl.decls);
                 },
-                .Alias as alias_decl -> alias_decl.sym = self.add_sym(
+                .Alias(alias_decl) -> alias_decl.sym = self.add_sym(
                     if alias_decl.is_typealias {
                         ast.TypeSym(
                             parent: self.sym,
@@ -62,7 +62,7 @@ pub struct Register {
                         )
                     }, alias_decl.pos
                 ),
-                .Trait as trait_decl -> {
+                .Trait(trait_decl) -> {
                     trait_decl.sym = self.add_sym(
                         ast.TypeSym(
                             parent: self.sym,
@@ -78,7 +78,7 @@ pub struct Register {
                     self.sym = trait_decl.sym;
                     self.walk_decls(trait_decl.decls);
                 },
-                .Struct as struct_decl -> {
+                .Struct(struct_decl) -> {
                     struct_decl.sym = if self.is_core_mod and struct_decl.name == "string" {
                         @as(ast.Type.Basic, self.table.string_t).sym
                     } else {
@@ -98,7 +98,7 @@ pub struct Register {
                     self.sym = struct_decl.sym;
                     self.walk_decls(struct_decl.decls);
                 },
-                .Enum as enum_decl -> {
+                .Enum(enum_decl) -> {
                     info := ast.TypeInfo.Enum(
                         underlying_type: enum_decl.underlying_type,
                         is_boxed: enum_decl.is_boxed
@@ -152,7 +152,7 @@ pub struct Register {
                     self.sym = enum_decl.sym;
                     self.walk_decls(enum_decl.decls);
                 },
-                .Field as field_decl -> {
+                .Field(field_decl) -> {
                     type_sym := @as(ast.TypeSym, self.sym);
                     if type_sym.has_field(field_decl.name) {
                         report.error(
@@ -172,7 +172,7 @@ pub struct Register {
                         is_required: field_decl.attributes.has("required")
                     ));
                 },
-                .Const as const_decl -> const_decl.sym = self.add_sym(ast.Const(
+                .Const(const_decl) -> const_decl.sym = self.add_sym(ast.Const(
                     parent: self.sym,
                     is_public: const_decl.is_public,
                     abi: self.abi,
@@ -180,7 +180,7 @@ pub struct Register {
                     expr: const_decl.expr,
                     type: const_decl.type
                 ), const_decl.pos),
-                .Var as var_decl -> {
+                .Var(var_decl) -> {
                     for left in var_decl.lefts {
                         left.sym = ast.Var(
                             parent: self.sym,
@@ -197,9 +197,9 @@ pub struct Register {
                         };
                     }
                 },
-                .Extend as extend_decl -> if extend_decl.type is .Basic as basic_type {
+                .Extend(extend_decl) -> if extend_decl.type is .Basic(basic_type) {
                     if basic_type.is_unresolved {
-                        if basic_type.expr is .Ident as ident {
+                        if basic_type.expr is .Ident(ident) {
                             self.sym = if type_sym := self.sym.scope.find(ident.name) {
                                 type_sym
                             } else {
@@ -237,7 +237,7 @@ pub struct Register {
                         extend_decl.pos
                     );
                 },
-                .Func as func_decl -> func_decl.sym = self.add_sym(ast.Func(
+                .Func(func_decl) -> func_decl.sym = self.add_sym(ast.Func(
                     parent: self.sym,
                     abi: func_decl.abi,
                     is_public: func_decl.is_public,

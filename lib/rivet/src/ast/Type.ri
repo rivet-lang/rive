@@ -84,7 +84,7 @@ pub enum Type < traits.Stringable {
 
         #[inline]
         func symbol(self) -> Func {
-            return if self.has_sym and self.sym.info is .Func as func_sym {
+            return if self.has_sym and self.sym.info is .Func(func_sym) {
                 func_sym
             } else {
                 Func(
@@ -102,7 +102,7 @@ pub enum Type < traits.Stringable {
     #[inline]
     pub func ptr_or_ref_inner(self) -> Self {
         return match self is {
-            .Pointer as ptr -> ptr.inner,
+            .Pointer(ptr) -> ptr.inner,
             .Rawptr -> self,
             else -> .Void()
         };
@@ -113,25 +113,25 @@ pub enum Type < traits.Stringable {
         // unaliasing instead.
         return match self is {
             .Rawptr -> self,
-            .Result as result -> .Result(result.inner.unalias() ?? result.inner),
-            .Option as option -> .Option(option.inner.unalias() ?? option.inner),
-            .Tuple as tuple_data -> {
+            .Result(result) -> .Result(result.inner.unalias() ?? result.inner),
+            .Option(option) -> .Option(option.inner.unalias() ?? option.inner),
+            .Tuple(tuple_data) -> {
                 unaliased_types := @dyn_array(mut Type, tuple_data.inners.len);
                 for i, tuple_type in tuple_data.inners {
                     unaliased_types[i] = tuple_type.unalias() ?? tuple_type;
                 }
                 .Tuple(unaliased_types, tuple_data.sym)
             },
-            .DynArray as dyn_array_data -> .DynArray(
+            .DynArray(dyn_array_data) -> .DynArray(
                 dyn_array_data.inner.unalias() ?? dyn_array_data.inner, dyn_array_data.is_mut
             ),
-            .Array as array_data -> .Array(
+            .Array(array_data) -> .Array(
                 array_data.inner.unalias() ?? array_data.inner, ...self
             ),
-            .Pointer as pointer_data -> .Pointer(
+            .Pointer(pointer_data) -> .Pointer(
                 pointer_data.inner.unalias() ?? pointer_data.inner, ...self
             ),
-            .Func as func_data -> {
+            .Func(func_data) -> {
                 for arg in func_data.args {
                     arg.type = arg.type.unalias() ?? arg.type;
                 }
@@ -140,7 +140,7 @@ pub enum Type < traits.Stringable {
                     ...self
                 )
             },
-            .Basic as basic if !basic.is_unresolved -> if basic.sym.info is .Alias as alias_info {
+            .Basic(basic) if !basic.is_unresolved -> if basic.sym.info is .Alias(alias_info) {
                 alias_info.parent.unalias() ?? alias_info.parent
             } else {
                 .Basic(basic.sym)
@@ -161,15 +161,15 @@ pub enum Type < traits.Stringable {
     pub func symbol(self) -> ?TypeSym {
         // NOTE: `.Void`, `.None`, `.Never` and `.Rawptr` has no `TypeSym` value.
         return match self is {
-            .Result as result -> result.inner.symbol(),
-            .Option as option -> option.inner.symbol(),
-            .Tuple as tuple_data -> tuple_data.sym,
-            .Variadic as variadic_data -> variadic_data.sym,
-            .DynArray as dyn_array_data -> dyn_array_data.sym,
-            .Array as array_data -> array_data.sym,
-            .Pointer as pointer_data -> pointer_data.inner.symbol(),
-            .Func as func_data -> func_data.sym,
-            .Basic as basic if !basic.is_unresolved -> basic.sym,
+            .Result(result) -> result.inner.symbol(),
+            .Option(option) -> option.inner.symbol(),
+            .Tuple(tuple_data) -> tuple_data.sym,
+            .Variadic(variadic_data) -> variadic_data.sym,
+            .DynArray(dyn_array_data) -> dyn_array_data.sym,
+            .Array(array_data) -> array_data.sym,
+            .Pointer(pointer_data) -> pointer_data.inner.symbol(),
+            .Func(func_data) -> func_data.sym,
+            .Basic(basic) if !basic.is_unresolved -> basic.sym,
             else -> none
         };
     }
@@ -196,7 +196,7 @@ pub enum Type < traits.Stringable {
     pub func is_void(self) -> bool {
         return match self is {
             .Void, .Never -> true,
-            .Result as result -> result.inner.is_void(),
+            .Result(result) -> result.inner.is_void(),
             else -> false
         };
     }
@@ -209,7 +209,7 @@ pub enum Type < traits.Stringable {
     #[inline]
     pub func is_mut_pointer(self) -> bool {
         return match self is {
-            .Pointer as ptr -> ptr.is_mut,
+            .Pointer(ptr) -> ptr.is_mut,
             .Rawptr -> true,
             else -> false
         };
@@ -231,17 +231,17 @@ pub enum Type < traits.Stringable {
     pub func position(self) -> token.Pos {
         return match self is {
             .Void, .None -> token.noPos,
-            .Never as never_pos -> never_pos,
-            .Option as opt_t -> opt_t.pos,
-            .Result as res_t -> res_t.pos,
-            .Tuple as tuple_t -> tuple_t.pos,
-            .Variadic as variadic_t -> variadic_t.pos,
-            .DynArray as dyn_array_t -> dyn_array_t.pos,
-            .Array as arr_t -> arr_t.pos,
-            .Pointer as ptr_t -> ptr_t.pos,
-            .Rawptr as rawptr_t -> rawptr_t.pos,
-            .Func as func_t -> func_t.pos,
-            .Basic as basic_t -> if basic_t.is_unresolved {
+            .Never(never_pos) -> never_pos,
+            .Option(opt_t) -> opt_t.pos,
+            .Result(res_t) -> res_t.pos,
+            .Tuple(tuple_t) -> tuple_t.pos,
+            .Variadic(variadic_t) -> variadic_t.pos,
+            .DynArray(dyn_array_t) -> dyn_array_t.pos,
+            .Array(arr_t) -> arr_t.pos,
+            .Pointer(ptr_t) -> ptr_t.pos,
+            .Rawptr(rawptr_t) -> rawptr_t.pos,
+            .Func(func_t) -> func_t.pos,
+            .Basic(basic_t) -> if basic_t.is_unresolved {
                 basic_t.expr.position()
             } else {
                 basic_t.pos
@@ -255,19 +255,19 @@ pub enum Type < traits.Stringable {
             .None if rhs is .None -> true,
             .Void if rhs is .Void -> true,
             .Never if rhs is .Never -> true,
-            .Result as result_lhs if rhs is .Result as result_rhs ->
+            .Result(result_lhs) if rhs is .Result(result_rhs) ->
                 result_lhs.inner == result_rhs.inner,
-            .Option as option_lhs if rhs is .Option as option_rhs ->
+            .Option(option_lhs) if rhs is .Option(option_rhs) ->
                 option_lhs.inner == option_rhs.inner,
-            .Tuple as tuple_lhs if rhs is .Tuple as tuple_rhs -> tuple_lhs == tuple_rhs,
-            .Variadic as variadic_lhs if rhs is .Variadic as variadic_rhs ->
+            .Tuple(tuple_lhs) if rhs is .Tuple(tuple_rhs) -> tuple_lhs == tuple_rhs,
+            .Variadic(variadic_lhs) if rhs is .Variadic(variadic_rhs) ->
                 variadic_lhs.inner == variadic_rhs.inner,
-            .DynArray as dyn_array_lhs if rhs is .DynArray as dyn_array_rhs ->
+            .DynArray(dyn_array_lhs) if rhs is .DynArray(dyn_array_rhs) ->
                 dyn_array_lhs.inner == dyn_array_rhs.inner and dyn_array_lhs.is_mut == dyn_array_rhs.is_mut,
-            .Array as array_lhs if rhs is .Array as array_rhs ->
+            .Array(array_lhs) if rhs is .Array(array_rhs) ->
                 array_lhs.inner == array_rhs.inner and array_lhs.size_value == array_rhs.size_value
                 and array_lhs.is_mut == array_rhs.is_mut,
-            .Pointer as ptr_lhs if rhs is .Pointer as ptr_rhs -> if ptr_lhs.is_mut
+            .Pointer(ptr_lhs) if rhs is .Pointer(ptr_rhs) -> if ptr_lhs.is_mut
                 and !ptr_rhs.is_mut {
                 false
             } else if ptr_lhs.is_indexable and !ptr_rhs.is_indexable {
@@ -276,7 +276,7 @@ pub enum Type < traits.Stringable {
                 ptr_lhs.inner == ptr_rhs.inner
             },
             .Rawptr if rhs is .Rawptr -> true,
-            .Func as func_lhs if rhs is .Func as func_rhs -> match {
+            .Func(func_lhs) if rhs is .Func(func_rhs) -> match {
                 func_lhs.is_method != func_rhs.is_method,
                 func_lhs.self_is_mut != func_rhs.self_is_mut,
                 func_lhs.self_is_ptr != func_rhs.self_is_ptr,
@@ -297,7 +297,7 @@ pub enum Type < traits.Stringable {
                     final_res
                 }
             },
-            .Basic as basic_lhs if rhs is .Basic as basic_rhs ->
+            .Basic(basic_lhs) if rhs is .Basic(basic_rhs) ->
                 !(basic_lhs.is_unresolved and basic_rhs.is_unresolved)
                 and basic_lhs.sym == basic_rhs.sym,
             else -> false
@@ -321,9 +321,9 @@ pub enum Type < traits.Stringable {
             .None -> "<none>",
         	.Void -> "<void>",
             .Never -> "never",
-            .Result as result -> "!".concat(result.inner.to_string_(qualstr)),
-            .Option as option -> "?".concat(option.inner.to_string_(qualstr)),
-            .Tuple as tuple_data -> {
+            .Result(result) -> "!".concat(result.inner.to_string_(qualstr)),
+            .Option(option) -> "?".concat(option.inner.to_string_(qualstr)),
+            .Tuple(tuple_data) -> {
                 mut sb := Builder.new(100);
                 sb.write_byte(b'(');
                 for i, inner in tuple_data.inners {
@@ -335,20 +335,20 @@ pub enum Type < traits.Stringable {
                 sb.write_byte(b')');
                 sb.to_string()
             },
-            .Variadic as variadic_data -> "...".concat(variadic_data.inner.to_string_(qualstr)),
-            .DynArray as dyn_array_data -> if dyn_array_data.is_mut {
+            .Variadic(variadic_data) -> "...".concat(variadic_data.inner.to_string_(qualstr)),
+            .DynArray(dyn_array_data) -> if dyn_array_data.is_mut {
                 "[]mut"
             } else {
                 "[]"
             }.concat(dyn_array_data.inner.to_string_(qualstr)),
-            .Array as array_data -> "[".concat(
+            .Array(array_data) -> "[".concat(
                 array_data.size.to_string(), "]", if array_data.is_mut {
                     "mut "
                 } else {
                     ""
                 }, array_data.inner.to_string_(qualstr)
             ),
-            .Pointer as pointer_data -> {
+            .Pointer(pointer_data) -> {
                 if pointer_data.is_mut {
                     if pointer_data.is_indexable {
                         "[&]mut "
@@ -364,7 +364,7 @@ pub enum Type < traits.Stringable {
                 }.concat(pointer_data.inner.to_string_(qualstr))
             },
             .Rawptr -> "rawptr",
-            .Func as func_data -> {
+            .Func(func_data) -> {
                 mut sb := Builder.new(150);
                 sb.write_string("func(");
                 if func_data.is_method {
@@ -391,7 +391,7 @@ pub enum Type < traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Basic as basic -> if basic.is_unresolved {
+            .Basic(basic) -> if basic.is_unresolved {
                 basic.expr.to_string()
             } else if qualstr {
                 basic.sym.qualname()
