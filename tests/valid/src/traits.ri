@@ -84,5 +84,5 @@ struct IntegerStruct {
 
 test "traits with `default_value` attribute" {
     is_ := IntegerStruct();
-    @assert(is_.i is IntegerValue as int_v and int_v.int == 5);
+    @assert(is_.i is IntegerValue(int_v) and int_v.int == 5);
 }

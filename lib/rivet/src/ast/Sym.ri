@@ -72,7 +72,7 @@ pub trait Sym {
     func module(self) -> ?Module {
         mut p := self;
         while {
-            if p is Module as mod {
+            if p is Module(mod) {
                 return mod;
             } else if p_ := p.parent {
                 p = p_;
