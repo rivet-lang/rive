@@ -163,6 +163,6 @@ test "string.substr()" {
     str := "hello world!";
     @assert(str.substr() == str);
     @assert(str.substr(6) == "world!");
-    @assert(str.substr(end: 4) == "hello");
-    @assert(str.substr(1, 8) == "llo wor");
+    @assert(str.substr(end: 5) == "hello");
+    @assert(str.substr(2, 9) == "llo wor");
 }
