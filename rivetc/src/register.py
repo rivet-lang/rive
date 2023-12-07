@@ -222,9 +222,9 @@ class Register:
                             attributes = decl.attributes
                         )
                     )
-                    decl.sym.is_main = decl.is_main
                 except utils.CompilerError(e):
                     report.error(e.args[0], decl.name_pos)
+                decl.sym.is_main = decl.is_main
             self.abi = old_abi
             self.sym = old_sym
 
