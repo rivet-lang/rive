@@ -152,11 +152,11 @@ pub enum Decl {
 
     pub func decls(self) -> ?[]Self {
         return match self is {
-            .Extern as extern_decl -> extern_decl.decls,
-            .Trait as trait_decl -> trait_decl.decls,
-            .Enum as enum_decl -> enum_decl.decls,
-            .Struct as struct_decl -> struct_decl.decls,
-            .Extend as extend_decl -> extend_decl.decls,
+            .Extern(extern_decl) -> extern_decl.decls,
+            .Trait(trait_decl) -> trait_decl.decls,
+            .Enum(enum_decl) -> enum_decl.decls,
+            .Struct(struct_decl) -> struct_decl.decls,
+            .Extend(extend_decl) -> extend_decl.decls,
             else -> none
         };
     }

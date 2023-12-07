@@ -103,7 +103,7 @@ pub struct Codegen {
         match type is {
             .Pointer(ptr) -> {
                 mut inner := ptr.inner;
-                while (inner is .Pointer as inner_ptr) : inner = inner_ptr.inner {
+                while (inner is .Pointer(inner_ptr)) : inner = inner_ptr.inner {
                     sb.write_string("ptr_");
                     if inner_ptr.is_mut {
                         sb.write_string("mut_");
@@ -173,7 +173,7 @@ pub struct Codegen {
                 }
             },
             ast.TypeSym(type) -> match type.info is {
-                .Tuple as tuple_info -> {
+                .Tuple(tuple_info) -> {
                     mut sb2 := strings.Builder.new();
                     sb2.write_string("Tuple_");
                     for i, ttype in tuple_info.types {

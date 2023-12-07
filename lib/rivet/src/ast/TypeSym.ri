@@ -28,13 +28,13 @@ pub struct TypeSym < Sym {
                 return f;
             }
         }
-        if self.info is .Trait as trait_info {
+        if self.info is .Trait(trait_info) {
             for b in trait_info.bases {
                 if f := b.lookup_field(name) {
                     return f;
                 }
             }
-        } else if self.info is .Struct as struct_info {
+        } else if self.info is .Struct(struct_info) {
             for t in struct_info.traits {
                 if f := t.lookup_field(name) {
                     return f;
@@ -64,13 +64,13 @@ pub struct TypeSym < Sym {
     }
 
     pub func find_in_base(self, name: string) -> ?Sym {
-         if self.info is .Trait as trait_info {
+         if self.info is .Trait(trait_info) {
             for b in trait_info.bases {
                 if s := b.scope.find(name) {
                     return s;
                 }
             }
-        } else if self.info is .Struct as struct_info {
+        } else if self.info is .Struct(struct_info) {
             for t in struct_info.traits {
                 if s := t.scope.find(name) {
                     return s;
@@ -81,7 +81,7 @@ pub struct TypeSym < Sym {
                     return s;
                 }
             }
-        } else if self.info is .Enum as enum_info {
+        } else if self.info is .Enum(enum_info) {
             for t in enum_info.traits {
                 if s := t.scope.find(name) {
                     return s;
@@ -132,13 +132,13 @@ pub struct TypeSym < Sym {
             return self.full_fields_;
         }
         mut fields := @dyn_array(Field);
-        if self.info is .Trait as trait_info {
+        if self.info is .Trait(trait_info) {
             for mut b in trait_info.bases {
                 for bf in b.full_fields() {
                     fields.push(bf);
                 }
             }
-        } else if self.info is .Struct as struct_info {
+        } else if self.info is .Struct(struct_info) {
             for mut t in struct_info.traits {
                 for tf in t.full_fields() {
                     fields.push(tf);
@@ -159,7 +159,7 @@ pub struct TypeSym < Sym {
 
     #[inline]
     pub func implement_trait(self, trait_sym: TypeSym) -> bool {
-        return if trait_sym.info is .Trait as trait_info {
+        return if trait_sym.info is .Trait(trait_info) {
             self in trait_info.implements
         } else {
             false
@@ -184,9 +184,9 @@ pub struct TypeSym < Sym {
 
     #[inline]
     pub func is_boxed(self) -> bool {
-        return if self.info is .Enum as enum_info {
+        return if self.info is .Enum(enum_info) {
             enum_info.is_boxed
-        } else if self.info is .Struct as struct_info {
+        } else if self.info is .Struct(struct_info) {
             struct_info.is_boxed
         } else {
             self.info is .Trait or self.info is .String or self.info is .DynArray

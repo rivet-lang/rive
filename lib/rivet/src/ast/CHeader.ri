@@ -103,8 +103,8 @@ enum CImportValue {
 
     #[inline]
     pub func to_bool(self) -> bool {
-        return (self is .Int as int and int == 1)
-            or (self is .Uint as uint and uint == 1);
+        return (self is .Int(int) and int == 1)
+            or (self is .Uint(uint) and uint == 1);
     }
 }
 

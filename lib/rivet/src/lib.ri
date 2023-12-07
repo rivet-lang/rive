@@ -123,7 +123,7 @@ pub struct Compiler {
     func import_modules(mut self) -> ! {
         for sf in self.table.source_files {
             for d in sf.decls {
-                if d is .Import as import_decl {
+                if d is .Import(import_decl) {
                     if self.table.universe.scope.exists(import_decl.info.full_name) {
                         continue;
                     }
@@ -307,7 +307,7 @@ pub struct Compiler {
                 deps.push("core");
             }
             for d in pf.decls {
-                if d is .Import as import_decl {
+                if d is .Import(import_decl) {
                     if !import_decl.info.found {
                         continue; // module not found
                     }

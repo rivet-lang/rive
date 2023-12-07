@@ -149,7 +149,7 @@ extend Codegen {
             ),
             .DynArray -> self.dyn_array_t,
             .Rawptr -> .Rawptr(self.table.pointer_size),
-            .Pointer as ptr_t -> .Pointer(
+            .Pointer(ptr_t) -> .Pointer(
                 self.type_to_mir(ptr_t.inner), size: self.table.pointer_size
             ),
             else -> {

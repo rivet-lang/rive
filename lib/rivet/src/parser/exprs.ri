@@ -93,7 +93,7 @@ extend Parser {
                         .Type(self.parse_type())
                     };
                     if self.accept(.Lparen) {
-                        val := Expr.Binary(
+                        val := ast.Expr.Binary(
                             left: left,
                             right: right,
                             op: op,
@@ -662,7 +662,7 @@ extend Parser {
         mut expr := ast.Expr.Empty(self.tok.pos);
         while !self.accept(.Rbrace) {
             stmt := self.parse_stmt();
-            if stmt is .Expr as stmt_expr and self.prev_tok.kind != .Semicolon
+            if stmt is .Expr(stmt_expr) and self.prev_tok.kind != .Semicolon
                 and self.tok.kind == .Rbrace {
                 expr = stmt_expr;
                 has_expr = true;
