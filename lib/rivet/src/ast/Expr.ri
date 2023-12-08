@@ -367,7 +367,11 @@ pub enum Expr < traits.Stringable {
                 sb.to_string()
             },
             .ArrayLiteral(array_lit) -> {
-                mut sb := strings.Builder.from_string("[");
+                mut sb := strings.Builder.new(100);
+                if array_lit.is_dyn {
+                    sb.write_byte(b'+');
+                }
+                sb.write_byte(b'[');
                 for i, value in array_lit.values {
                     sb.write_string(value.to_string());
                     if i < array_lit.values.len - 1 {
@@ -375,9 +379,6 @@ pub enum Expr < traits.Stringable {
                     }
                 }
                 sb.write_byte(b']');
-                if !array_lit.is_dyn {
-                    sb.write_byte(b'!');
-                }
                 sb.to_string()
             },
             .Selector(selector) -> "{}.{}".fmt(selector.left, selector.field_name),

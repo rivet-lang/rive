@@ -555,12 +555,12 @@ class ArrayLiteral:
     def __repr__(self):
         if len(self.elems) == 0:
             if self.is_dyn:
-                return "[]"
+                return "+[]"
             return "[]"
-        res = f"[{', '.join([str(e) for e in self.elems])}]"
-        if not self.is_dyn:
-            res += "!"
-        return res
+        res = ""
+        if self.is_dyn:
+            res += "+"
+        return res + f"[{', '.join([str(e) for e in self.elems])}]"
 
     def __str__(self):
         return self.__repr__()
