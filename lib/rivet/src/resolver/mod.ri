@@ -34,7 +34,7 @@ pub struct Resolver {
         if report.total_errors() > 0 {
             return;
         }
-        self.preludes = [
+        self.preludes = +[
             Prelude("Throwable", self.table.throwable_sym)
         ];
         for sf in source_files {

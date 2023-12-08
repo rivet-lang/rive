@@ -291,7 +291,7 @@ extend Parser {
                 self.next();
                 e := self.parse_expr();
                 if self.accept(.Comma) { // tuple
-                    mut exprs: []mut ast.Expr := [e];
+                    mut exprs: []mut ast.Expr := +[e];
                     while {
                         exprs.push(self.parse_expr());
                         if !self.accept(.Comma) {
@@ -309,7 +309,8 @@ extend Parser {
                     .Paren(e, pos + e.position() + self.prev_tok.pos)
                 }
             },
-            self.tok.kind == .Lbracket -> {
+            self.tok.kind in [.Lbracket, .Plus] -> {
+                is_dyn := self.accept(.Plus);
                 mut elems := @dyn_array(mut ast.Expr);
                 mut pos := self.tok.pos;
                 self.next();
@@ -323,7 +324,7 @@ extend Parser {
                 }
                 pos += self.tok.pos;
                 self.expect(.Rbracket);
-                .ArrayLiteral(elems, !self.accept(.Bang), pos)
+                .ArrayLiteral(elems, is_dyn, pos)
             },
             self.tok.kind == .Name -> if self.peek_tok.kind == .Char {
                 if self.tok.lit == "b" {

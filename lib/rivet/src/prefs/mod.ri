@@ -59,7 +59,7 @@ pub struct Prefs {
     pub mut mod_dir: string;
     pub mut mod_output: string;
 
-    pub mut library_path: []string := [rivetcLibDir, libDir];
+    pub mut library_path: []string := +[rivetcLibDir, libDir];
     pub mut libraries_to_link: []string;
     pub mut objects_to_link: []string;
 

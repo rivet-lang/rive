@@ -186,7 +186,7 @@ pub struct DocComment {
     func merge(self) -> string {
         mut res := strings.Builder.new();
         for line in self.lines {
-            res.write_join([line, if line.is_empty() or line.ends_with(".") {
+            res.write_join(+[line, if line.is_empty() or line.ends_with(".") {
                 "\n"
             } else {
                 " "

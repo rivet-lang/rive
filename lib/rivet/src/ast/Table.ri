@@ -128,7 +128,7 @@ pub struct Table {
     }
 
     func setup_builtins(mut self) {
-        self.builtins = [
+        self.builtins = +[
             // variables
             .Const("_FILE_", self.string_t),
             .Const("_LINE_", self.uint_t),
@@ -138,56 +138,56 @@ pub struct Table {
             .Const("_RIVET_COMMIT_", self.string_t),
 
             // functions
-            .Func("size_of", [BuiltinArg("value", is_any: true)], self.uint_t),
-            .Func("align_of", [BuiltinArg("value", is_any: true)], self.uint_t),
+            .Func("size_of", +[BuiltinArg("value", is_any: true)], self.uint_t),
+            .Func("align_of", +[BuiltinArg("value", is_any: true)], self.uint_t),
 
-            .Func("ptr_add", [
+            .Func("ptr_add", +[
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("value", is_any: true)
-            ], is_unsafe: true, checks: [
+            ], is_unsafe: true, checks: +[
                 .ArgumentTypeShouldBe(0, .Pointer),
                 .ArgumentTypeShouldBe(1, .Integer),
                 .ReturnTypeEqualToArgumentType(0)
             ]),
-            .Func("ptr_diff", [
+            .Func("ptr_diff", +[
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("pointer2", is_any: true)
-            ], self.uint_t, is_unsafe: true, checks: [
+            ], self.uint_t, is_unsafe: true, checks: +[
                 .ArgumentTypeShouldBe(0, .Pointer),
                 .ArgumentTypeEqualToArgumentType(1, 0)
             ]),
 
-            .Func("as", [
+            .Func("as", +[
                 BuiltinArg("type", is_any: true),
                 BuiltinArg("value", is_any: true)
-            ], checks: [
+            ], checks: +[
                 .ReturnTypeEqualToArgumentType(0)
             ]),
 
-            .Func("unreachable", [], .Never(token.noPos)),
-            .Func("breakpoint", []),
-            .Func("assert", [
+            .Func("unreachable", +[], .Never(token.noPos)),
+            .Func("breakpoint", +[]),
+            .Func("assert", +[
                 BuiltinArg("cond", type: self.bool_t),
                 BuiltinArg("msg", type: self.string_t, is_optional: true)
             ]),
 
-            .Func("dyn_array", [
+            .Func("dyn_array", +[
                 BuiltinArg("type", is_any: true),
                 BuiltinArg("cap", type: self.uint_t, is_optional: true)
-            ], checks: [
+            ], checks: +[
                 .ReturnTypeEqualToArgumentType(0)
             ]),
 
-            .Func("set_enum_ref_value", [
+            .Func("set_enum_ref_value", +[
                 BuiltinArg("enum_value", is_any: true, is_mut: true),
                 BuiltinArg("new_value", is_any: true)
-            ], is_unsafe: true, checks: [
+            ], is_unsafe: true, checks: +[
                 .ArgumentTypeShouldBe(0, .Enum),
                 .ArgumentTypeEqualToArgumentType(1, 0)
             ]),
 
             // TODO: rename to `ignore_warn`: `@ignore_warn("not_mutated", expr)`.
-            .Func("ignore_not_mutated_warn", [
+            .Func("ignore_not_mutated_warn", +[
                 BuiltinArg("expr", is_any: true, is_mut: true)
             ])
         ];
@@ -497,7 +497,7 @@ pub struct Table {
 pub func universe() -> Module {
     return Module(
         name: "universe",
-        scope: Scope(syms: [
+        scope: Scope(syms: +[
             TypeSym(name: "bool", info: .Bool()),
             TypeSym(name: "rune", info: .Rune()),
             TypeSym(name: "int8", info: .SizedInt(8)),

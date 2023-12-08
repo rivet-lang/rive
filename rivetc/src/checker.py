@@ -148,7 +148,7 @@ class Checker:
                 field_typ = self.check_expr(decl.def_expr)
                 self.expected_type = old_expected_type
                 try:
-                    self.check_compatible_types(field_typ, decl.typ)
+                    self.check_types(field_typ, decl.typ)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
         elif isinstance(decl, ast.ExtendDecl):

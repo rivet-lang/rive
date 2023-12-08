@@ -556,7 +556,7 @@ class ArrayLiteral:
         if len(self.elems) == 0:
             if self.is_dyn:
                 return "[]"
-            return "[]!"
+            return "[]"
         res = f"[{', '.join([str(e) for e in self.elems])}]"
         if not self.is_dyn:
             res += "!"

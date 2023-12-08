@@ -103,7 +103,7 @@ pub struct Compiler {
             }
             filtered_files
         } else {
-            [self.prefs.input]
+            +[self.prefs.input]
         };
         if files.is_empty() {
             utils.error("no input received");

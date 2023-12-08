@@ -57,7 +57,7 @@ extend Codegen {
         self.cur_func.add_block(self.cur_func.cur_block);
         self.gen_stmts(func_decl.stmts);
         self.cur_func.add_block(
-            mir.Block(stmts: [
+            mir.Block(stmts: +[
                 if ret_type_is_void {
                     .Return()
                 } else {
