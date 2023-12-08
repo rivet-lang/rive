@@ -879,8 +879,8 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Rbracket)
-            is_arr = self.accept(Kind.Bang)
-            expr = ast.ArrayLiteral(elems, is_arr, pos)
+            is_dyn = not self.accept(Kind.Bang)
+            expr = ast.ArrayLiteral(elems, is_dyn, pos)
         elif self.tok.kind == Kind.Name:
             if self.peek_tok.kind == Kind.Char:
                 if self.tok.lit == "b":

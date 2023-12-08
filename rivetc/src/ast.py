@@ -546,19 +546,19 @@ class TupleLiteral:
         return self.__repr__()
 
 class ArrayLiteral:
-    def __init__(self, elems, is_arr, pos):
+    def __init__(self, elems, is_dyn, pos):
         self.elems = elems
         self.pos = pos
-        self.is_arr = is_arr
+        self.is_dyn = is_dyn
         self.typ = None
 
     def __repr__(self):
         if len(self.elems) == 0:
-            if self.is_arr:
-                return "[]!"
-            return "[]"
+            if self.is_dyn:
+                return "[]"
+            return "[]!"
         res = f"[{', '.join([str(e) for e in self.elems])}]"
-        if self.is_arr:
+        if not self.is_dyn:
             res += "!"
         return res
 

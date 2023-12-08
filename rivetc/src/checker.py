@@ -455,13 +455,19 @@ class Checker:
                         self.check_types(typ, elem_typ)
                     except utils.CompilerError as err:
                         report.error(err.args[0], e.pos)
-                        if expr.is_arr:
-                            report.note(f"in element {i + 1} of array literal")
-                        else:
+                        if expr.is_dyn:
                             report.note(
                                 f"in element {i + 1} of dynamic array literal"
                             )
-            if expr.is_arr:
+                        else:
+                            report.note(f"in element {i + 1} of array literal")
+            if expr.is_dyn:
+                expr.typ = type.Type(
+                    self.comp.universe.add_or_get_dyn_array(
+                        self.comp.comptime_number_to_type(elem_typ), is_mut
+                    )
+                )
+            else:
                 if len(expr.elems) > 0:
                     arr_len = str(len(expr.elems))
                 else:
@@ -474,12 +480,6 @@ class Checker:
                     self.comp.universe.add_or_get_array(
                         self.comp.comptime_number_to_type(elem_typ),
                         ast.IntegerLiteral(arr_len, expr.pos), is_mut
-                    )
-                )
-            else:
-                expr.typ = type.Type(
-                    self.comp.universe.add_or_get_dyn_array(
-                        self.comp.comptime_number_to_type(elem_typ), is_mut
                     )
                 )
             self.expected_type = old_expected_type

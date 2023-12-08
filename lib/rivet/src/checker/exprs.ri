@@ -279,17 +279,19 @@ extend Checker {
             } else {
                 self.check_types(type, value_type) catch |err| {
                     mut err_b := report.error_builder(err.to_string(), value.position());
-                    err_b.add_note(if array_lit.is_arr {
-                        "in element {} of array literal"
-                    } else {
+                    err_b.add_note(if array_lit.is_dyn {
                         "in element {} of dynamic array literal"
+                    } else {
+                        "in element {} of array literal"
                     }.fmt(i + 1));
                     err_b.emit();
                 };
             }
         }
         self.expected_type = old_expected_type;
-        array_lit.type = if array_lit.is_arr {
+        array_lit.type = if array_lit.is_dyn {
+            .Basic(self.table.universe.add_or_get_dyn_array(value_type, is_mut), pos: array_lit.pos)
+        } else {
             arr_len := if array_lit.values.len > 0 {
                 array_lit.values.len
             } else {
@@ -302,8 +304,6 @@ extend Checker {
                 self.table.universe.add_or_get_array(value_type, arr_len, is_mut),
                 pos: array_lit.pos
             )
-        } else {
-            .Basic(self.table.universe.add_or_get_dyn_array(value_type, is_mut), pos: array_lit.pos)
         };
         return array_lit.type;
     }

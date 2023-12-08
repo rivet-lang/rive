@@ -1526,39 +1526,39 @@ class Codegen:
         elif isinstance(expr, ast.ArrayLiteral):
             typ_sym = expr.typ.symbol()
             if len(expr.elems) == 0:
-                if expr.is_arr:
-                    return self.default_value(expr.typ)
-                tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
-                self.cur_fn.alloca(tmp, self.empty_dyn_array(typ_sym))
-                return tmp
+                if expr.is_dyn:
+                    tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
+                    self.cur_fn.alloca(tmp, self.empty_dyn_array(typ_sym))
+                    return tmp
+                return self.default_value(expr.typ)
             elem_typ = typ_sym.info.elem_typ
             size, _ = self.comp.type_size(elem_typ)
             elems = []
             for i, elem in enumerate(expr.elems):
                 elems.append(self.gen_expr_with_cast(elem_typ, elem))
             arr_lit = ir.ArrayLit(self.ir_type(elem_typ), elems)
-            if expr.is_arr:
-                if custom_tmp:
-                    size, _ = self.comp.type_size(expr.typ)
-                    self.cur_fn.add_call(
-                        "_R4core8mem_copyF",
-                        [custom_tmp, arr_lit,
-                         ir.IntLit(ir.UINT_T, str(size))]
+            if expr.is_dyn:
+                tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
+                self.cur_fn.alloca(
+                    tmp,
+                    ir.Inst(
+                        ir.InstKind.Call, [
+                            ir.Name("_R4core8DynArray10from_arrayF"), arr_lit,
+                            ir.IntLit(ir.UINT_T, str(size)),
+                            ir.IntLit(ir.UINT_T, str(len(elems)))
+                        ]
                     )
-                    return ir.Skip()
-                return arr_lit
-            tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
-            self.cur_fn.alloca(
-                tmp,
-                ir.Inst(
-                    ir.InstKind.Call, [
-                        ir.Name("_R4core8DynArray10from_arrayF"), arr_lit,
-                        ir.IntLit(ir.UINT_T, str(size)),
-                        ir.IntLit(ir.UINT_T, str(len(elems)))
-                    ]
                 )
-            )
-            return tmp
+                return tmp
+            if custom_tmp:
+                size, _ = self.comp.type_size(expr.typ)
+                self.cur_fn.add_call(
+                    "_R4core8mem_copyF",
+                    [custom_tmp, arr_lit,
+                        ir.IntLit(ir.UINT_T, str(size))]
+                )
+                return ir.Skip()
+            return arr_lit
         elif isinstance(expr, ast.IndexExpr):
             s = expr.left.typ.symbol()
             left = self.gen_expr_with_cast(expr.left.typ, expr.left)
