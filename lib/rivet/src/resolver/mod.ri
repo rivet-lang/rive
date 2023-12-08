@@ -45,8 +45,6 @@ pub struct Resolver {
             self.resolve_decls(self.source_file.decls);
             if self.source_file_abi == .Rivet and self.different_abi_usage_count > 0 {
                 report.warn("filename requires ABI specification", sf.pos);
-            } else if self.source_file_abi != .Rivet and self.different_abi_usage_count == 0 {
-                report.warn("filename does not require ABI specification", sf.pos);
             }
         }
     }
