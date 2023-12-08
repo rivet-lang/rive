@@ -9,6 +9,8 @@ struct KindMap {
     value: string;
 }
 
+// TODO: use an array instead of a dynamic array, once a bug 
+// with slices from an array is fixed
 var kindStrings := +[
     KindMap(.Unknown, "unknown"),
     KindMap(.EndOfFile, "end of file"),
