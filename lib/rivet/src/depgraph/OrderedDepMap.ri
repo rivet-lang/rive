@@ -37,7 +37,7 @@ pub struct OrderedDepMap {
         return if res := self.data.get(name) {
             res
         } else {
-            []
+            +[]
         };
     }
 

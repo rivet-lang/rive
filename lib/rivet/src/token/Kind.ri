@@ -9,7 +9,7 @@ struct KindMap {
     value: string;
 }
 
-var kindStrings := [
+var kindStrings := +[
     KindMap(.Unknown, "unknown"),
     KindMap(.EndOfFile, "end of file"),
     KindMap(.DocComment, "doc-comment"),

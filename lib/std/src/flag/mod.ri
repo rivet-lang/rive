@@ -419,7 +419,7 @@ pub struct FlagParser {
             }
             if (arg.len == 2 and arg[0] == b'-' and arg[1] == short_hand) or arg == full {
                 if i +  1 >= self.args.len {
-                    return [];
+                    return +[];
                 }
                 next_arg := self.args[i + 1];
                 if next_arg.len > 2 {
@@ -427,7 +427,7 @@ pub struct FlagParser {
                     if next_arg_rest == "--" {
                         // It could be end of input (`--`) or another argument (`--abc`).
                         // Both are invalid so die.
-                        return [];
+                        return +[];
                     }
                 }
                 found_entries.push(self.args[i + 1]);
