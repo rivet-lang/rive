@@ -35,8 +35,8 @@ extend Resolver {
                     self.resolve_expr(value);
                 }
             },
-            .DynArrayLiteral(dyn_array_lit) -> {
-                for mut value in dyn_array_lit.values {
+            .ArrayLiteral(array_lit) -> {
+                for mut value in array_lit.values {
                     self.resolve_expr(value);
                 }
             },

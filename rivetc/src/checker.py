@@ -427,7 +427,7 @@ class Checker:
                     types.append(tt)
             expr.typ = type.Type(self.comp.universe.add_or_get_tuple(types))
             return expr.typ
-        elif isinstance(expr, ast.DynArrayLiteral):
+        elif isinstance(expr, ast.ArrayLiteral):
             old_expected_type = self.expected_type
             size = ""
             is_mut = False

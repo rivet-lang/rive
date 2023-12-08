@@ -93,7 +93,7 @@ pub enum Expr < traits.Stringable {
         pos: token.Pos;
         mut type: Type;
     },
-    DynArrayLiteral {
+    ArrayLiteral {
         values: []mut Expr;
         is_arr: bool;
         pos: token.Pos;
@@ -302,7 +302,7 @@ pub enum Expr < traits.Stringable {
             .StringLiteral(string_lit) -> string_lit.pos,
             .EnumLiteral(enum_lit) -> enum_lit.pos,
             .TupleLiteral(tuple_lit) -> tuple_lit.pos,
-            .DynArrayLiteral(dyn_array_lit) -> dyn_array_lit.pos,
+            .ArrayLiteral(array_lit) -> array_lit.pos,
             .Index(index) -> index.pos,
             .Selector(selector) -> selector.pos,
             .Indirect(indirect) -> indirect.pos,
@@ -366,16 +366,16 @@ pub enum Expr < traits.Stringable {
                 sb.write_byte(b')');
                 sb.to_string()
             },
-            .DynArrayLiteral(dyn_array_lit) -> {
+            .ArrayLiteral(array_lit) -> {
                 mut sb := strings.Builder.from_string("[");
-                for i, value in dyn_array_lit.values {
+                for i, value in array_lit.values {
                     sb.write_string(value.to_string());
-                    if i < dyn_array_lit.values.len - 1 {
+                    if i < array_lit.values.len - 1 {
                         sb.write_string(", ");
                     }
                 }
                 sb.write_byte(b']');
-                if dyn_array_lit.is_arr {
+                if array_lit.is_arr {
                     sb.write_byte(b'!');
                 }
                 sb.to_string()

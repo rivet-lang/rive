@@ -323,7 +323,7 @@ extend Parser {
                 }
                 pos += self.tok.pos;
                 self.expect(.Rbracket);
-                .DynArrayLiteral(elems, self.accept(.Bang), pos)
+                .ArrayLiteral(elems, self.accept(.Bang), pos)
             },
             self.tok.kind == .Name -> if self.peek_tok.kind == .Char {
                 if self.tok.lit == "b" {

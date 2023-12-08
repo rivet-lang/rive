@@ -1523,7 +1523,7 @@ class Codegen:
                     TypeKind.Tuple else expr.field_name
                 )
             )
-        elif isinstance(expr, ast.DynArrayLiteral):
+        elif isinstance(expr, ast.ArrayLiteral):
             typ_sym = expr.typ.symbol()
             if len(expr.elems) == 0:
                 if expr.is_arr:
