@@ -5,17 +5,17 @@ struct Xyz {
 }
 
 func new_array() -> [4]int32 {
-    return [1, 2, 3, 4]!;
+    return [1, 2, 3, 4];
 }
 
 test "array literal" {
-    lit := [1, 2, 3, 4]!;
-    @assert(lit == [1, 2, 3, 4]!);
+    lit := [1, 2, 3, 4];
+    @assert(lit == [1, 2, 3, 4]);
     @assert(lit.len == 4);
 }
 
 test "array returned from function" {
     arr := new_array();
-    @assert(arr == [1, 2, 3, 4]!);
+    @assert(arr == [1, 2, 3, 4]);
     @assert(arr.len == 4);
 }

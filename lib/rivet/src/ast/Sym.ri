@@ -163,7 +163,7 @@ pub struct Module < Sym {
             is_public: true,
             name: unique_name,
             info: .Array(elem_typ, size, is_mut),
-            fields: [
+            fields: +[
                 Field(
                     name: "len", is_public: true,
                     type: .Basic(self.scope.find_type_symbol_by_index_or_panic(11))
@@ -183,7 +183,7 @@ pub struct Module < Sym {
             is_public: true,
             name: unique_name,
             info: .DynArray(elem_type, is_mut),
-            fields: [
+            fields: +[
                 Field(
                     name: "len", is_public: true,
                     type: .Basic(self.scope.find_type_symbol_by_index_or_panic(11))
@@ -200,7 +200,7 @@ pub struct Module < Sym {
             is_method: true,
             self_type: .Basic(type_sym),
             self_is_mut: true,
-            args: [Arg("value", type: elem_type, pos: token.noPos)],
+            args: +[Arg("value", type: elem_type, pos: token.noPos)],
             ret_type: .Void(),
             has_body: true
         )) catch {};

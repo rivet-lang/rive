@@ -240,7 +240,7 @@ extend Checker {
         self.cur_fn = @as(ast.Func, func_decl.sym);
         self.check_stmts(func_decl.stmts);
         func_decl.defer_stmts = self.defer_stmts;
-        self.defer_stmts = [];
+        self.defer_stmts = +[];
         self.check_scope_vars(func_decl.scope);
         if func_decl.ret_type is .Never and !self.inside_extern {
             if func_decl.stmts.len > 0 {

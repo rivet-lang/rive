@@ -166,7 +166,7 @@ extend Table {
             }
             return paths;
         }
-        return [];
+        return +[];
     }
 
     func search_c_header(self, is_local: bool, header: string) -> ?string {

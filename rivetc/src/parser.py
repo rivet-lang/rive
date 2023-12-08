@@ -869,7 +869,8 @@ class Parser:
                 expr = ast.ParExpr(e, e.pos)
         elif self.tok.kind in (Kind.KwUnsafe, Kind.Lbrace):
             expr = self.parse_block_expr()
-        elif self.tok.kind == Kind.Lbracket:
+        elif self.tok.kind in (Kind.Lbracket, Kind.Plus):
+            is_dyn = self.accept(Kind.Plus)
             elems = []
             pos = self.tok.pos
             self.next()
@@ -879,8 +880,7 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Rbracket)
-            is_arr = self.accept(Kind.Bang)
-            expr = ast.DynArrayLiteral(elems, is_arr, pos)
+            expr = ast.ArrayLiteral(elems, is_dyn, pos)
         elif self.tok.kind == Kind.Name:
             if self.peek_tok.kind == Kind.Char:
                 if self.tok.lit == "b":

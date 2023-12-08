@@ -148,7 +148,7 @@ class Checker:
                 field_typ = self.check_expr(decl.def_expr)
                 self.expected_type = old_expected_type
                 try:
-                    self.check_compatible_types(field_typ, decl.typ)
+                    self.check_types(field_typ, decl.typ)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
         elif isinstance(decl, ast.ExtendDecl):
@@ -427,7 +427,7 @@ class Checker:
                     types.append(tt)
             expr.typ = type.Type(self.comp.universe.add_or_get_tuple(types))
             return expr.typ
-        elif isinstance(expr, ast.DynArrayLiteral):
+        elif isinstance(expr, ast.ArrayLiteral):
             old_expected_type = self.expected_type
             size = ""
             is_mut = False
@@ -455,13 +455,19 @@ class Checker:
                         self.check_types(typ, elem_typ)
                     except utils.CompilerError as err:
                         report.error(err.args[0], e.pos)
-                        if expr.is_arr:
-                            report.note(f"in element {i + 1} of array literal")
-                        else:
+                        if expr.is_dyn:
                             report.note(
                                 f"in element {i + 1} of dynamic array literal"
                             )
-            if expr.is_arr:
+                        else:
+                            report.note(f"in element {i + 1} of array literal")
+            if expr.is_dyn:
+                expr.typ = type.Type(
+                    self.comp.universe.add_or_get_dyn_array(
+                        self.comp.comptime_number_to_type(elem_typ), is_mut
+                    )
+                )
+            else:
                 if len(expr.elems) > 0:
                     arr_len = str(len(expr.elems))
                 else:
@@ -474,12 +480,6 @@ class Checker:
                     self.comp.universe.add_or_get_array(
                         self.comp.comptime_number_to_type(elem_typ),
                         ast.IntegerLiteral(arr_len, expr.pos), is_mut
-                    )
-                )
-            else:
-                expr.typ = type.Type(
-                    self.comp.universe.add_or_get_dyn_array(
-                        self.comp.comptime_number_to_type(elem_typ), is_mut
                     )
                 )
             self.expected_type = old_expected_type

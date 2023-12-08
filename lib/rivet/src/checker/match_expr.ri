@@ -168,7 +168,7 @@ extend Checker {
         match_expr.is_exhaustive = true;
         mut unhandled := @dyn_array(string);
         if expr_type == self.table.bool_t and match_expr.branches.len == 1 {
-            for v in ["true", "false"]! {
+            for v in ["true", "false"] {
                 if !branch_exprs.contains(v) {
                     match_expr.is_exhaustive = false;
                     unhandled.push("`{}`".fmt(v));
