@@ -263,7 +263,7 @@ extend Checker {
             if value_sym.info is .Array(array_info) {
                 size = array_info.size;
             }
-            is_mut = value_sym.info.is_mut_arr_or_vec();
+            is_mut = value_sym.info.is_mut_arr_or_dyn_array();
         } else if !self.expected_type.is_void() {
             has_expected_type = true;
             value_type = self.expected_type;
@@ -416,7 +416,7 @@ extend Checker {
             .Array, .DynArray -> {
                 elem_type := left_sym.info.elem_type()?;
                 if index.index is .Range {
-                    is_mut := left_sym.info.is_mut_arr_or_vec();
+                    is_mut := left_sym.info.is_mut_arr_or_dyn_array();
                     if left_sym.info is .DynArray {
                         index.left_type
                     } else {

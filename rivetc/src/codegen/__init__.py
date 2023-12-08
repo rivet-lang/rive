@@ -103,7 +103,7 @@ class Codegen:
                 ir.Selector(ir.UINT64_T, testRunner, ir.Name("skip_tests")),
                 ir.IntLit(ir.UINT64_T, "0")
             )
-            tests_vec = ir.Selector(
+            tests_dyn_array = ir.Selector(
                 ir.DYN_ARRAY_T.ptr(True), testRunner, ir.Name("tests")
             )
             test_t = ir.TEST_T.ptr()

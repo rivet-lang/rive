@@ -339,7 +339,7 @@ pub struct Checker {
                     return;
                 }
                 expr_sym := index.left_type.symbol()?;
-                if !expr_sym.info.is_mut_arr_or_vec() {
+                if !expr_sym.info.is_mut_arr_or_dyn_array() {
                     report.error(
                         "cannot modify elements of an immutable {}".fmt(expr_sym.info),
                         index.pos

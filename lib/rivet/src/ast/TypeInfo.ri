@@ -140,7 +140,7 @@ pub enum TypeInfo < traits.Stringable {
     }
 
     #[inline]
-    pub func is_mut_arr_or_vec(self) -> bool {
+    pub func is_mut_arr_or_dyn_array(self) -> bool {
         return match self is {
             .Array(arr) -> arr.is_mut,
             .DynArray(vec) -> vec.is_mut,
