@@ -47,7 +47,16 @@ class Codegen:
         self.while_continue_expr = None
 
     def gen_source_files(self, source_files):
+        for mod in self.comp.universe.syms:
+            if isinstance(mod, sym.Mod):
+                self.gen_mod_attributes(mod.name, mod.attributes)
+
         self.gen_types()
+
+        self.out_rir.globals.append(
+            ir.GlobalVar(False, False, ir.DYN_ARRAY_T.ptr(True), "_R4core4ARGS")
+        )
+
         # generate 'init_string_lits_fn' function
         self.init_string_lits_fn = ir.FuncDecl(
             False, ast.Annotations(), False, "_R4core16init_string_litsF", [],
@@ -62,19 +71,16 @@ class Codegen:
         )
         self.out_rir.decls.append(self.init_global_vars_fn)
 
-        for mod in self.comp.universe.syms:
-            if isinstance(mod, sym.Mod):
-                self.gen_mod_attributes(mod.name, mod.attributes)
-        for source_file in source_files:
-            self.source_file = source_file
-            self.gen_decls(source_file.decls)
-
         # generate '_R12drop_globalsZ' function
         g_fn = ir.FuncDecl(
             False, ast.Annotations(), False, "_R4core12drop_globalsF", [],
             False, ir.VOID_T, False
         )
         self.out_rir.decls.append(g_fn)
+
+        for source_file in source_files:
+            self.source_file = source_file
+            self.gen_decls(source_file.decls)
 
         # generate 'main' fn
         argc = ir.Ident(ir.C_INT_T, "_argc")
@@ -243,7 +249,8 @@ class Codegen:
     def gen_decl(self, decl):
         self.cur_fn_defer_stmts = []
         if isinstance(decl, ast.ExternDecl):
-            self.gen_decls(decl.decls)
+            if decl.abi != sym.ABI.Rivet:
+                self.gen_decls(decl.decls)
         elif isinstance(decl, ast.VarDecl):
             self.inside_var_decl = True
             for l in decl.lefts:
