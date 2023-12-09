@@ -15,7 +15,7 @@ pub struct Checker {
 
     mut source_file: ast.SourceFile;
     mut sym: ast.Sym := ast.InvalidSym();
-    mut cur_fn: ast.Func;
+    mut cur_func: ast.Func;
 
     mut inside_extern: bool;
     mut inside_test: bool;
