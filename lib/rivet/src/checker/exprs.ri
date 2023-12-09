@@ -788,48 +788,48 @@ extend Checker {
     }
 
     func check_return(mut self, mut return_expr: ast.Expr.Return) -> ast.Type {
-        if self.cur_fn.ret_type is .Never {
+        if self.cur_func.ret_type is .Never {
             report.error("`never` functions cannot use `return` statements", return_expr.pos);
         } else if self.inside_defer {
             report.error("`return` is not allowed inside `defer` statement", return_expr.pos);
         } else if self.inside_test and return_expr.has_expr {
             report.error("cannot return values inside `test` declaration", return_expr.pos);
         } else if return_expr.has_expr {
-            if self.cur_fn.ret_type is .Void {
+            if self.cur_func.ret_type is .Void {
                 report.error(
                     "{} `{}` should not return a value".fmt(
-                        self.cur_fn.kind(), self.cur_fn.name
+                        self.cur_func.kind(), self.cur_func.name
                     ), return_expr.expr.position()
                 );
             } else {
                 old_expected_type := self.expected_type;
-                self.expected_type = if self.cur_fn.ret_type is .Result(res_t) {
+                self.expected_type = if self.cur_func.ret_type is .Result(res_t) {
                     res_t.inner
                 } else {
-                    self.cur_fn.ret_type
+                    self.cur_func.ret_type
                 };
                 expr_type := self.check_expr(return_expr.expr);
                 self.expected_type = old_expected_type;
-                self.check_types(expr_type, self.cur_fn.ret_type) catch |err| {
+                self.check_types(expr_type, self.cur_func.ret_type) catch |err| {
                     mut err_b := report.error_builder(
                         err.to_string(), return_expr.expr.position()
                     );
                     err_b.add_note(
-                        "in return of {} `{}`", self.cur_fn.kind(),
-                        self.cur_fn.name
+                        "in return of {} `{}`", self.cur_func.kind(),
+                        self.cur_func.name
                     );
                     err_b.emit();
                 };
             }
         } else if !(
-            self.cur_fn.ret_type is .Void
-            or (self.cur_fn.ret_type is .Result(res_t) and res_t.inner is .Void)
+            self.cur_func.ret_type is .Void
+            or (self.cur_func.ret_type is .Result(res_t) and res_t.inner is .Void)
         ) {
             mut err := report.error_builder(
-                "expected `{}` value in return argument".fmt(self.cur_fn.ret_type),
+                "expected `{}` value in return argument".fmt(self.cur_func.ret_type),
                 return_expr.pos
             );
-            err.add_note("in return of {} `{}`", self.cur_fn.kind(), self.cur_fn.name);
+            err.add_note("in return of {} `{}`", self.cur_func.kind(), self.cur_func.name);
             err.emit();
         }
         self.scope_returns = true;
@@ -837,13 +837,13 @@ extend Checker {
     }
 
     func check_throw(mut self, mut throw_expr: ast.Expr.Throw) -> ast.Type {
-        if self.cur_fn.ret_type is .Never {
+        if self.cur_func.ret_type is .Never {
             report.error("`never` functions cannot use `throw` statements", throw_expr.pos);
         } else if self.inside_defer {
             report.error("`throw` is not allowed inside `defer` statement", throw_expr.pos);
         } else if self.inside_test {
             report.error("cannot throw errors inside `test` declaration", throw_expr.pos);
-        } else if self.cur_fn.ret_type is .Result {
+        } else if self.cur_func.ret_type is .Result {
             expr_type := self.check_expr(throw_expr.expr);
             expr_sym := expr_type.symbol()?;
             if !(expr_sym == self.table.throwable_sym
@@ -857,15 +857,15 @@ extend Checker {
                     "in order to use that value, type `{}` should implement the `Throwable` trait".fmt(expr_type)
                 );
                 err_b.add_note(
-                    "in throw argument of {} `{}`", self.cur_fn.kind(),
-                    self.cur_fn.name
+                    "in throw argument of {} `{}`", self.cur_func.kind(),
+                    self.cur_func.name
                 );
                 err_b.emit();
             }
         } else {
             mut err_b := report.error_builder(
                 "{} `{}` cannot throws errors".fmt(
-                    self.cur_fn.kind(), self.cur_fn.name
+                    self.cur_func.kind(), self.cur_func.name
                 ), throw_expr.expr.position()
             );
             err_b.add_note("if you want to throw errors, add `!` in front of the return type");

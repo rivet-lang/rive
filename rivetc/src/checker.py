@@ -12,7 +12,7 @@ class Checker:
         self.source_file = None
 
         self.sym = None
-        self.cur_fn = None
+        self.cur_func = None
 
         self.expected_type = self.comp.void_t
         self.void_types = (self.comp.void_t, self.comp.never_t)
@@ -190,20 +190,20 @@ class Checker:
                 report.note(
                     "this is because Rivet cannot ensure that the function does not always return `none`"
                 )
-            self.cur_fn = decl.sym
+            self.cur_func = decl.sym
             self.check_stmts(decl.stmts)
             decl.defer_stmts = self.defer_stmts
             self.defer_stmts = []
             self.check_mut_vars(decl.scope)
         elif isinstance(decl, ast.TestDecl):
-            old_cur_fn = self.cur_fn
-            self.cur_fn = None
+            old_cur_func = self.cur_func
+            self.cur_func = None
             self.inside_test = True
             self.check_stmts(decl.stmts)
             decl.defer_stmts = self.defer_stmts
             self.defer_stmts = []
             self.inside_test = False
-            self.cur_fn = old_cur_fn
+            self.cur_func = old_cur_func
             self.check_mut_vars(decl.scope)
         self.sym = old_sym
 
@@ -970,13 +970,13 @@ class Checker:
             if expr.has_err_handler():
                 if isinstance(expr.typ, type.Result):
                     if expr.err_handler.is_propagate:
-                        if self.cur_fn and not (
-                            self.cur_fn.is_main or self.inside_test
+                        if self.cur_func and not (
+                            self.cur_func.is_main or self.inside_test
                             or self.inside_var_decl
-                            or isinstance(self.cur_fn.ret_typ, type.Result)
+                            or isinstance(self.cur_func.ret_typ, type.Result)
                         ):
                             report.error(
-                                f"to propagate the call, `{self.cur_fn.name}` must return an result type",
+                                f"to propagate the call, `{self.cur_func.name}` must return an result type",
                                 expr.err_handler.pos
                             )
                     else:
@@ -1240,37 +1240,37 @@ class Checker:
                     "cannot return values inside `test` declaration", expr.pos
                 )
             elif expr.has_expr:
-                if self.cur_fn.ret_typ == self.comp.void_t:
+                if self.cur_func.ret_typ == self.comp.void_t:
                     report.error(
-                        f"{self.cur_fn.typeof()} `{self.cur_fn.name}` should not return a value",
+                        f"{self.cur_func.typeof()} `{self.cur_func.name}` should not return a value",
                         expr.expr.pos
                     )
                 else:
                     old_expected_type = self.expected_type
-                    self.expected_type = self.cur_fn.ret_typ.typ if isinstance(
-                        self.cur_fn.ret_typ, type.Result
-                    ) else self.cur_fn.ret_typ
+                    self.expected_type = self.cur_func.ret_typ.typ if isinstance(
+                        self.cur_func.ret_typ, type.Result
+                    ) else self.cur_func.ret_typ
                     expr_typ = self.check_expr(expr.expr)
                     self.expected_type = old_expected_type
                     try:
-                        self.check_types(expr_typ, self.cur_fn.ret_typ)
+                        self.check_types(expr_typ, self.cur_func.ret_typ)
                     except utils.CompilerError as e:
                         expr_typ_sym = expr_typ.symbol()
                         report.error(e.args[0], expr.expr.pos)
                         report.note(
-                            f"in return argument of {self.cur_fn.typeof()} `{self.cur_fn.name}`"
+                            f"in return argument of {self.cur_func.typeof()} `{self.cur_func.name}`"
                         )
-            elif self.cur_fn and not (
-                (self.cur_fn.ret_typ == self.comp.void_t) or (
-                    isinstance(self.cur_fn.ret_typ, type.Result)
-                    and self.cur_fn.ret_typ.typ == self.comp.void_t
+            elif self.cur_func and not (
+                (self.cur_func.ret_typ == self.comp.void_t) or (
+                    isinstance(self.cur_func.ret_typ, type.Result)
+                    and self.cur_func.ret_typ.typ == self.comp.void_t
                 )
             ):
                 report.error(
-                    f"expected `{self.cur_fn.ret_typ}` argument", expr.pos
+                    f"expected `{self.cur_func.ret_typ}` argument", expr.pos
                 )
                 report.note(
-                    f"in return argument of {self.cur_fn.typeof()} `{self.cur_fn.name}`"
+                    f"in return argument of {self.cur_func.typeof()} `{self.cur_func.name}`"
                 )
             expr.typ = self.comp.never_t
             return expr.typ
@@ -1279,7 +1279,7 @@ class Checker:
                 report.error(
                     "cannot throw errors inside `test` declaration", expr.pos
                 )
-            elif isinstance(self.cur_fn.ret_typ, type.Result):
+            elif isinstance(self.cur_func.ret_typ, type.Result):
                 expr_typ = self.check_expr(expr.expr)
                 expr_typ_sym = expr_typ.symbol()
                 if not (
@@ -1294,11 +1294,11 @@ class Checker:
                         f"in order to use that value, type `{expr_typ}` should implement the `Throwable` trait"
                     )
                     report.note(
-                        f"in throw argument of {self.cur_fn.typeof()} `{self.cur_fn.name}`"
+                        f"in throw argument of {self.cur_func.typeof()} `{self.cur_func.name}`"
                     )
             else:
                 report.error(
-                    f"{self.cur_fn.typeof()} `{self.cur_fn.name}` cannot throw errors",
+                    f"{self.cur_func.typeof()} `{self.cur_func.name}` cannot throw errors",
                     expr.expr.pos
                 )
                 report.note(

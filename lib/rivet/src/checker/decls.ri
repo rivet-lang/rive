@@ -154,12 +154,12 @@ extend Checker {
             },
             .Func(mut func_decl) -> self.check_func(func_decl),
             .Test(test_decl) -> {
-                old_cur_fn := self.cur_fn;
-                self.cur_fn = ast.Func(ret_type: .Void());
+                old_cur_func := self.cur_func;
+                self.cur_func = ast.Func(ret_type: .Void());
                 self.inside_test = true;
                 self.check_stmts(test_decl.stmts);
                 self.inside_test = false;
-                self.cur_fn = old_cur_fn;
+                self.cur_func = old_cur_func;
                 self.check_scope_vars(test_decl.scope);
             },
             else -> {}
@@ -237,7 +237,7 @@ extend Checker {
             err.add_note("this is because Rivet cannot ensure that the function does not always return a null pointer");
             err.emit();
         }
-        self.cur_fn = @as(ast.Func, func_decl.sym);
+        self.cur_func = @as(ast.Func, func_decl.sym);
         self.check_stmts(func_decl.stmts);
         func_decl.defer_stmts = self.defer_stmts;
         self.defer_stmts = +[];
