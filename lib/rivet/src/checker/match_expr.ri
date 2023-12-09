@@ -59,13 +59,13 @@ extend Checker {
             } else if expr_sym.info is .Enum(enum_info) {
                 if enum_info.is_boxed and !match_expr.is_typematch {
                     mut err := report.error_builder(
-                        "cannot use `match` with a non-boxed enum type", match_expr.pos
+                        "cannot use `match` with a non-tagged enum type", match_expr.pos
                     );
                     err.add_note("use a type-match instead");
                     err.emit();
                 } else if !enum_info.is_boxed and match_expr.is_typematch {
                     mut err := report.error_builder(
-                        "cannot use a type-match with a non-boxed enum type",
+                        "cannot use a type-match with a non-tagged enum type",
                         match_expr.pos
                     );
                     err.add_note("use a simple `match` instead");

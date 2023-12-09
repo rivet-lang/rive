@@ -20,7 +20,7 @@
 - [ ] Constant-folding: `x := 2 * 2;` => `x := 4;`.
 - [ ] Optimize code, inline functions/methods annotated with `inline`, 
     delete unused code, etc.
-- [ ] (Atomic) Reference-Counting for traits, boxed enums, strings, dynamic arrays and structs.
+- [ ] (Atomic) Reference-Counting for traits, tagged enums, strings, dynamic arrays and structs.
 - [ ] Better support for embedded structs.
 - [ ] `undefined` for uninitialized variables: `x: [5]uint8 := undefined;`.
 - [ ] Disallow empty array literal (`x := []; -> ERROR`).

@@ -678,7 +678,7 @@ extend Checker {
                     if left_sym.info is .Enum(enum_info) {
                         if enum_info.is_boxed and binary.op !in [.KwIs, .KwNotIs] {
                             report.error(
-                                "boxed enum types only support `is` and `!is`", binary.pos
+                                "tagged enum types only support `is` and `!is`", binary.pos
                             );
                         } else if !enum_info.is_boxed and binary.op !in [.Eq, .Ne] {
                             report.error(

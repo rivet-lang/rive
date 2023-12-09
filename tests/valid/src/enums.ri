@@ -43,7 +43,7 @@ enum AdvancedEnum {
     Ghi(rune)
 }
 
-test "enums: boxed enum" {
+test "enums: tagged enum" {
     mut e := AdvancedEnum.Abc(6);
     if e is .Abc {
         @assert(@as(int32, e) == 6);
@@ -79,7 +79,7 @@ enum OS {
     }
 }
 
-test "enums: boxed enum with fields" {
+test "enums: tagged enum with fields" {
     mut user_os := OS.Windows(version: 2023_10_04);
     if user_os is .Windows(windows) {
         @assert(windows.version == 2023_10_04);
@@ -105,7 +105,7 @@ struct EnumStruct {
     dv: DefaultValue;
 }
 
-test "boxed enums with `default_value` attribute" {
+test "tagged enums with `default_value` attribute" {
     es := EnumStruct();
     @assert(es.dv is .Abc(int) and int == 5);
 }

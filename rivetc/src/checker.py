@@ -716,7 +716,7 @@ class Checker:
                         Kind.KwIs, Kind.KwNotIs
                     ):
                         report.error(
-                            "boxed enum types only support `is` and `!is`",
+                            "tagged enum types only support `is` and `!is`",
                             expr.pos
                         )
                     elif not lsym.info.is_boxed and expr.op not in (
@@ -1371,7 +1371,7 @@ class Checker:
             elif expr_sym.kind == TypeKind.Enum:
                 if expr_sym.info.is_boxed and not expr.is_typematch:
                     report.error(
-                        "cannot use `match` with a boxed enum value", expr.pos
+                        "cannot use `match` with a tagged enum value", expr.pos
                     )
                     report.note("use a typematch instead")
                 elif not expr_sym.info.is_boxed and expr.is_typematch:
