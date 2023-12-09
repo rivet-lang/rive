@@ -1598,7 +1598,7 @@ class Codegen:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
                                 ir.Name("_R4core16array_slice_fromF"),
-                                ir.Inst(ir.InstKind.GetRef, [left]),
+                                left,
                                 ir.IntLit(ir.UINT_T, str(size)),
                                 ir.IntLit(ir.UINT_T, s.info.size.lit), start
                             ]
@@ -1607,7 +1607,7 @@ class Codegen:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
                                 ir.Name("_R4core11array_sliceF"),
-                                ir.Inst(ir.InstKind.GetRef, [left]),
+                                left,
                                 ir.IntLit(ir.UINT_T, str(size)),
                                 ir.IntLit(ir.UINT_T, s.info.size.lit), start,
                                 end
