@@ -47,7 +47,7 @@ extend Checker {
                 }
             },
             .Defer(defer_stmt) -> {
-                if self.cur_func.ret_type is .Never {
+                if self.cur_fn.ret_type is .Never {
                     report.error("`never` functions cannot use `defer` statements", defer_stmt.pos);
                 }
                 self.inside_defer = true;

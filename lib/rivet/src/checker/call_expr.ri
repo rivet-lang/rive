@@ -143,14 +143,14 @@ extend Checker {
         if call_expr.has_err_handler() {
             if call_expr.type is .Result(result_t) {
                 if call_expr.err_handler.is_propagate {
-                    if !(self.cur_func.is_main or self.inside_test or self.inside_var_decl
-                        or self.cur_func.ret_type is .Result) {
+                    if !(self.cur_fn.is_main or self.inside_test or self.inside_var_decl
+                        or self.cur_fn.ret_type is .Result) {
                         mut err := report.error_builder(
                             "cannot propagate the result value", call_expr.err_handler.pos
                         );
                         err.add_note(
                             "to propagate the result, `{}` must return an result type",
-                            self.cur_func.name
+                            self.cur_fn.name
                         );
                         err.emit();
                     }
