@@ -26,8 +26,8 @@ pub enum Expr < traits.Stringable {
         expr: Expr;
         type: Type;
     },
-    Name: string,
-    Ident: Var,
+    Name(string),
+    Ident(Var),
     Selector {
         left: Expr;
         name: string;

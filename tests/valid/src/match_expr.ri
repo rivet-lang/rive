@@ -28,8 +28,8 @@ test "`match` branch condition" {
 }
 
 enum MatchBase {
-    MatchSon: MatchSon,
-    Other: bool
+    MatchSon(MatchSon),
+    Other(bool)
 }
 
 struct MatchSon {

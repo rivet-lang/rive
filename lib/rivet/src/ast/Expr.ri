@@ -9,13 +9,13 @@ import ../token;
 
 #[default_value(.Empty(token.noPos))]
 pub enum Expr < traits.Stringable {
-    Empty: token.Pos,
+    Empty(token.Pos),
     Paren {
         mut expr: Expr;
         pos: token.Pos;
         mut type: Type;
     },
-    Type: Type,
+    Type(Type),
     Assign {
         mut left: Expr;
         op: token.Kind;

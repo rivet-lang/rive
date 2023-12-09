@@ -23,7 +23,7 @@ pub enum Type < traits.Stringable {
         size: uint;
         is_primitive: bool;
     },
-    Rawptr: uint,
+    Rawptr(uint),
     Pointer {
         inner: Type;
         is_managed: bool;

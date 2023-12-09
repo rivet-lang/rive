@@ -357,10 +357,11 @@ class Parser:
                     while not self.accept(Kind.Rbrace):
                         variant_decls.append(self.parse_decl())
                     self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields
-                elif self.accept(Kind.Colon):
+                elif self.accept(Kind.Lparen):
                     has_typ = True
                     is_boxed = True
                     typ = self.parse_type()
+                    self.expect(Kind.Rparen)
                 elif self.accept(Kind.Assign):
                     variant = self.parse_expr()
                 variants.append(

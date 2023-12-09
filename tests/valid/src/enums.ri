@@ -38,9 +38,9 @@ test "enums: enum variant match" {
 }
 
 enum AdvancedEnum {
-    Abc: int32,
+    Abc(int32),
     Def,
-    Ghi: rune
+    Ghi(rune)
 }
 
 test "enums: boxed enum" {
@@ -98,7 +98,7 @@ test "enums: boxed enum with fields" {
 
 #[default_value(.Abc(5))]
 enum DefaultValue {
-    Abc: int32
+    Abc(int32)
 }
 
 struct EnumStruct {

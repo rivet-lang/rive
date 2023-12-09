@@ -37,7 +37,7 @@ test "catch result error" {
 }
 
 enum IOError < Throwable {
-    FileNotFound: string,
+    FileNotFound(string),
     InvalidFileSize {
         path: string;
         size: uint;

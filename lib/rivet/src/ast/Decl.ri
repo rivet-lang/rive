@@ -7,7 +7,7 @@ import std/strings;
 import ../token;
 
 pub enum Decl {
-    Empty: token.Pos,
+    Empty(token.Pos),
     Import {
         attributes: Attributes;
         is_public: bool;

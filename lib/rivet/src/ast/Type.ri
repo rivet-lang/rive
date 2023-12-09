@@ -15,7 +15,7 @@ pub enum Type < traits.Stringable {
         mut expr: Expr;
         pos: token.Pos;
     },
-    Never: token.Pos,
+    Never(token.Pos),
     Void,
     None,
     Option {

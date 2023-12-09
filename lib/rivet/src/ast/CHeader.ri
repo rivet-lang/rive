@@ -97,14 +97,14 @@ struct CDefines {
 
 enum CImportValue {
     Invalid,
-    Float: float64,
-    Int: int,
-    Uint: uint;
+    Float(float64),
+    Int(int),
+    Uint(uint);
 
     #[inline]
     pub func to_bool(self) -> bool {
-        return (self is .Int(int) and int == 1)
-            or (self is .Uint(uint) and uint == 1);
+        return (self is .Int(int_) and int_ == 1)
+            or (self is .Uint(uint_) and uint_ == 1);
     }
 }
 

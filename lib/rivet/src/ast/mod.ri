@@ -5,9 +5,9 @@
 import ../token;
 
 pub enum Node {
-    Decl: Decl,
-    Stmt: Stmt,
-    Expr: Expr
+    Decl(Decl),
+    Stmt(Stmt),
+    Expr(Expr)
 }
 
 #[boxed]

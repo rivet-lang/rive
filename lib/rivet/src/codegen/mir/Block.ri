@@ -26,13 +26,13 @@ pub struct Block < traits.Stringable {
 }
 
 pub enum Stmt < traits.Stringable {
-    Expr: Expr,
+    Expr(Expr),
     Assign {
         left: Expr;
         right: Expr;
     },
-    Discard: Expr,
-    Goto: string,
+    Discard(Expr),
+    Goto(string),
     GotoIf {
         label: string;
         cond: Expr;

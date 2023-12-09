@@ -568,7 +568,7 @@ enum BuiltinFuncType {
 }
 
 enum BuiltinFuncCheck {
-    ReturnTypeEqualToArgumentType: uint,
+    ReturnTypeEqualToArgumentType(uint),
     ArgumentTypeEqualToArgumentType {
         arg1_idx: uint;
         arg2_idx: uint;

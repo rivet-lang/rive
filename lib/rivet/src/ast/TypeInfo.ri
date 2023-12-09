@@ -24,7 +24,7 @@ pub enum TypeInfo < traits.Stringable {
         size: uint;
     },
     String,
-    Func: Func,
+    Func(Func),
     Alias {
         mut parent: Type;
     },

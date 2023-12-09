@@ -5,8 +5,8 @@
 import ../token;
 
 pub enum Stmt {
-    Empty: token.Pos,
-    Expr: Expr,
+    Empty(token.Pos),
+    Expr(Expr),
     VarDecl {
         lefts: []ObjectData;
         mut right: Expr;

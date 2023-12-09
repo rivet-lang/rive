@@ -381,10 +381,11 @@ extend Parser {
                             variant_decls.push(self.parse_decl());
                         }
                         self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields;
-                    } else if self.accept(.Colon) {
+                    } else if self.accept(.Lparen) {
                         has_type = true;
                         is_boxed = true;
                         v_type = self.parse_type();
+                        self.expect(.Rparen);
                     } else if self.accept(.Assign) {
                         has_value = true;
                         value = self.parse_expr();
