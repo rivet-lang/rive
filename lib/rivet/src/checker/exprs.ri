@@ -86,6 +86,56 @@ extend Checker {
                 enum_lit.type
             },
             .TupleLiteral(mut tuple_lit) -> self.check_tuple_literal(tuple_lit),
+            .ArrayCtor(array_ctor) -> {
+                if mut init_value := array_ctor.init_value {
+                    init_t := self.check_expr(init_value);
+                    if !self.check_compatible_types(init_t, array_ctor.elem_type) {
+                        report.error(
+                            "argument `init` should have a value of type `{}`".fmt(
+                                array_ctor.elem_type
+                            ), init_value.position()
+                        );
+                    }
+                    if array_ctor.len_value is none {
+                        report.error(
+                            "`init` argument should be used together with `len` argument",
+                            init_value.position()
+                        );
+                    }
+                }
+                if mut len_value := array_ctor.len_value {
+                    len_t := self.check_expr(len_value);
+                    if !(len_t == self.table.uint_t or len_t == self.table.comptime_int_t) {
+                        report.error(
+                            "argument `len` should have a value of type `uint`",
+                            len_value.position()
+                        );
+                    }
+                }
+                if mut cap_value := array_ctor.cap_value {
+                    cap_t := self.check_expr(cap_value);
+                    if !(cap_t == self.table.uint_t or cap_t == self.table.comptime_int_t) {
+                        report.error(
+                            "argument `cap` should have a value of type `uint`",
+                            cap_value.position()
+                        );
+                    }
+                }
+                array_ctor.type = if array_ctor.is_dyn {
+                    .Basic(
+                        self.table.universe.add_or_get_dyn_array(
+                            array_ctor.elem_type, array_ctor.is_mut
+                        ), pos: array_ctor.pos
+                    )
+                } else {
+                    .Basic(
+                        self.table.universe.add_or_get_array(
+                            array_ctor.elem_type, array_ctor.len_res, array_ctor.is_mut
+                        ), pos: array_ctor.pos
+                    )
+                };
+                array_ctor.type
+            },
             .ArrayLiteral(mut array_lit) -> self.check_array_literal(array_lit),
             .Ident(ident) -> {
                 ident.type = if ident.name == "_" {
@@ -227,12 +277,12 @@ extend Checker {
     func check_tuple_literal(mut self, mut tuple_lit: ast.Expr.TupleLiteral) -> ast.Type {
         old_expected_type := self.expected_type;
         mut has_expected_types := false;
-        mut expected_types := @dyn_array(ast.Type);
+        mut expected_types := []ast.Type();
         if expected_type_sym := self.expected_type.symbol(); expected_type_sym.info is .Tuple(tuple_info) {
             has_expected_types = tuple_lit.values.len == tuple_info.types.len;
             expected_types = tuple_info.types;
         }
-        mut types := @dyn_array(ast.Type);
+        mut types := []ast.Type();
         for i, mut value in tuple_lit.values {
             if has_expected_types {
                 self.expected_type = expected_types[i];

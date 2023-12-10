@@ -233,6 +233,16 @@ class Resolver:
         elif isinstance(expr, ast.TupleLiteral):
             for e in expr.exprs:
                 self.resolve_expr(e)
+        elif isinstance(expr, ast.ArrayCtor):
+            self.resolve_type(expr.elem_type)
+            if expr.init_value:
+                self.resolve_expr(expr.init_value)
+            if expr.cap_value:
+                self.resolve_expr(expr.cap_value)
+            if expr.len_value:
+                self.resolve_expr(expr.len_value)
+                if not expr.is_dyn:
+                    expr.len_res = self.eval_size(expr.len_value)
         elif isinstance(expr, ast.ArrayLiteral):
             for e in expr.elems:
                 self.resolve_expr(e)

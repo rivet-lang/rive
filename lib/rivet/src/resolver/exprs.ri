@@ -35,6 +35,32 @@ extend Resolver {
                     self.resolve_expr(value);
                 }
             },
+            .ArrayCtor(array_ctor) -> {
+                _ = self.resolve_type(array_ctor.elem_type);
+                if mut init_value := array_ctor.init_value {
+                    self.resolve_expr(init_value);
+                }
+                if mut len_value := array_ctor.len_value {
+                    self.resolve_expr(len_value);
+                    if !array_ctor.is_dyn {
+                        if len_res := self.eval_size(len_value) {
+                            if len_res <= 0 {
+                                report.error(
+                                    "array size cannot be zero or negative", len_value.position()
+                                );
+                            }
+                            array_ctor.len_res = @as(uint, len_res);
+                        } else {
+                            report.error(
+                                "cannot calculate array size in comptime", len_value.position()
+                            );
+                        }
+                    }
+                }
+                if mut cap_value := array_ctor.cap_value {
+                    self.resolve_expr(cap_value);
+                }
+            },
             .ArrayLiteral(array_lit) -> {
                 for mut value in array_lit.values {
                     self.resolve_expr(value);

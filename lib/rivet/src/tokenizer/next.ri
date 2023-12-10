@@ -627,7 +627,7 @@ extend Tokenizer {
                     ch = decode_unicode_escaped_rune(ch);
                 } else {
                     // find escape sequence start positions
-                    mut escapes_pos := @dyn_array(uint);
+                    mut escapes_pos := []uint();
                     for i, v in ch.as_bytes() {
                         if v == BACKSLASH {
                             escapes_pos.push(i);
@@ -678,8 +678,8 @@ extend Tokenizer {
         if start_char == LF {
             self.inc_line_number();
         }
-        mut u_escapes_pos := @dyn_array(uint); // pos list of \uXXXX
-        mut h_escapes_pos := @dyn_array(uint); // pos list of \xXX
+        mut u_escapes_pos := []uint(); // pos list of \uXXXX
+        mut h_escapes_pos := []uint(); // pos list of \xXX
         while {
             self.pos += 1;
             if self.pos >= self.text.len {
@@ -742,9 +742,9 @@ extend Tokenizer {
             lit = self.text.substr(start, self.pos).clone();
             if !self.prefs.is_fmt {
                 mut segment_idx: uint := 0;
-                mut str_segments := @dyn_array(string);
+                mut str_segments := []string();
                 if u_escapes_pos.len + h_escapes_pos.len > 0 {
-                    mut all_pos := @dyn_array(uint, u_escapes_pos.len + h_escapes_pos.len);
+                    mut all_pos := []uint(cap: u_escapes_pos.len + h_escapes_pos.len);
                     for pos1 in u_escapes_pos {
                         all_pos.push(pos1);
                     }

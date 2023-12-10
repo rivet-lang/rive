@@ -75,7 +75,7 @@ struct ComparatorSet {
                 "invalid format of comparator set for input '{}'".fmt(input)
             );
         }
-        mut comparators := @dyn_array(Comparator);
+        mut comparators := []Comparator();
         for raw_comp in raw_comparators {
             comparators.push(
                 Comparator.parse(raw_comp) ?? throw InvalidComparatorFormatError(
@@ -116,7 +116,7 @@ struct Range {
 
     func parse(input: string) -> ?Range {
         raw_comparator_sets := input.split(comparatorSetSep);
-        mut comparator_sets := @dyn_array(ComparatorSet);
+        mut comparator_sets := []ComparatorSet();
         for raw_comp_set in raw_comparator_sets {
             if can_expand(raw_comp_set) {
                 comparator_sets.push(ComparatorSet.expand(raw_comp_set) ?? return none);

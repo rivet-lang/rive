@@ -102,6 +102,17 @@ pub enum Expr < traits.Stringable {
         pos: token.Pos;
         mut type: Type;
     },
+    ArrayCtor {
+        is_dyn: bool;
+        is_mut: bool;
+        mut elem_type: Type;
+        mut init_value: ?Expr;
+        mut cap_value: ?Expr;
+        mut len_value: ?Expr;
+        mut len_res: uint;
+        mut type: Type;
+        pos: token.Pos;
+    },
     ArrayLiteral {
         values: []mut Expr;
         is_dyn: bool;
@@ -214,7 +225,6 @@ pub enum Expr < traits.Stringable {
     BuiltinCall {
         name: string;
         args: []CallArg;
-        dyn_array_is_mut: bool;
         pos: token.Pos;
         mut builtin: Builtin := .Invalid;
         mut type: Type;
@@ -312,6 +322,7 @@ pub enum Expr < traits.Stringable {
             .StringLiteral(string_lit) -> string_lit.pos,
             .EnumLiteral(enum_lit) -> enum_lit.pos,
             .TupleLiteral(tuple_lit) -> tuple_lit.pos,
+            .ArrayCtor(array_ctor) -> array_ctor.pos,
             .ArrayLiteral(array_lit) -> array_lit.pos,
             .Index(index) -> index.pos,
             .Selector(selector) -> selector.pos,
@@ -375,6 +386,37 @@ pub enum Expr < traits.Stringable {
                     }
                 }
                 sb.write_byte(b')');
+                sb.to_string()
+            },
+            .ArrayCtor(array_ctor) -> {
+                mut sb := strings.Builder.new(100);
+                sb.write_byte(b'[');
+                if !array_ctor.is_dyn {
+                    sb.write_string(array_ctor.len_value?.to_string());
+                }
+                sb.write_byte(b']');
+                if array_ctor.is_mut {
+                    sb.write_string("mut ");
+                }
+                sb.write_fmt("{}(", array_ctor.elem_type);
+                if array_ctor.is_dyn {
+                    if init_value := array_ctor.init_value {
+                        sb.write_fmt("init: {}", init_value);
+                        if array_ctor.cap_value !is none or array_ctor.len_value !is none {
+                            sb.write_string(", ");
+                        }
+                    }
+                    if cap_value := array_ctor.cap_value {
+                        sb.write_fmt("cap: {}", cap_value);
+                        if array_ctor.len_value !is none {
+                            sb.write_string(", ");
+                        }
+                    }
+                    if len_value := array_ctor.len_value {
+                        sb.write_fmt("len: {}", len_value);
+                    }
+                }
+                sb.write_string(")");
                 sb.to_string()
             },
             .ArrayLiteral(array_lit) -> {

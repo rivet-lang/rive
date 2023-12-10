@@ -74,7 +74,7 @@ pub struct FlagParser {
     pub func new(args: []string) -> Self {
         original_args := args.clone();
         mut all_before_dashdash := args.clone();
-        mut all_after_dashdash := @dyn_array(string);
+        mut all_after_dashdash := []string();
         idx_dashdash := index_of(args, "--");
         if v := idx_dashdash {
             all_before_dashdash.trim(v);
@@ -406,8 +406,8 @@ pub struct FlagParser {
     /// - found arguments and corresponding values are removed from args list.
     func parse_value(mut self, long_hand: string, short_hand: uint8) -> []string {
         full := "--".concat(long_hand);
-        mut found_entries := @dyn_array(string);
-        mut to_delete := @dyn_array(uint);
+        mut found_entries := []string();
+        mut to_delete := []uint();
         mut should_skip_one := false;
         for i, arg in self.args {
             if should_skip_one {

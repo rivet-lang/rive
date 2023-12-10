@@ -171,13 +171,6 @@ pub struct Table {
                 BuiltinArg("msg", type: self.string_t, is_optional: true)
             ]),
 
-            .Func("dyn_array", +[
-                BuiltinArg("type", is_any: true),
-                BuiltinArg("cap", type: self.uint_t, is_optional: true)
-            ], checks: +[
-                .ReturnTypeEqualToArgumentType(0)
-            ]),
-
             .Func("set_enum_ref_value", +[
                 BuiltinArg("enum_value", is_any: true, is_mut: true),
                 BuiltinArg("new_value", is_any: true)
@@ -353,7 +346,7 @@ pub struct Table {
                         types := if type_sym.info is .Tuple(tuple_lit) {
                             tuple_lit.types
                         } else {
-                            mut tmp := @dyn_array(Type);
+                            mut tmp := []Type();
                             for field in type_sym.full_fields() {
                                 tmp.push(field.type);
                             }
@@ -388,7 +381,7 @@ pub struct Table {
     }
 
     pub func filter_files(self, inputs: []string) -> []string {
-        mut new_inputs := @dyn_array(string, inputs.len);
+        mut new_inputs := []string(cap: inputs.len);
         for input in inputs {
             base_name_input := Path.base_name(input);
             if base_name_input.count(".") == 1 {
@@ -396,7 +389,7 @@ pub struct Table {
                 continue;
             }
             exts := base_name_input.substr(end: base_name_input.len - 3).split(".")[1..];
-            mut already_exts := @dyn_array(string, exts.len);
+            mut already_exts := []string(cap: exts.len);
             mut should_compile := false;
             for ext in exts {
                 if ext in already_exts {

@@ -126,7 +126,7 @@ extend Table {
                 mut name := tokens.next()?;
                 define_value := tokens.rest();
                 has_value := define_value.len > 0;
-                mut args := @dyn_array(string);
+                mut args := []string();
                 mut is_macro := true;
                 if has_value {
                     if paren_idx := name.index_of_byte(b'(') {
@@ -157,7 +157,7 @@ extend Table {
             lines := result.output.find_between(
                 "#include <...> search starts here:", "End of search list."
             ).split_into_lines();
-            mut paths := @dyn_array(string);
+            mut paths := []string();
             for line in lines {
                 if line.is_empty() {
                     continue;

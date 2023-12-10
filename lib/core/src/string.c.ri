@@ -100,7 +100,7 @@ pub struct string < Stringable, Hashable, Throwable {
 
     /// Returns a string array of the string split by '\t' and ' '.
     pub func fields(self) -> []Self {
-        mut res := @dyn_array(Self);
+        mut res := []Self();
         mut word_start: uint := 0;
         mut word_len: uint := 0;
         mut is_in_word := false;
@@ -458,7 +458,7 @@ pub struct string < Stringable, Hashable, Throwable {
             return self;
         }
         mut idx: uint := 0;
-        mut idxs := @dyn_array(uint);
+        mut idxs := []uint();
         while {
             idx = self.index_after_of(rep, idx) ?? break;
             idxs.push(idx);
@@ -508,7 +508,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// Returns an array of all the UTF8 runes in the string `self` which is useful
     /// if you want random access to them.
     pub func as_runes(self) -> []rune {
-        mut runes := @dyn_array(rune, self.runes_count());
+        mut runes := []rune(cap: self.runes_count());
         mut i: uint := 0;
         while i < self.len : i += 1 {
             char_len := unsafe { self.ptr[i] }.len_utf8();
@@ -541,7 +541,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// remainder contains more `delim` substrings.
     pub func split(self, delim: Self, nth: uint := 0) -> []Self {
         mut i: uint := 0;
-        mut res := @dyn_array(Self);
+        mut res := []Self();
         match delim.len {
             0 -> {
                 i = 1;
@@ -601,7 +601,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// If the delimiter string is empty then `.split()` is used.
     pub func split_any(self, delim: Self) -> []Self {
         mut i: uint := 0;
-        mut res := @dyn_array(Self);
+        mut res := []Self();
         // check empty source string
         if self.len > 0 {
             // if empty delimiter string using default split
@@ -629,7 +629,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// NOTE: algorithm is "greedy", consuming '\r\n' as a single line ending with higher
     /// priority than '\r' and '\n' as multiple endings
     pub func split_into_lines(self) -> []Self {
-        mut res := @dyn_array(Self);
+        mut res := []Self();
         if self.len == 0 {
             return res;
         }

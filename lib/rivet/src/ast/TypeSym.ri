@@ -131,7 +131,7 @@ pub struct TypeSym < Sym {
         if !self.full_fields_.is_empty() {
             return self.full_fields_;
         }
-        mut fields := @dyn_array(Field);
+        mut fields := []Field();
         if self.info is .Trait(trait_info) {
             for mut b in trait_info.bases {
                 for bf in b.full_fields() {

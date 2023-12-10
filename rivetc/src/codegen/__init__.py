@@ -765,13 +765,6 @@ class Codegen:
                 self.cur_func.store_ptr(
                     arg0, ir.Inst(ir.InstKind.LoadPtr, [arg1])
                 )
-            elif expr.name == "dyn_array":
-                typ_sym = expr.typ.symbol()
-                if len(expr.args) == 2:
-                    return self.empty_dyn_array(
-                        typ_sym, self.gen_expr(expr.args[1])
-                    )
-                return self.empty_dyn_array(typ_sym)
             elif expr.name == "as":
                 arg1 = expr.args[1]
                 arg1_is_voidptr = isinstance(
@@ -1539,6 +1532,56 @@ class Codegen:
                     TypeKind.Tuple else expr.field_name
                 )
             )
+        elif isinstance(expr, ast.ArrayCtor):
+            if expr.is_dyn:
+                if not expr.init_value and not expr.cap_value and not expr.len_value:
+                    # []T()
+                    return self.empty_dyn_array(expr.typ.symbol())
+                if expr.init_value:
+                    method_name = "_R4core8DynArray13new_with_initF"
+                else:
+                    method_name = "_R4core8DynArray12new_with_lenF"
+                size, _ = self.comp.type_size(expr.elem_type)
+                args = []
+                if expr.init_value:
+                    init_value = self.gen_expr_with_cast(expr.elem_type, expr.init_value)
+                    args.append(ir.Inst(ir.InstKind.GetRef, [init_value]))
+                # element size
+                args.append(ir.IntLit(ir.UINT_T, str(size)))
+                # length
+                if expr.len_value:
+                    args.append(self.gen_expr(expr.len_value))
+                else:
+                    args.append(ir.IntLit(ir.UINT_T, "0"))
+                # capacity
+                if expr.cap_value:
+                    args.append(self.gen_expr(expr.cap_value))
+                else:
+                    args.append(ir.IntLit(ir.UINT_T, "0"))
+                return ir.Inst(ir.InstKind.Call, [ir.Name(method_name), *args])
+            else:
+                if custom_tmp:
+                    final_value = custom_tmp
+                else:
+                    tmp_name = self.cur_func.local_name()
+                    tmp_t = self.ir_type(expr.typ)
+                    tmp = ir.Ident(tmp_t, tmp_name)
+                    self.cur_func.inline_alloca(tmp_t, tmp_name)
+                    final_value = tmp
+                if expr.init_value:
+                    size, _ = self.comp.type_size(expr.elem_type)
+                    init_value = self.gen_expr_with_cast(expr.elem_type, expr.init_value)
+                    self.cur_func.add_call(
+                        "_R4core14array_init_setF",
+                        [
+                            final_value, ir.IntLit(ir.UINT_T, str(size)),
+                            ir.IntLit(ir.UINT_T, str(expr.typ.symbol().info.size)),
+                            ir.Inst(ir.InstKind.GetRef, [init_value])
+                        ]
+                    )
+                if custom_tmp:
+                    return ir.Skip()
+                return tmp
         elif isinstance(expr, ast.ArrayLiteral):
             typ_sym = expr.typ.symbol()
             if len(expr.elems) == 0:
