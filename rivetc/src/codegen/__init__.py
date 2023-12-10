@@ -25,10 +25,10 @@ class Codegen:
         self.source_file = None
 
         self.init_global_vars_fn = None
-        self.cur_fn = None
-        self.cur_fn_is_main = False
-        self.cur_fn_ret_typ = self.comp.void_t
-        self.cur_fn_defer_stmts = []
+        self.cur_func = None
+        self.cur_func_is_main = False
+        self.cur_func_ret_typ = self.comp.void_t
+        self.cur_func_defer_stmts = []
 
         self.inside_trait = False
         self.inside_test = False
@@ -47,7 +47,18 @@ class Codegen:
         self.while_continue_expr = None
 
     def gen_source_files(self, source_files):
+        for mod in self.comp.universe.syms:
+            if isinstance(mod, sym.Mod):
+                self.gen_mod_attributes(mod.name, mod.attributes)
+
         self.gen_types()
+
+        self.out_rir.globals.append(
+            ir.GlobalVar(
+                False, False, ir.DYN_ARRAY_T.ptr(True), "_R4core4ARGS"
+            )
+        )
+
         # generate 'init_string_lits_fn' function
         self.init_string_lits_fn = ir.FuncDecl(
             False, ast.Annotations(), False, "_R4core16init_string_litsF", [],
@@ -62,19 +73,16 @@ class Codegen:
         )
         self.out_rir.decls.append(self.init_global_vars_fn)
 
-        for mod in self.comp.universe.syms:
-            if isinstance(mod, sym.Mod):
-                self.gen_mod_attributes(mod.name, mod.attributes)
-        for source_file in source_files:
-            self.source_file = source_file
-            self.gen_decls(source_file.decls)
-
         # generate '_R12drop_globalsZ' function
         g_fn = ir.FuncDecl(
             False, ast.Annotations(), False, "_R4core12drop_globalsF", [],
             False, ir.VOID_T, False
         )
         self.out_rir.decls.append(g_fn)
+
+        for source_file in source_files:
+            self.source_file = source_file
+            self.gen_decls(source_file.decls)
 
         # generate 'main' fn
         argc = ir.Ident(ir.C_INT_T, "_argc")
@@ -84,8 +92,8 @@ class Codegen:
             ir.C_INT_T, False
         )
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
-            self.cur_fn = main_fn
-            self.cur_fn.add_call("_R4core16init_string_litsF")
+            self.cur_func = main_fn
+            self.cur_func.add_call("_R4core16init_string_litsF")
             testRunner = ir.Ident(ir.TEST_RUNNER_T, "_testRunner")
             main_fn.alloca(testRunner)
             tests_field = ir.Selector(
@@ -103,7 +111,7 @@ class Codegen:
                 ir.Selector(ir.UINT64_T, testRunner, ir.Name("skip_tests")),
                 ir.IntLit(ir.UINT64_T, "0")
             )
-            tests_vec = ir.Selector(
+            tests_dyn_array = ir.Selector(
                 ir.DYN_ARRAY_T.ptr(True), testRunner, ir.Name("tests")
             )
             test_t = ir.TEST_T.ptr()
@@ -241,9 +249,10 @@ class Codegen:
             self.gen_decl(decl)
 
     def gen_decl(self, decl):
-        self.cur_fn_defer_stmts = []
+        self.cur_func_defer_stmts = []
         if isinstance(decl, ast.ExternDecl):
-            self.gen_decls(decl.decls)
+            if decl.abi != sym.ABI.Rivet:
+                self.gen_decls(decl.decls)
         elif isinstance(decl, ast.VarDecl):
             self.inside_var_decl = True
             for l in decl.lefts:
@@ -255,19 +264,19 @@ class Codegen:
                 )
                 if not decl.is_extern:
                     ident = ir.Ident(typ, name)
-                    self.cur_fn = self.init_global_vars_fn
+                    self.cur_func = self.init_global_vars_fn
                     value = self.gen_expr_with_cast(l.typ, decl.right)
                     if isinstance(typ, ir.Array):
                         size, _ = self.comp.type_size(l.typ)
                         if isinstance(value,
                                       ir.ArrayLit) and len(value.elems) > 0:
-                            self.cur_fn.add_call(
+                            self.cur_func.add_call(
                                 "_R4core8mem_copyF",
                                 [ident, value,
                                  ir.IntLit(ir.UINT_T, str(size))]
                             )
                     else:
-                        self.cur_fn.store(ident, value)
+                        self.cur_func.store(ident, value)
             self.inside_var_decl = False
         elif isinstance(decl, ast.EnumDecl):
             for v in decl.variants:
@@ -332,23 +341,23 @@ class Codegen:
                 name, args, decl.is_variadic and decl.is_extern, ret_typ,
                 decl.ret_typ == self.comp.never_t
             )
-            self.cur_fn = fn_decl
-            self.cur_fn.arr_ret_struct = arr_ret_struct
-            self.cur_fn_is_main = decl.is_main
-            self.cur_fn_ret_typ = decl.ret_typ
+            self.cur_func = fn_decl
+            self.cur_func.arr_ret_struct = arr_ret_struct
+            self.cur_func_is_main = decl.is_main
+            self.cur_func_ret_typ = decl.ret_typ
             self.gen_defer_stmt_vars(decl.defer_stmts)
             self.gen_stmts(decl.stmts)
             fn_dec_ret_type_str = str(fn_decl.ret_typ)
             if fn_dec_ret_type_str == "void" or fn_dec_ret_type_str == "_R6Result_R4void":
                 self.gen_defer_stmts(scope = decl.scope)
             if fn_dec_ret_type_str == "_R6Result_R4void":
-                self.cur_fn.add_ret(self.result_void(decl.ret_typ))
+                self.cur_func.add_ret(self.result_void(decl.ret_typ))
             elif fn_dec_ret_type_str != "void" and not (
                 len(fn_decl.instrs) > 0
                 and isinstance(fn_decl.instrs[-1], ir.Inst)
                 and fn_decl.instrs[-1].kind == ir.InstKind.Ret
             ):
-                self.cur_fn.add_ret(self.default_value(decl.ret_typ))
+                self.cur_func.add_ret(self.default_value(decl.ret_typ))
             if decl.is_extern and not decl.has_body:
                 self.out_rir.externs.append(fn_decl)
             else:
@@ -365,7 +374,7 @@ class Codegen:
                     False, ast.Annotations(), False, test_func,
                     [ir.Ident(ir.TEST_T.ptr(), "test")], False, ir.VOID_T, False
                 )
-                self.cur_fn = test_fn
+                self.cur_func = test_fn
                 self.gen_defer_stmt_vars(decl.defer_stmts)
                 self.gen_stmts(decl.stmts)
                 self.gen_defer_stmts(scope = decl.scope)
@@ -385,30 +394,30 @@ class Codegen:
             old_entry_label = self.loop_entry_label
             old_exit_label = self.loop_exit_label
             iterable_sym = stmt.iterable.typ.symbol()
-            self.loop_entry_label = self.cur_fn.local_name()
-            body_label = self.cur_fn.local_name()
-            self.loop_exit_label = self.cur_fn.local_name()
-            self.cur_fn.add_comment("for in stmt")
+            self.loop_entry_label = self.cur_func.local_name()
+            body_label = self.cur_func.local_name()
+            self.loop_exit_label = self.cur_func.local_name()
+            self.cur_func.add_comment("for in stmt")
             if stmt.index:
-                idx_name = self.cur_fn.unique_name(stmt.index.name)
+                idx_name = self.cur_func.unique_name(stmt.index.name)
                 stmt.scope.update_ir_name(stmt.index.name, idx_name)
             else:
-                idx_name = self.cur_fn.local_name()
+                idx_name = self.cur_func.local_name()
             iterable = self.gen_expr(stmt.iterable)
-            self.cur_fn.inline_alloca(
+            self.cur_func.inline_alloca(
                 ir.UINT_T, idx_name, ir.IntLit(ir.UINT_T, "0")
             )
             idx = ir.Ident(ir.UINT_T, idx_name)
-            self.cur_fn.add_label(self.loop_entry_label)
+            self.cur_func.add_label(self.loop_entry_label)
             if iterable_sym.kind == TypeKind.Array:
                 len_ = ir.IntLit(ir.UINT_T, iterable_sym.info.size.lit)
             else:
                 len_ = ir.Selector(ir.UINT_T, iterable, ir.Name("len"))
-            self.cur_fn.add_cond_br(
+            self.cur_func.add_cond_br(
                 ir.Inst(ir.InstKind.Cmp, [ir.Name("<"), idx, len_]), body_label,
                 self.loop_exit_label
             )
-            self.cur_fn.add_label(body_label)
+            self.cur_func.add_label(body_label)
             value_t_ir = self.ir_type(iterable_sym.info.elem_typ)
             value_is_ref_or_is_mut = stmt.value.is_ref or stmt.value.is_mut
             value_t_is_boxed = isinstance(
@@ -436,14 +445,14 @@ class Codegen:
                 isinstance(value_t_ir, ir.Pointer) and value_t_ir.is_managed
             ):
                 value = ir.Inst(ir.InstKind.LoadPtr, [value])
-            unique_ir_name = self.cur_fn.unique_name(stmt.value.name)
-            self.cur_fn.inline_alloca(value_t_ir, unique_ir_name, value)
+            unique_ir_name = self.cur_func.unique_name(stmt.value.name)
+            self.cur_func.inline_alloca(value_t_ir, unique_ir_name, value)
             stmt.scope.update_ir_name(stmt.value.name, unique_ir_name)
             self.while_continue_expr = ir.Inst(ir.InstKind.Inc, [idx])
             self.gen_stmt(stmt.stmt)
-            self.cur_fn.add_inst(self.while_continue_expr)
-            self.cur_fn.add_br(self.loop_entry_label)
-            self.cur_fn.add_label(self.loop_exit_label)
+            self.cur_func.add_inst(self.while_continue_expr)
+            self.cur_func.add_br(self.loop_entry_label)
+            self.cur_func.add_label(self.loop_exit_label)
             self.loop_entry_label = old_entry_label
             self.loop_exit_label = old_exit_label
             self.loop_scope = old_loop_scope
@@ -454,17 +463,17 @@ class Codegen:
             old_while_continue_expr = self.while_continue_expr
             old_entry_label = self.loop_entry_label
             old_exit_label = self.loop_exit_label
-            self.cur_fn.add_comment(f"while stmt (is_inf: {stmt.is_inf})")
-            self.loop_entry_label = self.cur_fn.local_name()
-            body_label = self.cur_fn.local_name()
-            self.loop_exit_label = self.cur_fn.local_name()
-            else_stmt_label = self.cur_fn.local_name(
+            self.cur_func.add_comment(f"while stmt (is_inf: {stmt.is_inf})")
+            self.loop_entry_label = self.cur_func.local_name()
+            body_label = self.cur_func.local_name()
+            self.loop_exit_label = self.cur_func.local_name()
+            else_stmt_label = self.cur_func.local_name(
             ) if stmt.has_else_stmt else ""
             self.while_continue_expr = stmt.continue_expr
-            self.cur_fn.add_label(self.loop_entry_label)
+            self.cur_func.add_label(self.loop_entry_label)
             if stmt.is_inf:
                 cond = ir.IntLit(self.comp.bool_t, "1")
-                self.cur_fn.add_br(body_label)
+                self.cur_func.add_br(body_label)
             else:
                 if isinstance(stmt.cond, ast.GuardExpr):
                     cond = self.gen_guard_expr(
@@ -474,29 +483,29 @@ class Codegen:
                 else:
                     cond = self.gen_expr_with_cast(self.comp.bool_t, stmt.cond)
                 if isinstance(cond, ir.IntLit) and cond.lit == "1":
-                    self.cur_fn.add_br(body_label)
+                    self.cur_func.add_br(body_label)
                 else:
-                    self.cur_fn.add_cond_br(
+                    self.cur_func.add_cond_br(
                         cond, body_label, else_stmt_label
                         if stmt.has_else_stmt else self.loop_exit_label
                     )
             gen_stmt = True
             if isinstance(cond, ir.IntLit) and cond.lit == "0":
-                self.cur_fn.add_comment("skip while stmt (cond: false)")
+                self.cur_func.add_comment("skip while stmt (cond: false)")
                 gen_stmt = False
-            self.cur_fn.add_label(body_label)
+            self.cur_func.add_label(body_label)
             if gen_stmt:
                 self.gen_stmt(stmt.stmt)
                 if stmt.has_continue_expr:
                     self.gen_expr(stmt.continue_expr)
-                self.cur_fn.add_comment(
+                self.cur_func.add_comment(
                     f"while stmt (goto to `{self.loop_entry_label}` for continue)"
                 )
-                self.cur_fn.add_br(self.loop_entry_label)
+                self.cur_func.add_br(self.loop_entry_label)
             if stmt.has_else_stmt:
-                self.cur_fn.add_label(else_stmt_label)
+                self.cur_func.add_label(else_stmt_label)
                 self.gen_stmt(stmt.else_stmt)
-            self.cur_fn.add_label(self.loop_exit_label)
+            self.cur_func.add_label(self.loop_exit_label)
             self.loop_entry_label = old_entry_label
             self.loop_exit_label = old_exit_label
             self.loop_scope = old_loop_scope
@@ -507,22 +516,22 @@ class Codegen:
                 left_ir_typ = self.ir_type(left.typ)
                 ident = ir.Ident(
                     left_ir_typ,
-                    self.cur_fn.local_name()
-                    if left.name == "_" else self.cur_fn.unique_name(left.name)
+                    self.cur_func.local_name() if left.name == "_" else
+                    self.cur_func.unique_name(left.name)
                 )
                 stmt.scope.update_ir_name(left.name, ident.name)
                 if isinstance(left_ir_typ, ir.Array):
                     size, _ = self.comp.type_size(left.typ)
-                    self.cur_fn.alloca(ident)
+                    self.cur_func.alloca(ident)
                     val = self.gen_expr_with_cast(left.typ, stmt.right, ident)
                     if isinstance(val, ir.ArrayLit) and len(val.elems) > 0:
-                        self.cur_fn.add_call(
+                        self.cur_func.add_call(
                             "_R4core8mem_copyF",
                             [ident, val,
                              ir.IntLit(ir.UINT_T, str(size))]
                         )
                 else:
-                    self.cur_fn.alloca(
+                    self.cur_func.alloca(
                         ident, self.gen_expr_with_cast(left.typ, stmt.right)
                     )
             else:
@@ -531,14 +540,14 @@ class Codegen:
                     left_ir_typ = self.ir_type(left.typ)
                     ident = ir.Ident(
                         left_ir_typ,
-                        self.cur_fn.local_name() if left.name == "_" else
-                        self.cur_fn.unique_name(left.name)
+                        self.cur_func.local_name() if left.name == "_" else
+                        self.cur_func.unique_name(left.name)
                     )
                     stmt.scope.update_ir_name(left.name, ident.name)
                     if isinstance(left_ir_typ, ir.Array):
                         size, _ = self.comp.type_size(left.typ)
-                        self.cur_fn.alloca(ident)
-                        self.cur_fn.add_call(
+                        self.cur_func.alloca(ident)
+                        self.cur_func.add_call(
                             "_R4core8mem_copyF", [
                                 ident,
                                 ir.Selector(
@@ -548,15 +557,15 @@ class Codegen:
                             ]
                         )
                     else:
-                        self.cur_fn.alloca(
+                        self.cur_func.alloca(
                             ident,
                             ir.Selector(left_ir_typ, right, ir.Name(f"f{i}"))
                         )
         elif isinstance(stmt, ast.DeferStmt):
-            self.cur_fn.store(
+            self.cur_func.store(
                 ir.Ident(ir.BOOL_T, stmt.flag_var), ir.IntLit(ir.BOOL_T, "1")
             )
-            self.cur_fn_defer_stmts.append(stmt)
+            self.cur_func_defer_stmts.append(stmt)
         elif isinstance(stmt, ast.ExprStmt):
             _ = self.gen_expr(stmt.expr)
 
@@ -626,10 +635,10 @@ class Codegen:
         expected_sym = expected_typ_.symbol()
         if expected_sym.kind == TypeKind.Trait and expr_typ != expected_typ_ and expr_sym != expected_sym and expr.typ != self.comp.none_t:
             res_expr = self.trait_value(res_expr, expr_typ, expected_typ_)
-        elif expr_sym.kind == TypeKind.Enum and expr_sym.info.is_boxed and expr_sym.info.has_variant(
+        elif expr_sym.kind == TypeKind.Enum and expr_sym.info.is_tagged and expr_sym.info.has_variant(
             expected_sym.name
         ):
-            tmp = self.cur_fn.local_name()
+            tmp = self.cur_func.local_name()
             tmp_t = expected_typ
             load_ptr = False
             if not (
@@ -650,7 +659,7 @@ class Codegen:
             )
             if load_ptr:
                 value = ir.Inst(ir.InstKind.LoadPtr, [value])
-            self.cur_fn.inline_alloca(tmp_t, tmp, value)
+            self.cur_func.inline_alloca(tmp_t, tmp, value)
             res_expr = ir.Ident(tmp_t, tmp)
 
         # wrap option value
@@ -707,6 +716,8 @@ class Codegen:
             return ir.StringLit(escaped_val, str(size))
         elif isinstance(expr, ast.EnumLiteral):
             enum_sym = expr.typ.symbol()
+            if expr.is_instance:
+                return self.boxed_enum_value(enum_sym, expr.value, None)
             return ir.IntLit(
                 self.ir_type(enum_sym.info.underlying_typ),
                 str(expr.variant_info.value)
@@ -729,7 +740,9 @@ class Codegen:
                     )
                 return ir.Ident(ir_typ, cg_utils.mangle_symbol(expr.sym))
             elif isinstance(expr.sym, sym.Func):
-                return ir.Ident(self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.sym))
+                return ir.Ident(
+                    self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.sym)
+                )
             elif expr.is_comptime:
                 if expr.name == "_RIVET_COMMIT_":
                     return self.gen_string_literal(utils.commit_hash())
@@ -749,7 +762,7 @@ class Codegen:
             if expr.name == "set_enum_ref_value":
                 arg0 = self.gen_expr(expr.args[0])
                 arg1 = self.gen_expr(expr.args[1])
-                self.cur_fn.store_ptr(
+                self.cur_func.store_ptr(
                     arg0, ir.Inst(ir.InstKind.LoadPtr, [arg1])
                 )
             elif expr.name == "dyn_array":
@@ -785,8 +798,8 @@ class Codegen:
                 typ_sym = arg1.typ.symbol()
                 expr_typ_sym = expr.typ.symbol()
                 if typ_sym.kind == TypeKind.Trait:
-                    tmp = self.cur_fn.local_name()
-                    self.cur_fn.inline_alloca(
+                    tmp = self.cur_func.local_name()
+                    self.cur_func.inline_alloca(
                         ir_typ, tmp,
                         ir.Inst(
                             ir.InstKind.Cast, [
@@ -808,8 +821,8 @@ class Codegen:
                         )
                     )
                     return ir.Ident(ir_typ, tmp)
-                elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed:
-                    tmp = self.cur_fn.local_name()
+                elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_tagged:
+                    tmp = self.cur_func.local_name()
                     tmp_t = ir_typ
                     load_ptr = False
                     if not (
@@ -830,10 +843,10 @@ class Codegen:
                     )
                     if load_ptr:
                         value = ir.Inst(ir.InstKind.LoadPtr, [value])
-                    self.cur_fn.inline_alloca(tmp_t, tmp, value)
+                    self.cur_func.inline_alloca(tmp_t, tmp, value)
                     return ir.Ident(tmp_t, tmp)
-                tmp = self.cur_fn.local_name()
-                self.cur_fn.inline_alloca(
+                tmp = self.cur_func.local_name()
+                self.cur_func.inline_alloca(
                     ir_typ, tmp,
                     ir.Inst(ir.InstKind.Cast, [res, ir_typ], ir_typ)
                 )
@@ -849,7 +862,7 @@ class Codegen:
                 if self.inside_test:
                     tmp_idx_ = ir.Ident(ir.TEST_T.ptr(), "test")
                     pos = utils.smart_quote(str(expr.pos), False)
-                    self.cur_fn.add_call(
+                    self.cur_func.add_call(
                         "_R4core11assert_testF", [
                             self.gen_expr(expr.args[0]),
                             self.gen_string_literal(
@@ -862,18 +875,18 @@ class Codegen:
                             ), tmp_idx_
                         ]
                     )
-                    l1 = self.cur_fn.local_name()
-                    l2 = self.cur_fn.local_name()
-                    self.cur_fn.add_cond_br(
+                    l1 = self.cur_func.local_name()
+                    l2 = self.cur_func.local_name()
+                    self.cur_func.add_cond_br(
                         ir.Selector(
                             ir.BOOL_T, tmp_idx_, ir.Name("early_return")
                         ), l1, l2
                     )
-                    self.cur_fn.add_label(l1)
-                    self.cur_fn.add_ret_void()
-                    self.cur_fn.add_label(l2)
+                    self.cur_func.add_label(l1)
+                    self.cur_func.add_ret_void()
+                    self.cur_func.add_label(l2)
                 elif self.comp.prefs.build_mode != prefs.BuildMode.Release:
-                    self.cur_fn.add_call(
+                    self.cur_func.add_call(
                         "_R4core6assertF", [
                             self.gen_expr(expr.args[0]),
                             self.gen_string_literal(
@@ -892,15 +905,15 @@ class Codegen:
             elif expr.name == "unreachable":
                 self.runtime_error("entered unreachable code")
             elif expr.name == "breakpoint" and self.comp.prefs.build_mode != prefs.BuildMode.Release:
-                self.cur_fn.breakpoint()
+                self.cur_func.breakpoint()
         elif isinstance(expr, ast.TupleLiteral):
             expr_sym = expr.typ.symbol()
-            tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
-            self.cur_fn.alloca(tmp)
+            tmp = ir.Ident(self.ir_type(expr.typ), self.cur_func.local_name())
+            self.cur_func.alloca(tmp)
             for i, elem in enumerate(expr.exprs):
                 elem_typ = expr_sym.info.types[i]
                 field_expr = self.gen_expr_with_cast(elem_typ, elem)
-                self.cur_fn.store(
+                self.cur_func.store(
                     ir.Selector(elem_typ, tmp, ir.Name(f"f{i}")), field_expr
                 )
             return tmp
@@ -922,7 +935,7 @@ class Codegen:
                         if left == None:
                             continue
                         inst = ir.InstKind.StorePtr if require_store_ptr else ir.InstKind.Store
-                        self.cur_fn.add_inst(
+                        self.cur_func.add_inst(
                             ir.Inst(
                                 inst, [
                                     left,
@@ -944,9 +957,9 @@ class Codegen:
                 else:
                     value = self.gen_expr_with_cast(expr.left.typ, expr.right)
                     if require_store_ptr:
-                        self.cur_fn.store_ptr(left, value)
+                        self.cur_func.store_ptr(left, value)
                     else:
-                        self.cur_fn.store(left, value)
+                        self.cur_func.store(left, value)
             else:
                 single_op = expr.op.single()
                 right = self.gen_expr_with_cast(expr.left.typ, expr.right)
@@ -963,7 +976,7 @@ class Codegen:
                         right_operand = ir.Inst(
                             ir.InstKind.GetRef, [right_operand]
                         )
-                    self.cur_fn.store(
+                    self.cur_func.store(
                         left,
                         ir.Inst(
                             ir.InstKind.Call, [
@@ -976,9 +989,9 @@ class Codegen:
                 elif op_kind := ir.get_ir_op(single_op):
                     value = ir.Inst(op_kind, [left, right])
                     if require_store_ptr:
-                        self.cur_fn.store_ptr(left, value)
+                        self.cur_func.store_ptr(left, value)
                     else:
-                        self.cur_fn.store(left, value)
+                        self.cur_func.store(left, value)
                 else:
                     assert False, expr
         elif isinstance(expr, ast.Block):
@@ -1014,7 +1027,7 @@ class Codegen:
                             else:
                                 field = type_fields[i]
                             initted_fields.append(field.name)
-                            self.cur_fn.store(
+                            self.cur_func.store(
                                 ir.Selector(
                                     self.ir_type(field.typ), tmp,
                                     ir.Name(field.name)
@@ -1044,7 +1057,7 @@ class Codegen:
                                 )
                             else:
                                 value = self.default_value(f.typ)
-                            self.cur_fn.store(
+                            self.cur_func.store(
                                 ir.Selector(f_typ, tmp, ir.Name(f.name)), value
                             )
                         return self.boxed_enum_variant_with_fields_value(
@@ -1076,9 +1089,9 @@ class Codegen:
                     )
                 else:
                     tmp = ir.Ident(
-                        self.ir_type(expr.typ), self.cur_fn.local_name()
+                        self.ir_type(expr.typ), self.cur_func.local_name()
                     )
-                    self.cur_fn.alloca(tmp)
+                    self.cur_func.alloca(tmp)
                 initted_fields = []
                 type_fields = typ_sym.full_fields()
                 for i, f in enumerate(expr.args):
@@ -1090,7 +1103,7 @@ class Codegen:
                     else:
                         field = type_fields[i]
                     initted_fields.append(field.name)
-                    self.cur_fn.store(
+                    self.cur_func.store(
                         ir.Selector(
                             self.ir_type(field.typ), tmp, ir.Name(field.name)
                         ), self.gen_expr_with_cast(field.typ, f.expr)
@@ -1113,7 +1126,7 @@ class Codegen:
                         value = ir.Selector(f_typ, spread_val, ir.Name(f.name))
                     else:
                         value = self.default_value(f.typ)
-                    self.cur_fn.store(
+                    self.cur_func.store(
                         ir.Selector(f_typ, tmp, ir.Name(f.name)), value
                     )
                 return tmp
@@ -1166,7 +1179,8 @@ class Codegen:
                                     ir.Inst(
                                         ir.InstKind.Add, [
                                             ir.Name(
-                                                cg_utils.mangle_symbol(left_sym) +
+                                                cg_utils
+                                                .mangle_symbol(left_sym) +
                                                 "4VTBL"
                                             ), id_value
                                         ]
@@ -1287,18 +1301,18 @@ class Codegen:
                 )
             inst = ir.Inst(ir.InstKind.Call, args)
             if expr.sym.ret_typ in self.void_types:
-                self.cur_fn.add_inst(inst)
+                self.cur_func.add_inst(inst)
             else:
                 is_void_value = expr.typ in self.void_types
-                tmp = "" if custom_tmp else self.cur_fn.local_name()
+                tmp = "" if custom_tmp else self.cur_func.local_name()
                 if isinstance(expr.sym.ret_typ, type.Array):
                     size, _ = self.comp.type_size(expr.sym.ret_typ)
                     if custom_tmp:
                         id = custom_tmp
                     else:
                         id = ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
-                        self.cur_fn.alloca(id)
-                    self.cur_fn.add_call(
+                        self.cur_func.alloca(id)
+                    self.cur_func.add_call(
                         "_R4core8mem_copyF", [
                             id,
                             ir.Selector(
@@ -1312,18 +1326,18 @@ class Codegen:
                     ret_typ = self.ir_type(expr.sym.ret_typ)
                     value = ir.Inst(ir.InstKind.Cast, [inst, ret_typ.ptr()])
                     if custom_tmp:
-                        self.cur_fn.store(
+                        self.cur_func.store(
                             custom_tmp, ir.Inst(ir.InstKind.LoadPtr, [value])
                         )
                     else:
-                        self.cur_fn.inline_alloca(
+                        self.cur_func.inline_alloca(
                             ret_typ, tmp, ir.Inst(ir.InstKind.LoadPtr, [value])
                         )
                 else:
                     if custom_tmp:
-                        self.cur_fn.store(custom_tmp, inst)
+                        self.cur_func.store(custom_tmp, inst)
                     else:
-                        self.cur_fn.inline_alloca(
+                        self.cur_func.inline_alloca(
                             self.ir_type(expr.sym.ret_typ), tmp, inst
                         )
                 if expr.has_err_handler():
@@ -1331,27 +1345,27 @@ class Codegen:
                         not expr.err_handler.is_propagate
                     ) and expr.err_handler.expr.typ in self.void_types
                     res_value = ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
-                    panic_l = self.cur_fn.local_name()
-                    else_value = "" if err_handler_is_void else self.cur_fn.local_name(
+                    panic_l = self.cur_func.local_name()
+                    else_value = "" if err_handler_is_void else self.cur_func.local_name(
                     )
-                    exit_l = "" if expr.err_handler.is_propagate else self.cur_fn.local_name(
+                    exit_l = "" if expr.err_handler.is_propagate else self.cur_func.local_name(
                     )
                     res_value_is_err = ir.Selector(
                         ir.BOOL_T, res_value, ir.Name("is_err")
                     )
-                    self.cur_fn.add_cond_br(
+                    self.cur_func.add_cond_br(
                         res_value_is_err, panic_l,
                         exit_l if err_handler_is_void else else_value
                     )
-                    self.cur_fn.add_label(panic_l)
+                    self.cur_func.add_label(panic_l)
                     if expr.err_handler.is_propagate:
                         self.gen_return_trace_add(expr.pos)
                         self.gen_defer_stmts(
                             True, res_value_is_err, scope = expr.scope,
                             run_defer_previous = True
                         )
-                        if self.cur_fn_is_main or self.inside_var_decl:
-                            self.cur_fn.add_call(
+                        if self.cur_func_is_main or self.inside_var_decl:
+                            self.cur_func.add_call(
                                 "_R4core15uncatched_errorF", [
                                     ir.Selector(
                                         self.ir_type(self.comp.throwable_t),
@@ -1361,7 +1375,7 @@ class Codegen:
                             )
                         elif self.inside_test:
                             pos = utils.smart_quote(str(expr.pos), False)
-                            self.cur_fn.add_call(
+                            self.cur_func.add_call(
                                 "_R4core18test_error_throwedF", [
                                     ir.Selector(
                                         self.ir_type(self.comp.throwable_t),
@@ -1371,18 +1385,18 @@ class Codegen:
                                     ir.Ident(ir.TEST_T, "test")
                                 ]
                             )
-                            self.cur_fn.add_ret_void()
+                            self.cur_func.add_ret_void()
                         else:
                             tmp2 = ir.Ident(
-                                self.ir_type(self.cur_fn_ret_typ),
-                                self.cur_fn.local_name()
+                                self.ir_type(self.cur_func_ret_typ),
+                                self.cur_func.local_name()
                             )
-                            self.cur_fn.alloca(tmp2)
-                            self.cur_fn.store(
+                            self.cur_func.alloca(tmp2)
+                            self.cur_func.store(
                                 ir.Selector(ir.BOOL_T, tmp2, ir.Name("is_err")),
                                 ir.IntLit(ir.BOOL_T, "1")
                             )
-                            self.cur_fn.store(
+                            self.cur_func.store(
                                 ir.Selector(
                                     self.ir_type(self.comp.throwable_t), tmp2,
                                     ir.Name("err")
@@ -1392,8 +1406,8 @@ class Codegen:
                                     res_value, ir.Name("err")
                                 )
                             )
-                            self.cur_fn.add_ret(tmp2)
-                        self.cur_fn.add_label(else_value)
+                            self.cur_func.add_ret(tmp2)
+                        self.cur_func.add_label(else_value)
                         if is_void_value:
                             return ir.Skip()
                         return ir.Selector(
@@ -1403,13 +1417,13 @@ class Codegen:
                     else: # `catch`
                         self.gen_return_trace_clear()
                         if expr.err_handler.has_varname():
-                            err_ir_name = self.cur_fn.unique_name(
+                            err_ir_name = self.cur_func.unique_name(
                                 expr.err_handler.varname
                             )
                             expr.err_handler.scope.update_ir_name(
                                 expr.err_handler.varname, err_ir_name
                             )
-                            self.cur_fn.inline_alloca(
+                            self.cur_func.inline_alloca(
                                 self.ir_type(self.comp.throwable_t),
                                 err_ir_name,
                                 ir.Selector(
@@ -1421,31 +1435,31 @@ class Codegen:
                             _ = self.gen_expr_with_cast(
                                 expr.sym.ret_typ.typ, expr.err_handler.expr
                             )
-                            self.cur_fn.add_label(exit_l)
+                            self.cur_func.add_label(exit_l)
                             return ir.Selector(
                                 self.ir_type(expr.typ), res_value,
                                 ir.Name("value")
                             )
                         tmp2 = ir.Ident(
                             self.ir_type(expr.sym.ret_typ.typ),
-                            self.cur_fn.local_name()
+                            self.cur_func.local_name()
                         )
-                        self.cur_fn.alloca(
+                        self.cur_func.alloca(
                             tmp2,
                             self.gen_expr_with_cast(
                                 expr.sym.ret_typ.typ, expr.err_handler.expr
                             )
                         )
-                        self.cur_fn.add_br(exit_l)
-                        self.cur_fn.add_label(else_value)
-                        self.cur_fn.store(
+                        self.cur_func.add_br(exit_l)
+                        self.cur_func.add_label(else_value)
+                        self.cur_func.store(
                             tmp2,
                             ir.Selector(
                                 self.ir_type(expr.typ), res_value,
                                 ir.Name("value")
                             )
                         )
-                        self.cur_fn.add_label(exit_l)
+                        self.cur_func.add_label(exit_l)
                         return tmp2
                 return ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
         elif isinstance(expr, ast.SelectorExpr):
@@ -1455,7 +1469,7 @@ class Codegen:
                 elif isinstance(
                     expr.left_sym, sym.Type
                 ) and expr.left_sym.kind == TypeKind.Enum:
-                    if expr.left_sym.info.is_boxed:
+                    if expr.left_sym.info.is_tagged:
                         return self.boxed_enum_value(
                             expr.left_sym, expr.field_name, None,
                             custom_tmp = custom_tmp
@@ -1467,14 +1481,16 @@ class Codegen:
                         )
                 elif isinstance(expr.left_sym, sym.Func):
                     return ir.Ident(
-                        self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.left_sym)
+                        self.ir_type(expr.typ),
+                        cg_utils.mangle_symbol(expr.left_sym)
                     )
                 elif isinstance(
                     expr.field_sym, sym.Var
                 ) and expr.field_sym.is_extern and expr.field_sym.abi != sym.ABI.Rivet:
                     return ir.Ident(self.ir_type(expr.typ), expr.field_sym.name)
                 return ir.Ident(
-                    self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.field_sym)
+                    self.ir_type(expr.typ),
+                    cg_utils.mangle_symbol(expr.field_sym)
                 )
             old_inside_selector_expr = self.inside_selector_expr
             self.inside_selector_expr = True
@@ -1486,10 +1502,10 @@ class Codegen:
             if expr.is_indirect:
                 return ir.Inst(ir.InstKind.LoadPtr, [left])
             elif expr.is_option_check:
-                panic_l = self.cur_fn.local_name()
-                exit_l = self.cur_fn.local_name()
+                panic_l = self.cur_func.local_name()
+                exit_l = self.cur_func.local_name()
                 if expr.left_typ.is_pointer():
-                    self.cur_fn.add_cond_br(
+                    self.cur_func.add_cond_br(
                         ir.Inst(
                             ir.InstKind.Cmp,
                             [ir.Name("=="), left,
@@ -1498,14 +1514,14 @@ class Codegen:
                     )
                     value = left
                 else:
-                    self.cur_fn.add_cond_br(
+                    self.cur_func.add_cond_br(
                         ir.Selector(ir.BOOL_T, left, ir.Name("is_none")),
                         panic_l, exit_l
                     )
                     value = ir.Selector(ir_typ, left, ir.Name("value"))
-                self.cur_fn.add_label(panic_l)
+                self.cur_func.add_label(panic_l)
                 self.runtime_error(f"attempt to use none value (`{expr.left}`)")
-                self.cur_fn.add_label(exit_l)
+                self.cur_func.add_label(exit_l)
                 return value
             elif isinstance(left, ir.StringLit):
                 if expr.field_name == "ptr":
@@ -1523,42 +1539,46 @@ class Codegen:
                     TypeKind.Tuple else expr.field_name
                 )
             )
-        elif isinstance(expr, ast.DynArrayLiteral):
+        elif isinstance(expr, ast.ArrayLiteral):
             typ_sym = expr.typ.symbol()
             if len(expr.elems) == 0:
-                if expr.is_arr:
-                    return self.default_value(expr.typ)
-                tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
-                self.cur_fn.alloca(tmp, self.empty_dyn_array(typ_sym))
-                return tmp
+                if expr.is_dyn:
+                    tmp = ir.Ident(
+                        self.ir_type(expr.typ), self.cur_func.local_name()
+                    )
+                    self.cur_func.alloca(tmp, self.empty_dyn_array(typ_sym))
+                    return tmp
+                return self.default_value(expr.typ)
             elem_typ = typ_sym.info.elem_typ
             size, _ = self.comp.type_size(elem_typ)
             elems = []
             for i, elem in enumerate(expr.elems):
                 elems.append(self.gen_expr_with_cast(elem_typ, elem))
             arr_lit = ir.ArrayLit(self.ir_type(elem_typ), elems)
-            if expr.is_arr:
-                if custom_tmp:
-                    size, _ = self.comp.type_size(expr.typ)
-                    self.cur_fn.add_call(
-                        "_R4core8mem_copyF",
-                        [custom_tmp, arr_lit,
-                         ir.IntLit(ir.UINT_T, str(size))]
-                    )
-                    return ir.Skip()
-                return arr_lit
-            tmp = ir.Ident(self.ir_type(expr.typ), self.cur_fn.local_name())
-            self.cur_fn.alloca(
-                tmp,
-                ir.Inst(
-                    ir.InstKind.Call, [
-                        ir.Name("_R4core8DynArray10from_arrayF"), arr_lit,
-                        ir.IntLit(ir.UINT_T, str(size)),
-                        ir.IntLit(ir.UINT_T, str(len(elems)))
-                    ]
+            if expr.is_dyn:
+                tmp = ir.Ident(
+                    self.ir_type(expr.typ), self.cur_func.local_name()
                 )
-            )
-            return tmp
+                self.cur_func.alloca(
+                    tmp,
+                    ir.Inst(
+                        ir.InstKind.Call, [
+                            ir.Name("_R4core8DynArray10from_arrayF"), arr_lit,
+                            ir.IntLit(ir.UINT_T, str(size)),
+                            ir.IntLit(ir.UINT_T, str(len(elems)))
+                        ]
+                    )
+                )
+                return tmp
+            if custom_tmp:
+                size, _ = self.comp.type_size(expr.typ)
+                self.cur_func.add_call(
+                    "_R4core8mem_copyF",
+                    [custom_tmp, arr_lit,
+                     ir.IntLit(ir.UINT_T, str(size))]
+                )
+                return ir.Skip()
+            return arr_lit
         elif isinstance(expr, ast.IndexExpr):
             s = expr.left.typ.symbol()
             left = self.gen_expr_with_cast(expr.left.typ, expr.left)
@@ -1576,7 +1596,7 @@ class Codegen:
                         end = ir.IntLit(ir.UINT_T, left.len)
                     else:
                         end = None
-                tmp = self.cur_fn.local_name()
+                tmp = self.cur_func.local_name()
                 if s.kind == TypeKind.DynArray:
                     if end == None:
                         inst = ir.Inst(
@@ -1597,8 +1617,7 @@ class Codegen:
                     if end == None:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R4core16array_slice_fromF"),
-                                ir.Inst(ir.InstKind.GetRef, [left]),
+                                ir.Name("_R4core16array_slice_fromF"), left,
                                 ir.IntLit(ir.UINT_T, str(size)),
                                 ir.IntLit(ir.UINT_T, s.info.size.lit), start
                             ]
@@ -1606,22 +1625,21 @@ class Codegen:
                     else:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R4core11array_sliceF"),
-                                ir.Inst(ir.InstKind.GetRef, [left]),
+                                ir.Name("_R4core11array_sliceF"), left,
                                 ir.IntLit(ir.UINT_T, str(size)),
                                 ir.IntLit(ir.UINT_T, s.info.size.lit), start,
                                 end
                             ]
                         )
-                self.cur_fn.inline_alloca(self.ir_type(expr.typ), tmp, inst)
+                self.cur_func.inline_alloca(self.ir_type(expr.typ), tmp, inst)
                 return ir.Ident(self.ir_type(expr.typ), tmp)
             idx = self.gen_expr(expr.index)
             if isinstance(s.info, sym.ArrayInfo):
-                self.cur_fn.add_call(
+                self.cur_func.add_call(
                     "_R4core11array_indexF",
                     [ir.IntLit(ir.UINT_T, s.info.size.lit), idx]
                 )
-            tmp = self.cur_fn.local_name()
+            tmp = self.cur_func.local_name()
             expr_typ_ir = self.ir_type(expr.typ)
             if isinstance(expr.left_typ, type.Ptr) or s.kind == TypeKind.Array:
                 if expr.is_ref:
@@ -1655,19 +1673,19 @@ class Codegen:
                     value = ir.Inst(ir.InstKind.LoadPtr, [value], expr_typ_ir)
             else:
                 assert False, (expr, expr.pos)
-            self.cur_fn.inline_alloca(expr_typ_ir, tmp, value)
+            self.cur_func.inline_alloca(expr_typ_ir, tmp, value)
             return ir.Ident(expr_typ_ir, tmp)
         elif isinstance(expr, ast.UnaryExpr):
             right = self.gen_expr_with_cast(expr.right_typ, expr.right)
             if expr.op == Kind.Amp:
-                tmp = self.cur_fn.local_name()
+                tmp = self.cur_func.local_name()
                 if isinstance(
                     right, ir.Inst
                 ) and right.kind == ir.InstKind.LoadPtr:
                     right = right.args[0]
                 else:
                     right = ir.Inst(ir.InstKind.GetRef, [right])
-                self.cur_fn.inline_alloca(self.ir_type(expr.typ), tmp, right)
+                self.cur_func.inline_alloca(self.ir_type(expr.typ), tmp, right)
                 return ir.Ident(self.ir_type(expr.typ), tmp)
 
             # runtime calculation
@@ -1698,9 +1716,9 @@ class Codegen:
                     expr_typ = expr_left_typ
                     is_not_never = expr.right.typ != self.comp.never_t
                     left = self.gen_expr_with_cast(expr_typ, expr.left)
-                    is_none_label = self.cur_fn.local_name()
-                    is_not_none_label = self.cur_fn.local_name()
-                    exit_label = self.cur_fn.local_name(
+                    is_none_label = self.cur_func.local_name()
+                    is_not_none_label = self.cur_func.local_name()
+                    exit_label = self.cur_func.local_name(
                     ) if is_not_never else ""
                     if expr_typ.is_pointer():
                         cond = ir.Inst(
@@ -1711,54 +1729,54 @@ class Codegen:
                     else:
                         cond = ir.Selector(ir.BOOL_T, left, ir.Name("is_none"))
                     tmp = ir.Ident(
-                        self.ir_type(expr_typ.typ), self.cur_fn.local_name()
+                        self.ir_type(expr_typ.typ), self.cur_func.local_name()
                     )
-                    self.cur_fn.alloca(tmp)
-                    self.cur_fn.add_cond_br(
+                    self.cur_func.alloca(tmp)
+                    self.cur_func.add_cond_br(
                         cond, is_none_label, is_not_none_label
                     )
-                    self.cur_fn.add_label(is_none_label)
+                    self.cur_func.add_label(is_none_label)
                     right = self.gen_expr_with_cast(expr_typ.typ, expr.right)
                     if is_not_never:
-                        self.cur_fn.store(tmp, right)
-                        self.cur_fn.add_br(exit_label)
-                    self.cur_fn.add_label(is_not_none_label)
+                        self.cur_func.store(tmp, right)
+                        self.cur_func.add_br(exit_label)
+                    self.cur_func.add_label(is_not_none_label)
                     if expr_typ.is_pointer():
-                        self.cur_fn.store(tmp, left)
+                        self.cur_func.store(tmp, left)
                     else:
-                        self.cur_fn.store(
+                        self.cur_func.store(
                             tmp,
                             ir.Selector(expr_typ.typ, left, ir.Name("value"))
                         )
                     if is_not_never:
-                        self.cur_fn.add_label(exit_label)
+                        self.cur_func.add_label(exit_label)
                     return tmp
             elif expr.op in (Kind.KwAnd, Kind.KwOr):
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
                 tmp = ir.Ident(
-                    self.ir_type(self.comp.bool_t), self.cur_fn.local_name()
+                    self.ir_type(self.comp.bool_t), self.cur_func.local_name()
                 )
-                self.cur_fn.alloca(tmp, left)
-                left_l = self.cur_fn.local_name()
-                exit_l = self.cur_fn.local_name()
+                self.cur_func.alloca(tmp, left)
+                left_l = self.cur_func.local_name()
+                exit_l = self.cur_func.local_name()
                 if expr.op == Kind.KwAnd:
-                    self.cur_fn.add_cond_br(left, left_l, exit_l)
+                    self.cur_func.add_cond_br(left, left_l, exit_l)
                 else:
-                    self.cur_fn.add_cond_br(left, exit_l, left_l)
-                self.cur_fn.add_label(left_l)
-                self.cur_fn.store(
+                    self.cur_func.add_cond_br(left, exit_l, left_l)
+                self.cur_func.add_label(left_l)
+                self.cur_func.store(
                     tmp, self.gen_expr_with_cast(expr_left_typ, expr.right)
                 )
-                self.cur_fn.add_label(exit_l)
+                self.cur_func.add_label(exit_l)
                 return tmp
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
-                tmp = self.cur_fn.local_name()
+                tmp = self.cur_func.local_name()
                 kind = "==" if expr.op == Kind.KwIs else "!="
                 left_sym = expr_left_typ.symbol()
                 expr_right_sym = expr_right_typ.symbol()
                 if left_sym.kind == TypeKind.Enum:
-                    if left_sym.info.is_boxed:
+                    if left_sym.info.is_tagged:
                         cmp = ir.Inst(
                             ir.InstKind.Cmp, [
                                 ir.Name(kind),
@@ -1798,10 +1816,10 @@ class Codegen:
                             ir.IntLit(ir.UINT_T, str(expr_right_sym.id))
                         ]
                     )
-                self.cur_fn.inline_alloca(ir.BOOL_T, tmp, cmp)
+                self.cur_func.inline_alloca(ir.BOOL_T, tmp, cmp)
                 if expr.has_var:
-                    expr_var_exit_label = self.cur_fn.local_name()
-                    self.cur_fn.add_cond_single_br(
+                    expr_var_exit_label = self.cur_func.local_name()
+                    self.cur_func.add_cond_single_br(
                         ir.Inst(
                             ir.InstKind.BooleanNot, [ir.Ident(ir.BOOL_T, tmp)]
                         ), expr_var_exit_label
@@ -1821,10 +1839,10 @@ class Codegen:
                         or expr.var.is_mut
                     ):
                         val = ir.Inst(ir.InstKind.LoadPtr, [val], var_t2)
-                    unique_name = self.cur_fn.unique_name(expr.var.name)
+                    unique_name = self.cur_func.unique_name(expr.var.name)
                     expr.scope.update_ir_name(expr.var.name, unique_name)
-                    self.cur_fn.inline_alloca(var_t, unique_name, val)
-                    self.cur_fn.add_label(expr_var_exit_label)
+                    self.cur_func.inline_alloca(var_t, unique_name, val)
+                    self.cur_func.add_label(expr_var_exit_label)
                 return ir.Ident(ir.BOOL_T, tmp)
             elif expr.op in (Kind.KwIn, Kind.KwNotIn):
                 expr_left_typ = self.comp.comptime_number_to_type(expr_left_typ)
@@ -1912,7 +1930,7 @@ class Codegen:
                     right_elem_typ_sym = right_sym.info.elem_typ.symbol()
                     if right_elem_typ_sym.kind.is_primitive() or (
                         right_elem_typ_sym.kind == TypeKind.Enum
-                        and not right_elem_typ_sym.info.is_boxed
+                        and not right_elem_typ_sym.info.is_tagged
                     ):
                         cond = ir.Inst(
                             ir.InstKind.Cmp,
@@ -1921,8 +1939,9 @@ class Codegen:
                     else:
                         cond = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name(f"{cg_utils.mangle_symbol(left_sym)}4_eq_M"),
-                                cur_elem, elem_idx_
+                                ir.Name(
+                                    f"{cg_utils.mangle_symbol(left_sym)}4_eq_M"
+                                ), cur_elem, elem_idx_
                             ]
                         )
                     contains_decl.add_cond_br(cond, ret_l, continue_l)
@@ -1941,21 +1960,21 @@ class Codegen:
                 call = ir.Inst(ir.InstKind.Call, args, ir.BOOL_T)
                 if expr.op == Kind.KwNotIn:
                     call = ir.Inst(ir.InstKind.BooleanNot, [call], ir.BOOL_T)
-                tmp = self.cur_fn.local_name()
-                self.cur_fn.inline_alloca(ir.BOOL_T, tmp, call)
+                tmp = self.cur_func.local_name()
+                self.cur_func.inline_alloca(ir.BOOL_T, tmp, call)
                 return ir.Ident(ir.BOOL_T, tmp)
 
             left = self.gen_expr_with_cast(expr_left_typ, expr.left)
             right = self.gen_expr_with_cast(expr_left_typ, expr.right)
 
             # runtime calculation
-            tmp = self.cur_fn.local_name()
+            tmp = self.cur_func.local_name()
             typ_sym = expr_left_typ.symbol()
             if expr.op.is_overloadable_op() and (
                 typ_sym.kind in (
                     TypeKind.Array, TypeKind.DynArray, TypeKind.String,
                     TypeKind.Struct
-                ) or (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed)
+                ) or (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_tagged)
             ) and not isinstance(expr_left_typ, type.Ptr):
                 if typ_sym.kind == TypeKind.Array:
                     if expr.op == Kind.Eq:
@@ -1963,7 +1982,7 @@ class Codegen:
                     elif expr.op == Kind.Ne:
                         name = "_R4core8array_neF"
                     size, _ = self.comp.type_size(expr_left_typ)
-                    self.cur_fn.inline_alloca(
+                    self.cur_func.inline_alloca(
                         self.ir_type(expr.typ), tmp,
                         ir.Inst(
                             ir.InstKind.Call, [
@@ -1975,7 +1994,7 @@ class Codegen:
                 else:
                     op_method = OVERLOADABLE_OPERATORS_STR[str(expr.op)]
                     sym_is_boxed = typ_sym.is_boxed()
-                    self.cur_fn.inline_alloca(
+                    self.cur_func.inline_alloca(
                         self.ir_type(expr.typ), tmp,
                         ir.Inst(
                             ir.InstKind.Call, [
@@ -1992,19 +2011,19 @@ class Codegen:
                 return ir.Ident(expr.typ, tmp)
             if expr.op.is_relational():
                 kind = str(expr.op)
-                self.cur_fn.inline_alloca(
+                self.cur_func.inline_alloca(
                     self.ir_type(expr.typ), tmp,
                     ir.Inst(ir.InstKind.Cmp, [ir.Name(kind), left, right])
                 )
             elif expr.op in (Kind.Div, Kind.Mod):
                 is_div = expr.op == Kind.Div
                 kind = ir.InstKind.Div if is_div else ir.InstKind.Mod
-                self.cur_fn.inline_alloca(
+                self.cur_func.inline_alloca(
                     self.ir_type(expr.typ), tmp, ir.Inst(kind, [left, right])
                 )
             else:
                 if op_kind := ir.get_ir_op(expr.op):
-                    self.cur_fn.inline_alloca(
+                    self.cur_func.inline_alloca(
                         self.ir_type(expr.typ), tmp,
                         ir.Inst(op_kind, [left, right])
                     )
@@ -2013,79 +2032,83 @@ class Codegen:
             return ir.Ident(self.ir_type(expr.typ), tmp)
         elif isinstance(expr, ast.IfExpr):
             is_void_value = expr.typ in self.void_types
-            exit_label = self.cur_fn.local_name()
-            else_label = self.cur_fn.local_name(
+            exit_label = self.cur_func.local_name()
+            else_label = self.cur_func.local_name(
             ) if expr.has_else else exit_label
             tmp = ir.Ident(
                 self.ir_type(expr.expected_typ),
-                self.cur_fn.local_name() if not is_void_value else ""
+                self.cur_func.local_name() if not is_void_value else ""
             )
             if not is_void_value:
-                self.cur_fn.alloca(tmp)
-            self.cur_fn.add_comment(f"if expr (end: {exit_label})")
+                self.cur_func.alloca(tmp)
+            self.cur_func.add_comment(f"if expr (end: {exit_label})")
             next_branch = ""
             for i, b in enumerate(expr.branches):
                 is_branch_void_value = b.typ in self.void_types
-                self.cur_fn.add_comment(f"if branch (is_else: {b.is_else})")
+                self.cur_func.add_comment(f"if branch (is_else: {b.is_else})")
                 if b.is_else:
-                    self.cur_fn.add_label(else_label)
+                    self.cur_func.add_label(else_label)
                 else:
                     if isinstance(b.cond, ast.GuardExpr):
                         cond = self.gen_guard_expr(b.cond, "", "", False)
                     else:
                         cond = self.gen_expr_with_cast(self.comp.bool_t, b.cond)
-                    branch_label = self.cur_fn.local_name()
+                    branch_label = self.cur_func.local_name()
                     if i == len(expr.branches) - 1:
                         next_branch = exit_label
                     elif i + 1 == len(expr.branches
                                       ) - 1 and expr.branches[i + 1].is_else:
                         next_branch = else_label
                     else:
-                        next_branch = self.cur_fn.local_name()
+                        next_branch = self.cur_func.local_name()
                     if isinstance(b.cond, ast.GuardExpr):
-                        self.cur_fn.add_cond_single_br(
+                        self.cur_func.add_cond_single_br(
                             ir.Inst(ir.InstKind.BooleanNot, [cond]), next_branch
                         )
                         if b.cond.has_cond:
-                            self.cur_fn.add_cond_single_br(
+                            self.cur_func.add_cond_single_br(
                                 ir.Inst(
                                     ir.InstKind.BooleanNot,
                                     [self.gen_expr(b.cond.cond)]
                                 ), next_branch
                             )
                     else:
-                        self.cur_fn.add_cond_br(cond, branch_label, next_branch)
-                    self.cur_fn.add_label(branch_label)
+                        self.cur_func.add_cond_br(
+                            cond, branch_label, next_branch
+                        )
+                    self.cur_func.add_label(branch_label)
                 if is_branch_void_value:
                     self.gen_expr_with_cast(
                         expr.expected_typ, b.expr
                     ) # ignore void value
                 else:
-                    self.cur_fn.store(
+                    self.cur_func.store(
                         tmp, self.gen_expr_with_cast(expr.expected_typ, b.expr)
                     )
-                self.cur_fn.add_comment("if expr branch (goto to other branch)")
-                self.cur_fn.add_br(exit_label)
+                self.cur_func.add_comment(
+                    "if expr branch (goto to other branch)"
+                )
+                self.cur_func.add_br(exit_label)
                 if len(next_branch) > 0 and next_branch != else_label:
-                    self.cur_fn.add_label(next_branch)
-            self.cur_fn.add_label(exit_label)
+                    self.cur_func.add_label(next_branch)
+            self.cur_func.add_label(exit_label)
             if not is_void_value:
                 return tmp
         elif isinstance(expr, ast.MatchExpr):
             is_void_value = expr.typ in self.void_types
-            exit_match = self.cur_fn.local_name()
-            self.cur_fn.add_comment(f"match expr (end: {exit_match})")
+            exit_match = self.cur_func.local_name()
+            self.cur_func.add_comment(f"match expr (end: {exit_match})")
             tmp = ir.Ident(
                 self.ir_type(expr.expected_typ),
-                self.cur_fn.local_name() if not is_void_value else ""
+                self.cur_func.local_name() if not is_void_value else ""
             )
             if not is_void_value:
-                self.cur_fn.alloca(tmp)
+                self.cur_func.alloca(tmp)
             if isinstance(expr.expr, ast.GuardExpr):
                 cond = self.gen_guard_expr(expr.expr, "", "", False)
-                self.cur_fn.add_cond_single_br(cond, exit_match)
+                self.cur_func.add_cond_single_br(cond, exit_match)
                 if expr.expr.has_cond:
-                    self.cur_fn.add_cond_single_br(
+                    self.cur_func.add_cond_single_br(
                         ir.Inst(
                             ir.InstKind.BooleanNot,
                             [self.gen_expr(expr.expr.cond)]
@@ -2098,16 +2121,16 @@ class Codegen:
                 match_expr = self.gen_expr_with_cast(expr.expr.typ, expr.expr)
             for b in expr.branches:
                 is_branch_void_value = b.typ in self.void_types
-                b_label = "" if b.is_else else self.cur_fn.local_name()
-                b_exit = exit_match if b.is_else else self.cur_fn.local_name()
+                b_label = "" if b.is_else else self.cur_func.local_name()
+                b_exit = exit_match if b.is_else else self.cur_func.local_name()
                 if not b.is_else:
-                    self.cur_fn.add_comment(
+                    self.cur_func.add_comment(
                         f"match expr patterns (len: {len(b.pats)})"
                     )
                 for i, p in enumerate(b.pats):
-                    next_pat = self.cur_fn.local_name(
+                    next_pat = self.cur_func.local_name(
                     ) if i < len(b.pats) - 1 else b_exit
-                    tmp2 = self.cur_fn.local_name()
+                    tmp2 = self.cur_func.local_name()
                     if expr.is_typematch:
                         if p.typ.sym.kind == TypeKind.Trait:
                             value_idx_x = ir.IntLit(
@@ -2126,8 +2149,8 @@ class Codegen:
                             value_idx_x = ir.IntLit(
                                 ir.UINT_T, str(p.typ.sym.id)
                             )
-                        if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.is_boxed:
-                            self.cur_fn.inline_alloca(
+                        if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.is_tagged:
+                            self.cur_func.inline_alloca(
                                 ir.BOOL_T, tmp2,
                                 ir.Inst(
                                     ir.InstKind.Cmp,
@@ -2135,7 +2158,7 @@ class Codegen:
                                 )
                             )
                         else:
-                            self.cur_fn.inline_alloca(
+                            self.cur_func.inline_alloca(
                                 ir.BOOL_T, tmp2,
                                 ir.Inst(
                                     ir.InstKind.Cmp, [
@@ -2184,25 +2207,25 @@ class Codegen:
                                 var_t, ir.Pointer
                             ):
                                 var_t = var_t.ptr(True)
-                            unique_name = self.cur_fn.unique_name(b.var_name)
+                            unique_name = self.cur_func.unique_name(b.var_name)
                             expr.scope.update_ir_name(b.var_name, unique_name)
-                            self.cur_fn.inline_alloca(var_t, unique_name, val)
+                            self.cur_func.inline_alloca(var_t, unique_name, val)
                     else:
                         p_typ_sym = p.typ.symbol()
                         tmp2_i = ir.Ident(ir.BOOL_T, tmp2)
                         if isinstance(p, ast.RangeExpr):
-                            rend_l = self.cur_fn.local_name()
+                            rend_l = self.cur_func.local_name()
                             start = self.gen_expr_with_cast(p.typ, p.start)
                             end = self.gen_expr_with_cast(p.typ, p.end)
-                            self.cur_fn.alloca(tmp2_i)
-                            self.cur_fn.add_cond_br(
+                            self.cur_func.alloca(tmp2_i)
+                            self.cur_func.add_cond_br(
                                 ir.Inst(
                                     ir.InstKind.Cmp,
                                     [ir.Name(">="), match_expr, start]
                                 ), rend_l, next_pat
                             )
-                            self.cur_fn.add_label(rend_l)
-                            self.cur_fn.store(
+                            self.cur_func.add_label(rend_l)
+                            self.cur_func.store(
                                 tmp2_i,
                                 ir.Inst(
                                     ir.InstKind.Cmp,
@@ -2225,16 +2248,16 @@ class Codegen:
                                         ), match_expr, p_conv,
                                     ]
                                 )
-                            self.cur_fn.inline_alloca(ir.BOOL_T, tmp2, inst)
-                    self.cur_fn.add_cond_br(
+                            self.cur_func.inline_alloca(ir.BOOL_T, tmp2, inst)
+                    self.cur_func.add_cond_br(
                         ir.Ident(ir.BOOL_T, tmp2), b_label, next_pat
                     )
                     if i < len(b.pats) - 1:
-                        self.cur_fn.add_label(next_pat)
+                        self.cur_func.add_label(next_pat)
                 if not b.is_else:
-                    self.cur_fn.add_label(b_label)
+                    self.cur_func.add_label(b_label)
                     if b.has_cond:
-                        self.cur_fn.add_cond_single_br(
+                        self.cur_func.add_cond_single_br(
                             ir.Inst(
                                 ir.InstKind.BooleanNot, [
                                     self.gen_expr_with_cast(
@@ -2248,13 +2271,13 @@ class Codegen:
                         expr.expected_typ, b.expr
                     ) # ignore void value
                 else:
-                    self.cur_fn.store(
+                    self.cur_func.store(
                         tmp, self.gen_expr_with_cast(expr.expected_typ, b.expr)
                     )
-                self.cur_fn.add_br(exit_match)
+                self.cur_func.add_br(exit_match)
                 if not b.is_else:
-                    self.cur_fn.add_label(b_exit)
-            self.cur_fn.add_label(exit_match)
+                    self.cur_func.add_label(b_exit)
+            self.cur_func.add_label(exit_match)
             if not is_void_value:
                 return tmp
         elif isinstance(expr, ast.BranchExpr):
@@ -2263,22 +2286,22 @@ class Codegen:
                     self.while_continue_expr, ast.EmptyExpr
                 ):
                     if isinstance(self.while_continue_expr, ir.Inst):
-                        self.cur_fn.add_inst(self.while_continue_expr)
+                        self.cur_func.add_inst(self.while_continue_expr)
                     else:
                         self.gen_expr(self.while_continue_expr)
-                self.cur_fn.add_br(self.loop_entry_label)
+                self.cur_func.add_br(self.loop_entry_label)
             else:
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True,
                     scope_limit = self.loop_scope
                 )
-                self.cur_fn.add_br(self.loop_exit_label)
+                self.cur_func.add_br(self.loop_exit_label)
             return ir.Skip()
         elif isinstance(expr, ast.ReturnExpr):
-            wrap_result = isinstance(self.cur_fn_ret_typ, type.Result)
-            ret_typ = self.cur_fn_ret_typ.typ if wrap_result else self.cur_fn_ret_typ
+            wrap_result = isinstance(self.cur_func_ret_typ, type.Result)
+            ret_typ = self.cur_func_ret_typ.typ if wrap_result else self.cur_func_ret_typ
             if self.inside_test:
-                self.cur_fn.store(
+                self.cur_func.store(
                     ir.Selector(
                         ir.UINT8_T, ir.Ident(ir.TEST_T.ptr(), "test"),
                         ir.Name("result")
@@ -2287,18 +2310,18 @@ class Codegen:
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True
                 )
-                self.cur_fn.add_ret_void()
+                self.cur_func.add_ret_void()
             elif expr.has_expr:
-                is_array = self.cur_fn_ret_typ.symbol().kind == TypeKind.Array
+                is_array = self.cur_func_ret_typ.symbol().kind == TypeKind.Array
                 expr_ = self.gen_expr_with_cast(ret_typ, expr.expr)
                 if is_array and self.comp.prefs.target_backend == prefs.Backend.C:
                     size, _ = self.comp.type_size(ret_typ)
                     tmp = ir.Ident(
-                        ir.Type(self.cur_fn.arr_ret_struct),
-                        self.cur_fn.local_name()
+                        ir.Type(self.cur_func.arr_ret_struct),
+                        self.cur_func.local_name()
                     )
-                    self.cur_fn.alloca(tmp)
-                    self.cur_fn.add_call(
+                    self.cur_func.alloca(tmp)
+                    self.cur_func.add_call(
                         "_R4core8mem_copyF", [
                             ir.Selector(
                                 self.ir_type(ret_typ), tmp, ir.Name("arr")
@@ -2308,21 +2331,21 @@ class Codegen:
                     )
                     expr_ = tmp
                 if wrap_result:
-                    expr_ = self.result_value(self.cur_fn_ret_typ, expr_)
+                    expr_ = self.result_value(self.cur_func_ret_typ, expr_)
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True
                 )
-                self.cur_fn.add_ret(expr_)
+                self.cur_func.add_ret(expr_)
             elif wrap_result:
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True
                 )
-                self.cur_fn.add_ret(self.result_void(self.cur_fn_ret_typ))
+                self.cur_func.add_ret(self.result_void(self.cur_func_ret_typ))
             else:
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True
                 )
-                self.cur_fn.add_ret_void()
+                self.cur_func.add_ret_void()
             return ir.Skip()
         elif isinstance(expr, ast.ThrowExpr):
             t_sym = expr.expr.typ.symbol()
@@ -2331,14 +2354,14 @@ class Codegen:
             ) or t_sym == self.comp.throwable_sym:
                 self.gen_return_trace_add(expr.pos)
                 expr_ = self.result_error(
-                    self.cur_fn_ret_typ, expr.expr.typ,
+                    self.cur_func_ret_typ, expr.expr.typ,
                     self.gen_expr(expr.expr)
                 )
                 self.gen_defer_stmts(
                     True, ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err")),
                     scope = expr.scope, run_defer_previous = True
                 )
-                self.cur_fn.add_ret(expr_)
+                self.cur_func.add_ret(expr_)
                 return ir.Skip()
             else:
                 assert False
@@ -2355,7 +2378,7 @@ class Codegen:
         require_store_ptr = False
         if isinstance(expr, ast.Ident):
             if expr.name == "_":
-                self.cur_fn.add_inst(
+                self.cur_func.add_inst(
                     ir.Inst(
                         ir.InstKind.Cast, [self.gen_expr(right), ir.VOID_T]
                     )
@@ -2379,7 +2402,7 @@ class Codegen:
                     rec = ir.Inst(ir.InstKind.GetRef, [rec])
                 expr_right = self.gen_expr_with_cast(right.typ, right)
                 val_sym = right.typ.symbol()
-                self.cur_fn.add_call(
+                self.cur_func.add_call(
                     "_R4core8DynArray3setM", [
                         rec,
                         self.gen_expr(expr.index),
@@ -2398,8 +2421,8 @@ class Codegen:
 
     def gen_defer_stmt_vars(self, defer_stmts):
         for defer_stmt in defer_stmts:
-            defer_stmt.flag_var = self.cur_fn.local_name()
-            self.cur_fn.alloca(
+            defer_stmt.flag_var = self.cur_func.local_name()
+            self.cur_func.alloca(
                 ir.Ident(ir.BOOL_T, defer_stmt.flag_var),
                 ir.IntLit(ir.BOOL_T, "0")
             )
@@ -2408,8 +2431,8 @@ class Codegen:
         self, gen_errdefer = False, last_ret_was_err = None, scope = None,
         run_defer_previous = False, scope_limit = None
     ):
-        for i in range(len(self.cur_fn_defer_stmts) - 1, -1, -1):
-            defer_stmt = self.cur_fn_defer_stmts[i]
+        for i in range(len(self.cur_func_defer_stmts) - 1, -1, -1):
+            defer_stmt = self.cur_func_defer_stmts[i]
             if not (
                 (run_defer_previous and scope.start >= defer_stmt.scope.start)
                 or (scope.start == defer_stmt.scope.start)
@@ -2425,22 +2448,22 @@ class Codegen:
                 # do not generate `defer` that are in a scope greater than
                 # the established limit, this is used by `break`
                 break
-            defer_start = self.cur_fn.local_name()
-            defer_end = self.cur_fn.local_name()
-            self.cur_fn.add_comment(
+            defer_start = self.cur_func.local_name()
+            defer_end = self.cur_func.local_name()
+            self.cur_func.add_comment(
                 f"defer_stmt (start: {defer_start}, end: {defer_end}, mode: {defer_stmt.mode})"
             )
-            self.cur_fn.add_cond_br(
+            self.cur_func.add_cond_br(
                 ir.Ident(ir.BOOL_T, defer_stmt.flag_var), defer_start, defer_end
             )
-            self.cur_fn.add_label(defer_start)
+            self.cur_func.add_label(defer_start)
             if defer_stmt.mode == ast.DeferMode.ERROR:
-                self.cur_fn.add_cond_single_br(
+                self.cur_func.add_cond_single_br(
                     ir.Inst(ir.InstKind.BooleanNot, [last_ret_was_err]),
                     defer_end
                 )
             self.gen_expr(defer_stmt.expr)
-            self.cur_fn.add_label(defer_end)
+            self.cur_func.add_label(defer_end)
 
     def gen_const(self, const_sym):
         if const_sym.has_evaled_expr:
@@ -2458,36 +2481,36 @@ class Codegen:
         return const_sym.ir_expr
 
     def result_void(self, typ):
-        tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
-        self.cur_fn.alloca(tmp)
-        self.cur_fn.store(
+        tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
+        self.cur_func.alloca(tmp)
+        self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_err")),
             ir.IntLit(ir.BOOL_T, "0")
         )
         return tmp
 
     def result_value(self, typ, value):
-        tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
-        self.cur_fn.alloca(tmp)
-        self.cur_fn.store(
+        tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
+        self.cur_func.alloca(tmp)
+        self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_err")),
             ir.IntLit(ir.BOOL_T, "0")
         )
-        self.cur_fn.store(
+        self.cur_func.store(
             ir.Selector(
-                self.ir_type(self.cur_fn_ret_typ.typ), tmp, ir.Name("value")
+                self.ir_type(self.cur_func_ret_typ.typ), tmp, ir.Name("value")
             ), value
         )
         return tmp
 
     def result_error(self, typ, expr_t, expr):
-        tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
-        self.cur_fn.alloca(tmp)
-        self.cur_fn.store(
+        tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
+        self.cur_func.alloca(tmp)
+        self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_err")),
             ir.IntLit(ir.BOOL_T, "1")
         )
-        self.cur_fn.store(
+        self.cur_func.store(
             ir.Selector(
                 self.ir_type(self.comp.throwable_t), tmp, ir.Name("err")
             ), self.trait_value(expr, expr_t, self.comp.throwable_t)
@@ -2495,28 +2518,28 @@ class Codegen:
         return tmp
 
     def option_value(self, typ, value):
-        tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
-        self.cur_fn.alloca(tmp)
-        self.cur_fn.store(
+        tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
+        self.cur_func.alloca(tmp)
+        self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_none")),
             ir.IntLit(ir.BOOL_T, "0")
         )
-        self.cur_fn.store(
+        self.cur_func.store(
             ir.Selector(self.ir_type(typ.typ), tmp, ir.Name("value")), value
         )
         return tmp
 
     def option_none(self, typ):
-        tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
-        self.cur_fn.alloca(tmp)
-        self.cur_fn.store(
+        tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
+        self.cur_func.alloca(tmp)
+        self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_none")),
             ir.IntLit(ir.BOOL_T, "1")
         )
         return tmp
 
     def runtime_error(self, msg):
-        self.cur_fn.add_call(
+        self.cur_func.add_call(
             "_R4core13runtime_errorF", [
                 self.gen_string_literal(utils.smart_quote(msg, False)),
                 self.empty_dyn_array(self.comp.universe["[]core.Stringable"])
@@ -2568,14 +2591,14 @@ class Codegen:
         elif typ_sym.kind == TypeKind.DynArray:
             return self.empty_dyn_array(typ_sym)
         elif typ_sym.kind == TypeKind.Enum:
-            if typ_sym.info.is_boxed and typ_sym.default_value:
+            if typ_sym.info.is_tagged and typ_sym.default_value:
                 return self.gen_expr_with_cast(typ, typ_sym.default_value)
             return ir.IntLit(self.ir_type(typ_sym.info.underlying_typ), "0")
         elif typ_sym.kind == TypeKind.Tuple:
-            tmp = ir.Ident(typ, self.cur_fn.local_name())
-            self.cur_fn.alloca(tmp)
+            tmp = ir.Ident(typ, self.cur_func.local_name())
+            self.cur_func.alloca(tmp)
             for i, typ in enumerate(typ_sym.info.types):
-                self.cur_fn.store(
+                self.cur_func.store(
                     ir.Selector(self.ir_type(typ), tmp, ir.Name(f"f{i}")),
                     self.default_value(typ)
                 )
@@ -2584,10 +2607,12 @@ class Codegen:
             if custom_tmp:
                 tmp = custom_tmp
             elif typ_sym.info.is_boxed:
-                tmp = self.boxed_instance(cg_utils.mangle_symbol(typ_sym), typ_sym.id)
+                tmp = self.boxed_instance(
+                    cg_utils.mangle_symbol(typ_sym), typ_sym.id
+                )
             else:
-                tmp = ir.Ident(self.ir_type(typ), self.cur_fn.local_name())
-                self.cur_fn.alloca(tmp)
+                tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
+                self.cur_func.alloca(tmp)
             for f in typ_sym.full_fields():
                 if f.typ.symbol().kind == TypeKind.Array:
                     continue
@@ -2596,7 +2621,7 @@ class Codegen:
                     val = self.gen_expr_with_cast(f.typ, f.def_expr)
                 else:
                     val = self.default_value(f.typ)
-                self.cur_fn.store(sltor, val)
+                self.cur_func.store(sltor, val)
             return tmp
         elif typ_sym.kind == TypeKind.Trait:
             if typ_sym.default_value:
@@ -2648,9 +2673,9 @@ class Codegen:
 
     def boxed_instance(self, name, id, custom_name = None):
         tmp = ir.Ident(
-            ir.Type(name).ptr(True), custom_name or self.cur_fn.local_name()
+            ir.Type(name).ptr(True), custom_name or self.cur_func.local_name()
         )
-        to_fn = self.init_string_lits_fn if custom_name else self.cur_fn
+        to_fn = self.init_string_lits_fn if custom_name else self.cur_func
         inst = ir.Inst(
             ir.InstKind.Call,
             [ir.Name("_R4core9mem_allocF"),
@@ -2680,7 +2705,9 @@ class Codegen:
             if not isinstance(f_typ, ir.Pointer):
                 f_typ = f_typ.ptr(True)
                 value_f = ir.Inst(ir.InstKind.GetRef, [value_f], f_typ)
-            self.cur_fn.store(ir.Selector(f_typ, tmp, ir.Name(f.name)), value_f)
+            self.cur_func.store(
+                ir.Selector(f_typ, tmp, ir.Name(f.name)), value_f
+            )
         if not is_ptr:
             value = ir.Inst(ir.InstKind.GetRef, [value])
         value = value if is_ptr else ir.Inst(
@@ -2692,22 +2719,24 @@ class Codegen:
         if value_sym.kind == TypeKind.Trait:
             index = ir.Inst(
                 ir.InstKind.Call, [
-                    ir.Name(f"{cg_utils.mangle_symbol(trait_sym)}17__index_of_vtbl__"),
+                    ir.Name(
+                        f"{cg_utils.mangle_symbol(trait_sym)}17__index_of_vtbl__"
+                    ),
                     ir.Selector(ir.UINT_T, value, ir.Name("_idx_"))
                 ], ir.UINT_T
             )
-            self.cur_fn.store(
+            self.cur_func.store(
                 ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")),
                 ir.Selector(ir.VOID_PTR_T, value, ir.Name("obj"))
             )
         else:
             vtbl_idx_x = trait_sym.info.indexof(value_sym)
             index = ir.IntLit(ir.UINT_T, str(vtbl_idx_x))
-            self.cur_fn.store(
+            self.cur_func.store(
                 ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")), value
             )
-        self.cur_fn.store(ir.Selector(ir.UINT_T, tmp, ir.Name("_id_")), index)
-        self.cur_fn.store(
+        self.cur_func.store(ir.Selector(ir.UINT_T, tmp, ir.Name("_id_")), index)
+        self.cur_func.store(
             ir.Selector(ir.UINT_T, tmp, ir.Name("_idx_")),
             ir.IntLit(ir.UINT_T, str(value_sym.id))
         )
@@ -2719,10 +2748,12 @@ class Codegen:
         if custom_tmp:
             tmp = custom_tmp
         else:
-            tmp = self.boxed_instance(cg_utils.mangle_symbol(enum_sym), enum_sym.id)
+            tmp = self.boxed_instance(
+                cg_utils.mangle_symbol(enum_sym), enum_sym.id
+            )
         uint_t = ir.UINT_T
         variant_info = enum_sym.info.get_variant(variant_name)
-        self.cur_fn.store(
+        self.cur_func.store(
             ir.Selector(uint_t, tmp, ir.Name("_idx_")),
             ir.IntLit(uint_t, variant_info.value)
         )
@@ -2743,7 +2774,7 @@ class Codegen:
                 )
         else:
             value = ir.NoneLit(ir.VOID_PTR_T)
-        self.cur_fn.store(ir.Selector(uint_t, tmp, ir.Name("obj")), value)
+        self.cur_func.store(ir.Selector(uint_t, tmp, ir.Name("obj")), value)
         return tmp
 
     def boxed_enum_variant_with_fields_value(
@@ -2752,32 +2783,34 @@ class Codegen:
         if custom_tmp:
             tmp = custom_tmp
         else:
-            tmp = self.boxed_instance(cg_utils.mangle_symbol(enum_sym), enum_sym.id)
+            tmp = self.boxed_instance(
+                cg_utils.mangle_symbol(enum_sym), enum_sym.id
+            )
         variant_info = enum_sym.info.get_variant(variant_name)
-        self.cur_fn.store(
+        self.cur_func.store(
             ir.Selector(ir.UINT_T, tmp, ir.Name("_idx_")),
             ir.IntLit(ir.UINT_T, variant_info.value)
         )
-        self.cur_fn.store(ir.Selector(ir.UINT_T, tmp, ir.Name("obj")), value)
+        self.cur_func.store(ir.Selector(ir.UINT_T, tmp, ir.Name("obj")), value)
         return tmp
 
     def gen_return_trace_add(self, pos):
-        tmp_name = self.cur_fn.local_name()
+        tmp_name = self.cur_func.local_name()
         tmp = ir.Ident(ir.Type("_R4core9CallTrace"), tmp_name)
-        self.cur_fn.alloca(tmp)
-        self.cur_fn.store(
+        self.cur_func.alloca(tmp)
+        self.cur_func.store(
             ir.Selector(ir.STRING_T, tmp, ir.Name("name")),
-            self.gen_string_literal(self.cur_fn.name)
+            self.gen_string_literal(self.cur_func.name)
         )
-        self.cur_fn.store(
+        self.cur_func.store(
             ir.Selector(ir.STRING_T, tmp, ir.Name("file")),
             self.gen_string_literal(pos.file)
         )
-        self.cur_fn.store(
+        self.cur_func.store(
             ir.Selector(ir.UINT_T, tmp, ir.Name("line")),
             ir.IntLit(ir.UINT_T, str(pos.line + 1))
         )
-        self.cur_fn.add_call(
+        self.cur_func.add_call(
             "_R4core11ReturnTrace3addM", [
                 ir.Inst(
                     ir.InstKind.GetRef, [
@@ -2791,7 +2824,7 @@ class Codegen:
         )
 
     def gen_return_trace_clear(self):
-        self.cur_fn.add_call(
+        self.cur_func.add_call(
             "_R4core11ReturnTrace5clearM", [
                 ir.Inst(
                     ir.InstKind.GetRef, [
@@ -2806,7 +2839,7 @@ class Codegen:
 
     def gen_guard_expr(self, expr, entry_label, exit_label, gen_cond = True):
         gexpr = self.gen_expr_with_cast(expr.typ, expr.expr)
-        var_name = self.cur_fn.unique_name(expr.vars[0].name)
+        var_name = self.cur_func.unique_name(expr.vars[0].name)
         expr.scope.update_ir_name(expr.vars[0].name, var_name)
         if expr.is_result:
             cond = ir.Inst(
@@ -2814,7 +2847,7 @@ class Codegen:
                 [ir.Selector(ir.BOOL_T, gexpr, ir.Name("is_err"))]
             )
             var_t = self.ir_type(expr.typ)
-            self.cur_fn.inline_alloca(
+            self.cur_func.inline_alloca(
                 var_t, var_name, ir.Selector(var_t, gexpr, ir.Name("value"))
             )
         elif expr.expr.typ.is_pointer():
@@ -2823,20 +2856,20 @@ class Codegen:
                 [ir.Name("!="), gexpr,
                  ir.NoneLit(ir.VOID_PTR_T)]
             )
-            self.cur_fn.inline_alloca(self.ir_type(expr.typ), var_name, gexpr)
+            self.cur_func.inline_alloca(self.ir_type(expr.typ), var_name, gexpr)
         else:
             cond = ir.Inst(
                 ir.InstKind.BooleanNot,
                 [ir.Selector(ir.BOOL_T, gexpr, ir.Name("is_none"))]
             )
-            self.cur_fn.inline_alloca(
+            self.cur_func.inline_alloca(
                 self.ir_type(expr.typ), var_name,
                 ir.Selector(
                     self.ir_type(expr.expr.typ.typ), gexpr, ir.Name("value")
                 )
             )
         if expr.has_cond and gen_cond:
-            self.cur_fn.add_cond_br(
+            self.cur_func.add_cond_br(
                 self.gen_expr(expr.cond), entry_label, exit_label
             )
         return cond
@@ -2912,7 +2945,7 @@ class Codegen:
         elif typ_sym.kind == TypeKind.None_:
             return ir.VOID_PTR_T
         elif typ_sym.kind == TypeKind.Enum:
-            if typ_sym.info.is_boxed:
+            if typ_sym.info.is_tagged:
                 return ir.Type(cg_utils.mangle_symbol(typ_sym)).ptr(True)
             return ir.Type(str(typ_sym.info.underlying_typ))
         elif typ_sym.kind.is_primitive():
@@ -2941,7 +2974,7 @@ class Codegen:
             elif ts.kind == TypeKind.Enum:
                 # TODO: in the self-hosted compiler calculate the enum value here
                 # not in register nor resolver.
-                if ts.info.is_boxed:
+                if ts.info.is_tagged:
                     self.out_rir.structs.append(
                         ir.Struct(
                             False, cg_utils.mangle_symbol(ts), [
@@ -2995,7 +3028,9 @@ class Codegen:
                                 m.name
                             ] if m.name in OVERLOADABLE_OPERATORS_STR else m.name
                             if ts_method := its.find(m.name):
-                                map[method_name] = cg_utils.mangle_symbol(ts_method)
+                                map[method_name] = cg_utils.mangle_symbol(
+                                    ts_method
+                                )
                             else:
                                 map[method_name] = cg_utils.mangle_symbol(m)
                     funcs.append(map)
@@ -3043,7 +3078,9 @@ class Codegen:
                 for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 self.out_rir.structs.append(
-                    ir.Struct(ts.info.is_opaque, cg_utils.mangle_symbol(ts), fields)
+                    ir.Struct(
+                        ts.info.is_opaque, cg_utils.mangle_symbol(ts), fields
+                    )
                 )
 
     def get_type_symbols(self, root):

@@ -1,0 +1,5 @@
+tests/invalid/invalid_tagged_enum_literal.ri:8:9: error: variant `Invalid` cannot be initialized without arguments
+    8 |     _ = TaggedEnum.Invalid;
+      |         ^~~~~~~~~~~~~~~~~~
+      = help: if you intend not to pass any value, add `()`: `Invalid()`
+rivet: error: could not compile module `invalid_tagged_enum_literal`, aborting due to previous error

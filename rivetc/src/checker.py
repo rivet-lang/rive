@@ -12,7 +12,7 @@ class Checker:
         self.source_file = None
 
         self.sym = None
-        self.cur_fn = None
+        self.cur_func = None
 
         self.expected_type = self.comp.void_t
         self.void_types = (self.comp.void_t, self.comp.never_t)
@@ -148,7 +148,7 @@ class Checker:
                 field_typ = self.check_expr(decl.def_expr)
                 self.expected_type = old_expected_type
                 try:
-                    self.check_compatible_types(field_typ, decl.typ)
+                    self.check_types(field_typ, decl.typ)
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
         elif isinstance(decl, ast.ExtendDecl):
@@ -190,20 +190,20 @@ class Checker:
                 report.note(
                     "this is because Rivet cannot ensure that the function does not always return `none`"
                 )
-            self.cur_fn = decl.sym
+            self.cur_func = decl.sym
             self.check_stmts(decl.stmts)
             decl.defer_stmts = self.defer_stmts
             self.defer_stmts = []
             self.check_mut_vars(decl.scope)
         elif isinstance(decl, ast.TestDecl):
-            old_cur_fn = self.cur_fn
-            self.cur_fn = None
+            old_cur_func = self.cur_func
+            self.cur_func = None
             self.inside_test = True
             self.check_stmts(decl.stmts)
             decl.defer_stmts = self.defer_stmts
             self.defer_stmts = []
             self.inside_test = False
-            self.cur_fn = old_cur_fn
+            self.cur_func = old_cur_func
             self.check_mut_vars(decl.scope)
         self.sym = old_sym
 
@@ -331,12 +331,16 @@ class Checker:
                 if v := _sym.info.get_variant(expr.value):
                     expr.variant_info = v
                     expr.typ = type.Type(_sym)
-                    if _sym.info.is_boxed and not expr.from_is_cmp and not expr.is_instance:
-                        report.error(
-                            f"cannot use variant `{expr}` as a simple value",
-                            expr.pos
-                        )
-                        report.note(f"make an instance instead: `{expr}()`")
+                    if _sym.info.is_tagged and not expr.from_is_cmp and not expr.is_instance:
+                        if v.has_typ:
+                            report.error(
+                                f"variant `{expr.value}` cannot be initialized without arguments",
+                                expr.pos
+                            )
+                            report.help(
+                                f"if you intend not to pass any value, add `()`: `{expr.value}()`"
+                            )
+                        expr.is_instance = True
                 else:
                     report.error(
                         f"enum `{_sym.name}` has no variant `{expr.value}`",
@@ -427,7 +431,7 @@ class Checker:
                     types.append(tt)
             expr.typ = type.Type(self.comp.universe.add_or_get_tuple(types))
             return expr.typ
-        elif isinstance(expr, ast.DynArrayLiteral):
+        elif isinstance(expr, ast.ArrayLiteral):
             old_expected_type = self.expected_type
             size = ""
             is_mut = False
@@ -455,13 +459,19 @@ class Checker:
                         self.check_types(typ, elem_typ)
                     except utils.CompilerError as err:
                         report.error(err.args[0], e.pos)
-                        if expr.is_arr:
-                            report.note(f"in element {i + 1} of array literal")
-                        else:
+                        if expr.is_dyn:
                             report.note(
                                 f"in element {i + 1} of dynamic array literal"
                             )
-            if expr.is_arr:
+                        else:
+                            report.note(f"in element {i + 1} of array literal")
+            if expr.is_dyn:
+                expr.typ = type.Type(
+                    self.comp.universe.add_or_get_dyn_array(
+                        self.comp.comptime_number_to_type(elem_typ), is_mut
+                    )
+                )
+            else:
                 if len(expr.elems) > 0:
                     arr_len = str(len(expr.elems))
                 else:
@@ -474,12 +484,6 @@ class Checker:
                     self.comp.universe.add_or_get_array(
                         self.comp.comptime_number_to_type(elem_typ),
                         ast.IntegerLiteral(arr_len, expr.pos), is_mut
-                    )
-                )
-            else:
-                expr.typ = type.Type(
-                    self.comp.universe.add_or_get_dyn_array(
-                        self.comp.comptime_number_to_type(elem_typ), is_mut
                     )
                 )
             self.expected_type = old_expected_type
@@ -672,8 +676,10 @@ class Checker:
                 try:
                     self.check_types(ltyp, elem_typ)
                     if not (
-                        lsym.kind.is_primitive() or
-                        (lsym.kind == TypeKind.Enum and not lsym.info.is_boxed)
+                        lsym.kind.is_primitive() or (
+                            lsym.kind == TypeKind.Enum
+                            and not lsym.info.is_tagged
+                        )
                     ) and not lsym.exists(op_m):
                         report.error(
                             f"cannot use operator `{expr.op}` with type `{lsym.name}`",
@@ -695,7 +701,7 @@ class Checker:
                         expr.left.pos
                     )
                 if expr.has_var:
-                    if lsym.kind == TypeKind.Enum and lsym.info.is_boxed:
+                    if lsym.kind == TypeKind.Enum and lsym.info.is_tagged:
                         if expr.right.variant_info.has_typ:
                             expr.scope.update_type(
                                 expr.var.name, expr.right.variant_info.typ
@@ -712,14 +718,14 @@ class Checker:
                     if expr.var.is_mut:
                         expr.scope.update_is_hidden_ref(expr.var.name, True)
                 if lsym.kind == TypeKind.Enum:
-                    if lsym.info.is_boxed and expr.op not in (
+                    if lsym.info.is_tagged and expr.op not in (
                         Kind.KwIs, Kind.KwNotIs
                     ):
                         report.error(
-                            "boxed enum types only support `is` and `!is`",
+                            "tagged enum types only support `is` and `!is`",
                             expr.pos
                         )
-                    elif not lsym.info.is_boxed and expr.op not in (
+                    elif not lsym.info.is_tagged and expr.op not in (
                         Kind.Eq, Kind.Ne
                     ):
                         report.error(
@@ -836,7 +842,9 @@ class Checker:
 
                 if expr.left_typ == self.comp.string_t:
                     if isinstance(expr.index, ast.RangeExpr):
-                        report.error("`string` does not support slicing syntax", expr.pos)
+                        report.error(
+                            "`string` does not support slicing syntax", expr.pos
+                        )
                         report.help("use `.substr()` instead")
                     expr.typ = self.comp.uint8_t
                 elif hasattr(expr.left_typ, "typ"):
@@ -970,13 +978,13 @@ class Checker:
             if expr.has_err_handler():
                 if isinstance(expr.typ, type.Result):
                     if expr.err_handler.is_propagate:
-                        if self.cur_fn and not (
-                            self.cur_fn.is_main or self.inside_test
+                        if self.cur_func and not (
+                            self.cur_func.is_main or self.inside_test
                             or self.inside_var_decl
-                            or isinstance(self.cur_fn.ret_typ, type.Result)
+                            or isinstance(self.cur_func.ret_typ, type.Result)
                         ):
                             report.error(
-                                f"to propagate the call, `{self.cur_fn.name}` must return an result type",
+                                f"to propagate the call, `{self.cur_func.name}` must return an result type",
                                 expr.err_handler.pos
                             )
                     else:
@@ -1115,6 +1123,16 @@ class Checker:
                         )
                     expr.typ = expr.field_sym.typ()
                 elif isinstance(expr.left_sym, sym.Type):
+                    if expr.left_sym.kind == sym.TypeKind.Enum:
+                        if v := expr.left_sym.info.get_variant(expr.field_name):
+                            if v.has_typ:
+                                report.error(
+                                    f"variant `{expr}` cannot be initialized without arguments",
+                                    expr.pos
+                                )
+                                report.help(
+                                    f"if you intend not to pass any value, add `()`: `{expr}()`"
+                                )
                     expr.typ = type.Type(expr.left_sym)
                 elif isinstance(expr.field_sym, sym.Type):
                     expr.typ = type.Type(expr.field_sym)
@@ -1240,37 +1258,37 @@ class Checker:
                     "cannot return values inside `test` declaration", expr.pos
                 )
             elif expr.has_expr:
-                if self.cur_fn.ret_typ == self.comp.void_t:
+                if self.cur_func.ret_typ == self.comp.void_t:
                     report.error(
-                        f"{self.cur_fn.typeof()} `{self.cur_fn.name}` should not return a value",
+                        f"{self.cur_func.typeof()} `{self.cur_func.name}` should not return a value",
                         expr.expr.pos
                     )
                 else:
                     old_expected_type = self.expected_type
-                    self.expected_type = self.cur_fn.ret_typ.typ if isinstance(
-                        self.cur_fn.ret_typ, type.Result
-                    ) else self.cur_fn.ret_typ
+                    self.expected_type = self.cur_func.ret_typ.typ if isinstance(
+                        self.cur_func.ret_typ, type.Result
+                    ) else self.cur_func.ret_typ
                     expr_typ = self.check_expr(expr.expr)
                     self.expected_type = old_expected_type
                     try:
-                        self.check_types(expr_typ, self.cur_fn.ret_typ)
+                        self.check_types(expr_typ, self.cur_func.ret_typ)
                     except utils.CompilerError as e:
                         expr_typ_sym = expr_typ.symbol()
                         report.error(e.args[0], expr.expr.pos)
                         report.note(
-                            f"in return argument of {self.cur_fn.typeof()} `{self.cur_fn.name}`"
+                            f"in return argument of {self.cur_func.typeof()} `{self.cur_func.name}`"
                         )
-            elif self.cur_fn and not (
-                (self.cur_fn.ret_typ == self.comp.void_t) or (
-                    isinstance(self.cur_fn.ret_typ, type.Result)
-                    and self.cur_fn.ret_typ.typ == self.comp.void_t
+            elif self.cur_func and not (
+                (self.cur_func.ret_typ == self.comp.void_t) or (
+                    isinstance(self.cur_func.ret_typ, type.Result)
+                    and self.cur_func.ret_typ.typ == self.comp.void_t
                 )
             ):
                 report.error(
-                    f"expected `{self.cur_fn.ret_typ}` argument", expr.pos
+                    f"expected `{self.cur_func.ret_typ}` argument", expr.pos
                 )
                 report.note(
-                    f"in return argument of {self.cur_fn.typeof()} `{self.cur_fn.name}`"
+                    f"in return argument of {self.cur_func.typeof()} `{self.cur_func.name}`"
                 )
             expr.typ = self.comp.never_t
             return expr.typ
@@ -1279,7 +1297,7 @@ class Checker:
                 report.error(
                     "cannot throw errors inside `test` declaration", expr.pos
                 )
-            elif isinstance(self.cur_fn.ret_typ, type.Result):
+            elif isinstance(self.cur_func.ret_typ, type.Result):
                 expr_typ = self.check_expr(expr.expr)
                 expr_typ_sym = expr_typ.symbol()
                 if not (
@@ -1294,11 +1312,11 @@ class Checker:
                         f"in order to use that value, type `{expr_typ}` should implement the `Throwable` trait"
                     )
                     report.note(
-                        f"in throw argument of {self.cur_fn.typeof()} `{self.cur_fn.name}`"
+                        f"in throw argument of {self.cur_func.typeof()} `{self.cur_func.name}`"
                     )
             else:
                 report.error(
-                    f"{self.cur_fn.typeof()} `{self.cur_fn.name}` cannot throw errors",
+                    f"{self.cur_func.typeof()} `{self.cur_func.name}` cannot throw errors",
                     expr.expr.pos
                 )
                 report.note(
@@ -1369,12 +1387,12 @@ class Checker:
                 report.error("invalid value for typematch", expr.expr.pos)
                 report.note(f"expected enum or trait value, found `{expr_typ}`")
             elif expr_sym.kind == TypeKind.Enum:
-                if expr_sym.info.is_boxed and not expr.is_typematch:
+                if expr_sym.info.is_tagged and not expr.is_typematch:
                     report.error(
-                        "cannot use `match` with a boxed enum value", expr.pos
+                        "cannot use `match` with a tagged enum value", expr.pos
                     )
                     report.note("use a typematch instead")
-                elif not expr_sym.info.is_boxed and expr.is_typematch:
+                elif not expr_sym.info.is_tagged and expr.is_typematch:
                     report.error(
                         "cannot use typematch with a enum value", expr.pos
                     )
@@ -1476,7 +1494,7 @@ class Checker:
             else:
                 assert False
             has_args = len(expr.args) > 0
-            if not info.info.is_boxed:
+            if not info.info.is_tagged:
                 report.error(f"`{expr.left}` not expects value", expr.left.pos)
             elif has_args:
                 if v.has_fields:
@@ -1493,7 +1511,12 @@ class Checker:
                     self.expected_type = old_expected_type
                 else:
                     report.error(f"`{expr.left}` not expects a value", expr.pos)
-            elif v.has_typ and not (v.has_fields or expr.left.from_is_cmp):
+            elif v.has_typ and not (
+                v.has_fields or (
+                    isinstance(expr.left, ast.EnumLiteral)
+                    and expr.left.from_is_cmp
+                )
+            ):
                 report.error(f"`{expr.left}` expects a value", expr.pos)
             elif v.has_fields:
                 self.check_ctor(v.typ.symbol(), expr)

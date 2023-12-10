@@ -230,7 +230,7 @@ extend Parser {
                 type := if has_type {
                     self.parse_type()
                 } else {
-                    .Void()
+                    .Void
                 };
                 pos += self.prev_tok.pos;
                 self.expect(.DeclAssign);
@@ -361,7 +361,7 @@ extend Parser {
                     }
                 }
                 self.expect(.Lbrace);
-                mut is_boxed := false;
+                mut is_tagged := false;
                 mut variants := @dyn_array(ast.EnumVariantDecl);
                 while {
                     v_pos := self.tok.pos;
@@ -373,17 +373,18 @@ extend Parser {
                     mut variant_decls := @dyn_array(ast.Decl);
                     if self.accept(.Lbrace) {
                         has_type = true;
-                        is_boxed = true;
+                        is_tagged = true;
                         old_inside_enum_variant_with_fields := self.inside_enum_variant_with_fields;
                         self.inside_enum_variant_with_fields = true;
                         while !self.accept(.Rbrace) {
                             variant_decls.push(self.parse_decl());
                         }
                         self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields;
-                    } else if self.accept(.Colon) {
+                    } else if self.accept(.Lparen) {
                         has_type = true;
-                        is_boxed = true;
+                        is_tagged = true;
                         v_type = self.parse_type();
+                        self.expect(.Rparen);
                     } else if self.accept(.Assign) {
                         has_value = true;
                         value = self.parse_expr();
@@ -411,7 +412,7 @@ extend Parser {
                 self.expect(.Rbrace);
                 return .Enum(
                     doc_comment, attributes, is_public, name, underlying_type,
-                    bases, variants, is_boxed, decls, pos
+                    bases, variants, is_tagged, decls, pos
                 );
             },
             (self.inside_struct or self.inside_trait

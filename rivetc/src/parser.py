@@ -342,7 +342,7 @@ class Parser:
             self.expect(Kind.Lbrace)
             variants = []
             decls = []
-            is_boxed = False
+            is_tagged = False
             while True:
                 v_name = self.parse_name()
                 has_typ = False
@@ -351,16 +351,17 @@ class Parser:
                 variant_decls = []
                 if self.accept(Kind.Lbrace):
                     has_typ = True
-                    is_boxed = True
+                    is_tagged = True
                     old_inside_enum_variant_with_fields = self.inside_enum_variant_with_fields
                     self.inside_enum_variant_with_fields = True
                     while not self.accept(Kind.Rbrace):
                         variant_decls.append(self.parse_decl())
                     self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields
-                elif self.accept(Kind.Colon):
+                elif self.accept(Kind.Lparen):
                     has_typ = True
-                    is_boxed = True
+                    is_tagged = True
                     typ = self.parse_type()
+                    self.expect(Kind.Rparen)
                 elif self.accept(Kind.Assign):
                     variant = self.parse_expr()
                 variants.append(
@@ -376,7 +377,7 @@ class Parser:
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
                 doc_comment, attributes, is_public, name, underlying_typ, bases,
-                variants, is_boxed, decls, pos
+                variants, is_tagged, decls, pos
             )
         elif self.accept(Kind.KwExtend):
             pos = self.prev_tok.pos
@@ -717,8 +718,9 @@ class Parser:
                     right = ast.EnumLiteral(name, pos, True)
                 else:
                     right = ast.TypeNode(self.parse_type(), pos)
-                if self.accept(Kind.KwAs):
+                if self.accept(Kind.Lparen):
                     var = self.parse_var_decl(support_ref = False)
+                    self.expect(Kind.Rparen)
                 else:
                     var = None
                 left = ast.BinaryExpr(
@@ -868,7 +870,8 @@ class Parser:
                 expr = ast.ParExpr(e, e.pos)
         elif self.tok.kind in (Kind.KwUnsafe, Kind.Lbrace):
             expr = self.parse_block_expr()
-        elif self.tok.kind == Kind.Lbracket:
+        elif self.tok.kind in (Kind.Lbracket, Kind.Plus):
+            is_dyn = self.accept(Kind.Plus)
             elems = []
             pos = self.tok.pos
             self.next()
@@ -878,8 +881,7 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Rbracket)
-            is_arr = self.accept(Kind.Bang)
-            expr = ast.DynArrayLiteral(elems, is_arr, pos)
+            expr = ast.ArrayLiteral(elems, is_dyn, pos)
         elif self.tok.kind == Kind.Name:
             if self.peek_tok.kind == Kind.Char:
                 if self.tok.lit == "b":
@@ -1135,11 +1137,12 @@ class Parser:
                         pats.append(branch_expr)
                     if not self.accept(Kind.Comma):
                         break
-                if self.accept(Kind.KwAs):
+                if self.accept(Kind.Lparen):
                     has_var = True
                     var_is_mut = self.accept(Kind.KwMut)
                     var_pos = self.tok.pos
                     var_name = self.parse_name()
+                    self.expect(Kind.Rparen)
                 if self.accept(Kind.KwIf):
                     has_cond = True
                     cond = self.parse_expr()

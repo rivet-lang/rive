@@ -204,7 +204,7 @@ class EnumVariant:
 class EnumDecl:
     def __init__(
         self, docs, attributes, is_public, name, underlying_typ, bases,
-        variants, is_boxed, decls, pos
+        variants, is_tagged, decls, pos
     ):
         self.docs = docs
         self.attributes = attributes
@@ -213,7 +213,7 @@ class EnumDecl:
         self.underlying_typ = underlying_typ
         self.bases = bases
         self.variants = variants
-        self.is_boxed = is_boxed
+        self.is_tagged = is_tagged
         self.decls = decls
         self.sym = None
         self.pos = pos
@@ -545,22 +545,22 @@ class TupleLiteral:
     def __str__(self):
         return self.__repr__()
 
-class DynArrayLiteral:
-    def __init__(self, elems, is_arr, pos):
+class ArrayLiteral:
+    def __init__(self, elems, is_dyn, pos):
         self.elems = elems
         self.pos = pos
-        self.is_arr = is_arr
+        self.is_dyn = is_dyn
         self.typ = None
 
     def __repr__(self):
         if len(self.elems) == 0:
-            if self.is_arr:
-                return "[]!"
+            if self.is_dyn:
+                return "+[]"
             return "[]"
-        res = f"[{', '.join([str(e) for e in self.elems])}]"
-        if self.is_arr:
-            res += "!"
-        return res
+        res = ""
+        if self.is_dyn:
+            res += "+"
+        return res + f"[{', '.join([str(e) for e in self.elems])}]"
 
     def __str__(self):
         return self.__repr__()

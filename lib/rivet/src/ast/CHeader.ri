@@ -57,7 +57,7 @@ struct CDefine < traits.Stringable {
     has_value: bool;
     is_macro: bool;
 
-    mut cvalue: CImportValue := .Invalid();
+    mut cvalue: CImportValue := .Invalid;
     mut has_cvalue: bool;
 
     pub func to_string(&self) -> string {
@@ -97,14 +97,14 @@ struct CDefines {
 
 enum CImportValue {
     Invalid,
-    Float: float64,
-    Int: int,
-    Uint: uint;
+    Float(float64),
+    Int(int),
+    Uint(uint);
 
     #[inline]
     pub func to_bool(self) -> bool {
-        return (self is .Int as int and int == 1)
-            or (self is .Uint as uint and uint == 1);
+        return (self is .Int(int_) and int_ == 1)
+            or (self is .Uint(uint_) and uint_ == 1);
     }
 }
 
@@ -166,7 +166,7 @@ extend Table {
             }
             return paths;
         }
-        return [];
+        return +[];
     }
 
     func search_c_header(self, is_local: bool, header: string) -> ?string {

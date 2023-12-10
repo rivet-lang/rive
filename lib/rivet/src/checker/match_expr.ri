@@ -12,7 +12,7 @@ extend Checker {
 
     func check_match(mut self, mut match_expr: ast.Expr.Match) -> ast.Type {
         old_expected_type := self.expected_type;
-        match_expr.type = .Void();
+        match_expr.type = .Void;
         if match_expr.branches.len == 1 and match_expr.has_else {
             report.error(
                 "`match` must have at least one non `else` branch",
@@ -32,11 +32,11 @@ extend Checker {
                     "invalid type `{}` used as `match` condition".fmt(expr_type),
                     match_expr.expr.position()
                 );
-                return .Void();
+                return .Void;
             }
             ast.TypeSym()
         };
-        if match_expr.expr is .Guard as guard_expr {
+        if match_expr.expr is .Guard(guard_expr) {
             if guard_expr.vars.len == 1 {
                 expr_type = guard_expr.vars[0].type;
                 expr_sym = expr_type.symbol()?;
@@ -56,16 +56,16 @@ extend Checker {
                 );
                 err.add_note("expected enum or trait type, found `{}`", expr_type);
                 err.emit();
-            } else if expr_sym.info is .Enum as enum_info {
-                if enum_info.is_boxed and !match_expr.is_typematch {
+            } else if expr_sym.info is .Enum(enum_info) {
+                if enum_info.is_tagged and !match_expr.is_typematch {
                     mut err := report.error_builder(
-                        "cannot use `match` with a non-boxed enum type", match_expr.pos
+                        "cannot use `match` with a non-tagged enum type", match_expr.pos
                     );
                     err.add_note("use a type-match instead");
                     err.emit();
-                } else if !enum_info.is_boxed and match_expr.is_typematch {
+                } else if !enum_info.is_tagged and match_expr.is_typematch {
                     mut err := report.error_builder(
-                        "cannot use a type-match with a non-boxed enum type",
+                        "cannot use a type-match with a non-tagged enum type",
                         match_expr.pos
                     );
                     err.add_note("use a simple `match` instead");
@@ -141,7 +141,7 @@ extend Checker {
                 }
                 self.expected_type = old_expected_type;
             }
-            mut branch_t := ast.Type.Void();
+            mut branch_t := ast.Type.Void;
             if ib == 0 {
                 branch_t = self.check_expr(branch.expr);
                 if match_expr.expected_type is .Void {
@@ -168,13 +168,13 @@ extend Checker {
         match_expr.is_exhaustive = true;
         mut unhandled := @dyn_array(string);
         if expr_type == self.table.bool_t and match_expr.branches.len == 1 {
-            for v in ["true", "false"]! {
+            for v in ["true", "false"] {
                 if !branch_exprs.contains(v) {
                     match_expr.is_exhaustive = false;
                     unhandled.push("`{}`".fmt(v));
                 }
             }
-        } else if expr_sym.info is .Enum as enum_info2 {
+        } else if expr_sym.info is .Enum(enum_info2) {
             for variant in enum_info2.variants {
                 e := ".".concat(variant.name);
                 if !branch_exprs.contains(e) {

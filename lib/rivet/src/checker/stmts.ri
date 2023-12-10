@@ -23,11 +23,11 @@ extend Checker {
 
     func check_stmt(mut self, mut stmt: ast.Stmt) {
         match stmt is {
-            .VarDecl as var_decl -> self.check_var_decl(
+            .VarDecl(var_decl) -> self.check_var_decl(
                 var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
             ),
-            .For as mut for_stmt -> self.check_for(for_stmt),
-            .While as while_stmt -> {
+            .For(mut for_stmt) -> self.check_for(for_stmt),
+            .While(while_stmt) -> {
                 if !while_stmt.is_inf and self.check_expr(
                     while_stmt.cond
                 ) != self.table.bool_t {
@@ -46,8 +46,8 @@ extend Checker {
                     self.check_stmt(while_stmt.else_stmt);
                 }
             },
-            .Defer as defer_stmt -> {
-                if self.cur_fn.ret_type is .Never {
+            .Defer(defer_stmt) -> {
+                if self.cur_func.ret_type is .Never {
                     report.error("`never` functions cannot use `defer` statements", defer_stmt.pos);
                 }
                 self.inside_defer = true;
@@ -57,7 +57,7 @@ extend Checker {
                 self.defer_stmts.push(defer_stmt);
                 self.inside_defer = false;
             },
-            .Expr as mut expr -> self.check_expr_evaluated_but_not_used(
+            .Expr(mut expr) -> self.check_expr_evaluated_but_not_used(
                 self.check_expr(expr), expr.position()
             ),
             else -> {}
@@ -74,7 +74,7 @@ extend Checker {
             elem_sym := elem_type.symbol()?;
             if for_stmt.values.len == 1 {
                 value0 := for_stmt.values[0];
-                if value0.is_mut and !iterable_sym.info.is_mut_arr_or_vec() {
+                if value0.is_mut and !iterable_sym.info.is_mut_arr_or_dyn_array() {
                     report.error(
                         "cannot modify immutable {}".fmt(iterable_sym.info),
                         for_stmt.iterable.position()

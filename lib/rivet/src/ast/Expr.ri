@@ -9,8 +9,7 @@ import ../token;
 
 #[default_value(.Empty(token.noPos))]
 pub enum Expr < traits.Stringable {
-    Empty: token.Pos,
-    Comment: Comment,
+    Empty(token.Pos)
     Paren {
         mut expr: Expr;
         pos: token.Pos;
@@ -24,7 +23,7 @@ pub enum Expr < traits.Stringable {
             return res;
         }
     },
-    Type: Type,
+    Type(Type),
     Assign {
         mut left: Expr;
         op: token.Kind;
@@ -39,7 +38,7 @@ pub enum Expr < traits.Stringable {
         mut is_sym: bool;
         mut found: bool;
         mut sym: Sym;
-        mut builtin: Builtin := .Invalid();
+        mut builtin: Builtin := .Invalid;
         pos: token.Pos;
         mut type: Type;
     },
@@ -102,9 +101,9 @@ pub enum Expr < traits.Stringable {
         pos: token.Pos;
         mut type: Type;
     },
-    DynArrayLiteral {
+    ArrayLiteral {
         values: []mut Expr;
-        is_arr: bool;
+        is_dyn: bool;
         pos: token.Pos;
         mut type: Type;
     },
@@ -216,7 +215,7 @@ pub enum Expr < traits.Stringable {
         args: []CallArg;
         dyn_array_is_mut: bool;
         pos: token.Pos;
-        mut builtin: Builtin := .Invalid();
+        mut builtin: Builtin := .Invalid;
         mut type: Type;
     },
     Unary {
@@ -287,7 +286,7 @@ pub enum Expr < traits.Stringable {
 
     #[inline]
     pub func clean_paren(self) -> Self {
-        return if self is .Paren as paren {
+        return if self is .Paren(paren) {
             paren.clean_paren()
         } else {
             self
@@ -296,39 +295,39 @@ pub enum Expr < traits.Stringable {
 
     pub func position(self) -> token.Pos {
         return match self is {
-            .Empty as empty_pos -> empty_pos,
-            .Comment as comment -> comment.pos,
-            .Paren as paren -> paren.pos,
-            .Type as type -> type.position(),
-            .Assign as assign -> assign.pos,
-            .Ident as ident -> ident.pos,
-            .SelfTy as self_ty -> self_ty.pos,
-            .SelfLiteral as self_lit -> self_lit.pos,
-            .NoneLiteral as none_lit -> none_lit.pos,
-            .BoolLiteral as bool_lit -> bool_lit.pos,
-            .CharLiteral as char_lit -> char_lit.pos,
-            .IntegerLiteral as int_lit -> int_lit.pos,
-            .FloatLiteral as float_lit -> float_lit.pos,
-            .StringLiteral as string_lit -> string_lit.pos,
-            .EnumLiteral as enum_lit -> enum_lit.pos,
-            .TupleLiteral as tuple_lit -> tuple_lit.pos,
-            .DynArrayLiteral as dyn_array_lit -> dyn_array_lit.pos,
-            .Index as index -> index.pos,
-            .Selector as selector -> selector.pos,
-            .Indirect as indirect -> indirect.pos,
-            .OptionCheck as option_check -> option_check.pos,
-            .Branch as branch -> branch.pos,
-            .Range as range -> range.pos,
-            .Call as call -> call.pos,
-            .BuiltinCall as builtin_call -> builtin_call.pos,
-            .Unary as unary -> unary.pos,
-            .Binary as binary -> binary.pos,
-            .Return as return_expr -> return_expr.pos,
-            .Throw as throw_expr -> throw_expr.pos,
-            .Block as block -> block.pos,
-            .If as if_expr -> if_expr.pos,
-            .Match as match_expr -> match_expr.pos,
-            .Guard as guard -> guard.pos
+            .Empty(empty_pos) -> empty_pos,
+            .Comment(comment) -> comment.pos,
+            .Paren(paren) -> paren.pos,
+            .Type(type) -> type.position(),
+            .Assign(assign) -> assign.pos,
+            .Ident(ident) -> ident.pos,
+            .SelfTy(self_ty) -> self_ty.pos,
+            .SelfLiteral(self_lit) -> self_lit.pos,
+            .NoneLiteral(none_lit) -> none_lit.pos,
+            .BoolLiteral(bool_lit) -> bool_lit.pos,
+            .CharLiteral(char_lit) -> char_lit.pos,
+            .IntegerLiteral(int_lit) -> int_lit.pos,
+            .FloatLiteral(float_lit) -> float_lit.pos,
+            .StringLiteral(string_lit) -> string_lit.pos,
+            .EnumLiteral(enum_lit) -> enum_lit.pos,
+            .TupleLiteral(tuple_lit) -> tuple_lit.pos,
+            .ArrayLiteral(array_lit) -> array_lit.pos,
+            .Index(index) -> index.pos,
+            .Selector(selector) -> selector.pos,
+            .Indirect(indirect) -> indirect.pos,
+            .OptionCheck(option_check) -> option_check.pos,
+            .Branch(branch) -> branch.pos,
+            .Range(range) -> range.pos,
+            .Call(call) -> call.pos,
+            .BuiltinCall(builtin_call) -> builtin_call.pos,
+            .Unary(unary) -> unary.pos,
+            .Binary(binary) -> binary.pos,
+            .Return(return_expr) -> return_expr.pos,
+            .Throw(throw_expr) -> throw_expr.pos,
+            .Block(block) -> block.pos,
+            .If(if_expr) -> if_expr.pos,
+            .Match(match_expr) -> match_expr.pos,
+            .Guard(guard) -> guard.pos
         };
     }
 
@@ -337,10 +336,10 @@ pub enum Expr < traits.Stringable {
         return match self is {
             .Empty -> "<empty-expression>",
             .Comment -> "<comment>",
-            .Paren as paren -> "({})".fmt(paren.expr),
-            .Type as type -> type.to_string(),
-            .Assign as assign -> "{} {} {}".fmt(assign.left, assign.op, assign.right),
-            .Ident as ident -> if ident.is_comptime {
+            .Paren(paren) -> "({})".fmt(paren.expr),
+            .Type(type) -> type.to_string(),
+            .Assign(assign) -> "{} {} {}".fmt(assign.left, assign.op, assign.right),
+            .Ident(ident) -> if ident.is_comptime {
                 "@".concat(ident.name)
             } else {
                 ident.name
@@ -348,15 +347,15 @@ pub enum Expr < traits.Stringable {
             .SelfTy -> "Self",
             .SelfLiteral -> "self",
             .NoneLiteral -> "none",
-            .BoolLiteral as bool_lit -> bool_lit.value.to_string(),
-            .CharLiteral as char_lit -> if char_lit.is_byte {
+            .BoolLiteral(bool_lit) -> bool_lit.value.to_string(),
+            .CharLiteral(char_lit) -> if char_lit.is_byte {
                 "b'{}'".fmt(char_lit.value)
             } else {
                 "'{}'".fmt(char_lit.value)
             },
-            .IntegerLiteral as int_lit -> int_lit.value,
-            .FloatLiteral as float_lit -> float_lit.value,
-            .StringLiteral as string_lit -> if string_lit.is_bytestr {
+            .IntegerLiteral(int_lit) -> int_lit.value,
+            .FloatLiteral(float_lit) -> float_lit.value,
+            .StringLiteral(string_lit) -> if string_lit.is_bytestr {
                 "b\"{}\"".fmt(string_lit.value)
             } else if string_lit.is_raw {
                 "r\"{}\"".fmt(string_lit.value)
@@ -365,8 +364,8 @@ pub enum Expr < traits.Stringable {
             } else {
                 "\"{}\"".fmt(string_lit.value)
             },
-            .EnumLiteral as enum_lit -> ".".concat(enum_lit.value),
-            .TupleLiteral as tuple_lit -> {
+            .EnumLiteral(enum_lit) -> ".".concat(enum_lit.value),
+            .TupleLiteral(tuple_lit) -> {
                 mut sb := strings.Builder.from_string("(");
                 for i, value in tuple_lit.values {
                     sb.write_string(value.to_string());
@@ -377,25 +376,26 @@ pub enum Expr < traits.Stringable {
                 sb.write_byte(b')');
                 sb.to_string()
             },
-            .DynArrayLiteral as dyn_array_lit -> {
-                mut sb := strings.Builder.from_string("[");
-                for i, value in dyn_array_lit.values {
+            .ArrayLiteral(array_lit) -> {
+                mut sb := strings.Builder.new(100);
+                if array_lit.is_dyn {
+                    sb.write_byte(b'+');
+                }
+                sb.write_byte(b'[');
+                for i, value in array_lit.values {
                     sb.write_string(value.to_string());
-                    if i < dyn_array_lit.values.len - 1 {
+                    if i < array_lit.values.len - 1 {
                         sb.write_string(", ");
                     }
                 }
                 sb.write_byte(b']');
-                if dyn_array_lit.is_arr {
-                    sb.write_byte(b'!');
-                }
                 sb.to_string()
             },
-            .Selector as selector -> "{}.{}".fmt(selector.left, selector.field_name),
-            .Indirect as indirect -> "{}.*".fmt(indirect.left),
-            .OptionCheck as option_check -> "{}?".fmt(option_check.left),
-            .Branch as branch_expr -> branch_expr.op.to_string(),
-            .Range as range -> {
+            .Selector(selector) -> "{}.{}".fmt(selector.left, selector.field_name),
+            .Indirect(indirect) -> "{}.*".fmt(indirect.left),
+            .OptionCheck(option_check) -> "{}?".fmt(option_check.left),
+            .Branch(branch_expr) -> branch_expr.op.to_string(),
+            .Range(range) -> {
                 mut sb := strings.Builder.new();
                 if range.has_start {
                     sb.write_string(range.start.to_string());
@@ -410,8 +410,8 @@ pub enum Expr < traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Index as index -> "{}[{}]".fmt(index.left, index.index),
-            .Call as call -> {
+            .Index(index) -> "{}[{}]".fmt(index.left, index.index),
+            .Call(call) -> {
                 mut sb := strings.Builder.new();
                 sb.write_string(call.left.to_string());
                 sb.write_byte(b'(');
@@ -444,7 +444,7 @@ pub enum Expr < traits.Stringable {
                 }
                 sb.to_string()
             },
-            .BuiltinCall as builtin_call -> {
+            .BuiltinCall(builtin_call) -> {
                 mut sb := strings.Builder.from_string("@");
                 sb.write_string(builtin_call.name);
                 sb.write_byte(b'(');
@@ -457,15 +457,15 @@ pub enum Expr < traits.Stringable {
                 sb.write_byte(b')');
                 sb.to_string()
             },
-            .Unary as unary -> "{}{}".fmt(unary.op, unary.right),
-            .Binary as binary -> "{} {} {}".fmt(binary.left, binary.op, binary.right),
-            .Return as return_expr -> if return_expr.has_expr {
+            .Unary(unary) -> "{}{}".fmt(unary.op, unary.right),
+            .Binary(binary) -> "{} {} {}".fmt(binary.left, binary.op, binary.right),
+            .Return(return_expr) -> if return_expr.has_expr {
                 "return {}".fmt(return_expr.expr)
             } else {
                 "return"
             },
-            .Throw as throw_expr -> "throw {}".fmt(throw_expr.expr),
-            .Block as block -> {
+            .Throw(throw_expr) -> "throw {}".fmt(throw_expr.expr),
+            .Block(block) -> {
                 mut sb := strings.Builder.new();
                 if block.is_unsafe {
                     sb.write_string("unsafe ");
@@ -479,7 +479,7 @@ pub enum Expr < traits.Stringable {
                 sb.write_string(" }");
                 sb.to_string()
             },
-            .If as if_expr -> {
+            .If(if_expr) -> {
                 mut sb := strings.Builder.new();
                 for branch in if_expr.branches {
                     if branch.is_else {
@@ -495,7 +495,7 @@ pub enum Expr < traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Match as match_expr -> {
+            .Match(match_expr) -> {
                 mut sb := strings.Builder.new();
                 sb.write_fmt("match {} ", match_expr.expr);
                 if match_expr.is_typematch {
@@ -530,7 +530,7 @@ pub enum Expr < traits.Stringable {
                 sb.write_string("} ");
                 sb.to_string()
             },
-            .Guard as guard -> {
+            .Guard(guard) -> {
                 mut sb := strings.Builder.new();
                 if guard.vars.len > 0 {
                     sb.write_string("(");

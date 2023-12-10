@@ -128,7 +128,7 @@ pub struct Table {
     }
 
     func setup_builtins(mut self) {
-        self.builtins = [
+        self.builtins = +[
             // variables
             .Const("_FILE_", self.string_t),
             .Const("_LINE_", self.uint_t),
@@ -138,56 +138,56 @@ pub struct Table {
             .Const("_RIVET_COMMIT_", self.string_t),
 
             // functions
-            .Func("size_of", [BuiltinArg("value", is_any: true)], self.uint_t),
-            .Func("align_of", [BuiltinArg("value", is_any: true)], self.uint_t),
+            .Func("size_of", +[BuiltinArg("value", is_any: true)], self.uint_t),
+            .Func("align_of", +[BuiltinArg("value", is_any: true)], self.uint_t),
 
-            .Func("ptr_add", [
+            .Func("ptr_add", +[
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("value", is_any: true)
-            ], is_unsafe: true, checks: [
+            ], is_unsafe: true, checks: +[
                 .ArgumentTypeShouldBe(0, .Pointer),
                 .ArgumentTypeShouldBe(1, .Integer),
                 .ReturnTypeEqualToArgumentType(0)
             ]),
-            .Func("ptr_diff", [
+            .Func("ptr_diff", +[
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("pointer2", is_any: true)
-            ], self.uint_t, is_unsafe: true, checks: [
+            ], self.uint_t, is_unsafe: true, checks: +[
                 .ArgumentTypeShouldBe(0, .Pointer),
                 .ArgumentTypeEqualToArgumentType(1, 0)
             ]),
 
-            .Func("as", [
+            .Func("as", +[
                 BuiltinArg("type", is_any: true),
                 BuiltinArg("value", is_any: true)
-            ], checks: [
+            ], checks: +[
                 .ReturnTypeEqualToArgumentType(0)
             ]),
 
-            .Func("unreachable", [], .Never(token.noPos)),
-            .Func("breakpoint", []),
-            .Func("assert", [
+            .Func("unreachable", +[], .Never(token.noPos)),
+            .Func("breakpoint", +[]),
+            .Func("assert", +[
                 BuiltinArg("cond", type: self.bool_t),
                 BuiltinArg("msg", type: self.string_t, is_optional: true)
             ]),
 
-            .Func("dyn_array", [
+            .Func("dyn_array", +[
                 BuiltinArg("type", is_any: true),
                 BuiltinArg("cap", type: self.uint_t, is_optional: true)
-            ], checks: [
+            ], checks: +[
                 .ReturnTypeEqualToArgumentType(0)
             ]),
 
-            .Func("set_enum_ref_value", [
+            .Func("set_enum_ref_value", +[
                 BuiltinArg("enum_value", is_any: true, is_mut: true),
                 BuiltinArg("new_value", is_any: true)
-            ], is_unsafe: true, checks: [
+            ], is_unsafe: true, checks: +[
                 .ArgumentTypeShouldBe(0, .Enum),
                 .ArgumentTypeEqualToArgumentType(1, 0)
             ]),
 
             // TODO: rename to `ignore_warn`: `@ignore_warn("not_mutated", expr)`.
-            .Func("ignore_not_mutated_warn", [
+            .Func("ignore_not_mutated_warn", +[
                 BuiltinArg("expr", is_any: true, is_mut: true)
             ])
         ];
@@ -196,8 +196,8 @@ pub struct Table {
     pub func find_builtin(self, name: string) -> ?Builtin {
         for builtin in self.builtins {
             is_equal := match builtin is {
-                .Const as b_var -> b_var.name == name,
-                .Func as b_func -> b_func.name == name,
+                .Const(b_var) -> b_var.name == name,
+                .Func(b_func) -> b_func.name == name,
                 else -> false
             };
             if is_equal {
@@ -268,9 +268,9 @@ pub struct Table {
 
     pub func int_bits(self, type: Type) -> uint {
         type_sym := type.symbol()?;
-        return if type_sym.info is .SizedInt as int_info {
+        return if type_sym.info is .SizedInt(int_info) {
             int_info.size
-        } else if type_sym.info is .SizedUint as uint_info {
+        } else if type_sym.info is .SizedUint(uint_info) {
             uint_info.size
         } else if type_sym.info is .Int or type_sym.info is .Uint {
             if self.prefs.target_is_64bit { 64 } else { 32 }
@@ -282,7 +282,7 @@ pub struct Table {
     pub func float_bits(self, type: Type) -> uint {
         _ = self;
         type_sym := type.symbol()?;
-        return if type_sym.info is .Float as float_info {
+        return if type_sym.info is .Float(float_info) {
             float_info.size
         } else {
             75
@@ -313,44 +313,44 @@ pub struct Table {
             } else {
                 match type_sym.info is {
                     .Func -> (self.pointer_size, self.pointer_size),
-                    .Alias as alias_info -> self.type_size(alias_info.parent),
+                    .Alias(alias_info) -> self.type_size(alias_info.parent),
                     .Bool -> (1, 1),
                     .Uint, .Int -> (self.pointer_size, self.pointer_size),
-                    .SizedInt as int -> match int.size {
+                    .SizedInt(int) -> match int.size {
                         8 -> (1, 1),
                         16 -> (2, 2),
                         32 -> (4, 4),
                         64 -> (8, 8),
                         else -> (0, 0)
                     },
-                    .SizedUint as uint -> match uint.size {
+                    .SizedUint(uint) -> match uint.size {
                         8 -> (1, 1),
                         16 -> (2, 2),
                         32 -> (4, 4),
                         64 -> (8, 8),
                         else -> (0, 0)
                     },
-                    .Float as float -> match float.size {
+                    .Float(float) -> match float.size {
                         32 -> (4, 4),
                         64 -> (8, 8),
                         else -> (0, 0)
                     },
                     .Rune -> (4, 4),
                     .ComptimeFloat, .ComptimeInt -> (8, 8),
-                    .Enum as enum_info -> if enum_info.is_boxed {
+                    .Enum(enum_info) -> if enum_info.is_tagged {
                         ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size)
                     } else {
                         self.type_size(enum_info.underlying_type)
                     },
                     .DynArray -> self.type_symbol_size(self.dyn_array_sym, is_raw),
-                    .Array as array_info -> {
+                    .Array(array_info) -> {
                         (elem_size, elem_align) := self.type_size(array_info.elem_type);
                         (array_info.size * elem_size, elem_align)
                     },
                     .Struct, .Tuple -> {
                         mut total_size: uint := 0;
                         mut max_alignment: uint := 0;
-                        types := if type_sym.info is .Tuple as tuple_lit {
+                        types := if type_sym.info is .Tuple(tuple_lit) {
                             tuple_lit.types
                         } else {
                             mut tmp := @dyn_array(Type);
@@ -368,7 +368,7 @@ pub struct Table {
                         }
                         (utils.round_up(total_size, max_alignment), max_alignment)
                     },
-                    .Trait as trait_info -> {
+                    .Trait(trait_info) -> {
                         (size, align) = ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size);
                         for mut btype in trait_info.bases {
                             (bsize, _balign) := self.type_symbol_size(btype, is_raw);
@@ -497,21 +497,21 @@ pub struct Table {
 pub func universe() -> Module {
     return Module(
         name: "universe",
-        scope: Scope(syms: [
-            TypeSym(name: "bool", info: .Bool()),
-            TypeSym(name: "rune", info: .Rune()),
+        scope: Scope(syms: +[
+            TypeSym(name: "bool", info: .Bool),
+            TypeSym(name: "rune", info: .Rune),
             TypeSym(name: "int8", info: .SizedInt(8)),
             TypeSym(name: "int16", info: .SizedInt(16)),
             TypeSym(name: "int32", info: .SizedInt(32)),
             TypeSym(name: "int64", info: .SizedInt(64)),
-            TypeSym(name: "int", info: .Int()),
+            TypeSym(name: "int", info: .Int),
             TypeSym(name: "uint8", info: .SizedUint(8)),
             TypeSym(name: "uint16", info: .SizedUint(16)),
             TypeSym(name: "uint32", info: .SizedUint(32)),
             TypeSym(name: "uint64", info: .SizedUint(64)),
-            TypeSym(name: "uint", info: .Uint()),
-            TypeSym(name: "comptime_int", info: .ComptimeInt()),
-            TypeSym(name: "comptime_float", info: .ComptimeFloat()),
+            TypeSym(name: "uint", info: .Uint),
+            TypeSym(name: "comptime_int", info: .ComptimeInt),
+            TypeSym(name: "comptime_float", info: .ComptimeFloat),
             TypeSym(name: "float32", info: .Float(32)),
             TypeSym(name: "float64", info: .Float(64)),
             TypeSym(name: "string", info: .Struct(is_boxed: true))
@@ -546,9 +546,9 @@ pub enum Builtin {
 
     pub func type(self) -> Type {
         return match self is {
-            .Const as b_const -> b_const.type,
-            .Func as b_func -> b_func.type,
-            else -> .Void()
+            .Const(b_const) -> b_const.type,
+            .Func(b_func) -> b_func.type,
+            else -> .Void
         };
     }
 }
@@ -568,7 +568,7 @@ enum BuiltinFuncType {
 }
 
 enum BuiltinFuncCheck {
-    ReturnTypeEqualToArgumentType: uint,
+    ReturnTypeEqualToArgumentType(uint),
     ArgumentTypeEqualToArgumentType {
         arg1_idx: uint;
         arg2_idx: uint;

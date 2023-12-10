@@ -34,7 +34,7 @@ pub struct Resolver {
         if report.total_errors() > 0 {
             return;
         }
-        self.preludes = [
+        self.preludes = +[
             Prelude("Throwable", self.table.throwable_sym)
         ];
         for sf in source_files {
@@ -45,8 +45,6 @@ pub struct Resolver {
             self.resolve_decls(self.source_file.decls);
             if self.source_file_abi == .Rivet and self.different_abi_usage_count > 0 {
                 report.warn("filename requires ABI specification", sf.pos);
-            } else if self.source_file_abi != .Rivet and self.different_abi_usage_count == 0 {
-                report.warn("filename does not require ABI specification", sf.pos);
             }
         }
     }
@@ -68,9 +66,9 @@ pub struct Resolver {
 
     func eval_size(mut self, mut expr: ast.Expr) -> ?int {
         return match expr is {
-            .Paren as paren -> self.eval_size(paren.expr),
-            .IntegerLiteral as int_lit -> int_lit.value.to_int() catch return none,
-            .Ident as mut ident -> {
+            .Paren(paren) -> self.eval_size(paren.expr),
+            .IntegerLiteral(int_lit) -> int_lit.value.to_int() catch return none,
+            .Ident(mut ident) -> {
                 self.resolve_ident(ident);
                 if ident.found {
                     self.eval_sym(ident.sym, ident.pos)
@@ -78,7 +76,7 @@ pub struct Resolver {
                     none
                 }
             },
-            .Selector as mut selector -> {
+            .Selector(mut selector) -> {
                 self.resolve_selector(selector);
                 if selector.found {
                     self.eval_sym(selector.sym, selector.pos)
@@ -86,7 +84,7 @@ pub struct Resolver {
                     none
                 }
             },
-            .Binary as binary -> if left := self.eval_size(binary.left) {
+            .Binary(binary) -> if left := self.eval_size(binary.left) {
                 if right := self.eval_size(binary.right) {
                     match binary.op {
                         .Plus -> left + right,
@@ -107,8 +105,8 @@ pub struct Resolver {
             } else {
                 none
             },
-            .BuiltinCall as builtin_call if builtin_call.name in ["size_of", "align_of"] -> {
-                if builtin_call.args[0].expr is .Type as mut type and self.resolve_type(type) {
+            .BuiltinCall(builtin_call) if builtin_call.name in ["size_of", "align_of"] -> {
+                if builtin_call.args[0].expr is .Type(mut type) and self.resolve_type(type) {
                     (size, align) := self.table.type_size(type);
                     if builtin_call.name == "size_of" {
                         @as(int, size)
@@ -124,7 +122,7 @@ pub struct Resolver {
     }
 
     func eval_sym(mut self, sym: ast.Sym, pos: token.Pos) -> ?int {
-        if sym is ast.Const as const_ {
+        if sym is ast.Const(const_) {
             if !const_.has_evaled_size {
                 const_.evaled_size = self.eval_size(const_.expr)?;
             }

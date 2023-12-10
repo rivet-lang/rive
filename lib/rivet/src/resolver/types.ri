@@ -9,11 +9,11 @@ extend Resolver {
     func resolve_type(mut self, mut type: ast.Type) -> bool {
         return match type is {
             .Void, .Never, .Rawptr -> true,
-            .Option as opt -> self.resolve_type(opt.inner),
-            .Result as res -> self.resolve_type(res.inner),
-            .Variadic as variadic -> if self.resolve_type(variadic.inner) {
+            .Option(opt) -> self.resolve_type(opt.inner),
+            .Result(res) -> self.resolve_type(res.inner),
+            .Variadic(variadic) -> if self.resolve_type(variadic.inner) {
                 elem_sym := variadic.inner.symbol()?;
-                if elem_sym.info is .Trait as trait_info {
+                if elem_sym.info is .Trait(trait_info) {
                     trait_info.has_objects = true;
                 }
                 variadic.sym = self.table.universe.add_or_get_dyn_array(variadic.inner, false);
@@ -21,13 +21,13 @@ extend Resolver {
             } else {
                 false
             },
-            .DynArray as vec -> if self.resolve_type(vec.inner) {
+            .DynArray(vec) -> if self.resolve_type(vec.inner) {
                 vec.sym = self.table.universe.add_or_get_dyn_array(vec.inner, vec.is_mut);
                 true
             } else {
                 false
             },
-            .Array as arr -> if self.resolve_type(arr.inner) {
+            .Array(arr) -> if self.resolve_type(arr.inner) {
                 if arr_size := self.eval_size(arr.size) {
                     if arr_size <= 0 {
                         mut err := report.error_builder(
@@ -52,8 +52,8 @@ extend Resolver {
             } else {
                 false
             },
-            .Pointer as ptr -> self.resolve_type(ptr.inner),
-            .Tuple as tuple -> {
+            .Pointer(ptr) -> self.resolve_type(ptr.inner),
+            .Tuple(tuple) -> {
                 mut resolved := false;
                 for mut inner in tuple.inners {
                     resolved = self.resolve_type(inner);
@@ -63,7 +63,7 @@ extend Resolver {
                 }
                 resolved
             },
-            .Func as func_t -> {
+            .Func(func_t) -> {
                 mut res1 := false;
                 for arg in func_t.args {
                     res1 = self.resolve_type(arg.type);
@@ -73,7 +73,7 @@ extend Resolver {
                 func_t.has_sym = true;
                 res1
             },
-            .Basic as basic -> if basic.is_unresolved {
+            .Basic(basic) -> if basic.is_unresolved {
                 match basic.expr is {
                     .SelfTy -> if self.self_sym_is_set {
                         basic.is_unresolved = false;
@@ -82,13 +82,13 @@ extend Resolver {
                     } else {
                         false
                     },
-                    .Ident as mut ident -> {
+                    .Ident(mut ident) -> {
                         self.resolve_ident(ident);
                         if ident.found {
-                            if ident.sym is ast.TypeSym as type_sym {
+                            if ident.sym is ast.TypeSym(type_sym) {
                                 basic.is_unresolved = false;
                                 basic.sym = type_sym;
-                                if type_sym.info is .Alias as alias_info {
+                                if type_sym.info is .Alias(alias_info) {
                                     if self.resolve_type(alias_info.parent) {
                                         type.unalias_in_place();
                                     }
@@ -102,10 +102,10 @@ extend Resolver {
                         }
                         ident.found
                     },
-                    .Selector as mut selector -> {
+                    .Selector(mut selector) -> {
                         self.resolve_selector(selector);
                         if selector.found {
-                            if selector.sym is ast.TypeSym as type_sym {
+                            if selector.sym is ast.TypeSym(type_sym) {
                                 if type_sym.info is .Placeholder {
                                     report.error(
                                         "cannot find type `{}` in {} `{}`".fmt(
@@ -118,7 +118,7 @@ extend Resolver {
                                 } else {
                                     basic.is_unresolved = false;
                                     basic.sym = type_sym;
-                                    if type_sym.info is .Alias as alias_info {
+                                    if type_sym.info is .Alias(alias_info) {
                                         if self.resolve_type(alias_info.parent) {
                                             type.unalias_in_place();
                                         }

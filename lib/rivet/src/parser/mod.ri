@@ -51,7 +51,7 @@ pub struct Parser {
         self.file_dir = Path.dir_name(file) ?? file;
         self.tokenizer = tokenizer.Tokenizer.from_file(file, self.prefs, self.table);
         if report.total_errors() > 0 {
-            return ast.SourceFile(file, [], self.mod_sym);
+            return ast.SourceFile(file, +[], self.mod_sym);
         }
         self.advance(2);
         pos := self.tok.pos;

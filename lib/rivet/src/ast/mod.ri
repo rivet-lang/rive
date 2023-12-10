@@ -5,15 +5,15 @@
 import ../token;
 
 pub enum Node {
-    Decl: Decl,
-    Stmt: Stmt,
-    Expr: Expr;
+    Decl(Decl),
+    Stmt(Stmt),
+    Expr(Expr);
 
     pub func position(self) -> token.Pos {
         return match self is {
-            .Decl as decl -> decl.position(),
-            .Stmt as stmt -> stmt.position(),
-            .Expr as expr -> expr.position()
+            .Decl(decl) -> decl.position(),
+            .Stmt(stmt) -> stmt.position(),
+            .Expr(expr) -> expr.position()
         };
     }
 }

@@ -14,8 +14,8 @@ extend Codegen {
 
     func gen_decl(mut self, mut decl: ast.Decl) {
         match decl is {
-            .Extern as extern_decl -> self.gen_decls(extern_decl.decls),
-            .Var as var_decl -> {
+            .Extern(extern_decl) -> self.gen_decls(extern_decl.decls),
+            .Var(var_decl) -> {
                 for left in var_decl.lefts {
                     self.mir.globals.push(mir.Global(
                         is_extern: left.is_extern,
@@ -24,11 +24,11 @@ extend Codegen {
                     ));
                 }
             },
-            .Trait as trait_decl -> self.gen_decls(trait_decl.decls),
-            .Enum as enum_decl -> self.gen_decls(enum_decl.decls),
-            .Struct as struct_decl -> self.gen_decls(struct_decl.decls),
-            .Extend as extend_decl -> self.gen_decls(extend_decl.decls),
-            .Func as mut func_decl -> self.gen_func(func_decl),
+            .Trait(trait_decl) -> self.gen_decls(trait_decl.decls),
+            .Enum(enum_decl) -> self.gen_decls(enum_decl.decls),
+            .Struct(struct_decl) -> self.gen_decls(struct_decl.decls),
+            .Extend(extend_decl) -> self.gen_decls(extend_decl.decls),
+            .Func(mut func_decl) -> self.gen_func(func_decl),
             else -> {}
         }
     }
@@ -57,7 +57,7 @@ extend Codegen {
         self.cur_func.add_block(self.cur_func.cur_block);
         self.gen_stmts(func_decl.stmts);
         self.cur_func.add_block(
-            mir.Block(stmts: [
+            mir.Block(stmts: +[
                 if ret_type_is_void {
                     .Return()
                 } else {

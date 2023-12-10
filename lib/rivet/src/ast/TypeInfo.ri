@@ -24,7 +24,7 @@ pub enum TypeInfo < traits.Stringable {
         size: uint;
     },
     String,
-    Func: Func,
+    Func(Func),
     Alias {
         mut parent: Type;
     },
@@ -73,7 +73,7 @@ pub enum TypeInfo < traits.Stringable {
     Enum {
         underlying_type: Type;
         mut variants: []EnumVariant;
-        is_boxed: bool;
+        is_tagged: bool;
         mut traits: []mut TypeSym;
 
         #[inline]
@@ -133,17 +133,17 @@ pub enum TypeInfo < traits.Stringable {
     #[inline]
     pub func elem_type(self) -> ?Type {
         return match self is {
-            .Array as arr -> arr.elem_type,
-            .DynArray as vec -> vec.elem_type,
+            .Array(arr) -> arr.elem_type,
+            .DynArray(vec) -> vec.elem_type,
             else -> none
         };
     }
 
     #[inline]
-    pub func is_mut_arr_or_vec(self) -> bool {
+    pub func is_mut_arr_or_dyn_array(self) -> bool {
         return match self is {
-            .Array as arr -> arr.is_mut,
-            .DynArray as vec -> vec.is_mut,
+            .Array(arr) -> arr.is_mut,
+            .DynArray(vec) -> vec.is_mut,
             else -> false
         };
     }
@@ -169,12 +169,12 @@ pub enum TypeInfo < traits.Stringable {
             .Bool -> "bool",
             .Rune -> "rune",
             .Int -> "int",
-            .SizedInt as int_info -> "int{}".fmt(int_info.size),
+            .SizedInt(int_info) -> "int{}".fmt(int_info.size),
             .Uint -> "uint",
-            .SizedUint as uint_info -> "uint{}".fmt(uint_info.size),
+            .SizedUint(uint_info) -> "uint{}".fmt(uint_info.size),
             .ComptimeInt -> "comptime_int",
             .ComptimeFloat -> "comptime_float",
-            .Float as float_info -> "float{}".fmt(float_info.size),
+            .Float(float_info) -> "float{}".fmt(float_info.size),
             .String -> "string",
             .Func -> "func",
             .Alias -> "alias",
@@ -182,7 +182,7 @@ pub enum TypeInfo < traits.Stringable {
             .DynArray -> "dynamic array",
             .Tuple -> "tuple",
             .Trait -> "trait",
-            .Struct as struct_info -> if struct_info.is_enum_variant {
+            .Struct(struct_info) -> if struct_info.is_enum_variant {
                 "enum variant"
             } else {
                 "struct"

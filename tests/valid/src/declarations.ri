@@ -9,7 +9,7 @@ test "implicitly typed constant" {
     @assert(MY_CONST == 5);
 }
 
-var myArray := [1, 2, 3, 4]!;
+var myArray := [1, 2, 3, 4];
 
 test "global var array" {
     @assert(myArray.len == 4);

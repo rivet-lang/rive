@@ -38,31 +38,31 @@ test "enums: enum variant match" {
 }
 
 enum AdvancedEnum {
-    Abc: int32,
+    Abc(int32),
     Def,
-    Ghi: rune
+    Ghi(rune)
 }
 
-test "enums: boxed enum" {
+test "enums: tagged enum" {
     mut e := AdvancedEnum.Abc(6);
     if e is .Abc {
         @assert(@as(int32, e) == 6);
     }
-    if e is .Abc as e_int32 {
+    if e is .Abc(e_int32) {
         @assert(e_int32 == 6);
     }
     match e is {
-        .Abc as e_abc -> @assert(e_abc == 6),
+        .Abc(e_abc) -> @assert(e_abc == 6),
         else -> @assert(false)
     }
     match e is {
-        .Abc as mut e_abc2 -> {
+        .Abc(mut e_abc2) -> {
             e_abc2 += 2;
             @assert(e_abc2 == 8);
         },
         else -> @assert(false)
     }
-    e = .Def();
+    e = .Def;
     match e is {
         .Def -> @assert(true),
         else -> @assert(false)
@@ -79,14 +79,14 @@ enum OS {
     }
 }
 
-test "enums: boxed enum with fields" {
+test "enums: tagged enum with fields" {
     mut user_os := OS.Windows(version: 2023_10_04);
-    if user_os is .Windows as windows {
+    if user_os is .Windows(windows) {
         @assert(windows.version == 2023_10_04);
     }
 
     user_os = .Linux(kernel_version: 5_16_0, distro_name: "CentOS");
-    if user_os is .Linux as linux {
+    if user_os is .Linux(linux) {
         @assert(linux.kernel_version == 5_16_0);
         @assert(linux.distro_name == "CentOS");
         linux.kernel_version = 5_12_0;
@@ -98,14 +98,14 @@ test "enums: boxed enum with fields" {
 
 #[default_value(.Abc(5))]
 enum DefaultValue {
-    Abc: int32
+    Abc(int32)
 }
 
 struct EnumStruct {
     dv: DefaultValue;
 }
 
-test "boxed enums with `default_value` attribute" {
+test "tagged enums with `default_value` attribute" {
     es := EnumStruct();
-    @assert(es.dv is .Abc as int and int == 5);
+    @assert(es.dv is .Abc(int) and int == 5);
 }

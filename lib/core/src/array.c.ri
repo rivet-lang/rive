@@ -26,8 +26,8 @@ func array_slice(arr: rawptr, elem_size: uint, size: uint, start: uint, end: uin
     }
     len := end - start;
     return unsafe {
-        DynArray.from_array(
-            if len == size { arr } else { @ptr_add(arr, start) }, elem_size, len
+        DynArray.from_array_no_alloc(
+            if len == size { arr } else { @ptr_add(arr, start * elem_size) }, elem_size, len
         )
     };
 }

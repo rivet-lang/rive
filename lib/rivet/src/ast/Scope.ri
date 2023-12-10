@@ -28,7 +28,7 @@ pub struct Scope {
 
     pub func add_or_get(mut self, sym: Sym) -> !Sym {
         if old_sym := self.find(sym.name) {
-            if sym is TypeSym as type_sym and old_sym is TypeSym as mut old_type_sym {
+            if sym is TypeSym(type_sym) and old_sym is TypeSym(mut old_type_sym) {
                 if old_type_sym.update(type_sym)! {
                     return old_sym;
                 }
@@ -117,7 +117,7 @@ pub struct Scope {
 
     pub func update_type(self, name: string, type: Type) {
         if sym := self.lookup(name) {
-            if sym is Var as var_info {
+            if sym is Var(var_info) {
                 var_info.type = type;
             }
         }
@@ -125,7 +125,7 @@ pub struct Scope {
 
     pub func update_is_hidden_ref(self, name: string, is_hidden_ref: bool) {
         if sym := self.lookup(name) {
-            if sym is Var as var_info {
+            if sym is Var(var_info) {
                 var_info.is_hidden_ref = is_hidden_ref;
             }
         }
@@ -133,7 +133,7 @@ pub struct Scope {
 
     pub func update_is_used(self, name: string, is_used: bool) {
         if sym := self.lookup(name) {
-            if sym is Var as var_info {
+            if sym is Var(var_info) {
                 var_info.is_used = is_used;
             }
         }

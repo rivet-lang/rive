@@ -28,8 +28,8 @@ test "`match` branch condition" {
 }
 
 enum MatchBase {
-    MatchSon: MatchSon,
-    Other: bool
+    MatchSon(MatchSon),
+    Other(bool)
 }
 
 struct MatchSon {
@@ -40,7 +40,7 @@ test "`match` branch variable" {
     ss := MatchSon(name: "Rivet");
     sb := MatchBase.MatchSon(ss);
     @assert(match sb is {
-        .MatchSon as sb_ss -> sb_ss.name == "Rivet",
+        .MatchSon(sb_ss) -> sb_ss.name == "Rivet",
         else -> false
     });
 }

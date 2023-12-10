@@ -20,10 +20,10 @@
 - [ ] Constant-folding: `x := 2 * 2;` => `x := 4;`.
 - [ ] Optimize code, inline functions/methods annotated with `inline`, 
     delete unused code, etc.
-- [ ] (Atomic) Reference-Counting for traits, boxed enums, strings, dynamic arrays and structs.
+- [ ] (Atomic) Reference-Counting for traits, tagged enums, strings, dynamic arrays and structs.
 - [ ] Better support for embedded structs.
 - [ ] `undefined` for uninitialized variables: `x: [5]uint8 := undefined;`.
-- [ ] Disallow empty array literal (`x := []!; -> ERROR`).
+- [ ] Disallow empty array literal (`x := []; -> ERROR`).
 - [ ] Add `@is_flag_defined()` builtin function.
 - [ ] Generic support: `Struct<T> { f: T; }` => `Struct:<T>(f: @default(T))`.
 - [ ] Lambdas + Closures: `sum := |a: int32, b: int32| [my_inherited_var] a + b;`.
