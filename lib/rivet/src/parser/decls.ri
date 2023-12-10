@@ -362,7 +362,7 @@ extend Parser {
                     }
                 }
                 self.expect(.Lbrace);
-                mut is_boxed := false;
+                mut is_tagged := false;
                 mut variants := @dyn_array(ast.EnumVariantDecl);
                 while {
                     v_pos := self.tok.pos;
@@ -374,7 +374,7 @@ extend Parser {
                     mut variant_decls := @dyn_array(ast.Decl);
                     if self.accept(.Lbrace) {
                         has_type = true;
-                        is_boxed = true;
+                        is_tagged = true;
                         old_inside_enum_variant_with_fields := self.inside_enum_variant_with_fields;
                         self.inside_enum_variant_with_fields = true;
                         while !self.accept(.Rbrace) {
@@ -383,7 +383,7 @@ extend Parser {
                         self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields;
                     } else if self.accept(.Lparen) {
                         has_type = true;
-                        is_boxed = true;
+                        is_tagged = true;
                         v_type = self.parse_type();
                         self.expect(.Rparen);
                     } else if self.accept(.Assign) {
@@ -413,7 +413,7 @@ extend Parser {
                 self.expect(.Rbrace);
                 return .Enum(
                     doc_comment, attributes, is_public, name, underlying_type,
-                    bases, variants, is_boxed, decls, pos
+                    bases, variants, is_tagged, decls, pos
                 );
             },
             (self.inside_struct or self.inside_trait

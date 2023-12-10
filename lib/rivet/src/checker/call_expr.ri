@@ -211,7 +211,7 @@ extend Checker {
                     enum_info.get_variant(@as(ast.Expr.EnumLiteral, call_expr.left).value)?
                 };
                 has_args := !call_expr.args.is_empty();
-                if !enum_info.is_boxed {
+                if !enum_info.is_tagged {
                     report.error(
                         "`{}` not expects value".fmt(call_expr.left),
                         call_expr.left.position()
@@ -356,7 +356,7 @@ extend Checker {
                                         field.name, type_sym.name
                                     ), call_expr.pos
                                 ),
-                                .Enum(enum_info2) if enum_info2.is_boxed and !was_initted ->
+                                .Enum(enum_info2) if enum_info2.is_tagged and !was_initted ->
                                     report.warn(
                                         "field `{}` of type `{}` must be initialized".fmt(
                                             field.name, type_sym.name

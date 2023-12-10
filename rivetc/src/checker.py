@@ -331,7 +331,7 @@ class Checker:
                 if v := _sym.info.get_variant(expr.value):
                     expr.variant_info = v
                     expr.typ = type.Type(_sym)
-                    if _sym.info.is_boxed and not expr.from_is_cmp and not expr.is_instance:
+                    if _sym.info.is_tagged and not expr.from_is_cmp and not expr.is_instance:
                         report.error(
                             f"cannot use variant `{expr}` as a simple value",
                             expr.pos
@@ -673,7 +673,7 @@ class Checker:
                     self.check_types(ltyp, elem_typ)
                     if not (
                         lsym.kind.is_primitive() or
-                        (lsym.kind == TypeKind.Enum and not lsym.info.is_boxed)
+                        (lsym.kind == TypeKind.Enum and not lsym.info.is_tagged)
                     ) and not lsym.exists(op_m):
                         report.error(
                             f"cannot use operator `{expr.op}` with type `{lsym.name}`",
@@ -695,7 +695,7 @@ class Checker:
                         expr.left.pos
                     )
                 if expr.has_var:
-                    if lsym.kind == TypeKind.Enum and lsym.info.is_boxed:
+                    if lsym.kind == TypeKind.Enum and lsym.info.is_tagged:
                         if expr.right.variant_info.has_typ:
                             expr.scope.update_type(
                                 expr.var.name, expr.right.variant_info.typ
@@ -712,14 +712,14 @@ class Checker:
                     if expr.var.is_mut:
                         expr.scope.update_is_hidden_ref(expr.var.name, True)
                 if lsym.kind == TypeKind.Enum:
-                    if lsym.info.is_boxed and expr.op not in (
+                    if lsym.info.is_tagged and expr.op not in (
                         Kind.KwIs, Kind.KwNotIs
                     ):
                         report.error(
                             "tagged enum types only support `is` and `!is`",
                             expr.pos
                         )
-                    elif not lsym.info.is_boxed and expr.op not in (
+                    elif not lsym.info.is_tagged and expr.op not in (
                         Kind.Eq, Kind.Ne
                     ):
                         report.error(
@@ -1369,12 +1369,12 @@ class Checker:
                 report.error("invalid value for typematch", expr.expr.pos)
                 report.note(f"expected enum or trait value, found `{expr_typ}`")
             elif expr_sym.kind == TypeKind.Enum:
-                if expr_sym.info.is_boxed and not expr.is_typematch:
+                if expr_sym.info.is_tagged and not expr.is_typematch:
                     report.error(
                         "cannot use `match` with a tagged enum value", expr.pos
                     )
                     report.note("use a typematch instead")
-                elif not expr_sym.info.is_boxed and expr.is_typematch:
+                elif not expr_sym.info.is_tagged and expr.is_typematch:
                     report.error(
                         "cannot use typematch with a enum value", expr.pos
                     )
@@ -1476,7 +1476,7 @@ class Checker:
             else:
                 assert False
             has_args = len(expr.args) > 0
-            if not info.info.is_boxed:
+            if not info.info.is_tagged:
                 report.error(f"`{expr.left}` not expects value", expr.left.pos)
             elif has_args:
                 if v.has_fields:

@@ -172,7 +172,7 @@ extend Codegen {
                             }
                             .Func(args, self.type_to_mir(func_info.ret_type), size)
                         },
-                        .Enum(enum_info) if !enum_info.is_boxed -> self.type_to_mir(
+                        .Enum(enum_info) if !enum_info.is_tagged -> self.type_to_mir(
                             enum_info.underlying_type
                         ),
                         .Array(array_info) -> .Array(

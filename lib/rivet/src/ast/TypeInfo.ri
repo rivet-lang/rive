@@ -73,7 +73,7 @@ pub enum TypeInfo < traits.Stringable {
     Enum {
         underlying_type: Type;
         mut variants: []EnumVariant;
-        is_boxed: bool;
+        is_tagged: bool;
         mut traits: []mut TypeSym;
 
         #[inline]

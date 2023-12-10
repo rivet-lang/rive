@@ -633,7 +633,7 @@ class Codegen:
         expected_sym = expected_typ_.symbol()
         if expected_sym.kind == TypeKind.Trait and expr_typ != expected_typ_ and expr_sym != expected_sym and expr.typ != self.comp.none_t:
             res_expr = self.trait_value(res_expr, expr_typ, expected_typ_)
-        elif expr_sym.kind == TypeKind.Enum and expr_sym.info.is_boxed and expr_sym.info.has_variant(
+        elif expr_sym.kind == TypeKind.Enum and expr_sym.info.is_tagged and expr_sym.info.has_variant(
             expected_sym.name
         ):
             tmp = self.cur_func.local_name()
@@ -815,7 +815,7 @@ class Codegen:
                         )
                     )
                     return ir.Ident(ir_typ, tmp)
-                elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed:
+                elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_tagged:
                     tmp = self.cur_func.local_name()
                     tmp_t = ir_typ
                     load_ptr = False
@@ -1462,7 +1462,7 @@ class Codegen:
                 elif isinstance(
                     expr.left_sym, sym.Type
                 ) and expr.left_sym.kind == TypeKind.Enum:
-                    if expr.left_sym.info.is_boxed:
+                    if expr.left_sym.info.is_tagged:
                         return self.boxed_enum_value(
                             expr.left_sym, expr.field_name, None,
                             custom_tmp = custom_tmp
@@ -1765,7 +1765,7 @@ class Codegen:
                 left_sym = expr_left_typ.symbol()
                 expr_right_sym = expr_right_typ.symbol()
                 if left_sym.kind == TypeKind.Enum:
-                    if left_sym.info.is_boxed:
+                    if left_sym.info.is_tagged:
                         cmp = ir.Inst(
                             ir.InstKind.Cmp, [
                                 ir.Name(kind),
@@ -1919,7 +1919,7 @@ class Codegen:
                     right_elem_typ_sym = right_sym.info.elem_typ.symbol()
                     if right_elem_typ_sym.kind.is_primitive() or (
                         right_elem_typ_sym.kind == TypeKind.Enum
-                        and not right_elem_typ_sym.info.is_boxed
+                        and not right_elem_typ_sym.info.is_tagged
                     ):
                         cond = ir.Inst(
                             ir.InstKind.Cmp,
@@ -1962,7 +1962,7 @@ class Codegen:
                 typ_sym.kind in (
                     TypeKind.Array, TypeKind.DynArray, TypeKind.String,
                     TypeKind.Struct
-                ) or (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_boxed)
+                ) or (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_tagged)
             ) and not isinstance(expr_left_typ, type.Ptr):
                 if typ_sym.kind == TypeKind.Array:
                     if expr.op == Kind.Eq:
@@ -2133,7 +2133,7 @@ class Codegen:
                             value_idx_x = ir.IntLit(
                                 ir.UINT_T, str(p.typ.sym.id)
                             )
-                        if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.is_boxed:
+                        if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.is_tagged:
                             self.cur_func.inline_alloca(
                                 ir.BOOL_T, tmp2,
                                 ir.Inst(
@@ -2575,7 +2575,7 @@ class Codegen:
         elif typ_sym.kind == TypeKind.DynArray:
             return self.empty_dyn_array(typ_sym)
         elif typ_sym.kind == TypeKind.Enum:
-            if typ_sym.info.is_boxed and typ_sym.default_value:
+            if typ_sym.info.is_tagged and typ_sym.default_value:
                 return self.gen_expr_with_cast(typ, typ_sym.default_value)
             return ir.IntLit(self.ir_type(typ_sym.info.underlying_typ), "0")
         elif typ_sym.kind == TypeKind.Tuple:
@@ -2919,7 +2919,7 @@ class Codegen:
         elif typ_sym.kind == TypeKind.None_:
             return ir.VOID_PTR_T
         elif typ_sym.kind == TypeKind.Enum:
-            if typ_sym.info.is_boxed:
+            if typ_sym.info.is_tagged:
                 return ir.Type(cg_utils.mangle_symbol(typ_sym)).ptr(True)
             return ir.Type(str(typ_sym.info.underlying_typ))
         elif typ_sym.kind.is_primitive():
@@ -2948,7 +2948,7 @@ class Codegen:
             elif ts.kind == TypeKind.Enum:
                 # TODO: in the self-hosted compiler calculate the enum value here
                 # not in register nor resolver.
-                if ts.info.is_boxed:
+                if ts.info.is_tagged:
                     self.out_rir.structs.append(
                         ir.Struct(
                             False, cg_utils.mangle_symbol(ts), [

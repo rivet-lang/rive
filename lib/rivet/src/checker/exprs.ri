@@ -57,7 +57,7 @@ extend Checker {
                         enum_lit.sym = sym;
                         enum_lit.variant = variant;
                         enum_lit.type = .Basic(sym, pos: enum_lit.pos);
-                        if enum_info.is_boxed and !enum_lit.from_is_cmp
+                        if enum_info.is_tagged and !enum_lit.from_is_cmp
                             and !enum_lit.is_instance {
                             mut err := report.error_builder(
                                 "cannot use variant `.{}` as a simple value".fmt(
@@ -616,7 +616,7 @@ extend Checker {
                             op_method := if binary.op == .KwIn { "==" } else { "!=" };
                             if !(left_sym.info.is_primitive()
                                 or !(left_sym.info is .Enum(enum_info)
-                                and enum_info.is_boxed))
+                                and enum_info.is_tagged))
                                 and !left_sym.has_method(op_method) {
                                 mut err := report.error_builder(
                                     "cannot use operator `{}` with type `{}`".fmt(
@@ -655,7 +655,7 @@ extend Checker {
                         self.check_name_case(
                             .Snake, "variable", binary.var_obj.name, binary.var_obj.pos
                         );
-                        if left_sym.info is .Enum(enum_info) and enum_info.is_boxed {
+                        if left_sym.info is .Enum(enum_info) and enum_info.is_tagged {
                             variant := @as(ast.Expr.EnumLiteral, binary.right).variant;
                             if variant.has_type {
                                 binary.var_obj.type = variant.type;
@@ -676,11 +676,11 @@ extend Checker {
                         }
                     }
                     if left_sym.info is .Enum(enum_info) {
-                        if enum_info.is_boxed and binary.op !in [.KwIs, .KwNotIs] {
+                        if enum_info.is_tagged and binary.op !in [.KwIs, .KwNotIs] {
                             report.error(
                                 "tagged enum types only support `is` and `!is`", binary.pos
                             );
-                        } else if !enum_info.is_boxed and binary.op !in [.Eq, .Ne] {
+                        } else if !enum_info.is_tagged and binary.op !in [.Eq, .Ne] {
                             report.error(
                                 "enum types only support `==` and `!=`", binary.pos
                             );

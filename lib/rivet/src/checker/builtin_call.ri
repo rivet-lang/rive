@@ -137,7 +137,7 @@ extend Checker {
                     }
                 },
                 .Enum(enum_info) -> {
-                    if enum_info.is_boxed and enum_info.get_variant_by_type(to_type) is none {
+                    if enum_info.is_tagged and enum_info.get_variant_by_type(to_type) is none {
                         report.error(
                             "cannot cast type `{}` to `{}`".fmt(from_type, to_type),
                             builtin_call.pos
@@ -164,7 +164,7 @@ extend Checker {
                         }
                     }
                     match to_ts.info is {
-                        .Enum(enum_info2) if !enum_info2.is_boxed -> {
+                        .Enum(enum_info2) if !enum_info2.is_tagged -> {
                             if self.table.is_int(to_type) and !self.inside_unsafe() {
                                 report.warn(
                                     "casting numbers to enums should be done inside `unsafe` blocks",

@@ -56,7 +56,7 @@ pub enum Decl {
         mut underlying_type: Type;
         bases: []mut Type;
         variants: []EnumVariantDecl;
-        is_boxed: bool;
+        is_tagged: bool;
         decls: []Decl;
         pos: token.Pos;
         mut sym: Sym;

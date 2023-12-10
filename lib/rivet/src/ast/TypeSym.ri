@@ -185,7 +185,7 @@ pub struct TypeSym < Sym {
     #[inline]
     pub func is_boxed(self) -> bool {
         return if self.info is .Enum(enum_info) {
-            enum_info.is_boxed
+            enum_info.is_tagged
         } else if self.info is .Struct(struct_info) {
             struct_info.is_boxed
         } else {

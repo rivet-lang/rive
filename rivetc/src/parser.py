@@ -342,7 +342,7 @@ class Parser:
             self.expect(Kind.Lbrace)
             variants = []
             decls = []
-            is_boxed = False
+            is_tagged = False
             while True:
                 v_name = self.parse_name()
                 has_typ = False
@@ -351,7 +351,7 @@ class Parser:
                 variant_decls = []
                 if self.accept(Kind.Lbrace):
                     has_typ = True
-                    is_boxed = True
+                    is_tagged = True
                     old_inside_enum_variant_with_fields = self.inside_enum_variant_with_fields
                     self.inside_enum_variant_with_fields = True
                     while not self.accept(Kind.Rbrace):
@@ -359,7 +359,7 @@ class Parser:
                     self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields
                 elif self.accept(Kind.Lparen):
                     has_typ = True
-                    is_boxed = True
+                    is_tagged = True
                     typ = self.parse_type()
                     self.expect(Kind.Rparen)
                 elif self.accept(Kind.Assign):
@@ -377,7 +377,7 @@ class Parser:
             self.expect(Kind.Rbrace)
             return ast.EnumDecl(
                 doc_comment, attributes, is_public, name, underlying_typ, bases,
-                variants, is_boxed, decls, pos
+                variants, is_tagged, decls, pos
             )
         elif self.accept(Kind.KwExtend):
             pos = self.prev_tok.pos

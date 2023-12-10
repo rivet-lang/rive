@@ -337,7 +337,7 @@ pub struct Table {
                     },
                     .Rune -> (4, 4),
                     .ComptimeFloat, .ComptimeInt -> (8, 8),
-                    .Enum(enum_info) -> if enum_info.is_boxed {
+                    .Enum(enum_info) -> if enum_info.is_tagged {
                         ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size)
                     } else {
                         self.type_size(enum_info.underlying_type)
