@@ -545,6 +545,42 @@ class TupleLiteral:
     def __str__(self):
         return self.__repr__()
 
+class ArrayCtor:
+    def __init__(self, is_dyn, is_mut, elem_type, init_value, cap_value, len_value, pos):
+        self.is_dyn = is_dyn
+        self.is_mut = is_mut
+        self.elem_type = elem_type
+        self.init_value = init_value
+        self.cap_value = cap_value
+        self.len_value = len_value
+        self.len_res = None
+        self.typ = None
+        self.pos = pos
+
+    def __repr__(self):
+        res = "["
+        if not self.is_dyn:
+            res += str(self.len_value)
+        res += "]"
+        if self.is_mut:
+            res += "mut "
+        res += f"{self.elem_type}("
+        if self.is_dyn:
+            if self.init_value:
+                res += f"init: {self.init_value}"
+                if self.cap_value or self.len_value:
+                    res += ", "
+            if self.cap_value:
+                res += f"cap: {self.cap_value}"
+                if self.self.len_value:
+                    res += ", "
+            if self.len_value:
+                res += f"len: {self.len_value}"
+        return res + ")"
+
+    def __str__(self):
+        return self.__repr__()
+
 class ArrayLiteral:
     def __init__(self, elems, is_dyn, pos):
         self.elems = elems

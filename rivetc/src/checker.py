@@ -431,6 +431,33 @@ class Checker:
                     types.append(tt)
             expr.typ = type.Type(self.comp.universe.add_or_get_tuple(types))
             return expr.typ
+        elif isinstance(expr, ast.ArrayCtor):
+            if expr.init_value:
+                init_t = self.check_expr(expr.init_value)
+                if not self.check_compatible_types(init_t, expr.elem_type):
+                    report.error(f"argument `init` should have a value of type `{expr.elem_type}`", expr.init_value.pos)
+            if expr.cap_value:
+                cap_t = self.check_expr(expr.cap_value)
+                if not (cap_t == self.comp.uint_t or cap_t == self.comp.comptime_int_t):
+                    report.error("argument `cap` should have a value of type `uint`", expr.cap_value.pos)
+            if expr.len_value:
+                len_t = self.check_expr(expr.len_value)
+                if not (len_t == self.comp.uint_t or len_t == self.comp.comptime_int_t):
+                    report.error("argument `len` should have a value of type `uint`", expr.len_value.pos)
+            if expr.is_dyn:
+                expr.typ = type.Type(
+                    self.comp.universe.add_or_get_dyn_array(
+                        self.comp.comptime_number_to_type(expr.elem_type), expr.is_mut
+                    )
+                )
+            else:
+                expr.typ = type.Type(
+                    self.comp.universe.add_or_get_array(
+                        self.comp.comptime_number_to_type(expr.elem_type),
+                        expr.len_res, expr.is_mut
+                    )
+                )
+            return expr.typ
         elif isinstance(expr, ast.ArrayLiteral):
             old_expected_type = self.expected_type
             size = ""

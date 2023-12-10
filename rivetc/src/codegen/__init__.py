@@ -1539,6 +1539,37 @@ class Codegen:
                     TypeKind.Tuple else expr.field_name
                 )
             )
+        elif isinstance(expr, ast.ArrayCtor):
+            if expr.is_dyn:
+                typ_sym = expr.typ.symbol()
+                if expr.cap_value:
+                    return self.empty_dyn_array(
+                        typ_sym, self.gen_expr(expr.cap_value)
+                    )
+                return self.empty_dyn_array(typ_sym)
+            else:
+                if custom_tmp:
+                    final_value = custom_tmp
+                else:
+                    tmp_name = self.cur_func.local_name()
+                    tmp_t = self.ir_type(expr.typ)
+                    tmp = ir.Ident(tmp_t, tmp_name)
+                    self.cur_func.inline_alloca(tmp_t, tmp_name)
+                    final_value = tmp
+                if expr.init_value:
+                    size, _ = self.comp.type_size(expr.elem_type)
+                    init_value = self.gen_expr_with_cast(expr.elem_type, expr.init_value)
+                    self.cur_func.add_call(
+                        "_R4core14array_init_setF",
+                        [
+                            final_value, ir.IntLit(ir.UINT_T, str(size)),
+                            ir.IntLit(ir.UINT_T, str(expr.typ.symbol().info.size)),
+                            ir.Inst(ir.InstKind.GetRef, [init_value])
+                        ]
+                    )
+                if custom_tmp:
+                    return ir.Skip()
+                return tmp
         elif isinstance(expr, ast.ArrayLiteral):
             typ_sym = expr.typ.symbol()
             if len(expr.elems) == 0:
