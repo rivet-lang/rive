@@ -436,6 +436,8 @@ class Checker:
                 init_t = self.check_expr(expr.init_value)
                 if not self.check_compatible_types(init_t, expr.elem_type):
                     report.error(f"argument `init` should have a value of type `{expr.elem_type}`", expr.init_value.pos)
+                if not expr.len_value:
+                    report.error("`init` argument should be used together with `len` argument", expr.init_value.pos)
             if expr.cap_value:
                 cap_t = self.check_expr(expr.cap_value)
                 if not (cap_t == self.comp.uint_t or cap_t == self.comp.comptime_int_t):

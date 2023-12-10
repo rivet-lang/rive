@@ -1541,12 +1541,31 @@ class Codegen:
             )
         elif isinstance(expr, ast.ArrayCtor):
             if expr.is_dyn:
-                typ_sym = expr.typ.symbol()
+                if not expr.init_value and not expr.cap_value and not expr.len_value:
+                    # []T()
+                    return self.empty_dyn_array(expr.typ.symbol())
+                if expr.init_value:
+                    method_name = "_R4core8DynArray13new_with_initF"
+                else:
+                    method_name = "_R4core8DynArray12new_with_lenF"
+                size, _ = self.comp.type_size(expr.elem_type)
+                args = []
+                if expr.init_value:
+                    init_value = self.gen_expr_with_cast(expr.elem_type, expr.init_value)
+                    args.append(ir.Inst(ir.InstKind.GetRef, [init_value]))
+                # element size
+                args.append(ir.IntLit(ir.UINT_T, str(size)))
+                # length
+                if expr.len_value:
+                    args.append(self.gen_expr(expr.len_value))
+                else:
+                    args.append(ir.IntLit(ir.UINT_T, "0"))
+                # capacity
                 if expr.cap_value:
-                    return self.empty_dyn_array(
-                        typ_sym, self.gen_expr(expr.cap_value)
-                    )
-                return self.empty_dyn_array(typ_sym)
+                    args.append(self.gen_expr(expr.cap_value))
+                else:
+                    args.append(ir.IntLit(ir.UINT_T, "0"))
+                return ir.Inst(ir.InstKind.Call, [ir.Name(method_name), *args])
             else:
                 if custom_tmp:
                     final_value = custom_tmp
