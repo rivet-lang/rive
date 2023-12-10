@@ -8,14 +8,14 @@ import ../report;
 extend Checker {
     func check_expr(mut self, mut expr: ast.Expr) -> ast.Type {
         return match expr is {
-            .Empty, .Comment -> .Void(),
+            .Empty -> .Void,
             .Type(type) -> type,
             .Branch(branch) -> {
                 self.scope_returns = true;
                 .Never(branch.pos)
             },
             .Paren(paren) -> self.check_expr(paren.expr),
-            .NoneLiteral -> .None(),
+            .NoneLiteral -> .None,
             .BoolLiteral -> self.table.bool_t,
             .CharLiteral(char_lit) -> {
                 char_lit.type = if char_lit.is_byte {
@@ -49,25 +49,30 @@ extend Checker {
                 self_lit.type = self_lit.obj.type;
                 self_lit.type
             },
-            .SelfTy -> .Void(),
+            .SelfTy -> .Void,
             .EnumLiteral(enum_lit) -> {
-                enum_lit.type = .Void();
+                enum_lit.type = .Void;
                 if sym := self.expected_type.symbol(); sym.info is .Enum(enum_info) {
                     if variant := enum_info.get_variant(enum_lit.value) {
                         enum_lit.sym = sym;
                         enum_lit.variant = variant;
                         enum_lit.type = .Basic(sym, pos: enum_lit.pos);
-                        if enum_info.is_boxed and !enum_lit.from_is_cmp
+                        if enum_info.is_tagged and !enum_lit.from_is_cmp
                             and !enum_lit.is_instance {
-                            mut err := report.error_builder(
-                                "cannot use variant `.{}` as a simple value".fmt(
+                            if variant.has_type {
+                                mut err := report.error_builder(
+                                    "variant `{}` cannot be initialized without arguments".fmt(
+                                        enum_lit.value
+                                    ),
+                                    enum_lit.pos
+                                );
+                                err.add_help(
+                                    "if you intend not to pass any value, add `()`: `{}()`",
                                     enum_lit.value
-                                ), enum_lit.pos
-                            );
-                            err.add_note(
-                                "make an instance instead: `.{}()`", enum_lit.value
-                            );
-                            err.emit();
+                                );
+                                err.emit();
+                            }
+                            enum_lit.is_instance = true;
                         }
                     } else {
                         report.error(
@@ -84,7 +89,7 @@ extend Checker {
             .ArrayLiteral(mut array_lit) -> self.check_array_literal(array_lit),
             .Ident(ident) -> {
                 ident.type = if ident.name == "_" {
-                    .Void()
+                    .Void
                 } else if ident.is_comptime {
                     ident.builtin.type()
                 } else if ident.is_sym or ident.is_obj {
@@ -101,10 +106,10 @@ extend Checker {
                             }
                             func_sym.type(self.table.universe)
                         },
-                        else -> .Void()
+                        else -> .Void
                     }
                 } else {
-                    .Void()
+                    .Void
                 };
                 ident.type
             },
@@ -128,7 +133,7 @@ extend Checker {
                         err.add_help("use index access to element 0 instead");
                     }
                     err.emit();
-                    .Void()
+                    .Void
                 };
                 indirect.type
             },
@@ -138,7 +143,7 @@ extend Checker {
                     opt.inner
                 } else {
                     report.error("cannot check a non-option value", option_check.left.position());
-                    .Void()
+                    .Void
                 };
                 option_check.type
             },
@@ -171,13 +176,13 @@ extend Checker {
                     }
                 }
                 old_expected_type := self.expected_type;
-                self.expected_type = .Void();
+                self.expected_type = .Void;
                 self.check_stmts(block.stmts);
                 self.expected_type = old_expected_type;
                 block.type = if block.is_expr {
                     self.check_expr(block.expr)
                 } else {
-                    .Void()
+                    .Void
                 };
                 if block.type is .Void and block.is_expr {
                     // if the expression has no value then it is another statement
@@ -211,7 +216,7 @@ extend Checker {
                     );
                 }
                 self.inside_guard_expr = old_inside_guard_expr;
-                .Void()
+                .Void
             },
             .Return(mut return_expr) -> self.check_return(return_expr),
             .Throw(mut throw_expr) -> self.check_throw(throw_expr),
@@ -254,7 +259,7 @@ extend Checker {
         mut size: uint := 0;
         mut is_mut := false;
         mut has_expected_type := false;
-        mut value_type := ast.Type.Void();
+        mut value_type := ast.Type.Void;
         if value_sym := self.expected_type.symbol(); value_sym.info is .Array
             or value_sym.info is .DynArray {
             has_expected_type = true;
@@ -263,7 +268,7 @@ extend Checker {
             if value_sym.info is .Array(array_info) {
                 size = array_info.size;
             }
-            is_mut = value_sym.info.is_mut_arr_or_vec();
+            is_mut = value_sym.info.is_mut_arr_or_dyn_array();
         } else if !self.expected_type.is_void() {
             has_expected_type = true;
             value_type = self.expected_type;
@@ -279,17 +284,19 @@ extend Checker {
             } else {
                 self.check_types(type, value_type) catch |err| {
                     mut err_b := report.error_builder(err.to_string(), value.position());
-                    err_b.add_note(if array_lit.is_arr {
-                        "in element {} of array literal"
-                    } else {
+                    err_b.add_note(if array_lit.is_dyn {
                         "in element {} of dynamic array literal"
+                    } else {
+                        "in element {} of array literal"
                     }.fmt(i + 1));
                     err_b.emit();
                 };
             }
         }
         self.expected_type = old_expected_type;
-        array_lit.type = if array_lit.is_arr {
+        array_lit.type = if array_lit.is_dyn {
+            .Basic(self.table.universe.add_or_get_dyn_array(value_type, is_mut), pos: array_lit.pos)
+        } else {
             arr_len := if array_lit.values.len > 0 {
                 array_lit.values.len
             } else {
@@ -302,8 +309,6 @@ extend Checker {
                 self.table.universe.add_or_get_array(value_type, arr_len, is_mut),
                 pos: array_lit.pos
             )
-        } else {
-            .Basic(self.table.universe.add_or_get_dyn_array(value_type, is_mut), pos: array_lit.pos)
         };
         return array_lit.type;
     }
@@ -311,6 +316,21 @@ extend Checker {
     func check_selector(mut self, mut selector: ast.Expr.Selector) -> ast.Type {
         selector.type = if selector.is_path {
             if selector.left_sym is ast.TypeSym(type_sym) {
+                if type_sym.info is .Enum(enum_info) {
+                    if variant := enum_info.get_variant(selector.field_name); variant.has_type {
+                        mut err := report.error_builder(
+                            "variant `{}` cannot be initialized without arguments".fmt(
+                                selector.field_name
+                            ),
+                            selector.pos
+                        );
+                        err.add_help(
+                            "if you intend not to pass any value, add `()`: `{}()`",
+                            selector.field_name
+                        );
+                        err.emit();
+                    }
+                }
                 .Basic(type_sym, pos: selector.pos)
             } else {
                 match selector.sym is {
@@ -333,7 +353,7 @@ extend Checker {
                         );
                         err.add_note("please report this bug, thanks =D");
                         err.emit();
-                        .Void()
+                        .Void
                     }
                 }
             }
@@ -353,7 +373,7 @@ extend Checker {
                             );
                             err.add_help("use parentheses to call the method");
                             err.emit();
-                            .Void()
+                            .Void
                         } else {
                             mut err := report.error_builder(
                                 "cannot take value of associated function `{}`".fmt(
@@ -372,7 +392,7 @@ extend Checker {
                                 sym.type_of(), left_sym.name, selector.field_name
                             ), selector.pos
                         );
-                        .Void()
+                        .Void
                     }
                 } else {
                     mut err := report.error_builder(
@@ -388,7 +408,7 @@ extend Checker {
                         );
                     }
                     err.emit();
-                    .Void()
+                    .Void
                 }
             } else {
                 report.error(
@@ -396,7 +416,7 @@ extend Checker {
                         selector.left_type, selector.field_name
                     ), selector.field_pos
                 );
-                .Void()
+                .Void
             }
         };
         return selector.type;
@@ -416,7 +436,7 @@ extend Checker {
             .Array, .DynArray -> {
                 elem_type := left_sym.info.elem_type()?;
                 if index.index is .Range {
-                    is_mut := left_sym.info.is_mut_arr_or_vec();
+                    is_mut := left_sym.info.is_mut_arr_or_dyn_array();
                     if left_sym.info is .DynArray {
                         index.left_type
                     } else {
@@ -557,7 +577,7 @@ extend Checker {
         if left_sym := left_type.symbol() {
             match binary.op {
                 .Plus, .Minus, .Mul, .Div, .Mod, .Xor, .Amp, .Pipe -> {
-                    mut promoted_type := ast.Type.Void();
+                    mut promoted_type := ast.Type.Void;
                     if left_sym.info.is_compound() {
                         if op_method := left_sym.find_method(binary.op.to_string()) {
                             promoted_type = op_method.ret_type;
@@ -616,7 +636,7 @@ extend Checker {
                             op_method := if binary.op == .KwIn { "==" } else { "!=" };
                             if !(left_sym.info.is_primitive()
                                 or !(left_sym.info is .Enum(enum_info)
-                                and enum_info.is_boxed))
+                                and enum_info.is_tagged))
                                 and !left_sym.has_method(op_method) {
                                 mut err := report.error_builder(
                                     "cannot use operator `{}` with type `{}`".fmt(
@@ -655,7 +675,7 @@ extend Checker {
                         self.check_name_case(
                             .Snake, "variable", binary.var_obj.name, binary.var_obj.pos
                         );
-                        if left_sym.info is .Enum(enum_info) and enum_info.is_boxed {
+                        if left_sym.info is .Enum(enum_info) and enum_info.is_tagged {
                             variant := @as(ast.Expr.EnumLiteral, binary.right).variant;
                             if variant.has_type {
                                 binary.var_obj.type = variant.type;
@@ -676,11 +696,11 @@ extend Checker {
                         }
                     }
                     if left_sym.info is .Enum(enum_info) {
-                        if enum_info.is_boxed and binary.op !in [.KwIs, .KwNotIs] {
+                        if enum_info.is_tagged and binary.op !in [.KwIs, .KwNotIs] {
                             report.error(
-                                "boxed enum types only support `is` and `!is`", binary.pos
+                                "tagged enum types only support `is` and `!is`", binary.pos
                             );
-                        } else if !enum_info.is_boxed and binary.op !in [.Eq, .Ne] {
+                        } else if !enum_info.is_tagged and binary.op !in [.Eq, .Ne] {
                             report.error(
                                 "enum types only support `==` and `!=`", binary.pos
                             );
@@ -763,7 +783,7 @@ extend Checker {
                     );
                 }
             }
-            mut branch_t := ast.Type.Void();
+            mut branch_t := ast.Type.Void;
             if i == 0 {
                 branch_t = self.check_expr(branch.expr);
                 if if_expr.expected_type is .Void {
@@ -883,11 +903,11 @@ extend Checker {
         right_type := self.check_expr(assign.right);
         self.expected_type = old_expected_type;
         if assign.left is .Ident(ident) and ident.name == "_" {
-            return .Void();
+            return .Void;
         }
         self.check_types(right_type, left_type) catch |err| {
             report.error(err.to_string(), assign.right.position());
         };
-        return .Void();
+        return .Void;
     }
 }
