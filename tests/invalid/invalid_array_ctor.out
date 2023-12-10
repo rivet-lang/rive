@@ -1,0 +1,4 @@
+tests/invalid/invalid_array_ctor.ri:2:21: error: `init` argument should be used together with `len` argument
+    2 |     _ = []int(init: 5); // invalid
+      |                     ^
+rivet: error: could not compile module `invalid_array_ctor`, aborting due to previous error

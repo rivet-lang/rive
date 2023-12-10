@@ -8,6 +8,11 @@ func new_array() -> [4]int32 {
     return [1, 2, 3, 4];
 }
 
+test "array constructor" {
+    lit := [5]int(init: 10);
+    @assert(lit == [10, 10, 10, 10, 10]);
+}
+
 test "array literal" {
     lit := [1, 2, 3, 4];
     @assert(lit == [1, 2, 3, 4]);

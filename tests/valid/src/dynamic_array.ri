@@ -9,14 +9,14 @@ test "dynamic array from fixed array" {
     @assert(dyn_array == dyn_array2);
 }
 
-test "`@dyn_array` builtin function" {
+test "dynamic array constructor" {
     {
-        mut da := @dyn_array(int32);
+        mut da := []int32();
         da.push(5);
         @assert(da[0] == 5);
     }
     {
-        mut da := @dyn_array(int32, 2);
+        mut da := []int32(cap: 2);
         da.push(10);
         @assert(da.cap == 2);
         @assert(da[0] == 10);
