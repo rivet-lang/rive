@@ -10,7 +10,7 @@ import ../token;
 
 extend Parser {
     func parse_doc_comments(mut self) -> []ast.Comment {
-        mut comments := @dyn_array(ast.Comment);
+        mut comments := []ast.Comment();
         while self.tok.kind == .DocComment or (self.tok.kind == .Comment and comments.len > 0) {
             comments.push(self.parse_comment());
         }
@@ -25,7 +25,7 @@ extend Parser {
             }
             if self.accept(.Lbracket) {
                 while {
-                    mut args := @dyn_array(ast.AttributeArgument);
+                    mut args := []ast.AttributeArgument();
                     pos := self.tok.pos;
                     attribute_name := if self.accept(.KwUnsafe) {
                         "unsafe"
@@ -81,7 +81,7 @@ extend Parser {
     }
 
     func parse_decls(mut self) -> []ast.Decl {
-        mut decls := @dyn_array(ast.Decl);
+        mut decls := []ast.Decl();
         while self.tok.kind != .EndOfFile {
             decls.push(self.parse_decl());
         }
@@ -98,7 +98,7 @@ extend Parser {
         match {
             self.tok.kind == .Comment -> return .Comment(self.parse_comment()),
             self.accept(.KwImport) -> {
-                mut import_list := @dyn_array(ast.ImportListInfo);
+                mut import_list := []ast.ImportListInfo();
                 mut glob := false;
                 if self.accept(.Lbrace) {
                     while {
@@ -173,7 +173,7 @@ extend Parser {
                 self.inside_extern = true;
                 // extern function or var
                 abi := self.parse_abi();
-                mut decls := @dyn_array(ast.Decl);
+                mut decls := []ast.Decl();
                 if self.accept(.Lbrace) {
                     if is_public {
                         report.error("`extern` blocks cannot be declared public", pos);
@@ -249,7 +249,7 @@ extend Parser {
             },
             self.accept(.KwVar) -> {
                 // variable declarations
-                mut lefts := @dyn_array(ast.ObjectData);
+                mut lefts := []ast.ObjectData();
                 if self.accept(.Lparen) {
                     // multiple variables
                     while {
@@ -284,7 +284,7 @@ extend Parser {
                 old_inside_trait := self.inside_trait;
                 self.inside_trait = true;
                 name := self.parse_name();
-                mut bases := @dyn_array(mut ast.Type);
+                mut bases := []mut ast.Type();
                 if self.accept(.Lt) {
                     while {
                         bases.push(self.parse_type());
@@ -293,7 +293,7 @@ extend Parser {
                         }
                     }
                 }
-                mut decls := @dyn_array(ast.Decl);
+                mut decls := []ast.Decl();
                 self.expect(.Lbrace);
                 while !self.accept(.Rbrace) {
                     decls.push(self.parse_decl());
@@ -315,8 +315,8 @@ extend Parser {
                 self.inside_struct = true;
                 name := self.parse_name();
                 is_opaque := self.accept(.Semicolon);
-                mut bases := @dyn_array(mut ast.Type);
-                mut decls := @dyn_array(ast.Decl);
+                mut bases := []mut ast.Type();
+                mut decls := []ast.Decl();
                 if !is_opaque {
                     if self.accept(.Lt) {
                         while {
@@ -351,7 +351,7 @@ extend Parser {
                 } else {
                     self.table.comptime_int_t
                 };
-                mut bases := @dyn_array(mut ast.Type);
+                mut bases := []mut ast.Type();
                 if self.accept(.Lt) {
                     while {
                         bases.push(self.parse_type());
@@ -362,7 +362,7 @@ extend Parser {
                 }
                 self.expect(.Lbrace);
                 mut is_tagged := false;
-                mut variants := @dyn_array(ast.EnumVariantDecl);
+                mut variants := []ast.EnumVariantDecl();
                 while {
                     v_pos := self.tok.pos;
                     v_name := self.parse_name();
@@ -370,7 +370,7 @@ extend Parser {
                     mut has_value := false;
                     mut v_type := ast.Type.Void;
                     mut value := ast.Expr.Empty(self.tok.pos);
-                    mut variant_decls := @dyn_array(ast.Decl);
+                    mut variant_decls := []ast.Decl();
                     if self.accept(.Lbrace) {
                         has_type = true;
                         is_tagged = true;
@@ -402,7 +402,7 @@ extend Parser {
                         break;
                     }
                 }
-                mut decls := @dyn_array(ast.Decl);
+                mut decls := []ast.Decl();
                 if self.accept(.Semicolon) {
                     while self.tok.kind != .Rbrace {
                         decls.push(self.parse_decl());
@@ -445,7 +445,7 @@ extend Parser {
             },
             self.accept(.KwExtend) -> {
                 type := self.parse_type();
-                mut bases := @dyn_array(mut ast.Type);
+                mut bases := []mut ast.Type();
                 if self.accept(.Lt) {
                     while {
                         bases.push(self.parse_type());
@@ -455,7 +455,7 @@ extend Parser {
                     }
                 }
                 self.expect(.Lbrace);
-                mut decls := @dyn_array(ast.Decl);
+                mut decls := []ast.Decl();
                 while !self.accept(.Rbrace) {
                     decls.push(self.parse_decl());
                 }
@@ -480,7 +480,7 @@ extend Parser {
                 self.open_scope();
                 sc := self.scope;
                 sc.detached_from_parent = true;
-                mut stmts := @dyn_array(mut ast.Stmt);
+                mut stmts := []mut ast.Stmt();
                 self.expect(.Lbrace);
                 while !self.accept(.Rbrace) {
                     stmts.push(self.parse_stmt());
@@ -543,7 +543,7 @@ extend Parser {
         mut self_is_mut := false;
         mut self_is_ptr := false;
         mut self_pos := token.noPos;
-        mut args := @dyn_array(ast.Arg);
+        mut args := []ast.Arg();
         mut has_named_args := false;
         mut is_variadic := false;
 
@@ -619,7 +619,7 @@ extend Parser {
             }
         }
 
-        mut stmts := @dyn_array(mut ast.Stmt);
+        mut stmts := []mut ast.Stmt();
         mut has_body := true;
         if (self.inside_trait or self.inside_extern) and self.accept(.Semicolon) {
             has_body = false;

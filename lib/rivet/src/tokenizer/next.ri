@@ -678,8 +678,8 @@ extend Tokenizer {
         if start_char == LF {
             self.inc_line_number();
         }
-        mut u_escapes_pos := []uin(); // pos list of \uXXXX
-        mut h_escapes_pos := []uin(); // pos list of \xXX
+        mut u_escapes_pos := []uint(); // pos list of \uXXXX
+        mut h_escapes_pos := []uint(); // pos list of \xXX
         while {
             self.pos += 1;
             if self.pos >= self.text.len {

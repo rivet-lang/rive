@@ -41,7 +41,7 @@ extend Checker {
                 expr_type = guard_expr.vars[0].type;
                 expr_sym = expr_type.symbol()?;
             } else {
-                mut types := @dyn_array(mut ast.Type);
+                mut types := []mut ast.Type();
                 for var_ in guard_expr.vars {
                     types.push(var_.type);
                 }
@@ -166,7 +166,7 @@ extend Checker {
         // check that expressions are exhaustive, this is achieved either by putting
         // an `else` or when the `match` is on an enum by listing all variants.
         match_expr.is_exhaustive = true;
-        mut unhandled := @dyn_array(string);
+        mut unhandled := []string();
         if expr_type == self.table.bool_t and match_expr.branches.len == 1 {
             for v in ["true", "false"] {
                 if !branch_exprs.contains(v) {

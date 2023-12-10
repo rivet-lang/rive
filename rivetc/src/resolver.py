@@ -234,7 +234,7 @@ class Resolver:
             for e in expr.exprs:
                 self.resolve_expr(e)
         elif isinstance(expr, ast.ArrayCtor):
-            self.resolve_expr(expr.elem_type)
+            self.resolve_type(expr.elem_type)
             if expr.init_value:
                 self.resolve_expr(expr.init_value)
             if expr.cap_value:

@@ -16,7 +16,7 @@ extend Parser {
                 // function types
                 self.expect(.KwFunc);
                 self.expect(.Lparen);
-                mut args := @dyn_array(ast.Arg);
+                mut args := []ast.Arg();
                 if self.tok.kind != .Rparen {
                     while {
                         arg_pos := self.tok.pos;
@@ -77,7 +77,7 @@ extend Parser {
             },
             self.accept(.Lparen) -> {
                 // tuples
-                mut inners := @dyn_array(mut ast.Type);
+                mut inners := []mut ast.Type();
                 while {
                     inners.push(self.parse_type());
                     if !self.accept(.Comma) {
