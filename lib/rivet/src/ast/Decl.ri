@@ -6,7 +6,7 @@ import ../token;
 
 pub enum Decl {
     Empty(token.Pos),
-    Comment: Comment,
+    Comment(Comment),
     Import {
         attributes: Attributes;
         is_public: bool;
@@ -151,20 +151,20 @@ pub enum Decl {
 
     pub func position(self) -> token.Pos {
         return match self is {
-            .Empty as empty_pos -> empty_pos,
-            .Comment as comment -> comment.pos,
-            .Import as import_d -> import_d.pos,
-            .Extern as extern_d -> extern_d.pos,
-            .Alias as alias_d -> alias_d.pos,
-            .Trait as trait_d -> trait_d.pos,
-            .Enum as enum_d -> enum_d.pos,
-            .Struct as struct_d -> struct_d.pos,
-            .Field as field_d -> field_d.pos,
-            .Extend as extend_d -> extend_d.pos,
-            .Const as const_d -> const_d.pos,
-            .Var as var_d -> var_d.pos,
-            .Func as func_d -> func_d.pos,
-            .Test as test_d -> test_d.pos
+            .Empty(empty_pos) -> empty_pos,
+            .Comment(comment) -> comment.pos,
+            .Import(import_d) -> import_d.pos,
+            .Extern(extern_d) -> extern_d.pos,
+            .Alias(alias_d) -> alias_d.pos,
+            .Trait(trait_d) -> trait_d.pos,
+            .Enum(enum_d) -> enum_d.pos,
+            .Struct(struct_d) -> struct_d.pos,
+            .Field(field_d) -> field_d.pos,
+            .Extend(extend_d) -> extend_d.pos,
+            .Const(const_d) -> const_d.pos,
+            .Var(var_d) -> var_d.pos,
+            .Func(func_d) -> func_d.pos,
+            .Test(test_d) -> test_d.pos
         };
     }
 

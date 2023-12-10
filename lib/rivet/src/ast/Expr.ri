@@ -9,7 +9,8 @@ import ../token;
 
 #[default_value(.Empty(token.noPos))]
 pub enum Expr < traits.Stringable {
-    Empty(token.Pos)
+    Empty(token.Pos),
+    Comment(Comment),
     Paren {
         mut expr: Expr;
         pos: token.Pos;
@@ -17,7 +18,7 @@ pub enum Expr < traits.Stringable {
 
         pub func clean_paren(self) -> Expr {
             mut res := self.expr;
-            while res is .Paren as paren {
+            while res is .Paren(paren) {
                 res = paren.expr;
             }
             return res;

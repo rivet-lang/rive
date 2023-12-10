@@ -9,8 +9,8 @@ extend Formatter {
         match expr is {
             .Empty -> {},
             .NoneLiteral -> self.write("none"),
-            .Paren as paren -> self.write_fmt("({})", paren.clean_paren()),
-            .Block as block -> {
+            .Paren(paren) -> self.write_fmt("({})", paren.clean_paren()),
+            .Block(block) -> {
                 if block.is_unsafe {
                     self.write("unsafe ");
                 }
