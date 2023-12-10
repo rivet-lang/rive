@@ -804,11 +804,8 @@ class Parser:
                 self.expect(Kind.Lparen)
                 args = []
                 dyn_array_is_mut = False
-                if name in ("dyn_array", "as", "size_of", "align_of"):
+                if name in ("as", "size_of", "align_of"):
                     pos = self.tok.pos
-                    dyn_array_is_mut = name == "dyn_array" and self.accept(
-                        Kind.KwMut
-                    )
                     args.append(ast.TypeNode(self.parse_type(), pos))
                     if self.tok.kind != Kind.Rparen:
                         self.expect(Kind.Comma)
@@ -819,7 +816,6 @@ class Parser:
                             break
                 self.expect(Kind.Rparen)
                 expr = ast.BuiltinCallExpr(name, args, expr.pos)
-                expr.dyn_array_is_mut = dyn_array_is_mut
             else: # builtin variable
                 expr = self.parse_ident(True)
         elif self.tok.kind == Kind.Dot and self.peek_tok.kind == Kind.Name:

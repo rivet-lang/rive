@@ -1044,28 +1044,6 @@ class Checker:
             elif expr.name == "ignore_not_mutated_warn":
                 _ = self.check_expr(expr.args[0])
                 self.check_expr_is_mut(expr.args[0])
-            elif expr.name == "dyn_array":
-                if len(expr.args) in (1, 2):
-                    elem_t = expr.args[0].typ
-                    expr.typ = type.Type(
-                        self.comp.universe.add_or_get_dyn_array(
-                            elem_t, expr.dyn_array_is_mut
-                        )
-                    )
-                    if len(expr.args) == 2:
-                        arg1_t = self.check_expr(expr.args[1])
-                        try:
-                            self.check_types(arg1_t, self.comp.uint_t)
-                        except utils.CompilerError as e:
-                            report.error(e.args[0], expr.args[1].pos)
-                            report.note(
-                                "in second argument of builtin function `dyn_array`"
-                            )
-                else:
-                    report.error(
-                        f"expected 1 or 2 arguments, found {len(expr.args)}",
-                        expr.pos
-                    )
             elif expr.name == "as":
                 old_expected_type = self.expected_type
                 self.expected_type = expr.typ

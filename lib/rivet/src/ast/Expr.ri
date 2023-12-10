@@ -225,7 +225,6 @@ pub enum Expr < traits.Stringable {
     BuiltinCall {
         name: string;
         args: []CallArg;
-        dyn_array_is_mut: bool;
         pos: token.Pos;
         mut builtin: Builtin := .Invalid;
         mut type: Type;

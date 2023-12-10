@@ -171,13 +171,6 @@ pub struct Table {
                 BuiltinArg("msg", type: self.string_t, is_optional: true)
             ]),
 
-            .Func("dyn_array", +[
-                BuiltinArg("type", is_any: true),
-                BuiltinArg("cap", type: self.uint_t, is_optional: true)
-            ], checks: +[
-                .ReturnTypeEqualToArgumentType(0)
-            ]),
-
             .Func("set_enum_ref_value", +[
                 BuiltinArg("enum_value", is_any: true, is_mut: true),
                 BuiltinArg("new_value", is_any: true)

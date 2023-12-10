@@ -228,9 +228,7 @@ extend Parser {
                     };
                     mut args := []ast.CallArg();
                     self.expect(.Lparen);
-                    mut dyn_array_is_mut := false;
-                    if name in ["dyn_array", "as", "size_of", "align_of"] {
-                        dyn_array_is_mut = name == "dyn_array" and self.accept(.KwMut);
+                    if name in ["as", "size_of", "align_of"] {
                         arg_pos := self.tok.pos;
                         args.push(
                             ast.CallArg(
@@ -252,7 +250,7 @@ extend Parser {
                         }
                     }
                     self.expect(.Rparen);
-                    .BuiltinCall(name, args, dyn_array_is_mut, pos + self.prev_tok.pos)
+                    .BuiltinCall(name, args, pos + self.prev_tok.pos)
                 } else {
                     self.parse_ident(true) // builtin variable
                 }

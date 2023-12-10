@@ -765,13 +765,6 @@ class Codegen:
                 self.cur_func.store_ptr(
                     arg0, ir.Inst(ir.InstKind.LoadPtr, [arg1])
                 )
-            elif expr.name == "dyn_array":
-                typ_sym = expr.typ.symbol()
-                if len(expr.args) == 2:
-                    return self.empty_dyn_array(
-                        typ_sym, self.gen_expr(expr.args[1])
-                    )
-                return self.empty_dyn_array(typ_sym)
             elif expr.name == "as":
                 arg1 = expr.args[1]
                 arg1_is_voidptr = isinstance(
