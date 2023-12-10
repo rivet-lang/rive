@@ -310,7 +310,7 @@ extend Parser {
                 }
             },
             self.tok.kind in [.Lbracket, .Plus] -> {
-                is_dyn := self.accept(.Plus);
+                mut is_dyn := self.accept(.Plus);
                 mut elems := @dyn_array(mut ast.Expr);
                 mut pos := self.tok.pos;
                 self.next();
@@ -322,9 +322,67 @@ extend Parser {
                         }
                     }
                 }
-                pos += self.tok.pos;
                 self.expect(.Rbracket);
-                .ArrayLiteral(elems, is_dyn, pos)
+                pos += self.prev_tok.pos;
+                if !is_dyn and (elems.len == 0 or elems.len == 1 and self.tok.kind !in [
+                    .Semicolon, .Comma, .Rbrace
+                ]) {
+                    // []T() or [SIZE]T()
+                    is_dyn = elems.len == 0;
+                    is_mut := self.accept(.KwMut);
+                    elem_type := self.parse_type();
+                    mut init_value: ?ast.Expr := none;
+                    mut cap_value: ?ast.Expr := none;
+                    mut len_value: ?ast.Expr := none;
+                    self.expect(.Lparen);
+                    while self.tok.kind != .Rparen {
+                        mut arg_pos := self.tok.pos;
+                        arg_name := self.parse_name();
+                        self.expect(.Colon);
+                        arg_value := self.parse_expr();
+                        arg_pos += self.prev_tok.pos;
+                        match arg_name {
+                            "init" -> if init_value is none {
+                                init_value = arg_value;
+                            } else {
+                                report.error("duplicate array constructor argument `init`", arg_pos);
+                                break;
+                            },
+                            "len" if is_dyn -> if len_value is none {
+                                len_value = arg_value;
+                            } else {
+                                report.error("duplicate array constructor argument `len`", arg_pos);
+                                break;
+                            },
+                            "cap" if is_dyn -> if cap_value is none {
+                                cap_value = arg_value;
+                            } else {
+                                report.error("duplicate array constructor argument `cap`", arg_pos);
+                                break;
+                            },
+                            else -> {
+                                report.error(
+                                    "unknown array constructor argument `{}`".fmt(arg_name),
+                                    arg_pos
+                                );
+                                break;
+                            }
+                        }
+                        if self.tok.kind != .Rparen {
+                            self.expect(.Comma);
+                        }
+                    }
+                    self.expect(.Rparen);
+                    pos += self.prev_tok.pos;
+                    if !is_dyn {
+                        len_value = elems[0];
+                    }
+                    .ArrayCtor(
+                        is_dyn, is_mut, elem_type, init_value, cap_value, len_value, pos: pos
+                    )
+                } else {
+                    .ArrayLiteral(elems, is_dyn, pos)
+                }
             },
             self.tok.kind == .Name -> if self.peek_tok.kind == .Char {
                 if self.tok.lit == "b" {

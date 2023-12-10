@@ -881,9 +881,9 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Rbracket)
-            if len(elems) == 0 or (len(elems) == 1 and not is_dyn) and self.tok.kind not in (
+            if not is_dyn and (len(elems) == 0 or len(elems) == 1 and self.tok.kind not in (
                 Kind.Semicolon, Kind.Comma, Kind.Rbrace
-            ):
+            )):
                 # []T() or [SIZE]T()
                 is_dyn = len(elems) == 0
                 is_mut = self.accept(Kind.KwMut)
@@ -903,26 +903,26 @@ class Parser:
                             break
                         else:
                             init_value = arg_value
-                    elif arg_name == "cap" and is_dyn:
-                        if cap_value:
-                            report.error("duplicate array constructor argument `cap`", arg_pos)
-                            break
-                        else:
-                            cap_value = arg_value
                     elif arg_name == "len" and is_dyn:
                         if len_value:
                             report.error("duplicate array constructor argument `len`", arg_pos)
                             break
                         else:
                             len_value = arg_value
+                    elif arg_name == "cap" and is_dyn:
+                        if cap_value:
+                            report.error("duplicate array constructor argument `cap`", arg_pos)
+                            break
+                        else:
+                            cap_value = arg_value
                     else:
                         report.error(f"unknown array constructor argument `{arg_name}`", arg_pos)
                         break
                     if self.tok.kind != Kind.Rparen:
                         self.expect(Kind.Comma)
+                self.expect(Kind.Rparen)
                 if not is_dyn:
                     len_value = elems[0]
-                self.expect(Kind.Rparen)
                 expr = ast.ArrayCtor(is_dyn, is_mut, elem_type, init_value, cap_value, len_value, pos)
             else:
                 expr = ast.ArrayLiteral(elems, is_dyn, pos)
