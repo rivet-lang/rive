@@ -37,14 +37,14 @@ pub struct Checker {
         for source_file in source_files {
             self.sym = source_file.mod;
             self.source_file = source_file;
-            self.expected_type = .Void();
+            self.expected_type = .Void;
             self.check_global_vars(source_file.decls);
         }
         // check the source code
         for source_file in source_files {
             self.sym = source_file.mod;
             self.source_file = source_file;
-            self.expected_type = .Void();
+            self.expected_type = .Void;
             self.check_decls(source_file.decls);
             // check unused imports
             for imported_sym in source_file.imported_symbols.syms {

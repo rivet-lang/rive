@@ -109,8 +109,8 @@ extend Codegen {
     func type_to_mir(mut self, type: ast.Type) -> mir.Type {
         (size, _) := self.table.type_size(type, true);
         return match type is {
-            .Void -> .Void(),
-            .Never -> .Never(),
+            .Void -> .Void,
+            .Never -> .Never,
             .Result(result) -> {
                 is_void := result.inner.is_void();
                 name := "_R6Result".concat(self.mangle_type(result.inner));
@@ -187,7 +187,7 @@ extend Codegen {
                         }
                     }
                 } else {
-                    .Void()
+                    .Void
                 }
             }
         };

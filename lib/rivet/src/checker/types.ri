@@ -223,7 +223,7 @@ extend Checker {
                 type_hi
             } else {
                 // float -> int (bad)
-                .Void()
+                .Void
             }
         } else {
             is_signed_lo := self.table.is_signed_int(type_lo);
@@ -247,7 +247,7 @@ extend Checker {
                 type_lo
             } else {
                 // signed number -> unsigned number (bad)
-                .Void()
+                .Void
             }
         };
     }

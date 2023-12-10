@@ -47,7 +47,7 @@ extend Resolver {
                         name: for_stmt.index.name,
                         level: .Local,
                         pos: for_stmt.index.pos,
-                        type: .Void() // updated later
+                        type: .Void // updated later
                     );
                     for_stmt.scope.add_local(for_stmt.index.sym) catch |err| report.error(
                         err.to_string(), for_stmt.index.pos
@@ -60,7 +60,7 @@ extend Resolver {
                         name: value.name,
                         level: .Local,
                         pos: value.pos,
-                        type: .Void() // updated later
+                        type: .Void // updated later
                     );
                     for_stmt.scope.add_local(value.sym) catch |err| report.error(
                         err.to_string(), value.pos

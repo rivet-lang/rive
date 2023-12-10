@@ -5,7 +5,7 @@
 import std/traits;
 import std/strings;
 
-#[default_value(.Empty())]
+#[default_value(.Empty)]
 pub enum Expr < traits.Stringable {
     Empty,
     IntConst {

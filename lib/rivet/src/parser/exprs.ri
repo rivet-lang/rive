@@ -88,7 +88,7 @@ extend Parser {
                             pos: pos + self.prev_tok.pos
                         )
                     } else if self.accept(.KwNone) {
-                        .Type(.None())
+                        .Type(.None)
                     } else {
                         .Type(self.parse_type())
                     };

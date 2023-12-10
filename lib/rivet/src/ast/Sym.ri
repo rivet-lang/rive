@@ -201,7 +201,7 @@ pub struct Module < Sym {
             self_type: .Basic(type_sym),
             self_is_mut: true,
             args: +[Arg("value", type: elem_type, pos: token.noPos)],
-            ret_type: .Void(),
+            ret_type: .Void,
             has_body: true
         )) catch {};
         type_sym.scope.add(Func(

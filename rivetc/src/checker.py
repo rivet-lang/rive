@@ -332,11 +332,10 @@ class Checker:
                     expr.variant_info = v
                     expr.typ = type.Type(_sym)
                     if _sym.info.is_tagged and not expr.from_is_cmp and not expr.is_instance:
-                        report.error(
-                            f"cannot use variant `{expr}` as a simple value",
-                            expr.pos
-                        )
-                        report.note(f"make an instance instead: `{expr}()`")
+                        if v.has_typ:
+                            report.error(f"variant `{expr.value}` cannot be initialized without arguments", expr.pos)
+                            report.help(f"if you intend not to pass any value, add `()`: `{expr.value}()`")
+                        expr.is_instance = True
                 else:
                     report.error(
                         f"enum `{_sym.name}` has no variant `{expr.value}`",
@@ -1115,6 +1114,11 @@ class Checker:
                         )
                     expr.typ = expr.field_sym.typ()
                 elif isinstance(expr.left_sym, sym.Type):
+                    if expr.left_sym.kind == sym.TypeKind.Enum:
+                        if v := expr.left_sym.info.get_variant(expr.field_name):
+                            if v.has_typ:
+                                report.error(f"variant `{expr}` cannot be initialized without arguments", expr.pos)
+                                report.help(f"if you intend not to pass any value, add `()`: `{expr}()`")
                     expr.typ = type.Type(expr.left_sym)
                 elif isinstance(expr.field_sym, sym.Type):
                     expr.typ = type.Type(expr.field_sym)
@@ -1493,7 +1497,7 @@ class Checker:
                     self.expected_type = old_expected_type
                 else:
                     report.error(f"`{expr.left}` not expects a value", expr.pos)
-            elif v.has_typ and not (v.has_fields or expr.left.from_is_cmp):
+            elif v.has_typ and not (v.has_fields or (isinstance(expr.left, ast.EnumLiteral) and expr.left.from_is_cmp)):
                 report.error(f"`{expr.left}` expects a value", expr.pos)
             elif v.has_fields:
                 self.check_ctor(v.typ.symbol(), expr)

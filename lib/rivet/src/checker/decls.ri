@@ -155,7 +155,7 @@ extend Checker {
             .Func(mut func_decl) -> self.check_func(func_decl),
             .Test(test_decl) -> {
                 old_cur_func := self.cur_func;
-                self.cur_func = ast.Func(ret_type: .Void());
+                self.cur_func = ast.Func(ret_type: .Void);
                 self.inside_test = true;
                 self.check_stmts(test_decl.stmts);
                 self.inside_test = false;

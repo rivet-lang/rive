@@ -231,7 +231,7 @@ extend Parser {
                 type := if has_type {
                     self.parse_type()
                 } else {
-                    .Void()
+                    .Void
                 };
                 pos += self.prev_tok.pos;
                 self.expect(.DeclAssign);

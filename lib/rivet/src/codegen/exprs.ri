@@ -21,7 +21,7 @@ extend Codegen {
                 .IntConst(float_lit.value.to_int() catch @unreachable()),
                 self.uint_t
             ),
-            else -> .Empty()
+            else -> .Empty
         };
     }
 }

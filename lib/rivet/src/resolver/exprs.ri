@@ -95,7 +95,7 @@ extend Resolver {
                     binary.var_obj.sym = ast.Var(
                         is_mut: binary.var_obj.is_mut,
                         name: binary.var_obj.name,
-                        type: .Void(),
+                        type: .Void,
                         level: .Local,
                         pos: binary.var_obj.pos
                     );
@@ -135,7 +135,7 @@ extend Resolver {
                         is_mut: var_.is_mut,
                         name: var_.name,
                         level: .Local,
-                        type: .Void(),
+                        type: .Void,
                         pos: var_.pos
                     );
                     guard.scope.add_local(var_.sym) catch |err| report.error(
@@ -168,7 +168,7 @@ extend Resolver {
                                 is_mut: branch.var_is_mut,
                                 name: branch.var_name,
                                 level: .Local,
-                                type: .Void(),
+                                type: .Void,
                                 pos: branch.var_pos
                             )) catch |err| report.error(
                                 err.to_string(), branch.var_pos

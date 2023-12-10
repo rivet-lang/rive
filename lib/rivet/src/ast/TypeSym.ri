@@ -17,7 +17,7 @@ pub struct Field {
 pub struct TypeSym < Sym {
     pub mut fields: []Field;
     pub mut full_fields_: []Field;
-    pub mut info: TypeInfo := .Invalid();
+    pub mut info: TypeInfo := .Invalid;
     pub mut size: uint;
     pub mut align: uint;
     pub mut default_value: ?Expr;

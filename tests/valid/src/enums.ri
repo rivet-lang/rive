@@ -62,7 +62,7 @@ test "enums: tagged enum" {
         },
         else -> @assert(false)
     }
-    e = .Def();
+    e = .Def;
     match e is {
         .Def -> @assert(true),
         else -> @assert(false)

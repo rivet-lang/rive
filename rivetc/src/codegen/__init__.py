@@ -714,6 +714,8 @@ class Codegen:
             return ir.StringLit(escaped_val, str(size))
         elif isinstance(expr, ast.EnumLiteral):
             enum_sym = expr.typ.symbol()
+            if expr.is_instance:
+                return self.boxed_enum_value(enum_sym, expr.value, None)
             return ir.IntLit(
                 self.ir_type(enum_sym.info.underlying_typ),
                 str(expr.variant_info.value)

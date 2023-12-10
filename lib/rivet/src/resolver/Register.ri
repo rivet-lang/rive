@@ -206,7 +206,7 @@ pub struct Register {
                                 self.add_sym(ast.TypeSym(
                                     parent: self.sym,
                                     name: ident.name,
-                                    info: .Placeholder()
+                                    info: .Placeholder
                                 ), ident.pos)
                             };
                             ident.found = true;

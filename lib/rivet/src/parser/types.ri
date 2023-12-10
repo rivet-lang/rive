@@ -38,7 +38,7 @@ extend Parser {
                 ret_type := if self.accept(.Arrow) {
                     self.parse_type()
                 } else {
-                    .Void()
+                    .Void
                 };
                 .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos)
             },

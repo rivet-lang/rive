@@ -30,7 +30,7 @@ pub enum Expr < traits.Stringable {
         mut is_sym: bool;
         mut found: bool;
         mut sym: Sym;
-        mut builtin: Builtin := .Invalid();
+        mut builtin: Builtin := .Invalid;
         pos: token.Pos;
         mut type: Type;
     },
@@ -207,7 +207,7 @@ pub enum Expr < traits.Stringable {
         args: []CallArg;
         dyn_array_is_mut: bool;
         pos: token.Pos;
-        mut builtin: Builtin := .Invalid();
+        mut builtin: Builtin := .Invalid;
         mut type: Type;
     },
     Unary {

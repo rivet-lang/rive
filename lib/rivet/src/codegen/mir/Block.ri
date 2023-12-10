@@ -44,7 +44,7 @@ pub enum Stmt < traits.Stringable {
     },
     Return {
         has_expr: bool;
-        expr: Expr := .Empty();
+        expr: Expr := .Empty;
     };
 
     pub func to_string(self) -> string {

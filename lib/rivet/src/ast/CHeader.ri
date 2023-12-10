@@ -57,7 +57,7 @@ struct CDefine < traits.Stringable {
     has_value: bool;
     is_macro: bool;
 
-    mut cvalue: CImportValue := .Invalid();
+    mut cvalue: CImportValue := .Invalid;
     mut has_cvalue: bool;
 
     pub func to_string(&self) -> string {

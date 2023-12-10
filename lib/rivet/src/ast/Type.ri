@@ -7,7 +7,7 @@ import { Builder } from std/strings;
 
 import ../token;
 
-#[default_value(.Void())]
+#[default_value(.Void)]
 pub enum Type < traits.Stringable {
     Basic {
         mut sym: TypeSym;
@@ -89,7 +89,7 @@ pub enum Type < traits.Stringable {
             } else {
                 Func(
                     is_method: self.is_method,
-                    self_type: .Void(),
+                    self_type: .Void,
                     self_is_mut: self.self_is_mut,
                     self_is_ptr: self.self_is_ptr,
                     args: self.args,
@@ -104,7 +104,7 @@ pub enum Type < traits.Stringable {
         return match self is {
             .Pointer(ptr) -> ptr.inner,
             .Rawptr -> self,
-            else -> .Void()
+            else -> .Void
         };
     }
 

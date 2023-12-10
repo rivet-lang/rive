@@ -8,7 +8,7 @@ import ../utils/maps;
 
 extend Checker {
     func check_call(mut self, mut call_expr: ast.Expr.Call) -> ast.Type {
-        call_expr.type = .Void();
+        call_expr.type = .Void;
 
         mut left := call_expr.left;
         inside_parens := if left is .Paren(paren)
@@ -81,7 +81,7 @@ extend Checker {
                     );
                     err.add_help("use the option-check syntax: `foo?.method()` or use `??`: `(foo ?? 5).method()`");
                     err.emit();
-                    return .Void();
+                    return .Void;
                 }
                 if left_sym := selector.left_type.symbol() {
                     if method := left_sym.find_method(selector.field_name) {
