@@ -169,7 +169,7 @@ pub struct Compiler {
         mut name := "";
         mut full_name := "";
         mut abspath := "";
-        mut files := @dyn_array(string);
+        mut files := []string();
         is_super := pathx.starts_with("../");
         if pathx.starts_with("./") or is_super {
             self.vlog("    searching module in local path");
@@ -288,7 +288,7 @@ pub struct Compiler {
         }
         self.vlog("-----------------------------------------");
         source_files := self.table.source_files;
-        self.table.source_files = @dyn_array(ast.SourceFile, source_files.len);
+        self.table.source_files = []ast.SourceFile(cap: source_files.len);
         for node in g_resolved.nodes {
             for pf in source_files {
                 if pf.mod.name == node.name {
@@ -302,7 +302,7 @@ pub struct Compiler {
     func import_graph(self) -> depgraph.DepGraph {
         mut g := depgraph.DepGraph.new();
         for pf in self.table.source_files {
-            mut deps := @dyn_array(string);
+            mut deps := []string();
             if pf.mod.name !in ["c.ctypes", "c.libc", "c", "core"] {
                 deps.push("core");
             }
