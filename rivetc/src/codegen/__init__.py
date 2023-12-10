@@ -54,7 +54,9 @@ class Codegen:
         self.gen_types()
 
         self.out_rir.globals.append(
-            ir.GlobalVar(False, False, ir.DYN_ARRAY_T.ptr(True), "_R4core4ARGS")
+            ir.GlobalVar(
+                False, False, ir.DYN_ARRAY_T.ptr(True), "_R4core4ARGS"
+            )
         )
 
         # generate 'init_string_lits_fn' function
@@ -514,8 +516,8 @@ class Codegen:
                 left_ir_typ = self.ir_type(left.typ)
                 ident = ir.Ident(
                     left_ir_typ,
-                    self.cur_func.local_name()
-                    if left.name == "_" else self.cur_func.unique_name(left.name)
+                    self.cur_func.local_name() if left.name == "_" else
+                    self.cur_func.unique_name(left.name)
                 )
                 stmt.scope.update_ir_name(left.name, ident.name)
                 if isinstance(left_ir_typ, ir.Array):
@@ -738,7 +740,9 @@ class Codegen:
                     )
                 return ir.Ident(ir_typ, cg_utils.mangle_symbol(expr.sym))
             elif isinstance(expr.sym, sym.Func):
-                return ir.Ident(self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.sym))
+                return ir.Ident(
+                    self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.sym)
+                )
             elif expr.is_comptime:
                 if expr.name == "_RIVET_COMMIT_":
                     return self.gen_string_literal(utils.commit_hash())
@@ -1175,7 +1179,8 @@ class Codegen:
                                     ir.Inst(
                                         ir.InstKind.Add, [
                                             ir.Name(
-                                                cg_utils.mangle_symbol(left_sym) +
+                                                cg_utils
+                                                .mangle_symbol(left_sym) +
                                                 "4VTBL"
                                             ), id_value
                                         ]
@@ -1476,14 +1481,16 @@ class Codegen:
                         )
                 elif isinstance(expr.left_sym, sym.Func):
                     return ir.Ident(
-                        self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.left_sym)
+                        self.ir_type(expr.typ),
+                        cg_utils.mangle_symbol(expr.left_sym)
                     )
                 elif isinstance(
                     expr.field_sym, sym.Var
                 ) and expr.field_sym.is_extern and expr.field_sym.abi != sym.ABI.Rivet:
                     return ir.Ident(self.ir_type(expr.typ), expr.field_sym.name)
                 return ir.Ident(
-                    self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.field_sym)
+                    self.ir_type(expr.typ),
+                    cg_utils.mangle_symbol(expr.field_sym)
                 )
             old_inside_selector_expr = self.inside_selector_expr
             self.inside_selector_expr = True
@@ -1536,7 +1543,9 @@ class Codegen:
             typ_sym = expr.typ.symbol()
             if len(expr.elems) == 0:
                 if expr.is_dyn:
-                    tmp = ir.Ident(self.ir_type(expr.typ), self.cur_func.local_name())
+                    tmp = ir.Ident(
+                        self.ir_type(expr.typ), self.cur_func.local_name()
+                    )
                     self.cur_func.alloca(tmp, self.empty_dyn_array(typ_sym))
                     return tmp
                 return self.default_value(expr.typ)
@@ -1547,7 +1556,9 @@ class Codegen:
                 elems.append(self.gen_expr_with_cast(elem_typ, elem))
             arr_lit = ir.ArrayLit(self.ir_type(elem_typ), elems)
             if expr.is_dyn:
-                tmp = ir.Ident(self.ir_type(expr.typ), self.cur_func.local_name())
+                tmp = ir.Ident(
+                    self.ir_type(expr.typ), self.cur_func.local_name()
+                )
                 self.cur_func.alloca(
                     tmp,
                     ir.Inst(
@@ -1564,7 +1575,7 @@ class Codegen:
                 self.cur_func.add_call(
                     "_R4core8mem_copyF",
                     [custom_tmp, arr_lit,
-                        ir.IntLit(ir.UINT_T, str(size))]
+                     ir.IntLit(ir.UINT_T, str(size))]
                 )
                 return ir.Skip()
             return arr_lit
@@ -1606,8 +1617,7 @@ class Codegen:
                     if end == None:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R4core16array_slice_fromF"),
-                                left,
+                                ir.Name("_R4core16array_slice_fromF"), left,
                                 ir.IntLit(ir.UINT_T, str(size)),
                                 ir.IntLit(ir.UINT_T, s.info.size.lit), start
                             ]
@@ -1615,8 +1625,7 @@ class Codegen:
                     else:
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R4core11array_sliceF"),
-                                left,
+                                ir.Name("_R4core11array_sliceF"), left,
                                 ir.IntLit(ir.UINT_T, str(size)),
                                 ir.IntLit(ir.UINT_T, s.info.size.lit), start,
                                 end
@@ -1930,8 +1939,9 @@ class Codegen:
                     else:
                         cond = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name(f"{cg_utils.mangle_symbol(left_sym)}4_eq_M"),
-                                cur_elem, elem_idx_
+                                ir.Name(
+                                    f"{cg_utils.mangle_symbol(left_sym)}4_eq_M"
+                                ), cur_elem, elem_idx_
                             ]
                         )
                     contains_decl.add_cond_br(cond, ret_l, continue_l)
@@ -2063,7 +2073,9 @@ class Codegen:
                                 ), next_branch
                             )
                     else:
-                        self.cur_func.add_cond_br(cond, branch_label, next_branch)
+                        self.cur_func.add_cond_br(
+                            cond, branch_label, next_branch
+                        )
                     self.cur_func.add_label(branch_label)
                 if is_branch_void_value:
                     self.gen_expr_with_cast(
@@ -2073,7 +2085,9 @@ class Codegen:
                     self.cur_func.store(
                         tmp, self.gen_expr_with_cast(expr.expected_typ, b.expr)
                     )
-                self.cur_func.add_comment("if expr branch (goto to other branch)")
+                self.cur_func.add_comment(
+                    "if expr branch (goto to other branch)"
+                )
                 self.cur_func.add_br(exit_label)
                 if len(next_branch) > 0 and next_branch != else_label:
                     self.cur_func.add_label(next_branch)
@@ -2593,7 +2607,9 @@ class Codegen:
             if custom_tmp:
                 tmp = custom_tmp
             elif typ_sym.info.is_boxed:
-                tmp = self.boxed_instance(cg_utils.mangle_symbol(typ_sym), typ_sym.id)
+                tmp = self.boxed_instance(
+                    cg_utils.mangle_symbol(typ_sym), typ_sym.id
+                )
             else:
                 tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
                 self.cur_func.alloca(tmp)
@@ -2689,7 +2705,9 @@ class Codegen:
             if not isinstance(f_typ, ir.Pointer):
                 f_typ = f_typ.ptr(True)
                 value_f = ir.Inst(ir.InstKind.GetRef, [value_f], f_typ)
-            self.cur_func.store(ir.Selector(f_typ, tmp, ir.Name(f.name)), value_f)
+            self.cur_func.store(
+                ir.Selector(f_typ, tmp, ir.Name(f.name)), value_f
+            )
         if not is_ptr:
             value = ir.Inst(ir.InstKind.GetRef, [value])
         value = value if is_ptr else ir.Inst(
@@ -2701,7 +2719,9 @@ class Codegen:
         if value_sym.kind == TypeKind.Trait:
             index = ir.Inst(
                 ir.InstKind.Call, [
-                    ir.Name(f"{cg_utils.mangle_symbol(trait_sym)}17__index_of_vtbl__"),
+                    ir.Name(
+                        f"{cg_utils.mangle_symbol(trait_sym)}17__index_of_vtbl__"
+                    ),
                     ir.Selector(ir.UINT_T, value, ir.Name("_idx_"))
                 ], ir.UINT_T
             )
@@ -2728,7 +2748,9 @@ class Codegen:
         if custom_tmp:
             tmp = custom_tmp
         else:
-            tmp = self.boxed_instance(cg_utils.mangle_symbol(enum_sym), enum_sym.id)
+            tmp = self.boxed_instance(
+                cg_utils.mangle_symbol(enum_sym), enum_sym.id
+            )
         uint_t = ir.UINT_T
         variant_info = enum_sym.info.get_variant(variant_name)
         self.cur_func.store(
@@ -2761,7 +2783,9 @@ class Codegen:
         if custom_tmp:
             tmp = custom_tmp
         else:
-            tmp = self.boxed_instance(cg_utils.mangle_symbol(enum_sym), enum_sym.id)
+            tmp = self.boxed_instance(
+                cg_utils.mangle_symbol(enum_sym), enum_sym.id
+            )
         variant_info = enum_sym.info.get_variant(variant_name)
         self.cur_func.store(
             ir.Selector(ir.UINT_T, tmp, ir.Name("_idx_")),
@@ -3004,7 +3028,9 @@ class Codegen:
                                 m.name
                             ] if m.name in OVERLOADABLE_OPERATORS_STR else m.name
                             if ts_method := its.find(m.name):
-                                map[method_name] = cg_utils.mangle_symbol(ts_method)
+                                map[method_name] = cg_utils.mangle_symbol(
+                                    ts_method
+                                )
                             else:
                                 map[method_name] = cg_utils.mangle_symbol(m)
                     funcs.append(map)
@@ -3052,7 +3078,9 @@ class Codegen:
                 for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 self.out_rir.structs.append(
-                    ir.Struct(ts.info.is_opaque, cg_utils.mangle_symbol(ts), fields)
+                    ir.Struct(
+                        ts.info.is_opaque, cg_utils.mangle_symbol(ts), fields
+                    )
                 )
 
     def get_type_symbols(self, root):

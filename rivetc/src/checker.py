@@ -333,8 +333,13 @@ class Checker:
                     expr.typ = type.Type(_sym)
                     if _sym.info.is_tagged and not expr.from_is_cmp and not expr.is_instance:
                         if v.has_typ:
-                            report.error(f"variant `{expr.value}` cannot be initialized without arguments", expr.pos)
-                            report.help(f"if you intend not to pass any value, add `()`: `{expr.value}()`")
+                            report.error(
+                                f"variant `{expr.value}` cannot be initialized without arguments",
+                                expr.pos
+                            )
+                            report.help(
+                                f"if you intend not to pass any value, add `()`: `{expr.value}()`"
+                            )
                         expr.is_instance = True
                 else:
                     report.error(
@@ -671,8 +676,10 @@ class Checker:
                 try:
                     self.check_types(ltyp, elem_typ)
                     if not (
-                        lsym.kind.is_primitive() or
-                        (lsym.kind == TypeKind.Enum and not lsym.info.is_tagged)
+                        lsym.kind.is_primitive() or (
+                            lsym.kind == TypeKind.Enum
+                            and not lsym.info.is_tagged
+                        )
                     ) and not lsym.exists(op_m):
                         report.error(
                             f"cannot use operator `{expr.op}` with type `{lsym.name}`",
@@ -835,7 +842,9 @@ class Checker:
 
                 if expr.left_typ == self.comp.string_t:
                     if isinstance(expr.index, ast.RangeExpr):
-                        report.error("`string` does not support slicing syntax", expr.pos)
+                        report.error(
+                            "`string` does not support slicing syntax", expr.pos
+                        )
                         report.help("use `.substr()` instead")
                     expr.typ = self.comp.uint8_t
                 elif hasattr(expr.left_typ, "typ"):
@@ -1117,8 +1126,13 @@ class Checker:
                     if expr.left_sym.kind == sym.TypeKind.Enum:
                         if v := expr.left_sym.info.get_variant(expr.field_name):
                             if v.has_typ:
-                                report.error(f"variant `{expr}` cannot be initialized without arguments", expr.pos)
-                                report.help(f"if you intend not to pass any value, add `()`: `{expr}()`")
+                                report.error(
+                                    f"variant `{expr}` cannot be initialized without arguments",
+                                    expr.pos
+                                )
+                                report.help(
+                                    f"if you intend not to pass any value, add `()`: `{expr}()`"
+                                )
                     expr.typ = type.Type(expr.left_sym)
                 elif isinstance(expr.field_sym, sym.Type):
                     expr.typ = type.Type(expr.field_sym)
@@ -1497,7 +1511,12 @@ class Checker:
                     self.expected_type = old_expected_type
                 else:
                     report.error(f"`{expr.left}` not expects a value", expr.pos)
-            elif v.has_typ and not (v.has_fields or (isinstance(expr.left, ast.EnumLiteral) and expr.left.from_is_cmp)):
+            elif v.has_typ and not (
+                v.has_fields or (
+                    isinstance(expr.left, ast.EnumLiteral)
+                    and expr.left.from_is_cmp
+                )
+            ):
                 report.error(f"`{expr.left}` expects a value", expr.pos)
             elif v.has_fields:
                 self.check_ctor(v.typ.symbol(), expr)
