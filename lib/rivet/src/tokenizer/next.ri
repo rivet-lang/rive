@@ -39,6 +39,11 @@ extend Tokenizer {
             nextc := self.look_ahead(1);
             if utils.is_name_char(ch) {
                 name := self.read_name();
+                if name == "and" {
+                    return self.new_token(.LogicalAnd, len: 3);
+                } else if name == "or" {
+                    return self.new_token(.LogicalOr, len: 2);
+                }
                 return self.new_token(token.Kind.lookup(name), name, name.len);
             } else if ch.is_digit() {
                 // decimals with 0 prefix = error
@@ -219,7 +224,9 @@ extend Tokenizer {
                     continue;
                 },
                 b'&' -> {
-                    if nextc == b'=' {
+                    if nextc == b'&' and self.look_ahead(2).is_space() {
+                        return self.new_token(.LogicalAnd, len: 2);
+                    } else if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.AmpAssign, len: 2);
                     }
@@ -242,7 +249,9 @@ extend Tokenizer {
                     return self.new_token(.Bang);
                 },
                 b'|' -> {
-                    if nextc == b'=' {
+                    if nextc == b'|' and self.look_ahead(2).is_space() {
+                        return self.new_token(.LogicalOr, len: 2);
+                    } else if nextc == b'=' {
                         self.pos += 1;
                         return self.new_token(.PipeAssign, len: 2);
                     }

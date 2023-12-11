@@ -1794,7 +1794,7 @@ class Codegen:
                     if is_not_never:
                         self.cur_func.add_label(exit_label)
                     return tmp
-            elif expr.op in (Kind.KwAnd, Kind.KwOr):
+            elif expr.op in (Kind.LogicalAnd, Kind.LogicalOr):
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
                 tmp = ir.Ident(
                     self.ir_type(self.comp.bool_t), self.cur_func.local_name()
@@ -1802,7 +1802,7 @@ class Codegen:
                 self.cur_func.alloca(tmp, left)
                 left_l = self.cur_func.local_name()
                 exit_l = self.cur_func.local_name()
-                if expr.op == Kind.KwAnd:
+                if expr.op == Kind.LogicalAnd:
                     self.cur_func.add_cond_br(left, left_l, exit_l)
                 else:
                     self.cur_func.add_cond_br(left, exit_l, left_l)

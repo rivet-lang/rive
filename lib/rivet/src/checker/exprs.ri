@@ -621,7 +621,7 @@ extend Checker {
         } else if left_type is .Option and binary.op != .OrElse and right_type !is .None {
             report.error("option values ​​can only be compared with `none`", binary.pos);
         } else if left_type == self.table.bool_t and right_type == left_type
-            and binary.op !in [.Eq, .Ne, .KwAnd, .KwOr, .Pipe, .Amp] {
+            and binary.op !in [.Eq, .Ne, .LogicalAnd, .LogicalOr, .Pipe, .Amp] {
             report.error("boolean values only support the following operators: `==`, `!=`, `and`, `or`, `&` and `|`", binary.pos);
         }
 
@@ -760,7 +760,7 @@ extend Checker {
                     binary.type = self.table.bool_t;
                     return binary.type;
                 },
-                .KwAnd, .KwOr -> {
+                .LogicalAnd, .LogicalOr -> {
                     if left_type != self.table.bool_t {
                         report.error(
                             "non-boolean expression in left operand for `{}`".fmt(binary.op),
@@ -772,7 +772,7 @@ extend Checker {
                             binary.left.position()
                         );
                     } else if binary.left is .Binary(bin_left) {
-                        if bin_left.op != binary.op and bin_left.op in [.KwAnd, .KwOr] {
+                        if bin_left.op != binary.op and bin_left.op in [.LogicalAnd, .LogicalOr] {
                             // use `(a and b) or c` instead of `a and b or c`
                             mut err := report.error_builder(
                                 "ambiguous boolean expression", binary.pos

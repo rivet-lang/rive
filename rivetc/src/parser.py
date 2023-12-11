@@ -672,16 +672,16 @@ class Parser:
 
     def parse_or_expr(self):
         left = self.parse_and_expr()
-        while self.accept(Kind.KwOr):
+        while self.accept(Kind.LogicalOr):
             right = self.parse_and_expr()
-            left = ast.BinaryExpr(left, Kind.KwOr, right, left.pos)
+            left = ast.BinaryExpr(left, Kind.LogicalOr, right, left.pos)
         return left
 
     def parse_and_expr(self):
         left = self.parse_equality_expr()
-        while self.accept(Kind.KwAnd):
+        while self.accept(Kind.LogicalAnd):
             right = self.parse_equality_expr()
-            left = ast.BinaryExpr(left, Kind.KwAnd, right, left.pos)
+            left = ast.BinaryExpr(left, Kind.LogicalAnd, right, left.pos)
         return left
 
     def parse_equality_expr(self):

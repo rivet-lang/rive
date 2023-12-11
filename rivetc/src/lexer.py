@@ -491,6 +491,10 @@ class Lexer:
             ch, nextc = self.current_char(), self.look_ahead(1)
             if utils.is_valid_name(ch):
                 lit = self.read_ident()
+                if lit == "and":
+                    return token.Token("", Kind.LogicalAnd, pos)
+                elif lit == "or":
+                    return token.Token("", Kind.LogicalOr, pos)
                 return token.Token(lit, token.lookup(lit), pos)
             elif ch.isdigit():
                 # decimals with 0 prefix = error
@@ -606,7 +610,10 @@ class Lexer:
                 self.pp_directive()
                 continue
             elif ch == "&":
-                if nextc == "=":
+                if nextc == "&" and self.look_ahead(2).isspace():
+                    self.pos += 1
+                    return token.Token("", Kind.LogicalAnd, pos)
+                elif nextc == "=":
                     self.pos += 1
                     return token.Token("", Kind.AmpAssign, pos)
                 return token.Token("", Kind.Amp, pos)
@@ -628,7 +635,10 @@ class Lexer:
                     return token.Token("", Kind.Ne, pos)
                 return token.Token("", Kind.Bang, pos)
             elif ch == "|":
-                if nextc == "=":
+                if nextc == "|" and self.look_ahead(2).isspace():
+                    self.pos += 1
+                    return token.Token("", Kind.LogicalOr, pos)
+                elif nextc == "=":
                     self.pos += 1
                     return token.Token("", Kind.PipeAssign, pos)
                 return token.Token("", Kind.Pipe, pos)

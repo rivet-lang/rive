@@ -14,12 +14,12 @@ extend Parser {
 
     func parse_or_expr(mut self) -> ast.Expr {
         mut left := self.parse_and_expr();
-        while self.accept(.KwOr) {
+        while self.accept(.LogicalOr) {
             right := self.parse_and_expr();
             left = .Binary(
                 left: left,
                 right: right,
-                op: .KwOr,
+                op: .LogicalOr,
                 pos: left.position() + right.position()
             );
         }
@@ -28,12 +28,12 @@ extend Parser {
 
     func parse_and_expr(mut self) -> ast.Expr {
         mut left := self.parse_equality_expr();
-        while self.accept(.KwAnd) {
+        while self.accept(.LogicalAnd) {
             right := self.parse_equality_expr();
             left = .Binary(
                 left: left,
                 right: right,
-                op: .KwAnd,
+                op: .LogicalAnd,
                 pos: left.position() + right.position()
             );
         }
