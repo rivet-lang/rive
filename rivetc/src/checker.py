@@ -638,7 +638,7 @@ class Checker:
                 Kind.Eq, Kind.Ne, Kind.LogicalAnd, Kind.LogicalOr, Kind.Pipe, Kind.Amp
             ):
                 report.error(
-                    "boolean values only support the following operators: `==`, `!=`, `and`, `or`, `&` and `|`",
+                    "boolean values only support the following operators: `==`, `!=`, `&&`, `||`, `&` and `|`",
                     expr.pos
                 )
             elif ltyp == self.comp.string_t and rtyp == self.comp.string_t and expr.op not in (

@@ -622,7 +622,7 @@ extend Checker {
             report.error("option values ​​can only be compared with `none`", binary.pos);
         } else if left_type == self.table.bool_t and right_type == left_type
             and binary.op !in [.Eq, .Ne, .LogicalAnd, .LogicalOr, .Pipe, .Amp] {
-            report.error("boolean values only support the following operators: `==`, `!=`, `and`, `or`, `&` and `|`", binary.pos);
+            report.error("boolean values only support the following operators: `==`, `!=`, `&&`, `||`, `&` and `|`", binary.pos);
         }
 
         mut return_type := left_type;
