@@ -491,10 +491,6 @@ class Lexer:
             ch, nextc = self.current_char(), self.look_ahead(1)
             if utils.is_valid_name(ch):
                 lit = self.read_ident()
-                if lit == "and":
-                    return token.Token("", Kind.LogicalAnd, pos)
-                elif lit == "or":
-                    return token.Token("", Kind.LogicalOr, pos)
                 return token.Token(lit, token.lookup(lit), pos)
             elif ch.isdigit():
                 # decimals with 0 prefix = error

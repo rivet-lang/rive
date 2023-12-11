@@ -39,11 +39,6 @@ extend Tokenizer {
             nextc := self.look_ahead(1);
             if utils.is_name_char(ch) {
                 name := self.read_name();
-                if name == "and" {
-                    return self.new_token(.LogicalAnd, len: 3);
-                } else if name == "or" {
-                    return self.new_token(.LogicalOr, len: 2);
-                }
                 return self.new_token(token.Kind.lookup(name), name, name.len);
             } else if ch.is_digit() {
                 // decimals with 0 prefix = error
@@ -716,7 +711,7 @@ extend Tokenizer {
                 // escape `\x`
                 if c == b'x' {
                     if self.look_ahead(1) == b'"' || !(
-                        self.look_ahead(1).is_hex_digit() and
+                        self.look_ahead(1).is_hex_digit() &&
                         self.look_ahead(2).is_hex_digit()
                     ) {
                         self.error(r"`\x` used without two following hex digits", pos);

@@ -190,7 +190,7 @@ func underscore_ok(s_: string) -> bool {
     // number proper.
     while i < s.len : i += 1 {
         // digits are always okay.
-        if (b'0' <= s[i] && s[i] <= b'9') or
+        if (b'0' <= s[i] && s[i] <= b'9') ||
             (hex && b'a' <= lower(s[i]) && lower(s[i]) <= b'f') {
             saw = b'0';
             continue;

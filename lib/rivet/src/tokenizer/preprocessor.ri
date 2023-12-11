@@ -73,11 +73,11 @@ extend Tokenizer {
         cond := self.pp_expression();
         self.skip_whitespace();
         self.pos -= 1;
-        if self.conditional_stack.is_empty() or
+        if self.conditional_stack.is_empty() ||
             self.conditional_stack[self.conditional_stack.len - 1].else_found {
             self.error("unexpected `#else_if`", pos);
         } else if cond && !self.conditional_stack[self.conditional_stack.len - 1].matched
-            && (self.conditional_stack.len == 1 or
+            && (self.conditional_stack.len == 1 ||
                 !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
             // condition true -> process code within if
             self.conditional_stack[self.conditional_stack.len - 1].matched = true;
@@ -91,11 +91,11 @@ extend Tokenizer {
     func pp_else(mut self) {
         pos := self.current_pos();
         self.skip_whitespace();
-        if self.conditional_stack.is_empty() or
+        if self.conditional_stack.is_empty() ||
             self.conditional_stack[self.conditional_stack.len - 1].else_found {
             self.error("unexpected `#else`", pos);
         } else if !self.conditional_stack[self.conditional_stack.len - 1].matched
-            && (self.conditional_stack.len == 1 or
+            && (self.conditional_stack.len == 1 ||
                 !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
             // condition true -> process code within if
             self.conditional_stack[self.conditional_stack.len - 1].matched = true;

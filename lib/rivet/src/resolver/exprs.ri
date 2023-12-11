@@ -370,7 +370,7 @@ extend Resolver {
             if sym_ref.ref_expr is .Ident(ident) && ident.found && ident.is_sym {
                 sym_ref.ref = ident.sym;
                 sym_ref.ref_resolved = true;
-            } else if sym_ref.ref_expr is .Selector(selector) && selector.found and
+            } else if sym_ref.ref_expr is .Selector(selector) && selector.found &&
                 selector.is_path {
                 sym_ref.ref = selector.sym;
                 sym_ref.ref_resolved = true;
