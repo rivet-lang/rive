@@ -626,9 +626,13 @@ class Checker:
                         )
             elif isinstance(
                 ltyp, type.Option
-            ) and expr.op not in (Kind.KwIs, Kind.KwNotIs, Kind.OrElse):
+            ) and expr.op not in (Kind.OrElse, Kind.Eq, Kind.Ne):
                 report.error(
-                    "option values only support `??`, `is` and `!is`", expr.pos
+                    "option values only support `??`, `==` and `!=`", expr.pos
+                )
+            elif isinstance(ltyp, type.Option) and expr.op != Kind.OrElse and rtyp != self.comp.none_t:
+                report.error(
+                    "option values ​​can only be compared with `none`", expr.pos
                 )
             elif ltyp == self.comp.bool_t and rtyp == self.comp.bool_t and expr.op not in (
                 Kind.Eq, Kind.Ne, Kind.KwAnd, Kind.KwOr, Kind.Pipe, Kind.Amp
@@ -721,12 +725,9 @@ class Checker:
                     report.error(e.args[0], expr.pos)
                 return expr.typ
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
-                if not (
-                    lsym.kind in (TypeKind.Trait, TypeKind.Enum)
-                    or isinstance(ltyp, type.Option)
-                ):
+                if lsym.kind not in (TypeKind.Trait, TypeKind.Enum):
                     report.error(
-                        f"`{expr.op}` can only be used with traits, enums and options",
+                        f"`{expr.op}` can only be used with traits and tagged enums",
                         expr.left.pos
                     )
                 if expr.has_var:

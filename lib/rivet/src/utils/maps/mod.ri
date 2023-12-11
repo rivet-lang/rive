@@ -45,7 +45,7 @@ pub struct MapStringUint {
 
     #[inline]
     pub func contains(self, key: string) -> bool {
-        return self.get(key) !is none;
+        return self.get(key) != none;
     }
 
     #[inline]
@@ -116,7 +116,7 @@ pub struct MapStringArrayOfStrings {
 
     #[inline]
     pub func contains(self, key: string) -> bool {
-        return self.get(key) !is none;
+        return self.get(key) != none;
     }
 
     #[inline]
@@ -166,7 +166,7 @@ pub struct MapStringBool {
 
     #[inline]
     pub func contains(self, key: string) -> bool {
-        return self.get(key) !is none;
+        return self.get(key) != none;
     }
 
     #[inline]

@@ -201,7 +201,7 @@ pub struct Table {
     }
 
     pub func exist_builtin(self, name: string) -> bool {
-        return self.find_builtin(name) !is none;
+        return self.find_builtin(name) != none;
     }
 
     #[inline]

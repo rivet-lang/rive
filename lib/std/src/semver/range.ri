@@ -130,7 +130,7 @@ struct Range {
     func parse_x(input: string) -> ?Version {
         raw_ver := RawVersion.parse(input).complete();
         for typ in versions {
-            if raw_ver.raw_ints[typ].index_of_any(xRangeSymbols) is none {
+            if raw_ver.raw_ints[typ].index_of_any(xRangeSymbols) == none {
                 continue;
             }
             match typ {
@@ -179,7 +179,7 @@ struct Range {
 func can_expand(input: string) -> bool {
     input0 := input[0];
     return input0 == b'~' or input0 == b'^' or input.contains(hyphenRangeSep)
-        or input.index_of_any(xRangeSymbols) !is none;
+        or input.index_of_any(xRangeSymbols) != none;
 }
 
 func expand_tilda(raw_version: string) -> ?ComparatorSet {

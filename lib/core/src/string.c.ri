@@ -733,7 +733,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// Returns `true` if the string contains `substr`.
     #[inline]
     pub func contains(self, substr: Self) -> bool {
-        return substr.len == 0 or self.index_of(substr) !is none;
+        return substr.len == 0 or self.index_of(substr) != none;
     }
 
     /// Returns `true` if the string starts with `p`.

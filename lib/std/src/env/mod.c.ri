@@ -11,7 +11,7 @@ pub var homeDir := get(#if _LINUX_ "HOME" #else "USERPROFILE" #endif) ?? "";
 /// Returns `true` if the environment variable exists.
 #[inline]
 pub func exists(name: string) -> bool {
-    return get(name) !is none;
+    return get(name) != none;
 }
 
 /// Returns the value of the environment variable named by the key.

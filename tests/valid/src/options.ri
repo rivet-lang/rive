@@ -1,6 +1,6 @@
 test "`none` literal" {
     x: ?int32 := none;
-    @assert(x is none);
+    @assert(x == none);
 }
 
 test "operator `??`" {
@@ -21,9 +21,9 @@ struct Option {
 
 test "option fields" {
     opt := Option();
-    @assert(opt.a is none);
+    @assert(opt.a == none);
 
     opt2 := Option(a: 5);
-    @assert(opt2.a !is none);
+    @assert(opt2.a != none);
     @assert(opt2.a? == 5);
 }

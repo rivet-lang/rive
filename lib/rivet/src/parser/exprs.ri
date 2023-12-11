@@ -340,19 +340,19 @@ extend Parser {
                         arg_value := self.parse_expr();
                         arg_pos += self.prev_tok.pos;
                         match arg_name {
-                            "init" -> if init_value is none {
+                            "init" -> if init_value == none {
                                 init_value = arg_value;
                             } else {
                                 report.error("duplicate array constructor argument `init`", arg_pos);
                                 break;
                             },
-                            "len" if is_dyn -> if len_value is none {
+                            "len" if is_dyn -> if len_value == none {
                                 len_value = arg_value;
                             } else {
                                 report.error("duplicate array constructor argument `len`", arg_pos);
                                 break;
                             },
-                            "cap" if is_dyn -> if cap_value is none {
+                            "cap" if is_dyn -> if cap_value == none {
                                 cap_value = arg_value;
                             } else {
                                 report.error("duplicate array constructor argument `cap`", arg_pos);
@@ -787,7 +787,7 @@ extend Parser {
         return if value.len > 2 and value.substr(end: 2) !in ["0x", "0o", "0b"]
             and value.index_of_any(
             ".eE"
-        ) !is none {
+        ) != none {
             .FloatLiteral(value, pos)
         } else {
             .IntegerLiteral(value, pos)

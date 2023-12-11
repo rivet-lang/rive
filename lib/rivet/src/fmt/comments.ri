@@ -69,7 +69,7 @@ extend Formatter {
     ) {
         mut prev_line := prev_line_ ?? 0;
         for i, comment in comments {
-            if prev_line_ !is none
+            if prev_line_ != none
                 and (
                     (
                         comment.pos.line > prev_line and self.output.len() > 1

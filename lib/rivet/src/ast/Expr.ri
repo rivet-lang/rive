@@ -402,13 +402,13 @@ pub enum Expr < traits.Stringable {
                 if array_ctor.is_dyn {
                     if init_value := array_ctor.init_value {
                         sb.write_fmt("init: {}", init_value);
-                        if array_ctor.cap_value !is none or array_ctor.len_value !is none {
+                        if array_ctor.cap_value != none or array_ctor.len_value != none {
                             sb.write_string(", ");
                         }
                     }
                     if cap_value := array_ctor.cap_value {
                         sb.write_fmt("cap: {}", cap_value);
-                        if array_ctor.len_value !is none {
+                        if array_ctor.len_value != none {
                             sb.write_string(", ");
                         }
                     }

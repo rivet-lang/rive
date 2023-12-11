@@ -378,10 +378,10 @@ pub struct FlagParser {
     func handle_builtin_options(mut self) {
         mut show_version := false;
         mut show_help := false;
-        if self.find_flag("help") is none {
+        if self.find_flag("help") == none {
             show_help = self.bool_flag("help", b'h', self.default_help_label) ?? false;
         }
-        if !self.application_version.is_empty() and self.find_flag("version") is none {
+        if !self.application_version.is_empty() and self.find_flag("version") == none {
             show_version = self.bool_flag("version", 0, self.default_version_label) ?? false;
         }
         if show_help {
@@ -478,7 +478,7 @@ pub struct FlagParser {
                 return val;
             }
             if arg.len > 1 and arg[0] == b'-' and arg[1] != b'-'
-                and arg.index_of_byte(short_hand) !is none {
+                and arg.index_of_byte(short_hand) != none {
                 // `-abc` is equivalent to `-a -b -c`
                 return "true";
             }

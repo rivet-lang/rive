@@ -247,7 +247,7 @@ pub struct Path {
                 }
             }
             mut up_count: uint := 1;
-            while from_it.next() !is none {
+            while from_it.next() != none {
                 up_count += 1;
             }
             up_index_end := up_count * 3;

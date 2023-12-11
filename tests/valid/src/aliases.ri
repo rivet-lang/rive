@@ -13,5 +13,5 @@ func rawptr_option() -> RawptrOption {
 }
 
 test "using `alias` with types" {
-    @assert(rawptr_option() is none);
+    @assert(rawptr_option() == none);
 }

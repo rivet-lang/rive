@@ -82,7 +82,7 @@ pub enum TypeInfo < traits.Stringable {
         }
 
         func has_variant(self, name: string) -> bool {
-            return self.get_variant(name) !is none;
+            return self.get_variant(name) != none;
         }
 
         func get_variant(self, name: string) -> ?EnumVariant {

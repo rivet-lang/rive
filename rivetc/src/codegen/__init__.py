@@ -1743,16 +1743,16 @@ class Codegen:
             expr_left_typ = expr.left.typ
             expr_right_typ = expr.right.typ
             if isinstance(expr_left_typ, type.Option):
-                if expr.op in (Kind.KwIs, Kind.KwNotIs):
+                if expr.op in (Kind.Eq, Kind.Ne):
                     left = self.gen_expr_with_cast(expr_left_typ, expr.left)
                     if expr_left_typ.is_pointer():
-                        op = "==" if expr.op == Kind.KwIs else "!="
+                        op = "==" if expr.op == Kind.Eq else "!="
                         return ir.Inst(
                             ir.InstKind.Cmp,
                             [op, left, ir.NoneLit(ir.VOID_PTR_T)], ir.BOOL_T
                         )
                     val = ir.Selector(ir.BOOL_T, left, ir.Name("is_none"))
-                    if expr.op == Kind.KwNotIs:
+                    if expr.op == Kind.Ne:
                         val = ir.Inst(ir.InstKind.BooleanNot, [val], ir.BOOL_T)
                     return val
                 elif expr.op == Kind.OrElse:

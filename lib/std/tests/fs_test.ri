@@ -54,14 +54,14 @@ test "std.fs.Path.dir_name()" {
     } else {
         @assert(false);
     }
-    @assert(Path.dir_name("/") is none);
-    @assert(Path.dir_name("//") is none);
-    @assert(Path.dir_name("///") is none);
-    @assert(Path.dir_name("////") is none);
-    @assert(Path.dir_name("") is none);
-    @assert(Path.dir_name("a") is none);
-    @assert(Path.dir_name("a/") is none);
-    @assert(Path.dir_name("a//") is none);
+    @assert(Path.dir_name("/") == none);
+    @assert(Path.dir_name("//") == none);
+    @assert(Path.dir_name("///") == none);
+    @assert(Path.dir_name("////") == none);
+    @assert(Path.dir_name("") == none);
+    @assert(Path.dir_name("a") == none);
+    @assert(Path.dir_name("a/") == none);
+    @assert(Path.dir_name("a//") == none);
 }
 
 test "std.fs.Path.base_name()" {

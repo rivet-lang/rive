@@ -45,12 +45,12 @@ func bt_print_callback(
                 return -1; // stop backtracing
             }
         }
-        fn_name := if fn_ptr is none {
+        fn_name := if fn_ptr == none {
             "???"
         } else {
             demangle_symbol(string.from_raw(fn_ptr))
         };
-        file_name := if filename_ptr is none {
+        file_name := if filename_ptr == none {
             "???"
         } else {
             string.from_raw(filename_ptr)

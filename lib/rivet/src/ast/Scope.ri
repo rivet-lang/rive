@@ -58,7 +58,7 @@ pub struct Scope {
 
     #[inline]
     pub func exists(self, name: string) -> bool {
-        return self.find(name) !is none;
+        return self.find(name) != none;
     }
 
     pub func find(self, name: string) -> ?Sym {
@@ -112,7 +112,7 @@ pub struct Scope {
 
     #[inline]
     func dont_lookup_parent(self) -> bool {
-        return self.parent is none or self.detached_from_parent;
+        return self.parent == none or self.detached_from_parent;
     }
 
     pub func update_type(self, name: string, type: Type) {

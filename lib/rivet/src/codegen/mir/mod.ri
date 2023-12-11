@@ -144,7 +144,7 @@ pub struct Func < traits.Stringable {
     }
 
     pub func has_local(self, name: string) -> bool {
-        return self.get_local(name) !is none;
+        return self.get_local(name) != none;
     }
 
     pub func add_block(mut self, mut block: Block) {

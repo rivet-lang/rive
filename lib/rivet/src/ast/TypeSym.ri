@@ -51,7 +51,7 @@ pub struct TypeSym < Sym {
 
     #[inline]
     pub func has_field(self, name: string) -> bool {
-        return self.lookup_field(name) !is none;
+        return self.lookup_field(name) != none;
     }
 
     #[inline]
@@ -119,12 +119,12 @@ pub struct TypeSym < Sym {
 
     #[inline]
     pub func has_func(self, name: string) -> bool {
-        return self.find_func(name) !is none;
+        return self.find_func(name) != none;
     }
 
     #[inline]
     pub func has_method(self, name: string) -> bool {
-        return self.find_method(name) !is none;
+        return self.find_method(name) != none;
     }
 
     pub func full_fields(mut self) -> []Field {

@@ -62,7 +62,7 @@ pub struct ImportedSymbols {
 
     #[inline]
     pub func exists(&self, name: string) -> bool {
-        return self.find(name) !is none;
+        return self.find(name) != none;
     }
 }
 

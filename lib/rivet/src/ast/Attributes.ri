@@ -58,7 +58,7 @@ pub struct Attributes {
 
     #[inline]
     pub func has(self, name: string) -> bool {
-        return self.find(name) !is none;
+        return self.find(name) != none;
     }
 
     #[inline]
