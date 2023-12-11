@@ -225,6 +225,7 @@ extend Tokenizer {
                 },
                 b'&' -> {
                     if nextc == b'&' and self.look_ahead(2).is_space() {
+                        self.pos += 1;
                         return self.new_token(.LogicalAnd, len: 2);
                     } else if nextc == b'=' {
                         self.pos += 1;
@@ -250,6 +251,7 @@ extend Tokenizer {
                 },
                 b'|' -> {
                     if nextc == b'|' and self.look_ahead(2).is_space() {
+                        self.pos += 1;
                         return self.new_token(.LogicalOr, len: 2);
                     } else if nextc == b'=' {
                         self.pos += 1;
