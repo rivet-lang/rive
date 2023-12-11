@@ -4,10 +4,10 @@
 
 #[inline]
 pub func is_name_char(ch: uint8) -> bool {
-    return ch.is_letter() or ch == b'_';
+    return ch.is_letter() || ch == b'_';
 }
 
 #[inline]
 pub func is_new_line(ch: uint8) -> bool {
-    return ch == LF or ch == CR;
+    return ch == LF || ch == CR;
 }

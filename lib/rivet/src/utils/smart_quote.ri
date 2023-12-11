@@ -20,8 +20,8 @@ pub func smart_quote(s: string, raw: bool := false) -> string {
         mut i: uint := 0;
         while i < s.len : i += 1 {
             ch := s[i];
-            if (ch >= 37 and ch <= 90) or (ch >= 95 and ch <= 126)
-                or (ch in [b' ', b'!', b'#', b'[', b']']) {
+            if (ch >= 37 && ch <= 90) || (ch >= 95 && ch <= 126)
+                || (ch in [b' ', b'!', b'#', b'[', b']']) {
                 // safe punctuation + digits + big latin letters, small latin
                 // letters + more safe punctuation, important punctuation exceptions,
                 // that are not placed conveniently in a consequitive span in the ASCII

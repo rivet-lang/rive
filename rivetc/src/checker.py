@@ -635,10 +635,10 @@ class Checker:
                     "option values ​​can only be compared with `none`", expr.pos
                 )
             elif ltyp == self.comp.bool_t and rtyp == self.comp.bool_t and expr.op not in (
-                Kind.Eq, Kind.Ne, Kind.KwAnd, Kind.KwOr, Kind.Pipe, Kind.Amp
+                Kind.Eq, Kind.Ne, Kind.LogicalAnd, Kind.LogicalOr, Kind.Pipe, Kind.Amp
             ):
                 report.error(
-                    "boolean values only support the following operators: `==`, `!=`, `and`, `or`, `&` and `|`",
+                    "boolean values only support the following operators: `==`, `!=`, `&&`, `||`, `&` and `|`",
                     expr.pos
                 )
             elif ltyp == self.comp.string_t and rtyp == self.comp.string_t and expr.op not in (
@@ -763,7 +763,7 @@ class Checker:
                         )
                 expr.typ = self.comp.bool_t
                 return expr.typ
-            elif expr.op in (Kind.KwAnd, Kind.KwOr):
+            elif expr.op in (Kind.LogicalAnd, Kind.LogicalOr):
                 if ltyp != self.comp.bool_t:
                     report.error(
                         f"non-boolean expression in left operand for `{expr.op}`",
@@ -776,7 +776,7 @@ class Checker:
                     )
                 elif isinstance(expr.left, ast.BinaryExpr):
                     if expr.left.op != expr.op and expr.left.op in (
-                        Kind.KwAnd, Kind.KwOr
+                        Kind.LogicalAnd, Kind.LogicalOr
                     ):
                         # use `(a and b) or c` instead of `a and b or c`
                         report.error("ambiguous boolean expression", expr.pos)

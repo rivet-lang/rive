@@ -37,13 +37,13 @@ pub struct Pos < traits.Stringable {
 
     pub func ==(&self, other: &Pos) -> bool {
         return self.file == other.file
-            and self.line == other.line
-            and self.col == other.col
-            and self.len == other.len
-            and self.pos == other.pos
-            and self.end_line == other.end_line
-            and self.end_col == other.end_col
-            and self.is_multiline == other.is_multiline;
+            && self.line == other.line
+            && self.col == other.col
+            && self.len == other.len
+            && self.pos == other.pos
+            && self.end_line == other.end_line
+            && self.end_col == other.end_col
+            && self.is_multiline == other.is_multiline;
     }
 
     #[inline]
@@ -97,7 +97,7 @@ pub struct Token < traits.Stringable {
         if is_keyword(self.lit) {
             str = "keyword";
         }
-        if self.kind != .DocComment and self.lit != "" {
+        if self.kind != .DocComment && self.lit != "" {
             str = str.concat(" `{}`".fmt(self.lit));
         }
         return str;

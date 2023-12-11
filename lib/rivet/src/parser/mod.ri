@@ -95,7 +95,7 @@ pub struct Parser {
         }
         self.last_err_pos = self.tok.pos;
         mut kstr := kind.to_string();
-        if token.is_keyword(kstr) or (kstr.len > 0 and !kstr[0].is_letter()) {
+        if token.is_keyword(kstr) || (kstr.len > 0 && !kstr[0].is_letter()) {
             kstr = "`{}`".fmt(kstr);
         }
         report.error("expected {}, found {}".fmt(kstr, self.tok), self.tok.pos);
@@ -128,10 +128,10 @@ pub struct Parser {
         support_ref: bool := false, support_mut: bool := true
     ) -> ast.ObjectData {
         pos := self.tok.pos;
-        is_mut := support_mut and self.accept(.KwMut);
-        is_ref := support_ref and !is_mut and self.accept(.Amp);
+        is_mut := support_mut && self.accept(.KwMut);
+        is_ref := support_ref && !is_mut && self.accept(.Amp);
         name := self.parse_name();
-        (type, has_type) := if support_type and self.accept(.Colon) {
+        (type, has_type) := if support_type && self.accept(.Colon) {
             (self.parse_type(), true)
         } else {
             (ast.Type.Void, false)
@@ -158,8 +158,8 @@ pub struct Parser {
     }
 
     func parse_comment(mut self) -> ast.Comment {
-        if self.prefs.is_fmt or (self.prefs.is_docs and self.tok.kind == .DocComment) {
-            if self.accept(.Comment) or self.accept(.DocComment) {
+        if self.prefs.is_fmt || (self.prefs.is_docs && self.tok.kind == .DocComment) {
+            if self.accept(.Comment) || self.accept(.DocComment) {
                 return ast.Comment(
                     self.prev_tok.kind == .DocComment, self.prev_tok.lit, self.prev_tok.pos
                 );
@@ -176,8 +176,8 @@ pub struct Parser {
         mut comments := []ast.Comment();
         mut line := self.prev_tok.pos.line;
         while {
-            if self.tok.kind != .Comment or (same_line and self.tok.pos.line > line)
-                or (follow_up and (self.tok.pos.line > line + 1 or self.tok.lit.contains("\n"))) {
+            if self.tok.kind != .Comment || (same_line && self.tok.pos.line > line)
+                || (follow_up && (self.tok.pos.line > line + 1 || self.tok.lit.contains("\n"))) {
                 break;
             }
             comments.push(self.parse_comment());

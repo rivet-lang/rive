@@ -34,9 +34,9 @@ struct RawVersion {
             return false;
         }
         return is_valid_number(self.raw_ints[VER_MAJOR])
-            and is_valid_number(self.raw_ints[VER_MINOR])
-            and is_valid_number(self.raw_ints[VER_PATCH])
-            and is_valid_string(self.prerelease) and is_valid_string(self.metadata);
+            && is_valid_number(self.raw_ints[VER_MINOR])
+            && is_valid_number(self.raw_ints[VER_PATCH])
+            && is_valid_string(self.prerelease) && is_valid_string(self.metadata);
     }
 
     #[inline]

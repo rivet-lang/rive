@@ -51,6 +51,8 @@ class Kind(Enum):
     Pipe = auto_enum() # |
     Xor = auto_enum() # ^
     BitNot = auto_enum() # ~
+    LogicalAnd = auto_enum() # &&
+    LogicalOr = auto_enum() # ||
     Lbrace = auto_enum() # {
     Rbrace = auto_enum() # }
     Lbracket = auto_enum() # [
@@ -61,7 +63,6 @@ class Kind(Enum):
     KeywordBegin = auto_enum()
     # ========== keywords ==========
     KwAlias = auto_enum() # alias
-    KwAnd = auto_enum() # and
     KwAs = auto_enum() # as
     KwBreak = auto_enum() # break
     KwCatch = auto_enum() # catch
@@ -85,7 +86,6 @@ class Kind(Enum):
     KwNone = auto_enum() # none
     KwNotIn = auto_enum() # !in
     KwNotIs = auto_enum() # !is
-    KwOr = auto_enum() # or
     KwPub = auto_enum() # pub
     KwReturn = auto_enum() # return
     KwSelf = auto_enum() # self
@@ -197,6 +197,8 @@ TOKEN_STRINGS = {
     Kind.Pipe: "|",
     Kind.Xor: "^",
     Kind.BitNot: "~",
+    Kind.LogicalAnd: "&&",
+    Kind.LogicalOr: "||",
     Kind.Lbrace: "{",
     Kind.Rbrace: "}",
     Kind.Lbracket: "[",
@@ -206,7 +208,6 @@ TOKEN_STRINGS = {
 
     # ========== keywords ==========
     Kind.KwAlias: "alias",
-    Kind.KwAnd: "and",
     Kind.KwAs: "as",
     Kind.KwBreak: "break",
     Kind.KwCatch: "catch",
@@ -230,7 +231,6 @@ TOKEN_STRINGS = {
     Kind.KwNone: "none",
     Kind.KwNotIn: "!in",
     Kind.KwNotIs: "!is",
-    Kind.KwOr: "or",
     Kind.KwPub: "pub",
     Kind.KwReturn: "return",
     Kind.KwSelf: "self",

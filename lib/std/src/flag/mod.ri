@@ -224,8 +224,8 @@ pub struct FlagParser {
     /// `--help` option is given to the program.
     pub func usage(self) -> string {
         positive_min_arg := self.min_free_args > 0;
-        positive_max_arg := self.max_free_args > 0 and self.max_free_args != MAX_ARGS_NUMBER;
-        no_arguments := self.min_free_args == 0 and self.max_free_args == 0;
+        positive_max_arg := self.max_free_args > 0 && self.max_free_args != MAX_ARGS_NUMBER;
+        no_arguments := self.min_free_args == 0 && self.max_free_args == 0;
         adesc := if no_arguments {
             ""
         } else {
@@ -247,19 +247,19 @@ pub struct FlagParser {
             sb.writeln();
         }
         // show a message about the [ARGS]:
-        if positive_min_arg or positive_max_arg or no_arguments {
+        if positive_min_arg || positive_max_arg || no_arguments {
             if no_arguments {
                 sb.writeln("This application does not expect any arguments.");
             } else {
                 sb.write_string("The arguments should be ");
-                if positive_min_arg and positive_max_arg
-                    and self.min_free_args == self.max_free_args {
+                if positive_min_arg && positive_max_arg
+                    && self.min_free_args == self.max_free_args {
                     sb.write_fmt("exactly {}", self.min_free_args);
                 } else {
                     if positive_min_arg {
                         sb.write_fmt("at least {}", self.min_free_args);
                     }
-                    if positive_min_arg and positive_max_arg {
+                    if positive_min_arg && positive_max_arg {
                         sb.write_string(" and ");
                     }
                     if positive_max_arg {
@@ -327,19 +327,19 @@ pub struct FlagParser {
         mut remaining := self.args.clone();
         if !self.allow_unknown_args {
             for arg in remaining {
-                if (arg.len >= 2 and arg.substr(end: 2) == "--")
-                    or (arg.len == 2 and arg[0] == b'-') {
+                if (arg.len >= 2 && arg.substr(end: 2) == "--")
+                    || (arg.len == 2 && arg[0] == b'-') {
                     throw UnknownFlagError(arg);
                 }
             }
         }
-        if remaining.len < self.min_free_args and self.min_free_args > 0 {
+        if remaining.len < self.min_free_args && self.min_free_args > 0 {
             throw ArgsCountError(self.min_free_args, remaining.len);
         }
-        if remaining.len > self.max_free_args and self.max_free_args > 0 {
+        if remaining.len > self.max_free_args && self.max_free_args > 0 {
             throw ArgsCountError(self.max_free_args, remaining.len);
         }
-        if remaining.len > 0 and self.max_free_args == 0 and self.min_free_args == 0 {
+        if remaining.len > 0 && self.max_free_args == 0 && self.min_free_args == 0 {
             throw ArgsCountError(0, remaining.len);
         }
         for arg in self.all_after_dashdash {
@@ -381,7 +381,7 @@ pub struct FlagParser {
         if self.find_flag("help") == none {
             show_help = self.bool_flag("help", b'h', self.default_help_label) ?? false;
         }
-        if !self.application_version.is_empty() and self.find_flag("version") == none {
+        if !self.application_version.is_empty() && self.find_flag("version") == none {
             show_version = self.bool_flag("version", 0, self.default_version_label) ?? false;
         }
         if show_help {
@@ -414,10 +414,10 @@ pub struct FlagParser {
                 should_skip_one = false;
                 continue;
             }
-            if arg.is_empty() or arg[0] != b'-' {
+            if arg.is_empty() || arg[0] != b'-' {
                 continue;
             }
-            if (arg.len == 2 and arg[0] == b'-' and arg[1] == short_hand) or arg == full {
+            if (arg.len == 2 && arg[0] == b'-' && arg[1] == short_hand) || arg == full {
                 if i +  1 >= self.args.len {
                     return +[];
                 }
@@ -436,7 +436,7 @@ pub struct FlagParser {
                 should_skip_one = true;
                 continue;
             }
-            if arg.len > full.len + 1 and arg.substr(end: full.len + 1) == full.concat("=") {
+            if arg.len > full.len + 1 && arg.substr(end: full.len + 1) == full.concat("=") {
                 found_entries.push(arg.substr(full.len + 1));
                 to_delete.push(i);
                 continue;
@@ -457,11 +457,11 @@ pub struct FlagParser {
     func parse_bool_value(mut self, long_hand: string, short_hand: uint8) -> ?string {
         full := "--".concat(long_hand);
         for i, arg in self.args {
-            if arg.is_empty() or arg[0] != b'-' {
+            if arg.is_empty() || arg[0] != b'-' {
                 continue;
             }
-            if (arg.len == 2 and arg[0] == b'-' and arg[1] == short_hand) or arg == full {
-                if self.args.len > i + 1 and self.args[i + 1] in ["true", "false"] {
+            if (arg.len == 2 && arg[0] == b'-' && arg[1] == short_hand) || arg == full {
+                if self.args.len > i + 1 && self.args[i + 1] in ["true", "false"] {
                     val := self.args[i + 1];
                     self.args.delete(i + 1);
                     self.args.delete(i);
@@ -471,14 +471,14 @@ pub struct FlagParser {
                     return "true";
                 }
             }
-            if arg.len > full.len + 1 and arg.substr(end: full.len + 1) == full.concat("=") {
+            if arg.len > full.len + 1 && arg.substr(end: full.len + 1) == full.concat("=") {
                 // flag: `abc=true`
                 val := arg.substr(full.len + 1);
                 self.args.delete(i);
                 return val;
             }
-            if arg.len > 1 and arg[0] == b'-' and arg[1] != b'-'
-                and arg.index_of_byte(short_hand) != none {
+            if arg.len > 1 && arg[0] == b'-' && arg[1] != b'-'
+                && arg.index_of_byte(short_hand) != none {
                 // `-abc` is equivalent to `-a -b -c`
                 return "true";
             }

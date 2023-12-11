@@ -20,7 +20,7 @@ extend rune < Stringable {
     /// reverse is not true: not all valid uint32s are valid runes. `from_uint32()`
     /// will return `none` if the input is not a valid value for a rune.
     pub func from_uint32(i: uint32) -> ?rune {
-        if i >= 0x110000 or (i >= 0xD800 and i < 0xE000) {
+        if i >= 0x110000 || (i >= 0xD800 && i < 0xE000) {
             return none;
         }
         return unsafe { @as(rune, i) };

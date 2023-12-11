@@ -16,7 +16,7 @@ extend Checker {
                     if !impl.is_public {
                         errors.push("method `{}` should be public.".fmt(impl.name));
                     }
-                    if !impl.self_is_ptr and !impltor.is_boxed() {
+                    if !impl.self_is_ptr && !impltor.is_boxed() {
                         errors.push(
                             "receiver `self` should be a reference, or use the attribute `boxed`."
                         );
@@ -24,9 +24,9 @@ extend Checker {
                     if impl.args.len == trait_func.args.len {
                         for i, arg in impl.args {
                             trait_arg := trait_func.args[i];
-                            if arg.is_mut and !trait_arg.is_mut {
+                            if arg.is_mut && !trait_arg.is_mut {
                                 errors.push("argument `{}` should not be `mut`.".fmt(arg.name));
-                            } else if !arg.is_mut and trait_arg.is_mut {
+                            } else if !arg.is_mut && trait_arg.is_mut {
                                 errors.push("argument `{}` should be `mut`.".fmt(arg.name));
                             }
                             if arg.type != trait_arg.type {

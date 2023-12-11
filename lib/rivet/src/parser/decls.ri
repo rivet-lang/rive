@@ -11,7 +11,7 @@ import ../token;
 extend Parser {
     func parse_doc_comments(mut self) -> []ast.Comment {
         mut comments := []ast.Comment();
-        while self.tok.kind == .DocComment or (self.tok.kind == .Comment and comments.len > 0) {
+        while self.tok.kind == .DocComment || (self.tok.kind == .Comment && comments.len > 0) {
             comments.push(self.parse_comment());
         }
         return comments;
@@ -34,7 +34,7 @@ extend Parser {
                     };
                     if self.accept(.Lparen) {
                         while {
-                            name := if self.tok.kind == .Name and self.peek_tok.kind == .Colon {
+                            name := if self.tok.kind == .Name && self.peek_tok.kind == .Colon {
                                 n := self.parse_name();
                                 self.expect(.Colon);
                                 n
@@ -64,7 +64,7 @@ extend Parser {
     #[inline]
     func is_public(mut self) -> bool {
         is_public := self.accept(.KwPub);
-        return self.inside_trait or self.inside_enum_variant_with_fields or is_public;
+        return self.inside_trait || self.inside_enum_variant_with_fields || is_public;
     }
 
     func parse_abi(mut self) -> ast.ABI {
@@ -91,7 +91,7 @@ extend Parser {
     func parse_decl(mut self) -> ast.Decl {
         doc_comment := self.parse_doc_comments();
         attributes := self.parse_attributes(
-            self.tok.kind == .Hash and self.peek_tok.kind == .Bang
+            self.tok.kind == .Hash && self.peek_tok.kind == .Bang
         );
         is_public := self.is_public();
         mut pos := self.tok.pos;
@@ -149,7 +149,7 @@ extend Parser {
                 mut mod_path_pos := self.tok.pos;
                 mod_path := self.parse_import_path();
                 mod_path_pos += self.prev_tok.pos;
-                alias_name := if import_list.is_empty() and self.accept(.KwAs) {
+                alias_name := if import_list.is_empty() && self.accept(.KwAs) {
                     has_custom_alias = true;
                     self.parse_name()
                 } else {
@@ -199,7 +199,7 @@ extend Parser {
                 mut parent := ast.Expr.Empty(self.tok.pos);
                 mut parent_type := ast.Type.Void;
                 mut is_typealias := false;
-                if self.tok.kind != .Name and self.tok.kind.is_start_of_type() {
+                if self.tok.kind != .Name && self.tok.kind.is_start_of_type() {
                     is_typealias = true;
                     parent_type = self.parse_type();
                 } else {
@@ -262,7 +262,7 @@ extend Parser {
                     lefts.push(self.parse_var_decl(true));
                 }
                 pos += self.prev_tok.pos;
-                right := if !self.inside_extern and self.accept(.DeclAssign) {
+                right := if !self.inside_extern && self.accept(.DeclAssign) {
                     self.parse_expr()
                 } else {
                     .Empty(self.tok.pos)
@@ -415,9 +415,9 @@ extend Parser {
                     bases, variants, is_tagged, decls, pos
                 );
             },
-            (self.inside_struct or self.inside_trait
-                or self.inside_enum_variant_with_fields)
-                and self.tok.kind in [.KwMut, .Name] -> {
+            (self.inside_struct || self.inside_trait
+                || self.inside_enum_variant_with_fields)
+                && self.tok.kind in [.KwMut, .Name] -> {
                 // fields
                 is_mut := self.accept(.KwMut);
                 name := self.parse_name();
@@ -469,8 +469,8 @@ extend Parser {
                 );
             },
             self.accept(.KwFunc) -> return self.parse_func_decl(
-                doc_comment, attributes, is_public, attributes.has("unsafe") or (
-                    self.inside_extern and self.extern_abi != .Rivet
+                doc_comment, attributes, is_public, attributes.has("unsafe") || (
+                    self.inside_extern && self.extern_abi != .Rivet
                 ), if self.inside_extern { self.extern_abi } else { .Rivet }
             ),
             self.accept(.KwTest) -> {
@@ -537,7 +537,7 @@ extend Parser {
         } else {
             self.parse_name()
         };
-        is_special_method := name.starts_with("__") and name.ends_with("__");
+        is_special_method := name.starts_with("__") && name.ends_with("__");
 
         mut is_method := false;
         mut self_is_mut := false;
@@ -554,15 +554,15 @@ extend Parser {
         self.expect(.Lparen);
         if self.tok.kind != .Rparen {
             // receiver (`self`|`&self`|`mut self`)
-            if self.tok.kind == .KwSelf or (
-                self.tok.kind in [.Amp, .KwMut] and self.peek_tok.kind == .KwSelf
+            if self.tok.kind == .KwSelf || (
+                self.tok.kind in [.Amp, .KwMut] && self.peek_tok.kind == .KwSelf
             ) {
                 is_method = true;
                 self_pos = self.tok.pos;
                 self_is_ptr = self.accept(.Amp);
-                self_is_mut = !self_is_ptr and self.accept(.KwMut);
+                self_is_mut = !self_is_ptr && self.accept(.KwMut);
                 self.expect(.KwSelf);
-                if self_is_mut or self_is_ptr {
+                if self_is_mut || self_is_ptr {
                     self_pos += self.prev_tok.pos;
                 }
                 if self.tok.kind != .Rparen {
@@ -571,7 +571,7 @@ extend Parser {
             }
             // arguments
             while self.tok.kind != .Rparen {
-                if self.inside_extern and self.accept(.Ellipsis) {
+                if self.inside_extern && self.accept(.Ellipsis) {
                     is_variadic = true;
                     break;
                 } else {
@@ -621,11 +621,11 @@ extend Parser {
 
         mut stmts := []mut ast.Stmt();
         mut has_body := true;
-        if (self.inside_trait or self.inside_extern) and self.accept(.Semicolon) {
+        if (self.inside_trait || self.inside_extern) && self.accept(.Semicolon) {
             has_body = false;
         } else {
             self.expect(.Lbrace);
-            while !(self.accept(.Rbrace) or self.tok.kind == .EndOfFile) {
+            while !(self.accept(.Rbrace) || self.tok.kind == .EndOfFile) {
                 stmts.push(self.parse_stmt());
             }
         }
@@ -641,7 +641,7 @@ extend Parser {
             is_variadic: is_variadic,
             is_method: is_method,
             is_special_method: is_special_method,
-            is_main: self.mod_sym.is_root and name == "main",
+            is_main: self.mod_sym.is_root && name == "main",
             is_operator: is_operator,
             name: name,
             args: args,

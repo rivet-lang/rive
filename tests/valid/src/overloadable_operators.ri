@@ -24,35 +24,35 @@ var vec := DynArray(2, 2);
 test "overloadable operators: +" {
     mut v1 := vec;
     v1 = v1 + vec;
-    @assert(v1.x == 4 and v1.y == 4);
+    @assert(v1.x == 4 && v1.y == 4);
     v1 += vec;
-    @assert(v1.x == 6 and v1.y == 6);
+    @assert(v1.x == 6 && v1.y == 6);
 }
 
 test "overloadable operators: -" {
     mut v1 := vec;
     v1 = v1 - vec;
-    @assert(v1.x == 0 and v1.y == 0);
+    @assert(v1.x == 0 && v1.y == 0);
     v1 += vec;
-    @assert(v1.x == 2 and v1.y == 2);
+    @assert(v1.x == 2 && v1.y == 2);
     v1 -= vec;
-    @assert(v1.x == 0 and v1.y == 0);
+    @assert(v1.x == 0 && v1.y == 0);
 }
 
 test "overloadable operators: &" {
     mut v1 := vec;
     v1 = v1 * vec;
-    @assert(v1.x == 4 and v1.y == 4);
+    @assert(v1.x == 4 && v1.y == 4);
     v1 *= vec;
-    @assert(v1.x == 8 and v1.y == 8);
+    @assert(v1.x == 8 && v1.y == 8);
 }
 
 test "overloadable operators: /" {
     mut v1 := vec;
     v1 = v1 / vec;
-    @assert(v1.x == 1 and v1.y == 1);
+    @assert(v1.x == 1 && v1.y == 1);
     v1 += vec;
-    @assert(v1.x == 3 and v1.y == 3);
+    @assert(v1.x == 3 && v1.y == 3);
     v1 /= vec;
-    @assert(v1.x == 1 and v1.y == 1);
+    @assert(v1.x == 1 && v1.y == 1);
 }

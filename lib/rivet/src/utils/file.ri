@@ -23,7 +23,7 @@ pub func path_styled_for_error_messages(path_: string) -> string {
 pub func skip_bom(file_content: string) -> string {
    // BOM check
    if file_content.len >= 3 {
-     if file_content[0] == 0xEF and file_content[1] == 0xBB and file_content[2] == 0xBF {
+     if file_content[0] == 0xEF && file_content[1] == 0xBB && file_content[2] == 0xBF {
         // skip three BOM bytes
         return file_content.substr(3);
      }
@@ -59,7 +59,7 @@ struct SourceCache {
 
    pub func find_lines_between(self, path_: string, line: uint, end_line: uint) -> ?[]string {
 	  return if lines := self.find_lines(path_) {
-		if lines.len > 0 and lines.len >= end_line {
+		if lines.len > 0 && lines.len >= end_line {
 			lines[line..end_line]
 		} else {
 			none

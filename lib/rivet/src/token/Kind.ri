@@ -57,6 +57,8 @@ var kindStrings := [
     KindMap(.Pipe, "|"),
     KindMap(.Xor, "^"),
     KindMap(.BitNot, "~"),
+    KindMap(.LogicalAnd, "&&"),
+    KindMap(.LogicalOr, "||"),
     KindMap(.Lbrace, "{"),
     KindMap(.Rbrace, "}"),
     KindMap(.Lbracket, "["),
@@ -66,7 +68,6 @@ var kindStrings := [
 
     // keywords
     KindMap(.KwAlias, "alias"),
-    KindMap(.KwAnd, "and"),
     KindMap(.KwAs, "as"),
     KindMap(.KwBreak, "break"),
     KindMap(.KwCatch, "catch"),
@@ -90,7 +91,6 @@ var kindStrings := [
     KindMap(.KwNone, "none"),
     KindMap(.KwNotIn, "!in"),
     KindMap(.KwNotIs, "!is"),
-    KindMap(.KwOr, "or"),
     KindMap(.KwPub, "pub"),
     KindMap(.KwReturn, "return"),
     KindMap(.KwSelf, "self"),
@@ -156,6 +156,8 @@ pub enum Kind < traits.Stringable {
     Pipe, // |
     Xor, // ^
     BitNot, // ~
+    LogicalAnd, // &&
+    LogicalOr, // ||
     Lbrace, // {
     Rbrace, // }
     Lbracket, // [
@@ -166,7 +168,6 @@ pub enum Kind < traits.Stringable {
     KeywordBegin,
     // ========== keywords ==========
     KwAlias, // alias
-    KwAnd, // and
     KwAs, // as
     KwBreak, // break
     KwCatch, // catch
@@ -190,7 +191,6 @@ pub enum Kind < traits.Stringable {
     KwNone, // none
     KwNotIn, // !in
     KwNotIs, // !is
-    KwOr, // or
     KwPub, // pub
     KwReturn, // return
     KwSelf, // self

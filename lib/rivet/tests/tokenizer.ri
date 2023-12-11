@@ -27,7 +27,7 @@ test "tokenizer: simple `func main() { }`" {
     tokens := tokenize("func main() { }");
     @assert(tokens.len == 6);
     @assert(tokens[0].kind == .KwFunc);
-    @assert(tokens[1].kind == .Name and tokens[1].lit == "main");
+    @assert(tokens[1].kind == .Name && tokens[1].lit == "main");
     @assert(tokens[2].kind == .Lparen);
     @assert(tokens[3].kind == .Rparen);
     @assert(tokens[4].kind == .Lbrace);
@@ -61,7 +61,7 @@ test "tokenizer: preprocessor" {
     mut tokens := tokenize("#if true func main() { } #endif");
     @assert(tokens.len == 6);
     @assert(tokens[0].kind == .KwFunc);
-    @assert(tokens[1].kind == .Name and tokens[1].lit == "main");
+    @assert(tokens[1].kind == .Name && tokens[1].lit == "main");
     @assert(tokens[2].kind == .Lparen);
     @assert(tokens[3].kind == .Rparen);
     @assert(tokens[4].kind == .Lbrace);
@@ -73,7 +73,7 @@ test "tokenizer: preprocessor" {
     tokens = tokenize("#if !CUSTOM_FLAG func main() { } #endif");
     @assert(tokens.len == 6);
     @assert(tokens[0].kind == .KwFunc);
-    @assert(tokens[1].kind == .Name and tokens[1].lit == "main");
+    @assert(tokens[1].kind == .Name && tokens[1].lit == "main");
     @assert(tokens[2].kind == .Lparen);
     @assert(tokens[3].kind == .Rparen);
     @assert(tokens[4].kind == .Lbrace);

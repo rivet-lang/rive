@@ -101,8 +101,8 @@ pub struct Version < traits.Stringable {
 
     #[inline]
     pub func ==(self, v2: Self) -> bool {
-        return self.major == v2.major and self.minor == v2.minor and self.patch == v2.patch
-            and self.prerelease == v2.prerelease;
+        return self.major == v2.major && self.minor == v2.minor && self.patch == v2.patch
+            && self.prerelease == v2.prerelease;
     }
 
     #[inline]
@@ -138,12 +138,12 @@ pub struct Version < traits.Stringable {
 
     #[inline]
     pub func >=(self, v2: Self) -> bool {
-        return self == v2 or self > v2;
+        return self == v2 || self > v2;
     }
 
     #[inline]
     pub func <=(self, v2: Self) -> bool {
-        return self == v2 or self < v2;
+        return self == v2 || self < v2;
     }
 
     pub func to_string(self) -> string {

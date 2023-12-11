@@ -36,7 +36,7 @@ extend Codegen {
     func gen_func(mut self, mut func_decl: ast.Decl.Func) {
         ret_type_is_void := func_decl.ret_type.is_void();
         self.cur_func = mir.Func(
-            name: if func_decl.is_extern and func_decl.abi != .Rivet {
+            name: if func_decl.is_extern && func_decl.abi != .Rivet {
                 func_decl.name
             } else {
                 self.mangle_symbol(func_decl.sym)

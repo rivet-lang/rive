@@ -4,7 +4,7 @@
 
 func is_valid_string(input: string) -> bool {
     for c in input.as_bytes() {
-        if !(c.is_letter() or c.is_digit() or c == b'.' or c == b'-') {
+        if !(c.is_letter() || c.is_digit() || c == b'.' || c == b'-') {
             return false;
         }
     }

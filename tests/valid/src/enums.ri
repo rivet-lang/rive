@@ -107,5 +107,5 @@ struct EnumStruct {
 
 test "tagged enums with `default_value` attribute" {
     es := EnumStruct();
-    @assert(es.dv is .Abc(int) and int == 5);
+    @assert(es.dv is .Abc(int) && int == 5);
 }

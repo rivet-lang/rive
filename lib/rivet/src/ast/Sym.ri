@@ -87,10 +87,10 @@ pub trait Sym {
         self_mod := self.module() ?? return false;
         other_mod := other.module() ?? return false;
         return (
-            other_mod.is_universe or self_mod.id == other.id
-            or self_mod.id == other_mod.id
-            or self_mod.id == other_mod.parent?.id
-            or self_mod.parent?.id == other.parent?.id
+            other_mod.is_universe || self_mod.id == other.id
+            || self_mod.id == other_mod.id
+            || self_mod.id == other_mod.parent?.id
+            || self_mod.parent?.id == other.parent?.id
         );
     }
 
@@ -365,7 +365,7 @@ pub struct Func < Sym {
     pub func args_len(self) -> uint {
         mut len: uint := 0;
         for arg in self.args {
-            if !(arg.is_self or arg.type is .Variadic) {
+            if !(arg.is_self || arg.type is .Variadic) {
                 len += 1;
             }
         }

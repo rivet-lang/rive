@@ -18,7 +18,7 @@ pub struct StringFormatter {
                     if b2 == b'{' { // escaping '{'
                         self.res.write_byte(b'{');
                         self.i += 1;
-                    } else if b2 == b':' or b2 == b'}' {
+                    } else if b2 == b':' || b2 == b'}' {
                         if b2 == b':' {
                             self.i += 1;
                         }
@@ -32,14 +32,14 @@ pub struct StringFormatter {
                             );
                         }
                         value := args[arg_idx].to_string();
-                        if has_fwidth and fwidth > 0 {
+                        if has_fwidth && fwidth > 0 {
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {
                                 self.res.write_string(" ".repeat(@as(uint, fwidth - value_len)));
                             }
                         }
                         self.res.write_string(value);
-                        if has_fwidth and fwidth < 0 {
+                        if has_fwidth && fwidth < 0 {
                             fwidth = -fwidth;
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {
@@ -54,7 +54,7 @@ pub struct StringFormatter {
                         self.i += 1;
                         mut buf := StaticBuffer();
                         while unsafe {
-                            self.buf.ptr[self.i] != b'}' and self.buf.ptr[self.i] != b':'
+                            self.buf.ptr[self.i] != b'}' && self.buf.ptr[self.i] != b':'
                         } {
                             buf.push(unsafe { self.buf.ptr[self.i] });
                             self.i += 1;
@@ -74,14 +74,14 @@ pub struct StringFormatter {
                         }
                         (has_fwidth, mut fwidth) := self.fwidth();
                         value := args[index].to_string();
-                        if has_fwidth and fwidth > 0 {
+                        if has_fwidth && fwidth > 0 {
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {
                                 self.res.write_string(" ".repeat(@as(uint, fwidth - value_len)));
                             }
                         }
                         self.res.write_string(value);
-                        if has_fwidth and fwidth < 0 {
+                        if has_fwidth && fwidth < 0 {
                             fwidth = -fwidth;
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {

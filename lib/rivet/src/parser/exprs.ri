@@ -14,12 +14,12 @@ extend Parser {
 
     func parse_or_expr(mut self) -> ast.Expr {
         mut left := self.parse_and_expr();
-        while self.accept(.KwOr) {
+        while self.accept(.LogicalOr) {
             right := self.parse_and_expr();
             left = .Binary(
                 left: left,
                 right: right,
-                op: .KwOr,
+                op: .LogicalOr,
                 pos: left.position() + right.position()
             );
         }
@@ -28,12 +28,12 @@ extend Parser {
 
     func parse_and_expr(mut self) -> ast.Expr {
         mut left := self.parse_equality_expr();
-        while self.accept(.KwAnd) {
+        while self.accept(.LogicalAnd) {
             right := self.parse_equality_expr();
             left = .Binary(
                 left: left,
                 right: right,
-                op: .KwAnd,
+                op: .LogicalAnd,
                 pos: left.position() + right.position()
             );
         }
@@ -76,7 +76,7 @@ extend Parser {
                     )
                 },
                 .KwIs, .KwNotIs -> {
-                    if self.inside_match_header and self.peek_tok.kind == .Lbrace {
+                    if self.inside_match_header && self.peek_tok.kind == .Lbrace {
                         break;
                     }
                     op := self.tok.kind;
@@ -204,7 +204,7 @@ extend Parser {
                 op := self.tok.kind;
                 pos := self.tok.pos;
                 self.next();
-                is_mut_ptr := op == .Amp and self.accept(.KwMut);
+                is_mut_ptr := op == .Amp && self.accept(.KwMut);
                 right := self.parse_unary_expr();
                 .Unary(right, op, is_mut_ptr, pos + right.position())
             },
@@ -255,7 +255,7 @@ extend Parser {
                     self.parse_ident(true) // builtin variable
                 }
             },
-            self.tok.kind == .Dot and self.peek_tok.kind == .Name -> {
+            self.tok.kind == .Dot && self.peek_tok.kind == .Name -> {
                 pos := self.tok.pos;
                 self.next();
                 .EnumLiteral(self.parse_name(), pos: pos + self.prev_tok.pos)
@@ -322,7 +322,7 @@ extend Parser {
                 }
                 self.expect(.Rbracket);
                 pos += self.prev_tok.pos;
-                if !is_dyn and (elems.len == 0 or elems.len == 1 and self.tok.kind !in [
+                if !is_dyn && (elems.len == 0 || elems.len == 1 && self.tok.kind !in [
                     .Semicolon, .Comma, .Rbrace
                 ]) {
                     // []T() or [SIZE]T()
@@ -419,9 +419,9 @@ extend Parser {
                     right := self.parse_expr();
                     .Assign(expr, op, right, pos + right.position())
                 },
-                self.tok.kind == .Lparen and !self.decl_operator_is_used()
-                    and (expr is .Ident or expr is .Selector or expr is .Paren
-                        or expr is .SelfTy or expr is .EnumLiteral) -> {
+                self.tok.kind == .Lparen && !self.decl_operator_is_used()
+                    && (expr is .Ident || expr is .Selector || expr is .Paren
+                        || expr is .SelfTy || expr is .EnumLiteral) -> {
                     self.next();
                     mut args := []ast.CallArg();
                     mut spread_expr := ast.Expr.Empty(self.tok.pos);
@@ -429,7 +429,7 @@ extend Parser {
                     if self.tok.kind != .Rparen {
                         mut expecting_named_arg := false;
                         while {
-                            if self.tok.kind == .Name and self.peek_tok.kind == .Colon {
+                            if self.tok.kind == .Name && self.peek_tok.kind == .Colon {
                                 // named argument
                                 name := self.parse_name();
                                 name_p := self.tok.pos;
@@ -534,8 +534,8 @@ extend Parser {
                     )
                 },
                 // avoid `expr` + `.EnumLiteral` concatenation
-                self.prev_tok.pos.line != self.tok.pos.line and self.tok.kind == .Dot
-                and self.peek_tok.kind == .Name and self.peek_tok.lit[0].is_upper() -> break,
+                self.prev_tok.pos.line != self.tok.pos.line && self.tok.kind == .Dot
+                && self.peek_tok.kind == .Name && self.peek_tok.lit[0].is_upper() -> break,
                 self.accept(.Dot) -> if self.accept(.Mul) {
                     .Indirect(
                         left: expr,
@@ -563,7 +563,7 @@ extend Parser {
         mut pos := self.tok.pos;
         while self.tok.kind in [.KwIf, .KwElse] {
             branch_pos := self.tok.pos;
-            if self.accept(.KwElse) and self.tok.kind != .KwIf {
+            if self.accept(.KwElse) && self.tok.kind != .KwIf {
                 branches.push(
                     ast.IfBranch(
                         .Empty(self.tok.pos), self.parse_block_expr(),
@@ -614,8 +614,8 @@ extend Parser {
                 self.parse_expr()
             }
         };
-        is_typematch := expr !is .Guard and self.prev_tok.kind != .KwMatch
-            and self.accept(.KwIs);
+        is_typematch := expr !is .Guard && self.prev_tok.kind != .KwMatch
+            && self.accept(.KwIs);
         self.expect(.Lbrace);
         self.inside_match_header = old_inside_match_header;
         while {
@@ -644,7 +644,7 @@ extend Parser {
                         });
                     } else {
                         mut case_expr := self.parse_expr();
-                        if self.accept(.DotDot) or self.accept(.Ellipsis) {
+                        if self.accept(.DotDot) || self.accept(.Ellipsis) {
                             if self.prev_tok.kind == .DotDot {
                                 mut err := report.error_builder(
                                     "`match` only supports inclusive ranges, not exclusive",
@@ -719,8 +719,8 @@ extend Parser {
         mut expr := ast.Expr.Empty(self.tok.pos);
         while !self.accept(.Rbrace) {
             stmt := self.parse_stmt();
-            if stmt is .Expr(stmt_expr) and self.prev_tok.kind != .Semicolon
-                and self.tok.kind == .Rbrace {
+            if stmt is .Expr(stmt_expr) && self.prev_tok.kind != .Semicolon
+                && self.tok.kind == .Rbrace {
                 expr = stmt_expr;
                 has_expr = true;
             } else {
@@ -784,8 +784,8 @@ extend Parser {
         value := self.tok.lit;
         pos := self.tok.pos;
         self.next();
-        return if value.len > 2 and value.substr(end: 2) !in ["0x", "0o", "0b"]
-            and value.index_of_any(
+        return if value.len > 2 && value.substr(end: 2) !in ["0x", "0o", "0b"]
+            && value.index_of_any(
             ".eE"
         ) != none {
             .FloatLiteral(value, pos)

@@ -606,7 +606,10 @@ class Lexer:
                 self.pp_directive()
                 continue
             elif ch == "&":
-                if nextc == "=":
+                if nextc == "&" and self.look_ahead(2).isspace():
+                    self.pos += 1
+                    return token.Token("", Kind.LogicalAnd, pos)
+                elif nextc == "=":
                     self.pos += 1
                     return token.Token("", Kind.AmpAssign, pos)
                 return token.Token("", Kind.Amp, pos)
@@ -628,7 +631,10 @@ class Lexer:
                     return token.Token("", Kind.Ne, pos)
                 return token.Token("", Kind.Bang, pos)
             elif ch == "|":
-                if nextc == "=":
+                if nextc == "|" and self.look_ahead(2).isspace():
+                    self.pos += 1
+                    return token.Token("", Kind.LogicalOr, pos)
+                elif nextc == "=":
                     self.pos += 1
                     return token.Token("", Kind.PipeAssign, pos)
                 return token.Token("", Kind.Pipe, pos)
@@ -779,7 +785,7 @@ class Lexer:
     def pp_or_expression(self):
         left = self.pp_and_expression()
         self.skip_whitespace()
-        while self.pos < self.text_len and self.matches("or", self.pos):
+        while self.pos < self.text_len and self.matches("||", self.pos):
             self.pos += 2
             self.skip_whitespace()
             right = self.pp_and_expression()
@@ -789,8 +795,8 @@ class Lexer:
     def pp_and_expression(self):
         left = self.pp_unary_expression()
         self.skip_whitespace()
-        while self.pos < self.text_len and self.matches("and", self.pos):
-            self.pos += 3
+        while self.pos < self.text_len and self.matches("&&", self.pos):
+            self.pos += 2
             self.skip_whitespace()
             right = self.pp_unary_expression()
             left = left and right
