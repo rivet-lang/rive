@@ -789,7 +789,7 @@ class Lexer:
     def pp_or_expression(self):
         left = self.pp_and_expression()
         self.skip_whitespace()
-        while self.pos < self.text_len and self.matches("or", self.pos):
+        while self.pos < self.text_len and self.matches("||", self.pos):
             self.pos += 2
             self.skip_whitespace()
             right = self.pp_and_expression()
@@ -799,8 +799,8 @@ class Lexer:
     def pp_and_expression(self):
         left = self.pp_unary_expression()
         self.skip_whitespace()
-        while self.pos < self.text_len and self.matches("and", self.pos):
-            self.pos += 3
+        while self.pos < self.text_len and self.matches("&&", self.pos):
+            self.pos += 2
             self.skip_whitespace()
             right = self.pp_unary_expression()
             left = left and right

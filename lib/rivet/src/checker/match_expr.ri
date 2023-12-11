@@ -50,7 +50,7 @@ extend Checker {
             }
         } else {
             if match_expr.is_typematch && !(expr_sym.info is .Enum
-                or expr_sym.info is .Trait) {
+                || expr_sym.info is .Trait) {
                 mut err := report.error_builder(
                     "invalid type for type-match", match_expr.expr.position()
                 );

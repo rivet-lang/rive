@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 import ../traits;
-#if !(_X86_ or _AMD64_)
+#if !(_X86_ || _AMD64_)
 import ../process;
 #endif
 

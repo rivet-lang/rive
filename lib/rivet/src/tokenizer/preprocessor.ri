@@ -137,7 +137,7 @@ extend Tokenizer {
     func pp_or_expression(mut self) -> bool {
         mut left := self.pp_and_expression();
         self.skip_whitespace();
-        while self.pos < self.text.len && self.matches("or", self.pos) {
+        while self.pos < self.text.len && self.matches("||", self.pos) {
             self.pos += 2;
             self.skip_whitespace();
             right := self.pp_and_expression();
@@ -149,8 +149,8 @@ extend Tokenizer {
     func pp_and_expression(mut self) -> bool {
         mut left := self.pp_unary_expression();
         self.skip_whitespace();
-        while self.pos < self.text.len && self.matches("and", self.pos) {
-            self.pos += 3;
+        while self.pos < self.text.len && self.matches("&&", self.pos) {
+            self.pos += 2;
             self.skip_whitespace();
             right := self.pp_unary_expression();
             left = left && right;

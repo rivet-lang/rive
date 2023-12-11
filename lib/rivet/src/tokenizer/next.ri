@@ -702,7 +702,7 @@ extend Tokenizer {
                 backslash_count += 1;
             }
             // end of string
-            if c == b'"' && (is_raw or backslash_count % 2 == 0) {
+            if c == b'"' && (is_raw || backslash_count % 2 == 0) {
                 break; // handle "\\" at the end: "123\\"
             }
             if c == CR {
