@@ -183,7 +183,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// Returns the number of occurrences of `substr` in the string or 0 if no
     /// `substr` could be found.
     pub func count(self, substr: Self) -> uint {
-        if self.len == 0 or substr.len == 0 {
+        if self.len == 0 || substr.len == 0 {
             return 0;
         }
         if substr.len > self.len {
@@ -260,7 +260,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// Returns the position of the first character of the input string.
     /// It will return `none` if the input string can't be found.
     pub func index_of(self, p: Self) -> ?uint {
-        if p.len > self.len or p.len == 0 {
+        if p.len > self.len || p.len == 0 {
             return none;
         }
         mut i: uint := 0;
@@ -328,7 +328,7 @@ pub struct string < Stringable, Hashable, Throwable {
 
     /// Returns the position of the last occurence of the input string.
     pub func last_index_of(self, p: Self) -> ?uint {
-        if p.len > self.len or p.len == 0 {
+        if p.len > self.len || p.len == 0 {
             return none;
         }
         mut i: uint := self.len - p.len;
@@ -356,7 +356,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// Strips any of the characters given in `cutset` from the start and end of
     /// the string.
     pub func trim(self, cutset: Self) -> Self {
-        if self.len < 1 or cutset.len < 1 {
+        if self.len < 1 || cutset.len < 1 {
             return self;
         }
         (pos_left, pos_right) := self.trim_indexes(cutset);
@@ -398,7 +398,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// Strips any of the characters given in `cutset` from the left of the
     /// string.
     pub func trim_left(self, cutset: Self) -> Self {
-        if self.len < 1 or cutset.len < 1 {
+        if self.len < 1 || cutset.len < 1 {
             return self;
         }
         mut pos: uint := 0;
@@ -421,7 +421,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// Strips any of the characters given in `cutset` from the right of the
     /// string.
     pub func trim_right(self, cutset: Self) -> Self {
-        if self.len < 1 or cutset.len < 1 {
+        if self.len < 1 || cutset.len < 1 {
             return self;
         }
         mut pos := self.len - 1;
@@ -452,7 +452,7 @@ pub struct string < Stringable, Hashable, Throwable {
 
     /// Replaces all occurences of `rep` with the string passed in `with_`.
     pub func replace(self, rep: Self, with: Self) -> Self {
-        if self.len == 0 or rep.len == 0 or rep.len > self.len {
+        if self.len == 0 || rep.len == 0 || rep.len > self.len {
             return self;
         } else if !self.contains(rep) {
             return self;
@@ -570,7 +570,7 @@ pub struct string < Stringable, Hashable, Throwable {
                         i += 1;
                     }
                 }
-                if nth < 1 or res.len < nth {
+                if nth < 1 || res.len < nth {
                     res.push(self.substr(start));
                 }
                 return res;
@@ -589,7 +589,7 @@ pub struct string < Stringable, Hashable, Throwable {
                         i += 1;
                     }
                 }
-                if nth < 1 or res.len < nth {
+                if nth < 1 || res.len < nth {
                     res.push(self.substr(start));
                 }
                 return res;
@@ -702,7 +702,7 @@ pub struct string < Stringable, Hashable, Throwable {
         mut i: uint := 0;
         while i < self.len : i += 1 {
             unsafe {
-                if i >= rhs.len or self.ptr[i] > rhs.ptr[i] {
+                if i >= rhs.len || self.ptr[i] > rhs.ptr[i] {
                     return false;
                 } else if self.ptr[i] < rhs.ptr[i] {
                     return true;
@@ -722,18 +722,18 @@ pub struct string < Stringable, Hashable, Throwable {
 
     #[inline]
     pub func <=(self, rhs: Self) -> bool {
-        return self < rhs or self == rhs;
+        return self < rhs || self == rhs;
     }
 
     #[inline]
     pub func >=(self, rhs: Self) -> bool {
-        return self > rhs or self == rhs;
+        return self > rhs || self == rhs;
     }
 
     /// Returns `true` if the string contains `substr`.
     #[inline]
     pub func contains(self, substr: Self) -> bool {
-        return substr.len == 0 or self.index_of(substr) != none;
+        return substr.len == 0 || self.index_of(substr) != none;
     }
 
     /// Returns `true` if the string starts with `p`.
@@ -790,7 +790,7 @@ pub struct string < Stringable, Hashable, Throwable {
         unsafe {
             start_ := start ?? 0;
             end_ := end ?? self.len;
-            if start_ > end_ or start_ > self.len or end_ > self.len {
+            if start_ > end_ || start_ > self.len || end_ > self.len {
                 runtime_error(
                     "substring index out of range (range: {}..{}, len: {})", start_,
                     end_, self.len

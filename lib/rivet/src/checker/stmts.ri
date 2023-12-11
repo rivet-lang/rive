@@ -67,7 +67,7 @@ extend Checker {
     func check_for(mut self, mut for_stmt: ast.Stmt.For) {
         iterable_t := self.check_expr(for_stmt.iterable);
         iterable_sym := iterable_t.symbol()?;
-        if iterable_sym.info is .Array or iterable_sym.info is .DynArray {
+        if iterable_sym.info is .Array || iterable_sym.info is .DynArray {
             mut elem_type := self.table.comptime_number_to_type(
                 iterable_sym.info.elem_type()?
             );

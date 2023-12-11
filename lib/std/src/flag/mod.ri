@@ -247,7 +247,7 @@ pub struct FlagParser {
             sb.writeln();
         }
         // show a message about the [ARGS]:
-        if positive_min_arg or positive_max_arg or no_arguments {
+        if positive_min_arg || positive_max_arg || no_arguments {
             if no_arguments {
                 sb.writeln("This application does not expect any arguments.");
             } else {
@@ -328,7 +328,7 @@ pub struct FlagParser {
         if !self.allow_unknown_args {
             for arg in remaining {
                 if (arg.len >= 2 and arg.substr(end: 2) == "--")
-                    or (arg.len == 2 and arg[0] == b'-') {
+                    || (arg.len == 2 and arg[0] == b'-') {
                     throw UnknownFlagError(arg);
                 }
             }
@@ -414,10 +414,10 @@ pub struct FlagParser {
                 should_skip_one = false;
                 continue;
             }
-            if arg.is_empty() or arg[0] != b'-' {
+            if arg.is_empty() || arg[0] != b'-' {
                 continue;
             }
-            if (arg.len == 2 and arg[0] == b'-' and arg[1] == short_hand) or arg == full {
+            if (arg.len == 2 and arg[0] == b'-' and arg[1] == short_hand) || arg == full {
                 if i +  1 >= self.args.len {
                     return +[];
                 }
@@ -457,10 +457,10 @@ pub struct FlagParser {
     func parse_bool_value(mut self, long_hand: string, short_hand: uint8) -> ?string {
         full := "--".concat(long_hand);
         for i, arg in self.args {
-            if arg.is_empty() or arg[0] != b'-' {
+            if arg.is_empty() || arg[0] != b'-' {
                 continue;
             }
-            if (arg.len == 2 and arg[0] == b'-' and arg[1] == short_hand) or arg == full {
+            if (arg.len == 2 and arg[0] == b'-' and arg[1] == short_hand) || arg == full {
                 if self.args.len > i + 1 and self.args[i + 1] in ["true", "false"] {
                     val := self.args[i + 1];
                     self.args.delete(i + 1);

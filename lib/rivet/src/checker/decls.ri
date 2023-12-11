@@ -9,7 +9,7 @@ extend Checker {
     func check_global_vars(mut self, decls: []mut ast.Decl) {
         for mut decl in decls {
             old_sym := self.sym;
-            if decl is .Const or decl is .Var {
+            if decl is .Const || decl is .Var {
                 self.check_decl(decl);
             } else if decl_decls := decl.decls() {
                 self.check_global_vars(decl_decls);
@@ -20,7 +20,7 @@ extend Checker {
 
     func check_decls(mut self, decls: []mut ast.Decl) {
         for mut decl in decls {
-            if !(decl is .Const or decl is .Var) {
+            if !(decl is .Const || decl is .Var) {
                 self.check_decl(decl);
             }
         }
@@ -49,7 +49,7 @@ extend Checker {
             .Alias(alias_decl) -> {
                 alias_sym := if alias_decl.sym is ast.SymRef(sym_ref) { sym_ref.ref } else { alias_decl.sym };
                 self.check_name_case(match {
-                        alias_decl.is_typealias or alias_sym is ast.TypeSym -> .Pascal,
+                        alias_decl.is_typealias || alias_sym is ast.TypeSym -> .Pascal,
                         alias_sym is ast.Const -> .Upper,
                         else -> .Snake
                     }, "alias", alias_decl.name, alias_decl.pos
@@ -81,7 +81,7 @@ extend Checker {
                     const_decl.type = self.check_expr(const_decl.expr);
                     @as(ast.Const, const_decl.sym).type = const_decl.type;
                 }
-                if const_decl.type is .Option or const_decl.type is .None {
+                if const_decl.type is .Option || const_decl.type is .None {
                     report.error(
                         "cannot assign option values to constants",
                         const_decl.expr.position()

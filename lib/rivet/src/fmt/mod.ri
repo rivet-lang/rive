@@ -131,7 +131,7 @@ pub struct Formatter {
             match prev_decl is {
                 // Force a newline after function declarations
                 // The only exception is inside a block of no body functions
-                .Func(func_decl) if decl !is .Func or !func_decl.has_body -> return true,
+                .Func(func_decl) if decl !is .Func || !func_decl.has_body -> return true,
                 .Struct -> return true, // Force a newline after struct declarations
                 .Alias -> return prev_decl is .Alias,
                 .Field(prev_field_d) -> return if decl is .Field(field_d) {

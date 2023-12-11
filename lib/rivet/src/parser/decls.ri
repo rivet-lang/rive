@@ -11,7 +11,7 @@ import ../token;
 extend Parser {
     func parse_doc_comments(mut self) -> []ast.Comment {
         mut comments := []ast.Comment();
-        while self.tok.kind == .DocComment or (self.tok.kind == .Comment and comments.len > 0) {
+        while self.tok.kind == .DocComment || (self.tok.kind == .Comment and comments.len > 0) {
             comments.push(self.parse_comment());
         }
         return comments;
@@ -64,7 +64,7 @@ extend Parser {
     #[inline]
     func is_public(mut self) -> bool {
         is_public := self.accept(.KwPub);
-        return self.inside_trait or self.inside_enum_variant_with_fields or is_public;
+        return self.inside_trait || self.inside_enum_variant_with_fields || is_public;
     }
 
     func parse_abi(mut self) -> ast.ABI {
@@ -415,8 +415,8 @@ extend Parser {
                     bases, variants, is_tagged, decls, pos
                 );
             },
-            (self.inside_struct or self.inside_trait
-                or self.inside_enum_variant_with_fields)
+            (self.inside_struct || self.inside_trait
+                || self.inside_enum_variant_with_fields)
                 and self.tok.kind in [.KwMut, .Name] -> {
                 // fields
                 is_mut := self.accept(.KwMut);
@@ -469,7 +469,7 @@ extend Parser {
                 );
             },
             self.accept(.KwFunc) -> return self.parse_func_decl(
-                doc_comment, attributes, is_public, attributes.has("unsafe") or (
+                doc_comment, attributes, is_public, attributes.has("unsafe") || (
                     self.inside_extern and self.extern_abi != .Rivet
                 ), if self.inside_extern { self.extern_abi } else { .Rivet }
             ),
@@ -554,7 +554,7 @@ extend Parser {
         self.expect(.Lparen);
         if self.tok.kind != .Rparen {
             // receiver (`self`|`&self`|`mut self`)
-            if self.tok.kind == .KwSelf or (
+            if self.tok.kind == .KwSelf || (
                 self.tok.kind in [.Amp, .KwMut] and self.peek_tok.kind == .KwSelf
             ) {
                 is_method = true;
@@ -562,7 +562,7 @@ extend Parser {
                 self_is_ptr = self.accept(.Amp);
                 self_is_mut = !self_is_ptr and self.accept(.KwMut);
                 self.expect(.KwSelf);
-                if self_is_mut or self_is_ptr {
+                if self_is_mut || self_is_ptr {
                     self_pos += self.prev_tok.pos;
                 }
                 if self.tok.kind != .Rparen {
@@ -621,11 +621,11 @@ extend Parser {
 
         mut stmts := []mut ast.Stmt();
         mut has_body := true;
-        if (self.inside_trait or self.inside_extern) and self.accept(.Semicolon) {
+        if (self.inside_trait || self.inside_extern) and self.accept(.Semicolon) {
             has_body = false;
         } else {
             self.expect(.Lbrace);
-            while !(self.accept(.Rbrace) or self.tok.kind == .EndOfFile) {
+            while !(self.accept(.Rbrace) || self.tok.kind == .EndOfFile) {
                 stmts.push(self.parse_stmt());
             }
         }

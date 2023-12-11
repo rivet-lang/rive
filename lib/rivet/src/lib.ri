@@ -171,7 +171,7 @@ pub struct Compiler {
         mut abspath := "";
         mut files := []string();
         is_super := pathx.starts_with("../");
-        if pathx.starts_with("./") or is_super {
+        if pathx.starts_with("./") || is_super {
             self.vlog("    searching module in local path");
             pathx2 := pathx.substr(if is_super { 3 } else { 2 });
             name = if last_idx := pathx2.last_index_of_byte(b'/') {

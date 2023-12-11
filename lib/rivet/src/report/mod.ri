@@ -87,7 +87,7 @@ pub struct ReportBuilder {
                 return;
             }
             if reportTable.prefs.all_warns_are_errors
-                or reportTable.prefs.optimize_mode != .Debug {
+                || reportTable.prefs.optimize_mode != .Debug {
                 self.kind = .Error;
             }
         }
@@ -160,7 +160,7 @@ func formatted_multi_line(pos: token.Pos) {
                 sb.write_string(utils.bold(utils.blue("/~~ from here")));
                 console.ewriteln(sb.to_string());
             }
-            if line_nr < max or line_nr >= lines.len - max {
+            if line_nr < max || line_nr >= lines.len - max {
                 console.ewriteln(
                     "{} {} {}", utils.bold(utils.blue("{:5}".fmt(line_nr + pos.line + 1))),
                     utils.bold(utils.blue("|")), line.replace("\t", "    ")

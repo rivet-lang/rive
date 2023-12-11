@@ -303,14 +303,14 @@ extend Resolver {
                 selector.left_sym = self_ty.sym;
             },
             .Ident(ident) if ident.found and ident.is_sym -> {
-                if ident.sym is ast.Var or ident.sym is ast.Const {
+                if ident.sym is ast.Var || ident.sym is ast.Const {
                     return;
                 }
                 selector.is_path = true;
                 selector.left_sym = ident.sym;
             },
             .Selector(selector2) if selector2.found and selector2.is_path -> {
-                if selector2.sym is ast.Var or selector2.sym is ast.Const {
+                if selector2.sym is ast.Var || selector2.sym is ast.Const {
                     return;
                 }
                 selector.is_path = true;

@@ -179,7 +179,7 @@ struct DynArray {
     }
 
     func slice(self, start: uint, end: uint) -> Self {
-        if start > end or end > self.len {
+        if start > end || end > self.len {
             runtime_error(
                 "slice index out of range (range: {}..{}, len: {})", start, end, self.len
             );

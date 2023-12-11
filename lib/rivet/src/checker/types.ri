@@ -78,7 +78,7 @@ extend Checker {
         if got is .Never {
             return true;
         } else if (expected is .Never and got is .Void)
-            or (expected is .Void and got is .Never) {
+            || (expected is .Void and got is .Never) {
             return true;
         } else if expected is .Void and got is .Void {
             return true;
@@ -110,7 +110,7 @@ extend Checker {
         got_is_ptr := got.is_pointer();
         if expected_is_ptr and got_is_ptr {
             return check_pointer(expected, got);
-        } else if (expected_is_ptr and !got_is_ptr) or (got_is_ptr and !expected_is_ptr) {
+        } else if (expected_is_ptr and !got_is_ptr) || (got_is_ptr and !expected_is_ptr) {
             return false;
         }
 
@@ -142,7 +142,7 @@ extend Checker {
         }
 
         if self.table.is_number(expected) and self.table.is_number(got) {
-            if self.table.is_comptime_number(expected) or self.table.is_comptime_number(got) {
+            if self.table.is_comptime_number(expected) || self.table.is_comptime_number(got) {
                 return true;
             }
             return self.promote_number(expected, got) == expected;
@@ -256,7 +256,7 @@ extend Checker {
 func check_pointer(expected: ast.Type, got: ast.Type) -> bool {
     if expected is .Rawptr {
         // rawptr == &T, is valid
-        return got is .Rawptr or got is .Pointer;
+        return got is .Rawptr || got is .Pointer;
     } else if expected is .Pointer(ptr) and got is .Pointer(ptr2) {
         if ptr.is_mut and !ptr2.is_mut {
             return false;

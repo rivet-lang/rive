@@ -271,7 +271,7 @@ pub struct Checker {
                 );
             } else if ident.name == "_" {
                 return;
-            } else if ident.found and (ident.is_sym or ident.is_obj) {
+            } else if ident.found and (ident.is_sym || ident.is_obj) {
                 self.check_sym_is_mut(ident.sym, ident.pos, from_selector);
             },
             .Selector(selector) -> if selector.is_path {
@@ -403,8 +403,8 @@ pub struct Checker {
     func check_expr_evaluated_but_not_used(self, expr_type: ast.Type, pos: token.Pos) {
         _ = self;
         if !((expr_type is .Result(res) and !res.inner.is_void())
-            or (expr_type is .Option(opt) and !opt.inner.is_void())
-            or expr_type.is_void()) {
+            || (expr_type is .Option(opt) and !opt.inner.is_void())
+            || expr_type.is_void()) {
             report.warn("expression evaluated but not used", pos);
         }
     }

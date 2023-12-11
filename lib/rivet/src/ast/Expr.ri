@@ -219,7 +219,7 @@ pub enum Expr < traits.Stringable {
 
         #[inline]
         func has_err_handler(self) -> bool {
-            return self.err_handler.has_expr or self.err_handler.is_propagate;
+            return self.err_handler.has_expr || self.err_handler.is_propagate;
         }
     },
     BuiltinCall {
@@ -402,7 +402,7 @@ pub enum Expr < traits.Stringable {
                 if array_ctor.is_dyn {
                     if init_value := array_ctor.init_value {
                         sb.write_fmt("init: {}", init_value);
-                        if array_ctor.cap_value != none or array_ctor.len_value != none {
+                        if array_ctor.cap_value != none || array_ctor.len_value != none {
                             sb.write_string(", ");
                         }
                     }

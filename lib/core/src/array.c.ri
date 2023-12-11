@@ -30,7 +30,7 @@ func array_ne(arr: rawptr, other_arr: rawptr, len: uint) -> bool {
 }
 
 func array_slice(arr: rawptr, elem_size: uint, size: uint, start: uint, end: uint) -> DynArray {
-    if start > end or end > size {
+    if start > end || end > size {
         runtime_error("slice index out of range (range: {}..{}, len: {})", start, end, size);
     }
     len := end - start;

@@ -99,7 +99,7 @@ extend Tokenizer {
                             self.pos -= 1;
                             self.line -= 1;
                         }
-                        if (is_doc_comment and self.prefs.is_docs) or self.prefs.is_fmt {
+                        if (is_doc_comment and self.prefs.is_docs) || self.prefs.is_fmt {
                             mut comment := self.text.substr(start_pos, end_pos);
                             // find out if this comment is on its own line (for rivet format)
                             mut is_separate_line_comment := true;
@@ -217,7 +217,7 @@ extend Tokenizer {
                     return self.new_token(.Question);
                 },
                 b'#' -> {
-                    if nextc == b'[' or nextc == b'!' {
+                    if nextc == b'[' || nextc == b'!' {
                         return self.new_token(.Hash);
                     }
                     self.pp_directive();
@@ -301,7 +301,7 @@ extend Tokenizer {
         self.pos += 1;
         while self.pos < self.text.len {
             c := self.current_char();
-            if utils.is_name_char(c) or c.is_digit() {
+            if utils.is_name_char(c) || c.is_digit() {
                 self.pos += 1;
                 continue;
             }
@@ -476,7 +476,7 @@ extend Tokenizer {
                 self.pos += 1;
             }
             if !ch.is_digit() and ch != NUM_SEP {
-                if !ch.is_letter() or ch in [b'e', b'E'] {
+                if !ch.is_letter() || ch in [b'e', b'E'] {
                     break;
                 } else {
                     self.pos -= 1;
@@ -507,7 +507,7 @@ extend Tokenizer {
                     while self.pos < self.text.len : self.pos += 1 {
                         c := self.current_char();
                         if !c.is_digit() {
-                            if !c.is_letter() or c in [b'e', b'E'] {
+                            if !c.is_letter() || c in [b'e', b'E'] {
                                 // 16.6.to_string()
                                 if c == b'.' and self.look_ahead(1).is_letter() {
                                     call_method = true;
@@ -609,7 +609,7 @@ extend Tokenizer {
             }
             double_slash := self.matches(r"\\", self.pos - 2);
             if ch == SINGLE_QUOTE and (
-                self.text[self.pos - 1] != BACKSLASH or double_slash
+                self.text[self.pos - 1] != BACKSLASH || double_slash
             ) {
                 if double_slash {
                     len += 1;
@@ -627,10 +627,10 @@ extend Tokenizer {
             // the string inside the backticks is longer than one character
             // but we might only have one rune... attempt to decode escapes
             // if the content expresses an escape code, it will have an even
-            // number of characters e.g. (octal) \141 (hex) \x61 or (unicode)
+            // number of characters e.g. (octal) \141 (hex) \x61 || (unicode)
             // \u2605 we don't handle binary escape codes in rune literals.
             orig := ch;
-            if ch.len % 2 == 0 and (escaped_hex or escaped_unicode or escaped_octal) {
+            if ch.len % 2 == 0 and (escaped_hex || escaped_unicode || escaped_octal) {
                 if escaped_unicode {
                     // there can only be one, so attempt to decode it now
                     ch = decode_unicode_escaped_rune(ch);
@@ -651,7 +651,7 @@ extend Tokenizer {
             }
             u := ch.as_runes();
             if u.len != 1 {
-                if escaped_hex or escaped_unicode {
+                if escaped_hex || escaped_unicode {
                     mut err := self.error_builder(
                         "invalid character literal (`{}` -> `{}`)".fmt(orig, ch),
                         pos
@@ -710,10 +710,10 @@ extend Tokenizer {
                 self.inc_line_number();
             }
             // escape `\x` or `\u`
-            if backslash_count % 2 == 1 and !(is_raw or is_cstr) {
+            if backslash_count % 2 == 1 and !(is_raw || is_cstr) {
                 // escape `\x`
                 if c == b'x' {
-                    if self.look_ahead(1) == b'"' or !(
+                    if self.look_ahead(1) == b'"' || !(
                         self.look_ahead(1).is_hex_digit() and
                         self.look_ahead(2).is_hex_digit()
                     ) {
@@ -721,12 +721,12 @@ extend Tokenizer {
                     }
                     h_escapes_pos.push(self.pos - 1);
                 } else if c == b'u' { // escape `\u`
-                    if self.look_ahead(1) == b'"' or self.look_ahead(2) == b'"'
-                        or self.look_ahead(3) == b'"' or self.look_ahead(4) == b'"'
-                        or !self.look_ahead(1).is_hex_digit()
-                        or !self.look_ahead(2).is_hex_digit()
-                        or !self.look_ahead(3).is_hex_digit()
-                        or !self.look_ahead(4).is_hex_digit() {
+                    if self.look_ahead(1) == b'"' || self.look_ahead(2) == b'"'
+                        || self.look_ahead(3) == b'"' || self.look_ahead(4) == b'"'
+                        || !self.look_ahead(1).is_hex_digit()
+                        || !self.look_ahead(2).is_hex_digit()
+                        || !self.look_ahead(3).is_hex_digit()
+                        || !self.look_ahead(4).is_hex_digit() {
                         self.error(r"`\u` incomplete unicode character value", pos);
                     }
                     u_escapes_pos.push(self.pos - 1);

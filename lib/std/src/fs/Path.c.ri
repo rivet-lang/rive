@@ -144,7 +144,7 @@ pub struct Path {
     pub func extension(path: string) -> string {
         filename := Self.file_name(path);
         index := filename.last_index_of_byte(b'.') ?? return "";
-        return if index == 0 or index + 1 >= filename.len {
+        return if index == 0 || index + 1 >= filename.len {
             ""
         } else {
             filename.substr(index)

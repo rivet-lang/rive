@@ -189,7 +189,7 @@ pub struct TypeSym < Sym {
         } else if self.info is .Struct(struct_info) {
             struct_info.is_boxed
         } else {
-            self.info is .Trait or self.info is .String or self.info is .DynArray
+            self.info is .Trait || self.info is .String || self.info is .DynArray
         };
     }
 

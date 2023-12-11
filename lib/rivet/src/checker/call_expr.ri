@@ -21,10 +21,10 @@ extend Checker {
 
         match left is {
             .SelfTy(self_ty) -> self.check_ctor_call(self_ty.sym, call_expr),
-            .Ident(ident) if (ident.is_sym or ident.is_obj) -> match ident.sym is {
+            .Ident(ident) if (ident.is_sym || ident.is_obj) -> match ident.sym is {
                 ast.TypeSym(mut type_sym) if type_sym.info is .Trait
-                    or type_sym.info is .Struct or type_sym.info is .String
-                    or type_sym.info is .Enum -> self.check_ctor_call(type_sym, call_expr),
+                    || type_sym.info is .Struct || type_sym.info is .String
+                    || type_sym.info is .Enum -> self.check_ctor_call(type_sym, call_expr),
                 ast.Func(func_) -> {
                     call_expr.func_ = func_;
                     if func_.is_main {
@@ -50,8 +50,8 @@ extend Checker {
             .Selector(selector) -> if selector.is_path {
                 match selector.sym is {
                     ast.TypeSym(mut s_type_sym) if s_type_sym.info is .Trait
-                        or s_type_sym.info is .Struct or s_type_sym.info is .String
-                        or s_type_sym.info is .Enum -> self.check_ctor_call(
+                        || s_type_sym.info is .Struct || s_type_sym.info is .String
+                        || s_type_sym.info is .Enum -> self.check_ctor_call(
                         s_type_sym, call_expr
                     ),
                     ast.Func(s_func_) -> {
@@ -143,8 +143,8 @@ extend Checker {
         if call_expr.has_err_handler() {
             if call_expr.type is .Result(result_t) {
                 if call_expr.err_handler.is_propagate {
-                    if !(self.cur_func.is_main or self.inside_test or self.inside_var_decl
-                        or self.cur_func.ret_type is .Result) {
+                    if !(self.cur_func.is_main || self.inside_test || self.inside_var_decl
+                        || self.cur_func.ret_type is .Result) {
                         mut err := report.error_builder(
                             "cannot propagate the result value", call_expr.err_handler.pos
                         );
@@ -235,7 +235,7 @@ extend Checker {
                         );
                     }
                 } else if variant.has_type and !(
-                    variant.has_fields or (
+                    variant.has_fields || (
                         call_expr.left is .EnumLiteral(enum_lit) and enum_lit.from_is_cmp
                     )
                 ) {
@@ -330,7 +330,7 @@ extend Checker {
                     }
                 }
                 for field in type_fields {
-                    if !field.is_required and (field.type is .Option or field.has_def_expr) {
+                    if !field.is_required and (field.type is .Option || field.has_def_expr) {
                         continue;
                     }
                     was_initted := initted_fields.contains(field.name);

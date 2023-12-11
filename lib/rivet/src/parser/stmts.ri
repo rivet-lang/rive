@@ -103,7 +103,7 @@ extend Parser {
                 }
                 pos := self.prev_tok.pos;
                 expr := self.parse_expr();
-                if !(expr is .If or expr is .Match or expr is .Block) {
+                if !(expr is .If || expr is .Match || expr is .Block) {
                     self.expect(.Semicolon);
                 }
                 .Defer(expr, defer_mode, pos)
@@ -135,7 +135,7 @@ extend Parser {
             else -> {
                 expr := self.parse_expr();
                 if !((self.inside_block and self.tok.kind == .Rbrace)
-                    or (expr is .If or expr is .Match or expr is .Block)) {
+                    || (expr is .If || expr is .Match || expr is .Block)) {
                     self.expect(.Semicolon);
                 }
                 .Expr(expr)

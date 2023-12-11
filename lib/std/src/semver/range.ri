@@ -170,7 +170,7 @@ struct Range {
     func satisfies(&self, ver: Version) -> bool {
         mut final_result := false;
         for set in self.comparator_sets {
-            final_result = final_result or set.satisfies(ver);
+            final_result = final_result || set.satisfies(ver);
         }
         return final_result;
     }
@@ -178,8 +178,8 @@ struct Range {
 
 func can_expand(input: string) -> bool {
     input0 := input[0];
-    return input0 == b'~' or input0 == b'^' or input.contains(hyphenRangeSep)
-        or input.index_of_any(xRangeSymbols) != none;
+    return input0 == b'~' || input0 == b'^' || input.contains(hyphenRangeSep)
+        || input.index_of_any(xRangeSymbols) != none;
 }
 
 func expand_tilda(raw_version: string) -> ?ComparatorSet {

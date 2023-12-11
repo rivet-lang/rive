@@ -322,7 +322,7 @@ extend Parser {
                 }
                 self.expect(.Rbracket);
                 pos += self.prev_tok.pos;
-                if !is_dyn and (elems.len == 0 or elems.len == 1 and self.tok.kind !in [
+                if !is_dyn and (elems.len == 0 || elems.len == 1 and self.tok.kind !in [
                     .Semicolon, .Comma, .Rbrace
                 ]) {
                     // []T() or [SIZE]T()
@@ -420,8 +420,8 @@ extend Parser {
                     .Assign(expr, op, right, pos + right.position())
                 },
                 self.tok.kind == .Lparen and !self.decl_operator_is_used()
-                    and (expr is .Ident or expr is .Selector or expr is .Paren
-                        or expr is .SelfTy or expr is .EnumLiteral) -> {
+                    and (expr is .Ident || expr is .Selector || expr is .Paren
+                        || expr is .SelfTy || expr is .EnumLiteral) -> {
                     self.next();
                     mut args := []ast.CallArg();
                     mut spread_expr := ast.Expr.Empty(self.tok.pos);
@@ -644,7 +644,7 @@ extend Parser {
                         });
                     } else {
                         mut case_expr := self.parse_expr();
-                        if self.accept(.DotDot) or self.accept(.Ellipsis) {
+                        if self.accept(.DotDot) || self.accept(.Ellipsis) {
                             if self.prev_tok.kind == .DotDot {
                                 mut err := report.error_builder(
                                     "`match` only supports inclusive ranges, not exclusive",

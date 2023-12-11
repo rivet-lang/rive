@@ -112,7 +112,7 @@ pub struct Scope {
 
     #[inline]
     func dont_lookup_parent(self) -> bool {
-        return self.parent == none or self.detached_from_parent;
+        return self.parent == none || self.detached_from_parent;
     }
 
     pub func update_type(self, name: string, type: Type) {

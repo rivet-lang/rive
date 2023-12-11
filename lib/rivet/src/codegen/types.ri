@@ -12,8 +12,8 @@ extend Codegen {
         mut ts := []ast.TypeSym();
         for sym in root.scope.syms {
             if sym is ast.TypeSym(type_sym) and !(
-                type_sym.info is .DynArray or type_sym.info is .Alias
-                or type_sym.info.is_primitive()
+                type_sym.info is .DynArray || type_sym.info is .Alias
+                || type_sym.info.is_primitive()
             ) {
                 ts.push(type_sym);
             }
@@ -48,7 +48,7 @@ extend Codegen {
                 .Tuple(tuple_info) -> {
                     for type in tuple_info.types {
                         dep := type.to_qualstring();
-                        if dep !in type_names or dep in field_deps or type is .Option {
+                        if dep !in type_names || dep in field_deps || type is .Option {
                             continue;
                         }
                         field_deps.push(dep);
@@ -57,14 +57,14 @@ extend Codegen {
                 .Trait(trait_info) -> {
                     for base in trait_info.bases {
                         dep := base.qualname();
-                        if dep !in type_names or dep in field_deps {
+                        if dep !in type_names || dep in field_deps {
                             continue;
                         }
                         field_deps.push(dep);
                     }
                     for field in ts.fields {
                         dep := field.type.to_qualstring();
-                        if dep !in type_names or dep in field_deps or field.type is .Option {
+                        if dep !in type_names || dep in field_deps || field.type is .Option {
                             continue;
                         }
                         field_deps.push(dep);
@@ -73,14 +73,14 @@ extend Codegen {
                 .Struct(struct_info) -> {
                     for base in struct_info.bases {
                         dep := base.qualname();
-                        if dep !in type_names or dep in field_deps {
+                        if dep !in type_names || dep in field_deps {
                             continue;
                         }
                         field_deps.push(dep);
                     }
                     for field in ts.fields {
                         dep := field.type.to_qualstring();
-                        if dep !in type_names or dep in field_deps or field.type is .Option {
+                        if dep !in type_names || dep in field_deps || field.type is .Option {
                             continue;
                         }
                         field_deps.push(dep);

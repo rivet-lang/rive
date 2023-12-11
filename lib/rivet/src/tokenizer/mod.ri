@@ -169,7 +169,7 @@ pub struct Tokenizer {
                 self.pos += 1;
                 continue;
             }
-            if !(c == 32 or (c > 8 and c < 14) or (c == 0x85) or (c == 0xA0)) {
+            if !(c == 32 || (c > 8 and c < 14) || (c == 0x85) || (c == 0xA0)) {
                 return;
             }
             if c == CR and self.look_ahead(1) == LF {
@@ -184,8 +184,8 @@ pub struct Tokenizer {
 
     func matches(self, want: string, start_pos: uint) -> bool {
         end_pos := start_pos + want.len;
-        if start_pos < 0 or end_pos < 0 or start_pos >= self.text.len
-            or end_pos > self.text.len {
+        if start_pos < 0 || end_pos < 0 || start_pos >= self.text.len
+            || end_pos > self.text.len {
             return false;
         }
         mut pos: uint := start_pos;
@@ -227,7 +227,7 @@ pub struct Tokenizer {
     // the byte 0xc0
     func decode_h_escape_single(self, str: string, idx: uint) -> (uint, string) {
         end_idx := idx + 4; // "\xXX".len == 4
-        if idx + 2 > str.len or end_idx > str.len {
+        if idx + 2 > str.len || end_idx > str.len {
             self.error("unfinished single hex escape started at");
             return (0, "");
         }

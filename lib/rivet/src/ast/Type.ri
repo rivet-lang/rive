@@ -203,7 +203,7 @@ pub enum Type < traits.Stringable {
 
     #[inline]
     pub func is_pointer(self) -> bool {
-        return self is .Pointer or self is .Rawptr;
+        return self is .Pointer || self is .Rawptr;
     }
 
     #[inline]

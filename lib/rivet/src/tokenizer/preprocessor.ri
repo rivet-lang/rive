@@ -34,7 +34,7 @@ extend Tokenizer {
             // skip tokens until next preprocessing directive
             while self.pos < self.text.len : self.pos += 1 {
                 cc := self.current_char();
-                if cc == b'#' and !(self.matches("#error", self.pos) or self.matches("#warn", self.pos)) {
+                if cc == b'#' and !(self.matches("#error", self.pos) || self.matches("#warn", self.pos)) {
                     self.pos -= 1;
                     return;
                 } else if utils.is_new_line(cc) {
@@ -56,7 +56,7 @@ extend Tokenizer {
         self.pos -= 1;
         self.conditional_stack.push(Conditional());
         if cond and (self.conditional_stack.len == 1
-            or !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
+            || !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
             // condition true -> process code within if
             self.conditional_stack[self.conditional_stack.len - 1].matched = true;
             self.conditional_stack[self.conditional_stack.len - 1].skip_section = false;
@@ -141,7 +141,7 @@ extend Tokenizer {
             self.pos += 2;
             self.skip_whitespace();
             right := self.pp_and_expression();
-            left = left or right;
+            left = left || right;
         }
         return left;
     }

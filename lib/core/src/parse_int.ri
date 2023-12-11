@@ -54,7 +54,7 @@ extend string {
 
         if bit_size == 0 {
             bit_size = int.bits();
-        } else if bit_size < 0 or bit_size > 64 {
+        } else if bit_size < 0 || bit_size > 64 {
             throw InvalidBitSizeError("invalid bit size {}".fmt(bit_size));
         }
 
@@ -97,7 +97,7 @@ extend string {
             n *= @as(uint, base);
 
             n1 := n + @as(uint, d);
-            if n1 < n or n1 > max_val {
+            if n1 < n || n1 > max_val {
                 // `n + d` overflows
                 throw ValueOutOfRangeError("value out of range");
             }
@@ -172,14 +172,14 @@ func underscore_ok(s_: string) -> bool {
     mut s := s_;
 
     // optional sign.
-    if s.len >= 1 and (s[0] == b'-' or s[0] == b'+') {
+    if s.len >= 1 and (s[0] == b'-' || s[0] == b'+') {
         s = s.substr(1);
     }
 
     // optional base prefix.
     mut hex := false;
     if s.len >= 2 and s[i] == b'0' and (
-        lower(s[1]) == b'b' or lower(s[1]) == b'o' or lower(s[1]) == b'x'
+        lower(s[1]) == b'b' || lower(s[1]) == b'o' || lower(s[1]) == b'x'
     ) {
         // base prefix counts as a digit for "underscore as digit separator"
         i = 2;

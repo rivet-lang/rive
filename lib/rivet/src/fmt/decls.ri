@@ -123,7 +123,7 @@ extend Formatter {
         if func_decl.ret_type !is .Void {
             self.write_fmt(" -> {}", func_decl.ret_type);
         }
-        if func_decl.is_extern or !func_decl.has_body {
+        if func_decl.is_extern || !func_decl.has_body {
             self.writeln(";");
         } else {
             self.writeln(" {");

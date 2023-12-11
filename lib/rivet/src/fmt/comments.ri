@@ -23,7 +23,7 @@ extend Formatter {
             self.indent += 1;
         }
         if !comment.is_multiline() {
-            is_separate_line := !same_line or comment.text.starts_with("\x01");
+            is_separate_line := !same_line || comment.text.starts_with("\x01");
             s := comment.text.trim_left("\x01").trim_right(" ");
             mut out_s := if comment.is_doc { "///" } else { "//" };
             if s != "" {
@@ -74,7 +74,7 @@ extend Formatter {
                     (
                         comment.pos.line > prev_line and self.output.len() > 1
                         and self.output.last_n(1) != "\n"
-                    ) or (
+                    ) || (
                         comment.pos.line > prev_line + 1 and self.output.len() > 2
                         and self.output.last_n(2) != "\n\n"
                     )
@@ -85,7 +85,7 @@ extend Formatter {
                 self.write(" ");
             }
             self.format_comment(comment, same_line, level);
-            if i < comments.len - 1 or has_nl {
+            if i < comments.len - 1 || has_nl {
                 self.writeln();
             }
             prev_line = comment.pos.end_line;

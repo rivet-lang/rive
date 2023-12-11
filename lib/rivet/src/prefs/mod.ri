@@ -114,7 +114,7 @@ pub struct Prefs {
                 prefs.check_syntax = true;
             }
         }
-        if !(is_test or run_output or is_check) {
+        if !(is_test || run_output || is_check) {
             if mod_name := fp.string_flag(
                 "mod-name", 0, "Specify the name of the module being built."
             ) {
@@ -199,7 +199,7 @@ pub struct Prefs {
             }
         }
 
-        if !(is_test or run_output or is_check) {
+        if !(is_test || run_output || is_check) {
             if emit_mir := fp.bool_flag("emit-mir", 0, "Emit Rivet's Module Intermediate Representation to a file."); emit_mir {
                 prefs.emit_mir = true;
             }
@@ -216,7 +216,7 @@ pub struct Prefs {
             }
         }
 
-        if !(is_test or run_output) {
+        if !(is_test || run_output) {
             if show_color := fp.bool_flag(
                 "show-color", 0,
                 "Force the use of ANSI colors for the error/warning messages,\n"
@@ -234,7 +234,7 @@ pub struct Prefs {
             fp.add_footer("By default, the target OS and the target architecture is the host OS and architecture.\n");
         }
 
-        if !(is_test or is_check) {
+        if !(is_test || is_check) {
             fp.add_footer("Note that most Rivet warnings turn to errors, if you pass `-r` or `--release`, so you will");
             fp.add_footer("have to fix them first.\n");
         }
@@ -287,7 +287,7 @@ pub struct Prefs {
             utils.error("the compiler can only receive one module");
         } else if !Path.exists(input) {
             utils.error("`{}` does not exist", input);
-        } else if !(Path.is_directory(input) or Path.is_file(input)) {
+        } else if !(Path.is_directory(input) || Path.is_file(input)) {
             utils.error("`{}` is not a directory or file");
         } else {
             self.input = input;

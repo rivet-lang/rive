@@ -71,7 +71,7 @@ extend Resolver {
                     self.resolve_decls(trait_decl.decls);
                 },
                 .Enum(enum_decl) -> {
-                    if enum_decl.is_tagged or self.resolve_type(enum_decl.underlying_type) {
+                    if enum_decl.is_tagged || self.resolve_type(enum_decl.underlying_type) {
                         self.self_sym = @as(ast.TypeSym, enum_decl.sym);
                         self.self_sym_is_set = true;
                         enum_info := @as(ast.TypeInfo.Enum, self.self_sym.info);

@@ -114,9 +114,9 @@ extend Checker {
                 builtin_call.pos
             );
         } else if (from_type is .Pointer and to_type is .Rawptr)
-            or (from_type is .Rawptr and to_type is .Pointer)
-            or (from_type is .Pointer and to_type is .Pointer)
-            or (from_type is .Pointer and self.table.is_int(to_type)) {
+            || (from_type is .Rawptr and to_type is .Pointer)
+            || (from_type is .Pointer and to_type is .Pointer)
+            || (from_type is .Pointer and self.table.is_int(to_type)) {
             if !self.inside_unsafe() {
                 report.error(
                     "cast type `{}` to `{}` is unsafe and requires `unsafe` block".fmt(
@@ -141,21 +141,21 @@ extend Checker {
                     }
                 },
                 else -> if ((self.table.is_float(from_type) and self.table.is_int(to_type))
-                    or (self.table.is_int(from_type) and self.table.is_float(to_type))
+                    || (self.table.is_int(from_type) and self.table.is_float(to_type))
                     // ===============================================================
-                    or (self.table.is_int(from_type) and self.table.is_int(to_type))
-                    or (self.table.is_float(from_type) and self.table.is_float(to_type))
+                    || (self.table.is_int(from_type) and self.table.is_int(to_type))
+                    || (self.table.is_float(from_type) and self.table.is_float(to_type))
                     // ===============================================================
-                    or (from_type == self.table.rune_t and to_type == self.table.uint32_t)
-                    or (from_type == self.table.rune_t and to_type == self.table.int32_t)
-                    or (from_type == self.table.uint32_t and to_type == self.table.rune_t
+                    || (from_type == self.table.rune_t and to_type == self.table.uint32_t)
+                    || (from_type == self.table.rune_t and to_type == self.table.int32_t)
+                    || (from_type == self.table.uint32_t and to_type == self.table.rune_t
                         and self.inside_unsafe())) {
                     return; // TODO: advanced check
                 } else if to_ts := to_type.symbol() {
                     mod_sym := self.sym.module()?;
                     if mod_sym.is_core() {
                         if (from_ts == self.table.dyn_array_sym and to_ts.info is .DynArray)
-                            or (to_ts == self.table.dyn_array_sym and from_ts.info is .DynArray) {
+                            || (to_ts == self.table.dyn_array_sym and from_ts.info is .DynArray) {
                             return; // Valid inside `core` module
                         }
                     }

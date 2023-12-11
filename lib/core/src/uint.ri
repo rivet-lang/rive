@@ -16,8 +16,8 @@ extend uint8 < Stringable {
     /// '\r', 0x85, 0xA0
     #[inline]
     pub func is_space(self) -> bool {
-        return self == 32 or (self > 8 and self < 14) or (self == 0x85)
-            or (self == 0xA0);
+        return self == 32 || (self > 8 and self < 14) || (self == 0x85)
+            || (self == 0xA0);
     }
 
     /// Returns `true` if the byte is in range 0-9 and `false` otherwise.
@@ -29,7 +29,7 @@ extend uint8 < Stringable {
     /// Returns `true` if the byte is a binary digit (0 or 1) and `false` otherwise.
     #[inline]
     pub func is_bin_digit(self) -> bool {
-        return self == b'0' or self == b'1';
+        return self == b'0' || self == b'1';
     }
 
     /// Returns `true` if the byte is in range 0-7 and `false` otherwise.
@@ -43,20 +43,20 @@ extend uint8 < Stringable {
     #[inline]
     pub func is_hex_digit(self) -> bool {
         return (self >= b'0' and self <= b'9')
-            or (self >= b'a' and self <= b'f')
-            or (self >= b'A' and self <= b'F');
+            || (self >= b'a' and self <= b'f')
+            || (self >= b'A' and self <= b'F');
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z and `false` otherwise.
     #[inline]
     pub func is_letter(self) -> bool {
-        return (self >= b'a' and self <= b'z') or (self >= b'A' and self <= b'Z');
+        return (self >= b'a' and self <= b'z') || (self >= b'A' and self <= b'Z');
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z or 1-9 and `false` otherwise.
     #[inline]
     pub func is_alnum(self) -> bool {
-        return self.is_letter() or self.is_digit();
+        return self.is_letter() || self.is_digit();
     }
 
     /// Returns `true` if the byte is upper and `false` otherwise.
