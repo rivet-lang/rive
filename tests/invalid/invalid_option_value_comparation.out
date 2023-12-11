@@ -1,0 +1,4 @@
+tests/invalid/invalid_option_value_comparation.ri:4:9: error: option values ​​can only be compared with `none`
+    4 |     _ = x == 1; // fail
+      |         ^~~~~~
+rivet: error: could not compile module `invalid_option_value_comparation`, aborting due to previous error
