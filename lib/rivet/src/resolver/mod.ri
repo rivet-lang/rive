@@ -43,7 +43,7 @@ pub struct Resolver {
             self.detect_source_file_abi();
             self.different_abi_usage_count = 0;
             self.resolve_decls(self.source_file.decls);
-            if self.source_file_abi == .Rivet and self.different_abi_usage_count > 0 {
+            if self.source_file_abi == .Rivet && self.different_abi_usage_count > 0 {
                 report.warn("filename requires ABI specification", sf.pos);
             }
         }
@@ -59,7 +59,7 @@ pub struct Resolver {
     }
 
     func check_vis(self, sym: ast.Sym, pos: token.Pos) {
-        if !sym.is_public and !self.source_file.mod.has_access_to(sym) {
+        if !sym.is_public && !self.source_file.mod.has_access_to(sym) {
             report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
         }
     }
@@ -106,7 +106,7 @@ pub struct Resolver {
                 none
             },
             .BuiltinCall(builtin_call) if builtin_call.name in ["size_of", "align_of"] -> {
-                if builtin_call.args[0].expr is .Type(mut type) and self.resolve_type(type) {
+                if builtin_call.args[0].expr is .Type(mut type) && self.resolve_type(type) {
                     (size, align) := self.table.type_size(type);
                     if builtin_call.name == "size_of" {
                         @as(int, size)

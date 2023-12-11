@@ -195,7 +195,7 @@ pub enum Expr < traits.Stringable {
 
         func get_named_arg(self, name: string) -> ?CallArg {
             for arg in self.args {
-                if arg.is_named and arg.name == name {
+                if arg.is_named && arg.name == name {
                     return arg;
                 }
             }

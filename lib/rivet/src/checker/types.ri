@@ -21,7 +21,7 @@ extend Checker {
         func_kind: string, func_name: string
     ) {
         if expected_sym := expected.symbol(); expected_sym.info is .Trait(mut trait_info)
-            and expected != got {
+            && expected != got {
             got_t := self.table.comptime_number_to_type(got);
             if got_t.symbol()? in trait_info.implements {
                 trait_info.mark_has_objects();
@@ -77,10 +77,10 @@ extend Checker {
     func check_compatible_types(self, got: ast.Type, expected: ast.Type) -> bool {
         if got is .Never {
             return true;
-        } else if (expected is .Never and got is .Void)
-            || (expected is .Void and got is .Never) {
+        } else if (expected is .Never && got is .Void)
+            || (expected is .Void && got is .Never) {
             return true;
-        } else if expected is .Void and got is .Void {
+        } else if expected is .Void && got is .Void {
             return true;
         }
 
@@ -88,29 +88,29 @@ extend Checker {
             return self.check_compatible_types(got, result.inner);
         }
 
-        if got is .Option(option) and expected is .Pointer {
+        if got is .Option(option) && expected is .Pointer {
             return check_pointer(expected, option.inner);
-        } else if got is .Option and expected !is .Option {
+        } else if got is .Option && expected !is .Option {
             return false;
-        } else if expected is .Option(option_) and got is .Option(option2) {
-            if option_.inner is .Pointer and option2.inner is .Pointer {
+        } else if expected is .Option(option_) && got is .Option(option2) {
+            if option_.inner is .Pointer && option2.inner is .Pointer {
                 return check_pointer(option_.inner, option2.inner);
             }
             return option_.inner == option2.inner;
-        } else if expected is .Option(option_2) and got !is .Option {
+        } else if expected is .Option(option_2) && got !is .Option {
             if got is .None {
                 return true;
             }
             return self.check_compatible_types(got, option_2.inner);
-        } else if expected is .None and got is .Option {
+        } else if expected is .None && got is .Option {
             return true;
         }
 
         expected_is_ptr := expected.is_pointer();
         got_is_ptr := got.is_pointer();
-        if expected_is_ptr and got_is_ptr {
+        if expected_is_ptr && got_is_ptr {
             return check_pointer(expected, got);
-        } else if (expected_is_ptr and !got_is_ptr) || (got_is_ptr and !expected_is_ptr) {
+        } else if (expected_is_ptr && !got_is_ptr) || (got_is_ptr && !expected_is_ptr) {
             return false;
         }
 
@@ -123,25 +123,25 @@ extend Checker {
                 return vec_info.elem_type == variadic.inner;
             }
             elem_sym := vec_info.elem_type.symbol()?;
-            if got_sym.info is .Trait(trait_info) and elem_sym in trait_info.bases {
+            if got_sym.info is .Trait(trait_info) && elem_sym in trait_info.bases {
                 return true;
             }
             return self.check_compatible_types(got, vec_info.elem_type);
         }
 
-        if expected is .Func and got is .Func {
+        if expected is .Func && got is .Func {
             return expected == got;
-        } else if expected is .DynArray(dyn_array_info) and got is .DynArray(dyn_array_info2) {
+        } else if expected is .DynArray(dyn_array_info) && got is .DynArray(dyn_array_info2) {
             return dyn_array_info.inner == dyn_array_info2.inner;
         }
 
-        if expected == self.table.rune_t and got == self.table.comptime_int_t {
+        if expected == self.table.rune_t && got == self.table.comptime_int_t {
             return true;
-        } else if expected == self.table.comptime_int_t and got == self.table.rune_t {
+        } else if expected == self.table.comptime_int_t && got == self.table.rune_t {
             return true;
         }
 
-        if self.table.is_number(expected) and self.table.is_number(got) {
+        if self.table.is_number(expected) && self.table.is_number(got) {
             if self.table.is_comptime_number(expected) || self.table.is_comptime_number(got) {
                 return true;
             }
@@ -157,14 +157,14 @@ extend Checker {
                 }
             },
             .Array(array_info) if got_sym.info is .Array(array_info2) -> {
-                if array_info.is_mut and !array_info2.is_mut {
+                if array_info.is_mut && !array_info2.is_mut {
                     return false;
                 }
                 return array_info.elem_type == array_info2.elem_type
-                    and array_info.size == array_info2.size;
+                    && array_info.size == array_info2.size;
             },
             .DynArray(dyn_array_lhs) if got_sym.info is .DynArray(dyn_array_rhs) -> {
-                if dyn_array_lhs.is_mut and !dyn_array_rhs.is_mut {
+                if dyn_array_lhs.is_mut && !dyn_array_rhs.is_mut {
                     return false;
                 }
                 return dyn_array_lhs.elem_type == dyn_array_rhs.elem_type;
@@ -185,7 +185,7 @@ extend Checker {
 
         mod_sym := self.sym.module()?;
         if mod_sym.is_core() {
-            if expected_sym.info is .DynArray and got_sym == self.table.dyn_array_sym {
+            if expected_sym.info is .DynArray && got_sym == self.table.dyn_array_sym {
                 return true;
             }
         }
@@ -196,7 +196,7 @@ extend Checker {
     func promote(self, left_type: ast.Type, right_type: ast.Type) -> ast.Type {
         if left_type == right_type {
             return left_type;
-        } else if self.table.is_number(left_type) and self.table.is_number(right_type) {
+        } else if self.table.is_number(left_type) && self.table.is_number(right_type) {
             return self.promote_number(left_type, right_type);
         }
         return left_type;
@@ -232,17 +232,17 @@ extend Checker {
             is_signed_hi := self.table.is_signed_int(type_hi);
             is_unsigned_hi := !is_signed_hi;
 
-            if is_unsigned_lo and is_unsigned_hi {
+            if is_unsigned_lo && is_unsigned_hi {
                 // unsigned number -> unsigned number (good)
                 type_hi
-            } else if is_signed_lo and is_signed_hi {
+            } else if is_signed_lo && is_signed_hi {
                 // signed number -> signed number (good)
-                if bits_lo == 64 and bits_hi != 64 {
+                if bits_lo == 64 && bits_hi != 64 {
                     type_lo
                 } else {
                     type_hi
                 }
-            } else if is_unsigned_lo and is_signed_hi and bits_hi > bits_lo {
+            } else if is_unsigned_lo && is_signed_hi && bits_hi > bits_lo {
                 // unsigned number -> signed number (good, if signed type is larger)
                 type_lo
             } else {
@@ -257,11 +257,11 @@ func check_pointer(expected: ast.Type, got: ast.Type) -> bool {
     if expected is .Rawptr {
         // rawptr == &T, is valid
         return got is .Rawptr || got is .Pointer;
-    } else if expected is .Pointer(ptr) and got is .Pointer(ptr2) {
-        if ptr.is_mut and !ptr2.is_mut {
+    } else if expected is .Pointer(ptr) && got is .Pointer(ptr2) {
+        if ptr.is_mut && !ptr2.is_mut {
             return false;
         }
-        if ptr.is_indexable and !ptr2.is_indexable {
+        if ptr.is_indexable && !ptr2.is_indexable {
             return false;
         }
         return ptr.inner == ptr2.inner;

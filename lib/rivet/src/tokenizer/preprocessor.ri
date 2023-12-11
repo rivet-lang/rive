@@ -30,11 +30,11 @@ extend Tokenizer {
             }
         }
         if self.conditional_stack.len > 0
-            and self.conditional_stack[self.conditional_stack.len - 1].skip_section {
+            && self.conditional_stack[self.conditional_stack.len - 1].skip_section {
             // skip tokens until next preprocessing directive
             while self.pos < self.text.len : self.pos += 1 {
                 cc := self.current_char();
-                if cc == b'#' and !(self.matches("#error", self.pos) || self.matches("#warn", self.pos)) {
+                if cc == b'#' && !(self.matches("#error", self.pos) || self.matches("#warn", self.pos)) {
                     self.pos -= 1;
                     return;
                 } else if utils.is_new_line(cc) {
@@ -55,7 +55,7 @@ extend Tokenizer {
         self.skip_whitespace();
         self.pos -= 1;
         self.conditional_stack.push(Conditional());
-        if cond and (self.conditional_stack.len == 1
+        if cond && (self.conditional_stack.len == 1
             || !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
             // condition true -> process code within if
             self.conditional_stack[self.conditional_stack.len - 1].matched = true;
@@ -76,8 +76,8 @@ extend Tokenizer {
         if self.conditional_stack.is_empty() or
             self.conditional_stack[self.conditional_stack.len - 1].else_found {
             self.error("unexpected `#else_if`", pos);
-        } else if cond and !self.conditional_stack[self.conditional_stack.len - 1].matched
-            and (self.conditional_stack.len == 1 or
+        } else if cond && !self.conditional_stack[self.conditional_stack.len - 1].matched
+            && (self.conditional_stack.len == 1 or
                 !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
             // condition true -> process code within if
             self.conditional_stack[self.conditional_stack.len - 1].matched = true;
@@ -95,7 +95,7 @@ extend Tokenizer {
             self.conditional_stack[self.conditional_stack.len - 1].else_found {
             self.error("unexpected `#else`", pos);
         } else if !self.conditional_stack[self.conditional_stack.len - 1].matched
-            and (self.conditional_stack.len == 1 or
+            && (self.conditional_stack.len == 1 or
                 !self.conditional_stack[self.conditional_stack.len - 2].skip_section) {
             // condition true -> process code within if
             self.conditional_stack[self.conditional_stack.len - 1].matched = true;
@@ -137,7 +137,7 @@ extend Tokenizer {
     func pp_or_expression(mut self) -> bool {
         mut left := self.pp_and_expression();
         self.skip_whitespace();
-        while self.pos < self.text.len and self.matches("or", self.pos) {
+        while self.pos < self.text.len && self.matches("or", self.pos) {
             self.pos += 2;
             self.skip_whitespace();
             right := self.pp_and_expression();
@@ -149,17 +149,17 @@ extend Tokenizer {
     func pp_and_expression(mut self) -> bool {
         mut left := self.pp_unary_expression();
         self.skip_whitespace();
-        while self.pos < self.text.len and self.matches("and", self.pos) {
+        while self.pos < self.text.len && self.matches("and", self.pos) {
             self.pos += 3;
             self.skip_whitespace();
             right := self.pp_unary_expression();
-            left = left and right;
+            left = left && right;
         }
         return left;
     }
 
     func pp_unary_expression(mut self) -> bool {
-        if self.pos < self.text.len and self.current_char() == b'!' {
+        if self.pos < self.text.len && self.current_char() == b'!' {
             self.pos += 1;
             self.skip_whitespace();
             return !self.pp_unary_expression();
@@ -180,7 +180,7 @@ extend Tokenizer {
             result := self.pp_expression();
             self.skip_whitespace();
             cc = self.current_char();
-            if self.pos < self.text.len and cc == b')' {
+            if self.pos < self.text.len && cc == b')' {
                 self.pos += 1;
             } else {
                 self.error("expected `)`, found `{}`".fmt(cc.to_ascii()), self.current_pos());

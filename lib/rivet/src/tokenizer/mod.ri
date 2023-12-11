@@ -111,7 +111,7 @@ pub struct Tokenizer {
                 "the end of file `{}` has been reached 50 times already".fmt(self.file)
             );
         }
-        if self.pos != self.text.len and self.eofs == 1 {
+        if self.pos != self.text.len && self.eofs == 1 {
             self.inc_line_number();
         }
         self.pos = self.text.len;
@@ -150,7 +150,7 @@ pub struct Tokenizer {
 
     #[inline]
     func eat_to_end_of_line(mut self) {
-        while self.pos < self.text.len and self.current_char() != LF : self.pos += 1 {}
+        while self.pos < self.text.len && self.current_char() != LF : self.pos += 1 {}
     }
 
     func inc_line_number(mut self) {
@@ -169,14 +169,14 @@ pub struct Tokenizer {
                 self.pos += 1;
                 continue;
             }
-            if !(c == 32 || (c > 8 and c < 14) || (c == 0x85) || (c == 0xA0)) {
+            if !(c == 32 || (c > 8 && c < 14) || (c == 0x85) || (c == 0xA0)) {
                 return;
             }
-            if c == CR and self.look_ahead(1) == LF {
+            if c == CR && self.look_ahead(1) == LF {
                 self.is_cr_lf = true;
             }
             // count `\r\n` as one line
-            if utils.is_new_line(c) and !(self.text[self.pos - 1] == CR and c == LF) {
+            if utils.is_new_line(c) && !(self.text[self.pos - 1] == CR && c == LF) {
                 self.inc_line_number();
             }
         }

@@ -301,7 +301,7 @@ pub struct Table {
             (type_sym.size, type_sym.align)
         } else {
             (mut size: uint, mut align: uint) := (0, 0);
-            (size, align) = if type_sym.is_boxed() and !is_raw {
+            (size, align) = if type_sym.is_boxed() && !is_raw {
                 (self.pointer_size, self.pointer_size)
             } else {
                 match type_sym.info is {
@@ -477,7 +477,7 @@ pub struct Table {
                 };
             },
             "_TESTS_" -> return self.prefs.is_test,
-            else -> return if name.starts_with("_") and name.ends_with("_") {
+            else -> return if name.starts_with("_") && name.ends_with("_") {
                 report.error("unknown builtin flag: `{}`".fmt(name), pos);
                 false
             } else {

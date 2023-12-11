@@ -81,12 +81,12 @@ pub struct Directory {
                 mut res := []string(cap: 15);
                 while ent := libc.readdir(dir) {
                     bptr: [&]uint8 := &ent.*.d_name[0];
-                    if (bptr[0] == 0 || (bptr[0] == b'.' and bptr[1] == 0)
-                        || (bptr[0] == b'.' and bptr[1] == b'.' and bptr[2] == 0)) {
+                    if (bptr[0] == 0 || (bptr[0] == b'.' && bptr[1] == 0)
+                        || (bptr[0] == b'.' && bptr[1] == b'.' && bptr[2] == 0)) {
                         continue;
                     }
                     bptr_str := string.from_raw(bptr);
-                    if !ext.is_empty() and Path.extension(bptr_str) != ext {
+                    if !ext.is_empty() && Path.extension(bptr_str) != ext {
                         continue;
                     }
                     full_path := Path.join(rpath, bptr_str)!;

@@ -11,7 +11,7 @@ extend Codegen {
     func get_type_symbols(mut self, root: ast.Sym) -> []ast.TypeSym {
         mut ts := []ast.TypeSym();
         for sym in root.scope.syms {
-            if sym is ast.TypeSym(type_sym) and !(
+            if sym is ast.TypeSym(type_sym) && !(
                 type_sym.info is .DynArray || type_sym.info is .Alias
                 || type_sym.info.is_primitive()
             ) {

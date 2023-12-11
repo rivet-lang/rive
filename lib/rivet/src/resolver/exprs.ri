@@ -239,7 +239,7 @@ extend Resolver {
             ident.sym = obj;
             @as(ast.Var, obj).is_used = true;
         } else if imported := self.source_file.imported_symbols.find(ident.name) {
-            if !(imported.sym is ast.TypeSym(type_sym) and type_sym.info is .Placeholder) {
+            if !(imported.sym is ast.TypeSym(type_sym) && type_sym.info is .Placeholder) {
                 imported.is_used = true;
                 ident.found = true;
                 ident.is_sym = true;
@@ -250,7 +250,7 @@ extend Resolver {
             ident.is_sym = true;
             ident.sym = sym;
         } else if sym := self.sym.scope.find(ident.name) {
-            if !(sym is ast.TypeSym(type_sym) and type_sym.info is .Placeholder) {
+            if !(sym is ast.TypeSym(type_sym) && type_sym.info is .Placeholder) {
                 ident.found = true;
                 ident.is_sym = true;
                 ident.sym = sym;
@@ -269,7 +269,7 @@ extend Resolver {
             ident.sym = sym;
         } else if self.self_sym_is_set {
             if sym := self.self_sym.scope.find(ident.name) {
-                if !(sym is ast.TypeSym(type_sym) and type_sym.info is .Placeholder) {
+                if !(sym is ast.TypeSym(type_sym) && type_sym.info is .Placeholder) {
                     if sym is ast.Func {
                         mut err := report.error_builder(
                             "cannot find `{}` in this scope".fmt(ident.name), ident.pos
@@ -286,7 +286,7 @@ extend Resolver {
         }
 
         if ident.found {
-            if ident.is_sym and ident.sym is ast.SymRef(mut sym_ref) {
+            if ident.is_sym && ident.sym is ast.SymRef(mut sym_ref) {
                 ident.sym = self.clean_symbol_reference(sym_ref);
             }
             self.check_symbol_abi(ident.sym, ident.pos);
@@ -302,14 +302,14 @@ extend Resolver {
                 selector.is_path = true;
                 selector.left_sym = self_ty.sym;
             },
-            .Ident(ident) if ident.found and ident.is_sym -> {
+            .Ident(ident) if ident.found && ident.is_sym -> {
                 if ident.sym is ast.Var || ident.sym is ast.Const {
                     return;
                 }
                 selector.is_path = true;
                 selector.left_sym = ident.sym;
             },
-            .Selector(selector2) if selector2.found and selector2.is_path -> {
+            .Selector(selector2) if selector2.found && selector2.is_path -> {
                 if selector2.sym is ast.Var || selector2.sym is ast.Const {
                     return;
                 }
@@ -341,7 +341,7 @@ extend Resolver {
             } else {
                 s
             };
-        } else if sym_ is ast.TypeSym(type_sym) and type_sym.info is .Enum(enum_info) {
+        } else if sym_ is ast.TypeSym(type_sym) && type_sym.info is .Enum(enum_info) {
             if enum_info.has_variant(name) {
                 return sym_;
             }
@@ -367,10 +367,10 @@ extend Resolver {
     func clean_symbol_reference(mut self, mut sym_ref: ast.SymRef) -> ast.Sym {
         if !sym_ref.ref_resolved {
             self.resolve_expr(sym_ref.ref_expr);
-            if sym_ref.ref_expr is .Ident(ident) and ident.found and ident.is_sym {
+            if sym_ref.ref_expr is .Ident(ident) && ident.found && ident.is_sym {
                 sym_ref.ref = ident.sym;
                 sym_ref.ref_resolved = true;
-            } else if sym_ref.ref_expr is .Selector(selector) and selector.found and
+            } else if sym_ref.ref_expr is .Selector(selector) && selector.found and
                 selector.is_path {
                 sym_ref.ref = selector.sym;
                 sym_ref.ref_resolved = true;

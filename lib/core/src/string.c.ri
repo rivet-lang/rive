@@ -110,12 +110,12 @@ pub struct string < Stringable, Hashable, Throwable {
             if !is_space {
                 word_len += 1;
             }
-            if !is_in_word and !is_space {
+            if !is_in_word && !is_space {
                 word_start = i;
                 is_in_word = true;
                 continue;
             }
-            if is_space and is_in_word {
+            if is_space && is_in_word {
                 res.push(self.substr(word_start, word_start + word_len));
                 is_in_word = false;
                 word_len = 0;
@@ -123,7 +123,7 @@ pub struct string < Stringable, Hashable, Throwable {
                 continue;
             }
         }
-        if is_in_word and word_len > 0 {
+        if is_in_word && word_len > 0 {
             // collect the remainder word at the end
             res.push(self.substr(word_start, self.len));
         }
@@ -266,7 +266,7 @@ pub struct string < Stringable, Hashable, Throwable {
         mut i: uint := 0;
         while i < self.len : i += 1 {
             mut j: uint := 0;
-            while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
+            while j < p.len && unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
             if j == p.len {
                 return i;
             }
@@ -286,7 +286,7 @@ pub struct string < Stringable, Hashable, Throwable {
         while i < self.len : i += 1 {
             mut j: uint := 0;
             mut ii := i;
-            while j < p.len and unsafe { self.ptr[ii] == p.ptr[j] } {
+            while j < p.len && unsafe { self.ptr[ii] == p.ptr[j] } {
                 j += 1;
                 ii += 1;
             }
@@ -334,7 +334,7 @@ pub struct string < Stringable, Hashable, Throwable {
         mut i: uint := self.len - p.len;
         while i >= 0 : i -= 1 {
             mut j: uint := 0;
-            while j < p.len and unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
+            while j < p.len && unsafe { self.ptr[i + j] == p.ptr[j] } : j += 1 { }
             if j == p.len {
                 return i;
             }
@@ -372,7 +372,7 @@ pub struct string < Stringable, Hashable, Throwable {
         mut pos_right: uint := if self.len == 0 { 0 } else { self.len - 1 };
         mut cs_match := true;
         cutset_bytes := cutset.as_bytes();
-        while pos_left <= self.len and pos_right > 0 and cs_match {
+        while pos_left <= self.len && pos_right > 0 && cs_match {
             cs_match = false;
             for cs in cutset_bytes {
                 if unsafe { self.ptr[pos_left] == cs } {
@@ -546,7 +546,7 @@ pub struct string < Stringable, Hashable, Throwable {
             0 -> {
                 i = 1;
                 for ch in self.as_bytes() {
-                    if nth > 0 and i >= nth {
+                    if nth > 0 && i >= nth {
                         res.push(self.substr(i));
                         break;
                     }
@@ -560,7 +560,7 @@ pub struct string < Stringable, Hashable, Throwable {
                 delim_byte := delim[0];
                 while i < self.len {
                     if unsafe { self.ptr[i] == delim_byte } {
-                        if nth > 0 and res.len == nth - 1 {
+                        if nth > 0 && res.len == nth - 1 {
                             break;
                         }
                         res.push(self.substr(start, i));
@@ -578,8 +578,8 @@ pub struct string < Stringable, Hashable, Throwable {
             else -> {
                 mut start: uint := 0;
                 while i <= self.len {
-                    if i + delim.len <= self.len and self.substr(i, i + delim.len) == delim {
-                        if nth > 0 and res.len == nth - 1 {
+                    if i + delim.len <= self.len && self.substr(i, i + delim.len) == delim {
+                        if nth > 0 && res.len == nth - 1 {
                             break;
                         }
                         res.push(self.substr(start, i));
@@ -652,7 +652,7 @@ pub struct string < Stringable, Hashable, Throwable {
                     } else {
                         self.substr(line_start, i)
                     });
-                    if i + 1 < self.len and unsafe { self.ptr[i + 1] == lf } {
+                    if i + 1 < self.len && unsafe { self.ptr[i + 1] == lf } {
                         line_start = i + 2;
                     } else {
                         line_start = i + 1;

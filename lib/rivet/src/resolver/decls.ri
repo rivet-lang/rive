@@ -19,10 +19,10 @@ extend Resolver {
                 } else {
                     sym_ref := @as(ast.SymRef, alias_decl.sym);
                     self.resolve_expr(sym_ref.ref_expr);
-                    if sym_ref.ref_expr is .Ident(ident) and ident.found and ident.is_sym {
+                    if sym_ref.ref_expr is .Ident(ident) && ident.found && ident.is_sym {
                         sym_ref.ref = ident.sym;
                         sym_ref.ref_resolved = true;
-                    } else if sym_ref.ref_expr is .Selector(selector) and selector.found {
+                    } else if sym_ref.ref_expr is .Selector(selector) && selector.found {
                         sym_ref.ref = selector.sym;
                         sym_ref.ref_resolved = true;
                     }
@@ -147,7 +147,7 @@ extend Resolver {
                             if base_sym.info is .Trait(mut trait_info) {
                                 trait_info.implement(self.self_sym);
                             } else if self.self_sym.info is .Struct(struct_info)
-                                and base_sym.info is .Struct {
+                                && base_sym.info is .Struct {
                                 struct_info.bases.push(base_sym);
                             } else {
                                 report.error(
@@ -161,7 +161,7 @@ extend Resolver {
                     self.resolve_decls(extend_decl.decls);
                 },
                 .Field(field_decl) -> if self.resolve_type(field_decl.type)
-                    and field_decl.has_def_expr {
+                    && field_decl.has_def_expr {
                     self.resolve_expr(field_decl.def_expr);
                 },
                 .Func(func_decl) -> {
@@ -170,7 +170,7 @@ extend Resolver {
                         if func_decl.self_is_ptr {
                             self_type = .Pointer(self_type);
                         }
-                        is_used := self.self_sym.info is .Trait and !func_decl.has_body;
+                        is_used := self.self_sym.info is .Trait && !func_decl.has_body;
                         func_decl.scope.add_local(ast.Var(
                             name: "self",
                             is_mut: func_decl.self_is_mut,
@@ -188,8 +188,8 @@ extend Resolver {
                     for arg in func_decl.args {
                         if self.resolve_type(arg.type) {
                             self.check_variable_shadowing(arg.name, arg.pos);
-                            is_used := self.self_sym_is_set and self.self_sym.info is .Trait
-                                and !func_decl.has_body;
+                            is_used := self.self_sym_is_set && self.self_sym.info is .Trait
+                                && !func_decl.has_body;
                             func_decl.scope.add_local(ast.Var(
                                 is_mut: arg.is_mut,
                                 is_used: is_used,

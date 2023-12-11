@@ -57,8 +57,8 @@ extend Checker {
                         enum_lit.sym = sym;
                         enum_lit.variant = variant;
                         enum_lit.type = .Basic(sym, pos: enum_lit.pos);
-                        if enum_info.is_tagged and !enum_lit.from_is_cmp
-                            and !enum_lit.is_instance {
+                        if enum_info.is_tagged && !enum_lit.from_is_cmp
+                            && !enum_lit.is_instance {
                             if variant.has_type {
                                 mut err := report.error_builder(
                                     "variant `{}` cannot be initialized without arguments".fmt(
@@ -167,7 +167,7 @@ extend Checker {
             .Indirect(indirect) -> {
                 indirect.left_type = self.check_expr(indirect.left);
                 indirect.type = if indirect.left_type.is_pointer()
-                    || (indirect.left_type is .Pointer(ptr) and !ptr.is_indexable)
+                    || (indirect.left_type is .Pointer(ptr) && !ptr.is_indexable)
                     || indirect.left_type is .Rawptr  {
                 	indirect.is_mut = indirect.left_type.is_pointer();
                     indirect.left_type.ptr_or_ref_inner()
@@ -179,7 +179,7 @@ extend Checker {
                         err.add_help(
                             "consider casting this to another pointer type, e.g. `*uint8`"
                         );
-                    } else if indirect.left_type is .Pointer(ptr2) and ptr2.is_indexable {
+                    } else if indirect.left_type is .Pointer(ptr2) && ptr2.is_indexable {
                         err.add_help("use index access to element 0 instead");
                     }
                     err.emit();
@@ -234,7 +234,7 @@ extend Checker {
                 } else {
                     .Void
                 };
-                if block.type is .Void and block.is_expr {
+                if block.type is .Void && block.is_expr {
                     // if the expression has no value then it is another statement
                     block.stmts.push(.Expr(block.expr, block.pos));
                     block.is_expr = false;
@@ -259,7 +259,7 @@ extend Checker {
                 old_inside_guard_expr := self.inside_guard_expr;
                 self.inside_guard_expr = true;
                 self.check_var_decl(guard.vars, guard.expr, guard.scope, guard.pos);
-                if guard.has_cond and self.check_expr(guard.cond) != self.table.bool_t {
+                if guard.has_cond && self.check_expr(guard.cond) != self.table.bool_t {
                     report.error(
                         "non-boolean expression used as guard condition",
                         guard.cond.position()
@@ -328,7 +328,7 @@ extend Checker {
         }
         for i, mut value in array_lit.values {
             type := self.check_expr(value);
-            if i == 0 and !has_expected_type {
+            if i == 0 && !has_expected_type {
                 value_type = self.table.comptime_number_to_type(type);
                 self.expected_type = value_type;
             } else {
@@ -451,7 +451,7 @@ extend Checker {
                         ), selector.field_pos
                     );
                     if selector.field_name.is_digit()
-                        and (left_sym.info is .DynArray || left_sym.info is .Array ) {
+                        && (left_sym.info is .DynArray || left_sym.info is .Array ) {
                         err.add_note(
                             "instead of using tuple indexing, use array indexing: `{}[{}]`"
                                 .fmt(selector.left, selector.field_name)
@@ -569,13 +569,13 @@ extend Checker {
                     expected_pointer = true;
                     indexable_pointer = ptr.is_indexable;
                 } else if self.expected_type is .Option(opt)
-                    and opt.inner is .Pointer(opt_ptr) {
+                    && opt.inner is .Pointer(opt_ptr) {
                     expected_pointer = true;
                     indexable_pointer = opt_ptr.is_indexable;
                 }
                 right := unary.right.clean_paren();
                 if right is .Index(index) {
-                    if index.left_type is .Pointer and !expected_pointer {
+                    if index.left_type is .Pointer && !expected_pointer {
                         report.error("cannot take the address of a pointer indexing", unary.pos);
                     }
                     index.is_ref = true;
@@ -616,12 +616,12 @@ extend Checker {
                 }
                 err.emit();
             }
-        } else if left_type is .Option and binary.op !in [.Eq, .Ne, .OrElse] {
+        } else if left_type is .Option && binary.op !in [.Eq, .Ne, .OrElse] {
             report.error("option values only support `??`, `==` and `!=`", binary.pos);
-        } else if left_type is .Option and binary.op != .OrElse and right_type !is .None {
+        } else if left_type is .Option && binary.op != .OrElse && right_type !is .None {
             report.error("option values ​​can only be compared with `none`", binary.pos);
-        } else if left_type == self.table.bool_t and right_type == left_type
-            and binary.op !in [.Eq, .Ne, .LogicalAnd, .LogicalOr, .Pipe, .Amp] {
+        } else if left_type == self.table.bool_t && right_type == left_type
+            && binary.op !in [.Eq, .Ne, .LogicalAnd, .LogicalOr, .Pipe, .Amp] {
             report.error("boolean values only support the following operators: `==`, `!=`, `&&`, `||`, `&` and `|`", binary.pos);
         }
 
@@ -660,7 +660,7 @@ extend Checker {
                 .OrElse -> {
                     if left_type is .Option(opt) {
                         if !self.check_compatible_types(right_type, opt.inner)
-                            and right_type !is .Never {
+                            && right_type !is .Never {
                             mut err := report.error_builder(
                                 "expected type `{}`, found `{}`".fmt(opt.inner, right_type),
                                 binary.right.position()
@@ -688,8 +688,8 @@ extend Checker {
                             op_method := if binary.op == .KwIn { "==" } else { "!=" };
                             if !(left_sym.info.is_primitive()
                                 || !(left_sym.info is .Enum(enum_info)
-                                and enum_info.is_tagged))
-                                and !left_sym.has_method(op_method) {
+                                && enum_info.is_tagged))
+                                && !left_sym.has_method(op_method) {
                                 mut err := report.error_builder(
                                     "cannot use operator `{}` with type `{}`".fmt(
                                         binary.op, left_sym.name
@@ -726,7 +726,7 @@ extend Checker {
                         self.check_name_case(
                             .Snake, "variable", binary.var_obj.name, binary.var_obj.pos
                         );
-                        if left_sym.info is .Enum(enum_info) and enum_info.is_tagged {
+                        if left_sym.info is .Enum(enum_info) && enum_info.is_tagged {
                             variant := @as(ast.Expr.EnumLiteral, binary.right).variant;
                             if variant.has_type {
                                 binary.var_obj.type = variant.type;
@@ -747,11 +747,11 @@ extend Checker {
                         }
                     }
                     if left_sym.info is .Enum(enum_info) {
-                        if enum_info.is_tagged and binary.op !in [.KwIs, .KwNotIs] {
+                        if enum_info.is_tagged && binary.op !in [.KwIs, .KwNotIs] {
                             report.error(
                                 "tagged enum types only support `is` and `!is`", binary.pos
                             );
-                        } else if !enum_info.is_tagged and binary.op !in [.Eq, .Ne] {
+                        } else if !enum_info.is_tagged && binary.op !in [.Eq, .Ne] {
                             report.error(
                                 "enum types only support `==` and `!=`", binary.pos
                             );
@@ -772,8 +772,8 @@ extend Checker {
                             binary.left.position()
                         );
                     } else if binary.left is .Binary(bin_left) {
-                        if bin_left.op != binary.op and bin_left.op in [.LogicalAnd, .LogicalOr] {
-                            // use `(a and b) || c` instead of `a and b || c`
+                        if bin_left.op != binary.op && bin_left.op in [.LogicalAnd, .LogicalOr] {
+                            // use `(a && b) || c` instead of `a && b || c`
                             mut err := report.error_builder(
                                 "ambiguous boolean expression", binary.pos
                             );
@@ -799,8 +799,8 @@ extend Checker {
                                 right_type, left_type
                             ), binary.left.position()
                         );
-                    } else if binary.op == .Lshift and self.table.is_signed_int(left_type)
-                        and !self.inside_unsafe() {
+                    } else if binary.op == .Lshift && self.table.is_signed_int(left_type)
+                        && !self.inside_unsafe() {
                         report.warn(
                             "shifting a value from a signed type `{}` can change the sign"
                                 .fmt(left_type),
@@ -827,7 +827,7 @@ extend Checker {
         for i, branch in if_expr.branches {
             if !branch.is_else {
                 bcond_t := self.check_expr(branch.cond);
-                if branch.cond !is .Guard and bcond_t != self.table.bool_t {
+                if branch.cond !is .Guard && bcond_t != self.table.bool_t {
                     report.error(
                         "non-boolean expression used as `if` condition",
                         branch.cond.position()
@@ -852,7 +852,7 @@ extend Checker {
             }
             branch.type = branch_t;
         }
-        if !if_expr.type.is_void() and !if_expr.has_else {
+        if !if_expr.type.is_void() && !if_expr.has_else {
             report.error("`if` expression needs an `else` branch", if_expr.pos);
         }
         return if_expr.expected_type;
@@ -863,7 +863,7 @@ extend Checker {
             report.error("`never` functions cannot use `return` statements", return_expr.pos);
         } else if self.inside_defer {
             report.error("`return` is not allowed inside `defer` statement", return_expr.pos);
-        } else if self.inside_test and return_expr.has_expr {
+        } else if self.inside_test && return_expr.has_expr {
             report.error("cannot return values inside `test` declaration", return_expr.pos);
         } else if return_expr.has_expr {
             if self.cur_func.ret_type is .Void {
@@ -894,7 +894,7 @@ extend Checker {
             }
         } else if !(
             self.cur_func.ret_type is .Void
-            || (self.cur_func.ret_type is .Result(res_t) and res_t.inner is .Void)
+            || (self.cur_func.ret_type is .Result(res_t) && res_t.inner is .Void)
         ) {
             mut err := report.error_builder(
                 "expected `{}` value in return argument".fmt(self.cur_func.ret_type),
@@ -953,7 +953,7 @@ extend Checker {
         self.expected_type = left_type;
         right_type := self.check_expr(assign.right);
         self.expected_type = old_expected_type;
-        if assign.left is .Ident(ident) and ident.name == "_" {
+        if assign.left is .Ident(ident) && ident.name == "_" {
             return .Void;
         }
         self.check_types(right_type, left_type) catch |err| {

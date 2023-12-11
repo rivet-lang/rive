@@ -30,7 +30,7 @@ extend Checker {
         old_sym := self.sym;
         defer self.sym = old_sym;
         match decl is {
-            .Import(import_decl) -> if import_decl.import_list.is_empty() and !import_decl.glob {
+            .Import(import_decl) -> if import_decl.import_list.is_empty() && !import_decl.glob {
                 if import_decl.has_custom_alias {
                     self.check_name_case(
                         .Snake, "import alias", import_decl.alias_name, import_decl.pos
@@ -168,7 +168,7 @@ extend Checker {
 
     func check_func(mut self, mut func_decl: ast.Decl.Func) {
         if !func_decl.is_operator {
-            name := if func_decl.is_method and func_decl.is_special_method {
+            name := if func_decl.is_method && func_decl.is_special_method {
                 func_decl.name.substr(2, func_decl.name.len - 2) // skip `__`
             } else {
                 func_decl.name
@@ -210,7 +210,7 @@ extend Checker {
                 );
             }
         }
-        if func_decl.is_method and func_decl.self_is_ptr and func_decl.self_type.is_boxed() {
+        if func_decl.is_method && func_decl.self_is_ptr && func_decl.self_type.is_boxed() {
             report.error("cannot take the address of a boxed value as receiver", func_decl.self_pos);
         }
         for arg in func_decl.args {
@@ -229,7 +229,7 @@ extend Checker {
                 };
             }
         }
-        if func_decl.ret_type is .Pointer and func_decl.abi != .Rivet {
+        if func_decl.ret_type is .Pointer && func_decl.abi != .Rivet {
             mut err := report.error_builder(
                 "function `{}` should return an optional pointer".fmt(func_decl.name),
                 func_decl.ret_type.position()
@@ -242,11 +242,11 @@ extend Checker {
         func_decl.defer_stmts = self.defer_stmts;
         self.defer_stmts = +[];
         self.check_scope_vars(func_decl.scope);
-        if func_decl.ret_type is .Never and !self.inside_extern {
+        if func_decl.ret_type is .Never && !self.inside_extern {
             if func_decl.stmts.len > 0 {
                 match func_decl.stmts[func_decl.stmts.len - 1] is {
                     .While(while_stmt) if while_stmt.is_inf
-                        and while_stmt.stmt is .Expr(expr) and expr is .Block(block) -> {
+                        && while_stmt.stmt is .Expr(expr) && expr is .Block(block) -> {
                         if !block.stmts.is_empty() {
                             report.error("infinite loop should be empty", while_stmt.pos);
                         }
@@ -260,9 +260,9 @@ extend Checker {
                             );
                         }
                     },
-                    .Expr(expr3) if expr3 is .Block(block1) and block1.stmts.len > 0 -> {
+                    .Expr(expr3) if expr3 is .Block(block1) && block1.stmts.len > 0 -> {
                         last_stmt := block1.stmts[block1.stmts.len - 1];
-                        if last_stmt is .Expr(last_expr) and last_expr is .Call(call) {
+                        if last_stmt is .Expr(last_expr) && last_expr is .Call(call) {
                             if call.type !is .Never {
                                 report.error(
                                     "`{}` is not a `never` function".fmt(
@@ -296,8 +296,8 @@ extend Checker {
                 err.add_note("`never` functions should end with a call to another `never` function, or with a `while {}`");
                 err.emit();
             }
-        } else if func_decl.has_body and !func_decl.ret_type.is_void()
-            and !self.has_return(func_decl.stmts, func_decl.ret_type is .Result) {
+        } else if func_decl.has_body && !func_decl.ret_type.is_void()
+            && !self.has_return(func_decl.stmts, func_decl.ret_type is .Result) {
             report.error(
                 "missing `return` statement at end of {} `{}`".fmt(
                     if func_decl.is_method { "method" } else { "function" },

@@ -185,7 +185,7 @@ func can_expand(input: string) -> bool {
 func expand_tilda(raw_version: string) -> ?ComparatorSet {
     min_ver := coerce(raw_version) catch return none;
     mut max_ver := min_ver;
-    max_ver = if min_ver.minor == 0 and min_ver.patch == 0 {
+    max_ver = if min_ver.minor == 0 && min_ver.patch == 0 {
         min_ver.increment(.Major)
     } else {
         min_ver.increment(.Minor)

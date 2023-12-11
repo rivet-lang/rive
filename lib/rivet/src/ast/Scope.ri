@@ -28,7 +28,7 @@ pub struct Scope {
 
     pub func add_or_get(mut self, sym: Sym) -> !Sym {
         if old_sym := self.find(sym.name) {
-            if sym is TypeSym(type_sym) and old_sym is TypeSym(mut old_type_sym) {
+            if sym is TypeSym(type_sym) && old_sym is TypeSym(mut old_type_sym) {
                 if old_type_sym.update(type_sym)! {
                     return old_sym;
                 }
@@ -45,7 +45,7 @@ pub struct Scope {
 
     pub func add_local(mut self, sym: Sym) -> ! {
         if self.is_local {
-            if sym is Var and sym.name == "_" {
+            if sym is Var && sym.name == "_" {
                 return; // ignore blank variable
             } else if _ := self.lookup(sym.name) {
                 throw DuplicateSymbolError(

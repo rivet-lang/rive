@@ -16,14 +16,14 @@ extend uint8 < Stringable {
     /// '\r', 0x85, 0xA0
     #[inline]
     pub func is_space(self) -> bool {
-        return self == 32 || (self > 8 and self < 14) || (self == 0x85)
+        return self == 32 || (self > 8 && self < 14) || (self == 0x85)
             || (self == 0xA0);
     }
 
     /// Returns `true` if the byte is in range 0-9 and `false` otherwise.
     #[inline]
     pub func is_digit(self) -> bool {
-        return self >= b'0' and self <= b'9';
+        return self >= b'0' && self <= b'9';
     }
 
     /// Returns `true` if the byte is a binary digit (0 or 1) and `false` otherwise.
@@ -35,22 +35,22 @@ extend uint8 < Stringable {
     /// Returns `true` if the byte is in range 0-7 and `false` otherwise.
     #[inline]
     pub func is_oct_digit(self) -> bool {
-        return self >= b'0' and self <= b'7';
+        return self >= b'0' && self <= b'7';
     }
 
     /// Returns `true` if the byte is either in range 0-9, a-f or A-F and `false`
     /// otherwise.
     #[inline]
     pub func is_hex_digit(self) -> bool {
-        return (self >= b'0' and self <= b'9')
-            || (self >= b'a' and self <= b'f')
-            || (self >= b'A' and self <= b'F');
+        return (self >= b'0' && self <= b'9')
+            || (self >= b'a' && self <= b'f')
+            || (self >= b'A' && self <= b'F');
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z and `false` otherwise.
     #[inline]
     pub func is_letter(self) -> bool {
-        return (self >= b'a' and self <= b'z') || (self >= b'A' and self <= b'Z');
+        return (self >= b'a' && self <= b'z') || (self >= b'A' && self <= b'Z');
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z or 1-9 and `false` otherwise.
@@ -62,13 +62,13 @@ extend uint8 < Stringable {
     /// Returns `true` if the byte is upper and `false` otherwise.
     #[inline]
     pub func is_upper(self) -> bool {
-        return (self >= b'A' and self <= b'Z');
+        return (self >= b'A' && self <= b'Z');
     }
 
     /// Returns `true` if the byte is lower and `false` otherwise.
     #[inline]
     pub func is_lower(self) -> bool {
-        return (self >= b'a' and self <= b'z');
+        return (self >= b'a' && self <= b'z');
     }
 
     /// Calculates length to read from the first byte.

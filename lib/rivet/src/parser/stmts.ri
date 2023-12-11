@@ -109,8 +109,8 @@ extend Parser {
                 .Defer(expr, defer_mode, pos)
             },
             self.tok.kind in [.Lparen, .KwMut, .Name]
-                and self.peek_tok.kind !in [.Dot, .Lbracket, .Lparen]
-                and self.decl_operator_is_used() -> {
+                && self.peek_tok.kind !in [.Dot, .Lbracket, .Lparen]
+                && self.decl_operator_is_used() -> {
                 // variable declarations
                 mut pos := self.tok.pos;
                 mut lefts := []ast.ObjectData();
@@ -134,7 +134,7 @@ extend Parser {
             },
             else -> {
                 expr := self.parse_expr();
-                if !((self.inside_block and self.tok.kind == .Rbrace)
+                if !((self.inside_block && self.tok.kind == .Rbrace)
                     || (expr is .If || expr is .Match || expr is .Block)) {
                     self.expect(.Semicolon);
                 }

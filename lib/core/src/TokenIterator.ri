@@ -19,7 +19,7 @@ pub struct TokenIterator {
     /// complete. Does not advance to the next token.
     pub func peek(mut self) -> ?string {
         // move to beginning of token
-        while self.index < self.buffer.len and self.is_split_byte(self.buffer[self.index])
+        while self.index < self.buffer.len && self.is_split_byte(self.buffer[self.index])
             : self.index += 1 {}
         start := self.index;
         if start == self.buffer.len {
@@ -27,7 +27,7 @@ pub struct TokenIterator {
         }
         // move to end of token
         mut end := start;
-        while end < self.buffer.len and !self.is_split_byte(self.buffer[end])
+        while end < self.buffer.len && !self.is_split_byte(self.buffer[end])
             : end += 1 {}
         return self.buffer.substr(start, end);
     }
@@ -36,7 +36,7 @@ pub struct TokenIterator {
     pub func rest(&self) -> string {
         // move to beginning of token
         mut index := self.index;
-        while index < self.buffer.len and self.is_split_byte(self.buffer[index])
+        while index < self.buffer.len && self.is_split_byte(self.buffer[index])
             : index += 1 {}
         return self.buffer.substr(index);
     }

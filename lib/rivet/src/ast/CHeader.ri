@@ -64,7 +64,7 @@ struct CDefine < traits.Stringable {
         mut sb := strings.Builder.new();
         sb.write_string(if self.is_macro { "macro " } else { "const " });
         sb.write_string(self.name);
-        if self.is_macro and self.args.len > 0 {
+        if self.is_macro && self.args.len > 0 {
             sb.write_string("(");
             for i, arg in self.args {
                 sb.write_string(arg);
@@ -103,8 +103,8 @@ enum CImportValue {
 
     #[inline]
     pub func to_bool(self) -> bool {
-        return (self is .Int(int_) and int_ == 1)
-            || (self is .Uint(uint_) and uint_ == 1);
+        return (self is .Int(int_) && int_ == 1)
+            || (self is .Uint(uint_) && uint_ == 1);
     }
 }
 

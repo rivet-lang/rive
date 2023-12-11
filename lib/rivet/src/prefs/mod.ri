@@ -136,7 +136,7 @@ pub struct Prefs {
             }
         }
         if define := fp.string_flag("define", b'D', "Define the provided flag.") {
-            if define.starts_with("_") and define.ends_with("_") {
+            if define.starts_with("_") && define.ends_with("_") {
                 utils.error(
                     "this form of declaration is reserved for the compiler: `{}`", define
                 );
@@ -308,7 +308,7 @@ pub struct Prefs {
             self.mod_output = self.mod_name;
         }
 
-        if self.target_os == .Windows and !self.mod_output.ends_with(".exe") {
+        if self.target_os == .Windows && !self.mod_output.ends_with(".exe") {
             self.mod_output = self.mod_output.concat(".exe");
         }
 

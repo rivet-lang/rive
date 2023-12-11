@@ -13,7 +13,7 @@ extend Checker {
     func check_match(mut self, mut match_expr: ast.Expr.Match) -> ast.Type {
         old_expected_type := self.expected_type;
         match_expr.type = .Void;
-        if match_expr.branches.len == 1 and match_expr.has_else {
+        if match_expr.branches.len == 1 && match_expr.has_else {
             report.error(
                 "`match` must have at least one non `else` branch",
                 match_expr.branches[0].pos
@@ -49,7 +49,7 @@ extend Checker {
                 expr_type = .Tuple(types, expr_sym);
             }
         } else {
-            if match_expr.is_typematch and !(expr_sym.info is .Enum
+            if match_expr.is_typematch && !(expr_sym.info is .Enum
                 or expr_sym.info is .Trait) {
                 mut err := report.error_builder(
                     "invalid type for type-match", match_expr.expr.position()
@@ -57,13 +57,13 @@ extend Checker {
                 err.add_note("expected enum or trait type, found `{}`", expr_type);
                 err.emit();
             } else if expr_sym.info is .Enum(enum_info) {
-                if enum_info.is_tagged and !match_expr.is_typematch {
+                if enum_info.is_tagged && !match_expr.is_typematch {
                     mut err := report.error_builder(
                         "cannot use `match` with a non-tagged enum type", match_expr.pos
                     );
                     err.add_note("use a type-match instead");
                     err.emit();
-                } else if !enum_info.is_tagged and match_expr.is_typematch {
+                } else if !enum_info.is_tagged && match_expr.is_typematch {
                     mut err := report.error_builder(
                         "cannot use a type-match with a non-tagged enum type",
                         match_expr.pos
@@ -133,7 +133,7 @@ extend Checker {
                         report.error("only boxed types can have vars", branch.var_pos);
                     }
                 }
-                if branch.has_cond and self.check_expr(branch.cond) != self.table.bool_t {
+                if branch.has_cond && self.check_expr(branch.cond) != self.table.bool_t {
                     report.error(
                         "non-boolean expression use as `match` branch condition",
                         branch.cond.position()
@@ -167,7 +167,7 @@ extend Checker {
         // an `else` or when the `match` is on an enum by listing all variants.
         match_expr.is_exhaustive = true;
         mut unhandled := []string();
-        if expr_type == self.table.bool_t and match_expr.branches.len == 1 {
+        if expr_type == self.table.bool_t && match_expr.branches.len == 1 {
             for v in ["true", "false"] {
                 if !branch_exprs.contains(v) {
                     match_expr.is_exhaustive = false;
@@ -190,7 +190,7 @@ extend Checker {
         mut else_branch := match_expr.branches[match_expr.branches.len - 1];
         if !has_else {
             for i, branch in match_expr.branches {
-                if branch.is_else and i != match_expr.branches.len - 1 {
+                if branch.is_else && i != match_expr.branches.len - 1 {
                     report.error("`else` must be the last branch of `match`", branch.pos);
                     else_branch = branch;
                     has_else = true;
