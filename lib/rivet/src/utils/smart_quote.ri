@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import { Builder } from std/strings;
+import std/strings.{ Builder };
 
 const BACKSLASH: uint8 := 92;
 const BACKSLASH_R: uint8 := 13;

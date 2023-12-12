@@ -82,7 +82,6 @@ var kindStrings := [
     KindMap(.KwFalse, "false"),
     KindMap(.KwFunc, "func"),
     KindMap(.KwFor, "for"),
-    KindMap(.KwFrom, "from"),
     KindMap(.KwIf, "if"),
     KindMap(.KwImport, "import"),
     KindMap(.KwIn, "in"),
@@ -182,7 +181,6 @@ pub enum Kind < traits.Stringable {
     KwFalse, // false
     KwFunc, // func
     KwFor, // for
-    KwFrom, // from
     KwIf, // if
     KwImport, // import
     KwIn, // in

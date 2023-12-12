@@ -5,7 +5,7 @@
 import std/traits;
 import std/console;
 import std/process;
-import { Path, Directory } from std/fs;
+import std/fs.{ Path, Directory };
 
 import ./ast;
 import ./utils;

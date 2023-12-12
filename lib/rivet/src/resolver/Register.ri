@@ -266,7 +266,7 @@ pub struct Register {
 
     func import_decl(mut self, import_decl: ast.Decl.Import) {
         if import_decl.glob {
-            // `import { * } from module/path`
+            // `import module/path.*`
             for sym in import_decl.info.mod.scope.syms {
                 if !sym.is_public {
                     continue;
@@ -295,7 +295,7 @@ pub struct Register {
                 }
             }
         } else {
-            // `import { A, B } from module/path`
+            // `import module/path.{ A, B }`
             for import_info in import_decl.import_list {
                 if import_info.name == "self" {
                     if import_decl.is_public {

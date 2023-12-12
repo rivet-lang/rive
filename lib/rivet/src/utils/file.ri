@@ -4,7 +4,7 @@
 
 import std/env;
 import std/process;
-import { Path, self } from std/fs;
+import std/fs.{ self, Path };
 
 var normalizedWorkdir := process.wdAtStartup.replace("\\", "/").concat("/");
 var errorPathsAbsolute := (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";

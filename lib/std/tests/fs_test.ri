@@ -1,6 +1,6 @@
 import std/env;
 import std/process;
-import { Path, Directory } from std/fs;
+import std/fs.{ Path, Directory };
 
 var cwd := process.get_cwd() catch ".";
 

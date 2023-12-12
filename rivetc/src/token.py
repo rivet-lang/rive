@@ -77,7 +77,6 @@ class Kind(Enum):
     KwFalse = auto_enum() # false
     KwFunc = auto_enum() # func
     KwFor = auto_enum() # for
-    KwFrom = auto_enum() # from
     KwIf = auto_enum() # if
     KwImport = auto_enum() # import
     KwIn = auto_enum() # in
@@ -222,7 +221,6 @@ TOKEN_STRINGS = {
     Kind.KwFalse: "false",
     Kind.KwFunc: "func",
     Kind.KwFor: "for",
-    Kind.KwFrom: "from",
     Kind.KwIf: "if",
     Kind.KwImport: "import",
     Kind.KwIn: "in",

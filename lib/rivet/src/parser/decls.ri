@@ -98,57 +98,56 @@ extend Parser {
         match {
             self.tok.kind == .Comment -> return .Comment(self.parse_comment()),
             self.accept(.KwImport) -> {
-                mut import_list := []ast.ImportListInfo();
-                mut glob := false;
-                if self.accept(.Lbrace) {
-                    while {
-                        info_pos := self.tok.pos;
-                        mut info_has_custom_alias := false;
-                        match {
-                            self.accept(.KwSelf) -> {
-                                name := "self";
-                                info_alias := if self.accept(.KwAs) {
-                                    info_has_custom_alias = true;
-                                    self.parse_name()
-                                } else {
-                                    name
-                                };
-                                import_list.push(
-                                    ast.ImportListInfo(
-                                        name, info_alias, info_has_custom_alias, info_pos
-                                    )
-                                );
-                            },
-                            self.accept(.Mul) -> {
-                                glob = true;
-                                break;
-                            },
-                            else -> {
-                                name := self.parse_name();
-                                info_alias := if self.accept(.KwAs) {
-                                    info_has_custom_alias = true;
-                                    self.parse_name()
-                                } else {
-                                    name
-                                };
-                                import_list.push(
-                                    ast.ImportListInfo(
-                                        name, info_alias, info_has_custom_alias, info_pos
-                                    )
-                                );
-                            }
-                        }
-                        if !self.accept(.Comma) {
-                            break;
-                        }
-                    }
-                    self.expect(.Rbrace);
-                    self.expect(.KwFrom);
-                }
                 mut has_custom_alias := false;
                 mut mod_path_pos := self.tok.pos;
                 mod_path := self.parse_import_path();
                 mod_path_pos += self.prev_tok.pos;
+                mut import_list := []ast.ImportListInfo();
+                mut glob := false;
+                if self.accept(.Dot) {
+                    if self.accept(.Lbrace) {
+                        while {
+                            info_pos := self.tok.pos;
+                            mut info_has_custom_alias := false;
+                            match {
+                                self.accept(.KwSelf) -> {
+                                    name := "self";
+                                    info_alias := if self.accept(.KwAs) {
+                                        info_has_custom_alias = true;
+                                        self.parse_name()
+                                    } else {
+                                        name
+                                    };
+                                    import_list.push(
+                                        ast.ImportListInfo(
+                                            name, info_alias, info_has_custom_alias, info_pos
+                                        )
+                                    );
+                                },
+                                else -> {
+                                    name := self.parse_name();
+                                    info_alias := if self.accept(.KwAs) {
+                                        info_has_custom_alias = true;
+                                        self.parse_name()
+                                    } else {
+                                        name
+                                    };
+                                    import_list.push(
+                                        ast.ImportListInfo(
+                                            name, info_alias, info_has_custom_alias, info_pos
+                                        )
+                                    );
+                                }
+                            }
+                            if !self.accept(.Comma) {
+                                break;
+                            }
+                        }
+                        self.expect(.Rbrace);
+                    } else if self.accept(.Mul) {
+                        glob = true;
+                    }
+                }
                 alias_name := if import_list.is_empty() && self.accept(.KwAs) {
                     has_custom_alias = true;
                     self.parse_name()

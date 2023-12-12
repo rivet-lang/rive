@@ -7,7 +7,7 @@ import std/semver;
 import std/strings;
 import std/console;
 import std/process;
-import { Path, Directory, self } from std/fs;
+import std/fs.{ Path, Directory, self };
 
 import rivet/build;
 import rivet/utils;

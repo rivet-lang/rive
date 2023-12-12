@@ -11,7 +11,7 @@ import ../prefs;
 import ../utils;
 import ../report;
 
-import { LF, CR } from ../utils;
+import ../utils.{ LF, CR };
 
 const NUM_SEP := b'_';
 

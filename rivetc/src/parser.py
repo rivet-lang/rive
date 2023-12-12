@@ -168,36 +168,35 @@ class Parser:
         is_public = self.is_public()
         pos = self.tok.pos
         if self.accept(Kind.KwImport):
-            import_list = []
-            glob = False
-            if self.accept(Kind.Lbrace):
-                while True:
-                    info_pos = self.tok.pos
-                    if self.accept(Kind.KwSelf):
-                        name = "self"
-                        info_alias = name
-                        if self.accept(Kind.KwAs):
-                            info_alias = self.parse_name()
-                        import_list.append(
-                            ast.ImportListInfo(name, info_alias, info_pos)
-                        )
-                    elif self.accept(Kind.Mul):
-                        glob = True
-                        break
-                    else:
-                        name = self.parse_name()
-                        info_alias = name
-                        if self.accept(Kind.KwAs):
-                            info_alias = self.parse_name()
-                        import_list.append(
-                            ast.ImportListInfo(name, info_alias, info_pos)
-                        )
-                    if not self.accept(Kind.Comma):
-                        break
-                self.expect(Kind.Rbrace)
-                self.expect(Kind.KwFrom)
             path = self.parse_import_path()
             alias = ""
+            import_list = []
+            glob = False
+            if self.accept(Kind.Dot):
+                if self.accept(Kind.Lbrace):
+                    while True:
+                        info_pos = self.tok.pos
+                        if self.accept(Kind.KwSelf):
+                            name = "self"
+                            info_alias = name
+                            if self.accept(Kind.KwAs):
+                                info_alias = self.parse_name()
+                            import_list.append(
+                                ast.ImportListInfo(name, info_alias, info_pos)
+                            )
+                        else:
+                            name = self.parse_name()
+                            info_alias = name
+                            if self.accept(Kind.KwAs):
+                                info_alias = self.parse_name()
+                            import_list.append(
+                                ast.ImportListInfo(name, info_alias, info_pos)
+                            )
+                        if not self.accept(Kind.Comma):
+                            break
+                    self.expect(Kind.Rbrace)
+                elif self.accept(Kind.Mul):
+                    glob = True
             if len(import_list) == 0 and self.accept(Kind.KwAs):
                 alias = self.parse_name()
             self.expect(Kind.Semicolon)

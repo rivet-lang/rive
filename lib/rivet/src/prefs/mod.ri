@@ -6,7 +6,7 @@ import std/env;
 import std/sys;
 import std/flag;
 import std/process;
-import { Path } from std/fs;
+import std/fs.{ Path };
 
 import ../utils;
 

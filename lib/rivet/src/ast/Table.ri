@@ -4,7 +4,7 @@
 
 import std/sys;
 import std/process;
-import { Path } from std/fs;
+import std/fs.{ Path };
 
 import ../token;
 import ../prefs;

@@ -5,7 +5,7 @@
 import std/traits;
 import std/process;
 import std/strings;
-import { Path } from std/fs;
+import std/fs.{ Path };
 
 import ../token;
 
