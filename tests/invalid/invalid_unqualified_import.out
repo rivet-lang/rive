@@ -1,0 +1,5 @@
+tests/invalid/invalid_unqualified_import.ri:3:8: error: invalid syntax for unqualified import
+    3 | import std/dynlib.; // fail
+      |        ^~~~~~~~~~
+      = note: expected a list of symbols or `*`
+rivet: error: could not compile module `invalid_unqualified_import`, aborting due to previous error

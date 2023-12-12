@@ -197,6 +197,9 @@ class Parser:
                     self.expect(Kind.Rbrace)
                 elif self.accept(Kind.Mul):
                     glob = True
+                else:
+                    report.error("invalid syntax for unqualified import", pos)
+                    report.note("expected a list of symbols or `*`")
             if len(import_list) == 0 and self.accept(Kind.KwAs):
                 alias = self.parse_name()
             self.expect(Kind.Semicolon)

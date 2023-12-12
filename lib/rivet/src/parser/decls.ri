@@ -146,6 +146,12 @@ extend Parser {
                         self.expect(.Rbrace);
                     } else if self.accept(.Mul) {
                         glob = true;
+                    } else {
+                        mut err := report.error_builder(
+                            "invalid syntax for unqualified import", mod_path_pos
+                        );
+                        err.add_note("expected a list of symbols or `*`");
+                        err.emit();
                     }
                 }
                 alias_name := if import_list.is_empty() && self.accept(.KwAs) {
