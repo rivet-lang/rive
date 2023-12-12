@@ -5,7 +5,6 @@
 from os import path
 import glob, sys, os, utils
 
-
 def run_fail_tests():
     ok, fail, skip = 0, 0, 0
     exit_code = 0
@@ -21,7 +20,7 @@ def run_fail_tests():
         start = f" [{i+1}/{len(FAIL_FILES)}]"
         res = utils.run_process("./rivet", "check", "--show-color=false", file)
         try:
-            outf = open(file.replace(".ri", ".out"), encoding='UTF-8').read()
+            outf = open(file.replace(".ri", ".out"), encoding = 'UTF-8').read()
             if outf.strip() == res.err:
                 utils.eprint(start, file, utils.bold(utils.green("-> OK")))
                 ok += 1
@@ -40,19 +39,20 @@ def run_fail_tests():
         except FileNotFoundError:
             utils.eprint(
                 start, file,
-                utils.bold(utils.yellow("-> SKIP (.out file not found)")))
+                utils.bold(utils.yellow("-> SKIP (.out file not found)"))
+            )
             skip += 1
-    utils.eprint(utils.bold("Summary for all tests: "), end="")
+    utils.eprint(utils.bold("Summary for all tests: "), end = "")
     if ok > 0:
-        utils.eprint(utils.bold(utils.green(f"{ok} passed")) + ", ", end="")
+        utils.eprint(utils.bold(utils.green(f"{ok} passed")) + ", ", end = "")
     if fail > 0:
-        utils.eprint(utils.bold(utils.red(f"{fail} failed")) + ", ", end="")
+        utils.eprint(utils.bold(utils.red(f"{fail} failed")) + ", ", end = "")
     if skip > 0:
-        utils.eprint(utils.bold(utils.yellow(f"{skip} skipped")) + ", ",
-                     end="")
+        utils.eprint(
+            utils.bold(utils.yellow(f"{skip} skipped")) + ", ", end = ""
+        )
     utils.eprint(utils.bold(f"{len(FAIL_FILES)} total."))
 
     return exit_code
-
 
 exit(run_fail_tests())

@@ -150,7 +150,7 @@ pub enum Decl {
     };
 
     pub func position(self) -> token.Pos {
-        return match self is {
+        return match self {
             .Empty(empty_pos) -> empty_pos,
             .Comment(comment) -> comment.pos,
             .Import(import_d) -> import_d.pos,
@@ -169,7 +169,7 @@ pub enum Decl {
     }
 
     pub func decls(self) -> ?[]Self {
-        return match self is {
+        return match self {
             .Extern(extern_decl) -> extern_decl.decls,
             .Trait(trait_decl) -> trait_decl.decls,
             .Enum(enum_decl) -> enum_decl.decls,

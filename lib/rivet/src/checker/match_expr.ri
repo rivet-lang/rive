@@ -58,18 +58,7 @@ extend Checker {
                 err.emit();
             } else if expr_sym.info is .Enum(enum_info) {
                 if enum_info.is_tagged && !match_expr.is_typematch {
-                    mut err := report.error_builder(
-                        "cannot use `match` with a non-tagged enum type", match_expr.pos
-                    );
-                    err.add_note("use a type-match instead");
-                    err.emit();
-                } else if !enum_info.is_tagged && match_expr.is_typematch {
-                    mut err := report.error_builder(
-                        "cannot use a type-match with a non-tagged enum type",
-                        match_expr.pos
-                    );
-                    err.add_note("use a simple `match` instead");
-                    err.emit();
+                    match_expr.is_typematch = true;
                 }
             }
         }
@@ -79,20 +68,20 @@ extend Checker {
         for ib, branch in match_expr.branches {
             if !branch.is_else {
                 self.expected_type = expr_type;
-                for i, mut case in branch.cases {
-                    case_t := self.check_expr(case);
+                for i, mut pattern in branch.patterns {
+                    pattern_t := self.check_expr(pattern);
                     if i == 0 {
-                        branch.var_type = case_t;
+                        branch.var_type = pattern_t;
                     }
-                    self.check_types(case_t, expr_type) catch |err| {
-                        report.error(err.to_string(), case.position());
+                    self.check_types(pattern_t, expr_type) catch |err| {
+                        report.error(err.to_string(), pattern.position());
                     };
                     if !branch.has_cond {
-                        key := case.to_string();
+                        key := pattern.to_string();
                         if val := branch_exprs.get(key) {
                             if val == 1 {
                                 report.error(
-                                    "match case is handled more than once", case.position()
+                                    "match pattern is handled more than once", pattern.position()
                                 );
                             } else {
                                 branch_exprs.set(key, val + 1);
@@ -109,22 +98,22 @@ extend Checker {
                     if branch.var_is_mut {
                         self.check_expr_is_mut(match_expr.expr);
                     }
-                    if branch.cases.len != 1 {
-                        report.error("multiple cases cannot have variable", branch.var_pos);
+                    if branch.patterns.len != 1 {
+                        report.error("multiple patterns cannot have variable", branch.var_pos);
                     } else if expr_sym.is_boxed() {
                         if expr_sym.info is .Enum {
-                            case0 := @as(
-                                ast.Expr.EnumLiteral, branch.cases[0]
+                            pattern0 := @as(
+                                ast.Expr.EnumLiteral, branch.patterns[0]
                             ).variant;
-                            if case0.has_type {
-                                branch.var_type = case0.type;
+                            if pattern0.has_type {
+                                branch.var_type = pattern0.type;
                                 match_expr.scope.update_is_hidden_ref(
                                     branch.var_name, branch.var_is_mut
                                 );
                             } else {
                                 report.error(
                                     "cannot use void expression as value",
-                                    branch.cases[0].position()
+                                    branch.patterns[0].position()
                                 );
                             }
                         }

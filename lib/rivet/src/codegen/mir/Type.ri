@@ -41,7 +41,7 @@ pub enum Type < traits.Stringable {
     };
 
     pub func size(self) -> uint {
-        return match self is {
+        return match self {
             .SizedInt(int) -> int.size,
             .SizedUint(uint) -> uint.size,
             .Basic(basic) -> basic.size,
@@ -54,7 +54,7 @@ pub enum Type < traits.Stringable {
     }
 
     pub func to_string(self) -> string {
-        return match self is {
+        return match self {
             .Void -> "void",
             .Never -> "never",
             .SizedInt(int) -> "int{}".fmt(int.bits),

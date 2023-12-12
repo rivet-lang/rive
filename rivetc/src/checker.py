@@ -435,21 +435,40 @@ class Checker:
             if expr.init_value:
                 init_t = self.check_expr(expr.init_value)
                 if not self.check_compatible_types(init_t, expr.elem_type):
-                    report.error(f"argument `init` should have a value of type `{expr.elem_type}`", expr.init_value.pos)
+                    report.error(
+                        f"argument `init` should have a value of type `{expr.elem_type}`",
+                        expr.init_value.pos
+                    )
                 if not expr.len_value:
-                    report.error("`init` argument should be used together with `len` argument", expr.init_value.pos)
+                    report.error(
+                        "`init` argument should be used together with `len` argument",
+                        expr.init_value.pos
+                    )
             if expr.cap_value:
                 cap_t = self.check_expr(expr.cap_value)
-                if not (cap_t == self.comp.uint_t or cap_t == self.comp.comptime_int_t):
-                    report.error("argument `cap` should have a value of type `uint`", expr.cap_value.pos)
+                if not (
+                    cap_t == self.comp.uint_t
+                    or cap_t == self.comp.comptime_int_t
+                ):
+                    report.error(
+                        "argument `cap` should have a value of type `uint`",
+                        expr.cap_value.pos
+                    )
             if expr.len_value:
                 len_t = self.check_expr(expr.len_value)
-                if not (len_t == self.comp.uint_t or len_t == self.comp.comptime_int_t):
-                    report.error("argument `len` should have a value of type `uint`", expr.len_value.pos)
+                if not (
+                    len_t == self.comp.uint_t
+                    or len_t == self.comp.comptime_int_t
+                ):
+                    report.error(
+                        "argument `len` should have a value of type `uint`",
+                        expr.len_value.pos
+                    )
             if expr.is_dyn:
                 expr.typ = type.Type(
                     self.comp.universe.add_or_get_dyn_array(
-                        self.comp.comptime_number_to_type(expr.elem_type), expr.is_mut
+                        self.comp.comptime_number_to_type(expr.elem_type),
+                        expr.is_mut
                     )
                 )
             else:
@@ -630,12 +649,15 @@ class Checker:
                 report.error(
                     "option values only support `??`, `==` and `!=`", expr.pos
                 )
-            elif isinstance(ltyp, type.Option) and expr.op != Kind.OrElse and rtyp != self.comp.none_t:
+            elif isinstance(
+                ltyp, type.Option
+            ) and expr.op != Kind.OrElse and rtyp != self.comp.none_t:
                 report.error(
                     "option values ​​can only be compared with `none`", expr.pos
                 )
             elif ltyp == self.comp.bool_t and rtyp == self.comp.bool_t and expr.op not in (
-                Kind.Eq, Kind.Ne, Kind.LogicalAnd, Kind.LogicalOr, Kind.Pipe, Kind.Amp
+                Kind.Eq, Kind.Ne, Kind.LogicalAnd, Kind.LogicalOr, Kind.Pipe,
+                Kind.Amp
             ):
                 report.error(
                     "boolean values only support the following operators: `==`, `!=`, `&&`, `||`, `&` and `|`",
@@ -1389,22 +1411,12 @@ class Checker:
             expr.typ = self.comp.void_t
             expr_typ = self.check_expr(expr.expr)
             expr_sym = expr_typ.symbol()
-            if expr.is_typematch and expr_sym.kind not in (
-                TypeKind.Enum, TypeKind.Trait
-            ):
+            if expr.is_typematch and expr_sym.kind != TypeKind.Trait:
                 report.error("invalid value for typematch", expr.expr.pos)
-                report.note(f"expected enum or trait value, found `{expr_typ}`")
+                report.note(f"expected trait value, found `{expr_typ}`")
             elif expr_sym.kind == TypeKind.Enum:
                 if expr_sym.info.is_tagged and not expr.is_typematch:
-                    report.error(
-                        "cannot use `match` with a tagged enum value", expr.pos
-                    )
-                    report.note("use a typematch instead")
-                elif not expr_sym.info.is_tagged and expr.is_typematch:
-                    report.error(
-                        "cannot use typematch with a enum value", expr.pos
-                    )
-                    report.note("use a simple `match` instead")
+                    expr.is_typematch = True
             expr.expected_typ = self.expected_type
             for i, b in enumerate(expr.branches):
                 if not b.is_else:

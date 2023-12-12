@@ -39,7 +39,7 @@ struct MatchSon {
 test "`match` branch variable" {
     ss := MatchSon(name: "Rivet");
     sb := MatchBase.MatchSon(ss);
-    @assert(match sb is {
+    @assert(match sb {
         .MatchSon(sb_ss) -> sb_ss.name == "Rivet",
         else -> false
     });

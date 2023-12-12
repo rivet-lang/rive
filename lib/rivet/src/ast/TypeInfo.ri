@@ -132,7 +132,7 @@ pub enum TypeInfo < traits.Stringable {
 
     #[inline]
     pub func elem_type(self) -> ?Type {
-        return match self is {
+        return match self {
             .Array(arr) -> arr.elem_type,
             .DynArray(vec) -> vec.elem_type,
             else -> none
@@ -141,7 +141,7 @@ pub enum TypeInfo < traits.Stringable {
 
     #[inline]
     pub func is_mut_arr_or_dyn_array(self) -> bool {
-        return match self is {
+        return match self {
             .Array(arr) -> arr.is_mut,
             .DynArray(vec) -> vec.is_mut,
             else -> false
@@ -162,7 +162,7 @@ pub enum TypeInfo < traits.Stringable {
 
     #[inline]
     pub func to_string(self) -> string {
-        return match self is {
+        return match self {
             .Invalid -> "invalid",
             .Placeholder -> "placeholder",
             .None -> "none",

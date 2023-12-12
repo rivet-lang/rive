@@ -128,7 +128,7 @@ pub struct Formatter {
         prev_line_nr := prev_node.position().end_line;
         // the nodes are declarations
         if node is .Decl(decl) && prev_node is .Decl(prev_decl) {
-            match prev_decl is {
+            match prev_decl {
                 // Force a newline after function declarations
                 // The only exception is inside a block of no body functions
                 .Func(func_decl) if decl !is .Func || !func_decl.has_body -> return true,

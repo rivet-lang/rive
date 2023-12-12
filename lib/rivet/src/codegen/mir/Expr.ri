@@ -88,7 +88,7 @@ pub enum Expr < traits.Stringable {
     };
 
     pub func to_string(self) -> string {
-        return match self is {
+        return match self {
             .Empty -> "<empty-expression>",
             .IntConst(int_const) -> "{}".fmt(int_const.value),
             .FloatConst(float_const) -> "{}".fmt(float_const.value),

@@ -38,7 +38,7 @@ pub struct Register {
             old_abi := self.abi;
             old_sym := self.sym;
             self.sym.scope.owner = self.sym;
-            match decl is {
+            match decl {
                 .Import(import_decl) -> self.import_decl(import_decl),
                 .Extern(extern_decl) -> {
                     self.abi = extern_decl.abi;

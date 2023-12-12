@@ -100,7 +100,7 @@ pub struct Codegen {
 
     func prefix_type(self, type: ast.Type) -> string {
         mut sb := strings.Builder.new();
-        match type is {
+        match type {
             .Pointer(ptr) -> {
                 mut inner := ptr.inner;
                 while (inner is .Pointer(inner_ptr)) : inner = inner_ptr.inner {
@@ -118,7 +118,7 @@ pub struct Codegen {
     }
 
     func mangle_type(self, type: ast.Type) -> string {
-        return match type is {
+        return match type {
             .Void -> "4void",
             .Rawptr -> "6rawptr",
             .Never -> "5never",
@@ -172,7 +172,7 @@ pub struct Codegen {
                     sb.write_fmt("{}{}", name.len, name);
                 }
             },
-            ast.TypeSym(type) -> match type.info is {
+            ast.TypeSym(type) -> match type.info {
                 .Tuple(tuple_info) -> {
                     mut sb2 := strings.Builder.new();
                     sb2.write_string("Tuple_");

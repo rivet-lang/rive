@@ -10,7 +10,7 @@ pub enum Node {
     Expr(Expr);
 
     pub func position(self) -> token.Pos {
-        return match self is {
+        return match self {
             .Decl(decl) -> decl.position(),
             .Stmt(stmt) -> stmt.position(),
             .Expr(expr) -> expr.position()

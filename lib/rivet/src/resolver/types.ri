@@ -7,7 +7,7 @@ import ../report;
 
 extend Resolver {
     func resolve_type(mut self, mut type: ast.Type) -> bool {
-        return match type is {
+        return match type {
             .Void, .Never, .Rawptr -> true,
             .Option(opt) -> self.resolve_type(opt.inner),
             .Result(res) -> self.resolve_type(res.inner),
@@ -33,7 +33,7 @@ extend Resolver {
                         mut err := report.error_builder(
                             "array size cannot be zero or negative", arr.size.position()
                         );
-                        err.add_note("array size is {}", arr_size);
+                        err.add_note("array size {}", arr_size);
                         err.emit();
                         false
                     } else {
@@ -74,7 +74,7 @@ extend Resolver {
                 res1
             },
             .Basic(basic) -> if basic.is_unresolved {
-                match basic.expr is {
+                match basic.expr {
                     .SelfTy -> if self.self_sym_is_set {
                         basic.is_unresolved = false;
                         basic.sym = self.self_sym;

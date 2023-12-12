@@ -253,7 +253,7 @@ pub struct Checker {
         self, expr: ast.Expr, from_assign: bool := false,
         from_selector: bool := false
     ) {
-        match expr is {
+        match expr {
             .Paren(paren) -> self.check_expr_is_mut(paren.expr),
             .SelfLiteral(self_lit) -> if self_lit.obj.is_mut {
                 self_lit.obj.is_changed = true;
@@ -277,7 +277,7 @@ pub struct Checker {
             .Selector(selector) -> if selector.is_path {
                 self.check_sym_is_mut(selector.sym, selector.pos, true);
             } else {
-                match selector.left is {
+                match selector.left {
                     .Ident(ident2) if ident2.found -> if ident2.is_sym {
                         self.check_sym_is_mut(ident2.sym, ident2.pos, true)
                     } else if ident2.sym is ast.Var(i_var) && i_var.level == .Argument {
@@ -419,7 +419,7 @@ pub struct Checker {
     }
 
     func expr_has_return(self, expr: ast.Expr, allow_throw: bool := false) -> bool {
-        return match expr is {
+        return match expr {
             .Match(match_expr) -> {
                 for i, branch in match_expr.branches {
                     if match_expr.is_exhaustive && i == match_expr.branches.len {

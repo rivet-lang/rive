@@ -101,7 +101,7 @@ pub enum Type < traits.Stringable {
 
     #[inline]
     pub func ptr_or_ref_inner(self) -> Self {
-        return match self is {
+        return match self {
             .Pointer(ptr) -> ptr.inner,
             .Rawptr -> self,
             else -> .Void
@@ -111,7 +111,7 @@ pub enum Type < traits.Stringable {
     pub func unalias(self) -> ?Self {
         // NOTE: `.unalias()` returns an option, so we use the same type without
         // unaliasing instead.
-        return match self is {
+        return match self {
             .Rawptr -> self,
             .Result(result) -> .Result(result.inner.unalias() ?? result.inner),
             .Option(option) -> .Option(option.inner.unalias() ?? option.inner),
@@ -160,7 +160,7 @@ pub enum Type < traits.Stringable {
     #[inline]
     pub func symbol(self) -> ?TypeSym {
         // NOTE: `.Void`, `.None`, `.Never` and `.Rawptr` has no `TypeSym` value.
-        return match self is {
+        return match self {
             .Result(result) -> result.inner.symbol(),
             .Option(option) -> option.inner.symbol(),
             .Tuple(tuple_data) -> tuple_data.sym,
@@ -194,7 +194,7 @@ pub enum Type < traits.Stringable {
 
     #[inline]
     pub func is_void(self) -> bool {
-        return match self is {
+        return match self {
             .Void, .Never -> true,
             .Result(result) -> result.inner.is_void(),
             else -> false
@@ -208,7 +208,7 @@ pub enum Type < traits.Stringable {
 
     #[inline]
     pub func is_mut_pointer(self) -> bool {
-        return match self is {
+        return match self {
             .Pointer(ptr) -> ptr.is_mut,
             .Rawptr -> true,
             else -> false
@@ -217,7 +217,7 @@ pub enum Type < traits.Stringable {
 
     #[inline]
     pub func is_any_kind_of_pointer(self) -> bool {
-        return match self is {
+        return match self {
             .Pointer, .Rawptr, .Func -> true,
             else -> if type_sym := self.symbol() {
                 type_sym.is_boxed()
@@ -229,7 +229,7 @@ pub enum Type < traits.Stringable {
 
     #[inline]
     pub func position(self) -> token.Pos {
-        return match self is {
+        return match self {
             .Void, .None -> token.noPos,
             .Never(never_pos) -> never_pos,
             .Option(opt_t) -> opt_t.pos,
@@ -251,7 +251,7 @@ pub enum Type < traits.Stringable {
 
     #[inline]
     pub func ==(self, rhs: Self) -> bool {
-        return match self is {
+        return match self {
             .None if rhs is .None -> true,
             .Void if rhs is .Void -> true,
             .Never if rhs is .Never -> true,
@@ -317,7 +317,7 @@ pub enum Type < traits.Stringable {
     }
 
     pub func to_string_(self, qualstr: bool) -> string {
-        return match self is {
+        return match self {
             .None -> "<none>",
         	.Void -> "<void>",
             .Never -> "never",

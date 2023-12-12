@@ -1544,7 +1544,9 @@ class Codegen:
                 size, _ = self.comp.type_size(expr.elem_type)
                 args = []
                 if expr.init_value:
-                    init_value = self.gen_expr_with_cast(expr.elem_type, expr.init_value)
+                    init_value = self.gen_expr_with_cast(
+                        expr.elem_type, expr.init_value
+                    )
                     args.append(ir.Inst(ir.InstKind.GetRef, [init_value]))
                 # element size
                 args.append(ir.IntLit(ir.UINT_T, str(size)))
@@ -1570,12 +1572,16 @@ class Codegen:
                     final_value = tmp
                 if expr.init_value:
                     size, _ = self.comp.type_size(expr.elem_type)
-                    init_value = self.gen_expr_with_cast(expr.elem_type, expr.init_value)
+                    init_value = self.gen_expr_with_cast(
+                        expr.elem_type, expr.init_value
+                    )
                     self.cur_func.add_call(
-                        "_R4core14array_init_setF",
-                        [
-                            final_value, ir.IntLit(ir.UINT_T, str(size)),
-                            ir.IntLit(ir.UINT_T, str(expr.typ.symbol().info.size)),
+                        "_R4core14array_init_setF", [
+                            final_value,
+                            ir.IntLit(ir.UINT_T, str(size)),
+                            ir.IntLit(
+                                ir.UINT_T, str(expr.typ.symbol().info.size)
+                            ),
                             ir.Inst(ir.InstKind.GetRef, [init_value])
                         ]
                     )

@@ -29,7 +29,7 @@ extend Checker {
     func check_decl(mut self, mut decl: ast.Decl) {
         old_sym := self.sym;
         defer self.sym = old_sym;
-        match decl is {
+        match decl {
             .Import(import_decl) -> if import_decl.import_list.is_empty() && !import_decl.glob {
                 if import_decl.has_custom_alias {
                     self.check_name_case(
@@ -244,7 +244,7 @@ extend Checker {
         self.check_scope_vars(func_decl.scope);
         if func_decl.ret_type is .Never && !self.inside_extern {
             if func_decl.stmts.len > 0 {
-                match func_decl.stmts[func_decl.stmts.len - 1] is {
+                match func_decl.stmts[func_decl.stmts.len - 1] {
                     .While(while_stmt) if while_stmt.is_inf
                         && while_stmt.stmt is .Expr(expr) && expr is .Block(block) -> {
                         if !block.stmts.is_empty() {

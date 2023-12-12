@@ -546,7 +546,9 @@ class TupleLiteral:
         return self.__repr__()
 
 class ArrayCtor:
-    def __init__(self, is_dyn, is_mut, elem_type, init_value, cap_value, len_value, pos):
+    def __init__(
+        self, is_dyn, is_mut, elem_type, init_value, cap_value, len_value, pos
+    ):
         self.is_dyn = is_dyn
         self.is_mut = is_mut
         self.elem_type = elem_type

@@ -877,9 +877,10 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             self.expect(Kind.Rbracket)
-            if not is_dyn and (len(elems) == 0 or len(elems) == 1 and self.tok.kind not in (
-                Kind.Semicolon, Kind.Comma, Kind.Rbrace
-            )):
+            if not is_dyn and (
+                len(elems) == 0 or len(elems) == 1 and self.tok.kind not in
+                (Kind.Semicolon, Kind.Comma, Kind.Rbrace)
+            ):
                 # []T() or [SIZE]T()
                 is_dyn = len(elems) == 0
                 is_mut = self.accept(Kind.KwMut)
@@ -895,31 +896,46 @@ class Parser:
                     arg_value = self.parse_expr()
                     if arg_name == "init":
                         if init_value:
-                            report.error("duplicate array constructor argument `init`", arg_pos)
+                            report.error(
+                                "duplicate array constructor argument `init`",
+                                arg_pos
+                            )
                             break
                         else:
                             init_value = arg_value
                     elif arg_name == "len" and is_dyn:
                         if len_value:
-                            report.error("duplicate array constructor argument `len`", arg_pos)
+                            report.error(
+                                "duplicate array constructor argument `len`",
+                                arg_pos
+                            )
                             break
                         else:
                             len_value = arg_value
                     elif arg_name == "cap" and is_dyn:
                         if cap_value:
-                            report.error("duplicate array constructor argument `cap`", arg_pos)
+                            report.error(
+                                "duplicate array constructor argument `cap`",
+                                arg_pos
+                            )
                             break
                         else:
                             cap_value = arg_value
                     else:
-                        report.error(f"unknown array constructor argument `{arg_name}`", arg_pos)
+                        report.error(
+                            f"unknown array constructor argument `{arg_name}`",
+                            arg_pos
+                        )
                         break
                     if self.tok.kind != Kind.Rparen:
                         self.expect(Kind.Comma)
                 self.expect(Kind.Rparen)
                 if not is_dyn:
                     len_value = elems[0]
-                expr = ast.ArrayCtor(is_dyn, is_mut, elem_type, init_value, cap_value, len_value, pos)
+                expr = ast.ArrayCtor(
+                    is_dyn, is_mut, elem_type, init_value, cap_value, len_value,
+                    pos
+                )
             else:
                 expr = ast.ArrayLiteral(elems, is_dyn, pos)
         elif self.tok.kind == Kind.Name:
@@ -1154,14 +1170,15 @@ class Parser:
                 while True:
                     if is_typematch:
                         t_pos = self.tok.pos
+                        pats.append(ast.TypeNode(self.parse_type(), t_pos))
+                    else:
                         if self.accept(Kind.Dot):
-                            pats.append(
-                                ast.EnumLiteral(self.parse_name(), t_pos, True)
+                            t_pos = self.tok.pos
+                            branch_expr = ast.EnumLiteral(
+                                self.parse_name(), t_pos, True
                             )
                         else:
-                            pats.append(ast.TypeNode(self.parse_type(), t_pos))
-                    else:
-                        branch_expr = self.parse_expr()
+                            branch_expr = self.parse_expr()
                         if self.accept(Kind.DotDot
                                        ) or self.accept(Kind.Ellipsis):
                             if self.prev_tok.kind == Kind.DotDot:

@@ -620,7 +620,7 @@ extend Parser {
         self.inside_match_header = old_inside_match_header;
         while {
             branch_pos := self.tok.pos;
-            mut cases := []mut ast.Expr();
+            mut patterns := []mut ast.Expr();
             mut has_var := false;
             mut var_is_mut := false;
             mut var_name := "";
@@ -633,17 +633,17 @@ extend Parser {
             } else {
                 while {
                     if is_typematch {
-                        name_pos := self.tok.pos;
-                        cases.push(if self.accept(.Dot) {
-                            .EnumLiteral(
+                        patterns.push(.Type(self.parse_type()));
+                    } else {
+                        mut pattern_expr := if self.accept(.Dot) {
+                            name_pos := self.tok.pos;
+                            ast.Expr.EnumLiteral(
                                 self.parse_name(), pos: name_pos + self.prev_tok.pos,
                                 from_is_cmp: true
                             )
                         } else {
-                            .Type(self.parse_type())
-                        });
-                    } else {
-                        mut case_expr := self.parse_expr();
+                            self.parse_expr()
+                        };
                         if self.accept(.DotDot) || self.accept(.Ellipsis) {
                             if self.prev_tok.kind == .DotDot {
                                 mut err := report.error_builder(
@@ -653,12 +653,12 @@ extend Parser {
                                 err.add_help("use `...` instead of `..`");
                                 err.emit();
                             }
-                            case_expr = .Range(
-                                case_expr, self.parse_expr(), true, true, true,
-                                case_expr.position() + self.prev_tok.pos
+                            pattern_expr = .Range(
+                                pattern_expr, self.parse_expr(), true, true, true,
+                                pattern_expr.position() + self.prev_tok.pos
                             );
                         }
-                        cases.push(case_expr);
+                        patterns.push(pattern_expr);
                     }
                     if !self.accept(.Comma) {
                         break;
@@ -681,7 +681,7 @@ extend Parser {
             }
             self.expect(.Arrow);
             branches.push(ast.MatchBranch(
-                cases: cases,
+                patterns: patterns,
                 has_var: has_var,
                 var_is_mut: var_is_mut,
                 var_name: var_name,

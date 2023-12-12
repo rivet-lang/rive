@@ -7,7 +7,7 @@ import ../report;
 
 extend Checker {
     func check_expr(mut self, mut expr: ast.Expr) -> ast.Type {
-        return match expr is {
+        return match expr {
             .Empty, .Comment -> .Void,
             .Type(type) -> type,
             .Branch(branch) -> {
@@ -482,7 +482,7 @@ extend Checker {
                 index.index.position()
             );
         }
-        index.type = match left_sym.info is {
+        index.type = match left_sym.info {
             .Array, .DynArray -> {
                 elem_type := left_sym.info.elem_type()?;
                 if index.index is .Range {

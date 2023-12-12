@@ -188,7 +188,7 @@ pub struct Table {
 
     pub func find_builtin(self, name: string) -> ?Builtin {
         for builtin in self.builtins {
-            is_equal := match builtin is {
+            is_equal := match builtin {
                 .Const(b_var) -> b_var.name == name,
                 .Func(b_func) -> b_func.name == name,
                 else -> false
@@ -285,7 +285,7 @@ pub struct Table {
     /// Returns the size and alignment (in bytes) of `typ`, similarly to
     /// C's `sizeof(T)` and `_Alignof(T)`.
     pub func type_size(mut self, type: Type, is_raw: bool := false) -> (uint, uint) {
-        return match type is {
+        return match type {
             .Result, .Option -> self.type_symbol_size(self.throwable_sym, is_raw),
             .Rawptr, .Pointer, .Func -> (self.pointer_size, self.pointer_size),
             else -> if mut type_sym := type.symbol() {
@@ -304,7 +304,7 @@ pub struct Table {
             (size, align) = if type_sym.is_boxed() && !is_raw {
                 (self.pointer_size, self.pointer_size)
             } else {
-                match type_sym.info is {
+                match type_sym.info {
                     .Func -> (self.pointer_size, self.pointer_size),
                     .Alias(alias_info) -> self.type_size(alias_info.parent),
                     .Bool -> (1, 1),
@@ -538,7 +538,7 @@ pub enum Builtin {
     };
 
     pub func type(self) -> Type {
-        return match self is {
+        return match self {
             .Const(b_const) -> b_const.type,
             .Func(b_func) -> b_func.type,
             else -> .Void

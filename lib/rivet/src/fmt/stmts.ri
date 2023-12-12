@@ -14,7 +14,7 @@ extend Formatter {
     }
 
     func format_stmt(mut self, stmt: ast.Stmt) {
-        match stmt is {
+        match stmt {
             .Comment(comment) -> self.format_comment(comment, has_nl: true),
             .Expr(expr) -> self.format_expr(expr),
             else -> {}

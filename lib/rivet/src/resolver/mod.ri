@@ -65,7 +65,7 @@ pub struct Resolver {
     }
 
     func eval_size(mut self, mut expr: ast.Expr) -> ?int {
-        return match expr is {
+        return match expr {
             .Paren(paren) -> self.eval_size(paren.expr),
             .IntegerLiteral(int_lit) -> int_lit.value.to_int() catch return none,
             .Ident(mut ident) -> {

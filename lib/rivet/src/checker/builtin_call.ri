@@ -56,7 +56,7 @@ extend Checker {
             }
             mut return_type := b_func.type;
             for check in b_func.checks {
-                match check is {
+                match check {
                     .ArgumentTypeEqualToArgumentType(at) -> {
                         arg1 := builtin_call.args[at.arg1_idx];
                         arg2 := builtin_call.args[at.arg2_idx];
@@ -125,7 +125,7 @@ extend Checker {
                 );
             }
         } else if from_ts := from_type.symbol() {
-            match from_ts.info is {
+            match from_ts.info {
                 .Trait(mut trait_info) -> if to_ts := to_type.symbol() {
                     if to_ts in trait_info.implements {
                         trait_info.mark_has_objects();
@@ -159,7 +159,7 @@ extend Checker {
                             return; // Valid inside `core` module
                         }
                     }
-                    match to_ts.info is {
+                    match to_ts.info {
                         .Enum(enum_info2) if !enum_info2.is_tagged -> {
                             if self.table.is_int(to_type) && !self.inside_unsafe() {
                                 report.warn(

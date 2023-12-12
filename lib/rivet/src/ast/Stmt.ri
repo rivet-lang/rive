@@ -45,7 +45,7 @@ pub enum Stmt {
     };
 
     pub func position(self) -> token.Pos {
-        return match self is {
+        return match self {
             .Empty(empty_pos) -> empty_pos,
             .Comment(comment) -> comment.pos,
             .Expr(expr) -> expr.position(),

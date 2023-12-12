@@ -19,7 +19,7 @@ extend Checker {
             false
         };
 
-        match left is {
+        match left {
             .SelfTy(self_ty) -> self.check_ctor_call(self_ty.sym, call_expr),
             .Ident(ident) if (ident.is_sym || ident.is_obj) -> match ident.sym is {
                 ast.TypeSym(mut type_sym) if type_sym.info is .Trait
@@ -202,7 +202,7 @@ extend Checker {
         } else {
             .Basic(type_sym, pos: call_expr.pos)
         };
-        match type_sym.info is {
+        match type_sym.info {
             .Enum(enum_info) -> {
                 variant := if call_expr.left is .Selector(selector) {
                     @as(ast.TypeInfo.Enum, @as(ast.TypeSym, selector.left_sym).info)
@@ -342,7 +342,7 @@ extend Checker {
                         );
                         continue;
                     }
-                    match field.type is {
+                    match field.type {
                         .Pointer, .Rawptr if !was_initted -> report.warn(
                             "field `{}` of type `{}` must be initialized".fmt(
                                 field.name, type_sym.name
@@ -350,7 +350,7 @@ extend Checker {
                         ),
                         else -> if f_type_sym := field.type.symbol();
                             f_type_sym.default_value == none {
-                            match f_type_sym.info is {
+                            match f_type_sym.info {
                                 .Trait if !was_initted -> report.warn(
                                     "field `{}` of type `{}` must be initialized".fmt(
                                         field.name, type_sym.name

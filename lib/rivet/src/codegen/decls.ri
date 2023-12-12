@@ -13,7 +13,7 @@ extend Codegen {
     }
 
     func gen_decl(mut self, mut decl: ast.Decl) {
-        match decl is {
+        match decl {
             .Extern(extern_decl) -> self.gen_decls(extern_decl.decls),
             .Var(var_decl) -> {
                 for left in var_decl.lefts {

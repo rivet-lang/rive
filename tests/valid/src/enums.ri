@@ -51,11 +51,11 @@ test "enums: tagged enum" {
     if e is .Abc(e_int32) {
         @assert(e_int32 == 6);
     }
-    match e is {
+    match e {
         .Abc(e_abc) -> @assert(e_abc == 6),
         else -> @assert(false)
     }
-    match e is {
+    match e {
         .Abc(mut e_abc2) -> {
             e_abc2 += 2;
             @assert(e_abc2 == 8);
@@ -63,7 +63,7 @@ test "enums: tagged enum" {
         else -> @assert(false)
     }
     e = .Def;
-    match e is {
+    match e {
         .Def -> @assert(true),
         else -> @assert(false)
     }

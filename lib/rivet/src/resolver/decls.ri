@@ -11,7 +11,7 @@ extend Resolver {
             old_sym := self.sym;
             old_self_sym := self.self_sym;
             old_self_sym_is_set := self.self_sym_is_set;
-            match decl is {
+            match decl {
                 .Empty(empty_pos) -> report.error("BUG: empty declaration found", empty_pos),
                 .Extern(extern_decl) -> self.resolve_decls(extern_decl.decls),
                 .Alias(alias_decl) -> if alias_decl.is_typealias {

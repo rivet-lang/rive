@@ -28,7 +28,7 @@ extend Formatter {
     }
 
     func format_decl(mut self, decl: ast.Decl) {
-        match decl is {
+        match decl {
             .Comment(comment) -> self.format_comment(comment, has_nl: true),
             .Extern(extern_d) -> {
                 self.write_fmt("extern ({}) {{", extern_d.abi);

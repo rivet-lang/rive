@@ -275,7 +275,7 @@ pub enum Expr < traits.Stringable {
     Match {
         mut expr: Expr;
         branches: []MatchBranch;
-        is_typematch: bool;
+        mut is_typematch: bool;
         has_else: bool;
         mut scope: Scope;
         pos: token.Pos;
@@ -305,7 +305,7 @@ pub enum Expr < traits.Stringable {
     }
 
     pub func position(self) -> token.Pos {
-        return match self is {
+        return match self {
             .Empty(empty_pos) -> empty_pos,
             .Comment(comment) -> comment.pos,
             .Paren(paren) -> paren.pos,
@@ -345,7 +345,7 @@ pub enum Expr < traits.Stringable {
 
     #[inline]
     pub func to_string(self) -> string {
-        return match self is {
+        return match self {
             .Empty -> "<empty-expression>",
             .Comment -> "<comment>",
             .Paren(paren) -> "({})".fmt(paren.expr),
@@ -549,9 +549,9 @@ pub enum Expr < traits.Stringable {
                     if branch.is_else {
                         sb.write_string("else ");
                     } else {
-                        for ip, case in branch.cases {
-                            sb.write_string(case.to_string());
-                            if ip < branch.cases.len - 1 {
+                        for ip, pattern in branch.patterns {
+                            sb.write_string(pattern.to_string());
+                            if ip < branch.patterns.len - 1 {
                                 sb.write_string(", ");
                             }
                         }
@@ -633,7 +633,7 @@ pub struct IfBranch {
 
 #[boxed]
 pub struct MatchBranch {
-    pub cases: []mut Expr;
+    pub patterns: []mut Expr;
     pub has_var: bool;
     pub var_is_mut: bool;
     pub var_name: string;
