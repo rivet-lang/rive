@@ -7,7 +7,7 @@ import ../prefs;
 import ../token;
 import ../report;
 
-import std/fs.{ Path };
+import std/fs.Path;
 
 struct Prelude {
     name: string;

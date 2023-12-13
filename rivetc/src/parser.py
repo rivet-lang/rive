@@ -174,6 +174,7 @@ class Parser:
             glob = False
             if self.accept(Kind.Dot):
                 if self.accept(Kind.Lbrace):
+                    lbrace_pos = self.prev_tok.pos
                     while True:
                         info_pos = self.tok.pos
                         if self.accept(Kind.KwSelf):
@@ -195,11 +196,22 @@ class Parser:
                         if not self.accept(Kind.Comma):
                             break
                     self.expect(Kind.Rbrace)
+                    if len(import_list) == 1:
+                        report.warn("unnecessary use of braces", lbrace_pos)
+                        report.note("consider removing those braces")
+                elif self.accept(Kind.Name):
+                    name = self.parse_name()
+                    info_alias = name
+                    if self.accept(Kind.KwAs):
+                        info_alias = self.parse_name()
+                    import_list.append(
+                        ast.ImportListInfo(name, info_alias, info_pos)
+                    )
                 elif self.accept(Kind.Mul):
                     glob = True
                 else:
                     report.error("invalid syntax for unqualified import", pos)
-                    report.note("expected a list of symbols or `*`")
+                    report.note("expected a single name, a list of names or `*`")
             if len(import_list) == 0 and self.accept(Kind.KwAs):
                 alias = self.parse_name()
             self.expect(Kind.Semicolon)

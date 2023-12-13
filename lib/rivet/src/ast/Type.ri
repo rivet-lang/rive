@@ -3,7 +3,7 @@
 // be found in the LICENSE file.
 
 import std/traits;
-import std/strings.{ Builder };
+import std/strings.Builder;
 
 import ../token;
 

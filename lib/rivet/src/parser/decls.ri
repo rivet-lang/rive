@@ -106,6 +106,7 @@ extend Parser {
                 mut glob := false;
                 if self.accept(.Dot) {
                     if self.accept(.Lbrace) {
+                        mut lbrace_pos := self.prev_tok.pos;
                         while {
                             info_pos := self.tok.pos;
                             mut info_has_custom_alias := false;
@@ -143,14 +144,35 @@ extend Parser {
                                 break;
                             }
                         }
+                        lbrace_pos += self.tok.pos;
                         self.expect(.Rbrace);
+                        if import_list.len == 1 {
+                            mut warn := report.warn_builder("unnecessary use of braces", lbrace_pos);
+                            warn.add_help("consider removing those braces");
+                            warn.emit();
+                        }
+                    } else if self.tok.kind == .Name {
+                        info_pos := self.tok.pos;
+                        name := self.parse_name();
+                        mut info_has_custom_alias := false;
+                        info_alias := if self.accept(.KwAs) {
+                            info_has_custom_alias = true;
+                            self.parse_name()
+                        } else {
+                            name
+                        };
+                        import_list.push(
+                            ast.ImportListInfo(
+                                name, info_alias, info_has_custom_alias, info_pos
+                            )
+                        );
                     } else if self.accept(.Mul) {
                         glob = true;
                     } else {
                         mut err := report.error_builder(
                             "invalid syntax for unqualified import", mod_path_pos
                         );
-                        err.add_note("expected a list of symbols or `*`");
+                        err.add_note("expected a single name, a list of names or `*`");
                         err.emit();
                     }
                 }
