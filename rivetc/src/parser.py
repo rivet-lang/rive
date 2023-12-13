@@ -199,7 +199,8 @@ class Parser:
                     if len(import_list) == 1:
                         report.warn("unnecessary use of braces", lbrace_pos)
                         report.note("consider removing those braces")
-                elif self.accept(Kind.Name):
+                elif self.tok.kind == Kind.Name:
+                    info_pos = self.tok.pos
                     name = self.parse_name()
                     info_alias = name
                     if self.accept(Kind.KwAs):
