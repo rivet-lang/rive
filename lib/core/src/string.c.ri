@@ -817,8 +817,8 @@ pub struct string < Stringable, Hashable, Throwable {
     }
 
     #[inline]
-    pub func hash(self) -> uint64 {
-        return sum64_string(self);
+    pub func hash(self) -> uint {
+        return @as(uint, sum64_string(self));
     }
 
     #[inline]
