@@ -145,7 +145,6 @@ extend Checker {
             if self.table.is_comptime_number(expected) || self.table.is_comptime_number(got) {
                 return true;
             }
-            return self.promote_number(expected, got) == expected;
         }
 
         match expected_sym.info {
@@ -191,65 +190,6 @@ extend Checker {
         }
 
         return expected == got;
-    }
-
-    func promote(self, left_type: ast.Type, right_type: ast.Type) -> ast.Type {
-        if left_type == right_type {
-            return left_type;
-        } else if self.table.is_number(left_type) && self.table.is_number(right_type) {
-            return self.promote_number(left_type, right_type);
-        }
-        return left_type;
-    }
-
-    func promote_number(self, expected: ast.Type, got: ast.Type) -> ast.Type {
-        mut type_hi := expected;
-        mut type_lo := got;
-        mut bits_hi := self.table.number_bits(type_hi);
-        mut bits_lo := self.table.number_bits(type_lo);
-        if bits_hi < bits_lo {
-            old_hi := type_hi;
-            type_hi = type_lo;
-            type_lo = old_hi;
-
-            old_bhi := bits_hi;
-            bits_hi = bits_lo;
-            bits_lo = old_bhi;
-        }
-
-        return if self.table.is_float(type_hi) {
-            if self.table.is_float(type_lo) {
-                // float -> float (good)
-                type_hi
-            } else {
-                // float -> int (bad)
-                .Void
-            }
-        } else {
-            is_signed_lo := self.table.is_signed_int(type_lo);
-            is_unsigned_lo := !is_signed_lo;
-
-            is_signed_hi := self.table.is_signed_int(type_hi);
-            is_unsigned_hi := !is_signed_hi;
-
-            if is_unsigned_lo && is_unsigned_hi {
-                // unsigned number -> unsigned number (good)
-                type_hi
-            } else if is_signed_lo && is_signed_hi {
-                // signed number -> signed number (good)
-                if bits_lo == 64 && bits_hi != 64 {
-                    type_lo
-                } else {
-                    type_hi
-                }
-            } else if is_unsigned_lo && is_signed_hi && bits_hi > bits_lo {
-                // unsigned number -> signed number (good, if signed type is larger)
-                type_lo
-            } else {
-                // signed number -> unsigned number (bad)
-                .Void
-            }
-        };
     }
 }
 

@@ -690,7 +690,7 @@ class Checker:
                             expr.pos
                         )
                 else:
-                    promoted_type = self.promote(ltyp, rtyp)
+                    promoted_type = ltyp
                     if promoted_type == self.comp.void_t:
                         report.error(
                             f"mismatched types `{ltyp}` and `{rtyp}`", expr.pos
@@ -1841,7 +1841,6 @@ class Checker:
                 expected
             ) or self.comp.is_comptime_number(got):
                 return True
-            #return self.promote_number(expected, got) == expected
         elif exp_sym.kind == TypeKind.Trait:
             if self.comp.comptime_number_to_type(got).symbol(
             ) in exp_sym.info.implements:
@@ -1878,52 +1877,6 @@ class Checker:
         elif expected.is_indexable and not got.is_indexable:
             return False
         return expected.typ == got.typ
-
-    def promote(self, left_typ, right_typ):
-        if left_typ == right_typ:
-            return left_typ
-        elif self.comp.is_number(left_typ) and self.comp.is_number(right_typ):
-            return self.promote_number(left_typ, right_typ)
-        return left_typ
-
-    def promote_number(self, expected, got):
-        type_hi = expected
-        type_lo = got
-        bits_hi = self.comp.num_bits(type_hi)
-        bits_lo = self.comp.num_bits(type_lo)
-        if bits_hi < bits_lo:
-            old_hi = type_hi
-            type_hi = type_lo
-            type_lo = old_hi
-
-            old_bhi = bits_hi
-            bits_hi = bits_lo
-            bits_lo = old_bhi
-
-        if self.comp.is_float(type_hi):
-            if self.comp.is_float(type_lo):
-                # float -> float (good)
-                return type_hi
-            # float -> int (bad)
-            return self.comp.void_t
-
-        is_signed_lo = self.comp.is_signed_int(type_lo)
-        is_unsigned_lo = not is_signed_lo
-        is_signed_hi = self.comp.is_signed_int(type_hi)
-        is_unsigned_hi = not is_signed_hi
-
-        if is_unsigned_lo and is_unsigned_hi:
-            # unsigned number -> unsigned number (good)
-            return type_hi
-        elif is_signed_lo and is_signed_hi:
-            # signed number -> signed number (good)
-            return type_lo if bits_lo == 64 and is_signed_lo else type_hi
-        elif is_unsigned_lo and is_signed_hi and bits_lo < bits_hi:
-            # unsigned number -> signed number (good, if signed type is larger)
-            return type_lo
-        else:
-            # signed number -> unsigned number (bad)
-            return self.comp.void_t
 
     def check_expr_is_mut(self, expr, from_assign = False):
         if isinstance(expr, ast.ParExpr):
