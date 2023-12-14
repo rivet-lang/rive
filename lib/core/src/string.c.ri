@@ -817,7 +817,7 @@ pub struct string < Stringable, Hashable, Throwable {
     }
 
     #[inline]
-    pub func hash(self) -> uint {
+    pub func hash(self) -> uint64 {
         return sum64_string(self);
     }
 

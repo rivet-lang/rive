@@ -61,7 +61,7 @@ extend int32 < Stringable {
             while n > 0 {
                 n1 := @as(int32, n / 100);
                 d = @as(uint32, @as(int32, n) - (n1 * 100)) << 1;
-                n = n1;
+                n = @as(int64, n1);
                 buf[index] = digitPairs.ptr[d];
                 index -= 1;
                 d += 1;

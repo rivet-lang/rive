@@ -65,7 +65,7 @@ pub struct StringFormatter {
                                 );
                             }
                         }
-                        index := buf.as_uint64();
+                        index := buf.as_uint();
                         if index >= args.len {
                             runtime_error(
                                 "string.fmt: argument index out of range (index: {}, len: {})",
