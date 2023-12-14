@@ -76,7 +76,7 @@ pub func sum64_string(data: string) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
     mut i: uint := 0;
     while i < data.len : i += 1 {
-        hash = (hash ^ @as(uint32, data[i])) * FNV64_PRIME;
+        hash = (hash ^ @as(uint64, data[i])) * FNV64_PRIME;
     }
     return hash;
 }
