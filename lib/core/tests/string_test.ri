@@ -146,12 +146,7 @@ test "string.parse_int()" {
     @assert("9223372036854775807".parse_int(10, 64)! == 9223372036854775807);
     @assert("baobab".parse_int(36, 64)! == 123314438);
 
-    // invalid bit sizes
-    @assert(if _ := "123".parse_int(10, -1) {
-        false
-    } else {
-        true
-    });
+    // invalid bit size
     @assert(if _ := "123".parse_int(10, 65) {
         false
     } else {

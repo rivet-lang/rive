@@ -71,7 +71,7 @@ pub struct TextScanner {
     /// of the input text.
     /// NOTE: after `c := ts.next()`, `ts.current()` will also return `c`.
     #[inline]
-    pub func current(self) -> ?uint {
+    pub func current(self) -> ?uint8 {
         if self.pos > 0 {
             return self.input[self.pos - 1];
         }

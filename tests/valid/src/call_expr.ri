@@ -25,7 +25,7 @@ test "call expression with named arguments" {
     qux(a);
 }
 
-func args(values: ...int32) -> int32 {
+func args(values: ...int) -> int {
     mut res := 0;
     for v in values {
         res += v;
@@ -38,7 +38,7 @@ test "call expression with spread expression" {
     @assert(args(...+[10, 9, 8, 7, 6, 5, 4, 3, 2, 1]) == 55);
 }
 
-func mutable_primitive_type_argument(mut a: int32) {
+func mutable_primitive_type_argument(mut a: int) {
     a += 2;
 }
 

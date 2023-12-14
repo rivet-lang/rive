@@ -1,4 +1,4 @@
-tests/b_invalid/checking_trait.ri:24:14: error: type `int32` does not implement trait `ToStr`
+tests/b_invalid/checking_trait.ri:24:14: error: type `int` does not implement trait `ToStr`
    24 |     my_print(1); // FAIL
       |              ^
       = note: in argument `v` of function `my_print`

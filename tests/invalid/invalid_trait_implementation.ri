@@ -1,5 +1,5 @@
 trait ToStr {
-    func to_str1(&self) -> string;
+    func to_str1(self) -> string;
 }
 
 func my_print(v: ToStr) {

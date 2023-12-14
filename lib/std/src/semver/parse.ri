@@ -2,9 +2,9 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-const VER_MAJOR: uint64 := 0;
-const VER_MINOR: uint64 := 1;
-const VER_PATCH: uint64 := 2;
+const VER_MAJOR: uint := 0;
+const VER_MINOR: uint := 1;
+const VER_PATCH: uint := 2;
 var versions := [VER_MAJOR, VER_MINOR, VER_PATCH];
 
 struct RawVersion {
@@ -40,7 +40,7 @@ struct RawVersion {
     }
 
     #[inline]
-    func is_missing(&self, typ: uint64) -> bool {
+    func is_missing(&self, typ: uint) -> bool {
         return typ >= self.raw_ints.len - 1;
     }
 

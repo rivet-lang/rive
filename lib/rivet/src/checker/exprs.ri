@@ -641,7 +641,7 @@ extend Checker {
                             );
                         }
                     } else {
-                        promoted_type = self.promote(left_type, right_type);
+                        promoted_type = left_type;
                         if promoted_type is .Void {
                             report.error(
                                 "mismatched types `{}` and `{}`".fmt(left_type, right_type),

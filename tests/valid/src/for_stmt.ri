@@ -17,14 +17,14 @@ test "`for` statement with dynamic array" {
 test "`for` statement with `string.as_bytes()`" {
     mut sum := 0;
     for b in "Hello World!".as_bytes() {
-        sum += @as(int32, b);
+        sum += @as(int, b);
     }
     @assert(sum == 1085);
 }
 
 test "`for` statement with referenced value" {
     mut res := 0;
-    arr: []mut int32 := +[1, 2, 3];
+    arr: []mut int := +[1, 2, 3];
     for &value in arr {
         res += value.*;
     }

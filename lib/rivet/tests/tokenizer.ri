@@ -5,7 +5,7 @@
 import rivet/prefs;
 import rivet/token;
 import rivet/tokenizer;
-import rivet/ast.{ Table };
+import rivet/ast.Table;
 
 var prefs_ := prefs.Prefs();
 

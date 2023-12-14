@@ -241,7 +241,7 @@ pub struct Table {
 
     pub func comptime_number_to_type(self, type: Type) -> Type {
         return if type == self.comptime_int_t {
-            self.int32_t
+            self.int_t
         } else if type == self.comptime_float_t {
             self.float64_t
         } else {
