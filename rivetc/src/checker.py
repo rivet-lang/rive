@@ -390,7 +390,10 @@ class Checker:
                 expr.typ = self.comp.rune_t
             return expr.typ
         elif isinstance(expr, ast.IntegerLiteral):
-            expr.typ = self.comp.comptime_int_t
+            if self.comp.is_number(self.expected_type):
+                expr.typ = self.expected_type
+            else:
+                expr.typ = self.comp.comptime_int_t
             return expr.typ
         elif isinstance(expr, ast.FloatLiteral):
             expr.typ = self.comp.comptime_float_t
@@ -1838,7 +1841,7 @@ class Checker:
                 expected
             ) or self.comp.is_comptime_number(got):
                 return True
-            return self.promote_number(expected, got) == expected
+            #return self.promote_number(expected, got) == expected
         elif exp_sym.kind == TypeKind.Trait:
             if self.comp.comptime_number_to_type(got).symbol(
             ) in exp_sym.info.implements:
