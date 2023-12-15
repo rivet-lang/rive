@@ -717,7 +717,7 @@ class Codegen:
         elif isinstance(expr, ast.EnumLiteral):
             enum_sym = expr.typ.symbol()
             if expr.is_instance:
-                return self.boxed_enum_value(enum_sym, expr.value, None)
+                return self.tagged_enum_value(enum_sym, expr.value, None)
             return ir.IntLit(
                 self.ir_type(enum_sym.info.underlying_typ),
                 str(expr.variant_info.value)
@@ -1053,7 +1053,7 @@ class Codegen:
                             self.cur_func.store(
                                 ir.Selector(f_typ, tmp, ir.Name(f.name)), value
                             )
-                        return self.boxed_enum_variant_with_fields_value(
+                        return self.tagged_enum_variant_with_fields_value(
                             typ_sym, expr.left.value
                             if isinstance(expr.left, ast.EnumLiteral) else
                             expr.left.field_name, tmp, custom_tmp = custom_tmp
@@ -1063,14 +1063,14 @@ class Codegen:
                             x = expr.args[0].expr
                         else:
                             x = None
-                        return self.boxed_enum_value(
+                        return self.tagged_enum_value(
                             typ_sym, expr.left.value, x, custom_tmp = custom_tmp
                         )
                     if len(expr.args) > 0:
                         x = expr.args[0].expr
                     else:
                         x = None
-                    return self.boxed_enum_value(
+                    return self.tagged_enum_value(
                         typ_sym, expr.left.field_name, x,
                         custom_tmp = custom_tmp
                     )
@@ -1463,7 +1463,7 @@ class Codegen:
                     expr.left_sym, sym.Type
                 ) and expr.left_sym.kind == TypeKind.Enum:
                     if expr.left_sym.info.is_tagged:
-                        return self.boxed_enum_value(
+                        return self.tagged_enum_value(
                             expr.left_sym, expr.field_name, None,
                             custom_tmp = custom_tmp
                         )
@@ -2791,7 +2791,7 @@ class Codegen:
         )
         return tmp
 
-    def boxed_enum_value(
+    def tagged_enum_value(
         self, enum_sym, variant_name, value, custom_tmp = None
     ):
         if custom_tmp:
@@ -2826,7 +2826,7 @@ class Codegen:
         self.cur_func.store(ir.Selector(uint_t, tmp, ir.Name("obj")), value)
         return tmp
 
-    def boxed_enum_variant_with_fields_value(
+    def tagged_enum_variant_with_fields_value(
         self, enum_sym, variant_name, value, custom_tmp = None
     ):
         if custom_tmp:
