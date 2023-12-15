@@ -686,7 +686,7 @@ class Codegen:
             if expr.is_byte:
                 return ir.IntLit(
                     ir.UINT8_T,
-                    str(utils.bytestr(self.decode_escape(expr.lit)).buf[0])
+                    str(utils.bytestr(cg_utils.decode_escape(expr.lit)).buf[0])
                 )
             return ir.RuneLit(ir.RUNE_T, expr.lit)
         elif isinstance(expr, ast.IntegerLiteral):
@@ -3208,21 +3208,3 @@ class Codegen:
                 if ts.mangled_name == node.name:
                     types_sorted.append(ts)
         return types_sorted
-
-    def decode_escape(self, ch):
-        if ch.startswith("\\"):
-            code = ch[1:]
-            code_b = utils.bytestr(code).buf[0]
-            if code in ("\\", "'", '"'):
-                return chr(code_b)
-            elif code in ("a", "b", "f"):
-                return chr(code_b - 90)
-            elif code == "n":
-                return "\n"
-            elif code == "r":
-                return "\r"
-            elif code == "t":
-                return "\t"
-            elif code == "v":
-                return "\v"
-        return ch

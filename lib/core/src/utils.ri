@@ -27,7 +27,7 @@ func tagged_enum_cast(expected_id: uint, got_id: uint) {
     if got_id != expected_id {
         // TODO: replace indexes with names
         console_ewriteln(
-            "runtime error: cannot cast tagged enum ID({}) to type ID({})", enum_info._id_, expected_id
+            "runtime error: cannot cast tagged enum ID({}) to type ID({})", got_id, expected_id
         );
         bt_print(2);
         process_exit(1);
