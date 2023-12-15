@@ -2,30 +2,22 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-struct EnumInfo {
-    _rc_: uint;
-    _id_: uint;
-    obj: rawptr;
-}
-
-func enum_cast(ptr: rawptr, expected_id: uint) -> rawptr {
-    enum_info := unsafe { @as(&EnumInfo, ptr) };
-    if enum_info._id_ != expected_id {
+func tagged_enum_cast(expected_id: uint, got_id: uint) {
+    if got_id != expected_id {
         // TODO: replace indexes with names
         console_ewriteln(
-            "runtime error: enum cast: cannot cast ID({}) to ID({})", enum_info._id_, expected_id
+            "runtime error: cannot cast tagged enum ID({}) to variant ID({})", got_id, expected_id
         );
         bt_print(2);
         process_exit(1);
     }
-    return enum_info.obj;
 }
 
 func trait_cast(got_obj: rawptr, got_id: uint, expected_id: uint) -> rawptr {
     if got_id != expected_id {
         // TODO: replace indexes with names
         console_ewriteln(
-            "runtime error: trait cast: cannot cast ID({}) to ID({})", got_id, expected_id
+            "runtime error: cannot cast trait ID({}) to type ID({})", got_id, expected_id
         );
         bt_print(2);
         process_exit(1);

@@ -5,8 +5,26 @@
 import os
 
 from ..sym import TypeKind
-from .. import ast, sym, type
+from .. import ast, sym, type, utils
 from ..token import OVERLOADABLE_OPERATORS_STR
+
+def decode_escape(ch):
+    if ch.startswith("\\"):
+        code = ch[1:]
+        code_b = utils.bytestr(code).buf[0]
+        if code in ("\\", "'", '"'):
+            return chr(code_b)
+        elif code in ("a", "b", "f"):
+            return chr(code_b - 90)
+        elif code == "n":
+            return "\n"
+        elif code == "r":
+            return "\r"
+        elif code == "t":
+            return "\t"
+        elif code == "v":
+            return "\v"
+    return ch
 
 def prefix_type(tt):
     prefix = ""

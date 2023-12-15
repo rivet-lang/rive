@@ -128,7 +128,7 @@ class Function:
 class RIRFile:
     def __init__(self, mod_name):
         self.mod_name = mod_name
-        self.structs = []
+        self.types = []
         self.externs = []
         self.globals = []
         self.decls = []
@@ -146,9 +146,9 @@ class RIRFile:
             "// and is subject to change without notice. Knock yourself out."
         )
         sb.writeln()
-        for i, s in enumerate(self.structs):
-            sb.writeln(str(s))
-            if i < len(self.structs) - 1:
+        for i, t in enumerate(self.types):
+            sb.writeln(str(t))
+            if i < len(self.types) - 1:
                 sb.writeln()
         sb.writeln()
         for i, e in enumerate(self.externs):
@@ -189,6 +189,23 @@ class VTable:
         sb.write("}")
         return str(sb)
 
+class Union:
+    def __init__(self, name, fields):
+        self.name = name
+        self.fields = fields
+
+    def __str__(self):
+        sb = utils.Builder()
+        sb.writeln(f'union {self.name} {{')
+        for i, f in enumerate(self.fields):
+            sb.write(f'  {f.name}: {f.typ}')
+            if i < len(self.fields) - 1:
+                sb.writeln(",")
+            else:
+                sb.writeln()
+        sb.write("}")
+        return str(sb)
+
 class Struct:
     def __init__(self, is_opaque, name, fields):
         self.is_opaque = is_opaque
@@ -198,9 +215,9 @@ class Struct:
     def __str__(self):
         sb = utils.Builder()
         if self.is_opaque:
-            sb.write(f'type {self.name} opaque')
+            sb.write(f'struct {self.name} opaque')
         else:
-            sb.writeln(f'type {self.name} {{')
+            sb.writeln(f'struct {self.name} {{')
             for i, f in enumerate(self.fields):
                 sb.write(f'  {f.name}: {f.typ}')
                 if i < len(self.fields) - 1:
@@ -511,7 +528,7 @@ class InstKind(Enum):
     StorePtr = auto_enum()
     LoadPtr = auto_enum()
     GetElementPtr = auto_enum()
-    GetRef = auto_enum()
+    GetPtr = auto_enum()
 
     Cast = auto_enum()
     Cmp = auto_enum()
@@ -553,7 +570,7 @@ class InstKind(Enum):
         elif self == InstKind.StorePtr: return "store_ptr"
         elif self == InstKind.LoadPtr: return "load_ptr"
         elif self == InstKind.GetElementPtr: return "get_element_ptr"
-        elif self == InstKind.GetRef: return "get_ref"
+        elif self == InstKind.GetPtr: return "get_ref"
         elif self == InstKind.Cast: return "cast"
         elif self == InstKind.Cmp: return "cmp"
         elif self == InstKind.DbgStmtLine: return "dbg_stmt_line"
