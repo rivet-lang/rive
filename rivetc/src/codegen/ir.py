@@ -528,7 +528,7 @@ class InstKind(Enum):
     StorePtr = auto_enum()
     LoadPtr = auto_enum()
     GetElementPtr = auto_enum()
-    GetRef = auto_enum()
+    GetPtr = auto_enum()
 
     Cast = auto_enum()
     Cmp = auto_enum()
@@ -570,7 +570,7 @@ class InstKind(Enum):
         elif self == InstKind.StorePtr: return "store_ptr"
         elif self == InstKind.LoadPtr: return "load_ptr"
         elif self == InstKind.GetElementPtr: return "get_element_ptr"
-        elif self == InstKind.GetRef: return "get_ref"
+        elif self == InstKind.GetPtr: return "get_ref"
         elif self == InstKind.Cast: return "cast"
         elif self == InstKind.Cmp: return "cmp"
         elif self == InstKind.DbgStmtLine: return "dbg_stmt_line"

@@ -288,7 +288,7 @@ class CGen:
             self.write(" + ")
             self.gen_expr(inst.args[1])
             self.write(")")
-        elif inst.kind == InstKind.GetRef:
+        elif inst.kind == InstKind.GetPtr:
             arg0 = inst.args[0]
             if isinstance(arg0, (ir.Ident, ir.Selector, ir.ArrayLit)):
                 if isinstance(arg0, ir.ArrayLit):
