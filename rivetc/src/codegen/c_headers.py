@@ -64,13 +64,13 @@ typedef uint32_t uint32;
 typedef uint64_t uint64;
 typedef ptrdiff_t ri_int;
 typedef size_t ri_uint;
-typedef ri_int comptime_int;
-
-typedef uint8 bool;
-typedef uint32 rune;
 
 typedef float float32;
 typedef double float64;
+
+typedef uint8 bool;
+typedef uint32 rune;
+typedef ri_int comptime_int;
 typedef float64 comptime_float;
 
 """

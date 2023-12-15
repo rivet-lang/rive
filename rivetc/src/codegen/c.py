@@ -29,17 +29,14 @@ class CGen:
     def __init__(self, comp):
         self.comp = comp
         self.typedefs = utils.Builder()
-        self.unions = utils.Builder()
-        self.structs = utils.Builder()
+        self.types = utils.Builder()
         self.protos = utils.Builder()
         self.globals = utils.Builder()
         self.out = utils.Builder()
 
     def gen(self, out_rir):
-        self.comp.vlog("cgen: generating unions...")
-        self.gen_unions(out_rir.unions)
-        self.comp.vlog("cgen: generating structs...")
-        self.gen_structs(out_rir.structs)
+        self.comp.vlog("cgen: generating types...")
+        self.gen_types(out_rir.types)
         self.comp.vlog("cgen: generating externs...")
         self.gen_externs(out_rir.externs)
         self.comp.vlog("cgen: generating globals...")
@@ -54,8 +51,7 @@ class CGen:
             if self.comp.prefs.build_mode != prefs.BuildMode.Release:
                 out.write(c_headers.RIVET_BREAKPOINT)
             out.write(str(self.typedefs).strip() + "\n\n")
-            out.write(str(self.unions).strip() + "\n\n")
-            out.write(str(self.structs).strip() + "\n\n")
+            out.write(str(self.types).strip() + "\n\n")
             out.write(str(self.protos).strip() + "\n\n")
             out.write(str(self.globals).strip() + "\n\n")
             out.write(str(self.out).strip())
@@ -100,33 +96,32 @@ class CGen:
     def writeln(self, txt = ""):
         self.out.writeln(txt)
 
-    def gen_unions(self, unions):
-        for u in unions:
-            self.typedefs.writeln(f"typedef union {u.name} {u.name};")
-            self.unions.writeln(f"union {u.name} {{")
-            for i, f in enumerate(u.fields):
-                f_name = c_escape(f.name)
-                self.unions.write("  ")
-                self.unions.write(self.gen_type(f.typ, f_name))
-                if not isinstance(f.typ, (ir.Array, ir.Function)):
-                    self.unions.write(f" {f_name}")
-                self.unions.writeln(";")
-            self.unions.writeln("};\n")
-
-    def gen_structs(self, structs):
-        for s in structs:
-            self.typedefs.writeln(f"typedef struct {s.name} {s.name};")
-            if not s.is_opaque:
-                self.structs.writeln(f"struct {s.name} {{")
+    def gen_types(self, types):
+        for s in types:
+            if isinstance(s, ir.Struct):
+                self.typedefs.writeln(f"typedef struct {s.name} {s.name};")
+                if not s.is_opaque:
+                    self.types.writeln(f"struct {s.name} {{")
+                    for i, f in enumerate(s.fields):
+                        f_name = c_escape(f.name)
+                        self.types.write("  ")
+                        self.types.write(self.gen_type(f.typ, f_name))
+                        if not isinstance(f.typ, (ir.Array, ir.Function)):
+                            self.types.write(f" {f_name}")
+                        self.types.writeln(";")
+                    self.types.writeln("};")
+                self.types.writeln()
+            else:
+                self.typedefs.writeln(f"typedef union {s.name} {s.name};")
+                self.types.writeln(f"union {s.name} {{")
                 for i, f in enumerate(s.fields):
                     f_name = c_escape(f.name)
-                    self.structs.write("  ")
-                    self.structs.write(self.gen_type(f.typ, f_name))
+                    self.types.write("  ")
+                    self.types.write(self.gen_type(f.typ, f_name))
                     if not isinstance(f.typ, (ir.Array, ir.Function)):
-                        self.structs.write(f" {f_name}")
-                    self.structs.writeln(";")
-                self.structs.writeln("};")
-            self.structs.writeln()
+                        self.types.write(f" {f_name}")
+                    self.types.writeln(";")
+                self.types.writeln("};\n")
 
     def gen_externs(self, externs):
         for extern_fn in externs:

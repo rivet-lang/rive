@@ -321,7 +321,7 @@ class Codegen:
                     name = f"_R{len(name)}{name}"
                     if name not in self.generated_array_returns:
                         arr_ret_struct = name
-                        self.out_rir.structs.append(
+                        self.out_rir.types.append(
                             ir.Struct(False, name, [ir.Field("arr", ret_typ)])
                         )
                         self.generated_array_returns.append(name)
@@ -2933,7 +2933,7 @@ class Codegen:
             name = f"_R6Result{cg_utils.mangle_type(typ.typ)}"
             if name not in self.generated_opt_res_types:
                 is_void = typ.typ in self.void_types
-                self.out_rir.structs.append(
+                self.out_rir.types.append(
                     ir.Struct(
                         False, name, [
                             ir.Field(
@@ -2955,7 +2955,7 @@ class Codegen:
             name = f"_R6Option{cg_utils.mangle_type(typ.typ)}"
             if name not in self.generated_opt_res_types:
                 is_void = typ.typ in self.void_types
-                self.out_rir.structs.append(
+                self.out_rir.types.append(
                     ir.Struct(
                         False, name, [
                             ir.Field(
@@ -3022,7 +3022,7 @@ class Codegen:
                 fields = []
                 for i, f in enumerate(ts.info.types):
                     fields.append(ir.Field(f"f{i}", self.ir_type(f)))
-                self.out_rir.structs.append(
+                self.out_rir.types.append(
                     ir.Struct(False, cg_utils.mangle_symbol(ts), fields)
                 )
             elif ts.kind == TypeKind.Enum:
@@ -3036,8 +3036,8 @@ class Codegen:
                             typ_sym = v.typ.symbol()
                             fields.append(ir.Field(f"v{typ_sym.id}", self.ir_type(v.typ)))
                     union_name = mangled_name + "5Union"
-                    self.out_rir.unions.append(ir.Union(union_name, fields))
-                    self.out_rir.structs.append(
+                    self.out_rir.types.append(ir.Union(union_name, fields))
+                    self.out_rir.types.append(
                         ir.Struct(
                             False, mangled_name, [
                                 ir.Field("_rc_", ir.UINT_T),
@@ -3059,7 +3059,7 @@ class Codegen:
                     if not isinstance(f_typ, ir.Pointer):
                         f_typ = f_typ.ptr()
                     fields.append(ir.Field(f.name, f_typ))
-                self.out_rir.structs.append(ir.Struct(False, ts_name, fields))
+                self.out_rir.types.append(ir.Struct(False, ts_name, fields))
                 # Virtual table
                 vtbl_name = f"{ts_name}4Vtbl"
                 static_vtbl_name = f"{ts_name}4VTBL"
@@ -3098,7 +3098,7 @@ class Codegen:
                     funcs.append(map)
                     index_of_vtbl.append((its.qualname(), its.id, idx))
                 if len(funcs) > 0 and ts.info.has_objects:
-                    self.out_rir.structs.append(
+                    self.out_rir.types.append(
                         ir.Struct(False, vtbl_name, fields)
                     )
                     self.out_rir.decls.append(
@@ -3139,7 +3139,7 @@ class Codegen:
                           ] if ts.info.is_boxed else []
                 for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
-                self.out_rir.structs.append(
+                self.out_rir.types.append(
                     ir.Struct(
                         ts.info.is_opaque, cg_utils.mangle_symbol(ts), fields
                     )
@@ -3182,6 +3182,14 @@ class Codegen:
                     ):
                         continue
                     field_deps.append(dep)
+            elif ts.kind == TypeKind.Enum and ts.info.is_tagged:
+                for variant in ts.info.variants:
+                    if variant.has_typ:
+                        variant_sym = variant.typ.symbol()
+                        dep = cg_utils.mangle_symbol(variant_sym)
+                        if dep not in typ_names or dep in field_deps:
+                            continue
+                        field_deps.append(dep)
             elif ts.kind == TypeKind.Trait:
                 for base in ts.info.bases:
                     dep = cg_utils.mangle_symbol(base)

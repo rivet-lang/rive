@@ -128,8 +128,7 @@ class Function:
 class RIRFile:
     def __init__(self, mod_name):
         self.mod_name = mod_name
-        self.unions = []
-        self.structs = []
+        self.types = []
         self.externs = []
         self.globals = []
         self.decls = []
@@ -147,14 +146,9 @@ class RIRFile:
             "// and is subject to change without notice. Knock yourself out."
         )
         sb.writeln()
-        for i, u in enumerate(self.unions):
-            sb.writeln(str(u))
-            if i < len(self.unions) - 1:
-                sb.writeln()
-        sb.writeln()
-        for i, s in enumerate(self.structs):
-            sb.writeln(str(s))
-            if i < len(self.structs) - 1:
+        for i, t in enumerate(self.types):
+            sb.writeln(str(t))
+            if i < len(self.types) - 1:
                 sb.writeln()
         sb.writeln()
         for i, e in enumerate(self.externs):
