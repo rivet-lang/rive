@@ -1860,7 +1860,7 @@ class Codegen:
                         val = ir.Selector(
                             ir.Type(self.ir_type(expr.typ)), obj_val, ir.Name(f"v{expr.right.variant_info.value}")
                         )
-                        if expr.var.is_mut and isinstance(var_t2, ir.Pointer):
+                        if expr.var.is_mut and not isinstance(var_t2, ir.Pointer):
                             val = ir.Inst(ir.InstKind.GetPtr, [val], var_t2)
                     else:
                         val = ir.Inst(
