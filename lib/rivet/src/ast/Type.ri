@@ -10,7 +10,7 @@ import ../token;
 #[default_value(.Void)]
 pub enum Type < traits.Stringable {
     Basic {
-        mut sym: TypeSym;
+        mut sym: ?TypeSym;
         mut is_unresolved: bool;
         mut expr: Expr;
         pos: token.Pos;
@@ -31,7 +31,7 @@ pub enum Type < traits.Stringable {
         mut sym: TypeSym;
         pos: token.Pos;
 
-        func ==(self, other: Self) -> bool {
+        func ==(&self, other: &Self) -> bool {
             if self.inners.len != other.inners.len {
                 return false;
             }
@@ -140,7 +140,7 @@ pub enum Type < traits.Stringable {
                     ...self
                 )
             },
-            .Basic(basic) if !basic.is_unresolved -> if basic.sym.info is .Alias(alias_info) {
+            .Basic(basic) if !basic.is_unresolved -> if basic.sym?.info is .Alias(alias_info) {
                 alias_info.parent.unalias() ?? alias_info.parent
             } else {
                 .Basic(basic.sym)
@@ -299,7 +299,7 @@ pub enum Type < traits.Stringable {
             },
             .Basic(basic_lhs) if rhs is .Basic(basic_rhs) ->
                 !(basic_lhs.is_unresolved && basic_rhs.is_unresolved)
-                && basic_lhs.sym == basic_rhs.sym,
+                && basic_lhs.sym? == basic_rhs.sym?,
             else -> false
         };
     }
@@ -391,12 +391,14 @@ pub enum Type < traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Basic(basic) -> if basic.is_unresolved {
-                basic.expr.to_string()
-            } else if qualstr {
-                basic.sym.qualname()
+            .Basic(basic) -> if type_sym := basic.sym {
+                if qualstr {
+                    type_sym.qualname()
+                } else {
+                    type_sym.name
+                }
             } else {
-                basic.sym.name
+                basic.expr.to_string()
             }
         };
     }

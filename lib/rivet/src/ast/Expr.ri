@@ -16,7 +16,7 @@ pub enum Expr < traits.Stringable {
         pos: token.Pos;
         mut type: Type;
 
-        pub func clean_paren(self) -> Expr {
+        pub func clean_paren(&self) -> Expr {
             mut res := self.expr;
             while res is .Paren(paren) {
                 res = paren.expr;
@@ -184,7 +184,7 @@ pub enum Expr < traits.Stringable {
         mut is_enum_variant: bool;
         mut enum_variant_sym: TypeSym;
 
-        func has_named_args(self) -> bool {
+        func has_named_args(&self) -> bool {
             for arg in self.args {
                 if arg.is_named {
                     return true;
@@ -193,7 +193,7 @@ pub enum Expr < traits.Stringable {
             return false;
         }
 
-        func get_named_arg(self, name: string) -> ?CallArg {
+        func get_named_arg(&self, name: string) -> ?CallArg {
             for arg in self.args {
                 if arg.is_named && arg.name == name {
                     return arg;
@@ -204,7 +204,7 @@ pub enum Expr < traits.Stringable {
 
         /// Returns the number of pure arguments, that is, not named, that
         /// this call has.
-        func pure_args_count(self) -> uint {
+        func pure_args_count(&self) -> uint {
             mut l: uint := 0;
             for arg in self.args {
                 if !arg.is_named {
@@ -218,7 +218,7 @@ pub enum Expr < traits.Stringable {
         }
 
         #[inline]
-        func has_err_handler(self) -> bool {
+        func has_err_handler(&self) -> bool {
             return self.err_handler.has_expr || self.err_handler.is_propagate;
         }
     },

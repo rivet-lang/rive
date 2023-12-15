@@ -198,7 +198,13 @@ pub struct Register {
                     }
                 },
                 .Extend(extend_decl) -> if extend_decl.type is .Basic(basic_type) {
-                    if basic_type.is_unresolved {
+                    if type_sym := basic_type.sym {
+                        self.sym = type_sym;
+                        if type_sym.is_primitive()
+                            && !self.source_file.mod.is_core() {
+                            report.error("cannot extend primitive types", extend_decl.pos);
+                        }
+                    } else {
                         if basic_type.expr is .Ident(ident) {
                             self.sym = if type_sym := self.sym.scope.find(ident.name) {
                                 type_sym
@@ -219,15 +225,6 @@ pub struct Register {
                                 extend_decl.pos
                             );
                             continue;
-                        }
-                    } else {
-                        self.sym = basic_type.sym;
-                        if basic_type.sym.is_primitive()
-                            && !self.source_file.mod.is_core() {
-                            report.error(
-                                "cannot extend primitive types",
-                                extend_decl.pos
-                            );
                         }
                     }
                     self.walk_decls(extend_decl.decls);

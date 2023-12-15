@@ -981,10 +981,10 @@ class Codegen:
                     )
                 elif typ_sym.kind == TypeKind.Enum:
                     if expr.is_enum_variant:
-                        tmp = self.boxed_instance(
-                            cg_utils.mangle_symbol(expr.enum_variant_sym),
-                            expr.enum_variant_sym.id
+                        tmp = ir.Ident(
+                            ir.Type(cg_utils.mangle_symbol(expr.enum_variant_sym)), self.cur_func.local_name()
                         )
+                        self.cur_func.alloca(tmp)
                         initted_fields = []
                         type_fields = expr.enum_variant_sym.full_fields()
                         for i, f in enumerate(expr.args):
@@ -1860,8 +1860,9 @@ class Codegen:
                         val = ir.Selector(
                             ir.Type(self.ir_type(expr.typ)), obj_val, ir.Name(f"v{expr.right.variant_info.value}")
                         )
-                        if expr.var.is_mut and not isinstance(var_t2, ir.Pointer):
+                        if expr.var.is_mut and not isinstance(var_t, ir.Pointer):
                             val = ir.Inst(ir.InstKind.GetPtr, [val], var_t2)
+                            var_t = var_t.ptr()
                     else:
                         val = ir.Inst(
                             ir.InstKind.Cast, [
@@ -3165,7 +3166,7 @@ class Codegen:
                         variant_sym = variant.typ.symbol()
                         if variant_sym.kind != TypeKind.Struct:
                             continue
-                        if variant_sym.is_boxed() or isinstance(variant.typ, type.Option):
+                        if variant_sym.is_boxed() or isinstance(variant.typ, type.Option) or not variant.has_fields:
                             continue
                         dep = cg_utils.mangle_symbol(variant_sym)
                         if dep not in typ_names or dep in field_deps:

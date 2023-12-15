@@ -47,7 +47,7 @@ pub enum TypeInfo < traits.Stringable {
         mut implements: []TypeSym;
         mut has_objects: bool;
 
-        func index_of(self, type_sym: TypeSym) -> ?uint {
+        func index_of(&self, type_sym: TypeSym) -> ?uint {
             for i, ts in self.implements {
                 if ts.id == type_sym.id {
                     return i;
@@ -81,11 +81,11 @@ pub enum TypeInfo < traits.Stringable {
             self.variants.push(variant);
         }
 
-        func has_variant(self, name: string) -> bool {
+        func has_variant(&self, name: string) -> bool {
             return self.get_variant(name) != none;
         }
 
-        func get_variant(self, name: string) -> ?EnumVariant {
+        func get_variant(&self, name: string) -> ?EnumVariant {
             for v in self.variants {
                 if v.name == name {
                     return v;
@@ -94,7 +94,7 @@ pub enum TypeInfo < traits.Stringable {
             return none;
         }
 
-        func get_variant_by_type(self, type: Type) -> ?EnumVariant {
+        func get_variant_by_type(&self, type: Type) -> ?EnumVariant {
             for v in self.variants {
                 if v.has_type && v.type == type {
                     return v;
@@ -103,7 +103,7 @@ pub enum TypeInfo < traits.Stringable {
             return none;
         }
 
-        func contains_trait(self, type_sym: TypeSym) -> bool {
+        func contains_trait(&self, type_sym: TypeSym) -> bool {
             for trait_ in self.traits {
                 if trait_.id == type_sym.id {
                     return true;
@@ -120,7 +120,7 @@ pub enum TypeInfo < traits.Stringable {
         mut bases: []mut TypeSym;
         mut traits: []mut TypeSym;
 
-        func contains_trait(self, type_sym: TypeSym) -> bool {
+        func contains_trait(&self, type_sym: TypeSym) -> bool {
             for trait_ in self.traits {
                 if trait_.id == type_sym.id {
                     return true;
