@@ -3021,7 +3021,7 @@ class Codegen:
                                 ir.Field("_rc_", ir.UINT_T),
                                 ir.Field("_idx_", ir.UINT_T),
                                 ir.Field("obj", ir.Type(union_name))
-                            ]
+                            ], is_tagged_enum = True
                         )
                     )
             elif ts.kind == TypeKind.Trait:
@@ -3164,9 +3164,7 @@ class Codegen:
                 for variant in ts.info.variants:
                     if variant.has_typ:
                         variant_sym = variant.typ.symbol()
-                        if variant_sym.kind != TypeKind.Struct:
-                            continue
-                        if variant_sym.is_boxed() or isinstance(variant.typ, type.Option) or not variant.has_fields:
+                        if variant_sym.is_boxed() or isinstance(variant.typ, type.Option):
                             continue
                         dep = cg_utils.mangle_symbol(variant_sym)
                         if dep not in typ_names or dep in field_deps:
