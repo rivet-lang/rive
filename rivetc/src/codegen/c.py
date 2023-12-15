@@ -29,12 +29,15 @@ class CGen:
     def __init__(self, comp):
         self.comp = comp
         self.typedefs = utils.Builder()
+        self.unions = utils.Builder()
         self.structs = utils.Builder()
         self.protos = utils.Builder()
         self.globals = utils.Builder()
         self.out = utils.Builder()
 
     def gen(self, out_rir):
+        self.comp.vlog("cgen: generating unions...")
+        self.gen_unions(out_rir.unions)
         self.comp.vlog("cgen: generating structs...")
         self.gen_structs(out_rir.structs)
         self.comp.vlog("cgen: generating externs...")
@@ -51,6 +54,7 @@ class CGen:
             if self.comp.prefs.build_mode != prefs.BuildMode.Release:
                 out.write(c_headers.RIVET_BREAKPOINT)
             out.write(str(self.typedefs).strip() + "\n\n")
+            out.write(str(self.unions).strip() + "\n\n")
             out.write(str(self.structs).strip() + "\n\n")
             out.write(str(self.protos).strip() + "\n\n")
             out.write(str(self.globals).strip() + "\n\n")
@@ -96,6 +100,19 @@ class CGen:
     def writeln(self, txt = ""):
         self.out.writeln(txt)
 
+    def gen_unions(self, unions):
+        for u in unions:
+            self.typedefs.writeln(f"typedef union {u.name} {u.name};")
+            self.unions.writeln(f"union {u.name} {{")
+            for i, f in enumerate(u.fields):
+                f_name = c_escape(f.name)
+                self.unions.write("  ")
+                self.unions.write(self.gen_type(f.typ, f_name))
+                if not isinstance(f.typ, (ir.Array, ir.Function)):
+                    self.unions.write(f" {f_name}")
+                self.unions.writeln(";")
+            self.unions.writeln("};\n")
+
     def gen_structs(self, structs):
         for s in structs:
             self.typedefs.writeln(f"typedef struct {s.name} {s.name};")
@@ -107,10 +124,7 @@ class CGen:
                     self.structs.write(self.gen_type(f.typ, f_name))
                     if not isinstance(f.typ, (ir.Array, ir.Function)):
                         self.structs.write(f" {f_name}")
-                    if i < len(s.fields) - 1:
-                        self.structs.writeln(";")
-                    else:
-                        self.structs.writeln(";")
+                    self.structs.writeln(";")
                 self.structs.writeln("};")
             self.structs.writeln()
 

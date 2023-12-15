@@ -128,6 +128,7 @@ class Function:
 class RIRFile:
     def __init__(self, mod_name):
         self.mod_name = mod_name
+        self.unions = []
         self.structs = []
         self.externs = []
         self.globals = []
@@ -145,6 +146,11 @@ class RIRFile:
         sb.writeln(
             "// and is subject to change without notice. Knock yourself out."
         )
+        sb.writeln()
+        for i, u in enumerate(self.unions):
+            sb.writeln(str(u))
+            if i < len(self.unions) - 1:
+                sb.writeln()
         sb.writeln()
         for i, s in enumerate(self.structs):
             sb.writeln(str(s))
@@ -189,6 +195,23 @@ class VTable:
         sb.write("}")
         return str(sb)
 
+class Union:
+    def __init__(self, name, fields):
+        self.name = name
+        self.fields = fields
+
+    def __str__(self):
+        sb = utils.Builder()
+        sb.writeln(f'union {self.name} {{')
+        for i, f in enumerate(self.fields):
+            sb.write(f'  {f.name}: {f.typ}')
+            if i < len(self.fields) - 1:
+                sb.writeln(",")
+            else:
+                sb.writeln()
+        sb.write("}")
+        return str(sb)
+
 class Struct:
     def __init__(self, is_opaque, name, fields):
         self.is_opaque = is_opaque
@@ -198,9 +221,9 @@ class Struct:
     def __str__(self):
         sb = utils.Builder()
         if self.is_opaque:
-            sb.write(f'type {self.name} opaque')
+            sb.write(f'struct {self.name} opaque')
         else:
-            sb.writeln(f'type {self.name} {{')
+            sb.writeln(f'struct {self.name} {{')
             for i, f in enumerate(self.fields):
                 sb.write(f'  {f.name}: {f.typ}')
                 if i < len(self.fields) - 1:

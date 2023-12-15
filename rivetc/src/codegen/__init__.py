@@ -3024,12 +3024,20 @@ class Codegen:
                 # TODO: in the self-hosted compiler calculate the enum value here
                 # not in register nor resolver.
                 if ts.info.is_tagged:
+                    mangled_name = cg_utils.mangle_symbol(ts)
+                    fields = []
+                    for v in ts.info.variants:
+                        if v.has_typ:
+                            typ_sym = v.typ.symbol()
+                            fields.append(ir.Field(f"v{typ_sym.id}", self.ir_type(v.typ)))
+                    union_name = mangled_name + "5Union"
+                    self.out_rir.unions.append(ir.Union(union_name, fields))
                     self.out_rir.structs.append(
                         ir.Struct(
-                            False, cg_utils.mangle_symbol(ts), [
+                            False, mangled_name, [
                                 ir.Field("_rc_", ir.UINT_T),
                                 ir.Field("_idx_", ir.UINT_T),
-                                ir.Field("obj", ir.VOID_PTR_T)
+                                ir.Field("obj", ir.Type(union_name))
                             ]
                         )
                     )
