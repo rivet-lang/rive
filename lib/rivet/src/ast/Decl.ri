@@ -180,7 +180,6 @@ pub enum Decl {
     }
 }
 
-#[boxed]
 pub struct EnumVariantDecl {
     pub name: string;
     pub mut type: Type;

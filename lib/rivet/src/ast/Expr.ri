@@ -601,7 +601,6 @@ pub enum Expr < traits.Stringable {
     }
 }
 
-#[boxed]
 pub struct CallArg {
     pub name: string;
     pub mut expr: Expr;
@@ -610,7 +609,6 @@ pub struct CallArg {
     pub mut type: Type;
 }
 
-#[boxed]
 pub struct CallErrorHandler {
     pub varname: string;
     pub varname_pos: token.Pos;
@@ -622,7 +620,6 @@ pub struct CallErrorHandler {
     pub pos: token.Pos;
 }
 
-#[boxed]
 pub struct IfBranch {
     pub mut cond: Expr;
     pub mut expr: Expr;
@@ -632,7 +629,6 @@ pub struct IfBranch {
     pub mut type: Type;
 }
 
-#[boxed]
 pub struct MatchBranch {
     pub mut patterns: []mut Expr;
     pub has_var: bool;
