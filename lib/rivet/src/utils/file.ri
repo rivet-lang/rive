@@ -70,9 +70,7 @@ struct SourceCache {
    }
 
    pub func find_lines(self, path_: string) -> ?[]string {
-	// TODO: fix "variable does not need to be mutable"
-	// for mut cached in self.sources {
-	  for &cached in self.sources {
+	  for mut cached in self.sources {
 		 if cached.path == path_ {
 			if cached.lines.is_empty() {
 			   cached.lines = cached.content.split_into_lines();

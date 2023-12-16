@@ -60,14 +60,14 @@ extend Checker {
                 self.check_decls(extern_decl.decls);
                 self.inside_extern = false;
             },
-            .Var(var_decl) -> {
+            .Var(mut var_decl) -> {
                 self.inside_var_decl = true;
                 self.check_var_decl(
                     var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
                 );
                 self.inside_var_decl = false;
             },
-            .Const(const_decl) -> {
+            .Const(mut const_decl) -> {
                 self.check_name_case(.Upper, "constant", const_decl.name, const_decl.pos);
                 if const_decl.has_type {
                     old_expected_type := self.expected_type;
@@ -129,7 +129,7 @@ extend Checker {
                 }
                 self.check_decls(struct_decl.decls);
             },
-            .Field(field_decl) -> {
+            .Field(mut field_decl) -> {
                 self.check_name_case(.Snake, "field", field_decl.name, field_decl.pos);
                 if field_decl.has_def_expr {
                     old_expected_type := self.expected_type;
@@ -213,7 +213,7 @@ extend Checker {
         if func_decl.is_method && func_decl.self_is_ptr && func_decl.self_type.is_boxed() {
             report.error("cannot take the address of a boxed value as receiver", func_decl.self_pos);
         }
-        for arg in func_decl.args {
+        for mut arg in func_decl.args {
             self.check_name_case(.Snake, "argument", arg.name, arg.pos);
             if arg.has_def_expr {
                 if func_decl.abi != .Rivet {

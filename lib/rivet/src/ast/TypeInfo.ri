@@ -44,7 +44,7 @@ pub enum TypeInfo < traits.Stringable {
     },
     Trait {
         mut bases: []mut TypeSym;
-        mut implements: []TypeSym;
+        mut implements: []mut TypeSym;
         mut has_objects: bool;
 
         func index_of(&self, type_sym: TypeSym) -> ?uint {
@@ -72,7 +72,7 @@ pub enum TypeInfo < traits.Stringable {
     },
     Enum {
         underlying_type: Type;
-        mut variants: []EnumVariant;
+        mut variants: []mut EnumVariant;
         is_tagged: bool;
         mut traits: []mut TypeSym;
 

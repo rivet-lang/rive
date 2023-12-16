@@ -117,7 +117,7 @@ pub struct Parser {
 
     func close_scope(mut self) {
         self.scope.end = self.tok.pos.pos;
-        if parent := self.scope.parent {
+        if mut parent := self.scope.parent {
             parent.childrens.push(self.scope);
             self.scope = parent;
         }

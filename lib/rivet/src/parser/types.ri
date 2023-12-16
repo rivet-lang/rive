@@ -16,7 +16,7 @@ extend Parser {
                 // function types
                 self.expect(.KwFunc);
                 self.expect(.Lparen);
-                mut args := []ast.Arg();
+                mut args := []mut ast.Arg();
                 if self.tok.kind != .Rparen {
                     while {
                         arg_pos := self.tok.pos;

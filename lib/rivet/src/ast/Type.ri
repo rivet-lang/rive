@@ -76,14 +76,14 @@ pub enum Type < traits.Stringable {
         is_method: bool;
         self_is_mut: bool;
         self_is_ptr: bool;
-        args: []Arg;
+        args: []mut Arg;
         mut ret_type: Type;
         pos: token.Pos;
         mut sym: TypeSym;
         mut has_sym: bool;
 
         #[inline]
-        func symbol(self) -> Func {
+        func symbol(&self) -> Func {
             return if self.has_sym && self.sym.info is .Func(func_sym) {
                 func_sym
             } else {
@@ -108,7 +108,7 @@ pub enum Type < traits.Stringable {
         };
     }
 
-    pub func unalias(self) -> ?Self {
+    pub func unalias(mut self) -> ?Self {
         // NOTE: `.unalias()` returns an option, so we use the same type without
         // unaliasing instead.
         return match self {
@@ -131,8 +131,8 @@ pub enum Type < traits.Stringable {
             .Pointer(pointer_data) -> .Pointer(
                 pointer_data.inner.unalias() ?? pointer_data.inner, ...self
             ),
-            .Func(func_data) -> {
-                for arg in func_data.args {
+            .Func(mut func_data) -> {
+                for mut arg in func_data.args {
                     arg.type = arg.type.unalias() ?? arg.type;
                 }
                 .Func(

@@ -66,7 +66,7 @@ pub struct Resolver {
 
     func eval_size(mut self, mut expr: ast.Expr) -> ?int {
         return match expr {
-            .Paren(paren) -> self.eval_size(paren.expr),
+            .Paren(mut paren) -> self.eval_size(paren.expr),
             .IntegerLiteral(int_lit) -> int_lit.value.to_int() catch return none,
             .Ident(mut ident) -> {
                 self.resolve_ident(ident);
@@ -84,7 +84,7 @@ pub struct Resolver {
                     none
                 }
             },
-            .Binary(binary) -> if left := self.eval_size(binary.left) {
+            .Binary(mut binary) -> if left := self.eval_size(binary.left) {
                 if right := self.eval_size(binary.right) {
                     match binary.op {
                         .Plus -> left + right,
@@ -105,7 +105,7 @@ pub struct Resolver {
             } else {
                 none
             },
-            .BuiltinCall(builtin_call) if builtin_call.name in ["size_of", "align_of"] -> {
+            .BuiltinCall(mut builtin_call) if builtin_call.name in ["size_of", "align_of"] -> {
                 if builtin_call.args[0].expr is .Type(mut type) && self.resolve_type(type) {
                     (size, align) := self.table.type_size(type);
                     if builtin_call.name == "size_of" {
@@ -121,8 +121,8 @@ pub struct Resolver {
         };
     }
 
-    func eval_sym(mut self, sym: ast.Sym, pos: token.Pos) -> ?int {
-        if sym is ast.Const(const_) {
+    func eval_sym(mut self, mut sym: ast.Sym, pos: token.Pos) -> ?int {
+        if sym is ast.Const(mut const_) {
             if !const_.has_evaled_size {
                 const_.evaled_size = self.eval_size(const_.expr)?;
             }

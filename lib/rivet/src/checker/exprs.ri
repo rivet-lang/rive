@@ -14,10 +14,10 @@ extend Checker {
                 self.scope_returns = true;
                 .Never(branch.pos)
             },
-            .Paren(paren) -> self.check_expr(paren.expr),
+            .Paren(mut paren) -> self.check_expr(paren.expr),
             .NoneLiteral -> .None,
             .BoolLiteral -> self.table.bool_t,
-            .CharLiteral(char_lit) -> {
+            .CharLiteral(mut char_lit) -> {
                 char_lit.type = if char_lit.is_byte {
                     self.table.uint8_t
                 } else {
@@ -25,15 +25,15 @@ extend Checker {
                 };
                 char_lit.type
             },
-            .IntegerLiteral(int_lit) -> {
+            .IntegerLiteral(mut int_lit) -> {
                 int_lit.type = self.table.comptime_int_t;
                 int_lit.type
             },
-            .FloatLiteral(float_lit) -> {
+            .FloatLiteral(mut float_lit) -> {
                 float_lit.type = self.table.comptime_float_t;
                 float_lit.type
             },
-            .StringLiteral(string_lit) -> {
+            .StringLiteral(mut string_lit) -> {
                 string_lit.type = if string_lit.is_bytestr {
                     .Basic(self.table.universe.add_or_get_array(
                         self.table.uint8_t, string_lit.value.len, false
@@ -45,12 +45,12 @@ extend Checker {
                 };
                 string_lit.type
             },
-            .SelfLiteral(self_lit) -> {
+            .SelfLiteral(mut self_lit) -> {
                 self_lit.type = self_lit.obj.type;
                 self_lit.type
             },
             .SelfTy -> .Void,
-            .EnumLiteral(enum_lit) -> {
+            .EnumLiteral(mut enum_lit) -> {
                 enum_lit.type = .Void;
                 if sym := self.expected_type.symbol(); sym.info is .Enum(enum_info) {
                     if variant := enum_info.get_variant(enum_lit.value) {
@@ -86,7 +86,7 @@ extend Checker {
                 enum_lit.type
             },
             .TupleLiteral(mut tuple_lit) -> self.check_tuple_literal(tuple_lit),
-            .ArrayCtor(array_ctor) -> {
+            .ArrayCtor(mut array_ctor) -> {
                 if mut init_value := array_ctor.init_value {
                     init_t := self.check_expr(init_value);
                     if !self.check_compatible_types(init_t, array_ctor.elem_type) {
@@ -137,7 +137,7 @@ extend Checker {
                 array_ctor.type
             },
             .ArrayLiteral(mut array_lit) -> self.check_array_literal(array_lit),
-            .Ident(ident) -> {
+            .Ident(mut ident) -> {
                 ident.type = if ident.name == "_" {
                     .Void
                 } else if ident.is_comptime {
@@ -164,7 +164,7 @@ extend Checker {
                 ident.type
             },
             .Selector(mut selector) -> self.check_selector(selector),
-            .Indirect(indirect) -> {
+            .Indirect(mut indirect) -> {
                 indirect.left_type = self.check_expr(indirect.left);
                 indirect.type = if indirect.left_type.is_pointer()
                     || (indirect.left_type is .Pointer(ptr) && !ptr.is_indexable)
@@ -187,7 +187,7 @@ extend Checker {
                 };
                 indirect.type
             },
-            .OptionCheck(option_check) -> {
+            .OptionCheck(mut option_check) -> {
             	option_check.left_type = self.check_expr(option_check.left);
                 option_check.type = if option_check.left_type is .Option(opt) {
                     opt.inner
@@ -197,7 +197,7 @@ extend Checker {
                 };
                 option_check.type
             },
-            .Range(range) -> {
+            .Range(mut range) -> {
                 range.type = if range.has_start {
                     self.check_expr(range.start)
                 } else {
@@ -216,7 +216,7 @@ extend Checker {
             .Index(mut index) -> self.check_index(index),
             .Call(mut call_expr) -> self.check_call(call_expr),
             .BuiltinCall(mut builtin_call) -> self.check_builtin_call(builtin_call),
-            .Block(block) -> {
+            .Block(mut block) -> {
                 self.defer_stmts_start = self.defer_stmts.len;
                 if block.is_unsafe {
                     if self.inside_unsafe_block {
@@ -255,7 +255,7 @@ extend Checker {
             .Binary(mut binary) -> self.check_binary(binary),
             .If(mut if_expr) -> self.check_if(if_expr),
             .Match(mut match_expr) -> self.check_match(match_expr),
-            .Guard(guard) -> {
+            .Guard(mut guard) -> {
                 old_inside_guard_expr := self.inside_guard_expr;
                 self.inside_guard_expr = true;
                 self.check_var_decl(guard.vars, guard.expr, guard.scope, guard.pos);
@@ -573,8 +573,8 @@ extend Checker {
                     expected_pointer = true;
                     indexable_pointer = opt_ptr.is_indexable;
                 }
-                right := unary.right.clean_paren();
-                if right is .Index(index) {
+                mut right := unary.right.clean_paren();
+                if right is .Index(mut index) {
                     if index.left_type is .Pointer && !expected_pointer {
                         report.error("cannot take the address of a pointer indexing", unary.pos);
                     }
@@ -743,6 +743,7 @@ extend Checker {
                             binary.var_obj.sym.type = right_type;
                         }
                         if binary.var_obj.is_mut {
+                            self.check_expr_is_mut(binary.left);
                             binary.var_obj.sym.is_hidden_ref = true;
                         }
                     }
@@ -824,7 +825,7 @@ extend Checker {
 
     func check_if(mut self, mut if_expr: ast.Expr.If) -> ast.Type {
         if_expr.expected_type = self.expected_type;
-        for i, branch in if_expr.branches {
+        for i, mut branch in if_expr.branches {
             if !branch.is_else {
                 bcond_t := self.check_expr(branch.cond);
                 if branch.cond !is .Guard && bcond_t != self.table.bool_t {

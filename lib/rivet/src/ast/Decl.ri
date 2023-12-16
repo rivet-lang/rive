@@ -54,7 +54,7 @@ pub enum Decl {
         name: string;
         mut underlying_type: Type;
         bases: []mut Type;
-        variants: []EnumVariantDecl;
+        variants: []mut EnumVariantDecl;
         is_tagged: bool;
         decls: []Decl;
         pos: token.Pos;
@@ -106,7 +106,7 @@ pub enum Decl {
         is_public: bool;
         is_extern: bool;
         abi: ABI;
-        lefts: []ObjectData;
+        lefts: []mut ObjectData;
         mut right: Expr;
         pos: token.Pos;
         mut sym: Sym;
@@ -125,7 +125,7 @@ pub enum Decl {
         is_operator: bool;
         abi: ABI;
         name: string;
-        args: []Arg;
+        args: []mut Arg;
         has_named_args: bool;
         mut ret_type: Type;
         stmts: []mut Stmt;

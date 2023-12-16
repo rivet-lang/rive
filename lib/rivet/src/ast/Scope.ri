@@ -12,7 +12,7 @@ pub struct Scope {
     pub mut parent: ?Scope;
     pub mut detached_from_parent: bool;
     pub mut childrens: []Scope;
-    pub mut syms: []Sym;
+    pub mut syms: []mut Sym;
     pub mut is_local: bool;
 
     pub func add(mut self, sym: Sym) -> ! {

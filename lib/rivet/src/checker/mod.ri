@@ -78,12 +78,12 @@ pub struct Checker {
     }
 
     func check_var_decl(
-        mut self, lefts: []ast.ObjectData, mut right: ast.Expr, scope: ast.Scope,
+        mut self, lefts: []mut ast.ObjectData, mut right: ast.Expr, scope: ast.Scope,
         pos: token.Pos
     ) {
         if lefts.len == 1 {
             old_expected_type := self.expected_type;
-            left0 := lefts[0];
+            mut left0 := lefts[0];
             if !left0.is_extern {
                 if left0.name == "_" && left0.is_mut {
                     report.error("cannot use `mut` on `_`", left0.pos);
@@ -146,7 +146,7 @@ pub struct Checker {
             right_sym := right_type.symbol()?;
             if right_sym.info is .Tuple(tuple_info) {
                 if tuple_info.types.len == lefts.len {
-                    for i, vd in lefts {
+                    for i, mut vd in lefts {
                         if vd.name == "_" && vd.is_mut {
                             report.error("cannot use `mut` on `_`", vd.pos);
                         }
@@ -250,12 +250,12 @@ pub struct Checker {
     }
 
     func check_expr_is_mut(
-        self, expr: ast.Expr, from_assign: bool := false,
+        self, mut expr: ast.Expr, from_assign: bool := false,
         from_selector: bool := false
     ) {
         match expr {
-            .Paren(paren) -> self.check_expr_is_mut(paren.expr),
-            .SelfLiteral(self_lit) -> if self_lit.obj.is_mut {
+            .Paren(mut paren) -> self.check_expr_is_mut(paren.expr),
+            .SelfLiteral(mut self_lit) -> if self_lit.obj.is_mut {
                 self_lit.obj.is_changed = true;
             } else {
                 mut err := report.error_builder(
@@ -264,7 +264,7 @@ pub struct Checker {
                 err.add_help("consider making `self` as mutable: `mut self`");
                 err.emit();
             },
-            .Ident(ident) -> if ident.is_comptime {
+            .Ident(mut ident) -> if ident.is_comptime {
                 report.error(
                     "cannot use constant `@{}` as mutable value".fmt(ident.name),
                     ident.pos
@@ -274,29 +274,10 @@ pub struct Checker {
             } else if ident.found && (ident.is_sym || ident.is_obj) {
                 self.check_sym_is_mut(ident.sym, ident.pos, from_selector);
             },
-            .Selector(selector) -> if selector.is_path {
+            .Selector(mut selector) -> if selector.is_path {
                 self.check_sym_is_mut(selector.sym, selector.pos, true);
             } else {
-                match selector.left {
-                    .Ident(ident2) if ident2.found -> if ident2.is_sym {
-                        self.check_sym_is_mut(ident2.sym, ident2.pos, true)
-                    } else if ident2.sym is ast.Var(i_var) && i_var.level == .Argument {
-                        if i_var.is_mut {
-                           i_var.is_changed = true;
-                        } else {
-                            mut err := report.error_builder(
-                                "cannot use `{}` as mutable argument".fmt(ident2.name),
-                                ident.pos
-                            );
-                            err.add_help(
-                                "consider making this argument mutable: `mut {}`",
-                                ident2.name
-                            );
-                            err.emit();
-                        }
-                    },
-                    else -> self.check_expr_is_mut(selector.left, from_assign, true)
-                }
+                self.check_expr_is_mut(selector.left, from_assign, true);
                 if selector.found && !selector.field_is_mut {
                     report.error(
                         "field `{}` of type `{}` is immutable".fmt(
@@ -308,13 +289,13 @@ pub struct Checker {
             .Indirect(indirect) -> if !indirect.is_mut {
                 report.error("cannot use a immutable pointer as mutable value", selector.pos);
             },
-            .OptionCheck(option_check) -> self.check_expr_is_mut(option_check.left),
+            .OptionCheck(mut option_check) -> self.check_expr_is_mut(option_check.left),
             .NoneLiteral -> report.error("`none` cannot be modified", expr.position()),
             .StringLiteral -> report.error(
                 "string literals cannot be modified", expr.position()
             ),
             .TupleLiteral(tuple_lit) -> if from_assign {
-                for value in tuple_lit.values {
+                for mut value in tuple_lit.values {
                     self.check_expr_is_mut(value);
                 }
             } else {
@@ -324,12 +305,12 @@ pub struct Checker {
                 "enum literals cannot be modified", enum_lit.pos
             ),
             .BuiltinCall(builtin_call) -> {
-                for arg in builtin_call.args {
+                for mut arg in builtin_call.args {
                     self.check_expr_is_mut(arg.expr);
                 }
             },
-            .Block(block) if block.is_expr -> self.check_expr_is_mut(block.expr),
-            .Index(index) -> {
+            .Block(mut block) if block.is_expr -> self.check_expr_is_mut(block.expr),
+            .Index(mut index) -> {
                 if index.left_type is .Pointer(ptr) {
                     if !ptr.is_mut {
                         report.error(
@@ -338,6 +319,7 @@ pub struct Checker {
                     }
                     return;
                 }
+                self.check_expr_is_mut(index.left);
                 expr_sym := index.left_type.symbol()?;
                 if !expr_sym.info.is_mut_arr_or_dyn_array() {
                     report.error(
@@ -346,18 +328,18 @@ pub struct Checker {
                     );
                 }
             },
-            .Unary(unary) -> self.check_expr_is_mut(unary.right),
-            .Binary(binary) -> {
+            .Unary(mut unary) -> self.check_expr_is_mut(unary.right),
+            .Binary(mut binary) -> {
                 self.check_expr_is_mut(binary.left);
                 self.check_expr_is_mut(binary.right);
             },
             .If(if_expr) -> {
-                for branch in if_expr.branches {
+                for mut branch in if_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
             },
             .Match(match_expr) -> {
-                for branch in match_expr.branches {
+                for mut branch in match_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
             },
@@ -365,13 +347,13 @@ pub struct Checker {
         }
     }
 
-    func check_sym_is_mut(self, sym: ast.Sym, pos: token.Pos, from_selector: bool) {
+    func check_sym_is_mut(self, mut sym: ast.Sym, pos: token.Pos, from_selector: bool) {
         _ = self;
         match sym is {
             ast.Const -> report.error(
                 "cannot use constant `{}` as mutable value".fmt(sym.name), pos
             ),
-            ast.Var(var_info) if !(from_selector && var_info.level == .Local) -> {
+            ast.Var(mut var_info) if !(from_selector && var_info.level == .Local) -> {
                 if var_info.is_mut {
                     var_info.is_changed = true;
                 } else {

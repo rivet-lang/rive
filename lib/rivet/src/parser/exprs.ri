@@ -226,7 +226,7 @@ extend Parser {
                     } else {
                         self.parse_name()
                     };
-                    mut args := []ast.CallArg();
+                    mut args := []mut ast.CallArg();
                     self.expect(.Lparen);
                     if name in ["as", "size_of", "align_of"] {
                         arg_pos := self.tok.pos;
@@ -423,7 +423,7 @@ extend Parser {
                     && (expr is .Ident || expr is .Selector || expr is .Paren
                         || expr is .SelfTy || expr is .EnumLiteral) -> {
                     self.next();
-                    mut args := []ast.CallArg();
+                    mut args := []mut ast.CallArg();
                     mut spread_expr := ast.Expr.Empty(self.tok.pos);
                     mut has_spread_expr := false;
                     if self.tok.kind != .Rparen {
@@ -558,7 +558,7 @@ extend Parser {
     }
 
     func parse_if_expr(mut self) -> ast.Expr {
-        mut branches := []ast.IfBranch();
+        mut branches := []mut ast.IfBranch();
         mut has_else := false;
         mut pos := self.tok.pos;
         while self.tok.kind in [.KwIf, .KwElse] {
@@ -600,7 +600,7 @@ extend Parser {
 
     func parse_match_expr(mut self) -> ast.Expr {
         mut has_else := false;
-        mut branches := []ast.MatchBranch();
+        mut branches := []mut ast.MatchBranch();
         pos := self.prev_tok.pos;
         old_inside_match_header := self.inside_match_header;
         self.inside_match_header = true;
@@ -734,7 +734,7 @@ extend Parser {
 
     func parse_guard_expr(mut self) -> ast.Expr {
         pos := self.tok.pos;
-        mut vars := []ast.ObjectData();
+        mut vars := []mut ast.ObjectData();
         if self.accept(.Lparen) {
             while {
                 vars.push(self.parse_var_decl(support_type: false));

@@ -36,7 +36,7 @@ extend Checker {
                     err.emit();
                 }
             } else {
-                for i, arg in builtin_call.args {
+                for i, mut arg in builtin_call.args {
                     arg_info := b_func.args[i];
                     arg.type = self.check_expr(arg.expr);
                     if arg_info.is_mut {
@@ -124,7 +124,7 @@ extend Checker {
                     ), builtin_call.pos
                 );
             }
-        } else if from_ts := from_type.symbol() {
+        } else if mut from_ts := from_type.symbol() {
             match from_ts.info {
                 .Trait(mut trait_info) -> if to_ts := to_type.symbol() {
                     if to_ts in trait_info.implements {
