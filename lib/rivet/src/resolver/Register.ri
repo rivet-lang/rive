@@ -33,7 +33,7 @@ pub struct Register {
         self.table.throwable_t = .Basic(self.table.throwable_sym);
     }
 
-    func walk_decls(mut self, decls: []mut ast.Decl) {
+    func walk_decls(mut self, mut decls: []mut ast.Decl) {
         for mut decl in decls {
             old_abi := self.abi;
             old_sym := self.sym;

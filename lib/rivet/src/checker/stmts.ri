@@ -7,7 +7,7 @@ import ../token;
 import ../report;
 
 extend Checker {
-    func check_stmts(mut self, stmts: []mut ast.Stmt) {
+    func check_stmts(mut self, mut stmts: []mut ast.Stmt) {
         mut unreachable_pos := token.noPos;
         for mut stmt in stmts {
             if self.scope_returns && unreachable_pos.pos == 0 {
@@ -74,11 +74,15 @@ extend Checker {
             elem_sym := elem_type.symbol()?;
             if for_stmt.values.len == 1 {
                 value0 := for_stmt.values[0];
-                if value0.is_mut && !iterable_sym.info.is_mut_arr_or_dyn_array() {
-                    report.error(
-                        "cannot modify immutable {}".fmt(iterable_sym.info),
-                        for_stmt.iterable.position()
-                    );
+                if value0.is_mut {
+                    if !iterable_sym.info.is_mut_arr_or_dyn_array() {
+                        report.error(
+                            "cannot modify immutable {}".fmt(iterable_sym.info),
+                            for_stmt.iterable.position()
+                        );
+                    } else {
+                        self.check_expr_is_mut(for_stmt.iterable);
+                    }
                 } else if value0.is_ref {
                     if elem_sym.is_boxed() {
                         report.error("cannot take the address of a boxed value", value0.pos);

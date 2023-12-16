@@ -6,19 +6,19 @@ import ../ast;
 import ../report;
 
 extend Checker {
-    func check_global_vars(mut self, decls: []mut ast.Decl) {
+    func check_global_vars(mut self, mut decls: []mut ast.Decl) {
         for mut decl in decls {
             old_sym := self.sym;
             if decl is .Const || decl is .Var {
                 self.check_decl(decl);
-            } else if decl_decls := decl.decls() {
+            } else if mut decl_decls := decl.decls() {
                 self.check_global_vars(decl_decls);
             }
             self.sym = old_sym;
         }
     }
 
-    func check_decls(mut self, decls: []mut ast.Decl) {
+    func check_decls(mut self, mut decls: []mut ast.Decl) {
         for mut decl in decls {
             if !(decl is .Const || decl is .Var) {
                 self.check_decl(decl);

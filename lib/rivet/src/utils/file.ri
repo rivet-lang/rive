@@ -49,7 +49,7 @@ struct SourceCache {
 	  return none;
    }
 
-   pub func find_line(self, path_: string, line: uint) -> ?string {
+   pub func find_line(mut self, path_: string, line: uint) -> ?string {
 	  return if lines := self.find_lines(path_) {
 		 lines[line]
 	  } else {
@@ -57,7 +57,7 @@ struct SourceCache {
 	  };
    }
 
-   pub func find_lines_between(self, path_: string, line: uint, end_line: uint) -> ?[]string {
+   pub func find_lines_between(mut self, path_: string, line: uint, end_line: uint) -> ?[]string {
 	  return if lines := self.find_lines(path_) {
 		if lines.len > 0 && lines.len >= end_line {
 			lines[line..end_line]
@@ -69,7 +69,7 @@ struct SourceCache {
 	  };
    }
 
-   pub func find_lines(self, path_: string) -> ?[]string {
+   pub func find_lines(mut self, path_: string) -> ?[]string {
 	  for mut cached in self.sources {
 		 if cached.path == path_ {
 			if cached.lines.is_empty() {

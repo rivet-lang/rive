@@ -98,7 +98,7 @@ pub enum Expr < traits.Stringable {
         mut variant: EnumVariant;
     },
     TupleLiteral {
-        values: []mut Expr;
+        mut values: []mut Expr;
         pos: token.Pos;
         mut type: Type;
     },
@@ -114,7 +114,7 @@ pub enum Expr < traits.Stringable {
         pos: token.Pos;
     },
     ArrayLiteral {
-        values: []mut Expr;
+        mut values: []mut Expr;
         is_dyn: bool;
         pos: token.Pos;
         mut type: Type;
@@ -266,7 +266,7 @@ pub enum Expr < traits.Stringable {
         mut defer_stmts: []Stmt.Defer;
     },
     If {
-        branches: []mut IfBranch;
+        mut branches: []mut IfBranch;
         has_else: bool;
         pos: token.Pos;
         mut expected_type: Type;
@@ -274,7 +274,7 @@ pub enum Expr < traits.Stringable {
     },
     Match {
         mut expr: Expr;
-        branches: []mut MatchBranch;
+        mut branches: []mut MatchBranch;
         mut is_typematch: bool;
         has_else: bool;
         mut scope: Scope;
@@ -286,8 +286,9 @@ pub enum Expr < traits.Stringable {
     // Examples:
     // - if x := optional_or_result_fn() { ... }
     // - while byte := reader.read() { ... }
+    // - match x := optional_or_result_fn(); x == some { ... }
     Guard {
-        vars: []mut ObjectData;
+        mut vars: []mut ObjectData;
         mut expr: Expr;
         has_cond: bool;
         mut cond: Expr;
@@ -633,7 +634,7 @@ pub struct IfBranch {
 
 #[boxed]
 pub struct MatchBranch {
-    pub patterns: []mut Expr;
+    pub mut patterns: []mut Expr;
     pub has_var: bool;
     pub var_is_mut: bool;
     pub var_name: string;

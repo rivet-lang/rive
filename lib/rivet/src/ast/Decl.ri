@@ -23,7 +23,7 @@ pub enum Decl {
         docs: []Comment;
         attributes: Attributes;
         abi: ABI;
-        decls: []Decl;
+        mut decls: []Decl;
         pos: token.Pos;
     },
     Alias {
@@ -42,8 +42,8 @@ pub enum Decl {
         attributes: Attributes;
         is_public: bool;
         name: string;
-        bases: []mut Type;
-        decls: []Decl;
+        mut bases: []mut Type;
+        mut decls: []Decl;
         pos: token.Pos;
         mut sym: Sym;
     },
@@ -53,10 +53,10 @@ pub enum Decl {
         is_public: bool;
         name: string;
         mut underlying_type: Type;
-        bases: []mut Type;
-        variants: []mut EnumVariantDecl;
+        mut bases: []mut Type;
+        mut variants: []mut EnumVariantDecl;
         is_tagged: bool;
-        decls: []Decl;
+        mut decls: []Decl;
         pos: token.Pos;
         mut sym: Sym;
     },
@@ -65,8 +65,8 @@ pub enum Decl {
         attributes: Attributes;
         is_public: bool;
         name: string;
-        bases: []mut Type;
-        decls: []Decl;
+        mut bases: []mut Type;
+        mut decls: []Decl;
         is_opaque: bool;
         pos: token.Pos;
         mut sym: Sym;
@@ -85,8 +85,8 @@ pub enum Decl {
     Extend {
         attributes: Attributes;
         mut type: Type;
-        bases: []mut Type;
-        decls: []Decl;
+        mut bases: []mut Type;
+        mut decls: []Decl;
         pos: token.Pos;
     },
     Const {
@@ -106,7 +106,7 @@ pub enum Decl {
         is_public: bool;
         is_extern: bool;
         abi: ABI;
-        lefts: []mut ObjectData;
+        mut lefts: []mut ObjectData;
         mut right: Expr;
         pos: token.Pos;
         mut sym: Sym;
@@ -125,10 +125,10 @@ pub enum Decl {
         is_operator: bool;
         abi: ABI;
         name: string;
-        args: []mut Arg;
+        mut args: []mut Arg;
         has_named_args: bool;
         mut ret_type: Type;
-        stmts: []mut Stmt;
+        mut stmts: []mut Stmt;
         mut scope: Scope;
         has_body: bool;
         self_is_mut: bool;
@@ -143,7 +143,7 @@ pub enum Decl {
         docs: []Comment;
         attributes: Attributes;
         name: string;
-        stmts: []mut Stmt;
+        mut stmts: []mut Stmt;
         scope: Scope;
         pos: token.Pos;
         mut defer_stmts: []Stmt.Defer;
@@ -187,7 +187,7 @@ pub struct EnumVariantDecl {
     pub has_type: bool;
     pub has_value: bool;
     pub value: Expr;
-    pub decls: []Decl;
+    pub mut decls: []Decl;
     pub pos: token.Pos;
 }
 

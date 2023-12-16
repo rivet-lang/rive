@@ -78,7 +78,7 @@ pub struct Checker {
     }
 
     func check_var_decl(
-        mut self, lefts: []mut ast.ObjectData, mut right: ast.Expr, scope: ast.Scope,
+        mut self, mut lefts: []mut ast.ObjectData, mut right: ast.Expr, scope: ast.Scope,
         pos: token.Pos
     ) {
         if lefts.len == 1 {
@@ -249,10 +249,7 @@ pub struct Checker {
         }
     }
 
-    func check_expr_is_mut(
-        self, mut expr: ast.Expr, from_assign: bool := false,
-        from_selector: bool := false
-    ) {
+    func check_expr_is_mut(self, mut expr: ast.Expr, from_assign: bool := false) {
         match expr {
             .Paren(mut paren) -> self.check_expr_is_mut(paren.expr),
             .SelfLiteral(mut self_lit) -> if self_lit.obj.is_mut {
@@ -272,12 +269,12 @@ pub struct Checker {
             } else if ident.name == "_" {
                 return;
             } else if ident.found && (ident.is_sym || ident.is_obj) {
-                self.check_sym_is_mut(ident.sym, ident.pos, from_selector);
+                self.check_sym_is_mut(ident.sym, ident.pos);
             },
             .Selector(mut selector) -> if selector.is_path {
-                self.check_sym_is_mut(selector.sym, selector.pos, true);
+                self.check_sym_is_mut(selector.sym, selector.pos);
             } else {
-                self.check_expr_is_mut(selector.left, from_assign, true);
+                self.check_expr_is_mut(selector.left);
                 if selector.found && !selector.field_is_mut {
                     report.error(
                         "field `{}` of type `{}` is immutable".fmt(
@@ -347,13 +344,13 @@ pub struct Checker {
         }
     }
 
-    func check_sym_is_mut(self, mut sym: ast.Sym, pos: token.Pos, from_selector: bool) {
+    func check_sym_is_mut(self, mut sym: ast.Sym, pos: token.Pos) {
         _ = self;
         match sym is {
             ast.Const -> report.error(
                 "cannot use constant `{}` as mutable value".fmt(sym.name), pos
             ),
-            ast.Var(mut var_info) if !(from_selector && var_info.level == .Local) -> {
+            ast.Var(mut var_info) -> {
                 if var_info.is_mut {
                     var_info.is_changed = true;
                 } else {

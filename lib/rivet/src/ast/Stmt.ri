@@ -9,7 +9,7 @@ pub enum Stmt {
     Comment(Comment),
     Expr(Expr),
     VarDecl {
-        lefts: []mut ObjectData;
+        mut lefts: []mut ObjectData;
         mut right: Expr;
         mut scope: Scope;
         pos: token.Pos;
@@ -27,7 +27,7 @@ pub enum Stmt {
     For {
         mut index: ObjectData;
         has_index: bool;
-        values: []mut ObjectData;
+        mut values: []mut ObjectData;
         mut iterable: Expr;
         mut stmt: Stmt;
         mut scope: Scope;

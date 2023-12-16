@@ -27,7 +27,7 @@ pub enum Type < traits.Stringable {
         pos: token.Pos;
     },
     Tuple {
-        inners: []mut Type;
+        mut inners: []mut Type;
         mut sym: TypeSym;
         pos: token.Pos;
 
@@ -76,7 +76,7 @@ pub enum Type < traits.Stringable {
         is_method: bool;
         self_is_mut: bool;
         self_is_ptr: bool;
-        args: []mut Arg;
+        mut args: []mut Arg;
         mut ret_type: Type;
         pos: token.Pos;
         mut sym: TypeSym;

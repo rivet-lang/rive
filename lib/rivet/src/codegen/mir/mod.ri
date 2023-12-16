@@ -208,9 +208,9 @@ pub struct Var {
     pub mut is_moved: bool;
     pub mut is_dropped: bool;
     pub mut is_initialized: bool;
-    pub fields: []mut Var;
+    pub mut fields: []mut Var;
 
-    pub func set_field(self, name: string, value: Expr) {
+    pub func set_field(mut self, name: string, value: Expr) {
         for mut field in self.fields {
             if field.dbg_name == name {
                 field.value = value;
