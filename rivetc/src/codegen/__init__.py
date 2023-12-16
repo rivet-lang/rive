@@ -877,8 +877,7 @@ class Codegen:
                 self.cur_func.breakpoint()
         elif isinstance(expr, ast.TupleLiteral):
             expr_sym = expr.typ.symbol()
-            tmp = ir.Ident(self.ir_type(expr.typ), self.cur_func.local_name())
-            self.cur_func.alloca(tmp)
+            tmp = self.stacked_instance(self.ir_type(expr.typ))
             for i, elem in enumerate(expr.exprs):
                 elem_typ = expr_sym.info.types[i]
                 field_expr = self.gen_expr_with_cast(elem_typ, elem)
@@ -981,10 +980,7 @@ class Codegen:
                     )
                 elif typ_sym.kind == TypeKind.Enum:
                     if expr.is_enum_variant:
-                        tmp = ir.Ident(
-                            ir.Type(cg_utils.mangle_symbol(expr.enum_variant_sym)), self.cur_func.local_name()
-                        )
-                        self.cur_func.alloca(tmp)
+                        tmp = self.stacked_instance(ir.Type(cg_utils.mangle_symbol(expr.enum_variant_sym)))
                         initted_fields = []
                         type_fields = expr.enum_variant_sym.full_fields()
                         for i, f in enumerate(expr.args):
@@ -1053,14 +1049,9 @@ class Codegen:
                 if custom_tmp:
                     tmp = custom_tmp
                 elif typ_sym.is_boxed():
-                    tmp = self.boxed_instance(
-                        cg_utils.mangle_symbol(typ_sym), typ_sym.id
-                    )
+                    tmp = self.boxed_instance(cg_utils.mangle_symbol(typ_sym))
                 else:
-                    tmp = ir.Ident(
-                        self.ir_type(expr.typ), self.cur_func.local_name()
-                    )
-                    self.cur_func.alloca(tmp)
+                    tmp = self.stacked_instance(self.ir_type(expr.typ))
                 initted_fields = []
                 type_fields = typ_sym.full_fields()
                 for i, f in enumerate(expr.args):
@@ -1356,11 +1347,7 @@ class Codegen:
                             )
                             self.cur_func.add_ret_void()
                         else:
-                            tmp2 = ir.Ident(
-                                self.ir_type(self.cur_func_ret_typ),
-                                self.cur_func.local_name()
-                            )
-                            self.cur_func.alloca(tmp2)
+                            tmp2 = self.stacked_instance(self.ir_type(self.cur_func_ret_typ))
                             self.cur_func.store(
                                 ir.Selector(ir.BOOL_T, tmp2, ir.Name("is_err")),
                                 ir.IntLit(ir.BOOL_T, "1")
@@ -1409,12 +1396,8 @@ class Codegen:
                                 self.ir_type(expr.typ), res_value,
                                 ir.Name("value")
                             )
-                        tmp2 = ir.Ident(
+                        tmp2 = self.stacked_instance(
                             self.ir_type(expr.sym.ret_typ.typ),
-                            self.cur_func.local_name()
-                        )
-                        self.cur_func.alloca(
-                            tmp2,
                             self.gen_expr_with_cast(
                                 expr.sym.ret_typ.typ, expr.err_handler.expr
                             )
@@ -1568,11 +1551,7 @@ class Codegen:
             typ_sym = expr.typ.symbol()
             if len(expr.elems) == 0:
                 if expr.is_dyn:
-                    tmp = ir.Ident(
-                        self.ir_type(expr.typ), self.cur_func.local_name()
-                    )
-                    self.cur_func.alloca(tmp, self.empty_dyn_array(typ_sym))
-                    return tmp
+                    return self.stacked_instance(self.ir_type(expr.typ), self.empty_dyn_array(typ_sym))
                 return self.default_value(expr.typ)
             elem_typ = typ_sym.info.elem_typ
             size, _ = self.comp.type_size(elem_typ)
@@ -1581,11 +1560,8 @@ class Codegen:
                 elems.append(self.gen_expr_with_cast(elem_typ, elem))
             arr_lit = ir.ArrayLit(self.ir_type(elem_typ), elems)
             if expr.is_dyn:
-                tmp = ir.Ident(
-                    self.ir_type(expr.typ), self.cur_func.local_name()
-                )
-                self.cur_func.alloca(
-                    tmp,
+                return self.stacked_instance(
+                    self.ir_type(expr.typ),
                     ir.Inst(
                         ir.InstKind.Call, [
                             ir.Name("_R4core8DynArray10from_arrayF"), arr_lit,
@@ -1594,7 +1570,6 @@ class Codegen:
                         ]
                     )
                 )
-                return tmp
             if custom_tmp:
                 size, _ = self.comp.type_size(expr.typ)
                 self.cur_func.add_call(
@@ -1753,10 +1728,7 @@ class Codegen:
                         )
                     else:
                         cond = ir.Selector(ir.BOOL_T, left, ir.Name("is_none"))
-                    tmp = ir.Ident(
-                        self.ir_type(expr_typ.typ), self.cur_func.local_name()
-                    )
-                    self.cur_func.alloca(tmp)
+                    tmp = self.stacked_instance(self.ir_type(expr_typ.typ))
                     self.cur_func.add_cond_br(
                         cond, is_none_label, is_not_none_label
                     )
@@ -1778,10 +1750,7 @@ class Codegen:
                     return tmp
             elif expr.op in (Kind.LogicalAnd, Kind.LogicalOr):
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
-                tmp = ir.Ident(
-                    self.ir_type(self.comp.bool_t), self.cur_func.local_name()
-                )
-                self.cur_func.alloca(tmp, left)
+                tmp = self.stacked_instance(self.ir_type(self.comp.bool_t), left)
                 left_l = self.cur_func.local_name()
                 exit_l = self.cur_func.local_name()
                 if expr.op == Kind.LogicalAnd:
@@ -2354,11 +2323,7 @@ class Codegen:
                 expr_ = self.gen_expr_with_cast(ret_typ, expr.expr)
                 if is_array and self.comp.prefs.target_backend == prefs.Backend.C:
                     size, _ = self.comp.type_size(ret_typ)
-                    tmp = ir.Ident(
-                        ir.Type(self.cur_func.arr_ret_struct),
-                        self.cur_func.local_name()
-                    )
-                    self.cur_func.alloca(tmp)
+                    tmp = self.stacked_instance(ir.Type(self.cur_func.arr_ret_struct))
                     self.cur_func.add_call(
                         "_R4core8mem_copyF", [
                             ir.Selector(
@@ -2519,8 +2484,7 @@ class Codegen:
         return const_sym.ir_expr
 
     def result_void(self, typ):
-        tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
-        self.cur_func.alloca(tmp)
+        tmp = self.stacked_instance(self.ir_type(typ))
         self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_err")),
             ir.IntLit(ir.BOOL_T, "0")
@@ -2528,8 +2492,7 @@ class Codegen:
         return tmp
 
     def result_value(self, typ, value):
-        tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
-        self.cur_func.alloca(tmp)
+        tmp = self.stacked_instance(self.ir_type(typ))
         self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_err")),
             ir.IntLit(ir.BOOL_T, "0")
@@ -2542,8 +2505,7 @@ class Codegen:
         return tmp
 
     def result_error(self, typ, expr_t, expr):
-        tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
-        self.cur_func.alloca(tmp)
+        tmp = self.stacked_instance(self.ir_type(typ))
         self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_err")),
             ir.IntLit(ir.BOOL_T, "1")
@@ -2556,8 +2518,7 @@ class Codegen:
         return tmp
 
     def option_value(self, typ, value):
-        tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
-        self.cur_func.alloca(tmp)
+        tmp = self.stacked_instance(self.ir_type(typ))
         self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_none")),
             ir.IntLit(ir.BOOL_T, "0")
@@ -2568,8 +2529,7 @@ class Codegen:
         return tmp
 
     def option_none(self, typ):
-        tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
-        self.cur_func.alloca(tmp)
+        tmp = self.stacked_instance(self.ir_type(typ))
         self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_none")),
             ir.IntLit(ir.BOOL_T, "1")
@@ -2633,8 +2593,7 @@ class Codegen:
                 return self.gen_expr_with_cast(typ, typ_sym.default_value)
             return ir.IntLit(self.ir_type(typ_sym.info.underlying_typ), "0")
         elif typ_sym.kind == TypeKind.Tuple:
-            tmp = ir.Ident(typ, self.cur_func.local_name())
-            self.cur_func.alloca(tmp)
+            tmp = self.stacked_instance(typ)
             for i, typ in enumerate(typ_sym.info.types):
                 self.cur_func.store(
                     ir.Selector(self.ir_type(typ), tmp, ir.Name(f"f{i}")),
@@ -2645,12 +2604,9 @@ class Codegen:
             if custom_tmp:
                 tmp = custom_tmp
             elif typ_sym.info.is_boxed:
-                tmp = self.boxed_instance(
-                    cg_utils.mangle_symbol(typ_sym), typ_sym.id
-                )
+                tmp = self.boxed_instance(cg_utils.mangle_symbol(typ_sym))
             else:
-                tmp = ir.Ident(self.ir_type(typ), self.cur_func.local_name())
-                self.cur_func.alloca(tmp)
+                tmp = self.stacked_instance(self.ir_type(typ))
             for f in typ_sym.full_fields():
                 if f.typ.symbol().kind == TypeKind.Array:
                     continue
@@ -2688,7 +2644,7 @@ class Codegen:
                 ir.STRING_T.ptr(True), self.generated_string_literals[lit_hash]
             )
         tmp = self.boxed_instance(
-            "_R4core6string", 19,
+            "_R4core6string",
             custom_name = f"STRLIT{len(self.generated_string_literals)}"
         )
         self.out_rir.globals.append(
@@ -2709,7 +2665,15 @@ class Codegen:
         self.generated_string_literals[lit_hash] = tmp.name
         return tmp
 
-    def boxed_instance(self, name, id, custom_name = None):
+    def stacked_instance(self, typ, init_value=None):
+        tmp = ir.Ident(typ, self.cur_func.local_name())
+        if init_value:
+            self.cur_func.alloca(tmp, init_value)
+        else:
+            self.cur_func.alloca(tmp)
+        return tmp
+
+    def boxed_instance(self, name, custom_name = None):
         tmp = ir.Ident(
             ir.Type(name).ptr(True), custom_name or self.cur_func.local_name()
         )
@@ -2735,7 +2699,7 @@ class Codegen:
         value_sym = self.comp.comptime_number_to_type(value_typ).symbol()
         trait_sym = trait_typ.symbol()
         size, _ = self.comp.type_size(value_typ)
-        tmp = self.boxed_instance(cg_utils.mangle_symbol(trait_sym), 0)
+        tmp = self.boxed_instance(cg_utils.mangle_symbol(trait_sym))
         is_ptr = isinstance(value.typ, ir.Pointer)
         for f in trait_sym.fields:
             f_typ = self.ir_type(f.typ)
@@ -2786,9 +2750,7 @@ class Codegen:
         if custom_tmp:
             tmp = custom_tmp
         else:
-            tmp = self.boxed_instance(
-                cg_utils.mangle_symbol(enum_sym), enum_sym.id
-            )
+            tmp = self.boxed_instance(cg_utils.mangle_symbol(enum_sym))
         uint_t = ir.UINT_T
         variant_info = enum_sym.info.get_variant(variant_name)
         self.cur_func.store(
@@ -2802,7 +2764,7 @@ class Codegen:
             size, _ = self.comp.type_size(variant_info.typ)
             obj_f = ir.Selector(ir.Type(f"{cg_utils.mangle_symbol(enum_sym)}5Union"), tmp, ir.Name("obj"))
             self.cur_func.store(
-                ir.Selector(self.ir_type(variant_info.typ), obj_f, ir.Name(f"v{variant_info.value}")), 
+                ir.Selector(self.ir_type(variant_info.typ), obj_f, ir.Name(f"v{variant_info.value}")),
                 arg0
             )
         return tmp
@@ -2813,9 +2775,7 @@ class Codegen:
         if custom_tmp:
             tmp = custom_tmp
         else:
-            tmp = self.boxed_instance(
-                cg_utils.mangle_symbol(enum_sym), enum_sym.id
-            )
+            tmp = self.boxed_instance(cg_utils.mangle_symbol(enum_sym))
         variant_info = enum_sym.info.get_variant(variant_name)
         self.cur_func.store(
             ir.Selector(ir.UINT_T, tmp, ir.Name("_idx_")),
@@ -2828,9 +2788,7 @@ class Codegen:
         return tmp
 
     def gen_return_trace_add(self, pos):
-        tmp_name = self.cur_func.local_name()
-        tmp = ir.Ident(ir.Type("_R4core9CallTrace"), tmp_name)
-        self.cur_func.alloca(tmp)
+        tmp = self.stacked_instance(ir.Type("_R4core9CallTrace"))
         self.cur_func.store(
             ir.Selector(ir.STRING_T, tmp, ir.Name("name")),
             self.gen_string_literal(self.cur_func.name)
