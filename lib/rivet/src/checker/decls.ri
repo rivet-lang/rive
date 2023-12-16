@@ -6,19 +6,19 @@ import ../ast;
 import ../report;
 
 extend Checker {
-    func check_global_vars(mut self, decls: []mut ast.Decl) {
+    func check_global_vars(mut self, mut decls: []mut ast.Decl) {
         for mut decl in decls {
             old_sym := self.sym;
             if decl is .Const || decl is .Var {
                 self.check_decl(decl);
-            } else if decl_decls := decl.decls() {
+            } else if mut decl_decls := decl.decls() {
                 self.check_global_vars(decl_decls);
             }
             self.sym = old_sym;
         }
     }
 
-    func check_decls(mut self, decls: []mut ast.Decl) {
+    func check_decls(mut self, mut decls: []mut ast.Decl) {
         for mut decl in decls {
             if !(decl is .Const || decl is .Var) {
                 self.check_decl(decl);
@@ -55,19 +55,19 @@ extend Checker {
                     }, "alias", alias_decl.name, alias_decl.pos
                 );
             },
-            .Extern(extern_decl) -> {
+            .Extern(mut extern_decl) -> {
                 self.inside_extern = true;
                 self.check_decls(extern_decl.decls);
                 self.inside_extern = false;
             },
-            .Var(var_decl) -> {
+            .Var(mut var_decl) -> {
                 self.inside_var_decl = true;
                 self.check_var_decl(
                     var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
                 );
                 self.inside_var_decl = false;
             },
-            .Const(const_decl) -> {
+            .Const(mut const_decl) -> {
                 self.check_name_case(.Upper, "constant", const_decl.name, const_decl.pos);
                 if const_decl.has_type {
                     old_expected_type := self.expected_type;
@@ -95,11 +95,11 @@ extend Checker {
                     }
                 }
             },
-            .Trait(trait_decl) -> {
+            .Trait(mut trait_decl) -> {
                 self.check_name_case(.Pascal, "trait", trait_decl.name, trait_decl.pos);
                 self.check_decls(trait_decl.decls);
             },
-            .Enum(enum_decl) -> {
+            .Enum(mut enum_decl) -> {
                 self.check_name_case(.Pascal, "enum", enum_decl.name, enum_decl.pos);
                 for base in enum_decl.bases {
                     if sym := base.symbol() {
@@ -110,13 +110,13 @@ extend Checker {
                         }
                     }
                 }
-                for variant in enum_decl.variants {
+                for mut variant in enum_decl.variants {
                     self.check_name_case(.Pascal, "enum variant", variant.name, variant.pos);
                     self.check_decls(variant.decls);
                 }
                 self.check_decls(enum_decl.decls);
             },
-            .Struct(struct_decl) -> {
+            .Struct(mut struct_decl) -> {
                 self.check_name_case(.Pascal, "struct", struct_decl.name, struct_decl.pos);
                 for base in struct_decl.bases {
                     if sym := base.symbol() {
@@ -129,7 +129,7 @@ extend Checker {
                 }
                 self.check_decls(struct_decl.decls);
             },
-            .Field(field_decl) -> {
+            .Field(mut field_decl) -> {
                 self.check_name_case(.Snake, "field", field_decl.name, field_decl.pos);
                 if field_decl.has_def_expr {
                     old_expected_type := self.expected_type;
@@ -141,7 +141,7 @@ extend Checker {
                     };
                 }
             },
-            .Extend(extend_decl) -> {
+            .Extend(mut extend_decl) -> {
                 type_sym := extend_decl.type.symbol()?;
                 for base in extend_decl.bases {
                     if sym := base.symbol() {
@@ -153,7 +153,7 @@ extend Checker {
                 self.check_decls(extend_decl.decls);
             },
             .Func(mut func_decl) -> self.check_func(func_decl),
-            .Test(test_decl) -> {
+            .Test(mut test_decl) -> {
                 old_cur_func := self.cur_func;
                 self.cur_func = ast.Func(ret_type: .Void);
                 self.inside_test = true;
@@ -213,7 +213,7 @@ extend Checker {
         if func_decl.is_method && func_decl.self_is_ptr && func_decl.self_type.is_boxed() {
             report.error("cannot take the address of a boxed value as receiver", func_decl.self_pos);
         }
-        for arg in func_decl.args {
+        for mut arg in func_decl.args {
             self.check_name_case(.Snake, "argument", arg.name, arg.pos);
             if arg.has_def_expr {
                 if func_decl.abi != .Rivet {

@@ -10,7 +10,7 @@ var versions := [VER_MAJOR, VER_MINOR, VER_PATCH];
 struct RawVersion {
     prerelease: string;
     metadata: string;
-    raw_ints: []mut string;
+    mut raw_ints: []mut string;
 
     // TODO: Rewrite using regex:
     // /(\d+)\.(\d+)\.(\d+)(?:\-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-]+))?/

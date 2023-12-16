@@ -156,7 +156,7 @@ class Register:
                                 sym.Type(
                                     decl.is_public, variant.name,
                                     TypeKind.Struct,
-                                    info = sym.StructInfo(False, True, True)
+                                    info = sym.StructInfo(False, False, True)
                                 )
                             )
                             old_v_sym = self.sym

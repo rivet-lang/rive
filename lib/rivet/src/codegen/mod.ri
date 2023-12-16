@@ -37,10 +37,10 @@ pub struct Codegen {
     mut loop_exit_label: string;
     mut while_continue_expr: ?mir.Expr;
 
-    pub func generate_mirs(mut self, source_files: []ast.SourceFile) {
+    pub func generate_mirs(mut self, mut source_files: []mut ast.SourceFile) {
         self.init_types();
         self.rivet_internal = self.get_or_create_mir("rivetc.compiler.internal");
-        for source_file in source_files {
+        for mut source_file in source_files {
             self.generate_mir(source_file);
         }
         if self.prefs.emit_mir {
@@ -53,7 +53,7 @@ pub struct Codegen {
         }
     }
 
-    pub func generate_mir(mut self, source_file: ast.SourceFile) {
+    pub func generate_mir(mut self, mut source_file: ast.SourceFile) {
         self.source_file = source_file;
         self.mir = self.get_or_create_mir(source_file.mod.name);
         self.gen_decls(source_file.decls);
@@ -205,9 +205,9 @@ pub struct Codegen {
         return sym.mangled_name;
     }
 
-    func add_locals(mut self, scope: ast.Scope) {
-        for sym in scope.syms {
-            if sym is ast.Var(local) {
+    func add_locals(mut self, mut scope: ast.Scope) {
+        for mut sym in scope.syms {
+            if sym is ast.Var(mut local) {
                 local.mir_name = if self.cur_func.has_local(local.name) {
                     "{}_{}".fmt(local.name, self.cur_func.locals.len)
                 } else {
@@ -220,7 +220,7 @@ pub struct Codegen {
                 ));
             }
         }
-        for children in scope.childrens {
+        for mut children in scope.childrens {
             self.add_locals(children);
         }
     }

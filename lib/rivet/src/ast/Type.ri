@@ -10,7 +10,7 @@ import ../token;
 #[default_value(.Void)]
 pub enum Type < traits.Stringable {
     Basic {
-        mut sym: TypeSym;
+        mut sym: ?TypeSym;
         mut is_unresolved: bool;
         mut expr: Expr;
         pos: token.Pos;
@@ -27,11 +27,11 @@ pub enum Type < traits.Stringable {
         pos: token.Pos;
     },
     Tuple {
-        inners: []mut Type;
+        mut inners: []mut Type;
         mut sym: TypeSym;
         pos: token.Pos;
 
-        func ==(self, other: Self) -> bool {
+        func ==(&self, other: &Self) -> bool {
             if self.inners.len != other.inners.len {
                 return false;
             }
@@ -76,14 +76,14 @@ pub enum Type < traits.Stringable {
         is_method: bool;
         self_is_mut: bool;
         self_is_ptr: bool;
-        args: []Arg;
+        mut args: []mut Arg;
         mut ret_type: Type;
         pos: token.Pos;
         mut sym: TypeSym;
         mut has_sym: bool;
 
         #[inline]
-        func symbol(self) -> Func {
+        func symbol(&self) -> Func {
             return if self.has_sym && self.sym.info is .Func(func_sym) {
                 func_sym
             } else {
@@ -108,31 +108,31 @@ pub enum Type < traits.Stringable {
         };
     }
 
-    pub func unalias(self) -> ?Self {
+    pub func unalias(mut self) -> ?Self {
         // NOTE: `.unalias()` returns an option, so we use the same type without
         // unaliasing instead.
         return match self {
             .Rawptr -> self,
-            .Result(result) -> .Result(result.inner.unalias() ?? result.inner),
-            .Option(option) -> .Option(option.inner.unalias() ?? option.inner),
-            .Tuple(tuple_data) -> {
-                unaliased_types := []mut Type(cap: tuple_data.inners.len);
-                for i, tuple_type in tuple_data.inners {
+            .Result(mut result) -> .Result(result.inner.unalias() ?? result.inner),
+            .Option(mut option) -> .Option(option.inner.unalias() ?? option.inner),
+            .Tuple(mut tuple_data) -> {
+                mut unaliased_types := []mut Type(cap: tuple_data.inners.len);
+                for i, mut tuple_type in tuple_data.inners {
                     unaliased_types[i] = tuple_type.unalias() ?? tuple_type;
                 }
                 .Tuple(unaliased_types, tuple_data.sym)
             },
-            .DynArray(dyn_array_data) -> .DynArray(
+            .DynArray(mut dyn_array_data) -> .DynArray(
                 dyn_array_data.inner.unalias() ?? dyn_array_data.inner, dyn_array_data.is_mut
             ),
-            .Array(array_data) -> .Array(
+            .Array(mut array_data) -> .Array(
                 array_data.inner.unalias() ?? array_data.inner, ...self
             ),
-            .Pointer(pointer_data) -> .Pointer(
+            .Pointer(mut pointer_data) -> .Pointer(
                 pointer_data.inner.unalias() ?? pointer_data.inner, ...self
             ),
-            .Func(func_data) -> {
-                for arg in func_data.args {
+            .Func(mut func_data) -> {
+                for mut arg in func_data.args {
                     arg.type = arg.type.unalias() ?? arg.type;
                 }
                 .Func(
@@ -140,7 +140,7 @@ pub enum Type < traits.Stringable {
                     ...self
                 )
             },
-            .Basic(basic) if !basic.is_unresolved -> if basic.sym.info is .Alias(alias_info) {
+            .Basic(mut basic) if !basic.is_unresolved -> if basic.sym?.info is .Alias(mut alias_info) {
                 alias_info.parent.unalias() ?? alias_info.parent
             } else {
                 .Basic(basic.sym)
@@ -299,7 +299,7 @@ pub enum Type < traits.Stringable {
             },
             .Basic(basic_lhs) if rhs is .Basic(basic_rhs) ->
                 !(basic_lhs.is_unresolved && basic_rhs.is_unresolved)
-                && basic_lhs.sym == basic_rhs.sym,
+                && basic_lhs.sym? == basic_rhs.sym?,
             else -> false
         };
     }
@@ -391,12 +391,14 @@ pub enum Type < traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Basic(basic) -> if basic.is_unresolved {
-                basic.expr.to_string()
-            } else if qualstr {
-                basic.sym.qualname()
+            .Basic(basic) -> if type_sym := basic.sym {
+                if qualstr {
+                    type_sym.qualname()
+                } else {
+                    type_sym.name
+                }
             } else {
-                basic.sym.name
+                basic.expr.to_string()
             }
         };
     }

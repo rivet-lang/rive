@@ -121,9 +121,9 @@ pub struct Compiler {
     }
 
     func import_modules(mut self) -> ! {
-        for sf in self.table.source_files {
-            for d in sf.decls {
-                if d is .Import(import_decl) {
+        for mut sf in self.table.source_files {
+            for mut d in sf.decls {
+                if d is .Import(mut import_decl) {
                     if self.table.universe.scope.exists(import_decl.info.full_name) {
                         continue;
                     }
@@ -145,7 +145,7 @@ pub struct Compiler {
     func load_module(
         mut self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) -> !ast.ImportedMod {
-        mod := self.load_module_files(pathx, alias_name, file_path, pos)!;
+        mut mod := self.load_module_files(pathx, alias_name, file_path, pos)!;
         if mod.found {
             mod.mod = if mod_mod_ := self.table.universe.scope.find(mod.full_name) {
                 @as(ast.Module, mod_mod_)
@@ -288,7 +288,7 @@ pub struct Compiler {
         }
         self.vlog("-----------------------------------------");
         source_files := self.table.source_files;
-        self.table.source_files = []ast.SourceFile(cap: source_files.len);
+        self.table.source_files = []mut ast.SourceFile(cap: source_files.len);
         for node in g_resolved.nodes {
             for pf in source_files {
                 if pf.mod.name == node.name {

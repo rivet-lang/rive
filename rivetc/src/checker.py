@@ -280,11 +280,14 @@ class Checker:
                 elem_typ = self.comp.comptime_number_to_type(
                     iterable_sym.info.elem_typ
                 )
-                if stmt.value.is_mut and not iterable_sym.info.is_mut:
-                    report.error(
-                        f"cannot modify immutable {iterable_sym.kind}",
-                        stmt.iterable.pos
-                    )
+                if stmt.value.is_mut: 
+                    if not iterable_sym.info.is_mut:
+                        report.error(
+                            f"cannot modify immutable {iterable_sym.kind}",
+                            stmt.iterable.pos
+                        )
+                    else:
+                        self.check_expr_is_mut(stmt.iterable)
                 elif stmt.value.is_ref:
                     elem_typ = type.Ptr(elem_typ)
                 if stmt.index != None:
@@ -771,6 +774,7 @@ class Checker:
                         expr.scope.update_type(expr.var.name, rtyp)
                         expr.var.typ = rtyp
                     if expr.var.is_mut:
+                        self.check_expr_is_mut(expr.left)
                         expr.scope.update_is_hidden_ref(expr.var.name, True)
                 if lsym.kind == TypeKind.Enum:
                     if lsym.info.is_tagged and expr.op not in (
@@ -1911,22 +1915,8 @@ class Checker:
         elif isinstance(expr, ast.SelectorExpr):
             if expr.is_path:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
-                return
-            elif isinstance(expr.left, ast.Ident):
-                if expr.left.sym:
-                    self.check_sym_is_mut(expr.left.sym, expr.pos)
-                elif expr.left.obj.level == sym.ObjLevel.Arg:
-                    if not expr.left.obj.is_mut:
-                        report.error(
-                            f"cannot use `{expr.left.name}` as mutable argument",
-                            expr.pos
-                        )
-                        report.help(
-                            f"consider making this argument mutable: `mut {expr.left.name}`"
-                        )
-                    expr.left.obj.is_changed = True
-            else:
-                self.check_expr_is_mut(expr.left, from_assign)
+                return 
+            self.check_expr_is_mut(expr.left, from_assign)
             if expr.is_indirect and isinstance(expr.left_typ, type.Ptr):
                 if not expr.left_typ.is_mut:
                     report.error(
@@ -1963,6 +1953,7 @@ class Checker:
                         expr.pos
                     )
                 return
+            self.check_expr_is_mut(expr.left, from_assign)
             expr_sym = expr.left.typ.symbol()
             if not expr_sym.info.is_mut:
                 report.error(

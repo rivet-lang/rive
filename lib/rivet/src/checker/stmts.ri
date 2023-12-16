@@ -7,7 +7,7 @@ import ../token;
 import ../report;
 
 extend Checker {
-    func check_stmts(mut self, stmts: []mut ast.Stmt) {
+    func check_stmts(mut self, mut stmts: []mut ast.Stmt) {
         mut unreachable_pos := token.noPos;
         for mut stmt in stmts {
             if self.scope_returns && unreachable_pos.pos == 0 {
@@ -23,11 +23,11 @@ extend Checker {
 
     func check_stmt(mut self, mut stmt: ast.Stmt) {
         match stmt {
-            .VarDecl(var_decl) -> self.check_var_decl(
+            .VarDecl(mut var_decl) -> self.check_var_decl(
                 var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
             ),
             .For(mut for_stmt) -> self.check_for(for_stmt),
-            .While(while_stmt) -> {
+            .While(mut while_stmt) -> {
                 if !while_stmt.is_inf && self.check_expr(
                     while_stmt.cond
                 ) != self.table.bool_t {
@@ -46,7 +46,7 @@ extend Checker {
                     self.check_stmt(while_stmt.else_stmt);
                 }
             },
-            .Defer(defer_stmt) -> {
+            .Defer(mut defer_stmt) -> {
                 if self.cur_func.ret_type is .Never {
                     report.error("`never` functions cannot use `defer` statements", defer_stmt.pos);
                 }
@@ -74,11 +74,15 @@ extend Checker {
             elem_sym := elem_type.symbol()?;
             if for_stmt.values.len == 1 {
                 value0 := for_stmt.values[0];
-                if value0.is_mut && !iterable_sym.info.is_mut_arr_or_dyn_array() {
-                    report.error(
-                        "cannot modify immutable {}".fmt(iterable_sym.info),
-                        for_stmt.iterable.position()
-                    );
+                if value0.is_mut {
+                    if !iterable_sym.info.is_mut_arr_or_dyn_array() {
+                        report.error(
+                            "cannot modify immutable {}".fmt(iterable_sym.info),
+                            for_stmt.iterable.position()
+                        );
+                    } else {
+                        self.check_expr_is_mut(for_stmt.iterable);
+                    }
                 } else if value0.is_ref {
                     if elem_sym.is_boxed() {
                         report.error("cannot take the address of a boxed value", value0.pos);
@@ -93,13 +97,13 @@ extend Checker {
                 for_stmt.index.sym.type = self.table.uint_t;
             }
             if for_stmt.values.len == 1 {
-                value0 := for_stmt.values[0];
+                mut value0 := for_stmt.values[0];
                 self.check_name_case(.Snake, "variable", value0.name, value0.pos);
                 value0.sym.type = elem_type;
                 value0.sym.is_hidden_ref = value0.is_mut;
             } else {
                 types := @as(ast.TypeInfo.Tuple, elem_type.symbol()?.info).types;
-                for i, value in for_stmt.values {
+                for i, mut value in for_stmt.values {
                     self.check_name_case(.Snake, "variable", value.name, value.pos);
                     if value.is_ref && elem_sym.is_boxed() {
                         report.error("cannot take the address of a boxed value", value.pos);

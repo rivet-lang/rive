@@ -981,10 +981,10 @@ class Codegen:
                     )
                 elif typ_sym.kind == TypeKind.Enum:
                     if expr.is_enum_variant:
-                        tmp = self.boxed_instance(
-                            cg_utils.mangle_symbol(expr.enum_variant_sym),
-                            expr.enum_variant_sym.id
+                        tmp = ir.Ident(
+                            ir.Type(cg_utils.mangle_symbol(expr.enum_variant_sym)), self.cur_func.local_name()
                         )
+                        self.cur_func.alloca(tmp)
                         initted_fields = []
                         type_fields = expr.enum_variant_sym.full_fields()
                         for i, f in enumerate(expr.args):
@@ -1860,8 +1860,9 @@ class Codegen:
                         val = ir.Selector(
                             ir.Type(self.ir_type(expr.typ)), obj_val, ir.Name(f"v{expr.right.variant_info.value}")
                         )
-                        if expr.var.is_mut and not isinstance(var_t2, ir.Pointer):
+                        if expr.var.is_mut and not isinstance(var_t, ir.Pointer):
                             val = ir.Inst(ir.InstKind.GetPtr, [val], var_t2)
+                            var_t = var_t.ptr()
                     else:
                         val = ir.Inst(
                             ir.InstKind.Cast, [
@@ -3153,18 +3154,17 @@ class Codegen:
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Tuple:
                 for f in ts.info.types:
-                    dep = cg_utils.mangle_symbol(f.symbol())
+                    fsym = f.symbol()
+                    dep = cg_utils.mangle_symbol(fsym)
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f, type.Option
-                    ):
+                    ) or fsym.is_boxed():
                         continue
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Enum and ts.info.is_tagged:
                 for variant in ts.info.variants:
                     if variant.has_typ:
                         variant_sym = variant.typ.symbol()
-                        if variant_sym.kind != TypeKind.Struct:
-                            continue
                         if variant_sym.is_boxed() or isinstance(variant.typ, type.Option):
                             continue
                         dep = cg_utils.mangle_symbol(variant_sym)
@@ -3178,23 +3178,25 @@ class Codegen:
                         continue
                     field_deps.append(dep)
                 for f in ts.fields:
-                    dep = cg_utils.mangle_symbol(f.typ.symbol())
+                    fsym = f.typ.symbol()
+                    dep = cg_utils.mangle_symbol(fsym)
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f.typ, type.Option
-                    ):
+                    ) or fsym.is_boxed():
                         continue
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Struct:
                 for base in ts.info.bases:
                     dep = cg_utils.mangle_symbol(base)
-                    if dep not in typ_names or dep in field_deps:
+                    if dep not in typ_names or dep in field_deps or base.is_boxed():
                         continue
                     field_deps.append(dep)
                 for f in ts.fields:
-                    dep = cg_utils.mangle_symbol(f.typ.symbol())
+                    fsym = f.typ.symbol()
+                    dep = cg_utils.mangle_symbol(fsym)
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f.typ, type.Option
-                    ):
+                    ) or fsym.is_boxed():
                         continue
                     field_deps.append(dep)
             dg.add(ts.mangled_name, field_deps)

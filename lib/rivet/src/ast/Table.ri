@@ -17,6 +17,7 @@ pub struct Table {
     /// compiled reside.
     pub mut universe: Module;
     pub mut prefs: prefs.Prefs;
+    pub mut source_files: []mut SourceFile;
 
     pub pointer_size: uint;
 
@@ -69,8 +70,6 @@ pub struct Table {
     pub mut float64_t: Type;
     pub mut string_t: Type;
     pub mut throwable_t: Type;
-
-    pub mut source_files: []SourceFile;
 
     #[inline]
     pub func new(prefs_: prefs.Prefs) -> Table {
@@ -361,7 +360,7 @@ pub struct Table {
                         }
                         (utils.round_up(total_size, max_alignment), max_alignment)
                     },
-                    .Trait(trait_info) -> {
+                    .Trait(mut trait_info) -> {
                         (size, align) = ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size);
                         for mut btype in trait_info.bases {
                             (bsize, _balign) := self.type_symbol_size(btype, is_raw);

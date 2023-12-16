@@ -16,7 +16,7 @@ pub enum Expr < traits.Stringable {
         pos: token.Pos;
         mut type: Type;
 
-        pub func clean_paren(self) -> Expr {
+        pub func clean_paren(&self) -> Expr {
             mut res := self.expr;
             while res is .Paren(paren) {
                 res = paren.expr;
@@ -98,7 +98,7 @@ pub enum Expr < traits.Stringable {
         mut variant: EnumVariant;
     },
     TupleLiteral {
-        values: []mut Expr;
+        mut values: []mut Expr;
         pos: token.Pos;
         mut type: Type;
     },
@@ -114,7 +114,7 @@ pub enum Expr < traits.Stringable {
         pos: token.Pos;
     },
     ArrayLiteral {
-        values: []mut Expr;
+        mut values: []mut Expr;
         is_dyn: bool;
         pos: token.Pos;
         mut type: Type;
@@ -170,7 +170,7 @@ pub enum Expr < traits.Stringable {
     },
     Call {
         mut left: Expr;
-        mut args: []CallArg;
+        mut args: []mut CallArg;
         mut spread_expr: Expr;
         has_spread_expr: bool;
         mut err_handler: CallErrorHandler;
@@ -184,7 +184,7 @@ pub enum Expr < traits.Stringable {
         mut is_enum_variant: bool;
         mut enum_variant_sym: TypeSym;
 
-        func has_named_args(self) -> bool {
+        func has_named_args(&self) -> bool {
             for arg in self.args {
                 if arg.is_named {
                     return true;
@@ -193,7 +193,7 @@ pub enum Expr < traits.Stringable {
             return false;
         }
 
-        func get_named_arg(self, name: string) -> ?CallArg {
+        func get_named_arg(&self, name: string) -> ?CallArg {
             for arg in self.args {
                 if arg.is_named && arg.name == name {
                     return arg;
@@ -204,7 +204,7 @@ pub enum Expr < traits.Stringable {
 
         /// Returns the number of pure arguments, that is, not named, that
         /// this call has.
-        func pure_args_count(self) -> uint {
+        func pure_args_count(&self) -> uint {
             mut l: uint := 0;
             for arg in self.args {
                 if !arg.is_named {
@@ -218,13 +218,13 @@ pub enum Expr < traits.Stringable {
         }
 
         #[inline]
-        func has_err_handler(self) -> bool {
+        func has_err_handler(&self) -> bool {
             return self.err_handler.has_expr || self.err_handler.is_propagate;
         }
     },
     BuiltinCall {
         name: string;
-        args: []CallArg;
+        mut args: []mut CallArg;
         pos: token.Pos;
         mut builtin: Builtin := .Invalid;
         mut type: Type;
@@ -266,7 +266,7 @@ pub enum Expr < traits.Stringable {
         mut defer_stmts: []Stmt.Defer;
     },
     If {
-        branches: []IfBranch;
+        mut branches: []mut IfBranch;
         has_else: bool;
         pos: token.Pos;
         mut expected_type: Type;
@@ -274,7 +274,7 @@ pub enum Expr < traits.Stringable {
     },
     Match {
         mut expr: Expr;
-        branches: []MatchBranch;
+        mut branches: []mut MatchBranch;
         mut is_typematch: bool;
         has_else: bool;
         mut scope: Scope;
@@ -286,8 +286,9 @@ pub enum Expr < traits.Stringable {
     // Examples:
     // - if x := optional_or_result_fn() { ... }
     // - while byte := reader.read() { ... }
+    // - match x := optional_or_result_fn(); x == some { ... }
     Guard {
-        vars: []ObjectData;
+        mut vars: []mut ObjectData;
         mut expr: Expr;
         has_cond: bool;
         mut cond: Expr;
@@ -633,7 +634,7 @@ pub struct IfBranch {
 
 #[boxed]
 pub struct MatchBranch {
-    pub patterns: []mut Expr;
+    pub mut patterns: []mut Expr;
     pub has_var: bool;
     pub var_is_mut: bool;
     pub var_name: string;

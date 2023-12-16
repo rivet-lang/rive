@@ -12,7 +12,7 @@ extend Tokenizer {
     }
 
     func pp_directive(mut self) {
-        pos := self.current_pos();
+        mut pos := self.current_pos();
         self.pos += 1; // skip '#'
         self.skip_whitespace();
         pp_dir := self.read_name();
@@ -192,7 +192,7 @@ extend Tokenizer {
 
     func pp_symbol(mut self) -> bool {
         self.pos -= 1;
-        pos := self.current_pos();
+        mut pos := self.current_pos();
         self.pos += 1;
         name := self.read_name();
         self.pos += 1;

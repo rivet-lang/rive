@@ -9,10 +9,10 @@ extend Resolver {
     func resolve_stmt(mut self, mut stmt: ast.Stmt) {
         match stmt {
             .Comment -> {},
-            .Empty(empty_pos) -> report.error("BUG: empty statement found", empty_pos),
+            .Empty(empty_pos) -> report.error("bug: unexpected empty statement found", empty_pos),
             .Expr(mut expr) -> self.resolve_expr(expr),
-            .VarDecl(var_stmt) -> {
-                for left in var_stmt.lefts {
+            .VarDecl(mut var_stmt) -> {
+                for mut left in var_stmt.lefts {
                     self.check_variable_shadowing(left.name, left.pos);
                     _ = self.resolve_type(left.type);
                     left.sym = ast.Var(
@@ -28,7 +28,7 @@ extend Resolver {
                 }
                 self.resolve_expr(var_stmt.right);
             },
-            .While(while_stmt) -> {
+            .While(mut while_stmt) -> {
                 if !while_stmt.is_inf {
                     self.resolve_expr(while_stmt.cond);
                 }
@@ -40,7 +40,7 @@ extend Resolver {
                     self.resolve_stmt(while_stmt.else_stmt);
                 }
             },
-            .For(for_stmt) -> {
+            .For(mut for_stmt) -> {
                 if for_stmt.has_index {
                     self.check_variable_shadowing(for_stmt.index.name, for_stmt.index.pos);
                     for_stmt.index.sym = ast.Var(
@@ -54,7 +54,7 @@ extend Resolver {
                         err.to_string(), for_stmt.index.pos
                     );
                 }
-                for value in for_stmt.values {
+                for mut value in for_stmt.values {
                     self.check_variable_shadowing(value.name, value.pos);
                     value.sym = ast.Var(
                         is_mut: value.is_mut,
@@ -70,7 +70,7 @@ extend Resolver {
                 self.resolve_expr(for_stmt.iterable);
                 self.resolve_stmt(for_stmt.stmt);
             },
-            .Defer(defer_stmt) -> self.resolve_expr(defer_stmt.expr)
+            .Defer(mut defer_stmt) -> self.resolve_expr(defer_stmt.expr)
         }
     }
 }

@@ -5,7 +5,7 @@
 import c/libc;
 
 struct StaticBuffer {
-    buf: [25]mut uint8;
+    mut buf: [25]mut uint8;
     mut len: uint;
 
     pub func push(mut self, byte: uint8) {
@@ -16,22 +16,22 @@ struct StaticBuffer {
         self.len += 1;
     }
 
-    pub func as_uint64(&self) -> uint64 {
+    pub func as_uint64(mut self) -> uint64 {
         self.buf[self.len] = 0;
         return unsafe { libc.strtoul(&self.buf[0], none, 10) };
     }
 
-    pub func as_uint(&self) -> uint {
+    pub func as_uint(mut self) -> uint {
         self.buf[self.len] = 0;
         return unsafe { @as(uint, libc.strtoul(&self.buf[0], none, 10)) };
     }
 
-    pub func as_int(&self) -> int {
+    pub func as_int(mut self) -> int {
         self.buf[self.len] = 0;
         return unsafe { @as(int, libc.strtol(&self.buf[0], none, 10))};
     }
 
-    pub func as_string(&self) -> string {
+    pub func as_string(mut self) -> string {
         self.buf[self.len] = 0;
         return unsafe { string.from_raw_with_len(&self.buf[0], self.len).clone() };
     }

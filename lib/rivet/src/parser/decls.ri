@@ -276,7 +276,7 @@ extend Parser {
             },
             self.accept(.KwVar) -> {
                 // variable declarations
-                mut lefts := []ast.ObjectData();
+                mut lefts := []mut ast.ObjectData();
                 if self.accept(.Lparen) {
                     // multiple variables
                     while {
@@ -389,7 +389,7 @@ extend Parser {
                 }
                 self.expect(.Lbrace);
                 mut is_tagged := false;
-                mut variants := []ast.EnumVariantDecl();
+                mut variants := []mut ast.EnumVariantDecl();
                 while {
                     v_pos := self.tok.pos;
                     v_name := self.parse_name();
@@ -505,7 +505,7 @@ extend Parser {
                 self.expect(.String);
                 self.inside_func = true;
                 self.open_scope();
-                sc := self.scope;
+                mut sc := self.scope;
                 sc.detached_from_parent = true;
                 mut stmts := []mut ast.Stmt();
                 self.expect(.Lbrace);
@@ -570,13 +570,13 @@ extend Parser {
         mut self_is_mut := false;
         mut self_is_ptr := false;
         mut self_pos := token.noPos;
-        mut args := []ast.Arg();
+        mut args := []mut ast.Arg();
         mut has_named_args := false;
         mut is_variadic := false;
 
         self.inside_func = true;
         self.open_scope();
-        sc := self.scope;
+        mut sc := self.scope;
         sc.detached_from_parent = true;
         self.expect(.Lparen);
         if self.tok.kind != .Rparen {

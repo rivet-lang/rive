@@ -32,7 +32,7 @@ test "`for` statement with referenced value" {
 }
 
 test "`for` statement with mutable value" {
-    arr: []mut int32 := +[1, 2, 3];
+    mut arr: []mut int32 := +[1, 2, 3];
     for mut elem in arr {
         elem = elem * 2;
     }
