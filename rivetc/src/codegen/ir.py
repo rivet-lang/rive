@@ -207,11 +207,10 @@ class Union:
         return str(sb)
 
 class Struct:
-    def __init__(self, is_opaque, name, fields, is_tagged_enum=False):
+    def __init__(self, is_opaque, name, fields):
         self.is_opaque = is_opaque
         self.name = name
         self.fields = fields
-        self.is_tagged_enum = is_tagged_enum
 
     def __str__(self):
         sb = utils.Builder()

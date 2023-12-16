@@ -30,7 +30,6 @@ class CGen:
         self.comp = comp
         self.typedefs = utils.Builder()
         self.types = utils.Builder()
-        self.types2 = utils.Builder()
         self.protos = utils.Builder()
         self.globals = utils.Builder()
         self.out = utils.Builder()
@@ -53,7 +52,6 @@ class CGen:
                 out.write(c_headers.RIVET_BREAKPOINT)
             out.write(str(self.typedefs).strip() + "\n\n")
             out.write(str(self.types).strip() + "\n\n")
-            out.write(str(self.types2).strip() + "\n\n")
             out.write(str(self.protos).strip() + "\n\n")
             out.write(str(self.globals).strip() + "\n\n")
             out.write(str(self.out).strip())
@@ -102,18 +100,17 @@ class CGen:
         for s in types:
             if isinstance(s, ir.Struct):
                 self.typedefs.writeln(f"typedef struct {s.name} {s.name};")
-                buf = self.types2 if s.is_tagged_enum else self.types
                 if not s.is_opaque:
-                    buf.writeln(f"struct {s.name} {{")
+                    self.types.writeln(f"struct {s.name} {{")
                     for i, f in enumerate(s.fields):
                         f_name = c_escape(f.name)
-                        buf.write("  ")
-                        buf.write(self.gen_type(f.typ, f_name))
+                        self.types.write("  ")
+                        self.types.write(self.gen_type(f.typ, f_name))
                         if not isinstance(f.typ, (ir.Array, ir.Function)):
-                            buf.write(f" {f_name}")
-                        buf.writeln(";")
-                    buf.writeln("};")
-                buf.writeln()
+                            self.types.write(f" {f_name}")
+                        self.types.writeln(";")
+                    self.types.writeln("};")
+                self.types.writeln()
             else:
                 self.typedefs.writeln(f"typedef union {s.name} {s.name};")
                 self.types.writeln(f"union {s.name} {{")

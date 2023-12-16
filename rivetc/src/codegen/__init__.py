@@ -3021,7 +3021,7 @@ class Codegen:
                                 ir.Field("_rc_", ir.UINT_T),
                                 ir.Field("_idx_", ir.UINT_T),
                                 ir.Field("obj", ir.Type(union_name))
-                            ], is_tagged_enum = True
+                            ]
                         )
                     )
             elif ts.kind == TypeKind.Trait:
@@ -3154,10 +3154,11 @@ class Codegen:
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Tuple:
                 for f in ts.info.types:
-                    dep = cg_utils.mangle_symbol(f.symbol())
+                    fsym = f.symbol()
+                    dep = cg_utils.mangle_symbol(fsym)
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f, type.Option
-                    ):
+                    ) or fsym.is_boxed():
                         continue
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Enum and ts.info.is_tagged:
@@ -3177,23 +3178,25 @@ class Codegen:
                         continue
                     field_deps.append(dep)
                 for f in ts.fields:
-                    dep = cg_utils.mangle_symbol(f.typ.symbol())
+                    fsym = f.typ.symbol()
+                    dep = cg_utils.mangle_symbol(fsym)
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f.typ, type.Option
-                    ):
+                    ) or fsym.is_boxed():
                         continue
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Struct:
                 for base in ts.info.bases:
                     dep = cg_utils.mangle_symbol(base)
-                    if dep not in typ_names or dep in field_deps:
+                    if dep not in typ_names or dep in field_deps or base.is_boxed():
                         continue
                     field_deps.append(dep)
                 for f in ts.fields:
-                    dep = cg_utils.mangle_symbol(f.typ.symbol())
+                    fsym = f.typ.symbol()
+                    dep = cg_utils.mangle_symbol(fsym)
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f.typ, type.Option
-                    ):
+                    ) or fsym.is_boxed():
                         continue
                     field_deps.append(dep)
             dg.add(ts.mangled_name, field_deps)
