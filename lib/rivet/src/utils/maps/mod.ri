@@ -15,7 +15,7 @@ pub struct MapStringUint {
     mut pairs: []mut StringUint;
 
     pub func set(mut self, key: string, value: uint) {
-        for pair in self.pairs {
+        for mut pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
                 return; // found

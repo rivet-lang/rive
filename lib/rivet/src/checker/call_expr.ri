@@ -20,8 +20,8 @@ extend Checker {
         };
 
         match left {
-            .SelfTy(self_ty) -> self.check_ctor_call(self_ty.sym, call_expr),
-            .Ident(ident) if (ident.is_sym || ident.is_obj) -> match ident.sym is {
+            .SelfTy(mut self_ty) -> self.check_ctor_call(self_ty.sym, call_expr),
+            .Ident(mut ident) if (ident.is_sym || ident.is_obj) -> match ident.sym is {
                 ast.TypeSym(mut type_sym) if type_sym.info is .Trait
                     || type_sym.info is .Struct || type_sym.info is .String
                     || type_sym.info is .Enum -> self.check_ctor_call(type_sym, call_expr),
@@ -255,7 +255,7 @@ extend Checker {
                         "cannot use spread expression with trait constructor", call_expr.pos
                     );
                 } else if call_expr.args.len == 1 {
-                    arg0 := call_expr.args[0];
+                    mut arg0 := call_expr.args[0];
                     value_t := self.table.comptime_number_to_type(self.check_expr(arg0.expr));
                     if value_t.symbol()? in trait_info.implements {
                         trait_info.mark_has_objects();
@@ -292,7 +292,7 @@ extend Checker {
                         return;
                     }
                 }
-                for i, arg in call_expr.args {
+                for i, mut arg in call_expr.args {
                     mut field := ast.Field();
                     if arg.is_named {
                         if t_field := type_sym.lookup_field(arg.name) {

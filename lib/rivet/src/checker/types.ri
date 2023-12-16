@@ -20,7 +20,7 @@ extend Checker {
         self, got: ast.Type, expected: ast.Type, pos: token.Pos, arg_name: string,
         func_kind: string, func_name: string
     ) {
-        if expected_sym := expected.symbol(); expected_sym.info is .Trait(mut trait_info)
+        if mut expected_sym := expected.symbol(); expected_sym.info is .Trait(mut trait_info)
             && expected != got {
             got_t := self.table.comptime_number_to_type(got);
             if got_t.symbol()? in trait_info.implements {
@@ -114,7 +114,7 @@ extend Checker {
             return false;
         }
 
-        expected_sym := expected.symbol() ?? return false;
+        mut expected_sym := expected.symbol() ?? return false;
         got_sym := got.symbol() ?? return false;
 
         if expected is .Variadic {

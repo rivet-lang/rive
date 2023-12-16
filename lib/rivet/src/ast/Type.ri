@@ -113,22 +113,22 @@ pub enum Type < traits.Stringable {
         // unaliasing instead.
         return match self {
             .Rawptr -> self,
-            .Result(result) -> .Result(result.inner.unalias() ?? result.inner),
-            .Option(option) -> .Option(option.inner.unalias() ?? option.inner),
+            .Result(mut result) -> .Result(result.inner.unalias() ?? result.inner),
+            .Option(mut option) -> .Option(option.inner.unalias() ?? option.inner),
             .Tuple(tuple_data) -> {
-                unaliased_types := []mut Type(cap: tuple_data.inners.len);
-                for i, tuple_type in tuple_data.inners {
+                mut unaliased_types := []mut Type(cap: tuple_data.inners.len);
+                for i, mut tuple_type in tuple_data.inners {
                     unaliased_types[i] = tuple_type.unalias() ?? tuple_type;
                 }
                 .Tuple(unaliased_types, tuple_data.sym)
             },
-            .DynArray(dyn_array_data) -> .DynArray(
+            .DynArray(mut dyn_array_data) -> .DynArray(
                 dyn_array_data.inner.unalias() ?? dyn_array_data.inner, dyn_array_data.is_mut
             ),
-            .Array(array_data) -> .Array(
+            .Array(mut array_data) -> .Array(
                 array_data.inner.unalias() ?? array_data.inner, ...self
             ),
-            .Pointer(pointer_data) -> .Pointer(
+            .Pointer(mut pointer_data) -> .Pointer(
                 pointer_data.inner.unalias() ?? pointer_data.inner, ...self
             ),
             .Func(mut func_data) -> {
@@ -140,7 +140,7 @@ pub enum Type < traits.Stringable {
                     ...self
                 )
             },
-            .Basic(basic) if !basic.is_unresolved -> if basic.sym?.info is .Alias(alias_info) {
+            .Basic(mut basic) if !basic.is_unresolved -> if basic.sym?.info is .Alias(mut alias_info) {
                 alias_info.parent.unalias() ?? alias_info.parent
             } else {
                 .Basic(basic.sym)

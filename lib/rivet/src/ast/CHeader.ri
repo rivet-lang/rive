@@ -119,7 +119,7 @@ extend Table {
             "{} -x c -E -dM /dev/null".fmt(self.prefs.target_backend_compiler)
         ) {
             defines_ := result.output.split_into_lines();
-            defines := CDefines();
+            mut defines := CDefines();
             for define in defines_ {
                 mut tokens := define.tokenize(b' ');
                 _ = tokens.next(); // skip '#define'

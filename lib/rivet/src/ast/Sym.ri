@@ -179,7 +179,7 @@ pub struct Module < Sym {
         if type_sym := self.scope.find(unique_name) {
             return @as(TypeSym, type_sym);
         }
-        type_sym := TypeSym(
+        mut type_sym := TypeSym(
             is_public: true,
             name: unique_name,
             info: .DynArray(elem_type, is_mut),

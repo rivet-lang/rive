@@ -33,7 +33,7 @@ struct CallTrace {
 const RETURN_TRACE_MAX_SIZE := 50;
 
 struct ReturnTrace {
-    traces: [RETURN_TRACE_MAX_SIZE]mut CallTrace;
+    mut traces: [RETURN_TRACE_MAX_SIZE]mut CallTrace;
     mut cur_idx: uint;
 
     #[inline]
