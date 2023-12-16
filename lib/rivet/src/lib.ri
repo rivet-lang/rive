@@ -121,7 +121,7 @@ pub struct Compiler {
     }
 
     func import_modules(mut self) -> ! {
-        for sf in self.table.source_files {
+        for mut sf in self.table.source_files {
             for mut d in sf.decls {
                 if d is .Import(mut import_decl) {
                     if self.table.universe.scope.exists(import_decl.info.full_name) {
@@ -288,7 +288,7 @@ pub struct Compiler {
         }
         self.vlog("-----------------------------------------");
         source_files := self.table.source_files;
-        self.table.source_files = []ast.SourceFile(cap: source_files.len);
+        self.table.source_files = []mut ast.SourceFile(cap: source_files.len);
         for node in g_resolved.nodes {
             for pf in source_files {
                 if pf.mod.name == node.name {

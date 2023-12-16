@@ -32,16 +32,16 @@ pub struct Checker {
     mut defer_stmts_start: uint;
     mut defer_stmts: []ast.Stmt.Defer;
 
-    pub func check_files(mut self, source_files: []ast.SourceFile) {
+    pub func check_files(mut self, mut source_files: []mut ast.SourceFile) {
         // check global variables
-        for source_file in source_files {
+        for mut source_file in source_files {
             self.sym = source_file.mod;
             self.source_file = source_file;
             self.expected_type = .Void;
             self.check_global_vars(source_file.decls);
         }
         // check the source code
-        for source_file in source_files {
+        for mut source_file in source_files {
             self.sym = source_file.mod;
             self.source_file = source_file;
             self.expected_type = .Void;
@@ -291,7 +291,7 @@ pub struct Checker {
             .StringLiteral -> report.error(
                 "string literals cannot be modified", expr.position()
             ),
-            .TupleLiteral(tuple_lit) -> if from_assign {
+            .TupleLiteral(mut tuple_lit) -> if from_assign {
                 for mut value in tuple_lit.values {
                     self.check_expr_is_mut(value);
                 }
@@ -301,7 +301,7 @@ pub struct Checker {
             .EnumLiteral(enum_lit) if !enum_lit.is_instance -> report.error(
                 "enum literals cannot be modified", enum_lit.pos
             ),
-            .BuiltinCall(builtin_call) -> {
+            .BuiltinCall(mut builtin_call) -> {
                 for mut arg in builtin_call.args {
                     self.check_expr_is_mut(arg.expr);
                 }
@@ -330,12 +330,12 @@ pub struct Checker {
                 self.check_expr_is_mut(binary.left);
                 self.check_expr_is_mut(binary.right);
             },
-            .If(if_expr) -> {
+            .If(mut if_expr) -> {
                 for mut branch in if_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
             },
-            .Match(match_expr) -> {
+            .Match(mut match_expr) -> {
                 for mut branch in match_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }

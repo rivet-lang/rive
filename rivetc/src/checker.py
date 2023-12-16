@@ -280,11 +280,14 @@ class Checker:
                 elem_typ = self.comp.comptime_number_to_type(
                     iterable_sym.info.elem_typ
                 )
-                if stmt.value.is_mut and not iterable_sym.info.is_mut:
-                    report.error(
-                        f"cannot modify immutable {iterable_sym.kind}",
-                        stmt.iterable.pos
-                    )
+                if stmt.value.is_mut: 
+                    if not iterable_sym.info.is_mut:
+                        report.error(
+                            f"cannot modify immutable {iterable_sym.kind}",
+                            stmt.iterable.pos
+                        )
+                    else:
+                        self.check_expr_is_mut(stmt.iterable)
                 elif stmt.value.is_ref:
                     elem_typ = type.Ptr(elem_typ)
                 if stmt.index != None:
@@ -1913,8 +1916,7 @@ class Checker:
             if expr.is_path:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
                 return 
-            else:
-                self.check_expr_is_mut(expr.left, from_assign)
+            self.check_expr_is_mut(expr.left, from_assign)
             if expr.is_indirect and isinstance(expr.left_typ, type.Ptr):
                 if not expr.left_typ.is_mut:
                     report.error(
@@ -1951,7 +1953,7 @@ class Checker:
                         expr.pos
                     )
                 return
-            self.check_expr_is_mut(expr.left)
+            self.check_expr_is_mut(expr.left, from_assign)
             expr_sym = expr.left.typ.symbol()
             if not expr_sym.info.is_mut:
                 report.error(

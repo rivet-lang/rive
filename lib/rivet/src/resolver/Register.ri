@@ -40,7 +40,7 @@ pub struct Register {
             self.sym.scope.owner = self.sym;
             match decl {
                 .Import(import_decl) -> self.import_decl(import_decl),
-                .Extern(extern_decl) -> {
+                .Extern(mut extern_decl) -> {
                     self.abi = extern_decl.abi;
                     self.walk_decls(extern_decl.decls);
                 },
@@ -180,7 +180,7 @@ pub struct Register {
                     expr: const_decl.expr,
                     type: const_decl.type
                 ), const_decl.pos),
-                .Var(var_decl) -> {
+                .Var(mut var_decl) -> {
                     for mut left in var_decl.lefts {
                         left.sym = ast.Var(
                             parent: self.sym,

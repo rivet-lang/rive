@@ -30,7 +30,7 @@ extend Resolver {
             } else {
                 report.error("cannot resolve `self` expression", self_ty.pos);
             },
-            .TupleLiteral(tuple_lit) -> {
+            .TupleLiteral(mut tuple_lit) -> {
                 for mut value in tuple_lit.values {
                     self.resolve_expr(value);
                 }
@@ -61,7 +61,7 @@ extend Resolver {
                     self.resolve_expr(cap_value);
                 }
             },
-            .ArrayLiteral(array_lit) -> {
+            .ArrayLiteral(mut array_lit) -> {
                 for mut value in array_lit.values {
                     self.resolve_expr(value);
                 }
@@ -173,7 +173,7 @@ extend Resolver {
                     self.resolve_expr(guard.cond);
                 }
             },
-            .If(if_expr) -> {
+            .If(mut if_expr) -> {
                 for mut branch in if_expr.branches {
                     if !branch.is_else {
                         self.resolve_expr(branch.cond);

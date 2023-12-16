@@ -132,13 +132,13 @@ pub struct TypeSym < Sym {
             return self.full_fields_;
         }
         mut fields := []Field();
-        if self.info is .Trait(trait_info) {
+        if self.info is .Trait(mut trait_info) {
             for mut b in trait_info.bases {
                 for bf in b.full_fields() {
                     fields.push(bf);
                 }
             }
-        } else if self.info is .Struct(struct_info) {
+        } else if self.info is .Struct(mut struct_info) {
             for mut t in struct_info.traits {
                 for tf in t.full_fields() {
                     fields.push(tf);

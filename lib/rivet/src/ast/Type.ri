@@ -115,7 +115,7 @@ pub enum Type < traits.Stringable {
             .Rawptr -> self,
             .Result(mut result) -> .Result(result.inner.unalias() ?? result.inner),
             .Option(mut option) -> .Option(option.inner.unalias() ?? option.inner),
-            .Tuple(tuple_data) -> {
+            .Tuple(mut tuple_data) -> {
                 mut unaliased_types := []mut Type(cap: tuple_data.inners.len);
                 for i, mut tuple_type in tuple_data.inners {
                     unaliased_types[i] = tuple_type.unalias() ?? tuple_type;
