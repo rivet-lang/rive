@@ -10,7 +10,6 @@ import rivet/ast;
 import rivet/fmt;
 import rivet/prefs;
 import rivet/utils;
-import rivet/report;
 
 var fmtDescription := "Formats the given Rivet source files or recursively formats all files in the
 directory, then prints their formatted source to stdout.";
@@ -40,10 +39,9 @@ pub func cmd_fmt(args: []string) -> ! {
         );
         prefs_.check_input(input);
         prefs_.load_module_info()!;
-        report.reportTable.prefs = prefs_;
         table_ := ast.Table.new(prefs_);
-        mut compiler := rivet.Compiler(table: table_, prefs: prefs_);
-        compiler.load_root_module()!;
+        mut builder := rivet.Builder(table: table_, prefs: prefs_);
+        builder.load_root_module()!;
         mut formatter := fmt.Formatter(prefs_, table_, write_to_file: write_to_file);
         for source_file in table_.source_files {
             output := formatter.format(source_file);

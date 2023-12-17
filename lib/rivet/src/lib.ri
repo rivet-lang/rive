@@ -19,7 +19,7 @@ import ./resolver;
 import ./depgraph;
 
 #[boxed]
-pub struct Compiler {
+pub struct Builder {
     mut table: ast.Table;
     mut prefs: prefs.Prefs;
 
@@ -29,7 +29,6 @@ pub struct Compiler {
 
     pub func new(args: []string, is_test: bool, run_output: bool, is_check: bool) -> ! {
         prefs_ := prefs.Prefs.new(args, is_test, run_output, is_check)!;
-        report.reportTable.prefs = prefs_;
         table_ := ast.Table.new(prefs_);
         Self(
             table: table_, prefs: prefs_,
@@ -108,14 +107,14 @@ pub struct Compiler {
         if files.is_empty() {
             utils.error("no input received");
         } else if self.prefs.is_verbose {
-            self.vlog("Compiler.load_root_module(): loaded root module files:");
+            self.vlog("Builder.load_root_module: loaded root module files:");
             for file in files {
                 self.vlog("   > {}", file);
             }
         }
         root_sym := ast.Module(name: self.prefs.mod_name, is_root: true);
         self.table.universe.scope.add(root_sym) catch |err| utils.error(
-            "Compiler.load_root_module(): {}", err
+            "Builder.load_root_module: {}", err
         );
         self.parse_files(root_sym, files);
     }
@@ -164,7 +163,7 @@ pub struct Compiler {
     func load_module_files(
         self, pathx: string, alias_name: string, file_path: string, pos: token.Pos
     ) -> !ast.ImportedMod {
-        self.vlog("Compiler.load_module_files(): searching module `{}`", pathx);
+        self.vlog("Builder.load_module_files: searching module `{}`", pathx);
         mut found := false;
         mut name := "";
         mut full_name := "";

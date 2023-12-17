@@ -73,6 +73,7 @@ pub struct Table {
 
     #[inline]
     pub func new(prefs_: prefs.Prefs) -> Table {
+        report.reportTable.prefs = prefs_;
         universe_ := universe();
         mut table := Table(
             universe: universe_,

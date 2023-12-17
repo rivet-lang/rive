@@ -40,7 +40,7 @@ func main() {
             // These commands are handled directly by the compiler.
             is_test := cmd == "test";
             is_check := cmd == "check";
-            rivet.Compiler.new(process.args[2..], is_test, is_test || cmd == "run", is_check)!;
+            rivet.Builder.new(process.args[2..], is_test, is_test || cmd == "run", is_check)!;
         },
         "new", "init" -> tools.cmd_new(process.args[2..], cmd == "init")!,
         "fmt" -> tools.cmd_fmt(process.args[2..])!,
