@@ -4,7 +4,7 @@
 
 pub func is_snake_case(name: string) -> bool {
     for c in name.as_bytes() {
-        if c == b'_' {
+        if c == '_' {
             continue;
         }
         if c.is_upper() {
@@ -19,7 +19,7 @@ pub func is_camel_case(name: string) -> bool {
         return false;
     }
     for c in name.as_bytes() {
-        if c == b'_' {
+        if c == '_' {
             return false;
         }
     }
@@ -31,7 +31,7 @@ pub func is_pascal_case(name: string) -> bool {
         return false;
     }
     for c in name.as_bytes() {
-        if c == b'_' {
+        if c == '_' {
             return false;
         }
     }
@@ -40,7 +40,7 @@ pub func is_pascal_case(name: string) -> bool {
 
 pub func is_upper_case(name: string) -> bool {
     for c in name.as_bytes() {
-        if c == b'_' {
+        if c == '_' {
             continue;
         }
         if c.is_lower() {

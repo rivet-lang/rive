@@ -106,7 +106,7 @@ pub struct string < Stringable, Hashable, Throwable {
         mut is_in_word := false;
         mut is_space := false;
         for i, c in self.as_bytes() {
-            is_space = c in [@as(uint8, 32), 9, 10];
+            is_space = c in [32, 9, 10];
             if !is_space {
                 word_len += 1;
             }
@@ -669,7 +669,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// Returns an iterator that iterates over the slices of `self` that are not
     /// any of the bytes in `delimiter_bytes`.
     ///
-    /// `"   abc def    ghi  ".tokenize(b' ')` will return slices for "abc", "def",
+    /// `"   abc def    ghi  ".tokenize(' ')` will return slices for "abc", "def",
     /// "ghi", none, in that order.
     ///
     /// If `self` is empty, the iterator will return none.

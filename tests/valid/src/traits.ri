@@ -13,7 +13,7 @@ trait ReaderWriter < Reader, Writer {
 struct SomeStream < ReaderWriter {
     pub func read(&self) -> uint8 {
         _ = self;
-        return b'A';
+        return 'A';
     }
 
     pub func write(&self, _b: uint8) -> bool {
@@ -28,7 +28,7 @@ struct SomeStream < ReaderWriter {
 }
 
 func writer(w: Writer) -> bool {
-    return w.write(b'A');
+    return w.write('A');
 }
 
 func reader(r: Reader) -> uint8 {
@@ -36,14 +36,14 @@ func reader(r: Reader) -> uint8 {
 }
 
 func reader_writer(rw: ReaderWriter) -> uint8 {
-    return rw.write_and_read(b'A');
+    return rw.write_and_read('A');
 }
 
 test "traits: inheritance" {
     ss := SomeStream();
     @assert(writer(ss));
-    @assert(reader(ss) == b'A');
-    @assert(reader_writer(ss) == b'A');
+    @assert(reader(ss) == 'A');
+    @assert(reader_writer(ss) == 'A');
 }
 
 trait Eq {

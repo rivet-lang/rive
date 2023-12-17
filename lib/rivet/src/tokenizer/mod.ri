@@ -336,7 +336,7 @@ func number_literal_without_separator(lit: string) -> string {
     return if lit.contains("_") {
         mut sb := strings.Builder.new(lit.len - lit.count("_"));
         for ch in lit.as_bytes() {
-            if ch != b'_' {
+            if ch != '_' {
                 sb.write_byte(ch);
             }
         }

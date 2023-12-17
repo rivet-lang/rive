@@ -81,8 +81,8 @@ pub struct Directory {
                 mut res := []string(cap: 15);
                 while ent := libc.readdir(dir) {
                     bptr: [&]uint8 := &ent.*.d_name[0];
-                    if (bptr[0] == 0 || (bptr[0] == b'.' && bptr[1] == 0)
-                        || (bptr[0] == b'.' && bptr[1] == b'.' && bptr[2] == 0)) {
+                    if (bptr[0] == 0 || (bptr[0] == '.' && bptr[1] == 0)
+                        || (bptr[0] == '.' && bptr[1] == '.' && bptr[2] == 0)) {
                         continue;
                     }
                     bptr_str := string.from_raw(bptr);

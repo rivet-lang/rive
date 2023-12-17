@@ -34,7 +34,7 @@ extend Tokenizer {
             // skip tokens until next preprocessing directive
             while self.pos < self.text.len : self.pos += 1 {
                 cc := self.current_char();
-                if cc == b'#' && !(self.matches("#error", self.pos) || self.matches("#warn", self.pos)) {
+                if cc == '#' && !(self.matches("#error", self.pos) || self.matches("#warn", self.pos)) {
                     self.pos -= 1;
                     return;
                 } else if utils.is_new_line(cc) {
@@ -159,7 +159,7 @@ extend Tokenizer {
     }
 
     func pp_unary_expression(mut self) -> bool {
-        if self.pos < self.text.len && self.current_char() == b'!' {
+        if self.pos < self.text.len && self.current_char() == '!' {
             self.pos += 1;
             self.skip_whitespace();
             return !self.pp_unary_expression();
@@ -174,13 +174,13 @@ extend Tokenizer {
             self.error("expected name, found end of file", pos);
         } else if utils.is_name_char(cc) {
             return self.pp_symbol();
-        } else if cc == b'(' {
+        } else if cc == '(' {
             self.pos += 1;
             self.skip_whitespace();
             result := self.pp_expression();
             self.skip_whitespace();
             cc = self.current_char();
-            if self.pos < self.text.len && cc == b')' {
+            if self.pos < self.text.len && cc == ')' {
                 self.pos += 1;
             } else {
                 self.error("expected `)`, found `{}`".fmt(cc.to_ascii()), self.current_pos());

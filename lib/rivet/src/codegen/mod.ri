@@ -199,7 +199,7 @@ pub struct Codegen {
             else -> sb.write_fmt("{}{}", sym.name.len, sym.name)
         }
         if sym is ast.Func(sym_func) {
-            sb.write_byte(if sym_func.is_method { b'M' } else { b'F' });
+            sb.write_byte(if sym_func.is_method { 'M' } else { 'F' });
         }
         sym.mangled_name = sb.to_string();
         return sym.mangled_name;

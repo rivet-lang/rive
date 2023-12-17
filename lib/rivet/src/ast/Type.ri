@@ -325,14 +325,14 @@ pub enum Type < traits.Stringable {
             .Option(option) -> "?".concat(option.inner.to_string_(qualstr)),
             .Tuple(tuple_data) -> {
                 mut sb := Builder.new(100);
-                sb.write_byte(b'(');
+                sb.write_byte('(');
                 for i, inner in tuple_data.inners {
                     sb.write_string(inner.to_string_(qualstr));
                     if i < tuple_data.inners.len - 1 {
                         sb.write_string(", ");
                     }
                 }
-                sb.write_byte(b')');
+                sb.write_byte(')');
                 sb.to_string()
             },
             .Variadic(variadic_data) -> "...".concat(variadic_data.inner.to_string_(qualstr)),

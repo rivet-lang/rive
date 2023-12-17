@@ -78,7 +78,7 @@ extend int32 < Stringable {
             if is_neg {
                 // prepend `-` if it's negative
                 index -= 1;
-                buf[index] = b'-';
+                buf[index] = '-';
             }
 
             diff := @as(uint, max) - index;
@@ -120,7 +120,7 @@ extend int64 < Stringable {
 
             while n > 0 {
                 n1 := n / 100;
-                d = @as(int64, @as(uint32, n - (n1 * 100))) << @as(int64, 1);
+                d = @as(int64, @as(uint32, n - (n1 * 100))) << 1;
                 n = n1;
                 buf[index] = digitPairs.ptr[@as(uint, d)];
                 index -= 1;
@@ -138,7 +138,7 @@ extend int64 < Stringable {
             if is_neg {
                 // prepend `-` if it's negative
                 index -= 1;
-                buf[index] = b'-';
+                buf[index] = '-';
             }
 
             diff := @as(uint, max) - index;

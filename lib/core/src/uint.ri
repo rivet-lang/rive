@@ -23,34 +23,34 @@ extend uint8 < Stringable {
     /// Returns `true` if the byte is in range 0-9 and `false` otherwise.
     #[inline]
     pub func is_digit(self) -> bool {
-        return self >= b'0' && self <= b'9';
+        return self >= '0' && self <= '9';
     }
 
     /// Returns `true` if the byte is a binary digit (0 or 1) and `false` otherwise.
     #[inline]
     pub func is_bin_digit(self) -> bool {
-        return self == b'0' || self == b'1';
+        return self == '0' || self == '1';
     }
 
     /// Returns `true` if the byte is in range 0-7 and `false` otherwise.
     #[inline]
     pub func is_oct_digit(self) -> bool {
-        return self >= b'0' && self <= b'7';
+        return self >= '0' && self <= '7';
     }
 
     /// Returns `true` if the byte is either in range 0-9, a-f or A-F and `false`
     /// otherwise.
     #[inline]
     pub func is_hex_digit(self) -> bool {
-        return (self >= b'0' && self <= b'9')
-            || (self >= b'a' && self <= b'f')
-            || (self >= b'A' && self <= b'F');
+        return (self >= '0' && self <= '9')
+            || (self >= 'a' && self <= 'f')
+            || (self >= 'A' && self <= 'F');
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z and `false` otherwise.
     #[inline]
     pub func is_letter(self) -> bool {
-        return (self >= b'a' && self <= b'z') || (self >= b'A' && self <= b'Z');
+        return (self >= 'a' && self <= 'z') || (self >= 'A' && self <= 'Z');
     }
 
     /// Returns `true` if the byte is in range a-z or A-Z or 1-9 and `false` otherwise.
@@ -62,13 +62,13 @@ extend uint8 < Stringable {
     /// Returns `true` if the byte is upper and `false` otherwise.
     #[inline]
     pub func is_upper(self) -> bool {
-        return (self >= b'A' && self <= b'Z');
+        return (self >= 'A' && self <= 'Z');
     }
 
     /// Returns `true` if the byte is lower and `false` otherwise.
     #[inline]
     pub func is_lower(self) -> bool {
-        return (self >= b'a' && self <= b'z');
+        return (self >= 'a' && self <= 'z');
     }
 
     /// Calculates length to read from the first byte.
@@ -132,7 +132,7 @@ extend uint32 < Stringable {
 
             while n > 0 {
                 n1 := n / 100;
-                d = (n - (n1 * 100)) << @as(uint32, 1);
+                d = (n - (n1 * 100)) << 1;
                 n = n1;
                 buf[index] = digitPairs.ptr[d];
                 index -= 1;

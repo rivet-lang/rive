@@ -121,7 +121,7 @@ extend Table {
             defines_ := result.output.split_into_lines();
             mut defines := CDefines();
             for define in defines_ {
-                mut tokens := define.tokenize(b' ');
+                mut tokens := define.tokenize(' ');
                 _ = tokens.next(); // skip '#define'
                 mut name := tokens.next()?;
                 define_value := tokens.rest();
@@ -129,7 +129,7 @@ extend Table {
                 mut args := []string();
                 mut is_macro := true;
                 if has_value {
-                    if paren_idx := name.index_of_byte(b'(') {
+                    if paren_idx := name.index_of_byte('(') {
                         def_args := name.substr(paren_idx + 1).all_before_of(")");
                         name = name.substr(end: paren_idx);
                         if def_args.len > 0 {

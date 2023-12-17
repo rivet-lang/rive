@@ -48,7 +48,7 @@ pub func cmd_new(args: []string, is_init: bool) -> ! {
         fp.add_usage_example("-t lib");
         fp.add_usage_example("my_project_name -t lib");
         template = fp.string_flag(
-            "template", b't', "Template used by the project (default: bin)."
+            "template", 't', "Template used by the project (default: bin)."
         ) ?? "bin";
     }
     init_git := fp.bool_flag(

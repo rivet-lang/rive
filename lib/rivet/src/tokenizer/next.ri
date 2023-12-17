@@ -40,7 +40,7 @@ extend Tokenizer {
                 return self.new_token(token.Kind.lookup(name), name, name.len);
             } else if ch.is_digit() {
                 // decimals with 0 prefix = error
-                if ch == b'0' && nextc.is_digit() {
+                if ch == '0' && nextc.is_digit() {
                     self.pos -= 1;
                     mut err := self.error_builder(
                         "leading zeros in decimal integer literals are not permitted"
@@ -54,36 +54,36 @@ extend Tokenizer {
             }
             // delimiters and operators
             match ch {
-                b'+' -> {
-                    if nextc == b'=' {
+                '+' -> {
+                    if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.PlusAssign, len: 2);
                     }
                     return self.new_token(.Plus);
                 },
-                b'-' -> {
-                    if nextc == b'>' {
+                '-' -> {
+                    if nextc == '>' {
                         self.pos += 1;
                         return self.new_token(.Arrow, len: 2);
-                    } else if nextc == b'=' {
+                    } else if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.MinusAssign, len: 2);
                     }
                     return self.new_token(.Minus);
                 },
-                b'*' -> {
-                    if nextc == b'=' {
+                '*' -> {
+                    if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.MulAssign, len: 2);
                     }
                     return self.new_token(.Mul);
                 },
-                b'/' -> {
-                    if nextc == b'=' {
+                '/' -> {
+                    if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.DivAssign, len: 2);
-                    } else if nextc == b'/' {
-                        is_doc_comment := self.look_ahead(2) == b'/';
+                    } else if nextc == '/' {
+                        is_doc_comment := self.look_ahead(2) == '/';
                         bytes_to_skip: uint := if is_doc_comment { 3 } else { 2 };
                         start_pos := self.pos + bytes_to_skip;
                         self.ignore_line();
@@ -98,7 +98,7 @@ extend Tokenizer {
                             mut is_separate_line_comment := true;
                             mut j := start_pos - bytes_to_skip;
                             while j >= 0 && self.text[j] != LF : j -= 1 {
-                                if self.text[j] !in [b'\t', b' '] {
+                                if self.text[j] !in ['\t', ' '] {
                                     is_separate_line_comment = false;
                                     break;
                                 }
@@ -117,7 +117,7 @@ extend Tokenizer {
                             );
                         }
                         continue;
-                    } else if nextc == b'*' {
+                    } else if nextc == '*' {
                         start_pos := self.pos;
                         start_line := self.line;
                         start_col := utils.max(1, self.current_column()) - 1;
@@ -154,123 +154,123 @@ extend Tokenizer {
                     }
                     return self.new_token(.Div);
                 },
-                b'%' -> {
-                    if nextc == b'=' {
+                '%' -> {
+                    if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.ModAssign, len: 2);
                     }
                     return self.new_token(.Mod);
                 },
-                b'@' -> return self.new_token(.At),
-                b'=' -> {
-                    if nextc == b'=' {
+                '@' -> return self.new_token(.At),
+                '=' -> {
+                    if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.Eq, len: 2);
                     }
                     return self.new_token(.Assign);
                 },
-                b'<' -> {
-                    if nextc == b'=' {
+                '<' -> {
+                    if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.Le, len: 2);
                     }
                     return self.new_token(.Lt);
                 },
-                b'>' -> {
-                    if nextc == b'=' {
+                '>' -> {
+                    if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.Ge, len: 2);
                     }
                     return self.new_token(.Gt);
                 },
-                b'.' -> {
-                    if nextc == b'.' && self.look_ahead(2) == b'.' {
+                '.' -> {
+                    if nextc == '.' && self.look_ahead(2) == '.' {
                         self.pos += 2;
                         return self.new_token(.Ellipsis, len: 3);
-                    } else if nextc == b'.' {
+                    } else if nextc == '.' {
                         self.pos += 1;
                         return self.new_token(.DotDot, len: 2);
                     }
                     return self.new_token(.Dot);
                 },
-                b',' -> return self.new_token(.Comma),
-                b':' -> {
-                    if nextc == b'=' {
+                ',' -> return self.new_token(.Comma),
+                ':' -> {
+                    if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.DeclAssign, len: 2);
                     }
                     return self.new_token(.Colon);
                 },
-                b';' -> return self.new_token(.Semicolon),
-                b'?' -> {
-                    if nextc == b'?' {
+                ';' -> return self.new_token(.Semicolon),
+                '?' -> {
+                    if nextc == '?' {
                         self.pos += 2;
                         return self.new_token(.OrElse, len: 2);
                     }
                     return self.new_token(.Question);
                 },
-                b'#' -> {
-                    if nextc == b'[' || nextc == b'!' {
+                '#' -> {
+                    if nextc == '[' || nextc == '!' {
                         return self.new_token(.Hash);
                     }
                     self.pp_directive();
                     continue;
                 },
-                b'&' -> {
-                    if nextc == b'&' && self.look_ahead(2).is_space() {
+                '&' -> {
+                    if nextc == '&' && self.look_ahead(2).is_space() {
                         self.pos += 1;
                         return self.new_token(.LogicalAnd, len: 2);
-                    } else if nextc == b'=' {
+                    } else if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.AmpAssign, len: 2);
                     }
                     return self.new_token(.Amp);
                 },
-                b'!' -> {
-                    is_s_or_n := self.look_ahead(2) in [b's', b'n'];
-                    if nextc == b'i' && is_s_or_n && self.look_ahead(3).is_space() {
+                '!' -> {
+                    is_s_or_n := self.look_ahead(2) in ['s', 'n'];
+                    if nextc == 'i' && is_s_or_n && self.look_ahead(3).is_space() {
                         self.pos += 2;
                         ch2 := self.current_char();
-                        if ch2 == b's' {
+                        if ch2 == 's' {
                             return self.new_token(.KwNotIs, len: 2);
-                        } else if ch2 == b'n' {
+                        } else if ch2 == 'n' {
                             return self.new_token(.KwNotIn, len: 2);
                         }
-                    } else if nextc == b'=' {
+                    } else if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.Ne, len: 2);
                     }
                     return self.new_token(.Bang);
                 },
-                b'|' -> {
-                    if nextc == b'|' && self.look_ahead(2).is_space() {
+                '|' -> {
+                    if nextc == '|' && self.look_ahead(2).is_space() {
                         self.pos += 1;
                         return self.new_token(.LogicalOr, len: 2);
-                    } else if nextc == b'=' {
+                    } else if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.PipeAssign, len: 2);
                     }
                     return self.new_token(.Pipe);
                 },
-                b'~' -> return self.new_token(.BitNot),
-                b'^' -> {
-                    if nextc == b'=' {
+                '~' -> return self.new_token(.BitNot),
+                '^' -> {
+                    if nextc == '=' {
                         self.pos += 1;
                         return self.new_token(.XorAssign, len: 2);
                     }
                     return self.new_token(.Xor);
                 },
-                b'{' -> return self.new_token(.Lbrace),
-                b'}' -> return self.new_token(.Rbrace),
-                b'[' -> return self.new_token(.Lbracket),
-                b']' -> return self.new_token(.Rbracket),
-                b'(' -> return self.new_token(.Lparen),
-                b')' -> return self.new_token(.Rparen),
+                '{' -> return self.new_token(.Lbrace),
+                '}' -> return self.new_token(.Rbrace),
+                '[' -> return self.new_token(.Lbracket),
+                ']' -> return self.new_token(.Rbracket),
+                '(' -> return self.new_token(.Lparen),
+                ')' -> return self.new_token(.Rparen),
                 SINGLE_QUOTE -> {
                     lit := self.read_char();
                     return self.new_token(.Char, lit, lit.len + 2);
                 },
-                b'"' -> {
+                '"' -> {
                     start_line := self.line;
                     start_col := utils.max(1, self.current_column()) - 1;
                     lit := self.read_string();
@@ -363,7 +363,7 @@ extend Tokenizer {
 
     func read_bin_number(mut self) -> string {
         start := self.pos;
-        self.pos += 2; // skip '0b'
+        self.pos += 2; // skip '0'
         if self.pos < self.text.len && self.current_char() == NUM_SEP {
             self.pos -= 1;
             self.error("separator `_` is only valid between digits in a numeric literal");
@@ -471,7 +471,7 @@ extend Tokenizer {
                 self.pos += 1;
             }
             if !ch.is_digit() && ch != NUM_SEP {
-                if !ch.is_letter() || ch in [b'e', b'E'] {
+                if !ch.is_letter() || ch in ['e', 'E'] {
                     break;
                 } else {
                     self.pos -= 1;
@@ -494,7 +494,7 @@ extend Tokenizer {
         mut call_method := false; // true for, e.g., 5.method(), 5.5.method(), 5e5.method()
         mut is_range := false; // true for, e.g., 5..10
         // fractional part
-        if self.pos < self.text.len && self.text[self.pos] == b'.' {
+        if self.pos < self.text.len && self.text[self.pos] == '.' {
             self.pos += 1;
             if self.pos < self.text.len {
                 // 16.6, 16.6.to_string()
@@ -502,9 +502,9 @@ extend Tokenizer {
                     while self.pos < self.text.len : self.pos += 1 {
                         c := self.current_char();
                         if !c.is_digit() {
-                            if !c.is_letter() || c in [b'e', b'E'] {
+                            if !c.is_letter() || c in ['e', 'E'] {
                                 // 16.6.to_string()
-                                if c == b'.' && self.look_ahead(1).is_letter() {
+                                if c == '.' && self.look_ahead(1).is_letter() {
                                     call_method = true;
                                 }
                                 break;
@@ -517,11 +517,11 @@ extend Tokenizer {
                             }
                         }
                     }
-                } else if self.current_char() == b'.' {
+                } else if self.current_char() == '.' {
                     // 4.. a range
                     is_range = true;
                     self.pos -= 1;
-                } else if self.current_char() in [b'e', b'E'] {
+                } else if self.current_char() in ['e', 'E'] {
                     // 6.e6
                 } else if self.current_char().is_letter() {
                     // 16.to_string()
@@ -543,10 +543,10 @@ extend Tokenizer {
         }
         // exponential part
         mut has_exp := false;
-        if self.pos < self.text.len && self.current_char() in [b'e', b'E'] {
+        if self.pos < self.text.len && self.current_char() in ['e', 'E'] {
             has_exp = true;
             self.pos += 1;
-            if self.pos < self.text.len && self.current_char() in [b'-', b'+'] {
+            if self.pos < self.text.len && self.current_char() in ['-', '+'] {
                 self.pos += 1;
             }
             while self.pos < self.text.len : self.pos += 1 {
@@ -554,7 +554,7 @@ extend Tokenizer {
                 if !c2.is_digit() {
                     if !c2.is_letter() {
                         // 6e6.to_string()
-                        if c2 == b'.' && self.look_ahead(1).is_letter() {
+                        if c2 == '.' && self.look_ahead(1).is_letter() {
                             call_method = true;
                         }
                         break;
@@ -564,11 +564,11 @@ extend Tokenizer {
                 }
             }
         }
-        if self.text[self.pos - 1] in [b'e', b'E'] {
+        if self.text[self.pos - 1] in ['e', 'E'] {
             self.pos -= 1;
             self.error("exponent has no digits");
             self.pos += 1;
-        } else if self.current_char() == b'.' && !is_range && !call_method {
+        } else if self.current_char() == '.' && !is_range && !call_method {
             self.pos -= 1;
             if has_exp {
                 self.error("exponential part should be integer");
@@ -676,8 +676,8 @@ extend Tokenizer {
         self.pos += 1;
         start_char := self.current_char();
         mut backslash_count := if start_char == BACKSLASH { 1 } else { 0 };
-        is_raw := self.pos > 0 && self.text[self.pos - 1] == b'r';
-        is_cstr := self.pos > 0 && self.text[self.pos - 1] == b'c';
+        is_raw := self.pos > 0 && self.text[self.pos - 1] == 'r';
+        is_cstr := self.pos > 0 && self.text[self.pos - 1] == 'c';
         mut n_cr_chars := 0;
         if start_char == LF {
             self.inc_line_number();
@@ -695,7 +695,7 @@ extend Tokenizer {
                 backslash_count += 1;
             }
             // end of string
-            if c == b'"' && (is_raw || backslash_count % 2 == 0) {
+            if c == '"' && (is_raw || backslash_count % 2 == 0) {
                 break; // handle "\\" at the end: "123\\"
             }
             if c == CR {
@@ -707,26 +707,24 @@ extend Tokenizer {
             // escape `\x` or `\u`
             if backslash_count % 2 == 1 && !(is_raw || is_cstr) {
                 // escape `\x`
-                if c == b'x' {
-                    if self.look_ahead(1) == b'"' || !(
+                if c == 'x' {
+                    if self.look_ahead(1) == '"' || !(
                         self.look_ahead(1).is_hex_digit() &&
                         self.look_ahead(2).is_hex_digit()
                     ) {
                         self.error(r"`\x` used without two following hex digits", pos);
                     }
                     h_escapes_pos.push(self.pos - 1);
-                } else if c == b'u' { // escape `\u`
-                    if self.look_ahead(1) == b'"' || self.look_ahead(2) == b'"'
-                        || self.look_ahead(3) == b'"' || self.look_ahead(4) == b'"'
-                        || !self.look_ahead(1).is_hex_digit()
-                        || !self.look_ahead(2).is_hex_digit()
-                        || !self.look_ahead(3).is_hex_digit()
-                        || !self.look_ahead(4).is_hex_digit() {
+                } else if c == 'u' { // escape `\u`
+                    if self.look_ahead(1) == '"' || self.look_ahead(2) == '"'
+                        || self.look_ahead(3) == '"' || self.look_ahead(4) == '"'
+                        || !self.look_ahead(1).is_hex_digit() || !self.look_ahead(2).is_hex_digit()
+                        || !self.look_ahead(3).is_hex_digit() || !self.look_ahead(4).is_hex_digit() {
                         self.error(r"`\u` incomplete unicode character value", pos);
                     }
                     u_escapes_pos.push(self.pos - 1);
-                } else if c !in [b'x', b'u', b'e', b'n', b'r', b't', b'v', b'a', b'f', b'b',
-                    b'\\', b'@', b'?', b'{', b'}', b'\'', b'"', b'$'] && !c.is_digit() {
+                } else if c !in ['x', 'u', 'e', 'n', 'r', 't', 'v', 'a', 'f', 'b', '\\', '\'', '"']
+                    && !c.is_digit() {
                     // unknown escape sequence
                     self.pos -= 1;
                     self.error(

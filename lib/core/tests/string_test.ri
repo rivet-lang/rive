@@ -23,7 +23,7 @@ test "string.fmt()" {
 }
 
 test "string.index_of_byte()" {
-    if i := "aeiou".index_of_byte(b'e') {
+    if i := "aeiou".index_of_byte('e') {
         @assert(i == 1);
     } else {
         @assert(false);
@@ -55,7 +55,7 @@ test "string.runes_count()" {
 }
 
 test "string.tokenize()" {
-    mut iterator := "   abc def    ghi  ".tokenize(b' ');
+    mut iterator := "   abc def    ghi  ".tokenize(' ');
     mut res := []string(cap: 3);
     while w := iterator.next() {
         res.push(w);

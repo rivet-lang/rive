@@ -13,7 +13,7 @@ var doubleEscape := "\\\\";
 var invalidEscapes := b"({`.";
 
 pub func smart_quote(s: string, raw: bool := false) -> string {
-    if s.len == 0 {
+    if s == "" {
         return "";
     } else if s.len < 256 {
         mut is_pure := true;
@@ -21,7 +21,7 @@ pub func smart_quote(s: string, raw: bool := false) -> string {
         while i < s.len : i += 1 {
             ch := s[i];
             if (ch >= 37 && ch <= 90) || (ch >= 95 && ch <= 126)
-                || (ch in [b' ', b'!', b'#', b'[', b']']) {
+                || (ch in [' ', '!', '#', '[', ']']) {
                 // safe punctuation + digits + big latin letters, small latin
                 // letters + more safe punctuation, important punctuation exceptions,
                 // that are not placed conveniently in a consequitive span in the ASCII
@@ -35,7 +35,7 @@ pub func smart_quote(s: string, raw: bool := false) -> string {
             return s;
         }
     }
-    // ensure there is enough space for the potential expansion of several b'\\' or b'\n'
+    // ensure there is enough space for the potential expansion of several '\\' or '\n'
     mut result := Builder.new(s.len + 10);
     mut pos: int64 := -1;
     mut current: uint8 := 0;
@@ -95,7 +95,7 @@ pub func smart_quote(s: string, raw: bool := false) -> string {
                 // keep newlines in string
                 current = 0;
                 result.write_byte(BACKSLASH);
-                result.write_byte(b'n');
+                result.write_byte('n');
             },
             BACKSLASH_R if next == BACKSLASH_N -> {
                 result.write_byte(current);

@@ -21,12 +21,21 @@ extend Checker {
                 char_lit.type = if char_lit.is_byte {
                     self.table.uint8_t
                 } else {
-                    self.table.rune_t
+                    if self.expected_type == self.table.uint8_t {
+                        char_lit.is_byte = true;
+                        self.table.uint8_t
+                    } else {
+                        self.table.rune_t
+                    }
                 };
                 char_lit.type
             },
             .IntegerLiteral(mut int_lit) -> {
-                int_lit.type = self.table.comptime_int_t;
+                int_lit.type = if self.table.is_int(self.expected_type) {
+                    self.expected_type
+                } else {
+                    self.table.comptime_int_t
+                };
                 int_lit.type
             },
             .FloatLiteral(mut float_lit) -> {

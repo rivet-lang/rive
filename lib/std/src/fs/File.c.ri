@@ -51,7 +51,7 @@ pub struct File {
     /// Writes the string `s` into the file and appends a '\n' character.
     pub func writeln(mut self, s: string) {
         self.write_string(s);
-        self.write_byte(b'\n');
+        self.write_byte('\n');
     }
 
     #[inline]
@@ -61,7 +61,7 @@ pub struct File {
 
     pub func writeln_fmt(mut self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
-        self.write_byte(b'\n');
+        self.write_byte('\n');
     }
 
     /// Returns the current file contents.

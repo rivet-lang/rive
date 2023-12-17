@@ -89,8 +89,8 @@ struct ComparatorSet {
     #[inline]
     func expand(input: string) -> ?ComparatorSet {
         return match input[0] {
-            b'~' -> expand_tilda(input.substr(1)),
-            b'^' -> expand_tilda(input.substr(1)),
+            '~' -> expand_tilda(input.substr(1)),
+            '^' -> expand_tilda(input.substr(1)),
             else -> {
                 if input.contains(hyphenRangeSep) {
                     expand_hyphen(input)
@@ -178,7 +178,7 @@ struct Range {
 
 func can_expand(input: string) -> bool {
     input0 := input[0];
-    return input0 == b'~' || input0 == b'^' || input.contains(hyphenRangeSep)
+    return input0 == '~' || input0 == '^' || input.contains(hyphenRangeSep)
         || input.index_of_any(xRangeSymbols) != none;
 }
 

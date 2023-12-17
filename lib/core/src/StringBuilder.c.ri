@@ -62,7 +62,7 @@ pub struct StringBuilder < Stringable {
                 self.write_raw_with_len(s.ptr, s.len);
             }
         }
-        self.write_byte(b'\n');
+        self.write_byte('\n');
     }
 
     pub func write_join(mut self, ss: []string, sep: string := "") {
@@ -85,7 +85,7 @@ pub struct StringBuilder < Stringable {
 
     pub func writeln_fmt(mut self, s: string, args: ...Stringable) {
         self.write_string(s.fmt(args));
-        self.write_byte(b'\n');
+        self.write_byte('\n');
     }
 
     pub func last_n(self, n: uint) -> string {

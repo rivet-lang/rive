@@ -174,7 +174,7 @@ pub struct Compiler {
         if pathx.starts_with("./") || is_super {
             self.vlog("    searching module in local path");
             pathx2 := pathx.substr(if is_super { 3 } else { 2 });
-            name = if last_idx := pathx2.last_index_of_byte(b'/') {
+            name = if last_idx := pathx2.last_index_of_byte('/') {
                 pathx2.substr(last_idx + 1)
             } else {
                 pathx2
@@ -189,10 +189,10 @@ pub struct Compiler {
                 if mod_basedir.ends_with("/src") {
                     mod_basedir = mod_basedir.substr(end: mod_basedir.len - 4); // skip `/src`
                 } else if mod_basedir.contains("/src") {
-                    first_part := mod_basedir.substr(end: mod_basedir.last_index_of_byte(b'/') ?? 0);
-                    mod_basedir = mod_basedir.substr(end: first_part.last_index_of_byte(b'/') ?? 0);
+                    first_part := mod_basedir.substr(end: mod_basedir.last_index_of_byte('/') ?? 0);
+                    mod_basedir = mod_basedir.substr(end: first_part.last_index_of_byte('/') ?? 0);
                 }
-                names := abspath.substr((mod_basedir.last_index_of_byte(b'/') ?? 0) + 1).split(
+                names := abspath.substr((mod_basedir.last_index_of_byte('/') ?? 0) + 1).split(
                     "/"
                 );
                 full_name = if "src" in names {
@@ -211,7 +211,7 @@ pub struct Compiler {
             process.set_cwd(old_wd)!;
         } else {
             self.vlog("    searching module in global path");
-            name = if last_idx := pathx.last_index_of_byte(b'/') {
+            name = if last_idx := pathx.last_index_of_byte('/') {
                 pathx.substr(last_idx + 1)
             } else {
                 pathx
@@ -226,7 +226,7 @@ pub struct Compiler {
                 }
                 // support `src/` directory
                 src_dir := if pathx.contains("/") {
-                    slash_idx := (pathx.index_of_byte(b'/') ?? 0) + 1;
+                    slash_idx := (pathx.index_of_byte('/') ?? 0) + 1;
                     Path.join(l, pathx.substr(end: slash_idx), "src", pathx.substr(slash_idx))!
                 } else {
                     Path.join(mod_path, "src")!

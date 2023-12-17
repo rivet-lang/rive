@@ -4,7 +4,7 @@
 
 #[inline]
 pub func is_name_char(ch: uint8) -> bool {
-    return ch.is_letter() || ch == b'_';
+    return ch.is_letter() || ch == '_';
 }
 
 #[inline]

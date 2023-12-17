@@ -240,7 +240,7 @@ pub struct Module < Sym {
                     sb.write_string(", ");
                 }
             }
-            sb.write_byte(b')');
+            sb.write_byte(')');
             sb.to_string()
         };
         if type_sym := self.scope.find(unique_name) {
@@ -274,7 +274,7 @@ pub struct Module < Sym {
                     sb.write_string(", ");
                 }
             }
-            sb.write_byte(b')');
+            sb.write_byte(')');
             if func_sym.ret_type !is .Void {
                 sb.write_fmt(" {}", func_sym.ret_type.to_qualstring());
             }

@@ -66,7 +66,7 @@ pub enum Expr < traits.Stringable {
     },
     CharLiteral {
         value: string;
-        is_byte: bool;
+        mut is_byte: bool;
         pos: token.Pos;
         mut type: Type;
     },
@@ -386,16 +386,16 @@ pub enum Expr < traits.Stringable {
                         sb.write_string(", ");
                     }
                 }
-                sb.write_byte(b')');
+                sb.write_byte(')');
                 sb.to_string()
             },
             .ArrayCtor(array_ctor) -> {
                 mut sb := strings.Builder.new(100);
-                sb.write_byte(b'[');
+                sb.write_byte('[');
                 if !array_ctor.is_dyn {
                     sb.write_string(array_ctor.len_value?.to_string());
                 }
-                sb.write_byte(b']');
+                sb.write_byte(']');
                 if array_ctor.is_mut {
                     sb.write_string("mut ");
                 }
@@ -423,16 +423,16 @@ pub enum Expr < traits.Stringable {
             .ArrayLiteral(array_lit) -> {
                 mut sb := strings.Builder.new(100);
                 if array_lit.is_dyn {
-                    sb.write_byte(b'+');
+                    sb.write_byte('+');
                 }
-                sb.write_byte(b'[');
+                sb.write_byte('[');
                 for i, value in array_lit.values {
                     sb.write_string(value.to_string());
                     if i < array_lit.values.len - 1 {
                         sb.write_string(", ");
                     }
                 }
-                sb.write_byte(b']');
+                sb.write_byte(']');
                 sb.to_string()
             },
             .Selector(selector) -> "{}.{}".fmt(selector.left, selector.field_name),
@@ -458,7 +458,7 @@ pub enum Expr < traits.Stringable {
             .Call(call) -> {
                 mut sb := strings.Builder.new();
                 sb.write_string(call.left.to_string());
-                sb.write_byte(b'(');
+                sb.write_byte('(');
                 for i, arg in call.args {
                     if arg.is_named {
                         sb.write_string(arg.name);
@@ -476,7 +476,7 @@ pub enum Expr < traits.Stringable {
                     sb.write_string("...");
                     sb.write_string(call.spread_expr.to_string());
                 }
-                sb.write_byte(b')');
+                sb.write_byte(')');
                 if call.err_handler.has_expr {
                     sb.write_string("catch ");
                     if call.err_handler.has_varname {
@@ -484,21 +484,21 @@ pub enum Expr < traits.Stringable {
                     }
                     sb.write_string(call.err_handler.expr.to_string());
                 } else if call.err_handler.is_propagate {
-                    sb.write_byte(b'!');
+                    sb.write_byte('!');
                 }
                 sb.to_string()
             },
             .BuiltinCall(builtin_call) -> {
                 mut sb := strings.Builder.from_string("@");
                 sb.write_string(builtin_call.name);
-                sb.write_byte(b'(');
+                sb.write_byte('(');
                 for i, arg in builtin_call.args {
                     sb.write_string(arg.expr.to_string());
                     if i < builtin_call.args.len - 1 {
                         sb.write_string(", ");
                     }
                 }
-                sb.write_byte(b')');
+                sb.write_byte(')');
                 sb.to_string()
             },
             .Unary(unary) -> "{}{}".fmt(unary.op, unary.right),

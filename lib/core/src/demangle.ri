@@ -32,10 +32,10 @@ func demangle_symbol(name: string) -> string {
         buf.clear();
 
         byte = unsafe { name.ptr[idx] };
-        if byte == b'F' {
+        if byte == 'F' {
             res.write_string("()");
             break;
-        } else if byte == b'M' {
+        } else if byte == 'M' {
             res.write_string("(self)");
             break;
         } else if !byte.is_digit() {

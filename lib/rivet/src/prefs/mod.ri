@@ -122,20 +122,20 @@ pub struct Prefs {
                 prefs.mod_output = mod_name;
             }
             if mod_output := fp.string_flag(
-                "output", b'o', "Force Rivet to output the module in a specific location
+                "output", 'o', "Force Rivet to output the module in a specific location
                                      (relative to the current working directory if not absolute)."
             ) {
                 prefs.mod_output = mod_output;
             }
             if release := fp.bool_flag(
-                "release", b'r',
+                "release", 'r',
                 "Compile the executable in release mode, where most
                                      optimizations are enabled."
             ); release {
                 prefs.optimize_mode = .Release;
             }
         }
-        if define := fp.string_flag("define", b'D', "Define the provided flag.") {
+        if define := fp.string_flag("define", 'D', "Define the provided flag.") {
             if define.starts_with("_") && define.ends_with("_") {
                 utils.error(
                     "this form of declaration is reserved for the compiler: `{}`", define
@@ -147,7 +147,7 @@ pub struct Prefs {
             }
         }
         if !is_check {
-            if libpath := fp.string_flag("", b'L', "Add a directory to the library search path.") {
+            if libpath := fp.string_flag("", 'L', "Add a directory to the library search path.") {
                 if Path.is_directory(libpath) {
                     if libpath in prefs.library_path {
                         utils.error("duplicate library path: `{}`", libpath);
@@ -172,7 +172,7 @@ pub struct Prefs {
                 }
             }
             if target_backend := fp.string_flag(
-                "backend", b'b', "Specify the backend to use while building the module."
+                "backend", 'b', "Specify the backend to use while building the module."
             ) {
                 if backend := Backend.from_string(target_backend) {
                     prefs.target_backend = backend;
@@ -181,7 +181,7 @@ pub struct Prefs {
                 }
             }
             if target_backend_compiler := fp.string_flag(
-                "backend-compiler", b'C',
+                "backend-compiler", 'C',
                 "Change the backend compiler Rivet invokes to the
                                         specified compiler."
             ) {
@@ -207,11 +207,11 @@ pub struct Prefs {
                 prefs.keep_c = true;
             }
             if all_warns_are_errors := fp.bool_flag(
-                "", b'W', "Treat all Rivet warnings as errors, even in development builds."
+                "", 'W', "Treat all Rivet warnings as errors, even in development builds."
             ); all_warns_are_errors {
                 prefs.all_warns_are_errors = true;
             }
-            if hide_all_warns := fp.bool_flag("", b'w', "Hide all warnings."); hide_all_warns {
+            if hide_all_warns := fp.bool_flag("", 'w', "Hide all warnings."); hide_all_warns {
                 prefs.hide_all_warns = true;
             }
         }
@@ -224,7 +224,7 @@ pub struct Prefs {
             ) {
                 utils.stderrSupportStyles = show_color;
             }
-            if verbose := fp.bool_flag("verbose", b'v', "Print additional messages to the console."); verbose {
+            if verbose := fp.bool_flag("verbose", 'v', "Print additional messages to the console."); verbose {
                 prefs.is_verbose = true;
             }
         }

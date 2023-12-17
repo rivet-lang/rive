@@ -24,7 +24,7 @@ pub func cmd_fmt(args: []string) -> ! {
     fp.add_usage_example("directory/");
     fp.add_usage_example("-w file.ri");
     write_to_file := fp.bool_flag(
-        "write-to-file", b'w', "Write result to source file(s) instead of to stdout.") ?? false;
+        "write-to-file", 'w', "Write result to source file(s) instead of to stdout.") ?? false;
     remaining := fp.finalize() catch |err_fp| {
         console.ewriteln(fp.usage());
         utils.error(err_fp.to_string())

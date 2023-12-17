@@ -46,7 +46,7 @@ extend Formatter {
             for i, line in lines {
                 if i == lines.len - 1 {
                     self.empty_line = true;
-                    if comment.text[comment.text.len - 1] == b'\n' {
+                    if comment.text[comment.text.len - 1] == '\n' {
                         self.writeln(line);
                     } else {
                         self.write(line);

@@ -328,7 +328,7 @@ pub struct FlagParser {
         if !self.allow_unknown_args {
             for arg in remaining {
                 if (arg.len >= 2 && arg.substr(end: 2) == "--")
-                    || (arg.len == 2 && arg[0] == b'-') {
+                    || (arg.len == 2 && arg[0] == '-') {
                     throw UnknownFlagError(arg);
                 }
             }
@@ -379,7 +379,7 @@ pub struct FlagParser {
         mut show_version := false;
         mut show_help := false;
         if self.find_flag("help") == none {
-            show_help = self.bool_flag("help", b'h', self.default_help_label) ?? false;
+            show_help = self.bool_flag("help", 'h', self.default_help_label) ?? false;
         }
         if !self.application_version.is_empty() && self.find_flag("version") == none {
             show_version = self.bool_flag("version", 0, self.default_version_label) ?? false;
@@ -414,10 +414,10 @@ pub struct FlagParser {
                 should_skip_one = false;
                 continue;
             }
-            if arg.is_empty() || arg[0] != b'-' {
+            if arg.is_empty() || arg[0] != '-' {
                 continue;
             }
-            if (arg.len == 2 && arg[0] == b'-' && arg[1] == short_hand) || arg == full {
+            if (arg.len == 2 && arg[0] == '-' && arg[1] == short_hand) || arg == full {
                 if i +  1 >= self.args.len {
                     return +[];
                 }
@@ -457,10 +457,10 @@ pub struct FlagParser {
     func parse_bool_value(mut self, long_hand: string, short_hand: uint8) -> ?string {
         full := "--".concat(long_hand);
         for i, arg in self.args {
-            if arg.is_empty() || arg[0] != b'-' {
+            if arg.is_empty() || arg[0] != '-' {
                 continue;
             }
-            if (arg.len == 2 && arg[0] == b'-' && arg[1] == short_hand) || arg == full {
+            if (arg.len == 2 && arg[0] == '-' && arg[1] == short_hand) || arg == full {
                 if self.args.len > i + 1 && self.args[i + 1] in ["true", "false"] {
                     val := self.args[i + 1];
                     self.args.delete(i + 1);
@@ -477,7 +477,7 @@ pub struct FlagParser {
                 self.args.delete(i);
                 return val;
             }
-            if arg.len > 1 && arg[0] == b'-' && arg[1] != b'-'
+            if arg.len > 1 && arg[0] == '-' && arg[1] != '-'
                 && arg.index_of_byte(short_hand) != none {
                 // `-abc` is equivalent to `-a -b -c`
                 return "true";

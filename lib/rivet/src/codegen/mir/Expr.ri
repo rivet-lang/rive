@@ -102,7 +102,7 @@ pub enum Expr < traits.Stringable {
                         sb.write_string(", ");
                     }
                 }
-                sb.write_byte(b')');
+                sb.write_byte(')');
                 sb.to_string()
             },
             .Const(const_) -> "const({}, {})".fmt(const_.type, const_.expr),
@@ -118,7 +118,7 @@ pub enum Expr < traits.Stringable {
                         sb.write_string(", ");
                     }
                 }
-                sb.write_byte(b')');
+                sb.write_byte(')');
                 sb.to_string()
             },
             .Call(call) -> {
@@ -133,7 +133,7 @@ pub enum Expr < traits.Stringable {
                         }
                     }
                 }
-                sb.write_byte(b')');
+                sb.write_byte(')');
                 sb.to_string()
             }
         };

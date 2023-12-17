@@ -68,7 +68,7 @@ pub struct Formatter {
         if penalty_idx > 0 && self.line_len <= maxLen[penalty_idx] {
             return false;
         }
-        if self.output.last_byte() == b' ' {
+        if self.output.last_byte() == ' ' {
             self.output.go_back(1);
         }
         self.write("\n");
@@ -107,10 +107,10 @@ pub struct Formatter {
         i = if buffer.len() > 0 { buffer.len() - 1 } else { 0 };
         while i >= 0 : i -= 1 {
             ch := buffer.byte_at(i);
-            if ch == b'\n' {
+            if ch == '\n' {
                 break;
             }
-            line_len += if ch == b'\t' { 4 } else { 1 };
+            line_len += if ch == '\t' { 4 } else { 1 };
             last_line_str.push(ch);
             if i == 0 {
                 break;

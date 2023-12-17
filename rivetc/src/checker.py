@@ -390,7 +390,11 @@ class Checker:
             if expr.is_byte:
                 expr.typ = self.comp.uint8_t
             else:
-                expr.typ = self.comp.rune_t
+                if self.expected_type == self.comp.uint8_t:
+                    expr.is_byte = True
+                    expr.typ = self.comp.uint8_t
+                else:
+                    expr.typ = self.comp.rune_t
             return expr.typ
         elif isinstance(expr, ast.IntegerLiteral):
             if self.comp.is_number(self.expected_type):
