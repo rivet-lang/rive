@@ -4,6 +4,7 @@
 
 import ../token;
 
+#[boxed]
 pub enum Stmt {
     Empty(token.Pos),
     Comment(Comment),
@@ -39,7 +40,7 @@ pub enum Stmt {
             Error,
             Success
         }
-        
+
         mut expr: Expr;
         mode: Mode;
         pos: token.Pos;

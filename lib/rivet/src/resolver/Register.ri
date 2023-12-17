@@ -101,7 +101,8 @@ pub struct Register {
                 .Enum(mut enum_decl) -> {
                     info := ast.TypeInfo.Enum(
                         underlying_type: enum_decl.underlying_type,
-                        is_tagged: enum_decl.is_tagged
+                        is_tagged: enum_decl.is_tagged,
+                        is_boxed: enum_decl.attributes.has("boxed")
                     );
                     enum_decl.sym = self.add_sym(
                         ast.TypeSym(

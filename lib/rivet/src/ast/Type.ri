@@ -7,7 +7,7 @@ import std/strings.Builder;
 
 import ../token;
 
-#[default_value(.Void)]
+#[boxed; default_value(.Void)]
 pub enum Type < traits.Stringable {
     Basic {
         mut sym: ?TypeSym;

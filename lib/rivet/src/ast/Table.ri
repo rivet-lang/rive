@@ -330,7 +330,22 @@ pub struct Table {
                     .Rune -> (4, 4),
                     .ComptimeFloat, .ComptimeInt -> (8, 8),
                     .Enum(enum_info) -> if enum_info.is_tagged {
-                        ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size)
+                        if enum_info.is_boxed {
+                            ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size)
+                        } else {
+                            mut total_size := self.pointer_size;
+                            mut max_alignment := self.pointer_size;
+                            for variant in enum_info.variants {
+                                if variant.has_type {
+                                    (variant_size, alignment) := self.type_size(variant.type);
+                                    if alignment > max_alignment {
+                                        max_alignment = alignment;
+                                    }
+                                    total_size = utils.round_up(total_size, alignment) + variant_size;
+                                }
+                            }
+                            (utils.round_up(total_size, max_alignment), max_alignment)
+                        }
                     } else {
                         self.type_size(enum_info.underlying_type)
                     },

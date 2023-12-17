@@ -47,8 +47,8 @@ pub enum Stmt < traits.Stringable {
         expr: Expr := .Empty;
     };
 
-    pub func to_string(self) -> string {
-        return match self {
+    pub func to_string(&self) -> string {
+        return match self.* {
             .Expr(expr) -> expr.to_string(),
             .Assign(assign) -> "{} = {}".fmt(assign.left, assign.right),
             .Discard(discard) -> "discard {}".fmt(discard),

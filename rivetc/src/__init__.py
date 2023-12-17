@@ -390,7 +390,21 @@ class Compiler:
             size, align = 8, 8
         elif sy.kind == sym.TypeKind.Enum:
             if sy.info.is_tagged:
-                size, align = self.pointer_size, self.pointer_size
+                if sy.info.is_boxed:
+                    size, align = self.pointer_size, self.pointer_size
+                else:
+                    total_size = self.pointer_size
+                    max_alignment = self.pointer_size
+                    for variant in sy.info.variants:
+                        if variant.has_typ:
+                            variant_size, alignment = self.type_size(variant.typ)
+                            if alignment > max_alignment:
+                                max_alignment = alignment
+                            total_size = utils.round_up(
+                                total_size, alignment
+                            ) + variant_size
+                    size = utils.round_up(total_size, max_alignment)
+                    align = max_alignment
             else:
                 size, align = self.type_size(sy.info.underlying_typ)
         elif sy.kind == sym.TypeKind.Array:

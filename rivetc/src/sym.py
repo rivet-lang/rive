@@ -469,9 +469,10 @@ class EnumVariant:
         self.has_fields = has_fields
 
 class EnumInfo:
-    def __init__(self, underlying_typ, is_tagged):
+    def __init__(self, underlying_typ, is_tagged, is_boxed):
         self.underlying_typ = underlying_typ
         self.is_tagged = is_tagged
+        self.is_boxed = is_boxed
         self.variants = []
 
     def add_variant(self, name, has_typ, typ, has_fields):
@@ -600,8 +601,8 @@ class Type(Sym):
         return self in trait_sym.info.implements
 
     def is_boxed(self):
-        if self.kind == TypeKind.Enum:
-            return self.info.is_tagged
+        if isinstance(self.info, EnumInfo):
+            return self.info.is_boxed
         elif isinstance(self.info, StructInfo):
             return self.info.is_boxed
         return self.kind in (TypeKind.Trait, TypeKind.String, TypeKind.DynArray)

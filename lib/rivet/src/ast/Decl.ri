@@ -4,6 +4,7 @@
 
 import ../token;
 
+#[boxed]
 pub enum Decl {
     Empty(token.Pos),
     Comment(Comment),

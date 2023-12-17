@@ -74,6 +74,7 @@ pub enum TypeInfo < traits.Stringable {
         underlying_type: Type;
         mut variants: []mut EnumVariant;
         is_tagged: bool;
+        is_boxed: bool;
         mut traits: []mut TypeSym;
 
         #[inline]
@@ -161,8 +162,8 @@ pub enum TypeInfo < traits.Stringable {
     }
 
     #[inline]
-    pub func to_string(self) -> string {
-        return match self {
+    pub func to_string(&self) -> string {
+        return match self.* {
             .Invalid -> "invalid",
             .Placeholder -> "placeholder",
             .None -> "none",

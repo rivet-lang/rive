@@ -280,7 +280,7 @@ class Checker:
                 elem_typ = self.comp.comptime_number_to_type(
                     iterable_sym.info.elem_typ
                 )
-                if stmt.value.is_mut: 
+                if stmt.value.is_mut:
                     if not iterable_sym.info.is_mut:
                         report.error(
                             f"cannot modify immutable {iterable_sym.kind}",
@@ -1445,7 +1445,7 @@ class Checker:
                                 "multiple patterns cannot have variable",
                                 b.var_pos
                             )
-                        elif expr_sym.is_boxed():
+                        else:
                             var_t = self.comp.void_t
                             if expr_sym.kind == TypeKind.Enum:
                                 pat0 = b.pats[0].variant_info
@@ -1463,10 +1463,6 @@ class Checker:
                                 var_t = b.pats[0].typ
                             b.var_typ = var_t
                             expr.scope.update_type(b.var_name, var_t)
-                        else:
-                            report.error(
-                                "only boxed types can have vars", b.var_pos
-                            )
                     if b.has_cond and self.check_expr(
                         b.cond
                     ) != self.comp.bool_t:
@@ -1915,7 +1911,7 @@ class Checker:
         elif isinstance(expr, ast.SelectorExpr):
             if expr.is_path:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
-                return 
+                return
             self.check_expr_is_mut(expr.left, from_assign)
             if expr.is_indirect and isinstance(expr.left_typ, type.Ptr):
                 if not expr.left_typ.is_mut:
