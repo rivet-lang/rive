@@ -10,7 +10,7 @@ import rivet/ast.Env;
 var prefs_ := prefs.Prefs();
 
 func tokenize(text: string) -> []token.Token {
-    mut tokenizer_ := tokenizer.Tokenizer.new(text, prefs_, Env.new(prefs_));
+    mut tokenizer_ := tokenizer.Tokenizer.new(text, Env.new(prefs_));
     mut tokens := []token.Token(cap: text.len / 3);
     mut token := tokenizer_.next();
     while {
