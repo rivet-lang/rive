@@ -16,41 +16,41 @@ extend Checker {
             },
             .Paren(mut paren) -> self.check_expr(paren.expr),
             .NoneLiteral -> .None,
-            .BoolLiteral -> self.table.bool_t,
+            .BoolLiteral -> self.env.bool_t,
             .CharLiteral(mut char_lit) -> {
                 char_lit.type = if char_lit.is_byte {
-                    self.table.uint8_t
+                    self.env.uint8_t
                 } else {
-                    if self.expected_type == self.table.uint8_t {
+                    if self.expected_type == self.env.uint8_t {
                         char_lit.is_byte = true;
-                        self.table.uint8_t
+                        self.env.uint8_t
                     } else {
-                        self.table.rune_t
+                        self.env.rune_t
                     }
                 };
                 char_lit.type
             },
             .IntegerLiteral(mut int_lit) -> {
-                int_lit.type = if self.table.is_int(self.expected_type) {
+                int_lit.type = if self.env.is_int(self.expected_type) {
                     self.expected_type
                 } else {
-                    self.table.comptime_int_t
+                    self.env.comptime_int_t
                 };
                 int_lit.type
             },
             .FloatLiteral(mut float_lit) -> {
-                float_lit.type = self.table.comptime_float_t;
+                float_lit.type = self.env.comptime_float_t;
                 float_lit.type
             },
             .StringLiteral(mut string_lit) -> {
                 string_lit.type = if string_lit.is_bytestr {
-                    .Basic(self.table.universe.add_or_get_array(
-                        self.table.uint8_t, string_lit.value.len, false
+                    .Basic(self.env.universe.add_or_get_array(
+                        self.env.uint8_t, string_lit.value.len, false
                     ))
                 } else if string_lit.is_cstr {
-                    .Pointer(self.table.uint8_t, is_indexable: true)
+                    .Pointer(self.env.uint8_t, is_indexable: true)
                 } else {
-                    self.table.string_t
+                    self.env.string_t
                 };
                 string_lit.type
             },
@@ -114,7 +114,7 @@ extend Checker {
                 }
                 if mut len_value := array_ctor.len_value {
                     len_t := self.check_expr(len_value);
-                    if !(len_t == self.table.uint_t || len_t == self.table.comptime_int_t) {
+                    if !(len_t == self.env.uint_t || len_t == self.env.comptime_int_t) {
                         report.error(
                             "argument `len` should have a value of type `uint`",
                             len_value.position()
@@ -123,7 +123,7 @@ extend Checker {
                 }
                 if mut cap_value := array_ctor.cap_value {
                     cap_t := self.check_expr(cap_value);
-                    if !(cap_t == self.table.uint_t || cap_t == self.table.comptime_int_t) {
+                    if !(cap_t == self.env.uint_t || cap_t == self.env.comptime_int_t) {
                         report.error(
                             "argument `cap` should have a value of type `uint`",
                             cap_value.position()
@@ -132,13 +132,13 @@ extend Checker {
                 }
                 array_ctor.type = if array_ctor.is_dyn {
                     .Basic(
-                        self.table.universe.add_or_get_dyn_array(
+                        self.env.universe.add_or_get_dyn_array(
                             array_ctor.elem_type, array_ctor.is_mut
                         ), pos: array_ctor.pos
                     )
                 } else {
                     .Basic(
-                        self.table.universe.add_or_get_array(
+                        self.env.universe.add_or_get_array(
                             array_ctor.elem_type, array_ctor.len_res, array_ctor.is_mut
                         ), pos: array_ctor.pos
                     )
@@ -163,7 +163,7 @@ extend Checker {
                                 err.add_help("wrap the extern function with a function");
                                 err.emit();
                             }
-                            func_sym.type(self.table.universe)
+                            func_sym.type(self.env.universe)
                         },
                         else -> .Void
                     }
@@ -210,14 +210,14 @@ extend Checker {
                 range.type = if range.has_start {
                     self.check_expr(range.start)
                 } else {
-                    self.table.uint_t
+                    self.env.uint_t
                 };
                 end_type := if range.has_end {
                     self.check_expr(range.end)
                 } else {
-                    self.table.uint_t
+                    self.env.uint_t
                 };
-                if !(self.table.is_int(range.type) || self.table.is_int(end_type)) {
+                if !(self.env.is_int(range.type) || self.env.is_int(end_type)) {
                     report.error("non-integer value used as range", range.pos);
                 }
                 range.type
@@ -268,7 +268,7 @@ extend Checker {
                 old_inside_guard_expr := self.inside_guard_expr;
                 self.inside_guard_expr = true;
                 self.check_var_decl(guard.vars, guard.expr, guard.scope, guard.pos);
-                if guard.has_cond && self.check_expr(guard.cond) != self.table.bool_t {
+                if guard.has_cond && self.check_expr(guard.cond) != self.env.bool_t {
                     report.error(
                         "non-boolean expression used as guard condition",
                         guard.cond.position()
@@ -308,7 +308,7 @@ extend Checker {
         }
         self.expected_type = old_expected_type;
         tuple_lit.type = .Basic(
-            self.table.universe.add_or_get_tuple(types), pos: tuple_lit.pos
+            self.env.universe.add_or_get_tuple(types), pos: tuple_lit.pos
         );
         return tuple_lit.type;
     }
@@ -333,12 +333,12 @@ extend Checker {
             value_type = self.expected_type;
         }
         if has_expected_type {
-            value_type = self.table.comptime_number_to_type(value_type);
+            value_type = self.env.comptime_number_to_type(value_type);
         }
         for i, mut value in array_lit.values {
             type := self.check_expr(value);
             if i == 0 && !has_expected_type {
-                value_type = self.table.comptime_number_to_type(type);
+                value_type = self.env.comptime_number_to_type(type);
                 self.expected_type = value_type;
             } else {
                 self.check_types(type, value_type) catch |err| {
@@ -354,7 +354,7 @@ extend Checker {
         }
         self.expected_type = old_expected_type;
         array_lit.type = if array_lit.is_dyn {
-            .Basic(self.table.universe.add_or_get_dyn_array(value_type, is_mut), pos: array_lit.pos)
+            .Basic(self.env.universe.add_or_get_dyn_array(value_type, is_mut), pos: array_lit.pos)
         } else {
             arr_len := if array_lit.values.len > 0 {
                 array_lit.values.len
@@ -365,7 +365,7 @@ extend Checker {
                 size
             };
             .Basic(
-                self.table.universe.add_or_get_array(value_type, arr_len, is_mut),
+                self.env.universe.add_or_get_array(value_type, arr_len, is_mut),
                 pos: array_lit.pos
             )
         };
@@ -401,7 +401,7 @@ extend Checker {
                                 ), selector.field_pos
                             );
                         }
-                        func_sym.type(self.table.universe)
+                        func_sym.type(self.env.universe)
                     },
                     ast.TypeSym(type_sym_) -> .Basic(type_sym_, pos: selector.pos),
                     ast.Const(const_sym) -> const_sym.type,
@@ -443,7 +443,7 @@ extend Checker {
                                 "use `{}.{}` instead", left_sym.name, selector.field_name
                             );
                             err.emit();
-                            func_sym.type(self.table.universe)
+                            func_sym.type(self.env.universe)
                         }
                     } else {
                         report.error(
@@ -485,7 +485,7 @@ extend Checker {
         index.left_type = self.check_expr(index.left);
         left_sym := index.left_type.symbol()?;
         index_t := self.check_expr(index.index);
-        if !(index_t == self.table.comptime_int_t || self.table.is_unsigned_int(index_t)) {
+        if !(index_t == self.env.comptime_int_t || self.env.is_unsigned_int(index_t)) {
             report.error(
                 "expected unsigned integer type, found `{}`".fmt(index_t),
                 index.index.position()
@@ -501,7 +501,7 @@ extend Checker {
                     } else {
                         .DynArray(
                             elem_type, is_mut,
-                            self.table.universe.add_or_get_dyn_array(elem_type, is_mut)
+                            self.env.universe.add_or_get_dyn_array(elem_type, is_mut)
                         )
                     }
                 } else {
@@ -509,7 +509,7 @@ extend Checker {
                 }
             },
             else -> {
-                if !(index.left_type is .Pointer || index.left_type == self.table.string_t) {
+                if !(index.left_type is .Pointer || index.left_type == self.env.string_t) {
                     mut err := report.error_builder(
                         "type `{}` does not support indexing".fmt(index.left_type),
                         index.pos
@@ -528,7 +528,7 @@ extend Checker {
                         report.error("cannot slice a pointer", index.index.position());
                     }
                 }
-                if index.left_type == self.table.string_t {
+                if index.left_type == self.env.string_t {
                     if index.index is .Range {
                         mut err := report.error_builder(
                             "`string` does not support slicing syntax", index.pos
@@ -536,7 +536,7 @@ extend Checker {
                         err.add_help("use `.substr()` instead");
                         err.emit();
                     }
-                    self.table.uint8_t
+                    self.env.uint8_t
                 } else {
                     @as(ast.Type.Pointer, index.left_type).inner
                 }
@@ -548,13 +548,13 @@ extend Checker {
     func check_unary(mut self, mut unary: ast.Expr.Unary) -> ast.Type {
         unary.type = self.check_expr(unary.right);
         match unary.op {
-            .Bang if unary.type != self.table.bool_t -> report.error(
+            .Bang if unary.type != self.env.bool_t -> report.error(
                 "operator `!` can only be used with boolean values", unary.pos
             ),
-            .BitNot if !self.table.is_int(unary.type) -> report.error(
+            .BitNot if !self.env.is_int(unary.type) -> report.error(
                 "operator `~` can only be used with numeric values", unary.pos
             ),
-            .Minus -> if self.table.is_unsigned_int(unary.type) {
+            .Minus -> if self.env.is_unsigned_int(unary.type) {
                 mut err := report.error_builder(
                     "cannot apply unary operator `-` to type `{expr.typ}`".fmt(
                         unary.type
@@ -562,8 +562,8 @@ extend Checker {
                 );
                 err.add_note("unsigned values cannot be negated");
                 err.emit();
-            } else if !(self.table.is_signed_int(unary.type)
-                || self.table.is_float(unary.type)) {
+            } else if !(self.env.is_signed_int(unary.type)
+                || self.env.is_float(unary.type)) {
                 report.error(
                     "operator `-` can only be used with signed integer or float values",
                     unary.pos
@@ -629,7 +629,7 @@ extend Checker {
             report.error("option values only support `??`, `==` and `!=`", binary.pos);
         } else if left_type is .Option && binary.op != .OrElse && right_type !is .None {
             report.error("option values ​​can only be compared with `none`", binary.pos);
-        } else if left_type == self.table.bool_t && right_type == left_type
+        } else if left_type == self.env.bool_t && right_type == left_type
             && binary.op !in [.Eq, .Ne, .LogicalAnd, .LogicalOr, .Pipe, .Amp] {
             report.error("boolean values only support the following operators: `==`, `!=`, `&&`, `||`, `&` and `|`", binary.pos);
         }
@@ -690,7 +690,7 @@ extend Checker {
                     return binary.type;
                 },
                 .KwIn, .KwNotIn -> {
-                    binary.type = self.table.bool_t;
+                    binary.type = self.env.bool_t;
                     if right_sym := right_type.symbol() {
                         if right_sym.info is .Array || right_sym.info is .DynArray {
                             elem_type := right_sym.info.elem_type()?;
@@ -767,16 +767,16 @@ extend Checker {
                             );
                         }
                     }
-                    binary.type = self.table.bool_t;
+                    binary.type = self.env.bool_t;
                     return binary.type;
                 },
                 .LogicalAnd, .LogicalOr -> {
-                    if left_type != self.table.bool_t {
+                    if left_type != self.env.bool_t {
                         report.error(
                             "non-boolean expression in left operand for `{}`".fmt(binary.op),
                             binary.left.position()
                         );
-                    } else if right_type != self.table.bool_t {
+                    } else if right_type != self.env.bool_t {
                         report.error(
                             "non-boolean expression in right operand for `{}`".fmt(binary.op),
                             binary.left.position()
@@ -794,22 +794,22 @@ extend Checker {
                             err.emit();
                         }
                     }
-                    binary.type = self.table.bool_t;
+                    binary.type = self.env.bool_t;
                     return binary.type;
                 },
                 .Lshift, .Rshift -> {
-                    if !self.table.is_int(left_type) {
+                    if !self.env.is_int(left_type) {
                         report.error(
                             "shift on non-integer type `{}`".fmt(left_type),
                             binary.left.position()
                         );
-                    } else if !self.table.is_int(right_type) {
+                    } else if !self.env.is_int(right_type) {
                         report.error(
                             "cannot shift non-integer type `{}` into type `{}`".fmt(
                                 right_type, left_type
                             ), binary.left.position()
                         );
-                    } else if binary.op == .Lshift && self.table.is_signed_int(left_type)
+                    } else if binary.op == .Lshift && self.env.is_signed_int(left_type)
                         && !self.inside_unsafe() {
                         report.warn(
                             "shifting a value from a signed type `{}` can change the sign"
@@ -825,7 +825,7 @@ extend Checker {
         }
 
         binary.type = if binary.op.is_relational() {
-            self.table.bool_t
+            self.env.bool_t
         } else {
             return_type
         };
@@ -837,7 +837,7 @@ extend Checker {
         for i, mut branch in if_expr.branches {
             if !branch.is_else {
                 bcond_t := self.check_expr(branch.cond);
-                if branch.cond !is .Guard && bcond_t != self.table.bool_t {
+                if branch.cond !is .Guard && bcond_t != self.env.bool_t {
                     report.error(
                         "non-boolean expression used as `if` condition",
                         branch.cond.position()
@@ -927,8 +927,8 @@ extend Checker {
         } else if self.cur_func.ret_type is .Result {
             expr_type := self.check_expr(throw_expr.expr);
             expr_sym := expr_type.symbol()?;
-            if !(expr_sym == self.table.throwable_sym
-                || expr_sym.implement_trait(self.table.throwable_sym)
+            if !(expr_sym == self.env.throwable_sym
+                || expr_sym.implement_trait(self.env.throwable_sym)
             ) {
                 mut err_b := report.error_builder(
                     "using an invalid value as an error to throw",

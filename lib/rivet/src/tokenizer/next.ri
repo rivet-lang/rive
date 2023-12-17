@@ -92,7 +92,7 @@ extend Tokenizer {
                             self.pos -= 1;
                             self.line -= 1;
                         }
-                        if (is_doc_comment && self.prefs.is_docs) || self.prefs.is_fmt {
+                        if (is_doc_comment && self.env.prefs.is_docs) || self.env.prefs.is_fmt {
                             mut comment := self.text.substr(start_pos, end_pos);
                             // find out if this comment is on its own line (for rivet format)
                             mut is_separate_line_comment := true;
@@ -144,7 +144,7 @@ extend Tokenizer {
                             self.error("comment not terminated");
                             break;
                         }
-                        if self.prefs.is_fmt {
+                        if self.env.prefs.is_fmt {
                             line := self.text.substr(start_pos + 2, end_pos);
                             return self.new_multiline_token(
                                 .Comment, line, line.len, start_line, self.line, start_col
@@ -615,7 +615,7 @@ extend Tokenizer {
         len -= 1;
 
         mut ch := self.text.substr(start + 1, self.pos).clone();
-        if self.prefs.is_fmt {
+        if self.env.prefs.is_fmt {
             return ch;
         }
         if len != 1 {
@@ -742,7 +742,7 @@ extend Tokenizer {
         mut lit := "";
         if start <= self.pos {
             lit = self.text.substr(start, self.pos).clone();
-            if !self.prefs.is_fmt {
+            if !self.env.prefs.is_fmt {
                 mut segment_idx: uint := 0;
                 mut str_segments := []string();
                 if u_escapes_pos.len + h_escapes_pos.len > 0 {

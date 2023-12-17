@@ -108,7 +108,7 @@ enum CImportValue {
     }
 }
 
-extend Table {
+extend Env {
     func setup_c_utils(mut self) {
         self.c_include_paths = self.get_include_paths();
         self.c_defines = self.get_global_defines();

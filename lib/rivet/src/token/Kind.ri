@@ -105,7 +105,7 @@ var kindStrings := [
     KindMap(.KwWhile, "while")
 ];
 
-var keywordsTable := kindStrings[@as(uint, Kind.KeywordBegin)..];
+var keywordsEnv := kindStrings[@as(uint, Kind.KeywordBegin)..];
 
 pub enum Kind < traits.Stringable {
     Unknown, // unknown
@@ -208,7 +208,7 @@ pub enum Kind < traits.Stringable {
 
     #[inline]
     pub func lookup(str: string) -> Self {
-        for &km in keywordsTable {
+        for &km in keywordsEnv {
             if km.value == str {
                 return km.key;
             }

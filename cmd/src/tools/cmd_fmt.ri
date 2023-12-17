@@ -39,11 +39,11 @@ pub func cmd_fmt(args: []string) -> ! {
         );
         prefs_.check_input(input);
         prefs_.load_module_info()!;
-        table_ := ast.Table.new(prefs_);
-        mut builder := rivet.Builder(table: table_, prefs: prefs_);
+        env := ast.Env.new(prefs_);
+        mut builder := rivet.Builder(env: env);
         builder.load_root_module()!;
-        mut formatter := fmt.Formatter(prefs_, table_, write_to_file: write_to_file);
-        for source_file in table_.source_files {
+        mut formatter := fmt.Formatter(env, write_to_file: write_to_file);
+        for source_file in env.source_files {
             output := formatter.format(source_file);
             console.writeln(output);
         }

@@ -376,7 +376,7 @@ extend Parser {
                 underlying_type := if self.accept(.KwAs) {
                     self.parse_type()
                 } else {
-                    self.table.comptime_int_t
+                    self.env.comptime_int_t
                 };
                 mut bases := []mut ast.Type();
                 if self.accept(.Lt) {

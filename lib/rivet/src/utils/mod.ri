@@ -12,7 +12,7 @@ pub const CR: uint8 := 13;
 
 pub var mut stderrSupportStyles := styles.stderr_support_styles();
 
-pub var tabsTable := [
+pub var tabsEnv := [
     "",
     "\t",
     "\t\t",
@@ -27,8 +27,8 @@ pub var tabsTable := [
 ];
 
 pub func tabs(n: uint) -> string {
-    return if n < tabsTable.len {
-        tabsTable[n]
+    return if n < tabsEnv.len {
+        tabsEnv[n]
     } else {
         "\t".repeat(n)
     };

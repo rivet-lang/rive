@@ -22,7 +22,7 @@ extend Checker {
     ) {
         if mut expected_sym := expected.symbol(); expected_sym.info is .Trait(mut trait_info)
             && expected != got {
-            got_t := self.table.comptime_number_to_type(got);
+            got_t := self.env.comptime_number_to_type(got);
             if got_t.symbol()? in trait_info.implements {
                 trait_info.mark_has_objects();
             } else {
@@ -135,21 +135,21 @@ extend Checker {
             return dyn_array_info.inner == dyn_array_info2.inner;
         }
 
-        if expected == self.table.rune_t && got == self.table.comptime_int_t {
+        if expected == self.env.rune_t && got == self.env.comptime_int_t {
             return true;
-        } else if expected == self.table.comptime_int_t && got == self.table.rune_t {
+        } else if expected == self.env.comptime_int_t && got == self.env.rune_t {
             return true;
         }
 
-        if self.table.is_number(expected) && self.table.is_number(got) {
-            if self.table.is_comptime_number(expected) || self.table.is_comptime_number(got) {
+        if self.env.is_number(expected) && self.env.is_number(got) {
+            if self.env.is_comptime_number(expected) || self.env.is_comptime_number(got) {
                 return true;
             }
         }
 
         match expected_sym.info {
             .Trait(mut trait_info) -> {
-                got_sym2 := self.table.comptime_number_to_type(got).symbol()?;
+                got_sym2 := self.env.comptime_number_to_type(got).symbol()?;
                 if got_sym2 in trait_info.implements {
                     trait_info.mark_has_objects();
                     return true;
@@ -184,7 +184,7 @@ extend Checker {
 
         mod_sym := self.sym.module()?;
         if mod_sym.is_core() {
-            if expected_sym.info is .DynArray && got_sym == self.table.dyn_array_sym {
+            if expected_sym.info is .DynArray && got_sym == self.env.dyn_array_sym {
                 return true;
             }
         }

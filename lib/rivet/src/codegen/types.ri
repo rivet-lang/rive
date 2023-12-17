@@ -107,7 +107,7 @@ extend Codegen {
     }
 
     func type_to_mir(mut self, type: ast.Type) -> mir.Type {
-        (size, _) := self.table.type_size(type, true);
+        (size, _) := self.env.type_size(type, true);
         return match type {
             .Void -> .Void,
             .Never -> .Never,
@@ -148,14 +148,14 @@ extend Codegen {
                 self.type_to_mir(array_t.inner), array_t.size_value, size
             ),
             .DynArray -> self.dyn_array_t,
-            .Rawptr -> .Rawptr(self.table.pointer_size),
+            .Rawptr -> .Rawptr(self.env.pointer_size),
             .Pointer(ptr_t) -> .Pointer(
-                self.type_to_mir(ptr_t.inner), size: self.table.pointer_size
+                self.type_to_mir(ptr_t.inner), size: self.env.pointer_size
             ),
             else -> {
-                if self.table.is_int(type) {
-                    bits := self.table.int_bits(type);
-                    if self.table.is_signed_int(type) {
+                if self.env.is_int(type) {
+                    bits := self.env.int_bits(type);
+                    if self.env.is_signed_int(type) {
                         .SizedInt(bits, size)
                     } else {
                         .SizedUint(bits, size)
@@ -181,7 +181,7 @@ extend Codegen {
                         else -> {
                             mut res := mir.Type.Basic(self.mangle_symbol(type_sym), size);
                             if type_sym.is_boxed() {
-                                res = .Pointer(res, true, self.table.pointer_size)
+                                res = .Pointer(res, true, self.env.pointer_size)
                             }
                             res
                         }

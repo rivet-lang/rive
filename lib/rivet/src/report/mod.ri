@@ -10,7 +10,7 @@ import ../prefs;
 import ../token;
 import ../utils;
 
-pub var mut reportTable := ReportTable();
+pub var mut reportTable := ReportEnv();
 
 #[inline]
 pub func total_errors() -> uint {
@@ -23,7 +23,7 @@ pub func total_warns() -> uint {
 }
 
 #[boxed]
-struct ReportTable {
+struct ReportEnv {
     pub mut prefs: prefs.Prefs;
     pub mut errors: uint;
     pub mut warns: uint;

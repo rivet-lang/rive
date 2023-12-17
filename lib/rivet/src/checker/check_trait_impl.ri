@@ -55,18 +55,18 @@ extend Checker {
                         err.add_note("====== method signature for `{}` ======", impl.name);
                         err.add_note(
                             "trait `{}` has `{}`", trait_sym.name,
-                            trait_func.type(self.table.universe)
+                            trait_func.type(self.env.universe)
                         );
                         err.add_note(
                             "type `{}` has `{}`", impltor.name,
-                            impl.type(self.table.universe)
+                            impl.type(self.env.universe)
                         );
                         err.emit();
                     }
                 } else if !trait_func.has_body {
                     impl_does_not_implemented.push(
                         "`{}` - {}".fmt(
-                            trait_func.name, trait_func.type(self.table.universe)
+                            trait_func.name, trait_func.type(self.env.universe)
                         )
                     );
                 }

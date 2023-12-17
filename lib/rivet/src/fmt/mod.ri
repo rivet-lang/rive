@@ -7,14 +7,12 @@ import std/strings;
 
 import ../ast;
 import ../utils;
-import ../prefs;
 
 var maxLen := [@as(uint, 0), 35, 60, 85, 93, 100];
 
 #[boxed]
 pub struct Formatter {
-    prefs: prefs.Prefs;
-    table: ast.Table;
+    env: ast.Env;
 
     mut source_file: ast.SourceFile;
     mut imports_output: strings.Builder := strings.Builder.new(100);

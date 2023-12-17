@@ -20,8 +20,7 @@ import ./depgraph;
 
 #[boxed]
 pub struct Builder {
-    mut table: ast.Table;
-    mut prefs: prefs.Prefs;
+    mut env: ast.Env;
 
     mut resolver: resolver.Resolver;
     mut checker: checker.Checker;
@@ -29,12 +28,12 @@ pub struct Builder {
 
     pub func new(args: []string, is_test: bool, run_output: bool, is_check: bool) -> ! {
         prefs_ := prefs.Prefs.new(args, is_test, run_output, is_check)!;
-        table_ := ast.Table.new(prefs_);
+        env := ast.Env.new(prefs_);
         Self(
-            table: table_, prefs: prefs_,
-            resolver: resolver.Resolver(table_, prefs_),
-            checker: checker.Checker(table_, prefs_),
-            codegen: codegen.Codegen(table_, prefs_)
+            env: env,
+            resolver: resolver.Resolver(env),
+            checker: checker.Checker(env),
+            codegen: codegen.Codegen(env)
         ).run()!;
     }
 
@@ -45,22 +44,22 @@ pub struct Builder {
         self.load_root_module()!;
         self.import_modules()!;
 
-        if !self.prefs.check_syntax {
+        if !self.env.prefs.check_syntax {
             self.vlog("resolving files...");
-            self.resolver.resolve_files(self.table.source_files);
+            self.resolver.resolve_files(self.env.source_files);
             if report.total_errors() > 0 {
                 self.abort();
             }
 
             self.vlog("checking files...");
-            self.checker.check_files(self.table.source_files);
+            self.checker.check_files(self.env.source_files);
             if report.total_errors() > 0 {
                 self.abort();
             }
 
-            if !self.prefs.check {
+            if !self.env.prefs.check {
                 self.vlog("generating MIR from AST...");
-                self.codegen.generate_mirs(self.table.source_files);
+                self.codegen.generate_mirs(self.env.source_files);
                 if report.total_errors() > 0 {
                     self.abort();
                 }
@@ -70,7 +69,7 @@ pub struct Builder {
         total_warns := report.total_warns();
         if total_warns > 0 {
             utils.warn(
-                "module `{}` generated {} {}", self.prefs.mod_name, total_warns,
+                "module `{}` generated {} {}", self.env.prefs.mod_name, total_warns,
                 if total_warns == 1 {
                     "warning"
                 } else {
@@ -90,40 +89,40 @@ pub struct Builder {
     }
 
     func load_root_module(mut self) -> ! {
-        files := if Path.is_directory(self.prefs.input) {
-            mut filtered_files := self.table.filter_files(
-                Directory.walk(self.prefs.input, ".ri")!
+        files := if Path.is_directory(self.env.prefs.input) {
+            mut filtered_files := self.env.filter_files(
+                Directory.walk(self.env.prefs.input, ".ri")!
             );
-            src_dir := Path.join(self.prefs.input, "src")!;
+            src_dir := Path.join(self.env.prefs.input, "src")!;
             if Path.is_directory(src_dir) { // support `src/` directory
-                for file in self.table.filter_files(Directory.walk(src_dir, ".ri")!) {
+                for file in self.env.filter_files(Directory.walk(src_dir, ".ri")!) {
                     filtered_files.push(file);
                 }
             }
             filtered_files
         } else {
-            +[self.prefs.input]
+            +[self.env.prefs.input]
         };
         if files.is_empty() {
             utils.error("no input received");
-        } else if self.prefs.is_verbose {
+        } else if self.env.prefs.is_verbose {
             self.vlog("Builder.load_root_module: loaded root module files:");
             for file in files {
                 self.vlog("   > {}", file);
             }
         }
-        root_sym := ast.Module(name: self.prefs.mod_name, is_root: true);
-        self.table.universe.scope.add(root_sym) catch |err| utils.error(
+        root_sym := ast.Module(name: self.env.prefs.mod_name, is_root: true);
+        self.env.universe.scope.add(root_sym) catch |err| utils.error(
             "Builder.load_root_module: {}", err
         );
         self.parse_files(root_sym, files);
     }
 
     func import_modules(mut self) -> ! {
-        for mut sf in self.table.source_files {
+        for mut sf in self.env.source_files {
             for mut d in sf.decls {
                 if d is .Import(mut import_decl) {
-                    if self.table.universe.scope.exists(import_decl.info.full_name) {
+                    if self.env.universe.scope.exists(import_decl.info.full_name) {
                         continue;
                     }
                     import_decl.info = self.load_module(
@@ -146,11 +145,11 @@ pub struct Builder {
     ) -> !ast.ImportedMod {
         mut mod := self.load_module_files(pathx, alias_name, file_path, pos)!;
         if mod.found {
-            mod.mod = if mod_mod_ := self.table.universe.scope.find(mod.full_name) {
+            mod.mod = if mod_mod_ := self.env.universe.scope.find(mod.full_name) {
                 @as(ast.Module, mod_mod_)
             } else {
                 mod_sym := ast.Module(name: mod.full_name);
-                self.table.universe.scope.add(mod_sym) catch |err| {
+                self.env.universe.scope.add(mod_sym) catch |err| {
                     report.error(err.to_string(), pos)
                 };
                 self.parse_files(mod_sym, mod.files);
@@ -205,7 +204,7 @@ pub struct Builder {
             }
             if found {
                 self.vlog("      > found");
-                files = self.table.filter_files(Directory.walk(pathx, ".ri")!);
+                files = self.env.filter_files(Directory.walk(pathx, ".ri")!);
             }
             process.set_cwd(old_wd)!;
         } else {
@@ -216,12 +215,12 @@ pub struct Builder {
                 pathx
             };
             full_name = pathx.replace("/", ".");
-            for l in self.prefs.library_path {
+            for l in self.env.prefs.library_path {
                 self.vlog("        searching module in `{}`", l);
                 mod_path := Path.resolve(Path.join(l, pathx)!)!;
                 if Path.is_directory(mod_path) {
                     found = true;
-                    files = self.table.filter_files(Directory.walk(mod_path, ".ri")!);
+                    files = self.env.filter_files(Directory.walk(mod_path, ".ri")!);
                 }
                 // support `src/` directory
                 src_dir := if pathx.contains("/") {
@@ -234,7 +233,7 @@ pub struct Builder {
                     if !found {
                         found = true;
                     }
-                    files = self.table.filter_files(Directory.walk(src_dir, ".ri")!);
+                    files = self.env.filter_files(Directory.walk(src_dir, ".ri")!);
                 }
                 if found {
                     self.vlog("        > found");
@@ -260,10 +259,10 @@ pub struct Builder {
     }
 
     func parse_files(mut self, mod_sym: ast.Module, files: []string) {
-        for sf in parser.Parser(table: self.table, prefs: self.prefs).parse_module(
+        for sf in parser.Parser(env: self.env, prefs: self.env.prefs).parse_module(
             mod_sym, files
         ) {
-            self.table.source_files.push(sf);
+            self.env.source_files.push(sf);
         }
         if report.total_errors() > 0 {
             self.abort();
@@ -286,12 +285,12 @@ pub struct Builder {
             self.vlog("> {}", node.name);
         }
         self.vlog("-----------------------------------------");
-        source_files := self.table.source_files;
-        self.table.source_files = []mut ast.SourceFile(cap: source_files.len);
+        source_files := self.env.source_files;
+        self.env.source_files = []mut ast.SourceFile(cap: source_files.len);
         for node in g_resolved.nodes {
             for pf in source_files {
                 if pf.mod.name == node.name {
-                    self.table.source_files.push(pf);
+                    self.env.source_files.push(pf);
                 }
             }
         }
@@ -300,7 +299,7 @@ pub struct Builder {
 
     func import_graph(self) -> depgraph.DepGraph {
         mut g := depgraph.DepGraph.new();
-        for pf in self.table.source_files {
+        for pf in self.env.source_files {
             mut deps := []string();
             if pf.mod.name !in ["c.ctypes", "c.libc", "c", "core"] {
                 deps.push("core");
@@ -323,17 +322,17 @@ pub struct Builder {
     }
 
     func vlog(self, msg: string, args: ...traits.Stringable) {
-        if self.prefs.is_verbose {
+        if self.env.prefs.is_verbose {
             console.writeln(utils.bold(utils.green("[rivet-log] ")).concat(msg), args);
         }
     }
 
     func abort(self) {
         mut msg := if report.total_errors() == 1 {
-            "could not compile module `{}`, aborting due to previous error".fmt(self.prefs.mod_name)
+            "could not compile module `{}`, aborting due to previous error".fmt(self.env.prefs.mod_name)
         } else {
             "could not compile module `{}`, aborting due to {} previous errors".fmt(
-                self.prefs.mod_name, report.total_errors()
+                self.env.prefs.mod_name, report.total_errors()
             )
         };
         total_warns := report.total_warns();

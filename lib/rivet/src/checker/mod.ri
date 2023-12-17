@@ -4,14 +4,12 @@
 
 import ../ast;
 import ../token;
-import ../prefs;
 import ../utils;
 import ../report;
 
 #[boxed]
 pub struct Checker {
-    mut table: ast.Table;
-    mut prefs: prefs.Prefs;
+    mut env: ast.Env;
 
     mut source_file: ast.SourceFile;
     mut sym: ast.Sym := ast.InvalidSym();
@@ -58,7 +56,7 @@ pub struct Checker {
             }
         }
         // check global mutable variables
-        for sym in self.table.universe.scope.syms {
+        for sym in self.env.universe.scope.syms {
             if sym is ast.Module(module) {
                 for mod_sym in module.scope.syms {
                     if mod_sym is ast.Var(mod_var) {
@@ -70,8 +68,8 @@ pub struct Checker {
                         }
                     }
                 }
-                if module.name == self.prefs.mod_name && !self.prefs.is_test && !module.scope.exists("main") {
-                    utils.error("function `main` was not defined on module `{}`".fmt(self.prefs.mod_name));
+                if module.name == self.env.prefs.mod_name && !self.env.prefs.is_test && !module.scope.exists("main") {
+                    utils.error("function `main` was not defined on module `{}`".fmt(self.env.prefs.mod_name));
                 }
             }
         }
@@ -122,7 +120,7 @@ pub struct Checker {
                     };
                     self.expected_type = old_expected_type;
                 } else {
-                    right_type = self.table.comptime_number_to_type(right_type);
+                    right_type = self.env.comptime_number_to_type(right_type);
                     left0.type = right_type;
                     if left0.sym.name.is_empty() {
                         scope.update_type(left0.name, right_type);
@@ -172,7 +170,7 @@ pub struct Checker {
                                 errb.emit();
                             };
                         } else {
-                            v_type := self.table.comptime_number_to_type(value_type);
+                            v_type := self.env.comptime_number_to_type(value_type);
                             vd.type = v_type;
                             if vd.sym.name.is_empty() {
                                 scope.update_type(vd.name, right_type);
@@ -258,7 +256,7 @@ pub struct Checker {
                 mut err := report.error_builder(
                     "cannot use `self` as mutable value", self_lit.pos
                 );
-                err.add_help("consider making `self` as mutable: `mut self`");
+                err.add_help("consider making `self` as muenv: `mut self`");
                 err.emit();
             },
             .Ident(mut ident) -> if ident.is_comptime {
@@ -359,7 +357,7 @@ pub struct Checker {
                             "cannot use variable `{}` as mutable argument".fmt(sym.name), pos
                         );
                         err_b.add_help(
-                            "consider making this argument mutable: `mut {}`", var_info.name
+                            "consider making this argument muenv: `mut {}`", var_info.name
                         );
                         err_b
                     } else {
@@ -367,7 +365,7 @@ pub struct Checker {
                             "cannot use variable `{}` as mutable value".fmt(sym.name), pos
                         );
                         err_b.add_help(
-                            "consider making this {} mutable: `mut {}`", var_info.type_of(),
+                            "consider making this {} muenv: `mut {}`", var_info.type_of(),
                             var_info.name
                         );
                         err_b

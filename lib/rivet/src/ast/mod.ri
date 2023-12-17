@@ -80,3 +80,28 @@ pub struct ObjectData {
     pub is_extern: bool;
     pub is_global: bool;
 }
+
+pub func universe() -> Module {
+    return Module(
+        name: "universe",
+        scope: Scope(syms: +[
+            TypeSym(name: "bool", info: .Bool),
+            TypeSym(name: "rune", info: .Rune),
+            TypeSym(name: "int8", info: .SizedInt(8)),
+            TypeSym(name: "int16", info: .SizedInt(16)),
+            TypeSym(name: "int32", info: .SizedInt(32)),
+            TypeSym(name: "int64", info: .SizedInt(64)),
+            TypeSym(name: "int", info: .Int),
+            TypeSym(name: "uint8", info: .SizedUint(8)),
+            TypeSym(name: "uint16", info: .SizedUint(16)),
+            TypeSym(name: "uint32", info: .SizedUint(32)),
+            TypeSym(name: "uint64", info: .SizedUint(64)),
+            TypeSym(name: "uint", info: .Uint),
+            TypeSym(name: "comptime_int", info: .ComptimeInt),
+            TypeSym(name: "comptime_float", info: .ComptimeFloat),
+            TypeSym(name: "float32", info: .Float(32)),
+            TypeSym(name: "float64", info: .Float(64)),
+            TypeSym(name: "string", info: .Struct(is_boxed: true))
+        ])
+    );
+}

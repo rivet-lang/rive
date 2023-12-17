@@ -256,7 +256,7 @@ extend Checker {
                     );
                 } else if call_expr.args.len == 1 {
                     mut arg0 := call_expr.args[0];
-                    value_t := self.table.comptime_number_to_type(self.check_expr(arg0.expr));
+                    value_t := self.env.comptime_number_to_type(self.check_expr(arg0.expr));
                     if value_t.symbol()? in trait_info.implements {
                         trait_info.mark_has_objects();
                     } else {

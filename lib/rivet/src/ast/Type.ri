@@ -3,9 +3,11 @@
 // be found in the LICENSE file.
 
 import std/traits;
+import std/process;
 import std/strings.Builder;
 
 import ../token;
+import ../utils;
 
 #[boxed; default_value(.Void)]
 pub enum Type < traits.Stringable {
@@ -400,6 +402,199 @@ pub enum Type < traits.Stringable {
             } else {
                 basic.expr.to_string()
             }
+        };
+    }
+}
+
+extend Env {
+    #[inline]
+    pub func is_number(self, type: Type) -> bool {
+        return self.is_int(type) || self.is_float(type);
+    }
+
+    #[inline]
+    pub func is_int(self, type: Type) -> bool {
+        return self.is_signed_int(type) || self.is_unsigned_int(type);
+    }
+
+    #[inline]
+    pub func is_signed_int(self, type: Type) -> bool {
+        return type in [
+            self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.int_t,
+            self.comptime_int_t
+        ];
+    }
+
+    #[inline]
+    pub func is_unsigned_int(self, type: Type) -> bool {
+        return type in [
+            self.uint8_t, self.uint16_t, self.uint32_t, self.uint64_t, self.uint_t
+        ];
+    }
+
+    #[inline]
+    pub func is_float(self, type: Type) -> bool {
+        return type in [self.float32_t, self.float64_t, self.comptime_float_t];
+    }
+
+    #[inline]
+    pub func is_comptime_number(self, type: Type) -> bool {
+        return type == self.comptime_int_t || type == self.comptime_float_t;
+    }
+
+    pub func comptime_number_to_type(self, type: Type) -> Type {
+        return if type == self.comptime_int_t {
+            self.int_t
+        } else if type == self.comptime_float_t {
+            self.float64_t
+        } else {
+            type
+        };
+    }
+
+    pub func number_bits(self, type: Type) -> uint {
+        return if self.is_int(type) {
+            self.int_bits(type)
+        } else if self.is_float(type) {
+            self.float_bits(type)
+        } else {
+            0
+        };
+    }
+
+    pub func int_bits(self, type: Type) -> uint {
+        type_sym := type.symbol()?;
+        return if type_sym.info is .SizedInt(int_info) {
+            int_info.size
+        } else if type_sym.info is .SizedUint(uint_info) {
+            uint_info.size
+        } else if type_sym.info is .Int || type_sym.info is .Uint {
+            if self.prefs.target_is_64bit { 64 } else { 32 }
+        } else {
+            75
+        };
+    }
+
+    pub func float_bits(self, type: Type) -> uint {
+        _ = self;
+        type_sym := type.symbol()?;
+        return if type_sym.info is .Float(float_info) {
+            float_info.size
+        } else {
+            75
+        };
+    }
+
+    /// Returns the size and alignment (in bytes) of `typ`, similarly to
+    /// C's `sizeof(T)` and `_Alignof(T)`.
+    pub func type_size(mut self, type: Type, is_raw: bool := false) -> (uint, uint) {
+        return match type {
+            .Result, .Option -> self.type_symbol_size(self.throwable_sym, is_raw),
+            .Rawptr, .Pointer, .Func -> (self.pointer_size, self.pointer_size),
+            else -> if mut type_sym := type.symbol() {
+                self.type_symbol_size(type_sym, is_raw)
+            } else {
+                (0, 0)
+            }
+        };
+    }
+
+    pub func type_symbol_size(mut self, mut type_sym: TypeSym, is_raw: bool := false) -> (uint, uint) {
+        return if type_sym.size != 0 {
+            (type_sym.size, type_sym.align)
+        } else {
+            (mut size: uint, mut align: uint) := (0, 0);
+            (size, align) = if type_sym.is_boxed() && !is_raw {
+                (self.pointer_size, self.pointer_size)
+            } else {
+                match type_sym.info {
+                    .Func -> (self.pointer_size, self.pointer_size),
+                    .Alias(alias_info) -> self.type_size(alias_info.parent),
+                    .Bool -> (1, 1),
+                    .Uint, .Int -> (self.pointer_size, self.pointer_size),
+                    .SizedInt(int) -> match int.size {
+                        8 -> (1, 1),
+                        16 -> (2, 2),
+                        32 -> (4, 4),
+                        64 -> (8, 8),
+                        else -> (0, 0)
+                    },
+                    .SizedUint(uint) -> match uint.size {
+                        8 -> (1, 1),
+                        16 -> (2, 2),
+                        32 -> (4, 4),
+                        64 -> (8, 8),
+                        else -> (0, 0)
+                    },
+                    .Float(float) -> match float.size {
+                        32 -> (4, 4),
+                        64 -> (8, 8),
+                        else -> (0, 0)
+                    },
+                    .Rune -> (4, 4),
+                    .ComptimeFloat, .ComptimeInt -> (8, 8),
+                    .Enum(enum_info) -> if enum_info.is_tagged {
+                        if enum_info.is_boxed {
+                            ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size)
+                        } else {
+                            mut total_size := self.pointer_size;
+                            mut max_alignment := self.pointer_size;
+                            for variant in enum_info.variants {
+                                if variant.has_type {
+                                    (variant_size, alignment) := self.type_size(variant.type);
+                                    if alignment > max_alignment {
+                                        max_alignment = alignment;
+                                    }
+                                    total_size = utils.round_up(total_size, alignment) + variant_size;
+                                }
+                            }
+                            (utils.round_up(total_size, max_alignment), max_alignment)
+                        }
+                    } else {
+                        self.type_size(enum_info.underlying_type)
+                    },
+                    .DynArray -> self.type_symbol_size(self.dyn_array_sym, is_raw),
+                    .Array(array_info) -> {
+                        (elem_size, elem_align) := self.type_size(array_info.elem_type);
+                        (array_info.size * elem_size, elem_align)
+                    },
+                    .Struct, .Tuple -> {
+                        mut total_size: uint := 0;
+                        mut max_alignment: uint := 0;
+                        types := if type_sym.info is .Tuple(tuple_lit) {
+                            tuple_lit.types
+                        } else {
+                            mut tmp := []Type();
+                            for field in type_sym.full_fields() {
+                                tmp.push(field.type);
+                            }
+                            tmp
+                        };
+                        for ftype in types {
+                            (field_size, alignment) := self.type_size(ftype);
+                            if alignment > max_alignment {
+                                max_alignment = alignment;
+                            }
+                            total_size = utils.round_up(total_size, alignment) + field_size;
+                        }
+                        (utils.round_up(total_size, max_alignment), max_alignment)
+                    },
+                    .Trait(mut trait_info) -> {
+                        (size, align) = ((type_sym.fields.len + 2) * self.pointer_size, self.pointer_size);
+                        for mut btype in trait_info.bases {
+                            (bsize, _balign) := self.type_symbol_size(btype, is_raw);
+                            size += bsize - 2 * self.pointer_size;
+                        }
+                        (size, align)
+                    },
+                    else -> process.panic(
+                        "Env.type_size: unsupported type `{}`", type_sym.qualname()
+                    )
+                }
+            };
+            type_sym.size = size;
+            type_sym.align = align;
+            (size, align)
         };
     }
 }

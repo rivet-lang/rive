@@ -45,7 +45,7 @@ extend Checker {
                 for var_ in guard_expr.vars {
                     types.push(var_.type);
                 }
-                expr_sym = self.table.universe.add_or_get_tuple(types);
+                expr_sym = self.env.universe.add_or_get_tuple(types);
                 expr_type = .Tuple(types, expr_sym);
             }
         } else {
@@ -120,7 +120,7 @@ extend Checker {
                         match_expr.scope.update_type(branch.var_name, branch.var_type);
                     }
                 }
-                if branch.has_cond && self.check_expr(branch.cond) != self.table.bool_t {
+                if branch.has_cond && self.check_expr(branch.cond) != self.env.bool_t {
                     report.error(
                         "non-boolean expression use as `match` branch condition",
                         branch.cond.position()
@@ -154,7 +154,7 @@ extend Checker {
         // an `else` or when the `match` is on an enum by listing all variants.
         match_expr.is_exhaustive = true;
         mut unhandled := []string();
-        if expr_type == self.table.bool_t && match_expr.branches.len == 1 {
+        if expr_type == self.env.bool_t && match_expr.branches.len == 1 {
             for v in ["true", "false"] {
                 if !branch_exprs.contains(v) {
                     match_expr.is_exhaustive = false;

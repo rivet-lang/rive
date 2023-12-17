@@ -30,7 +30,7 @@ extend Checker {
             .While(mut while_stmt) -> {
                 if !while_stmt.is_inf && self.check_expr(
                     while_stmt.cond
-                ) != self.table.bool_t {
+                ) != self.env.bool_t {
                     if while_stmt.cond !is .Guard {
                         report.error(
                             "non-boolean expression used as `while` condition",
@@ -68,7 +68,7 @@ extend Checker {
         iterable_t := self.check_expr(for_stmt.iterable);
         iterable_sym := iterable_t.symbol()?;
         if iterable_sym.info is .Array || iterable_sym.info is .DynArray {
-            mut elem_type := self.table.comptime_number_to_type(
+            mut elem_type := self.env.comptime_number_to_type(
                 iterable_sym.info.elem_type()?
             );
             elem_sym := elem_type.symbol()?;
@@ -94,7 +94,7 @@ extend Checker {
                 self.check_name_case(
                     .Snake, "index variable", for_stmt.index.name, for_stmt.index.pos
                 );
-                for_stmt.index.sym.type = self.table.uint_t;
+                for_stmt.index.sym.type = self.env.uint_t;
             }
             if for_stmt.values.len == 1 {
                 mut value0 := for_stmt.values[0];

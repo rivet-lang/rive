@@ -6,14 +6,12 @@ import std/strings;
 
 import ./mir;
 import ../ast;
-import ../prefs;
 import ../utils;
 import ../utils/maps;
 
 #[boxed]
 pub struct Codegen {
-    mut table: ast.Table;
-    prefs: prefs.Prefs;
+    mut env: ast.Env;
 
     mut source_file: ast.SourceFile;
 
@@ -43,12 +41,12 @@ pub struct Codegen {
         for mut source_file in source_files {
             self.generate_mir(source_file);
         }
-        if self.prefs.emit_mir {
+        if self.env.prefs.emit_mir {
             for mir_ in self.mirs {
                 mir_.to_file() catch |err| utils.error(err.to_string());
             }
         }
-        match self.prefs.target_backend {
+        match self.env.prefs.target_backend {
             .C -> {}
         }
     }
@@ -63,24 +61,24 @@ pub struct Codegen {
     }
 
     func init_types(mut self) {
-        self.int_t = if self.table.prefs.target_is_64bit {
-            self.type_to_mir(self.table.int64_t)
+        self.int_t = if self.env.prefs.target_is_64bit {
+            self.type_to_mir(self.env.int64_t)
         } else {
-            self.type_to_mir(self.table.int32_t)
+            self.type_to_mir(self.env.int32_t)
         };
-        self.uint_t = if self.table.prefs.target_is_64bit {
-            self.type_to_mir(self.table.uint64_t)
+        self.uint_t = if self.env.prefs.target_is_64bit {
+            self.type_to_mir(self.env.uint64_t)
         } else {
-            self.type_to_mir(self.table.uint32_t)
+            self.type_to_mir(self.env.uint32_t)
         };
-        self.bool_t = self.type_to_mir(self.table.uint8_t);
+        self.bool_t = self.type_to_mir(self.env.uint8_t);
         self.dyn_array_t = .Pointer(.Basic(
-            self.mangle_symbol(self.table.dyn_array_sym),
-            self.table.type_symbol_size(self.table.dyn_array_sym, true).0
+            self.mangle_symbol(self.env.dyn_array_sym),
+            self.env.type_symbol_size(self.env.dyn_array_sym, true).0
         ), true);
-        self.throwable_t = self.type_to_mir(self.table.throwable_t);
+        self.throwable_t = self.type_to_mir(self.env.throwable_t);
 
-        for sym in self.table.universe.scope.syms {
+        for sym in self.env.universe.scope.syms {
             if sym is ast.Module {
                 self.sort_type_symbols(self.get_type_symbols(sym));
             }

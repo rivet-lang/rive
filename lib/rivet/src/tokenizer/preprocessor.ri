@@ -202,7 +202,7 @@ extend Tokenizer {
         } else if name == "false" {
             false
         } else {
-            self.table.evalue_pp_symbol(name, pos)
+            self.env.evalue_pp_symbol(name, pos)
         };
     }
 }

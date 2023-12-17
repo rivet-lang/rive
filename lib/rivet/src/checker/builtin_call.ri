@@ -84,7 +84,7 @@ extend Checker {
                             .Pointer if !arg.type.is_pointer() -> report.error(
                                 "expected pointer type, found {}".fmt(arg.type), arg.pos
                             ),
-                            .Integer if !self.table.is_number(arg.type) -> report.error(
+                            .Integer if !self.env.is_number(arg.type) -> report.error(
                                 "expected integer type, found {}".fmt(arg.type), arg.pos
                             ),
                             else -> {}
@@ -116,7 +116,7 @@ extend Checker {
         } else if (from_type is .Pointer && to_type is .Rawptr)
             || (from_type is .Rawptr && to_type is .Pointer)
             || (from_type is .Pointer && to_type is .Pointer)
-            || (from_type is .Pointer && self.table.is_int(to_type)) {
+            || (from_type is .Pointer && self.env.is_int(to_type)) {
             if !self.inside_unsafe() {
                 report.error(
                     "cast type `{}` to `{}` is unsafe and requires `unsafe` block".fmt(
@@ -140,28 +140,28 @@ extend Checker {
                         );
                     }
                 },
-                else -> if ((self.table.is_float(from_type) && self.table.is_int(to_type))
-                    || (self.table.is_int(from_type) && self.table.is_float(to_type))
+                else -> if ((self.env.is_float(from_type) && self.env.is_int(to_type))
+                    || (self.env.is_int(from_type) && self.env.is_float(to_type))
                     // ===============================================================
-                    || (self.table.is_int(from_type) && self.table.is_int(to_type))
-                    || (self.table.is_float(from_type) && self.table.is_float(to_type))
+                    || (self.env.is_int(from_type) && self.env.is_int(to_type))
+                    || (self.env.is_float(from_type) && self.env.is_float(to_type))
                     // ===============================================================
-                    || (from_type == self.table.rune_t && to_type == self.table.uint32_t)
-                    || (from_type == self.table.rune_t && to_type == self.table.int32_t)
-                    || (from_type == self.table.uint32_t && to_type == self.table.rune_t
+                    || (from_type == self.env.rune_t && to_type == self.env.uint32_t)
+                    || (from_type == self.env.rune_t && to_type == self.env.int32_t)
+                    || (from_type == self.env.uint32_t && to_type == self.env.rune_t
                         && self.inside_unsafe())) {
                     return; // TODO: advanced check
                 } else if to_ts := to_type.symbol() {
                     mod_sym := self.sym.module()?;
                     if mod_sym.is_core() {
-                        if (from_ts == self.table.dyn_array_sym && to_ts.info is .DynArray)
-                            || (to_ts == self.table.dyn_array_sym && from_ts.info is .DynArray) {
+                        if (from_ts == self.env.dyn_array_sym && to_ts.info is .DynArray)
+                            || (to_ts == self.env.dyn_array_sym && from_ts.info is .DynArray) {
                             return; // Valid inside `core` module
                         }
                     }
                     match to_ts.info {
                         .Enum(enum_info2) if !enum_info2.is_tagged -> {
-                            if self.table.is_int(to_type) && !self.inside_unsafe() {
+                            if self.env.is_int(to_type) && !self.inside_unsafe() {
                                 report.warn(
                                     "casting numbers to enums should be done inside `unsafe` blocks",
                                     builtin_call.pos

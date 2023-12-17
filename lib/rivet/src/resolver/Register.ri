@@ -3,14 +3,12 @@
 // be found in the LICENSE file.
 
 import ../ast;
-import ../prefs;
 import ../token;
 import ../report;
 
 #[boxed]
 pub struct Register {
-    mut table: ast.Table;
-    mut prefs: prefs.Prefs;
+    mut env: ast.Env;
 
     mut core_is_set: bool;
     mut is_core_mod: bool;
@@ -23,14 +21,14 @@ pub struct Register {
         for sf in source_files {
             self.is_core_mod = sf.mod.is_core();
             if !self.core_is_set && self.is_core_mod {
-                self.table.core_mod = sf.mod;
+                self.env.core_mod = sf.mod;
                 self.core_is_set = true;
             }
             self.sym = sf.mod;
             self.source_file = sf;
             self.walk_decls(self.source_file.decls);
         }
-        self.table.throwable_t = .Basic(self.table.throwable_sym);
+        self.env.throwable_t = .Basic(self.env.throwable_sym);
     }
 
     func walk_decls(mut self, mut decls: []mut ast.Decl) {
@@ -71,16 +69,16 @@ pub struct Register {
                             info: .Trait()
                         ), trait_decl.pos
                     );
-                    if self.is_core_mod && trait_decl.name == "Throwable" && !self.table.throwable_sym_is_set {
-                        self.table.throwable_sym_is_set = true;
-                        self.table.throwable_sym = @as(ast.TypeSym, trait_decl.sym);
+                    if self.is_core_mod && trait_decl.name == "Throwable" && !self.env.throwable_sym_is_set {
+                        self.env.throwable_sym_is_set = true;
+                        self.env.throwable_sym = @as(ast.TypeSym, trait_decl.sym);
                     }
                     self.sym = trait_decl.sym;
                     self.walk_decls(trait_decl.decls);
                 },
                 .Struct(mut struct_decl) -> {
                     struct_decl.sym = if self.is_core_mod && struct_decl.name == "string" {
-                        @as(ast.Type.Basic, self.table.string_t).sym
+                        @as(ast.Type.Basic, self.env.string_t).sym
                     } else {
                         self.add_sym(ast.TypeSym(
                             parent: self.sym,
@@ -93,7 +91,7 @@ pub struct Register {
                         ), struct_decl.pos)
                     };
                     if self.is_core_mod && struct_decl.name == "DynArray" {
-                        self.table.dyn_array_sym = @as(ast.TypeSym, struct_decl.sym);
+                        self.env.dyn_array_sym = @as(ast.TypeSym, struct_decl.sym);
                     }
                     self.sym = struct_decl.sym;
                     self.walk_decls(struct_decl.decls);

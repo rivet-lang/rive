@@ -7,7 +7,6 @@ import std/process;
 
 import ../ast;
 import ../token;
-import ../prefs;
 import ../utils;
 import ../report;
 
@@ -17,8 +16,7 @@ const NUM_SEP := b'_';
 
 #[boxed]
 pub struct Tokenizer {
-    table: ast.Table;
-    prefs: prefs.Prefs;
+    env: ast.Env;
     file: string := "<internal-memory>";
     text: string;
     mut pos: uint;
@@ -31,16 +29,17 @@ pub struct Tokenizer {
     mut eofs: uint;
     mut conditional_stack: []mut Conditional;
 
-    pub func new(text: string, prefs_: prefs.Prefs, table: ast.Table) -> Tokenizer {
-        mut t := Tokenizer(table: table, prefs: prefs_, text: text);
+    pub func new(text: string, env: ast.Env) -> Tokenizer {
+        mut t := Tokenizer(env: env, text: text);
         t.init();
         return t;
     }
 
-    pub func from_file(file: string, prefs_: prefs.Prefs, table: ast.Table) -> Tokenizer {
+    pub func from_file(file: string, env: ast.Env) -> Tokenizer {
         mut t := Tokenizer(
-            table: table, prefs: prefs_, file: file,
-            text: utils.read_file(file) catch |err| utils.error(err.to_string())
+            env: env, file: file, text: utils.read_file(file) catch |err| utils.error(
+                err.to_string()
+            )
         );
         t.init();
         return t;

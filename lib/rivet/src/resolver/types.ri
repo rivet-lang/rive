@@ -16,13 +16,13 @@ extend Resolver {
                 if elem_sym.info is .Trait(mut trait_info) {
                     trait_info.has_objects = true;
                 }
-                variadic.sym = self.table.universe.add_or_get_dyn_array(variadic.inner, false);
+                variadic.sym = self.env.universe.add_or_get_dyn_array(variadic.inner, false);
                 true
             } else {
                 false
             },
             .DynArray(mut dyn_arr) -> if self.resolve_type(dyn_arr.inner) {
-                dyn_arr.sym = self.table.universe.add_or_get_dyn_array(dyn_arr.inner, dyn_arr.is_mut);
+                dyn_arr.sym = self.env.universe.add_or_get_dyn_array(dyn_arr.inner, dyn_arr.is_mut);
                 true
             } else {
                 false
@@ -38,7 +38,7 @@ extend Resolver {
                         false
                     } else {
                     	arr.size_value = @as(uint, arr_size);
-                        arr.sym = self.table.universe.add_or_get_array(
+                        arr.sym = self.env.universe.add_or_get_array(
                             arr.inner, arr.size_value, arr.is_mut
                         );
                         true
@@ -59,7 +59,7 @@ extend Resolver {
                     resolved = self.resolve_type(inner);
                 }
                 if resolved {
-                    tuple.sym = self.table.universe.add_or_get_tuple(tuple.inners);
+                    tuple.sym = self.env.universe.add_or_get_tuple(tuple.inners);
                 }
                 resolved
             },
@@ -69,7 +69,7 @@ extend Resolver {
                     res1 = self.resolve_type(arg.type);
                 }
                 res1 = self.resolve_type(func_t.ret_type);
-                func_t.sym = self.table.universe.add_or_get_func(func_t.symbol());
+                func_t.sym = self.env.universe.add_or_get_func(func_t.symbol());
                 func_t.has_sym = true;
                 res1
             },

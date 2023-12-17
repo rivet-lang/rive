@@ -12,7 +12,7 @@ import ../tokenizer;
 
 #[boxed]
 pub struct Parser {
-    mut table: ast.Table;
+    mut env: ast.Env;
     mut prefs: prefs.Prefs;
 
     mut tokenizer: tokenizer.Tokenizer;
@@ -49,7 +49,7 @@ pub struct Parser {
     pub func parse_file(mut self, file: string) -> ast.SourceFile {
         self.file_path = file;
         self.file_dir = Path.dir_name(file) ?? file;
-        self.tokenizer = tokenizer.Tokenizer.from_file(file, self.prefs, self.table);
+        self.tokenizer = tokenizer.Tokenizer.from_file(file, self.env);
         if report.total_errors() > 0 {
             return ast.SourceFile(file, +[], self.mod_sym);
         }
@@ -158,7 +158,7 @@ pub struct Parser {
     }
 
     func parse_comment(mut self) -> ast.Comment {
-        if self.prefs.is_fmt || (self.prefs.is_docs && self.tok.kind == .DocComment) {
+        if self.env.prefs.is_fmt || (self.env.prefs.is_docs && self.tok.kind == .DocComment) {
             if self.accept(.Comment) || self.accept(.DocComment) {
                 return ast.Comment(
                     self.prev_tok.kind == .DocComment, self.prev_tok.lit, self.prev_tok.pos

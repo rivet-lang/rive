@@ -67,7 +67,7 @@ extend Resolver {
                 }
             },
             .BuiltinCall(mut builtin_call) -> {
-                if builtin := self.table.find_builtin(builtin_call.name) {
+                if builtin := self.env.find_builtin(builtin_call.name) {
                     if builtin is .Func {
                         builtin_call.builtin = builtin;
                         for mut arg in builtin_call.args {
@@ -101,7 +101,7 @@ extend Resolver {
                         );
                         call.err_handler.scope.add_local(ast.Var(
                             name: call.err_handler.varname,
-                            type: self.table.throwable_t,
+                            type: self.env.throwable_t,
                             level: .Local,
                             pos: call.err_handler.varname_pos
                         )) catch |err| report.error(
@@ -221,7 +221,7 @@ extend Resolver {
             ident.is_obj = true;
             return; // ignore special var
         } else if ident.is_comptime {
-            if builtin := self.table.find_builtin(ident.name) {
+            if builtin := self.env.find_builtin(ident.name) {
                 if builtin is .Const {
                     ident.builtin = builtin;
                 } else {
@@ -255,7 +255,7 @@ extend Resolver {
                 ident.is_sym = true;
                 ident.sym = sym;
             }
-        } else if sym := self.table.universe.scope.find(ident.name) {
+        } else if sym := self.env.universe.scope.find(ident.name) {
             if sym is ast.Module {
                 mut err := report.error_builder(
                     "use of non-imported module `{}`".fmt(ident.name), ident.pos
