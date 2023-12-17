@@ -397,7 +397,9 @@ class Compiler:
                     max_alignment = self.pointer_size
                     for variant in sy.info.variants:
                         if variant.has_typ:
-                            variant_size, alignment = self.type_size(variant.typ)
+                            variant_size, alignment = self.type_size(
+                                variant.typ
+                            )
                             if alignment > max_alignment:
                                 max_alignment = alignment
                             total_size = utils.round_up(

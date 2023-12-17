@@ -212,7 +212,9 @@ class Parser:
                     glob = True
                 else:
                     report.error("invalid syntax for unqualified import", pos)
-                    report.note("expected a single name, a list of names or `*`")
+                    report.note(
+                        "expected a single name, a list of names or `*`"
+                    )
             if len(import_list) == 0 and self.accept(Kind.KwAs):
                 alias = self.parse_name()
             self.expect(Kind.Semicolon)

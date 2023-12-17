@@ -350,7 +350,9 @@ class Codegen:
             fn_dec_ret_type_str = str(fn_decl.ret_typ)
             if fn_dec_ret_type_str == "void" or fn_dec_ret_type_str == "_R6Result_R4void":
                 self.gen_defer_stmts(scope = decl.scope)
-            if fn_dec_ret_type_str == "_R6Result_R4void" and len(fn_decl.instrs) == 0:
+            if fn_dec_ret_type_str == "_R6Result_R4void" and len(
+                fn_decl.instrs
+            ) == 0:
                 self.cur_func.add_ret(self.result_void(decl.ret_typ))
             elif fn_dec_ret_type_str != "void" and not (
                 len(fn_decl.instrs) > 0
@@ -641,12 +643,19 @@ class Codegen:
             tmp = self.cur_func.local_name()
             tmp_t = expected_typ
             variant_idx = expr_sym.info.get_variant_by_type(expected_typ_).value
-            self.cur_func.add_call("_R4core16tagged_enum_castF", [
-                ir.Selector(ir.UINT_T, res_expr, ir.Name("_idx_")),
-                variant_idx
-            ])
-            obj_f = ir.Selector(ir.Type(cg_utils.mangle_symbol(expr_sym)+"6_Union"), res_expr, ir.Name("obj"))
-            value = ir.Selector(self.ir_type(expr.typ), obj_f, ir.Name(f"v{variant_idx}"))
+            self.cur_func.add_call(
+                "_R4core16tagged_enum_castF", [
+                    ir.Selector(ir.UINT_T, res_expr, ir.Name("_idx_")),
+                    variant_idx
+                ]
+            )
+            obj_f = ir.Selector(
+                ir.Type(cg_utils.mangle_symbol(expr_sym) + "6_Union"), res_expr,
+                ir.Name("obj")
+            )
+            value = ir.Selector(
+                self.ir_type(expr.typ), obj_f, ir.Name(f"v{variant_idx}")
+            )
             self.cur_func.inline_alloca(tmp_t, tmp, value)
             res_expr = ir.Ident(tmp_t, tmp)
 
@@ -805,13 +814,23 @@ class Codegen:
                 elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_tagged:
                     tmp = self.cur_func.local_name()
                     tmp_t = ir_typ
-                    variant_idx = typ_sym.info.get_variant_by_type(expr.typ).value
-                    self.cur_func.add_call("_R4core16tagged_enum_castF", [
-                        ir.Selector(ir.UINT_T, res, ir.Name("_idx_")),
-                        variant_idx
-                    ])
-                    obj_f = ir.Selector(ir.Type(cg_utils.mangle_symbol(typ_sym)+"6_Union"), res, ir.Name("obj"))
-                    value = ir.Selector(self.ir_type(expr.typ), obj_f, ir.Name(f"v{variant_idx}"))
+                    variant_idx = typ_sym.info.get_variant_by_type(
+                        expr.typ
+                    ).value
+                    self.cur_func.add_call(
+                        "_R4core16tagged_enum_castF", [
+                            ir.Selector(ir.UINT_T, res, ir.Name("_idx_")),
+                            variant_idx
+                        ]
+                    )
+                    obj_f = ir.Selector(
+                        ir.Type(cg_utils.mangle_symbol(typ_sym) + "6_Union"),
+                        res, ir.Name("obj")
+                    )
+                    value = ir.Selector(
+                        self.ir_type(expr.typ), obj_f,
+                        ir.Name(f"v{variant_idx}")
+                    )
                     self.cur_func.inline_alloca(tmp_t, tmp, value)
                     return ir.Ident(tmp_t, tmp)
                 tmp = self.cur_func.local_name()
@@ -980,7 +999,11 @@ class Codegen:
                     )
                 elif typ_sym.kind == TypeKind.Enum:
                     if expr.is_enum_variant:
-                        tmp = self.stacked_instance(ir.Type(cg_utils.mangle_symbol(expr.enum_variant_sym)))
+                        tmp = self.stacked_instance(
+                            ir.Type(
+                                cg_utils.mangle_symbol(expr.enum_variant_sym)
+                            )
+                        )
                         initted_fields = []
                         type_fields = expr.enum_variant_sym.full_fields()
                         for i, f in enumerate(expr.args):
@@ -1347,7 +1370,9 @@ class Codegen:
                             )
                             self.cur_func.add_ret_void()
                         else:
-                            tmp2 = self.stacked_instance(self.ir_type(self.cur_func_ret_typ))
+                            tmp2 = self.stacked_instance(
+                                self.ir_type(self.cur_func_ret_typ)
+                            )
                             self.cur_func.store(
                                 ir.Selector(ir.BOOL_T, tmp2, ir.Name("is_err")),
                                 ir.IntLit(ir.BOOL_T, "1")
@@ -1551,7 +1576,9 @@ class Codegen:
             typ_sym = expr.typ.symbol()
             if len(expr.elems) == 0:
                 if expr.is_dyn:
-                    return self.stacked_instance(self.ir_type(expr.typ), self.empty_dyn_array(typ_sym))
+                    return self.stacked_instance(
+                        self.ir_type(expr.typ), self.empty_dyn_array(typ_sym)
+                    )
                 return self.default_value(expr.typ)
             elem_typ = typ_sym.info.elem_typ
             size, _ = self.comp.type_size(elem_typ)
@@ -1750,7 +1777,9 @@ class Codegen:
                     return tmp
             elif expr.op in (Kind.LogicalAnd, Kind.LogicalOr):
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
-                tmp = self.stacked_instance(self.ir_type(self.comp.bool_t), left)
+                tmp = self.stacked_instance(
+                    self.ir_type(self.comp.bool_t), left
+                )
                 left_l = self.cur_func.local_name()
                 exit_l = self.cur_func.local_name()
                 if expr.op == Kind.LogicalAnd:
@@ -1827,22 +1856,25 @@ class Codegen:
                         union_type = ir.Type(union_name)
                         obj_val = ir.Selector(union_type, left, ir.Name("obj"))
                         val = ir.Selector(
-                            ir.Type(self.ir_type(expr.typ)), obj_val, ir.Name(f"v{expr.right.variant_info.value}")
+                            ir.Type(self.ir_type(expr.typ)), obj_val,
+                            ir.Name(f"v{expr.right.variant_info.value}")
                         )
-                        if expr.var.is_mut and not isinstance(var_t, ir.Pointer):
+                        if expr.var.is_mut and not isinstance(
+                            var_t, ir.Pointer
+                        ):
                             val = ir.Inst(ir.InstKind.GetPtr, [val], var_t2)
                             var_t = var_t.ptr()
                     else:
                         val = ir.Inst(
                             ir.InstKind.Cast, [
-                                ir.Selector(ir.VOID_PTR_T, left, ir.Name("obj")),
-                                var_t2
+                                ir.Selector(
+                                    ir.VOID_PTR_T, left, ir.Name("obj")
+                                ), var_t2
                             ]
                         )
-                        if not (
-                            (isinstance(var_t2, ir.Pointer) and var_t2.is_managed)
-                            or expr.var.is_mut
-                        ):
+                        if not ((
+                            isinstance(var_t2, ir.Pointer) and var_t2.is_managed
+                        ) or expr.var.is_mut):
                             val = ir.Inst(ir.InstKind.LoadPtr, [val], var_t2)
                     unique_name = self.cur_func.unique_name(expr.var.name)
                     expr.scope.update_ir_name(expr.var.name, unique_name)
@@ -2186,13 +2218,16 @@ class Codegen:
                             e_expr_typ_sym = expr.expr.typ.symbol()
                             if e_expr_typ_sym.kind == TypeKind.Enum:
                                 obj_f = ir.Selector(
-                                    e_expr_typ_sym.name + "6_Union", match_expr, ir.Name("obj")
+                                    e_expr_typ_sym.name + "6_Union", match_expr,
+                                    ir.Name("obj")
                                 )
                                 val = ir.Selector(
-                                    self.ir_type(p.variant_info.typ),
-                                    obj_f, ir.Name(f"v{p.variant_info.value}")
+                                    self.ir_type(p.variant_info.typ), obj_f,
+                                    ir.Name(f"v{p.variant_info.value}")
                                 )
-                                if b.var_is_mut and not isinstance(var_t, ir.Pointer):
+                                if b.var_is_mut and not isinstance(
+                                    var_t, ir.Pointer
+                                ):
                                     val = ir.Inst(ir.InstKind.GetPtr, [val])
                             else:
                                 val = ir.Inst(
@@ -2323,7 +2358,9 @@ class Codegen:
                 expr_ = self.gen_expr_with_cast(ret_typ, expr.expr)
                 if is_array and self.comp.prefs.target_backend == prefs.Backend.C:
                     size, _ = self.comp.type_size(ret_typ)
-                    tmp = self.stacked_instance(ir.Type(self.cur_func.arr_ret_struct))
+                    tmp = self.stacked_instance(
+                        ir.Type(self.cur_func.arr_ret_struct)
+                    )
                     self.cur_func.add_call(
                         "_R4core8mem_copyF", [
                             ir.Selector(
@@ -2665,7 +2702,7 @@ class Codegen:
         self.generated_string_literals[lit_hash] = tmp.name
         return tmp
 
-    def stacked_instance(self, typ, init_value=None):
+    def stacked_instance(self, typ, init_value = None):
         tmp = ir.Ident(typ, self.cur_func.local_name())
         if init_value:
             self.cur_func.alloca(tmp, init_value)
@@ -2766,10 +2803,15 @@ class Codegen:
         ):
             arg0 = self.gen_expr_with_cast(variant_info.typ, value)
             size, _ = self.comp.type_size(variant_info.typ)
-            obj_f = ir.Selector(ir.Type(f"{cg_utils.mangle_symbol(enum_sym)}6_Union"), tmp, ir.Name("obj"))
+            obj_f = ir.Selector(
+                ir.Type(f"{cg_utils.mangle_symbol(enum_sym)}6_Union"), tmp,
+                ir.Name("obj")
+            )
             self.cur_func.store(
-                ir.Selector(self.ir_type(variant_info.typ), obj_f, ir.Name(f"v{variant_info.value}")),
-                arg0
+                ir.Selector(
+                    self.ir_type(variant_info.typ), obj_f,
+                    ir.Name(f"v{variant_info.value}")
+                ), arg0
             )
         return tmp
 
@@ -2789,9 +2831,15 @@ class Codegen:
             ir.Selector(ir.UINT_T, tmp, ir.Name("_idx_")),
             ir.IntLit(ir.UINT_T, variant_info.value)
         )
-        obj_f = ir.Selector(ir.Type(f"{cg_utils.mangle_symbol(enum_sym)}6_Union"), tmp, ir.Name("obj"))
+        obj_f = ir.Selector(
+            ir.Type(f"{cg_utils.mangle_symbol(enum_sym)}6_Union"), tmp,
+            ir.Name("obj")
+        )
         self.cur_func.store(
-            ir.Selector(self.ir_type(variant_info.typ), obj_f, ir.Name(f"v{variant_info.value}")), value
+            ir.Selector(
+                self.ir_type(variant_info.typ), obj_f,
+                ir.Name(f"v{variant_info.value}")
+            ), value
         )
         return tmp
 
@@ -2981,7 +3029,9 @@ class Codegen:
                     fields = []
                     for v in ts.info.variants:
                         if v.has_typ:
-                            fields.append(ir.Field(f"v{v.value}", self.ir_type(v.typ)))
+                            fields.append(
+                                ir.Field(f"v{v.value}", self.ir_type(v.typ))
+                            )
                     union_name = mangled_name + "6_Union"
                     self.out_rir.types.append(ir.Union(union_name, fields))
                     struct_fields = []
@@ -2991,7 +3041,9 @@ class Codegen:
                         ir.Field("_idx_", ir.UINT_T),
                         ir.Field("obj", ir.Type(union_name))
                     ]
-                    self.out_rir.types.append(ir.Struct(False, mangled_name, struct_fields))
+                    self.out_rir.types.append(
+                        ir.Struct(False, mangled_name, struct_fields)
+                    )
             elif ts.kind == TypeKind.Trait:
                 ts_name = cg_utils.mangle_symbol(ts)
                 fields = [
@@ -3133,7 +3185,8 @@ class Codegen:
                 for variant in ts.info.variants:
                     if variant.has_typ:
                         variant_sym = variant.typ.symbol()
-                        if variant_sym.is_boxed() or isinstance(variant.typ, type.Option):
+                        if variant_sym.is_boxed(
+                        ) or isinstance(variant.typ, type.Option):
                             continue
                         dep = cg_utils.mangle_symbol(variant_sym)
                         if dep not in typ_names or dep in field_deps:
@@ -3156,7 +3209,8 @@ class Codegen:
             elif ts.kind == TypeKind.Struct:
                 for base in ts.info.bases:
                     dep = cg_utils.mangle_symbol(base)
-                    if dep not in typ_names or dep in field_deps or base.is_boxed():
+                    if dep not in typ_names or dep in field_deps or base.is_boxed(
+                    ):
                         continue
                     field_deps.append(dep)
                 for f in ts.fields:
