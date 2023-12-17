@@ -13,7 +13,7 @@ pub struct ModuleIR < traits.Stringable {
     pub name: string;
     pub mut structs: []Struct;
     pub mut globals: []Global;
-    pub mut vtables: []VEnv;
+    pub mut vtables: []VTable;
     pub mut externs: []Func;
     pub mut funcs: []Func;
 
@@ -108,7 +108,7 @@ pub struct Global < traits.Stringable {
 }
 
 #[boxed]
-pub struct VEnv {
+pub struct VTable {
     pub funcs: []Func;
 }
 
