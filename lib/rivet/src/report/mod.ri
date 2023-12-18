@@ -10,16 +10,16 @@ import ../prefs;
 import ../token;
 import ../utils;
 
-pub var mut reportTable := ReportEnv();
+pub var mut report_table := ReportEnv();
 
 #[inline]
 pub func total_errors() -> uint {
-    return reportTable.errors;
+    return report_table.errors;
 }
 
 #[inline]
 pub func total_warns() -> uint {
-    return reportTable.warns;
+    return report_table.warns;
 }
 
 #[boxed]
@@ -68,7 +68,7 @@ pub func warn_builder(msg: string, pos: token.Pos) -> ReportBuilder {
 pub struct ReportBuilder {
     mut kind: ReportKind;
     msg: string;
-    pos: token.Pos := token.noPos;
+    pos: token.Pos := token.no_pos;
     mut attributes: []Attribute;
 
     #[inline]
@@ -83,22 +83,22 @@ pub struct ReportBuilder {
 
     pub func emit(mut self) {
         if self.kind == .Warn {
-            if reportTable.prefs.hide_all_warns {
+            if report_table.prefs.hide_all_warns {
                 return;
             }
-            if reportTable.prefs.all_warns_are_errors
-                || reportTable.prefs.optimize_mode != .Debug {
+            if report_table.prefs.all_warns_are_errors
+                || report_table.prefs.optimize_mode != .Debug {
                 self.kind = .Error;
             }
         }
-        if reportTable.last_pos == self.pos {
+        if report_table.last_pos == self.pos {
             return;
         }
-        reportTable.last_pos = self.pos;
+        report_table.last_pos = self.pos;
         if self.kind == .Error {
-            reportTable.errors += 1;
+            report_table.errors += 1;
         } else {
-            reportTable.warns += 1;
+            report_table.warns += 1;
         }
         console.ewriteln(
             utils.bold("{}: {} {}"), self.pos.to_report_string(), if self.kind == .Error {
@@ -127,7 +127,7 @@ pub struct ReportBuilder {
 }
 
 func formatted_single_line(pos: token.Pos) {
-    if line := utils.sourceCache.find_line(pos.file, pos.line) {
+    if line := utils.source_cache.find_line(pos.file, pos.line) {
         console.ewriteln(
             "{} {} {}", utils.bold(utils.blue("{:5}".fmt(pos.line + 1))),
             utils.bold(utils.blue("|")), line.replace("\t", "    ")
@@ -149,7 +149,7 @@ func formatted_single_line(pos: token.Pos) {
 }
 
 func formatted_multi_line(pos: token.Pos) {
-    if lines := utils.sourceCache.find_lines_between(pos.file, pos.line, pos.end_line + 1) {
+    if lines := utils.source_cache.find_lines_between(pos.file, pos.line, pos.end_line + 1) {
         mut ellipsis := false;
         max: uint := if lines.len > 8 { 4 } else { 2 };
         for line_nr, line in lines {

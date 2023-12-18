@@ -11,14 +11,14 @@ import rivet/fmt;
 import rivet/prefs;
 import rivet/utils;
 
-var fmtDescription := "Formats the given Rivet source files or recursively formats all files in the
+var fmt_desc := "Formats the given Rivet source files or recursively formats all files in the
 directory, then prints their formatted source to stdout.";
 
 pub func cmd_fmt(args: []string) -> ! {
     mut fp := flag.FlagParser.new(args);
     fp.set_application_name("rivet fmt");
     fp.set_arguments_description("[FILES|DIRECTORIES]");
-    fp.set_application_short_description(fmtDescription);
+    fp.set_application_short_description(fmt_desc);
     fp.add_usage_example("file.ri");
     fp.add_usage_example("directory/");
     fp.add_usage_example("-w file.ri");

@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-var digitPairs := "0010203040506070809001112131415161718191021222324252627"
+var digit_pairs := "0010203040506070809001112131415161718191021222324252627"
     "28292031323334353637383930414243444546474849405152535455565758595061626364656667"
     "68696071727374757677787970818283848586878889809192939495969798999";
 
@@ -62,10 +62,10 @@ extend int32 < Stringable {
                 n1 := @as(int32, n / 100);
                 d = @as(uint32, @as(int32, n) - (n1 * 100)) << 1;
                 n = @as(int64, n1);
-                buf[index] = digitPairs.ptr[d];
+                buf[index] = digit_pairs.ptr[d];
                 index -= 1;
                 d += 1;
-                buf[index] = digitPairs.ptr[d];
+                buf[index] = digit_pairs.ptr[d];
                 index -= 1;
             }
             index += 1;
@@ -122,10 +122,10 @@ extend int64 < Stringable {
                 n1 := n / 100;
                 d = @as(int64, @as(uint32, n - (n1 * 100))) << 1;
                 n = n1;
-                buf[index] = digitPairs.ptr[@as(uint, d)];
+                buf[index] = digit_pairs.ptr[@as(uint, d)];
                 index -= 1;
                 d += 1;
-                buf[index] = digitPairs.ptr[@as(uint, d)];
+                buf[index] = digit_pairs.ptr[@as(uint, d)];
                 index -= 1;
             }
             index += 1;

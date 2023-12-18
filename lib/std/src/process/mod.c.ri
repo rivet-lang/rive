@@ -16,8 +16,8 @@ pub alias get_cwd := core.process_get_cwd;
 pub alias executable := core.process_executable;
 
 pub var args := core.ARGS;
-pub var wdAtStartup := get_cwd() catch ".";
-pub var executableDir := Path.dir_name(executable() catch wdAtStartup);
+pub var wd_at_startup := get_cwd() catch ".";
+pub var executable_dir := Path.dir_name(executable() catch wd_at_startup);
 
 #[boxed]
 pub struct NotADirectoryError < Throwable {

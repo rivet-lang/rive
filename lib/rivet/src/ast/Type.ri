@@ -232,7 +232,7 @@ pub enum Type < traits.Stringable {
     #[inline]
     pub func position(self) -> token.Pos {
         return match self {
-            .Void, .None -> token.noPos,
+            .Void, .None -> token.no_pos,
             .Never(never_pos) -> never_pos,
             .Option(opt_t) -> opt_t.pos,
             .Result(res_t) -> res_t.pos,

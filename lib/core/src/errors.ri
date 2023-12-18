@@ -11,7 +11,7 @@ pub func last_errno_error() -> c.ErrnoError {
     return c.last_errno_error();
 }
 
-var returnTrace := ReturnTrace();
+var return_trace := ReturnTrace();
 
 /// This trait is used for errors throwed with result types (!T).
 pub trait Throwable < Stringable { }
@@ -19,7 +19,7 @@ pub trait Throwable < Stringable { }
 #[inline]
 func uncatched_error(err: Throwable) {
     console_ewriteln("uncatched error: {}", err.to_string());
-    returnTrace.print();
+    return_trace.print();
     process_exit(102);
 }
 

@@ -102,7 +102,7 @@ extend Env {
                 .ReturnTypeEqualToArgumentType(0)
             ]),
 
-            .Func("unreachable", +[], .Never(token.noPos)),
+            .Func("unreachable", +[], .Never(token.no_pos)),
             .Func("breakpoint", +[]),
             .Func("assert", +[
                 BuiltinArg("cond", type: self.bool_t),

@@ -624,7 +624,7 @@ extend Parser {
             mut has_var := false;
             mut var_is_mut := false;
             mut var_name := "";
-            mut var_pos := token.noPos;
+            mut var_pos := token.no_pos;
             mut has_cond := false;
             mut cond := ast.Expr.Empty(self.tok.pos);
             is_else := self.accept(.KwElse);

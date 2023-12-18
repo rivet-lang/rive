@@ -10,12 +10,12 @@ import std/fs.Path;
 
 import ../utils;
 
-pub var rivetDir := Path.join(env.homeDir, ".rivet_lang")!;
-pub var rivetcDir := Path.dir_name(process.executable()!)?;
+pub var rivet_dir := Path.join(env.home_dir, ".rivet_lang")!;
+pub var rivetc_dir := Path.dir_name(process.executable()!)?;
 
-pub var objDir := Path.join(rivetDir, "obj")!;
-pub var libDir := Path.join(rivetDir, "lib")!;
-pub var rivetcLibDir := Path.join(rivetcDir, "lib")!;
+pub var obj_dir := Path.join(rivet_dir, "obj")!;
+pub var lib_dir := Path.join(rivet_dir, "lib")!;
+pub var rivetc_lib_dir := Path.join(rivetc_dir, "lib")!;
 
 pub enum Backend as uint8 {
     C;
@@ -63,7 +63,7 @@ pub struct Prefs {
     pub mut is_docs: bool;
     pub mut is_test: bool;
 
-    pub mut library_path: []string := +[rivetcLibDir, libDir];
+    pub mut library_path: []string := +[rivetc_lib_dir, lib_dir];
     pub mut libraries_to_link: []string;
     pub mut objects_to_link: []string;
 
@@ -222,7 +222,7 @@ pub struct Prefs {
                 "Force the use of ANSI colors for the error/warning messages,\n"
                 "                                     or disable them completely."
             ) {
-                utils.stderrSupportStyles = show_color;
+                utils.stderr_support_styles = show_color;
             }
             if verbose := fp.bool_flag("verbose", 'v', "Print additional messages to the console."); verbose {
                 prefs.is_verbose = true;

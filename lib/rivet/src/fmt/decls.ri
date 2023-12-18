@@ -10,7 +10,7 @@ extend Formatter {
         mut prev_decl := if decls.len > 0 {
             decls[0]
         } else {
-            .Empty(token.noPos)
+            .Empty(token.no_pos)
         };
         if !is_root {
             self.indent += 1;

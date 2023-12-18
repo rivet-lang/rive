@@ -12,11 +12,11 @@ var prefs_ := prefs.Prefs();
 func tokenize(text: string) -> []token.Token {
     mut tokenizer_ := tokenizer.Tokenizer.new(text, Env.new(prefs_));
     mut tokens := []token.Token(cap: text.len / 3);
-    mut token := tokenizer_.next();
+    mut token_ := tokenizer_.next();
     while {
-        tokens.push(token);
-        token = tokenizer_.next();
-        if token.kind == .EndOfFile {
+        tokens.push(token_);
+        token_ = tokenizer_.next();
+        if token_.kind == .EndOfFile {
             break;
         }
     }

@@ -7,7 +7,7 @@ import std/strings;
 
 import ../token;
 
-#[boxed; default_value(.Empty(token.noPos))]
+#[boxed; default_value(.Empty(token.no_pos))]
 pub enum Expr < traits.Stringable {
     Empty(token.Pos),
     Comment(Comment),

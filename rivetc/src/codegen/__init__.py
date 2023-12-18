@@ -125,11 +125,11 @@ class Codegen:
                 )
                 main_fn.store(
                     ir.Selector(ir.STRING_T, test_value, ir.Name("err_pos")),
-                    ir.Ident(ir.STRING_T, "_R4core11emptyString")
+                    ir.Ident(ir.STRING_T, "_R4core12empty_string")
                 )
                 main_fn.store(
                     ir.Selector(ir.STRING_T, test_value, ir.Name("err_msg")),
-                    ir.Ident(ir.STRING_T, "_R4core11emptyString")
+                    ir.Ident(ir.STRING_T, "_R4core12empty_string")
                 )
                 main_fn.store(
                     ir.Selector(
@@ -2613,7 +2613,7 @@ class Codegen:
         elif typ in (self.comp.float32_t, self.comp.float64_t):
             return ir.FloatLit(self.ir_type(typ), "0.0")
         elif typ == self.comp.string_t:
-            return ir.Ident(ir.STRING_T, "_R4core11emptyString")
+            return ir.Ident(ir.STRING_T, "_R4core12empty_string")
         elif isinstance(typ, type.Result):
             if typ.typ == self.comp.void_t:
                 return self.result_void(typ)
@@ -2674,7 +2674,7 @@ class Codegen:
     def gen_string_literal(self, lit, size = None):
         size = size or utils.bytestr(lit).len
         if size == 0:
-            return ir.Ident(ir.STRING_T.ptr(True), "_R4core11emptyString")
+            return ir.Ident(ir.STRING_T.ptr(True), "_R4core12empty_string")
         lit_hash = hash(lit)
         if lit_hash in self.generated_string_literals:
             return ir.Ident(
@@ -2863,7 +2863,7 @@ class Codegen:
                     ir.InstKind.GetPtr, [
                         ir.Ident(
                             ir.Type("_R4core11ReturnTrace"),
-                            "_R4core11returnTrace"
+                            "_R4core12return_trace"
                         )
                     ]
                 ), tmp
@@ -2877,7 +2877,7 @@ class Codegen:
                     ir.InstKind.GetPtr, [
                         ir.Ident(
                             ir.Type("_R4core11ReturnTrace"),
-                            "_R4core11returnTrace"
+                            "_R4core12return_trace"
                         )
                     ]
                 )

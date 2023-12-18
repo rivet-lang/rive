@@ -39,7 +39,7 @@ extend float32 < Stringable {
             cstr: ?[&]uint8 := none;
             len := libc.asprintf(&cstr, c"%g", self.*);
             return if len == -1 {
-                emptyString // fail
+                empty_string // fail
             } else {
                 string.from_raw_with_len(cstr, @as(uint, len))
             };
@@ -68,7 +68,7 @@ extend float64 < Stringable {
             cstr: ?[&]uint8 := none;
             len := libc.asprintf(&cstr, c"%g", self.*);
             return if len == -1 {
-                emptyString // fail
+                empty_string // fail
             } else {
                 string.from_raw_with_len(cstr, @as(uint, len))
             };

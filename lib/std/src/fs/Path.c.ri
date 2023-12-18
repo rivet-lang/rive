@@ -10,7 +10,7 @@ import ../mem;
 pub struct Path {
     pub alias MAX_LEN := libc.MAX_PATH_LEN;
     pub const SEPARATOR := #if _WINDOWS_ b'\\' #else b'/' #endif;
-    pub var separatorStr := #if _WINDOWS_ "\\" #else "/" #endif;
+    pub var separator_str := #if _WINDOWS_ "\\" #else "/" #endif;
     pub var delimiter := #if _WINDOWS_ ";" #else ":" #endif;
 
     /// Returns `true` if the given byte is a valid path separator
@@ -99,7 +99,7 @@ pub struct Path {
         }
 
         if end_index == 0 && path[0] == SEPARATOR {
-            return separatorStr;
+            return separator_str;
         } else if end_index == 0 {
             return none;
         }
@@ -130,10 +130,10 @@ pub struct Path {
         return path.substr(start_index + 1, end_index);
     }
 
-    /// Return alls characters found after the last occurrence of `separatorStr`.
+    /// Return alls characters found after the last occurrence of `separator_str`.
     /// File extension is included.
     pub func file_name(path: string) -> string {
-        return path.all_after_of_last(separatorStr);
+        return path.all_after_of_last(separator_str);
     }
 
     /// Returns the extension of the file name (if any).

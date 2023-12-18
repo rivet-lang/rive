@@ -8,7 +8,7 @@ import std/strings;
 import ../ast;
 import ../utils;
 
-var maxLen := [@as(uint, 0), 35, 60, 85, 93, 100];
+var max_len := [@as(uint, 0), 35, 60, 85, 93, 100];
 
 #[boxed]
 pub struct Formatter {
@@ -63,7 +63,7 @@ pub struct Formatter {
     }
 
     func wrap_long_line(mut self, penalty_idx: uint, add_indent: bool) -> bool {
-        if penalty_idx > 0 && self.line_len <= maxLen[penalty_idx] {
+        if penalty_idx > 0 && self.line_len <= max_len[penalty_idx] {
             return false;
         }
         if self.output.last_byte() == ' ' {

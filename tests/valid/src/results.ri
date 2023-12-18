@@ -18,10 +18,10 @@ func result3() -> !int32 {
     return 5;
 }
 
-var resultValue := result3()!;
+var result_value := result3()!;
 
 test "propagate result in `var` declaration" {
-    @assert(resultValue == 5);
+    @assert(result_value == 5);
 }
 
 test "catch result error" {

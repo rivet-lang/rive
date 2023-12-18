@@ -569,7 +569,7 @@ extend Parser {
         mut is_method := false;
         mut self_is_mut := false;
         mut self_is_ptr := false;
-        mut self_pos := token.noPos;
+        mut self_pos := token.no_pos;
         mut args := []mut ast.Arg();
         mut has_named_args := false;
         mut is_variadic := false;

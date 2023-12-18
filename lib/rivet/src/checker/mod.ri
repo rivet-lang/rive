@@ -86,13 +86,7 @@ pub struct Checker {
                 if left0.name == "_" && left0.is_mut {
                     report.error("cannot use `mut` on `_`", left0.pos);
                 }
-                self.check_name_case(
-                    if left0.is_global {
-                        .Camel
-                    } else {
-                        .Snake
-                    }, "variable", left0.name, left0.pos
-                );
+                self.check_name_case(.Snake, "variable", left0.name, left0.pos);
                 if self.inside_match_cond_expr {
                     if left0.sym.name.is_empty() {
                         scope.update_is_used(left0.name, true);
@@ -148,11 +142,7 @@ pub struct Checker {
                         if vd.name == "_" && vd.is_mut {
                             report.error("cannot use `mut` on `_`", vd.pos);
                         }
-                        self.check_name_case(if vd.is_global {
-                            .Camel
-                        } else {
-                            .Snake
-                        }, "variable", vd.name, vd.pos);
+                        self.check_name_case(.Snake, "variable", vd.name, vd.pos);
                         if self.inside_match_cond_expr {
                             if vd.sym.name.is_empty() {
                                 scope.update_is_used(vd.name, true);

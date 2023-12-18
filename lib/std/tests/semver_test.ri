@@ -20,7 +20,7 @@ struct TestCoerce {
     valid: string;
 }
 
-var versionToTest := [
+var version_to_test := [
     TestVersion("1.2.4", 1, 2, 4, "", ""),
     TestVersion("1.2.4-prerelease-1", 1, 2, 4, "prerelease-1", ""),
     TestVersion("1.2.4+20191231", 1, 2, 4, "", "20191231"),
@@ -28,7 +28,7 @@ var versionToTest := [
     TestVersion("1.2.4+20191231-prerelease-1", 1, 2, 4, "", "20191231-prerelease-1")
 ];
 
-var rangesToTest := [
+var ranges_to_test := [
     TestRange("1.1.0", "1.1.0", "1.1.1"),
     TestRange("1.1.0", "=1.1.0", "=1.1.1"),
     TestRange("1.1.0", ">=1.0.0", "<1.1.0"),
@@ -49,7 +49,7 @@ var rangesToTest := [
     TestRange("2.3.4", "*", "3.x")
 ];
 
-var coerceToTest := [
+var coerce_to_test := [
     TestCoerce("1.2.0.4", "1.2.0"),
     TestCoerce("1.2.0", "1.2.0"),
     TestCoerce("1.2", "1.2.0"),
@@ -59,7 +59,7 @@ var coerceToTest := [
     TestCoerce("1-alpha+meta", "1.0.0-alpha+meta")
 ];
 
-var invalidVersionToTest := [
+var invalid_version_to_test := [
     "a.b.c",
     "1.2",
     "1.2.x",
@@ -68,7 +68,7 @@ var invalidVersionToTest := [
     "1.2.3+meta%"
 ];
 
-var invalidRangesToTest := [
+var invalid_ranges_to_test := [
     "^a",
     "~b",
     "a - c",
@@ -78,7 +78,7 @@ var invalidRangesToTest := [
 ];
 
 test "std.semver.Version.from_string()" {
-    for item in versionToTest {
+    for item in version_to_test {
         ver := semver.Version.from_string(item.raw) catch {
             @assert(false);
             continue
@@ -90,7 +90,7 @@ test "std.semver.Version.from_string()" {
         @assert(ver.prerelease == item.prerelease);
         @assert(ver.to_string() == item.raw);
     }
-    for ver in invalidVersionToTest {
+    for ver in invalid_version_to_test {
         _ = semver.Version.from_string(ver) catch {
             @assert(true);
             continue
@@ -150,7 +150,7 @@ test "std.semver.Version comparing" {
 }
 
 test "std.semver.Version.satisfies()" {
-    for item in rangesToTest {
+    for item in ranges_to_test {
         ver := semver.Version.from_string(item.raw_version) catch {
             @assert(false);
             return
@@ -165,13 +165,13 @@ test "std.semver.Version.satisfies() invalid" {
         @assert(false);
         return
     };
-    for item in invalidRangesToTest {
+    for item in invalid_ranges_to_test {
         @assert(!ver.satisfies(item));
     }
 }
 
 test "std.semver.coerce()" {
-    for item in coerceToTest {
+    for item in coerce_to_test {
         valid := semver.Version.from_string(item.valid) catch {
             @assert(false);
             return
@@ -194,10 +194,10 @@ test "std.semver.coerce() invalid" {
 }
 
 test "std.semver.is_valid()" {
-    for item in versionToTest {
+    for item in version_to_test {
         @assert(semver.is_valid(item.raw));
     }
-    for item in invalidVersionToTest {
+    for item in invalid_version_to_test {
         @assert(!semver.is_valid(item));
     }
 }

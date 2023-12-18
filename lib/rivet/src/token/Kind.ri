@@ -9,7 +9,7 @@ struct KindMap {
     value: string;
 }
 
-var kindStrings := [
+var kind_strings := [
     KindMap(.Unknown, "unknown"),
     KindMap(.EndOfFile, "end of file"),
     KindMap(.DocComment, "doc-comment"),
@@ -105,7 +105,7 @@ var kindStrings := [
     KindMap(.KwWhile, "while")
 ];
 
-var keywordsEnv := kindStrings[@as(uint, Kind.KeywordBegin)..];
+var keywords_table := kind_strings[@as(uint, Kind.KeywordBegin)..];
 
 pub enum Kind < traits.Stringable {
     Unknown, // unknown
@@ -208,7 +208,7 @@ pub enum Kind < traits.Stringable {
 
     #[inline]
     pub func lookup(str: string) -> Self {
-        for &km in keywordsEnv {
+        for &km in keywords_table {
             if km.value == str {
                 return km.key;
             }
@@ -255,7 +255,7 @@ pub enum Kind < traits.Stringable {
     }
 
     pub func to_string(&self) -> string {
-        for &km in kindStrings {
+        for &km in kind_strings {
             if km.key == self.* {
                 return km.value;
             }

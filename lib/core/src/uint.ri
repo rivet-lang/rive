@@ -134,10 +134,10 @@ extend uint32 < Stringable {
                 n1 := n / 100;
                 d = (n - (n1 * 100)) << 1;
                 n = n1;
-                buf[index] = digitPairs.ptr[d];
+                buf[index] = digit_pairs.ptr[d];
                 index -= 1;
                 d += 1;
-                buf[index] = digitPairs.ptr[d];
+                buf[index] = digit_pairs.ptr[d];
                 index -= 1;
             }
             index += 1;
@@ -176,10 +176,10 @@ extend uint64 < Stringable {
                 n1 := n / 100;
                 d = (n - (n1 * 100)) << @as(uint32, 1);
                 n = n1;
-                buf[index] = digitPairs.ptr[d];
+                buf[index] = digit_pairs.ptr[d];
                 index -= 1;
                 d += 1;
-                buf[index] = digitPairs.ptr[d];
+                buf[index] = digit_pairs.ptr[d];
                 index -= 1;
             }
             index += 1;

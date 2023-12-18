@@ -40,7 +40,7 @@ pub struct Builder {
     func run(mut self) -> ! {
         self.make_rivet_directory()!;
 
-        _ = self.load_module("core", "core", "", token.noPos)!;
+        _ = self.load_module("core", "core", "", token.no_pos)!;
         self.load_root_module()!;
         self.import_modules()!;
 
@@ -80,11 +80,11 @@ pub struct Builder {
     }
 
     func make_rivet_directory(self) -> ! {
-        if !Path.exists(prefs.rivetDir) {
+        if !Path.exists(prefs.rivet_dir) {
             self.vlog("making Rivet directory");
-            Directory.make(prefs.rivetDir)!;
-            Directory.make(prefs.objDir)!;
-            Directory.make(prefs.libDir)!;
+            Directory.make(prefs.rivet_dir)!;
+            Directory.make(prefs.obj_dir)!;
+            Directory.make(prefs.lib_dir)!;
         }
     }
 
