@@ -2,7 +2,6 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-#[boxed]
 pub struct Field {
     pub is_public: bool;
     pub name: string;
@@ -184,12 +183,11 @@ pub struct TypeSym < Sym {
 
     #[inline]
     pub func is_boxed(self) -> bool {
-        return if self.info is .Enum(enum_info) {
-            enum_info.is_boxed
-        } else if self.info is .Struct(struct_info) {
-            struct_info.is_boxed
-        } else {
-            self.info is .Trait || self.info is .String || self.info is .DynArray
+        return match self.info {
+            .String, .DynArray, .Trait -> true,
+            .Struct(struct_info) -> struct_info.is_boxed,
+            .Enum(enum_info) -> enum_info.is_boxed,
+            else -> false
         };
     }
 
