@@ -92,6 +92,6 @@ Read [CONTRIBUTING](CONTRIBUTING.md) to get more information.
 
 <div align="center">
 
-© 2023 **The Rivet Developers**
+© 2023 **Jose Mendoza**
 
 </div>
