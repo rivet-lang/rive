@@ -246,7 +246,7 @@ pub struct Checker {
                 mut err := report.error_builder(
                     "cannot use `self` as mutable value", self_lit.pos
                 );
-                err.add_help("consider making `self` as muenv: `mut self`");
+                err.add_help("consider making `self` as mutable: `mut self`");
                 err.emit();
             },
             .Ident(mut ident) -> if ident.is_comptime {
@@ -347,7 +347,7 @@ pub struct Checker {
                             "cannot use variable `{}` as mutable argument".fmt(sym.name), pos
                         );
                         err_b.add_help(
-                            "consider making this argument muenv: `mut {}`", var_info.name
+                            "consider making this argument mutable: `mut {}`", var_info.name
                         );
                         err_b
                     } else {
@@ -355,7 +355,7 @@ pub struct Checker {
                             "cannot use variable `{}` as mutable value".fmt(sym.name), pos
                         );
                         err_b.add_help(
-                            "consider making this {} muenv: `mut {}`", var_info.type_of(),
+                            "consider making this {} mutable: `mut {}`", var_info.type_of(),
                             var_info.name
                         );
                         err_b

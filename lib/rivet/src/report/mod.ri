@@ -10,39 +10,7 @@ import ../prefs;
 import ../token;
 import ../utils;
 
-pub var mut report_table := ReportEnv();
-
-#[inline]
-pub func total_errors() -> uint {
-    return report_table.errors;
-}
-
-#[inline]
-pub func total_warns() -> uint {
-    return report_table.warns;
-}
-
-#[boxed]
-struct ReportEnv {
-    pub mut prefs: prefs.Prefs;
-    pub mut errors: uint;
-    pub mut warns: uint;
-
-    mut last_pos: token.Pos;
-}
-
-pub enum ReportKind as uint8 {
-    Error,
-    Warn,
-    Note,
-    Help
-}
-
-#[boxed]
-struct Attribute {
-    kind: ReportKind;
-    msg: string;
-}
+pub var mut report_table := ReportTable();
 
 #[inline]
 pub func error(msg: string, pos: token.Pos) {
@@ -62,6 +30,37 @@ pub func error_builder(msg: string, pos: token.Pos) -> ReportBuilder {
 #[inline]
 pub func warn_builder(msg: string, pos: token.Pos) -> ReportBuilder {
     return ReportBuilder(.Warn, msg, pos);
+}
+
+#[inline]
+pub func total_errors() -> uint {
+    return report_table.errors;
+}
+
+#[inline]
+pub func total_warns() -> uint {
+    return report_table.warns;
+}
+
+#[boxed]
+struct ReportTable {
+    pub mut prefs: prefs.Prefs;
+    pub mut errors: uint;
+    pub mut warns: uint;
+
+    mut last_pos: token.Pos;
+}
+
+pub enum ReportKind as uint8 {
+    Error,
+    Warn,
+    Note,
+    Help
+}
+
+struct Attribute {
+    kind: ReportKind;
+    msg: string;
 }
 
 // TODO: support JSON format for LSP, etc.

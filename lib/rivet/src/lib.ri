@@ -259,9 +259,7 @@ pub struct Builder {
     }
 
     func parse_files(mut self, mod_sym: ast.Module, files: []string) {
-        for sf in parser.Parser(env: self.env, prefs: self.env.prefs).parse_module(
-            mod_sym, files
-        ) {
+        for sf in parser.Parser(env: self.env).parse_module(mod_sym, files) {
             self.env.source_files.push(sf);
         }
         if report.total_errors() > 0 {

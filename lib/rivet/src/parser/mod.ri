@@ -5,7 +5,6 @@
 import std/fs.Path;
 
 import ../ast;
-import ../prefs;
 import ../report;
 import ../token;
 import ../tokenizer;
@@ -13,7 +12,6 @@ import ../tokenizer;
 #[boxed]
 pub struct Parser {
     mut env: ast.Env;
-    mut prefs: prefs.Prefs;
 
     mut tokenizer: tokenizer.Tokenizer;
     mut prev_tok: token.Token;
