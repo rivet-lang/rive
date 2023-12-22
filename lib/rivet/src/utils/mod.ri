@@ -10,7 +10,7 @@ import std/console/styles;
 pub const LF: uint8 := 10;
 pub const CR: uint8 := 13;
 
-pub var mut stderr_support_styles := styles.stderr_support_styles();
+pub var mut support_ansi_escape_codes := styles.support_ansi_escape_codes();
 
 pub var tabs_table := [
     "",
@@ -73,32 +73,32 @@ pub func info(msg: string, args: ...traits.Stringable) {
 
 #[inline]
 pub func bold(msg: string) -> string {
-    return if stderr_support_styles { styles.bold(msg) } else { msg };
+    return if support_ansi_escape_codes { styles.bold(msg) } else { msg };
 }
 
 #[inline]
 pub func red(msg: string) -> string {
-    return if stderr_support_styles { styles.red(msg) } else { msg };
+    return if support_ansi_escape_codes { styles.red(msg) } else { msg };
 }
 
 #[inline]
 pub func yellow(msg: string) -> string {
-    return if stderr_support_styles { styles.yellow(msg) } else { msg };
+    return if support_ansi_escape_codes { styles.yellow(msg) } else { msg };
 }
 
 #[inline]
 pub func cyan(msg: string) -> string {
-    return if stderr_support_styles { styles.cyan(msg) } else { msg };
+    return if support_ansi_escape_codes { styles.cyan(msg) } else { msg };
 }
 
 #[inline]
 pub func blue(msg: string) -> string {
-    return if stderr_support_styles { styles.blue(msg) } else { msg };
+    return if support_ansi_escape_codes { styles.blue(msg) } else { msg };
 }
 
 #[inline]
 pub func green(msg: string) -> string {
-    return if stderr_support_styles { styles.green(msg) } else { msg };
+    return if support_ansi_escape_codes { styles.green(msg) } else { msg };
 }
 
 /// Rounds the number `n` up to the next mult

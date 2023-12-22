@@ -2,16 +2,18 @@
 // Use of this source code is governed by an MIT license that can
 // be found in the LICENSE file.
 
-import std/console;
+import ../../env;
+import ../../console;
 
 #[inline]
-pub func stdout_support_styles() -> bool {
-    return console.is_atty(1);
-}
-
-#[inline]
-pub func stderr_support_styles() -> bool {
-    return console.is_atty(2);
+pub func support_ansi_escape_codes() -> bool {
+    if console.is_atty(1) && console.is_atty(2) {
+        if term := env.get("TERM"); term == "dumb" {
+            return false;
+        }
+        return true;
+    }
+    return false;
 }
 
 #[inline]

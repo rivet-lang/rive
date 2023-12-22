@@ -222,7 +222,7 @@ pub struct Prefs {
                 "Force the use of ANSI colors for the error/warning messages,\n"
                 "                                     or disable them completely."
             ) {
-                utils.stderr_support_styles = show_color;
+                utils.support_ansi_escape_codes = show_color;
             }
             if verbose := fp.bool_flag("verbose", 'v', "Print additional messages to the console."); verbose {
                 prefs.is_verbose = true;
