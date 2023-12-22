@@ -18,7 +18,6 @@ pub enum Node {
     }
 }
 
-#[boxed]
 pub struct Comment {
     pub mut is_doc: bool;
     pub mut text: string;

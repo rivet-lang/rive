@@ -13,20 +13,18 @@ pub struct AttributeDuplicatedError < Throwable {
     }
 }
 
-#[boxed]
 pub struct AttributeArgument {
     pub name: string;
     pub expr: Expr;
     pub is_named: bool;
 }
 
-#[boxed]
 pub struct Attribute {
     pub name: string;
     pub args: []AttributeArgument;
     pub pos: token.Pos;
 
-    pub func find_argument(self, name: string) -> ?AttributeArgument {
+    pub func find_argument(&self, name: string) -> ?AttributeArgument {
         for arg in self.args {
             if arg.name == name {
                 return arg;
@@ -36,7 +34,6 @@ pub struct Attribute {
     }
 }
 
-#[boxed]
 pub struct Attributes {
     pub mut attributes: []Attribute;
 
@@ -47,7 +44,7 @@ pub struct Attributes {
         self.attributes.push(attribute);
     }
 
-    pub func find(self, name: string) -> ?Attribute {
+    pub func find(&self, name: string) -> ?Attribute {
         for attribute in self.attributes {
             if attribute.name == name {
                 return attribute;
@@ -57,12 +54,12 @@ pub struct Attributes {
     }
 
     #[inline]
-    pub func has(self, name: string) -> bool {
+    pub func has(&self, name: string) -> bool {
         return self.find(name) != none;
     }
 
     #[inline]
-    pub func is_empty(self) -> bool {
+    pub func is_empty(&self) -> bool {
         return self.attributes.is_empty();
     }
 }
