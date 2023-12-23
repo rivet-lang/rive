@@ -89,9 +89,3 @@ Only linux is supported for now. Windows is not well supported, and macOS is not
 yet. Any help to provide full support for both Windows and macOS is welcome.
 
 Read [CONTRIBUTING](CONTRIBUTING.md) to get more information.
-
-<div align="center">
-
-© 2023 **Jose Mendoza**
-
-</div>
