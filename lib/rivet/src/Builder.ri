@@ -18,13 +18,6 @@ import ./codegen;
 import ./resolver;
 import ./depgraph;
 
-struct ModuleFilesResult {
-    pub short_name: string;
-    pub full_name: string;
-    pub files: []string;
-    pub found: bool;
-}
-
 pub struct Builder {
     mut env: ast.Env;
 
@@ -153,8 +146,9 @@ pub struct Builder {
     func load_module(
         mut self, path: string, alias_name: string, file_path: string, pos: token.Pos
     ) -> !ast.ImportedMod {
-        mut mod := self.load_module_metadata(path, alias_name, file_path, pos)!;
+        mut mod := self.load_module_files(alias_name, path, file_path)!;
         if mod.found {
+            self.vlog("    module `{}` loaded", path);
             mod.mod = if mod_mod_ := self.env.universe.scope.find(mod.full_name) {
                 @as(ast.Module, mod_mod_)
             } else {
@@ -165,32 +159,17 @@ pub struct Builder {
                 self.parse_files(mod_sym, mod.files);
                 mod_sym
             };
+        } else if mod.files.is_empty() {
+            self.vlog("        > module contains no rivet files", path);
+            report.error("module `{}` contains no rivet files".fmt(path), pos);
+        } else {
+            self.vlog("        > module not found", path);
+            report.error("module `{}` not found".fmt(path), pos);
         }
         return mod;
     }
 
-    func load_module_metadata(
-        &self, path: string, alias_name: string, file_path: string, pos: token.Pos
-    ) -> !ast.ImportedMod {
-        mod_files_result := self.load_module_files(path, file_path)!;
-        if !mod_files_result.found {
-            self.vlog("        > module not found", path);
-            report.error("module `{}` not found".fmt(path), pos);
-        } else if mod_files_result.files.is_empty() {
-            self.vlog("        > module contains no rivet files", path);
-            report.error("module `{}` contains no rivet files".fmt(path), pos);
-        } else {
-            self.vlog("    module `{}` loaded", path);
-        }
-        return ast.ImportedMod(
-            found: mod_files_result.found, name: mod_files_result.short_name,
-            alias_name: if alias_name.is_empty() { mod_files_result.short_name } else { alias_name },
-            full_name: mod_files_result.full_name,
-            files: mod_files_result.files
-        );
-    }
-
-    func load_module_files(&self, path: string, file_path: string) -> !ModuleFilesResult {
+    func load_module_files(&self, alias_name: string, path: string, file_path: string) -> !ast.ImportedMod {
         self.vlog("Builder.load_module_files: searching module `{}`", path);
         mut found := false;
         mut name := "";
@@ -270,7 +249,13 @@ pub struct Builder {
                 }
             }
         }
-        return ModuleFilesResult(name, full_name, files, found);
+        return ast.ImportedMod(
+            found: found, 
+            name: name,
+            alias_name: if alias_name.is_empty() { name } else { alias_name },
+            full_name: full_name,
+            files: files
+        );
     }
 
     func parse_files(mut self, mod_sym: ast.Module, files: []string) {
