@@ -2,5 +2,5 @@
     "name": "rivet",
     "description": "The Rivet compiler",
     "version": "0.1.0",
-    "authors": ["The Rivet Developers"]
+    "authors": ["Jose Mendoza", "Other contributors"]
 }

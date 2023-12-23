@@ -1,6 +1,6 @@
-// Copyright (C) 2023 Jose Mendoza. All rights reserved.
-// Use of this source code is governed by an MIT license that can
-// be found in the LICENSE file.
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
+// source code is governed by an MIT license that can be found in the LICENSE 
+// file.
 
 var digit_pairs := "0010203040506070809001112131415161718191021222324252627"
     "28292031323334353637383930414243444546474849405152535455565758595061626364656667"
