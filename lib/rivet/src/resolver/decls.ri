@@ -160,9 +160,19 @@ extend Resolver {
                     }
                     self.resolve_decls(extend_decl.decls);
                 },
-                .Field(mut field_decl) -> if self.resolve_type(field_decl.type)
-                    && field_decl.has_def_expr {
-                    self.resolve_expr(field_decl.def_expr);
+                .Field(mut field_decl) -> if self.resolve_type(field_decl.type) {
+                    if field_decl.has_def_expr {
+                        self.resolve_expr(field_decl.def_expr);
+                    }
+                    if sym := self.self_sym.scope.find(field_decl.name) {
+                        report.error(
+                            "{} `{}` has field and {} named `{}`".fmt(
+                                self.self_sym.type_of(), self.self_sym.name, sym.type_of(), field_decl.name
+                            ), 
+                            field_decl.pos
+                        );
+                        continue;
+                    }
                 },
                 .Func(mut func_decl) -> {
                     if func_decl.is_method {

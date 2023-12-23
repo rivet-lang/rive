@@ -6,7 +6,6 @@ import std/flag;
 import std/console;
 import std/fs.Directory;
 
-import rivet;
 import rivet/ast;
 import rivet/fmt;
 import rivet/prefs;

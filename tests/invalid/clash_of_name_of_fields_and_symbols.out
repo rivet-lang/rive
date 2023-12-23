@@ -1,0 +1,4 @@
+tests/invalid/clash_of_name_of_fields_and_symbols.ri:2:5: error: struct `Xyz` has field and function named `a`
+    2 |     a: int;
+      |     ^~~~~~
+rivet: error: could not compile module `clash_of_name_of_fields_and_symbols`, aborting due to previous error

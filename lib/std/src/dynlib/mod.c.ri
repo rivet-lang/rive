@@ -8,16 +8,16 @@
 
 import c/libc;
 
-pub var sharedLibExtension := get_shared_library_extension();
+pub var shared_lib_extension := get_shared_library_extension();
 
 /// Returns a library name with the operating system specific extension for shared
 /// libraries.
 #[inline]
 pub func library_name(libname: string) -> string {
-    return if libname.ends_with(sharedLibExtension) {
+    return if libname.ends_with(shared_lib_extension) {
         libname
     } else {
-        libname.concat(sharedLibExtension)
+        libname.concat(shared_lib_extension)
     };
 }
 
@@ -39,8 +39,8 @@ pub struct CannotLoadLibraryError < Throwable {
     }
 }
 
-pub func load(path: string, global_symbols: bool = false) -> !Library {
-    flags := if global_symbols { libc.RTLD_NOW | libc.RTLD_GLOBAL } else { libc.RTLD_NOW };
+pub func load(path: string, global_symbols: bool := false) -> !Library {
+    flags: int32 := if global_symbols { libc.RTLD_NOW | libc.RTLD_GLOBAL } else { libc.RTLD_NOW };
     if ptr := unsafe { libc.dlopen(path.ptr, flags) } {
         return Library(path, ptr);
     }

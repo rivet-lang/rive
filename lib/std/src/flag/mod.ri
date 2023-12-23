@@ -66,7 +66,7 @@ pub struct FlagParser {
     mut application_description: string;
     mut args_description: string;
     /// Whether passing undescribed arguments is allowed.
-    mut allow_unknown_args: bool;
+    mut allow_unknown_args_: bool;
     /// When set, --help will display all the collected footers at the bottom.
     mut footers: []string;
 
@@ -184,7 +184,7 @@ pub struct FlagParser {
     /// to fail.
     #[inline]
     pub func allow_unknown_args(mut self) {
-        self.allow_unknown_args = true;
+        self.allow_unknown_args_ = true;
     }
 
     /// Returns an option with the bool value of the given command line flag, named `name`.
@@ -325,7 +325,7 @@ pub struct FlagParser {
     pub func finalize(mut self) -> ![]string {
         self.handle_builtin_options();
         mut remaining := self.args.clone();
-        if !self.allow_unknown_args {
+        if !self.allow_unknown_args_ {
             for arg in remaining {
                 if (arg.len >= 2 && arg.substr(end: 2) == "--")
                     || (arg.len == 2 && arg[0] == '-') {
