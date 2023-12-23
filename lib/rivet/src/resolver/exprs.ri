@@ -270,14 +270,6 @@ extend Resolver {
         } else if self.self_sym_is_set {
             if sym := self.self_sym.scope.find(ident.name) {
                 if !(sym is ast.TypeSym(type_sym) && type_sym.info is .Placeholder) {
-                    if sym is ast.Func {
-                        mut err := report.error_builder(
-                            "cannot find `{}` in this scope".fmt(ident.name), ident.pos
-                        );
-                        err.add_help("use `Self.{}()` instead", sym.name);
-                        err.emit();
-                        return;
-                    }
                     ident.found = true;
                     ident.is_sym = true;
                     ident.sym = sym;

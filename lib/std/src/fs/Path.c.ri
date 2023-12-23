@@ -56,7 +56,7 @@ pub struct Path {
     /// Returns `true` if `path` is a file.
     #[inline]
     pub func is_file(path: string) -> bool {
-        return Self.exists(path) && !Self.is_directory(path);
+        return exists(path) && !is_directory(path);
     }
 
     /// Returns `true` if `path` is absolute.
@@ -142,7 +142,7 @@ pub struct Path {
     /// Files that end with `.`, or that start with `.` and have no other `.` in their
     /// name, are considered to have no extension.
     pub func extension(path: string) -> string {
-        filename := Self.file_name(path);
+        filename := file_name(path);
         index := filename.last_index_of_byte('.') ?? return "";
         return if index == 0 || index + 1 >= filename.len {
             ""
@@ -164,7 +164,7 @@ pub struct Path {
         mut have_abs := false;
         mut max_size: uint := 0;
         for i, p in paths {
-            if Self.is_absolute(p) {
+            if is_absolute(p) {
                 first_index = i;
                 have_abs = true;
                 max_size = 0;
@@ -234,8 +234,8 @@ pub struct Path {
     /// resolve to the same path (after calling `resolve` on each), a zero-length
     /// string is returned.
     pub func relative(from_: string, to: string) -> !string {
-        _ = Self.resolve(from_)!;
-        _ = Self.resolve(to)!;
+        _ = resolve(from_)!;
+        _ = resolve(to)!;
         mut from_it := from_.tokenize(SEPARATOR);
         mut to_it := to.tokenize(SEPARATOR);
         while {
@@ -315,8 +315,8 @@ pub struct Path {
                 if this_path.is_empty() {
                     continue;
                 }
-                prev_sep := Self.is_separator(prev_path[prev_path.len - 1]);
-                this_sep := Self.is_separator(this_path[0]);
+                prev_sep := is_separator(prev_path[prev_path.len - 1]);
+                this_sep := is_separator(this_path[0]);
                 sum += (!prev_sep && !this_sep).to_uint();
                 sum += if prev_sep && this_sep { this_path.len - 1 } else { this_path.len };
                 prev_path = this_path;
@@ -339,8 +339,8 @@ pub struct Path {
             if this_path.is_empty() {
                 continue;
             }
-            prev_sep := Self.is_separator(prev_path[prev_path.len - 1]);
-            this_sep := Self.is_separator(this_path[0]);
+            prev_sep := is_separator(prev_path[prev_path.len - 1]);
+            this_sep := is_separator(this_path[0]);
             if !prev_sep && !this_sep {
                 unsafe {
                     buf[buf_index] = SEPARATOR;
@@ -369,13 +369,13 @@ pub struct Path {
         if path.is_empty() {
             return cwd;
         }
-        rpath := Self.resolve(path)!;
+        rpath := resolve(path)!;
         if rpath == "." {
             return cwd;
         }
-        if Self.is_absolute(rpath) {
+        if is_absolute(rpath) {
             return rpath;
         }
-        return Self.resolve(Self.join(cwd, rpath)!)!;
+        return resolve(join(cwd, rpath)!)!;
     }
 }

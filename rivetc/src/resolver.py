@@ -413,21 +413,11 @@ class Resolver:
             ident.is_sym = True
         elif self.self_sym:
             if s := self.self_sym.find(ident.name):
-                if isinstance(
+                if not (isinstance(
                     s, sym.Type
-                ) and s.kind == sym.TypeKind.Placeholder:
-                    report.error(
-                        f"cannot find `{ident.name}` in this scope", ident.pos
-                    )
-                    ident.not_found = True
-                elif isinstance(s, sym.Func):
-                    report.error(
-                        f"cannot find `{ident.name}` in this scope", ident.pos
-                    )
-                    report.help(f"use `Self.{s.name}()` instead")
-                    ident.not_found = True
-                ident.sym = s
-                ident.is_sym = True
+                ) and s.kind == sym.TypeKind.Placeholder):
+                    ident.sym = s
+                    ident.is_sym = True
         if ident.sym == None and ident.obj == None:
             report.error(f"cannot find `{ident.name}` in this scope", ident.pos)
             ident.not_found = True
