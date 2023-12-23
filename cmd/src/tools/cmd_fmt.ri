@@ -4,12 +4,14 @@
 
 import std/flag;
 import std/console;
+import std/fs.Directory;
 
 import rivet;
 import rivet/ast;
 import rivet/fmt;
 import rivet/prefs;
 import rivet/utils;
+import rivet/parser;
 
 var fmt_desc := "Formats the given Rivet source files or recursively formats all files in the
 directory, then prints their formatted source to stdout.";
@@ -33,17 +35,14 @@ pub func cmd_fmt(args: []string) -> ! {
         utils.error("no input received");
     }
     for input in remaining {
-        mut prefs_ := prefs.Prefs(
-            is_fmt: true,
-            hide_all_warns: true
-        );
-        prefs_.check_input(input);
+        mut prefs_ := prefs.Prefs(is_fmt: true, hide_all_warns: true);
+        prefs_.set_input(input);
         prefs_.load_module_info()!;
         env := ast.Env.new(prefs_);
-        mut builder := rivet.Builder(env: env);
-        builder.load_root_module()!;
-        mut formatter := fmt.Formatter(env, write_to_file: write_to_file);
-        for source_file in env.source_files {
+        files := Directory.walk(input, ".ri")!;
+        mut formatter := fmt.Formatter(prefs_, write_to_file: write_to_file);
+        for source_file in parser.Parser(env: env).parse_module_files(files) {
+            utils.info("Formatting file `{}`...", source_file.path);
             output := formatter.format(source_file);
             console.writeln(output);
         }

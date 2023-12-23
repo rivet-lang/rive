@@ -6,6 +6,7 @@ import std/console;
 import std/process;
 
 import rivet;
+import rivet/prefs;
 import rivet/utils;
 
 import ./tools;
@@ -39,8 +40,11 @@ func main() {
         "build", "run", "test", "check" -> {
             // These commands are handled directly by the compiler.
             is_test := cmd == "test";
-            is_check := cmd == "check";
-            rivet.Builder.new(process.args[2..], is_test, is_test || cmd == "run", is_check)!;
+            mut prefs_ := prefs.Prefs.from_args(
+                process.args[2..], is_test, is_test || cmd == "run", cmd == "check"
+            )!;
+            prefs_.load_module_info()!;
+            rivet.compile(prefs_)!;
         },
         "new", "init" -> tools.cmd_new(process.args[2..], cmd == "init")!,
         "fmt" -> tools.cmd_fmt(process.args[2..])!,

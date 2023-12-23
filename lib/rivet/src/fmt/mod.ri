@@ -6,13 +6,14 @@ import std/traits;
 import std/strings;
 
 import ../ast;
+import ../prefs;
 import ../utils;
 
 var max_len := [@as(uint, 0), 35, 60, 85, 93, 100];
 
 #[boxed]
 pub struct Formatter {
-    env: ast.Env;
+    prefs: prefs.Prefs;
 
     mut source_file: ast.SourceFile;
     mut imports_output: strings.Builder := strings.Builder.new(100);

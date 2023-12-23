@@ -323,8 +323,16 @@ pub enum Type < traits.Stringable {
             .None -> "<none>",
         	.Void -> "<void>",
             .Never -> "never",
-            .Result(result) -> "!".concat(result.inner.to_string_(qualstr)),
-            .Option(option) -> "?".concat(option.inner.to_string_(qualstr)),
+            .Result(result) -> if result.inner is .Void {
+                "!"
+            } else {
+                "!".concat(result.inner.to_string_(qualstr))
+            },
+            .Option(option) -> if option.inner is .Void {
+                "?"
+            } else {
+                "?".concat(option.inner.to_string_(qualstr))
+            },
             .Tuple(tuple_data) -> {
                 mut sb := Builder.new(100);
                 sb.write_byte('(');
