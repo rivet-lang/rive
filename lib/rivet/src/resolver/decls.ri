@@ -171,7 +171,6 @@ extend Resolver {
                             ), 
                             field_decl.pos
                         );
-                        continue;
                     }
                 },
                 .Func(mut func_decl) -> {
