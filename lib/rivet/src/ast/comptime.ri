@@ -2,6 +2,8 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
+import std/sys;
+
 import ../token;
 import ../report;
 
@@ -46,10 +48,88 @@ extend Env {
 
     func evalue_comptime_condition(self, cond: Expr) -> ?bool {
         return match cond {
+            .Paren(paren) -> self.evalue_comptime_condition(paren.expr),
+            .Ident(ident) -> self.evalue_comptime_ident(ident.name, ident.pos),
+            .Unary(unary) if unary.op == .Bang -> if val := self.evalue_comptime_condition(
+                unary.right
+            ) {
+                !val
+            } else {
+                none
+            },
+            .Binary(binary) if binary.op in [.LogicalAnd, .LogicalOr] -> {
+                if left := self.evalue_comptime_condition(binary.left) {
+                    if binary.op == .LogicalOr && left {
+                        left
+                    } else if right := self.evalue_comptime_condition(binary.right) {
+                        if binary.op == .LogicalAnd {
+                            left && right
+                        } else {
+                            right
+                        }
+                    } else {
+                        none
+                    }
+                } else {
+                    none
+                }
+            },
             else -> {
                 report.error("invalid comptime condition", cond.position());
                 none
             }
         };
+    }
+
+    func evalue_comptime_ident(self, name: string, pos: token.Pos) -> bool {
+        match name {
+            // operating systems
+            "_LINUX_", "_WINDOWS_" -> {
+                return if os := sys.OS.from_string(name) {
+                    os == self.prefs.target_os
+                } else {
+                    false
+                };
+            },
+            // architectures
+            "_X86_", "_AMD64_" -> {
+                return if os := sys.Arch.from_string(name) {
+                    os == self.prefs.target_arch
+                } else {
+                    false
+                };
+            },
+            // bits
+            "_x32_", "_x64_" -> {
+                return if name == "_x32_" {
+                    !self.prefs.target_is_64bit
+                } else {
+                    self.prefs.target_is_64bit
+                };
+            },
+            // endian
+            "_LITTLE_ENDIAN_", "_BIG_ENDIAN_" -> {
+                return if name == "_LITTLE_ENDIAN_" {
+                    self.prefs.target_is_little_endian
+                } else {
+                    !self.prefs.target_is_little_endian
+                };
+            },
+            // optimize modes
+            "_DEBUG_", "_RELEASE_" -> {
+                return if name == "_DEBUG_" {
+                    self.prefs.optimize_mode == .Debug
+                } else {
+                    self.prefs.optimize_mode == .Release
+                };
+            },
+            "_TESTS_" -> return self.prefs.is_test,
+            else -> return if name.starts_with("_") && name.ends_with("_") {
+                report.error("unknown builtin flag: `{}`".fmt(name), pos);
+                false
+            } else {
+                name in self.prefs.flags
+            }
+        }
     }
 }
