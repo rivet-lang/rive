@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
@@ -27,36 +27,8 @@ extend Checker {
                 var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
             ),
             .For(mut for_stmt) -> self.check_for(for_stmt),
-            .While(mut while_stmt) -> {
-                if !while_stmt.is_inf && self.check_expr(
-                    while_stmt.cond
-                ) != self.env.bool_t {
-                    if while_stmt.cond !is .Guard {
-                        report.error(
-                            "non-boolean expression used as `while` condition",
-                            while_stmt.cond.position()
-                        );
-                    }
-                }
-                self.check_stmt(while_stmt.stmt);
-                if while_stmt.has_continue_expr {
-                    _ = self.check_expr(while_stmt.continue_expr);
-                }
-                if while_stmt.has_else_stmt {
-                    self.check_stmt(while_stmt.else_stmt);
-                }
-            },
-            .Defer(mut defer_stmt) -> {
-                if self.cur_func.ret_type is .Never {
-                    report.error("`never` functions cannot use `defer` statements", defer_stmt.pos);
-                }
-                self.inside_defer = true;
-                self.check_expr_evaluated_but_not_used(
-                    self.check_expr(defer_stmt.expr), defer_stmt.expr.position()
-                );
-                self.defer_stmts.push(defer_stmt);
-                self.inside_defer = false;
-            },
+            .While(mut while_stmt) -> self.check_while(while_stmt),
+            .Defer(mut defer_stmt) -> self.check_defer(defer_stmt),
             .Expr(mut expr) -> self.check_expr_evaluated_but_not_used(
                 self.check_expr(expr), expr.position()
             ),
@@ -65,6 +37,10 @@ extend Checker {
     }
 
     func check_for(mut self, mut for_stmt: ast.Stmt.For) {
+        prev_loop_control_tracker := self.loop_control_tracker;
+        self.loop_control_tracker = .AnyLoop;
+        defer self.loop_control_tracker = prev_loop_control_tracker;
+
         iterable_t := self.check_expr(for_stmt.iterable);
         iterable_sym := iterable_t.symbol()?;
         if iterable_sym.info is .Array || iterable_sym.info is .DynArray {
@@ -121,5 +97,48 @@ extend Checker {
             err.add_note("expected array value");
             err.emit();
         }
+    }
+
+    func check_while(mut self, mut while_stmt: ast.Stmt.While)  {
+        prev_loop_control_tracker := self.loop_control_tracker;
+        self.loop_control_tracker = .AnyLoop;
+        defer self.loop_control_tracker = prev_loop_control_tracker;
+
+        if !while_stmt.is_inf && self.check_expr(
+            while_stmt.cond
+        ) != self.env.bool_t {
+            if while_stmt.cond !is .Guard {
+                report.error(
+                    "non-boolean expression used as `while` condition",
+                    while_stmt.cond.position()
+                );
+            }
+        }
+        self.check_stmt(while_stmt.stmt);
+        if while_stmt.has_continue_expr {
+            _ = self.check_expr(while_stmt.continue_expr);
+        }
+        if while_stmt.has_else_stmt {
+            self.check_stmt(while_stmt.else_stmt);
+        }
+    }
+
+    func check_defer(mut self, mut defer_stmt: ast.Stmt.Defer) {
+        prev_return_tracker := self.return_tracker;
+        self.return_tracker = .Defer;
+        defer self.return_tracker = prev_return_tracker;
+
+        prev_loop_control_tracker := self.loop_control_tracker;
+        self.loop_control_tracker = .Defer;
+        defer self.loop_control_tracker = prev_loop_control_tracker;
+
+        if self.cur_func.ret_type is .Never {
+            report.error("`never` functions cannot use `defer` statements", defer_stmt.pos);
+        }
+
+        self.check_expr_evaluated_but_not_used(
+            self.check_expr(defer_stmt.expr), defer_stmt.expr.position()
+        );
+        self.defer_stmts.push(defer_stmt);
     }
 }

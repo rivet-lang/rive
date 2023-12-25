@@ -1,0 +1,13 @@
+tests/invalid/invalid_loop_control_usage.ri:3:9: error: `break` and `continue` statements can only be used inside loops
+    3 |         break; // invalid
+      |         ^~~~~
+tests/invalid/invalid_loop_control_usage.ri:6:9: error: `break` and `continue` statements can only be used inside loops
+    6 |         continue; // invalid
+      |         ^~~~~~~~
+tests/invalid/invalid_loop_control_usage.ri:11:13: error: `break` and `continue` statements inside loop cannot be deferred
+   11 |             break; // invalid
+      |             ^~~~~
+tests/invalid/invalid_loop_control_usage.ri:17:13: error: `break` and `continue` statements inside loop cannot be deferred
+   17 |             continue; // invalid
+      |             ^~~~~~~~
+rivet: error: could not compile module `invalid_loop_control_usage`, aborting due to 4 previous errors

@@ -1,11 +1,23 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
 import ../token;
 import ../utils;
 import ../report;
+
+enum LoopControlLegalityTracker {
+    None,
+    AnyLoop,
+    Defer
+}
+
+enum ReturnLegalityTracker {
+    None,
+    Lambda, // TODO
+    Defer
+}
 
 #[boxed]
 pub struct Checker {
@@ -18,10 +30,12 @@ pub struct Checker {
     mut inside_extern: bool;
     mut inside_test: bool;
     mut inside_var_decl: bool;
-    mut inside_defer: bool;
     mut inside_unsafe_block: bool;
     mut inside_guard_expr: bool;
     mut inside_match_cond_expr: bool;
+
+    mut loop_control_tracker: LoopControlLegalityTracker;
+    mut return_tracker: ReturnLegalityTracker;
 
     mut expected_type: ast.Type;
     mut scope_returns: bool;

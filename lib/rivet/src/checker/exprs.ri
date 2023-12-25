@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
@@ -12,6 +12,19 @@ extend Checker {
             .Type(type) -> type,
             .Branch(branch) -> {
                 self.scope_returns = true;
+                if self.loop_control_tracker != .AnyLoop {
+                    if self.loop_control_tracker == .Defer {
+                        report.error(
+                            "`break` and `continue` statements inside loop cannot be deferred",
+                            branch.pos
+                        );
+                    } else {
+                        report.error(
+                            "`break` and `continue` statements can only be used inside loops",
+                            branch.pos
+                        );
+                    }
+                }
                 .Never(branch.pos)
             },
             .Paren(mut paren) -> self.check_expr(paren.expr),
@@ -871,7 +884,7 @@ extend Checker {
     func check_return(mut self, mut return_expr: ast.Expr.Return) -> ast.Type {
         if self.cur_func.ret_type is .Never {
             report.error("`never` functions cannot use `return` statements", return_expr.pos);
-        } else if self.inside_defer {
+        } else if self.return_tracker == .Defer {
             report.error("`return` is not allowed inside `defer` statement", return_expr.pos);
         } else if self.inside_test && return_expr.has_expr {
             report.error("cannot return values inside `test` declaration", return_expr.pos);
@@ -920,7 +933,7 @@ extend Checker {
     func check_throw(mut self, mut throw_expr: ast.Expr.Throw) -> ast.Type {
         if self.cur_func.ret_type is .Never {
             report.error("`never` functions cannot use `throw` statements", throw_expr.pos);
-        } else if self.inside_defer {
+        } else if self.return_tracker == .Defer {
             report.error("`throw` is not allowed inside `defer` statement", throw_expr.pos);
         } else if self.inside_test {
             report.error("cannot throw errors inside `test` declaration", throw_expr.pos);
