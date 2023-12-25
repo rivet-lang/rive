@@ -149,9 +149,7 @@ extend Resolver {
                 self.resolve_expr(index.index);
             },
             .Block(mut block) -> {
-                for mut stmt in block.stmts {
-                    self.resolve_stmt(stmt);
-                }
+                self.resolve_stmts(block.stmts);
                 if block.is_expr {
                     self.resolve_expr(block.expr);
                 }
