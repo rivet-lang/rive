@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
@@ -55,13 +55,18 @@ extend Parser {
             self.accept(.Lbracket) -> {
                 // arrays or dynamic arrays
                 if self.tok.kind != .Rbracket {
-                    // indexable pointers
                     if self.accept(.Amp) {
+                        // indexable pointers
                         self.expect(.Rbracket);
                         is_mut := self.accept(.KwMut);
                         .Pointer(
                             self.parse_type(), is_mut, true, pos: pos + self.prev_tok.pos
                         )
+                    } else if self.accept(.Colon) {
+                        // slice
+                        self.expect(.Rbracket);
+                        is_mut := self.accept(.KwMut);
+                        .Slice(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
                     } else {
                         // array
                         size := self.parse_expr();

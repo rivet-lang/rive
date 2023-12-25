@@ -1,8 +1,16 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/traits;
+
+pub struct EnumVariant {
+    pub name: string;
+    pub value: int;
+    pub has_type: bool;
+    pub mut type: Type;
+    pub has_fields: bool;
+}
 
 pub enum TypeInfo < traits.Stringable {
     Invalid,
@@ -31,6 +39,11 @@ pub enum TypeInfo < traits.Stringable {
     Array {
         elem_type: Type;
         size: uint;
+        is_mut: bool;
+        has_contains_method: bool;
+    },
+    Slice {
+        elem_type: Type;
         is_mut: bool;
         has_contains_method: bool;
     },
@@ -141,8 +154,9 @@ pub enum TypeInfo < traits.Stringable {
     }
 
     #[inline]
-    pub func is_mut_arr_or_dyn_array(self) -> bool {
+    pub func is_mut_array(self) -> bool {
         return match self {
+            .Slice(slice) -> slice.is_mut,
             .Array(arr) -> arr.is_mut,
             .DynArray(vec) -> vec.is_mut,
             else -> false
@@ -179,6 +193,7 @@ pub enum TypeInfo < traits.Stringable {
             .String -> "string",
             .Func -> "func",
             .Alias -> "alias",
+            .Slice -> "slice",
             .Array -> "array",
             .DynArray -> "dynamic array",
             .Tuple -> "tuple",
@@ -191,12 +206,4 @@ pub enum TypeInfo < traits.Stringable {
             .Enum -> "enum"
         };
     }
-}
-
-pub struct EnumVariant {
-    pub name: string;
-    pub value: int;
-    pub has_type: bool;
-    pub mut type: Type;
-    pub has_fields: bool;
 }

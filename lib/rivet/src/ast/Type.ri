@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/traits;
@@ -46,6 +46,12 @@ pub enum Type < traits.Stringable {
         }
     },
     Variadic {
+        mut inner: Type;
+        is_mut: bool;
+        mut sym: TypeSym;
+        pos: token.Pos;
+    },
+    Slice {
         mut inner: Type;
         is_mut: bool;
         mut sym: TypeSym;
@@ -124,6 +130,9 @@ pub enum Type < traits.Stringable {
                 }
                 .Tuple(unaliased_types, tuple_data.sym)
             },
+            .Slice(mut slice_data) -> .Slice(
+                slice_data.inner.unalias() ?? slice_data.inner, slice_data.is_mut
+            ),
             .DynArray(mut dyn_array_data) -> .DynArray(
                 dyn_array_data.inner.unalias() ?? dyn_array_data.inner, dyn_array_data.is_mut
             ),
@@ -167,6 +176,7 @@ pub enum Type < traits.Stringable {
             .Option(option) -> option.inner.symbol(),
             .Tuple(tuple_data) -> tuple_data.sym,
             .Variadic(variadic_data) -> variadic_data.sym,
+            .Slice(slice_data) -> slice_data.sym,
             .DynArray(dyn_array_data) -> dyn_array_data.sym,
             .Array(array_data) -> array_data.sym,
             .Pointer(pointer_data) -> pointer_data.inner.symbol(),
@@ -238,6 +248,7 @@ pub enum Type < traits.Stringable {
             .Result(res_t) -> res_t.pos,
             .Tuple(tuple_t) -> tuple_t.pos,
             .Variadic(variadic_t) -> variadic_t.pos,
+            .Slice(slice_t) -> slice_t.pos,
             .DynArray(dyn_array_t) -> dyn_array_t.pos,
             .Array(arr_t) -> arr_t.pos,
             .Pointer(ptr_t) -> ptr_t.pos,
@@ -264,6 +275,8 @@ pub enum Type < traits.Stringable {
             .Tuple(tuple_lhs) if rhs is .Tuple(tuple_rhs) -> tuple_lhs == tuple_rhs,
             .Variadic(variadic_lhs) if rhs is .Variadic(variadic_rhs) ->
                 variadic_lhs.inner == variadic_rhs.inner,
+            .Slice(slice_lhs) if rhs is .Slice(slice_rhs) ->
+                slice_lhs.inner == slice_rhs.inner && slice_lhs.is_mut == slice_rhs.is_mut,
             .DynArray(dyn_array_lhs) if rhs is .DynArray(dyn_array_rhs) ->
                 dyn_array_lhs.inner == dyn_array_rhs.inner && dyn_array_lhs.is_mut == dyn_array_rhs.is_mut,
             .Array(array_lhs) if rhs is .Array(array_rhs) ->
@@ -346,6 +359,11 @@ pub enum Type < traits.Stringable {
                 sb.to_string()
             },
             .Variadic(variadic_data) -> "...".concat(variadic_data.inner.to_string_(qualstr)),
+            .Slice(slice_data) -> if slice_data.is_mut {
+                "[:]mut"
+            } else {
+                "[:]"
+            }.concat(slice_data.inner.to_string_(qualstr)),
             .DynArray(dyn_array_data) -> if dyn_array_data.is_mut {
                 "[]mut"
             } else {
@@ -561,6 +579,7 @@ extend Env {
                     } else {
                         self.type_size(enum_info.underlying_type)
                     },
+                    .Slice -> (self.pointer_size * 3, self.pointer_size),
                     .DynArray -> self.type_symbol_size(self.dyn_array_sym, is_raw),
                     .Array(array_info) -> {
                         (elem_size, elem_align) := self.type_size(array_info.elem_type);

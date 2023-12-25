@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/traits;
@@ -150,6 +150,38 @@ pub struct SymRef < Sym {
 
 #[boxed]
 pub struct Module < Sym {
+    pub func add_or_get_slice(mut self, elem_type: Type, is_mut: bool) -> TypeSym {
+        unique_name := if is_mut { "[:]mut " } else { "[:]" }.concat(elem_type.to_qualstring());
+        if type_sym := self.scope.find(unique_name) {
+            return @as(TypeSym, type_sym);
+        }
+        mut type_sym := TypeSym(
+            is_public: true,
+            name: unique_name,
+            info: .DynArray(elem_type, is_mut),
+            fields: +[
+                Field(
+                    name: "len", is_public: true,
+                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(11))
+                )
+            ]
+        );
+        type_sym.scope.add(Func(
+            name: "to_dynamic_array",
+            is_public: true,
+            is_method: true,
+            self_is_ptr: true,
+            self_type: .Basic(type_sym),
+            ret_type: .Basic(self.add_or_get_dyn_array(elem_type, is_mut)),
+            has_body: true
+        )) catch {};
+        if slice_sym := self.scope.find("core")?.scope.find("Slice") {
+            type_sym.scope.add(slice_sym.scope.find("is_empty")?) catch {};
+        }
+        self.scope.add(type_sym) catch {};
+        return type_sym;
+    }
+
     pub func add_or_get_array(mut self, elem_typ: Type, size: uint, is_mut: bool) -> TypeSym {
         unique_name := if is_mut {
             "[{}]mut {}"
