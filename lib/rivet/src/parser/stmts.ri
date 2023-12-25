@@ -9,6 +9,13 @@ extend Parser {
     func parse_stmt(mut self) -> ast.Stmt {
         return match {
             self.tok.kind == .Comment -> .Comment(self.parse_comment()),
+            self.accept(.KwComptime) -> match self.tok.kind {
+                .KwIf -> .ComptimeIf(self.parse_comptime_if(.Stmt)),
+                else -> {
+                    report.error("invalid comptime construction", self.tok.pos);
+                    .Empty(self.tok.pos)
+                }
+            },
             self.accept(.KwWhile) -> {
                 pos := self.prev_tok.pos;
                 mut is_inf := false;

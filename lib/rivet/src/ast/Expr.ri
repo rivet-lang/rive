@@ -265,6 +265,7 @@ pub enum Expr < traits.Stringable {
         mut type: Type;
         mut defer_stmts: []Stmt.Defer;
     },
+    ComptimeIf(ComptimeIf),
     If {
         mut branches: []mut IfBranch;
         has_else: bool;
@@ -338,6 +339,7 @@ pub enum Expr < traits.Stringable {
             .Return(return_expr) -> return_expr.pos,
             .Throw(throw_expr) -> throw_expr.pos,
             .Block(block) -> block.pos,
+            .ComptimeIf(comptime_if) -> comptime_if.pos,
             .If(if_expr) -> if_expr.pos,
             .Match(match_expr) -> match_expr.pos,
             .Guard(guard) -> guard.pos
@@ -521,6 +523,22 @@ pub enum Expr < traits.Stringable {
                     sb.write_string(block.expr.to_string());
                 }
                 sb.write_string(" }");
+                sb.to_string()
+            },
+            .ComptimeIf(comptime_if) -> {
+                mut sb := strings.Builder.new();
+                for branch in comptime_if.branches {
+                    if branch.is_else {
+                        sb.write_string("else ");
+                    } else if branch.is_else_if {
+                        sb.write_string("else if ");
+                        sb.write_string(branch.cond.to_string());
+                    } else {
+                        sb.write_string("comptime if ");
+                        sb.write_string(branch.cond.to_string());
+                    }
+                    sb.write_fmt("{{ {} nodes }}", branch.nodes.len);
+                }
                 sb.to_string()
             },
             .If(if_expr) -> {

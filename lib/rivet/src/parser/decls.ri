@@ -97,6 +97,13 @@ extend Parser {
         mut pos := self.tok.pos;
         match {
             self.tok.kind == .Comment -> return .Comment(self.parse_comment()),
+            self.accept(.KwComptime) -> match self.tok.kind {
+                .KwIf -> return .ComptimeIf(self.parse_comptime_if(.Decl)),
+                else -> {
+                    report.error("invalid comptime construction", self.tok.pos);
+                    return .Empty(self.tok.pos);
+                }
+            },
             self.accept(.KwImport) -> {
                 mut has_custom_alias := false;
                 mut mod_path_pos := self.tok.pos;

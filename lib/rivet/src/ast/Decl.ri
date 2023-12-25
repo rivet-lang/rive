@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../token;
@@ -8,6 +8,7 @@ import ../token;
 pub enum Decl {
     Empty(token.Pos),
     Comment(Comment),
+    ComptimeIf(ComptimeIf),
     Import {
         attributes: Attributes;
         is_public: bool;
@@ -154,6 +155,7 @@ pub enum Decl {
         return match self {
             .Empty(empty_pos) -> empty_pos,
             .Comment(comment) -> comment.pos,
+            .ComptimeIf(comptime_if) -> comptime_if.pos,
             .Import(import_d) -> import_d.pos,
             .Extern(extern_d) -> extern_d.pos,
             .Alias(alias_d) -> alias_d.pos,
@@ -171,6 +173,9 @@ pub enum Decl {
 
     pub func decls(self) -> ?[]Self {
         return match self {
+            .ComptimeIf(comptime_if) -> nodes_to_decls(
+                comptime_if.branches[comptime_if.branch_idx?].nodes
+            ),
             .Extern(extern_decl) -> extern_decl.decls,
             .Trait(trait_decl) -> trait_decl.decls,
             .Enum(enum_decl) -> enum_decl.decls,
