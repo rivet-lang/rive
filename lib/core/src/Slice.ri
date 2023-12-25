@@ -9,14 +9,14 @@ struct Slice {
 
     func get(&self, idx: uint) -> rawptr {
         if idx >= self.len {
-            runtime_error("dynamic array index out of range (index: {}, len: {})", idx, self.len);
+            runtime_error("slice index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { @ptr_add(@as([&]mut uint8, self.ptr), idx * self.elem_size) };
     }
 
     func set(&self, idx: uint, val: rawptr) {
         if idx >= self.len {
-            runtime_error("dynamic array index out of range (index: {}, len: {})", idx, self.len);
+            runtime_error("slice index out of range (index: {}, len: {})", idx, self.len);
         }
         unsafe {
             mem_copy(

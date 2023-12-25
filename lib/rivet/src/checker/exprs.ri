@@ -22,12 +22,12 @@ extend Checker {
                 if self.loop_control_tracker != .AnyLoop {
                     if self.loop_control_tracker == .Defer {
                         report.error(
-                            "`break` and `continue` statements inside loop cannot be deferred",
+                            "`break` and `continue` expressions inside loop cannot be deferred",
                             loop_control.pos
                         );
                     } else {
                         report.error(
-                            "`break` and `continue` statements can only be used inside loops",
+                            "`break` and `continue` expressions can only be used inside loops",
                             loop_control.pos
                         );
                     }
