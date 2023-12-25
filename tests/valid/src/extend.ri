@@ -1,0 +1,10 @@
+struct Package {}
+
+extend Package {
+    name: string;
+}
+
+test "add fields to struct from `extend`" {
+    pkg := Package(name: "extended");
+    @assert(pkg.name == "extended");
+}

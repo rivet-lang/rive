@@ -308,8 +308,9 @@ extend Parser {
                 );
             },
             self.accept(.KwTrait) -> {
-                old_inside_trait := self.inside_trait;
+                prev_inside_trait := self.inside_trait;
                 self.inside_trait = true;
+
                 name := self.parse_name();
                 mut bases := []mut ast.Type();
                 if self.accept(.Lt) {
@@ -325,8 +326,8 @@ extend Parser {
                 while !self.accept(.Rbrace) {
                     decls.push(self.parse_decl());
                 }
-                self.inside_trait = old_inside_trait;
                 pos += self.prev_tok.pos;
+                self.inside_trait = prev_inside_trait;
                 return .Trait(
                     doc_comment,
                     attributes,
@@ -338,8 +339,9 @@ extend Parser {
                 );
             },
             self.accept(.KwStruct) -> {
-                old_inside_struct := self.inside_struct;
+                prev_inside_struct := self.inside_struct;
                 self.inside_struct = true;
+
                 name := self.parse_name();
                 is_opaque := self.accept(.Semicolon);
                 mut bases := []mut ast.Type();
@@ -358,8 +360,8 @@ extend Parser {
                         decls.push(self.parse_decl());
                     }
                 }
-                self.inside_struct = old_inside_struct;
                 pos += self.prev_tok.pos;
+                self.inside_struct = prev_inside_struct;
                 return .Struct(
                     doc_comment,
                     attributes,
@@ -401,12 +403,12 @@ extend Parser {
                     if self.accept(.Lbrace) {
                         has_type = true;
                         is_tagged = true;
-                        old_inside_enum_variant_with_fields := self.inside_enum_variant_with_fields;
+                        prev_inside_enum_variant_with_fields := self.inside_enum_variant_with_fields;
                         self.inside_enum_variant_with_fields = true;
                         while !self.accept(.Rbrace) {
                             variant_decls.push(self.parse_decl());
                         }
-                        self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields;
+                        self.inside_enum_variant_with_fields = prev_inside_enum_variant_with_fields;
                     } else if self.accept(.Lparen) {
                         has_type = true;
                         is_tagged = true;
@@ -442,7 +444,7 @@ extend Parser {
                     bases, variants, is_tagged, decls, pos
                 );
             },
-            (self.inside_struct || self.inside_trait
+            (self.inside_struct || self.inside_trait || self.inside_extend
                 || self.inside_enum_variant_with_fields)
                 && self.tok.kind in [.KwMut, .Name] -> {
                 // fields
@@ -471,6 +473,9 @@ extend Parser {
                 );
             },
             self.accept(.KwExtend) -> {
+                prev_inside_extend := self.inside_extend;
+                self.inside_extend = true;
+
                 type := self.parse_type();
                 mut bases := []mut ast.Type();
                 if self.accept(.Lt) {
@@ -481,12 +486,15 @@ extend Parser {
                         }
                     }
                 }
+
                 self.expect(.Lbrace);
                 mut decls := []ast.Decl();
                 while !self.accept(.Rbrace) {
                     decls.push(self.parse_decl());
                 }
                 pos += self.prev_tok.pos;
+
+                self.inside_extend = prev_inside_extend;
                 return .Extend(
                     attributes,
                     type,

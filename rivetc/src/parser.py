@@ -24,12 +24,14 @@ class Parser:
 
         self.scope = None
 
-        self.inside_extern = False
         self.extern_abi = sym.ABI.Rivet
+
+        self.inside_extern = False
         self.inside_mod = False
         self.inside_struct = False
         self.inside_trait = False
         self.inside_enum_variant_with_fields = False
+        self.inside_extend = False
         self.inside_match_header = False
         self.inside_block = False
 
@@ -307,17 +309,17 @@ class Parser:
                     if not self.accept(Kind.Comma):
                         break
             decls = []
-            old_inside_trait = self.inside_trait
+            prev_inside_trait = self.inside_trait
             self.inside_trait = True
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
                 decls.append(self.parse_decl())
-            self.inside_trait = old_inside_trait
+            self.inside_trait = prev_inside_trait
             return ast.TraitDecl(
                 doc_comment, attributes, is_public, name, bases, decls, pos
             )
         elif self.accept(Kind.KwStruct):
-            old_inside_struct = self.inside_struct
+            prev_inside_struct = self.inside_struct
             self.inside_struct = True
             pos = self.tok.pos
             name = self.parse_name()
@@ -334,14 +336,14 @@ class Parser:
                 while self.tok.kind != Kind.Rbrace:
                     decls.append(self.parse_decl())
                 self.expect(Kind.Rbrace)
-            self.inside_struct = old_inside_struct
+            self.inside_struct = prev_inside_struct
             return ast.StructDecl(
                 doc_comment, attributes, is_public, name, bases, decls,
                 is_opaque, pos
             )
         elif (
             self.inside_struct or self.inside_trait
-            or self.inside_enum_variant_with_fields
+            or self.inside_enum_variant_with_fields or self.inside_extend
         ) and self.tok.kind in (Kind.KwMut, Kind.Name):
             return self.parse_field_decl(attributes, doc_comment, is_public)
         elif self.accept(Kind.KwEnum):
@@ -369,11 +371,11 @@ class Parser:
                 if self.accept(Kind.Lbrace):
                     has_typ = True
                     is_tagged = True
-                    old_inside_enum_variant_with_fields = self.inside_enum_variant_with_fields
+                    prev_inside_enum_variant_with_fields = self.inside_enum_variant_with_fields
                     self.inside_enum_variant_with_fields = True
                     while not self.accept(Kind.Rbrace):
                         variant_decls.append(self.parse_decl())
-                    self.inside_enum_variant_with_fields = old_inside_enum_variant_with_fields
+                    self.inside_enum_variant_with_fields = prev_inside_enum_variant_with_fields
                 elif self.accept(Kind.Lparen):
                     has_typ = True
                     is_tagged = True
@@ -397,6 +399,9 @@ class Parser:
                 variants, is_tagged, decls, pos
             )
         elif self.accept(Kind.KwExtend):
+            prev_inside_extend = self.inside_extend
+            self.inside_extend = True
+
             pos = self.prev_tok.pos
             typ = self.parse_type()
             bases = []
@@ -405,10 +410,13 @@ class Parser:
                     bases.append(self.parse_type())
                     if not self.accept(Kind.Comma):
                         break
+
             decls = []
             self.expect(Kind.Lbrace)
             while not self.accept(Kind.Rbrace):
                 decls.append(self.parse_decl())
+
+            self.inside_extend = prev_inside_extend
             return ast.ExtendDecl(attributes, typ, bases, decls, pos)
         elif self.accept(Kind.KwFunc):
             return self.parse_func_decl(
@@ -1108,7 +1116,7 @@ class Parser:
         pos = self.tok.pos
         is_unsafe = self.accept(Kind.KwUnsafe)
         self.expect(Kind.Lbrace)
-        old_inside_block = self.inside_block
+        prev_inside_block = self.inside_block
         self.inside_block = True
         stmts = []
         has_expr = False
@@ -1125,7 +1133,7 @@ class Parser:
             else:
                 stmts.append(stmt)
         self.close_scope()
-        self.inside_block = old_inside_block
+        self.inside_block = prev_inside_block
         return ast.Block(sc, is_unsafe, stmts, expr, has_expr, pos)
 
     def parse_if_expr(self):
@@ -1161,7 +1169,7 @@ class Parser:
         branches = []
         pos = self.prev_tok.pos
         is_typematch = False
-        old_inside_match_header = self.inside_match_header
+        prev_inside_match_header = self.inside_match_header
         self.inside_match_header = True
         if self.tok.kind == Kind.Lbrace:
             expr = ast.BoolLiteral(True, pos)
@@ -1173,7 +1181,7 @@ class Parser:
                 expr = self.parse_expr()
             is_typematch = self.accept(Kind.KwIs)
         self.expect(Kind.Lbrace)
-        self.inside_match_header = old_inside_match_header
+        self.inside_match_header = prev_inside_match_header
         while True:
             pats = []
             has_var = False
