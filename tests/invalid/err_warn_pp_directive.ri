@@ -1,8 +1,0 @@
-#error a simple error
-#warn a simple warn
-
-#if true
-    #warn if true executed
-#else
-    #error if else executed
-#endif
