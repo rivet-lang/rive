@@ -158,7 +158,7 @@ pub struct Func < traits.Stringable {
             sb.write_string("extern ");
         }
         sb.write_string("func @{}(".fmt(self.name));
-        for i, arg in self.locals[..self.args_len] {
+        for i, arg in self.locals[:self.args_len] {
             sb.write_fmt("%{}: {}", arg.dbg_name, arg.type);
             if i < self.args_len - 1 {
                 sb.write_string(", ");
@@ -170,7 +170,7 @@ pub struct Func < traits.Stringable {
         } else {
             sb.writeln(" {");
             if self.blocks.len > 0 {
-                locals := self.locals[self.args_len..];
+                locals := self.locals[self.args_len:];
                 for local in locals {
                     sb.writeln_fmt("    var %{}: {};", local.dbg_name, local.type);
                 }

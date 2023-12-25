@@ -1056,7 +1056,7 @@ class Parser:
                 )
             elif self.accept(Kind.Lbracket):
                 index = self.empty_expr()
-                if self.accept(Kind.DotDot):
+                if self.accept(Kind.Colon):
                     if self.tok.kind == Kind.Rbracket:
                         index = ast.RangeExpr(
                             None, None, False, index.pos, False, False
@@ -1068,7 +1068,7 @@ class Parser:
                         )
                 else:
                     index = self.parse_expr()
-                    if self.accept(Kind.DotDot):
+                    if self.accept(Kind.Colon):
                         if self.tok.kind == Kind.Rbracket:
                             index = ast.RangeExpr(
                                 index, None, False, index.pos, True, False

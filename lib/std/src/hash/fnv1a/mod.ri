@@ -3,7 +3,7 @@
 // file.
 
 // This module implements a FNV-1a hash.
-// See: https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function
+// See: https..//en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function
 
 const FNV32_PRIME: uint32 := 16777619;
 const FNV32_OFFSET_BASIS: uint32 := 2166136261;

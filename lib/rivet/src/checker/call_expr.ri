@@ -422,7 +422,7 @@ extend Checker {
         // check default expressions
         if func_.has_named_args {
             args_len := call_expr.pure_args_count();
-            mut args := call_expr.args[..args_len];
+            mut args := call_expr.args[:args_len];
             mut i: uint := args_len;
             while i < func_args_len : i += 1 {
                 arg := func_.args[i];

@@ -60,7 +60,7 @@ struct SourceCache {
    pub func find_lines_between(mut self, path_: string, line: uint, end_line: uint) -> ?[]string {
 	  return if lines := self.find_lines(path_) {
 		if lines.len > 0 && lines.len >= end_line {
-			lines[line..end_line]
+			lines[line:end_line]
 		} else {
 			none
 		}

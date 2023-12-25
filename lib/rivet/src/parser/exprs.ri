@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
@@ -498,7 +498,7 @@ extend Parser {
                     )
                 },
                 self.accept(.Lbracket) -> {
-                    index: ast.Expr := if self.accept(.DotDot) {
+                    index: ast.Expr := if self.accept(.Colon) {
                         if self.tok.kind == .Rbracket {
                             .Range(pos: expr.position() + self.tok.pos)
                         } else {
@@ -509,7 +509,7 @@ extend Parser {
                         }
                     } else {
                         start := self.parse_expr();
-                        if self.accept(.DotDot) {
+                        if self.accept(.Colon) {
                             if self.tok.kind == .Rbracket {
                                 .Range(
                                     start: start, has_start: true,

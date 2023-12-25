@@ -105,7 +105,7 @@ var kind_strings := [
     KindMap(.KwWhile, "while")
 ];
 
-var keywords_table := kind_strings[@as(uint, Kind.KeywordBegin)..];
+var keywords_table := kind_strings[@as(uint, Kind.KeywordBegin):];
 
 pub enum Kind < traits.Stringable {
     Unknown, // unknown

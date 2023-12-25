@@ -201,7 +201,7 @@ extend Checker {
                 err_details = err_details.concat(utils.join(unhandled, ", "));
             } else {
                 err_details = err_details.concat(
-                    utils.join(unhandled[..MATCH_EXHAUSTIVE_CUTOFF_LIMIT], ", ")
+                    utils.join(unhandled[:MATCH_EXHAUSTIVE_CUTOFF_LIMIT], ", ")
                 );
                 remaining := unhandled.len - MATCH_EXHAUSTIVE_CUTOFF_LIMIT;
                 if remaining > 0 {

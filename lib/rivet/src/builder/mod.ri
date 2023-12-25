@@ -95,6 +95,15 @@ pub struct Builder {
         }
     }
 
+    func parse_files(mut self, mod_sym: ast.Module, files: []string) {
+        for sf in parser.Parser(env: self.env).parse_module(mod_sym, files) {
+            self.env.source_files.push(sf);
+        }
+        if report.total_errors() > 0 {
+            self.abort();
+        }
+    }
+
     func load_root_module(mut self) -> ! {
         files := if Path.is_directory(self.env.prefs.input) {
             mut filtered_files := self.env.filter_files(
@@ -137,8 +146,8 @@ pub struct Builder {
 
     func import_modules(mut self) -> ! {
         for mut sf in self.env.source_files {
-            for mut d in sf.decls {
-                if d is .Import(mut import_decl) {
+            for mut decl in sf.decls {
+                if decl is .Import(mut import_decl) {
                     if self.env.universe.scope.exists(import_decl.info.full_name) {
                         continue;
                     }
@@ -217,8 +226,8 @@ pub struct Builder {
                 );
                 full_name = if "src" in names {
                     src_idx := utils.index_of(names, "src");
-                    utils.join(names[..src_idx], ".").concat(
-                        ".", utils.join(names[src_idx + 1..], ".")
+                    utils.join(names[:src_idx], ".").concat(
+                        ".", utils.join(names[src_idx + 1:], ".")
                     )
                 } else {
                     utils.join(names, ".")
@@ -270,15 +279,6 @@ pub struct Builder {
             full_name: full_name,
             files: files
         );
-    }
-
-    func parse_files(mut self, mod_sym: ast.Module, files: []string) {
-        for sf in parser.Parser(env: self.env).parse_module(mod_sym, files) {
-            self.env.source_files.push(sf);
-        }
-        if report.total_errors() > 0 {
-            self.abort();
-        }
     }
 
     func resolve_deps(mut self) {

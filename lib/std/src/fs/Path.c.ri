@@ -184,7 +184,7 @@ pub struct Path {
         defer(error) unsafe {
             mem.dealloc(result)
         }
-        for p in paths[first_index..] {
+        for p in paths[first_index:] {
             mut components := p.tokenize(SEPARATOR);
             while component := components.next() {
                 if component == "." {

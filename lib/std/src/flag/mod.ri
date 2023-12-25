@@ -79,7 +79,7 @@ pub struct FlagParser {
         if v := idx_dashdash {
             all_before_dashdash.trim(v);
             if v < original_args.len {
-                all_after_dashdash = original_args[v + 1..];
+                all_after_dashdash = original_args[v + 1:];
             }
         }
         return Self(
