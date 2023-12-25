@@ -21,7 +21,7 @@ extern (C) {
 
     pub func readlink(path: [&]uint8, buf: [&]uint8, size: uint) -> int;
 
-    comptime if _LINUX_ {
+    $if _LINUX_ {
         pub func get_nprocs() -> int32;
     }
 }

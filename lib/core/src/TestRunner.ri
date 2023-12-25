@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-comptime if _TESTS_ {
+$if _TESTS_ {
     var support_color := console_is_atty(1);
 
     var ok_status := bold(green("-> OK"));

@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-comptime if !_RELEASE_ { // skip backtrace in release mode
+$if !_RELEASE_ { // skip backtrace in release mode
     #![compile_c_source("../thirdparty/libbacktrace/backtrace.c")]
 
     import c;
@@ -78,7 +78,7 @@ comptime if !_RELEASE_ { // skip backtrace in release mode
 }
 
 pub func bt_print(frames_to_skip: int32 := 0) {
-    comptime if _RELEASE_ {
+    $if _RELEASE_ {
         _ = frames_to_skip;
     } else {
         unsafe {

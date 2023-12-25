@@ -99,7 +99,7 @@ extend Parser {
         mut pos := self.tok.pos;
         match {
             self.tok.kind == .Comment -> return .Comment(self.parse_comment()),
-            self.accept(.KwComptime) -> match self.tok.kind {
+            self.accept(.Dollar) -> match self.tok.kind {
                 .KwIf -> return .ComptimeIf(self.parse_comptime_if(.Decl)),
                 else -> {
                     report.error("invalid comptime construction", self.tok.pos);

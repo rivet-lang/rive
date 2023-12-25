@@ -214,7 +214,7 @@ extend Parser {
 
     func parse_primary_expr(mut self) -> ast.Expr {
         mut expr: ast.Expr := match {
-            self.accept(.KwComptime) -> match self.tok.kind {
+            self.accept(.Dollar) -> match self.tok.kind {
                 .KwIf -> .ComptimeIf(self.parse_comptime_if(.Expr)),
                 else -> {
                     report.error("invalid comptime construction", self.tok.pos);

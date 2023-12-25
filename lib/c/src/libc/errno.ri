@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-comptime if _LINUX_ {
+$if _LINUX_ {
     extern (C) {
         pub func __errno_location() -> ?&mut int32;
     }
@@ -12,7 +12,7 @@ comptime if _LINUX_ {
     pub const ERANGE := 34;
 }
 
-comptime if _WINDOWS_ {
+$if _WINDOWS_ {
     extern (C) {
         #[dllimport]
         pub func _errno() -> &mut int32;

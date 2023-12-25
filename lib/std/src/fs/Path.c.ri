@@ -9,9 +9,9 @@ import ../mem;
 
 pub struct Path {
     pub alias MAX_LEN := libc.MAX_PATH_LEN;
-    pub const SEPARATOR := comptime if _WINDOWS_ { b'\\' } else { b'/' };
-    pub var separator_str := comptime if _WINDOWS_ { "\\" } else { "/" };
-    pub var delimiter := comptime if _WINDOWS_ { ";" } else { ":" };
+    pub const SEPARATOR := $if _WINDOWS_ { b'\\' } else { b'/' };
+    pub var separator_str := $if _WINDOWS_ { "\\" } else { "/" };
+    pub var delimiter := $if _WINDOWS_ { ";" } else { ":" };
 
     /// Returns `true` if the given byte is a valid path separator
     #[inline]

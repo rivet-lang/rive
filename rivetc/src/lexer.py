@@ -560,6 +560,8 @@ class Lexer:
                 return token.Token("", Kind.Mod, pos)
             elif ch == "@":
                 return token.Token("", Kind.At, pos)
+            elif ch == "$":
+                return token.Token("", Kind.Dollar, pos)
             #
             elif ch == "=":
                 if nextc == "=":

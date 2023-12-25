@@ -208,7 +208,7 @@ class Parser:
         return decls
 
     def parse_decl(self):
-        if self.accept(Kind.KwComptime):
+        if self.accept(Kind.Dollar):
             if self.tok.kind == Kind.KwIf:
                 return self.parse_comptime_if(0)
             else:
@@ -632,7 +632,7 @@ class Parser:
         return False
 
     def parse_stmt(self):
-        if self.accept(Kind.KwComptime):
+        if self.accept(Kind.Dollar):
             if self.tok.kind == Kind.KwIf:
                 return self.parse_comptime_if(1)
             else:
@@ -872,7 +872,7 @@ class Parser:
 
     def parse_primary_expr(self):
         expr = self.empty_expr()
-        if self.accept(Kind.KwComptime):
+        if self.accept(Kind.Dollar):
             if self.tok.kind == Kind.KwIf:
                 expr = self.parse_comptime_if(3)
             else:

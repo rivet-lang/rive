@@ -20,7 +20,7 @@ extern (C) {
     func wy2u01(r: uint64) -> float64;
     func wy2gau(r: uint64) -> float64;
 
-    comptime if !WYHASH_32BIT_MUM {
+    $if !WYHASH_32BIT_MUM {
         func wy2u0k(r: uint64, k: uint64) -> uint64;
     }
 }

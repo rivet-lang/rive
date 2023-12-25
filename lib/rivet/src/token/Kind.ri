@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/traits;
@@ -46,6 +46,7 @@ var kind_strings := [
     KindMap(.Ellipsis, "..."),
     KindMap(.Hash, "#"),
     KindMap(.At, "@"),
+    KindMap(.Dollar, "$"),
     KindMap(.Arrow, "->"),
     KindMap(.Comma, ","),
     KindMap(.Colon, ":"),
@@ -71,7 +72,6 @@ var kind_strings := [
     KindMap(.KwAs, "as"),
     KindMap(.KwBreak, "break"),
     KindMap(.KwCatch, "catch"),
-    KindMap(.KwComptime, "comptime"),
     KindMap(.KwConst, "const"),
     KindMap(.KwContinue, "continue"),
     KindMap(.KwDefer, "defer"),
@@ -144,6 +144,7 @@ pub enum Kind < traits.Stringable {
     Ellipsis, // ...
     Hash, // #
     At, // @
+    Dollar, // $
     Arrow, // ->
     Comma, // ,
     Colon, // :
@@ -170,7 +171,6 @@ pub enum Kind < traits.Stringable {
     KwAs, // as
     KwBreak, // break
     KwCatch, // catch
-    KwComptime, // comptime
     KwConst, // const
     KwContinue, // continue
     KwDefer, // defer

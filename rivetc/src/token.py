@@ -40,6 +40,7 @@ class Kind(Enum):
     Ellipsis = auto_enum() # ...
     Hash = auto_enum() # #
     At = auto_enum() # @
+    Dollar = auto_enum() # $
     Arrow = auto_enum() # ->
     Comma = auto_enum() # ,
     Colon = auto_enum() # :
@@ -66,7 +67,6 @@ class Kind(Enum):
     KwAs = auto_enum() # as
     KwBreak = auto_enum() # break
     KwCatch = auto_enum() # catch
-    KwComptime = auto_enum() # comptime
     KwConst = auto_enum() # const
     KwContinue = auto_enum() # continue
     KwDefer = auto_enum() # defer
@@ -185,6 +185,7 @@ TOKEN_STRINGS = {
     Kind.Ellipsis: "...",
     Kind.Hash: "#",
     Kind.At: "@",
+    Kind.Dollar: "$",
     Kind.Arrow: "->",
     Kind.Comma: ",",
     Kind.Colon: ":",
@@ -210,7 +211,6 @@ TOKEN_STRINGS = {
     Kind.KwAs: "as",
     Kind.KwBreak: "break",
     Kind.KwCatch: "catch",
-    Kind.KwComptime: "comptime",
     Kind.KwConst: "const",
     Kind.KwContinue: "continue",
     Kind.KwDefer: "defer",

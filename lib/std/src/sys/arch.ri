@@ -3,7 +3,7 @@
 // file.
 
 import ../traits;
-comptime if !(_X86_ || _AMD64_) {
+$if !(_X86_ || _AMD64_) {
     import ../process;
 }
 
@@ -31,7 +31,7 @@ pub enum Arch as uint8 < traits.Stringable {
 /// Returns the current architecture.
 #[inline]
 pub func arch() -> Arch {
-    comptime if _X86_ {
+    $if _X86_ {
         return .X86;
     } else if _AMD64_ {
         return .Amd64;

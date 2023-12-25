@@ -149,12 +149,12 @@ extend int64 < Stringable {
 }
 
 extend int < Stringable {
-    pub const MIN := @as(int, comptime if _x64_ { int64.MIN } else { int32.MIN });
-    pub const MAX := @as(int, comptime if _x64_ { int64.MAX } else { int32.MAX });
+    pub const MIN := @as(int, $if _x64_ { int64.MIN } else { int32.MIN });
+    pub const MAX := @as(int, $if _x64_ { int64.MAX } else { int32.MAX });
 
     #[inline]
     pub func bits() -> uint32 {
-        return comptime if _x64_ { 64 } else { 32 };
+        return $if _x64_ { 64 } else { 32 };
     }
 
     /// Returns the value of `self` as a string.

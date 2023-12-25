@@ -9,7 +9,7 @@ import ../ctypes.{ pid_t, uid_t };
 
 pub alias SignalHandler := func(int32, &mut siginfo_t, rawptr);
 
-comptime if _LINUX_ {
+$if _LINUX_ {
     pub const SA_ONSTACK := 0x08000000;
     pub const SA_SIGINFO := 0x00000004;
     pub const SA_NOCLDWAIT := 0x00000002;
@@ -50,7 +50,7 @@ comptime if _LINUX_ {
     pub const SEGV_ACCERR := 0x2;
 
     pub struct sigset_t {
-        pub __val: [comptime if _X86_ { 32 } else { 16 }]uint32;
+        pub __val: [$if _X86_ { 32 } else { 16 }]uint32;
     }
 
     pub struct sigval {
@@ -88,7 +88,7 @@ comptime if _LINUX_ {
 }
 
 extern (C) {
-    comptime if _LINUX_ {
+    $if _LINUX_ {
         pub func sigaction(signum: int32, act: ?&sigaction_t, old_act: ?&mut sigaction_t) -> int32;
     }
     pub func signal(sig: int32, handler: SignalHandler) -> ?SignalHandler;

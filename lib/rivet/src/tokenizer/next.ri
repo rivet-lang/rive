@@ -162,6 +162,7 @@ extend Tokenizer {
                     return self.new_token(.Mod);
                 },
                 '@' -> return self.new_token(.At),
+                '$' -> return self.new_token(.Dollar),
                 '=' -> {
                     if nextc == '=' {
                         self.pos += 1;

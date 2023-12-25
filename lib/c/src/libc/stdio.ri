@@ -35,7 +35,7 @@ pub const O_CLOEXEC := 0x80000;
 
 pub struct FILE;
 
-comptime if _LINUX_ {
+$if _LINUX_ {
     extern (C) {
         pub var stdin: &mut FILE;
         pub var stdout: &mut FILE;
@@ -64,7 +64,7 @@ comptime if _LINUX_ {
 	pub const TMP_MAX := 308915776;
 }
 
-comptime if _WINDOWS_ {
+$if _WINDOWS_ {
     extern (C) {
         func __acrt_iob_fn(index: uint32) -> &mut FILE;
     }

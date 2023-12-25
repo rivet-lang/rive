@@ -197,11 +197,11 @@ extend uint64 < Stringable {
 }
 
 extend uint < Stringable {
-    pub const MAX := @as(uint, comptime if _x64_ { uint64.MAX } else { uint32.MAX });
+    pub const MAX := @as(uint, $if _x64_ { uint64.MAX } else { uint32.MAX });
 
     #[inline]
     pub func bits() -> uint32 {
-        return comptime if _x64_ { 64 } else { 32 };
+        return $if _x64_ { 64 } else { 32 };
     }
 
     /// Returns the value of `self` as a string.

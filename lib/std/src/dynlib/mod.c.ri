@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-comptime if _LINUX_ {
+$if _LINUX_ {
     #![link_library("dl")]
 }
 
@@ -92,7 +92,7 @@ func dlerror() -> ?string {
 
 #[inline]
 func get_shared_library_extension() -> string {
-    return comptime if _LINUX_ {
+    return $if _LINUX_ {
         ".so"
     } else if _WINDOWS_ {
         ".dll"

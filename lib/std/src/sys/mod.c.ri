@@ -4,14 +4,14 @@
 
 import c/libc;
 
-comptime if !_LINUX_ {
+$if !_LINUX_ {
     import ../process;
 }
 
 /// Returns the number of virtual CPU cores found on the system.
 #[inline]
 pub func nr_cpus() -> int32 {
-    comptime if _LINUX_ {
+    $if _LINUX_ {
         return unsafe { libc.get_nprocs() };
     } else {
         process.panic("`nr_cpus` only works on linux (for now)");

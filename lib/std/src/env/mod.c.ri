@@ -6,7 +6,7 @@ import core;
 import c/libc;
 
 /// User's home directory.
-pub var home_dir := get(comptime if _LINUX_ { "HOME" } else { "USERPROFILE" }) ?? "";
+pub var home_dir := get($if _LINUX_ { "HOME" } else { "USERPROFILE" }) ?? "";
 
 /// Returns `true` if the environment variable exists.
 #[inline]

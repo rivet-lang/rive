@@ -534,7 +534,7 @@ pub enum Expr < traits.Stringable {
                         sb.write_string("else if ");
                         sb.write_string(branch.cond.to_string());
                     } else {
-                        sb.write_string("comptime if ");
+                        sb.write_string("$if ");
                         sb.write_string(branch.cond.to_string());
                     }
                     sb.write_fmt("{{ {} nodes }}", branch.nodes.len);

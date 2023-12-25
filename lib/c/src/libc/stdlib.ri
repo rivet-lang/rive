@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-comptime if _LINUX_ {
+$if _LINUX_ {
     pub const RAND_MAX := 0x7fffffff;
 } else if _WINDOWS_ {
     pub const RAND_MAX := 0x7fff;

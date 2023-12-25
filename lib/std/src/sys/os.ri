@@ -3,7 +3,7 @@
 // file.
 
 import ../traits;
-comptime if !(_X86_ || _AMD64_) {
+$if !(_X86_ || _AMD64_) {
     import ../process;
 }
 
@@ -34,7 +34,7 @@ pub enum OS as uint8 < traits.Stringable {
 /// Returns the current operating system.
 #[inline]
 pub func os() -> OS {
-    comptime if _LINUX_ {
+    $if _LINUX_ {
         return .Linux;
     } else if _WINDOWS_ {
         return .Windows;
