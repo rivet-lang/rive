@@ -250,8 +250,8 @@ class Mod(Sym):
         slice_sym.add(
             Func(
                 ABI.Rivet, True, False, False, True, False, "to_dynamic_array", [],
-                type_Type(slice_sym), False, True, NO_POS, False, False,
-                type_Type(slice_sym)
+                type_Type(self.add_or_get_dyn_array(elem_typ, is_mut)), False, True,
+                NO_POS, False, True, type_Type(slice_sym)
             )
         )
         if core_slice_sym := self.find("core").find("Slice"):
