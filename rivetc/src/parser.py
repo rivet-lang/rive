@@ -136,7 +136,9 @@ class Parser:
             self.expect(Kind.KwIf)
             cond = self.parse_expr()
             branches.append(
-                ast.ComptimeIfBranch(cond,False, self.parse_nodes(level), cond.pos)
+                ast.ComptimeIfBranch(
+                    cond, False, self.parse_nodes(level), cond.pos
+                )
             )
             if self.tok.kind != Kind.KwElse:
                 break

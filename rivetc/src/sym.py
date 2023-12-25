@@ -242,16 +242,16 @@ class Mod(Sym):
             return sym
         from .type import Type as type_Type
         slice_sym = Type(
-            True, unique_name, TypeKind.Slice, info = SliceInfo(elem_typ, is_mut),
-            fields = [
-                Field("len", False, True, type_Type(self[14]))
-            ]
+            True, unique_name, TypeKind.Slice,
+            info = SliceInfo(elem_typ, is_mut),
+            fields = [Field("len", False, True, type_Type(self[14]))]
         )
         slice_sym.add(
             Func(
-                ABI.Rivet, True, False, False, True, False, "to_dynamic_array", [],
-                type_Type(self.add_or_get_dyn_array(elem_typ, is_mut)), False, True,
-                NO_POS, False, True, type_Type(slice_sym)
+                ABI.Rivet, True, False, False, True, False,
+                "to_dynamic_array", [],
+                type_Type(self.add_or_get_dyn_array(elem_typ, is_mut)), False,
+                True, NO_POS, False, True, type_Type(slice_sym)
             )
         )
         if core_slice_sym := self.find("core").find("Slice"):
@@ -283,8 +283,8 @@ class Mod(Sym):
             return sym
         from .type import Type as type_Type
         dyn_array_sym = Type(
-            True, unique_name, TypeKind.DynArray, info = DynArrayInfo(elem_typ, is_mut),
-            fields = [
+            True, unique_name, TypeKind.DynArray,
+            info = DynArrayInfo(elem_typ, is_mut), fields = [
                 Field("len", False, True, type_Type(self[14])),
                 Field("cap", False, True, type_Type(self[14]))
             ]

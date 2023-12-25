@@ -60,7 +60,9 @@ class Compiler:
     def run(self):
         # if we are compiling the `core` module, avoid autoloading it
         if self.prefs.mod_name != "core":
-            self.parsed_files += self.load_module("core", "core", "", token.NO_POS)
+            self.parsed_files += self.load_module(
+                "core", "core", "", token.NO_POS
+            )
 
         self.load_root_module()
         self.import_modules()
@@ -163,13 +165,17 @@ class Compiler:
             )
             src_dir = path.join(self.prefs.input, "src")
             if path.isdir(src_dir): # support `src/` directory
-                files += self.filter_files(glob.glob(path.join(src_dir, "*.ri")))
+                files += self.filter_files(
+                    glob.glob(path.join(src_dir, "*.ri"))
+                )
             # if the `--test` option is used and a `tests` directory exists, try to
             # load files from that directory as well
             if self.prefs.build_mode == prefs.BuildMode.Test:
                 tests_dir = path.join(self.prefs.input, "tests")
                 if path.isdir(tests_dir):
-                    files += self.filter_files(glob.glob(path.join(tests_dir, "*.ri")))
+                    files += self.filter_files(
+                        glob.glob(path.join(tests_dir, "*.ri"))
+                    )
         else:
             files = [self.prefs.input]
         if len(files) == 0:
@@ -481,7 +487,9 @@ class Compiler:
             if val != None:
                 return not val
             return None
-        elif isinstance(cond, ast.BinaryExpr) and cond.op in [token.Kind.LogicalAnd, token.Kind.LogicalOr]:
+        elif isinstance(cond, ast.BinaryExpr) and cond.op in [
+            token.Kind.LogicalAnd, token.Kind.LogicalOr
+        ]:
             left = self.evalue_comptime_condition(cond.left)
             if left != None:
                 if cond.op == token.Kind.LogicalOr and left:

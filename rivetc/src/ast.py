@@ -40,11 +40,11 @@ class ComptimeIf:
 
 class ComptimeIfBranch:
     def __init__(self, cond, is_else, nodes, pos):
-        self.cond=cond
-        self.is_else=is_else
-        self.nodes=nodes
-        self.pos=pos
-        self.typ=None
+        self.cond = cond
+        self.is_else = is_else
+        self.nodes = nodes
+        self.pos = pos
+        self.typ = None
 
 # Used in variable decls/stmts and guard exprs
 class ObjDecl:

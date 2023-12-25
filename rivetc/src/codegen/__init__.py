@@ -68,15 +68,15 @@ class Codegen:
 
         # generate '_R4core12init_globalsF' function
         self.init_global_vars_fn = ir.FuncDecl(
-            False, ast.Attributes(), False, "_R4core12init_globalsF", [],
-            False, ir.VOID_T, False
+            False, ast.Attributes(), False, "_R4core12init_globalsF", [], False,
+            ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_global_vars_fn)
 
         # generate '_R12drop_globalsZ' function
         g_fn = ir.FuncDecl(
-            False, ast.Attributes(), False, "_R4core12drop_globalsF", [],
-            False, ir.VOID_T, False
+            False, ast.Attributes(), False, "_R4core12drop_globalsF", [], False,
+            ir.VOID_T, False
         )
         self.out_rir.decls.append(g_fn)
 
@@ -1632,20 +1632,16 @@ class Codegen:
                 tmp = self.cur_func.local_name()
                 if s.kind in (TypeKind.DynArray, TypeKind.Slice):
                     if end == None:
-                        method_name = "_R4core5Slice10slice_fromM" if s.kind==TypeKind.Slice else "_R4core8DynArray10slice_fromM"
+                        method_name = "_R4core5Slice10slice_fromM" if s.kind == TypeKind.Slice else "_R4core8DynArray10slice_fromM"
                         inst = ir.Inst(
-                            ir.InstKind.Call, [
-                                ir.Name(method_name), left,
-                                start
-                            ]
+                            ir.InstKind.Call,
+                            [ir.Name(method_name), left, start]
                         )
                     else:
-                        method_name = "_R4core5Slice5sliceM" if s.kind==TypeKind.Slice else "_R4core8DynArray5sliceM"
+                        method_name = "_R4core5Slice5sliceM" if s.kind == TypeKind.Slice else "_R4core8DynArray5sliceM"
                         inst = ir.Inst(
-                            ir.InstKind.Call, [
-                                ir.Name(method_name), left, start,
-                                end
-                            ]
+                            ir.InstKind.Call,
+                            [ir.Name(method_name), left, start, end]
                         )
                 else:
                     size, _ = self.comp.type_size(s.info.elem_typ)
@@ -1692,13 +1688,14 @@ class Codegen:
             elif s.kind in (TypeKind.DynArray, TypeKind.Slice):
                 method_name = "_R4core5Slice3getM" if s.kind == TypeKind.Slice else "_R4core8DynArray3getM"
                 expr_typ_ir2 = expr_typ_ir.ptr()
-                if s.kind == TypeKind.Slice and not isinstance(left.typ, type.Ptr):
+                if s.kind == TypeKind.Slice and not isinstance(
+                    left.typ, type.Ptr
+                ):
                     left = ir.Inst(ir.InstKind.GetPtr, [left], left.typ.ptr())
                 value = ir.Inst(
                     ir.InstKind.Cast, [
                         ir.Inst(
-                            ir.InstKind.Call,
-                            [ir.Name(method_name), left, idx]
+                            ir.InstKind.Call, [ir.Name(method_name), left, idx]
                         ), expr_typ_ir2
                     ], expr_typ_ir2
                 )
@@ -2447,7 +2444,9 @@ class Codegen:
             left_ir_typ = self.ir_type(expr.left_typ)
             left_sym = expr.left_typ.symbol()
             sym_is_boxed = left_sym.is_boxed()
-            if left_sym.kind in (TypeKind.DynArray, TypeKind.Slice) and assign_op == Kind.Assign:
+            if left_sym.kind in (
+                TypeKind.DynArray, TypeKind.Slice
+            ) and assign_op == Kind.Assign:
                 rec = self.gen_expr_with_cast(expr.left_typ, expr.left)
                 if not isinstance(left_ir_typ, ir.Pointer):
                     rec = ir.Inst(ir.InstKind.GetPtr, [rec])
