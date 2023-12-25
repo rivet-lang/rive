@@ -7,16 +7,16 @@ import std/console;
 import std/process;
 import std/fs.{ Path, Directory };
 
-import ./ast;
-import ./utils;
-import ./prefs;
-import ./token;
-import ./parser;
-import ./report;
-import ./checker;
-import ./codegen;
-import ./resolver;
-import ./depgraph;
+import ../ast;
+import ../utils;
+import ../prefs;
+import ../token;
+import ../parser;
+import ../report;
+import ../checker;
+import ../codegen;
+import ../resolver;
+import ../depgraph;
 
 pub struct Builder {
     mut env: ast.Env;
