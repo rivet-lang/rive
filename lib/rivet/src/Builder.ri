@@ -38,7 +38,11 @@ pub struct Builder {
     pub func run(mut self) -> ! {
         self.make_rivet_directory()!;
 
-        _ = self.load_module("core", "core", "", token.no_pos)!;
+        // if we are compiling the `core` module, avoid autoloading it
+        if self.env.prefs.mod_name != "core" {
+            _ = self.load_module("core", "core", "", token.no_pos)!;
+        }
+
         self.load_root_module()!;
         self.import_modules()!;
 

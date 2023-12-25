@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/strings;
@@ -658,6 +658,7 @@ extend Parser {
         }
         self.close_scope();
         self.inside_func = false;
+        is_main := self.mod_sym.is_root && self.mod_sym.name != "core" && name == "main";
         return .Func(
             docs: docs,
             abi: abi,
@@ -668,7 +669,7 @@ extend Parser {
             is_variadic: is_variadic,
             is_method: is_method,
             is_special_method: is_special_method,
-            is_main: self.mod_sym.is_root && name == "main",
+            is_main: is_main,
             is_operator: is_operator,
             name: name,
             args: args,

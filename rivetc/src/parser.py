@@ -550,7 +550,7 @@ class Parser:
             doc_comment, attributes, is_public, self.inside_extern, is_unsafe,
             name, pos, args, ret_typ, stmts, sc, has_body, is_method,
             self_is_mut, self_is_ptr, has_named_args, self.mod_sym.is_root
-            and name == "main", is_variadic, abi
+            and self.mod_sym.name != "core" and name == "main", is_variadic, abi
         )
 
     # ---- statements --------------------------

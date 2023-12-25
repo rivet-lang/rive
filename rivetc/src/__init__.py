@@ -124,9 +124,13 @@ class Compiler:
         return g
 
     def run(self):
-        self.parsed_files += self.load_module("core", "core", "", token.NO_POS)
+        # if we are compiling the `core` module, avoid autoloading it
+        if self.prefs.mod_name != "core":
+            self.parsed_files += self.load_module("core", "core", "", token.NO_POS)
+
         self.load_root_module()
         self.import_modules()
+
         if not self.prefs.check_syntax:
             self.vlog("registering symbols...")
             self.register.walk_files(self.source_files)
