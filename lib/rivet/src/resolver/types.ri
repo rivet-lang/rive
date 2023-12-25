@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
@@ -17,6 +17,12 @@ extend Resolver {
                     trait_info.has_objects = true;
                 }
                 variadic.sym = self.env.universe.add_or_get_dyn_array(variadic.inner, false);
+                true
+            } else {
+                false
+            },
+            .Slice(mut slice) -> if self.resolve_type(slice.inner) {
+                slice.sym = self.env.universe.add_or_get_slice(slice.inner, slice.is_mut);
                 true
             } else {
                 false

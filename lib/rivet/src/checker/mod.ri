@@ -320,7 +320,7 @@ pub struct Checker {
                 }
                 self.check_expr_is_mut(index.left);
                 expr_sym := index.left_type.symbol()?;
-                if !expr_sym.info.is_mut_arr_or_dyn_array() {
+                if !expr_sym.info.is_mut_array() {
                     report.error(
                         "cannot modify elements of an immutable {}".fmt(expr_sym.info),
                         index.pos

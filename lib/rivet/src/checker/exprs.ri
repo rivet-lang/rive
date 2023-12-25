@@ -276,8 +276,8 @@ extend Checker {
                     }
                     self.inside_unsafe_block = false;
                 }
-                block.defer_stmts = self.defer_stmts[self.defer_stmts_start:];
-                self.defer_stmts = self.defer_stmts[:self.defer_stmts_start];
+                block.defer_stmts = self.defer_stmts[self.defer_stmts_start:].to_dynamic_array();
+                self.defer_stmts = self.defer_stmts[:self.defer_stmts_start].to_dynamic_array();
                 block.type
             },
             .Unary(mut unary) -> self.check_unary(unary),
@@ -347,7 +347,7 @@ extend Checker {
             if value_sym.info is .Array(array_info) {
                 size = array_info.size;
             }
-            is_mut = value_sym.info.is_mut_arr_or_dyn_array();
+            is_mut = value_sym.info.is_mut_array();
         } else if !self.expected_type.is_void() {
             has_expected_type = true;
             value_type = self.expected_type;
@@ -512,16 +512,16 @@ extend Checker {
             );
         }
         index.type = match left_sym.info {
-            .Array, .DynArray -> {
+            .Array, .DynArray, .Slice -> {
                 elem_type := left_sym.info.elem_type()?;
                 if index.index is .Range {
-                    is_mut := left_sym.info.is_mut_arr_or_dyn_array();
-                    if left_sym.info is .DynArray {
+                    is_mut := left_sym.info.is_mut_array();
+                    if left_sym.info is .Slice {
                         index.left_type
                     } else {
-                        .DynArray(
+                        .Slice(
                             elem_type, is_mut,
-                            self.env.universe.add_or_get_dyn_array(elem_type, is_mut)
+                            self.env.universe.add_or_get_slice(elem_type, is_mut)
                         )
                     }
                 } else {

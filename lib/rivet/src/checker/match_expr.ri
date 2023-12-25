@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
@@ -198,7 +198,7 @@ extend Checker {
         if unhandled.len > 0 {
             mut err_details := "add `match` branches for: ";
             if unhandled.len < MATCH_EXHAUSTIVE_CUTOFF_LIMIT {
-                err_details = err_details.concat(utils.join(unhandled, ", "));
+                err_details = err_details.concat(utils.join(unhandled[:], ", "));
             } else {
                 err_details = err_details.concat(
                     utils.join(unhandled[:MATCH_EXHAUSTIVE_CUTOFF_LIMIT], ", ")

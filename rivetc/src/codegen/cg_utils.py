@@ -87,6 +87,9 @@ def mangle_symbol(s):
                 name = f"{len(name)}{name}"
                 res.insert(0, name)
                 s.mangled_name = name
+            elif s.kind == TypeKind.Slice:
+                res.insert(0, "4core5Slice")
+                s.mangled_name = "_R4core5Slice"
             elif s.kind == TypeKind.DynArray:
                 res.insert(0, "4core8DynArray")
                 s.mangled_name = "_R4core8DynArray"

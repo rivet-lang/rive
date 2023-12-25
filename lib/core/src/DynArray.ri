@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 #[boxed]
@@ -8,7 +8,6 @@ struct DynArray {
     elem_size: uint;
     mut len: uint;
     mut cap: uint;
-    is_ref: bool;
 
     #[unsafe; inline]
     func new(elem_size: uint, cap: uint) -> Self {
@@ -43,7 +42,7 @@ struct DynArray {
 
     #[unsafe; inline]
     func from_array_no_alloc(arr: rawptr, elem_size: uint, len: uint) -> Self {
-        return Self(arr, elem_size, len, len, is_ref: true);
+        return Self(arr, elem_size, len, len);
     }
 
     #[unsafe; inline]
@@ -178,24 +177,24 @@ struct DynArray {
         self.cap = cap;
     }
 
-    func slice(self, start: uint, end: uint) -> Self {
+    func slice(self, start: uint, end: uint) -> Slice {
         if start > end || end > self.len {
             runtime_error(
-                "slice index out of range (range: {}..{}, len: {})", start, end, self.len
+                "slice index [{}:{}] out of range (len: {})", start, end, self.len
             );
         }
         len := end - start;
         if len == self.len {
-            return self;
+            return Slice(self.ptr, self.elem_size, self.len);
         }
-        return Self(
+        return Slice(
             unsafe { @ptr_add(@as([&]mut uint8, self.ptr), start * self.elem_size) },
-            self.elem_size, len, len, true
+            self.elem_size, len
         );
     }
 
     #[inline]
-    func slice_from(self, start: uint) -> Self {
+    func slice_from(self, start: uint) -> Slice {
         return self.slice(start, self.len);
     }
 
@@ -212,9 +211,7 @@ struct DynArray {
 
     func __drop__(self) {
         unsafe {
-            if !self.is_ref {
-                mem_dealloc(self.ptr);
-            }
+            mem_dealloc(self.ptr);
         }
     }
 }

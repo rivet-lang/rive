@@ -766,7 +766,7 @@ extend Tokenizer {
                 if segment_idx < lit.len {
                     str_segments.push(lit.substr(segment_idx));
                 }
-                lit = utils.join(str_segments, "");
+                lit = utils.join(str_segments[:], "");
             }
             if n_cr_chars > 0 {
                 lit = lit.replace("\r", "");

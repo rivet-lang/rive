@@ -1,0 +1,71 @@
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
+// file.
+
+struct Slice {
+    ptr: rawptr;
+    elem_size: uint;
+    len: uint;
+
+    func get(&self, idx: uint) -> rawptr {
+        if idx >= self.len {
+            runtime_error("dynamic array index out of range (index: {}, len: {})", idx, self.len);
+        }
+        return unsafe { @ptr_add(@as([&]mut uint8, self.ptr), idx * self.elem_size) };
+    }
+
+    func set(&self, idx: uint, val: rawptr) {
+        if idx >= self.len {
+            runtime_error("dynamic array index out of range (index: {}, len: {})", idx, self.len);
+        }
+        unsafe {
+            mem_copy(
+                @ptr_add(@as([&]mut uint8, self.ptr), self.elem_size * idx),
+                val, self.elem_size
+            );
+        }
+    }
+
+    #[inline]
+    func is_empty(&self) -> bool {
+        return self.len == 0;
+    }
+
+    func slice(self, start: uint, end: uint) -> Self {
+        if start > end || end > self.len {
+            runtime_error(
+                "slice index [{}:{}] out of range (len: {})", start, end, self.len
+            );
+        }
+        len := end - start;
+        if len == self.len {
+            return Self(self.ptr, self.elem_size, self.len);
+        }
+        return Self(
+            unsafe { @ptr_add(@as([&]mut uint8, self.ptr), start * self.elem_size) },
+            self.elem_size, len
+        );
+    }
+
+    #[inline]
+    func slice_from(self, start: uint) -> Self {
+        return self.slice(start, self.len);
+    }
+
+    #[inline]
+    func to_dynamic_array(&self) -> DynArray {
+        return unsafe { DynArray.from_array(self.ptr, self.elem_size, self.len) };
+    }
+
+    func ==(&self, rhs: &Self) -> bool {
+        if self.len != rhs.len {
+            return false;
+        }
+        return mem_cmp(self.ptr, rhs.ptr, self.len) == 0;
+    }
+
+    #[inline]
+    func !=(&self, rhs: &Self) -> bool {
+        return !(self == rhs);
+    }
+}

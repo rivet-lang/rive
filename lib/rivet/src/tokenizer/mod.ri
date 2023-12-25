@@ -252,7 +252,7 @@ pub struct Tokenizer {
                 s.substr(end_idx)
             });
         }
-        return utils.join(ss, "");
+        return utils.join(ss[:], "");
     }
 
     #[inline]
@@ -298,7 +298,7 @@ func decode_o_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
             s.substr(end_idx)
         });
     }
-    return utils.join(ss, "");
+    return utils.join(ss[:], "");
 }
 
 func decode_u_escape_single(str: string, idx: uint) -> (uint, string) {
@@ -316,7 +316,7 @@ func decode_unicode_escaped_rune(str: string) -> string {
         mut ss := []string(cap: 2);
         ss.push(segment);
         ss.push(str.substr(end_idx));
-        utils.join(ss, "")
+        utils.join(ss[:], "")
     };
 }
 

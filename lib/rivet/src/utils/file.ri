@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/env;
@@ -57,7 +57,7 @@ struct SourceCache {
 	  };
    }
 
-   pub func find_lines_between(mut self, path_: string, line: uint, end_line: uint) -> ?[]string {
+   pub func find_lines_between(mut self, path_: string, line: uint, end_line: uint) -> ?[:]string {
 	  return if lines := self.find_lines(path_) {
 		if lines.len > 0 && lines.len >= end_line {
 			lines[line:end_line]

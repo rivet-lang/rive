@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/flag;
@@ -15,7 +15,7 @@ import rivet/parser;
 var fmt_desc := "Formats the given Rivet source files or recursively formats all files in the
 directory, then prints their formatted source to stdout.";
 
-pub func cmd_fmt(args: []string) -> ! {
+pub func cmd_fmt(args: [:]string) -> ! {
     mut fp := flag.FlagParser.new(args);
     fp.set_application_name("rivet fmt");
     fp.set_arguments_description("[FILES|DIRECTORIES]");

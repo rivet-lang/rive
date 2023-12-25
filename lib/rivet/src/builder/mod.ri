@@ -238,12 +238,12 @@ pub struct Builder {
                     "/"
                 );
                 full_name = if "src" in names {
-                    src_idx := utils.index_of(names, "src");
+                    src_idx := utils.index_of(names[:], "src");
                     utils.join(names[:src_idx], ".").concat(
                         ".", utils.join(names[src_idx + 1:], ".")
                     )
                 } else {
-                    utils.join(names, ".")
+                    utils.join(names[:], ".")
                 };
             }
             if found {

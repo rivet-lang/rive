@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
@@ -154,6 +154,12 @@ extend Checker {
                     trait_info.mark_has_objects();
                     return true;
                 }
+            },
+            .Slice(slice_lhs) if got_sym.info is .Slice(slice_rhs) -> {
+                if slice_lhs.is_mut && !slice_rhs.is_mut {
+                    return false;
+                }
+                return slice_lhs.elem_type == slice_rhs.elem_type;
             },
             .Array(array_info) if got_sym.info is .Array(array_info2) -> {
                 if array_info.is_mut && !array_info2.is_mut {

@@ -136,7 +136,9 @@ class Parser:
             self.expect(Kind.KwIf)
             cond = self.parse_expr()
             branches.append(
-                ast.ComptimeIfBranch(cond,False, self.parse_nodes(level), cond.pos)
+                ast.ComptimeIfBranch(
+                    cond, False, self.parse_nodes(level), cond.pos
+                )
             )
             if self.tok.kind != Kind.KwElse:
                 break
@@ -1444,11 +1446,16 @@ class Parser:
         elif self.accept(Kind.Lbracket):
             # arrays or dynamic arrays
             if self.tok.kind != Kind.Rbracket:
-                # indexable pointers
                 if self.accept(Kind.Amp):
+                    # indexable pointers
                     self.expect(Kind.Rbracket)
                     is_mut = self.accept(Kind.KwMut)
                     return type.Ptr(self.parse_type(), is_mut, True)
+                elif self.accept(Kind.Colon):
+                    # slices
+                    self.expect(Kind.Rbracket)
+                    is_mut = self.accept(Kind.KwMut)
+                    return type.Slice(self.parse_type(), is_mut)
                 # array
                 size = self.parse_expr()
                 self.expect(Kind.Rbracket)

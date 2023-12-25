@@ -420,9 +420,10 @@ class Resolver:
             ident.is_sym = True
         elif self.self_sym:
             if s := self.self_sym.find(ident.name):
-                if not (isinstance(
-                    s, sym.Type
-                ) and s.kind == sym.TypeKind.Placeholder):
+                if not (
+                    isinstance(s, sym.Type)
+                    and s.kind == sym.TypeKind.Placeholder
+                ):
                     ident.sym = s
                     ident.is_sym = True
         if ident.sym == None and ident.obj == None:
@@ -512,6 +513,12 @@ class Resolver:
                     self.comp.universe.add_or_get_dyn_array(
                         typ.typ, typ.is_mut
                     )
+                )
+                return True
+        elif isinstance(typ, type.Slice):
+            if self.resolve_type(typ.typ):
+                typ.resolve(
+                    self.comp.universe.add_or_get_slice(typ.typ, typ.is_mut)
                 )
                 return True
         elif isinstance(typ, type.Tuple):

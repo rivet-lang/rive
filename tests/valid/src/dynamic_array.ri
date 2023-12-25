@@ -1,6 +1,6 @@
 test "dynamic array from fixed array" {
     arr := [1, 2, 3];
-    mut dyn_array := arr[:];
+    mut dyn_array := arr[:].to_dynamic_array();
     dyn_array.push(2);
     @assert(dyn_array.len == 4);
 
