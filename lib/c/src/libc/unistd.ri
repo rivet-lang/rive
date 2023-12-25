@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 extern (C) {
@@ -21,7 +21,7 @@ extern (C) {
 
     pub func readlink(path: [&]uint8, buf: [&]uint8, size: uint) -> int;
 
-#if _LINUX_
-    pub func get_nprocs() -> int32;
-#endif
+    comptime if _LINUX_ {
+        pub func get_nprocs() -> int32;
+    }
 }

@@ -127,7 +127,7 @@ class Parser:
             if self.accept(Kind.KwElse) and self.tok.kind != Kind.KwIf:
                 branches.append(
                     ast.ComptimeIfBranch(
-                        self.empty_expr(), self.parse_nodes(level), True,
+                        self.empty_expr(), True, self.parse_nodes(level),
                         Kind.KwElse
                     )
                 )

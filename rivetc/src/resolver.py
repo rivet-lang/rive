@@ -592,7 +592,11 @@ class Resolver:
         return False
 
     def eval_size(self, expr):
-        if isinstance(expr, ast.IntegerLiteral):
+        if isinstance(expr, ast.ComptimeIf):
+            return self.eval_size(self.comp.evalue_comptime_if(expr)[0])
+        elif isinstance(expr, ast.Block) and expr.is_expr:
+            return self.eval_size(expr.expr)
+        elif isinstance(expr, ast.IntegerLiteral):
             return expr
         elif isinstance(expr, ast.ParExpr):
             return self.eval_size(expr.expr)

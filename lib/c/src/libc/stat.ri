@@ -1,31 +1,31 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import c/ctypes.*;
 
-#if _AMD64_
-// The `stat` definition used by the Linux kernel.
-pub struct Stat {
-    pub dev: dev_t;
-    pub ino: ino_t;
-    pub nlink: uint;
+comptime if _AMD64_ {
+    // The `stat` definition used by the Linux kernel.
+    pub struct Stat {
+        pub dev: dev_t;
+        pub ino: ino_t;
+        pub nlink: uint;
 
-    pub mode: uint32;
-    pub uid: uid_t;
-    pub gid: gid_t;
-    __pad0: uint32;
-    pub rdev: dev_t;
-    pub size: off_t;
-    pub blksize: int;
-    pub blocks: int64;
+        pub mode: uint32;
+        pub uid: uid_t;
+        pub gid: gid_t;
+        __pad0: uint32;
+        pub rdev: dev_t;
+        pub size: off_t;
+        pub blksize: int;
+        pub blocks: int64;
 
-    pub atim: timespec;
-    pub mtim: timespec;
-    pub ctim: timespec;
-    __unused: [3]int;
+        pub atim: timespec;
+        pub mtim: timespec;
+        pub ctim: timespec;
+        __unused: [3]int;
+    }
 }
-#endif
 
 extern (C) {
     pub func stat(__file: [&]uint8, __buf: &mut Stat) -> int32;

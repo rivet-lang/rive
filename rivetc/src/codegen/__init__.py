@@ -678,7 +678,7 @@ class Codegen:
 
     def gen_expr(self, expr, custom_tmp = None):
         if isinstance(expr, ast.ComptimeIf):
-            self.gen_expr(self.comp.evalue_comptime_if(expr)[0])
+            return self.gen_expr(self.comp.evalue_comptime_if(expr)[0])
         elif isinstance(expr, ast.ParExpr):
             return self.gen_expr(expr.expr)
         elif isinstance(expr, ast.NoneLiteral):

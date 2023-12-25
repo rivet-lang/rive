@@ -1,24 +1,24 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-#if _LINUX_
-extern (C) {
-    pub func __errno_location() -> ?&mut int32;
+comptime if _LINUX_ {
+    extern (C) {
+        pub func __errno_location() -> ?&mut int32;
+    }
+
+    pub const EDOM := 33;
+    pub const EILSEQ := 84;
+    pub const ERANGE := 34;
 }
 
-pub const EDOM := 33;
-pub const EILSEQ := 84;
-pub const ERANGE := 34;
-#endif
+comptime if _WINDOWS_ {
+    extern (C) {
+        #[dllimport]
+        pub func _errno() -> &mut int32;
+    }
 
-#if _WINDOWS_
-extern (C) {
-    [dllimport]
-    pub func _errno() &mut int32;
+    pub const EDOM := 33;
+    pub const EILSEQ := 42;
+    pub const ERANGE := 34;
 }
-
-pub const EDOM := 33;
-pub const EILSEQ := 42;
-pub const ERANGE := 34;
-#endif

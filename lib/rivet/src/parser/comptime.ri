@@ -3,7 +3,6 @@
 // file.
 
 import ../ast;
-import ../report;
 
 extend Parser {
     enum ComptimeLevel as uint8 {

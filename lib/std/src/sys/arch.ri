@@ -1,11 +1,11 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../traits;
-#if !(_X86_ || _AMD64_)
-import ../process;
-#endif
+comptime if !(_X86_ || _AMD64_) {
+    import ../process;
+}
 
 pub enum Arch as uint8 < traits.Stringable {
     X86,
@@ -31,11 +31,11 @@ pub enum Arch as uint8 < traits.Stringable {
 /// Returns the current architecture.
 #[inline]
 pub func arch() -> Arch {
-#if _X86_
-    return .X86;
-#else_if _AMD64_
-    return .Amd64;
-#else
-    process.panic("unknown host architecture");
-#endif
+    comptime if _X86_ {
+        return .X86;
+    } else if _AMD64_ {
+        return .Amd64;
+    } else {
+        process.panic("unknown host architecture");
+    }
 }

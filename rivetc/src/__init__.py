@@ -475,18 +475,18 @@ class Compiler:
         elif isinstance(cond, ast.Ident):
             return self.evalue_comptime_ident(cond.name, cond.pos)
         elif isinstance(cond, ast.UnaryExpr) and cond.op == token.Kind.Bang:
-            if val := self.evalue_comptime_condition(cond.right):
+            val = self.evalue_comptime_condition(cond.right)
+            if val != None:
                 return not val
-            else:
-                return None
-        elif isinstance(cond, ast.BinaryExpr) and binary.op in [token.Kind.LogicalAnd, token.Kind.LogicalOr]:
-            left = self.evalue_comptime_condition(binary.left)
+            return None
+        elif isinstance(cond, ast.BinaryExpr) and cond.op in [token.Kind.LogicalAnd, token.Kind.LogicalOr]:
+            left = self.evalue_comptime_condition(cond.left)
             if left != None:
-                if binary.op == token.Kind.LogicalOr and left:
+                if cond.op == token.Kind.LogicalOr and left:
                     return True
-                right = self.evalue_comptime_condition(binary.right)
+                right = self.evalue_comptime_condition(cond.right)
                 if right != None:
-                    if binary.op == token.Kind.LogicalAnd:
+                    if cond.op == token.Kind.LogicalAnd:
                         return left and right
                     return right
                 return None

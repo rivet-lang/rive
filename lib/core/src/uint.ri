@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 extend uint8 < Stringable {
@@ -197,11 +197,11 @@ extend uint64 < Stringable {
 }
 
 extend uint < Stringable {
-    pub const MAX := @as(uint, #if _x64_ uint64.MAX #else uint32.MAX #endif);
+    pub const MAX := @as(uint, comptime if _x64_ { uint64.MAX } else { uint32.MAX });
 
     #[inline]
     pub func bits() -> uint32 {
-        return #if _x64_ 64 #else 32 #endif;
+        return comptime if _x64_ { 64 } else { 32 };
     }
 
     /// Returns the value of `self` as a string.

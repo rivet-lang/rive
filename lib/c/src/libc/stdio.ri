@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import c/ctypes.*;
@@ -35,7 +35,7 @@ pub const O_CLOEXEC := 0x80000;
 
 pub struct FILE;
 
-#if _LINUX_
+comptime if _LINUX_ {
     extern (C) {
         pub var stdin: &mut FILE;
         pub var stdout: &mut FILE;
@@ -62,11 +62,11 @@ pub struct FILE;
 	pub const SEEK_END := 2;
 
 	pub const TMP_MAX := 308915776;
-#endif
+}
 
-#if _WINDOWS_
+comptime if _WINDOWS_ {
     extern (C) {
-        func __acrt_iob_fn(index: uint32) &mut FILE;
+        func __acrt_iob_fn(index: uint32) -> &mut FILE;
     }
 
     pub alias fpos_t := int64;
@@ -89,7 +89,7 @@ pub struct FILE;
     pub var stdin: &mut FILE := unsafe { __acrt_iob_fn(0) };
     pub var stdout: &mut FILE := unsafe { __acrt_iob_fn(1) };
     pub var stderr: &mut FILE := unsafe { __acrt_iob_fn(2) };
-#endif
+}
 
 extern (C) {
     pub func fopen(path: [&]uint8, mode: [&]uint8) -> ?&mut FILE;

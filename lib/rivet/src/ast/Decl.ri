@@ -173,9 +173,13 @@ pub enum Decl {
 
     pub func decls(self) -> ?[]Self {
         return match self {
-            .ComptimeIf(comptime_if) -> nodes_to_decls(
-                comptime_if.branches[comptime_if.branch_idx?].nodes
-            ),
+            .ComptimeIf(comptime_if) -> if branch_idx := comptime_if.branch_idx {
+                nodes_to_decls(
+                    comptime_if.branches[branch_idx].nodes
+                )
+            } else {
+                none
+            },
             .Extern(extern_decl) -> extern_decl.decls,
             .Trait(trait_decl) -> trait_decl.decls,
             .Enum(enum_decl) -> enum_decl.decls,

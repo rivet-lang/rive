@@ -670,6 +670,7 @@ class Lexer:
 
     def pp_directive(self):
         pos = self.current_pos()
+        report.warn("deprecated", pos)
         self.pos += 1 # skip '#'
         self.skip_whitespace()
         kw = self.read_ident()

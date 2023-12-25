@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import rivet/prefs;
@@ -55,30 +55,4 @@ test "tokenizer: float conversion and reading" {
 	@assert(1.23e+10 == 1.23e0010);
 	@assert((-1.23e+10) == (1.23e0010 * -1.0));
 	@assert(x == 55.0);
-}
-
-test "tokenizer: preprocessor" {
-    mut tokens := tokenize("#if true func main() { } #endif");
-    @assert(tokens.len == 6);
-    @assert(tokens[0].kind == .KwFunc);
-    @assert(tokens[1].kind == .Name && tokens[1].lit == "main");
-    @assert(tokens[2].kind == .Lparen);
-    @assert(tokens[3].kind == .Rparen);
-    @assert(tokens[4].kind == .Lbrace);
-    @assert(tokens[5].kind == .Rbrace);
-
-    tokens = tokenize("#if false func main() { } #endif");
-    @assert(tokens.len == 1); // EndOfFile
-
-    tokens = tokenize("#if !CUSTOM_FLAG func main() { } #endif");
-    @assert(tokens.len == 6);
-    @assert(tokens[0].kind == .KwFunc);
-    @assert(tokens[1].kind == .Name && tokens[1].lit == "main");
-    @assert(tokens[2].kind == .Lparen);
-    @assert(tokens[3].kind == .Rparen);
-    @assert(tokens[4].kind == .Lbrace);
-    @assert(tokens[5].kind == .Rbrace);
-
-    tokens = tokenize("#if CUSTOM_FLAG func main() { } #endif");
-    @assert(tokens.len == 1); // EndOfFile
 }

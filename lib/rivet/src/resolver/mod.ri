@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
@@ -64,6 +64,11 @@ pub struct Resolver {
 
     func eval_size(mut self, mut expr: ast.Expr) -> ?int {
         return match expr {
+            .ComptimeIf(mut comptime_if) -> {
+                mut ct_expr := ast.nodes_to_exprs(self.env.evalue_comptime_if(comptime_if))[0];
+                self.eval_size(ct_expr)
+            },
+            .Block(mut block) if block.is_expr -> self.eval_size(block.expr),
             .Paren(mut paren) -> self.eval_size(paren.expr),
             .IntegerLiteral(int_lit) -> int_lit.value.to_int() catch return none,
             .Ident(mut ident) -> {

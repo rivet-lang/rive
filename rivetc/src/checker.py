@@ -32,6 +32,8 @@ class Checker:
                 self.check_decl(decl)
             elif hasattr(decl, "decls"):
                 self.check_global_vars(decl.decls)
+            elif isinstance(decl, ast.ComptimeIf):
+                self.check_global_vars(self.comp.evalue_comptime_if(decl))
             self.sym = old_sym
 
     def check_files(self, source_files):
