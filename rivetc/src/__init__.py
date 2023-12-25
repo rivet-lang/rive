@@ -153,7 +153,13 @@ class Compiler:
             )
             src_dir = path.join(self.prefs.input, "src")
             if path.isdir(src_dir): # support `src/` directory
-                files += glob.glob(path.join(src_dir, "*.ri"))
+                files += self.filter_files(glob.glob(path.join(src_dir, "*.ri")))
+            # if the `--test` option is used and a `tests` directory exists, try to
+            # load files from that directory as well
+            if self.prefs.build_mode == prefs.BuildMode.Test:
+                tests_dir = path.join(self.prefs.input, "tests")
+                if path.isdir(tests_dir):
+                    files += self.filter_files(glob.glob(path.join(tests_dir, "*.ri")))
         else:
             files = [self.prefs.input]
         if len(files) == 0:

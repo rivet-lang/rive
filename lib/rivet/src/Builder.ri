@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/traits;
@@ -100,6 +100,16 @@ pub struct Builder {
             if Path.is_directory(src_dir) { // support `src/` directory
                 for file in self.env.filter_files(Directory.walk(src_dir, ".ri")!) {
                     filtered_files.push(file);
+                }
+            }
+            // if the `test` command was used and a `tests` directory exists, try to
+            // load files from that directory as well
+            if self.env.prefs.is_test {
+                tests_dir := Path.join(self.env.prefs.input, "tests")!;
+                if Path.is_directory(tests_dir) {
+                    for file in self.env.filter_files(Directory.walk(tests_dir, ".ri")!) {
+                        filtered_files.push(file);
+                    }
                 }
             }
             filtered_files
@@ -250,7 +260,7 @@ pub struct Builder {
             }
         }
         return ast.ImportedMod(
-            found: found, 
+            found: found,
             name: name,
             alias_name: if alias_name.is_empty() { name } else { alias_name },
             full_name: full_name,
