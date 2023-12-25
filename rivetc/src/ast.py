@@ -75,7 +75,7 @@ class ObjDecl:
 # ---- Declarations ----
 class EmptyDecl:
     def __init__(self):
-        self.attributes = Annotations()
+        self.attributes = Attributes()
 
 class DocComment:
     def __init__(self, lines, pos):
@@ -95,13 +95,13 @@ class DocComment:
                 res += " "
         return res
 
-class AnnotationArg:
+class AttributeArg:
     def __init__(self, name, expr):
         self.name = name
         self.expr = expr
         self.is_named = name != ""
 
-class Annotation:
+class Attribute:
     def __init__(self, name, args, pos):
         self.name = name
         self.args = args
@@ -113,7 +113,7 @@ class Annotation:
                 return arg
         return None
 
-class Annotations:
+class Attributes:
     def __init__(self):
         self.attributes = []
 

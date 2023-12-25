@@ -90,9 +90,11 @@ extend Parser {
 
     func parse_decl(mut self) -> ast.Decl {
         doc_comment := self.parse_doc_comments();
-        attributes := self.parse_attributes(
-            self.tok.kind == .Hash && self.peek_tok.kind == .Bang
-        );
+        is_mod_attr := self.tok.kind == .Hash && self.peek_tok.kind == .Bang;
+        attributes := self.parse_attributes(is_mod_attr);
+        if is_mod_attr {
+            return .Empty();
+        }
         is_public := self.is_public();
         mut pos := self.tok.pos;
         match {

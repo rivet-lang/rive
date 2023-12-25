@@ -61,21 +61,21 @@ class Codegen:
 
         # generate 'init_string_lits_fn' function
         self.init_string_lits_fn = ir.FuncDecl(
-            False, ast.Annotations(), False, "_R4core16init_string_litsF", [],
+            False, ast.Attributes(), False, "_R4core16init_string_litsF", [],
             False, ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_string_lits_fn)
 
         # generate '_R4core12init_globalsF' function
         self.init_global_vars_fn = ir.FuncDecl(
-            False, ast.Annotations(), False, "_R4core12init_globalsF", [],
+            False, ast.Attributes(), False, "_R4core12init_globalsF", [],
             False, ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_global_vars_fn)
 
         # generate '_R12drop_globalsZ' function
         g_fn = ir.FuncDecl(
-            False, ast.Annotations(), False, "_R4core12drop_globalsF", [],
+            False, ast.Attributes(), False, "_R4core12drop_globalsF", [],
             False, ir.VOID_T, False
         )
         self.out_rir.decls.append(g_fn)
@@ -88,7 +88,7 @@ class Codegen:
         argc = ir.Ident(ir.C_INT_T, "_argc")
         argv = ir.Ident(ir.CHAR_T.ptr().ptr(), "_argv")
         main_fn = ir.FuncDecl(
-            False, ast.Annotations(), False, "main", [argc, argv], False,
+            False, ast.Attributes(), False, "main", [argc, argv], False,
             ir.C_INT_T, False
         )
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
@@ -375,7 +375,7 @@ class Codegen:
                 test_func = f"__test{len(self.generated_tests)}__"
                 test_func = f"_R{len(test_func)}{test_func}"
                 test_fn = ir.FuncDecl(
-                    False, ast.Annotations(), False, test_func,
+                    False, ast.Attributes(), False, test_func,
                     [ir.Ident(ir.TEST_T.ptr(), "test")], False, ir.VOID_T, False
                 )
                 self.cur_func = test_fn
@@ -1907,7 +1907,7 @@ class Codegen:
                             self.ir_type(expr_left_typ), "_elem_"
                         )
                         contains_decl = ir.FuncDecl(
-                            False, ast.Annotations(), False, full_name,
+                            False, ast.Attributes(), False, full_name,
                             [self_idx_, elem_idx_], False, ir.BOOL_T, False
                         )
                     else:
@@ -1918,7 +1918,7 @@ class Codegen:
                             self.ir_type(expr_left_typ), "_elem_"
                         )
                         contains_decl = ir.FuncDecl(
-                            False, ast.Annotations(), False, full_name, [
+                            False, ast.Attributes(), False, full_name, [
                                 self_idx_,
                                 ir.Ident(ir.UINT_T, "_len_"), elem_idx_
                             ], False, ir.BOOL_T, False
@@ -3112,7 +3112,7 @@ class Codegen:
                         )
                     )
                     index_of_vtbl_fn = ir.FuncDecl(
-                        False, ast.Annotations(), False,
+                        False, ast.Attributes(), False,
                         cg_utils.mangle_symbol(ts) + "17__index_of_vtbl__",
                         [ir.Ident(ir.UINT_T, "self")], False, ir.UINT_T, False
                     )

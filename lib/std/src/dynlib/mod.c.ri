@@ -46,9 +46,8 @@ pub func load(path: string, global_symbols: bool := false) -> !Library {
     }
     if dl_error := dlerror() {
         throw CannotLoadLibraryError("cannot load '{}': {}".fmt(path, dl_error));
-    } else {
-        throw CannotLoadLibraryError("cannot load '{}'".fmt(path));
     }
+    throw CannotLoadLibraryError("cannot load '{}'".fmt(path));
 }
 
 #[boxed]

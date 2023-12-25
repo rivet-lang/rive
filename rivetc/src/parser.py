@@ -152,8 +152,8 @@ class Parser:
 
     def parse_attributes(self, parse_mod_attributes = False):
         if parse_mod_attributes and self.mod_sym.attributes == None:
-            self.mod_sym.attributes = ast.Annotations()
-        attributes = ast.Annotations()
+            self.mod_sym.attributes = ast.Attributes()
+        attributes = ast.Attributes()
         while self.accept(Kind.Hash):
             if parse_mod_attributes:
                 self.expect(Kind.Bang)
@@ -173,11 +173,11 @@ class Parser:
                             else:
                                 name = ""
                             expr = self.parse_expr()
-                            args.append(ast.AnnotationArg(name, expr))
+                            args.append(ast.AttributeArg(name, expr))
                             if not self.accept(Kind.Comma):
                                 break
                         self.expect(Kind.Rparen)
-                    attribute = ast.Annotation(attribute_name, args, pos)
+                    attribute = ast.Attribute(attribute_name, args, pos)
                     if parse_mod_attributes:
                         self.mod_sym.attributes.add(attribute)
                     else:
@@ -208,19 +208,20 @@ class Parser:
         return decls
 
     def parse_decl(self):
-        doc_comment = self.parse_doc_comment()
-        attributes = self.parse_attributes(
-            self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
-        )
-        is_public = self.is_public()
-        pos = self.tok.pos
         if self.accept(Kind.KwComptime):
             if self.tok.kind == Kind.KwIf:
                 return self.parse_comptime_if(0)
             else:
                 report.error("invalid comptime construction", self.tok.pos)
                 return
-        elif self.accept(Kind.KwImport):
+        doc_comment = self.parse_doc_comment()
+        is_mod_attr = self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
+        attributes = self.parse_attributes(is_mod_attr)
+        if is_mod_attr:
+            return ast.EmptyDecl()
+        is_public = self.is_public()
+        pos = self.tok.pos
+        if self.accept(Kind.KwImport):
             path = self.parse_import_path()
             alias = ""
             import_list = []
