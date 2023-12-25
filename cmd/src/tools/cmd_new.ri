@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/flag;
@@ -18,10 +18,10 @@ var new_desc := "Sets up a new Rivet project and performs `git init` (if `git` i
 on the system).";
 
 var new_desc2 := "If [NAME] is given, the project will be setup in a new directory with that
-name, and that name will be added to the `project.json` file. If no name is
+name, and that name will be added to the `rivet.json` file. If no name is
 given, the user will be prompted for a name.";
 
-var init_desc := "If no `project.json` file exists, one will be created.
+var init_desc := "If no `rivet.json` file exists, one will be created.
 If the current directory is not already controlled with `git`, will perform
 `git init` (if `git` is installed on the system).";
 
@@ -94,7 +94,7 @@ pub func cmd_new(args: []string, is_init: bool) -> ! {
 
     if is_init {
         utils.info("initializing project `{}`...", project.name);
-        create_project_json(project, true)!;
+        create_rivet_json(project, true)!;
         create_editorconfig_file(project.name, true)!;
         if init_git {
             create_gitattributes_file(project.name, true)!;
@@ -112,7 +112,7 @@ pub func cmd_new(args: []string, is_init: bool) -> ! {
             "bin", "lib" -> {
                 utils.info("using the template `{}`...", template);
                 Directory.make(project.name)!;
-                create_project_json(project, false)!;
+                create_rivet_json(project, false)!;
                 create_editorconfig_file(project.name, false)!;
                 if init_git {
                     create_gitattributes_file(project.name, false)!;
@@ -159,16 +159,15 @@ func check_project(mut project: build.Project) {
     }
 }
 
-func create_project_json(project: build.Project, is_init: bool) -> ! {
-    path_ := if is_init { "project.json" } else { Path.join(project.name, "project.json")! };
+func create_rivet_json(project: build.Project, is_init: bool) -> ! {
+    path_ := if is_init { "rivet.json" } else { Path.join(project.name, "rivet.json")! };
     if !Path.exists(path_) {
-        utils.info("creating `project.json` file...");
-        project_ri := generate_project_json(project);
-        fs.write_file(path_, project_ri)!;
+        utils.info("creating `rivet.json` file...");
+        fs.write_file(path_, generate_rivet_json(project))!;
     }
 }
 
-func generate_project_json(project: build.Project) -> string {
+func generate_rivet_json(project: build.Project) -> string {
     mut sb := strings.Builder.new();
     sb.writeln("{");
     sb.write_fmt("    \"name\": \"{}\"", project.name);
