@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/strings;
@@ -89,7 +89,7 @@ pub struct DepGraph {
             }
             (seen, cycle_names) = nn.is_part_of_cycle(k.key, cycle_names);
             if seen {
-                out.writeln_fmt(" * `{}`", utils.join(cycle_names, "` -> `"));
+                out.writeln_fmt(" * `{}`", utils.join(cycle_names[:], "` -> `"));
                 nn.is_cycle = maps.MapStringBool();
             }
         }

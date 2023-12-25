@@ -167,7 +167,7 @@ class Slice(TBase):
         return f"[:]{self.typ.qualstr()}"
 
     def __eq__(self, other):
-        if not isinstance(other, DynArray):
+        if not isinstance(other, Slice):
             return False
         return self.typ == other.typ and self.is_mut == other.is_mut
 

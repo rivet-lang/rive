@@ -276,8 +276,8 @@ extend Checker {
                     }
                     self.inside_unsafe_block = false;
                 }
-                block.defer_stmts = self.defer_stmts[self.defer_stmts_start:];
-                self.defer_stmts = self.defer_stmts[:self.defer_stmts_start];
+                block.defer_stmts = self.defer_stmts[self.defer_stmts_start:].to_dynamic_array();
+                self.defer_stmts = self.defer_stmts[:self.defer_stmts_start].to_dynamic_array();
                 block.type
             },
             .Unary(mut unary) -> self.check_unary(unary),

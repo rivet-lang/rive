@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import c/libc;
@@ -65,7 +65,7 @@ pub struct StringBuilder < Stringable {
         self.write_byte('\n');
     }
 
-    pub func write_join(mut self, ss: []string, sep: string := "") {
+    pub func write_join(mut self, ss: [:]string, sep: string := "") {
         if ss.len == 1 {
             self.write_string(ss[0]);
         } else {

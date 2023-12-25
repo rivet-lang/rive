@@ -1630,18 +1630,20 @@ class Codegen:
                     else:
                         end = None
                 tmp = self.cur_func.local_name()
-                if s.kind == TypeKind.DynArray:
+                if s.kind in (TypeKind.DynArray, TypeKind.Slice):
                     if end == None:
+                        method_name = "_R4core5Slice10slice_fromM" if s.kind==TypeKind.Slice else "_R4core8DynArray10slice_fromM"
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R4core8DynArray10slice_fromM"), left,
+                                ir.Name(method_name), left,
                                 start
                             ]
                         )
                     else:
+                        method_name = "_R4core5Slice5sliceM" if s.kind==TypeKind.Slice else "_R4core8DynArray5sliceM"
                         inst = ir.Inst(
                             ir.InstKind.Call, [
-                                ir.Name("_R4core8DynArray5sliceM"), left, start,
+                                ir.Name(method_name), left, start,
                                 end
                             ]
                         )

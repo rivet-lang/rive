@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../traits;
@@ -42,7 +42,7 @@ pub struct Flag < traits.Stringable {
 #[boxed]
 pub struct FlagParser {
     /// The original arguments to be parsed.
-    original_args: []string;
+    original_args: [:]string;
     /// The index of a `--`, `none` if there is not any.
     idx_dashdash: ?uint;
     /// All options after `--` are ignored, and will be passed to the application unmodified.
@@ -71,19 +71,18 @@ pub struct FlagParser {
     mut footers: []string;
 
     /// Create a new flag parser for the given args.
-    pub func new(args: []string) -> Self {
-        original_args := args.clone();
-        mut all_before_dashdash := args.clone();
+    pub func new(args: [:]string) -> Self {
+        mut all_before_dashdash := args.to_dynamic_array();
         mut all_after_dashdash := []string();
         idx_dashdash := index_of(args, "--");
         if v := idx_dashdash {
             all_before_dashdash.trim(v);
-            if v < original_args.len {
-                all_after_dashdash = original_args[v + 1:];
+            if v < args.len {
+                all_after_dashdash = args[v + 1:].to_dynamic_array();
             }
         }
         return Self(
-            original_args: original_args,
+            original_args: args,
             idx_dashdash: idx_dashdash,
             all_after_dashdash: all_after_dashdash,
             args: all_before_dashdash,
@@ -487,8 +486,8 @@ pub struct FlagParser {
     }
 }
 
-pub func index_of(vec: []string, value: string) -> ?uint {
-    for i, val in vec {
+pub func index_of(slice: [:]string, value: string) -> ?uint {
+    for i, val in slice {
         if val == value {
             return i;
         }

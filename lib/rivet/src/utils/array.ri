@@ -1,21 +1,21 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/strings;
 
-pub func join(vec: []string, s: string) -> string {
-    return if vec.is_empty() {
+pub func join(slice: [:]string, s: string) -> string {
+    return if slice.is_empty() {
         ""
     } else {
         mut sb := strings.Builder.new();
-        sb.write_join(vec, s);
+        sb.write_join(slice, s);
         sb.to_string()
     };
 }
 
-pub func index_of(vec: []string, value: string) -> uint {
-    for i, val in vec {
+pub func index_of(slice: [:]string, value: string) -> uint {
+    for i, val in slice {
         if val == value {
             return i;
         }
