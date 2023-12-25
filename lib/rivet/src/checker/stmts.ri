@@ -23,6 +23,12 @@ extend Checker {
 
     func check_stmt(mut self, mut stmt: ast.Stmt) {
         match stmt {
+            .ComptimeIf(mut comptime_if) -> {
+                mut stmts := ast.nodes_to_stmts(
+                    self.env.evalue_comptime_if(comptime_if)
+                );
+                self.check_stmts(stmts);
+            },
             .VarDecl(mut var_decl) -> self.check_var_decl(
                 var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
             ),

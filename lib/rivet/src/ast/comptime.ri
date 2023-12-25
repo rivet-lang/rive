@@ -9,10 +9,10 @@ import ../report;
 
 pub struct ComptimeIf {
     mut branches: []mut ComptimeIfBranch;
-    mut branch_idx: ?uint;
-    has_else: bool;
-    pos: token.Pos;
-    mut type: Type;
+    pub mut branch_idx: ?uint;
+    pub has_else: bool;
+    pub pos: token.Pos;
+    pub mut type: Type;
 
     pub func nodes(self) -> ?[]Node {
         if branch_idx := self.branch_idx {
@@ -33,6 +33,9 @@ pub struct ComptimeIfBranch {
 
 extend Env {
     pub func evalue_comptime_if(self, mut comptime_if: ComptimeIf) -> []mut Node {
+        if branch_idx := comptime_if.branch_idx {
+            return comptime_if.branches[branch_idx].nodes;
+        }
         for i, branch in comptime_if.branches {
             if branch.is_else && comptime_if.branch_idx == none {
                 comptime_if.branch_idx = i;

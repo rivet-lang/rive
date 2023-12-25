@@ -10,6 +10,13 @@ extend Checker {
         return match expr {
             .Empty, .Comment -> .Void,
             .Type(type) -> type,
+            .ComptimeIf(mut comptime_if) -> {
+                mut exprs := ast.nodes_to_exprs(
+                    self.env.evalue_comptime_if(comptime_if)
+                );
+                comptime_if.type = self.check_expr(exprs[0]);
+                comptime_if.type
+            },
             .LoopControl(loop_control) -> {
                 self.scope_returns = true;
                 if self.loop_control_tracker != .AnyLoop {

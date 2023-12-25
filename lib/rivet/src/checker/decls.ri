@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
@@ -30,6 +30,12 @@ extend Checker {
         old_sym := self.sym;
         defer self.sym = old_sym;
         match decl {
+            .ComptimeIf(mut comptime_if) -> {
+                mut decls := ast.nodes_to_decls(
+                    self.env.evalue_comptime_if(comptime_if)
+                );
+                self.check_decls(decls);
+            },
             .Import(import_decl) -> if import_decl.import_list.is_empty() && !import_decl.glob {
                 if import_decl.has_custom_alias {
                     self.check_name_case(
