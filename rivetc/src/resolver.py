@@ -27,7 +27,9 @@ class Resolver:
         for decl in decls:
             old_sym = self.sym
             old_self_sym = self.self_sym
-            if isinstance(decl, ast.ExternDecl):
+            if isinstance(decl, ast.ComptimeIf):
+                self.resolve_decls(self.comp.evalue_comptime_if(decl))
+            elif isinstance(decl, ast.ExternDecl):
                 self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.ConstDecl):
                 self.resolve_type(decl.typ)
@@ -152,16 +154,20 @@ class Resolver:
                     if arg.has_def_expr:
                         self.resolve_expr(arg.def_expr)
                 self.resolve_type(decl.ret_typ)
-                for stmt in decl.stmts:
-                    self.resolve_stmt(stmt)
+                self.resolve_stmts(decl.stmts)
             elif isinstance(decl, ast.TestDecl):
-                for stmt in decl.stmts:
-                    self.resolve_stmt(stmt)
+                self.resolve_stmts(decl.stmt)
             self.sym = old_sym
             self.self_sym = old_self_sym
 
+    def resolve_stmts(self, stmts):
+        for stmt in stmts:
+            self.resolve_stmt(stmt)
+
     def resolve_stmt(self, stmt):
-        if isinstance(stmt, ast.VarDeclStmt):
+        if isinstance(stmt, ast.ComptimeIf):
+            self.resolve_stmts(self.comp.evalue_comptime_if(stmt))
+        elif isinstance(stmt, ast.VarDeclStmt):
             for v in stmt.lefts:
                 if v.has_typ:
                     self.resolve_type(v.typ)
@@ -212,6 +218,8 @@ class Resolver:
         if isinstance(expr, ast.EmptyExpr):
             report.error("empty expression found", expr.pos)
             report.note("unexpected bug, please, report it")
+        elif isinstance(expr, ast.ComptimeIf):
+            self.resolve_expr(self.comp.evalue_comptime_if(expr)[0])
         elif isinstance(expr, ast.TypeNode):
             self.resolve_type(expr.typ)
         elif isinstance(expr, ast.AssignExpr):
@@ -315,8 +323,7 @@ class Resolver:
         elif isinstance(expr, ast.ThrowExpr):
             self.resolve_expr(expr.expr)
         elif isinstance(expr, ast.Block):
-            for stmt in expr.stmts:
-                self.resolve_stmt(stmt)
+            self.resolve_stmts(expr.stmts)
             if expr.is_expr:
                 self.resolve_expr(expr.expr)
         elif isinstance(expr, ast.IfExpr):

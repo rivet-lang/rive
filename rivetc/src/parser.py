@@ -97,6 +97,51 @@ class Parser:
             self.scope.parent.childrens.append(self.scope)
         self.scope = self.scope.parent
 
+    # ---- comptime ------------------
+    def parse_nodes(self, level):
+        if level == 0: # decl
+            decls = []
+            if self.accept(Kind.Lbrace):
+                while self.tok.kind != Kind.Rbrace:
+                    decls.append(self.parse_decl())
+                self.expect(Kind.Rbrace)
+            else:
+                decls.append(self.parse_decl())
+            return decls
+        elif level == 1: # stmts
+            stmts = []
+            if self.accept(Kind.Lbrace):
+                while self.tok.kind != Kind.Rbrace:
+                    stmts.append(self.parse_stmt())
+                self.expect(Kind.Rbrace)
+            else:
+                stmts.append(self.parse_stmt())
+            return stmts
+        return [self.parse_expr()]
+
+    def parse_comptime_if(self, level):
+        branches = []
+        has_else = False
+        pos = self.tok.pos
+        while self.tok.kind in (Kind.KwIf, Kind.KwElse):
+            if self.accept(Kind.KwElse) and self.tok.kind != Kind.KwIf:
+                branches.append(
+                    ast.ComptimeIfBranch(
+                        self.empty_expr(), self.parse_nodes(level), True,
+                        Kind.KwElse
+                    )
+                )
+                has_else = True
+                break
+            self.expect(Kind.KwIf)
+            cond = self.parse_expr()
+            branches.append(
+                ast.ComptimeIfBranch(cond,False, self.parse_nodes(level), cond.pos)
+            )
+            if self.tok.kind != Kind.KwElse:
+                break
+        return ast.ComptimeIf(branches, has_else, pos)
+
     # ---- declarations --------------
     def parse_doc_comment(self):
         pos = self.tok.pos
@@ -169,7 +214,13 @@ class Parser:
         )
         is_public = self.is_public()
         pos = self.tok.pos
-        if self.accept(Kind.KwImport):
+        if self.accept(Kind.KwComptime):
+            if self.tok.kind == Kind.KwIf:
+                return self.parse_comptime_if(0)
+            else:
+                report.error("invalid comptime construction", self.tok.pos)
+                return
+        elif self.accept(Kind.KwImport):
             path = self.parse_import_path()
             alias = ""
             import_list = []
@@ -580,7 +631,13 @@ class Parser:
         return False
 
     def parse_stmt(self):
-        if self.accept(Kind.KwWhile):
+        if self.accept(Kind.KwComptime):
+            if self.tok.kind == Kind.KwIf:
+                return self.parse_comptime_if(1)
+            else:
+                report.error("invalid comptime construction", self.tok.pos)
+                return
+        elif self.accept(Kind.KwWhile):
             pos = self.prev_tok.pos
             is_inf = False
             continue_expr = self.empty_expr()
@@ -814,7 +871,13 @@ class Parser:
 
     def parse_primary_expr(self):
         expr = self.empty_expr()
-        if self.tok.kind in [
+        if self.accept(Kind.KwComptime):
+            if self.tok.kind == Kind.KwIf:
+                expr = self.parse_comptime_if(3)
+            else:
+                report.error("invalid comptime construction", self.tok.pos)
+                return
+        elif self.tok.kind in [
             Kind.KwTrue, Kind.KwFalse, Kind.Char, Kind.Number, Kind.String,
             Kind.KwNone, Kind.KwSelf, Kind.KwSelfTy
         ]:

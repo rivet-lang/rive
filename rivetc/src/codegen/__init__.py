@@ -250,7 +250,9 @@ class Codegen:
 
     def gen_decl(self, decl):
         self.cur_func_defer_stmts = []
-        if isinstance(decl, ast.ExternDecl):
+        if isinstance(decl, ast.ComptimeIf):
+            self.gen_decls(self.comp.evalue_comptime_if(decl))
+        elif isinstance(decl, ast.ExternDecl):
             if decl.abi != sym.ABI.Rivet:
                 self.gen_decls(decl.decls)
         elif isinstance(decl, ast.VarDecl):
@@ -389,7 +391,9 @@ class Codegen:
             self.gen_stmt(stmt)
 
     def gen_stmt(self, stmt):
-        if isinstance(stmt, ast.ForStmt):
+        if isinstance(stmt, ast.ComptimeIf):
+            self.gen_stmts(self.comp.evalue_comptime_if(stmt))
+        elif isinstance(stmt, ast.ForStmt):
             old_loop_scope = self.loop_scope
             self.loop_scope = stmt.scope
             old_while_continue_expr = self.while_continue_expr
@@ -673,7 +677,9 @@ class Codegen:
         return res_expr
 
     def gen_expr(self, expr, custom_tmp = None):
-        if isinstance(expr, ast.ParExpr):
+        if isinstance(expr, ast.ComptimeIf):
+            self.gen_expr(self.comp.evalue_comptime_if(expr)[0])
+        elif isinstance(expr, ast.ParExpr):
             return self.gen_expr(expr.expr)
         elif isinstance(expr, ast.NoneLiteral):
             return ir.NoneLit(ir.VOID_PTR_T)

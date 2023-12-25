@@ -30,6 +30,22 @@ class SourceFile:
     def __str__(self):
         return self.__repr__()
 
+class ComptimeIf:
+    def __init__(self, branches, has_else, pos):
+        self.branches = branches
+        self.branch_idx = None
+        self.has_else = has_else
+        self.pos = pos
+        self.typ = None
+
+class ComptimeIfBranch:
+    def __init__(self, cond, is_else, nodes, pos):
+        self.cond=cond
+        self.is_else=is_else
+        self.nodes=nodes
+        self.pos=pos
+        self.typ=None
+
 # Used in variable decls/stmts and guard exprs
 class ObjDecl:
     def __init__(self, is_mut, is_ref, name, has_typ, typ, level, pos):

@@ -840,5 +840,5 @@ class Lexer:
         elif ident == "false":
             defined = False
         else:
-            defined = self.comp.evalue_pp_symbol(ident, pos)
+            defined = self.comp.evalue_comptime_ident(ident, pos)
         return defined
