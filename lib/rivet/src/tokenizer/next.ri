@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../token;
@@ -209,13 +209,7 @@ extend Tokenizer {
                     }
                     return self.new_token(.Question);
                 },
-                '#' -> {
-                    if nextc == '[' || nextc == '!' {
-                        return self.new_token(.Hash);
-                    }
-                    self.pp_directive();
-                    continue;
-                },
+                '#' -> return self.new_token(.Hash),
                 '&' -> {
                     if nextc == '&' && self.look_ahead(2).is_space() {
                         self.pos += 1;

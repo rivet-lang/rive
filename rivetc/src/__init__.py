@@ -57,27 +57,60 @@ class Compiler:
         self.checker = checker.Checker(self)
         self.codegen = codegen.Codegen(self)
 
+    def run(self):
+        # if we are compiling the `core` module, avoid autoloading it
+        if self.prefs.mod_name != "core":
+            self.parsed_files += self.load_module("core", "core", "", token.NO_POS)
+
+        self.load_root_module()
+        self.import_modules()
+
+        if not self.prefs.check_syntax:
+            self.vlog("registering symbols...")
+            self.register.walk_files(self.source_files)
+            if report.ERRORS > 0:
+                self.abort()
+            self.vlog("resolving symbols...")
+            self.resolver.resolve_files(self.source_files)
+            if report.ERRORS > 0:
+                self.abort()
+            self.vlog("checking files...")
+            self.checker.check_files(self.source_files)
+            if report.ERRORS > 0:
+                self.abort()
+            if not self.prefs.check:
+                self.vlog("generating RIR...")
+                self.codegen.gen_source_files(self.source_files)
+                if report.ERRORS > 0:
+                    self.abort()
+
     def import_modules(self):
         for sf in self.parsed_files:
-            for decl in sf.decls:
-                if isinstance(decl, ast.ImportDecl):
-                    mod = self.load_module_files(
-                        decl.path, decl.alias, sf.file, decl.pos
-                    )
-                    if mod.found:
-                        if mod_sym_ := self.universe.find(mod.full_name):
-                            mod_sym = mod_sym_ # module already imported
-                        else:
-                            mod_sym = sym.Mod(False, mod.full_name)
-                            self.universe.add(mod_sym)
-                            self.parsed_files += parser.Parser(self).parse_mod(
-                                mod_sym, mod.files
-                            )
-                        decl.alias = mod.alias
-                        decl.mod_sym = mod_sym
+            self.import_modules_from_decls(sf, sf.decls)
         self.resolve_deps()
         if report.ERRORS > 0:
             self.abort()
+
+    def import_modules_from_decls(self, sf, decls):
+        for decl in decls:
+            if isinstance(decl, ast.ImportDecl):
+                mod = self.load_module_files(
+                    decl.path, decl.alias, sf.file, decl.pos
+                )
+                if mod.found:
+                    if mod_sym_ := self.universe.find(mod.full_name):
+                        mod_sym = mod_sym_ # module already imported
+                    else:
+                        mod_sym = sym.Mod(False, mod.full_name)
+                        self.universe.add(mod_sym)
+                        self.parsed_files += parser.Parser(self).parse_mod(
+                            mod_sym, mod.files
+                        )
+                    decl.alias = mod.alias
+                    decl.mod_sym = mod_sym
+            elif isinstance(decl, ast.ComptimeIf):
+                ct_decls = self.evalue_comptime_if(decl)
+                self.import_modules_from_decls(sf, ct_decls)
 
     def resolve_deps(self):
         g = self.import_graph()
@@ -122,33 +155,6 @@ class Compiler:
                     deps.append(d.mod_sym.name)
             g.add(fp.sym.name, deps)
         return g
-
-    def run(self):
-        # if we are compiling the `core` module, avoid autoloading it
-        if self.prefs.mod_name != "core":
-            self.parsed_files += self.load_module("core", "core", "", token.NO_POS)
-
-        self.load_root_module()
-        self.import_modules()
-
-        if not self.prefs.check_syntax:
-            self.vlog("registering symbols...")
-            self.register.walk_files(self.source_files)
-            if report.ERRORS > 0:
-                self.abort()
-            self.vlog("resolving symbols...")
-            self.resolver.resolve_files(self.source_files)
-            if report.ERRORS > 0:
-                self.abort()
-            self.vlog("checking files...")
-            self.checker.check_files(self.source_files)
-            if report.ERRORS > 0:
-                self.abort()
-            if not self.prefs.check:
-                self.vlog("generating RIR...")
-                self.codegen.gen_source_files(self.source_files)
-                if report.ERRORS > 0:
-                    self.abort()
 
     def load_root_module(self):
         if path.isdir(self.prefs.input):
@@ -450,7 +456,46 @@ class Compiler:
         sy.align = align
         return size, align
 
-    def evalue_pp_symbol(self, name, pos):
+    def evalue_comptime_if(self, comptime_if):
+        if comptime_if.branch_idx != None:
+            return comptime_if.branches[comptime_if.branch_idx].nodes
+        for i, branch in enumerate(comptime_if.branches):
+            if branch.is_else and comptime_if.branch_idx == None:
+                comptime_if.branch_idx = i
+            elif cond := self.evalue_comptime_condition(branch.cond):
+                if cond:
+                    comptime_if.branch_idx = i
+            if comptime_if.branch_idx != None:
+                return comptime_if.branches[comptime_if.branch_idx].nodes
+        return []
+
+    def evalue_comptime_condition(self, cond):
+        if isinstance(cond, ast.ParExpr):
+            return self.evalue_comptime_condition(cond.expr)
+        elif isinstance(cond, ast.Ident):
+            return self.evalue_comptime_ident(cond.name, cond.pos)
+        elif isinstance(cond, ast.UnaryExpr) and cond.op == token.Kind.Bang:
+            val = self.evalue_comptime_condition(cond.right)
+            if val != None:
+                return not val
+            return None
+        elif isinstance(cond, ast.BinaryExpr) and cond.op in [token.Kind.LogicalAnd, token.Kind.LogicalOr]:
+            left = self.evalue_comptime_condition(cond.left)
+            if left != None:
+                if cond.op == token.Kind.LogicalOr and left:
+                    return True
+                right = self.evalue_comptime_condition(cond.right)
+                if right != None:
+                    if cond.op == token.Kind.LogicalAnd:
+                        return left and right
+                    return right
+                return None
+            return None
+        else:
+            report.error("invalid comptime condition", cond.pos)
+        return None
+
+    def evalue_comptime_ident(self, name, pos):
         # operating systems
         if name in ("_LINUX_", "_WINDOWS_"):
             return self.prefs.target_os.equals_to_string(name)

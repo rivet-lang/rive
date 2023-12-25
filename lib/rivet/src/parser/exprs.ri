@@ -214,6 +214,13 @@ extend Parser {
 
     func parse_primary_expr(mut self) -> ast.Expr {
         mut expr: ast.Expr := match {
+            self.accept(.KwComptime) -> match self.tok.kind {
+                .KwIf -> .ComptimeIf(self.parse_comptime_if(.Expr)),
+                else -> {
+                    report.error("invalid comptime construction", self.tok.pos);
+                    .Empty(self.tok.pos)
+                }
+            },
             self.tok.kind in [
                 .KwTrue, .KwFalse, .Char, .Number, .String,
                 .KwNone, .KwSelf, .KwSelfTy

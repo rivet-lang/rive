@@ -97,6 +97,51 @@ class Parser:
             self.scope.parent.childrens.append(self.scope)
         self.scope = self.scope.parent
 
+    # ---- comptime ------------------
+    def parse_nodes(self, level):
+        if level == 0: # decl
+            decls = []
+            if self.accept(Kind.Lbrace):
+                while self.tok.kind != Kind.Rbrace:
+                    decls.append(self.parse_decl())
+                self.expect(Kind.Rbrace)
+            else:
+                decls.append(self.parse_decl())
+            return decls
+        elif level == 1: # stmts
+            stmts = []
+            if self.accept(Kind.Lbrace):
+                while self.tok.kind != Kind.Rbrace:
+                    stmts.append(self.parse_stmt())
+                self.expect(Kind.Rbrace)
+            else:
+                stmts.append(self.parse_stmt())
+            return stmts
+        return [self.parse_expr()]
+
+    def parse_comptime_if(self, level):
+        branches = []
+        has_else = False
+        pos = self.tok.pos
+        while self.tok.kind in (Kind.KwIf, Kind.KwElse):
+            if self.accept(Kind.KwElse) and self.tok.kind != Kind.KwIf:
+                branches.append(
+                    ast.ComptimeIfBranch(
+                        self.empty_expr(), True, self.parse_nodes(level),
+                        Kind.KwElse
+                    )
+                )
+                has_else = True
+                break
+            self.expect(Kind.KwIf)
+            cond = self.parse_expr()
+            branches.append(
+                ast.ComptimeIfBranch(cond,False, self.parse_nodes(level), cond.pos)
+            )
+            if self.tok.kind != Kind.KwElse:
+                break
+        return ast.ComptimeIf(branches, has_else, pos)
+
     # ---- declarations --------------
     def parse_doc_comment(self):
         pos = self.tok.pos
@@ -107,8 +152,8 @@ class Parser:
 
     def parse_attributes(self, parse_mod_attributes = False):
         if parse_mod_attributes and self.mod_sym.attributes == None:
-            self.mod_sym.attributes = ast.Annotations()
-        attributes = ast.Annotations()
+            self.mod_sym.attributes = ast.Attributes()
+        attributes = ast.Attributes()
         while self.accept(Kind.Hash):
             if parse_mod_attributes:
                 self.expect(Kind.Bang)
@@ -128,11 +173,11 @@ class Parser:
                             else:
                                 name = ""
                             expr = self.parse_expr()
-                            args.append(ast.AnnotationArg(name, expr))
+                            args.append(ast.AttributeArg(name, expr))
                             if not self.accept(Kind.Comma):
                                 break
                         self.expect(Kind.Rparen)
-                    attribute = ast.Annotation(attribute_name, args, pos)
+                    attribute = ast.Attribute(attribute_name, args, pos)
                     if parse_mod_attributes:
                         self.mod_sym.attributes.add(attribute)
                     else:
@@ -163,10 +208,17 @@ class Parser:
         return decls
 
     def parse_decl(self):
+        if self.accept(Kind.KwComptime):
+            if self.tok.kind == Kind.KwIf:
+                return self.parse_comptime_if(0)
+            else:
+                report.error("invalid comptime construction", self.tok.pos)
+                return
         doc_comment = self.parse_doc_comment()
-        attributes = self.parse_attributes(
-            self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
-        )
+        is_mod_attr = self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
+        attributes = self.parse_attributes(is_mod_attr)
+        if is_mod_attr:
+            return ast.EmptyDecl()
         is_public = self.is_public()
         pos = self.tok.pos
         if self.accept(Kind.KwImport):
@@ -580,7 +632,13 @@ class Parser:
         return False
 
     def parse_stmt(self):
-        if self.accept(Kind.KwWhile):
+        if self.accept(Kind.KwComptime):
+            if self.tok.kind == Kind.KwIf:
+                return self.parse_comptime_if(1)
+            else:
+                report.error("invalid comptime construction", self.tok.pos)
+                return
+        elif self.accept(Kind.KwWhile):
             pos = self.prev_tok.pos
             is_inf = False
             continue_expr = self.empty_expr()
@@ -814,7 +872,13 @@ class Parser:
 
     def parse_primary_expr(self):
         expr = self.empty_expr()
-        if self.tok.kind in [
+        if self.accept(Kind.KwComptime):
+            if self.tok.kind == Kind.KwIf:
+                expr = self.parse_comptime_if(3)
+            else:
+                report.error("invalid comptime construction", self.tok.pos)
+                return
+        elif self.tok.kind in [
             Kind.KwTrue, Kind.KwFalse, Kind.Char, Kind.Number, Kind.String,
             Kind.KwNone, Kind.KwSelf, Kind.KwSelfTy
         ]:

@@ -30,6 +30,22 @@ class SourceFile:
     def __str__(self):
         return self.__repr__()
 
+class ComptimeIf:
+    def __init__(self, branches, has_else, pos):
+        self.branches = branches
+        self.branch_idx = None
+        self.has_else = has_else
+        self.pos = pos
+        self.typ = None
+
+class ComptimeIfBranch:
+    def __init__(self, cond, is_else, nodes, pos):
+        self.cond=cond
+        self.is_else=is_else
+        self.nodes=nodes
+        self.pos=pos
+        self.typ=None
+
 # Used in variable decls/stmts and guard exprs
 class ObjDecl:
     def __init__(self, is_mut, is_ref, name, has_typ, typ, level, pos):
@@ -59,7 +75,7 @@ class ObjDecl:
 # ---- Declarations ----
 class EmptyDecl:
     def __init__(self):
-        self.attributes = Annotations()
+        self.attributes = Attributes()
 
 class DocComment:
     def __init__(self, lines, pos):
@@ -79,13 +95,13 @@ class DocComment:
                 res += " "
         return res
 
-class AnnotationArg:
+class AttributeArg:
     def __init__(self, name, expr):
         self.name = name
         self.expr = expr
         self.is_named = name != ""
 
-class Annotation:
+class Attribute:
     def __init__(self, name, args, pos):
         self.name = name
         self.args = args
@@ -97,7 +113,7 @@ class Annotation:
                 return arg
         return None
 
-class Annotations:
+class Attributes:
     def __init__(self):
         self.attributes = []
 

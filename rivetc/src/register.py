@@ -27,7 +27,9 @@ class Register:
         for decl in decls:
             old_abi = self.abi
             old_sym = self.sym
-            if isinstance(decl, ast.ImportDecl):
+            if isinstance(decl, ast.ComptimeIf):
+                self.walk_decls(self.comp.evalue_comptime_if(decl))
+            elif isinstance(decl, ast.ImportDecl):
                 if len(decl.import_list) == 0:
                     if decl.is_public:
                         try:

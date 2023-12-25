@@ -32,6 +32,8 @@ class Checker:
                 self.check_decl(decl)
             elif hasattr(decl, "decls"):
                 self.check_global_vars(decl.decls)
+            elif isinstance(decl, ast.ComptimeIf):
+                self.check_global_vars(self.comp.evalue_comptime_if(decl))
             self.sym = old_sym
 
     def check_files(self, source_files):
@@ -71,7 +73,9 @@ class Checker:
 
     def check_decl(self, decl):
         old_sym = self.sym
-        if isinstance(decl, ast.ExternDecl):
+        if isinstance(decl, ast.ComptimeIf):
+            self.check_decls(self.comp.evalue_comptime_if(decl))
+        elif isinstance(decl, ast.ExternDecl):
             self.check_decls(decl.decls)
         elif isinstance(decl, ast.ConstDecl):
             if decl.has_typ:
@@ -212,7 +216,9 @@ class Checker:
             self.check_stmt(stmt)
 
     def check_stmt(self, stmt):
-        if isinstance(stmt, ast.VarDeclStmt):
+        if isinstance(stmt, ast.ComptimeIf):
+            self.check_stmts(self.comp.evalue_comptime_if(stmt))
+        elif isinstance(stmt, ast.VarDeclStmt):
             old_expected_type = self.expected_type
             if len(stmt.lefts) == 1:
                 if stmt.lefts[0].has_typ:
@@ -309,6 +315,9 @@ class Checker:
     def check_expr(self, expr):
         if isinstance(expr, ast.EmptyExpr):
             pass # error raised in `Resolver`
+        elif isinstance(expr, ast.ComptimeIf):
+            expr.typ = self.check_expr(self.comp.evalue_comptime_if(expr)[0])
+            return expr.typ
         elif isinstance(expr, ast.TypeNode):
             return expr.typ
         elif isinstance(expr, ast.AssignExpr):

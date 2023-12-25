@@ -1,94 +1,93 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-#if !_RELEASE_ // skip backtrace in release mode
+comptime if !_RELEASE_ { // skip backtrace in release mode
+    #![compile_c_source("../thirdparty/libbacktrace/backtrace.c")]
 
-#![compile_c_source("../thirdparty/libbacktrace/backtrace.c")]
+    import c;
 
-import c;
+    struct BacktraceState;
 
-struct BacktraceState;
+    struct BacktraceData {
+        mut has_error: bool;
+    }
 
-struct BacktraceData {
-    mut has_error: bool;
-}
-
-alias BacktraceErrorCB := func(rawptr, ?[&]mut uint8, int32);
-alias BacktraceFullCB := func(
-    rawptr, int32, ?[&]mut uint8, int32, ?[&]mut uint8
-) -> int32;
-
-extern (C) {
-    func backtrace_create_state(
-        filename: [&]uint8, threaded: bool, error_cb: BacktraceErrorCB,
-        data: ?rawptr
-    ) -> ?&mut BacktraceState;
-
-    func backtrace_full(
-        state: &BacktraceState, skip: int32, cb: BacktraceFullCB,
-        error_cb: BacktraceErrorCB, data: rawptr
+    alias BacktraceErrorCB := func(rawptr, ?[&]mut uint8, int32);
+    alias BacktraceFullCB := func(
+        rawptr, int32, ?[&]mut uint8, int32, ?[&]mut uint8
     ) -> int32;
-}
 
-var state := unsafe {
-    backtrace_create_state(ARGS[0].ptr, true, bt_error_handler, none)?
-};
+    extern (C) {
+        func backtrace_create_state(
+            filename: [&]uint8, threaded: bool, error_cb: BacktraceErrorCB,
+            data: ?rawptr
+        ) -> ?&mut BacktraceState;
 
-func bt_print_callback(
-    _data: rawptr, _pc: int32, filename_ptr: ?[&]mut uint8, lineno: int32,
-    fn_ptr: ?[&]mut uint8
-) -> int32 {
-    unsafe {
-        if safe_fn_ptr := fn_ptr {
-            if mem_cmp(safe_fn_ptr, c"_R4core4mainF", 13) == 0 {
-                return -1; // stop backtracing
+        func backtrace_full(
+            state: &BacktraceState, skip: int32, cb: BacktraceFullCB,
+            error_cb: BacktraceErrorCB, data: rawptr
+        ) -> int32;
+    }
+
+    var state := unsafe {
+        backtrace_create_state(ARGS[0].ptr, true, bt_error_handler, none)?
+    };
+
+    func bt_print_callback(
+        _data: rawptr, _pc: int32, filename_ptr: ?[&]mut uint8, lineno: int32,
+        fn_ptr: ?[&]mut uint8
+    ) -> int32 {
+        unsafe {
+            if safe_fn_ptr := fn_ptr {
+                if mem_cmp(safe_fn_ptr, c"_R4core4mainF", 13) == 0 {
+                    return -1; // stop backtracing
+                }
+            }
+            fn_name := if fn_ptr == none {
+                "???"
+            } else {
+                demangle_symbol(string.from_raw(fn_ptr))
+            };
+            file_name := if filename_ptr == none {
+                "???"
+            } else {
+                string.from_raw(filename_ptr)
+            };
+            console_ewriteln("   from {} in \"{}\":{}", fn_name, file_name, lineno);
+        }
+        return 0;
+    }
+
+    func bt_error_handler(data: rawptr, msg_ptr: ?[&]mut uint8, errnum: int32) {
+        unsafe {
+            mut bdata := @as(&mut BacktraceData, data);
+            if !bdata.has_error {
+                bdata.has_error = true;
+                console_ewrite("   libbacktrace error: ");
+                console_ewrite(string.from_raw(msg_ptr));
+                if errnum > 0 {
+                    console_ewrite(" (");
+                    console_ewrite(c.errno_msg(errnum));
+                    console_ewrite(")");
+                }
+                console_ewriteln();
             }
         }
-        fn_name := if fn_ptr == none {
-            "???"
-        } else {
-            demangle_symbol(string.from_raw(fn_ptr))
-        };
-        file_name := if filename_ptr == none {
-            "???"
-        } else {
-            string.from_raw(filename_ptr)
-        };
-        console_ewriteln("   from {} in \"{}\":{}", fn_name, file_name, lineno);
-    }
-    return 0;
-}
-
-func bt_error_handler(data: rawptr, msg_ptr: ?[&]mut uint8, errnum: int32) {
-    unsafe {
-        mut bdata := @as(&mut BacktraceData, data);
-        if !bdata.has_error {
-            bdata.has_error = true;
-            console_ewrite("   libbacktrace error: ");
-            console_ewrite(string.from_raw(msg_ptr));
-            if errnum > 0 {
-                console_ewrite(" (");
-                console_ewrite(c.errno_msg(errnum));
-                console_ewrite(")");
-            }
-            console_ewriteln();
-        }
     }
 }
-#endif
 
 pub func bt_print(frames_to_skip: int32 := 0) {
-#if _RELEASE_
-    _ = frames_to_skip;
-#else
-    unsafe {
-        if runtime_is_started {
-            mut data := BacktraceData();
-            _ = backtrace_full(
-                state, frames_to_skip, bt_print_callback, bt_error_handler, &mut data
-            );
+    comptime if _RELEASE_ {
+        _ = frames_to_skip;
+    } else {
+        unsafe {
+            if runtime_is_started {
+                mut data := BacktraceData();
+                _ = backtrace_full(
+                    state, frames_to_skip, bt_print_callback, bt_error_handler, &mut data
+                );
+            }
         }
     }
-#endif
 }

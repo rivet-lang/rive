@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 #![compile_c_source("../thirdparty/wyhash/wyhash.c")]
@@ -20,7 +20,7 @@ extern (C) {
     func wy2u01(r: uint64) -> float64;
     func wy2gau(r: uint64) -> float64;
 
-#if !WYHASH_32BIT_MUM
-    func wy2u0k(r: uint64, k: uint64) -> uint64;
-#endif
+    comptime if !WYHASH_32BIT_MUM {
+        func wy2u0k(r: uint64, k: uint64) -> uint64;
+    }
 }

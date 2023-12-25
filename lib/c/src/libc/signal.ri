@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 // TODO(StunxFS): replace the argument type of `SignalHandler` from
@@ -9,7 +9,7 @@ import ../ctypes.{ pid_t, uid_t };
 
 pub alias SignalHandler := func(int32, &mut siginfo_t, rawptr);
 
-#if _LINUX_
+comptime if _LINUX_ {
     pub const SA_ONSTACK := 0x08000000;
     pub const SA_SIGINFO := 0x00000004;
     pub const SA_NOCLDWAIT := 0x00000002;
@@ -50,7 +50,7 @@ pub alias SignalHandler := func(int32, &mut siginfo_t, rawptr);
     pub const SEGV_ACCERR := 0x2;
 
     pub struct sigset_t {
-        pub __val: [#if _X86_ 32 #else 16 #endif]uint32;
+        pub __val: [comptime if _X86_ { 32 } else { 16 }]uint32;
     }
 
     pub struct sigval {
@@ -76,21 +76,21 @@ pub alias SignalHandler := func(int32, &mut siginfo_t, rawptr);
         pub sa_flags: int32;
         pub sa_restorer: func();
     }
-#else_if _WINDOWS_
+} else if _WINDOWS_ {
     pub const SIGABRT := 22;
     pub const SIGFPE := 8;
     pub const SIGILL := 4;
     pub const SIGINT := 2;
     pub const SIGSEGV := 11;
     pub const SIGTERM := 15;
-#else
-    #error cannot define values for signals in this operating system, please report the issue
-#endif
+} else {
+    // TODO: error cannot define values for signals in this operating system, please report the issue
+}
 
 extern (C) {
-#if _LINUX_
-    pub func sigaction(signum: int32, act: ?&sigaction_t, old_act: ?&mut sigaction_t) -> int32;
-#endif
+    comptime if _LINUX_ {
+        pub func sigaction(signum: int32, act: ?&sigaction_t, old_act: ?&mut sigaction_t) -> int32;
+    }
     pub func signal(sig: int32, handler: SignalHandler) -> ?SignalHandler;
     pub func raise(sig: int32) -> int32;
 }

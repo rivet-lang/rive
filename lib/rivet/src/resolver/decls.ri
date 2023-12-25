@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
@@ -12,7 +12,13 @@ extend Resolver {
             old_self_sym := self.self_sym;
             old_self_sym_is_set := self.self_sym_is_set;
             match decl {
-                .Empty(empty_pos) -> report.error("BUG: empty declaration found", empty_pos),
+                // .Empty(empty_pos) -> report.error("BUG: empty declaration found", empty_pos),
+                .ComptimeIf(mut comptime_if) -> {
+                    mut ct_decls := ast.nodes_to_decls(
+                        self.env.evalue_comptime_if(comptime_if)
+                    );
+                    self.resolve_decls(ct_decls);
+                },
                 .Extern(mut extern_decl) -> self.resolve_decls(extern_decl.decls),
                 .Alias(mut alias_decl) -> if alias_decl.is_typealias {
                     _ = self.resolve_type(alias_decl.parent_type);
@@ -168,7 +174,7 @@ extend Resolver {
                         report.error(
                             "{} `{}` has field and {} named `{}`".fmt(
                                 self.self_sym.type_of(), self.self_sym.name, sym.type_of(), field_decl.name
-                            ), 
+                            ),
                             field_decl.pos
                         );
                     }

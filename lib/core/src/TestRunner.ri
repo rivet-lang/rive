@@ -1,138 +1,136 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-#if _TESTS_
+comptime if _TESTS_ {
+    var support_color := console_is_atty(1);
 
-var support_color := console_is_atty(1);
+    var ok_status := bold(green("-> OK"));
+    var failed_status := bold(red("-> FAIL"));
+    var skip_status := bold(yellow("-> SKIP"));
 
-var ok_status := bold(green("-> OK"));
-var failed_status := bold(red("-> FAIL"));
-var skip_status := bold(yellow("-> SKIP"));
-
-extern (Rivet) {
-    var testRunner: TestRunner;
-}
-
-func bold(msg: string) -> string {
-    if !support_color {
-        return msg;
+    extern (Rivet) {
+        var testRunner: TestRunner;
     }
-    return "\x1b[1m{}\x1b[22m".fmt(msg);
-}
 
-func green(msg: string) -> string {
-    if !support_color {
-        return msg;
+    func bold(msg: string) -> string {
+        if !support_color {
+            return msg;
+        }
+        return "\x1b[1m{}\x1b[22m".fmt(msg);
     }
-    return "\x1b[32m{}\x1b[39m".fmt(msg);
-}
 
-func red(msg: string) -> string {
-    if !support_color {
-        return msg;
+    func green(msg: string) -> string {
+        if !support_color {
+            return msg;
+        }
+        return "\x1b[32m{}\x1b[39m".fmt(msg);
     }
-    return "\x1b[31m{}\x1b[39m".fmt(msg);
-}
 
-func yellow(msg: string) -> string {
-    if !support_color {
-        return msg;
+    func red(msg: string) -> string {
+        if !support_color {
+            return msg;
+        }
+        return "\x1b[31m{}\x1b[39m".fmt(msg);
     }
-    return "\x1b[33m{}\x1b[39m".fmt(msg);
-}
 
-func assert_test(cond: bool, msg: string, pos: string, mut test_: Test) {
-    if !cond {
-        test_.result = .Failed;
-        test_.err_msg = "assertion failed: {}".fmt(msg);
+    func yellow(msg: string) -> string {
+        if !support_color {
+            return msg;
+        }
+        return "\x1b[33m{}\x1b[39m".fmt(msg);
+    }
+
+    func assert_test(cond: bool, msg: string, pos: string, mut test_: Test) {
+        if !cond {
+            test_.result = .Failed;
+            test_.err_msg = "assertion failed: {}".fmt(msg);
+            test_.err_pos = pos;
+            test_.early_return = true;
+        }
+    }
+
+    func test_error_throwed(err: Throwable, pos: string, mut test_: Test) {
+        test_.result = .ErrorThrowed;
+        test_.err = err;
         test_.err_pos = pos;
         test_.early_return = true;
     }
-}
 
-func test_error_throwed(err: Throwable, pos: string, mut test_: Test) {
-    test_.result = .ErrorThrowed;
-    test_.err = err;
-    test_.err_pos = pos;
-    test_.early_return = true;
-}
+    enum TestResult as uint8 {
+        Ok,
+        Skipped,
+        Failed,
+        ErrorThrowed
+    }
 
-enum TestResult as uint8 {
-    Ok,
-    Skipped,
-    Failed,
-    ErrorThrowed
-}
+    struct Test {
+        name: string;
+        fn: func (mut Test);
+        mut result: TestResult;
+        mut early_return: bool;
+        mut err_pos: string;
+        mut err_msg: string;
+        mut err: Throwable;
+    }
 
-struct Test {
-    name: string;
-    fn: func (mut Test);
-    mut result: TestResult;
-    mut early_return: bool;
-    mut err_pos: string;
-    mut err_msg: string;
-    mut err: Throwable;
-}
+    struct TestRunner {
+        mut tests: []mut Test;
+        mut ok_tests: uint64;
+        mut fail_tests: uint64;
+        mut skip_tests: uint64;
 
-struct TestRunner {
-    mut tests: []mut Test;
-    mut ok_tests: uint64;
-    mut fail_tests: uint64;
-    mut skip_tests: uint64;
-
-    func run(mut self) {
-        for i, mut test_ in self.tests {
-            console_ewrite(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
-            (test_.fn)(test_);
-            match test_.result {
-                .Ok -> self.print_ok(),
-                .Skipped -> self.print_skip(),
-                .Failed -> self.print_failed(test_.err_pos, test_.err_msg),
-                .ErrorThrowed -> self.print_error_throwed(test_.err_pos, test_.err)
+        func run(mut self) {
+            for i, mut test_ in self.tests {
+                console_ewrite(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
+                (test_.fn)(test_);
+                match test_.result {
+                    .Ok -> self.print_ok(),
+                    .Skipped -> self.print_skip(),
+                    .Failed -> self.print_failed(test_.err_pos, test_.err_msg),
+                    .ErrorThrowed -> self.print_error_throwed(test_.err_pos, test_.err)
+                }
+            }
+            self.print_summary_tests();
+            if self.fail_tests > 0 {
+                process_exit(1);
             }
         }
-        self.print_summary_tests();
-        if self.fail_tests > 0 {
-            process_exit(1);
+
+        func print_summary_tests(&self) {
+            console_ewrite(bold("Summary for all tests: "));
+            if self.ok_tests > 0 {
+                console_ewrite("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
+            }
+            if self.fail_tests > 0 {
+                console_ewrite("{}, ", bold(red("{} failed".fmt(self.fail_tests))));
+            }
+            if self.skip_tests > 0 {
+                console_ewrite("{}, ", bold(yellow("{} skipped".fmt(self.skip_tests))));
+            }
+            console_ewriteln(bold("{} total.".fmt(self.tests.len)));
         }
-    }
 
-    func print_summary_tests(&self) {
-        console_ewrite(bold("Summary for all tests: "));
-        if self.ok_tests > 0 {
-            console_ewrite("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
+        func print_ok(mut self) {
+            console_ewriteln(ok_status);
+            self.ok_tests += 1;
         }
-        if self.fail_tests > 0 {
-            console_ewrite("{}, ", bold(red("{} failed".fmt(self.fail_tests))));
+
+        func print_skip(mut self) {
+            console_ewriteln(skip_status);
+            self.skip_tests += 1;
         }
-        if self.skip_tests > 0 {
-            console_ewrite("{}, ", bold(yellow("{} skipped".fmt(self.skip_tests))));
+
+        func print_failed(mut self, pos: string, msg: string) {
+            console_ewriteln(failed_status);
+            console_ewriteln("     at {}: {}", bold(pos), msg);
+            self.fail_tests += 1;
         }
-        console_ewriteln(bold("{} total.".fmt(self.tests.len)));
-    }
 
-    func print_ok(mut self) {
-        console_ewriteln(ok_status);
-        self.ok_tests += 1;
-    }
-
-    func print_skip(mut self) {
-        console_ewriteln(skip_status);
-        self.skip_tests += 1;
-    }
-
-    func print_failed(mut self, pos: string, msg: string) {
-        console_ewriteln(failed_status);
-        console_ewriteln("     at {}: {}", bold(pos), msg);
-        self.fail_tests += 1;
-    }
-
-    func print_error_throwed(mut self, pos: string, err: Throwable) {
-        console_ewriteln(failed_status);
-        console_ewriteln("     at {}: error throwed: {}", bold(pos), err);
-        self.fail_tests += 1;
+        func print_error_throwed(mut self, pos: string, err: Throwable) {
+            console_ewriteln(failed_status);
+            console_ewriteln("     at {}: error throwed: {}", bold(pos), err);
+            self.fail_tests += 1;
+        }
     }
 }
-
-#endif

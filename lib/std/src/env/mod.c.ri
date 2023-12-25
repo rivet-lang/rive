@@ -1,12 +1,12 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import core;
 import c/libc;
 
 /// User's home directory.
-pub var home_dir := get(#if _LINUX_ "HOME" #else "USERPROFILE" #endif) ?? "";
+pub var home_dir := get(comptime if _LINUX_ { "HOME" } else { "USERPROFILE" }) ?? "";
 
 /// Returns `true` if the environment variable exists.
 #[inline]

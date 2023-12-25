@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/strings;
@@ -27,7 +27,6 @@ pub struct Tokenizer {
     mut is_started: bool;
     mut is_cr_lf: bool;
     mut eofs: uint;
-    mut conditional_stack: []mut Conditional;
 
     pub func new(text: string, env: ast.Env) -> Tokenizer {
         mut t := Tokenizer(env: env, text: text);

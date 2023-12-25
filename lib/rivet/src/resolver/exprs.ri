@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import ../ast;
@@ -10,6 +10,12 @@ extend Resolver {
     func resolve_expr(mut self, mut expr: ast.Expr) {
         match expr {
             .Empty(empty_pos) -> report.error("bug: unexpected empty expression found", empty_pos),
+            .ComptimeIf(mut comptime_if) -> {
+                mut exprs := ast.nodes_to_exprs(
+                    self.env.evalue_comptime_if(comptime_if)
+                );
+                self.resolve_expr(exprs[0]);
+            },
             .Paren(mut paren) -> self.resolve_expr(paren.expr),
             .Type(mut type) -> _ = self.resolve_type(type),
             .Ident(mut ident) -> self.resolve_ident(ident),
@@ -143,9 +149,7 @@ extend Resolver {
                 self.resolve_expr(index.index);
             },
             .Block(mut block) -> {
-                for mut stmt in block.stmts {
-                    self.resolve_stmt(stmt);
-                }
+                self.resolve_stmts(block.stmts);
                 if block.is_expr {
                     self.resolve_expr(block.expr);
                 }

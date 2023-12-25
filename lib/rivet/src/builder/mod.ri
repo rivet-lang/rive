@@ -146,18 +146,7 @@ pub struct Builder {
 
     func import_modules(mut self) -> ! {
         for mut sf in self.env.source_files {
-            for mut decl in sf.decls {
-                if decl is .Import(mut import_decl) {
-                    if self.env.universe.scope.exists(import_decl.info.full_name) {
-                        continue;
-                    }
-                    import_decl.info = self.load_module(
-                        import_decl.path, import_decl.alias_name, sf.path,
-                        import_decl.path_pos
-                    )!;
-                    import_decl.alias_name = import_decl.info.alias_name;
-                }
-            }
+            self.import_modules_from_decls(sf, sf.decls)!;
         }
         self.vlog("loaded modules...");
         self.resolve_deps();
@@ -166,25 +155,49 @@ pub struct Builder {
         }
     }
 
+    func import_modules_from_decls(
+        mut self, sf: ast.SourceFile, mut decls: []mut ast.Decl
+    ) -> ! {
+        for mut decl in decls {
+            if decl is .Import(mut import_decl) {
+                if self.env.universe.scope.exists(import_decl.info.full_name) {
+                    continue;
+                }
+                import_decl.info = self.load_module(
+                    import_decl.path, import_decl.alias_name, sf.path,
+                    import_decl.path_pos
+                )!;
+                import_decl.alias_name = import_decl.info.alias_name;
+            } else if decl is .ComptimeIf(mut comptime_if) {
+                mut ct_decls := ast.nodes_to_decls(
+                    self.env.evalue_comptime_if(comptime_if)
+                );
+                self.import_modules_from_decls(sf, ct_decls)!;
+            }
+        }
+    }
+
     func load_module(
         mut self, path: string, alias_name: string, file_path: string, pos: token.Pos
     ) -> !ast.ImportedMod {
         mut mod := self.load_module_files(alias_name, path, file_path)!;
         if mod.found {
-            self.vlog("    module `{}` loaded", path);
-            mod.mod = if mod_mod_ := self.env.universe.scope.find(mod.full_name) {
-                @as(ast.Module, mod_mod_)
+             if mod.files.is_empty() {
+                self.vlog("        > module contains no rivet files", path);
+                report.error("module `{}` contains no rivet files".fmt(path), pos);
             } else {
-                mod_sym := ast.Module(name: mod.full_name);
-                self.env.universe.scope.add(mod_sym) catch |err| {
-                    report.error(err.to_string(), pos)
+                self.vlog("    module `{}` loaded", path);
+                mod.mod = if mod_mod_ := self.env.universe.scope.find(mod.full_name) {
+                    @as(ast.Module, mod_mod_)
+                } else {
+                    mod_sym := ast.Module(name: mod.full_name);
+                    self.env.universe.scope.add(mod_sym) catch |err| {
+                        report.error(err.to_string(), pos)
+                    };
+                    self.parse_files(mod_sym, mod.files);
+                    mod_sym
                 };
-                self.parse_files(mod_sym, mod.files);
-                mod_sym
-            };
-        } else if mod.files.is_empty() {
-            self.vlog("        > module contains no rivet files", path);
-            report.error("module `{}` contains no rivet files".fmt(path), pos);
+            }
         } else {
             self.vlog("        > module not found", path);
             report.error("module `{}` not found".fmt(path), pos);
