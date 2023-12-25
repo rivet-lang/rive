@@ -282,7 +282,7 @@ class Checker:
         elif isinstance(stmt, ast.ForStmt):
             iterable_t = self.check_expr(stmt.iterable)
             iterable_sym = iterable_t.symbol()
-            if iterable_sym.kind in (TypeKind.Array, TypeKind.DynArray):
+            if iterable_sym.kind in (TypeKind.Array, TypeKind.DynArray, TypeKind.Slice):
                 elem_typ = self.comp.comptime_number_to_type(
                     iterable_sym.info.elem_typ
                 )
