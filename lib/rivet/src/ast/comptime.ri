@@ -1,0 +1,55 @@
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
+// file.
+
+import ../token;
+import ../report;
+
+pub struct ComptimeIf {
+    mut branches: []mut ComptimeIfBranch;
+    mut branch_idx: ?uint;
+    has_else: bool;
+    pos: token.Pos;
+    mut type: Type;
+
+    pub func nodes(self) -> ?[]Node {
+        if branch_idx := self.branch_idx {
+            return self.branches[branch_idx].nodes;
+        }
+        return none;
+    }
+}
+
+pub struct ComptimeIfBranch {
+    pub mut cond: Expr;
+    pub is_else: bool;
+    pub is_else_if: bool;
+    pub mut nodes: []mut Node;
+    pub pos: token.Pos;
+    pub mut type: Type;
+}
+
+extend Env {
+    pub func evalue_comptime_if(self, mut comptime_if: ComptimeIf) -> []mut Node {
+        for i, branch in comptime_if.branches {
+            if branch.is_else && comptime_if.branch_idx == none {
+                comptime_if.branch_idx = i;
+            } else if cond := self.evalue_comptime_condition(branch.cond); cond {
+                comptime_if.branch_idx = i;
+            }
+            if branch_idx := comptime_if.branch_idx {
+                return comptime_if.branches[branch_idx].nodes;
+            }
+        }
+        return +[];
+    }
+
+    func evalue_comptime_condition(self, cond: Expr) -> ?bool {
+        return match cond {
+            else -> {
+                report.error("invalid comptime condition", cond.position());
+                none
+            }
+        };
+    }
+}
