@@ -10,22 +10,22 @@ extend Checker {
         return match expr {
             .Empty, .Comment -> .Void,
             .Type(type) -> type,
-            .Branch(branch) -> {
+            .LoopControl(loop_control) -> {
                 self.scope_returns = true;
                 if self.loop_control_tracker != .AnyLoop {
                     if self.loop_control_tracker == .Defer {
                         report.error(
                             "`break` and `continue` statements inside loop cannot be deferred",
-                            branch.pos
+                            loop_control.pos
                         );
                     } else {
                         report.error(
                             "`break` and `continue` statements can only be used inside loops",
-                            branch.pos
+                            loop_control.pos
                         );
                     }
                 }
-                .Never(branch.pos)
+                .Never(loop_control.pos)
             },
             .Paren(mut paren) -> self.check_expr(paren.expr),
             .NoneLiteral -> .None,

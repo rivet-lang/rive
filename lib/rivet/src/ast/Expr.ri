@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/traits;
@@ -146,7 +146,7 @@ pub enum Expr < traits.Stringable {
     	mut left_type: Type;
     	mut type: Type;
     },
-    Branch {
+    LoopControl {
         op: token.Kind;
         pos: token.Pos;
     },
@@ -329,7 +329,7 @@ pub enum Expr < traits.Stringable {
             .Selector(selector) -> selector.pos,
             .Indirect(indirect) -> indirect.pos,
             .OptionCheck(option_check) -> option_check.pos,
-            .Branch(branch) -> branch.pos,
+            .LoopControl(loop_control) -> loop_control.pos,
             .Range(range) -> range.pos,
             .Call(call) -> call.pos,
             .BuiltinCall(builtin_call) -> builtin_call.pos,
@@ -438,7 +438,7 @@ pub enum Expr < traits.Stringable {
             .Selector(selector) -> "{}.{}".fmt(selector.left, selector.field_name),
             .Indirect(indirect) -> "{}.*".fmt(indirect.left),
             .OptionCheck(option_check) -> "{}?".fmt(option_check.left),
-            .Branch(branch_expr) -> branch_expr.op.to_string(),
+            .LoopControl(loop_control) -> loop_control.op.to_string(),
             .Range(range) -> {
                 mut sb := strings.Builder.new();
                 if range.has_start {

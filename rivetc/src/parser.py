@@ -844,7 +844,7 @@ class Parser:
             op = self.tok.kind
             pos = self.tok.pos
             self.next()
-            expr = ast.BranchExpr(op, pos, self.scope)
+            expr = ast.LoopControlExpr(op, pos, self.scope)
         elif self.accept(Kind.KwReturn):
             pos = self.prev_tok.pos
             has_expr = self.tok.kind not in (

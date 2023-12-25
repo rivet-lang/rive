@@ -264,7 +264,7 @@ extend Parser {
                 op := self.tok.kind;
                 pos := self.tok.pos;
                 self.next();
-                .Branch(op, pos)
+                .LoopControl(op, pos)
             },
             self.accept(.KwReturn) -> {
                 pos := self.prev_tok.pos;

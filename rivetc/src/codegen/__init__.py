@@ -2322,7 +2322,7 @@ class Codegen:
             self.cur_func.add_label(exit_match)
             if not is_void_value:
                 return tmp
-        elif isinstance(expr, ast.BranchExpr):
+        elif isinstance(expr, ast.LoopControlExpr):
             if expr.op == Kind.KwContinue:
                 if self.while_continue_expr and not isinstance(
                     self.while_continue_expr, ast.EmptyExpr

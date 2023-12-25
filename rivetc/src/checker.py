@@ -1492,7 +1492,7 @@ class Checker:
                         report.error(e.args[0], b.expr.pos)
                 b.typ = branch_t
             return expr.expected_typ
-        elif isinstance(expr, ast.BranchExpr):
+        elif isinstance(expr, ast.LoopControlExpr):
             expr.typ = self.comp.never_t
             return expr.typ
         elif isinstance(expr, ast.EmptyExpr):

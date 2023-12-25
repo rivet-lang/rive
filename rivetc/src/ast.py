@@ -855,7 +855,7 @@ class SelectorExpr:
     def __str__(self):
         return self.__repr__()
 
-class BranchExpr:
+class LoopControlExpr:
     def __init__(self, op, pos, scope = None):
         self.op = op
         self.pos = pos
