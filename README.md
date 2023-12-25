@@ -55,8 +55,6 @@ quality.
 * **Not NULL values by default**: This is only possible with option types (`?T`) and `none`.
 * **Easy error handling**: With result types, `func my_func() -> !T { ... }`,
     `throw` and `catch`.
-* **A basic preprocessor**: `if`, `else_if`, `else` and `endif` for optional code using
-    flags (`-D my_flag`).
 * **Immutable values**: Variables and fields are immutable by default.
     structs have internal immutability.
 * **Polymorphism**: Traits, Embedded Structs and Tagged Enums are supported.
