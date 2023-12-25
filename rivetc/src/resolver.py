@@ -156,7 +156,7 @@ class Resolver:
                 self.resolve_type(decl.ret_typ)
                 self.resolve_stmts(decl.stmts)
             elif isinstance(decl, ast.TestDecl):
-                self.resolve_stmts(decl.stmt)
+                self.resolve_stmts(decl.stmts)
             self.sym = old_sym
             self.self_sym = old_self_sym
 
