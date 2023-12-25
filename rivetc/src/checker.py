@@ -872,19 +872,17 @@ class Checker:
                     f"expected unsigned integer value, found `{idx_t}`",
                     expr.index.pos
                 )
-            if left_sym.kind in (TypeKind.Array, TypeKind.DynArray):
+            if left_sym.kind in (TypeKind.Array, TypeKind.DynArray, TypeKind.Slice):
                 if isinstance(expr.index, ast.RangeExpr):
-                    if left_sym.kind == TypeKind.DynArray:
+                    if left_sym.kind == TypeKind.Slice:
                         expr.typ = expr.left_typ
                     else:
-                        expr.typ = type.DynArray(
+                        expr.typ = type.Slice(
                             left_sym.info.elem_typ, left_sym.info.is_mut
                         )
-                        expr.typ.sym = self.comp.universe.add_or_get_dyn_array(
+                        expr.typ.sym = self.comp.universe.add_or_get_slice(
                             left_sym.info.elem_typ, left_sym.info.is_mut
                         )
-                elif left_sym.kind == TypeKind.DynArray:
-                    expr.typ = left_sym.info.elem_typ
                 else:
                     expr.typ = left_sym.info.elem_typ
             else:
@@ -1864,6 +1862,10 @@ class Checker:
                 return False
             return exp_sym.info.elem_typ == got_sym.info.elem_typ and exp_sym.info.size == got_sym.info.size
         elif exp_sym.kind == TypeKind.DynArray and got_sym.kind == TypeKind.DynArray:
+            if exp_sym.info.is_mut and not got_sym.info.is_mut:
+                return False
+            return exp_sym.info.elem_typ == got_sym.info.elem_typ
+        elif exp_sym.kind == TypeKind.Slice and got_sym.kind == TypeKind.Slice:
             if exp_sym.info.is_mut and not got_sym.info.is_mut:
                 return False
             return exp_sym.info.elem_typ == got_sym.info.elem_typ

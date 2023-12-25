@@ -514,6 +514,14 @@ class Resolver:
                     )
                 )
                 return True
+        elif isinstance(typ, type.Slice):
+            if self.resolve_type(typ.typ):
+                typ.resolve(
+                    self.comp.universe.add_or_get_slice(
+                        typ.typ, typ.is_mut
+                    )
+                )
+                return True
         elif isinstance(typ, type.Tuple):
             res = False
             for t in typ.types:

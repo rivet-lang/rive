@@ -428,6 +428,8 @@ class Compiler:
         elif sy.kind == sym.TypeKind.Array:
             elem_size, elem_align = self.type_size(sy.info.elem_typ)
             size, align = int(sy.info.size.lit) * elem_size, elem_align
+        elif sy.kind == sym.TypeKind.Slice:
+            size, align = self.pointer_size * 3, self.pointer_size
         elif sy.is_boxed():
             size, align = self.pointer_size, self.pointer_size
         elif sy.kind in (sym.TypeKind.Struct, sym.TypeKind.Tuple):

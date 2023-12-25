@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import c/libc;
@@ -29,19 +29,19 @@ func array_ne(arr: rawptr, other_arr: rawptr, len: uint) -> bool {
     return !array_eq(arr, other_arr, len);
 }
 
-func array_slice(arr: rawptr, elem_size: uint, size: uint, start: uint, end: uint) -> DynArray {
+func array_slice(arr: rawptr, elem_size: uint, size: uint, start: uint, end: uint) -> Slice {
     if start > end || end > size {
-        runtime_error("slice index out of range (range: {}..{}, len: {})", start, end, size);
+        runtime_error("slice index [{}:{}] out of range (len: {})", start, end, size);
     }
     len := end - start;
     return unsafe {
-        DynArray.from_array_no_alloc(
+        Slice(
             if len == size { arr } else { @ptr_add(arr, start * elem_size) }, elem_size, len
         )
     };
 }
 
 #[inline]
-func array_slice_from(arr: rawptr, elem_size: uint, size: uint, start: uint) -> DynArray {
+func array_slice_from(arr: rawptr, elem_size: uint, size: uint, start: uint) -> Slice {
     return array_slice(arr, elem_size, size, start, size);
 }

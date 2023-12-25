@@ -233,6 +233,32 @@ class SymRef(Sym):
         return self.ref.is_core_mod()
 
 class Mod(Sym):
+    def add_or_get_slice(self, elem_typ, is_mut = False):
+        if is_mut:
+            unique_name = f"[:]mut {elem_typ.qualstr()}"
+        else:
+            unique_name = f"[:]{elem_typ.qualstr()}"
+        if sym := self.find(unique_name):
+            return sym
+        from .type import Type as type_Type
+        slice_sym = Type(
+            True, unique_name, TypeKind.Slice, info = SliceInfo(elem_typ, is_mut),
+            fields = [
+                Field("len", False, True, type_Type(self[14]))
+            ]
+        )
+        slice_sym.add(
+            Func(
+                ABI.Rivet, True, False, False, True, False, "to_dynamic_array", [],
+                type_Type(slice_sym), False, True, NO_POS, False, False,
+                type_Type(slice_sym)
+            )
+        )
+        if core_slice_sym := self.find("core").find("Slice"):
+            if is_empty_m := core_slice_sym.find("is_empty"):
+                slice_sym.add(is_empty_m)
+        return self.add_and_return(slice_sym)
+
     def add_or_get_array(self, elem_typ, size, is_mut = False):
         if is_mut:
             unique_name = f"[{size}]mut {elem_typ.qualstr()}"
@@ -257,7 +283,7 @@ class Mod(Sym):
             return sym
         from .type import Type as type_Type
         dyn_array_sym = Type(
-            True, unique_name, TypeKind.DynArray, info = info(elem_typ, is_mut),
+            True, unique_name, TypeKind.DynArray, info = DynArrayInfo(elem_typ, is_mut),
             fields = [
                 Field("len", False, True, type_Type(self[14])),
                 Field("cap", False, True, type_Type(self[14]))
@@ -357,6 +383,7 @@ class TypeKind(Enum):
     Float64 = auto_enum()
     String = auto_enum()
     Alias = auto_enum()
+    Slice = auto_enum()
     Array = auto_enum()
     DynArray = auto_enum()
     Tuple = auto_enum()
@@ -417,6 +444,8 @@ class TypeKind(Enum):
             return "string"
         elif self == TypeKind.Alias:
             return "alias"
+        elif self == TypeKind.Slice:
+            return "slice"
         elif self == TypeKind.Array:
             return "array"
         elif self == TypeKind.DynArray:
@@ -450,7 +479,13 @@ class ArrayInfo:
         self.is_mut = is_mut
         self.has_contains_method = False
 
-class info:
+class DynArrayInfo:
+    def __init__(self, elem_typ, is_mut):
+        self.elem_typ = elem_typ
+        self.is_mut = is_mut
+        self.has_contains_method = False
+
+class SliceInfo:
     def __init__(self, elem_typ, is_mut):
         self.elem_typ = elem_typ
         self.is_mut = is_mut
