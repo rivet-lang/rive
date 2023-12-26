@@ -9,21 +9,47 @@ import ../token;
 import ../report;
 
 extend Parser {
+    #[inline]
     func parse_import_decl(mut self, attributes: ast.Attributes, is_public: bool, mut pos: token.Pos) -> ast.Decl {
+        return .Import(self.parse_import("", attributes, is_public, pos));
+    }
+
+    func parse_import(
+        mut self, prev_mod_path: string, attributes: ast.Attributes, is_public: bool, mut pos: token.Pos
+    ) -> ast.ImportDecl {
         mut has_custom_alias := false;
         mut mod_path_pos := self.tok.pos;
-        mod_path := self.parse_import_path();
+        mut mod_path := self.parse_import_path();
+        if !prev_mod_path.is_empty() {
+            mod_path = "{}/{}".fmt(prev_mod_path, mod_path);
+        }
         mod_path_pos += self.prev_tok.pos;
+        mut subimports := []mut ast.ImportDecl();
+        if self.tok.kind == .Div && self.peek_tok.kind == .Lbrace {
+            self.advance(2);
+            while {
+                mut subimport_pos := self.tok.pos;
+                subimports.push(self.parse_import(mod_path, attributes, is_public, subimport_pos));
+                if !self.accept(.Comma) {
+                    break;
+                }
+            }
+            self.expect(.Rbrace);
+        }
         (glob, import_list) := self.parse_import_list(mod_path_pos);
-        alias_name := if import_list.is_empty() && self.accept(.KwAs) {
+        alias_name := if subimports.is_empty() && import_list.is_empty() && self.accept(.KwAs) {
             has_custom_alias = true;
-            self.parse_name()
+            new_name := self.parse_name();
+            mod_path_pos += self.prev_tok.pos;
+            new_name
         } else {
             ""
         };
         pos += self.prev_tok.pos;
-        self.expect(.Semicolon);
-        return .Import(
+        if prev_mod_path.is_empty() {
+            self.expect(.Semicolon);
+        }
+        return ast.ImportDecl(
             attributes: attributes,
             is_public: is_public,
             path: mod_path,
@@ -31,9 +57,30 @@ extend Parser {
             alias_name: alias_name,
             has_custom_alias: has_custom_alias,
             glob: glob,
+            subimports: subimports,
             import_list: import_list,
             pos: pos
         );
+    }
+
+    func parse_import_path(mut self) -> string {
+        mut sb := strings.Builder.new();
+        if self.accept(.Dot) {
+            sb.write_string("./");
+            self.expect(.Div);
+        } else {
+            while self.accept(.DotDot) {
+                sb.write_string("../");
+                self.expect(.Div);
+            }
+        }
+        sb.write_string(self.parse_name());
+        while self.tok.kind == .Div && self.peek_tok.kind != .Lbrace {
+            self.expect(.Div);
+            sb.write_string("/");
+            sb.write_string(self.parse_name());
+        }
+        return sb.to_string();
     }
 
     func parse_import_list(mut self, mod_path_pos: token.Pos) -> (bool, []ast.ImportListInfo) {
@@ -112,24 +159,5 @@ extend Parser {
             }
         }
         return (glob, import_list);
-    }
-
-    func parse_import_path(mut self) -> string {
-        mut sb := strings.Builder.new();
-        if self.accept(.Dot) {
-            sb.write_string("./");
-            self.expect(.Div);
-        } else {
-            while self.accept(.DotDot) {
-                sb.write_string("../");
-                self.expect(.Div);
-            }
-        }
-        sb.write_string(self.parse_name());
-        while self.accept(.Div) {
-            sb.write_string("/");
-            sb.write_string(self.parse_name());
-        }
-        return sb.to_string();
     }
 }

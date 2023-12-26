@@ -160,19 +160,29 @@ pub struct Builder {
     ) -> ! {
         for mut decl in decls {
             if decl is .Import(mut import_decl) {
-                if self.env.universe.scope.exists(import_decl.info.full_name) {
-                    continue;
-                }
-                import_decl.info = self.load_module(
-                    import_decl.path, import_decl.alias_name, sf.path,
-                    import_decl.path_pos
-                )!;
-                import_decl.alias_name = import_decl.info.alias_name;
+                self.import_module(sf, import_decl)!;
             } else if decl is .ComptimeIf(mut comptime_if) {
                 mut ct_decls := ast.nodes_to_decls(
                     self.env.evalue_comptime_if(comptime_if)
                 );
                 self.import_modules_from_decls(sf, ct_decls)!;
+            }
+        }
+    }
+
+    func import_module(mut self, sf: ast.SourceFile, mut import_decl: ast.ImportDecl) -> ! {
+        if import_decl.subimports.is_empty() {
+            if self.env.universe.scope.exists(import_decl.info.full_name) {
+                return;
+            }
+            import_decl.info = self.load_module(
+                import_decl.path, import_decl.alias_name, sf.path,
+                import_decl.path_pos
+            )!;
+            import_decl.alias_name = import_decl.info.alias_name;
+        } else {
+            for mut subimport in import_decl.subimports {
+                self.import_module(sf, subimport)!;
             }
         }
     }
