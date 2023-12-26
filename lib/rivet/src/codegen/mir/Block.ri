@@ -2,8 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/traits;
-import std/strings;
+import std/{ traits, strings };
 
 #[boxed]
 pub struct Block < traits.Stringable {

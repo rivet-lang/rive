@@ -2,10 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/traits;
-import std/console;
-import std/process;
-import std/console/styles;
+import std/{ traits, console, process, console/styles };
 
 pub const LF: uint8 := 10;
 pub const CR: uint8 := 13;

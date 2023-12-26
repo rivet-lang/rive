@@ -2,11 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/env;
-import std/sys;
-import std/flag;
-import std/process;
-import std/fs.Path;
+import std/{ env, sys, flag, process, fs.Path };
 
 import ../utils;
 

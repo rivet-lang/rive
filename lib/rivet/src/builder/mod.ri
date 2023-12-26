@@ -2,10 +2,9 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/traits;
-import std/console;
-import std/process;
-import std/fs.{ Path, Directory };
+import std/{ 
+    traits, console, process, fs.{ Path, Directory } 
+};
 
 import ../ast;
 import ../utils;
