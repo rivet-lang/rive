@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 // This module implements a FNV-1a hash.
@@ -14,7 +14,7 @@ const FNV64_OFFSET_BASIS: uint64 := 14695981039346656037;
 /// Returns a fnv1a hash of the memory block, described by the dynamic
 /// byte array `data`.
 #[inline]
-pub func sum32(data: []uint8) -> uint32 {
+pub func sum32(data: [:]uint8) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
     mut i: uint := 0;
     while i < data.len : i += 1 {
@@ -49,7 +49,7 @@ pub func sum32_string(data: string) -> uint32 {
 /// Returns a fnv1a hash of the memory block, described by the dynamic
 /// byte array `data`.
 #[inline]
-pub func sum64(data: []uint8) -> uint64 {
+pub func sum64(data: [:]uint8) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
     mut i: uint := 0;
     while i < data.len : i += 1 {
