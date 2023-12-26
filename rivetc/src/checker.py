@@ -1726,9 +1726,9 @@ class Checker:
         if expr.has_spread_expr:
             spread_expr_t = self.check_expr(expr.spread_expr)
             spread_expr_sym = spread_expr_t.symbol()
-            if spread_expr_sym.kind != TypeKind.DynArray:
+            if spread_expr_sym.kind not in (TypeKind.DynArray, TypeKind.Slice, TypeKind.Array):
                 report.error(
-                    "spread operator can only be used with dynamic arrays",
+                    "spread operator can only be used with arrays, dynamic arrays and slices",
                     expr.spread_expr.pos
                 )
             elif not isinstance(info.args[-1].typ, type.Variadic):
@@ -1736,11 +1736,10 @@ class Checker:
                     "unexpected spread expression", expr.spread_expr.pos
                 )
             else:
-                last_arg_typ = info.args[-1].typ
-                dyn_array_t = type.DynArray(last_arg_typ, False)
-                dyn_array_t.sym = last_arg_typ.sym
+                spread_t = type.Variadic(spread_expr_t.sym.info.elem_typ)
+                variadic_t = info.args[-1].typ
                 try:
-                    self.check_types(spread_expr_t, dyn_array_t)
+                    self.check_types(spread_t, variadic_t)
                 except utils.CompilerError as e:
                     report.error(e.args[0], expr.spread_expr.pos)
         return expr.typ

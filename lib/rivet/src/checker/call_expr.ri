@@ -490,15 +490,16 @@ extend Checker {
         if call_expr.has_spread_expr {
             spread_expr_t := self.check_expr(call_expr.spread_expr);
             spread_expr_sym := spread_expr_t.symbol()?;
-            if spread_expr_sym.info is .DynArray {
+            if spread_expr_sym.info is .DynArray || spread_expr_sym.info is .Array
+                || spread_expr_sym.info is .Slice {
                 last_arg_type := func_.args[func_.args.len - 1].type;
-                dyn_array_t := ast.Type.Basic(last_arg_type.symbol()?);
-                self.check_types(spread_expr_t, dyn_array_t) catch |err| {
+                spread_t := ast.Type.Variadic(spread_expr_sym.info.elem_type()?);
+                self.check_types(spread_expr_t, spread_t) catch |err| {
                     report.error(err.to_string(), call_expr.spread_expr.position());
                 };
             } else {
                 report.error(
-                    "spread operator can only be used with dynamic arrays",
+                    "spread operator can only be used with arrays, dynamic arrays and slices",
                     call_expr.spread_expr.position()
                 );
             }

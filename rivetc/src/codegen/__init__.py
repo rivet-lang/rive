@@ -663,6 +663,27 @@ class Codegen:
             self.cur_func.inline_alloca(tmp_t, tmp, value)
             res_expr = ir.Ident(tmp_t, tmp)
 
+        if isinstance(expected_typ_, type.Variadic):
+            expr_sym = expr.typ.symbol()
+            if expr_sym.kind == TypeKind.DynArray:
+                res_expr = ir.Inst(ir.InstKind.Call, [
+                    ir.Name("_R4core8DynArray5sliceM"),
+                    ir.IntLit(ir.UINT_T, "0"),
+                    ir.Selector(ir.UINT_T, res_expr, ir.Name("len"))
+                ])
+            elif expr_sym.kind == TypeKind.Array:
+                elem_size, _ = self.comp.type_size(expr_sym.info.elem_typ)
+                res_expr = ir.Inst(ir.InstKind.Call, [
+                    ir.Name("_R4core11array_sliceF"),
+                    res_expr,
+                    ir.IntLit(ir.UINT_T, str(elem_size)),
+                    ir.IntLit(ir.UINT_T, str(expr_sym.info.size)),
+                    ir.IntLit(ir.UINT_T, "0"),
+                    ir.IntLit(ir.UINT_T, str(expr_sym.info.size))
+                ])
+            elif expr_sym.kind == TypeKind.Slice:
+                pass # valid
+
         # wrap option value
         if isinstance(expected_typ_,
                       type.Option) and (not expected_typ_.is_pointer()):
@@ -1255,7 +1276,7 @@ class Codegen:
             if expr.has_spread_expr:
                 args.append(
                     self.gen_expr_with_cast(
-                        expr.spread_expr.typ, expr.spread_expr
+                        expr.sym.args[-1].typ, expr.spread_expr
                     )
                 )
             elif expr.sym.is_variadic:
