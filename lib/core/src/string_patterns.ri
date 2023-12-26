@@ -307,50 +307,33 @@ extend string {
         return self.trim(" \n\t\v\f\r");
     }
 
-    /// Replaces all occurences of `rep` with the string passed in `with_`.
-    pub func replace(self, rep: Self, with: Self) -> Self {
-        if self.len == 0 || rep.len == 0 || rep.len > self.len {
-            return self;
-        } else if !self.contains(rep) {
+    /// Replaces all occurences of `old_value` with the string passed in `new_value`.
+    pub func replace(self, old_value: Self, new_value: Self) -> Self {
+        if self.len == 0 || new_value.len == 0 || new_value.len > self.len {
             return self;
         }
-        mut idx: uint := 0;
-        mut idxs := []uint();
-        while {
-            idx = self.index_after_of(rep, idx) ?? break;
-            idxs.push(idx);
-            idx += rep.len;
-        }
-        if idxs.len == 0 {
-            return self;
-        }
-        new_len := self.len + idxs.len * (with.len - rep.len);
-        b := unsafe { @as([&]mut uint8, mem_alloc(new_len)) };
-        (mut b_i: uint, mut s_idx: uint) := (0, 0);
-        unsafe {
-            for rep_pos in idxs {
-                mut i: uint := s_idx;
-                while i < rep_pos : i += 1 {
-                    b[b_i] = self.ptr[i];
-                    b_i += 1;
+        if mut occurrence_idx := self.index_of(old_value) {
+            search_step := old_value.len;
+            new_len_hint := self.len - old_value.len + new_value.len;
+            mut sb := StringBuilder.new(new_len_hint);
+            mut i: uint := 0;
+            while {
+                sb.write_string(self.substr(i, occurrence_idx));
+                sb.write_string(new_value);
+                i = occurrence_idx + old_value.len;
+                if occurrence_idx >= self.len {
+                    break;
                 }
-                s_idx = rep_pos + rep.len;
-                i = 0;
-                while i < with.len : i += 1 {
-                    b[b_i] = with.ptr[i];
-                    b_i += 1;
+                if oc_i := self.index_after_of(old_value, occurrence_idx + search_step) {
+                    occurrence_idx = oc_i;
+                } else {
+                    break;
                 }
             }
-            if s_idx < self.len {
-                mut i: uint := s_idx;
-                while i < self.len : i += 1 {
-                    b[b_i] = self.ptr[i];
-                    b_i += 1;
-                }
-            }
-            b[new_len] = 0;
+            sb.write_string(self.substr(i, self.len));
+            return sb.to_string();
         }
-        return unsafe { Self.from_raw_with_len(b, new_len) };
+        return self;
     }
 
     /// Splits the string based on the passed `delim` substring. It returns the
