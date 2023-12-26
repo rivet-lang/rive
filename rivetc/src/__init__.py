@@ -96,23 +96,30 @@ class Compiler:
     def import_modules_from_decls(self, sf, decls):
         for decl in decls:
             if isinstance(decl, ast.ImportDecl):
-                mod = self.load_module_files(
-                    decl.path, decl.alias, sf.file, decl.pos
-                )
-                if mod.found:
-                    if mod_sym_ := self.universe.find(mod.full_name):
-                        mod_sym = mod_sym_ # module already imported
-                    else:
-                        mod_sym = sym.Mod(False, mod.full_name)
-                        self.universe.add(mod_sym)
-                        self.parsed_files += parser.Parser(self).parse_mod(
-                            mod_sym, mod.files
-                        )
-                    decl.alias = mod.alias
-                    decl.mod_sym = mod_sym
+                self.import_module(sf, decl)
             elif isinstance(decl, ast.ComptimeIf):
                 ct_decls = self.evalue_comptime_if(decl)
                 self.import_modules_from_decls(sf, ct_decls)
+    
+    def import_module(self, sf, decl):
+        if len(decl.subimports) > 0:
+            for subimport in decl.subimports:
+                self.import_module(sf, subimport)
+            return
+        mod = self.load_module_files(
+            decl.path, decl.alias, sf.file, decl.pos
+        )
+        if mod.found:
+            if mod_sym_ := self.universe.find(mod.full_name):
+                mod_sym = mod_sym_ # module already imported
+            else:
+                mod_sym = sym.Mod(False, mod.full_name)
+                self.universe.add(mod_sym)
+                self.parsed_files += parser.Parser(self).parse_mod(
+                    mod_sym, mod.files
+                )
+            decl.alias = mod.alias
+            decl.mod_sym = mod_sym
 
     def resolve_deps(self):
         g = self.import_graph()
