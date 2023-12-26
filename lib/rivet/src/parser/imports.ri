@@ -1,0 +1,130 @@
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
+// file.
+
+import std/strings;
+
+import ../ast;
+import ../token;
+import ../report;
+
+extend Parser {
+    func parse_import_decl(mut self, attributes: ast.Attributes, is_public: bool, mut pos: token.Pos) -> ast.Decl {
+        mut has_custom_alias := false;
+        mut mod_path_pos := self.tok.pos;
+        mod_path := self.parse_import_path();
+        mod_path_pos += self.prev_tok.pos;
+        mut import_list := []ast.ImportListInfo();
+        mut glob := false;
+        if self.accept(.Dot) {
+            if self.accept(.Lbrace) {
+                mut lbrace_pos := self.prev_tok.pos;
+                while {
+                    info_pos := self.tok.pos;
+                    mut info_has_custom_alias := false;
+                    match {
+                        self.accept(.KwSelf) -> {
+                            name := "self";
+                            info_alias := if self.accept(.KwAs) {
+                                info_has_custom_alias = true;
+                                self.parse_name()
+                            } else {
+                                name
+                            };
+                            import_list.push(
+                                ast.ImportListInfo(
+                                    name, info_alias, info_has_custom_alias, info_pos
+                                )
+                            );
+                        },
+                        else -> {
+                            name := self.parse_name();
+                            info_alias := if self.accept(.KwAs) {
+                                info_has_custom_alias = true;
+                                self.parse_name()
+                            } else {
+                                name
+                            };
+                            import_list.push(
+                                ast.ImportListInfo(
+                                    name, info_alias, info_has_custom_alias, info_pos
+                                )
+                            );
+                        }
+                    }
+                    if !self.accept(.Comma) {
+                        break;
+                    }
+                }
+                lbrace_pos += self.tok.pos;
+                self.expect(.Rbrace);
+                if import_list.len == 1 {
+                    mut warn := report.warn_builder("unnecessary use of braces", lbrace_pos);
+                    warn.add_help("consider removing those braces");
+                    warn.emit();
+                }
+            } else if self.tok.kind == .Name {
+                info_pos := self.tok.pos;
+                name := self.parse_name();
+                mut info_has_custom_alias := false;
+                info_alias := if self.accept(.KwAs) {
+                    info_has_custom_alias = true;
+                    self.parse_name()
+                } else {
+                    name
+                };
+                import_list.push(
+                    ast.ImportListInfo(
+                        name, info_alias, info_has_custom_alias, info_pos
+                    )
+                );
+            } else if self.accept(.Mul) {
+                glob = true;
+            } else {
+                mut err := report.error_builder(
+                    "invalid syntax for unqualified import", mod_path_pos
+                );
+                err.add_note("expected a single name, a list of names or `*`");
+                err.emit();
+            }
+        }
+        alias_name := if import_list.is_empty() && self.accept(.KwAs) {
+            has_custom_alias = true;
+            self.parse_name()
+        } else {
+            ""
+        };
+        pos += self.prev_tok.pos;
+        self.expect(.Semicolon);
+        return .Import(
+            attributes: attributes,
+            is_public: is_public,
+            path: mod_path,
+            path_pos: mod_path_pos,
+            alias_name: alias_name,
+            has_custom_alias: has_custom_alias,
+            glob: glob,
+            import_list: import_list,
+            pos: pos
+        );
+    }
+
+    func parse_import_path(mut self) -> string {
+        mut sb := strings.Builder.new();
+        if self.accept(.Dot) {
+            sb.write_string("./");
+            self.expect(.Div);
+        } else {
+            while self.accept(.DotDot) {
+                sb.write_string("../");
+                self.expect(.Div);
+            }
+        }
+        sb.write_string(self.parse_name());
+        while self.accept(.Div) {
+            sb.write_string("/");
+            sb.write_string(self.parse_name());
+        }
+        return sb.to_string();
+    }
+}
