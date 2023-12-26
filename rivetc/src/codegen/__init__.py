@@ -2021,7 +2021,7 @@ class Codegen:
             if expr.op.is_overloadable_op() and (
                 typ_sym.kind in (
                     TypeKind.Array, TypeKind.DynArray, TypeKind.String,
-                    TypeKind.Struct
+                    TypeKind.Struct, TypeKind.Slice
                 ) or (typ_sym.kind == TypeKind.Enum and typ_sym.info.is_tagged)
             ) and not isinstance(expr_left_typ, type.Ptr):
                 if typ_sym.kind == TypeKind.Array:

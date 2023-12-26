@@ -27,6 +27,11 @@ struct Slice {
     }
 
     #[inline]
+    func to_dynamic_array(&self) -> DynArray {
+        return unsafe { DynArray.from_array(self.ptr, self.elem_size, self.len) };
+    }
+
+    #[inline]
     func is_empty(&self) -> bool {
         return self.len == 0;
     }
@@ -50,11 +55,6 @@ struct Slice {
     #[inline]
     func slice_from(self, start: uint) -> Self {
         return self.slice(start, self.len);
-    }
-
-    #[inline]
-    func to_dynamic_array(&self) -> DynArray {
-        return unsafe { DynArray.from_array(self.ptr, self.elem_size, self.len) };
     }
 
     func ==(&self, rhs: &Self) -> bool {
