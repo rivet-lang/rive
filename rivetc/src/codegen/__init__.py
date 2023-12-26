@@ -37,6 +37,7 @@ class Codegen:
         self.inside_lhs_assign = False
 
         self.generated_string_literals = {}
+        self.generated_tuple_types = []
         self.generated_opt_res_types = []
         self.generated_array_returns = []
         self.generated_tests = []
@@ -3065,12 +3066,14 @@ class Codegen:
         )
         for ts in type_symbols:
             if ts.kind == TypeKind.Tuple:
+                mangled_name = cg_utils.mangle_symbol(ts)
+                if mangled_name in self.generated_tuple_types:
+                    continue
+                self.generated_tuple_types.append(mangled_name)
                 fields = []
                 for i, f in enumerate(ts.info.types):
                     fields.append(ir.Field(f"f{i}", self.ir_type(f)))
-                self.out_rir.types.append(
-                    ir.Struct(False, cg_utils.mangle_symbol(ts), fields)
-                )
+                self.out_rir.types.append(ir.Struct(False, mangled_name, fields))
             elif ts.kind == TypeKind.Enum:
                 # TODO: in the self-hosted compiler calculate the enum value here
                 # not in register nor resolver.
