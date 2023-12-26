@@ -224,59 +224,7 @@ class Parser:
                 report.error("invalid comptime construction", self.tok.pos)
                 return
         elif self.accept(Kind.KwImport):
-            path = self.parse_import_path()
-            alias = ""
-            import_list = []
-            glob = False
-            if self.accept(Kind.Dot):
-                if self.accept(Kind.Lbrace):
-                    lbrace_pos = self.prev_tok.pos
-                    while True:
-                        info_pos = self.tok.pos
-                        if self.accept(Kind.KwSelf):
-                            name = "self"
-                            info_alias = name
-                            if self.accept(Kind.KwAs):
-                                info_alias = self.parse_name()
-                            import_list.append(
-                                ast.ImportListInfo(name, info_alias, info_pos)
-                            )
-                        else:
-                            name = self.parse_name()
-                            info_alias = name
-                            if self.accept(Kind.KwAs):
-                                info_alias = self.parse_name()
-                            import_list.append(
-                                ast.ImportListInfo(name, info_alias, info_pos)
-                            )
-                        if not self.accept(Kind.Comma):
-                            break
-                    self.expect(Kind.Rbrace)
-                    if len(import_list) == 1:
-                        report.warn("unnecessary use of braces", lbrace_pos)
-                        report.note("consider removing those braces")
-                elif self.tok.kind == Kind.Name:
-                    info_pos = self.tok.pos
-                    name = self.parse_name()
-                    info_alias = name
-                    if self.accept(Kind.KwAs):
-                        info_alias = self.parse_name()
-                    import_list.append(
-                        ast.ImportListInfo(name, info_alias, info_pos)
-                    )
-                elif self.accept(Kind.Mul):
-                    glob = True
-                else:
-                    report.error("invalid syntax for unqualified import", pos)
-                    report.note(
-                        "expected a single name, a list of names or `*`"
-                    )
-            if len(import_list) == 0 and self.accept(Kind.KwAs):
-                alias = self.parse_name()
-            self.expect(Kind.Semicolon)
-            return ast.ImportDecl(
-                attributes, is_public, path, alias, glob, import_list, pos
-            )
+            return self.parse_import_decl(attributes, is_public, pos)
         elif self.accept(Kind.KwExtern):
             self.inside_extern = True
             # extern function or var
@@ -495,6 +443,81 @@ class Parser:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()
         return ast.EmptyDecl()
+    
+    def parse_import_decl(self, attributes, is_public, pos):
+        return self.parse_import("", attributes, is_public, pos)
+
+    def parse_import(self, prev_mod_path, attributes, is_public, pos):
+        mod_path_pos = self.tok.pos
+        path = self.parse_import_path()
+        if len(prev_mod_path) > 0:
+            path = f"{prev_mod_path}/{path}"
+        subimports = []
+        if self.tok.kind == Kind.Div and self.peek_tok.kind == Kind.Lbrace:
+            self.advance(2)
+            while True:
+                subimport_pos = self.tok.pos
+                subimports.append(self.parse_import(path, attributes, is_public, subimport_pos))
+                if not self.accept(Kind.Comma):
+                    break
+            self.expect(Kind.Rbrace)
+        glob, import_list = self.parse_import_list(mod_path_pos)
+        alias = ""
+        if len(subimports) == 0 and len(import_list) == 0 and self.accept(Kind.KwAs):
+            alias = self.parse_name()
+        if len(prev_mod_path) == 0:
+            self.expect(Kind.Semicolon)
+        return ast.ImportDecl(
+            attributes, is_public, path, alias, glob, subimports, import_list, pos
+        )
+    
+    def parse_import_list(self, mod_path_pos):
+        import_list = []
+        glob = False
+        if self.accept(Kind.Dot):
+            if self.accept(Kind.Lbrace):
+                lbrace_pos = self.prev_tok.pos
+                while True:
+                    info_pos = self.tok.pos
+                    if self.accept(Kind.KwSelf):
+                        name = "self"
+                        info_alias = name
+                        if self.accept(Kind.KwAs):
+                            info_alias = self.parse_name()
+                        import_list.append(
+                            ast.ImportListInfo(name, info_alias, info_pos)
+                        )
+                    else:
+                        name = self.parse_name()
+                        info_alias = name
+                        if self.accept(Kind.KwAs):
+                            info_alias = self.parse_name()
+                        import_list.append(
+                            ast.ImportListInfo(name, info_alias, info_pos)
+                        )
+                    if not self.accept(Kind.Comma):
+                        break
+                self.expect(Kind.Rbrace)
+                if len(import_list) == 1:
+                    report.warn("unnecessary use of braces", lbrace_pos)
+                    report.note("consider removing those braces")
+            elif self.tok.kind == Kind.Name:
+                info_pos = self.tok.pos
+                name = self.parse_name()
+                info_alias = name
+                if self.accept(Kind.KwAs):
+                    info_alias = self.parse_name()
+                import_list.append(
+                    ast.ImportListInfo(name, info_alias, info_pos)
+                )
+            elif self.accept(Kind.Mul):
+                glob = True
+            else:
+                report.error("invalid syntax for unqualified import", pos)
+                report.note(
+                    "expected a single name, a list of names or `*`"
+                )
+        return glob, import_list
 
     def parse_import_path(self):
         res = ""
@@ -506,7 +529,8 @@ class Parser:
                 res += "../"
                 self.expect(Kind.Div)
         res += self.parse_name()
-        while self.accept(Kind.Div):
+        while self.tok.kind == Kind.Div and self.peek_tok.kind != Kind.Lbrace:
+            self.next()
             res += "/" + self.parse_name()
         return res
 
