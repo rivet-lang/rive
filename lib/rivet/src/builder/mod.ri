@@ -171,20 +171,20 @@ pub struct Builder {
     }
 
     func import_module(mut self, sf: ast.SourceFile, mut import_decl: ast.ImportDecl) -> ! {
-        if import_decl.subimports.is_empty() {
-            if self.env.universe.scope.exists(import_decl.info.full_name) {
-                return;
-            }
-            import_decl.info = self.load_module(
-                import_decl.path, import_decl.alias_name, sf.path,
-                import_decl.path_pos
-            )!;
-            import_decl.alias_name = import_decl.info.alias_name;
-        } else {
+        if !import_decl.subimports.is_empty() {
             for mut subimport in import_decl.subimports {
                 self.import_module(sf, subimport)!;
             }
+            return;
         }
+        if self.env.universe.scope.exists(import_decl.info.full_name) {
+            return;
+        }
+        import_decl.info = self.load_module(
+            import_decl.path, import_decl.alias_name, sf.path,
+            import_decl.path_pos
+        )!;
+        import_decl.alias_name = import_decl.info.alias_name;
     }
 
     func load_module(

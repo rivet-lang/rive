@@ -203,7 +203,6 @@ pub struct ImportDecl {
     pub pos: token.Pos;
 }
 
-#[boxed]
 pub struct ImportedMod {
     pub name: string;
     pub full_name: string;
