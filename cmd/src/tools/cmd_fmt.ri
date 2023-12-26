@@ -6,11 +6,7 @@ import std/flag;
 import std/console;
 import std/fs.Directory;
 
-import rivet/ast;
-import rivet/fmt;
-import rivet/prefs;
-import rivet/utils;
-import rivet/parser;
+import rivet/{ ast, fmt, prefs, utils, parser };
 
 var fmt_desc := "Formats the given Rivet source files or recursively formats all files in the
 directory, then prints their formatted source to stdout.";

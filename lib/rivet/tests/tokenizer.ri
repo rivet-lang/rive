@@ -2,10 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import rivet/prefs;
-import rivet/token;
-import rivet/tokenizer;
-import rivet/ast.Env;
+import rivet/{ prefs, token, tokenizer, ast.Env };
 
 var prefs_ := prefs.Prefs();
 
