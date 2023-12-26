@@ -12,7 +12,7 @@ extend Resolver {
             old_self_sym := self.self_sym;
             old_self_sym_is_set := self.self_sym_is_set;
             match decl {
-                .Empty(empty_pos) -> report.error("BUG: empty declaration found", empty_pos),
+                // .Empty(empty_pos) -> report.error("BUG: empty declaration found", empty_pos),
                 .ComptimeIf(mut comptime_if) -> {
                     mut ct_decls := ast.nodes_to_decls(
                         self.env.evalue_comptime_if(comptime_if)
