@@ -494,7 +494,7 @@ extend Checker {
                 || spread_expr_sym.info is .Slice {
                 last_arg_type := func_.args[func_.args.len - 1].type;
                 spread_t := ast.Type.Variadic(spread_expr_sym.info.elem_type()?);
-                self.check_types(spread_expr_t, spread_t) catch |err| {
+                self.check_types(spread_t, last_arg_type) catch |err| {
                     report.error(err.to_string(), call_expr.spread_expr.position());
                 };
             } else {
