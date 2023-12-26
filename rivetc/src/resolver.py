@@ -487,7 +487,7 @@ class Resolver:
                 elem_sym = typ.typ.symbol()
                 if elem_sym.kind == type.TypeKind.Trait:
                     elem_sym.info.has_objects = True
-                typ.resolve(self.comp.universe.add_or_get_dyn_array(typ.typ))
+                typ.resolve(self.comp.universe.add_or_get_slice(typ.typ))
                 return True
         elif isinstance(typ, type.Array):
             if self.resolve_type(typ.typ):

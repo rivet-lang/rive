@@ -7,6 +7,16 @@ struct Slice {
     elem_size: uint;
     len: uint;
 
+    #[inline]
+    func new(ptr: rawptr, elem_size: uint) -> Self {
+        return Slice(ptr, elem_size);
+    }
+
+    #[unsafe; inline]
+    func from_array(arr: rawptr, elem_size: uint, len: uint) -> Self {
+        return Self(arr, elem_size, len);
+    }
+
     func get(&self, idx: uint) -> rawptr {
         if idx >= self.len {
             runtime_error("slice index out of range (index: {}, len: {})", idx, self.len);

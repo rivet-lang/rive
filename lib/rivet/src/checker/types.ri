@@ -118,15 +118,15 @@ extend Checker {
         got_sym := got.symbol() ?? return false;
 
         if expected is .Variadic {
-            vec_info := @as(ast.TypeInfo.DynArray, expected_sym.info);
+            slice_info := @as(ast.TypeInfo.Slice, expected_sym.info);
             if got is .Variadic(variadic) {
-                return vec_info.elem_type == variadic.inner;
+                return slice_info.elem_type == variadic.inner;
             }
-            elem_sym := vec_info.elem_type.symbol()?;
+            elem_sym := slice_info.elem_type.symbol()?;
             if got_sym.info is .Trait(trait_info) && elem_sym in trait_info.bases {
                 return true;
             }
-            return self.check_compatible_types(got, vec_info.elem_type);
+            return self.check_compatible_types(got, slice_info.elem_type);
         }
 
         if expected is .Func && got is .Func {

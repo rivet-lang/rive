@@ -16,7 +16,7 @@ extend Resolver {
                 if elem_sym.info is .Trait(mut trait_info) {
                     trait_info.has_objects = true;
                 }
-                variadic.sym = self.env.universe.add_or_get_dyn_array(variadic.inner, false);
+                variadic.sym = self.env.universe.add_or_get_slice(variadic.inner, false);
                 true
             } else {
                 false

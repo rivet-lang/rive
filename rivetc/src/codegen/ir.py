@@ -76,7 +76,7 @@ class Pointer:
         return str(self) == str(other)
 
 VOID_T = Type("void")
-VOID_PTR_T = VOID_T.ptr()
+RAWPTR_T = VOID_T.ptr()
 BOOL_T = Type("bool")
 RUNE_T = Type("rune")
 C_INT_T = Type("int")

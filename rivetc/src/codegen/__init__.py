@@ -434,7 +434,7 @@ class Codegen:
                     ir.InstKind.GetElementPtr, [iterable, idx], value_t_ir
                 )
             else:
-                value = ir.Selector(ir.VOID_PTR_T, iterable, ir.Name("ptr"))
+                value = ir.Selector(ir.RAWPTR_T, iterable, ir.Name("ptr"))
                 value = ir.Inst(
                     ir.InstKind.Add, [
                         ir.Inst(
@@ -592,12 +592,12 @@ class Codegen:
 
         if isinstance(
             res_expr.typ, ir.Pointer
-        ) and res_expr.typ != ir.VOID_PTR_T:
+        ) and res_expr.typ != ir.RAWPTR_T:
             if isinstance(expected_typ, ir.Pointer):
                 if not expected_typ.is_managed:
                     nr_level_expected = expected_typ.nr_level()
                     nr_level = res_expr.typ.nr_level()
-                    if nr_level > nr_level_expected and expected_typ != ir.VOID_PTR_T:
+                    if nr_level > nr_level_expected and expected_typ != ir.RAWPTR_T:
                         while nr_level > nr_level_expected:
                             if isinstance(
                                 res_expr.typ, ir.Pointer
@@ -622,7 +622,7 @@ class Codegen:
         elif isinstance(
             expected_typ, ir.Pointer
         ) and not expected_typ.is_managed and res_expr.typ not in (
-            ir.VOID_T, ir.VOID_PTR_T
+            ir.VOID_T, ir.RAWPTR_T
         ):
             nr_level_expected = expected_typ.nr_level()
             nr_level = res_expr.typ.nr_level(
@@ -682,7 +682,7 @@ class Codegen:
         elif isinstance(expr, ast.ParExpr):
             return self.gen_expr(expr.expr)
         elif isinstance(expr, ast.NoneLiteral):
-            return ir.NoneLit(ir.VOID_PTR_T)
+            return ir.NoneLit(ir.RAWPTR_T)
         elif isinstance(expr, ast.BoolLiteral):
             return ir.IntLit(ir.BOOL_T, str(int(expr.lit)))
         elif isinstance(expr, ast.CharLiteral):
@@ -803,7 +803,7 @@ class Codegen:
                                     ir.InstKind.Call, [
                                         ir.Name("_R4core10trait_castF"),
                                         ir.Selector(
-                                            ir.VOID_PTR_T, res, ir.Name("obj")
+                                            ir.RAWPTR_T, res, ir.Name("obj")
                                         ),
                                         ir.Selector(
                                             ir.UINT_T, res, ir.Name("_idx_")
@@ -1162,7 +1162,7 @@ class Codegen:
                         )
                     args.append(
                         ir.Selector(
-                            ir.VOID_PTR_T,
+                            ir.RAWPTR_T,
                             ir.Inst(
                                 ir.InstKind.LoadPtr, [
                                     ir.Inst(
@@ -1186,7 +1186,7 @@ class Codegen:
                     if left_sym.kind == TypeKind.Trait and not expr.sym.has_body:
                         args.append(
                             ir.Selector(
-                                ir.VOID_PTR_T, self_expr, ir.Name("obj")
+                                ir.RAWPTR_T, self_expr, ir.Name("obj")
                             )
                         )
                     else:
@@ -1283,7 +1283,7 @@ class Codegen:
                             )
                         args.append(self.variadic_args(vargs, var_arg.typ.typ))
                     else:
-                        args.append(self.empty_dyn_array(var_arg.typ.symbol()))
+                        args.append(self.empty_slice(var_arg.typ.symbol()))
             if expr.sym.ret_typ == self.comp.never_t:
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True
@@ -1492,7 +1492,7 @@ class Codegen:
                         ir.Inst(
                             ir.InstKind.Cmp,
                             [ir.Name("=="), left,
-                             ir.NoneLit(ir.VOID_PTR_T)]
+                             ir.NoneLit(ir.RAWPTR_T)]
                         ), panic_l, exit_l
                     )
                     value = left
@@ -1744,7 +1744,7 @@ class Codegen:
                         op = "==" if expr.op == Kind.Eq else "!="
                         return ir.Inst(
                             ir.InstKind.Cmp,
-                            [op, left, ir.NoneLit(ir.VOID_PTR_T)], ir.BOOL_T
+                            [op, left, ir.NoneLit(ir.RAWPTR_T)], ir.BOOL_T
                         )
                     val = ir.Selector(ir.BOOL_T, left, ir.Name("is_none"))
                     if expr.op == Kind.Ne:
@@ -1762,7 +1762,7 @@ class Codegen:
                         cond = ir.Inst(
                             ir.InstKind.Cmp,
                             [ir.Name("=="), left,
-                             ir.NoneLit(ir.VOID_PTR_T)]
+                             ir.NoneLit(ir.RAWPTR_T)]
                         )
                     else:
                         cond = ir.Selector(ir.BOOL_T, left, ir.Name("is_none"))
@@ -1879,7 +1879,7 @@ class Codegen:
                         val = ir.Inst(
                             ir.InstKind.Cast, [
                                 ir.Selector(
-                                    ir.VOID_PTR_T, left, ir.Name("obj")
+                                    ir.RAWPTR_T, left, ir.Name("obj")
                                 ), var_t2
                             ]
                         )
@@ -2244,7 +2244,7 @@ class Codegen:
                                 val = ir.Inst(
                                     ir.InstKind.Cast, [
                                         ir.Selector(
-                                            ir.VOID_PTR_T, match_expr,
+                                            ir.RAWPTR_T, match_expr,
                                             ir.Name("obj")
                                         ), var_t
                                     ]
@@ -2591,7 +2591,7 @@ class Codegen:
         self.cur_func.add_call(
             "_R4core13runtime_errorF", [
                 self.gen_string_literal(utils.smart_quote(msg, False)),
-                self.empty_dyn_array(self.comp.universe["[]core.Stringable"])
+                self.empty_slice(self.comp.universe["[]core.Stringable"])
             ]
         )
 
@@ -2601,7 +2601,7 @@ class Codegen:
         elem_size, _ = self.comp.type_size(var_arg_typ_)
         return ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R4core8DynArray19from_array_no_allocF"),
+                ir.Name("_R4core5Slice10from_arrayF"),
                 ir.ArrayLit(self.ir_type(var_arg_typ_), vargs),
                 ir.IntLit(ir.UINT_T, str(elem_size)),
                 ir.IntLit(ir.UINT_T, str(len(vargs)))
@@ -2610,13 +2610,13 @@ class Codegen:
 
     def default_value(self, typ, custom_tmp = None):
         if isinstance(typ, (type.Ptr, type.Func)):
-            return ir.NoneLit(ir.VOID_PTR_T)
+            return ir.NoneLit(ir.RAWPTR_T)
         if isinstance(typ, type.Option):
             if typ.is_pointer():
-                return ir.NoneLit(ir.VOID_PTR_T)
+                return ir.NoneLit(ir.RAWPTR_T)
             return self.option_none(typ)
         if typ == self.comp.rune_t:
-            return ir.RuneLit("\\0")
+            return ir.RuneLit("0")
         elif typ in (
             self.comp.bool_t, self.comp.int8_t, self.comp.int16_t,
             self.comp.int32_t, self.comp.int64_t, self.comp.uint8_t,
@@ -2637,6 +2637,8 @@ class Codegen:
             return ir.ArrayLit(
                 self.ir_type(typ), [self.default_value(typ_sym.info.elem_typ)]
             )
+        elif typ_sym.kind == TypeKind.Slice:
+            return self.empty_slice(typ_sym)
         elif typ_sym.kind == TypeKind.DynArray:
             return self.empty_dyn_array(typ_sym)
         elif typ_sym.kind == TypeKind.Enum:
@@ -2671,7 +2673,7 @@ class Codegen:
         elif typ_sym.kind == TypeKind.Trait:
             if typ_sym.default_value:
                 return self.gen_expr_with_cast(typ, typ_sym.default_value)
-            return ir.NoneLit(ir.VOID_PTR_T)
+            return ir.NoneLit(ir.RAWPTR_T)
         return None
 
     def empty_dyn_array(self, typ_sym, cap = None):
@@ -2682,6 +2684,17 @@ class Codegen:
                 ir.Name("_R4core8DynArray3newF"),
                 ir.IntLit(ir.UINT_T, str(size)), cap
                 or ir.IntLit(ir.UINT_T, "0")
+            ]
+        )
+
+    def empty_slice(self, typ_sym):
+        elem_typ = typ_sym.info.elem_typ
+        _, _ = self.comp.type_size(elem_typ)
+        return ir.Inst(
+            ir.InstKind.Call, [
+                ir.Name("_R4core5Slice3newF"),
+                ir.Ident(ir.RAWPTR_T, "NULL"),
+                ir.IntLit(ir.UINT_T, "0")
             ]
         )
 
@@ -2779,14 +2792,14 @@ class Codegen:
                 ], ir.UINT_T
             )
             self.cur_func.store(
-                ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")),
-                ir.Selector(ir.VOID_PTR_T, value, ir.Name("obj"))
+                ir.Selector(ir.RAWPTR_T, tmp, ir.Name("obj")),
+                ir.Selector(ir.RAWPTR_T, value, ir.Name("obj"))
             )
         else:
             vtbl_idx_x = trait_sym.info.indexof(value_sym)
             index = ir.IntLit(ir.UINT_T, str(vtbl_idx_x))
             self.cur_func.store(
-                ir.Selector(ir.VOID_PTR_T, tmp, ir.Name("obj")), value
+                ir.Selector(ir.RAWPTR_T, tmp, ir.Name("obj")), value
             )
         self.cur_func.store(ir.Selector(ir.UINT_T, tmp, ir.Name("_id_")), index)
         self.cur_func.store(
@@ -2915,7 +2928,7 @@ class Codegen:
             cond = ir.Inst(
                 ir.InstKind.Cmp,
                 [ir.Name("!="), gexpr,
-                 ir.NoneLit(ir.VOID_PTR_T)]
+                 ir.NoneLit(ir.RAWPTR_T)]
             )
             self.cur_func.inline_alloca(self.ir_type(expr.typ), var_name, gexpr)
         else:
@@ -2978,7 +2991,7 @@ class Codegen:
         elif isinstance(typ, type.Func):
             args = []
             if gen_self_arg:
-                args.append(ir.VOID_PTR_T)
+                args.append(ir.RAWPTR_T)
             for arg in typ.args:
                 arg_t = self.ir_type(arg.typ)
                 if arg.is_mut and not isinstance(arg_t, ir.Pointer):
@@ -3006,7 +3019,7 @@ class Codegen:
         elif typ_sym.kind == TypeKind.Never:
             return ir.VOID_T
         elif typ_sym.kind == TypeKind.None_:
-            return ir.VOID_PTR_T
+            return ir.RAWPTR_T
         elif typ_sym.kind == TypeKind.Enum:
             if typ_sym.info.is_tagged:
                 typ = ir.Type(cg_utils.mangle_symbol(typ_sym))
@@ -3066,7 +3079,7 @@ class Codegen:
                     ir.Field("_rc_", ir.UINT_T),
                     ir.Field("_idx_", ir.UINT_T),
                     ir.Field("_id_", ir.UINT_T),
-                    ir.Field("obj", ir.VOID_PTR_T),
+                    ir.Field("obj", ir.RAWPTR_T),
                 ]
                 for f in ts.fields:
                     f_typ = self.ir_type(f.typ)
