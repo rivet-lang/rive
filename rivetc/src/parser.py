@@ -210,20 +210,20 @@ class Parser:
         return decls
 
     def parse_decl(self):
+        doc_comment = self.parse_doc_comment()
+        is_mod_attr = self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
+        attributes = self.parse_attributes(is_mod_attr)
+        if is_mod_attr:
+            return self.parse_decl()
+        is_public = self.is_public()
+        pos = self.tok.pos
         if self.accept(Kind.Dollar):
             if self.tok.kind == Kind.KwIf:
                 return self.parse_comptime_if(0)
             else:
                 report.error("invalid comptime construction", self.tok.pos)
                 return
-        doc_comment = self.parse_doc_comment()
-        is_mod_attr = self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
-        attributes = self.parse_attributes(is_mod_attr)
-        if is_mod_attr:
-            return ast.EmptyDecl()
-        is_public = self.is_public()
-        pos = self.tok.pos
-        if self.accept(Kind.KwImport):
+        elif self.accept(Kind.KwImport):
             path = self.parse_import_path()
             alias = ""
             import_list = []
