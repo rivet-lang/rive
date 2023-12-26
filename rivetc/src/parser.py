@@ -214,7 +214,7 @@ class Parser:
         is_mod_attr = self.tok.kind == Kind.Hash and self.peek_tok.kind == Kind.Bang
         attributes = self.parse_attributes(is_mod_attr)
         if is_mod_attr:
-            return ast.EmptyDecl(self.tok.pos)
+            return ast.EmptyDecl()
         is_public = self.is_public()
         pos = self.tok.pos
         if self.accept(Kind.Dollar):
