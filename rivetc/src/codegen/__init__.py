@@ -1688,10 +1688,13 @@ class Codegen:
             elif s.kind in (TypeKind.DynArray, TypeKind.Slice):
                 method_name = "_R4core5Slice3getM" if s.kind == TypeKind.Slice else "_R4core8DynArray3getM"
                 expr_typ_ir2 = expr_typ_ir.ptr()
-                if s.kind == TypeKind.Slice and not isinstance(
-                    left.typ, type.Ptr
-                ):
-                    left = ir.Inst(ir.InstKind.GetPtr, [left], left.typ.ptr())
+                if s.kind == TypeKind.Slice:
+                    if not isinstance(
+                        left.typ, type.Ptr
+                    ):
+                        left = ir.Inst(ir.InstKind.GetPtr, [left], left.typ.ptr())
+                    if expr.is_ref:
+                        expr_typ_ir = expr_typ_ir.ptr()
                 value = ir.Inst(
                     ir.InstKind.Cast, [
                         ir.Inst(

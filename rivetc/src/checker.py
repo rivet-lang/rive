@@ -1884,6 +1884,8 @@ class Checker:
         if self.sym.is_core_mod():
             if exp_sym.kind == TypeKind.DynArray and got_sym == self.comp.dyn_array_sym:
                 return True
+            if exp_sym.kind == TypeKind.Slice and got_sym.name == "Slice":
+                return True
 
         return False
 

@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 const MAX_ONE_B: uint32 := 0x80;
@@ -125,7 +125,7 @@ pub struct TooManyBytesError < Throwable {
 
 // convert array of utf8 bytes to single utf32 value will error if more than
 // 4 bytes are submitted
-func utf8_to_utf32(bytes: []uint8) -> !rune {
+func utf8_to_utf32(bytes: [:]uint8) -> !rune {
     if bytes.len == 0 {
         return 0;
     }

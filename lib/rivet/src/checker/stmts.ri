@@ -49,7 +49,8 @@ extend Checker {
 
         iterable_t := self.check_expr(for_stmt.iterable);
         iterable_sym := iterable_t.symbol()?;
-        if iterable_sym.info is .Array || iterable_sym.info is .DynArray {
+        if iterable_sym.info is .Array || iterable_sym.info is .DynArray
+            || iterable_sym.info is .Slice {
             mut elem_type := self.env.comptime_number_to_type(
                 iterable_sym.info.elem_type()?
             );

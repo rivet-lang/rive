@@ -158,7 +158,7 @@ pub struct Module < Sym {
         mut type_sym := TypeSym(
             is_public: true,
             name: unique_name,
-            info: .DynArray(elem_type, is_mut),
+            info: .Slice(elem_type, is_mut),
             fields: +[
                 Field(
                     name: "len", is_public: true,

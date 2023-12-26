@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import c/libc;
@@ -48,7 +48,7 @@ pub struct string < Stringable, Hashable, Throwable {
 
     /// Returns a string with the bytes stored in `bytes`. If the length of
     /// `bytes` is 0, an empty string is returned instead.
-    pub func from_bytes(bytes: []uint8) -> Self {
+    pub func from_bytes(bytes: [:]uint8) -> Self {
         if bytes.len == 0 {
             return empty_string;
         }
@@ -497,11 +497,9 @@ pub struct string < Stringable, Hashable, Throwable {
     }
 
     #[inline]
-    pub func as_bytes(self) -> []uint8 {
+    pub func as_bytes(self) -> [:]uint8 {
         return unsafe {
-            DynArray.from_array_no_alloc(
-                @as(&mut uint8, self.ptr), @size_of(uint8), self.len
-            )
+            Slice(@as(&mut uint8, self.ptr), @size_of(uint8), self.len)
         };
     }
 

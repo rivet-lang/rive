@@ -185,13 +185,12 @@ extend Checker {
                 }
                 return true;
             },
-            else -> {}
-        }
-
-        mod_sym := self.sym.module()?;
-        if mod_sym.is_core() {
-            if expected_sym.info is .DynArray && got_sym == self.env.dyn_array_sym {
-                return true;
+            else -> if mod_sym := self.sym.module(); mod_sym.is_core() {
+                if expected_sym.info is .DynArray && got_sym == self.env.dyn_array_sym {
+                    return true;
+                } else if expected_sym.info is .Slice && got_sym.name == "Slice" {
+                    return true;
+                }
             }
         }
 

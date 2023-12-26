@@ -147,6 +147,7 @@ pub enum TypeInfo < traits.Stringable {
     #[inline]
     pub func elem_type(self) -> ?Type {
         return match self {
+            .Slice(slice) -> slice.elem_type,
             .Array(arr) -> arr.elem_type,
             .DynArray(vec) -> vec.elem_type,
             else -> none

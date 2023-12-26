@@ -1,5 +1,5 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this 
-// source code is governed by an MIT license that can be found in the LICENSE 
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
 import std/traits;
@@ -116,7 +116,7 @@ pub struct Formatter {
             }
         }
         self.line_len = line_len;
-        return string.from_bytes(reverse(last_line_str));
+        return string.from_bytes(reverse(last_line_str)[:]);
     }
 
     func should_insert_newline_before_node(self, node: ast.Node, prev_node: ast.Node) -> bool {
