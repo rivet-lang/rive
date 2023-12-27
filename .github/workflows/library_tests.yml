@@ -2,6 +2,8 @@ name: Library Tests
 
 on:
   push:
+    branches:
+      - 'main'
     paths: ['lib/**.ri', 'rivetc/**.py']
   pull_request:
     paths: ['lib/**.ri', 'rivetc/**.py']
