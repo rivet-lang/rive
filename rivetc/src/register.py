@@ -225,6 +225,7 @@ class Register:
                     continue
                 self.check_imported_symbol(symbol, decl.pos)
                 self.source_file.imported_symbols[symbol.name] = symbol
+            return
         for import_info in decl.import_list:
             if import_info.name == "self":
                 self.source_file.imported_symbols[decl.alias
