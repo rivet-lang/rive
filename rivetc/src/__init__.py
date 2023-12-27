@@ -153,15 +153,20 @@ class Compiler:
             deps = []
             if fp.sym.name not in ["c.libc", "c", "c.ctypes", "core"]:
                 deps.append("core")
-            for d in fp.decls:
-                if isinstance(d, ast.ImportDecl):
-                    if len(d.subimports) > 0:
-                        for subimport in d.subimports:
-                            self.import_graph_mod(subimport, deps, fp)
-                    else:
-                        self.import_graph_mod(d, deps, fp)
+            self.import_graph_decls(fp, deps, fp.decls)
             g.add(fp.sym.name, deps)
         return g
+    
+    def import_graph_decls(self, fp, deps, decls):
+        for d in decls:
+            if isinstance(d, ast.ImportDecl):
+                if len(d.subimports) > 0:
+                    for subimport in d.subimports:
+                        self.import_graph_mod(subimport, deps, fp)
+                else:
+                    self.import_graph_mod(d, deps, fp)
+            elif isinstance(d, ast.ComptimeIf):
+                self.import_graph_decls(fp, deps, self.evalue_comptime_if(d))
 
     def import_graph_mod(self, d, deps, fp):
         if not d.mod_sym:
@@ -493,6 +498,8 @@ class Compiler:
     def evalue_comptime_condition(self, cond):
         if isinstance(cond, ast.ParExpr):
             return self.evalue_comptime_condition(cond.expr)
+        elif isinstance(cond, ast.BoolLiteral):
+            return bool(cond.lit)
         elif isinstance(cond, ast.Ident):
             return self.evalue_comptime_ident(cond.name, cond.pos)
         elif isinstance(cond, ast.UnaryExpr) and cond.op == token.Kind.Bang:

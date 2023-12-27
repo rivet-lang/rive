@@ -324,29 +324,36 @@ pub struct Builder {
         self.vlog("module dependencies resolved...");
     }
 
-    func import_graph(&self) -> depgraph.DepGraph {
+    func import_graph(mut self) -> depgraph.DepGraph {
         mut g := depgraph.DepGraph.new();
-        for pf in self.env.source_files {
+        for mut pf in self.env.source_files {
             mut deps := []string();
             if pf.mod.name !in ["c.ctypes", "c.libc", "c", "core"] {
                 deps.push("core");
             }
-            for d in pf.decls {
-                if d is .Import(import_decl) {
-                    if import_decl.subimports.len > 0 {
-                        for subimport in import_decl.subimports {
-                            if dep := import_graph_mod(&subimport, pf) {
-                                deps.push(dep);
-                            }
-                        }
-                    } else if dep := import_graph_mod(&import_decl, pf) {
-                        deps.push(dep);
-                    }
-                }
-            }
+            self.import_graph_decls(pf, deps, pf.decls);
             g.add(pf.mod.name, deps);
         }
         return g;
+    }
+
+    func import_graph_decls(mut self, mut pf: ast.SourceFile, mut deps: []string, mut decls: []mut ast.Decl) {
+        for mut d in decls {
+            if d is .Import(import_decl) {
+                if import_decl.subimports.len > 0 {
+                    for subimport in import_decl.subimports {
+                        if dep := import_graph_mod(&subimport, pf) {
+                            deps.push(dep);
+                        }
+                    }
+                } else if dep := import_graph_mod(&import_decl, pf) {
+                    deps.push(dep);
+                }
+            } else if d is .ComptimeIf(mut comptime_if) {
+                mut ct_decls := ast.nodes_to_decls(self.env.evalue_comptime_if(comptime_if));
+                self.import_graph_decls(pf, deps, ct_decls);
+            }
+        }
     }
 
     func import_graph_mod(import_decl: &ast.ImportDecl, pf: ast.SourceFile) -> ?string {

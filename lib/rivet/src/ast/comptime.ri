@@ -51,6 +51,7 @@ extend Env {
     func evalue_comptime_condition(self, cond: Expr) -> ?bool {
         return match cond {
             .Paren(paren) -> self.evalue_comptime_condition(paren.expr),
+            .BoolLiteral(bool_lit) -> bool_lit.value,
             .Ident(ident) -> self.evalue_comptime_ident(ident.name, ident.pos),
             .Unary(unary) if unary.op == .Bang -> if val := self.evalue_comptime_condition(
                 unary.right
