@@ -1,5 +1,10 @@
-import ./mod.*;
+import ./{ mod.*, mod2/{self as mod2_self} };
 
-test "`import` declaration: using `*` (glob)" {
+test "`import` declaration using `*` (glob)" {
     @assert(add(2, 2) == 4);
+}
+
+test "`import` declaration using subimports" {
+    @assert(mod2_self.add_two(2) == 4);
+    @assert(mod2_self.add_three(3) == 6);
 }
