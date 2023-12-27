@@ -200,11 +200,17 @@ class Register:
                     report.error(e.args[0], decl.name_pos)
             self.abi = old_abi
             self.sym = old_sym
-    
+
     def walk_import_decl(self, decl):
         if len(decl.subimports) > 0:
             for subimport in decl.subimports:
                 self.walk_import_decl(subimport)
+        elif decl.glob:
+            for symbol in decl.mod_sym.syms:
+                if not symbol.is_public:
+                    continue
+                self.check_imported_symbol(symbol, decl.pos)
+                self.source_file.imported_symbols[symbol.name] = symbol
         elif len(decl.import_list) == 0:
             if decl.is_public:
                 try:
@@ -218,12 +224,6 @@ class Register:
             else:
                 self.source_file.imported_symbols[decl.alias
                                                     ] = decl.mod_sym
-        elif decl.glob:
-            for symbol in decl.mod_sym.syms:
-                if not symbol.is_public:
-                    continue
-                self.check_imported_symbol(symbol, decl.pos)
-                self.source_file.imported_symbols[symbol.name] = symbol
         else:
             for import_info in decl.import_list:
                 if import_info.name == "self":
