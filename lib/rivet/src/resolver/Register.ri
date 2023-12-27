@@ -2,9 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ../ast;
-import ../token;
-import ../report;
+import ../{ ast, report, token };
 
 #[boxed]
 pub struct Register {
@@ -45,7 +43,7 @@ pub struct Register {
     func walk_decl(mut self, mut decl: ast.Decl) {
         match decl {
             .ComptimeIf(mut comptime_if_decl) -> self.comptime_if(comptime_if_decl),
-            .Import(import_decl) -> self.import_decl(import_decl),
+            .Import(import_decl) -> self.import_decl(&import_decl),
             .Extern(mut extern_decl) -> {
                 self.abi = extern_decl.abi;
                 self.walk_decls(extern_decl.decls);
@@ -270,7 +268,13 @@ pub struct Register {
         self.walk_decls(ast.nodes_to_decls(nodes));
     }
 
-    func import_decl(mut self, import_decl: ast.Decl.Import) {
+    func import_decl(mut self, import_decl: &ast.ImportDecl) {
+        if !import_decl.subimports.is_empty() {
+            for &subimport in import_decl.subimports {
+                self.import_decl(subimport);
+            }
+            return;
+        }
         if import_decl.glob {
             // `import module/path.*`
             for sym in import_decl.info.mod.scope.syms {

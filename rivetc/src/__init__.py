@@ -96,23 +96,29 @@ class Compiler:
     def import_modules_from_decls(self, sf, decls):
         for decl in decls:
             if isinstance(decl, ast.ImportDecl):
-                mod = self.load_module_files(
-                    decl.path, decl.alias, sf.file, decl.pos
-                )
-                if mod.found:
-                    if mod_sym_ := self.universe.find(mod.full_name):
-                        mod_sym = mod_sym_ # module already imported
-                    else:
-                        mod_sym = sym.Mod(False, mod.full_name)
-                        self.universe.add(mod_sym)
-                        self.parsed_files += parser.Parser(self).parse_mod(
-                            mod_sym, mod.files
-                        )
-                    decl.alias = mod.alias
-                    decl.mod_sym = mod_sym
+                self.import_module(sf, decl)
             elif isinstance(decl, ast.ComptimeIf):
                 ct_decls = self.evalue_comptime_if(decl)
                 self.import_modules_from_decls(sf, ct_decls)
+
+    def import_module(self, sf, decl):
+        if len(decl.subimports) > 0:
+            for subimport in decl.subimports:
+                self.import_module(sf, subimport)
+                subimport.id = id(subimport.mod_sym)
+            return
+        mod = self.load_module_files(decl.path, decl.alias, sf.file, decl.pos)
+        if mod.found:
+            if mod_sym_ := self.universe.find(mod.full_name):
+                mod_sym = mod_sym_ # module already imported
+            else:
+                mod_sym = sym.Mod(False, mod.full_name)
+                self.universe.add(mod_sym)
+                self.parsed_files += parser.Parser(self).parse_mod(
+                    mod_sym, mod.files
+                )
+            decl.alias = mod.alias
+            decl.mod_sym = mod_sym
 
     def resolve_deps(self):
         g = self.import_graph()
@@ -149,14 +155,21 @@ class Compiler:
                 deps.append("core")
             for d in fp.decls:
                 if isinstance(d, ast.ImportDecl):
-                    if not d.mod_sym:
-                        continue # module not found
-                    if d.mod_sym.name == fp.sym.name:
-                        report.error("import cycle detected", d.pos)
-                        continue
-                    deps.append(d.mod_sym.name)
+                    if len(d.subimports) > 0:
+                        for subimport in d.subimports:
+                            self.import_graph_mod(subimport, deps, fp)
+                    else:
+                        self.import_graph_mod(d, deps, fp)
             g.add(fp.sym.name, deps)
         return g
+
+    def import_graph_mod(self, d, deps, fp):
+        if not d.mod_sym:
+            return # module not found
+        if d.mod_sym.name == fp.sym.name:
+            report.error("import cycle detected", d.pos)
+            return
+        deps.append(d.mod_sym.name)
 
     def load_root_module(self):
         if path.isdir(self.prefs.input):

@@ -2,13 +2,9 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/traits;
-import std/strings;
-import std/console;
+import std/{ traits, strings, console };
 
-import ../prefs;
-import ../token;
-import ../utils;
+import ../{ prefs, token, utils };
 
 pub var mut report_table := ReportTable();
 

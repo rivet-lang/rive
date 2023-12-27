@@ -2,8 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ../../env;
-import ../../console;
+import ../../{ env, console };
 
 #[inline]
 pub func support_ansi_escape_codes() -> bool {

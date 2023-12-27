@@ -2,9 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/env;
-import std/process;
-import std/fs.{ self, Path };
+import std/{ env, process, fs.{ self, Path } };
 
 var normalized_wd := process.wd_at_startup.replace("\\", "/").concat("/");
 var error_paths_abs := (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute";

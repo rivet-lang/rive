@@ -30,39 +30,7 @@ class Register:
             if isinstance(decl, ast.ComptimeIf):
                 self.walk_decls(self.comp.evalue_comptime_if(decl))
             elif isinstance(decl, ast.ImportDecl):
-                if len(decl.import_list) == 0:
-                    if decl.is_public:
-                        try:
-                            self.sym.add(
-                                sym.SymRef(
-                                    decl.is_public, decl.alias, decl.mod_sym
-                                )
-                            )
-                        except utils.CompilerError as e:
-                            report.error(e.args[0], decl.pos)
-                    else:
-                        self.source_file.imported_symbols[decl.alias
-                                                          ] = decl.mod_sym
-                if decl.glob:
-                    for symbol in decl.mod_sym.syms:
-                        if not symbol.is_public:
-                            continue
-                        self.check_imported_symbol(symbol, decl.pos)
-                        self.source_file.imported_symbols[symbol.name] = symbol
-                for import_info in decl.import_list:
-                    if import_info.name == "self":
-                        self.source_file.imported_symbols[decl.alias
-                                                          ] = decl.mod_sym
-                    elif symbol := decl.mod_sym.find(import_info.name):
-                        self.check_vis(symbol, import_info.pos)
-                        self.check_imported_symbol(symbol, import_info.pos)
-                        self.source_file.imported_symbols[import_info.alias
-                                                          ] = symbol
-                    else:
-                        report.error(
-                            f"could not find `{import_info.name}` in module `{decl.mod_sym.name}`",
-                            import_info.pos
-                        )
+                self.walk_import_decl(decl)
             elif isinstance(decl, ast.ExternDecl):
                 self.abi = decl.abi
                 self.walk_decls(decl.decls)
@@ -232,6 +200,41 @@ class Register:
                     report.error(e.args[0], decl.name_pos)
             self.abi = old_abi
             self.sym = old_sym
+
+    def walk_import_decl(self, decl):
+        if len(decl.subimports) > 0:
+            for subimport in decl.subimports:
+                self.walk_import_decl(subimport)
+        elif decl.glob:
+            for symbol in decl.mod_sym.syms:
+                if not symbol.is_public:
+                    continue
+                self.check_imported_symbol(symbol, decl.pos)
+                self.source_file.imported_symbols[symbol.name] = symbol
+        elif len(decl.import_list) == 0:
+            if decl.is_public:
+                try:
+                    self.sym.add(
+                        sym.SymRef(decl.is_public, decl.alias, decl.mod_sym)
+                    )
+                except utils.CompilerError as e:
+                    report.error(e.args[0], decl.pos)
+            else:
+                self.source_file.imported_symbols[decl.alias] = decl.mod_sym
+        else:
+            for import_info in decl.import_list:
+                if import_info.name == "self":
+                    self.source_file.imported_symbols[decl.alias] = decl.mod_sym
+                elif symbol := decl.mod_sym.find(import_info.name):
+                    self.check_vis(symbol, import_info.pos)
+                    self.check_imported_symbol(symbol, import_info.pos)
+                    self.source_file.imported_symbols[import_info.alias
+                                                      ] = symbol
+                else:
+                    report.error(
+                        f"could not find `{import_info.name}` in module `{decl.mod_sym.name}`",
+                        import_info.pos
+                    )
 
     def add_sym(self, sy, pos):
         try:

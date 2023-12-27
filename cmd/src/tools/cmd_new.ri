@@ -2,15 +2,10 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/flag;
-import std/semver;
-import std/strings;
-import std/console;
-import std/process;
-import std/fs.{ Path, Directory, self };
-
-import rivet/build;
-import rivet/utils;
+import std/{ 
+    flag, semver, strings, console, process, fs.{self, Path, Directory}
+};
+import rivet/{ build, utils };
 
 import ./templates;
 

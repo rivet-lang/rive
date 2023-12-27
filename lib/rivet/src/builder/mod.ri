@@ -2,21 +2,13 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/traits;
-import std/console;
-import std/process;
-import std/fs.{ Path, Directory };
+import std/{ 
+    traits, console, process, fs.{ Path, Directory } 
+};
 
-import ../ast;
-import ../utils;
-import ../prefs;
-import ../token;
-import ../parser;
-import ../report;
-import ../checker;
-import ../codegen;
-import ../resolver;
-import ../depgraph;
+import ../{ 
+    ast, utils, prefs, token, parser, report, checker, codegen, resolver, depgraph 
+};
 
 pub struct Builder {
     mut env: ast.Env;
@@ -160,14 +152,7 @@ pub struct Builder {
     ) -> ! {
         for mut decl in decls {
             if decl is .Import(mut import_decl) {
-                if self.env.universe.scope.exists(import_decl.info.full_name) {
-                    continue;
-                }
-                import_decl.info = self.load_module(
-                    import_decl.path, import_decl.alias_name, sf.path,
-                    import_decl.path_pos
-                )!;
-                import_decl.alias_name = import_decl.info.alias_name;
+                self.import_module(sf, import_decl)!;
             } else if decl is .ComptimeIf(mut comptime_if) {
                 mut ct_decls := ast.nodes_to_decls(
                     self.env.evalue_comptime_if(comptime_if)
@@ -175,6 +160,23 @@ pub struct Builder {
                 self.import_modules_from_decls(sf, ct_decls)!;
             }
         }
+    }
+
+    func import_module(mut self, sf: ast.SourceFile, mut import_decl: ast.ImportDecl) -> ! {
+        if !import_decl.subimports.is_empty() {
+            for mut subimport in import_decl.subimports {
+                self.import_module(sf, subimport)!;
+            }
+            return;
+        }
+        if self.env.universe.scope.exists(import_decl.info.full_name) {
+            return;
+        }
+        import_decl.info = self.load_module(
+            import_decl.path, import_decl.alias_name, sf.path,
+            import_decl.path_pos
+        )!;
+        import_decl.alias_name = import_decl.info.alias_name;
     }
 
     func load_module(
@@ -331,19 +333,31 @@ pub struct Builder {
             }
             for d in pf.decls {
                 if d is .Import(import_decl) {
-                    if !import_decl.info.found {
-                        continue; // module not found
+                    if import_decl.subimports.len > 0 {
+                        for subimport in import_decl.subimports {
+                            if dep := import_graph_mod(&subimport, pf) {
+                                deps.push(dep);
+                            }
+                        }
+                    } else if dep := import_graph_mod(&import_decl, pf) {
+                        deps.push(dep);
                     }
-                    if import_decl.info.full_name == pf.mod.name {
-                        report.error("import cycle detected", import_decl.pos);
-                        continue;
-                    }
-                    deps.push(import_decl.info.full_name);
                 }
             }
             g.add(pf.mod.name, deps);
         }
         return g;
+    }
+
+    func import_graph_mod(import_decl: &ast.ImportDecl, pf: ast.SourceFile) -> ?string {
+        if !import_decl.info.found {
+            return none; // module not found
+        }
+        if import_decl.info.full_name == pf.mod.name {
+            report.error("import cycle detected", import_decl.pos);
+            return none;
+        }
+        return import_decl.info.full_name;
     }
 
     func vlog(&self, msg: string, args: ...traits.Stringable) {

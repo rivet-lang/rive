@@ -4,8 +4,7 @@
 
 import std/sys;
 
-import ../token;
-import ../report;
+import ../{ token, report };
 
 pub struct ComptimeIf {
     mut branches: []mut ComptimeIfBranch;

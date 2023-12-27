@@ -2,15 +2,9 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/strings;
-import std/process;
+import std/{ process, strings };
 
-import ../ast;
-import ../token;
-import ../utils;
-import ../report;
-
-import ../utils.{ LF, CR };
+import ../{ ast, token, utils, report, utils.{LF, CR} };
 
 const NUM_SEP := b'_';
 

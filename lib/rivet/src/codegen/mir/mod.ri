@@ -2,9 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/fs;
-import std/traits;
-import std/strings;
+import std/{ fs, traits, strings };
 
 import ../../utils;
 

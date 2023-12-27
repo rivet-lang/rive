@@ -2,12 +2,9 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/traits;
-import std/strings;
+import std/{ traits, strings };
 
-import ../ast;
-import ../prefs;
-import ../utils;
+import ../{ ast, prefs, utils };
 
 var max_len := [@as(uint, 0), 35, 60, 85, 93, 100];
 

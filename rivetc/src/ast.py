@@ -136,13 +136,15 @@ class Attributes:
 
 class ImportDecl:
     def __init__(
-        self, attributes, is_public, path, alias, glob, import_list, pos
+        self, attributes, is_public, path, alias, glob, subimports, import_list,
+        pos
     ):
         self.attributes = attributes
         self.is_public = is_public
         self.path = path
         self.alias = alias
         self.glob = glob
+        self.subimports = subimports
         self.import_list = import_list
         self.mod_sym = None
         self.pos = pos

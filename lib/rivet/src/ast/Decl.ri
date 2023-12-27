@@ -9,18 +9,7 @@ pub enum Decl {
     Empty(token.Pos),
     Comment(Comment),
     ComptimeIf(ComptimeIf),
-    Import {
-        attributes: Attributes;
-        is_public: bool;
-        path: string;
-        path_pos: token.Pos;
-        mut alias_name: string;
-        mut has_custom_alias: bool;
-        glob: bool;
-        import_list: []ImportListInfo;
-        mut info: ImportedMod;
-        pos: token.Pos;
-    },
+    Import(ImportDecl),
     Extern {
         docs: []Comment;
         attributes: Attributes;
@@ -200,10 +189,17 @@ pub struct EnumVariantDecl {
     pub pos: token.Pos;
 }
 
-pub struct ImportListInfo {
-    pub name: string;
-    pub alias_name: string;
+pub struct ImportDecl {
+    pub attributes: Attributes;
+    pub is_public: bool;
+    pub path: string;
+    pub path_pos: token.Pos;
+    pub mut alias_name: string;
     pub mut has_custom_alias: bool;
+    pub glob: bool;
+    pub mut subimports: []mut ImportDecl;
+    pub import_list: []ImportListInfo;
+    pub mut info: ImportedMod;
     pub pos: token.Pos;
 }
 
@@ -214,6 +210,13 @@ pub struct ImportedMod {
     pub found: bool;
     pub files: []string;
     pub mut mod: Module;
+}
+
+pub struct ImportListInfo {
+    pub name: string;
+    pub alias_name: string;
+    pub mut has_custom_alias: bool;
+    pub pos: token.Pos;
 }
 
 pub func filter_field_decl(decls: []Decl) -> []Decl {

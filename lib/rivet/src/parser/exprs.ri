@@ -2,9 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ../ast;
-import ../report;
-import ../token;
+import ../{ ast, report, token };
 
 extend Parser {
     #[inline]
@@ -330,7 +328,7 @@ extend Parser {
                 self.expect(.Rbracket);
                 pos += self.prev_tok.pos;
                 if !is_dyn && (elems.len == 0 || elems.len == 1 && self.tok.kind !in [
-                    .Semicolon, .Comma, .Rbrace
+                    .Semicolon, .Comma, .Rbrace, .Rparen
                 ]) {
                     // []T() or [SIZE]T()
                     is_dyn = elems.len == 0;

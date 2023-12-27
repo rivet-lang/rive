@@ -37,6 +37,7 @@ class Codegen:
         self.inside_lhs_assign = False
 
         self.generated_string_literals = {}
+        self.generated_tuple_types = []
         self.generated_opt_res_types = []
         self.generated_array_returns = []
         self.generated_tests = []
@@ -590,9 +591,7 @@ class Codegen:
         ) and self.comp.is_number(expected_typ_) and expr.typ != expected_typ_:
             res_expr = ir.Inst(ir.InstKind.Cast, [res_expr, expected_typ])
 
-        if isinstance(
-            res_expr.typ, ir.Pointer
-        ) and res_expr.typ != ir.RAWPTR_T:
+        if isinstance(res_expr.typ, ir.Pointer) and res_expr.typ != ir.RAWPTR_T:
             if isinstance(expected_typ, ir.Pointer):
                 if not expected_typ.is_managed:
                     nr_level_expected = expected_typ.nr_level()
@@ -666,21 +665,24 @@ class Codegen:
         if isinstance(expected_typ_, type.Variadic):
             expr_sym = expr.typ.symbol()
             if expr_sym.kind == TypeKind.DynArray:
-                res_expr = ir.Inst(ir.InstKind.Call, [
-                    ir.Name("_R4core8DynArray5sliceM"),
-                    ir.IntLit(ir.UINT_T, "0"),
-                    ir.Selector(ir.UINT_T, res_expr, ir.Name("len"))
-                ])
+                res_expr = ir.Inst(
+                    ir.InstKind.Call, [
+                        ir.Name("_R4core8DynArray5sliceM"),
+                        ir.IntLit(ir.UINT_T, "0"),
+                        ir.Selector(ir.UINT_T, res_expr, ir.Name("len"))
+                    ]
+                )
             elif expr_sym.kind == TypeKind.Array:
                 elem_size, _ = self.comp.type_size(expr_sym.info.elem_typ)
-                res_expr = ir.Inst(ir.InstKind.Call, [
-                    ir.Name("_R4core11array_sliceF"),
-                    res_expr,
-                    ir.IntLit(ir.UINT_T, str(elem_size)),
-                    ir.IntLit(ir.UINT_T, str(expr_sym.info.size)),
-                    ir.IntLit(ir.UINT_T, "0"),
-                    ir.IntLit(ir.UINT_T, str(expr_sym.info.size))
-                ])
+                res_expr = ir.Inst(
+                    ir.InstKind.Call, [
+                        ir.Name("_R4core11array_sliceF"), res_expr,
+                        ir.IntLit(ir.UINT_T, str(elem_size)),
+                        ir.IntLit(ir.UINT_T, str(expr_sym.info.size)),
+                        ir.IntLit(ir.UINT_T, "0"),
+                        ir.IntLit(ir.UINT_T, str(expr_sym.info.size))
+                    ]
+                )
             elif expr_sym.kind == TypeKind.Slice:
                 pass # valid
 
@@ -1206,9 +1208,7 @@ class Codegen:
                     )
                     if left_sym.kind == TypeKind.Trait and not expr.sym.has_body:
                         args.append(
-                            ir.Selector(
-                                ir.RAWPTR_T, self_expr, ir.Name("obj")
-                            )
+                            ir.Selector(ir.RAWPTR_T, self_expr, ir.Name("obj"))
                         )
                     else:
                         args.append(self_expr)
@@ -1287,11 +1287,11 @@ class Codegen:
                         args.append(self.gen_expr_with_cast(arg.typ, arg.expr))
                 else:
                     var_arg = expr.sym.args[-1]
-                    if variadic_count == 1 and len(expr.args
-                                                   ) > 0 and isinstance(
-                                                       expr.args[-1].expr.typ,
-                                                       type.Variadic
-                                                   ):
+                    if variadic_count == 1 and len(
+                        expr.args
+                    ) > 0 and isinstance(
+                        expr.args[-1].expr.typ, type.Variadic
+                    ):
                         arg = expr.args[-1]
                         args.append(self.gen_expr_with_cast(arg.typ, arg.expr))
                     elif variadic_count > 0:
@@ -1710,10 +1710,10 @@ class Codegen:
                 method_name = "_R4core5Slice3getM" if s.kind == TypeKind.Slice else "_R4core8DynArray3getM"
                 expr_typ_ir2 = expr_typ_ir.ptr()
                 if s.kind == TypeKind.Slice:
-                    if not isinstance(
-                        left.typ, type.Ptr
-                    ):
-                        left = ir.Inst(ir.InstKind.GetPtr, [left], left.typ.ptr())
+                    if not isinstance(left.typ, type.Ptr):
+                        left = ir.Inst(
+                            ir.InstKind.GetPtr, [left], left.typ.ptr()
+                        )
                     if expr.is_ref:
                         expr_typ_ir = expr_typ_ir.ptr()
                 value = ir.Inst(
@@ -1899,9 +1899,8 @@ class Codegen:
                     else:
                         val = ir.Inst(
                             ir.InstKind.Cast, [
-                                ir.Selector(
-                                    ir.RAWPTR_T, left, ir.Name("obj")
-                                ), var_t2
+                                ir.Selector(ir.RAWPTR_T, left, ir.Name("obj")),
+                                var_t2
                             ]
                         )
                         if not ((
@@ -3065,11 +3064,15 @@ class Codegen:
         )
         for ts in type_symbols:
             if ts.kind == TypeKind.Tuple:
+                mangled_name = cg_utils.mangle_symbol(ts)
+                if mangled_name in self.generated_tuple_types:
+                    continue
+                self.generated_tuple_types.append(mangled_name)
                 fields = []
                 for i, f in enumerate(ts.info.types):
                     fields.append(ir.Field(f"f{i}", self.ir_type(f)))
                 self.out_rir.types.append(
-                    ir.Struct(False, cg_utils.mangle_symbol(ts), fields)
+                    ir.Struct(False, mangled_name, fields)
                 )
             elif ts.kind == TypeKind.Enum:
                 # TODO: in the self-hosted compiler calculate the enum value here

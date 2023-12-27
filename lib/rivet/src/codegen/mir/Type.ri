@@ -2,9 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/traits;
-import std/strings;
-import std/process;
+import std/{ process, traits, strings };
 
 #[boxed; default_value(.Void)]
 pub enum Type < traits.Stringable {

@@ -5,8 +5,7 @@
 import c/libc;
 import core;
 
-import ../fs.Path;
-import ../strings.Builder;
+import ../{ fs.Path, strings.Builder };
 
 pub alias id := core.process_id;
 pub alias panic := core.process_panic;

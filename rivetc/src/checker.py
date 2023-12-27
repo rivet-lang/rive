@@ -1287,9 +1287,8 @@ class Checker:
                                     f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                                 )
                 expr.left_typ = left_typ
-            if isinstance(
-                expr.left_typ, type.Ptr
-            ) and expr.left_typ.nr_level() > 1 and not expr.is_indirect:
+            if isinstance(expr.left_typ, type.Ptr) and expr.left_typ.nr_level(
+            ) > 1 and not expr.is_indirect:
                 report.error(
                     "fields of an multi-level pointer cannot be accessed directly",
                     expr.pos
@@ -1726,7 +1725,9 @@ class Checker:
         if expr.has_spread_expr:
             spread_expr_t = self.check_expr(expr.spread_expr)
             spread_expr_sym = spread_expr_t.symbol()
-            if spread_expr_sym.kind not in (TypeKind.DynArray, TypeKind.Slice, TypeKind.Array):
+            if spread_expr_sym.kind not in (
+                TypeKind.DynArray, TypeKind.Slice, TypeKind.Array
+            ):
                 report.error(
                     "spread operator can only be used with arrays, dynamic arrays and slices",
                     expr.spread_expr.pos

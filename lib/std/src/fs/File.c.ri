@@ -4,8 +4,7 @@
 
 import c/libc;
 
-import ../mem;
-import ../traits.Stringable;
+import ../{ mem, traits.Stringable };
 
 #[boxed]
 pub struct OperationFailedError < Throwable {

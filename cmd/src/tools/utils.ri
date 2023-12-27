@@ -2,8 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/console;
-import std/console/styles;
+import std/{ console, console/styles };
 
 #[inline]
 pub func readln(prompt: string) -> ?string {
