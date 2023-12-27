@@ -3,9 +3,7 @@
 // file.
 
 import std/{ console, process };
-
-import rivet;
-import rivet/{ prefs, utils };
+import rivet/{ self, prefs, utils };
 
 import ./tools;
 
