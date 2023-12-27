@@ -178,16 +178,16 @@ func generate_rivet_json(project: build.Project) -> string {
     }
     if !project.authors.is_empty() {
         sb.writeln(",");
-        sb.write_string("    \"authors\": [");
+        sb.write("    \"authors\": [");
         for i, author in project.authors {
-            sb.write_string("\"");
-            sb.write_string(author);
-            sb.write_string("\"");
+            sb.write("\"");
+            sb.write(author);
+            sb.write("\"");
             if i < project.authors.len - 1 {
-                sb.write_string(", ");
+                sb.write(", ");
             }
         }
-        sb.write_string("]");
+        sb.write("]");
     }
     if !project.repository_url.is_empty() {
         sb.writeln(",");

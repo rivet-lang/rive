@@ -13,6 +13,6 @@ pub func read_file(path: string) -> !string {
 /// Writes `text` data to a file in `path`.
 pub func write_file(path: string, text: string) -> ! {
     mut f := File.open(path, "wb")!;
-    f.write_string(text);
+    f.write(text);
     f.close();
 }

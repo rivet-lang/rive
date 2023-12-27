@@ -266,9 +266,9 @@ pub struct Module < Sym {
         unique_name := {
             mut sb := strings.Builder.from_string("(");
             for i, type in types {
-                sb.write_string(type.to_qualstring());
+                sb.write(type.to_qualstring());
                 if i < types.len - 1 {
-                    sb.write_string(", ");
+                    sb.write(", ");
                 }
             }
             sb.write_byte(')');
@@ -293,16 +293,16 @@ pub struct Module < Sym {
             mut sb := strings.Builder.from_string("func(");
             if func_sym.is_method {
                 if func_sym.self_is_mut {
-                    sb.write_string("mut ");
+                    sb.write("mut ");
                 } else if func_sym.self_is_ptr {
-                    sb.write_string("&");
+                    sb.write("&");
                 }
-                sb.write_string("self");
+                sb.write("self");
             }
             for i, arg in func_sym.args {
-                sb.write_string(arg.type.to_qualstring());
+                sb.write(arg.type.to_qualstring());
                 if i < func_sym.args.len - 1 {
-                    sb.write_string(", ");
+                    sb.write(", ");
                 }
             }
             sb.write_byte(')');

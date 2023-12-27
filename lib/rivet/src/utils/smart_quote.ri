@@ -66,16 +66,16 @@ pub func smart_quote(s: string, raw: bool := false) -> string {
             },
             BACKSLASH -> {
                 if raw {
-                    result.write_string(double_escape);
+                    result.write(double_escape);
                 } else if next == BACKSLASH {
                     // escaped backslash - keep as is
                     current = 0;
                     skip_next = true;
-                    result.write_string(double_escape);
+                    result.write(double_escape);
                 } else if next != 0 {
                     if raw {
                         skip_next = true;
-                        result.write_string(double_escape);
+                        result.write(double_escape);
                         continue;
                     }
                     if next in invalid_escapes {

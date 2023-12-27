@@ -71,7 +71,7 @@ pub struct Struct < traits.Stringable {
         mut sb := strings.Builder.new();
         sb.write_fmt("struct @{}", self.name);
         if self.is_opaque {
-            sb.write_string(";");
+            sb.write(";");
         } else {
             sb.writeln(" {");
             for i, field in self.fields {
@@ -98,7 +98,7 @@ pub struct Global < traits.Stringable {
     pub func to_string(self) -> string {
         mut sb := strings.Builder.new();
         if self.is_extern {
-            sb.write_string("extern ");
+            sb.write("extern ");
         }
         sb.write_fmt("var @{}: {};", self.name, self.type);
         return sb.to_string();
@@ -153,18 +153,18 @@ pub struct Func < traits.Stringable {
     pub func to_string(self) -> string {
         mut sb := strings.Builder.new();
         if self.is_extern {
-            sb.write_string("extern ");
+            sb.write("extern ");
         }
-        sb.write_string("func @{}(".fmt(self.name));
+        sb.write("func @{}(".fmt(self.name));
         for i, arg in self.locals[:self.args_len] {
             sb.write_fmt("%{}: {}", arg.dbg_name, arg.type);
             if i < self.args_len - 1 {
-                sb.write_string(", ");
+                sb.write(", ");
             }
         }
         sb.write_fmt(") -> {}", self.ret_type);
         if self.is_extern {
-            sb.write_string(";");
+            sb.write(";");
         } else {
             sb.writeln(" {");
             if self.blocks.len > 0 {

@@ -50,7 +50,7 @@ pub struct StringBuilder < Stringable {
     }
 
     #[inline]
-    pub func write_string(mut self, s: string) {
+    pub func write(mut self, s: string) {
         unsafe {
             self.write_raw_with_len(s.ptr, s.len);
         }
@@ -67,12 +67,12 @@ pub struct StringBuilder < Stringable {
 
     pub func write_join(mut self, ss: [:]string, sep: string := "") {
         if ss.len == 1 {
-            self.write_string(ss[0]);
+            self.write(ss[0]);
         } else {
             for i, s in ss {
-                self.write_string(s);
+                self.write(s);
                 if i < ss.len - 1 {
-                    self.write_string(sep);
+                    self.write(sep);
                 }
             }
         }
@@ -80,11 +80,11 @@ pub struct StringBuilder < Stringable {
 
     #[inline]
     pub func write_fmt(mut self, s: string, args: ...Stringable) {
-        self.write_string(s.fmt(args));
+        self.write(s.fmt(args));
     }
 
     pub func writeln_fmt(mut self, s: string, args: ...Stringable) {
-        self.write_string(s.fmt(args));
+        self.write(s.fmt(args));
         self.write_byte('\n');
     }
 

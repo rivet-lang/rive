@@ -348,9 +348,9 @@ pub enum Type < traits.Stringable {
                 mut sb := Builder.new(100);
                 sb.write_byte('(');
                 for i, inner in tuple_data.inners {
-                    sb.write_string(inner.to_string_(qualstr));
+                    sb.write(inner.to_string_(qualstr));
                     if i < tuple_data.inners.len - 1 {
-                        sb.write_string(", ");
+                        sb.write(", ");
                     }
                 }
                 sb.write_byte(')');
@@ -392,28 +392,28 @@ pub enum Type < traits.Stringable {
             .Rawptr -> "rawptr",
             .Func(func_data) -> {
                 mut sb := Builder.new(150);
-                sb.write_string("func(");
+                sb.write("func(");
                 if func_data.is_method {
                     if func_data.self_is_mut {
-                        sb.write_string("mut ");
+                        sb.write("mut ");
                     } else if func_data.self_is_ptr {
-                        sb.write_string("&");
+                        sb.write("&");
                     }
-                    sb.write_string("self");
+                    sb.write("self");
                     if func_data.args.len > 0 {
-                        sb.write_string(", ");
+                        sb.write(", ");
                     }
                 }
                 for i, arg in func_data.args {
-                    sb.write_string(arg.type.to_string_(qualstr));
+                    sb.write(arg.type.to_string_(qualstr));
                     if i < func_data.args.len - 1 {
-                        sb.write_string(", ");
+                        sb.write(", ");
                     }
                 }
-                sb.write_string(")");
+                sb.write(")");
                 if func_data.ret_type !is .Void {
-                    sb.write_string(" -> ");
-                    sb.write_string(func_data.ret_type.to_string_(qualstr));
+                    sb.write(" -> ");
+                    sb.write(func_data.ret_type.to_string_(qualstr));
                 }
                 sb.to_string()
             },

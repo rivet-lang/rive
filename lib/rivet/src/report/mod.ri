@@ -131,9 +131,9 @@ func formatted_single_line(pos: token.Pos) {
         end_column := utils.max(0, utils.min(pos.col + utils.max(0, pos.len), line.len));
         mut sb := strings.Builder.new(line.len);
         write_spaces(sb, start_column, line);
-        sb.write_string(utils.bold(utils.blue("^")));
+        sb.write(utils.bold(utils.blue("^")));
         if pos.len > 1 {
-            sb.write_string(
+            sb.write(
                 utils.bold(
                     utils.blue("~".repeat(line.substr(start_column, end_column).runes_count() - 1))
                 )
@@ -150,9 +150,9 @@ func formatted_multi_line(pos: token.Pos) {
         for line_nr, line in lines {
             if line_nr + pos.line == pos.line {
                 mut sb := strings.Builder.new(line.len);
-                sb.write_string(utils.bold(utils.blue("      | ")));
+                sb.write(utils.bold(utils.blue("      | ")));
                 write_spaces(sb, utils.max(0, utils.min(pos.col, line.len)), line);
-                sb.write_string(utils.bold(utils.blue("/~~ from here")));
+                sb.write(utils.bold(utils.blue("/~~ from here")));
                 console.ewriteln(sb.to_string());
             }
             if line_nr < max || line_nr >= lines.len - max {
@@ -166,9 +166,9 @@ func formatted_multi_line(pos: token.Pos) {
             }
             if line_nr + pos.line == pos.end_line {
                 mut sb := strings.Builder.new(line.len);
-                sb.write_string(utils.bold(utils.blue("      | ")));
+                sb.write(utils.bold(utils.blue("      | ")));
                 write_spaces(sb, utils.max(0, utils.min(pos.end_col, line.len)), line);
-                sb.write_string(utils.bold(utils.blue("^~~ to here")));
+                sb.write(utils.bold(utils.blue("^~~ to here")));
                 console.ewriteln(sb.to_string());
             }
         }
@@ -184,7 +184,7 @@ func write_spaces(mut sb: strings.Builder, start_column: uint, line: string) {
             i += 1;
         } else {
             char_len := b.len_utf8();
-            sb.write_string(" ".repeat(line.substr(i, i + char_len).runes_count()));
+            sb.write(" ".repeat(line.substr(i, i + char_len).runes_count()));
             i += char_len;
         }
     }

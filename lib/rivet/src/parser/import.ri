@@ -81,14 +81,14 @@ extend Parser {
     func parse_import_path(mut self) -> string {
         mut sb := strings.Builder.new();
         if self.accept(.Dot) {
-            sb.write_string(".");
+            sb.write(".");
             if self.peek_tok.kind != .Lbrace {
                 sb.write_byte('/');
                 self.expect(.Div);
             }
         } else {
             while self.accept(.DotDot) {
-                sb.write_string("..");
+                sb.write("..");
                 if self.peek_tok.kind != .Lbrace {
                     sb.write_byte('/');
                     self.expect(.Div);
@@ -98,11 +98,11 @@ extend Parser {
         if self.tok.kind == .Div && self.peek_tok.kind == .Lbrace {
             return sb.to_string();
         }
-        sb.write_string(self.parse_name());
+        sb.write(self.parse_name());
         while self.tok.kind == .Div && self.peek_tok.kind != .Lbrace {
             self.expect(.Div);
-            sb.write_string("/");
-            sb.write_string(self.parse_name());
+            sb.write("/");
+            sb.write(self.parse_name());
         }
         return sb.to_string();
     }

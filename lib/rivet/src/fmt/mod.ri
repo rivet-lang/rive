@@ -31,7 +31,7 @@ pub struct Formatter {
         if self.indent > 0 && self.empty_line {
             self.write_indent();
         }
-        self.output.write_string(s);
+        self.output.write(s);
         self.line_len += s.len;
         self.empty_line = false;
     }
@@ -56,7 +56,7 @@ pub struct Formatter {
     }
 
     func write_indent(mut self) {
-        self.output.write_string(utils.tabs(self.indent));
+        self.output.write(utils.tabs(self.indent));
         self.line_len += self.indent * 4;
     }
 

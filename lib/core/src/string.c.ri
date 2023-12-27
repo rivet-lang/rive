@@ -93,7 +93,7 @@ pub struct string < Stringable, Hashable, Throwable {
         }
         mut sb := StringBuilder.from_string(self);
         for other in others {
-            sb.write_string(other);
+            sb.write(other);
         }
         return sb.to_string();
     }
@@ -142,12 +142,12 @@ pub struct string < Stringable, Hashable, Throwable {
         while i < words.len : i += 1 {
             word := words[i];
             if word.len + 1 > space_left {
-                wrapped.write_string(end);
-                wrapped.write_string(word);
+                wrapped.write(end);
+                wrapped.write(word);
                 space_left = width - word.len;
             } else {
-                wrapped.write_string(" ");
-                wrapped.write_string(word);
+                wrapped.write(" ");
+                wrapped.write(word);
                 space_left -= 1 + word.len;
             }
         }

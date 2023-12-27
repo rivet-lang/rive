@@ -96,9 +96,9 @@ pub enum Expr < traits.Stringable {
                 mut sb := strings.Builder.from_string("array_const(");
                 sb.write_fmt("{}, ", array_const.type);
                 for i, elem in array_const.elems {
-                    sb.write_string(elem.to_string());
+                    sb.write(elem.to_string());
                     if i < array_const.elems.len - 1 {
-                        sb.write_string(", ");
+                        sb.write(", ");
                     }
                 }
                 sb.write_byte(')');
@@ -112,9 +112,9 @@ pub enum Expr < traits.Stringable {
                 mut sb := strings.Builder.new();
                 sb.write_fmt("{}(", operator.op);
                 for i, arg in operator.args {
-                    sb.write_string(arg.to_string());
+                    sb.write(arg.to_string());
                     if i < operator.args.len - 1 {
-                        sb.write_string(", ");
+                        sb.write(", ");
                     }
                 }
                 sb.write_byte(')');
@@ -122,13 +122,13 @@ pub enum Expr < traits.Stringable {
             },
             .Call(call) -> {
                 mut sb := strings.Builder.from_string("call(");
-                sb.write_string(call.func_.to_string());
+                sb.write(call.func_.to_string());
                 if call.args.len > 0 {
-                    sb.write_string(", ");
+                    sb.write(", ");
                     for i, arg in call.args {
-                        sb.write_string(arg.to_string());
+                        sb.write(arg.to_string());
                         if i < call.args.len - 1 {
-                            sb.write_string(", ");
+                            sb.write(", ");
                         }
                     }
                 }

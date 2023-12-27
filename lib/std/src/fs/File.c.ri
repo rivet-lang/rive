@@ -40,7 +40,7 @@ pub struct File {
 
     /// Writes the string `s` into the file.
     #[inline]
-    pub func write_string(mut self, s: string) {
+    pub func write(mut self, s: string) {
         @ignore_not_mutated_warn(self);
         unsafe {
             _ = libc.fputs(s.ptr, self.f);
@@ -49,17 +49,17 @@ pub struct File {
 
     /// Writes the string `s` into the file and appends a '\n' character.
     pub func writeln(mut self, s: string) {
-        self.write_string(s);
+        self.write(s);
         self.write_byte('\n');
     }
 
     #[inline]
     pub func write_string_fmt(mut self, s: string, args: ...Stringable) {
-        self.write_string(s.fmt(args));
+        self.write(s.fmt(args));
     }
 
     pub func writeln_fmt(mut self, s: string, args: ...Stringable) {
-        self.write_string(s.fmt(args));
+        self.write(s.fmt(args));
         self.write_byte('\n');
     }
 

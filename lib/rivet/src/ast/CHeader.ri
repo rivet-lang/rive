@@ -59,22 +59,22 @@ struct CDefine < traits.Stringable {
 
     pub func to_string(&self) -> string {
         mut sb := strings.Builder.new();
-        sb.write_string(if self.is_macro { "macro " } else { "const " });
-        sb.write_string(self.name);
+        sb.write(if self.is_macro { "macro " } else { "const " });
+        sb.write(self.name);
         if self.is_macro && self.args.len > 0 {
-            sb.write_string("(");
+            sb.write("(");
             for i, arg in self.args {
-                sb.write_string(arg);
+                sb.write(arg);
                 if i < self.args.len - 1 {
-                    sb.write_string(", ");
+                    sb.write(", ");
                 }
             }
-            sb.write_string(") =>");
+            sb.write(") =>");
         } else {
-            sb.write_string(" =");
+            sb.write(" =");
         }
-        sb.write_string(" ");
-        sb.write_string(self.value);
+        sb.write(" ");
+        sb.write(self.value);
         return sb.to_string();
     }
 }

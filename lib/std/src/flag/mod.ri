@@ -247,7 +247,7 @@ pub struct FlagParser {
             if no_arguments {
                 sb.writeln("This application does not expect any arguments.");
             } else {
-                sb.write_string("The arguments should be ");
+                sb.write("The arguments should be ");
                 if positive_min_arg && positive_max_arg
                     && self.min_free_args == self.max_free_args {
                     sb.write_fmt("exactly {}", self.min_free_args);
@@ -256,7 +256,7 @@ pub struct FlagParser {
                         sb.write_fmt("at least {}", self.min_free_args);
                     }
                     if positive_min_arg && positive_max_arg {
-                        sb.write_string(" and ");
+                        sb.write(" and ");
                     }
                     if positive_max_arg {
                         sb.write_fmt("at most {}", self.max_free_args);
@@ -270,13 +270,13 @@ pub struct FlagParser {
             sb.writeln("Options:");
             for i, flag in self.flags {
                 mut len := sb.len();
-                sb.write_string("   ");
+                sb.write("   ");
                 if flag.abbr == 0 {
-                    sb.write_string("    ");
+                    sb.write("    ");
                 } else {
                     sb.write_fmt("-{}", flag.abbr.to_ascii());
                     if !flag.name.is_empty() {
-                        sb.write_string(", ");
+                        sb.write(", ");
                     }
                 }
                 if !flag.name.is_empty() {
@@ -286,7 +286,7 @@ pub struct FlagParser {
                         sb.write_fmt("--{}", flag.name);
                     }
                     if flag.abbr != 0 {
-                        sb.write_string("  ");
+                        sb.write("  ");
                     }
                 }
                 len = sb.len() - len;

@@ -35,15 +35,15 @@ pub struct StringFormatter {
                         if has_fwidth && fwidth > 0 {
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(uint, fwidth - value_len)));
+                                self.res.write(" ".repeat(@as(uint, fwidth - value_len)));
                             }
                         }
-                        self.res.write_string(value);
+                        self.res.write(value);
                         if has_fwidth && fwidth < 0 {
                             fwidth = -fwidth;
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(uint, fwidth - value_len)));
+                                self.res.write(" ".repeat(@as(uint, fwidth - value_len)));
                             }
                         }
                         if !has_fwidth {
@@ -77,15 +77,15 @@ pub struct StringFormatter {
                         if has_fwidth && fwidth > 0 {
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(uint, fwidth - value_len)));
+                                self.res.write(" ".repeat(@as(uint, fwidth - value_len)));
                             }
                         }
-                        self.res.write_string(value);
+                        self.res.write(value);
                         if has_fwidth && fwidth < 0 {
                             fwidth = -fwidth;
                             value_len := @as(int, value.len);
                             if value_len <= fwidth {
-                                self.res.write_string(" ".repeat(@as(uint, fwidth - value_len)));
+                                self.res.write(" ".repeat(@as(uint, fwidth - value_len)));
                             }
                         }
                     } else {

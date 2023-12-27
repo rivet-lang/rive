@@ -318,8 +318,8 @@ extend string {
             mut sb := StringBuilder.new(new_len_hint);
             mut i: uint := 0;
             while {
-                sb.write_string(self.substr(i, occurrence_idx));
-                sb.write_string(new_value);
+                sb.write(self.substr(i, occurrence_idx));
+                sb.write(new_value);
                 i = occurrence_idx + old_value.len;
                 if occurrence_idx >= self.len {
                     break;
@@ -330,7 +330,7 @@ extend string {
                     break;
                 }
             }
-            sb.write_string(self.substr(i, self.len));
+            sb.write(self.substr(i, self.len));
             return sb.to_string();
         }
         return self;

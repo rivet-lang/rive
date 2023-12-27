@@ -19,7 +19,7 @@ func demangle_symbol(name: string) -> string {
         }
 
         if !res.is_empty() {
-            res.write_string(".");
+            res.write(".");
         }
 
         buf_len := @as(uint, buf.as_uint64());
@@ -33,10 +33,10 @@ func demangle_symbol(name: string) -> string {
 
         byte = unsafe { name.ptr[idx] };
         if byte == 'F' {
-            res.write_string("()");
+            res.write("()");
             break;
         } else if byte == 'M' {
-            res.write_string("(self)");
+            res.write("(self)");
             break;
         } else if !byte.is_digit() {
             break; // end

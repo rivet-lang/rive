@@ -72,9 +72,9 @@ pub enum Type < traits.Stringable {
             .Func(fn) -> {
                 mut sb := strings.Builder.from_string("*func(");
                 for i, arg in fn.args {
-                    sb.write_string(arg.to_string());
+                    sb.write(arg.to_string());
                     if i < fn.args.len - 1 {
-                        sb.write_string(", ");
+                        sb.write(", ");
                     }
                 }
                 sb.write_fmt(") -> {}", fn.ret_type);

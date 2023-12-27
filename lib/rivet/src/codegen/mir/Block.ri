@@ -19,7 +19,7 @@ pub struct Block < traits.Stringable {
         for stmt in self.stmts {
             sb.writeln_fmt("        {};", stmt);
         }
-        sb.write_string("    }");
+        sb.write("    }");
         return sb.to_string();
     }
 }
