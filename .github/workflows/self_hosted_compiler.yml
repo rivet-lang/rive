@@ -2,6 +2,8 @@ name: Self-hosted Compiler
 
 on:
   push:
+    branches:
+      - 'main'
     paths: ['lib/**.ri', 'rivetc/**.py', 'cmd/**.ri']
   pull_request:
     paths: ['lib/**.ri', 'rivetc/**.py', 'cmd/**.ri']

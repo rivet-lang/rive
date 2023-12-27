@@ -3,7 +3,7 @@ name: Self-hosted Compiler - Nightly Build
 on:
   push:
     branches:
-      - main
+      - 'main'
     paths: ['lib/**.ri', 'rivetc/**.py', 'cmd/**.ri']
 
 jobs:
