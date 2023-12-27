@@ -3,7 +3,7 @@
 // file.
 
 import std/{ 
-    flag, semver, strings, console, process, fs.{ self, Path, Directory }  
+    flag, semver, strings, console, process, fs.{self, Path, Directory}
 };
 import rivet/{ build, utils };
 
