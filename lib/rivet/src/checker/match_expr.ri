@@ -2,10 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ../ast;
-import ../utils;
-import ../report;
-import ../utils/maps;
+import ../{ ast, utils, report, utils/maps };
 
 extend Checker {
     const MATCH_EXHAUSTIVE_CUTOFF_LIMIT := 12;

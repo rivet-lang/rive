@@ -522,13 +522,15 @@ class Parser:
     def parse_import_path(self):
         res = ""
         if self.accept(Kind.Dot):
-            res += "./"
+            res += "."
             if self.peek_tok.kind != Kind.Lbrace:
+                res += "/"
                 self.expect(Kind.Div)
         else:
             while self.accept(Kind.DotDot):
-                res += "../"
+                res += ".."
                 if self.peek_tok.kind != Kind.Lbrace:
+                    res += "/"
                     self.expect(Kind.Div)
         if self.tok.kind == Kind.Div and self.peek_tok.kind == Kind.Lbrace:
             return res

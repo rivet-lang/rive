@@ -4,10 +4,8 @@
 
 import std/strings;
 
+import ../{ ast, utils, utils/maps };
 import ./mir;
-import ../ast;
-import ../utils;
-import ../utils/maps;
 
 #[boxed]
 pub struct Codegen {

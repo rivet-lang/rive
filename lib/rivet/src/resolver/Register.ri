@@ -2,9 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ../ast;
-import ../token;
-import ../report;
+import ../{ ast, report, token };
 
 #[boxed]
 pub struct Register {

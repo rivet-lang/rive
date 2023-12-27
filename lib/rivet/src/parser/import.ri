@@ -4,9 +4,7 @@
 
 import std/strings;
 
-import ../ast;
-import ../token;
-import ../report;
+import ../{ ast, report, token };
 
 extend Parser {
     #[inline]
@@ -66,14 +64,16 @@ extend Parser {
     func parse_import_path(mut self) -> string {
         mut sb := strings.Builder.new();
         if self.accept(.Dot) {
-            sb.write_string("./");
+            sb.write_string(".");
             if self.peek_tok.kind != .Lbrace {
+                sb.write_byte('/');
                 self.expect(.Div);
             }
         } else {
             while self.accept(.DotDot) {
-                sb.write_string("../");
+                sb.write_string("..");
                 if self.peek_tok.kind != .Lbrace {
+                    sb.write_byte('/');
                     self.expect(.Div);
                 }
             }

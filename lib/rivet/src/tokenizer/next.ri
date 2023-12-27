@@ -2,8 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ../token;
-import ../utils.{ self, LF, CR };
+import ../{ token, utils.{self, LF, CR} };
 
 const SINGLE_QUOTE: uint8 := 0x27; // `'`
 const BACKSLASH: uint8 := 0x5C; // '\'

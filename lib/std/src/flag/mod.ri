@@ -2,10 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ../traits;
-import ../strings;
-import ../console;
-import ../process;
+import ../{ traits, strings, console, process };
 
 pub const MAX_ARGS_NUMBER := 4048;
 pub var space := "                                     ";

@@ -6,16 +6,9 @@ import std/{
     traits, console, process, fs.{ Path, Directory } 
 };
 
-import ../ast;
-import ../utils;
-import ../prefs;
-import ../token;
-import ../parser;
-import ../report;
-import ../checker;
-import ../codegen;
-import ../resolver;
-import ../depgraph;
+import ../{ 
+    ast, utils, prefs, token, parser, report, checker, codegen, resolver, depgraph 
+};
 
 pub struct Builder {
     mut env: ast.Env;
