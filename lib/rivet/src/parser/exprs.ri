@@ -328,7 +328,7 @@ extend Parser {
                 self.expect(.Rbracket);
                 pos += self.prev_tok.pos;
                 if !is_dyn && (elems.len == 0 || elems.len == 1 && self.tok.kind !in [
-                    .Semicolon, .Comma, .Rbrace
+                    .Semicolon, .Comma, .Rbrace, .Rparen
                 ]) {
                     // []T() or [SIZE]T()
                     is_dyn = elems.len == 0;

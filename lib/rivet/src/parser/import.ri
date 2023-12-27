@@ -15,7 +15,6 @@ extend Parser {
     func parse_import(
         mut self, prev_mod_path: string, attributes: ast.Attributes, is_public: bool, mut pos: token.Pos
     ) -> ast.ImportDecl {
-        mut has_custom_alias := false;
         mut mod_path_pos := self.tok.pos;
         mut mod_path := self.parse_import_path();
         if !prev_mod_path.is_empty() {
@@ -26,8 +25,27 @@ extend Parser {
         if self.tok.kind == .Div && self.peek_tok.kind == .Lbrace {
             self.advance(2);
             while {
-                mut subimport_pos := self.tok.pos;
-                subimports.push(self.parse_import(mod_path, attributes, is_public, subimport_pos));
+                if self.accept(.KwSelf) {
+                    mut self_pos := self.prev_tok.pos;
+                    self_alias := if self.accept(.KwAs) {
+                        self_pos += self.tok.pos;
+                        self.parse_name()
+                    } else {
+                        ""
+                    };
+                    subimports.push(ast.ImportDecl(
+                        attributes: attributes,
+                        is_public: is_public,
+                        path: mod_path,
+                        path_pos: self_pos,
+                        alias_name: self_alias,
+                        has_custom_alias: !self_alias.is_empty(),
+                        pos: pos
+                    ));
+                } else {
+                    mut subimport_pos := self.tok.pos;
+                    subimports.push(self.parse_import(mod_path, attributes, is_public, subimport_pos));
+                }
                 if !self.accept(.Comma) {
                     break;
                 }
@@ -36,7 +54,6 @@ extend Parser {
         }
         (glob, import_list) := self.parse_import_list(mod_path_pos);
         alias_name := if subimports.is_empty() && import_list.is_empty() && self.accept(.KwAs) {
-            has_custom_alias = true;
             new_name := self.parse_name();
             mod_path_pos += self.prev_tok.pos;
             new_name
@@ -53,7 +70,7 @@ extend Parser {
             path: mod_path,
             path_pos: mod_path_pos,
             alias_name: alias_name,
-            has_custom_alias: has_custom_alias,
+            has_custom_alias: !alias_name.is_empty(),
             glob: glob,
             subimports: subimports,
             import_list: import_list,

@@ -456,8 +456,18 @@ class Parser:
         if self.tok.kind == Kind.Div and self.peek_tok.kind == Kind.Lbrace:
             self.advance(2)
             while True:
-                subimport_pos = self.tok.pos
-                subimports.append(self.parse_import(path, attributes, is_public, subimport_pos))
+                if self.accept(Kind.KwSelf):
+                    self_pos = self.prev_tok.pos
+                    if self.accept(Kind.KwAs):
+                        self_alias = self.parse_name()
+                    else:
+                        self_alias = ""
+                    subimports.append(ast.ImportDecl(
+                        attributes, is_public, path, self_alias, False, [], [], pos
+                    ))
+                else:
+                    subimport_pos = self.tok.pos
+                    subimports.append(self.parse_import(path, attributes, is_public, subimport_pos))
                 if not self.accept(Kind.Comma):
                     break
             self.expect(Kind.Rbrace)
@@ -1000,7 +1010,7 @@ class Parser:
             self.expect(Kind.Rbracket)
             if not is_dyn and (
                 len(elems) == 0 or len(elems) == 1 and self.tok.kind not in
-                (Kind.Semicolon, Kind.Comma, Kind.Rbrace)
+                (Kind.Semicolon, Kind.Comma, Kind.Rbrace, Kind.Rparen)
             ):
                 # []T() or [SIZE]T()
                 is_dyn = len(elems) == 0
