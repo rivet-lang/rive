@@ -340,19 +340,31 @@ pub struct Builder {
             }
             for d in pf.decls {
                 if d is .Import(import_decl) {
-                    if !import_decl.info.found {
-                        continue; // module not found
+                    if import_decl.subimports.len > 0 {
+                        for subimport in import_decl.subimports {
+                            if dep := import_graph_mod(&subimport, pf) {
+                                deps.push(dep);
+                            }
+                        }
+                    } else if dep := import_graph_mod(&import_decl, pf) {
+                        deps.push(dep);
                     }
-                    if import_decl.info.full_name == pf.mod.name {
-                        report.error("import cycle detected", import_decl.pos);
-                        continue;
-                    }
-                    deps.push(import_decl.info.full_name);
                 }
             }
             g.add(pf.mod.name, deps);
         }
         return g;
+    }
+
+    func import_graph_mod(import_decl: &ast.ImportDecl, pf: ast.SourceFile) -> ?string {
+        if !import_decl.info.found {
+            return none; // module not found
+        }
+        if import_decl.info.full_name == pf.mod.name {
+            report.error("import cycle detected", import_decl.pos);
+            return none;
+        }
+        return import_decl.info.full_name;
     }
 
     func vlog(&self, msg: string, args: ...traits.Stringable) {
