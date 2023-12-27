@@ -67,12 +67,19 @@ extend Parser {
         mut sb := strings.Builder.new();
         if self.accept(.Dot) {
             sb.write_string("./");
-            self.expect(.Div);
+            if self.peek_tok.kind != .Lbrace {
+                self.expect(.Div);
+            }
         } else {
             while self.accept(.DotDot) {
                 sb.write_string("../");
-                self.expect(.Div);
+                if self.peek_tok.kind != .Lbrace {
+                    self.expect(.Div);
+                }
             }
+        }
+        if self.tok.kind == .Div && self.peek_tok.kind == .Lbrace {
+            return sb.to_string();
         }
         sb.write_string(self.parse_name());
         while self.tok.kind == .Div && self.peek_tok.kind != .Lbrace {

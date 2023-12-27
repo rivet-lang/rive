@@ -523,11 +523,15 @@ class Parser:
         res = ""
         if self.accept(Kind.Dot):
             res += "./"
-            self.expect(Kind.Div)
+            if self.peek_tok.kind != Kind.Lbrace:
+                self.expect(Kind.Div)
         else:
             while self.accept(Kind.DotDot):
                 res += "../"
-                self.expect(Kind.Div)
+                if self.peek_tok.kind != Kind.Lbrace:
+                    self.expect(Kind.Div)
+        if self.tok.kind == Kind.Div and self.peek_tok.kind == Kind.Lbrace:
+            return res
         res += self.parse_name()
         while self.tok.kind == Kind.Div and self.peek_tok.kind != Kind.Lbrace:
             self.next()
