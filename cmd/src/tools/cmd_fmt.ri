@@ -2,9 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/{ flag, console };
-import std/fs.Directory;
-
+import std/{ flag, console, fs.Directory };
 import rivet/{ ast, fmt, prefs, utils, parser };
 
 var fmt_desc := "Formats the given Rivet source files or recursively formats all files in the

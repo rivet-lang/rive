@@ -205,8 +205,7 @@ class Register:
         if len(decl.subimports) > 0:
             for subimport in decl.subimports:
                 self.walk_import_decl(subimport)
-            return
-        if len(decl.import_list) == 0:
+        elif len(decl.import_list) == 0:
             if decl.is_public:
                 try:
                     self.sym.add(
@@ -219,27 +218,27 @@ class Register:
             else:
                 self.source_file.imported_symbols[decl.alias
                                                     ] = decl.mod_sym
-        if decl.glob:
+        elif decl.glob:
             for symbol in decl.mod_sym.syms:
                 if not symbol.is_public:
                     continue
                 self.check_imported_symbol(symbol, decl.pos)
                 self.source_file.imported_symbols[symbol.name] = symbol
-            return
-        for import_info in decl.import_list:
-            if import_info.name == "self":
-                self.source_file.imported_symbols[decl.alias
-                                                    ] = decl.mod_sym
-            elif symbol := decl.mod_sym.find(import_info.name):
-                self.check_vis(symbol, import_info.pos)
-                self.check_imported_symbol(symbol, import_info.pos)
-                self.source_file.imported_symbols[import_info.alias
-                                                    ] = symbol
-            else:
-                report.error(
-                    f"could not find `{import_info.name}` in module `{decl.mod_sym.name}`",
-                    import_info.pos
-                )
+        else:
+            for import_info in decl.import_list:
+                if import_info.name == "self":
+                    self.source_file.imported_symbols[decl.alias
+                                                        ] = decl.mod_sym
+                elif symbol := decl.mod_sym.find(import_info.name):
+                    self.check_vis(symbol, import_info.pos)
+                    self.check_imported_symbol(symbol, import_info.pos)
+                    self.source_file.imported_symbols[import_info.alias
+                                                        ] = symbol
+                else:
+                    report.error(
+                        f"could not find `{import_info.name}` in module `{decl.mod_sym.name}`",
+                        import_info.pos
+                    )
 
     def add_sym(self, sy, pos):
         try:
