@@ -323,9 +323,6 @@ pub struct Register {
                     }
                 } else if sym := import_decl.info.mod.scope.find(import_info.name) {
                     self.check_vis(sym, import_info.pos);
-                    if import_info.name=="sum64"{
-                        report.warn("sum64", import_info.pos );
-                    }
                     if self.check_imported_symbol(sym.name, import_info.pos, true) {
                         if import_decl.is_public {
                             self.sym.scope.add(ast.SymRef(
