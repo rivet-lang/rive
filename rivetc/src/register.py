@@ -215,25 +215,21 @@ class Register:
             if decl.is_public:
                 try:
                     self.sym.add(
-                        sym.SymRef(
-                            decl.is_public, decl.alias, decl.mod_sym
-                        )
+                        sym.SymRef(decl.is_public, decl.alias, decl.mod_sym)
                     )
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             else:
-                self.source_file.imported_symbols[decl.alias
-                                                    ] = decl.mod_sym
+                self.source_file.imported_symbols[decl.alias] = decl.mod_sym
         else:
             for import_info in decl.import_list:
                 if import_info.name == "self":
-                    self.source_file.imported_symbols[decl.alias
-                                                        ] = decl.mod_sym
+                    self.source_file.imported_symbols[decl.alias] = decl.mod_sym
                 elif symbol := decl.mod_sym.find(import_info.name):
                     self.check_vis(symbol, import_info.pos)
                     self.check_imported_symbol(symbol, import_info.pos)
                     self.source_file.imported_symbols[import_info.alias
-                                                        ] = symbol
+                                                      ] = symbol
                 else:
                     report.error(
                         f"could not find `{import_info.name}` in module `{decl.mod_sym.name}`",

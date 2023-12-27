@@ -443,7 +443,7 @@ class Parser:
             report.error(f"expected declaration, found {self.tok}", pos)
             self.next()
         return ast.EmptyDecl()
-    
+
     def parse_import_decl(self, attributes, is_public, pos):
         return self.parse_import("", attributes, is_public, pos)
 
@@ -462,25 +462,35 @@ class Parser:
                         self_alias = self.parse_name()
                     else:
                         self_alias = ""
-                    subimports.append(ast.ImportDecl(
-                        attributes, is_public, path, self_alias, False, [], [], pos
-                    ))
+                    subimports.append(
+                        ast.ImportDecl(
+                            attributes, is_public, path, self_alias, False, [],
+                            [], pos
+                        )
+                    )
                 else:
                     subimport_pos = self.tok.pos
-                    subimports.append(self.parse_import(path, attributes, is_public, subimport_pos))
+                    subimports.append(
+                        self.parse_import(
+                            path, attributes, is_public, subimport_pos
+                        )
+                    )
                 if not self.accept(Kind.Comma):
                     break
             self.expect(Kind.Rbrace)
         glob, import_list = self.parse_import_list(mod_path_pos)
         alias = ""
-        if len(subimports) == 0 and len(import_list) == 0 and self.accept(Kind.KwAs):
+        if len(subimports) == 0 and len(import_list) == 0 and self.accept(
+            Kind.KwAs
+        ):
             alias = self.parse_name()
         if len(prev_mod_path) == 0:
             self.expect(Kind.Semicolon)
         return ast.ImportDecl(
-            attributes, is_public, path, alias, glob, subimports, import_list, pos
+            attributes, is_public, path, alias, glob, subimports, import_list,
+            pos
         )
-    
+
     def parse_import_list(self, mod_path_pos):
         import_list = []
         glob = False
@@ -524,9 +534,7 @@ class Parser:
                 glob = True
             else:
                 report.error("invalid syntax for unqualified import", pos)
-                report.note(
-                    "expected a single name, a list of names or `*`"
-                )
+                report.note("expected a single name, a list of names or `*`")
         return glob, import_list
 
     def parse_import_path(self):

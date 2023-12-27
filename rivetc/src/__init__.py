@@ -100,16 +100,14 @@ class Compiler:
             elif isinstance(decl, ast.ComptimeIf):
                 ct_decls = self.evalue_comptime_if(decl)
                 self.import_modules_from_decls(sf, ct_decls)
-    
+
     def import_module(self, sf, decl):
         if len(decl.subimports) > 0:
             for subimport in decl.subimports:
                 self.import_module(sf, subimport)
-                subimport.id=id(subimport.mod_sym)
+                subimport.id = id(subimport.mod_sym)
             return
-        mod = self.load_module_files(
-            decl.path, decl.alias, sf.file, decl.pos
-        )
+        mod = self.load_module_files(decl.path, decl.alias, sf.file, decl.pos)
         if mod.found:
             if mod_sym_ := self.universe.find(mod.full_name):
                 mod_sym = mod_sym_ # module already imported
@@ -164,7 +162,7 @@ class Compiler:
                         self.import_graph_mod(d, deps, fp)
             g.add(fp.sym.name, deps)
         return g
-    
+
     def import_graph_mod(self, d, deps, fp):
         if not d.mod_sym:
             return # module not found
