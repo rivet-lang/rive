@@ -31,7 +31,7 @@ pub enum Node < Stringable {
 }
 
 pub func nodes_to_decls(nodes: []mut Node) -> []mut Decl {
-    mut decls := []mut Decl(nodes.len);
+    mut decls := []mut Decl(cap: nodes.len);
     for node in nodes {
         if node is .Decl(decl) {
             decls.push(decl);
