@@ -87,6 +87,14 @@ extend Env {
                 .ArgumentTypeShouldBe(1, .Integer),
                 .ReturnTypeEqualToArgumentType(0)
             ]),
+            .Func("ptr_sub", +[
+                BuiltinArg("pointer", is_any: true),
+                BuiltinArg("value", is_any: true)
+            ], self.uint_t, is_unsafe: true, checks: +[
+                .ArgumentTypeShouldBe(0, .Pointer),
+                .ArgumentTypeShouldBe(1, .Integer),
+                .ReturnTypeEqualToArgumentType(0)
+            ]),
             .Func("ptr_diff", +[
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("pointer2", is_any: true)

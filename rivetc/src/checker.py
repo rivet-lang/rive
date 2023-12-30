@@ -1100,7 +1100,7 @@ class Checker:
                         f"attempt to cast an expression that is already of type `{expr.typ}`",
                         expr.pos
                     )
-            elif expr.name in ("ptr_add", "ptr_diff"):
+            elif expr.name in ("ptr_add", "ptr_sub", "ptr_diff"):
                 if not self.inside_unsafe:
                     report.error(
                         f"`{expr.name}` should be called inside an `unsafe` block",

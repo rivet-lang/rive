@@ -912,7 +912,7 @@ class Codegen:
                             )
                         ]
                     )
-            elif expr.name in ("ptr_add", "ptr_diff"):
+            elif expr.name in ("ptr_add", "ptr_sub", "ptr_diff"):
                 return ir.Inst(
                     ir.InstKind.Add
                     if expr.name == "ptr_add" else ir.InstKind.Sub,

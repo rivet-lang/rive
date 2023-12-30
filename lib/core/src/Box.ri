@@ -8,7 +8,7 @@ struct Box {
     mut dtor: ?func(rawptr);
 
     func new(size: uint, dtor: ?func(rawptr)) -> rawptr {
-        mut boxed := @as(&Self, mem_alloc(@size_of(Self) + size));
+        mut boxed := unsafe { @as(&Self, mem_alloc(@size_of(Self) + size)) };
         boxed.ref_count = 1;
         boxed.dtor = dtor;
         boxed.value = unsafe { @ptr_add(@as([&]uint8, boxed), @size_of(Self)) };
@@ -16,12 +16,12 @@ struct Box {
     }
 
     func retain(ptr: rawptr) {
-        mut boxed := @as(&Self, unsafe { @ptr_diff(@as([&]uint8, ptr), @size_of(Self)) });
+        mut boxed := unsafe { @as(&Self, @ptr_sub(@as([&]uint8, ptr), @size_of(Self))) };
         boxed.ref_count += 1;
     }
 
     func release(ptr: rawptr) {
-        mut boxed := @as(&Self, unsafe { @ptr_diff(@as([&]uint8, ptr), @size_of(Self)) });
+        mut boxed := unsafe { @as(&Self, @ptr_sub(@as([&]uint8, ptr), @size_of(Self))) };
         boxed.ref_count -= 1;
         if boxed.ref_count == 0 {
             if dtor := boxed.dtor {
