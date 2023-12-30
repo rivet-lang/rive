@@ -448,13 +448,13 @@ class Lexer:
             if c == utils.BACKSLASH:
                 backslash_count += 1
             # end of string
-            if c == '"' and (is_raw or backslash_count % 2 == 0):
+            if c == '"' and (is_raw or backslash_count & 1 == 0):
                 break # handle "\\" at the end
             if c == CR:
                 n_cr_chars += 1
             if c == LF:
                 self.inc_line_number()
-            if backslash_count % 2 == 1 and not (is_cstr or is_raw):
+            if backslash_count & 1 == 1 and not (is_cstr or is_raw):
                 # escape `\x`
                 if c == "x":
                     h_escapes_pos.append(self.pos - 1)

@@ -582,7 +582,7 @@ extend Tokenizer {
         start := self.pos;
 
         // set flags for advanced escapes first
-        escaped_hex := self.matches("\\x", start + 1);
+        escaped_hex := self.matches("\\x", start + 1) && self.text.len > start + 3;
         escaped_unicode := self.matches("\\u", start + 1);
         escaped_octal := !escaped_hex && !escaped_unicode && self.matches("\\", start + 1);
 
@@ -619,7 +619,7 @@ extend Tokenizer {
             // number of characters e.g. (octal) \141 (hex) \x61 || (unicode)
             // \u2605 we don't handle binary escape codes in rune literals.
             orig := ch;
-            if ch.len % 2 == 0 && (escaped_hex || escaped_unicode || escaped_octal) {
+            if ch.len % 1 == 0 && (escaped_hex || escaped_unicode || escaped_octal) {
                 if escaped_unicode {
                     // there can only be one, so attempt to decode it now
                     ch = decode_unicode_escaped_rune(ch);
@@ -689,7 +689,7 @@ extend Tokenizer {
                 backslash_count += 1;
             }
             // end of string
-            if c == '"' && (is_raw || backslash_count % 2 == 0) {
+            if c == '"' && (is_raw || backslash_count & 1 == 0) {
                 break; // handle "\\" at the end: "123\\"
             }
             if c == CR {
@@ -699,7 +699,7 @@ extend Tokenizer {
                 self.inc_line_number();
             }
             // escape `\x` or `\u`
-            if backslash_count % 2 == 1 && !(is_raw || is_cstr) {
+            if backslash_count & 1 == 1 && !(is_raw || is_cstr) {
                 // escape `\x`
                 if c == 'x' {
                     if self.look_ahead(1) == '"' || !(
@@ -717,8 +717,7 @@ extend Tokenizer {
                         self.error(r"`\u` incomplete unicode character value", pos);
                     }
                     u_escapes_pos.push(self.pos - 1);
-                } else if c !in ['x', 'u', 'e', 'n', 'r', 't', 'v', 'a', 'f', 'b', '\\', '\'', '"']
-                    && !c.is_digit() {
+                } else if !utils.is_escape_sequence(c) && !c.is_digit() && c != '\n' {
                     // unknown escape sequence
                     self.pos -= 1;
                     self.error(
