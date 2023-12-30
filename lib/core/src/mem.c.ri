@@ -7,8 +7,8 @@ import c/libc;
 /// Allocates dynamically a `size` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
 ///
-/// NOTE: Unlike the `mem.zeroed` function, `mem.alloc` will
-/// not zero the memory block.
+/// NOTE: Unlike the `mem.zeroed` function, `mem.alloc` will not zero
+/// the memory block.
 pub func mem_alloc(size: uint) -> rawptr {
     if new := unsafe { libc.malloc(size) } {
         return new;

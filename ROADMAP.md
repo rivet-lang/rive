@@ -41,13 +41,3 @@
     func xyz() { }
     ```
 - [ ] Replace `c/libc` definitions by `extern (C) import` declarations.
-- [ ] `comptime` statement for compile-time execution (`CTE`):
-    ```swift
-    comptime {
-        my_func();
-    }
-
-    func my_func() {
-        console.writeln("executed in compile-time");
-    }
-    ```
