@@ -2771,10 +2771,6 @@ class Codegen:
             to_fn.store(tmp, inst)
         else:
             to_fn.alloca(tmp, inst)
-        to_fn.store(
-            ir.Selector(ir.UINT_T, tmp, ir.Name("_rc_")),
-            ir.IntLit(ir.UINT_T, "1")
-        )
         return tmp
 
     def trait_value(self, value, value_typ, trait_typ):
@@ -3087,10 +3083,7 @@ class Codegen:
                             )
                     union_name = mangled_name + "6_Union"
                     self.out_rir.types.append(ir.Union(union_name, fields))
-                    struct_fields = []
-                    if ts.info.is_boxed:
-                        struct_fields.append(ir.Field("_rc_", ir.UINT_T))
-                    struct_fields += [
+                    struct_fields = [
                         ir.Field("_idx_", ir.UINT_T),
                         ir.Field("obj", ir.Type(union_name))
                     ]
@@ -3100,7 +3093,6 @@ class Codegen:
             elif ts.kind == TypeKind.Trait:
                 ts_name = cg_utils.mangle_symbol(ts)
                 fields = [
-                    ir.Field("_rc_", ir.UINT_T),
                     ir.Field("_idx_", ir.UINT_T),
                     ir.Field("_id_", ir.UINT_T),
                     ir.Field("obj", ir.RAWPTR_T),
@@ -3186,8 +3178,7 @@ class Codegen:
             elif ts.kind in (
                 TypeKind.Struct, TypeKind.String, TypeKind.DynArray
             ):
-                fields = [ir.Field("_rc_", ir.UINT_T)
-                          ] if ts.info.is_boxed else []
+                fields = []
                 for f in ts.full_fields():
                     fields.append(ir.Field(f.name, self.ir_type(f.typ)))
                 self.out_rir.types.append(

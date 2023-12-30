@@ -2,7 +2,6 @@
 
 - [X] Check correct implementation of a trait.
 - [ ] `no_mangle` attribute to avoid function mangling.
-- [ ] `c_union` attribute to indicate that a struct should behave the same as a C union.
 - [ ] Format command (`rivet fmt .`).
 - [ ] Replace Python scripts with Rivet scripts.
 - [ ] Explicit function/method overloading:
@@ -23,7 +22,7 @@
 - [ ] (Atomic) Reference-Counting for traits, tagged enums, strings, dynamic arrays and structs.
 - [ ] Better support for embedded structs.
 - [ ] `undefined` for uninitialized variables: `x: [5]uint8 := undefined;`.
-- [ ] Add `@is_flag_defined()` builtin function.
+- [ ] Add `@is_defined()` builtin function.
 - [ ] Generic support: `Struct<T> { f: T; }` => `Struct:<T>(f: @default(T))`.
 - [ ] Lambdas + Closures: `sum := |a: int32, b: int32| [my_inherited_var] a + b;`.
 - [ ] Anonymous structs: `my_obj := struct(my_field: 1, other_field: true, pwd: "abc");`.
