@@ -106,7 +106,7 @@ pub struct Resolver {
             } else {
                 none
             },
-            .BuiltinCall(mut builtin_call) if builtin_call.name in ["size_of", "align_of"] -> {
+            .BuiltinCall(&mut builtin_call) if builtin_call.name in ["size_of", "align_of"] -> {
                 if builtin_call.args[0].expr is .Type(mut type) && self.resolve_type(type) {
                     (size, align) := self.env.type_size(type);
                     if builtin_call.name == "size_of" {

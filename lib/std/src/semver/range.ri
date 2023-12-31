@@ -128,7 +128,7 @@ struct Range {
     }
 
     func parse_x(input: string) -> ?Version {
-        mut raw_ver := RawVersion.parse(input).complete();
+        raw_ver := RawVersion.parse(input).complete();
         for typ in versions {
             if raw_ver.raw_ints[typ].index_of_any(x_range_symbols) == none {
                 continue;

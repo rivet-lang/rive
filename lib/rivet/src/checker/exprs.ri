@@ -10,7 +10,7 @@ extend Checker {
             .Empty, .Comment -> .Void,
             .Type(type) -> type,
             .ComptimeIf(mut comptime_if) -> {
-                mut exprs := ast.nodes_to_exprs(
+                exprs := ast.nodes_to_exprs(
                     self.env.evalue_comptime_if(comptime_if)
                 );
                 comptime_if.type = self.check_expr(exprs[0]);

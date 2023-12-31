@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ../{ ast, token, utils, report };
+import ../{ ast, token, report };
 
 extend Checker {
     func check_expr_is_mut(self, mut expr: ast.Expr, from_assign: bool := false) {
@@ -71,7 +71,7 @@ extend Checker {
                 }
             },
             .Block(mut block) if block.is_expr -> self.check_expr_is_mut(block.expr),
-            .Index(mut index) -> {
+            .Index(&mut index) -> {
                 if index.left_type is .Pointer(ptr) {
                     if !ptr.is_mut {
                         report.error(
