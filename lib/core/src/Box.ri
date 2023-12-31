@@ -15,9 +15,10 @@ struct Box {
         return boxed.value;
     }
 
-    func retain(ptr: rawptr) {
+    func retain(ptr: rawptr) -> rawptr {
         boxed := unsafe { @as(&mut Self, @ptr_sub(@as([&]uint8, ptr), @size_of(Self))) };
         boxed.ref_count += 1;
+        return ptr;
     }
 
     func release(ptr: rawptr) {
