@@ -658,5 +658,6 @@ pub struct MatchBranch {
     pub mut expr: Expr;
     pub is_else: bool;
     pub pos: token.Pos;
+    pub mut scope: Scope;
     pub mut type: Type;
 }

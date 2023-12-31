@@ -339,7 +339,7 @@ class Resolver:
                         self.resolve_expr(pat)
                     if b.has_var:
                         try:
-                            expr.scope.add(
+                            b.scope.add(
                                 sym.Obj(
                                     b.var_is_mut and not b.var_is_ref, b.var_name,
                                     self.comp.void_t, sym.ObjLevel.Local, b.var_pos

@@ -1473,13 +1473,13 @@ class Checker:
                                         b.pats[0].pos
                                     )
                                 if not b.var_is_ref:
-                                    expr.scope.update_is_hidden_ref(
+                                    b.scope.update_is_hidden_ref(
                                         b.var_name, b.var_is_mut
                                     )
                             else:
                                 var_t = b.pats[0].typ
                             b.var_typ = var_t
-                            expr.scope.update_type(b.var_name, var_t)
+                            b.scope.update_type(b.var_name, var_t)
                         else:
                             report.error(
                                 "multiple patterns cannot have variable",

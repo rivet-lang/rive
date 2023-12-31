@@ -111,7 +111,7 @@ extend Checker {
                                     }
                                     branch_var.type = .Pointer(branch_var.type, branch_var.is_mut);
                                 } else {
-                                    match_expr.scope.update_is_hidden_ref(
+                                    branch.scope.update_is_hidden_ref(
                                         branch_var.name, branch_var.is_mut
                                     );
                                 }
@@ -124,7 +124,7 @@ extend Checker {
                         } else if branch_var.is_ref && branch_var.type.is_boxed() {
                             report.error("cannot take the address of a boxed value", branch_var.pos);
                         }
-                        match_expr.scope.update_type(branch_var.name, branch_var.type);
+                        branch.scope.update_type(branch_var.name, branch_var.type);
                     } else {
                         report.error("multiple patterns cannot have variable", branch_var.pos);
                     }

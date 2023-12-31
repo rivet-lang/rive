@@ -2285,7 +2285,7 @@ class Codegen:
                             ):
                                 var_t = var_t.ptr(True)
                             unique_name = self.cur_func.unique_name(b.var_name)
-                            expr.scope.update_ir_name(b.var_name, unique_name)
+                            b.scope.update_ir_name(b.var_name, unique_name)
                             self.cur_func.inline_alloca(var_t, unique_name, val)
                     else:
                         p_typ_sym = p.typ.symbol()

@@ -129,7 +129,7 @@ extend Codegen {
                     self.type_to_mir(option.inner)
                 } else {
                     is_void := option.inner.is_void();
-                    name := "_R6Option".concat(self.mangle_type(result.inner));
+                    name := "_R6Option".concat(self.mangle_type(option.inner));
                     if !self.generated_opt_res_types.contains(name) {
                         mut fields := []mir.Field();
                         if !is_void {

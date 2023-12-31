@@ -267,8 +267,8 @@ extend Checker {
                     },
                     .Expr(expr3) if expr3 is .Block(block1) && block1.stmts.len > 0 -> {
                         last_stmt := block1.stmts[block1.stmts.len - 1];
-                        if last_stmt is .Expr(last_expr) && last_expr is .Call(call) {
-                            if call.type !is .Never {
+                        if last_stmt is .Expr(last_expr) && last_expr is .Call(call_expr) {
+                            if call_expr.type !is .Never {
                                 report.error(
                                     "`{}` is not a `never` function".fmt(
                                         call_expr.func_.name

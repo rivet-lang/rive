@@ -32,7 +32,7 @@ extend Resolver {
                 self_lit.obj = @as(ast.Var, self_lit.scope.lookup("self")?);
                 self_lit.obj.is_used = true;
             } else {
-                report.error("cannot resolve `self` expression", self_ty.pos);
+                report.error("cannot resolve `self` expression", self_lit.pos);
             },
             .TupleLiteral(mut tuple_lit) -> {
                 for mut value in tuple_lit.values {
