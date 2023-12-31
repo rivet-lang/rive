@@ -624,6 +624,7 @@ extend Parser {
         self.expect(.Lbrace);
         self.inside_match_header = old_inside_match_header;
         while {
+            self.open_scope();
             branch_pos := self.tok.pos;
             mut patterns := []mut ast.Expr();
             mut branch_var: ?ast.ObjectData := none;
@@ -683,8 +684,10 @@ extend Parser {
                 cond: cond,
                 expr: self.parse_expr(),
                 is_else: is_else,
+                scope: self.scope,
                 pos: branch_pos + self.prev_tok.pos
             ));
+            self.close_scope();
             if !self.accept(.Comma) {
                 break;
             }

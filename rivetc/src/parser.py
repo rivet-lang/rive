@@ -1297,6 +1297,7 @@ class Parser:
         self.expect(Kind.Lbrace)
         self.inside_match_header = prev_inside_match_header
         while True:
+            self.open_scope()
             pats = []
             has_var = False
             var_is_ref = False
@@ -1348,9 +1349,10 @@ class Parser:
             branches.append(
                 ast.MatchBranch(
                     pats, has_var, var_is_ref, var_is_mut, var_name, var_pos, has_cond,
-                    cond, self.parse_expr(), is_else
+                    cond, self.parse_expr(), is_else, self.scope
                 )
             )
+            self.close_scope()
             if not self.accept(Kind.Comma):
                 break
         if isinstance(expr, ast.GuardExpr):

@@ -129,8 +129,8 @@ pub struct Parser {
         support_ref: bool := false, support_mut: bool := true
     ) -> ast.ObjectData {
         pos := self.tok.pos;
+        is_ref := support_ref && self.accept(.Amp);
         is_mut := support_mut && self.accept(.KwMut);
-        is_ref := support_ref && !is_mut && self.accept(.Amp);
         name := self.parse_name();
         (type, has_type) := if support_type && self.accept(.Colon) {
             (self.parse_type(), true)

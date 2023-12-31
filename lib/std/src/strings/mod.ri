@@ -9,7 +9,7 @@ pub alias Builder := core.StringBuilder;
 /// Uses levenshtein distance algorithm to calculate the distance between
 /// two strings (lower is closer).
 pub func levenshtein_distance(a: string, b: string) -> int32 {
-    mut f := []mut int32(init: 0, len: b.len + 1);
+    f := []mut int32(init: 0, len: b.len + 1);
     for ca in a.as_bytes() {
         mut j: uint := 1;
         mut fj1 := f[0];

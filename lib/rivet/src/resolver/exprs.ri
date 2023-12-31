@@ -9,7 +9,7 @@ extend Resolver {
         match expr {
             .Empty(empty_pos) -> report.error("bug: unexpected empty expression found", empty_pos),
             .ComptimeIf(mut comptime_if) -> {
-                mut exprs := ast.nodes_to_exprs(
+                exprs := ast.nodes_to_exprs(
                     self.env.evalue_comptime_if(comptime_if)
                 );
                 self.resolve_expr(exprs[0]);
@@ -32,7 +32,7 @@ extend Resolver {
                 self_lit.obj = @as(ast.Var, self_lit.scope.lookup("self")?);
                 self_lit.obj.is_used = true;
             } else {
-                report.error("cannot resolve `self` expression", self_ty.pos);
+                report.error("cannot resolve `self` expression", self_lit.pos);
             },
             .TupleLiteral(mut tuple_lit) -> {
                 for mut value in tuple_lit.values {
