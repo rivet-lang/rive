@@ -61,7 +61,7 @@ $if !_RELEASE_ { // skip backtrace in release mode
 
     func bt_error_handler(data: rawptr, msg_ptr: ?[&]mut uint8, errnum: int32) {
         unsafe {
-            mut bdata := @as(&mut BacktraceData, data);
+            bdata := @as(&mut BacktraceData, data);
             if !bdata.has_error {
                 bdata.has_error = true;
                 console_ewrite("   libbacktrace error: ");

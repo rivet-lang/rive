@@ -1941,14 +1941,15 @@ class Checker:
             if expr.is_path:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
                 return
-            self.check_expr_is_mut(expr.left, from_assign)
-            if expr.is_indirect and isinstance(expr.left_typ, type.Ptr):
+            if isinstance(expr.left_typ, type.Ptr):
                 if not expr.left_typ.is_mut:
                     report.error(
                         "cannot use a immutable pointer as mutable value",
                         expr.pos
                     )
-            elif not expr.field_is_mut and not expr.is_option_check:
+                return
+            self.check_expr_is_mut(expr.left, from_assign)
+            if not expr.field_is_mut and not expr.is_option_check:
                 report.error(
                     f"field `{expr.field_name}` of type `{expr.left_typ.symbol().name}` is immutable",
                     expr.pos
@@ -1977,14 +1978,13 @@ class Checker:
                         "cannot modify elements of an immutable pointer",
                         expr.pos
                     )
-                return
-            self.check_expr_is_mut(expr.left, from_assign)
-            expr_sym = expr.left.typ.symbol()
-            if not expr_sym.info.is_mut:
-                report.error(
-                    f"cannot modify elements of an immutable {expr_sym.kind}",
-                    expr.pos
-                )
+            else:
+                expr_sym = expr.left.typ.symbol()
+                if not expr_sym.info.is_mut:
+                    report.error(
+                        f"cannot modify elements of an immutable {expr_sym.kind}",
+                        expr.pos
+                    )
         elif isinstance(expr, ast.UnaryExpr):
             self.check_expr_is_mut(expr.right)
         elif isinstance(expr, ast.BinaryExpr):
