@@ -1504,7 +1504,7 @@ class Codegen:
             ir_left_typ = self.ir_type(expr.left_typ)
             ir_typ = self.ir_type(expr.typ)
             if expr.is_indirect:
-                return ir.Inst(ir.InstKind.LoadPtr, [left])
+                return ir.Inst(ir.InstKind.LoadPtr, [left], ir_left_typ.typ)
             elif expr.is_option_check:
                 panic_l = self.cur_func.local_name()
                 exit_l = self.cur_func.local_name()
@@ -1882,7 +1882,7 @@ class Codegen:
                     var_t = self.ir_type(expr.var.typ)
                     var_t2 = var_t if isinstance(
                         var_t, ir.Pointer
-                    ) or expr.var.is_mut else var_t.ptr()
+                    ) or (expr.var.is_mut or expr.var.is_ref) else var_t.ptr()
                     if left_sym.kind == TypeKind.Enum:
                         union_name = f"{cg_utils.mangle_symbol(left_sym)}6_Union"
                         union_type = ir.Type(union_name)
@@ -1891,7 +1891,9 @@ class Codegen:
                             ir.Type(self.ir_type(expr.typ)), obj_val,
                             ir.Name(f"v{expr.right.variant_info.value}")
                         )
-                        if expr.var.is_mut and not isinstance(
+                        if expr.var.is_ref:
+                            val = ir.Inst(ir.InstKind.GetPtr, [val], var_t2)
+                        elif expr.var.is_mut and not isinstance(
                             var_t, ir.Pointer
                         ):
                             val = ir.Inst(ir.InstKind.GetPtr, [val], var_t2)
@@ -1905,7 +1907,7 @@ class Codegen:
                         )
                         if not ((
                             isinstance(var_t2, ir.Pointer) and var_t2.is_managed
-                        ) or expr.var.is_mut):
+                        ) or expr.var.is_mut or expr.var.is_ref):
                             val = ir.Inst(ir.InstKind.LoadPtr, [val], var_t2)
                     unique_name = self.cur_func.unique_name(expr.var.name)
                     expr.scope.update_ir_name(expr.var.name, unique_name)
@@ -2256,7 +2258,9 @@ class Codegen:
                                     self.ir_type(p.variant_info.typ), obj_f,
                                     ir.Name(f"v{p.variant_info.value}")
                                 )
-                                if b.var_is_mut and not isinstance(
+                                if b.var_is_ref:
+                                    val = ir.Inst(ir.InstKind.GetPtr, [val])
+                                elif b.var_is_mut and not isinstance(
                                     var_t, ir.Pointer
                                 ):
                                     val = ir.Inst(ir.InstKind.GetPtr, [val])
@@ -2276,10 +2280,10 @@ class Codegen:
                                     )
                                 ):
                                     val = ir.Inst(ir.InstKind.LoadPtr, [val])
-                            if b.var_is_mut and not isinstance(
+                            if (b.var_is_mut or b.var_is_ref) and not isinstance(
                                 var_t, ir.Pointer
                             ):
-                                var_t = var_t.ptr(True)
+                                var_t = var_t.ptr(not b.var_is_ref)
                             unique_name = self.cur_func.unique_name(b.var_name)
                             expr.scope.update_ir_name(b.var_name, unique_name)
                             self.cur_func.inline_alloca(var_t, unique_name, val)

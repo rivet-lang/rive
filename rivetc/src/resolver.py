@@ -276,8 +276,8 @@ class Resolver:
                 try:
                     expr.scope.add(
                         sym.Obj(
-                            expr.var.is_mut, expr.var.name, self.comp.void_t,
-                            sym.ObjLevel.Local, expr.var.pos
+                            expr.var.is_mut and not expr.var.is_ref, expr.var.name,
+                            self.comp.void_t, sym.ObjLevel.Local, expr.var.pos
                         )
                     )
                 except utils.CompilerError as e:
@@ -341,8 +341,8 @@ class Resolver:
                         try:
                             expr.scope.add(
                                 sym.Obj(
-                                    b.var_is_mut, b.var_name, self.comp.void_t,
-                                    sym.ObjLevel.Local, b.var_pos
+                                    b.var_is_mut and not b.var_is_ref, b.var_name,
+                                    self.comp.void_t, sym.ObjLevel.Local, b.var_pos
                                 )
                             )
                         except utils.CompilerError as e:

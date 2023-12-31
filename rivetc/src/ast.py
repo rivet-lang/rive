@@ -974,11 +974,12 @@ class IfExpr:
 
 class MatchBranch:
     def __init__(
-        self, pats, has_var, var_is_mut, var_name, var_pos, has_cond, cond,
+        self, pats, has_var, var_is_ref, var_is_mut, var_name, var_pos, has_cond, cond,
         expr, is_else
     ):
         self.pats = pats
         self.has_var = has_var
+        self.var_is_ref = var_is_ref
         self.var_is_mut = var_is_mut
         self.var_name = var_name
         self.var_pos = var_pos
@@ -993,6 +994,13 @@ class MatchBranch:
         if self.is_else:
             return f"else => {self.expr}"
         res = f"{', '.join([str(p) for p in self.pats])}"
+        if self.has_var:
+            res += "("
+            if self.var_is_ref:
+                res += "&"
+            if self.var_is_mut:
+                res += "mut "
+            res += f"{self.var_name})"
         if self.has_cond:
             res += " if {self.cond}"
         res += f" => {self.expr}"

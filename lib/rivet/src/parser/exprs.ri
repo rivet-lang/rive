@@ -626,10 +626,7 @@ extend Parser {
         while {
             branch_pos := self.tok.pos;
             mut patterns := []mut ast.Expr();
-            mut has_var := false;
-            mut var_is_mut := false;
-            mut var_name := "";
-            mut var_pos := token.no_pos;
+            mut branch_var: ?ast.ObjectData := none;
             mut has_cond := false;
             mut cond := ast.Expr.Empty(self.tok.pos);
             is_else := self.accept(.KwElse);
@@ -670,13 +667,7 @@ extend Parser {
                     }
                 }
                 if self.accept(.Lparen) {
-                    has_var = true;
-                    var_pos = self.tok.pos;
-                    var_is_mut = self.accept(.KwMut);
-                    if var_is_mut {
-                        var_pos += self.tok.pos;
-                    }
-                    var_name = self.parse_name();
+                    branch_var = self.parse_var_decl(support_ref: true, support_mut: true);
                     self.expect(.Rparen);
                 }
                 if self.accept(.KwIf) {
@@ -687,10 +678,7 @@ extend Parser {
             self.expect(.Arrow);
             branches.push(ast.MatchBranch(
                 patterns: patterns,
-                has_var: has_var,
-                var_is_mut: var_is_mut,
-                var_name: var_name,
-                var_pos: var_pos,
+                branch_var: branch_var,
                 has_cond: has_cond,
                 cond: cond,
                 expr: self.parse_expr(),

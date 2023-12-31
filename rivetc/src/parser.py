@@ -786,8 +786,8 @@ class Parser:
         self, inside_global = False, support_typ = True, support_ref = False,
         support_mut = True
     ):
+        is_ref = support_ref and self.accept(Kind.Amp)
         is_mut = support_mut and self.accept(Kind.KwMut)
-        is_ref = support_ref and not is_mut and self.accept(Kind.Amp)
         pos = self.tok.pos
         name = self.parse_name()
         has_typ = False
@@ -852,7 +852,7 @@ class Parser:
                 else:
                     right = ast.TypeNode(self.parse_type(), pos)
                 if self.accept(Kind.Lparen):
-                    var = self.parse_var_decl(support_ref = False)
+                    var = self.parse_var_decl(support_ref = True, support_mut = True)
                     self.expect(Kind.Rparen)
                 else:
                     var = None
@@ -1299,6 +1299,7 @@ class Parser:
         while True:
             pats = []
             has_var = False
+            var_is_ref = False
             var_is_mut = False
             var_name = ""
             var_pos = token.NO_POS
@@ -1335,6 +1336,7 @@ class Parser:
                         break
                 if self.accept(Kind.Lparen):
                     has_var = True
+                    var_is_ref = self.accept(Kind.Amp)
                     var_is_mut = self.accept(Kind.KwMut)
                     var_pos = self.tok.pos
                     var_name = self.parse_name()
@@ -1345,7 +1347,7 @@ class Parser:
             self.expect(Kind.Arrow)
             branches.append(
                 ast.MatchBranch(
-                    pats, has_var, var_is_mut, var_name, var_pos, has_cond,
+                    pats, has_var, var_is_ref, var_is_mut, var_name, var_pos, has_cond,
                     cond, self.parse_expr(), is_else
                 )
             )

@@ -648,10 +648,7 @@ pub struct IfBranch {
 
 pub struct MatchBranch {
     pub mut patterns: []mut Expr;
-    pub has_var: bool;
-    pub var_is_mut: bool;
-    pub var_name: string;
-    pub var_pos: token.Pos;
+    pub branch_var: ?ObjectData;
     pub has_cond: bool;
     pub mut var_type: Type;
     pub mut cond: Expr;

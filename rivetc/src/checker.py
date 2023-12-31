@@ -775,22 +775,27 @@ class Checker:
                     )
                 if expr.has_var:
                     if lsym.kind == TypeKind.Enum and lsym.info.is_tagged:
+                        v_t = expr.right.variant_info.typ
+                        if expr.var.is_ref:
+                            v_t = type.Ptr(v_t, expr.var.is_mut)
                         if expr.right.variant_info.has_typ:
-                            expr.scope.update_type(
-                                expr.var.name, expr.right.variant_info.typ
-                            )
-                            expr.var.typ = expr.right.variant_info.typ
+                            expr.scope.update_type(expr.var.name, v_t)
+                            expr.var.typ = v_t
                         else:
                             report.error(
                                 "variant `{expr.right}` has no value",
                                 expr.right.pos
                             )
                     else:
-                        expr.scope.update_type(expr.var.name, rtyp)
-                        expr.var.typ = rtyp
+                        v_t = rtyp
+                        if expr.var.is_ref:
+                            v_t = type.Ptr(rtyp, expr.var.is_mut)
+                        expr.scope.update_type(expr.var.name, v_t)
+                        expr.var.typ = v_t
                     if expr.var.is_mut:
                         self.check_expr_is_mut(expr.left)
-                        expr.scope.update_is_hidden_ref(expr.var.name, True)
+                        if not expr.var.is_ref:
+                            expr.scope.update_is_hidden_ref(expr.var.name, True)
                 if lsym.kind == TypeKind.Enum:
                     if lsym.info.is_tagged and expr.op not in (
                         Kind.KwIs, Kind.KwNotIs
@@ -1454,29 +1459,32 @@ class Checker:
                     if b.has_var:
                         if b.var_is_mut:
                             self.check_expr_is_mut(expr.expr)
-                        if len(b.pats) != 1:
-                            report.error(
-                                "multiple patterns cannot have variable",
-                                b.var_pos
-                            )
-                        else:
+                        if len(b.pats) == 1:
                             var_t = self.comp.void_t
                             if expr_sym.kind == TypeKind.Enum:
                                 pat0 = b.pats[0].variant_info
                                 if pat0.has_typ:
                                     var_t = pat0.typ
+                                    if b.var_is_ref:
+                                        var_t = type.Ptr(var_t, b.var_is_mut)
                                 else:
                                     report.error(
                                         "cannot use void expression",
                                         b.pats[0].pos
                                     )
-                                expr.scope.update_is_hidden_ref(
-                                    b.var_name, b.var_is_mut
-                                )
+                                if not b.var_is_ref:
+                                    expr.scope.update_is_hidden_ref(
+                                        b.var_name, b.var_is_mut
+                                    )
                             else:
                                 var_t = b.pats[0].typ
                             b.var_typ = var_t
                             expr.scope.update_type(b.var_name, var_t)
+                        else:
+                            report.error(
+                                "multiple patterns cannot have variable",
+                                b.var_pos
+                            )
                     if b.has_cond and self.check_expr(
                         b.cond
                     ) != self.comp.bool_t:

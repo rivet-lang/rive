@@ -123,7 +123,7 @@ extend Resolver {
                 if binary.has_var_obj {
                     self.check_variable_shadowing(binary.var_obj.name, binary.var_obj.pos);
                     binary.var_obj.sym = ast.Var(
-                        is_mut: binary.var_obj.is_mut,
+                        is_mut: binary.var_obj.is_mut && !binary.var_obj.is_ref,
                         name: binary.var_obj.name,
                         type: .Void,
                         level: .Local,
@@ -190,16 +190,16 @@ extend Resolver {
                         for mut pattern in branch.patterns {
                             self.resolve_expr(pattern);
                         }
-                        if branch.has_var {
-                            self.check_variable_shadowing(branch.var_name, branch.var_pos);
+                        if branch_var := branch.branch_var {
+                            self.check_variable_shadowing(branch_var.name, branch_var.pos);
                             match_expr.scope.add_local(ast.Var(
-                                is_mut: branch.var_is_mut,
-                                name: branch.var_name,
+                                is_mut: branch_var.is_mut && !branch_var.is_ref,
+                                name: branch_var.name,
                                 level: .Local,
                                 type: .Void,
-                                pos: branch.var_pos
+                                pos: branch_var.pos
                             )) catch |err| report.error(
-                                err.to_string(), branch.var_pos
+                                err.to_string(), branch_var.pos
                             );
                         }
                         if branch.has_cond {

@@ -51,7 +51,7 @@ extend Checker {
                 mut err := report.error_builder(
                     "invalid type for type-match", match_expr.expr.position()
                 );
-                err.add_note("expected enum or trait type, found `{}`", expr_type);
+                err.add_note("expected trait value, found `{}`", expr_type);
                 err.emit();
             } else if expr_sym.info is .Enum(enum_info) {
                 if enum_info.is_tagged && !match_expr.is_typematch {
@@ -88,25 +88,27 @@ extend Checker {
                         }
                     }
                 }
-                if branch.has_var {
+                if branch_var := branch.branch_var {
                     self.check_name_case(
-                        .Snake, "branch variable", branch.var_name, branch.var_pos
+                        .Snake, "branch variable", branch_var.name, branch_var.pos
                     );
-                    if branch.var_is_mut {
+                    if branch_var.is_mut {
                         self.check_expr_is_mut(match_expr.expr);
                     }
-                    if branch.patterns.len != 1 {
-                        report.error("multiple patterns cannot have variable", branch.var_pos);
-                    } else {
+                    if branch.patterns.len == 1 {
                         if expr_sym.info is .Enum {
                             pattern0 := @as(
                                 ast.Expr.EnumLiteral, branch.patterns[0]
                             ).variant;
                             if pattern0.has_type {
-                                branch.var_type = pattern0.type;
-                                match_expr.scope.update_is_hidden_ref(
-                                    branch.var_name, branch.var_is_mut
-                                );
+                                branch_var.type = pattern0.type;
+                                if branch_var.is_ref {
+                                    branch_var.type = .Pointer(branch_var.type, branch_var.is_mut);
+                                } else {
+                                    match_expr.scope.update_is_hidden_ref(
+                                        branch_var.name, branch_var.is_mut
+                                    );
+                                }
                             } else {
                                 report.error(
                                     "cannot use void expression as value",
@@ -114,7 +116,9 @@ extend Checker {
                                 );
                             }
                         }
-                        match_expr.scope.update_type(branch.var_name, branch.var_type);
+                        match_expr.scope.update_type(branch_var.name, branch_var.type);
+                    } else {
+                        report.error("multiple patterns cannot have variable", branch_var.pos);
                     }
                 }
                 if branch.has_cond && self.check_expr(branch.cond) != self.env.bool_t {
