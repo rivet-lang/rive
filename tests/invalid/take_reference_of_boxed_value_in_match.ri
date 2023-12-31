@@ -1,0 +1,14 @@
+enum Values {
+    String(string),
+    Int(int)
+}
+
+func main() {
+    val := Values.String("Abc");
+    match val {
+        .String(&str) -> _ = str, // fail
+        else -> {}
+    }
+
+    @assert(val is .String(&str2) && str2.* == "Abc"); // fail
+}
