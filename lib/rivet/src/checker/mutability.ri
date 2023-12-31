@@ -1,0 +1,143 @@
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
+// file.
+
+import ../{ ast, token, utils, report };
+
+extend Checker {
+    func check_expr_is_mut(self, mut expr: ast.Expr, from_assign: bool := false) {
+        match expr {
+            .Paren(mut paren) -> self.check_expr_is_mut(paren.expr),
+            .SelfLiteral(mut self_lit) -> if self_lit.obj.is_mut {
+                self_lit.obj.is_changed = true;
+            } else {
+                mut err := report.error_builder(
+                    "cannot use `self` as mutable value", self_lit.pos
+                );
+                err.add_help("consider making `self` as mutable: `mut self`");
+                err.emit();
+            },
+            .Ident(mut ident) -> if ident.is_comptime {
+                report.error(
+                    "cannot use constant `@{}` as mutable value".fmt(ident.name),
+                    ident.pos
+                );
+            } else if ident.name == "_" {
+                return;
+            } else if ident.found && (ident.is_sym || ident.is_obj) {
+                check_sym_is_mut(ident.sym, ident.pos);
+            },
+            .Selector(mut selector) -> if selector.is_path {
+                check_sym_is_mut(selector.sym, selector.pos);
+            } else {
+                if selector.left_type is .Pointer(ptr_t) {
+                    if !ptr_t.is_mut {
+                        report.error(
+                            "cannot use a immutable pointer as mutable value", selector.pos
+                        );
+                    }
+                } else {
+                    self.check_expr_is_mut(selector.left);
+                    if selector.found && !selector.field_is_mut {
+                        report.error(
+                            "field `{}` of type `{}` is immutable".fmt(
+                                selector.field_name, selector.left_type
+                            ), selector.pos
+                        );
+                    }
+                }
+            },
+            .Indirect(indirect) -> if !indirect.is_mut {
+                report.error("cannot use a immutable pointer as mutable value", indirect.pos);
+            },
+            .OptionCheck(mut option_check) -> self.check_expr_is_mut(option_check.left),
+            .NoneLiteral -> report.error("`none` cannot be modified", expr.position()),
+            .StringLiteral -> report.error(
+                "string literals cannot be modified", expr.position()
+            ),
+            .TupleLiteral(mut tuple_lit) -> if from_assign {
+                for mut value in tuple_lit.values {
+                    self.check_expr_is_mut(value);
+                }
+            } else {
+                report.error("tuple literals cannot be modified", tuple_lit.pos);
+            },
+            .EnumLiteral(enum_lit) if !enum_lit.is_instance -> report.error(
+                "enum literals cannot be modified", enum_lit.pos
+            ),
+            .BuiltinCall(mut builtin_call) -> {
+                for mut arg in builtin_call.args {
+                    self.check_expr_is_mut(arg.expr);
+                }
+            },
+            .Block(mut block) if block.is_expr -> self.check_expr_is_mut(block.expr),
+            .Index(mut index) -> {
+                if index.left_type is .Pointer(ptr) {
+                    if !ptr.is_mut {
+                        report.error(
+                            "cannot modify elements of an immutable pointer", index.pos
+                        );
+                    }
+                } else {
+                    expr_sym := index.left_type.symbol()?;
+                    if !expr_sym.info.is_mut_array() {
+                        report.error(
+                            "cannot modify elements of an immutable {}".fmt(expr_sym.info),
+                            index.pos
+                        );
+                    }
+                }
+            },
+            .Unary(mut unary) -> self.check_expr_is_mut(unary.right),
+            .Binary(mut binary) -> {
+                self.check_expr_is_mut(binary.left);
+                self.check_expr_is_mut(binary.right);
+            },
+            .If(mut if_expr) -> {
+                for mut branch in if_expr.branches {
+                    self.check_expr_is_mut(branch.expr);
+                }
+            },
+            .Match(mut match_expr) -> {
+                for mut branch in match_expr.branches {
+                    self.check_expr_is_mut(branch.expr);
+                }
+            },
+            else -> {}
+        }
+    }
+
+    func check_sym_is_mut(mut sym: ast.Sym, pos: token.Pos) {
+        match sym is {
+            ast.Const -> report.error(
+                "cannot use constant `{}` as mutable value".fmt(sym.name), pos
+            ),
+            ast.Var(mut var_info) -> {
+                if var_info.is_mut {
+                    var_info.is_changed = true;
+                } else {
+                    mut err := if var_info.level == .Argument {
+                        mut err_b := report.error_builder(
+                            "cannot use variable `{}` as mutable argument".fmt(sym.name), pos
+                        );
+                        err_b.add_help(
+                            "consider making this argument mutable: `mut {}`", var_info.name
+                        );
+                        err_b
+                    } else {
+                        mut err_b := report.error_builder(
+                            "cannot use variable `{}` as mutable value".fmt(sym.name), pos
+                        );
+                        err_b.add_help(
+                            "consider making this {} mutable: `mut {}`", var_info.type_of(),
+                            var_info.name
+                        );
+                        err_b
+                    };
+                    err.emit();
+                }
+            },
+            else -> {}
+        }
+    }
+}
