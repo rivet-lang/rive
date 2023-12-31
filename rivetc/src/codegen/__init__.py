@@ -2280,10 +2280,10 @@ class Codegen:
                                     )
                                 ):
                                     val = ir.Inst(ir.InstKind.LoadPtr, [val])
-                            if (b.var_is_mut or b.var_is_ref) and not isinstance(
+                            if b.var_is_mut and not isinstance(
                                 var_t, ir.Pointer
                             ):
-                                var_t = var_t.ptr(not b.var_is_ref)
+                                var_t = var_t.ptr(True)
                             unique_name = self.cur_func.unique_name(b.var_name)
                             expr.scope.update_ir_name(b.var_name, unique_name)
                             self.cur_func.inline_alloca(var_t, unique_name, val)

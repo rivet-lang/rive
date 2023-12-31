@@ -574,11 +574,14 @@ pub enum Expr < traits.Stringable {
                             }
                         }
                     }
-                    if branch.has_var {
-                        if branch.var_is_mut {
+                    if branch_var := branch.branch_var {
+                        if branch_var.is_ref {
+                            sb.write("&");
+                        }
+                        if branch_var.is_mut {
                             sb.write("mut ");
                         }
-                        sb.write(branch.var_name);
+                        sb.write(branch_var.name);
                     }
                     if branch.has_cond {
                         sb.write_fmt(" if {} ", branch.cond);
@@ -648,7 +651,7 @@ pub struct IfBranch {
 
 pub struct MatchBranch {
     pub mut patterns: []mut Expr;
-    pub branch_var: ?ObjectData;
+    pub mut branch_var: ?ObjectData;
     pub has_cond: bool;
     pub mut var_type: Type;
     pub mut cond: Expr;

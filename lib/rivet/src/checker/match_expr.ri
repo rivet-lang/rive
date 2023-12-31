@@ -88,13 +88,14 @@ extend Checker {
                         }
                     }
                 }
-                if branch_var := branch.branch_var {
+                if mut branch_var := branch.branch_var {
                     self.check_name_case(
                         .Snake, "branch variable", branch_var.name, branch_var.pos
                     );
                     if branch_var.is_mut {
                         self.check_expr_is_mut(match_expr.expr);
                     }
+                    branch_var.type = branch.var_type;
                     if branch.patterns.len == 1 {
                         if expr_sym.info is .Enum {
                             pattern0 := @as(

@@ -762,7 +762,7 @@ extend Checker {
                                 } else {
                                     variant.type
                                 };
-                                binary.var_obj.type = var_t
+                                binary.var_obj.type = var_t;
                                 binary.var_obj.sym.type = var_t;
                             } else {
                                 report.error(
@@ -772,11 +772,6 @@ extend Checker {
                             }
                         } else if left_sym.info is .Trait {
                             // trait value
-                            var_t := if binary.var_obj.is_ref {
-                                ast.Type.Pointer(right_type, binary.var_obj.is_mut)
-                            } else {
-                                right_type
-                            };
                             binary.var_obj.type = right_type;
                             binary.var_obj.sym.type = right_type;
                         }
