@@ -96,7 +96,7 @@ extend Parser {
                             right: right,
                             op: op,
                             has_var_obj: true,
-                            var_obj: self.parse_var_decl(support_ref: false),
+                            var_obj: self.parse_var_decl(support_ref: true),
                             scope: self.scope,
                             pos: left.position() + self.prev_tok.pos
                         );

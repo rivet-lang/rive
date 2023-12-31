@@ -596,10 +596,10 @@ class Parser:
         sc = self.scope
         self.expect(Kind.Lparen)
         if self.tok.kind != Kind.Rparen:
-            # receiver (`self`|`&self`|`mut self`)
+            # receiver (`self`|`mut self`|`&self`|`&mut self`)
             if self.tok.kind == Kind.KwSelf or (
                 self.tok.kind in (Kind.Amp, Kind.KwMut)
-                and self.peek_tok.kind == Kind.KwSelf
+                and self.peek_tok.kind in (Kind.KwMut, Kind.KwSelf)
             ):
                 is_method = True
                 self_is_ptr = self.accept(Kind.Amp)

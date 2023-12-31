@@ -128,11 +128,11 @@ class Resolver:
                 if decl.is_method:
                     self_typ = type.Type(self.self_sym)
                     if decl.self_is_ptr:
-                        self_typ = type.Ptr(self_typ)
+                        self_typ = type.Ptr(self_typ, decl.self_is_mut)
                     try:
                         decl.scope.add(
                             sym.Obj(
-                                decl.self_is_mut, "self", self_typ,
+                                decl.self_is_mut and not decl.self_is_ptr, "self", self_typ,
                                 sym.ObjLevel.Rec, decl.name_pos
                             )
                         )

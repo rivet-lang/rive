@@ -476,14 +476,14 @@ extend Parser {
         sc.detached_from_parent = true;
         self.expect(.Lparen);
         if self.tok.kind != .Rparen {
-            // receiver (`self`|`&self`|`mut self`)
+            // receiver (`self`|`mut self`|`&self`|`&mut self`)
             if self.tok.kind == .KwSelf || (
-                self.tok.kind in [.Amp, .KwMut] && self.peek_tok.kind == .KwSelf
+                self.tok.kind in [.Amp, .KwMut] && self.peek_tok.kind in [.KwMut, .KwSelf]
             ) {
                 is_method = true;
                 self_pos = self.tok.pos;
                 self_is_ptr = self.accept(.Amp);
-                self_is_mut = !self_is_ptr && self.accept(.KwMut);
+                self_is_mut = self.accept(.KwMut);
                 self.expect(.KwSelf);
                 if self_is_mut || self_is_ptr {
                     self_pos += self.prev_tok.pos;
