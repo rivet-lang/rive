@@ -758,6 +758,15 @@ extend Checker {
                             variant := @as(ast.Expr.EnumLiteral, binary.right).variant;
                             if variant.has_type {
                                 var_t := if binary.var_obj.is_ref {
+                                    if variant.type is .Pointer {
+                                        report.error(
+                                            "cannot take the address of other pointer", binary.var_obj.pos
+                                        );
+                                    } else if variant.type.is_boxed() {
+                                        report.error(
+                                            "cannot take the address of a boxed value", binary.var_obj.pos
+                                        );
+                                    }
                                     ast.Type.Pointer(variant.type, binary.var_obj.is_mut)
                                 } else {
                                     variant.type

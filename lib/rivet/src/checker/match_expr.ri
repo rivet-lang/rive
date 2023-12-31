@@ -104,6 +104,11 @@ extend Checker {
                             if pattern0.has_type {
                                 branch_var.type = pattern0.type;
                                 if branch_var.is_ref {
+                                    if branch_var.type is .Pointer {
+                                        report.error("cannot take the address of other pointer", branch_var.pos);
+                                    } else if branch_var.type.is_boxed() {
+                                        report.error("cannot take the address of a boxed value", branch_var.pos);
+                                    }
                                     branch_var.type = .Pointer(branch_var.type, branch_var.is_mut);
                                 } else {
                                     match_expr.scope.update_is_hidden_ref(
@@ -116,6 +121,8 @@ extend Checker {
                                     branch.patterns[0].position()
                                 );
                             }
+                        } else if branch_var.is_ref && branch_var.type.is_boxed() {
+                            report.error("cannot take the address of a boxed value", branch_var.pos);
                         }
                         match_expr.scope.update_type(branch_var.name, branch_var.type);
                     } else {
