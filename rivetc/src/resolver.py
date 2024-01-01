@@ -485,8 +485,6 @@ class Resolver:
             return True
         elif isinstance(typ, type.Ptr):
             return self.resolve_type(typ.typ)
-        elif isinstance(typ, type.Ptr):
-            return self.resolve_type(typ.typ)
         elif isinstance(typ, type.Variadic):
             if self.resolve_type(typ.typ):
                 elem_sym = typ.typ.symbol()
@@ -550,6 +548,7 @@ class Resolver:
         elif isinstance(typ, type.Type):
             if typ.is_resolved():
                 return True # resolved
+            result = False
             if isinstance(typ.expr, ast.Ident):
                 self.resolve_ident(typ.expr)
                 if typ.expr.sym != None:
@@ -560,7 +559,7 @@ class Resolver:
                             if self.resolve_type(typ.expr.sym.info.parent):
                                 typ.unalias()
                         typ_sym = typ.symbol()
-                        return True
+                        result = True
                     else:
                         report.error(
                             f"expected type, found {typ.expr.sym.typeof()}",
@@ -587,7 +586,7 @@ class Resolver:
                                 typ.expr.field_sym.info.parent
                             ):
                                 typ.unalias()
-                        return True
+                        result = True
                     else:
                         report.error(
                             f"expected type, found {typ.expr.field_sym.typeof()}",
@@ -596,11 +595,17 @@ class Resolver:
             elif isinstance(typ.expr, ast.SelfTyExpr):
                 if self.self_sym:
                     typ.resolve(self.self_sym)
-                    return True
+                    result = True
                 else:
                     report.error("cannot resolve type for `Self`", typ.expr.pos)
             else:
                 report.error(f"expected type, found {typ.expr}", typ.expr.pos)
+            if result and isinstance(typ, type.Type) and not typ.is_boxed:
+                tsym = typ.symbol()
+                #if isinstance(tsym, sym.Type) and tsym.kind != sym.TypeKind.Trait and tsym.is_boxed():
+                #    report.warn(f"cannot use type `{tsym.name}` as a simple value", typ.expr.pos)
+                #    report.help(f"type `{tsym.name}` is boxed, you should use `+{typ.expr}` instead")
+            return result
         return False
 
     def eval_size(self, expr):

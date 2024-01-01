@@ -1009,9 +1009,12 @@ class Parser:
         elif self.tok.kind in (Kind.KwUnsafe, Kind.Lbrace):
             expr = self.parse_block_expr()
         elif self.tok.kind in (Kind.Lbracket, Kind.Plus):
-            is_dyn = self.accept(Kind.Plus)
-            elems = []
             pos = self.tok.pos
+            is_dyn = self.accept(Kind.Plus)
+            if self.tok.kind != Kind.Lbracket:
+                is_mut = self.accept(Kind.KwMut)
+                return ast.UnaryExpr(self.parse_expr(), Kind.Plus, is_mut, pos)
+            elems = []
             self.next()
             if self.tok.kind != Kind.Rbracket:
                 while True:

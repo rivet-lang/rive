@@ -1738,6 +1738,10 @@ class Codegen:
             return ir.Ident(expr_typ_ir, tmp)
         elif isinstance(expr, ast.UnaryExpr):
             right = self.gen_expr_with_cast(expr.right_typ, expr.right)
+            if expr.op == Kind.Plus:
+                res = self.boxed_instance(cg_utils.mangle_symbol(expr.right_typ.symbol()))
+                self.cur_func.store_ptr(res, ir.Inst(ir.InstKind.Cast, [right, right.typ]))
+                return res
             if expr.op == Kind.Amp:
                 tmp = self.cur_func.local_name()
                 if isinstance(
@@ -2689,8 +2693,8 @@ class Codegen:
         )
         inst = ir.Inst(
             ir.InstKind.Call,
-            [ir.Name("_R4core3mem9raw_allocF"),
-             ir.Name(f"sizeof({name})")]
+            [ir.Name("_R4core3mem11boxed_allocF"),
+             ir.Name(f"sizeof({name})"), ir.Name("NULL")]
         )
         if custom_name:
             self.cur_func.store(tmp, inst)
@@ -2977,7 +2981,7 @@ class Codegen:
                 return ir.UINT_T
             return ir.Type(typ_sym.name)
         res = ir.Type(cg_utils.mangle_symbol(typ_sym))
-        if typ_sym.is_boxed():
+        if typ_sym.is_boxed() or (isinstance(typ, type.Type) and typ.is_boxed):
             return res.ptr(True)
         return res
 

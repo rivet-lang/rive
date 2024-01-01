@@ -608,6 +608,9 @@ class Checker:
                         "operator `-` can only be used with signed values",
                         expr.pos
                     )
+            elif expr.op == Kind.Plus:
+                if isinstance(expr.typ, type.Type):
+                    expr.typ = type.Type(expr.typ.sym, True, expr.is_mut_ptr)
             elif expr.op == Kind.Amp:
                 if isinstance(self.expected_type, type.Ptr):
                     expected_pointer = True

@@ -313,78 +313,84 @@ extend Parser {
                 }
             },
             self.tok.kind in [.Lbracket, .Plus] -> {
-                mut is_dyn := self.accept(.Plus);
-                mut elems := []mut ast.Expr();
                 mut pos := self.tok.pos;
-                self.next();
-                if self.tok.kind != .Rbracket {
-                    while {
-                        elems.push(self.parse_expr());
-                        if !self.accept(.Comma) {
-                            break;
-                        }
-                    }
-                }
-                self.expect(.Rbracket);
-                pos += self.prev_tok.pos;
-                if !is_dyn && (elems.len == 0 || elems.len == 1 && self.tok.kind !in [
-                    .Semicolon, .Comma, .Rbrace, .Rparen
-                ]) {
-                    // []T() or [SIZE]T()
-                    is_dyn = elems.len == 0;
+                mut is_dyn := self.accept(.Plus);
+                if self.tok.kind != .Lbracket {
                     is_mut := self.accept(.KwMut);
-                    elem_type := self.parse_type();
-                    mut init_value: ?ast.Expr := none;
-                    mut cap_value: ?ast.Expr := none;
-                    mut len_value: ?ast.Expr := none;
-                    self.expect(.Lparen);
-                    while self.tok.kind != .Rparen {
-                        mut arg_pos := self.tok.pos;
-                        arg_name := self.parse_name();
-                        self.expect(.Colon);
-                        arg_value := self.parse_expr();
-                        arg_pos += self.prev_tok.pos;
-                        match arg_name {
-                            "init" -> if init_value == none {
-                                init_value = arg_value;
-                            } else {
-                                report.error("duplicate array constructor argument `init`", arg_pos);
-                                break;
-                            },
-                            "len" if is_dyn -> if len_value == none {
-                                len_value = arg_value;
-                            } else {
-                                report.error("duplicate array constructor argument `len`", arg_pos);
-                                break;
-                            },
-                            "cap" if is_dyn -> if cap_value == none {
-                                cap_value = arg_value;
-                            } else {
-                                report.error("duplicate array constructor argument `cap`", arg_pos);
-                                break;
-                            },
-                            else -> {
-                                report.error(
-                                    "unknown array constructor argument `{}`".fmt(arg_name),
-                                    arg_pos
-                                );
+                    right := self.parse_expr();
+                    .Unary(right, .Plus, is_mut, pos + right.position())
+                } else {
+                    mut elems := []mut ast.Expr();
+                    self.next();
+                    if self.tok.kind != .Rbracket {
+                        while {
+                            elems.push(self.parse_expr());
+                            if !self.accept(.Comma) {
                                 break;
                             }
                         }
-                        if self.tok.kind != .Rparen {
-                            self.expect(.Comma);
-                        }
                     }
-                    self.expect(.Rparen);
+                    self.expect(.Rbracket);
                     pos += self.prev_tok.pos;
-                    if !is_dyn {
-                        len_value = elems[0];
+                    if !is_dyn && (elems.len == 0 || elems.len == 1 && self.tok.kind !in [
+                        .Semicolon, .Comma, .Rbrace, .Rparen
+                    ]) {
+                        // []T() or [SIZE]T()
+                        is_dyn = elems.len == 0;
+                        is_mut := self.accept(.KwMut);
+                        elem_type := self.parse_type();
+                        mut init_value: ?ast.Expr := none;
+                        mut cap_value: ?ast.Expr := none;
+                        mut len_value: ?ast.Expr := none;
+                        self.expect(.Lparen);
+                        while self.tok.kind != .Rparen {
+                            mut arg_pos := self.tok.pos;
+                            arg_name := self.parse_name();
+                            self.expect(.Colon);
+                            arg_value := self.parse_expr();
+                            arg_pos += self.prev_tok.pos;
+                            match arg_name {
+                                "init" -> if init_value == none {
+                                    init_value = arg_value;
+                                } else {
+                                    report.error("duplicate array constructor argument `init`", arg_pos);
+                                    break;
+                                },
+                                "len" if is_dyn -> if len_value == none {
+                                    len_value = arg_value;
+                                } else {
+                                    report.error("duplicate array constructor argument `len`", arg_pos);
+                                    break;
+                                },
+                                "cap" if is_dyn -> if cap_value == none {
+                                    cap_value = arg_value;
+                                } else {
+                                    report.error("duplicate array constructor argument `cap`", arg_pos);
+                                    break;
+                                },
+                                else -> {
+                                    report.error(
+                                        "unknown array constructor argument `{}`".fmt(arg_name),
+                                        arg_pos
+                                    );
+                                    break;
+                                }
+                            }
+                            if self.tok.kind != .Rparen {
+                                self.expect(.Comma);
+                            }
+                        }
+                        self.expect(.Rparen);
+                        pos += self.prev_tok.pos;
+                        if !is_dyn {
+                            len_value = elems[0];
+                        }
+                        .ArrayCtor(
+                            is_dyn, is_mut, elem_type, init_value, cap_value, len_value, pos: pos
+                        )
+                    } else {
+                        .ArrayLiteral(elems, is_dyn, pos)
                     }
-                    .ArrayCtor(
-                        is_dyn, is_mut, elem_type, init_value, cap_value, len_value, pos: pos
-                    )
-                } else {
-                    .ArrayLiteral(elems, is_dyn, pos)
                 }
             },
             self.tok.kind == .Name -> if self.peek_tok.kind == .Char {
