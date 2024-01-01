@@ -668,7 +668,7 @@ class Codegen:
                 res_expr = ir.Inst(
                     ir.InstKind.Call, [
                         ir.Name("_R4core8DynArray5sliceM"),
-                        ir.Inst(ir.InstKind.LoadPtr, [res_expr]),
+                        ir.Inst(ir.InstKind.GetPtr, [res_expr]),
                         ir.IntLit(ir.UINT_T, "0"),
                         ir.Selector(ir.UINT_T, res_expr, ir.Name("len"))
                     ]
@@ -677,7 +677,7 @@ class Codegen:
                 elem_size, _ = self.comp.type_size(expr_sym.info.elem_typ)
                 res_expr = ir.Inst(
                     ir.InstKind.Call, [
-                        ir.Name("_R4core11array_sliceF"), ir.Inst(ir.InstKind.LoadPtr, [res_expr]),
+                        ir.Name("_R4core11array_sliceF"), res_expr,
                         ir.IntLit(ir.UINT_T, str(elem_size)),
                         ir.IntLit(ir.UINT_T, str(expr_sym.info.size)),
                         ir.IntLit(ir.UINT_T, "0"),
@@ -1928,100 +1928,7 @@ class Codegen:
                 else:
                     full_name = f"_R4core5Array{len(contains_method)}{contains_method}"
                 if not right_sym.info.has_contains_method:
-                    right_sym.info.has_contains_method = True
-                    if right_is_dyn_array:
-                        self_idx_ = ir.Ident(ir.DYN_ARRAY_T, "self")
-                        elem_idx_ = ir.Ident(
-                            self.ir_type(expr_left_typ), "_elem_"
-                        )
-                        contains_decl = ir.FuncDecl(
-                            False, ast.Attributes(), False, full_name,
-                            [self_idx_, elem_idx_], False, ir.BOOL_T, False
-                        )
-                    else:
-                        self_idx_ = ir.Ident(
-                            self.ir_type(expr_right_typ), "self"
-                        )
-                        elem_idx_ = ir.Ident(
-                            self.ir_type(expr_left_typ), "_elem_"
-                        )
-                        contains_decl = ir.FuncDecl(
-                            False, ast.Attributes(), False, full_name, [
-                                self_idx_,
-                                ir.Ident(ir.UINT_T, "_len_"), elem_idx_
-                            ], False, ir.BOOL_T, False
-                        )
-                    inc_v = ir.Ident(ir.UINT_T, contains_decl.local_name())
-                    contains_decl.alloca(inc_v, ir.IntLit(ir.UINT_T, "0"))
-                    cond_l = contains_decl.local_name()
-                    body_l = contains_decl.local_name()
-                    ret_l = contains_decl.local_name()
-                    continue_l = contains_decl.local_name()
-                    exit_l = contains_decl.local_name()
-                    contains_decl.add_label(cond_l)
-                    contains_decl.add_cond_br(
-                        ir.Inst(
-                            ir.InstKind.Cmp, [
-                                ir.Name("<"), inc_v,
-                                ir.Selector(
-                                    ir.UINT_T, self_idx_, ir.Name("len")
-                                ) if right_is_dyn_array else
-                                ir.Ident(ir.UINT_T, "_len_")
-                            ]
-                        ), body_l, exit_l
-                    )
-                    contains_decl.add_label(body_l)
-                    right_elem_typ_sym = right_sym.info.elem_typ.symbol()
-                    is_primitive = right_elem_typ_sym.kind.is_primitive() or (
-                        right_elem_typ_sym.kind == TypeKind.Enum
-                        and not right_elem_typ_sym.info.is_tagged)
-                    if right_is_dyn_array:
-                        cur_elem = ir.Inst(
-                            ir.InstKind.Cast, [
-                                ir.Inst(
-                                    ir.InstKind.Call, [
-                                        ir.Name(
-                                            "_R4core8DynArray7raw_getM"
-                                        ), ir.Inst(ir.InstKind.GetPtr, [self_idx_]), inc_v
-                                    ]
-                                ),
-                                self.ir_type(expr_left_typ).ptr()
-                            ]
-                        )
-                        if is_primitive or right_elem_typ_sym.is_boxed():
-                            cur_elem = ir.Inst(ir.InstKind.LoadPtr, [cur_elem])
-                    else:
-                        cur_elem = ir.Inst(
-                            ir.InstKind.GetElementPtr,
-                            [self_idx_, inc_v],
-                            self.ir_type(expr_left_typ)
-                        )
-                        if is_primitive or right_elem_typ_sym.is_boxed():
-                            cur_elem = ir.Inst(ir.InstKind.LoadPtr, [cur_elem])
-                    if is_primitive:
-                        cond = ir.Inst(
-                            ir.InstKind.Cmp,
-                            [ir.Name("=="), cur_elem, elem_idx_]
-                        )
-                    else:
-                        if not isinstance(elem_idx_.typ, ir.Pointer):
-                            elem_idx_ = ir.Inst(ir.InstKind.GetPtr, [elem_idx_])
-                        cond = ir.Inst(
-                            ir.InstKind.Call, [
-                                ir.Name(
-                                    f"{cg_utils.mangle_symbol(left_sym)}4_eq_M"
-                                ), cur_elem, elem_idx_
-                            ]
-                        )
-                    contains_decl.add_cond_br(cond, ret_l, continue_l)
-                    contains_decl.add_label(ret_l)
-                    contains_decl.add_ret(ir.IntLit(ir.BOOL_T, "1"))
-                    contains_decl.add_label(continue_l)
-                    contains_decl.add_inst(ir.Inst(ir.InstKind.Inc, [inc_v]))
-                    contains_decl.add_br(cond_l)
-                    contains_decl.add_label(exit_l)
-                    contains_decl.add_ret(ir.IntLit(ir.BOOL_T, "0"))
-                    self.out_rir.decls.append(contains_decl)
+                    self.generate_contains_method(left_sym,right_sym,right_is_dyn_array,expr_left_typ,expr_right_typ,full_name)
                 args = [ir.Name(full_name), right]
                 if not right_is_dyn_array:
                     args.append(ir.IntLit(ir.UINT_T, str(right_sym.info.size)))
@@ -3300,3 +3207,99 @@ class Codegen:
                 if ts.mangled_name == node.name:
                     types_sorted.append(ts)
         return types_sorted
+
+    def generate_contains_method(self,left_sym,right_sym,right_is_dyn_array,expr_left_typ,expr_right_typ,full_name):
+        right_sym.info.has_contains_method = True
+        if right_is_dyn_array:
+            self_idx_ = ir.Ident(ir.DYN_ARRAY_T, "self")
+            elem_idx_ = ir.Ident(
+                self.ir_type(expr_left_typ), "_elem_"
+            )
+            contains_decl = ir.FuncDecl(
+                False, ast.Attributes(), False, full_name,
+                [self_idx_, elem_idx_], False, ir.BOOL_T, False
+            )
+        else:
+            self_idx_ = ir.Ident(
+                self.ir_type(expr_right_typ), "self"
+            )
+            elem_idx_ = ir.Ident(
+                self.ir_type(expr_left_typ), "_elem_"
+            )
+            contains_decl = ir.FuncDecl(
+                False, ast.Attributes(), False, full_name, [
+                    self_idx_,
+                    ir.Ident(ir.UINT_T, "_len_"), elem_idx_
+                ], False, ir.BOOL_T, False
+            )
+        inc_v = ir.Ident(ir.UINT_T, contains_decl.local_name())
+        contains_decl.alloca(inc_v, ir.IntLit(ir.UINT_T, "0"))
+        cond_l = contains_decl.local_name()
+        body_l = contains_decl.local_name()
+        ret_l = contains_decl.local_name()
+        continue_l = contains_decl.local_name()
+        exit_l = contains_decl.local_name()
+        contains_decl.add_label(cond_l)
+        contains_decl.add_cond_br(
+            ir.Inst(
+                ir.InstKind.Cmp, [
+                    ir.Name("<"), inc_v,
+                    ir.Selector(
+                        ir.UINT_T, self_idx_, ir.Name("len")
+                    ) if right_is_dyn_array else
+                    ir.Ident(ir.UINT_T, "_len_")
+                ]
+            ), body_l, exit_l
+        )
+        contains_decl.add_label(body_l)
+        right_elem_typ_sym = right_sym.info.elem_typ.symbol()
+        is_primitive = right_elem_typ_sym.kind.is_primitive() or (
+            right_elem_typ_sym.kind == TypeKind.Enum
+            and not right_elem_typ_sym.info.is_tagged)
+        if right_is_dyn_array:
+            cur_elem = ir.Inst(
+                ir.InstKind.Cast, [
+                    ir.Inst(
+                        ir.InstKind.Call, [
+                            ir.Name(
+                                "_R4core8DynArray7raw_getM"
+                            ), ir.Inst(ir.InstKind.GetPtr, [self_idx_]), inc_v
+                        ]
+                    ),
+                    self.ir_type(expr_left_typ).ptr()
+                ]
+            )
+            if is_primitive or right_elem_typ_sym.is_boxed():
+                cur_elem = ir.Inst(ir.InstKind.LoadPtr, [cur_elem])
+        else:
+            cur_elem = ir.Inst(
+                ir.InstKind.GetElementPtr,
+                [self_idx_, inc_v],
+                self.ir_type(expr_left_typ)
+            )
+            if is_primitive or right_elem_typ_sym.is_boxed():
+                cur_elem = ir.Inst(ir.InstKind.LoadPtr, [cur_elem])
+        if is_primitive:
+            cond = ir.Inst(
+                ir.InstKind.Cmp,
+                [ir.Name("=="), cur_elem, elem_idx_]
+            )
+        else:
+            if not isinstance(elem_idx_.typ, ir.Pointer):
+                elem_idx_ = ir.Inst(ir.InstKind.GetPtr, [elem_idx_])
+            cond = ir.Inst(
+                ir.InstKind.Call, [
+                    ir.Name(
+                        f"{cg_utils.mangle_symbol(left_sym)}4_eq_M"
+                    ), cur_elem, elem_idx_
+                ]
+            )
+        contains_decl.add_cond_br(cond, ret_l, continue_l)
+        contains_decl.add_label(ret_l)
+        contains_decl.add_ret(ir.IntLit(ir.BOOL_T, "1"))
+        contains_decl.add_label(continue_l)
+        contains_decl.add_inst(ir.Inst(ir.InstKind.Inc, [inc_v]))
+        contains_decl.add_br(cond_l)
+        contains_decl.add_label(exit_l)
+        contains_decl.add_ret(ir.IntLit(ir.BOOL_T, "0"))
+        self.out_rir.decls.append(contains_decl)
