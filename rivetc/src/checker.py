@@ -1651,8 +1651,23 @@ class Checker:
                 f"{kind} `{info.name}` should be called inside `unsafe` block",
                 expr.pos
             )
-        elif info.is_method and info.self_is_mut:
-            self.check_expr_is_mut(expr.left.left)
+        elif info.is_method and not self.check_compatible_types(expr.left.left.typ, info.self_typ):
+            self_sym = info.self_typ.symbol()
+            left_sym = expr.left.left.typ.symbol()
+            is_self_ptr_and_left_is_not_ptr = (
+                isinstance(info.self_typ, type.Ptr) and not isinstance(expr.left.left.typ, type.Ptr)
+            )
+            if not (
+                is_self_ptr_and_left_is_not_ptr
+                or (not isinstance(info.self_typ, type.Ptr) and isinstance(expr.left.left.typ, type.Ptr))
+                or not (
+                    self_sym.kind == TypeKind.Trait and left_sym.kind == TypeKind.Trait
+                    and left_sym in self_sym.info.bases
+                )
+            ):
+                self.check_argument_type(expr.left.left.typ, info.self_typ, expr.pos, "self", "method", info.name)
+            if is_self_ptr_and_left_is_not_ptr and info.self_is_mut:
+                self.check_expr_is_mut(expr.left.left)
 
         func_args_len = len(info.args)
         if info.is_variadic and not info.is_extern:

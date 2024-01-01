@@ -100,7 +100,7 @@ pub struct string < Stringable, Hashable, Throwable {
 
     /// Returns a string array of the string split by '\t' and ' '.
     pub func fields(&self) -> []Self {
-        mut res := []Self();
+        res := []Self();
         mut word_start: uint := 0;
         mut word_len: uint := 0;
         mut is_in_word := false;
@@ -190,7 +190,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// Returns an array of all the UTF8 runes in the string `self` which is useful
     /// if you want random access to them.
     pub func as_runes(&self) -> []rune {
-        mut runes := []rune(cap: self.runes_count());
+        runes := []rune(cap: self.runes_count());
         mut i: uint := 0;
         while i < self.len : i += 1 {
             char_len := unsafe { self.ptr[i] }.len_utf8();

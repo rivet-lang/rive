@@ -346,7 +346,7 @@ extend string {
     /// remainder contains more `delim` substrings.
     pub func split(&self, delim: Self, nth: uint := 0) -> []Self {
         mut i: uint := 0;
-        mut res := []Self();
+        res := []Self();
         match delim.len {
             0 -> {
                 i = 1;
@@ -406,7 +406,7 @@ extend string {
     /// If the delimiter string is empty then `.split()` is used.
     pub func split_any(&self, delim: Self) -> []Self {
         mut i: uint := 0;
-        mut res := []Self();
+        res := []Self();
         // check empty source string
         if self.len > 0 {
             // if empty delimiter string using default split
@@ -433,7 +433,7 @@ extend string {
     /// NOTE: algorithm is "greedy", consuming '\r\n' as a single line ending with higher
     /// priority than '\r' and '\n' as multiple endings
     pub func split_into_lines(&self) -> []Self {
-        mut res := []Self();
+        res := []Self();
         if self.len == 0 {
             return res;
         }
