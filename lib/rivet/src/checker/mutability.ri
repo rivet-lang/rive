@@ -28,6 +28,12 @@ extend Checker {
                             "cannot use a immutable pointer as mutable value", selector.pos
                         );
                     }
+                } else if selector.left_type is .Basic(basic_t) && basic_t.is_boxed {
+                    if !basic_t.is_mut {
+                        report.error(
+                            "cannot use a immutable boxed value as mutable value", selector.pos
+                        );
+                    }
                 } else {
                     self.check_expr_is_mut(selector.left);
                     if selector.found && !selector.field_is_mut {
@@ -68,6 +74,12 @@ extend Checker {
                     if !ptr.is_mut {
                         report.error(
                             "cannot modify elements of an immutable pointer", index.pos
+                        );
+                    }
+                } else if index.left_type is .Basic(basic_t) && basic_t.is_boxed {
+                    if !basic_t.is_mut {
+                        report.error(
+                            "cannot use a immutable boxed value as mutable value", selector.pos
                         );
                     }
                 } else {

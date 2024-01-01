@@ -1949,6 +1949,13 @@ class Checker:
                         expr.pos
                     )
                 return
+            if isinstance(expr.left_typ, type.Basic) and not expr.left_typ.is_boxed:
+                if not expr.left_typ.is_mut:
+                    report.error(
+                        "cannot use a immutable boxed value as mutable value",
+                        expr.pos
+                    )
+                return
             self.check_expr_is_mut(expr.left, from_assign)
             if not expr.field_is_mut and not expr.is_option_check:
                 report.error(
@@ -1977,6 +1984,12 @@ class Checker:
                 if not expr.left.typ.is_mut:
                     report.error(
                         "cannot modify elements of an immutable pointer",
+                        expr.pos
+                    )
+            elif isinstance(expr.left.typ, type.Basic) and not expr.left.typ.is_boxed:
+                if not expr.left.typ.is_mut:
+                    report.error(
+                        "cannot use a immutable boxed value as mutable value",
                         expr.pos
                     )
             else:
