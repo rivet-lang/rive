@@ -2,14 +2,4 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import core;
-
-pub alias alloc := core.mem_alloc;
-pub alias zeroed := core.mem_zeroed;
-pub alias resize := core.mem_resize;
-pub alias set := core.mem_set;
-pub alias copy := core.mem_copy;
-pub alias move := core.mem_move;
-pub alias dup := core.mem_dup;
-pub alias cmp := core.mem_cmp;
-pub alias dealloc := core.mem_dealloc;
+pub import core/mem.*;

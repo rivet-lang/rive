@@ -152,7 +152,7 @@ class Compiler:
             if not fp.sym:
                 continue
             deps = []
-            if fp.sym.name not in ["c.libc", "c", "c.ctypes", "core"]:
+            if fp.sym.name not in ["c.libc", "c", "c.ctypes", "core", "core.mem"]:
                 deps.append("core")
             self.import_graph_decls(fp, deps, fp.decls)
             g.add(fp.sym.name, deps)

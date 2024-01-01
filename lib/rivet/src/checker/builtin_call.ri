@@ -112,8 +112,9 @@ extend Checker {
                 "attempt to cast an expression that is already of type `{}`".fmt(to_type),
                 builtin_call.pos
             );
-        } else if (from_type is .Pointer && to_type is .Rawptr)
+        } else if (from_type is .Pointer && (to_type is .Rawptr || to_type is .Boxedptr))
             || (from_type is .Rawptr && to_type is .Pointer)
+            || (from_type is .Boxedptr && (to_type is .Pointer || to_type is .Rawptr))
             || (from_type is .Pointer && to_type is .Pointer)
             || (from_type is .Pointer && self.env.is_int(to_type)) {
             if !self.inside_unsafe() {

@@ -2,12 +2,12 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/{ 
-    traits, console, process, fs.{ Path, Directory } 
+import std/{
+    traits, console, process, fs.{ Path, Directory }
 };
 
-import ../{ 
-    ast, utils, prefs, token, parser, report, checker, codegen, resolver, depgraph 
+import ../{
+    ast, utils, prefs, token, parser, report, checker, codegen, resolver, depgraph
 };
 
 pub struct Builder {
@@ -328,7 +328,7 @@ pub struct Builder {
         mut g := depgraph.DepGraph.new();
         for mut pf in self.env.source_files {
             mut deps := []string();
-            if pf.mod.name !in ["c.ctypes", "c.libc", "c", "core"] {
+            if pf.mod.name !in ["c.ctypes", "c.libc", "c", "core", "core.mem"] {
                 deps.push("core");
             }
             self.import_graph_decls(pf, deps, pf.decls);

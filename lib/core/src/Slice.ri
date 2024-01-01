@@ -2,6 +2,8 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
+import ./mem;
+
 struct Slice {
     ptr: rawptr;
     elem_size: uint;
@@ -29,7 +31,7 @@ struct Slice {
             runtime_error("slice index out of range (index: {}, len: {})", idx, self.len);
         }
         unsafe {
-            mem_copy(
+            mem.copy(
                 @ptr_add(@as([&]mut uint8, self.ptr), self.elem_size * idx),
                 val, self.elem_size
             );
@@ -71,7 +73,7 @@ struct Slice {
         if self.len != rhs.len {
             return false;
         }
-        return mem_cmp(self.ptr, rhs.ptr, self.len) == 0;
+        return mem.cmp(self.ptr, rhs.ptr, self.len) == 0;
     }
 
     #[inline]

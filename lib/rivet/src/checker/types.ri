@@ -194,20 +194,22 @@ extend Checker {
 
         return expected == got;
     }
-}
 
-func check_pointer(expected: ast.Type, got: ast.Type) -> bool {
-    if expected is .Rawptr {
-        // rawptr == &T, is valid
-        return got is .Rawptr || got is .Pointer;
-    } else if expected is .Pointer(ptr) && got is .Pointer(ptr2) {
-        if ptr.is_mut && !ptr2.is_mut {
-            return false;
+    func check_pointer(expected: ast.Type, got: ast.Type) -> bool {
+        if expected is .Rawptr {
+            // rawptr == &T, is valid
+            return got is .Rawptr || got is .Pointer || got is .Boxedptr;
+        } else if expected is .Pointer(ptr) && got is .Pointer(ptr2) {
+            if ptr.is_mut && !ptr2.is_mut {
+                return false;
+            }
+            if ptr.is_indexable && !ptr2.is_indexable {
+                return false;
+            }
+            return ptr.inner == ptr2.inner;
+        } else if expected is .Boxedptr && got is .Boxedptr {
+            return true;
         }
-        if ptr.is_indexable && !ptr2.is_indexable {
-            return false;
-        }
-        return ptr.inner == ptr2.inner;
+        return false;
     }
-    return false;
 }

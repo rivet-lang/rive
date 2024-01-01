@@ -6,6 +6,7 @@ $if !_RELEASE_ { // skip backtrace in release mode
     #![compile_c_source("../thirdparty/libbacktrace/backtrace.c")]
 
     import c;
+    import ./mem;
 
     struct BacktraceState;
 
@@ -40,7 +41,7 @@ $if !_RELEASE_ { // skip backtrace in release mode
     ) -> int32 {
         unsafe {
             if safe_fn_ptr := fn_ptr {
-                if mem_cmp(safe_fn_ptr, c"_R4core4mainF", 13) == 0 {
+                if mem.cmp(safe_fn_ptr, c"_R4core4mainF", 13) == 0 {
                     return -1; // stop backtracing
                 }
             }

@@ -3,6 +3,7 @@
 // file.
 
 import c/libc;
+import ./mem;
 
 #[boxed]
 pub struct StringBuilder < Stringable {
@@ -42,7 +43,7 @@ pub struct StringBuilder < Stringable {
     #[unsafe]
     pub func write_raw_with_len(mut self, s: [&]uint8, len: uint) {
         self.inner.reserve(self.inner.len + len);
-        mem_copy(
+        mem.copy(
             unsafe { @ptr_add(self.inner.ptr, self.inner.elem_size * self.inner.len) },
             s, len
         );

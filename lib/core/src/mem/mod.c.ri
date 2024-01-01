@@ -1,0 +1,68 @@
+// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
+// file.
+
+import c/libc;
+
+extern (Rivet) {
+    #[export("_R4core13runtime_errorF")]
+    func core_runtime_error(msg: string, args: ...string) -> never;
+}
+
+#[inline]
+func runtime_error(msg: string, args: ...string) -> never {
+    core_runtime_error(msg, args);
+}
+
+/// Fills the first `n` bytes of the memory area pointed to by `s`, with the
+/// byte `c`.
+#[inline]
+pub func set(s: rawptr, c: uint8, n: uint) {
+    unsafe {
+        _ = libc.memset(s, @as(int32, c), n);
+    }
+}
+
+/// Copies `sz` bytes from memory area `src` to memory area `dest`.
+///
+/// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem.move`, if the memory
+/// areas do overlap.
+#[inline]
+pub func copy(dest: rawptr, src: rawptr, sz: uint) {
+    unsafe {
+        _ = libc.memcpy(dest, src, sz);
+    }
+}
+
+/// Copies `sz` bytes from memory area `src` to memory area `dest`.
+///
+/// NOTE: The memory areas *MAY* overlap: copying takes place as though the bytes
+/// in `src` are first copied into a temporary array that does not overlap
+/// `src` or `dest`, and the bytes are then copied from the temporary array to
+/// `dest`.
+#[inline]
+pub func move(dest: rawptr, src: rawptr, sz: uint) {
+    unsafe {
+        _ = libc.memmove(dest, src, sz);
+    }
+}
+
+/// Compares the first `n` bytes (each interpreted as `uint8`) of the memory areas
+/// `s1` and `s2`. It returns an integer less than, equal to, or greater than
+/// zero, if the first n bytes of `s1` is found, respectively, to be less than,
+/// to match, or be greater than the first n bytes of `s2`.
+///
+/// For a nonzero return value, the sign is determined by the sign of the
+/// difference between the first pair of bytes (interpreted as `uint8`) that
+/// differ in `s1` and `s2`.
+///
+/// If n is zero, the return value is zero.
+///
+/// NOTE: Do NOT use `mem.cmp` to compare security critical data, such
+/// as cryptographic secrets, because the required CPU time depends on the
+/// number of equal bytes. You should use a function that performs comparisons
+/// in constant time for this.
+#[inline]
+pub func cmp(s1: rawptr, s2: rawptr, n: uint) -> int32 {
+    return unsafe { libc.memcmp(s1, s2, n) };
+}

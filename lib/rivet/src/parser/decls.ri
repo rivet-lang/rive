@@ -412,7 +412,7 @@ extend Parser {
             },
             self.accept(.KwFunc) -> return self.parse_func_decl(
                 doc_comment, attributes, is_public, attributes.has("unsafe") || (
-                    self.inside_extern && self.extern_abi != .Rivet
+                    self.inside_extern && self.extern_abi != .Rivet && !attributes.has("trusted")
                 ), if self.inside_extern { self.extern_abi } else { .Rivet }
             ),
             self.accept(.KwTest) -> {

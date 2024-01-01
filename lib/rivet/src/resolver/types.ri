@@ -7,7 +7,7 @@ import ../{ ast, report };
 extend Resolver {
     func resolve_type(mut self, mut type: ast.Type) -> bool {
         return match type {
-            .Void, .Never, .Rawptr -> true,
+            .Void, .Never, .Rawptr, .Boxedptr -> true,
             .Option(mut opt) -> self.resolve_type(opt.inner),
             .Result(mut res) -> self.resolve_type(res.inner),
             .Variadic(mut variadic) -> if self.resolve_type(variadic.inner) {

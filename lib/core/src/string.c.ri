@@ -3,6 +3,7 @@
 // file.
 
 import c/libc;
+import ./mem;
 
 var empty_string := string(c"", 0, true);
 
@@ -38,7 +39,7 @@ pub struct string < Stringable, Hashable, Throwable {
     }
 
     pub func from_byte(byte: uint8) -> Self {
-        res := unsafe { @as([&]mut uint8, mem_alloc(2)) };
+        res := unsafe { @as([&]mut uint8, mem.raw_alloc(2)) };
         unsafe {
             res[0] = byte;
             res[1] = 0;
@@ -52,9 +53,9 @@ pub struct string < Stringable, Hashable, Throwable {
         if bytes.len == 0 {
             return empty_string;
         }
-        res := unsafe { @as([&]mut uint8, mem_alloc(bytes.len + 1)) };
+        res := unsafe { @as([&]mut uint8, mem.raw_alloc(bytes.len + 1)) };
         unsafe {
-            mem_copy(res, &bytes[0], bytes.len);
+            mem.copy(res, &bytes[0], bytes.len);
             res[bytes.len] = 0;
         }
         return Self(res, bytes.len);
@@ -75,11 +76,11 @@ pub struct string < Stringable, Hashable, Throwable {
             self
         } else {
             len := self.len * count;
-            res := unsafe { @as([&]mut uint8, mem_alloc(len)) };
+            res := unsafe { @as([&]mut uint8, mem.raw_alloc(len)) };
             unsafe {
                 mut i: uint := 0;
                 while i < count : i += 1 {
-                    mem_copy(@ptr_add(res, i * self.len), self.ptr, self.len);
+                    mem.copy(@ptr_add(res, i * self.len), self.ptr, self.len);
                 }
                 res[len] = 0;
             }
@@ -305,9 +306,9 @@ pub struct string < Stringable, Hashable, Throwable {
         if self.len == 0 {
             return empty_string;
         }
-        res := unsafe { @as([&]mut uint8, mem_alloc(self.len + 1)) };
+        res := unsafe { @as([&]mut uint8, mem.raw_alloc(self.len + 1)) };
         unsafe {
-            mem_copy(res, self.ptr, self.len);
+            mem.copy(res, self.ptr, self.len);
             res[self.len] = 0;
         }
         return Self(res, self.len);
@@ -333,7 +334,7 @@ pub struct string < Stringable, Hashable, Throwable {
                 return false;
             }
         }
-        return mem_cmp(self.ptr, rhs.ptr, rhs.len) == 0;
+        return mem.cmp(self.ptr, rhs.ptr, rhs.len) == 0;
     }
 
     #[inline]
@@ -376,7 +377,7 @@ pub struct string < Stringable, Hashable, Throwable {
     func __destroy__(self) {
         if !self.is_ref {
             unsafe {
-                mem_dealloc(self.ptr);
+                mem.raw_dealloc(self.ptr);
             }
         }
     }

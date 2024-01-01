@@ -173,16 +173,16 @@ pub struct Path {
         }
         mut result_index: uint := 0;
         result := if have_abs {
-            unsafe { @as([&]mut uint8, mem.alloc(max_size)) }
+            unsafe { @as([&]mut uint8, mem.raw_alloc(max_size)) }
         } else {
             cwd := core.process_get_cwd()!;
-            tmp := unsafe { @as([&]mut uint8, mem.alloc(max_size + cwd.len + 1)) };
+            tmp := unsafe { @as([&]mut uint8, mem.raw_alloc(max_size + cwd.len + 1)) };
             mem.copy(tmp, cwd.ptr, cwd.len);
             result_index += cwd.len;
             tmp
         };
         defer(error) unsafe {
-            mem.dealloc(result)
+            mem.raw_dealloc(result)
         }
         for p in paths[first_index:] {
             mut components := p.tokenize(SEPARATOR);
@@ -225,7 +225,7 @@ pub struct Path {
         }
         return unsafe {
             string.from_raw_with_len(
-                @as([&]uint8, mem.resize(result, result_index)), result_index
+                @as([&]uint8, mem.raw_resize(result, result_index)), result_index
             )
         };
     }
@@ -251,9 +251,9 @@ pub struct Path {
                 up_count += 1;
             }
             up_index_end := up_count * 3;
-            result := unsafe { @as([&]mut uint8, mem.alloc(up_index_end + to_rest.len)) };
+            result := unsafe { @as([&]mut uint8, mem.raw_alloc(up_index_end + to_rest.len)) };
             defer(error) unsafe {
-                mem.dealloc(result);
+                mem.raw_dealloc(result);
             }
             mut result_index: uint := 0;
             while result_index < up_index_end {
@@ -268,7 +268,7 @@ pub struct Path {
             }
             if to_rest.len == 0 {
                 // shave off the trailing slash
-                buf := unsafe { @as([&]mut uint8, mem.resize(result, result_index - 1)) };
+                buf := unsafe { @as([&]mut uint8, mem.raw_resize(result, result_index - 1)) };
                 unsafe {
                     buf[result_index - 1] = 0;
                 }
@@ -323,10 +323,10 @@ pub struct Path {
             }
             sum + 1 // + 1 = NLL character
         };
-        buf := unsafe { @as([&]mut uint8, mem.alloc(total_len)) };
+        buf := unsafe { @as([&]mut uint8, mem.raw_alloc(total_len)) };
         unsafe {
             buf[total_len - 1] = 0;
-            defer(error) mem.dealloc(buf);
+            defer(error) mem.raw_dealloc(buf);
         }
         paths_first_path_index_value := paths[first_path_index];
         mem.copy(buf, paths_first_path_index_value.ptr, paths_first_path_index_value.len);

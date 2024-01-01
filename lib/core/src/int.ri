@@ -2,6 +2,8 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
+import ./mem;
+
 var digit_pairs := "0010203040506070809001112131415161718191021222324252627"
     "28292031323334353637383930414243444546474849405152535455565758595061626364656667"
     "68696071727374757677787970818283848586878889809192939495969798999";
@@ -54,7 +56,7 @@ extend int32 < Stringable {
         }
         unsafe {
             mut index := @as(uint, max);
-            buf := @as([&]mut uint8, mem_alloc(index + 1));
+            buf := @as([&]mut uint8, mem.raw_alloc(index + 1));
             buf[index] = 0;
             index -= 1;
 
@@ -82,7 +84,7 @@ extend int32 < Stringable {
             }
 
             diff := @as(uint, max) - index;
-            mem_move(buf, @ptr_add(buf, index), diff + 1);
+            mem.move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
     }
@@ -114,7 +116,7 @@ extend int64 < Stringable {
         unsafe {
             max := 20;
             mut index := @as(uint, max);
-            buf := @as([&]mut uint8, mem_alloc(index + 1));
+            buf := @as([&]mut uint8, mem.raw_alloc(index + 1));
             buf[index] = 0;
             index -= 1;
 
@@ -142,7 +144,7 @@ extend int64 < Stringable {
             }
 
             diff := @as(uint, max) - index;
-            mem_move(buf, @ptr_add(buf, index), diff + 1);
+            mem.move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
     }

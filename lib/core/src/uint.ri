@@ -2,6 +2,8 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
+import ./mem;
+
 extend uint8 < Stringable {
     pub const MAX: uint8 := 255;
 
@@ -126,7 +128,7 @@ extend uint32 < Stringable {
             mut d: uint32 := 0;
 
             mut index := max;
-            buf := @as([&]mut uint8, mem_alloc(max + 1));
+            buf := @as([&]mut uint8, mem.raw_alloc(max + 1));
             buf[index] = 0;
             index -= 1;
 
@@ -148,7 +150,7 @@ extend uint32 < Stringable {
             }
 
             diff := max - index;
-            mem_move(buf, @ptr_add(buf, index), diff + 1);
+            mem.move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
     }
@@ -168,7 +170,7 @@ extend uint64 < Stringable {
 
             max := 20;
             mut index := @as(uint, max);
-            buf := @as([&]mut uint8, mem_alloc(index + 1));
+            buf := @as([&]mut uint8, mem.raw_alloc(index + 1));
             buf[index] = 0;
             index -= 1;
 
@@ -190,7 +192,7 @@ extend uint64 < Stringable {
             }
 
             diff := @as(uint, max) - index;
-            mem_move(buf, @ptr_add(buf, index), diff + 1);
+            mem.move(buf, @ptr_add(buf, index), diff + 1);
             return string.from_raw_with_len(buf, diff);
         }
     }

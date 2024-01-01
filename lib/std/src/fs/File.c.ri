@@ -90,11 +90,11 @@ pub struct File {
                 );
             }
 
-            res := @as([&]mut uint8, mem.alloc(@as(uint, allocate) + 1));
+            res := @as([&]mut uint8, mem.raw_alloc(@as(uint, allocate) + 1));
             nelements := libc.fread(res, 1, @as(uint, allocate), self.f);
 
             if self.is_eof() && libc.ferror(self.f) != 0 {
-                mem.dealloc(res);
+                mem.raw_dealloc(res);
                 throw OperationFailedError("fread failed");
             }
 

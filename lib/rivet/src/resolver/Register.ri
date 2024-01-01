@@ -282,9 +282,18 @@ pub struct Register {
                     continue;
                 }
                 if self.check_imported_symbol(sym.name, import_decl.pos, true) {
-                    self.source_file.imported_symbols.add(
-                        sym.name, sym, import_decl.pos, true
-                    );
+                    if import_decl.is_public {
+                        self.sym.scope.add(ast.SymRef(
+                            is_public: true,
+                            name: sym.name,
+                            ref: sym,
+                            ref_resolved: true
+                        )) catch |err| report.error(err.to_string(), import_decl.pos);
+                    } else {
+                        self.source_file.imported_symbols.add(
+                            sym.name, sym, import_decl.pos, true
+                        );
+                    }
                 }
             }
         } else if import_decl.import_list.is_empty() {

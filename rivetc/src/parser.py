@@ -424,7 +424,7 @@ class Parser:
             return self.parse_func_decl(
                 doc_comment, attributes, is_public,
                 attributes.has("unsafe")
-                or (self.inside_extern and self.extern_abi != sym.ABI.Rivet),
+                or (self.inside_extern and self.extern_abi != sym.ABI.Rivet and not attributes.has("trusted")),
                 self.extern_abi if self.inside_extern else sym.ABI.Rivet
             )
         elif self.accept(Kind.KwTest):

@@ -3,12 +3,13 @@
 // file.
 
 import c/libc;
+import ./mem;
 
 func array_init_set(arr: rawptr, elem_size: uint, len: uint, value: rawptr) {
     mut i: uint := 0;
     while i < len : i += 1 {
         unsafe {
-            mem_copy(@ptr_add(@as([&]mut uint8, arr), elem_size * i), value, elem_size);
+            mem.copy(@ptr_add(@as([&]mut uint8, arr), elem_size * i), value, elem_size);
         }
     }
 }

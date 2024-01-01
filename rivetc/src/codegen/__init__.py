@@ -274,7 +274,7 @@ class Codegen:
                         if isinstance(value,
                                       ir.ArrayLit) and len(value.elems) > 0:
                             self.cur_func.add_call(
-                                "_R4core8mem_copyF",
+                                "_R4core3mem4copyF",
                                 [ident, value,
                                  ir.IntLit(ir.UINT_T, str(size))]
                             )
@@ -533,7 +533,7 @@ class Codegen:
                     val = self.gen_expr_with_cast(left.typ, stmt.right, ident)
                     if isinstance(val, ir.ArrayLit) and len(val.elems) > 0:
                         self.cur_func.add_call(
-                            "_R4core8mem_copyF",
+                            "_R4core3mem4copyF",
                             [ident, val,
                              ir.IntLit(ir.UINT_T, str(size))]
                         )
@@ -555,7 +555,7 @@ class Codegen:
                         size, _ = self.comp.type_size(left.typ)
                         self.cur_func.alloca(ident)
                         self.cur_func.add_call(
-                            "_R4core8mem_copyF", [
+                            "_R4core3mem4copyF", [
                                 ident,
                                 ir.Selector(
                                     left_ir_typ, right, ir.Name(f"f{i}")
@@ -1323,7 +1323,7 @@ class Codegen:
                         id = ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
                         self.cur_func.alloca(id)
                     self.cur_func.add_call(
-                        "_R4core8mem_copyF", [
+                        "_R4core3mem4copyF", [
                             id,
                             ir.Selector(
                                 self.ir_type(expr.sym.ret_typ), inst,
@@ -1627,7 +1627,7 @@ class Codegen:
             if custom_tmp:
                 size, _ = self.comp.type_size(expr.typ)
                 self.cur_func.add_call(
-                    "_R4core8mem_copyF",
+                    "_R4core3mem4copyF",
                     [custom_tmp, arr_lit,
                      ir.IntLit(ir.UINT_T, str(size))]
                 )
@@ -2397,7 +2397,7 @@ class Codegen:
                         ir.Type(self.cur_func.arr_ret_struct)
                     )
                     self.cur_func.add_call(
-                        "_R4core8mem_copyF", [
+                        "_R4core3mem4copyF", [
                             ir.Selector(
                                 self.ir_type(ret_typ), tmp, ir.Name("arr")
                             ), expr_,
@@ -2768,7 +2768,7 @@ class Codegen:
         to_fn = self.init_string_lits_fn if custom_name else self.cur_func
         inst = ir.Inst(
             ir.InstKind.Call,
-            [ir.Name("_R4core9mem_allocF"),
+            [ir.Name("_R4core3mem9raw_allocF"),
              ir.Name(f"sizeof({name})")]
         )
         if custom_name:
@@ -2798,7 +2798,7 @@ class Codegen:
             value = ir.Inst(ir.InstKind.GetPtr, [value])
         value = value if is_ptr else ir.Inst(
             ir.InstKind.Call, [
-                ir.Name("_R4core7mem_dupF"), value,
+                ir.Name("_R4core3mem7raw_dupF"), value,
                 ir.IntLit(ir.UINT_T, str(size))
             ]
         )

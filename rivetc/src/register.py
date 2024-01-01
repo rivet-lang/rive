@@ -210,12 +210,20 @@ class Register:
                 if not symbol.is_public:
                     continue
                 self.check_imported_symbol(symbol, decl.pos)
-                self.source_file.imported_symbols[symbol.name] = symbol
+                if decl.is_public:
+                    try:
+                        self.sym.add(
+                            sym.SymRef(True, symbol.name, symbol)
+                        )
+                    except utils.CompilerError as e:
+                        report.error(e.args[0], decl.pos)
+                else:
+                    self.source_file.imported_symbols[symbol.name] = symbol
         elif len(decl.import_list) == 0:
             if decl.is_public:
                 try:
                     self.sym.add(
-                        sym.SymRef(decl.is_public, decl.alias, decl.mod_sym)
+                        sym.SymRef(True, decl.alias, decl.mod_sym)
                     )
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
