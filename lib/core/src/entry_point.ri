@@ -21,7 +21,7 @@ func init_args(_argc: uint, _argv: [&][&]uint8) {
 }
 
 $if _TESTS_ {
-    func main(_argc: int32, _argv: [&][&]uint8, mut test_runner: TestRunner) {
+    func main(_argc: int32, _argv: [&][&]uint8, test_runner: &mut TestRunner) {
         setup_signals_handler();
         init_args(@as(uint, _argc), _argv);
 
