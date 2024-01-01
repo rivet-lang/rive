@@ -203,7 +203,7 @@ extend Checker {
                     );
                 }
                 match func_decl.name {
-                    "__drop__" -> {},
+                    "__destroy__" -> {},
                     else -> report.error(
                         "unknown special method `{}`".fmt(func_decl.name),
                         func_decl.pos

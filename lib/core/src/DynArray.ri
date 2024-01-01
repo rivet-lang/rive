@@ -209,7 +209,7 @@ struct DynArray {
         return dyn_array;
     }
 
-    func __drop__(self) {
+    func __destroy__(self) {
         unsafe {
             mem_dealloc(self.ptr);
         }

@@ -373,7 +373,7 @@ pub struct string < Stringable, Hashable, Throwable {
         return self > rhs || self == rhs;
     }
 
-    func __drop__(self) {
+    func __destroy__(self) {
         if !self.is_ref {
             unsafe {
                 mem_dealloc(self.ptr);
