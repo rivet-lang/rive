@@ -198,7 +198,7 @@ extend Checker {
                     || (indirect.left_type is .Pointer(ptr) && !ptr.is_indexable)
                     || indirect.left_type is .Rawptr  {
                 	indirect.is_mut = indirect.left_type.is_pointer();
-                    indirect.left_type.ptr_or_ref_inner()
+                    indirect.left_type.ptr_inner()
                 } else {
                     mut err := report.error_builder(
                         "invalid indirect for `{}`".fmt(indirect.left_type), indirect.pos

@@ -478,7 +478,9 @@ class Resolver:
                     expr.not_found = True
 
     def resolve_type(self, typ):
-        if isinstance(typ, type.Ptr):
+        if isinstance(typ, type.Boxedptr):
+            return True
+        elif isinstance(typ, type.Ptr):
             return self.resolve_type(typ.typ)
         elif isinstance(typ, type.Ptr):
             return self.resolve_type(typ.typ)

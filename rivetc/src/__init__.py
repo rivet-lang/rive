@@ -47,6 +47,7 @@ class Compiler:
         self.float64_t = type.Type(self.universe[18])
         self.string_t = type.Type(self.universe[19])
         self.rawptr_t = type.Ptr(self.void_t, True)
+        self.boxedptr_t = type.Boxedptr()
         self.throwable_t = None # updated in register
 
         self.parsed_files = []
@@ -156,7 +157,7 @@ class Compiler:
             self.import_graph_decls(fp, deps, fp.decls)
             g.add(fp.sym.name, deps)
         return g
-    
+
     def import_graph_decls(self, fp, deps, decls):
         for d in decls:
             if isinstance(d, ast.ImportDecl):
@@ -395,7 +396,7 @@ class Compiler:
     def type_size(self, typ):
         if isinstance(typ, (type.Result, type.Option)):
             return self.type_size(typ.typ)
-        elif isinstance(typ, (type.Ptr, type.Func)):
+        elif isinstance(typ, (type.Ptr, type.Func, type.Boxedptr)):
             return self.pointer_size, self.pointer_size
         return self.type_symbol_size(typ.symbol())
 

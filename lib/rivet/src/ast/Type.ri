@@ -18,6 +18,18 @@ pub enum Type < traits.Stringable {
     Never(token.Pos),
     Void,
     None,
+    Pointer {
+        mut inner: Type;
+        is_mut: bool;
+        is_indexable: bool;
+        pos: token.Pos;
+    },
+    Rawptr {
+        pos: token.Pos;
+    },
+    Boxedptr {
+        pos: token.Pos;
+    },
     Option {
         mut inner: Type;
         pos: token.Pos;
@@ -69,15 +81,6 @@ pub enum Type < traits.Stringable {
         mut sym: TypeSym;
         pos: token.Pos;
     },
-    Pointer {
-        mut inner: Type;
-        is_mut: bool;
-        is_indexable: bool;
-        pos: token.Pos;
-    },
-    Rawptr {
-        pos: token.Pos;
-    },
     Func {
         is_method: bool;
         self_is_mut: bool;
@@ -106,10 +109,10 @@ pub enum Type < traits.Stringable {
     };
 
     #[inline]
-    pub func ptr_or_ref_inner(self) -> Self {
+    pub func ptr_inner(self) -> Self {
         return match self {
             .Pointer(ptr) -> ptr.inner,
-            .Rawptr -> self,
+            .Rawptr, .Boxedptr -> self,
             else -> .Void
         };
     }
@@ -118,7 +121,7 @@ pub enum Type < traits.Stringable {
         // NOTE: `.unalias()` returns an option, so we use the same type without
         // unaliasing instead.
         return match self {
-            .Rawptr -> self,
+            .Rawptr, .Boxedptr -> self,
             .Result(mut result) -> .Result(result.inner.unalias() ?? result.inner),
             .Option(mut option) -> .Option(option.inner.unalias() ?? option.inner),
             .Tuple(mut tuple_data) -> {
@@ -168,7 +171,8 @@ pub enum Type < traits.Stringable {
 
     #[inline]
     pub func symbol(self) -> ?TypeSym {
-        // NOTE: `.Void`, `.None`, `.Never` and `.Rawptr` has no `TypeSym` value.
+        // NOTE: `.Void`, `.None`, `.Never`, `.Boxedptr` and `.Rawptr` has no
+        // `TypeSym` value.
         return match self {
             .Result(result) -> result.inner.symbol(),
             .Option(option) -> option.inner.symbol(),
@@ -213,14 +217,14 @@ pub enum Type < traits.Stringable {
 
     #[inline]
     pub func is_pointer(self) -> bool {
-        return self is .Pointer || self is .Rawptr;
+        return self is .Pointer || self is .Rawptr || self is .Boxedptr;
     }
 
     #[inline]
     pub func is_mut_pointer(self) -> bool {
         return match self {
             .Pointer(ptr) -> ptr.is_mut,
-            .Rawptr -> true,
+            .Rawptr, .Boxedptr -> true,
             else -> false
         };
     }
@@ -228,7 +232,7 @@ pub enum Type < traits.Stringable {
     #[inline]
     pub func is_any_kind_of_pointer(self) -> bool {
         return match self {
-            .Pointer, .Rawptr, .Func -> true,
+            .Pointer, .Rawptr, .Boxedptr, .Func -> true,
             else -> if type_sym := self.symbol() {
                 type_sym.is_boxed()
             } else {
@@ -251,6 +255,7 @@ pub enum Type < traits.Stringable {
             .Array(arr_t) -> arr_t.pos,
             .Pointer(ptr_t) -> ptr_t.pos,
             .Rawptr(rawptr_t) -> rawptr_t.pos,
+            .Boxedptr(boxedptr_t) -> boxedptr_t.pos,
             .Func(func_t) -> func_t.pos,
             .Basic(basic_t) -> if basic_t.is_unresolved {
                 basic_t.expr.position()
@@ -289,6 +294,7 @@ pub enum Type < traits.Stringable {
                 ptr_lhs.inner == ptr_rhs.inner
             },
             .Rawptr if rhs is .Rawptr -> true,
+            .Boxedptr if rhs is .Boxedptr -> true,
             .Func(func_lhs) if rhs is .Func(func_rhs) -> match {
                 func_lhs.is_method != func_rhs.is_method,
                 func_lhs.self_is_mut != func_rhs.self_is_mut,
@@ -390,6 +396,7 @@ pub enum Type < traits.Stringable {
                 }.concat(pointer_data.inner.to_string_(qualstr))
             },
             .Rawptr -> "rawptr",
+            .Boxedptr -> "boxedptr",
             .Func(func_data) -> {
                 mut sb := Builder.new(150);
                 sb.write("func(");
@@ -514,7 +521,7 @@ extend Env {
     pub func type_size(mut self, type: Type, is_raw: bool := false) -> (uint, uint) {
         return match type {
             .Result, .Option -> self.type_symbol_size(self.throwable_sym, is_raw),
-            .Rawptr, .Pointer, .Func -> (self.pointer_size, self.pointer_size),
+            .Rawptr, .Boxedptr, .Pointer, .Func -> (self.pointer_size, self.pointer_size),
             else -> if mut type_sym := type.symbol() {
                 self.type_symbol_size(type_sym, is_raw)
             } else {

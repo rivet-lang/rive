@@ -2633,7 +2633,7 @@ class Codegen:
         )
 
     def default_value(self, typ, custom_tmp = None):
-        if isinstance(typ, (type.Ptr, type.Func)):
+        if isinstance(typ, (type.Ptr, type.Func, type.Boxedptr)):
             return ir.NoneLit(ir.RAWPTR_T)
         if isinstance(typ, type.Option):
             if typ.is_pointer():
@@ -3029,6 +3029,8 @@ class Codegen:
             if isinstance(inner_t, ir.Pointer) and inner_t.is_managed:
                 return inner_t
             return ir.Pointer(inner_t)
+        elif isinstance(typ, type.Boxedptr):
+            return ir.RAWPTR_T
         typ_sym = typ.symbol()
         if typ_sym.kind == TypeKind.DynArray:
             return ir.DYN_ARRAY_T.ptr(True)
@@ -3213,16 +3215,24 @@ class Codegen:
         for ts in tss:
             field_deps = []
             if ts.kind == TypeKind.Array:
-                dep = cg_utils.mangle_symbol(ts.info.elem_typ.symbol())
+                elem_sym = ts.info.elem_typ.symbol()
+                if elem_sym == None:
+                    continue
+                dep = cg_utils.mangle_symbol(elem_sym)
                 if dep in typ_names:
                     field_deps.append(dep)
             elif ts.kind == TypeKind.DynArray:
-                dep = cg_utils.mangle_symbol(ts.info.elem_typ.symbol())
+                elem_sym = ts.info.elem_typ.symbol()
+                if elem_sym == None:
+                    continue
+                dep = cg_utils.mangle_symbol(elem_sym)
                 if dep in typ_names:
                     field_deps.append(dep)
             elif ts.kind == TypeKind.Tuple:
                 for f in ts.info.types:
                     fsym = f.symbol()
+                    if fsym == None:
+                        continue
                     dep = cg_utils.mangle_symbol(fsym)
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f, type.Option
@@ -3233,6 +3243,8 @@ class Codegen:
                 for variant in ts.info.variants:
                     if variant.has_typ:
                         variant_sym = variant.typ.symbol()
+                        if variant_sym == None:
+                            continue
                         if variant_sym.is_boxed(
                         ) or isinstance(variant.typ, type.Option):
                             continue
@@ -3248,6 +3260,8 @@ class Codegen:
                     field_deps.append(dep)
                 for f in ts.fields:
                     fsym = f.typ.symbol()
+                    if fsym == None:
+                        continue
                     dep = cg_utils.mangle_symbol(fsym)
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f.typ, type.Option
@@ -3263,6 +3277,8 @@ class Codegen:
                     field_deps.append(dep)
                 for f in ts.fields:
                     fsym = f.typ.symbol()
+                    if fsym == None:
+                        continue
                     dep = cg_utils.mangle_symbol(fsym)
                     if dep not in typ_names or dep in field_deps or isinstance(
                         f.typ, type.Option

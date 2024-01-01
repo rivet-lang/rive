@@ -1552,6 +1552,8 @@ class Parser:
                 return self.comp.never_t
             elif lit == "rawptr":
                 return self.comp.rawptr_t
+            elif lit == "boxedptr":
+                return self.comp.boxedptr_t
             elif lit == "bool":
                 return self.comp.bool_t
             elif lit == "rune":

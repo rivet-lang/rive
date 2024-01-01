@@ -5,7 +5,7 @@
 import copy
 
 from . import token
-from .sym import TypeKind, Func as sym_Func, Arg, ABI
+from .sym import TypeKind, Type as sym_Type, Func as sym_Func, Arg, ABI
 
 class _Ptr: # ugly hack =/
     def __init__(self, val):
@@ -21,6 +21,8 @@ class TBase:
             return self.sym
         elif isinstance(self, Func):
             return self.info()
+        elif isinstance(self, Boxedptr):
+            return sym_Type(False, "boxedptr", TypeKind.Void)
         return self.typ.symbol()
 
     def unalias(self):
@@ -81,6 +83,22 @@ class Type(TBase):
             res = str(self.sym.name)
         return res
 
+class Boxedptr(TBase):
+    def __init__(self):
+        pass
+
+    def nr_level(self):
+        return 0
+
+    def qualstr(self):
+        return "boxedptr"
+
+    def __eq__(self, other):
+        return isinstance(other, Boxedptr)
+
+    def __str__(self):
+        return "boxedptr"
+
 class Ptr(TBase):
     def __init__(self, typ, is_mut = False, is_indexable = False):
         self.typ = typ
@@ -99,7 +117,7 @@ class Ptr(TBase):
 
     def qualstr(self):
         if str(self.typ) == "void":
-            return "rawptr" if self.is_mut else "rawptr"
+            return "rawptr"
         elif self.is_mut:
             if self.is_indexable:
                 return f"[&]mut {self.typ.qualstr()}"
@@ -119,7 +137,7 @@ class Ptr(TBase):
 
     def __str__(self):
         if str(self.typ) == "void":
-            return "rawptr" if self.is_mut else "rawptr"
+            return "rawptr"
         elif self.is_mut:
             if self.is_indexable:
                 return f"[&]mut {self.typ}"
@@ -327,7 +345,7 @@ class Option(TBase):
         self.sym = None
 
     def is_pointer(self):
-        return self.typ.__class__ in (Ptr, Func) or self.typ.symbol().is_boxed()
+        return self.typ.__class__ in (Ptr, Func, Boxedptr) or self.typ.symbol().is_boxed()
 
     def qualstr(self):
         return f"?{self.typ.qualstr()}"

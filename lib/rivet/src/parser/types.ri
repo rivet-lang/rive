@@ -125,6 +125,7 @@ extend Parser {
                             .Never(self.prev_tok.pos)
                         },
                         "rawptr" -> .Rawptr(self.prev_tok.pos),
+                        "boxedptr" -> .Boxedptr(self.prev_tok.pos),
                         "bool" -> .Basic(self.env.bool_sym, pos: expr_pos),
                         "rune" -> .Basic(self.env.rune_sym, pos: expr_pos),
                         "int8" -> .Basic(self.env.int8_sym, pos: expr_pos),
