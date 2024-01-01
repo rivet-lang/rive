@@ -17,16 +17,16 @@ pub struct DepGraph {
     pub mut nodes: []DepGraphNode;
 
     #[inline]
-    pub func new() -> Self {
-        return Self(true, []DepGraphNode(cap: 1024));
+    pub func new() -> +Self {
+        return +Self(true, []DepGraphNode(cap: 1024));
     }
 
     #[inline]
-    pub func add(mut self, mod: string, deps: []string) {
+    pub func add(+mut self, mod: string, deps: []string) {
         self.nodes.push(DepGraphNode(mod, deps));
     }
 
-    pub func resolve(self) -> Self {
+    pub func resolve(+self) -> +Self {
         mut node_names := OrderedDepMap.new();
         mut node_deps := OrderedDepMap.new();
         for node in self.nodes {
@@ -63,7 +63,7 @@ pub struct DepGraph {
         return resolved;
     }
 
-    pub func display(self) -> string {
+    pub func display(+self) -> string {
         mut out := strings.Builder.new();
         for node in self.nodes {
             for dep in node.deps {
@@ -73,7 +73,7 @@ pub struct DepGraph {
         return out.to_string();
     }
 
-    pub func display_cycles(self) -> string {
+    pub func display_cycles(+self) -> string {
         mut out := strings.Builder.new();
         mut seen := false;
         mut nn := NodeNames();

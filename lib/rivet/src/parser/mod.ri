@@ -8,7 +8,7 @@ import ../{ ast, report, token, tokenizer };
 
 #[boxed]
 pub struct Parser {
-    mut env: ast.Env;
+    env: +mut ast.Env;
 
     mut tokenizer: tokenizer.Tokenizer;
     mut prev_tok: token.Token;
