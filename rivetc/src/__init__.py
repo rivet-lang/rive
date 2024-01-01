@@ -398,6 +398,8 @@ class Compiler:
             return self.type_size(typ.typ)
         elif isinstance(typ, (type.Ptr, type.Func, type.Boxedptr)):
             return self.pointer_size, self.pointer_size
+        elif isinstance(typ, type.Type) and typ.is_boxed:
+            return self.pointer_size, self.pointer_size
         return self.type_symbol_size(typ.symbol())
 
     def type_symbol_size(self, sy):

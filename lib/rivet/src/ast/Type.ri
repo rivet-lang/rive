@@ -13,6 +13,8 @@ pub enum Type < traits.Stringable {
         mut sym: ?TypeSym;
         mut is_unresolved: bool;
         mut expr: Expr;
+        is_boxed: bool;
+        is_mut: bool;
         pos: token.Pos;
     },
     Never(token.Pos),
@@ -155,7 +157,7 @@ pub enum Type < traits.Stringable {
             .Basic(mut basic) if !basic.is_unresolved -> if basic.sym?.info is .Alias(mut alias_info) {
                 alias_info.parent.unalias() ?? alias_info.parent
             } else {
-                .Basic(basic.sym)
+                .Basic(basic.sym, ...self)
             },
             else -> none // for `.Void`, `.None` or `.Never`
         };
@@ -318,7 +320,9 @@ pub enum Type < traits.Stringable {
             },
             .Basic(basic_lhs) if rhs is .Basic(basic_rhs) ->
                 !(basic_lhs.is_unresolved && basic_rhs.is_unresolved)
-                && basic_lhs.sym? == basic_rhs.sym?,
+                && basic_lhs.sym? == basic_rhs.sym?
+                && basic_lhs.is_boxed == basic_rhs.is_boxed
+                && basic_lhs.is_mut == basic_rhs.is_mut,
             else -> false
         };
     }
@@ -424,14 +428,24 @@ pub enum Type < traits.Stringable {
                 }
                 sb.to_string()
             },
-            .Basic(basic) -> if type_sym := basic.sym {
-                if qualstr {
-                    type_sym.qualname()
-                } else {
-                    type_sym.name
+            .Basic(basic) -> {
+                mut sb := Builder.new(150);
+                if basic.is_boxed {
+                    sb.write("+");
+                    if basic.is_mut {
+                        sb.write("mut ");
+                    }
                 }
-            } else {
-                basic.expr.to_string()
+                sb.write(if type_sym := basic.sym {
+                    if qualstr {
+                        type_sym.qualname()
+                    } else {
+                        type_sym.name
+                    }
+                } else {
+                    basic.expr.to_string()
+                });
+                sb.to_string()
             }
         };
     }
@@ -522,6 +536,7 @@ extend Env {
         return match type {
             .Result, .Option -> self.type_symbol_size(self.throwable_sym, is_raw),
             .Rawptr, .Boxedptr, .Pointer, .Func -> (self.pointer_size, self.pointer_size),
+            .Basic(basic_t) if basic_t.is_boxed && !is_raw -> (self.pointer_size, self.pointer_size),
             else -> if mut type_sym := type.symbol() {
                 self.type_symbol_size(type_sym, is_raw)
             } else {

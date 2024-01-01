@@ -104,15 +104,23 @@ extend Parser {
                 expr: ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
                 is_unresolved: true
             ),
-            self.tok.kind == .Name -> {
+            self.tok.kind in [.Plus, .Name] -> {
                 prev_tok_kind := self.prev_tok.kind;
+                is_boxed := self.accept(.Plus);
+                is_mut := is_boxed && self.accept(.KwMut);
+                if self.accept(.KwSelfTy) {
+                    return .Basic(
+                        expr: ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
+                        is_unresolved: true, is_boxed: is_boxed, is_mut: is_mut
+                    );
+                }
                 mut expr := self.parse_ident();
                 if self.accept(.Dot) {
                     expr = self.parse_selector_expr(expr);
                     while self.accept(.Dot) {
                         expr = self.parse_selector_expr(expr);
                     }
-                    .Basic(expr: expr, is_unresolved: true)
+                    .Basic(expr: expr, is_unresolved: true, is_boxed: is_boxed, is_mut: is_mut)
                 } else {
                     // normal type
                     expr_name := @as(ast.Expr.Ident, expr).name;
@@ -143,7 +151,9 @@ extend Parser {
                         "string" -> .Basic(self.env.string_sym, pos: expr_pos),
                         "comptime_int" -> .Basic(self.env.comptime_int_sym, pos: expr_pos),
                         "comptime_float" -> .Basic(self.env.comptime_float_sym, pos: expr_pos),
-                        else -> .Basic(expr: expr, is_unresolved: true)
+                        else -> .Basic(
+                            expr: expr, is_unresolved: true, is_boxed: is_boxed, is_mut: is_mut
+                        )
                     }
                 }
             },
