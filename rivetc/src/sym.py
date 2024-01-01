@@ -640,7 +640,7 @@ class Type(Sym):
             return self.info.is_boxed
         elif isinstance(self.info, StructInfo):
             return self.info.is_boxed
-        return self.kind in (TypeKind.Trait, TypeKind.String, TypeKind.DynArray)
+        return self.kind == TypeKind.Trait
 
     def is_primitive(self):
         if self.kind == TypeKind.Enum:
@@ -729,11 +729,6 @@ def universe():
     uni.add(Type(True, "comptime_float", TypeKind.ComptimeFloat))
     uni.add(Type(True, "float32", TypeKind.Float32))
     uni.add(Type(True, "float64", TypeKind.Float64))
-    uni.add(
-        Type(
-            True, "string", TypeKind.String,
-            info = StructInfo(False, is_boxed = True)
-        )
-    )
+    uni.add(Type(True, "string", TypeKind.String, info=StructInfo(False)))
 
     return uni

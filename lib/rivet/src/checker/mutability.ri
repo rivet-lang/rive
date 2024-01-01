@@ -8,15 +8,7 @@ extend Checker {
     func check_expr_is_mut(self, mut expr: ast.Expr, from_assign: bool := false) {
         match expr {
             .Paren(mut paren) -> self.check_expr_is_mut(paren.expr),
-            .SelfLiteral(mut self_lit) -> if self_lit.obj.is_mut {
-                self_lit.obj.is_changed = true;
-            } else {
-                mut err := report.error_builder(
-                    "cannot use `self` as mutable value", self_lit.pos
-                );
-                err.add_help("consider making `self` as mutable: `mut self`");
-                err.emit();
-            },
+            .SelfLiteral(mut self_lit) -> self_lit.obj.is_changed = true,
             .Ident(mut ident) -> if ident.is_comptime {
                 report.error(
                     "cannot use constant `@{}` as mutable value".fmt(ident.name),

@@ -400,6 +400,8 @@ class Compiler:
             return self.pointer_size, self.pointer_size
         elif isinstance(typ, type.Type) and typ.is_boxed:
             return self.pointer_size, self.pointer_size
+        elif isinstance(typ, type.DynArray):
+            return self.type_symbol_size(self.dyn_array_sym)
         return self.type_symbol_size(typ.symbol())
 
     def type_symbol_size(self, sy):
@@ -452,6 +454,8 @@ class Compiler:
                     align = max_alignment
             else:
                 size, align = self.type_size(sy.info.underlying_typ)
+        elif sy.kind == sym.TypeKind.DynArray:
+            elem_size, elem_align = self.type_size(self.dyn_array_sym)
         elif sy.kind == sym.TypeKind.Array:
             elem_size, elem_align = self.type_size(sy.info.elem_typ)
             size, align = int(sy.info.size.lit) * elem_size, elem_align
@@ -459,7 +463,7 @@ class Compiler:
             size, align = self.pointer_size * 3, self.pointer_size
         elif sy.is_boxed():
             size, align = self.pointer_size, self.pointer_size
-        elif sy.kind in (sym.TypeKind.Struct, sym.TypeKind.Tuple):
+        elif sy.kind in (sym.TypeKind.Struct, sym.TypeKind.Tuple, sym.TypeKind.String):
             if sy.kind == sym.TypeKind.Struct and sy.info.is_boxed:
                 size, align = self.pointer_size, self.pointer_size
             else:

@@ -56,7 +56,7 @@ class Codegen:
 
         self.out_rir.globals.append(
             ir.GlobalVar(
-                False, False, ir.DYN_ARRAY_T.ptr(True), "_R4core4ARGS"
+                False, False, ir.DYN_ARRAY_T, "_R4core4ARGS"
             )
         )
 
@@ -113,7 +113,7 @@ class Codegen:
                 ir.IntLit(ir.UINT64_T, "0")
             )
             tests_dyn_array = ir.Selector(
-                ir.DYN_ARRAY_T.ptr(True), testRunner, ir.Name("tests")
+                ir.DYN_ARRAY_T, testRunner, ir.Name("tests")
             )
             test_t = ir.TEST_T.ptr()
             gtests_array = []
@@ -134,7 +134,7 @@ class Codegen:
                 )
                 main_fn.store(
                     ir.Selector(
-                        ir.STRING_T.ptr(True), test_value, ir.Name("name")
+                        ir.STRING_T, test_value, ir.Name("name")
                     ), self.gen_string_literal(gtest.name)
                 )
                 main_fn.store(
@@ -301,7 +301,7 @@ class Codegen:
             args = []
             if decl.is_method:
                 self_typ = self.ir_type(decl.self_typ)
-                if decl.self_is_mut and not decl.self_typ.symbol().is_boxed():
+                if decl.self_is_mut and not decl.self_is_ptr and not decl.self_typ.symbol().is_boxed():
                     self_typ = self_typ.ptr()
                 args.append(ir.Ident(self_typ, "self"))
             for i, arg in enumerate(decl.args):
@@ -668,6 +668,7 @@ class Codegen:
                 res_expr = ir.Inst(
                     ir.InstKind.Call, [
                         ir.Name("_R4core8DynArray5sliceM"),
+                        ir.Inst(ir.InstKind.LoadPtr, [res_expr]),
                         ir.IntLit(ir.UINT_T, "0"),
                         ir.Selector(ir.UINT_T, res_expr, ir.Name("len"))
                     ]
@@ -676,7 +677,7 @@ class Codegen:
                 elem_size, _ = self.comp.type_size(expr_sym.info.elem_typ)
                 res_expr = ir.Inst(
                     ir.InstKind.Call, [
-                        ir.Name("_R4core11array_sliceF"), res_expr,
+                        ir.Name("_R4core11array_sliceF"), ir.Inst(ir.InstKind.LoadPtr, [res_expr]),
                         ir.IntLit(ir.UINT_T, str(elem_size)),
                         ir.IntLit(ir.UINT_T, str(expr_sym.info.size)),
                         ir.IntLit(ir.UINT_T, "0"),
@@ -1233,7 +1234,7 @@ class Codegen:
                     left_sym = expr.sym.self_typ.symbol()
                     if left_sym.kind == TypeKind.DynArray:
                         expr.sym = self.comp.dyn_array_sym[expr.sym.name]
-                    sym_rec_is_ref = expr.sym.self_is_mut or expr.sym.self_is_ptr
+                    sym_rec_is_ref = expr.sym.self_is_ptr or expr.sym.self_is_mut
                     receiver = expr.left.left
                     if left_sym.kind == TypeKind.Trait and expr.sym.self_typ != receiver.typ:
                         self_expr = self.gen_expr_with_cast(
@@ -1656,13 +1657,13 @@ class Codegen:
                         method_name = "_R4core5Slice10slice_fromM" if s.kind == TypeKind.Slice else "_R4core8DynArray10slice_fromM"
                         inst = ir.Inst(
                             ir.InstKind.Call,
-                            [ir.Name(method_name), left, start]
+                            [ir.Name(method_name), ir.Inst(ir.InstKind.GetPtr, [left]), start]
                         )
                     else:
                         method_name = "_R4core5Slice5sliceM" if s.kind == TypeKind.Slice else "_R4core8DynArray5sliceM"
                         inst = ir.Inst(
                             ir.InstKind.Call,
-                            [ir.Name(method_name), left, start, end]
+                            [ir.Name(method_name), ir.Inst(ir.InstKind.GetPtr, [left]), start, end]
                         )
                 else:
                     size, _ = self.comp.type_size(s.info.elem_typ)
@@ -1704,18 +1705,18 @@ class Codegen:
             elif s.kind == TypeKind.String:
                 value = ir.Inst(
                     ir.InstKind.Call,
-                    [ir.Name("_R4core6string2atM"), left, idx], expr_typ_ir
+                    [ir.Name("_R4core6string2atM"), ir.Inst(ir.InstKind.GetPtr, [left]), idx],
+                    expr_typ_ir
                 )
             elif s.kind in (TypeKind.DynArray, TypeKind.Slice):
                 method_name = "_R4core5Slice3getM" if s.kind == TypeKind.Slice else "_R4core8DynArray3getM"
                 expr_typ_ir2 = expr_typ_ir.ptr()
-                if s.kind == TypeKind.Slice:
-                    if not isinstance(left.typ, type.Ptr):
-                        left = ir.Inst(
-                            ir.InstKind.GetPtr, [left], left.typ.ptr()
-                        )
-                    if expr.is_ref:
-                        expr_typ_ir = expr_typ_ir.ptr()
+                if not isinstance(left.typ, type.Ptr):
+                    left = ir.Inst(
+                        ir.InstKind.GetPtr, [left], left.typ.ptr()
+                    )
+                if expr.is_ref:
+                    expr_typ_ir = expr_typ_ir.ptr()
                 value = ir.Inst(
                     ir.InstKind.Cast, [
                         ir.Inst(
@@ -1728,7 +1729,7 @@ class Codegen:
                     if not s.info.elem_typ.symbol().is_boxed():
                         load_ptr = False
                         expr_typ_ir = expr_typ_ir2
-                if load_ptr and (not expr.is_ref or s.is_boxed()):
+                if load_ptr and not expr.is_ref:
                     value = ir.Inst(ir.InstKind.LoadPtr, [value], expr_typ_ir)
             else:
                 assert False, (expr, expr.pos)
@@ -1929,7 +1930,7 @@ class Codegen:
                 if not right_sym.info.has_contains_method:
                     right_sym.info.has_contains_method = True
                     if right_is_dyn_array:
-                        self_idx_ = ir.Ident(ir.DYN_ARRAY_T.ptr(True), "self")
+                        self_idx_ = ir.Ident(ir.DYN_ARRAY_T, "self")
                         elem_idx_ = ir.Ident(
                             self.ir_type(expr_left_typ), "_elem_"
                         )
@@ -1970,43 +1971,41 @@ class Codegen:
                         ), body_l, exit_l
                     )
                     contains_decl.add_label(body_l)
+                    right_elem_typ_sym = right_sym.info.elem_typ.symbol()
+                    is_primitive = right_elem_typ_sym.kind.is_primitive() or (
+                        right_elem_typ_sym.kind == TypeKind.Enum
+                        and not right_elem_typ_sym.info.is_tagged)
                     if right_is_dyn_array:
                         cur_elem = ir.Inst(
-                            ir.InstKind.LoadPtr, [
+                            ir.InstKind.Cast, [
                                 ir.Inst(
-                                    ir.InstKind.Cast, [
-                                        ir.Inst(
-                                            ir.InstKind.Call, [
-                                                ir.Name(
-                                                    "_R4core8DynArray7raw_getM"
-                                                ), self_idx_, inc_v
-                                            ]
-                                        ),
-                                        self.ir_type(expr_left_typ).ptr()
+                                    ir.InstKind.Call, [
+                                        ir.Name(
+                                            "_R4core8DynArray7raw_getM"
+                                        ), ir.Inst(ir.InstKind.GetPtr, [self_idx_]), inc_v
                                     ]
-                                )
+                                ),
+                                self.ir_type(expr_left_typ).ptr()
                             ]
                         )
+                        if is_primitive or right_elem_typ_sym.is_boxed():
+                            cur_elem = ir.Inst(ir.InstKind.LoadPtr, [cur_elem])
                     else:
                         cur_elem = ir.Inst(
-                            ir.InstKind.LoadPtr, [
-                                ir.Inst(
-                                    ir.InstKind.GetElementPtr,
-                                    [self_idx_, inc_v],
-                                    self.ir_type(expr_left_typ)
-                                )
-                            ]
+                            ir.InstKind.GetElementPtr,
+                            [self_idx_, inc_v],
+                            self.ir_type(expr_left_typ)
                         )
-                    right_elem_typ_sym = right_sym.info.elem_typ.symbol()
-                    if right_elem_typ_sym.kind.is_primitive() or (
-                        right_elem_typ_sym.kind == TypeKind.Enum
-                        and not right_elem_typ_sym.info.is_tagged
-                    ):
+                        if is_primitive or right_elem_typ_sym.is_boxed():
+                            cur_elem = ir.Inst(ir.InstKind.LoadPtr, [cur_elem])
+                    if is_primitive:
                         cond = ir.Inst(
                             ir.InstKind.Cmp,
                             [ir.Name("=="), cur_elem, elem_idx_]
                         )
                     else:
+                        if not isinstance(elem_idx_.typ, ir.Pointer):
+                            elem_idx_ = ir.Inst(ir.InstKind.GetPtr, [elem_idx_])
                         cond = ir.Inst(
                             ir.InstKind.Call, [
                                 ir.Name(
@@ -2063,7 +2062,8 @@ class Codegen:
                     )
                 else:
                     op_method = OVERLOADABLE_OPERATORS_STR[str(expr.op)]
-                    sym_is_boxed = typ_sym.is_boxed()
+                    left_is_ptr = isinstance(left.typ, type.Ptr) or typ_sym.is_boxed()
+                    right_is_ptr = isinstance(right.typ, type.Ptr) or typ_sym.is_boxed()
                     self.cur_func.inline_alloca(
                         self.ir_type(expr.typ), tmp,
                         ir.Inst(
@@ -2071,9 +2071,9 @@ class Codegen:
                                 ir.Name(
                                     cg_utils.mangle_symbol(typ_sym) +
                                     f"{len(op_method)}{op_method}M"
-                                ), left if sym_is_boxed else
+                                ), left if left_is_ptr else
                                 ir.Inst(ir.InstKind.GetPtr, [left]),
-                                right if sym_is_boxed else
+                                right if right_is_ptr else
                                 ir.Inst(ir.InstKind.GetPtr, [right])
                             ]
                         )
@@ -2318,11 +2318,13 @@ class Codegen:
                                     [ir.Name("=="), match_expr, p_conv]
                                 )
                             else:
+                                lhs = match_expr if isinstance(match_expr.typ, ir.Pointer) else ir.Inst(ir.InstKind.GetPtr, [match_expr])
+                                rhs = p_conv if isinstance(p_conv.typ, ir.Pointer) else ir.Inst(ir.InstKind.GetPtr, [p_conv])
                                 inst = ir.Inst(
                                     ir.InstKind.Call, [
                                         ir.Name(
                                             f"{cg_utils.mangle_symbol(p_typ_sym)}4_eq_M"
-                                        ), match_expr, p_conv,
+                                        ), lhs, rhs
                                     ]
                                 )
                             self.cur_func.inline_alloca(ir.BOOL_T, tmp2, inst)
@@ -2725,18 +2727,18 @@ class Codegen:
     def gen_string_literal(self, lit, size = None):
         size = size or utils.bytestr(lit).len
         if size == 0:
-            return ir.Ident(ir.STRING_T.ptr(True), "_R4core12empty_string")
+            return ir.Ident(ir.STRING_T, "_R4core12empty_string")
         lit_hash = hash(lit)
         if lit_hash in self.generated_string_literals:
             return ir.Ident(
-                ir.STRING_T.ptr(True), self.generated_string_literals[lit_hash]
+                ir.STRING_T, self.generated_string_literals[lit_hash]
             )
-        tmp = self.boxed_instance(
-            "_R4core6string",
+        tmp = self.stacked_instance(
+            ir.STRING_T,
             custom_name = f"STRLIT{len(self.generated_string_literals)}"
         )
         self.out_rir.globals.append(
-            ir.GlobalVar(False, False, ir.STRING_T.ptr(True), tmp.name)
+            ir.GlobalVar(False, False, ir.STRING_T, tmp.name)
         )
         self.init_string_lits_fn.store(
             ir.Selector(ir.UINT8_T.ptr(), tmp, ir.Name("ptr")),
@@ -2747,34 +2749,34 @@ class Codegen:
             ir.IntLit(ir.UINT_T, str(size))
         )
         self.init_string_lits_fn.store(
-            ir.Selector(ir.BOOL_T, tmp, ir.Name("is_ref")),
+            ir.Selector(ir.BOOL_T, tmp, ir.Name("is_lit")),
             ir.IntLit(ir.BOOL_T, "1")
         )
         self.generated_string_literals[lit_hash] = tmp.name
         return tmp
 
-    def stacked_instance(self, typ, init_value = None):
-        tmp = ir.Ident(typ, self.cur_func.local_name())
-        if init_value:
-            self.cur_func.alloca(tmp, init_value)
-        else:
-            self.cur_func.alloca(tmp)
+    def stacked_instance(self, typ, init_value = None, custom_name = None):
+        tmp = ir.Ident(typ, custom_name or self.cur_func.local_name())
+        if not custom_name:
+            if init_value:
+                self.cur_func.alloca(tmp, init_value)
+            else:
+                self.cur_func.alloca(tmp)
         return tmp
 
     def boxed_instance(self, name, custom_name = None):
         tmp = ir.Ident(
             ir.Type(name).ptr(True), custom_name or self.cur_func.local_name()
         )
-        to_fn = self.init_string_lits_fn if custom_name else self.cur_func
         inst = ir.Inst(
             ir.InstKind.Call,
             [ir.Name("_R4core3mem9raw_allocF"),
              ir.Name(f"sizeof({name})")]
         )
         if custom_name:
-            to_fn.store(tmp, inst)
+            self.cur_func.store(tmp, inst)
         else:
-            to_fn.alloca(tmp, inst)
+            self.cur_func.alloca(tmp, inst)
         return tmp
 
     def trait_value(self, value, value_typ, trait_typ):
@@ -3023,7 +3025,7 @@ class Codegen:
         elif isinstance(typ, type.Array):
             return ir.Array(self.ir_type(typ.typ), typ.size)
         elif isinstance(typ, type.DynArray):
-            return ir.DYN_ARRAY_T.ptr(True)
+            return ir.DYN_ARRAY_T
         elif isinstance(typ, type.Ptr):
             inner_t = self.ir_type(typ.typ)
             if isinstance(inner_t, ir.Pointer) and inner_t.is_managed:
@@ -3033,7 +3035,7 @@ class Codegen:
             return ir.RAWPTR_T
         typ_sym = typ.symbol()
         if typ_sym.kind == TypeKind.DynArray:
-            return ir.DYN_ARRAY_T.ptr(True)
+            return ir.DYN_ARRAY_T
         elif typ_sym.kind == TypeKind.Array:
             return ir.Array(
                 self.ir_type(typ_sym.info.elem_typ), typ_sym.info.size

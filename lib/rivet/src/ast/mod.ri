@@ -55,7 +55,7 @@ pub func universe() -> Module {
             TypeSym(name: "comptime_float", info: .ComptimeFloat),
             TypeSym(name: "float32", info: .Float(32)),
             TypeSym(name: "float64", info: .Float(64)),
-            TypeSym(name: "string", info: .Struct(is_boxed: true))
+            TypeSym(name: "string", info: .Struct())
         ])
     );
 }
