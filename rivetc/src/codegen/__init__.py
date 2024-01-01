@@ -298,7 +298,7 @@ class Codegen:
             args = []
             if decl.is_method:
                 self_typ = self.ir_type(decl.self_typ)
-                if (decl.self_is_ptr or
+                if (decl.self_is_ptr or decl.self_is_boxed or
                     decl.self_is_mut) and not isinstance(self_typ, ir.Pointer):
                     self_typ = self_typ.ptr()
                 args.append(ir.Ident(self_typ, "self"))

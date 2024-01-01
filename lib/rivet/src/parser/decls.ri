@@ -463,8 +463,9 @@ extend Parser {
         is_special_method := name.starts_with("__") && name.ends_with("__");
 
         mut is_method := false;
-        mut self_is_mut := false;
         mut self_is_ptr := false;
+        mut self_is_boxed := false;
+        mut self_is_mut := false;
         mut self_pos := token.no_pos;
         mut args := []mut ast.Arg();
         mut has_named_args := false;
@@ -476,16 +477,18 @@ extend Parser {
         sc.detached_from_parent = true;
         self.expect(.Lparen);
         if self.tok.kind != .Rparen {
-            // receiver (`self`|`mut self`|`&self`|`&mut self`)
+            // receiver (`self`|`mut self`|`&self`|`&mut self`|`+self`|`+mut self`)
             if self.tok.kind == .KwSelf || (
-                self.tok.kind in [.Amp, .KwMut] && self.peek_tok.kind in [.KwMut, .KwSelf]
+                self.tok.kind in [.Amp, .KwMut, .Plus]
+                && self.peek_tok.kind in [.KwMut, .KwSelf]
             ) {
                 is_method = true;
                 self_pos = self.tok.pos;
                 self_is_ptr = self.accept(.Amp);
+                self_is_boxed = !self_is_ptr && self.accept(.Plus);
                 self_is_mut = self.accept(.KwMut);
                 self.expect(.KwSelf);
-                if self_is_mut || self_is_ptr {
+                if self_is_mut || self_is_ptr || self_is_boxed {
                     self_pos += self.prev_tok.pos;
                 }
                 if self.tok.kind != .Rparen {
@@ -573,8 +576,9 @@ extend Parser {
             ret_type: ret_type,
             stmts: stmts,
             has_body: has_body,
-            self_is_mut: self_is_mut,
             self_is_ptr: self_is_ptr,
+            self_is_boxed: self_is_boxed,
+            self_is_mut: self_is_mut,
             scope: sc,
             pos: pos + self.prev_tok.pos,
             self_pos: self_pos

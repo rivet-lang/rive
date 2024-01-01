@@ -132,7 +132,7 @@ class Resolver:
                     try:
                         decl.scope.add(
                             sym.Obj(
-                                decl.self_is_mut and not decl.self_is_ptr,
+                                decl.self_is_mut and not decl.self_is_ptr and not decl.self_is_boxed,
                                 "self", self_typ, sym.ObjLevel.Rec,
                                 decl.name_pos
                             )

@@ -375,8 +375,9 @@ pub struct Func < Sym {
     pub is_special_method: bool;
     pub is_variadic: bool;
     pub mut self_type: Type;
-    pub self_is_mut: bool;
     pub self_is_ptr: bool;
+    pub self_is_boxed: bool;
+    pub self_is_mut: bool;
     pub self_pos: token.Pos;
     pub args: []Arg;
     pub has_named_args: bool;
@@ -420,8 +421,8 @@ pub struct Func < Sym {
     pub func type(self, mut universe: Module) -> Type {
         return .Func(
             is_method: self.is_method,
-            self_is_mut: self.self_is_mut,
             self_is_ptr: self.self_is_ptr,
+            self_is_mut: self.self_is_mut,
             args: self.args,
             ret_type: self.ret_type,
             sym: universe.add_or_get_func(self),

@@ -589,21 +589,23 @@ class Parser:
         args = []
         is_method = False
         is_variadic = False
-        self_is_mut = False
         self_is_ptr = False
+        self_is_boxed = False
+        self_is_mut = False
         has_named_args = False
 
         self.open_scope()
         sc = self.scope
         self.expect(Kind.Lparen)
         if self.tok.kind != Kind.Rparen:
-            # receiver (`self`|`mut self`|`&self`|`&mut self`)
+            # receiver (`self`|`mut self`|`&self`|`&mut self`|`+self`|`+mut self`)
             if self.tok.kind == Kind.KwSelf or (
-                self.tok.kind in (Kind.Amp, Kind.KwMut)
+                self.tok.kind in (Kind.Amp, Kind.Plus, Kind.KwMut)
                 and self.peek_tok.kind in (Kind.KwMut, Kind.KwSelf)
             ):
                 is_method = True
                 self_is_ptr = self.accept(Kind.Amp)
+                self_is_boxed = not self_is_boxed and self.accept(Kind.Plus)
                 self_is_mut = self.accept(Kind.KwMut)
                 self.expect(Kind.KwSelf)
                 if self.tok.kind != Kind.Rparen:
@@ -661,7 +663,8 @@ class Parser:
             doc_comment, attributes, is_public, self.inside_extern, is_unsafe,
             name, pos, args, ret_typ, stmts, sc, has_body, is_method,
             self_is_mut, self_is_ptr, has_named_args, self.mod_sym.is_root
-            and self.mod_sym.name != "core" and name == "main", is_variadic, abi
+            and self.mod_sym.name != "core" and name == "main", is_variadic, abi,
+            self_is_boxed = self_is_boxed
         )
 
     # ---- statements --------------------------

@@ -192,7 +192,7 @@ class Register:
                             decl.name, decl.args, decl.ret_typ,
                             decl.has_named_args, decl.has_body, decl.name_pos,
                             decl.self_is_mut, decl.self_is_ptr,
-                            attributes = decl.attributes
+                            attributes = decl.attributes, self_is_boxed=decl.self_is_boxed
                         )
                     )
                     decl.sym.is_main = decl.is_main

@@ -254,8 +254,9 @@ pub struct Register {
                 has_named_args: func_decl.has_named_args,
                 ret_type: func_decl.ret_type,
                 has_body: func_decl.has_body,
-                self_is_mut: func_decl.self_is_mut,
                 self_is_ptr: func_decl.self_is_ptr,
+                self_is_boxed: func_decl.self_is_boxed,
+                self_is_mut: func_decl.self_is_mut,
                 self_pos: func_decl.self_pos,
                 pos: func_decl.pos
             ), func_decl.pos),

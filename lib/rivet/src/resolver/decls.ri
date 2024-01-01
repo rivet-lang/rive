@@ -187,7 +187,7 @@ extend Resolver {
                         is_used := self.self_sym.info is .Trait && !func_decl.has_body;
                         func_decl.scope.add_local(ast.Var(
                             name: "self",
-                            is_mut: func_decl.self_is_mut && !func_decl.self_is_ptr,
+                            is_mut: func_decl.self_is_mut && !func_decl.self_is_ptr && !func_decl.self_is_boxed,
                             is_used: is_used,
                             is_changed: is_used,
                             level: .Receiver,

@@ -288,7 +288,7 @@ class FuncDecl:
         self, docs, attributes, is_public, is_extern, is_unsafe, name, name_pos,
         args, ret_typ, stmts, scope, has_body = False, is_method = False,
         self_is_mut = False, self_is_ptr = False, has_named_args = False,
-        is_main = False, is_variadic = False, abi = None
+        is_main = False, is_variadic = False, abi = None, self_is_boxed = False
     ):
         self.sym = None
         self.docs = docs
@@ -299,8 +299,9 @@ class FuncDecl:
         self.name_pos = name_pos
         self.args = args
         self.self_typ = None
-        self.self_is_mut = self_is_mut
         self.self_is_ptr = self_is_ptr
+        self.self_is_boxed = self_is_boxed
+        self.self_is_mut = self_is_mut
         self.is_main = is_main
         self.is_extern = is_extern
         self.is_unsafe = is_unsafe
