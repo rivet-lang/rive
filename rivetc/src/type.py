@@ -16,6 +16,11 @@ class _Ptr: # ugly hack =/
         self.val.__dict__ = val.__dict__
 
 class TBase:
+    def value_is_boxed(self):
+        if isinstance(self, Type):
+            return self.is_boxed
+        return self.symbol().is_boxed()
+
     def symbol(self):
         if isinstance(self, (DynArray, Array, Tuple, Variadic, Slice)):
             return self.sym

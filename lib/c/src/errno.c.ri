@@ -4,12 +4,11 @@
 
 import c/libc;
 
-#[boxed]
 pub struct ErrnoError < Throwable {
     pub msg: string;
     pub code: int32;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return "errno: {} (code: {})".fmt(self.msg, self.code);
     }
 }
@@ -35,6 +34,6 @@ pub func errno_msg(code: int32 := errno()) -> string {
 }
 
 #[inline]
-pub func last_errno_error() -> ErrnoError {
-    return ErrnoError(errno_msg(), errno());
+pub func last_errno_error() -> +ErrnoError {
+    return +ErrnoError(errno_msg(), errno());
 }

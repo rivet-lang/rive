@@ -298,19 +298,13 @@ class Codegen:
             args = []
             if decl.is_method:
                 self_typ = self.ir_type(decl.self_typ)
-                if (decl.self_is_ptr or decl.self_is_boxed or
-                    decl.self_is_mut) and not isinstance(self_typ, ir.Pointer):
-                    self_typ = self_typ.ptr()
+                if (decl.self_is_ptr or decl.self_is_boxed) and not isinstance(self_typ, ir.Pointer):
+                    self_typ = self_typ.ptr(decl.self_is_boxed)
                 args.append(ir.Ident(self_typ, "self"))
             for i, arg in enumerate(decl.args):
                 if self.inside_trait and i == 0: continue
                 arg_typ = self.ir_type(arg.typ)
                 arg_typ_sym = arg.typ.symbol()
-                if arg.is_mut and not (
-                    arg_typ_sym.is_boxed() or arg_typ_sym.is_primitive()
-                    or isinstance(arg.typ, type.Ptr)
-                ):
-                    arg_typ = arg_typ.ptr()
                 args.append(ir.Ident(arg_typ, arg.name))
             ret_typ = self.ir_type(decl.ret_typ)
             arr_ret_struct = ""
@@ -591,34 +585,29 @@ class Codegen:
 
         if isinstance(res_expr.typ, ir.Pointer) and res_expr.typ != ir.RAWPTR_T:
             if isinstance(expected_typ, ir.Pointer):
-                if not expected_typ.is_managed:
-                    nr_level_expected = expected_typ.nr_level()
-                    nr_level = res_expr.typ.nr_level()
-                    if nr_level > nr_level_expected and expected_typ != ir.RAWPTR_T:
-                        while nr_level > nr_level_expected:
-                            if isinstance(
-                                res_expr.typ, ir.Pointer
-                            ) and res_expr.typ.is_managed:
-                                break
-                            res_expr = ir.Inst(
-                                ir.InstKind.LoadPtr, [res_expr],
-                                res_expr.typ.typ
-                            )
-                            nr_level -= 1
-                    elif nr_level < nr_level_expected:
-                        while nr_level < nr_level_expected:
-                            res_expr = ir.Inst(
-                                ir.InstKind.GetPtr, [res_expr],
-                                res_expr.typ.ptr()
-                            )
-                            nr_level += 1
-            elif not res_expr.typ.is_managed:
+                nr_level_expected = expected_typ.nr_level()
+                nr_level = res_expr.typ.nr_level()
+                if nr_level > nr_level_expected and expected_typ != ir.RAWPTR_T:
+                    while nr_level > nr_level_expected:
+                        res_expr = ir.Inst(
+                            ir.InstKind.LoadPtr, [res_expr],
+                            res_expr.typ.typ
+                        )
+                        nr_level -= 1
+                elif nr_level < nr_level_expected:
+                    while nr_level < nr_level_expected:
+                        res_expr = ir.Inst(
+                            ir.InstKind.GetPtr, [res_expr],
+                            res_expr.typ.ptr()
+                        )
+                        nr_level += 1
+            else:
                 res_expr = ir.Inst(
                     ir.InstKind.LoadPtr, [res_expr], res_expr.typ.typ
                 )
         elif isinstance(
             expected_typ, ir.Pointer
-        ) and not expected_typ.is_managed and res_expr.typ not in (
+        ) and res_expr.typ not in (
             ir.VOID_T, ir.RAWPTR_T
         ):
             nr_level_expected = expected_typ.nr_level()
@@ -749,8 +738,6 @@ class Codegen:
             )
         elif isinstance(expr, ast.SelfExpr):
             self_typ = self.ir_type(expr.typ)
-            if expr.obj.is_mut and not isinstance(self_typ, ir.Pointer):
-                self_typ = self_typ.ptr()
             return ir.Ident(self_typ, "self")
         elif isinstance(expr, ast.Ident):
             if isinstance(expr.sym, sym.Const):
@@ -797,7 +784,7 @@ class Codegen:
                 ) and arg1.typ.typ == self.comp.void_t
                 if (
                     isinstance(expr.typ, type.Ptr)
-                    and expr.typ.symbol().is_boxed()
+                    and expr.typ.value_is_boxed()
                     and (arg1.typ == expr.typ.typ or arg1_is_voidptr)
                 ):
                     if not arg1_is_voidptr:
@@ -1266,7 +1253,7 @@ class Codegen:
                 if expr.sym.is_method:
                     left_sym = expr.left.left_typ.symbol()
                     if left_sym.kind == TypeKind.DynArray and expr.sym.name == "push":
-                        if arg.typ.symbol().is_boxed():
+                        if arg.typ.value_is_boxed():
                             arg_value = ir.Inst(
                                 ir.InstKind.GetPtr, [arg_value],
                                 arg_value.typ.ptr()
@@ -1535,6 +1522,8 @@ class Codegen:
                 return ir.IntLit(ir.UINT_T, str(left_sym.info.size))
             elif left_sym.kind == TypeKind.Trait:
                 return ir.Selector(ir_typ.ptr(), left, ir.Name(expr.field_name))
+            if isinstance(left.typ, ir.Pointer):
+                left = ir.Inst(ir.InstKind.LoadPtr, [left], left.typ.typ)
             return ir.Selector(
                 ir_typ, left,
                 ir.Name(
@@ -1727,7 +1716,7 @@ class Codegen:
                 )
                 load_ptr = True
                 if self.inside_lhs_assign and self.inside_selector_expr:
-                    if not s.info.elem_typ.symbol().is_boxed():
+                    if not s.info.elem_typ.value_is_boxed():
                         load_ptr = False
                         expr_typ_ir = expr_typ_ir2
                 if load_ptr and not expr.is_ref:
@@ -2981,7 +2970,7 @@ class Codegen:
                 return ir.UINT_T
             return ir.Type(typ_sym.name)
         res = ir.Type(cg_utils.mangle_symbol(typ_sym))
-        if typ_sym.is_boxed() or (isinstance(typ, type.Type) and typ.is_boxed):
+        if typ_sym.kind == TypeKind.Trait or typ.value_is_boxed():
             return res.ptr(True)
         return res
 

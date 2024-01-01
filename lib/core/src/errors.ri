@@ -37,7 +37,7 @@ struct ReturnTrace {
     mut cur_idx: uint;
 
     #[inline]
-    func add(mut self, trace: CallTrace) {
+    func add(&mut self, trace: CallTrace) {
         if self.cur_idx == RETURN_TRACE_MAX_SIZE {
             runtime_error("maximum return trace size exceeded");
         }
@@ -45,7 +45,7 @@ struct ReturnTrace {
         self.cur_idx += 1;
     }
 
-    func print(self) {
+    func print(&self) {
         mut i: uint := 0;
         while i < self.cur_idx : i += 1 {
             trace := self.traces[i];
@@ -56,7 +56,7 @@ struct ReturnTrace {
         }
     }
 
-    func clear(mut self) {
+    func clear(&mut self) {
         self.cur_idx = 0;
     }
 }

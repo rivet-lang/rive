@@ -129,6 +129,9 @@ class Resolver:
                     self_typ = type.Type(self.self_sym)
                     if decl.self_is_ptr:
                         self_typ = type.Ptr(self_typ, decl.self_is_mut)
+                    elif decl.self_is_boxed:
+                        self_typ.is_boxed = True
+                        self_typ.is_mut = decl.self_is_mut
                     try:
                         decl.scope.add(
                             sym.Obj(
@@ -602,9 +605,9 @@ class Resolver:
                 report.error(f"expected type, found {typ.expr}", typ.expr.pos)
             if result and isinstance(typ, type.Type) and not typ.is_boxed:
                 tsym = typ.symbol()
-                #if isinstance(tsym, sym.Type) and tsym.kind != sym.TypeKind.Trait and tsym.is_boxed():
-                #    report.warn(f"cannot use type `{tsym.name}` as a simple value", typ.expr.pos)
-                #    report.help(f"type `{tsym.name}` is boxed, you should use `+{typ.expr}` instead")
+                if isinstance(tsym, sym.Type) and tsym.kind != sym.TypeKind.Trait and tsym.is_boxed():
+                    report.error(f"cannot use type `{tsym.name}` as a simple value", typ.expr.pos)
+                    report.help(f"type `{tsym.name}` is boxed, you should use `+{typ.expr}` instead")
             return result
         return False
 

@@ -180,7 +180,9 @@ extend Resolver {
                 },
                 .Func(mut func_decl) -> {
                     if func_decl.is_method {
-                        mut self_type := ast.Type.Basic(self.self_sym);
+                        mut self_type := ast.Type.Basic(
+                            self.self_sym, is_boxed: func_decl.self_is_boxed, is_mut: func_decl.self_is_boxed
+                        );
                         if func_decl.self_is_ptr {
                             self_type = .Pointer(self_type, func_decl.self_is_ptr);
                         }
