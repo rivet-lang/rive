@@ -43,14 +43,17 @@ class TBase:
                 _Ptr(self).store(self.sym.info.parent)
 
 class Type(TBase):
-    def __init__(self, sym):
+    def __init__(self, sym, is_boxed = False, is_mut = False):
         self.sym = sym
         self.expr = None
         self._unresolved = False
 
+        self.is_boxed = is_boxed
+        self.is_mut = is_mut
+
     @staticmethod
-    def unresolved(expr):
-        typ = Type(None)
+    def unresolved(expr, is_boxed = False, is_mut = False):
+        typ = Type(None, is_boxed, is_mut)
         typ.expr = expr
         typ._unresolved = True
         return typ
@@ -72,15 +75,22 @@ class Type(TBase):
     def __eq__(self, other):
         if not isinstance(other, Type):
             return False
-        if self.sym == other.sym:
-            return True
-        return False
+        if self.is_boxed and not other.is_boxed:
+            return False
+        if self.is_mut and not other.is_mut:
+            return False
+        return self.sym == other.sym
 
     def __str__(self):
         if self._unresolved:
             res = str(self.expr)
         else:
             res = str(self.sym.name)
+        if self.is_boxed:
+            if self.is_mut:
+                res = f"+mut {res}"
+            else:
+                res = f"+{res}"
         return res
 
 class Boxedptr(TBase):

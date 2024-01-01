@@ -1536,14 +1536,20 @@ class Parser:
             )
         elif self.accept(Kind.KwNone):
             return self.comp.none_t
-        elif self.tok.kind == Kind.Name:
+        elif self.tok.kind in (Kind.Plus, Kind.Name):
             prev_tok_kind = self.prev_tok.kind
+            is_boxed = self.accept(Kind.Plus)
+            is_mut = is_boxed and self.accept(Kind.KwMut)
+            if self.accept(Kind.KwSelfTy):
+                return type.Type.unresolved(
+                    ast.SelfTyExpr(self.scope, self.prev_tok.pos), is_boxed, is_mut
+                )
             expr = self.parse_ident()
             if self.accept(Kind.Dot):
                 res = self.parse_selector_expr(expr)
                 while self.accept(Kind.Dot):
                     res = self.parse_selector_expr(res)
-                return type.Type.unresolved(res)
+                return type.Type.unresolved(res, is_boxed, is_mut)
             # normal type
             lit = expr.name
             if lit == "never":
@@ -1588,7 +1594,7 @@ class Parser:
                 return self.comp.comptime_int_t
             elif lit == "comptime_float":
                 return self.comp.comptime_float_t
-            return type.Type.unresolved(expr)
+            return type.Type.unresolved(expr, is_boxed, is_mut)
         else:
             report.error(f"expected type, found {self.tok}", pos)
             self.next()
