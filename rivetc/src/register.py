@@ -212,9 +212,7 @@ class Register:
                 self.check_imported_symbol(symbol, decl.pos)
                 if decl.is_public:
                     try:
-                        self.sym.add(
-                            sym.SymRef(True, symbol.name, symbol)
-                        )
+                        self.sym.add(sym.SymRef(True, symbol.name, symbol))
                     except utils.CompilerError as e:
                         report.error(e.args[0], decl.pos)
                 else:
@@ -222,9 +220,7 @@ class Register:
         elif len(decl.import_list) == 0:
             if decl.is_public:
                 try:
-                    self.sym.add(
-                        sym.SymRef(True, decl.alias, decl.mod_sym)
-                    )
+                    self.sym.add(sym.SymRef(True, decl.alias, decl.mod_sym))
                 except utils.CompilerError as e:
                     report.error(e.args[0], decl.pos)
             else:

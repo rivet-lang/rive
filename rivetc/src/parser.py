@@ -423,9 +423,10 @@ class Parser:
         elif self.accept(Kind.KwFunc):
             return self.parse_func_decl(
                 doc_comment, attributes, is_public,
-                attributes.has("unsafe")
-                or (self.inside_extern and self.extern_abi != sym.ABI.Rivet and not attributes.has("trusted")),
-                self.extern_abi if self.inside_extern else sym.ABI.Rivet
+                attributes.has("unsafe") or (
+                    self.inside_extern and self.extern_abi != sym.ABI.Rivet
+                    and not attributes.has("trusted")
+                ), self.extern_abi if self.inside_extern else sym.ABI.Rivet
             )
         elif self.accept(Kind.KwTest):
             pos = self.prev_tok.pos
@@ -852,7 +853,9 @@ class Parser:
                 else:
                     right = ast.TypeNode(self.parse_type(), pos)
                 if self.accept(Kind.Lparen):
-                    var = self.parse_var_decl(support_ref = True, support_mut = True)
+                    var = self.parse_var_decl(
+                        support_ref = True, support_mut = True
+                    )
                     self.expect(Kind.Rparen)
                 else:
                     var = None
@@ -1348,8 +1351,8 @@ class Parser:
             self.expect(Kind.Arrow)
             branches.append(
                 ast.MatchBranch(
-                    pats, has_var, var_is_ref, var_is_mut, var_name, var_pos, has_cond,
-                    cond, self.parse_expr(), is_else, self.scope
+                    pats, has_var, var_is_ref, var_is_mut, var_name, var_pos,
+                    has_cond, cond, self.parse_expr(), is_else, self.scope
                 )
             )
             self.close_scope()
@@ -1542,7 +1545,8 @@ class Parser:
             is_mut = is_boxed and self.accept(Kind.KwMut)
             if self.accept(Kind.KwSelfTy):
                 return type.Type.unresolved(
-                    ast.SelfTyExpr(self.scope, self.prev_tok.pos), is_boxed, is_mut
+                    ast.SelfTyExpr(self.scope, self.prev_tok.pos), is_boxed,
+                    is_mut
                 )
             expr = self.parse_ident()
             if self.accept(Kind.Dot):

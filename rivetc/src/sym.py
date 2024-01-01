@@ -729,6 +729,6 @@ def universe():
     uni.add(Type(True, "comptime_float", TypeKind.ComptimeFloat))
     uni.add(Type(True, "float32", TypeKind.Float32))
     uni.add(Type(True, "float64", TypeKind.Float64))
-    uni.add(Type(True, "string", TypeKind.String, info=StructInfo(False)))
+    uni.add(Type(True, "string", TypeKind.String, info = StructInfo(False)))
 
     return uni

@@ -152,7 +152,9 @@ class Compiler:
             if not fp.sym:
                 continue
             deps = []
-            if fp.sym.name not in ["c.libc", "c", "c.ctypes", "core", "core.mem"]:
+            if fp.sym.name not in [
+                "c.libc", "c", "c.ctypes", "core", "core.mem"
+            ]:
                 deps.append("core")
             self.import_graph_decls(fp, deps, fp.decls)
             g.add(fp.sym.name, deps)
@@ -463,7 +465,9 @@ class Compiler:
             size, align = self.pointer_size * 3, self.pointer_size
         elif sy.is_boxed():
             size, align = self.pointer_size, self.pointer_size
-        elif sy.kind in (sym.TypeKind.Struct, sym.TypeKind.Tuple, sym.TypeKind.String):
+        elif sy.kind in (
+            sym.TypeKind.Struct, sym.TypeKind.Tuple, sym.TypeKind.String
+        ):
             if sy.kind == sym.TypeKind.Struct and sy.info.is_boxed:
                 size, align = self.pointer_size, self.pointer_size
             else:

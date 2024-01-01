@@ -974,8 +974,8 @@ class IfExpr:
 
 class MatchBranch:
     def __init__(
-        self, pats, has_var, var_is_ref, var_is_mut, var_name, var_pos, has_cond, cond,
-        expr, is_else, scope
+        self, pats, has_var, var_is_ref, var_is_mut, var_name, var_pos,
+        has_cond, cond, expr, is_else, scope
     ):
         self.pats = pats
         self.has_var = has_var
