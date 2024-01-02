@@ -803,14 +803,17 @@ class Checker:
                     else:
                         v_t = rtyp
                         if expr.var.is_ref:
-                            if v_t.value_is_boxed():
-                                report.error("cannot take reference to a boxed value", expr.var.pos)
-                            v_t = type.Ptr(rtyp, expr.var.is_mut)
+                            report.error("cannot take reference to a boxed value", expr.var.pos)
+                        if isinstance(v_t, type.Type):
+                            v_t.is_boxed = True
+                            v_t.is_mut = expr.var.is_mut
+                            if expr.var.is_mut:
+                                self.check_expr_is_mut(expr.left)
                         expr.scope.update_type(expr.var.name, v_t)
                         expr.var.typ = v_t
                     if expr.var.is_mut:
                         self.check_expr_is_mut(expr.left)
-                        if not expr.var.is_ref:
+                        if not (lsym.kind == TypeKind.Trait or expr.var.is_ref):
                             report.error("invalid syntax for typematching", expr.var.pos)
                             report.help("use `&mut` instead")
                 if lsym.kind == TypeKind.Enum:
@@ -1476,9 +1479,9 @@ class Checker:
                             report.error(e.args[0], p.pos)
                     if b.has_var:
                         if b.var_is_mut:
-                            if b.var_is_ref:
+                            if b.var_is_ref or expr_sym.kind == TypeKind.Trait:
                                 self.check_expr_is_mut(expr.expr)
-                            else:
+                            elif expr_sym.kind != TypeKind.Trait:
                                 report.error("invalid syntax for typematching", b.var_pos)
                                 report.help("use `&mut` instead")
                         if len(b.pats) == 1:
@@ -1498,8 +1501,11 @@ class Checker:
                                     )
                             else:
                                 var_t = b.pats[0].typ
-                                if b.var_is_ref and var_t.value_is_boxed():
+                                if b.var_is_ref:
                                     report.error("cannot take reference to a boxed value", b.var_pos)
+                                if isinstance(var_t, type.Type):
+                                    var_t.is_boxed = True
+                                    var_t.is_mut = b.var_is_mut
                             b.var_typ = var_t
                             b.scope.update_type(b.var_name, var_t)
                         else:

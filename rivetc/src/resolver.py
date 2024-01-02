@@ -14,6 +14,7 @@ class Resolver:
         self.self_sym = None
 
         self.inside_extend_type = False
+        self.inside_typematch_type = False
 
     def resolve_files(self, source_files):
         self.load_preludes()
@@ -279,7 +280,9 @@ class Resolver:
             self.resolve_expr(expr.right)
         elif isinstance(expr, ast.BinaryExpr):
             self.resolve_expr(expr.left)
+            self.inside_typematch_type = expr.op in (Kind.KwIs, Kind.KwNotIs)
             self.resolve_expr(expr.right)
+            self.inside_typematch_type = False
             if expr.has_var:
                 try:
                     expr.scope.add(
@@ -345,7 +348,9 @@ class Resolver:
             for b in expr.branches:
                 if not b.is_else:
                     for pat in b.pats:
+                        self.inside_typematch_type = expr.is_typematch
                         self.resolve_expr(pat)
+                        self.inside_typematch_type = False
                     if b.has_var:
                         try:
                             b.scope.add(
@@ -607,7 +612,7 @@ class Resolver:
                     report.error("cannot resolve type for `Self`", typ.expr.pos)
             else:
                 report.error(f"expected type, found {typ.expr}", typ.expr.pos)
-            if result and isinstance(typ, type.Type) and not typ.is_boxed and not self.inside_extend_type:
+            if result and isinstance(typ, type.Type) and not typ.is_boxed and not self.inside_extend_type and not self.inside_typematch_type:
                 tsym = typ.symbol()
                 if isinstance(tsym, sym.Type) and tsym.kind != sym.TypeKind.Trait and tsym.is_boxed():
                     report.error(f"cannot use type `{tsym.name}` as a simple value", typ.expr.pos)
