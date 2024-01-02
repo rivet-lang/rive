@@ -792,6 +792,8 @@ class Checker:
                     if lsym.kind == TypeKind.Enum and lsym.info.is_tagged:
                         v_t = expr.right.variant_info.typ
                         if expr.var.is_ref:
+                            if v_t.value_is_boxed():
+                                report.error("cannot take reference to a boxed value", expr.var.pos)
                             v_t = type.Ptr(v_t, expr.var.is_mut)
                         if expr.right.variant_info.has_typ:
                             expr.scope.update_type(expr.var.name, v_t)
@@ -804,12 +806,16 @@ class Checker:
                     else:
                         v_t = rtyp
                         if expr.var.is_ref:
+                            if v_t.value_is_boxed():
+                                report.error("cannot take reference to a boxed value", expr.var.pos)
                             v_t = type.Ptr(rtyp, expr.var.is_mut)
                         expr.scope.update_type(expr.var.name, v_t)
                         expr.var.typ = v_t
                     if expr.var.is_mut:
                         self.check_expr_is_mut(expr.left)
                         if not expr.var.is_ref:
+                            report.error("invalid syntax for typematching", expr.var.pos)
+                            report.help("use `&mut` instead")
                             expr.scope.update_is_hidden_ref(expr.var.name, True)
                 if lsym.kind == TypeKind.Enum:
                     if lsym.info.is_tagged and expr.op not in (
@@ -1474,7 +1480,11 @@ class Checker:
                             report.error(e.args[0], p.pos)
                     if b.has_var:
                         if b.var_is_mut:
-                            self.check_expr_is_mut(expr.expr)
+                            if b.var_is_ref:
+                                self.check_expr_is_mut(expr.expr)
+                            else:
+                                report.error("invalid syntax for typematching", expr.var_pos)
+                                report.help("use `&mut` instead")
                         if len(b.pats) == 1:
                             var_t = self.comp.void_t
                             if expr_sym.kind == TypeKind.Enum:
@@ -1482,11 +1492,13 @@ class Checker:
                                 if pat0.has_typ:
                                     var_t = pat0.typ
                                     if b.var_is_ref:
+                                        if var_t.value_is_boxed():
+                                            report.error("cannot take reference to a boxed value", b.var_pos)
                                         var_t = type.Ptr(var_t, b.var_is_mut)
                                 else:
                                     report.error(
                                         "cannot use void expression",
-                                        b.pats[0].pos
+                                        b.var_pos
                                     )
                                 if not b.var_is_ref:
                                     b.scope.update_is_hidden_ref(
@@ -1494,6 +1506,8 @@ class Checker:
                                     )
                             else:
                                 var_t = b.pats[0].typ
+                                if b.var_is_ref and var_t.value_is_boxed():
+                                    report.error("cannot take reference to a boxed value", b.var_pos)
                             b.var_typ = var_t
                             b.scope.update_type(b.var_name, var_t)
                         else:
