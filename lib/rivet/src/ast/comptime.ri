@@ -25,7 +25,7 @@ pub struct ComptimeIfBranch {
     pub mut cond: +mut Expr;
     pub is_else: bool;
     pub is_else_if: bool;
-    pub mut nodes: []mut +mut Node;
+    pub mut nodes: []+mut Node;
     pub pos: token.Pos;
     pub mut type: +mut Type;
 }

@@ -7,7 +7,7 @@ import ../token;
 #[boxed]
 pub struct SourceFile {
     pub path: string;
-    pub mut decls: []mut +Decl;
+    pub mut decls: []+Decl;
     pub mut mod: +Module;
     pub mut imported_symbols: +ImportedSymbols;
     pub mut pos: token.Pos;

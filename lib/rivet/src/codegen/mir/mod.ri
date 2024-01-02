@@ -206,7 +206,7 @@ pub struct Var {
     pub mut is_moved: bool;
     pub mut is_dropped: bool;
     pub mut is_initialized: bool;
-    pub mut fields: []mut +Var;
+    pub mut fields: []+Var;
 
     pub func set_field(mut self, name: string, value: +Expr) {
         for mut field in self.fields {

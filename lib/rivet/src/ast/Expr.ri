@@ -649,7 +649,7 @@ pub struct IfBranch {
 }
 
 pub struct MatchBranch {
-    pub mut patterns: []mut +Expr;
+    pub mut patterns: []+Expr;
     pub mut branch_var: ?+ObjectData;
     pub has_cond: bool;
     pub mut var_type: +Type;

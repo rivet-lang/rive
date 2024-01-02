@@ -134,14 +134,13 @@ class Resolver:
                     self_typ = type.Type(self.self_sym)
                     if decl.self_is_ptr:
                         self_typ = type.Ptr(self_typ, decl.self_is_mut)
-                    elif decl.self_is_boxed:
+                    elif decl.self_is_boxed and self.self_sym.kind != sym.TypeKind.Trait:
                         self_typ.is_boxed = True
                         self_typ.is_mut = decl.self_is_mut
                     try:
                         decl.scope.add(
                             sym.Obj(
-                                decl.self_is_mut and not decl.self_is_ptr
-                                and not decl.self_is_boxed, "self", self_typ,
+                                False, "self", self_typ,
                                 sym.ObjLevel.Rec, decl.name_pos
                             )
                         )

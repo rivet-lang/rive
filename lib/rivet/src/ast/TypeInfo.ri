@@ -56,8 +56,8 @@ pub enum TypeInfo < traits.Stringable {
         types: []+mut Type;
     },
     Trait {
-        mut bases: []mut +mut TypeSym;
-        mut implements: []mut +mut TypeSym;
+        mut bases: []+mut TypeSym;
+        mut implements: []+mut TypeSym;
         mut has_objects: bool;
 
         func index_of(&self, type_sym: +mut TypeSym) -> ?uint {
@@ -88,7 +88,7 @@ pub enum TypeInfo < traits.Stringable {
         mut variants: []mut EnumVariant;
         is_tagged: bool;
         is_boxed: bool;
-        mut traits: []mut +mut TypeSym;
+        mut traits: []+mut TypeSym;
 
         #[inline]
         func add_variant(&mut self, variant: EnumVariant) {
@@ -131,8 +131,8 @@ pub enum TypeInfo < traits.Stringable {
         is_opaque: bool;
         is_enum_variant: bool;
         mut parent: +mut TypeSym; // enum type symbol if this is a enum variant
-        mut bases: []mut +mut TypeSym;
-        mut traits: []mut +mut TypeSym;
+        mut bases: []+mut TypeSym;
+        mut traits: []+mut TypeSym;
 
         func contains_trait(&self, type_sym: +mut TypeSym) -> bool {
             for trait_ in self.traits {

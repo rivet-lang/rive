@@ -41,7 +41,7 @@ pub enum Type < traits.Stringable {
         pos: token.Pos;
     },
     Tuple {
-        inners: []mut +mut Type;
+        inners: []+mut Type;
         mut sym: +mut TypeSym;
         pos: token.Pos;
 
@@ -87,7 +87,7 @@ pub enum Type < traits.Stringable {
         is_method: bool;
         self_is_mut: bool;
         self_is_ptr: bool;
-        args: []mut +mut Arg;
+        args: []+mut Arg;
         ret_type: +mut Type;
         pos: token.Pos;
         mut sym: +mut TypeSym;
@@ -100,7 +100,7 @@ pub enum Type < traits.Stringable {
             } else {
                 +Func(
                     is_method: self.is_method,
-                    self_type: +.Void,
+                    self_type: +mut .Void,
                     self_is_mut: self.self_is_mut,
                     self_is_ptr: self.self_is_ptr,
                     args: self.args,

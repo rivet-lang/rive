@@ -148,7 +148,7 @@ pub struct Builder {
     }
 
     func import_modules_from_decls(
-        mut self, sf: +mut ast.SourceFile, decls: []mut +ast.Decl
+        mut self, sf: +mut ast.SourceFile, decls: []+ast.Decl
     ) -> ! {
         for mut decl in decls {
             if decl is .Import(mut import_decl) {
@@ -337,7 +337,7 @@ pub struct Builder {
         return g;
     }
 
-    func import_graph_decls(&mut self, pf: +mut ast.SourceFile, deps: []string, decls: []mut +ast.Decl) {
+    func import_graph_decls(&mut self, pf: +mut ast.SourceFile, deps: []string, decls: []+ast.Decl) {
         for mut d in decls {
             if d is .Import(import_decl) {
                 if import_decl.subimports.len > 0 {

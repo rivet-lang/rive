@@ -8,9 +8,9 @@ import ../token;
 
 #[boxed]
 pub enum Node < Stringable {
-    Decl(+Decl),
-    Stmt(+Stmt),
-    Expr(+Expr);
+    Decl(+mut Decl),
+    Stmt(+mut Stmt),
+    Expr(+mut Expr);
 
     pub func position(+self) -> token.Pos {
         return match self.+ {

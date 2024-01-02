@@ -11,7 +11,7 @@ pub struct Scope {
     pub mut owner: ?Sym;
     pub mut parent: ?+Scope;
     pub mut detached_from_parent: bool;
-    pub mut childrens: []mut +Scope;
+    pub mut childrens: []+Scope;
     pub mut syms: []mut Sym;
     pub mut is_local: bool;
 

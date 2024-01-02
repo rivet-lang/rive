@@ -11,7 +11,7 @@ pub enum Stmt {
     ComptimeIf(ComptimeIf),
     Expr(+Expr),
     VarDecl {
-        mut lefts: []mut +ObjectData;
+        mut lefts: []+ObjectData;
         mut right: +Expr;
         mut scope: +Scope;
         pos: token.Pos;
@@ -29,7 +29,7 @@ pub enum Stmt {
     For {
         mut index: +ObjectData;
         has_index: bool;
-        mut values: []mut +ObjectData;
+        mut values: []+ObjectData;
         mut iterable: +Expr;
         mut stmt: +Stmt;
         mut scope: +Scope;
