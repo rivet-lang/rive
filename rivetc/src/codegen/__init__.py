@@ -418,7 +418,6 @@ class Codegen:
             )
             self.cur_func.add_label(body_label)
             value_t_ir = self.ir_type(iterable_sym.info.elem_typ)
-            value_is_ref_or_is_mut = stmt.value.is_ref or stmt.value.is_mut
             value_t_is_boxed = isinstance(
                 value_t_ir, ir.Pointer
             ) and value_t_ir.is_managed
@@ -436,11 +435,11 @@ class Codegen:
                         ), idx
                     ]
                 )
-            if value_is_ref_or_is_mut and not isinstance(
+            if stmt.value.is_ref and not isinstance(
                 value_t_ir, ir.Pointer
             ):
                 value_t_ir = ir.Pointer(value_t_ir)
-            if not value_is_ref_or_is_mut or (
+            if not stmt.value.is_ref or (
                 isinstance(value_t_ir, ir.Pointer) and value_t_ir.is_managed
             ):
                 value = ir.Inst(ir.InstKind.LoadPtr, [value])
@@ -1211,7 +1210,7 @@ class Codegen:
                     left_sym = expr.sym.self_typ.symbol()
                     if left_sym.kind == TypeKind.DynArray:
                         expr.sym = self.comp.dyn_array_sym[expr.sym.name]
-                    sym_rec_is_ref = expr.sym.self_is_ptr or expr.sym.self_is_mut
+                    sym_rec_is_ref = expr.sym.self_is_ptr or expr.sym.self_is_boxed
                     receiver = expr.left.left
                     if left_sym.kind == TypeKind.Trait and expr.sym.self_typ != receiver.typ:
                         self_expr = self.gen_expr_with_cast(
@@ -1235,12 +1234,6 @@ class Codegen:
                 fn_arg = expr.sym.get_arg(i)
                 fn_arg_typ = fn_arg.typ
                 fn_arg_typ_sym = fn_arg_typ.symbol()
-                if fn_arg.is_mut and not isinstance(
-                    fn_arg.typ, type.Ptr
-                ) and not (
-                    fn_arg_typ_sym.is_boxed() or fn_arg_typ_sym.is_primitive()
-                ):
-                    fn_arg_typ = type.Ptr(fn_arg_typ)
                 arg_value = self.gen_expr_with_cast(fn_arg_typ, arg.expr)
                 if expr.sym.is_method:
                     left_sym = expr.left.left_typ.symbol()
@@ -1867,9 +1860,7 @@ class Codegen:
                         ), expr_var_exit_label
                     )
                     var_t = self.ir_type(expr.var.typ)
-                    var_t2 = var_t if isinstance(var_t, ir.Pointer) or (
-                        expr.var.is_mut or expr.var.is_ref
-                    ) else var_t.ptr()
+                    var_t2 = var_t if isinstance(var_t, ir.Pointer) else var_t.ptr()
                     if left_sym.kind == TypeKind.Enum:
                         union_name = f"{cg_utils.mangle_symbol(left_sym)}6_Union"
                         union_type = ir.Type(union_name)
@@ -1880,11 +1871,6 @@ class Codegen:
                         )
                         if expr.var.is_ref:
                             val = ir.Inst(ir.InstKind.GetPtr, [val], var_t2)
-                        elif expr.var.is_mut and not isinstance(
-                            var_t, ir.Pointer
-                        ):
-                            val = ir.Inst(ir.InstKind.GetPtr, [val], var_t2)
-                            var_t = var_t.ptr()
                     else:
                         val = ir.Inst(
                             ir.InstKind.Cast, [
@@ -1894,7 +1880,7 @@ class Codegen:
                         )
                         if not ((
                             isinstance(var_t2, ir.Pointer) and var_t2.is_managed
-                        ) or expr.var.is_mut or expr.var.is_ref):
+                        ) or expr.var.is_ref):
                             val = ir.Inst(ir.InstKind.LoadPtr, [val], var_t2)
                     unique_name = self.cur_func.unique_name(expr.var.name)
                     expr.scope.update_ir_name(expr.var.name, unique_name)
@@ -2158,10 +2144,6 @@ class Codegen:
                                 )
                                 if b.var_is_ref:
                                     val = ir.Inst(ir.InstKind.GetPtr, [val])
-                                elif b.var_is_mut and not isinstance(
-                                    var_t, ir.Pointer
-                                ):
-                                    val = ir.Inst(ir.InstKind.GetPtr, [val])
                             else:
                                 val = ir.Inst(
                                     ir.InstKind.Cast, [
@@ -2172,16 +2154,10 @@ class Codegen:
                                     ]
                                 )
                                 if not (
-                                    b.var_is_mut or (
-                                        isinstance(var_t, ir.Pointer)
-                                        and var_t.is_managed
-                                    )
+                                    isinstance(var_t, ir.Pointer)
+                                    and var_t.is_managed
                                 ):
                                     val = ir.Inst(ir.InstKind.LoadPtr, [val])
-                            if b.var_is_mut and not isinstance(
-                                var_t, ir.Pointer
-                            ):
-                                var_t = var_t.ptr(True)
                             unique_name = self.cur_func.unique_name(b.var_name)
                             b.scope.update_ir_name(b.var_name, unique_name)
                             self.cur_func.inline_alloca(var_t, unique_name, val)
@@ -2919,10 +2895,7 @@ class Codegen:
             if gen_self_arg:
                 args.append(ir.RAWPTR_T)
             for arg in typ.args:
-                arg_t = self.ir_type(arg.typ)
-                if arg.is_mut and not isinstance(arg_t, ir.Pointer):
-                    arg_t = ir.Pointer(arg_t)
-                args.append(arg_t)
+                args.append(self.ir_type(arg.typ))
             return ir.Function(args, self.ir_type(typ.ret_typ))
         elif isinstance(typ, type.Slice):
             return ir.SLICE_T
@@ -3007,7 +2980,7 @@ class Codegen:
                 fields = [
                     ir.Field("_idx_", ir.UINT_T),
                     ir.Field("_id_", ir.UINT_T),
-                    ir.Field("obj", ir.RAWPTR_T),
+                    ir.Field("obj", ir.RAWPTR_T)
                 ]
                 for f in ts.fields:
                     f_typ = self.ir_type(f.typ)

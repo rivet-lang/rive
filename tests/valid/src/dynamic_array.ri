@@ -1,6 +1,6 @@
 test "dynamic array from fixed array" {
     arr := [1, 2, 3];
-    mut dyn_array := arr[:].to_dynamic_array();
+    dyn_array := arr[:].to_dynamic_array();
     dyn_array.push(2);
     @assert(dyn_array.len == 4);
 
@@ -11,12 +11,12 @@ test "dynamic array from fixed array" {
 
 test "dynamic array constructor" {
     {
-        mut da := []int32();
+        da := []int32();
         da.push(5);
         @assert(da[0] == 5);
     }
     {
-        mut da := []int32(cap: 2);
+        da := []int32(cap: 2);
         da.push(10);
         @assert(da.cap == 2);
         @assert(da[0] == 10);
