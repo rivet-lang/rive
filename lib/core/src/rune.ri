@@ -120,7 +120,7 @@ func len_utf8(code: uint32) -> uint {
 pub struct TooManyBytesError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }

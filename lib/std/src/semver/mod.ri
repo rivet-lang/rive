@@ -13,7 +13,7 @@ pub enum Increment as uint8 {
 
 #[boxed]
 pub struct EmptyInputError < Throwable {
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         _ = self;
         return "empty input";
     }
@@ -23,7 +23,7 @@ pub struct EmptyInputError < Throwable {
 pub struct InvalidVersionFormatError < Throwable {
     input: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return "invalid version format for input '{}'".fmt(self.input);
     }
 }
@@ -32,7 +32,7 @@ pub struct InvalidVersionFormatError < Throwable {
 pub struct InvalidVersionError < Throwable {
     input: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.input;
     }
 }

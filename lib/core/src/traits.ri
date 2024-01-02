@@ -3,9 +3,9 @@
 // file.
 
 pub trait Stringable {
-    func to_string(self) -> string;
+    func to_string(+self) -> string;
 }
 
 pub trait Hashable {
-    func hash(self) -> uint;
+    func hash(+self) -> uint;
 }

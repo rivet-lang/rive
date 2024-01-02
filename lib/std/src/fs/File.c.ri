@@ -10,7 +10,7 @@ import ../{ mem, traits.Stringable };
 pub struct OperationFailedError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }

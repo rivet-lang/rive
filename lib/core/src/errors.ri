@@ -66,7 +66,7 @@ pub struct InvalidArgumentError < Throwable {
     msg: string;
 
     #[inline]
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
@@ -76,7 +76,7 @@ pub struct OutOfMemoryError < Throwable {
     msg: string;
 
     #[inline]
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
@@ -86,7 +86,7 @@ pub struct ReadFailedError < Throwable {
     msg: string;
 
     #[inline]
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
@@ -95,7 +95,7 @@ pub struct ReadFailedError < Throwable {
 pub struct InvalidSyntaxError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
@@ -104,7 +104,7 @@ pub struct InvalidSyntaxError < Throwable {
 pub struct InvalidBaseError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
@@ -113,7 +113,7 @@ pub struct InvalidBaseError < Throwable {
 pub struct InvalidBitSizeError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
@@ -122,7 +122,7 @@ pub struct InvalidBitSizeError < Throwable {
 pub struct ValueOutOfRangeError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }

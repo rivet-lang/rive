@@ -176,6 +176,11 @@ class Checker:
                     )
             self.check_decls(decl.decls)
         elif isinstance(decl, ast.FuncDecl):
+            if decl.is_method:
+                self_sym = decl.self_typ.symbol()
+                if self_sym.is_boxed() and not decl.self_is_boxed:
+                    report.error("cannot pass an expression by value or reference as receiver", decl.name_pos)
+                    report.note(f"type `{self_sym.name}` is boxed, should use `+self` or `+mut self` instead")
             for arg in decl.args:
                 if arg.has_def_expr:
                     old_expected_type = self.expected_type
@@ -1759,8 +1764,9 @@ class Checker:
 
     def check_receiver(self, info, recv):
         if not isinstance(info.self_typ, type.Ptr) and isinstance(recv.typ, type.Ptr):
-            # valid, the receiver will be dereferenced after: (self.*).method()
-            return
+            if not info.self_is_boxed:
+                # valid, the receiver will be dereferenced after: (self.*).method()
+                return
 
         if isinstance(info.self_typ, type.Ptr) and not isinstance(recv.typ, type.Ptr):
             # valid, the receiver will be referenced later: (&self).method()
@@ -1770,6 +1776,12 @@ class Checker:
             return
 
         if info.self_is_boxed:
+            recv_sym = recv.typ.symbol()
+            if recv_sym.kind == TypeKind.Trait:
+                # traits are boxed values behind the scenes
+                if info.self_is_mut:
+                    self.check_expr_is_mut(recv)
+                return
             if isinstance(recv.typ, type.Type) and recv.typ.is_boxed:
                 if info.self_is_mut and not recv.typ.is_mut:
                     # we cannot modify a boxed receiver that is not mutable

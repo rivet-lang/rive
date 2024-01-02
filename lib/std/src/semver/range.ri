@@ -19,7 +19,7 @@ enum Operator as uint8 {
 pub struct InvalidComparatorFormatError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }

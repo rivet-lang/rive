@@ -11,7 +11,7 @@ import ../env;
 pub struct CannotMakeDirectoryError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
@@ -20,7 +20,7 @@ pub struct CannotMakeDirectoryError < Throwable {
 pub struct CannotMakeFileError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
@@ -29,7 +29,7 @@ pub struct CannotMakeFileError < Throwable {
 pub struct CouldNotOpenDirectoryError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
@@ -38,7 +38,7 @@ pub struct CouldNotOpenDirectoryError < Throwable {
 pub struct EmptyStringError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
