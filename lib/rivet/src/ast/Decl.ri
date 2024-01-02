@@ -141,7 +141,7 @@ pub enum Decl {
         mut defer_stmts: []+Stmt.Defer;
     };
 
-    pub func position(self) -> token.Pos {
+    pub func position(+self) -> token.Pos {
         return match self {
             .Empty(empty_pos) -> empty_pos,
             .Comment(comment) -> comment.pos,
@@ -161,7 +161,7 @@ pub enum Decl {
         };
     }
 
-    pub func decls(self) -> ?[]+Self {
+    pub func decls(+self) -> ?[]+Self {
         return match self {
             .ComptimeIf(comptime_if) -> if branch_idx := comptime_if.branch_idx {
                 nodes_to_decls(

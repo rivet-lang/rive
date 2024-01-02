@@ -22,14 +22,14 @@ pub struct Tokenizer {
     mut is_cr_lf: bool;
     mut eofs: uint;
 
-    pub func new(text: string, env: +ast.Env) -> +Tokenizer {
-        mut t := Tokenizer(env: env, text: text);
+    pub func new(text: string, env: +ast.Env) -> +mut Tokenizer {
+        t := +mut Tokenizer(env: env, text: text);
         t.init();
         return t;
     }
 
-    pub func from_file(file: string, env: +ast.Env) -> +Tokenizer {
-        mut t := +Tokenizer(
+    pub func from_file(file: string, env: +ast.Env) -> +mut Tokenizer {
+        t := +mut Tokenizer(
             env: env, file: file, text: utils.read_file(file) catch |err| utils.error(
                 err.to_string()
             )
@@ -66,7 +66,7 @@ pub struct Tokenizer {
 
     #[inline]
     func new_multiline_token(
-        self, kind: token.Kind, lit: string := "", len: uint := 1,
+        +self, kind: token.Kind, lit: string := "", len: uint := 1,
         start_line: uint := 0, end_line: uint := 0, start_col: uint := 0
     ) -> token.Token {
         return token.Token(lit, kind, len, token.Pos(

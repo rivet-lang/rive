@@ -68,7 +68,7 @@ pub trait Sym {
     is_root: bool;
     mut is_generated: bool;
 
-    func module(self) -> ?+Module {
+    func module(+self) -> ?+Module {
         mut p := self;
         while {
             if p is Module(mod) {
@@ -82,7 +82,7 @@ pub trait Sym {
         return none;
     }
 
-    func has_access_to(self, other: Sym) -> bool {
+    func has_access_to(+self, other: Sym) -> bool {
         self_mod := self.module() ?? return false;
         other_mod := other.module() ?? return false;
         return (
@@ -93,7 +93,7 @@ pub trait Sym {
         );
     }
 
-    func type_of(self) -> string {
+    func type_of(+self) -> string {
         return match self is {
             SymRef(sym_ref) -> if sym_ref.ref_resolved {
                 sym_ref.ref.type_of()
@@ -116,7 +116,7 @@ pub trait Sym {
         };
     }
 
-    func qualname(self) -> string {
+    func qualname(+self) -> string {
         return if parent := self.parent {
             if parent.is_universe {
                 self.name
@@ -128,11 +128,11 @@ pub trait Sym {
         };
     }
 
-    func ==(self, other: Self) -> bool {
+    func ==(+self, other: Self) -> bool {
         return self.id == other.id;
     }
 
-    func !=(self, other: Self) -> bool {
+    func !=(+self, other: Self) -> bool {
         return self.id != other.id;
     }
 }
@@ -149,19 +149,19 @@ pub struct SymRef < Sym {
 
 #[boxed]
 pub struct Module < Sym {
-    pub func add_or_get_slice(mut self, elem_type: +Type, is_mut: bool) -> +TypeSym {
+    pub func add_or_get_slice(+mut self, elem_type: +Type, is_mut: bool) -> +TypeSym {
         unique_name := if is_mut { "[:]mut " } else { "[:]" }.concat(elem_type.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
             return @as(+TypeSym, type_sym);
         }
-        mut type_sym := TypeSym(
+        type_sym := +TypeSym(
             is_public: true,
             name: unique_name,
-            info: .Slice(elem_type, is_mut),
+            info: +.Slice(elem_type, is_mut),
             fields: +[
                 Field(
                     name: "len", is_public: true,
-                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(11))
+                    type: +.Basic(self.scope.find_type_symbol_by_index_or_panic(11))
                 )
             ]
         );
@@ -170,8 +170,8 @@ pub struct Module < Sym {
             is_public: true,
             is_method: true,
             self_is_ptr: true,
-            self_type: .Basic(type_sym),
-            ret_type: .Basic(self.add_or_get_dyn_array(elem_type, is_mut)),
+            self_type: +.Basic(type_sym),
+            ret_type: +.Basic(self.add_or_get_dyn_array(elem_type, is_mut)),
             has_body: true
         )) catch {};
         if slice_sym := self.scope.find("core")?.scope.find("Slice") {
@@ -181,7 +181,7 @@ pub struct Module < Sym {
         return type_sym;
     }
 
-    pub func add_or_get_array(mut self, elem_typ: +Type, size: uint, is_mut: bool) -> +TypeSym {
+    pub func add_or_get_array(+mut self, elem_typ: +Type, size: uint, is_mut: bool) -> +TypeSym {
         unique_name := if is_mut {
             "[{}]mut {}"
         } else {
@@ -190,14 +190,14 @@ pub struct Module < Sym {
         if type_sym := self.scope.find(unique_name) {
             return @as(+TypeSym, type_sym);
         }
-        type_sym := TypeSym(
+        type_sym := +TypeSym(
             is_public: true,
             name: unique_name,
-            info: .Array(elem_typ, size, is_mut),
+            info: +.Array(elem_typ, size, is_mut),
             fields: +[
                 Field(
                     name: "len", is_public: true,
-                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(11))
+                    type: +.Basic(self.scope.find_type_symbol_by_index_or_panic(11))
                 )
             ]
         );
@@ -205,23 +205,23 @@ pub struct Module < Sym {
         return type_sym;
     }
 
-    pub func add_or_get_dyn_array(mut self, elem_type: +Type, is_mut: bool) -> +TypeSym {
+    pub func add_or_get_dyn_array(+mut self, elem_type: +Type, is_mut: bool) -> +TypeSym {
         unique_name := if is_mut { "[]mut " } else { "[]" }.concat(elem_type.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
             return @as(+TypeSym, type_sym);
         }
-        mut type_sym := TypeSym(
+        type_sym := +mut TypeSym(
             is_public: true,
             name: unique_name,
-            info: .DynArray(elem_type, is_mut),
+            info: +.DynArray(elem_type, is_mut),
             fields: +[
                 Field(
                     name: "len", is_public: true,
-                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(11))
+                    type: +.Basic(self.scope.find_type_symbol_by_index_or_panic(11))
                 ),
                 Field(
                     name: "cap", is_public: true,
-                    type: .Basic(self.scope.find_type_symbol_by_index_or_panic(11))
+                    type: +.Basic(self.scope.find_type_symbol_by_index_or_panic(11))
                 )
             ]
         );
@@ -229,17 +229,17 @@ pub struct Module < Sym {
             name: "push",
             is_public: true,
             is_method: true,
-            self_type: .Basic(type_sym),
+            self_type: +.Basic(type_sym),
             self_is_mut: true,
-            args: +[Arg("value", type: elem_type, pos: token.no_pos)],
-            ret_type: .Void,
+            args: +[+Arg("value", type: elem_type, pos: token.no_pos)],
+            ret_type: +.Void,
             has_body: true
         )) catch {};
         type_sym.scope.add(+Func(
             name: "pop",
             is_public: true,
             is_method: true,
-            self_type: .Basic(type_sym),
+            self_type: +.Basic(type_sym),
             self_is_mut: true,
             ret_type: elem_type,
             has_body: true
@@ -248,8 +248,8 @@ pub struct Module < Sym {
             name: "clone",
             is_public: true,
             is_method: true,
-            self_type: .Basic(type_sym),
-            ret_type: .Basic(type_sym),
+            self_type: +.Basic(type_sym),
+            ret_type: +.Basic(type_sym),
             has_body: true
         )) catch {};
         if dyn_array_sym := self.scope.find("core")?.scope.find("DynArray") {
@@ -262,7 +262,7 @@ pub struct Module < Sym {
         return type_sym;
     }
 
-    pub func add_or_get_tuple(mut self, types: []+Type) -> +TypeSym {
+    pub func add_or_get_tuple(+mut self, types: []+Type) -> +TypeSym {
         unique_name := {
             mut sb := strings.Builder.from_string("(");
             for i, type in types {
@@ -281,14 +281,14 @@ pub struct Module < Sym {
         for i, type in types {
             fields.push(Field(name: i.to_string(), is_public: true, type: type));
         }
-        type_sym := TypeSym(
-            is_public: true, name: unique_name, info: .Tuple(types), fields: fields
+        type_sym := +TypeSym(
+            is_public: true, name: unique_name, info: +.Tuple(types), fields: fields
         );
         self.scope.add(type_sym) catch {};
         return type_sym;
     }
 
-    pub func add_or_get_func(mut self, func_sym: +Func) -> +TypeSym {
+    pub func add_or_get_func(+mut self, func_sym: +Func) -> +TypeSym {
         unique_name := {
             mut sb := strings.Builder.from_string("func(");
             if func_sym.is_method {
@@ -314,13 +314,13 @@ pub struct Module < Sym {
         if type_sym := self.scope.find(unique_name) {
             return @as(+TypeSym, type_sym);
         }
-        type_sym := TypeSym(is_public: true, name: unique_name, info: .Func(func_sym));
+        type_sym := +TypeSym(is_public: true, name: unique_name, info: +.Func(func_sym));
         self.scope.add(type_sym) catch {};
         return type_sym;
     }
 
     #[inline]
-    pub func is_core(self) -> bool {
+    pub func is_core(+self) -> bool {
         return self.name == "core";
     }
 }
@@ -385,7 +385,7 @@ pub struct Func < Sym {
     pub ret_type: +Type;
     pub pos: token.Pos;
 
-    pub func get_arg(self, idx: uint) -> +Arg {
+    pub func get_arg(+self, idx: uint) -> +Arg {
         arg := self.args[idx];
         return if arg.is_self {
             self.args[idx + 1]
@@ -394,7 +394,7 @@ pub struct Func < Sym {
         };
     }
 
-    pub func args_len(self) -> uint {
+    pub func args_len(+self) -> uint {
         mut len: uint := 0;
         for arg in self.args {
             if !(arg.is_self || arg.type is .Variadic) {
@@ -405,7 +405,7 @@ pub struct Func < Sym {
     }
 
     #[inline]
-    pub func kind(self) -> string {
+    pub func kind(+self) -> string {
         return if self.is_method {
             if self.is_special_method {
                 "special method"
@@ -418,8 +418,8 @@ pub struct Func < Sym {
     }
 
 	#[inline]
-    pub func type(self, mut universe: +Module) -> +Type {
-        return .Func(
+    pub func type(+self, universe: +mut Module) -> +Type {
+        return +.Func(
             is_method: self.is_method,
             self_is_ptr: self.self_is_ptr,
             self_is_mut: self.self_is_mut,
