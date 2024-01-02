@@ -20,10 +20,10 @@ pub struct File {
     f: &mut libc.FILE;
     mut is_opened: bool;
 
-    pub func open(path: string, mode: string := "r") -> !+File {
+    pub func open(path: string, mode: string := "r") -> !+mut File {
         unsafe {
             if f := libc.fopen(path.ptr, mode.ptr) {
-                return +Self(f, true);
+                return +mut Self(f, true);
             }
         }
         throw OperationFailedError("File.open: failed to open file '{}'".fmt(path));

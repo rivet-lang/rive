@@ -1651,23 +1651,8 @@ class Checker:
                 f"{kind} `{info.name}` should be called inside `unsafe` block",
                 expr.pos
             )
-        elif info.is_method and not self.check_compatible_types(expr.left.left.typ, info.self_typ):
-            self_sym = info.self_typ.symbol()
-            left_sym = expr.left.left.typ.symbol()
-            is_self_ptr_and_left_is_not_ptr = (
-                isinstance(info.self_typ, type.Ptr) and not isinstance(expr.left.left.typ, type.Ptr)
-            )
-            if not (
-                is_self_ptr_and_left_is_not_ptr
-                or (not isinstance(info.self_typ, type.Ptr) and isinstance(expr.left.left.typ, type.Ptr))
-                or not (
-                    self_sym.kind == TypeKind.Trait and left_sym.kind == TypeKind.Trait
-                    and left_sym in self_sym.info.bases
-                )
-            ):
-                self.check_argument_type(expr.left.left.typ, info.self_typ, expr.pos, "self", "method", info.name)
-            if is_self_ptr_and_left_is_not_ptr and info.self_is_mut:
-                self.check_expr_is_mut(expr.left.left)
+        elif info.is_method:
+            self.check_receiver(info, expr.left.left)
 
         func_args_len = len(info.args)
         if info.is_variadic and not info.is_extern:
@@ -1771,6 +1756,29 @@ class Checker:
                 except utils.CompilerError as e:
                     report.error(e.args[0], expr.spread_expr.pos)
         return expr.typ
+
+    def check_receiver(self, info, recv):
+        if not isinstance(info.self_typ, type.Ptr) and isinstance(recv.typ, type.Ptr):
+            # valid, the receiver will be dereferenced after: (self.*).method()
+            return
+
+        if isinstance(info.self_typ, type.Ptr) and not isinstance(recv.typ, type.Ptr):
+            # valid, the receiver will be referenced later: (&self).method()
+            if info.self_typ.is_mut:
+                # if the pointer is mutable, we must check that the receiver is also mutable.
+                self.check_expr_is_mut(recv)
+            return
+
+        if info.self_is_boxed:
+            if isinstance(recv.typ, type.Type) and recv.typ.is_boxed:
+                if info.self_is_mut and not recv.typ.is_mut:
+                    # we cannot modify a boxed receiver that is not mutable
+                    report.error(f"method `{info.name}` expected a mutable boxed receiver", recv.pos)
+                    report.note(f"got a receiver of type `{recv.typ}`")
+            else:
+                # we cannot operate on a receiver that is not boxed
+                report.error(f"method `{info.name}` expected a boxed receiver", recv.pos)
+                report.note(f"got a receiver of type `{recv.typ}`")
 
     def check_argument_type(
         self, got, expected, pos, arg_name, func_kind, func_name
