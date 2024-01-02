@@ -15,23 +15,23 @@ pub enum Expr < traits.Stringable {
     },
     StringConst {
         value: string;
-        type: Type;
+        type: +Type;
     },
     ArrayConst {
-        elems: []Expr;
-        type: Type;
+        elems: []+Expr;
+        type: +Type;
     },
     Const {
-        expr: Expr;
-        type: Type;
+        expr: +Expr;
+        type: +Type;
     },
     Name(string),
-    Ident(Var),
+    Ident(+Var),
     Selector {
-        left: Expr;
+        left: +Expr;
         name: string;
-        var_: Var;
-        type: Type;
+        var_: +Var;
+        type: +Type;
     },
     Operator {
         enum Op < traits.Stringable {
@@ -77,13 +77,13 @@ pub enum Expr < traits.Stringable {
         }
 
         op: Op;
-        args: []Expr;
-        type: Type;
+        args: []+Expr;
+        type: +Type;
     },
     Call {
-        func_: Expr;
-        args: []Expr;
-        type: Type;
+        func_: +Expr;
+        args: []+Expr;
+        type: +Type;
     };
 
     pub func to_string(self) -> string {

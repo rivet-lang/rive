@@ -27,7 +27,7 @@ pub enum CImportAction {
     },
     Define {
         name: string;
-        value: Expr;
+        value: +Expr;
         pos: token.Pos;
     },
     Undefine {
@@ -41,7 +41,7 @@ pub enum CImportAction {
 }
 
 pub struct CImportIfBranch {
-    pub cond: Expr;
+    pub cond: +Expr;
     pub is_else: bool;
     pub actions: []mut CImportAction;
     pub pos: token.Pos;

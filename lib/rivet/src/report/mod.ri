@@ -6,7 +6,7 @@ import std/{ traits, strings, console };
 
 import ../{ prefs, token, utils };
 
-pub var mut report_table := ReportTable();
+pub var report_table := +mut ReportTable();
 
 #[inline]
 pub func error(msg: string, pos: token.Pos) {
@@ -40,7 +40,7 @@ pub func total_warns() -> uint {
 
 #[boxed]
 struct ReportTable {
-    pub mut prefs: prefs.Prefs;
+    pub prefs: +prefs.Prefs;
     pub mut errors: uint;
     pub mut warns: uint;
 

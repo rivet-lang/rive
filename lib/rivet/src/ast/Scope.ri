@@ -9,9 +9,9 @@ pub struct Scope {
     pub start: uint;
     pub mut end: uint;
     pub mut owner: ?Sym;
-    pub mut parent: ?Scope;
+    pub mut parent: ?+Scope;
     pub mut detached_from_parent: bool;
-    pub mut childrens: []mut Scope;
+    pub mut childrens: []mut +Scope;
     pub mut syms: []mut Sym;
     pub mut is_local: bool;
 
@@ -85,18 +85,18 @@ pub struct Scope {
     }
 
     #[inline]
-    pub func find_type_symbol_or_panic(self, name: string) -> TypeSym {
-        return @as(TypeSym, self.find_or_panic(name));
+    pub func find_type_symbol_or_panic(self, name: string) -> +TypeSym {
+        return @as(+TypeSym, self.find_or_panic(name));
     }
 
     #[inline]
-    pub func find_type_symbol_by_index_or_panic(self, idx: uint) -> TypeSym {
-        return @as(TypeSym, self.find_by_index_or_panic(idx));
+    pub func find_type_symbol_by_index_or_panic(self, idx: uint) -> +TypeSym {
+        return @as(+TypeSym, self.find_by_index_or_panic(idx));
     }
 
     pub func lookup(self, name: string) -> ?Sym {
         if self.is_local {
-            mut sc_: ?Scope := self;
+            mut sc_: ?+Scope := self;
             while sc := sc_ {
                 if sym := sc.find(name) {
                     return sym;
@@ -115,7 +115,7 @@ pub struct Scope {
         return self.parent == none || self.detached_from_parent;
     }
 
-    pub func update_type(self, name: string, type: Type) {
+    pub func update_type(self, name: string, type: +Type) {
         if mut sym := self.lookup(name) {
             if sym is Var(mut var_info) {
                 var_info.type = type;

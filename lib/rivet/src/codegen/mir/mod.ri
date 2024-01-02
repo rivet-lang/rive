@@ -12,8 +12,8 @@ pub struct ModuleIR < traits.Stringable {
     pub mut structs: []Struct;
     pub mut globals: []Global;
     pub mut vtables: []VTable;
-    pub mut externs: []Func;
-    pub mut funcs: []Func;
+    pub mut externs: []+Func;
+    pub mut funcs: []+Func;
 
     #[inline]
     pub func to_file(self) -> ! {
@@ -58,7 +58,7 @@ pub struct ModuleIR < traits.Stringable {
 #[boxed]
 pub struct Field {
     pub name: string;
-    pub type: Type;
+    pub type: +Type;
 }
 
 #[boxed]
@@ -92,8 +92,8 @@ pub struct Struct < traits.Stringable {
 pub struct Global < traits.Stringable {
     pub is_extern: bool;
     pub name: string;
-    pub type: Type;
-    pub fields: []Var;
+    pub type: +Type;
+    pub fields: []+Var;
 
     pub func to_string(self) -> string {
         mut sb := strings.Builder.new();
@@ -107,32 +107,32 @@ pub struct Global < traits.Stringable {
 
 #[boxed]
 pub struct VTable {
-    pub funcs: []Func;
+    pub funcs: []+Func;
 }
 
 #[boxed]
 pub struct Func < traits.Stringable {
     pub name: string;
     pub mut args_len: uint;
-    pub ret_type: Type;
+    pub ret_type: +Type;
     pub is_variadic: bool;
     pub is_extern: bool;
-    pub mut locals: []Var;
+    pub mut locals: []+Var;
     pub mut blocks: []Block;
     pub mut cur_block: Block;
 
-    pub func make_tmp(mut self, type: Type) -> Var {
+    pub func make_tmp(mut self, type: +Type) -> +Var {
         tmp := Var(self.locals.len, level: .Temporal, type: type);
         self.locals.push(tmp);
         return tmp;
     }
 
-    pub func add_local(mut self, mut local: Var) {
+    pub func add_local(mut self, mut local: +Var) {
         local.id = self.locals.len;
         self.locals.push(local);
     }
 
-    pub func get_local(self, name: string) -> ?Var {
+    pub func get_local(self, name: string) -> ?+Var {
         for local in self.locals {
             if local.dbg_name == name {
                 return local;
@@ -200,15 +200,15 @@ pub enum VarLevel {
 pub struct Var {
     pub mut id: uint;
     pub dbg_name: string;
-    pub level: VarLevel;
-    pub type: Type;
-    pub mut value: ?Expr; // comptime value
+    pub level: +VarLevel;
+    pub type: +Type;
+    pub mut value: ?+Expr; // comptime value
     pub mut is_moved: bool;
     pub mut is_dropped: bool;
     pub mut is_initialized: bool;
-    pub mut fields: []mut Var;
+    pub mut fields: []mut +Var;
 
-    pub func set_field(mut self, name: string, value: Expr) {
+    pub func set_field(mut self, name: string, value: +Expr) {
         for mut field in self.fields {
             if field.dbg_name == name {
                 field.value = value;
@@ -217,7 +217,7 @@ pub struct Var {
         }
     }
 
-    pub func get_field(self, name: string) -> ?Var {
+    pub func get_field(self, name: string) -> ?+Var {
         for field in self.fields {
             if field.dbg_name == name {
                 return field;
@@ -226,7 +226,7 @@ pub struct Var {
         return none;
     }
 
-    pub func get_field_by_id(self, id: uint) -> ?Var {
+    pub func get_field_by_id(self, id: uint) -> ?+Var {
         for field in self.fields {
             if field.id == id {
                 return field;

@@ -7,8 +7,8 @@ pub struct Field {
     pub name: string;
     pub is_mut: bool;
     pub has_def_expr: bool;
-    pub def_expr: Expr;
-    pub type: Type;
+    pub def_expr: +Expr;
+    pub type: +Type;
     pub is_required: bool;
 }
 
@@ -16,10 +16,10 @@ pub struct Field {
 pub struct TypeSym < Sym {
     pub mut fields: []Field;
     pub mut full_fields_: []Field;
-    pub mut info: TypeInfo := .Invalid;
+    pub mut info: +TypeInfo := .Invalid;
     pub mut size: uint;
     pub mut align: uint;
-    pub mut default_value: ?Expr;
+    pub mut default_value: ?+Expr;
 
     pub func lookup_field(self, name: string) -> ?Field {
         for f in self.fields {
@@ -91,7 +91,7 @@ pub struct TypeSym < Sym {
     }
 
     #[inline]
-    pub func find_func(self, name: string) -> ?Func {
+    pub func find_func(self, name: string) -> ?+Func {
         return if sym := self.scope.find(name); sym is Func(func_) {
             if self.info !is .Trait && !func_.has_body {
                 return none;
@@ -108,7 +108,7 @@ pub struct TypeSym < Sym {
     }
 
     #[inline]
-    pub func find_method(self, name: string) -> ?Func {
+    pub func find_method(self, name: string) -> ?+Func {
         return if func_ := self.find_func(name); func_.is_method {
             func_
         } else {
@@ -157,7 +157,7 @@ pub struct TypeSym < Sym {
     }
 
     #[inline]
-    pub func implement_trait(self, trait_sym: TypeSym) -> bool {
+    pub func implement_trait(self, trait_sym: +TypeSym) -> bool {
         return if trait_sym.info is .Trait(trait_info) {
             self in trait_info.implements
         } else {
@@ -165,7 +165,7 @@ pub struct TypeSym < Sym {
         };
     }
 
-    pub func update(mut self, other: TypeSym) -> !bool {
+    pub func update(mut self, other: +TypeSym) -> !bool {
         if self.info is .Placeholder {
             // update placeholder
             if other.info !is .Placeholder {

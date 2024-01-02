@@ -23,18 +23,18 @@ pub enum Type < traits.Stringable {
     },
     Rawptr(uint),
     Pointer {
-        inner: Type;
+        inner: +Type;
         is_managed: bool;
         size: uint;
     },
     Array {
-        elem_type: Type;
+        elem_type: +Type;
         count: uint;
         size: uint;
     },
     Func {
-        args: []Type;
-        ret_type: Type;
+        args: []+Type;
+        ret_type: +Type;
         size: uint;
     };
 

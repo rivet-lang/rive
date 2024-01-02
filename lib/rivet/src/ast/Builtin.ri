@@ -8,12 +8,12 @@ pub enum Builtin {
     Invalid,
     Const {
         name: string;
-        type: Type;
+        type: +Type;
     },
     Func {
         name: string;
         args: []BuiltinArg;
-        type: Type;
+        type: +Type;
         is_unsafe: bool;
         checks: []BuiltinFuncCheck;
 
@@ -29,7 +29,7 @@ pub enum Builtin {
         }
     };
 
-    pub func type(self) -> Type {
+    pub func type(self) -> +Type {
         return match self {
             .Const(b_const) -> b_const.type,
             .Func(b_func) -> b_func.type,
@@ -42,7 +42,7 @@ struct BuiltinArg {
     pub name: string;
     pub is_mut: bool;
     pub is_any: bool; // any type
-    pub type: Type;
+    pub type: +Type;
     pub is_optional: bool;
 }
 

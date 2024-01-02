@@ -27,18 +27,18 @@ pub struct ObjectData {
     pub is_mut: bool;
     pub is_ref: bool;
     pub has_type: bool;
-    pub mut type: Type;
-    pub level: VarLevel;
+    pub mut type: +Type;
+    pub level: +VarLevel;
     pub pos: token.Pos;
-    pub mut sym: Var;
+    pub mut sym: +Var;
     pub is_extern: bool;
     pub is_global: bool;
 }
 
-pub func universe() -> Module {
+pub func universe() -> +Module {
     return Module(
         name: "universe",
-        scope: Scope(syms: +[
+        scope: +Scope(syms: +[
             TypeSym(name: "bool", info: .Bool),
             TypeSym(name: "rune", info: .Rune),
             TypeSym(name: "int8", info: .SizedInt(8)),

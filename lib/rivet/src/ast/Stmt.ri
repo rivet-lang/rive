@@ -9,30 +9,30 @@ pub enum Stmt {
     Empty(token.Pos),
     Comment(Comment),
     ComptimeIf(ComptimeIf),
-    Expr(Expr),
+    Expr(+Expr),
     VarDecl {
-        mut lefts: []mut ObjectData;
-        mut right: Expr;
-        mut scope: Scope;
+        mut lefts: []mut +ObjectData;
+        mut right: +Expr;
+        mut scope: +Scope;
         pos: token.Pos;
     },
     While {
-        mut cond: Expr;
-        mut continue_expr: Expr;
+        mut cond: +Expr;
+        mut continue_expr: +Expr;
         has_continue_expr: bool;
-        mut stmt: Stmt;
-        mut else_stmt: Stmt;
+        mut stmt: +Stmt;
+        mut else_stmt: +Stmt;
         has_else_stmt: bool;
         is_inf: bool;
         pos: token.Pos;
     },
     For {
-        mut index: ObjectData;
+        mut index: +ObjectData;
         has_index: bool;
-        mut values: []mut ObjectData;
-        mut iterable: Expr;
-        mut stmt: Stmt;
-        mut scope: Scope;
+        mut values: []mut +ObjectData;
+        mut iterable: +Expr;
+        mut stmt: +Stmt;
+        mut scope: +Scope;
         pos: token.Pos;
     },
     Defer {
@@ -42,7 +42,7 @@ pub enum Stmt {
             Success
         }
 
-        mut expr: Expr;
+        mut expr: +Expr;
         mode: Mode;
         pos: token.Pos;
     };

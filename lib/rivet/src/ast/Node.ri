@@ -8,9 +8,9 @@ import ../token;
 
 #[boxed]
 pub enum Node < Stringable {
-    Decl(Decl),
-    Stmt(Stmt),
-    Expr(Expr);
+    Decl(+Decl),
+    Stmt(+Stmt),
+    Expr(+Expr);
 
     pub func position(self) -> token.Pos {
         return match self {
@@ -30,8 +30,8 @@ pub enum Node < Stringable {
     }
 }
 
-pub func nodes_to_decls(nodes: []mut Node) -> []mut Decl {
-    mut decls := []mut Decl(cap: nodes.len);
+pub func nodes_to_decls(nodes: []mut +Node) -> []mut +Decl {
+    mut decls := []mut +Decl(cap: nodes.len);
     for node in nodes {
         if node is .Decl(decl) {
             decls.push(decl);
@@ -40,8 +40,8 @@ pub func nodes_to_decls(nodes: []mut Node) -> []mut Decl {
     return decls;
 }
 
-pub func nodes_to_stmts(nodes: []mut Node) -> []mut Stmt {
-    mut stmts := []mut Stmt(cap: nodes.len);
+pub func nodes_to_stmts(nodes: []mut +Node) -> []mut +Stmt {
+    mut stmts := []mut +Stmt(cap: nodes.len);
     for node in nodes {
         if node is .Stmt(stmt) {
             stmts.push(stmt);
@@ -50,8 +50,8 @@ pub func nodes_to_stmts(nodes: []mut Node) -> []mut Stmt {
     return stmts;
 }
 
-pub func nodes_to_exprs(nodes: []mut Node) -> []mut Expr {
-    mut exprs := []mut Expr(cap: nodes.len);
+pub func nodes_to_exprs(nodes: []mut +Node) -> []mut +Expr {
+    mut exprs := []mut +Expr(cap: nodes.len);
     for node in nodes {
         if node is .Expr(expr) {
             exprs.push(expr);
