@@ -140,9 +140,9 @@ class Resolver:
                     try:
                         decl.scope.add(
                             sym.Obj(
-                                decl.self_is_mut and not decl.self_is_ptr and not decl.self_is_boxed,
-                                "self", self_typ, sym.ObjLevel.Rec,
-                                decl.name_pos
+                                decl.self_is_mut and not decl.self_is_ptr
+                                and not decl.self_is_boxed, "self", self_typ,
+                                sym.ObjLevel.Rec, decl.name_pos
                             )
                         )
                     except utils.CompilerError as e:
@@ -201,8 +201,8 @@ class Resolver:
                 try:
                     stmt.scope.add(
                         sym.Obj(
-                            False, stmt.index.name,
-                            self.comp.void_t, sym.ObjLevel.Local, stmt.index.pos
+                            False, stmt.index.name, self.comp.void_t,
+                            sym.ObjLevel.Local, stmt.index.pos
                         )
                     )
                 except utils.CompilerError as e:
@@ -287,9 +287,8 @@ class Resolver:
                 try:
                     expr.scope.add(
                         sym.Obj(
-                            False,
-                            expr.var.name, self.comp.void_t, sym.ObjLevel.Local,
-                            expr.var.pos
+                            False, expr.var.name, self.comp.void_t,
+                            sym.ObjLevel.Local, expr.var.pos
                         )
                     )
                 except utils.CompilerError as e:
@@ -355,8 +354,7 @@ class Resolver:
                         try:
                             b.scope.add(
                                 sym.Obj(
-                                    False,
-                                    b.var_name, self.comp.void_t,
+                                    False, b.var_name, self.comp.void_t,
                                     sym.ObjLevel.Local, b.var_pos
                                 )
                             )
@@ -612,11 +610,20 @@ class Resolver:
                     report.error("cannot resolve type for `Self`", typ.expr.pos)
             else:
                 report.error(f"expected type, found {typ.expr}", typ.expr.pos)
-            if result and isinstance(typ, type.Type) and not typ.is_boxed and not self.inside_extend_type and not self.inside_typematch_type:
+            if result and isinstance(
+                typ, type.Type
+            ) and not typ.is_boxed and not self.inside_extend_type and not self.inside_typematch_type:
                 tsym = typ.symbol()
-                if isinstance(tsym, sym.Type) and tsym.kind != sym.TypeKind.Trait and tsym.is_boxed():
-                    report.error(f"cannot use type `{tsym.name}` as a simple value", typ.expr.pos)
-                    report.help(f"type `{tsym.name}` is boxed, you should use `+{typ.expr}` instead")
+                if isinstance(
+                    tsym, sym.Type
+                ) and tsym.kind != sym.TypeKind.Trait and tsym.is_boxed():
+                    report.error(
+                        f"cannot use type `{tsym.name}` as a simple value",
+                        typ.expr.pos
+                    )
+                    report.help(
+                        f"type `{tsym.name}` is boxed, you should use `+{typ.expr}` instead"
+                    )
             return result
         return False
 

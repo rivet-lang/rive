@@ -298,7 +298,8 @@ class Codegen:
             args = []
             if decl.is_method:
                 self_typ = self.ir_type(decl.self_typ)
-                if (decl.self_is_ptr or decl.self_is_boxed) and not isinstance(self_typ, ir.Pointer):
+                if (decl.self_is_ptr or decl.self_is_boxed
+                    ) and not isinstance(self_typ, ir.Pointer):
                     self_typ = self_typ.ptr(decl.self_is_boxed)
                 args.append(ir.Ident(self_typ, "self"))
             for i, arg in enumerate(decl.args):
@@ -435,9 +436,7 @@ class Codegen:
                         ), idx
                     ]
                 )
-            if stmt.value.is_ref and not isinstance(
-                value_t_ir, ir.Pointer
-            ):
+            if stmt.value.is_ref and not isinstance(value_t_ir, ir.Pointer):
                 value_t_ir = ir.Pointer(value_t_ir)
             if not stmt.value.is_ref or (
                 isinstance(value_t_ir, ir.Pointer) and value_t_ir.is_managed
@@ -589,26 +588,21 @@ class Codegen:
                 if nr_level > nr_level_expected and expected_typ != ir.RAWPTR_T:
                     while nr_level > nr_level_expected:
                         res_expr = ir.Inst(
-                            ir.InstKind.LoadPtr, [res_expr],
-                            res_expr.typ.typ
+                            ir.InstKind.LoadPtr, [res_expr], res_expr.typ.typ
                         )
                         nr_level -= 1
                 elif nr_level < nr_level_expected:
                     while nr_level < nr_level_expected:
                         res_expr = ir.Inst(
-                            ir.InstKind.GetPtr, [res_expr],
-                            res_expr.typ.ptr()
+                            ir.InstKind.GetPtr, [res_expr], res_expr.typ.ptr()
                         )
                         nr_level += 1
             else:
                 res_expr = ir.Inst(
                     ir.InstKind.LoadPtr, [res_expr], res_expr.typ.typ
                 )
-        elif isinstance(
-            expected_typ, ir.Pointer
-        ) and res_expr.typ not in (
-            ir.VOID_T, ir.RAWPTR_T
-        ):
+        elif isinstance(expected_typ, ir.Pointer
+                        ) and res_expr.typ not in (ir.VOID_T, ir.RAWPTR_T):
             nr_level_expected = expected_typ.nr_level()
             nr_level = res_expr.typ.nr_level(
             ) if isinstance(res_expr.typ, ir.Pointer) else 0
@@ -774,8 +768,7 @@ class Codegen:
                     arg1.typ, type.Ptr
                 ) and arg1.typ.typ == self.comp.void_t
                 if (
-                    isinstance(expr.typ, type.Ptr)
-                    and expr.typ.value_is_boxed()
+                    isinstance(expr.typ, type.Ptr) and expr.typ.value_is_boxed()
                     and (arg1.typ == expr.typ.typ or arg1_is_voidptr)
                 ):
                     if not arg1_is_voidptr:
@@ -1715,7 +1708,9 @@ class Codegen:
             if expr.op == Kind.Plus:
                 size, _ = self.comp.type_size(expr.right_typ)
                 res = self.boxed_instance(self.ir_type(expr.right_typ), size)
-                self.cur_func.store_ptr(res, ir.Inst(ir.InstKind.Cast, [right, right.typ]))
+                self.cur_func.store_ptr(
+                    res, ir.Inst(ir.InstKind.Cast, [right, right.typ])
+                )
                 return res
             if expr.op == Kind.Amp:
                 tmp = self.cur_func.local_name()
@@ -1861,7 +1856,8 @@ class Codegen:
                         ), expr_var_exit_label
                     )
                     var_t = self.ir_type(expr.var.typ)
-                    var_t2 = var_t if isinstance(var_t, ir.Pointer) else var_t.ptr()
+                    var_t2 = var_t if isinstance(var_t,
+                                                 ir.Pointer) else var_t.ptr()
                     if left_sym.kind == TypeKind.Enum:
                         union_name = f"{cg_utils.mangle_symbol(left_sym)}6_Union"
                         union_type = ir.Type(union_name)
@@ -2647,11 +2643,16 @@ class Codegen:
         return tmp
 
     def boxed_instance(self, typ, size, custom_name = None):
-        tmp = ir.Ident(typ if isinstance(typ, ir.Pointer) else typ.ptr(True), custom_name or self.cur_func.local_name())
+        tmp = ir.Ident(
+            typ if isinstance(typ, ir.Pointer) else typ.ptr(True), custom_name
+            or self.cur_func.local_name()
+        )
         inst = ir.Inst(
-            ir.InstKind.Call,
-            [ir.Name("_R4core3mem11boxed_allocF"),
-             ir.IntLit(ir.UINT_T, str(size)), ir.Name("NULL")]
+            ir.InstKind.Call, [
+                ir.Name("_R4core3mem11boxed_allocF"),
+                ir.IntLit(ir.UINT_T, str(size)),
+                ir.Name("NULL")
+            ]
         )
         if custom_name:
             self.cur_func.store(tmp, inst)
@@ -2946,7 +2947,9 @@ class Codegen:
                 typ_ = typ_.ptr(True)
             return typ_
         res = ir.Type(cg_utils.mangle_symbol(typ_sym))
-        if typ_sym.kind == TypeKind.Trait or (isinstance(typ, type.Type) and typ.is_boxed):
+        if typ_sym.kind == TypeKind.Trait or (
+            isinstance(typ, type.Type) and typ.is_boxed
+        ):
             return res.ptr(True)
         return res
 

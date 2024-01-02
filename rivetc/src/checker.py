@@ -179,8 +179,13 @@ class Checker:
             if decl.is_method:
                 self_sym = decl.self_typ.symbol()
                 if self_sym.is_boxed() and not decl.self_is_boxed:
-                    report.error("cannot pass an expression by value or reference as receiver", decl.name_pos)
-                    report.note(f"type `{self_sym.name}` is boxed, should use `+self` or `+mut self` instead")
+                    report.error(
+                        "cannot pass an expression by value or reference as receiver",
+                        decl.name_pos
+                    )
+                    report.note(
+                        f"type `{self_sym.name}` is boxed, should use `+self` or `+mut self` instead"
+                    )
             for arg in decl.args:
                 if arg.has_def_expr:
                     old_expected_type = self.expected_type
@@ -295,9 +300,14 @@ class Checker:
                 )
                 if stmt.value.is_ref:
                     if isinstance(elem_typ, type.Type) and elem_typ.is_boxed:
-                        report.error("cannot take reference of a boxed value", stmt.value.pos)
+                        report.error(
+                            "cannot take reference of a boxed value",
+                            stmt.value.pos
+                        )
                         amp_expr = "&mut" if stmt.value.is_mut else "&"
-                        report.help(f"consider removing `{amp_expr}` from the declaration of `{stmt.value.name}`")
+                        report.help(
+                            f"consider removing `{amp_expr}` from the declaration of `{stmt.value.name}`"
+                        )
                     elif stmt.value.is_mut and not iterable_sym.info.is_mut:
                         report.error(
                             f"cannot modify immutable {iterable_sym.kind}",
@@ -306,7 +316,9 @@ class Checker:
                     else:
                         elem_typ = type.Ptr(elem_typ, stmt.value.is_mut)
                 elif stmt.value.is_mut:
-                    report.error("invalid syntax for `for` statement", stmt.value.pos)
+                    report.error(
+                        "invalid syntax for `for` statement", stmt.value.pos
+                    )
                     report.help(
                         f"`&mut {stmt.value.name}` must be used if you want to modify the elements of an {iterable_sym.kind}"
                     )
@@ -790,7 +802,10 @@ class Checker:
                         v_t = expr.right.variant_info.typ
                         if expr.var.is_ref:
                             if v_t.value_is_boxed():
-                                report.error("cannot take reference to a boxed value", expr.var.pos)
+                                report.error(
+                                    "cannot take reference to a boxed value",
+                                    expr.var.pos
+                                )
                             v_t = type.Ptr(v_t, expr.var.is_mut)
                         if expr.right.variant_info.has_typ:
                             expr.scope.update_type(expr.var.name, v_t)
@@ -803,7 +818,10 @@ class Checker:
                     else:
                         v_t = rtyp
                         if expr.var.is_ref:
-                            report.error("cannot take reference to a boxed value", expr.var.pos)
+                            report.error(
+                                "cannot take reference to a boxed value",
+                                expr.var.pos
+                            )
                         if isinstance(v_t, type.Type):
                             v_t.is_boxed = True
                             v_t.is_mut = expr.var.is_mut
@@ -814,7 +832,9 @@ class Checker:
                     if expr.var.is_mut:
                         self.check_expr_is_mut(expr.left)
                         if not (lsym.kind == TypeKind.Trait or expr.var.is_ref):
-                            report.error("invalid syntax for typematching", expr.var.pos)
+                            report.error(
+                                "invalid syntax for typematching", expr.var.pos
+                            )
                             report.help("use `&mut` instead")
                 if lsym.kind == TypeKind.Enum:
                     if lsym.info.is_tagged and expr.op not in (
@@ -1236,7 +1256,9 @@ class Checker:
                     if isinstance(left_typ, type.Type) and left_typ.is_boxed:
                         expr.typ = type.Type(left_typ.sym)
                     else:
-                        report.error(f"invalid indirect for `{left_typ}`", expr.pos)
+                        report.error(
+                            f"invalid indirect for `{left_typ}`", expr.pos
+                        )
                 elif expr.is_indirect:
                     if not (
                         isinstance(left_typ, type.Ptr)
@@ -1487,7 +1509,9 @@ class Checker:
                             if b.var_is_ref or expr_sym.kind == TypeKind.Trait:
                                 self.check_expr_is_mut(expr.expr)
                             elif expr_sym.kind != TypeKind.Trait:
-                                report.error("invalid syntax for typematching", b.var_pos)
+                                report.error(
+                                    "invalid syntax for typematching", b.var_pos
+                                )
                                 report.help("use `&mut` instead")
                         if len(b.pats) == 1:
                             var_t = self.comp.void_t
@@ -1497,17 +1521,22 @@ class Checker:
                                     var_t = pat0.typ
                                     if b.var_is_ref:
                                         if var_t.value_is_boxed():
-                                            report.error("cannot take reference to a boxed value", b.var_pos)
+                                            report.error(
+                                                "cannot take reference to a boxed value",
+                                                b.var_pos
+                                            )
                                         var_t = type.Ptr(var_t, b.var_is_mut)
                                 else:
                                     report.error(
-                                        "cannot use void expression",
-                                        b.var_pos
+                                        "cannot use void expression", b.var_pos
                                     )
                             else:
                                 var_t = b.pats[0].typ
                                 if b.var_is_ref:
-                                    report.error("cannot take reference to a boxed value", b.var_pos)
+                                    report.error(
+                                        "cannot take reference to a boxed value",
+                                        b.var_pos
+                                    )
                                 if isinstance(var_t, type.Type):
                                     var_t.is_boxed = True
                                     var_t.is_mut = b.var_is_mut
@@ -1814,11 +1843,16 @@ class Checker:
             if isinstance(recv.typ, type.Type) and recv.typ.is_boxed:
                 if info.self_is_mut and not recv.typ.is_mut:
                     # we cannot modify a boxed receiver that is not mutable
-                    report.error(f"method `{info.name}` expected a mutable boxed receiver", recv.pos)
+                    report.error(
+                        f"method `{info.name}` expected a mutable boxed receiver",
+                        recv.pos
+                    )
                     report.note(f"got a receiver of type `{recv.typ}`")
             else:
                 # we cannot operate on a receiver that is not boxed
-                report.error(f"method `{info.name}` expected a boxed receiver", recv.pos)
+                report.error(
+                    f"method `{info.name}` expected a boxed receiver", recv.pos
+                )
                 report.note(f"got a receiver of type `{recv.typ}`")
 
     def check_argument_type(
@@ -2006,7 +2040,9 @@ class Checker:
             if expr.is_path:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
                 return
-            if expr.is_boxed_indirect and isinstance(expr.left_typ, type.Type) and expr.left_typ.is_boxed:
+            if expr.is_boxed_indirect and isinstance(
+                expr.left_typ, type.Type
+            ) and expr.left_typ.is_boxed:
                 if not expr.left_typ.is_mut:
                     report.error(
                         "cannot use a immutable boxed value as mutable value",
@@ -2057,7 +2093,9 @@ class Checker:
                         "cannot modify elements of an immutable pointer",
                         expr.pos
                     )
-            elif isinstance(expr.left.typ, type.Type) and expr.left.typ.is_boxed:
+            elif isinstance(
+                expr.left.typ, type.Type
+            ) and expr.left.typ.is_boxed:
                 if not expr.left.typ.is_mut:
                     report.error(
                         "cannot use a immutable boxed value as mutable value",

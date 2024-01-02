@@ -656,7 +656,7 @@ class Func(Sym):
     def __init__(
         self, abi, is_public, is_extern, is_unsafe, is_method, is_variadic,
         name, args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
-        self_is_ptr, self_typ = None, attributes = None, self_is_boxed=False
+        self_is_ptr, self_typ = None, attributes = None, self_is_boxed = False
     ):
         Sym.__init__(self, is_public, name)
         self.is_main = False
