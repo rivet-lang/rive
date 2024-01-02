@@ -8,7 +8,7 @@ import ../token;
 pub struct AttributeDuplicatedError < Throwable {
     name: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return "duplicated attribute `{}`".fmt(self.name);
     }
 }

@@ -8,7 +8,7 @@ pub struct EnumVariant {
     pub name: string;
     pub value: int;
     pub has_type: bool;
-    pub mut type: +Type;
+    pub type: +mut Type;
     pub has_fields: bool;
 }
 
@@ -34,33 +34,33 @@ pub enum TypeInfo < traits.Stringable {
     String,
     Func(+Func),
     Alias {
-        mut parent: +Type;
+        parent: +mut Type;
     },
     Array {
-        elem_type: +Type;
+        elem_type: +mut Type;
         size: uint;
         is_mut: bool;
         has_contains_method: bool;
     },
     Slice {
-        elem_type: +Type;
+        elem_type: +mut Type;
         is_mut: bool;
         has_contains_method: bool;
     },
     DynArray {
-        elem_type: +Type;
+        elem_type: +mut Type;
         is_mut: bool;
         has_contains_method: bool;
     },
     Tuple {
-        types: []+Type;
+        types: []+mut Type;
     },
     Trait {
-        mut bases: []mut +TypeSym;
-        mut implements: []mut +TypeSym;
+        mut bases: []mut +mut TypeSym;
+        mut implements: []mut +mut TypeSym;
         mut has_objects: bool;
 
-        func index_of(&self, type_sym: +TypeSym) -> ?uint {
+        func index_of(&self, type_sym: +mut TypeSym) -> ?uint {
             for i, ts in self.implements {
                 if ts.id == type_sym.id {
                     return i;
@@ -69,29 +69,29 @@ pub enum TypeInfo < traits.Stringable {
             return none;
         }
 
-        func implement(mut self, type_sym: +TypeSym) {
+        func implement(&mut self, type_sym: +mut TypeSym) {
             if type_sym !in self.implements {
                 self.implements.push(type_sym);
-                for mut b in self.bases {
-                    @as(+TypeInfo.Trait, b.info).implement(type_sym);
+                for b in self.bases {
+                    @as(+mut TypeInfo.Trait, b.info).implement(type_sym);
                 }
             }
         }
 
         #[inline]
-        func mark_has_objects(mut self) {
+        func mark_has_objects(&mut self) {
             self.has_objects = true;
         }
     },
     Enum {
-        underlying_type: +Type;
+        underlying_type: +mut Type;
         mut variants: []mut EnumVariant;
         is_tagged: bool;
         is_boxed: bool;
-        mut traits: []mut +TypeSym;
+        mut traits: []mut +mut TypeSym;
 
         #[inline]
-        func add_variant(mut self, variant: EnumVariant) {
+        func add_variant(&mut self, variant: EnumVariant) {
             self.variants.push(variant);
         }
 
@@ -108,7 +108,7 @@ pub enum TypeInfo < traits.Stringable {
             return none;
         }
 
-        func get_variant_by_type(&self, type: +Type) -> ?EnumVariant {
+        func get_variant_by_type(&self, type: +mut Type) -> ?EnumVariant {
             for v in self.variants {
                 if v.has_type && v.type == type {
                     return v;
@@ -117,7 +117,7 @@ pub enum TypeInfo < traits.Stringable {
             return none;
         }
 
-        func contains_trait(&self, type_sym: +TypeSym) -> bool {
+        func contains_trait(&self, type_sym: +mut TypeSym) -> bool {
             for trait_ in self.traits {
                 if trait_.id == type_sym.id {
                     return true;
@@ -130,11 +130,11 @@ pub enum TypeInfo < traits.Stringable {
         is_boxed: bool;
         is_opaque: bool;
         is_enum_variant: bool;
-        mut parent: +TypeSym; // enum type symbol if this is a enum variant
-        mut bases: []mut +TypeSym;
-        mut traits: []mut +TypeSym;
+        mut parent: +mut TypeSym; // enum type symbol if this is a enum variant
+        mut bases: []mut +mut TypeSym;
+        mut traits: []mut +mut TypeSym;
 
-        func contains_trait(&self, type_sym: +TypeSym) -> bool {
+        func contains_trait(&self, type_sym: +mut TypeSym) -> bool {
             for trait_ in self.traits {
                 if trait_.id == type_sym.id {
                     return true;

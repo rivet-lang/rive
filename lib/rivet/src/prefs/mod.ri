@@ -80,7 +80,7 @@ pub struct Prefs {
 
     pub func from_args(args: [:]string, is_test: bool, run_output: bool, is_check: bool) -> !+Self {
         prefs := +mut Self(is_test: is_test, run_output: run_output, check: is_check);
-        mut fp := flag.FlagParser.new(args);
+        fp := flag.FlagParser.new(args);
         fp.set_application_name(if is_test {
             "rivet test"
         } else if run_output {

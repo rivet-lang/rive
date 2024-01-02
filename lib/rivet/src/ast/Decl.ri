@@ -142,7 +142,7 @@ pub enum Decl {
     };
 
     pub func position(+self) -> token.Pos {
-        return match self {
+        return match self.+ {
             .Empty(empty_pos) -> empty_pos,
             .Comment(comment) -> comment.pos,
             .ComptimeIf(comptime_if) -> comptime_if.pos,
@@ -162,7 +162,7 @@ pub enum Decl {
     }
 
     pub func decls(+self) -> ?[]+Self {
-        return match self {
+        return match self.+ {
             .ComptimeIf(comptime_if) -> if branch_idx := comptime_if.branch_idx {
                 nodes_to_decls(
                     comptime_if.branches[branch_idx].nodes

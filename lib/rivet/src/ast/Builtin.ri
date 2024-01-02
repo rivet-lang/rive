@@ -8,16 +8,16 @@ pub enum Builtin {
     Invalid,
     Const {
         name: string;
-        type: +Type;
+        type: +mut Type;
     },
     Func {
         name: string;
         args: []BuiltinArg;
-        type: +Type;
+        type: +mut Type;
         is_unsafe: bool;
         checks: []BuiltinFuncCheck;
 
-        func args_len(self) -> uint {
+        func args_len(&self) -> uint {
             mut l: uint := 0;
             for arg in self.args {
                 if arg.is_optional {
@@ -29,11 +29,11 @@ pub enum Builtin {
         }
     };
 
-    pub func type(self) -> +Type {
+    pub func type(self) -> +mut Type {
         return match self {
             .Const(b_const) -> b_const.type,
             .Func(b_func) -> b_func.type,
-            else -> .Void
+            else -> +mut .Void
         };
     }
 }
@@ -65,7 +65,7 @@ enum BuiltinFuncCheck {
 }
 
 extend Env {
-    func setup_builtins(mut self) {
+    func setup_builtins(+mut self) {
         self.builtins = +[
             // variables
             .Const("_FILE_", self.string_t),
@@ -110,7 +110,7 @@ extend Env {
                 .ReturnTypeEqualToArgumentType(0)
             ]),
 
-            .Func("unreachable", +[], .Never(token.no_pos)),
+            .Func("unreachable", +[], +mut .Never(token.no_pos)),
             .Func("breakpoint", +[]),
             .Func("assert", +[
                 BuiltinArg("cond", type: self.bool_t),
@@ -132,7 +132,7 @@ extend Env {
         ];
     }
 
-    pub func find_builtin(self, name: string) -> ?Builtin {
+    pub func find_builtin(+self, name: string) -> ?Builtin {
         for builtin in self.builtins {
             is_equal := match builtin {
                 .Const(b_var) -> b_var.name == name,
@@ -146,7 +146,7 @@ extend Env {
         return none;
     }
 
-    pub func exist_builtin(self, name: string) -> bool {
+    pub func exist_builtin(+self, name: string) -> bool {
         return self.find_builtin(name) != none;
     }
 }

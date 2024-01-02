@@ -68,7 +68,7 @@ pub struct FlagParser {
     mut footers: []string;
 
     /// Create a new flag parser for the given args.
-    pub func new(args: [:]string) -> +Self {
+    pub func new(args: [:]string) -> +mut Self {
         mut all_before_dashdash := args.to_dynamic_array();
         mut all_after_dashdash := []string();
         idx_dashdash := index_of(args, "--");
@@ -78,7 +78,7 @@ pub struct FlagParser {
                 all_after_dashdash = args[v + 1:].to_dynamic_array();
             }
         }
-        return +Self(
+        return +mut Self(
             original_args: args,
             idx_dashdash: idx_dashdash,
             all_after_dashdash: all_after_dashdash,

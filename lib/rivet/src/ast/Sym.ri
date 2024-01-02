@@ -18,7 +18,7 @@ func new_sym_id() -> uint {
 pub struct DuplicateSymbolError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
@@ -61,14 +61,14 @@ pub trait Sym {
     mut is_public: bool;
     mut parent: ?Sym;
     name: string;
-    mut scope: +Scope;
+    mut scope: +mut Scope;
     mut mangled_name: string;
     mut qualified_name: string;
     is_universe: bool;
     is_root: bool;
     mut is_generated: bool;
 
-    func module(+self) -> ?+Module {
+    func module(+mut self) -> ?+mut Module {
         mut p := self;
         while {
             if p is Module(mod) {
@@ -149,7 +149,7 @@ pub struct SymRef < Sym {
 
 #[boxed]
 pub struct Module < Sym {
-    pub func add_or_get_slice(+mut self, elem_type: +Type, is_mut: bool) -> +TypeSym {
+    pub func add_or_get_slice(+mut self, elem_type: +mut Type, is_mut: bool) -> +mut TypeSym {
         unique_name := if is_mut { "[:]mut " } else { "[:]" }.concat(elem_type.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
             return @as(+TypeSym, type_sym);
@@ -181,7 +181,7 @@ pub struct Module < Sym {
         return type_sym;
     }
 
-    pub func add_or_get_array(+mut self, elem_typ: +Type, size: uint, is_mut: bool) -> +TypeSym {
+    pub func add_or_get_array(+mut self, elem_typ: +mut Type, size: uint, is_mut: bool) -> +mut TypeSym {
         unique_name := if is_mut {
             "[{}]mut {}"
         } else {
@@ -205,7 +205,7 @@ pub struct Module < Sym {
         return type_sym;
     }
 
-    pub func add_or_get_dyn_array(+mut self, elem_type: +Type, is_mut: bool) -> +TypeSym {
+    pub func add_or_get_dyn_array(+mut self, elem_type: +mut Type, is_mut: bool) -> +mut TypeSym {
         unique_name := if is_mut { "[]mut " } else { "[]" }.concat(elem_type.to_qualstring());
         if type_sym := self.scope.find(unique_name) {
             return @as(+TypeSym, type_sym);
@@ -262,7 +262,7 @@ pub struct Module < Sym {
         return type_sym;
     }
 
-    pub func add_or_get_tuple(+mut self, types: []+Type) -> +TypeSym {
+    pub func add_or_get_tuple(+mut self, types: []+mut Type) -> +mut TypeSym {
         unique_name := {
             mut sb := strings.Builder.from_string("(");
             for i, type in types {
@@ -288,7 +288,7 @@ pub struct Module < Sym {
         return type_sym;
     }
 
-    pub func add_or_get_func(+mut self, func_sym: +Func) -> +TypeSym {
+    pub func add_or_get_func(+mut self, func_sym: +mut Func) -> +mut TypeSym {
         unique_name := {
             mut sb := strings.Builder.from_string("func(");
             if func_sym.is_method {
@@ -361,9 +361,9 @@ pub struct Arg {
     pub is_mut: bool;
     pub is_self: bool;
     pub has_def_expr: bool;
-    pub mut def_expr: +Expr;
+    pub mut def_expr: +mut Expr;
     pub pos: token.Pos;
-    pub mut type: +Type;
+    pub mut type: +mut Type;
 }
 
 #[boxed]
