@@ -1,5 +1,5 @@
 test "dynamic arrays: push and pop" {
-    mut vec := +["A", "B"];
+    vec := +["A", "B"];
     @assert(vec.len == 2);
 
     vec.push("C");

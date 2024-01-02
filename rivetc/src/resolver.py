@@ -196,7 +196,7 @@ class Resolver:
                 try:
                     stmt.scope.add(
                         sym.Obj(
-                            stmt.index.is_mut, stmt.index.name,
+                            False, stmt.index.name,
                             self.comp.void_t, sym.ObjLevel.Local, stmt.index.pos
                         )
                     )
@@ -205,7 +205,7 @@ class Resolver:
             try:
                 stmt.scope.add(
                     sym.Obj(
-                        stmt.value.is_mut, stmt.value.name, self.comp.void_t,
+                        False, stmt.value.name, self.comp.void_t,
                         sym.ObjLevel.Local, stmt.value.pos
                     )
                 )
@@ -280,7 +280,7 @@ class Resolver:
                 try:
                     expr.scope.add(
                         sym.Obj(
-                            expr.var.is_mut and not expr.var.is_ref,
+                            False,
                             expr.var.name, self.comp.void_t, sym.ObjLevel.Local,
                             expr.var.pos
                         )
@@ -346,7 +346,7 @@ class Resolver:
                         try:
                             b.scope.add(
                                 sym.Obj(
-                                    b.var_is_mut and not b.var_is_ref,
+                                    False,
                                     b.var_name, self.comp.void_t,
                                     sym.ObjLevel.Local, b.var_pos
                                 )

@@ -304,7 +304,7 @@ class Checker:
                             stmt.iterable.pos
                         )
                     else:
-                        elem_typ = type.Ptr(elem_typ)
+                        elem_typ = type.Ptr(elem_typ, stmt.value.is_mut)
                 elif stmt.value.is_mut:
                     report.error("invalid syntax for `for` statement", stmt.value.pos)
                     report.help(

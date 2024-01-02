@@ -66,7 +66,7 @@ $if _TESTS_ {
 
     struct Test {
         name: string;
-        fn: func (mut Test);
+        fn: func (&mut Test);
         mut result: TestResult;
         mut early_return: bool;
         mut err_pos: string;
@@ -75,13 +75,13 @@ $if _TESTS_ {
     }
 
     struct TestRunner {
-        mut tests: []mut Test;
+        tests: []mut Test;
         mut ok_tests: uint64;
         mut fail_tests: uint64;
         mut skip_tests: uint64;
 
         func run(&mut self) {
-            for i, mut test_ in self.tests {
+            for i, &mut test_ in self.tests {
                 console_ewrite(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
                 (test_.fn)(test_);
                 match test_.result {

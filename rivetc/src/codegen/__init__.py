@@ -1311,7 +1311,7 @@ class Codegen:
                         ]
                     )
                 elif expr.sym.is_method and expr.sym.name == "pop" and left_sym.kind == TypeKind.DynArray:
-                    ret_typ = self.ir_type(expr.sym.ret_typ)
+                    ret_typ = self.ir_type(expr.typ)
                     value = ir.Inst(ir.InstKind.Cast, [inst, ret_typ.ptr()])
                     if custom_tmp:
                         self.cur_func.store(
