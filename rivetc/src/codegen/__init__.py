@@ -761,15 +761,7 @@ class Codegen:
                 elif expr.name == "_RIVET_VERSION_":
                     return self.gen_string_literal(utils.full_version())
             # runtime object
-            i_typ = self.ir_type(expr.typ)
-            if (
-                expr.obj.level == sym.ObjLevel.Arg and expr.obj.is_mut
-                and not expr.typ.symbol().is_primitive()
-            ) or (
-                expr.obj.is_hidden_ref and not isinstance(i_typ, ir.Pointer)
-            ):
-                i_typ = i_typ.ptr()
-            return ir.Ident(i_typ, expr.obj.ir_name)
+            return ir.Ident(self.ir_type(expr.typ), expr.obj.ir_name)
         elif isinstance(expr, ast.BuiltinCallExpr):
             if expr.name == "set_enum_ref_value":
                 arg0 = self.gen_expr(expr.args[0])

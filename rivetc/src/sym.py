@@ -27,7 +27,6 @@ class Obj:
         self.is_mut = is_mut
         self.is_used = False
         self.is_changed = False
-        self.is_hidden_ref = False
         self.level = level
         self.pos = pos
         self.typ = typ
@@ -70,10 +69,6 @@ class Scope:
     def update_type(self, name, typ):
         if obj := self.lookup(name):
             obj.typ = typ
-
-    def update_is_hidden_ref(self, name, val):
-        if obj := self.lookup(name):
-            obj.is_hidden_ref = val
 
     def update_ir_name(self, name, ir_name):
         if obj := self.lookup(name):

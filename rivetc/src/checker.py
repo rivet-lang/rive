@@ -313,9 +313,6 @@ class Checker:
                 if stmt.index != None:
                     stmt.scope.update_type(stmt.index.name, self.comp.uint_t)
                 stmt.scope.update_type(stmt.value.name, elem_typ)
-                stmt.scope.update_is_hidden_ref(
-                    stmt.value.name, stmt.value.is_mut
-                )
                 self.check_stmt(stmt.stmt)
             else:
                 report.error(
@@ -816,7 +813,6 @@ class Checker:
                         if not expr.var.is_ref:
                             report.error("invalid syntax for typematching", expr.var.pos)
                             report.help("use `&mut` instead")
-                            expr.scope.update_is_hidden_ref(expr.var.name, True)
                 if lsym.kind == TypeKind.Enum:
                     if lsym.info.is_tagged and expr.op not in (
                         Kind.KwIs, Kind.KwNotIs
@@ -1483,7 +1479,7 @@ class Checker:
                             if b.var_is_ref:
                                 self.check_expr_is_mut(expr.expr)
                             else:
-                                report.error("invalid syntax for typematching", expr.var_pos)
+                                report.error("invalid syntax for typematching", b.var_pos)
                                 report.help("use `&mut` instead")
                         if len(b.pats) == 1:
                             var_t = self.comp.void_t
@@ -1499,10 +1495,6 @@ class Checker:
                                     report.error(
                                         "cannot use void expression",
                                         b.var_pos
-                                    )
-                                if not b.var_is_ref:
-                                    b.scope.update_is_hidden_ref(
-                                        b.var_name, b.var_is_mut
                                     )
                             else:
                                 var_t = b.pats[0].typ
