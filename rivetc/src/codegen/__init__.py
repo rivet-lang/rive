@@ -1210,7 +1210,6 @@ class Codegen:
                     left_sym = expr.sym.self_typ.symbol()
                     if left_sym.kind == TypeKind.DynArray:
                         expr.sym = self.comp.dyn_array_sym[expr.sym.name]
-                    sym_rec_is_ref = expr.sym.self_is_ptr or expr.sym.self_is_boxed
                     receiver = expr.left.left
                     if left_sym.kind == TypeKind.Trait and expr.sym.self_typ != receiver.typ:
                         self_expr = self.gen_expr_with_cast(
@@ -1218,13 +1217,13 @@ class Codegen:
                         )
                     else:
                         self_expr = self.gen_expr(receiver)
-                    if sym_rec_is_ref and not isinstance(
+                    if expr.sym.self_is_ptr and not isinstance(
                         self_expr.typ, ir.Pointer
                     ):
                         self_expr = ir.Inst(ir.InstKind.GetPtr, [self_expr])
                     elif isinstance(
                         receiver.typ, type.Ptr
-                    ) and not sym_rec_is_ref:
+                    ) and not expr.sym.self_is_ptr:
                         self_expr = ir.Inst(ir.InstKind.LoadPtr, [self_expr])
                     args.append(self_expr)
             args_len = expr.sym.args_len()
