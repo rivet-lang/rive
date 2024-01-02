@@ -297,7 +297,7 @@ pub enum Expr < traits.Stringable {
     };
 
     #[inline]
-    pub func clean_paren(self) -> Self {
+    pub func clean_paren(+self) -> +Self {
         return if self is .Paren(paren) {
             paren.clean_paren()
         } else {
@@ -305,7 +305,7 @@ pub enum Expr < traits.Stringable {
         };
     }
 
-    pub func position(self) -> token.Pos {
+    pub func position(+self) -> token.Pos {
         return match self {
             .Empty(empty_pos) -> empty_pos,
             .Comment(comment) -> comment.pos,
@@ -345,8 +345,7 @@ pub enum Expr < traits.Stringable {
         };
     }
 
-    #[inline]
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return match self {
             .Empty -> "<empty-expression>",
             .Comment -> "<comment>",
