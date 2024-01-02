@@ -13,6 +13,8 @@ class Resolver:
         self.sym = None
         self.self_sym = None
 
+        self.inside_extend_type = False
+
     def resolve_files(self, source_files):
         self.load_preludes()
         for sf in source_files:
@@ -114,7 +116,9 @@ class Resolver:
                 if decl.has_def_expr:
                     self.resolve_expr(decl.def_expr)
             elif isinstance(decl, ast.ExtendDecl):
+                self.inside_extend_type = True
                 if self.resolve_type(decl.typ):
+                    self.inside_extend_type = False
                     self.self_sym = decl.typ.symbol()
                     for base in decl.bases:
                         if self.resolve_type(base):
@@ -603,7 +607,7 @@ class Resolver:
                     report.error("cannot resolve type for `Self`", typ.expr.pos)
             else:
                 report.error(f"expected type, found {typ.expr}", typ.expr.pos)
-            if result and isinstance(typ, type.Type) and not typ.is_boxed:
+            if result and isinstance(typ, type.Type) and not typ.is_boxed and not self.inside_extend_type:
                 tsym = typ.symbol()
                 if isinstance(tsym, sym.Type) and tsym.kind != sym.TypeKind.Trait and tsym.is_boxed():
                     report.error(f"cannot use type `{tsym.name}` as a simple value", typ.expr.pos)
