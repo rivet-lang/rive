@@ -1782,20 +1782,25 @@ class Checker:
         return expr.typ
 
     def check_receiver(self, info, recv):
-        if not isinstance(info.self_typ, type.Ptr) and isinstance(recv.typ, type.Ptr):
+        if not info.self_is_ptr and isinstance(recv.typ, type.Ptr):
             if not info.self_is_boxed:
                 # valid, the receiver will be dereferenced after: (self.*).method()
                 return
 
-        if isinstance(info.self_typ, type.Ptr) and not isinstance(recv.typ, type.Ptr):
+        if info.self_is_ptr and not isinstance(recv.typ, type.Ptr):
             # valid, the receiver will be referenced later: (&self).method()
             if info.self_typ.is_mut:
                 # if the pointer is mutable, we must check that the receiver is also mutable.
                 self.check_expr_is_mut(recv)
             return
 
+        recv_sym = recv.typ.symbol()
+        if recv_sym.kind == TypeKind.DynArray and info.self_is_mut:
+            # `DynamicArray` has methods that modify its receiver by reference, so we
+            # check that we use mutable values
+            self.check_expr_is_mut(recv)
+
         if info.self_is_boxed:
-            recv_sym = recv.typ.symbol()
             if recv_sym.kind == TypeKind.Trait:
                 # traits are boxed values behind the scenes
                 if info.self_is_mut:

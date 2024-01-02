@@ -320,7 +320,7 @@ pub struct FlagParser {
     /// Call .finalize() after all arguments are defined.
     pub func finalize(+mut self) -> ![]string {
         self.handle_builtin_options();
-        remaining := self.args.clone();
+        mut remaining := self.args.clone();
         if !self.allow_unknown_args_ {
             for arg in remaining {
                 if (arg.len >= 2 && arg.substr(end: 2) == "--")
@@ -402,8 +402,8 @@ pub struct FlagParser {
     /// - found arguments and corresponding values are removed from args list.
     func parse_value(+mut self, long_hand: string, short_hand: uint8) -> []string {
         full := "--".concat(long_hand);
-        found_entries := []string();
-        to_delete := []uint();
+        mut found_entries := []string();
+        mut to_delete := []uint();
         mut should_skip_one := false;
         for i, arg in self.args {
             if should_skip_one {
