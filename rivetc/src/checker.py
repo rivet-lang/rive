@@ -293,16 +293,23 @@ class Checker:
                 elem_typ = self.comp.comptime_number_to_type(
                     iterable_sym.info.elem_typ
                 )
-                if stmt.value.is_mut:
-                    if not iterable_sym.info.is_mut:
+                if stmt.value.is_ref:
+                    if isinstance(elem_typ, type.Type) and elem_typ.is_boxed:
+                        report.error("cannot take reference of a boxed value", stmt.value.pos)
+                        amp_expr = "&mut" if stmt.value.is_mut else "&"
+                        report.help(f"consider removing `{amp_expr}` from the declaration of `{stmt.value.name}`")
+                    elif stmt.value.is_mut and not iterable_sym.info.is_mut:
                         report.error(
                             f"cannot modify immutable {iterable_sym.kind}",
                             stmt.iterable.pos
                         )
                     else:
-                        self.check_expr_is_mut(stmt.iterable)
-                elif stmt.value.is_ref:
-                    elem_typ = type.Ptr(elem_typ)
+                        elem_typ = type.Ptr(elem_typ)
+                elif stmt.value.is_mut:
+                    report.error("invalid syntax for `for` statement", stmt.value.pos)
+                    report.help(
+                        f"`&mut {stmt.value.name}` must be used if you want to modify the elements of an {iterable_sym.kind}"
+                    )
                 if stmt.index != None:
                     stmt.scope.update_type(stmt.index.name, self.comp.uint_t)
                 stmt.scope.update_type(stmt.value.name, elem_typ)

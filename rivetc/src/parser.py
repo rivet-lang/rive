@@ -1571,38 +1571,72 @@ class Parser:
             elif lit == "boxedptr":
                 return self.comp.boxedptr_t
             elif lit == "bool":
+                if is_boxed:
+                    return self.comp.bool_t.to_boxed(is_mut)
                 return self.comp.bool_t
             elif lit == "rune":
+                if is_boxed:
+                    return self.comp.rune_t.to_boxed(is_mut)
                 return self.comp.rune_t
+            elif lit == "int":
+                if is_boxed:
+                    return self.comp.int_t.to_boxed(is_mut)
+                return self.comp.int_t
             elif lit == "int8":
+                if is_boxed:
+                    return self.comp.int8_t.to_boxed(is_mut)
                 return self.comp.int8_t
             elif lit == "int16":
+                if is_boxed:
+                    return self.comp.int16_t.to_boxed(is_mut)
                 return self.comp.int16_t
             elif lit == "int32":
+                if is_boxed:
+                    return self.comp.int32_t.to_boxed(is_mut)
                 return self.comp.int32_t
             elif lit == "int64":
+                if is_boxed:
+                    return self.comp.int64_t.to_boxed(is_mut)
                 return self.comp.int64_t
-            elif lit == "int":
-                return self.comp.int_t
+            elif lit == "uint":
+                if is_boxed:
+                    return self.comp.uint_t.to_boxed(is_mut)
+                return self.comp.uint_t
             elif lit == "uint8":
+                if is_boxed:
+                    return self.comp.uint8_t.to_boxed(is_mut)
                 return self.comp.uint8_t
             elif lit == "uint16":
+                if is_boxed:
+                    return self.comp.uint16_t.to_boxed(is_mut)
                 return self.comp.uint16_t
             elif lit == "uint32":
+                if is_boxed:
+                    return self.comp.uint32_t.to_boxed(is_mut)
                 return self.comp.uint32_t
             elif lit == "uint64":
+                if is_boxed:
+                    return self.comp.uint64_t.to_boxed(is_mut)
                 return self.comp.uint64_t
-            elif lit == "uint":
-                return self.comp.uint_t
             elif lit == "float32":
+                if is_boxed:
+                    return self.comp.float32_t.to_boxed(is_mut)
                 return self.comp.float32_t
             elif lit == "float64":
+                if is_boxed:
+                    return self.comp.float64_t.to_boxed(is_mut)
                 return self.comp.float64_t
             elif lit == "string":
+                if is_boxed:
+                    return self.comp.string_t.to_boxed(is_mut)
                 return self.comp.string_t
             elif lit == "comptime_int":
+                if is_boxed:
+                    return self.comp.comptime_int_t.to_boxed(is_mut)
                 return self.comp.comptime_int_t
             elif lit == "comptime_float":
+                if is_boxed:
+                    return self.comp.comptime_float_t.to_boxed(is_mut)
                 return self.comp.comptime_float_t
             return type.Type.unresolved(expr, is_boxed, is_mut)
         else:

@@ -70,8 +70,18 @@ class Type(TBase):
     def is_resolved(self):
         return not self._unresolved
 
+    def to_boxed(self, is_mut):
+        return Type(self.sym, True, is_mut)
+
     def qualstr(self):
-        return self.sym.qualname()
+        qualname = self.sym.qualname()
+        if self.is_boxed:
+            res = "+"
+            if self.is_mut:
+                res += "mut "
+            res += qualname
+            return res
+        return qualname
 
     def symbol(self):
         sy = self.sym
