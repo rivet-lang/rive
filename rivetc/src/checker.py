@@ -1232,6 +1232,11 @@ class Checker:
                         )
                     else:
                         expr.typ = left_typ.typ
+                elif expr.is_boxed_indirect:
+                    if isinstance(left_typ, type.Type) and left_typ.is_boxed:
+                        expr.typ = type.Type(left_typ.sym)
+                    else:
+                        report.error(f"invalid indirect for `{left_typ}`", expr.pos)
                 elif expr.is_indirect:
                     if not (
                         isinstance(left_typ, type.Ptr)
@@ -2000,6 +2005,13 @@ class Checker:
         elif isinstance(expr, ast.SelectorExpr):
             if expr.is_path:
                 self.check_sym_is_mut(expr.field_sym, expr.pos)
+                return
+            if expr.is_boxed_indirect and isinstance(expr.left_typ, type.Type) and expr.left_typ.is_boxed:
+                if not expr.left_typ.is_mut:
+                    report.error(
+                        "cannot use a immutable boxed value as mutable value",
+                        expr.pos
+                    )
                 return
             if isinstance(expr.left_typ, type.Ptr):
                 if not expr.left_typ.is_mut:

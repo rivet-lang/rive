@@ -1078,7 +1078,8 @@ class Codegen:
                 if custom_tmp:
                     tmp = custom_tmp
                 elif typ_sym.is_boxed():
-                    tmp = self.boxed_instance(cg_utils.mangle_symbol(typ_sym))
+                    size, _ = self.comp.type_size(expr.typ)
+                    tmp = self.boxed_instance(self.ir_type(expr.typ), size)
                 else:
                     tmp = self.stacked_instance(self.ir_type(expr.typ))
                 initted_fields = []
@@ -1473,7 +1474,7 @@ class Codegen:
             self.inside_selector_expr = old_inside_selector_expr
             ir_left_typ = self.ir_type(expr.left_typ)
             ir_typ = self.ir_type(expr.typ)
-            if expr.is_indirect:
+            if expr.is_indirect or expr.is_boxed_indirect:
                 return ir.Inst(ir.InstKind.LoadPtr, [left], ir_left_typ.typ)
             elif expr.is_option_check:
                 panic_l = self.cur_func.local_name()
@@ -1712,7 +1713,8 @@ class Codegen:
         elif isinstance(expr, ast.UnaryExpr):
             right = self.gen_expr_with_cast(expr.right_typ, expr.right)
             if expr.op == Kind.Plus:
-                res = self.boxed_instance(cg_utils.mangle_symbol(expr.right_typ.symbol()))
+                size, _ = self.comp.type_size(expr.right_typ)
+                res = self.boxed_instance(self.ir_type(expr.right_typ), size)
                 self.cur_func.store_ptr(res, ir.Inst(ir.InstKind.Cast, [right, right.typ]))
                 return res
             if expr.op == Kind.Amp:
@@ -2562,7 +2564,8 @@ class Codegen:
             if custom_tmp:
                 tmp = custom_tmp
             elif typ_sym.info.is_boxed:
-                tmp = self.boxed_instance(cg_utils.mangle_symbol(typ_sym))
+                size, _ = self.comp.type_size(typ)
+                tmp = self.boxed_instance(self.ir_type(typ), size)
             else:
                 tmp = self.stacked_instance(self.ir_type(typ))
             for f in typ_sym.full_fields():
@@ -2643,14 +2646,12 @@ class Codegen:
                 self.cur_func.alloca(tmp)
         return tmp
 
-    def boxed_instance(self, name, custom_name = None):
-        tmp = ir.Ident(
-            ir.Type(name).ptr(True), custom_name or self.cur_func.local_name()
-        )
+    def boxed_instance(self, typ, size, custom_name = None):
+        tmp = ir.Ident(typ if isinstance(typ, ir.Pointer) else typ.ptr(True), custom_name or self.cur_func.local_name())
         inst = ir.Inst(
             ir.InstKind.Call,
             [ir.Name("_R4core3mem11boxed_allocF"),
-             ir.Name(f"sizeof({name})"), ir.Name("NULL")]
+             ir.IntLit(ir.UINT_T, str(size)), ir.Name("NULL")]
         )
         if custom_name:
             self.cur_func.store(tmp, inst)
@@ -2664,7 +2665,8 @@ class Codegen:
         value_sym = self.comp.comptime_number_to_type(value_typ).symbol()
         trait_sym = trait_typ.symbol()
         size, _ = self.comp.type_size(value_typ)
-        tmp = self.boxed_instance(cg_utils.mangle_symbol(trait_sym))
+        trait_size, _ = self.comp.type_size(trait_typ)
+        tmp = self.boxed_instance(self.ir_type(trait_typ), trait_size)
         is_ptr = isinstance(value.typ, ir.Pointer)
         for f in trait_sym.fields:
             f_typ = self.ir_type(f.typ)
@@ -2717,7 +2719,8 @@ class Codegen:
         else:
             mangled_name = cg_utils.mangle_symbol(enum_sym)
             if enum_sym.info.is_boxed:
-                tmp = self.boxed_instance(mangled_name)
+                size, _ = self.comp.type_symbol_size(enum_sym)
+                tmp = self.boxed_instance(ir.Type(mangled_name), size)
             else:
                 tmp = self.stacked_instance(ir.Type(mangled_name))
         uint_t = ir.UINT_T
@@ -2751,7 +2754,8 @@ class Codegen:
         else:
             mangled_name = cg_utils.mangle_symbol(enum_sym)
             if enum_sym.info.is_boxed:
-                tmp = self.boxed_instance(mangled_name)
+                size, _ = self.comp.type_symbol_size(enum_sym)
+                tmp = self.boxed_instance(ir.Type(mangled_name), size)
             else:
                 tmp = self.stacked_instance(ir.Type(mangled_name))
         variant_info = enum_sym.info.get_variant(variant_name)
@@ -2922,19 +2926,27 @@ class Codegen:
             return ir.RAWPTR_T
         elif typ_sym.kind == TypeKind.Enum:
             if typ_sym.info.is_tagged:
-                typ = ir.Type(cg_utils.mangle_symbol(typ_sym))
-                if typ_sym.info.is_boxed:
-                    typ = typ.ptr(True)
-                return typ
-            return ir.Type(str(typ_sym.info.underlying_typ))
+                typ_ = ir.Type(cg_utils.mangle_symbol(typ_sym))
+                if isinstance(typ, type.Type) and typ.is_boxed:
+                    typ_ = typ_.ptr(True)
+                return typ_
+            typ_ = ir.Type(str(typ_sym.info.underlying_typ))
+            if isinstance(typ, type.Type) and typ.is_boxed:
+                typ_ = typ_.ptr(True)
+            return typ_
         elif typ_sym.kind.is_primitive():
+            typ_ = None
             if typ_sym.name == "int":
-                return ir.INT_T
-            if typ_sym.name == "uint":
-                return ir.UINT_T
-            return ir.Type(typ_sym.name)
+                typ_ = ir.INT_T
+            elif typ_sym.name == "uint":
+                typ_ = ir.UINT_T
+            else:
+                typ_ = ir.Type(typ_sym.name)
+            if isinstance(typ, type.Type) and typ.is_boxed:
+                typ_ = typ_.ptr(True)
+            return typ_
         res = ir.Type(cg_utils.mangle_symbol(typ_sym))
-        if typ_sym.kind == TypeKind.Trait or typ.value_is_boxed():
+        if typ_sym.kind == TypeKind.Trait or (isinstance(typ, type.Type) and typ.is_boxed):
             return res.ptr(True)
         return res
 

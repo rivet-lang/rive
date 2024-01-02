@@ -1217,7 +1217,12 @@ class Parser:
             ):
                 break
             elif self.accept(Kind.Dot):
-                if self.accept(Kind.Mul):
+                if self.accept(Kind.Plus):
+                    expr = ast.SelectorExpr(
+                        expr, "", expr.pos, self.prev_tok.pos,
+                        is_boxed_indirect = True
+                    )
+                elif self.accept(Kind.Mul):
                     expr = ast.SelectorExpr(
                         expr, "", expr.pos, self.prev_tok.pos,
                         is_indirect = True
