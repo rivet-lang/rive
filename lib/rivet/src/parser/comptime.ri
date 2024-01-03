@@ -11,10 +11,10 @@ extend Parser {
         Expr
     }
 
-    func parse_nodes(mut self, level: ComptimeLevel) -> []mut ast.Node {
+    func parse_nodes(+mut self, level: ComptimeLevel) -> []+mut ast.Node {
         return match level {
             .Decl -> {
-                mut decls := []mut ast.Node();
+                mut decls := []+mut ast.Node();
                 if self.accept(.Lbrace) {
                     while self.tok.kind != .Rbrace {
                         decls.push(.Decl(self.parse_decl()))
@@ -26,7 +26,7 @@ extend Parser {
                 decls
             },
             .Stmt -> {
-                mut stmts := []mut ast.Node();
+                mut stmts := []+mut ast.Node();
                 if self.accept(.Lbrace) {
                     while self.tok.kind != .Rbrace {
                         stmts.push(.Stmt(self.parse_stmt()));
@@ -41,7 +41,7 @@ extend Parser {
         };
     }
 
-    func parse_comptime_if(mut self, level: ComptimeLevel) -> ast.ComptimeIf {
+    func parse_comptime_if(+mut self, level: ComptimeLevel) -> ast.ComptimeIf {
         mut branches := []mut ast.ComptimeIfBranch();
         mut has_else := false;
         mut pos := self.tok.pos;

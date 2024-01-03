@@ -9,9 +9,9 @@ import ../../utils;
 #[boxed]
 pub struct ModuleIR < traits.Stringable {
     pub name: string;
-    pub mut structs: []Struct;
-    pub mut globals: []Global;
-    pub mut vtables: []VTable;
+    pub mut structs: []+Struct;
+    pub mut globals: []+Global;
+    pub mut vtables: []+VTable;
     pub mut externs: []+Func;
     pub mut funcs: []+Func;
 
@@ -64,7 +64,7 @@ pub struct Field {
 #[boxed]
 pub struct Struct < traits.Stringable {
     pub name: string;
-    pub fields: []Field;
+    pub fields: []+Field;
     pub is_opaque: bool;
 
     pub func to_string(self) -> string {
@@ -118,8 +118,8 @@ pub struct Func < traits.Stringable {
     pub is_variadic: bool;
     pub is_extern: bool;
     pub mut locals: []+Var;
-    pub mut blocks: []Block;
-    pub mut cur_block: Block;
+    pub mut blocks: []+Block;
+    pub mut cur_block: +Block;
 
     pub func make_tmp(mut self, type: +Type) -> +Var {
         tmp := Var(self.locals.len, level: .Temporal, type: type);
@@ -145,7 +145,7 @@ pub struct Func < traits.Stringable {
         return self.get_local(name) != none;
     }
 
-    pub func add_block(mut self, mut block: Block) {
+    pub func add_block(mut self, mut block: +Block) {
         block.id = self.blocks.len;
         self.blocks.push(block);
     }

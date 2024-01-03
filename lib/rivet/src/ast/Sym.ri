@@ -277,9 +277,9 @@ pub struct Module < Sym {
         if type_sym := self.scope.find(unique_name) {
             return @as(+mut TypeSym, type_sym);
         }
-        mut fields := []Field();
+        mut fields := []+Field();
         for i, type in types {
-            fields.push(Field(name: i.to_string(), is_public: true, type: type));
+            fields.push(+Field(name: i.to_string(), is_public: true, type: type));
         }
         type_sym := +mut TypeSym(
             is_public: true, name: unique_name, info: +mut .Tuple(types), fields: fields
@@ -350,7 +350,7 @@ pub struct Var < Sym {
     pub mut is_changed: bool;
     pub mut is_hidden_ref: bool;
     pub mut mir_name: string; // used for duplicate objects in MIR
-    pub level: VarLevel;
+    pub level: +VarLevel;
     pub mut type: +Type;
     pub pos: token.Pos;
 }

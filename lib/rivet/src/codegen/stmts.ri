@@ -6,13 +6,13 @@ import ./mir as _;
 import ../ast;
 
 extend Codegen {
-    func gen_stmts(mut self, stmts: []ast.Stmt) {
+    func gen_stmts(mut self, stmts: []+ast.Stmt) {
         for stmt in stmts {
             self.gen_stmt(stmt);
         }
     }
 
-    func gen_stmt(mut self, stmt: ast.Stmt) {
+    func gen_stmt(mut self, stmt: +mut ast.Stmt) {
         match stmt {
             .Expr(expr) -> {
                 self.cur_func.cur_block.add_stmt(.Expr(self.gen_expr(expr)));

@@ -5,17 +5,17 @@
 import ../{ ast, report };
 
 extend Parser {
-    func parse_type(mut self) -> ast.Type {
+    func parse_type(+mut self) -> +mut ast.Type {
         mut pos := self.tok.pos;
         return match {
-            self.accept(.Question) -> .Option(
+            self.accept(.Question) -> +mut .Option(
                 self.parse_type(), pos + self.prev_tok.pos
             ),
             self.tok.kind == .KwFunc -> {
                 // function types
                 self.expect(.KwFunc);
                 self.expect(.Lparen);
-                mut args := []mut ast.Arg();
+                mut args := []+mut ast.Arg();
                 if self.tok.kind != .Rparen {
                     while {
                         arg_pos := self.tok.pos;
@@ -39,7 +39,7 @@ extend Parser {
                 } else {
                     .Void
                 };
-                .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos)
+                +mut .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos)
             },
             self.accept(.Amp) -> {
                 // pointers
@@ -49,7 +49,7 @@ extend Parser {
                     err.add_help("use an indexable pointer instead (`[&]T`)");
                     err.emit();
                 }
-                .Pointer(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
+                +mut .Pointer(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
             },
             self.accept(.Lbracket) -> {
                 // arrays or dynamic arrays
@@ -76,12 +76,12 @@ extend Parser {
                 } else {
                     self.expect(.Rbracket);
                     is_mut := self.accept(.KwMut);
-                    .DynArray(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
+                    +mut .DynArray(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
                 }
             },
             self.accept(.Lparen) -> {
                 // tuples
-                mut inners := []mut ast.Type();
+                mut inners := []+mut ast.Type();
                 while {
                     inners.push(self.parse_type());
                     if !self.accept(.Comma) {
@@ -95,13 +95,13 @@ extend Parser {
                 }
                 pos += self.tok.pos;
                 self.expect(.Rparen);
-                .Tuple(inners, pos: pos)
+                +mut .Tuple(inners, pos: pos)
             },
-            self.accept(.Ellipsis) -> .Variadic(
+            self.accept(.Ellipsis) -> +mut .Variadic(
                 self.parse_type(), pos: pos + self.prev_tok.pos
             ),
-            self.accept(.KwSelfTy) -> .Basic(
-                expr: ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
+            self.accept(.KwSelfTy) -> +mut .Basic(
+                expr: +mut ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
                 is_unresolved: true
             ),
             self.tok.kind in [.Plus, .Name] -> {
@@ -110,7 +110,7 @@ extend Parser {
                 is_mut := is_boxed && self.accept(.KwMut);
                 if self.accept(.KwSelfTy) {
                     return .Basic(
-                        expr: ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
+                        expr: +mut ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
                         is_unresolved: true, is_boxed: is_boxed, is_mut: is_mut
                     );
                 }
@@ -120,7 +120,7 @@ extend Parser {
                     while self.accept(.Dot) {
                         expr = self.parse_selector_expr(expr);
                     }
-                    .Basic(expr: expr, is_unresolved: true, is_boxed: is_boxed, is_mut: is_mut)
+                    +mut .Basic(expr: expr, is_unresolved: true, is_boxed: is_boxed, is_mut: is_mut)
                 } else {
                     // normal type
                     expr_name := @as(ast.Expr.Ident, expr).name;
@@ -130,28 +130,28 @@ extend Parser {
                             if prev_tok_kind != .Arrow {
                                 report.error("invalid use of `never` type", pos);
                             }
-                            .Never(self.prev_tok.pos)
+                            +mut .Never(self.prev_tok.pos)
                         },
-                        "rawptr" -> .Rawptr(self.prev_tok.pos),
-                        "boxedptr" -> .Boxedptr(self.prev_tok.pos),
-                        "bool" -> .Basic(self.env.bool_sym, pos: expr_pos),
-                        "rune" -> .Basic(self.env.rune_sym, pos: expr_pos),
-                        "int8" -> .Basic(self.env.int8_sym, pos: expr_pos),
-                        "int16" -> .Basic(self.env.int16_sym, pos: expr_pos),
-                        "int32" -> .Basic(self.env.int32_sym, pos: expr_pos),
-                        "int64" -> .Basic(self.env.int64_sym, pos: expr_pos),
-                        "int" -> .Basic(self.env.int_sym, pos: expr_pos),
-                        "uint8" -> .Basic(self.env.uint8_sym, pos: expr_pos),
-                        "uint16" -> .Basic(self.env.uint16_sym, pos: expr_pos),
-                        "uint32" -> .Basic(self.env.uint32_sym, pos: expr_pos),
-                        "uint64" -> .Basic(self.env.uint64_sym, pos: expr_pos),
-                        "uint" -> .Basic(self.env.uint_sym, pos: expr_pos),
-                        "float32" -> .Basic(self.env.float32_sym, pos: expr_pos),
-                        "float64" -> .Basic(self.env.float64_sym, pos: expr_pos),
-                        "string" -> .Basic(self.env.string_sym, pos: expr_pos),
-                        "comptime_int" -> .Basic(self.env.comptime_int_sym, pos: expr_pos),
-                        "comptime_float" -> .Basic(self.env.comptime_float_sym, pos: expr_pos),
-                        else -> .Basic(
+                        "rawptr" -> +mut .Rawptr(self.prev_tok.pos),
+                        "boxedptr" -> +mut .Boxedptr(self.prev_tok.pos),
+                        "bool" -> +mut .Basic(self.env.bool_sym, pos: expr_pos),
+                        "rune" -> +mut .Basic(self.env.rune_sym, pos: expr_pos),
+                        "int8" -> +mut .Basic(self.env.int8_sym, pos: expr_pos),
+                        "int16" -> +mut .Basic(self.env.int16_sym, pos: expr_pos),
+                        "int32" -> +mut .Basic(self.env.int32_sym, pos: expr_pos),
+                        "int64" -> +mut .Basic(self.env.int64_sym, pos: expr_pos),
+                        "int" -> +mut .Basic(self.env.int_sym, pos: expr_pos),
+                        "uint8" -> +mut .Basic(self.env.uint8_sym, pos: expr_pos),
+                        "uint16" -> +mut .Basic(self.env.uint16_sym, pos: expr_pos),
+                        "uint32" -> +mut .Basic(self.env.uint32_sym, pos: expr_pos),
+                        "uint64" -> +mut .Basic(self.env.uint64_sym, pos: expr_pos),
+                        "uint" -> +mut .Basic(self.env.uint_sym, pos: expr_pos),
+                        "float32" -> +mut .Basic(self.env.float32_sym, pos: expr_pos),
+                        "float64" -> +mut .Basic(self.env.float64_sym, pos: expr_pos),
+                        "string" -> +mut .Basic(self.env.string_sym, pos: expr_pos),
+                        "comptime_int" -> +mut .Basic(self.env.comptime_int_sym, pos: expr_pos),
+                        "comptime_float" -> +mut .Basic(self.env.comptime_float_sym, pos: expr_pos),
+                        else -> +mut .Basic(
                             expr: expr, is_unresolved: true, is_boxed: is_boxed, is_mut: is_mut
                         )
                     }
@@ -160,7 +160,7 @@ extend Parser {
             else -> {
                 report.error("expected type, found {}".fmt(self.tok), pos);
                 self.next();
-                .Basic(expr: .Empty(pos), is_unresolved: true)
+                +mut .Basic(expr: .Empty(pos), is_unresolved: true)
             }
         };
     }

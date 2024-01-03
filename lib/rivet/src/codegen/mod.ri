@@ -9,31 +9,31 @@ import ./mir;
 
 #[boxed]
 pub struct Codegen {
-    mut env: ast.Env;
+    mut env: +mut ast.Env;
 
-    mut source_file: ast.SourceFile;
+    mut source_file: +mut ast.SourceFile;
 
-    mut type_symbols: []ast.TypeSym;
+    mut type_symbols: []+mut ast.TypeSym;
 
-    mut rivet_internal: mir.ModuleIR;
-    mut mirs: []mir.ModuleIR;
-    mut mir: mir.ModuleIR;
-    mut cur_func: mir.Func;
+    mut rivet_internal: +mut mir.ModuleIR;
+    mut mirs: []+mut mir.ModuleIR;
+    mut mir: +mut mir.ModuleIR;
+    mut cur_func: +mir.Func;
 
-    mut int_t: mir.Type;
-    mut uint_t: mir.Type;
-    mut bool_t: mir.Type;
-    mut dyn_array_t: mir.Type;
-    mut throwable_t: mir.Type;
+    mut int_t: +mut mir.Type;
+    mut uint_t: +mut mir.Type;
+    mut bool_t: +mut mir.Type;
+    mut dyn_array_t: +mut mir.Type;
+    mut throwable_t: +mut mir.Type;
 
     mut generated_opt_res_types: maps.MapStringBool;
     mut generated_array_returns: maps.MapStringBool;
 
     mut loop_entry_label: string;
     mut loop_exit_label: string;
-    mut while_continue_expr: ?mir.Expr;
+    mut while_continue_expr: ?+mut mir.Expr;
 
-    pub func generate_mirs(mut self, mut source_files: []mut ast.SourceFile) {
+    pub func generate_mirs(mut self, mut source_files: []+mut ast.SourceFile) {
         self.init_types();
         self.rivet_internal = self.get_or_create_mir("rivetc.compiler.internal");
         for mut source_file in source_files {
@@ -49,7 +49,7 @@ pub struct Codegen {
         }
     }
 
-    pub func generate_mir(mut self, mut source_file: ast.SourceFile) {
+    pub func generate_mir(mut self, mut source_file: +mut ast.SourceFile) {
         self.source_file = source_file;
         self.mir = self.get_or_create_mir(source_file.mod.name);
         self.gen_decls(source_file.decls);
@@ -83,18 +83,18 @@ pub struct Codegen {
         }
     }
 
-    func get_or_create_mir(mut self, name: string) -> mir.ModuleIR {
+    func get_or_create_mir(mut self, name: string) -> +mut mir.ModuleIR {
         for mir_ in self.mirs {
             if mir_.name == name {
                 return mir_;
             }
         }
-        new_mir := mir.ModuleIR(name);
+        new_mir := +mut mir.ModuleIR(name);
         self.mirs.push(new_mir);
         return new_mir;
     }
 
-    func prefix_type(self, type: ast.Type) -> string {
+    func prefix_type(self, type: +mut ast.Type) -> string {
         mut sb := strings.Builder.new();
         match type {
             .Pointer(ptr) -> {
@@ -113,7 +113,7 @@ pub struct Codegen {
         return sb.to_string();
     }
 
-    func mangle_type(self, type: ast.Type) -> string {
+    func mangle_type(self, type: +mut ast.Type) -> string {
         return match type {
             .Void -> "4void",
             .Rawptr -> "6rawptr",
@@ -201,7 +201,7 @@ pub struct Codegen {
         return sym.mangled_name;
     }
 
-    func add_locals(mut self, mut scope: ast.Scope) {
+    func add_locals(mut self, mut scope: +mut ast.Scope) {
         for mut sym in scope.syms {
             if sym is ast.Var(mut local) {
                 local.mir_name = if self.cur_func.has_local(local.name) {

@@ -6,11 +6,11 @@ import ../{ ast, report, token };
 
 extend Parser {
     #[inline]
-    func parse_expr(mut self) -> ast.Expr {
+    func parse_expr(+mut self) -> +mut ast.Expr {
         return self.parse_or_expr();
     }
 
-    func parse_or_expr(mut self) -> ast.Expr {
+    func parse_or_expr(+mut self) -> +mut ast.Expr {
         mut left := self.parse_and_expr();
         while self.accept(.LogicalOr) {
             right := self.parse_and_expr();
@@ -24,7 +24,7 @@ extend Parser {
         return left;
     }
 
-    func parse_and_expr(mut self) -> ast.Expr {
+    func parse_and_expr(+mut self) -> +mut ast.Expr {
         mut left := self.parse_equality_expr();
         while self.accept(.LogicalAnd) {
             right := self.parse_equality_expr();
@@ -38,7 +38,7 @@ extend Parser {
         return left;
     }
 
-    func parse_equality_expr(mut self) -> ast.Expr {
+    func parse_equality_expr(+mut self) -> +mut ast.Expr {
         mut left := self.parse_relational_expr();
         while {
             if self.tok.kind in [.Eq, .Ne] {
@@ -58,7 +58,7 @@ extend Parser {
         return left;
     }
 
-    func parse_relational_expr(mut self) -> ast.Expr {
+    func parse_relational_expr(+mut self) -> +mut ast.Expr {
         mut left := self.parse_shift_expr();
         while {
             left = match self.tok.kind {
@@ -117,7 +117,7 @@ extend Parser {
         return left;
     }
 
-    func parse_shift_expr(mut self) -> ast.Expr {
+    func parse_shift_expr(+mut self) -> +mut ast.Expr {
         mut left := self.parse_additive_expr();
         while {
             left = match self.tok.kind {
@@ -153,7 +153,7 @@ extend Parser {
         return left;
     }
 
-    func parse_additive_expr(mut self) -> ast.Expr {
+    func parse_additive_expr(+mut self) -> +mut ast.Expr {
         mut left := self.parse_multiplicative_expr();
         while {
             match self.tok.kind {
@@ -174,7 +174,7 @@ extend Parser {
         return left;
     }
 
-    func parse_multiplicative_expr(mut self) -> ast.Expr {
+    func parse_multiplicative_expr(+mut self) -> +mut ast.Expr {
         mut left := self.parse_unary_expr();
         while {
             match self.tok.kind {
@@ -196,7 +196,7 @@ extend Parser {
     }
 
     #[inline]
-    func parse_unary_expr(mut self) -> ast.Expr {
+    func parse_unary_expr(+mut self) -> +mut ast.Expr {
         return match self.tok.kind {
             .Amp, .Bang, .BitNot, .Minus -> {
                 op := self.tok.kind;
@@ -210,8 +210,8 @@ extend Parser {
         };
     }
 
-    func parse_primary_expr(mut self) -> ast.Expr {
-        mut expr: ast.Expr := match {
+    func parse_primary_expr(+mut self) -> +mut ast.Expr {
+        mut expr: +mut ast.Expr := match {
             self.accept(.Dollar) -> match self.tok.kind {
                 .KwIf -> .ComptimeIf(self.parse_comptime_if(.Expr)),
                 else -> {
@@ -294,7 +294,7 @@ extend Parser {
                 self.next();
                 e := self.parse_expr();
                 if self.accept(.Comma) { // tuple
-                    mut exprs: []mut ast.Expr := +[e];
+                    mut exprs: []+mut ast.Expr := +[e];
                     while {
                         exprs.push(self.parse_expr());
                         if !self.accept(.Comma) {
@@ -320,7 +320,7 @@ extend Parser {
                     right := self.parse_expr();
                     .Unary(right, .Plus, is_mut, pos + right.position())
                 } else {
-                    mut elems := []mut ast.Expr();
+                    mut elems := []+mut ast.Expr();
                     self.next();
                     if self.tok.kind != .Rbracket {
                         while {
@@ -339,9 +339,9 @@ extend Parser {
                         is_dyn = elems.len == 0;
                         is_mut := self.accept(.KwMut);
                         elem_type := self.parse_type();
-                        mut init_value: ?ast.Expr := none;
-                        mut cap_value: ?ast.Expr := none;
-                        mut len_value: ?ast.Expr := none;
+                        mut init_value: ?+mut ast.Expr := none;
+                        mut cap_value: ?+mut ast.Expr := none;
+                        mut len_value: ?+mut ast.Expr := none;
                         self.expect(.Lparen);
                         while self.tok.kind != .Rparen {
                             mut arg_pos := self.tok.pos;
@@ -509,7 +509,7 @@ extend Parser {
                     )
                 },
                 self.accept(.Lbracket) -> {
-                    index: ast.Expr := if self.accept(.Colon) {
+                    index: +mut ast.Expr := if self.accept(.Colon) {
                         if self.tok.kind == .Rbracket {
                             .Range(pos: expr.position() + self.tok.pos)
                         } else {
@@ -568,7 +568,7 @@ extend Parser {
         return expr;
     }
 
-    func parse_if_expr(mut self) -> ast.Expr {
+    func parse_if_expr(+mut self) -> +mut ast.Expr {
         mut branches := []mut ast.IfBranch();
         mut has_else := false;
         mut pos := self.tok.pos;
@@ -609,7 +609,7 @@ extend Parser {
         return .If(branches, has_else, pos);
     }
 
-    func parse_match_expr(mut self) -> ast.Expr {
+    func parse_match_expr(+mut self) -> +mut ast.Expr {
         mut has_else := false;
         mut branches := []mut ast.MatchBranch();
         pos := self.prev_tok.pos;
@@ -632,8 +632,8 @@ extend Parser {
         while {
             self.open_scope();
             branch_pos := self.tok.pos;
-            mut patterns := []mut ast.Expr();
-            mut branch_var: ?ast.ObjectData := none;
+            mut patterns := []+mut ast.Expr();
+            mut branch_var: ?+mut ast.ObjectData := none;
             mut has_cond := false;
             mut cond := ast.Expr.Empty(self.tok.pos);
             is_else := self.accept(.KwElse);
@@ -707,7 +707,7 @@ extend Parser {
         );
     }
 
-    func parse_block_expr(mut self) -> ast.Expr {
+    func parse_block_expr(+mut self) -> +mut ast.Expr {
         // block expression
         self.open_scope();
         sc := self.scope;
@@ -716,7 +716,7 @@ extend Parser {
         pos := self.tok.pos;
         is_unsafe := self.accept(.KwUnsafe);
         self.expect(.Lbrace);
-        mut stmts := []mut ast.Stmt();
+        mut stmts := []+mut ast.Stmt();
         mut has_expr := false;
         mut expr := ast.Expr.Empty(self.tok.pos);
         while !self.accept(.Rbrace) {
@@ -734,9 +734,9 @@ extend Parser {
         return .Block(is_unsafe, stmts, expr, has_expr, sc, pos + self.prev_tok.pos);
     }
 
-    func parse_guard_expr(mut self) -> ast.Expr {
+    func parse_guard_expr(+mut self) -> +mut ast.Expr {
         pos := self.tok.pos;
-        mut vars := []mut ast.ObjectData();
+        mut vars := []+mut ast.ObjectData();
         if self.accept(.Lparen) {
             while {
                 vars.push(self.parse_var_decl(support_type: false));
@@ -761,7 +761,7 @@ extend Parser {
     }
 
     #[inline]
-    func parse_literal(mut self) -> ast.Expr {
+    func parse_literal(+mut self) -> +mut ast.Expr {
         return match {
             self.tok.kind in [.KwTrue, .KwFalse] -> {
                 value := self.tok.kind == .KwTrue;
@@ -782,7 +782,7 @@ extend Parser {
         };
     }
 
-    func parse_integer_literal(mut self) -> ast.Expr {
+    func parse_integer_literal(+mut self) -> +mut ast.Expr {
         value := self.tok.lit;
         pos := self.tok.pos;
         self.next();
@@ -796,7 +796,7 @@ extend Parser {
         };
     }
 
-    func parse_character_literal(mut self) -> ast.Expr {
+    func parse_character_literal(+mut self) -> +mut ast.Expr {
         is_byte := if self.accept(.Name) {
             self.prev_tok.lit == "b"
         } else {
@@ -808,7 +808,7 @@ extend Parser {
         return .CharLiteral(value, is_byte, pos);
     }
 
-    func parse_string_literal(mut self) -> ast.Expr {
+    func parse_string_literal(+mut self) -> +mut ast.Expr {
         mut is_raw := false;
         mut is_bytestr := false;
         mut is_cstr := false;
@@ -840,7 +840,7 @@ extend Parser {
         );
     }
 
-    func parse_ident(mut self, is_comptime: bool := false) -> ast.Expr {
+    func parse_ident(+mut self, is_comptime: bool := false) -> +mut ast.Expr {
         pos := if is_comptime {
             self.prev_tok.pos + self.tok.pos
         } else {
@@ -855,7 +855,7 @@ extend Parser {
     }
 
     #[inline]
-    func parse_selector_expr(mut self, left: ast.Expr) -> ast.Expr {
+    func parse_selector_expr(+mut self, left: +mut ast.Expr) -> +mut ast.Expr {
         field_pos := self.tok.pos;
         return .Selector(
             left: left,

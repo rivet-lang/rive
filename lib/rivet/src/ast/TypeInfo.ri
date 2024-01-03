@@ -73,7 +73,7 @@ pub enum TypeInfo < traits.Stringable {
             if type_sym !in self.implements {
                 self.implements.push(type_sym);
                 for b in self.bases {
-                    @as(TypeInfo.Trait, b.info).implement(type_sym);
+                    @as(+TypeInfo.Trait, b.info).implement(type_sym);
                 }
             }
         }

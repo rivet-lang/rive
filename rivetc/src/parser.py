@@ -893,6 +893,8 @@ class Parser:
         left = self.parse_multiplicative_expr()
         while True:
             if self.tok.kind in [Kind.Plus, Kind.Minus]:
+                if self.tok.kind == Kind.Plus and self.prev_tok.pos.line != self.tok.pos.line:
+                    break
                 op = self.tok.kind
                 self.next()
                 right = self.parse_multiplicative_expr()

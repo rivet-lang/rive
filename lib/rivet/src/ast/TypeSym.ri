@@ -14,14 +14,14 @@ pub struct Field {
 
 #[boxed]
 pub struct TypeSym < Sym {
-    pub mut fields: []Field;
-    pub mut full_fields_: []Field;
+    pub mut fields: []+Field;
+    pub mut full_fields_: []+Field;
     pub mut info: +mut TypeInfo := +mut .Invalid;
     pub mut size: uint;
     pub mut align: uint;
     pub mut default_value: ?+mut Expr;
 
-    pub func lookup_field(+self, name: string) -> ?Field {
+    pub func lookup_field(+self, name: string) -> ?+Field {
         for f in self.fields {
             if f.name == name {
                 return f;
@@ -126,11 +126,11 @@ pub struct TypeSym < Sym {
         return self.find_method(name) != none;
     }
 
-    pub func full_fields(+mut self) -> []Field {
+    pub func full_fields(+mut self) -> []+Field {
         if !self.full_fields_.is_empty() {
             return self.full_fields_;
         }
-        mut fields := []Field();
+        mut fields := []+Field();
         if self.info is .Trait(trait_info) {
             for b in trait_info.bases {
                 for bf in b.full_fields() {

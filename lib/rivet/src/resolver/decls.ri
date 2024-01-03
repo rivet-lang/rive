@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Resolver {
-    func resolve_decls(mut self, mut decls: []mut ast.Decl) {
+    func resolve_decls(mut self, mut decls: []+mut ast.Decl) {
         for mut decl in decls {
             old_sym := self.sym;
             old_self_sym := self.self_sym;
@@ -22,7 +22,7 @@ extend Resolver {
                 .Alias(mut alias_decl) -> if alias_decl.is_typealias {
                     _ = self.resolve_type(alias_decl.parent_type);
                 } else {
-                    mut sym_ref := @as(ast.SymRef, alias_decl.sym);
+                    mut sym_ref := @as(+mut ast.SymRef, alias_decl.sym);
                     self.resolve_expr(sym_ref.ref_expr);
                     if sym_ref.ref_expr is .Ident(ident) && ident.found && ident.is_sym {
                         sym_ref.ref = ident.sym;
@@ -45,7 +45,7 @@ extend Resolver {
                     }
                 },
                 .Trait(mut trait_decl) -> {
-                    self.self_sym = @as(ast.TypeSym, trait_decl.sym);
+                    self.self_sym = @as(+mut ast.TypeSym, trait_decl.sym);
                     self.self_sym_is_set = true;
                     mut trait_info := @as(ast.TypeInfo.Trait, self.self_sym.info);
                     for mut base in trait_decl.bases {
@@ -77,7 +77,7 @@ extend Resolver {
                 },
                 .Enum(mut enum_decl) -> {
                     if enum_decl.is_tagged || self.resolve_type(enum_decl.underlying_type) {
-                        self.self_sym = @as(ast.TypeSym, enum_decl.sym);
+                        self.self_sym = @as(+mut ast.TypeSym, enum_decl.sym);
                         self.self_sym_is_set = true;
                         mut enum_info := @as(ast.TypeInfo.Enum, self.self_sym.info);
                         for mut variant in enum_info.variants {
@@ -116,7 +116,7 @@ extend Resolver {
                     self.resolve_decls(enum_decl.decls);
                 },
                 .Struct(mut struct_decl) -> {
-                    self.self_sym = @as(ast.TypeSym, struct_decl.sym);
+                    self.self_sym = @as(+mut ast.TypeSym, struct_decl.sym);
                     self.self_sym_is_set = true;
                     for mut base in struct_decl.bases {
                         if self.resolve_type(base) {
@@ -187,7 +187,7 @@ extend Resolver {
                             self_type = .Pointer(self_type, func_decl.self_is_ptr);
                         }
                         is_used := self.self_sym.info is .Trait && !func_decl.has_body;
-                        func_decl.scope.add_local(ast.Var(
+                        func_decl.scope.add_local(+mut ast.Var(
                             name: "self",
                             is_mut: func_decl.self_is_mut && !func_decl.self_is_ptr && !func_decl.self_is_boxed,
                             is_used: is_used,
@@ -199,14 +199,14 @@ extend Resolver {
                             err.to_string(), func_decl.pos
                         );
                         func_decl.self_type = self_type;
-                        @as(ast.Func, func_decl.sym).self_type = self_type;
+                        @as(+mut ast.Func, func_decl.sym).self_type = self_type;
                     }
                     for mut arg in func_decl.args {
                         if self.resolve_type(arg.type) {
                             self.check_variable_shadowing(arg.name, arg.pos);
                             is_used := self.self_sym_is_set && self.self_sym.info is .Trait
                                 && !func_decl.has_body;
-                            func_decl.scope.add_local(ast.Var(
+                            func_decl.scope.add_local(+mut ast.Var(
                                 is_mut: arg.is_mut,
                                 is_used: is_used,
                                 is_changed: is_used,

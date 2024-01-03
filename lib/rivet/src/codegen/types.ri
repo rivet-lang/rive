@@ -6,8 +6,8 @@ import ../{ ast, utils, depgraph };
 import ./mir;
 
 extend Codegen {
-    func get_type_symbols(mut self, root: ast.Sym) -> []ast.TypeSym {
-        mut ts := []ast.TypeSym();
+    func get_type_symbols(mut self, root: ast.Sym) -> []+mut ast.TypeSym {
+        mut ts := []+mut ast.TypeSym();
         for sym in root.scope.syms {
             if sym is ast.TypeSym(type_sym) && !(
                 type_sym.info is .DynArray || type_sym.info is .Alias
@@ -22,7 +22,7 @@ extend Codegen {
         return ts;
     }
 
-    func sort_type_symbols(mut self, tss: []ast.TypeSym) {
+    func sort_type_symbols(mut self, tss: []+mut ast.TypeSym) {
         mut dg := depgraph.DepGraph.new();
         mut type_names := []string();
         for ts in tss {
@@ -104,7 +104,7 @@ extend Codegen {
         }
     }
 
-    func type_to_mir(mut self, type: ast.Type) -> mir.Type {
+    func type_to_mir(mut self, type: +mut ast.Type) -> +mut mir.Type {
         (size, _) := self.env.type_size(type, true);
         return match type {
             .Void -> .Void,
@@ -113,7 +113,7 @@ extend Codegen {
                 is_void := result.inner.is_void();
                 name := "_R6Result".concat(self.mangle_type(result.inner));
                 if !self.generated_opt_res_types.contains(name) {
-                    mut fields := []mir.Field();
+                    mut fields := []+mut mir.Field();
                     if !is_void {
                         fields.push(mir.Field("value", self.type_to_mir(result.inner)));
                     }
@@ -131,7 +131,7 @@ extend Codegen {
                     is_void := option.inner.is_void();
                     name := "_R6Option".concat(self.mangle_type(option.inner));
                     if !self.generated_opt_res_types.contains(name) {
-                        mut fields := []mir.Field();
+                        mut fields := []+mut mir.Field();
                         if !is_void {
                             fields.push(mir.Field("value", self.type_to_mir(option.inner)));
                         }
@@ -164,7 +164,7 @@ extend Codegen {
                     }
                     match type_sym.info {
                         .Func(func_info) -> {
-                            mut args := []mir.Type();
+                            mut args := []+mut mir.Type();
                             for arg in func_info.args {
                                 args.push(self.type_to_mir(arg.type));
                             }

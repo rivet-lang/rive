@@ -18,11 +18,11 @@ enum ReturnLegalityTracker {
 
 #[boxed]
 pub struct Checker {
-    mut env: ast.Env;
+    mut env: +mut ast.Env;
 
-    mut source_file: ast.SourceFile;
+    mut source_file: +mut ast.SourceFile;
     mut sym: ast.Sym := ast.InvalidSym();
-    mut cur_func: ast.Func;
+    mut cur_func: +mut ast.Func;
 
     mut inside_extern: bool;
     mut inside_test: bool;
@@ -34,14 +34,14 @@ pub struct Checker {
     mut loop_control_tracker: LoopControlLegalityTracker;
     mut return_tracker: ReturnLegalityTracker;
 
-    mut expected_type: ast.Type;
+    mut expected_type: +mut ast.Type;
     mut scope_returns: bool;
     mut unsafe_operations: uint;
 
     mut defer_stmts_start: uint;
-    mut defer_stmts: []ast.Stmt.Defer;
+    mut defer_stmts: []+ast.Stmt.Defer;
 
-    pub func check_files(mut self, mut source_files: []mut ast.SourceFile) {
+    pub func check_files(mut self, mut source_files: []+mut ast.SourceFile) {
         // check global variables
         for mut source_file in source_files {
             self.sym = source_file.mod;
@@ -87,7 +87,7 @@ pub struct Checker {
     }
 
     func check_var_decl(
-        mut self, mut lefts: []mut ast.ObjectData, mut right: ast.Expr, scope: ast.Scope,
+        mut self, mut lefts: []+mut ast.ObjectData, mut right: +mut ast.Expr, scope: +mut ast.Scope,
         pos: token.Pos
     ) {
         if lefts.len == 1 {
@@ -196,7 +196,7 @@ pub struct Checker {
         }
     }
 
-    func check_scope_vars(self, scope: ast.Scope) {
+    func check_scope_vars(self, scope: +mut ast.Scope) {
         if !self.inside_extern {
             for sym in scope.syms {
                 if sym is ast.Var(var_info) {
@@ -248,7 +248,7 @@ pub struct Checker {
         }
     }
 
-    func check_expr_evaluated_but_not_used(self, expr_type: ast.Type, pos: token.Pos) {
+    func check_expr_evaluated_but_not_used(self, expr_type: +mut ast.Type, pos: token.Pos) {
         _ = self;
         if !((expr_type is .Result(res) && !res.inner.is_void())
             || (expr_type is .Option(opt) && !opt.inner.is_void())
@@ -257,7 +257,7 @@ pub struct Checker {
         }
     }
 
-    func has_return(self, mut stmts: []mut ast.Stmt, allow_throw: bool := false) -> bool {
+    func has_return(self, mut stmts: []+mut ast.Stmt, allow_throw: bool := false) -> bool {
         for mut stmt in stmts {
             if stmt is .Expr(mut expr) && self.expr_has_return(expr, allow_throw) {
                 return true;
@@ -269,7 +269,7 @@ pub struct Checker {
         return false;
     }
 
-    func expr_has_return(self, mut expr: ast.Expr, allow_throw: bool := false) -> bool {
+    func expr_has_return(self, mut expr: +mut ast.Expr, allow_throw: bool := false) -> bool {
         return match expr {
             .ComptimeIf(mut comptime_if) -> {
                 mut ct_expr := ast.nodes_to_exprs(self.env.evalue_comptime_if(comptime_if))[0];

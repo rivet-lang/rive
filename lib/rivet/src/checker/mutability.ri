@@ -5,7 +5,7 @@
 import ../{ ast, token, report };
 
 extend Checker {
-    func check_expr_is_mut(self, mut expr: ast.Expr, from_assign: bool := false) {
+    func check_expr_is_mut(self, mut expr: +mut ast.Expr, from_assign: bool := false) {
         match expr {
             .Paren(mut paren) -> self.check_expr_is_mut(paren.expr),
             .SelfLiteral(mut self_lit) -> self_lit.obj.is_changed = true,
@@ -79,7 +79,7 @@ extend Checker {
                 } else if index.left_type is .Basic(basic_t) && basic_t.is_boxed {
                     if !basic_t.is_mut {
                         report.error(
-                            "cannot use a immutable boxed value as mutable value", selector.pos
+                            "cannot use a immutable boxed value as mutable value", index.pos
                         );
                     }
                 } else {

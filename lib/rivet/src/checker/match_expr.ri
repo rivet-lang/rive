@@ -7,7 +7,7 @@ import ../{ ast, utils, report, utils/maps };
 extend Checker {
     const MATCH_EXHAUSTIVE_CUTOFF_LIMIT := 12;
 
-    func check_match(mut self, mut match_expr: ast.Expr.Match) -> ast.Type {
+    func check_match(mut self, mut match_expr: +mut ast.Expr.Match) -> +mut ast.Type {
         old_expected_type := self.expected_type;
         match_expr.type = .Void;
         if match_expr.branches.len == 1 && match_expr.has_else {
@@ -38,7 +38,7 @@ extend Checker {
                 expr_type = guard_expr.vars[0].type;
                 expr_sym = expr_type.symbol()?;
             } else {
-                mut types := []mut ast.Type();
+                mut types := []+mut ast.Type();
                 for var_ in guard_expr.vars {
                     types.push(var_.type);
                 }

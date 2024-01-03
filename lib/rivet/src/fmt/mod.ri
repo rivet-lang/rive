@@ -12,7 +12,7 @@ var max_len := [@as(uint, 0), 35, 60, 85, 93, 100];
 pub struct Formatter {
     prefs: prefs.Prefs;
 
-    mut source_file: ast.SourceFile;
+    mut source_file: +mut ast.SourceFile;
     mut imports_output: strings.Builder := strings.Builder.new(100);
     mut output: strings.Builder := strings.Builder.new(1000);
 
@@ -21,7 +21,7 @@ pub struct Formatter {
     mut line_len: uint;
     mut empty_line: bool;
 
-    pub func format(mut self, source_file: ast.SourceFile) -> string {
+    pub func format(mut self, source_file: +mut ast.SourceFile) -> string {
         self.source_file = source_file;
         self.format_decls(source_file.decls, is_root: true);
         return self.output.to_string();

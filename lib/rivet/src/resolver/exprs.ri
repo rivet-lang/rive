@@ -5,7 +5,7 @@
 import ../{ ast, report, token };
 
 extend Resolver {
-    func resolve_expr(mut self, mut expr: ast.Expr) {
+    func resolve_expr(mut self, mut expr: +mut ast.Expr) {
         match expr {
             .Empty(empty_pos) -> report.error("bug: unexpected empty expression found", empty_pos),
             .ComptimeIf(mut comptime_if) -> {
@@ -29,7 +29,7 @@ extend Resolver {
             .SelfLiteral(mut self_lit) -> if self.self_sym_is_set {
                 self_lit.sym = self.self_sym;
                 self_lit.found = true;
-                self_lit.obj = @as(ast.Var, self_lit.scope.lookup("self")?);
+                self_lit.obj = @as(+mut ast.Var, self_lit.scope.lookup("self")?);
                 self_lit.obj.is_used = true;
             } else {
                 report.error("cannot resolve `self` expression", self_lit.pos);
@@ -103,7 +103,7 @@ extend Resolver {
                         self.check_variable_shadowing(
                             call.err_handler.varname, call.err_handler.varname_pos
                         );
-                        call.err_handler.scope.add_local(ast.Var(
+                        call.err_handler.scope.add_local(+mut ast.Var(
                             name: call.err_handler.varname,
                             type: self.env.throwable_t,
                             level: .Local,
@@ -192,7 +192,7 @@ extend Resolver {
                         }
                         if branch_var := branch.branch_var {
                             self.check_variable_shadowing(branch_var.name, branch_var.pos);
-                            match_expr.scope.add_local(ast.Var(
+                            match_expr.scope.add_local(+mut ast.Var(
                                 is_mut: branch_var.is_mut && !branch_var.is_ref,
                                 name: branch_var.name,
                                 level: .Local,
@@ -217,7 +217,7 @@ extend Resolver {
         }
     }
 
-    func resolve_ident(mut self, mut ident: ast.Expr.Ident) {
+    func resolve_ident(mut self, mut ident: +mut ast.Expr.Ident) {
         if ident.name == "_" {
             ident.found = true;
             ident.is_obj = true;
@@ -239,7 +239,7 @@ extend Resolver {
             ident.found = true;
             ident.is_obj = true;
             ident.sym = obj;
-            @as(ast.Var, obj).is_used = true;
+            @as(+mut ast.Var, obj).is_used = true;
         } else if mut imported := self.source_file.imported_symbols.find(ident.name) {
             if !(imported.sym is ast.TypeSym(type_sym) && type_sym.info is .Placeholder) {
                 imported.is_used = true;
@@ -289,7 +289,7 @@ extend Resolver {
         }
     }
 
-    func resolve_selector(mut self, mut selector: ast.Expr.Selector) {
+    func resolve_selector(mut self, mut selector: +mut ast.Expr.Selector) {
         self.resolve_expr(selector.left);
         match selector.left {
             .SelfTy(self_ty) if self_ty.found -> {
@@ -358,7 +358,7 @@ extend Resolver {
         return none;
     }
 
-    func clean_symbol_reference(mut self, mut sym_ref: ast.SymRef) -> ast.Sym {
+    func clean_symbol_reference(mut self, mut sym_ref: +mut ast.SymRef) -> ast.Sym {
         if !sym_ref.ref_resolved {
             self.resolve_expr(sym_ref.ref_expr);
             if sym_ref.ref_expr is .Ident(ident) && ident.found && ident.is_sym {

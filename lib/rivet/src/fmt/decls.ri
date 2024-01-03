@@ -5,7 +5,7 @@
 import ../{ ast, token };
 
 extend Formatter {
-    func format_decls(mut self, decls: []ast.Decl, is_root: bool := false) {
+    func format_decls(mut self, decls: []+ast.Decl, is_root: bool := false) {
         mut prev_decl := if decls.len > 0 {
             decls[0]
         } else {
@@ -26,7 +26,7 @@ extend Formatter {
         }
     }
 
-    func format_decl(mut self, decl: ast.Decl) {
+    func format_decl(mut self, decl: +mut ast.Decl) {
         match decl {
             .Comment(comment) -> self.format_comment(comment, has_nl: true),
             .Extern(extern_d) -> {
@@ -70,7 +70,7 @@ extend Formatter {
         }
     }
 
-    func format_struct(mut self, struct_decl: ast.Decl.Struct) {
+    func format_struct(mut self, struct_decl: +mut ast.Decl.Struct) {
         self.format_comments(struct_decl.docs);
         self.format_attributes(struct_decl.attributes);
         if struct_decl.is_public {
@@ -86,7 +86,7 @@ extend Formatter {
         }
     }
 
-    func format_func(mut self, func_decl: ast.Decl.Func) {
+    func format_func(mut self, func_decl: +mut ast.Decl.Func) {
         self.format_comments(func_decl.docs);
         self.format_attributes(func_decl.attributes);
         if func_decl.is_public {

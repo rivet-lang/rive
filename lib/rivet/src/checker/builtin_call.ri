@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Checker {
-    func check_builtin_call(mut self, mut builtin_call: ast.Expr.BuiltinCall) -> ast.Type {
+    func check_builtin_call(mut self, mut builtin_call: +mut ast.Expr.BuiltinCall) -> +mut ast.Type {
         builtin_call.type = if builtin_call.builtin is .Func(b_func) {
             if b_func.is_unsafe && !self.inside_unsafe() {
                 report.warn(
@@ -104,7 +104,7 @@ extend Checker {
         return builtin_call.type;
     }
 
-    func check_builtin_as(mut self, builtin_call: ast.Expr.BuiltinCall) {
+    func check_builtin_as(mut self, builtin_call: +mut ast.Expr.BuiltinCall) {
         to_type := builtin_call.args[0].type;
         from_type := builtin_call.args[1].type;
         if to_type == from_type {

@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Parser {
-    func parse_stmt(mut self) -> ast.Stmt {
+    func parse_stmt(+mut self) -> +mut ast.Stmt {
         return match {
             self.tok.kind == .Comment -> .Comment(self.parse_comment()),
             self.accept(.Dollar) -> match self.tok.kind {
@@ -65,7 +65,7 @@ extend Parser {
                     index = self.parse_var_decl(support_mut: false, support_type: false);
                     self.expect(.Comma);
                 }
-                mut values := []mut ast.ObjectData();
+                mut values := []+mut ast.ObjectData();
                 if self.accept(.Lparen) {
                     while {
                         values.push(
@@ -119,7 +119,7 @@ extend Parser {
                 && self.decl_operator_is_used() -> {
                 // variable declarations
                 mut pos := self.tok.pos;
-                mut lefts := []mut ast.ObjectData();
+                mut lefts := []+mut ast.ObjectData();
                 if self.accept(.Lparen) {
                     // multiple variables
                     while {
