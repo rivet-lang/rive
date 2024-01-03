@@ -190,7 +190,7 @@ class Codegen:
                 CGen(self.comp).gen(self.out_rir)
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
                 exit_code = os.system(self.comp.prefs.mod_output)
-                # os.remove(self.comp.prefs.mod_output)
+                os.remove(self.comp.prefs.mod_output)
                 # assert exit_code == 0
                 if exit_code != 0:
                     exit(1)
