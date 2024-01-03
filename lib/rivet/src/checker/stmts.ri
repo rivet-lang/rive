@@ -7,7 +7,7 @@ import ../{ ast, token, report };
 extend Checker {
     func check_stmts(+mut self, mut stmts: []+mut ast.Stmt) {
         mut unreachable_pos := token.no_pos;
-        for mut stmt in stmts {
+        for stmt in stmts {
             if self.scope_returns && unreachable_pos.pos == 0 {
                 unreachable_pos = stmt.position();
             }

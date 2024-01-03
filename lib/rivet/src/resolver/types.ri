@@ -5,8 +5,8 @@
 import ../{ ast, report };
 
 extend Resolver {
-    func resolve_type(+mut self, mut type: +mut ast.Type) -> bool {
-        return match type {
+    func resolve_type(+mut self, type: +mut ast.Type) -> bool {
+        return match type.+ {
             .Void, .Never, .Rawptr, .Boxedptr -> true,
             .Option(opt) -> self.resolve_type(opt.inner),
             .Result(res) -> self.resolve_type(res.inner),
@@ -60,7 +60,7 @@ extend Resolver {
             .Pointer(ptr) -> self.resolve_type(ptr.inner),
             .Tuple(tuple) -> {
                 mut resolved := false;
-                for mut inner in tuple.inners {
+                for inner in tuple.inners {
                     resolved = self.resolve_type(inner);
                 }
                 if resolved {
@@ -70,7 +70,7 @@ extend Resolver {
             },
             .Func(func_t) -> {
                 mut res1 := false;
-                for mut arg in func_t.args {
+                for arg in func_t.args {
                     res1 = self.resolve_type(arg.type);
                 }
                 res1 = self.resolve_type(func_t.ret_type);

@@ -5,14 +5,14 @@
 import ../{ ast, report };
 
 extend Resolver {
-    func resolve_stmts(+mut self, mut stmts: []+mut ast.Stmt) {
-        for mut stmt in stmts {
+    func resolve_stmts(+mut self, stmts: []+mut ast.Stmt) {
+        for stmt in stmts {
             self.resolve_stmt(stmt);
         }
     }
 
-    func resolve_stmt(+mut self, mut stmt: +mut ast.Stmt) {
-        match stmt {
+    func resolve_stmt(+mut self, stmt: +mut ast.Stmt) {
+        match stmt.+ {
             .Comment -> {},
             .Empty(empty_pos) -> report.error("bug: unexpected empty statement found", empty_pos),
             .ComptimeIf(comptime_if) -> {
@@ -23,7 +23,7 @@ extend Resolver {
             },
             .Expr(expr) -> self.resolve_expr(expr),
             .VarDecl(var_stmt) -> {
-                for mut left in var_stmt.lefts {
+                for left in var_stmt.lefts {
                     self.check_variable_shadowing(left.name, left.pos);
                     _ = self.resolve_type(left.type);
                     left.sym = ast.Var(
@@ -65,7 +65,7 @@ extend Resolver {
                         err.to_string(), for_stmt.index.pos
                     );
                 }
-                for mut value in for_stmt.values {
+                for value in for_stmt.values {
                     self.check_variable_shadowing(value.name, value.pos);
                     value.sym = ast.Var(
                         is_mut: value.is_mut,

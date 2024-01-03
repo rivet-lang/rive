@@ -61,7 +61,7 @@ pub struct Resolver {
     }
 
     func eval_size(+mut self, mut expr: +mut ast.Expr) -> ?int {
-        return match expr {
+        return match expr.+ {
             .ComptimeIf(comptime_if) -> {
                 mut ct_expr := ast.nodes_to_exprs(self.env.evalue_comptime_if(comptime_if))[0];
                 self.eval_size(ct_expr)

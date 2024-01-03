@@ -5,8 +5,8 @@
 import ../{ ast, report, token };
 
 extend Resolver {
-    func resolve_expr(+mut self, mut expr: +mut ast.Expr) {
-        match expr {
+    func resolve_expr(+mut self, expr: +mut ast.Expr) {
+        match expr.+ {
             .Empty(empty_pos) -> report.error("bug: unexpected empty expression found", empty_pos),
             .ComptimeIf(comptime_if) -> {
                 exprs := ast.nodes_to_exprs(
@@ -16,7 +16,7 @@ extend Resolver {
             },
             .Paren(paren) -> self.resolve_expr(paren.expr),
             .Type(type) -> _ = self.resolve_type(type),
-            .Ident(ident) -> self.resolve_ident(ident),
+            .Ident(mut ident) -> self.resolve_ident(ident),
             .Selector(selector) -> self.resolve_selector(selector),
             .Indirect(indirect) -> self.resolve_expr(indirect.left),
             .OptionCheck(option_check) -> self.resolve_expr(option_check.left),
@@ -35,7 +35,7 @@ extend Resolver {
                 report.error("cannot resolve `self` expression", self_lit.pos);
             },
             .TupleLiteral(tuple_lit) -> {
-                for mut value in tuple_lit.values {
+                for value in tuple_lit.values {
                     self.resolve_expr(value);
                 }
             },
@@ -66,7 +66,7 @@ extend Resolver {
                 }
             },
             .ArrayLiteral(array_lit) -> {
-                for mut value in array_lit.values {
+                for value in array_lit.values {
                     self.resolve_expr(value);
                 }
             },
@@ -74,7 +74,7 @@ extend Resolver {
                 if builtin := self.env.find_builtin(builtin_call.name) {
                     if builtin is .Func {
                         builtin_call.builtin = builtin;
-                        for mut arg in builtin_call.args {
+                        for arg in builtin_call.args {
                             self.resolve_expr(arg.expr);
                         }
                     } else {
@@ -92,7 +92,7 @@ extend Resolver {
             },
             .Call(call) -> {
                 self.resolve_expr(call.left);
-                for mut arg in call.args {
+                for arg in call.args {
                     self.resolve_expr(arg.expr);
                 }
                 if call.has_spread_expr {
@@ -157,7 +157,7 @@ extend Resolver {
             },
             .Throw(throw_expr) -> self.resolve_expr(throw_expr.expr),
             .Guard(guard) -> {
-                for mut var_ in guard.vars {
+                for var_ in guard.vars {
                     self.check_variable_shadowing(var_.name, var_.pos);
                     var_.sym = ast.Var(
                         is_mut: var_.is_mut,
@@ -176,7 +176,7 @@ extend Resolver {
                 }
             },
             .If(if_expr) -> {
-                for mut branch in if_expr.branches {
+                for branch in if_expr.branches {
                     if !branch.is_else {
                         self.resolve_expr(branch.cond);
                     }
@@ -185,9 +185,9 @@ extend Resolver {
             },
             .Match(match_expr) -> {
                 self.resolve_expr(match_expr.expr);
-                for mut branch in match_expr.branches {
+                for branch in match_expr.branches {
                     if !branch.is_else {
-                        for mut pattern in branch.patterns {
+                        for pattern in branch.patterns {
                             self.resolve_expr(pattern);
                         }
                         if branch_var := branch.branch_var {
@@ -217,7 +217,7 @@ extend Resolver {
         }
     }
 
-    func resolve_ident(+mut self, mut ident: +mut ast.Expr.Ident) {
+    func resolve_ident(+mut self, ident: +mut ast.Expr.Ident) {
         if ident.name == "_" {
             ident.found = true;
             ident.is_obj = true;
@@ -289,7 +289,7 @@ extend Resolver {
         }
     }
 
-    func resolve_selector(+mut self, mut selector: +mut ast.Expr.Selector) {
+    func resolve_selector(+mut self, selector: +mut ast.Expr.Selector) {
         self.resolve_expr(selector.left);
         match selector.left {
             .SelfTy(self_ty) if self_ty.found -> {
@@ -358,7 +358,7 @@ extend Resolver {
         return none;
     }
 
-    func clean_symbol_reference(+mut self, mut sym_ref: +mut ast.SymRef) -> ast.Sym {
+    func clean_symbol_reference(+mut self, sym_ref: +mut ast.SymRef) -> ast.Sym {
         if !sym_ref.ref_resolved {
             self.resolve_expr(sym_ref.ref_expr);
             if sym_ref.ref_expr is .Ident(ident) && ident.found && ident.is_sym {

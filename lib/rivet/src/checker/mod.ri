@@ -43,14 +43,14 @@ pub struct Checker {
 
     pub func check_files(+mut self, mut source_files: []+mut ast.SourceFile) {
         // check global variables
-        for mut source_file in source_files {
+        for source_file in source_files {
             self.sym = source_file.mod;
             self.source_file = source_file;
             self.expected_type = .Void;
             self.check_global_vars(source_file.decls);
         }
         // check the source code
-        for mut source_file in source_files {
+        for source_file in source_files {
             self.sym = source_file.mod;
             self.source_file = source_file;
             self.expected_type = .Void;
@@ -258,7 +258,7 @@ pub struct Checker {
     }
 
     func has_return(+self, mut stmts: []+mut ast.Stmt, allow_throw: bool := false) -> bool {
-        for mut stmt in stmts {
+        for stmt in stmts {
             if stmt is .Expr(expr) && self.expr_has_return(expr, allow_throw) {
                 return true;
             } else if stmt is .ComptimeIf(comptime_if) {
@@ -288,7 +288,7 @@ pub struct Checker {
                 false
             },
             .If(if_expr) -> {
-                for mut branch in if_expr.branches {
+                for branch in if_expr.branches {
                     if branch.is_else && self.expr_has_return(branch.expr, allow_throw) {
                         return true;
                     }

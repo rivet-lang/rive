@@ -6,7 +6,7 @@ import ../{ ast, report };
 
 extend Checker {
     func check_global_vars(+mut self, mut decls: []+mut ast.Decl) {
-        for mut decl in decls {
+        for decl in decls {
             old_sym := self.sym;
             if decl is .Const || decl is .Var {
                 self.check_decl(decl);
@@ -18,7 +18,7 @@ extend Checker {
     }
 
     func check_decls(+mut self, mut decls: []+mut ast.Decl) {
-        for mut decl in decls {
+        for decl in decls {
             if !(decl is .Const || decl is .Var) {
                 self.check_decl(decl);
             }
@@ -115,7 +115,7 @@ extend Checker {
                         }
                     }
                 }
-                for mut variant in enum_decl.variants {
+                for variant in enum_decl.variants {
                     self.check_name_case(.Pascal, "enum variant", variant.name, variant.pos);
                     self.check_decls(variant.decls);
                 }
@@ -218,7 +218,7 @@ extend Checker {
         if func_decl.is_method && func_decl.self_is_ptr && func_decl.self_type.is_boxed() {
             report.error("cannot take the address of a boxed value as receiver", func_decl.self_pos);
         }
-        for mut arg in func_decl.args {
+        for arg in func_decl.args {
             self.check_name_case(.Snake, "argument", arg.name, arg.pos);
             if arg.has_def_expr {
                 if func_decl.abi != .Rivet {

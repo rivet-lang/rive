@@ -7,7 +7,7 @@ import ../ast;
 
 extend Codegen {
     func gen_decls(mut self, mut decls: []+mut ast.Decl) {
-        for mut decl in decls {
+        for decl in decls {
             self.gen_decl(decl);
         }
     }

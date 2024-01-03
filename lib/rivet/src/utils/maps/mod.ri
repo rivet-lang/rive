@@ -13,7 +13,7 @@ pub struct MapStringUint {
     mut pairs: []mut StringUint;
 
     pub func set(mut self, key: string, value: uint) {
-        for mut pair in self.pairs {
+        for pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
                 return; // found
@@ -81,7 +81,7 @@ pub struct MapStringArrayOfStrings {
     }
 
     pub func set(mut self, key: string, value: []string) {
-        for mut pair in self.pairs {
+        for pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
                 return; // found
@@ -129,7 +129,7 @@ pub struct MapStringBool {
     mut pairs: []mut StringBool;
 
     pub func set(mut self, key: string, value: bool) {
-        for mut pair in self.pairs {
+        for pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
                 return; // found

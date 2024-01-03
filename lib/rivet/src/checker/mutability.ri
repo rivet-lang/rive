@@ -54,7 +54,7 @@ extend Checker {
                 "string literals cannot be modified", expr.position()
             ),
             .TupleLiteral(tuple_lit) -> if from_assign {
-                for mut value in tuple_lit.values {
+                for value in tuple_lit.values {
                     self.check_expr_is_mut(value);
                 }
             } else {
@@ -64,7 +64,7 @@ extend Checker {
                 "enum literals cannot be modified", enum_lit.pos
             ),
             .BuiltinCall(builtin_call) -> {
-                for mut arg in builtin_call.args {
+                for arg in builtin_call.args {
                     self.check_expr_is_mut(arg.expr);
                 }
             },
@@ -98,12 +98,12 @@ extend Checker {
                 self.check_expr_is_mut(binary.right);
             },
             .If(if_expr) -> {
-                for mut branch in if_expr.branches {
+                for branch in if_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
             },
             .Match(match_expr) -> {
-                for mut branch in match_expr.branches {
+                for branch in match_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
             },

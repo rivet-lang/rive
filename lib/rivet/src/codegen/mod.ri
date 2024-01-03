@@ -36,7 +36,7 @@ pub struct Codegen {
     pub func generate_mirs(mut self, mut source_files: []+mut ast.SourceFile) {
         self.init_types();
         self.rivet_internal = self.get_or_create_mir("rivetc.compiler.internal");
-        for mut source_file in source_files {
+        for source_file in source_files {
             self.generate_mir(source_file);
         }
         if self.env.prefs.emit_mir {
@@ -202,7 +202,7 @@ pub struct Codegen {
     }
 
     func add_locals(mut self, mut scope: +mut ast.Scope) {
-        for mut sym in scope.syms {
+        for sym in scope.syms {
             if sym is ast.Var(local) {
                 local.mir_name = if self.cur_func.has_local(local.name) {
                     "{}_{}".fmt(local.name, self.cur_func.locals.len)
@@ -216,7 +216,7 @@ pub struct Codegen {
                 ));
             }
         }
-        for mut children in scope.childrens {
+        for children in scope.childrens {
             self.add_locals(children);
         }
     }

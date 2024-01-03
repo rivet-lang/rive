@@ -209,7 +209,7 @@ pub struct Var {
     pub mut fields: []+Var;
 
     pub func set_field(+mut self, name: string, value: +mut Expr) {
-        for mut field in self.fields {
+        for field in self.fields {
             if field.dbg_name == name {
                 field.value = value;
                 break;

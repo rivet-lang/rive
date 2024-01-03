@@ -6,14 +6,14 @@ import ../{ ast, report, token };
 
 #[boxed]
 pub struct Register {
-    mut env: +mut ast.Env;
+    env: +mut ast.Env;
 
     mut core_is_set: bool;
     mut is_core_mod: bool;
 
     mut abi: ast.ABI;
     mut sym: ast.Sym := ast.InvalidSym();
-    mut source_file: +mut ast.SourceFile;
+    source_file: +mut ast.SourceFile;
 
     pub func walk_files(+mut self, source_files: []+mut ast.SourceFile) {
         for sf in source_files {
@@ -30,7 +30,7 @@ pub struct Register {
     }
 
     func walk_decls(+mut self, mut decls: []+mut ast.Decl) {
-        for mut decl in decls {
+        for decl in decls {
             old_abi := self.abi;
             old_sym := self.sym;
             self.sym.scope.owner = self.sym;
@@ -40,8 +40,8 @@ pub struct Register {
         }
     }
 
-    func walk_decl(+mut self, mut decl: +mut ast.Decl) {
-        match decl {
+    func walk_decl(+mut self, decl: +mut ast.Decl) {
+        match decl.+ {
             .ComptimeIf(comptime_if_decl) -> self.comptime_if(comptime_if_decl),
             .Import(import_decl) -> self.import_decl(&import_decl),
             .Extern(extern_decl) -> {
@@ -117,7 +117,7 @@ pub struct Register {
                     ), enum_decl.pos
                 );
                 mut enum_info := @as(ast.TypeInfo.Enum, info);
-                for mut variant in enum_decl.variants {
+                for variant in enum_decl.variants {
                     if enum_info.has_variant(variant.name) {
                         report.error("enum `{}` has duplicate variant `{}`".fmt(
                             enum_decl.name, variant.name
@@ -186,7 +186,7 @@ pub struct Register {
                 type: const_decl.type
             ), const_decl.pos),
             .Var(var_decl) -> {
-                for mut left in var_decl.lefts {
+                for left in var_decl.lefts {
                     left.sym = ast.Var(
                         parent: self.sym,
                         is_public: var_decl.is_public,
