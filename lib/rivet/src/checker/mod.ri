@@ -18,7 +18,7 @@ enum ReturnLegalityTracker {
 
 #[boxed]
 pub struct Checker {
-    mut env: +mut ast.Env;
+    env: +mut ast.Env;
 
     mut source_file: +mut ast.SourceFile;
     mut sym: ast.Sym := ast.InvalidSym();
