@@ -1703,14 +1703,15 @@ class Codegen:
             self.cur_func.inline_alloca(expr_typ_ir, tmp, value)
             return ir.Ident(expr_typ_ir, tmp)
         elif isinstance(expr, ast.UnaryExpr):
-            right = self.gen_expr_with_cast(expr.right_typ, expr.right)
             if expr.op == Kind.Plus:
+                right = self.gen_expr(expr.right)
+                if isinstance(right.typ, ir.Pointer):
+                    return right
                 size, _ = self.comp.type_size(expr.right_typ, True)
                 res = self.boxed_instance(self.ir_type(expr.right_typ), size)
-                self.cur_func.store_ptr(
-                    res, ir.Inst(ir.InstKind.Cast, [right, right.typ])
-                )
+                self.cur_func.store_ptr(res, right)
                 return res
+            right = self.gen_expr_with_cast(expr.right_typ, expr.right)
             if expr.op == Kind.Amp:
                 tmp = self.cur_func.local_name()
                 if isinstance(
