@@ -203,7 +203,7 @@ pub struct Codegen {
 
     func add_locals(mut self, mut scope: +mut ast.Scope) {
         for mut sym in scope.syms {
-            if sym is ast.Var(mut local) {
+            if sym is ast.Var(local) {
                 local.mir_name = if self.cur_func.has_local(local.name) {
                     "{}_{}".fmt(local.name, self.cur_func.locals.len)
                 } else {

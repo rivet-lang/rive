@@ -21,19 +21,19 @@ extend Checker {
 
     func check_stmt(+mut self, mut stmt: +mut ast.Stmt) {
         match stmt {
-            .ComptimeIf(mut comptime_if) -> {
+            .ComptimeIf(comptime_if) -> {
                 mut stmts := ast.nodes_to_stmts(
                     self.env.evalue_comptime_if(comptime_if)
                 );
                 self.check_stmts(stmts);
             },
-            .VarDecl(mut var_decl) -> self.check_var_decl(
+            .VarDecl(var_decl) -> self.check_var_decl(
                 var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
             ),
-            .For(mut for_stmt) -> self.check_for(for_stmt),
-            .While(mut while_stmt) -> self.check_while(while_stmt),
-            .Defer(mut defer_stmt) -> self.check_defer(defer_stmt),
-            .Expr(mut expr) -> self.check_expr_evaluated_but_not_used(
+            .For(for_stmt) -> self.check_for(for_stmt),
+            .While(while_stmt) -> self.check_while(while_stmt),
+            .Defer(defer_stmt) -> self.check_defer(defer_stmt),
+            .Expr(expr) -> self.check_expr_evaluated_but_not_used(
                 self.check_expr(expr), expr.position()
             ),
             else -> {}

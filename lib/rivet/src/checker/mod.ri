@@ -259,9 +259,9 @@ pub struct Checker {
 
     func has_return(self, mut stmts: []+mut ast.Stmt, allow_throw: bool := false) -> bool {
         for mut stmt in stmts {
-            if stmt is .Expr(mut expr) && self.expr_has_return(expr, allow_throw) {
+            if stmt is .Expr(expr) && self.expr_has_return(expr, allow_throw) {
                 return true;
-            } else if stmt is .ComptimeIf(mut comptime_if) {
+            } else if stmt is .ComptimeIf(comptime_if) {
                 mut ct_stmts := ast.nodes_to_stmts(self.env.evalue_comptime_if(comptime_if));
                 return self.has_return(ct_stmts);
             }
@@ -271,11 +271,11 @@ pub struct Checker {
 
     func expr_has_return(self, mut expr: +mut ast.Expr, allow_throw: bool := false) -> bool {
         return match expr {
-            .ComptimeIf(mut comptime_if) -> {
+            .ComptimeIf(comptime_if) -> {
                 mut ct_expr := ast.nodes_to_exprs(self.env.evalue_comptime_if(comptime_if))[0];
                 self.expr_has_return(ct_expr)
             },
-            .Match(mut match_expr) -> {
+            .Match(match_expr) -> {
                 for i, mut branch in match_expr.branches {
                     if match_expr.is_exhaustive && i == match_expr.branches.len {
                         if self.expr_has_return(branch.expr, allow_throw) {
@@ -287,7 +287,7 @@ pub struct Checker {
                 }
                 false
             },
-            .If(mut if_expr) -> {
+            .If(if_expr) -> {
                 for mut branch in if_expr.branches {
                     if branch.is_else && self.expr_has_return(branch.expr, allow_throw) {
                         return true;
@@ -296,7 +296,7 @@ pub struct Checker {
                 false
             },
             .Call(call_expr) -> call_expr.type is .Never,
-            .Block(mut block) -> self.has_return(block.stmts, allow_throw),
+            .Block(block) -> self.has_return(block.stmts, allow_throw),
             .Return -> true,
             .Throw if allow_throw -> true,
             else -> false

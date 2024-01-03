@@ -8,18 +8,18 @@ extend Resolver {
     func resolve_expr(+mut self, mut expr: +mut ast.Expr) {
         match expr {
             .Empty(empty_pos) -> report.error("bug: unexpected empty expression found", empty_pos),
-            .ComptimeIf(mut comptime_if) -> {
+            .ComptimeIf(comptime_if) -> {
                 exprs := ast.nodes_to_exprs(
                     self.env.evalue_comptime_if(comptime_if)
                 );
                 self.resolve_expr(exprs[0]);
             },
-            .Paren(mut paren) -> self.resolve_expr(paren.expr),
-            .Type(mut type) -> _ = self.resolve_type(type),
-            .Ident(mut ident) -> self.resolve_ident(ident),
-            .Selector(mut selector) -> self.resolve_selector(selector),
-            .Indirect(mut indirect) -> self.resolve_expr(indirect.left),
-            .OptionCheck(mut option_check) -> self.resolve_expr(option_check.left),
+            .Paren(paren) -> self.resolve_expr(paren.expr),
+            .Type(type) -> _ = self.resolve_type(type),
+            .Ident(ident) -> self.resolve_ident(ident),
+            .Selector(selector) -> self.resolve_selector(selector),
+            .Indirect(indirect) -> self.resolve_expr(indirect.left),
+            .OptionCheck(option_check) -> self.resolve_expr(option_check.left),
             .SelfTy(self_ty) -> if self.self_sym_is_set {
                 self_ty.sym = self.self_sym;
                 self_ty.found = true;
@@ -34,12 +34,12 @@ extend Resolver {
             } else {
                 report.error("cannot resolve `self` expression", self_lit.pos);
             },
-            .TupleLiteral(mut tuple_lit) -> {
+            .TupleLiteral(tuple_lit) -> {
                 for mut value in tuple_lit.values {
                     self.resolve_expr(value);
                 }
             },
-            .ArrayCtor(mut array_ctor) -> {
+            .ArrayCtor(array_ctor) -> {
                 _ = self.resolve_type(array_ctor.elem_type);
                 if mut init_value := array_ctor.init_value {
                     self.resolve_expr(init_value);
@@ -65,12 +65,12 @@ extend Resolver {
                     self.resolve_expr(cap_value);
                 }
             },
-            .ArrayLiteral(mut array_lit) -> {
+            .ArrayLiteral(array_lit) -> {
                 for mut value in array_lit.values {
                     self.resolve_expr(value);
                 }
             },
-            .BuiltinCall(mut builtin_call) -> {
+            .BuiltinCall(builtin_call) -> {
                 if builtin := self.env.find_builtin(builtin_call.name) {
                     if builtin is .Func {
                         builtin_call.builtin = builtin;
@@ -90,7 +90,7 @@ extend Resolver {
                     );
                 }
             },
-            .Call(mut call) -> {
+            .Call(call) -> {
                 self.resolve_expr(call.left);
                 for mut arg in call.args {
                     self.resolve_expr(arg.expr);
@@ -116,8 +116,8 @@ extend Resolver {
                     self.resolve_expr(call.err_handler.expr);
                 }
             },
-            .Unary(mut unary) -> self.resolve_expr(unary.right),
-            .Binary(mut binary) -> {
+            .Unary(unary) -> self.resolve_expr(unary.right),
+            .Binary(binary) -> {
                 self.resolve_expr(binary.left);
                 self.resolve_expr(binary.right);
                 if binary.has_var_obj {
@@ -134,7 +134,7 @@ extend Resolver {
                     );
                 }
             },
-            .Range(mut range) -> {
+            .Range(range) -> {
                 if range.has_start {
                     self.resolve_expr(range.start);
                 }
@@ -142,21 +142,21 @@ extend Resolver {
                     self.resolve_expr(range.end);
                 }
             },
-            .Index(mut index) -> {
+            .Index(index) -> {
                 self.resolve_expr(index.left);
                 self.resolve_expr(index.index);
             },
-            .Block(mut block) -> {
+            .Block(block) -> {
                 self.resolve_stmts(block.stmts);
                 if block.is_expr {
                     self.resolve_expr(block.expr);
                 }
             },
-            .Return(mut return_expr) -> if return_expr.has_expr {
+            .Return(return_expr) -> if return_expr.has_expr {
                 self.resolve_expr(return_expr.expr);
             },
-            .Throw(mut throw_expr) -> self.resolve_expr(throw_expr.expr),
-            .Guard(mut guard) -> {
+            .Throw(throw_expr) -> self.resolve_expr(throw_expr.expr),
+            .Guard(guard) -> {
                 for mut var_ in guard.vars {
                     self.check_variable_shadowing(var_.name, var_.pos);
                     var_.sym = ast.Var(
@@ -175,7 +175,7 @@ extend Resolver {
                     self.resolve_expr(guard.cond);
                 }
             },
-            .If(mut if_expr) -> {
+            .If(if_expr) -> {
                 for mut branch in if_expr.branches {
                     if !branch.is_else {
                         self.resolve_expr(branch.cond);
@@ -183,7 +183,7 @@ extend Resolver {
                     self.resolve_expr(branch.expr);
                 }
             },
-            .Match(mut match_expr) -> {
+            .Match(match_expr) -> {
                 self.resolve_expr(match_expr.expr);
                 for mut branch in match_expr.branches {
                     if !branch.is_else {
@@ -209,7 +209,7 @@ extend Resolver {
                     self.resolve_expr(branch.expr);
                 }
             },
-            .Assign(mut assign_expr) -> {
+            .Assign(assign_expr) -> {
                 self.resolve_expr(assign_expr.left);
                 self.resolve_expr(assign_expr.right);
             },
@@ -280,7 +280,7 @@ extend Resolver {
         }
 
         if ident.found {
-            if ident.is_sym && ident.sym is ast.SymRef(mut sym_ref) {
+            if ident.is_sym && ident.sym is ast.SymRef(sym_ref) {
                 ident.sym = self.clean_symbol_reference(sym_ref);
             }
             self.check_symbol_abi(ident.sym, ident.pos);
@@ -325,12 +325,12 @@ extend Resolver {
 
     func find_symbol(+mut self, mut sym: ast.Sym, name: string, pos: token.Pos) -> ?ast.Sym {
         mut sym_ := sym;
-        if sym is ast.SymRef(mut sym_ref) {
+        if sym is ast.SymRef(sym_ref) {
             sym_ = self.clean_symbol_reference(sym_ref);
         }
         if mut s := sym_.scope.find(name) {
             self.check_vis(s, pos);
-            return if s is ast.SymRef(mut sym_ref2) {
+            return if s is ast.SymRef(sym_ref2) {
                 self.clean_symbol_reference(sym_ref2)
             } else {
                 s
@@ -369,7 +369,7 @@ extend Resolver {
                 sym_ref.ref = selector.sym;
                 sym_ref.ref_resolved = true;
             }
-            if sym_ref.ref is ast.SymRef(mut sym_ref2) {
+            if sym_ref.ref is ast.SymRef(sym_ref2) {
                 sym_ref.ref = self.clean_symbol_reference(sym_ref2);
             }
         }

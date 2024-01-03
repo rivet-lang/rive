@@ -19,8 +19,8 @@ extend Checker {
 
         match left {
             .SelfTy(self_ty) -> self.check_ctor_call(self_ty.sym, call_expr),
-            .Ident(mut ident) if (ident.is_sym || ident.is_obj) -> match ident.sym is {
-                ast.TypeSym(mut type_sym) if type_sym.info is .Trait
+            .Ident(ident) if (ident.is_sym || ident.is_obj) -> match ident.sym is {
+                ast.TypeSym(type_sym) if type_sym.info is .Trait
                     || type_sym.info is .Struct || type_sym.info is .String
                     || type_sym.info is .Enum -> self.check_ctor_call(type_sym, call_expr),
                 ast.Func(func_) -> {
@@ -45,9 +45,9 @@ extend Checker {
                     }
                 }
             },
-            .Selector(mut selector) -> if selector.is_path {
+            .Selector(selector) -> if selector.is_path {
                 match selector.sym is {
-                    ast.TypeSym(mut s_type_sym) if s_type_sym.info is .Trait
+                    ast.TypeSym(s_type_sym) if s_type_sym.info is .Trait
                         || s_type_sym.info is .Struct || s_type_sym.info is .String
                         || s_type_sym.info is .Enum -> self.check_ctor_call(
                         s_type_sym, call_expr
@@ -129,7 +129,7 @@ extend Checker {
                     );
                 }
             },
-            .EnumLiteral(mut enum_lit) -> {
+            .EnumLiteral(enum_lit) -> {
                 enum_lit.is_instance = true;
                 _ = self.check_expr(left);
                 self.check_ctor_call(enum_lit.sym, call_expr);
@@ -247,7 +247,7 @@ extend Checker {
                     );
                 }
             },
-            .Trait(mut trait_info) -> {
+            .Trait(trait_info) -> {
                 if call_expr.has_spread_expr {
                     report.error(
                         "cannot use spread expression with trait constructor", call_expr.pos

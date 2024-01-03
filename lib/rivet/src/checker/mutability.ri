@@ -7,9 +7,9 @@ import ../{ ast, token, report };
 extend Checker {
     func check_expr_is_mut(self, expr: +mut ast.Expr, from_assign: bool := false) {
         match expr {
-            .Paren(mut paren) -> self.check_expr_is_mut(paren.expr),
+            .Paren(paren) -> self.check_expr_is_mut(paren.expr),
             .SelfLiteral(self_lit) -> self_lit.obj.is_changed = true,
-            .Ident(mut ident) -> if ident.is_comptime {
+            .Ident(ident) -> if ident.is_comptime {
                 report.error(
                     "cannot use constant `@{}` as mutable value".fmt(ident.name),
                     ident.pos
@@ -19,7 +19,7 @@ extend Checker {
             } else if ident.found && (ident.is_sym || ident.is_obj) {
                 check_sym_is_mut(ident.sym, ident.pos);
             },
-            .Selector(mut selector) -> if selector.is_path {
+            .Selector(selector) -> if selector.is_path {
                 check_sym_is_mut(selector.sym, selector.pos);
             } else {
                 if selector.left_type is .Pointer(ptr_t) {
@@ -48,12 +48,12 @@ extend Checker {
             .Indirect(indirect) -> if !indirect.is_mut {
                 report.error("cannot use a immutable pointer as mutable value", indirect.pos);
             },
-            .OptionCheck(mut option_check) -> self.check_expr_is_mut(option_check.left),
+            .OptionCheck(option_check) -> self.check_expr_is_mut(option_check.left),
             .NoneLiteral -> report.error("`none` cannot be modified", expr.position()),
             .StringLiteral -> report.error(
                 "string literals cannot be modified", expr.position()
             ),
-            .TupleLiteral(mut tuple_lit) -> if from_assign {
+            .TupleLiteral(tuple_lit) -> if from_assign {
                 for mut value in tuple_lit.values {
                     self.check_expr_is_mut(value);
                 }
@@ -63,12 +63,12 @@ extend Checker {
             .EnumLiteral(enum_lit) if !enum_lit.is_instance -> report.error(
                 "enum literals cannot be modified", enum_lit.pos
             ),
-            .BuiltinCall(mut builtin_call) -> {
+            .BuiltinCall(builtin_call) -> {
                 for mut arg in builtin_call.args {
                     self.check_expr_is_mut(arg.expr);
                 }
             },
-            .Block(mut block) if block.is_expr -> self.check_expr_is_mut(block.expr),
+            .Block(block) if block.is_expr -> self.check_expr_is_mut(block.expr),
             .Index(&mut index) -> {
                 if index.left_type is .Pointer(ptr) {
                     if !ptr.is_mut {
@@ -92,17 +92,17 @@ extend Checker {
                     }
                 }
             },
-            .Unary(mut unary) -> self.check_expr_is_mut(unary.right),
-            .Binary(mut binary) -> {
+            .Unary(unary) -> self.check_expr_is_mut(unary.right),
+            .Binary(binary) -> {
                 self.check_expr_is_mut(binary.left);
                 self.check_expr_is_mut(binary.right);
             },
-            .If(mut if_expr) -> {
+            .If(if_expr) -> {
                 for mut branch in if_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
             },
-            .Match(mut match_expr) -> {
+            .Match(match_expr) -> {
                 for mut branch in match_expr.branches {
                     self.check_expr_is_mut(branch.expr);
                 }
@@ -116,7 +116,7 @@ extend Checker {
             ast.Const -> report.error(
                 "cannot use constant `{}` as mutable value".fmt(sym.name), pos
             ),
-            ast.Var(mut var_info) -> {
+            ast.Var(var_info) -> {
                 if var_info.is_mut {
                     var_info.is_changed = true;
                 } else {

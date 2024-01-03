@@ -9,7 +9,7 @@ extend Checker {
         return match expr {
             .Empty, .Comment -> .Void,
             .Type(type) -> type,
-            .ComptimeIf(mut comptime_if) -> {
+            .ComptimeIf(comptime_if) -> {
                 exprs := ast.nodes_to_exprs(
                     self.env.evalue_comptime_if(comptime_if)
                 );
@@ -33,10 +33,10 @@ extend Checker {
                 }
                 .Never(loop_control.pos)
             },
-            .Paren(mut paren) -> self.check_expr(paren.expr),
+            .Paren(paren) -> self.check_expr(paren.expr),
             .NoneLiteral -> .None,
             .BoolLiteral -> self.env.bool_t,
-            .CharLiteral(mut char_lit) -> {
+            .CharLiteral(char_lit) -> {
                 char_lit.type = if char_lit.is_byte {
                     self.env.uint8_t
                 } else {
@@ -49,7 +49,7 @@ extend Checker {
                 };
                 char_lit.type
             },
-            .IntegerLiteral(mut int_lit) -> {
+            .IntegerLiteral(int_lit) -> {
                 int_lit.type = if self.env.is_int(self.expected_type) {
                     self.expected_type
                 } else {
@@ -57,11 +57,11 @@ extend Checker {
                 };
                 int_lit.type
             },
-            .FloatLiteral(mut float_lit) -> {
+            .FloatLiteral(float_lit) -> {
                 float_lit.type = self.env.comptime_float_t;
                 float_lit.type
             },
-            .StringLiteral(mut string_lit) -> {
+            .StringLiteral(string_lit) -> {
                 string_lit.type = if string_lit.is_bytestr {
                     .Basic(self.env.universe.add_or_get_array(
                         self.env.uint8_t, string_lit.value.len, false
@@ -78,7 +78,7 @@ extend Checker {
                 self_lit.type
             },
             .SelfTy -> .Void,
-            .EnumLiteral(mut enum_lit) -> {
+            .EnumLiteral(enum_lit) -> {
                 enum_lit.type = .Void;
                 if sym := self.expected_type.symbol(); sym.info is .Enum(enum_info) {
                     if variant := enum_info.get_variant(enum_lit.value) {
@@ -113,8 +113,8 @@ extend Checker {
                 }
                 enum_lit.type
             },
-            .TupleLiteral(mut tuple_lit) -> self.check_tuple_literal(tuple_lit),
-            .ArrayCtor(mut array_ctor) -> {
+            .TupleLiteral(tuple_lit) -> self.check_tuple_literal(tuple_lit),
+            .ArrayCtor(array_ctor) -> {
                 if mut init_value := array_ctor.init_value {
                     init_t := self.check_expr(init_value);
                     if !self.check_compatible_types(init_t, array_ctor.elem_type) {
@@ -164,8 +164,8 @@ extend Checker {
                 };
                 array_ctor.type
             },
-            .ArrayLiteral(mut array_lit) -> self.check_array_literal(array_lit),
-            .Ident(mut ident) -> {
+            .ArrayLiteral(array_lit) -> self.check_array_literal(array_lit),
+            .Ident(ident) -> {
                 ident.type = if ident.name == "_" {
                     .Void
                 } else if ident.is_comptime {
@@ -191,8 +191,8 @@ extend Checker {
                 };
                 ident.type
             },
-            .Selector(mut selector) -> self.check_selector(selector),
-            .Indirect(mut indirect) -> {
+            .Selector(selector) -> self.check_selector(selector),
+            .Indirect(indirect) -> {
                 indirect.left_type = self.check_expr(indirect.left);
                 indirect.type = if indirect.left_type.is_pointer()
                     || (indirect.left_type is .Pointer(ptr) && !ptr.is_indexable)
@@ -215,7 +215,7 @@ extend Checker {
                 };
                 indirect.type
             },
-            .OptionCheck(mut option_check) -> {
+            .OptionCheck(option_check) -> {
             	option_check.left_type = self.check_expr(option_check.left);
                 option_check.type = if option_check.left_type is .Option(opt) {
                     opt.inner
@@ -225,7 +225,7 @@ extend Checker {
                 };
                 option_check.type
             },
-            .Range(mut range) -> {
+            .Range(range) -> {
                 range.type = if range.has_start {
                     self.check_expr(range.start)
                 } else {
@@ -241,10 +241,10 @@ extend Checker {
                 }
                 range.type
             },
-            .Index(mut index) -> self.check_index(index),
-            .Call(mut call_expr) -> self.check_call(call_expr),
-            .BuiltinCall(mut builtin_call) -> self.check_builtin_call(builtin_call),
-            .Block(mut block) -> {
+            .Index(index) -> self.check_index(index),
+            .Call(call_expr) -> self.check_call(call_expr),
+            .BuiltinCall(builtin_call) -> self.check_builtin_call(builtin_call),
+            .Block(block) -> {
                 self.defer_stmts_start = self.defer_stmts.len;
                 if block.is_unsafe {
                     if self.inside_unsafe_block {
@@ -279,11 +279,11 @@ extend Checker {
                 self.defer_stmts = self.defer_stmts[:self.defer_stmts_start].to_dynamic_array();
                 block.type
             },
-            .Unary(mut unary) -> self.check_unary(unary),
-            .Binary(mut binary) -> self.check_binary(binary),
-            .If(mut if_expr) -> self.check_if(if_expr),
-            .Match(mut match_expr) -> self.check_match(match_expr),
-            .Guard(mut guard) -> {
+            .Unary(unary) -> self.check_unary(unary),
+            .Binary(binary) -> self.check_binary(binary),
+            .If(if_expr) -> self.check_if(if_expr),
+            .Match(match_expr) -> self.check_match(match_expr),
+            .Guard(guard) -> {
                 old_inside_guard_expr := self.inside_guard_expr;
                 self.inside_guard_expr = true;
                 self.check_var_decl(guard.vars, guard.expr, guard.scope, guard.pos);
@@ -296,9 +296,9 @@ extend Checker {
                 self.inside_guard_expr = old_inside_guard_expr;
                 .Void
             },
-            .Return(mut return_expr) -> self.check_return(return_expr),
-            .Throw(mut throw_expr) -> self.check_throw(throw_expr),
-            .Assign(mut assign) -> self.check_assign(assign)
+            .Return(return_expr) -> self.check_return(return_expr),
+            .Throw(throw_expr) -> self.check_throw(throw_expr),
+            .Assign(assign) -> self.check_assign(assign)
         };
     }
 
@@ -605,7 +605,7 @@ extend Checker {
                     indexable_pointer = opt_ptr.is_indexable;
                 }
                 mut right := unary.right.clean_paren();
-                if right is .Index(mut index) {
+                if right is .Index(index) {
                     if index.left_type is .Pointer && !expected_pointer {
                         report.error("cannot take the address of a pointer indexing", unary.pos);
                     }

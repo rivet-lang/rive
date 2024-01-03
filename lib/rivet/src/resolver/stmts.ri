@@ -15,14 +15,14 @@ extend Resolver {
         match stmt {
             .Comment -> {},
             .Empty(empty_pos) -> report.error("bug: unexpected empty statement found", empty_pos),
-            .ComptimeIf(mut comptime_if) -> {
+            .ComptimeIf(comptime_if) -> {
                 mut stmts := ast.nodes_to_stmts(
                     self.env.evalue_comptime_if(comptime_if)
                 );
                 self.resolve_stmts(stmts);
             },
-            .Expr(mut expr) -> self.resolve_expr(expr),
-            .VarDecl(mut var_stmt) -> {
+            .Expr(expr) -> self.resolve_expr(expr),
+            .VarDecl(var_stmt) -> {
                 for mut left in var_stmt.lefts {
                     self.check_variable_shadowing(left.name, left.pos);
                     _ = self.resolve_type(left.type);
@@ -39,7 +39,7 @@ extend Resolver {
                 }
                 self.resolve_expr(var_stmt.right);
             },
-            .While(mut while_stmt) -> {
+            .While(while_stmt) -> {
                 if !while_stmt.is_inf {
                     self.resolve_expr(while_stmt.cond);
                 }
@@ -51,7 +51,7 @@ extend Resolver {
                     self.resolve_stmt(while_stmt.else_stmt);
                 }
             },
-            .For(mut for_stmt) -> {
+            .For(for_stmt) -> {
                 if for_stmt.has_index {
                     self.check_variable_shadowing(for_stmt.index.name, for_stmt.index.pos);
                     for_stmt.index.sym = ast.Var(
@@ -81,7 +81,7 @@ extend Resolver {
                 self.resolve_expr(for_stmt.iterable);
                 self.resolve_stmt(for_stmt.stmt);
             },
-            .Defer(mut defer_stmt) -> self.resolve_expr(defer_stmt.expr)
+            .Defer(defer_stmt) -> self.resolve_expr(defer_stmt.expr)
         }
     }
 }

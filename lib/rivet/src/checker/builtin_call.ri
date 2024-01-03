@@ -126,7 +126,7 @@ extend Checker {
             }
         } else if mut from_ts := from_type.symbol() {
             match from_ts.info {
-                .Trait(mut trait_info) -> if to_ts := to_type.symbol() {
+                .Trait(trait_info) -> if to_ts := to_type.symbol() {
                     if to_ts in trait_info.implements {
                         trait_info.mark_has_objects();
                         return;

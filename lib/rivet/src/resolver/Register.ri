@@ -42,13 +42,13 @@ pub struct Register {
 
     func walk_decl(+mut self, mut decl: +mut ast.Decl) {
         match decl {
-            .ComptimeIf(mut comptime_if_decl) -> self.comptime_if(comptime_if_decl),
+            .ComptimeIf(comptime_if_decl) -> self.comptime_if(comptime_if_decl),
             .Import(import_decl) -> self.import_decl(&import_decl),
-            .Extern(mut extern_decl) -> {
+            .Extern(extern_decl) -> {
                 self.abi = extern_decl.abi;
                 self.walk_decls(extern_decl.decls);
             },
-            .Alias(mut alias_decl) -> alias_decl.sym = self.add_sym(
+            .Alias(alias_decl) -> alias_decl.sym = self.add_sym(
                 if alias_decl.is_typealias {
                     ast.TypeSym(
                         parent: self.sym,
@@ -66,7 +66,7 @@ pub struct Register {
                     )
                 }, alias_decl.pos
             ),
-            .Trait(mut trait_decl) -> {
+            .Trait(trait_decl) -> {
                 trait_decl.sym = self.add_sym(
                     ast.TypeSym(
                         parent: self.sym,
@@ -82,7 +82,7 @@ pub struct Register {
                 self.sym = trait_decl.sym;
                 self.walk_decls(trait_decl.decls);
             },
-            .Struct(mut struct_decl) -> {
+            .Struct(struct_decl) -> {
                 struct_decl.sym = if self.is_core_mod && struct_decl.name == "string" {
                     @as(ast.Type.Basic, self.env.string_t).sym
                 } else {
@@ -102,7 +102,7 @@ pub struct Register {
                 self.sym = struct_decl.sym;
                 self.walk_decls(struct_decl.decls);
             },
-            .Enum(mut enum_decl) -> {
+            .Enum(enum_decl) -> {
                 info := ast.TypeInfo.Enum(
                     underlying_type: enum_decl.underlying_type,
                     is_tagged: enum_decl.is_tagged,
@@ -177,7 +177,7 @@ pub struct Register {
                     is_required: field_decl.attributes.has("required")
                 ));
             },
-            .Const(mut const_decl) -> const_decl.sym = self.add_sym(+mut ast.Const(
+            .Const(const_decl) -> const_decl.sym = self.add_sym(+mut ast.Const(
                 parent: self.sym,
                 is_public: const_decl.is_public,
                 abi: self.abi,
@@ -185,7 +185,7 @@ pub struct Register {
                 expr: const_decl.expr,
                 type: const_decl.type
             ), const_decl.pos),
-            .Var(mut var_decl) -> {
+            .Var(var_decl) -> {
                 for mut left in var_decl.lefts {
                     left.sym = ast.Var(
                         parent: self.sym,
@@ -202,7 +202,7 @@ pub struct Register {
                     };
                 }
             },
-            .Extend(mut extend_decl) -> if extend_decl.type is .Basic(mut basic_type) {
+            .Extend(extend_decl) -> if extend_decl.type is .Basic(basic_type) {
                 if type_sym := basic_type.sym {
                     self.sym = type_sym;
                     if type_sym.is_primitive()
@@ -210,7 +210,7 @@ pub struct Register {
                         report.error("cannot extend primitive types", extend_decl.pos);
                     }
                 } else {
-                    if basic_type.expr is .Ident(mut ident) {
+                    if basic_type.expr is .Ident(ident) {
                         self.sym = if type_sym := self.sym.scope.find(ident.name) {
                             type_sym
                         } else {
@@ -239,7 +239,7 @@ pub struct Register {
                     extend_decl.pos
                 );
             },
-            .Func(mut func_decl) -> func_decl.sym = self.add_sym(+mut ast.Func(
+            .Func(func_decl) -> func_decl.sym = self.add_sym(+mut ast.Func(
                 parent: self.sym,
                 abi: func_decl.abi,
                 is_public: func_decl.is_public,
