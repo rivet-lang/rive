@@ -73,7 +73,7 @@ pub enum TypeInfo < traits.Stringable {
             if type_sym !in self.implements {
                 self.implements.push(type_sym);
                 for b in self.bases {
-                    @as(+mut TypeInfo.Trait, b.info).implement(type_sym);
+                    @as(TypeInfo.Trait, b.info).implement(type_sym);
                 }
             }
         }
@@ -145,8 +145,8 @@ pub enum TypeInfo < traits.Stringable {
     };
 
     #[inline]
-    pub func elem_type(self) -> ?+Type {
-        return match self {
+    pub func elem_type(&self) -> ?+Type {
+        return match self.* {
             .Slice(slice) -> slice.elem_type,
             .Array(arr) -> arr.elem_type,
             .DynArray(vec) -> vec.elem_type,
@@ -155,8 +155,8 @@ pub enum TypeInfo < traits.Stringable {
     }
 
     #[inline]
-    pub func is_mut_array(self) -> bool {
-        return match self {
+    pub func is_mut_array(&self) -> bool {
+        return match self.* {
             .Slice(slice) -> slice.is_mut,
             .Array(arr) -> arr.is_mut,
             .DynArray(vec) -> vec.is_mut,
@@ -165,15 +165,16 @@ pub enum TypeInfo < traits.Stringable {
     }
 
     #[inline]
-    pub func is_primitive(self) -> bool {
-        return self is .Bool || self is .Rune || self is .SizedInt || self is .SizedUint
-            || self is .Uint || self is .Int || self is .ComptimeInt
-            || self is .ComptimeFloat || self is .ComptimeFloat || self is .Float;
+    pub func is_primitive(&self) -> bool {
+        return self.* is .Bool || self.* is .Rune || self.* is .SizedInt
+            || self.* is .SizedUint || self.* is .Uint || self.* is .Int
+            || self.* is .ComptimeInt || self.* is .ComptimeFloat
+            || self.* is .ComptimeFloat || self.* is .Float;
     }
 
     #[inline]
-    pub func is_compound(self) -> bool {
-        return self is .Struct || self is .Trait || self is .Enum || self is .Tuple;
+    pub func is_compound(&self) -> bool {
+        return self.* is .Struct || self.* is .Trait || self.* is .Enum || self.* is .Tuple;
     }
 
     #[inline]

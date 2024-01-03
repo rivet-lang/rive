@@ -370,8 +370,10 @@ class Option(TBase):
         self.sym = None
 
     def is_pointer(self):
-        return self.typ.__class__ in (Ptr, Func,
-                                      Boxedptr) or self.typ.symbol().is_boxed()
+        if isinstance(self.typ, Type) and self.typ.is_boxed:
+            return True
+        tsym = self.typ.symbol()
+        return self.typ.__class__ in (Ptr, Func, Boxedptr) or tsym.is_boxed()
 
     def qualstr(self):
         return f"?{self.typ.qualstr()}"
