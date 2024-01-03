@@ -21,7 +21,7 @@ extend Parser {
                         arg_pos := self.tok.pos;
                         is_mut := self.accept(.KwMut);
                         arg_type := self.parse_type();
-                        args.push(ast.Arg(
+                        args.push(+mut ast.Arg(
                             name: "arg{}".fmt(args.len),
                             is_mut: is_mut,
                             type: arg_type,
@@ -37,7 +37,7 @@ extend Parser {
                 ret_type := if self.accept(.Arrow) {
                     self.parse_type()
                 } else {
-                    .Void
+                    +mut .Void
                 };
                 +mut .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos)
             },
@@ -58,20 +58,20 @@ extend Parser {
                         // indexable pointers
                         self.expect(.Rbracket);
                         is_mut := self.accept(.KwMut);
-                        .Pointer(
+                        +mut .Pointer(
                             self.parse_type(), is_mut, true, pos: pos + self.prev_tok.pos
                         )
                     } else if self.accept(.Colon) {
                         // slice
                         self.expect(.Rbracket);
                         is_mut := self.accept(.KwMut);
-                        .Slice(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
+                        +mut .Slice(self.parse_type(), is_mut, pos: pos + self.prev_tok.pos)
                     } else {
                         // array
                         size := self.parse_expr();
                         self.expect(.Rbracket);
                         is_mut := self.accept(.KwMut);
-                        .Array(self.parse_type(), is_mut, size, pos: pos + self.prev_tok.pos)
+                        +mut .Array(self.parse_type(), is_mut, size, pos: pos + self.prev_tok.pos)
                     }
                 } else {
                     self.expect(.Rbracket);
@@ -109,12 +109,12 @@ extend Parser {
                 is_boxed := self.accept(.Plus);
                 is_mut := is_boxed && self.accept(.KwMut);
                 if self.accept(.KwSelfTy) {
-                    return .Basic(
+                    return +mut .Basic(
                         expr: +mut ast.Expr.SelfTy(self.scope, self.prev_tok.pos),
                         is_unresolved: true, is_boxed: is_boxed, is_mut: is_mut
                     );
                 }
-                mut expr := self.parse_ident();
+                expr := self.parse_ident();
                 if self.accept(.Dot) {
                     expr = self.parse_selector_expr(expr);
                     while self.accept(.Dot) {
@@ -160,7 +160,7 @@ extend Parser {
             else -> {
                 report.error("expected type, found {}".fmt(self.tok), pos);
                 self.next();
-                +mut .Basic(expr: .Empty(pos), is_unresolved: true)
+                +mut .Basic(expr: +mut .Empty(pos), is_unresolved: true)
             }
         };
     }

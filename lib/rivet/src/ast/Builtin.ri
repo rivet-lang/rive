@@ -42,7 +42,7 @@ struct BuiltinArg {
     pub name: string;
     pub is_mut: bool;
     pub is_any: bool; // any type
-    pub type: +Type;
+    pub type: +mut Type;
     pub is_optional: bool;
 }
 

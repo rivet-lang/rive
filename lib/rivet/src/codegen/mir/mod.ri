@@ -58,7 +58,7 @@ pub struct ModuleIR < traits.Stringable {
 #[boxed]
 pub struct Field {
     pub name: string;
-    pub type: +Type;
+    pub type: +mut Type;
 }
 
 #[boxed]
@@ -92,7 +92,7 @@ pub struct Struct < traits.Stringable {
 pub struct Global < traits.Stringable {
     pub is_extern: bool;
     pub name: string;
-    pub type: +Type;
+    pub type: +mut Type;
     pub fields: []+Var;
 
     pub func to_string(+self) -> string {
@@ -114,14 +114,14 @@ pub struct VTable {
 pub struct Func < traits.Stringable {
     pub name: string;
     pub mut args_len: uint;
-    pub ret_type: +Type;
+    pub ret_type: +mut Type;
     pub is_variadic: bool;
     pub is_extern: bool;
     pub mut locals: []+Var;
     pub mut blocks: []+Block;
     pub mut cur_block: +Block;
 
-    pub func make_tmp(+mut self, type: +Type) -> +Var {
+    pub func make_tmp(+mut self, type: +mut Type) -> +Var {
         tmp := Var(self.locals.len, level: .Temporal, type: type);
         self.locals.push(tmp);
         return tmp;
@@ -200,8 +200,8 @@ pub enum VarLevel {
 pub struct Var {
     pub mut id: uint;
     pub dbg_name: string;
-    pub level: +VarLevel;
-    pub type: +Type;
+    pub level: VarLevel;
+    pub type: +mut Type;
     pub mut value: ?+Expr; // comptime value
     pub mut is_moved: bool;
     pub mut is_dropped: bool;

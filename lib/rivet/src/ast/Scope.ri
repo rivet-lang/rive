@@ -115,7 +115,7 @@ pub struct Scope {
         return self.parent == none || self.detached_from_parent;
     }
 
-    pub func update_type(+self, name: string, type: +Type) {
+    pub func update_type(+self, name: string, type: +mut Type) {
         if mut sym := self.lookup(name) {
             if sym is Var(mut var_info) {
                 var_info.type = type;

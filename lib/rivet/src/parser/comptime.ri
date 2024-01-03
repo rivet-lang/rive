@@ -50,7 +50,7 @@ extend Parser {
             if self.accept(.KwElse) && self.tok.kind != .KwIf {
                 branches.push(
                     ast.ComptimeIfBranch(
-                        .Empty(self.tok.pos), nodes: self.parse_nodes(level),
+                        +mut .Empty(self.tok.pos), nodes: self.parse_nodes(level),
                         is_else: true, pos: branch_pos + self.prev_tok.pos
                     )
                 );

@@ -448,7 +448,7 @@ extend Parser {
     }
 
     func parse_func_decl(
-        mut self, docs: []ast.Comment, attributes: ast.Attributes,
+        +mut self, docs: []ast.Comment, attributes: ast.Attributes,
         is_public: bool, is_unsafe: bool, abi: ast.ABI
     ) -> +mut ast.Decl {
         mut is_operator := false;
@@ -473,7 +473,7 @@ extend Parser {
 
         self.inside_func = true;
         self.open_scope();
-        mut sc := self.scope;
+        sc := self.scope;
         sc.detached_from_parent = true;
         self.expect(.Lparen);
         if self.tok.kind != .Rparen {

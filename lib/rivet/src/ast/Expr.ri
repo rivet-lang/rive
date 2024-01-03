@@ -16,14 +16,14 @@ pub enum Expr < traits.Stringable {
         mut type: +mut Type;
 
         pub func clean_paren(&self) -> +mut Expr {
-            mut res := self.expr;
+            res := self.expr;
             while res is .Paren(paren) {
                 res = paren.expr;
             }
             return res;
         }
     },
-    Type(+Type),
+    Type(+mut Type),
     Assign {
         left: +mut Expr;
         op: token.Kind;
@@ -625,7 +625,7 @@ pub struct CallArg {
     pub mut expr: +mut Expr;
     pub is_named: bool;
     pub pos: token.Pos;
-    pub mut type: +Type;
+    pub mut type: +mut Type;
 }
 
 pub struct CallErrorHandler {
@@ -645,18 +645,18 @@ pub struct IfBranch {
     pub is_else: bool;
     pub is_else_if: bool;
     pub pos: token.Pos;
-    pub mut type: +Type;
+    pub mut type: +mut Type;
 }
 
 pub struct MatchBranch {
     pub mut patterns: []+mut Expr;
     pub mut branch_var: ?+ObjectData;
     pub has_cond: bool;
-    pub mut var_type: +Type;
+    pub mut var_type: +mut Type;
     pub mut cond: +mut Expr;
     pub mut expr: +mut Expr;
     pub is_else: bool;
     pub pos: token.Pos;
     pub mut scope: +Scope;
-    pub mut type: +Type;
+    pub mut type: +mut Type;
 }

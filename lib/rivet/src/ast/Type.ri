@@ -493,7 +493,7 @@ extend Env {
         return type == self.comptime_int_t || type == self.comptime_float_t;
     }
 
-    pub func comptime_number_to_type(+self, type: +mut Type) -> +Type {
+    pub func comptime_number_to_type(+self, type: +mut Type) -> +mut Type {
         return if type == self.comptime_int_t {
             self.int_t
         } else if type == self.comptime_float_t {

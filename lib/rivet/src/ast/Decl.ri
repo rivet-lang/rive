@@ -24,7 +24,7 @@ pub enum Decl {
         name: string;
         parent: +mut Expr;
         is_typealias: bool;
-        mut parent_type: +Type;
+        mut parent_type: +mut Type;
         pos: token.Pos;
         mut sym: Sym;
     },
@@ -33,7 +33,7 @@ pub enum Decl {
         attributes: Attributes;
         is_public: bool;
         name: string;
-        mut bases: []+Type;
+        mut bases: []+mut Type;
         mut decls: []+mut Decl;
         pos: token.Pos;
         mut sym: Sym;
@@ -43,8 +43,8 @@ pub enum Decl {
         attributes: Attributes;
         is_public: bool;
         name: string;
-        mut underlying_type: +Type;
-        mut bases: []+Type;
+        mut underlying_type: +mut Type;
+        mut bases: []+mut Type;
         mut variants: []mut EnumVariantDecl;
         is_tagged: bool;
         mut decls: []+mut Decl;
@@ -56,7 +56,7 @@ pub enum Decl {
         attributes: Attributes;
         is_public: bool;
         name: string;
-        mut bases: []+Type;
+        mut bases: []+mut Type;
         mut decls: []+mut Decl;
         is_opaque: bool;
         pos: token.Pos;
@@ -68,15 +68,15 @@ pub enum Decl {
         is_public: bool;
         is_mut: bool;
         name: string;
-        mut type: +Type;
+        mut type: +mut Type;
         mut def_expr: +mut Expr;
         has_def_expr: bool;
         pos: token.Pos;
     },
     Extend {
         attributes: Attributes;
-        mut type: +Type;
-        mut bases: []+Type;
+        mut type: +mut Type;
+        mut bases: []+mut Type;
         mut decls: []+mut Decl;
         pos: token.Pos;
     },
@@ -86,7 +86,7 @@ pub enum Decl {
         is_public: bool;
         name: string;
         has_type: bool;
-        mut type: +Type;
+        mut type: +mut Type;
         mut expr: +mut Expr;
         pos: token.Pos;
         mut sym: Sym;
@@ -118,14 +118,14 @@ pub enum Decl {
         name: string;
         mut args: []+Arg;
         has_named_args: bool;
-        mut ret_type: +Type;
+        mut ret_type: +mut Type;
         mut stmts: []+mut Stmt;
         mut scope: +Scope;
         has_body: bool;
         self_is_ptr: bool;
         self_is_boxed: bool;
         self_is_mut: bool;
-        mut self_type: +Type;
+        mut self_type: +mut Type;
         pos: token.Pos;
         self_pos: token.Pos;
         mut sym: Sym;

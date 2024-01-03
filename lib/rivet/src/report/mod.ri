@@ -40,7 +40,7 @@ pub func total_warns() -> uint {
 
 #[boxed]
 struct ReportTable {
-    pub prefs: +prefs.Prefs;
+    pub prefs: +mut prefs.Prefs;
     pub mut errors: uint;
     pub mut warns: uint;
 

@@ -27,8 +27,8 @@ pub struct ObjectData {
     pub is_mut: bool;
     pub is_ref: bool;
     pub has_type: bool;
-    pub mut type: +Type;
-    pub level: +VarLevel;
+    pub mut type: +mut Type;
+    pub level: VarLevel;
     pub pos: token.Pos;
     pub mut sym: +Var;
     pub is_extern: bool;
