@@ -76,8 +76,8 @@ extend Parser {
         };
     }
 
-    func parse_decls(+mut self) -> []+ast.Decl {
-        mut decls := []+ast.Decl();
+    func parse_decls(+mut self) -> []+mut ast.Decl {
+        mut decls := []+mut ast.Decl();
         while self.tok.kind != .EndOfFile {
             decls.push(self.parse_decl());
         }
@@ -107,7 +107,7 @@ extend Parser {
                 self.inside_extern = true;
                 // extern function or var
                 abi := self.parse_abi();
-                mut decls := []+ast.Decl();
+                mut decls := []+mut ast.Decl();
                 if self.accept(.Lbrace) {
                     if is_public {
                         report.error("`extern` blocks cannot be declared public", pos);
@@ -228,7 +228,7 @@ extend Parser {
                         }
                     }
                 }
-                mut decls := []+ast.Decl();
+                mut decls := []+mut ast.Decl();
                 self.expect(.Lbrace);
                 while !self.accept(.Rbrace) {
                     decls.push(self.parse_decl());
@@ -252,7 +252,7 @@ extend Parser {
                 name := self.parse_name();
                 is_opaque := self.accept(.Semicolon);
                 mut bases := []+mut ast.Type();
-                mut decls := []+ast.Decl();
+                mut decls := []+mut ast.Decl();
                 if !is_opaque {
                     if self.accept(.Lt) {
                         while {
@@ -306,7 +306,7 @@ extend Parser {
                     mut has_value := false;
                     mut v_type := ast.Type.Void;
                     mut value := ast.Expr.Empty(self.tok.pos);
-                    mut variant_decls := []+ast.Decl();
+                    mut variant_decls := []+mut ast.Decl();
                     if self.accept(.Lbrace) {
                         has_type = true;
                         is_tagged = true;
@@ -338,7 +338,7 @@ extend Parser {
                         break;
                     }
                 }
-                mut decls := []+ast.Decl();
+                mut decls := []+mut ast.Decl();
                 if self.accept(.Semicolon) {
                     while self.tok.kind != .Rbrace {
                         decls.push(self.parse_decl());
@@ -395,7 +395,7 @@ extend Parser {
                 }
 
                 self.expect(.Lbrace);
-                mut decls := []+ast.Decl();
+                mut decls := []+mut ast.Decl();
                 while !self.accept(.Rbrace) {
                     decls.push(self.parse_decl());
                 }

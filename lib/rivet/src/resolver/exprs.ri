@@ -5,7 +5,7 @@
 import ../{ ast, report, token };
 
 extend Resolver {
-    func resolve_expr(mut self, mut expr: +mut ast.Expr) {
+    func resolve_expr(+mut self, mut expr: +mut ast.Expr) {
         match expr {
             .Empty(empty_pos) -> report.error("bug: unexpected empty expression found", empty_pos),
             .ComptimeIf(mut comptime_if) -> {
@@ -20,13 +20,13 @@ extend Resolver {
             .Selector(mut selector) -> self.resolve_selector(selector),
             .Indirect(mut indirect) -> self.resolve_expr(indirect.left),
             .OptionCheck(mut option_check) -> self.resolve_expr(option_check.left),
-            .SelfTy(mut self_ty) -> if self.self_sym_is_set {
+            .SelfTy(self_ty) -> if self.self_sym_is_set {
                 self_ty.sym = self.self_sym;
                 self_ty.found = true;
             } else {
                 report.error("cannot resolve `Self` expression", self_ty.pos);
             },
-            .SelfLiteral(mut self_lit) -> if self.self_sym_is_set {
+            .SelfLiteral(self_lit) -> if self.self_sym_is_set {
                 self_lit.sym = self.self_sym;
                 self_lit.found = true;
                 self_lit.obj = @as(+mut ast.Var, self_lit.scope.lookup("self")?);
@@ -217,7 +217,7 @@ extend Resolver {
         }
     }
 
-    func resolve_ident(mut self, mut ident: +mut ast.Expr.Ident) {
+    func resolve_ident(+mut self, mut ident: +mut ast.Expr.Ident) {
         if ident.name == "_" {
             ident.found = true;
             ident.is_obj = true;
@@ -289,7 +289,7 @@ extend Resolver {
         }
     }
 
-    func resolve_selector(mut self, mut selector: +mut ast.Expr.Selector) {
+    func resolve_selector(+mut self, mut selector: +mut ast.Expr.Selector) {
         self.resolve_expr(selector.left);
         match selector.left {
             .SelfTy(self_ty) if self_ty.found -> {
@@ -323,7 +323,7 @@ extend Resolver {
         }
     }
 
-    func find_symbol(mut self, mut sym: ast.Sym, name: string, pos: token.Pos) -> ?ast.Sym {
+    func find_symbol(+mut self, mut sym: ast.Sym, name: string, pos: token.Pos) -> ?ast.Sym {
         mut sym_ := sym;
         if sym is ast.SymRef(mut sym_ref) {
             sym_ = self.clean_symbol_reference(sym_ref);
@@ -358,7 +358,7 @@ extend Resolver {
         return none;
     }
 
-    func clean_symbol_reference(mut self, mut sym_ref: +mut ast.SymRef) -> ast.Sym {
+    func clean_symbol_reference(+mut self, mut sym_ref: +mut ast.SymRef) -> ast.Sym {
         if !sym_ref.ref_resolved {
             self.resolve_expr(sym_ref.ref_expr);
             if sym_ref.ref_expr is .Ident(ident) && ident.found && ident.is_sym {
@@ -376,7 +376,7 @@ extend Resolver {
         return sym_ref.ref;
     }
 
-    func check_symbol_abi(mut self, sym: ast.Sym, pos: token.Pos) {
+    func check_symbol_abi(+mut self, sym: ast.Sym, pos: token.Pos) {
         if sym.abi != .Rivet {
             if self.source_file_abi == sym.abi {
                 self.different_abi_usage_count += 1;

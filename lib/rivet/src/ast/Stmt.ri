@@ -12,16 +12,16 @@ pub enum Stmt {
     Expr(+Expr),
     VarDecl {
         mut lefts: []+ObjectData;
-        mut right: +Expr;
+        mut right: +mut Expr;
         mut scope: +Scope;
         pos: token.Pos;
     },
     While {
-        mut cond: +Expr;
-        mut continue_expr: +Expr;
+        mut cond: +mut Expr;
+        mut continue_expr: +mut Expr;
         has_continue_expr: bool;
-        mut stmt: +Stmt;
-        mut else_stmt: +Stmt;
+        mut stmt: +mut Stmt;
+        mut else_stmt: +mut Stmt;
         has_else_stmt: bool;
         is_inf: bool;
         pos: token.Pos;
@@ -30,8 +30,8 @@ pub enum Stmt {
         mut index: +ObjectData;
         has_index: bool;
         mut values: []+ObjectData;
-        mut iterable: +Expr;
-        mut stmt: +Stmt;
+        mut iterable: +mut Expr;
+        mut stmt: +mut Stmt;
         mut scope: +Scope;
         pos: token.Pos;
     },
@@ -42,7 +42,7 @@ pub enum Stmt {
             Success
         }
 
-        mut expr: +Expr;
+        mut expr: +mut Expr;
         mode: Mode;
         pos: token.Pos;
     };

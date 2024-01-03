@@ -39,9 +39,9 @@ pub struct Checker {
     mut unsafe_operations: uint;
 
     mut defer_stmts_start: uint;
-    mut defer_stmts: []+ast.Stmt.Defer;
+    mut defer_stmts: []+mut ast.Stmt.Defer;
 
-    pub func check_files(mut self, mut source_files: []+mut ast.SourceFile) {
+    pub func check_files(+mut self, mut source_files: []+mut ast.SourceFile) {
         // check global variables
         for mut source_file in source_files {
             self.sym = source_file.mod;
@@ -303,7 +303,7 @@ pub struct Checker {
         };
     }
 
-    func inside_unsafe(mut self) -> bool {
+    func inside_unsafe(+mut self) -> bool {
         self.unsafe_operations += 1;
         return self.inside_unsafe_block;
     }

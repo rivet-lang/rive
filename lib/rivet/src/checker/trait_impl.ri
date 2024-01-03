@@ -5,7 +5,7 @@
 import ../{ ast, token, report };
 
 extend Checker {
-    func check_trait_impl(mut self, impltor: +mut ast.TypeSym, trait_sym: +mut ast.TypeSym, pos: token.Pos) {
+    func check_trait_impl(+mut self, impltor: +mut ast.TypeSym, trait_sym: +mut ast.TypeSym, pos: token.Pos) {
         mut impl_does_not_implemented := []string();
         for sym in trait_sym.scope.syms {
             if sym is ast.Func(trait_func) {

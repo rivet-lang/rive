@@ -15,7 +15,7 @@ pub struct AttributeDuplicatedError < Throwable {
 
 pub struct AttributeArgument {
     pub name: string;
-    pub expr: +Expr;
+    pub expr: +mut Expr;
     pub is_named: bool;
 }
 

@@ -6,7 +6,7 @@ import ./mir as _;
 import ../ast;
 
 extend Codegen {
-    func gen_stmts(mut self, stmts: []+ast.Stmt) {
+    func gen_stmts(mut self, stmts: []+mut ast.Stmt) {
         for stmt in stmts {
             self.gen_stmt(stmt);
         }

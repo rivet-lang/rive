@@ -5,7 +5,7 @@
 import ../{ ast, token };
 
 extend Formatter {
-    func format_decls(mut self, decls: []+ast.Decl, is_root: bool := false) {
+    func format_decls(mut self, decls: []+mut ast.Decl, is_root: bool := false) {
         mut prev_decl := if decls.len > 0 {
             decls[0]
         } else {

@@ -262,7 +262,7 @@ pub enum Expr < traits.Stringable {
         scope: +mut Scope;
         pos: token.Pos;
         mut type: +mut Type;
-        mut defer_stmts: []+Stmt.Defer;
+        mut defer_stmts: []+mut Stmt.Defer;
     },
     ComptimeIf(ComptimeIf),
     If {
@@ -622,7 +622,7 @@ pub enum Expr < traits.Stringable {
 
 pub struct CallArg {
     pub name: string;
-    pub mut expr: +Expr;
+    pub mut expr: +mut Expr;
     pub is_named: bool;
     pub pos: token.Pos;
     pub mut type: +Type;
@@ -633,15 +633,15 @@ pub struct CallErrorHandler {
     pub varname_pos: token.Pos;
     pub has_varname: bool;
     pub is_propagate: bool;
-    pub mut expr: +Expr;
+    pub mut expr: +mut Expr;
     pub has_expr: bool;
     pub mut scope: +Scope;
     pub pos: token.Pos;
 }
 
 pub struct IfBranch {
-    pub mut cond: +Expr;
-    pub mut expr: +Expr;
+    pub mut cond: +mut Expr;
+    pub mut expr: +mut Expr;
     pub is_else: bool;
     pub is_else_if: bool;
     pub pos: token.Pos;
@@ -649,12 +649,12 @@ pub struct IfBranch {
 }
 
 pub struct MatchBranch {
-    pub mut patterns: []+Expr;
+    pub mut patterns: []+mut Expr;
     pub mut branch_var: ?+ObjectData;
     pub has_cond: bool;
     pub mut var_type: +Type;
-    pub mut cond: +Expr;
-    pub mut expr: +Expr;
+    pub mut cond: +mut Expr;
+    pub mut expr: +mut Expr;
     pub is_else: bool;
     pub pos: token.Pos;
     pub mut scope: +Scope;

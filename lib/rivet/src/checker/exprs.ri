@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Checker {
-    func check_expr(mut self, mut expr: +mut ast.Expr) -> +mut ast.Type {
+    func check_expr(+mut self, mut expr: +mut ast.Expr) -> +mut ast.Type {
         return match expr {
             .Empty, .Comment -> .Void,
             .Type(type) -> type,
@@ -73,7 +73,7 @@ extend Checker {
                 };
                 string_lit.type
             },
-            .SelfLiteral(mut self_lit) -> {
+            .SelfLiteral(self_lit) -> {
                 self_lit.type = self_lit.obj.type;
                 self_lit.type
             },
@@ -302,7 +302,7 @@ extend Checker {
         };
     }
 
-    func check_tuple_literal(mut self, mut tuple_lit: +mut ast.Expr.TupleLiteral) -> +mut ast.Type {
+    func check_tuple_literal(+mut self, mut tuple_lit: +mut ast.Expr.TupleLiteral) -> +mut ast.Type {
         old_expected_type := self.expected_type;
         mut has_expected_types := false;
         mut expected_types := []+ast.Type();
@@ -332,7 +332,7 @@ extend Checker {
         return tuple_lit.type;
     }
 
-    func check_array_literal(mut self, mut array_lit: +mut ast.Expr.ArrayLiteral) -> +mut ast.Type {
+    func check_array_literal(+mut self, mut array_lit: +mut ast.Expr.ArrayLiteral) -> +mut ast.Type {
         old_expected_type := self.expected_type;
         mut size: uint := 0;
         mut is_mut := false;
@@ -391,7 +391,7 @@ extend Checker {
         return array_lit.type;
     }
 
-    func check_selector(mut self, mut selector: +mut ast.Expr.Selector) -> +mut ast.Type {
+    func check_selector(+mut self, mut selector: +mut ast.Expr.Selector) -> +mut ast.Type {
         selector.type = if selector.is_path {
             if selector.left_sym is ast.TypeSym(type_sym) {
                 if type_sym.info is .Enum(enum_info) {
@@ -500,7 +500,7 @@ extend Checker {
         return selector.type;
     }
 
-    func check_index(mut self, mut index: +mut ast.Expr.Index) -> +mut ast.Type {
+    func check_index(+mut self, mut index: +mut ast.Expr.Index) -> +mut ast.Type {
         index.left_type = self.check_expr(index.left);
         left_sym := index.left_type.symbol()?;
         index_t := self.check_expr(index.index);
@@ -564,7 +564,7 @@ extend Checker {
         return index.type;
     }
 
-    func check_unary(mut self, mut unary: +mut ast.Expr.Unary) -> +mut ast.Type {
+    func check_unary(+mut self, mut unary: +mut ast.Expr.Unary) -> +mut ast.Type {
         unary.type = self.check_expr(unary.right);
         match unary.op {
             .Bang if unary.type != self.env.bool_t -> report.error(
@@ -628,7 +628,7 @@ extend Checker {
         return unary.type;
     }
 
-    func check_binary(mut self, mut binary: +mut ast.Expr.Binary) -> +mut ast.Type {
+    func check_binary(+mut self, mut binary: +mut ast.Expr.Binary) -> +mut ast.Type {
         left_type := self.check_expr(binary.left);
         old_expected_type := self.expected_type;
         self.expected_type = left_type;
@@ -870,7 +870,7 @@ extend Checker {
         return binary.type;
     }
 
-    func check_if(mut self, mut if_expr: +mut ast.Expr.If) -> +mut ast.Type {
+    func check_if(+mut self, mut if_expr: +mut ast.Expr.If) -> +mut ast.Type {
         if_expr.expected_type = self.expected_type;
         for i, mut branch in if_expr.branches {
             if !branch.is_else {
@@ -906,7 +906,7 @@ extend Checker {
         return if_expr.expected_type;
     }
 
-    func check_return(mut self, mut return_expr: +mut ast.Expr.Return) -> +mut ast.Type {
+    func check_return(+mut self, mut return_expr: +mut ast.Expr.Return) -> +mut ast.Type {
         if self.cur_func.ret_type is .Never {
             report.error("`never` functions cannot use `return` statements", return_expr.pos);
         } else if self.return_tracker == .Defer {
@@ -955,7 +955,7 @@ extend Checker {
         return .Never(return_expr.pos);
     }
 
-    func check_throw(mut self, mut throw_expr: +mut ast.Expr.Throw) -> +mut ast.Type {
+    func check_throw(+mut self, mut throw_expr: +mut ast.Expr.Throw) -> +mut ast.Type {
         if self.cur_func.ret_type is .Never {
             report.error("`never` functions cannot use `throw` statements", throw_expr.pos);
         } else if self.return_tracker == .Defer {
@@ -994,7 +994,7 @@ extend Checker {
         return .Never(throw_expr.pos);
     }
 
-    func check_assign(mut self, mut assign: +mut ast.Expr.Assign) -> +mut ast.Type {
+    func check_assign(+mut self, mut assign: +mut ast.Expr.Assign) -> +mut ast.Type {
         left_type := self.check_expr(assign.left);
         self.check_expr_is_mut(assign.left, true);
         old_expected_type := self.expected_type;

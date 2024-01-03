@@ -7,9 +7,9 @@ import std/{ traits, strings };
 #[boxed]
 pub struct Block < traits.Stringable {
     mut id: uint;
-    mut stmts: []+Stmt;
+    mut stmts: []+mut Stmt;
 
-    pub func add_stmt(mut self, stmt: +Stmt) {
+    pub func add_stmt(mut self, stmt: +mut Stmt) {
         self.stmts.push(stmt);
     }
 
@@ -27,23 +27,23 @@ pub struct Block < traits.Stringable {
 pub enum Stmt < traits.Stringable {
     Expr(+Expr),
     Assign {
-        left: +Expr;
-        right: +Expr;
+        left: +mut Expr;
+        right: +mut Expr;
     },
     Discard(+Expr),
     Goto(string),
     GotoIf {
         label: string;
-        cond: +Expr;
+        cond: +mut Expr;
     },
     GotoIfElse {
         label: string;
-        cond: +Expr;
+        cond: +mut Expr;
         label2: string;
     },
     Return {
         has_expr: bool;
-        expr: +Expr := .Empty;
+        expr: +mut Expr := .Empty;
     };
 
     pub func to_string(&self) -> string {

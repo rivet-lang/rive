@@ -1782,7 +1782,7 @@ class Checker:
 
             if arg_fn.is_mut and not isinstance(
                 arg_fn.typ, type.Ptr
-            ) and not arg_fn.typ.symbol().is_primitive():
+            ) and arg_fn.typ.symbol().kind in (TypeKind.Trait, TypeKind.DynArray):
                 self.check_expr_is_mut(arg.expr)
 
             if not (

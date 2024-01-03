@@ -18,17 +18,17 @@ pub enum Expr < traits.Stringable {
         type: +Type;
     },
     ArrayConst {
-        elems: []+Expr;
+        elems: []+mut Expr;
         type: +Type;
     },
     Const {
-        expr: +Expr;
+        expr: +mut Expr;
         type: +Type;
     },
     Name(string),
     Ident(+Var),
     Selector {
-        left: +Expr;
+        left: +mut Expr;
         name: string;
         var_: +Var;
         type: +Type;
@@ -77,12 +77,12 @@ pub enum Expr < traits.Stringable {
         }
 
         op: Op;
-        args: []+Expr;
+        args: []+mut Expr;
         type: +Type;
     },
     Call {
-        func_: +Expr;
-        args: []+Expr;
+        func_: +mut Expr;
+        args: []+mut Expr;
         type: +Type;
     };
 

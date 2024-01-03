@@ -17,8 +17,8 @@ pub struct DepGraph {
     pub mut nodes: []DepGraphNode;
 
     #[inline]
-    pub func new() -> +Self {
-        return +Self(true, []DepGraphNode(cap: 1024));
+    pub func new() -> +mut Self {
+        return +mut Self(true, []DepGraphNode(cap: 1024));
     }
 
     #[inline]

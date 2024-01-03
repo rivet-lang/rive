@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Resolver {
-    func resolve_decls(mut self, mut decls: []+mut ast.Decl) {
+    func resolve_decls(+mut self, mut decls: []+mut ast.Decl) {
         for mut decl in decls {
             old_sym := self.sym;
             old_self_sym := self.self_sym;

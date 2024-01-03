@@ -12,7 +12,7 @@ pub enum Type < traits.Stringable {
     Basic {
         mut sym: ?+mut TypeSym;
         mut is_unresolved: bool;
-        mut expr: +Expr;
+        mut expr: +mut Expr;
         is_boxed: bool;
         is_mut: bool;
         pos: token.Pos;
@@ -78,7 +78,7 @@ pub enum Type < traits.Stringable {
     Array {
         inner: +mut Type;
         is_mut: bool;
-        mut size: +Expr;
+        mut size: +mut Expr;
         mut size_value: uint;
         mut sym: +mut TypeSym;
         pos: token.Pos;

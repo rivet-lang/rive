@@ -15,7 +15,7 @@ struct IncompatibleTypesError < Throwable {
 
 extend Checker {
     func check_argument_type(
-        self, got: +mut ast.Type, expected: +mut ast.Type, pos: token.Pos, arg_name: string,
+        +self, got: +mut ast.Type, expected: +mut ast.Type, pos: token.Pos, arg_name: string,
         func_kind: string, func_name: string
     ) {
         if mut expected_sym := expected.symbol(); expected_sym.info is .Trait(mut trait_info)
@@ -45,7 +45,7 @@ extend Checker {
         }
     }
 
-    func check_types(self, got: +mut ast.Type, expected: +mut ast.Type) -> ! {
+    func check_types(+self, got: +mut ast.Type, expected: +mut ast.Type) -> ! {
         if !self.check_compatible_types(got, expected) {
             got_str := if got is .None {
                 if expected is .Option {
@@ -72,7 +72,7 @@ extend Checker {
         }
     }
 
-    func check_compatible_types(self, got: +mut ast.Type, expected: +mut ast.Type) -> bool {
+    func check_compatible_types(+self, got: +mut ast.Type, expected: +mut ast.Type) -> bool {
         if got is .Never {
             return true;
         } else if (expected is .Never && got is .Void)

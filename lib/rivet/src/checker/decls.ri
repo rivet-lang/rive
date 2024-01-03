@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Checker {
-    func check_global_vars(mut self, mut decls: []+mut ast.Decl) {
+    func check_global_vars(+mut self, mut decls: []+mut ast.Decl) {
         for mut decl in decls {
             old_sym := self.sym;
             if decl is .Const || decl is .Var {
@@ -17,7 +17,7 @@ extend Checker {
         }
     }
 
-    func check_decls(mut self, mut decls: []+mut ast.Decl) {
+    func check_decls(+mut self, mut decls: []+mut ast.Decl) {
         for mut decl in decls {
             if !(decl is .Const || decl is .Var) {
                 self.check_decl(decl);
@@ -25,7 +25,7 @@ extend Checker {
         }
     }
 
-    func check_decl(mut self, mut decl: +mut ast.Decl) {
+    func check_decl(+mut self, mut decl: +mut ast.Decl) {
         old_sym := self.sym;
         defer self.sym = old_sym;
         match decl {
@@ -171,7 +171,7 @@ extend Checker {
         }
     }
 
-    func check_func(mut self, mut func_decl: +mut ast.Decl.Func) {
+    func check_func(+mut self, mut func_decl: +mut ast.Decl.Func) {
         if !func_decl.is_operator {
             name := if func_decl.is_method && func_decl.is_special_method {
                 func_decl.name.substr(2, func_decl.name.len - 2) // skip `__`

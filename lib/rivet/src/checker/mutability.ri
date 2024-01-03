@@ -5,10 +5,10 @@
 import ../{ ast, token, report };
 
 extend Checker {
-    func check_expr_is_mut(self, mut expr: +mut ast.Expr, from_assign: bool := false) {
+    func check_expr_is_mut(self, expr: +mut ast.Expr, from_assign: bool := false) {
         match expr {
             .Paren(mut paren) -> self.check_expr_is_mut(paren.expr),
-            .SelfLiteral(mut self_lit) -> self_lit.obj.is_changed = true,
+            .SelfLiteral(self_lit) -> self_lit.obj.is_changed = true,
             .Ident(mut ident) -> if ident.is_comptime {
                 report.error(
                     "cannot use constant `@{}` as mutable value".fmt(ident.name),

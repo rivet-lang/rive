@@ -27,7 +27,7 @@ pub enum CImportAction {
     },
     Define {
         name: string;
-        value: +Expr;
+        value: +mut Expr;
         pos: token.Pos;
     },
     Undefine {

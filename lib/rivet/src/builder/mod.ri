@@ -137,7 +137,7 @@ pub struct Builder {
     }
 
     func import_modules(&mut self) -> ! {
-        for mut sf in self.env.source_files {
+        for sf in self.env.source_files {
             self.import_modules_from_decls(sf, sf.decls)!;
         }
         self.vlog("loaded modules...");
@@ -148,12 +148,12 @@ pub struct Builder {
     }
 
     func import_modules_from_decls(
-        mut self, sf: +mut ast.SourceFile, decls: []+ast.Decl
+        mut self, sf: +mut ast.SourceFile, decls: []+mut ast.Decl
     ) -> ! {
-        for mut decl in decls {
-            if decl is .Import(mut import_decl) {
+        for decl in decls {
+            if decl is .Import(import_decl) {
                 self.import_module(sf, import_decl)!;
-            } else if decl is .ComptimeIf(mut comptime_if) {
+            } else if decl is .ComptimeIf(comptime_if) {
                 mut ct_decls := ast.nodes_to_decls(
                     self.env.evalue_comptime_if(comptime_if)
                 );
@@ -162,9 +162,9 @@ pub struct Builder {
         }
     }
 
-    func import_module(&mut self, sf: +ast.SourceFile, import_decl: +ast.ImportDecl) -> ! {
+    func import_module(&mut self, sf: +ast.SourceFile, import_decl: &mut ast.ImportDecl) -> ! {
         if !import_decl.subimports.is_empty() {
-            for mut subimport in import_decl.subimports {
+            for &mut subimport in import_decl.subimports {
                 self.import_module(sf, subimport)!;
             }
             return;
@@ -181,8 +181,8 @@ pub struct Builder {
 
     func load_module(
         mut self, path: string, alias_name: string, file_path: string, pos: token.Pos
-    ) -> !+ast.ImportedMod {
-        mut mod := self.load_module_files(alias_name, path, file_path)!;
+    ) -> !ast.ImportedMod {
+        mod := self.load_module_files(alias_name, path, file_path)!;
         if mod.found {
              if mod.files.is_empty() {
                 self.vlog("        > module contains no rivet files", path);
@@ -190,9 +190,9 @@ pub struct Builder {
             } else {
                 self.vlog("    module `{}` loaded", path);
                 mod.mod = if mod_mod_ := self.env.universe.scope.find(mod.full_name) {
-                    @as(+ast.Module, mod_mod_)
+                    @as(+mut ast.Module, mod_mod_)
                 } else {
-                    mod_sym := ast.Module(name: mod.full_name);
+                    mod_sym := +mut ast.Module(name: mod.full_name);
                     self.env.universe.scope.add(mod_sym) catch |err| {
                         report.error(err.to_string(), pos)
                     };
@@ -207,7 +207,7 @@ pub struct Builder {
         return mod;
     }
 
-    func load_module_files(&self, alias_name: string, path: string, file_path: string) -> !+ast.ImportedMod {
+    func load_module_files(&self, alias_name: string, path: string, file_path: string) -> !ast.ImportedMod {
         self.vlog("Builder.load_module_files: searching module `{}`", path);
         mut found := false;
         mut name := "";
@@ -287,7 +287,7 @@ pub struct Builder {
                 }
             }
         }
-        return +ast.ImportedMod(
+        return ast.ImportedMod(
             found: found,
             name: name,
             alias_name: if alias_name.is_empty() { name } else { alias_name },
@@ -325,8 +325,8 @@ pub struct Builder {
     }
 
     func import_graph(&mut self) -> +depgraph.DepGraph {
-        mut g := depgraph.DepGraph.new();
-        for mut pf in self.env.source_files {
+        g := depgraph.DepGraph.new();
+        for pf in self.env.source_files {
             mut deps := []string();
             if pf.mod.name !in ["c.ctypes", "c.libc", "c", "core", "core.mem"] {
                 deps.push("core");
@@ -337,8 +337,8 @@ pub struct Builder {
         return g;
     }
 
-    func import_graph_decls(&mut self, pf: +mut ast.SourceFile, deps: []string, decls: []+ast.Decl) {
-        for mut d in decls {
+    func import_graph_decls(&mut self, pf: +mut ast.SourceFile, mut deps: []string, decls: []+mut ast.Decl) {
+        for d in decls {
             if d is .Import(import_decl) {
                 if import_decl.subimports.len > 0 {
                     for subimport in import_decl.subimports {
@@ -349,8 +349,8 @@ pub struct Builder {
                 } else if dep := import_graph_mod(&import_decl, pf) {
                     deps.push(dep);
                 }
-            } else if d is .ComptimeIf(mut comptime_if) {
-                mut ct_decls := ast.nodes_to_decls(self.env.evalue_comptime_if(comptime_if));
+            } else if d is .ComptimeIf(comptime_if) {
+                ct_decls := ast.nodes_to_decls(self.env.evalue_comptime_if(comptime_if));
                 self.import_graph_decls(pf, deps, ct_decls);
             }
         }
