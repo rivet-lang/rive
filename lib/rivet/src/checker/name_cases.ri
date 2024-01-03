@@ -25,8 +25,10 @@ extend Checker {
 
     #[inline]
     func check_name_case(+self, case: NameCase, kind: string, name: string, pos: token.Pos) {
-        if !(self.inside_extern || name == "_" || name == "string"
-            || self.sym.module()?.name in ["c.libc", "c.ctypes"]) {
+        if mod := self.sym.module(); mod.name in ["c.libc", "c.ctypes"] {
+            return;
+        }
+        if !(self.inside_extern || name == "_" || name == "string") {
             is_valid := match case {
                 .Snake -> utils.is_snake_case(name),
                 .Camel -> utils.is_camel_case(name),
