@@ -5,7 +5,7 @@
 import ./prefs.Prefs;
 import ./builder.Builder;
 
-pub func compile(prefs: +Prefs) -> ! {
+pub func compile(prefs: +mut Prefs) -> ! {
     mut builder := Builder.new(prefs);
     builder.run()!;
 }

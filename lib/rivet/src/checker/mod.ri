@@ -196,7 +196,7 @@ pub struct Checker {
         }
     }
 
-    func check_scope_vars(self, scope: +mut ast.Scope) {
+    func check_scope_vars(+self, scope: +mut ast.Scope) {
         if !self.inside_extern {
             for sym in scope.syms {
                 if sym is ast.Var(var_info) {
@@ -248,7 +248,7 @@ pub struct Checker {
         }
     }
 
-    func check_expr_evaluated_but_not_used(self, expr_type: +mut ast.Type, pos: token.Pos) {
+    func check_expr_evaluated_but_not_used(+self, expr_type: +mut ast.Type, pos: token.Pos) {
         _ = self;
         if !((expr_type is .Result(res) && !res.inner.is_void())
             || (expr_type is .Option(opt) && !opt.inner.is_void())
@@ -257,7 +257,7 @@ pub struct Checker {
         }
     }
 
-    func has_return(self, mut stmts: []+mut ast.Stmt, allow_throw: bool := false) -> bool {
+    func has_return(+self, mut stmts: []+mut ast.Stmt, allow_throw: bool := false) -> bool {
         for mut stmt in stmts {
             if stmt is .Expr(expr) && self.expr_has_return(expr, allow_throw) {
                 return true;
@@ -269,7 +269,7 @@ pub struct Checker {
         return false;
     }
 
-    func expr_has_return(self, mut expr: +mut ast.Expr, allow_throw: bool := false) -> bool {
+    func expr_has_return(+self, mut expr: +mut ast.Expr, allow_throw: bool := false) -> bool {
         return match expr {
             .ComptimeIf(comptime_if) -> {
                 mut ct_expr := ast.nodes_to_exprs(self.env.evalue_comptime_if(comptime_if))[0];

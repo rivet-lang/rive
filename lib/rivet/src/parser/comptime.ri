@@ -17,11 +17,11 @@ extend Parser {
                 mut decls := []+mut ast.Node();
                 if self.accept(.Lbrace) {
                     while self.tok.kind != .Rbrace {
-                        decls.push(.Decl(self.parse_decl()))
+                        decls.push(+mut .Decl(self.parse_decl()))
                     }
                     self.expect(.Rbrace);
                 } else {
-                    decls.push(.Decl(self.parse_decl()))
+                    decls.push(+mut .Decl(self.parse_decl()))
                 }
                 decls
             },
@@ -29,15 +29,15 @@ extend Parser {
                 mut stmts := []+mut ast.Node();
                 if self.accept(.Lbrace) {
                     while self.tok.kind != .Rbrace {
-                        stmts.push(.Stmt(self.parse_stmt()));
+                        stmts.push(+mut .Stmt(self.parse_stmt()));
                     }
                     self.expect(.Rbrace);
                 } else {
-                    stmts.push(.Stmt(self.parse_stmt()));
+                    stmts.push(+mut .Stmt(self.parse_stmt()));
                 }
                 stmts
             },
-            .Expr -> +[.Expr(self.parse_expr())]
+            .Expr -> +[+mut .Expr(self.parse_expr())]
         };
     }
 

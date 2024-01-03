@@ -15,7 +15,7 @@ extend Codegen {
     func gen_stmt(mut self, stmt: +mut ast.Stmt) {
         match stmt {
             .Expr(expr) -> {
-                self.cur_func.cur_block.add_stmt(.Expr(self.gen_expr(expr)));
+                self.cur_func.cur_block.add_stmt(+mut .Expr(self.gen_expr(expr)));
             },
             else -> {}
         }

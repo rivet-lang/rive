@@ -95,7 +95,7 @@ extend Checker {
             }
             self.check_stmt(for_stmt.stmt);
         } else {
-            mut err := report.error_builder(
+            err := report.error_builder(
                 "`{}` is not an iterable type".fmt(iterable_t),
                 for_stmt.iterable.position()
             );

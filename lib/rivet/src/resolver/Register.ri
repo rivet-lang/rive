@@ -371,13 +371,13 @@ pub struct Register {
     func check_imported_symbol(+self, name: string, pos: token.Pos, is_import: bool) -> bool {
         if self.source_file.imported_symbols.exists(name) {
             if is_import {
-                mut err := report.error_builder(
+                err := report.error_builder(
                     "another symbol with the name `{}` is already imported".fmt(name), pos
                 );
                 err.add_help("change the name of the import with `as` (`x as y`)");
                 err.emit();
             } else {
-                mut err := report.error_builder(
+                err := report.error_builder(
                     "duplicate symbol `{}` in {} `{}`".fmt(
                         name, self.sym.type_of(), self.sym.name
                     ), pos
@@ -387,7 +387,7 @@ pub struct Register {
             }
             return false;
         } else if is_import && self.source_file.mod.scope.exists(name) {
-            mut err := report.error_builder(
+            err := report.error_builder(
                 "another symbol with the name `{}` already exists".fmt(name), pos
             );
             err.add_help("change the name of the import with `as` (`x as y`)");

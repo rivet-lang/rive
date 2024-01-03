@@ -155,7 +155,7 @@ pub struct Builder {
             if decl is .Import(&mut import_decl) {
                 self.import_module(sf, import_decl)!;
             } else if decl is .ComptimeIf(comptime_if) {
-                mut ct_decls := ast.nodes_to_decls(
+                ct_decls := ast.nodes_to_decls(
                     self.env.evalue_comptime_if(comptime_if)
                 );
                 self.import_modules_from_decls(sf, ct_decls)!;

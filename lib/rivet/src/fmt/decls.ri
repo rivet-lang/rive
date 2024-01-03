@@ -15,7 +15,7 @@ extend Formatter {
             self.indent += 1;
         }
         for decl in decls {
-            if self.should_insert_newline_before_node(.Decl(decl), .Decl(prev_decl)) {
+            if self.should_insert_newline_before_node(+mut .Decl(decl), .Decl(prev_decl)) {
                 self.writeln();
             }
             self.format_decl(decl);

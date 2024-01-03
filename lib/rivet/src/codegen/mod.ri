@@ -94,7 +94,7 @@ pub struct Codegen {
         return new_mir;
     }
 
-    func prefix_type(self, type: +mut ast.Type) -> string {
+    func prefix_type(+self, type: +mut ast.Type) -> string {
         mut sb := strings.Builder.new();
         match type {
             .Pointer(ptr) -> {
@@ -113,7 +113,7 @@ pub struct Codegen {
         return sb.to_string();
     }
 
-    func mangle_type(self, type: +mut ast.Type) -> string {
+    func mangle_type(+self, type: +mut ast.Type) -> string {
         return match type {
             .Void -> "4void",
             .Rawptr -> "6rawptr",
@@ -152,7 +152,7 @@ pub struct Codegen {
         };
     }
 
-    func mangle_symbol(self, mut sym: ast.Sym, insert_r: bool := true) -> string {
+    func mangle_symbol(+self, mut sym: ast.Sym, insert_r: bool := true) -> string {
         if sym.mangled_name.len > 0 {
             return sym.mangled_name;
         }

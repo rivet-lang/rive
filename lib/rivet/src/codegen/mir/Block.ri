@@ -9,11 +9,11 @@ pub struct Block < traits.Stringable {
     mut id: uint;
     mut stmts: []+mut Stmt;
 
-    pub func add_stmt(mut self, stmt: +mut Stmt) {
+    pub func add_stmt(+mut self, stmt: +mut Stmt) {
         self.stmts.push(stmt);
     }
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         mut sb := strings.Builder.new();
         sb.writeln_fmt("@b{} {{", self.id);
         for stmt in self.stmts {

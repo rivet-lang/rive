@@ -5,7 +5,7 @@
 import ../{ ast, token, report };
 
 extend Checker {
-    func check_expr_is_mut(self, expr: +mut ast.Expr, from_assign: bool := false) {
+    func check_expr_is_mut(+self, expr: +mut ast.Expr, from_assign: bool := false) {
         match expr {
             .Paren(paren) -> self.check_expr_is_mut(paren.expr),
             .SelfLiteral(self_lit) -> self_lit.obj.is_changed = true,
@@ -120,7 +120,7 @@ extend Checker {
                 if var_info.is_mut {
                     var_info.is_changed = true;
                 } else {
-                    mut err := if var_info.level == .Argument {
+                    err := if var_info.level == .Argument {
                         mut err_b := report.error_builder(
                             "cannot use variable `{}` as mutable argument".fmt(sym.name), pos
                         );

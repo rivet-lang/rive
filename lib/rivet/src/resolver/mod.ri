@@ -54,7 +54,7 @@ pub struct Resolver {
         }
     }
 
-    func check_vis(self, sym: ast.Sym, pos: token.Pos) {
+    func check_vis(+self, sym: ast.Sym, pos: token.Pos) {
         if !sym.is_public && !self.source_file.mod.has_access_to(sym) {
             report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
         }
@@ -133,7 +133,7 @@ pub struct Resolver {
         return none;
     }
 
-    func check_variable_shadowing(self, name: string, pos: token.Pos) {
+    func check_variable_shadowing(+self, name: string, pos: token.Pos) {
         if self.source_file.imported_symbols.exists(name) {
             report.error(
                 "name `{}` hide an imported symbol".fmt(name), pos

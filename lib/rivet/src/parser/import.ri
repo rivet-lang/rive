@@ -153,7 +153,7 @@ extend Parser {
                 lbrace_pos += self.tok.pos;
                 self.expect(.Rbrace);
                 if import_list.len == 1 {
-                    mut warn := report.warn_builder("unnecessary use of braces", lbrace_pos);
+                    warn := report.warn_builder("unnecessary use of braces", lbrace_pos);
                     warn.add_help("consider removing those braces");
                     warn.emit();
                 }
@@ -175,7 +175,7 @@ extend Parser {
             } else if self.accept(.Mul) {
                 glob = true;
             } else {
-                mut err := report.error_builder(
+                err := report.error_builder(
                     "invalid syntax for unqualified import", mod_path_pos
                 );
                 err.add_note("expected a single name, a list of names or `*`");

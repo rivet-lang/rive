@@ -8,7 +8,7 @@ import ../{ ast, token, report };
 struct IncompatibleTypesError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub func to_string(+self) -> string {
         return self.msg;
     }
 }
@@ -24,7 +24,7 @@ extend Checker {
             if got_t.symbol()? in trait_info.implements {
                 trait_info.mark_has_objects();
             } else {
-                mut err := report.error_builder(
+                err := report.error_builder(
                     "type `{}` does not implement trait `{}`".fmt(
                         got_t, expected_sym.name
                     ), pos

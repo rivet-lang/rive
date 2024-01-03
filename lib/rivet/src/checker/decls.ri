@@ -235,7 +235,7 @@ extend Checker {
             }
         }
         if func_decl.ret_type is .Pointer && func_decl.abi != .Rivet {
-            mut err := report.error_builder(
+            err := report.error_builder(
                 "function `{}` should return an optional pointer".fmt(func_decl.name),
                 func_decl.ret_type.position()
             );
@@ -276,7 +276,7 @@ extend Checker {
                                 );
                             }
                         } else {
-                            mut err := report.error_builder(
+                            err := report.error_builder(
                                 "`never` functions cannot return",
                                 func_decl.pos
                             );
@@ -285,7 +285,7 @@ extend Checker {
                         }
                     },
                     else -> {
-                        mut err := report.error_builder(
+                        err := report.error_builder(
                             "`never` functions cannot return",
                             func_decl.pos
                         );
@@ -294,7 +294,7 @@ extend Checker {
                     }
                 }
             } else {
-                mut err := report.error_builder(
+                err := report.error_builder(
                     "`never` functions cannot be empty",
                     func_decl.pos
                 );
