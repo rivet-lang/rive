@@ -2010,7 +2010,21 @@ class Checker:
         return expected.typ == got.typ
 
     def check_expr_is_mut(self, expr, from_assign = False):
-        if isinstance(expr, ast.ParExpr):
+        if isinstance(expr.typ, type.Ptr):
+            if not expr.typ.is_mut:
+                report.error(
+                    "cannot modify elements of an immutable pointer",
+                    expr.pos
+                )
+            return
+        elif isinstance(expr.typ, type.Type) and expr.typ.is_boxed:
+            if not expr.typ.is_mut:
+                report.error(
+                    "cannot use a immutable boxed value as mutable value",
+                    expr.pos
+                )
+            return
+        elif isinstance(expr, ast.ParExpr):
             self.check_expr_is_mut(expr.expr)
         elif isinstance(expr, ast.Ident):
             if expr.is_comptime:

@@ -15,7 +15,7 @@ pub struct Register {
     mut sym: ast.Sym := ast.InvalidSym();
     mut source_file: +mut ast.SourceFile;
 
-    pub func walk_files(+mut self, source_files: []+ast.SourceFile) {
+    pub func walk_files(+mut self, source_files: []+mut ast.SourceFile) {
         for sf in source_files {
             self.is_core_mod = sf.mod.is_core();
             if !self.core_is_set && self.is_core_mod {

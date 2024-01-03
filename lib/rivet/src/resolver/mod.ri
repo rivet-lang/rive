@@ -25,7 +25,7 @@ pub struct Resolver {
     mut source_file_abi: ast.ABI;
     mut different_abi_usage_count: uint;
 
-    pub func resolve_files(+mut self, source_files: []+ast.SourceFile) {
+    pub func resolve_files(+mut self, source_files: []+mut ast.SourceFile) {
         Register(self.env).walk_files(source_files);
         if report.total_errors() > 0 {
             return;

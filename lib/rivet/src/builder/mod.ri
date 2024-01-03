@@ -17,7 +17,7 @@ pub struct Builder {
     mut checker: +mut checker.Checker;
     mut codegen: +mut codegen.Codegen;
 
-    pub func new(prefs_: +prefs.Prefs) -> Self {
+    pub func new(prefs_: +mut prefs.Prefs) -> Self {
         env := ast.Env.new(prefs_);
         return Self(
             env: env,
@@ -88,7 +88,8 @@ pub struct Builder {
     }
 
     func parse_files(&mut self, mod_sym: +mut ast.Module, files: []string) {
-        for sf in parser.Parser(env: self.env).parse_module(mod_sym, files) {
+        parser_ := +mut parser.Parser(env: self.env);
+        for sf in parser_.parse_module(mod_sym, files) {
             self.env.source_files.push(sf);
         }
         if report.total_errors() > 0 {
@@ -129,7 +130,7 @@ pub struct Builder {
                 self.vlog("   > {}", file);
             }
         }
-        root_sym := ast.Module(name: self.env.prefs.mod_name, is_root: true);
+        root_sym := +mut ast.Module(name: self.env.prefs.mod_name, is_root: true);
         self.env.universe.scope.add(root_sym) catch |err| utils.error(
             "Builder.load_root_module: {}", err
         );
@@ -151,7 +152,7 @@ pub struct Builder {
         mut self, sf: +mut ast.SourceFile, decls: []+mut ast.Decl
     ) -> ! {
         for decl in decls {
-            if decl is .Import(import_decl) {
+            if decl is .Import(&mut import_decl) {
                 self.import_module(sf, import_decl)!;
             } else if decl is .ComptimeIf(comptime_if) {
                 mut ct_decls := ast.nodes_to_decls(
@@ -162,7 +163,7 @@ pub struct Builder {
         }
     }
 
-    func import_module(&mut self, sf: +ast.SourceFile, import_decl: &mut ast.ImportDecl) -> ! {
+    func import_module(&mut self, sf: +mut ast.SourceFile, import_decl: &mut ast.ImportDecl) -> ! {
         if !import_decl.subimports.is_empty() {
             for &mut subimport in import_decl.subimports {
                 self.import_module(sf, subimport)!;
@@ -356,7 +357,7 @@ pub struct Builder {
         }
     }
 
-    func import_graph_mod(import_decl: &ast.ImportDecl, pf: +ast.SourceFile) -> ?string {
+    func import_graph_mod(import_decl: &ast.ImportDecl, pf: +mut ast.SourceFile) -> ?string {
         if !import_decl.info.found {
             return none; // module not found
         }
