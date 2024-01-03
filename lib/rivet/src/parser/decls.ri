@@ -14,7 +14,7 @@ extend Parser {
     }
 
     pub func parse_attributes(+mut self, parse_mod_attributes: bool := false) -> ast.Attributes {
-        mut attributes := ast.Attributes();
+        attributes := ast.Attributes();
         while self.accept(.Hash) {
             if parse_mod_attributes {
                 self.expect(.Bang);
@@ -89,17 +89,17 @@ extend Parser {
         is_mod_attr := self.tok.kind == .Hash && self.peek_tok.kind == .Bang;
         attributes := self.parse_attributes(is_mod_attr);
         if is_mod_attr {
-            return .Empty(self.tok.pos);
+            return +mut .Empty(self.tok.pos);
         }
         is_public := self.is_public();
         mut pos := self.tok.pos;
         match {
-            self.tok.kind == .Comment -> return .Comment(self.parse_comment()),
+            self.tok.kind == .Comment -> return +mut .Comment(self.parse_comment()),
             self.accept(.Dollar) -> match self.tok.kind {
-                .KwIf -> return .ComptimeIf(self.parse_comptime_if(.Decl)),
+                .KwIf -> return +mut .ComptimeIf(self.parse_comptime_if(.Decl)),
                 else -> {
                     report.error("invalid comptime construction", self.tok.pos);
-                    return .Empty(self.tok.pos);
+                    return +mut .Empty(self.tok.pos);
                 }
             },
             self.accept(.KwImport) -> return self.parse_import_decl(attributes, is_public, pos),
@@ -125,13 +125,13 @@ extend Parser {
                 }
                 pos += self.prev_tok.pos;
                 self.inside_extern = false;
-                return .Extern(doc_comment, attributes, abi, decls, pos)
+                return +mut .Extern(doc_comment, attributes, abi, decls, pos)
             },
             self.accept(.KwAlias) -> {
                 name := self.parse_name();
                 self.expect(.DeclAssign);
-                mut parent := ast.Expr.Empty(self.tok.pos);
-                mut parent_type := ast.Type.Void;
+                mut parent := +mut ast.Expr.Empty(self.tok.pos);
+                mut parent_type := +mut ast.Type.Void;
                 mut is_typealias := false;
                 if self.tok.kind != .Name && self.tok.kind.is_start_of_type() {
                     is_typealias = true;
@@ -147,7 +147,7 @@ extend Parser {
                 }
                 pos += self.prev_tok.pos;
                 self.expect(.Semicolon);
-                return .Alias(
+                return +mut .Alias(
                     doc_comment,
                     attributes,
                     is_public,
@@ -164,13 +164,13 @@ extend Parser {
                 type := if has_type {
                     self.parse_type()
                 } else {
-                    .Void
+                    +mut .Void
                 };
                 pos += self.prev_tok.pos;
                 self.expect(.DeclAssign);
                 expr := self.parse_expr();
                 self.expect(.Semicolon);
-                return .Const(
+                return +mut +mut .Const(
                     doc_comment,
                     attributes,
                     is_public,
@@ -199,10 +199,10 @@ extend Parser {
                 right := if !self.inside_extern && self.accept(.DeclAssign) {
                     self.parse_expr()
                 } else {
-                    .Empty(self.tok.pos)
+                    +mut .Empty(self.tok.pos)
                 };
                 self.expect(.Semicolon);
-                return .Var(
+                return +mut .Var(
                     doc_comment,
                     attributes,
                     is_public,
@@ -235,7 +235,7 @@ extend Parser {
                 }
                 pos += self.prev_tok.pos;
                 self.inside_trait = prev_inside_trait;
-                return .Trait(
+                return +mut .Trait(
                     doc_comment,
                     attributes,
                     is_public,
@@ -269,7 +269,7 @@ extend Parser {
                 }
                 pos += self.prev_tok.pos;
                 self.inside_struct = prev_inside_struct;
-                return .Struct(
+                return +mut .Struct(
                     doc_comment,
                     attributes,
                     is_public,
@@ -304,8 +304,8 @@ extend Parser {
                     v_name := self.parse_name();
                     mut has_type := false;
                     mut has_value := false;
-                    mut v_type := ast.Type.Void;
-                    mut value := ast.Expr.Empty(self.tok.pos);
+                    mut v_type := +mut ast.Type.Void;
+                    mut value := +mut ast.Expr.Empty(self.tok.pos);
                     mut variant_decls := []+mut ast.Decl();
                     if self.accept(.Lbrace) {
                         has_type = true;
@@ -346,7 +346,7 @@ extend Parser {
                 }
                 pos += self.tok.pos;
                 self.expect(.Rbrace);
-                return .Enum(
+                return +mut .Enum(
                     doc_comment, attributes, is_public, name, underlying_type,
                     bases, variants, is_tagged, decls, pos
                 );
@@ -363,11 +363,11 @@ extend Parser {
                 def_expr := if has_def_expr {
                     self.parse_expr()
                 } else {
-                    .Empty(self.tok.pos)
+                    +mut .Empty(self.tok.pos)
                 };
                 pos += self.prev_tok.pos;
                 self.expect(.Semicolon);
-                return .Field(
+                return +mut .Field(
                     doc_comment,
                     attributes,
                     is_public,
@@ -402,7 +402,7 @@ extend Parser {
                 pos += self.prev_tok.pos;
 
                 self.inside_extend = prev_inside_extend;
-                return .Extend(
+                return +mut .Extend(
                     attributes,
                     type,
                     bases,
@@ -420,7 +420,7 @@ extend Parser {
                 self.expect(.String);
                 self.inside_func = true;
                 self.open_scope();
-                mut sc := self.scope;
+                sc := self.scope;
                 sc.detached_from_parent = true;
                 mut stmts := []+mut ast.Stmt();
                 self.expect(.Lbrace);
@@ -429,7 +429,7 @@ extend Parser {
                 }
                 self.close_scope();
                 self.inside_func = false;
-                return .Test(
+                return +mut .Test(
                     doc_comment,
                     attributes,
                     name,
@@ -444,7 +444,7 @@ extend Parser {
             },
             else -> {}
         }
-        return .Empty(pos);
+        return +mut .Empty(pos);
     }
 
     func parse_func_decl(
@@ -511,9 +511,9 @@ extend Parser {
                         has_named_args = true;
                         self.parse_expr()
                     } else {
-                        .Empty(self.tok.pos)
+                        +mut .Empty(self.tok.pos)
                     };
-                    args.push(ast.Arg(
+                    args.push(+mut ast.Arg(
                         name: arg_name,
                         is_mut: arg_is_mut,
                         type: arg_type,
@@ -529,7 +529,7 @@ extend Parser {
         }
         self.expect(.Rparen);
 
-        mut ret_type := ast.Type.Void;
+        mut ret_type := +mut ast.Type.Void;
         ret_t_pos := self.tok.pos;
         if self.accept(.Arrow) {
             is_result := self.accept(.Bang);
@@ -541,7 +541,7 @@ extend Parser {
                 ret_type = self.parse_type();
             }
             if is_result {
-                ret_type = .Result(ret_type, ret_t_pos + self.prev_tok.pos);
+                ret_type = +mut .Result(ret_type, ret_t_pos + self.prev_tok.pos);
             }
         }
 
@@ -558,7 +558,7 @@ extend Parser {
         self.close_scope();
         self.inside_func = false;
         is_main := self.mod_sym.is_root && self.mod_sym.name != "core" && name == "main";
-        return .Func(
+        return +mut .Func(
             docs: docs,
             abi: abi,
             attributes: attributes,

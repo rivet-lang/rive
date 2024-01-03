@@ -8,8 +8,8 @@ import ../{ ast, report, token };
 
 extend Parser {
     #[inline]
-    func parse_import_decl(+mut self, attributes: ast.Attributes, is_public: bool, mut pos: token.Pos) -> +mut ast.Decl {
-        return .Import(self.parse_import("", attributes, is_public, pos));
+    func parse_import_decl(+mut self, attributes: ast.Attributes, is_public: bool, pos: token.Pos) -> +mut ast.Decl {
+        return +mut .Import(self.parse_import("", attributes, is_public, pos));
     }
 
     func parse_import(
@@ -43,7 +43,7 @@ extend Parser {
                         pos: pos
                     ));
                 } else {
-                    mut subimport_pos := self.tok.pos;
+                    subimport_pos := self.tok.pos;
                     subimports.push(self.parse_import(mod_path, attributes, is_public, subimport_pos));
                 }
                 if !self.accept(.Comma) {

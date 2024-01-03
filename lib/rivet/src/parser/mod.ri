@@ -52,11 +52,11 @@ pub struct Parser {
         self.file_dir = Path.dir_name(file) ?? file;
         self.tokenizer = tokenizer.Tokenizer.from_file(file, self.env);
         if report.total_errors() > 0 {
-            return ast.SourceFile(file, +[], self.mod_sym);
+            return +mut ast.SourceFile(file, +[], self.mod_sym);
         }
         self.advance(2);
         pos := self.tok.pos;
-        return ast.SourceFile(file, self.parse_decls(), self.mod_sym, pos: pos + self.prev_tok.pos);
+        return +mut ast.SourceFile(file, self.parse_decls(), self.mod_sym, pos: pos + self.prev_tok.pos);
     }
 
     func next(+mut self) {
@@ -109,7 +109,7 @@ pub struct Parser {
     }
 
     func open_scope(+mut self) {
-        self.scope = ast.Scope(
+        self.scope = +mut ast.Scope(
             start: self.tok.pos.pos,
             parent: self.scope,
             is_local: self.inside_func
@@ -118,7 +118,7 @@ pub struct Parser {
 
     func close_scope(+mut self) {
         self.scope.end = self.tok.pos.pos;
-        if mut parent := self.scope.parent {
+        if parent := self.scope.parent {
             parent.childrens.push(self.scope);
             self.scope = parent;
         }
@@ -135,9 +135,9 @@ pub struct Parser {
         (type, has_type) := if support_type && self.accept(.Colon) {
             (self.parse_type(), true)
         } else {
-            (ast.Type.Void, false)
+            (+mut ast.Type.Void, false)
         };
-        return ast.ObjectData(
+        return +mut ast.ObjectData(
             name, is_mut, is_ref, has_type, type, .Local, pos + self.prev_tok.pos,
             is_extern: self.inside_extern, is_global: inside_global
         );

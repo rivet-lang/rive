@@ -831,6 +831,8 @@ class Codegen:
                         self.ir_type(expr.typ), obj_f,
                         ir.Name(f"v{variant_idx}")
                     )
+                    if isinstance(tmp_t, ir.Pointer):
+                        value = ir.Inst(ir.InstKind.GetPtr, [value], tmp_t)
                     self.cur_func.inline_alloca(tmp_t, tmp, value)
                     return ir.Ident(tmp_t, tmp)
                 tmp = self.cur_func.local_name()

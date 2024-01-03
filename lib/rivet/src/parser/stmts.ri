@@ -9,21 +9,21 @@ extend Parser {
         return match {
             self.tok.kind == .Comment -> .Comment(self.parse_comment()),
             self.accept(.Dollar) -> match self.tok.kind {
-                .KwIf -> .ComptimeIf(self.parse_comptime_if(.Stmt)),
+                .KwIf -> +mut .ComptimeIf(self.parse_comptime_if(.Stmt)),
                 else -> {
                     report.error("invalid comptime construction", self.tok.pos);
-                    .Empty(self.tok.pos)
+                    +mut .Empty(self.tok.pos)
                 }
             },
             self.accept(.KwWhile) -> {
                 pos := self.prev_tok.pos;
                 mut is_inf := false;
-                mut cond := ast.Expr.Empty(self.tok.pos);
+                mut cond := +mut ast.Expr.Empty(self.tok.pos);
                 mut has_continue_expr := false;
-                mut continue_expr := ast.Expr.Empty(self.tok.pos);
+                mut continue_expr := +mut ast.Expr.Empty(self.tok.pos);
                 if self.tok.kind == .Lbrace {
                     is_inf = true;
-                    cond = .BoolLiteral(true, self.prev_tok.pos);
+                    cond = +mut .BoolLiteral(true, self.prev_tok.pos);
                 } else {
                     cond = if self.decl_operator_is_used() {
                         self.open_scope();
@@ -46,9 +46,9 @@ extend Parser {
                     has_else_stmt = true;
                     self.parse_stmt()
                 } else {
-                    .Empty(self.tok.pos)
+                    +mut .Empty(self.tok.pos)
                 };
-                .While(
+                +mut .While(
                     cond, continue_expr, has_continue_expr, stmt, else_stmt,
                     has_else_stmt, is_inf, pos + self.prev_tok.pos
                 )
@@ -59,7 +59,7 @@ extend Parser {
                 sc := self.scope;
                 // single or 2 variables
                 mut has_index := false;
-                mut index := ast.ObjectData();
+                mut index := +mut ast.ObjectData();
                 if self.peek_token(1).kind == .Comma {
                     has_index = true;
                     index = self.parse_var_decl(support_mut: false, support_type: false);
@@ -83,7 +83,7 @@ extend Parser {
                 iterable := self.parse_expr();
                 stmt := self.parse_stmt();
                 self.close_scope();
-                .For(
+                +mut .For(
                     index: index, has_index: has_index, values: values,
                     iterable: iterable, stmt: stmt, pos: pos + self.prev_tok.pos,
                     scope: sc
@@ -112,7 +112,7 @@ extend Parser {
                 if !(expr is .If || expr is .Match || expr is .Block) {
                     self.expect(.Semicolon);
                 }
-                .Defer(expr, defer_mode, pos)
+                +mut .Defer(expr, defer_mode, pos)
             },
             self.tok.kind in [.Lparen, .KwMut, .Name]
                 && self.peek_tok.kind !in [.Dot, .Lbracket, .Lparen]
@@ -136,7 +136,7 @@ extend Parser {
                 right := self.parse_expr();
                 pos += self.prev_tok.pos;
                 self.expect(.Semicolon);
-                .VarDecl(lefts, right, self.scope, pos)
+                +mut .VarDecl(lefts, right, self.scope, pos)
             },
             else -> {
                 expr := self.parse_expr();
@@ -144,7 +144,7 @@ extend Parser {
                     || (expr is .If || expr is .Match || expr is .Block)) {
                     self.expect(.Semicolon);
                 }
-                .Expr(expr)
+                +mut .Expr(expr)
             }
         };
     }

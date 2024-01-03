@@ -2010,21 +2010,7 @@ class Checker:
         return expected.typ == got.typ
 
     def check_expr_is_mut(self, expr, from_assign = False):
-        if isinstance(expr.typ, type.Ptr):
-            if not expr.typ.is_mut:
-                report.error(
-                    "cannot modify elements of an immutable pointer",
-                    expr.pos
-                )
-            return
-        elif isinstance(expr.typ, type.Type) and expr.typ.is_boxed:
-            if not expr.typ.is_mut:
-                report.error(
-                    "cannot use a immutable boxed value as mutable value",
-                    expr.pos
-                )
-            return
-        elif isinstance(expr, ast.ParExpr):
+        if isinstance(expr, ast.ParExpr):
             self.check_expr_is_mut(expr.expr)
         elif isinstance(expr, ast.Ident):
             if expr.is_comptime:
@@ -2035,7 +2021,19 @@ class Checker:
             elif expr.name == "_":
                 return
             elif expr.is_obj:
-                if not expr.obj.is_mut:
+                if isinstance(expr.typ, type.Ptr):
+                    if not expr.typ.is_mut:
+                        report.error(
+                            "cannot modify elements of an immutable pointer",
+                            expr.pos
+                        )
+                elif isinstance(expr.typ, type.Type) and expr.typ.is_boxed:
+                    if not expr.typ.is_mut:
+                        report.error(
+                            "cannot use a immutable boxed value as mutable value",
+                            expr.pos
+                        )
+                elif not expr.obj.is_mut:
                     kind = "argument" if expr.obj.level == sym.ObjLevel.Arg else "object"
                     report.error(
                         f"cannot use `{expr.obj.name}` as mutable {kind}",
