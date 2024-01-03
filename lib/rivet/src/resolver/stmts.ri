@@ -15,8 +15,8 @@ extend Resolver {
         match stmt.+ {
             .Comment -> {},
             .Empty(empty_pos) -> report.error("bug: unexpected empty statement found", empty_pos),
-            .ComptimeIf(comptime_if) -> {
-                mut stmts := ast.nodes_to_stmts(
+            .ComptimeIf(&mut comptime_if) -> {
+                stmts := ast.nodes_to_stmts(
                     self.env.evalue_comptime_if(comptime_if)
                 );
                 self.resolve_stmts(stmts);
@@ -26,7 +26,7 @@ extend Resolver {
                 for left in var_stmt.lefts {
                     self.check_variable_shadowing(left.name, left.pos);
                     _ = self.resolve_type(left.type);
-                    left.sym = ast.Var(
+                    left.sym = +mut ast.Var(
                         is_mut: left.is_mut,
                         name: left.name,
                         level: .Local,
@@ -54,12 +54,12 @@ extend Resolver {
             .For(for_stmt) -> {
                 if for_stmt.has_index {
                     self.check_variable_shadowing(for_stmt.index.name, for_stmt.index.pos);
-                    for_stmt.index.sym = ast.Var(
+                    for_stmt.index.sym = +mut ast.Var(
                         is_mut: for_stmt.index.is_mut,
                         name: for_stmt.index.name,
                         level: .Local,
                         pos: for_stmt.index.pos,
-                        type: .Void // updated later
+                        type: +mut .Void // updated later
                     );
                     for_stmt.scope.add_local(for_stmt.index.sym) catch |err| report.error(
                         err.to_string(), for_stmt.index.pos
@@ -67,12 +67,12 @@ extend Resolver {
                 }
                 for value in for_stmt.values {
                     self.check_variable_shadowing(value.name, value.pos);
-                    value.sym = ast.Var(
+                    value.sym = +mut ast.Var(
                         is_mut: value.is_mut,
                         name: value.name,
                         level: .Local,
                         pos: value.pos,
-                        type: .Void // updated later
+                        type: +mut .Void // updated later
                     );
                     for_stmt.scope.add_local(value.sym) catch |err| report.error(
                         err.to_string(), value.pos

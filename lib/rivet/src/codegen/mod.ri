@@ -134,7 +134,7 @@ pub struct Codegen {
             },
             else -> {
                 prefix_type := self.prefix_type(type);
-                if mut type_sym := type.symbol() {
+                if type_sym := type.symbol() {
                     if type_sym.is_primitive() {
                         "{}{}".fmt(type_sym.name.len, type_sym.name)
                     } else {
@@ -157,7 +157,7 @@ pub struct Codegen {
             return sym.mangled_name;
         }
         mut sb := strings.Builder.new();
-        if mut parent := sym.parent; !parent.is_universe {
+        if parent := sym.parent; !parent.is_universe {
             sb.write(self.mangle_symbol(parent));
         } else if insert_r {
             sb.write("_R");

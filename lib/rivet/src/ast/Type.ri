@@ -94,11 +94,11 @@ pub enum Type < traits.Stringable {
         mut has_sym: bool;
 
         #[inline]
-        func symbol(&self) -> +Func {
+        func symbol(&self) -> +mut Func {
             return if self.has_sym && self.sym.info is .Func(func_sym) {
                 func_sym
             } else {
-                +Func(
+                +mut Func(
                     is_method: self.is_method,
                     self_type: +mut .Void,
                     self_is_mut: self.self_is_mut,

@@ -12,7 +12,7 @@ extend Resolver {
             old_self_sym_is_set := self.self_sym_is_set;
             match decl.+ {
                 // .Empty(empty_pos) -> report.error("BUG: empty declaration found", empty_pos),
-                .ComptimeIf(comptime_if) -> {
+                .ComptimeIf(&mut comptime_if) -> {
                     ct_decls := ast.nodes_to_decls(
                         self.env.evalue_comptime_if(comptime_if)
                     );
@@ -51,10 +51,10 @@ extend Resolver {
                     for base in trait_decl.bases {
                         if self.resolve_type(base) {
                             base_sym := base.symbol()?;
-                            if base_sym.info is .Trait(base_trait_info) {
+                            if base_sym.info is .Trait(&mut base_trait_info) {
                                 trait_info.bases.push(base_sym);
                                 for impl in base_trait_info.implements {
-                                    if impl.info is .Struct(struct_info) {
+                                    if impl.info is .Struct(&mut struct_info) {
                                         if !struct_info.contains_trait(base_sym) {
                                             base_trait_info.implement(impl);
                                             struct_info.traits.push(base_sym);
@@ -88,7 +88,7 @@ extend Resolver {
                         for base in enum_decl.bases {
                             if self.resolve_type(base) {
                                 base_sym := base.symbol()?;
-                                if base_sym.info is .Trait(trait_info) {
+                                if base_sym.info is .Trait(&mut trait_info) {
                                     enum_info.traits.push(base_sym);
                                     trait_info.implement(self.self_sym);
                                 } else {
@@ -122,10 +122,10 @@ extend Resolver {
                         if self.resolve_type(base) {
                             mut struct_info := @as(ast.TypeInfo.Struct, self.self_sym.info);
                             base_sym := base.symbol()?;
-                            if base_sym.info is .Trait(trait_info) {
+                            if base_sym.info is .Trait(&mut trait_info) {
                                 struct_info.traits.push(base_sym);
                                 trait_info.implement(self.self_sym);
-                            } else if base_sym.info is .Struct(struct_info2) {
+                            } else if base_sym.info is .Struct(&mut struct_info2) {
                                 struct_info.bases.push(base_sym);
                                 for b_trait in struct_info2.traits {
                                     @as(ast.TypeInfo.Trait, b_trait.info).implement(
@@ -149,9 +149,9 @@ extend Resolver {
                     for base in extend_decl.bases {
                         if self.resolve_type(base) {
                             base_sym := base.symbol()?;
-                            if base_sym.info is .Trait(trait_info) {
+                            if base_sym.info is .Trait(&mut trait_info) {
                                 trait_info.implement(self.self_sym);
-                            } else if self.self_sym.info is .Struct(struct_info)
+                            } else if self.self_sym.info is .Struct(&mut struct_info)
                                 && base_sym.info is .Struct {
                                 struct_info.bases.push(base_sym);
                             } else {
@@ -178,13 +178,13 @@ extend Resolver {
                         );
                     }
                 },
-                .Func(func_decl) -> {
+                .Func(&mut func_decl) -> {
                     if func_decl.is_method {
-                        mut self_type := ast.Type.Basic(
+                        mut self_type := +mut ast.Type.Basic(
                             self.self_sym, is_boxed: func_decl.self_is_boxed, is_mut: func_decl.self_is_boxed
                         );
                         if func_decl.self_is_ptr {
-                            self_type = .Pointer(self_type, func_decl.self_is_ptr);
+                            self_type = +mut .Pointer(self_type, func_decl.self_is_ptr);
                         }
                         is_used := self.self_sym.info is .Trait && !func_decl.has_body;
                         func_decl.scope.add_local(+mut ast.Var(

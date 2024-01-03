@@ -97,7 +97,7 @@ pub enum Decl {
         is_public: bool;
         is_extern: bool;
         abi: ABI;
-        mut lefts: []+ObjectData;
+        mut lefts: []+mut ObjectData;
         mut right: +mut Expr;
         pos: token.Pos;
         mut sym: Sym;
@@ -116,11 +116,11 @@ pub enum Decl {
         is_operator: bool;
         abi: ABI;
         name: string;
-        mut args: []+Arg;
+        args: []+mut Arg;
         has_named_args: bool;
-        mut ret_type: +mut Type;
-        mut stmts: []+mut Stmt;
-        mut scope: +Scope;
+        ret_type: +mut Type;
+        stmts: []+mut Stmt;
+        scope: +mut Scope;
         has_body: bool;
         self_is_ptr: bool;
         self_is_boxed: bool;

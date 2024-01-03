@@ -31,7 +31,7 @@ pub struct ComptimeIfBranch {
 }
 
 extend Env {
-    pub func evalue_comptime_if(+self, mut comptime_if: ComptimeIf) -> []+mut Node {
+    pub func evalue_comptime_if(+self, comptime_if: &mut ComptimeIf) -> []+mut Node {
         if branch_idx := comptime_if.branch_idx {
             return comptime_if.branches[branch_idx].nodes;
         }

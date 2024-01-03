@@ -43,14 +43,14 @@ pub struct ImportedSymbol {
 }
 
 pub struct ImportedSymbols {
-    pub mut syms: []+ImportedSymbol;
+    pub mut syms: []+mut ImportedSymbol;
 
     #[inline]
-    pub func add(mut self, name: string, sym: Sym, pos: token.Pos, is_used: bool := false) {
-        self.syms.push(+ImportedSymbol(name, sym, pos, is_used));
+    pub func add(&mut self, name: string, sym: Sym, pos: token.Pos, is_used: bool := false) {
+        self.syms.push(+mut ImportedSymbol(name, sym, pos, is_used));
     }
 
-    pub func find(&self, name: string) -> ?+ImportedSymbol {
+    pub func find(&self, name: string) -> ?+mut ImportedSymbol {
         for imported_sym in self.syms {
             if name == imported_sym.name {
                 return imported_sym;

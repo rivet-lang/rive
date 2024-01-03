@@ -622,7 +622,7 @@ pub enum Expr < traits.Stringable {
 
 pub struct CallArg {
     pub name: string;
-    pub mut expr: +mut Expr;
+    pub expr: +mut Expr;
     pub is_named: bool;
     pub pos: token.Pos;
     pub mut type: +mut Type;
@@ -633,9 +633,9 @@ pub struct CallErrorHandler {
     pub varname_pos: token.Pos;
     pub has_varname: bool;
     pub is_propagate: bool;
-    pub mut expr: +mut Expr;
+    pub expr: +mut Expr;
     pub has_expr: bool;
-    pub mut scope: +Scope;
+    pub scope: +mut Scope;
     pub pos: token.Pos;
 }
 

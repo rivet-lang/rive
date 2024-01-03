@@ -18,7 +18,7 @@ extend Checker {
         +self, got: +mut ast.Type, expected: +mut ast.Type, pos: token.Pos, arg_name: string,
         func_kind: string, func_name: string
     ) {
-        if mut expected_sym := expected.symbol(); expected_sym.info is .Trait(trait_info)
+        if expected_sym := expected.symbol(); expected_sym.info is .Trait(trait_info)
             && expected != got {
             got_t := self.env.comptime_number_to_type(got);
             if got_t.symbol()? in trait_info.implements {

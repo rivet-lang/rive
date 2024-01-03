@@ -10,7 +10,7 @@ extend Checker {
             old_sym := self.sym;
             if decl is .Const || decl is .Var {
                 self.check_decl(decl);
-            } else if mut decl_decls := decl.decls() {
+            } else if decl_decls := decl.decls() {
                 self.check_global_vars(decl_decls);
             }
             self.sym = old_sym;

@@ -124,7 +124,7 @@ extend Checker {
                     ), builtin_call.pos
                 );
             }
-        } else if mut from_ts := from_type.symbol() {
+        } else if from_ts := from_type.symbol() {
             match from_ts.info {
                 .Trait(trait_info) -> if to_ts := to_type.symbol() {
                     if to_ts in trait_info.implements {

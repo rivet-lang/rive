@@ -115,7 +115,7 @@ extend Checker {
             },
             .TupleLiteral(tuple_lit) -> self.check_tuple_literal(tuple_lit),
             .ArrayCtor(array_ctor) -> {
-                if mut init_value := array_ctor.init_value {
+                if init_value := array_ctor.init_value {
                     init_t := self.check_expr(init_value);
                     if !self.check_compatible_types(init_t, array_ctor.elem_type) {
                         report.error(
@@ -131,7 +131,7 @@ extend Checker {
                         );
                     }
                 }
-                if mut len_value := array_ctor.len_value {
+                if len_value := array_ctor.len_value {
                     len_t := self.check_expr(len_value);
                     if !(len_t == self.env.uint_t || len_t == self.env.comptime_int_t) {
                         report.error(
@@ -140,7 +140,7 @@ extend Checker {
                         );
                     }
                 }
-                if mut cap_value := array_ctor.cap_value {
+                if cap_value := array_ctor.cap_value {
                     cap_t := self.check_expr(cap_value);
                     if !(cap_t == self.env.uint_t || cap_t == self.env.comptime_int_t) {
                         report.error(

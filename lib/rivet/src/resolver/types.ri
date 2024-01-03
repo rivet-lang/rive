@@ -10,9 +10,9 @@ extend Resolver {
             .Void, .Never, .Rawptr, .Boxedptr -> true,
             .Option(opt) -> self.resolve_type(opt.inner),
             .Result(res) -> self.resolve_type(res.inner),
-            .Variadic(variadic) -> if self.resolve_type(variadic.inner) {
-                mut elem_sym := variadic.inner.symbol()?;
-                if elem_sym.info is .Trait(trait_info) {
+            .Variadic(&mut variadic) -> if self.resolve_type(variadic.inner) {
+                elem_sym := variadic.inner.symbol()?;
+                if elem_sym.info is .Trait(&mut trait_info) {
                     trait_info.has_objects = true;
                 }
                 variadic.sym = self.env.universe.add_or_get_slice(variadic.inner, false);
@@ -20,19 +20,19 @@ extend Resolver {
             } else {
                 false
             },
-            .Slice(slice) -> if self.resolve_type(slice.inner) {
+            .Slice(&mut slice) -> if self.resolve_type(slice.inner) {
                 slice.sym = self.env.universe.add_or_get_slice(slice.inner, slice.is_mut);
                 true
             } else {
                 false
             },
-            .DynArray(dyn_arr) -> if self.resolve_type(dyn_arr.inner) {
+            .DynArray(&mut dyn_arr) -> if self.resolve_type(dyn_arr.inner) {
                 dyn_arr.sym = self.env.universe.add_or_get_dyn_array(dyn_arr.inner, dyn_arr.is_mut);
                 true
             } else {
                 false
             },
-            .Array(arr) -> if self.resolve_type(arr.inner) {
+            .Array(&mut arr) -> if self.resolve_type(arr.inner) {
                 if arr_size := self.eval_size(arr.size) {
                     if arr_size <= 0 {
                         err := report.error_builder(
@@ -58,7 +58,7 @@ extend Resolver {
                 false
             },
             .Pointer(ptr) -> self.resolve_type(ptr.inner),
-            .Tuple(tuple) -> {
+            .Tuple(&mut tuple) -> {
                 mut resolved := false;
                 for inner in tuple.inners {
                     resolved = self.resolve_type(inner);
@@ -68,7 +68,7 @@ extend Resolver {
                 }
                 resolved
             },
-            .Func(func_t) -> {
+            .Func(&mut func_t) -> {
                 mut res1 := false;
                 for arg in func_t.args {
                     res1 = self.resolve_type(arg.type);
@@ -78,8 +78,8 @@ extend Resolver {
                 func_t.has_sym = true;
                 res1
             },
-            .Basic(basic) -> if basic.is_unresolved {
-                match basic.expr {
+            .Basic(&mut basic) -> if basic.is_unresolved {
+                match basic.expr.+ {
                     .SelfTy -> if self.self_sym_is_set {
                         basic.is_unresolved = false;
                         basic.sym = self.self_sym;
@@ -87,10 +87,10 @@ extend Resolver {
                     } else {
                         false
                     },
-                    .Ident(ident) -> {
+                    .Ident(&mut ident) -> {
                         self.resolve_ident(ident);
                         if ident.found {
-                            if ident.sym is ast.TypeSym(type_sym) {
+                            if ident.sym is ast.TypeSym(mut type_sym) {
                                 basic.is_unresolved = false;
                                 basic.sym = type_sym;
                                 if type_sym.info is .Alias(alias_info) {
@@ -107,10 +107,10 @@ extend Resolver {
                         }
                         ident.found
                     },
-                    .Selector(selector) -> {
+                    .Selector(&mut selector) -> {
                         self.resolve_selector(selector);
                         if selector.found {
-                            if selector.sym is ast.TypeSym(type_sym) {
+                            if selector.sym is ast.TypeSym(mut type_sym) {
                                 if type_sym.info is .Placeholder {
                                     report.error(
                                         "cannot find type `{}` in {} `{}`".fmt(

@@ -158,7 +158,7 @@ extend Codegen {
                     } else {
                         .SizedUint(bits, size)
                     }
-                } else if mut type_sym := type.symbol() {
+                } else if type_sym := type.symbol() {
                     if type_sym.is_primitive() {
                         return .Basic(type_sym.name, size, true);
                     }
