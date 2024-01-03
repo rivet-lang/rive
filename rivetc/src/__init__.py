@@ -420,6 +420,7 @@ class Compiler:
         elif sy.kind == sym.TypeKind.Trait:
             if raw_size:
                 size, align = self.pointer_size * 3, self.pointer_size
+                size += len(sy.fields) * self.pointer_size
             else:
                 size, align = self.pointer_size, self.pointer_size
         elif sy.kind == sym.TypeKind.Alias:
