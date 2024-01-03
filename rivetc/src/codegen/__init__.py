@@ -1072,7 +1072,7 @@ class Codegen:
                 if custom_tmp:
                     tmp = custom_tmp
                 elif typ_sym.is_boxed():
-                    size, _ = self.comp.type_size(expr.typ)
+                    size, _ = self.comp.type_size(expr.typ, True)
                     tmp = self.boxed_instance(self.ir_type(expr.typ), size)
                 else:
                     tmp = self.stacked_instance(self.ir_type(expr.typ))
@@ -1269,7 +1269,7 @@ class Codegen:
                             )
                         args.append(self.variadic_args(vargs, var_arg.typ.typ))
                     else:
-                        args.append(self.empty_slice(var_arg.typ.symbol()))
+                        args.append(self.empty_slice())
             if expr.sym.ret_typ == self.comp.never_t:
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True
@@ -1705,7 +1705,7 @@ class Codegen:
         elif isinstance(expr, ast.UnaryExpr):
             right = self.gen_expr_with_cast(expr.right_typ, expr.right)
             if expr.op == Kind.Plus:
-                size, _ = self.comp.type_size(expr.right_typ)
+                size, _ = self.comp.type_size(expr.right_typ, True)
                 res = self.boxed_instance(self.ir_type(expr.right_typ), size)
                 self.cur_func.store_ptr(
                     res, ir.Inst(ir.InstKind.Cast, [right, right.typ])
@@ -2494,13 +2494,13 @@ class Codegen:
         self.cur_func.add_call(
             "_R4core13runtime_errorF", [
                 self.gen_string_literal(utils.smart_quote(msg, False)),
-                self.empty_slice(self.comp.universe["[]core.Stringable"])
+                self.empty_slice()
             ]
         )
 
     def variadic_args(self, vargs, var_arg_typ_):
         if len(vargs) == 0:
-            return self.empty_dyn_array(var_arg_typ_.typ.symbol())
+            return self.empty_slice(var_arg_typ_.typ.symbol())
         elem_size, _ = self.comp.type_size(var_arg_typ_)
         return ir.Inst(
             ir.InstKind.Call, [
@@ -2541,7 +2541,7 @@ class Codegen:
                 self.ir_type(typ), [self.default_value(typ_sym.info.elem_typ)]
             )
         elif typ_sym.kind == TypeKind.Slice:
-            return self.empty_slice(typ_sym)
+            return self.empty_slice()
         elif typ_sym.kind == TypeKind.DynArray:
             return self.empty_dyn_array(typ_sym)
         elif typ_sym.kind == TypeKind.Enum:
@@ -2560,7 +2560,7 @@ class Codegen:
             if custom_tmp:
                 tmp = custom_tmp
             elif typ_sym.info.is_boxed:
-                size, _ = self.comp.type_size(typ)
+                size, _ = self.comp.type_size(typ, True)
                 tmp = self.boxed_instance(self.ir_type(typ), size)
             else:
                 tmp = self.stacked_instance(self.ir_type(typ))
@@ -2591,9 +2591,7 @@ class Codegen:
             ]
         )
 
-    def empty_slice(self, typ_sym):
-        elem_typ = typ_sym.info.elem_typ
-        _, _ = self.comp.type_size(elem_typ)
+    def empty_slice(self):
         return ir.Inst(
             ir.InstKind.Call, [
                 ir.Name("_R4core5Slice3newF"),
@@ -2666,7 +2664,8 @@ class Codegen:
         value_sym = self.comp.comptime_number_to_type(value_typ).symbol()
         trait_sym = trait_typ.symbol()
         size, _ = self.comp.type_size(value_typ)
-        tmp = self.boxed_instance(self.ir_type(trait_typ), str(self.comp.pointer_size * 3))
+        trait_size, _ = self.comp.type_symbol_size(trait_sym, True)
+        tmp = self.boxed_instance(self.ir_type(trait_typ), str(trait_size))
         is_ptr = isinstance(value.typ, ir.Pointer)
         for f in trait_sym.fields:
             f_typ = self.ir_type(f.typ)
@@ -2719,7 +2718,7 @@ class Codegen:
         else:
             mangled_name = cg_utils.mangle_symbol(enum_sym)
             if enum_sym.info.is_boxed:
-                size, _ = self.comp.type_symbol_size(enum_sym)
+                size, _ = self.comp.type_symbol_size(enum_sym, True)
                 tmp = self.boxed_instance(ir.Type(mangled_name), size)
             else:
                 tmp = self.stacked_instance(ir.Type(mangled_name))
@@ -2733,7 +2732,6 @@ class Codegen:
             value, ast.EmptyExpr
         ):
             arg0 = self.gen_expr_with_cast(variant_info.typ, value)
-            size, _ = self.comp.type_size(variant_info.typ)
             obj_f = ir.Selector(
                 ir.Type(f"{cg_utils.mangle_symbol(enum_sym)}6_Union"), tmp,
                 ir.Name("obj")
@@ -2754,7 +2752,7 @@ class Codegen:
         else:
             mangled_name = cg_utils.mangle_symbol(enum_sym)
             if enum_sym.info.is_boxed:
-                size, _ = self.comp.type_symbol_size(enum_sym)
+                size, _ = self.comp.type_symbol_size(enum_sym, True)
                 tmp = self.boxed_instance(ir.Type(mangled_name), size)
             else:
                 tmp = self.stacked_instance(ir.Type(mangled_name))

@@ -562,6 +562,8 @@ class Type(Sym):
         self.info = info
         self.size = -1
         self.align = -1
+        self.raw_size = -1
+        self.raw_align = -1
         self.default_value = None
 
     def find_field(self, name):
