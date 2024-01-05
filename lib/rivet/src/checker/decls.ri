@@ -28,7 +28,7 @@ extend Checker {
     func check_decl(+mut self, mut decl: +mut ast.Decl) {
         old_sym := self.sym;
         defer self.sym = old_sym;
-        match decl {
+        match decl.+ {
             .ComptimeIf(comptime_if) -> {
                 mut decls := ast.nodes_to_decls(
                     self.env.evalue_comptime_if(comptime_if)

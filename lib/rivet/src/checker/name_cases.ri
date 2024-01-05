@@ -24,7 +24,7 @@ extend Checker {
     }
 
     #[inline]
-    func check_name_case(+self, case: NameCase, kind: string, name: string, pos: token.Pos) {
+    func check_name_case(+mut self, case: NameCase, kind: string, name: string, pos: token.Pos) {
         if mod := self.sym.module(); mod.name in ["c.libc", "c.ctypes"] {
             return;
         }

@@ -8,8 +8,8 @@ extend Checker {
     func check_trait_impl(+mut self, impltor: +mut ast.TypeSym, trait_sym: +mut ast.TypeSym, pos: token.Pos) {
         mut impl_does_not_implemented := []string();
         for sym in trait_sym.scope.syms {
-            if sym is ast.Func(trait_func) {
-                if impl := impltor.find_func(trait_func.name); !trait_func.has_body {
+            if sym is ast.Func(mut trait_func) {
+                if mut impl := impltor.find_func(trait_func.name); !trait_func.has_body {
                     mut errors := []string();
                     if !impl.is_public {
                         errors.push("method `{}` should be public.".fmt(impl.name));

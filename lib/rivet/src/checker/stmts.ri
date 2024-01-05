@@ -5,7 +5,7 @@
 import ../{ ast, token, report };
 
 extend Checker {
-    func check_stmts(+mut self, mut stmts: []+mut ast.Stmt) {
+    func check_stmts(+mut self, stmts: []+mut ast.Stmt) {
         mut unreachable_pos := token.no_pos;
         for stmt in stmts {
             if self.scope_returns && unreachable_pos.pos == 0 {
@@ -19,8 +19,8 @@ extend Checker {
         self.scope_returns = false;
     }
 
-    func check_stmt(+mut self, mut stmt: +mut ast.Stmt) {
-        match stmt {
+    func check_stmt(+mut self, stmt: +mut ast.Stmt) {
+        match stmt.+ {
             .ComptimeIf(comptime_if) -> {
                 mut stmts := ast.nodes_to_stmts(
                     self.env.evalue_comptime_if(comptime_if)
@@ -40,7 +40,7 @@ extend Checker {
         }
     }
 
-    func check_for(+mut self, mut for_stmt: +mut ast.Stmt.For) {
+    func check_for(+mut self, for_stmt: +mut ast.Stmt.For) {
         prev_loop_control_tracker := self.loop_control_tracker;
         self.loop_control_tracker = .AnyLoop;
         defer self.loop_control_tracker = prev_loop_control_tracker;
@@ -104,7 +104,7 @@ extend Checker {
         }
     }
 
-    func check_while(+mut self, mut while_stmt: +mut ast.Stmt.While)  {
+    func check_while(+mut self, while_stmt: +mut ast.Stmt.While)  {
         prev_loop_control_tracker := self.loop_control_tracker;
         self.loop_control_tracker = .AnyLoop;
         defer self.loop_control_tracker = prev_loop_control_tracker;
@@ -128,7 +128,7 @@ extend Checker {
         }
     }
 
-    func check_defer(+mut self, mut defer_stmt: +mut ast.Stmt.Defer) {
+    func check_defer(+mut self, defer_stmt: +mut ast.Stmt.Defer) {
         prev_return_tracker := self.return_tracker;
         self.return_tracker = .Defer;
         defer self.return_tracker = prev_return_tracker;
@@ -144,6 +144,7 @@ extend Checker {
         self.check_expr_evaluated_but_not_used(
             self.check_expr(defer_stmt.expr), defer_stmt.expr.position()
         );
+
         self.defer_stmts.push(defer_stmt);
     }
 }

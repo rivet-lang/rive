@@ -6,7 +6,7 @@ import ../{ ast, report };
 
 extend Checker {
     func check_expr(+mut self, mut expr: +mut ast.Expr) -> +mut ast.Type {
-        return match expr {
+        return match expr.+ {
             .Empty, .Comment -> .Void,
             .Type(type) -> type,
             .ComptimeIf(comptime_if) -> {
