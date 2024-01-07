@@ -2,8 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ./prefs.Prefs;
-import ./builder.Builder;
+import ./{ prefs.Prefs, builder.Builder };
 
 pub func compile(prefs: +mut Prefs) -> ! {
     mut builder := Builder.new(prefs);
