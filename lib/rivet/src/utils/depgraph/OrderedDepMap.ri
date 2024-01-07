@@ -4,7 +4,7 @@
 
 import std/process;
 
-import ../utils/maps;
+import ../maps;
 
 #[boxed]
 pub struct OrderedDepMap {
