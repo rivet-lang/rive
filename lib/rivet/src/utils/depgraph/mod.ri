@@ -4,7 +4,7 @@
 
 import std/strings;
 
-import ../{ utils, utils/maps };
+import ../{ self, maps };
 
 struct DepGraphNode {
     pub mut name: string;
