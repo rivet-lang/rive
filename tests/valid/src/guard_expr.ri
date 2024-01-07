@@ -7,7 +7,7 @@ func ret_err() -> !int32 {
 }
 
 test "guard expression with mutable variable" {
-    if val := ret_none() {
+    if mut val := ret_none() {
         @assert(val == 3);
         val += 2;
         @assert(val == 5);
