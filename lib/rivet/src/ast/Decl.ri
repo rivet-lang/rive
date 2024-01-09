@@ -26,7 +26,7 @@ pub enum Decl {
         is_typealias: bool;
         mut parent_type: +mut Type;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: +mut Sym;
     },
     Trait {
         docs: []Comment;
@@ -36,7 +36,7 @@ pub enum Decl {
         mut bases: []+mut Type;
         mut decls: []+mut Decl;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: +mut Sym;
     },
     Enum {
         docs: []Comment;
@@ -49,7 +49,7 @@ pub enum Decl {
         is_tagged: bool;
         mut decls: []+mut Decl;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: +mut Sym;
     },
     Struct {
         docs: []Comment;
@@ -60,7 +60,7 @@ pub enum Decl {
         mut decls: []+mut Decl;
         is_opaque: bool;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: +mut Sym;
     },
     Field {
         docs: []Comment;
@@ -89,7 +89,7 @@ pub enum Decl {
         mut type: +mut Type;
         mut expr: +mut Expr;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: +mut Sym;
     },
     Var {
         docs: []Comment;
@@ -100,7 +100,7 @@ pub enum Decl {
         mut lefts: []+mut ObjectData;
         mut right: +mut Expr;
         pos: token.Pos;
-        mut sym: Sym;
+        mut sym: +mut Sym;
         mut scope: +Scope;
     },
     Func {
@@ -128,7 +128,7 @@ pub enum Decl {
         mut self_type: +mut Type;
         pos: token.Pos;
         self_pos: token.Pos;
-        mut sym: Sym;
+        mut sym: +mut Sym;
         mut defer_stmts: []+mut Stmt.Defer;
     },
     Test {

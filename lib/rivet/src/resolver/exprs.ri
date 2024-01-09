@@ -323,7 +323,7 @@ extend Resolver {
         }
     }
 
-    func find_symbol(+mut self, mut sym: ast.Sym, name: string, pos: token.Pos) -> ?ast.Sym {
+    func find_symbol(+mut self, sym: +mut ast.Sym, name: string, pos: token.Pos) -> ?ast.Sym {
         mut sym_ := sym;
         if sym is ast.SymRef(mut sym_ref) {
             sym_ = self.clean_symbol_reference(sym_ref);

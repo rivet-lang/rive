@@ -54,7 +54,7 @@ pub struct TypeSym < Sym {
     }
 
     #[inline]
-    pub func lookup(+self, name: string) -> ?Sym {
+    pub func lookup(+self, name: string) -> ?+mut Sym {
         return if s := self.scope.lookup(name) {
             s
         } else {
@@ -62,7 +62,7 @@ pub struct TypeSym < Sym {
         };
     }
 
-    pub func find_in_base(+self, name: string) -> ?Sym {
+    pub func find_in_base(+self, name: string) -> ?+mut Sym {
          if self.info is .Trait(trait_info) {
             for b in trait_info.bases {
                 if s := b.scope.find(name) {

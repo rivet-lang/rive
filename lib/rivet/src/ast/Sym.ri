@@ -59,7 +59,7 @@ pub trait Sym {
     id: uint := new_sym_id();
     abi: ABI;
     mut is_public: bool;
-    mut parent: ?Sym;
+    parent: ?+mut Sym;
     name: string;
     mut scope: +mut Scope;
     mut mangled_name: string;
@@ -82,13 +82,12 @@ pub trait Sym {
         return none;
     }
 
-    func has_access_to(+self, mut other: Sym) -> bool {
+    func has_access_to(+self, other: +mut Sym) -> bool {
         self_mod := self.module() ?? return false;
         other_mod := other.module() ?? return false;
         return (
             other_mod.is_universe || self_mod.id == other.id
-            || self_mod.id == other_mod.id
-            || self_mod.id == other_mod.parent?.id
+            || self_mod.id == other_mod.id || self_mod.id == other_mod.parent?.id
             || self_mod.parent?.id == other.parent?.id
         );
     }
@@ -128,11 +127,11 @@ pub trait Sym {
         };
     }
 
-    func ==(+self, other: Self) -> bool {
+    func ==(+self, other: +Self) -> bool {
         return self.id == other.id;
     }
 
-    func !=(+self, other: Self) -> bool {
+    func !=(+self, other: +Self) -> bool {
         return self.id != other.id;
     }
 }
@@ -142,7 +141,7 @@ pub struct InvalidSym < Sym {}
 
 #[boxed]
 pub struct SymRef < Sym {
-    pub mut ref: Sym;
+    pub mut ref: +mut Sym;
     pub mut ref_expr: +mut Expr;
     pub mut ref_resolved: bool;
 }

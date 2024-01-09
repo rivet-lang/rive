@@ -8,14 +8,14 @@ import std/process;
 pub struct Scope {
     pub start: uint;
     pub mut end: uint;
-    pub mut owner: ?Sym;
+    pub mut owner: ?+mut Sym;
     pub mut parent: ?+mut Scope;
     pub mut detached_from_parent: bool;
     pub mut childrens: []+mut Scope;
-    pub mut syms: []mut Sym;
+    pub mut syms: []+mut Sym;
     pub mut is_local: bool;
 
-    pub func add(+mut self, sym: Sym) -> ! {
+    pub func add(+mut self, sym: +mut Sym) -> ! {
         if _ := self.find(sym.name) {
             throw DuplicateSymbolError(
                 "duplicate symbol `{}` in {} `{}`".fmt(
@@ -26,7 +26,7 @@ pub struct Scope {
         self.syms.push(sym);
     }
 
-    pub func add_or_get(+mut self, sym: Sym) -> !Sym {
+    pub func add_or_get(+mut self, sym: +mut Sym) -> !+mut Sym {
         if mut old_sym := self.find(sym.name) {
             if sym is TypeSym(type_sym) && old_sym is TypeSym(mut old_type_sym) {
                 if old_type_sym.update(type_sym)! {
@@ -43,7 +43,7 @@ pub struct Scope {
         return sym;
     }
 
-    pub func add_local(+mut self, sym: Sym) -> ! {
+    pub func add_local(+mut self, sym: +mut Sym) -> ! {
         if self.is_local {
             if sym is Var && sym.name == "_" {
                 return; // ignore blank variable
@@ -61,7 +61,7 @@ pub struct Scope {
         return self.find(name) != none;
     }
 
-    pub func find(+self, name: string) -> ?Sym {
+    pub func find(+self, name: string) -> ?+mut Sym {
         for sym in self.syms {
             if sym.name == name {
                 return sym;
@@ -70,14 +70,14 @@ pub struct Scope {
         return none;
     }
 
-    pub func find_or_panic(+self, name: string) -> Sym {
+    pub func find_or_panic(+self, name: string) -> +mut Sym {
         if x := self.find(name) {
             return x;
         }
         process.panic("cannot found symbol `{}`", name);
     }
 
-    pub func find_by_index_or_panic(+self, idx: uint) -> Sym {
+    pub func find_by_index_or_panic(+self, idx: uint) -> +mut Sym {
         if idx >= self.syms.len {
             process.panic("symbol index out of range `{}`", idx);
         }
@@ -94,7 +94,7 @@ pub struct Scope {
         return @as(+mut TypeSym, self.find_by_index_or_panic(idx));
     }
 
-    pub func lookup(+self, name: string) -> ?Sym {
+    pub func lookup(+self, name: string) -> ?+mut Sym {
         if self.is_local {
             mut sc_: ?+Scope := self;
             while sc := sc_ {

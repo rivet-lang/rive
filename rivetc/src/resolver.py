@@ -73,10 +73,12 @@ class Resolver:
                             decl.sym.default_value = attribute.args[0].expr
                             self.resolve_expr(decl.sym.default_value)
                     for base in decl.bases:
+                        self.inside_extend_type = True
                         if self.resolve_type(base):
                             base_sym = base.symbol()
                             if base_sym.kind == sym.TypeKind.Trait:
                                 base_sym.info.implement(decl.sym)
+                        self.inside_extend_type = False
                     for v in decl.variants:
                         if len(v.decls) > 0:
                             self.self_sym = v.typ.symbol()
@@ -89,6 +91,7 @@ class Resolver:
                         decl.sym.default_value = attribute.args[0].expr
                         self.resolve_expr(decl.sym.default_value)
                 for base in decl.bases:
+                    self.inside_extend_type = True
                     if self.resolve_type(base):
                         base_sym = base.symbol()
                         if base_sym.kind == sym.TypeKind.Trait:
@@ -97,11 +100,13 @@ class Resolver:
                                 if base_sym not in impl.info.traits:
                                     base_sym.info.implement(impl)
                                     impl.info.traits.append(base_sym)
+                    self.inside_extend_type = False
                 self.self_sym = decl.sym
                 self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.StructDecl):
                 self.self_sym = decl.sym
                 for base in decl.bases:
+                    self.inside_extend_type = True
                     if self.resolve_type(base):
                         base_sym = base.symbol()
                         if base_sym.kind == sym.TypeKind.Trait:
@@ -111,6 +116,7 @@ class Resolver:
                             decl.sym.info.bases.append(base_sym)
                             for b_trait in base_sym.info.traits:
                                 b_trait.info.implement(decl.sym)
+                    self.inside_extend_type = False
                 self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.FieldDecl):
                 self.resolve_type(decl.typ)
@@ -119,7 +125,6 @@ class Resolver:
             elif isinstance(decl, ast.ExtendDecl):
                 self.inside_extend_type = True
                 if self.resolve_type(decl.typ):
-                    self.inside_extend_type = False
                     self.self_sym = decl.typ.symbol()
                     for base in decl.bases:
                         if self.resolve_type(base):
@@ -128,6 +133,7 @@ class Resolver:
                                 base_sym.info.implements.append(self.self_sym)
                             elif self.self_sym.kind == sym.TypeKind.Struct and self.self_sym.kind == base_sym.kind:
                                 self.self_sym.info.bases.append(base_sym)
+                    self.inside_extend_type = False
                     self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.FuncDecl):
                 if decl.is_method:
@@ -615,7 +621,7 @@ class Resolver:
                 tsym = typ.symbol()
                 if isinstance(
                     tsym, sym.Type
-                ) and tsym.kind != sym.TypeKind.Trait and tsym.is_boxed():
+                ) and tsym.is_boxed():
                     report.error(
                         f"cannot use type `{tsym.name}` as a simple value",
                         typ.expr.pos

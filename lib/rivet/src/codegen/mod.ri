@@ -152,7 +152,7 @@ pub struct Codegen {
         };
     }
 
-    func mangle_symbol(+self, mut sym: ast.Sym, insert_r: bool := true) -> string {
+    func mangle_symbol(+self, sym: +mut ast.Sym, insert_r: bool := true) -> string {
         if sym.mangled_name.len > 0 {
             return sym.mangled_name;
         }

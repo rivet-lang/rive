@@ -37,7 +37,7 @@ pub enum Expr < traits.Stringable {
         mut is_obj: bool;
         mut is_sym: bool;
         mut found: bool;
-        mut sym: Sym;
+        mut sym: +mut Sym;
         mut builtin: Builtin := .Invalid;
         pos: token.Pos;
         mut type: +mut Type;
@@ -121,14 +121,14 @@ pub enum Expr < traits.Stringable {
     Selector {
         mut left: +mut Expr;
         mut left_type: +mut Type;
-        mut left_sym: Sym;
+        mut left_sym: +mut Sym;
         field_name: string;
         field_pos: token.Pos;
         mut field_is_mut: bool;
         mut field_type: +mut Type;
         mut is_path: bool;
         mut found: bool;
-        mut sym: Sym;
+        mut sym: +mut Sym;
         pos: token.Pos;
         mut type: +mut Type;
     },

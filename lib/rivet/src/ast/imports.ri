@@ -37,7 +37,7 @@ pub struct ImportListInfo {
 #[boxed]
 pub struct ImportedSymbol {
     pub name: string;
-    pub sym: Sym;
+    pub sym: +mut Sym;
     pub pos: token.Pos;
     pub mut is_used: bool;
 }
@@ -46,7 +46,7 @@ pub struct ImportedSymbols {
     pub mut syms: []+mut ImportedSymbol;
 
     #[inline]
-    pub func add(&mut self, name: string, sym: Sym, pos: token.Pos, is_used: bool := false) {
+    pub func add(&mut self, name: string, sym: +mut Sym, pos: token.Pos, is_used: bool := false) {
         self.syms.push(+mut ImportedSymbol(name, sym, pos, is_used));
     }
 

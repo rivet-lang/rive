@@ -111,7 +111,7 @@ extend Checker {
         }
     }
 
-    func check_sym_is_mut(mut sym: ast.Sym, pos: token.Pos) {
+    func check_sym_is_mut(sym: +mut ast.Sym, pos: token.Pos) {
         match sym is {
             ast.Const -> report.error(
                 "cannot use constant `{}` as mutable value".fmt(sym.name), pos
